@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SSC Admin — Add Question</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1e293b, #334155);
+      padding: 20px 32px;
+      border-bottom: 2px solid #3b82f6;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    header h1 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: #f1f5f9;
+    }
+
+    header span {
+      background: #3b82f6;
+      color: #fff;
+      font-size: 0.7rem;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .container {
+      max-width: 780px;
+      margin: 32px auto;
+      padding: 0 20px;
+    }
+
+    form {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 32px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    label .required {
+      color: #f87171;
+    }
+
+    input, select, textarea {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: #e2e8f0;
+      font-size: 0.95rem;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .options-section {
+      grid-column: 1 / -1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .options-section label {
+      margin-bottom: 2px;
+    }
+
+    .option-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .option-label {
+      background: #334155;
+      color: #94a3b8;
+      width: 32px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+    }
+
+    .option-row input[type="text"] {
+      flex: 1;
+    }
+
+    .option-row input[type="radio"] {
+      accent-color: #22c55e;
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .correct-hint {
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-top: -4px;
+    }
+
+    .btn-bar {
+      grid-column: 1 / -1;
+      display: flex;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    button {
+      padding: 12px 28px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-submit {
+      background: #3b82f6;
+      color: #fff;
+      flex: 1;
+    }
+
+    .btn-submit:hover { background: #2563eb; }
+
+    .btn-reset {
+      background: #334155;
+      color: #94a3b8;
+    }
+
+    .btn-reset:hover { background: #475569; color: #e2e8f0; }
+
+    /* Toast notification */
+    .toast {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      padding: 14px 24px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transform: translateX(120%);
+      transition: transform 0.35s ease;
+      z-index: 1000;
+      max-width: 380px;
+    }
+
+    .toast.show { transform: translateX(0); }
+
+    .toast.success {
+      background: #166534;
+      color: #bbf7d0;
+      border: 1px solid #22c55e;
+    }
+
+    .toast.error {
+      background: #7f1d1d;
+      color: #fecaca;
+      border: 1px solid #f87171;
+    }
+
+    @media (max-width: 600px) {
+      .form-grid { grid-template-columns: 1fr; }
+      form { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>SSC Question Bank — Admin</h1>
+    <span>Upload</span>
+  </header>
+
+  <div class="container">
+    <form id="questionForm">
+      <div class="form-grid">
+
+        <!-- Subject -->
+        <div class="form-group">
+          <label>Subject <span class="required">*</span></label>
+          <select id="subject" required>
+            <option value="">Select subject</option>
+            <option>Mathematics</option>
+            <option>English</option>
+            <option>General Knowledge</option>
+            <option>Reasoning</option>
+            <option>General Science</option>
+            <option>Hindi</option>
+          </select>
+        </div>
+
+        <!-- Tier -->
+        <div class="form-group">
+          <label>Tier <span class="required">*</span></label>
+          <select id="tier" required>
+            <option value="">Select tier</option>
+            <option>Tier 1</option>
+            <option>Tier 2</option>
+            <option>Tier 3</option>
+          </select>
+        </div>
+
+        <!-- Chapter -->
+        <div class="form-group">
+          <label>Chapter</label>
+          <input type="text" id="chapter" placeholder="e.g. Algebra, Idioms…">
+        </div>
+
+        <!-- Concept -->
+        <div class="form-group">
+          <label>Concept</label>
+          <input type="text" id="concept" placeholder="e.g. Quadratic Equations">
+        </div>
+
+        <!-- Difficulty -->
+        <div class="form-group">
+          <label>Difficulty <span class="required">*</span></label>
+          <select id="difficulty" required>
+            <option value="">Select level</option>
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+        </div>
+
+        <!-- Formula -->
+        <div class="form-group">
+          <label>Formula</label>
+          <input type="text" id="formula" placeholder="e.g. a² - b² = (a+b)(a-b)">
+        </div>
+
+        <!-- Trap Type -->
+        <div class="form-group">
+          <label>Trap Type</label>
+          <select id="trapType">
+            <option value="">None</option>
+            <option>Sign Error</option>
+            <option>Unit Confusion</option>
+            <option>Partial Calculation</option>
+            <option>Misread Question</option>
+            <option>Approximation Trick</option>
+            <option>Other</option>
+          </select>
+        </div>
+
+        <!-- empty cell for alignment -->
+        <div></div>
+
+        <!-- Question -->
+        <div class="form-group full-width">
+          <label>Question <span class="required">*</span></label>
+          <textarea id="question" placeholder="Type the full question text…" required></textarea>
+        </div>
+
+        <!-- Options + Correct Answer -->
+        <div class="options-section">
+          <label>Options <span class="required">*</span> &nbsp; <span style="font-weight:400; text-transform:none; color:#64748b;">(select radio for correct answer)</span></label>
+          <div class="option-row">
+            <span class="option-label">A</span>
+            <input type="text" id="optA" placeholder="Option A" required>
+            <input type="radio" name="correct" value="0" required title="Mark A as correct">
+          </div>
+          <div class="option-row">
+            <span class="option-label">B</span>
+            <input type="text" id="optB" placeholder="Option B" required>
+            <input type="radio" name="correct" value="1" title="Mark B as correct">
+          </div>
+          <div class="option-row">
+            <span class="option-label">C</span>
+            <input type="text" id="optC" placeholder="Option C" required>
+            <input type="radio" name="correct" value="2" title="Mark C as correct">
+          </div>
+          <div class="option-row">
+            <span class="option-label">D</span>
+            <input type="text" id="optD" placeholder="Option D" required>
+            <input type="radio" name="correct" value="3" title="Mark D as correct">
+          </div>
+          <p class="correct-hint">The selected radio button marks the correct answer.</p>
+        </div>
+
+        <!-- Buttons -->
+        <div class="btn-bar">
+          <button type="submit" class="btn-submit">Add Question</button>
+          <button type="reset" class="btn-reset">Clear</button>
+        </div>
+
+      </div>
+    </form>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const API_URL = 'http://localhost:3000/api/questions';
+
+    function showToast(message, type) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = 'toast ' + type + ' show';
+      setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+    document.getElementById('questionForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const options = [
+        document.getElementById('optA').value.trim(),
+        document.getElementById('optB').value.trim(),
+        document.getElementById('optC').value.trim(),
+        document.getElementById('optD').value.trim()
+      ];
+
+      const correctRadio = document.querySelector('input[name="correct"]:checked');
+      if (!correctRadio) {
+        showToast('Please select the correct answer', 'error');
+        return;
+      }
+
+      const correctAnswer = options[parseInt(correctRadio.value)];
+
+      const payload = {
+        subject:     document.getElementById('subject').value,
+        tier:        document.getElementById('tier').value,
+        chapter:     document.getElementById('chapter').value.trim(),
+        concept:     document.getElementById('concept').value.trim(),
+        difficulty:  document.getElementById('difficulty').value,
+        formula:     document.getElementById('formula').value.trim(),
+        trapType:    document.getElementById('trapType').value,
+        question:    document.getElementById('question').value.trim(),
+        options,
+        correctAnswer
+      };
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          showToast('Question #' + data.question.id + ' added!', 'success');
+          document.getElementById('questionForm').reset();
+        } else {
+          showToast(data.error || 'Failed to add question', 'error');
+        }
+      } catch (err) {
+        showToast('Server unreachable — is the backend running?', 'error');
+      }
+    });
+  </script>
+
+</body>
+</html>

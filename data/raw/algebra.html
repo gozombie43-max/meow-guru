@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SSC CGL Algebra PYQ — All Years</title>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&family=Mulish:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #1a1a2e;
+  --ink2: #2d2d4e;
+  --paper: #fdfaf5;
+  --cream: #f5f0e8;
+  --rule: #d4c9b0;
+  --accent: #8b1a1a;
+  --accent2: #2563eb;
+  --gold: #c8960c;
+  --green: #166534;
+  --red: #991b1b;
+  --tag-bg: #fff8f0;
+  --muted: #6b6b8a;
+  --correct-bg: #f0fdf4;
+  --wrong-bg: #fef2f2;
+  --shadow: 0 2px 12px rgba(26,26,46,0.10);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Mulish', sans-serif;
+  min-height: 100vh;
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 31px, #e8e0d0 31px, #e8e0d0 32px);
+}
+
+/* HEADER */
+header {
+  background: var(--ink);
+  color: #fff;
+  padding: 2.5rem 2rem 2rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 4px solid var(--gold);
+}
+header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent, transparent 20px,
+    rgba(255,255,255,.015) 20px, rgba(255,255,255,.015) 40px
+  );
+  pointer-events: none;
+}
+.h-badge {
+  display: inline-flex; align-items: center; gap: .4rem;
+  background: var(--gold); color: var(--ink);
+  font-size: .68rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+  padding: .22rem .9rem; border-radius: 2px; margin-bottom: 1.1rem;
+}
+header h1 {
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-size: clamp(1.8rem,5vw,3rem);
+  font-weight: 700; line-height: 1.2;
+  letter-spacing: -.01em;
+}
+header h1 em { color: var(--gold); font-style: normal; }
+.h-sub {
+  color: rgba(255,255,255,.55); font-size: .82rem;
+  margin-top: .5rem; font-style: italic;
+  font-family: 'Crimson Pro', serif;
+}
+
+/* TOOLBAR */
+.toolbar {
+  max-width: 1000px; margin: 1.4rem auto 0;
+  padding: 0 1rem;
+}
+.search-row {
+  display: flex; gap: .7rem; align-items: center; flex-wrap: wrap;
+  margin-bottom: .9rem;
+}
+.search-box {
+  flex: 1 1 220px; position: relative;
+}
+.search-box input {
+  width: 100%;
+  background: #fff; border: 1.5px solid var(--rule);
+  font-family: 'Mulish', sans-serif; font-size: .88rem;
+  padding: .52rem 1rem .52rem 2.3rem;
+  border-radius: 4px; outline: none; color: var(--ink);
+  transition: border-color .2s, box-shadow .2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,.06);
+}
+.search-box input:focus {
+  border-color: var(--accent2);
+  box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+}
+.search-box::before {
+  content: '⌕'; position: absolute;
+  left: .7rem; top: 50%; transform: translateY(-50%);
+  color: var(--muted); font-size: 1.1rem; pointer-events: none;
+}
+.stats-pill {
+  background: #fff; border: 1px solid var(--rule);
+  border-radius: 4px; padding: .4rem .85rem;
+  font-size: .78rem; color: var(--muted);
+  display: flex; gap: .4rem; align-items: center;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05);
+}
+.stats-pill strong { color: var(--accent2); }
+.stats-pill.c strong { color: var(--green); }
+
+.year-bar {
+  display: flex; flex-wrap: wrap; gap: .35rem; align-items: center;
+}
+.fb {
+  background: #fff; border: 1.5px solid var(--rule);
+  color: var(--muted); font-family: 'Mulish', sans-serif;
+  font-size: .73rem; font-weight: 700;
+  padding: .3rem .7rem; border-radius: 3px;
+  cursor: pointer; transition: all .15s;
+  display: inline-flex; gap: .25rem; align-items: center;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+}
+.fb:hover { border-color: var(--accent); color: var(--accent); background: #fff8f0; }
+.fb.active { background: var(--ink); border-color: var(--ink); color: #fff; }
+.fb.active .fc { color: rgba(255,255,255,.65); }
+.fc { font-size: .66rem; font-weight: 600; color: var(--muted); }
+
+/* PROGRESS */
+.prog-row {
+  max-width: 1000px; margin: .8rem auto 0;
+  padding: 0 1rem;
+  display: flex; gap: .6rem; align-items: center; flex-wrap: wrap;
+}
+.prog-outer { flex: 1 1 140px; height: 4px; background: var(--rule); border-radius: 2px; overflow: hidden; }
+.prog-inner { height: 100%; background: linear-gradient(90deg, var(--accent), var(--gold)); border-radius: 2px; transition: width .4s; width:0%; }
+
+/* YEAR SECTION HEADINGS */
+.year-section { margin-top: 2.2rem; }
+.year-head {
+  display: flex; align-items: center; gap: .8rem;
+  max-width: 1000px; margin: 0 auto 1.1rem;
+  padding: 0 1rem;
+}
+.year-head h2 {
+  font-family: 'Crimson Pro', serif;
+  font-size: 1.45rem; font-weight: 700;
+  color: var(--ink2); border-bottom: 2.5px solid var(--accent);
+  padding-bottom: .15rem;
+}
+.year-head-count {
+  font-size: .72rem; font-weight: 700; color: var(--accent);
+  background: #fff5f5; border: 1px solid #fca5a5;
+  padding: .15rem .55rem; border-radius: 12px;
+}
+.yr-line { flex: 1; height: 1px; background: var(--rule); }
+
+/* QUESTION CARDS */
+.q-list {
+  max-width: 1000px; margin: 0 auto;
+  padding: 0 1rem;
+  display: flex; flex-direction: column; gap: .75rem;
+}
+.q-card {
+  background: #fff;
+  border: 1.5px solid var(--rule);
+  border-left: 4px solid var(--rule);
+  border-radius: 0 6px 6px 0;
+  padding: 1rem 1.2rem 1rem 1.1rem;
+  transition: box-shadow .18s, border-left-color .18s;
+  animation: slideIn .22s ease both;
+  position: relative;
+}
+.q-card:hover { box-shadow: var(--shadow); }
+.q-card.answered-ok { border-left-color: #22c55e; }
+.q-card.answered-no { border-left-color: #ef4444; }
+
+@keyframes slideIn {
+  from { opacity:0; transform:translateX(-6px); }
+  to   { opacity:1; transform:translateX(0); }
+}
+
+.q-meta {
+  display: flex; flex-wrap: wrap; gap: .38rem;
+  align-items: center; margin-bottom: .72rem;
+}
+.q-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .65rem; font-weight: 600;
+  background: var(--ink2); color: #fff;
+  padding: .15rem .48rem; border-radius: 2px;
+  letter-spacing: .02em;
+}
+.q-year-tag {
+  font-size: .65rem; font-weight: 800; letter-spacing: .07em;
+  text-transform: uppercase;
+  background: var(--tag-bg); border: 1px solid #f0d9b5;
+  color: var(--accent); padding: .15rem .5rem; border-radius: 2px;
+}
+.q-exam { font-size: .65rem; color: var(--muted); }
+.q-date { font-size: .63rem; color: #bbb; margin-left: .1rem; }
+
+/* QUESTION TEXT — math-book style */
+.q-text {
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-size: 1.06rem; line-height: 1.75;
+  color: var(--ink); margin-bottom: .9rem;
+  letter-spacing: .005em;
+}
+/* slash fractions — keep as text, styled nicely */
+.q-text, .opt-text {
+  font-variant-numeric: oldstyle-nums;
+}
+
+/* OPTIONS — 2-col grid */
+.opts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .35rem .6rem;
+}
+@media(max-width:520px){ .opts-grid{grid-template-columns:1fr;} }
+
+.opt-btn {
+  display: flex; align-items: flex-start; gap: .42rem;
+  background: #fafaf8;
+  border: 1.5px solid #e5dfd4;
+  color: var(--ink);
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-size: .97rem; line-height: 1.5;
+  padding: .4rem .75rem;
+  border-radius: 3px;
+  text-align: left; cursor: pointer;
+  transition: all .12s;
+}
+.opt-btn:hover:not(:disabled) {
+  border-color: var(--accent2);
+  background: #eff6ff; color: var(--accent2);
+}
+.opt-btn:hover:not(:disabled) .opt-lbl { color: var(--accent2); }
+.opt-lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .7rem; font-weight: 600;
+  color: var(--muted); min-width: 18px;
+  flex-shrink: 0; margin-top: .12rem;
+}
+.opt-btn.ok {
+  border-color: #4ade80; background: var(--correct-bg); color: var(--green);
+}
+.opt-btn.ok .opt-lbl { color: var(--green); }
+.opt-btn.no {
+  border-color: #f87171; background: var(--wrong-bg); color: var(--red);
+}
+.opt-btn.no .opt-lbl { color: var(--red); }
+.opt-btn:disabled { cursor: default; }
+
+/* RESULT ROW */
+.res-row {
+  margin-top: .5rem; font-size: .8rem;
+  padding: .32rem .65rem; border-radius: 3px;
+  display: none; font-family: 'Mulish', sans-serif;
+}
+.res-row.show { display: block; }
+.res-row.ok { background: var(--correct-bg); color: var(--green); border-left: 3px solid #4ade80; }
+.res-row.no { background: var(--wrong-bg); color: var(--red); border-left: 3px solid #f87171; }
+
+.no-results {
+  text-align: center; padding: 3rem; color: var(--muted);
+  font-style: italic; display: none; font-family: 'Crimson Pro', serif;
+  font-size: 1.05rem;
+}
+.no-results.show { display: block; }
+
+footer {
+  text-align: center; padding: 2rem;
+  font-size: .75rem; color: var(--muted);
+  border-top: 1px solid var(--rule);
+  background: var(--cream);
+  margin-top: 3rem;
+  font-family: 'Crimson Pro', serif;
+  font-style: italic;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="h-badge">📐 Algebra · PYQ Collection</div>
+  <h1>SSC CGL &amp; CHSL <em>Algebra</em></h1>
+  <h1 style="font-size:1.1rem;font-weight:400;margin-top:.3rem;opacity:.8">Previous Year Questions — All Years</h1>
+  <div class="h-sub">2010 · 2011 · 2012 · 2013 · 2014 · 2015 · 2016 · 2017 · 2018 · 2019 · 2020 · 2021 · 2022 · CHSL 2023 &nbsp;|&nbsp; 378 Questions</div>
+</header>
+
+<div class="toolbar">
+  <div class="search-row">
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="Search questions, expressions…" oninput="render()">
+    </div>
+    <div class="stats-pill">Showing <strong id="visCount">378</strong></div>
+    <div class="stats-pill">Attempted <strong id="attCount">0</strong></div>
+    <div class="stats-pill c">Correct <strong id="corCount">0</strong></div>
+  </div>
+  <div class="year-bar" id="yearBar">
+    <button class="fb active" onclick="setYear('all',this)">All <span class="fc">378</span></button>
+    <button class="fb" onclick="setYear('2010',this)">2010 <span class="fc">13</span></button>
+    <button class="fb" onclick="setYear('2011',this)">2011 <span class="fc">9</span></button>
+    <button class="fb" onclick="setYear('2014-2011',this)">2011–14 <span class="fc">31</span></button>
+    <button class="fb" onclick="setYear('2012',this)">2012 <span class="fc">7</span></button>
+    <button class="fb" onclick="setYear('2013',this)">2013 <span class="fc">7</span></button>
+    <button class="fb" onclick="setYear('2014',this)">2014 <span class="fc">23</span></button>
+    <button class="fb" onclick="setYear('2015',this)">2015 <span class="fc">22</span></button>
+    <button class="fb" onclick="setYear('2016',this)">2016 <span class="fc">56</span></button>
+    <button class="fb" onclick="setYear('2017',this)">2017 <span class="fc">134</span></button>
+    <button class="fb" onclick="setYear('2018',this)">2018 <span class="fc">41</span></button>
+    <button class="fb" onclick="setYear('2019',this)">2019 <span class="fc">18</span></button>
+    <button class="fb" onclick="setYear('2020',this)">2020 <span class="fc">9</span></button>
+    <button class="fb" onclick="setYear('2021',this)">2021 <span class="fc">4</span></button>
+    <button class="fb" onclick="setYear('2022',this)">2022 <span class="fc">2</span></button>
+    <button class="fb" onclick="setYear('2023 (CHSL)',this)">CHSL 2023 <span class="fc">2</span></button>
+  </div>
+</div>
+
+<div class="prog-row">
+  <div class="prog-outer"><div class="prog-inner" id="progBar"></div></div>
+</div>
+
+<div id="mainContent"></div>
+<div class="no-results" id="noResults">No questions match your search.</div>
+
+<footer>SSC CGL Tier-II Algebra PYQs &nbsp;·&nbsp; 2010–2023 &nbsp;·&nbsp; 378 Questions compiled from official papers</footer>
+
+<script>
+const QUESTIONS = [
+  {gid:1,year:'2010',q:'If a² + b² + 1/a² + 1/b² = 4, then the value of a² + b² will be:',opts:['1','1½','2','2½'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:2,year:'2010',q:'If (x + 1/x)² = 3, then the value of (x³ + 1/x³) is:',opts:['3','2','1','0'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:3,year:'2010',q:'(0.1×0.1×0.1 + 0.02×0.02×0.02) / (0.2×0.2×0.2 + 0.04×0.04×0.04) = ?',opts:['0.125','0.250','0.500','0.855'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:4,year:'2010',q:'If x + 1/x = 2, then the value of x¹⁰⁰ + 1/x¹⁰⁰ is:',opts:['2','0','1','-2'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:5,year:'2010',q:'If x³ + 3x² + 3x = 7, then x is equal to:',opts:['2','∛6','1','-1'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:6,year:'2010',q:'If 2x + 2/x = 1, then the value of x³ + 1/x³ is:',opts:['13/8','11/8','8/11','-13/8'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:7,year:'2010',q:'If 2x + 1/(3x) = 6, then 3x + 1/(2x) is equal to:',opts:['4','8','9','12'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:8,year:'2010',q:'If x = (√2 – 1)^(–1/2), then the value of (x² – 1/x²) is:',opts:['2','–2√2','2√2','–√2'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:9,year:'2010',q:'(0.87)³ + (0.13)³ / [(0.87)² + (0.13)² – (0.87)×(0.13)] = ?',opts:['1/2','2','1','2½'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:10,year:'2010',q:'If x² + y² – 2x + 6y + 10 = 0, then the value of (x² + y²) is:',opts:['4','6','8','10'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:11,year:'2010',q:'If x^(1/3) + y^(1/3) = z^(1/3), then (x + y – z)³ + 27xyz is equal to:',opts:['0','1','–1','27'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:12,year:'2010',q:'If a² = 2, then (a + 1) is equal to:',opts:['a – 1','2/(a–1)','(a+1)/(3–2a)','(a–1)/(3–2a)'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:13,year:'2010',q:'If a + b + c = 1 and ab + bc + ca = 1/3, then a : b : c is:',opts:['1:2:2','2:1:2','1:1:1','1:2:1'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:14,year:'2011',q:'If a² + b² + c² = 2(a – b – c) – 3, then the value of (a – b + c) is:',opts:['–1','3','1','–2'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:15,year:'2011',q:'If x² + 3x + 1 = 0, then the value of x³ + 1/x³ is:',opts:['–18','18','36','–36'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:16,year:'2011',q:'If x^a · x^b · x^c = 1, then the value of a³ + b³ + c³ is:',opts:['9','abc','a+b+c','3abc'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:17,year:'2011',q:'If a + 1/a + 2 = 0, then the value of a³⁷ – 1/a¹⁰⁰ is:',opts:['0','–2','1','2'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:18,year:'2011',q:'The value of k for which the graph of (k – 1)x + y – 2 = 0 and (2 – k)x – 3y + 1 = 0 are parallel:',opts:['1/2','–1/2','2','–2'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:19,year:'2011',q:'If x + 1/(16x) = 1, then the value of 64x³ + 1/(64x³) is:',opts:['4','52','64','76'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:20,year:'2011',q:'If a, b, c are three non-zero real numbers such that a + b + c = 0 and b² ≠ ca, then (a² + b² + c²)/(b² – ca) is:',opts:['3','2','0','1'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:21,year:'2011',q:'If a⁴ + a²b² + b⁴ = 8 and a² + ab + b² = 4, then the value of ab is:',opts:['–1','0','2','1'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:22,year:'2011',q:'If a = 25, b = 15, c = –10, then the value of (a³ + b³ + c³ – 3abc) / [(a–b)² + (b–c)² + (c–a)²] is:',opts:['30','–15','–30','15'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:23,year:'2014-2011',q:'If a²+b²+c² = 2(a–b–c)–3, then the value of (a–b+c) is?',opts:['–1','3','1','–2'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:24,year:'2014-2011',q:'If x³+3x+1 = 0, then the value of x³+1/x³ is?',opts:['–18','18','36','–36'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:25,year:'2014-2011',q:'If xᵃ·xᵇ·xᶜ = 1, then the value of a³+b³+c³ is?',opts:['9','abc','a+b+c','3abc'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:26,year:'2014-2011',q:'If a+1/a+2 = 0, then the value of (a³⁷–1/a¹⁰⁰) is?',opts:['0','–2','1','2'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:27,year:'2014-2011',q:'x+1/(16x) = 1, then the value of 64x³+1/(64x³) is?',opts:['4','52','64','76'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:28,year:'2014-2011',q:'a, b, c are non-zero reals, a+b+c = 0 and b²≠ca, then (a²+b²+c²)/(b²–ca) is?',opts:['3','2','0','1'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:29,year:'2014-2011',q:'If a⁴+a²b²+b⁴ = 8 and a²+ab+b² = 4, then the value of ab is?',opts:['–1','0','2','1'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:30,year:'2014-2011',q:'If a = 25, b = 15, c = –10, then (a³+b³+c³–3abc)/((a–b)²+(b–c)²+(c–a)²) is?',opts:['30','–15','–30','15'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:31,year:'2014-2011',q:'If a³b = abc = 180, a,b,c are positive integers, then c is?',opts:['110','1','4','25'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:32,year:'2014-2011',q:'If (x+1/x)² = 3, then (x⁷²+x⁶⁶+x⁵⁴+x³⁶+x²⁴+x⁶+1) is?',opts:['1','2','3','4'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:33,year:'2014-2011',q:'If a+b+c = 0, then (a²+b²+c²)/(a²–bc) is?',opts:['0','1','2','3'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:34,year:'2014-2011',q:'If n = 7+4√3, then the value of (√n+1/√n) is?',opts:['2√3','4','–4','–2√3'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:35,year:'2014-2011',q:'If a+b+c = 6, a²+b²+c² = 14 and a³+b³+c³ = 36, then abc is?',opts:['3','6','9','12'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:36,year:'2014-2011',q:'If a,b are rational and (a–1)√2+3 = b√2+a, then (a+b) is?',opts:['–5','3','–3','5'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:37,year:'2014-2011',q:'If (x+1/x)² = 3, then x²⁰⁶+x²⁰⁰+x⁹⁰+x⁸⁴+x¹⁸+x¹²+x⁶+1 is?',opts:['0','1','84','206'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:38,year:'2014-2011',q:'If x = y = 333 and z = 334, then x³+y³+z³–3xyz is?',opts:['0','667','1000','2334'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:39,year:'2014-2011',q:'If (x–a²)/(b+c) + (x–b²)/(c+a) + (x–c²)/(a+b) = 4(a+b+c), then x is equal to?',opts:['(a+b+c)²','a²+b²+c²','ab+bc+ca','a²+b²+c²–ab–bc–ca'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:40,year:'2014-2011',q:'If (x–a)(x–b) = 1 and a–b+5 = 0, then (x–a)³–1/(x–a)³ is?',opts:['–125','1','125','140'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:41,year:'2014-2011',q:'If √x = √3–√5, then the value of x²–16x+6 is?',opts:['0','–2','2','1'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:42,year:'2014-2011',q:'If a²+b²+c² = 2(a–b–c)–3, then the value of 4a–3b+5c is?',opts:['2','3','5','6'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:43,year:'2014-2011',q:'If 2x+2/x = 3, then x³+1/x³+2 is?',opts:['–9/8','–25/8','7/8','11'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:44,year:'2014-2011',q:'One of the factors of (a²–b²)³+(b²–c²)³+(c²+a²)³ is?',opts:['(a+b)(a–b)','(a+b)(a+b)','(a–b)(a–b)','(b–c)(b–c)'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:45,year:'2014-2011',q:'If x = ∛5+2, then x³–6x²+12x–13 is?',opts:['–1','1','2','0'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:46,year:'2014-2011',q:'If a²+b²+c² = ab+bc+ac, then (a+c)/b is?',opts:['0','2','1','–1'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:47,year:'2014-2011',q:'If ab+bc+ca = 0, then (1/(a²–bc)+1/(b²–ca)+1/(c²–ab)) is?',opts:['0','1','3','a+b+c'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:48,year:'2014-2011',q:'If (2+√3)a = (2–√3)b = 1, then 1/a+1/b is?',opts:['1','2','2√3','4'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:49,year:'2014-2011',q:'If 3x+3/x = 1, then x³+1/x³+1 is?',opts:['0','1/27','5/27','28/27'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:50,year:'2014-2011',q:'The factors of (a²+4b²+4b–4ab–2a–8) are?',opts:['(a–2b–4)(a–2b+2)','(a–b+2)(a–4b–4)','(a+2b–4)(a+2b+4)','(a+2b–1)(a–2b+1)'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:51,year:'2014-2011',q:'The value of 1/(a²+ax+x²) – 1/(a²–ax+x²) + 2ax/(a⁴–a²x²+x⁴) is?',opts:['2','1','–1','0'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:52,year:'2014-2011',q:'If x = 11, then x⁵–12x⁴+12x³–12x²+12x–1 is?',opts:['5','10','15','20'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:53,year:'2014-2011',q:'If p = 99, then p(p²+3p+3) is?',opts:['1000000','999000','999999','990000'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:54,year:'2012',q:'If x = √3/2, then the value of (1+x)/(1+√(1+x)) + (1–x)/(1–√(1–x)) is:',opts:['√3/2','√3','0','1'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:55,year:'2012',q:'The real value of x that satisfies √(4x–9) + √(4x+9) = 5 + √7 is:',opts:['3/√7','4','√5','2√3'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:56,year:'2012',q:'Find the value of a³ + b³ + c³ – 3abc, if a = 225, b = 226, c = 227:',opts:['2034','2340','2304','2430'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:57,year:'2012',q:'Number of solutions of the equation √(x²–x+1) + 1/√(x²–x+1) = 2 – x² is:',opts:['2','4','0','1'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:58,year:'2012',q:'If x + a/x = 1, then the value of (x² + x + a)/(x³ – x²) is:',opts:['2/a','–2/a','–2','–a/2'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:59,year:'2012',q:'If √(28–6√3) = √3a + b (a, b rational), then the value of (a + b) is:',opts:['1','–1','–2','2'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:60,year:'2012',q:'If x = √((√5+1)/(√5–1)), then x² – x – 1 is equal to:',opts:['2','5','0','1'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:61,year:'2013',q:'If x = y = 333 and z = 334, then x³ + y³ + z³ – 3xyz is:',opts:['0','667','1000','2334'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:62,year:'2013',q:'If (x–a)(x–b) = 1 and a – b + 5 = 0, then (x–a)³ – 1/(x–a)³ is:',opts:['–125','1','125','140'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:63,year:'2013',q:'If √x = √3 – √5, then the value of x² – 16x + 6 is:',opts:['0','–2','2','4'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:64,year:'2013',q:'If a² + b² + c² = 2(a–b–c) – 3, then the value of 4a – 3b + 5c is:',opts:['2','3','5','6'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:65,year:'2013',q:'If 2x + 2/x = 3, then the value of x³ + 2/x³ + 2 is:',opts:['–25/8','–25/8','7/8','11'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:66,year:'2013',q:'One of the factors of (a²–b²)³ + (b²–c²)³ + (c²–a²)³ is:',opts:['(a+b)(a–b)','(a+b)(a+b)','(a–b)(a–b)','(b–c)(b–c)'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:67,year:'2013',q:'If x = ∛5 + 2, then the value of x³ – 6x² + 21x – 13 is:',opts:['–1','1','2','0'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:68,year:'2014',q:'If a² + b² + c² = ab + bc + ac, then (a+c)/b is:',opts:['0','2','1','–1'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:69,year:'2014',q:'If ab + bc + ca = 0, then (1/(a²–bc) + 1/(b²–ca) + 1/(c²–ab)) is:',opts:['0','1','3','a+b+c'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:70,year:'2014',q:'If (2+√3)a = (2–√3)b = 1, then the value of 1/a + 1/b is:',opts:['1','2','2√3','4'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:71,year:'2014',q:'If 3x + 3/x = 1, then x³ + 1/x³ + 1 is:',opts:['–1/29','1/27','–1/36','1/24'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:72,year:'2014',q:'The factors of (a²+4b²+4b–4ab–2a–8) will be:',opts:['(a–2b–4)(a–2b+2)','(a–2b+2)(a–4b–4)','(a+2b–4)(a+2b+2)','(a+2b–1)(a–2b+1)'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:73,year:'2014',q:'If 4x + 5y = 83 and 3x : 2y = 21:22, then y – x equals:',opts:['3','4','7','11'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:74,year:'2014',q:'If x = 11, then the value of x⁵ – 12x⁴ + 12x³ – 12x² + 12x – 1 is:',opts:['5','10','15','20'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:75,year:'2014',q:'If p = 99, then the value of p(p² + 3p + 3) is:',opts:['10000000 – 1','999000','999999','990000'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:76,year:'2014',q:'If (3–5x)/2x + (3–5y)/2y + (3–5z)/2z = 0, then 2/x + 2/y + 2/z is:',opts:['5','15','20','10'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:77,year:'2014',q:'If 2s = a + b + c, then s(s–c) + (s–a)(s–b) is:',opts:['abc','(a+b+c)/2','ab','0'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:78,year:'2014',q:'If p + m = 6 and p³ + m³ = 72, then pm is:',opts:['6','8','6','9'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:79,year:'2014',q:'When xᵐ is multiplied by xⁿ, product is 1. The relation between m and n is:',opts:['m = n','m = –n','mn = 1','m + n = 1'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:80,year:'2014',q:'If 2P/(p²–2p+1) = 1/4, then the value of (p + 1/p) is:',opts:['2/5','10','7','1'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:81,year:'2014',q:'1/(1+√2) + 1/(√2+√3) + 1/(√3+√4) + … + 1/(√8+√9) = ?',opts:['0','1','2','4'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:82,year:'2014',q:'If 2x = √a + 1/√a (a>0), then the value of (√(x²–1))/(x – √(x²–1)) is:',opts:['½(a–1)','a–1','a+1','½(a+1)'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:83,year:'2014',q:'If a, b, c are real and a² + b² + c² = 2(a–b–c) – 3, then a + b + c is:',opts:['3','0','–1','1'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:84,year:'2014',q:'If (a+b–c)/(a+b) = (b+c–a)/(b+c) = (c+a–b)/(c+a) and a+b+c ≠ 0, then:',opts:['a=b≠c','b≠a=c','a≠b≠c','a=b=c'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:85,year:'2014',q:'If a = 2 + √3, then the value of (a⁶ + a⁴ + a² + 1)/a³ is:',opts:['42','56','45','65'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:86,year:'2014',q:'If x = √5 + √3 and y = √5 – √3, then x⁴ – y⁴ is:',opts:['544','32√15','64√15','16'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:87,year:'2014',q:'If x + y + z = 6, then (x–1)³ + (y–2)³ + (z–3)³ is:',opts:['(x–1)(y–2)(z–3)','2(x–1)(y–2)(z–3)','3(x–1)(y–2)(z–3)','3xyz'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:88,year:'2014',q:'If bc + ab + ca = abc, then (b+c)/(bc(a–1)) + (a+c)/(ac(b–1)) + (a+b)/(ab(c–1)) is:',opts:['–2/3','1','0','–1/2'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:89,year:'2014',q:'If (a²–bc)/(a²+bc) + (b²–ca)/(b²+ca) + (c²–ab)/(c²+ab) = 1, then a²/(a²+bc) + b²/(b²+ac) + c²/(c²+ab) is:',opts:['–1','2','0','1'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:90,year:'2014',q:'If p⁴ = 119 – 1/p⁴, then p³ – 1/p³ is:',opts:['36','18','24','32'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:91,year:'2015',q:'If (x³–y³):(x²+xy+y²) = 5:1 and (x²–y²):(x–y) = 7:1, then the ratio 2x:3y equals?',opts:['2:3','4:3','4:1','3:2'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:92,year:'2015',q:'If (3x–2y):(2x+3y) = 5:6, then one value of (∛x+∛y)²/(∛x–∛y)² is?',opts:['1/5','1/25','5','25'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:93,year:'2015',q:'If a+b = 1, find the value of a³+b³–ab–(a²–b²)²?',opts:['2','–1','1','0'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:94,year:'2015',q:'If 3(a²+b²+c²) = (a+b+c)², then the relation between a, b and c is?',opts:['ab≠b=c','a≠b≠c','a=b=c','ab=b≠c'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:95,year:'2015',q:'Let x = (√13+√11)/(√13–√11) and y = 1/x, then 3x²–5xy+3y² is?',opts:['1717','1177','1771','1171'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:96,year:'2015',q:'If (p⁻¹q²/p³q⁻²)^(1/3) ÷ (p⁶q⁻³/p⁻²q³)^(1/3) = pᵃqᵇ, then a+b (p,q different positive primes) is?',opts:['–2','1','0','–1'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:97,year:'2015',q:'If x = a^(1/2)+a^(–1/2), y = a^(1/2)–a^(–1/2), then (x⁴–x²y²–1)+(y⁴–x²y²+1) is?',opts:['12','13','14','16'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:98,year:'2015',q:'x–√3–√2 = 0 and y–√3+√2 = 0, then (x³–20√2)–(y³+2√2) is?',opts:['0','2','3','1'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:99,year:'2015',q:'If a–1/(a–3) = 5, then the value of (a–3)³–1/(a–3)³ is?',opts:['5','14','2','7'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:100,year:'2015',q:'If x²+y²+z² = xy+yz+zx, then (3x⁴+7y⁴+5z⁴)/(5x²y²+7y²z²+3z²x²) is?',opts:['1','–1','2','0'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:101,year:'2015',q:'If a+1/b = b+1/c = c+1/a (a≠b≠c≠0), then the value of a²b²c² is?',opts:['1','–1','abc','0'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:102,year:'2015',q:'If a – 1/(a–3) = 5, then (a–3)³ – 1/(a–3)³ is:',opts:['7','2','5','14'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:103,year:'2015',q:'If a + 1/b = b + 1/c = c + 1/a (a≠b≠c≠0), then a²b²c² is:',opts:['0','1','abc','–1'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:104,year:'2015',q:'If (p⁻¹q²/p³q⁻²)^(1/3) ÷ (p⁶q⁻³/p⁻²q³)^(1/3) = p^a q^b, then a + b is:',opts:['2/3','–2/3','3/4','0'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:105,year:'2015',q:'If x² + y² + z² = xy + yz + zx, then (3x⁴+7y⁴+5z⁴)/(5x²y²+7y²z²+3z²x²) is:',opts:['0','–1','2','1'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:106,year:'2015',q:'If (3x–2y):(2x+3y) = 5:6, then one value of (∛x + ∛y)²/(∛x – ∛y)² is:',opts:['5','25','1/5','1/25'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:107,year:'2015',q:'If x – √3 – √2 = 0 and y – √3 + √2 = 0, then (x³ – 20√2) – (y³ – 2√2) is:',opts:['1','0','2','3'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:108,year:'2015',q:'Let x = (√13+√11)/(√13–√11) and y = 1/x, then 3x² – 5xy + 3y² is:',opts:['1717','1171','1771','1177'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:109,year:'2015',q:'Find the value of (0.67×0.67×0.67 – 0.33×0.33×0.33)/(0.67×0.67 + 0.67×0.33 + 0.33×0.33):',opts:['3.4','0.34','11','1.1'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:110,year:'2015',q:'If (x²–y²):(x²+xy+y²) = 5:1 and (x²–y²):(x–y) = 7:1, then 2x:3y equals:',opts:['4:3','4:1','2:3','3:2'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:111,year:'2015',q:'If x = a^(1/2) + a^(–1/2), y = a^(1/2) – a^(–1/2), then (x⁴ – x²y² – 1) + (y⁴ – x²y² + 1) is:',opts:['12','14','16','13'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:112,year:'2015',q:'If a + b = 1, find the value of a³ + b³ – ab – (a² – b²)²:',opts:['2','1','0','–1'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:113,year:'2016',q:'If x²+1/x² = 98 (x>0), then the value of x³+1/x³ is?',opts:['970','1030','–970','–1030'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:114,year:'2016',q:'If a+1/b = 1 and b+1/c = 1, then the value of c+1/a is?',opts:['0','2','1','3'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:115,year:'2016',q:'If x = y+z, then x³–y³–z³ is?',opts:['0','3xyz','–3xyz','1'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:116,year:'2016',q:'If a+b+c+d = 4, then the value of 1/((1–a)(1–b)(1–c)) + 1/((1–b)(1–c)(1–d)) + 1/((1–c)(1–d)(1–a)) + 1/((1–d)(1–a)(1–b)) is?',opts:['0','1','4','1+abcd'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:117,year:'2016',q:'The simplified value of (√3–√2)/(√12–√18) – (1/3)×√27 – (1/2)×∛27 is closest to?',opts:['(√3–1)','(1–√c)','–(–√3–1)','–(√3+1)'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:118,year:'2016',q:'If x = 11, the value of x⁵–12x⁴+12x³–12x²+12x–1 is?',opts:['11','10','12','–10'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:119,year:'2016',q:'If a = 1/(a–5) (a>0), then the value of a+1/a is?',opts:['√29','√29','–√29','√27'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:120,year:'2016',q:'If a+1/b = b+1/c = c+1/a (where a≠b≠c), then abc is equal to?',opts:['+1','–1','+1 & –1','None of the options'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:121,year:'2016',q:'If ax+by = 1 and bx+ay = 2ab/(a²+b²), then (x²+y²)(a²+b²) is equal to?',opts:['1','2','0.5','0'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:122,year:'2016',q:'If x, y, z are the three factors of a³–7a–6, then value of x+y+z will be?',opts:['3a','3','6','a'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:123,year:'2016',q:'Let 0 < x < 1. Then the correct inequality is?',opts:['x<√x<x²','√x<x<x²','x²<x<√x','√x<x²<x'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:124,year:'2016',q:'The simplified value of (1–2xy/(x²+y²)) ÷ ((x³–y³)/(x–y) – 3xy) is?',opts:['1/(x²–y²)','1/(x²+y²)','1/(x–y)','1/(x+y)'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:125,year:'2016',q:'If a+b+c = 0, then the value of 1/((a+b)(b+c)) + 1/((b+c)(c+a)) + 1/((c+a)(a+b)) is?',opts:['0','1','3','2'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:126,year:'2016',q:'If x²+y²+2x+1 = 0, then the value of x³¹+y³⁵ is?',opts:['–1','0','1','2'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:127,year:'2016',q:'If x = (√5+1)/(√5–1) and y = (√5–1)/(√5+1), the value of (x²+xy+y²)/(x²–xy+y²) is?',opts:['3/4','4/3','3/5','5/3'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:128,year:'2016',q:'If (x–1/x)² = 3, then the value of x⁶+1/x⁶ equals?',opts:['90','100','110','120'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:129,year:'2016',q:'If x⁴+2x³+ax²+bx+9 is a perfect square (a,b positive reals), then the value of a and b are?',opts:['a=5,b=6','a=6,b=7','a=7,b=6','a=7,b=8'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:130,year:'2016',q:'If a²+b²+c² = 16, x²+y²+z² = 25 and ax+by+cz = 20, then the value of (a+b+c)/(x+y+z) is?',opts:['3/5','5/3','4/5','5/4'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:131,year:'2016',q:'The value of x which satisfies (x+a²+2c²)/(b+c) + (x+b²+2a²)/(c+a) + (x+c²+2b²)/(a+b) = 0 is?',opts:['(a²+b²+c²)','–(a²+b²+c²)','(a²+2b²+c²)','–(a²+b²+2c²)'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:132,year:'2016',q:'If a³ = 117+b³ and a = 3+b, then the value of a+b is?',opts:['±7','±49','±13','0'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:133,year:'2016',q:'If a+1/a = –2, then the value of a¹⁰⁰⁰+a⁻¹⁰⁰⁰ is?',opts:['2','0','1','1/2'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:134,year:'2016',q:'If P = 99, then the value of P(P²+3P+3) is?',opts:['9999','999999','99999','9999999'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:135,year:'2016',q:'If x+1/x = c+1/c, then the value of x is?',opts:['c, 1/c','c, c²','c, 2c','0, 1'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:136,year:'2016',q:'If the sum of squares of two real numbers is 41 and their sum is 9, then the sum of cubes of these two numbers is?',opts:['169','209','189','198'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:137,year:'2016',q:'A complete factorisation of x⁴+64 is?',opts:['(x²+8)²','(x²+8)(x²–8)','(x²–4x+8)(x²–4x–8)','(x²+4x+8)(x²–4x+8)'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:138,year:'2016',q:'If a+b = 1, then a⁴+b⁴–a³–b³–2a²b²+ab is equal to?',opts:['1','2','4','0'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:139,year:'2016',q:'If x²+y²+6x+5 = 4(x–y), then x–y is?',opts:['1','–1','0','4'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:140,year:'2016',q:'If a = 299, b = 298, c = 297, then 2a³+2b³+2c³–6abc is?',opts:['5154','5267','5364','5456'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:141,year:'2016',q:'If x+1/x = √3, the value of x¹⁸+x¹²+x⁶+1 is?',opts:['0','1','2','3'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:142,year:'2016',q:'If x = 1+√2+√3, then the value of 2x⁴–8x³–5x²+26x–28 is?',opts:['2√2','3√3','5√5','6√6'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:143,year:'2016',q:'If 2r = h+√(r²+h²), then the ratio r:h (r ≠ 0) is?',opts:['1:2','2:3','4:3','3:5'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:144,year:'2016',q:'If P = 99, then the value of P(P² + 3P + 3) is:',opts:['9999','999999','99999','9999999'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:145,year:'2016',q:'If x + 1/x = c + 1/c, then the value of x is:',opts:['c, 1/c','c, c²','c, 2c','0, 1'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:146,year:'2016',q:'A complete factorisation of x⁴ + 64 is:',opts:['(x²+8)²','(x²+8)(x²–8)','(x²–4x+8)(x²+4x–8)','(x²+4x+8)(x²–4x+8)'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:147,year:'2016',q:'If a + b = 1, then a⁴ + b⁴ – a³ – b³ – 2a²b² + ab is equal to:',opts:['1','2','4','0'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:148,year:'2016',q:'If x² + y² + 6x + 5 = 4(x – y), then x – y is:',opts:['1','–1','0','4'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:149,year:'2016',q:'If a = 299, b = 298, c = 297, then 2a³ + 2b³ + 2c³ – 6abc is:',opts:['5154','5267','5364','5456'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:150,year:'2016',q:'If x + 1/x = √3, then x¹⁸ + x¹² + x⁶ + 1 is:',opts:['0','1','2','3'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:151,year:'2016',q:'If x = 1 + √2 + √3, then 2x⁴ – 8x³ – 5x² + 26x – 28 is:',opts:['2√2','3√3','5√5','6√6'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:152,year:'2016',q:'(1 – 2xy/(x²+y²)) ÷ (x³–y³)/(x–y) – 3xy) = ?',opts:['1/(x²–y²)','1/(x²+y²)','1/(x–y)','1/(x+y)'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:153,year:'2016',q:'If a + b + c = 0, then 1/((a+b)(b+c)) + 1/((b+c)(c+a)) + 1/((c+a)(a+b)) is:',opts:['0','1','3','2'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:154,year:'2016',q:'If x² + y² + 2x + 1 = 0, then the value of x³¹ + y³⁵ is:',opts:['–1','0','1','2'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:155,year:'2016',q:'If (x – 1/x)² = 3, then x⁶ + 1/x⁶ equals:',opts:['90','100','110','120'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:156,year:'2016',q:'If x⁴ + 2x³ + ax² + bx + 9 is a perfect square (a, b positive reals), then (a, b) is:',opts:['a=5,b=6','a=6,b=7','a=7,b=6','a=7,b=8'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:157,year:'2016',q:'If a²+b²+c²=16, x²+y²+z²=25 and ax+by+cz=20, then (a+b+c)/(x+y+z) is:',opts:['3/5','5/3','4/5','5/4'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:158,year:'2016',q:'The value of x satisfying (x+a²+2c²)/(b+c) + (x+b²+2a²)/(c+a) + (x+c²+2b²)/(a+b) = 0 is:',opts:['a²+b²+c²','–(a²+b²+c²)','a²+2b²+c²','–(a²+b²+2c²)'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:159,year:'2016',q:'If a³ = 117 + b³ and a = 3 + b, then the value of a + b is:',opts:['±7','±49','±13','0'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:160,year:'2016',q:'If a + 1/a = –2, then a¹⁰⁰⁰ + a⁻¹⁰⁰⁰ is:',opts:['2','0','1','1/2'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:161,year:'2016',q:'If x² + 1/x² = 98 (x>0), then x³ + 1/x³ is:',opts:['970','1030','–970','–1030'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:162,year:'2016',q:'If a + 1/b = 1 and b + 1/c = 1, then c + 1/a is:',opts:['0','2','1','3'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:163,year:'2016',q:'If x = y + z, then x³ – y³ – z³ is:',opts:['0','3xyz','–3xyz','1'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:164,year:'2016',q:'If a+b+c+d = 4, then 1/((1–a)(1–b)(1–c)) + 1/((1–b)(1–c)(1–d)) + 1/((1–c)(1–d)(1–a)) + 1/((1–d)(1–a)(1–b)) is:',opts:['0','1','4','1+abcd'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:165,year:'2016',q:'If x = 11, the value of x⁵ – 12x⁴ + 12x³ – 12x² + 12x – 1 is:',opts:['11','10','12','–10'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:166,year:'2016',q:'If a = 1/(a–5) (a>0), then the value of a + 1/a is:',opts:['2√29','√29','–√29','√27'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:167,year:'2016',q:'If a+1/b = b+1/c = c+1/a (a≠b≠c≠0), then abc is equal to:',opts:['+1','–1','+1 & –1','None of these'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:168,year:'2016',q:'If ax+by=1 and bx+ay=2ab/(a²+b²), then (x²+y²)(a²+b²) is:',opts:['1','2','0.5','0'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:169,year:'2017',q:'The sum of two positive numbers is 14 and difference between their squares is 56. What is the sum of their squares?',opts:['106','196','53','68'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:170,year:'2017',q:'If a²+b²=4b+6a–13, then what is the value of a+b?',opts:['3','2','5','10'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:171,year:'2017',q:'X and y are positive integers. If x⁴+y⁴+x²y² = 481 and xy = 12, then what is the value of x²–xy+y²?',opts:['16','13','11','15'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:172,year:'2017',q:'If A = 1+2ᵖ and B = 1+2⁻ᵖ, then what is the value of B?',opts:['(A+1)/(A–1)','(A+2)/(A+1)','A/(A–1)','(A–2)/(A+1)'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:173,year:'2017',q:'If a and b are roots of ax²+bx+c = 0, then which equation will have roots (ab+a+b) and (ab–a–b)?',opts:['a²x²+2acx+c²+b²=0','a²x²–2acx+c²–b²=0','a²x²–2acx+c²+b²=0','a²x²+2acx+c²–b²=0'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:174,year:'2017',q:'If √((1–p²)(1–q²)) = √3/2, then what is the value of √(2p²+2q²+2pq) + √(2p²+2q²–2pq)?',opts:['2','√2','1','None of these'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:175,year:'2017',q:'If (a+b)²–2(a+b) = 80 and ab = 16, then what can be the value of 3a–19b?',opts:['–16','–14','–18','–20'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:176,year:'2017',q:'If x^(y+z) = 1, y^(x+z) = 1024 and z^(x+y) = 729 (x,y,z natural numbers), then what is the value of (z+1)^(y+x+1)?',opts:['6561','10000','4096','14641'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:177,year:'2017',q:'If x+y+z = 1, x²+y²+z² = 2 and x³+y³+z³ = 3, then what is the value of xyz?',opts:['1/3','1/6','1/2','1/4'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:178,year:'2017',q:'If y² = y+7, then what is the value of y³?',opts:['8y+7','y+14','y+2','4y+7'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:179,year:'2017',q:'If f(x) = (x–2)(x²+Px+4) and (x–3) is a factor of f(x), then what is the value of P?',opts:['4','–4','–13/3','13/3'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:180,year:'2017',q:'If [x–(1/x)] = 2, then what is the value of [x⁶ – (1/x⁶)]?',opts:['144√3+1','134√2','142√2+3','140√2'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:181,year:'2017',q:'X, y and z are all positive numbers. If 3ˣ > 9ʸ and 2ʸ > 4ᶻ, then which of the following is TRUE?',opts:['x>y>z','x>z>y','z>y>x','y>x>z'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:182,year:'2017',q:'If x = 1/8, which of the following has the largest value?',opts:['x/2','x²','√x','1/x'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:183,year:'2017',q:'If x = 1/(1+1/(1+x)) and y = 2/(2+1/(1+y)), then which of the following can be the value of x+y?',opts:['(–√5–√17+3)/4','(2√5+√17–3)/4','(–√5+√17+1)/4','(√5+√17–1)/4'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:184,year:'2017',q:'If A = 125 and B = 8, then what is the value of (A+B)³–(A–B)³–3B(A²–B²)?',opts:['4096','4608','4224','3456'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:185,year:'2017',q:'If X^(yz) = 1, Y^(zx) = 125 and Z^(yx) = 243 (X,Y,Z natural numbers), then what is the value of 9x+10y–18z?',opts:['18','15','12','5'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:186,year:'2017',q:'If 3X+6Y+9Z = 20/3, 6x+9y+3z = 17/3 and 18x+27y–z = 113/9, then what is the value of 75x+113y?',opts:['163/3','143/6','218/9','311/3'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:187,year:'2017',q:'If a = (√3+√2)/(√3–√2) and b = (√3–√2)/(√3+√2), then what is the value of a²+b²–ab?',opts:['97','(2√3)+2','(4√6)+1','98'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:188,year:'2017',q:'If the difference between the roots of Ax²–Bx+C = 0 is 4, then which is TRUE?',opts:['B²–16A²=4AC+4B²','B²–10A²=4AC+6A²','B²–8A²=4AC+10A²','B²–16A²=4AC+8B²'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:189,year:'2017',q:'α and β are roots of a quadratic. If α+β = 8 and α–β = 2√5, then which equation has roots α⁴ and β⁴?',opts:['x²–1522x+14641=0','x²+1921x+14641=0','x²–1764x+14641=0','x²+2520x+14641=0'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:190,year:'2017',q:'If a and b are roots of Px²–Qx+R = 0, then what is the value of 1/a²+1/b²+a/b+b/a?',opts:['(Q²–2P)(2R+P)/PR²','(Q²–2PR)(R+P)/PR²','(Q²–2R)(2P+R)/P²R²','(Q²–2PR)(2R+2P)/P²R²'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:191,year:'2017',q:'If x²–16x–59 = 0, then what is the value of (x–6)²+1/(x–6)²?',opts:['14','18','16','20'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:192,year:'2017',q:'If A and B are the roots of Ax²–A²x+AB = 0, then what is the value of A and B respectively?',opts:['1, 0','1, 1','0, 2','0, 1'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:193,year:'2017',q:'α and β are the roots of x²–x–1 = 0. What is the value of α⁸+β⁸?',opts:['47','54','59','68'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:194,year:'2017',q:'If a+b+c = 9, ab+bc+ca = 26, a³+b³ = 91, b³+c³ = 72 and c³+a³ = 35, then what is abc?',opts:['48','24','36','42'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:195,year:'2017',q:'If x³–4x²+19 = 6(x–1), then what is the value of [x²+(1/x–4)]?',opts:['3','5','6','8'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:196,year:'2017',q:'Cost of 8 pencils, 5 pens, 3 erasers = Rs 111. Cost of 9 pencils, 6 pens, 5 erasers = Rs 130. Cost of 16 pencils, 11 pens, 3 erasers = Rs 221. What is the cost of 39 pencils, 26 pens and 13 erasers?',opts:['316','546','624','482'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:197,year:'2017',q:'If 2x+3y–5z = 18, 3x+2y+z = 29 and x+y+3z = 17, then what is xy+yz+zx?',opts:['32','52','64','46'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:198,year:'2017',q:'If x+y+z = 22 and xy+yz+zx = 35, then (x–y)²+(y–z)²+(z–x)² is?',opts:['793','681','758','715'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:199,year:'2017',q:'If (x+y)/z = 2, then what is the value of y/(y–z) + x/(x–z)?',opts:['0','1','2','–1'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:200,year:'2017',q:'If α and β are roots of x²–2x+4 = 0, then what is the equation whose roots are α³/β² and β³/α²?',opts:['x²–4x+8=0','x²–32x+4=0','x²–2x+4=0','x²–16x+4=0'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:201,year:'2017',q:'If one root of Ax²+Bx+C = 0 is two and a half times the other, then which is TRUE?',opts:['7B²=3CA','7B²=4CA','7B²=36CA','10B²=49CA'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:202,year:'2017',q:'If x²–12x+33 = 0, then what is the value of (x–4)²+1/(x–4)²?',opts:['16','14','18','20'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:203,year:'2017',q:'If a⁴+1 = (a²/b²)(4b²–b⁴–1), then what is the value of a⁴+b⁴?',opts:['2','16','32','64'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:204,year:'2017',q:'If 3√((1–a)/a)+9 = 19–3√(a/(1–a)), then what is the value of a?',opts:['3/10, 7/10','1/10, 9/10','2/5, 3/5','1/5, 4/5'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:205,year:'2017',q:'If a+b = 10 and √(a/b)–13 = –√(b/a)–11, then what is the value of 3ab+4a²+5b²?',opts:['450','300','600','750'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:206,year:'2017',q:'If 3x+4y–2z+9 = 17, 7x+2y+11z+8 = 23 and 5x+9y+6z–4 = 18, then what is x+y+z–34?',opts:['–28','–14','–31','–45'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:207,year:'2017',q:'If x+3y–2z/4 = 6, x+2/3(2y+3z) = 33 and 1/7(x+y+z)+2z = 9, then what is 46x+131y?',opts:['414','364','384','464'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:208,year:'2017',q:'p³+q³+r³–3pqr = 4. If a = q+r, b = r+p and c = p+q, then what is a³+b³+c³–3abc?',opts:['4','8','2','12'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:209,year:'2017',q:'If α and β are the roots of x²+x–1 = 0, then what is the equation whose roots are α⁵ and β⁵?',opts:['x²+7x–1=0','x²–7x–1=0','x²–11x–1=0','x²+11x–1=0'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:210,year:'2017',q:'If x and y are natural numbers such that x+y = 2017, then what is the value of (–1)ˣ+(–1)ʸ?',opts:['2','–2','0','1'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:211,year:'2017',q:'If x+1/x = (√3+1)/2, then what is the value of x⁴+1/x⁴?',opts:['(4√3–1)/4','(4√3+1)/2','(–4√3–1)/4','(–4√3–1)/2'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:212,year:'2017',q:'If a+a²+a³–1 = 0, then what is the value of a³+1/a?',opts:['1','4','2','3'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:213,year:'2017',q:'If a–1/a = b, b–1/b = c and c–1/c = a, then what is the value of 1/ab+1/bc+1/ca?',opts:['–3','–6','–1','–9'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:214,year:'2017',q:'If the roots of a(b–c)x²+b(c–a)x+c(a–b) = 0 are equal, then which is true?',opts:['b=(a+c)/ac','2/b=1/a+1/c','2b=1/a+1/c','abc=ab+bc+ca'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:215,year:'2017',q:'If [√(a²+b²+ab)] + [√(a²+b²–ab)] = 1, then what is the value of (1–a²)(1–b²)?',opts:['1/4','4/7','5/4','3/4'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:216,year:'2017',q:'If 3x+4y–11 = 18 and 8x–6y+12 = 6, then what is the value of 5x–3y–9?',opts:['18','–9','–27','–18'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:217,year:'2017',q:'If a+b+c = 7/12, 3a–4b+5c = 3/4 and 7a–11b–13c = –7/12, then what is (a+c)?',opts:['1/2','5/12','3/4','1/4'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:218,year:'2017',q:'If P = 7+4√3 and PQ = 1, then what is the value of (1/P²+1/Q²)?',opts:['148','189','194','204'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:219,year:'2017',q:'If x = (√5)+1 and y = (√5)–1, then what is (x²/y²)+(y²/x²)+4(x/y+y/x)+6?',opts:['31','23√5','27√5','25'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:220,year:'2017',q:'If x = 2+√3, y = 2–√3 and z = 1, then what is x/yz+y/xz+z/xy+2[1/x+1/y+1/z]?',opts:['25','22','17','43'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:221,year:'2017',q:'A root of ax²+bx+c = 0 (a,b,c rational) is 5+3√3. What is (a²+b²+c²)/(a+b+c)?',opts:['35/3','37/3','–105/11','–105/13'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:222,year:'2017',q:'If x = (a/b+b/a), y = (b/c+c/b) and z = (c/a+a/c), then what is xyz–x²–y²–z²?',opts:['–4','2','–1','–6'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:223,year:'2017',q:'If [a+1/a]²–2[a–1/a] = 12, then which is a value of "a"?',opts:['–8+√3','–8–√3','–8+√5','None of these'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:224,year:'2017',q:'If x²–4x+1 = 0, then what is the value of x⁹+x⁷–194x⁵–194x³?',opts:['4','–4','1','–1'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:225,year:'2017',q:'If x+y = 3, then what is the value of x³+y³+9xy?',opts:['15','81','27','9'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:226,year:'2017',q:'A = (x⁸–1)/(x⁴–1) and B = (y⁴–1)/(y²+1). If x = 2 and y = 9, then what is A²+2AB+AB²?',opts:['96475','98625','92425','89125'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:227,year:'2017',q:'If x–4y = 0 and x+2y = 24, then what is (2x+3y)/(2x–3y)?',opts:['9/5','11/5','13/7','9/7'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:228,year:'2017',q:'If (x/a+y/b) = 3 and (x/b–y/a) = 9, then what is the value of x/y?',opts:['(b+3a)/(a–3b)','(a+3b)/(b–3a)','(1+3a)/(a+3b)','(a+3b²)/(b–3a²)'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:229,year:'2017',q:'If x+y+z = 0, then what is the value of (3y²+x²+z²)/(2y²–xz)?',opts:['2','1','3/2','5/3'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:230,year:'2017',q:'If a³+3a²+9a = 1, then what is the value of a³+(3/a)?',opts:['31','26','28','24'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:231,year:'2017',q:'x, y, z are real numbers. If x³+y³+z³ = 13, x+y+z = 1 and xyz = 1, then what is xy+yz+zx?',opts:['–1','1','3','–3'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:232,year:'2017',q:'If (a+b)/c = 6/5 and (b+c)/a = 9/2, then what is the value of (a+c)/b?',opts:['9/5','11/7','7/11','7/4'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:233,year:'2017',q:'If x³+y³+z³ = 3(1+xyz), P = y+z–x, Q = z+x–y and R = x+y–z, then what is P³+Q³+R³–3PQR?',opts:['9','8','12','6'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:234,year:'2017',q:'If x₁x₂x₃ = 4(4+x₁+x₂+x₃), then what is [1/(2+x₁)+1/(2+x₂)+1/(2+x₃)]?',opts:['1','1/2','2','1/3'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:235,year:'2017',q:'If α and β are the roots of x²–x+1 = 0, then which equation will have roots α³ and β³?',opts:['x²+2x+1=0','x²–2x–1=0','x²+3x–1=0','x²–3x+1=0'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:236,year:'2017',q:'Cost of 4 pens, 6 notebooks, 9 files = Rs 305. Cost of 3 pens, 4 notebooks, 2 files = Rs 145. What is cost of 5 pens, 8 notebooks and 16 files?',opts:['415','465','440','Cannot be determined'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:237,year:'2017',q:'ABC is right-angled (∠BAC = 90°, ∠ACB = 60°). What is the ratio of circum-radius to side AB?',opts:['1:2','1:√3','2:√3','2:3'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:238,year:'2017',q:'If x + y + z = 0, then (3y² + x² + z²)/(2y² – xz) is:',opts:['2','1','3/2','5/3'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:239,year:'2017',q:'If P = 7 + 4√3 and PQ = 1, then 1/P² + 1/Q² is:',opts:['196','194','206','182'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:240,year:'2017',q:'If a³ + 3a² + 9a = 1, then a³ + 3/a is:',opts:['31','26','28','24'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:241,year:'2017',q:'If x³ + y³ + z³ = 13, x + y + z = 1 and xyz = 1, then xy + yz + zx is:',opts:['–1','1','3','–3'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:242,year:'2017',q:'If (a+b)/c = 6/5 and (b+c)/a = 9/2, then (a+c)/b is:',opts:['9/5','11/7','7/11','7/4'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:243,year:'2017',q:'If x²+y²+z² = 3(1+xyz), P = y+z–x, Q = z+x–y and R = x+y–z, then P³+Q³+R³–3PQR is:',opts:['9','8','12','6'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:244,year:'2017',q:'If x₁x₂x₃ = 4(4+x₁+x₂+x₃), then [1/(2+x₁)] + [1/(2+x₂)] + [1/(2+x₃)] = ?',opts:['1','1/2','2','1/3'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:245,year:'2017',q:'If α, β are roots of x² – x + 1 = 0, which equation has roots α³ and β³?',opts:['x²+2x+1=0','x²–2x–1=0','x²+3x–1=0','x²–3x+1=0'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:246,year:'2017',q:'If 3x+5y+7z = 49, 9x+8y+21z = 126, what is y?',opts:['4','2','3','5'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:247,year:'2017',q:'Cost of 4 pens, 6 note books and 9 files is Rs. 305. Cost of 3 pens, 4 notebooks and 2 files is Rs. 145. What is cost of 5 pens, 8 notebooks and 16 files?',opts:['415','465','440','Cannot be determined'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:248,year:'2017',q:'If P = 7 + 4√3 and PQ = 1, then (1/P²) + (1/Q²) is:',opts:['148','189','194','204'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:249,year:'2017',q:'If x = (√5)+1 and y = (√5)–1, the value of (x²/y²) + (y²/x²) + 4[(x/y) + (y/x)] + 6 is:',opts:['31','23√5','27√5','25'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:250,year:'2017',q:'If x = 2+√3, y = 2–√3 and z = 1, then (x/yz) + (y/xz) + (z/xy) + 2[(1/x)+(1/y)+(1/z)] is:',opts:['25','22','17','43'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:251,year:'2017',q:'A root of ax²+bx+c=0 is 5+3√3. The value of (a²+b²+c²)/(a+b+c) is:',opts:['35/3','37/3','–105/11','–105/13'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:252,year:'2017',q:'If x=(a/b)+(b/a), y=(b/c)+(c/b) and z=(c/a)+(a/c), then xyz–x²–y²–z² is:',opts:['–4','2','–1','–6'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:253,year:'2017',q:'If [a+(1/a)]² – 2[a–(1/a)] = 12, then a is:',opts:['–8+√3','–8–√3','–8+√5','None of these'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:254,year:'2017',q:'If x² – 4x + 1 = 0, then x⁶ + x⁷ – 194x⁵ – 194x³ is:',opts:['4','–4','1','–1'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:255,year:'2017',q:'If x + y = 3, then x³ + y³ + 9xy is:',opts:['15','81','27','9'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:256,year:'2017',q:'A=(x⁸–1)/(x⁴+1) and B=(y⁴–1)/(y²+1). If x=2 and y=9, then A²+2AB+AB²=?',opts:['96475','98625','92425','89125'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:257,year:'2017',q:'If x–4y=0 and x+2y=24, then (2x+3y)/(2x–3y) is:',opts:['9/5','11/5','13/7','9/7'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:258,year:'2017',q:'If (x/a)+(y/b)=3 and (x/b)–(y/a)=9, then x/y is:',opts:['(b+3a)/(a–3b)','(a+3b)/(b–3a)','(1+3a)/(a+3b)','(a+3b²)/(b–3a²)'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:259,year:'2017',q:'p³+q³+r³–3pqr=4. If a=q+r, b=r+p and c=p+q, then a³+b³+c³–3abc is:',opts:['4','8','2','12'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:260,year:'2017',q:'If α, β are roots of x²+x–1=0, then the equation with roots α⁵ and β⁵ is:',opts:['x²+7x–1=0','x²–7x–1=0','x²–11x–1=0','x²+11x–1=0'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:261,year:'2017',q:'If x and y are natural numbers with x+y=2017, then (–1)ˣ+(–1)ʸ is:',opts:['2','–2','0','1'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:262,year:'2017',q:'If x + 1/x = (√3+1)/2, then x⁴ + 1/x⁴ is:',opts:['(4√3–1)/4','(4√3+1)/2','(–4√3–1)/4','(–4√3–1)/2'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:263,year:'2017',q:'If a + a² + a³ – 1 = 0, then a³ + 1/(1/a) is:',opts:['1','4','2','3'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:264,year:'2017',q:'If a–(1/a)=b, b–(1/b)=c and c–(1/c)=a, then (1/ab)+(1/bc)+(1/ca) is:',opts:['–3','–6','–1','–9'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:265,year:'2017',q:'If the roots of a(b–c)x²+b(c–a)x+c(a–b)=0 are equal, then 2b=(following is TRUE)?',opts:['b=(a+c)/ac','2b=(1/a)+(1/c)','2b=(1/a)+(1/c)','abc=ab+bc+ca'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:266,year:'2017',q:'If [√(a²+b²+ab)] + [√(a²+b²–ab)] = 1, then (1–a²)(1–b²) is:',opts:['1/4','4/7','5/4','3/4'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:267,year:'2017',q:'If 3x+4y–11=18 and 8x–6y+12=6, then 5x–3y–9 is:',opts:['18','–9','27','–18'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:268,year:'2017',q:'If a+b+c=7/12, 3a–4b–5c=3/4 and 7a–11b–13c=–7/4, then a+c is:',opts:['1/2','5/12','3/4','1/4'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:269,year:'2017',q:'If x+y+z=22 and xy+yz+zx=35, then (x–y)²+(y–z)²+(z–x)² is:',opts:['793','681','758','715'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:270,year:'2017',q:'If (x+y)/z=2, then [y/(y–z)]+[x/(x–z)] is:',opts:['0','1','2','–1'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:271,year:'2017',q:'If α, β are roots of x²–2x+4=0, the equation with roots α³/β² and β³/α² is:',opts:['x²–4x+8=0','x²+32x+4=0','x²–2x+4=0','x²–16x+4=0'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:272,year:'2017',q:'If one root of Ax²+Bx+C=0 is two-and-half times the other, which is TRUE?',opts:['7B²=3CA','7B²=4CA','7B²=36CA','10B²=49CA'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:273,year:'2017',q:'If x²–12x+33=0, then (x–4)²+[1/(x–4)²] is:',opts:['16','14','18','20'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:274,year:'2017',q:'If a⁴+1=[a²/b²](4b²–b⁴–1), then a⁴+b⁴ is:',opts:['2','16','32','64'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:275,year:'2017',q:'If 3√((1–a)/a)+9=19–3√(a/(1–a)), then a is:',opts:['3/10, 7/10','1/10, 9/10','2/5, 3/5','1/5, 4/5'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:276,year:'2017',q:'If a+b=10 and √(a/b)–13=–√(b/a)–11, then 3ab+4a²+5b² is:',opts:['450','300','600','750'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:277,year:'2017',q:'If 3x+4y–2z+9=17, 7x+2y+11z+8=23 and 5x+9y+6z–4=18, then x+y+z–34 is:',opts:['–28','–14','–31','–45'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:278,year:'2017',q:'If x+3y–2z/4=6, x+2/3(2y+3z)=33 and 1/7(x+y+z)+2z=9, then 46x+131y is:',opts:['414','364','384','464'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:279,year:'2017',q:'If a=(√3+√2)/(√3–√2) and b=(√3–√2)/(√3+√2), then a²+b²–ab is:',opts:['97','(2√3)+2','(4√6)+1','98'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:280,year:'2017',q:'If the difference between roots of Ax²–Bx+C=0 is 4, which is TRUE?',opts:['B²–16A²=4AC+4B²','B²–10A²=4AC+6A²','B²–8A²=4AC+10A²','B²–16A²=4AC+8B²'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:281,year:'2017',q:'α, β are roots of quadratic equation. If α+β=8 and α–β=2√5, equation with roots α⁴ and β⁴ is:',opts:['x²–1522x+14641=0','x²+1921x+14641=0','x²–1764x+14641=0','x²+2520x+14641=0'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:282,year:'2017',q:'If a, b are roots of Px²–Qx+R=0, then (1/a²)+(1/b²)+(a/b)+(b/a) is:',opts:['(Q²–2P)(2R+P)/PR²','(Q²–2PR)(R+P)/PR²','(Q²–2R)(2P+R)/P²R²','(Q²–2PR)(2R+2P)/P²R²'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:283,year:'2017',q:'If x²–16x+59=0, then (x–6)²+[1/(x–6)²] is:',opts:['14','18','16','20'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:284,year:'2017',q:'If A and B are roots of Ax²–A²x+AB=0, then A and B are:',opts:['1,0','1,1','0,2','0,1'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:285,year:'2017',q:'α, β are roots of x²–x–1=0. Value of α⁸+β⁸ is:',opts:['47','54','59','68'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:286,year:'2017',q:'If a+b+c=9, ab+bc+ca=26, a³+b³=91, b³+c³=72 and c³+a³=35, then abc is:',opts:['48','24','36','42'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:287,year:'2017',q:'If x³–4x²+19=6(x–1), then [x²+(1/(x–4))] is:',opts:['3','5','6','8'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:288,year:'2017',q:'8 pencils, 5 pens, 3 erasers cost Rs.111. 9 pencils, 6 pens, 5 erasers cost Rs.130. 16 pencils, 11 pens, 3 erasers cost Rs.221. What do 39 pencils, 26 pens, 13 erasers cost?',opts:['316','546','624','482'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:289,year:'2017',q:'If 2x+3y–5z=18, 3x+2y+z=29 and x+y+3z=17, then xy+yz+zx is:',opts:['32','52','64','46'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:290,year:'2017',q:'(2+√2)+(1/(2+√2))+(1/(2–√2))+(2–√2) = ?',opts:['2','4','8','6'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:291,year:'2017',q:'If a²+b² = 4b+6a–13, then a+b is:',opts:['3','2','5','10'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:292,year:'2017',q:'x and y are positive integers with x⁴+y⁴+x²y² = 481 and xy = 12, then x²–xy+y² is:',opts:['16','13','11','15'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:293,year:'2017',q:'If A = 1+2ᵖ and B = 1+2⁻ᵖ, then B in terms of A is:',opts:['(A+1)/(A–1)','(A+2)/(A+1)','A/(A–1)','(A–2)/(A+1)'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:294,year:'2017',q:'If a, b are roots of ax²+bx+c=0, equation with roots (ab+a+b) and (ab–a–b) is:',opts:['a²x²+2acx+c²+b²=0','a²x²–2acx+c²–b²=0','a²x²–2acx+c²+b²=0','a²x²+2acx+c²–b²=0'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:295,year:'2017',q:'If √((1–p²)(1–q²)) = √3/2, then value of √(2p²+2q²+2pq) + √(2p²+2q²–2pq) is:',opts:['2','√2','1','None of these'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:296,year:'2017',q:'If (a+b)²–2(a+b)=80 and ab=16, then 3a–19b is:',opts:['–16','–14','–18','–20'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:297,year:'2017',q:'If x^(y+z)=1, y^(x+z)=1024 and z^(x+y)=729 (x,y,z natural numbers), then (z+1)^(y+x+1) is:',opts:['6561','10000','4096','14641'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:298,year:'2017',q:'If x+y+z=1, x²+y²+z²=2 and x³+y³+z³=3, then xyz is:',opts:['1/3','1/6','1/2','1/4'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:299,year:'2017',q:'If f(x) = x²+px+4 and (x–3) is a factor of f(x), then p is:',opts:['4','–4','–13/3','13/3'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:300,year:'2017',q:'If y² = y + 7, then y³ is:',opts:['8y+7','y+14','y+2','4y+7'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:301,year:'2017',q:'If A = 125 and B = 8, then (A+B)³–(A–B)³–6B(A²–B²) is:',opts:['4096','4608','4224','3456'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:302,year:'2017',q:'If x = 1/(1+1/(1+x)) and y = 1/(2+1/(1+y)), then x+y can be:',opts:['(–5–√17+3)/4','(2√5+√17–3)/4','(–√5+√17+1)/4','(√5+√17–1)/4'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:303,year:'2018',q:'If x⁸ – 1442x⁴ + 1 = 0, then a possible value of x – 1/x is?',opts:['5','8','4','6'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:304,year:'2018',q:'If a²+b²+c²+96 = 8(a+b–2c), then √(ab – bc + ca) is equal to?',opts:['6','2√2','4','2√3'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:305,year:'2018',q:'If x+y+z = 11, x²+y²+z² = 133 and x³+y³+z³ = 881, then the value of ∛(xyz) is?',opts:['–6','6','–8','8'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:306,year:'2018',q:'If a³+b³ = 218 and a+b = 2, then the value of ab is?',opts:['34','–35','–31','32'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:307,year:'2018',q:'If 2√2x³ – 3√3y³ = (√2x – √3y)(Ax²+By²+Cxy), then the value of A² + B² – C² is?',opts:['11','7','19','10'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:308,year:'2018',q:'If x + 1/(16x) = 3, then the value of 16x³ + 1/(256x³) is?',opts:['423','441','432','414'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:309,year:'2018',q:'If x+y+z = 2, xy+yz+zx = –11 and xyz = –12, then what is the value of √(x³+y³+z³–2)?',opts:['6','12','9','8'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:310,year:'2018',q:'If x⁴ – 83x² + 1 = 0, then a value of x³ – x⁻³ can be?',opts:['758','756','739','737'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:311,year:'2018',q:'If (5x+1)³ + (x–3)³ + 8(3x–4)³ = 6(5x+1)(x–3)(3x–4), then x is equal to?',opts:['5/6','1/3','2/3','3/4'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:312,year:'2018',q:'If 8x³ – 27y³ = (Ax+By)(Cx² – Dy² + 6xy), then (A + B + C – D) is equal to?',opts:['–12','12','15','9'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:313,year:'2018',q:'If x = (√5–√3)/(√5+√3) and y is the reciprocal of x, then what is the value of (x³ + y³)?',opts:['488','504','472','476'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:314,year:'2018',q:'ab(a – b) + bc(b – c) + ca(c – a) is equal to?',opts:['(a+b)(b–c)(c–a)','(a–b)(b+c)(c–a)','(a–b)(b–c)(c–a)','(b–a)(b–c)(c–a)'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:315,year:'2018',q:'Given that (5x–3)³ + (2x+5)³ + 27(4–3x)³ = 9(3–5x)(2x+5)(3x–4), then the value of (2x+1) is?',opts:['–13','15','–15','13'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:316,year:'2018',q:'If 5√5x³+2√2y³ = (Ax+√2y)(Bx²+2y²+Cxy), then the value of (A² + B² – C²) is?',opts:['15','20','30','40'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:317,year:'2018',q:'If [3(x²+1)–7x]/(3x) = 6, x ≠ 0, then the value of √x + 1/√x is?',opts:['√(25/3)','√(11/3)','√(35/3)','√(31/3)'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:318,year:'2018',q:'If x+y+z = 6, xyz = –10 and x²+y²+z² = 30, then what is the value of (x³+y³+z³)?',opts:['132','135','130','127'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:319,year:'2018',q:'If [x–(1/x)] = 2, then [x⁶–(1/x⁶)] is:',opts:['114√2+1','134√2','142√2+3','140√2'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:320,year:'2018',q:'If 3x+6y+9z=20/3, 6x+9y+3z=17/3 and 18x+27y–z=113/9, then 75x+113y is:',opts:['163/3','143/6','218/9','311/3'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:321,year:'2018',q:'If x^(y\') = 1, y^(z\') = 125 and z^(y\') = 243 (x,y,z natural), then 9x+10y–18z is:',opts:['18','15','12','5'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:322,year:'2018',q:'If x = √((1+√3)/2) – √((1–√3)/2), then (√2–x)/(√2+x) is closest to:',opts:['1.4','0.12','0.17','1.2'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:323,year:'2018',q:'If a³+b³=218 and a+b=2, then ab is:',opts:['–35','–31','34','32'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:324,year:'2018',q:'(253³+247³)/(25.3×25.3–624.91+24.7×24.7) is 50×10^k where k is:',opts:['3','–3','2','4'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:325,year:'2018',q:'If x+y+z=11, x²+y²+z²=133 and x³+y³+z³=881, then ∛(xyz) is:',opts:['6','–8','–6','8'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:326,year:'2018',q:'If √(86–60√2) = a–b√2, then √(a²+b²) correct to one decimal place is:',opts:['8.4','7.8','8.2','7.2'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:327,year:'2018',q:'If x⁸–1442x⁴+1=0, then a possible value of x–1/x is:',opts:['8','4','6','5'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:328,year:'2018',q:'If 2√2x³–3√3y³=(√2x–√3y)(Ax²+By²+Cxy), then A²+B²–C² is:',opts:['7','10','11','19'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:329,year:'2018',q:'If a²+b²+c²+96=8(a+b–2c), then √(ab–bc+ca) is equal to:',opts:['4','2√3','6','2√2'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:330,year:'2018',q:'If x + 1/(16x) = 3, then 16x³ + 1/(256x³) is:',opts:['423','441','432','414'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:331,year:'2018',q:'If x+y+z=2, xy+yz+zx=–11, xyz=–12, then √(x³+y³+z³–2) is:',opts:['6','12','9','8'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:332,year:'2018',q:'If x⁴–83x²+1=0, then a value of x³–x⁻³ is:',opts:['758','756','739','737'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:333,year:'2018',q:'If (5x+1)³+(x–3)³+8(3x–4)³ = 6(5x+1)(x–3)(3x–4), then x is equal to:',opts:['5/6','1/3','2/3','3/4'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:334,year:'2018',q:'If 8x³–27y³=(Ax+By)(Cx²–Dy²+6xy), then (A+B+C–D) is equal to:',opts:['–12','12','15','9'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:335,year:'2018',q:'If x=(√5–√3)/(√5+√3) and y is reciprocal of x, then (x³+y³) is:',opts:['488','504','472','476'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:336,year:'2018',q:'If √(10–2√21)+√(8+2√15)=√a+√b (a,b positive integers), then √(ab) is closest to:',opts:['4.6','5.9','6.8','7.2'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:337,year:'2018',q:'ab(a–b)+bc(b–c)+ca(c–a) is equal to:',opts:['(a+b)(b–c)(c–a)','(a–b)(b+c)(c–a)','(a–b)(b–c)(c–a)','(b–a)(b–c)(c–a)'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:338,year:'2018',q:'If (5x–3)³+(2x+5)³+27(4–3x)³=9(3–5x)(2x+5)(3x–4), then (2x+1) is:',opts:['–13','15','–15','13'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:339,year:'2018',q:'If 5√5x³+2√2y²=(Ax+√2y)(Bx²+2y²+Cxy), then A²+B²–C² is:',opts:['15','20','30','40'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:340,year:'2018',q:'If (3(2x²+1)–7x)/(3x) = 6 (x≠0), then √x + 1/√x is:',opts:['√(25/3)','√(11/3)','√(35/3)','√(31/3)'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:341,year:'2018',q:'Let x=∛27–∛(6¾) and y=√((45+√605+√245)/(√80+√125)). Then x²+y² is:',opts:['223/36','221/36','221/9','227/9'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:342,year:'2018',q:'If x+y+z=6, xyz=–10 and x²+y²+z²=30, then (x³+y³+z³) is:',opts:['132','135','130','127'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:343,year:'2018',q:'(4.6)⁴+(5.4)⁴+(24.84)² / [(4.6)²+(5.4)²+(24.84)] = ?',opts:['24.42','24.24','25.42','25.48'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:344,year:'2019',q:'If 27(x+y)³–8(x–y)³=(Ax²+By²+Cxy), then (A+B–C) is:',opts:['13','16','18','11'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:345,year:'2019',q:'Given x⁸–34x⁴+1=0. What is (x³+x⁻³)?',opts:['5√8','6√6','5√6','6√8'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:346,year:'2019',q:'If 3x²–5x+1=0, then (x²+1/(9x²)) is:',opts:['1⅔','1⅓','2⅓','2⅑'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:347,year:'2019',q:'If 1/(4–√8) + (3+2√2)/(3–2√2) – (3–2√2)/(3+2√2) = a+b√2, then (3a+4b) is:',opts:['99½','99','98½','98'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:348,year:'2019',q:'If a+b+c=6, a³+b³+c³–3abc=342, then ab+bc+ca is:',opts:['8','–7','–5','5'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:349,year:'2019',q:'If 9x²+y²=37 and xy=2, x,y>0, then (27x³+y³) is:',opts:['217','207','301','259'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:350,year:'2019',q:'If a+b+c=7 and a³+b³+c³–3abc=175, then (ab+bc+ca) is:',opts:['7','8','6','9'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:351,year:'2019',q:'If x²+4y²=17 and xy=2, x,y>0, then (x³+8y³) is:',opts:['85','76','65','95'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:352,year:'2019',q:'If (x+y)³+8(x–y)³=(3x+Ay)(3x²+Bxy+Cy²), then A+B+C is:',opts:['0','4','2','3'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:353,year:'2019',q:'If 2x²–7x+5=0, then x²+25/(4x²) is:',opts:['9¼','7¼','9¾','5½'],ans:2,exam:'CGL Tier-II',date:''},
+  {gid:354,year:'2019',q:'If x–1/x=5 (x≠0), then (x⁶+3x³–1)/(x⁶–8x³–1) is:',opts:['13/12','11/13','3/8','4/9'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:355,year:'2019',q:'If x²+1/x²=7, then x³+1/x³ (x>0) is:',opts:['16','18','15','12'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:356,year:'2019',q:'If x(3–2/x)=3/x, then x³–1/x³ is:',opts:['8/27','52/27','62/27','61/27'],ans:3,exam:'CGL Tier-II',date:''},
+  {gid:357,year:'2019',q:'If x+16/x=8, then x²+32/x² is:',opts:['24','16','20','18'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:358,year:'2019',q:'If x=√(–√3+√(3+8√7+4√3)) (x>0), then x equals:',opts:['2','4','1','3'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:359,year:'2019',q:'If √x+1/√x=3, then x³+1/x³ is:',opts:['324','326','322','422'],ans:1,exam:'CGL Tier-II',date:''},
+  {gid:360,year:'2019',q:'If x–3/x=6 (x≠0), then (x⁴–27/x²)/(x²–3x–3) is:',opts:['90','80','270','54'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:361,year:'2019',q:'If (8+2√3)/(3√3+5)=a√3–b, then a+b is:',opts:['16','18','15','24'],ans:0,exam:'CGL Tier-II',date:''},
+  {gid:362,year:'2020',q:'If a + b + c = 1, ab + bc + ca = −22 and abc = −40, then what is the value of a³ + b³ + c³ ?',opts:['−51','27','67','−53'],ans:2,exam:'CGL 2020',date:'29/01/2022'},
+  {gid:363,year:'2020',q:'If 2x² + 5x + 1 = 0, then one of the values of x − 1/(2x) is:',opts:['√13/2','√17/2','5/2','13/2'],ans:1,exam:'CGL 2020',date:'29/01/2022'},
+  {gid:364,year:'2020',q:'22√2 / (4√2 − √3 + √5) = a + √5·b, with a, b > 0. Then what is (ab) : (a + b)?',opts:['7:8','4:7','7:4','8:7'],ans:2,exam:'CGL 2020',date:'29/01/2022'},
+  {gid:365,year:'2020',q:'If 2x − y = 2 and xy = 3/2, then what is the value of x³ − y³/8 ?',opts:['13/4','−5/4','9/2','5/2'],ans:0,exam:'CGL 2020',date:'29/01/2022'},
+  {gid:366,year:'2020',q:'If x = √(1 + √3/2) − √(1 − √3/2), then the value of (√3 − x)/(√3 + x) is: (corrected to two decimal places)',opts:['0.25','0.19','0.27','0.17'],ans:3,exam:'CGL 2020',date:'29/01/2022'},
+  {gid:367,year:'2020',q:'If x² − √7·x + 1 = 0, then what is the value of x⁵ + 1/x⁵ ?',opts:['25√7','21√7','27√7','19√7'],ans:0,exam:'CGL 2020',date:'29/01/2022'},
+  {gid:368,year:'2020',q:'If x = 32.5, y = 34.6 and z = 30.9, then the value of x³ + y³ + z³ − 3xyz is 0.98k, where k is equal to:',opts:['1,033','933','1,026','921'],ans:0,exam:'CGL 2020',date:'03/02/2022'},
+  {gid:369,year:'2020',q:'If x + 1/x = 3, x ≠ 0, then the value of x⁷ + 1/x⁷ is:',opts:['749','843','746','849'],ans:1,exam:'CGL 2020',date:'03/02/2022'},
+  {gid:370,year:'2020',q:'If x⁴ + y⁴ + x²y² = 17(1/16) and x² − xy + y² = 5(1/4), then one of the values of (x − y) is:',opts:['5/2','3/4','5/4','3/2'],ans:1,exam:'CGL 2020',date:'03/02/2022'},
+  {gid:371,year:'2021',q:'What is the value of (√7+√5)/(√7−√5) ÷ (√14+√10)/(√14−√10) + √10/√5 ?',opts:['√2 + 2','2√2 + 2','√2 + 1','2√2 + 1'],ans:3,exam:'CGL 2021',date:'08/08/2022'},
+  {gid:372,year:'2021',q:'If (x + 1/x)² = 3, then what is the value of x⁶ + x⁻⁶ ?',opts:['6','2','−6','−2'],ans:1,exam:'CGL 2021',date:'08/08/2022'},
+  {gid:373,year:'2021',q:'What is the solution of the following equations? 2X + 3Y = 12 and 3X − 2Y = 5',opts:['X = 3, Y = 2','X = 2, Y = 3','X = −2, Y = 3','X = 3, Y = −2'],ans:0,exam:'CGL 2021',date:'08/08/2022'},
+  {gid:374,year:'2021',q:'If xy = −6 and x³ + y³ = 19 (x and y are integers), then what is the value of 1/x⁻¹ + 1/y⁻¹ ?',opts:['−1','−2','1','2'],ans:0,exam:'CGL 2021',date:'08/08/2022'},
+  {gid:375,year:'2022',q:'For what value of m will the system of equations 18x − 72y + 13 = 0 and 7x − my − 17 = 0 have no solution?',opts:['28','24','9','12'],ans:0,exam:'CGL 2022',date:'06/03/2023'},
+  {gid:376,year:'2022',q:'If 2ˣ + 3ʸ = 17 and 2^(x+2) − 3^(y+1) = 5, then find x and y.',opts:['x = 1, y = 3','x = 3, y = 3','x = 3, y = 2','x = 1, y = 2'],ans:0,exam:'CGL 2022',date:'07/03/2023'},
+  {gid:377,year:'2023 (CHSL)',q:'If (a − 2b) = 8 and 2ab = 9, then find the value of (a + 2b).',opts:['12','6','10','8'],ans:2,exam:'CHSL 2023',date:'02/11/2023'},
+  {gid:378,year:'2023 (CHSL)',q:'A and B each have a certain number of oranges. A says to B, "If you give me 10 of your oranges, I will have twice the number of oranges left with you." B replies, "If you give me 10 of your oranges, I will have the same number of oranges left with you." Find the number of oranges that A has.',opts:['65','50','55','70'],ans:1,exam:'CHSL 2023',date:'02/11/2023'}
+];
+
+// Year display labels
+const YEAR_LABEL = {
+  '2010':'2010','2011':'2011','2014-2011':'2011–2014 (Mixed)',
+  '2012':'2012','2013':'2013','2014':'2014','2015':'2015',
+  '2016':'2016','2017':'2017','2018':'2018','2019':'2019',
+  '2020':'2020','2021':'2021','2022':'2022','2023 (CHSL)':'CHSL 2023'
+};
+
+// Year sort order
+const YEAR_ORDER = ['2010','2011','2012','2013','2014-2011','2014','2015','2016','2017','2018','2019','2020','2021','2022','2023 (CHSL)'];
+
+let activeYear = 'all';
+let answers = {}, correct = {};
+const LABELS = ['(a)','(b)','(c)','(d)'];
+
+function setYear(y, btn) {
+  activeYear = y;
+  document.querySelectorAll('.fb').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function render() {
+  const query = document.getElementById('searchInput').value.toLowerCase().trim();
+  const content = document.getElementById('mainContent');
+  const noResults = document.getElementById('noResults');
+  content.innerHTML = '';
+
+  // Filter
+  let filtered = QUESTIONS.filter(q => {
+    const matchYear = activeYear === 'all' || q.year === activeYear;
+    const matchSearch = !query || q.q.toLowerCase().includes(query) ||
+      q.opts.some(o => o.toLowerCase().includes(query));
+    return matchYear && matchSearch;
+  });
+
+  document.getElementById('visCount').textContent = filtered.length;
+  noResults.classList.toggle('show', filtered.length === 0);
+
+  if (filtered.length === 0) return;
+
+  // Group by year
+  const groups = {};
+  for (const q of filtered) {
+    if (!groups[q.year]) groups[q.year] = [];
+    groups[q.year].push(q);
+  }
+
+  // Render in year order
+  const orderedYears = YEAR_ORDER.filter(y => groups[y]);
+  // Add any years not in YEAR_ORDER
+  for (const y of Object.keys(groups)) {
+    if (!orderedYears.includes(y)) orderedYears.push(y);
+  }
+
+  let gNum = 0;
+  for (const year of orderedYears) {
+    const yearQs = groups[year];
+    if (!yearQs) continue;
+
+    const section = document.createElement('div');
+    section.className = 'year-section';
+
+    const head = document.createElement('div');
+    head.className = 'year-head';
+    head.innerHTML = `
+      <h2>${YEAR_LABEL[year] || year}</h2>
+      <span class="year-head-count">${yearQs.length} Q</span>
+      <span class="yr-line"></span>
+    `;
+    section.appendChild(head);
+
+    const list = document.createElement('div');
+    list.className = 'q-list';
+
+    yearQs.forEach((q, idx) => {
+      gNum++;
+      list.appendChild(makeCard(q, gNum, idx));
+    });
+
+    section.appendChild(list);
+    content.appendChild(section);
+  }
+
+  updateStats();
+}
+
+function makeCard(q, gNum, idx) {
+  const div = document.createElement('div');
+  div.className = 'q-card';
+  div.id = 'card-' + q.gid;
+  const chosen = answers[q.gid];
+  if (chosen !== undefined) div.classList.add(correct[q.gid] ? 'answered-ok' : 'answered-no');
+  div.style.animationDelay = Math.min(idx, 25) * 0.012 + 's';
+
+  let dateBit = q.date ? `<span class="q-date">${q.date}</span>` : '';
+
+  const optBtns = q.opts.map((opt, i) => {
+    let cls = 'opt-btn';
+    if (chosen !== undefined) {
+      if (i === q.ans) cls += ' ok';
+      else if (i === chosen) cls += ' no';
+    }
+    return `<button class="${cls}" ${chosen !== undefined ? 'disabled' : ''} onclick="choose(${q.gid},${i})">
+      <span class="opt-lbl">${LABELS[i]}</span><span class="opt-text">${opt}</span>
+    </button>`;
+  }).join('');
+
+  const resShow = chosen !== undefined ? 'show' : '';
+  const resCls  = correct[q.gid] ? 'ok' : 'no';
+  const resMsg  = correct[q.gid]
+    ? '✓ Correct!'
+    : `✗ Incorrect — Answer: ${LABELS[q.ans]} ${q.opts[q.ans]}`;
+
+  div.innerHTML = `
+    <div class="q-meta">
+      <span class="q-num">Q.${gNum}</span>
+      <span class="q-year-tag">${YEAR_LABEL[q.year] || q.year}</span>
+      <span class="q-exam">${q.exam || 'CGL'} Tier-II</span>
+      ${dateBit}
+    </div>
+    <div class="q-text">${q.q}</div>
+    <div class="opts-grid">${optBtns}</div>
+    <div class="res-row ${resCls} ${resShow}">${resMsg}</div>
+  `;
+  return div;
+}
+
+function choose(gid, optIdx) {
+  const q = QUESTIONS.find(x => x.gid === gid);
+  if (!q || answers[gid] !== undefined) return;
+  answers[gid] = optIdx;
+  correct[gid] = optIdx === q.ans;
+  const card = document.getElementById('card-' + gid);
+  if (card) {
+    const fresh = makeCard(q, parseInt(card.querySelector('.q-num').textContent.slice(2)), 0);
+    fresh.style.animationDelay = '0s';
+    card.parentNode.replaceChild(fresh, card);
+  }
+  updateStats();
+}
+
+function updateStats() {
+  const att = Object.keys(answers).length;
+  const cor = Object.values(correct).filter(Boolean).length;
+  document.getElementById('attCount').textContent = att;
+  document.getElementById('corCount').textContent  = cor;
+  document.getElementById('progBar').style.width   = att ? (cor / att * 100) + '%' : '0%';
+}
+
+render();
+</script>
+</body>
+</html>

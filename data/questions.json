@@ -1,0 +1,29 @@
+[
+ {
+  "question": "What is 20% of 150?",
+  "subject": "Quantitative Aptitude",
+  "chapter": "Percentage",
+  "concept": "percentage calculation",
+  "difficulty": "easy",
+  "trap_type": "base confusion",
+  "year": 2022
+ },
+ {
+  "question": "If 3x + 5 = 20, find x.",
+  "subject": "Quantitative Aptitude",
+  "chapter": "Algebra",
+  "concept": "linear equation",
+  "difficulty": "easy",
+  "trap_type": "calculation mistake",
+  "year": 2021
+ },
+ {
+  "question": "Find the ratio of 40 to 60.",
+  "subject": "Quantitative Aptitude",
+  "chapter": "Ratio",
+  "concept": "ratio simplification",
+  "difficulty": "easy",
+  "trap_type": "simplification trap",
+  "year": 2023
+ }
+]
