@@ -79,6 +79,73 @@ function MathFraction({
   );
 }
 
+/* ── Math Text Renderer ─────────────────────────────────── *
+ * Parses a string for fraction patterns like  a/b, (expr)/(expr)
+ * and renders them as stacked math-book fractions with a vinculum.
+ * ──────────────────────────────────────────────────────────── */
+
+function MathText({ text, className = "" }: { text: string; className?: string }) {
+  /*
+   * Regex explanation:
+   *   Group 1 – numerator that is a parenthesized expression: \(([^()]+)\)
+   *   Group 2 – OR a "simple" token (digits, letters, superscripts, √, ., –, ^, etc.)
+   *   Then a literal /
+   *   Group 3 – denominator parenthesized
+   *   Group 4 – OR simple token
+   *
+   * We avoid matching the "/" inside exam fields like "CGL Tier-II" by requiring
+   * at least one alphanumeric / math char on both sides.
+   */
+  const fractionRe =
+    /(\([^()]+\)|[\w\d√∛⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾ᵃᵇⁿ.–^]+)\/((\([^()]+\))|[\w\d√∛⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾ᵃᵇⁿ.–^]+)/g;
+
+  const parts: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = fractionRe.exec(text)) !== null) {
+    // Push text before this match
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index));
+    }
+
+    const rawNum = match[1];
+    const rawDen = match[2];
+    // Strip outer parens for display if the whole token is wrapped
+    const num = rawNum.startsWith("(") && rawNum.endsWith(")") ? rawNum.slice(1, -1) : rawNum;
+    const den = rawDen.startsWith("(") && rawDen.endsWith(")") ? rawDen.slice(1, -1) : rawDen;
+
+    parts.push(
+      <span
+        key={match.index}
+        className="inline-flex flex-col items-center leading-none align-middle mx-[2px]"
+        role="math"
+        aria-label={`${num} over ${den}`}
+      >
+        <span className="font-semibold px-[3px]" style={{ fontSize: "0.88em" }}>
+          {num}
+        </span>
+        <span
+          className="w-full my-[1px]"
+          style={{ minWidth: "0.9em", borderTop: "1.5px solid currentColor" }}
+        />
+        <span className="font-semibold px-[3px]" style={{ fontSize: "0.88em" }}>
+          {den}
+        </span>
+      </span>,
+    );
+
+    lastIndex = match.index + match[0].length;
+  }
+
+  // Push remaining text
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+
+  return <span className={className}>{parts}</span>;
+}
+
 /* ── Question Navigator ────────────────────────────────── *
  * Scrollable strip of numbered buttons for quick jumping.
  * Color-coded: current=purple, correct=green, wrong=red,
@@ -851,7 +918,7 @@ export default function QuizEngine() {
               miniMode ? "text-base" : "text-lg sm:text-xl"
             }`}
           >
-            {currentQ.question}
+            <MathText text={currentQ.question} />
           </h2>
 
           {/* Options */}
@@ -875,7 +942,7 @@ export default function QuizEngine() {
                   >
                     {String.fromCharCode(65 + i)}
                   </span>
-                  <span>{opt}</span>
+                  <span><MathText text={opt} /></span>
                   {isAnswered && i === currentQ.correctAnswer && (
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 ml-auto shrink-0" />
                   )}
@@ -899,7 +966,7 @@ export default function QuizEngine() {
             </div>
             <p className="text-sm text-slate-600 leading-relaxed mb-2">
               <span className="text-[var(--text-primary)] font-medium">Correct Answer:</span>{" "}
-              {currentQ.options[currentQ.correctAnswer]} ({currentQ.answer})
+              <MathText text={`${currentQ.options[currentQ.correctAnswer]} (${currentQ.answer})`} />
             </p>
             <p className="text-sm text-slate-500 leading-relaxed">
               <span className="text-slate-600 font-medium">Concept:</span>{" "}
