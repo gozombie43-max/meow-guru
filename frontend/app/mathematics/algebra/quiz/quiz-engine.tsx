@@ -23,6 +23,7 @@ type Difficulty = "easy" | "medium" | "hard";
 
 interface SessionResult {
   questionId: number;
+  questionIndex: number;
   selected: number | null;
   correct: number;
   isCorrect: boolean;
@@ -170,8 +171,7 @@ function QuestionNavigator({
   const statusMap = useMemo(() => {
     const map: Record<number, "correct" | "wrong" | "timeout"> = {};
     for (const r of results) {
-      // Results are stored in order — the index in results array = question index
-      const idx = results.indexOf(r);
+      const idx = r.questionIndex;
       if (r.isCorrect) map[idx] = "correct";
       else if (r.selected === null) map[idx] = "timeout";
       else map[idx] = "wrong";
@@ -435,6 +435,7 @@ export default function QuizEngine() {
       ...prev,
       {
         questionId: currentQ.id,
+        questionIndex: currentIndex,
         selected: null,
         correct: currentQ.correctAnswer,
         isCorrect: false,
@@ -468,6 +469,7 @@ export default function QuizEngine() {
       ...prev,
       {
         questionId: currentQ.id,
+        questionIndex: currentIndex,
         selected: index,
         correct: currentQ.correctAnswer,
         isCorrect,
@@ -506,16 +508,14 @@ export default function QuizEngine() {
 
   function handleJumpTo(index: number) {
     if (index === currentIndex) return;
-    // Only allow jumping to unanswered future questions or already-answered ones
     setCurrentIndex(index);
-    setSelectedAnswer(null);
-    // If this question was already answered, show it as answered
-    if (index < results.length) {
-      const prev = results[index];
+    const prev = results.find((r) => r.questionIndex === index);
+    if (prev) {
       setSelectedAnswer(prev.selected);
       setIsAnswered(true);
       stopTimer();
     } else {
+      setSelectedAnswer(null);
       setIsAnswered(false);
       startTimer();
     }
@@ -847,12 +847,16 @@ export default function QuizEngine() {
                 </div>
               )}
 
-              {/* Timer */}
-              <TimerCircle timeLeft={timeLeft} maxTime={maxTime} mini={miniMode} />
+
             </div>
           </div>
           <ProgressBar current={currentIndex + 1} total={questions.length} />
         </div>
+      </div>
+
+      {/* ── Fixed Bottom-Right Timer ── */}
+      <div className="fixed bottom-6 right-6 z-50 glass rounded-2xl p-3 shadow-lg">
+        <TimerCircle timeLeft={timeLeft} maxTime={maxTime} mini={miniMode} />
       </div>
 
       {/* ── Question Area ── */}
