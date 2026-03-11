@@ -27,6 +27,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        {/* Ambient background glow blobs */}
+        <div className="bg-blob-1" aria-hidden="true" />
+        <div className="bg-blob-2" aria-hidden="true" />
+        <div className="bg-blob-3" aria-hidden="true" />
         {children}
       </body>
     </html>

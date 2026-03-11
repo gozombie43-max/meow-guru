@@ -8,52 +8,40 @@ export default function Home() {
   const router = useRouter();
 
   const subjects = [
-    { name: "MATH", path: "/questions?subject=Math" },
-    { name: "ENGLISH", path: "/questions?subject=English" },
-    { name: "REASONING", path: "/questions?subject=Reasoning" },
-    { name: "GENERAL AWARENESS", path: "/questions?subject=GA" },
+    { name: "MATH", path: "/questions?subject=Math", icon: "➕" },
+    { name: "ENGLISH", path: "/questions?subject=English", icon: "📖" },
+    { name: "REASONING", path: "/questions?subject=Reasoning", icon: "🧠" },
+    { name: "GENERAL AWARENESS", path: "/questions?subject=GA", icon: "🌐" },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-300 flex flex-col items-center justify-center">
+    <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden px-4">
 
       {/* Menu icon */}
       <div className="absolute top-6 right-6 cursor-pointer">
-        <Menu size={30}/>
+        <Menu size={30} className="text-slate-500"/>
       </div>
 
       {/* Title */}
-      <h1 className="text-5xl font-bold tracking-wide mb-2">
+      <h1 className="text-5xl font-bold tracking-wide mb-2 gradient-text" style={{ fontFamily: "'SF Pro Display', 'Helvetica Neue', sans-serif" }}>
         Meow
       </h1>
 
-      <p className="text-gray-600 mb-10">
+      <div className="glass-header-badge mb-10">
         Developed by Gurucharan
-      </p>
+      </div>
 
-      {/* Buttons */}
+      {/* Liquid Glass Buttons */}
       <div className="flex flex-col gap-6 w-80">
 
         {subjects.map((sub, i) => (
           <button
             key={i}
             onClick={() => router.push(sub.path)}
-            className="
-              border-2 border-black
-              py-4
-              text-xl
-              font-semibold
-              rounded-xl
-              bg-white
-              hover:bg-black
-              hover:text-white
-              transition-all
-              duration-300
-              shadow-md
-              hover:scale-105
-            "
+            className="liquid-btn"
           >
-            {sub.name}
+            <span className="btn-label">{sub.name}</span>
+            <span className="btn-icon">{sub.icon}</span>
           </button>
         ))}
 

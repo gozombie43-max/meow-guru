@@ -41,9 +41,9 @@ const MODE_LABELS: Record<QuizMode, string> = {
 };
 
 const DIFFICULTY_COLORS: Record<Difficulty, string> = {
-  easy: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
-  medium: "text-amber-400 bg-amber-500/10 border-amber-500/20",
-  hard: "text-red-400 bg-red-500/10 border-red-500/20",
+  easy: "text-emerald-600 bg-emerald-500/10 border-emerald-500/25",
+  medium: "text-amber-600 bg-amber-500/10 border-amber-500/25",
+  hard: "text-red-500 bg-red-500/10 border-red-500/25",
 };
 
 /* ── Math Fraction Display ──────────────────────────────── *
@@ -65,14 +65,14 @@ function MathFraction({
       className={`inline-flex flex-col items-center leading-none ${className}`}
       role="math"
     >
-      <span className="text-white font-bold" style={{ fontSize: "0.85em" }}>
+      <span className="text-[var(--text-primary)] font-bold" style={{ fontSize: "0.85em" }}>
         {numerator}
       </span>
       <span
-        className="w-full border-t border-gray-500 my-[2px]"
+        className="w-full border-t border-slate-400 my-[2px]"
         style={{ minWidth: "1.2em" }}
       />
-      <span className="text-gray-400 font-semibold" style={{ fontSize: "0.85em" }}>
+      <span className="text-slate-500 font-semibold" style={{ fontSize: "0.85em" }}>
         {denominator}
       </span>
     </span>
@@ -134,13 +134,13 @@ function QuestionNavigator({
     const base =
       "shrink-0 w-9 h-9 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer border";
     if (idx === currentIndex)
-      return `${base} bg-purple-500/20 border-purple-500/50 text-purple-300 shadow-[0_0_12px_rgba(167,139,250,0.15)]`;
+      return `${base} bg-cyan-500/15 border-cyan-500/40 text-cyan-600 shadow-[0_0_12px_rgba(0,229,255,0.15)]`;
     const status = statusMap[idx];
     if (status === "correct")
-      return `${base} bg-emerald-500/10 border-emerald-500/25 text-emerald-400`;
+      return `${base} bg-emerald-500/10 border-emerald-500/25 text-emerald-600`;
     if (status === "wrong" || status === "timeout")
-      return `${base} bg-red-500/10 border-red-500/25 text-red-400`;
-    return `${base} bg-white/[0.02] border-white/[0.06] text-gray-500 hover:bg-white/[0.05] hover:border-white/[0.12]`;
+      return `${base} bg-red-500/10 border-red-500/25 text-red-500`;
+    return `${base} bg-white/15 border-white/25 text-slate-500 hover:bg-white/25 hover:border-white/40`;
   }
 
   return (
@@ -148,7 +148,7 @@ function QuestionNavigator({
       {/* Prev arrow */}
       <button
         onClick={() => scroll("left")}
-        className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/[0.05] transition-colors cursor-pointer"
+        className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-[var(--text-primary)] hover:bg-white/15 transition-colors cursor-pointer"
         aria-label="Scroll left"
       >
         <ChevronLeft className="w-4 h-4" />
@@ -175,7 +175,7 @@ function QuestionNavigator({
       {/* Next arrow */}
       <button
         onClick={() => scroll("right")}
-        className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/[0.05] transition-colors cursor-pointer"
+        className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-[var(--text-primary)] hover:bg-white/15 transition-colors cursor-pointer"
         aria-label="Scroll right"
       >
         <ChevronRight className="w-4 h-4" />
@@ -219,7 +219,7 @@ function TimerCircle({
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke={isLow ? "#ef4444" : "#a78bfa"}
+          stroke={isLow ? "#ef4444" : "#00e5ff"}
           strokeWidth={stroke}
           strokeDasharray={circumference}
           strokeDashoffset={offset}
@@ -228,7 +228,7 @@ function TimerCircle({
         />
       </svg>
       <span
-        className={`absolute text-sm font-bold ${isLow ? "text-red-400" : "text-white"}`}
+        className={`absolute text-sm font-bold ${isLow ? "text-red-500" : "text-[var(--text-primary)]"}`}
       >
         {timeLeft}
       </span>
@@ -241,9 +241,9 @@ function TimerCircle({
 function ProgressBar({ current, total }: { current: number; total: number }) {
   const pct = total > 0 ? (current / total) * 100 : 0;
   return (
-    <div className="w-full h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
+    <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
       <div
-        className="h-full bg-gradient-to-r from-purple-500 to-orange-500 rounded-full transition-all duration-500"
+        className="h-full bg-gradient-to-r from-cyan-400 to-teal-400 rounded-full transition-all duration-500"
         style={{ width: `${pct}%` }}
       />
     </div>
@@ -498,15 +498,15 @@ export default function QuizEngine() {
       "w-full text-left px-5 py-4 rounded-xl border transition-all duration-300 cursor-pointer";
     if (!isAnswered) {
       if (selectedAnswer === index)
-        return `${base} border-purple-500/40 bg-purple-500/10 text-white`;
-      return `${base} border-white/[0.07] bg-white/[0.02] text-gray-300 hover:border-white/20 hover:bg-white/[0.04]`;
+        return `${base} border-cyan-400/40 bg-cyan-500/10 text-[var(--text-primary)]`;
+      return `${base} border-white/30 bg-white/10 text-slate-600 hover:border-white/45 hover:bg-white/18`;
     }
     // After answering
     if (index === currentQ!.correctAnswer)
-      return `${base} border-emerald-500/40 bg-emerald-500/10 text-emerald-300`;
+      return `${base} border-emerald-500/40 bg-emerald-500/10 text-emerald-700`;
     if (index === selectedAnswer && index !== currentQ!.correctAnswer)
-      return `${base} border-red-500/40 bg-red-500/10 text-red-300`;
-    return `${base} border-white/[0.04] bg-white/[0.01] text-gray-600`;
+      return `${base} border-red-500/40 bg-red-500/10 text-red-600`;
+    return `${base} border-white/20 bg-white/5 text-slate-400`;
   }
 
   /* ════════════════════════════════════════════════════════
@@ -516,29 +516,26 @@ export default function QuizEngine() {
   /* ── Analytics Screen ── */
   if (showAnalytics) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] text-white relative overflow-hidden">
-        <div className="fixed inset-0 pointer-events-none" aria-hidden="true">
-          <div className="absolute -top-[15%] -left-[10%] w-[500px] h-[500px] rounded-full bg-purple-600/10 blur-[120px] animate-float" />
-        </div>
+      <div className="min-h-screen relative overflow-hidden">
 
         {/* Nav */}
         <nav className="fixed top-0 left-0 right-0 z-50 glass">
           <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <Zap className="w-6 h-6 text-purple-400" />
-              <span className="text-xl font-bold tracking-tight gradient-text">SSC AI</span>
+              <Zap className="w-6 h-6 text-cyan-500" />
+              <span className="text-xl font-bold tracking-tight gradient-text font-sans">SSC AI</span>
             </div>
-            <button className="p-2 rounded-lg hover:bg-white/5 transition-colors" aria-label="Menu">
-              <Menu className="w-5 h-5 text-gray-400" />
+            <button className="p-2 rounded-lg hover:bg-white/10 transition-colors" aria-label="Menu">
+              <Menu className="w-5 h-5 text-slate-500" />
             </button>
           </div>
         </nav>
 
         <div className="pt-28 pb-20 px-6 max-w-3xl mx-auto relative">
-          <h1 className="animate-fade-in-up text-3xl font-bold mb-2">
+          <h1 className="animate-fade-in-up text-3xl font-bold mb-2 text-[var(--text-primary)]" style={{ fontFamily: "'SF Pro Display', 'Helvetica Neue', sans-serif" }}>
             Session <span className="gradient-text">Complete</span>
           </h1>
-          <p className="animate-fade-in-up text-gray-400 mb-10" style={{ animationDelay: "100ms" }}>
+          <p className="animate-fade-in-up text-slate-500 mb-10" style={{ animationDelay: "100ms" }}>
             Here&apos;s how you performed in this {MODE_LABELS[mode]} session.
           </p>
 
@@ -548,14 +545,14 @@ export default function QuizEngine() {
             style={{ animationDelay: "200ms" }}
           >
             {[
-              { label: "Correct", value: stats.correct, color: "text-emerald-400" },
-              { label: "Wrong", value: stats.wrong, color: "text-red-400" },
-              { label: "Accuracy", value: `${stats.accuracy}%`, color: "text-purple-400" },
-              { label: "Avg Time", value: `${stats.avgTime}s`, color: "text-amber-400" },
+              { label: "Correct", value: stats.correct, color: "text-emerald-600" },
+              { label: "Wrong", value: stats.wrong, color: "text-red-500" },
+              { label: "Accuracy", value: `${stats.accuracy}%`, color: "text-cyan-600" },
+              { label: "Avg Time", value: `${stats.avgTime}s`, color: "text-amber-600" },
             ].map((s) => (
               <div key={s.label} className="glass-card rounded-xl p-5 text-center">
                 <div className={`text-2xl font-bold ${s.color}`}>{s.value}</div>
-                <div className="text-xs text-gray-500 mt-1">{s.label}</div>
+                <div className="text-xs text-slate-500 mt-1">{s.label}</div>
               </div>
             ))}
           </div>
@@ -566,14 +563,14 @@ export default function QuizEngine() {
             style={{ animationDelay: "250ms" }}
           >
             <div className="glass-card rounded-xl p-5">
-              <div className="text-sm text-gray-500 mb-1">Best Streak</div>
-              <div className="text-xl font-bold text-orange-400 flex items-center gap-2">
+              <div className="text-sm text-slate-500 mb-1">Best Streak</div>
+              <div className="text-xl font-bold text-cyan-600 flex items-center gap-2">
                 <Flame className="w-5 h-5" /> {bestStreak}
               </div>
             </div>
             <div className="glass-card rounded-xl p-5">
-              <div className="text-sm text-gray-500 mb-1">Questions Done</div>
-              <div className="text-xl font-bold text-white flex items-center justify-center gap-2">
+              <div className="text-sm text-slate-500 mb-1">Questions Done</div>
+              <div className="text-xl font-bold text-[var(--text-primary)] flex items-center justify-center gap-2">
                 <MathFraction numerator={results.length} denominator={questions.length} />
               </div>
             </div>
@@ -585,15 +582,15 @@ export default function QuizEngine() {
               className="animate-fade-in-up glass-card rounded-xl p-6 mb-10"
               style={{ animationDelay: "350ms" }}
             >
-              <h3 className="font-semibold mb-4 flex items-center gap-2">
-                <Target className="w-4 h-4 text-red-400" />
+              <h3 className="font-semibold mb-4 flex items-center gap-2 text-[var(--text-primary)]">
+                <Target className="w-4 h-4 text-red-500" />
                 Weak Areas — Needs Practice
               </h3>
               <div className="space-y-3">
                 {weakConcepts.map((wc) => (
                   <div key={wc.concept} className="flex items-center justify-between">
-                    <span className="text-sm text-gray-300">{wc.concept}</span>
-                    <span className="text-xs px-2.5 py-1 rounded-full bg-red-500/10 text-red-400 border border-red-500/20">
+                    <span className="text-sm text-slate-600">{wc.concept}</span>
+                    <span className="text-xs px-2.5 py-1 rounded-full bg-red-500/10 text-red-500 border border-red-500/25">
                       {wc.accuracy}% accuracy
                     </span>
                   </div>
@@ -609,19 +606,19 @@ export default function QuizEngine() {
           >
             <button
               onClick={handleRestart}
-              className="btn-glow px-6 py-3 rounded-xl text-white font-semibold flex items-center justify-center gap-2 cursor-pointer"
+              className="btn-glow px-6 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 cursor-pointer"
             >
               <RotateCcw className="w-4 h-4" /> Practice Again
             </button>
             <Link
               href="/mathematics/algebra"
-              className="btn-outline px-6 py-3 rounded-xl text-gray-300 font-medium text-center cursor-pointer"
+              className="btn-outline px-6 py-3 rounded-xl font-medium text-center cursor-pointer"
             >
               Change Mode
             </Link>
             <Link
               href="/mathematics"
-              className="btn-outline px-6 py-3 rounded-xl text-gray-300 font-medium text-center cursor-pointer"
+              className="btn-outline px-6 py-3 rounded-xl font-medium text-center cursor-pointer"
             >
               All Topics
             </Link>
@@ -634,21 +631,17 @@ export default function QuizEngine() {
   /* ── Pre-start screen ── */
   if (!started) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] text-white relative overflow-hidden">
-        <div className="fixed inset-0 pointer-events-none" aria-hidden="true">
-          <div className="absolute -top-[15%] -left-[10%] w-[500px] h-[500px] rounded-full bg-purple-600/10 blur-[120px] animate-float" />
-          <div className="absolute top-[50%] -right-[10%] w-[400px] h-[400px] rounded-full bg-teal-500/8 blur-[100px] animate-float-reverse" />
-        </div>
+      <div className="min-h-screen relative overflow-hidden">
 
         {/* Nav */}
         <nav className="fixed top-0 left-0 right-0 z-50 glass">
           <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <Zap className="w-6 h-6 text-purple-400" />
-              <span className="text-xl font-bold tracking-tight gradient-text">SSC AI</span>
+              <Zap className="w-6 h-6 text-cyan-500" />
+              <span className="text-xl font-bold tracking-tight gradient-text font-sans">SSC AI</span>
             </div>
-            <button className="p-2 rounded-lg hover:bg-white/5 transition-colors" aria-label="Menu">
-              <Menu className="w-5 h-5 text-gray-400" />
+            <button className="p-2 rounded-lg hover:bg-white/10 transition-colors" aria-label="Menu">
+              <Menu className="w-5 h-5 text-slate-500" />
             </button>
           </div>
         </nav>
@@ -656,20 +649,20 @@ export default function QuizEngine() {
         <div className="pt-28 pb-20 px-6 max-w-2xl mx-auto relative text-center">
           <Link
             href="/mathematics/algebra"
-            className="animate-fade-in-up inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors mb-12 group"
+            className="animate-fade-in-up inline-flex items-center gap-2 text-sm text-slate-500 hover:text-[var(--text-primary)] transition-colors mb-12 group"
           >
             <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
             Back to Algebra
           </Link>
 
           <h1
-            className="animate-fade-in-up text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4"
-            style={{ animationDelay: "100ms" }}
+            className="animate-fade-in-up text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4 text-[var(--text-primary)]"
+            style={{ animationDelay: "100ms", fontFamily: "'SF Pro Display', 'Helvetica Neue', sans-serif" }}
           >
             {MODE_LABELS[mode]}
           </h1>
           <p
-            className="animate-fade-in-up text-gray-400 mb-8"
+            className="animate-fade-in-up text-slate-500 mb-8"
             style={{ animationDelay: "200ms" }}
           >
             {questions.length} questions loaded · {miniMode ? "20s" : "60s"} per question
@@ -682,11 +675,11 @@ export default function QuizEngine() {
           >
             {/* Mini mode toggle */}
             <div className="flex items-center justify-center gap-4">
-              <span className="text-sm text-gray-400">Mini Mode</span>
+              <span className="text-sm text-slate-500">Mini Mode</span>
               <button
                 onClick={() => setMiniMode((m) => !m)}
                 className={`relative w-12 h-6 rounded-full transition-colors cursor-pointer ${
-                  miniMode ? "bg-purple-500" : "bg-white/10"
+                  miniMode ? "bg-cyan-500" : "bg-white/20"
                 }`}
               >
                 <div
@@ -700,11 +693,11 @@ export default function QuizEngine() {
             {/* Concept filter (concept mode) */}
             {mode === "concept" && (
               <div className="flex flex-col items-center gap-2">
-                <span className="text-sm text-gray-400">Filter by Concept</span>
+                <span className="text-sm text-slate-500">Filter by Concept</span>
                 <select
                   value={conceptFilter}
                   onChange={(e) => setConceptFilter(e.target.value)}
-                  className="bg-white/[0.04] border border-white/[0.08] rounded-lg px-4 py-2 text-sm text-gray-300 outline-none focus:border-purple-500/40"
+                  className="glass-input px-4 py-2 text-sm outline-none"
                 >
                   <option value="all">All Concepts</option>
                   {CONCEPTS.map((c) => (
@@ -718,7 +711,7 @@ export default function QuizEngine() {
 
             {/* Difficulty */}
             <div className="flex items-center justify-center gap-2">
-              <span className="text-sm text-gray-400 mr-2">Starting Difficulty</span>
+              <span className="text-sm text-slate-500 mr-2">Starting Difficulty</span>
               {(["easy", "medium", "hard"] as Difficulty[]).map((d) => (
                 <button
                   key={d}
@@ -726,7 +719,7 @@ export default function QuizEngine() {
                   className={`px-4 py-1.5 rounded-full text-xs font-medium border capitalize cursor-pointer transition-all ${
                     difficulty === d
                       ? DIFFICULTY_COLORS[d]
-                      : "text-gray-500 border-white/[0.06] bg-transparent hover:bg-white/[0.03]"
+                      : "text-slate-500 border-white/25 bg-transparent hover:bg-white/10"
                   }`}
                 >
                   {d}
@@ -737,7 +730,7 @@ export default function QuizEngine() {
 
           <button
             onClick={handleStart}
-            className="animate-fade-in-up btn-glow px-10 py-4 rounded-xl text-white font-semibold text-lg flex items-center gap-3 mx-auto cursor-pointer"
+            className="animate-fade-in-up btn-glow px-10 py-4 rounded-xl font-semibold text-lg flex items-center gap-3 mx-auto cursor-pointer"
             style={{ animationDelay: "400ms" }}
           >
             Start Quiz <ChevronRight className="w-5 h-5" />
@@ -750,18 +743,15 @@ export default function QuizEngine() {
   /* ── Quiz Screen ── */
   if (!currentQ) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center text-gray-500">
+      <div className="min-h-screen flex items-center justify-center text-slate-500">
         No questions available for this selection.
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white relative overflow-hidden">
+    <div className="min-h-screen relative overflow-hidden">
       {/* Background */}
-      <div className="fixed inset-0 pointer-events-none" aria-hidden="true">
-        <div className="absolute -top-[15%] -left-[10%] w-[500px] h-[500px] rounded-full bg-purple-600/8 blur-[120px] animate-float" />
-      </div>
 
       {/* ── Top Bar ── */}
       <div className="fixed top-0 left-0 right-0 z-50 glass">
@@ -769,7 +759,7 @@ export default function QuizEngine() {
           <div className="h-16 flex items-center justify-between">
             <Link
               href="/mathematics/algebra"
-              className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors group"
+              className="flex items-center gap-2 text-sm text-slate-500 hover:text-[var(--text-primary)] transition-colors group"
             >
               <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
               <span className="hidden sm:inline">Exit Quiz</span>
@@ -778,14 +768,14 @@ export default function QuizEngine() {
             <div className="flex items-center gap-3">
               {/* Streak badge */}
               {streak >= 2 && (
-                <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-semibold">
+                <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/25 text-cyan-600 text-xs font-semibold">
                   <Flame className="w-3 h-3" /> {streak}
                 </div>
               )}
 
               {/* Mini mode indicator */}
               {miniMode && (
-                <div className="px-2.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[11px] font-medium">
+                <div className="px-2.5 py-1 rounded-full bg-teal-500/10 border border-teal-500/25 text-teal-600 text-[11px] font-medium">
                   MINI
                 </div>
               )}
@@ -814,18 +804,18 @@ export default function QuizEngine() {
         <div className="flex items-center justify-between mb-6 text-sm">
           <div className="flex items-center gap-4 flex-wrap">
             <MathFraction
-              numerator={<span className="text-white font-semibold">{currentIndex + 1}</span>}
+              numerator={<span className="text-[var(--text-primary)] font-semibold">{currentIndex + 1}</span>}
               denominator={questions.length}
               className="text-sm"
             />
-            <span className="flex items-center gap-1 text-emerald-400">
+            <span className="flex items-center gap-1 text-emerald-600">
               <CheckCircle2 className="w-3.5 h-3.5" /> {stats.correct}
             </span>
-            <span className="flex items-center gap-1 text-red-400">
+            <span className="flex items-center gap-1 text-red-500">
               <XCircle className="w-3.5 h-3.5" /> {stats.wrong}
             </span>
             {stats.accuracy > 0 && (
-              <span className="text-gray-500">{stats.accuracy}%</span>
+              <span className="text-slate-500">{stats.accuracy}%</span>
             )}
           </div>
           <span
@@ -842,15 +832,15 @@ export default function QuizEngine() {
         >
           {/* Tags */}
           <div className="flex flex-wrap items-center gap-2 mb-5">
-            <span className="text-[11px] px-2.5 py-1 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20">
+            <span className="text-[11px] px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-600 border border-cyan-500/25">
               {currentQ.concept}
             </span>
             {mode === "formula" && (
-              <span className="text-[11px] px-2.5 py-1 rounded-full bg-teal-500/10 text-teal-400 border border-teal-500/20">
+              <span className="text-[11px] px-2.5 py-1 rounded-full bg-teal-500/10 text-teal-600 border border-teal-500/25">
                 {currentQ.formula}
               </span>
             )}
-            <span className="text-[11px] px-2.5 py-1 rounded-full bg-white/[0.04] text-gray-500 border border-white/[0.06]">
+            <span className="text-[11px] px-2.5 py-1 rounded-full bg-white/20 text-slate-500 border border-white/30">
               {currentQ.exam} {currentQ.year}
             </span>
           </div>
@@ -877,22 +867,22 @@ export default function QuizEngine() {
                   <span
                     className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-medium shrink-0 ${
                       isAnswered && i === currentQ.correctAnswer
-                        ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-400"
+                        ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-600"
                         : isAnswered && i === selectedAnswer
-                          ? "border-red-500/50 bg-red-500/10 text-red-400"
-                          : "border-white/10 text-gray-500"
+                          ? "border-red-500/50 bg-red-500/10 text-red-500"
+                          : "border-white/25 text-slate-500"
                     }`}
                   >
                     {String.fromCharCode(65 + i)}
                   </span>
                   <span>{opt}</span>
                   {isAnswered && i === currentQ.correctAnswer && (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 ml-auto shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 ml-auto shrink-0" />
                   )}
                   {isAnswered &&
                     i === selectedAnswer &&
                     i !== currentQ.correctAnswer && (
-                      <XCircle className="w-4 h-4 text-red-400 ml-auto shrink-0" />
+                      <XCircle className="w-4 h-4 text-red-500 ml-auto shrink-0" />
                     )}
                 </div>
               </button>
@@ -902,22 +892,22 @@ export default function QuizEngine() {
 
         {/* Solution panel */}
         {isAnswered && (
-          <div className="glass-card rounded-2xl p-6 mb-6 animate-fade-in-up border-l-2 border-purple-500/30">
+          <div className="glass-card rounded-2xl p-6 mb-6 animate-fade-in-up border-l-2 border-cyan-500/30">
             <div className="flex items-center gap-2 mb-3">
-              <Lightbulb className="w-4 h-4 text-amber-400" />
-              <h4 className="text-sm font-semibold text-amber-400">Solution</h4>
+              <Lightbulb className="w-4 h-4 text-amber-500" />
+              <h4 className="text-sm font-semibold text-amber-600">Solution</h4>
             </div>
-            <p className="text-sm text-gray-300 leading-relaxed mb-2">
-              <span className="text-white font-medium">Correct Answer:</span>{" "}
+            <p className="text-sm text-slate-600 leading-relaxed mb-2">
+              <span className="text-[var(--text-primary)] font-medium">Correct Answer:</span>{" "}
               {currentQ.options[currentQ.correctAnswer]} ({currentQ.answer})
             </p>
-            <p className="text-sm text-gray-400 leading-relaxed">
-              <span className="text-gray-300 font-medium">Concept:</span>{" "}
-              {currentQ.concept} · <span className="text-gray-300 font-medium">Formula:</span>{" "}
+            <p className="text-sm text-slate-500 leading-relaxed">
+              <span className="text-slate-600 font-medium">Concept:</span>{" "}
+              {currentQ.concept} · <span className="text-slate-600 font-medium">Formula:</span>{" "}
               {currentQ.formula}
             </p>
             {selectedAnswer === null && (
-              <p className="text-xs text-red-400 mt-2 flex items-center gap-1">
+              <p className="text-xs text-red-500 mt-2 flex items-center gap-1">
                 <Clock className="w-3 h-3" /> Time expired — question was skipped.
               </p>
             )}
@@ -928,7 +918,7 @@ export default function QuizEngine() {
         {isAnswered && (
           <button
             onClick={handleNext}
-            className="btn-glow px-6 py-3 rounded-xl text-white font-semibold flex items-center gap-2 mx-auto cursor-pointer animate-fade-in-up"
+            className="btn-glow px-6 py-3 rounded-xl font-semibold flex items-center gap-2 mx-auto cursor-pointer animate-fade-in-up"
           >
             {currentIndex < questions.length - 1 ? (
               <>

@@ -20,9 +20,9 @@ const topics: Topic[] = [
     description:
       "Master HCF, LCM, divisibility rules, prime numbers, and number properties essential for SSC.",
     slug: "number-system",
-    accentColor: "text-purple-400",
-    glowColor: "hover:border-purple-500/25 hover:shadow-[0_20px_60px_rgba(0,0,0,0.4),0_0_40px_rgba(167,139,250,0.08)]",
-    bgGlow: "bg-purple-500/10",
+    accentColor: "text-cyan-500",
+    glowColor: "hover:border-cyan-400/30 hover:shadow-[0_0_24px_rgba(0,229,255,0.15)]",
+    bgGlow: "bg-cyan-500/10",
   },
   {
     title: "Arithmetic",
@@ -30,9 +30,9 @@ const topics: Topic[] = [
     description:
       "Percentage, profit & loss, simple & compound interest, ratio & proportion, time & work.",
     slug: "arithmetic",
-    accentColor: "text-orange-400",
-    glowColor: "hover:border-orange-500/25 hover:shadow-[0_20px_60px_rgba(0,0,0,0.4),0_0_40px_rgba(255,107,53,0.08)]",
-    bgGlow: "bg-orange-500/10",
+    accentColor: "text-teal-500",
+    glowColor: "hover:border-teal-400/30 hover:shadow-[0_0_24px_rgba(38,198,218,0.15)]",
+    bgGlow: "bg-teal-500/10",
   },
   {
     title: "Algebra",
@@ -40,9 +40,9 @@ const topics: Topic[] = [
     description:
       "Linear equations, quadratic equations, polynomials, algebraic identities, and simplification.",
     slug: "algebra",
-    accentColor: "text-teal-400",
-    glowColor: "hover:border-teal-500/25 hover:shadow-[0_20px_60px_rgba(0,0,0,0.4),0_0_40px_rgba(0,212,170,0.08)]",
-    bgGlow: "bg-teal-500/10",
+    accentColor: "text-indigo-400",
+    glowColor: "hover:border-indigo-400/30 hover:shadow-[0_0_24px_rgba(165,180,252,0.20)]",
+    bgGlow: "bg-indigo-400/10",
   },
   {
     title: "Geometry",
@@ -50,9 +50,9 @@ const topics: Topic[] = [
     description:
       "Lines, angles, triangles, circles, quadrilaterals, and coordinate geometry fundamentals.",
     slug: "geometry",
-    accentColor: "text-amber-400",
-    glowColor: "hover:border-amber-500/25 hover:shadow-[0_20px_60px_rgba(0,0,0,0.4),0_0_40px_rgba(251,191,36,0.08)]",
-    bgGlow: "bg-amber-500/10",
+    accentColor: "text-sky-400",
+    glowColor: "hover:border-sky-400/30 hover:shadow-[0_0_24px_rgba(0,180,220,0.15)]",
+    bgGlow: "bg-sky-400/10",
   },
   {
     title: "Mensuration",
@@ -60,9 +60,9 @@ const topics: Topic[] = [
     description:
       "Area, perimeter, surface area, and volume of 2D and 3D shapes for competitive exams.",
     slug: "mensuration",
-    accentColor: "text-pink-400",
-    glowColor: "hover:border-pink-500/25 hover:shadow-[0_20px_60px_rgba(0,0,0,0.4),0_0_40px_rgba(236,72,153,0.08)]",
-    bgGlow: "bg-pink-500/10",
+    accentColor: "text-cyan-400",
+    glowColor: "hover:border-cyan-400/30 hover:shadow-[0_0_24px_rgba(0,229,255,0.15)]",
+    bgGlow: "bg-cyan-400/10",
   },
   {
     title: "Trigonometry",
@@ -70,9 +70,9 @@ const topics: Topic[] = [
     description:
       "Trigonometric ratios, identities, heights & distances, and angle-based problem solving.",
     slug: "trigonometry",
-    accentColor: "text-blue-400",
-    glowColor: "hover:border-blue-500/25 hover:shadow-[0_20px_60px_rgba(0,0,0,0.4),0_0_40px_rgba(96,165,250,0.08)]",
-    bgGlow: "bg-blue-500/10",
+    accentColor: "text-teal-400",
+    glowColor: "hover:border-teal-400/30 hover:shadow-[0_0_24px_rgba(38,198,218,0.15)]",
+    bgGlow: "bg-teal-400/10",
   },
   {
     title: "Statistics & Probability",
@@ -80,9 +80,9 @@ const topics: Topic[] = [
     description:
       "Mean, median, mode, data interpretation, and probability concepts for SSC examinations.",
     slug: "statistics-probability",
-    accentColor: "text-emerald-400",
-    glowColor: "hover:border-emerald-500/25 hover:shadow-[0_20px_60px_rgba(0,0,0,0.4),0_0_40px_rgba(52,211,153,0.08)]",
-    bgGlow: "bg-emerald-500/10",
+    accentColor: "text-indigo-300",
+    glowColor: "hover:border-indigo-300/30 hover:shadow-[0_0_24px_rgba(165,180,252,0.15)]",
+    bgGlow: "bg-indigo-300/10",
   },
 ];
 
@@ -90,32 +90,22 @@ const topics: Topic[] = [
 
 export default function MathematicsPage() {
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white relative overflow-hidden">
-
-      {/* ── Background Effects ── */}
-      <div className="fixed inset-0 pointer-events-none" aria-hidden="true">
-        <div className="absolute -top-[15%] -left-[10%] w-[500px] h-[500px] rounded-full bg-purple-600/10 blur-[120px] animate-float" />
-        <div className="absolute top-[50%] -right-[10%] w-[450px] h-[450px] rounded-full bg-orange-500/8 blur-[100px] animate-float-reverse" />
-        <div
-          className="absolute -bottom-[10%] left-[40%] w-[350px] h-[350px] rounded-full bg-amber-500/6 blur-[80px] animate-float"
-          style={{ animationDelay: "2s" }}
-        />
-      </div>
+    <div className="min-h-screen relative overflow-hidden">
 
       {/* ── Navigation ── */}
       <nav className="fixed top-0 left-0 right-0 z-50 glass">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <Zap className="w-6 h-6 text-purple-400" />
-            <span className="text-xl font-bold tracking-tight gradient-text">
+            <Zap className="w-6 h-6 text-cyan-500" />
+            <span className="text-xl font-bold tracking-tight gradient-text font-sans">
               SSC AI
             </span>
           </div>
           <button
-            className="p-2 rounded-lg hover:bg-white/5 transition-colors"
+            className="p-2 rounded-lg hover:bg-white/10 transition-colors"
             aria-label="Menu"
           >
-            <Menu className="w-5 h-5 text-gray-400" />
+            <Menu className="w-5 h-5 text-slate-500" />
           </button>
         </div>
       </nav>
@@ -126,7 +116,7 @@ export default function MathematicsPage() {
           {/* Back button */}
           <Link
             href="/"
-            className="animate-fade-in-up inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors mb-10 group"
+            className="animate-fade-in-up inline-flex items-center gap-2 text-sm text-slate-500 hover:text-[var(--text-primary)] transition-colors mb-10 group"
           >
             <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
             <span>Back to Subjects</span>
@@ -135,20 +125,20 @@ export default function MathematicsPage() {
           {/* Page heading */}
           <div className="flex items-center gap-4 mb-3">
             <div
-              className="animate-fade-in-up w-14 h-14 rounded-2xl bg-purple-500/10 flex items-center justify-center"
+              className="animate-fade-in-up w-14 h-14 rounded-2xl bg-cyan-500/10 flex items-center justify-center"
               style={{ animationDelay: "100ms" }}
             >
               <span className="text-2xl">🧮</span>
             </div>
             <h1
-              className="animate-fade-in-up text-[clamp(2rem,5vw,3.5rem)] font-bold tracking-tight"
-              style={{ animationDelay: "150ms" }}
+              className="animate-fade-in-up text-[clamp(2rem,5vw,3.5rem)] font-bold tracking-tight text-[var(--text-primary)]"
+              style={{ animationDelay: "150ms", fontFamily: "'SF Pro Display', 'Helvetica Neue', sans-serif" }}
             >
               <span className="gradient-text">Mathematics</span> Topics
             </h1>
           </div>
           <p
-            className="animate-fade-in-up text-gray-400 text-[clamp(0.95rem,1.8vw,1.1rem)] max-w-2xl leading-relaxed"
+            className="animate-fade-in-up text-slate-500 text-[clamp(0.95rem,1.8vw,1.1rem)] max-w-2xl leading-relaxed"
             style={{ animationDelay: "250ms" }}
           >
             Select a topic to start practicing. Each section contains AI-curated
@@ -176,25 +166,25 @@ export default function MathematicsPage() {
                     <span className="text-xl">{topic.emoji}</span>
                   </div>
                   <ArrowRight
-                    className={`w-4 h-4 text-gray-600 ${topic.accentColor.replace("text-", "group-hover:text-")} transition-all group-hover:translate-x-1`}
+                    className={`w-4 h-4 text-slate-400 ${topic.accentColor.replace("text-", "group-hover:text-")} transition-all group-hover:translate-x-1`}
                   />
                 </div>
 
                 {/* Title */}
-                <h3 className="text-lg font-semibold mb-2 tracking-tight">
+                <h3 className="text-lg font-semibold mb-2 tracking-tight text-[var(--text-primary)]" style={{ fontFamily: "'SF Pro Display', 'Helvetica Neue', sans-serif" }}>
                   {topic.title}
                 </h3>
 
                 {/* Description */}
-                <p className="text-sm text-gray-400 leading-relaxed">
+                <p className="text-sm text-slate-500 leading-relaxed">
                   {topic.description}
                 </p>
 
                 {/* Bottom accent bar */}
-                <div className="mt-5 h-px w-full bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+                <div className="mt-5 h-px w-full bg-gradient-to-r from-transparent via-cyan-300/20 to-transparent" />
 
                 {/* Action hint */}
-                <div className="mt-4 flex items-center gap-1.5 text-xs text-gray-500 group-hover:text-gray-300 transition-colors">
+                <div className="mt-4 flex items-center gap-1.5 text-xs text-slate-500 group-hover:text-[var(--text-primary)] transition-colors">
                   <span>Start Practice</span>
                   <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5" />
                 </div>
@@ -205,7 +195,7 @@ export default function MathematicsPage() {
       </section>
 
       {/* ── Footer accent line ── */}
-      <div className="h-px w-full bg-gradient-to-r from-transparent via-purple-500/20 to-transparent" />
+      <div className="h-px w-full bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent" />
     </div>
   );
 }

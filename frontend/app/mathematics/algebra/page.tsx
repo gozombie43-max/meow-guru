@@ -22,8 +22,8 @@ const modes: PracticeMode[] = [
     description:
       "Practice questions grouped by concept — identities, quadratics, surds, and more. Build strong fundamentals.",
     icon: <Brain className="w-6 h-6" />,
-    accent: "text-purple-400",
-    glow: "hover:border-purple-500/25 hover:shadow-[0_20px_60px_rgba(0,0,0,0.4),0_0_40px_rgba(167,139,250,0.08)]",
+    accent: "text-cyan-500",
+    glow: "hover:border-cyan-400/30 hover:shadow-[0_0_24px_rgba(0,229,255,0.15)]",
     chipLabel: "Fundamentals",
   },
   {
@@ -32,8 +32,8 @@ const modes: PracticeMode[] = [
     description:
       "Each question shows the relevant formula. Learn to identify and apply the right formula quickly.",
     icon: <Sparkles className="w-6 h-6" />,
-    accent: "text-teal-400",
-    glow: "hover:border-teal-500/25 hover:shadow-[0_20px_60px_rgba(0,0,0,0.4),0_0_40px_rgba(0,212,170,0.08)]",
+    accent: "text-teal-500",
+    glow: "hover:border-teal-400/30 hover:shadow-[0_0_24px_rgba(38,198,218,0.15)]",
     chipLabel: "Formula Drills",
   },
   {
@@ -42,8 +42,8 @@ const modes: PracticeMode[] = [
     description:
       "Random questions across all concepts and difficulty levels. Simulate real exam conditions.",
     icon: <Shuffle className="w-6 h-6" />,
-    accent: "text-orange-400",
-    glow: "hover:border-orange-500/25 hover:shadow-[0_20px_60px_rgba(0,0,0,0.4),0_0_40px_rgba(255,107,53,0.08)]",
+    accent: "text-indigo-400",
+    glow: "hover:border-indigo-400/30 hover:shadow-[0_0_24px_rgba(165,180,252,0.20)]",
     chipLabel: "Exam Simulation",
   },
   {
@@ -52,8 +52,8 @@ const modes: PracticeMode[] = [
     description:
       "AI generates harder variants of real questions. Push your limits with dynamically scaled difficulty.",
     icon: <Flame className="w-6 h-6" />,
-    accent: "text-amber-400",
-    glow: "hover:border-amber-500/25 hover:shadow-[0_20px_60px_rgba(0,0,0,0.4),0_0_40px_rgba(251,191,36,0.08)]",
+    accent: "text-sky-400",
+    glow: "hover:border-sky-400/30 hover:shadow-[0_0_24px_rgba(0,180,220,0.15)]",
     chipLabel: "Advanced",
   },
 ];
@@ -62,25 +62,19 @@ const modes: PracticeMode[] = [
 
 export default function AlgebraPage() {
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white relative overflow-hidden">
-
-      {/* ── Background Effects ── */}
-      <div className="fixed inset-0 pointer-events-none" aria-hidden="true">
-        <div className="absolute -top-[15%] -left-[10%] w-[500px] h-[500px] rounded-full bg-purple-600/10 blur-[120px] animate-float" />
-        <div className="absolute top-[50%] -right-[10%] w-[400px] h-[400px] rounded-full bg-teal-500/8 blur-[100px] animate-float-reverse" />
-      </div>
+    <div className="min-h-screen relative overflow-hidden">
 
       {/* ── Navigation ── */}
       <nav className="fixed top-0 left-0 right-0 z-50 glass">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <Zap className="w-6 h-6 text-purple-400" />
-            <span className="text-xl font-bold tracking-tight gradient-text">
+            <Zap className="w-6 h-6 text-cyan-500" />
+            <span className="text-xl font-bold tracking-tight gradient-text font-sans">
               SSC AI
             </span>
           </div>
-          <button className="p-2 rounded-lg hover:bg-white/5 transition-colors" aria-label="Menu">
-            <Menu className="w-5 h-5 text-gray-400" />
+          <button className="p-2 rounded-lg hover:bg-white/10 transition-colors" aria-label="Menu">
+            <Menu className="w-5 h-5 text-slate-500" />
           </button>
         </div>
       </nav>
@@ -90,7 +84,7 @@ export default function AlgebraPage() {
         <div className="max-w-5xl mx-auto">
           <Link
             href="/mathematics"
-            className="animate-fade-in-up inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors mb-10 group"
+            className="animate-fade-in-up inline-flex items-center gap-2 text-sm text-slate-500 hover:text-[var(--text-primary)] transition-colors mb-10 group"
           >
             <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
             <span>Back to Mathematics</span>
@@ -104,14 +98,14 @@ export default function AlgebraPage() {
               <span className="text-2xl">✖️</span>
             </div>
             <h1
-              className="animate-fade-in-up text-[clamp(2rem,5vw,3rem)] font-bold tracking-tight"
-              style={{ animationDelay: "150ms" }}
+              className="animate-fade-in-up text-[clamp(2rem,5vw,3rem)] font-bold tracking-tight text-[var(--text-primary)]"
+              style={{ animationDelay: "150ms", fontFamily: "'SF Pro Display', 'Helvetica Neue', sans-serif" }}
             >
               <span className="gradient-text">Algebra</span>
             </h1>
           </div>
           <p
-            className="animate-fade-in-up text-gray-400 text-[clamp(0.95rem,1.8vw,1.1rem)] max-w-2xl leading-relaxed mb-2"
+            className="animate-fade-in-up text-slate-500 text-[clamp(0.95rem,1.8vw,1.1rem)] max-w-2xl leading-relaxed mb-2"
             style={{ animationDelay: "250ms" }}
           >
             377 questions from SSC CGL, CHSL &amp; MTS exams. Choose a practice
@@ -132,8 +126,8 @@ export default function AlgebraPage() {
                 key={s.label}
                 className="flex items-center gap-2 px-4 py-2 rounded-full glass text-sm"
               >
-                <span className="text-white font-semibold">{s.value}</span>
-                <span className="text-gray-500">{s.label}</span>
+                <span className="text-[var(--text-primary)] font-semibold">{s.value}</span>
+                <span className="text-slate-500">{s.label}</span>
               </div>
             ))}
           </div>
@@ -144,8 +138,8 @@ export default function AlgebraPage() {
       <section className="relative px-6 pt-8 pb-32">
         <div className="max-w-5xl mx-auto">
           <h2
-            className="animate-fade-in-up text-xl font-semibold mb-8"
-            style={{ animationDelay: "350ms" }}
+            className="animate-fade-in-up text-xl font-semibold mb-8 text-[var(--text-primary)]"
+            style={{ animationDelay: "350ms", fontFamily: "'SF Pro Display', 'Helvetica Neue', sans-serif" }}
           >
             Choose Practice Mode
           </h2>
@@ -160,17 +154,17 @@ export default function AlgebraPage() {
               >
                 <div className="flex items-start justify-between mb-5">
                   <div className={`${mode.accent}`}>{mode.icon}</div>
-                  <span className="text-[11px] px-2.5 py-1 rounded-full bg-white/[0.04] text-gray-500 border border-white/[0.06]">
+                  <span className="text-[11px] px-2.5 py-1 rounded-full bg-white/20 text-slate-500 border border-white/30">
                     {mode.chipLabel}
                   </span>
                 </div>
-                <h3 className="text-lg font-semibold mb-2 tracking-tight">
+                <h3 className="text-lg font-semibold mb-2 tracking-tight text-[var(--text-primary)]" style={{ fontFamily: "'SF Pro Display', 'Helvetica Neue', sans-serif" }}>
                   {mode.title}
                 </h3>
-                <p className="text-sm text-gray-400 leading-relaxed mb-5">
+                <p className="text-sm text-slate-500 leading-relaxed mb-5">
                   {mode.description}
                 </p>
-                <div className={`flex items-center gap-1.5 text-sm text-gray-500 group-hover:${mode.accent.replace("text-", "text-")} transition-colors`}>
+                <div className={`flex items-center gap-1.5 text-sm text-slate-500 group-hover:${mode.accent.replace("text-", "text-")} transition-colors`}>
                   <span>Start Session</span>
                   <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
                 </div>
@@ -180,7 +174,7 @@ export default function AlgebraPage() {
         </div>
       </section>
 
-      <div className="h-px w-full bg-gradient-to-r from-transparent via-purple-500/20 to-transparent" />
+      <div className="h-px w-full bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent" />
     </div>
   );
 }
