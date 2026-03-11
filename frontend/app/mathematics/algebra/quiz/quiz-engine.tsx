@@ -148,9 +148,13 @@ function MathText({ text, className = "" }: { text: string; className?: string }
 }
 
 /* ── Question Navigator ────────────────────────────────── *
- * Scrollable strip of numbered buttons for quick jumping.
- * Color-coded: current=purple, correct=green, wrong=red,
- * unvisited=gray.
+ * Enhanced nav bar with:
+ *  - Jump shortcuts: First / Mid / Last
+ *  - Scrollable number chips with hidden scrollbar
+ *  - Visual states: current (blue), correct (green), wrong (red),
+ *    skipped/timeout (amber), unattempted (gray)
+ *  - Auto-scroll to keep current chip centred
+ *  - Left / Right arrow buttons for manual scrolling
  * ──────────────────────────────────────────────────────────── */
 
 function QuestionNavigator({
@@ -165,88 +169,125 @@ function QuestionNavigator({
   onJump: (index: number) => void;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const btnRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const chipRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
-  // Build a status map from results
+  /* ── Status map ── */
   const statusMap = useMemo(() => {
-    const map: Record<number, "correct" | "wrong" | "timeout"> = {};
+    const map: Record<number, "correct" | "wrong" | "skipped"> = {};
     for (const r of results) {
       const idx = r.questionIndex;
       if (r.isCorrect) map[idx] = "correct";
-      else if (r.selected === null) map[idx] = "timeout";
+      else if (r.selected === null) map[idx] = "skipped";
       else map[idx] = "wrong";
     }
     return map;
   }, [results]);
 
-  // Keep the current button visible
+  /* ── Auto-scroll current chip into view ── */
   useEffect(() => {
-    const btn = btnRefs.current[currentIndex];
-    if (btn && scrollRef.current) {
-      const container = scrollRef.current;
-      const offsetLeft = btn.offsetLeft - container.offsetLeft;
-      const scrollTo = offsetLeft - container.clientWidth / 2 + btn.clientWidth / 2;
-      container.scrollTo({ left: scrollTo, behavior: "smooth" });
+    const chip = chipRefs.current[currentIndex];
+    if (chip && scrollRef.current) {
+      const bar = scrollRef.current;
+      const offset =
+        chip.offsetLeft - bar.offsetLeft - bar.clientWidth / 2 + chip.clientWidth / 2;
+      bar.scrollTo({ left: offset, behavior: "smooth" });
     }
   }, [currentIndex]);
 
+  /* ── Manual scroll arrows ── */
   function scroll(dir: "left" | "right") {
     scrollRef.current?.scrollBy({
-      left: dir === "left" ? -200 : 200,
+      left: dir === "left" ? -160 : 160,
       behavior: "smooth",
     });
   }
 
-  function btnClass(idx: number) {
+  /* ── Chip class by state ── */
+  function chipClass(idx: number) {
     const base =
-      "shrink-0 w-9 h-9 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer border";
+      "qnum-chip shrink-0 w-9 h-9 rounded-[9px] text-[0.82rem] font-bold inline-flex items-center justify-center cursor-pointer border-[1.5px] transition-all duration-150 select-none";
+
     if (idx === currentIndex)
-      return `${base} bg-cyan-500/15 border-cyan-500/40 text-cyan-600 shadow-[0_0_12px_rgba(0,229,255,0.15)]`;
+      return `${base} bg-[#3B6EF8] text-white border-[#3B6EF8] shadow-[0_2px_10px_rgba(59,110,248,0.35)] scale-[1.08]`;
+
     const status = statusMap[idx];
     if (status === "correct")
-      return `${base} bg-emerald-500/10 border-emerald-500/25 text-emerald-600`;
-    if (status === "wrong" || status === "timeout")
-      return `${base} bg-red-500/10 border-red-500/25 text-red-500`;
-    return `${base} bg-white/15 border-white/25 text-slate-500 hover:bg-white/25 hover:border-white/40`;
+      return `${base} bg-emerald-50 text-emerald-600 border-emerald-300`;
+    if (status === "wrong")
+      return `${base} bg-red-50 text-red-600 border-red-300`;
+    if (status === "skipped")
+      return `${base} bg-amber-50 text-amber-600 border-amber-300`;
+
+    // unattempted
+    return `${base} bg-[#F5F5F5] text-[#555] border-[#E0E0E0] hover:bg-indigo-50 hover:border-[#3B6EF8] hover:text-[#3B6EF8]`;
   }
 
   return (
-    <div className="glass rounded-xl p-2 flex items-center gap-1.5 mb-5">
-      {/* Prev arrow */}
-      <button
-        onClick={() => scroll("left")}
-        className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-[var(--text-primary)] hover:bg-white/15 transition-colors cursor-pointer"
-        aria-label="Scroll left"
-      >
-        <ChevronLeft className="w-4 h-4" />
-      </button>
-
-      {/* Scrollable buttons */}
-      <div
-        ref={scrollRef}
-        className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide"
-        style={{ scrollbarWidth: "none" }}
-      >
-        {Array.from({ length: total }, (_, i) => (
-          <button
-            key={i}
-            ref={(el) => { btnRefs.current[i] = el; }}
-            onClick={() => onJump(i)}
-            className={btnClass(i)}
-          >
-            {i + 1}
-          </button>
-        ))}
+    <div className="mb-5 space-y-1.5">
+      {/* ── Jump shortcuts row ── */}
+      <div className="flex items-center gap-2 px-1 flex-nowrap overflow-hidden">
+        <button
+          onClick={() => onJump(0)}
+          className="shrink-0 px-3 py-1.5 rounded-full border-[1.5px] border-[#E0E0E0] bg-[#FAFAFA] text-[#444] text-[0.78rem] font-semibold cursor-pointer whitespace-nowrap transition-all duration-150 hover:bg-[#3B6EF8] hover:border-[#3B6EF8] hover:text-white active:scale-95"
+        >
+          ⏮ First
+        </button>
+        <button
+          onClick={() => onJump(Math.floor(total / 2))}
+          className="shrink-0 px-3 py-1.5 rounded-full border-[1.5px] border-[#E0E0E0] bg-[#FAFAFA] text-[#444] text-[0.78rem] font-semibold cursor-pointer whitespace-nowrap transition-all duration-150 hover:bg-[#3B6EF8] hover:border-[#3B6EF8] hover:text-white active:scale-95"
+        >
+          ⬛ Mid
+        </button>
+        <button
+          onClick={() => onJump(total - 1)}
+          className="shrink-0 px-3 py-1.5 rounded-full border-[1.5px] border-[#E0E0E0] bg-[#FAFAFA] text-[#444] text-[0.78rem] font-semibold cursor-pointer whitespace-nowrap transition-all duration-150 hover:bg-[#3B6EF8] hover:border-[#3B6EF8] hover:text-white active:scale-95"
+        >
+          Last ⏭
+        </button>
+        <span className="ml-auto shrink-0 text-[0.8rem] font-semibold text-slate-400 whitespace-nowrap">
+          Q {currentIndex + 1} / {total}
+        </span>
       </div>
 
-      {/* Next arrow */}
-      <button
-        onClick={() => scroll("right")}
-        className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-[var(--text-primary)] hover:bg-white/15 transition-colors cursor-pointer"
-        aria-label="Scroll right"
-      >
-        <ChevronRight className="w-4 h-4" />
-      </button>
+      {/* ── Scrollable number bar ── */}
+      <div className="glass rounded-xl flex items-center gap-0">
+        {/* Left arrow */}
+        <button
+          onClick={() => scroll("left")}
+          className="shrink-0 w-7 min-h-[44px] flex items-center justify-center text-slate-500 hover:text-[#3B6EF8] text-lg font-bold cursor-pointer transition-colors"
+          aria-label="Scroll left"
+        >
+          ‹
+        </button>
+
+        {/* Chips */}
+        <div
+          ref={scrollRef}
+          className="qnav-bar-scroll flex items-center gap-1.5 overflow-x-auto flex-1 py-2 px-1.5"
+          style={{ scrollBehavior: "smooth", scrollbarWidth: "none", msOverflowStyle: "none" }}
+        >
+          {Array.from({ length: total }, (_, i) => (
+            <button
+              key={i}
+              ref={(el) => { chipRefs.current[i] = el; }}
+              onClick={() => onJump(i)}
+              className={chipClass(i)}
+              style={{ animationDelay: `${Math.min(i * 8, 300)}ms` }}
+            >
+              {i + 1}
+            </button>
+          ))}
+        </div>
+
+        {/* Right arrow */}
+        <button
+          onClick={() => scroll("right")}
+          className="shrink-0 w-7 min-h-[44px] flex items-center justify-center text-slate-500 hover:text-[#3B6EF8] text-lg font-bold cursor-pointer transition-colors"
+          aria-label="Scroll right"
+        >
+          ›
+        </button>
+      </div>
     </div>
   );
 }

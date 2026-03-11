@@ -86,6 +86,31 @@ body {
   100% { transform: translate(30px, 20px) scale(1.08); }
 }
 
+/* ========== Question Nav Chips ========== */
+
+@keyframes chipFadeIn {
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes currentPop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.15); }
+  100% { transform: scale(1.08); }
+}
+
+.qnum-chip {
+  animation: chipFadeIn 0.2s ease both;
+  -webkit-tap-highlight-color: transparent;
+}
+.qnum-chip.scale-\[1\.08\] {
+  animation: chipFadeIn 0.2s ease both, currentPop 0.25s ease both;
+}
+
+/* Hide scrollbar inside the nav bar (webkit) */
+.qnav-bar-scroll::-webkit-scrollbar {
+  display: none;
+}
+
 /* ========== Animation Utilities ========== */
 
 .animate-float {
