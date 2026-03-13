@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  ArrowLeft, ArrowRight, Zap, Menu, Clock, Target,
+  ArrowLeft, ArrowRight, Zap, Menu, Target,
   CheckCircle2, XCircle, BarChart3, Flame,
   ChevronRight, RotateCcw, Lightbulb, Flag, X,
 } from "lucide-react";
@@ -15,7 +15,6 @@ import {
   type AlgebraQuestion,
   CONCEPTS,
 } from "@/lib/algebra-questions";
-import { generateAIBatch } from "@/lib/ai-generator";
 
 /* ── Types ──────────────────────────────────────────────── */
 
@@ -310,7 +309,7 @@ function QuestionNavigator({
 
   return (
     <>
-      <div className="sticky top-[4.25rem] z-40 mb-5 space-y-3 rounded-2xl border border-slate-200 bg-white/95 p-3 shadow-[0_8px_24px_rgba(15,23,42,0.08)] backdrop-blur">
+      <div className="mb-5 space-y-3 rounded-2xl border border-slate-200 bg-white/95 p-3 shadow-[0_8px_24px_rgba(15,23,42,0.08)] backdrop-blur">
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           <button
             onClick={onFirst}
@@ -508,6 +507,7 @@ export default function QuizEngine() {
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [conceptFilter, setConceptFilter] = useState<string>("all");
   const [started, setStarted] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const touchStartXRef = useRef<number | null>(null);
   const touchStartYRef = useRef<number | null>(null);
 
@@ -534,18 +534,12 @@ export default function QuizEngine() {
         pool = [...algebraQuestions];
         break;
       case "ai-challenge":
-        pool = generateAIBatch(shuffle(algebraQuestions), 50);
+        pool = [...algebraQuestions];
         break;
       case "mixed":
       default:
         pool = shuffle([...algebraQuestions]);
         break;
-    }
-
-    // Filter by adaptive difficulty
-    if (mode !== "ai-challenge") {
-      const filtered = pool.filter((q) => q.difficulty === difficulty);
-      pool = filtered.length >= 5 ? filtered : pool;
     }
 
     setQuestions(shuffle(pool));
@@ -561,7 +555,8 @@ export default function QuizEngine() {
     setStreak(0);
     setShowAnalytics(false);
     setStarted(false);
-  }, [mode, difficulty, conceptFilter]);
+    setSubmitError("");
+  }, [mode, conceptFilter]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
   /* ── Timer ── */
@@ -586,34 +581,12 @@ export default function QuizEngine() {
     }, 1000);
   }, [maxTime, stopTimer]);
 
-  const handleTimeout = useCallback(() => {
-    if (!currentQ) return;
-    setIsAnswered(true);
-    stopTimer();
-    const timeTaken = Math.max(1, maxTime - timeLeft);
-    setStreak(0);
-    setResults((prev) => [
-      ...prev,
-      {
-        questionId: currentQ.id,
-        questionIndex: currentIndex,
-        selected: null,
-        correct: currentQ.correctAnswer,
-        isCorrect: false,
-        timeTaken,
-        concept: currentQ.concept,
-        difficulty: currentQ.difficulty,
-      },
-    ]);
-  }, [currentIndex, currentQ, maxTime, stopTimer, timeLeft]);
-
-  // Auto-lock when timer hits 0
+  // Stop timer at 0 but do not auto-submit or reveal answers.
   useEffect(() => {
-    if (timeLeft === 0 && !isAnswered && started) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      handleTimeout();
+    if (timeLeft === 0) {
+      stopTimer();
     }
-  }, [handleTimeout, isAnswered, started, timeLeft]);
+  }, [stopTimer, timeLeft]);
 
   // Cleanup timer on unmount
   useEffect(() => () => stopTimer(), [stopTimer]);
@@ -636,11 +609,13 @@ export default function QuizEngine() {
       if (existing) {
         setSelectedAnswer(existing.selected);
         setIsAnswered(true);
+        setSubmitError("");
         return;
       }
 
       setSelectedAnswer(null);
       setIsAnswered(false);
+      setSubmitError("");
       if (started && !showAnalytics) {
         startTimer();
       }
@@ -707,12 +682,25 @@ export default function QuizEngine() {
 
   const handleSelectAnswer = useCallback((index: number) => {
     if (isAnswered || !currentQ) return;
+    if (index < 0 || index >= currentQ.options.length) return;
+
     setSelectedAnswer(index);
+    setSubmitError("");
+  }, [currentQ, isAnswered]);
+
+  const handleSubmitAnswer = useCallback(() => {
+    if (isAnswered || !currentQ || selectedAnswer === null) {
+      if (!isAnswered && selectedAnswer === null) {
+        setSubmitError("Select an option before submitting.");
+      }
+      return;
+    }
+
     setIsAnswered(true);
     stopTimer();
 
     const timeTaken = Math.max(1, maxTime - timeLeft);
-    const isCorrect = index === currentQ.correctAnswer;
+    const isCorrect = selectedAnswer === currentQ.correctAnswer;
 
     if (isCorrect) {
       setStreak((s) => {
@@ -729,7 +717,7 @@ export default function QuizEngine() {
       {
         questionId: currentQ.id,
         questionIndex: currentIndex,
-        selected: index,
+        selected: selectedAnswer,
         correct: currentQ.correctAnswer,
         isCorrect,
         timeTaken,
@@ -742,10 +730,8 @@ export default function QuizEngine() {
       next.add(currentIndex);
       return next;
     });
-
-    // Adaptive difficulty
-    adaptDifficulty(isCorrect);
-  }, [adaptDifficulty, currentIndex, currentQ, isAnswered, maxTime, stopTimer, timeLeft]);
+    setSubmitError("");
+  }, [currentIndex, currentQ, isAnswered, maxTime, selectedAnswer, stopTimer, timeLeft]);
 
   function handleNext() {
     if (currentIndex < questions.length - 1) {
@@ -771,6 +757,7 @@ export default function QuizEngine() {
     setBestStreak(0);
     setShowAnalytics(false);
     setStarted(false);
+    setSubmitError("");
   }
 
   useEffect(() => {
@@ -860,11 +847,11 @@ export default function QuizEngine() {
   /* ── Option style helper ── */
   function optionClass(index: number) {
     const base =
-      "w-full text-left px-5 py-4 rounded-xl border transition-all duration-300 cursor-pointer";
+      "w-full text-left px-5 py-4 rounded-md border transition-all duration-300 cursor-pointer";
     if (!isAnswered) {
       if (selectedAnswer === index)
-        return `${base} border-cyan-400/40 bg-cyan-500/10 text-[var(--text-primary)]`;
-      return `${base} border-white/30 bg-white/10 text-slate-600 hover:border-white/45 hover:bg-white/18`;
+        return `${base} border-cyan-500/60 bg-cyan-500/10 text-[var(--text-primary)] shadow-[0_10px_24px_rgba(34,211,238,0.15)]`;
+      return `${base} border-white/30 bg-white/10 text-slate-600 hover:border-cyan-300/60 hover:bg-white/18`;
     }
     // After answering
     if (index === currentQ!.correctAnswer)
@@ -1260,11 +1247,18 @@ export default function QuizEngine() {
           {/* Options */}
           <div className="space-y-3">
             {currentQ.options.map((opt, i) => (
-              <button
+              <motion.button
                 key={i}
                 onClick={() => handleSelectAnswer(i)}
                 disabled={isAnswered}
                 className={optionClass(i)}
+                whileTap={!isAnswered ? { scale: 0.985 } : undefined}
+                animate={
+                  !isAnswered && selectedAnswer === i
+                    ? { scale: 1.015, y: -1 }
+                    : { scale: 1, y: 0 }
+                }
+                transition={{ type: "spring", stiffness: 320, damping: 24 }}
               >
                 <div className="flex items-center gap-3">
                   <span
@@ -1288,10 +1282,40 @@ export default function QuizEngine() {
                       <XCircle className="w-4 h-4 text-red-500 ml-auto shrink-0" />
                     )}
                 </div>
-              </button>
+              </motion.button>
             ))}
           </div>
+
+          {!isAnswered && (
+            <div className="mt-5 flex flex-col items-center gap-2">
+              <button
+                type="button"
+                onClick={handleSubmitAnswer}
+                className="btn-glow px-6 py-3 rounded-xl font-semibold flex items-center gap-2 cursor-pointer"
+              >
+                Submit Answer
+              </button>
+              {submitError && (
+                <p className="text-sm text-red-500">{submitError}</p>
+              )}
+            </div>
+          )}
         </div>
+
+        {/* Correct/Wrong status */}
+        {isAnswered && (
+          <div className="glass-card rounded-2xl p-4 mb-4 animate-fade-in-up">
+            {selectedAnswer === currentQ.correctAnswer ? (
+              <p className="text-emerald-600 font-semibold flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4" /> You are correct.
+              </p>
+            ) : (
+              <p className="text-red-500 font-semibold flex items-center gap-2">
+                <XCircle className="w-4 h-4" /> You are wrong.
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Solution panel */}
         {isAnswered && (
@@ -1309,11 +1333,6 @@ export default function QuizEngine() {
               {currentQ.concept} · <span className="text-slate-600 font-medium">Formula:</span>{" "}
               {currentQ.formula}
             </p>
-            {selectedAnswer === null && (
-              <p className="text-xs text-red-500 mt-2 flex items-center gap-1">
-                <Clock className="w-3 h-3" /> Time expired — question was skipped.
-              </p>
-            )}
           </div>
         )}
 
