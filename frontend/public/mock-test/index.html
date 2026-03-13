@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mock Test Navigation</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="app-shell" aria-label="Mock test container">
+    <header class="app-header">
+      <div>
+        <h1>Mock Test</h1>
+        <p class="muted">State-driven navigation for 377 questions</p>
+      </div>
+      <div id="questionCounter" class="counter" aria-live="polite">Question 1 / 377</div>
+    </header>
+
+    <section class="toolbar" aria-label="Question tools">
+      <form id="jumpForm" class="jump-form" novalidate>
+        <label for="jumpInput">Jump to question</label>
+        <div class="jump-input-row">
+          <input id="jumpInput" name="jumpInput" type="number" min="1" max="377" inputmode="numeric" placeholder="1-377" />
+          <button type="submit">Go</button>
+        </div>
+        <p id="jumpMessage" class="message" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <section class="palette-section" aria-label="Question palette">
+      <div id="questionPalette" class="question-palette" role="listbox" aria-label="Question numbers"></div>
+    </section>
+
+    <section id="questionCard" class="question-card" aria-label="Active question">
+      <p id="questionMeta" class="question-meta"></p>
+      <h2 id="questionText" class="question-text"></h2>
+      <div id="optionsList" class="options-list" role="radiogroup" aria-label="Answer options"></div>
+      <p class="hint">Keyboard: Left/Right arrows for navigation, 1-4 to select options.</p>
+      <p class="hint">Mobile: Swipe left/right on this card to move between questions.</p>
+    </section>
+
+    <nav class="pager" aria-label="Question navigation">
+      <button id="previousBtn" type="button" class="secondary">Previous</button>
+      <button id="nextBtn" type="button">Next</button>
+    </nav>
+  </main>
+
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
