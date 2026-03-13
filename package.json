@@ -17,6 +17,10 @@
     "cheerio": "^1.2.0",
     "cors": "^2.8.6",
     "express": "^5.2.1",
-    "mongodb": "^7.1.0"
+    "mongodb": "^7.1.0",
+    "react-window": "^1.8.9"
+  },
+  "devDependencies": {
+    "@types/react-window": "^1.8.8"
   }
 }

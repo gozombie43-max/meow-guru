@@ -3,10 +3,12 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { AnimatePresence, motion } from "framer-motion";
+import { FixedSizeGrid, FixedSizeList, type GridChildComponentProps, type CellComponentProps } from "react-window";
 import {
   ArrowLeft, ArrowRight, Zap, Menu, Clock, Target,
-  Trophy, CheckCircle2, XCircle, BarChart3, Flame,
-  ChevronRight, ChevronLeft, RotateCcw, Lightbulb,
+  CheckCircle2, XCircle, BarChart3, Flame,
+  ChevronRight, RotateCcw, Lightbulb, Flag, X,
 } from "lucide-react";
 import {
   algebraQuestions,
@@ -147,210 +149,335 @@ function MathText({ text, className = "" }: { text: string; className?: string }
   return <span className={className}>{parts}</span>;
 }
 
-/* ── Question Navigator ────────────────────────────────── *
- * Enhanced nav bar with:
- *  - Jump shortcuts: First / Mid / Last
- *  - Scrollable number chips with hidden scrollbar
- *  - Visual states: current (blue), correct (green), wrong (red),
- *    skipped/timeout (amber), unattempted (gray)
- *  - Auto-scroll to keep current chip centred
- *  - Left / Right arrow buttons for manual scrolling
+/* ── Question Navigator (Virtualized + Mobile) ─────────── *
+ *  - Sticky two-row navigation
+ *  - React Window virtualization for quick strip and palette
+ *  - Framer Motion full-screen palette modal
  * ──────────────────────────────────────────────────────────── */
+
+type QuestionStatus = "current" | "review" | "answered" | "not-answered";
+
+function getQuestionStatus({
+  index,
+  currentIndex,
+  answeredQuestions,
+  markedForReview,
+}: {
+  index: number;
+  currentIndex: number;
+  answeredQuestions: Set<number>;
+  markedForReview: Set<number>;
+}): QuestionStatus {
+  if (index === currentIndex) return "current";
+  if (markedForReview.has(index)) return "review";
+  if (answeredQuestions.has(index)) return "answered";
+  return "not-answered";
+}
+
+function statusClasses(status: QuestionStatus) {
+  const base = "border transition-all duration-200";
+  if (status === "current") return `${base} bg-blue-600 text-white border-blue-600 shadow-sm shadow-blue-400/40`;
+  if (status === "review") return `${base} bg-orange-100 text-orange-700 border-orange-300`;
+  if (status === "answered") return `${base} bg-emerald-100 text-emerald-700 border-emerald-300`;
+  return `${base} bg-slate-100 text-slate-700 border-slate-300`;
+}
+
+function QuestionPaletteModal({
+  isOpen,
+  total,
+  currentIndex,
+  answeredQuestions,
+  markedForReview,
+  onClose,
+  onGoToQuestion,
+}: {
+  isOpen: boolean;
+  total: number;
+  currentIndex: number;
+  answeredQuestions: Set<number>;
+  markedForReview: Set<number>;
+  onClose: () => void;
+  onGoToQuestion: (questionNumber: number) => void;
+}) {
+  const [viewport, setViewport] = useState({ width: 360, height: 640 });
+
+  useEffect(() => {
+    function syncViewport() {
+      setViewport({ width: window.innerWidth, height: window.innerHeight });
+    }
+    syncViewport();
+    window.addEventListener("resize", syncViewport);
+    return () => window.removeEventListener("resize", syncViewport);
+  }, []);
+
+  const columns = viewport.width >= 1200 ? 10 : viewport.width >= 768 ? 9 : 8;
+  const gap = 8;
+  const horizontalPadding = 16;
+  const gridWidth = Math.max(300, viewport.width - horizontalPadding * 2);
+  const cellSize = Math.max(44, Math.floor((gridWidth - gap * (columns - 1)) / columns));
+  const rowCount = Math.ceil(total / columns);
+  const gridHeight = Math.max(260, viewport.height - 112);
+
+  const Cell = ({ columnIndex, rowIndex, style }: GridChildComponentProps) => {
+    const index = rowIndex * columns + columnIndex;
+    if (index >= total) return null;
+    const status = getQuestionStatus({
+      index,
+      currentIndex,
+      answeredQuestions,
+      markedForReview,
+    });
+
+    return (
+      <div
+        style={{
+          ...style,
+          left: Number(style.left) + gap / 2,
+          top: Number(style.top) + gap / 2,
+          width: Number(style.width) - gap,
+          height: Number(style.height) - gap,
+        }}
+      >
+        <button
+          onClick={() => {
+            onGoToQuestion(index + 1);
+            onClose();
+          }}
+          className={`w-full h-full min-h-12 rounded-xl text-sm font-semibold ${statusClasses(status)}`}
+        >
+          {index + 1}
+        </button>
+      </div>
+    );
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          className="fixed inset-0 z-[90] bg-slate-900/45 backdrop-blur-sm"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          <motion.div
+            className="h-full w-full bg-white/95 p-4"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 20, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-base font-semibold text-slate-800">Question Palette</h3>
+              <button
+                onClick={onClose}
+                className="h-12 min-w-12 rounded-xl border border-slate-300 bg-white text-slate-700 shadow-sm"
+                aria-label="Close question palette"
+              >
+                <X className="mx-auto h-5 w-5" />
+              </button>
+            </div>
+            <div className="mb-3 flex gap-2 text-xs text-slate-600">
+              <span className="rounded-md border border-blue-300 bg-blue-100 px-2 py-1">Current</span>
+              <span className="rounded-md border border-emerald-300 bg-emerald-100 px-2 py-1">Answered</span>
+              <span className="rounded-md border border-orange-300 bg-orange-100 px-2 py-1">Review</span>
+              <span className="rounded-md border border-slate-300 bg-slate-100 px-2 py-1">Not Answered</span>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-white p-1 shadow-sm">
+              <FixedSizeGrid
+                columnCount={columns}
+                columnWidth={cellSize}
+                rowCount={rowCount}
+                rowHeight={cellSize}
+                width={gridWidth}
+                height={gridHeight}
+              >
+                {Cell}
+              </FixedSizeGrid>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
 
 function QuestionNavigator({
   total,
   currentIndex,
-  results,
-  onJump,
+  answeredQuestions,
+  markedForReview,
+  jumpValue,
+  jumpError,
+  onJumpValueChange,
+  onJumpSubmit,
+  onGoToQuestion,
+  onFirst,
   onPrevious,
   onNext,
+  onLast,
+  onOpenPalette,
+  onClosePalette,
+  isPaletteOpen,
+  onToggleReview,
 }: {
   total: number;
   currentIndex: number;
-  results: SessionResult[];
-  onJump: (index: number) => void;
+  answeredQuestions: Set<number>;
+  markedForReview: Set<number>;
+  jumpValue: string;
+  jumpError: string;
+  onJumpValueChange: (value: string) => void;
+  onJumpSubmit: () => void;
+  onGoToQuestion: (questionNumber: number) => void;
+  onFirst: () => void;
   onPrevious: () => void;
   onNext: () => void;
+  onLast: () => void;
+  onOpenPalette: () => void;
+  onClosePalette: () => void;
+  isPaletteOpen: boolean;
+  onToggleReview: () => void;
 }) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const chipRefs = useRef<(HTMLButtonElement | null)[]>([]);
-  const [jumpValue, setJumpValue] = useState(String(currentIndex + 1));
-  const [jumpError, setJumpError] = useState("");
+  const stripRef = useRef<FixedSizeList>(null);
+  const stripOuterRef = useRef<HTMLDivElement>(null);
+  const [stripWidth, setStripWidth] = useState(300);
+  const itemSize = 56;
 
   useEffect(() => {
-    setJumpValue(String(currentIndex + 1));
-    setJumpError("");
-  }, [currentIndex]);
-
-  /* ── Status map ── */
-  const statusMap = useMemo(() => {
-    const map: Record<number, "correct" | "wrong" | "skipped"> = {};
-    for (const r of results) {
-      const idx = r.questionIndex;
-      if (r.isCorrect) map[idx] = "correct";
-      else if (r.selected === null) map[idx] = "skipped";
-      else map[idx] = "wrong";
+    function syncStripWidth() {
+      setStripWidth(Math.max(220, Math.min(window.innerWidth - 64, 920)));
     }
-    return map;
-  }, [results]);
+    syncStripWidth();
+    window.addEventListener("resize", syncStripWidth);
+    return () => window.removeEventListener("resize", syncStripWidth);
+  }, []);
 
-  /* ── Auto-scroll current chip into view ── */
   useEffect(() => {
-    const chip = chipRefs.current[currentIndex];
-    if (chip && scrollRef.current) {
-      const bar = scrollRef.current;
-      const offset =
-        chip.offsetLeft - bar.offsetLeft - bar.clientWidth / 2 + chip.clientWidth / 2;
-      bar.scrollTo({ left: offset, behavior: "smooth" });
-    }
+    const viewport = stripOuterRef.current;
+    if (!viewport) return;
+    const target = Math.max(0, currentIndex * itemSize - viewport.clientWidth / 2 + itemSize / 2);
+    viewport.scrollTo({ left: target, behavior: "smooth" });
   }, [currentIndex]);
 
-  /* ── Manual scroll arrows ── */
-  function scroll(dir: "left" | "right") {
-    scrollRef.current?.scrollBy({
-      left: dir === "left" ? -160 : 160,
-      behavior: "smooth",
+  const QuickItem = ({ index, style }: ListChildComponentProps) => {
+    const status = getQuestionStatus({
+      index,
+      currentIndex,
+      answeredQuestions,
+      markedForReview,
     });
-  }
 
-  /* ── Chip class by state ── */
-  function chipClass(idx: number) {
-    const base =
-      "qnum-chip shrink-0 w-9 h-9 rounded-[9px] text-[0.82rem] font-bold inline-flex items-center justify-center cursor-pointer border-[1.5px] transition-all duration-150 select-none";
-
-    if (idx === currentIndex)
-      return `${base} bg-[#3B6EF8] text-white border-[#3B6EF8] shadow-[0_2px_10px_rgba(59,110,248,0.35)] scale-[1.08]`;
-
-    const status = statusMap[idx];
-    if (status === "correct")
-      return `${base} bg-emerald-50 text-emerald-600 border-emerald-300`;
-    if (status === "wrong")
-      return `${base} bg-red-50 text-red-600 border-red-300`;
-    if (status === "skipped")
-      return `${base} bg-amber-50 text-amber-600 border-amber-300`;
-
-    // unattempted
-    return `${base} bg-[#F5F5F5] text-[#555] border-[#E0E0E0] hover:bg-indigo-50 hover:border-[#3B6EF8] hover:text-[#3B6EF8]`;
-  }
+    return (
+      <div style={{ ...style, padding: 4, scrollSnapAlign: "center" }}>
+        <button
+          onClick={() => onGoToQuestion(index + 1)}
+          className={`h-12 w-12 min-h-12 min-w-12 rounded-xl text-sm font-semibold ${statusClasses(status)}`}
+          aria-label={`Question ${index + 1}`}
+        >
+          {index + 1}
+        </button>
+      </div>
+    );
+  };
 
   return (
-    <div className="mb-5 space-y-1.5">
-      <div className="glass rounded-xl px-3 py-2.5 flex flex-wrap items-center gap-2">
-        <button
-          onClick={onPrevious}
-          disabled={currentIndex === 0}
-          className="shrink-0 px-3 py-1.5 rounded-lg border-[1.5px] border-[#E0E0E0] bg-white text-[#444] text-[0.78rem] font-semibold cursor-pointer whitespace-nowrap transition-all duration-150 hover:bg-indigo-50 hover:border-[#3B6EF8] hover:text-[#3B6EF8] disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <ChevronLeft className="w-3.5 h-3.5 inline-block mr-1" /> Previous
-        </button>
-
-        <form
-          onSubmit={(event) => {
-            event.preventDefault();
-            const parsed = Number.parseInt(jumpValue, 10);
-            if (Number.isNaN(parsed) || parsed < 1 || parsed > total) {
-              setJumpError(`Enter 1 to ${total}`);
-              return;
-            }
-            setJumpError("");
-            onJump(parsed - 1);
-          }}
-          className="flex items-center gap-1.5"
-        >
-          <label htmlFor="jump-to-question" className="text-[0.76rem] font-semibold text-slate-500">
-            Jump
-          </label>
-          <input
-            id="jump-to-question"
-            inputMode="numeric"
-            value={jumpValue}
-            onChange={(e) => setJumpValue(e.target.value)}
-            className="w-[76px] px-2 py-1.5 rounded-lg border border-[#E0E0E0] bg-white text-[#333] text-[0.78rem] outline-none focus:border-[#3B6EF8]"
-            aria-label="Jump to question number"
-          />
+    <>
+      <div className="sticky top-[4.25rem] z-40 mb-5 space-y-3 rounded-2xl border border-slate-200 bg-white/95 p-3 shadow-[0_8px_24px_rgba(15,23,42,0.08)] backdrop-blur">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           <button
-            type="submit"
-            className="px-2.5 py-1.5 rounded-lg border border-[#3B6EF8] bg-[#3B6EF8] text-white text-[0.76rem] font-semibold"
+            onClick={onFirst}
+            disabled={currentIndex === 0}
+            className="h-12 rounded-xl border border-slate-300 bg-white text-sm font-semibold text-slate-700 shadow-sm transition-all duration-200 disabled:opacity-50"
           >
-            Go
+            First
           </button>
-          {jumpError && <span className="text-[0.72rem] text-red-500 ml-1">{jumpError}</span>}
-        </form>
+          <button
+            onClick={onPrevious}
+            disabled={currentIndex === 0}
+            className="h-12 rounded-xl border border-slate-300 bg-white text-sm font-semibold text-slate-700 shadow-sm transition-all duration-200 disabled:opacity-50"
+          >
+            Previous
+          </button>
 
-        <button
-          onClick={onNext}
-          disabled={currentIndex === total - 1}
-          className="ml-auto shrink-0 px-3 py-1.5 rounded-lg border-[1.5px] border-[#E0E0E0] bg-white text-[#444] text-[0.78rem] font-semibold cursor-pointer whitespace-nowrap transition-all duration-150 hover:bg-indigo-50 hover:border-[#3B6EF8] hover:text-[#3B6EF8] disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Next <ChevronRight className="w-3.5 h-3.5 inline-block ml-1" />
-        </button>
-      </div>
-
-      {/* ── Jump shortcuts row ── */}
-      <div className="flex items-center gap-2 px-1 flex-nowrap overflow-hidden">
-        <button
-          onClick={() => onJump(0)}
-          className="shrink-0 px-3 py-1.5 rounded-full border-[1.5px] border-[#E0E0E0] bg-[#FAFAFA] text-[#444] text-[0.78rem] font-semibold cursor-pointer whitespace-nowrap transition-all duration-150 hover:bg-[#3B6EF8] hover:border-[#3B6EF8] hover:text-white active:scale-95"
-        >
-          ⏮ First
-        </button>
-        <button
-          onClick={() => onJump(Math.floor(total / 2))}
-          className="shrink-0 px-3 py-1.5 rounded-full border-[1.5px] border-[#E0E0E0] bg-[#FAFAFA] text-[#444] text-[0.78rem] font-semibold cursor-pointer whitespace-nowrap transition-all duration-150 hover:bg-[#3B6EF8] hover:border-[#3B6EF8] hover:text-white active:scale-95"
-        >
-          ⬛ Mid
-        </button>
-        <button
-          onClick={() => onJump(total - 1)}
-          className="shrink-0 px-3 py-1.5 rounded-full border-[1.5px] border-[#E0E0E0] bg-[#FAFAFA] text-[#444] text-[0.78rem] font-semibold cursor-pointer whitespace-nowrap transition-all duration-150 hover:bg-[#3B6EF8] hover:border-[#3B6EF8] hover:text-white active:scale-95"
-        >
-          Last ⏭
-        </button>
-        <span className="ml-auto shrink-0 text-[0.8rem] font-semibold text-slate-400 whitespace-nowrap">
-          Q {currentIndex + 1} / {total}
-        </span>
-      </div>
-
-      {/* ── Scrollable number bar ── */}
-      <div className="glass rounded-xl flex items-center gap-0">
-        {/* Left arrow */}
-        <button
-          onClick={() => scroll("left")}
-          className="shrink-0 w-7 min-h-[44px] flex items-center justify-center text-slate-500 hover:text-[#3B6EF8] text-lg font-bold cursor-pointer transition-colors"
-          aria-label="Scroll left"
-        >
-          ‹
-        </button>
-
-        {/* Chips */}
-        <div
-          ref={scrollRef}
-          className="qnav-bar-scroll flex items-center gap-1.5 overflow-x-auto flex-1 py-2 px-1.5"
-          style={{ scrollBehavior: "smooth", scrollbarWidth: "none", msOverflowStyle: "none" }}
-        >
-          {Array.from({ length: total }, (_, i) => (
+          <div className="col-span-2 grid grid-cols-[1fr_auto] gap-2 sm:col-span-1">
+            <input
+              value={jumpValue}
+              inputMode="numeric"
+              onChange={(event) => onJumpValueChange(event.target.value)}
+              placeholder={`1-${total}`}
+              className="h-12 rounded-xl border border-slate-300 px-3 text-sm text-slate-700 outline-none focus:border-blue-500"
+              aria-label="Jump to question"
+            />
             <button
-              key={i}
-              ref={(el) => { chipRefs.current[i] = el; }}
-              onClick={() => onJump(i)}
-              className={chipClass(i)}
-              style={{ animationDelay: `${Math.min(i * 8, 300)}ms` }}
+              onClick={onJumpSubmit}
+              className="h-12 min-w-12 rounded-xl border border-blue-600 bg-blue-600 px-3 text-sm font-semibold text-white shadow-sm"
             >
-              {i + 1}
+              Go
             </button>
-          ))}
-        </div>
+          </div>
 
-        {/* Right arrow */}
-        <button
-          onClick={() => scroll("right")}
-          className="shrink-0 w-7 min-h-[44px] flex items-center justify-center text-slate-500 hover:text-[#3B6EF8] text-lg font-bold cursor-pointer transition-colors"
-          aria-label="Scroll right"
-        >
-          ›
-        </button>
+          <button
+            onClick={onNext}
+            disabled={currentIndex === total - 1}
+            className="h-12 rounded-xl border border-slate-300 bg-white text-sm font-semibold text-slate-700 shadow-sm transition-all duration-200 disabled:opacity-50"
+          >
+            Next
+          </button>
+          <button
+            onClick={onLast}
+            disabled={currentIndex === total - 1}
+            className="h-12 rounded-xl border border-slate-300 bg-white text-sm font-semibold text-slate-700 shadow-sm transition-all duration-200 disabled:opacity-50"
+          >
+            Last
+          </button>
+          <button
+            onClick={onToggleReview}
+            className={`h-12 rounded-xl border text-sm font-semibold shadow-sm ${markedForReview.has(currentIndex)
+              ? "border-orange-400 bg-orange-100 text-orange-700"
+              : "border-slate-300 bg-white text-slate-700"}`}
+          >
+            <span className="inline-flex items-center gap-1.5">
+              <Flag className="h-4 w-4" /> Review
+            </span>
+          </button>
+          <button
+            onClick={onOpenPalette}
+            className="col-span-2 h-12 rounded-xl border border-slate-300 bg-slate-900 text-sm font-semibold text-white shadow-sm sm:col-span-1"
+          >
+            Open Question Palette
+          </button>
+        </div>
+        {jumpError && <p className="text-xs font-medium text-red-500">{jumpError}</p>}
+
+        <div className="rounded-xl border border-slate-200 bg-slate-50 px-1 py-1.5">
+          <FixedSizeList
+            ref={stripRef}
+            outerRef={stripOuterRef}
+            layout="horizontal"
+            height={56}
+            width={stripWidth}
+            itemCount={total}
+            itemSize={itemSize}
+            className="mx-auto"
+            style={{ scrollSnapType: "x mandatory" }}
+          >
+            {QuickItem}
+          </FixedSizeList>
+        </div>
       </div>
-    </div>
+
+      <QuestionPaletteModal
+        isOpen={isPaletteOpen}
+        total={total}
+        currentIndex={currentIndex}
+        answeredQuestions={answeredQuestions}
+        markedForReview={markedForReview}
+        onClose={onClosePalette}
+        onGoToQuestion={onGoToQuestion}
+      />
+    </>
   );
 }
 
@@ -437,6 +564,11 @@ export default function QuizEngine() {
   const [bestStreak, setBestStreak] = useState(0);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [results, setResults] = useState<SessionResult[]>([]);
+  const [answeredQuestions, setAnsweredQuestions] = useState<Set<number>>(new Set());
+  const [markedForReview, setMarkedForReview] = useState<Set<number>>(new Set());
+  const [jumpValue, setJumpValue] = useState("1");
+  const [jumpError, setJumpError] = useState("");
+  const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [conceptFilter, setConceptFilter] = useState<string>("all");
   const [started, setStarted] = useState(false);
   const touchStartXRef = useRef<number | null>(null);
@@ -445,11 +577,12 @@ export default function QuizEngine() {
   /* Timer state */
   const [timeLeft, setTimeLeft] = useState(60);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const questionStartRef = useRef<number>(Date.now());
 
   const maxTime = miniMode ? 20 : 60;
+  const currentQ = questions[currentIndex] as AlgebraQuestion | undefined;
 
   /* ── Build question set ── */
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     let pool: AlgebraQuestion[];
 
@@ -483,10 +616,16 @@ export default function QuizEngine() {
     setSelectedAnswer(null);
     setIsAnswered(false);
     setResults([]);
+    setAnsweredQuestions(new Set());
+    setMarkedForReview(new Set());
+    setJumpValue("1");
+    setJumpError("");
+    setIsPaletteOpen(false);
     setStreak(0);
     setShowAnalytics(false);
     setStarted(false);
-  }, [mode, difficulty, conceptFilter]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [mode, difficulty, conceptFilter]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   /* ── Timer ── */
   const stopTimer = useCallback(() => {
@@ -499,7 +638,6 @@ export default function QuizEngine() {
   const startTimer = useCallback(() => {
     stopTimer();
     setTimeLeft(maxTime);
-    questionStartRef.current = Date.now();
     timerRef.current = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
@@ -511,30 +649,11 @@ export default function QuizEngine() {
     }, 1000);
   }, [maxTime, stopTimer]);
 
-  // Auto-lock when timer hits 0
-  useEffect(() => {
-    if (timeLeft === 0 && !isAnswered && started) {
-      handleTimeout();
-    }
-  }, [timeLeft]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Cleanup timer on unmount
-  useEffect(() => () => stopTimer(), [stopTimer]);
-
-  /* ── Current question ── */
-  const currentQ = questions[currentIndex] as AlgebraQuestion | undefined;
-
-  /* ── Handlers ── */
-  function handleStart() {
-    setStarted(true);
-    startTimer();
-  }
-
-  function handleTimeout() {
+  const handleTimeout = useCallback(() => {
     if (!currentQ) return;
     setIsAnswered(true);
     stopTimer();
-    const timeTaken = Math.round((Date.now() - questionStartRef.current) / 1000);
+    const timeTaken = Math.max(1, maxTime - timeLeft);
     setStreak(0);
     setResults((prev) => [
       ...prev,
@@ -549,6 +668,23 @@ export default function QuizEngine() {
         difficulty: currentQ.difficulty,
       },
     ]);
+  }, [currentIndex, currentQ, maxTime, stopTimer, timeLeft]);
+
+  // Auto-lock when timer hits 0
+  useEffect(() => {
+    if (timeLeft === 0 && !isAnswered && started) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      handleTimeout();
+    }
+  }, [handleTimeout, isAnswered, started, timeLeft]);
+
+  // Cleanup timer on unmount
+  useEffect(() => () => stopTimer(), [stopTimer]);
+
+  /* ── Handlers ── */
+  function handleStart() {
+    setStarted(true);
+    startTimer();
   }
 
   const showQuestion = useCallback(
@@ -575,13 +711,70 @@ export default function QuizEngine() {
     [questions.length, results, showAnalytics, startTimer, started, stopTimer],
   );
 
-  function handleSelectAnswer(index: number) {
+  const goToQuestion = useCallback((questionNumber: number) => {
+    if (questions.length === 0) return;
+    const safeNumber = Math.max(1, Math.min(questionNumber, questions.length));
+    setJumpValue(String(safeNumber));
+    setJumpError("");
+    showQuestion(safeNumber - 1);
+  }, [questions.length, showQuestion]);
+
+  const nextQuestion = useCallback(() => {
+    goToQuestion(currentIndex + 2);
+  }, [currentIndex, goToQuestion]);
+
+  const previousQuestion = useCallback(() => {
+    goToQuestion(currentIndex);
+  }, [currentIndex, goToQuestion]);
+
+  const jumpToQuestion = useCallback(() => {
+    const parsed = Number.parseInt(jumpValue, 10);
+    if (Number.isNaN(parsed) || parsed < 1 || parsed > questions.length) {
+      setJumpError(`Enter 1 to ${questions.length}`);
+      return;
+    }
+    setJumpError("");
+    goToQuestion(parsed);
+  }, [goToQuestion, jumpValue, questions.length]);
+
+  const openPalette = useCallback(() => {
+    setIsPaletteOpen(true);
+  }, []);
+
+  const closePalette = useCallback(() => {
+    setIsPaletteOpen(false);
+  }, []);
+
+  const toggleReviewForCurrentQuestion = useCallback(() => {
+    setMarkedForReview((prev) => {
+      const next = new Set(prev);
+      if (next.has(currentIndex)) {
+        next.delete(currentIndex);
+      } else {
+        next.add(currentIndex);
+      }
+      return next;
+    });
+  }, [currentIndex]);
+
+  const adaptDifficulty = useCallback((correct: boolean) => {
+    const recent = [...results.slice(-4), { isCorrect: correct }];
+    const recentCorrect = recent.filter((r) => r.isCorrect).length;
+
+    if (recentCorrect >= 4 && difficulty !== "hard") {
+      setDifficulty((d) => (d === "easy" ? "medium" : "hard"));
+    } else if (recentCorrect <= 1 && difficulty !== "easy") {
+      setDifficulty((d) => (d === "hard" ? "medium" : "easy"));
+    }
+  }, [difficulty, results]);
+
+  const handleSelectAnswer = useCallback((index: number) => {
     if (isAnswered || !currentQ) return;
     setSelectedAnswer(index);
     setIsAnswered(true);
     stopTimer();
 
-    const timeTaken = Math.round((Date.now() - questionStartRef.current) / 1000);
+    const timeTaken = Math.max(1, maxTime - timeLeft);
     const isCorrect = index === currentQ.correctAnswer;
 
     if (isCorrect) {
@@ -607,21 +800,15 @@ export default function QuizEngine() {
         difficulty: currentQ.difficulty,
       },
     ]);
+    setAnsweredQuestions((prev) => {
+      const next = new Set(prev);
+      next.add(currentIndex);
+      return next;
+    });
 
     // Adaptive difficulty
     adaptDifficulty(isCorrect);
-  }
-
-  function adaptDifficulty(correct: boolean) {
-    const recent = [...results.slice(-4), { isCorrect: correct }];
-    const recentCorrect = recent.filter((r) => r.isCorrect).length;
-
-    if (recentCorrect >= 4 && difficulty !== "hard") {
-      setDifficulty((d) => (d === "easy" ? "medium" : "hard"));
-    } else if (recentCorrect <= 1 && difficulty !== "easy") {
-      setDifficulty((d) => (d === "hard" ? "medium" : "easy"));
-    }
-  }
+  }, [adaptDifficulty, currentIndex, currentQ, isAnswered, maxTime, stopTimer, timeLeft]);
 
   function handleNext() {
     if (currentIndex < questions.length - 1) {
@@ -632,17 +819,17 @@ export default function QuizEngine() {
     }
   }
 
-  function handleJumpTo(index: number) {
-    if (index === currentIndex) return;
-    showQuestion(index);
-  }
-
   function handleRestart() {
     setQuestions(shuffle([...questions]));
     setCurrentIndex(0);
     setSelectedAnswer(null);
     setIsAnswered(false);
     setResults([]);
+    setAnsweredQuestions(new Set());
+    setMarkedForReview(new Set());
+    setJumpValue("1");
+    setJumpError("");
+    closePalette();
     setStreak(0);
     setBestStreak(0);
     setShowAnalytics(false);
@@ -699,6 +886,7 @@ export default function QuizEngine() {
   }, [
     currentIndex,
     currentQ,
+    handleSelectAnswer,
     isAnswered,
     selectedAnswer,
     showAnalytics,
@@ -1040,10 +1228,21 @@ export default function QuizEngine() {
         <QuestionNavigator
           total={questions.length}
           currentIndex={currentIndex}
-          results={results}
-          onJump={handleJumpTo}
-          onPrevious={() => showQuestion(currentIndex - 1)}
-          onNext={() => showQuestion(currentIndex + 1)}
+          answeredQuestions={answeredQuestions}
+          markedForReview={markedForReview}
+          jumpValue={jumpValue}
+          jumpError={jumpError}
+          onJumpValueChange={setJumpValue}
+          onJumpSubmit={jumpToQuestion}
+          onGoToQuestion={goToQuestion}
+          onFirst={() => goToQuestion(1)}
+          onPrevious={previousQuestion}
+          onNext={nextQuestion}
+          onLast={() => goToQuestion(questions.length)}
+          onOpenPalette={openPalette}
+          onClosePalette={closePalette}
+          isPaletteOpen={isPaletteOpen}
+          onToggleReview={toggleReviewForCurrentQuestion}
         />
 
         {/* Stats bar */}
