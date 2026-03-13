@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { FixedSizeGrid, FixedSizeList, type GridChildComponentProps, type CellComponentProps } from "react-window";
 import {
   ArrowLeft, ArrowRight, Zap, Menu, Clock, Target,
   CheckCircle2, XCircle, BarChart3, Flame,
@@ -199,58 +198,6 @@ function QuestionPaletteModal({
   onClose: () => void;
   onGoToQuestion: (questionNumber: number) => void;
 }) {
-  const [viewport, setViewport] = useState({ width: 360, height: 640 });
-
-  useEffect(() => {
-    function syncViewport() {
-      setViewport({ width: window.innerWidth, height: window.innerHeight });
-    }
-    syncViewport();
-    window.addEventListener("resize", syncViewport);
-    return () => window.removeEventListener("resize", syncViewport);
-  }, []);
-
-  const columns = viewport.width >= 1200 ? 10 : viewport.width >= 768 ? 9 : 8;
-  const gap = 8;
-  const horizontalPadding = 16;
-  const gridWidth = Math.max(300, viewport.width - horizontalPadding * 2);
-  const cellSize = Math.max(44, Math.floor((gridWidth - gap * (columns - 1)) / columns));
-  const rowCount = Math.ceil(total / columns);
-  const gridHeight = Math.max(260, viewport.height - 112);
-
-  const Cell = ({ columnIndex, rowIndex, style }: GridChildComponentProps) => {
-    const index = rowIndex * columns + columnIndex;
-    if (index >= total) return null;
-    const status = getQuestionStatus({
-      index,
-      currentIndex,
-      answeredQuestions,
-      markedForReview,
-    });
-
-    return (
-      <div
-        style={{
-          ...style,
-          left: Number(style.left) + gap / 2,
-          top: Number(style.top) + gap / 2,
-          width: Number(style.width) - gap,
-          height: Number(style.height) - gap,
-        }}
-      >
-        <button
-          onClick={() => {
-            onGoToQuestion(index + 1);
-            onClose();
-          }}
-          className={`w-full h-full min-h-12 rounded-xl text-sm font-semibold ${statusClasses(status)}`}
-        >
-          {index + 1}
-        </button>
-      </div>
-    );
-  };
-
   return (
     <AnimatePresence>
       {isOpen && (
@@ -284,17 +231,30 @@ function QuestionPaletteModal({
               <span className="rounded-md border border-orange-300 bg-orange-100 px-2 py-1">Review</span>
               <span className="rounded-md border border-slate-300 bg-slate-100 px-2 py-1">Not Answered</span>
             </div>
-            <div className="rounded-2xl border border-slate-200 bg-white p-1 shadow-sm">
-              <FixedSizeGrid
-                columnCount={columns}
-                columnWidth={cellSize}
-                rowCount={rowCount}
-                rowHeight={cellSize}
-                width={gridWidth}
-                height={gridHeight}
-              >
-                {Cell}
-              </FixedSizeGrid>
+            <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+              <div className="question-grid question-grid--palette">
+                {Array.from({ length: total }, (_, index) => {
+                  const status = getQuestionStatus({
+                    index,
+                    currentIndex,
+                    answeredQuestions,
+                    markedForReview,
+                  });
+
+                  return (
+                    <button
+                      key={index}
+                      onClick={() => {
+                        onGoToQuestion(index + 1);
+                        onClose();
+                      }}
+                      className={`question-button min-h-12 rounded-xl text-sm font-semibold ${statusClasses(status)}`}
+                    >
+                      {index + 1}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </motion.div>
         </motion.div>
@@ -340,47 +300,13 @@ function QuestionNavigator({
   isPaletteOpen: boolean;
   onToggleReview: () => void;
 }) {
-  const stripRef = useRef<FixedSizeList>(null);
-  const stripOuterRef = useRef<HTMLDivElement>(null);
-  const [stripWidth, setStripWidth] = useState(300);
-  const itemSize = 56;
+  const quickButtonRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   useEffect(() => {
-    function syncStripWidth() {
-      setStripWidth(Math.max(220, Math.min(window.innerWidth - 64, 920)));
-    }
-    syncStripWidth();
-    window.addEventListener("resize", syncStripWidth);
-    return () => window.removeEventListener("resize", syncStripWidth);
-  }, []);
-
-  useEffect(() => {
-    const viewport = stripOuterRef.current;
-    if (!viewport) return;
-    const target = Math.max(0, currentIndex * itemSize - viewport.clientWidth / 2 + itemSize / 2);
-    viewport.scrollTo({ left: target, behavior: "smooth" });
+    const activeButton = quickButtonRefs.current[currentIndex];
+    if (!activeButton) return;
+    activeButton.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
   }, [currentIndex]);
-
-  const QuickItem = ({ index, style }: ListChildComponentProps) => {
-    const status = getQuestionStatus({
-      index,
-      currentIndex,
-      answeredQuestions,
-      markedForReview,
-    });
-
-    return (
-      <div style={{ ...style, padding: 4, scrollSnapAlign: "center" }}>
-        <button
-          onClick={() => onGoToQuestion(index + 1)}
-          className={`h-12 w-12 min-h-12 min-w-12 rounded-xl text-sm font-semibold ${statusClasses(status)}`}
-          aria-label={`Question ${index + 1}`}
-        >
-          {index + 1}
-        </button>
-      </div>
-    );
-  };
 
   return (
     <>
@@ -452,19 +378,30 @@ function QuestionNavigator({
         {jumpError && <p className="text-xs font-medium text-red-500">{jumpError}</p>}
 
         <div className="rounded-xl border border-slate-200 bg-slate-50 px-1 py-1.5">
-          <FixedSizeList
-            ref={stripRef}
-            outerRef={stripOuterRef}
-            layout="horizontal"
-            height={56}
-            width={stripWidth}
-            itemCount={total}
-            itemSize={itemSize}
-            className="mx-auto"
-            style={{ scrollSnapType: "x mandatory" }}
-          >
-            {QuickItem}
-          </FixedSizeList>
+          <div className="question-strip qnav-bar-scroll mx-auto" style={{ scrollSnapType: "x mandatory" }}>
+            {Array.from({ length: total }, (_, index) => {
+              const status = getQuestionStatus({
+                index,
+                currentIndex,
+                answeredQuestions,
+                markedForReview,
+              });
+
+              return (
+                <button
+                  key={index}
+                  ref={(element) => {
+                    quickButtonRefs.current[index] = element;
+                  }}
+                  onClick={() => onGoToQuestion(index + 1)}
+                  className={`qnum-chip h-12 w-12 min-h-12 min-w-12 rounded-xl text-sm font-semibold ${statusClasses(status)}`}
+                  aria-label={`Question ${index + 1}`}
+                >
+                  {index + 1}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 

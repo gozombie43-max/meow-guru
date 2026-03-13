@@ -106,6 +106,45 @@ body {
   animation: chipFadeIn 0.2s ease both, currentPop 0.25s ease both;
 }
 
+.question-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
+  gap: 8px;
+}
+
+.question-grid--palette {
+  max-height: min(70vh, 720px);
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.question-button {
+  height: 40px;
+  border-radius: 6px;
+  cursor: pointer;
+  min-height: 44px;
+}
+
+.question-strip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding: 4px;
+}
+
+.question-strip .qnum-chip {
+  scroll-snap-align: center;
+  flex: 0 0 auto;
+}
+
+@media (max-width: 640px) {
+  .question-grid {
+    grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
+  }
+}
+
 /* Hide scrollbar inside the nav bar (webkit) */
 .qnav-bar-scroll::-webkit-scrollbar {
   display: none;
