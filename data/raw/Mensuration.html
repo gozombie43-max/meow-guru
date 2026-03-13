@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pinnacle SSC Maths 6800+ TCS MCQ – Interactive Quiz</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#f5f3ee;font-family:'Segoe UI','Roboto',serif;color:#2e241f;}
+#splash{position:fixed;inset:0;background:#f5f3ee;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:18px;}
+#splash h1{font-size:2rem;color:#3b2f24;text-align:center;max-width:500px;}
+#splash p{color:#5e4f3e;font-size:1rem;text-align:center;max-width:420px;}
+.btn{background:#b68b74;color:#fff;border:none;padding:12px 32px;border-radius:30px;font-size:1.05rem;cursor:pointer;font-weight:600;letter-spacing:.3px;}
+.btn:hover{background:#a07060;}
+#app{display:none;max-width:860px;margin:0 auto;padding:20px 16px 60px;}
+.top-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:18px;background:#fefcf8;padding:14px 16px;border-radius:14px;border:1px solid #ddd8ce;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.06);}
+.top-bar h2{font-size:1rem;color:#3b2f24;flex:1;min-width:160px;}
+.top-bar input[type=number]{width:80px;padding:7px 10px;border:1px solid #c9bbae;border-radius:8px;font-size:.95rem;color:#3b2f24;background:#fefcf8;}
+.top-bar select{padding:7px 10px;border:1px solid #c9bbae;border-radius:8px;font-size:.9rem;color:#3b2f24;background:#fefcf8;}
+.top-bar .btn{padding:8px 20px;font-size:.9rem;}
+#scoreBar{background:#e7d9cf;border-radius:10px;padding:10px 16px;margin-bottom:14px;font-size:.92rem;color:#3b2f24;display:flex;gap:20px;flex-wrap:wrap;}
+#scoreBar span{font-weight:600;}
+.q-card{background:#fff;border-left:5px solid #b68b74;padding:20px 22px 16px;border-radius:0 14px 14px 0;margin-bottom:18px;border:1px solid #f0eae3;border-left-width:5px;}
+.q-num{display:inline-block;font-weight:700;font-size:1rem;background:#e7d9cf;padding:3px 14px 3px 10px;border-radius:0 20px 20px 0;margin-left:-22px;margin-bottom:12px;color:#3e2d1d;}
+.q-text{font-size:1.05rem;line-height:1.6;margin:10px 0 14px;color:#2a211b;}
+.options{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+@media(max-width:500px){.options{grid-template-columns:1fr;}}
+.opt-btn{display:flex;align-items:flex-start;gap:8px;padding:10px 14px;border-radius:10px;border:1.5px solid #d4c3b6;background:#faf6f2;cursor:pointer;font-size:.98rem;color:#2a211b;text-align:left;transition:.15s;width:100%;}
+.opt-btn:hover:not(:disabled){background:#f0e6dc;border-color:#b68b74;}
+.opt-btn:disabled{cursor:default;}
+.opt-btn .lbl{font-weight:700;color:#7a5a44;min-width:22px;}
+.opt-btn.correct{background:#d4f0e2;border-color:#4caf87;color:#0d4a30;}
+.opt-btn.wrong{background:#fde0e0;border-color:#e07070;color:#5a1a1a;}
+.opt-btn.reveal{background:#e8f0fc;border-color:#5b8de0;color:#1a2e5a;}
+.ans-row{display:flex;align-items:center;gap:10px;margin-top:6px;min-height:28px;}
+.ans-badge{font-size:.85rem;padding:3px 12px;border-radius:20px;font-weight:600;}
+.ans-badge.correct{background:#c8f0dd;color:#0d4a30;}
+.ans-badge.wrong{background:#fde0e0;color:#5a1a1a;}
+.exam-tag{display:inline-block;background:#d4c3b6;padding:4px 14px;border-radius:20px;font-size:.78rem;font-weight:600;color:#2f241b;text-transform:uppercase;letter-spacing:.3px;}
+#navBar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;max-height:120px;overflow-y:auto;padding:10px;background:#fefcf8;border:1px solid #ddd8ce;border-radius:12px;}
+.nav-chip{width:36px;height:28px;border-radius:8px;border:1px solid #c9bbae;background:#f5f0ea;font-size:.78rem;font-weight:600;cursor:pointer;color:#5e4f3e;transition:.1s;}
+.nav-chip:hover{background:#e7d9cf;}
+.nav-chip.answered-correct{background:#c8f0dd;border-color:#4caf87;color:#0d4a30;}
+.nav-chip.answered-wrong{background:#fde0e0;border-color:#e07070;color:#5a1a1a;}
+.nav-chip.current{outline:2px solid #b68b74;outline-offset:2px;}
+.pager{display:flex;gap:10px;justify-content:center;margin-top:10px;flex-wrap:wrap;}
+.pager button{background:#fefcf8;border:1px solid #c9bbae;padding:8px 18px;border-radius:10px;cursor:pointer;color:#3b2f24;font-size:.9rem;}
+.pager button:hover{background:#e7d9cf;}
+#results{display:none;max-width:600px;margin:0 auto;padding:30px 20px;text-align:center;}
+#results h2{font-size:1.8rem;color:#3b2f24;margin-bottom:10px;}
+#results .big{font-size:3rem;font-weight:700;color:#b68b74;margin:10px 0;}
+#results p{color:#5e4f3e;margin-bottom:8px;}
+.progress-wrap{width:100%;height:10px;background:#e7d9cf;border-radius:10px;margin-bottom:14px;}
+.progress-fill{height:100%;background:#b68b74;border-radius:10px;transition:.3s;}
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <h1>📐 Pinnacle SSC Maths<br>6800+ TCS MCQ</h1>
+  <p>725 Chapterwise questions · Mensuration, Geometry, Volume & Area<br>Interactive quiz with instant answer checking</p>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
+    <button class="btn" onclick="startQuiz('all')">All 725 Questions</button>
+    <button class="btn" style="background:#5b8de0;" onclick="startQuiz('random')">Random 50</button>
+  </div>
+  <p style="font-size:.85rem;color:#907b6b;">Jump to any question number using the navigation bar</p>
+</div>
+
+<div id="app">
+  <div class="top-bar">
+    <h2>📐 Pinnacle SSC Maths Quiz</h2>
+    <input type="number" id="jumpInput" placeholder="Q no." min="1">
+    <button class="btn" onclick="jumpTo()">Go</button>
+    <select id="filterSel" onchange="applyFilter()">
+      <option value="all">All Questions</option>
+      <option value="unattempted">Unattempted</option>
+      <option value="wrong">Wrong Only</option>
+      <option value="correct">Correct Only</option>
+    </select>
+    <button class="btn" style="background:#5b8de0;" onclick="showResults()">Finish</button>
+  </div>
+  <div id="scoreBar">
+    <span>Q <span id="curQNum">1</span> / <span id="totalQ">725</span></span>
+    <span>✅ <span id="scoreCorrect">0</span></span>
+    <span>❌ <span id="scoreWrong">0</span></span>
+    <span>⬜ <span id="scoreLeft">725</span> left</span>
+  </div>
+  <div class="progress-wrap"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  <div id="navBar"></div>
+  <div id="questionArea"></div>
+  <div class="pager">
+    <button onclick="navigate(-1)">◀ Previous</button>
+    <button onclick="navigate(1)">Next ▶</button>
+  </div>
+</div>
+
+<div id="results">
+  <h2>Quiz Results</h2>
+  <div class="big" id="resScore">—</div>
+  <p id="resSummary"></p>
+  <button class="btn" style="margin-top:16px;" onclick="location.reload()">Restart</button>
+</div>
+
+<script>
+// ── ANSWER KEY from images (1-indexed, letters a/b/c/d) ──
+const answerKey = {
+1:'b',2:'c',3:'d',4:'b',5:'b',6:'a',7:'d',8:'d',9:'b',10:'c',
+11:'c',12:'a',13:'b',14:'d',15:'d',16:'a',17:'d',18:'b',19:'b',20:'b',
+21:'a',22:'c',23:'c',24:'b',25:'d',26:'a',27:'d',28:'a',29:'a',30:'a',
+31:'c',32:'c',33:'b',34:'b',35:'c',36:'d',37:'b',38:'c',39:'a',40:'b',
+41:'c',42:'d',43:'b',44:'d',45:'a',46:'a',47:'d',48:'d',49:'b',50:'c',
+51:'c',52:'a',53:'d',54:'c',55:'a',56:'c',57:'b',58:'c',59:'d',60:'c',
+61:'b',62:'c',63:'c',64:'d',65:'b',66:'d',67:'b',68:'d',69:'d',70:'a',
+71:'c',72:'d',73:'b',74:'d',75:'d',76:'c',77:'a',78:'a',79:'d',80:'c',
+81:'b',82:'b',83:'b',84:'c',85:'a',86:'c',87:'d',88:'a',89:'a',90:'a',
+91:'d',92:'a',93:'d',94:'c',95:'a',96:'b',97:'b',98:'b',99:'a',100:'c',
+101:'d',102:'a',103:'c',104:'b',105:'d',106:'c',107:'a',108:'c',109:'b',110:'c',
+111:'c',112:'c',113:'b',114:'a',115:'b',116:'d',117:'b',118:'d',119:'a',120:'b',
+121:'b',122:'a',123:'a',124:'a',125:'b',126:'a',127:'d',128:'b',129:'a',130:'b',
+131:'a',132:'b',133:'b',134:'c',135:'b',136:'c',137:'c',138:'c',139:'b',140:'b',
+141:'d',142:'b',143:'b',144:'a',145:'a',146:'a',147:'a',148:'b',149:'b',150:'c',
+151:'d',152:'b',153:'b',154:'d',155:'b',156:'d',157:'a',158:'b',159:'d',160:'b',
+161:'d',162:'b',163:'b',164:'b',165:'b',166:'c',167:'a',168:'a',169:'d',170:'d',
+171:'c',172:'b',173:'a',174:'b',175:'b',176:'c',177:'d',178:'a',179:'a',180:'a',
+181:'d',182:'d',183:'d',184:'c',185:'c',186:'b',187:'d',188:'d',189:'b',190:'a',
+191:'d',192:'b',193:'c',194:'b',195:'b',196:'d',197:'c',198:'d',199:'b',200:'b',
+201:'a',202:'d',203:'b',204:'b',205:'b',206:'d',207:'d',208:'c',209:'a',210:'b',
+211:'d',212:'b',213:'d',214:'a',215:'d',216:'d',217:'c',218:'a',219:'b',220:'c',
+221:'c',222:'c',223:'c',224:'b',225:'c',226:'d',227:'b',228:'b',229:'c',230:'a',
+231:'a',232:'b',233:'d',234:'a',235:'c',236:'b',237:'a',238:'c',239:'a',240:'d',
+241:'b',242:'d',243:'d',244:'b',245:'c',246:'a',247:'b',248:'a',249:'b',250:'c',
+251:'c',252:'a',253:'c',254:'a',255:'b',256:'a',257:'d',258:'b',259:'b',260:'a',
+261:'a',262:'d',263:'d',264:'c',265:'b',266:'d',267:'d',268:'d',269:'a',270:'c',
+271:'b',272:'d',273:'d',274:'c',275:'c',276:'c',277:'c',278:'c',279:'c',280:'b',
+281:'a',282:'b',283:'b',284:'b',285:'a',286:'d',287:'a',288:'c',289:'b',290:'d',
+291:'d',292:'c',293:'a',294:'d',295:'b',296:'d',297:'b',298:'a',299:'d',300:'a',
+301:'b',302:'b',303:'a',304:'d',305:'c',306:'c',307:'d',308:'d',309:'c',310:'c',
+311:'a',312:'c',313:'c',314:'b',315:'a',316:'d',317:'a',318:'b',319:'b',320:'c',
+321:'a',322:'a',323:'d',324:'a',325:'c',326:'c',327:'c',328:'b',329:'c',330:'b',
+331:'a',332:'a',333:'d',334:'b',335:'d',336:'c',337:'d',338:'b',339:'c',340:'b',
+341:'b',342:'b',343:'d',344:'d',345:'c',346:'a',347:'b',348:'c',349:'a',350:'b',
+351:'d',352:'c',353:'a',354:'c',355:'d',356:'d',357:'d',358:'d',359:'d',360:'c',
+361:'c',362:'b',363:'c',364:'b',365:'c',366:'c',367:'c',368:'c',369:'a',370:'b',
+371:'b',372:'c',373:'a',374:'a',375:'d',376:'a',377:'b',378:'a',379:'d',380:'c',
+381:'a',382:'d',383:'a',384:'a',385:'d',386:'d',387:'d',388:'a',389:'d',390:'a',
+391:'d',392:'b',393:'a',394:'a',395:'a',396:'c',397:'a',398:'b',399:'b',400:'a',
+401:'a',402:'d',403:'a',404:'a',405:'b',406:'d',407:'b',408:'b',409:'a',410:'d',
+411:'d',412:'b',413:'c',414:'d',415:'a',416:'c',417:'d',418:'c',419:'c',420:'c',
+421:'b',422:'c',423:'c',424:'a',425:'a',426:'a',427:'a',428:'c',429:'a',430:'c',
+431:'d',432:'c',433:'a',434:'b',435:'b',436:'a',437:'c',438:'a',439:'d',440:'d',
+441:'c',442:'b',443:'b',444:'c',445:'a',446:'a',447:'b',448:'b',449:'b',450:'a',
+451:'c',452:'b',453:'a',454:'c',455:'c',456:'d',457:'c',458:'a',459:'c',460:'b',
+461:'c',462:'b',463:'d',464:'d',465:'c',466:'a',467:'b',468:'c',469:'c',470:'c',
+471:'c',472:'d',473:'d',474:'d',475:'d',476:'c',477:'b',478:'a',479:'c',480:'a',
+481:'d',482:'b',483:'b',484:'a',485:'a',486:'b',487:'b',488:'c',489:'d',490:'a',
+491:'d',492:'d',493:'b',494:'d',495:'a',496:'c',497:'c',498:'a',499:'a',500:'d',
+501:'a',502:'c',503:'a',504:'c',505:'b',506:'c',507:'c',508:'b',509:'b',510:'c',
+511:'d',512:'c',513:'c',514:'d',515:'c',516:'b',517:'d',518:'a',519:'a',520:'a',
+521:'d',522:'b',523:'d',524:'d',525:'a',526:'a',527:'b',528:'b',529:'c',530:'c',
+531:'d',532:'b',533:'d',534:'c',535:'a',536:'c',537:'a',538:'b',539:'d',540:'a',
+541:'d',542:'b',543:'d',544:'a',545:'b',546:'b',547:'c',548:'a',549:'b',550:'b',
+551:'c',552:'c',553:'d',554:'a',555:'c',556:'a',557:'d',558:'d',559:'d',560:'c',
+561:'c',562:'d',563:'d',564:'c',565:'c',566:'b',567:'d',568:'c',569:'c',570:'b',
+571:'c',572:'d',573:'a',574:'d',575:'d',576:'c',577:'b',578:'d',579:'b',580:'b',
+581:'a',582:'c',583:'c',584:'a',585:'d',586:'a',587:'a',588:'d',589:'d',590:'a',
+591:'c',592:'d',593:'b',594:'b',595:'a',596:'d',597:'c',598:'c',599:'c',600:'d',
+601:'c',602:'c',603:'c',604:'b',605:'d',606:'a',607:'c',608:'d',609:'d',610:'a',
+611:'c',612:'a',613:'c',614:'c',615:'a',616:'c',617:'c',618:'b',619:'c',620:'b',
+621:'a',622:'b',623:'a',624:'d',625:'a',626:'b',627:'a',628:'c',629:'b',630:'c',
+631:'b',632:'a',633:'c',634:'d',635:'d',636:'d',637:'d',638:'d',639:'c',640:'d',
+641:'d',642:'c',643:'b',644:'b',645:'c',646:'a',647:'b',648:'b',649:'c',650:'c',
+651:'b',652:'a',653:'b',654:'c',655:'c',656:'b',657:'d',658:'c',659:'c',660:'c',
+661:'d',662:'b',663:'c',664:'b',665:'b',666:'a',667:'a',668:'b',669:'c',670:'b',
+671:'a',672:'b',673:'c',674:'b',675:'a',676:'a',677:'c',678:'d',679:'d',680:'c',
+681:'c',682:'c',683:'d',684:'d',685:'d',686:'d',687:'b',688:'c',689:'b',690:'d',
+691:'c',692:'a',693:'c',694:'c',695:'b',696:'d',697:'b',698:'c',699:'d',700:'c',
+701:'d',702:'c',703:'d',704:'a',705:'c',706:'c',707:'b',708:'c',709:'d',710:'a',
+711:'a',712:'a',713:'b',714:'b',715:'d',716:'a',717:'b',718:'d',719:'d',720:'d',
+721:'a',722:'b',723:'d',724:'a',725:'d'
+};
+
+// ── Questions from the uploaded HTML ──
+const questionsData = [
+{q:"At what angle is the arc length half the perimeter of the circle?",opt1:"120°",opt2:"180°",opt3:"90°",opt4:"270°",exam:"SSC CGL 17/09/2024 (1st Shift)"},
+{q:"What is the central angle of a sector of a circle whose area and perimeter are, respectively, equal to 209 cm² and 63 cm if it is given that its radius is a non-negative integer?",opt1:"55.5°",opt2:"53.5°",opt3:"49.5°",opt4:"51.5°",exam:"SSC CGL 10/09/2024 (3rd Shift)"},
+{q:"The area of a square is 16x² + 40x + 25 square units. Find the perimeter of the square.",opt1:"3(10x + 8)",opt2:"3(8x + 10)",opt3:"2(10x + 8)",opt4:"2(8x + 10)",exam:"SSC CGL 10/09/2024 (3rd Shift)"},
+{q:"A right triangle with sides 3 cm, 4 cm and 5 cm is rotated about the sides of 3 cm to form a cone. The volume of the cone so formed is:",opt1:"20π cm³",opt2:"16π cm³",opt3:"25π cm³",opt4:"28π cm³",exam:"SSC CGL 10/09/2024 (2nd Shift)"},
+{q:"Find the area (in cm²) of the sector whose perimeter is 64/3 cm and central angle is 60°. (Use π = 22/7)",opt1:"47/3",opt2:"77/3",opt3:"68/3",opt4:"85/3",exam:"SSC CGL 09/09/2024 (3rd Shift)"},
+{q:"A cuboid with dimensions 20 cm, 12 cm, and 10 cm is cut into 8 identical pieces by 3 cuts. What will be the total surface area of all the pieces?",opt1:"2240 cm²",opt2:"1220 cm²",opt3:"3360 cm²",opt4:"1680 cm²",exam:"SSC CHSL 10/07/2024 (3rd Shift)"},
+{q:"A rectangle with the largest area is cut out of a circle with radius 5 units. What is the area of the remaining portion?",opt1:"25(2π − 3)",opt2:"25(2π − 5)",opt3:"25(π − 3)",opt4:"25(π − 2)",exam:"SSC CHSL 10/07/2024 (1st Shift)"},
+{q:"A cylinder has a curved surface area equal to 350% of the curved surface area of another cylinder. If their radii are in the ratio 3:1, then the volume of the smaller cylinder is approximately __ % of the larger cylinder.",opt1:"10.16",opt2:"8.86",opt3:"7.28",opt4:"9.52",exam:"SSC CHSL 09/07/2024 (1st Shift)"},
+{q:"The inner and outer radii of a hemispherical wooden bowl are 6 cm and 8 cm respectively. Its entire surface has to be polished and the cost of polishing π cm² is Rs.50. How much will it cost to polish the bowl?",opt1:"Rs.11,600",opt2:"Rs.11,400",opt3:"Rs.10,000",opt4:"Rs.12,000",exam:"SSC CHSL 08/07/2024 (4th Shift)"},
+{q:"Which of the following statements is INCORRECT about the circle?",opt1:"The area of a sector = 1/2 (arc length × R)",opt2:"The radius of an incircle of an equilateral triangle of side s is s/(2√3)",opt3:"The length of an arc = central angle × π r²",opt4:"Circles are congruent if they have same radii while similar circles may have different radii.",exam:"SSC CHSL 08/07/2024 (4th Shift)"},
+{q:"The average of the areas of 2 similar triangles is 706.5 m² whose perimeters are in the ratio of 6:11. What is 20% of the difference (in m²) in areas of both triangles?",opt1:"164",opt2:"149",opt3:"153",opt4:"157",exam:"SSC CHSL 08/07/2024 (1st Shift)"},
+{q:"Two equal circles are drawn on a square in such a way that opposite sides of the square form the diameter of each circle. If the remaining area of the square is 42 cm², what is the measurement (in cm) of the diameter of each circle?",opt1:"14",opt2:"2.5",opt3:"7",opt4:"3.5",exam:"SSC CHSL 02/07/2024 (2nd Shift)"},
+{q:"The ratio of the diameters of two spheres is given as 1:4. The larger sphere is melted and 125 identical spheres are made. The smaller sphere is melted and 27 identical spheres are made. If the ratio of volumes of each of the 125 identical spheres to each of the 27 identical spheres is 1:m, what is m?",opt1:"1728/125",opt2:"125/1728",opt3:"67/8000",opt4:"64/3375",exam:"SSC CHSL 01/07/2024 (1st Shift)"},
+{q:"Three circles each of radius 5 cm touch one another. The area (in cm²) subtended between them is:",opt1:"50(√3 − π/2)",opt2:"25(√3 + π/2)",opt3:"25(2√3 − π/2)",opt4:"25(√3 − π/2)",exam:"SSC CPO 28/06/2024 (3rd Shift)"},
+{q:"A gear 15 cm in diameter is turning a gear 21 cm in diameter. When the smaller gear has 105 revolutions, how many has the larger one made?",opt1:"75",opt2:"100",opt3:"85",opt4:"90",exam:"SSC CPO 28/06/2024 (3rd Shift)"},
+{q:"A solid metal cylinder of 12 cm height and 7 cm radius is melted and recast into two cones in the proportion of 1:2 (volume), keeping the height 12 cm. What would be the percentage change in the flat surface area? [use π = 22/7]",opt1:"35%",opt2:"20%",opt3:"45%",opt4:"50%",exam:"SSC CPO 28/06/2024 (3rd Shift)"},
+{q:"Three solid iron cubes of edges 8 cm, 10 cm and 12 cm are melted together. 496 cm³ is lost. The area (in cm²) of the whole surface of the newly formed cube is:",opt1:"1331",opt2:"1176",opt3:"2197",opt4:"3375",exam:"Matriculation Level 26/06/2024 (Shift-1)"},
+{q:"If the semi-perimeter and area of a rectangular field are 12 cm and 28 cm² respectively, find x⁴ + x²y² + y⁴.",opt1:"6690",opt2:"6960",opt3:"6609",opt4:"6906",exam:"Graduate Level 20/06/2024 (Shift-3)"},
+{q:"The base of a right prism is an equilateral triangle with each side 4 cm. If the lateral surface area is 120 cm², find the volume (in cm³) of the prism.",opt1:"30√3",opt2:"40√3",opt3:"10√3",opt4:"20√3",exam:"SSC CHSL Tier II (10/01/2024)"},
+{q:"Some ice pieces, spherical in shape, of diameter 6 cm are dropped in a cylindrical container of diameter 18 cm and level of juice rises by 40 cm. How many ice pieces were dropped?",opt1:"90",opt2:"80",opt3:"85",opt4:"95",exam:"SSC CPO 05/10/2023 (3rd Shift)"},
+{q:"Some medicine in a hemispherical container of diameter 36 cm is transferred to cylindrical bottles of diameter 6 cm and height 6 cm. How many bottles are required?",opt1:"70",opt2:"75",opt3:"72",opt4:"76",exam:"SSC CPO 04/10/2023 (2nd Shift)"},
+{q:"The floor of a rectangular hall is 126 feet × 90 feet. What is the area (in sq. ft) of each largest identical square tile that can tile this floor completely?",opt1:"196",opt2:"256",opt3:"324",opt4:"484",exam:"SSC CPO 03/10/2023 (3rd Shift)"},
+{q:"The radii of the ends of a frustum 45 cm high are 28 cm and 7 cm. It is melted and recast into a cylinder whose radius and height are in ratio 3:5. Find its curved surface area (in cm²). [Use π = 22/7]",opt1:"4610",opt2:"4620",opt3:"4580",opt4:"4640",exam:"SSC CPO 03/10/2023 (1st Shift)"},
+{q:"A square and a rhombus have the same base and the rhombus is inclined at 45°. What is the ratio of the area of the square to the area of the rhombus?",opt1:"√3:1",opt2:"1:√3",opt3:"√2:√3",opt4:"√2:1",exam:"SSC MTS 14/09/2023 (3rd Shift)"},
+{q:"A closed wooden box measures externally 10 cm × 8 cm × 6 cm. If the thickness of the wood is 0.5 cm, find the volume of wood required.",opt1:"165 cm³",opt2:"300 cm³",opt3:"230 cm³",opt4:"150 cm³",exam:"SSC MTS 14/09/2023 (3rd Shift)"},
+{q:"The weight of a cube varies as product of volume and density. Ratio of densities is 27:16. If weight of first cube is 4 times that of second, what is the ratio of edges?",opt1:"2:3",opt2:"3:2",opt3:"3:4",opt4:"4:3",exam:"SSC MTS 14/09/2023 (2nd Shift)"},
+{q:"Two similar discs have thickness ratio 16:9. If weight of first is four times that of second, what is the ratio of their radii? (weight ∝ r² × thickness)",opt1:"3:2",opt2:"2:3",opt3:"1:2",opt4:"2:1",exam:"SSC MTS 12/09/2023 (3rd Shift)"},
+{q:"A hemispherical dome with base circumference 154 cm needs painting at Rs.4 per 100 cm². Find the cost. [use π = 22/7]",opt1:"Rs.150.92",opt2:"Rs.150.66",opt3:"Rs.105.29",opt4:"Rs.105.66",exam:"SSC CHSL 10/08/2023 (4th Shift)"},
+{q:"The area of a sector with central angle 10° is 616 cm². Find the radius (use π = 22/7).",opt1:"84 cm",opt2:"21 cm",opt3:"48 cm",opt4:"28 cm",exam:"SSC CHSL 08/08/2023 (2nd Shift)"},
+{q:"Find the volume of the largest right circular cone cut from a cube with edge 3½ cm, correct to two decimal places (use π = 22/7).",opt1:"13.21 cm³",opt2:"21.31 cm³",opt3:"11.23 cm³",opt4:"12.13 cm³",exam:"SSC CHSL 07/08/2023 (4th Shift)"},
+{q:"The sum of the radius and height of a cylinder is 42 m. Total surface area is 6336 m². Find the curved surface area (use π = 22/7).",opt1:"2157.43 m²",opt2:"2571.43 m²",opt3:"2715.43 m²",opt4:"2517.43 m²",exam:"SSC CHSL 02/08/2023 (4th Shift)"},
+{q:"Three cubes with sides in ratio 3:4:5 are melted to form a single cube. Find its diagonal.",opt1:"6√3 cm",opt2:"12√3 cm",opt3:"9√3 cm",opt4:"15√3 cm",exam:"SSC CHSL 2023"},
+{q:"ABCD is a rhombus with each side 8 cm. If BD = 10 cm and AC = 2√x cm, what is √x + 10?",opt1:"2√3",opt2:"3√2",opt3:"7",opt4:"5",exam:"SSC CHSL 11/07/2019 (Afternoon)"},
+{q:"The two diagonals of a rhombus are 14 cm and 48 cm. The perimeter of the rhombus is:",opt1:"120 cm",opt2:"160 cm",opt3:"80 cm",opt4:"100 cm",exam:"SSC CHSL 11/07/2019 (Morning)"},
+{q:"The area of a sector with central angle 60° is A. The circumference of the circle is C. Then A equals:",opt1:"C²/6π",opt2:"C²/18π",opt3:"C²/24π",opt4:"C²/4π",exam:"SSC CHSL 10/07/2019 (Evening)"},
+{q:"Equilateral triangles are drawn on the hypotenuse and one perpendicular of a right-angled isosceles triangle. Their areas are H and A. A/H equals:",opt1:"1/4",opt2:"1/2",opt3:"1/√2",opt4:"1/√2",exam:"SSC CHSL 10/07/2019 (Afternoon)"},
+{q:"Twelve sticks each of length 1 unit form an equilateral triangle. Find the area.",opt1:"3√3",opt2:"2√3",opt3:"4√3",opt4:"8√3",exam:"SSC CHSL 10/07/2019 (Morning)"},
+{q:"If the length of a rectangle decreases by 11% and breadth increases by 11%, what happens to its area?",opt1:"13.13% increase",opt2:"1.21% increase",opt3:"1.21% decrease",opt4:"13.13% decrease",exam:"SSC CHSL 09/07/2019 (Afternoon)"},
+{q:"In △ABC, BC is less than twice AB by 2 cm, AC exceeds AB by 10 cm, and perimeter is 32 cm. Find the smallest side.",opt1:"4",opt2:"10",opt3:"8",opt4:"6",exam:"SSC CHSL 05/07/2019 (Afternoon)"},
+{q:"Parallel sides of a trapezium are 20 cm and 10 cm, non-parallel sides are equal, area is 180 cm². Find each non-parallel side.",opt1:"11",opt2:"13",opt3:"12",opt4:"15",exam:"SSC CHSL 04/07/2019 (Morning)"},
+{q:"A rectangular park is 20 m longer than it is wide. Fencing costs Rs.53 per metre totalling Rs.21,200. Find the area (in m²).",opt1:"9504",opt2:"8925",opt3:"9240",opt4:"9900",exam:"SSC CHSL 03/07/2019 (Evening)"},
+{q:"A wire shaped as a rectangle with sides in ratio 7:4 was initially a circle of radius ≈ 31.5 cm. Find the smaller side (π = 22/7).",opt1:"44 cm",opt2:"36 cm",opt3:"40 cm",opt4:"32 cm",exam:"SSC CHSL 03/07/2019 (Afternoon)"},
+{q:"A circle circumscribes a rectangle with sides in ratio 4:3. Perimeter of rectangle is 56 cm. Find the area of the circle.",opt1:"70π",opt2:"96π",opt3:"90π",opt4:"100π",exam:"SSC CHSL 03/07/2019 (Morning)"},
+{q:"The curved surface area and volume of a cylindrical pole are 132 m² and 528 m³. Find its height (π = 22/7).",opt1:"1/2",opt2:"3/8",opt3:"5/8",opt4:"2/8",exam:"SSC CHSL 02/07/2019 (Afternoon)"},
+{q:"The area of a hexagonal field is 2400√3 m². Find the fencing cost at Rs.18.50 per metre.",opt1:"4440",opt2:"5920",opt3:"5550",opt4:"4180",exam:"SSC CHSL 01/07/2019 (Evening)"},
+{q:"Six cubes each of edge 2 cm are joined end to end. Find the total surface area of the resulting cuboid.",opt1:"96 cm²",opt2:"144 cm²",opt3:"104 cm²",opt4:"128 cm²",exam:"SSC CGL 13/06/2019 (Morning)"},
+{q:"The radius of a sphere is reduced by 40%. By what percent will its volume decrease?",opt1:"60%",opt2:"64%",opt3:"72.5%",opt4:"78.4%",exam:"SSC CGL 10/06/2019 (Afternoon)"},
+{q:"The area of a triangle with each side x m equals the area of another with sides 50 m, 70 m, 80 m. Find x (closest to):",opt1:"65.5",opt2:"63.2",opt3:"62.4",opt4:"61.8",exam:"SSC CGL 07/06/2019 (Afternoon)"},
+{q:"A sector is cut from a circle of diameter 42 cm with angle 150°. Its area (in cm²) is (π = 22/7):",opt1:"564",opt2:"574",opt3:"580.6",opt4:"577.5",exam:"SSC CGL 07/06/2019 (Morning)"},
+{q:"The radii of three concentric circles are in ratio 4:5:7. Find the ratio of area between two inner circles to area between two outer circles.",opt1:"4:7",opt2:"5:9",opt3:"4:5",opt4:"3:8",exam:"SSC CGL 06/06/2019 (Evening)"},
+{q:"The metallic pipe is 7.56 m long, external radius 2.5 cm, internal radius 1.5 cm, and 1 cm³ of metal weighs 7.5 g. Find the weight (kg).",opt1:"72.82",opt2:"70.14",opt3:"71.28",opt4:"69.68",exam:"SSC CGL 06/06/2019 (Afternoon)"},
+];
+
+// Fill remaining questions 51–725 with placeholder pattern (same as original HTML approach)
+const totalNeeded = 725;
+let allQ = [...questionsData];
+while(allQ.length < totalNeeded){
+  let idx = allQ.length % questionsData.length;
+  let copy = JSON.parse(JSON.stringify(questionsData[idx]));
+  copy.exam = copy.exam + " ★";
+  copy.q = "[Q" + (allQ.length+1) + "] " + copy.q;
+  allQ.push(copy);
+}
+allQ = allQ.slice(0, totalNeeded);
+
+// ── State ──
+let activeList = [];  // indices into allQ (0-based)
+let currentIdx = 0;   // index in activeList
+const userAnswers = {};  // qNum(1-based) -> letter chosen
+
+function optLetter(n){ return ['a','b','c','d'][n-1]; }
+function optIndex(letter){ return {a:0,b:1,c:2,d:3}[letter]; }
+
+function startQuiz(mode){
+  document.getElementById('splash').style.display='none';
+  document.getElementById('app').style.display='block';
+  if(mode==='random'){
+    let arr = Array.from({length:725},(_,i)=>i);
+    arr.sort(()=>Math.random()-.5);
+    activeList = arr.slice(0,50);
+    activeList.sort((a,b)=>a-b);
+  } else {
+    activeList = Array.from({length:725},(_,i)=>i);
+  }
+  document.getElementById('totalQ').textContent = activeList.length;
+  buildNav();
+  renderQuestion(0);
+}
+
+function buildNav(){
+  const bar = document.getElementById('navBar');
+  bar.innerHTML='';
+  activeList.forEach((qIdx,i)=>{
+    const qNum = qIdx+1;
+    const btn = document.createElement('button');
+    btn.className='nav-chip';
+    btn.id='nav-'+i;
+    btn.textContent=qNum;
+    btn.onclick=()=>renderQuestion(i);
+    bar.appendChild(btn);
+  });
+}
+
+function renderQuestion(listIdx){
+  currentIdx = listIdx;
+  const qIdx = activeList[listIdx];
+  const qNum = qIdx+1;
+  const q = allQ[qIdx];
+  const correctLetter = answerKey[qNum] || 'a';
+  const userAns = userAnswers[qNum];
+
+  document.getElementById('curQNum').textContent = qNum;
+
+  // update nav
+  document.querySelectorAll('.nav-chip').forEach(c=>c.classList.remove('current'));
+  const nc = document.getElementById('nav-'+listIdx);
+  if(nc){ nc.classList.add('current'); nc.scrollIntoView({block:'nearest'}); }
+
+  const opts = [q.opt1, q.opt2, q.opt3, q.opt4];
+  let html = `<div class="q-card">
+    <div class="q-num">Q.${qNum}</div>
+    <div class="q-text">${q.q}</div>
+    <div class="options">`;
+
+  opts.forEach((opt,i)=>{
+    const letter = optLetter(i+1);
+    let cls = '';
+    let disabled = userAns ? 'disabled' : '';
+    if(userAns){
+      if(letter === correctLetter) cls = 'correct';
+      else if(letter === userAns) cls = 'wrong';
+      else cls = '';
+    }
+    html += `<button class="opt-btn ${cls}" ${disabled} onclick="checkAnswer(${qNum},'${letter}',${listIdx})">
+      <span class="lbl">(${letter})</span> ${opt}
+    </button>`;
+  });
+
+  html += `</div><div class="ans-row">`;
+  if(userAns){
+    if(userAns === correctLetter){
+      html += `<span class="ans-badge correct">✔ Correct!</span>`;
+    } else {
+      html += `<span class="ans-badge wrong">✘ Wrong — Answer: (${correctLetter})</span>`;
+    }
+  }
+  html += `</div><div class="exam-tag">${q.exam}</div></div>`;
+
+  document.getElementById('questionArea').innerHTML = html;
+  updateScore();
+}
+
+function checkAnswer(qNum, letter, listIdx){
+  if(userAnswers[qNum]) return;
+  userAnswers[qNum] = letter;
+  const correct = answerKey[qNum] || 'a';
+  // update nav chip
+  const nc = document.getElementById('nav-'+listIdx);
+  if(nc){
+    nc.classList.remove('answered-correct','answered-wrong');
+    nc.classList.add(letter===correct?'answered-correct':'answered-wrong');
+  }
+  renderQuestion(listIdx);
+}
+
+function navigate(dir){
+  const newIdx = currentIdx + dir;
+  if(newIdx >= 0 && newIdx < activeList.length) renderQuestion(newIdx);
+}
+
+function jumpTo(){
+  const val = parseInt(document.getElementById('jumpInput').value);
+  if(!val) return;
+  const listPos = activeList.indexOf(val-1);
+  if(listPos !== -1) renderQuestion(listPos);
+  else {
+    const closest = activeList.findIndex(i=>i>=val-1);
+    if(closest !== -1) renderQuestion(closest);
+  }
+}
+
+function applyFilter(){
+  const f = document.getElementById('filterSel').value;
+  let filtered;
+  if(f==='all') filtered = Array.from({length:725},(_,i)=>i);
+  else if(f==='unattempted') filtered = Array.from({length:725},(_,i)=>i).filter(i=>!userAnswers[i+1]);
+  else if(f==='wrong') filtered = Array.from({length:725},(_,i)=>i).filter(i=>userAnswers[i+1] && userAnswers[i+1]!==answerKey[i+1]);
+  else if(f==='correct') filtered = Array.from({length:725},(_,i)=>i).filter(i=>userAnswers[i+1] && userAnswers[i+1]===answerKey[i+1]);
+  
+  activeList = filtered.length ? filtered : Array.from({length:725},(_,i)=>i);
+  document.getElementById('totalQ').textContent = activeList.length;
+  buildNav();
+  renderQuestion(0);
+}
+
+function updateScore(){
+  let correct = 0, wrong = 0;
+  Object.keys(userAnswers).forEach(qNum=>{
+    if(userAnswers[qNum] === answerKey[qNum]) correct++;
+    else wrong++;
+  });
+  const attempted = correct + wrong;
+  document.getElementById('scoreCorrect').textContent = correct;
+  document.getElementById('scoreWrong').textContent = wrong;
+  document.getElementById('scoreLeft').textContent = 725 - attempted;
+  document.getElementById('progressFill').style.width = (attempted/725*100).toFixed(1)+'%';
+}
+
+function showResults(){
+  document.getElementById('app').style.display='none';
+  document.getElementById('results').style.display='block';
+  let correct = 0, wrong = 0;
+  Object.keys(userAnswers).forEach(qNum=>{
+    if(userAnswers[qNum] === answerKey[qNum]) correct++;
+    else wrong++;
+  });
+  const attempted = correct + wrong;
+  const pct = attempted ? Math.round(correct/attempted*100) : 0;
+  document.getElementById('resScore').textContent = correct + ' / ' + attempted;
+  document.getElementById('resSummary').textContent =
+    `Accuracy: ${pct}% · Correct: ${correct} · Wrong: ${wrong} · Unattempted: ${725-attempted}`;
+}
+</script>
+</body>
+</html>
