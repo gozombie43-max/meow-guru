@@ -119,6 +119,21 @@ button:disabled {
   scrollbar-width: thin;
   padding-bottom: 0.2rem;
   scroll-behavior: smooth;
+  overscroll-behavior-x: contain;
+}
+
+.palette-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.8rem;
+  margin-bottom: 0.45rem;
+}
+
+.palette-help {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
 }
 
 .palette-btn {
@@ -133,6 +148,12 @@ button:disabled {
   font-weight: 600;
   display: grid;
   place-items: center;
+}
+
+.palette-btn:hover,
+.palette-btn:focus-visible {
+  border-color: var(--brand);
+  outline: none;
 }
 
 .palette-btn.answered {
@@ -184,6 +205,11 @@ button:disabled {
   background: var(--brand-soft);
 }
 
+.option-btn:focus-visible {
+  outline: 2px solid #93c5fd;
+  outline-offset: 1px;
+}
+
 .hint {
   margin: 0.75rem 0 0;
   color: var(--muted);
@@ -208,6 +234,12 @@ button:disabled {
 
   .jump-input-row input {
     width: 100%;
+  }
+
+  .palette-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
   }
 
   .pager button {

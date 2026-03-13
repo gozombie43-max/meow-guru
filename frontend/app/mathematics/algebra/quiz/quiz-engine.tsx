@@ -162,14 +162,25 @@ function QuestionNavigator({
   currentIndex,
   results,
   onJump,
+  onPrevious,
+  onNext,
 }: {
   total: number;
   currentIndex: number;
   results: SessionResult[];
   onJump: (index: number) => void;
+  onPrevious: () => void;
+  onNext: () => void;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const chipRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const [jumpValue, setJumpValue] = useState(String(currentIndex + 1));
+  const [jumpError, setJumpError] = useState("");
+
+  useEffect(() => {
+    setJumpValue(String(currentIndex + 1));
+    setJumpError("");
+  }, [currentIndex]);
 
   /* ── Status map ── */
   const statusMap = useMemo(() => {
@@ -224,6 +235,57 @@ function QuestionNavigator({
 
   return (
     <div className="mb-5 space-y-1.5">
+      <div className="glass rounded-xl px-3 py-2.5 flex flex-wrap items-center gap-2">
+        <button
+          onClick={onPrevious}
+          disabled={currentIndex === 0}
+          className="shrink-0 px-3 py-1.5 rounded-lg border-[1.5px] border-[#E0E0E0] bg-white text-[#444] text-[0.78rem] font-semibold cursor-pointer whitespace-nowrap transition-all duration-150 hover:bg-indigo-50 hover:border-[#3B6EF8] hover:text-[#3B6EF8] disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <ChevronLeft className="w-3.5 h-3.5 inline-block mr-1" /> Previous
+        </button>
+
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            const parsed = Number.parseInt(jumpValue, 10);
+            if (Number.isNaN(parsed) || parsed < 1 || parsed > total) {
+              setJumpError(`Enter 1 to ${total}`);
+              return;
+            }
+            setJumpError("");
+            onJump(parsed - 1);
+          }}
+          className="flex items-center gap-1.5"
+        >
+          <label htmlFor="jump-to-question" className="text-[0.76rem] font-semibold text-slate-500">
+            Jump
+          </label>
+          <input
+            id="jump-to-question"
+            inputMode="numeric"
+            value={jumpValue}
+            onChange={(e) => setJumpValue(e.target.value)}
+            className="w-[76px] px-2 py-1.5 rounded-lg border border-[#E0E0E0] bg-white text-[#333] text-[0.78rem] outline-none focus:border-[#3B6EF8]"
+            aria-label="Jump to question number"
+          />
+          <button
+            type="submit"
+            className="px-2.5 py-1.5 rounded-lg border border-[#3B6EF8] bg-[#3B6EF8] text-white text-[0.76rem] font-semibold"
+          >
+            Go
+          </button>
+          {jumpError && <span className="text-[0.72rem] text-red-500 ml-1">{jumpError}</span>}
+        </form>
+
+        <button
+          onClick={onNext}
+          disabled={currentIndex === total - 1}
+          className="ml-auto shrink-0 px-3 py-1.5 rounded-lg border-[1.5px] border-[#E0E0E0] bg-white text-[#444] text-[0.78rem] font-semibold cursor-pointer whitespace-nowrap transition-all duration-150 hover:bg-indigo-50 hover:border-[#3B6EF8] hover:text-[#3B6EF8] disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Next <ChevronRight className="w-3.5 h-3.5 inline-block ml-1" />
+        </button>
+      </div>
+
       {/* ── Jump shortcuts row ── */}
       <div className="flex items-center gap-2 px-1 flex-nowrap overflow-hidden">
         <button
@@ -377,6 +439,8 @@ export default function QuizEngine() {
   const [results, setResults] = useState<SessionResult[]>([]);
   const [conceptFilter, setConceptFilter] = useState<string>("all");
   const [started, setStarted] = useState(false);
+  const touchStartXRef = useRef<number | null>(null);
+  const touchStartYRef = useRef<number | null>(null);
 
   /* Timer state */
   const [timeLeft, setTimeLeft] = useState(60);
@@ -487,6 +551,30 @@ export default function QuizEngine() {
     ]);
   }
 
+  const showQuestion = useCallback(
+    (index: number) => {
+      if (questions.length === 0) return;
+
+      const safeIndex = Math.max(0, Math.min(index, questions.length - 1));
+      stopTimer();
+      setCurrentIndex(safeIndex);
+
+      const existing = results.find((r) => r.questionIndex === safeIndex);
+      if (existing) {
+        setSelectedAnswer(existing.selected);
+        setIsAnswered(true);
+        return;
+      }
+
+      setSelectedAnswer(null);
+      setIsAnswered(false);
+      if (started && !showAnalytics) {
+        startTimer();
+      }
+    },
+    [questions.length, results, showAnalytics, startTimer, started, stopTimer],
+  );
+
   function handleSelectAnswer(index: number) {
     if (isAnswered || !currentQ) return;
     setSelectedAnswer(index);
@@ -537,10 +625,7 @@ export default function QuizEngine() {
 
   function handleNext() {
     if (currentIndex < questions.length - 1) {
-      setCurrentIndex((i) => i + 1);
-      setSelectedAnswer(null);
-      setIsAnswered(false);
-      startTimer();
+      showQuestion(currentIndex + 1);
     } else {
       stopTimer();
       setShowAnalytics(true);
@@ -549,17 +634,7 @@ export default function QuizEngine() {
 
   function handleJumpTo(index: number) {
     if (index === currentIndex) return;
-    setCurrentIndex(index);
-    const prev = results.find((r) => r.questionIndex === index);
-    if (prev) {
-      setSelectedAnswer(prev.selected);
-      setIsAnswered(true);
-      stopTimer();
-    } else {
-      setSelectedAnswer(null);
-      setIsAnswered(false);
-      startTimer();
-    }
+    showQuestion(index);
   }
 
   function handleRestart() {
@@ -573,6 +648,63 @@ export default function QuizEngine() {
     setShowAnalytics(false);
     setStarted(false);
   }
+
+  useEffect(() => {
+    if (!started || showAnalytics) return;
+
+    function onKeyDown(event: KeyboardEvent) {
+      const target = event.target as HTMLElement | null;
+      const tag = target?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") {
+        return;
+      }
+
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        showQuestion(currentIndex - 1);
+        return;
+      }
+
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        showQuestion(currentIndex + 1);
+        return;
+      }
+
+      if (isAnswered || !currentQ) return;
+
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        const base = selectedAnswer === null ? 0 : Math.min(selectedAnswer + 1, currentQ.options.length - 1);
+        handleSelectAnswer(base);
+        return;
+      }
+
+      if (event.key === "ArrowUp") {
+        event.preventDefault();
+        const base = selectedAnswer === null ? currentQ.options.length - 1 : Math.max(selectedAnswer - 1, 0);
+        handleSelectAnswer(base);
+        return;
+      }
+
+      const num = Number.parseInt(event.key, 10);
+      if (num >= 1 && num <= currentQ.options.length) {
+        event.preventDefault();
+        handleSelectAnswer(num - 1);
+      }
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [
+    currentIndex,
+    currentQ,
+    isAnswered,
+    selectedAnswer,
+    showAnalytics,
+    showQuestion,
+    started,
+  ]);
 
   /* ── Computed stats ── */
   const stats = useMemo(() => {
@@ -910,6 +1042,8 @@ export default function QuizEngine() {
           currentIndex={currentIndex}
           results={results}
           onJump={handleJumpTo}
+          onPrevious={() => showQuestion(currentIndex - 1)}
+          onNext={() => showQuestion(currentIndex + 1)}
         />
 
         {/* Stats bar */}
@@ -941,6 +1075,27 @@ export default function QuizEngine() {
         <div
           key={currentQ.id}
           className={`glass-card rounded-2xl ${miniMode ? "p-5" : "p-7 sm:p-8"} mb-6 animate-fade-in-up`}
+          onTouchStart={(event) => {
+            const touch = event.changedTouches[0];
+            touchStartXRef.current = touch.clientX;
+            touchStartYRef.current = touch.clientY;
+          }}
+          onTouchEnd={(event) => {
+            const startX = touchStartXRef.current;
+            const startY = touchStartYRef.current;
+            if (startX === null || startY === null) return;
+
+            const touch = event.changedTouches[0];
+            const deltaX = touch.clientX - startX;
+            const deltaY = touch.clientY - startY;
+
+            touchStartXRef.current = null;
+            touchStartYRef.current = null;
+
+            if (Math.abs(deltaX) < 50 || Math.abs(deltaY) > 90) return;
+            if (deltaX > 0) showQuestion(currentIndex - 1);
+            else showQuestion(currentIndex + 1);
+          }}
         >
           {/* Tags */}
           <div className="flex flex-wrap items-center gap-2 mb-5">

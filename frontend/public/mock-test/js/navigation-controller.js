@@ -2,6 +2,15 @@ function clamp(value, min, max) {
   return Math.max(min, Math.min(value, max));
 }
 
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
 export class NavigationController {
   constructor({ questions, elements }) {
     this.questions = questions;
@@ -10,6 +19,7 @@ export class NavigationController {
     this.answers = new Array(questions.length).fill(null);
     this.touchStartX = null;
     this.touchStartY = null;
+    this.maxOptions = this.questions[0]?.options.length || 4;
   }
 
   init() {
@@ -28,6 +38,8 @@ export class NavigationController {
       questionCard,
       optionsList,
     } = this.elements;
+
+    jumpInput.max = String(this.questions.length);
 
     previousBtn.addEventListener("click", () => {
       this.showQuestion(this.currentQuestionIndex - 1);
@@ -85,16 +97,30 @@ export class NavigationController {
       }
 
       if (event.key === "ArrowLeft") {
+        event.preventDefault();
         this.showQuestion(this.currentQuestionIndex - 1);
         return;
       }
       if (event.key === "ArrowRight") {
+        event.preventDefault();
         this.showQuestion(this.currentQuestionIndex + 1);
         return;
       }
 
+      if (event.key === "ArrowUp") {
+        event.preventDefault();
+        this.selectRelativeOption(-1);
+        return;
+      }
+
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        this.selectRelativeOption(1);
+        return;
+      }
+
       const numeric = Number.parseInt(event.key, 10);
-      if (numeric >= 1 && numeric <= 4) {
+      if (numeric >= 1 && numeric <= this.maxOptions) {
         this.selectOption(numeric - 1);
       }
     });
@@ -132,6 +158,7 @@ export class NavigationController {
   showQuestion(index) {
     const safeIndex = clamp(index, 0, this.questions.length - 1);
     this.currentQuestionIndex = safeIndex;
+    this.maxOptions = this.questions[safeIndex]?.options.length || this.maxOptions;
 
     this.renderActiveQuestion();
     this.updatePagerButtons();
@@ -174,8 +201,9 @@ export class NavigationController {
             data-option-index="${optionIndex}"
             role="radio"
             aria-checked="${selectedOption === optionIndex}"
+            aria-label="Option ${optionIndex + 1}"
           >
-            ${optionIndex + 1}. ${optionText}
+            ${optionIndex + 1}. ${escapeHtml(optionText)}
           </button>
         `;
       })
@@ -184,7 +212,18 @@ export class NavigationController {
     this.elements.optionsList.innerHTML = optionsMarkup;
   }
 
+  selectRelativeOption(direction) {
+    const selected = this.answers[this.currentQuestionIndex];
+    const fallback = direction > 0 ? 0 : this.maxOptions - 1;
+    const base = selected === null ? fallback : selected + direction;
+    const nextOption = clamp(base, 0, this.maxOptions - 1);
+    this.selectOption(nextOption);
+  }
+
   selectOption(optionIndex) {
+    if (optionIndex < 0 || optionIndex >= this.maxOptions) {
+      return;
+    }
     this.answers[this.currentQuestionIndex] = optionIndex;
     this.renderActiveQuestion();
     this.updatePaletteState();
