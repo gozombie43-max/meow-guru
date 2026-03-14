@@ -13,9 +13,8 @@ interface Subject {
   iconBg: string;
   iconColor: string;
   description: string;
-  chips: string[];
-  cardGlow: string;
-  hoverText: string;
+  tags: string[];
+  boxTint: string;
   href: string;
 }
 
@@ -23,49 +22,45 @@ const subjects: Subject[] = [
   {
     title: "Mathematics",
     icon: Calculator,
-    iconBg: "bg-cyan-500/10",
-    iconColor: "text-cyan-500",
+    iconBg: "bg-[#d9f2f2]",
+    iconColor: "text-[#2ab5b5]",
     description:
       "Master arithmetic, algebra, geometry, and data interpretation with AI-guided practice.",
-    chips: ["Algebra", "Geometry", "Arithmetic", "DI"],
-    cardGlow: "card-purple",
-    hoverText: "group-hover:text-cyan-400",
+    tags: ["Algebra", "Geometry", "Arithmetic", "DI"],
+    boxTint: "from-[#d6e8f5] to-[#dbeaf6]",
     href: "/mathematics",
   },
   {
     title: "Reasoning",
     icon: Brain,
-    iconBg: "bg-teal-500/10",
-    iconColor: "text-teal-500",
+    iconBg: "bg-[#d9f2f2]",
+    iconColor: "text-[#2ab5b5]",
     description:
       "Sharpen logical and analytical reasoning with pattern-based adaptive questions.",
-    chips: ["Logical", "Analytical", "Patterns", "Series"],
-    cardGlow: "card-orange",
-    hoverText: "group-hover:text-teal-400",
+    tags: ["Logical", "Analytical", "Patterns", "Series"],
+    boxTint: "from-[#dce6f5] to-[#e3ebf7]",
     href: "/reasoning",
   },
   {
     title: "English",
     icon: BookOpen,
-    iconBg: "bg-indigo-400/10",
-    iconColor: "text-indigo-400",
+    iconBg: "bg-[#d9f2f2]",
+    iconColor: "text-[#2ab5b5]",
     description:
       "Improve grammar, vocabulary, and comprehension with contextual AI exercises.",
-    chips: ["Grammar", "Vocabulary", "Comprehension"],
-    cardGlow: "card-teal",
-    hoverText: "group-hover:text-indigo-400",
+    tags: ["Grammar", "Vocabulary", "Comprehension"],
+    boxTint: "from-[#d4e9f7] to-[#dbedf9]",
     href: "/english",
   },
   {
     title: "General Awareness",
     icon: Globe,
-    iconBg: "bg-sky-400/10",
-    iconColor: "text-sky-400",
+    iconBg: "bg-[#d9f2f2]",
+    iconColor: "text-[#2ab5b5]",
     description:
       "Stay updated with current affairs, history, polity, and science for SSC exams.",
-    chips: ["Current Affairs", "History", "Science"],
-    cardGlow: "card-gold",
-    hoverText: "group-hover:text-sky-400",
+    tags: ["Current Affairs", "History", "Science"],
+    boxTint: "from-[#cfe4f0] to-[#d8e9f3]",
     href: "/general-awareness",
   },
 ];
@@ -131,11 +126,11 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Subject Cards ── */}
-      <section className="relative px-6 pb-32">
-        <div className="max-w-6xl mx-auto">
+      {/* ── Subject Boxes ── */}
+      <section className="relative pb-24">
+        <div className="w-full">
           {/* Section heading */}
-          <div className="text-center mb-16">
+          <div className="text-center mb-10 px-6">
             <h2
               className="animate-fade-in-up text-[clamp(1.6rem,3.5vw,2.25rem)] font-bold mb-4 text-[var(--text-primary)]"
               style={{ animationDelay: "600ms", fontFamily: "'SF Pro Display', 'Helvetica Neue', sans-serif" }}
@@ -150,54 +145,46 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Card grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Full-width subject stack */}
+          <div className="flex flex-col gap-[6px]">
             {subjects.map((subject, i) => (
-              <Link
+              <article
                 key={subject.title}
-                href={subject.href}
-                className={`glass-card ${subject.cardGlow} rounded-2xl p-4 cursor-pointer group animate-fade-in-up block`}
+                className={`w-full bg-gradient-to-r ${subject.boxTint} rounded-[8px] px-5 py-6 animate-fade-in-up transition-[filter] duration-200 hover:brightness-95 active:brightness-95`}
                 style={{ animationDelay: `${700 + i * 120}ms` }}
               >
-                {/* Icon */}
                 <div
-                  className={`w-10 h-10 rounded-xl ${subject.iconBg} flex items-center justify-center mb-3`}
+                  className={`w-14 h-14 rounded-2xl ${subject.iconBg} flex items-center justify-center mb-4`}
                 >
                   <subject.icon
-                    className={`w-5 h-5 ${subject.iconColor}`}
+                    className={`w-7 h-7 ${subject.iconColor}`}
                   />
                 </div>
 
-                {/* Title */}
-                <h3 className="text-base font-semibold mb-1.5 tracking-tight text-[var(--text-primary)]" style={{ fontFamily: "'SF Pro Display', 'Helvetica Neue', sans-serif" }}>
+                <h3
+                  className="text-[28px] font-bold leading-tight tracking-tight text-[#1a2340] mb-3"
+                  style={{ fontFamily: "'SF Pro Display', 'Helvetica Neue', sans-serif" }}
+                >
                   {subject.title}
                 </h3>
 
-                {/* Description */}
-                <p className="text-xs text-slate-500 mb-3 leading-relaxed">
+                <p className="text-[15px] text-slate-600 leading-6 max-w-3xl mb-3">
                   {subject.description}
                 </p>
 
-                {/* Topic chips */}
-                <div className="flex flex-wrap gap-1.5 mb-3">
-                  {subject.chips.map((chip) => (
-                    <span
-                      key={chip}
-                      className="text-[10px] px-2 py-0.5 rounded-full bg-white/20 text-slate-500 border border-white/30"
-                    >
-                      {chip}
-                    </span>
+                <div className="flex flex-wrap gap-x-4 gap-y-1 mb-3 text-[13px] text-[#555]">
+                  {subject.tags.map((tag) => (
+                    <span key={tag}>{tag}</span>
                   ))}
                 </div>
 
-                {/* Action link */}
-                <div
-                  className={`flex items-center gap-1 text-xs text-slate-500 ${subject.hoverText} transition-colors`}
+                <Link
+                  href={subject.href}
+                  className="inline-block text-[14px] font-medium text-[#2ab5b5] transition-colors hover:text-[#209b9b]"
                 >
-                  <span>Start Practice</span>
-                  <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-1" />
-                </div>
-              </Link>
+                  Start Practice →
+                </Link>
+              </article>
             ))}
           </div>
         </div>
