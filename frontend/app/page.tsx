@@ -302,8 +302,8 @@ export default function Home() {
 
         @media (max-width: 820px) {
           .pill-grid {
-            grid-template-columns: 1fr;
-            max-width: 460px;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            max-width: 420px;
             gap: 0.75rem;
             padding: 0 0.85rem;
           }
@@ -315,6 +315,58 @@ export default function Home() {
 
           .pill-content {
             font-size: clamp(0.85rem, 3.8vw, 1rem);
+          }
+        }
+
+        @media (max-width: 640px) {
+          .hero-mobile-offset {
+            padding-top: 9.5rem;
+            padding-bottom: 2.75rem;
+          }
+
+          .hero-mobile-offset .developer-credit {
+            margin-bottom: 1.75rem;
+            font-size: 0.9rem;
+          }
+
+          .hero-mobile-offset .btn-outline {
+            padding: 0.75rem 1.15rem;
+            font-size: 0.95rem;
+          }
+
+          .subject-heading-wrap {
+            margin-bottom: 1.2rem;
+            padding-left: 1rem;
+            padding-right: 1rem;
+          }
+
+          .subject-heading-title {
+            font-size: clamp(1.3rem, 6vw, 1.7rem);
+            margin-bottom: 0.55rem;
+            line-height: 1.2;
+          }
+
+          .subject-heading-copy {
+            font-size: 0.88rem;
+            line-height: 1.35;
+          }
+
+          .pill-grid {
+            max-width: 380px;
+            gap: 0.55rem;
+            padding: 0 0.65rem;
+          }
+
+          .pill-card {
+            min-height: 50px;
+            padding: 6px 10px;
+          }
+
+          .pill-content {
+            font-size: clamp(0.72rem, 2.9vw, 0.84rem);
+            letter-spacing: 0.02em;
+            text-transform: none;
+            padding: 0 0.15rem;
           }
         }
 
@@ -352,7 +404,7 @@ export default function Home() {
       </nav>
 
       {/* ── Hero Section ── */}
-      <section className="relative pt-36 sm:pt-32 pb-24 px-6">
+      <section className="relative pt-36 sm:pt-32 pb-24 px-6 hero-mobile-offset">
         <div className="max-w-4xl mx-auto text-center">
           <p
             className="animate-fade-in-up developer-credit mb-12"
@@ -380,15 +432,15 @@ export default function Home() {
       <section className="relative pb-24">
         <div className="w-full">
           {/* Section heading */}
-          <div className="text-center mb-10 px-6">
+          <div className="text-center mb-10 px-6 subject-heading-wrap">
             <h2
-              className="animate-fade-in-up text-[clamp(1.6rem,3.5vw,2.25rem)] font-bold mb-4 text-[var(--text-primary)]"
+              className="animate-fade-in-up text-[clamp(1.6rem,3.5vw,2.25rem)] font-bold mb-4 text-[var(--text-primary)] subject-heading-title"
               style={{ animationDelay: "600ms", fontFamily: "'SF Pro Display', 'Helvetica Neue', sans-serif" }}
             >
               Choose Your <span className="gradient-text">Subject</span>
             </h2>
             <p
-              className="animate-fade-in-up text-slate-500"
+              className="animate-fade-in-up text-slate-500 subject-heading-copy"
               style={{ animationDelay: "650ms" }}
             >
               Select a subject to begin your practice session
