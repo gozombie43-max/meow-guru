@@ -1,7 +1,7 @@
 import Link from "next/link";
 import {
   Calculator, Brain, BookOpen, Globe,
-  Menu, ArrowRight, Sparkles, Zap,
+  Menu, ArrowRight, Zap,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -82,7 +82,7 @@ export default function Home() {
           <div className="flex items-center gap-2.5">
             <Zap className="w-6 h-6 text-cyan-500" />
             <span className="text-xl font-bold tracking-tight gradient-text font-sans">
-              SSC AI
+              STUDY WITH GURU
             </span>
           </div>
           <button
@@ -97,37 +97,16 @@ export default function Home() {
       {/* ── Hero Section ── */}
       <section className="relative pt-40 pb-24 px-6">
         <div className="max-w-4xl mx-auto text-center">
-          {/* Badge */}
-          <div
-            className="animate-fade-in-up glass-header-badge inline-flex items-center gap-2"
-          >
-            <Sparkles className="w-4 h-4 text-cyan-500" />
-            <span className="text-sm tracking-wide">
-              AI-Powered Learning Platform
-            </span>
-          </div>
-
           {/* Headline */}
           <h1
             className="animate-fade-in-up text-[clamp(2.5rem,6vw,4.5rem)] font-bold leading-[1.08] tracking-tight mb-6 text-[var(--text-primary)]"
             style={{ animationDelay: "150ms", fontFamily: "'SF Pro Display', 'Helvetica Neue', sans-serif" }}
           >
-            Master SSC Exams
-            <br />
-            <span className="gradient-text">with AI Intelligence</span>
+            <span className="gradient-text">STUDY WITH GURU</span>
           </h1>
 
-          {/* Subtitle */}
           <p
-            className="animate-fade-in-up text-[clamp(1rem,2vw,1.2rem)] text-slate-500 max-w-2xl mx-auto mb-3 leading-relaxed"
-            style={{ animationDelay: "300ms" }}
-          >
-            Practice smarter with adaptive AI that analyzes your strengths,
-            identifies weak areas, and creates personalized study paths for SSC
-            success.
-          </p>
-          <p
-            className="animate-fade-in-up text-sm text-slate-400 mb-12"
+            className="animate-fade-in-up developer-credit mb-12"
             style={{ animationDelay: "350ms" }}
           >
             Developed by{" "}
@@ -172,39 +151,39 @@ export default function Home() {
           </div>
 
           {/* Card grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {subjects.map((subject, i) => (
               <Link
                 key={subject.title}
                 href={subject.href}
-                className={`glass-card ${subject.cardGlow} rounded-2xl p-6 cursor-pointer group animate-fade-in-up block`}
+                className={`glass-card ${subject.cardGlow} rounded-2xl p-4 cursor-pointer group animate-fade-in-up block`}
                 style={{ animationDelay: `${700 + i * 120}ms` }}
               >
                 {/* Icon */}
                 <div
-                  className={`w-12 h-12 rounded-xl ${subject.iconBg} flex items-center justify-center mb-5`}
+                  className={`w-10 h-10 rounded-xl ${subject.iconBg} flex items-center justify-center mb-3`}
                 >
                   <subject.icon
-                    className={`w-6 h-6 ${subject.iconColor}`}
+                    className={`w-5 h-5 ${subject.iconColor}`}
                   />
                 </div>
 
                 {/* Title */}
-                <h3 className="text-lg font-semibold mb-2 tracking-tight text-[var(--text-primary)]" style={{ fontFamily: "'SF Pro Display', 'Helvetica Neue', sans-serif" }}>
+                <h3 className="text-base font-semibold mb-1.5 tracking-tight text-[var(--text-primary)]" style={{ fontFamily: "'SF Pro Display', 'Helvetica Neue', sans-serif" }}>
                   {subject.title}
                 </h3>
 
                 {/* Description */}
-                <p className="text-sm text-slate-500 mb-4 leading-relaxed">
+                <p className="text-xs text-slate-500 mb-3 leading-relaxed">
                   {subject.description}
                 </p>
 
                 {/* Topic chips */}
-                <div className="flex flex-wrap gap-2 mb-5">
+                <div className="flex flex-wrap gap-1.5 mb-3">
                   {subject.chips.map((chip) => (
                     <span
                       key={chip}
-                      className="text-xs px-2.5 py-1 rounded-full bg-white/20 text-slate-500 border border-white/30"
+                      className="text-[10px] px-2 py-0.5 rounded-full bg-white/20 text-slate-500 border border-white/30"
                     >
                       {chip}
                     </span>
@@ -213,10 +192,10 @@ export default function Home() {
 
                 {/* Action link */}
                 <div
-                  className={`flex items-center gap-1.5 text-sm text-slate-500 ${subject.hoverText} transition-colors`}
+                  className={`flex items-center gap-1 text-xs text-slate-500 ${subject.hoverText} transition-colors`}
                 >
                   <span>Start Practice</span>
-                  <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+                  <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-1" />
                 </div>
               </Link>
             ))}
