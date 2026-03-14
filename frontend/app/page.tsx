@@ -76,18 +76,20 @@ export default function Home() {
           display: flex;
           align-items: center;
           justify-content: center;
-          min-height: 98px;
-          padding: 16px 32px;
+          min-height: 88px;
+          padding: 14px 26px;
           color: #fff;
           text-decoration: none;
           background:
-            radial-gradient(circle at 24% 18%, rgba(255, 255, 255, 0.68) 0%, rgba(255, 255, 255, 0.18) 24%, rgba(255, 255, 255, 0) 52%),
-            radial-gradient(circle at 50% 96%, rgba(255, 255, 255, 0.32) 0%, rgba(255, 255, 255, 0) 48%),
+            radial-gradient(circle at 22% 14%, rgba(255, 255, 255, 0.84) 0%, rgba(255, 255, 255, 0.22) 28%, rgba(255, 255, 255, 0) 56%),
+            radial-gradient(circle at 50% 96%, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 50%),
             linear-gradient(140deg, var(--pill-light) 2%, var(--pill-base) 52%, var(--pill-dark) 100%);
           box-shadow:
-            0 8px 30px var(--pill-glow),
-            inset 0 1px 0 rgba(255, 255, 255, 0.5),
-            inset 0 -8px 16px rgba(0, 0, 0, 0.1);
+            0 12px 34px color-mix(in srgb, var(--pill-base) 62%, transparent),
+            0 3px 10px color-mix(in srgb, var(--pill-dark) 45%, transparent),
+            0 0 26px color-mix(in srgb, var(--pill-base) 38%, transparent),
+            inset 0 2px 0 rgba(255, 255, 255, 0.62),
+            inset 0 -10px 20px rgba(0, 0, 0, 0.14);
           transform: scale(0.6);
           opacity: 0;
           animation:
@@ -101,9 +103,10 @@ export default function Home() {
           transform: scale(1.06);
           filter: brightness(1.1);
           box-shadow:
-            0 14px 40px color-mix(in srgb, var(--pill-base) 72%, transparent),
-            inset 0 1px 0 rgba(255, 255, 255, 0.56),
-            inset 0 -10px 18px rgba(0, 0, 0, 0.12);
+            0 16px 42px color-mix(in srgb, var(--pill-base) 75%, transparent),
+            0 0 34px color-mix(in srgb, var(--pill-base) 50%, transparent),
+            inset 0 2px 0 rgba(255, 255, 255, 0.68),
+            inset 0 -10px 20px rgba(0, 0, 0, 0.14);
         }
 
         .pill-card:active {
@@ -117,12 +120,12 @@ export default function Home() {
 
         .pill-gloss-top {
           position: absolute;
-          top: 0;
-          left: 10%;
-          width: 80%;
-          height: 45%;
-          background: radial-gradient(ellipse at top, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0) 72%);
-          opacity: 0.55;
+          top: -2%;
+          left: 8%;
+          width: 84%;
+          height: 48%;
+          background: radial-gradient(ellipse at top, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0) 74%);
+          opacity: 0.72;
           border-radius: 999px 999px 120px 120px;
           pointer-events: none;
         }
@@ -133,10 +136,38 @@ export default function Home() {
           left: 20%;
           width: 55%;
           height: 20%;
-          background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.62) 0%, rgba(255, 255, 255, 0) 74%);
-          opacity: 0.3;
+          background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.74) 0%, rgba(255, 255, 255, 0) 74%);
+          opacity: 0.44;
           border-radius: 999px;
           pointer-events: none;
+        }
+
+        .guru-neon {
+          background: linear-gradient(95deg, #66fff2 0%, #6ad9ff 24%, #8ec5ff 48%, #7dff90 72%, #66fff2 100%);
+          background-size: 260% 100%;
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+          animation: guru-neon-shift 5.6s linear infinite;
+          text-shadow:
+            0 0 8px rgba(102, 255, 242, 0.45),
+            0 0 16px rgba(106, 217, 255, 0.35),
+            0 0 24px rgba(125, 255, 144, 0.25);
+        }
+
+        @keyframes guru-neon-shift {
+          0% {
+            background-position: 0% 50%;
+            filter: hue-rotate(0deg);
+          }
+          50% {
+            background-position: 100% 50%;
+            filter: hue-rotate(26deg);
+          }
+          100% {
+            background-position: 0% 50%;
+            filter: hue-rotate(0deg);
+          }
         }
 
         .pill-content {
@@ -185,8 +216,8 @@ export default function Home() {
           }
 
           .pill-card {
-            min-height: 86px;
-            padding: 14px 22px;
+            min-height: 80px;
+            padding: 12px 20px;
           }
 
           .pill-content {
@@ -209,7 +240,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <Zap className="w-6 h-6 text-cyan-500" />
-            <span className="text-xl font-bold tracking-tight gradient-text font-sans">
+            <span className="text-xl font-bold tracking-tight font-sans guru-neon">
               STUDY WITH GURU
             </span>
           </div>
@@ -223,19 +254,11 @@ export default function Home() {
       </nav>
 
       {/* ── Hero Section ── */}
-      <section className="relative pt-40 pb-24 px-6">
+      <section className="relative pt-32 pb-24 px-6">
         <div className="max-w-4xl mx-auto text-center">
-          {/* Headline */}
-          <h1
-            className="animate-fade-in-up text-[clamp(2.5rem,6vw,4.5rem)] font-bold leading-[1.08] tracking-tight mb-6 text-[var(--text-primary)]"
-            style={{ animationDelay: "150ms", fontFamily: "'SF Pro Display', 'Helvetica Neue', sans-serif" }}
-          >
-            <span className="gradient-text">STUDY WITH GURU</span>
-          </h1>
-
           <p
             className="animate-fade-in-up developer-credit mb-12"
-            style={{ animationDelay: "350ms" }}
+            style={{ animationDelay: "250ms" }}
           >
             Developed by{" "}
             <span className="gradient-text-subtle font-medium">
