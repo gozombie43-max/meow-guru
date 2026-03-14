@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SSC AI Exam Platform",
-  description: "Master SSC exams with AI-powered adaptive learning. Practice Mathematics, Reasoning, English, and General Awareness.",
+  title: "STUDY WITH GURU",
+  description: "START YOUR PREPARATION.",
 };
 
 export default function RootLayout({
