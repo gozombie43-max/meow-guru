@@ -81,32 +81,68 @@ export default function Home() {
           color: #fff;
           text-decoration: none;
           background:
-            radial-gradient(circle at 22% 14%, rgba(255, 255, 255, 0.84) 0%, rgba(255, 255, 255, 0.22) 28%, rgba(255, 255, 255, 0) 56%),
-            radial-gradient(circle at 50% 96%, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 50%),
+            radial-gradient(circle at 20% 16%, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0.1) 28%, rgba(255, 255, 255, 0) 58%),
+            radial-gradient(circle at 52% 96%, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0) 50%),
             linear-gradient(140deg, var(--pill-light) 2%, var(--pill-base) 52%, var(--pill-dark) 100%);
           box-shadow:
-            0 12px 34px color-mix(in srgb, var(--pill-base) 62%, transparent),
-            0 3px 10px color-mix(in srgb, var(--pill-dark) 45%, transparent),
-            0 0 26px color-mix(in srgb, var(--pill-base) 38%, transparent),
-            inset 0 2px 0 rgba(255, 255, 255, 0.62),
-            inset 0 -10px 20px rgba(0, 0, 0, 0.14);
+            0 10px 26px color-mix(in srgb, var(--pill-base) 54%, transparent),
+            0 3px 10px color-mix(in srgb, var(--pill-dark) 38%, transparent),
+            0 0 18px color-mix(in srgb, var(--pill-base) 20%, transparent),
+            inset 0 1px 0 rgba(255, 255, 255, 0.35),
+            inset 0 -8px 16px rgba(0, 0, 0, 0.1);
           transform: scale(0.6);
           opacity: 0;
           animation:
             pill-entry 500ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
-            pill-float 3s ease-in-out infinite;
-          transition: transform 200ms ease, box-shadow 200ms ease, filter 200ms ease;
+            pill-breathe 4.8s ease-in-out infinite;
+          transition: transform 240ms ease, box-shadow 240ms ease, filter 240ms ease;
           will-change: transform, box-shadow, filter;
         }
 
+        .pill-card::before {
+          content: "";
+          position: absolute;
+          top: -34%;
+          left: -42%;
+          width: 40%;
+          height: 170%;
+          background: linear-gradient(
+            115deg,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.2) 44%,
+            rgba(255, 255, 255, 0.62) 50%,
+            rgba(255, 255, 255, 0.2) 56%,
+            rgba(255, 255, 255, 0) 100%
+          );
+          transform: translateX(-170%) rotate(12deg);
+          animation: pill-shimmer 4.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+          pointer-events: none;
+          z-index: 0;
+        }
+
+        .pill-card::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          border-radius: inherit;
+          box-shadow: 0 0 24px rgba(255, 140, 50, 0.22);
+          opacity: 0.6;
+          animation: pill-glow-pulse 4.8s ease-in-out infinite;
+          pointer-events: none;
+        }
+
         .pill-card:hover {
-          transform: scale(1.06);
-          filter: brightness(1.1);
+          transform: scale(1.05);
+          filter: brightness(1.04);
           box-shadow:
-            0 16px 42px color-mix(in srgb, var(--pill-base) 75%, transparent),
-            0 0 34px color-mix(in srgb, var(--pill-base) 50%, transparent),
-            inset 0 2px 0 rgba(255, 255, 255, 0.68),
-            inset 0 -10px 20px rgba(0, 0, 0, 0.14);
+            0 16px 34px color-mix(in srgb, var(--pill-base) 64%, transparent),
+            0 0 20px color-mix(in srgb, var(--pill-base) 30%, transparent),
+            inset 0 1px 0 rgba(255, 255, 255, 0.42),
+            inset 0 -8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .pill-card:hover::before {
+          animation-duration: 2.2s;
         }
 
         .pill-card:active {
@@ -124,10 +160,11 @@ export default function Home() {
           left: 8%;
           width: 84%;
           height: 48%;
-          background: radial-gradient(ellipse at top, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0) 74%);
-          opacity: 0.72;
+          background: radial-gradient(ellipse at top, rgba(255, 255, 255, 0.68) 0%, rgba(255, 255, 255, 0) 74%);
+          opacity: 0.32;
           border-radius: 999px 999px 120px 120px;
           pointer-events: none;
+          z-index: 1;
         }
 
         .pill-gloss-bottom {
@@ -136,10 +173,11 @@ export default function Home() {
           left: 20%;
           width: 55%;
           height: 20%;
-          background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.74) 0%, rgba(255, 255, 255, 0) 74%);
-          opacity: 0.44;
+          background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.46) 0%, rgba(255, 255, 255, 0) 74%);
+          opacity: 0.24;
           border-radius: 999px;
           pointer-events: none;
+          z-index: 1;
         }
 
         .guru-neon {
@@ -172,7 +210,7 @@ export default function Home() {
 
         .pill-content {
           position: relative;
-          z-index: 1;
+          z-index: 2;
           font-family: "Segoe UI", "Helvetica Neue", sans-serif;
           font-size: clamp(1rem, 2vw, 1.25rem);
           font-weight: 600;
@@ -197,13 +235,54 @@ export default function Home() {
           }
         }
 
-        @keyframes pill-float {
+        @keyframes pill-breathe {
           0%,
           100% {
-            transform: translateY(0);
+            box-shadow:
+              0 10px 26px color-mix(in srgb, var(--pill-base) 54%, transparent),
+              0 3px 10px color-mix(in srgb, var(--pill-dark) 38%, transparent),
+              0 0 16px rgba(255, 140, 50, 0.18),
+              inset 0 1px 0 rgba(255, 255, 255, 0.35),
+              inset 0 -8px 16px rgba(0, 0, 0, 0.1);
           }
           50% {
-            transform: translateY(-4px);
+            box-shadow:
+              0 12px 30px color-mix(in srgb, var(--pill-base) 58%, transparent),
+              0 4px 12px color-mix(in srgb, var(--pill-dark) 42%, transparent),
+              0 0 26px rgba(255, 140, 50, 0.32),
+              inset 0 1px 0 rgba(255, 255, 255, 0.4),
+              inset 0 -8px 16px rgba(0, 0, 0, 0.1);
+          }
+        }
+
+        @keyframes pill-glow-pulse {
+          0%,
+          100% {
+            opacity: 0.42;
+            box-shadow: 0 0 18px rgba(255, 140, 50, 0.2);
+          }
+          50% {
+            opacity: 0.74;
+            box-shadow: 0 0 28px rgba(255, 140, 50, 0.34);
+          }
+        }
+
+        @keyframes pill-shimmer {
+          0% {
+            transform: translateX(-170%) rotate(12deg);
+            opacity: 0;
+          }
+          10% {
+            opacity: 0.9;
+          }
+          22% {
+            transform: translateX(310%) rotate(12deg);
+            opacity: 0.9;
+          }
+          30%,
+          100% {
+            transform: translateX(310%) rotate(12deg);
+            opacity: 0;
           }
         }
 
@@ -216,8 +295,8 @@ export default function Home() {
           }
 
           .pill-card {
-            min-height: 80px;
-            padding: 12px 20px;
+            min-height: 74px;
+            padding: 10px 18px;
           }
 
           .pill-content {
@@ -232,15 +311,20 @@ export default function Home() {
             opacity: 1;
             transition: none;
           }
+
+          .pill-card::before,
+          .pill-card::after {
+            animation: none;
+          }
         }
       `}</style>
 
       {/* ── Navigation ── */}
       <nav className="fixed top-0 left-0 right-0 z-50 glass">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
             <Zap className="w-6 h-6 text-cyan-500" />
-            <span className="text-xl font-bold tracking-tight font-sans guru-neon">
+            <span className="text-sm sm:text-xl font-bold tracking-tight font-sans guru-neon whitespace-nowrap leading-none">
               STUDY WITH GURU
             </span>
           </div>
@@ -254,7 +338,7 @@ export default function Home() {
       </nav>
 
       {/* ── Hero Section ── */}
-      <section className="relative pt-32 pb-24 px-6">
+      <section className="relative pt-36 sm:pt-32 pb-24 px-6">
         <div className="max-w-4xl mx-auto text-center">
           <p
             className="animate-fade-in-up developer-credit mb-12"
@@ -275,7 +359,7 @@ export default function Home() {
               href="/mathematics"
               className="btn-glow px-8 py-3.5 rounded-xl font-semibold flex items-center gap-2 text-base cursor-pointer"
             >
-              Start Practicing
+              start practicing
               <ArrowRight className="w-4 h-4" />
             </Link>
             <button className="btn-outline px-8 py-3.5 rounded-xl font-medium text-base cursor-pointer">
