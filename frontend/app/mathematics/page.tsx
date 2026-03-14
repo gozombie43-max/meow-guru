@@ -1,201 +1,354 @@
+"use client";
+
+import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Zap, Menu } from "lucide-react";
+import { ArrowLeft, Search } from "lucide-react";
 
-/* ── Topic data ───────────────────────────────────────── */
-
-interface Topic {
+interface TopicItem {
   title: string;
-  emoji: string;
-  description: string;
+  subtitle: string;
   slug: string;
-  accentColor: string;
-  glowColor: string;
-  bgGlow: string;
+  thumbnail: string;
 }
 
-const topics: Topic[] = [
+const mathTopics: TopicItem[] = [
   {
     title: "Number System",
-    emoji: "🔢",
-    description:
-      "Master HCF, LCM, divisibility rules, prime numbers, and number properties essential for SSC.",
+    subtitle: "HCF, LCM, divisibility, primes and base concepts",
     slug: "number-system",
-    accentColor: "text-cyan-500",
-    glowColor: "hover:border-cyan-400/30 hover:shadow-[0_0_24px_rgba(0,229,255,0.15)]",
-    bgGlow: "bg-cyan-500/10",
+    thumbnail:
+      "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=200&q=80",
   },
   {
     title: "Arithmetic",
-    emoji: "➕",
-    description:
-      "Percentage, profit & loss, simple & compound interest, ratio & proportion, time & work.",
+    subtitle: "Percentages, ratio, profit-loss, SI-CI, time-work",
     slug: "arithmetic",
-    accentColor: "text-teal-500",
-    glowColor: "hover:border-teal-400/30 hover:shadow-[0_0_24px_rgba(38,198,218,0.15)]",
-    bgGlow: "bg-teal-500/10",
+    thumbnail:
+      "https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&w=200&q=80",
   },
   {
     title: "Algebra",
-    emoji: "✖️",
-    description:
-      "Linear equations, quadratic equations, polynomials, algebraic identities, and simplification.",
+    subtitle: "Equations, identities, polynomials and simplification",
     slug: "algebra",
-    accentColor: "text-indigo-400",
-    glowColor: "hover:border-indigo-400/30 hover:shadow-[0_0_24px_rgba(165,180,252,0.20)]",
-    bgGlow: "bg-indigo-400/10",
+    thumbnail:
+      "https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?auto=format&fit=crop&w=200&q=80",
   },
   {
     title: "Geometry",
-    emoji: "📐",
-    description:
-      "Lines, angles, triangles, circles, quadrilaterals, and coordinate geometry fundamentals.",
+    subtitle: "Angles, triangles, circles and theorem-based problems",
     slug: "geometry",
-    accentColor: "text-sky-400",
-    glowColor: "hover:border-sky-400/30 hover:shadow-[0_0_24px_rgba(0,180,220,0.15)]",
-    bgGlow: "bg-sky-400/10",
+    thumbnail:
+      "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=200&q=80",
   },
   {
     title: "Mensuration",
-    emoji: "📏",
-    description:
-      "Area, perimeter, surface area, and volume of 2D and 3D shapes for competitive exams.",
+    subtitle: "Area, perimeter, TSA, CSA and volume of solids",
     slug: "mensuration",
-    accentColor: "text-cyan-400",
-    glowColor: "hover:border-cyan-400/30 hover:shadow-[0_0_24px_rgba(0,229,255,0.15)]",
-    bgGlow: "bg-cyan-400/10",
+    thumbnail:
+      "https://images.unsplash.com/photo-1453733190371-0a9bedd82893?auto=format&fit=crop&w=200&q=80",
   },
   {
     title: "Trigonometry",
-    emoji: "📊",
-    description:
-      "Trigonometric ratios, identities, heights & distances, and angle-based problem solving.",
+    subtitle: "Ratios, identities, heights and distances practice",
     slug: "trigonometry",
-    accentColor: "text-teal-400",
-    glowColor: "hover:border-teal-400/30 hover:shadow-[0_0_24px_rgba(38,198,218,0.15)]",
-    bgGlow: "bg-teal-400/10",
+    thumbnail:
+      "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=200&q=80",
   },
   {
     title: "Statistics & Probability",
-    emoji: "📈",
-    description:
-      "Mean, median, mode, data interpretation, and probability concepts for SSC examinations.",
+    subtitle: "Mean, median, mode, DI and probability rules",
     slug: "statistics-probability",
-    accentColor: "text-indigo-300",
-    glowColor: "hover:border-indigo-300/30 hover:shadow-[0_0_24px_rgba(165,180,252,0.15)]",
-    bgGlow: "bg-indigo-300/10",
+    thumbnail:
+      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=200&q=80",
   },
 ];
 
-/* ── Page ──────────────────────────────────────────────── */
+function TopicCard({ topic }: { topic: TopicItem }) {
+  return (
+    <Link href={`/mathematics/${topic.slug}`} className="topic-card" aria-label={`Open ${topic.title}`}>
+      <div className="topic-thumb-wrap">
+        <img src={topic.thumbnail} alt={topic.title} className="topic-thumb" loading="lazy" />
+      </div>
+      <div className="topic-copy">
+        <h2 className="topic-title">{topic.title}</h2>
+        <p className="topic-subtitle">{topic.subtitle}</p>
+      </div>
+    </Link>
+  );
+}
 
 export default function MathematicsPage() {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredTopics = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+
+    if (!normalizedQuery) {
+      return mathTopics;
+    }
+
+    return mathTopics.filter((topic) => {
+      const combinedText = `${topic.title} ${topic.subtitle}`.toLowerCase();
+      return combinedText.includes(normalizedQuery);
+    });
+  }, [searchQuery]);
+
   return (
-    <div className="min-h-screen relative overflow-hidden">
-
-      {/* ── Navigation ── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 glass">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <Zap className="w-6 h-6 text-cyan-500" />
-            <span className="text-xl font-bold tracking-tight gradient-text font-sans">
-              SSC AI
-            </span>
-          </div>
-          <button
-            className="p-2 rounded-lg hover:bg-white/10 transition-colors"
-            aria-label="Menu"
-          >
-            <Menu className="w-5 h-5 text-slate-500" />
-          </button>
-        </div>
-      </nav>
-
-      {/* ── Page Header ── */}
-      <section className="relative pt-28 pb-12 px-6">
-        <div className="max-w-6xl mx-auto">
-          {/* Back button */}
-          <Link
-            href="/"
-            className="animate-fade-in-up inline-flex items-center gap-2 text-sm text-slate-500 hover:text-[var(--text-primary)] transition-colors mb-10 group"
-          >
-            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-            <span>Back to Subjects</span>
+    <main className="math-topics-page">
+      <header className="math-header">
+        <div className="header-inner">
+          <Link href="/" className="header-back" aria-label="Back to home">
+            <ArrowLeft size={20} strokeWidth={2.3} />
           </Link>
+          <h1 className="header-title">Mathematics Topics</h1>
+          <div className="header-spacer" aria-hidden="true" />
+        </div>
+      </header>
 
-          {/* Page heading */}
-          <div className="flex items-center gap-4 mb-3">
-            <div
-              className="animate-fade-in-up w-14 h-14 rounded-2xl bg-cyan-500/10 flex items-center justify-center"
-              style={{ animationDelay: "100ms" }}
-            >
-              <span className="text-2xl">🧮</span>
+      <section className="content-wrap" aria-label="Topic listing area">
+        <div className="search-wrap">
+          <Search className="search-icon" size={18} />
+          <input
+            type="text"
+            className="search-input"
+            placeholder="Search"
+            aria-label="Search topics"
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+          />
+        </div>
+
+        <div className="topic-list">
+          {filteredTopics.map((topic) => (
+            <TopicCard key={topic.slug} topic={topic} />
+          ))}
+
+          {filteredTopics.length === 0 ? (
+            <div className="empty-state" role="status" aria-live="polite">
+              No topics found. Try a different search term.
             </div>
-            <h1
-              className="animate-fade-in-up text-[clamp(2rem,5vw,3.5rem)] font-bold tracking-tight text-[var(--text-primary)]"
-              style={{ animationDelay: "150ms", fontFamily: "'SF Pro Display', 'Helvetica Neue', sans-serif" }}
-            >
-              <span className="gradient-text">Mathematics</span> Topics
-            </h1>
-          </div>
-          <p
-            className="animate-fade-in-up text-slate-500 text-[clamp(0.95rem,1.8vw,1.1rem)] max-w-2xl leading-relaxed"
-            style={{ animationDelay: "250ms" }}
-          >
-            Select a topic to start practicing. Each section contains AI-curated
-            questions tailored for SSC CGL, CHSL, and MTS exams.
-          </p>
+          ) : null}
         </div>
       </section>
 
-      {/* ── Topic Cards ── */}
-      <section className="relative px-6 pb-32">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {topics.map((topic, i) => (
-              <Link
-                key={topic.slug}
-                href={`/mathematics/${topic.slug}`}
-                className={`glass-card ${topic.glowColor} rounded-2xl p-6 cursor-pointer group animate-fade-in-up block`}
-                style={{ animationDelay: `${350 + i * 100}ms` }}
-              >
-                {/* Top row: emoji + arrow */}
-                <div className="flex items-start justify-between mb-4">
-                  <div
-                    className={`w-12 h-12 rounded-xl ${topic.bgGlow} flex items-center justify-center`}
-                  >
-                    <span className="text-xl">{topic.emoji}</span>
-                  </div>
-                  <ArrowRight
-                    className={`w-4 h-4 text-slate-400 ${topic.accentColor.replace("text-", "group-hover:text-")} transition-all group-hover:translate-x-1`}
-                  />
-                </div>
+      <style>{`
+        .math-topics-page {
+          min-height: 100vh;
+          background: #f5f6f8;
+          color: #1f2937;
+          font-family: "Poppins", "Segoe UI", "Helvetica Neue", sans-serif;
+        }
 
-                {/* Title */}
-                <h3 className="text-lg font-semibold mb-2 tracking-tight text-[var(--text-primary)]" style={{ fontFamily: "'SF Pro Display', 'Helvetica Neue', sans-serif" }}>
-                  {topic.title}
-                </h3>
+        .math-header {
+          position: sticky;
+          top: 0;
+          z-index: 30;
+          background: rgba(245, 246, 248, 0.93);
+          backdrop-filter: blur(10px);
+          border-bottom: 1px solid #e8ebf0;
+        }
 
-                {/* Description */}
-                <p className="text-sm text-slate-500 leading-relaxed">
-                  {topic.description}
-                </p>
+        .header-inner {
+          max-width: 740px;
+          margin: 0 auto;
+          min-height: 64px;
+          display: grid;
+          grid-template-columns: 40px 1fr 40px;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 16px;
+        }
 
-                {/* Bottom accent bar */}
-                <div className="mt-5 h-px w-full bg-gradient-to-r from-transparent via-cyan-300/20 to-transparent" />
+        .header-back {
+          width: 40px;
+          height: 40px;
+          border-radius: 999px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          color: #111827;
+          text-decoration: none;
+          transition: background-color 0.2s ease;
+        }
 
-                {/* Action hint */}
-                <div className="mt-4 flex items-center gap-1.5 text-xs text-slate-500 group-hover:text-[var(--text-primary)] transition-colors">
-                  <span>Start Practice</span>
-                  <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5" />
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
+        .header-back:hover {
+          background: #e8edf3;
+        }
 
-      {/* ── Footer accent line ── */}
-      <div className="h-px w-full bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent" />
-    </div>
+        .header-title {
+          text-align: center;
+          font-size: 1.05rem;
+          font-weight: 700;
+          letter-spacing: 0.01em;
+          color: #111827;
+        }
+
+        .header-spacer {
+          width: 40px;
+          height: 40px;
+        }
+
+        .content-wrap {
+          max-width: 740px;
+          margin: 0 auto;
+          padding: 14px 14px 28px;
+        }
+
+        .search-wrap {
+          position: relative;
+          margin: 4px 2px 16px;
+        }
+
+        .search-icon {
+          position: absolute;
+          top: 50%;
+          left: 14px;
+          transform: translateY(-50%);
+          color: #9aa3b2;
+          pointer-events: none;
+        }
+
+        .search-input {
+          width: 100%;
+          border: none;
+          outline: none;
+          border-radius: 18px;
+          background: #ffffff;
+          height: 48px;
+          padding: 0 14px 0 42px;
+          font-size: 0.95rem;
+          color: #1f2937;
+          box-shadow: 0 6px 20px rgba(16, 24, 40, 0.07);
+          transition: box-shadow 0.25s ease;
+        }
+
+        .search-input::placeholder {
+          color: #9aa3b2;
+        }
+
+        .search-input:focus {
+          box-shadow: 0 8px 24px rgba(16, 24, 40, 0.12);
+        }
+
+        .topic-list {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          padding-bottom: 10px;
+        }
+
+        .topic-card {
+          width: 100%;
+          background: #ffffff;
+          border-radius: 18px;
+          padding: 14px;
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          text-decoration: none;
+          box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+          transition: transform 0.25s ease, box-shadow 0.25s ease;
+          cursor: pointer;
+        }
+
+        .topic-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 12px 30px rgba(15, 23, 42, 0.13);
+        }
+
+        .topic-card:focus-visible {
+          outline: 2px solid #7aa8ff;
+          outline-offset: 2px;
+        }
+
+        .topic-thumb-wrap {
+          flex: 0 0 auto;
+          width: 64px;
+          height: 64px;
+          border-radius: 999px;
+          overflow: hidden;
+          background: #edf2f7;
+          border: 2px solid #f2f4f7;
+        }
+
+        .topic-thumb {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+        }
+
+        .topic-copy {
+          min-width: 0;
+        }
+
+        .topic-title {
+          margin: 0;
+          font-size: 1.02rem;
+          line-height: 1.2;
+          font-weight: 700;
+          color: #1f2937;
+        }
+
+        .topic-subtitle {
+          margin: 6px 0 0;
+          font-size: 0.86rem;
+          line-height: 1.45;
+          color: #6b7280;
+        }
+
+        .empty-state {
+          border-radius: 16px;
+          background: #ffffff;
+          color: #6b7280;
+          text-align: center;
+          padding: 18px;
+          font-size: 0.9rem;
+          box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+        }
+
+        @media (min-width: 768px) {
+          .header-inner {
+            min-height: 70px;
+            padding: 12px 22px;
+          }
+
+          .header-title {
+            font-size: 1.15rem;
+          }
+
+          .content-wrap {
+            padding: 20px 20px 40px;
+          }
+
+          .search-wrap {
+            margin: 4px 2px 20px;
+          }
+
+          .topic-list {
+            gap: 14px;
+          }
+
+          .topic-card {
+            border-radius: 20px;
+            padding: 16px;
+            gap: 16px;
+          }
+
+          .topic-thumb-wrap {
+            width: 70px;
+            height: 70px;
+          }
+
+          .topic-title {
+            font-size: 1.08rem;
+          }
+
+          .topic-subtitle {
+            font-size: 0.9rem;
+          }
+        }
+      `}</style>
+    </main>
   );
 }
