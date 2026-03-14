@@ -12,8 +12,6 @@ interface Subject {
   icon: LucideIcon;
   iconBg: string;
   iconColor: string;
-  description: string;
-  tags: string[];
   boxTint: string;
   href: string;
 }
@@ -24,9 +22,6 @@ const subjects: Subject[] = [
     icon: Calculator,
     iconBg: "bg-[#d9f2f2]",
     iconColor: "text-[#2ab5b5]",
-    description:
-      "Master arithmetic, algebra, geometry, and data interpretation with AI-guided practice.",
-    tags: ["Algebra", "Geometry", "Arithmetic", "DI"],
     boxTint: "from-[#d6e8f5] to-[#dbeaf6]",
     href: "/mathematics",
   },
@@ -35,9 +30,6 @@ const subjects: Subject[] = [
     icon: Brain,
     iconBg: "bg-[#d9f2f2]",
     iconColor: "text-[#2ab5b5]",
-    description:
-      "Sharpen logical and analytical reasoning with pattern-based adaptive questions.",
-    tags: ["Logical", "Analytical", "Patterns", "Series"],
     boxTint: "from-[#dce6f5] to-[#e3ebf7]",
     href: "/reasoning",
   },
@@ -46,9 +38,6 @@ const subjects: Subject[] = [
     icon: BookOpen,
     iconBg: "bg-[#d9f2f2]",
     iconColor: "text-[#2ab5b5]",
-    description:
-      "Improve grammar, vocabulary, and comprehension with contextual AI exercises.",
-    tags: ["Grammar", "Vocabulary", "Comprehension"],
     boxTint: "from-[#d4e9f7] to-[#dbedf9]",
     href: "/english",
   },
@@ -57,9 +46,6 @@ const subjects: Subject[] = [
     icon: Globe,
     iconBg: "bg-[#d9f2f2]",
     iconColor: "text-[#2ab5b5]",
-    description:
-      "Stay updated with current affairs, history, polity, and science for SSC exams.",
-    tags: ["Current Affairs", "History", "Science"],
     boxTint: "from-[#cfe4f0] to-[#d8e9f3]",
     href: "/general-awareness",
   },
@@ -167,16 +153,6 @@ export default function Home() {
                 >
                   {subject.title}
                 </h3>
-
-                <p className="text-[15px] text-slate-600 leading-6 max-w-3xl mb-3">
-                  {subject.description}
-                </p>
-
-                <div className="flex flex-wrap gap-x-4 gap-y-1 mb-3 text-[13px] text-[#555]">
-                  {subject.tags.map((tag) => (
-                    <span key={tag}>{tag}</span>
-                  ))}
-                </div>
 
                 <Link
                   href={subject.href}
