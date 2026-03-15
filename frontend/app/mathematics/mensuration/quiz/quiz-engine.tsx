@@ -558,22 +558,11 @@ export default function QuizEngine() {
     if (index < 0 || index >= currentQ.options.length) return;
 
     setSelectedAnswer(index);
-    setSubmitError("");
-  }, [currentQ, isAnswered]);
-
-  const handleSubmitAnswer = useCallback(() => {
-    if (isAnswered || !currentQ || selectedAnswer === null) {
-      if (!isAnswered && selectedAnswer === null) {
-        setSubmitError("Select an option before submitting.");
-      }
-      return;
-    }
-
     setIsAnswered(true);
     stopTimer();
 
     const timeTaken = Math.max(1, maxTime - timeLeft);
-    const isCorrect = selectedAnswer === currentQ.correctAnswer;
+    const isCorrect = index === currentQ.correctAnswer;
     adaptDifficulty(isCorrect);
 
     if (isCorrect) {
@@ -591,7 +580,7 @@ export default function QuizEngine() {
       {
         questionId: currentQ.id,
         questionIndex: currentIndex,
-        selected: selectedAnswer,
+        selected: index,
         correct: currentQ.correctAnswer,
         isCorrect,
         timeTaken,
@@ -605,7 +594,12 @@ export default function QuizEngine() {
       return next;
     });
     setSubmitError("");
-  }, [adaptDifficulty, currentIndex, currentQ, isAnswered, maxTime, selectedAnswer, stopTimer, timeLeft]);
+  }, [adaptDifficulty, currentIndex, currentQ, isAnswered, maxTime, stopTimer, timeLeft]);
+
+  const handlePrev = useCallback(() => {
+    if (currentIndex <= 0) return;
+    showQuestion(currentIndex - 1);
+  }, [currentIndex, showQuestion]);
 
   function handleNext() {
     if (currentIndex < questions.length - 1) {
@@ -719,18 +713,18 @@ export default function QuizEngine() {
   /* ── Option style helper ── */
   function optionClass(index: number) {
     const base =
-      "w-full text-left px-5 py-4 rounded-md border transition-all duration-300 cursor-pointer";
+      "w-full text-left px-5 py-[1.05rem] rounded-xl border-2 transition-all duration-300 cursor-pointer";
     if (!isAnswered) {
       if (selectedAnswer === index)
-        return `${base} border-cyan-500/60 bg-cyan-500/10 text-[var(--text-primary)] shadow-[0_10px_24px_rgba(34,211,238,0.15)]`;
-      return `${base} border-white/30 bg-white/10 text-slate-600 hover:border-cyan-300/60 hover:bg-white/18`;
+        return `${base} border-cyan-500/70 bg-cyan-500/10 text-[var(--text-primary)] shadow-[0_10px_24px_rgba(34,211,238,0.15)]`;
+      return `${base} border-slate-300/90 bg-white/80 text-slate-700 hover:border-cyan-400/70 hover:bg-cyan-50/60`;
     }
     // After answering
     if (index === currentQ!.correctAnswer)
-      return `${base} border-emerald-500/40 bg-emerald-500/10 text-emerald-700`;
+      return `${base} border-emerald-500/65 bg-emerald-500/10 text-emerald-700`;
     if (index === selectedAnswer && index !== currentQ!.correctAnswer)
-      return `${base} border-red-500/40 bg-red-500/10 text-red-600`;
-    return `${base} border-white/20 bg-white/5 text-slate-400`;
+      return `${base} border-red-500/65 bg-red-500/10 text-red-600`;
+    return `${base} border-slate-300/80 bg-white/55 text-slate-500`;
   }
 
   /* ════════════════════════════════════════════════════════
@@ -978,50 +972,45 @@ export default function QuizEngine() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
+    <div
+      className="min-h-screen relative overflow-hidden"
+      style={{
+        background:
+          "linear-gradient(165deg, #ecf4ff 0%, #eef8ff 38%, #f7fbff 100%)",
+        fontFamily: "Poppins, Inter, 'Segoe UI', sans-serif",
+      }}
+    >
       {/* Background */}
 
       {/* ── Top Bar ── */}
-      <div className="fixed top-0 left-0 right-0 z-50 glass">
-        <div className="max-w-4xl mx-auto px-6">
+      <div className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200/70">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6">
           <div className="h-16 flex items-center justify-between">
             <Link
               href="/mathematics/mensuration"
-              className="flex items-center gap-2 text-sm text-slate-500 hover:text-[var(--text-primary)] transition-colors group"
+              className="inline-flex items-center justify-center w-10 h-10 rounded-full border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition-colors"
             >
-              <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-              <span className="hidden sm:inline">Exit Quiz</span>
+              <ArrowLeft className="w-4 h-4" />
             </Link>
 
-            <div className="flex items-center gap-3">
-              {/* Streak badge */}
-              {streak >= 2 && (
-                <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/25 text-cyan-600 text-xs font-semibold">
-                  <Flame className="w-3 h-3" /> {streak}
-                </div>
-              )}
-
-              {/* Mini mode indicator */}
-              {miniMode && (
-                <div className="px-2.5 py-1 rounded-full bg-teal-500/10 border border-teal-500/25 text-teal-600 text-[11px] font-medium">
-                  MINI
-                </div>
-              )}
-
-
+            <div className="text-sm font-semibold text-slate-700">
+              Question {currentIndex + 1}/{questions.length}
             </div>
+
+            <button
+              onClick={openPalette}
+              className="inline-flex items-center justify-center w-10 h-10 rounded-full border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition-colors"
+              aria-label="Open question palette"
+            >
+              <Menu className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </div>
 
-      {/* ── Fixed Bottom-Right Timer ── */}
-      <div className="fixed bottom-6 right-6 z-50 glass rounded-2xl p-3 shadow-lg">
-        <TimerCircle timeLeft={timeLeft} maxTime={maxTime} mini={miniMode} />
-      </div>
-
       {/* ── Question Area ── */}
       <div
-        className={`pt-24 pb-20 px-6 max-w-3xl mx-auto relative ${miniMode ? "pt-22" : ""}`}
+        className={`pt-22 pb-16 px-4 sm:px-6 max-w-3xl mx-auto relative ${miniMode ? "pt-22" : ""}`}
       >
         {/* Question Navigator */}
         <QuestionNavigator
@@ -1035,35 +1024,11 @@ export default function QuizEngine() {
           isPaletteOpen={isPaletteOpen}
         />
 
-        {/* Stats bar */}
-        <div className="flex items-center justify-between mb-6 text-sm">
-          <div className="flex items-center gap-4 flex-wrap">
-            <MathFraction
-              numerator={<span className="text-[var(--text-primary)] font-semibold">{currentIndex + 1}</span>}
-              denominator={questions.length}
-              className="text-sm"
-            />
-            <span className="flex items-center gap-1 text-emerald-600">
-              <CheckCircle2 className="w-3.5 h-3.5" /> {stats.correct}
-            </span>
-            <span className="flex items-center gap-1 text-red-500">
-              <XCircle className="w-3.5 h-3.5" /> {stats.wrong}
-            </span>
-            {stats.accuracy > 0 && (
-              <span className="text-slate-500">{stats.accuracy}%</span>
-            )}
-          </div>
-          <span
-            className={`text-xs px-2.5 py-1 rounded-full border capitalize ${DIFFICULTY_COLORS[difficulty]}`}
-          >
-            {difficulty}
-          </span>
-        </div>
-
         {/* Question Card */}
         <div
           key={currentQ.id}
-          className={`glass-card rounded-2xl ${miniMode ? "p-5" : "p-7 sm:p-8"} mb-6 animate-fade-in-up`}
+          className={`rounded-3xl border border-white/80 ${miniMode ? "p-5" : "p-6 sm:p-8"} mb-6 animate-fade-in-up shadow-[0_16px_38px_rgba(15,23,42,0.12)]`}
+          style={{ background: "linear-gradient(145deg, #ffffff 0%, #f3f8ff 100%)" }}
           onTouchStart={(event) => {
             const touch = event.changedTouches[0];
             touchStartXRef.current = touch.clientX;
@@ -1099,14 +1064,27 @@ export default function QuizEngine() {
           {/* Question text */}
           <h2
             className={`font-semibold leading-relaxed mb-7 ${
-              miniMode ? "text-base" : "text-lg sm:text-xl"
+              miniMode ? "text-base" : "text-lg sm:text-[1.4rem]"
             }`}
           >
             <MathText text={currentQ.question} />
           </h2>
 
+          <div className="mb-6 rounded-2xl border border-slate-200 bg-white/75 px-4 py-3">
+            <div className="mb-2 flex items-center justify-between text-sm font-medium text-slate-600">
+              <span>Time</span>
+              <span>{timeLeft}s / 1 minute</span>
+            </div>
+            <div className="h-2.5 w-full rounded-full bg-slate-200 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-1000 ease-linear"
+                style={{ width: `${Math.max(0, (timeLeft / maxTime) * 100)}%` }}
+              />
+            </div>
+          </div>
+
           {/* Options */}
-          <div className="space-y-3">
+          <div className="space-y-3.5">
             {currentQ.options.map((opt, i) => (
               <motion.button
                 key={i}
@@ -1133,9 +1111,9 @@ export default function QuizEngine() {
                   >
                     {String.fromCharCode(65 + i)}
                   </span>
-                  <span><MathText text={opt} /></span>
+                  <span className="flex-1 text-center"><MathText text={opt} /></span>
                   {isAnswered && i === currentQ.correctAnswer && (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 ml-auto shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 ml-auto shrink-0 animate-pulse" />
                   )}
                   {isAnswered &&
                     i === selectedAnswer &&
@@ -1146,21 +1124,6 @@ export default function QuizEngine() {
               </motion.button>
             ))}
           </div>
-
-          {!isAnswered && (
-            <div className="mt-5 flex flex-col items-center gap-2">
-              <button
-                type="button"
-                onClick={handleSubmitAnswer}
-                className="btn-glow px-6 py-3 rounded-xl font-semibold flex items-center gap-2 cursor-pointer"
-              >
-                Submit Answer
-              </button>
-              {submitError && (
-                <p className="text-sm text-red-500">{submitError}</p>
-              )}
-            </div>
-          )}
         </div>
 
         {/* Correct/Wrong status */}
@@ -1197,23 +1160,27 @@ export default function QuizEngine() {
           </div>
         )}
 
-        {/* Next button */}
-        {isAnswered && (
+        <div className="mt-7 grid grid-cols-2 gap-3">
+          <button
+            onClick={handlePrev}
+            disabled={currentIndex === 0}
+            className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 font-semibold text-white bg-gradient-to-r from-orange-500 to-amber-500 shadow-[0_10px_22px_rgba(249,115,22,0.32)] hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-45 disabled:cursor-not-allowed"
+          >
+            <ArrowLeft className="w-4 h-4" /> Prev
+          </button>
+
           <button
             onClick={handleNext}
-            className="btn-glow px-6 py-3 rounded-xl font-semibold flex items-center gap-2 mx-auto cursor-pointer animate-fade-in-up"
+            disabled={!isAnswered}
+            className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 font-semibold text-white bg-gradient-to-r from-orange-500 to-amber-500 shadow-[0_10px_22px_rgba(249,115,22,0.32)] hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-45 disabled:cursor-not-allowed"
           >
             {currentIndex < questions.length - 1 ? (
-              <>
-                Next Question <ArrowRight className="w-4 h-4" />
-              </>
+              <>Next <ArrowRight className="w-4 h-4" /></>
             ) : (
-              <>
-                View Results <BarChart3 className="w-4 h-4" />
-              </>
+              <>Finish <BarChart3 className="w-4 h-4" /></>
             )}
           </button>
-        )}
+        </div>
       </div>
     </div>
   );
