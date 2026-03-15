@@ -7,7 +7,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowLeft, ArrowRight, Sparkles, Target,
   CheckCircle2, XCircle, BarChart3, Flame,
-  RotateCcw, Lightbulb, X,
+  RotateCcw, Lightbulb, Menu, X,
 } from "lucide-react";
 import {
   algebraQuestions,
@@ -292,15 +292,6 @@ function QuestionNavigator({
   return (
     <>
       <div className="mb-5 space-y-3 rounded-2xl border border-slate-200 bg-white/95 p-3 shadow-[0_8px_24px_rgba(15,23,42,0.08)] backdrop-blur">
-        <div className="grid grid-cols-1 gap-2">
-          <button
-            onClick={onOpenPalette}
-            className="h-12 rounded-xl border border-slate-300 bg-slate-900 text-sm font-semibold text-white shadow-sm"
-          >
-            Open Question Palette
-          </button>
-        </div>
-
         <div className="rounded-xl border border-slate-200 bg-slate-50 px-1 py-1.5">
           <div className="question-strip qnav-bar-scroll mx-auto" style={{ scrollSnapType: "x mandatory" }}>
             {Array.from({ length: total }, (_, index) => {
@@ -720,18 +711,18 @@ export default function QuizEngine() {
   /* ── Option style helper ── */
   function optionClass(index: number) {
     const base =
-      "w-full text-left px-5 py-4 rounded-md border transition-all duration-300 cursor-pointer";
+      "w-full text-left px-5 py-[1.05rem] rounded-xl border-2 transition-all duration-300 cursor-pointer";
     if (!isAnswered) {
       if (selectedAnswer === index)
-        return `${base} border-cyan-500/60 bg-cyan-500/10 text-[var(--text-primary)] shadow-[0_10px_24px_rgba(34,211,238,0.15)]`;
-      return `${base} border-white/30 bg-white/10 text-slate-600 hover:border-cyan-300/60 hover:bg-white/18`;
+        return `${base} border-cyan-500/70 bg-cyan-500/10 text-[var(--text-primary)] shadow-[0_10px_24px_rgba(34,211,238,0.15)]`;
+      return `${base} border-slate-300/90 bg-white/80 text-slate-700 hover:border-cyan-400/70 hover:bg-cyan-50/60`;
     }
     // After answering
     if (index === currentQ!.correctAnswer)
-      return `${base} border-emerald-500/40 bg-emerald-500/10 text-emerald-700`;
+      return `${base} border-emerald-500/65 bg-emerald-500/10 text-emerald-700`;
     if (index === selectedAnswer && index !== currentQ!.correctAnswer)
-      return `${base} border-red-500/40 bg-red-500/10 text-red-600`;
-    return `${base} border-white/20 bg-white/5 text-slate-400`;
+      return `${base} border-red-500/65 bg-red-500/10 text-red-600`;
+    return `${base} border-slate-300/80 bg-white/55 text-slate-500`;
   }
 
   /* ════════════════════════════════════════════════════════
@@ -1054,6 +1045,14 @@ export default function QuizEngine() {
                 </div>
               )}
 
+              <button
+                onClick={openPalette}
+                className="sm:hidden inline-flex items-center gap-2 px-3.5 py-2 rounded-full border border-slate-300 bg-white text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors"
+                aria-label="Open question palette menu"
+              >
+                <Menu className="w-4 h-4" /> Menu
+              </button>
+
               {/* Mini mode indicator */}
               {miniMode && (
                 <div className="px-2.5 py-1 rounded-full bg-teal-500/10 border border-teal-500/25 text-teal-600 text-[11px] font-medium">
@@ -1210,9 +1209,9 @@ export default function QuizEngine() {
               <button
                 type="button"
                 onClick={handleSubmitAnswer}
-                className="btn-glow px-6 py-3 rounded-xl font-semibold flex items-center gap-2 cursor-pointer"
+                className="px-7 py-2.5 rounded-full border border-cyan-500/35 bg-cyan-500 text-white font-semibold shadow-[0_8px_18px_rgba(6,182,212,0.35)] hover:bg-cyan-600 hover:shadow-[0_10px_22px_rgba(8,145,178,0.45)] transition-all duration-200 cursor-pointer"
               >
-                Submit Answer
+                Submit
               </button>
               {submitError && (
                 <p className="text-sm text-red-500">{submitError}</p>
