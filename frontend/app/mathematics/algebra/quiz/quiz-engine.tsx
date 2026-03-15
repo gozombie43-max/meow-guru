@@ -978,7 +978,9 @@ export default function QuizEngine() {
             {MODE_LABELS[mode]}
           </h1>
           <p className="text-slate-500 mb-12">
-            {questions.length} questions loaded · 60s per question
+            {mode === "concept"
+              ? "Concept Practice · 60s per question"
+              : `${questions.length} questions loaded · 60s per question`}
           </p>
 
           <button
@@ -1001,8 +1003,8 @@ export default function QuizEngine() {
 
           .start-quiz-button {
             position: relative;
-            width: min(88vw, 370px);
-            min-height: 82px;
+            width: min(82vw, 300px);
+            min-height: 64px;
             border: 0;
             border-radius: 999px;
             cursor: pointer;
@@ -1010,8 +1012,8 @@ export default function QuizEngine() {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.65rem;
-            padding: 0 2rem;
+            gap: 0.5rem;
+            padding: 0 1.5rem;
             background: linear-gradient(130deg, #7c3aed 0%, #a21caf 48%, #2563eb 100%);
             background-size: 190% 190%;
             color: #ffffff;
@@ -1050,8 +1052,8 @@ export default function QuizEngine() {
           .start-quiz-icon {
             position: relative;
             z-index: 2;
-            width: 1.08rem;
-            height: 1.08rem;
+            width: 0.95rem;
+            height: 0.95rem;
             stroke-width: 2.4;
             color: #ffffff;
             filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.55));
@@ -1061,7 +1063,7 @@ export default function QuizEngine() {
           .start-quiz-label {
             position: relative;
             z-index: 2;
-            font-size: clamp(1.02rem, 3vw, 1.28rem);
+            font-size: clamp(0.95rem, 2.7vw, 1.08rem);
             font-weight: 800;
             letter-spacing: 0.02em;
             color: #ffffff;
@@ -1137,8 +1139,8 @@ export default function QuizEngine() {
 
           @media (max-width: 640px) {
             .start-quiz-button {
-              width: min(92vw, 332px);
-              min-height: 76px;
+              width: min(84vw, 270px);
+              min-height: 58px;
             }
           }
         `}</style>

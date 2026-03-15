@@ -997,7 +997,7 @@ export default function QuizEngine() {
           </div>
         </nav>
 
-        <div className="pt-28 pb-20 px-6 max-w-2xl mx-auto relative text-center">
+        <div className="pt-24 pb-10 px-4 sm:px-6 max-w-2xl mx-auto relative text-center min-h-screen flex flex-col">
           <Link
             href="/mathematics/mensuration"
             className="animate-fade-in-up inline-flex items-center gap-2 text-sm text-slate-500 hover:text-[var(--text-primary)] transition-colors mb-12 group"
@@ -1013,10 +1013,12 @@ export default function QuizEngine() {
             {MODE_LABELS[mode]}
           </h1>
           <p
-            className="animate-fade-in-up text-slate-500 mb-8"
+            className="animate-fade-in-up text-slate-500 mb-7 px-2"
             style={{ animationDelay: "200ms" }}
           >
-            {questions.length} questions loaded · {miniMode ? "20s" : "60s"} per question
+            {mode === "concept"
+              ? `Concept Practice · ${miniMode ? "20s" : "60s"} per question`
+              : `${questions.length} questions loaded · ${miniMode ? "20s" : "60s"} per question`}
           </p>
 
           {/* Controls */}
@@ -1079,13 +1081,15 @@ export default function QuizEngine() {
             </div>
           </div>
 
-          <button
-            onClick={handleStart}
-            className="animate-fade-in-up btn-glow px-10 py-4 rounded-xl font-semibold text-lg flex items-center gap-3 mx-auto cursor-pointer"
-            style={{ animationDelay: "400ms" }}
-          >
-            Start Quiz <ChevronRight className="w-5 h-5" />
-          </button>
+          <div className="flex-1 flex items-center justify-center">
+            <button
+              onClick={handleStart}
+              className="animate-fade-in-up btn-glow px-7 sm:px-8 py-2.5 sm:py-3 rounded-xl font-semibold text-base sm:text-lg flex items-center gap-2 sm:gap-2.5 mx-auto cursor-pointer"
+              style={{ animationDelay: "400ms" }}
+            >
+              Start Quiz <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
+            </button>
+          </div>
         </div>
       </div>
     );
