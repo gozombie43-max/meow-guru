@@ -1,161 +1,404 @@
 import Link from "next/link";
-import {
-  ArrowLeft, ArrowRight, Zap, Menu, Layers3, ListChecks, Trophy,
-} from "lucide-react";
-
-interface PracticeMode {
+interface FeatureCardData {
   title: string;
-  slug: string;
-  description: string;
+  href: string;
+  gradient: string;
   icon: React.ReactNode;
-  accent: string;
-  glow: string;
-  chipLabel: string;
 }
 
-const modes: PracticeMode[] = [
+function FeatureCard({ title, href, gradient, icon }: FeatureCardData) {
+  return (
+    <Link href={href} className="feature-card" style={{ background: gradient }}>
+      <div className="feature-glow" aria-hidden="true" />
+      <div className="feature-icon-wrap" aria-hidden="true">
+        {icon}
+      </div>
+      <p className="feature-title">{title}</p>
+    </Link>
+  );
+}
+
+const featureCards: FeatureCardData[] = [
   {
     title: "All Concepts",
-    slug: "all",
-    description:
-      "Practice the full Mensuration bank across circle, area, volume, and mixed exam patterns.",
-    icon: <Layers3 className="w-6 h-6" />,
-    accent: "text-cyan-500",
-    glow: "hover:border-cyan-400/30 hover:shadow-[0_0_24px_rgba(0,229,255,0.15)]",
-    chipLabel: "Full Practice",
+    href: "/mathematics/mensuration/quiz?mode=all",
+    gradient: "linear-gradient(135deg, #3f8cff 0%, #00c7ff 100%)",
+    icon: (
+      <svg viewBox="0 0 24 24" className="feature-icon" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 6h16" />
+        <path d="M4 12h16" />
+        <path d="M4 18h16" />
+        <circle cx="8" cy="6" r="1.5" />
+        <circle cx="14" cy="12" r="1.5" />
+        <circle cx="10" cy="18" r="1.5" />
+      </svg>
+    ),
   },
   {
     title: "Each Concept",
-    slug: "concept",
-    description:
-      "Start concept-wise practice and choose a specific Mensuration concept before beginning.",
-    icon: <ListChecks className="w-6 h-6" />,
-    accent: "text-teal-500",
-    glow: "hover:border-teal-400/30 hover:shadow-[0_0_24px_rgba(38,198,218,0.15)]",
-    chipLabel: "Concept Wise",
+    href: "/mathematics/mensuration/quiz?mode=concept",
+    gradient: "linear-gradient(135deg, #7f5af0 0%, #3f8cff 100%)",
+    icon: (
+      <svg viewBox="0 0 24 24" className="feature-icon" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M7 4h10" />
+        <path d="M12 4v16" />
+        <circle cx="12" cy="16" r="4" />
+      </svg>
+    ),
   },
   {
     title: "Tier 2",
-    slug: "tier2",
-    description:
-      "Attempt only SSC Tier 2 level Mensuration questions for high-difficulty exam simulation.",
-    icon: <Trophy className="w-6 h-6" />,
-    accent: "text-amber-500",
-    glow: "hover:border-amber-400/30 hover:shadow-[0_0_24px_rgba(245,158,11,0.15)]",
-    chipLabel: "High Difficulty",
+    href: "/mathematics/mensuration/quiz?mode=tier2",
+    gradient: "linear-gradient(135deg, #ff7eb3 0%, #ff9f1c 100%)",
+    icon: (
+      <svg viewBox="0 0 24 24" className="feature-icon" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M8 21h8" />
+        <path d="M12 3v14" />
+        <path d="M7 8H4a2 2 0 0 0-2 2v1a5 5 0 0 0 5 5h1" />
+        <path d="M17 8h3a2 2 0 0 1 2 2v1a5 5 0 0 1-5 5h-1" />
+      </svg>
+    ),
   },
 ];
 
 export default function MensurationPage() {
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      <nav className="fixed top-0 left-0 right-0 z-50 glass">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <Zap className="w-6 h-6 text-cyan-500" />
-            <span className="text-xl font-bold tracking-tight gradient-text font-sans">
-              SSC AI
-            </span>
+    <main className="mensuration-page">
+      <div className="mensuration-container">
+        <header className="mensuration-header">
+          <p className="mensuration-eyebrow">Mathematics</p>
+          <h1 className="mensuration-title">Mensuration</h1>
+        </header>
+
+        <section className="promo-banner">
+          <div className="banner-content">
+            <p className="banner-kicker">Mensuration Track 2026</p>
+            <h2>Master area, perimeter, and volume with smart drills</h2>
+            <p className="banner-subtitle">
+              Practice exam-style sets with guided progression from fundamentals to Tier 2 level.
+            </p>
           </div>
-          <button className="p-2 rounded-lg hover:bg-white/10 transition-colors" aria-label="Menu">
-            <Menu className="w-5 h-5 text-slate-500" />
-          </button>
-        </div>
-      </nav>
 
-      <section className="relative pt-28 pb-8 px-6">
-        <div className="max-w-5xl mx-auto">
-          <Link
-            href="/mathematics"
-            className="animate-fade-in-up inline-flex items-center gap-2 text-sm text-slate-500 hover:text-[var(--text-primary)] transition-colors mb-10 group"
-          >
-            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-            <span>Back to Mathematics</span>
-          </Link>
-
-          <div className="flex items-center gap-4 mb-3">
-            <div
-              className="animate-fade-in-up w-14 h-14 rounded-2xl bg-cyan-500/10 flex items-center justify-center"
-              style={{ animationDelay: "100ms" }}
-            >
-              <span className="text-2xl">📏</span>
-            </div>
-            <h1
-              className="animate-fade-in-up text-[clamp(2rem,5vw,3rem)] font-bold tracking-tight text-[var(--text-primary)]"
-              style={{ animationDelay: "150ms", fontFamily: "'SF Pro Display', 'Helvetica Neue', sans-serif" }}
-            >
-              <span className="gradient-text">Mensuration</span>
-            </h1>
+          <div className="banner-illustration" aria-hidden="true">
+            <svg viewBox="0 0 120 120" className="ruler-svg" fill="none">
+              <rect x="24" y="34" width="72" height="52" rx="8" stroke="rgba(255,255,255,0.38)" strokeWidth="2" />
+              <path d="M34 44v8M42 44v5M50 44v8M58 44v5M66 44v8M74 44v5M82 44v8" stroke="white" strokeWidth="2" strokeLinecap="round" />
+              <path d="M34 70h52" stroke="white" strokeWidth="2.2" strokeLinecap="round" />
+            </svg>
           </div>
-          <p
-            className="animate-fade-in-up text-slate-500 text-[clamp(0.95rem,1.8vw,1.1rem)] max-w-2xl leading-relaxed mb-2"
-            style={{ animationDelay: "250ms" }}
-          >
-            725 questions from SSC CGL, CHSL, CPO, MTS and Tier 2 patterns.
-            Choose how you want to start.
-          </p>
+        </section>
 
-          <div
-            className="animate-fade-in-up flex flex-wrap items-center gap-4 mt-6"
-            style={{ animationDelay: "300ms" }}
-          >
-            {[
-              { label: "Questions", value: "725" },
-              { label: "Start Modes", value: "3" },
-              { label: "Difficulty Levels", value: "3" },
-            ].map((s) => (
-              <div
-                key={s.label}
-                className="flex items-center gap-2 px-4 py-2 rounded-full glass text-sm"
-              >
-                <span className="text-[var(--text-primary)] font-semibold">{s.value}</span>
-                <span className="text-slate-500">{s.label}</span>
-              </div>
+        <section className="feature-section">
+          <h2>Explore Features</h2>
+          <p className="feature-subtitle">Pick your mensuration mode and start a focused practice session.</p>
+
+          <div className="feature-grid">
+            {featureCards.map((card) => (
+              <FeatureCard key={card.title} {...card} />
             ))}
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
 
-      <section className="relative px-6 pt-8 pb-32">
-        <div className="max-w-5xl mx-auto">
-          <h2
-            className="animate-fade-in-up text-xl font-semibold mb-8 text-[var(--text-primary)]"
-            style={{ animationDelay: "350ms", fontFamily: "'SF Pro Display', 'Helvetica Neue', sans-serif" }}
-          >
-            Choose Start Option
-          </h2>
+      <style>{`
+        .mensuration-page {
+          min-height: 100vh;
+          background: #f6f7fb;
+          padding: 16px 14px 32px;
+          font-family: "Poppins", "Inter", "Segoe UI", sans-serif;
+        }
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {modes.map((mode, i) => (
-              <Link
-                key={mode.slug}
-                href={`/mathematics/mensuration/quiz?mode=${mode.slug}`}
-                className={`glass-card ${mode.glow} rounded-2xl p-7 cursor-pointer group animate-fade-in-up block`}
-                style={{ animationDelay: `${400 + i * 100}ms` }}
-              >
-                <div className="flex items-start justify-between mb-5">
-                  <div className={`${mode.accent}`}>{mode.icon}</div>
-                  <span className="text-[11px] px-2.5 py-1 rounded-full bg-white/20 text-slate-500 border border-white/30">
-                    {mode.chipLabel}
-                  </span>
-                </div>
-                <h3 className="text-lg font-semibold mb-2 tracking-tight text-[var(--text-primary)]" style={{ fontFamily: "'SF Pro Display', 'Helvetica Neue', sans-serif" }}>
-                  {mode.title}
-                </h3>
-                <p className="text-sm text-slate-500 leading-relaxed mb-5">
-                  {mode.description}
-                </p>
-                <div className="flex items-center gap-1.5 text-sm text-slate-500 transition-colors group-hover:text-[var(--text-primary)]">
-                  <span>Start Session</span>
-                  <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
+        .mensuration-container {
+          max-width: 1040px;
+          margin: 0 auto;
+        }
 
-      <div className="h-px w-full bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent" />
-    </div>
+        .mensuration-header {
+          margin: 4px 2px 12px;
+          animation: fade-slide 420ms ease both;
+        }
+
+        .mensuration-eyebrow {
+          margin: 0;
+          font-size: 0.76rem;
+          color: #6a7493;
+          letter-spacing: 0.08em;
+          font-weight: 600;
+          text-transform: uppercase;
+        }
+
+        .mensuration-title {
+          margin: 4px 0 0;
+          color: #202846;
+          font-size: clamp(1.4rem, 1.2rem + 1vw, 2rem);
+          line-height: 1.15;
+          font-weight: 700;
+        }
+
+        .promo-banner {
+          position: relative;
+          overflow: hidden;
+          border-radius: 24px;
+          padding: 22px 18px;
+          background: linear-gradient(135deg, #4f9cff 0%, #00d2ff 100%);
+          box-shadow: 0 14px 32px rgba(79, 156, 255, 0.24);
+          display: grid;
+          grid-template-columns: 1fr auto;
+          gap: 14px;
+          margin-bottom: 22px;
+          animation: fade-slide 520ms ease both;
+        }
+
+        .promo-banner::before,
+        .promo-banner::after {
+          content: "";
+          position: absolute;
+          border-radius: 999px;
+          pointer-events: none;
+          background: rgba(255, 255, 255, 0.22);
+          filter: blur(0.4px);
+        }
+
+        .promo-banner::before {
+          width: 130px;
+          height: 130px;
+          top: -48px;
+          right: -26px;
+        }
+
+        .promo-banner::after {
+          width: 90px;
+          height: 90px;
+          bottom: -34px;
+          left: -22px;
+        }
+
+        .banner-content {
+          position: relative;
+          z-index: 1;
+          color: #fff;
+        }
+
+        .banner-kicker {
+          font-size: 0.78rem;
+          font-weight: 600;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          opacity: 0.9;
+          margin-bottom: 6px;
+        }
+
+        .banner-content h2 {
+          font-size: clamp(1.2rem, 2vw + 0.9rem, 2rem);
+          line-height: 1.2;
+          margin: 0 0 8px;
+          font-weight: 700;
+        }
+
+        .banner-subtitle {
+          font-size: 0.92rem;
+          line-height: 1.45;
+          opacity: 0.92;
+          max-width: 42ch;
+          margin: 0;
+        }
+
+        .banner-illustration {
+          width: 72px;
+          height: 72px;
+          border-radius: 20px;
+          background: rgba(255, 255, 255, 0.2);
+          border: 1px solid rgba(255, 255, 255, 0.4);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          align-self: center;
+          position: relative;
+          z-index: 1;
+          backdrop-filter: blur(3px);
+        }
+
+        .ruler-svg {
+          width: 44px;
+          height: 44px;
+        }
+
+        .feature-section h2 {
+          margin: 0;
+          color: #1f2a44;
+          font-weight: 650;
+          font-size: 1.1rem;
+          letter-spacing: 0.01em;
+          animation: fade-slide 620ms ease both;
+        }
+
+        .feature-subtitle {
+          margin: 6px 0 14px;
+          color: #68738f;
+          font-size: 0.9rem;
+          line-height: 1.4;
+          animation: fade-slide 680ms ease both;
+        }
+
+        .feature-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 12px;
+        }
+
+        .feature-card {
+          position: relative;
+          border-radius: 18px;
+          aspect-ratio: 1 / 1;
+          min-height: 140px;
+          text-decoration: none;
+          color: #fff;
+          box-shadow: 0 12px 22px rgba(76, 95, 179, 0.24);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          overflow: hidden;
+          transition: transform 0.26s ease, box-shadow 0.26s ease, filter 0.26s ease;
+          isolation: isolate;
+          animation: card-in 540ms ease both;
+        }
+
+        .feature-card:nth-child(1) { animation-delay: 80ms; }
+        .feature-card:nth-child(2) { animation-delay: 130ms; }
+        .feature-card:nth-child(3) { animation-delay: 180ms; }
+
+        .feature-card::after {
+          content: "";
+          position: absolute;
+          width: 90px;
+          height: 90px;
+          border-radius: 999px;
+          top: -22px;
+          right: -22px;
+          background: rgba(255, 255, 255, 0.18);
+          z-index: 0;
+        }
+
+        .feature-glow {
+          position: absolute;
+          width: 120px;
+          height: 120px;
+          border-radius: 999px;
+          left: -24px;
+          bottom: -30px;
+          background: rgba(255, 255, 255, 0.15);
+          filter: blur(2px);
+          z-index: 0;
+        }
+
+        .feature-icon-wrap {
+          width: 56px;
+          height: 56px;
+          border-radius: 16px;
+          border: 1px solid rgba(255, 255, 255, 0.35);
+          background: rgba(255, 255, 255, 0.16);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          position: relative;
+          z-index: 1;
+        }
+
+        .feature-icon {
+          width: 30px;
+          height: 30px;
+          color: #ffffff;
+        }
+
+        .feature-title {
+          margin: 0;
+          font-size: 0.94rem;
+          font-weight: 600;
+          letter-spacing: 0.01em;
+          text-align: center;
+          position: relative;
+          z-index: 1;
+        }
+
+        .feature-card:hover {
+          transform: translateY(-4px) scale(1.03);
+          box-shadow: 0 18px 30px rgba(70, 88, 166, 0.34);
+          filter: saturate(1.05);
+        }
+
+        .feature-card:focus-visible {
+          outline: 2px solid rgba(80, 120, 255, 0.8);
+          outline-offset: 2px;
+        }
+
+        @keyframes fade-slide {
+          from {
+            opacity: 0;
+            transform: translateY(8px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes card-in {
+          from {
+            opacity: 0;
+            transform: translateY(10px) scale(0.97);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+
+        @media (max-width: 480px) {
+          .feature-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        @media (min-width: 640px) {
+          .mensuration-page {
+            padding: 26px 20px 44px;
+          }
+
+          .mensuration-header {
+            margin-bottom: 16px;
+          }
+
+          .promo-banner {
+            padding: 28px 24px;
+            gap: 18px;
+          }
+
+          .banner-illustration {
+            width: 84px;
+            height: 84px;
+          }
+
+          .feature-grid {
+            gap: 16px;
+          }
+
+          .feature-card {
+            min-height: 160px;
+          }
+        }
+
+        @media (min-width: 900px) {
+          .feature-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+          }
+
+          .feature-card {
+            min-height: 172px;
+          }
+        }
+      `}</style>
+    </main>
   );
 }
