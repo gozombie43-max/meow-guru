@@ -7,7 +7,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowLeft, ArrowRight, Sparkles, Target,
   CheckCircle2, XCircle, BarChart3, Flame,
-  RotateCcw, Lightbulb, Flag, X,
+  RotateCcw, Lightbulb, X,
 } from "lucide-react";
 import {
   algebraQuestions,
@@ -267,37 +267,19 @@ function QuestionNavigator({
   currentIndex,
   answeredQuestions,
   markedForReview,
-  jumpValue,
-  jumpError,
-  onJumpValueChange,
-  onJumpSubmit,
   onGoToQuestion,
-  onFirst,
-  onPrevious,
-  onNext,
-  onLast,
   onOpenPalette,
   onClosePalette,
   isPaletteOpen,
-  onToggleReview,
 }: {
   total: number;
   currentIndex: number;
   answeredQuestions: Set<number>;
   markedForReview: Set<number>;
-  jumpValue: string;
-  jumpError: string;
-  onJumpValueChange: (value: string) => void;
-  onJumpSubmit: () => void;
   onGoToQuestion: (questionNumber: number) => void;
-  onFirst: () => void;
-  onPrevious: () => void;
-  onNext: () => void;
-  onLast: () => void;
   onOpenPalette: () => void;
   onClosePalette: () => void;
   isPaletteOpen: boolean;
-  onToggleReview: () => void;
 }) {
   const quickButtonRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
@@ -310,71 +292,14 @@ function QuestionNavigator({
   return (
     <>
       <div className="mb-5 space-y-3 rounded-2xl border border-slate-200 bg-white/95 p-3 shadow-[0_8px_24px_rgba(15,23,42,0.08)] backdrop-blur">
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          <button
-            onClick={onFirst}
-            disabled={currentIndex === 0}
-            className="h-12 rounded-xl border border-slate-300 bg-white text-sm font-semibold text-slate-700 shadow-sm transition-all duration-200 disabled:opacity-50"
-          >
-            First
-          </button>
-          <button
-            onClick={onPrevious}
-            disabled={currentIndex === 0}
-            className="h-12 rounded-xl border border-slate-300 bg-white text-sm font-semibold text-slate-700 shadow-sm transition-all duration-200 disabled:opacity-50"
-          >
-            Previous
-          </button>
-
-          <div className="col-span-2 grid grid-cols-[1fr_auto] gap-2 sm:col-span-1">
-            <input
-              value={jumpValue}
-              inputMode="numeric"
-              onChange={(event) => onJumpValueChange(event.target.value)}
-              placeholder={`1-${total}`}
-              className="h-12 rounded-xl border border-slate-300 px-3 text-sm text-slate-700 outline-none focus:border-blue-500"
-              aria-label="Jump to question"
-            />
-            <button
-              onClick={onJumpSubmit}
-              className="h-12 min-w-12 rounded-xl border border-blue-600 bg-blue-600 px-3 text-sm font-semibold text-white shadow-sm"
-            >
-              Go
-            </button>
-          </div>
-
-          <button
-            onClick={onNext}
-            disabled={currentIndex === total - 1}
-            className="h-12 rounded-xl border border-slate-300 bg-white text-sm font-semibold text-slate-700 shadow-sm transition-all duration-200 disabled:opacity-50"
-          >
-            Next
-          </button>
-          <button
-            onClick={onLast}
-            disabled={currentIndex === total - 1}
-            className="h-12 rounded-xl border border-slate-300 bg-white text-sm font-semibold text-slate-700 shadow-sm transition-all duration-200 disabled:opacity-50"
-          >
-            Last
-          </button>
-          <button
-            onClick={onToggleReview}
-            className={`h-12 rounded-xl border text-sm font-semibold shadow-sm ${markedForReview.has(currentIndex)
-              ? "border-orange-400 bg-orange-100 text-orange-700"
-              : "border-slate-300 bg-white text-slate-700"}`}
-          >
-            <span className="inline-flex items-center gap-1.5">
-              <Flag className="h-4 w-4" /> Review
-            </span>
-          </button>
+        <div className="grid grid-cols-1 gap-2">
           <button
             onClick={onOpenPalette}
-            className="col-span-2 h-12 rounded-xl border border-slate-300 bg-slate-900 text-sm font-semibold text-white shadow-sm sm:col-span-1"
+            className="h-12 rounded-xl border border-slate-300 bg-slate-900 text-sm font-semibold text-white shadow-sm"
           >
             Open Question Palette
           </button>
         </div>
-        {jumpError && <p className="text-xs font-medium text-red-500">{jumpError}</p>}
 
         <div className="rounded-xl border border-slate-200 bg-slate-50 px-1 py-1.5">
           <div className="question-strip qnav-bar-scroll mx-auto" style={{ scrollSnapType: "x mandatory" }}>
@@ -469,20 +394,6 @@ function TimerCircle({
   );
 }
 
-/* ── Progress Bar ──────────────────────────────────────── */
-
-function ProgressBar({ current, total }: { current: number; total: number }) {
-  const pct = total > 0 ? (current / total) * 100 : 0;
-  return (
-    <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-      <div
-        className="h-full bg-gradient-to-r from-cyan-400 to-teal-400 rounded-full transition-all duration-500"
-        style={{ width: `${pct}%` }}
-      />
-    </div>
-  );
-}
-
 /* ── Main Quiz Engine ──────────────────────────────────── */
 
 export default function QuizEngine() {
@@ -502,8 +413,6 @@ export default function QuizEngine() {
   const [results, setResults] = useState<SessionResult[]>([]);
   const [answeredQuestions, setAnsweredQuestions] = useState<Set<number>>(new Set());
   const [markedForReview, setMarkedForReview] = useState<Set<number>>(new Set());
-  const [jumpValue, setJumpValue] = useState("1");
-  const [jumpError, setJumpError] = useState("");
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [conceptFilter, setConceptFilter] = useState<string>("all");
   const [started, setStarted] = useState(false);
@@ -549,8 +458,6 @@ export default function QuizEngine() {
     setResults([]);
     setAnsweredQuestions(new Set());
     setMarkedForReview(new Set());
-    setJumpValue("1");
-    setJumpError("");
     setIsPaletteOpen(false);
     setStreak(0);
     setShowAnalytics(false);
@@ -626,28 +533,8 @@ export default function QuizEngine() {
   const goToQuestion = useCallback((questionNumber: number) => {
     if (questions.length === 0) return;
     const safeNumber = Math.max(1, Math.min(questionNumber, questions.length));
-    setJumpValue(String(safeNumber));
-    setJumpError("");
     showQuestion(safeNumber - 1);
   }, [questions.length, showQuestion]);
-
-  const nextQuestion = useCallback(() => {
-    goToQuestion(currentIndex + 2);
-  }, [currentIndex, goToQuestion]);
-
-  const previousQuestion = useCallback(() => {
-    goToQuestion(currentIndex);
-  }, [currentIndex, goToQuestion]);
-
-  const jumpToQuestion = useCallback(() => {
-    const parsed = Number.parseInt(jumpValue, 10);
-    if (Number.isNaN(parsed) || parsed < 1 || parsed > questions.length) {
-      setJumpError(`Enter 1 to ${questions.length}`);
-      return;
-    }
-    setJumpError("");
-    goToQuestion(parsed);
-  }, [goToQuestion, jumpValue, questions.length]);
 
   const openPalette = useCallback(() => {
     setIsPaletteOpen(true);
@@ -656,18 +543,6 @@ export default function QuizEngine() {
   const closePalette = useCallback(() => {
     setIsPaletteOpen(false);
   }, []);
-
-  const toggleReviewForCurrentQuestion = useCallback(() => {
-    setMarkedForReview((prev) => {
-      const next = new Set(prev);
-      if (next.has(currentIndex)) {
-        next.delete(currentIndex);
-      } else {
-        next.add(currentIndex);
-      }
-      return next;
-    });
-  }, [currentIndex]);
 
   const adaptDifficulty = useCallback((correct: boolean) => {
     const recent = [...results.slice(-4), { isCorrect: correct }];
@@ -750,8 +625,6 @@ export default function QuizEngine() {
     setResults([]);
     setAnsweredQuestions(new Set());
     setMarkedForReview(new Set());
-    setJumpValue("1");
-    setJumpError("");
     closePalette();
     setStreak(0);
     setBestStreak(0);
@@ -1191,7 +1064,6 @@ export default function QuizEngine() {
 
             </div>
           </div>
-          <ProgressBar current={currentIndex + 1} total={questions.length} />
         </div>
       </div>
 
@@ -1210,19 +1082,10 @@ export default function QuizEngine() {
           currentIndex={currentIndex}
           answeredQuestions={answeredQuestions}
           markedForReview={markedForReview}
-          jumpValue={jumpValue}
-          jumpError={jumpError}
-          onJumpValueChange={setJumpValue}
-          onJumpSubmit={jumpToQuestion}
           onGoToQuestion={goToQuestion}
-          onFirst={() => goToQuestion(1)}
-          onPrevious={previousQuestion}
-          onNext={nextQuestion}
-          onLast={() => goToQuestion(questions.length)}
           onOpenPalette={openPalette}
           onClosePalette={closePalette}
           isPaletteOpen={isPaletteOpen}
-          onToggleReview={toggleReviewForCurrentQuestion}
         />
 
         {/* Stats bar */}
