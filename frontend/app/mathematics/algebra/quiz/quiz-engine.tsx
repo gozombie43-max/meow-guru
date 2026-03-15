@@ -969,24 +969,28 @@ export default function QuizEngine() {
   /* ── Pre-start screen ── */
   if (!started) {
     return (
-      <div className="concept-start min-h-screen relative overflow-hidden flex items-center justify-center px-6">
-        <div className="w-full max-w-2xl text-center">
+      <div className="concept-start min-h-screen relative overflow-hidden px-4 sm:px-6">
+        <div className="w-full max-w-2xl mx-auto text-center min-h-screen flex flex-col pt-20 sm:pt-24 pb-8">
           <h1
             className="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-3 text-[var(--text-primary)]"
             style={{ fontFamily: "'SF Pro Display', 'Helvetica Neue', sans-serif" }}
           >
             {MODE_LABELS[mode]}
           </h1>
-          <p className="text-slate-500 mb-12">{MODE_LABELS[mode]} · 60s per question</p>
+          <p className="text-slate-500 mb-8 sm:mb-10">
+            {mode === "concept" ? "Concept Practice · 60s per question" : `${MODE_LABELS[mode]} · 60s per question`}
+          </p>
 
-          <button
-            onClick={handleStart}
-            className="start-quiz-button mx-auto"
-            aria-label="Start Quiz"
-          >
-            <Sparkles className="start-quiz-icon" aria-hidden="true" />
-            <span className="start-quiz-label">Start Quiz</span>
-          </button>
+          <div className="flex-1 flex items-center justify-center">
+            <button
+              onClick={handleStart}
+              className="start-quiz-button mx-auto"
+              aria-label="Start Quiz"
+            >
+              <Sparkles className="start-quiz-icon" aria-hidden="true" />
+              <span className="start-quiz-label">Start Quiz</span>
+            </button>
+          </div>
         </div>
 
         <style jsx>{`
@@ -999,8 +1003,8 @@ export default function QuizEngine() {
 
           .start-quiz-button {
             position: relative;
-            width: min(82vw, 300px);
-            min-height: 64px;
+            width: min(78vw, 260px);
+            min-height: 54px;
             border: 0;
             border-radius: 999px;
             cursor: pointer;
@@ -1008,8 +1012,8 @@ export default function QuizEngine() {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
-            padding: 0 1.5rem;
+            gap: 0.42rem;
+            padding: 0 1.2rem;
             background: linear-gradient(130deg, #7c3aed 0%, #a21caf 48%, #2563eb 100%);
             background-size: 190% 190%;
             color: #ffffff;
@@ -1048,8 +1052,8 @@ export default function QuizEngine() {
           .start-quiz-icon {
             position: relative;
             z-index: 2;
-            width: 0.95rem;
-            height: 0.95rem;
+            width: 0.88rem;
+            height: 0.88rem;
             stroke-width: 2.4;
             color: #ffffff;
             filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.55));
@@ -1059,7 +1063,7 @@ export default function QuizEngine() {
           .start-quiz-label {
             position: relative;
             z-index: 2;
-            font-size: clamp(0.95rem, 2.7vw, 1.08rem);
+            font-size: clamp(0.88rem, 2.5vw, 1rem);
             font-weight: 800;
             letter-spacing: 0.02em;
             color: #ffffff;
@@ -1135,8 +1139,8 @@ export default function QuizEngine() {
 
           @media (max-width: 640px) {
             .start-quiz-button {
-              width: min(84vw, 270px);
-              min-height: 58px;
+              width: min(72vw, 220px);
+              min-height: 50px;
             }
           }
         `}</style>
