@@ -977,11 +977,7 @@ export default function QuizEngine() {
           >
             {MODE_LABELS[mode]}
           </h1>
-          <p className="text-slate-500 mb-12">
-            {mode === "concept"
-              ? "Concept Practice · 60s per question"
-              : `${questions.length} questions loaded · 60s per question`}
-          </p>
+          <p className="text-slate-500 mb-12">{MODE_LABELS[mode]} · 60s per question</p>
 
           <button
             onClick={handleStart}
