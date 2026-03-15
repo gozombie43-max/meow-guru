@@ -5,9 +5,9 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  ArrowLeft, ArrowRight, Zap, Menu, Target,
+  ArrowLeft, ArrowRight, Target,
   CheckCircle2, XCircle, BarChart3, Flame,
-  ChevronRight, RotateCcw, Lightbulb, Flag, X,
+  RotateCcw, Lightbulb, Flag, X,
 } from "lucide-react";
 import {
   algebraQuestions,
@@ -869,20 +869,6 @@ export default function QuizEngine() {
   if (showAnalytics) {
     return (
       <div className="min-h-screen relative overflow-hidden">
-
-        {/* Nav */}
-        <nav className="fixed top-0 left-0 right-0 z-50 glass">
-          <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <Zap className="w-6 h-6 text-cyan-500" />
-              <span className="text-xl font-bold tracking-tight gradient-text font-sans">SSC AI</span>
-            </div>
-            <button className="p-2 rounded-lg hover:bg-white/10 transition-colors" aria-label="Menu">
-              <Menu className="w-5 h-5 text-slate-500" />
-            </button>
-          </div>
-        </nav>
-
         <div className="pt-28 pb-20 px-6 max-w-3xl mx-auto relative">
           <h1 className="animate-fade-in-up text-3xl font-bold mb-2 text-[var(--text-primary)]" style={{ fontFamily: "'SF Pro Display', 'Helvetica Neue', sans-serif" }}>
             Session <span className="gradient-text">Complete</span>
@@ -983,111 +969,153 @@ export default function QuizEngine() {
   /* ── Pre-start screen ── */
   if (!started) {
     return (
-      <div className="min-h-screen relative overflow-hidden">
-
-        {/* Nav */}
-        <nav className="fixed top-0 left-0 right-0 z-50 glass">
-          <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <Zap className="w-6 h-6 text-cyan-500" />
-              <span className="text-xl font-bold tracking-tight gradient-text font-sans">SSC AI</span>
-            </div>
-            <button className="p-2 rounded-lg hover:bg-white/10 transition-colors" aria-label="Menu">
-              <Menu className="w-5 h-5 text-slate-500" />
-            </button>
-          </div>
-        </nav>
-
-        <div className="pt-28 pb-20 px-6 max-w-2xl mx-auto relative text-center">
-          <Link
-            href="/mathematics/algebra"
-            className="animate-fade-in-up inline-flex items-center gap-2 text-sm text-slate-500 hover:text-[var(--text-primary)] transition-colors mb-12 group"
-          >
-            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-            Back to Algebra
-          </Link>
-
+      <div className="concept-start min-h-screen relative overflow-hidden flex items-center justify-center px-6">
+        <div className="w-full max-w-2xl text-center">
           <h1
-            className="animate-fade-in-up text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4 text-[var(--text-primary)]"
-            style={{ animationDelay: "100ms", fontFamily: "'SF Pro Display', 'Helvetica Neue', sans-serif" }}
+            className="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-3 text-[var(--text-primary)]"
+            style={{ fontFamily: "'SF Pro Display', 'Helvetica Neue', sans-serif" }}
           >
             {MODE_LABELS[mode]}
           </h1>
-          <p
-            className="animate-fade-in-up text-slate-500 mb-8"
-            style={{ animationDelay: "200ms" }}
-          >
-            {questions.length} questions loaded · {miniMode ? "20s" : "60s"} per question
+          <p className="text-slate-500 mb-12">
+            {questions.length} questions loaded · 60s per question
           </p>
-
-          {/* Controls */}
-          <div
-            className="animate-fade-in-up space-y-6 mb-10"
-            style={{ animationDelay: "300ms" }}
-          >
-            {/* Mini mode toggle */}
-            <div className="flex items-center justify-center gap-4">
-              <span className="text-sm text-slate-500">Mini Mode</span>
-              <button
-                onClick={() => setMiniMode((m) => !m)}
-                className={`relative w-12 h-6 rounded-full transition-colors cursor-pointer ${
-                  miniMode ? "bg-cyan-500" : "bg-white/20"
-                }`}
-              >
-                <div
-                  className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
-                    miniMode ? "translate-x-6" : ""
-                  }`}
-                />
-              </button>
-            </div>
-
-            {/* Concept filter (concept mode) */}
-            {mode === "concept" && (
-              <div className="flex flex-col items-center gap-2">
-                <span className="text-sm text-slate-500">Filter by Concept</span>
-                <select
-                  value={conceptFilter}
-                  onChange={(e) => setConceptFilter(e.target.value)}
-                  className="glass-input px-4 py-2 text-sm outline-none"
-                >
-                  <option value="all">All Concepts</option>
-                  {CONCEPTS.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            {/* Difficulty */}
-            <div className="flex items-center justify-center gap-2">
-              <span className="text-sm text-slate-500 mr-2">Starting Difficulty</span>
-              {(["easy", "medium", "hard"] as Difficulty[]).map((d) => (
-                <button
-                  key={d}
-                  onClick={() => setDifficulty(d)}
-                  className={`px-4 py-1.5 rounded-full text-xs font-medium border capitalize cursor-pointer transition-all ${
-                    difficulty === d
-                      ? DIFFICULTY_COLORS[d]
-                      : "text-slate-500 border-white/25 bg-transparent hover:bg-white/10"
-                  }`}
-                >
-                  {d}
-                </button>
-              ))}
-            </div>
-          </div>
 
           <button
             onClick={handleStart}
-            className="animate-fade-in-up btn-glow px-10 py-4 rounded-xl font-semibold text-lg flex items-center gap-3 mx-auto cursor-pointer"
-            style={{ animationDelay: "400ms" }}
+            className="start-quiz-button mx-auto"
+            aria-label="Start Quiz"
           >
-            Start Quiz <ChevronRight className="w-5 h-5" />
+            <span className="start-quiz-label">Start Quiz</span>
           </button>
         </div>
+
+        <style jsx>{`
+          .concept-start {
+            background:
+              radial-gradient(1200px 600px at 20% -10%, rgba(56, 189, 248, 0.18), transparent 60%),
+              radial-gradient(1000px 540px at 85% 110%, rgba(16, 185, 129, 0.16), transparent 62%),
+              linear-gradient(135deg, #f8fbff 0%, #edf4ff 45%, #f8fbff 100%);
+          }
+
+          .start-quiz-button {
+            position: relative;
+            width: min(78vw, 340px);
+            min-height: 84px;
+            border: 0;
+            border-radius: 24px;
+            cursor: pointer;
+            isolation: isolate;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 1.75rem;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(226, 245, 255, 0.78));
+            box-shadow:
+              0 16px 44px rgba(14, 116, 144, 0.18),
+              inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            animation: float-card 3.2s ease-in-out infinite;
+          }
+
+          .start-quiz-button::before,
+          .start-quiz-button::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            pointer-events: none;
+          }
+
+          .start-quiz-button::before {
+            padding: 1.5px;
+            background: conic-gradient(
+              from 0deg,
+              rgba(56, 189, 248, 0.08),
+              rgba(16, 185, 129, 0.7),
+              rgba(59, 130, 246, 0.82),
+              rgba(56, 189, 248, 0.08)
+            );
+            -webkit-mask:
+              linear-gradient(#000 0 0) content-box,
+              linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            animation: border-spin 3s linear infinite;
+          }
+
+          .start-quiz-button::after {
+            background: linear-gradient(110deg, transparent 20%, rgba(255, 255, 255, 0.85) 48%, transparent 76%);
+            transform: translateX(-140%);
+            mix-blend-mode: screen;
+            opacity: 0.9;
+            animation: light-sweep 2.8s ease-in-out infinite;
+          }
+
+          .start-quiz-label {
+            position: relative;
+            z-index: 2;
+            font-size: clamp(1rem, 2.8vw, 1.3rem);
+            font-weight: 700;
+            letter-spacing: 0.015em;
+            color: #0f172a;
+            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.75);
+            animation: text-glow 3.2s ease-in-out infinite;
+          }
+
+          @keyframes light-sweep {
+            0% {
+              transform: translateX(-140%);
+            }
+            55%,
+            100% {
+              transform: translateX(140%);
+            }
+          }
+
+          @keyframes border-spin {
+            to {
+              transform: rotate(1turn);
+            }
+          }
+
+          @keyframes float-card {
+            0%,
+            100% {
+              transform: translateY(0) scale(1);
+              box-shadow:
+                0 16px 44px rgba(14, 116, 144, 0.18),
+                0 0 24px rgba(56, 189, 248, 0.16),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            }
+            50% {
+              transform: translateY(-5px) scale(1.015);
+              box-shadow:
+                0 24px 48px rgba(14, 116, 144, 0.24),
+                0 0 30px rgba(16, 185, 129, 0.22),
+                inset 0 1px 0 rgba(255, 255, 255, 0.85);
+            }
+          }
+
+          @keyframes text-glow {
+            0%,
+            100% {
+              color: #0f172a;
+            }
+            50% {
+              color: #0c4a6e;
+            }
+          }
+
+          @media (max-width: 640px) {
+            .start-quiz-button {
+              width: min(90vw, 320px);
+              min-height: 78px;
+              border-radius: 22px;
+            }
+          }
+        `}</style>
       </div>
     );
   }
