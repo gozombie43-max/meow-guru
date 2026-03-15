@@ -406,16 +406,6 @@ export default function Home() {
       {/* ── Hero Section ── */}
       <section className="relative pt-36 sm:pt-32 pb-24 px-6 hero-mobile-offset">
         <div className="max-w-4xl mx-auto text-center">
-          <p
-            className="animate-fade-in-up developer-credit mb-12"
-            style={{ animationDelay: "250ms" }}
-          >
-            Developed by{" "}
-            <span className="gradient-text-subtle font-medium">
-              Gurucharan
-            </span>
-          </p>
-
           {/* CTA Buttons */}
           <div
             className="animate-fade-in-up flex flex-col sm:flex-row items-center justify-center gap-4"
@@ -473,6 +463,11 @@ export default function Home() {
 
       {/* ── Footer accent line ── */}
       <div className="h-px w-full bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent" />
+
+      {/* ── Bottom credit ── */}
+      <p className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 text-black font-bold text-sm sm:text-base text-center">
+        Developed by : Gurucharan Murmu
+      </p>
     </div>
   );
 }
