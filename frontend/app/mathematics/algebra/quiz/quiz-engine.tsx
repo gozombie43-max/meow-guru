@@ -1071,20 +1071,8 @@ export default function QuizEngine() {
         fontFamily: "Poppins, Inter, 'Segoe UI', sans-serif",
       }}
     >
-      <div className="fixed top-0 left-0 right-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-md">
-        <div className="mx-auto grid h-16 max-w-3xl grid-cols-[44px_1fr_auto_auto] items-center gap-2 px-3 sm:px-6">
-          <Link
-            href="/mathematics/algebra"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-700 transition-colors hover:bg-slate-50"
-            aria-label="Back"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-
-          <div className="text-center text-sm font-semibold text-slate-700">
-            {currentIndex + 1} / {questions.length}
-          </div>
-
+      <main className="mx-auto max-w-3xl px-3 pb-[110px] pt-3 sm:px-6 sm:pt-4">
+        <section className="mb-3 flex items-center justify-end gap-2">
           <div className="rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-sm font-bold text-slate-700">
             {formatClock(timeLeft)}
           </div>
@@ -1096,10 +1084,8 @@ export default function QuizEngine() {
           >
             <Menu className="h-4 w-4" />
           </button>
-        </div>
-      </div>
+        </section>
 
-      <main className="mx-auto max-w-3xl px-3 pb-[110px] pt-[84px] sm:px-6 sm:pt-[88px]">
         <section className="mb-4">
           <QuestionNavigator
             total={questions.length}
