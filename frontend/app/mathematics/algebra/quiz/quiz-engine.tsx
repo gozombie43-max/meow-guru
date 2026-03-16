@@ -153,30 +153,33 @@ function MathText({ text, className = "" }: { text: string; className?: string }
  *  - Framer Motion full-screen palette modal
  * ──────────────────────────────────────────────────────────── */
 
-type QuestionStatus = "current" | "review" | "answered" | "not-answered";
+type QuestionStatus = "current" | "correct" | "wrong" | "not-answered";
 
 function getQuestionStatus({
   index,
   currentIndex,
-  answeredQuestions,
-  markedForReview,
+  selectedAnswers,
+  questions,
 }: {
   index: number;
   currentIndex: number;
-  answeredQuestions: Set<number>;
-  markedForReview: Set<number>;
+  selectedAnswers: Record<number, number>;
+  questions: AlgebraQuestion[];
 }): QuestionStatus {
+  const selected = selectedAnswers[index];
+  const question = questions[index];
+
   if (index === currentIndex) return "current";
-  if (markedForReview.has(index)) return "review";
-  if (answeredQuestions.has(index)) return "answered";
-  return "not-answered";
+  if (selected === undefined || !question) return "not-answered";
+  if (selected === question.correctAnswer) return "correct";
+  return "wrong";
 }
 
 function statusClasses(status: QuestionStatus) {
   const base = "border transition-all duration-200";
   if (status === "current") return `${base} bg-blue-600 text-white border-blue-600 shadow-sm shadow-blue-400/40`;
-  if (status === "review") return `${base} bg-orange-100 text-orange-700 border-orange-300`;
-  if (status === "answered") return `${base} bg-emerald-100 text-emerald-700 border-emerald-300`;
+  if (status === "correct") return `${base} bg-emerald-100 text-emerald-700 border-emerald-300`;
+  if (status === "wrong") return `${base} bg-rose-100 text-rose-700 border-rose-300`;
   return `${base} bg-slate-100 text-slate-700 border-slate-300`;
 }
 
@@ -184,16 +187,16 @@ function QuestionPaletteModal({
   isOpen,
   total,
   currentIndex,
-  answeredQuestions,
-  markedForReview,
+  selectedAnswers,
+  questions,
   onClose,
   onGoToQuestion,
 }: {
   isOpen: boolean;
   total: number;
   currentIndex: number;
-  answeredQuestions: Set<number>;
-  markedForReview: Set<number>;
+  selectedAnswers: Record<number, number>;
+  questions: AlgebraQuestion[];
   onClose: () => void;
   onGoToQuestion: (questionNumber: number) => void;
 }) {
@@ -226,8 +229,8 @@ function QuestionPaletteModal({
             </div>
             <div className="mb-3 flex gap-2 text-xs text-slate-600">
               <span className="rounded-md border border-blue-300 bg-blue-100 px-2 py-1">Current</span>
-              <span className="rounded-md border border-emerald-300 bg-emerald-100 px-2 py-1">Answered</span>
-              <span className="rounded-md border border-orange-300 bg-orange-100 px-2 py-1">Review</span>
+              <span className="rounded-md border border-emerald-300 bg-emerald-100 px-2 py-1">Correct</span>
+              <span className="rounded-md border border-rose-300 bg-rose-100 px-2 py-1">Wrong</span>
               <span className="rounded-md border border-slate-300 bg-slate-100 px-2 py-1">Not Answered</span>
             </div>
             <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
@@ -236,8 +239,8 @@ function QuestionPaletteModal({
                   const status = getQuestionStatus({
                     index,
                     currentIndex,
-                    answeredQuestions,
-                    markedForReview,
+                    selectedAnswers,
+                    questions,
                   });
 
                   return (
@@ -265,8 +268,8 @@ function QuestionPaletteModal({
 function QuestionNavigator({
   total,
   currentIndex,
-  answeredQuestions,
-  markedForReview,
+  selectedAnswers,
+  questions,
   onGoToQuestion,
   onOpenPalette,
   onClosePalette,
@@ -274,8 +277,8 @@ function QuestionNavigator({
 }: {
   total: number;
   currentIndex: number;
-  answeredQuestions: Set<number>;
-  markedForReview: Set<number>;
+  selectedAnswers: Record<number, number>;
+  questions: AlgebraQuestion[];
   onGoToQuestion: (questionNumber: number) => void;
   onOpenPalette: () => void;
   onClosePalette: () => void;
@@ -298,8 +301,8 @@ function QuestionNavigator({
               const status = getQuestionStatus({
                 index,
                 currentIndex,
-                answeredQuestions,
-                markedForReview,
+                selectedAnswers,
+                questions,
               });
 
               return (
@@ -324,8 +327,8 @@ function QuestionNavigator({
         isOpen={isPaletteOpen}
         total={total}
         currentIndex={currentIndex}
-        answeredQuestions={answeredQuestions}
-        markedForReview={markedForReview}
+        selectedAnswers={selectedAnswers}
+        questions={questions}
         onClose={onClosePalette}
         onGoToQuestion={onGoToQuestion}
       />
@@ -395,15 +398,13 @@ export default function QuizEngine() {
   const [questions, setQuestions] = useState<AlgebraQuestion[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
-  const [isAnswered, setIsAnswered] = useState(false);
   const [miniMode, setMiniMode] = useState(false);
   const [difficulty, setDifficulty] = useState<Difficulty>("medium");
   const [streak, setStreak] = useState(0);
   const [bestStreak, setBestStreak] = useState(0);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [results, setResults] = useState<SessionResult[]>([]);
-  const [answeredQuestions, setAnsweredQuestions] = useState<Set<number>>(new Set());
-  const [markedForReview, setMarkedForReview] = useState<Set<number>>(new Set());
+  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [conceptFilter, setConceptFilter] = useState<string>("all");
   const [started, setStarted] = useState(false);
@@ -445,10 +446,8 @@ export default function QuizEngine() {
     setQuestions(shuffle(pool));
     setCurrentIndex(0);
     setSelectedAnswer(null);
-    setIsAnswered(false);
     setResults([]);
-    setAnsweredQuestions(new Set());
-    setMarkedForReview(new Set());
+    setSelectedAnswers({});
     setIsPaletteOpen(false);
     setStreak(0);
     setShowAnalytics(false);
@@ -503,22 +502,14 @@ export default function QuizEngine() {
       stopTimer();
       setCurrentIndex(safeIndex);
 
-      const existing = results.find((r) => r.questionIndex === safeIndex);
-      if (existing) {
-        setSelectedAnswer(existing.selected);
-        setIsAnswered(true);
-        setSubmitError("");
-        return;
-      }
-
-      setSelectedAnswer(null);
-      setIsAnswered(false);
+      const existingSelection = selectedAnswers[safeIndex];
+      setSelectedAnswer(existingSelection ?? null);
       setSubmitError("");
       if (started && !showAnalytics) {
         startTimer();
       }
     },
-    [questions.length, results, showAnalytics, startTimer, started, stopTimer],
+    [questions.length, selectedAnswers, showAnalytics, startTimer, started, stopTimer],
   );
 
   const goToQuestion = useCallback((questionNumber: number) => {
@@ -547,15 +538,18 @@ export default function QuizEngine() {
   }, [difficulty, results]);
 
   const handleSelectAnswer = useCallback((index: number) => {
-    if (isAnswered || !currentQ) return;
+    if (!currentQ) return;
     if (index < 0 || index >= currentQ.options.length) return;
 
     setSelectedAnswer(index);
-    setIsAnswered(true);
-    stopTimer();
+    setSelectedAnswers((prev) => ({
+      ...prev,
+      [currentIndex]: index,
+    }));
 
     const timeTaken = Math.max(1, maxTime - timeLeft);
     const isCorrect = index === currentQ.correctAnswer;
+    adaptDifficulty(isCorrect);
 
     if (isCorrect) {
       setStreak((s) => {
@@ -567,9 +561,8 @@ export default function QuizEngine() {
       setStreak(0);
     }
 
-    setResults((prev) => [
-      ...prev,
-      {
+    setResults((prev) => {
+      const next: SessionResult = {
         questionId: currentQ.id,
         questionIndex: currentIndex,
         selected: index,
@@ -578,15 +571,17 @@ export default function QuizEngine() {
         timeTaken,
         concept: currentQ.concept,
         difficulty: currentQ.difficulty,
-      },
-    ]);
-    setAnsweredQuestions((prev) => {
-      const next = new Set(prev);
-      next.add(currentIndex);
-      return next;
+      };
+
+      const existingIndex = prev.findIndex((r) => r.questionIndex === currentIndex);
+      if (existingIndex === -1) return [...prev, next];
+
+      const updated = [...prev];
+      updated[existingIndex] = next;
+      return updated;
     });
     setSubmitError("");
-  }, [currentIndex, currentQ, isAnswered, maxTime, stopTimer, timeLeft]);
+  }, [adaptDifficulty, currentIndex, currentQ, maxTime, timeLeft]);
 
   const handlePrev = useCallback(() => {
     if (currentIndex <= 0) return;
@@ -606,10 +601,8 @@ export default function QuizEngine() {
     setQuestions(shuffle([...questions]));
     setCurrentIndex(0);
     setSelectedAnswer(null);
-    setIsAnswered(false);
     setResults([]);
-    setAnsweredQuestions(new Set());
-    setMarkedForReview(new Set());
+    setSelectedAnswers({});
     closePalette();
     setStreak(0);
     setBestStreak(0);
@@ -640,7 +633,7 @@ export default function QuizEngine() {
         return;
       }
 
-      if (isAnswered || !currentQ) return;
+      if (!currentQ) return;
 
       if (event.key === "ArrowDown") {
         event.preventDefault();
@@ -669,7 +662,6 @@ export default function QuizEngine() {
     currentIndex,
     currentQ,
     handleSelectAnswer,
-    isAnswered,
     selectedAnswer,
     showAnalytics,
     showQuestion,
@@ -680,14 +672,15 @@ export default function QuizEngine() {
   const stats = useMemo(() => {
     const correct = results.filter((r) => r.isCorrect).length;
     const wrong = results.filter((r) => !r.isCorrect && r.selected !== null).length;
-    const skipped = results.filter((r) => r.selected === null).length;
-    const accuracy = results.length > 0 ? Math.round((correct / results.length) * 100) : 0;
+    const attempted = Object.keys(selectedAnswers).length;
+    const skipped = Math.max(0, questions.length - attempted);
+    const accuracy = attempted > 0 ? Math.round((correct / attempted) * 100) : 0;
     const avgTime =
       results.length > 0
         ? Math.round(results.reduce((a, r) => a + r.timeTaken, 0) / results.length)
         : 0;
     return { correct, wrong, skipped, accuracy, avgTime };
-  }, [results]);
+  }, [questions.length, results, selectedAnswers]);
 
   /* ── Weak concepts (for analytics) ── */
   const weakConcepts = useMemo(() => {
@@ -704,19 +697,20 @@ export default function QuizEngine() {
 
   /* ── Option style helper ── */
   function optionClass(index: number) {
-    const base =
-      "w-full text-left px-5 py-4 rounded-2xl border transition-all duration-200 cursor-pointer shadow-sm";
-    if (!isAnswered) {
-      if (selectedAnswer === index)
-        return `${base} border-indigo-400 bg-indigo-50 text-[var(--text-primary)] shadow-[0_8px_20px_rgba(79,70,229,0.18)]`;
-      return `${base} border-slate-200 bg-white text-slate-700 hover:border-indigo-300 hover:bg-indigo-50/40`;
+    const base = "w-full rounded-2xl border-2 px-4 py-4 text-left transition-all duration-200 shadow-sm";
+    if (selectedAnswer === index) {
+      return `${base} border-blue-500 bg-blue-50 text-slate-800 shadow-[0_8px_20px_rgba(37,99,235,0.15)]`;
     }
-    // After answering
-    if (index === currentQ!.correctAnswer)
-      return `${base} border-emerald-400 bg-emerald-50 text-emerald-700`;
-    if (index === selectedAnswer && index !== currentQ!.correctAnswer)
-      return `${base} border-rose-400 bg-rose-50 text-rose-600`;
-    return `${base} border-slate-200 bg-slate-50 text-slate-500`;
+    return `${base} border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50/50`;
+  }
+
+  function formatClock(totalSeconds: number) {
+    const safeSeconds = Math.max(0, totalSeconds);
+    const mins = Math.floor(safeSeconds / 60)
+      .toString()
+      .padStart(2, "0");
+    const secs = (safeSeconds % 60).toString().padStart(2, "0");
+    return `${mins}:${secs}`;
   }
 
   /* ════════════════════════════════════════════════════════
@@ -1024,229 +1018,142 @@ export default function QuizEngine() {
         fontFamily: "Poppins, Inter, 'Segoe UI', sans-serif",
       }}
     >
-      {/* Background */}
+      <div className="fixed top-0 left-0 right-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-md">
+        <div className="mx-auto grid h-16 max-w-3xl grid-cols-[44px_1fr_auto_auto] items-center gap-2 px-3 sm:px-6">
+          <Link
+            href="/mathematics/algebra"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-700 transition-colors hover:bg-slate-50"
+            aria-label="Back"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
 
-      {/* ── Top Bar ── */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200/70">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6">
-          <div className="h-16 flex items-center justify-between">
-            <Link
-              href="/mathematics/algebra"
-              className="inline-flex items-center justify-center w-10 h-10 rounded-full border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-            </Link>
-
-            <div className="text-sm font-semibold text-slate-700">
-              Question {currentIndex + 1}/{questions.length}
-            </div>
-
-            <button
-              onClick={openPalette}
-              className="inline-flex items-center justify-center w-10 h-10 rounded-full border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition-colors"
-              aria-label="Open question palette"
-            >
-              <Menu className="w-4 h-4" />
-            </button>
+          <div className="text-center text-sm font-semibold text-slate-700">
+            {currentIndex + 1} / {questions.length}
           </div>
+
+          <div className="rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-sm font-bold text-slate-700">
+            {formatClock(timeLeft)}
+          </div>
+
+          <button
+            onClick={openPalette}
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-700 transition-colors hover:bg-slate-50"
+            aria-label="Open question palette"
+          >
+            <Menu className="h-4 w-4" />
+          </button>
         </div>
       </div>
 
-      {/* ── Question Area ── */}
-      <div
-        className={`pt-16 pb-[92px] px-3 sm:px-6 max-w-3xl mx-auto relative ${miniMode ? "pt-16" : ""}`}
-      >
-        <div className="h-[calc(100svh-64px-92px)] sm:h-[calc(100vh-64px-92px)] overflow-y-auto pb-4">
-          {/* ── Question Number Strip ── */}
-          <div className="sticky top-0 z-20 pt-2 pb-2 bg-[linear-gradient(165deg,#ecf4ff_0%,#eef8ff_38%,#f7fbff_100%)]">
-            <QuestionNavigator
-              total={questions.length}
-              currentIndex={currentIndex}
-              answeredQuestions={answeredQuestions}
-              markedForReview={markedForReview}
-              onGoToQuestion={goToQuestion}
-              onOpenPalette={openPalette}
-              onClosePalette={closePalette}
-              isPaletteOpen={isPaletteOpen}
-            />
-          </div>
+      <main className="mx-auto max-w-3xl px-3 pb-[100px] pt-[74px] sm:px-6">
+        <section className="mb-4">
+          <QuestionNavigator
+            total={questions.length}
+            currentIndex={currentIndex}
+            selectedAnswers={selectedAnswers}
+            questions={questions}
+            onGoToQuestion={goToQuestion}
+            onOpenPalette={openPalette}
+            onClosePalette={closePalette}
+            isPaletteOpen={isPaletteOpen}
+          />
+        </section>
 
-          <div
-            className="pb-5"
-            onTouchStart={(event) => {
-              const touch = event.changedTouches[0];
-              touchStartXRef.current = touch.clientX;
-              touchStartYRef.current = touch.clientY;
-            }}
-            onTouchEnd={(event) => {
-              const startX = touchStartXRef.current;
-              const startY = touchStartYRef.current;
-              if (startX === null || startY === null) return;
+        <section
+          className="mb-4"
+          onTouchStart={(event) => {
+            const touch = event.changedTouches[0];
+            touchStartXRef.current = touch.clientX;
+            touchStartYRef.current = touch.clientY;
+          }}
+          onTouchEnd={(event) => {
+            const startX = touchStartXRef.current;
+            const startY = touchStartYRef.current;
+            if (startX === null || startY === null) return;
 
-              const touch = event.changedTouches[0];
-              const deltaX = touch.clientX - startX;
-              const deltaY = touch.clientY - startY;
+            const touch = event.changedTouches[0];
+            const deltaX = touch.clientX - startX;
+            const deltaY = touch.clientY - startY;
 
-              touchStartXRef.current = null;
-              touchStartYRef.current = null;
+            touchStartXRef.current = null;
+            touchStartYRef.current = null;
 
-              if (Math.abs(deltaX) < 50 || Math.abs(deltaY) > 90) return;
-              if (deltaX > 0) showQuestion(currentIndex - 1);
-              else showQuestion(currentIndex + 1);
-            }}
+            if (Math.abs(deltaX) < 50 || Math.abs(deltaY) > 90) return;
+            if (deltaX > 0) showQuestion(currentIndex - 1);
+            else showQuestion(currentIndex + 1);
+          }}
+        >
+          <motion.div
+            key={currentQ.id}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2 }}
+            className="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_14px_34px_rgba(15,23,42,0.1)] sm:p-8"
           >
-            {/* Question Panel */}
-            <div
-              key={currentQ.id}
-              className={`rounded-3xl border border-white/80 ${miniMode ? "p-5" : "p-6 sm:p-8"} mt-1 mb-4 shadow-[0_16px_38px_rgba(15,23,42,0.12)]`}
-              style={{
-                background: "linear-gradient(145deg, #ffffff 0%, #f3f8ff 100%)",
-                opacity: 1,
-                visibility: "visible",
-              }}
+            <div className="mb-4 flex flex-wrap items-center gap-2">
+              <span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-[11px] text-blue-700">
+                {currentQ.concept}
+              </span>
+              <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] text-slate-600">
+                {currentQ.exam} {currentQ.year}
+              </span>
+            </div>
+            <h2 className="text-lg font-semibold leading-relaxed text-slate-800 sm:text-2xl">
+              <MathText text={currentQ.question} />
+            </h2>
+            {(currentQ as AlgebraQuestion & { image?: string }).image && (
+              // Optional image support for questions that include media.
+              <img
+                src={(currentQ as AlgebraQuestion & { image?: string }).image}
+                alt={`Question ${currentIndex + 1}`}
+                className="mt-4 w-full rounded-2xl border border-slate-200"
+              />
+            )}
+          </motion.div>
+        </section>
+
+        <section className="mb-5 space-y-3.5">
+          {currentQ.options.slice(0, 4).map((opt, i) => (
+            <button
+              key={i}
+              onClick={() => handleSelectAnswer(i)}
+              className={`${optionClass(i)} min-h-14`}
+              type="button"
             >
-              <div className="flex flex-wrap items-center gap-2 mb-5">
-                <span className="text-[11px] px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-600 border border-cyan-500/25">
-                  {currentQ.concept}
+              <div className="flex items-start gap-3">
+                <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-slate-100 text-sm font-semibold text-slate-700">
+                  {String.fromCharCode(65 + i)}
                 </span>
-                {mode === "formula" && (
-                  <span className="text-[11px] px-2.5 py-1 rounded-full bg-teal-500/10 text-teal-600 border border-teal-500/25">
-                    {currentQ.formula}
-                  </span>
-                )}
-                <span className="text-[11px] px-2.5 py-1 rounded-full bg-white/20 text-slate-500 border border-white/30">
-                  {currentQ.exam} {currentQ.year}
+                <span className="pt-0.5 text-[0.98rem] leading-relaxed">
+                  <MathText text={opt} />
                 </span>
               </div>
+            </button>
+          ))}
+        </section>
+      </main>
 
-              <h2
-                className={`font-semibold leading-relaxed ${
-                  miniMode ? "text-lg" : "text-xl sm:text-[1.55rem]"
-                }`}
-              >
-                <MathText text={currentQ.question} />
-              </h2>
-            </div>
+      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 bg-white/95 backdrop-blur-md">
+        <div
+          className="mx-auto max-w-3xl px-3 pb-3 pt-3 sm:px-6"
+          style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 12px)" }}
+        >
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={handlePrev}
+              disabled={currentIndex === 0}
+              className="inline-flex h-14 items-center justify-center rounded-2xl border border-slate-300 bg-slate-100 px-5 text-base font-semibold text-slate-700 transition-colors hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-45"
+            >
+              Previous
+            </button>
 
-            {/* Options Panel */}
-            <div className="rounded-3xl border border-white/80 p-4 sm:p-6 bg-white/90 shadow-[0_12px_30px_rgba(15,23,42,0.1)]">
-              <div className="mb-5 rounded-2xl border border-slate-200 bg-white/75 px-4 py-3">
-                <div className="mb-2 flex items-center justify-between text-sm font-medium text-slate-600">
-                  <span>Time Left</span>
-                  <span>{timeLeft}s</span>
-                </div>
-                <div className="h-2.5 w-full rounded-full bg-slate-200 overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-1000 ease-linear"
-                    style={{ width: `${Math.max(0, (timeLeft / maxTime) * 100)}%` }}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-3.5">
-                {currentQ.options.map((opt, i) => (
-                  <motion.button
-                    key={i}
-                    onClick={() => handleSelectAnswer(i)}
-                    disabled={isAnswered}
-                    className={optionClass(i)}
-                    whileTap={!isAnswered ? { scale: 0.985 } : undefined}
-                    animate={
-                      !isAnswered && selectedAnswer === i
-                        ? { scale: 1.015, y: -1 }
-                        : { scale: 1, y: 0 }
-                    }
-                    transition={{ type: "spring", stiffness: 320, damping: 24 }}
-                  >
-                    <div className="flex items-center gap-3.5">
-                      <span
-                        className={`w-8 h-8 rounded-full border flex items-center justify-center text-sm font-semibold shrink-0 ${
-                          isAnswered && i === currentQ.correctAnswer
-                            ? "border-emerald-400 bg-emerald-100 text-emerald-700"
-                            : isAnswered && i === selectedAnswer
-                              ? "border-rose-400 bg-rose-100 text-rose-600"
-                              : "border-slate-300 bg-slate-100 text-slate-600"
-                        }`}
-                      >
-                        {String.fromCharCode(65 + i)}
-                      </span>
-                      <span className="flex-1 text-left text-[0.98rem] leading-relaxed"><MathText text={opt} /></span>
-                      {isAnswered && i === currentQ.correctAnswer && (
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600 ml-auto shrink-0 animate-pulse" />
-                      )}
-                      {isAnswered &&
-                        i === selectedAnswer &&
-                        i !== currentQ.correctAnswer && (
-                          <XCircle className="w-4 h-4 text-red-500 ml-auto shrink-0" />
-                        )}
-                    </div>
-                  </motion.button>
-                ))}
-              </div>
-            </div>
-
-            {/* Correct/Wrong status */}
-            {isAnswered && (
-              <div className="glass-card rounded-2xl p-4 mt-4 mb-4 animate-fade-in-up">
-                {selectedAnswer === currentQ.correctAnswer ? (
-                  <p className="text-emerald-600 font-semibold flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4" /> You are correct.
-                  </p>
-                ) : (
-                  <p className="text-red-500 font-semibold flex items-center gap-2">
-                    <XCircle className="w-4 h-4" /> You are wrong.
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* Solution panel */}
-            {isAnswered && (
-              <div className="glass-card rounded-2xl p-6 mb-6 animate-fade-in-up border-l-2 border-cyan-500/30">
-                <div className="flex items-center gap-2 mb-3">
-                  <Lightbulb className="w-4 h-4 text-amber-500" />
-                  <h4 className="text-sm font-semibold text-amber-600">Solution</h4>
-                </div>
-                <p className="text-sm text-slate-600 leading-relaxed mb-2">
-                  <span className="text-[var(--text-primary)] font-medium">Correct Answer:</span>{" "}
-                  <MathText text={`${currentQ.options[currentQ.correctAnswer]} (${currentQ.answer})`} />
-                </p>
-                <p className="text-sm text-slate-500 leading-relaxed">
-                  <span className="text-slate-600 font-medium">Concept:</span>{" "}
-                  {currentQ.concept} · <span className="text-slate-600 font-medium">Formula:</span>{" "}
-                  {currentQ.formula}
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 bg-white/95 backdrop-blur-md">
-          <div
-            className="max-w-3xl mx-auto px-3 sm:px-6 pt-3"
-            style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 12px)" }}
-          >
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                onClick={handlePrev}
-                disabled={currentIndex === 0}
-                className="inline-flex h-[52px] items-center justify-center gap-2 rounded-2xl bg-[#ece8ff] px-5 font-semibold text-[#3a3271] transition-colors hover:bg-[#e3ddff] disabled:opacity-45 disabled:cursor-not-allowed"
-              >
-                <ArrowLeft className="w-4 h-4" /> Previous
-              </button>
-
-              <button
-                onClick={handleNext}
-                disabled={!isAnswered}
-                className="inline-flex h-[52px] items-center justify-center gap-2 rounded-2xl bg-[#2D2DB8] px-5 font-bold text-white transition-colors hover:bg-[#2525a3] disabled:opacity-45 disabled:cursor-not-allowed"
-              >
-                {currentIndex < questions.length - 1 ? (
-                  <>Next <ArrowRight className="w-4 h-4" /></>
-                ) : (
-                  <>Submit <BarChart3 className="w-4 h-4" /></>
-                )}
-              </button>
-            </div>
+            <button
+              onClick={handleNext}
+              className="inline-flex h-14 items-center justify-center rounded-2xl bg-blue-700 px-5 text-base font-semibold text-white transition-colors hover:bg-blue-800"
+            >
+              {currentIndex < questions.length - 1 ? "Next" : "Submit"}
+            </button>
           </div>
         </div>
       </div>
