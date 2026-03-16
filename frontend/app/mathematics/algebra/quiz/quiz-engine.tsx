@@ -1054,10 +1054,10 @@ export default function QuizEngine() {
 
       {/* ── Question Area ── */}
       <div
-        className={`pt-20 pb-40 px-4 sm:px-6 max-w-3xl mx-auto relative ${miniMode ? "pt-20" : ""}`}
+        className={`pt-20 pb-40 px-3 sm:px-6 max-w-3xl mx-auto relative ${miniMode ? "pt-20" : ""}`}
       >
         {/* ── Question Number Strip ── */}
-        <div className="sticky top-16 z-40 pt-2 pb-3 bg-transparent">
+        <div className="relative z-10 pt-2 pb-2 mb-3">
           <QuestionNavigator
             total={questions.length}
             currentIndex={currentIndex}
@@ -1071,7 +1071,7 @@ export default function QuizEngine() {
         </div>
 
         <div
-          className="min-h-[calc(100vh-220px)] flex flex-col"
+          className="min-h-[calc(100svh-250px)] sm:min-h-[calc(100vh-230px)] flex flex-col"
           onTouchStart={(event) => {
             const touch = event.changedTouches[0];
             touchStartXRef.current = touch.clientX;
@@ -1097,7 +1097,7 @@ export default function QuizEngine() {
           {/* Middle: Question Panel */}
           <div
             key={currentQ.id}
-            className={`rounded-3xl border border-white/80 ${miniMode ? "p-6" : "p-7 sm:p-9"} mt-1 mb-4 shadow-[0_16px_38px_rgba(15,23,42,0.12)]`}
+            className={`rounded-3xl border border-white/80 ${miniMode ? "p-5" : "p-6 sm:p-8"} mt-1 mb-4 shadow-[0_16px_38px_rgba(15,23,42,0.12)]`}
             style={{
               background: "linear-gradient(145deg, #ffffff 0%, #f3f8ff 100%)",
               opacity: 1,
@@ -1128,7 +1128,7 @@ export default function QuizEngine() {
           </div>
 
           {/* Lower: Options Panel */}
-          <div className="mt-auto rounded-3xl border border-white/80 p-5 sm:p-6 bg-white/90 shadow-[0_12px_30px_rgba(15,23,42,0.1)]">
+          <div className="mt-auto rounded-3xl border border-white/80 p-4 sm:p-6 bg-white/90 shadow-[0_12px_30px_rgba(15,23,42,0.1)]">
             <div className="mb-5 rounded-2xl border border-slate-200 bg-white/75 px-4 py-3">
               <div className="mb-2 flex items-center justify-between text-sm font-medium text-slate-600">
                 <span>Time Left</span>
@@ -1220,7 +1220,10 @@ export default function QuizEngine() {
         )}
 
         <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 bg-white/95 backdrop-blur-md">
-          <div className="max-w-3xl mx-auto px-4 sm:px-6 py-4">
+          <div
+            className="max-w-3xl mx-auto px-3 sm:px-6 pt-3"
+            style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 12px)" }}
+          >
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={handlePrev}
