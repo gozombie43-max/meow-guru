@@ -1070,15 +1070,8 @@ export default function QuizEngine() {
           />
         </div>
 
-        {/* Question Card */}
         <div
-          key={currentQ.id}
-          className={`rounded-3xl border border-white/80 ${miniMode ? "p-6" : "p-7 sm:p-9"} mt-1 mb-6 shadow-[0_16px_38px_rgba(15,23,42,0.12)]`}
-          style={{
-            background: "linear-gradient(145deg, #ffffff 0%, #f3f8ff 100%)",
-            opacity: 1,
-            visibility: "visible",
-          }}
+          className="min-h-[calc(100vh-220px)] flex flex-col"
           onTouchStart={(event) => {
             const touch = event.changedTouches[0];
             touchStartXRef.current = touch.clientX;
@@ -1101,83 +1094,94 @@ export default function QuizEngine() {
             else showQuestion(currentIndex + 1);
           }}
         >
-          {/* Tags */}
-          <div className="flex flex-wrap items-center gap-2 mb-5">
-            <span className="text-[11px] px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-600 border border-cyan-500/25">
-              {currentQ.concept}
-            </span>
-            {mode === "formula" && (
-              <span className="text-[11px] px-2.5 py-1 rounded-full bg-teal-500/10 text-teal-600 border border-teal-500/25">
-                {currentQ.formula}
-              </span>
-            )}
-            <span className="text-[11px] px-2.5 py-1 rounded-full bg-white/20 text-slate-500 border border-white/30">
-              {currentQ.exam} {currentQ.year}
-            </span>
-          </div>
-
-          {/* Question text */}
-          <h2
-            className={`font-semibold leading-relaxed mb-7 ${
-              miniMode ? "text-lg" : "text-xl sm:text-[1.55rem]"
-            }`}
+          {/* Middle: Question Panel */}
+          <div
+            key={currentQ.id}
+            className={`rounded-3xl border border-white/80 ${miniMode ? "p-6" : "p-7 sm:p-9"} mt-1 mb-4 shadow-[0_16px_38px_rgba(15,23,42,0.12)]`}
+            style={{
+              background: "linear-gradient(145deg, #ffffff 0%, #f3f8ff 100%)",
+              opacity: 1,
+              visibility: "visible",
+            }}
           >
-            <MathText text={currentQ.question} />
-          </h2>
+            <div className="flex flex-wrap items-center gap-2 mb-5">
+              <span className="text-[11px] px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-600 border border-cyan-500/25">
+                {currentQ.concept}
+              </span>
+              {mode === "formula" && (
+                <span className="text-[11px] px-2.5 py-1 rounded-full bg-teal-500/10 text-teal-600 border border-teal-500/25">
+                  {currentQ.formula}
+                </span>
+              )}
+              <span className="text-[11px] px-2.5 py-1 rounded-full bg-white/20 text-slate-500 border border-white/30">
+                {currentQ.exam} {currentQ.year}
+              </span>
+            </div>
 
-          <div className="mb-6 rounded-2xl border border-slate-200 bg-white/75 px-4 py-3">
-            <div className="mb-2 flex items-center justify-between text-sm font-medium text-slate-600">
-              <span>Time Left</span>
-              <span>{timeLeft}s</span>
-            </div>
-            <div className="h-2.5 w-full rounded-full bg-slate-200 overflow-hidden">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-1000 ease-linear"
-                style={{ width: `${Math.max(0, (timeLeft / maxTime) * 100)}%` }}
-              />
-            </div>
+            <h2
+              className={`font-semibold leading-relaxed ${
+                miniMode ? "text-lg" : "text-xl sm:text-[1.55rem]"
+              }`}
+            >
+              <MathText text={currentQ.question} />
+            </h2>
           </div>
 
-          {/* Options */}
-          <div className="space-y-3.5">
-            {currentQ.options.map((opt, i) => (
-              <motion.button
-                key={i}
-                onClick={() => handleSelectAnswer(i)}
-                disabled={isAnswered}
-                className={optionClass(i)}
-                whileTap={!isAnswered ? { scale: 0.985 } : undefined}
-                animate={
-                  !isAnswered && selectedAnswer === i
-                    ? { scale: 1.015, y: -1 }
-                    : { scale: 1, y: 0 }
-                }
-                transition={{ type: "spring", stiffness: 320, damping: 24 }}
-              >
-                <div className="flex items-center gap-3.5">
-                  <span
-                    className={`w-8 h-8 rounded-full border flex items-center justify-center text-sm font-semibold shrink-0 ${
-                      isAnswered && i === currentQ.correctAnswer
-                        ? "border-emerald-400 bg-emerald-100 text-emerald-700"
-                        : isAnswered && i === selectedAnswer
-                          ? "border-rose-400 bg-rose-100 text-rose-600"
-                          : "border-slate-300 bg-slate-100 text-slate-600"
-                    }`}
-                  >
-                    {String.fromCharCode(65 + i)}
-                  </span>
-                  <span className="flex-1 text-left text-[0.98rem] leading-relaxed"><MathText text={opt} /></span>
-                  {isAnswered && i === currentQ.correctAnswer && (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 ml-auto shrink-0 animate-pulse" />
-                  )}
-                  {isAnswered &&
-                    i === selectedAnswer &&
-                    i !== currentQ.correctAnswer && (
-                      <XCircle className="w-4 h-4 text-red-500 ml-auto shrink-0" />
+          {/* Lower: Options Panel */}
+          <div className="mt-auto rounded-3xl border border-white/80 p-5 sm:p-6 bg-white/90 shadow-[0_12px_30px_rgba(15,23,42,0.1)]">
+            <div className="mb-5 rounded-2xl border border-slate-200 bg-white/75 px-4 py-3">
+              <div className="mb-2 flex items-center justify-between text-sm font-medium text-slate-600">
+                <span>Time Left</span>
+                <span>{timeLeft}s</span>
+              </div>
+              <div className="h-2.5 w-full rounded-full bg-slate-200 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-1000 ease-linear"
+                  style={{ width: `${Math.max(0, (timeLeft / maxTime) * 100)}%` }}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-3.5">
+              {currentQ.options.map((opt, i) => (
+                <motion.button
+                  key={i}
+                  onClick={() => handleSelectAnswer(i)}
+                  disabled={isAnswered}
+                  className={optionClass(i)}
+                  whileTap={!isAnswered ? { scale: 0.985 } : undefined}
+                  animate={
+                    !isAnswered && selectedAnswer === i
+                      ? { scale: 1.015, y: -1 }
+                      : { scale: 1, y: 0 }
+                  }
+                  transition={{ type: "spring", stiffness: 320, damping: 24 }}
+                >
+                  <div className="flex items-center gap-3.5">
+                    <span
+                      className={`w-8 h-8 rounded-full border flex items-center justify-center text-sm font-semibold shrink-0 ${
+                        isAnswered && i === currentQ.correctAnswer
+                          ? "border-emerald-400 bg-emerald-100 text-emerald-700"
+                          : isAnswered && i === selectedAnswer
+                            ? "border-rose-400 bg-rose-100 text-rose-600"
+                            : "border-slate-300 bg-slate-100 text-slate-600"
+                      }`}
+                    >
+                      {String.fromCharCode(65 + i)}
+                    </span>
+                    <span className="flex-1 text-left text-[0.98rem] leading-relaxed"><MathText text={opt} /></span>
+                    {isAnswered && i === currentQ.correctAnswer && (
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 ml-auto shrink-0 animate-pulse" />
                     )}
-                </div>
-              </motion.button>
-            ))}
+                    {isAnswered &&
+                      i === selectedAnswer &&
+                      i !== currentQ.correctAnswer && (
+                        <XCircle className="w-4 h-4 text-red-500 ml-auto shrink-0" />
+                      )}
+                  </div>
+                </motion.button>
+              ))}
+            </div>
           </div>
         </div>
 
