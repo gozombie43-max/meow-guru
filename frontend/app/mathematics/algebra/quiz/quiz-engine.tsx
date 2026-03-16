@@ -1052,9 +1052,12 @@ export default function QuizEngine() {
         </div>
       </div>
 
-      {/* ── Question Number Strip ── */}
-      <div className="fixed top-16 left-0 right-0 z-40 px-4 sm:px-6 pt-2 pb-2 bg-white/80 backdrop-blur-md border-b border-slate-200/70">
-        <div className="max-w-3xl mx-auto">
+      {/* ── Question Area ── */}
+      <div
+        className={`pt-20 pb-40 px-4 sm:px-6 max-w-3xl mx-auto relative ${miniMode ? "pt-20" : ""}`}
+      >
+        {/* ── Question Number Strip ── */}
+        <div className="sticky top-16 z-40 pt-2 pb-3 bg-transparent">
           <QuestionNavigator
             total={questions.length}
             currentIndex={currentIndex}
@@ -1066,12 +1069,7 @@ export default function QuizEngine() {
             isPaletteOpen={isPaletteOpen}
           />
         </div>
-      </div>
 
-      {/* ── Question Area ── */}
-      <div
-        className={`pt-44 pb-40 px-4 sm:px-6 max-w-3xl mx-auto relative ${miniMode ? "pt-44" : ""}`}
-      >
         {/* Question Card */}
         <div
           key={currentQ.id}
