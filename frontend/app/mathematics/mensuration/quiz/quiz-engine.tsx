@@ -449,7 +449,12 @@ export default function QuizEngine() {
         break;
     }
 
-    setQuestions(shuffle(pool));
+    const nextQuestions =
+      mode === "all"
+        ? [...pool].sort((a, b) => a.id - b.id)
+        : shuffle(pool);
+
+    setQuestions(nextQuestions);
     setCurrentIndex(0);
     setSelectedAnswer(null);
     setIsAnswered(false);
@@ -611,7 +616,11 @@ export default function QuizEngine() {
   }
 
   function handleRestart() {
-    setQuestions(shuffle([...questions]));
+    setQuestions(
+      mode === "all"
+        ? [...questions].sort((a, b) => a.id - b.id)
+        : shuffle([...questions]),
+    );
     setCurrentIndex(0);
     setSelectedAnswer(null);
     setIsAnswered(false);
