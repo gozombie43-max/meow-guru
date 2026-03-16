@@ -450,9 +450,9 @@ export default function QuizEngine() {
     }
 
     const nextQuestions =
-      mode === "all"
-        ? [...pool].sort((a, b) => a.id - b.id)
-        : shuffle(pool);
+      mode === "tier2"
+        ? shuffle(pool)
+        : [...pool].sort((a, b) => a.id - b.id);
 
     setQuestions(nextQuestions);
     setCurrentIndex(0);
@@ -617,9 +617,9 @@ export default function QuizEngine() {
 
   function handleRestart() {
     setQuestions(
-      mode === "all"
-        ? [...questions].sort((a, b) => a.id - b.id)
-        : shuffle([...questions]),
+      mode === "tier2"
+        ? shuffle([...questions])
+        : [...questions].sort((a, b) => a.id - b.id),
     );
     setCurrentIndex(0);
     setSelectedAnswer(null);
