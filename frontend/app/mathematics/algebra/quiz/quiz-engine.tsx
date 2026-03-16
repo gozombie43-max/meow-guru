@@ -153,24 +153,27 @@ function MathText({ text, className = "" }: { text: string; className?: string }
  *  - Framer Motion full-screen palette modal
  * ──────────────────────────────────────────────────────────── */
 
-type QuestionStatus = "current" | "correct" | "wrong" | "not-answered";
+type QuestionStatus = "current" | "answered" | "correct" | "wrong" | "not-answered";
 
 function getQuestionStatus({
   index,
   currentIndex,
   selectedAnswers,
   questions,
+  submittedQuestions,
 }: {
   index: number;
   currentIndex: number;
   selectedAnswers: Record<number, number>;
   questions: AlgebraQuestion[];
+  submittedQuestions: Set<number>;
 }): QuestionStatus {
   const selected = selectedAnswers[index];
   const question = questions[index];
 
   if (index === currentIndex) return "current";
   if (selected === undefined || !question) return "not-answered";
+  if (!submittedQuestions.has(index)) return "answered";
   if (selected === question.correctAnswer) return "correct";
   return "wrong";
 }
@@ -178,6 +181,7 @@ function getQuestionStatus({
 function statusClasses(status: QuestionStatus) {
   const base = "border transition-all duration-200";
   if (status === "current") return `${base} bg-blue-600 text-white border-blue-600 shadow-sm shadow-blue-400/40`;
+  if (status === "answered") return `${base} bg-amber-100 text-amber-700 border-amber-300`;
   if (status === "correct") return `${base} bg-emerald-100 text-emerald-700 border-emerald-300`;
   if (status === "wrong") return `${base} bg-rose-100 text-rose-700 border-rose-300`;
   return `${base} bg-slate-100 text-slate-700 border-slate-300`;
@@ -189,6 +193,7 @@ function QuestionPaletteModal({
   currentIndex,
   selectedAnswers,
   questions,
+  submittedQuestions,
   onClose,
   onGoToQuestion,
 }: {
@@ -197,6 +202,7 @@ function QuestionPaletteModal({
   currentIndex: number;
   selectedAnswers: Record<number, number>;
   questions: AlgebraQuestion[];
+  submittedQuestions: Set<number>;
   onClose: () => void;
   onGoToQuestion: (questionNumber: number) => void;
 }) {
@@ -229,6 +235,7 @@ function QuestionPaletteModal({
             </div>
             <div className="mb-3 flex gap-2 text-xs text-slate-600">
               <span className="rounded-md border border-blue-300 bg-blue-100 px-2 py-1">Current</span>
+              <span className="rounded-md border border-amber-300 bg-amber-100 px-2 py-1">Answered</span>
               <span className="rounded-md border border-emerald-300 bg-emerald-100 px-2 py-1">Correct</span>
               <span className="rounded-md border border-rose-300 bg-rose-100 px-2 py-1">Wrong</span>
               <span className="rounded-md border border-slate-300 bg-slate-100 px-2 py-1">Not Answered</span>
@@ -241,6 +248,7 @@ function QuestionPaletteModal({
                     currentIndex,
                     selectedAnswers,
                     questions,
+                    submittedQuestions,
                   });
 
                   return (
@@ -270,6 +278,7 @@ function QuestionNavigator({
   currentIndex,
   selectedAnswers,
   questions,
+  submittedQuestions,
   onGoToQuestion,
   onOpenPalette,
   onClosePalette,
@@ -279,6 +288,7 @@ function QuestionNavigator({
   currentIndex: number;
   selectedAnswers: Record<number, number>;
   questions: AlgebraQuestion[];
+  submittedQuestions: Set<number>;
   onGoToQuestion: (questionNumber: number) => void;
   onOpenPalette: () => void;
   onClosePalette: () => void;
@@ -303,6 +313,7 @@ function QuestionNavigator({
                 currentIndex,
                 selectedAnswers,
                 questions,
+                submittedQuestions,
               });
 
               return (
@@ -329,6 +340,7 @@ function QuestionNavigator({
         currentIndex={currentIndex}
         selectedAnswers={selectedAnswers}
         questions={questions}
+        submittedQuestions={submittedQuestions}
         onClose={onClosePalette}
         onGoToQuestion={onGoToQuestion}
       />
@@ -405,6 +417,7 @@ export default function QuizEngine() {
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [results, setResults] = useState<SessionResult[]>([]);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
+  const [submittedQuestions, setSubmittedQuestions] = useState<Set<number>>(new Set());
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [conceptFilter, setConceptFilter] = useState<string>("all");
   const [started, setStarted] = useState(false);
@@ -448,6 +461,7 @@ export default function QuizEngine() {
     setSelectedAnswer(null);
     setResults([]);
     setSelectedAnswers({});
+    setSubmittedQuestions(new Set());
     setIsPaletteOpen(false);
     setStreak(0);
     setShowAnalytics(false);
@@ -505,11 +519,11 @@ export default function QuizEngine() {
       const existingSelection = selectedAnswers[safeIndex];
       setSelectedAnswer(existingSelection ?? null);
       setSubmitError("");
-      if (started && !showAnalytics) {
+      if (started && !showAnalytics && !submittedQuestions.has(safeIndex)) {
         startTimer();
       }
     },
-    [questions.length, selectedAnswers, showAnalytics, startTimer, started, stopTimer],
+    [questions.length, selectedAnswers, showAnalytics, startTimer, started, stopTimer, submittedQuestions],
   );
 
   const goToQuestion = useCallback((questionNumber: number) => {
@@ -539,6 +553,7 @@ export default function QuizEngine() {
 
   const handleSelectAnswer = useCallback((index: number) => {
     if (!currentQ) return;
+    if (submittedQuestions.has(currentIndex)) return;
     if (index < 0 || index >= currentQ.options.length) return;
 
     setSelectedAnswer(index);
@@ -547,8 +562,23 @@ export default function QuizEngine() {
       [currentIndex]: index,
     }));
 
+    setSubmitError("");
+  }, [currentIndex, currentQ, submittedQuestions]);
+
+  const handleSubmitCurrent = useCallback(() => {
+    if (!currentQ) return;
+    if (submittedQuestions.has(currentIndex)) return;
+
+    const selected = selectedAnswers[currentIndex];
+    if (selected === undefined) {
+      setSubmitError("Please choose an option before submitting.");
+      return;
+    }
+
+    stopTimer();
+
     const timeTaken = Math.max(1, maxTime - timeLeft);
-    const isCorrect = index === currentQ.correctAnswer;
+    const isCorrect = selected === currentQ.correctAnswer;
     adaptDifficulty(isCorrect);
 
     if (isCorrect) {
@@ -565,7 +595,7 @@ export default function QuizEngine() {
       const next: SessionResult = {
         questionId: currentQ.id,
         questionIndex: currentIndex,
-        selected: index,
+        selected,
         correct: currentQ.correctAnswer,
         isCorrect,
         timeTaken,
@@ -580,8 +610,15 @@ export default function QuizEngine() {
       updated[existingIndex] = next;
       return updated;
     });
+
+    setSubmittedQuestions((prev) => {
+      const next = new Set(prev);
+      next.add(currentIndex);
+      return next;
+    });
+
     setSubmitError("");
-  }, [adaptDifficulty, currentIndex, currentQ, maxTime, timeLeft]);
+  }, [adaptDifficulty, currentIndex, currentQ, maxTime, selectedAnswers, stopTimer, submittedQuestions, timeLeft]);
 
   const handlePrev = useCallback(() => {
     if (currentIndex <= 0) return;
@@ -603,6 +640,7 @@ export default function QuizEngine() {
     setSelectedAnswer(null);
     setResults([]);
     setSelectedAnswers({});
+    setSubmittedQuestions(new Set());
     closePalette();
     setStreak(0);
     setBestStreak(0);
@@ -672,7 +710,7 @@ export default function QuizEngine() {
   const stats = useMemo(() => {
     const correct = results.filter((r) => r.isCorrect).length;
     const wrong = results.filter((r) => !r.isCorrect && r.selected !== null).length;
-    const attempted = Object.keys(selectedAnswers).length;
+    const attempted = results.length;
     const skipped = Math.max(0, questions.length - attempted);
     const accuracy = attempted > 0 ? Math.round((correct / attempted) * 100) : 0;
     const avgTime =
@@ -680,7 +718,7 @@ export default function QuizEngine() {
         ? Math.round(results.reduce((a, r) => a + r.timeTaken, 0) / results.length)
         : 0;
     return { correct, wrong, skipped, accuracy, avgTime };
-  }, [questions.length, results, selectedAnswers]);
+  }, [questions.length, results]);
 
   /* ── Weak concepts (for analytics) ── */
   const weakConcepts = useMemo(() => {
@@ -698,6 +736,18 @@ export default function QuizEngine() {
   /* ── Option style helper ── */
   function optionClass(index: number) {
     const base = "w-full rounded-2xl border-2 px-4 py-4 text-left transition-all duration-200 shadow-sm";
+    const isCurrentSubmitted = submittedQuestions.has(currentIndex);
+
+    if (isCurrentSubmitted && currentQ) {
+      if (index === currentQ.correctAnswer) {
+        return `${base} border-emerald-400 bg-emerald-50 text-emerald-700`;
+      }
+      if (selectedAnswer === index && index !== currentQ.correctAnswer) {
+        return `${base} border-rose-400 bg-rose-50 text-rose-700`;
+      }
+      return `${base} border-slate-200 bg-slate-50 text-slate-500`;
+    }
+
     if (selectedAnswer === index) {
       return `${base} border-blue-500 bg-blue-50 text-slate-800 shadow-[0_8px_20px_rgba(37,99,235,0.15)]`;
     }
@@ -1009,9 +1059,12 @@ export default function QuizEngine() {
     );
   }
 
+  const isCurrentSubmitted = submittedQuestions.has(currentIndex);
+  const canSubmit = selectedAnswer !== null && !isCurrentSubmitted;
+
   return (
     <div
-      className="min-h-screen relative overflow-hidden"
+      className="min-h-screen relative overflow-x-hidden"
       style={{
         background:
           "linear-gradient(165deg, #ecf4ff 0%, #eef8ff 38%, #f7fbff 100%)",
@@ -1046,13 +1099,14 @@ export default function QuizEngine() {
         </div>
       </div>
 
-      <main className="mx-auto max-w-3xl px-3 pb-[100px] pt-[74px] sm:px-6">
+      <main className="mx-auto max-w-3xl px-3 pb-[110px] pt-[84px] sm:px-6 sm:pt-[88px]">
         <section className="mb-4">
           <QuestionNavigator
             total={questions.length}
             currentIndex={currentIndex}
             selectedAnswers={selectedAnswers}
             questions={questions}
+            submittedQuestions={submittedQuestions}
             onGoToQuestion={goToQuestion}
             onOpenPalette={openPalette}
             onClosePalette={closePalette}
@@ -1118,6 +1172,7 @@ export default function QuizEngine() {
             <button
               key={i}
               onClick={() => handleSelectAnswer(i)}
+              disabled={isCurrentSubmitted}
               className={`${optionClass(i)} min-h-14`}
               type="button"
             >
@@ -1134,6 +1189,14 @@ export default function QuizEngine() {
         </section>
       </main>
 
+      {submitError && (
+        <div className="fixed bottom-[86px] left-0 right-0 z-40 px-3 sm:px-6">
+          <div className="mx-auto max-w-3xl rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm font-medium text-rose-700 shadow-sm">
+            {submitError}
+          </div>
+        </div>
+      )}
+
       <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 bg-white/95 backdrop-blur-md">
         <div
           className="mx-auto max-w-3xl px-3 pb-3 pt-3 sm:px-6"
@@ -1149,10 +1212,25 @@ export default function QuizEngine() {
             </button>
 
             <button
-              onClick={handleNext}
-              className="inline-flex h-14 items-center justify-center rounded-2xl bg-blue-700 px-5 text-base font-semibold text-white transition-colors hover:bg-blue-800"
+              onClick={() => {
+                if (!isCurrentSubmitted) {
+                  handleSubmitCurrent();
+                  return;
+                }
+                handleNext();
+              }}
+              disabled={!canSubmit && !isCurrentSubmitted}
+              className={`inline-flex h-14 items-center justify-center rounded-2xl px-5 text-base font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-45 ${
+                isCurrentSubmitted
+                  ? "bg-blue-700 hover:bg-blue-800"
+                  : "bg-red-600 hover:bg-red-700"
+              }`}
             >
-              {currentIndex < questions.length - 1 ? "Next" : "Submit"}
+              {!isCurrentSubmitted
+                ? "Submit"
+                : currentIndex < questions.length - 1
+                  ? "Next ->"
+                  : "Finish"}
             </button>
           </div>
         </div>
