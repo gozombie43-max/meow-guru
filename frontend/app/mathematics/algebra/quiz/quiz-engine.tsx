@@ -291,7 +291,7 @@ function QuestionNavigator({
 
   return (
     <>
-      <div className="mb-5 space-y-3 rounded-2xl border border-slate-200 bg-white/95 p-3 shadow-[0_8px_24px_rgba(15,23,42,0.08)] backdrop-blur">
+      <div className="rounded-2xl border border-slate-200 bg-white/95 p-2 shadow-[0_10px_24px_rgba(15,23,42,0.1)] backdrop-blur">
         <div className="rounded-xl border border-slate-200 bg-slate-50 px-1 py-1.5">
           <div className="question-strip qnav-bar-scroll mx-auto" style={{ scrollSnapType: "x mandatory" }}>
             {Array.from({ length: total }, (_, index) => {
@@ -309,7 +309,7 @@ function QuestionNavigator({
                     quickButtonRefs.current[index] = element;
                   }}
                   onClick={() => onGoToQuestion(index + 1)}
-                  className={`qnum-chip h-12 w-12 min-h-12 min-w-12 rounded-xl text-sm font-semibold ${statusClasses(status)}`}
+                  className={`qnum-chip h-11 w-11 min-h-11 min-w-11 rounded-lg text-sm font-semibold ${statusClasses(status)}`}
                   aria-label={`Question ${index + 1}`}
                 >
                   {index + 1}
@@ -705,18 +705,18 @@ export default function QuizEngine() {
   /* ── Option style helper ── */
   function optionClass(index: number) {
     const base =
-      "w-full text-left px-5 py-[1.05rem] rounded-xl border-2 transition-all duration-300 cursor-pointer";
+      "w-full text-left px-5 py-4 rounded-2xl border transition-all duration-200 cursor-pointer shadow-sm";
     if (!isAnswered) {
       if (selectedAnswer === index)
-        return `${base} border-cyan-500/70 bg-cyan-500/10 text-[var(--text-primary)] shadow-[0_10px_24px_rgba(34,211,238,0.15)]`;
-      return `${base} border-slate-300/90 bg-white/80 text-slate-700 hover:border-cyan-400/70 hover:bg-cyan-50/60`;
+        return `${base} border-indigo-400 bg-indigo-50 text-[var(--text-primary)] shadow-[0_8px_20px_rgba(79,70,229,0.18)]`;
+      return `${base} border-slate-200 bg-white text-slate-700 hover:border-indigo-300 hover:bg-indigo-50/40`;
     }
     // After answering
     if (index === currentQ!.correctAnswer)
-      return `${base} border-emerald-500/65 bg-emerald-500/10 text-emerald-700`;
+      return `${base} border-emerald-400 bg-emerald-50 text-emerald-700`;
     if (index === selectedAnswer && index !== currentQ!.correctAnswer)
-      return `${base} border-red-500/65 bg-red-500/10 text-red-600`;
-    return `${base} border-slate-300/80 bg-white/55 text-slate-500`;
+      return `${base} border-rose-400 bg-rose-50 text-rose-600`;
+    return `${base} border-slate-200 bg-slate-50 text-slate-500`;
   }
 
   /* ════════════════════════════════════════════════════════
@@ -1052,26 +1052,30 @@ export default function QuizEngine() {
         </div>
       </div>
 
+      {/* ── Question Number Strip ── */}
+      <div className="fixed top-16 left-0 right-0 z-40 px-4 sm:px-6 pt-2 pb-2 bg-white/80 backdrop-blur-md border-b border-slate-200/70">
+        <div className="max-w-3xl mx-auto">
+          <QuestionNavigator
+            total={questions.length}
+            currentIndex={currentIndex}
+            answeredQuestions={answeredQuestions}
+            markedForReview={markedForReview}
+            onGoToQuestion={goToQuestion}
+            onOpenPalette={openPalette}
+            onClosePalette={closePalette}
+            isPaletteOpen={isPaletteOpen}
+          />
+        </div>
+      </div>
+
       {/* ── Question Area ── */}
       <div
-        className={`pt-22 pb-16 px-4 sm:px-6 max-w-3xl mx-auto relative ${miniMode ? "pt-22" : ""}`}
+        className={`pt-44 pb-40 px-4 sm:px-6 max-w-3xl mx-auto relative ${miniMode ? "pt-44" : ""}`}
       >
-        {/* Question Navigator */}
-        <QuestionNavigator
-          total={questions.length}
-          currentIndex={currentIndex}
-          answeredQuestions={answeredQuestions}
-          markedForReview={markedForReview}
-          onGoToQuestion={goToQuestion}
-          onOpenPalette={openPalette}
-          onClosePalette={closePalette}
-          isPaletteOpen={isPaletteOpen}
-        />
-
         {/* Question Card */}
         <div
           key={currentQ.id}
-          className={`rounded-3xl border border-white/80 ${miniMode ? "p-5" : "p-6 sm:p-8"} mb-6 animate-fade-in-up shadow-[0_16px_38px_rgba(15,23,42,0.12)]`}
+          className={`rounded-3xl border border-white/80 ${miniMode ? "p-6" : "p-7 sm:p-9"} mb-6 animate-fade-in-up shadow-[0_16px_38px_rgba(15,23,42,0.12)]`}
           style={{ background: "linear-gradient(145deg, #ffffff 0%, #f3f8ff 100%)" }}
           onTouchStart={(event) => {
             const touch = event.changedTouches[0];
@@ -1113,7 +1117,7 @@ export default function QuizEngine() {
           {/* Question text */}
           <h2
             className={`font-semibold leading-relaxed mb-7 ${
-              miniMode ? "text-base" : "text-lg sm:text-[1.4rem]"
+              miniMode ? "text-lg" : "text-xl sm:text-[1.55rem]"
             }`}
           >
             <MathText text={currentQ.question} />
@@ -1121,8 +1125,8 @@ export default function QuizEngine() {
 
           <div className="mb-6 rounded-2xl border border-slate-200 bg-white/75 px-4 py-3">
             <div className="mb-2 flex items-center justify-between text-sm font-medium text-slate-600">
-              <span>Time</span>
-              <span>{timeLeft}s / 1 minute</span>
+              <span>Time Left</span>
+              <span>{timeLeft}s</span>
             </div>
             <div className="h-2.5 w-full rounded-full bg-slate-200 overflow-hidden">
               <div
@@ -1148,19 +1152,19 @@ export default function QuizEngine() {
                 }
                 transition={{ type: "spring", stiffness: 320, damping: 24 }}
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3.5">
                   <span
-                    className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-medium shrink-0 ${
+                    className={`w-8 h-8 rounded-full border flex items-center justify-center text-sm font-semibold shrink-0 ${
                       isAnswered && i === currentQ.correctAnswer
-                        ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-600"
+                        ? "border-emerald-400 bg-emerald-100 text-emerald-700"
                         : isAnswered && i === selectedAnswer
-                          ? "border-red-500/50 bg-red-500/10 text-red-500"
-                          : "border-white/25 text-slate-500"
+                          ? "border-rose-400 bg-rose-100 text-rose-600"
+                          : "border-slate-300 bg-slate-100 text-slate-600"
                     }`}
                   >
                     {String.fromCharCode(65 + i)}
                   </span>
-                  <span className="flex-1 text-center"><MathText text={opt} /></span>
+                  <span className="flex-1 text-left text-[0.98rem] leading-relaxed"><MathText text={opt} /></span>
                   {isAnswered && i === currentQ.correctAnswer && (
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 ml-auto shrink-0 animate-pulse" />
                   )}
@@ -1209,26 +1213,30 @@ export default function QuizEngine() {
           </div>
         )}
 
-        <div className="mt-7 grid grid-cols-2 gap-3">
-          <button
-            onClick={handlePrev}
-            disabled={currentIndex === 0}
-            className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 font-semibold text-white bg-gradient-to-r from-orange-500 to-amber-500 shadow-[0_10px_22px_rgba(249,115,22,0.32)] hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-45 disabled:cursor-not-allowed"
-          >
-            <ArrowLeft className="w-4 h-4" /> Prev
-          </button>
+        <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 bg-white/95 backdrop-blur-md">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 py-4">
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={handlePrev}
+                disabled={currentIndex === 0}
+                className="inline-flex h-[52px] items-center justify-center gap-2 rounded-2xl bg-[#ece8ff] px-5 font-semibold text-[#3a3271] transition-colors hover:bg-[#e3ddff] disabled:opacity-45 disabled:cursor-not-allowed"
+              >
+                <ArrowLeft className="w-4 h-4" /> Previous
+              </button>
 
-          <button
-            onClick={handleNext}
-            disabled={!isAnswered}
-            className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 font-semibold text-white bg-gradient-to-r from-orange-500 to-amber-500 shadow-[0_10px_22px_rgba(249,115,22,0.32)] hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-45 disabled:cursor-not-allowed"
-          >
-            {currentIndex < questions.length - 1 ? (
-              <>Next <ArrowRight className="w-4 h-4" /></>
-            ) : (
-              <>Finish <BarChart3 className="w-4 h-4" /></>
-            )}
-          </button>
+              <button
+                onClick={handleNext}
+                disabled={!isAnswered}
+                className="inline-flex h-[52px] items-center justify-center gap-2 rounded-2xl bg-[#2D2DB8] px-5 font-bold text-white transition-colors hover:bg-[#2525a3] disabled:opacity-45 disabled:cursor-not-allowed"
+              >
+                {currentIndex < questions.length - 1 ? (
+                  <>Next <ArrowRight className="w-4 h-4" /></>
+                ) : (
+                  <>Submit <BarChart3 className="w-4 h-4" /></>
+                )}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
