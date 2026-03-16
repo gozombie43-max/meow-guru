@@ -1073,8 +1073,12 @@ export default function QuizEngine() {
         {/* Question Card */}
         <div
           key={currentQ.id}
-          className={`rounded-3xl border border-white/80 ${miniMode ? "p-6" : "p-7 sm:p-9"} mb-6 animate-fade-in-up shadow-[0_16px_38px_rgba(15,23,42,0.12)]`}
-          style={{ background: "linear-gradient(145deg, #ffffff 0%, #f3f8ff 100%)" }}
+          className={`rounded-3xl border border-white/80 ${miniMode ? "p-6" : "p-7 sm:p-9"} mt-1 mb-6 shadow-[0_16px_38px_rgba(15,23,42,0.12)]`}
+          style={{
+            background: "linear-gradient(145deg, #ffffff 0%, #f3f8ff 100%)",
+            opacity: 1,
+            visibility: "visible",
+          }}
           onTouchStart={(event) => {
             const touch = event.changedTouches[0];
             touchStartXRef.current = touch.clientX;
