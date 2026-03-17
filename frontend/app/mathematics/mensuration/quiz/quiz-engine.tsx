@@ -5,9 +5,9 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  ArrowLeft, ArrowRight, Zap, Menu, Target,
-  CheckCircle2, XCircle, BarChart3, Flame,
-  ChevronRight, RotateCcw, Lightbulb, X,
+  Sparkles, Menu, Target,
+  CheckCircle2, XCircle, Flame,
+  RotateCcw, Lightbulb, X,
 } from "lucide-react";
 import {
   mensurationQuestions,
@@ -290,16 +290,7 @@ function QuestionNavigator({
 
   return (
     <>
-      <div className="mb-5 space-y-3 rounded-2xl border border-slate-200 bg-white/95 p-3 shadow-[0_8px_24px_rgba(15,23,42,0.08)] backdrop-blur">
-        <div className="grid grid-cols-1 gap-2">
-          <button
-            onClick={onOpenPalette}
-            className="h-12 rounded-xl border border-slate-300 bg-slate-900 text-sm font-semibold text-white shadow-sm"
-          >
-            Open Question Palette
-          </button>
-        </div>
-
+      <div className="rounded-2xl border border-slate-200 bg-white/95 p-2 shadow-[0_10px_24px_rgba(15,23,42,0.1)] backdrop-blur">
         <div className="rounded-xl border border-slate-200 bg-slate-50 px-1 py-1.5">
           <div className="question-strip qnav-bar-scroll mx-auto" style={{ scrollSnapType: "x mandatory" }}>
             {Array.from({ length: total }, (_, index) => {
@@ -317,7 +308,7 @@ function QuestionNavigator({
                     quickButtonRefs.current[index] = element;
                   }}
                   onClick={() => onGoToQuestion(index + 1)}
-                  className={`qnum-chip h-12 w-12 min-h-12 min-w-12 rounded-xl text-sm font-semibold ${statusClasses(status)}`}
+                  className={`qnum-chip h-11 w-11 min-h-11 min-w-11 rounded-lg text-sm font-semibold ${statusClasses(status)}`}
                   aria-label={`Question ${index + 1}`}
                 >
                   {index + 1}
@@ -425,6 +416,7 @@ export default function QuizEngine() {
 
   const maxTime = miniMode ? 20 : 60;
   const currentQ = questions[currentIndex] as MensurationQuestion | undefined;
+  const isLongQuestion = (currentQ?.question?.length ?? 0) > 180;
 
   /* ── Build question set ── */
   /* eslint-disable react-hooks/set-state-in-effect */
@@ -736,6 +728,15 @@ export default function QuizEngine() {
     return `${base} border-slate-300/80 bg-white/55 text-slate-500`;
   }
 
+  function formatClock(totalSeconds: number) {
+    const safeSeconds = Math.max(0, totalSeconds);
+    const mins = Math.floor(safeSeconds / 60)
+      .toString()
+      .padStart(2, "0");
+    const secs = (safeSeconds % 60).toString().padStart(2, "0");
+    return `${mins}:${secs}`;
+  }
+
   /* ════════════════════════════════════════════════════════
      RENDER
      ════════════════════════════════════════════════════════ */
@@ -858,115 +859,181 @@ export default function QuizEngine() {
   /* ── Pre-start screen ── */
   if (!started) {
     return (
-      <div className="min-h-screen relative overflow-hidden">
-
-        {/* Nav */}
-        <nav className="fixed top-0 left-0 right-0 z-50 glass">
-          <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <Zap className="w-6 h-6 text-cyan-500" />
-              <span className="text-xl font-bold tracking-tight gradient-text font-sans">SSC AI</span>
-            </div>
-            <button className="p-2 rounded-lg hover:bg-white/10 transition-colors" aria-label="Menu">
-              <Menu className="w-5 h-5 text-slate-500" />
-            </button>
-          </div>
-        </nav>
-
-        <div className="pt-24 pb-10 px-4 sm:px-6 max-w-2xl mx-auto relative text-center min-h-screen flex flex-col">
-          <Link
-            href="/mathematics/mensuration"
-            className="animate-fade-in-up inline-flex items-center gap-2 text-sm text-slate-500 hover:text-[var(--text-primary)] transition-colors mb-12 group"
-          >
-            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-            Back to Mensuration
-          </Link>
-
+      <div className="concept-start min-h-screen relative overflow-hidden px-4 sm:px-6">
+        <div className="w-full max-w-2xl mx-auto text-center min-h-screen flex flex-col pt-20 sm:pt-24 pb-8">
           <h1
-            className="animate-fade-in-up text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4 text-[var(--text-primary)]"
-            style={{ animationDelay: "100ms", fontFamily: "'SF Pro Display', 'Helvetica Neue', sans-serif" }}
+            className="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-3 text-[var(--text-primary)]"
+            style={{ fontFamily: "'SF Pro Display', 'Helvetica Neue', sans-serif" }}
           >
             {MODE_LABELS[mode]}
           </h1>
-          <p
-            className="animate-fade-in-up text-slate-500 mb-7 px-2"
-            style={{ animationDelay: "200ms" }}
-          >
-            {mode === "concept"
-              ? `Concept Practice · ${miniMode ? "20s" : "60s"} per question`
-              : `${questions.length} questions loaded · ${miniMode ? "20s" : "60s"} per question`}
+          <p className="text-slate-500 mb-8 sm:mb-10">
+            {mode === "concept" ? "Concept Practice · 60s per question" : `${MODE_LABELS[mode]} · 60s per question`}
           </p>
-
-          {/* Controls */}
-          <div
-            className="animate-fade-in-up space-y-6 mb-10"
-            style={{ animationDelay: "300ms" }}
-          >
-            {/* Mini mode toggle */}
-            <div className="flex items-center justify-center gap-4">
-              <span className="text-sm text-slate-500">Mini Mode</span>
-              <button
-                onClick={() => setMiniMode((m) => !m)}
-                className={`relative w-12 h-6 rounded-full transition-colors cursor-pointer ${
-                  miniMode ? "bg-cyan-500" : "bg-white/20"
-                }`}
-              >
-                <div
-                  className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
-                    miniMode ? "translate-x-6" : ""
-                  }`}
-                />
-              </button>
-            </div>
-
-            {/* Concept filter (concept mode) */}
-            {mode === "concept" && (
-              <div className="flex flex-col items-center gap-2">
-                <span className="text-sm text-slate-500">Filter by Concept</span>
-                <select
-                  value={conceptFilter}
-                  onChange={(e) => setConceptFilter(e.target.value)}
-                  className="glass-input px-4 py-2 text-sm outline-none"
-                >
-                  <option value="all">All Concepts</option>
-                  {CONCEPTS.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            {/* Difficulty */}
-            <div className="flex items-center justify-center gap-2">
-              <span className="text-sm text-slate-500 mr-2">Starting Difficulty</span>
-              {(["easy", "medium", "hard"] as Difficulty[]).map((d) => (
-                <button
-                  key={d}
-                  onClick={() => setDifficulty(d)}
-                  className={`px-4 py-1.5 rounded-full text-xs font-medium border capitalize cursor-pointer transition-all ${
-                    difficulty === d
-                      ? DIFFICULTY_COLORS[d]
-                      : "text-slate-500 border-white/25 bg-transparent hover:bg-white/10"
-                  }`}
-                >
-                  {d}
-                </button>
-              ))}
-            </div>
-          </div>
 
           <div className="flex-1 flex items-center justify-center">
             <button
               onClick={handleStart}
-              className="animate-fade-in-up btn-glow px-7 sm:px-8 py-2.5 sm:py-3 rounded-xl font-semibold text-base sm:text-lg flex items-center gap-2 sm:gap-2.5 mx-auto cursor-pointer"
-              style={{ animationDelay: "400ms" }}
+              className="start-quiz-button mx-auto"
+              aria-label="Start Quiz"
             >
-              Start Quiz <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
+              <Sparkles className="start-quiz-icon" aria-hidden="true" />
+              <span className="start-quiz-label">Start Quiz</span>
             </button>
           </div>
         </div>
+
+        <style jsx>{`
+          .concept-start {
+            background:
+              radial-gradient(1200px 600px at 20% -10%, rgba(56, 189, 248, 0.18), transparent 60%),
+              radial-gradient(1000px 540px at 85% 110%, rgba(16, 185, 129, 0.16), transparent 62%),
+              linear-gradient(135deg, #f8fbff 0%, #edf4ff 45%, #f8fbff 100%);
+          }
+
+          .start-quiz-button {
+            position: relative;
+            width: min(78vw, 260px);
+            min-height: 54px;
+            border: 0;
+            border-radius: 999px;
+            cursor: pointer;
+            isolation: isolate;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.42rem;
+            padding: 0 1.2rem;
+            background: linear-gradient(130deg, #7c3aed 0%, #a21caf 48%, #2563eb 100%);
+            background-size: 190% 190%;
+            color: #ffffff;
+            box-shadow:
+              0 18px 32px rgba(37, 99, 235, 0.33),
+              0 0 22px rgba(139, 92, 246, 0.36),
+              0 0 40px rgba(168, 85, 247, 0.2),
+              inset 0 1.5px 0 rgba(255, 255, 255, 0.32);
+            transition: transform 0.4s ease, box-shadow 0.4s ease, filter 0.4s ease;
+            animation: button-breathe 3.4s ease-in-out infinite, gradient-shift 4.2s ease-in-out infinite;
+          }
+
+          .start-quiz-button::before,
+          .start-quiz-button::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            pointer-events: none;
+          }
+
+          .start-quiz-button::before {
+            inset: 2px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.08) 42%, transparent 85%);
+            opacity: 0.85;
+          }
+
+          .start-quiz-button::after {
+            background: linear-gradient(100deg, transparent 18%, rgba(255, 255, 255, 0.72) 47%, transparent 78%);
+            transform: translateX(-140%);
+            mix-blend-mode: screen;
+            opacity: 0.92;
+            animation: light-sweep 3s ease-in-out infinite;
+          }
+
+          .start-quiz-icon {
+            position: relative;
+            z-index: 2;
+            width: 0.88rem;
+            height: 0.88rem;
+            stroke-width: 2.4;
+            color: #ffffff;
+            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.55));
+            animation: icon-twinkle 2.8s ease-in-out infinite;
+          }
+
+          .start-quiz-label {
+            position: relative;
+            z-index: 2;
+            font-size: clamp(0.88rem, 2.5vw, 1rem);
+            font-weight: 800;
+            letter-spacing: 0.02em;
+            color: #ffffff;
+            text-shadow: 0 2px 10px rgba(30, 41, 59, 0.34);
+          }
+
+          .start-quiz-button:hover {
+            transform: translateY(-2px) scale(1.05);
+            filter: brightness(1.12);
+            box-shadow:
+              0 22px 42px rgba(37, 99, 235, 0.4),
+              0 0 30px rgba(139, 92, 246, 0.55),
+              0 0 58px rgba(168, 85, 247, 0.33),
+              inset 0 2px 0 rgba(255, 255, 255, 0.44);
+          }
+
+          .start-quiz-button:focus-visible {
+            outline: 2px solid rgba(255, 255, 255, 0.72);
+            outline-offset: 4px;
+          }
+
+          @keyframes light-sweep {
+            0% {
+              transform: translateX(-140%);
+            }
+            55%,
+            100% {
+              transform: translateX(140%);
+            }
+          }
+
+          @keyframes button-breathe {
+            0%,
+            100% {
+              transform: translateY(0) scale(1);
+              box-shadow:
+                0 18px 32px rgba(37, 99, 235, 0.33),
+                0 0 22px rgba(139, 92, 246, 0.36),
+                0 0 40px rgba(168, 85, 247, 0.2),
+                inset 0 1.5px 0 rgba(255, 255, 255, 0.32);
+            }
+            50% {
+              transform: translateY(-4px) scale(1.018);
+              box-shadow:
+                0 23px 40px rgba(37, 99, 235, 0.4),
+                0 0 28px rgba(139, 92, 246, 0.48),
+                0 0 52px rgba(168, 85, 247, 0.3),
+                inset 0 2px 0 rgba(255, 255, 255, 0.42);
+            }
+          }
+
+          @keyframes gradient-shift {
+            0%,
+            100% {
+              background-position: 0% 50%;
+            }
+            50% {
+              background-position: 100% 50%;
+            }
+          }
+
+          @keyframes icon-twinkle {
+            0%,
+            100% {
+              transform: scale(1) rotate(0deg);
+              opacity: 0.92;
+            }
+            50% {
+              transform: scale(1.15) rotate(8deg);
+              opacity: 1;
+            }
+          }
+
+          @media (max-width: 640px) {
+            .start-quiz-button {
+              width: min(72vw, 220px);
+              min-height: 50px;
+            }
+          }
+        `}</style>
       </div>
     );
   }
@@ -982,62 +1049,43 @@ export default function QuizEngine() {
 
   return (
     <div
-      className="min-h-screen relative overflow-hidden"
+      className="min-h-screen relative overflow-x-hidden"
       style={{
         background:
           "linear-gradient(165deg, #ecf4ff 0%, #eef8ff 38%, #f7fbff 100%)",
         fontFamily: "Poppins, Inter, 'Segoe UI', sans-serif",
       }}
     >
-      {/* Background */}
-
-      {/* ── Top Bar ── */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200/70">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6">
-          <div className="h-16 flex items-center justify-between">
-            <Link
-              href="/mathematics/mensuration"
-              className="inline-flex items-center justify-center w-10 h-10 rounded-full border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-            </Link>
-
-            <div className="text-sm font-semibold text-slate-700">
-              Question {currentIndex + 1}/{questions.length}
-            </div>
-
-            <button
-              onClick={openPalette}
-              className="inline-flex items-center justify-center w-10 h-10 rounded-full border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition-colors"
-              aria-label="Open question palette"
-            >
-              <Menu className="w-4 h-4" />
-            </button>
+      <main className="mx-auto max-w-3xl px-3 pb-[210px] pt-3 sm:px-6 sm:pt-4">
+        <section className="mb-3 flex items-center justify-end gap-2">
+          <div className="rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-sm font-bold text-slate-700">
+            {formatClock(timeLeft)}
           </div>
-        </div>
-      </div>
 
-      {/* ── Question Area ── */}
-      <div
-        className={`pt-22 pb-16 px-4 sm:px-6 max-w-3xl mx-auto relative ${miniMode ? "pt-22" : ""}`}
-      >
-        {/* Question Navigator */}
-        <QuestionNavigator
-          total={questions.length}
-          currentIndex={currentIndex}
-          answeredQuestions={answeredQuestions}
-          markedForReview={markedForReview}
-          onGoToQuestion={goToQuestion}
-          onOpenPalette={openPalette}
-          onClosePalette={closePalette}
-          isPaletteOpen={isPaletteOpen}
-        />
+          <button
+            onClick={openPalette}
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-700 transition-colors hover:bg-slate-50"
+            aria-label="Open question palette"
+          >
+            <Menu className="h-4 w-4" />
+          </button>
+        </section>
 
-        {/* Question Card */}
-        <div
-          key={currentQ.id}
-          className={`rounded-3xl border border-white/80 ${miniMode ? "p-5" : "p-6 sm:p-8"} mb-6 animate-fade-in-up shadow-[0_16px_38px_rgba(15,23,42,0.12)]`}
-          style={{ background: "linear-gradient(145deg, #ffffff 0%, #f3f8ff 100%)" }}
+        <section className="mb-4">
+          <QuestionNavigator
+            total={questions.length}
+            currentIndex={currentIndex}
+            answeredQuestions={answeredQuestions}
+            markedForReview={markedForReview}
+            onGoToQuestion={goToQuestion}
+            onOpenPalette={openPalette}
+            onClosePalette={closePalette}
+            isPaletteOpen={isPaletteOpen}
+          />
+        </section>
+
+        <section
+          className="mb-4"
           onTouchStart={(event) => {
             const touch = event.changedTouches[0];
             touchStartXRef.current = touch.clientX;
@@ -1060,82 +1108,70 @@ export default function QuizEngine() {
             else showQuestion(currentIndex + 1);
           }}
         >
-          {/* Tags */}
-          <div className="flex flex-wrap items-center gap-2 mb-5">
-            <span className="text-[11px] px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-600 border border-cyan-500/25">
-              {currentQ.concept}
-            </span>
-            <span className="text-[11px] px-2.5 py-1 rounded-full bg-white/20 text-slate-500 border border-white/30">
-              {currentQ.exam} {currentQ.year}
-            </span>
-          </div>
-
-          {/* Question text */}
-          <h2
-            className={`font-semibold leading-relaxed mb-7 ${
-              miniMode ? "text-base" : "text-lg sm:text-[1.4rem]"
+          <motion.div
+            key={currentQ.id}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2 }}
+            className={`rounded-xl border border-slate-200 bg-white p-5 shadow-[0_14px_34px_rgba(15,23,42,0.1)] sm:p-6 ${
+              isLongQuestion ? "min-h-[220px] sm:min-h-[260px]" : "min-h-[150px] sm:min-h-[180px]"
             }`}
           >
-            <MathText text={currentQ.question} />
-          </h2>
-
-          <div className="mb-6 rounded-2xl border border-slate-200 bg-white/75 px-4 py-3">
-            <div className="mb-2 flex items-center justify-between text-sm font-medium text-slate-600">
-              <span>Time</span>
-              <span>{timeLeft}s / 1 minute</span>
+            <div className="mb-4 flex flex-wrap items-center gap-2">
+              <span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-[11px] text-blue-700">
+                {currentQ.concept}
+              </span>
+              <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] text-slate-600">
+                {currentQ.exam} {currentQ.year}
+              </span>
             </div>
-            <div className="h-2.5 w-full rounded-full bg-slate-200 overflow-hidden">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 transition-all duration-1000 ease-linear"
-                style={{ width: `${Math.max(0, (timeLeft / maxTime) * 100)}%` }}
-              />
-            </div>
-          </div>
+            <h2 className="px-2 pt-2 text-lg font-normal leading-8 text-black sm:px-3 sm:text-[1.6rem] sm:leading-9">
+              <MathText text={currentQ.question} />
+            </h2>
+          </motion.div>
+        </section>
 
-          {/* Options */}
-          <div className="space-y-3.5">
-            {currentQ.options.map((opt, i) => (
-              <motion.button
-                key={i}
-                onClick={() => handleSelectAnswer(i)}
-                disabled={isAnswered}
-                className={optionClass(i)}
-                whileTap={!isAnswered ? { scale: 0.985 } : undefined}
-                animate={
-                  !isAnswered && selectedAnswer === i
-                    ? { scale: 1.015, y: -1 }
-                    : { scale: 1, y: 0 }
-                }
-                transition={{ type: "spring", stiffness: 320, damping: 24 }}
-              >
-                <div className="flex items-center gap-3">
-                  <span
-                    className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-medium shrink-0 ${
-                      isAnswered && i === currentQ.correctAnswer
-                        ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-600"
-                        : isAnswered && i === selectedAnswer
-                          ? "border-red-500/50 bg-red-500/10 text-red-500"
-                          : "border-white/25 text-slate-500"
-                    }`}
-                  >
-                    {String.fromCharCode(65 + i)}
-                  </span>
-                  <span className="flex-1 text-center"><MathText text={opt} /></span>
-                  {isAnswered && i === currentQ.correctAnswer && (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 ml-auto shrink-0 animate-pulse" />
-                  )}
-                  {isAnswered &&
-                    i === selectedAnswer &&
-                    i !== currentQ.correctAnswer && (
-                      <XCircle className="w-4 h-4 text-red-500 ml-auto shrink-0" />
-                    )}
-                </div>
-              </motion.button>
-            ))}
-          </div>
-        </div>
+        <section className="mb-5 space-y-4">
+          {currentQ.options.map((opt, i) => (
+            <motion.button
+              key={i}
+              onClick={() => handleSelectAnswer(i)}
+              disabled={isAnswered}
+              className={`${optionClass(i)} min-h-[78px] sm:min-h-[88px]`}
+              whileTap={!isAnswered ? { scale: 0.985 } : undefined}
+              animate={
+                !isAnswered && selectedAnswer === i
+                  ? { scale: 1.015, y: -1 }
+                  : { scale: 1, y: 0 }
+              }
+              transition={{ type: "spring", stiffness: 320, damping: 24 }}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <span
+                  className={`mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-sm font-semibold ${
+                    isAnswered && i === currentQ.correctAnswer
+                      ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-600"
+                      : isAnswered && i === selectedAnswer
+                        ? "border-red-500/50 bg-red-500/10 text-red-500"
+                        : "border-slate-300 bg-slate-100 text-slate-700"
+                  }`}
+                >
+                  {String.fromCharCode(65 + i)}
+                </span>
+                <span className="flex-1 pt-0.5 text-[0.98rem] leading-relaxed sm:leading-8">
+                  <MathText text={opt} />
+                </span>
+                {isAnswered && i === currentQ.correctAnswer && (
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" aria-label="Right option" />
+                )}
+                {isAnswered && i === selectedAnswer && i !== currentQ.correctAnswer && (
+                  <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-600" aria-label="Wrong option" />
+                )}
+              </div>
+            </motion.button>
+          ))}
+        </section>
 
-        {/* Correct/Wrong status */}
         {isAnswered && (
           <div className="glass-card rounded-2xl p-4 mb-4 animate-fade-in-up">
             {selectedAnswer === currentQ.correctAnswer ? (
@@ -1150,7 +1186,6 @@ export default function QuizEngine() {
           </div>
         )}
 
-        {/* Solution panel */}
         {isAnswered && (
           <div className="glass-card rounded-2xl p-6 mb-6 animate-fade-in-up border-l-2 border-cyan-500/30">
             <div className="flex items-center gap-2 mb-3">
@@ -1168,27 +1203,30 @@ export default function QuizEngine() {
             </p>
           </div>
         )}
+      </main>
 
-        <div className="mt-7 grid grid-cols-2 gap-3">
-          <button
-            onClick={handlePrev}
-            disabled={currentIndex === 0}
-            className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 font-semibold text-white bg-gradient-to-r from-orange-500 to-amber-500 shadow-[0_10px_22px_rgba(249,115,22,0.32)] hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-45 disabled:cursor-not-allowed"
-          >
-            <ArrowLeft className="w-4 h-4" /> Prev
-          </button>
+      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 bg-white/95 backdrop-blur-md">
+        <div
+          className="mx-auto max-w-3xl px-3 pb-3 pt-3 sm:px-6"
+          style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 12px)" }}
+        >
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={handlePrev}
+              disabled={currentIndex === 0}
+              className="inline-flex h-14 items-center justify-center rounded-2xl border border-slate-300 bg-slate-100 px-5 text-base font-semibold text-slate-700 transition-colors hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-45"
+            >
+              Previous
+            </button>
 
-          <button
-            onClick={handleNext}
-            disabled={!isAnswered}
-            className="inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 font-semibold text-white bg-gradient-to-r from-orange-500 to-amber-500 shadow-[0_10px_22px_rgba(249,115,22,0.32)] hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-45 disabled:cursor-not-allowed"
-          >
-            {currentIndex < questions.length - 1 ? (
-              <>Next <ArrowRight className="w-4 h-4" /></>
-            ) : (
-              <>Finish <BarChart3 className="w-4 h-4" /></>
-            )}
-          </button>
+            <button
+              onClick={handleNext}
+              disabled={!isAnswered}
+              className="inline-flex h-14 items-center justify-center rounded-2xl bg-blue-600 px-5 text-base font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-45"
+            >
+              {currentIndex < questions.length - 1 ? "Next ->" : "Finish"}
+            </button>
+          </div>
         </div>
       </div>
     </div>
