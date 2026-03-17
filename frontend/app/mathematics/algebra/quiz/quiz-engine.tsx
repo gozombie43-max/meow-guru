@@ -86,6 +86,45 @@ function MathFraction({
  * ──────────────────────────────────────────────────────────── */
 
 function MathText({ text, className = "" }: { text: string; className?: string }) {
+  const renderInlineMath = (input: string, keyPrefix: string) => {
+    // Render powers (a^2, (x+y)^3) and ratio spacing (a:b) in a book-like style.
+    const nodes: React.ReactNode[] = [];
+    const tokenRe = /(\([^()]+\)|[A-Za-z0-9]+)\^(-?\d+)|([A-Za-z0-9]+):([A-Za-z0-9]+)/g;
+    let last = 0;
+    let m: RegExpExecArray | null;
+
+    while ((m = tokenRe.exec(input)) !== null) {
+      if (m.index > last) {
+        nodes.push(input.slice(last, m.index));
+      }
+
+      if (m[1] && m[2]) {
+        nodes.push(
+          <span key={`${keyPrefix}-pow-${m.index}`} className="whitespace-nowrap">
+            {m[1]}
+            <sup className="ml-[1px] text-[0.72em] align-super">{m[2]}</sup>
+          </span>,
+        );
+      } else if (m[3] && m[4]) {
+        nodes.push(
+          <span key={`${keyPrefix}-ratio-${m.index}`} className="whitespace-nowrap font-medium">
+            {m[3]}
+            <span className="px-1">:</span>
+            {m[4]}
+          </span>,
+        );
+      }
+
+      last = m.index + m[0].length;
+    }
+
+    if (last < input.length) {
+      nodes.push(input.slice(last));
+    }
+
+    return nodes;
+  };
+
   /*
    * Regex explanation:
    *   Group 1 – numerator that is a parenthesized expression: \(([^()]+)\)
@@ -107,7 +146,7 @@ function MathText({ text, className = "" }: { text: string; className?: string }
   while ((match = fractionRe.exec(text)) !== null) {
     // Push text before this match
     if (match.index > lastIndex) {
-      parts.push(text.slice(lastIndex, match.index));
+      parts.push(...renderInlineMath(text.slice(lastIndex, match.index), `txt-${match.index}`));
     }
 
     const rawNum = match[1];
@@ -141,7 +180,7 @@ function MathText({ text, className = "" }: { text: string; className?: string }
 
   // Push remaining text
   if (lastIndex < text.length) {
-    parts.push(text.slice(lastIndex));
+    parts.push(...renderInlineMath(text.slice(lastIndex), "txt-tail"));
   }
 
   return <span className={className}>{parts}</span>;
@@ -431,6 +470,7 @@ export default function QuizEngine() {
 
   const maxTime = miniMode ? 20 : 60;
   const currentQ = questions[currentIndex] as AlgebraQuestion | undefined;
+  const isLongQuestion = (currentQ?.question?.length ?? 0) > 180;
 
   /* ── Build question set ── */
   /* eslint-disable react-hooks/set-state-in-effect */
@@ -1129,7 +1169,9 @@ export default function QuizEngine() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2 }}
-            className="min-h-[220px] rounded-xl border border-slate-200 bg-white p-6 shadow-[0_14px_34px_rgba(15,23,42,0.1)] sm:min-h-[280px] sm:p-8"
+            className={`rounded-xl border border-slate-200 bg-white p-5 shadow-[0_14px_34px_rgba(15,23,42,0.1)] sm:p-6 ${
+              isLongQuestion ? "min-h-[220px] sm:min-h-[260px]" : "min-h-[150px] sm:min-h-[180px]"
+            }`}
           >
             <div className="mb-4 flex flex-wrap items-center gap-2">
               <span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-[11px] text-blue-700">
@@ -1139,7 +1181,7 @@ export default function QuizEngine() {
                 {currentQ.exam} {currentQ.year}
               </span>
             </div>
-            <h2 className="text-lg font-semibold leading-relaxed text-slate-800 sm:text-2xl">
+            <h2 className="px-2 pt-2 text-lg font-normal leading-8 text-black sm:px-3 sm:text-[1.6rem] sm:leading-9">
               <MathText text={currentQ.question} />
             </h2>
             {(currentQ as AlgebraQuestion & { image?: string }).image && (
@@ -1162,13 +1204,19 @@ export default function QuizEngine() {
               className={`${optionClass(i)} min-h-[78px] sm:min-h-[88px]`}
               type="button"
             >
-              <div className="flex items-start gap-3">
+              <div className="flex items-start justify-between gap-3">
                 <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-slate-100 text-sm font-semibold text-slate-700">
                   {String.fromCharCode(65 + i)}
                 </span>
-                <span className="pt-0.5 text-[0.98rem] leading-relaxed sm:leading-8">
+                <span className="flex-1 pt-0.5 text-[0.98rem] leading-relaxed sm:leading-8">
                   <MathText text={opt} />
                 </span>
+                {isCurrentSubmitted && i === currentQ.correctAnswer && (
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" aria-label="Right option" />
+                )}
+                {isCurrentSubmitted && selectedAnswer === i && i !== currentQ.correctAnswer && (
+                  <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-600" aria-label="Wrong option" />
+                )}
               </div>
             </button>
           ))}
