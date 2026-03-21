@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Study With Guru</title>
+  
+  <!-- Bootstrap 5.3 CDN -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+    crossorigin="anonymous"
+  />
+
+  <style>
+    :root {
+      --brand-orange: #f15a3a;
+      --brand-orange-dark: #d9482c;
+      --navbar-height: 70px;
+    }
+
+    /* Base page setup */
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #0f0f0f;
+    }
+
+    /* Top header */
+    .main-navbar {
+      height: var(--navbar-height);
+      background: #ffffff;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      z-index: 1030;
+    }
+
+    .brand-text {
+      color: var(--brand-orange);
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      font-size: clamp(1rem, 2vw, 1.25rem);
+    }
+
+    .navbar-toggler {
+      border: 0;
+    }
+
+    .navbar-toggler:focus {
+      box-shadow: none;
+    }
+
+    /* Hero section */
+    .hero-section {
+      position: relative;
+      min-height: 100vh;
+      padding-top: var(--navbar-height);
+      background-image:
+        linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+        url("https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=1600&q=80");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+
+    .hero-content {
+      min-height: calc(100vh - var(--navbar-height));
+    }
+
+    .hero-title {
+      color: #ffffff;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-align: center;
+      line-height: 1.2;
+      font-size: clamp(2rem, 6vw, 3.5rem);
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    .hero-divider {
+      width: 80px;
+      height: 4px;
+      background-color: var(--brand-orange);
+      border-radius: 999px;
+      margin-bottom: 2rem;
+    }
+
+    /* Subject buttons */
+    .subject-buttons {
+      width: 100%;
+      max-width: 260px;
+    }
+
+    .subject-btn {
+      width: 100%;
+      border: 0;
+      border-radius: 999px;
+      background-color: var(--brand-orange);
+      color: #ffffff;
+      font-size: 1.05rem;
+      font-weight: 600;
+      padding: 0.9rem 1.2rem;
+      text-transform: none;
+      transition: transform 0.2s ease, background-color 0.2s ease;
+    }
+
+    .subject-btn:hover,
+    .subject-btn:focus-visible {
+      background-color: var(--brand-orange-dark);
+      color: #ffffff;
+      transform: scale(1.03);
+    }
+
+    @media (max-width: 575.98px) {
+      .subject-buttons {
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Fixed top navbar -->
+  <nav class="navbar navbar-light fixed-top main-navbar" aria-label="Main navigation">
+    <div class="container d-flex justify-content-between align-items-center">
+      <a class="navbar-brand m-0 brand-text" href="#" aria-label="Study With Guru home">STUDY WITH GURU</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#mainNav"
+        aria-controls="mainNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    </div>
+
+    <div class="collapse navbar-collapse bg-white" id="mainNav">
+      <div class="container pb-3">
+        <div class="d-flex flex-column gap-2">
+          <a class="text-decoration-none text-dark" href="#">Home</a>
+          <a class="text-decoration-none text-dark" href="#">Courses</a>
+          <a class="text-decoration-none text-dark" href="#">Practice</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero landing section -->
+  <header class="hero-section">
+    <div class="container min-vh-100 d-flex flex-column justify-content-center align-items-center hero-content">
+      <h1 class="hero-title">START YOUR PREPARATION</h1>
+      <div class="hero-divider" aria-hidden="true"></div>
+
+      <!-- Subject selection buttons -->
+      <div class="subject-buttons d-flex flex-column justify-content-center align-items-center gap-3">
+        <button type="button" class="btn subject-btn">Mathematics</button>
+        <button type="button" class="btn subject-btn">Reasoning</button>
+        <button type="button" class="btn subject-btn">English</button>
+        <button type="button" class="btn subject-btn">General Awareness</button>
+      </div>
+    </div>
+  </header>
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+    crossorigin="anonymous"
+  ></script>
+</body>
+</html>

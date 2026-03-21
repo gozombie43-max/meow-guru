@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SSC Admin — Add Question</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --glass-bg: rgba(255, 255, 255, 0.12);
+      --glass-border: rgba(255, 255, 255, 0.35);
+      --glass-shadow: 0 8px 32px rgba(0, 180, 220, 0.18), 0 2px 8px rgba(0,0,0,0.10);
+      --glass-blur: blur(18px) saturate(180%);
+      --liquid-cyan: rgba(0, 229, 255, 0.55);
+      --liquid-teal: rgba(38, 198, 218, 0.45);
+      --liquid-purple: rgba(165, 180, 252, 0.30);
+      --glow-cyan: 0 0 24px rgba(0, 229, 255, 0.50), 0 0 8px rgba(0,229,255,0.25);
+      --text-primary: #1a2a3a;
+      --text-glass: rgba(30, 60, 90, 0.85);
+      --bg-gradient: radial-gradient(ellipse at 30% 20%, #dce8f8 0%, #eef2ff 40%, #f0f4f8 100%);
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-primary);
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Ambient blobs */
+    body::before, body::after {
+      content: '';
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+    }
+    body::before {
+      width: 500px; height: 500px;
+      top: -100px; left: -100px;
+      background: radial-gradient(circle, rgba(165,180,252,0.35) 0%, transparent 70%);
+      animation: blobFloat 8s ease-in-out infinite alternate;
+    }
+    body::after {
+      width: 400px; height: 400px;
+      bottom: -80px; right: -80px;
+      background: radial-gradient(circle, rgba(0,229,255,0.25) 0%, transparent 70%);
+      animation: blobFloat 10s ease-in-out infinite alternate-reverse;
+    }
+
+    @keyframes blobFloat {
+      0%   { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(30px, 20px) scale(1.08); }
+    }
+
+    @keyframes liquidWave {
+      0%   { transform: translateX(0) scaleY(1); }
+      33%  { transform: translateX(5%) scaleY(1.08); }
+      66%  { transform: translateX(-5%) scaleY(0.95); }
+      100% { transform: translateX(3%) scaleY(1.05); }
+    }
+
+    header {
+      background: rgba(255,255,255,0.20);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border-bottom: 1px solid rgba(255,255,255,0.40);
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 2px 20px rgba(0,180,220,0.10);
+      position: relative;
+      z-index: 10;
+    }
+
+    header h1 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    header span {
+      background: linear-gradient(135deg, #00e5ff, #26c6da);
+      color: var(--text-primary);
+      font-size: 0.7rem;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .container {
+      max-width: 780px;
+      margin: 32px auto;
+      padding: 0 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    form {
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(18px) saturate(180%);
+      -webkit-backdrop-filter: blur(18px) saturate(180%);
+      border: 1.5px solid rgba(255,255,255,0.35);
+      border-radius: 24px;
+      padding: 32px;
+      box-shadow: var(--glass-shadow), inset 0 1px 0 rgba(255,255,255,0.6);
+      position: relative;
+      overflow: hidden;
+    }
+
+    form::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #4a7a9b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    label .required {
+      color: #ef4444;
+    }
+
+    input, select, textarea {
+      background: rgba(255,255,255,0.20);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1.5px solid rgba(255,255,255,0.45);
+      border-radius: 12px;
+      padding: 10px 14px;
+      color: var(--text-glass);
+      font-size: 0.95rem;
+      font-family: inherit;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: rgba(0, 229, 255, 0.65);
+      box-shadow: 0 0 0 3px rgba(0,229,255,0.15);
+    }
+
+    input::placeholder, textarea::placeholder {
+      color: rgba(74, 122, 155, 0.55);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .options-section {
+      grid-column: 1 / -1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .options-section label {
+      margin-bottom: 2px;
+    }
+
+    .option-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .option-label {
+      background: rgba(255,255,255,0.20);
+      backdrop-filter: blur(8px);
+      color: #4a7a9b;
+      width: 32px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+      border: 1px solid rgba(255,255,255,0.35);
+    }
+
+    .option-row input[type="text"] {
+      flex: 1;
+    }
+
+    .option-row input[type="radio"] {
+      accent-color: #00e5ff;
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .correct-hint {
+      font-size: 0.75rem;
+      color: #4a7a9b;
+      margin-top: -4px;
+    }
+
+    .btn-bar {
+      grid-column: 1 / -1;
+      display: flex;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    button {
+      padding: 12px 28px;
+      border: none;
+      border-radius: 18px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-submit {
+      background: linear-gradient(135deg, #00e5ff, #26c6da);
+      color: var(--text-primary);
+      flex: 1;
+      font-weight: 700;
+      box-shadow: 0 4px 20px rgba(0, 229, 255, 0.30);
+    }
+
+    .btn-submit::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: -20%;
+      width: 140%;
+      height: 50%;
+      background: linear-gradient(135deg, var(--liquid-cyan), var(--liquid-teal), var(--liquid-purple));
+      border-radius: 60% 60% 0 0 / 40% 40% 0 0;
+      opacity: 0.4;
+      animation: liquidWave 4s ease-in-out infinite alternate;
+      filter: blur(2px);
+    }
+
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--glow-cyan);
+    }
+
+    .btn-reset {
+      background: rgba(255,255,255,0.18);
+      backdrop-filter: blur(10px);
+      color: #4a7a9b;
+      border: 1.5px solid rgba(255,255,255,0.40);
+    }
+
+    .btn-reset:hover {
+      background: rgba(255,255,255,0.28);
+      color: var(--text-primary);
+    }
+
+    /* Toast notification */
+    .toast {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      padding: 14px 24px;
+      border-radius: 18px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transform: translateX(120%);
+      transition: transform 0.35s ease;
+      z-index: 1000;
+      max-width: 380px;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    .toast.show { transform: translateX(0); }
+
+    .toast.success {
+      background: rgba(220, 252, 231, 0.85);
+      color: #166534;
+      border: 1px solid rgba(34, 197, 94, 0.40);
+      box-shadow: 0 4px 24px rgba(0, 180, 220, 0.12);
+    }
+
+    .toast.error {
+      background: rgba(254, 226, 226, 0.85);
+      color: #991b1b;
+      border: 1px solid rgba(248, 113, 113, 0.40);
+      box-shadow: 0 4px 24px rgba(220, 50, 50, 0.12);
+    }
+
+    @media (max-width: 600px) {
+      .form-grid { grid-template-columns: 1fr; }
+      form { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>SSC Question Bank — Admin</h1>
+    <span>Upload</span>
+  </header>
+
+  <div class="container">
+    <form id="questionForm">
+      <div class="form-grid">
+
+        <!-- Subject -->
+        <div class="form-group">
+          <label>Subject <span class="required">*</span></label>
+          <select id="subject" required>
+            <option value="">Select subject</option>
+            <option>Mathematics</option>
+            <option>English</option>
+            <option>General Knowledge</option>
+            <option>Reasoning</option>
+            <option>General Science</option>
+            <option>Hindi</option>
+          </select>
+        </div>
+
+        <!-- Tier -->
+        <div class="form-group">
+          <label>Tier <span class="required">*</span></label>
+          <select id="tier" required>
+            <option value="">Select tier</option>
+            <option>Tier 1</option>
+            <option>Tier 2</option>
+            <option>Tier 3</option>
+          </select>
+        </div>
+
+        <!-- Chapter -->
+        <div class="form-group">
+          <label>Chapter</label>
+          <input type="text" id="chapter" placeholder="e.g. Algebra, Idioms…">
+        </div>
+
+        <!-- Concept -->
+        <div class="form-group">
+          <label>Concept</label>
+          <input type="text" id="concept" placeholder="e.g. Quadratic Equations">
+        </div>
+
+        <!-- Difficulty -->
+        <div class="form-group">
+          <label>Difficulty <span class="required">*</span></label>
+          <select id="difficulty" required>
+            <option value="">Select level</option>
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+        </div>
+
+        <!-- Formula -->
+        <div class="form-group">
+          <label>Formula</label>
+          <input type="text" id="formula" placeholder="e.g. a² - b² = (a+b)(a-b)">
+        </div>
+
+        <!-- Trap Type -->
+        <div class="form-group">
+          <label>Trap Type</label>
+          <select id="trapType">
+            <option value="">None</option>
+            <option>Sign Error</option>
+            <option>Unit Confusion</option>
+            <option>Partial Calculation</option>
+            <option>Misread Question</option>
+            <option>Approximation Trick</option>
+            <option>Other</option>
+          </select>
+        </div>
+
+        <!-- empty cell for alignment -->
+        <div></div>
+
+        <!-- Question -->
+        <div class="form-group full-width">
+          <label>Question <span class="required">*</span></label>
+          <textarea id="question" placeholder="Type the full question text…" required></textarea>
+        </div>
+
+        <!-- Options + Correct Answer -->
+        <div class="options-section">
+          <label>Options <span class="required">*</span> &nbsp; <span style="font-weight:400; text-transform:none; color:#64748b;">(select radio for correct answer)</span></label>
+          <div class="option-row">
+            <span class="option-label">A</span>
+            <input type="text" id="optA" placeholder="Option A" required>
+            <input type="radio" name="correct" value="0" required title="Mark A as correct">
+          </div>
+          <div class="option-row">
+            <span class="option-label">B</span>
+            <input type="text" id="optB" placeholder="Option B" required>
+            <input type="radio" name="correct" value="1" title="Mark B as correct">
+          </div>
+          <div class="option-row">
+            <span class="option-label">C</span>
+            <input type="text" id="optC" placeholder="Option C" required>
+            <input type="radio" name="correct" value="2" title="Mark C as correct">
+          </div>
+          <div class="option-row">
+            <span class="option-label">D</span>
+            <input type="text" id="optD" placeholder="Option D" required>
+            <input type="radio" name="correct" value="3" title="Mark D as correct">
+          </div>
+          <p class="correct-hint">The selected radio button marks the correct answer.</p>
+        </div>
+
+        <!-- Buttons -->
+        <div class="btn-bar">
+          <button type="submit" class="btn-submit">Add Question</button>
+          <button type="reset" class="btn-reset">Clear</button>
+        </div>
+
+      </div>
+    </form>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const API_URL = 'http://localhost:3000/api/questions';
+
+    function showToast(message, type) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = 'toast ' + type + ' show';
+      setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+    document.getElementById('questionForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const options = [
+        document.getElementById('optA').value.trim(),
+        document.getElementById('optB').value.trim(),
+        document.getElementById('optC').value.trim(),
+        document.getElementById('optD').value.trim()
+      ];
+
+      const correctRadio = document.querySelector('input[name="correct"]:checked');
+      if (!correctRadio) {
+        showToast('Please select the correct answer', 'error');
+        return;
+      }
+
+      const correctAnswer = options[parseInt(correctRadio.value)];
+
+      const payload = {
+        subject:     document.getElementById('subject').value,
+        tier:        document.getElementById('tier').value,
+        chapter:     document.getElementById('chapter').value.trim(),
+        concept:     document.getElementById('concept').value.trim(),
+        difficulty:  document.getElementById('difficulty').value,
+        formula:     document.getElementById('formula').value.trim(),
+        trapType:    document.getElementById('trapType').value,
+        question:    document.getElementById('question').value.trim(),
+        options,
+        correctAnswer
+      };
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          showToast('Question #' + data.question.id + ' added!', 'success');
+          document.getElementById('questionForm').reset();
+        } else {
+          showToast(data.error || 'Failed to add question', 'error');
+        }
+      } catch (err) {
+        showToast('Server unreachable — is the backend running?', 'error');
+      }
+    });
+  </script>
+
+</body>
+</html>
