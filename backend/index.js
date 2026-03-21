@@ -1,6 +1,7 @@
 // backend/index.js
 import 'dotenv/config';
 import express from 'express';
+import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import passport from './auth/passport.js';
@@ -13,6 +14,10 @@ const app = express();
 
 // ── Middleware ──────────────────────────────────────────
 app.use(express.json());
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true,
+}));
 app.use(cookieParser());
 app.use(session({
   secret:            process.env.SESSION_SECRET,
