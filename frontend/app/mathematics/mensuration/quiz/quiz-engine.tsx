@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useAuth } from '@/context/AuthContext';
+import { updateProgress, toggleBookmark } from '@/lib/userApi';
+import { Bookmark, BookmarkCheck } from 'lucide-react';
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
@@ -387,6 +390,9 @@ function TimerCircle({
 /* ── Main Quiz Engine ──────────────────────────────────── */
 
 export default function QuizEngine() {
+    // ...all state declarations...
+
+    // Derived values (must be after state, before any function that uses them)
   const searchParams = useSearchParams();
   const mode = (searchParams.get("mode") || "all") as QuizMode;
 
@@ -410,13 +416,54 @@ export default function QuizEngine() {
   const touchStartXRef = useRef<number | null>(null);
   const touchStartYRef = useRef<number | null>(null);
 
+  // Derived values (must be after state, before any function that uses them)
+
+  const { user, token, refreshUser } = useAuth();
+  const [bookmarked, setBookmarked] = useState<Set<string>>(
+    new Set(user?.bookmarks ?? [])
+  );
+
+  // ...existing code...
+
+
+  
+
+  // Derived values (must be after state, before any function that uses them)
+  const currentQ = questions[currentIndex] as MensurationQuestion | undefined;
+  const isLongQuestion = (currentQ?.question?.length ?? 0) > 180;
+
+  // Now define handleBookmark after currentQ is in scope
+  const handleBookmark = useCallback(async () => {
+    if (!currentQ || !token) return;
+    const qId = String(currentQ.id);
+    const isBookmarked = bookmarked.has(qId);
+    const action = isBookmarked ? 'remove' : 'add';
+
+    // Optimistic update
+    setBookmarked((prev) => {
+      const next = new Set(prev);
+      isBookmarked ? next.delete(qId) : next.add(qId);
+      return next;
+    });
+
+    try {
+      await toggleBookmark(token, qId, action);
+    } catch {
+      // Revert on failure
+      setBookmarked((prev) => {
+        const next = new Set(prev);
+        isBookmarked ? next.add(qId) : next.delete(qId);
+        return next;
+      });
+    }
+  }, [currentQ, token, bookmarked]);
+
   /* Timer state */
   const [timeLeft, setTimeLeft] = useState(60);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const maxTime = miniMode ? 20 : 60;
-  const currentQ = questions[currentIndex] as MensurationQuestion | undefined;
-  const isLongQuestion = (currentQ?.question?.length ?? 0) > 180;
+
 
   /* ── Build question set ── */
   /* eslint-disable react-hooks/set-state-in-effect */
@@ -603,6 +650,7 @@ export default function QuizEngine() {
       showQuestion(currentIndex + 1);
     } else {
       stopTimer();
+      refreshUser(); // ← sync dashboard before showing analytics
       setShowAnalytics(true);
     }
   }
@@ -1117,13 +1165,24 @@ export default function QuizEngine() {
               isLongQuestion ? "min-h-[220px] sm:min-h-[260px]" : "min-h-[150px] sm:min-h-[180px]"
             }`}
           >
-            <div className="mb-4 flex flex-wrap items-center gap-2">
-              <span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-[11px] text-blue-700">
-                {currentQ.concept}
-              </span>
-              <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] text-slate-600">
-                {currentQ.exam} {currentQ.year}
-              </span>
+            <div className="mb-4 flex items-center justify-between">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-[11px] text-blue-700">
+                  {currentQ.concept}
+                </span>
+                <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] text-slate-600">
+                  {currentQ.exam} {currentQ.year}
+                </span>
+              </div>
+              <button
+                onClick={handleBookmark}
+                className="p-1.5 rounded-full hover:bg-slate-100 transition-colors"
+                aria-label={bookmarked.has(String(currentQ.id)) ? 'Remove bookmark' : 'Add bookmark'}
+              >
+                {bookmarked.has(String(currentQ.id))
+                  ? <BookmarkCheck className="w-5 h-5 text-cyan-500" />
+                  : <Bookmark className="w-5 h-5 text-slate-400" />}
+              </button>
             </div>
             <h2 className="px-2 pt-2 text-lg font-normal leading-8 text-black sm:px-3 sm:text-[1.6rem] sm:leading-9">
               <MathText text={currentQ.question} />

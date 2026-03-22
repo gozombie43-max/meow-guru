@@ -1,4 +1,7 @@
 "use client";
+import { useAuth } from '@/context/AuthContext';
+import { updateProgress, toggleBookmark } from '@/lib/userApi';
+import { Bookmark, BookmarkCheck } from 'lucide-react';
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useSearchParams } from "next/navigation";
@@ -442,6 +445,7 @@ function TimerCircle({
 /* ── Main Quiz Engine ──────────────────────────────────── */
 
 export default function QuizEngine() {
+
   const searchParams = useSearchParams();
   const mode = (searchParams.get("mode") || "mixed") as QuizMode;
 
@@ -463,6 +467,11 @@ export default function QuizEngine() {
   const [submitError, setSubmitError] = useState("");
   const touchStartXRef = useRef<number | null>(null);
   const touchStartYRef = useRef<number | null>(null);
+
+  const { user, token, refreshUser } = useAuth();
+  const [bookmarked, setBookmarked] = useState<Set<string>>(
+    new Set(user?.bookmarks ?? [])
+  );
 
   /* Timer state */
   const [timeLeft, setTimeLeft] = useState(60);
@@ -611,7 +620,7 @@ export default function QuizEngine() {
 
     const selected = selectedAnswers[currentIndex];
     if (selected === undefined) {
-      setSubmitError("Please choose an option before submitting.");
+      setSubmitError('Please choose an option before submitting.');
       return;
     }
 
@@ -631,6 +640,11 @@ export default function QuizEngine() {
       setStreak(0);
     }
 
+    // ── Save progress to backend ──────────────────────────
+    if (token) {
+      updateProgress(token, currentQ.concept, 1, isCorrect ? 1 : 0).catch(() => {});
+    }
+
     setResults((prev) => {
       const next: SessionResult = {
         questionId: currentQ.id,
@@ -642,10 +656,8 @@ export default function QuizEngine() {
         concept: currentQ.concept,
         difficulty: currentQ.difficulty,
       };
-
       const existingIndex = prev.findIndex((r) => r.questionIndex === currentIndex);
       if (existingIndex === -1) return [...prev, next];
-
       const updated = [...prev];
       updated[existingIndex] = next;
       return updated;
@@ -657,8 +669,33 @@ export default function QuizEngine() {
       return next;
     });
 
-    setSubmitError("");
-  }, [adaptDifficulty, currentIndex, currentQ, maxTime, selectedAnswers, stopTimer, submittedQuestions, timeLeft]);
+    setSubmitError('');
+  }, [adaptDifficulty, currentIndex, currentQ, maxTime, selectedAnswers, stopTimer, submittedQuestions, timeLeft, token]);
+  
+  const handleBookmark = useCallback(async () => {
+    if (!currentQ || !token) return;
+    const qId = String(currentQ.id);
+    const isBookmarked = bookmarked.has(qId);
+    const action = isBookmarked ? 'remove' : 'add';
+
+    // Optimistic update
+    setBookmarked((prev) => {
+      const next = new Set(prev);
+      isBookmarked ? next.delete(qId) : next.add(qId);
+      return next;
+    });
+
+    try {
+      await toggleBookmark(token, qId, action);
+    } catch {
+      // Revert on failure
+      setBookmarked((prev) => {
+        const next = new Set(prev);
+        isBookmarked ? next.add(qId) : next.delete(qId);
+        return next;
+      });
+    }
+  }, [currentQ, token, bookmarked]);
 
   const handlePrev = useCallback(() => {
     if (currentIndex <= 0) return;
@@ -666,13 +703,14 @@ export default function QuizEngine() {
   }, [currentIndex, showQuestion]);
 
   function handleNext() {
-    if (currentIndex < questions.length - 1) {
-      showQuestion(currentIndex + 1);
-    } else {
-      stopTimer();
-      setShowAnalytics(true);
+      if (currentIndex < questions.length - 1) {
+        showQuestion(currentIndex + 1);
+      } else {
+        stopTimer();
+        refreshUser(); // ← sync dashboard before showing analytics
+        setShowAnalytics(true);
+      }
     }
-  }
 
   function handleRestart() {
     setQuestions(shuffle([...questions]));
@@ -1125,20 +1163,46 @@ export default function QuizEngine() {
             <Menu className="h-4 w-4" />
           </button>
         </section>
+        <section
+          className="mb-4"
+          onTouchStart={(event) => {/* ...existing code... */}}
+          onTouchEnd={(event) => {/* ...existing code... */}}
+        >
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-[11px] text-blue-700">
+                {currentQ.concept}
+              </span>
+              <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] text-slate-600">
+                {currentQ.exam} {currentQ.year}
+              </span>
+            </div>
+            <button
+              onClick={handleBookmark}
+              className="p-1.5 rounded-full hover:bg-slate-100 transition-colors"
+              aria-label={bookmarked.has(String(currentQ.id)) ? 'Remove bookmark' : 'Add bookmark'}
+            >
+              {bookmarked.has(String(currentQ.id))
+                ? <BookmarkCheck className="w-5 h-5 text-cyan-500" />
+                : <Bookmark className="w-5 h-5 text-slate-400" />}
+            </button>
+          </div>
 
-        <section className="mb-4">
-          <QuestionNavigator
-            total={questions.length}
-            currentIndex={currentIndex}
-            selectedAnswers={selectedAnswers}
-            questions={questions}
-            submittedQuestions={submittedQuestions}
-            onGoToQuestion={goToQuestion}
-            onOpenPalette={openPalette}
-            onClosePalette={closePalette}
-            isPaletteOpen={isPaletteOpen}
-          />
+          {/* ...existing question card content... */}
         </section>
+
+        {/* Question Navigator Palette */}
+        <QuestionNavigator
+          total={questions.length}
+          currentIndex={currentIndex}
+          selectedAnswers={selectedAnswers}
+          questions={questions}
+          submittedQuestions={submittedQuestions}
+          onGoToQuestion={goToQuestion}
+          onOpenPalette={openPalette}
+          onClosePalette={closePalette}
+          isPaletteOpen={isPaletteOpen}
+        />
 
         <section
           className="mb-4"
