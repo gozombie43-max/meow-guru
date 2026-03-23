@@ -11,6 +11,9 @@ import { initAuthRoutes } from './routes/auth.routes.js';
 import { initUserRoutes } from './routes/user.routes.js';
 
 const app = express();
+app.set('trust proxy', 1);  // ← ADD THIS LINE
+
+
 
 // ── Middleware ──────────────────────────────────────────
 app.use(express.json());
@@ -19,10 +22,16 @@ app.use(cors({
   credentials: true,
 }));
 app.use(cookieParser());
+
 app.use(session({
   secret:            process.env.SESSION_SECRET,
   resave:            false,
   saveUninitialized: false,
+  cookie: {
+    secure:   isProd,
+    sameSite: isProd ? 'none' : 'lax',
+    maxAge:   24 * 60 * 60 * 1000,
+  },
 }));
 app.use(passport.initialize());
 app.use(passport.session());
