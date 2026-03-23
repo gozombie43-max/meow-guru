@@ -1,7 +1,4 @@
-// Google login handler
-const handleGoogleLogin = () => {
-  window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
-};
+
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -25,6 +22,11 @@ export default function RegisterPage() {
   const { login } = useAuth();
   const router = useRouter();
   const [error, setError] = useState('');
+
+  // Google login handler
+  const handleGoogleLogin = () => {
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
+  };
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
