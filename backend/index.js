@@ -10,7 +10,9 @@ import { initDB, initUsersDB } from './cosmos.js';
 import { initAuthRoutes } from './routes/auth.routes.js';
 import { initUserRoutes } from './routes/user.routes.js';
 
+
 const app = express();
+const isProd = process.env.NODE_ENV === 'production';
 app.set('trust proxy', 1);  // ← ADD THIS LINE
 
 
@@ -34,7 +36,6 @@ app.use(session({
   },
 }));
 app.use(passport.initialize());
-app.use(passport.session());
 
 // ── Init DB + Routes ────────────────────────────────────
 (async () => {
