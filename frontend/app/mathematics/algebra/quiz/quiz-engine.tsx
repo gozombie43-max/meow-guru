@@ -1,29 +1,6 @@
-"use client";
-import { useAuth } from '@/context/AuthContext';
-import { updateProgress, toggleBookmark } from '@/lib/userApi';
-import { Bookmark, BookmarkCheck } from 'lucide-react';
-
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { useSearchParams } from "next/navigation";
-import Link from "next/link";
-import { AnimatePresence, motion } from "framer-motion";
-import {
-  ArrowLeft, ArrowRight, Sparkles, Target,
-  CheckCircle2, XCircle, BarChart3, Flame,
-  RotateCcw, Lightbulb, Menu, X,
-} from "lucide-react";
-import {
-  algebraQuestions,
-  shuffle,
-  type AlgebraQuestion,
-  CONCEPTS,
-} from "@/lib/algebra-questions";
-
-/* ── Types ──────────────────────────────────────────────── */
-
+// Types
 type QuizMode = "concept" | "formula" | "mixed" | "ai-challenge";
 type Difficulty = "easy" | "medium" | "hard";
-
 interface SessionResult {
   questionId: number;
   questionIndex: number;
@@ -35,20 +12,28 @@ interface SessionResult {
   difficulty: Difficulty;
 }
 
-/* ── Constants ──────────────────────────────────────────── */
-
+// Constants
 const MODE_LABELS: Record<QuizMode, string> = {
   concept: "Concept Practice",
   formula: "Formula Practice",
   mixed: "Mixed Practice",
   "ai-challenge": "AI Challenge",
 };
+"use client";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useSearchParams } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
+import Link from "next/link";
+import { Bookmark, BookmarkCheck, CheckCircle2, XCircle, Menu, Flame, Sparkles, Target, RotateCcw, X, ArrowLeft, ArrowRight, BarChart3, Lightbulb } from "lucide-react";
+import { useAuth } from '@/context/AuthContext';
+import { updateProgress, toggleBookmark } from '@/lib/userApi';
+import {
+  algebraQuestions,
+  shuffle,
+  type AlgebraQuestion,
+  CONCEPTS,
+} from "@/lib/algebra-questions";
 
-const DIFFICULTY_COLORS: Record<Difficulty, string> = {
-  easy: "text-emerald-600 bg-emerald-500/10 border-emerald-500/25",
-  medium: "text-amber-600 bg-amber-500/10 border-amber-500/25",
-  hard: "text-red-500 bg-red-500/10 border-red-500/25",
-};
 
 /* ── Math Fraction Display ──────────────────────────────── *
  * Renders  a / b  as a proper stacked fraction like textbooks.
@@ -1353,13 +1338,14 @@ export default function QuizEngine() {
         <div className="fixed bottom-[86px] left-0 right-0 z-40 px-3 sm:px-6">
           <div className="mx-auto max-w-3xl rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm font-medium text-rose-700 shadow-sm">
             {submitError}
-          <div
-            className="min-h-screen relative overflow-x-hidden"
-            style={{
-              background: '#E8EEF7',
-              fontFamily: "Poppins, Inter, 'Segoe UI', sans-serif",
-            }}
-          >
+          </div>
+        </div>
+      )}
+
+      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 bg-white/95 backdrop-blur-md">
+        <div
+          className="mx-auto max-w-3xl px-3 pb-3 pt-3 sm:px-6"
+          style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 12px)" }}
         >
           <div className="grid grid-cols-2 gap-3">
             <button
