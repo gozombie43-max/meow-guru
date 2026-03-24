@@ -222,7 +222,7 @@ function getQuestionStatus({
 
 function statusClasses(status: QuestionStatus) {
   const base = "border transition-all duration-200";
-  if (status === "current") return `${base} bg-blue-600 text-white border-blue-600 shadow-sm shadow-blue-400/40`;
+  if (status === "current") return `${base} bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-400/40 scale-110 z-10`;
   if (status === "answered") return `${base} bg-amber-100 text-amber-700 border-amber-300`;
   if (status === "correct") return `${base} bg-emerald-100 text-emerald-700 border-emerald-300`;
   if (status === "wrong") return `${base} bg-rose-100 text-rose-700 border-rose-300`;
@@ -813,23 +813,23 @@ export default function QuizEngine() {
 
   /* ── Option style helper ── */
   function optionClass(index: number) {
-    const base = "w-full rounded-2xl border-2 px-4 py-4 text-left transition-all duration-200 shadow-sm";
+    const base = "w-full rounded-2xl border-2 px-6 py-6 text-left transition-all duration-200 shadow-lg";
     const isCurrentSubmitted = submittedQuestions.has(currentIndex);
 
     if (isCurrentSubmitted && currentQ) {
       if (index === currentQ.correctAnswer) {
-        return `${base} border-emerald-400 bg-emerald-50 text-emerald-700`;
+        return `${base} border-emerald-400 bg-emerald-50 text-emerald-700 shadow-md`;
       }
       if (selectedAnswer === index && index !== currentQ.correctAnswer) {
-        return `${base} border-rose-400 bg-rose-50 text-rose-700`;
+        return `${base} border-rose-400 bg-rose-50 text-rose-700 shadow-md`;
       }
-      return `${base} border-slate-200 bg-slate-50 text-slate-500`;
+      return `${base} border-slate-200 bg-slate-50 text-slate-500 shadow`;
     }
 
     if (selectedAnswer === index) {
-      return `${base} border-blue-500 bg-blue-50 text-slate-800 shadow-[0_8px_20px_rgba(37,99,235,0.15)]`;
+      return `${base} border-blue-600 bg-blue-50 text-blue-900 shadow-lg`;
     }
-    return `${base} border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50/50`;
+    return `${base} border-slate-200 bg-white text-slate-700 hover:border-blue-400 hover:bg-blue-50/60 shadow`;
   }
 
   function formatClock(totalSeconds: number) {
@@ -1233,7 +1233,7 @@ export default function QuizEngine() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2 }}
-            className={`rounded-xl border border-slate-200 bg-white p-5 shadow-[0_14px_34px_rgba(15,23,42,0.1)] sm:p-6 ${
+            className={`rounded-2xl border border-slate-200 bg-white p-8 shadow-lg sm:p-10 ${
               isLongQuestion ? "min-h-[220px] sm:min-h-[260px]" : "min-h-[150px] sm:min-h-[180px]"
             }`}
           >
