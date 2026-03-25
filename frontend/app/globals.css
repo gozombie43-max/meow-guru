@@ -97,6 +97,46 @@ body {
   100% { transform: translate(30px, 20px) scale(1.08); }
 }
 
+/* ========== MathRenderer global styles ========== */
+
+/* Inline math — sits naturally in text flow */
+.math-inline .katex {
+  font-size: 1em;
+  vertical-align: middle;
+}
+
+/* Block math — centred, scrollable on small screens */
+.math-block {
+  display: block;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.75rem 0;
+  text-align: center;
+  -webkit-overflow-scrolling: touch;
+}
+
+.math-block .katex-display {
+  margin: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 0.25rem; /* space for scrollbar */
+}
+
+/* Slightly larger font for display equations */
+.math-block .katex {
+  font-size: 1.15em;
+}
+
+/* Error colour override */
+.katex-error {
+  color: #cc0000 !important;
+}
+
+/* Prevent layout shift on SSR → CSR hydration */
+.math-renderer {
+  word-break: break-word;
+}
+
 /* ========== Question Nav Chips ========== */
 
 @keyframes chipFadeIn {
