@@ -1,5 +1,7 @@
 "use client";
 
+import MathRenderer from "@/components/MathRenderer";
+
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
@@ -91,103 +93,7 @@ function MathFraction({
  * Parses a string for fraction patterns like  a/b, (expr)/(expr)
  * and renders them as stacked math-book fractions with a vinculum.
  * ─────────────────────────────────────────────────────────────────────────── */
-function MathText({ text, className = "" }: { text: string; className?: string }) {
-  const renderInlineMath = (input: string, keyPrefix: string) => {
-    const nodes: React.ReactNode[] = [];
-    const tokenRe =
-      /(\([^()]+\)|[A-Za-z0-9]+)\^(-?\d+)|([A-Za-z0-9]+):([A-Za-z0-9]+)/g;
-    let last = 0;
-    let m: RegExpExecArray | null;
 
-    while ((m = tokenRe.exec(input)) !== null) {
-      if (m.index > last) {
-        nodes.push(input.slice(last, m.index));
-      }
-
-      if (m[1] && m[2]) {
-        nodes.push(
-          <span key={`${keyPrefix}-pow-${m.index}`} className="whitespace-nowrap">
-            {m[1]}
-            <sup className="ml-[1px] text-[0.72em] align-super">{m[2]}</sup>
-          </span>
-        );
-      } else if (m[3] && m[4]) {
-        nodes.push(
-          <span
-            key={`${keyPrefix}-ratio-${m.index}`}
-            className="whitespace-nowrap font-medium"
-          >
-            {m[3]}
-            <span className="px-1">:</span>
-            {m[4]}
-          </span>
-        );
-      }
-
-      last = m.index + m[0].length;
-    }
-
-    if (last < input.length) {
-      nodes.push(input.slice(last));
-    }
-
-    return nodes;
-  };
-
-  const fractionRe =
-    /(\([^()]+\)|[\w\d√∛⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾ᵃᵇⁿ.–^]+)\/((\([^()]+\))|[\w\d√∛⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾ᵃᵇⁿ.–^]+)/g;
-
-  const parts: React.ReactNode[] = [];
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
-
-  while ((match = fractionRe.exec(text)) !== null) {
-    if (match.index > lastIndex) {
-      parts.push(
-        ...renderInlineMath(text.slice(lastIndex, match.index), `txt-${match.index}`)
-      );
-    }
-
-    const rawNum = match[1];
-    const rawDen = match[2];
-    const num =
-      rawNum.startsWith("(") && rawNum.endsWith(")")
-        ? rawNum.slice(1, -1)
-        : rawNum;
-    const den =
-      rawDen.startsWith("(") && rawDen.endsWith(")")
-        ? rawDen.slice(1, -1)
-        : rawDen;
-
-    parts.push(
-      <span
-        key={match.index}
-        className="inline-flex flex-col items-center leading-none align-middle mx-[2px]"
-        role="math"
-        aria-label={`${num} over ${den}`}
-      >
-        <span className="font-semibold px-[3px]" style={{ fontSize: "0.88em" }}>
-          {num}
-        </span>
-        <span
-          className="w-full my-[1px]"
-          style={{ minWidth: "0.9em", borderTop: "1.5px solid currentColor" }}
-        />
-        <span className="font-semibold px-[3px]" style={{ fontSize: "0.88em" }}>
-          {den}
-        </span>
-      </span>
-    );
-
-    lastIndex = match.index + match[0].length;
-  }
-
-  if (lastIndex < text.length) {
-    parts.push(...renderInlineMath(text.slice(lastIndex), "txt-tail"));
-  }
-
-  return <span className={className}>{parts}</span>;
-}
 
 /* ── Question Status Helpers ────────────────────────────────────────────────  */
 type QuestionStatus = "current" | "answered" | "correct" | "wrong" | "not-answered";
@@ -1224,14 +1130,15 @@ export default function QuizEngine() {
 
             <div
               style={{
-                fontSize: 17,
+                fontSize: 18,
                 fontWeight: 500,
                 color: "#111827",
-                lineHeight: 1.65,
-                marginBottom: 8,
+                lineHeight: 1.6,
+                marginBottom: 28, // More space below question
+                letterSpacing: 0.01,
               }}
             >
-              <MathText text={currentQ.question} />
+              <MathRenderer text={currentQ.question} className="leading-relaxed" />
             </div>
 
             {(currentQ as AlgebraQuestion & { image?: string }).image && (
@@ -1245,7 +1152,7 @@ export default function QuizEngine() {
         </section>
 
         {/* Options */}
-        <section className="mb-5">
+        <section className="mb-5" style={{ marginTop: 28 }}>
           {currentQ.options.slice(0, 4).map((opt, i) => {
             let border = "#E5E7EB",
               bg = "#FFFFFF",
@@ -1339,7 +1246,7 @@ export default function QuizEngine() {
                 <span
                   style={{ fontSize: 17, fontWeight: 400, color: "#111827", lineHeight: 1.5 }}
                 >
-                  <MathText text={opt} />
+                  <MathRenderer text={opt} />
                 </span>
                 {isCurrentSubmitted && i === currentQ.correctAnswer && (
                   <CheckCircle2
