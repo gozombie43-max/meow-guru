@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { ArrowLeft, Search } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Priority = "very-high" | "high" | "medium" | "low" | "least";
@@ -169,138 +170,39 @@ const TOPICS: Topic[] = [
   },
 ];
 
-// ── Priority config ───────────────────────────────────────────────────────────
-const PRIORITY_CONFIG: Record<
-  Priority,
-  {
-    label: string;
-    color: string;
-    bg: string;
-    border: string;
-    pill: string;
-    dot: string;
-    tabActive: string;
-  }
-> = {
-  "very-high": {
-    label: "Very High",
-    color: "text-red-600",
-    bg: "bg-red-50",
-    border: "border-red-200",
-    pill: "bg-red-100 text-red-700 border-red-200",
-    dot: "bg-red-500",
-    tabActive: "bg-red-500 text-white border-red-500 shadow-red-200",
-  },
-  high: {
-    label: "High",
-    color: "text-orange-600",
-    bg: "bg-orange-50",
-    border: "border-orange-200",
-    pill: "bg-orange-100 text-orange-700 border-orange-200",
-    dot: "bg-orange-500",
-    tabActive: "bg-orange-500 text-white border-orange-500 shadow-orange-200",
-  },
-  medium: {
-    label: "Medium",
-    color: "text-yellow-600",
-    bg: "bg-yellow-50",
-    border: "border-yellow-200",
-    pill: "bg-yellow-100 text-yellow-700 border-yellow-200",
-    dot: "bg-yellow-500",
-    tabActive: "bg-yellow-500 text-white border-yellow-500 shadow-yellow-200",
-  },
-  low: {
-    label: "Low",
-    color: "text-green-600",
-    bg: "bg-green-50",
-    border: "border-green-200",
-    pill: "bg-green-100 text-green-700 border-green-200",
-    dot: "bg-green-500",
-    tabActive: "bg-green-500 text-white border-green-500 shadow-green-200",
-  },
-  least: {
-    label: "Least",
-    color: "text-blue-600",
-    bg: "bg-blue-50",
-    border: "border-blue-200",
-    pill: "bg-blue-100 text-blue-700 border-blue-200",
-    dot: "bg-blue-400",
-    tabActive: "bg-blue-400 text-white border-blue-400 shadow-blue-200",
-  },
+// ── Priority config — no red/yellow ──────────────────────────────────────────
+const PRIORITY_CONFIG: Record<Priority, { label: string; iconAccent: string; badge: string }> = {
+  "very-high": { label: "Core",    iconAccent: "#e8f0fe", badge: "#4f80f7" },
+  "high":      { label: "High",    iconAccent: "#e8f5f0", badge: "#34a87a" },
+  "medium":    { label: "Medium",  iconAccent: "#f0eefe", badge: "#7c5cbf" },
+  "low":       { label: "Low",     iconAccent: "#e8f6fd", badge: "#3b9ecb" },
+  "least":     { label: "Least",   iconAccent: "#f0f4f8", badge: "#8896a8" },
 };
 
 // ── Tabs ──────────────────────────────────────────────────────────────────────
 const TABS = [
-  { id: "all",       label: "All"       },
-  { id: "very-high", label: "🔴 High"   },
-  { id: "high",      label: "🟠 Good"   },
-  { id: "medium",    label: "🟡 Medium" },
-  { id: "low",       label: "🟢 Low"    },
-  { id: "least",     label: "🔵 Least"  },
+  { id: "all",       label: "All"    },
+  { id: "very-high", label: "Core"   },
+  { id: "high",      label: "High"   },
+  { id: "medium",    label: "Medium" },
+  { id: "low",       label: "Low"    },
+  { id: "least",     label: "Least"  },
 ] as const;
 
 type TabId = typeof TABS[number]["id"];
 
-// ── Topic Card ────────────────────────────────────────────────────────────────
-function TopicCard({ topic, onStart }: { topic: Topic; onStart: (topic: Topic) => void }) {
-  const [expanded, setExpanded] = useState(false);
+// ── Topic Pill Card ───────────────────────────────────────────────────────────
+function TopicPill({ topic, index }: { topic: Topic; index: number }) {
   const cfg = PRIORITY_CONFIG[topic.priority];
   return (
-    <div
-      className="w-full rounded-[16px] bg-white/60 backdrop-blur-md shadow-md mb-0 flex items-center px-4 py-4 gap-3"
-      style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.08)", marginBottom: 0, border: 'none' }}
-    >
-      {/* Icon */}
-      <div className="flex-shrink-0 w-12 h-12 rounded-[12px] bg-white/80 flex items-center justify-center text-[2rem] mr-2 border border-white/40">
+    <div className="pill-card" style={{ animationDelay: `${index * 45}ms` }}>
+      <span className="pill-icon" style={{ background: cfg.iconAccent }}>
         {topic.icon}
-      </div>
-      {/* Center: Title, meta, subtopics */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap mb-1">
-          <span className="block font-bold text-[19px] leading-[1.4] text-slate-900">
-            {topic.name}
-          </span>
-          <span className={`text-[13px] font-semibold px-2 py-0.5 rounded-full bg-white/80 text-blue-700 border border-blue-200 ml-1`}>{cfg.label}</span>
-        </div>
-        <div className="flex items-center gap-2 mb-1 text-[15px] text-slate-600 font-medium">
-          ~{topic.questions} questions
-          <span className="text-slate-300">•</span>
-          <button
-            type="button"
-            tabIndex={-1}
-            onClick={e => { e.stopPropagation(); setExpanded(p => !p); }}
-            className="text-[15px] text-blue-500 hover:text-blue-700 font-medium px-1 py-0 rounded transition-colors focus:outline-none"
-            style={{ minHeight: 36 }}
-            aria-expanded={expanded}
-          >
-            {expanded ? "Hide subtopics ▲" : `${topic.subtopics.length} subtopics ▼`}
-          </button>
-        </div>
-        {expanded && (
-          <div className="overflow-hidden transition-all duration-200 bg-white/80 rounded-lg mt-2 px-2 py-2">
-            <div className="flex flex-wrap gap-2">
-              {topic.subtopics.map((sub) => (
-                <span
-                  key={sub}
-                  className="text-[13px] bg-white border border-slate-200 text-slate-600 px-2.5 py-1 rounded-lg"
-                >
-                  {sub}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-      {/* Right: Start button */}
-      <button
-        type="button"
-        tabIndex={-1}
-        onClick={e => { e.stopPropagation(); onStart(topic); }}
-        className="ml-2 bg-blue-100 hover:bg-blue-200 active:scale-95 text-blue-700 font-bold text-[17px] px-5 py-2 rounded-full transition-all duration-150 shadow-sm"
-        style={{ minHeight: 44, minWidth: 80 }}
-      >
-        Start
-      </button>
+      </span>
+      <span className="pill-name">{topic.name}</span>
+      <span className="pill-badge" style={{ background: cfg.iconAccent, color: cfg.badge }}>
+        {cfg.label}
+      </span>
     </div>
   );
 }
@@ -311,16 +213,6 @@ export default function ReasoningTopicsPage() {
   const [activeTab, setActiveTab] = useState<TabId>("all");
   const [search, setSearch] = useState("");
 
-  // Counts per priority
-  const counts = useMemo(() => {
-    const c: Record<string, number> = { all: TOPICS.length };
-    TOPICS.forEach((t) => {
-      c[t.priority] = (c[t.priority] ?? 0) + 1;
-    });
-    return c;
-  }, []);
-
-  // Filtered list
   const filtered = useMemo(() => {
     return TOPICS.filter((t) => {
       const matchTab = activeTab === "all" || t.priority === activeTab;
@@ -333,158 +225,312 @@ export default function ReasoningTopicsPage() {
     });
   }, [activeTab, search]);
 
-  function handleStart(topic: Topic) {
-    router.push(
-      `/reasoning/quiz?topic=${encodeURIComponent(topic.name)}&mode=concept`
-    );
-  }
-
-  function handlePracticeAll() {
-    router.push("/reasoning/quiz?mode=mixed");
-  }
-
   return (
-    <div
-      className="min-h-screen bg-[#f0f4fb]"
-      style={{ fontFamily: "Poppins, Inter, 'Segoe UI', sans-serif" }}
-    >
-      <div className="w-full max-w-[480px] mx-auto px-4 pt-6 pb-4" style={{ background: 'linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%)', minHeight: '100vh' }}>
+    <main className="page">
+      {/* ── Top bar ── */}
+      <header className="topbar">
+        <button
+          className="back-btn"
+          onClick={() => router.back()}
+          aria-label="Back"
+        >
+          <ArrowLeft size={19} strokeWidth={2.4} />
+        </button>
+        <span className="topbar-title">Reasoning Topics</span>
+        <span className="topbar-spacer" aria-hidden />
+      </header>
 
-        {/* ── Header ── */}
-        <div className="mb-6">
-          <button
-            onClick={() => router.back()}
-            className="text-[16px] text-slate-600 hover:text-blue-700 mb-2 flex items-center gap-1 transition-colors min-h-[44px] font-medium"
-            style={{ minHeight: 44 }}
-          >
-            ← Back
-          </button>
-          <h1 className="text-[27px] font-bold text-slate-900 leading-[1.2] mb-1">Reasoning Topics</h1>
-          <p className="text-[16px] text-slate-700 mt-1 leading-[1.4] font-medium">
-            SSC CGL Tier 2
-          </p>
-        </div>
-
+      <div className="body">
         {/* ── Search ── */}
-        <div className="relative mb-5">
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl select-none">🔍</span>
+        <div className="search-row">
+          <Search className="search-ico" size={16} />
           <input
             type="text"
-            placeholder="Search topics or subtopics..."
+            className="search-field"
+            placeholder="Search topics…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-12 pr-12 py-3 rounded-full border border-slate-200 bg-white/80 shadow text-[16px] text-slate-700 placeholder-slate-400 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
-            style={{ minHeight: 44, fontWeight: 500 }}
+            aria-label="Search topics"
           />
           {search && (
-            <button
-              onClick={() => setSearch("")}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors text-xl"
-              aria-label="Clear search"
-              style={{ minHeight: 44 }}
-            >
-              ✕
+            <button className="search-clear" onClick={() => setSearch("")} aria-label="Clear">
+              ×
             </button>
           )}
         </div>
 
         {/* ── Tabs ── */}
-        <div className="-mx-4 px-4 mb-6">
-          <div className="flex gap-2 overflow-x-auto pb-1.5 no-scrollbar" style={{ height: 44, minHeight: 44, whiteSpace: 'nowrap' }}>
-            {TABS.map((tab) => {
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex-shrink-0 flex items-center gap-1.5 px-5 py-2 rounded-full text-[16px] font-semibold border-0 transition-all duration-150 shadow-sm ${
-                    isActive
-                      ? 'bg-blue-600 text-white shadow-md'
-                      : 'bg-white/70 text-slate-700 hover:bg-blue-100'
-                  }`}
-                  style={{ minHeight: 40, marginRight: 8 }}
-                >
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
+        <div className="tabs-scroll">
+          {TABS.map((tab) => (
+            <button
+              key={tab.id}
+              className={`tab-btn${activeTab === tab.id ? " tab-active" : ""}`}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
-        {/* ── Priority pills (All tab only) ── */}
-        {activeTab === "all" && !search && (
-          <div className="flex flex-wrap gap-2 mb-4">
-            {(
-              Object.entries(PRIORITY_CONFIG) as [
-                Priority,
-                (typeof PRIORITY_CONFIG)[Priority]
-              ][]
-            ).map(([key, cfg]) => (
-              <button
-                key={key}
-                onClick={() => setActiveTab(key as TabId)}
-                className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border ${cfg.pill} transition-all hover:scale-105 active:scale-95`}
-              >
-                <span className={`w-2 h-2 rounded-full ${cfg.dot}`} />
-                {cfg.label} ({counts[key] ?? 0})
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* ── Results count ── */}
-        <div className="mb-3 flex items-center justify-between">
-          <span className="text-xs text-slate-400 font-medium">
-            {filtered.length} topic{filtered.length !== 1 ? "s" : ""} found
-          </span>
+        {/* ── Count row ── */}
+        <div className="count-row">
+          <span className="count-text">{filtered.length} topic{filtered.length !== 1 ? "s" : ""}</span>
           {(search || activeTab !== "all") && (
-            <button
-              onClick={() => { setSearch(""); setActiveTab("all"); }}
-              className="text-xs text-blue-500 hover:text-blue-700 font-medium transition-colors"
-            >
+            <button className="clear-btn" onClick={() => { setSearch(""); setActiveTab("all"); }}>
               Clear filters
             </button>
           )}
         </div>
 
-        {/* ── Topic list ── */}
+        {/* ── List ── */}
         {filtered.length === 0 ? (
-          <div className="text-center py-20">
-            <span className="text-5xl">🔍</span>
-            <p className="text-slate-600 mt-4 font-semibold text-base">No topics found</p>
-            <p className="text-slate-400 text-[15px] mt-1">Try a different search term</p>
-            <button
-              onClick={() => { setSearch(""); setActiveTab("all"); }}
-              className="mt-5 text-[15px] text-blue-500 hover:text-blue-700 font-semibold border border-blue-200 px-5 py-2 rounded-xl transition-colors"
-              style={{ minHeight: 44 }}
-            >
-              Show all topics
-            </button>
+          <div className="empty">
+            <span className="empty-ico">🔍</span>
+            <p className="empty-title">No topics found</p>
+            <p className="empty-sub">Try a different search term</p>
           </div>
         ) : (
-          <div className="flex flex-col gap-4" style={{ gap: 16 }}>
-            {filtered.map((topic) => (
-              <TopicCard key={topic.id} topic={topic} onStart={handleStart} />
+          <div className="pill-list">
+            {filtered.map((topic, i) => (
+              <TopicPill key={topic.id} topic={topic} index={i} />
             ))}
           </div>
         )}
       </div>
 
-      {/* Bottom bar removed for mobile-first design */}
-    </div>
-  );
-}
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap');
 
-// Add minimal CSS for expand animation and no-scrollbar utility
-if (typeof window !== "undefined") {
-  const style = document.createElement("style");
-  style.innerHTML = `
-    .expand-enter { max-height: 0; opacity: 0; }
-    .expand-enter-active { max-height: 200px; opacity: 1; transition: max-height 180ms cubic-bezier(.4,0,.2,1), opacity 180ms; }
-    .expand-exit { max-height: 200px; opacity: 1; }
-    .expand-exit-active { max-height: 0; opacity: 0; transition: max-height 180ms cubic-bezier(.4,0,.2,1), opacity 180ms; }
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-  `;
-  document.head.appendChild(style);
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        .page {
+          min-height: 100dvh;
+          background: #f4f6fb;
+          font-family: 'DM Sans', 'Segoe UI', sans-serif;
+          color: #0f172a;
+        }
+
+        /* ── Topbar ── */
+        .topbar {
+          position: sticky;
+          top: 0;
+          z-index: 40;
+          background: rgba(244,246,251,0.93);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
+          border-bottom: 1px solid rgba(15,23,42,0.07);
+          display: grid;
+          grid-template-columns: 44px 1fr 44px;
+          align-items: center;
+          padding: 0 12px;
+          height: 56px;
+        }
+
+        .back-btn {
+          width: 36px; height: 36px;
+          border-radius: 50%;
+          border: none;
+          background: transparent;
+          display: flex; align-items: center; justify-content: center;
+          color: #0f172a;
+          cursor: pointer;
+          transition: background 0.15s;
+        }
+        .back-btn:hover { background: #e8edf4; }
+
+        .topbar-title {
+          text-align: center;
+          font-size: 0.97rem;
+          font-weight: 700;
+          letter-spacing: -0.01em;
+          color: #0f172a;
+        }
+
+        .topbar-spacer { width: 36px; }
+
+        /* ── Body ── */
+        .body {
+          max-width: 520px;
+          margin: 0 auto;
+          padding: 16px 14px 48px;
+        }
+
+        /* ── Search ── */
+        .search-row {
+          position: relative;
+          margin-bottom: 14px;
+        }
+
+        .search-ico {
+          position: absolute;
+          left: 14px; top: 50%;
+          transform: translateY(-50%);
+          color: #94a3b8;
+          pointer-events: none;
+        }
+
+        .search-field {
+          width: 100%;
+          height: 46px;
+          border: none;
+          outline: none;
+          border-radius: 999px;
+          background: #fff;
+          padding: 0 40px 0 40px;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 0.93rem;
+          color: #0f172a;
+          box-shadow: 0 2px 12px rgba(15,23,42,0.08), 0 0 0 1px rgba(15,23,42,0.06);
+          transition: box-shadow 0.2s;
+        }
+        .search-field::placeholder { color: #94a3b8; }
+        .search-field:focus {
+          box-shadow: 0 4px 18px rgba(15,23,42,0.11), 0 0 0 2px rgba(79,128,247,0.22);
+        }
+
+        .search-clear {
+          position: absolute;
+          right: 13px; top: 50%;
+          transform: translateY(-50%);
+          background: #e2e8f0;
+          border: none; border-radius: 50%;
+          width: 22px; height: 22px;
+          font-size: 0.9rem; color: #64748b;
+          cursor: pointer;
+          display: flex; align-items: center; justify-content: center;
+          transition: background 0.15s;
+        }
+        .search-clear:hover { background: #cbd5e1; }
+
+        /* ── Tabs ── */
+        .tabs-scroll {
+          display: flex;
+          gap: 8px;
+          overflow-x: auto;
+          padding-bottom: 4px;
+          margin-bottom: 14px;
+          scrollbar-width: none;
+        }
+        .tabs-scroll::-webkit-scrollbar { display: none; }
+
+        .tab-btn {
+          flex-shrink: 0;
+          height: 36px;
+          padding: 0 16px;
+          border-radius: 999px;
+          border: 1.5px solid #e2e8f0;
+          background: #fff;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 0.86rem;
+          font-weight: 600;
+          color: #475569;
+          cursor: pointer;
+          transition: all 0.18s;
+          white-space: nowrap;
+        }
+        .tab-btn:hover { background: #eef2ff; border-color: #c7d7fd; color: #4f80f7; }
+        .tab-active {
+          background: #4f80f7 !important;
+          border-color: #4f80f7 !important;
+          color: #fff !important;
+          box-shadow: 0 3px 10px rgba(79,128,247,0.28);
+        }
+
+        /* ── Count row ── */
+        .count-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 10px;
+        }
+        .count-text {
+          font-size: 0.8rem;
+          color: #94a3b8;
+          font-weight: 500;
+        }
+        .clear-btn {
+          font-size: 0.8rem;
+          color: #4f80f7;
+          background: none;
+          border: none;
+          cursor: pointer;
+          font-weight: 600;
+          padding: 0;
+        }
+
+        /* ── Pill list ── */
+        .pill-list {
+          display: flex;
+          flex-direction: column;
+          gap: 9px;
+        }
+
+        /* ── Pill card ── */
+        .pill-card {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          background: #fff;
+          border-radius: 999px;
+          padding: 9px 14px 9px 9px;
+          box-shadow: 0 2px 10px rgba(15,23,42,0.07), 0 0 0 1px rgba(15,23,42,0.045);
+          text-decoration: none;
+          animation: fadeUp 0.32s ease both;
+          transition: transform 0.2s cubic-bezier(.34,1.56,.64,1), box-shadow 0.2s;
+          cursor: pointer;
+        }
+        .pill-card:hover {
+          transform: translateY(-2px) scale(1.01);
+          box-shadow: 0 6px 20px rgba(15,23,42,0.11), 0 0 0 1px rgba(15,23,42,0.045);
+        }
+        .pill-card:active { transform: scale(0.98); }
+
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(8px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Icon bubble ── */
+        .pill-icon {
+          flex-shrink: 0;
+          width: 42px; height: 42px;
+          border-radius: 50%;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 1.25rem;
+        }
+
+        /* ── Name ── */
+        .pill-name {
+          flex: 1;
+          font-size: 0.95rem;
+          font-weight: 600;
+          color: #0f172a;
+          letter-spacing: -0.01em;
+          line-height: 1.3;
+        }
+
+        /* ── Badge ── */
+        .pill-badge {
+          flex-shrink: 0;
+          font-size: 0.73rem;
+          font-weight: 700;
+          padding: 3px 10px;
+          border-radius: 999px;
+          letter-spacing: 0.01em;
+        }
+
+        /* ── Empty state ── */
+        .empty {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding: 60px 20px;
+          gap: 6px;
+        }
+        .empty-ico { font-size: 2.8rem; }
+        .empty-title { font-size: 1rem; font-weight: 700; color: #334155; margin-top: 8px; }
+        .empty-sub { font-size: 0.88rem; color: #94a3b8; }
+      `}</style>
+    </main>
+  );
 }
