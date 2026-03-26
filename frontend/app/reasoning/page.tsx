@@ -2,7 +2,6 @@
 
 import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { CSSTransition } from "react-transition-group";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Priority = "very-high" | "high" | "medium" | "low" | "least";
@@ -247,66 +246,62 @@ function TopicCard({ topic, onStart }: { topic: Topic; onStart: (topic: Topic) =
   const [expanded, setExpanded] = useState(false);
   const cfg = PRIORITY_CONFIG[topic.priority];
   return (
-    <button
-      className="w-full text-left bg-white rounded-[16px] shadow-sm hover:shadow-md active:scale-[0.98] transition-all duration-150 mb-0 p-0 border-0 focus:outline-none"
-      style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.08)", marginBottom: 0 }}
-      onClick={() => onStart(topic)}
-      tabIndex={0}
+    <div
+      className="w-full rounded-[16px] bg-white/60 backdrop-blur-md shadow-md mb-0 flex items-center px-4 py-4 gap-3"
+      style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.08)", marginBottom: 0, border: 'none' }}
     >
-      <div className="flex items-center gap-4 px-4 py-4" style={{ minHeight: 72 }}>
-        {/* Icon */}
-        <span className="flex-shrink-0 w-12 h-12 text-[2rem] flex items-center justify-center bg-slate-50 rounded-full mr-2">
-          {topic.icon}
-        </span>
-        {/* Center: Title, meta, subtopics */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap mb-1">
-            <span className="block font-bold text-[18px] leading-[1.4] text-slate-900">
-              {topic.name}
-            </span>
-            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${cfg.pill}`}>{cfg.label}</span>
-          </div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-[15px] text-slate-500 font-medium">~{topic.questions} questions</span>
-            <span className="text-slate-200">•</span>
-            <button
-              type="button"
-              tabIndex={-1}
-              onClick={e => { e.stopPropagation(); setExpanded(p => !p); }}
-              className="text-[14px] text-blue-500 hover:text-blue-700 font-medium px-2 py-1 rounded transition-colors focus:outline-none"
-              style={{ minHeight: 36 }}
-              aria-expanded={expanded}
-            >
-              {expanded ? "Hide subtopics ▲" : `${topic.subtopics.length} subtopics ▼`}
-            </button>
-          </div>
-          <CSSTransition in={expanded} timeout={180} classNames="expand" unmountOnExit>
-            <div className={`overflow-hidden transition-all duration-200 bg-slate-50 rounded-lg mt-2 px-2 py-2`}> 
-              <div className="flex flex-wrap gap-2">
-                {topic.subtopics.map((sub) => (
-                  <span
-                    key={sub}
-                    className="text-[13px] bg-white border border-slate-200 text-slate-600 px-2.5 py-1 rounded-lg"
-                  >
-                    {sub}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </CSSTransition>
-        </div>
-        {/* Right: Start button */}
-        <button
-          type="button"
-          tabIndex={-1}
-          onClick={e => { e.stopPropagation(); onStart(topic); }}
-          className="ml-2 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold text-[16px] px-5 py-3 rounded-xl transition-all duration-150 shadow-sm"
-          style={{ minHeight: 44, minWidth: 80 }}
-        >
-          Start
-        </button>
+      {/* Icon */}
+      <div className="flex-shrink-0 w-12 h-12 rounded-[12px] bg-white/80 flex items-center justify-center text-[2rem] mr-2 border border-white/40">
+        {topic.icon}
       </div>
-    </button>
+      {/* Center: Title, meta, subtopics */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap mb-1">
+          <span className="block font-bold text-[19px] leading-[1.4] text-slate-900">
+            {topic.name}
+          </span>
+          <span className={`text-[13px] font-semibold px-2 py-0.5 rounded-full bg-white/80 text-blue-700 border border-blue-200 ml-1`}>{cfg.label}</span>
+        </div>
+        <div className="flex items-center gap-2 mb-1 text-[15px] text-slate-600 font-medium">
+          ~{topic.questions} questions
+          <span className="text-slate-300">•</span>
+          <button
+            type="button"
+            tabIndex={-1}
+            onClick={e => { e.stopPropagation(); setExpanded(p => !p); }}
+            className="text-[15px] text-blue-500 hover:text-blue-700 font-medium px-1 py-0 rounded transition-colors focus:outline-none"
+            style={{ minHeight: 36 }}
+            aria-expanded={expanded}
+          >
+            {expanded ? "Hide subtopics ▲" : `${topic.subtopics.length} subtopics ▼`}
+          </button>
+        </div>
+        {expanded && (
+          <div className="overflow-hidden transition-all duration-200 bg-white/80 rounded-lg mt-2 px-2 py-2">
+            <div className="flex flex-wrap gap-2">
+              {topic.subtopics.map((sub) => (
+                <span
+                  key={sub}
+                  className="text-[13px] bg-white border border-slate-200 text-slate-600 px-2.5 py-1 rounded-lg"
+                >
+                  {sub}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+      {/* Right: Start button */}
+      <button
+        type="button"
+        tabIndex={-1}
+        onClick={e => { e.stopPropagation(); onStart(topic); }}
+        className="ml-2 bg-blue-100 hover:bg-blue-200 active:scale-95 text-blue-700 font-bold text-[17px] px-5 py-2 rounded-full transition-all duration-150 shadow-sm"
+        style={{ minHeight: 44, minWidth: 80 }}
+      >
+        Start
+      </button>
+    </div>
   );
 }
 
@@ -353,38 +348,38 @@ export default function ReasoningTopicsPage() {
       className="min-h-screen bg-[#f0f4fb]"
       style={{ fontFamily: "Poppins, Inter, 'Segoe UI', sans-serif" }}
     >
-      <div className="w-full max-w-[480px] mx-auto px-4 pt-6 pb-4">
+      <div className="w-full max-w-[480px] mx-auto px-4 pt-6 pb-4" style={{ background: 'linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%)', minHeight: '100vh' }}>
 
         {/* ── Header ── */}
         <div className="mb-6">
           <button
             onClick={() => router.back()}
-            className="text-[15px] text-slate-400 hover:text-slate-600 mb-2 flex items-center gap-1 transition-colors min-h-[44px]"
+            className="text-[16px] text-slate-600 hover:text-blue-700 mb-2 flex items-center gap-1 transition-colors min-h-[44px] font-medium"
             style={{ minHeight: 44 }}
           >
             ← Back
           </button>
-          <h1 className="text-[24px] font-semibold text-slate-900 leading-[1.3] mb-1">Reasoning Topics</h1>
-          <p className="text-[15px] text-slate-500 mt-1 leading-[1.4]">
-            SSC CGL Tier 2 · {TOPICS.length} topics · 30 questions · 90 marks
+          <h1 className="text-[27px] font-bold text-slate-900 leading-[1.2] mb-1">Reasoning Topics</h1>
+          <p className="text-[16px] text-slate-700 mt-1 leading-[1.4] font-medium">
+            SSC CGL Tier 2
           </p>
         </div>
 
         {/* ── Search ── */}
-        <div className="relative mb-4">
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg select-none">🔍</span>
+        <div className="relative mb-5">
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl select-none">🔍</span>
           <input
             type="text"
             placeholder="Search topics or subtopics..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-12 pr-12 py-3 rounded-2xl border border-slate-200 bg-white shadow-sm text-[15px] text-slate-700 placeholder-slate-400 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
-            style={{ minHeight: 44 }}
+            className="w-full pl-12 pr-12 py-3 rounded-full border border-slate-200 bg-white/80 shadow text-[16px] text-slate-700 placeholder-slate-400 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
+            style={{ minHeight: 44, fontWeight: 500 }}
           />
           {search && (
             <button
               onClick={() => setSearch("")}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors text-lg"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors text-xl"
               aria-label="Clear search"
               style={{ minHeight: 44 }}
             >
@@ -394,32 +389,22 @@ export default function ReasoningTopicsPage() {
         </div>
 
         {/* ── Tabs ── */}
-        <div className="-mx-4 px-4 mb-4">
+        <div className="-mx-4 px-4 mb-6">
           <div className="flex gap-2 overflow-x-auto pb-1.5 no-scrollbar" style={{ height: 44, minHeight: 44, whiteSpace: 'nowrap' }}>
             {TABS.map((tab) => {
               const isActive = activeTab === tab.id;
-              const priorityCfg = tab.id !== "all" ? PRIORITY_CONFIG[tab.id as Priority] : null;
               return (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-[15px] font-semibold border transition-all duration-150 shadow-sm ${
+                  className={`flex-shrink-0 flex items-center gap-1.5 px-5 py-2 rounded-full text-[16px] font-semibold border-0 transition-all duration-150 shadow-sm ${
                     isActive
-                      ? priorityCfg
-                        ? `${priorityCfg.tabActive} shadow-md`
-                        : "bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-200"
-                      : "bg-white text-slate-600 border-slate-200 hover:border-blue-300 hover:text-blue-600"
+                      ? 'bg-blue-600 text-white shadow-md'
+                      : 'bg-white/70 text-slate-700 hover:bg-blue-100'
                   }`}
                   style={{ minHeight: 40, marginRight: 8 }}
                 >
                   {tab.label}
-                  <span
-                    className={`text-xs px-1.5 py-0.5 rounded-full font-bold ${
-                      isActive ? "bg-white/25 text-white" : "bg-slate-100 text-slate-500"
-                    }`}
-                  >
-                    {counts[tab.id] ?? 0}
-                  </span>
                 </button>
               );
             })}
