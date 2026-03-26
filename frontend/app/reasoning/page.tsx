@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { CSSTransition } from "react-transition-group";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Priority = "very-high" | "high" | "medium" | "low" | "least";
@@ -242,79 +243,70 @@ const TABS = [
 type TabId = typeof TABS[number]["id"];
 
 // ── Topic Card ────────────────────────────────────────────────────────────────
-function TopicCard({
-  topic,
-  onStart,
-}: {
-  topic: Topic;
-  onStart: (topic: Topic) => void;
-}) {
+function TopicCard({ topic, onStart }: { topic: Topic; onStart: (topic: Topic) => void }) {
   const [expanded, setExpanded] = useState(false);
   const cfg = PRIORITY_CONFIG[topic.priority];
-
   return (
-    <div
-      className={`rounded-2xl border ${cfg.border} bg-white shadow-sm overflow-hidden transition-all duration-200 hover:shadow-md`}
+    <button
+      className="w-full text-left bg-white rounded-[16px] shadow-sm hover:shadow-md active:scale-[0.98] transition-all duration-150 mb-0 p-0 border-0 focus:outline-none"
+      style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.08)", marginBottom: 0 }}
+      onClick={() => onStart(topic)}
+      tabIndex={0}
     >
-      {/* Main row */}
-      <div className="flex items-center gap-3 px-4 py-4">
+      <div className="flex items-center gap-4 px-4 py-4" style={{ minHeight: 72 }}>
         {/* Icon */}
-        <span className="text-2xl flex-shrink-0 w-10 text-center">{topic.icon}</span>
-
-        {/* Name + meta */}
+        <span className="flex-shrink-0 w-12 h-12 text-[2rem] flex items-center justify-center bg-slate-50 rounded-full mr-2">
+          {topic.icon}
+        </span>
+        {/* Center: Title, meta, subtopics */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-semibold text-slate-800 text-sm leading-tight">
+          <div className="flex items-center gap-2 flex-wrap mb-1">
+            <span className="block font-bold text-[18px] leading-[1.4] text-slate-900">
               {topic.name}
             </span>
-            <span
-              className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${cfg.pill}`}
-            >
-              {cfg.label}
-            </span>
+            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${cfg.pill}`}>{cfg.label}</span>
           </div>
-          <div className="flex items-center gap-2 mt-1.5">
-            <span className="text-xs text-slate-400">~{topic.questions} questions</span>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[15px] text-slate-500 font-medium">~{topic.questions} questions</span>
             <span className="text-slate-200">•</span>
             <button
-              onClick={() => setExpanded((p) => !p)}
-              className="text-xs text-blue-500 hover:text-blue-700 transition-colors font-medium"
+              type="button"
+              tabIndex={-1}
+              onClick={e => { e.stopPropagation(); setExpanded(p => !p); }}
+              className="text-[14px] text-blue-500 hover:text-blue-700 font-medium px-2 py-1 rounded transition-colors focus:outline-none"
+              style={{ minHeight: 36 }}
+              aria-expanded={expanded}
             >
-              {expanded
-                ? "Hide ▲"
-                : `${topic.subtopics.length} subtopics ▼`}
+              {expanded ? "Hide subtopics ▲" : `${topic.subtopics.length} subtopics ▼`}
             </button>
           </div>
+          <CSSTransition in={expanded} timeout={180} classNames="expand" unmountOnExit>
+            <div className={`overflow-hidden transition-all duration-200 bg-slate-50 rounded-lg mt-2 px-2 py-2`}> 
+              <div className="flex flex-wrap gap-2">
+                {topic.subtopics.map((sub) => (
+                  <span
+                    key={sub}
+                    className="text-[13px] bg-white border border-slate-200 text-slate-600 px-2.5 py-1 rounded-lg"
+                  >
+                    {sub}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </CSSTransition>
         </div>
-
-        {/* Start button */}
+        {/* Right: Start button */}
         <button
-          onClick={() => onStart(topic)}
-          className="flex-shrink-0 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition-all duration-150 shadow-sm"
+          type="button"
+          tabIndex={-1}
+          onClick={e => { e.stopPropagation(); onStart(topic); }}
+          className="ml-2 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold text-[16px] px-5 py-3 rounded-xl transition-all duration-150 shadow-sm"
+          style={{ minHeight: 44, minWidth: 80 }}
         >
           Start
         </button>
       </div>
-
-      {/* Subtopics */}
-      {expanded && (
-        <div className={`px-4 pb-4 pt-2 ${cfg.bg} border-t ${cfg.border}`}>
-          <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-2">
-            Subtopics
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {topic.subtopics.map((sub) => (
-              <span
-                key={sub}
-                className="text-xs bg-white border border-slate-200 text-slate-600 px-2.5 py-1 rounded-lg shadow-sm"
-              >
-                {sub}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
+    </button>
   );
 }
 
@@ -361,39 +353,40 @@ export default function ReasoningTopicsPage() {
       className="min-h-screen bg-[#f0f4fb]"
       style={{ fontFamily: "Poppins, Inter, 'Segoe UI', sans-serif" }}
     >
-      <div className="max-w-2xl mx-auto px-4 pt-6 pb-32">
+      <div className="w-full max-w-[480px] mx-auto px-4 pt-6 pb-4">
 
         {/* ── Header ── */}
-        <div className="mb-5">
+        <div className="mb-6">
           <button
             onClick={() => router.back()}
-            className="text-sm text-slate-400 hover:text-slate-600 mb-3 flex items-center gap-1 transition-colors"
+            className="text-[15px] text-slate-400 hover:text-slate-600 mb-2 flex items-center gap-1 transition-colors min-h-[44px]"
+            style={{ minHeight: 44 }}
           >
             ← Back
           </button>
-          <h1 className="text-2xl font-bold text-slate-800">Reasoning Topics</h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <h1 className="text-[24px] font-semibold text-slate-900 leading-[1.3] mb-1">Reasoning Topics</h1>
+          <p className="text-[15px] text-slate-500 mt-1 leading-[1.4]">
             SSC CGL Tier 2 · {TOPICS.length} topics · 30 questions · 90 marks
           </p>
         </div>
 
         {/* ── Search ── */}
         <div className="relative mb-4">
-          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-base select-none">
-            🔍
-          </span>
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg select-none">🔍</span>
           <input
             type="text"
             placeholder="Search topics or subtopics..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-10 py-3 rounded-2xl border border-slate-200 bg-white shadow-sm text-sm text-slate-700 placeholder-slate-400 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
+            className="w-full pl-12 pr-12 py-3 rounded-2xl border border-slate-200 bg-white shadow-sm text-[15px] text-slate-700 placeholder-slate-400 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
+            style={{ minHeight: 44 }}
           />
           {search && (
             <button
               onClick={() => setSearch("")}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors text-base"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors text-lg"
               aria-label="Clear search"
+              style={{ minHeight: 44 }}
             >
               ✕
             </button>
@@ -402,33 +395,27 @@ export default function ReasoningTopicsPage() {
 
         {/* ── Tabs ── */}
         <div className="-mx-4 px-4 mb-4">
-          <div className="flex gap-2 overflow-x-auto pb-1.5"
-            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+          <div className="flex gap-2 overflow-x-auto pb-1.5 no-scrollbar" style={{ height: 44, minHeight: 44, whiteSpace: 'nowrap' }}>
             {TABS.map((tab) => {
               const isActive = activeTab === tab.id;
-              const priorityCfg =
-                tab.id !== "all"
-                  ? PRIORITY_CONFIG[tab.id as Priority]
-                  : null;
-
+              const priorityCfg = tab.id !== "all" ? PRIORITY_CONFIG[tab.id as Priority] : null;
               return (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold border transition-all duration-150 shadow-sm ${
+                  className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-[15px] font-semibold border transition-all duration-150 shadow-sm ${
                     isActive
                       ? priorityCfg
                         ? `${priorityCfg.tabActive} shadow-md`
                         : "bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-200"
                       : "bg-white text-slate-600 border-slate-200 hover:border-blue-300 hover:text-blue-600"
                   }`}
+                  style={{ minHeight: 40, marginRight: 8 }}
                 >
                   {tab.label}
                   <span
                     className={`text-xs px-1.5 py-0.5 rounded-full font-bold ${
-                      isActive
-                        ? "bg-white/25 text-white"
-                        : "bg-slate-100 text-slate-500"
+                      isActive ? "bg-white/25 text-white" : "bg-slate-100 text-slate-500"
                     }`}
                   >
                     {counts[tab.id] ?? 0}
@@ -480,16 +467,17 @@ export default function ReasoningTopicsPage() {
           <div className="text-center py-20">
             <span className="text-5xl">🔍</span>
             <p className="text-slate-600 mt-4 font-semibold text-base">No topics found</p>
-            <p className="text-slate-400 text-sm mt-1">Try a different search term</p>
+            <p className="text-slate-400 text-[15px] mt-1">Try a different search term</p>
             <button
               onClick={() => { setSearch(""); setActiveTab("all"); }}
-              className="mt-5 text-sm text-blue-500 hover:text-blue-700 font-semibold border border-blue-200 px-5 py-2 rounded-xl transition-colors"
+              className="mt-5 text-[15px] text-blue-500 hover:text-blue-700 font-semibold border border-blue-200 px-5 py-2 rounded-xl transition-colors"
+              style={{ minHeight: 44 }}
             >
               Show all topics
             </button>
           </div>
         ) : (
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4" style={{ gap: 16 }}>
             {filtered.map((topic) => (
               <TopicCard key={topic.id} topic={topic} onStart={handleStart} />
             ))}
@@ -497,34 +485,21 @@ export default function ReasoningTopicsPage() {
         )}
       </div>
 
-      {/* ── Fixed bottom bar ── */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 px-4 py-3 z-50">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
-          {/* Stats */}
-          <div className="flex gap-5">
-            <div className="text-center">
-              <div className="text-base font-bold text-slate-800">30</div>
-              <div className="text-[10px] text-slate-400 font-medium">Questions</div>
-            </div>
-            <div className="text-center">
-              <div className="text-base font-bold text-slate-800">90</div>
-              <div className="text-[10px] text-slate-400 font-medium">Marks</div>
-            </div>
-            <div className="text-center">
-              <div className="text-base font-bold text-red-500">−1</div>
-              <div className="text-[10px] text-slate-400 font-medium">Negative</div>
-            </div>
-          </div>
-
-          {/* CTA */}
-          <button
-            onClick={handlePracticeAll}
-            className="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-all shadow-md shadow-blue-200"
-          >
-            Practice All →
-          </button>
-        </div>
-      </div>
+      {/* Bottom bar removed for mobile-first design */}
     </div>
   );
+}
+
+// Add minimal CSS for expand animation and no-scrollbar utility
+if (typeof window !== "undefined") {
+  const style = document.createElement("style");
+  style.innerHTML = `
+    .expand-enter { max-height: 0; opacity: 0; }
+    .expand-enter-active { max-height: 200px; opacity: 1; transition: max-height 180ms cubic-bezier(.4,0,.2,1), opacity 180ms; }
+    .expand-exit { max-height: 200px; opacity: 1; }
+    .expand-exit-active { max-height: 0; opacity: 0; transition: max-height 180ms cubic-bezier(.4,0,.2,1), opacity 180ms; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  `;
+  document.head.appendChild(style);
 }
