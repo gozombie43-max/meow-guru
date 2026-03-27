@@ -1,0 +1,5630 @@
+[
+  {
+    "id": 24,
+    "text": "If \\(\\theta\\) is an acute angle and \\(\\sin \\theta \\cos \\theta = 2\\cos^3 \\theta - \\frac{1}{4}\\cos \\theta\\), then the value of \\(\\sin \\theta\\) is:",
+    "options": [
+      "\\(\\frac{\\sqrt{15} - 1}{8}\\)",
+      "\\(\\frac{\\sqrt{15} + 1}{4}\\)",
+      "\\(\\frac{\\sqrt{15} + 1}{4}\\)",
+      "\\(\\frac{\\sqrt{15} - 1}{2}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 10/08/2023 (2nd Shift)"
+  },
+  {
+    "id": 25,
+    "text": "Simplify the following: \\(7(\\cot 11^\\circ \\cot 13^\\circ \\cot 19^\\circ \\cot 29^\\circ \\cot 61^\\circ \\cot 71^\\circ \\cot 77^\\circ \\cot 79^\\circ)\\)",
+    "options": [
+      "7",
+      "-7",
+      "-1",
+      "1"
+    ],
+    "correct": "a",
+    "exam": "SSC CHSL 09/08/2023 (3rd Shift)"
+  },
+  {
+    "id": 26,
+    "text": "The given expression is equal to : \\(\\frac{\\sin^4A + \\cos^4A}{1 - 2\\sin^2A\\cos^2A}\\)",
+    "options": [
+      "1",
+      "-1",
+      "0",
+      "2"
+    ],
+    "correct": "a",
+    "exam": "SSC CHSL 09/08/2023 (3rd Shift)"
+  },
+  {
+    "id": 27,
+    "text": "If \\(\\cot A + \\cos A = p\\) and \\(\\cot A - \\cos A = q\\), then which of the following relation is correct?",
+    "options": [
+      "\\(\\frac{1}{16pq} = p^2 + q^2\\)",
+      "\\(\\frac{1}{4pq} = p^2 + q^2\\)",
+      "\\(\\frac{1}{16pq} = p^2 - q^2\\)",
+      "\\(\\frac{1}{4pq} = p^2 + q^2\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 03/08/2023 (4th Shift)"
+  },
+  {
+    "id": 28,
+    "text": "The value of the expression \\(4(\\sin^6 A + \\cos^6 A) - 6(\\sin^4 A + \\cos^4 A) + 8\\) is:",
+    "options": [
+      "4",
+      "8",
+      "7",
+      "6"
+    ],
+    "correct": "d",
+    "exam": "SSC CHSL 02/08/2023 (4th Shift)"
+  },
+  {
+    "id": 29,
+    "text": "Evaluate the following: \\(\\sqrt{2 + \\sqrt{2 + \\sqrt{2 + 2\\cos 80}}}\\)",
+    "options": [
+      "\\(2\\cos \\theta\\)",
+      "\\(2\\cos 20\\)",
+      "\\(\\sin 20\\)",
+      "\\(\\cos 20\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 27/07/2023 (3rd shift)"
+  },
+  {
+    "id": 30,
+    "text": "Find the value of \\(\\sqrt{\\frac{1 - \\sin 30}{1 + \\sin 30}}\\)",
+    "options": [
+      "\\(\\sec 30 - \\tan 30\\)",
+      "\\(\\sec 30 - \\tan 30\\)",
+      "\\(\\sec 30 - \\tan 30\\)",
+      "\\(\\sec 30 + \\tan 30\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 21/07/2023 (2nd shift)"
+  },
+  {
+    "id": 31,
+    "text": "The solution of the equation \\(\\cos^2 \\theta + \\sin \\theta + 1 = 0\\) lies between:",
+    "options": [
+      "\\(\\frac{3\\pi}{4} - \\frac{5\\pi}{4}\\)",
+      "\\(\\frac{5\\pi}{4} - \\frac{7\\pi}{4}\\)",
+      "\\(\\frac{\\pi}{4} - \\frac{3\\pi}{4}\\)",
+      "\\((-\\frac{\\pi}{4}, -\\frac{\\pi}{4})\\)"
+    ],
+    "correct": "b",
+    "exam": "Graduate Level 30/06/2023 (shift 1)"
+  },
+  {
+    "id": 32,
+    "text": "What is the value of \\((1 + \\cot A + \\tan A)(\\sin A - \\cos A)\\left(\\frac{\\sin A\\cos A}{\\sin^3 A - \\cos^3 A}\\right)\\)?",
+    "options": [
+      "1",
+      "-1",
+      "0",
+      "2"
+    ],
+    "correct": "a",
+    "exam": "SSC CHSL Tier II (26/06/2023)"
+  },
+  {
+    "id": 33,
+    "text": "If \\(\\sin m + \\sin n = p\\), \\(\\cos m + \\cos n = q\\), then find the value of \\(\\sin m \\times \\sin n + \\cos m \\times \\cos n\\).",
+    "options": [
+      "\\(p^2 + q^2 - 2\\)",
+      "\\(\\frac{p^2 + q^2 - 2}{2}\\)",
+      "\\(p + q - pq\\)",
+      "\\(p + q + pq\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 20/03/2023 (2nd Shift)"
+  },
+  {
+    "id": 34,
+    "text": "If \\(a \\cot \\theta + b \\csc \\theta = p\\) and \\(b \\cot \\theta + a \\csc \\theta = q\\) then \\(p^2 - q^2\\) is equal to",
+    "options": [
+      "\\(b^2 - a^2\\)",
+      "\\(a^2 - b^2\\)",
+      "\\(b - a\\)",
+      "\\(a^2 + b^2\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL Tier II (07/03/2023)"
+  },
+  {
+    "id": 35,
+    "text": "If A is an acute angle, the simplified form of \\(\\frac{\\cos (\\pi - A).\\cot (\\frac{\\pi}{2} + A)\\cos (-A)}{\\tan (\\pi + A)\\tan (\\frac{3\\pi}{2} + A)\\sin (2\\pi - A)}\\)",
+    "options": [
+      "\\(\\cos^2 A\\)",
+      "\\(\\sin A\\)",
+      "\\(\\sin^2 A\\)",
+      "\\(\\cos A\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 13/12/2022 (4th Shift)"
+  },
+  {
+    "id": 36,
+    "text": "What is the value of the expression \\(\\cos 2A \\cos 2B + \\sin^2 (A - B) - \\sin^2 (A + B)\\)?",
+    "options": [
+      "\\(\\sin (2A - 2B)\\)",
+      "\\(\\sin (2A + 2B)\\)",
+      "\\(\\cos (2A + 2B)\\)",
+      "\\(\\cos (2A - 2B)\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 12/12/2022 (1st Shift)"
+  },
+  {
+    "id": 37,
+    "text": "If \\(\\frac{k - k\\cos^2 30^\\circ}{1 + \\cos^2 30^\\circ} = \\sin^2 60^\\circ + 4\\tan^2 45^\\circ - \\cos^2 60^\\circ\\) then the value of k (correct to two decimal places) is:",
+    "options": [
+      "5.55",
+      "-6.83",
+      "-5.58",
+      "6.83"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 03/12/2022 (3rd Shift)"
+  },
+  {
+    "id": 38,
+    "text": "If \\(\\cos \\theta + \\sin \\theta = \\sqrt{2}\\cos \\theta\\) find the value of \\((\\cos \\theta - \\sin \\theta)\\)",
+    "options": [
+      "\\(\\sqrt{2}\\sin \\theta\\)",
+      "\\(\\sqrt{2}\\cos \\theta\\)",
+      "\\(\\frac{1}{\\sqrt{2}}\\sin \\theta\\)",
+      "\\(\\frac{1}{2}\\cos \\theta\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CPO 10/11/2022 (Afternoon)"
+  },
+  {
+    "id": 39,
+    "text": "The value of \\(\\sin 73^\\circ + \\cos 137^\\circ\\) is:",
+    "options": [
+      "\\(\\sin 13^\\circ\\)",
+      "\\(\\cos 13^\\circ\\)",
+      "\\(\\cos 18^\\circ\\)",
+      "\\(\\sin 18^\\circ\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CHSL 10/06/2022 (Evening)"
+  },
+  {
+    "id": 40,
+    "text": "The value of \\(\\sin 18^\\circ\\) is given as \\(\\frac{\\sqrt{5} - 1}{4}\\). Using this value, find the value of \\(\\cos 18^\\circ\\)",
+    "options": [
+      "\\(\\frac{\\sqrt{10} + 2\\sqrt{5}}{4}\\)",
+      "\\(\\frac{\\sqrt{5} + 1}{4}\\)",
+      "\\(\\frac{\\sqrt{6} + \\sqrt{2}}{4}\\)",
+      "\\(\\frac{\\sqrt{10} - 2\\sqrt{5}}{4}\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CHSL 30/05/2022 (Afternoon)"
+  },
+  {
+    "id": 41,
+    "text": "The value of \\(\\frac{\\sin 40 + \\sin 20}{\\cos 40 + \\cos 20}\\) is:",
+    "options": [
+      "\\(\\tan 30^\\circ\\)",
+      "\\(\\cot 30^\\circ\\)",
+      "\\(\\tan \\theta\\)",
+      "\\(\\cot \\theta\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CHSL 27/05/2022 (Morning)"
+  },
+  {
+    "id": 42,
+    "text": "The value of \\(\\cot^2 46^\\circ - \\sec^2 44^\\circ + (\\sin^2 1^\\circ + \\sin^2 3^\\circ + \\sin^2 5^\\circ + \\ldots + \\sin^2 89^\\circ)\\)",
+    "options": [
+      "\\(p^2 - q^2 = 4\\sqrt{pq}\\)",
+      "\\(p^2 - q^2 = 8\\sqrt{pq}\\)",
+      "\\(p^2 + q^2 = 4\\sqrt{pq}\\)",
+      "\\(p^2 + q^2 = 4pq\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CHSL 11/08/2023 (4th Shift)"
+  },
+  {
+    "id": 51,
+    "text": "If \\(3 - 2\\sin^2\\theta - 3\\cos \\theta = 0, 0^\\circ < \\theta < 90^\\circ\\), then what is the value of \\((2\\csc \\theta + \\tan \\theta)\\)?",
+    "options": [
+      "\\(7\\sqrt{3}\\)",
+      "\\(5\\sqrt{3}\\)",
+      "\\(\\frac{5\\sqrt{3}}{3}\\)",
+      "\\(\\frac{7\\sqrt{3}}{3}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 02/07/2019 (Evening)"
+  },
+  {
+    "id": 62,
+    "text": "A simplified of \\(\\frac{\\sin\\theta}{1 + \\cos\\theta} + \\frac{1 + \\cos\\theta}{\\sin\\theta} (\\tan\\theta + \\cot\\theta)\\) is:",
+    "options": [
+      "\\(\\cos \\theta\\)",
+      "\\(2\\sin \\theta\\)",
+      "\\(\\sin \\theta\\)",
+      "\\(2\\cos \\theta\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CHSL 02/07/2019 (Evening)"
+  },
+  {
+    "id": 63,
+    "text": "The value of \\(\\frac{(\\cos\\theta^2 + \\sin\\theta^2)(\\sec\\theta^2 + \\csc\\theta^2)}{\\sin56^\\circ.\\sec34^\\circ + \\cos25^\\circ.\\csc65^\\circ}\\) is:",
+    "options": [
+      "\\(\\frac{1}{2}\\)",
+      "4",
+      "2",
+      "1"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 02/07/2019 (Evening)"
+  },
+  {
+    "id": 64,
+    "text": "\\(\\frac{(\\sec\\theta + \\tan\\theta)(1 - \\sin\\theta)}{\\csc\\theta(1 + \\cos\\theta)(\\csc\\theta - \\cot\\theta)}\\) is equal to:",
+    "options": [
+      "\\(\\sin \\theta\\)",
+      "\\(\\sec \\theta\\)",
+      "\\(\\cos \\theta\\)",
+      "\\(\\csc \\theta\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 02/07/2019 (Morning)"
+  },
+  {
+    "id": 65,
+    "text": "If \\(3\\cos^2A + 7\\sin^2A = 4\\), then what is the value of \\(\\cot A\\), given that A is an acute angle ?",
+    "options": [
+      "1",
+      "\\(\\sqrt{3}\\)",
+      "\\(\\frac{\\sqrt{3}}{2}\\)",
+      "\\(\\frac{1}{\\sqrt{3}}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CLG 13/06/2019 (Evening)"
+  },
+  {
+    "id": 66,
+    "text": "If \\(\\cos \\theta = \\frac{13}{12}\\), then \\(\\sin \\theta + \\cos \\theta - \\tan \\theta\\) is equal to :",
+    "options": [
+      "\\(\\frac{91}{65}\\)",
+      "\\(\\frac{139}{65}\\)",
+      "\\(\\frac{71}{65}\\)",
+      "\\(\\frac{71}{65}\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CLG 11/06/2019 (Afternoon)"
+  },
+  {
+    "id": 67,
+    "text": "If \\(\\sec \\theta = \\cos (\\theta + 20^\\circ)\\), then \\(\\theta\\) is equal to:",
+    "options": [
+      "\\(22^\\circ\\)",
+      "\\(18^\\circ\\)",
+      "\\(14^\\circ\\)",
+      "\\(20^\\circ\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CLG 10/06/2019 (Afternoon)"
+  },
+  {
+    "id": 68,
+    "text": "If \\(3\\sin \\theta = 2\\cos^2\\theta ,0^\\circ < \\theta < 90^\\circ\\), then the value of \\(\\tan^2\\theta + \\sec^2\\theta - \\csc^2\\theta\\) is:",
+    "options": [
+      "-2",
+      "-7",
+      "\\(\\frac{7}{3}\\)",
+      "2"
+    ],
+    "correct": "b",
+    "exam": "SSC CLG 10/06/2019 (Morning)"
+  },
+  {
+    "id": 69,
+    "text": "If \\(\\frac{\\tan\\theta + \\sin\\theta}{1 + \\cos\\theta} = \\frac{k + 1}{k - 1}\\), then \\(k = ?\\)",
+    "options": [
+      "\\(\\csc \\theta\\)",
+      "\\(\\sec \\theta\\)",
+      "\\(\\cos \\theta\\)",
+      "\\(\\sin \\theta\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CLG 10/06/2019 (Morning)"
+  },
+  {
+    "id": 70,
+    "text": "If \\(\\frac{1}{\\csc\\theta - 1} + \\frac{1}{\\csc\\theta + 1} = 2 \\sec \\theta\\), \\(0^\\circ < \\theta < 90^\\circ\\), then the value of \\(\\cot \\theta + \\cos \\theta\\) is:",
+    "options": [
+      "\\(\\frac{1 + \\sqrt{2}}{2}\\)",
+      "\\(\\frac{2 + \\sqrt{2}}{2}\\)",
+      "\\(\\frac{2 + \\sqrt{3}}{\\sqrt{2}}\\)",
+      "\\(1 + \\sqrt{2}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CLG 07/06/2019 (Evening)"
+  },
+  {
+    "id": 81,
+    "text": "If \\(\\sec\\theta - \\tan\\theta = P\\), then \\(\\csc\\theta = ?\\)",
+    "options": [
+      "\\(\\frac{2P}{1 - P^2}\\)",
+      "\\(\\frac{1 - P^2}{1 + P^2}\\)",
+      "\\(\\frac{P^2 + 1}{1 - P^2}\\)",
+      "\\(\\frac{2P}{1 + P^2}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 04/06/2019 (Evening)"
+  },
+  {
+    "id": 82,
+    "text": "If \\(0^\\circ < \\theta < 90^\\circ\\) and \\(\\cos^2\\theta = 3(\\cot^2\\theta - \\cos^2\\theta)\\) then the value of \\(\\left(\\frac{1}{2}\\sec\\theta + \\sin\\theta\\right) - 1\\) is:",
+    "options": [
+      "\\(\\sqrt{3} + 2\\)",
+      "\\(2(2 - \\sqrt{3})\\)",
+      "\\(2(\\sqrt{3} - 1)\\)",
+      "\\(\\sqrt{3} + 1\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 04/06/2019 (Afternoon)"
+  },
+  {
+    "id": 83,
+    "text": "\\(\\left(\\frac{\\sin\\theta - 2\\sin^3\\theta}{2\\cos^3\\theta - \\cos\\theta}\\right)^2 + 1,\\theta \\neq 45^\\circ\\) is equal to.",
+    "options": [
+      "\\(\\csc^2\\theta\\)",
+      "\\(\\sec^2\\theta\\)",
+      "\\(\\cot^2\\theta\\)",
+      "\\(2\\tan^2\\theta\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 04/06/2019 (Afternoon)"
+  },
+  {
+    "id": 84,
+    "text": "\\((\\csc A - \\sin A)^2 + (\\sec A - \\cos A)^2 - (\\cot A - \\tan A)^2\\) is equal to:",
+    "options": [
+      "2",
+      "0",
+      "1",
+      "-1"
+    ],
+    "correct": "c",
+    "exam": "SSC CPO 16/03/2019 (Evening)"
+  },
+  {
+    "id": 85,
+    "text": "Find the value of \\(1 + \\frac{\\tan^2A}{1 + \\sec A}\\)",
+    "options": [
+      "\\(\\csc A\\)",
+      "\\(\\cos A\\)",
+      "\\(\\sec A\\)",
+      "\\(\\sin A\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CPO 15/03/2019 (Evening)"
+  },
+  {
+    "id": 86,
+    "text": "Find the value of \\((\\sin^6A + \\cos^6A + 3\\sin^2A.\\cos^2A) - (\\sin^4A - \\cos^4A + 1)\\csc^2A\\).",
+    "options": [
+      "3",
+      "-3",
+      "0",
+      "-1"
+    ],
+    "correct": "d",
+    "exam": "SSC CHSL Tier II (18/11/2024)"
+  },
+  {
+    "id": 87,
+    "text": "Find the value of \\(3 (\\sec^2A - 1) (\\csc A - 1) (\\csc A + 1) + 4(\\csc^2A - \\cot^2A)\\).",
+    "options": [
+      "12",
+      "3",
+      "10",
+      "7"
+    ],
+    "correct": "d",
+    "exam": "SSC CHSL Tier II (18/11/2024)"
+  },
+  {
+    "id": 88,
+    "text": "The value of \\(\\sin^2 30^\\circ - \\sin^2 40^\\circ + \\sin^2 45^\\circ - \\sin^2 55^\\circ - \\sin^2 35^\\circ + \\sin^2 45^\\circ - \\sin^2 50^\\circ + \\sin^2 60^\\circ\\) is:",
+    "options": [
+      "1",
+      "2",
+      "4",
+      "0"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 09/09/2024 (1st Shift)"
+  },
+  {
+    "id": 89,
+    "text": "The value of \\(\\cos^2 29^\\circ + \\cos^2 61^\\circ\\) is:",
+    "options": [
+      "\\(\\frac{\\sqrt{3}}{2}\\)",
+      "2",
+      "1",
+      "0"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 09/09/2024 (1st Shift)"
+  },
+  {
+    "id": 90,
+    "text": "If \\(\\csc \\theta = \\frac{5}{3}\\) then evaluate \\((\\sec^2\\theta - 1)\\times \\cot^2\\theta \\times (1 + \\cot^2\\theta)\\)",
+    "options": [
+      "\\(\\frac{25}{16}\\)",
+      "\\(\\frac{9}{16}\\)",
+      "\\(\\frac{25}{9}\\)",
+      "\\(\\frac{4}{5}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 09/09/2024 (1st Shift)"
+  },
+  {
+    "id": 91,
+    "text": "Simplify the following. \\(\\frac{\\sin^2A - \\cos^2A}{\\sin A - \\cos A}\\) where A is an acute angle.",
+    "options": [
+      "\\(1 + \\sin A\\cos A\\)",
+      "\\(1 - 3\\sin A\\)",
+      "\\(3\\cos A - 1\\)",
+      "\\(\\sin A + \\cos A\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 09/09/2024 (2nd Shift)"
+  },
+  {
+    "id": 92,
+    "text": "If \\(\\frac{\\sec\\alpha + \\tan\\alpha}{\\sec\\alpha - \\tan\\alpha} = \\frac{7}{4}\\) then find the value of \\(\\csc \\alpha\\)",
+    "options": [
+      "\\(\\frac{1}{3}\\)",
+      "\\(\\frac{1}{11}\\)",
+      "\\(\\frac{11}{3}\\)",
+      "\\(\\frac{3}{11}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 09/09/2024 (3rd Shift)"
+  },
+  {
+    "id": 93,
+    "text": "If A is an acute angle, which of the following is equal to \\(\\frac{\\sin A}{\\sin A + \\cos A}\\)?",
+    "options": [
+      "\\(\\frac{1 - \\cos A}{\\sin A}\\)",
+      "\\(\\frac{1 + \\cos A}{\\sin A}\\)",
+      "\\(\\frac{1 - \\sin A}{\\cos A}\\)",
+      "\\(\\frac{1 + \\sin A}{\\cos A}\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 09/09/2024 (3rd Shift)"
+  },
+  {
+    "id": 94,
+    "text": "If \\(\\frac{7\\sin\\theta + 4\\cos\\theta}{9\\sin\\theta - 2\\cos\\theta} = \\frac{5}{4}\\) then the value of \\(\\frac{\\tan^2\\theta + 5}{\\tan^2\\theta - 5}\\) is:",
+    "options": [
+      "\\(\\frac{2121}{769}\\)",
+      "\\(\\frac{2121}{769}\\)",
+      "\\(\\frac{769}{2121}\\)",
+      "\\(\\frac{769}{2121}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 10/09/2024 (3rd Shift)"
+  },
+  {
+    "id": 95,
+    "text": "\\(\\frac{2 + \\tan^2A + \\cot^2A}{\\sec^2A.\\cos^2A}\\) is equal to",
+    "options": [
+      "\\(\\sec 2A + \\tan 2A\\)",
+      "\\(\\sec 2A + \\cos 2A\\)",
+      "\\(\\cot 2A - \\cos 2A\\)",
+      "\\(\\sec 2A\\cos 2A\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 10/09/2024 (1st Shift)"
+  },
+  {
+    "id": 96,
+    "text": "Let \\(0^\\circ < t < 90^\\circ\\). Then which of the following is true?",
+    "options": [
+      "\\(\\sin (t) \\neq \\cos (t)\\) when \\(t = 45^\\circ\\)",
+      "\\(\\sin (t) > \\cos (t)\\) when \\(t < 45^\\circ\\)",
+      "\\(\\sin (t) < \\cos (t)\\) when \\(t > 45^\\circ\\)",
+      "\\(\\sin (t) < \\cos (t)\\) when \\(t > 45^\\circ\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 10/09/2024 (1st Shift)"
+  },
+  {
+    "id": 97,
+    "text": "If \\(2\\tan\\theta = 3\\), then \\(\\frac{3\\sin\\theta - 2\\cos\\theta}{3\\sin\\theta + 2\\cos\\theta}\\) is equal to:",
+    "options": [
+      "\\(\\frac{6}{13}\\)",
+      "\\(\\frac{6}{7}\\)",
+      "\\(\\frac{5}{7}\\)",
+      "\\(\\frac{5}{13}\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 10/09/2024 (2nd Shift)"
+  },
+  {
+    "id": 98,
+    "text": "If \\(\\cot \\theta = \\frac{4}{3}\\) then evaluate \\(\\frac{\\sec\\theta(1 + \\cot^2\\theta)(\\csc^2\\theta - \\cot^2\\theta)}{\\csc^3\\theta}\\)",
+    "options": [
+      "\\(\\frac{3}{4}\\)",
+      "\\(\\frac{4}{3}\\)",
+      "\\(\\frac{5}{3}\\)",
+      "\\(\\frac{3}{5}\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 10/09/2024 (2nd Shift)"
+  },
+  {
+    "id": 99,
+    "text": "What is the maximum value of \\(7 \\cos A + 24 \\sin A + 32\\)?",
+    "options": [
+      "39",
+      "32",
+      "25",
+      "57"
+    ],
+    "correct": "d",
+    "exam": "SSC CHSL 09/07/2024 (4th Shift)"
+  },
+  {
+    "id": 100,
+    "text": "If \\(\\tan A = \\sqrt{2} - 1\\) then find the value of \\(\\sin A \\cos A + \\tan A\\).",
+    "options": [
+      "\\(\\frac{1}{2}\\)",
+      "1",
+      "\\(\\frac{\\sqrt{2}}{2}\\)",
+      "\\(\\frac{\\sqrt{2} - 1}{2}\\)"
+    ],
+    "correct": null,
+    "exam": "SSC CHSL 10/07/2024 (1st Shift)"
+  },
+  {
+    "id": 101,
+    "text": "If \\(4 \\sin^2 \\theta - 4\\sqrt{3} \\sin \\theta + 3 = 0\\), then find the value of \\(\\theta\\). \\((0^\\circ < \\theta < 90^\\circ)\\)",
+    "options": [
+      "\\(45^\\circ\\)",
+      "\\(30^\\circ\\)",
+      "\\(60^\\circ\\)",
+      "\\(75^\\circ\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 10/07/2024 (3rd Shift)"
+  },
+  {
+    "id": 102,
+    "text": "The value of \\(\\frac{\\sin\\theta}{1 + \\cos\\theta} + \\frac{1 + \\cos\\theta}{\\sin\\theta} \\left(\\frac{1}{\\tan\\theta} + \\cot \\theta\\right)\\) is equal to:",
+    "options": [
+      "\\(\\tan \\theta\\)",
+      "\\(2 \\sin \\theta\\)",
+      "\\(2 \\cos \\theta\\)",
+      "1"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 11/07/2024 (1st Shift)"
+  },
+  {
+    "id": 103,
+    "text": "Simplify \\(\\frac{\\sin 60^\\circ - \\cos 60^\\circ}{\\sin 60^\\circ + \\cos 60^\\circ}\\)",
+    "options": [
+      "\\(2 + \\sqrt{3}\\)",
+      "\\(\\sqrt{3} - 2\\)",
+      "\\(\\sqrt{3} - 1\\)",
+      "\\(2 - \\sqrt{3}\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CHSL 11/07/2024 (3rd Shift)"
+  },
+  {
+    "id": 104,
+    "text": "If \\(\\cot\\theta = \\frac{28}{45}\\) then find the value of \\((\\sin\\theta - \\cos\\theta)\\).",
+    "options": [
+      "\\(\\frac{45}{78}\\)",
+      "\\(\\frac{7}{53}\\)",
+      "\\(\\frac{28}{53}\\)",
+      "\\(\\frac{17}{53}\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CPO 27/06/2024 (1st Shift)"
+  },
+  {
+    "id": 105,
+    "text": "If \\(\\sec 6A = \\csc (A - 29^\\circ)\\), where \\(2A\\) is an acute angle, then the measure of \\(\\angle A =\\)",
+    "options": [
+      "18",
+      "17",
+      "21",
+      "19"
+    ],
+    "correct": "b",
+    "exam": "SSC CPO 27/06/2024 (1st Shift)"
+  },
+  {
+    "id": 106,
+    "text": "Simplify: \\((1 + \\tan^2A) + (1 + \\tan^2A)\\)",
+    "options": [
+      "\\(\\frac{1}{\\sin^2A - \\sin^4A}\\)",
+      "\\(\\frac{1}{\\sin^2A - \\cos^4A}\\)",
+      "\\(\\frac{1}{\\cos^2A - \\sin^4A}\\)",
+      "\\(\\frac{1}{\\cot^2A - \\tan^4A}\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CPO 27/06/2024 (1st Shift)"
+  },
+  {
+    "id": 107,
+    "text": "If \\(\\sin \\alpha = \\frac{5}{13}\\), then the value of \\(\\cos \\alpha \\cdot \\csc \\alpha \\cdot \\cot \\alpha\\) is",
+    "options": [
+      "\\(\\frac{12}{5}\\)",
+      "\\(\\frac{144}{25}\\)",
+      "\\(\\frac{5}{12}\\)",
+      "\\(\\frac{25}{144}\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CPO 27/06/2024 (2nd Shift)"
+  },
+  {
+    "id": 108,
+    "text": "Find the value of \\((1 + \\cot A - \\csc A)(1 + \\tan A + \\sec A) - 3(\\sin^2A + \\cos^2A)\\).",
+    "options": [
+      "-1",
+      "1",
+      "2",
+      "-2"
+    ],
+    "correct": "a",
+    "exam": "SSC CPO 27/06/2024 (2nd Shift)"
+  },
+  {
+    "id": 109,
+    "text": "Find the maximum value of \\((19 \\sin \\theta + 6 \\cot \\theta \\sin \\theta)\\)",
+    "options": [
+      "\\(\\sqrt{397}\\)",
+      "\\(\\sqrt{197}\\)",
+      "\\(\\sqrt{297}\\)",
+      "\\(\\sqrt{497}\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CPO 27/06/2024 (3rd Shift)"
+  },
+  {
+    "id": 110,
+    "text": "If \\(\\tan \\theta = \\frac{3}{10}\\) then find the value of \\(\\frac{(1 + \\sin\\theta)(1 - \\sin\\theta)}{(1 + \\cos\\theta)(1 - \\cos\\theta)}\\)",
+    "options": [
+      "\\(\\frac{100}{7}\\)",
+      "\\(\\frac{100}{3}\\)",
+      "\\(\\frac{100}{9}\\)",
+      "\\(\\frac{50}{3}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CPO 27/06/2024 (3rd Shift)"
+  },
+  {
+    "id": 111,
+    "text": "Which of the following is true when \\(x = \\sin A + \\cos A\\) ; \\(y = \\sec A + \\csc A\\)?",
+    "options": [
+      "\\(y(1 + x^2) = 2x\\)",
+      "\\(y - 2x = x^2 y\\)",
+      "\\(y + 2x = x^2 y\\)",
+      "\\(y(1 - 2x^2) = x\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CPO 27/06/2024 (3rd Shift)"
+  },
+  {
+    "id": 112,
+    "text": "Solve the equation for A (in degrees): \\(2\\cos^2A + 3\\cos A - 2 = 0\\), \\(0 < A < 90^\\circ\\)",
+    "options": [
+      "\\(30^\\circ\\)",
+      "\\(60^\\circ\\)",
+      "\\(60^\\circ\\)",
+      "\\(45^\\circ\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CPO 28/06/2024 (1st Shift)"
+  },
+  {
+    "id": 113,
+    "text": "Find the value of \\(\\frac{1 - \\cot^2\\theta}{\\tan^2\\theta - 1}\\)",
+    "options": [
+      "\\(\\tan^2\\theta\\)",
+      "\\(\\cot \\theta\\)",
+      "\\(\\tan \\theta\\)",
+      "\\(\\cot^2\\theta\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CPO 28/06/2024 (1st Shift)"
+  },
+  {
+    "id": 114,
+    "text": "If \\(\\frac{\\sec A + \\tan A}{\\sec A - \\tan A} = \\frac{51}{79}\\) then the value of \\(\\sin A\\) is equal to:",
+    "options": [
+      "\\(\\frac{77}{144}\\)",
+      "\\(\\frac{61}{169}\\)",
+      "\\(\\frac{87}{169}\\)",
+      "\\(\\frac{65}{144}\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CPO 28/06/2024 (1st Shift)"
+  },
+  {
+    "id": 115,
+    "text": "If \\(4\\sin^2 \\theta = 3(1 + \\cos \\theta)\\), \\(0^\\circ < \\theta < 90^\\circ\\), then what is the value of \\(\\sqrt{15} \\tan\\theta + \\frac{4}{\\sqrt{15}} \\sin\\theta + 2\\sec\\theta\\)?",
+    "options": [
+      "24",
+      "\\(4\\sqrt{15}\\)",
+      "\\(\\frac{8}{\\sqrt{15}}\\)",
+      "8"
+    ],
+    "correct": "d",
+    "exam": "SSC CPO 28/06/2024 (2nd Shift)"
+  },
+  {
+    "id": 116,
+    "text": "If \\(\\tan \\theta + \\cot \\theta = 6\\), then the value of \\(\\tan^2\\theta + \\cot^2\\theta\\) is",
+    "options": [
+      "24",
+      "34",
+      "20",
+      "22"
+    ],
+    "correct": "b",
+    "exam": "SSC CPO 28/06/2024 (2nd Shift)"
+  },
+  {
+    "id": 117,
+    "text": "\\((1 - \\cos^2A) \\sec^2A\\) is equal to:",
+    "options": [
+      "\\(\\cos^2A \\cot^2A\\)",
+      "\\(\\tan^2A\\)",
+      "\\(\\cot^2A\\)",
+      "\\(\\csc^2A\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CPO 28/06/2024 (2nd Shift)"
+  },
+  {
+    "id": 118,
+    "text": "If \\(\\sin x + \\cos x = \\sqrt{2} \\sin x\\), then the value of \\(\\sin x - \\cos x\\) is:",
+    "options": [
+      "\\(\\sqrt{2} \\sin x\\)",
+      "\\(2 \\sin x\\)",
+      "\\(\\sqrt{2} \\cos x\\)",
+      "\\(\\sqrt{2} \\cos x\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CPO 28/06/2024 (2nd Shift)"
+  },
+  {
+    "id": 119,
+    "text": "If A, B and C are the interior angles of \\(\\triangle ABC\\), then what is the value of \\(\\tan \\frac{A}{2} + \\cos \\frac{B + C}{2} \\left(\\tan \\frac{A}{2} - \\cos \\frac{B}{2}\\right)\\)?",
+    "options": [
+      "2",
+      "-1",
+      "-2",
+      "1"
+    ],
+    "correct": "d",
+    "exam": "SSC CPO 28/06/2024 (3rd Shift)"
+  },
+  {
+    "id": 120,
+    "text": "Simplify \\(\\frac{\\sin^3A + \\cos^3A}{\\sin A + \\cos A}\\)",
+    "options": [
+      "\\(1 - \\tan A \\sec A\\)",
+      "\\(1 - \\cos A \\cot A\\)",
+      "\\(1 - \\sin A \\tan A\\)",
+      "\\(1 - \\sin A \\cos A\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CPO 28/06/2024 (3rd Shift)"
+  },
+  {
+    "id": 121,
+    "text": "If \\(\\sin (x + y) = 1\\) and \\(\\cos (x - y) = \\frac{\\sqrt{3}}{2}\\) find the value of y.",
+    "options": [
+      "\\(90^\\circ\\)",
+      "\\(60^\\circ\\)",
+      "\\(30^\\circ\\)",
+      "\\(20^\\circ\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CPO 28/06/2024 (3rd Shift)"
+  },
+  {
+    "id": 122,
+    "text": "The value of \\(\\left(\\frac{2\\cos^3\\theta - \\cos\\theta}{2\\sin\\theta - 2\\sin^3\\theta}\\right)^2 + 1\\) \\(\\theta \\neq 45^\\circ\\) is:",
+    "options": [
+      "\\(\\sec^2\\theta\\)",
+      "\\(\\csc^2\\theta\\)",
+      "\\(\\cot^2\\theta\\)",
+      "\\(\\tan^2\\theta\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CPO 28/06/2024 (3rd Shift)"
+  },
+  {
+    "id": 123,
+    "text": "The value of \\(\\sin^2 15^\\circ + \\sin^2 25^\\circ + \\sin^2 35^\\circ + \\sin^2 45^\\circ + \\sin^2 55^\\circ + \\sin^2 65^\\circ + \\sin^2 75^\\circ\\) is:",
+    "options": [
+      "4",
+      "7",
+      "7",
+      "7"
+    ],
+    "correct": "b",
+    "exam": "SSC CPO 29/06/2024 (3rd Shift)"
+  },
+  {
+    "id": 124,
+    "text": "Evaluate \\(7\\left(\\frac{\\csc 24^\\circ}{\\sec 66^\\circ}\\right)^3 + 8\\left(\\frac{\\cot 37^\\circ}{\\tan 53^\\circ}\\right)^4 - \\left(2\\frac{\\sec 14^\\circ}{\\csc 76^\\circ}\\right)^2 + \\left(-3\\frac{\\tan 82^\\circ}{\\cot 8^\\circ}\\right)^3\\)",
+    "options": [
+      "-16",
+      "40",
+      "10",
+      "2"
+    ],
+    "correct": "b",
+    "exam": "Higher Secondary 20/06/2024 (Shift - 2)"
+  },
+  {
+    "id": 125,
+    "text": "If \\(8 \\tan A = 5\\), what is the value of \\(\\frac{8\\sin A - 7\\cos A}{8\\sin A + 11\\cos A}\\)?",
+    "options": [
+      "\\(\\frac{-1}{8}\\)",
+      "\\(\\frac{1}{19}\\)",
+      "\\(\\frac{1}{8}\\)",
+      "\\(\\frac{-1}{6}\\)"
+    ],
+    "correct": "b",
+    "exam": "Higher Secondary 21/06/2024 (Shift - 2)"
+  },
+  {
+    "id": 126,
+    "text": "Which of the following is NOT a correct formula?",
+    "options": [
+      "\\(\\cos^2A \\cos^2A = \\cot^2A - \\cos^2A\\)",
+      "\\(\\frac{1 + \\tan^2A}{\\tan^2A} = \\sin^2A\\)",
+      "\\(\\sec A \\sin A = \\tan A\\)",
+      "\\(\\csc^2A - \\cot^2A = 1\\)"
+    ],
+    "correct": "b",
+    "exam": "Higher Secondary 24/06/2024 (Shift - 2)"
+  },
+  {
+    "id": 127,
+    "text": "Evaluate the following. \\(\\frac{5\\cos^2 120^\\circ + 4\\sec^2 30^\\circ - \\tan^2 135^\\circ}{\\sin^2 30^\\circ + \\cos^2 30^\\circ}\\)",
+    "options": [
+      "\\(\\frac{37}{12}\\)",
+      "\\(\\frac{57}{5}\\)",
+      "\\(\\frac{67}{12}\\)",
+      "\\(\\frac{27}{5}\\)"
+    ],
+    "correct": "c",
+    "exam": "Higher Secondary 25/06/2024 (Shift - 2)"
+  },
+  {
+    "id": 128,
+    "text": "Evaluate \\(\\left(\\frac{\\sin 23^\\circ \\cos 67^\\circ + \\cos 23^\\circ \\sin 67^\\circ}{\\csc^2 15^\\circ - \\tan^2 75^\\circ}\\right)^3\\)",
+    "options": [
+      "0",
+      "1",
+      "8",
+      "-1"
+    ],
+    "correct": "b",
+    "exam": "Higher Secondary 25/06/2024 (Shift - 4)"
+  },
+  {
+    "id": 129,
+    "text": "If A is an acute angle, what is the value of \\(\\csc A\\), if \\(\\cot A = \\frac{2p}{p^2 - 1}\\)?",
+    "options": [
+      "\\(\\frac{p^2 + 1}{p^2 - 1}\\)",
+      "\\(\\frac{p^2 - 1}{p^2 + 1}\\)",
+      "\\(\\frac{p^2}{p^2 - 1}\\)",
+      "\\(\\frac{2p}{p^2 + 1}\\)"
+    ],
+    "correct": "a",
+    "exam": "Higher Secondary 26/06/2024 (Shift - 2)"
+  },
+  {
+    "id": 130,
+    "text": "The value of \\(\\csc \\theta \\left[\\frac{1 + \\cos\\theta}{\\sin\\theta} + \\frac{\\sin\\theta}{1 + \\cos\\theta}\\right] - 2\\cot^2\\theta\\) is equal to:",
+    "options": [
+      "0",
+      "1",
+      "2",
+      "3"
+    ],
+    "correct": "a",
+    "exam": "Higher Secondary 26/06/2024 (Shift - 2)"
+  },
+  {
+    "id": 131,
+    "text": "If \\(\\sin A + \\cos A = 4\\), then find the value of \\(\\tan A + \\cot A\\).",
+    "options": [
+      "\\(\\frac{7}{18}\\)",
+      "\\(\\frac{3}{4}\\)",
+      "\\(\\frac{18}{7}\\)",
+      "\\(\\frac{4}{3}\\)"
+    ],
+    "correct": "c",
+    "exam": "Graduate Level 20/06/2024 (Shift - 3)"
+  },
+  {
+    "id": 132,
+    "text": "The expression \\(\\sin^2\\theta + \\cos^2\\theta - 1 = 0\\) is satisfied by how many values of \\(\\theta\\)?",
+    "options": [
+      "No value",
+      "Only one value",
+      "Infinitely many values",
+      "Two values"
+    ],
+    "correct": "c",
+    "exam": "Graduate Level 21/06/2024 (Shift - 3)"
+  },
+  {
+    "id": 133,
+    "text": "Find the value of \\((\\sin 75^\\circ + \\sin 15^\\circ)\\)",
+    "options": [
+      "\\(\\frac{\\sqrt{6}}{2}\\)",
+      "\\(\\frac{\\sqrt{3}}{2}\\)",
+      "\\(\\sqrt{6}\\)",
+      "\\(\\sqrt{3}\\)"
+    ],
+    "correct": "a",
+    "exam": "Graduate Level 21/06/2024 (Shift - 3)"
+  },
+  {
+    "id": 134,
+    "text": "Find the value of \\(\\frac{\\cos 25^\\circ - \\sin 65^\\circ}{\\cos 25^\\circ + \\sin 65^\\circ}\\)",
+    "options": [
+      "-1",
+      "0",
+      "1",
+      "\\(\\frac{1}{2}\\)"
+    ],
+    "correct": "b",
+    "exam": "Graduate Level 24/06/2024 (Shift - 3)"
+  },
+  {
+    "id": 135,
+    "text": "If \\(\\sin (5x - 40^\\circ) = \\cos (5y + 40^\\circ)\\) then the value of \\(x + y\\) is:",
+    "options": [
+      "\\(18^\\circ\\)",
+      "\\(15^\\circ\\)",
+      "\\(40^\\circ\\)",
+      "\\(20^\\circ\\)"
+    ],
+    "correct": "a",
+    "exam": "Graduate Level 24/06/2024 (Shift - 3)"
+  },
+  {
+    "id": 136,
+    "text": "The sides of a right-angled triangle, right-angled at B, are 6, 8 and 10 units. C is the vertex opposite to the side with length 8 units. What is the value of \\(\\tan^2 A + \\cos^2 C\\)?",
+    "options": [
+      "\\(\\frac{369}{400}\\)",
+      "\\(\\frac{125}{400}\\)",
+      "\\(\\frac{321}{400}\\)",
+      "\\(\\frac{325}{400}\\)"
+    ],
+    "correct": "a",
+    "exam": "Graduate Level 25/06/2024 (Shift - 3)"
+  },
+  {
+    "id": 137,
+    "text": "If \\(\\sin \\theta + \\cos \\theta = \\sqrt{5}\\), then the value of \\(\\sin^2\\theta + \\cos^2\\theta\\) is:",
+    "options": [
+      "\\(\\frac{1}{\\sqrt{5}}\\)",
+      "\\(\\sqrt{5}\\)",
+      "\\(2\\sqrt{5}\\)",
+      "0"
+    ],
+    "correct": "d",
+    "exam": "Graduate Level 26/06/2024 (Shift - 3)"
+  },
+  {
+    "id": 138,
+    "text": "If \\(\\cos 2\\theta = 0\\), where \\(\\theta\\) is an acute angle, then find the value of \\(\\sin (75^\\circ - \\theta)\\)",
+    "options": [
+      "\\(\\sqrt{2} + 1\\)",
+      "\\(\\frac{1}{2}\\)",
+      "\\(\\sqrt{2} - 1\\)",
+      "\\(\\frac{1}{\\sqrt{2}}\\)"
+    ],
+    "correct": "d",
+    "exam": "Graduate Level 26/06/2024 (Shift - 3)"
+  },
+  {
+    "id": 139,
+    "text": "If \\(P \\sin 60^\\circ = Q \\cos 45^\\circ\\), then the value of \\(\\frac{P^2 + Q^2}{P^2 - Q^2}\\) is equal to:",
+    "options": [
+      "\\(\\frac{5}{11}\\)",
+      "\\(\\frac{11}{7}\\)",
+      "\\(\\frac{11}{5}\\)",
+      "\\(\\frac{7}{11}\\)"
+    ],
+    "correct": "c",
+    "exam": "Graduate Level 26/06/2024 (Shift - 4)"
+  },
+  {
+    "id": 140,
+    "text": "Find the value of \\((\\tan^2\\theta + \\tan^4\\theta)\\)",
+    "options": [
+      "\\(\\sec^2\\theta - \\sec^4\\theta\\)",
+      "\\(\\cot^2\\theta - \\tan^2\\theta\\)",
+      "\\(\\sec^4\\theta + \\sec^2\\theta\\)",
+      "\\(\\sec^2\\theta - \\sec^2\\theta\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CPO 03/10/2023 (1st Shift)"
+  },
+  {
+    "id": 141,
+    "text": "If \\(\\cos \\theta - \\sin \\theta = \\sqrt{2} \\sin \\theta\\), then \\((\\cos \\theta + \\sin \\theta)\\) is:",
+    "options": [
+      "\\(\\sqrt{2} \\sin \\theta\\)",
+      "\\(\\sqrt{2} \\cos \\theta\\)",
+      "\\(\\sqrt{2} \\tan \\theta\\)",
+      "\\(\\sqrt{2} \\cot \\theta\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CPO 03/10/2023 (2nd Shift)"
+  },
+  {
+    "id": 142,
+    "text": "Find the value of \\(\\cos^2 25^\\circ - \\sin^2 65^\\circ\\) over \\(\\cos^2 25^\\circ + \\sin^2 65^\\circ\\)",
+    "options": [
+      "\\(\\frac{1}{2}\\)",
+      "1",
+      "-1",
+      "0"
+    ],
+    "correct": "d",
+    "exam": "SSC CHSL 08/08/2023 (1st Shift)"
+  },
+  {
+    "id": 143,
+    "text": "Simplify the given equation. \\(\\frac{\\cot^2A - 1}{\\cot A - 1}\\)",
+    "options": [
+      "\\(\\csc^2A - \\cot A\\)",
+      "\\(\\csc^2A + \\cot A\\)",
+      "\\(\\cot^2A + \\csc A\\)",
+      "\\(\\cot^2A - \\csc A\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 08/08/2023 (2nd Shift)"
+  },
+  {
+    "id": 144,
+    "text": "If \\(\\tan\\theta + \\sec\\theta = a\\), then what is \\(\\sec\\theta\\) equal to:",
+    "options": [
+      "\\(\\frac{a + 1}{2a^2}\\)",
+      "\\(\\frac{a - 1}{2a^2}\\)",
+      "\\(\\frac{a^2 - 1}{2a}\\)",
+      "\\(\\frac{a^2 + 1}{2a}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 08/08/2023 (2nd Shift)"
+  },
+  {
+    "id": 145,
+    "text": "Find the value of \\(\\frac{\\cos A}{1 + \\sin A} + \\frac{1 + \\sin A}{\\cos A}\\)",
+    "options": [
+      "\\(1 + 2\\sec A\\)",
+      "\\(2 - \\sec A\\)",
+      "\\(2 + \\sec A\\)",
+      "\\(2(1 + \\sec A)\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CHSL 08/08/2023 (3rd Shift)"
+  },
+  {
+    "id": 146,
+    "text": "If \\(\\sec\\theta + \\tan\\theta = \\frac{1}{\\sqrt{3}}\\) then the positive value of \\(\\cot\\theta + \\cos\\theta\\) is:",
+    "options": [
+      "\\(\\frac{3\\sqrt{3}}{2}\\)",
+      "\\(\\frac{\\sqrt{3}}{2}\\)",
+      "\\(\\frac{2}{3\\sqrt{3}}\\)",
+      "\\(\\frac{2}{3\\sqrt{3}}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 08/08/2023 (4th Shift)"
+  },
+  {
+    "id": 147,
+    "text": "If \\(\\frac{\\sin\\theta - \\cos\\theta}{\\sin\\theta + \\cos\\theta} = \\frac{4}{5}\\) then the value of \\(\\frac{\\csc^2\\theta}{2 - \\csc^2\\theta}\\) is:",
+    "options": [
+      "\\(\\frac{16}{25}\\)",
+      "\\(\\frac{40}{41}\\)",
+      "\\(\\frac{41}{40}\\)",
+      "\\(\\frac{31}{30}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 09/08/2023 (1st Shift)"
+  },
+  {
+    "id": 148,
+    "text": "\\(\\triangle PQR\\) is right angled at Q. If \\(PQ = 12\\) cm, \\(PR = 13\\) cm, find \\(\\tan P + \\cot R\\).",
+    "options": [
+      "\\(\\frac{9}{10}\\)",
+      "0",
+      "\\(\\frac{10}{12}\\)",
+      "\\(\\frac{12}{10}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 09/08/2023 (1st Shift)"
+  },
+  {
+    "id": 149,
+    "text": "If \\(\\tan A = \\frac{1}{2}\\) and \\(\\tan B = \\frac{1}{3}\\) then the value of \\(A + B\\) is:",
+    "options": [
+      "\\(60^\\circ\\)",
+      "\\(15^\\circ\\)",
+      "\\(30^\\circ\\)",
+      "\\(45^\\circ\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CHSL 09/08/2023 (1st Shift)"
+  },
+  {
+    "id": 150,
+    "text": "If \\(\\cot A = \\frac{5}{12}\\) find the value of the following expression. \\(\\frac{5(1 - \\cos^2A)}{6(1 - \\sin^2A)}\\)",
+    "options": [
+      "\\(\\frac{144}{5}\\)",
+      "\\(\\frac{24}{25}\\)",
+      "\\(\\frac{144}{25}\\)",
+      "\\(\\frac{24}{5}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 09/08/2023 (2nd Shift)"
+  },
+  {
+    "id": 151,
+    "text": "If \\(\\tan\\theta \\cdot \\tan 2\\theta = 1\\) then the value of \\(\\cot 5\\theta\\) is:",
+    "options": [
+      "-1",
+      "1",
+      "\\(-\\sqrt{3}\\)",
+      "\\(\\sqrt{3}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 09/08/2023 (4th Shift)"
+  },
+  {
+    "id": 152,
+    "text": "If \\(4\\sin^2A - 3 = 0\\) and \\(0 \\le A \\le 90^\\circ\\), then \\(3\\sin A - 4\\sin^2A\\) is:",
+    "options": [
+      "\\(\\frac{1}{2}\\)",
+      "\\(\\sqrt{\\frac{3}{2}}\\)",
+      "0",
+      "1"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 10/08/2023 (1st Shift)"
+  },
+  {
+    "id": 153,
+    "text": "\\(\\triangle RMS\\) is right-angled at M. The length of the base, \\(RM = 4\\) cm and the length of perpendicular \\(MS = 3\\) cm. Find the value of \\(\\sec R\\).",
+    "options": [
+      "\\(\\frac{3}{4}\\)",
+      "\\(\\frac{5}{4}\\)",
+      "\\(\\frac{4}{5}\\)",
+      "\\(\\frac{2}{5}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 10/08/2023 (3rd Shift)"
+  },
+  {
+    "id": 154,
+    "text": "Find the value of the following expression. \\((2\\tan^2A \\cos^2A + \\cos^2A)\\)",
+    "options": [
+      "4",
+      "1",
+      "3",
+      "2"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 10/08/2023 (4th Shift)"
+  },
+  {
+    "id": 155,
+    "text": "If A, B, C are the acute angles, such that \\(\\tan (A + B - C) = \\frac{1}{\\sqrt{3}}\\), \\(\\cos (B + C - A) = \\frac{1}{2}\\) and \\(\\sin (C + A - B) = \\frac{1}{\\sqrt{2}}\\). The value of \\(A + B + C\\) will be equal to:",
+    "options": [
+      "\\(90^\\circ\\)",
+      "\\(110^\\circ\\)",
+      "\\(170^\\circ\\)",
+      "\\(135^\\circ\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CHSL 10/08/2023 (4th Shift)"
+  },
+  {
+    "id": 156,
+    "text": "Find the value of the following expression. \\(\\frac{(1 + \\sec\\theta)}{\\sec\\theta} (1 - \\cos\\theta)\\)",
+    "options": [
+      "\\(\\cos^2\\theta\\)",
+      "\\(\\sec^2\\theta\\)",
+      "\\(\\cot^2\\theta\\)",
+      "\\(\\sin^2\\theta\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CHSL 10/08/2023 (4th Shift)"
+  },
+  {
+    "id": 157,
+    "text": "Let ABC be a right-angled triangle where \\(\\angle A = 90^\\circ\\) and \\(\\angle C = 45^\\circ\\). Find the value of \\(\\sec C + \\sin C \\sec C\\).",
+    "options": [
+      "1",
+      "\\(1 - \\sqrt{2}\\)",
+      "\\(1 + \\sqrt{2}\\)",
+      "\\(\\sqrt{2} - 1\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 11/08/2023 (1st Shift)"
+  },
+  {
+    "id": 158,
+    "text": "If \\((4\\sin\\theta + 5\\cos\\theta) = 3\\), then the value of \\((4\\cos\\theta - 5\\sin\\theta)\\) is:",
+    "options": [
+      "\\(3\\sqrt{2}\\)",
+      "\\(4\\sqrt{2}\\)",
+      "\\(2\\sqrt{3}\\)",
+      "\\(2\\sqrt{5}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 11/08/2023 (1st Shift)"
+  },
+  {
+    "id": 159,
+    "text": "Let ABC be a triangle right angled at B. If \\(\\tan A = \\frac{12}{5}\\), then find the values of \\(\\csc A\\) and \\(\\sec A\\), respectively.",
+    "options": [
+      "\\(\\frac{13}{10}\\)",
+      "\\(\\frac{13}{12}\\)",
+      "\\(\\frac{12}{13}\\)",
+      "\\(\\frac{12}{13}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 11/08/2023 (3rd Shift)"
+  },
+  {
+    "id": 160,
+    "text": "If \\(\\cos \\theta - \\sin \\theta = 0\\), then \\((\\sin^8\\theta + \\cos^8\\theta)\\) is:",
+    "options": [
+      "\\(\\frac{1}{8}\\)",
+      "\\(\\frac{1}{4}\\)",
+      "\\(\\frac{1}{6}\\)",
+      "\\(\\frac{1}{2}\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CHSL 11/08/2023 (3rd Shift)"
+  },
+  {
+    "id": 161,
+    "text": "Simplify the given expression \\(\\frac{3(\\sin^4Z - \\cos^4Z)}{2\\sin^2Z}\\)",
+    "options": [
+      "9",
+      "2",
+      "4",
+      "6"
+    ],
+    "correct": "d",
+    "exam": "SSC CHSL 11/08/2023 (4th Shift)"
+  },
+  {
+    "id": 162,
+    "text": "Find the value of \\(\\sin 47^\\circ \\cos 33^\\circ - \\cos 43^\\circ \\sin 57^\\circ\\).",
+    "options": [
+      "-1",
+      "1",
+      "0",
+      "\\(\\frac{1}{2}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 14/08/2023 (2nd Shift)"
+  },
+  {
+    "id": 163,
+    "text": "The value of \\(\\frac{1 + \\sin A}{\\cos A} + \\frac{\\cos A}{1 + \\sin A}\\) is:",
+    "options": [
+      "\\(2 \\sec A\\)",
+      "\\(2 \\csc A\\)",
+      "\\(\\sec A\\)",
+      "\\(\\csc A\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CHSL 14/08/2023 (3rd Shift)"
+  },
+  {
+    "id": 164,
+    "text": "Simplify the given equation. \\((1 + \\tan^2A) (1 + \\cot^2A) = ?\\)",
+    "options": [
+      "\\(\\frac{1}{\\cos^2A(1 + \\sin^2A)}\\)",
+      "\\(\\frac{1}{\\sin^2A(1 - \\sin^2A)}\\)",
+      "\\(\\frac{1}{\\sin^2A + 1 + \\csc^2A}\\)",
+      "\\(\\frac{1}{\\sin^2A(1 + \\cos^2A)}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 14/08/2023 (3rd Shift)"
+  },
+  {
+    "id": 165,
+    "text": "The given expression is equal to: \\((\\cot B - \\tan B) \\cdot \\sin B \\cdot \\cos B\\)",
+    "options": [
+      "\\(1 - 2\\sec^2 B\\)",
+      "\\(1 - 2\\cos^2B\\)",
+      "\\(2\\cos^2B - 1\\)",
+      "\\(2\\sec^2B - 1\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 14/08/2023 (4th Shift)"
+  },
+  {
+    "id": 166,
+    "text": "\\(\\cot^2\\theta - \\csc^2\\theta\\) equals to:",
+    "options": [
+      "0",
+      "\\(\\tan\\theta\\)",
+      "1",
+      "-1"
+    ],
+    "correct": "d",
+    "exam": "SSC CHSL 17/08/2023 (1st Shift)"
+  },
+  {
+    "id": 167,
+    "text": "If \\(\\sin\\theta \\cos\\theta = \\frac{1}{\\sqrt{3}}\\) then the value of \\((\\sin^4\\theta + \\cos^4\\theta)\\) is:",
+    "options": [
+      "1",
+      "\\(\\frac{5}{3}\\)",
+      "\\(\\frac{2}{3}\\)",
+      "\\(\\frac{1}{3}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 17/08/2023 (3rd Shift)"
+  },
+  {
+    "id": 168,
+    "text": "Simplify the given expression. \\(\\sqrt{\\frac{1 + \\cos P}{1 - \\cos P}}\\)",
+    "options": [
+      "\\(\\csc P - \\cot P\\)",
+      "\\(\\sec P - \\tan P\\)",
+      "\\(\\sec P + \\tan P\\)",
+      "\\(\\csc P + \\cot P\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CHSL 17/08/2023 (3rd Shift)"
+  },
+  {
+    "id": 169,
+    "text": "Find the value of \\(\\tan(50^\\circ + \\theta) - \\cot(40^\\circ - \\theta)\\).",
+    "options": [
+      "\\(\\frac{1}{2}\\)",
+      "-1",
+      "0",
+      "1"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 17/08/2023 (4th Shift)"
+  },
+  {
+    "id": 170,
+    "text": "What is the value of \\((1 - \\sin^2A) \\csc^2A\\)? Given A is an acute angle.",
+    "options": [
+      "\\(\\cot^2A\\)",
+      "1",
+      "\\(\\sec^2A\\)",
+      "0"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 17/08/2023 (4th Shift)"
+  },
+  {
+    "id": 171,
+    "text": "If \\(m = \\sec \\theta - \\tan \\theta\\) and \\(n = \\csc \\theta + \\cot \\theta\\), then what is the value of \\(m + n (m - 1)\\)?",
+    "options": [
+      "0",
+      "2",
+      "1",
+      "-1"
+    ],
+    "correct": "a",
+    "exam": "SSC CHSL 13/03/2023 (2nd Shift)"
+  },
+  {
+    "id": 172,
+    "text": "ABC is a right angled triangle. \\(\\angle A = 90^\\circ\\), \\(AB = 4\\) cm, \\(BC = 5\\) cm. What is the value of \\(\\cos B + \\cot C\\)?",
+    "options": [
+      "\\(\\frac{17}{20}\\)",
+      "\\(\\frac{29}{20}\\)",
+      "\\(\\frac{23}{20}\\)",
+      "\\(\\frac{31}{20}\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CHSL 13/03/2023 (3rd Shift)"
+  },
+  {
+    "id": 173,
+    "text": "If \\(\\triangle PQR\\) is right angled at Q, then what is the value of \\(\\cos (P + R)\\)?",
+    "options": [
+      "0.5",
+      "1",
+      "0.2",
+      "0"
+    ],
+    "correct": "d",
+    "exam": "SSC CHSL 13/03/2023 (4th Shift)"
+  },
+  {
+    "id": 174,
+    "text": "If \\(\\sqrt{3} \\tan^2 \\theta - 4 \\tan \\theta + \\sqrt{3} = 0\\), then what is the value of \\(\\tan^2 \\theta + \\cot^2 \\theta\\)?",
+    "options": [
+      "\\(\\frac{4}{3}\\)",
+      "\\(\\frac{10}{3}\\)",
+      "3",
+      "\\(\\frac{6}{5}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 13/03/2023 (4th Shift)"
+  },
+  {
+    "id": 175,
+    "text": "If \\(6\\cot\\theta = 5\\), then find the value of \\(\\frac{(6\\cos\\theta + \\sin\\theta)}{(6\\cos\\theta - 4\\sin\\theta)}\\)?",
+    "options": [
+      "5",
+      "1",
+      "6",
+      "0"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 14/03/2023 (2nd Shift)"
+  },
+  {
+    "id": 176,
+    "text": "If \\(-\\sin\\theta + \\csc\\theta = 6\\), then what is the value of \\(\\sin\\theta + \\csc\\theta\\)?",
+    "options": [
+      "6",
+      "\\(\\sqrt{40}\\)",
+      "\\(\\sqrt{34}\\)",
+      "\\(\\sqrt{38}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 14/03/2023 (2nd Shift)"
+  },
+  {
+    "id": 177,
+    "text": "If \\(\\sqrt{2} \\sec^2 \\theta - 4 \\sec \\theta + 2\\sqrt{2} = 0\\), then what is the value \\(\\sin^2 \\theta + \\tan^2 \\theta\\)?",
+    "options": [
+      "\\(\\frac{1}{2}\\)",
+      "\\(\\frac{2}{3}\\)",
+      "\\(\\frac{5}{2}\\)",
+      "\\(\\frac{3}{2}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 14/03/2023 (3rd Shift)"
+  },
+  {
+    "id": 178,
+    "text": "What is the value of \\(\\frac{\\sin\\theta + \\cos\\theta}{\\sin\\theta - \\cos\\theta} + \\frac{\\sin\\theta - \\cos\\theta}{\\sin\\theta + \\cos\\theta}\\)?",
+    "options": [
+      "\\(\\frac{1}{(\\sin^2\\theta - \\cos^2\\theta)}\\)",
+      "\\(\\frac{2}{(\\sin^2\\theta - \\cos^2\\theta)}\\)",
+      "\\(\\frac{\\sin^2\\theta - \\cos^2\\theta}{2}\\)",
+      "\\(\\frac{\\sin^3\\theta - \\cos^3\\theta}{2}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 14/03/2023 (4th Shift)"
+  },
+  {
+    "id": 179,
+    "text": "Simplify the following expression: \\(\\frac{1 - \\sin A}{\\cos A} + \\frac{\\cos A}{1 - \\sin A}\\)",
+    "options": [
+      "\\(2\\sin A\\)",
+      "\\(2\\cos A\\)",
+      "\\(2\\sec A\\)",
+      "\\(2\\tan A\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 15/03/2023 (1st Shift)"
+  },
+  {
+    "id": 180,
+    "text": "If \\(\\sec x + \\tan x = 5\\) and \\(\\csc y - \\cot y = \\frac{1}{3}\\) then find the value of \\((\\sec x + \\csc y) - (\\tan x - \\cot y)\\).",
+    "options": [
+      "2.2",
+      "3.2",
+      "4.2",
+      "3.1"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 15/03/2023 (1st Shift)"
+  },
+  {
+    "id": 181,
+    "text": "If \\(A = a \\csc \\theta + b \\cot \\theta\\) and \\(B = a \\cot \\theta + b \\csc \\theta\\), then what is the value of \\(A^2 - B^2\\)?",
+    "options": [
+      "\\(ab\\)",
+      "\\((a + b)\\)",
+      "\\((a^2 - b^2)\\)",
+      "\\((a - b)\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 15/03/2023 (4th Shift)"
+  },
+  {
+    "id": 182,
+    "text": "If \\(\\csc \\theta + \\cot \\theta = s\\), then what is the value of \\(\\cos \\theta\\)?",
+    "options": [
+      "\\(\\frac{s^2 - 1}{s^2 + 1}\\)",
+      "\\(\\frac{s^2 + 1}{s^2 - 1}\\)",
+      "\\(\\frac{s^2 - 1}{2s}\\)",
+      "\\(\\frac{2s}{s^2 + 1}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 16/03/2023 (2nd Shift)"
+  },
+  {
+    "id": 183,
+    "text": "Find the value of \\(\\tan x\\), if \\(\\sec x + \\tan x = \\sqrt{3}\\) and x lies between \\(0^\\circ\\) and \\(90^\\circ\\).",
+    "options": [
+      "\\(\\sqrt{3}\\)",
+      "1",
+      "\\(\\frac{1}{\\sqrt{3}}\\)",
+      "0"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 16/03/2023 (3rd Shift)"
+  },
+  {
+    "id": 184,
+    "text": "Tan of complementary of an angle is same as which of the angles?",
+    "options": [
+      "sin of that angle",
+      "cot of that angle",
+      "cos of that angle",
+      "cosec of that angle"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 17/03/2023 (1st Shift)"
+  },
+  {
+    "id": 185,
+    "text": "If \\(\\sec \\theta + \\tan \\theta = 2\\), then what is the value of \\(\\cot \\theta\\)?",
+    "options": [
+      "\\(\\frac{5}{3}\\)",
+      "\\(\\frac{3}{5}\\)",
+      "\\(\\frac{4}{3}\\)",
+      "\\(\\frac{3}{4}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 17/03/2023 (2nd Shift)"
+  },
+  {
+    "id": 186,
+    "text": "What is the value of \\((\\tan 10^\\circ \\tan 80^\\circ + \\tan 20^\\circ \\tan 70^\\circ + \\tan 30^\\circ \\tan 60^\\circ + \\tan 40^\\circ \\tan 50^\\circ)\\)?",
+    "options": [
+      "4",
+      "3",
+      "5",
+      "2"
+    ],
+    "correct": "a",
+    "exam": "SSC CHSL 17/03/2023 (4th Shift)"
+  },
+  {
+    "id": 187,
+    "text": "What is the value of \\(\\frac{\\cos\\theta + \\cos\\theta - 1}{\\cos\\theta - \\cos\\theta + 1}\\)?",
+    "options": [
+      "\\(2\\sec\\theta\\)",
+      "\\(2\\csc\\theta\\)",
+      "\\(2\\cot\\theta\\)",
+      "\\(\\cot\\theta + \\csc\\theta\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CHSL 20/03/2023 (2nd Shift)"
+  },
+  {
+    "id": 188,
+    "text": "If \\(6\\sec\\theta = 10\\), then find the value of \\(\\frac{(5\\cos\\theta - 3\\cos\\theta)}{(4\\cos\\theta + 3\\sin\\theta)}\\)?",
+    "options": [
+      "\\(\\frac{2}{3}\\)",
+      "\\(\\frac{3}{2}\\)",
+      "\\(\\frac{5}{6}\\)",
+      "\\(\\frac{6}{5}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 20/03/2023 (3rd Shift)"
+  },
+  {
+    "id": 189,
+    "text": "What is the value of \\(\\csc A (1 - \\cos A)(\\csc A + \\cot A)\\)?",
+    "options": [
+      "2",
+      "1",
+      "0",
+      "3"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 21/03/2023 (2nd Shift)"
+  },
+  {
+    "id": 190,
+    "text": "If \\(\\frac{(2\\cos^3A - \\cos A)}{(\\sin A - 2\\sin^3A)} = 1\\), then what is the value of A?",
+    "options": [
+      "\\(90^\\circ\\)",
+      "\\(30^\\circ\\)",
+      "\\(45^\\circ\\)",
+      "\\(60^\\circ\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 21/03/2023 (2nd Shift)"
+  },
+  {
+    "id": 191,
+    "text": "\\(\\frac{1}{1 + \\cos(90^\\circ - \\theta)} + \\frac{1}{1 - \\cos(90^\\circ - \\theta)} =\\)",
+    "options": [
+      "\\(2\\sec^2\\theta\\)",
+      "1",
+      "0",
+      "\\(2\\tan^2\\theta\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 03/12/2022 (1st Shift)"
+  },
+  {
+    "id": 192,
+    "text": "\\(\\sin^4\\theta + \\cos^4\\theta\\) in terms of \\(\\sin\\theta\\) can be written as:",
+    "options": [
+      "\\(2\\sin^4\\theta + 2\\sin^2\\theta - 1\\)",
+      "\\(2\\sin^4\\theta - 2\\sin^2\\theta\\)",
+      "\\(2\\sin^4\\theta - 2\\sin^2\\theta - 1\\)",
+      "\\(2\\sin^4\\theta - 2\\sin^2\\theta + 1\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 03/12/2022 (2nd Shift)"
+  },
+  {
+    "id": 193,
+    "text": "Simplify the following : \\(\\frac{\\cos x - \\sqrt{3}\\sin x}{2}\\)",
+    "options": [
+      "\\(\\cos(\\frac{\\pi}{3} - x)\\)",
+      "\\(\\sin(\\frac{\\pi}{3} + x)\\)",
+      "\\(\\cos(\\frac{\\pi}{3} + x)\\)",
+      "\\(\\sin(\\frac{\\pi}{3} - x)\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 03/12/2022 (3rd Shift)"
+  },
+  {
+    "id": 194,
+    "text": "The value of \\(\\sqrt{\\frac{1 + \\cos A}{1 - \\cos A}}\\) is:",
+    "options": [
+      "\\(\\sec A - \\tan A\\)",
+      "\\(\\csc A + \\cot A\\)",
+      "\\(\\sec A + \\tan A\\)",
+      "\\(\\csc A - \\cot A\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 03/12/2022 (4th Shift)"
+  },
+  {
+    "id": 195,
+    "text": "If \\(\\sin \\theta + \\cos \\theta = \\frac{\\sqrt{3} - 1}{2\\sqrt{2}}\\) then what is the value of \\(\\tan\\theta + \\cot\\theta\\)?",
+    "options": [
+      "\\(8(\\sqrt{3} - 2)\\)",
+      "\\(12(\\sqrt{3} - 2)\\)",
+      "\\(12(\\sqrt{3} + 2)\\)",
+      "\\(8(\\sqrt{3} + 2)\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 05/12/2022 (1st Shift)"
+  },
+  {
+    "id": 196,
+    "text": "If \\(\\sec 2\\theta = \\cos (\\theta - 36^\\circ)\\), where \\(2\\theta\\) is an acute angle, find the value of \\(\\theta\\).",
+    "options": [
+      "\\(32^\\circ\\)",
+      "\\(46^\\circ\\)",
+      "\\(20^\\circ\\)",
+      "\\(42^\\circ\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 05/12/2022 (1st Shift)"
+  },
+  {
+    "id": 197,
+    "text": "What will be the value of \\(\\cos x \\csc x - \\sin x \\sec x\\)?",
+    "options": [
+      "\\(\\cot 2x\\)",
+      "\\(\\tan 2x\\)",
+      "\\(\\cot 2x\\)",
+      "\\(2\\cot 2x\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 05/12/2022 (2nd Shift)"
+  },
+  {
+    "id": 198,
+    "text": "\\(\\cot^2 A - \\cos^2 A\\) is equal to :",
+    "options": [
+      "\\(\\cos^2 A \\cdot \\sin^2 A\\)",
+      "\\(\\cos^2 A \\cdot \\cot^2 A\\)",
+      "1",
+      "0"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 05/12/2022 (3rd Shift)"
+  },
+  {
+    "id": 199,
+    "text": "If \\(\\sin \\theta = a\\), then \\(\\sec \\theta + \\tan \\theta = ?\\)",
+    "options": [
+      "\\(\\sqrt{\\frac{b + a}{b - a}}\\)",
+      "\\(\\sqrt{\\frac{1}{b - a}}\\)",
+      "\\(\\sqrt{\\frac{1}{b - a}}\\)",
+      "\\(\\sqrt{\\frac{b - a}{b + a}}\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 06/12/2022 (1st Shift)"
+  },
+  {
+    "id": 200,
+    "text": "What will be the value of \\(\\sin 10^\\circ - \\frac{4}{3}\\sin 10^\\circ\\)?",
+    "options": [
+      "\\(\\frac{1}{3\\sqrt{3}}\\)",
+      "\\(\\frac{1}{6}\\)",
+      "\\(\\frac{1}{2\\sqrt{3}}\\)",
+      "\\(\\frac{\\sqrt{3}}{6}\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 06/12/2022 (1st Shift)"
+  },
+  {
+    "id": 201,
+    "text": "What is the value of \\(\\cos(-\\frac{17\\pi}{3})\\)?",
+    "options": [
+      "1",
+      "\\(\\frac{\\sqrt{3}}{2}\\)",
+      "\\(\\frac{1}{2}\\)",
+      "0"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 06/12/2022 (2nd Shift)"
+  },
+  {
+    "id": 202,
+    "text": "Solve the following to find its value in terms of trigonometric ratios. \\((\\sin A + \\cos A)(1 - \\sin A \\cos A)\\)",
+    "options": [
+      "\\(\\sin^3 A + \\cos^3 A\\)",
+      "\\(\\sin^2 A - \\cos^2 A\\)",
+      "\\((\\cos A - \\sin A)(\\sin^2 A + \\cos^2 A)\\)",
+      "\\(\\sin^3 A - \\cos^3 A\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 06/12/2022 (3rd Shift)"
+  },
+  {
+    "id": 203,
+    "text": "If \\(\\sec \\theta - 2\\cos \\theta = \\frac{7}{2}\\), where \\(\\theta\\) is a positive acute angle, then the value of \\(\\sec \\theta\\) is:",
+    "options": [
+      "6",
+      "8",
+      "5",
+      "4"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 06/12/2022 (4th Shift)"
+  },
+  {
+    "id": 204,
+    "text": "Find the value of \\(\\tan 3\\theta\\) if \\(\\sec 3\\theta = \\cos (4\\theta - 15^\\circ)\\).",
+    "options": [
+      "\\(\\frac{1}{\\sqrt{3}}\\)",
+      "\\(\\sqrt{3}\\)",
+      "-1",
+      "1"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 06/12/2022 (4th Shift)"
+  },
+  {
+    "id": 205,
+    "text": "If \\(\\tan A - \\tan B - \\tan C = \\tan A \\tan B \\tan C\\), what is the value of A in terms of B and C?",
+    "options": [
+      "\\(A = B + C\\)",
+      "\\(A = 2B - 2C\\)",
+      "\\(A = B - C\\)",
+      "\\(A = \\frac{B - C}{2}\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 07/12/2022 (1st Shift)"
+  },
+  {
+    "id": 206,
+    "text": "If \\(\\tan^2 \\alpha = 3 + Q^2\\), then \\(\\sec \\alpha + \\tan^3 \\alpha \\csc \\alpha = ?\\)",
+    "options": [
+      "\\((3 + Q^2)^{\\frac{3}{2}}\\)",
+      "\\((7 + Q^2)^{\\frac{3}{2}}\\)",
+      "\\((5 - Q^2)^{\\frac{3}{2}}\\)",
+      "\\((4 + Q^2)^{\\frac{3}{2}}\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 07/12/2022 (1st Shift)"
+  },
+  {
+    "id": 207,
+    "text": "If \\(1 + \\sin \\theta = \\cos \\theta\\), then what is the value of \\(\\sin \\theta\\)?",
+    "options": [
+      "\\(\\frac{2m^2 - 1}{m^2 + 1}\\)",
+      "\\(\\frac{m^2 - 1}{m^2 + 1}\\)",
+      "\\(\\frac{m^2 + 1}{2m^2 - 1}\\)",
+      "\\(\\frac{m^2 + 1}{m^2 - 1}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 07/12/2022 (2nd Shift)"
+  },
+  {
+    "id": 208,
+    "text": "Find the value of the following expression. \\(5(\\sin^4 \\theta + \\cos^4 \\theta) + 3(\\sin^6 \\theta + \\cos^6 \\theta) + 19\\sin^2 \\theta \\cos^2 \\theta\\)",
+    "options": [
+      "8",
+      "5",
+      "6",
+      "7"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 07/12/2022 (3rd Shift)"
+  },
+  {
+    "id": 209,
+    "text": "If \\(\\sin Y = x\\), then what will be the value of \\(\\cos 2Y\\) (where \\(0 \\leq Y \\leq 90^\\circ\\))?",
+    "options": [
+      "\\((\\sqrt{2} - 1)x\\)",
+      "\\(\\sqrt{2}x\\)",
+      "\\(1 - 2x\\)",
+      "\\(1 - 2x^2\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 08/12/2022 (1st Shift)"
+  },
+  {
+    "id": 210,
+    "text": "If \\(A + B = C\\), then \\(\\tan A \\tan B \\tan C = ?\\)",
+    "options": [
+      "\\(\\tan C + \\tan A - \\tan B\\)",
+      "\\(\\tan C + \\tan A + \\tan B\\)",
+      "\\(\\tan A - \\tan B - \\tan C\\)",
+      "\\(\\tan C - \\tan A - \\tan B\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 08/12/2022 (1st Shift)"
+  },
+  {
+    "id": 211,
+    "text": "If \\(x = 8(\\sin \\theta + \\cos \\theta)\\) and \\(y = 9(\\sin \\theta - \\cos \\theta)\\), then the value of \\(\\frac{x^2}{8^2} + \\frac{y^2}{9^2}\\) is:",
+    "options": [
+      "4",
+      "6",
+      "8",
+      "2"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 08/12/2022 (1st Shift)"
+  },
+  {
+    "id": 212,
+    "text": "\\(\\theta = 135^\\circ\\); \\(y = 15^\\circ\\). What is the value of \\(\\cos \\theta (\\sin y)\\)?",
+    "options": [
+      "\\(\\frac{\\sqrt{3} - 1}{2}\\)",
+      "\\(\\frac{1 - \\sqrt{3}}{2}\\)",
+      "\\(2 - \\sqrt{3}\\)",
+      "\\(\\sqrt{3} - 2\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 08/12/2022 (3rd Shift)"
+  },
+  {
+    "id": 213,
+    "text": "If \\(\\sec x - \\cos x = 4\\), then what will be the value of \\(\\frac{(1 + \\cos^2 x)}{\\cos x}\\)?",
+    "options": [
+      "\\(\\frac{9}{4}\\)",
+      "\\(\\frac{1}{4}\\)",
+      "\\(2\\sqrt{5}\\)",
+      "\\(\\sqrt{5}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 08/12/2022 (3rd Shift)"
+  },
+  {
+    "id": 214,
+    "text": "If \\(\\tan A \\tan B + \\frac{\\cos x}{\\cos A \\cos B} = 1\\), then \\(x = ?\\)",
+    "options": [
+      "B",
+      "A",
+      "\\(A + B\\)",
+      "\\(A - B\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 08/12/2022 (4th Shift)"
+  },
+  {
+    "id": 215,
+    "text": "\\(\\cos^3 60^\\circ - \\cos^3 240^\\circ - \\cos^3 360^\\circ =\\)",
+    "options": [
+      "\\(\\frac{-3}{4}\\)",
+      "\\(\\frac{-7}{5}\\)",
+      "\\(\\frac{-3}{5}\\)",
+      "\\(\\frac{-9}{7}\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 09/12/2022 (1st Shift)"
+  },
+  {
+    "id": 216,
+    "text": "If \\(5\\sin^2 A + 3\\cos^2 A = 4\\), \\(0 < A < 90^\\circ\\), then what is the value of \\(\\tan A\\)?",
+    "options": [
+      "0",
+      "3",
+      "1",
+      "2"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 09/12/2022 (1st Shift)"
+  },
+  {
+    "id": 217,
+    "text": "If \\(\\frac{\\sin \\theta + \\cos \\theta}{\\sin \\theta - \\cos \\theta} = \\frac{3}{2}\\), then the value of \\(\\sin^4 \\theta - \\cos^4 \\theta\\) is",
+    "options": [
+      "\\(\\frac{5}{12}\\)",
+      "\\(\\frac{12}{13}\\)",
+      "\\(\\frac{11}{12}\\)",
+      "\\(\\frac{5}{13}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 09/12/2022 (2nd Shift)"
+  },
+  {
+    "id": 218,
+    "text": "If \\(\\sin^2 \\theta \\cos^2 \\theta = \\frac{2}{9}\\), then what will be the value of \\(\\cos^2 \\theta + \\sec^2 \\theta\\)?",
+    "options": [
+      "\\(\\frac{7}{2}\\)",
+      "\\(\\frac{5}{2}\\)",
+      "\\(\\frac{9}{2}\\)",
+      "\\(9\\sqrt{2}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 09/12/2022 (3rd Shift)"
+  },
+  {
+    "id": 219,
+    "text": "If \\(2\\frac{\\cos^2 x - \\sec^2 x}{\\tan^2 x} = a + b \\cos 2x\\), then a, b = ?",
+    "options": [
+      "\\(\\frac{-3}{2}, \\frac{-1}{2}\\)",
+      "\\(\\frac{3}{2}, \\frac{1}{2}\\)",
+      "\\(-3, -1\\)",
+      "\\(3, 1\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 09/12/2022 (3rd Shift)"
+  },
+  {
+    "id": 220,
+    "text": "In the given figure, ABC is an isosceles triangle with \\(BC = 8\\) cm and \\(AB = AC = 5\\) cm. The value of \\(\\tan C - \\cot B\\) is",
+    "options": [
+      "\\(\\frac{-5}{12}\\)",
+      "\\(\\frac{-7}{12}\\)",
+      "\\(\\frac{7}{12}\\)",
+      "\\(\\frac{5}{12}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 09/12/2022 (4th Shift)"
+  },
+  {
+    "id": 221,
+    "text": "If \\(b \\cos \\theta = a\\), then \\(\\csc \\theta + \\cot \\theta =\\)",
+    "options": [
+      "\\(\\sqrt{\\frac{1}{b + a}}\\)",
+      "\\(\\sqrt{\\frac{b - a}{b + a}}\\)",
+      "\\(\\sqrt{\\frac{b + a}{b - a}}\\)",
+      "\\(\\sqrt{\\frac{1}{b - a}}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 09/12/2022 (4th Shift)"
+  },
+  {
+    "id": 222,
+    "text": "If \\(\\csc \\theta + \\cot \\theta = p\\), then the value of \\(\\frac{p^2 - 1}{p^2 + 1}\\) is:",
+    "options": [
+      "\\(\\cos \\theta\\)",
+      "\\(\\sin \\theta\\)",
+      "\\(\\cot \\theta\\)",
+      "\\(\\csc \\theta\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 12/12/2022 (1st Shift)"
+  },
+  {
+    "id": 223,
+    "text": "If \\(\\sin^2 \\theta - 3 \\sin \\theta + 2 = 0\\), then find the value of \\(\\theta\\) (\\(0^\\circ \\le \\theta \\le 90^\\circ\\)).",
+    "options": [
+      "\\(45^\\circ\\)",
+      "\\(0^\\circ\\)",
+      "\\(60^\\circ\\)",
+      "\\(90^\\circ\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 12/12/2022 (2nd Shift)"
+  },
+  {
+    "id": 224,
+    "text": "If \\(\\tan 30^\\circ \\cdot \\tan 70^\\circ = 1\\), where \\(70^\\circ\\) is an acute angle, then find the value of \\(\\cot 150^\\circ\\).",
+    "options": [
+      "1",
+      "-1",
+      "\\(-\\sqrt{3}\\)",
+      "\\(\\sqrt{3}\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 12/12/2022 (3rd Shift)"
+  },
+  {
+    "id": 225,
+    "text": "If \\(2\\sin \\theta + 2\\sin^2 \\theta = 2\\), then the value of \\(2\\cos^2 \\theta + 2\\cos^2 \\theta\\) is:",
+    "options": [
+      "4",
+      "2",
+      "1",
+      "0"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 12/12/2022 (3rd Shift)"
+  },
+  {
+    "id": 226,
+    "text": "If \\(\\cos \\theta + \\cos^2 \\theta = 1\\), find the value of \\(\\sqrt{\\sin^4 \\theta + \\cos^2 \\theta}\\)",
+    "options": [
+      "\\(\\sqrt{2} \\cos \\theta\\)",
+      "\\(2 \\cos \\theta\\)",
+      "\\(\\sqrt{2} \\sin \\theta\\)",
+      "\\(2 \\sin \\theta\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 12/12/2022 (4th Shift)"
+  },
+  {
+    "id": 227,
+    "text": "If \\(\\sec^2 A + \\tan^2 A = 3\\), then what is the value of \\(\\cot A\\)?",
+    "options": [
+      "\\(\\frac{1}{\\sqrt{3}}\\)",
+      "0",
+      "1",
+      "\\(\\sqrt{3}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 13/12/2022 (1st Shift)"
+  },
+  {
+    "id": 228,
+    "text": "What is the value of \\(\\csc 15^\\circ \\sec 15^\\circ\\)?",
+    "options": [
+      "0.5",
+      "4",
+      "2",
+      "1"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 13/12/2022 (2nd Shift)"
+  },
+  {
+    "id": 229,
+    "text": "\\(\\frac{\\cos A}{1 - \\tan A} + \\frac{\\sin A}{1 - \\cot A} = ?\\)",
+    "options": [
+      "\\(\\tan A - \\cot A\\)",
+      "\\(\\tan A + \\cot A\\)",
+      "\\(\\sin A - \\cos A\\)",
+      "\\(\\sin A + \\cos A\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 13/12/2022 (2nd Shift)"
+  },
+  {
+    "id": 230,
+    "text": "If \\(\\tan 40^\\circ = a\\), then find \\(\\frac{\\tan 320^\\circ - \\tan 310^\\circ}{1 + \\tan 320^\\circ \\tan 310^\\circ}\\)",
+    "options": [
+      "\\(\\frac{1 - a^2}{a}\\)",
+      "\\(\\frac{1 + a^2}{2a}\\)",
+      "\\(\\frac{1 - a^2}{2a}\\)",
+      "\\(\\frac{1 + a^2}{a}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 13/12/2022 (3rd Shift)"
+  },
+  {
+    "id": 231,
+    "text": "If \\(\\tan(\\alpha + \\beta) = a\\), \\(\\tan(\\alpha - \\beta) = b\\) then the value of \\(\\tan 2\\alpha\\) is:",
+    "options": [
+      "\\(\\frac{a + b}{1 - ab}\\)",
+      "\\(\\frac{a + b}{1 + ab}\\)",
+      "\\(\\frac{a - b}{1 + ab}\\)",
+      "\\(\\frac{a - b}{1 - ab}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 13/12/2022 (4th Shift)"
+  },
+  {
+    "id": 232,
+    "text": "If \\(x = \\frac{2\\sin\\theta}{1 + \\cos\\theta + \\sin\\theta}\\) then the value of \\(\\frac{1 - \\cos\\theta + \\sin\\theta}{1 + \\sin\\theta}\\) is:",
+    "options": [
+      "\\(\\frac{x}{1 + x}\\)",
+      "\\(x\\)",
+      "\\(\\frac{1}{x}\\)",
+      "\\(\\frac{1 + x}{x}\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CPO 09/11/2022 (Morning)"
+  },
+  {
+    "id": 233,
+    "text": "If \\(\\left(\\frac{\\sec\\theta - 1}{\\sec\\theta + 1}\\right)^n = \\cos \\theta \\cdot \\cot \\theta\\) then \\(n = ?\\)",
+    "options": [
+      "1",
+      "0.5",
+      "-1",
+      "-0.5"
+    ],
+    "correct": "c",
+    "exam": "SSC CPO 09/11/2022 (Morning)"
+  },
+  {
+    "id": 234,
+    "text": "The value of \\((2\\cos^2\\theta - 1)\\left(\\frac{1 + \\tan\\theta}{1 - \\tan\\theta} + \\frac{1 - \\tan\\theta}{1 + \\tan\\theta}\\right)\\) is:",
+    "options": [
+      "2",
+      "0",
+      "\\(\\frac{\\sqrt{3}}{2}\\)",
+      "1"
+    ],
+    "correct": "b",
+    "exam": "SSC CPO 09/11/2022 (Morning)"
+  },
+  {
+    "id": 235,
+    "text": "Simplify: \\(\\frac{\\sin\\theta \\cos\\theta - \\sin 6\\theta \\cos 3\\theta}{\\cos 2\\theta \\cos \\theta - \\sin 3\\theta \\sin 4\\theta}\\)",
+    "options": [
+      "\\(\\cot\\theta\\)",
+      "\\(\\cot 2\\theta\\)",
+      "\\(\\tan\\theta\\)",
+      "\\(\\tan 2\\theta\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CPO 09/11/2022 (Afternoon)"
+  },
+  {
+    "id": 236,
+    "text": "The value of \\((1 + \\cot A - \\csc A)(1 + \\tan A + \\sec A) - 1\\) is:",
+    "options": [
+      "1",
+      "2",
+      "3",
+      "0"
+    ],
+    "correct": "b",
+    "exam": "SSC CPO 09/11/2022 (Afternoon)"
+  },
+  {
+    "id": 237,
+    "text": "Given that A and B are second quadrant angles, \\(\\sin A = \\frac{1}{3}\\) and \\(\\sin B = \\frac{1}{5}\\) then find the value of \\(\\cos (A - B)\\)",
+    "options": [
+      "\\(\\frac{4\\sqrt{3} + 1}{15}\\)",
+      "\\(\\frac{8\\sqrt{3} - 1}{15}\\)",
+      "\\(\\frac{8\\sqrt{3} + 1}{15}\\)",
+      "\\(\\frac{4\\sqrt{3} - 1}{15}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CPO 09/11/2022 (Evening)"
+  },
+  {
+    "id": 238,
+    "text": "What is the value of \\(\\frac{\\sin(A + B)}{\\cos A \\cos B}\\)?",
+    "options": [
+      "\\(1 + \\cot A \\tan B\\)",
+      "\\(1 + \\tan A \\cot B\\)",
+      "\\(1 - \\sin A \\cos B\\)",
+      "\\(1 - \\cot A \\tan B\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CPO 09/11/2022 (Evening)"
+  },
+  {
+    "id": 239,
+    "text": "The value of the expression \\(\\cos^2 45^\\circ + \\cos^2 135^\\circ + \\cos^2 225^\\circ + \\cos^2 315^\\circ\\) is:",
+    "options": [
+      "2",
+      "\\(\\frac{1}{2}\\)",
+      "\\(\\frac{3}{2}\\)",
+      "1"
+    ],
+    "correct": "a",
+    "exam": "SSC CPO 10/11/2022 (Morning)"
+  },
+  {
+    "id": 240,
+    "text": "If \\(1 + \\sin^2 \\theta - 3\\sin\\theta \\cos\\theta = 0\\), then the value of \\(\\cot\\theta\\) is:",
+    "options": [
+      "0",
+      "1",
+      "\\(\\frac{1}{2}\\)",
+      "\\(\\frac{1}{3}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CPO 11/11/2022 (Evening)"
+  },
+  {
+    "id": 241,
+    "text": "If \\(\\cos^4 \\alpha - \\sin^4 \\alpha = \\frac{5}{6}\\), then the value of \\(2\\cos^2 \\alpha - 1 = \\_\\_\\_\\_\\_\\).",
+    "options": [
+      "\\(\\frac{11}{6}\\)",
+      "\\(\\frac{5}{6}\\)",
+      "\\(\\frac{6}{11}\\)",
+      "\\(\\frac{6}{5}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CPO 11/11/2022 (Evening)"
+  },
+  {
+    "id": 242,
+    "text": "Which of the following is equal to \\(\\left[\\frac{\\cos\\theta}{\\sin\\theta} + \\frac{\\sin\\theta}{\\cos\\theta}\\right]\\)?",
+    "options": [
+      "\\(\\csc\\theta \\sec\\theta\\)",
+      "\\(\\sec\\theta \\tan\\theta\\)",
+      "\\(\\csc\\theta \\tan\\theta\\)",
+      "\\(\\cot\\theta \\sec\\theta\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL Tier II (08/08/2022)"
+  },
+  {
+    "id": 243,
+    "text": "What is the value of \\(\\frac{\\cos 50^\\circ}{\\sin 40^\\circ} + \\frac{3\\csc 80^\\circ}{\\sec 10^\\circ} - 2\\cos 50^\\circ \\csc 40^\\circ\\)?",
+    "options": [
+      "3",
+      "2",
+      "5",
+      "4"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL Tier II (08/08/2022)"
+  },
+  {
+    "id": 244,
+    "text": "If \\(3\\tan\\theta = 3\\sin\\theta\\), then what is the value of \\(\\sin^2\\theta - \\cos^2\\theta\\)?",
+    "options": [
+      "\\(\\frac{1}{5}\\)",
+      "\\(\\frac{1}{4}\\)",
+      "\\(\\frac{1}{2}\\)",
+      "\\(\\frac{1}{3}\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL Tier II (08/08/2022)"
+  },
+  {
+    "id": 245,
+    "text": "Which of the following is equal to \\(\\frac{1}{\\tan\\theta} + \\tan\\theta\\)?",
+    "options": [
+      "\\(\\sec\\theta \\csc\\theta\\)",
+      "1",
+      "\\(\\csc\\theta \\sec\\theta\\)",
+      "\\(\\tan^2\\theta\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL Tier II (08/08/2022)"
+  },
+  {
+    "id": 246,
+    "text": "\\([(\\sin\\theta \\tan\\theta + \\cos\\theta)^2 - 1]\\) is equal to:",
+    "options": [
+      "\\(\\tan^2\\theta\\)",
+      "\\(\\csc\\theta\\)",
+      "\\(\\sec^2\\theta\\)",
+      "\\(\\sec\\theta\\)"
+    ],
+    "correct": "a",
+    "exam": "Graduate Level 02/08/2022 (Shift - 3)"
+  },
+  {
+    "id": 247,
+    "text": "The value of \\(\\sin^2\\frac{2\\pi}{3} + \\cos^2\\frac{5\\pi}{6} - \\tan^2\\frac{3\\pi}{4}\\) is:",
+    "options": [
+      "2",
+      "\\(\\frac{1}{2}\\)",
+      "\\(\\frac{1}{4}\\)",
+      "4"
+    ],
+    "correct": "a",
+    "exam": "Graduate Level 03/08/2022 (Shift - 3)"
+  },
+  {
+    "id": 248,
+    "text": "\\(\\frac{2\\sin\\theta}{4 - 4\\sin^2\\theta} = ?\\)",
+    "options": [
+      "\\(\\tan\\theta\\)",
+      "\\(2\\tan\\theta\\)",
+      "\\(\\cot\\theta\\)",
+      "\\(2\\cot\\theta\\)"
+    ],
+    "correct": "b",
+    "exam": "Graduate Level 04/08/2022 (Shift - 4)"
+  },
+  {
+    "id": 249,
+    "text": "Simplify: \\(\\frac{1}{\\cos x} \\cdot \\frac{\\cos(\\pi + x) \\cos(-x)}{\\sin(\\pi - x) \\cos(\\frac{\\pi}{2} + x)}\\)",
+    "options": [
+      "\\(\\sec x\\)",
+      "\\(\\tan x\\)",
+      "\\(\\csc x\\)",
+      "\\(\\cot x\\)"
+    ],
+    "correct": "c",
+    "exam": "Graduate Level 04/08/2022 (Shift - 4)"
+  },
+  {
+    "id": 250,
+    "text": "If \\(\\cos\\theta = \\sin(2\\theta)\\), \\(\\theta \\neq 0\\), what is the value of \\(\\cos^4\\theta + \\sin^4\\theta + \\cos^3\\theta + \\sin^3\\theta + \\sin^2\\theta + \\cos^2\\theta + \\sin\\theta + \\cos\\theta\\)?",
+    "options": [
+      "\\(\\frac{8 + 7\\sqrt{3}}{18}\\)",
+      "\\(\\frac{18 + 7\\sqrt{3}}{8}\\)",
+      "\\(\\frac{18 + 8\\sqrt{3}}{7}\\)",
+      "\\(\\frac{7 + 18\\sqrt{3}}{8}\\)"
+    ],
+    "correct": "b",
+    "exam": "Graduate Level 05/08/2022 (Shift - 3)"
+  },
+  {
+    "id": 251,
+    "text": "If \\(\\frac{x - x\\csc^2 30^\\circ}{1 + \\csc^2 30^\\circ} = \\cos^2 60^\\circ + 4\\cot^2 45^\\circ - \\sec^2 60^\\circ\\), then the value of x is ______.",
+    "options": [
+      "\\(\\frac{5}{12}\\)",
+      "\\(-\\frac{5}{12}\\)",
+      "\\(\\frac{1}{5}\\)",
+      "\\(-\\frac{1}{12}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 25/05/2022 (Morning)"
+  },
+  {
+    "id": 252,
+    "text": "If \\(\\sec\\theta - \\cos\\theta = 14\\) and \\(14\\sec\\theta = x\\), then the value of x is ________.",
+    "options": [
+      "\\(\\tan^2\\theta\\)",
+      "\\(\\sec^2\\theta\\)",
+      "\\(2\\sec\\theta\\)",
+      "\\(2\\tan\\theta\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CHSL 25/05/2022 (Afternoon)"
+  },
+  {
+    "id": 253,
+    "text": "The value of \\((1 + \\tan 10^\\circ)(1 + \\tan 35^\\circ)\\) is:",
+    "options": [
+      "\\(\\frac{1}{2}\\)",
+      "\\(\\frac{3}{4}\\)",
+      "1",
+      "2"
+    ],
+    "correct": "d",
+    "exam": "SSC CHSL 25/05/2022 (Evening)"
+  },
+  {
+    "id": 254,
+    "text": "The value of \\(\\frac{\\sin^4\\theta + \\sin^2\\theta}{\\cos^4\\theta + \\cos^2\\theta}\\) is:",
+    "options": [
+      "\\(\\tan^3\\theta\\)",
+      "\\(\\cot^3\\theta\\)",
+      "\\(\\tan\\theta\\)",
+      "\\(\\cot\\theta\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CHSL 27/05/2022 (Morning)"
+  },
+  {
+    "id": 255,
+    "text": "If \\(\\sin x - 3\\cos x = 3\\cos x\\), then the value of \\(\\cot x\\) is ______.",
+    "options": [
+      "\\(3 - \\sqrt{3}\\)",
+      "\\(3 + \\sqrt{3}\\)",
+      "\\(\\sqrt{3}\\)",
+      "\\(\\frac{3 - \\sqrt{3}}{6}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 31/05/2022 (Morning)"
+  },
+  {
+    "id": 256,
+    "text": "What is the value of \\((4\\sin^3 x - 3\\sin x + \\sin 3x)\\)?",
+    "options": [
+      "1",
+      "0",
+      "4",
+      "3"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 31/05/2022 (Afternoon)"
+  },
+  {
+    "id": 257,
+    "text": "What is the simplified value of \\([\\cos^2(90^\\circ - \\theta) - \\{\\cos(90^\\circ - \\theta)\\cos\\theta\\}] \\cot\\theta\\)?",
+    "options": [
+      "4",
+      "2",
+      "0",
+      "1"
+    ],
+    "correct": "d",
+    "exam": "SSC CHSL 31/05/2022 (Evening)"
+  },
+  {
+    "id": 258,
+    "text": "The value of \\(\\sin 2\\theta (\\tan\\theta + \\cot\\theta)\\) is:",
+    "options": [
+      "\\(\\frac{2}{3}\\)",
+      "1",
+      "\\(\\frac{1}{2}\\)",
+      "2"
+    ],
+    "correct": "d",
+    "exam": "SSC CHSL 01/06/2022 (Morning)"
+  },
+  {
+    "id": 259,
+    "text": "Using \\(2\\cos A \\cos B = \\cos(A + B) + \\cos(A - B)\\), find the value of \\(\\cos 75^\\circ \\cos 15^\\circ\\).",
+    "options": [
+      "\\(\\frac{1}{2}\\)",
+      "\\(\\frac{1}{4}\\)",
+      "\\(\\frac{\\sqrt{3}}{2}\\)",
+      "\\(\\frac{\\sqrt{3}}{4}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 01/06/2022 (Afternoon)"
+  },
+  {
+    "id": 260,
+    "text": "If \\(1 + \\frac{\\tan\\theta}{\\sqrt{3}} = \\frac{\\sqrt{3}}{3\\cot\\theta - 1}\\), then \\(\\tan\\theta = \\_\\_\\_\\_\\_\\_\\).",
+    "options": [
+      "\\(\\frac{\\sqrt{3} + 1}{2}\\)",
+      "\\(\\frac{\\sqrt{3} - 1}{2}\\)",
+      "\\(\\frac{2\\sqrt{3} - 1}{2}\\)",
+      "\\(\\frac{2\\sqrt{3} + 1}{2}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 03/06/2022 (Afternoon)"
+  },
+  {
+    "id": 261,
+    "text": "If \\(\\csc^2\\theta + \\cot^2\\theta = \\frac{5}{3}\\), then what is the value of \\(\\cot^2\\theta\\)?",
+    "options": [
+      "\\(\\frac{1}{3}\\)",
+      "\\(-\\frac{1}{3}\\)",
+      "\\(\\frac{2}{3}\\)",
+      "\\(-\\frac{2}{3}\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CHSL 07/06/2022 (Morning)"
+  },
+  {
+    "id": 262,
+    "text": "\\((\\csc\\theta - \\cot\\theta)^2 = ?\\), \\(0^\\circ < \\theta < 90^\\circ\\)",
+    "options": [
+      "\\(\\frac{1 - \\sin\\theta}{1 + \\cos\\theta}\\)",
+      "\\(\\frac{1 - \\cos\\theta}{1 + \\cos\\theta}\\)",
+      "\\(\\frac{1 + \\cos\\theta}{1 - \\cos\\theta}\\)",
+      "\\(\\frac{1 + \\cos\\theta}{1 - \\sin\\theta}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 09/06/2022 (Evening)"
+  },
+  {
+    "id": 263,
+    "text": "Using the formula \\(\\tan\\frac{x}{2} = \\frac{1 - \\cos x}{\\sin x}\\), find the value of \\(\\tan 22.5^\\circ\\).",
+    "options": [
+      "\\(\\sqrt{2} - 1\\)",
+      "\\(\\sqrt{2} + 1\\)",
+      "\\(\\frac{\\sqrt{3} + \\sqrt{2}}{2}\\)",
+      "\\(\\frac{\\sqrt{3} - \\sqrt{2}}{2}\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CHSL 10/06/2022 (Morning)"
+  },
+  {
+    "id": 264,
+    "text": "If \\(4\\sin^2\\theta = 3(1 + \\cos\\theta)\\), \\(0^\\circ < \\theta < 90^\\circ\\), then what is the value of \\((2\\tan\\theta + 4\\sin\\theta - \\sec\\theta)\\)?",
+    "options": [
+      "\\(3 - 4\\sqrt{3}\\)",
+      "\\(15 - 4\\sqrt{15}\\)",
+      "\\(15 + 3\\sqrt{15}\\)",
+      "\\(4\\sqrt{3} - 3\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 11/04/2022 (Morning)"
+  },
+  {
+    "id": 265,
+    "text": "If \\(3\\sec^2\\theta + \\tan\\theta - 7 = 0\\), \\(0^\\circ < \\theta < 90^\\circ\\), then what is the value of \\(\\frac{2\\sin\\theta + 3\\cos\\theta}{\\csc\\theta + \\sec\\theta}\\)?",
+    "options": [
+      "10",
+      "\\(\\frac{5}{2}\\)",
+      "\\(\\frac{5}{4}\\)",
+      "\\(4\\sqrt{2}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 12/04/2022 (Morning)"
+  },
+  {
+    "id": 266,
+    "text": "The value of \\(1 + \\frac{\\cot\\theta + \\cos\\theta}{\\cot\\theta - \\cos\\theta}\\), if \\(0^\\circ < \\theta < 90^\\circ\\), is equal to:",
+    "options": [
+      "\\(1 - \\sec\\theta + \\tan\\theta\\)",
+      "\\(1 - \\sec\\theta - \\tan\\theta\\)",
+      "\\(1 + \\sec\\theta - \\tan\\theta\\)",
+      "\\(1 + \\sec\\theta + \\tan\\theta\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 12/04/2022 (Afternoon)"
+  },
+  {
+    "id": 267,
+    "text": "The value of \\(\\left(\\frac{1 - \\cot\\theta}{1 - \\tan\\theta}\\right)^2 - 1\\) when \\(0^\\circ < \\theta < 90^\\circ\\), is equal to:",
+    "options": [
+      "\\(\\cos^2\\theta - 1\\)",
+      "\\(\\sec^2\\theta + 1\\)",
+      "\\(\\cot^2\\theta - 1\\)",
+      "\\(\\sin^2\\theta - 1\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 12/04/2022 (Afternoon)"
+  },
+  {
+    "id": 268,
+    "text": "\\((\\tan^2\\theta + \\cot^2\\theta + 2) + 3\\) is equal to:",
+    "options": [
+      "0",
+      "1",
+      "2",
+      "-1"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 13/04/2022 (Afternoon)"
+  },
+  {
+    "id": 269,
+    "text": "If \\(\\sin^2\\theta - \\cos^2\\theta - 3\\sin\\theta + 2 = 0\\), \\(0^\\circ < \\theta < 90^\\circ\\), then what is the value of \\(1 + \\sec\\theta + \\tan\\theta\\)?",
+    "options": [
+      "\\(-1 + \\sqrt{3}\\)",
+      "\\(-1 - \\sqrt{3}\\)",
+      "\\(1 + \\sqrt{3}\\)",
+      "\\(1 - \\sqrt{3}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 13/04/2022 (Evening)"
+  },
+  {
+    "id": 270,
+    "text": "\\((\\sec\\theta - \\tan\\theta)^2 (1 + \\sin\\theta)^2 + \\cos\\theta =\\)",
+    "options": [
+      "\\(\\cos^2\\theta\\)",
+      "1",
+      "\\(\\cot^2\\theta\\)",
+      "-1"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 13/04/2022 (Evening)"
+  },
+  {
+    "id": 271,
+    "text": "If \\(2\\sin^2\\theta + 3\\cos\\theta = 3\\), \\(0^\\circ < \\theta < 90^\\circ\\), then the value of \\((\\sec^2\\theta + \\cot^2\\theta)\\) is",
+    "options": [
+      "\\(3\\frac{2}{3}\\)",
+      "\\(3\\frac{1}{3}\\)",
+      "\\(4\\frac{1}{3}\\)",
+      "\\(4\\frac{1}{2}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 18/04/2022 (Evening)"
+  },
+  {
+    "id": 272,
+    "text": "Simplify the following expression: \\(\\frac{\\cos A}{1 - \\tan A} + \\frac{\\sin A}{1 - \\cot A} - \\sin A\\)",
+    "options": [
+      "\\(1 + \\cos A\\)",
+      "\\((1 + \\sin A)\\cos A\\)",
+      "\\(1 + \\sin A\\)",
+      "\\(\\cos A\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 19/04/2022 (Evening)"
+  },
+  {
+    "id": 273,
+    "text": "Simplify the following expression: \\(\\csc A (1 - \\cos A) - 2\\cot^2 A - 1\\)",
+    "options": [
+      "\\(\\sin^2 A\\)",
+      "\\(\\csc^2 A\\)",
+      "1",
+      "0"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 20/04/2022 (Morning)"
+  },
+  {
+    "id": 274,
+    "text": "If \\(6\\tan A (\\tan A + 1) = 5 - \\tan A\\), Given that \\(0 < A < \\frac{\\pi}{2}\\). What is the value of \\(\\sin A + \\cos A\\)?",
+    "options": [
+      "\\(3\\sqrt{5}\\)",
+      "\\(\\frac{5}{\\sqrt{3}}\\)",
+      "\\(5\\sqrt{3}\\)",
+      "\\(\\frac{3}{\\sqrt{5}}\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 20/04/2022 (Morning)"
+  },
+  {
+    "id": 275,
+    "text": "The value of \\(\\left(\\frac{1 - \\cot\\theta}{1 - \\tan\\theta}\\right)^2 + 1\\), if \\(0^\\circ < \\theta < 90^\\circ\\), is equal to:",
+    "options": [
+      "\\(\\csc^2\\theta\\)",
+      "\\(\\sin^2\\theta\\)",
+      "\\(\\cos^2\\theta\\)",
+      "\\(\\sec^2\\theta\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 20/04/2022 (Evening)"
+  },
+  {
+    "id": 276,
+    "text": "If \\(\\frac{\\sin^2\\theta - 3\\sin\\theta + 2}{\\cos^2\\theta} = 1\\), where \\(0^\\circ < \\theta < 90^\\circ\\), then what is the value of \\((\\cos 2\\theta - \\sin 3\\theta + \\csc 2\\theta)\\)?",
+    "options": [
+      "\\(\\frac{1}{2}\\)",
+      "2",
+      "\\(\\frac{3}{2}\\)",
+      "1"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 21/04/2022 (Afternoon)"
+  },
+  {
+    "id": 277,
+    "text": "Simplify: \\(\\frac{1 + \\cos\\theta - \\sin^2\\theta}{\\sin\\theta(1 + \\cos\\theta)} \\times \\frac{\\sqrt{\\sec^2\\theta + \\csc^2\\theta}}{\\tan\\theta + \\cot\\theta}\\), \\(0^\\circ < \\theta < 90^\\circ\\), is equal to:",
+    "options": [
+      "\\(\\tan\\theta\\)",
+      "\\(\\sec\\theta\\)",
+      "\\(\\csc\\theta\\)",
+      "\\(\\cot\\theta\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL Tier II (29/01/2022)"
+  },
+  {
+    "id": 278,
+    "text": "If \\(1 + 2\\tan^2\\theta + 2\\sin\\theta \\sec^2\\theta = \\frac{a}{b}\\), \\(0^\\circ < \\theta < 90^\\circ\\), then \\(\\tan\\theta = \\frac{a + b}{a - b} = ?\\)",
+    "options": [
+      "\\(\\sec\\theta\\)",
+      "\\(\\sin\\theta\\)",
+      "\\(\\cos\\theta\\)",
+      "\\(\\csc\\theta\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL Tier II (29/01/2022)"
+  },
+  {
+    "id": 279,
+    "text": "\\(\\frac{(1 + \\sec\\theta \\csc\\theta)^2 (\\sec\\theta - \\tan\\theta)^2 (1 + \\sin\\theta)}{(\\sin\\theta + \\sec\\theta)^2 + (\\cos\\theta + \\csc\\theta)^2}\\), \\(0^\\circ < \\theta < 90^\\circ\\), is equal to:",
+    "options": [
+      "\\(\\cos\\theta\\)",
+      "\\(1 - \\cos\\theta\\)",
+      "\\(\\sin\\theta\\)",
+      "\\(1 - \\sin\\theta\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL Tier II (29/01/2022)"
+  },
+  {
+    "id": 280,
+    "text": "\\(\\left(\\frac{\\tan^2\\theta}{\\sec^2\\theta} + \\frac{\\cos^2\\theta}{\\csc^2\\theta} + 2\\sin\\theta \\cos\\theta\\right) \\div (1 + \\csc^2\\theta + \\tan^2\\theta)\\), \\(0^\\circ < \\theta < 90^\\circ\\), is equal to:",
+    "options": [
+      "\\(\\csc\\theta \\sec\\theta\\)",
+      "\\(\\csc\\theta\\)",
+      "\\(\\sin\\theta \\cos\\theta\\)",
+      "\\(\\sec\\theta\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL Tier II (29/01/2022)"
+  },
+  {
+    "id": 281,
+    "text": "The expression \\(\\frac{\\tan^2\\theta - \\sec^2\\theta + 3\\sec^2\\theta \\tan^2\\theta}{\\tan^2\\theta + \\cot^2\\theta + 2}\\), \\(0^\\circ < \\theta < 90^\\circ\\) is equal to:",
+    "options": [
+      "\\(\\sec^2\\theta \\csc^2\\theta\\)",
+      "\\(\\sin^2\\theta \\csc^2\\theta\\)",
+      "\\(\\cos^2\\theta \\sin^2\\theta\\)",
+      "\\(\\cos^2\\theta \\sin^2\\theta\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL Tier II (03/02/2022)"
+  },
+  {
+    "id": 282,
+    "text": "The expression \\(\\frac{\\cos^4\\theta - \\sin^4\\theta + 2\\sin^2\\theta + 3}{(\\csc\\theta + \\cot\\theta + 1)(\\csc\\theta - \\cot\\theta + 1) - 2}\\), \\(0^\\circ < \\theta < 90^\\circ\\), is equal to:",
+    "options": [
+      "\\(\\frac{1}{2}\\sin\\theta\\)",
+      "\\(2\\sin\\theta\\)",
+      "\\(\\sec\\theta\\)",
+      "\\(2\\csc\\theta\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL Tier II (03/02/2022)"
+  },
+  {
+    "id": 283,
+    "text": "The expression \\(\\frac{(1 - \\sin\\theta + \\cos\\theta)^2 (1 - \\cos\\theta) \\sec^2\\theta \\csc^2\\theta}{(\\sec\\theta - \\tan\\theta)(\\tan\\theta + \\cot\\theta)}\\), \\(0^\\circ < \\theta < 90^\\circ\\), is equal to:",
+    "options": [
+      "\\(\\sin\\theta\\)",
+      "\\(2\\cos\\theta\\)",
+      "\\(\\cot\\theta\\)",
+      "\\(2\\tan\\theta\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL Tier II (03/02/2022)"
+  },
+  {
+    "id": 284,
+    "text": "If \\(\\frac{\\sin^2\\theta}{\\cos^2\\theta - 3\\cos\\theta + 2} = 1\\), \\(\\theta\\) lies in the first quadrant, then the value of \\(\\frac{\\tan^2\\frac{\\theta}{2} + \\sin^2\\frac{\\theta}{2}}{\\tan\\theta + \\sin\\theta}\\) is:",
+    "options": [
+      "\\(\\frac{2\\sqrt{3}}{27}\\)",
+      "\\(\\frac{5\\sqrt{3}}{27}\\)",
+      "\\(\\frac{2\\sqrt{3}}{9}\\)",
+      "\\(\\frac{7\\sqrt{3}}{54}\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL Tier II (03/02/2022)"
+  },
+  {
+    "id": 285,
+    "text": "The expression \\(\\frac{(1 - 2\\sin^2\\theta \\cos^2\\theta)(\\cot\\theta + 1)\\cos\\theta}{(\\sin^4\\theta + \\cos^4\\theta)(1 + \\tan\\theta)\\csc\\theta}\\), \\(0^\\circ < \\theta < 90^\\circ\\), is equal to:",
+    "options": [
+      "\\(\\sin\\theta\\)",
+      "\\(\\cos\\theta\\)",
+      "\\(\\sec\\theta\\)",
+      "\\(\\csc\\theta\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL Tier II (03/02/2022)"
+  },
+  {
+    "id": 286,
+    "text": "If \\(\\frac{\\csc^2\\theta}{\\csc^2\\theta - \\cot^2\\theta} = \\frac{13}{4}\\), \\(0^\\circ < \\theta < 90^\\circ\\), then the value of \\(\\frac{52\\cos^2\\theta - 9\\tan^2\\theta}{18\\sec^2\\theta + 8\\cot^2\\theta}\\) will be:",
+    "options": [
+      "\\(\\frac{4}{11}\\)",
+      "\\(\\frac{8}{11}\\)",
+      "\\(\\frac{8}{13}\\)",
+      "\\(\\frac{5}{11}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 09/08/2021 (Afternoon)"
+  },
+  {
+    "id": 287,
+    "text": "Evaluate the following expression: \\(\\frac{3(\\cot^2 46^\\circ - \\sec^2 44^\\circ)}{2(\\sin^2 28^\\circ + \\sin^2 62^\\circ)} + \\frac{2\\cos^2 60^\\circ \\tan^2 33^\\circ \\tan^2 57^\\circ}{\\sec^2(90^\\circ - \\theta) - \\cot^2\\theta}\\)",
+    "options": [
+      "-1",
+      "1",
+      "-2",
+      "2"
+    ],
+    "correct": "a",
+    "exam": "SSC CHSL 10/08/2021 (Morning)"
+  },
+  {
+    "id": 288,
+    "text": "For \\(\\theta: 0^\\circ < \\theta < 90^\\circ\\), \\(3\\sec\\theta + 4\\cos\\theta = 4\\sqrt{3}\\), find the value of \\((1 - \\sin\\theta + \\cos\\theta)\\)",
+    "options": [
+      "\\(\\frac{1 + 2\\sqrt{3}}{2}\\)",
+      "\\(\\frac{1 + \\sqrt{3}}{2}\\)",
+      "\\(\\frac{1 - \\sqrt{3}}{2}\\)",
+      "\\(\\frac{1 - 2\\sqrt{3}}{2}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 10/08/2021 (Morning)"
+  },
+  {
+    "id": 289,
+    "text": "If \\(\\frac{5\\cot\\theta + \\sqrt{3}\\csc\\theta}{2\\sqrt{3}\\csc\\theta + 3\\cot\\theta} = 1\\), \\(0^\\circ < \\theta < 90^\\circ\\), then the value of \\(\\frac{7}{2}\\cot^2\\theta - \\frac{3}{4}\\csc^2\\theta\\) will be:",
+    "options": [
+      "7",
+      "2",
+      "3",
+      "5"
+    ],
+    "correct": "d",
+    "exam": "SSC CHSL 10/08/2021 (Afternoon)"
+  },
+  {
+    "id": 290,
+    "text": "If \\((1 + \\cot^2\\theta) + (1 + (\\cot^2\\theta)^{-1})\\) is equal to \\(k\\), then \\(\\sqrt{k} = ?\\)",
+    "options": [
+      "\\(\\sin\\theta \\sec\\theta\\)",
+      "\\(\\csc\\theta \\cos\\theta\\)",
+      "\\(\\csc\\theta \\sec\\theta\\)",
+      "\\(\\sin\\theta \\cos\\theta\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 10/08/2021 (Evening)"
+  },
+  {
+    "id": 291,
+    "text": "The value of \\(\\frac{\\sec\\theta \\csc\\theta}{2 + \\tan^2\\theta + \\cot^2\\theta}\\) is equal to:",
+    "options": [
+      "\\(\\sec\\theta \\csc\\theta\\)",
+      "\\(\\sec\\theta \\sin\\theta\\)",
+      "\\(\\sin\\theta \\cos\\theta\\)",
+      "\\(\\cos\\theta \\csc\\theta\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 11/08/2021 (Morning)"
+  },
+  {
+    "id": 292,
+    "text": "If \\(\\cot A + \\csc A = 2\\) and A is an acute angle, then the value of \\(\\frac{9\\tan A + 16\\csc A}{5\\sin A + 3\\tan A}\\) is:",
+    "options": [
+      "3",
+      "6",
+      "4",
+      "8"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 11/08/2021 (Afternoon)"
+  },
+  {
+    "id": 293,
+    "text": "If \\(\\cot^2\\theta + \\cot^4\\theta = 2\\), then the value of \\(2\\sin^4\\theta + \\sin^2\\theta\\) is:",
+    "options": [
+      "3",
+      "5",
+      "1",
+      "2"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 11/08/2021 (Evening)"
+  },
+  {
+    "id": 294,
+    "text": "If \\(\\sin\\alpha + \\cos\\alpha = \\tan\\frac{\\pi}{3}\\), then the value of \\((\\sin^3\\alpha + \\cos^3\\alpha)\\) is equal to:",
+    "options": [
+      "\\(\\frac{1}{2}\\)",
+      "1",
+      "0",
+      "\\(\\frac{3}{2}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 11/08/2021 (Evening)"
+  },
+  {
+    "id": 295,
+    "text": "Value of \\(\\frac{\\sin^2 52^\\circ + 2 + \\sin^2 38^\\circ}{4\\cos^2 43^\\circ - 5 + 4\\cos^2 47^\\circ}\\)",
+    "options": [
+      "3",
+      "\\(\\frac{1}{3}\\)",
+      "-3",
+      "-1"
+    ],
+    "correct": "c",
+    "exam": "SSC CPO 24/11/2020 (Evening)"
+  },
+  {
+    "id": 296,
+    "text": "If \\(4(\\csc^2 57^\\circ - \\tan^2 33^\\circ) - \\cos 90^\\circ + y \\times \\tan^2 6^\\circ \\times \\tan^2 24^\\circ = \\frac{y}{2}\\) then the value of y is:",
+    "options": [
+      "4",
+      "8",
+      "-4",
+      "-8"
+    ],
+    "correct": "d",
+    "exam": "SSC CPO 25/11/2020 (Morning)"
+  },
+  {
+    "id": 297,
+    "text": "Find the value of \\((\\sin^6A + \\cos^6A + 3\\sin^2A\\cos^2A) - (\\sin^4A - \\cos^4A + 1)\\csc^2A\\).",
+    "options": [
+      "3",
+      "-3",
+      "0",
+      "-1"
+    ],
+    "correct": "d",
+    "exam": "SSC CHSL Tier II (18/11/2024)"
+  },
+  {
+    "id": 298,
+    "text": "Find the value of \\(3(\\sec^2A - 1)(\\csc A - 1)(\\csc A + 1) + 4(\\csc^2A - \\cot^2A)\\).",
+    "options": [
+      "12",
+      "3",
+      "10",
+      "7"
+    ],
+    "correct": "d",
+    "exam": "SSC CHSL Tier II (18/11/2024)"
+  },
+  {
+    "id": 299,
+    "text": "The value of \\(\\sin^2 30^\\circ - \\sin^2 40^\\circ + \\sin^2 45^\\circ - \\sin^2 55^\\circ - \\sin^2 35^\\circ + \\sin^2 45^\\circ - \\sin^2 50^\\circ + \\sin^2 60^\\circ\\) is:",
+    "options": [
+      "1",
+      "2",
+      "4",
+      "0"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 09/09/2024 (1st Shift)"
+  },
+  {
+    "id": 300,
+    "text": "The value of \\(\\cos^2 29^\\circ + \\cos^2 61^\\circ\\) is:",
+    "options": [
+      "\\(\\frac{\\sqrt{3}}{2}\\)",
+      "2",
+      "1",
+      "0"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 09/09/2024 (1st Shift)"
+  },
+  {
+    "id": 301,
+    "text": "If \\(\\csc \\theta = \\frac{5}{3}\\) then evaluate \\((\\sec^2\\theta - 1) \\times \\cot^2\\theta \\times (1 + \\cot^2\\theta)\\)",
+    "options": [
+      "\\(\\frac{25}{16}\\)",
+      "\\(\\frac{9}{16}\\)",
+      "\\(\\frac{25}{9}\\)",
+      "\\(\\frac{4}{5}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 09/09/2024 (1st Shift)"
+  },
+  {
+    "id": 302,
+    "text": "Simplify the following. \\(\\frac{\\sin^2A - \\cos^2A}{\\sin A - \\cos A}\\) where A is an acute angle.",
+    "options": [
+      "\\(1 + \\sin A \\cos A\\)",
+      "\\(1 - 3\\sin A\\)",
+      "\\(3\\cos A - 1\\)",
+      "\\(\\sin A + \\cos A\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 09/09/2024 (2nd Shift)"
+  },
+  {
+    "id": 303,
+    "text": "If \\(\\frac{\\sec\\alpha + \\tan\\alpha}{\\sec\\alpha - \\tan\\alpha} = \\frac{7}{4}\\) then find the value of \\(\\csc \\alpha\\)",
+    "options": [
+      "\\(\\frac{1}{3}\\)",
+      "\\(\\frac{1}{11}\\)",
+      "\\(\\frac{11}{3}\\)",
+      "\\(\\frac{3}{11}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 09/09/2024 (3rd Shift)"
+  },
+  {
+    "id": 304,
+    "text": "If A is an acute angle, which of the following is equal to \\(\\frac{\\sin A}{\\sin A + \\cos A}\\)?",
+    "options": [
+      "\\(\\frac{1 - \\cos A}{\\sin A}\\)",
+      "\\(\\frac{1 + \\cos A}{\\sin A}\\)",
+      "\\(\\frac{1 - \\sin A}{\\cos A}\\)",
+      "\\(\\frac{1 + \\sin A}{\\cos A}\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 09/09/2024 (3rd Shift)"
+  },
+  {
+    "id": 305,
+    "text": "If \\(\\frac{7\\sin\\theta + 4\\cos\\theta}{9\\sin\\theta - 2\\cos\\theta} = \\frac{5}{4}\\) then the value of \\(\\frac{\\tan^2\\theta + 5}{\\tan^2\\theta - 5}\\) is:",
+    "options": [
+      "\\(\\frac{2121}{769}\\)",
+      "\\(\\frac{2121}{769}\\)",
+      "\\(\\frac{769}{2121}\\)",
+      "\\(\\frac{769}{2121}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 10/09/2024 (3rd Shift)"
+  },
+  {
+    "id": 306,
+    "text": "\\(\\frac{2 + \\tan^2A + \\cot^2A}{\\sec^2A \\cdot \\cos^2A}\\) is equal to",
+    "options": [
+      "\\(\\sec 2A + \\tan 2A\\)",
+      "\\(\\sec 2A + \\cos 2A\\)",
+      "\\(\\cot 2A - \\cos 2A\\)",
+      "\\(\\sec 2A \\cos 2A\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 10/09/2024 (1st Shift)"
+  },
+  {
+    "id": 307,
+    "text": "Let \\(0^\\circ < t < 90^\\circ\\). Then which of the following is true?",
+    "options": [
+      "\\(\\sin(t) \\neq \\cos(t)\\) when \\(t = 45^\\circ\\)",
+      "\\(\\sin(t) > \\cos(t)\\) when \\(t < 45^\\circ\\)",
+      "\\(\\sin(t) < \\cos(t)\\) when \\(t > 45^\\circ\\)",
+      "\\(\\sin(t) < \\cos(t)\\) when \\(t > 45^\\circ\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 10/09/2024 (1st Shift)"
+  },
+  {
+    "id": 308,
+    "text": "If \\(2\\tan\\theta = 3\\), then \\(\\frac{3\\sin\\theta - 2\\cos\\theta}{3\\sin\\theta + 2\\cos\\theta}\\) is equal to:",
+    "options": [
+      "\\(\\frac{6}{13}\\)",
+      "\\(\\frac{6}{7}\\)",
+      "\\(\\frac{5}{7}\\)",
+      "\\(\\frac{5}{13}\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 10/09/2024 (2nd Shift)"
+  },
+  {
+    "id": 309,
+    "text": "If \\(\\cot \\theta = \\frac{4}{3}\\) then evaluate \\(\\frac{\\sec\\theta(1 + \\cot^2\\theta)(\\csc^2\\theta - \\cot^2\\theta)}{\\csc^3\\theta}\\)",
+    "options": [
+      "\\(\\frac{3}{4}\\)",
+      "\\(\\frac{4}{3}\\)",
+      "\\(\\frac{5}{3}\\)",
+      "\\(\\frac{3}{5}\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 10/09/2024 (2nd Shift)"
+  },
+  {
+    "id": 310,
+    "text": "If \\(\\sin 5x = \\cos(\\frac{\\pi}{3} - 2x)\\), then find the value of \\(x\\).",
+    "options": [
+      "\\(\\frac{\\pi}{3}\\)",
+      "\\(\\frac{\\pi}{6}\\)",
+      "\\(\\frac{\\pi}{9}\\)",
+      "\\(\\frac{\\pi}{12}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 10/09/2024 (3rd Shift)"
+  },
+  {
+    "id": 311,
+    "text": "If \\(\\sin A = \\frac{3}{5}\\) and \\(\\cos B = \\frac{5}{13}\\), then find \\(\\tan(A + B)\\):",
+    "options": [
+      "\\(\\frac{56}{33}\\)",
+      "\\(\\frac{33}{56}\\)",
+      "\\(\\frac{16}{63}\\)",
+      "\\(\\frac{63}{16}\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 10/09/2024 (3rd Shift)"
+  },
+  {
+    "id": 312,
+    "text": "If \\(\\tan\\theta = \\frac{3}{4}\\), then the value of \\(\\frac{5\\sin\\theta - 3\\cos\\theta}{5\\sin\\theta + 2\\cos\\theta}\\) is:",
+    "options": [
+      "\\(\\frac{1}{6}\\)",
+      "\\(\\frac{3}{11}\\)",
+      "\\(\\frac{5}{11}\\)",
+      "\\(\\frac{2}{5}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 11/09/2024 (1st Shift)"
+  },
+  {
+    "id": 313,
+    "text": "If \\(\\sec\\theta = \\frac{13}{12}\\), then \\(\\frac{2\\sin\\theta - 3\\cos\\theta}{4\\sin\\theta - 9\\cos\\theta}\\) is equal to:",
+    "options": [
+      "\\(\\frac{3}{8}\\)",
+      "\\(\\frac{8}{3}\\)",
+      "\\(\\frac{5}{2}\\)",
+      "\\(\\frac{2}{5}\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 11/09/2024 (1st Shift)"
+  },
+  {
+    "id": 314,
+    "text": "If \\(\\sin\\theta + \\cos\\theta = \\frac{\\sqrt{3} + 1}{2}\\), then find the value of \\(\\sin\\theta \\cos\\theta\\).",
+    "options": [
+      "\\(\\frac{\\sqrt{3}}{4}\\)",
+      "\\(\\frac{1}{4}\\)",
+      "\\(\\frac{\\sqrt{3}}{2}\\)",
+      "\\(\\frac{1}{2}\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 11/09/2024 (2nd Shift)"
+  },
+  {
+    "id": 315,
+    "text": "If \\(\\tan A = \\frac{5}{6}\\) and \\(\\tan B = \\frac{1}{11}\\), then find the value of \\(A + B\\).",
+    "options": [
+      "\\(30^\\circ\\)",
+      "\\(45^\\circ\\)",
+      "\\(60^\\circ\\)",
+      "\\(75^\\circ\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 11/09/2024 (2nd Shift)"
+  },
+  {
+    "id": 316,
+    "text": "If \\(\\sin\\theta = \\frac{4}{5}\\), then find the value of \\(\\frac{1 - \\cos\\theta}{1 + \\cos\\theta}\\).",
+    "options": [
+      "\\(\\frac{1}{9}\\)",
+      "\\(\\frac{2}{9}\\)",
+      "\\(\\frac{4}{9}\\)",
+      "\\(\\frac{8}{9}\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 12/09/2024 (1st Shift)"
+  },
+  {
+    "id": 317,
+    "text": "The value of \\(\\frac{\\sin^2 35^\\circ + \\sin^2 55^\\circ}{\\cos^2 20^\\circ + \\cos^2 70^\\circ}\\) is:",
+    "options": [
+      "1",
+      "2",
+      "\\(\\frac{1}{2}\\)",
+      "\\(\\frac{3}{2}\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 12/09/2024 (1st Shift)"
+  },
+  {
+    "id": 318,
+    "text": "If \\(\\frac{7\\sin\\theta + 5\\cos\\theta}{7\\sin\\theta - 2\\cos\\theta} = \\frac{8}{3}\\), then the value of \\(\\tan\\theta\\) is:",
+    "options": [
+      "7",
+      "5",
+      "8",
+      "6"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 12/09/2024 (2nd Shift)"
+  },
+  {
+    "id": 319,
+    "text": "If \\(\\cot^2\\phi - \\cot^2\\phi = 1\\), then the value of \\(\\cos^4\\phi + \\cos^2\\phi\\) is:",
+    "options": [
+      "2",
+      "1",
+      "\\(\\frac{1}{\\sqrt{3}}\\)",
+      "\\(\\frac{3}{2}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 12/09/2024 (2nd Shift)"
+  },
+  {
+    "id": 320,
+    "text": "If \\(\\tan 40^\\circ \\cdot \\tan 60^\\circ = 1\\), where \\(60^\\circ\\) is an acute angle, then find the value of \\(\\cos 50^\\circ\\).",
+    "options": [
+      "\\(\\sqrt{3}\\)",
+      "\\(-\\sqrt{3}\\)",
+      "-1",
+      "1"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 12/09/2024 (3rd Shift)"
+  },
+  {
+    "id": 321,
+    "text": "If \\(7\\cos A = 6\\), then the numerical value of \\(\\frac{\\cos A + \\cot A}{\\cos A - \\cot A}\\) is:",
+    "options": [
+      "1",
+      "0",
+      "13",
+      "-13"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 12/09/2024 (3rd Shift)"
+  },
+  {
+    "id": 322,
+    "text": "If \\(p(\\sqrt{3} + \\cot 30^\\circ) = \\tan 60^\\circ - 2\\sin 60^\\circ\\), then the value of \\(p\\) is:",
+    "options": [
+      "-1",
+      "\\(2\\sqrt{3}\\)",
+      "1",
+      "\\(\\sqrt{3}\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 13/09/2024 (1st Shift)"
+  },
+  {
+    "id": 323,
+    "text": "If \\(\\frac{1}{1 - \\sin\\theta} + \\frac{1}{1 + \\sin\\theta} = 4\\sec\\theta\\) \\((0^\\circ < \\theta < 90^\\circ)\\), then the value of \\(\\cos\\theta + \\cos\\theta\\) is:",
+    "options": [
+      "\\(\\sqrt{3}\\)",
+      "\\(\\sqrt{6}\\)",
+      "\\(\\sqrt{2}\\)",
+      "\\(\\sqrt{5}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 13/09/2024 (1st Shift)"
+  },
+  {
+    "id": 324,
+    "text": "If \\(\\sin 31^\\circ = \\alpha\\), then the value of \\(\\cot 59^\\circ\\) is:",
+    "options": [
+      "\\(\\frac{\\sqrt{1 - \\alpha^2}}{2\\alpha}\\)",
+      "\\(\\frac{\\alpha}{\\sqrt{1 - \\alpha^2}}\\)",
+      "\\(\\frac{\\sqrt{1 + \\alpha^2}}{\\alpha}\\)",
+      "\\(\\frac{\\alpha}{\\sqrt{1 + \\alpha^2}}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 13/09/2024 (1st Shift)"
+  },
+  {
+    "id": 325,
+    "text": "If \\(\\frac{\\tan x}{\\sec x} = \\frac{1}{2}\\), then the value of \\((\\sin x + \\cos x)^2\\) is:",
+    "options": [
+      "\\(\\frac{2 + \\sqrt{3}}{3}\\)",
+      "\\(\\frac{2 + \\sqrt{3}}{2}\\)",
+      "\\(\\frac{2 - \\sqrt{3}}{2}\\)",
+      "\\(\\frac{2 - \\sqrt{3}}{3}\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 13/09/2024 (2nd Shift)"
+  },
+  {
+    "id": 326,
+    "text": "If \\(\\tan A = \\frac{5}{7}\\), then find the value of \\(\\frac{7\\sin A - 3\\cos A}{7\\sin A + 3\\cos A} + 4\\).",
+    "options": [
+      "\\(\\frac{1}{4}\\)",
+      "\\(\\frac{3}{5}\\)",
+      "\\(\\frac{1}{5}\\)",
+      "\\(\\frac{7}{3}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 13/09/2024 (2nd Shift)"
+  },
+  {
+    "id": 327,
+    "text": "If \\(\\sin B = \\frac{15}{17}\\), what is the value of \\(\\cos B (\\sec B - \\tan B)\\)? Given that \\(0 < B < \\frac{\\pi}{2}\\)",
+    "options": [
+      "\\(\\frac{1}{16}\\)",
+      "\\(\\frac{2}{15}\\)",
+      "\\(\\frac{8}{15}\\)",
+      "\\(\\frac{2}{17}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 13/09/2024 (2nd Shift)"
+  },
+  {
+    "id": 328,
+    "text": "The value of \\(\\frac{\\cos A}{\\cos A + 1} + \\frac{\\sec A}{\\sec A - 1} + \\frac{\\sec A}{\\sec A + 1}\\), when \\(A = 60^\\circ\\) is:",
+    "options": [
+      "4",
+      "3",
+      "1",
+      "2"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 13/09/2024 (3rd Shift)"
+  },
+  {
+    "id": 329,
+    "text": "In a right angle \\(\\triangle ABC\\), \\(\\angle B = 90^\\circ\\), if \\(\\tan A = 1\\), then \\(4\\sin A \\cos A =\\)",
+    "options": [
+      "1",
+      "2",
+      "\\(\\frac{1}{2}\\)",
+      "4"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 17/09/2024 (1st Shift)"
+  },
+  {
+    "id": 330,
+    "text": "If \\(\\sec \\theta = \\frac{29}{20}\\) where \\(0^\\circ < \\theta < 90^\\circ\\), then what is the value of \\(3\\csc\\theta + 3\\cot\\theta\\)?",
+    "options": [
+      "\\(\\frac{7}{3}\\)",
+      "7",
+      "14",
+      "49"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 17/09/2024 (1st Shift)"
+  },
+  {
+    "id": 331,
+    "text": "If \\(\\cos 24^\\circ = \\frac{m}{n}\\), then the value of \\((\\csc 24^\\circ - \\cos 66^\\circ)\\) is:",
+    "options": [
+      "\\(\\frac{m^2}{n\\sqrt{m^2 - n^2}}\\)",
+      "\\(\\frac{n^2}{m\\sqrt{m^2 - n^2}}\\)",
+      "\\(\\frac{n^2}{m\\sqrt{n^2 - m^2}}\\)",
+      "\\(\\frac{m^2}{n\\sqrt{n^2 - m^2}}\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 17/09/2024 (1st Shift)"
+  },
+  {
+    "id": 332,
+    "text": "Find the value of \\(\\frac{4\\cos(90^\\circ - \\theta)\\sin^2(90^\\circ + \\theta) - 4\\sin(90^\\circ + \\theta)\\cos^2(90^\\circ - \\theta)}{\\cos(180^\\circ + \\theta)} = \\frac{1}{\\sqrt{1 + \\sin\\theta}}\\)",
+    "options": [
+      "-1",
+      "1",
+      "2",
+      "0"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 17/09/2024 (2nd Shift)"
+  },
+  {
+    "id": 333,
+    "text": "If \\(\\sin A + \\cos A = \\frac{1}{2\\sqrt{2}}\\), then find the value of \\(\\sin A + \\cos A\\).",
+    "options": [
+      "\\(\\frac{79}{128}\\)",
+      "\\(\\frac{7}{13}\\)",
+      "\\(\\frac{79}{126}\\)",
+      "\\(\\frac{5}{13}\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 17/09/2024 (2nd Shift)"
+  },
+  {
+    "id": 334,
+    "text": "If \\(a = x\\cos\\theta + y\\sin\\theta\\) and \\(b = x\\sin\\theta - y\\cos\\theta\\), then \\(a^2 + b^2\\) is equal to:",
+    "options": [
+      "\\(x + y\\)",
+      "\\(x^2 - y^2\\)",
+      "\\(x^2 + y^2\\)",
+      "\\(x - y\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 17/09/2024 (2nd Shift)"
+  },
+  {
+    "id": 335,
+    "text": "If \\(\\csc x = \\frac{5}{4}\\), then the value of \\(\\frac{5\\sin^2 x + 8\\cot^2 x}{27\\tan^2 x - 125\\cos^2 x}\\) is:",
+    "options": [
+      "\\(\\frac{33}{91}\\)",
+      "\\(\\frac{77}{30}\\)",
+      "\\(\\frac{55}{87}\\)",
+      "\\(\\frac{99}{47}\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 17/09/2024 (3rd Shift)"
+  },
+  {
+    "id": 336,
+    "text": "If \\(\\sin\\theta + \\cos\\theta = \\sqrt{3} \\cos\\theta\\), then the value of \\(\\cot\\theta\\) is:",
+    "options": [
+      "\\(\\sqrt{3} - 1\\)",
+      "\\(\\frac{\\sqrt{3} + 1}{2}\\)",
+      "\\(\\frac{\\sqrt{3} - 1}{2}\\)",
+      "\\(\\sqrt{3} + 1\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 17/09/2024 (3rd Shift)"
+  },
+  {
+    "id": 337,
+    "text": "If \\(\\sec(t) = \\frac{x}{y}\\), then \\(\\cot(t)\\) is equal to:",
+    "options": [
+      "\\(\\frac{y}{\\sqrt{x^2 - y^2}}\\)",
+      "\\(\\frac{x}{\\sqrt{x^2 + y^2}}\\)",
+      "\\(\\frac{x}{\\sqrt{x^2 - y^2}}\\)",
+      "\\(\\frac{y}{\\sqrt{x^2 + y^2}}\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 18/09/2024 (1st Shift)"
+  },
+  {
+    "id": 338,
+    "text": "If \\(3\\sin^2\\theta + 5\\cos^2\\theta = 4\\) and \\(\\theta\\) is an acute angle, then the value of \\(\\tan\\theta\\) is:",
+    "options": [
+      "\\(\\frac{1}{\\sqrt{2}}\\)",
+      "\\(\\frac{1}{\\sqrt{3}}\\)",
+      "\\(\\frac{1}{2}\\)",
+      "1"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 19/09/2024 (1st Shift)"
+  },
+  {
+    "id": 339,
+    "text": "The maximum value of \\((2\\sin\\theta + 3\\cos\\theta)\\) is:",
+    "options": [
+      "\\(\\sqrt{17}\\)",
+      "\\(\\sqrt{11}\\)",
+      "9",
+      "\\(\\sqrt{13}\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 19/09/2024 (2nd Shift)"
+  },
+  {
+    "id": 340,
+    "text": "Simplify \\([1 - \\sin^2 32^\\circ + \\frac{1}{1 + \\tan^2 58^\\circ}]\\)",
+    "options": [
+      "\\(\\frac{1}{2}\\)",
+      "\\(\\sin 32^\\circ\\)",
+      "1",
+      "\\(\\sqrt{3}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 19/09/2024 (2nd Shift)"
+  },
+  {
+    "id": 341,
+    "text": "If \\(\\tan\\theta = \\frac{5}{8}\\), then find the value of \\(\\frac{(1 + \\cos\\theta)(1 - \\cos\\theta)}{(1 + \\sin\\theta)(1 - \\sin\\theta)}\\).",
+    "options": [
+      "\\(\\frac{5}{64}\\)",
+      "\\(\\frac{2}{25}\\)",
+      "\\(\\frac{25}{64}\\)",
+      "\\(\\frac{64}{25}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 19/09/2024 (3rd Shift)"
+  },
+  {
+    "id": 342,
+    "text": "If \\(\\tan\\theta + \\cot\\theta = 2\\) and \\(\\theta\\) is an acute angle, then the value of \\(\\theta\\) is:",
+    "options": [
+      "\\(30^\\circ\\)",
+      "\\(15^\\circ\\)",
+      "\\(60^\\circ\\)",
+      "\\(45^\\circ\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 19/09/2024 (3rd Shift)"
+  },
+  {
+    "id": 343,
+    "text": "If A is an acute angle, then \\(\\sqrt{\\frac{1 - \\cos A}{1 + \\cos A}} + \\sqrt{\\frac{1 + \\cos A}{1 - \\cos A}}\\)",
+    "options": [
+      "\\(2\\csc A\\)",
+      "\\(2\\cos A\\)",
+      "\\(2\\sec A\\)",
+      "\\(2\\sin A\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 19/09/2024 (3rd Shift)"
+  },
+  {
+    "id": 344,
+    "text": "The value of \\(\\theta\\) when \\(\\sqrt{3}\\cos\\theta + \\sin\\theta = 1\\) (\\(1 \\le \\theta \\le 90^\\circ\\)), is:",
+    "options": [
+      "\\(20^\\circ\\)",
+      "\\(60^\\circ\\)",
+      "\\(90^\\circ\\)",
+      "\\(30^\\circ\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 23/09/2024 (1st Shift)"
+  },
+  {
+    "id": 345,
+    "text": "Let \\(x = r \\cos t\\), \\(y = r \\sin t \\cos u\\), \\(z = r \\sin t \\sin u\\). Then the value of \\(x^2 + y^2 + z^2\\) is",
+    "options": [
+      "\\(r^2 \\cos u\\)",
+      "\\(r^2\\)",
+      "\\(2r\\)",
+      "\\(r^2 \\sin t\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 23/09/2024 (1st Shift)"
+  },
+  {
+    "id": 346,
+    "text": "If \\(4\\tan\\theta - 3 = 0\\), then the value of \\(\\frac{1 - \\cos 2\\theta}{1 + \\cos 2\\theta}\\) is:",
+    "options": [
+      "1",
+      "\\(\\frac{7}{15}\\)",
+      "\\(\\frac{4}{3}\\)",
+      "\\(\\frac{9}{16}\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 23/09/2024 (1st Shift)"
+  },
+  {
+    "id": 347,
+    "text": "If \\(\\sin A - \\cos A = \\frac{\\sqrt{3} - \\sqrt{2}}{2}\\), then the value of \\(\\sin A \\cdot \\cos A\\) is:",
+    "options": [
+      "\\(\\frac{2\\sqrt{3} - 1}{4}\\)",
+      "\\(\\frac{2\\sqrt{2} - 1}{8}\\)",
+      "\\(\\frac{2\\sqrt{6} - 1}{8}\\)",
+      "\\(\\frac{3\\sqrt{2} - 1}{4}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 23/09/2024 (2nd Shift)"
+  },
+  {
+    "id": 348,
+    "text": "If \\(\\cos A + \\cos^2 A = 1\\) then \\(\\sin^2 A + \\sin^2 A\\) is equal to:",
+    "options": [
+      "\\(\\frac{\\cos^2 A}{\\cos A}\\)",
+      "\\(\\frac{\\cos A}{\\cos^2 A}\\)",
+      "\\(\\cos A\\)",
+      "1"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 23/09/2024 (2nd Shift)"
+  },
+  {
+    "id": 349,
+    "text": "The value of \\(\\frac{1}{\\cos\\theta} - \\cot\\theta \\cdot \\frac{1}{\\sin\\theta}\\) is equal to:",
+    "options": [
+      "\\(\\tan\\theta\\)",
+      "\\(\\csc\\theta\\)",
+      "\\(\\cot\\theta\\)",
+      "\\(\\sec\\theta\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 23/09/2024 (2nd Shift)"
+  },
+  {
+    "id": 350,
+    "text": "The value of \\(\\frac{\\sin^2\\theta - 2\\sin^4\\theta}{2\\cos^4\\theta + \\cos^2\\theta}\\) at \\(\\theta = 45^\\circ\\)",
+    "options": [
+      "1",
+      "0",
+      "3",
+      "2"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 23/09/2024 (3rd Shift)"
+  },
+  {
+    "id": 351,
+    "text": "For what value of \\(t\\) is the value of \\(\\sin^2 t\\), half of the value of \\(\\tan t\\)?",
+    "options": [
+      "\\(60^\\circ\\)",
+      "\\(45^\\circ\\)",
+      "\\(30^\\circ\\)",
+      "\\(22.5^\\circ\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 23/09/2024 (3rd Shift)"
+  },
+  {
+    "id": 352,
+    "text": "If \\(\\tan A = \\frac{1}{\\sqrt{10}}\\) A is an acute angle, then the value of \\(\\sin A + \\csc A\\) is:",
+    "options": [
+      "\\(\\frac{11}{\\sqrt{10}}\\)",
+      "\\(\\frac{1}{\\sqrt{10}}\\)",
+      "\\(\\frac{12}{\\sqrt{11}}\\)",
+      "\\(\\frac{10}{\\sqrt{11}}\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 23/09/2024 (3rd Shift)"
+  },
+  {
+    "id": 353,
+    "text": "If \\(\\sec\\theta = \\sqrt{2}\\), then \\(\\csc\\theta\\) is equal to:",
+    "options": [
+      "0",
+      "\\(\\sqrt{2}\\)",
+      "-1",
+      "1"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 24/09/2024 (1st Shift)"
+  },
+  {
+    "id": 354,
+    "text": "If \\(2\\sin^2\\theta + 3\\sin\\theta - 2 = 0\\), \\((0^\\circ < \\theta < 90^\\circ)\\), then the value of \\(\\theta\\) is:",
+    "options": [
+      "\\(15^\\circ\\)",
+      "\\(30^\\circ\\)",
+      "\\(60^\\circ\\)",
+      "\\(45^\\circ\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 24/09/2024 (1st Shift)"
+  },
+  {
+    "id": 355,
+    "text": "If \\(\\sin 3A = \\cos(A - 26^\\circ)\\), then \\(A =\\) where \\(3A\\) is an acute angle.",
+    "options": [
+      "\\(29^\\circ\\)",
+      "\\(52^\\circ\\)",
+      "\\(26^\\circ\\)",
+      "\\(78^\\circ\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 24/09/2024 (1st Shift)"
+  },
+  {
+    "id": 356,
+    "text": "The value of \\((\\sin A + \\csc A)^2 + (\\cos A + \\sec A)^2\\) is:",
+    "options": [
+      "\\(3 + \\tan^2 A + \\cot^2 A\\)",
+      "\\(7 + \\tan^2 A + \\cot^2 A\\)",
+      "\\(5 + \\tan^2 A + \\cot^2 A\\)",
+      "\\(1 + \\tan^2 A + \\cot^2 A\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 24/09/2024 (2nd Shift)"
+  },
+  {
+    "id": 357,
+    "text": "If \\(m = \\sec \\theta - \\tan \\theta\\) and \\(n = \\csc \\theta + \\cot \\theta\\), then what is the value of \\(m + n (m - 1)\\)?",
+    "options": [
+      "0",
+      "2",
+      "1",
+      "-1"
+    ],
+    "correct": "a",
+    "exam": "SSC CHSL 13/03/2023 (2nd Shift)"
+  },
+  {
+    "id": 358,
+    "text": "\\(\\triangle ABC\\) is a right angled triangle. \\(\\angle A = 90^\\circ\\), \\(AB = 4\\) cm, \\(BC = 5\\) cm. What is the value of \\(\\cos B + \\cot C\\)?",
+    "options": [
+      "\\(\\frac{17}{20}\\)",
+      "\\(\\frac{29}{20}\\)",
+      "\\(\\frac{23}{20}\\)",
+      "\\(\\frac{31}{20}\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CHSL 13/03/2023 (3rd Shift)"
+  },
+  {
+    "id": 359,
+    "text": "If \\(\\triangle PQR\\) is right angled at Q, then what is the value of \\(\\cos (P + R)\\)?",
+    "options": [
+      "0.5",
+      "1",
+      "0.2",
+      "0"
+    ],
+    "correct": "d",
+    "exam": "SSC CHSL 13/03/2023 (4th Shift)"
+  },
+  {
+    "id": 360,
+    "text": "If \\(\\sqrt{3} \\tan^2 \\theta - 4 \\tan \\theta + \\sqrt{3} = 0\\), then what is the value of \\(\\tan^2 \\theta + \\cot^2 \\theta\\)?",
+    "options": [
+      "\\(\\frac{4}{3}\\)",
+      "\\(\\frac{10}{3}\\)",
+      "3",
+      "\\(\\frac{6}{5}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 13/03/2023 (4th Shift)"
+  },
+  {
+    "id": 361,
+    "text": "If \\(6\\cot\\theta = 5\\), then find the value of \\(\\frac{6\\cos\\theta + \\sin\\theta}{6\\cos\\theta - 4\\sin\\theta}\\)?",
+    "options": [
+      "5",
+      "1",
+      "6",
+      "0"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 14/03/2023 (2nd Shift)"
+  },
+  {
+    "id": 362,
+    "text": "If \\(-\\sin\\theta + \\csc\\theta = 6\\), then what is the value of \\(\\sin\\theta + \\csc\\theta\\)?",
+    "options": [
+      "6",
+      "\\(\\sqrt{40}\\)",
+      "\\(\\sqrt{34}\\)",
+      "\\(\\sqrt{38}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 14/03/2023 (2nd Shift)"
+  },
+  {
+    "id": 363,
+    "text": "If \\(\\sqrt{2} \\sec^2 \\theta - 4 \\sec \\theta + 2\\sqrt{2} = 0\\), then what is the value of \\(\\sin^2 \\theta + \\tan^2 \\theta\\)?",
+    "options": [
+      "\\(\\frac{1}{2}\\)",
+      "\\(\\frac{2}{3}\\)",
+      "\\(\\frac{5}{2}\\)",
+      "\\(\\frac{3}{2}\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CHSL 14/03/2023 (3rd Shift)"
+  },
+  {
+    "id": 364,
+    "text": "What is the value of \\(\\frac{\\sin\\theta + \\cos\\theta}{\\sin\\theta - \\cos\\theta} + \\frac{\\sin\\theta - \\cos\\theta}{\\sin\\theta + \\cos\\theta}\\)?",
+    "options": [
+      "\\(\\frac{1}{(\\sin^2\\theta - \\cos^2\\theta)}\\)",
+      "\\(2(\\sin^2\\theta - \\cos^2\\theta)\\)",
+      "\\(\\frac{2}{(\\sin^2\\theta - \\cos^2\\theta)}\\)",
+      "\\(\\sin^2\\theta - \\cos^2\\theta\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 14/03/2023 (4th Shift)"
+  },
+  {
+    "id": 365,
+    "text": "Simplify the following expression: \\(\\frac{1 - \\sin A}{\\cos A} + \\frac{\\cos A}{1 - \\sin A}\\)",
+    "options": [
+      "\\(2\\sin A\\)",
+      "\\(2\\cos A\\)",
+      "\\(2\\sec A\\)",
+      "\\(2\\tan A\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 15/03/2023 (1st Shift)"
+  },
+  {
+    "id": 366,
+    "text": "If \\(\\sec x + \\tan x = 5\\) and \\(\\csc y - \\cot y = \\frac{1}{3}\\) then find the value of \\((\\sec x + \\csc y) - (\\tan x - \\cot y)\\).",
+    "options": [
+      "2.2",
+      "3.2",
+      "4.2",
+      "3.1"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 15/03/2023 (1st Shift)"
+  },
+  {
+    "id": 367,
+    "text": "If \\(A = a \\csc \\theta + b \\cot \\theta\\) and \\(B = a \\cot \\theta + b \\csc \\theta\\), then what is the value of \\(A^2 - B^2\\)?",
+    "options": [
+      "\\(ab\\)",
+      "\\((a + b)\\)",
+      "\\((a^2 - b^2)\\)",
+      "\\((a - b)\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 15/03/2023 (4th Shift)"
+  },
+  {
+    "id": 368,
+    "text": "If \\(\\csc \\theta + \\cot \\theta = s\\), then what is the value of \\(\\cos \\theta\\)?",
+    "options": [
+      "\\(\\frac{s^2 - 1}{s^2 + 1}\\)",
+      "\\(\\frac{s^2 + 1}{s^2 - 1}\\)",
+      "\\(\\frac{s^2 - 1}{2s}\\)",
+      "\\(\\frac{2s}{s^2 + 1}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 16/03/2023 (2nd Shift)"
+  },
+  {
+    "id": 369,
+    "text": "Find the value of \\(\\tan x\\), if \\(\\sec x + \\tan x = \\sqrt{3}\\) and x lies between \\(0^\\circ\\) and \\(90^\\circ\\).",
+    "options": [
+      "\\(\\sqrt{3}\\)",
+      "1",
+      "\\(\\frac{1}{\\sqrt{3}}\\)",
+      "0"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 16/03/2023 (3rd Shift)"
+  },
+  {
+    "id": 370,
+    "text": "Tan of complementary of an angle is same as which of the angles?",
+    "options": [
+      "sin of that angle",
+      "cot of that angle",
+      "cos of that angle",
+      "cosec of that angle"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 17/03/2023 (1st Shift)"
+  },
+  {
+    "id": 371,
+    "text": "If \\(\\sec \\theta + \\tan \\theta = 2\\), then what is the value of \\(\\cot \\theta\\)?",
+    "options": [
+      "\\(\\frac{5}{3}\\)",
+      "\\(\\frac{3}{5}\\)",
+      "\\(\\frac{4}{3}\\)",
+      "\\(\\frac{3}{4}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 17/03/2023 (2nd Shift)"
+  },
+  {
+    "id": 372,
+    "text": "What is the value of \\((\\tan 10^\\circ \\tan 80^\\circ + \\tan 20^\\circ \\tan 70^\\circ + \\tan 30^\\circ \\tan 60^\\circ + \\tan 40^\\circ \\tan 50^\\circ)\\)?",
+    "options": [
+      "4",
+      "3",
+      "5",
+      "2"
+    ],
+    "correct": "a",
+    "exam": "SSC CHSL 17/03/2023 (4th Shift)"
+  },
+  {
+    "id": 373,
+    "text": "What is the value of \\(\\frac{\\cot\\theta + \\csc\\theta - 1}{\\cot\\theta - \\csc\\theta + 1}\\)?",
+    "options": [
+      "\\(2\\sec\\theta\\)",
+      "\\(2\\csc\\theta\\)",
+      "\\(2\\cot\\theta\\)",
+      "\\(\\cot\\theta + \\csc\\theta\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CHSL 20/03/2023 (2nd Shift)"
+  },
+  {
+    "id": 374,
+    "text": "If \\(6\\sec\\theta = 10\\), then find the value of \\(\\frac{5\\cos\\theta - 3\\cos\\theta}{4\\cos\\theta + 3\\sin\\theta}\\)?",
+    "options": [
+      "\\(\\frac{2}{3}\\)",
+      "\\(\\frac{3}{2}\\)",
+      "\\(\\frac{5}{6}\\)",
+      "\\(\\frac{6}{5}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 20/03/2023 (3rd Shift)"
+  },
+  {
+    "id": 375,
+    "text": "What is the value of \\(\\csc A (1 - \\cos A)(\\csc A + \\cot A)\\)?",
+    "options": [
+      "2",
+      "1",
+      "0",
+      "3"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 21/03/2023 (2nd Shift)"
+  },
+  {
+    "id": 376,
+    "text": "If \\(\\frac{2\\cos^3 A - \\cos A}{\\sin A - 2\\sin^3 A} = 1\\), then what is the value of A?",
+    "options": [
+      "\\(90^\\circ\\)",
+      "\\(30^\\circ\\)",
+      "\\(45^\\circ\\)",
+      "\\(60^\\circ\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 21/03/2023 (2nd Shift)"
+  },
+  {
+    "id": 377,
+    "text": "\\((\\sin\\theta + \\csc\\theta)^2 + (\\cos\\theta + \\sec\\theta)^2 = ?\\)",
+    "options": [
+      "\\(5 + \\tan^2\\theta + \\cot^2\\theta\\)",
+      "\\(7 + \\tan^2\\theta - \\cot^2\\theta\\)",
+      "\\(7 + \\tan^2\\theta + \\cot^2\\theta\\)",
+      "\\(5 + \\tan^2\\theta - \\cot^2\\theta\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL Tier II (07/03/2023)"
+  },
+  {
+    "id": 378,
+    "text": "The value of \\(\\tan^2\\theta + \\cot^2\\theta - \\sec^2\\theta \\csc^2\\theta\\) is:",
+    "options": [
+      "2",
+      "-2",
+      "0",
+      "\\(\\frac{1}{2}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 01/12/2022 (1st Shift)"
+  },
+  {
+    "id": 379,
+    "text": "What is \\(\\sin\\alpha - \\sin\\beta\\)?",
+    "options": [
+      "\\(2\\cos\\frac{\\alpha + \\beta}{2} \\sin\\frac{\\alpha - \\beta}{2}\\)",
+      "\\(2\\sin\\frac{\\alpha + \\beta}{2} \\sin\\frac{\\alpha - \\beta}{2}\\)",
+      "\\(2\\cos\\frac{\\alpha - \\beta}{2} \\sin\\frac{\\alpha + \\beta}{2}\\)",
+      "\\(2\\cos\\frac{\\alpha + \\beta}{2} \\sin\\frac{\\alpha + \\beta}{2}\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 01/12/2022 (2nd Shift)"
+  },
+  {
+    "id": 380,
+    "text": "\\(\\frac{1}{1 + \\cos(90^\\circ - \\theta)} + \\frac{1}{1 - \\cos(90^\\circ - \\theta)} =\\)",
+    "options": [
+      "\\(2\\sec^2\\theta\\)",
+      "1",
+      "0",
+      "\\(2\\tan^2\\theta\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 03/12/2022 (1st Shift)"
+  },
+  {
+    "id": 381,
+    "text": "\\(\\sin^4\\theta + \\cos^4\\theta\\) in terms of \\(\\sin\\theta\\) can be written as:",
+    "options": [
+      "\\(2\\sin^4\\theta + 2\\sin^2\\theta - 1\\)",
+      "\\(2\\sin^4\\theta - 2\\sin^2\\theta\\)",
+      "\\(2\\sin^4\\theta - 2\\sin^2\\theta - 1\\)",
+      "\\(2\\sin^4\\theta - 2\\sin^2\\theta + 1\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 03/12/2022 (2nd Shift)"
+  },
+  {
+    "id": 382,
+    "text": "Simplify the following : \\(\\frac{\\cos x - \\sqrt{3}\\sin x}{2}\\)",
+    "options": [
+      "\\(\\cos(\\frac{\\pi}{3} - x)\\)",
+      "\\(\\sin(\\frac{\\pi}{3} + x)\\)",
+      "\\(\\cos(\\frac{\\pi}{3} + x)\\)",
+      "\\(\\sin(\\frac{\\pi}{3} - x)\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 03/12/2022 (3rd Shift)"
+  },
+  {
+    "id": 383,
+    "text": "The value of \\(\\sqrt{\\frac{1 + \\cos A}{1 - \\cos A}}\\) is:",
+    "options": [
+      "\\(\\sec A - \\tan A\\)",
+      "\\(\\csc A + \\cot A\\)",
+      "\\(\\sec A + \\tan A\\)",
+      "\\(\\csc A - \\cot A\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 03/12/2022 (4th Shift)"
+  },
+  {
+    "id": 384,
+    "text": "If \\(\\sin \\theta + \\cos \\theta = \\frac{\\sqrt{3} - 1}{2\\sqrt{2}}\\) then what is the value of \\(\\tan\\theta + \\cot\\theta\\)?",
+    "options": [
+      "\\(8(\\sqrt{3} - 2)\\)",
+      "\\(12(\\sqrt{3} - 2)\\)",
+      "\\(12(\\sqrt{3} + 2)\\)",
+      "\\(8(\\sqrt{3} + 2)\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 05/12/2022 (1st Shift)"
+  },
+  {
+    "id": 385,
+    "text": "If \\(\\sec 2\\theta = \\cos (\\theta - 36^\\circ)\\), where \\(2\\theta\\) is an acute angle, find the value of \\(\\theta\\).",
+    "options": [
+      "\\(32^\\circ\\)",
+      "\\(46^\\circ\\)",
+      "\\(20^\\circ\\)",
+      "\\(42^\\circ\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 05/12/2022 (1st Shift)"
+  },
+  {
+    "id": 386,
+    "text": "What will be the value of \\(\\cos x \\csc x - \\sin x \\sec x\\)?",
+    "options": [
+      "\\(\\cot 2x\\)",
+      "\\(\\tan 2x\\)",
+      "\\(\\cot 2x\\)",
+      "\\(2\\cot 2x\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 05/12/2022 (2nd Shift)"
+  },
+  {
+    "id": 387,
+    "text": "\\(\\cot^2 A - \\cos^2 A\\) is equal to :",
+    "options": [
+      "\\(\\cos^2 A \\sin^2 A\\)",
+      "\\(\\cos^2 A \\cot^2 A\\)",
+      "1",
+      "0"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 05/12/2022 (3rd Shift)"
+  },
+  {
+    "id": 388,
+    "text": "If \\(\\sin \\theta = a\\), then \\(\\sec \\theta + \\tan \\theta = ?\\)",
+    "options": [
+      "\\(\\sqrt{\\frac{b + a}{b - a}}\\)",
+      "\\(\\sqrt{\\frac{1}{b - a}}\\)",
+      "\\(\\sqrt{\\frac{1}{b - a}}\\)",
+      "\\(\\sqrt{\\frac{b - a}{b + a}}\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 06/12/2022 (1st Shift)"
+  },
+  {
+    "id": 389,
+    "text": "What will be the value of \\(\\sin 10^\\circ - \\frac{4}{3}\\sin^3 10^\\circ\\)?",
+    "options": [
+      "\\(\\frac{1}{3\\sqrt{3}}\\)",
+      "\\(\\frac{1}{6}\\)",
+      "\\(\\frac{1}{2\\sqrt{3}}\\)",
+      "\\(\\frac{\\sqrt{3}}{6}\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 06/12/2022 (1st Shift)"
+  },
+  {
+    "id": 390,
+    "text": "What is the value of \\(\\cos(-\\frac{17\\pi}{3})\\)?",
+    "options": [
+      "1",
+      "\\(\\frac{\\sqrt{3}}{2}\\)",
+      "\\(\\frac{1}{2}\\)",
+      "0"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 06/12/2022 (2nd Shift)"
+  },
+  {
+    "id": 391,
+    "text": "Solve the following to find its value in terms of trigonometric ratios. \\((\\sin A + \\cos A)(1 - \\sin A \\cos A)\\)",
+    "options": [
+      "\\(\\sin^3 A + \\cos^3 A\\)",
+      "\\(\\sin^2 A - \\cos^2 A\\)",
+      "\\((\\cos A - \\sin A)(\\sin^2 A + \\cos^2 A)\\)",
+      "\\(\\sin^3 A - \\cos^3 A\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 06/12/2022 (3rd Shift)"
+  },
+  {
+    "id": 392,
+    "text": "If \\(\\sec \\theta - 2\\cos \\theta = \\frac{7}{2}\\), where \\(\\theta\\) is a positive acute angle, then the value of \\(\\sec \\theta\\) is:",
+    "options": [
+      "6",
+      "8",
+      "5",
+      "4"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 06/12/2022 (4th Shift)"
+  },
+  {
+    "id": 393,
+    "text": "Find the value of \\(\\tan 3\\theta\\) if \\(\\sec 3\\theta = \\cos (4\\theta - 15^\\circ)\\).",
+    "options": [
+      "\\(\\frac{1}{\\sqrt{3}}\\)",
+      "\\(\\sqrt{3}\\)",
+      "-1",
+      "1"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 06/12/2022 (4th Shift)"
+  },
+  {
+    "id": 394,
+    "text": "If \\(\\tan A - \\tan B - \\tan C = \\tan A \\tan B \\tan C\\), what is the value of A in terms of B and C?",
+    "options": [
+      "\\(A = B + C\\)",
+      "\\(A = 2B - 2C\\)",
+      "\\(A = B - C\\)",
+      "\\(A = \\frac{B - C}{2}\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 07/12/2022 (1st Shift)"
+  },
+  {
+    "id": 395,
+    "text": "If \\(\\tan^2 \\alpha = 3 + Q^2\\), then \\(\\sec \\alpha + \\tan^3 \\alpha \\csc \\alpha = ?\\)",
+    "options": [
+      "\\((3 + Q^2)^{\\frac{3}{2}}\\)",
+      "\\((7 + Q^2)^{\\frac{3}{2}}\\)",
+      "\\((5 - Q^2)^{\\frac{3}{2}}\\)",
+      "\\((4 + Q^2)^{\\frac{3}{2}}\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 07/12/2022 (1st Shift)"
+  },
+  {
+    "id": 396,
+    "text": "If \\(1 + \\sin \\theta = \\cos \\theta\\), then what is the value of \\(\\sin \\theta\\)?",
+    "options": [
+      "\\(\\frac{2m^2 - 1}{m^2 + 1}\\)",
+      "\\(\\frac{m^2 - 1}{m^2 + 1}\\)",
+      "\\(\\frac{m^2 + 1}{2m^2 - 1}\\)",
+      "\\(\\frac{m^2 + 1}{m^2 - 1}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 07/12/2022 (2nd Shift)"
+  },
+  {
+    "id": 397,
+    "text": "Find the value of the following expression. \\(5(\\sin^4 \\theta + \\cos^4 \\theta) + 3(\\sin^6 \\theta + \\cos^6 \\theta) + 19\\sin^2 \\theta \\cos^2 \\theta\\)",
+    "options": [
+      "8",
+      "5",
+      "6",
+      "7"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 07/12/2022 (3rd Shift)"
+  },
+  {
+    "id": 398,
+    "text": "If \\(\\sin Y = x\\), then what will be the value of \\(\\cos 2Y\\) (where \\(0 \\leq Y \\leq 90^\\circ\\))?",
+    "options": [
+      "\\((\\sqrt{2} - 1)x\\)",
+      "\\(\\sqrt{2}x\\)",
+      "\\(1 - 2x\\)",
+      "\\(1 - 2x^2\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 08/12/2022 (1st Shift)"
+  },
+  {
+    "id": 399,
+    "text": "If \\(A + B = C\\), then \\(\\tan A \\tan B \\tan C = ?\\)",
+    "options": [
+      "\\(\\tan C + \\tan A - \\tan B\\)",
+      "\\(\\tan C + \\tan A + \\tan B\\)",
+      "\\(\\tan A - \\tan B - \\tan C\\)",
+      "\\(\\tan C - \\tan A - \\tan B\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 08/12/2022 (1st Shift)"
+  },
+  {
+    "id": 400,
+    "text": "If \\(x = 8(\\sin \\theta + \\cos \\theta)\\) and \\(y = 9(\\sin \\theta - \\cos \\theta)\\), then the value of \\(\\frac{x^2}{8^2} + \\frac{y^2}{9^2}\\) is:",
+    "options": [
+      "4",
+      "6",
+      "8",
+      "2"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 08/12/2022 (1st Shift)"
+  },
+  {
+    "id": 401,
+    "text": "\\(\\theta = 135^\\circ\\); \\(y = 15^\\circ\\). What is the value of \\(\\cos \\theta \\sin y\\)?",
+    "options": [
+      "\\(\\frac{\\sqrt{3} - 1}{2}\\)",
+      "\\(\\frac{1 - \\sqrt{3}}{2}\\)",
+      "\\(2 - \\sqrt{3}\\)",
+      "\\(\\sqrt{3} - 2\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 08/12/2022 (3rd Shift)"
+  },
+  {
+    "id": 402,
+    "text": "If \\(\\sec x - \\cos x = 4\\), then what will be the value of \\(\\frac{1 + \\cos^2 x}{\\cos x}\\)?",
+    "options": [
+      "\\(\\frac{9}{4}\\)",
+      "\\(\\frac{1}{4}\\)",
+      "\\(2\\sqrt{5}\\)",
+      "\\(\\sqrt{5}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 08/12/2022 (3rd Shift)"
+  },
+  {
+    "id": 403,
+    "text": "If \\(\\tan A \\tan B + \\frac{\\cos x}{\\cos A \\cos B} = 1\\), then \\(x = ?\\)",
+    "options": [
+      "B",
+      "A",
+      "\\(A + B\\)",
+      "\\(A - B\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 08/12/2022 (4th Shift)"
+  },
+  {
+    "id": 404,
+    "text": "\\(\\cos^3 60^\\circ - \\cos^3 240^\\circ - \\cos^3 360^\\circ =\\)",
+    "options": [
+      "\\(\\frac{-3}{4}\\)",
+      "\\(\\frac{-7}{5}\\)",
+      "\\(\\frac{-3}{5}\\)",
+      "\\(\\frac{-9}{7}\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 09/12/2022 (1st Shift)"
+  },
+  {
+    "id": 405,
+    "text": "If \\(5\\sin^2 A + 3\\cos^2 A = 4\\), \\(0 < A < 90^\\circ\\), then what is the value of \\(\\tan A\\)?",
+    "options": [
+      "0",
+      "3",
+      "1",
+      "2"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 09/12/2022 (1st Shift)"
+  },
+  {
+    "id": 406,
+    "text": "If \\(\\frac{\\sin \\theta + \\cos \\theta}{\\sin \\theta - \\cos \\theta} = \\frac{3}{2}\\), then the value of \\(\\sin^4 \\theta - \\cos^4 \\theta\\) is",
+    "options": [
+      "\\(\\frac{5}{12}\\)",
+      "\\(\\frac{12}{13}\\)",
+      "\\(\\frac{11}{12}\\)",
+      "\\(\\frac{5}{13}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 09/12/2022 (2nd Shift)"
+  },
+  {
+    "id": 407,
+    "text": "If \\(\\sin^2 \\theta \\cos^2 \\theta = \\frac{2}{9}\\), then what will be the value of \\(\\cos^2 \\theta + \\sec^2 \\theta\\)?",
+    "options": [
+      "\\(\\frac{7}{2}\\)",
+      "\\(\\frac{5}{2}\\)",
+      "\\(\\frac{9}{2}\\)",
+      "\\(9\\sqrt{2}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 09/12/2022 (3rd Shift)"
+  },
+  {
+    "id": 408,
+    "text": "If \\(2\\frac{\\cos^2 x - \\sec^2 x}{\\tan^2 x} = a + b \\cos 2x\\), then a, b = ?",
+    "options": [
+      "\\(\\frac{-3}{2}, \\frac{-1}{2}\\)",
+      "\\(\\frac{3}{2}, \\frac{1}{2}\\)",
+      "\\(-3, -1\\)",
+      "\\(3, 1\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 09/12/2022 (3rd Shift)"
+  },
+  {
+    "id": 409,
+    "text": "In the given figure, ABC is an isosceles triangle with \\(BC = 8\\) cm and \\(AB = AC = 5\\) cm. The value of \\(\\tan C - \\cot B\\) is",
+    "options": [
+      "\\(\\frac{-5}{12}\\)",
+      "\\(\\frac{-7}{12}\\)",
+      "\\(\\frac{7}{12}\\)",
+      "\\(\\frac{5}{12}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 09/12/2022 (4th Shift)"
+  },
+  {
+    "id": 410,
+    "text": "If \\(b \\cos \\theta = a\\), then \\(\\csc \\theta + \\cot \\theta =\\)",
+    "options": [
+      "\\(\\sqrt{\\frac{1}{b + a}}\\)",
+      "\\(\\sqrt{\\frac{b - a}{b + a}}\\)",
+      "\\(\\sqrt{\\frac{b + a}{b - a}}\\)",
+      "\\(\\sqrt{\\frac{1}{b - a}}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 09/12/2022 (4th Shift)"
+  },
+  {
+    "id": 411,
+    "text": "If \\(\\csc \\theta + \\cot \\theta = p\\), then the value of \\(\\frac{p^2 - 1}{p^2 + 1}\\) is:",
+    "options": [
+      "\\(\\cos \\theta\\)",
+      "\\(\\sin \\theta\\)",
+      "\\(\\cot \\theta\\)",
+      "\\(\\csc \\theta\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 12/12/2022 (1st Shift)"
+  },
+  {
+    "id": 412,
+    "text": "If \\(\\sin^2 \\theta - 3 \\sin \\theta + 2 = 0\\), then find the value of \\(\\theta\\) (\\(0^\\circ \\le \\theta \\le 90^\\circ\\)).",
+    "options": [
+      "\\(45^\\circ\\)",
+      "\\(0^\\circ\\)",
+      "\\(60^\\circ\\)",
+      "\\(90^\\circ\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 12/12/2022 (2nd Shift)"
+  },
+  {
+    "id": 413,
+    "text": "If \\(\\tan 30^\\circ \\cdot \\tan 70^\\circ = 1\\), where \\(70^\\circ\\) is an acute angle, then find the value of \\(\\cot 150^\\circ\\).",
+    "options": [
+      "1",
+      "-1",
+      "\\(-\\sqrt{3}\\)",
+      "\\(\\sqrt{3}\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 12/12/2022 (3rd Shift)"
+  },
+  {
+    "id": 414,
+    "text": "If \\(\\sin \\theta + 2\\sin^2 \\theta = 2\\), then the value of \\(2\\cos^4 \\theta + 2\\cos^2 \\theta\\) is:",
+    "options": [
+      "4",
+      "2",
+      "1",
+      "0"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 12/12/2022 (3rd Shift)"
+  },
+  {
+    "id": 415,
+    "text": "If \\(\\cos \\theta + \\cos^2 \\theta = 1\\), find the value of \\(\\sqrt{\\sin^4 \\theta + \\cos^2 \\theta}\\)",
+    "options": [
+      "\\(\\sqrt{2} \\cos \\theta\\)",
+      "\\(2 \\cos \\theta\\)",
+      "\\(\\sqrt{2} \\sin \\theta\\)",
+      "\\(2 \\sin \\theta\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 12/12/2022 (4th Shift)"
+  },
+  {
+    "id": 416,
+    "text": "If \\(\\sec^2 A + \\tan^2 A = 3\\), then what is the value of \\(\\cot A\\)?",
+    "options": [
+      "\\(\\frac{1}{\\sqrt{3}}\\)",
+      "0",
+      "1",
+      "\\(\\sqrt{3}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 13/12/2022 (1st Shift)"
+  },
+  {
+    "id": 417,
+    "text": "What is the value of \\(\\csc 15^\\circ \\sec 15^\\circ\\)?",
+    "options": [
+      "0.5",
+      "4",
+      "2",
+      "1"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 13/12/2022 (2nd Shift)"
+  },
+  {
+    "id": 418,
+    "text": "\\(\\frac{\\cos A}{1 - \\tan A} + \\frac{\\sin A}{1 - \\cot A} = ?\\)",
+    "options": [
+      "\\(\\tan A - \\cot A\\)",
+      "\\(\\tan A + \\cot A\\)",
+      "\\(\\sin A - \\cos A\\)",
+      "\\(\\sin A + \\cos A\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 13/12/2022 (2nd Shift)"
+  },
+  {
+    "id": 419,
+    "text": "If \\(\\tan 40^\\circ = a\\), then find \\(\\frac{\\tan 320^\\circ - \\tan 310^\\circ}{1 + \\tan 320^\\circ \\tan 310^\\circ}\\)",
+    "options": [
+      "\\(\\frac{1 - a^2}{a}\\)",
+      "\\(\\frac{1 + a^2}{2a}\\)",
+      "\\(\\frac{1 - a^2}{2a}\\)",
+      "\\(\\frac{1 + a^2}{a}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 13/12/2022 (3rd Shift)"
+  },
+  {
+    "id": 420,
+    "text": "If \\(\\tan(\\alpha + \\beta) = a\\), \\(\\tan(\\alpha - \\beta) = b\\) then the value of \\(\\tan 2\\alpha\\) is:",
+    "options": [
+      "\\(\\frac{a + b}{1 - ab}\\)",
+      "\\(\\frac{a + b}{1 + ab}\\)",
+      "\\(\\frac{a - b}{1 + ab}\\)",
+      "\\(\\frac{a - b}{1 - ab}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 13/12/2022 (4th Shift)"
+  },
+  {
+    "id": 421,
+    "text": "If \\(x = \\frac{2\\sin\\theta}{1 + \\cos\\theta + \\sin\\theta}\\) then the value of \\(\\frac{1 - \\cos\\theta + \\sin\\theta}{1 + \\sin\\theta}\\) is:",
+    "options": [
+      "\\(\\frac{x}{1 + x}\\)",
+      "\\(x\\)",
+      "\\(\\frac{1}{x}\\)",
+      "\\(\\frac{1 + x}{x}\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CPO 09/11/2022 (Morning)"
+  },
+  {
+    "id": 422,
+    "text": "If \\(\\left(\\frac{\\sec\\theta - 1}{\\sec\\theta + 1}\\right)^n = \\cos \\theta \\cdot \\cot \\theta\\) then \\(n = ?\\)",
+    "options": [
+      "1",
+      "0.5",
+      "-1",
+      "-0.5"
+    ],
+    "correct": "c",
+    "exam": "SSC CPO 09/11/2022 (Morning)"
+  },
+  {
+    "id": 423,
+    "text": "The value of \\((2\\cos^2\\theta - 1)\\left(\\frac{1 + \\tan\\theta}{1 - \\tan\\theta} + \\frac{1 - \\tan\\theta}{1 + \\tan\\theta}\\right)\\) is:",
+    "options": [
+      "2",
+      "0",
+      "\\(\\frac{\\sqrt{3}}{2}\\)",
+      "1"
+    ],
+    "correct": "b",
+    "exam": "SSC CPO 09/11/2022 (Morning)"
+  },
+  {
+    "id": 424,
+    "text": "Simplify. \\(\\frac{\\sin\\theta \\cos\\theta - \\sin\\theta \\cos\\theta}{\\cos 2\\theta \\cos \\theta - \\sin 3\\theta \\sin 4\\theta}\\)",
+    "options": [
+      "\\(\\cot\\theta\\)",
+      "\\(\\cot 2\\theta\\)",
+      "\\(\\tan\\theta\\)",
+      "\\(\\tan 2\\theta\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CPO 09/11/2022 (Afternoon)"
+  },
+  {
+    "id": 425,
+    "text": "The value of \\((1 + \\cot A - \\csc A)(1 + \\tan A + \\sec A) - 1\\) is:",
+    "options": [
+      "1",
+      "2",
+      "3",
+      "0"
+    ],
+    "correct": "b",
+    "exam": "SSC CPO 09/11/2022 (Afternoon)"
+  },
+  {
+    "id": 426,
+    "text": "Given that A and B are second quadrant angles, \\(\\sin A = \\frac{1}{3}\\) and \\(\\sin B = \\frac{1}{5}\\) then find the value of \\(\\cos (A - B)\\).",
+    "options": [
+      "\\(\\frac{4\\sqrt{3} + 1}{15}\\)",
+      "\\(\\frac{8\\sqrt{3} - 1}{15}\\)",
+      "\\(\\frac{8\\sqrt{3} + 1}{15}\\)",
+      "\\(\\frac{4\\sqrt{3} - 1}{15}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CPO 09/11/2022 (Evening)"
+  },
+  {
+    "id": 427,
+    "text": "What is the value of \\(\\frac{\\sin(A + B)}{\\cos A \\cos B}\\)?",
+    "options": [
+      "\\(1 + \\cot A \\tan B\\)",
+      "\\(1 + \\tan A \\cot B\\)",
+      "\\(1 - \\sin A \\cos B\\)",
+      "\\(1 - \\cot A \\tan B\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CPO 09/11/2022 (Evening)"
+  },
+  {
+    "id": 428,
+    "text": "The value of the expression \\(\\cos^2 45^\\circ + \\cos^2 135^\\circ + \\cos^2 225^\\circ + \\cos^2 315^\\circ\\) is:",
+    "options": [
+      "2",
+      "\\(\\frac{1}{2}\\)",
+      "\\(\\frac{3}{2}\\)",
+      "1"
+    ],
+    "correct": "a",
+    "exam": "SSC CPO 10/11/2022 (Morning)"
+  },
+  {
+    "id": 429,
+    "text": "If \\(1 + \\sin^2 \\theta - 3\\sin\\theta \\cos\\theta = 0\\), then the value of \\(\\cot\\theta\\) is:",
+    "options": [
+      "0",
+      "1",
+      "\\(\\frac{1}{2}\\)",
+      "\\(\\frac{1}{3}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CPO 11/11/2022 (Evening)"
+  },
+  {
+    "id": 430,
+    "text": "If \\(\\cos^4 \\alpha - \\sin^4 \\alpha = \\frac{5}{6}\\), then the value of \\(2\\cos^2 \\alpha - 1 = \\_\\_\\_\\_\\_\\).",
+    "options": [
+      "\\(\\frac{11}{6}\\)",
+      "\\(\\frac{5}{6}\\)",
+      "\\(\\frac{6}{11}\\)",
+      "\\(\\frac{6}{5}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CPO 11/11/2022 (Evening)"
+  },
+  {
+    "id": 431,
+    "text": "Which of the following is equal to \\(\\left[\\frac{\\cos\\theta}{\\sin\\theta} + \\frac{\\sin\\theta}{\\cos\\theta}\\right]\\)?",
+    "options": [
+      "\\(\\csc\\theta \\sec\\theta\\)",
+      "\\(\\sec\\theta \\tan\\theta\\)",
+      "\\(\\csc\\theta \\tan\\theta\\)",
+      "\\(\\cot\\theta \\sec\\theta\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL Tier II (08/08/2022)"
+  },
+  {
+    "id": 432,
+    "text": "What is the value of \\(\\frac{\\cos 50^\\circ}{\\sin 40^\\circ} + \\frac{3\\csc 80^\\circ}{\\sec 10^\\circ} - 2\\cos 50^\\circ \\csc 40^\\circ\\)?",
+    "options": [
+      "3",
+      "2",
+      "5",
+      "4"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL Tier II (08/08/2022)"
+  },
+  {
+    "id": 433,
+    "text": "If \\(3\\tan\\theta = 3\\sin\\theta\\), then what is the value of \\(\\sin^2\\theta - \\cos^2\\theta\\)?",
+    "options": [
+      "\\(\\frac{1}{5}\\)",
+      "\\(\\frac{1}{4}\\)",
+      "\\(\\frac{1}{2}\\)",
+      "\\(\\frac{1}{3}\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL Tier II (08/08/2022)"
+  },
+  {
+    "id": 434,
+    "text": "Which of the following is equal to \\(\\frac{1}{\\tan\\theta} + \\tan\\theta\\)?",
+    "options": [
+      "\\(\\sec\\theta \\csc\\theta\\)",
+      "1",
+      "\\(\\csc\\theta \\sec\\theta\\)",
+      "\\(\\tan^2\\theta\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL Tier II (08/08/2022)"
+  },
+  {
+    "id": 435,
+    "text": "\\([(\\sin\\theta \\tan\\theta + \\cos\\theta)^2 - 1]\\) is equal to:",
+    "options": [
+      "\\(\\tan^2\\theta\\)",
+      "\\(\\csc\\theta\\)",
+      "\\(\\sec^2\\theta\\)",
+      "\\(\\sec\\theta\\)"
+    ],
+    "correct": "a",
+    "exam": "Graduate Level 02/08/2022 (Shift - 3)"
+  },
+  {
+    "id": 436,
+    "text": "The value of \\(\\sin^2\\frac{2\\pi}{3} + \\cos^2\\frac{5\\pi}{6} - \\tan^2\\frac{3\\pi}{4}\\) is:",
+    "options": [
+      "2",
+      "\\(\\frac{1}{2}\\)",
+      "\\(\\frac{1}{4}\\)",
+      "4"
+    ],
+    "correct": "a",
+    "exam": "Graduate Level 03/08/2022 (Shift - 3)"
+  },
+  {
+    "id": 437,
+    "text": "\\(\\frac{2\\sin\\theta}{4 - 4\\sin^2\\theta} = ?\\)",
+    "options": [
+      "\\(\\tan\\theta\\)",
+      "\\(2\\tan\\theta\\)",
+      "\\(\\cot\\theta\\)",
+      "\\(2\\cot\\theta\\)"
+    ],
+    "correct": "b",
+    "exam": "Graduate Level 04/08/2022 (Shift - 4)"
+  },
+  {
+    "id": 438,
+    "text": "Simplify. \\(\\frac{1}{\\cos x} \\cdot \\frac{\\cos(\\pi + x) \\cos(-x)}{\\sin(\\pi - x) \\cos(\\frac{\\pi}{2} + x)}\\)",
+    "options": [
+      "\\(\\sec x\\)",
+      "\\(\\tan x\\)",
+      "\\(\\csc x\\)",
+      "\\(\\cot x\\)"
+    ],
+    "correct": "c",
+    "exam": "Graduate Level 04/08/2022 (Shift - 4)"
+  },
+  {
+    "id": 439,
+    "text": "If \\(\\cos\\theta = \\sin(2\\theta)\\), \\(\\theta \\neq 0\\), what is the value of \\(\\cos^4\\theta + \\sin^4\\theta + \\cos^3\\theta + \\sin^3\\theta + \\sin^2\\theta + \\cos^2\\theta + \\sin\\theta + \\cos\\theta\\)?",
+    "options": [
+      "\\(\\frac{8 + 7\\sqrt{3}}{18}\\)",
+      "\\(\\frac{18 + 7\\sqrt{3}}{8}\\)",
+      "\\(\\frac{18 + 8\\sqrt{3}}{7}\\)",
+      "\\(\\frac{7 + 18\\sqrt{3}}{8}\\)"
+    ],
+    "correct": "b",
+    "exam": "Graduate Level 05/08/2022 (Shift - 3)"
+  },
+  {
+    "id": 440,
+    "text": "If \\(\\frac{x - x\\csc^2 30^\\circ}{1 + \\csc^2 30^\\circ} = \\cos^2 60^\\circ + 4\\cot^2 45^\\circ - \\sec^2 60^\\circ\\), then the value of x is ______.",
+    "options": [
+      "\\(\\frac{5}{12}\\)",
+      "\\(-\\frac{5}{12}\\)",
+      "\\(\\frac{1}{5}\\)",
+      "\\(-\\frac{1}{12}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 25/05/2022 (Morning)"
+  },
+  {
+    "id": 441,
+    "text": "If \\(\\sec\\theta - \\cos\\theta = 14\\) and \\(14\\sec\\theta = x\\), then the value of x is ________.",
+    "options": [
+      "\\(\\tan^2\\theta\\)",
+      "\\(\\sec^2\\theta\\)",
+      "\\(2\\sec\\theta\\)",
+      "\\(2\\tan\\theta\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CHSL 25/05/2022 (Afternoon)"
+  },
+  {
+    "id": 442,
+    "text": "The value of \\((1 + \\tan 10^\\circ)(1 + \\tan 35^\\circ)\\) is:",
+    "options": [
+      "\\(\\frac{1}{2}\\)",
+      "\\(\\frac{3}{4}\\)",
+      "1",
+      "2"
+    ],
+    "correct": "d",
+    "exam": "SSC CHSL 25/05/2022 (Evening)"
+  },
+  {
+    "id": 443,
+    "text": "The value of \\(\\frac{\\sin^4\\theta + \\sin^2\\theta}{\\cos^4\\theta + \\cos^2\\theta}\\) is:",
+    "options": [
+      "\\(\\tan^3\\theta\\)",
+      "\\(\\cot^3\\theta\\)",
+      "\\(\\tan\\theta\\)",
+      "\\(\\cot\\theta\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CHSL 27/05/2022 (Morning)"
+  },
+  {
+    "id": 444,
+    "text": "If \\(\\sin x - 3\\cos x = 3\\cos x\\), then the value of \\(\\cot x\\) is ______.",
+    "options": [
+      "\\(3 - \\sqrt{3}\\)",
+      "\\(3 + \\sqrt{3}\\)",
+      "\\(\\sqrt{3}\\)",
+      "\\(\\frac{3 - \\sqrt{3}}{6}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 31/05/2022 (Morning)"
+  },
+  {
+    "id": 445,
+    "text": "What is the value of \\((4\\sin^3 x - 3\\sin x + \\sin 3x)\\)?",
+    "options": [
+      "1",
+      "0",
+      "4",
+      "3"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 31/05/2022 (Afternoon)"
+  },
+  {
+    "id": 446,
+    "text": "What is the simplified value of \\([\\cos^2(90^\\circ - \\theta) - \\{\\cos(90^\\circ - \\theta)\\cos\\theta\\}] \\cot\\theta\\)?",
+    "options": [
+      "4",
+      "2",
+      "0",
+      "1"
+    ],
+    "correct": "d",
+    "exam": "SSC CHSL 31/05/2022 (Evening)"
+  },
+  {
+    "id": 447,
+    "text": "The value of \\(\\sin 2\\theta (\\tan\\theta + \\cot\\theta)\\) is:",
+    "options": [
+      "\\(\\frac{2}{3}\\)",
+      "1",
+      "\\(\\frac{1}{2}\\)",
+      "2"
+    ],
+    "correct": "d",
+    "exam": "SSC CHSL 01/06/2022 (Morning)"
+  },
+  {
+    "id": 448,
+    "text": "Using \\(2\\cos A \\cos B = \\cos(A + B) + \\cos(A - B)\\), find the value of \\(\\cos 75^\\circ \\cos 15^\\circ\\).",
+    "options": [
+      "\\(\\frac{1}{2}\\)",
+      "\\(\\frac{1}{4}\\)",
+      "\\(\\frac{\\sqrt{3}}{2}\\)",
+      "\\(\\frac{\\sqrt{3}}{4}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 01/06/2022 (Afternoon)"
+  },
+  {
+    "id": 449,
+    "text": "If \\(1 + \\frac{\\tan\\theta}{\\sqrt{3}} = \\frac{\\sqrt{3}}{3\\cot\\theta - 1}\\), then \\(\\tan\\theta = \\_\\_\\_\\_\\_\\_\\).",
+    "options": [
+      "\\(\\frac{\\sqrt{3} + 1}{2}\\)",
+      "\\(\\frac{\\sqrt{3} - 1}{2}\\)",
+      "\\(\\frac{2\\sqrt{3} - 1}{2}\\)",
+      "\\(\\frac{2\\sqrt{3} + 1}{2}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 03/06/2022 (Afternoon)"
+  },
+  {
+    "id": 450,
+    "text": "If \\(\\csc^2\\theta + \\cot^2\\theta = \\frac{5}{3}\\), then what is the value of \\(\\cot^2\\theta\\)?",
+    "options": [
+      "\\(\\frac{1}{3}\\)",
+      "\\(-\\frac{1}{3}\\)",
+      "\\(\\frac{2}{3}\\)",
+      "\\(-\\frac{2}{3}\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CHSL 07/06/2022 (Morning)"
+  },
+  {
+    "id": 451,
+    "text": "\\((\\csc\\theta - \\cot\\theta)^2 = ?\\), \\(0^\\circ < \\theta < 90^\\circ\\)",
+    "options": [
+      "\\(\\frac{1 - \\sin\\theta}{1 + \\cos\\theta}\\)",
+      "\\(\\frac{1 - \\cos\\theta}{1 + \\cos\\theta}\\)",
+      "\\(\\frac{1 + \\cos\\theta}{1 - \\cos\\theta}\\)",
+      "\\(\\frac{1 + \\cos\\theta}{1 - \\sin\\theta}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 09/06/2022 (Evening)"
+  },
+  {
+    "id": 452,
+    "text": "Using the formula \\(\\tan\\frac{x}{2} = \\frac{1 - \\cos x}{\\sin x}\\), find the value of \\(\\tan 22.5^\\circ\\).",
+    "options": [
+      "\\(\\sqrt{2} - 1\\)",
+      "\\(\\sqrt{2} + 1\\)",
+      "\\(\\frac{\\sqrt{3} + \\sqrt{2}}{2}\\)",
+      "\\(\\frac{\\sqrt{3} - \\sqrt{2}}{2}\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CHSL 10/06/2022 (Morning)"
+  },
+  {
+    "id": 453,
+    "text": "If \\(4\\sin^2\\theta = 3(1 + \\cos\\theta)\\), \\(0^\\circ < \\theta < 90^\\circ\\), then what is the value of \\((2\\tan\\theta + 4\\sin\\theta - \\sec\\theta)\\)?",
+    "options": [
+      "\\(3 - 4\\sqrt{3}\\)",
+      "\\(15 - 4\\sqrt{15}\\)",
+      "\\(15 + 3\\sqrt{15}\\)",
+      "\\(4\\sqrt{3} - 3\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 11/04/2022 (Morning)"
+  },
+  {
+    "id": 454,
+    "text": "If \\(3\\sec^2\\theta + \\tan\\theta - 7 = 0\\), \\(0^\\circ < \\theta < 90^\\circ\\), then what is the value of \\(\\frac{2\\sin\\theta + 3\\cos\\theta}{\\csc\\theta + \\sec\\theta}\\)?",
+    "options": [
+      "10",
+      "\\(\\frac{5}{2}\\)",
+      "\\(\\frac{5}{4}\\)",
+      "\\(4\\sqrt{2}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 12/04/2022 (Morning)"
+  },
+  {
+    "id": 455,
+    "text": "The value of \\(1 + \\frac{\\cot\\theta + \\cos\\theta}{\\cot\\theta - \\cos\\theta}\\), if \\(0^\\circ < \\theta < 90^\\circ\\), is equal to:",
+    "options": [
+      "\\(1 - \\sec\\theta + \\tan\\theta\\)",
+      "\\(1 - \\sec\\theta - \\tan\\theta\\)",
+      "\\(1 + \\sec\\theta - \\tan\\theta\\)",
+      "\\(1 + \\sec\\theta + \\tan\\theta\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 12/04/2022 (Afternoon)"
+  },
+  {
+    "id": 456,
+    "text": "The value of \\(\\left(\\frac{1 - \\cot\\theta}{1 - \\tan\\theta}\\right)^2 - 1\\) when \\(0^\\circ < \\theta < 90^\\circ\\), is equal to:",
+    "options": [
+      "\\(\\cos^2\\theta - 1\\)",
+      "\\(\\sec^2\\theta + 1\\)",
+      "\\(\\cot^2\\theta - 1\\)",
+      "\\(\\sin^2\\theta - 1\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 12/04/2022 (Afternoon)"
+  },
+  {
+    "id": 457,
+    "text": "\\((\\tan^2\\theta + \\cot^2\\theta + 2) + 3\\) is equal to:",
+    "options": [
+      "0",
+      "1",
+      "2",
+      "-1"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 13/04/2022 (Afternoon)"
+  },
+  {
+    "id": 458,
+    "text": "If \\(\\sin^2\\theta - \\cos^2\\theta - 3\\sin\\theta + 2 = 0\\), \\(0^\\circ < \\theta < 90^\\circ\\), then what is the value of \\(1 + \\sec\\theta + \\tan\\theta\\)?",
+    "options": [
+      "\\(-1 + \\sqrt{3}\\)",
+      "\\(-1 - \\sqrt{3}\\)",
+      "\\(1 + \\sqrt{3}\\)",
+      "\\(1 - \\sqrt{3}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 13/04/2022 (Evening)"
+  },
+  {
+    "id": 459,
+    "text": "\\((\\sec\\theta - \\tan\\theta)^2 (1 + \\sin\\theta)^2 + \\cos\\theta =\\)",
+    "options": [
+      "\\(\\cos^2\\theta\\)",
+      "1",
+      "\\(\\cot^2\\theta\\)",
+      "-1"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 13/04/2022 (Evening)"
+  },
+  {
+    "id": 460,
+    "text": "If \\(2\\sin^2\\theta + 3\\cos\\theta = 3\\), \\(0^\\circ < \\theta < 90^\\circ\\), then the value of \\((\\sec^2\\theta + \\cot^2\\theta)\\) is",
+    "options": [
+      "\\(3\\frac{2}{3}\\)",
+      "\\(3\\frac{1}{3}\\)",
+      "\\(4\\frac{1}{3}\\)",
+      "\\(4\\frac{1}{2}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 18/04/2022 (Evening)"
+  },
+  {
+    "id": 461,
+    "text": "Simplify the following expression: \\(\\frac{\\cos A}{1 - \\tan A} + \\frac{\\sin A}{1 - \\cot A} - \\sin A\\)",
+    "options": [
+      "\\(1 + \\cos A\\)",
+      "\\((1 + \\sin A)\\cos A\\)",
+      "\\(1 + \\sin A\\)",
+      "\\(\\cos A\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 19/04/2022 (Evening)"
+  },
+  {
+    "id": 462,
+    "text": "Simplify the following expression: \\(\\csc A (1 - \\cos A) - 2\\cot^2 A - 1\\)",
+    "options": [
+      "\\(\\sin^2 A\\)",
+      "\\(\\csc^2 A\\)",
+      "1",
+      "0"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 20/04/2022 (Morning)"
+  },
+  {
+    "id": 463,
+    "text": "If \\(6\\tan A (\\tan A + 1) = 5 - \\tan A\\), Given that \\(0 < A < \\frac{\\pi}{2}\\). What is the value of \\(\\sin A + \\cos A\\)?",
+    "options": [
+      "\\(3\\sqrt{5}\\)",
+      "\\(\\frac{5}{\\sqrt{3}}\\)",
+      "\\(5\\sqrt{3}\\)",
+      "\\(\\frac{3}{\\sqrt{5}}\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 20/04/2022 (Morning)"
+  },
+  {
+    "id": 464,
+    "text": "The value of \\(\\left(\\frac{1 - \\cot\\theta}{1 - \\tan\\theta}\\right)^2 + 1\\), if \\(0^\\circ < \\theta < 90^\\circ\\), is equal to:",
+    "options": [
+      "\\(\\csc^2\\theta\\)",
+      "\\(\\sin^2\\theta\\)",
+      "\\(\\cos^2\\theta\\)",
+      "\\(\\sec^2\\theta\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 20/04/2022 (Evening)"
+  },
+  {
+    "id": 465,
+    "text": "If \\(\\frac{\\sin^2\\theta - 3\\sin\\theta + 2}{\\cos^2\\theta} = 1\\), where \\(0^\\circ < \\theta < 90^\\circ\\), then what is the value of \\((\\cos 2\\theta - \\sin 3\\theta + \\csc 2\\theta)\\)?",
+    "options": [
+      "\\(\\frac{1}{2}\\)",
+      "2",
+      "\\(\\frac{3}{2}\\)",
+      "1"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 21/04/2022 (Afternoon)"
+  },
+  {
+    "id": 466,
+    "text": "Simplify: \\(\\frac{1 + \\cos\\theta - \\sin^2\\theta}{\\sin\\theta(1 + \\cos\\theta)} \\times \\frac{\\sqrt{\\sec^2\\theta + \\csc^2\\theta}}{\\tan\\theta + \\cot\\theta}\\), \\(0^\\circ < \\theta < 90^\\circ\\), is equal to:",
+    "options": [
+      "\\(\\tan\\theta\\)",
+      "\\(\\sec\\theta\\)",
+      "\\(\\csc\\theta\\)",
+      "\\(\\cot\\theta\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL Tier II (29/01/2022)"
+  },
+  {
+    "id": 467,
+    "text": "If \\(1 + 2\\tan^2\\theta + 2\\sin\\theta \\sec^2\\theta = \\frac{a}{b}\\), \\(0^\\circ < \\theta < 90^\\circ\\), then \\(\\tan\\theta = \\frac{a + b}{a - b} = ?\\)",
+    "options": [
+      "\\(\\sec\\theta\\)",
+      "\\(\\sin\\theta\\)",
+      "\\(\\cos\\theta\\)",
+      "\\(\\csc\\theta\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL Tier II (29/01/2022)"
+  },
+  {
+    "id": 468,
+    "text": "\\(\\frac{(1 + \\sec\\theta \\csc\\theta)^2 (\\sec\\theta - \\tan\\theta)^2 (1 + \\sin\\theta)}{(\\sin\\theta + \\sec\\theta)^2 + (\\cos\\theta + \\csc\\theta)^2}\\), \\(0^\\circ < \\theta < 90^\\circ\\), is equal to:",
+    "options": [
+      "\\(\\cos\\theta\\)",
+      "\\(1 - \\cos\\theta\\)",
+      "\\(\\sin\\theta\\)",
+      "\\(1 - \\sin\\theta\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL Tier II (29/01/2022)"
+  },
+  {
+    "id": 469,
+    "text": "\\(\\left(\\frac{\\tan^2\\theta}{\\sec^2\\theta} + \\frac{\\cos^2\\theta}{\\csc^2\\theta} + 2\\sin\\theta \\cos\\theta\\right) \\div (1 + \\csc^2\\theta + \\tan^2\\theta)\\), \\(0^\\circ < \\theta < 90^\\circ\\), is equal to:",
+    "options": [
+      "\\(\\csc\\theta \\sec\\theta\\)",
+      "\\(\\csc\\theta\\)",
+      "\\(\\sin\\theta \\cos\\theta\\)",
+      "\\(\\sec\\theta\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL Tier II (29/01/2022)"
+  },
+  {
+    "id": 470,
+    "text": "The expression \\(\\frac{\\tan^2\\theta - \\sec^2\\theta + 3\\sec^2\\theta \\tan^2\\theta}{\\tan^2\\theta + \\cot^2\\theta + 2}\\), \\(0^\\circ < \\theta < 90^\\circ\\) is equal to:",
+    "options": [
+      "\\(\\sec^2\\theta \\csc^2\\theta\\)",
+      "\\(\\sin^2\\theta \\csc^2\\theta\\)",
+      "\\(\\cos^2\\theta \\sin^2\\theta\\)",
+      "\\(\\cos^2\\theta \\sin^2\\theta\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL Tier II (03/02/2022)"
+  },
+  {
+    "id": 471,
+    "text": "The expression \\(\\frac{\\cos^4\\theta - \\sin^4\\theta + 2\\sin^2\\theta + 3}{(\\csc\\theta + \\cot\\theta + 1)(\\csc\\theta - \\cot\\theta + 1) - 2}\\), \\(0^\\circ < \\theta < 90^\\circ\\), is equal to:",
+    "options": [
+      "\\(\\frac{1}{2}\\sin\\theta\\)",
+      "\\(2\\sin\\theta\\)",
+      "\\(\\sec\\theta\\)",
+      "\\(2\\csc\\theta\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL Tier II (03/02/2022)"
+  },
+  {
+    "id": 472,
+    "text": "The expression \\(\\frac{(1 - \\sin\\theta + \\cos\\theta)^2 (1 - \\cos\\theta) \\sec^2\\theta \\csc^2\\theta}{(\\sec\\theta - \\tan\\theta)(\\tan\\theta + \\cot\\theta)}\\), \\(0^\\circ < \\theta < 90^\\circ\\), is equal to:",
+    "options": [
+      "\\(\\sin\\theta\\)",
+      "\\(2\\cos\\theta\\)",
+      "\\(\\cot\\theta\\)",
+      "\\(2\\tan\\theta\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL Tier II (03/02/2022)"
+  },
+  {
+    "id": 473,
+    "text": "If \\(\\frac{\\sin^2\\theta}{\\cos^2\\theta - 3\\cos\\theta + 2} = 1\\), \\(\\theta\\) lies in the first quadrant, then the value of \\(\\frac{\\tan^2\\frac{\\theta}{2} + \\sin^2\\frac{\\theta}{2}}{\\tan\\theta + \\sin\\theta}\\) is:",
+    "options": [
+      "\\(\\frac{2\\sqrt{3}}{27}\\)",
+      "\\(\\frac{5\\sqrt{3}}{27}\\)",
+      "\\(\\frac{2\\sqrt{3}}{9}\\)",
+      "\\(\\frac{7\\sqrt{3}}{54}\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL Tier II (03/02/2022)"
+  },
+  {
+    "id": 474,
+    "text": "The expression \\(\\frac{(1 - 2\\sin^2\\theta \\cos^2\\theta)(\\cot\\theta + 1)\\cos\\theta}{(\\sin^4\\theta + \\cos^4\\theta)(1 + \\tan\\theta)\\csc\\theta}\\), \\(0^\\circ < \\theta < 90^\\circ\\), is equal to:",
+    "options": [
+      "\\(\\sin\\theta\\)",
+      "\\(\\cos\\theta\\)",
+      "\\(\\sec\\theta\\)",
+      "\\(\\csc\\theta\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL Tier II (03/02/2022)"
+  },
+  {
+    "id": 475,
+    "text": "If \\(\\frac{\\csc^2\\theta}{\\csc^2\\theta - \\cot^2\\theta} = \\frac{13}{4}\\), \\(0^\\circ < \\theta < 90^\\circ\\), then the value of \\(\\frac{52\\cos^2\\theta - 9\\tan^2\\theta}{18\\sec^2\\theta + 8\\cot^2\\theta}\\) will be:",
+    "options": [
+      "\\(\\frac{4}{11}\\)",
+      "\\(\\frac{8}{11}\\)",
+      "\\(\\frac{8}{13}\\)",
+      "\\(\\frac{5}{11}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 09/08/2021 (Afternoon)"
+  },
+  {
+    "id": 476,
+    "text": "Evaluate the following expression: \\(\\frac{3(\\cot^2 46^\\circ - \\sec^2 44^\\circ)}{2(\\sin^2 28^\\circ + \\sin^2 62^\\circ)} + \\frac{2\\cos^2 60^\\circ \\tan^2 33^\\circ \\tan^2 57^\\circ}{\\sec^2(90^\\circ - \\theta) - \\cot^2\\theta}\\)",
+    "options": [
+      "-1",
+      "1",
+      "-2",
+      "2"
+    ],
+    "correct": "a",
+    "exam": "SSC CHSL 10/08/2021 (Morning)"
+  },
+  {
+    "id": 477,
+    "text": "For \\(\\theta: 0^\\circ < \\theta < 90^\\circ\\), \\(3\\sec\\theta + 4\\cos\\theta = 4\\sqrt{3}\\), find the value of \\((1 - \\sin\\theta + \\cos\\theta)\\)",
+    "options": [
+      "\\(\\frac{1 + 2\\sqrt{3}}{2}\\)",
+      "\\(\\frac{1 + \\sqrt{3}}{2}\\)",
+      "\\(\\frac{1 - \\sqrt{3}}{2}\\)",
+      "\\(\\frac{1 - 2\\sqrt{3}}{2}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 10/08/2021 (Morning)"
+  },
+  {
+    "id": 478,
+    "text": "If \\(\\frac{5\\cot\\theta + \\sqrt{3}\\csc\\theta}{2\\sqrt{3}\\csc\\theta + 3\\cot\\theta} = 1\\), \\(0^\\circ < \\theta < 90^\\circ\\), then the value of \\(\\frac{7}{2}\\cot^2\\theta - \\frac{3}{4}\\csc^2\\theta\\) will be:",
+    "options": [
+      "7",
+      "2",
+      "3",
+      "5"
+    ],
+    "correct": "d",
+    "exam": "SSC CHSL 10/08/2021 (Afternoon)"
+  },
+  {
+    "id": 479,
+    "text": "If \\((1 + \\cot^2\\theta) + (1 + (\\cot^2\\theta)^{-1})\\) is equal to \\(k\\), then \\(\\sqrt{k} = ?\\)",
+    "options": [
+      "\\(\\sin\\theta \\sec\\theta\\)",
+      "\\(\\csc\\theta \\cos\\theta\\)",
+      "\\(\\csc\\theta \\sec\\theta\\)",
+      "\\(\\sin\\theta \\cos\\theta\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 10/08/2021 (Evening)"
+  },
+  {
+    "id": 480,
+    "text": "The value of \\(\\frac{\\sec\\theta \\csc\\theta}{2 + \\tan^2\\theta + \\cot^2\\theta}\\) is equal to:",
+    "options": [
+      "\\(\\sec\\theta \\csc\\theta\\)",
+      "\\(\\sec\\theta \\sin\\theta\\)",
+      "\\(\\sin\\theta \\cos\\theta\\)",
+      "\\(\\cos\\theta \\csc\\theta\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 11/08/2021 (Morning)"
+  },
+  {
+    "id": 481,
+    "text": "If \\(\\cot A + \\csc A = 2\\) and A is an acute angle, then the value of \\(\\frac{9\\tan A + 16\\csc A}{5\\sin A + 3\\tan A}\\) is:",
+    "options": [
+      "3",
+      "6",
+      "4",
+      "8"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 11/08/2021 (Afternoon)"
+  },
+  {
+    "id": 482,
+    "text": "If \\(\\cot^2\\theta + \\cot^4\\theta = 2\\), then the value of \\(2\\sin^4\\theta + \\sin^2\\theta\\) is:",
+    "options": [
+      "3",
+      "5",
+      "1",
+      "2"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 11/08/2021 (Evening)"
+  },
+  {
+    "id": 483,
+    "text": "If \\(\\sin\\alpha + \\cos\\alpha = \\tan\\frac{\\pi}{3}\\), then the value of \\((\\sin^3\\alpha + \\cos^3\\alpha)\\) is equal to:",
+    "options": [
+      "\\(\\frac{1}{2}\\)",
+      "1",
+      "0",
+      "\\(\\frac{3}{2}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 11/08/2021 (Evening)"
+  },
+  {
+    "id": 484,
+    "text": "Value of \\(\\frac{\\sin^2 52^\\circ + 2 + \\sin^2 38^\\circ}{4\\cos^2 43^\\circ - 5 + 4\\cos^2 47^\\circ}\\)",
+    "options": [
+      "3",
+      "\\(\\frac{1}{3}\\)",
+      "-3",
+      "-1"
+    ],
+    "correct": "c",
+    "exam": "SSC CPO 24/11/2020 (Evening)"
+  },
+  {
+    "id": 485,
+    "text": "If \\(4(\\csc^2 57^\\circ - \\tan^2 33^\\circ) - \\cos 90^\\circ + y \\times \\tan^2 6^\\circ \\times \\tan^2 24^\\circ = \\frac{y}{2}\\) then the value of y is:",
+    "options": [
+      "4",
+      "8",
+      "-4",
+      "-8"
+    ],
+    "correct": "d",
+    "exam": "SSC CPO 25/11/2020 (Morning)"
+  },
+  {
+    "id": 486,
+    "text": "\\((\\csc\\theta - \\cot\\theta)^2 = ?\\), \\(0^\\circ < \\theta < 90^\\circ\\)",
+    "options": [
+      "\\(\\frac{1 - \\sin\\theta}{1 + \\cos\\theta}\\)",
+      "\\(\\frac{1 - \\cos\\theta}{1 + \\cos\\theta}\\)",
+      "\\(\\frac{1 + \\cos\\theta}{1 - \\cos\\theta}\\)",
+      "\\(\\frac{1 + \\cos\\theta}{1 - \\sin\\theta}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 09/06/2022 (Evening)"
+  },
+  {
+    "id": 487,
+    "text": "Using the formula \\(\\tan\\frac{x}{2} = \\frac{1 - \\cos x}{\\sin x}\\), find the value of \\(\\tan 22.5^\\circ\\).",
+    "options": [
+      "\\(\\sqrt{2} - 1\\)",
+      "\\(\\sqrt{2} + 1\\)",
+      "\\(\\frac{\\sqrt{3} + \\sqrt{2}}{2}\\)",
+      "\\(\\frac{\\sqrt{3} - \\sqrt{2}}{2}\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CHSL 10/06/2022 (Morning)"
+  },
+  {
+    "id": 488,
+    "text": "If \\(4\\sin^2\\theta = 3(1 + \\cos\\theta)\\), \\(0^\\circ < \\theta < 90^\\circ\\), then what is the value of \\((2\\tan\\theta + 4\\sin\\theta - \\sec\\theta)\\)?",
+    "options": [
+      "\\(3 - 4\\sqrt{3}\\)",
+      "\\(15 - 4\\sqrt{15}\\)",
+      "\\(15 + 3\\sqrt{15}\\)",
+      "\\(4\\sqrt{3} - 3\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 11/04/2022 (Morning)"
+  },
+  {
+    "id": 489,
+    "text": "If \\(3\\sec^2\\theta + \\tan\\theta - 7 = 0\\), \\(0^\\circ < \\theta < 90^\\circ\\), then what is the value of \\(\\frac{2\\sin\\theta + 3\\cos\\theta}{\\csc\\theta + \\sec\\theta}\\)?",
+    "options": [
+      "10",
+      "\\(\\frac{5}{2}\\)",
+      "\\(\\frac{5}{4}\\)",
+      "\\(4\\sqrt{2}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 12/04/2022 (Morning)"
+  },
+  {
+    "id": 490,
+    "text": "The value of \\(1 + \\frac{\\cot\\theta + \\cos\\theta}{\\cot\\theta - \\cos\\theta}\\), if \\(0^\\circ < \\theta < 90^\\circ\\), is equal to:",
+    "options": [
+      "\\(1 - \\sec\\theta + \\tan\\theta\\)",
+      "\\(1 - \\sec\\theta - \\tan\\theta\\)",
+      "\\(1 + \\sec\\theta - \\tan\\theta\\)",
+      "\\(1 + \\sec\\theta + \\tan\\theta\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 12/04/2022 (Afternoon)"
+  },
+  {
+    "id": 491,
+    "text": "The value of \\(\\left(\\frac{1 - \\cot\\theta}{1 - \\tan\\theta}\\right)^2 - 1\\) when \\(0^\\circ < \\theta < 90^\\circ\\), is equal to:",
+    "options": [
+      "\\(\\cos^2\\theta - 1\\)",
+      "\\(\\sec^2\\theta + 1\\)",
+      "\\(\\cot^2\\theta - 1\\)",
+      "\\(\\sin^2\\theta - 1\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 12/04/2022 (Afternoon)"
+  },
+  {
+    "id": 492,
+    "text": "\\((\\tan^2\\theta + \\cot^2\\theta + 2) + 3\\) is equal to:",
+    "options": [
+      "0",
+      "1",
+      "2",
+      "-1"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 13/04/2022 (Afternoon)"
+  },
+  {
+    "id": 493,
+    "text": "If \\(\\sin^2\\theta - \\cos^2\\theta - 3\\sin\\theta + 2 = 0\\), \\(0^\\circ < \\theta < 90^\\circ\\), then what is the value of \\(1 + \\sec\\theta + \\tan\\theta\\)?",
+    "options": [
+      "\\(-1 + \\sqrt{3}\\)",
+      "\\(-1 - \\sqrt{3}\\)",
+      "\\(1 + \\sqrt{3}\\)",
+      "\\(1 - \\sqrt{3}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL 13/04/2022 (Evening)"
+  },
+  {
+    "id": 494,
+    "text": "\\((\\sec\\theta - \\tan\\theta)^2 (1 + \\sin\\theta)^2 + \\cos\\theta =\\)",
+    "options": [
+      "\\(\\cos^2\\theta\\)",
+      "1",
+      "\\(\\cot^2\\theta\\)",
+      "-1"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 13/04/2022 (Evening)"
+  },
+  {
+    "id": 495,
+    "text": "If \\(2\\sin^2\\theta + 3\\cos\\theta = 3\\), \\(0^\\circ < \\theta < 90^\\circ\\), then the value of \\((\\sec^2\\theta + \\cot^2\\theta)\\) is",
+    "options": [
+      "\\(3\\frac{2}{3}\\)",
+      "\\(3\\frac{1}{3}\\)",
+      "\\(4\\frac{1}{3}\\)",
+      "\\(4\\frac{1}{2}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL 18/04/2022 (Evening)"
+  },
+  {
+    "id": 496,
+    "text": "Simplify the following expression: \\(\\frac{\\cos A}{1 - \\tan A} + \\frac{\\sin A}{1 - \\cot A} - \\sin A\\)",
+    "options": [
+      "\\(1 + \\cos A\\)",
+      "\\((1 + \\sin A)\\cos A\\)",
+      "\\(1 + \\sin A\\)",
+      "\\(\\cos A\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 19/04/2022 (Evening)"
+  },
+  {
+    "id": 497,
+    "text": "Simplify the following expression: \\(\\csc A (1 - \\cos A) - 2\\cot^2 A - 1\\)",
+    "options": [
+      "\\(\\sin^2 A\\)",
+      "\\(\\csc^2 A\\)",
+      "1",
+      "0"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 20/04/2022 (Morning)"
+  },
+  {
+    "id": 498,
+    "text": "If \\(6\\tan A (\\tan A + 1) = 5 - \\tan A\\), Given that \\(0 < A < \\frac{\\pi}{2}\\). What is the value of \\(\\sin A + \\cos A\\)?",
+    "options": [
+      "\\(3\\sqrt{5}\\)",
+      "\\(\\frac{5}{\\sqrt{3}}\\)",
+      "\\(5\\sqrt{3}\\)",
+      "\\(\\frac{3}{\\sqrt{5}}\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 20/04/2022 (Morning)"
+  },
+  {
+    "id": 499,
+    "text": "The value of \\(\\left(\\frac{1 - \\cot\\theta}{1 - \\tan\\theta}\\right)^2 + 1\\), if \\(0^\\circ < \\theta < 90^\\circ\\), is equal to:",
+    "options": [
+      "\\(\\csc^2\\theta\\)",
+      "\\(\\sin^2\\theta\\)",
+      "\\(\\cos^2\\theta\\)",
+      "\\(\\sec^2\\theta\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL 20/04/2022 (Evening)"
+  },
+  {
+    "id": 500,
+    "text": "If \\(\\frac{\\sin^2\\theta - 3\\sin\\theta + 2}{\\cos^2\\theta} = 1\\), where \\(0^\\circ < \\theta < 90^\\circ\\), then what is the value of \\((\\cos 2\\theta - \\sin 3\\theta + \\csc 2\\theta)\\)?",
+    "options": [
+      "\\(\\frac{1}{2}\\)",
+      "2",
+      "\\(\\frac{3}{2}\\)",
+      "1"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL 21/04/2022 (Afternoon)"
+  },
+  {
+    "id": 501,
+    "text": "Simplify: \\(\\frac{1 + \\cos\\theta - \\sin^2\\theta}{\\sin\\theta(1 + \\cos\\theta)} \\times \\frac{\\sqrt{\\sec^2\\theta + \\csc^2\\theta}}{\\tan\\theta + \\cot\\theta}\\), \\(0^\\circ < \\theta < 90^\\circ\\), is equal to:",
+    "options": [
+      "\\(\\tan\\theta\\)",
+      "\\(\\sec\\theta\\)",
+      "\\(\\csc\\theta\\)",
+      "\\(\\cot\\theta\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL Tier II (29/01/2022)"
+  },
+  {
+    "id": 502,
+    "text": "If \\(1 + 2\\tan^2\\theta + 2\\sin\\theta \\sec^2\\theta = \\frac{a}{b}\\), \\(0^\\circ < \\theta < 90^\\circ\\), then \\(\\tan\\theta = \\frac{a + b}{a - b} = ?\\)",
+    "options": [
+      "\\(\\sec\\theta\\)",
+      "\\(\\sin\\theta\\)",
+      "\\(\\cos\\theta\\)",
+      "\\(\\csc\\theta\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL Tier II (29/01/2022)"
+  },
+  {
+    "id": 503,
+    "text": "\\(\\frac{(1 + \\sec\\theta \\csc\\theta)^2 (\\sec\\theta - \\tan\\theta)^2 (1 + \\sin\\theta)}{(\\sin\\theta + \\sec\\theta)^2 + (\\cos\\theta + \\csc\\theta)^2}\\), \\(0^\\circ < \\theta < 90^\\circ\\), is equal to:",
+    "options": [
+      "\\(\\cos\\theta\\)",
+      "\\(1 - \\cos\\theta\\)",
+      "\\(\\sin\\theta\\)",
+      "\\(1 - \\sin\\theta\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL Tier II (29/01/2022)"
+  },
+  {
+    "id": 504,
+    "text": "\\(\\left(\\frac{\\tan^2\\theta}{\\sec^2\\theta} + \\frac{\\cos^2\\theta}{\\csc^2\\theta} + 2\\sin\\theta \\cos\\theta\\right) \\div (1 + \\csc^2\\theta + \\tan^2\\theta)\\), \\(0^\\circ < \\theta < 90^\\circ\\), is equal to:",
+    "options": [
+      "\\(\\csc\\theta \\sec\\theta\\)",
+      "\\(\\csc\\theta\\)",
+      "\\(\\sin\\theta \\cos\\theta\\)",
+      "\\(\\sec\\theta\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CGL Tier II (29/01/2022)"
+  },
+  {
+    "id": 505,
+    "text": "The expression \\(\\frac{\\tan^2\\theta - \\sec^2\\theta + 3\\sec^2\\theta \\tan^2\\theta}{\\tan^2\\theta + \\cot^2\\theta + 2}\\), \\(0^\\circ < \\theta < 90^\\circ\\) is equal to:",
+    "options": [
+      "\\(\\sec^2\\theta \\csc^2\\theta\\)",
+      "\\(\\sin^2\\theta \\csc^2\\theta\\)",
+      "\\(\\cos^2\\theta \\sin^2\\theta\\)",
+      "\\(\\cos^2\\theta \\sin^2\\theta\\)"
+    ],
+    "correct": "a",
+    "exam": "SSC CGL Tier II (03/02/2022)"
+  },
+  {
+    "id": 506,
+    "text": "The expression \\(\\frac{\\cos^4\\theta - \\sin^4\\theta + 2\\sin^2\\theta + 3}{(\\csc\\theta + \\cot\\theta + 1)(\\csc\\theta - \\cot\\theta + 1) - 2}\\), \\(0^\\circ < \\theta < 90^\\circ\\), is equal to:",
+    "options": [
+      "\\(\\frac{1}{2}\\sin\\theta\\)",
+      "\\(2\\sin\\theta\\)",
+      "\\(\\sec\\theta\\)",
+      "\\(2\\csc\\theta\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL Tier II (03/02/2022)"
+  },
+  {
+    "id": 507,
+    "text": "The expression \\(\\frac{(1 - \\sin\\theta + \\cos\\theta)^2 (1 - \\cos\\theta) \\sec^2\\theta \\csc^2\\theta}{(\\sec\\theta - \\tan\\theta)(\\tan\\theta + \\cot\\theta)}\\), \\(0^\\circ < \\theta < 90^\\circ\\), is equal to:",
+    "options": [
+      "\\(\\sin\\theta\\)",
+      "\\(2\\cos\\theta\\)",
+      "\\(\\cot\\theta\\)",
+      "\\(2\\tan\\theta\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL Tier II (03/02/2022)"
+  },
+  {
+    "id": 508,
+    "text": "If \\(\\frac{\\sin^2\\theta}{\\cos^2\\theta - 3\\cos\\theta + 2} = 1\\), \\(\\theta\\) lies in the first quadrant, then the value of \\(\\frac{\\tan^2\\frac{\\theta}{2} + \\sin^2\\frac{\\theta}{2}}{\\tan\\theta + \\sin\\theta}\\) is:",
+    "options": [
+      "\\(\\frac{2\\sqrt{3}}{27}\\)",
+      "\\(\\frac{5\\sqrt{3}}{27}\\)",
+      "\\(\\frac{2\\sqrt{3}}{9}\\)",
+      "\\(\\frac{7\\sqrt{3}}{54}\\)"
+    ],
+    "correct": "d",
+    "exam": "SSC CGL Tier II (03/02/2022)"
+  },
+  {
+    "id": 509,
+    "text": "The expression \\(\\frac{(1 - 2\\sin^2\\theta \\cos^2\\theta)(\\cot\\theta + 1)\\cos\\theta}{(\\sin^4\\theta + \\cos^4\\theta)(1 + \\tan\\theta)\\csc\\theta}\\), \\(0^\\circ < \\theta < 90^\\circ\\), is equal to:",
+    "options": [
+      "\\(\\sin\\theta\\)",
+      "\\(\\cos\\theta\\)",
+      "\\(\\sec\\theta\\)",
+      "\\(\\csc\\theta\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CGL Tier II (03/02/2022)"
+  },
+  {
+    "id": 510,
+    "text": "If \\(\\frac{\\csc^2\\theta}{\\csc^2\\theta - \\cot^2\\theta} = \\frac{13}{4}\\), \\(0^\\circ < \\theta < 90^\\circ\\), then the value of \\(\\frac{52\\cos^2\\theta - 9\\tan^2\\theta}{18\\sec^2\\theta + 8\\cot^2\\theta}\\) will be:",
+    "options": [
+      "\\(\\frac{4}{11}\\)",
+      "\\(\\frac{8}{11}\\)",
+      "\\(\\frac{8}{13}\\)",
+      "\\(\\frac{5}{11}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 09/08/2021 (Afternoon)"
+  },
+  {
+    "id": 511,
+    "text": "Evaluate the following expression: \\(\\frac{3(\\cot^2 46^\\circ - \\sec^2 44^\\circ)}{2(\\sin^2 28^\\circ + \\sin^2 62^\\circ)} + \\frac{2\\cos^2 60^\\circ \\tan^2 33^\\circ \\tan^2 57^\\circ}{\\sec^2(90^\\circ - \\theta) - \\cot^2\\theta}\\)",
+    "options": [
+      "-1",
+      "1",
+      "-2",
+      "2"
+    ],
+    "correct": "a",
+    "exam": "SSC CHSL 10/08/2021 (Morning)"
+  },
+  {
+    "id": 512,
+    "text": "For \\(\\theta: 0^\\circ < \\theta < 90^\\circ\\), \\(3\\sec\\theta + 4\\cos\\theta = 4\\sqrt{3}\\), find the value of \\((1 - \\sin\\theta + \\cos\\theta)\\)",
+    "options": [
+      "\\(\\frac{1 + 2\\sqrt{3}}{2}\\)",
+      "\\(\\frac{1 + \\sqrt{3}}{2}\\)",
+      "\\(\\frac{1 - \\sqrt{3}}{2}\\)",
+      "\\(\\frac{1 - 2\\sqrt{3}}{2}\\)"
+    ],
+    "correct": "b",
+    "exam": "SSC CHSL 10/08/2021 (Morning)"
+  },
+  {
+    "id": 513,
+    "text": "If \\(\\frac{5\\cot\\theta + \\sqrt{3}\\csc\\theta}{2\\sqrt{3}\\csc\\theta + 3\\cot\\theta} = 1\\), \\(0^\\circ < \\theta < 90^\\circ\\), then the value of \\(\\frac{7}{2}\\cot^2\\theta - \\frac{3}{4}\\csc^2\\theta\\) will be:",
+    "options": [
+      "7",
+      "2",
+      "3",
+      "5"
+    ],
+    "correct": "d",
+    "exam": "SSC CHSL 10/08/2021 (Afternoon)"
+  },
+  {
+    "id": 514,
+    "text": "If \\((1 + \\cot^2\\theta) + (1 + (\\cot^2\\theta)^{-1})\\) is equal to \\(k\\), then \\(\\sqrt{k} = ?\\)",
+    "options": [
+      "\\(\\sin\\theta \\sec\\theta\\)",
+      "\\(\\csc\\theta \\cos\\theta\\)",
+      "\\(\\csc\\theta \\sec\\theta\\)",
+      "\\(\\sin\\theta \\cos\\theta\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 10/08/2021 (Evening)"
+  },
+  {
+    "id": 515,
+    "text": "The value of \\(\\frac{\\sec\\theta \\csc\\theta}{2 + \\tan^2\\theta + \\cot^2\\theta}\\) is equal to:",
+    "options": [
+      "\\(\\sec\\theta \\csc\\theta\\)",
+      "\\(\\sec\\theta \\sin\\theta\\)",
+      "\\(\\sin\\theta \\cos\\theta\\)",
+      "\\(\\cos\\theta \\csc\\theta\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 11/08/2021 (Morning)"
+  },
+  {
+    "id": 516,
+    "text": "If \\(\\cot A + \\csc A = 2\\) and A is an acute angle, then the value of \\(\\frac{9\\tan A + 16\\csc A}{5\\sin A + 3\\tan A}\\) is:",
+    "options": [
+      "3",
+      "6",
+      "4",
+      "8"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 11/08/2021 (Afternoon)"
+  },
+  {
+    "id": 517,
+    "text": "If \\(\\cot^2\\theta + \\cot^4\\theta = 2\\), then the value of \\(2\\sin^4\\theta + \\sin^2\\theta\\) is:",
+    "options": [
+      "3",
+      "5",
+      "1",
+      "2"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 11/08/2021 (Evening)"
+  },
+  {
+    "id": 518,
+    "text": "If \\(\\sin\\alpha + \\cos\\alpha = \\tan\\frac{\\pi}{3}\\), then the value of \\((\\sin^3\\alpha + \\cos^3\\alpha)\\) is equal to:",
+    "options": [
+      "\\(\\frac{1}{2}\\)",
+      "1",
+      "0",
+      "\\(\\frac{3}{2}\\)"
+    ],
+    "correct": "c",
+    "exam": "SSC CHSL 11/08/2021 (Evening)"
+  },
+  {
+    "id": 519,
+    "text": "Value of \\(\\frac{\\sin^2 52^\\circ + 2 + \\sin^2 38^\\circ}{4\\cos^2 43^\\circ - 5 + 4\\cos^2 47^\\circ}\\)",
+    "options": [
+      "3",
+      "\\(\\frac{1}{3}\\)",
+      "-3",
+      "-1"
+    ],
+    "correct": "c",
+    "exam": "SSC CPO 24/11/2020 (Evening)"
+  },
+  {
+    "id": 520,
+    "text": "If \\(4(\\csc^2 57^\\circ - \\tan^2 33^\\circ) - \\cos 90^\\circ + y \\times \\tan^2 6^\\circ \\times \\tan^2 24^\\circ = \\frac{y}{2}\\) then the value of y is:",
+    "options": [
+      "4",
+      "8",
+      "-4",
+      "-8"
+    ],
+    "correct": "d",
+    "exam": "SSC CPO 25/11/2020 (Morning)"
+  }
+]
