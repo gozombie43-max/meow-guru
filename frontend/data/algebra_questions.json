@@ -49,7 +49,7 @@
     "year": "2010",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If x + 1/x = 2, then the value of x^{1}^{0}^{0} + 1/x^{1}^{0}^{0} is:",
+    "question": "If x + 1/x = 2, then the value of x^{100} + 1/x^{100} is:",
     "options": [
       "2",
       "0",
@@ -109,15 +109,15 @@
     "year": "2010",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If x = (\\sqrt2 – 1)^{–1/2}, then the value of (x^{2} – 1/x^{2}) is:",
+    "question": "If x = (\\sqrt{2} – 1)^{–1/2}, then the value of (x^{2} – 1/x^{2}) is:",
     "options": [
       "2",
-      "–2\\sqrt2",
-      "2\\sqrt2",
-      "–\\sqrt2"
+      "–2\\sqrt{2}",
+      "2\\sqrt{2}",
+      "–\\sqrt{2}"
     ],
     "correct_option_index": 2,
-    "correct_answer": "2\\sqrt2"
+    "correct_answer": "2\\sqrt{2}"
   },
   {
     "id": 9,
@@ -229,7 +229,7 @@
     "year": "2011",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If x^a \\cdot x^b \\cdot x^c = 1, then the value of a^{3} + b^{3} + c^{3} is:",
+    "question": "If x^{a} \\cdot x^{b} \\cdot x^{c} = 1, then the value of a^{3} + b^{3} + c^{3} is:",
     "options": [
       "9",
       "abc",
@@ -244,7 +244,7 @@
     "year": "2011",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If a + 1/a + 2 = 0, then the value of a^{3}^{7} – 1/a^{1}^{0}^{0} is:",
+    "question": "If a + 1/a + 2 = 0, then the value of a^{37} – 1/a^{100} is:",
     "options": [
       "0",
       "–2",
@@ -379,7 +379,7 @@
     "year": "2014-2011",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If a+1/a+2 = 0, then the value of (a^{3}^{7}–1/a^{1}^{0}^{0}) is?",
+    "question": "If a+1/a+2 = 0, then the value of (a^{37}–1/a^{100}) is?",
     "options": [
       "0",
       "–2",
@@ -469,7 +469,7 @@
     "year": "2014-2011",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If (x+1/x)^{2} = 3, then (x^{7}^{2}+x^{6}^{6}+x^{5}^{4}+x^{3}^{6}+x^{2}^{4}+x^{6}+1) is?",
+    "question": "If (x+1/x)^{2} = 3, then (x^{72}+x^{66}+x^{54}+x^{36}+x^{24}+x^{6}+1) is?",
     "options": [
       "1",
       "2",
@@ -499,12 +499,12 @@
     "year": "2014-2011",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If n = 7+4\\sqrt3, then the value of (\\sqrtn+1/\\sqrtn) is?",
+    "question": "If n = 7+4\\sqrt{3}, then the value of (\\sqrt{n}+1/\\sqrt{n}) is?",
     "options": [
-      "2\\sqrt3",
+      "2\\sqrt{3}",
       "4",
       "–4",
-      "–2\\sqrt3"
+      "–2\\sqrt{3}"
     ],
     "correct_option_index": 1,
     "correct_answer": "4"
@@ -529,7 +529,7 @@
     "year": "2014-2011",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If a,b are rational and (a–1)\\sqrt2+3 = b\\sqrt2+a, then (a+b) is?",
+    "question": "If a,b are rational and (a–1)\\sqrt{2}+3 = b\\sqrt{2}+a, then (a+b) is?",
     "options": [
       "–5",
       "3",
@@ -544,7 +544,7 @@
     "year": "2014-2011",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If (x+1/x)^{2} = 3, then x^{2}^{0}^{6}+x^{2}^{0}^{0}+x^{9}^{0}+x^{8}^{4}+x^{1}^{8}+x^{1}^{2}+x^{6}+1 is?",
+    "question": "If (x+1/x)^{2} = 3, then x^{206}+x^{200}+x^{90}+x^{84}+x^{18}+x^{12}+x^{6}+1 is?",
     "options": [
       "0",
       "1",
@@ -604,7 +604,7 @@
     "year": "2014-2011",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If \\sqrtx = \\sqrt3–\\sqrt5, then the value of x^{2}–16x+6 is?",
+    "question": "If \\sqrt{x} = \\sqrt{3}–\\sqrt{5}, then the value of x^{2}–16x+6 is?",
     "options": [
       "0",
       "–2",
@@ -709,11 +709,11 @@
     "year": "2014-2011",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If (2+\\sqrt3)a = (2–\\sqrt3)b = 1, then 1/a+1/b is?",
+    "question": "If (2+\\sqrt{3})a = (2–\\sqrt{3})b = 1, then 1/a+1/b is?",
     "options": [
       "1",
       "2",
-      "2\\sqrt3",
+      "2\\sqrt{3}",
       "4"
     ],
     "correct_option_index": 3,
@@ -799,10 +799,10 @@
     "year": "2012",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If x = \\sqrt3/2, then the value of (1+x)/(1+\\sqrt(1+x)) + (1–x)/(1–\\sqrt(1–x)) is:",
+    "question": "If x = \\sqrt{3}/2, then the value of (1+x)/(1+\\sqrt(1+x)) + (1–x)/(1–\\sqrt(1–x)) is:",
     "options": [
-      "\\sqrt3/2",
-      "\\sqrt3",
+      "\\sqrt{3}/2",
+      "\\sqrt{3}",
       "0",
       "1"
     ],
@@ -814,12 +814,12 @@
     "year": "2012",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "The real value of x that satisfies \\sqrt(4x–9) + \\sqrt(4x+9) = 5 + \\sqrt7 is:",
+    "question": "The real value of x that satisfies \\sqrt(4x–9) + \\sqrt(4x+9) = 5 + \\sqrt{7} is:",
     "options": [
-      "3/\\sqrt7",
+      "3/\\sqrt{7}",
       "4",
-      "\\sqrt5",
-      "2\\sqrt3"
+      "\\sqrt{5}",
+      "2\\sqrt{3}"
     ],
     "correct_option_index": 1,
     "correct_answer": "4"
@@ -874,7 +874,7 @@
     "year": "2012",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If \\sqrt(28–6\\sqrt3) = \\sqrt3a + b (a, b rational), then the value of (a + b) is:",
+    "question": "If \\sqrt(28–6\\sqrt{3}) = \\sqrt{3}a + b (a, b rational), then the value of (a + b) is:",
     "options": [
       "1",
       "–1",
@@ -889,7 +889,7 @@
     "year": "2012",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If x = \\sqrt((\\sqrt5+1)/(\\sqrt5–1)), then x^{2} – x – 1 is equal to:",
+    "question": "If x = \\sqrt((\\sqrt{5}+1)/(\\sqrt{5}–1)), then x^{2} – x – 1 is equal to:",
     "options": [
       "2",
       "5",
@@ -934,7 +934,7 @@
     "year": "2013",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If \\sqrtx = \\sqrt3 – \\sqrt5, then the value of x^{2} – 16x + 6 is:",
+    "question": "If \\sqrt{x} = \\sqrt{3} – \\sqrt{5}, then the value of x^{2} – 16x + 6 is:",
     "options": [
       "0",
       "–2",
@@ -1039,11 +1039,11 @@
     "year": "2014",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If (2+\\sqrt3)a = (2–\\sqrt3)b = 1, then the value of 1/a + 1/b is:",
+    "question": "If (2+\\sqrt{3})a = (2–\\sqrt{3})b = 1, then the value of 1/a + 1/b is:",
     "options": [
       "1",
       "2",
-      "2\\sqrt3",
+      "2\\sqrt{3}",
       "4"
     ],
     "correct_option_index": 3,
@@ -1204,7 +1204,7 @@
     "year": "2014",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "1/(1+\\sqrt2) + 1/(\\sqrt2+\\sqrt3) + 1/(\\sqrt3+\\sqrt4) + … + 1/(\\sqrt8+\\sqrt9) = ?",
+    "question": "1/(1+\\sqrt{2}) + 1/(\\sqrt{2}+\\sqrt{3}) + 1/(\\sqrt{3}+\\sqrt{4}) + … + 1/(\\sqrt{8}+\\sqrt{9}) = ?",
     "options": [
       "0",
       "1",
@@ -1219,7 +1219,7 @@
     "year": "2014",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If 2x = \\sqrta + 1/\\sqrta (a>0), then the value of (\\sqrt(x^{2}–1))/(x – \\sqrt(x^{2}–1)) is:",
+    "question": "If 2x = \\sqrt{a} + 1/\\sqrt{a} (a>0), then the value of (\\sqrt(x^{2}–1))/(x – \\sqrt(x^{2}–1)) is:",
     "options": [
       "\\frac{1}{2}(a–1)",
       "a–1",
@@ -1264,7 +1264,7 @@
     "year": "2014",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If a = 2 + \\sqrt3, then the value of (a^{6} + a^{4} + a^{2} + 1)/a^{3} is:",
+    "question": "If a = 2 + \\sqrt{3}, then the value of (a^{6} + a^{4} + a^{2} + 1)/a^{3} is:",
     "options": [
       "42",
       "56",
@@ -1279,15 +1279,15 @@
     "year": "2014",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If x = \\sqrt5 + \\sqrt3 and y = \\sqrt5 – \\sqrt3, then x^{4} – y^{4} is:",
+    "question": "If x = \\sqrt{5} + \\sqrt{3} and y = \\sqrt{5} – \\sqrt{3}, then x^{4} – y^{4} is:",
     "options": [
       "544",
-      "32\\sqrt15",
-      "64\\sqrt15",
+      "32\\sqrt{1}5",
+      "64\\sqrt{1}5",
       "16"
     ],
     "correct_option_index": 2,
-    "correct_answer": "64\\sqrt15"
+    "correct_answer": "64\\sqrt{1}5"
   },
   {
     "id": 87,
@@ -1414,7 +1414,7 @@
     "year": "2015",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "Let x = (\\sqrt13+\\sqrt11)/(\\sqrt13–\\sqrt11) and y = 1/x, then 3x^{2}–5xy+3y^{2} is?",
+    "question": "Let x = (\\sqrt{1}3+\\sqrt{1}1)/(\\sqrt{1}3–\\sqrt{1}1) and y = 1/x, then 3x^{2}–5xy+3y^{2} is?",
     "options": [
       "1717",
       "1177",
@@ -1459,7 +1459,7 @@
     "year": "2015",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "x–\\sqrt3–\\sqrt2 = 0 and y–\\sqrt3+\\sqrt2 = 0, then (x^{3}–20\\sqrt2)–(y^{3}+2\\sqrt2) is?",
+    "question": "x–\\sqrt{3}–\\sqrt{2} = 0 and y–\\sqrt{3}+\\sqrt{2} = 0, then (x^{3}–20\\sqrt{2})–(y^{3}+2\\sqrt{2}) is?",
     "options": [
       "0",
       "2",
@@ -1549,7 +1549,7 @@
     "year": "2015",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If (p⁻^{1}q^{2}/p^{3}q⁻^{2})^{1/3} \\div (p^{6}q⁻^{3}/p⁻^{2}q^{3})^{1/3} = p^a q^b, then a + b is:",
+    "question": "If (p⁻^{1}q^{2}/p^{3}q⁻^{2})^{1/3} \\div (p^{6}q⁻^{3}/p⁻^{2}q^{3})^{1/3} = p^{a} q^{b}, then a + b is:",
     "options": [
       "2/3",
       "–2/3",
@@ -1594,7 +1594,7 @@
     "year": "2015",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If x – \\sqrt3 – \\sqrt2 = 0 and y – \\sqrt3 + \\sqrt2 = 0, then (x^{3} – 20\\sqrt2) – (y^{3} – 2\\sqrt2) is:",
+    "question": "If x – \\sqrt{3} – \\sqrt{2} = 0 and y – \\sqrt{3} + \\sqrt{2} = 0, then (x^{3} – 20\\sqrt{2}) – (y^{3} – 2\\sqrt{2}) is:",
     "options": [
       "1",
       "0",
@@ -1609,7 +1609,7 @@
     "year": "2015",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "Let x = (\\sqrt13+\\sqrt11)/(\\sqrt13–\\sqrt11) and y = 1/x, then 3x^{2} – 5xy + 3y^{2} is:",
+    "question": "Let x = (\\sqrt{1}3+\\sqrt{1}1)/(\\sqrt{1}3–\\sqrt{1}1) and y = 1/x, then 3x^{2} – 5xy + 3y^{2} is:",
     "options": [
       "1717",
       "1171",
@@ -1744,15 +1744,15 @@
     "year": "2016",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "The simplified value of (\\sqrt3–\\sqrt2)/(\\sqrt12–\\sqrt18) – (1/3)\\times \\sqrt27 – (1/2)\\times \\sqrt[3]27 is closest to?",
+    "question": "The simplified value of (\\sqrt{3}–\\sqrt{2})/(\\sqrt{1}2–\\sqrt{1}8) – (1/3)\\times \\sqrt{2}7 – (1/2)\\times \\sqrt[3]27 is closest to?",
     "options": [
-      "(\\sqrt3–1)",
-      "(1–\\sqrtc)",
-      "–(–\\sqrt3–1)",
-      "–(\\sqrt3+1)"
+      "(\\sqrt{3}–1)",
+      "(1–\\sqrt{c})",
+      "–(–\\sqrt{3}–1)",
+      "–(\\sqrt{3}+1)"
     ],
     "correct_option_index": 0,
-    "correct_answer": "(\\sqrt3–1)"
+    "correct_answer": "(\\sqrt{3}–1)"
   },
   {
     "id": 118,
@@ -1776,13 +1776,13 @@
     "date": "",
     "question": "If a = 1/(a–5) (a>0), then the value of a+1/a is?",
     "options": [
-      "\\sqrt29",
-      "\\sqrt29",
-      "–\\sqrt29",
-      "\\sqrt27"
+      "\\sqrt{2}9",
+      "\\sqrt{2}9",
+      "–\\sqrt{2}9",
+      "\\sqrt{2}7"
     ],
     "correct_option_index": 0,
-    "correct_answer": "\\sqrt29"
+    "correct_answer": "\\sqrt{2}9"
   },
   {
     "id": 120,
@@ -1836,13 +1836,13 @@
     "date": "",
     "question": "Let 0 < x < 1. Then the correct inequality is?",
     "options": [
-      "x<\\sqrtx<x^{2}",
-      "\\sqrtx<x<x^{2}",
-      "x^{2}<x<\\sqrtx",
-      "\\sqrtx<x^{2}<x"
+      "x<\\sqrt{x}<x^{2}",
+      "\\sqrt{x}<x<x^{2}",
+      "x^{2}<x<\\sqrt{x}",
+      "\\sqrt{x}<x^{2}<x"
     ],
     "correct_option_index": 2,
-    "correct_answer": "x^{2}<x<\\sqrtx"
+    "correct_answer": "x^{2}<x<\\sqrt{x}"
   },
   {
     "id": 124,
@@ -1879,7 +1879,7 @@
     "year": "2016",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If x^{2}+y^{2}+2x+1 = 0, then the value of x^{3}^{1}+y^{3}^{5} is?",
+    "question": "If x^{2}+y^{2}+2x+1 = 0, then the value of x^{31}+y^{35} is?",
     "options": [
       "–1",
       "0",
@@ -1894,7 +1894,7 @@
     "year": "2016",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If x = (\\sqrt5+1)/(\\sqrt5–1) and y = (\\sqrt5–1)/(\\sqrt5+1), the value of (x^{2}+xy+y^{2})/(x^{2}–xy+y^{2}) is?",
+    "question": "If x = (\\sqrt{5}+1)/(\\sqrt{5}–1) and y = (\\sqrt{5}–1)/(\\sqrt{5}+1), the value of (x^{2}+xy+y^{2})/(x^{2}–xy+y^{2}) is?",
     "options": [
       "3/4",
       "4/3",
@@ -1984,7 +1984,7 @@
     "year": "2016",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If a+1/a = –2, then the value of a^{1}^{0}^{0}^{0}+a⁻^{1}^{0}^{0}^{0} is?",
+    "question": "If a+1/a = –2, then the value of a^{1000}+a⁻^{1000} is?",
     "options": [
       "2",
       "0",
@@ -2104,7 +2104,7 @@
     "year": "2016",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If x+1/x = \\sqrt3, the value of x^{1}^{8}+x^{1}^{2}+x^{6}+1 is?",
+    "question": "If x+1/x = \\sqrt{3}, the value of x^{18}+x^{12}+x^{6}+1 is?",
     "options": [
       "0",
       "1",
@@ -2119,15 +2119,15 @@
     "year": "2016",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If x = 1+\\sqrt2+\\sqrt3, then the value of 2x^{4}–8x^{3}–5x^{2}+26x–28 is?",
+    "question": "If x = 1+\\sqrt{2}+\\sqrt{3}, then the value of 2x^{4}–8x^{3}–5x^{2}+26x–28 is?",
     "options": [
-      "2\\sqrt2",
-      "3\\sqrt3",
-      "5\\sqrt5",
-      "6\\sqrt6"
+      "2\\sqrt{2}",
+      "3\\sqrt{3}",
+      "5\\sqrt{5}",
+      "6\\sqrt{6}"
     ],
     "correct_option_index": 3,
-    "correct_answer": "6\\sqrt6"
+    "correct_answer": "6\\sqrt{6}"
   },
   {
     "id": 143,
@@ -2239,7 +2239,7 @@
     "year": "2016",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If x + 1/x = \\sqrt3, then x^{1}^{8} + x^{1}^{2} + x^{6} + 1 is:",
+    "question": "If x + 1/x = \\sqrt{3}, then x^{18} + x^{12} + x^{6} + 1 is:",
     "options": [
       "0",
       "1",
@@ -2254,15 +2254,15 @@
     "year": "2016",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If x = 1 + \\sqrt2 + \\sqrt3, then 2x^{4} – 8x^{3} – 5x^{2} + 26x – 28 is:",
+    "question": "If x = 1 + \\sqrt{2} + \\sqrt{3}, then 2x^{4} – 8x^{3} – 5x^{2} + 26x – 28 is:",
     "options": [
-      "2\\sqrt2",
-      "3\\sqrt3",
-      "5\\sqrt5",
-      "6\\sqrt6"
+      "2\\sqrt{2}",
+      "3\\sqrt{3}",
+      "5\\sqrt{5}",
+      "6\\sqrt{6}"
     ],
     "correct_option_index": 1,
-    "correct_answer": "3\\sqrt3"
+    "correct_answer": "3\\sqrt{3}"
   },
   {
     "id": 152,
@@ -2299,7 +2299,7 @@
     "year": "2016",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If x^{2} + y^{2} + 2x + 1 = 0, then the value of x^{3}^{1} + y^{3}^{5} is:",
+    "question": "If x^{2} + y^{2} + 2x + 1 = 0, then the value of x^{31} + y^{35} is:",
     "options": [
       "–1",
       "0",
@@ -2389,7 +2389,7 @@
     "year": "2016",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If a + 1/a = –2, then a^{1}^{0}^{0}^{0} + a⁻^{1}^{0}^{0}^{0} is:",
+    "question": "If a + 1/a = –2, then a^{1000} + a⁻^{1000} is:",
     "options": [
       "2",
       "0",
@@ -2481,13 +2481,13 @@
     "date": "",
     "question": "If a = 1/(a–5) (a>0), then the value of a + 1/a is:",
     "options": [
-      "2\\sqrt29",
-      "\\sqrt29",
-      "–\\sqrt29",
-      "\\sqrt27"
+      "2\\sqrt{2}9",
+      "\\sqrt{2}9",
+      "–\\sqrt{2}9",
+      "\\sqrt{2}7"
     ],
     "correct_option_index": 0,
-    "correct_answer": "2\\sqrt29"
+    "correct_answer": "2\\sqrt{2}9"
   },
   {
     "id": 167,
@@ -2599,10 +2599,10 @@
     "year": "2017",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If \\sqrt((1–p^{2})(1–q^{2})) = \\sqrt3/2, then what is the value of \\sqrt(2p^{2}+2q^{2}+2pq) + \\sqrt(2p^{2}+2q^{2}–2pq)?",
+    "question": "If \\sqrt((1–p^{2})(1–q^{2})) = \\sqrt{3}/2, then what is the value of \\sqrt(2p^{2}+2q^{2}+2pq) + \\sqrt(2p^{2}+2q^{2}–2pq)?",
     "options": [
       "2",
-      "\\sqrt2",
+      "\\sqrt{2}",
       "1",
       "None of these"
     ],
@@ -2691,13 +2691,13 @@
     "date": "",
     "question": "If [x–(1/x)] = 2, then what is the value of [x^{6} – (1/x^{6})]?",
     "options": [
-      "144\\sqrt3+1",
-      "134\\sqrt2",
-      "142\\sqrt2+3",
-      "140\\sqrt2"
+      "144\\sqrt{3}+1",
+      "134\\sqrt{2}",
+      "142\\sqrt{2}+3",
+      "140\\sqrt{2}"
     ],
     "correct_option_index": 3,
-    "correct_answer": "140\\sqrt2"
+    "correct_answer": "140\\sqrt{2}"
   },
   {
     "id": 181,
@@ -2723,7 +2723,7 @@
     "options": [
       "x/2",
       "x^{2}",
-      "\\sqrtx",
+      "\\sqrt{x}",
       "1/x"
     ],
     "correct_option_index": 3,
@@ -2736,13 +2736,13 @@
     "date": "",
     "question": "If x = 1/(1+1/(1+x)) and y = 2/(2+1/(1+y)), then which of the following can be the value of x+y?",
     "options": [
-      "(–\\sqrt5–\\sqrt17+3)/4",
-      "(2\\sqrt5+\\sqrt17–3)/4",
-      "(–\\sqrt5+\\sqrt17+1)/4",
-      "(\\sqrt5+\\sqrt17–1)/4"
+      "(–\\sqrt{5}–\\sqrt{1}7+3)/4",
+      "(2\\sqrt{5}+\\sqrt{1}7–3)/4",
+      "(–\\sqrt{5}+\\sqrt{1}7+1)/4",
+      "(\\sqrt{5}+\\sqrt{1}7–1)/4"
     ],
     "correct_option_index": 3,
-    "correct_answer": "(\\sqrt5+\\sqrt17–1)/4"
+    "correct_answer": "(\\sqrt{5}+\\sqrt{1}7–1)/4"
   },
   {
     "id": 184,
@@ -2794,15 +2794,15 @@
     "year": "2017",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If a = (\\sqrt3+\\sqrt2)/(\\sqrt3–\\sqrt2) and b = (\\sqrt3–\\sqrt2)/(\\sqrt3+\\sqrt2), then what is the value of a^{2}+b^{2}–ab?",
+    "question": "If a = (\\sqrt{3}+\\sqrt{2})/(\\sqrt{3}–\\sqrt{2}) and b = (\\sqrt{3}–\\sqrt{2})/(\\sqrt{3}+\\sqrt{2}), then what is the value of a^{2}+b^{2}–ab?",
     "options": [
       "97",
-      "(2\\sqrt3)+2",
-      "(4\\sqrt6)+1",
+      "(2\\sqrt{3})+2",
+      "(4\\sqrt{6})+1",
       "98"
     ],
     "correct_option_index": 1,
-    "correct_answer": "(2\\sqrt3)+2"
+    "correct_answer": "(2\\sqrt{3})+2"
   },
   {
     "id": 188,
@@ -2824,7 +2824,7 @@
     "year": "2017",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "\\alpha and \\beta are roots of a quadratic. If \\alpha+\\beta = 8 and \\alpha–\\beta = 2\\sqrt5, then which equation has roots \\alpha^{4} and \\beta^{4}?",
+    "question": "\\alpha and \\beta are roots of a quadratic. If \\alpha+\\beta = 8 and \\alpha–\\beta = 2\\sqrt{5}, then which equation has roots \\alpha^{4} and \\beta^{4}?",
     "options": [
       "x^{2}–1522x+14641=0",
       "x^{2}+1921x+14641=0",
@@ -3154,15 +3154,15 @@
     "year": "2017",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If x+1/x = (\\sqrt3+1)/2, then what is the value of x^{4}+1/x^{4}?",
+    "question": "If x+1/x = (\\sqrt{3}+1)/2, then what is the value of x^{4}+1/x^{4}?",
     "options": [
-      "(4\\sqrt3–1)/4",
-      "(4\\sqrt3+1)/2",
-      "(–4\\sqrt3–1)/4",
-      "(–4\\sqrt3–1)/2"
+      "(4\\sqrt{3}–1)/4",
+      "(4\\sqrt{3}+1)/2",
+      "(–4\\sqrt{3}–1)/4",
+      "(–4\\sqrt{3}–1)/2"
     ],
     "correct_option_index": 2,
-    "correct_answer": "(–4\\sqrt3–1)/4"
+    "correct_answer": "(–4\\sqrt{3}–1)/4"
   },
   {
     "id": 212,
@@ -3259,7 +3259,7 @@
     "year": "2017",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If P = 7+4\\sqrt3 and PQ = 1, then what is the value of (1/P^{2}+1/Q^{2})?",
+    "question": "If P = 7+4\\sqrt{3} and PQ = 1, then what is the value of (1/P^{2}+1/Q^{2})?",
     "options": [
       "148",
       "189",
@@ -3274,11 +3274,11 @@
     "year": "2017",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If x = (\\sqrt5)+1 and y = (\\sqrt5)–1, then what is (x^{2}/y^{2})+(y^{2}/x^{2})+4(x/y+y/x)+6?",
+    "question": "If x = (\\sqrt{5})+1 and y = (\\sqrt{5})–1, then what is (x^{2}/y^{2})+(y^{2}/x^{2})+4(x/y+y/x)+6?",
     "options": [
       "31",
-      "23\\sqrt5",
-      "27\\sqrt5",
+      "23\\sqrt{5}",
+      "27\\sqrt{5}",
       "25"
     ],
     "correct_option_index": 3,
@@ -3289,7 +3289,7 @@
     "year": "2017",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If x = 2+\\sqrt3, y = 2–\\sqrt3 and z = 1, then what is x/yz+y/xz+z/xy+2[1/x+1/y+1/z]?",
+    "question": "If x = 2+\\sqrt{3}, y = 2–\\sqrt{3} and z = 1, then what is x/yz+y/xz+z/xy+2[1/x+1/y+1/z]?",
     "options": [
       "25",
       "22",
@@ -3304,7 +3304,7 @@
     "year": "2017",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "A root of ax^{2}+bx+c = 0 (a,b,c rational) is 5+3\\sqrt3. What is (a^{2}+b^{2}+c^{2})/(a+b+c)?",
+    "question": "A root of ax^{2}+bx+c = 0 (a,b,c rational) is 5+3\\sqrt{3}. What is (a^{2}+b^{2}+c^{2})/(a+b+c)?",
     "options": [
       "35/3",
       "37/3",
@@ -3336,9 +3336,9 @@
     "date": "",
     "question": "If [a+1/a]^{2}–2[a–1/a] = 12, then which is a value of \"a\"?",
     "options": [
-      "–8+\\sqrt3",
-      "–8–\\sqrt3",
-      "–8+\\sqrt5",
+      "–8+\\sqrt{3}",
+      "–8–\\sqrt{3}",
+      "–8+\\sqrt{5}",
       "None of these"
     ],
     "correct_option_index": 3,
@@ -3547,12 +3547,12 @@
     "question": "ABC is right-angled (∠BAC = 90°, ∠ACB = 60°). What is the ratio of circum-radius to side AB?",
     "options": [
       "1:2",
-      "1:\\sqrt3",
-      "2:\\sqrt3",
+      "1:\\sqrt{3}",
+      "2:\\sqrt{3}",
       "2:3"
     ],
     "correct_option_index": 2,
-    "correct_answer": "2:\\sqrt3"
+    "correct_answer": "2:\\sqrt{3}"
   },
   {
     "id": 238,
@@ -3574,7 +3574,7 @@
     "year": "2017",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If P = 7 + 4\\sqrt3 and PQ = 1, then 1/P^{2} + 1/Q^{2} is:",
+    "question": "If P = 7 + 4\\sqrt{3} and PQ = 1, then 1/P^{2} + 1/Q^{2} is:",
     "options": [
       "196",
       "194",
@@ -3709,7 +3709,7 @@
     "year": "2017",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If P = 7 + 4\\sqrt3 and PQ = 1, then (1/P^{2}) + (1/Q^{2}) is:",
+    "question": "If P = 7 + 4\\sqrt{3} and PQ = 1, then (1/P^{2}) + (1/Q^{2}) is:",
     "options": [
       "148",
       "189",
@@ -3724,11 +3724,11 @@
     "year": "2017",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If x = (\\sqrt5)+1 and y = (\\sqrt5)–1, the value of (x^{2}/y^{2}) + (y^{2}/x^{2}) + 4[(x/y) + (y/x)] + 6 is:",
+    "question": "If x = (\\sqrt{5})+1 and y = (\\sqrt{5})–1, the value of (x^{2}/y^{2}) + (y^{2}/x^{2}) + 4[(x/y) + (y/x)] + 6 is:",
     "options": [
       "31",
-      "23\\sqrt5",
-      "27\\sqrt5",
+      "23\\sqrt{5}",
+      "27\\sqrt{5}",
       "25"
     ],
     "correct_option_index": 3,
@@ -3739,7 +3739,7 @@
     "year": "2017",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If x = 2+\\sqrt3, y = 2–\\sqrt3 and z = 1, then (x/yz) + (y/xz) + (z/xy) + 2[(1/x)+(1/y)+(1/z)] is:",
+    "question": "If x = 2+\\sqrt{3}, y = 2–\\sqrt{3} and z = 1, then (x/yz) + (y/xz) + (z/xy) + 2[(1/x)+(1/y)+(1/z)] is:",
     "options": [
       "25",
       "22",
@@ -3754,7 +3754,7 @@
     "year": "2017",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "A root of ax^{2}+bx+c=0 is 5+3\\sqrt3. The value of (a^{2}+b^{2}+c^{2})/(a+b+c) is:",
+    "question": "A root of ax^{2}+bx+c=0 is 5+3\\sqrt{3}. The value of (a^{2}+b^{2}+c^{2})/(a+b+c) is:",
     "options": [
       "35/3",
       "37/3",
@@ -3786,9 +3786,9 @@
     "date": "",
     "question": "If [a+(1/a)]^{2} – 2[a–(1/a)] = 12, then a is:",
     "options": [
-      "–8+\\sqrt3",
-      "–8–\\sqrt3",
-      "–8+\\sqrt5",
+      "–8+\\sqrt{3}",
+      "–8–\\sqrt{3}",
+      "–8+\\sqrt{5}",
       "None of these"
     ],
     "correct_option_index": 3,
@@ -3919,15 +3919,15 @@
     "year": "2017",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If x + 1/x = (\\sqrt3+1)/2, then x^{4} + 1/x^{4} is:",
+    "question": "If x + 1/x = (\\sqrt{3}+1)/2, then x^{4} + 1/x^{4} is:",
     "options": [
-      "(4\\sqrt3–1)/4",
-      "(4\\sqrt3+1)/2",
-      "(–4\\sqrt3–1)/4",
-      "(–4\\sqrt3–1)/2"
+      "(4\\sqrt{3}–1)/4",
+      "(4\\sqrt{3}+1)/2",
+      "(–4\\sqrt{3}–1)/4",
+      "(–4\\sqrt{3}–1)/2"
     ],
     "correct_option_index": 3,
-    "correct_answer": "(–4\\sqrt3–1)/2"
+    "correct_answer": "(–4\\sqrt{3}–1)/2"
   },
   {
     "id": 263,
@@ -4174,11 +4174,11 @@
     "year": "2017",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If a=(\\sqrt3+\\sqrt2)/(\\sqrt3–\\sqrt2) and b=(\\sqrt3–\\sqrt2)/(\\sqrt3+\\sqrt2), then a^{2}+b^{2}–ab is:",
+    "question": "If a=(\\sqrt{3}+\\sqrt{2})/(\\sqrt{3}–\\sqrt{2}) and b=(\\sqrt{3}–\\sqrt{2})/(\\sqrt{3}+\\sqrt{2}), then a^{2}+b^{2}–ab is:",
     "options": [
       "97",
-      "(2\\sqrt3)+2",
-      "(4\\sqrt6)+1",
+      "(2\\sqrt{3})+2",
+      "(4\\sqrt{6})+1",
       "98"
     ],
     "correct_option_index": 3,
@@ -4204,7 +4204,7 @@
     "year": "2017",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "\\alpha, \\beta are roots of quadratic equation. If \\alpha+\\beta=8 and \\alpha–\\beta=2\\sqrt5, equation with roots \\alpha^{4} and \\beta^{4} is:",
+    "question": "\\alpha, \\beta are roots of quadratic equation. If \\alpha+\\beta=8 and \\alpha–\\beta=2\\sqrt{5}, equation with roots \\alpha^{4} and \\beta^{4} is:",
     "options": [
       "x^{2}–1522x+14641=0",
       "x^{2}+1921x+14641=0",
@@ -4339,7 +4339,7 @@
     "year": "2017",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "(2+\\sqrt2)+(1/(2+\\sqrt2))+(1/(2–\\sqrt2))+(2–\\sqrt2) = ?",
+    "question": "(2+\\sqrt{2})+(1/(2+\\sqrt{2}))+(1/(2–\\sqrt{2}))+(2–\\sqrt{2}) = ?",
     "options": [
       "2",
       "4",
@@ -4414,10 +4414,10 @@
     "year": "2017",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If \\sqrt((1–p^{2})(1–q^{2})) = \\sqrt3/2, then value of \\sqrt(2p^{2}+2q^{2}+2pq) + \\sqrt(2p^{2}+2q^{2}–2pq) is:",
+    "question": "If \\sqrt((1–p^{2})(1–q^{2})) = \\sqrt{3}/2, then value of \\sqrt(2p^{2}+2q^{2}+2pq) + \\sqrt(2p^{2}+2q^{2}–2pq) is:",
     "options": [
       "2",
-      "\\sqrt2",
+      "\\sqrt{2}",
       "1",
       "None of these"
     ],
@@ -4521,13 +4521,13 @@
     "date": "",
     "question": "If x = 1/(1+1/(1+x)) and y = 1/(2+1/(1+y)), then x+y can be:",
     "options": [
-      "(–5–\\sqrt17+3)/4",
-      "(2\\sqrt5+\\sqrt17–3)/4",
-      "(–\\sqrt5+\\sqrt17+1)/4",
-      "(\\sqrt5+\\sqrt17–1)/4"
+      "(–5–\\sqrt{1}7+3)/4",
+      "(2\\sqrt{5}+\\sqrt{1}7–3)/4",
+      "(–\\sqrt{5}+\\sqrt{1}7+1)/4",
+      "(\\sqrt{5}+\\sqrt{1}7–1)/4"
     ],
     "correct_option_index": 3,
-    "correct_answer": "(\\sqrt5+\\sqrt17–1)/4"
+    "correct_answer": "(\\sqrt{5}+\\sqrt{1}7–1)/4"
   },
   {
     "id": 303,
@@ -4552,9 +4552,9 @@
     "question": "If a^{2}+b^{2}+c^{2}+96 = 8(a+b–2c), then \\sqrt(ab – bc + ca) is equal to?",
     "options": [
       "6",
-      "2\\sqrt2",
+      "2\\sqrt{2}",
       "4",
-      "2\\sqrt3"
+      "2\\sqrt{3}"
     ],
     "correct_option_index": 2,
     "correct_answer": "4"
@@ -4594,7 +4594,7 @@
     "year": "2018",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If 2\\sqrt2x^{3} – 3\\sqrt3y^{3} = (\\sqrt2x – \\sqrt3y)(Ax^{2}+By^{2}+Cxy), then the value of A^{2} + B^{2} – C^{2} is?",
+    "question": "If 2\\sqrt{2}x^{3} – 3\\sqrt{3}y^{3} = (\\sqrt{2}x – \\sqrt{3}y)(Ax^{2}+By^{2}+Cxy), then the value of A^{2} + B^{2} – C^{2} is?",
     "options": [
       "11",
       "7",
@@ -4684,7 +4684,7 @@
     "year": "2018",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If x = (\\sqrt5–\\sqrt3)/(\\sqrt5+\\sqrt3) and y is the reciprocal of x, then what is the value of (x^{3} + y^{3})?",
+    "question": "If x = (\\sqrt{5}–\\sqrt{3})/(\\sqrt{5}+\\sqrt{3}) and y is the reciprocal of x, then what is the value of (x^{3} + y^{3})?",
     "options": [
       "488",
       "504",
@@ -4729,7 +4729,7 @@
     "year": "2018",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If 5\\sqrt5x^{3}+2\\sqrt2y^{3} = (Ax+\\sqrt2y)(Bx^{2}+2y^{2}+Cxy), then the value of (A^{2} + B^{2} – C^{2}) is?",
+    "question": "If 5\\sqrt{5}x^{3}+2\\sqrt{2}y^{3} = (Ax+\\sqrt{2}y)(Bx^{2}+2y^{2}+Cxy), then the value of (A^{2} + B^{2} – C^{2}) is?",
     "options": [
       "15",
       "20",
@@ -4744,7 +4744,7 @@
     "year": "2018",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If [3(x^{2}+1)–7x]/(3x) = 6, x \\neq 0, then the value of \\sqrtx + 1/\\sqrtx is?",
+    "question": "If [3(x^{2}+1)–7x]/(3x) = 6, x \\neq 0, then the value of \\sqrt{x} + 1/\\sqrt{x} is?",
     "options": [
       "\\sqrt(25/3)",
       "\\sqrt(11/3)",
@@ -4776,13 +4776,13 @@
     "date": "",
     "question": "If [x–(1/x)] = 2, then [x^{6}–(1/x^{6})] is:",
     "options": [
-      "114\\sqrt2+1",
-      "134\\sqrt2",
-      "142\\sqrt2+3",
-      "140\\sqrt2"
+      "114\\sqrt{2}+1",
+      "134\\sqrt{2}",
+      "142\\sqrt{2}+3",
+      "140\\sqrt{2}"
     ],
     "correct_option_index": 3,
-    "correct_answer": "140\\sqrt2"
+    "correct_answer": "140\\sqrt{2}"
   },
   {
     "id": 320,
@@ -4819,7 +4819,7 @@
     "year": "2018",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If x = \\sqrt((1+\\sqrt3)/2) – \\sqrt((1–\\sqrt3)/2), then (\\sqrt2–x)/(\\sqrt2+x) is closest to:",
+    "question": "If x = \\sqrt((1+\\sqrt{3})/2) – \\sqrt((1–\\sqrt{3})/2), then (\\sqrt{2}–x)/(\\sqrt{2}+x) is closest to:",
     "options": [
       "1.4",
       "0.12",
@@ -4849,7 +4849,7 @@
     "year": "2018",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "(253^{3}+247^{3})/(25.3\\times 25.3–624.91+24.7\\times 24.7) is 50\\times 10^k where k is:",
+    "question": "(253^{3}+247^{3})/(25.3\\times 25.3–624.91+24.7\\times 24.7) is 50\\times 10^{k} where k is:",
     "options": [
       "3",
       "–3",
@@ -4879,7 +4879,7 @@
     "year": "2018",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If \\sqrt(86–60\\sqrt2) = a–b\\sqrt2, then \\sqrt(a^{2}+b^{2}) correct to one decimal place is:",
+    "question": "If \\sqrt(86–60\\sqrt{2}) = a–b\\sqrt{2}, then \\sqrt(a^{2}+b^{2}) correct to one decimal place is:",
     "options": [
       "8.4",
       "7.8",
@@ -4909,7 +4909,7 @@
     "year": "2018",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If 2\\sqrt2x^{3}–3\\sqrt3y^{3}=(\\sqrt2x–\\sqrt3y)(Ax^{2}+By^{2}+Cxy), then A^{2}+B^{2}–C^{2} is:",
+    "question": "If 2\\sqrt{2}x^{3}–3\\sqrt{3}y^{3}=(\\sqrt{2}x–\\sqrt{3}y)(Ax^{2}+By^{2}+Cxy), then A^{2}+B^{2}–C^{2} is:",
     "options": [
       "7",
       "10",
@@ -4927,12 +4927,12 @@
     "question": "If a^{2}+b^{2}+c^{2}+96=8(a+b–2c), then \\sqrt(ab–bc+ca) is equal to:",
     "options": [
       "4",
-      "2\\sqrt3",
+      "2\\sqrt{3}",
       "6",
-      "2\\sqrt2"
+      "2\\sqrt{2}"
     ],
     "correct_option_index": 3,
-    "correct_answer": "2\\sqrt2"
+    "correct_answer": "2\\sqrt{2}"
   },
   {
     "id": 330,
@@ -5014,7 +5014,7 @@
     "year": "2018",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If x=(\\sqrt5–\\sqrt3)/(\\sqrt5+\\sqrt3) and y is reciprocal of x, then (x^{3}+y^{3}) is:",
+    "question": "If x=(\\sqrt{5}–\\sqrt{3})/(\\sqrt{5}+\\sqrt{3}) and y is reciprocal of x, then (x^{3}+y^{3}) is:",
     "options": [
       "488",
       "504",
@@ -5029,7 +5029,7 @@
     "year": "2018",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If \\sqrt(10–2\\sqrt21)+\\sqrt(8+2\\sqrt15)=\\sqrta+\\sqrtb (a,b positive integers), then \\sqrt(ab) is closest to:",
+    "question": "If \\sqrt(10–2\\sqrt{2}1)+\\sqrt(8+2\\sqrt{1}5)=\\sqrt{a}+\\sqrt{b} (a,b positive integers), then \\sqrt(ab) is closest to:",
     "options": [
       "4.6",
       "5.9",
@@ -5074,7 +5074,7 @@
     "year": "2018",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If 5\\sqrt5x^{3}+2\\sqrt2y^{2}=(Ax+\\sqrt2y)(Bx^{2}+2y^{2}+Cxy), then A^{2}+B^{2}–C^{2} is:",
+    "question": "If 5\\sqrt{5}x^{3}+2\\sqrt{2}y^{2}=(Ax+\\sqrt{2}y)(Bx^{2}+2y^{2}+Cxy), then A^{2}+B^{2}–C^{2} is:",
     "options": [
       "15",
       "20",
@@ -5089,7 +5089,7 @@
     "year": "2018",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If (3(2x^{2}+1)–7x)/(3x) = 6 (x\\neq0), then \\sqrtx + 1/\\sqrtx is:",
+    "question": "If (3(2x^{2}+1)–7x)/(3x) = 6 (x\\neq0), then \\sqrt{x} + 1/\\sqrt{x} is:",
     "options": [
       "\\sqrt(25/3)",
       "\\sqrt(11/3)",
@@ -5104,7 +5104,7 @@
     "year": "2018",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "Let x=\\sqrt[3]27–\\sqrt[3](6\\frac{3}{4}) and y=\\sqrt((45+\\sqrt605+\\sqrt245)/(\\sqrt80+\\sqrt125)). Then x^{2}+y^{2} is:",
+    "question": "Let x=\\sqrt[3]27–\\sqrt[3](6\\frac{3}{4}) and y=\\sqrt((45+\\sqrt{6}05+\\sqrt{2}45)/(\\sqrt{8}0+\\sqrt{1}25)). Then x^{2}+y^{2} is:",
     "options": [
       "223/36",
       "221/36",
@@ -5166,13 +5166,13 @@
     "date": "",
     "question": "Given x^{8}–34x^{4}+1=0. What is (x^{3}+x⁻^{3})?",
     "options": [
-      "5\\sqrt8",
-      "6\\sqrt6",
-      "5\\sqrt6",
-      "6\\sqrt8"
+      "5\\sqrt{8}",
+      "6\\sqrt{6}",
+      "5\\sqrt{6}",
+      "6\\sqrt{8}"
     ],
     "correct_option_index": 2,
-    "correct_answer": "5\\sqrt6"
+    "correct_answer": "5\\sqrt{6}"
   },
   {
     "id": 346,
@@ -5194,7 +5194,7 @@
     "year": "2019",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If 1/(4–\\sqrt8) + (3+2\\sqrt2)/(3–2\\sqrt2) – (3–2\\sqrt2)/(3+2\\sqrt2) = a+b\\sqrt2, then (3a+4b) is:",
+    "question": "If 1/(4–\\sqrt{8}) + (3+2\\sqrt{2})/(3–2\\sqrt{2}) – (3–2\\sqrt{2})/(3+2\\sqrt{2}) = a+b\\sqrt{2}, then (3a+4b) is:",
     "options": [
       "99\\frac{1}{2}",
       "99",
@@ -5359,7 +5359,7 @@
     "year": "2019",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If x=\\sqrt(–\\sqrt3+\\sqrt(3+8\\sqrt7+4\\sqrt3)) (x>0), then x equals:",
+    "question": "If x=\\sqrt(–\\sqrt{3}+\\sqrt(3+8\\sqrt{7}+4\\sqrt{3})) (x>0), then x equals:",
     "options": [
       "2",
       "4",
@@ -5374,7 +5374,7 @@
     "year": "2019",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If \\sqrtx+1/\\sqrtx=3, then x^{3}+1/x^{3} is:",
+    "question": "If \\sqrt{x}+1/\\sqrt{x}=3, then x^{3}+1/x^{3} is:",
     "options": [
       "324",
       "326",
@@ -5404,7 +5404,7 @@
     "year": "2019",
     "exam": "CGL Tier-II",
     "date": "",
-    "question": "If (8+2\\sqrt3)/(3\\sqrt3+5)=a\\sqrt3–b, then a+b is:",
+    "question": "If (8+2\\sqrt{3})/(3\\sqrt{3}+5)=a\\sqrt{3}–b, then a+b is:",
     "options": [
       "16",
       "18",
@@ -5436,20 +5436,20 @@
     "date": "29/01/2022",
     "question": "If 2x^{2} + 5x + 1 = 0, then one of the values of x − 1/(2x) is:",
     "options": [
-      "\\sqrt13/2",
-      "\\sqrt17/2",
+      "\\sqrt{1}3/2",
+      "\\sqrt{1}7/2",
       "5/2",
       "13/2"
     ],
     "correct_option_index": 1,
-    "correct_answer": "\\sqrt17/2"
+    "correct_answer": "\\sqrt{1}7/2"
   },
   {
     "id": 364,
     "year": "2020",
     "exam": "CGL 2020",
     "date": "29/01/2022",
-    "question": "22\\sqrt2 / (4\\sqrt2 − \\sqrt3 + \\sqrt5) = a + \\sqrt5\\cdotb, with a, b > 0. Then what is (ab) : (a + b)?",
+    "question": "22\\sqrt{2} / (4\\sqrt{2} − \\sqrt{3} + \\sqrt{5}) = a + \\sqrt{5}\\cdotb, with a, b > 0. Then what is (ab) : (a + b)?",
     "options": [
       "7:8",
       "4:7",
@@ -5479,7 +5479,7 @@
     "year": "2020",
     "exam": "CGL 2020",
     "date": "29/01/2022",
-    "question": "If x = \\sqrt(1 + \\sqrt3/2) − \\sqrt(1 − \\sqrt3/2), then the value of (\\sqrt3 − x)/(\\sqrt3 + x) is: (corrected to two decimal places)",
+    "question": "If x = \\sqrt(1 + \\sqrt{3}/2) − \\sqrt(1 − \\sqrt{3}/2), then the value of (\\sqrt{3} − x)/(\\sqrt{3} + x) is: (corrected to two decimal places)",
     "options": [
       "0.25",
       "0.19",
@@ -5494,15 +5494,15 @@
     "year": "2020",
     "exam": "CGL 2020",
     "date": "29/01/2022",
-    "question": "If x^{2} − \\sqrt7\\cdotx + 1 = 0, then what is the value of x^{5} + 1/x^{5} ?",
+    "question": "If x^{2} − \\sqrt{7}\\cdotx + 1 = 0, then what is the value of x^{5} + 1/x^{5} ?",
     "options": [
-      "25\\sqrt7",
-      "21\\sqrt7",
-      "27\\sqrt7",
-      "19\\sqrt7"
+      "25\\sqrt{7}",
+      "21\\sqrt{7}",
+      "27\\sqrt{7}",
+      "19\\sqrt{7}"
     ],
     "correct_option_index": 0,
-    "correct_answer": "25\\sqrt7"
+    "correct_answer": "25\\sqrt{7}"
   },
   {
     "id": 368,
@@ -5554,15 +5554,15 @@
     "year": "2021",
     "exam": "CGL 2021",
     "date": "08/08/2022",
-    "question": "What is the value of (\\sqrt7+\\sqrt5)/(\\sqrt7−\\sqrt5) \\div (\\sqrt14+\\sqrt10)/(\\sqrt14−\\sqrt10) + \\sqrt10/\\sqrt5 ?",
+    "question": "What is the value of (\\sqrt{7}+\\sqrt{5})/(\\sqrt{7}−\\sqrt{5}) \\div (\\sqrt{1}4+\\sqrt{1}0)/(\\sqrt{1}4−\\sqrt{1}0) + \\sqrt{1}0/\\sqrt{5} ?",
     "options": [
-      "\\sqrt2 + 2",
-      "2\\sqrt2 + 2",
-      "\\sqrt2 + 1",
-      "2\\sqrt2 + 1"
+      "\\sqrt{2} + 2",
+      "2\\sqrt{2} + 2",
+      "\\sqrt{2} + 1",
+      "2\\sqrt{2} + 1"
     ],
     "correct_option_index": 3,
-    "correct_answer": "2\\sqrt2 + 1"
+    "correct_answer": "2\\sqrt{2} + 1"
   },
   {
     "id": 372,
