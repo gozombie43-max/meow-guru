@@ -74,30 +74,28 @@ function estimatedTime(d: "easy" | "medium" | "hard"): number {
 /* ── Build enriched question bank ──────────────────────── */
 
 interface RawQ {
-  question: string;
-  options: string[];
-  answer: string;
+  id: number;
   year: string;
   exam: string;
-  subject: string;
-  chapter: string;
+  date?: string;
+  question: string;
+  options: string[];
+  correct_option_index: number;
+  correct_answer: string;
 }
 
 export const algebraQuestions: AlgebraQuestion[] = (rawData as RawQ[]).map(
-  (raw, i) => {
+  (raw) => {
     const concept = classifyConcept(raw.question);
     const difficulty = classifyDifficulty(raw.exam);
-    const correctAnswer = raw.options.findIndex(
-      (o) => o.trim() === raw.answer.trim()
-    );
     return {
-      id: i + 1,
+      id: raw.id,
       concept,
       formula: formulaForConcept(concept),
       question: raw.question,
       options: raw.options,
-      correctAnswer: correctAnswer >= 0 ? correctAnswer : 0,
-      answer: raw.answer,
+      correctAnswer: typeof raw.correct_option_index === 'number' ? raw.correct_option_index : raw.options.findIndex((o) => o.trim() === raw.correct_answer.trim()),
+      answer: raw.correct_answer,
       difficulty,
       estimatedTime: estimatedTime(difficulty),
       year: raw.year,
