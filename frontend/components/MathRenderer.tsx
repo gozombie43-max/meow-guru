@@ -55,7 +55,11 @@ export default function MathRenderer({
       return <span key={i}>{part.content}</span>;
     }
 
-    const html = katex.renderToString(part.content, {
+    // Fallback: convert simple ASCII numeric fractions (e.g. 3/4) into \tfrac{3}{4}
+    // so they render like a math-book fraction. Only apply inside math parts.
+    const mathContent = part.content.replace(/(\d+)\s*\/\s*(\d+)/g, "\\tfrac{$1}{$2}");
+
+    const html = katex.renderToString(mathContent, {
       throwOnError: false,
       displayMode: part.type === "display",
       trust: false,
@@ -68,7 +72,8 @@ export default function MathRenderer({
         style={
           part.type === "display"
             ? { display: "block", textAlign: "center", margin: "0.5em 0" }
-            : undefined
+            : // add small horizontal spacing for inline math so it doesn't stick to text
+              { display: "inline-block", marginLeft: "0.22em", marginRight: "0.22em" }
         }
       />
     );

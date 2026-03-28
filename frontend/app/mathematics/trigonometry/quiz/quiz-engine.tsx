@@ -1,6 +1,7 @@
 "use client";
 
 import MathRenderer from "@/components/MathRenderer";
+import MathText from "@/components/MathText";
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useSearchParams } from "next/navigation";
@@ -1596,7 +1597,7 @@ export default function TrigQuizEngine() {
                     lineHeight: 1.5,
                   }}
                 >
-                  <MathRenderer text={opt} />
+                  <MathText text={opt} />
                 </span>
 
                 {/* Correct / wrong icons */}

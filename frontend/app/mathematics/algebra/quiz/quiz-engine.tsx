@@ -1,6 +1,7 @@
 "use client";
 
 import MathRenderer from "@/components/MathRenderer";
+import MathText from "@/components/MathText";
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useSearchParams } from "next/navigation";
@@ -1138,7 +1139,7 @@ export default function QuizEngine() {
                 letterSpacing: 0.01,
               }}
             >
-              <MathRenderer text={currentQ.question} className="leading-relaxed" />
+              <MathText text={currentQ.question} className="leading-relaxed" />
             </div>
 
             {(currentQ as AlgebraQuestion & { image?: string }).image && (
@@ -1246,7 +1247,7 @@ export default function QuizEngine() {
                 <span
                   style={{ fontSize: 17, fontWeight: 400, color: "#111827", lineHeight: 1.5 }}
                 >
-                  <MathRenderer text={opt} />
+                  <MathText text={opt} />
                 </span>
                 {isCurrentSubmitted && i === currentQ.correctAnswer && (
                   <CheckCircle2
