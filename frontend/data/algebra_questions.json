@@ -1,0 +1,5672 @@
+[
+  {
+    "id": 1,
+    "year": "2010",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a^{2} + b^{2} + 1/a^{2} + 1/b^{2} = 4, then the value of a^{2} + b^{2} will be:",
+    "options": [
+      "1",
+      "1\\frac{1}{2}",
+      "2",
+      "2\\frac{1}{2}"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "2"
+  },
+  {
+    "id": 2,
+    "year": "2010",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If (x + 1/x)^{2} = 3, then the value of (x^{3} + 1/x^{3}) is:",
+    "options": [
+      "3",
+      "2",
+      "1",
+      "0"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "0"
+  },
+  {
+    "id": 3,
+    "year": "2010",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "(0.1\\times 0.1\\times 0.1 + 0.02\\times 0.02\\times 0.02) / (0.2\\times 0.2\\times 0.2 + 0.04\\times 0.04\\times 0.04) = ?",
+    "options": [
+      "0.125",
+      "0.250",
+      "0.500",
+      "0.855"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "0.125"
+  },
+  {
+    "id": 4,
+    "year": "2010",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x + 1/x = 2, then the value of x^{1}^{0}^{0} + 1/x^{1}^{0}^{0} is:",
+    "options": [
+      "2",
+      "0",
+      "1",
+      "-2"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "2"
+  },
+  {
+    "id": 5,
+    "year": "2010",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x^{3} + 3x^{2} + 3x = 7, then x is equal to:",
+    "options": [
+      "2",
+      "\\sqrt[3]6",
+      "1",
+      "-1"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "\\sqrt[3]6"
+  },
+  {
+    "id": 6,
+    "year": "2010",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If 2x + 2/x = 1, then the value of x^{3} + 1/x^{3} is:",
+    "options": [
+      "13/8",
+      "11/8",
+      "8/11",
+      "-13/8"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "-13/8"
+  },
+  {
+    "id": 7,
+    "year": "2010",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If 2x + 1/(3x) = 6, then 3x + 1/(2x) is equal to:",
+    "options": [
+      "4",
+      "8",
+      "9",
+      "12"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "8"
+  },
+  {
+    "id": 8,
+    "year": "2010",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x = (\\sqrt2 – 1)^{–1/2}, then the value of (x^{2} – 1/x^{2}) is:",
+    "options": [
+      "2",
+      "–2\\sqrt2",
+      "2\\sqrt2",
+      "–\\sqrt2"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "2\\sqrt2"
+  },
+  {
+    "id": 9,
+    "year": "2010",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "(0.87)^{3} + (0.13)^{3} / [(0.87)^{2} + (0.13)^{2} – (0.87)\\times (0.13)] = ?",
+    "options": [
+      "1/2",
+      "2",
+      "1",
+      "2\\frac{1}{2}"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "1"
+  },
+  {
+    "id": 10,
+    "year": "2010",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x^{2} + y^{2} – 2x + 6y + 10 = 0, then the value of (x^{2} + y^{2}) is:",
+    "options": [
+      "4",
+      "6",
+      "8",
+      "10"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "10"
+  },
+  {
+    "id": 11,
+    "year": "2010",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x^{1/3} + y^{1/3} = z^{1/3}, then (x + y – z)^{3} + 27xyz is equal to:",
+    "options": [
+      "0",
+      "1",
+      "–1",
+      "27"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "0"
+  },
+  {
+    "id": 12,
+    "year": "2010",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a^{2} = 2, then (a + 1) is equal to:",
+    "options": [
+      "a – 1",
+      "2/(a–1)",
+      "(a+1)/(3–2a)",
+      "(a–1)/(3–2a)"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "2/(a–1)"
+  },
+  {
+    "id": 13,
+    "year": "2010",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a + b + c = 1 and ab + bc + ca = 1/3, then a : b : c is:",
+    "options": [
+      "1:2:2",
+      "2:1:2",
+      "1:1:1",
+      "1:2:1"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "1:1:1"
+  },
+  {
+    "id": 14,
+    "year": "2011",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a^{2} + b^{2} + c^{2} = 2(a – b – c) – 3, then the value of (a – b + c) is:",
+    "options": [
+      "–1",
+      "3",
+      "1",
+      "–2"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "1"
+  },
+  {
+    "id": 15,
+    "year": "2011",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x^{2} + 3x + 1 = 0, then the value of x^{3} + 1/x^{3} is:",
+    "options": [
+      "–18",
+      "18",
+      "36",
+      "–36"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "–18"
+  },
+  {
+    "id": 16,
+    "year": "2011",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x^a \\cdot x^b \\cdot x^c = 1, then the value of a^{3} + b^{3} + c^{3} is:",
+    "options": [
+      "9",
+      "abc",
+      "a+b+c",
+      "3abc"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "3abc"
+  },
+  {
+    "id": 17,
+    "year": "2011",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a + 1/a + 2 = 0, then the value of a^{3}^{7} – 1/a^{1}^{0}^{0} is:",
+    "options": [
+      "0",
+      "–2",
+      "1",
+      "2"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "0"
+  },
+  {
+    "id": 18,
+    "year": "2011",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "The value of k for which the graph of (k – 1)x + y – 2 = 0 and (2 – k)x – 3y + 1 = 0 are parallel:",
+    "options": [
+      "1/2",
+      "–1/2",
+      "2",
+      "–2"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "1/2"
+  },
+  {
+    "id": 19,
+    "year": "2011",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x + 1/(16x) = 1, then the value of 64x^{3} + 1/(64x^{3}) is:",
+    "options": [
+      "4",
+      "52",
+      "64",
+      "76"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "52"
+  },
+  {
+    "id": 20,
+    "year": "2011",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a, b, c are three non-zero real numbers such that a + b + c = 0 and b^{2} \\neq ca, then (a^{2} + b^{2} + c^{2})/(b^{2} – ca) is:",
+    "options": [
+      "3",
+      "2",
+      "0",
+      "1"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "3"
+  },
+  {
+    "id": 21,
+    "year": "2011",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a^{4} + a^{2}b^{2} + b^{4} = 8 and a^{2} + ab + b^{2} = 4, then the value of ab is:",
+    "options": [
+      "–1",
+      "0",
+      "2",
+      "1"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "0"
+  },
+  {
+    "id": 22,
+    "year": "2011",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a = 25, b = 15, c = –10, then the value of (a^{3} + b^{3} + c^{3} – 3abc) / [(a–b)^{2} + (b–c)^{2} + (c–a)^{2}] is:",
+    "options": [
+      "30",
+      "–15",
+      "–30",
+      "15"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "15"
+  },
+  {
+    "id": 23,
+    "year": "2014-2011",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a^{2}+b^{2}+c^{2} = 2(a–b–c)–3, then the value of (a–b+c) is?",
+    "options": [
+      "–1",
+      "3",
+      "1",
+      "–2"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "1"
+  },
+  {
+    "id": 24,
+    "year": "2014-2011",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x^{3}+3x+1 = 0, then the value of x^{3}+1/x^{3} is?",
+    "options": [
+      "–18",
+      "18",
+      "36",
+      "–36"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "–18"
+  },
+  {
+    "id": 25,
+    "year": "2014-2011",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If xᵃ\\cdotxᵇ\\cdotxᶜ = 1, then the value of a^{3}+b^{3}+c^{3} is?",
+    "options": [
+      "9",
+      "abc",
+      "a+b+c",
+      "3abc"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "3abc"
+  },
+  {
+    "id": 26,
+    "year": "2014-2011",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a+1/a+2 = 0, then the value of (a^{3}^{7}–1/a^{1}^{0}^{0}) is?",
+    "options": [
+      "0",
+      "–2",
+      "1",
+      "2"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "0"
+  },
+  {
+    "id": 27,
+    "year": "2014-2011",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "x+1/(16x) = 1, then the value of 64x^{3}+1/(64x^{3}) is?",
+    "options": [
+      "4",
+      "52",
+      "64",
+      "76"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "52"
+  },
+  {
+    "id": 28,
+    "year": "2014-2011",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "a, b, c are non-zero reals, a+b+c = 0 and b^{2}\\neqca, then (a^{2}+b^{2}+c^{2})/(b^{2}–ca) is?",
+    "options": [
+      "3",
+      "2",
+      "0",
+      "1"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "3"
+  },
+  {
+    "id": 29,
+    "year": "2014-2011",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a^{4}+a^{2}b^{2}+b^{4} = 8 and a^{2}+ab+b^{2} = 4, then the value of ab is?",
+    "options": [
+      "–1",
+      "0",
+      "2",
+      "1"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "0"
+  },
+  {
+    "id": 30,
+    "year": "2014-2011",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a = 25, b = 15, c = –10, then (a^{3}+b^{3}+c^{3}–3abc)/((a–b)^{2}+(b–c)^{2}+(c–a)^{2}) is?",
+    "options": [
+      "30",
+      "–15",
+      "–30",
+      "15"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "15"
+  },
+  {
+    "id": 31,
+    "year": "2014-2011",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a^{3}b = abc = 180, a,b,c are positive integers, then c is?",
+    "options": [
+      "110",
+      "1",
+      "4",
+      "25"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "4"
+  },
+  {
+    "id": 32,
+    "year": "2014-2011",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If (x+1/x)^{2} = 3, then (x^{7}^{2}+x^{6}^{6}+x^{5}^{4}+x^{3}^{6}+x^{2}^{4}+x^{6}+1) is?",
+    "options": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "1"
+  },
+  {
+    "id": 33,
+    "year": "2014-2011",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a+b+c = 0, then (a^{2}+b^{2}+c^{2})/(a^{2}–bc) is?",
+    "options": [
+      "0",
+      "1",
+      "2",
+      "3"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "2"
+  },
+  {
+    "id": 34,
+    "year": "2014-2011",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If n = 7+4\\sqrt3, then the value of (\\sqrtn+1/\\sqrtn) is?",
+    "options": [
+      "2\\sqrt3",
+      "4",
+      "–4",
+      "–2\\sqrt3"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "4"
+  },
+  {
+    "id": 35,
+    "year": "2014-2011",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a+b+c = 6, a^{2}+b^{2}+c^{2} = 14 and a^{3}+b^{3}+c^{3} = 36, then abc is?",
+    "options": [
+      "3",
+      "6",
+      "9",
+      "12"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "6"
+  },
+  {
+    "id": 36,
+    "year": "2014-2011",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a,b are rational and (a–1)\\sqrt2+3 = b\\sqrt2+a, then (a+b) is?",
+    "options": [
+      "–5",
+      "3",
+      "–3",
+      "5"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "5"
+  },
+  {
+    "id": 37,
+    "year": "2014-2011",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If (x+1/x)^{2} = 3, then x^{2}^{0}^{6}+x^{2}^{0}^{0}+x^{9}^{0}+x^{8}^{4}+x^{1}^{8}+x^{1}^{2}+x^{6}+1 is?",
+    "options": [
+      "0",
+      "1",
+      "84",
+      "206"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "0"
+  },
+  {
+    "id": 38,
+    "year": "2014-2011",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x = y = 333 and z = 334, then x^{3}+y^{3}+z^{3}–3xyz is?",
+    "options": [
+      "0",
+      "667",
+      "1000",
+      "2334"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "1000"
+  },
+  {
+    "id": 39,
+    "year": "2014-2011",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If (x–a^{2})/(b+c) + (x–b^{2})/(c+a) + (x–c^{2})/(a+b) = 4(a+b+c), then x is equal to?",
+    "options": [
+      "(a+b+c)^{2}",
+      "a^{2}+b^{2}+c^{2}",
+      "ab+bc+ca",
+      "a^{2}+b^{2}+c^{2}–ab–bc–ca"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "a^{2}+b^{2}+c^{2}"
+  },
+  {
+    "id": 40,
+    "year": "2014-2011",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If (x–a)(x–b) = 1 and a–b+5 = 0, then (x–a)^{3}–1/(x–a)^{3} is?",
+    "options": [
+      "–125",
+      "1",
+      "125",
+      "140"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "–125"
+  },
+  {
+    "id": 41,
+    "year": "2014-2011",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If \\sqrtx = \\sqrt3–\\sqrt5, then the value of x^{2}–16x+6 is?",
+    "options": [
+      "0",
+      "–2",
+      "2",
+      "1"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "0"
+  },
+  {
+    "id": 42,
+    "year": "2014-2011",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a^{2}+b^{2}+c^{2} = 2(a–b–c)–3, then the value of 4a–3b+5c is?",
+    "options": [
+      "2",
+      "3",
+      "5",
+      "6"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "3"
+  },
+  {
+    "id": 43,
+    "year": "2014-2011",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If 2x+2/x = 3, then x^{3}+1/x^{3}+2 is?",
+    "options": [
+      "–9/8",
+      "–25/8",
+      "7/8",
+      "11"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "–25/8"
+  },
+  {
+    "id": 44,
+    "year": "2014-2011",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "One of the factors of (a^{2}–b^{2})^{3}+(b^{2}–c^{2})^{3}+(c^{2}+a^{2})^{3} is?",
+    "options": [
+      "(a+b)(a–b)",
+      "(a+b)(a+b)",
+      "(a–b)(a–b)",
+      "(b–c)(b–c)"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "(a+b)(a–b)"
+  },
+  {
+    "id": 45,
+    "year": "2014-2011",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x = \\sqrt[3]5+2, then x^{3}–6x^{2}+12x–13 is?",
+    "options": [
+      "–1",
+      "1",
+      "2",
+      "0"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "0"
+  },
+  {
+    "id": 46,
+    "year": "2014-2011",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a^{2}+b^{2}+c^{2} = ab+bc+ac, then (a+c)/b is?",
+    "options": [
+      "0",
+      "2",
+      "1",
+      "–1"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "2"
+  },
+  {
+    "id": 47,
+    "year": "2014-2011",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If ab+bc+ca = 0, then (1/(a^{2}–bc)+1/(b^{2}–ca)+1/(c^{2}–ab)) is?",
+    "options": [
+      "0",
+      "1",
+      "3",
+      "a+b+c"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "0"
+  },
+  {
+    "id": 48,
+    "year": "2014-2011",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If (2+\\sqrt3)a = (2–\\sqrt3)b = 1, then 1/a+1/b is?",
+    "options": [
+      "1",
+      "2",
+      "2\\sqrt3",
+      "4"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "4"
+  },
+  {
+    "id": 49,
+    "year": "2014-2011",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If 3x+3/x = 1, then x^{3}+1/x^{3}+1 is?",
+    "options": [
+      "0",
+      "1/27",
+      "5/27",
+      "28/27"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "1/27"
+  },
+  {
+    "id": 50,
+    "year": "2014-2011",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "The factors of (a^{2}+4b^{2}+4b–4ab–2a–8) are?",
+    "options": [
+      "(a–2b–4)(a–2b+2)",
+      "(a–b+2)(a–4b–4)",
+      "(a+2b–4)(a+2b+4)",
+      "(a+2b–1)(a–2b+1)"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "(a–2b–4)(a–2b+2)"
+  },
+  {
+    "id": 51,
+    "year": "2014-2011",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "The value of 1/(a^{2}+ax+x^{2}) – 1/(a^{2}–ax+x^{2}) + 2ax/(a^{4}–a^{2}x^{2}+x^{4}) is?",
+    "options": [
+      "2",
+      "1",
+      "–1",
+      "0"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "0"
+  },
+  {
+    "id": 52,
+    "year": "2014-2011",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x = 11, then x^{5}–12x^{4}+12x^{3}–12x^{2}+12x–1 is?",
+    "options": [
+      "5",
+      "10",
+      "15",
+      "20"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "10"
+  },
+  {
+    "id": 53,
+    "year": "2014-2011",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If p = 99, then p(p^{2}+3p+3) is?",
+    "options": [
+      "1000000",
+      "999000",
+      "999999",
+      "990000"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "999999"
+  },
+  {
+    "id": 54,
+    "year": "2012",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x = \\sqrt3/2, then the value of (1+x)/(1+\\sqrt(1+x)) + (1–x)/(1–\\sqrt(1–x)) is:",
+    "options": [
+      "\\sqrt3/2",
+      "\\sqrt3",
+      "0",
+      "1"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "1"
+  },
+  {
+    "id": 55,
+    "year": "2012",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "The real value of x that satisfies \\sqrt(4x–9) + \\sqrt(4x+9) = 5 + \\sqrt7 is:",
+    "options": [
+      "3/\\sqrt7",
+      "4",
+      "\\sqrt5",
+      "2\\sqrt3"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "4"
+  },
+  {
+    "id": 56,
+    "year": "2012",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "Find the value of a^{3} + b^{3} + c^{3} – 3abc, if a = 225, b = 226, c = 227:",
+    "options": [
+      "2034",
+      "2340",
+      "2304",
+      "2430"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "2304"
+  },
+  {
+    "id": 57,
+    "year": "2012",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "Number of solutions of the equation \\sqrt(x^{2}–x+1) + 1/\\sqrt(x^{2}–x+1) = 2 – x^{2} is:",
+    "options": [
+      "2",
+      "4",
+      "0",
+      "1"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "0"
+  },
+  {
+    "id": 58,
+    "year": "2012",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x + a/x = 1, then the value of (x^{2} + x + a)/(x^{3} – x^{2}) is:",
+    "options": [
+      "2/a",
+      "–2/a",
+      "–2",
+      "–a/2"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "–2/a"
+  },
+  {
+    "id": 59,
+    "year": "2012",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If \\sqrt(28–6\\sqrt3) = \\sqrt3a + b (a, b rational), then the value of (a + b) is:",
+    "options": [
+      "1",
+      "–1",
+      "–2",
+      "2"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "2"
+  },
+  {
+    "id": 60,
+    "year": "2012",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x = \\sqrt((\\sqrt5+1)/(\\sqrt5–1)), then x^{2} – x – 1 is equal to:",
+    "options": [
+      "2",
+      "5",
+      "0",
+      "1"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "0"
+  },
+  {
+    "id": 61,
+    "year": "2013",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x = y = 333 and z = 334, then x^{3} + y^{3} + z^{3} – 3xyz is:",
+    "options": [
+      "0",
+      "667",
+      "1000",
+      "2334"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "1000"
+  },
+  {
+    "id": 62,
+    "year": "2013",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If (x–a)(x–b) = 1 and a – b + 5 = 0, then (x–a)^{3} – 1/(x–a)^{3} is:",
+    "options": [
+      "–125",
+      "1",
+      "125",
+      "140"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "–125"
+  },
+  {
+    "id": 63,
+    "year": "2013",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If \\sqrtx = \\sqrt3 – \\sqrt5, then the value of x^{2} – 16x + 6 is:",
+    "options": [
+      "0",
+      "–2",
+      "2",
+      "4"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "0"
+  },
+  {
+    "id": 64,
+    "year": "2013",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a^{2} + b^{2} + c^{2} = 2(a–b–c) – 3, then the value of 4a – 3b + 5c is:",
+    "options": [
+      "2",
+      "3",
+      "5",
+      "6"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "3"
+  },
+  {
+    "id": 65,
+    "year": "2013",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If 2x + 2/x = 3, then the value of x^{3} + 2/x^{3} + 2 is:",
+    "options": [
+      "–25/8",
+      "–25/8",
+      "7/8",
+      "11"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "–25/8"
+  },
+  {
+    "id": 66,
+    "year": "2013",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "One of the factors of (a^{2}–b^{2})^{3} + (b^{2}–c^{2})^{3} + (c^{2}–a^{2})^{3} is:",
+    "options": [
+      "(a+b)(a–b)",
+      "(a+b)(a+b)",
+      "(a–b)(a–b)",
+      "(b–c)(b–c)"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "(a+b)(a–b)"
+  },
+  {
+    "id": 67,
+    "year": "2013",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x = \\sqrt[3]5 + 2, then the value of x^{3} – 6x^{2} + 21x – 13 is:",
+    "options": [
+      "–1",
+      "1",
+      "2",
+      "0"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "0"
+  },
+  {
+    "id": 68,
+    "year": "2014",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a^{2} + b^{2} + c^{2} = ab + bc + ac, then (a+c)/b is:",
+    "options": [
+      "0",
+      "2",
+      "1",
+      "–1"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "2"
+  },
+  {
+    "id": 69,
+    "year": "2014",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If ab + bc + ca = 0, then (1/(a^{2}–bc) + 1/(b^{2}–ca) + 1/(c^{2}–ab)) is:",
+    "options": [
+      "0",
+      "1",
+      "3",
+      "a+b+c"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "0"
+  },
+  {
+    "id": 70,
+    "year": "2014",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If (2+\\sqrt3)a = (2–\\sqrt3)b = 1, then the value of 1/a + 1/b is:",
+    "options": [
+      "1",
+      "2",
+      "2\\sqrt3",
+      "4"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "4"
+  },
+  {
+    "id": 71,
+    "year": "2014",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If 3x + 3/x = 1, then x^{3} + 1/x^{3} + 1 is:",
+    "options": [
+      "–1/29",
+      "1/27",
+      "–1/36",
+      "1/24"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "–1/29"
+  },
+  {
+    "id": 72,
+    "year": "2014",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "The factors of (a^{2}+4b^{2}+4b–4ab–2a–8) will be:",
+    "options": [
+      "(a–2b–4)(a–2b+2)",
+      "(a–2b+2)(a–4b–4)",
+      "(a+2b–4)(a+2b+2)",
+      "(a+2b–1)(a–2b+1)"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "(a–2b–4)(a–2b+2)"
+  },
+  {
+    "id": 73,
+    "year": "2014",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If 4x + 5y = 83 and 3x : 2y = 21:22, then y – x equals:",
+    "options": [
+      "3",
+      "4",
+      "7",
+      "11"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "7"
+  },
+  {
+    "id": 74,
+    "year": "2014",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x = 11, then the value of x^{5} – 12x^{4} + 12x^{3} – 12x^{2} + 12x – 1 is:",
+    "options": [
+      "5",
+      "10",
+      "15",
+      "20"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "10"
+  },
+  {
+    "id": 75,
+    "year": "2014",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If p = 99, then the value of p(p^{2} + 3p + 3) is:",
+    "options": [
+      "10000000 – 1",
+      "999000",
+      "999999",
+      "990000"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "999999"
+  },
+  {
+    "id": 76,
+    "year": "2014",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If (3–5x)/2x + (3–5y)/2y + (3–5z)/2z = 0, then 2/x + 2/y + 2/z is:",
+    "options": [
+      "5",
+      "15",
+      "20",
+      "10"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "10"
+  },
+  {
+    "id": 77,
+    "year": "2014",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If 2s = a + b + c, then s(s–c) + (s–a)(s–b) is:",
+    "options": [
+      "abc",
+      "(a+b+c)/2",
+      "ab",
+      "0"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "ab"
+  },
+  {
+    "id": 78,
+    "year": "2014",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If p + m = 6 and p^{3} + m^{3} = 72, then pm is:",
+    "options": [
+      "6",
+      "8",
+      "6",
+      "9"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "8"
+  },
+  {
+    "id": 79,
+    "year": "2014",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "When x^{m} is multiplied by x^{n}, product is 1. The relation between m and n is:",
+    "options": [
+      "m = n",
+      "m = –n",
+      "mn = 1",
+      "m + n = 1"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "m = –n"
+  },
+  {
+    "id": 80,
+    "year": "2014",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If 2P/(p^{2}–2p+1) = 1/4, then the value of (p + 1/p) is:",
+    "options": [
+      "2/5",
+      "10",
+      "7",
+      "1"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "10"
+  },
+  {
+    "id": 81,
+    "year": "2014",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "1/(1+\\sqrt2) + 1/(\\sqrt2+\\sqrt3) + 1/(\\sqrt3+\\sqrt4) + … + 1/(\\sqrt8+\\sqrt9) = ?",
+    "options": [
+      "0",
+      "1",
+      "2",
+      "4"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "4"
+  },
+  {
+    "id": 82,
+    "year": "2014",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If 2x = \\sqrta + 1/\\sqrta (a>0), then the value of (\\sqrt(x^{2}–1))/(x – \\sqrt(x^{2}–1)) is:",
+    "options": [
+      "\\frac{1}{2}(a–1)",
+      "a–1",
+      "a+1",
+      "\\frac{1}{2}(a+1)"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "\\frac{1}{2}(a+1)"
+  },
+  {
+    "id": 83,
+    "year": "2014",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a, b, c are real and a^{2} + b^{2} + c^{2} = 2(a–b–c) – 3, then a + b + c is:",
+    "options": [
+      "3",
+      "0",
+      "–1",
+      "1"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "–1"
+  },
+  {
+    "id": 84,
+    "year": "2014",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If (a+b–c)/(a+b) = (b+c–a)/(b+c) = (c+a–b)/(c+a) and a+b+c \\neq 0, then:",
+    "options": [
+      "a=b\\neqc",
+      "b\\neqa=c",
+      "a\\neqb\\neqc",
+      "a=b=c"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "a=b=c"
+  },
+  {
+    "id": 85,
+    "year": "2014",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a = 2 + \\sqrt3, then the value of (a^{6} + a^{4} + a^{2} + 1)/a^{3} is:",
+    "options": [
+      "42",
+      "56",
+      "45",
+      "65"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "45"
+  },
+  {
+    "id": 86,
+    "year": "2014",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x = \\sqrt5 + \\sqrt3 and y = \\sqrt5 – \\sqrt3, then x^{4} – y^{4} is:",
+    "options": [
+      "544",
+      "32\\sqrt15",
+      "64\\sqrt15",
+      "16"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "64\\sqrt15"
+  },
+  {
+    "id": 87,
+    "year": "2014",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x + y + z = 6, then (x–1)^{3} + (y–2)^{3} + (z–3)^{3} is:",
+    "options": [
+      "(x–1)(y–2)(z–3)",
+      "2(x–1)(y–2)(z–3)",
+      "3(x–1)(y–2)(z–3)",
+      "3xyz"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "3(x–1)(y–2)(z–3)"
+  },
+  {
+    "id": 88,
+    "year": "2014",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If bc + ab + ca = abc, then (b+c)/(bc(a–1)) + (a+c)/(ac(b–1)) + (a+b)/(ab(c–1)) is:",
+    "options": [
+      "–2/3",
+      "1",
+      "0",
+      "–1/2"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "0"
+  },
+  {
+    "id": 89,
+    "year": "2014",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If (a^{2}–bc)/(a^{2}+bc) + (b^{2}–ca)/(b^{2}+ca) + (c^{2}–ab)/(c^{2}+ab) = 1, then a^{2}/(a^{2}+bc) + b^{2}/(b^{2}+ac) + c^{2}/(c^{2}+ab) is:",
+    "options": [
+      "–1",
+      "2",
+      "0",
+      "1"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "1"
+  },
+  {
+    "id": 90,
+    "year": "2014",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If p^{4} = 119 – 1/p^{4}, then p^{3} – 1/p^{3} is:",
+    "options": [
+      "36",
+      "18",
+      "24",
+      "32"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "32"
+  },
+  {
+    "id": 91,
+    "year": "2015",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If (x^{3}–y^{3}):(x^{2}+xy+y^{2}) = 5:1 and (x^{2}–y^{2}):(x–y) = 7:1, then the ratio 2x:3y equals?",
+    "options": [
+      "2:3",
+      "4:3",
+      "4:1",
+      "3:2"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "4:1"
+  },
+  {
+    "id": 92,
+    "year": "2015",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If (3x–2y):(2x+3y) = 5:6, then one value of (\\sqrt[3]x+\\sqrt[3]y)^{2}/(\\sqrt[3]x–\\sqrt[3]y)^{2} is?",
+    "options": [
+      "1/5",
+      "1/25",
+      "5",
+      "25"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "25"
+  },
+  {
+    "id": 93,
+    "year": "2015",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a+b = 1, find the value of a^{3}+b^{3}–ab–(a^{2}–b^{2})^{2}?",
+    "options": [
+      "2",
+      "–1",
+      "1",
+      "0"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "0"
+  },
+  {
+    "id": 94,
+    "year": "2015",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If 3(a^{2}+b^{2}+c^{2}) = (a+b+c)^{2}, then the relation between a, b and c is?",
+    "options": [
+      "ab\\neqb=c",
+      "a\\neqb\\neqc",
+      "a=b=c",
+      "ab=b\\neqc"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "a=b=c"
+  },
+  {
+    "id": 95,
+    "year": "2015",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "Let x = (\\sqrt13+\\sqrt11)/(\\sqrt13–\\sqrt11) and y = 1/x, then 3x^{2}–5xy+3y^{2} is?",
+    "options": [
+      "1717",
+      "1177",
+      "1771",
+      "1171"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "1771"
+  },
+  {
+    "id": 96,
+    "year": "2015",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If (p⁻^{1}q^{2}/p^{3}q⁻^{2})^{1/3} \\div (p^{6}q⁻^{3}/p⁻^{2}q^{3})^{1/3} = pᵃqᵇ, then a+b (p,q different positive primes) is?",
+    "options": [
+      "–2",
+      "1",
+      "0",
+      "–1"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "–1"
+  },
+  {
+    "id": 97,
+    "year": "2015",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x = a^{1/2}+a^{–1/2}, y = a^{1/2}–a^{–1/2}, then (x^{4}–x^{2}y^{2}–1)+(y^{4}–x^{2}y^{2}+1) is?",
+    "options": [
+      "12",
+      "13",
+      "14",
+      "16"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "14"
+  },
+  {
+    "id": 98,
+    "year": "2015",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "x–\\sqrt3–\\sqrt2 = 0 and y–\\sqrt3+\\sqrt2 = 0, then (x^{3}–20\\sqrt2)–(y^{3}+2\\sqrt2) is?",
+    "options": [
+      "0",
+      "2",
+      "3",
+      "1"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "0"
+  },
+  {
+    "id": 99,
+    "year": "2015",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a–1/(a–3) = 5, then the value of (a–3)^{3}–1/(a–3)^{3} is?",
+    "options": [
+      "5",
+      "14",
+      "2",
+      "7"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "14"
+  },
+  {
+    "id": 100,
+    "year": "2015",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x^{2}+y^{2}+z^{2} = xy+yz+zx, then (3x^{4}+7y^{4}+5z^{4})/(5x^{2}y^{2}+7y^{2}z^{2}+3z^{2}x^{2}) is?",
+    "options": [
+      "1",
+      "–1",
+      "2",
+      "0"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "1"
+  },
+  {
+    "id": 101,
+    "year": "2015",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a+1/b = b+1/c = c+1/a (a\\neqb\\neqc\\neq0), then the value of a^{2}b^{2}c^{2} is?",
+    "options": [
+      "1",
+      "–1",
+      "abc",
+      "0"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "1"
+  },
+  {
+    "id": 102,
+    "year": "2015",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a – 1/(a–3) = 5, then (a–3)^{3} – 1/(a–3)^{3} is:",
+    "options": [
+      "7",
+      "2",
+      "5",
+      "14"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "14"
+  },
+  {
+    "id": 103,
+    "year": "2015",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a + 1/b = b + 1/c = c + 1/a (a\\neqb\\neqc\\neq0), then a^{2}b^{2}c^{2} is:",
+    "options": [
+      "0",
+      "1",
+      "abc",
+      "–1"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "1"
+  },
+  {
+    "id": 104,
+    "year": "2015",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If (p⁻^{1}q^{2}/p^{3}q⁻^{2})^{1/3} \\div (p^{6}q⁻^{3}/p⁻^{2}q^{3})^{1/3} = p^a q^b, then a + b is:",
+    "options": [
+      "2/3",
+      "–2/3",
+      "3/4",
+      "0"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "–2/3"
+  },
+  {
+    "id": 105,
+    "year": "2015",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x^{2} + y^{2} + z^{2} = xy + yz + zx, then (3x^{4}+7y^{4}+5z^{4})/(5x^{2}y^{2}+7y^{2}z^{2}+3z^{2}x^{2}) is:",
+    "options": [
+      "0",
+      "–1",
+      "2",
+      "1"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "1"
+  },
+  {
+    "id": 106,
+    "year": "2015",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If (3x–2y):(2x+3y) = 5:6, then one value of (\\sqrt[3]x + \\sqrt[3]y)^{2}/(\\sqrt[3]x – \\sqrt[3]y)^{2} is:",
+    "options": [
+      "5",
+      "25",
+      "1/5",
+      "1/25"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "25"
+  },
+  {
+    "id": 107,
+    "year": "2015",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x – \\sqrt3 – \\sqrt2 = 0 and y – \\sqrt3 + \\sqrt2 = 0, then (x^{3} – 20\\sqrt2) – (y^{3} – 2\\sqrt2) is:",
+    "options": [
+      "1",
+      "0",
+      "2",
+      "3"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "0"
+  },
+  {
+    "id": 108,
+    "year": "2015",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "Let x = (\\sqrt13+\\sqrt11)/(\\sqrt13–\\sqrt11) and y = 1/x, then 3x^{2} – 5xy + 3y^{2} is:",
+    "options": [
+      "1717",
+      "1171",
+      "1771",
+      "1177"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "1771"
+  },
+  {
+    "id": 109,
+    "year": "2015",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "Find the value of (0.67\\times 0.67\\times 0.67 – 0.33\\times 0.33\\times 0.33)/(0.67\\times 0.67 + 0.67\\times 0.33 + 0.33\\times 0.33):",
+    "options": [
+      "3.4",
+      "0.34",
+      "11",
+      "1.1"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "0.34"
+  },
+  {
+    "id": 110,
+    "year": "2015",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If (x^{2}–y^{2}):(x^{2}+xy+y^{2}) = 5:1 and (x^{2}–y^{2}):(x–y) = 7:1, then 2x:3y equals:",
+    "options": [
+      "4:3",
+      "4:1",
+      "2:3",
+      "3:2"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "4:3"
+  },
+  {
+    "id": 111,
+    "year": "2015",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x = a^{1/2} + a^{–1/2}, y = a^{1/2} – a^{–1/2}, then (x^{4} – x^{2}y^{2} – 1) + (y^{4} – x^{2}y^{2} + 1) is:",
+    "options": [
+      "12",
+      "14",
+      "16",
+      "13"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "14"
+  },
+  {
+    "id": 112,
+    "year": "2015",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a + b = 1, find the value of a^{3} + b^{3} – ab – (a^{2} – b^{2})^{2}:",
+    "options": [
+      "2",
+      "1",
+      "0",
+      "–1"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "0"
+  },
+  {
+    "id": 113,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x^{2}+1/x^{2} = 98 (x>0), then the value of x^{3}+1/x^{3} is?",
+    "options": [
+      "970",
+      "1030",
+      "–970",
+      "–1030"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "970"
+  },
+  {
+    "id": 114,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a+1/b = 1 and b+1/c = 1, then the value of c+1/a is?",
+    "options": [
+      "0",
+      "2",
+      "1",
+      "3"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "1"
+  },
+  {
+    "id": 115,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x = y+z, then x^{3}–y^{3}–z^{3} is?",
+    "options": [
+      "0",
+      "3xyz",
+      "–3xyz",
+      "1"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "3xyz"
+  },
+  {
+    "id": 116,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a+b+c+d = 4, then the value of 1/((1–a)(1–b)(1–c)) + 1/((1–b)(1–c)(1–d)) + 1/((1–c)(1–d)(1–a)) + 1/((1–d)(1–a)(1–b)) is?",
+    "options": [
+      "0",
+      "1",
+      "4",
+      "1+abcd"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "0"
+  },
+  {
+    "id": 117,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "The simplified value of (\\sqrt3–\\sqrt2)/(\\sqrt12–\\sqrt18) – (1/3)\\times \\sqrt27 – (1/2)\\times \\sqrt[3]27 is closest to?",
+    "options": [
+      "(\\sqrt3–1)",
+      "(1–\\sqrtc)",
+      "–(–\\sqrt3–1)",
+      "–(\\sqrt3+1)"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "(\\sqrt3–1)"
+  },
+  {
+    "id": 118,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x = 11, the value of x^{5}–12x^{4}+12x^{3}–12x^{2}+12x–1 is?",
+    "options": [
+      "11",
+      "10",
+      "12",
+      "–10"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "10"
+  },
+  {
+    "id": 119,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a = 1/(a–5) (a>0), then the value of a+1/a is?",
+    "options": [
+      "\\sqrt29",
+      "\\sqrt29",
+      "–\\sqrt29",
+      "\\sqrt27"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "\\sqrt29"
+  },
+  {
+    "id": 120,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a+1/b = b+1/c = c+1/a (where a\\neqb\\neqc), then abc is equal to?",
+    "options": [
+      "+1",
+      "–1",
+      "+1 & –1",
+      "None of the options"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "+1 & –1"
+  },
+  {
+    "id": 121,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If ax+by = 1 and bx+ay = 2ab/(a^{2}+b^{2}), then (x^{2}+y^{2})(a^{2}+b^{2}) is equal to?",
+    "options": [
+      "1",
+      "2",
+      "0.5",
+      "0"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "1"
+  },
+  {
+    "id": 122,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x, y, z are the three factors of a^{3}–7a–6, then value of x+y+z will be?",
+    "options": [
+      "3a",
+      "3",
+      "6",
+      "a"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "3a"
+  },
+  {
+    "id": 123,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "Let 0 < x < 1. Then the correct inequality is?",
+    "options": [
+      "x<\\sqrtx<x^{2}",
+      "\\sqrtx<x<x^{2}",
+      "x^{2}<x<\\sqrtx",
+      "\\sqrtx<x^{2}<x"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "x^{2}<x<\\sqrtx"
+  },
+  {
+    "id": 124,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "The simplified value of (1–2xy/(x^{2}+y^{2})) \\div ((x^{3}–y^{3})/(x–y) – 3xy) is?",
+    "options": [
+      "1/(x^{2}–y^{2})",
+      "1/(x^{2}+y^{2})",
+      "1/(x–y)",
+      "1/(x+y)"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "1/(x^{2}–y^{2})"
+  },
+  {
+    "id": 125,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a+b+c = 0, then the value of 1/((a+b)(b+c)) + 1/((b+c)(c+a)) + 1/((c+a)(a+b)) is?",
+    "options": [
+      "0",
+      "1",
+      "3",
+      "2"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "0"
+  },
+  {
+    "id": 126,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x^{2}+y^{2}+2x+1 = 0, then the value of x^{3}^{1}+y^{3}^{5} is?",
+    "options": [
+      "–1",
+      "0",
+      "1",
+      "2"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "0"
+  },
+  {
+    "id": 127,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x = (\\sqrt5+1)/(\\sqrt5–1) and y = (\\sqrt5–1)/(\\sqrt5+1), the value of (x^{2}+xy+y^{2})/(x^{2}–xy+y^{2}) is?",
+    "options": [
+      "3/4",
+      "4/3",
+      "3/5",
+      "5/3"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "4/3"
+  },
+  {
+    "id": 128,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If (x–1/x)^{2} = 3, then the value of x^{6}+1/x^{6} equals?",
+    "options": [
+      "90",
+      "100",
+      "110",
+      "120"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "110"
+  },
+  {
+    "id": 129,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x^{4}+2x^{3}+ax^{2}+bx+9 is a perfect square (a,b positive reals), then the value of a and b are?",
+    "options": [
+      "a=5,b=6",
+      "a=6,b=7",
+      "a=7,b=6",
+      "a=7,b=8"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "a=7,b=6"
+  },
+  {
+    "id": 130,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a^{2}+b^{2}+c^{2} = 16, x^{2}+y^{2}+z^{2} = 25 and ax+by+cz = 20, then the value of (a+b+c)/(x+y+z) is?",
+    "options": [
+      "3/5",
+      "5/3",
+      "4/5",
+      "5/4"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "4/5"
+  },
+  {
+    "id": 131,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "The value of x which satisfies (x+a^{2}+2c^{2})/(b+c) + (x+b^{2}+2a^{2})/(c+a) + (x+c^{2}+2b^{2})/(a+b) = 0 is?",
+    "options": [
+      "(a^{2}+b^{2}+c^{2})",
+      "–(a^{2}+b^{2}+c^{2})",
+      "(a^{2}+2b^{2}+c^{2})",
+      "–(a^{2}+b^{2}+2c^{2})"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "(a^{2}+b^{2}+c^{2})"
+  },
+  {
+    "id": 132,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a^{3} = 117+b^{3} and a = 3+b, then the value of a+b is?",
+    "options": [
+      "\\pm7",
+      "\\pm49",
+      "\\pm13",
+      "0"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "\\pm7"
+  },
+  {
+    "id": 133,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a+1/a = –2, then the value of a^{1}^{0}^{0}^{0}+a⁻^{1}^{0}^{0}^{0} is?",
+    "options": [
+      "2",
+      "0",
+      "1",
+      "1/2"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "2"
+  },
+  {
+    "id": 134,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If P = 99, then the value of P(P^{2}+3P+3) is?",
+    "options": [
+      "9999",
+      "999999",
+      "99999",
+      "9999999"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "999999"
+  },
+  {
+    "id": 135,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x+1/x = c+1/c, then the value of x is?",
+    "options": [
+      "c, 1/c",
+      "c, c^{2}",
+      "c, 2c",
+      "0, 1"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "c, 1/c"
+  },
+  {
+    "id": 136,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If the sum of squares of two real numbers is 41 and their sum is 9, then the sum of cubes of these two numbers is?",
+    "options": [
+      "169",
+      "209",
+      "189",
+      "198"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "189"
+  },
+  {
+    "id": 137,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "A complete factorisation of x^{4}+64 is?",
+    "options": [
+      "(x^{2}+8)^{2}",
+      "(x^{2}+8)(x^{2}–8)",
+      "(x^{2}–4x+8)(x^{2}–4x–8)",
+      "(x^{2}+4x+8)(x^{2}–4x+8)"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "(x^{2}+4x+8)(x^{2}–4x+8)"
+  },
+  {
+    "id": 138,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a+b = 1, then a^{4}+b^{4}–a^{3}–b^{3}–2a^{2}b^{2}+ab is equal to?",
+    "options": [
+      "1",
+      "2",
+      "4",
+      "0"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "0"
+  },
+  {
+    "id": 139,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x^{2}+y^{2}+6x+5 = 4(x–y), then x–y is?",
+    "options": [
+      "1",
+      "–1",
+      "0",
+      "4"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "1"
+  },
+  {
+    "id": 140,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a = 299, b = 298, c = 297, then 2a^{3}+2b^{3}+2c^{3}–6abc is?",
+    "options": [
+      "5154",
+      "5267",
+      "5364",
+      "5456"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "5364"
+  },
+  {
+    "id": 141,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x+1/x = \\sqrt3, the value of x^{1}^{8}+x^{1}^{2}+x^{6}+1 is?",
+    "options": [
+      "0",
+      "1",
+      "2",
+      "3"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "0"
+  },
+  {
+    "id": 142,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x = 1+\\sqrt2+\\sqrt3, then the value of 2x^{4}–8x^{3}–5x^{2}+26x–28 is?",
+    "options": [
+      "2\\sqrt2",
+      "3\\sqrt3",
+      "5\\sqrt5",
+      "6\\sqrt6"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "6\\sqrt6"
+  },
+  {
+    "id": 143,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If 2r = h+\\sqrt(r^{2}+h^{2}), then the ratio r:h (r \\neq 0) is?",
+    "options": [
+      "1:2",
+      "2:3",
+      "4:3",
+      "3:5"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "4:3"
+  },
+  {
+    "id": 144,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If P = 99, then the value of P(P^{2} + 3P + 3) is:",
+    "options": [
+      "9999",
+      "999999",
+      "99999",
+      "9999999"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "9999999"
+  },
+  {
+    "id": 145,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x + 1/x = c + 1/c, then the value of x is:",
+    "options": [
+      "c, 1/c",
+      "c, c^{2}",
+      "c, 2c",
+      "0, 1"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "c, 1/c"
+  },
+  {
+    "id": 146,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "A complete factorisation of x^{4} + 64 is:",
+    "options": [
+      "(x^{2}+8)^{2}",
+      "(x^{2}+8)(x^{2}–8)",
+      "(x^{2}–4x+8)(x^{2}+4x–8)",
+      "(x^{2}+4x+8)(x^{2}–4x+8)"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "(x^{2}+4x+8)(x^{2}–4x+8)"
+  },
+  {
+    "id": 147,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a + b = 1, then a^{4} + b^{4} – a^{3} – b^{3} – 2a^{2}b^{2} + ab is equal to:",
+    "options": [
+      "1",
+      "2",
+      "4",
+      "0"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "0"
+  },
+  {
+    "id": 148,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x^{2} + y^{2} + 6x + 5 = 4(x – y), then x – y is:",
+    "options": [
+      "1",
+      "–1",
+      "0",
+      "4"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "–1"
+  },
+  {
+    "id": 149,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a = 299, b = 298, c = 297, then 2a^{3} + 2b^{3} + 2c^{3} – 6abc is:",
+    "options": [
+      "5154",
+      "5267",
+      "5364",
+      "5456"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "5154"
+  },
+  {
+    "id": 150,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x + 1/x = \\sqrt3, then x^{1}^{8} + x^{1}^{2} + x^{6} + 1 is:",
+    "options": [
+      "0",
+      "1",
+      "2",
+      "3"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "0"
+  },
+  {
+    "id": 151,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x = 1 + \\sqrt2 + \\sqrt3, then 2x^{4} – 8x^{3} – 5x^{2} + 26x – 28 is:",
+    "options": [
+      "2\\sqrt2",
+      "3\\sqrt3",
+      "5\\sqrt5",
+      "6\\sqrt6"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "3\\sqrt3"
+  },
+  {
+    "id": 152,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "(1 – 2xy/(x^{2}+y^{2})) \\div (x^{3}–y^{3})/(x–y) – 3xy) = ?",
+    "options": [
+      "1/(x^{2}–y^{2})",
+      "1/(x^{2}+y^{2})",
+      "1/(x–y)",
+      "1/(x+y)"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "1/(x^{2}+y^{2})"
+  },
+  {
+    "id": 153,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a + b + c = 0, then 1/((a+b)(b+c)) + 1/((b+c)(c+a)) + 1/((c+a)(a+b)) is:",
+    "options": [
+      "0",
+      "1",
+      "3",
+      "2"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "0"
+  },
+  {
+    "id": 154,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x^{2} + y^{2} + 2x + 1 = 0, then the value of x^{3}^{1} + y^{3}^{5} is:",
+    "options": [
+      "–1",
+      "0",
+      "1",
+      "2"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "–1"
+  },
+  {
+    "id": 155,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If (x – 1/x)^{2} = 3, then x^{6} + 1/x^{6} equals:",
+    "options": [
+      "90",
+      "100",
+      "110",
+      "120"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "110"
+  },
+  {
+    "id": 156,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x^{4} + 2x^{3} + ax^{2} + bx + 9 is a perfect square (a, b positive reals), then (a, b) is:",
+    "options": [
+      "a=5,b=6",
+      "a=6,b=7",
+      "a=7,b=6",
+      "a=7,b=8"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "a=5,b=6"
+  },
+  {
+    "id": 157,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a^{2}+b^{2}+c^{2}=16, x^{2}+y^{2}+z^{2}=25 and ax+by+cz=20, then (a+b+c)/(x+y+z) is:",
+    "options": [
+      "3/5",
+      "5/3",
+      "4/5",
+      "5/4"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "3/5"
+  },
+  {
+    "id": 158,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "The value of x satisfying (x+a^{2}+2c^{2})/(b+c) + (x+b^{2}+2a^{2})/(c+a) + (x+c^{2}+2b^{2})/(a+b) = 0 is:",
+    "options": [
+      "a^{2}+b^{2}+c^{2}",
+      "–(a^{2}+b^{2}+c^{2})",
+      "a^{2}+2b^{2}+c^{2}",
+      "–(a^{2}+b^{2}+2c^{2})"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "–(a^{2}+b^{2}+c^{2})"
+  },
+  {
+    "id": 159,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a^{3} = 117 + b^{3} and a = 3 + b, then the value of a + b is:",
+    "options": [
+      "\\pm7",
+      "\\pm49",
+      "\\pm13",
+      "0"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "\\pm7"
+  },
+  {
+    "id": 160,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a + 1/a = –2, then a^{1}^{0}^{0}^{0} + a⁻^{1}^{0}^{0}^{0} is:",
+    "options": [
+      "2",
+      "0",
+      "1",
+      "1/2"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "2"
+  },
+  {
+    "id": 161,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x^{2} + 1/x^{2} = 98 (x>0), then x^{3} + 1/x^{3} is:",
+    "options": [
+      "970",
+      "1030",
+      "–970",
+      "–1030"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "970"
+  },
+  {
+    "id": 162,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a + 1/b = 1 and b + 1/c = 1, then c + 1/a is:",
+    "options": [
+      "0",
+      "2",
+      "1",
+      "3"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "1"
+  },
+  {
+    "id": 163,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x = y + z, then x^{3} – y^{3} – z^{3} is:",
+    "options": [
+      "0",
+      "3xyz",
+      "–3xyz",
+      "1"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "3xyz"
+  },
+  {
+    "id": 164,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a+b+c+d = 4, then 1/((1–a)(1–b)(1–c)) + 1/((1–b)(1–c)(1–d)) + 1/((1–c)(1–d)(1–a)) + 1/((1–d)(1–a)(1–b)) is:",
+    "options": [
+      "0",
+      "1",
+      "4",
+      "1+abcd"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "0"
+  },
+  {
+    "id": 165,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x = 11, the value of x^{5} – 12x^{4} + 12x^{3} – 12x^{2} + 12x – 1 is:",
+    "options": [
+      "11",
+      "10",
+      "12",
+      "–10"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "11"
+  },
+  {
+    "id": 166,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a = 1/(a–5) (a>0), then the value of a + 1/a is:",
+    "options": [
+      "2\\sqrt29",
+      "\\sqrt29",
+      "–\\sqrt29",
+      "\\sqrt27"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "2\\sqrt29"
+  },
+  {
+    "id": 167,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a+1/b = b+1/c = c+1/a (a\\neqb\\neqc\\neq0), then abc is equal to:",
+    "options": [
+      "+1",
+      "–1",
+      "+1 & –1",
+      "None of these"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "+1 & –1"
+  },
+  {
+    "id": 168,
+    "year": "2016",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If ax+by=1 and bx+ay=2ab/(a^{2}+b^{2}), then (x^{2}+y^{2})(a^{2}+b^{2}) is:",
+    "options": [
+      "1",
+      "2",
+      "0.5",
+      "0"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "1"
+  },
+  {
+    "id": 169,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "The sum of two positive numbers is 14 and difference between their squares is 56. What is the sum of their squares?",
+    "options": [
+      "106",
+      "196",
+      "53",
+      "68"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "106"
+  },
+  {
+    "id": 170,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a^{2}+b^{2}=4b+6a–13, then what is the value of a+b?",
+    "options": [
+      "3",
+      "2",
+      "5",
+      "10"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "5"
+  },
+  {
+    "id": 171,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "X and y are positive integers. If x^{4}+y^{4}+x^{2}y^{2} = 481 and xy = 12, then what is the value of x^{2}–xy+y^{2}?",
+    "options": [
+      "16",
+      "13",
+      "11",
+      "15"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "13"
+  },
+  {
+    "id": 172,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If A = 1+2ᵖ and B = 1+2⁻ᵖ, then what is the value of B?",
+    "options": [
+      "(A+1)/(A–1)",
+      "(A+2)/(A+1)",
+      "A/(A–1)",
+      "(A–2)/(A+1)"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "A/(A–1)"
+  },
+  {
+    "id": 173,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a and b are roots of ax^{2}+bx+c = 0, then which equation will have roots (ab+a+b) and (ab–a–b)?",
+    "options": [
+      "a^{2}x^{2}+2acx+c^{2}+b^{2}=0",
+      "a^{2}x^{2}–2acx+c^{2}–b^{2}=0",
+      "a^{2}x^{2}–2acx+c^{2}+b^{2}=0",
+      "a^{2}x^{2}+2acx+c^{2}–b^{2}=0"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "a^{2}x^{2}–2acx+c^{2}–b^{2}=0"
+  },
+  {
+    "id": 174,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If \\sqrt((1–p^{2})(1–q^{2})) = \\sqrt3/2, then what is the value of \\sqrt(2p^{2}+2q^{2}+2pq) + \\sqrt(2p^{2}+2q^{2}–2pq)?",
+    "options": [
+      "2",
+      "\\sqrt2",
+      "1",
+      "None of these"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "2"
+  },
+  {
+    "id": 175,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If (a+b)^{2}–2(a+b) = 80 and ab = 16, then what can be the value of 3a–19b?",
+    "options": [
+      "–16",
+      "–14",
+      "–18",
+      "–20"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "–20"
+  },
+  {
+    "id": 176,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x^{y+z} = 1, y^{x+z} = 1024 and z^{x+y} = 729 (x,y,z natural numbers), then what is the value of (z+1)^{y+x+1}?",
+    "options": [
+      "6561",
+      "10000",
+      "4096",
+      "14641"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "6561"
+  },
+  {
+    "id": 177,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x+y+z = 1, x^{2}+y^{2}+z^{2} = 2 and x^{3}+y^{3}+z^{3} = 3, then what is the value of xyz?",
+    "options": [
+      "1/3",
+      "1/6",
+      "1/2",
+      "1/4"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "1/2"
+  },
+  {
+    "id": 178,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If y^{2} = y+7, then what is the value of y^{3}?",
+    "options": [
+      "8y+7",
+      "y+14",
+      "y+2",
+      "4y+7"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "8y+7"
+  },
+  {
+    "id": 179,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If f(x) = (x–2)(x^{2}+Px+4) and (x–3) is a factor of f(x), then what is the value of P?",
+    "options": [
+      "4",
+      "–4",
+      "–13/3",
+      "13/3"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "–4"
+  },
+  {
+    "id": 180,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If [x–(1/x)] = 2, then what is the value of [x^{6} – (1/x^{6})]?",
+    "options": [
+      "144\\sqrt3+1",
+      "134\\sqrt2",
+      "142\\sqrt2+3",
+      "140\\sqrt2"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "140\\sqrt2"
+  },
+  {
+    "id": 181,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "X, y and z are all positive numbers. If 3^{x} > 9ʸ and 2ʸ > 4ᶻ, then which of the following is TRUE?",
+    "options": [
+      "x>y>z",
+      "x>z>y",
+      "z>y>x",
+      "y>x>z"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "x>y>z"
+  },
+  {
+    "id": 182,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x = 1/8, which of the following has the largest value?",
+    "options": [
+      "x/2",
+      "x^{2}",
+      "\\sqrtx",
+      "1/x"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "1/x"
+  },
+  {
+    "id": 183,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x = 1/(1+1/(1+x)) and y = 2/(2+1/(1+y)), then which of the following can be the value of x+y?",
+    "options": [
+      "(–\\sqrt5–\\sqrt17+3)/4",
+      "(2\\sqrt5+\\sqrt17–3)/4",
+      "(–\\sqrt5+\\sqrt17+1)/4",
+      "(\\sqrt5+\\sqrt17–1)/4"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "(\\sqrt5+\\sqrt17–1)/4"
+  },
+  {
+    "id": 184,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If A = 125 and B = 8, then what is the value of (A+B)^{3}–(A–B)^{3}–3B(A^{2}–B^{2})?",
+    "options": [
+      "4096",
+      "4608",
+      "4224",
+      "3456"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "4096"
+  },
+  {
+    "id": 185,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If X^{yz} = 1, Y^{zx} = 125 and Z^{yx} = 243 (X,Y,Z natural numbers), then what is the value of 9x+10y–18z?",
+    "options": [
+      "18",
+      "15",
+      "12",
+      "5"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "12"
+  },
+  {
+    "id": 186,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If 3X+6Y+9Z = 20/3, 6x+9y+3z = 17/3 and 18x+27y–z = 113/9, then what is the value of 75x+113y?",
+    "options": [
+      "163/3",
+      "143/6",
+      "218/9",
+      "311/3"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "163/3"
+  },
+  {
+    "id": 187,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a = (\\sqrt3+\\sqrt2)/(\\sqrt3–\\sqrt2) and b = (\\sqrt3–\\sqrt2)/(\\sqrt3+\\sqrt2), then what is the value of a^{2}+b^{2}–ab?",
+    "options": [
+      "97",
+      "(2\\sqrt3)+2",
+      "(4\\sqrt6)+1",
+      "98"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "(2\\sqrt3)+2"
+  },
+  {
+    "id": 188,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If the difference between the roots of Ax^{2}–Bx+C = 0 is 4, then which is TRUE?",
+    "options": [
+      "B^{2}–16A^{2}=4AC+4B^{2}",
+      "B^{2}–10A^{2}=4AC+6A^{2}",
+      "B^{2}–8A^{2}=4AC+10A^{2}",
+      "B^{2}–16A^{2}=4AC+8B^{2}"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "B^{2}–16A^{2}=4AC+8B^{2}"
+  },
+  {
+    "id": 189,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "\\alpha and \\beta are roots of a quadratic. If \\alpha+\\beta = 8 and \\alpha–\\beta = 2\\sqrt5, then which equation has roots \\alpha^{4} and \\beta^{4}?",
+    "options": [
+      "x^{2}–1522x+14641=0",
+      "x^{2}+1921x+14641=0",
+      "x^{2}–1764x+14641=0",
+      "x^{2}+2520x+14641=0"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "x^{2}–1522x+14641=0"
+  },
+  {
+    "id": 190,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a and b are roots of Px^{2}–Qx+R = 0, then what is the value of 1/a^{2}+1/b^{2}+a/b+b/a?",
+    "options": [
+      "(Q^{2}–2P)(2R+P)/PR^{2}",
+      "(Q^{2}–2PR)(R+P)/PR^{2}",
+      "(Q^{2}–2R)(2P+R)/P^{2}R^{2}",
+      "(Q^{2}–2PR)(2R+2P)/P^{2}R^{2}"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "(Q^{2}–2PR)(R+P)/PR^{2}"
+  },
+  {
+    "id": 191,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x^{2}–16x–59 = 0, then what is the value of (x–6)^{2}+1/(x–6)^{2}?",
+    "options": [
+      "14",
+      "18",
+      "16",
+      "20"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "16"
+  },
+  {
+    "id": 192,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If A and B are the roots of Ax^{2}–A^{2}x+AB = 0, then what is the value of A and B respectively?",
+    "options": [
+      "1, 0",
+      "1, 1",
+      "0, 2",
+      "0, 1"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "1, 0"
+  },
+  {
+    "id": 193,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "\\alpha and \\beta are the roots of x^{2}–x–1 = 0. What is the value of \\alpha^{8}+\\beta^{8}?",
+    "options": [
+      "47",
+      "54",
+      "59",
+      "68"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "47"
+  },
+  {
+    "id": 194,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a+b+c = 9, ab+bc+ca = 26, a^{3}+b^{3} = 91, b^{3}+c^{3} = 72 and c^{3}+a^{3} = 35, then what is abc?",
+    "options": [
+      "48",
+      "24",
+      "36",
+      "42"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "24"
+  },
+  {
+    "id": 195,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x^{3}–4x^{2}+19 = 6(x–1), then what is the value of [x^{2}+(1/x–4)]?",
+    "options": [
+      "3",
+      "5",
+      "6",
+      "8"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "5"
+  },
+  {
+    "id": 196,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "Cost of 8 pencils, 5 pens, 3 erasers = Rs 111. Cost of 9 pencils, 6 pens, 5 erasers = Rs 130. Cost of 16 pencils, 11 pens, 3 erasers = Rs 221. What is the cost of 39 pencils, 26 pens and 13 erasers?",
+    "options": [
+      "316",
+      "546",
+      "624",
+      "482"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "546"
+  },
+  {
+    "id": 197,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If 2x+3y–5z = 18, 3x+2y+z = 29 and x+y+3z = 17, then what is xy+yz+zx?",
+    "options": [
+      "32",
+      "52",
+      "64",
+      "46"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "52"
+  },
+  {
+    "id": 198,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x+y+z = 22 and xy+yz+zx = 35, then (x–y)^{2}+(y–z)^{2}+(z–x)^{2} is?",
+    "options": [
+      "793",
+      "681",
+      "758",
+      "715"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "793"
+  },
+  {
+    "id": 199,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If (x+y)/z = 2, then what is the value of y/(y–z) + x/(x–z)?",
+    "options": [
+      "0",
+      "1",
+      "2",
+      "–1"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "1"
+  },
+  {
+    "id": 200,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If \\alpha and \\beta are roots of x^{2}–2x+4 = 0, then what is the equation whose roots are \\alpha^{3}/\\beta^{2} and \\beta^{3}/\\alpha^{2}?",
+    "options": [
+      "x^{2}–4x+8=0",
+      "x^{2}–32x+4=0",
+      "x^{2}–2x+4=0",
+      "x^{2}–16x+4=0"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "x^{2}–2x+4=0"
+  },
+  {
+    "id": 201,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If one root of Ax^{2}+Bx+C = 0 is two and a half times the other, then which is TRUE?",
+    "options": [
+      "7B^{2}=3CA",
+      "7B^{2}=4CA",
+      "7B^{2}=36CA",
+      "10B^{2}=49CA"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "10B^{2}=49CA"
+  },
+  {
+    "id": 202,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x^{2}–12x+33 = 0, then what is the value of (x–4)^{2}+1/(x–4)^{2}?",
+    "options": [
+      "16",
+      "14",
+      "18",
+      "20"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "20"
+  },
+  {
+    "id": 203,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a^{4}+1 = (a^{2}/b^{2})(4b^{2}–b^{4}–1), then what is the value of a^{4}+b^{4}?",
+    "options": [
+      "2",
+      "16",
+      "32",
+      "64"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "2"
+  },
+  {
+    "id": 204,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If 3\\sqrt((1–a)/a)+9 = 19–3\\sqrt(a/(1–a)), then what is the value of a?",
+    "options": [
+      "3/10, 7/10",
+      "1/10, 9/10",
+      "2/5, 3/5",
+      "1/5, 4/5"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "3/10, 7/10"
+  },
+  {
+    "id": 205,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a+b = 10 and \\sqrt(a/b)–13 = –\\sqrt(b/a)–11, then what is the value of 3ab+4a^{2}+5b^{2}?",
+    "options": [
+      "450",
+      "300",
+      "600",
+      "750"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "300"
+  },
+  {
+    "id": 206,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If 3x+4y–2z+9 = 17, 7x+2y+11z+8 = 23 and 5x+9y+6z–4 = 18, then what is x+y+z–34?",
+    "options": [
+      "–28",
+      "–14",
+      "–31",
+      "–45"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "–31"
+  },
+  {
+    "id": 207,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x+3y–2z/4 = 6, x+2/3(2y+3z) = 33 and 1/7(x+y+z)+2z = 9, then what is 46x+131y?",
+    "options": [
+      "414",
+      "364",
+      "384",
+      "464"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "414"
+  },
+  {
+    "id": 208,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "p^{3}+q^{3}+r^{3}–3pqr = 4. If a = q+r, b = r+p and c = p+q, then what is a^{3}+b^{3}+c^{3}–3abc?",
+    "options": [
+      "4",
+      "8",
+      "2",
+      "12"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "8"
+  },
+  {
+    "id": 209,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If \\alpha and \\beta are the roots of x^{2}+x–1 = 0, then what is the equation whose roots are \\alpha^{5} and \\beta^{5}?",
+    "options": [
+      "x^{2}+7x–1=0",
+      "x^{2}–7x–1=0",
+      "x^{2}–11x–1=0",
+      "x^{2}+11x–1=0"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "x^{2}+11x–1=0"
+  },
+  {
+    "id": 210,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x and y are natural numbers such that x+y = 2017, then what is the value of (–1)^{x}+(–1)ʸ?",
+    "options": [
+      "2",
+      "–2",
+      "0",
+      "1"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "0"
+  },
+  {
+    "id": 211,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x+1/x = (\\sqrt3+1)/2, then what is the value of x^{4}+1/x^{4}?",
+    "options": [
+      "(4\\sqrt3–1)/4",
+      "(4\\sqrt3+1)/2",
+      "(–4\\sqrt3–1)/4",
+      "(–4\\sqrt3–1)/2"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "(–4\\sqrt3–1)/4"
+  },
+  {
+    "id": 212,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a+a^{2}+a^{3}–1 = 0, then what is the value of a^{3}+1/a?",
+    "options": [
+      "1",
+      "4",
+      "2",
+      "3"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "2"
+  },
+  {
+    "id": 213,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a–1/a = b, b–1/b = c and c–1/c = a, then what is the value of 1/ab+1/bc+1/ca?",
+    "options": [
+      "–3",
+      "–6",
+      "–1",
+      "–9"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "–3"
+  },
+  {
+    "id": 214,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If the roots of a(b–c)x^{2}+b(c–a)x+c(a–b) = 0 are equal, then which is true?",
+    "options": [
+      "b=(a+c)/ac",
+      "2/b=1/a+1/c",
+      "2b=1/a+1/c",
+      "abc=ab+bc+ca"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "2/b=1/a+1/c"
+  },
+  {
+    "id": 215,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If [\\sqrt(a^{2}+b^{2}+ab)] + [\\sqrt(a^{2}+b^{2}–ab)] = 1, then what is the value of (1–a^{2})(1–b^{2})?",
+    "options": [
+      "1/4",
+      "4/7",
+      "5/4",
+      "3/4"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "3/4"
+  },
+  {
+    "id": 216,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If 3x+4y–11 = 18 and 8x–6y+12 = 6, then what is the value of 5x–3y–9?",
+    "options": [
+      "18",
+      "–9",
+      "–27",
+      "–18"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "–9"
+  },
+  {
+    "id": 217,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a+b+c = 7/12, 3a–4b+5c = 3/4 and 7a–11b–13c = –7/12, then what is (a+c)?",
+    "options": [
+      "1/2",
+      "5/12",
+      "3/4",
+      "1/4"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "5/12"
+  },
+  {
+    "id": 218,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If P = 7+4\\sqrt3 and PQ = 1, then what is the value of (1/P^{2}+1/Q^{2})?",
+    "options": [
+      "148",
+      "189",
+      "194",
+      "204"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "194"
+  },
+  {
+    "id": 219,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x = (\\sqrt5)+1 and y = (\\sqrt5)–1, then what is (x^{2}/y^{2})+(y^{2}/x^{2})+4(x/y+y/x)+6?",
+    "options": [
+      "31",
+      "23\\sqrt5",
+      "27\\sqrt5",
+      "25"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "25"
+  },
+  {
+    "id": 220,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x = 2+\\sqrt3, y = 2–\\sqrt3 and z = 1, then what is x/yz+y/xz+z/xy+2[1/x+1/y+1/z]?",
+    "options": [
+      "25",
+      "22",
+      "17",
+      "43"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "25"
+  },
+  {
+    "id": 221,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "A root of ax^{2}+bx+c = 0 (a,b,c rational) is 5+3\\sqrt3. What is (a^{2}+b^{2}+c^{2})/(a+b+c)?",
+    "options": [
+      "35/3",
+      "37/3",
+      "–105/11",
+      "–105/13"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "–105/11"
+  },
+  {
+    "id": 222,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x = (a/b+b/a), y = (b/c+c/b) and z = (c/a+a/c), then what is xyz–x^{2}–y^{2}–z^{2}?",
+    "options": [
+      "–4",
+      "2",
+      "–1",
+      "–6"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "–4"
+  },
+  {
+    "id": 223,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If [a+1/a]^{2}–2[a–1/a] = 12, then which is a value of \"a\"?",
+    "options": [
+      "–8+\\sqrt3",
+      "–8–\\sqrt3",
+      "–8+\\sqrt5",
+      "None of these"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "None of these"
+  },
+  {
+    "id": 224,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x^{2}–4x+1 = 0, then what is the value of x^{9}+x^{7}–194x^{5}–194x^{3}?",
+    "options": [
+      "4",
+      "–4",
+      "1",
+      "–1"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "4"
+  },
+  {
+    "id": 225,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x+y = 3, then what is the value of x^{3}+y^{3}+9xy?",
+    "options": [
+      "15",
+      "81",
+      "27",
+      "9"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "27"
+  },
+  {
+    "id": 226,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "A = (x^{8}–1)/(x^{4}–1) and B = (y^{4}–1)/(y^{2}+1). If x = 2 and y = 9, then what is A^{2}+2AB+AB^{2}?",
+    "options": [
+      "96475",
+      "98625",
+      "92425",
+      "89125"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "98625"
+  },
+  {
+    "id": 227,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x–4y = 0 and x+2y = 24, then what is (2x+3y)/(2x–3y)?",
+    "options": [
+      "9/5",
+      "11/5",
+      "13/7",
+      "9/7"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "11/5"
+  },
+  {
+    "id": 228,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If (x/a+y/b) = 3 and (x/b–y/a) = 9, then what is the value of x/y?",
+    "options": [
+      "(b+3a)/(a–3b)",
+      "(a+3b)/(b–3a)",
+      "(1+3a)/(a+3b)",
+      "(a+3b^{2})/(b–3a^{2})"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "(a+3b)/(b–3a)"
+  },
+  {
+    "id": 229,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x+y+z = 0, then what is the value of (3y^{2}+x^{2}+z^{2})/(2y^{2}–xz)?",
+    "options": [
+      "2",
+      "1",
+      "3/2",
+      "5/3"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "2"
+  },
+  {
+    "id": 230,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a^{3}+3a^{2}+9a = 1, then what is the value of a^{3}+(3/a)?",
+    "options": [
+      "31",
+      "26",
+      "28",
+      "24"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "28"
+  },
+  {
+    "id": 231,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "x, y, z are real numbers. If x^{3}+y^{3}+z^{3} = 13, x+y+z = 1 and xyz = 1, then what is xy+yz+zx?",
+    "options": [
+      "–1",
+      "1",
+      "3",
+      "–3"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "–1"
+  },
+  {
+    "id": 232,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If (a+b)/c = 6/5 and (b+c)/a = 9/2, then what is the value of (a+c)/b?",
+    "options": [
+      "9/5",
+      "11/7",
+      "7/11",
+      "7/4"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "11/7"
+  },
+  {
+    "id": 233,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x^{3}+y^{3}+z^{3} = 3(1+xyz), P = y+z–x, Q = z+x–y and R = x+y–z, then what is P^{3}+Q^{3}+R^{3}–3PQR?",
+    "options": [
+      "9",
+      "8",
+      "12",
+      "6"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "8"
+  },
+  {
+    "id": 234,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x_{1}x_{2}x_{3} = 4(4+x_{1}+x_{2}+x_{3}), then what is [1/(2+x_{1})+1/(2+x_{2})+1/(2+x_{3})]?",
+    "options": [
+      "1",
+      "1/2",
+      "2",
+      "1/3"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "1"
+  },
+  {
+    "id": 235,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If \\alpha and \\beta are the roots of x^{2}–x+1 = 0, then which equation will have roots \\alpha^{3} and \\beta^{3}?",
+    "options": [
+      "x^{2}+2x+1=0",
+      "x^{2}–2x–1=0",
+      "x^{2}+3x–1=0",
+      "x^{2}–3x+1=0"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "x^{2}+2x+1=0"
+  },
+  {
+    "id": 236,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "Cost of 4 pens, 6 notebooks, 9 files = Rs 305. Cost of 3 pens, 4 notebooks, 2 files = Rs 145. What is cost of 5 pens, 8 notebooks and 16 files?",
+    "options": [
+      "415",
+      "465",
+      "440",
+      "Cannot be determined"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "Cannot be determined"
+  },
+  {
+    "id": 237,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "ABC is right-angled (∠BAC = 90°, ∠ACB = 60°). What is the ratio of circum-radius to side AB?",
+    "options": [
+      "1:2",
+      "1:\\sqrt3",
+      "2:\\sqrt3",
+      "2:3"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "2:\\sqrt3"
+  },
+  {
+    "id": 238,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x + y + z = 0, then (3y^{2} + x^{2} + z^{2})/(2y^{2} – xz) is:",
+    "options": [
+      "2",
+      "1",
+      "3/2",
+      "5/3"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "2"
+  },
+  {
+    "id": 239,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If P = 7 + 4\\sqrt3 and PQ = 1, then 1/P^{2} + 1/Q^{2} is:",
+    "options": [
+      "196",
+      "194",
+      "206",
+      "182"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "196"
+  },
+  {
+    "id": 240,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a^{3} + 3a^{2} + 9a = 1, then a^{3} + 3/a is:",
+    "options": [
+      "31",
+      "26",
+      "28",
+      "24"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "28"
+  },
+  {
+    "id": 241,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x^{3} + y^{3} + z^{3} = 13, x + y + z = 1 and xyz = 1, then xy + yz + zx is:",
+    "options": [
+      "–1",
+      "1",
+      "3",
+      "–3"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "–1"
+  },
+  {
+    "id": 242,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If (a+b)/c = 6/5 and (b+c)/a = 9/2, then (a+c)/b is:",
+    "options": [
+      "9/5",
+      "11/7",
+      "7/11",
+      "7/4"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "11/7"
+  },
+  {
+    "id": 243,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x^{2}+y^{2}+z^{2} = 3(1+xyz), P = y+z–x, Q = z+x–y and R = x+y–z, then P^{3}+Q^{3}+R^{3}–3PQR is:",
+    "options": [
+      "9",
+      "8",
+      "12",
+      "6"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "8"
+  },
+  {
+    "id": 244,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x_{1}x_{2}x_{3} = 4(4+x_{1}+x_{2}+x_{3}), then [1/(2+x_{1})] + [1/(2+x_{2})] + [1/(2+x_{3})] = ?",
+    "options": [
+      "1",
+      "1/2",
+      "2",
+      "1/3"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "1"
+  },
+  {
+    "id": 245,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If \\alpha, \\beta are roots of x^{2} – x + 1 = 0, which equation has roots \\alpha^{3} and \\beta^{3}?",
+    "options": [
+      "x^{2}+2x+1=0",
+      "x^{2}–2x–1=0",
+      "x^{2}+3x–1=0",
+      "x^{2}–3x+1=0"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "x^{2}+2x+1=0"
+  },
+  {
+    "id": 246,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If 3x+5y+7z = 49, 9x+8y+21z = 126, what is y?",
+    "options": [
+      "4",
+      "2",
+      "3",
+      "5"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "3"
+  },
+  {
+    "id": 247,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "Cost of 4 pens, 6 note books and 9 files is Rs. 305. Cost of 3 pens, 4 notebooks and 2 files is Rs. 145. What is cost of 5 pens, 8 notebooks and 16 files?",
+    "options": [
+      "415",
+      "465",
+      "440",
+      "Cannot be determined"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "Cannot be determined"
+  },
+  {
+    "id": 248,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If P = 7 + 4\\sqrt3 and PQ = 1, then (1/P^{2}) + (1/Q^{2}) is:",
+    "options": [
+      "148",
+      "189",
+      "194",
+      "204"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "194"
+  },
+  {
+    "id": 249,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x = (\\sqrt5)+1 and y = (\\sqrt5)–1, the value of (x^{2}/y^{2}) + (y^{2}/x^{2}) + 4[(x/y) + (y/x)] + 6 is:",
+    "options": [
+      "31",
+      "23\\sqrt5",
+      "27\\sqrt5",
+      "25"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "25"
+  },
+  {
+    "id": 250,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x = 2+\\sqrt3, y = 2–\\sqrt3 and z = 1, then (x/yz) + (y/xz) + (z/xy) + 2[(1/x)+(1/y)+(1/z)] is:",
+    "options": [
+      "25",
+      "22",
+      "17",
+      "43"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "25"
+  },
+  {
+    "id": 251,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "A root of ax^{2}+bx+c=0 is 5+3\\sqrt3. The value of (a^{2}+b^{2}+c^{2})/(a+b+c) is:",
+    "options": [
+      "35/3",
+      "37/3",
+      "–105/11",
+      "–105/13"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "37/3"
+  },
+  {
+    "id": 252,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x=(a/b)+(b/a), y=(b/c)+(c/b) and z=(c/a)+(a/c), then xyz–x^{2}–y^{2}–z^{2} is:",
+    "options": [
+      "–4",
+      "2",
+      "–1",
+      "–6"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "–4"
+  },
+  {
+    "id": 253,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If [a+(1/a)]^{2} – 2[a–(1/a)] = 12, then a is:",
+    "options": [
+      "–8+\\sqrt3",
+      "–8–\\sqrt3",
+      "–8+\\sqrt5",
+      "None of these"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "None of these"
+  },
+  {
+    "id": 254,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x^{2} – 4x + 1 = 0, then x^{6} + x^{7} – 194x^{5} – 194x^{3} is:",
+    "options": [
+      "4",
+      "–4",
+      "1",
+      "–1"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "4"
+  },
+  {
+    "id": 255,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x + y = 3, then x^{3} + y^{3} + 9xy is:",
+    "options": [
+      "15",
+      "81",
+      "27",
+      "9"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "27"
+  },
+  {
+    "id": 256,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "A=(x^{8}–1)/(x^{4}+1) and B=(y^{4}–1)/(y^{2}+1). If x=2 and y=9, then A^{2}+2AB+AB^{2}=?",
+    "options": [
+      "96475",
+      "98625",
+      "92425",
+      "89125"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "98625"
+  },
+  {
+    "id": 257,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x–4y=0 and x+2y=24, then (2x+3y)/(2x–3y) is:",
+    "options": [
+      "9/5",
+      "11/5",
+      "13/7",
+      "9/7"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "11/5"
+  },
+  {
+    "id": 258,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If (x/a)+(y/b)=3 and (x/b)–(y/a)=9, then x/y is:",
+    "options": [
+      "(b+3a)/(a–3b)",
+      "(a+3b)/(b–3a)",
+      "(1+3a)/(a+3b)",
+      "(a+3b^{2})/(b–3a^{2})"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "(a+3b)/(b–3a)"
+  },
+  {
+    "id": 259,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "p^{3}+q^{3}+r^{3}–3pqr=4. If a=q+r, b=r+p and c=p+q, then a^{3}+b^{3}+c^{3}–3abc is:",
+    "options": [
+      "4",
+      "8",
+      "2",
+      "12"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "8"
+  },
+  {
+    "id": 260,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If \\alpha, \\beta are roots of x^{2}+x–1=0, then the equation with roots \\alpha^{5} and \\beta^{5} is:",
+    "options": [
+      "x^{2}+7x–1=0",
+      "x^{2}–7x–1=0",
+      "x^{2}–11x–1=0",
+      "x^{2}+11x–1=0"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "x^{2}+7x–1=0"
+  },
+  {
+    "id": 261,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x and y are natural numbers with x+y=2017, then (–1)^{x}+(–1)ʸ is:",
+    "options": [
+      "2",
+      "–2",
+      "0",
+      "1"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "0"
+  },
+  {
+    "id": 262,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x + 1/x = (\\sqrt3+1)/2, then x^{4} + 1/x^{4} is:",
+    "options": [
+      "(4\\sqrt3–1)/4",
+      "(4\\sqrt3+1)/2",
+      "(–4\\sqrt3–1)/4",
+      "(–4\\sqrt3–1)/2"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "(–4\\sqrt3–1)/2"
+  },
+  {
+    "id": 263,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a + a^{2} + a^{3} – 1 = 0, then a^{3} + 1/(1/a) is:",
+    "options": [
+      "1",
+      "4",
+      "2",
+      "3"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "1"
+  },
+  {
+    "id": 264,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a–(1/a)=b, b–(1/b)=c and c–(1/c)=a, then (1/ab)+(1/bc)+(1/ca) is:",
+    "options": [
+      "–3",
+      "–6",
+      "–1",
+      "–9"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "–3"
+  },
+  {
+    "id": 265,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If the roots of a(b–c)x^{2}+b(c–a)x+c(a–b)=0 are equal, then 2b=(following is TRUE)?",
+    "options": [
+      "b=(a+c)/ac",
+      "2b=(1/a)+(1/c)",
+      "2b=(1/a)+(1/c)",
+      "abc=ab+bc+ca"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "2b=(1/a)+(1/c)"
+  },
+  {
+    "id": 266,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If [\\sqrt(a^{2}+b^{2}+ab)] + [\\sqrt(a^{2}+b^{2}–ab)] = 1, then (1–a^{2})(1–b^{2}) is:",
+    "options": [
+      "1/4",
+      "4/7",
+      "5/4",
+      "3/4"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "3/4"
+  },
+  {
+    "id": 267,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If 3x+4y–11=18 and 8x–6y+12=6, then 5x–3y–9 is:",
+    "options": [
+      "18",
+      "–9",
+      "27",
+      "–18"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "18"
+  },
+  {
+    "id": 268,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a+b+c=7/12, 3a–4b–5c=3/4 and 7a–11b–13c=–7/4, then a+c is:",
+    "options": [
+      "1/2",
+      "5/12",
+      "3/4",
+      "1/4"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "1/2"
+  },
+  {
+    "id": 269,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x+y+z=22 and xy+yz+zx=35, then (x–y)^{2}+(y–z)^{2}+(z–x)^{2} is:",
+    "options": [
+      "793",
+      "681",
+      "758",
+      "715"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "793"
+  },
+  {
+    "id": 270,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If (x+y)/z=2, then [y/(y–z)]+[x/(x–z)] is:",
+    "options": [
+      "0",
+      "1",
+      "2",
+      "–1"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "0"
+  },
+  {
+    "id": 271,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If \\alpha, \\beta are roots of x^{2}–2x+4=0, the equation with roots \\alpha^{3}/\\beta^{2} and \\beta^{3}/\\alpha^{2} is:",
+    "options": [
+      "x^{2}–4x+8=0",
+      "x^{2}+32x+4=0",
+      "x^{2}–2x+4=0",
+      "x^{2}–16x+4=0"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "x^{2}–4x+8=0"
+  },
+  {
+    "id": 272,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If one root of Ax^{2}+Bx+C=0 is two-and-half times the other, which is TRUE?",
+    "options": [
+      "7B^{2}=3CA",
+      "7B^{2}=4CA",
+      "7B^{2}=36CA",
+      "10B^{2}=49CA"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "10B^{2}=49CA"
+  },
+  {
+    "id": 273,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x^{2}–12x+33=0, then (x–4)^{2}+[1/(x–4)^{2}] is:",
+    "options": [
+      "16",
+      "14",
+      "18",
+      "20"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "20"
+  },
+  {
+    "id": 274,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a^{4}+1=[a^{2}/b^{2}](4b^{2}–b^{4}–1), then a^{4}+b^{4} is:",
+    "options": [
+      "2",
+      "16",
+      "32",
+      "64"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "32"
+  },
+  {
+    "id": 275,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If 3\\sqrt((1–a)/a)+9=19–3\\sqrt(a/(1–a)), then a is:",
+    "options": [
+      "3/10, 7/10",
+      "1/10, 9/10",
+      "2/5, 3/5",
+      "1/5, 4/5"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "3/10, 7/10"
+  },
+  {
+    "id": 276,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a+b=10 and \\sqrt(a/b)–13=–\\sqrt(b/a)–11, then 3ab+4a^{2}+5b^{2} is:",
+    "options": [
+      "450",
+      "300",
+      "600",
+      "750"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "300"
+  },
+  {
+    "id": 277,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If 3x+4y–2z+9=17, 7x+2y+11z+8=23 and 5x+9y+6z–4=18, then x+y+z–34 is:",
+    "options": [
+      "–28",
+      "–14",
+      "–31",
+      "–45"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "–28"
+  },
+  {
+    "id": 278,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x+3y–2z/4=6, x+2/3(2y+3z)=33 and 1/7(x+y+z)+2z=9, then 46x+131y is:",
+    "options": [
+      "414",
+      "364",
+      "384",
+      "464"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "414"
+  },
+  {
+    "id": 279,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a=(\\sqrt3+\\sqrt2)/(\\sqrt3–\\sqrt2) and b=(\\sqrt3–\\sqrt2)/(\\sqrt3+\\sqrt2), then a^{2}+b^{2}–ab is:",
+    "options": [
+      "97",
+      "(2\\sqrt3)+2",
+      "(4\\sqrt6)+1",
+      "98"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "98"
+  },
+  {
+    "id": 280,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If the difference between roots of Ax^{2}–Bx+C=0 is 4, which is TRUE?",
+    "options": [
+      "B^{2}–16A^{2}=4AC+4B^{2}",
+      "B^{2}–10A^{2}=4AC+6A^{2}",
+      "B^{2}–8A^{2}=4AC+10A^{2}",
+      "B^{2}–16A^{2}=4AC+8B^{2}"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "B^{2}–16A^{2}=4AC+4B^{2}"
+  },
+  {
+    "id": 281,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "\\alpha, \\beta are roots of quadratic equation. If \\alpha+\\beta=8 and \\alpha–\\beta=2\\sqrt5, equation with roots \\alpha^{4} and \\beta^{4} is:",
+    "options": [
+      "x^{2}–1522x+14641=0",
+      "x^{2}+1921x+14641=0",
+      "x^{2}–1764x+14641=0",
+      "x^{2}+2520x+14641=0"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "x^{2}–1522x+14641=0"
+  },
+  {
+    "id": 282,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a, b are roots of Px^{2}–Qx+R=0, then (1/a^{2})+(1/b^{2})+(a/b)+(b/a) is:",
+    "options": [
+      "(Q^{2}–2P)(2R+P)/PR^{2}",
+      "(Q^{2}–2PR)(R+P)/PR^{2}",
+      "(Q^{2}–2R)(2P+R)/P^{2}R^{2}",
+      "(Q^{2}–2PR)(2R+2P)/P^{2}R^{2}"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "(Q^{2}–2P)(2R+P)/PR^{2}"
+  },
+  {
+    "id": 283,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x^{2}–16x+59=0, then (x–6)^{2}+[1/(x–6)^{2}] is:",
+    "options": [
+      "14",
+      "18",
+      "16",
+      "20"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "20"
+  },
+  {
+    "id": 284,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If A and B are roots of Ax^{2}–A^{2}x+AB=0, then A and B are:",
+    "options": [
+      "1,0",
+      "1,1",
+      "0,2",
+      "0,1"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "0,1"
+  },
+  {
+    "id": 285,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "\\alpha, \\beta are roots of x^{2}–x–1=0. Value of \\alpha^{8}+\\beta^{8} is:",
+    "options": [
+      "47",
+      "54",
+      "59",
+      "68"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "47"
+  },
+  {
+    "id": 286,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a+b+c=9, ab+bc+ca=26, a^{3}+b^{3}=91, b^{3}+c^{3}=72 and c^{3}+a^{3}=35, then abc is:",
+    "options": [
+      "48",
+      "24",
+      "36",
+      "42"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "24"
+  },
+  {
+    "id": 287,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x^{3}–4x^{2}+19=6(x–1), then [x^{2}+(1/(x–4))] is:",
+    "options": [
+      "3",
+      "5",
+      "6",
+      "8"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "5"
+  },
+  {
+    "id": 288,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "8 pencils, 5 pens, 3 erasers cost Rs.111. 9 pencils, 6 pens, 5 erasers cost Rs.130. 16 pencils, 11 pens, 3 erasers cost Rs.221. What do 39 pencils, 26 pens, 13 erasers cost?",
+    "options": [
+      "316",
+      "546",
+      "624",
+      "482"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "546"
+  },
+  {
+    "id": 289,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If 2x+3y–5z=18, 3x+2y+z=29 and x+y+3z=17, then xy+yz+zx is:",
+    "options": [
+      "32",
+      "52",
+      "64",
+      "46"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "52"
+  },
+  {
+    "id": 290,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "(2+\\sqrt2)+(1/(2+\\sqrt2))+(1/(2–\\sqrt2))+(2–\\sqrt2) = ?",
+    "options": [
+      "2",
+      "4",
+      "8",
+      "6"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "4"
+  },
+  {
+    "id": 291,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a^{2}+b^{2} = 4b+6a–13, then a+b is:",
+    "options": [
+      "3",
+      "2",
+      "5",
+      "10"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "3"
+  },
+  {
+    "id": 292,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "x and y are positive integers with x^{4}+y^{4}+x^{2}y^{2} = 481 and xy = 12, then x^{2}–xy+y^{2} is:",
+    "options": [
+      "16",
+      "13",
+      "11",
+      "15"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "13"
+  },
+  {
+    "id": 293,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If A = 1+2ᵖ and B = 1+2⁻ᵖ, then B in terms of A is:",
+    "options": [
+      "(A+1)/(A–1)",
+      "(A+2)/(A+1)",
+      "A/(A–1)",
+      "(A–2)/(A+1)"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "A/(A–1)"
+  },
+  {
+    "id": 294,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a, b are roots of ax^{2}+bx+c=0, equation with roots (ab+a+b) and (ab–a–b) is:",
+    "options": [
+      "a^{2}x^{2}+2acx+c^{2}+b^{2}=0",
+      "a^{2}x^{2}–2acx+c^{2}–b^{2}=0",
+      "a^{2}x^{2}–2acx+c^{2}+b^{2}=0",
+      "a^{2}x^{2}+2acx+c^{2}–b^{2}=0"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "a^{2}x^{2}–2acx+c^{2}–b^{2}=0"
+  },
+  {
+    "id": 295,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If \\sqrt((1–p^{2})(1–q^{2})) = \\sqrt3/2, then value of \\sqrt(2p^{2}+2q^{2}+2pq) + \\sqrt(2p^{2}+2q^{2}–2pq) is:",
+    "options": [
+      "2",
+      "\\sqrt2",
+      "1",
+      "None of these"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "2"
+  },
+  {
+    "id": 296,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If (a+b)^{2}–2(a+b)=80 and ab=16, then 3a–19b is:",
+    "options": [
+      "–16",
+      "–14",
+      "–18",
+      "–20"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "–20"
+  },
+  {
+    "id": 297,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x^{y+z}=1, y^{x+z}=1024 and z^{x+y}=729 (x,y,z natural numbers), then (z+1)^{y+x+1} is:",
+    "options": [
+      "6561",
+      "10000",
+      "4096",
+      "14641"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "6561"
+  },
+  {
+    "id": 298,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x+y+z=1, x^{2}+y^{2}+z^{2}=2 and x^{3}+y^{3}+z^{3}=3, then xyz is:",
+    "options": [
+      "1/3",
+      "1/6",
+      "1/2",
+      "1/4"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "1/2"
+  },
+  {
+    "id": 299,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If f(x) = x^{2}+px+4 and (x–3) is a factor of f(x), then p is:",
+    "options": [
+      "4",
+      "–4",
+      "–13/3",
+      "13/3"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "–4"
+  },
+  {
+    "id": 300,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If y^{2} = y + 7, then y^{3} is:",
+    "options": [
+      "8y+7",
+      "y+14",
+      "y+2",
+      "4y+7"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "8y+7"
+  },
+  {
+    "id": 301,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If A = 125 and B = 8, then (A+B)^{3}–(A–B)^{3}–6B(A^{2}–B^{2}) is:",
+    "options": [
+      "4096",
+      "4608",
+      "4224",
+      "3456"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "4096"
+  },
+  {
+    "id": 302,
+    "year": "2017",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x = 1/(1+1/(1+x)) and y = 1/(2+1/(1+y)), then x+y can be:",
+    "options": [
+      "(–5–\\sqrt17+3)/4",
+      "(2\\sqrt5+\\sqrt17–3)/4",
+      "(–\\sqrt5+\\sqrt17+1)/4",
+      "(\\sqrt5+\\sqrt17–1)/4"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "(\\sqrt5+\\sqrt17–1)/4"
+  },
+  {
+    "id": 303,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x^{8} – 1442x^{4} + 1 = 0, then a possible value of x – 1/x is?",
+    "options": [
+      "5",
+      "8",
+      "4",
+      "6"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "6"
+  },
+  {
+    "id": 304,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a^{2}+b^{2}+c^{2}+96 = 8(a+b–2c), then \\sqrt(ab – bc + ca) is equal to?",
+    "options": [
+      "6",
+      "2\\sqrt2",
+      "4",
+      "2\\sqrt3"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "4"
+  },
+  {
+    "id": 305,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x+y+z = 11, x^{2}+y^{2}+z^{2} = 133 and x^{3}+y^{3}+z^{3} = 881, then the value of \\sqrt[3](xyz) is?",
+    "options": [
+      "–6",
+      "6",
+      "–8",
+      "8"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "–6"
+  },
+  {
+    "id": 306,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a^{3}+b^{3} = 218 and a+b = 2, then the value of ab is?",
+    "options": [
+      "34",
+      "–35",
+      "–31",
+      "32"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "–35"
+  },
+  {
+    "id": 307,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If 2\\sqrt2x^{3} – 3\\sqrt3y^{3} = (\\sqrt2x – \\sqrt3y)(Ax^{2}+By^{2}+Cxy), then the value of A^{2} + B^{2} – C^{2} is?",
+    "options": [
+      "11",
+      "7",
+      "19",
+      "10"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "7"
+  },
+  {
+    "id": 308,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x + 1/(16x) = 3, then the value of 16x^{3} + 1/(256x^{3}) is?",
+    "options": [
+      "423",
+      "441",
+      "432",
+      "414"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "423"
+  },
+  {
+    "id": 309,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x+y+z = 2, xy+yz+zx = –11 and xyz = –12, then what is the value of \\sqrt(x^{3}+y^{3}+z^{3}–2)?",
+    "options": [
+      "6",
+      "12",
+      "9",
+      "8"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "6"
+  },
+  {
+    "id": 310,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x^{4} – 83x^{2} + 1 = 0, then a value of x^{3} – x⁻^{3} can be?",
+    "options": [
+      "758",
+      "756",
+      "739",
+      "737"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "756"
+  },
+  {
+    "id": 311,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If (5x+1)^{3} + (x–3)^{3} + 8(3x–4)^{3} = 6(5x+1)(x–3)(3x–4), then x is equal to?",
+    "options": [
+      "5/6",
+      "1/3",
+      "2/3",
+      "3/4"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "5/6"
+  },
+  {
+    "id": 312,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If 8x^{3} – 27y^{3} = (Ax+By)(Cx^{2} – Dy^{2} + 6xy), then (A + B + C – D) is equal to?",
+    "options": [
+      "–12",
+      "12",
+      "15",
+      "9"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "12"
+  },
+  {
+    "id": 313,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x = (\\sqrt5–\\sqrt3)/(\\sqrt5+\\sqrt3) and y is the reciprocal of x, then what is the value of (x^{3} + y^{3})?",
+    "options": [
+      "488",
+      "504",
+      "472",
+      "476"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "488"
+  },
+  {
+    "id": 314,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "ab(a – b) + bc(b – c) + ca(c – a) is equal to?",
+    "options": [
+      "(a+b)(b–c)(c–a)",
+      "(a–b)(b+c)(c–a)",
+      "(a–b)(b–c)(c–a)",
+      "(b–a)(b–c)(c–a)"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "(b–a)(b–c)(c–a)"
+  },
+  {
+    "id": 315,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "Given that (5x–3)^{3} + (2x+5)^{3} + 27(4–3x)^{3} = 9(3–5x)(2x+5)(3x–4), then the value of (2x+1) is?",
+    "options": [
+      "–13",
+      "15",
+      "–15",
+      "13"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "15"
+  },
+  {
+    "id": 316,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If 5\\sqrt5x^{3}+2\\sqrt2y^{3} = (Ax+\\sqrt2y)(Bx^{2}+2y^{2}+Cxy), then the value of (A^{2} + B^{2} – C^{2}) is?",
+    "options": [
+      "15",
+      "20",
+      "30",
+      "40"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "20"
+  },
+  {
+    "id": 317,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If [3(x^{2}+1)–7x]/(3x) = 6, x \\neq 0, then the value of \\sqrtx + 1/\\sqrtx is?",
+    "options": [
+      "\\sqrt(25/3)",
+      "\\sqrt(11/3)",
+      "\\sqrt(35/3)",
+      "\\sqrt(31/3)"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "\\sqrt(31/3)"
+  },
+  {
+    "id": 318,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x+y+z = 6, xyz = –10 and x^{2}+y^{2}+z^{2} = 30, then what is the value of (x^{3}+y^{3}+z^{3})?",
+    "options": [
+      "132",
+      "135",
+      "130",
+      "127"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "132"
+  },
+  {
+    "id": 319,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If [x–(1/x)] = 2, then [x^{6}–(1/x^{6})] is:",
+    "options": [
+      "114\\sqrt2+1",
+      "134\\sqrt2",
+      "142\\sqrt2+3",
+      "140\\sqrt2"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "140\\sqrt2"
+  },
+  {
+    "id": 320,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If 3x+6y+9z=20/3, 6x+9y+3z=17/3 and 18x+27y–z=113/9, then 75x+113y is:",
+    "options": [
+      "163/3",
+      "143/6",
+      "218/9",
+      "311/3"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "163/3"
+  },
+  {
+    "id": 321,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x^{y'} = 1, y^{z'} = 125 and z^{y'} = 243 (x,y,z natural), then 9x+10y–18z is:",
+    "options": [
+      "18",
+      "15",
+      "12",
+      "5"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "18"
+  },
+  {
+    "id": 322,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x = \\sqrt((1+\\sqrt3)/2) – \\sqrt((1–\\sqrt3)/2), then (\\sqrt2–x)/(\\sqrt2+x) is closest to:",
+    "options": [
+      "1.4",
+      "0.12",
+      "0.17",
+      "1.2"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "0.17"
+  },
+  {
+    "id": 323,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a^{3}+b^{3}=218 and a+b=2, then ab is:",
+    "options": [
+      "–35",
+      "–31",
+      "34",
+      "32"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "–35"
+  },
+  {
+    "id": 324,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "(253^{3}+247^{3})/(25.3\\times 25.3–624.91+24.7\\times 24.7) is 50\\times 10^k where k is:",
+    "options": [
+      "3",
+      "–3",
+      "2",
+      "4"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "3"
+  },
+  {
+    "id": 325,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x+y+z=11, x^{2}+y^{2}+z^{2}=133 and x^{3}+y^{3}+z^{3}=881, then \\sqrt[3](xyz) is:",
+    "options": [
+      "6",
+      "–8",
+      "–6",
+      "8"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "–8"
+  },
+  {
+    "id": 326,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If \\sqrt(86–60\\sqrt2) = a–b\\sqrt2, then \\sqrt(a^{2}+b^{2}) correct to one decimal place is:",
+    "options": [
+      "8.4",
+      "7.8",
+      "8.2",
+      "7.2"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "8.4"
+  },
+  {
+    "id": 327,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x^{8}–1442x^{4}+1=0, then a possible value of x–1/x is:",
+    "options": [
+      "8",
+      "4",
+      "6",
+      "5"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "4"
+  },
+  {
+    "id": 328,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If 2\\sqrt2x^{3}–3\\sqrt3y^{3}=(\\sqrt2x–\\sqrt3y)(Ax^{2}+By^{2}+Cxy), then A^{2}+B^{2}–C^{2} is:",
+    "options": [
+      "7",
+      "10",
+      "11",
+      "19"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "11"
+  },
+  {
+    "id": 329,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a^{2}+b^{2}+c^{2}+96=8(a+b–2c), then \\sqrt(ab–bc+ca) is equal to:",
+    "options": [
+      "4",
+      "2\\sqrt3",
+      "6",
+      "2\\sqrt2"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "2\\sqrt2"
+  },
+  {
+    "id": 330,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x + 1/(16x) = 3, then 16x^{3} + 1/(256x^{3}) is:",
+    "options": [
+      "423",
+      "441",
+      "432",
+      "414"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "441"
+  },
+  {
+    "id": 331,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x+y+z=2, xy+yz+zx=–11, xyz=–12, then \\sqrt(x^{3}+y^{3}+z^{3}–2) is:",
+    "options": [
+      "6",
+      "12",
+      "9",
+      "8"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "6"
+  },
+  {
+    "id": 332,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x^{4}–83x^{2}+1=0, then a value of x^{3}–x⁻^{3} is:",
+    "options": [
+      "758",
+      "756",
+      "739",
+      "737"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "758"
+  },
+  {
+    "id": 333,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If (5x+1)^{3}+(x–3)^{3}+8(3x–4)^{3} = 6(5x+1)(x–3)(3x–4), then x is equal to:",
+    "options": [
+      "5/6",
+      "1/3",
+      "2/3",
+      "3/4"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "1/3"
+  },
+  {
+    "id": 334,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If 8x^{3}–27y^{3}=(Ax+By)(Cx^{2}–Dy^{2}+6xy), then (A+B+C–D) is equal to:",
+    "options": [
+      "–12",
+      "12",
+      "15",
+      "9"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "12"
+  },
+  {
+    "id": 335,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x=(\\sqrt5–\\sqrt3)/(\\sqrt5+\\sqrt3) and y is reciprocal of x, then (x^{3}+y^{3}) is:",
+    "options": [
+      "488",
+      "504",
+      "472",
+      "476"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "488"
+  },
+  {
+    "id": 336,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If \\sqrt(10–2\\sqrt21)+\\sqrt(8+2\\sqrt15)=\\sqrta+\\sqrtb (a,b positive integers), then \\sqrt(ab) is closest to:",
+    "options": [
+      "4.6",
+      "5.9",
+      "6.8",
+      "7.2"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "6.8"
+  },
+  {
+    "id": 337,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "ab(a–b)+bc(b–c)+ca(c–a) is equal to:",
+    "options": [
+      "(a+b)(b–c)(c–a)",
+      "(a–b)(b+c)(c–a)",
+      "(a–b)(b–c)(c–a)",
+      "(b–a)(b–c)(c–a)"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "(a–b)(b–c)(c–a)"
+  },
+  {
+    "id": 338,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If (5x–3)^{3}+(2x+5)^{3}+27(4–3x)^{3}=9(3–5x)(2x+5)(3x–4), then (2x+1) is:",
+    "options": [
+      "–13",
+      "15",
+      "–15",
+      "13"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "15"
+  },
+  {
+    "id": 339,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If 5\\sqrt5x^{3}+2\\sqrt2y^{2}=(Ax+\\sqrt2y)(Bx^{2}+2y^{2}+Cxy), then A^{2}+B^{2}–C^{2} is:",
+    "options": [
+      "15",
+      "20",
+      "30",
+      "40"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "20"
+  },
+  {
+    "id": 340,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If (3(2x^{2}+1)–7x)/(3x) = 6 (x\\neq0), then \\sqrtx + 1/\\sqrtx is:",
+    "options": [
+      "\\sqrt(25/3)",
+      "\\sqrt(11/3)",
+      "\\sqrt(35/3)",
+      "\\sqrt(31/3)"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "\\sqrt(31/3)"
+  },
+  {
+    "id": 341,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "Let x=\\sqrt[3]27–\\sqrt[3](6\\frac{3}{4}) and y=\\sqrt((45+\\sqrt605+\\sqrt245)/(\\sqrt80+\\sqrt125)). Then x^{2}+y^{2} is:",
+    "options": [
+      "223/36",
+      "221/36",
+      "221/9",
+      "227/9"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "221/9"
+  },
+  {
+    "id": 342,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x+y+z=6, xyz=–10 and x^{2}+y^{2}+z^{2}=30, then (x^{3}+y^{3}+z^{3}) is:",
+    "options": [
+      "132",
+      "135",
+      "130",
+      "127"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "132"
+  },
+  {
+    "id": 343,
+    "year": "2018",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "(4.6)^{4}+(5.4)^{4}+(24.84)^{2} / [(4.6)^{2}+(5.4)^{2}+(24.84)] = ?",
+    "options": [
+      "24.42",
+      "24.24",
+      "25.42",
+      "25.48"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "25.42"
+  },
+  {
+    "id": 344,
+    "year": "2019",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If 27(x+y)^{3}–8(x–y)^{3}=(Ax^{2}+By^{2}+Cxy), then (A+B–C) is:",
+    "options": [
+      "13",
+      "16",
+      "18",
+      "11"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "13"
+  },
+  {
+    "id": 345,
+    "year": "2019",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "Given x^{8}–34x^{4}+1=0. What is (x^{3}+x⁻^{3})?",
+    "options": [
+      "5\\sqrt8",
+      "6\\sqrt6",
+      "5\\sqrt6",
+      "6\\sqrt8"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "5\\sqrt6"
+  },
+  {
+    "id": 346,
+    "year": "2019",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If 3x^{2}–5x+1=0, then (x^{2}+1/(9x^{2})) is:",
+    "options": [
+      "1\\frac{2}{3}",
+      "1\\frac{1}{3}",
+      "2\\frac{1}{3}",
+      "2⅑"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "2⅑"
+  },
+  {
+    "id": 347,
+    "year": "2019",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If 1/(4–\\sqrt8) + (3+2\\sqrt2)/(3–2\\sqrt2) – (3–2\\sqrt2)/(3+2\\sqrt2) = a+b\\sqrt2, then (3a+4b) is:",
+    "options": [
+      "99\\frac{1}{2}",
+      "99",
+      "98\\frac{1}{2}",
+      "98"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "99\\frac{1}{2}"
+  },
+  {
+    "id": 348,
+    "year": "2019",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a+b+c=6, a^{3}+b^{3}+c^{3}–3abc=342, then ab+bc+ca is:",
+    "options": [
+      "8",
+      "–7",
+      "–5",
+      "5"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "8"
+  },
+  {
+    "id": 349,
+    "year": "2019",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If 9x^{2}+y^{2}=37 and xy=2, x,y>0, then (27x^{3}+y^{3}) is:",
+    "options": [
+      "217",
+      "207",
+      "301",
+      "259"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "217"
+  },
+  {
+    "id": 350,
+    "year": "2019",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If a+b+c=7 and a^{3}+b^{3}+c^{3}–3abc=175, then (ab+bc+ca) is:",
+    "options": [
+      "7",
+      "8",
+      "6",
+      "9"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "7"
+  },
+  {
+    "id": 351,
+    "year": "2019",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x^{2}+4y^{2}=17 and xy=2, x,y>0, then (x^{3}+8y^{3}) is:",
+    "options": [
+      "85",
+      "76",
+      "65",
+      "95"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "85"
+  },
+  {
+    "id": 352,
+    "year": "2019",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If (x+y)^{3}+8(x–y)^{3}=(3x+Ay)(3x^{2}+Bxy+Cy^{2}), then A+B+C is:",
+    "options": [
+      "0",
+      "4",
+      "2",
+      "3"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "4"
+  },
+  {
+    "id": 353,
+    "year": "2019",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If 2x^{2}–7x+5=0, then x^{2}+25/(4x^{2}) is:",
+    "options": [
+      "9\\frac{1}{4}",
+      "7\\frac{1}{4}",
+      "9\\frac{3}{4}",
+      "5\\frac{1}{2}"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "9\\frac{3}{4}"
+  },
+  {
+    "id": 354,
+    "year": "2019",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x–1/x=5 (x\\neq0), then (x^{6}+3x^{3}–1)/(x^{6}–8x^{3}–1) is:",
+    "options": [
+      "13/12",
+      "11/13",
+      "3/8",
+      "4/9"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "13/12"
+  },
+  {
+    "id": 355,
+    "year": "2019",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x^{2}+1/x^{2}=7, then x^{3}+1/x^{3} (x>0) is:",
+    "options": [
+      "16",
+      "18",
+      "15",
+      "12"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "18"
+  },
+  {
+    "id": 356,
+    "year": "2019",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x(3–2/x)=3/x, then x^{3}–1/x^{3} is:",
+    "options": [
+      "8/27",
+      "52/27",
+      "62/27",
+      "61/27"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "61/27"
+  },
+  {
+    "id": 357,
+    "year": "2019",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x+16/x=8, then x^{2}+32/x^{2} is:",
+    "options": [
+      "24",
+      "16",
+      "20",
+      "18"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "16"
+  },
+  {
+    "id": 358,
+    "year": "2019",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x=\\sqrt(–\\sqrt3+\\sqrt(3+8\\sqrt7+4\\sqrt3)) (x>0), then x equals:",
+    "options": [
+      "2",
+      "4",
+      "1",
+      "3"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "2"
+  },
+  {
+    "id": 359,
+    "year": "2019",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If \\sqrtx+1/\\sqrtx=3, then x^{3}+1/x^{3} is:",
+    "options": [
+      "324",
+      "326",
+      "322",
+      "422"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "326"
+  },
+  {
+    "id": 360,
+    "year": "2019",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If x–3/x=6 (x\\neq0), then (x^{4}–27/x^{2})/(x^{2}–3x–3) is:",
+    "options": [
+      "90",
+      "80",
+      "270",
+      "54"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "90"
+  },
+  {
+    "id": 361,
+    "year": "2019",
+    "exam": "CGL Tier-II",
+    "date": "",
+    "question": "If (8+2\\sqrt3)/(3\\sqrt3+5)=a\\sqrt3–b, then a+b is:",
+    "options": [
+      "16",
+      "18",
+      "15",
+      "24"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "16"
+  },
+  {
+    "id": 362,
+    "year": "2020",
+    "exam": "CGL 2020",
+    "date": "29/01/2022",
+    "question": "If a + b + c = 1, ab + bc + ca = −22 and abc = −40, then what is the value of a^{3} + b^{3} + c^{3} ?",
+    "options": [
+      "−51",
+      "27",
+      "67",
+      "−53"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "67"
+  },
+  {
+    "id": 363,
+    "year": "2020",
+    "exam": "CGL 2020",
+    "date": "29/01/2022",
+    "question": "If 2x^{2} + 5x + 1 = 0, then one of the values of x − 1/(2x) is:",
+    "options": [
+      "\\sqrt13/2",
+      "\\sqrt17/2",
+      "5/2",
+      "13/2"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "\\sqrt17/2"
+  },
+  {
+    "id": 364,
+    "year": "2020",
+    "exam": "CGL 2020",
+    "date": "29/01/2022",
+    "question": "22\\sqrt2 / (4\\sqrt2 − \\sqrt3 + \\sqrt5) = a + \\sqrt5\\cdotb, with a, b > 0. Then what is (ab) : (a + b)?",
+    "options": [
+      "7:8",
+      "4:7",
+      "7:4",
+      "8:7"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "7:4"
+  },
+  {
+    "id": 365,
+    "year": "2020",
+    "exam": "CGL 2020",
+    "date": "29/01/2022",
+    "question": "If 2x − y = 2 and xy = 3/2, then what is the value of x^{3} − y^{3}/8 ?",
+    "options": [
+      "13/4",
+      "−5/4",
+      "9/2",
+      "5/2"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "13/4"
+  },
+  {
+    "id": 366,
+    "year": "2020",
+    "exam": "CGL 2020",
+    "date": "29/01/2022",
+    "question": "If x = \\sqrt(1 + \\sqrt3/2) − \\sqrt(1 − \\sqrt3/2), then the value of (\\sqrt3 − x)/(\\sqrt3 + x) is: (corrected to two decimal places)",
+    "options": [
+      "0.25",
+      "0.19",
+      "0.27",
+      "0.17"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "0.17"
+  },
+  {
+    "id": 367,
+    "year": "2020",
+    "exam": "CGL 2020",
+    "date": "29/01/2022",
+    "question": "If x^{2} − \\sqrt7\\cdotx + 1 = 0, then what is the value of x^{5} + 1/x^{5} ?",
+    "options": [
+      "25\\sqrt7",
+      "21\\sqrt7",
+      "27\\sqrt7",
+      "19\\sqrt7"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "25\\sqrt7"
+  },
+  {
+    "id": 368,
+    "year": "2020",
+    "exam": "CGL 2020",
+    "date": "03/02/2022",
+    "question": "If x = 32.5, y = 34.6 and z = 30.9, then the value of x^{3} + y^{3} + z^{3} − 3xyz is 0.98k, where k is equal to:",
+    "options": [
+      "1,033",
+      "933",
+      "1,026",
+      "921"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "1,033"
+  },
+  {
+    "id": 369,
+    "year": "2020",
+    "exam": "CGL 2020",
+    "date": "03/02/2022",
+    "question": "If x + 1/x = 3, x \\neq 0, then the value of x^{7} + 1/x^{7} is:",
+    "options": [
+      "749",
+      "843",
+      "746",
+      "849"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "843"
+  },
+  {
+    "id": 370,
+    "year": "2020",
+    "exam": "CGL 2020",
+    "date": "03/02/2022",
+    "question": "If x^{4} + y^{4} + x^{2}y^{2} = 17(1/16) and x^{2} − xy + y^{2} = 5(1/4), then one of the values of (x − y) is:",
+    "options": [
+      "5/2",
+      "3/4",
+      "5/4",
+      "3/2"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "3/4"
+  },
+  {
+    "id": 371,
+    "year": "2021",
+    "exam": "CGL 2021",
+    "date": "08/08/2022",
+    "question": "What is the value of (\\sqrt7+\\sqrt5)/(\\sqrt7−\\sqrt5) \\div (\\sqrt14+\\sqrt10)/(\\sqrt14−\\sqrt10) + \\sqrt10/\\sqrt5 ?",
+    "options": [
+      "\\sqrt2 + 2",
+      "2\\sqrt2 + 2",
+      "\\sqrt2 + 1",
+      "2\\sqrt2 + 1"
+    ],
+    "correct_option_index": 3,
+    "correct_answer": "2\\sqrt2 + 1"
+  },
+  {
+    "id": 372,
+    "year": "2021",
+    "exam": "CGL 2021",
+    "date": "08/08/2022",
+    "question": "If (x + 1/x)^{2} = 3, then what is the value of x^{6} + x⁻^{6} ?",
+    "options": [
+      "6",
+      "2",
+      "−6",
+      "−2"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "2"
+  },
+  {
+    "id": 373,
+    "year": "2021",
+    "exam": "CGL 2021",
+    "date": "08/08/2022",
+    "question": "What is the solution of the following equations? 2X + 3Y = 12 and 3X − 2Y = 5",
+    "options": [
+      "X = 3, Y = 2",
+      "X = 2, Y = 3",
+      "X = −2, Y = 3",
+      "X = 3, Y = −2"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "X = 3, Y = 2"
+  },
+  {
+    "id": 374,
+    "year": "2021",
+    "exam": "CGL 2021",
+    "date": "08/08/2022",
+    "question": "If xy = −6 and x^{3} + y^{3} = 19 (x and y are integers), then what is the value of 1/x⁻^{1} + 1/y⁻^{1} ?",
+    "options": [
+      "−1",
+      "−2",
+      "1",
+      "2"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "−1"
+  },
+  {
+    "id": 375,
+    "year": "2022",
+    "exam": "CGL 2022",
+    "date": "06/03/2023",
+    "question": "For what value of m will the system of equations 18x − 72y + 13 = 0 and 7x − my − 17 = 0 have no solution?",
+    "options": [
+      "28",
+      "24",
+      "9",
+      "12"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "28"
+  },
+  {
+    "id": 376,
+    "year": "2022",
+    "exam": "CGL 2022",
+    "date": "07/03/2023",
+    "question": "If 2^{x} + 3ʸ = 17 and 2^{x+2} − 3^{y+1} = 5, then find x and y.",
+    "options": [
+      "x = 1, y = 3",
+      "x = 3, y = 3",
+      "x = 3, y = 2",
+      "x = 1, y = 2"
+    ],
+    "correct_option_index": 0,
+    "correct_answer": "x = 1, y = 3"
+  },
+  {
+    "id": 377,
+    "year": "2023 (CHSL)",
+    "exam": "CHSL 2023",
+    "date": "02/11/2023",
+    "question": "If (a − 2b) = 8 and 2ab = 9, then find the value of (a + 2b).",
+    "options": [
+      "12",
+      "6",
+      "10",
+      "8"
+    ],
+    "correct_option_index": 2,
+    "correct_answer": "10"
+  },
+  {
+    "id": 378,
+    "year": "2023 (CHSL)",
+    "exam": "CHSL 2023",
+    "date": "02/11/2023",
+    "question": "A and B each have a certain number of oranges. A says to B, \"If you give me 10 of your oranges, I will have twice the number of oranges left with you.\" B replies, \"If you give me 10 of your oranges, I will have the same number of oranges left with you.\" Find the number of oranges that A has.",
+    "options": [
+      "65",
+      "50",
+      "55",
+      "70"
+    ],
+    "correct_option_index": 1,
+    "correct_answer": "50"
+  }
+]
