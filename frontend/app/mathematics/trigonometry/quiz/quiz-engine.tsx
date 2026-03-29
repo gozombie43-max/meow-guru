@@ -1427,19 +1427,6 @@ export default function TrigQuizEngine() {
                 {currentQ.exam} {currentQ.year}
               </span>
 
-              {/* Formula hint — shown when submitted */}
-              {isCurrentSubmitted && currentQ.formula && (
-                <span
-                  className="ml-auto hidden sm:inline-block rounded-lg px-3 py-1 text-xs font-mono"
-                  style={{
-                    background: "#F5F3FF",
-                    color: "#5B21B6",
-                    border: "1px solid #7c3aed30",
-                  }}
-                >
-                  {currentQ.formula}
-                </span>
-              )}
 
               <button
                 onClick={handleBookmark}
@@ -1462,11 +1449,13 @@ export default function TrigQuizEngine() {
             <div
               style={{
                 fontSize: 18,
-                fontWeight: 500,
+                fontWeight: 400,
                 color: "#111827",
                 lineHeight: 1.6,
                 marginBottom: 28,
                 letterSpacing: 0.01,
+                paddingLeft: "0.3cm",
+                paddingRight: "0.3cm",
               }}
             >
               <MathRenderer
@@ -1475,22 +1464,6 @@ export default function TrigQuizEngine() {
               />
             </div>
 
-            {/* Formula hint on mobile — shown below question when submitted */}
-            {isCurrentSubmitted && currentQ.formula && (
-              <div
-                className="sm:hidden rounded-lg px-3 py-2 text-xs font-mono mb-2"
-                style={{
-                  background: "#F5F3FF",
-                  color: "#5B21B6",
-                  border: "1px solid #7c3aed30",
-                }}
-              >
-                <span className="font-semibold text-violet-400 mr-1">
-                  Formula:
-                </span>
-                {currentQ.formula}
-              </div>
-            )}
           </motion.div>
         </section>
 

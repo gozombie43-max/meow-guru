@@ -20,17 +20,15 @@ import {
   X,
   ArrowLeft,
   ArrowRight,
-  BarChart3,
-  Lightbulb,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { updateProgress, toggleBookmark } from "@/lib/userApi";
 import {
-  algebraQuestions,
+  geometryQuestions,
   shuffle,
-  type AlgebraQuestion,
-  CONCEPTS,
-} from "@/lib/algebra-questions";
+  type GeometryQuestion,
+  GEOM_CONCEPTS,
+} from "@/lib/geometry-questions";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 type QuizMode = "concept" | "formula" | "mixed" | "ai-challenge";
@@ -90,14 +88,13 @@ function MathFraction({
   );
 }
 
-/* ── MathText ───────────────────────────────────────────────────────────────
- * Parses a string for fraction patterns like  a/b, (expr)/(expr)
- * and renders them as stacked math-book fractions with a vinculum.
- * ─────────────────────────────────────────────────────────────────────────── */
-
-
 /* ── Question Status Helpers ────────────────────────────────────────────────  */
-type QuestionStatus = "current" | "answered" | "correct" | "wrong" | "not-answered";
+type QuestionStatus =
+  | "current"
+  | "answered"
+  | "correct"
+  | "wrong"
+  | "not-answered";
 
 function getQuestionStatus({
   index,
@@ -109,7 +106,7 @@ function getQuestionStatus({
   index: number;
   currentIndex: number;
   selectedAnswers: Record<number, number>;
-  questions: AlgebraQuestion[];
+  questions: GeometryQuestion[];
   submittedQuestions: Set<number>;
 }): QuestionStatus {
   const selected = selectedAnswers[index];
@@ -125,7 +122,7 @@ function getQuestionStatus({
 function statusClasses(status: QuestionStatus) {
   const base = "border transition-all duration-200";
   if (status === "current")
-    return `${base} bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-400/40 scale-110 z-10`;
+    return `${base} bg-violet-600 text-white border-violet-600 shadow-lg shadow-violet-400/40 scale-110 z-10`;
   if (status === "answered")
     return `${base} bg-amber-100 text-amber-700 border-amber-300`;
   if (status === "correct")
@@ -150,7 +147,7 @@ function QuestionPaletteModal({
   total: number;
   currentIndex: number;
   selectedAnswers: Record<number, number>;
-  questions: AlgebraQuestion[];
+  questions: GeometryQuestion[];
   submittedQuestions: Set<number>;
   onClose: () => void;
   onGoToQuestion: (questionNumber: number) => void;
@@ -185,8 +182,8 @@ function QuestionPaletteModal({
               </button>
             </div>
 
-            <div className="mb-3 flex gap-2 text-xs text-slate-600">
-              <span className="rounded-md border border-blue-300 bg-blue-100 px-2 py-1">
+            <div className="mb-3 flex flex-wrap gap-2 text-xs text-slate-600">
+              <span className="rounded-md border border-violet-300 bg-violet-100 px-2 py-1">
                 Current
               </span>
               <span className="rounded-md border border-amber-300 bg-amber-100 px-2 py-1">
@@ -250,7 +247,7 @@ function QuestionNavigator({
   total: number;
   currentIndex: number;
   selectedAnswers: Record<number, number>;
-  questions: AlgebraQuestion[];
+  questions: GeometryQuestion[];
   submittedQuestions: Set<number>;
   onGoToQuestion: (questionNumber: number) => void;
   onOpenPalette: () => void;
@@ -262,7 +259,11 @@ function QuestionNavigator({
   useEffect(() => {
     const activeButton = quickButtonRefs.current[currentIndex];
     if (!activeButton) return;
-    activeButton.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+    activeButton.scrollIntoView({
+      behavior: "smooth",
+      inline: "center",
+      block: "nearest",
+    });
   }, [currentIndex]);
 
   return (
@@ -350,12 +351,14 @@ function TimerCircle({
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke={isLow ? "#ef4444" : "#00e5ff"}
+          stroke={isLow ? "#ef4444" : "#7c3aed"}
           strokeWidth={stroke}
           strokeDasharray={circumference}
           strokeDashoffset={offset}
           strokeLinecap="round"
-          className={`transition-all duration-1000 linear ${isLow ? "animate-pulse" : ""}`}
+          className={`transition-all duration-1000 linear ${
+            isLow ? "animate-pulse" : ""
+          }`}
         />
       </svg>
       <span
@@ -369,15 +372,81 @@ function TimerCircle({
   );
 }
 
-/* ══════════════════════════════════════════════════════════════════════════════
-   MAIN QUIZ ENGINE
-   ══════════════════════════════════════════════════════════════════════════════ */
-export default function QuizEngine() {
+/* ── Concept Badge ───────────────────────────────────────────────────────────
+ * Maps each trig concept to a distinct accent colour so learners
+ * can visually distinguish question categories at a glance.
+ * ─────────────────────────────────────────────────────────────────────────── */
+const CONCEPT_COLOURS: Record<string, { border: string; bg: string; text: string }> = {
+  "Trigonometric Ratios & Values": {
+    border: "#7C3AED",
+    bg: "#F5F3FF",
+    text: "#5B21B6",
+  },
+  "Trigonometric Identities": {
+    border: "#0891B2",
+    bg: "#ECFEFF",
+    text: "#0E7490",
+  },
+  "Height & Distance": {
+    border: "#059669",
+    bg: "#ECFDF5",
+    text: "#047857",
+  },
+  "Trigonometric Equations": {
+    border: "#D97706",
+    bg: "#FFFBEB",
+    text: "#B45309",
+  },
+  "Graphs & Periodicity": {
+    border: "#DB2777",
+    bg: "#FDF2F8",
+    text: "#BE185D",
+  },
+  "Complementary Angles": {
+    border: "#2563EB",
+    bg: "#EFF6FF",
+    text: "#1D4ED8",
+  },
+  Simplification: {
+    border: "#64748B",
+    bg: "#F8FAFC",
+    text: "#475569",
+  },
+};
+
+function ConceptBadge({ concept }: { concept: string }) {
+  const colours =
+    CONCEPT_COLOURS[concept] ?? {
+      border: "#7C3AED",
+      bg: "#F5F3FF",
+      text: "#5B21B6",
+    };
+  return (
+    <span
+      style={{
+        border: `1.5px solid ${colours.border}`,
+        borderRadius: "999px",
+        padding: "3px 12px",
+        fontSize: "13px",
+        color: colours.text,
+        background: colours.bg,
+        fontWeight: 500,
+      }}
+    >
+      {concept}
+    </span>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   MAIN TRIG QUIZ ENGINE
+   ════════════════════════════════════════════════════════════════════════════ */
+export default function TrigQuizEngine() {
   const searchParams = useSearchParams();
   const mode = (searchParams.get("mode") || "mixed") as QuizMode;
 
   // ── State ──────────────────────────────────────────────────────────────────
-  const [questions, setQuestions] = useState<AlgebraQuestion[]>([]);
+  const [questions, setQuestions] = useState<GeometryQuestion[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [miniMode, setMiniMode] = useState(false);
@@ -386,8 +455,12 @@ export default function QuizEngine() {
   const [bestStreak, setBestStreak] = useState(0);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [results, setResults] = useState<SessionResult[]>([]);
-  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
-  const [submittedQuestions, setSubmittedQuestions] = useState<Set<number>>(new Set());
+  const [selectedAnswers, setSelectedAnswers] = useState<
+    Record<number, number>
+  >({});
+  const [submittedQuestions, setSubmittedQuestions] = useState<Set<number>>(
+    new Set()
+  );
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [conceptFilter, setConceptFilter] = useState<string>("all");
   const [started, setStarted] = useState(false);
@@ -404,30 +477,30 @@ export default function QuizEngine() {
   );
 
   const maxTime = miniMode ? 20 : 60;
-  const currentQ = questions[currentIndex] as AlgebraQuestion | undefined;
+  const currentQ = questions[currentIndex] as GeometryQuestion | undefined;
   const isLongQuestion = (currentQ?.question?.length ?? 0) > 180;
 
   // ── Build question set ─────────────────────────────────────────────────────
   /* eslint-disable react-hooks/exhaustive-deps */
   useEffect(() => {
-    let pool: AlgebraQuestion[];
+    let pool: GeometryQuestion[];
 
     switch (mode) {
       case "concept":
         pool =
           conceptFilter === "all"
-            ? [...algebraQuestions]
-            : algebraQuestions.filter((q) => q.concept === conceptFilter);
+            ? [...geometryQuestions]
+            : geometryQuestions.filter((q) => q.concept === conceptFilter);
         break;
       case "formula":
-        pool = [...algebraQuestions];
+        pool = [...geometryQuestions];
         break;
       case "ai-challenge":
-        pool = [...algebraQuestions];
+        pool = [...geometryQuestions];
         break;
       case "mixed":
       default:
-        pool = shuffle([...algebraQuestions]);
+        pool = shuffle([...geometryQuestions]);
         break;
     }
 
@@ -506,7 +579,10 @@ export default function QuizEngine() {
   const goToQuestion = useCallback(
     (questionNumber: number) => {
       if (questions.length === 0) return;
-      const safeNumber = Math.max(1, Math.min(questionNumber, questions.length));
+      const safeNumber = Math.max(
+        1,
+        Math.min(questionNumber, questions.length)
+      );
       showQuestion(safeNumber - 1);
     },
     [questions.length, showQuestion]
@@ -565,7 +641,9 @@ export default function QuizEngine() {
     }
 
     if (token) {
-      updateProgress(token, currentQ.concept, 1, isCorrect ? 1 : 0).catch(() => {});
+      updateProgress(token, currentQ.concept, 1, isCorrect ? 1 : 0).catch(
+        () => {}
+      );
     }
 
     setResults((prev) => {
@@ -579,7 +657,9 @@ export default function QuizEngine() {
         concept: currentQ.concept,
         difficulty: currentQ.difficulty,
       };
-      const existingIndex = prev.findIndex((r) => r.questionIndex === currentIndex);
+      const existingIndex = prev.findIndex(
+        (r) => r.questionIndex === currentIndex
+      );
       if (existingIndex === -1) return [...prev, next];
       const updated = [...prev];
       updated[existingIndex] = next;
@@ -718,21 +798,26 @@ export default function QuizEngine() {
   // ── Computed stats ─────────────────────────────────────────────────────────
   const stats = useMemo(() => {
     const correct = results.filter((r) => r.isCorrect).length;
-    const wrong = results.filter((r) => !r.isCorrect && r.selected !== null).length;
+    const wrong = results.filter(
+      (r) => !r.isCorrect && r.selected !== null
+    ).length;
     const attempted = results.length;
-    const skipped = Math.max(0, questions.length - attempted);
-    const accuracy = attempted > 0 ? Math.round((correct / attempted) * 100) : 0;
+    const accuracy =
+      attempted > 0 ? Math.round((correct / attempted) * 100) : 0;
     const avgTime =
       results.length > 0
-        ? Math.round(results.reduce((a, r) => a + r.timeTaken, 0) / results.length)
+        ? Math.round(
+            results.reduce((a, r) => a + r.timeTaken, 0) / results.length
+          )
         : 0;
-    return { correct, wrong, skipped, accuracy, avgTime };
-  }, [questions.length, results]);
+    return { correct, wrong, accuracy, avgTime };
+  }, [results]);
 
   const weakConcepts = useMemo(() => {
     const conceptStats: Record<string, { correct: number; total: number }> = {};
     for (const r of results) {
-      if (!conceptStats[r.concept]) conceptStats[r.concept] = { correct: 0, total: 0 };
+      if (!conceptStats[r.concept])
+        conceptStats[r.concept] = { correct: 0, total: 0 };
       conceptStats[r.concept].total++;
       if (r.isCorrect) conceptStats[r.concept].correct++;
     }
@@ -744,17 +829,19 @@ export default function QuizEngine() {
       }));
   }, [results]);
 
-  // ── Option style helper ────────────────────────────────────────────────────
+  // ── Helpers ────────────────────────────────────────────────────────────────
   function formatClock(totalSeconds: number) {
     const safeSeconds = Math.max(0, totalSeconds);
-    const mins = Math.floor(safeSeconds / 60).toString().padStart(2, "0");
+    const mins = Math.floor(safeSeconds / 60)
+      .toString()
+      .padStart(2, "0");
     const secs = (safeSeconds % 60).toString().padStart(2, "0");
     return `${mins}:${secs}`;
   }
 
-  /* ════════════════════════════════════════════════════════════════════════════
+  /* ══════════════════════════════════════════════════════════════════════════
      RENDER
-     ════════════════════════════════════════════════════════════════════════════ */
+     ══════════════════════════════════════════════════════════════════════════ */
 
   // ── Analytics Screen ───────────────────────────────────────────────────────
   if (showAnalytics) {
@@ -763,9 +850,21 @@ export default function QuizEngine() {
         <div className="pt-28 pb-20 px-6 max-w-3xl mx-auto relative">
           <h1
             className="animate-fade-in-up text-3xl font-bold mb-2 text-[var(--text-primary)]"
-            style={{ fontFamily: "'SF Pro Display', 'Helvetica Neue', sans-serif" }}
+            style={{
+              fontFamily: "'SF Pro Display', 'Helvetica Neue', sans-serif",
+            }}
           >
-            Session <span className="gradient-text">Complete</span>
+            Session{" "}
+            <span
+              style={{
+                background:
+                  "linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}
+            >
+              Complete
+            </span>
           </h1>
           <p
             className="animate-fade-in-up text-slate-500 mb-10"
@@ -774,16 +873,43 @@ export default function QuizEngine() {
             Here&apos;s how you performed in this {MODE_LABELS[mode]} session.
           </p>
 
+          {/* Formula reminder banner */}
+          {currentQ && (
+            <div
+              className="animate-fade-in-up mb-8 rounded-xl border border-violet-200 bg-violet-50 px-5 py-4"
+              style={{ animationDelay: "150ms" }}
+            >
+              <p className="text-xs font-semibold uppercase tracking-wide text-violet-400 mb-1">
+                Key Formula
+              </p>
+              <p className="text-sm font-mono text-violet-800">
+                sin²θ + cos²θ = 1 &nbsp;|&nbsp; 1 + tan²θ = sec²θ &nbsp;|&nbsp; 1 + cot²θ = cosec²θ
+              </p>
+            </div>
+          )}
+
           {/* Stats grid */}
           <div
             className="animate-fade-in-up grid grid-cols-2 sm:grid-cols-4 gap-4 mb-10"
             style={{ animationDelay: "200ms" }}
           >
             {[
-              { label: "Correct", value: stats.correct, color: "text-emerald-600" },
+              {
+                label: "Correct",
+                value: stats.correct,
+                color: "text-emerald-600",
+              },
               { label: "Wrong", value: stats.wrong, color: "text-red-500" },
-              { label: "Accuracy", value: `${stats.accuracy}%`, color: "text-cyan-600" },
-              { label: "Avg Time", value: `${stats.avgTime}s`, color: "text-amber-600" },
+              {
+                label: "Accuracy",
+                value: `${stats.accuracy}%`,
+                color: "text-violet-600",
+              },
+              {
+                label: "Avg Time",
+                value: `${stats.avgTime}s`,
+                color: "text-amber-600",
+              },
             ].map((s) => (
               <div key={s.label} className="glass-card rounded-xl p-5 text-center">
                 <div className={`text-2xl font-bold ${s.color}`}>{s.value}</div>
@@ -799,17 +925,91 @@ export default function QuizEngine() {
           >
             <div className="glass-card rounded-xl p-5">
               <div className="text-sm text-slate-500 mb-1">Best Streak</div>
-              <div className="text-xl font-bold text-cyan-600 flex items-center gap-2">
+              <div className="text-xl font-bold text-violet-600 flex items-center gap-2">
                 <Flame className="w-5 h-5" /> {bestStreak}
               </div>
             </div>
             <div className="glass-card rounded-xl p-5">
               <div className="text-sm text-slate-500 mb-1">Questions Done</div>
               <div className="text-xl font-bold text-[var(--text-primary)] flex items-center justify-center gap-2">
-                <MathFraction numerator={results.length} denominator={questions.length} />
+                <MathFraction
+                  numerator={results.length}
+                  denominator={questions.length}
+                />
               </div>
             </div>
           </div>
+
+          {/* Concept breakdown */}
+          {results.length > 0 && (
+            <div
+              className="animate-fade-in-up glass-card rounded-xl p-6 mb-6"
+              style={{ animationDelay: "300ms" }}
+            >
+              <h3 className="font-semibold mb-4 text-[var(--text-primary)] flex items-center gap-2">
+                <span
+                  style={{
+                    display: "inline-block",
+                    width: 8,
+                    height: 8,
+                    borderRadius: "50%",
+                    background: "#7c3aed",
+                  }}
+                />
+                Concept Breakdown
+              </h3>
+              <div className="space-y-3">
+                {GEOM_CONCEPTS.map((c) => {
+                  const conceptResults = results.filter(
+                    (r) => r.concept === c
+                  );
+                  if (conceptResults.length === 0) return null;
+                  const correct = conceptResults.filter(
+                    (r) => r.isCorrect
+                  ).length;
+                  const pct = Math.round(
+                    (correct / conceptResults.length) * 100
+                  );
+                  const col = CONCEPT_COLOURS[c] ?? {
+                    border: "#7C3AED",
+                    bg: "#F5F3FF",
+                    text: "#5B21B6",
+                  };
+                  return (
+                    <div key={c}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm text-slate-600">{c}</span>
+                        <span
+                          className="text-xs px-2 py-0.5 rounded-full font-semibold"
+                          style={{
+                            background: col.bg,
+                            color: col.text,
+                            border: `1px solid ${col.border}`,
+                          }}
+                        >
+                          {pct}%
+                        </span>
+                      </div>
+                      <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-700"
+                          style={{
+                            width: `${pct}%`,
+                            background:
+                              pct >= 70
+                                ? "#059669"
+                                : pct >= 40
+                                ? "#D97706"
+                                : "#DC2626",
+                          }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Weak concepts */}
           {weakConcepts.length > 0 && (
@@ -823,7 +1023,10 @@ export default function QuizEngine() {
               </h3>
               <div className="space-y-3">
                 {weakConcepts.map((wc) => (
-                  <div key={wc.concept} className="flex items-center justify-between">
+                  <div
+                    key={wc.concept}
+                    className="flex items-center justify-between"
+                  >
                     <span className="text-sm text-slate-600">{wc.concept}</span>
                     <span className="text-xs px-2.5 py-1 rounded-full bg-red-500/10 text-red-500 border border-red-500/25">
                       {wc.accuracy}% accuracy
@@ -842,11 +1045,16 @@ export default function QuizEngine() {
             <button
               onClick={handleRestart}
               className="btn-glow px-6 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 cursor-pointer"
+              style={{
+                background: "linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)",
+                color: "#fff",
+                border: "none",
+              }}
             >
               <RotateCcw className="w-4 h-4" /> Practice Again
             </button>
             <Link
-              href="/mathematics/algebra"
+              href="/mathematics/geometry"
               className="btn-outline px-6 py-3 rounded-xl font-medium text-center cursor-pointer"
             >
               Change Mode
@@ -866,39 +1074,122 @@ export default function QuizEngine() {
   // ── Pre-start Screen ───────────────────────────────────────────────────────
   if (!started) {
     return (
-      <div className="concept-start min-h-screen relative overflow-hidden px-4 sm:px-6">
+      <div className="trig-start min-h-screen relative overflow-hidden px-4 sm:px-6">
         <div className="w-full max-w-2xl mx-auto text-center min-h-screen flex flex-col pt-20 sm:pt-24 pb-8">
+          {/* Header */}
+          <div className="mb-2 flex items-center justify-center gap-2">
+            <span
+              className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-widest"
+              style={{
+                background: "#F5F3FF",
+                color: "#7c3aed",
+                border: "1px solid #7c3aed30",
+              }}
+            >
+              Geometry
+            </span>
+          </div>
           <h1
             className="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-3 text-[var(--text-primary)]"
-            style={{ fontFamily: "'SF Pro Display', 'Helvetica Neue', sans-serif" }}
+            style={{
+              fontFamily: "'SF Pro Display', 'Helvetica Neue', sans-serif",
+            }}
           >
             {MODE_LABELS[mode]}
           </h1>
-          <p className="text-slate-500 mb-8 sm:mb-10">
+          <p className="text-slate-500 mb-4">
             {mode === "concept"
               ? "Concept Practice · 60s per question"
               : `${MODE_LABELS[mode]} · 60s per question`}
           </p>
 
+          {/* Concept filter (only in concept mode) */}
+          {mode === "concept" && (
+            <div className="mb-8 flex flex-wrap justify-center gap-2">
+              <button
+                onClick={() => setConceptFilter("all")}
+                className="rounded-full px-3 py-1.5 text-xs font-semibold transition-all"
+                style={{
+                  background:
+                    conceptFilter === "all" ? "#7c3aed" : "#F5F3FF",
+                  color: conceptFilter === "all" ? "#fff" : "#5B21B6",
+                  border: `1.5px solid ${
+                    conceptFilter === "all" ? "#7c3aed" : "#7c3aed40"
+                  }`,
+                }}
+              >
+                All
+              </button>
+              {GEOM_CONCEPTS.map((c) => {
+                const col = CONCEPT_COLOURS[c] ?? {
+                  border: "#7C3AED",
+                  bg: "#F5F3FF",
+                  text: "#5B21B6",
+                };
+                const isActive = conceptFilter === c;
+                return (
+                  <button
+                    key={c}
+                    onClick={() => setConceptFilter(c)}
+                    className="rounded-full px-3 py-1.5 text-xs font-semibold transition-all"
+                    style={{
+                      background: isActive ? col.text : col.bg,
+                      color: isActive ? "#fff" : col.text,
+                      border: `1.5px solid ${col.border}`,
+                    }}
+                  >
+                    {c}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Formula cheatsheet */}
+          <div className="mb-8 mx-auto max-w-sm rounded-2xl border border-violet-100 bg-violet-50/60 px-5 py-4 text-left">
+            <p className="text-xs font-semibold uppercase tracking-wide text-violet-400 mb-2">
+              Key Identities
+            </p>
+            {[
+              "sin²θ + cos²θ = 1",
+              "1 + tan²θ = sec²θ",
+              "1 + cot²θ = cosec²θ",
+              "sin(90°−θ) = cosθ",
+              "tan(90°−θ) = cotθ",
+            ].map((f) => (
+              <p key={f} className="text-xs font-mono text-violet-700 leading-6">
+                {f}
+              </p>
+            ))}
+          </div>
+
           <div className="flex-1 flex items-center justify-center">
             <button
               onClick={handleStart}
-              className="start-quiz-button mx-auto"
+              className="trig-start-button mx-auto"
               aria-label="Start Quiz"
             >
-              <Sparkles className="start-quiz-icon" aria-hidden="true" />
-              <span className="start-quiz-label">Start Quiz</span>
+              <Sparkles className="trig-start-icon" aria-hidden="true" />
+              <span className="trig-start-label">Start Quiz</span>
             </button>
           </div>
         </div>
 
         <style jsx>{`
-          .concept-start {
-            background: radial-gradient(1200px 600px at 20% -10%, rgba(56, 189, 248, 0.18), transparent 60%),
-              radial-gradient(1000px 540px at 85% 110%, rgba(16, 185, 129, 0.16), transparent 62%),
-              linear-gradient(135deg, #f8fbff 0%, #edf4ff 45%, #f8fbff 100%);
+          .trig-start {
+            background: radial-gradient(
+                1200px 600px at 20% -10%,
+                rgba(124, 58, 237, 0.12),
+                transparent 60%
+              ),
+              radial-gradient(
+                1000px 540px at 85% 110%,
+                rgba(37, 99, 235, 0.12),
+                transparent 62%
+              ),
+              linear-gradient(135deg, #faf8ff 0%, #eef4ff 45%, #faf8ff 100%);
           }
-          .start-quiz-button {
+          .trig-start-button {
             position: relative;
             width: min(78vw, 260px);
             min-height: 54px;
@@ -911,35 +1202,53 @@ export default function QuizEngine() {
             justify-content: center;
             gap: 0.42rem;
             padding: 0 1.2rem;
-            background: linear-gradient(130deg, #7c3aed 0%, #a21caf 48%, #2563eb 100%);
+            background: linear-gradient(
+              130deg,
+              #7c3aed 0%,
+              #4f46e5 48%,
+              #2563eb 100%
+            );
             background-size: 190% 190%;
             color: #ffffff;
-            box-shadow: 0 18px 32px rgba(37, 99, 235, 0.33), 0 0 22px rgba(139, 92, 246, 0.36),
-              0 0 40px rgba(168, 85, 247, 0.2), inset 0 1.5px 0 rgba(255, 255, 255, 0.32);
-            transition: transform 0.4s ease, box-shadow 0.4s ease, filter 0.4s ease;
-            animation: button-breathe 3.4s ease-in-out infinite, gradient-shift 4.2s ease-in-out infinite;
+            box-shadow: 0 18px 32px rgba(124, 58, 237, 0.35),
+              0 0 22px rgba(79, 70, 229, 0.3), 0 0 40px rgba(37, 99, 235, 0.2),
+              inset 0 1.5px 0 rgba(255, 255, 255, 0.32);
+            transition: transform 0.4s ease, box-shadow 0.4s ease,
+              filter 0.4s ease;
+            animation: trig-breathe 3.4s ease-in-out infinite,
+              trig-gradient 4.2s ease-in-out infinite;
           }
-          .start-quiz-button::before,
-          .start-quiz-button::after {
+          .trig-start-button::before,
+          .trig-start-button::after {
             content: "";
             position: absolute;
             inset: 0;
             border-radius: inherit;
             pointer-events: none;
           }
-          .start-quiz-button::before {
+          .trig-start-button::before {
             inset: 2px;
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.08) 42%, transparent 85%);
+            background: linear-gradient(
+              180deg,
+              rgba(255, 255, 255, 0.42),
+              rgba(255, 255, 255, 0.08) 42%,
+              transparent 85%
+            );
             opacity: 0.85;
           }
-          .start-quiz-button::after {
-            background: linear-gradient(100deg, transparent 18%, rgba(255, 255, 255, 0.72) 47%, transparent 78%);
+          .trig-start-button::after {
+            background: linear-gradient(
+              100deg,
+              transparent 18%,
+              rgba(255, 255, 255, 0.72) 47%,
+              transparent 78%
+            );
             transform: translateX(-140%);
             mix-blend-mode: screen;
             opacity: 0.92;
-            animation: light-sweep 3s ease-in-out infinite;
+            animation: trig-sweep 3s ease-in-out infinite;
           }
-          .start-quiz-icon {
+          .trig-start-icon {
             position: relative;
             z-index: 2;
             width: 0.88rem;
@@ -947,9 +1256,9 @@ export default function QuizEngine() {
             stroke-width: 2.4;
             color: #ffffff;
             filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.55));
-            animation: icon-twinkle 2.8s ease-in-out infinite;
+            animation: trig-twinkle 2.8s ease-in-out infinite;
           }
-          .start-quiz-label {
+          .trig-start-label {
             position: relative;
             z-index: 2;
             font-size: clamp(0.88rem, 2.5vw, 1rem);
@@ -958,44 +1267,53 @@ export default function QuizEngine() {
             color: #ffffff;
             text-shadow: 0 2px 10px rgba(30, 41, 59, 0.34);
           }
-          .start-quiz-button:hover {
+          .trig-start-button:hover {
             transform: translateY(-2px) scale(1.05);
             filter: brightness(1.12);
-            box-shadow: 0 22px 42px rgba(37, 99, 235, 0.4), 0 0 30px rgba(139, 92, 246, 0.55),
-              0 0 58px rgba(168, 85, 247, 0.33), inset 0 2px 0 rgba(255, 255, 255, 0.44);
+            box-shadow: 0 22px 42px rgba(124, 58, 237, 0.45),
+              0 0 30px rgba(79, 70, 229, 0.45), 0 0 58px rgba(37, 99, 235, 0.3),
+              inset 0 2px 0 rgba(255, 255, 255, 0.44);
           }
-          .start-quiz-button:focus-visible {
+          .trig-start-button:focus-visible {
             outline: 2px solid rgba(255, 255, 255, 0.72);
             outline-offset: 4px;
           }
-          @keyframes light-sweep {
-            0% { transform: translateX(-140%); }
-            55%, 100% { transform: translateX(140%); }
+          @keyframes trig-sweep {
+            0% {
+              transform: translateX(-140%);
+            }
+            55%,
+            100% {
+              transform: translateX(140%);
+            }
           }
-          @keyframes button-breathe {
-            0%, 100% {
+          @keyframes trig-breathe {
+            0%,
+            100% {
               transform: translateY(0) scale(1);
-              box-shadow: 0 18px 32px rgba(37, 99, 235, 0.33), 0 0 22px rgba(139, 92, 246, 0.36),
-                0 0 40px rgba(168, 85, 247, 0.2), inset 0 1.5px 0 rgba(255, 255, 255, 0.32);
             }
             50% {
               transform: translateY(-4px) scale(1.018);
-              box-shadow: 0 23px 40px rgba(37, 99, 235, 0.4), 0 0 28px rgba(139, 92, 246, 0.48),
-                0 0 52px rgba(168, 85, 247, 0.3), inset 0 2px 0 rgba(255, 255, 255, 0.42);
             }
           }
-          @keyframes gradient-shift {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
+          @keyframes trig-gradient {
+            0%,
+            100% {
+              background-position: 0% 50%;
+            }
+            50% {
+              background-position: 100% 50%;
+            }
           }
-          @keyframes icon-twinkle {
-            0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.92; }
-            50% { transform: scale(1.15) rotate(8deg); opacity: 1; }
-          }
-          @media (max-width: 640px) {
-            .start-quiz-button {
-              width: min(72vw, 220px);
-              min-height: 50px;
+          @keyframes trig-twinkle {
+            0%,
+            100% {
+              transform: scale(1) rotate(0deg);
+              opacity: 0.92;
+            }
+            50% {
+              transform: scale(1.15) rotate(8deg);
+              opacity: 1;
             }
           }
         `}</style>
@@ -1020,7 +1338,8 @@ export default function QuizEngine() {
     <div
       className="min-h-screen relative overflow-x-hidden"
       style={{
-        background: "linear-gradient(165deg, #ecf4ff 0%, #eef8ff 38%, #f7fbff 100%)",
+        background:
+          "linear-gradient(165deg, #f5f0ff 0%, #eef2ff 38%, #f8faff 100%)",
         fontFamily: "Poppins, Inter, 'Segoe UI', sans-serif",
       }}
     >
@@ -1028,6 +1347,13 @@ export default function QuizEngine() {
 
         {/* Top bar */}
         <section className="mb-3 flex items-center justify-end gap-2">
+          {/* Streak indicator */}
+          {streak >= 2 && (
+            <div className="flex items-center gap-1 rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-sm font-bold text-violet-600">
+              <Flame className="w-3.5 h-3.5" />
+              {streak}
+            </div>
+          )}
           <div className="rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-sm font-bold text-slate-700">
             {formatClock(timeLeft)}
           </div>
@@ -1082,39 +1408,28 @@ export default function QuizEngine() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2 }}
-            className={`bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.08)] px-6 py-6 sm:px-8 sm:py-8 ${
+            className={`bg-white rounded-2xl shadow-[0_4px_20px_rgba(124,58,237,0.08)] px-6 py-6 sm:px-8 sm:py-8 ${
               isLongQuestion
                 ? "min-h-[220px] sm:min-h-[260px]"
                 : "min-h-[150px] sm:min-h-[180px]"
             }`}
           >
-            <div className="flex items-center mb-[14px]">
-              <span
-                style={{
-                  border: "1.5px solid #3B82F6",
-                  borderRadius: "999px",
-                  padding: "3px 12px",
-                  fontSize: "13px",
-                  color: "#3B82F6",
-                  background: "transparent",
-                  fontWeight: 500,
-                }}
-              >
-                {currentQ.concept}
-              </span>
+            {/* Card header */}
+            <div className="flex items-center mb-[14px] flex-wrap gap-2">
+              <ConceptBadge concept={currentQ.concept} />
               <span
                 style={{
                   fontSize: "13px",
                   color: "#6B7280",
-                  marginLeft: 8,
                   fontWeight: 500,
                 }}
               >
                 {currentQ.exam} {currentQ.year}
               </span>
+
               <button
                 onClick={handleBookmark}
-                className="ml-auto p-1.5 rounded-full hover:bg-slate-100 transition-colors"
+                className="ml-auto sm:ml-0 p-1.5 rounded-full hover:bg-slate-100 transition-colors"
                 aria-label={
                   bookmarked.has(String(currentQ.id))
                     ? "Remove bookmark"
@@ -1122,47 +1437,44 @@ export default function QuizEngine() {
                 }
               >
                 {bookmarked.has(String(currentQ.id)) ? (
-                  <BookmarkCheck className="w-5 h-5 text-cyan-500" />
+                  <BookmarkCheck className="w-5 h-5 text-violet-500" />
                 ) : (
                   <Bookmark className="w-5 h-5 text-slate-400" />
                 )}
               </button>
             </div>
 
+            {/* Question text */}
             <div
               style={{
                 fontSize: 18,
                 fontWeight: 400,
                 color: "#111827",
                 lineHeight: 1.6,
-                marginBottom: 28, // More space below question
+                marginBottom: 28,
                 letterSpacing: 0.01,
                 paddingLeft: "0.3cm",
                 paddingRight: "0.3cm",
               }}
             >
-              <MathText text={currentQ.question} className="leading-relaxed" />
+              <MathRenderer
+                text={currentQ.question}
+                className="leading-relaxed"
+              />
             </div>
 
-            {(currentQ as AlgebraQuestion & { image?: string }).image && (
-              <img
-                src={(currentQ as AlgebraQuestion & { image?: string }).image}
-                alt={`Question ${currentIndex + 1}`}
-                className="mt-4 w-full rounded-2xl border border-slate-200"
-              />
-            )}
           </motion.div>
         </section>
 
         {/* Options */}
         <section className="mb-5" style={{ marginTop: 28 }}>
           {currentQ.options.slice(0, 4).map((opt, i) => {
-            let border = "#E5E7EB";
-            let bg = "#FFFFFF";
-            let letterBg = "transparent";
-            let letterBorder = "#3B82F6";
-            let letterText = "#1D4ED8";
-            const letterFontWeight = 600;
+            let border = "#E5E7EB",
+              bg = "#FFFFFF",
+              letterBg = "transparent",
+              letterBorder = "#7C3AED",
+              letterText = "#5B21B6",
+              letterFontWeight = 600;
 
             if (isCurrentSubmitted && i === currentQ.correctAnswer) {
               border = "#16A34A";
@@ -1181,10 +1493,10 @@ export default function QuizEngine() {
               letterBorder = "#DC2626";
               letterText = "#fff";
             } else if (!isCurrentSubmitted && selectedAnswer === i) {
-              border = "#2563EB";
-              bg = "#EFF6FF";
-              letterBg = "#2563EB";
-              letterBorder = "#2563EB";
+              border = "#7C3AED";
+              bg = "#F5F3FF";
+              letterBg = "#7C3AED";
+              letterBorder = "#7C3AED";
               letterText = "#fff";
             }
 
@@ -1215,8 +1527,8 @@ export default function QuizEngine() {
                 }}
                 onMouseOver={(e) => {
                   if (!isCurrentSubmitted && selectedAnswer !== i) {
-                    e.currentTarget.style.borderColor = "#93C5FD";
-                    e.currentTarget.style.background = "#EFF6FF";
+                    e.currentTarget.style.borderColor = "#C4B5FD";
+                    e.currentTarget.style.background = "#F5F3FF";
                   }
                 }}
                 onMouseOut={(e) => {
@@ -1226,6 +1538,7 @@ export default function QuizEngine() {
                   }
                 }}
               >
+                {/* Letter bubble */}
                 <span
                   style={{
                     width: 34,
@@ -1246,11 +1559,20 @@ export default function QuizEngine() {
                 >
                   {String.fromCharCode(65 + i)}
                 </span>
+
+                {/* Option text */}
                 <span
-                  style={{ fontSize: 17, fontWeight: 400, color: "#111827", lineHeight: 1.5 }}
+                  style={{
+                    fontSize: 17,
+                    fontWeight: 400,
+                    color: "#111827",
+                    lineHeight: 1.5,
+                  }}
                 >
                   <MathText text={opt} />
                 </span>
+
+                {/* Correct / wrong icons */}
                 {isCurrentSubmitted && i === currentQ.correctAnswer && (
                   <CheckCircle2
                     className="ml-auto h-5 w-5 shrink-0 text-emerald-600"
@@ -1284,7 +1606,9 @@ export default function QuizEngine() {
       <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 bg-white/95 backdrop-blur-md">
         <div
           className="mx-auto max-w-3xl px-3 pb-3 pt-3 sm:px-6"
-          style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 12px)" }}
+          style={{
+            paddingBottom: "calc(env(safe-area-inset-bottom) + 12px)",
+          }}
         >
           <div className="grid grid-cols-2 gap-3">
             <button
@@ -1304,11 +1628,12 @@ export default function QuizEngine() {
                 handleNext();
               }}
               disabled={!canSubmit && !isCurrentSubmitted}
-              className={`inline-flex h-14 items-center justify-center rounded-2xl px-5 text-base font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-45 ${
-                isCurrentSubmitted
-                  ? "bg-blue-700 hover:bg-blue-800"
-                  : "bg-blue-600 hover:bg-blue-700"
-              }`}
+              className="inline-flex h-14 items-center justify-center rounded-2xl px-5 text-base font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-45"
+              style={{
+                background: isCurrentSubmitted
+                  ? "linear-gradient(135deg, #5b21b6 0%, #1d4ed8 100%)"
+                  : "linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)",
+              }}
             >
               {!isCurrentSubmitted
                 ? "Submit"

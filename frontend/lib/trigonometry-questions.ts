@@ -149,7 +149,14 @@ function normaliseOptions(raw: RawQ): string[] {
 export const trigonometryQuestions: TrigonometryQuestion[] = (
   rawData as RawQ[]
 ).map((raw, i) => {
-  const questionText = (raw.question ?? raw.text ?? "").trim();
+  let questionText = (raw.question ?? raw.text ?? "").trim();
+
+  if (raw.exam) {
+    const escapedExam = raw.exam.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    questionText = questionText.replace(new RegExp(`${escapedExam}$`), "").trim();
+  }
+  questionText = questionText.replace(/\s+(?:SSC|CHSL|CGL|CPO|Graduate\s+Level|Matriculation\s+Level)[^\n]*$/i, "").trim();
+
   const options = normaliseOptions(raw);
   const concept = classifyConcept(questionText);
   const difficulty = classifyDifficulty(raw.exam ?? "");

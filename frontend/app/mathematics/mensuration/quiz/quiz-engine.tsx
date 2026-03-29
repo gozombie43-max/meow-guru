@@ -1184,7 +1184,7 @@ export default function QuizEngine() {
                   : <Bookmark className="w-5 h-5 text-slate-400" />}
               </button>
             </div>
-            <h2 className="px-2 pt-2 text-lg font-normal leading-8 text-black sm:px-3 sm:text-[1.6rem] sm:leading-9">
+            <h2 className="pt-2 text-base font-normal leading-7 text-black sm:text-[1.1rem] sm:leading-8" style={{ paddingLeft: "0.3cm", paddingRight: "0.3cm" }}>
               <MathText text={currentQ.question} />
             </h2>
           </motion.div>
@@ -1245,23 +1245,6 @@ export default function QuizEngine() {
           </div>
         )}
 
-        {isAnswered && (
-          <div className="glass-card rounded-2xl p-6 mb-6 animate-fade-in-up border-l-2 border-cyan-500/30">
-            <div className="flex items-center gap-2 mb-3">
-              <Lightbulb className="w-4 h-4 text-amber-500" />
-              <h4 className="text-sm font-semibold text-amber-600">Solution</h4>
-            </div>
-            <p className="text-sm text-slate-600 leading-relaxed mb-2">
-              <span className="text-[var(--text-primary)] font-medium">Correct Answer:</span>{" "}
-              <MathText text={`${currentQ.options[currentQ.correctAnswer]} (${currentQ.answer})`} />
-            </p>
-            <p className="text-sm text-slate-500 leading-relaxed">
-              <span className="text-slate-600 font-medium">Concept:</span>{" "}
-              {currentQ.concept} · <span className="text-slate-600 font-medium">Formula:</span>{" "}
-              {currentQ.formula}
-            </p>
-          </div>
-        )}
       </main>
 
       <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 bg-white/95 backdrop-blur-md">
