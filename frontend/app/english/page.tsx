@@ -198,10 +198,6 @@ function TopicPill({ topic, index }: { topic: Topic; index: number }) {
       </span>
       <div className="pill-middle">
         <span className="pill-name">{topic.name}</span>
-        <span className="pill-subs">
-          {topic.subtopics.slice(0, 3).join(" · ")}
-          {topic.subtopics.length > 3 ? ` · +${topic.subtopics.length - 3}` : ""}
-        </span>
       </div>
       <span className="pill-badge" style={{ background: cfg.iconAccent, color: cfg.badge }}>
         {cfg.label}

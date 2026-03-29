@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import api from '@/lib/axios';
 
 interface User {
@@ -25,18 +25,16 @@ const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser]       = useState<User | null>(null);
   const [token, setToken]     = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const stored = localStorage.getItem('token');
-    if (stored) {
-      login(stored).finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
+  const logout = useCallback(() => {
+    setToken(null);
+    setUser(null);
+    localStorage.removeItem('token');
   }, []);
 
-  const login = async (t: string) => {
+  const login = useCallback(async (t: string) => {
+    setLoading(true);
     setToken(t);
     localStorage.setItem('token', t);
     try {
@@ -46,10 +44,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(res.data);
     } catch {
       logout();
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [logout]);
 
-  const refreshUser = async () => {
+  const refreshUser = useCallback(async () => {
     const stored = localStorage.getItem('token');
     if (!stored) return;
     try {
@@ -57,14 +57,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         headers: { Authorization: `Bearer ${stored}` },
       });
       setUser(res.data);
-    } catch {}
-  };
+    } catch {
+      // ignore
+    }
+  }, []);
 
-  const logout = () => {
-    setToken(null);
-    setUser(null);
-    localStorage.removeItem('token');
-  };
+  useEffect(() => {
+    const stored = localStorage.getItem('token');
+    if (stored) {
+      login(stored);
+    }
+  }, [login]);
 
   return (
     <AuthContext.Provider value={{ user, token, login, logout, refreshUser, loading }}>

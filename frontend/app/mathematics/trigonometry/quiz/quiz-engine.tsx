@@ -463,6 +463,65 @@ export default function TrigQuizEngine() {
   );
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [conceptFilter, setConceptFilter] = useState<string>("all");
+  const [examFilter, setExamFilter] = useState<string>("");
+
+  function normalizeExamName(exam: string): string {
+    const normalized = (exam ?? "").trim();
+    const upper = normalized.toUpperCase();
+
+    if (upper.includes("SSC CGL") && upper.includes("TIER II")) return "SSC CGL Tier II";
+    if (upper.includes("SSC CGL")) return "SSC CGL";
+    if (upper.includes("SSC CHSL") && upper.includes("TIER II")) return "SSC CHSL Tier II";
+    if (upper.includes("SSC CHSL")) return "SSC CHSL";
+    if (upper.includes("SSC CPO")) return "SSC CPO";
+    if (upper.includes("GRADUATE LEVEL")) return "Graduate Level";
+    if (upper.includes("HIGHER SECONDARY")) return "Higher Secondary";
+    if (upper.includes("LECTURER")) return "Lecturer";
+    if (upper.includes("POLICE")) return "Police";
+    if (upper.includes("RAILWAY")) return "Railway";
+
+    const collapsed = normalized
+      .replace(/\b(?:\d{1,4}|\d{1,2}TH|\d{1,2}ND|\d{1,2}ST|\d{1,2}RD|SHIFT|SESSION|SET|PAPER|SLOT|AFTERNOON|MORNING|EVENING|TIER\s*I+|LEVEL)\b/gi, "")
+      .replace(/[\(\)\[\],\/\-]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    return collapsed;
+  }
+
+  const examOptions = useMemo(() => {
+    const set = new Set<string>();
+    trigonometryQuestions.forEach((q) => {
+      const exam = normalizeExamName((q.exam ?? "").trim());
+      if (exam) set.add(exam);
+    });
+    return ["all", ...Array.from(set).sort((a, b) => a.localeCompare(b))];
+  }, []);
+
+  const availableCount = useMemo(() => {
+    let pool: TrigonometryQuestion[];
+
+    if (mode === "concept") {
+      pool =
+        conceptFilter === "all"
+          ? [...trigonometryQuestions]
+          : trigonometryQuestions.filter((q) => q.concept === conceptFilter);
+    } else if (mode === "formula" || mode === "ai-challenge") {
+      pool = [...trigonometryQuestions];
+    } else {
+      pool = shuffle([...trigonometryQuestions]);
+    }
+
+    if (examFilter.trim() !== "") {
+      const examQuery = examFilter.trim().toLowerCase();
+      pool = pool.filter((q) =>
+        normalizeExamName((q.exam ?? "").trim()).toLowerCase().includes(examQuery)
+      );
+    }
+
+    return pool.length;
+  }, [mode, conceptFilter, examFilter]);
+
   const [started, setStarted] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [timeLeft, setTimeLeft] = useState(60);
@@ -504,6 +563,14 @@ export default function TrigQuizEngine() {
         break;
     }
 
+    if (examFilter.trim() !== "") {
+      const examQuery = examFilter.trim().toLowerCase();
+      pool = pool.filter((q) => {
+        const norm = normalizeExamName((q.exam ?? "").trim()).toLowerCase();
+        return norm.includes(examQuery);
+      });
+    }
+
     setQuestions(shuffle(pool));
     setCurrentIndex(0);
     setSelectedAnswer(null);
@@ -515,7 +582,7 @@ export default function TrigQuizEngine() {
     setShowAnalytics(false);
     setStarted(false);
     setSubmitError("");
-  }, [mode, conceptFilter]);
+  }, [mode, conceptFilter, examFilter]);
   /* eslint-enable react-hooks/exhaustive-deps */
 
   // ── Timer ──────────────────────────────────────────────────────────────────
@@ -1097,18 +1164,13 @@ export default function TrigQuizEngine() {
           >
             {MODE_LABELS[mode]}
           </h1>
-          <p className="text-slate-500 mb-4">
-            {mode === "concept"
-              ? "Concept Practice · 60s per question"
-              : `${MODE_LABELS[mode]} · 60s per question`}
-          </p>
 
           {/* Concept filter (only in concept mode) */}
           {mode === "concept" && (
-            <div className="mb-8 flex flex-wrap justify-center gap-2">
+            <div className="mb-4 flex flex-wrap justify-center gap-2">
               <button
                 onClick={() => setConceptFilter("all")}
-                className="rounded-full px-3 py-1.5 text-xs font-semibold transition-all"
+                className="rounded-full px-4 py-2 text-sm font-semibold transition-all"
                 style={{
                   background:
                     conceptFilter === "all" ? "#7c3aed" : "#F5F3FF",
@@ -1131,7 +1193,7 @@ export default function TrigQuizEngine() {
                   <button
                     key={c}
                     onClick={() => setConceptFilter(c)}
-                    className="rounded-full px-3 py-1.5 text-xs font-semibold transition-all"
+                    className="rounded-full px-4 py-2 text-sm font-semibold transition-all"
                     style={{
                       background: isActive ? col.text : col.bg,
                       color: isActive ? "#fff" : col.text,
@@ -1145,23 +1207,36 @@ export default function TrigQuizEngine() {
             </div>
           )}
 
-          {/* Formula cheatsheet */}
-          <div className="mb-8 mx-auto max-w-sm rounded-2xl border border-violet-100 bg-violet-50/60 px-5 py-4 text-left">
-            <p className="text-xs font-semibold uppercase tracking-wide text-violet-400 mb-2">
-              Key Identities
-            </p>
-            {[
-              "sin²θ + cos²θ = 1",
-              "1 + tan²θ = sec²θ",
-              "1 + cot²θ = cosec²θ",
-              "sin(90°−θ) = cosθ",
-              "tan(90°−θ) = cotθ",
-            ].map((f) => (
-              <p key={f} className="text-xs font-mono text-violet-700 leading-6">
-                {f}
-              </p>
-            ))}
+          {/* Exam name filter */}
+          <div className="mb-5 flex items-center justify-center" style={{ marginTop: "1cm" }}>
+            <div className="flex items-center gap-2 rounded-full border border-violet-200 bg-white/80 px-3 py-2 shadow-sm" style={{ minWidth: "280px" }}>
+              <select
+                value={examFilter || "all"}
+                onChange={(e) => setExamFilter(e.target.value === "all" ? "" : e.target.value)}
+                className="rounded-full border-none bg-transparent px-4 py-2 text-base font-semibold text-slate-700 outline-none focus:ring-0"
+                style={{ minWidth: "220px" }}
+              >
+                {examOptions.map((ex) => (
+                  <option key={ex} value={ex === "all" ? "all" : ex}>
+                    {ex === "all" ? "All exams" : ex}
+                  </option>
+                ))}
+              </select>
+
+              {examFilter !== "" && (
+                <button
+                  onClick={() => setExamFilter("")}
+                  className="rounded-full bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-700 hover:bg-violet-100"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
           </div>
+
+          <p className="text-sm font-medium text-slate-600 mb-5">
+            {availableCount} questions available
+          </p>
 
           <div className="flex-1 flex items-center justify-center">
             <button
@@ -1215,8 +1290,7 @@ export default function TrigQuizEngine() {
               inset 0 1.5px 0 rgba(255, 255, 255, 0.32);
             transition: transform 0.4s ease, box-shadow 0.4s ease,
               filter 0.4s ease;
-            animation: trig-breathe 3.4s ease-in-out infinite,
-              trig-gradient 4.2s ease-in-out infinite;
+            animation: trig-breathe 3.4s ease-in-out infinite;
           }
           .trig-start-button::before,
           .trig-start-button::after {
@@ -1474,8 +1548,8 @@ export default function TrigQuizEngine() {
               bg = "#FFFFFF",
               letterBg = "transparent",
               letterBorder = "#7C3AED",
-              letterText = "#5B21B6",
-              letterFontWeight = 600;
+              letterText = "#5B21B6";
+            const letterFontWeight = 600;
 
             if (isCurrentSubmitted && i === currentQ.correctAnswer) {
               border = "#16A34A";

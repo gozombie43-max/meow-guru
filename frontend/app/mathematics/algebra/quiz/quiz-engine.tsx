@@ -390,6 +390,7 @@ export default function QuizEngine() {
   const [submittedQuestions, setSubmittedQuestions] = useState<Set<number>>(new Set());
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [conceptFilter, setConceptFilter] = useState<string>("all");
+  const [examFilter, setExamFilter] = useState<string>("");
   const [started, setStarted] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [timeLeft, setTimeLeft] = useState(60);
@@ -406,6 +407,61 @@ export default function QuizEngine() {
   const maxTime = miniMode ? 20 : 60;
   const currentQ = questions[currentIndex] as AlgebraQuestion | undefined;
   const isLongQuestion = (currentQ?.question?.length ?? 0) > 180;
+
+  function normalizeExamName(exam: string): string {
+    const normalized = (exam ?? "").trim();
+    const upper = normalized.toUpperCase();
+
+    if (upper.includes("SSC CGL") && upper.includes("TIER II")) return "SSC CGL Tier II";
+    if (upper.includes("SSC CGL")) return "SSC CGL";
+    if (upper.includes("SSC CHSL") && upper.includes("TIER II")) return "SSC CHSL Tier II";
+    if (upper.includes("SSC CHSL")) return "SSC CHSL";
+    if (upper.includes("SSC CPO")) return "SSC CPO";
+    if (upper.includes("GRADUATE LEVEL")) return "Graduate Level";
+    if (upper.includes("HIGHER SECONDARY")) return "Higher Secondary";
+    if (upper.includes("LECTURER")) return "Lecturer";
+    if (upper.includes("POLICE")) return "Police";
+    if (upper.includes("RAILWAY")) return "Railway";
+
+    const collapsed = normalized
+      .replace(/\b(?:\d{1,4}|\d{1,2}TH|\d{1,2}ND|\d{1,2}ST|\d{1,2}RD|SHIFT|SESSION|SET|PAPER|SLOT|AFTERNOON|MORNING|EVENING|TIER\s*I+|LEVEL)\b/gi, "")
+      .replace(/[\(\)\[\],\/\-]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    return collapsed;
+  }
+
+  const examOptions = useMemo(() => {
+    const set = new Set<string>();
+    algebraQuestions.forEach((q) => {
+      const exam = normalizeExamName((q.exam ?? "").trim());
+      if (exam) set.add(exam);
+    });
+    return ["all", ...Array.from(set).sort((a, b) => a.localeCompare(b))];
+  }, []);
+
+  const availableCount = useMemo(() => {
+    let pool =
+      mode === "concept"
+        ? conceptFilter === "all"
+          ? [...algebraQuestions]
+          : algebraQuestions.filter((q) => q.concept === conceptFilter)
+        : mode === "formula" || mode === "ai-challenge"
+        ? [...algebraQuestions]
+        : mode === "mixed"
+        ? shuffle([...algebraQuestions])
+        : [...algebraQuestions];
+
+    if (examFilter.trim() !== "") {
+      const examQuery = examFilter.trim().toLowerCase();
+      pool = pool.filter((q) =>
+        normalizeExamName((q.exam ?? "").trim()).toLowerCase().includes(examQuery)
+      );
+    }
+
+    return pool.length;
+  }, [mode, conceptFilter, examFilter]);
 
   // ── Build question set ─────────────────────────────────────────────────────
   /* eslint-disable react-hooks/exhaustive-deps */
@@ -431,6 +487,14 @@ export default function QuizEngine() {
         break;
     }
 
+    if (examFilter.trim() !== "") {
+      const examQuery = examFilter.trim().toLowerCase();
+      pool = pool.filter((q) => {
+        const norm = normalizeExamName((q.exam ?? "").trim()).toLowerCase();
+        return norm.includes(examQuery);
+      });
+    }
+
     setQuestions(shuffle(pool));
     setCurrentIndex(0);
     setSelectedAnswer(null);
@@ -442,7 +506,7 @@ export default function QuizEngine() {
     setShowAnalytics(false);
     setStarted(false);
     setSubmitError("");
-  }, [mode, conceptFilter]);
+  }, [mode, conceptFilter, examFilter]);
   /* eslint-enable react-hooks/exhaustive-deps */
 
   // ── Timer ──────────────────────────────────────────────────────────────────
@@ -874,11 +938,66 @@ export default function QuizEngine() {
           >
             {MODE_LABELS[mode]}
           </h1>
-          <p className="text-slate-500 mb-8 sm:mb-10">
-            {mode === "concept"
-              ? "Concept Practice · 60s per question"
-              : `${MODE_LABELS[mode]} · 60s per question`}
+          <p className="text-sm font-medium text-slate-600 mb-5">
+            {availableCount} questions available
           </p>
+
+          {mode === "concept" && (
+            <div className="mb-4 flex flex-wrap justify-center gap-2" style={{ width: "100%" }}>
+              <button
+                onClick={() => setConceptFilter("all")}
+                className="rounded-full px-4 py-2 text-sm font-semibold transition-all"
+                style={{
+                  background: conceptFilter === "all" ? "#7c3aed" : "#F5F3FF",
+                  color: conceptFilter === "all" ? "#fff" : "#5B21B6",
+                  border: `1.5px solid ${conceptFilter === "all" ? "#7c3aed" : "#7c3aed40"}`,
+                }}
+              >
+                All
+              </button>
+              {CONCEPTS.map((c) => {
+                const isActive = conceptFilter === c;
+                return (
+                  <button
+                    key={c}
+                    onClick={() => setConceptFilter(c)}
+                    className="rounded-full px-4 py-2 text-sm font-semibold transition-all"
+                    style={{
+                      background: isActive ? "#5B21B6" : "#F5F3FF",
+                      color: isActive ? "#fff" : "#5B21B6",
+                      border: `1.5px solid ${isActive ? "#7c3aed" : "#7c3aed40"}`,
+                    }}
+                  >
+                    {c}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          <div className="mb-5 flex items-center justify-center" style={{ marginTop: "0.5rem" }}>
+            <div className="flex items-center gap-2 rounded-full border border-violet-200 bg-white/80 px-3 py-2 shadow-sm" style={{ minWidth: "220px" }}>
+              <select
+                value={examFilter || "all"}
+                onChange={(e) => setExamFilter(e.target.value === "all" ? "" : e.target.value)}
+                className="rounded-full border-none bg-transparent px-4 py-2 text-base font-semibold text-slate-700 outline-none focus:ring-0"
+              >
+                {examOptions.map((ex) => (
+                  <option key={ex} value={ex === "all" ? "all" : ex}>
+                    {ex === "all" ? "All exams" : ex}
+                  </option>
+                ))}
+              </select>
+              {examFilter !== "" && (
+                <button
+                  onClick={() => setExamFilter("")}
+                  className="rounded-full bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-700 hover:bg-violet-100"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+          </div>
 
           <div className="flex-1 flex items-center justify-center">
             <button
