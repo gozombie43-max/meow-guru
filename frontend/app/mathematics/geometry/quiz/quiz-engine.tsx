@@ -515,7 +515,7 @@ export default function TrigQuizEngine() {
   }, []);
 
   const availableCount = useMemo(() => {
-    let pool =
+    const pool =
       mode === "concept"
         ? conceptFilter === "all"
           ? [...geometryQuestions]
@@ -523,16 +523,8 @@ export default function TrigQuizEngine() {
         : mode === "formula" || mode === "ai-challenge"
         ? [...geometryQuestions]
         : mode === "mixed"
-        ? shuffle([...geometryQuestions])
+        ? [...geometryQuestions]
         : [...geometryQuestions];
-
-    if (examFilter.trim() !== "") {
-      const examQuery = examFilter.trim().toLowerCase();
-      pool = pool.filter((q) =>
-        normalizeExamName((q.exam ?? "").trim()).toLowerCase().includes(examQuery)
-      );
-    }
-
     return pool.length;
   }, [mode, conceptFilter, examFilter]);
 
@@ -568,7 +560,8 @@ export default function TrigQuizEngine() {
       });
     }
 
-    setQuestions(shuffle(pool));
+    const nextQuestions = [...pool].sort((a, b) => a.id - b.id);
+    setQuestions(nextQuestions);
     setCurrentIndex(0);
     setSelectedAnswer(null);
     setResults([]);
@@ -788,7 +781,7 @@ export default function TrigQuizEngine() {
   }
 
   function handleRestart() {
-    setQuestions(shuffle([...questions]));
+    setQuestions([...questions].sort((a, b) => a.id - b.id));
     setCurrentIndex(0);
     setSelectedAnswer(null);
     setResults([]);

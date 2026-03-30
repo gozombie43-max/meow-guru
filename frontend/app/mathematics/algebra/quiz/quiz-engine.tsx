@@ -442,7 +442,7 @@ export default function QuizEngine() {
   }, []);
 
   const availableCount = useMemo(() => {
-    let pool =
+    const pool =
       mode === "concept"
         ? conceptFilter === "all"
           ? [...algebraQuestions]
@@ -450,15 +450,8 @@ export default function QuizEngine() {
         : mode === "formula" || mode === "ai-challenge"
         ? [...algebraQuestions]
         : mode === "mixed"
-        ? shuffle([...algebraQuestions])
+        ? [...algebraQuestions]
         : [...algebraQuestions];
-
-    if (examFilter.trim() !== "") {
-      const examQuery = examFilter.trim().toLowerCase();
-      pool = pool.filter((q) =>
-        normalizeExamName((q.exam ?? "").trim()).toLowerCase().includes(examQuery)
-      );
-    }
 
     return pool.length;
   }, [mode, conceptFilter, examFilter]);
@@ -495,7 +488,8 @@ export default function QuizEngine() {
       });
     }
 
-    setQuestions(shuffle(pool));
+    const nextQuestions = [...pool].sort((a, b) => a.id - b.id);
+    setQuestions(nextQuestions);
     setCurrentIndex(0);
     setSelectedAnswer(null);
     setResults([]);
@@ -708,7 +702,7 @@ export default function QuizEngine() {
   }
 
   function handleRestart() {
-    setQuestions(shuffle([...questions]));
+    setQuestions([...questions].sort((a, b) => a.id - b.id));
     setCurrentIndex(0);
     setSelectedAnswer(null);
     setResults([]);

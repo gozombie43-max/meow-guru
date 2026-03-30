@@ -492,8 +492,8 @@ export default function MensurationQuizEngine() {
       });
     }
 
-    const shuffled = shuffle([...pool]);
-    setQuestions(shuffled);
+    const nextQuestions = mode === "tier2" ? shuffle([...pool]) : [...pool].sort((a, b) => a.id - b.id);
+    setQuestions(nextQuestions);
     setCurrentIndex(0);
     setSelectedAnswer(null);
     setResults([]);

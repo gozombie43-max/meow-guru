@@ -509,7 +509,7 @@ export default function TrigQuizEngine() {
     } else if (mode === "formula" || mode === "ai-challenge") {
       pool = [...trigonometryQuestions];
     } else {
-      pool = shuffle([...trigonometryQuestions]);
+      pool = [...trigonometryQuestions];
     }
 
     if (examFilter.trim() !== "") {
@@ -571,7 +571,8 @@ export default function TrigQuizEngine() {
       });
     }
 
-    setQuestions(shuffle(pool));
+    const nextQuestions = [...pool].sort((a, b) => a.id - b.id);
+    setQuestions(nextQuestions);
     setCurrentIndex(0);
     setSelectedAnswer(null);
     setResults([]);
@@ -791,7 +792,7 @@ export default function TrigQuizEngine() {
   }
 
   function handleRestart() {
-    setQuestions(shuffle([...questions]));
+    setQuestions([...questions].sort((a, b) => a.id - b.id));
     setCurrentIndex(0);
     setSelectedAnswer(null);
     setResults([]);
