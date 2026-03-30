@@ -1,0 +1,5571 @@
+‭Pinnacle‬
+‭Day: 65th - 69th‬
+‭Percentage‬
+‭Percentage‬
+‭Key Points :-‬
+‭What does a percentage, say 20% mean?‬
+‭20%‬ ‭simply‬ ‭means‬
+‭of‬ ‭something.‬
+‭20‬
+‭100‬
+‭Also, you can see‬
+‭=‬
+‭=‬
+‭20‬
+‭100‬
+‭1‬
+‭5‬
+‭0‬. ‭2‬
+‭i.e.‬‭0.2‬‭of‬‭something‬‭is‬‭the‬‭same‬‭as‬‭20%‬
+‭of that thing.‬
+‭●‬
+‭Percentage change‬
+‭=‬
+‭100‬
+‭𝑁𝑒𝑤‬‭ ‬‭𝑣𝑎𝑙𝑢𝑒‬‭ ‬−‭ ‬‭𝑂𝑟𝑖𝑔𝑖𝑛𝑎𝑙‬‭ ‬‭𝑣𝑎𝑙𝑢𝑒‬
+‭𝑂𝑟𝑖𝑔𝑖𝑛𝑎𝑙‬‭ ‬‭𝑣𝑎𝑙𝑢𝑒‬
+×
+‭●‬
+‭Percentage‬ ‭point‬ ‭change‬ ‭means‬
+‭difference‬ ‭between‬ ‭two‬ ‭percentage‬
+‭rates.‬‭For‬‭instance,‬‭50%‬‭-‬‭30%‬‭=‬‭20%,‬
+‭so‬‭here‬‭the‬‭percentage‬‭point‬‭change‬
+‭is 20.‬
+‭●‬
+‭If‬‭the‬‭price‬‭of‬‭a‬‭product‬‭increases‬‭by‬
+‭%,‬ ‭then‬ ‭to‬ ‭keep‬‭expenditure‬‭same,‬
+‭𝑎‬
+‭percentage‬
+‭reduction‬
+‭in‬
+‭consumption required‬
+‭= (‬
+‭100)%‬
+‭𝑎‬
+‭100‬‭ ‬+‭ ‬‭𝑎‬ ×
+‭●‬
+‭If‬ ‭the‬ ‭price‬ ‭of‬ ‭a‬ ‭product‬ ‭decreases‬
+‭by‬
+‭%,‬ ‭then‬ ‭to‬ ‭keep‬ ‭expenditure‬
+‭𝑎‬
+‭same,‬
+‭percentage‬
+‭increase‬
+‭in‬
+‭consumption required‬
+‭= (‬
+‭100)%‬
+‭𝑎‬
+‭100‬‭ ‬−‭ ‬‭𝑎‬ ×
+‭●‬
+‭If‬‭A‬‭is‬‭R%‬‭more‬‭than‬‭B,‬‭then‬‭B‬‭is‬‭less‬
+‭than A by =‬‭(‬
+‭100)%‬
+‭𝑅‬
+‭100‬‭ ‬+‭ ‬‭𝑅‬ ×
+‭●‬
+‭If‬‭A‬‭is‬‭R%‬‭less‬‭than‬‭B,‬‭then‬‭B‬‭is‬‭more‬
+‭than A by = (‬
+‭100)%‬
+‭𝑅‬
+‭100‬‭ ‬−‭ ‬‭𝑅‬ ×
+‭●‬
+‭If‬‭the‬‭number‬‭is‬‭first‬‭increased‬‭by‬‭x%‬
+‭and‬ ‭then‬ ‭decreased‬ ‭by‬‭x%,‬‭then‬‭the‬
+‭net‬ ‭result‬ ‭is‬ ‭always‬‭decrease‬‭and‬‭it‬
+‭is‬ ‭equal‬ ‭to‬ ‭=‬
+‭%.‬‭Same‬‭result‬
+( ‭𝑥‬
+‭2‬
+‭100‬)
+‭will‬ ‭be‬ ‭obtained‬ ‭in‬ ‭the‬ ‭vice-versa‬
+‭case.‬
+‭Successive percentage change :‬
+‭1.‬
+‭Two‬
+‭successive‬
+‭percentage‬
+‭change‬ ‭:‬ ‭If‬ ‭the‬ ‭number‬ ‭is‬ ‭first‬
+‭increased‬
+‭by‬ ‭a%‬ ‭and‬ ‭then‬
+‭increased by b% then,‬
+‭Effective percentage change‬
+‭= (a + b +‬
+‭)%‬
+‭𝑎𝑏‬
+‭100‬
+‭Similarly,‬ ‭if‬ ‭the‬ ‭number‬ ‭is‬ ‭first‬
+‭increased‬
+‭by‬ ‭a%‬ ‭and‬ ‭then‬
+‭decreased by b%, then‬
+‭Effective percentage change‬
+‭= (a - b -‬
+‭)%‬
+‭𝑎𝑏‬
+‭100‬
+‭2.‬
+‭Three‬ ‭successive‬ ‭percentage‬
+‭change‬ ‭:‬ ‭If‬ ‭the‬ ‭number‬ ‭is‬ ‭first‬
+‭increased by a% then by b% and‬
+‭then by c%, then‬
+‭Effective percentage change =‬
+‭(a + b + c +‬
+‭+‬
+‭)%‬
+‭𝑎𝑏‬‭ ‬+‭ ‬‭𝑏𝑐‬‭ ‬+‭ ‬‭𝑐𝑎‬
+‭100‬
+‭𝑎𝑏𝑐‬
+‭10000‬
+‭Important‬‭Fractions‬‭and‬‭their‬‭equivalent‬
+‭Percentage‬
+‭1)‬
+‭=‬
+‭2)‬
+‭= 33‬
+‭% = 33.33%‬
+‭1‬
+‭2‬
+‭50%‬
+‭1‬
+‭3‬
+‭1‬
+‭3‬
+‭3)‬
+‭=‬
+‭4)‬
+‭=‬
+‭1‬
+‭4‬
+‭25%‬
+‭1‬
+‭5‬
+‭20%‬
+‭5)‬
+‭=‬‭16.67%‬ ‭6)‬
+‭=‬‭14‬
+‭%‬‭=‬‭14.28%‬
+‭1‬
+‭6‬
+‭1‬
+‭7‬
+‭2‬
+‭7‬
+‭7)‬
+‭= 12.5%‬
+‭8)‬
+‭= 11‬
+‭% =‬‭11.11%‬
+‭1‬
+‭8‬
+‭1‬
+‭9‬
+‭1‬
+‭9‬
+‭9)‬
+‭= 10%‬
+‭10)‬
+‭= 9‬
+‭%‬‭= 9.09%‬
+‭1‬
+‭10‬
+‭1‬
+‭11‬
+‭1‬
+‭11‬
+‭11)‬
+‭= 8‬
+‭%‬ ‭12)‬
+‭= 7.69%‬
+‭1‬
+‭12‬
+‭1‬
+‭3‬
+‭1‬
+‭13‬
+‭13)‬
+‭= 7.14%‬ ‭14)‬
+‭= 6.67%‬
+‭1‬
+‭14‬
+‭1‬
+‭15‬
+‭15)‬
+‭= 6.25%‬‭16)‬
+‭=  83‬
+‭%‬
+‭1‬
+‭16‬
+‭5‬
+‭6‬
+‭1‬
+‭3‬
+‭17)‬
+‭= 37.5%‬ ‭18)‬
+‭= 62.5%‬
+‭3‬
+‭8‬
+‭5‬
+‭8‬
+‭19)‬
+‭= 87.5%‬ ‭20)‬
+‭= 27.27%‬
+‭7‬
+‭8‬
+‭3‬
+‭11‬
+‭21)‬
+‭= 66‬
+‭% =‬
+‭%‬
+‭2‬
+‭3‬
+‭2‬
+‭3‬
+‭200‬
+‭3‬
+‭22)‬
+‭=  2‬
+‭= 233‬
+‭%‬
+‭7‬
+‭3‬
+‭1‬
+‭3‬
+‭1‬
+‭3‬
+‭23)‬
+‭=  1‬
+‭= 112.5%‬
+‭9‬
+‭8‬
+‭1‬
+‭8‬
+‭24)‬
+‭=  28.56%‬
+‭2‬
+‭7‬
+‭These‬ ‭fractions‬ ‭are‬ ‭very‬‭common‬‭and‬‭it‬
+‭will be very helpful to learn them.‬
+‭Variety Questions‬
+‭Q.1.‬ ‭Every‬ ‭month,‬ ‭a‬ ‭man‬ ‭consumes‬ ‭20‬
+‭kg‬‭of‬‭rice‬‭and‬‭8‬‭kg‬‭of‬‭wheat.‬‭The‬‭price‬‭of‬
+‭rice‬ ‭is‬ ‭20%‬ ‭of‬ ‭the‬ ‭price‬ ‭of‬ ‭wheat,‬
+‭resulting‬ ‭in‬ ‭a‬ ‭total‬ ‭expenditure‬ ‭of‬ ‭₹300‬
+‭per‬ ‭month‬‭for‬‭rice‬‭and‬‭wheat‬‭combined.‬
+‭If‬‭the‬‭price‬‭of‬‭wheat‬‭is‬‭increased‬‭by‬‭20%,‬
+‭what‬
+‭percentage‬
+‭reduction‬
+‭in‬
+‭rice‬
+‭consumption‬ ‭is‬ ‭needed‬ ‭to‬ ‭maintain‬ ‭the‬
+‭same‬ ‭expenditure‬ ‭of‬ ‭₹300?‬ ‭(Given‬ ‭that‬
+‭the‬ ‭price‬ ‭of‬ ‭rice‬ ‭and‬ ‭consumption‬ ‭of‬
+‭wheat is constant.)‬
+‭SSC CGL 12/09/2024 (2nd Shift)‬
+‭(a) 40%    (b) 38%    (c) 24%   (d) 22%‬
+‭Q.2.‬
+‭In‬
+‭an‬
+‭election‬
+‭between‬
+‭two‬
+‭candidates,‬‭y%‬‭of‬‭the‬‭voters‬‭did‬‭not‬‭vote.‬
+‭10%‬ ‭of‬ ‭the‬ ‭votes‬ ‭cast‬ ‭were‬ ‭declared‬
+‭invalid,‬‭while‬‭all‬‭the‬‭valid‬‭votes‬‭were‬‭cast‬
+‭in‬‭favour‬‭of‬‭either‬‭of‬‭the‬‭two‬‭candidates.‬
+‭The‬ ‭candidate‬ ‭who‬ ‭got‬ ‭59.375%‬ ‭of‬ ‭the‬
+‭valid‬‭votes‬‭cast‬‭was‬‭declared‬‭elected‬‭by‬
+‭2484‬ ‭votes.‬ ‭If‬ ‭the‬ ‭number‬ ‭of‬ ‭people‬
+‭eligible‬ ‭to‬ ‭vote‬ ‭in‬ ‭that‬ ‭election‬ ‭was‬
+‭16,000, what is the value of y ?‬
+‭SSC CGL 09/09/2024 (1st Shift)‬
+‭(a) 7.2‬
+‭(b) 8.4‬
+‭(c) 8‬
+‭(d) 7.5‬
+‭Q.3.‬ ‭Last‬ ‭year,‬ ‭Geeta's‬ ‭monthly‬ ‭salary‬
+‭was‬ ‭₹12,000‬ ‭and‬ ‭Seeta's‬‭monthly‬‭salary‬
+‭was‬ ‭₹10,000.‬ ‭This‬ ‭year,‬ ‭Geeta's‬‭monthly‬
+‭salary‬ ‭is‬ ‭₹14,400,‬ ‭while‬ ‭Seeta's‬ ‭monthly‬
+‭salary‬ ‭is‬ ‭₹12,500.‬ ‭If‬ ‭the‬ ‭percentage‬
+‭increase‬ ‭in‬ ‭Seeta's‬ ‭monthly‬ ‭salary‬ ‭this‬
+‭year‬ ‭over‬ ‭her‬ ‭monthly‬‭salary‬‭last‬‭year‬‭is‬
+‭denoted‬ ‭by‬ ‭x%,‬ ‭and‬ ‭the‬ ‭percentage‬
+‭increase‬ ‭in‬ ‭Geeta's‬ ‭monthly‬ ‭salary‬ ‭this‬
+‭year‬ ‭over‬ ‭her‬ ‭monthly‬‭salary‬‭last‬‭year‬‭is‬
+‭denoted‬‭by‬‭y%,‬‭then‬‭what‬‭is‬‭the‬‭value‬‭of‬‭(‬
+‭× 100)% ?‬
+‭𝑥‬‭ ‬−‭ ‬‭𝑦‬
+‭𝑦‬
+‭SSC CHSL 04/07/2024 (3rd Shift)‬
+‭(a) 22     (b) 20     (c) 24     (d) 25‬
+‭Q.4.‬
+‭In‬
+‭an‬
+‭election‬
+‭between‬
+‭two‬
+‭candidates,‬
+‭the‬
+‭defeated‬
+‭candidate‬
+‭secured‬‭42%‬‭of‬‭the‬‭valid‬‭votes‬‭polled‬‭and‬
+‭lost‬ ‭the‬ ‭election‬ ‭by‬ ‭2545800‬ ‭votes.‬ ‭If‬
+‭365500‬ ‭votes‬ ‭were‬ ‭declared‬ ‭invalid‬‭and‬
+‭30%‬ ‭people‬ ‭did‬‭not‬‭cast‬‭their‬‭vote,‬‭what‬
+‭was‬ ‭the‬ ‭approximate‬ ‭number‬ ‭of‬ ‭people‬
+‭(in‬ ‭millions)‬ ‭in‬ ‭the‬ ‭electorate‬ ‭who‬ ‭did‬
+‭NOT cast their votes?‬
+‭SSC CHSL 03/07/2024 (1st Shift)‬
+‭(a) 7‬
+‭(b) 8‬
+‭(c) 6‬
+‭(d) 5‬
+‭Q.5.‬ ‭At‬ ‭the‬ ‭beginning‬ ‭of‬ ‭day‬ ‭1‬ ‭of‬ ‭a‬
+‭month,‬ ‭Rajesh‬ ‭has‬ ‭500‬ ‭eggs.‬ ‭He‬ ‭sells‬
+‭20%‬ ‭of‬ ‭the‬ ‭eggs‬ ‭by‬ ‭the‬ ‭end‬ ‭of‬ ‭the‬ ‭day‬
+‭and‬ ‭added‬ ‭b%‬ ‭of‬ ‭the‬ ‭eggs‬ ‭at‬ ‭the‬
+‭beginning‬ ‭of‬ ‭the‬ ‭next‬ ‭day‬ ‭and‬‭sold‬‭20%‬
+‭of‬ ‭the‬ ‭eggs‬ ‭at‬ ‭the‬ ‭end‬ ‭of‬ ‭the‬ ‭next‬ ‭day.‬
+‭This‬ ‭pattern‬ ‭continued‬ ‭up‬ ‭to‬ ‭the‬ ‭end‬‭of‬
+‭the‬‭third‬‭day‬‭of‬‭the‬‭month‬‭when‬‭he‬‭is‬‭left‬
+‭with‬ ‭1024‬ ‭eggs.‬ ‭The‬ ‭value‬ ‭of‬‭b‬‭is‬‭equal‬
+‭to:‬
+‭SSC CHSL 02/07/2024 (4th Shift)‬
+‭(a) 500     (b) 20     (c) 100     (d) 10‬
+‭Q.6.‬ ‭In‬ ‭an‬ ‭election‬ ‭between‬ ‭P,‬ ‭R‬ ‭and‬ ‭S,‬
+‭of‬ ‭the‬‭total‬‭votes‬‭polled‬‭are‬‭invalid.‬
+‭1‬
+‭10‬
+‭Votes‬‭polled‬‭in‬‭favour‬‭of‬‭R‬‭and‬‭S‬‭are‬‭half‬
+‭of‬ ‭the‬ ‭total‬ ‭votes‬ ‭polled,‬ ‭and‬ ‭they‬ ‭get‬
+‭equal‬ ‭votes.‬ ‭Due‬ ‭to‬ ‭a‬ ‭fault‬ ‭in‬ ‭the‬
+‭machine,‬ ‭half‬ ‭of‬ ‭the‬ ‭votes‬‭of‬‭S‬‭and‬‭half‬
+‭of‬
+‭the‬
+‭invalid‬
+‭votes‬
+‭are‬
+‭counted‬
+‭additionally‬ ‭in‬ ‭favour‬ ‭of‬ ‭R.‬ ‭What‬ ‭is‬ ‭the‬
+‭overall‬‭percentage‬‭of‬‭votes‬‭secured‬‭by‬‭R‬
+‭due to the fault?‬
+‭SSC CPO 28/06/2024 (3rd Shift)‬
+‭(a) 37.55% (b) 41.55% (c) 38.5% (d) 42.5%‬
+‭Q.7.‬ ‭In‬ ‭an‬ ‭election‬ ‭between‬ ‭A‬ ‭and‬ ‭B,‬
+‭every‬ ‭fifth‬ ‭vote‬ ‭polled‬ ‭was‬ ‭marked‬ ‭as‬
+‭invalid‬ ‭by‬ ‭the‬ ‭machine.‬‭In‬‭the‬‭remaining‬
+‭votes,‬ ‭A‬ ‭wins‬‭the‬‭election‬‭with‬‭a‬‭margin‬
+‭of‬ ‭2500‬ ‭votes‬ ‭or‬ ‭10%‬ ‭of‬ ‭the‬ ‭total‬‭votes‬
+‭www.ssccglpinnacle.com                                                 Download Pinnacle Exam Preparation App‬
+
+‭Pinnacle‬
+‭Day: 65th - 69th‬
+‭Percentage‬
+‭polled,‬‭over‬‭B.‬‭If‬‭90%‬‭of‬‭the‬‭invalid‬‭votes‬
+‭would‬ ‭have‬ ‭been‬ ‭in‬ ‭favour‬ ‭of‬ ‭B,‬ ‭then‬
+‭which‬ ‭of‬ ‭the‬ ‭following‬ ‭would‬‭have‬‭been‬
+‭the result of the election?‬
+‭SSC CPO 28/06/2024 (2nd Shift)‬
+‭(a) B would have won by 8%‬
+‭(b) B would have won by 3%‬
+‭(c) A would have won by 3%‬
+‭(d) A would have won by 8%‬
+‭Q.8.‬ ‭In‬ ‭an‬ ‭election,‬ ‭12%‬ ‭of‬‭the‬‭voters‬‭in‬
+‭the‬ ‭voter‬ ‭list‬ ‭did‬ ‭not‬ ‭cast‬ ‭their‬ ‭votes,‬
+‭whereas‬ ‭84‬ ‭voters‬ ‭cast‬ ‭their‬ ‭ballot‬
+‭papers‬ ‭blank.‬ ‭There‬ ‭were‬ ‭only‬ ‭two‬
+‭candidates:‬ ‭Ramagya‬ ‭and‬ ‭Shravan.‬ ‭The‬
+‭winner,‬‭Ramagya,‬‭was‬‭supported‬‭by‬‭54%‬
+‭of‬ ‭all‬ ‭the‬ ‭voters‬ ‭in‬ ‭the‬ ‭list.‬‭He‬‭got‬‭1456‬
+‭more‬ ‭votes‬ ‭than‬ ‭his‬ ‭rival,‬ ‭Shravan.‬ ‭Find‬
+‭the total number of voters in the list.‬
+‭SSC CPO 27/06/2024 (1st Shift)‬
+‭(a) 5690   (b) 6670   (c) 7860   (d) 6860‬
+‭Q.9.‬ ‭In‬ ‭an‬ ‭examination,‬ ‭there‬ ‭were‬ ‭two‬
+‭papers,‬‭A‬‭and‬‭B,‬‭and‬‭the‬‭maximum‬‭mark‬
+‭in‬ ‭each‬ ‭of‬ ‭the‬ ‭two‬ ‭papers‬ ‭was‬ ‭10.‬
+‭However,‬‭the‬‭weights‬‭assigned‬‭to‬‭papers‬
+‭A‬ ‭and‬ ‭B‬ ‭were‬ ‭in‬ ‭the‬ ‭ratio‬ ‭2‬ ‭:‬ ‭1,‬
+‭respectively.‬‭Riddhi‬‭scored‬‭8‬‭out‬‭of‬‭10‬‭in‬
+‭Paper‬ ‭B,‬ ‭and‬ ‭an‬ ‭overall‬ ‭70%‬ ‭in‬ ‭the‬
+‭examination.‬‭How‬‭much‬‭did‬‭she‬‭score‬‭in‬
+‭Paper A out of 10 ?‬
+‭Matriculation Level 25/06/2024 (Shift - 1)‬
+‭(a) 5‬
+‭(b) 6.5‬
+‭(c) 6‬
+‭(d) 5.5‬
+‭Q.10.‬ ‭In‬ ‭an‬ ‭election‬ ‭between‬ ‭two‬
+‭candidates,‬ ‭64%‬ ‭of‬ ‭the‬ ‭voters‬‭cast‬‭their‬
+‭votes,‬‭out‬‭of‬‭which‬‭4%‬‭of‬‭the‬‭votes‬‭were‬
+‭declared‬ ‭invalid.‬ ‭A‬‭candidate‬‭got‬‭12,288‬
+‭votes‬ ‭which‬ ‭were‬ ‭64%‬ ‭of‬ ‭the‬ ‭total‬ ‭valid‬
+‭votes.‬ ‭Find‬ ‭the‬ ‭total‬ ‭number‬ ‭of‬ ‭votes‬
+‭enrolled in that election.‬
+‭SSC CHSL Tier II  (02/11/2023)‬
+‭(a) 30,250‬
+‭(b) 32,152‬
+‭(c) 31,250‬
+‭(d) 20,152‬
+‭Q.11.‬‭Ayush‬‭spends‬‭25%‬‭of‬‭an‬‭amount‬‭of‬
+‭money‬ ‭on‬ ‭an‬ ‭insurance‬ ‭policy,‬ ‭26%‬ ‭on‬
+‭food,‬ ‭23%‬ ‭on‬ ‭children’s‬ ‭education‬ ‭and‬
+‭19%‬ ‭on‬ ‭recreation.‬ ‭He‬ ‭deposits‬ ‭the‬
+‭remaining‬ ‭amount‬ ‭of‬ ‭₹26,600‬ ‭in‬ ‭the‬
+‭bank.‬‭What‬‭is‬‭the‬‭total‬‭amount‬‭(in‬‭₹)‬‭that‬
+‭he‬ ‭spends‬ ‭on‬ ‭food‬ ‭and‬ ‭recreation‬
+‭together?‬
+‭SSC CPO 05/10/2023 (3rd Shift)‬
+‭(a) 1,95,000‬
+‭(b) 1,83,000‬
+‭(c) 1,62,000‬
+‭(d) 1,71,000‬
+‭Q.12.‬ ‭The‬ ‭cost‬ ‭price‬ ‭of‬ ‭pulses‬ ‭is‬ ‭12%‬
+‭less‬‭than‬‭the‬‭selling‬‭price.‬‭Using‬‭a‬‭faulty‬
+‭weighing‬ ‭machine,‬ ‭the‬ ‭shopkeeper‬ ‭is‬
+‭able‬ ‭to‬ ‭earn‬ ‭25%‬ ‭profit.‬ ‭How‬ ‭much‬
+‭percent‬ ‭of‬ ‭the‬ ‭faulty‬ ‭machine‬ ‭shows‬
+‭more‬ ‭weight‬ ‭as‬ ‭compared‬ ‭to‬ ‭the‬‭actual‬
+‭weight‬ ‭(Rounded‬ ‭off‬ ‭to‬ ‭the‬ ‭nearest‬
+‭integer) ?‬
+‭SSC CPO 04/10/2023 (3rd Shift)‬
+‭(a) 10%    (b) 14%    (c) 13%    (d) 15%‬
+‭Q.13.‬ ‭Swastik‬ ‭saves‬ ‭20%‬ ‭of‬ ‭his‬‭income‬
+‭while‬‭spending‬‭the‬‭remaining‬‭amount‬‭on‬
+‭food,‬ ‭rent,‬ ‭education‬‭and‬‭shopping.‬‭15%‬
+‭of‬ ‭the‬ ‭income‬ ‭is‬ ‭spent‬ ‭on‬ ‭food,‬ ‭while‬
+‭₹12,800‬ ‭is‬ ‭spent‬ ‭on‬ ‭rent,‬ ‭₹32,000‬ ‭on‬
+‭education‬ ‭and‬ ‭₹7,200‬ ‭on‬ ‭shopping.‬ ‭The‬
+‭amount‬ ‭spent‬ ‭on‬ ‭shopping‬‭is‬‭11.25%‬‭of‬
+‭the‬ ‭total‬ ‭expenditure.‬ ‭How‬‭much‬‭money‬
+‭(in ₹) is spent on food?‬
+‭SSC CPO 03/10/2023 (2nd  Shift)‬
+‭(a) 9600‬‭(b) 12000  (c) 15000  (d) 10800‬
+‭Q.14.‬‭A‬‭number‬‭is‬‭first‬‭increased‬‭by‬‭16%‬
+‭and‬ ‭then‬‭increased‬‭by‬‭20%.‬‭The‬‭number‬
+‭so‬ ‭obtained‬ ‭is‬ ‭now‬ ‭decreased‬ ‭by‬ ‭40%.‬
+‭The‬ ‭net‬ ‭decrease‬ ‭percentage‬ ‭in‬ ‭the‬
+‭original number is:‬
+‭SSC CHSL 14/08/2023 (4th Shift)‬
+‭(a) 16‬
+‭%‬
+‭(b) 15‬
+‭%‬
+‭12‬
+‭25‬
+‭9‬
+‭25‬
+‭(c) 11‬
+‭%‬
+‭(d) 13‬
+‭%‬
+‭13‬
+‭25‬
+‭7‬
+‭25‬
+‭Q.15.‬‭A‬‭number‬‭first‬‭increased‬‭by‬‭8%‬‭and‬
+‭then‬‭decreased‬‭by‬‭3%‬‭to‬‭get‬‭2619.‬‭What‬
+‭is 5% of that number ?‬
+‭SSC CHSL 10/08/2023 (3rd Shift)‬
+‭(a) 125   (b) 135   (c) 130   (d) 140‬
+‭Q.16.‬ ‭A‬ ‭spends‬ ‭68%‬ ‭of‬ ‭his‬ ‭monthly‬
+‭income.‬ ‭If‬‭A's‬‭monthly‬‭income‬‭increases‬
+‭by‬‭25%‬‭and‬‭his‬‭monthly‬‭saving‬‭increases‬
+‭by‬ ‭15%,‬ ‭then‬ ‭the‬ ‭percentage‬‭increase‬‭in‬
+‭his monthly expenditure will be:‬
+‭SSC CHSL 09/08/2023 (1st Shift)‬
+‭(a) 27‬
+‭%‬
+‭(b)  29‬
+‭%‬
+‭13‬
+‭17‬
+‭12‬
+‭17‬
+‭(c) 33‬
+‭%‬
+‭(d) 31‬
+‭%‬
+‭7‬
+‭17‬
+‭6‬
+‭17‬
+‭Q.17.‬‭Harsha's‬‭expenditure‬‭is‬‭45%‬‭of‬‭her‬
+‭income.‬ ‭If‬ ‭the‬ ‭income‬ ‭from‬ ‭the‬ ‭next‬
+‭month‬ ‭is‬ ‭increased‬ ‭by‬ ‭15%‬ ‭and‬ ‭the‬
+‭amount‬ ‭she‬ ‭saved‬ ‭each‬ ‭month‬ ‭remains‬
+‭the‬ ‭same,‬ ‭then‬ ‭find‬ ‭the‬ ‭percentage‬
+‭increase‬ ‭in‬ ‭her‬‭expenditure‬‭(rounded‬‭off‬
+‭to 2 decimal places).‬
+‭SSC CHSL 07/08/2023 (4th Shift)‬
+‭(a) 33.33%‬
+‭(b) 15.00%‬
+‭(c) 45.00%‬
+‭(d) 27.50%‬
+‭Q.18.‬‭The‬‭price‬‭of‬‭an‬‭article‬‭is‬‭increased‬
+‭by‬ ‭r%.‬ ‭The‬ ‭new‬ ‭price‬ ‭was‬‭decreased‬‭by‬
+‭r%‬
+‭later.‬
+‭Now‬ ‭the‬ ‭latest‬ ‭price‬ ‭is‬
+‭Rs.1.What‬ ‭was‬ ‭the‬ ‭original‬ ‭price‬ ‭of‬ ‭the‬
+‭article?‬
+‭SSC CGL 20/07/2023 (3rd shift)‬
+‭(a)‬
+‭(b)‬
+‭10000‬
+‭10000‬‭ ‬−‭ ‬‭𝑟‬
+‭2‬
+‭10000‬‭ ‬−‭ ‬‭ ‬‭𝑟‬
+‭2‬‭ ‬
+‭10000‬
+‭(c)‬
+‭(d)‬
+‭100‬
+‭100‬‭ ‬−‭ ‬‭𝑟‬
+‭2‬
+‭100‬
+‭1‬‭ ‬−‭ ‬‭𝑟‬
+‭2‬
+‭Q.19.‬‭Aditya buys 300 mangoes for‬
+‭Rs.1,100.‬ ‭Some‬ ‭of‬ ‭these‬ ‭mangoes‬ ‭are‬
+‭rotten‬‭and‬‭are‬‭thrown‬‭away.‬‭He‬‭sells‬‭the‬
+‭remaining‬ ‭mangoes‬ ‭at‬ ‭Rs.5‬ ‭each‬ ‭and‬
+‭makes‬ ‭a‬ ‭profit‬ ‭of‬ ‭Rs.150.‬ ‭Find‬ ‭the‬
+‭percentage of mangoes thrown away.‬
+‭SSC CGL 19/07/2023 (4th shift)‬
+‭(a) 16‬
+‭(b)‬
+‭1‬
+‭2‬‭%‬
+‭15‬‭2‬
+‭3‬‭%‬
+‭(c) 16‬
+‭(d) 16‬
+‭2‬
+‭3‬‭%‬
+‭1‬
+‭3‬‭%‬
+‭Q.20.‬‭In‬‭an‬‭election,‬‭15%‬‭of‬‭the‬‭voters‬‭on‬
+‭the‬‭voters‬‭list‬‭did‬‭not‬‭cast‬‭their‬‭votes‬‭and‬
+‭100‬ ‭voters‬ ‭cast‬ ‭their‬‭ballot‬‭paper‬‭blank.‬
+‭There‬‭were‬‭only‬‭two‬‭candidates‬‭Ram‬‭and‬
+‭Shyam.‬‭The‬‭winner,‬‭Ram,‬‭was‬‭supported‬
+‭by‬‭69%‬‭of‬‭all‬‭the‬‭voters‬‭in‬‭the‬‭list‬‭and‬‭he‬
+‭got‬‭630‬‭votes‬‭more‬‭than‬‭Shyam.‬‭Find‬‭the‬
+‭number of voters on the list.‬
+‭Matriculation Level 30/06/2023 (Shift - 3)‬
+‭(a) 1200   (b) 1000   (c) 1100   (d) 1300‬
+‭Q.21.‬ ‭If‬ ‭the‬ ‭price‬ ‭of‬‭rice‬‭is‬‭increased‬‭by‬
+‭25‬ ‭percent,‬ ‭then‬ ‭by‬ ‭what‬ ‭percentage‬
+‭consumption‬
+‭of‬
+‭rice‬
+‭should‬
+‭be‬
+‭decreased‬
+‭so‬
+‭that‬
+‭the‬ ‭expenditure‬
+‭incurred‬ ‭on‬ ‭rice‬ ‭gets‬ ‭decreased‬ ‭by‬ ‭40‬
+‭percent?‬
+‭SSC CHSL 21/03/2023 (4th Shift)‬
+‭(a) 52 %   (b) 43.33 %  (c) 42 %   (d) 48 %‬
+‭Q.22.‬
+‭Shiva’s‬
+‭monthly‬
+‭salary‬
+‭is‬
+‭Rs.75,000.‬ ‭He‬ ‭spends‬ ‭Rs.12,000‬ ‭on‬
+‭household‬ ‭items,‬ ‭Rs.14,000‬ ‭on‬ ‭LIC‬ ‭and‬
+‭mutual‬‭funds,‬‭Rs.15,000‬‭on‬‭his‬‭children’s‬
+‭education,‬ ‭and‬ ‭keeps‬ ‭Rs.10,000‬ ‭for‬
+‭miscellaneous‬‭expenses.‬‭His‬‭savings‬‭are‬
+‭Rs.21,000‬‭per‬‭month‬‭and‬‭he‬‭donates‬‭the‬
+‭rest‬‭of‬‭the‬‭amount‬‭to‬‭an‬‭orphanage.‬‭The‬
+‭percentage‬ ‭of‬ ‭his‬ ‭income‬ ‭that‬ ‭he‬
+‭donates is:‬
+‭SSC CGL 13/12/2022 (3rd Shift)‬
+‭(a) 3%‬
+‭(b) 6%‬
+‭(c) 8%‬
+‭(d) 4%‬
+‭Q.23.‬ ‭The‬ ‭expenditure‬ ‭on‬ ‭the‬ ‭cost‬ ‭of‬
+‭living‬ ‭of‬ ‭a‬ ‭man‬ ‭and‬‭his‬‭family‬‭is‬‭60%‬‭of‬
+‭his‬ ‭salary.‬ ‭He‬ ‭gets‬ ‭two‬ ‭increments‬ ‭of‬
+‭30%‬ ‭and‬ ‭60%‬ ‭in‬ ‭his‬ ‭salary.‬ ‭If‬‭his‬‭saving‬
+‭increases‬ ‭by‬ ‭250%‬ ‭of‬ ‭his‬ ‭initial‬ ‭saving,‬
+‭then‬‭the‬‭new‬‭cost‬‭of‬‭living‬‭expenditure‬‭is‬
+‭what‬ ‭percentage‬ ‭(rounded‬ ‭off‬ ‭to‬ ‭the‬
+‭nearest integer) of the increased salary?‬
+‭SSC CGL 12/12/2022 (4th Shift)‬
+‭(a) 32.7 Percent‬
+‭(b) 43.6 Percent‬
+‭(c) 29.5 Percent‬
+‭(d) 36.6 Percent‬
+‭Q.24.‬ ‭A‬ ‭mask‬ ‭manufacturing‬ ‭company‬
+‭manufactured‬ ‭‘X’‬ ‭number‬ ‭of‬ ‭masks‬ ‭in‬
+‭2018.‬ ‭It‬ ‭increased‬ ‭its‬ ‭manufacturing‬
+‭capacity‬ ‭by‬ ‭30%‬ ‭in‬ ‭2019‬ ‭and‬ ‭further‬
+‭increased‬ ‭its‬ ‭manufacturing‬ ‭by‬ ‭15%‬ ‭in‬
+‭2020.‬ ‭In‬ ‭2021,‬ ‭due‬ ‭to‬ ‭the‬ ‭machinery‬
+‭breakdown,‬ ‭its‬ ‭manufacturing‬ ‭declined‬
+‭by‬ ‭40%.‬ ‭What‬ ‭is‬ ‭the‬ ‭value‬ ‭of‬ ‭‘X’‬ ‭if‬ ‭it‬
+‭manufactured 179400 masks in 2021 ?‬
+‭SSC CGL 07/12/2022 (1st Shift)‬
+‭www.ssccglpinnacle.com                                                 Download Pinnacle Exam Preparation App‬
+
+‭Pinnacle‬
+‭Day: 65th - 69th‬
+‭Percentage‬
+‭(a) 180000‬
+‭(b) 230000‬
+‭(c) 200000‬
+‭(d) 210000‬
+‭Q.25.‬ ‭The‬ ‭population‬ ‭of‬ ‭country‬ ‭A‬
+‭decreased‬ ‭by‬ ‭p%‬ ‭and‬ ‭the‬ ‭population‬ ‭of‬
+‭country‬ ‭B‬ ‭decreased‬ ‭by‬ ‭q%‬ ‭from‬ ‭the‬
+‭year‬ ‭2020‬ ‭to‬ ‭2021.‬ ‭Here‬ ‭'p'‬ ‭is‬ ‭greater‬
+‭than‬ ‭'q'.‬ ‭Let‬ ‭'x'‬ ‭be‬ ‭the‬ ‭ratio‬ ‭of‬ ‭the‬
+‭population‬‭of‬‭country‬‭A‬‭to‬‭the‬‭population‬
+‭of‬‭country‬‭B‬‭in‬‭the‬‭given‬‭year.‬‭What‬‭is‬‭the‬
+‭percentage‬ ‭decrease‬ ‭in‬ ‭'x'‬ ‭from‬‭2020‬‭to‬
+‭2021 ?‬
+‭SSC CGL 06/12/2022 (2nd Shift)‬
+‭(a)‬
+‭(b)‬
+‭100‬(‭𝑝‬‭ ‬−‭ ‬‭𝑞‬)
+(‭100‬‭ ‬−‭ ‬‭𝑞‬)
+‭100‬(‭𝑝‬‭ ‬−‭ ‬‭𝑞‬)
+‭100‬‭ ‬+‭ ‬‭𝑞‬
+‭(c)‬
+‭(d)‬
+‭100‬(‭𝑝‬‭ ‬−‭ ‬‭𝑞‬)
+‭100‬‭ ‬−‭ ‬‭𝑝‬
+‭100‬(‭𝑝‬‭ ‬−‭ ‬‭𝑞‬)
+‭100‬‭ ‬
+‭Q.26.‬ ‭In‬ ‭an‬ ‭election‬ ‭between‬ ‭two‬
+‭candidates,‬
+‭the‬
+‭defeated‬
+‭candidate‬
+‭secured‬‭42%‬‭of‬‭the‬‭valid‬‭votes‬‭polled‬‭and‬
+‭lost‬ ‭the‬ ‭election‬ ‭by‬ ‭7,68,400‬ ‭votes.‬ ‭If‬
+‭82,560‬ ‭votes‬ ‭were‬ ‭declared‬ ‭invalid‬ ‭and‬
+‭20%‬‭people‬‭did‬‭NOT‬‭cast‬‭their‬‭vote,‬‭then‬
+‭the‬ ‭invalid‬ ‭votes‬ ‭were‬ ‭what‬ ‭percentage‬
+‭(rounded‬ ‭off‬ ‭to‬ ‭1‬ ‭decimal‬ ‭place)‬ ‭of‬ ‭the‬
+‭votes which people did NOT cast ?‬
+‭SSC CGL 02/12/2022 (2nd Shift)‬
+‭(a) 10.6 Percent‬
+‭(b) 9.8 Percent‬
+‭(c) 12.9 Percent‬
+‭(d) 6.8 Percent‬
+‭Q.27.‬‭40%‬‭of‬‭Ranita’s‬‭income‬‭is‬‭equal‬‭to‬
+‭56%‬ ‭of‬ ‭Bhaskar’s‬ ‭income.‬ ‭If‬ ‭Ranita’s‬
+‭income‬ ‭was‬ ‭₹800‬ ‭more‬ ‭than‬ ‭what‬ ‭it‬ ‭is‬
+‭and‬‭Bhaskar’s‬‭income‬‭was‬‭₹‬‭2,000‬‭more‬
+‭than‬ ‭what‬ ‭it‬ ‭is,‬ ‭then‬ ‭the‬ ‭ratio‬ ‭of‬ ‭the‬
+‭incomes‬ ‭of‬ ‭Ranita‬ ‭and‬ ‭Bhaskar‬ ‭would‬
+‭have‬ ‭been‬ ‭4‬ ‭:‬ ‭3.‬ ‭What‬ ‭is‬ ‭the‬ ‭actual‬
+‭combined‬
+‭income‬
+‭of‬
+‭Ranita‬
+‭and‬
+‭Bhaskar?‬
+‭SSC CHSL 09/06/2022 (Morning)‬
+‭(a) ₹67,200‬
+‭(b) ₹68,200‬
+‭(c) ₹66,800‬
+‭(d) ₹67,800‬
+‭Q.28.‬ ‭Sonam‬ ‭is‬ ‭a‬ ‭cab‬ ‭driver,‬ ‭who‬ ‭plies‬
+‭within‬ ‭a‬ ‭city.‬ ‭The‬ ‭number‬ ‭of‬ ‭kilometres‬
+‭that‬ ‭she‬‭drives‬‭on‬‭a‬‭Tuesday‬‭was‬‭12.5%‬
+‭less‬ ‭than‬ ‭the‬ ‭number‬ ‭of‬ ‭kilometres‬‭that‬
+‭she‬‭drives‬‭on‬‭the‬‭day‬‭before.On‬‭the‬‭other‬
+‭hand,‬ ‭the‬ ‭number‬‭of‬‭kilometres‬‭that‬‭she‬
+‭drives‬ ‭on‬ ‭Wednesday‬ ‭was‬ ‭20%‬ ‭more‬
+‭than‬ ‭the‬ ‭number‬ ‭of‬ ‭kilometres‬ ‭that‬ ‭she‬
+‭drives‬ ‭on‬ ‭Tuesday.‬ ‭If‬ ‭Sonam‬ ‭drives‬ ‭a‬
+‭total‬ ‭of‬ ‭336‬ ‭km‬ ‭on‬ ‭Wednesday,‬ ‭how‬
+‭many‬ ‭kilometers‬ ‭did‬ ‭she‬ ‭drive‬ ‭on‬
+‭Monday ?‬
+‭SSC CHSL 02/06/2022 (Morning)‬
+‭(a) 315‬
+‭(b) 318    (c) 320‬ ‭(d) 324‬
+‭Q.29.‬ ‭In‬ ‭an‬ ‭election,‬ ‭there‬ ‭were‬ ‭three‬
+‭candidates:‬ ‭A,‬ ‭B‬ ‭and‬ ‭C.‬ ‭10%‬ ‭of‬ ‭the‬
+‭eligible‬ ‭voters‬‭did‬‭not‬‭vote.‬‭Out‬‭of‬‭those‬
+‭who‬ ‭voted,‬ ‭45%‬ ‭voted‬ ‭for‬ ‭A,‬ ‭35%‬ ‭voted‬
+‭for‬‭B‬‭and‬‭the‬‭remaining‬‭20%‬‭voted‬‭for‬‭C.‬
+‭30%‬‭of‬‭the‬‭votes‬‭polled‬‭for‬‭A‬‭and‬‭20%‬‭of‬
+‭the‬‭votes‬‭polled‬‭for‬‭B‬‭were‬‭later‬‭deemed‬
+‭invalid,‬ ‭while‬ ‭all‬ ‭the‬ ‭votes‬ ‭polled‬ ‭for‬ ‭C‬
+‭were‬ ‭deemed‬ ‭valid.‬ ‭If‬ ‭A‬ ‭got‬ ‭882‬ ‭more‬
+‭valid‬ ‭votes‬ ‭than‬ ‭B‬ ‭did,‬ ‭how‬ ‭many‬ ‭valid‬
+‭votes did C receive?‬
+‭SSC CHSL 27/05/2022 (Afternoon)‬
+‭(a) 5020‬ ‭(b) 5040   (c) 5050   (d) 5060‬
+‭Q.30.‬ ‭A‬ ‭fruit‬ ‭seller‬ ‭sells‬ ‭45%‬ ‭of‬ ‭the‬
+‭oranges‬‭that‬‭he‬‭has‬‭along‬‭with‬‭one‬‭more‬
+‭oranges‬ ‭to‬ ‭a‬ ‭customer‬ ‭.‬ ‭He‬ ‭then‬ ‭sells‬
+‭20%‬ ‭of‬ ‭the‬ ‭remaining‬ ‭oranges‬ ‭and‬ ‭2‬
+‭more‬ ‭oranges‬‭to‬‭a‬‭second‬‭customer.‬‭He‬
+‭then‬ ‭sells‬ ‭90%‬ ‭of‬ ‭the‬ ‭now‬ ‭remaining‬
+‭oranges‬ ‭to‬ ‭a‬ ‭third‬ ‭customer‬ ‭and‬ ‭is‬ ‭still‬
+‭left‬ ‭with‬ ‭5‬ ‭oranges.‬ ‭How‬ ‭many‬ ‭oranges‬
+‭did the fruit seller have initially?‬
+‭SSC CGL 19/04/2022 (Evening)‬
+‭(a) 100‬ ‭(b) 111‬ ‭(c) 121‬ ‭(d) 120‬
+‭Q.31.‬ ‭The‬ ‭price‬ ‭of‬‭petrol‬‭shot‬‭up‬‭by‬‭5%.‬
+‭Before‬‭the‬‭hike,‬‭the‬‭price‬‭was‬‭Rs.‬‭82‬‭per‬
+‭litre.‬ ‭A‬ ‭man‬ ‭travels‬ ‭3045‬ ‭km‬ ‭every‬
+‭month‬‭and‬‭his‬‭car‬‭gives‬‭a‬‭mileage‬‭of‬‭15‬
+‭km‬ ‭per‬ ‭litre.‬ ‭What‬ ‭is‬ ‭the‬‭increase‬‭in‬‭the‬
+‭monthly‬ ‭expenditure‬ ‭(to‬‭the‬‭nearest‬‭Rs.)‬
+‭on‬‭the‬‭man’s‬‭travel‬‭due‬‭to‬‭the‬‭hike‬‭in‬‭the‬
+‭petrol prices?‬
+‭SSC CGL 12/04/2022 (Morning)‬
+‭(a) 832‬ ‭(b) 859‬ ‭(c) 758‬ ‭(d) 944‬
+‭Q.32.‬ ‭In‬ ‭a‬ ‭manufacturing‬ ‭unit,‬ ‭it‬ ‭was‬
+‭noted‬ ‭that‬ ‭the‬ ‭price‬ ‭of‬‭raw‬‭material‬‭has‬
+‭increased‬‭by‬‭25%‬‭and‬‭the‬‭labor‬‭cost‬‭has‬
+‭gone‬ ‭up‬ ‭from‬ ‭30%‬ ‭of‬ ‭the‬ ‭cost‬ ‭of‬ ‭raw‬
+‭material‬ ‭to‬ ‭38%‬ ‭of‬ ‭the‬ ‭cost‬ ‭of‬ ‭raw‬
+‭material.‬
+‭What‬
+‭percentage‬
+‭of‬
+‭the‬
+‭consumption‬‭of‬‭raw‬‭material‬‭be‬‭reduced‬
+‭to‬‭keep‬‭the‬‭cost‬‭the‬‭same‬‭as‬‭that‬‭before‬
+‭the increase?‬
+‭SSC CGL 11/04/2022 (Evening)‬
+‭(a) 20.7%  (b) 30.2%  (c) 24.6%  (d) 25.6%‬
+‭Q.33.‬ ‭Due‬ ‭to‬ ‭some‬ ‭crisis,‬ ‭some‬ ‭people‬
+‭from‬ ‭State‬ ‭A‬ ‭migrated‬ ‭to‬ ‭State‬ ‭B,‬ ‭and‬
+‭thereby‬ ‭the‬ ‭population‬ ‭of‬ ‭the‬ ‭second‬
+‭State‬‭increased‬‭by‬‭19.96%.‬‭However,‬‭at‬‭a‬
+‭later‬‭stage‬‭,‬‭all‬‭of‬‭them‬‭returned‬‭to‬‭State‬
+‭A.‬ ‭Then‬ ‭by‬ ‭what‬ ‭percentage‬ ‭(correct‬‭up‬
+‭to‬‭two‬‭decimal‬‭places)‬‭did‬‭the‬‭population‬
+‭of State B‬‭decrease ?‬
+‭SSC MTS 05/10/2021 (Morning)‬
+‭(a) 19.96  (b) 16.64  (c) 18.24  (d) 17.54‬
+‭Q.34.‬ ‭By‬ ‭mistake,‬ ‭the‬ ‭reciprocal‬ ‭of‬ ‭a‬
+‭positive‬ ‭fraction‬ ‭got‬ ‭typed‬ ‭in‬ ‭place‬ ‭of‬
+‭itself,‬ ‭and‬ ‭thereby‬ ‭its‬ ‭value‬ ‭got‬ ‭reduced‬
+‭by‬
+‭%.‬ ‭What‬ ‭was‬ ‭the‬ ‭value‬ ‭of‬ ‭the‬
+‭175‬
+‭4‬
+‭fraction?‬
+‭SSC CGL 24/08/2021 (Evening)‬
+‭(a)‬
+‭(b)‬
+‭(c)‬
+‭(d)‬
+‭1‬
+‭2‬
+‭4‬
+‭3‬
+‭3‬
+‭4‬
+‭1‬
+‭4‬
+‭Q.35.‬ ‭The‬ ‭income‬ ‭of‬ ‭A‬‭is‬‭20%‬‭less‬‭than‬
+‭the‬ ‭income‬ ‭of‬ ‭B‬ ‭and‬ ‭the‬‭income‬‭of‬‭C‬‭is‬
+‭70%‬ ‭of‬ ‭the‬ ‭sum‬ ‭of‬‭incomes‬‭of‬‭A‬‭and‬‭B.‬
+‭The‬ ‭income‬ ‭of‬ ‭D‬ ‭is‬ ‭25%‬ ‭more‬ ‭than‬ ‭the‬
+‭income‬ ‭of‬ ‭C.‬ ‭If‬ ‭the‬ ‭difference‬ ‭between‬
+‭the‬‭incomes‬‭of‬‭B‬‭and‬‭D‬‭is‬‭Rs‬‭23000,‬‭then‬
+‭what is the income (in Rs) of A ?‬
+‭SSC CGL 18/08/2021 (Afternoon)‬
+‭(a) 32000 (b) 25000 (c) 26000 (d) 28000‬
+‭Q.36.‬‭A‬‭certain‬‭number‬‭of‬‭students‬‭from‬
+‭school‬‭X‬‭appeared‬‭in‬‭an‬‭examination‬‭and‬
+‭20%‬ ‭students‬ ‭failed.‬ ‭From‬ ‭school‬ ‭Y,‬
+‭130%‬ ‭more‬ ‭students‬ ‭than‬ ‭that‬ ‭from‬
+‭school‬
+‭X,‬
+‭appeared‬
+‭in‬
+‭the‬
+‭same‬
+‭examination.‬ ‭If‬ ‭90%‬ ‭of‬ ‭the‬‭total‬‭number‬
+‭of‬ ‭students‬ ‭appeared‬ ‭from‬ ‭both‬ ‭the‬
+‭schools‬
+‭passed,‬ ‭then‬ ‭what‬ ‭is‬ ‭the‬
+‭percentage‬ ‭of‬ ‭students‬ ‭from‬ ‭school‬ ‭Y‬
+‭who‬ ‭failed‬ ‭(correct‬ ‭to‬ ‭one‬ ‭decimal‬
+‭place)?‬
+‭SSC CGL 17/08/2021 (Morning)‬
+‭(a) 8.3%‬ ‭(b) 10%‬ ‭(c) 6.4%‬ ‭(d) 5.7%‬
+‭Q.37.‬ ‭In‬ ‭a‬ ‭workshop‬ ‭with‬ ‭80‬ ‭students‬
+‭and‬ ‭10‬ ‭resource‬ ‭persons,‬ ‭sweets‬ ‭were‬
+‭distributed‬ ‭at‬ ‭the‬ ‭end‬ ‭of‬ ‭the‬ ‭workshop.‬
+‭The‬‭amount‬‭spent‬‭for‬‭distributing‬‭sweets‬
+‭to‬ ‭each‬ ‭student‬ ‭was‬ ‭30%‬ ‭of‬ ‭the‬ ‭total‬
+‭number‬ ‭of‬ ‭students‬ ‭and‬ ‭the‬ ‭amount‬
+‭spent‬‭towards‬‭each‬‭resource‬‭person‬‭was‬
+‭40%‬‭of‬‭the‬‭total‬‭number‬‭of‬‭students.‬‭The‬
+‭total‬
+‭amount‬
+‭spent‬
+‭for‬
+‭sweets‬
+‭distribution in the workshop was:‬
+‭SSC CHSL 10/08/2021 (Afternoon)‬
+‭(a) Rs. 2400‬
+‭(b) Rs. 2440‬
+‭(c) Rs. 2420‬
+‭(d) Rs. 2240‬
+‭Q.38.‬‭In‬‭a‬‭constituency,‬ ‭55%‬‭of‬‭the‬‭total‬
+‭number‬‭of‬‭voters‬‭are‬‭males‬‭and‬‭the‬‭rest‬
+‭are‬ ‭females.‬ ‭If‬ ‭40%‬ ‭of‬ ‭the‬ ‭males‬ ‭are‬
+‭illiterate‬ ‭and‬ ‭40%‬ ‭of‬ ‭the‬ ‭females‬ ‭are‬
+‭literate,‬ ‭then‬ ‭by‬ ‭what‬ ‭percentage‬ ‭is‬ ‭the‬
+‭number‬ ‭of‬ ‭illiterate‬ ‭females‬ ‭more‬ ‭than‬
+‭that‬ ‭of‬ ‭the‬‭illiterate‬‭males(correct‬‭to‬‭the‬
+‭one decimal place)‬
+‭SSC CHSL 04/08/2021 (Evening)‬
+‭(a) 22.7%  (b) 16.4%  (c) 21.5%  (d) 20.8%‬
+‭Q.39.‬ ‭A‬ ‭reduction‬ ‭of‬ ‭20%‬‭in‬‭the‬‭price‬‭of‬
+‭sugar‬‭enables‬‭a‬‭purchaser‬‭to‬‭obtain‬‭4‬‭kg‬
+‭more‬ ‭for‬ ‭Rs.160.‬ ‭The‬ ‭original‬ ‭price‬ ‭of‬
+‭sugar per kg is:‬
+‭SSC CHSL 20/10/2020 (Morning)‬
+‭(a) 12‬
+‭(b) 10       (c) 14      (d) 15‬
+‭Q.40.‬‭A‬‭student‬‭multiplied‬‭a‬‭number‬‭with‬
+‭instead‬ ‭of‬
+‭.‬ ‭What‬ ‭is‬ ‭the‬ ‭error‬
+‭3‬
+‭4‬
+‭4‬
+‭3‬
+‭percentage?‬
+‭SSC CHSL 15/10/2020  (Afternoon)‬
+‭(a) 59.67%‬
+‭(b) 43.75%‬
+‭(c) 67.45%‬
+‭(d) 39.34%‬
+‭Q.41‬‭.‬ ‭A‬ ‭crate‬ ‭of‬ ‭fruits‬ ‭contains‬ ‭one‬
+‭spoiled‬ ‭fruit‬ ‭for‬ ‭every‬ ‭25‬ ‭fruits.‬ ‭60%‬ ‭of‬
+‭the‬ ‭spoiled‬ ‭fruits‬ ‭were‬ ‭sold.‬‭If‬‭the‬‭seller‬
+‭had‬ ‭sold‬ ‭48‬ ‭spoiled‬ ‭fruits,‬ ‭then‬ ‭the‬
+‭number of fruits in the crate were:‬
+‭www.ssccglpinnacle.com                                                 Download Pinnacle Exam Preparation App‬
+
+‭Pinnacle‬
+‭Day: 65th - 69th‬
+‭Percentage‬
+‭SSC CHSL 14/10/2020  (Afternoon)‬
+‭(a) 2000   (b) 2400   (c) 3000   (d) 1200‬
+‭Q.42.‬‭If‬‭each‬‭edge‬‭of‬‭a‬‭cube‬‭is‬‭increased‬
+‭by‬ ‭10%,‬ ‭then‬ ‭the‬ ‭percentage‬‭increase‬‭in‬
+‭its surface area is:‬
+‭SSC CHSL 13/10/2020  (Afternoon)‬
+‭(a) 21%   (b) 19%   (c) 22%   (d) 20%‬
+‭Q.43.‬‭In‬‭a‬‭school,‬‭4%‬‭of‬‭the‬‭students‬‭did‬
+‭not‬‭appear‬‭for‬‭the‬‭annual‬‭exams.‬‭10%‬‭of‬
+‭the‬ ‭students‬ ‭who‬ ‭appeared‬ ‭for‬ ‭the‬
+‭exams‬ ‭could‬ ‭not‬ ‭pass‬ ‭the‬ ‭exam.‬‭Out‬‭of‬
+‭the‬
+‭remaining‬
+‭students,‬
+‭50%‬
+‭got‬
+‭distinction‬ ‭marks‬ ‭and‬ ‭432‬ ‭students‬
+‭passed‬ ‭the‬ ‭exam‬ ‭but‬ ‭could‬ ‭not‬ ‭get‬
+‭distinction‬ ‭marks.‬ ‭The‬ ‭total‬ ‭number‬ ‭of‬
+‭students in the school is:‬
+‭SSC CGL 06/03/2020 (Afternoon)‬
+‭(a) 960‬
+‭(b) 1000    (c) 878     (d) 1200‬
+‭Q.44.‬ ‭A,‬ ‭B‬ ‭and‬ ‭C‬ ‭donate‬‭8%,7%‬‭and‬‭9%,‬
+‭of‬
+‭their‬
+‭salaries‬
+‭respectively‬ ‭to‬ ‭a‬
+‭charitable‬ ‭trust.‬ ‭The‬ ‭salaries‬‭of‬‭A‬‭and‬‭B‬
+‭are‬‭the‬‭same‬‭and‬‭the‬‭difference‬‭between‬
+‭their‬ ‭donations‬ ‭is‬ ‭₹259.‬ ‭The‬ ‭total‬
+‭donation‬‭of‬‭A‬‭and‬‭B‬‭is‬‭₹1,185‬‭more‬‭than‬
+‭that‬‭of‬‭C.‬‭The‬‭total‬‭donation‬‭of‬‭A‬‭and‬‭C‬‭is‬
+‭what‬ ‭percentage‬ ‭of‬ ‭the‬ ‭total‬ ‭salaries‬‭of‬
+‭A,‬ ‭B‬ ‭and‬ ‭C‬ ‭?‬ ‭(Correct‬ ‭to‬ ‭one‬ ‭decimal‬
+‭place)‬
+‭SSC CGL 04/03/2020 (Evening)‬
+‭(a) 6.2 %    (b) 5.8 %    (c) 6.4 %    (d) 7.1%‬
+‭Q.45.‬ ‭The‬ ‭population‬ ‭of‬‭town‬‭B‬‭is‬‭300%‬
+‭more‬ ‭than‬ ‭that‬ ‭of‬ ‭town‬ ‭A.‬ ‭For‬ ‭the‬ ‭next‬
+‭two‬ ‭years,‬‭the‬‭population‬‭of‬‭A‬‭increases‬
+‭by‬ ‭x%‬ ‭per‬ ‭year‬ ‭and‬ ‭that‬ ‭of‬ ‭B‬‭decreases‬
+‭by‬‭the‬‭same‬‭percentage‬‭per‬‭year.‬‭After‬‭2‬
+‭years,‬ ‭if‬ ‭the‬ ‭population‬ ‭of‬ ‭A‬ ‭and‬ ‭B‬
+‭become equal, then the value of x is ____.‬
+‭SSC CPO 13/12/2019(Evening)‬
+‭(a) 30‬
+‭(b) 40     (c) 25      (d) 33‬
+‭2‬
+‭3‬
+‭1‬
+‭3‬
+‭Q.46.‬ ‭The‬ ‭monthly‬ ‭salary‬ ‭of‬ ‭a‬ ‭person‬
+‭was‬ ‭Rs.50,000.‬ ‭He‬ ‭used‬ ‭to‬ ‭spend‬ ‭on‬
+‭three‬
+‭heads-‬
+‭personal‬
+‭and‬
+‭family‬
+‭expenses‬ ‭(E),‬ ‭taxes(T),‬ ‭philanthropy‬ ‭(P),‬
+‭and‬‭the‬‭rest‬‭were‬‭his‬‭savings.‬‭E‬‭was‬‭50%‬
+‭of‬‭the‬‭income,‬‭T‬‭was‬‭20%of‬‭E‬‭and‬‭P‬‭was‬
+‭15%‬ ‭of‬ ‭T.‬ ‭When‬ ‭his‬ ‭salary‬‭got‬‭raised‬‭by‬
+‭40%,‬ ‭he‬ ‭maintained‬ ‭the‬ ‭average‬‭level‬‭of‬
+‭E,‬‭but‬‭T‬‭became‬‭30%‬‭of‬‭E‬‭and‬‭P‬‭became‬
+‭20%‬‭of‬‭T.‬‭By‬‭what‬‭percentage‬‭is‬‭the‬‭new‬
+‭savings‬ ‭more‬ ‭or‬ ‭less‬ ‭than‬ ‭the‬ ‭earlier‬
+‭savings?(correct upto one decimal place)‬
+‭SSC CPO 09/12/2019 (Morning)‬
+‭(a) 16.4% more‬
+‭(b) 8.2% more‬
+‭(c) 16.4% less       (d) 8.2% less‬
+‭Q.47.‬‭In‬‭an‬‭examination,‬‭A‬‭obtained‬‭10%‬
+‭more‬‭marks‬‭than‬‭B,‬‭B‬‭obtained‬‭20%‬‭more‬
+‭marks‬ ‭than‬ ‭C‬ ‭and‬ ‭C‬ ‭obtained‬ ‭32%‬ ‭less‬
+‭marks‬ ‭that‬ ‭D.‬ ‭If‬ ‭A‬ ‭obtained‬ ‭272‬ ‭more‬
+‭marks than C, then the marks obtained‬
+‭by B is :‬
+‭SSC CGL Tier II (13/09/2019)‬
+‭(a) 850    (b) 816    (c) 1020    (d) 952‬
+‭Q.48.‬ ‭If‬ ‭A‬ ‭is‬ ‭28%‬ ‭more‬ ‭than‬ ‭B‬ ‭and‬ ‭C‬‭is‬
+‭25%‬ ‭less‬ ‭than‬ ‭the‬ ‭sum‬‭of‬‭A‬‭and‬‭B,‬‭then‬
+‭by‬ ‭what‬ ‭percent‬ ‭will‬ ‭C‬ ‭be‬ ‭more‬ ‭than‬ ‭A‬
+‭(correct to one decimal place) ?‬
+‭SSC CGL Tier II (11/09/2019)‬
+‭(a) 32.2%   (b) 28%   (c) 43%   (d) 33.6%‬
+‭Q.49.‬ ‭When‬ ‭the‬ ‭price‬ ‭of‬ ‭an‬ ‭item‬ ‭was‬
+‭reduced‬ ‭by‬ ‭25%,‬ ‭then‬ ‭its‬ ‭sale‬ ‭was‬
+‭increased‬‭by‬‭x%.‬‭If‬‭there‬‭is‬‭an‬‭increase‬‭of‬
+‭20%‬ ‭in‬ ‭the‬ ‭receipt‬ ‭of‬ ‭the‬ ‭revenue,‬ ‭then‬
+‭the value of x will be :‬
+‭SSC CGL Tier II (11/09/2019)‬
+‭(a) 50%‬
+‭(b) 60%     (c) 45%     (d) 75%‬
+‭Q.50.‬‭With‬‭reference‬‭to‬‭a‬‭number‬‭greater‬
+‭than‬ ‭one,‬ ‭the‬ ‭difference‬ ‭between‬ ‭itself‬
+‭and‬ ‭its‬ ‭reciprocal‬ ‭is‬ ‭25%‬ ‭of‬ ‭the‬ ‭sum‬ ‭of‬
+‭itself‬ ‭and‬ ‭its‬ ‭reciprocal.‬ ‭By‬ ‭how‬ ‭much‬
+‭percentage‬ ‭(correct‬ ‭one‬ ‭decimal‬ ‭place)‬
+‭is‬‭the‬‭fourth‬‭power‬‭of‬‭the‬‭number‬‭greater‬
+‭than its square?‬
+‭SSC CHSL 11/07/2019 (Morning)‬
+‭(a) 57.8    (b) 62.5    (c) 64.5    (d) 66.7‬
+‭Q.51.‬ ‭For‬ ‭an‬ ‭examination‬ ‭of‬ ‭a‬ ‭practical‬
+‭based‬ ‭subject,‬ ‭the‬ ‭total‬ ‭marks‬ ‭is‬ ‭100.‬
+‭The‬‭break-up‬‭for‬‭theory,‬‭practical,‬‭project‬
+‭and‬ ‭viva‬ ‭voce‬ ‭is‬ ‭40%,‬ ‭30%,‬‭20%,‬‭10%.‬‭A‬
+‭candidate‬ ‭scored‬ ‭80%‬ ‭in‬ ‭theory,‬ ‭70%‬ ‭in‬
+‭practical,‬ ‭60%‬ ‭in‬‭project‬‭and‬‭50%‬‭in‬‭viva‬
+‭voce.‬
+‭What‬
+‭was‬
+‭her‬
+‭aggregate‬
+‭percentage ?‬
+‭SSC CHSL 09/07/2019 (Evening)‬
+‭(a) 70‬
+‭(b) 72‬
+‭(c) 68‬
+‭(d) 67‬
+‭Q.52.‬ ‭Sudha‬ ‭decided‬ ‭to‬ ‭donate‬ ‭12%‬ ‭of‬
+‭her‬‭monthly‬‭income‬‭to‬‭an‬‭orphanage.‬‭On‬
+‭the‬ ‭day‬ ‭of‬ ‭donation,‬ ‭she‬ ‭changed‬ ‭her‬
+‭decision‬‭and‬‭donated‬‭a‬‭sum‬‭of‬‭Rs.‬‭4800‬
+‭which‬‭was‬‭equal‬‭to‬‭80%‬‭of‬‭what‬‭she‬‭had‬
+‭decided‬ ‭earlier.‬ ‭What‬ ‭is‬ ‭27%‬ ‭of‬ ‭her‬
+‭monthly income ?‬
+‭SSC CHSL 04/07/2019 (Morning)‬
+‭(a) Rs. 13959‬
+‭(b) Rs. 11934‬
+‭(c) Rs. 14040‬
+‭(d) Rs. 13500‬
+‭Q.53.‬ ‭If‬ ‭decreasing‬ ‭120‬ ‭by‬‭x%‬‭gives‬‭the‬
+‭same‬‭result‬‭as‬‭increasing‬‭40‬‭by‬‭x%‬‭then‬
+‭x%‬‭of‬‭210‬‭is‬‭what‬‭percent‬‭less‬‭than‬‭(x‬‭+‬
+‭20)% of 180?‬
+‭SSC CGL 04/06/2019 (Morning)‬
+‭(a) 33‬
+‭(b) 18     (c) 16‬
+‭(d) 20‬
+‭1‬
+‭3‬
+‭2‬
+‭3‬
+‭Q.54.‬‭The price of an article increases by‬
+‭20%‬‭every‬‭year.‬‭If‬‭the‬‭difference‬‭between‬
+‭the‬ ‭prices‬ ‭at‬ ‭the‬ ‭end‬ ‭of‬ ‭the‬ ‭third‬ ‭and‬
+‭fourth‬ ‭years‬ ‭is‬ ‭Rs.‬ ‭259.20,‬ ‭then‬ ‭40%‬ ‭of‬
+‭the price (In Rs.) at the end of the second‬
+‭year is :‬
+‭SSC CHSL 03/06/2019 (Evening)‬
+‭(a) 484‬
+‭(b) 432    (c) 384    (d) 472‬
+‭Q.55.‬ ‭In‬ ‭an‬ ‭examination,‬ ‭Shreya‬ ‭scored‬
+‭84‬‭out‬‭of‬‭90‬‭in‬‭Mathematics,‬‭45‬‭out‬‭of‬‭50‬
+‭in‬ ‭Science,‬ ‭23‬ ‭out‬ ‭of‬ ‭25‬ ‭in‬ ‭Computer‬
+‭Science‬ ‭and‬ ‭68‬ ‭out‬ ‭of‬ ‭80‬ ‭in‬ ‭English.‬ ‭In‬
+‭which‬ ‭subject‬ ‭did‬ ‭Shreya‬ ‭score‬ ‭the‬
+‭highest percentage?‬
+‭SSC CPO 16/03/2019 (Afternoon)‬
+‭(a) Mathematics   (b) English‬
+‭(c) Science             (d) Computer Science‬
+‭Q.56.‬
+‭A‬
+‭marketing‬
+‭agent‬ ‭earns‬ ‭a‬
+‭commission‬ ‭of‬ ‭2%‬ ‭on‬ ‭first‬ ‭Rs.‬‭2,00,000,‬
+‭1.5%‬ ‭on‬‭next‬‭Rs‬‭2,00,000‬‭and‬‭1%‬‭on‬‭the‬
+‭remaining‬ ‭amount‬ ‭of‬ ‭sales‬ ‭made‬ ‭in‬ ‭a‬
+‭month.‬‭If‬‭the‬‭sales‬‭achieved‬‭by‬‭the‬‭agent‬
+‭for‬ ‭the‬ ‭month‬ ‭of‬ ‭April‬ ‭2018‬ ‭are‬ ‭Rs.‬
+‭5,68,000. The commission earned is‬
+‭SSC CPO 15/03/2019 (Morning)‬
+‭(a) Rs.8680‬
+‭(b) Rs.7730‬
+‭(c) Rs.8240               (d) Rs.7105‬
+‭Practice Questions‬
+‭SSC MTS 2024 Tier - 1‬
+‭Q.57.‬ ‭Two‬ ‭successive‬ ‭increases‬ ‭of‬‭15%‬
+‭each,‬ ‭is‬ ‭by‬ ‭what‬ ‭percentage‬ ‭more‬ ‭than‬
+‭the two successive decreases of 12%‬
+‭each ? (Rounded off to 2 decimal places)‬
+‭SSC MTS 01/10/2024 (Morning)‬
+‭(a) 30.56%‬
+‭(b) 42.95%‬
+‭(c) 28.25%‬
+‭(d) 22.12%‬
+‭Q.58.‬‭A‬‭sum‬‭of‬‭₹2,380‬‭is‬‭lent‬‭out‬‭into‬‭two‬
+‭parts,‬‭one‬‭at‬‭25%‬‭p.a.‬‭and‬‭another‬‭at‬‭20%‬
+‭p.a.‬ ‭.‬ ‭If‬ ‭the‬‭total‬‭annual‬‭income‬‭is‬‭₹500,‬
+‭find the money (in ₹) lent at 25% rate.‬
+‭SSC MTS 07/10/2024 (Morning)‬
+‭(a) 320‬ ‭(b) 240‬ ‭(c) 480‬ ‭(d) 560‬
+‭Q.59.‬ ‭The‬ ‭cost‬ ‭of‬ ‭a‬ ‭raw‬ ‭material‬
+‭increased‬ ‭with‬ ‭equal‬ ‭percentage‬ ‭in‬ ‭two‬
+‭years.‬ ‭The‬ ‭price‬ ‭increased‬ ‭to‬ ‭₹145.20‬
+‭from‬ ‭₹120.‬ ‭What‬ ‭is‬ ‭the‬ ‭equal‬ ‭annual‬
+‭percentage increase ?‬
+‭SSC MTS 09/10/2024 (Evening)‬
+‭(a) 10.5%   (b) 10%   (c) 11.5%   (d) 11%‬
+‭Q.60.‬ ‭The‬‭number‬‭of‬‭schools‬‭in‬‭a‬‭city‬‭is‬
+‭directly‬‭proportional‬‭to‬‭the‬‭population‬‭of‬
+‭the‬‭city.‬‭In‬‭2020,‬‭there‬‭were‬‭125‬‭schools‬
+‭and‬ ‭the‬ ‭population‬ ‭of‬ ‭the‬ ‭city‬ ‭was‬
+‭1,80,000.‬‭In‬‭2023,‬‭the‬‭number‬‭of‬‭schools‬
+‭in‬‭the‬‭city‬‭is‬‭180.‬‭What‬‭is‬‭the‬‭percentage‬
+‭increase‬ ‭in‬ ‭the‬ ‭population‬ ‭of‬ ‭the‬ ‭city‬
+‭from 2020 to 2023 ?‬
+‭SSC MTS 16/10/2024 (Morning)‬
+‭(a) 44%‬ ‭(b) 42%‬ ‭(c) 45%‬ ‭(d) 46%‬
+‭Q.61.‬ ‭Aniruddh‬ ‭invested‬ ‭₹15,000‬ ‭in‬ ‭the‬
+‭shares‬‭of‬‭a‬‭company.‬‭The‬‭shares‬‭rose‬‭by‬
+‭15%‬‭one‬‭day‬‭and‬‭fell‬‭by‬‭10%‬‭on‬‭the‬‭other‬
+‭day. What is the current value (in ₹) of‬
+‭www.ssccglpinnacle.com                                                 Download Pinnacle Exam Preparation App‬
+
+‭Pinnacle‬
+‭Day: 65th - 69th‬
+‭Percentage‬
+‭Aniruddh’s investment ?‬
+‭SSC MTS 16/10/2024 (Afternoon)‬
+‭(a) 15450 (b) 15525 (c) 15750 (d) 15500‬
+‭Q.62.‬ ‭If‬ ‭the‬ ‭height‬ ‭of‬ ‭a‬ ‭triangle‬ ‭is‬
+‭increased‬ ‭by‬ ‭20%‬ ‭and‬ ‭the‬ ‭base‬ ‭is‬
+‭increased‬ ‭by‬ ‭12%.‬ ‭What‬‭is‬‭the‬‭new‬‭area‬
+‭(in‬‭cm‬‭2‬‭)‬‭if‬‭the‬‭old‬‭area‬‭of‬‭the‬‭triangle‬‭was‬
+‭200 cm‬‭2‬‭?‬
+‭SSC MTS 16/10/2024 (Evening)‬
+‭(a) 234.4   (b) 254.4   (c) 268.8   (d) 216.7‬
+‭Q.63.‬ ‭The‬ ‭price‬ ‭of‬ ‭a‬ ‭commodity‬ ‭is‬
+‭increased‬‭by‬‭20%‬‭and‬‭then‬‭again‬‭by‬‭25%.‬
+‭By‬ ‭what‬ ‭per‬ ‭cent‬ ‭should‬ ‭the‬ ‭increased‬
+‭price‬‭be‬‭reduced‬‭to‬‭get‬‭back‬‭to‬‭the‬‭initial‬
+‭price ?‬
+‭SSC MTS 21/10/2024 (Afternoon)‬
+‭(a) 33‬
+‭%   (b) 45%   (c) 22‬
+‭%   (d) 25%‬
+‭1‬
+‭3‬
+‭1‬
+‭2‬
+‭Q.64.‬‭When‬‭80%‬‭of‬‭a‬‭number‬‭is‬‭added‬‭to‬
+‭80,‬ ‭the‬ ‭result‬ ‭is‬ ‭the‬ ‭same‬ ‭number.‬ ‭Find‬
+‭the number.‬
+‭SSC MTS 22/10/2024 (Morning)‬
+‭(a) 420   (b) 380   (c) 320   (d) 400‬
+‭Q.65.‬ ‭A’s‬ ‭salary‬ ‭increases‬ ‭by‬ ‭60%‬ ‭and‬
+‭then‬‭decreases‬‭by‬‭30%.‬‭On‬‭the‬‭whole,‬‭A’s‬
+‭salary is increased by ______?‬
+‭SSC MTS 22/10/2024 (Evening)‬
+‭(a) 48%‬ ‭(b) 30%‬ ‭(c) 12%    (d) 72%‬
+‭Q.66.‬‭A‬‭girl‬‭spends‬‭76%‬‭of‬‭her‬‭income.‬‭If‬
+‭her‬ ‭income‬ ‭increases‬ ‭by‬ ‭18%‬ ‭and‬ ‭her‬
+‭expenditure‬‭increases‬‭by‬‭25%,‬‭then‬‭what‬
+‭is‬‭the‬‭percentage‬‭increase‬‭or‬‭decrease‬‭in‬
+‭her‬ ‭savings‬ ‭?‬ ‭(Correct‬ ‭to‬ ‭one‬ ‭decimal‬
+‭place)‬
+‭SSC MTS 23/10/2024 (Morning)‬
+‭(a) Decrease by 4.2% (b) Increase by 5%‬
+‭(c) Decrease by 3.8% (d) Increase by 3.6%‬
+‭Q.67.‬ ‭A‬ ‭man’s‬ ‭working‬ ‭hours‬ ‭per‬ ‭day‬
+‭were‬ ‭increased‬ ‭by‬ ‭10%‬ ‭and‬ ‭his‬ ‭wages‬
+‭per‬ ‭hour‬ ‭were‬ ‭increased‬ ‭by‬ ‭5%.‬ ‭By‬‭how‬
+‭much‬ ‭per‬ ‭cent‬ ‭were‬ ‭his‬ ‭daily‬ ‭earnings‬
+‭increased ?‬
+‭SSC MTS 29/10/2024 (Evening)‬
+‭(a) 10.3%   (b) 12.2%   (c) 5%   (d) 15.5%‬
+‭Q.68.‬ ‭The‬ ‭salary‬ ‭of‬ ‭a‬ ‭worker‬ ‭is‬ ‭first‬
+‭increased‬ ‭by‬ ‭30%‬ ‭and‬ ‭later‬ ‭reduced‬ ‭by‬
+‭28.5%.‬ ‭What‬ ‭is‬ ‭the‬ ‭net‬ ‭change‬ ‭in‬ ‭his‬
+‭salary ?‬
+‭SSC MTS 30/10/2024 (Afternoon)‬
+‭(a) 9.05% decrease     (b) 7.05% decrease‬
+‭(c) 6.05% increase      (d) 8.05% increase‬
+‭Q.69.‬ ‭Out‬ ‭of‬ ‭his‬ ‭monthly‬ ‭income,‬ ‭Mr.‬
+‭Sharma‬ ‭spends‬ ‭24%‬ ‭on‬ ‭house‬ ‭rent‬ ‭and‬
+‭70%‬ ‭on‬ ‭household‬ ‭expenses‬ ‭and‬ ‭saves‬
+‭the‬ ‭balance.‬ ‭If‬ ‭every‬ ‭month,‬ ‭he‬ ‭saves‬
+‭₹1,200, then what is his monthly income?‬
+‭SSC MTS 11/11/2024 (Afternoon)‬
+‭(a) ₹20,000‬
+‭(b) ₹32,000‬
+‭(c) ₹27,000‬
+‭(d) ₹25,000‬
+‭Q.70.‬‭If‬‭a‬‭reduction‬‭of‬‭10%‬‭in‬‭the‬‭price‬‭of‬
+‭rice‬ ‭enables‬ ‭a‬ ‭person‬ ‭to‬ ‭obtain‬ ‭22‬ ‭kg‬
+‭more‬ ‭for‬ ‭₹250,‬ ‭then‬‭the‬‭original‬‭price‬‭of‬
+‭the‬‭rice‬‭per‬‭kg‬‭is:‬‭(correct‬‭to‬‭two‬‭decimal‬
+‭place)‬
+‭SSC MTS 12/11/2024 (Afternoon)‬
+‭(a) ₹1.20   (b) ₹1.22   (c) ₹1.26   (d) ₹1.24‬
+‭Q.71.‬ ‭In‬ ‭an‬ ‭election‬‭there‬‭were‬‭only‬‭two‬
+‭candidates,‬ ‭Geeta‬ ‭and‬ ‭Shyama.‬ ‭Geeta‬
+‭received‬ ‭15%‬ ‭of‬ ‭the‬ ‭total‬ ‭votes‬ ‭and‬
+‭Shyama‬‭received‬‭8700‬‭votes.‬‭60%‬‭of‬‭the‬
+‭voters‬‭did‬‭not‬‭cast‬‭their‬‭vote‬‭to‬‭either‬‭of‬
+‭the‬ ‭two‬ ‭candidates.‬ ‭Find‬ ‭the‬ ‭total‬
+‭percentage‬
+‭of‬
+‭votes‬
+‭that‬
+‭Shyama‬
+‭received,‬‭assuming‬‭that‬‭all‬‭the‬‭votes‬‭cast‬
+‭were valid.‬
+‭SSC MTS 12/11/2024 (Evening)‬
+‭(a) 22%‬ ‭(b) 23%‬ ‭(c) 24%    (d) 25%‬
+‭Q.72.‬ ‭Ravish‬ ‭had‬ ‭₹1,500‬ ‭with‬ ‭him.‬
+‭Sunaina‬‭had‬‭24%‬‭more‬‭money‬‭than‬‭what‬
+‭Ravish‬ ‭had,‬ ‭while‬ ‭Sanatan‬‭had‬‭10%‬‭less‬
+‭money‬ ‭that‬ ‭what‬ ‭Sunaina‬ ‭had.‬ ‭How‬
+‭much money did Sanatan have ?‬
+‭SSC MTS 14/11/2024 (Morning)‬
+‭(a) ₹1,674‬
+‭(b) ₹1,664‬
+‭(c) ₹1,764‬
+‭(d) ₹1,774‬
+‭Q.73.‬ ‭If‬ ‭the‬ ‭numerator‬ ‭of‬ ‭a‬ ‭fraction‬ ‭is‬
+‭increased‬‭by‬‭12%‬‭and‬‭its‬‭denominator‬‭is‬
+‭diminished‬ ‭by‬ ‭8%,‬ ‭then‬ ‭the‬ ‭value‬ ‭of‬‭the‬
+‭fraction is.‬
+‭Find the original fraction.‬
+‭56‬
+‭69‬
+‭SSC MTS 14/11/2024 (Evening)‬
+‭(a)‬
+‭(b)‬
+‭(c)‬
+‭(d)‬
+‭4‬
+‭3‬
+‭3‬
+‭2‬
+‭3‬
+‭4‬
+‭2‬
+‭3‬
+‭SSC CGL 2024 Tier - 1‬
+‭Q.74.‬‭A‬‭person‬‭earns‬‭₹16,000‬‭per‬‭month‬
+‭and‬‭spends‬‭80%‬‭of‬‭his‬‭income‬‭and‬‭saves‬
+‭the‬ ‭remaining‬ ‭amount.‬ ‭If‬ ‭his‬ ‭income‬
+‭increases‬ ‭by‬ ‭20%‬ ‭and‬ ‭expenditure‬ ‭by‬
+‭10%,‬ ‭find‬ ‭the‬ ‭percentage‬ ‭of‬ ‭increase‬ ‭in‬
+‭his savings.‬
+‭SSC CGL 09/09/2024 (2nd Shift)‬
+‭(a) 140%    (b) 90%    (c) 120%    (d) 60%‬
+‭Q.75.‬‭A number is first increased by 12%‬
+‭and‬‭then‬‭increased‬‭by‬‭23%.‬‭The‬‭number,‬
+‭so‬ ‭obtained,‬ ‭is‬ ‭now‬ ‭decreased‬ ‭by‬ ‭34%.‬
+‭What‬ ‭is‬ ‭the‬ ‭net‬ ‭increase‬ ‭or‬ ‭decrease‬
+‭percent‬‭in‬‭the‬‭original‬‭number‬‭(nearest‬‭to‬
+‭an integer) ?‬
+‭SSC CGL 09/09/2024 (3rd Shift)‬
+‭(a) 10% increase‬
+‭(b) 9% decrease‬
+‭(c) 10% decrease‬
+‭(d)  9% increase‬
+‭Q.76.‬ ‭In‬ ‭an‬‭election‬‭between‬‭Sunita‬‭and‬
+‭Mamata,‬ ‭85%‬ ‭of‬ ‭voters‬ ‭cast‬ ‭their‬ ‭votes‬
+‭but‬‭2%‬‭of‬‭votes‬‭were‬‭invalid.‬‭If‬‭Sunita‬‭got‬
+‭64,974‬‭votes‬‭which‬‭is‬‭78%‬‭of‬‭valid‬‭votes,‬
+‭then‬ ‭the‬ ‭total‬ ‭number‬ ‭of‬‭voters‬‭enrolled‬
+‭in the election was:‬
+‭SSC CGL 10/09/2024 (3rd Shift)‬
+‭(a) 1,25,000‬
+‭(b) 1,00,000‬
+‭(c) 1,65,000‬
+‭(d) 1,80,000‬
+‭Q.77.‬ ‭In‬ ‭an‬ ‭election‬ ‭between‬ ‭two‬
+‭candidates‬ ‭P‬ ‭and‬ ‭Q,‬ ‭P‬ ‭got‬ ‭78%‬ ‭of‬ ‭the‬
+‭total‬ ‭valid‬‭votes.‬‭If‬‭the‬‭total‬‭votes‬‭of‬‭the‬
+‭electorate‬‭were‬‭75,60,000,‬‭then‬‭what‬‭was‬
+‭the‬ ‭number‬ ‭of‬ ‭valid‬ ‭votes‬ ‭that‬ ‭Q‬ ‭got‬ ‭if‬
+‭10%‬ ‭of‬‭the‬‭voters‬‭did‬‭not‬‭cast‬‭their‬‭vote‬
+‭and‬ ‭15%‬ ‭of‬ ‭the‬ ‭votes‬ ‭polled‬ ‭were‬
+‭declared invalid ?‬
+‭SSC CGL 11/09/2024 (1st Shift)‬
+‭(a) 1,41,372‬
+‭(b) 1,41,732‬
+‭(c) 12,72,348‬
+‭(d) 1,47,312‬
+‭Q.78.‬ ‭Mrudula‬ ‭starts‬ ‭her‬ ‭job‬ ‭with‬ ‭a‬
+‭certain‬ ‭monthly‬ ‭salary‬‭and‬‭earns‬‭a‬‭fixed‬
+‭increment‬ ‭every‬ ‭year.‬ ‭If‬ ‭her‬ ‭salary‬ ‭was‬
+‭₹28,400‬ ‭after‬ ‭six‬ ‭years‬ ‭of‬ ‭service‬ ‭and‬
+‭₹52,997‬ ‭after‬ ‭fifteen‬ ‭years,‬ ‭find‬ ‭her‬
+‭annual increment.‬
+‭SSC CGL 11/09/2024 (1st Shift)‬
+‭(a) ₹12,002‬
+‭(b) ₹1,200‬
+‭(c) ₹2,733‬
+‭(d) ₹1,824‬
+‭Q.79.‬ ‭The‬ ‭salary‬ ‭of‬ ‭a‬ ‭worker‬ ‭is‬ ‭first‬
+‭increased‬‭by‬‭25%,‬‭then‬‭it‬‭is‬‭decreased‬‭by‬
+‭12%.‬‭The‬‭percentage‬‭change‬‭in‬‭his‬‭salary‬
+‭is:‬
+‭SSC CGL 11/09/2024 (2nd Shift)‬
+‭(a) 10% increase‬
+‭(b) 13% increase‬
+‭(c) 10% decrease‬
+‭(d) 13% decrease‬
+‭Q.80.‬ ‭A‬ ‭woman‬ ‭spends‬
+‭of‬ ‭her‬
+‭2‬
+‭3‬
+‭income.‬ ‭If‬ ‭her‬ ‭income‬‭increases‬‭by‬‭18%‬
+‭and‬ ‭the‬ ‭expenditure‬ ‭increases‬ ‭by‬ ‭24%,‬
+‭then‬ ‭the‬ ‭percentage‬ ‭increase‬ ‭in‬ ‭her‬
+‭savings will be:‬
+‭SSC CGL 11/09/2024 (3rd Shift)‬
+‭(a) 6%‬
+‭(b) 3%‬
+‭(c) 5%‬
+‭(d) 4%‬
+‭Q.81.‬
+‭The‬
+‭proportion‬
+‭of‬
+‭Suresh's‬
+‭spending‬ ‭to‬ ‭saving‬ ‭is‬ ‭3‬ ‭:‬ ‭1.‬ ‭His‬ ‭salary‬
+‭rises‬ ‭by‬ ‭25%.‬ ‭What‬ ‭percentage‬ ‭of‬ ‭his‬
+‭expenditure‬ ‭will‬ ‭increase‬ ‭if‬ ‭his‬ ‭saving‬
+‭grows by 10% ?‬
+‭SSC CGL 12/09/2024 (3rd Shift)‬
+‭(a) 40%    (b) 20%    (c) 10%    (d) 30%‬
+‭Q.82.‬ ‭In‬ ‭an‬ ‭election‬ ‭between‬‭R‬‭and‬‭S,‬‭R‬
+‭gets‬‭110%‬‭of‬‭the‬‭votes‬‭of‬‭S‬‭and‬‭beats‬‭S‬
+‭by‬ ‭770‬ ‭votes.‬ ‭If‬ ‭there‬ ‭were‬ ‭no‬ ‭invalid‬
+‭votes,‬ ‭then‬ ‭the‬ ‭total‬ ‭number‬ ‭of‬ ‭votes‬
+‭polled is:‬
+‭SSC CGL 13/09/2024 (1st Shift)‬
+‭(a) 17610 (b) 17160 (c) 16170 (d) 16710‬
+‭Q.83.‬‭Kalyan‬‭spends‬‭80%‬‭of‬‭his‬‭income.‬
+‭His‬ ‭income‬ ‭increases‬ ‭by‬ ‭15%‬ ‭and‬ ‭his‬
+‭expenditure‬ ‭also‬ ‭increases‬ ‭by‬ ‭5%.‬ ‭The‬
+‭percentage of increase in his savings is:‬
+‭SSC CGL 13/09/2024 (3rd Shift)‬
+‭(a) 50%    (b) 20%    (c) 55%    (d) 40%‬
+‭Q.84.‬‭In a company, all employees are‬
+‭www.ssccglpinnacle.com                                                 Download Pinnacle Exam Preparation App‬
+
+‭Pinnacle‬
+‭Day: 65th - 69th‬
+‭Percentage‬
+‭getting‬ ‭equal‬ ‭wages.‬ ‭If‬ ‭the‬ ‭number‬ ‭of‬
+‭employees‬‭is‬‭increased‬‭by‬‭20%‬‭and‬‭their‬
+‭wages‬ ‭per‬ ‭head‬ ‭are‬ ‭decreased‬ ‭by‬ ‭18%,‬
+‭what‬ ‭is‬‭the‬‭percentage‬‭decrease‬‭in‬‭total‬
+‭wages ?‬
+‭SSC CGL 17/09/2024 (1st Shift)‬
+‭(a) 2.4%    (b) 1%    (c) 1.6%    (d) 1.4%‬
+‭Q.85.‬ ‭In‬ ‭a‬‭constituency,‬‭45%‬‭of‬‭the‬‭total‬
+‭number‬‭of‬‭voters‬‭are‬‭males‬‭and‬‭the‬‭rest‬
+‭are‬ ‭females.‬ ‭If‬ ‭60%‬ ‭of‬ ‭the‬ ‭males‬ ‭are‬
+‭illiterate‬ ‭and‬ ‭60%‬ ‭of‬ ‭the‬ ‭females‬ ‭are‬
+‭literate,‬ ‭then‬ ‭by‬ ‭what‬ ‭percent‬ ‭is‬ ‭the‬
+‭number‬ ‭of‬ ‭illiterate‬ ‭females‬ ‭more‬ ‭than‬
+‭that of literate males ?‬
+‭(Rounded off to 2 decimal places)‬
+‭SSC CGL 18/09/2024 (1st Shift)‬
+‭(a) 19.11%‬
+‭(b) 27.23%‬
+‭(c) 30.24%‬
+‭(d) 22.22%‬
+‭Q.86.‬ ‭Refer‬ ‭the‬ ‭below‬ ‭table‬ ‭and‬‭answer‬
+‭the question that follows.‬
+‭Discipline‬
+‭Boys‬
+‭Girls‬
+‭Engineering‬
+‭120‬
+‭80‬
+‭Medical‬
+‭80‬
+‭120‬
+‭What‬‭percentage‬‭of‬‭students‬‭who‬‭chose‬
+‭medical are boys ?‬
+‭SSC CGL 18/09/2024 (2nd Shift)‬
+‭(a) 30%‬
+‭(b) 50%     (c) 40%    (d) 45%‬
+‭Q.87.‬ ‭In‬ ‭an‬ ‭election‬ ‭between‬ ‭two‬
+‭candidates,‬‭the‬‭one‬‭who‬‭gets‬‭88%‬‭of‬‭the‬
+‭votes‬ ‭is‬ ‭elected‬ ‭by‬ ‭a‬ ‭majority‬ ‭of‬ ‭684‬
+‭votes.‬ ‭What‬‭is‬‭the‬‭total‬‭number‬‭of‬‭votes‬
+‭polled ? (all polled votes are valid)‬
+‭SSC CGL 18/09/2024 (2nd Shift)‬
+‭(a) 900     (b) 800     (c) 850     (d) 750‬
+‭Q.88.‬ ‭An‬ ‭investor‬ ‭invested‬‭₹2,00,000‬‭in‬
+‭shares.‬ ‭The‬ ‭shares‬ ‭rose‬ ‭by‬ ‭18%‬ ‭on‬ ‭the‬
+‭first‬ ‭day,‬ ‭fell‬ ‭by‬ ‭15%‬ ‭on‬‭the‬‭second‬‭day,‬
+‭and‬‭then‬‭fell‬‭by‬‭3%‬‭on‬‭the‬‭third‬‭day.‬‭What‬
+‭is‬
+‭the‬ ‭net‬ ‭percentage‬ ‭increase‬ ‭or‬
+‭decrease‬ ‭in‬ ‭the‬ ‭value‬ ‭of‬ ‭the‬ ‭investor's‬
+‭shares‬ ‭?‬ ‭(Rounded‬ ‭up‬ ‭to‬ ‭one‬ ‭decimal‬
+‭place)‬
+‭SSC CGL 18/09/2024 (3rd Shift)‬
+‭(a) increase by 2.2%‬
+‭(b) increase by 2.7%‬
+‭(c) decrease by 2.7%‬
+‭(d) decrease by 2.2%‬
+‭Q.89.‬ ‭The‬ ‭price‬ ‭of‬ ‭an‬ ‭item‬ ‭is‬ ‭increased‬
+‭twice‬ ‭successively.‬ ‭The‬ ‭final‬ ‭price‬ ‭is‬
+‭₹2,295‬ ‭and‬ ‭initial‬ ‭price‬ ‭was‬ ‭₹1,000.‬‭The‬
+‭percentage‬ ‭increment‬ ‭the‬ ‭second‬ ‭time‬
+‭was‬ ‭twice‬ ‭the‬‭percentage‬‭increment‬‭the‬
+‭first‬ ‭time.‬ ‭By‬ ‭what‬ ‭percentage‬ ‭was‬ ‭the‬
+‭price increased the second time ?‬
+‭SSC CGL 19/09/2024 (2nd Shift)‬
+‭(a) 35%     (b) 65%     (c) 70%     (d) 25%‬
+‭Q.90.‬ ‭Three‬ ‭candidates‬ ‭X,‬ ‭Y‬ ‭and‬ ‭Z‬
+‭participated‬ ‭in‬ ‭an‬ ‭election.‬ ‭X‬ ‭got‬ ‭30%‬
+‭more‬ ‭votes‬ ‭than‬ ‭Y,‬ ‭whereas‬ ‭Z‬ ‭got‬ ‭25%‬
+‭more‬ ‭votes‬ ‭than‬‭Y.‬‭X‬‭also‬‭overtook‬‭Z‬‭by‬
+‭5000‬ ‭votes.‬ ‭If‬ ‭71%‬ ‭of‬ ‭the‬ ‭voters‬ ‭voted‬
+‭and‬‭no‬‭invalid‬‭votes‬‭were‬‭cast,‬‭then‬‭what‬
+‭was‬ ‭the‬ ‭total‬ ‭number‬ ‭of‬ ‭voters‬ ‭in‬ ‭the‬
+‭voting list ?‬
+‭SSC CGL 19/09/2024 (3rd Shift)‬
+‭(a) 5,00,000‬
+‭(b) 4,05,000‬
+‭(c) 3,55,000‬
+‭(d) 4,50,000‬
+‭Q.91.‬ ‭R‬ ‭targets‬ ‭to‬ ‭score‬ ‭85%‬ ‭marks‬ ‭in‬
+‭exams.‬‭He‬‭scores‬‭450‬‭marks‬‭and‬‭misses‬
+‭the‬ ‭target‬ ‭by‬‭35%.‬‭How‬‭much‬‭increment‬
+‭in‬ ‭percentage‬ ‭should‬ ‭be‬ ‭there‬ ‭in‬ ‭his‬
+‭scored marks to meet the target ?‬
+‭SSC CGL 23/09/2024 (1st Shift)‬
+‭(a) 70‬
+‭(b) 35‬
+‭(c) 53‬
+‭(d) 45‬
+‭Q.92.‬ ‭In‬ ‭an‬ ‭election‬ ‭between‬ ‭two‬
+‭candidates,‬ ‭P‬ ‭received‬ ‭42%‬ ‭of‬ ‭the‬ ‭valid‬
+‭votes‬ ‭and‬ ‭Q‬ ‭won‬ ‭by‬ ‭45,360‬ ‭votes.‬ ‭20%‬
+‭people‬ ‭did‬ ‭not‬ ‭cast‬ ‭their‬‭vote.‬‭If‬‭10%‬‭of‬
+‭the‬‭votes‬‭cast‬‭were‬‭found‬‭invalid,‬‭what‬‭is‬
+‭the‬ ‭total‬ ‭number‬ ‭of‬ ‭votes‬ ‭registered‬ ‭in‬
+‭the poll booth ?‬
+‭SSC CGL 23/09/2024 (2nd Shift)‬
+‭(a) 3,93,750‬
+‭(b) 3,59,000‬
+‭(c) 3,93,600‬
+‭(d) 3,53,790‬
+‭Q.93.‬‭If‬‭an‬‭employee's‬‭income‬‭is‬‭₹72,000,‬
+‭the‬‭amount‬‭he‬‭spends‬‭is‬‭40%‬‭higher‬‭than‬
+‭his‬ ‭savings.‬‭Therefore,‬‭his‬‭savings‬‭(in‬‭₹)‬
+‭is:‬
+‭SSC CGL 23/09/2024 (3rd Shift)‬
+‭(a) 30000‬
+‭(b) 34000‬
+‭(c) 32000‬
+‭(d) 28000‬
+‭Q.94.‬ ‭In‬ ‭an‬ ‭election‬ ‭between‬ ‭two‬
+‭candidates,‬ ‭80%‬ ‭of‬ ‭the‬ ‭voters‬‭cast‬‭their‬
+‭votes,‬ ‭out‬ ‭of‬ ‭which‬ ‭4%‬ ‭votes‬ ‭were‬
+‭declared‬ ‭invalid.‬ ‭A‬‭candidate‬‭got‬‭15,360‬
+‭votes‬‭which‬‭were‬‭80%‬‭of‬‭the‬‭valid‬‭votes.‬
+‭Find the total number of votes.‬
+‭SSC CGL 24/09/2024 (1st Shift)‬
+‭(a) 20,000‬
+‭(b) 18,000‬
+‭(c) 25,000‬
+‭(d) 23,000‬
+‭Q.95.‬‭The‬‭ratio‬‭of‬‭expenditure‬‭to‬‭savings‬
+‭of‬ ‭a‬ ‭woman‬ ‭is‬ ‭4‬ ‭:‬ ‭1.‬ ‭If‬ ‭her‬ ‭income‬ ‭and‬
+‭expenditure‬ ‭are‬ ‭increased‬ ‭by‬ ‭20%‬ ‭and‬
+‭10%, respectively, then find the‬
+‭percentage change in her savings.‬
+‭SSC CGL 25/09/2024 (2nd Shift)‬
+‭(a) 40%‬
+‭(b) 50%‬
+‭(c) 60%‬
+‭(d) 30%‬
+‭Q.96.‬‭The‬‭monthly‬‭income‬‭of‬‭Ramesh‬‭in‬
+‭year‬ ‭2021‬ ‭was‬ ‭₹18,600‬‭and‬‭his‬‭monthly‬
+‭expenditure‬ ‭was‬ ‭₹12,400.‬ ‭In‬ ‭year‬ ‭2022‬
+‭his‬ ‭income‬ ‭increased‬ ‭by‬ ‭15%‬ ‭and‬ ‭his‬
+‭expenditure‬ ‭increased‬ ‭by‬ ‭8%.‬ ‭Find‬ ‭the‬
+‭percentage increase in his savings.‬
+‭SSC CGL 25/09/2024 (3rd Shift)‬
+‭(a) 29%     (b) 32%     (c) 25%     (d) 27%‬
+‭Q.97.‬ ‭Suresh’s‬ ‭expenditure‬ ‭and‬ ‭savings‬
+‭are‬ ‭in‬ ‭the‬ ‭ratio‬ ‭of‬ ‭3‬ ‭:‬ ‭1.‬ ‭His‬ ‭income‬
+‭increases‬‭by‬‭25%.‬‭If‬‭his‬‭savings‬‭increase‬
+‭by‬ ‭20%,‬ ‭then‬ ‭by‬ ‭how‬ ‭much‬ ‭percentage‬
+‭does his expenditure increase ?‬
+‭SSC CGL 26/09/2024 (2nd Shift)‬
+‭(a) 27‬
+‭%‬
+‭(b) 25‬
+‭%‬
+‭2‬
+‭3‬
+‭2‬
+‭3‬
+‭(c) 28‬
+‭%‬
+‭(d) 26‬
+‭%‬
+‭2‬
+‭3‬
+‭2‬
+‭3‬
+‭Q.98.‬ ‭Ram's‬ ‭income‬ ‭is‬ ‭2.5%‬ ‭more‬ ‭than‬
+‭Shyam's‬ ‭income.‬ ‭By‬ ‭what‬ ‭percentage‬ ‭is‬
+‭Shyam's‬
+‭income‬
+‭less‬
+‭than‬
+‭Ram's‬
+‭income?‬
+‭SSC CGL 26/09/2024 (3rd Shift)‬
+‭(a) 2.43%  (b) 3.43%  (c) 1.43% (d) 4.43%‬
+‭SSC CHSL 2024 Tier - 1‬
+‭Q.99.‬ ‭A‬ ‭man‬ ‭spent‬‭60%‬‭of‬‭his‬‭salary‬‭on‬
+‭household‬ ‭expenses,‬ ‭20%‬ ‭of‬ ‭his‬ ‭salary‬
+‭on‬ ‭rent‬ ‭and‬ ‭out‬ ‭of‬ ‭remaining‬ ‭salary,‬ ‭he‬
+‭donated‬ ‭80%‬ ‭to‬ ‭a‬‭trust.‬‭If‬‭he‬‭is‬‭left‬‭with‬
+‭₹20,000, then what is his salary?‬
+‭SSC CHSL 01/07/2024 (1st Shift)‬
+‭(a) ₹5,50,000‬
+‭(b) ₹5,00,000‬
+‭(c) ₹4,00,000‬
+‭(d) ₹50,000‬
+‭Q.100.‬ ‭Mohan‬ ‭gets‬ ‭12%‬ ‭increase‬ ‭in‬ ‭his‬
+‭sale‬ ‭amount‬ ‭in‬ ‭the‬ ‭first‬ ‭year‬ ‭and‬ ‭15%‬
+‭increase‬‭in‬‭the‬‭second‬‭year,‬‭with‬‭that‬‭his‬
+‭present‬ ‭sale‬ ‭is‬ ‭₹1,28,800.‬ ‭What‬ ‭was‬‭his‬
+‭sale two years ago ?‬
+‭SSC CHSL 01/07/2024 (1st Shift)‬
+‭(a) ₹1,75,000‬
+‭(b) ₹1,25,000‬
+‭(c) ₹1,00,000‬
+‭(d) ₹1,50,000‬
+‭Q.101.‬‭The‬‭price‬‭of‬‭an‬‭electric‬‭bike‬‭was‬‭₹‬
+‭1,25,000‬ ‭last‬ ‭year.‬ ‭This‬ ‭year,‬ ‭its‬ ‭price‬
+‭decreased‬ ‭by‬ ‭30%.‬ ‭What‬ ‭is‬ ‭the‬‭price‬‭(in‬
+‭₹) of the electric bike this year?‬
+‭SSC CHSL 01/07/2024 (2nd Shift)‬
+‭(a) 87,000‬
+‭(b) 86,000‬
+‭(c) 87,500‬
+‭(d) 86,500‬
+‭Q.102.‬ ‭If‬ ‭18‬ ‭toys‬ ‭out‬ ‭of‬ ‭75‬ ‭toys‬ ‭are‬‭for‬
+‭boys‬‭and‬‭the‬‭rest‬‭are‬‭for‬‭girls,‬‭what‬‭is‬‭the‬
+‭percentage of girls toys?‬
+‭SSC CHSL 01/07/2024 (2nd Shift)‬
+‭(a) 57%    (b) 76%    (c) 67%    (d) 18%‬
+‭Q.103.‬ ‭Three‬ ‭persons‬ ‭ran‬ ‭for‬ ‭office‬‭and‬
+‭got,‬ ‭1136,‬ ‭7636‬ ‭and‬ ‭11628‬ ‭votes,‬
+‭respectively.‬ ‭What‬ ‭was‬ ‭the‬ ‭winning‬
+‭candidate's‬ ‭percentage‬ ‭of‬ ‭the‬ ‭total‬
+‭votes?‬
+‭SSC CHSL 01/07/2024 (2nd Shift)‬
+‭(a) 59%   (b) 52%   (c) 61%   (d) 57%‬
+‭Q.104.‬ ‭If‬ ‭the‬‭price‬‭of‬‭an‬‭article‬‭is‬‭raised‬
+‭by‬ ‭35%,‬ ‭by‬ ‭how‬ ‭much‬ ‭percent‬ ‭must‬ ‭a‬
+‭householder‬ ‭reduce‬ ‭his‬ ‭consumption‬ ‭of‬
+‭that‬ ‭article,‬ ‭so‬ ‭as‬ ‭not‬ ‭to‬ ‭increase‬ ‭his‬
+‭expenditure?‬
+‭SSC CHSL 01/07/2024 (3rd Shift)‬
+‭(a) 25‬
+‭%‬
+‭(b) 25‬
+‭%‬
+‭25‬
+‭27‬
+‭23‬
+‭27‬
+‭www.ssccglpinnacle.com                                                 Download Pinnacle Exam Preparation App‬
+
+‭Pinnacle‬
+‭Day: 65th - 69th‬
+‭Percentage‬
+‭(c) 25‬
+‭%‬
+‭(d) 25‬
+‭%‬
+‭22‬
+‭27‬
+‭24‬
+‭27‬
+‭Q.105.‬ ‭In‬ ‭an‬ ‭election‬ ‭between‬ ‭two‬
+‭candidates‬ ‭A‬ ‭and‬ ‭B,‬ ‭A‬ ‭got‬ ‭33%‬ ‭of‬ ‭total‬
+‭votes‬ ‭casted‬ ‭and‬ ‭still‬ ‭lost‬ ‭by‬ ‭55,522‬
+‭votes.‬‭Find‬‭the‬‭total‬‭number‬‭of‬‭votes‬‭got‬
+‭by B.‬
+‭SSC CHSL 01/07/2024 (3rd Shift)‬
+‭(a) 1,09,411‬
+‭(b) 1,04,911‬
+‭(c) 1,09,141‬
+‭(d) 1,09,114‬
+‭Q.106.‬ ‭The‬ ‭population‬ ‭of‬ ‭a‬ ‭city‬ ‭was‬
+‭5000000‬ ‭in‬ ‭2020.‬ ‭The‬‭population‬‭grows‬
+‭7.5%‬ ‭annually.‬‭The‬‭population‬‭in‬‭2022‬‭is‬
+‭______.‬
+‭SSC CHSL 01/07/2024 (4th Shift)‬
+‭(a) 5558875‬
+‭(b) 5887125‬
+‭(c) 5875215‬
+‭(d) 5778125‬
+‭Q.107.‬ ‭Sumit’s‬ ‭income‬ ‭in‬ ‭2020‬ ‭was‬
+‭₹21,000.‬ ‭He‬ ‭gets‬ ‭an‬ ‭increment‬ ‭of‬ ‭10%‬
+‭every year. What was his income in 2022 ?‬
+‭SSC CHSL 01/07/2024 (4th Shift)‬
+‭(a) ₹29,100‬
+‭(b) ₹26,530‬
+‭(c) ₹25,410‬
+‭(d) ₹23,100‬
+‭Q.108.‬ ‭In‬ ‭an‬ ‭election,‬ ‭a‬ ‭candidate‬
+‭secured‬‭41%‬‭of‬‭the‬‭votes‬‭polled‬‭and‬‭lost‬
+‭the‬ ‭election‬ ‭by‬ ‭97,632.‬ ‭What‬ ‭is‬ ‭the‬
+‭number‬‭of‬‭votes‬‭obtained‬‭by‬‭the‬‭winning‬
+‭candidate?‬
+‭SSC CHSL 01/07/2024 (4th Shift)‬
+‭(a) 542400‬
+‭(b) 320016‬
+‭(c) 360072‬
+‭(d) 222384‬
+‭Q.109.‬
+‭During‬
+‭the‬
+‭first‬
+‭year‬
+‭the‬
+‭population‬ ‭of‬ ‭a‬ ‭village‬ ‭increased‬ ‭by‬ ‭5%‬
+‭and‬‭during‬‭the‬‭second‬‭year‬‭it‬‭diminished‬
+‭by‬ ‭5%.‬ ‭At‬‭the‬‭end‬‭of‬‭the‬‭second‬‭year‬‭its‬
+‭population‬ ‭was‬ ‭47,880.‬ ‭What‬ ‭was‬ ‭the‬
+‭population‬ ‭at‬ ‭the‬ ‭beginning‬ ‭of‬ ‭the‬ ‭first‬
+‭year?‬
+‭SSC CHSL 02/07/2024 (1st Shift)‬
+‭(a) 43500 (b) 53000 (c) 48000 (d) 45000‬
+‭Q.110.‬ ‭In‬ ‭a‬ ‭group‬ ‭of‬ ‭250‬ ‭persons,‬ ‭40%‬
+‭are‬ ‭males‬ ‭and‬ ‭60%‬ ‭are‬ ‭females.‬ ‭If‬ ‭30‬
+‭more‬ ‭females‬ ‭join‬ ‭the‬ ‭group,‬ ‭then‬ ‭what‬
+‭will‬ ‭be‬ ‭the‬ ‭percentage‬ ‭of‬‭females‬‭in‬‭the‬
+‭new group? (Correct to 2 decimal places)‬
+‭SSC CHSL 02/07/2024 (1st Shift)‬
+‭(a) 90.25%‬
+‭(b) 62.58%‬
+‭(c) 64.29%‬
+‭(d) 72.25%‬
+‭Q.111.‬‭When‬‭a‬‭number‬‭is‬‭increased‬‭by‬‭8,‬
+‭it becomes 120% of itself. The number is:‬
+‭SSC CHSL 02/07/2024 (2nd Shift)‬
+‭(a) 50‬
+‭(b) 30‬
+‭(c) 60‬
+‭(d) 40‬
+‭Q.112.‬ ‭From‬ ‭the‬ ‭salary‬ ‭of‬ ‭a‬ ‭software‬
+‭engineer,‬ ‭if‬ ‭15%‬ ‭is‬ ‭used‬ ‭as‬ ‭house‬ ‭rent,‬
+‭25%‬ ‭of‬ ‭the‬ ‭remaining‬ ‭is‬ ‭spent‬ ‭on‬
+‭household‬ ‭items,‬ ‭25%‬ ‭of‬ ‭the‬ ‭remaining‬
+‭as‬‭income‬‭tax,‬‭and‬‭15%‬‭of‬‭the‬‭remaining‬
+‭on clothing, then he is left with ₹10,404.‬
+‭Find his total salary.‬
+‭SSC CHSL 02/07/2024 (2nd Shift)‬
+‭(a) ₹25,600‬
+‭(b) ₹22,600‬
+‭(c) ₹23,600‬
+‭(d) ₹24,600‬
+‭Q.113.‬ ‭The‬ ‭price‬ ‭of‬ ‭an‬ ‭article‬ ‭is‬ ‭first‬
+‭increased‬‭by‬‭40%‬‭and‬‭then‬‭decreased‬‭by‬
+‭45%,‬ ‭due‬ ‭to‬ ‭reduction‬ ‭in‬ ‭sales.‬ ‭Find‬‭the‬
+‭net‬ ‭percentage‬ ‭change‬ ‭in‬ ‭the‬‭final‬‭price‬
+‭of the article.‬
+‭SSC CHSL 02/07/2024 (3rd Shift)‬
+‭(a) - 23%   (b) 23%   (c) 13%   (d) - 13%‬
+‭Q.114.‬ ‭What‬‭is‬‭the‬‭number‬‭which‬‭needs‬
+‭to‬ ‭be‬ ‭added‬ ‭to‬ ‭20%‬ ‭of‬ ‭460‬ ‭to‬ ‭have‬ ‭the‬
+‭sum as 70% of 920 ?‬
+‭SSC CHSL 02/07/2024 (3rd Shift)‬
+‭(a) 762     (b) 926     (c) 335     (d) 552‬
+‭Q.115.‬ ‭In‬ ‭an‬ ‭election‬ ‭between‬ ‭two‬
+‭candidates,‬‭one‬‭got‬‭65%‬‭of‬‭the‬‭total‬‭valid‬
+‭votes.‬ ‭20%‬ ‭of‬ ‭the‬ ‭votes‬ ‭were‬ ‭invalid.‬ ‭If‬
+‭the‬‭total‬‭number‬‭of‬‭votes‬‭was‬‭7,500,‬‭the‬
+‭number‬ ‭of‬ ‭valid‬ ‭votes‬ ‭that‬ ‭the‬ ‭other‬
+‭candidate got was:‬
+‭SSC CHSL 02/07/2024 (4th Shift)‬
+‭(a) 4,300  (b) 1,900  (c)  2,100  (d) 1,700‬
+‭Q.116.‬‭A‬‭man‬‭spends‬‭35%‬‭of‬‭his‬‭monthly‬
+‭income‬ ‭on‬ ‭food‬ ‭and‬ ‭four-thirteenths‬ ‭of‬
+‭the‬ ‭remaining‬ ‭income‬ ‭on‬ ‭transport.‬ ‭He‬
+‭incurs‬ ‭some‬ ‭other‬ ‭expenses,‬ ‭but‬ ‭also‬
+‭saves‬ ‭Rs.6,300‬ ‭per‬ ‭month,‬ ‭the‬ ‭latter‬
+‭being‬ ‭equal‬ ‭to‬ ‭20%‬ ‭of‬ ‭the‬ ‭balance‬
+‭remaining‬ ‭just‬ ‭after‬ ‭spending‬ ‭on‬ ‭food‬
+‭and‬ ‭transport.‬ ‭What‬ ‭is‬ ‭his‬ ‭monthly‬
+‭income (in Rs.) ?‬
+‭SSC CHSL 02/07/2024 (4th Shift)‬
+‭(a) 63000‬
+‭(b) 72,000‬
+‭(c) 67500‬
+‭(d) 70,000‬
+‭Q.117.‬ ‭In‬ ‭an‬ ‭election‬ ‭between‬ ‭two‬
+‭candidates,‬‭a‬‭candidate‬‭who‬‭gets‬‭78%‬‭of‬
+‭the‬‭votes‬‭is‬‭elected‬‭by‬‭a‬‭majority‬‭of‬‭448‬
+‭votes.‬ ‭What‬‭is‬‭the‬‭total‬‭number‬‭of‬‭votes‬
+‭polled?‬
+‭SSC CHSL 03/07/2024 (1st Shift)‬
+‭(a) 800    (b) 750    (c) 850    (d) 700‬
+‭Q.118.‬ ‭Ramana‬ ‭spends‬ ‭75%‬ ‭of‬ ‭his‬
+‭income.‬‭His‬‭income‬‭is‬‭increased‬‭by‬‭25%‬
+‭and‬‭he‬‭increases‬‭his‬‭expenditure‬‭by‬‭10%.‬
+‭By‬ ‭what‬ ‭percentage‬ ‭are‬ ‭his‬ ‭savings‬
+‭increased ?‬
+‭SSC CHSL 03/07/2024 (2nd Shift)‬
+‭(a) 50%    (b) 60%    (c) 40%    (d) 70%‬
+‭Q.119.‬‭A‬‭person‬‭wants‬‭to‬‭buy‬‭10‬‭chairs.‬
+‭The‬ ‭total‬ ‭cost‬ ‭of‬ ‭10‬ ‭chairs‬ ‭is‬ ‭₹4,500.‬
+‭After‬ ‭bargaining,‬ ‭the‬ ‭shopkeeper‬‭agrees‬
+‭to‬ ‭decrease‬ ‭the‬ ‭cost‬ ‭of‬ ‭each‬ ‭chair‬ ‭by‬
+‭20%.‬ ‭Then,‬ ‭the‬ ‭person‬ ‭purchased‬ ‭10%‬
+‭more‬‭chairs.‬‭What‬‭will‬‭be‬‭the‬‭cost‬‭of‬‭the‬
+‭chairs that he purchased?‬
+‭SSC CHSL 03/07/2024 (2nd Shift)‬
+‭(a) ₹3,960 (b) ₹3,260 (c) ₹3,900 (d) ₹4,100‬
+‭Q.120.‬‭A‬‭fraction‬
+‭is‬‭decreased‬‭by‬
+‭.‬
+‭3‬
+‭5‬
+‭2‬
+‭5‬
+‭The‬ ‭resulting‬ ‭fraction‬ ‭is‬ ‭then‬ ‭increased‬
+‭by‬
+‭20%.‬
+‭What‬
+‭is‬
+‭the‬
+‭percentage‬
+‭decrease/increase‬ ‭in‬ ‭the‬ ‭value‬ ‭of‬ ‭the‬
+‭original fraction?‬
+‭SSC CHSL 03/07/2024 (2nd Shift)‬
+‭(a) Increase, 60%‬
+‭(b) Increase, 50%‬
+‭(c) Decrease, 60%‬
+‭(d) Decrease, 50%‬
+‭Q.121.‬ ‭In‬ ‭an‬ ‭election‬ ‭between‬ ‭two‬
+‭candidates,‬ ‭10%‬ ‭of‬‭the‬‭registered‬‭voters‬
+‭did‬ ‭not‬ ‭cast‬ ‭their‬ ‭vote.‬ ‭The‬ ‭winning‬
+‭candidate‬‭got‬‭60%‬‭of‬‭the‬‭total‬‭votes‬‭cast‬
+‭and‬ ‭defeated‬ ‭the‬ ‭other‬ ‭candidate‬ ‭by‬
+‭1242‬ ‭votes.‬ ‭Find‬ ‭the‬ ‭total‬ ‭number‬ ‭of‬
+‭registered voters.‬
+‭SSC CHSL 03/07/2024 (3rd Shift)‬
+‭(a) 6200   (b) 8640   (c) 6900   (d) 9600‬
+‭Q.122.‬ ‭If‬ ‭the‬ ‭income‬ ‭of‬ ‭P‬ ‭is‬ ‭40%‬ ‭less‬
+‭than‬ ‭Q,‬ ‭then‬ ‭the‬ ‭combined‬ ‭income‬ ‭of‬‭P‬
+‭and‬ ‭Q‬ ‭is‬ ‭how‬ ‭much‬ ‭percent‬ ‭more‬ ‭than‬
+‭the income of P ?‬
+‭SSC CHSL 03/07/2024 (3rd Shift)‬
+‭(a) 166‬
+‭(b) 166‬
+‭(c) 164‬
+‭(d) 164‬
+‭1‬
+‭3‬
+‭2‬
+‭3‬
+‭1‬
+‭3‬
+‭2‬
+‭3‬
+‭Q.123.‬ ‭In‬ ‭an‬ ‭engineering‬ ‭college,‬ ‭there‬
+‭are‬ ‭four‬ ‭branches‬ ‭namely‬ ‭Computer‬
+‭Science‬‭(CS),‬‭Electronics‬‭(EC),‬‭Civil‬‭(CE),‬
+‭and‬ ‭Mechanical‬ ‭(ME).‬ ‭The‬ ‭respective‬
+‭ratio‬ ‭of‬ ‭the‬‭number‬‭of‬‭students‬‭in‬‭these‬
+‭branches‬ ‭is‬ ‭11‬ ‭:‬ ‭5‬ ‭:‬ ‭6‬ ‭:‬ ‭7.‬ ‭What‬ ‭is‬ ‭the‬
+‭percentage‬ ‭of‬ ‭students‬ ‭belonging‬ ‭to‬‭CS‬
+‭and‬ ‭ME‬ ‭branches‬ ‭in‬‭the‬‭college‬‭(correct‬
+‭up to two decimal places) ?‬
+‭SSC CHSL 03/07/2024 (4th Shift)‬
+‭(a) 62.37 %‬
+‭(b) 62.07 %‬
+‭(c) 61.37 %‬
+‭(d) 61.07 %‬
+‭Q.124.‬ ‭A‬ ‭person‬ ‭spends‬ ‭10%‬ ‭of‬ ‭his‬
+‭income‬ ‭on‬ ‭groceries,‬‭10%‬‭on‬‭medicines,‬
+‭20%‬ ‭on‬ ‭children’s‬ ‭education,‬ ‭15%‬ ‭on‬
+‭house‬ ‭rent,‬ ‭and‬ ‭he‬ ‭saves‬ ‭the‬ ‭remaining‬
+‭amount.‬
+‭If‬ ‭his‬ ‭monthly‬ ‭income‬ ‭is‬
+‭₹30,000, find his savings.‬
+‭SSC CHSL 04/07/2024 (1st Shift)‬
+‭(a) ₹13,500‬
+‭(b) ₹16,500‬
+‭(c) ₹12,500‬
+‭(d) ₹15,500‬
+‭Q.125.‬ ‭In‬ ‭a‬ ‭state‬ ‭election‬ ‭between‬ ‭two‬
+‭parties,‬ ‭83%‬ ‭of‬ ‭the‬ ‭voters‬ ‭cast‬ ‭their‬
+‭votes,‬‭out‬‭of‬‭which‬‭4%‬‭of‬‭the‬‭votes‬‭were‬
+‭declared‬ ‭invalid.‬ ‭Party‬ ‭A‬ ‭got‬ ‭156611‬
+‭votes‬ ‭which‬ ‭were‬ ‭83%‬ ‭of‬ ‭the‬ ‭total‬ ‭valid‬
+‭votes.‬ ‭Find‬ ‭the‬ ‭total‬ ‭number‬ ‭of‬ ‭votes‬
+‭enrolled‬
+‭in‬ ‭that‬ ‭election.‬ ‭(Consider‬
+‭integer part only)‬
+‭SSC CHSL 04/07/2024 (1st Shift)‬
+‭(a) 23,46,807‬
+‭(b) 2,36,807‬
+‭(c) 2,34,888‬
+‭(d) 2,58,233‬
+‭Q.126.‬‭Rahul‬‭spends‬‭70%‬‭of‬‭his‬‭income.‬
+‭His‬ ‭income‬ ‭increased‬ ‭by‬ ‭15%‬ ‭and‬ ‭his‬
+‭expenditure increased by 7.5%. What is‬
+‭www.ssccglpinnacle.com                                                 Download Pinnacle Exam Preparation App‬
+
+‭Pinnacle‬
+‭Day: 65th - 69th‬
+‭Percentage‬
+‭the percentage increase in his savings?‬
+‭SSC CHSL 04/07/2024 (2nd Shift)‬
+‭(a) 32.5%   (b) 25.5%   (c) 50%   (d) 30.5%‬
+‭Q.127.‬‭Last‬‭year,‬‭Ranjan’s‬‭monthly‬‭salary‬
+‭was‬ ‭₹34,500‬ ‭and‬ ‭this‬ ‭year‬ ‭his‬ ‭monthly‬
+‭salary‬‭is‬‭₹38,640.‬‭What‬‭is‬‭the‬‭percentage‬
+‭increase‬ ‭in‬ ‭Ranjan’s‬ ‭monthly‬ ‭salary‬ ‭this‬
+‭year over his monthly salary last year ?‬
+‭SSC CHSL 04/07/2024 (2nd Shift)‬
+‭(a) 15 %    (b) 13 %    (c) 12 %    (d) 20 %‬
+‭Q.128.‬ ‭The‬ ‭cost‬ ‭of‬ ‭rice‬ ‭is‬ ‭increased‬ ‭by‬
+‭25%‬‭but‬‭its‬‭consumption‬‭is‬‭decreased‬‭by‬
+‭30%.‬ ‭Find‬ ‭the‬ ‭percentage‬ ‭increase‬ ‭or‬
+‭decrease in the expenditure of money.‬
+‭SSC CHSL 04/07/2024 (2nd Shift)‬
+‭(a) Decrease 12‬
+‭% (b) Decrease 13‬
+‭%‬
+‭1‬
+‭2‬
+‭1‬
+‭3‬
+‭(c) Increase 12‬
+‭%  (d) Increase 13‬
+‭%‬
+‭1‬
+‭2‬
+‭1‬
+‭3‬
+‭Q.129.‬‭If‬‭the‬‭price‬‭of‬‭tea‬‭is‬‭increased‬‭by‬
+‭40%,‬ ‭by‬ ‭how‬‭much‬‭percentage‬‭must‬‭the‬
+‭consumption‬ ‭of‬ ‭tea‬ ‭be‬‭decreased‬‭so‬‭as‬
+‭not to increase the expenditure ?‬
+‭SSC CHSL 04/07/2024 (4th Shift)‬
+‭(a) 35‬
+‭%‬
+‭(b) 28‬
+‭%‬
+‭9‬
+‭2‬
+‭4‬
+‭7‬
+‭(c) 31‬
+‭%‬
+‭(d) 15‬
+‭%‬
+‭3‬
+‭5‬
+‭2‬
+‭9‬
+‭Q.130.‬ ‭Ramu‬ ‭used‬ ‭to‬ ‭spend‬ ‭72%‬ ‭of‬ ‭his‬
+‭income.‬ ‭His‬ ‭income‬ ‭has‬ ‭increased‬ ‭by‬
+‭12%,‬‭and‬‭he‬‭increases‬‭his‬‭expenditure‬‭by‬
+‭5%.‬‭If‬‭Ramu‬‭earlier‬‭saved‬‭y‬‭and‬‭after‬‭the‬
+‭increases‬ ‭he‬ ‭now‬ ‭saves‬ ‭,‬ ‭then‬ ‭what‬ ‭is‬
+‭𝑥‬
+‭the value of (‬
+‭× 100)% ?‬
+‭𝑥‬‭ ‬−‭ ‬‭𝑦‬
+‭𝑦‬
+‭SSC CHSL 04/07/2024 (4th Shift)‬
+‭(a) 25%     (b) 22%     (c) 27%     (d) 30%‬
+‭Q.131.‬‭If‬‭the‬‭income‬‭of‬‭Neha‬‭is‬‭5%‬‭more‬
+‭than‬ ‭that‬ ‭of‬ ‭Monica,‬‭then‬‭the‬‭income‬‭of‬
+‭Monica‬‭is‬‭what‬‭percentage‬‭less‬‭than‬‭that‬
+‭of Neha ?‬
+‭SSC CHSL 04/07/2024 (4th Shift)‬
+‭(a) 4‬
+‭%‬
+‭(b) 4‬
+‭%‬
+‭16‬
+‭21‬
+‭11‬
+‭21‬
+‭(c) 4‬
+‭%‬
+‭(d) 4‬
+‭%‬
+‭13‬
+‭21‬
+‭5‬
+‭21‬
+‭Q.132.‬ ‭Monthly‬ ‭salary‬ ‭of‬ ‭Jitvik‬ ‭in‬ ‭the‬
+‭month‬ ‭of‬ ‭December‬ ‭2020‬ ‭was‬ ‭₹24,800.‬
+‭Every‬ ‭year‬ ‭his‬ ‭salary‬ ‭increases‬ ‭by‬ ‭5%‬
+‭from‬‭the‬‭month‬‭of‬‭January.‬‭What‬‭was‬‭his‬
+‭salary‬ ‭(in‬ ‭₹)‬ ‭in‬ ‭the‬ ‭month‬ ‭of‬ ‭February‬
+‭2022 ?‬
+‭SSC CHSL 05/07/2024 (1st Shift)‬
+‭(a) 27180 (b) 27486 (c) 26485 (d) 27342‬
+‭Q.133.‬ ‭The‬ ‭difference‬‭between‬‭31%‬‭and‬
+‭26%‬ ‭of‬ ‭votes‬ ‭for‬ ‭the‬ ‭same‬ ‭party‬ ‭at‬
+‭different‬ ‭places‬ ‭is‬ ‭2350.‬ ‭What‬ ‭is‬ ‭7%‬ ‭of‬
+‭those votes?‬
+‭SSC CHSL 05/07/2024 (1st Shift)‬
+‭(a) 2270    (b) 4090   (c) 3090    (d) 3290‬
+‭Q.134.‬ ‭The‬ ‭population‬ ‭of‬ ‭a‬ ‭town‬ ‭first‬
+‭decreased‬ ‭by‬ ‭16%‬ ‭due‬‭to‬‭migration‬‭to‬‭a‬
+‭big‬ ‭city‬ ‭for‬ ‭better‬‭job‬‭opportunities.‬‭The‬
+‭next‬ ‭year,‬ ‭the‬ ‭population‬ ‭of‬ ‭the‬ ‭town‬
+‭increased‬ ‭by‬ ‭21%‬ ‭as‬ ‭there‬ ‭were‬ ‭better‬
+‭facilities‬ ‭for‬ ‭jobs.‬ ‭What‬ ‭is‬ ‭the‬ ‭net‬
+‭percentage‬‭change‬‭(correct‬‭to‬‭2‬‭decimal‬
+‭places) in the population ?‬
+‭SSC CHSL 05/07/2024 (1st Shift)‬
+‭(a) Decrease by 2.54%‬
+‭(b) Increase by 2.54%‬
+‭(c) Decrease by 1.64%‬
+‭(d) Increase by 1.64%‬
+‭Q.135.‬ ‭In‬ ‭an‬ ‭election‬ ‭between‬ ‭two‬
+‭candidates,‬ ‭one‬ ‭candidate‬ ‭gets‬ ‭72%‬ ‭of‬
+‭the‬‭total‬‭votes‬‭cast.‬‭If‬‭the‬‭total‬‭votes‬‭are‬
+‭1000,‬ ‭by‬ ‭how‬ ‭many‬ ‭votes‬ ‭does‬ ‭the‬
+‭winner win the election?‬
+‭SSC CHSL 05/07/2024 (2nd Shift)‬
+‭(a) 360    (b) 720    (c) 250    (d) 440‬
+‭Q.136.‬ ‭A‬ ‭number‬ ‭is‬ ‭first‬ ‭increased‬ ‭by‬
+‭44%‬‭and‬‭then‬‭decreased‬‭by‬‭30%.‬‭The‬‭net‬
+‭percentage‬ ‭change‬ ‭(rounded‬ ‭off‬ ‭to‬ ‭the‬
+‭nearest integer) in the original number is:‬
+‭SSC CHSL 05/07/2024 (2nd Shift)‬
+‭(a) increase by 1%   (b) increase by 4%‬
+‭(c) decrease by 1%  (d) decrease by 4%‬
+‭Q.137.‬ ‭Raju‬ ‭spends‬ ‭80%‬ ‭of‬ ‭his‬ ‭income.‬
+‭His‬ ‭income‬ ‭increased‬ ‭by‬ ‭20%,‬ ‭while‬ ‭his‬
+‭spending‬‭rise‬‭by‬‭10%.‬‭The‬‭percentage‬‭of‬
+‭increase in his savings is:‬
+‭SSC CHSL 05/07/2024 (2nd Shift)‬
+‭(a) 48%    (b) 30%   (c) 60%    (d) 40%‬
+‭Q.138.‬ ‭R‬ ‭gives‬
+‭of‬‭the‬‭toffees‬‭he‬‭has‬
+‭3‬
+‭8‬
+‭with‬ ‭him‬ ‭to‬ ‭S.‬ ‭If‬ ‭now‬ ‭R‬ ‭has‬ ‭k%‬ ‭of‬ ‭the‬
+‭toffies with S, then find the value of k.‬
+‭SSC CHSL 05/07/2024 (3rd Shift)‬
+‭(a)‬
+‭(b)‬
+‭(c) 140     (d) 200‬
+‭500‬
+‭3‬
+‭200‬
+‭3‬
+‭Q.139.‬ ‭A‬ ‭quantity‬
+‭is‬ ‭changed‬ ‭to‬
+‭.‬
+‭4‬
+‭5‬
+‭5‬
+‭6‬
+‭How‬‭much‬‭percentage‬‭change‬‭is‬‭given‬‭to‬
+‭the quantity?‬
+‭SSC CHSL 05/07/2024 (3rd Shift)‬
+‭(a) 4.17% (b) 4.71% (c) 4.73% (d) 4.37%‬
+‭Q.140.‬ ‭The‬ ‭price‬ ‭of‬ ‭a‬ ‭motorcycle‬ ‭was‬
+‭$750‬ ‭last‬ ‭year.‬ ‭The‬ ‭price‬ ‭increased‬ ‭by‬
+‭20%‬ ‭this‬ ‭year.‬ ‭What‬ ‭is‬ ‭the‬ ‭price‬ ‭of‬ ‭the‬
+‭motorcycle this year?‬
+‭SSC CHSL 05/07/2024 (4th Shift)‬
+‭(a) $600   (b) $790   (c) $750   (d) $900‬
+‭Q.141.‬ ‭A‬ ‭person‬ ‭spends‬ ‭60%‬ ‭of‬ ‭his‬
+‭salary‬ ‭on‬ ‭family‬ ‭expenses,‬ ‭10%‬ ‭on‬
+‭medical‬ ‭expenses,‬ ‭5%‬ ‭on‬ ‭charity,‬ ‭and‬
+‭saves‬ ‭the‬ ‭remaining‬ ‭amount.‬ ‭If‬ ‭the‬
+‭amount‬ ‭on‬ ‭savings‬ ‭is‬ ‭₹4,000,‬ ‭find‬ ‭his‬
+‭monthly salary.‬
+‭SSC CHSL 05/07/2024 (4th Shift)‬
+‭(a) ₹12,000‬
+‭(b) ₹15,000‬
+‭(c) ₹14,000‬
+‭(d) ₹16,000‬
+‭Q.142.‬ ‭If‬ ‭the‬ ‭price‬ ‭of‬ ‭rice‬ ‭is‬‭reduced‬‭by‬
+‭24%,‬ ‭it‬ ‭enables‬ ‭Alok‬ ‭to‬ ‭buy‬ ‭10‬ ‭kg‬‭more‬
+‭rice‬ ‭for‬ ‭₹2,500.‬ ‭The‬ ‭reduced‬‭rate‬‭of‬‭rice‬
+‭per kg is:‬
+‭SSC CHSL 08/07/2024 (1st Shift)‬
+‭(a) ₹25    (b) ₹60    (c) ₹50    (d) ₹75‬
+‭Q.143.‬‭An‬‭interval‬‭of‬‭2‬‭hours‬‭25‬‭minutes‬
+‭is‬ ‭wrongly‬ ‭estimated‬ ‭by‬ ‭2‬ ‭hours‬ ‭30.5‬
+‭minutes. The error percentage is :‬
+‭SSC CHSL 08/07/2024 (1st Shift)‬
+‭(a) 3‬
+‭%‬
+‭(b) 2‬
+‭%‬
+‭23‬
+‭29‬
+‭27‬
+‭29‬
+‭(c) 3‬
+‭%‬
+‭(d) 2‬
+‭%‬
+‭19‬
+‭29‬
+‭21‬
+‭29‬
+‭Q.144.‬ ‭Suresh‬ ‭studies‬ ‭the‬ ‭pattern‬ ‭of‬
+‭daily‬ ‭sale‬ ‭of‬ ‭a‬ ‭shop.‬ ‭He‬ ‭finds‬ ‭that‬ ‭on‬
+‭Monday,‬‭the‬‭sale‬‭was‬‭decreased‬‭by‬‭10%‬
+‭in‬‭comparison‬‭to‬‭the‬‭sale‬‭on‬‭Sunday.‬‭On‬
+‭Tuesday,‬ ‭the‬ ‭sale‬‭was‬‭increased‬‭by‬‭10%‬
+‭in‬ ‭comparison‬ ‭to‬ ‭the‬ ‭sale‬ ‭of‬‭Monday.‬‭If‬
+‭the‬ ‭sale‬ ‭on‬‭Tuesday‬‭was‬‭of‬‭₹1,485,‬‭how‬
+‭much was the sale on Sunday?‬
+‭SSC CHSL 08/07/2024 (2nd Shift)‬
+‭(a) ₹1,495‬
+‭(b) ₹1,485‬
+‭(c) ₹1,475‬
+‭(d) ₹1,500‬
+‭Q.145.‬ ‭A’s‬ ‭income‬ ‭is‬ ‭equal‬ ‭to‬ ‭125%‬ ‭of‬
+‭the‬ ‭income‬ ‭of‬ ‭B,‬ ‭while‬ ‭B’s‬ ‭savings‬ ‭are‬
+‭120%‬ ‭of‬ ‭the‬ ‭savings‬ ‭of‬ ‭A.‬ ‭If‬ ‭the‬
+‭expenditure‬
+‭of‬
+‭B‬
+‭is‬
+‭75%‬
+‭of‬
+‭the‬
+‭expenditure‬‭of‬‭A,‬‭then‬‭how‬‭much‬‭are‬‭B’s‬
+‭savings‬
+‭as‬
+‭a‬
+‭percentage‬
+‭of‬
+‭her‬
+‭expenditure?‬
+‭SSC CHSL 08/07/2024 (2nd Shift)‬
+‭(a) 20% (b) 22‬
+‭% (c) 16‬
+‭% (d) 18‬
+‭%‬
+‭1‬
+‭2‬
+‭2‬
+‭3‬
+‭3‬
+‭4‬
+‭Q.146.‬ ‭At‬ ‭an‬ ‭election‬ ‭involving‬ ‭two‬
+‭candidates,‬‭68‬‭votes‬‭are‬‭declared‬‭invalid.‬
+‭The‬ ‭winning‬ ‭candidate‬ ‭gets‬ ‭52%‬ ‭of‬ ‭the‬
+‭valid‬ ‭votes‬ ‭and‬ ‭wins‬ ‭by‬ ‭98‬ ‭votes.‬ ‭The‬
+‭total number of votes polled is:‬
+‭SSC CHSL 08/07/2024 (3rd Shift)‬
+‭(a) 2518    (b) 2475    (c) 2500    (d) 2250‬
+‭Q.147.‬ ‭Ramesh's‬ ‭pocket‬ ‭money‬ ‭was‬
+‭reduced‬ ‭by‬ ‭25%,‬ ‭and‬ ‭then‬ ‭the‬ ‭reduced‬
+‭pocket‬ ‭money‬ ‭was‬ ‭increased‬ ‭by‬ ‭20%.‬
+‭Find‬ ‭the‬ ‭net‬ ‭increase‬ ‭or‬ ‭decrease‬
+‭percentage in his original pocket money.‬
+‭SSC CHSL 08/07/2024 (3rd Shift)‬
+‭(a) Increase 12%‬ ‭(b) Decrease 12%‬
+‭(c) Increase 10%‬ ‭(d) Decrease 10%‬
+‭Q.148.‬ ‭In‬ ‭an‬ ‭election‬ ‭a‬ ‭candidate‬
+‭secured‬‭47%‬‭of‬‭the‬‭votes‬‭and‬‭lost‬‭to‬‭his‬
+‭only‬ ‭opponent‬ ‭by‬ ‭276‬ ‭votes.‬ ‭Find‬ ‭the‬
+‭total number of votes polled.‬
+‭SSC CHSL 08/07/2024 (3rd Shift)‬
+‭(a) 3800    (b) 4600    (c) 4000    (d) 4200‬
+‭Q.149.‬‭In an election contested by two‬
+‭www.ssccglpinnacle.com                                                 Download Pinnacle Exam Preparation App‬
+
+‭Pinnacle‬
+‭Day: 65th - 69th‬
+‭Percentage‬
+‭candidates,‬‭one‬‭candidate‬‭got‬‭42%‬‭of‬‭the‬
+‭total‬ ‭votes‬ ‭and‬ ‭still‬ ‭lost‬ ‭by‬ ‭800‬ ‭votes.‬
+‭Find‬‭the‬‭total‬‭number‬‭of‬‭votes‬‭that‬‭were‬
+‭cast.‬
+‭SSC CHSL 08/07/2024 (4th Shift)‬
+‭(a) 7000    (b) 8000    (c) 2000    (d) 5000‬
+‭Q.150.‬ ‭A‬ ‭person‬ ‭saves‬ ‭45%‬ ‭of‬ ‭his‬
+‭income.‬ ‭Next‬‭year,‬‭his‬‭income‬‭increases‬
+‭by‬‭200%.‬‭He‬‭increases‬‭his‬‭savings‬‭by‬‭five‬
+‭times‬ ‭the‬ ‭previous‬ ‭year’s‬ ‭savings.‬ ‭By‬
+‭what‬‭percentage‬‭(correct‬‭to‬‭one‬‭place‬‭of‬
+‭decimal)‬‭has‬‭he‬‭increased/decreased‬‭his‬
+‭expenditure?‬
+‭SSC CHSL 09/07/2024 (1st Shift)‬
+‭(a) Increased, 63.4%‬
+‭(b) Increased, 36.4%‬
+‭(c) Decreased, 63.4%‬
+‭(d) Decreased, 36.4%‬
+‭Q.151.‬ ‭In‬ ‭an‬ ‭election‬ ‭between‬ ‭two‬
+‭candidates,‬ ‭10%‬ ‭of‬ ‭the‬ ‭voters‬ ‭did‬ ‭not‬
+‭cast‬ ‭their‬ ‭votes‬ ‭and‬ ‭5%‬ ‭of‬ ‭the‬ ‭votes‬
+‭polled‬‭were‬‭found‬‭invalid.‬‭The‬‭successful‬
+‭candidate‬ ‭got‬ ‭52.5%‬ ‭of‬ ‭the‬ ‭valid‬ ‭votes‬
+‭and‬‭won‬‭by‬‭a‬‭majority‬‭of‬‭1710‬‭votes.‬‭The‬
+‭number‬ ‭of‬ ‭voters‬ ‭enrolled‬ ‭on‬ ‭the‬‭voters‬
+‭list was:‬
+‭SSC CHSL 09/07/2024 (1st Shift)‬
+‭(a) 42000 (b) 48000 (c) 36000 (d) 40000‬
+‭Q.152.‬‭The‬‭total‬‭income‬‭of‬‭three‬‭families‬
+‭is‬ ‭₹72,000.‬ ‭Their‬ ‭expenditures‬ ‭are‬ ‭80%,‬
+‭85%‬‭and‬‭75%,‬‭respectively.‬‭If‬‭the‬‭savings‬
+‭are‬‭in‬‭the‬‭ratio‬‭8‬‭:‬‭9‬‭:‬‭20,‬‭then‬‭the‬‭income‬
+‭of the second family is :‬
+‭SSC CHSL 09/07/2024 (2nd Shift)‬
+‭(a) ₹40,000‬
+‭(b) ₹32,000‬
+‭(c) ₹24,000‬
+‭(d) ₹16,000‬
+‭Q.153.‬ ‭A‬ ‭number‬ ‭is‬ ‭first‬ ‭decreased‬ ‭by‬
+‭18%‬ ‭and‬ ‭the‬ ‭resulting‬ ‭number‬ ‭is‬ ‭then‬
+‭increased‬ ‭by‬ ‭25%.‬ ‭What‬ ‭is‬ ‭the‬ ‭overall‬
+‭percentage‬
+‭change‬
+‭in‬
+‭the‬
+‭original‬
+‭number?‬
+‭SSC CHSL 09/07/2024 (2nd Shift)‬
+‭(a) Decrease by 3.5% (b) Increase by 2.5%‬
+‭(c) Decrease by 2.5% (d) Increase by 3.5%‬
+‭Q.154.‬‭The‬‭average‬‭marks‬‭scored‬‭by‬‭the‬
+‭students‬ ‭of‬ ‭a‬ ‭class‬‭is‬‭75.‬‭If‬‭the‬‭average‬
+‭marks‬ ‭scored‬ ‭by‬ ‭the‬ ‭girls‬ ‭in‬ ‭the‬ ‭same‬
+‭class‬‭is‬‭90‬‭and‬‭that‬‭of‬‭boys‬‭is‬‭70,‬‭what‬‭is‬
+‭the percentage of boys in the class?‬
+‭SSC CHSL 09/07/2024 (3rd Shift)‬
+‭(a) 60%    (b) 70%    (c) 65%    (d) 75%‬
+‭Q.155.‬‭In‬‭an‬‭election‬‭there‬‭were‬‭only‬‭two‬
+‭candidates.‬
+‭One‬
+‭of‬ ‭the‬ ‭candidates‬
+‭secured‬‭35%‬‭of‬‭votes‬‭and‬‭is‬‭defeated‬‭by‬
+‭the‬ ‭other‬ ‭candidate‬ ‭by‬ ‭381‬ ‭votes.‬ ‭The‬
+‭total number of votes polled is:‬
+‭SSC CHSL 09/07/2024 (3rd Shift)‬
+‭(a) 1028     (b) 1270     (c) 635     (d) 514‬
+‭Q.156.‬‭If 20% of 35% of a number is‬
+‭240.8,‬‭then‬‭18%‬‭of‬‭that‬‭number‬‭(rounded‬
+‭off to 1 decimal place) is:‬
+‭SSC CHSL 09/07/2024 (4th Shift)‬
+‭(a) 621.2  (b) 619.2  (c) 618.2  (d) 623.2‬
+‭Q.157.‬ ‭The‬ ‭price‬ ‭of‬ ‭an‬‭electronic‬‭watch‬
+‭is‬ ‭first‬ ‭reduced‬ ‭by‬ ‭25%‬ ‭and‬ ‭then‬
+‭increased‬‭by‬‭50%.‬‭If‬‭the‬‭resulting‬‭price‬‭of‬
+‭the‬‭electronic‬‭watch‬‭is‬‭₹7,650,‬‭then‬‭what‬
+‭was its original price (in ₹) ?‬
+‭SSC CHSL 09/07/2024 (4th Shift)‬
+‭(a) 6,600  (b) 6,800  (c) 6,900  (d) 6,500‬
+‭Q.158.‬‭Ram‬‭spends‬‭30%‬‭of‬‭his‬‭salary‬‭on‬
+‭food,‬ ‭10%‬ ‭on‬ ‭house‬ ‭rent,‬ ‭7%‬ ‭on‬
+‭entertainment,‬‭and‬‭6%‬‭on‬‭conveyance.‬‭If‬
+‭at‬ ‭the‬ ‭end‬ ‭of‬ ‭a‬ ‭month‬ ‭his‬ ‭savings‬ ‭are‬
+‭₹1,880, then his monthly salary is :‬
+‭SSC CHSL 10/07/2024 (1st Shift)‬
+‭(a) ₹4,000 (b) ₹4,500 (c) ₹5,000 (d) ₹5,500‬
+‭Q.159.‬ ‭In‬ ‭an‬ ‭election‬ ‭between‬ ‭two‬
+‭candidates,‬‭A‬‭gets‬‭63%‬‭of‬‭the‬‭total‬‭valid‬
+‭votes.‬ ‭If‬ ‭the‬ ‭total‬ ‭votes‬ ‭polled‬ ‭were‬
+‭8,750,‬ ‭what‬ ‭is‬‭the‬‭number‬‭of‬‭valid‬‭votes‬
+‭that‬‭the‬‭other‬‭candidate‬‭B‬‭gets,‬‭if‬‭20%‬‭of‬
+‭the total votes were declared invalid ?‬
+‭SSC CHSL 10/07/2024 (1st Shift)‬
+‭(a) 4,410   (b) 3,560   (c) 6,450   (d) 2,590‬
+‭Q.160.‬ ‭In‬ ‭an‬ ‭election‬ ‭there‬ ‭were‬ ‭three‬
+‭candidates.‬ ‭The‬ ‭first‬ ‭candidate‬ ‭got‬‭40%‬
+‭votes‬ ‭and‬ ‭second‬ ‭candidate‬ ‭got‬ ‭35%‬
+‭votes.‬‭If‬‭the‬‭total‬‭votes‬‭in‬‭the‬‭election‬‭are‬
+‭50,000, find the number of votes got by‬
+‭the third candidate.‬
+‭SSC CHSL 10/07/2024 (2nd Shift)‬
+‭(a) 13,500  (b) 12500  (c) 12000  (d) 1250‬
+‭Q.161.‬ ‭After‬‭an‬‭increase‬‭of‬‭9%‬‭in‬‭salary,‬
+‭a‬ ‭person‬ ‭received‬ ‭₹6,300.‬ ‭What‬‭was‬‭his‬
+‭salary‬ ‭before‬ ‭the‬ ‭increase‬ ‭(consider‬
+‭integral part only) ?‬
+‭SSC CHSL 10/07/2024 (2nd Shift)‬
+‭(a) ₹5,000 (b) ₹3,879 (c) ₹5,779 (d) ₹4,000‬
+‭Q.162.‬ ‭Two‬ ‭numbers‬ ‭are‬ ‭respectively‬
+‭61%‬ ‭and‬ ‭35%‬ ‭less‬ ‭than‬ ‭a‬ ‭third‬ ‭number.‬
+‭The‬ ‭first‬ ‭number‬ ‭is‬ ‭what‬ ‭percentage‬ ‭of‬
+‭the second number ?‬
+‭SSC CHSL 10/07/2024 (4th Shift)‬
+‭(a) 48%    (b) 24%    (c) 60%    (d) 30%‬
+‭Q.163.‬ ‭In‬ ‭an‬ ‭election‬ ‭between‬ ‭two‬
+‭candidates,‬‭15%‬‭of‬‭the‬‭votes‬‭were‬‭invalid‬
+‭and‬ ‭one‬ ‭candidate‬ ‭got‬ ‭52%‬ ‭of‬ ‭the‬ ‭total‬
+‭valid‬ ‭votes.‬ ‭If‬ ‭the‬ ‭total‬ ‭number‬‭of‬‭votes‬
+‭was‬‭8000,‬‭what‬‭was‬‭the‬‭number‬‭of‬‭valid‬
+‭votes that the other candidate got ?‬
+‭SSC CHSL 10/07/2024 (4th Shift)‬
+‭(a) 3264   (b) 6800   (c) 3840   (d) 3536‬
+‭Q.164.‬ ‭In‬ ‭an‬ ‭election‬ ‭between‬ ‭two‬
+‭candidates,‬ ‭Ananth‬ ‭and‬ ‭Aravind,‬ ‭Ananth‬
+‭got‬‭55%‬‭of‬‭the‬‭total‬‭valid‬‭votes,‬‭and‬‭20%‬
+‭of‬ ‭the‬ ‭votes‬ ‭were‬ ‭invalid.‬ ‭If‬ ‭the‬ ‭total‬
+‭number‬ ‭of‬ ‭votes‬ ‭was‬ ‭30,000,‬ ‭find‬ ‭the‬
+‭number of valid votes that Aravind got.‬
+‭SSC CHSL 10/07/2024 (4th Shift)‬
+‭(a) 13200  (b) 24000  (c) 1080  (d) 10800‬
+‭Q.165.‬ ‭The‬ ‭population‬ ‭of‬ ‭a‬ ‭village‬ ‭was‬
+‭4,00,000.‬ ‭It‬ ‭increased‬‭by‬‭20%‬‭in‬‭the‬‭first‬
+‭year‬‭and‬‭increased‬‭by‬‭30%‬‭in‬‭the‬‭second‬
+‭year.‬ ‭Its‬ ‭population‬ ‭after‬ ‭two‬ ‭years‬ ‭is‬
+‭_______.‬
+‭SSC CHSL 11/07/2024 (1st Shift)‬
+‭(a) 6,25,000‬
+‭(b) 5,40,000‬
+‭(c) 5,20,000‬
+‭(d) 6,24,000‬
+‭Q.166.‬ ‭In‬ ‭an‬ ‭election‬ ‭between‬ ‭two‬
+‭candidates,‬‭30%‬‭voters‬‭did‬‭not‬‭cast‬‭their‬
+‭votes‬ ‭and‬ ‭200‬ ‭votes‬ ‭were‬ ‭declared‬
+‭invalid.‬ ‭The‬ ‭winner‬ ‭got‬ ‭65%‬ ‭of‬ ‭the‬‭valid‬
+‭votes.‬‭If‬‭he‬‭won‬‭by‬‭1200‬‭votes,‬‭then‬‭find‬
+‭the total votes.‬
+‭SSC CHSL 11/07/2024 (2nd Shift)‬
+‭(a) 6000   (b) 9000   (c) 8000   (d) 7000‬
+‭Q.167.‬‭In‬‭an‬‭election,‬‭there‬‭were‬‭only‬‭two‬
+‭candidates.‬
+‭One‬
+‭of‬ ‭the‬ ‭candidates‬
+‭secured‬‭44%‬‭of‬‭the‬‭votes‬‭and‬‭is‬‭defeated‬
+‭by‬ ‭the‬ ‭other‬ ‭candidate‬‭by‬‭1440‬‭votes.‬‭If‬
+‭there‬‭were‬‭no‬‭invalid‬‭votes.‬‭then‬‭the‬‭total‬
+‭number of votes polled is:‬
+‭SSC CHSL 11/07/2024 (2nd Shift)‬
+‭(a) 13000 (b) 12000 (c) 14000 (d) 15000‬
+‭Q.168.‬ ‭The‬ ‭price‬ ‭of‬‭a‬‭product‬‭increases‬
+‭by‬ ‭10%‬ ‭in‬ ‭the‬ ‭first‬ ‭year‬ ‭and‬ ‭20%‬ ‭in‬ ‭the‬
+‭second‬
+‭year.‬
+‭What‬
+‭is‬
+‭the‬
+‭overall‬
+‭percentage‬ ‭increase‬ ‭in‬ ‭the‬ ‭price‬ ‭of‬ ‭the‬
+‭product over the two years?‬
+‭SSC CHSL 11/07/2024 (3rd Shift)‬
+‭(a) 28%   (b) 32%   (c) 36%   (d) 30%‬
+‭Q.169.‬ ‭Shantanu’s‬ ‭income‬ ‭decreased‬
+‭from‬ ‭₹42,800‬ ‭to‬ ‭₹37,236.‬ ‭Find‬ ‭the‬
+‭percentage decrease in his income.‬
+‭SSC CHSL 11/07/2024 (3rd Shift)‬
+‭(a) 13%     (b) 11%     (c) 14%     (d) 12%‬
+‭Q.170.‬‭An‬‭election‬‭was‬‭held‬‭between‬‭two‬
+‭candidates.‬
+‭The‬
+‭winning‬
+‭candidate‬
+‭scored‬‭54%‬‭of‬‭the‬‭valid‬‭votes‬‭and‬‭won‬‭by‬
+‭88‬ ‭votes.‬ ‭If‬ ‭58‬ ‭votes‬ ‭were‬ ‭declared‬
+‭invalid,‬ ‭then‬ ‭find‬ ‭the‬ ‭total‬ ‭number‬ ‭of‬
+‭votes polled in the election.‬
+‭SSC CHSL 11/07/2024 (4th Shift)‬
+‭(a) 2000   (b) 1156   (c) 1158   (d) 1850‬
+‭Q.171.‬ ‭If‬ ‭the‬ ‭price‬ ‭of‬ ‭a‬ ‭commodity‬ ‭is‬
+‭increased‬ ‭by‬ ‭36%,‬ ‭by‬ ‭what‬ ‭percentage‬
+‭(rounded‬ ‭off‬ ‭to‬ ‭1‬ ‭decimal‬‭place)‬‭should‬
+‭its‬ ‭consumption‬ ‭be‬ ‭decreased‬ ‭so‬ ‭that‬
+‭the‬ ‭expenditure‬ ‭of‬ ‭the‬ ‭commodity‬‭stays‬
+‭the same ?‬
+‭SSC CHSL 11/07/2024 (4th Shift)‬
+‭(a) 29.5%   (b) 26.5%   (c) 36%   (d) 32%‬
+‭www.ssccglpinnacle.com                                                 Download Pinnacle Exam Preparation App‬
+
+‭Pinnacle‬
+‭Day: 65th - 69th‬
+‭Percentage‬
+‭SSC CPO 2024 Tier -  1‬
+‭Q.172.‬‭57%‬‭of‬‭Ranita's‬‭weekly‬‭income‬‭is‬
+‭equal‬ ‭to‬ ‭76%‬ ‭of‬ ‭Bhaskar's‬ ‭weekly‬
+‭income.‬ ‭If‬ ‭Ranita's‬ ‭weekly‬ ‭income‬ ‭was‬
+‭reduced‬‭by‬‭₹400,‬‭while‬‭Bhaskar's‬‭weekly‬
+‭income‬ ‭did‬ ‭not‬ ‭change,‬ ‭the‬ ‭ratio‬ ‭of‬ ‭the‬
+‭weekly‬ ‭incomes‬ ‭of‬ ‭Ranita‬ ‭and‬ ‭Bhaskar,‬
+‭respectively,‬‭would‬‭have‬‭been‬‭6‬‭:‬‭5.‬‭What‬
+‭is Bhaskar's weekly income (in ₹) ?‬
+‭SSC CPO 27/06/2024 (1st Shift)‬
+‭(a) 2800    (b) 4000   (c) 3000    (d) 3200‬
+‭Q.173.‬ ‭In‬ ‭an‬ ‭election‬ ‭between‬ ‭two‬
+‭candidates,‬‭one‬‭got‬‭60%‬‭of‬‭the‬‭total‬‭valid‬
+‭votes.‬ ‭25%‬ ‭of‬ ‭the‬ ‭votes‬ ‭were‬ ‭invalid.‬ ‭If‬
+‭the‬ ‭total‬ ‭number‬ ‭of‬ ‭votes‬ ‭was‬ ‭15,000,‬
+‭then‬ ‭find‬ ‭the‬ ‭number‬ ‭of‬ ‭valid‬‭votes‬‭that‬
+‭the other candidate got.‬
+‭SSC CPO 27/06/2024 (1st Shift)‬
+‭(a) 5,550   (b) 4,500   (c) 6,750   (d) 5,000‬
+‭Q.174.‬‭On‬‭account‬‭of‬‭corona‬‭virus,‬‭5%‬‭of‬
+‭the‬ ‭population‬ ‭of‬ ‭a‬ ‭village‬ ‭died.‬ ‭Out‬ ‭of‬
+‭the‬‭remaining‬‭population,‬‭20%‬‭fled‬‭due‬‭to‬
+‭panic.‬ ‭If‬ ‭the‬ ‭present‬ ‭population‬‭is‬‭4655,‬
+‭then‬ ‭what‬ ‭was‬ ‭the‬ ‭population‬ ‭of‬ ‭the‬
+‭village before the corona attack ?‬
+‭SSC CPO 27/06/2024 (2nd Shift)‬
+‭(a) 5995   (b) 6125    (c) 6000    (d) 5985‬
+‭Q.175.‬ ‭In‬ ‭a‬ ‭class,‬ ‭the‬ ‭numbers‬ ‭of‬ ‭boys‬
+‭and‬‭girls‬‭are‬‭in‬‭the‬‭ratio‬‭of‬‭3‬‭:‬‭5.‬‭What‬‭is‬
+‭the percentage of boys in the class?‬
+‭SSC CPO 27/06/2024 (2nd Shift)‬
+‭(a) 37.5 %  (b) 60 %  (c) 42.5 %  (d) 12.5 %‬
+‭Q.176.‬ ‭In‬ ‭an‬ ‭election,‬ ‭the‬ ‭winner‬ ‭was‬
+‭supported‬‭by‬‭46%‬‭of‬‭all‬‭the‬‭voters‬‭in‬‭the‬
+‭list,‬ ‭and‬ ‭he‬ ‭got‬‭410‬‭votes‬‭more‬‭than‬‭his‬
+‭only‬ ‭rival.‬ ‭10%‬ ‭of‬ ‭the‬ ‭voters‬ ‭on‬ ‭the‬
+‭voters’‬ ‭list‬ ‭did‬ ‭not‬ ‭cast‬ ‭their‬ ‭votes,‬ ‭and‬
+‭60‬ ‭voters‬ ‭cast‬ ‭their‬ ‭ballot‬‭papers‬‭blank.‬
+‭How many voters were on the list?‬
+‭SSC CPO 27/06/2024 (2nd Shift)‬
+‭(a) 17445 (b) 16550 (c) 17500 (d) 15750‬
+‭Q.177.‬
+‭The‬
+‭strength‬
+‭of‬
+‭a‬
+‭school‬
+‭increases‬ ‭and‬ ‭decreases‬‭every‬‭alternate‬
+‭year‬‭by‬‭15%.‬‭If‬‭it‬‭started‬‭with‬‭an‬‭increase‬
+‭in‬ ‭2012,‬ ‭then‬ ‭the‬ ‭strength‬ ‭of‬‭the‬‭school‬
+‭in‬‭the‬‭beginning‬‭of‬‭2015,‬‭as‬‭compared‬‭to‬
+‭that in 2012, had (correct to two decimal‬
+‭places):‬
+‭SSC CPO 27/06/2024 (2nd Shift)‬
+‭(a) Decreased by 12.41%‬
+‭(b) Increased by 12.41 %‬
+‭(c) Decreased by 13.85 %‬
+‭(d) Increased by 13.85 %‬
+‭Q.178.‬
+‭The‬
+‭population‬
+‭of‬ ‭a‬ ‭town‬
+‭increases‬ ‭8%‬ ‭annually.‬ ‭If‬ ‭its‬ ‭present‬
+‭population‬ ‭is‬ ‭1,42,560,‬ ‭what‬ ‭was‬ ‭the‬
+‭population one year ago?‬
+‭SSC CPO 27/06/2024 (3rd Shift)‬
+‭(a) 1,34,000‬
+‭(b) 1,33,000‬
+‭(c) 1,32,000‬
+‭(d) 1,31,000‬
+‭Q.179.‬ ‭In‬ ‭an‬ ‭election‬ ‭between‬ ‭two‬
+‭candidates,‬ ‭10%‬ ‭of‬ ‭the‬ ‭voters‬ ‭did‬ ‭not‬
+‭cast‬‭their‬‭votes‬‭and‬‭75‬‭votes‬‭were‬‭found‬
+‭invalid.‬ ‭The‬ ‭winner‬ ‭got‬ ‭50%‬ ‭of‬ ‭the‬ ‭total‬
+‭votes‬ ‭expected‬ ‭and‬ ‭won‬ ‭by‬ ‭170‬ ‭votes.‬
+‭How‬ ‭many‬ ‭voters‬ ‭were‬ ‭enrolled‬ ‭in‬ ‭the‬
+‭voters' list ?‬
+‭SSC CPO 27/06/2024 (3rd Shift)‬
+‭(a) 800     (b) 855     (c) 850     (d) 950‬
+‭Q.180.‬ ‭Bhavani‬ ‭spends‬ ‭68%‬ ‭of‬ ‭her‬
+‭income.‬ ‭Her‬ ‭income‬ ‭increases‬ ‭by‬ ‭15%‬
+‭and‬ ‭her‬ ‭expenditure‬ ‭increases‬ ‭by‬ ‭10%.‬
+‭How‬ ‭much‬ ‭is‬ ‭the‬ ‭increase‬ ‭in‬ ‭the‬
+‭percentage‬‭of‬‭saving?‬‭(Use‬‭decimal‬‭up‬‭to‬
+‭2 digits)‬
+‭SSC CPO 28/06/2024 (1st Shift)‬
+‭(a) 20.57%‬
+‭(b) 25.62%‬
+‭(c) 28.42%‬
+‭(d) 24.80%‬
+‭Q.181.‬ ‭A‬ ‭number‬ ‭is‬ ‭first‬ ‭decreased‬ ‭by‬
+‭10%,‬ ‭then‬ ‭increased‬ ‭by‬ ‭30%‬ ‭and‬ ‭then‬
+‭further‬ ‭it‬ ‭is‬ ‭decreased‬ ‭by‬ ‭20%.‬ ‭What‬ ‭is‬
+‭the‬ ‭net‬ ‭decrease‬ ‭percentage‬ ‭in‬ ‭the‬
+‭number ?‬
+‭SSC CPO 28/06/2024 (1st Shift)‬
+‭(a) 4‬
+‭%  (b) 6‬
+‭%  (c) 5‬
+‭%  (d) 3‬
+‭%‬
+‭1‬
+‭5‬
+‭2‬
+‭5‬
+‭3‬
+‭5‬
+‭4‬
+‭5‬
+‭Q.182.‬‭Ramnarayan's‬‭salary‬‭was‬‭reduced‬
+‭by‬ ‭3‬
+‭%‬ ‭and‬ ‭then,‬ ‭the‬ ‭reduced‬ ‭salary‬
+‭1‬
+‭8‬
+‭was‬
+‭increased‬ ‭by‬ ‭7‬
+‭%.‬ ‭By‬ ‭what‬
+‭2‬
+‭5‬
+‭percentage‬ ‭(rounded‬ ‭off‬ ‭to‬ ‭two‬‭decimal‬
+‭places)‬ ‭is‬ ‭his‬ ‭new‬ ‭salary‬ ‭more/less‬ ‭as‬
+‭compared to his original salary?‬
+‭SSC CPO 28/06/2024 (2nd Shift)‬
+‭(a) 3.03% less‬
+‭(b) 4.04% more‬
+‭(c) 4.04% less‬
+‭(d) 3.03% more‬
+‭Q.183.‬ ‭Shiya‬ ‭invests‬ ‭₹1,53,000,‬‭which‬‭is‬
+‭30%‬ ‭of‬ ‭her‬ ‭annual‬ ‭income,‬ ‭in‬ ‭mutual‬
+‭funds.‬ ‭What‬ ‭is‬ ‭her‬ ‭monthly‬ ‭income‬ ‭(in‬
+‭₹)?‬
+‭SSC CPO 28/06/2024 (2nd Shift)‬
+‭(a) 52,300‬
+‭(b) 45,800‬
+‭(c) 42,500‬
+‭(d) 55,600‬
+‭Q.184.‬ ‭If‬ ‭the‬ ‭radius‬ ‭of‬ ‭a‬ ‭sphere‬ ‭is‬
+‭increased‬
+‭by‬
+‭125%,‬ ‭then‬ ‭by‬ ‭what‬
+‭percentage‬‭will‬‭its‬‭surface‬‭area‬‭increase‬
+‭(correct to two decimal places)?‬
+‭SSC CPO 28/06/2024 (2nd Shift)‬
+‭(a) 506.25%‬
+‭(b) 509.54%‬
+‭(c) 409.76%‬
+‭(d) 406.25%‬
+‭Q.185.‬‭The‬‭population‬‭of‬‭a‬‭city‬‭increases‬
+‭every‬ ‭year‬ ‭at‬ ‭the‬ ‭rate‬ ‭of‬ ‭5%.‬ ‭If‬ ‭the‬
+‭population‬‭of‬‭the‬‭city‬‭is‬‭16000,‬‭what‬‭will‬
+‭be the population after 2 years?‬
+‭SSC CPO 28/06/2024 (2nd Shift)‬
+‭(a) 17640 (b) 17000 (c) 17700 (d) 17600‬
+‭Q.186.‬ ‭If‬ ‭the‬ ‭number‬ ‭of‬ ‭school‬ ‭going‬
+‭children‬ ‭in‬ ‭a‬ ‭town‬ ‭is‬ ‭64000‬ ‭and‬ ‭it‬ ‭is‬
+‭increasing‬ ‭annually‬ ‭by‬ ‭10%,‬ ‭then‬ ‭what‬
+‭will‬ ‭be‬ ‭the‬ ‭number‬ ‭of‬ ‭school‬ ‭going‬
+‭children‬ ‭in‬ ‭the‬ ‭town‬ ‭at‬ ‭the‬ ‭end‬ ‭of‬ ‭3‬
+‭years?‬
+‭SSC CPO 28/06/2024 (3rd Shift)‬
+‭(a) 85100‬
+‭(b) 85184‬
+‭(c) 85000‬
+‭(d) 80000‬
+‭Q.187.‬ ‭The‬ ‭cost‬ ‭of‬‭Compressed‬‭Natural‬
+‭Gas‬ ‭(CNG)‬ ‭per‬‭litre‬‭is‬‭increased‬‭by‬‭65%.‬
+‭By‬‭what‬‭percentage‬‭must‬‭Manish‬‭reduce‬
+‭his‬ ‭consumption‬ ‭of‬ ‭CNG‬ ‭so‬ ‭as‬ ‭not‬ ‭to‬
+‭increase‬ ‭his‬ ‭expenditure?‬ ‭(correct‬ ‭up‬ ‭to‬
+‭two decimal places)‬
+‭SSC CPO 28/06/2024 (3rd Shift)‬
+‭(a) 39.39%‬
+‭(b) 30.13%‬
+‭(c) 45.13%‬
+‭(d) 25.39%‬
+‭Q.188.‬ ‭Two‬ ‭successive‬ ‭price‬ ‭increases‬
+‭of‬ ‭25%‬ ‭and‬ ‭25%‬ ‭of‬ ‭an‬ ‭article‬ ‭are‬
+‭equivalent to a single price increase of:‬
+‭SSC CPO 29/06/2024 (1st Shift)‬
+‭(a) 52.25%‬
+‭(b) 50.25%‬
+‭(c) 56.25%‬
+‭(d) 48.50%‬
+‭Q.189.‬ ‭A‬ ‭is‬ ‭25%‬ ‭more‬ ‭than‬ ‭B‬ ‭and‬ ‭B‬ ‭is‬
+‭30%‬‭less‬‭than‬‭C.‬‭If‬‭C‬‭is‬‭20%‬‭more‬‭than‬‭D,‬
+‭then‬ ‭by‬ ‭what‬‭percentage‬‭is‬‭A‬‭more‬‭than‬
+‭D ?‬
+‭SSC CPO 29/06/2024 (1st Shift)‬
+‭(a) 3%‬
+‭(b) 6%‬
+‭(c) 5%‬
+‭(d) 2%‬
+‭Q.190.‬
+‭The‬
+‭population‬
+‭of‬ ‭a‬ ‭town‬
+‭increases‬‭annually‬‭by‬‭20%.‬‭If‬‭the‬‭present‬
+‭population‬ ‭is‬ ‭80lakh,‬ ‭then‬ ‭what‬ ‭is‬ ‭the‬
+‭difference‬ ‭between‬ ‭the‬ ‭population‬ ‭three‬
+‭years ago and 2 years ago ?‬
+‭SSC CPO 29/06/2024 (2nd Shift)‬
+‭(a) 75592.6‬
+‭(b) 85592.6‬
+‭(c) 65592.6‬
+‭(d) 925925.93‬
+‭Q.191.‬‭The‬‭breadth‬‭of‬‭a‬‭rectangular‬‭lawn‬
+‭is‬ ‭decreased‬ ‭by‬ ‭8%‬ ‭and‬ ‭its‬ ‭length‬ ‭is‬
+‭increased‬ ‭by‬ ‭15%.‬ ‭Find‬ ‭the‬ ‭percentage‬
+‭change in the lawn area.‬
+‭SSC CPO 29/06/2024 (2nd Shift)‬
+‭(a) 8.5% increase    (b) 8.5% decrease‬
+‭(c) 5.8%decrease    (d) 5.8% increase‬
+‭Q.192‬‭.‬ ‭The‬ ‭total‬ ‭percentage‬ ‭change‬ ‭in‬
+‭the‬ ‭volume‬ ‭of‬ ‭a‬ ‭cuboid‬ ‭if‬‭its‬‭length‬‭and‬
+‭breadth‬ ‭are‬ ‭decreased‬ ‭by‬‭15%‬‭and‬‭25%,‬
+‭respectively,‬‭while‬‭its‬‭height‬‭is‬‭increased‬
+‭by 60% is:‬
+‭SSC CPO 29/06/2024 (2nd Shift)‬
+‭(a) 5% decrease     (b) 2% decrease‬
+‭(c) 5% increase      (d) 2% increase‬
+‭Q.193.‬ ‭If‬ ‭the‬ ‭radius‬ ‭of‬ ‭a‬ ‭sphere‬ ‭is‬
+‭increased‬
+‭by‬
+‭20%,‬
+‭then‬
+‭find‬
+‭the‬
+‭percentage increase in its volume.‬
+‭SSC CPO 29/06/2024 (3rd Shift)‬
+‭(a) 70.6%  (b) 75.5%  (c) 72.8%  (d) 68.5%‬
+‭Q.194.‬‭The population of a town is‬
+‭www.ssccglpinnacle.com                                                 Download Pinnacle Exam Preparation App‬
+
+‭Pinnacle‬
+‭Day: 65th - 69th‬
+‭Percentage‬
+‭15000.‬ ‭If‬ ‭the‬ ‭population‬ ‭increases‬ ‭by‬
+‭15%‬ ‭in‬ ‭the‬ ‭first‬ ‭year,‬ ‭by‬ ‭25%‬ ‭in‬ ‭the‬
+‭second‬ ‭year‬ ‭and‬ ‭due‬ ‭to‬ ‭pollution‬ ‭it‬
+‭decreases‬ ‭by‬ ‭6%‬ ‭in‬ ‭the‬ ‭third‬ ‭year,‬ ‭what‬
+‭will‬ ‭be‬ ‭its‬ ‭population‬ ‭after‬ ‭3‬ ‭years?‬
+‭(Round off number in answer)‬
+‭SSC CPO 29/06/2024 (3rd Shift)‬
+‭(a) 20269 (b) 15269 (c) 25269 (d) 28269‬
+‭Q.195.‬ ‭If‬ ‭the‬ ‭length‬ ‭and‬ ‭breadth‬ ‭of‬ ‭a‬
+‭cuboid‬ ‭are‬ ‭increased‬ ‭by‬ ‭6%‬ ‭and‬ ‭8%,‬
+‭respectively,‬
+‭then‬
+‭the‬
+‭percentage‬
+‭increase‬ ‭in‬ ‭its‬ ‭volume‬ ‭(correct‬ ‭to‬ ‭two‬
+‭decimal places) is:‬
+‭SSC CPO 29/06/2024 (3rd Shift)‬
+‭(a) 13.96%‬
+‭(b) 12.96%‬
+‭(c) 14.48%‬
+‭(d) 11.48%‬
+‭Q.196.‬ ‭In‬ ‭a‬ ‭sweet,‬ ‭one-third‬ ‭is‬ ‭sugar.‬ ‭If‬
+‭the‬ ‭price‬ ‭of‬ ‭sugar‬ ‭now‬ ‭is‬
+‭of‬ ‭the‬
+‭7‬
+‭6‬
+‭previous‬ ‭price,‬ ‭what‬ ‭is‬ ‭the‬ ‭effective‬
+‭percentage‬ ‭increase‬ ‭in‬ ‭the‬ ‭cost‬ ‭of‬ ‭the‬
+‭sweet?‬
+‭SSC CPO 29/06/2024 (3rd Shift)‬
+‭(a)‬
+‭%‬
+‭(b)‬
+‭%‬
+‭100‬
+‭9‬
+‭200‬
+‭9‬
+‭(c)‬
+‭%‬
+‭(d)‬
+‭%‬
+‭100‬
+‭18‬
+‭100‬
+‭3‬
+‭Q.197.‬ ‭Ramesh‬ ‭spent‬‭₹30,000‬‭on‬‭Diwali‬
+‭shopping‬ ‭and‬ ‭₹45,000‬ ‭on‬ ‭buying‬ ‭a‬ ‭TV‬
+‭set,‬ ‭and‬ ‭the‬ ‭remaining‬ ‭40%‬ ‭of‬ ‭the‬ ‭total‬
+‭amount‬ ‭he‬ ‭had‬ ‭as‬ ‭cash‬ ‭with‬ ‭him.‬‭What‬
+‭was the total amount (in ₹)?‬
+‭SSC CPO 29/06/2024 (3rd Shift)‬
+‭(a) 1,22,000‬
+‭(b) 1,25,000‬
+‭(c) 1,35,000‬
+‭(d) 1,10,000‬
+‭SSC Selection Post (Phase - XII)‬
+‭Q.198.‬‭In a college election between two‬
+‭rivals,‬ ‭a‬ ‭candidate‬ ‭got‬ ‭30%‬ ‭of‬ ‭the‬ ‭total‬
+‭votes‬‭polled.‬‭He‬‭was‬‭defeated‬‭by‬‭his‬‭rival‬
+‭by‬ ‭200‬ ‭votes.‬‭The‬‭total‬‭number‬‭of‬‭votes‬
+‭polled was:‬
+‭Matriculation Level 20/06/2024 (Shift - 1)‬
+‭(a) 500     (b) 300     (c) 400     (d) 600‬
+‭Q.199.‬ ‭In‬ ‭a‬ ‭Panchayat‬ ‭election,‬ ‭three‬
+‭contestants‬‭-‬‭A,‬‭B,‬‭and‬‭C-‬‭are‬‭contesting.‬
+‭75%‬‭of‬‭the‬‭total‬‭population‬‭of‬‭8000‬‭cast‬
+‭their‬ ‭votes.‬ ‭There‬ ‭were‬ ‭no‬ ‭invalid‬ ‭or‬
+‭NOTA‬ ‭votes‬ ‭in‬ ‭the‬ ‭election.‬ ‭A‬ ‭got‬ ‭the‬
+‭least‬ ‭votes,‬ ‭with‬ ‭only‬ ‭300‬ ‭votes.‬ ‭B‬ ‭got‬
+‭66%‬ ‭of‬ ‭the‬ ‭total‬ ‭votes‬ ‭and‬ ‭won‬ ‭the‬
+‭election. How many votes did B get?‬
+‭Matriculation Level 20/06/2024 (Shift - 1)‬
+‭(a) 5280   (b) 3660    (c) 4060    (d) 3960‬
+‭Q.200.‬ ‭In‬ ‭an‬ ‭election‬ ‭between‬ ‭two‬
+‭candidates‬‭,‬‭75%‬‭of‬‭the‬‭voters‬‭cast‬‭their‬
+‭votes,‬‭out‬‭of‬‭which‬‭4%‬‭of‬‭the‬‭votes‬‭were‬
+‭declared‬ ‭invalid.‬ ‭A‬ ‭candidate‬ ‭got‬ ‭9504‬
+‭votes,‬‭which‬‭were‬‭80%‬‭of‬‭the‬‭valid‬‭votes.‬
+‭Find‬‭the‬‭total‬‭number‬‭of‬‭votes‬‭enrolled‬‭in‬
+‭that election.‬
+‭Matriculation Level 20/06/2024 (Shift - 4)‬
+‭(a) 12,672‬
+‭(b) 13,200‬
+‭(c) 16,500‬
+‭(d) 12,375‬
+‭Q.201.‬ ‭The‬ ‭price‬ ‭of‬ ‭a‬ ‭bike‬ ‭is‬ ‭first‬
+‭increased‬ ‭by‬ ‭21%‬ ‭and‬ ‭later‬ ‭on,‬ ‭it‬ ‭is‬
+‭decreased‬ ‭by‬ ‭34%‬ ‭due‬ ‭to‬ ‭reduction‬ ‭in‬
+‭sales.‬‭Find‬‭the‬‭net‬‭percentage‬‭change‬‭in‬
+‭the final price of the bike.‬
+‭Matriculation Level 21/06/2024 (Shift - 1)‬
+‭(a) Decrease of 13.25%‬
+‭(b) Increase of 20.14%‬
+‭(c) Decrease of 20.14%‬
+‭(d) Increase of 13.25%‬
+‭Q.202.‬ ‭In‬ ‭an‬ ‭election‬ ‭between‬ ‭two‬
+‭candidates,‬ ‭10%‬ ‭of‬ ‭the‬ ‭voters‬ ‭did‬ ‭not‬
+‭cast‬‭their‬‭vote‬‭and‬‭5%‬‭of‬‭the‬‭votes‬‭polled‬
+‭were‬ ‭found‬ ‭invalid.‬ ‭The‬ ‭successful‬
+‭candidate‬‭got‬‭55%‬‭of‬‭the‬‭valid‬‭votes‬‭and‬
+‭won‬ ‭by‬ ‭a‬ ‭majority‬ ‭of‬ ‭1,710‬ ‭votes.‬ ‭The‬
+‭number‬ ‭of‬ ‭voters‬ ‭enrolled‬ ‭on‬ ‭the‬‭voters‬
+‭list was:‬
+‭Matriculation Level 21/06/2024 (Shift - 1)‬
+‭(a) 21,000‬
+‭(b) 19,000‬
+‭(c) 18,000‬
+‭(d) 20,000‬
+‭Q.203.‬ ‭The‬ ‭monthly‬ ‭salaries‬ ‭of‬ ‭A‬‭and‬‭B‬
+‭together‬ ‭amount‬ ‭to‬ ‭₹45,000.‬ ‭A‬ ‭spends‬
+‭75%‬ ‭of‬ ‭his‬ ‭salary‬ ‭and‬ ‭B‬ ‭spends‬ ‭80%‬‭of‬
+‭his salary. If now their savings are the‬
+‭same, then the salary of B (in ₹) is:‬
+‭Matriculation Level 21/06/2024 (Shift - 1)‬
+‭(a) 25,000‬
+‭(b) 20,000‬
+‭(c) 15,000‬
+‭(d) 30,000‬
+‭Q.204.‬
+‭Antara's‬ ‭monthly‬ ‭income‬ ‭is‬
+‭₹96,000,‬ ‭while‬ ‭Barnali's‬ ‭monthly‬ ‭income‬
+‭is‬ ‭₹1,10,000.‬ ‭If‬‭y%‬‭of‬‭Barnali's‬‭income‬‭is‬
+‭equal to 55% of Antara's monthly income,‬
+‭find the value of y.‬
+‭Matriculation Level 21/06/2024 (Shift - 4)‬
+‭(a) 48‬
+‭(b) 44‬
+‭(c) 52‬
+‭(d) 45‬
+‭Q.205.‬ ‭In‬ ‭a‬ ‭constituency,‬ ‭the‬ ‭total‬
+‭number‬ ‭of‬ ‭people‬ ‭on‬ ‭the‬ ‭electoral‬ ‭roll‬
+‭was‬‭2,75,000.‬‭Out‬‭of‬‭them,‬‭90%‬‭cast‬‭their‬
+‭votes‬‭in‬‭an‬‭election‬‭and‬‭15%‬‭of‬‭the‬‭votes‬
+‭cast‬‭were‬‭declared‬‭invalid.‬‭What‬‭was‬‭the‬
+‭number of valid votes cast ?‬
+‭Matriculation Level 24/06/2024 (Shift - 4)‬
+‭(a) 2,10,275‬
+‭(b) 2,10,375‬
+‭(c) 2,10,325‬
+‭(d) 2,10,425‬
+‭Q.206.‬ ‭In‬ ‭an‬ ‭election‬ ‭between‬ ‭two‬
+‭candidates,‬ ‭75%‬ ‭of‬ ‭the‬ ‭voters‬‭cast‬‭their‬
+‭votes,‬‭out‬‭of‬‭which‬‭2%‬‭of‬‭the‬‭votes‬‭were‬
+‭declared‬ ‭invalid.‬ ‭A‬ ‭candidate‬ ‭got‬ ‭9,261‬
+‭votes,‬ ‭which‬ ‭were‬ ‭75%‬ ‭of‬‭the‬‭total‬‭valid‬
+‭votes. Find the total number of votes.‬
+‭Matriculation Level 24/06/2024 (Shift - 4)‬
+‭(a) 17,000‬
+‭(b) 17,200‬
+‭(c) 17,400‬
+‭(d) 16,800‬
+‭Q.207.‬‭If‬‭the‬‭GST‬‭on‬‭a‬‭certain‬‭article‬‭was‬
+‭Rs.600‬ ‭two‬ ‭years‬ ‭back‬ ‭and‬ ‭it‬ ‭increased‬
+‭to‬ ‭Rs.750‬ ‭this‬ ‭year,‬ ‭find‬ ‭the‬ ‭percentage‬
+‭increase in the GST on that article.‬
+‭Matriculation Level 25/06/2024 (Shift - 1)‬
+‭(a) 30%     (b) 15%     (c) 25%     (d) 20%‬
+‭Q.208.‬ ‭A‬‭city's‬‭population‬‭grows‬‭by‬‭10%‬
+‭in‬ ‭the‬ ‭first‬ ‭year,‬ ‭20%‬ ‭in‬ ‭the‬‭second‬‭year‬
+‭and‬ ‭10%‬ ‭in‬ ‭the‬ ‭third‬ ‭year.‬ ‭If‬ ‭the‬
+‭population‬‭after‬‭3‬‭years‬‭is‬‭8,71,200,‬‭then‬
+‭what‬‭was‬‭the‬‭original‬‭population‬‭3‬‭years‬
+‭ago?‬
+‭Matriculation Level 25/06/2024 (Shift - 1)‬
+‭(a) 7,00,000‬
+‭(b) 7,92,000‬
+‭(c) 6,60,000‬
+‭(d) 6,00,000‬
+‭Q.209.‬‭In‬‭an‬‭election,‬‭the‬‭total‬‭number‬‭of‬
+‭valid‬‭votes‬‭cast‬‭was‬‭3,75,000.‬‭Candidate‬
+‭A‬‭secured‬‭48%‬‭of‬‭the‬‭valid‬‭votes,‬‭with‬‭the‬
+‭rest‬ ‭of‬ ‭the‬ ‭valid‬ ‭votes‬ ‭going‬ ‭to‬ ‭the‬
+‭winner,‬ ‭Candidate‬ ‭B.‬ ‭By‬ ‭how‬‭many‬‭valid‬
+‭votes‬
+‭did‬
+‭Candidate‬
+‭B‬
+‭win‬
+‭over‬
+‭Candidate A ?‬
+‭Matriculation Level 26/06/2024 (Shift - 1)‬
+‭(a) 14,750‬
+‭(b) 15,000‬
+‭(c) 13,500‬
+‭(d) 15,250‬
+‭Q.210.‬ ‭Shweta‬ ‭spends‬ ‭21%‬ ‭of‬ ‭her‬
+‭monthly‬ ‭salary‬ ‭on‬ ‭house‬ ‭rent,‬ ‭14%‬ ‭on‬
+‭education,‬ ‭and‬ ‭13%‬ ‭on‬ ‭entertainment,‬
+‭and‬ ‭still‬ ‭saves‬ ‭₹5,408.‬ ‭What‬ ‭is‬ ‭her‬
+‭monthly salary (₹ in) ?‬
+‭Matriculation Level 26/06/2024 (Shift - 1)‬
+‭(a) 9,150‬
+‭(b) 12,400‬
+‭(c) 10,400‬
+‭(d) 14,000‬
+‭Q.211.‬‭In‬‭an‬‭examination,‬‭there‬‭were‬‭two‬
+‭papers,‬‭A‬‭and‬‭B,‬‭and‬‭the‬‭maximum‬‭mark‬
+‭in‬ ‭each‬ ‭of‬ ‭the‬ ‭two‬ ‭papers‬ ‭was‬ ‭10.‬
+‭However,‬‭the‬‭weights‬‭assigned‬‭to‬‭papers‬
+‭A‬ ‭and‬ ‭B‬ ‭were‬ ‭in‬ ‭the‬ ‭ratio‬ ‭2:‬ ‭1,‬
+‭respectively.‬‭Jonathan‬‭scored‬‭8‬‭out‬‭of‬‭10‬
+‭in‬ ‭Paper‬ ‭A‬ ‭and‬ ‭an‬ ‭overall‬ ‭70%‬ ‭in‬ ‭the‬
+‭examination.‬ ‭How‬ ‭much‬ ‭did‬ ‭he‬‭score‬‭in‬
+‭Paper B out of 10?‬
+‭Matriculation Level 26/06/2024 (Shift - 1)‬
+‭(a) 5.5‬
+‭(b) 6.5‬
+‭(c) 6‬
+‭(d) 5‬
+‭Q.212.‬ ‭In‬ ‭an‬ ‭election‬ ‭between‬ ‭two‬
+‭candidates,‬‭the‬‭first‬‭gets‬‭75%‬‭of‬‭the‬‭total‬
+‭valid‬ ‭votes.‬ ‭If‬ ‭20%‬ ‭votes‬ ‭are‬ ‭invalid‬
+‭among‬ ‭2,48,000‬ ‭votes,‬ ‭then‬ ‭how‬ ‭many‬
+‭votes‬‭were‬‭cast‬‭in‬‭the‬‭favour‬‭of‬‭the‬‭other‬
+‭candidate?‬
+‭Higher Secondary 20/06/2024 (Shift - 2)‬
+‭(a) 53800 (b) 46800 (c) 49600 (d) 56600‬
+‭Q.213.‬‭The‬‭price‬‭of‬‭an‬‭AC‬‭increases‬‭and‬
+‭decreases‬‭in‬‭every‬‭alternate‬‭year‬‭by‬‭1‬‭3‬
+‭5‬
+‭%.‬ ‭It‬ ‭started‬ ‭with‬ ‭an‬ ‭increase‬ ‭in‬ ‭2004.‬
+‭The‬‭price‬‭of‬‭the‬‭AC‬‭in‬‭2007,‬‭as‬‭compared‬
+‭to‬ ‭that‬‭in‬‭2004‬‭(correct‬‭to‬‭two‬‭places‬‭of‬
+‭decimals):‬
+‭Higher Secondary 21/06/2024 (Shift - 2)‬
+‭www.ssccglpinnacle.com                                                 Download Pinnacle Exam Preparation App‬
+
+‭Pinnacle‬
+‭Day: 65th - 69th‬
+‭Percentage‬
+‭(a) increased by 1.57%‬
+‭(b) decreased by 2.57%‬
+‭(c) decreased by 1.57%‬
+‭(d) increased by 2.57%‬
+‭Q.214.‬‭If‬‭70‬‭is‬‭subtracted‬‭from‬‭70%‬‭of‬‭a‬
+‭number,‬‭the‬‭remainder‬‭is‬‭70.‬‭What‬‭is‬‭the‬
+‭number?‬
+‭Higher Secondary 24/06/2024 (Shift - 2)‬
+‭(a) 200‬ ‭(b) 100‬ ‭(c) 400‬ ‭(d) 300‬
+‭Q.215.‬
+‭Pass‬
+‭percentage‬
+‭of‬
+‭an‬
+‭examination‬‭is‬‭35%.‬‭If‬‭a‬‭student‬‭who‬‭got‬
+‭210‬‭marks,‬‭failed‬‭by‬‭14‬‭marks,‬‭then‬‭what‬
+‭are‬
+‭the‬
+‭maximum‬
+‭marks‬
+‭of‬
+‭the‬
+‭examination?‬
+‭Higher Secondary 25/06/2024 (Shift - 2)‬
+‭(a) 640     (b) 600     (c) 620     (d) 660‬
+‭Q.216.‬ ‭If‬ ‭an‬‭electricity‬‭bill‬‭is‬‭paid‬‭before‬
+‭the‬‭due‬‭date,‬‭one‬‭gets‬‭a‬‭reduction‬‭of‬‭10%‬
+‭on‬ ‭the‬ ‭amount‬ ‭of‬ ‭the‬ ‭bill.‬‭By‬‭paying‬‭the‬
+‭bill‬ ‭before‬ ‭the‬ ‭due‬ ‭date,‬ ‭a‬ ‭person‬ ‭got‬ ‭a‬
+‭reduction‬ ‭of‬ ‭₹23.‬ ‭The‬ ‭amount‬ ‭of‬ ‭his‬
+‭electricity bill (in ₹) was :‬
+‭Higher Secondary 25/06/2024 (Shift - 2)‬
+‭(a) 380     (b) 250     (c) 520     (d) 230‬
+‭Q.217.‬ ‭A‬ ‭person‬ ‭spends‬ ‭60%‬ ‭of‬ ‭his‬
+‭income.‬ ‭His‬ ‭income‬ ‭increased‬ ‭by‬ ‭30%‬
+‭and‬‭he‬‭increased‬‭his‬‭expenditure‬‭by‬‭20%.‬
+‭His‬
+‭percent‬
+‭savings‬
+‭will‬
+‭then‬
+‭be‬
+‭increased by:‬
+‭Higher Secondary 25/06/2024 (Shift - 4)‬
+‭(a) 48%     (b) 45%      (c) 46%     (d) 42%‬
+‭Q.218.‬ ‭Ramagya‬ ‭spends‬ ‭22%‬ ‭of‬ ‭his‬
+‭salary‬‭on‬‭house‬‭rent‬‭and‬‭75%‬‭of‬‭the‬‭rest‬
+‭on‬ ‭household‬ ‭expenses.‬ ‭If‬ ‭he‬ ‭saves‬
+‭₹3,705, find his total income (in rupees).‬
+‭Higher Secondary 26/06/2024 (Shift - 2)‬
+‭(a) ₹19,000‬
+‭(b) ₹21,000‬
+‭(c) ₹17,000‬
+‭(d) ₹18,000‬
+‭Q.219.‬‭In‬‭an‬‭election,‬‭there‬‭were‬‭only‬‭two‬
+‭candidates.‬ ‭12%‬ ‭of‬ ‭the‬ ‭voters‬ ‭did‬ ‭not‬
+‭cast‬‭their‬‭votes.‬‭The‬‭winner‬‭by‬‭obtaining‬
+‭60%‬ ‭of‬ ‭the‬ ‭total‬ ‭votes‬ ‭defeated‬ ‭his‬
+‭opposite‬ ‭contestant‬‭by‬‭1200‬‭votes.‬‭Find‬
+‭the total number of votes.‬
+‭Graduate Level 20/06/2024 (Shift - 3)‬
+‭(a) 4000    (b) 3750    (c) 5730    (d) 3570‬
+‭Q.220.‬ ‭Ramesh‬ ‭spends‬ ‭60%‬ ‭of‬ ‭his‬
+‭income.‬ ‭If‬ ‭his‬ ‭income‬ ‭is‬ ‭increased‬ ‭by‬
+‭30%‬ ‭and‬ ‭his‬‭expenditure‬‭is‬‭increased‬‭by‬
+‭20%,‬‭then‬‭the‬‭percentage‬‭increase‬‭in‬‭the‬
+‭savings of Ramesh will be:‬
+‭Graduate Level 20/06/2024 (Shift - 3)‬
+‭(a) 50%     (b) 35%     (c) 45%     (d) 30%‬
+‭Q.221.‬ ‭During‬ ‭2021,‬ ‭the‬ ‭population‬ ‭of‬‭a‬
+‭city‬ ‭increased‬ ‭by‬ ‭8%‬ ‭and‬ ‭in‬ ‭2022,‬ ‭it‬
+‭increased‬‭by‬‭10%.‬‭At‬‭the‬‭end‬‭of‬‭2022,‬‭its‬
+‭population‬‭was‬‭47520.‬‭The‬‭population‬‭of‬
+‭the city at the end of 2021 was :‬
+‭Graduate Level 21/06/2024 (Shift - 3)‬
+‭(a) 40000 (b) 43200 (c) 42300 (d) 44000‬
+‭Q.222.‬‭In‬‭a‬‭school,‬‭an‬‭exam‬‭was‬‭held‬‭for‬
+‭80‬ ‭marks‬ ‭in‬ ‭which‬ ‭32‬ ‭was‬ ‭the‬ ‭passing‬
+‭marks.‬‭Who‬‭among‬‭the‬‭following‬‭scored‬
+‭the minimum marks ?‬
+‭Note‬‭: Round off upto one decimal only.‬
+‭Graduate Level 21/06/2024 (Shift - 3)‬
+‭(a) D, who got‬
+‭of the total marks‬
+‭12‬
+‭19‬
+‭(b) C, who got 160% of the passing‬
+‭marks‬
+‭(c) A, who got 72% marks in the exam‬
+‭(d) B, who got‬
+‭of the total marks‬
+‭7‬
+‭11‬
+‭Q.223.‬ ‭In‬‭a‬‭company,‬‭35%‬‭of‬‭employees‬
+‭are‬‭from‬‭a‬‭science‬‭background‬‭and‬ ‭1‬
+‭5‬‭𝑡ℎ‬
+‭are‬ ‭from‬ ‭an‬ ‭arts‬ ‭background.‬ ‭The‬ ‭rest‬
+‭are‬ ‭either‬ ‭illiterate‬ ‭or‬ ‭with‬ ‭a‬ ‭commerce‬
+‭background.‬ ‭The‬ ‭number‬ ‭of‬ ‭illiterate‬ ‭is‬
+‭300‬ ‭which‬ ‭is‬
+‭of‬ ‭the‬ ‭commerce‬
+‭1‬
+‭2‬
+‭background.‬ ‭How‬ ‭many‬ ‭employees‬ ‭are‬
+‭from science or arts background ?‬
+‭Graduate Level 21/06/2024 (Shift - 3)‬
+‭(a) 1100   (b) 1200   (c) 1500   (d) 1300‬
+‭Q.224.‬ ‭The‬ ‭sum‬ ‭of‬ ‭the‬ ‭two‬ ‭numbers‬ ‭is‬
+‭450.‬ ‭If‬ ‭the‬ ‭greater‬ ‭number‬ ‭is‬‭decreased‬
+‭by‬ ‭4%‬ ‭and‬ ‭the‬ ‭smaller‬ ‭number‬ ‭is‬
+‭increased‬ ‭by‬ ‭20%,‬ ‭then‬ ‭the‬ ‭numbers‬
+‭obtained‬ ‭are‬ ‭equal.‬ ‭The‬‭smaller‬‭number‬
+‭is:‬
+‭Graduate Level 24/06/2024 (Shift - 3)‬
+‭(a) 176    (b) 200     (c) 164     (d) 144‬
+‭Q.225.‬
+‭The‬
+‭strength‬
+‭of‬
+‭a‬
+‭school‬
+‭increases‬ ‭and‬ ‭decreases‬‭every‬‭alternate‬
+‭year‬‭by‬‭20%.‬‭It‬‭started‬‭with‬‭an‬‭increase‬‭in‬
+‭2018.‬‭What‬‭is‬‭the‬‭strength‬‭of‬‭the‬‭school‬
+‭at‬‭the‬‭start‬‭of‬‭2021‬‭as‬‭compared‬‭to‬‭that‬
+‭of 2018 ?‬
+‭Graduate Level 25/06/2024 (Shift - 3)‬
+‭(a) Increase by 15.2%‬
+‭(b) Decrease by 16.2%‬
+‭(c) Increase by 16.2%‬
+‭(d) Decrease by 15.2%‬
+‭Q.226.‬ ‭Vinod‬ ‭and‬ ‭Sanjay‬ ‭were‬ ‭fighting‬
+‭against‬ ‭each‬ ‭other‬ ‭for‬ ‭the‬ ‭post‬ ‭of‬ ‭a‬
+‭village‬ ‭Pradhan.‬ ‭Sanjay‬ ‭got‬ ‭47.5%‬‭votes‬
+‭and‬ ‭lost‬ ‭the‬ ‭election‬ ‭by‬‭270‬‭votes.‬‭How‬
+‭many‬‭votes‬‭did‬‭Vinod‬‭get‬‭(assuming‬‭that‬
+‭all‬ ‭the‬ ‭villagers‬ ‭participated‬ ‭in‬ ‭the‬
+‭voting)?‬
+‭Graduate Level 26/06/2024 (Shift - 3)‬
+‭(a) 2655    (b) 2835    (c) 2385    (d) 2565‬
+‭Q.227.‬ ‭A‬ ‭person‬ ‭spends‬ ‭40%‬ ‭of‬ ‭his‬
+‭salary‬ ‭on‬ ‭food‬ ‭items,‬ ‭50%‬ ‭of‬ ‭the‬
+‭remaining‬ ‭on‬ ‭transport,‬ ‭and‬ ‭30%‬ ‭of‬ ‭the‬
+‭remaining‬ ‭on‬ ‭clothes.‬‭After‬‭spending‬‭on‬
+‭food,‬ ‭transport‬ ‭and‬ ‭clothes,‬ ‭he‬ ‭saves‬
+‭₹1,260‬ ‭every‬‭month,‬‭what‬‭is‬‭his‬‭monthly‬
+‭salary?‬
+‭Graduate Level 26/06/2024 (Shift - 3)‬
+‭(a) ₹8,000‬
+‭(b) ₹6,000‬
+‭(c) ₹7,000‬
+‭(d) ₹10,000‬
+‭Q.228.‬‭A‬‭stock‬‭portfolio‬‭consists‬‭of‬‭three‬
+‭stocks.‬ ‭Stock‬ ‭A‬ ‭represents‬ ‭30%‬ ‭of‬ ‭the‬
+‭portfolio‬‭and‬‭has‬‭a‬‭return‬‭of‬‭5%.‬‭Stock‬‭B‬
+‭represents‬‭40%‬‭of‬‭the‬‭portfolio‬‭and‬‭has‬‭a‬
+‭return‬ ‭of‬ ‭10%.‬ ‭Stock‬ ‭C‬ ‭represents‬ ‭the‬
+‭remaining‬‭30%‬‭of‬‭the‬‭portfolio‬‭and‬‭has‬‭a‬
+‭return‬ ‭of‬ ‭8%.‬ ‭What‬‭is‬‭the‬‭average‬‭return‬
+‭of the portfolio?‬
+‭Graduate Level 26/06/2024 (Shift - 3)‬
+‭(a) 7.9%   (b) 7.5%   (c) 7.2%   (d) 8.1%‬
+‭Q.229.‬
+‭The‬
+‭number‬
+‭of‬
+‭toys‬
+‭manufactured‬‭by‬‭a‬‭machine‬‭in‬‭2018‬‭was‬
+‭25,000,‬‭which‬‭increased‬‭by‬‭20%‬‭in‬‭2019.‬
+‭In‬ ‭2020,‬ ‭the‬‭production‬‭was‬‭hindered‬‭by‬
+‭strike‬‭and‬‭it‬‭fell‬‭by‬‭15%.‬‭How‬‭many‬‭total‬
+‭toys‬‭were‬‭manufactured‬‭in‬‭three‬‭years‬‭by‬
+‭the machine?‬
+‭Graduate Level 26/06/2024 (Shift - 4)‬
+‭(a) 80000 (b) 89500 (c) 25500 (d) 80500‬
+‭SSC CHSL 2023 Tier - 2‬
+‭Q.230.‬ ‭The‬ ‭population‬ ‭of‬ ‭the‬ ‭city‬ ‭was‬
+‭1,75,000‬ ‭two‬ ‭years‬ ‭ago.‬ ‭If‬ ‭it‬ ‭had‬
+‭increased‬ ‭by‬ ‭4%‬ ‭and‬ ‭5%‬ ‭in‬ ‭the‬ ‭last‬‭two‬
+‭years,‬ ‭find‬ ‭the‬ ‭present‬‭population‬‭of‬‭the‬
+‭city.‬
+‭SSC CHSL Tier II  (02/11/2023)‬
+‭(a) 1,89,200‬
+‭(b) 1,92,100‬
+‭(c) 1,93,200‬
+‭(d) 1,91,100‬
+‭Q.231.‬‭A number is increased by 25%‬
+‭and then decreased by 16%, the final‬
+‭value of the number:‬
+‭SSC CHSL Tier II  (02/11/2023)‬
+‭(a) decreases by 13%‬
+‭(b) increases by 5%‬
+‭(c) does not change‬
+‭(d) decreases by 5%‬
+‭Q.232.‬‭A‬‭dishonest‬‭shopkeeper‬‭sells‬‭rice‬
+‭at‬‭a‬‭cost‬‭price‬‭but‬‭makes‬‭a‬‭25%‬‭profit‬‭by‬
+‭using‬ ‭faulty‬ ‭weights.‬ ‭He‬‭decides‬‭to‬‭give‬
+‭a‬ ‭discount‬ ‭to‬ ‭attract‬ ‭more‬ ‭customers.‬
+‭What‬‭percent‬‭of‬‭discount‬‭should‬‭he‬‭offer‬
+‭to make 10% profit ?‬
+‭SSC CHSL Tier II  (02/11/2023)‬
+‭(a) 11%‬ ‭(b) 12%‬ ‭(c) 10%‬ ‭(d) 9%‬
+‭Q.233.‬ ‭In‬ ‭an‬ ‭election,‬ ‭a‬ ‭candidate‬ ‭who‬
+‭gets‬‭90%‬‭votes‬‭is‬‭elected‬‭by‬‭a‬‭margin‬‭of‬
+‭800‬ ‭votes.‬ ‭What‬ ‭is‬ ‭the‬ ‭total‬ ‭number‬ ‭of‬
+‭votes polled?‬
+‭Note:‬ ‭There‬ ‭are‬ ‭only‬ ‭two‬ ‭candidates‬
+‭contesting‬ ‭the‬ ‭election‬ ‭and‬ ‭assume‬ ‭all‬
+‭the votes were valid.‬
+‭SSC CHSL Tier II  (10/01/2024)‬
+‭(a) 1050   (b) 950   (c) 1000   (d) 900‬
+‭www.ssccglpinnacle.com                                                 Download Pinnacle Exam Preparation App‬
+
+‭Pinnacle‬
+‭Day: 65th - 69th‬
+‭Percentage‬
+‭SSC CPO 2023 Tier - 1‬
+‭Q.234.‬ ‭In‬ ‭an‬ ‭election‬ ‭between‬ ‭two‬
+‭candidates,‬ ‭80%‬ ‭of‬ ‭the‬ ‭voters‬‭cast‬‭their‬
+‭votes,‬ ‭out‬ ‭of‬ ‭which‬ ‭5%‬ ‭votes‬ ‭were‬
+‭declared‬ ‭invalid.‬ ‭A‬ ‭candidate‬ ‭got‬ ‭9500‬
+‭votes‬‭which‬‭were‬‭80%‬‭of‬‭the‬‭valid‬‭votes.‬
+‭Find‬ ‭the‬ ‭total‬ ‭number‬ ‭of‬‭voters‬‭enrolled‬
+‭in that election.‬
+‭SSC CPO 04/10/2023 (1st Shift)‬
+‭(a) 14780 (b) 15625 (c) 16100 (d) 15100‬
+‭Q.235.‬‭The fraction equivalent to‬
+‭% is:‬
+‭1‬
+‭5‬
+‭SSC CPO 04/10/2023 (1st Shift)‬
+‭(a)‬
+‭(b)‬
+‭(c)‬
+‭(d)‬
+‭1‬
+‭125‬
+‭1‬
+‭500‬
+‭1‬
+‭200‬
+‭1‬
+‭40‬
+‭Q.236.‬
+‭In‬ ‭an‬ ‭election‬ ‭between‬ ‭two‬
+‭candidates,‬ ‭30%‬ ‭of‬ ‭the‬ ‭electorate‬ ‭did‬‭not‬
+‭cast‬ ‭their‬ ‭votes.‬ ‭20%‬ ‭of‬ ‭the‬ ‭votes‬ ‭polled‬
+‭were‬‭found‬‭invalid.‬‭The‬‭winning‬‭candidate‬
+‭got‬ ‭64%‬ ‭of‬ ‭the‬ ‭valid‬ ‭votes‬ ‭and‬ ‭won‬ ‭by‬ ‭a‬
+‭majority‬‭of‬‭3136‬‭votes.‬‭Find‬‭the‬‭number‬‭of‬
+‭voters enrolled in the voter list.‬
+‭SSC CPO 04/10/2023 (3rd Shift)‬
+‭(a) 24000 (b) 20000 (c) 25000 (d) 30000‬
+‭Q.237.‬ ‭In‬ ‭an‬ ‭election‬ ‭between‬ ‭two‬
+‭candidates,‬ ‭the‬ ‭difference‬ ‭between‬ ‭the‬
+‭candidates‬ ‭who‬‭won‬‭and‬‭lost‬‭was‬‭2,500‬
+‭votes.‬ ‭The‬ ‭candidate‬ ‭who‬ ‭won‬ ‭got‬ ‭75%‬
+‭of‬ ‭the‬ ‭votes,‬ ‭and‬ ‭there‬ ‭were‬ ‭no‬ ‭invalid‬
+‭votes.‬ ‭The‬ ‭total‬ ‭number‬ ‭of‬ ‭votes‬ ‭polled‬
+‭of the losing candidate was:‬
+‭SSC CPO 04/10/2023 (3rd Shift)‬
+‭(a) 1875  (b) 1250  (c) 5000   (d) 3750‬
+‭Q.238.‬ ‭In‬ ‭an‬ ‭election‬ ‭between‬ ‭two‬
+‭candidates,‬ ‭20%‬ ‭of‬ ‭the‬ ‭voters‬ ‭on‬ ‭the‬
+‭voters‬‭list‬‭did‬‭not‬‭cast‬‭their‬‭votes‬‭and‬‭80‬
+‭voters‬‭cast‬‭their‬‭ballot‬‭papers‬‭blank.‬‭The‬
+‭winner‬ ‭secured‬ ‭45%‬ ‭of‬ ‭all‬ ‭the‬ ‭voters‬ ‭in‬
+‭the‬ ‭list‬ ‭and‬ ‭he‬ ‭got‬‭280‬‭votes‬‭more‬‭than‬
+‭his‬‭rival.‬‭The‬‭number‬‭of‬‭voters‬‭on‬‭the‬‭list‬
+‭was:  SSC CPO 05/10/2023 (1st Shift)‬
+‭(a) 2000   (b) 2800   (c) 2500   (d) 1500‬
+‭Q.239.‬ ‭A‬ ‭family‬ ‭earns‬ ‭₹75,000,‬ ‭out‬ ‭of‬
+‭which‬ ‭10%‬ ‭is‬ ‭saved.‬ ‭30%‬ ‭of‬ ‭the‬
+‭expenditure‬ ‭is‬ ‭incurred‬ ‭on‬ ‭education,‬
+‭while‬‭₹30,375‬‭is‬‭spent‬‭on‬‭health‬‭and‬‭the‬
+‭remaining‬‭amount‬‭is‬‭spent‬‭on‬‭food.‬‭What‬
+‭is‬ ‭the‬‭percentage‬‭of‬‭food‬‭expenditure‬‭to‬
+‭the total income?‬
+‭SSC CPO 05/10/2023 (2nd Shift)‬
+‭(a) 20%‬ ‭(b) 21.5%  (c) 22.5%  (d) 32.5%‬
+‭SSC MTS 2023 Tier -1‬
+‭Q.240.‬ ‭If‬ ‭the‬ ‭first‬ ‭number‬ ‭is‬ ‭20%‬ ‭less‬
+‭than‬‭the‬‭third‬‭number‬‭and‬‭the‬‭ratio‬‭of‬‭the‬
+‭second‬‭to‬‭the‬‭third‬‭number‬‭is‬‭7‬‭:‬‭10,‬‭then‬
+‭the‬ ‭average‬ ‭of‬ ‭the‬ ‭first‬ ‭and‬ ‭the‬ ‭third‬
+‭number‬ ‭is‬ ‭how‬‭much‬‭percent‬‭more‬‭than‬
+‭the second number ?‬
+‭SSC MTS 01/09/2023 (1st Shift)‬
+‭(a)‬
+‭(b)‬
+‭(c)‬
+‭(d)‬
+‭26‬‭ ‬‭4‬
+‭7‬
+‭28‬‭ ‬‭2‬
+‭7‬
+‭28‬‭ ‬‭4‬
+‭7‬
+‭24‬‭2‬
+‭7‬
+‭Q.241.‬‭A‬‭contractor‬‭reduces‬‭the‬‭working‬
+‭time‬ ‭of‬ ‭a‬ ‭week‬ ‭(Monday‬ ‭to‬ ‭Saturday)‬
+‭from‬ ‭48‬ ‭hours‬ ‭to‬ ‭36‬ ‭hours‬ ‭for‬ ‭his‬
+‭workers‬ ‭without‬ ‭changing‬ ‭the‬ ‭payment.‬
+‭What‬ ‭is‬ ‭the‬ ‭percentage‬ ‭increase‬ ‭in‬ ‭the‬
+‭hourly rate?‬
+‭SSC MTS 05/09/2023 (3rd Shift)‬
+‭(a) 30‬
+‭%‬
+‭(b) 33‬
+‭%‬
+‭1‬
+‭3‬
+‭1‬
+‭3‬
+‭(c) 67‬
+‭%‬
+‭(d) 70‬
+‭%‬
+‭2‬
+‭3‬
+‭2‬
+‭3‬
+‭Q.242.‬ ‭A‬ ‭family‬ ‭spends‬ ‭20%‬ ‭of‬ ‭its‬
+‭monthly‬ ‭income‬ ‭on‬ ‭house‬ ‭rent.‬ ‭Out‬ ‭of‬
+‭the‬‭remaining‬‭amount,‬‭the‬‭family‬‭spends‬
+‭50%‬ ‭on‬ ‭household‬ ‭expenditure‬‭and‬‭20%‬
+‭on‬‭children's‬‭education.‬‭If‬‭after‬‭doing‬‭so,‬
+‭its monthly saving is ₹6,600, then what is‬
+‭the total monthly income of the family?‬
+‭SSC MTS 13/09/2023 (1st Shift)‬
+‭(a) ₹25,000‬
+‭(b) ₹27,500‬
+‭(c) ₹30,000‬
+‭(d) ₹28,000‬
+‭Q.243.‬ ‭Suresh‬ ‭could‬ ‭save‬ ‭20%‬ ‭of‬ ‭his‬
+‭income.‬ ‭But‬ ‭4‬ ‭years‬ ‭later,‬ ‭when‬ ‭his‬
+‭income‬‭increased‬‭by‬‭40%,‬‭he‬‭could‬‭save‬
+‭the‬‭same‬‭amount‬‭only‬‭as‬‭before.‬‭By‬‭how‬
+‭much‬ ‭percentage‬ ‭did‬ ‭his‬ ‭expenditure‬
+‭increase?‬
+‭SSC MTS 14/09/2023 (2nd Shift)‬
+‭(a) 23%‬ ‭(b) 50%‬ ‭(c) 22%‬ ‭(d) 45%‬
+‭SSC CHSL 2023 Tier - 1‬
+‭Q.244.‬ ‭Bhushan's‬ ‭monthly‬ ‭income‬ ‭is‬
+‭₹45,000‬ ‭and‬ ‭his‬ ‭monthly‬ ‭expenditure‬ ‭is‬
+‭₹33,000.‬ ‭If‬ ‭his‬ ‭monthly‬ ‭income‬ ‭is‬
+‭increased‬
+‭by‬
+‭22%‬
+‭while‬
+‭monthly‬
+‭expenditure‬ ‭is‬ ‭increased‬ ‭by‬ ‭11%,‬ ‭then‬
+‭what is his new monthly savings (in ₹) ?‬
+‭SSC CHSL 02/08/2023 (1st Shift)‬
+‭(a) 18,270 (b) 18,690  (c) 18,000 (d) 19,000‬
+‭Q.245‬‭.‬ ‭If‬ ‭the‬ ‭price‬ ‭of‬ ‭a‬ ‭movie‬ ‭ticket‬
+‭increased‬ ‭by‬
+‭%‬ ‭and‬ ‭the‬ ‭sale‬ ‭of‬
+‭12‬‭1‬
+‭2‬
+‭tickets‬‭also‬‭increased‬‭by‬
+‭%,‬‭then‬‭find‬
+‭8‬‭1‬
+‭2‬
+‭% change in income.‬
+‭SSC CHSL 02/08/2023 (2nd Shift)‬
+‭(a) 21.875%‬
+‭(b) 22.6750%‬
+‭(c) 20.675%‬
+‭(d) 22.0625%‬
+‭Q.246.‬‭In‬‭a‬‭village‬‭election‬‭between‬‭three‬
+‭candidates,‬ ‭80%‬ ‭of‬ ‭the‬ ‭voters‬‭cast‬‭their‬
+‭votes,‬ ‭out‬ ‭of‬ ‭which‬ ‭3%‬ ‭votes‬ ‭were‬
+‭declared‬ ‭invalid.‬ ‭The‬ ‭winning‬ ‭candidate‬
+‭got‬ ‭42,680‬ ‭votes‬‭which‬‭were‬‭55%‬‭of‬‭the‬
+‭total‬‭valid‬‭votes.‬‭Find‬‭the‬‭number‬‭of‬‭valid‬
+‭votes‬ ‭received‬ ‭by‬ ‭the‬ ‭candidate‬ ‭who‬
+‭stood‬ ‭third,‬ ‭given‬ ‭that‬ ‭he‬ ‭received‬ ‭only‬
+‭10% of the total valid votes.‬
+‭SSC CHSL 03/08/2023 (1st Shift)‬
+‭(a) 7760  (b) 7700  (c) 7670  (d) 7680‬
+‭Q.247.‬
+‭A‬
+‭total‬
+‭of‬ ‭7,50,000‬ ‭voters‬
+‭participated‬ ‭in‬ ‭an‬ ‭election.‬ ‭A‬ ‭candidate‬
+‭received‬ ‭3,82,500‬ ‭votes‬ ‭which‬ ‭was‬ ‭60%‬
+‭of‬ ‭the‬ ‭total‬ ‭valid‬ ‭votes.‬ ‭What‬ ‭was‬ ‭the‬
+‭percentage‬ ‭of‬ ‭invalid‬ ‭votes‬ ‭in‬ ‭the‬
+‭election?‬
+‭SSC CHSL 04/08/2023 (1st Shift)‬
+‭(a) 15%‬ ‭(b) 20%‬ ‭(c) 12%‬ ‭(d) 18%‬
+‭Q.248.‬ ‭If‬ ‭the‬ ‭curved‬ ‭surface‬ ‭area‬ ‭of‬ ‭a‬
+‭cylinder‬ ‭is‬ ‭increased‬ ‭by‬‭20%,‬‭and‬‭height‬
+‭is‬ ‭decreased‬ ‭by‬ ‭4%,‬ ‭then‬ ‭the‬ ‭net‬
+‭decrease‬ ‭or‬ ‭increase‬ ‭in‬ ‭the‬ ‭volume‬ ‭will‬
+‭be:‬
+‭SSC CHSL 08/08/2023 (3rd Shift)‬
+‭(a) 36 % decrease     (b) 20 % increase‬
+‭(c) 50 % increase      (d) 33 % decrease‬
+‭Q.249.‬‭Ravi‬‭initially‬‭had‬‭a‬‭certain‬‭number‬
+‭of‬ ‭chocolates,‬ ‭while‬ ‭Bhanu‬ ‭initially‬ ‭had‬
+‭80%‬ ‭of‬ ‭the‬ ‭number‬ ‭of‬ ‭chocolates‬ ‭that‬
+‭Ravi‬ ‭initially‬ ‭had.‬ ‭Ravi‬ ‭gave‬ ‭10%‬ ‭of‬ ‭his‬
+‭chocolates‬ ‭to‬ ‭his‬ ‭sister‬ ‭while‬ ‭Bhanu‬
+‭received‬ ‭from‬ ‭his‬ ‭uncle‬ ‭another‬ ‭35%‬ ‭of‬
+‭the‬‭number‬‭of‬‭chocolates‬‭he‬‭initially‬‭had.‬
+‭If‬ ‭Bhanu‬ ‭finally‬ ‭had‬ ‭54‬ ‭chocolates,‬ ‭how‬
+‭many‬ ‭chocolates‬ ‭did‬ ‭Ravi‬ ‭give‬ ‭to‬ ‭his‬
+‭sister?‬
+‭SSC CHSL 09/08/2023 (2nd Shift)‬
+‭(a) 3‬
+‭(b) 6‬
+‭(c) 5‬
+‭(d) 4‬
+‭Q.250.‬‭Rajat, Pooja and Abha participate‬
+‭in‬ ‭the‬ ‭election.‬ ‭If‬ ‭the‬ ‭total‬ ‭votes‬ ‭polled‬
+‭are‬ ‭40,000‬ ‭and‬ ‭10%‬‭of‬‭votes‬‭are‬‭invalid,‬
+‭Rajat‬ ‭got‬ ‭36%‬ ‭of‬ ‭valid‬ ‭votes‬ ‭and‬ ‭Pooja‬
+‭got‬ ‭40%‬ ‭of‬ ‭valid‬ ‭votes,‬ ‭then‬ ‭find‬ ‭the‬
+‭number of votes Abha got.‬
+‭SSC CHSL 14/08/2023 (3rd Shift)‬
+‭(a) 9245  (b) 1024  (c) 8640  (d) 5760‬
+‭Q.251.‬ ‭In‬ ‭an‬ ‭election‬ ‭between‬ ‭two‬
+‭candidates,‬ ‭85%‬ ‭of‬ ‭the‬ ‭electorate‬ ‭cast‬
+‭their‬ ‭votes.‬ ‭6%‬ ‭of‬ ‭the‬ ‭votes‬‭polled‬‭were‬
+‭declared‬‭invalid.‬‭If‬‭the‬‭winning‬‭candidate‬
+‭secured‬ ‭60%‬ ‭of‬ ‭the‬ ‭valid‬ ‭votes,‬ ‭how‬
+‭many‬ ‭votes‬ ‭did‬ ‭the‬ ‭winning‬ ‭candidate‬
+‭receive‬ ‭if‬ ‭the‬ ‭number‬ ‭of‬ ‭eligible‬ ‭voters‬
+‭was 10000 ?‬
+‭SSC CHSL 17/08/2023 (1st Shift)‬
+‭(a) 4784   (b) 4804   (c) 4794   (d) 4824‬
+‭Q.252.‬ ‭65%‬ ‭of‬ ‭Samita's‬ ‭income‬‭is‬‭equal‬
+‭to‬ ‭91%‬ ‭of‬ ‭Bhairav's‬ ‭income.‬ ‭If‬ ‭Samita's‬
+‭income‬ ‭was‬ ‭1,500‬‭more‬‭than‬‭what‬‭it‬‭is‬
+‭₹‬
+‭and‬ ‭Bhairav's‬ ‭income‬ ‭was‬
+‭500‬ ‭more‬
+‭₹‬
+‭than‬ ‭what‬ ‭it‬ ‭is,‬ ‭the‬ ‭ratio‬‭of‬‭the‬‭incomes‬
+‭of‬‭Samita‬‭and‬‭Bhairav‬‭would‬‭have‬‭been‬‭3‬
+‭:‬‭2.‬‭What‬‭is‬‭the‬‭actual‬‭combined‬‭income‬
+‭(in‬ ‭) of Samita and Bhairav?‬
+‭₹‬
+‭SSC CHSL 17/08/2023 (3rd Shift)‬
+‭(a) 18,500‬
+‭(b) 17,500‬
+‭(c) 20,000‬
+‭(d) 18,000‬
+‭www.ssccglpinnacle.com                                                 Download Pinnacle Exam Preparation App‬
+
+‭Pinnacle‬
+‭Day: 65th - 69th‬
+‭Percentage‬
+‭SSC CGL 2023 Tier - 1‬
+‭Q.253.‬ ‭In‬ ‭an‬ ‭election,‬ ‭2%‬ ‭persons‬
+‭enrolled‬
+‭in‬
+‭the‬ ‭voter‬ ‭list‬ ‭did‬ ‭not‬
+‭participate‬ ‭and‬ ‭500‬ ‭votes‬ ‭were‬ ‭invalid.‬
+‭Two‬ ‭candidates‬ ‭A‬ ‭and‬ ‭B‬ ‭fought‬ ‭the‬
+‭election,‬‭and‬‭A‬‭defeated‬‭B‬‭by‬‭200‬‭votes.‬
+‭If‬ ‭43%‬ ‭of‬ ‭the‬ ‭persons‬ ‭enrolled‬ ‭in‬ ‭the‬
+‭voter‬ ‭list‬ ‭casted‬ ‭their‬ ‭votes‬ ‭in‬ ‭favour‬‭of‬
+‭A,‬ ‭then‬ ‭what‬ ‭is‬ ‭the‬ ‭number‬ ‭of‬ ‭the‬ ‭total‬
+‭casted votes?‬
+‭SSC CGL 14/07/2023 (2nd shift)‬
+‭(a) 2450  (b) 2800  (c) 3000  (d) 3250‬
+‭Q.254.‬ ‭In‬ ‭an‬ ‭election‬ ‭between‬ ‭three‬
+‭candidates,‬ ‭Arjun,‬ ‭Bhaskar‬ ‭and‬ ‭Saral‬
+‭contested‬‭for‬‭a‬‭post.‬‭Arjun‬‭got‬‭50%‬‭votes‬
+‭more‬ ‭than‬ ‭Saral,‬‭and‬‭Saral‬‭got‬‭2%‬‭votes‬
+‭less‬
+‭than‬
+‭Bhaskar.‬
+‭The‬
+‭difference‬
+‭between‬ ‭the‬ ‭votes‬ ‭of‬‭Bhaskar‬‭and‬‭Saral‬
+‭is‬‭1296.‬‭What‬‭is‬‭the‬‭half‬‭of‬‭the‬‭difference‬
+‭between the votes of Arjun and Bhaskar?‬
+‭SSC CGL 14/07/2023 (3rd shift)‬
+‭(a) 3888  (b) 13988  (c) 7766  (d) 15228‬
+‭Q.255.‬‭Suhani‬‭pays‬‭tax‬‭at‬‭the‬‭rate‬‭of‬‭30%‬
+‭on‬ ‭her‬ ‭entire‬ ‭income‬ ‭of‬ ‭₹90,000‬ ‭and‬
+‭Ritika‬ ‭pays‬‭tax‬‭at‬‭the‬‭rate‬‭of‬‭40%‬‭on‬‭her‬
+‭entire‬‭income‬‭of‬ ‭₹y.‬‭If‬‭the‬‭overall‬‭tax‬‭rate‬
+‭on‬‭their‬‭combined‬‭income‬‭comes‬‭to‬‭37%,‬
+‭then what is the value of y?‬
+‭SSC CGL 17/07/2023 (2nd shift)‬
+‭(a) ₹2,04,000‬
+‭(b) ₹2,16,000‬
+‭(c) ₹2,13,000‬
+‭(d) ₹2,10,000‬
+‭Q.256.‬‭In‬‭a‬‭constituency,‬‭90%‬‭of‬‭the‬‭total‬
+‭number‬ ‭of‬ ‭people‬ ‭on‬ ‭the‬ ‭electoral‬ ‭roll‬
+‭cast‬ ‭their‬ ‭votes‬ ‭during‬ ‭an‬ ‭election.‬‭15%‬
+‭of‬ ‭the‬ ‭votes‬ ‭cast‬ ‭were‬ ‭declared‬ ‭invalid.‬
+‭Jeeta‬ ‭secured‬ ‭60%‬ ‭of‬ ‭the‬ ‭valid‬‭votes.‬‭If‬
+‭Jeeta‬ ‭secured‬ ‭91,800‬ ‭valid‬ ‭votes,‬ ‭what‬
+‭was‬ ‭the‬ ‭total‬ ‭number‬ ‭of‬ ‭people‬ ‭on‬ ‭the‬
+‭electoral roll?‬
+‭SSC CGL 17/07/2023 (3rd shift)‬
+‭(a) 2,16,000‬
+‭(b) 2,25,000‬
+‭(c) 1,80,000‬
+‭(d) 2,00,000‬
+‭Q.257.‬‭In‬‭a‬‭constituency,‬‭85%‬‭of‬‭the‬‭total‬
+‭number‬ ‭of‬ ‭people‬ ‭on‬ ‭the‬ ‭electoral‬ ‭roll‬
+‭cast‬ ‭their‬ ‭votes‬ ‭during‬ ‭an‬ ‭election.‬‭10%‬
+‭of‬‭the‬‭votes‬‭cast‬‭were‬‭declared‬‭invalid.‬‭If‬
+‭there‬ ‭were‬ ‭3,00,000‬ ‭people‬ ‭on‬ ‭the‬
+‭electoral‬
+‭roll‬
+‭and‬
+‭Dharam‬
+‭secured‬
+‭1,37,700‬ ‭valid‬‭votes,‬‭what‬‭percentage‬‭of‬
+‭the‬ ‭total‬ ‭number‬ ‭of‬ ‭valid‬ ‭votes‬ ‭did‬
+‭Dharam secure ?‬
+‭SSC CGL 18/07/2023 (3rd shift)‬
+‭(a) 50.5%  (b) 70.2%  (c) 45.9%  (d) 60.0%‬
+‭Q.258.‬‭If‬‭the‬‭price‬‭of‬‭petrol‬‭increased‬‭by‬
+‭7%,‬ ‭then‬ ‭by‬ ‭what‬‭percentage‬‭should‬‭the‬
+‭consumption‬
+‭be‬
+‭decreased‬
+‭by‬
+‭the‬
+‭consumer,‬ ‭if‬ ‭the‬ ‭expenditure‬ ‭on‬ ‭petrol‬
+‭remains unchanged ?‬
+‭SSC CGL 19/07/2023 (4th shift)‬
+‭(a)‬
+‭(b)‬
+‭6‬ ‭58‬
+‭107‬‭%‬
+‭5‬ ‭11‬
+‭107‬‭%‬
+‭(c)‬
+‭(d)‬
+‭3‬ ‭49‬
+‭107‬‭%‬
+‭4‬ ‭99‬
+‭107‬‭%‬
+‭Q.259.‬‭In‬‭a‬‭certain‬‭year,‬‭the‬‭population‬‭of‬
+‭a‬ ‭city‬ ‭was‬‭18000.‬‭If‬‭in‬‭the‬‭next‬‭year,‬‭the‬
+‭population‬‭of‬‭males‬‭increased‬‭by‬‭5%‬‭and‬
+‭that‬‭of‬‭females‬‭increased‬‭by‬‭7%,‬‭and‬‭the‬
+‭total‬‭population‬‭increased‬‭to‬‭19200,‬‭then‬
+‭what‬ ‭was‬‭the‬‭ratio‬‭of‬‭the‬‭populations‬‭of‬
+‭males and females in that given year?‬
+‭SSC CGL 20/07/2023 (1st shift)‬
+‭(a) 2 : 5    (b) 1 : 5    (c) 4 : 3    (d) 3 : 5‬
+‭Q.260.‬‭In‬‭January‬‭2022,‬‭Kriti‬‭paid‬‭an‬‭EMI,‬
+‭which‬ ‭was‬ ‭22%‬ ‭of‬ ‭her‬ ‭monthly‬ ‭salary.‬
+‭She‬ ‭spent‬ ‭the‬ ‭remaining‬ ‭salary‬ ‭on‬
+‭shopping‬‭of‬‭groceries‬‭and‬‭clothes‬‭in‬‭the‬
+‭ratio‬‭7‬‭:‬‭5.‬‭She‬‭spent‬‭₹18200‬‭on‬‭shopping‬
+‭of‬‭clothes.‬‭If,‬‭in‬‭February‬‭2022,‬‭her‬‭salary‬
+‭increased‬ ‭by‬ ‭16%,‬ ‭then‬ ‭what‬ ‭was‬ ‭her‬
+‭salary (in ₹) in February?‬
+‭SSC CGL 24/07/2023 (1st shift)‬
+‭(a) 66,350‬
+‭(b) 68,520‬
+‭(c) 70,250‬
+‭(d) 64,960‬
+‭Q.261.‬ ‭A‬ ‭person‬ ‭spends‬ ‭25%‬ ‭of‬ ‭his‬
+‭income‬
+‭on‬
+‭goods‬
+‭of‬
+‭daily‬
+‭uses.‬
+‭Furthermore,‬ ‭he‬ ‭spends‬ ‭18%‬ ‭of‬ ‭the‬‭rest‬
+‭on‬ ‭house‬ ‭rent‬ ‭and‬ ‭16%‬ ‭of‬ ‭the‬ ‭rest‬ ‭on‬
+‭travel.‬ ‭After‬ ‭that,‬ ‭only‬ ‭₹861‬ ‭is‬ ‭left‬ ‭with‬
+‭him. What is his salary?‬
+‭SSC CGL 24/07/2023 (3rd shift)‬
+‭(a) ₹1852‬
+‭(b) ₹1666‬
+‭1‬
+‭3‬
+‭2‬
+‭3‬
+‭(c) ₹‬
+‭(d) ₹‬
+‭1563‬‭1‬
+‭3‬
+‭1426‬‭1‬
+‭3‬
+‭Q.262.‬ ‭In‬ ‭an‬ ‭examination‬ ‭a‬ ‭candidate‬
+‭had‬ ‭to‬ ‭sit‬ ‭for‬ ‭three‬ ‭papers‬ ‭A,‬ ‭B,‬ ‭and‬ ‭C.‬
+‭The‬ ‭candidate‬ ‭secured‬ ‭75%‬ ‭marks‬ ‭in‬
+‭Paper‬‭A,‬‭80%‬‭marks‬‭in‬‭Paper‬‭B,‬‭and‬‭60%‬
+‭marks‬ ‭in‬ ‭Paper‬ ‭C.‬ ‭If‬ ‭the‬ ‭weightage‬
+‭assigned‬‭to‬‭Papers‬‭A,‬‭B,‬‭and‬‭C‬‭were‬‭40%,‬
+‭50%‬ ‭and‬ ‭10%,‬ ‭respectively,‬‭then‬‭find‬‭the‬
+‭weighted‬ ‭percentage‬ ‭of‬ ‭marks‬ ‭obtained‬
+‭by‬ ‭the‬ ‭candidate,‬ ‭when‬ ‭all‬ ‭the‬ ‭three‬
+‭papers were taken together.‬
+‭SSC CGL 24/07/2023 (4th shift)‬
+‭(a) 77%‬ ‭(b) 74%‬ ‭(c) 72%‬ ‭(d) 76%‬
+‭Q.263.‬ ‭Out‬ ‭of‬ ‭the‬ ‭total‬ ‭toffees,‬
+‭are‬
+‭1‬
+‭10‬
+‭wasted.‬ ‭35%‬ ‭of‬ ‭the‬ ‭rest‬ ‭are‬ ‭given‬ ‭to‬ ‭S‬
+‭and‬
+‭of‬‭the‬‭total‬‭are‬‭given‬‭to‬‭N.‬‭If‬‭the‬
+‭1‬
+‭8‬
+‭toffees‬ ‭with‬ ‭N‬ ‭are‬ ‭10‬ ‭more‬ ‭than‬ ‭the‬
+‭wasted‬ ‭toffees,‬ ‭then‬ ‭how‬ ‭many‬ ‭toffees‬
+‭were given to S ?‬
+‭SSC CGL 25/07/2023 (1st shift)‬
+‭(a) 126‬ ‭(b) 150‬ ‭(c) 110‬ ‭(d) 135‬
+‭Q.264.‬ ‭A‬ ‭family‬ ‭income‬ ‭is‬ ‭₹35,000‬ ‭in‬ ‭a‬
+‭month.‬‭The‬‭family‬‭spends‬‭the‬‭income‬‭on‬
+‭various‬ ‭expenditures,‬ ‭viz.,‬ ‭food,‬ ‭health,‬
+‭education,‬ ‭entertainment,‬‭and‬‭rent.‬‭After‬
+‭incurring‬ ‭all‬ ‭the‬ ‭expenditures,‬ ‭8%‬ ‭is‬
+‭saved‬ ‭every‬ ‭month.‬ ‭The‬ ‭expenditure‬ ‭on‬
+‭health‬ ‭is‬ ‭50%‬ ‭more‬ ‭than‬ ‭that‬ ‭of‬ ‭food.‬
+‭While‬ ‭food‬ ‭is‬ ‭three‬ ‭times‬ ‭of‬ ‭the‬
+‭expenditure‬
+‭on‬
+‭entertainment,‬
+‭the‬
+‭expenditure‬ ‭on‬ ‭health‬ ‭is‬ ‭half‬ ‭of‬ ‭the‬
+‭expenditure‬
+‭on‬
+‭education.‬
+‭The‬
+‭expenditure‬ ‭on‬ ‭rent‬ ‭is‬ ‭one-third‬ ‭of‬ ‭the‬
+‭combined‬ ‭expenditure‬ ‭on‬ ‭food,‬ ‭health‬
+‭and‬ ‭education.‬ ‭How‬ ‭much‬ ‭expenditure‬
+‭(in ₹) is incurred on education?‬
+‭SSC CGL 25/07/2023 (2nd shift)‬
+‭(a) 12600  (b) 8400  (c) 13200  (d) 7700‬
+‭Q.265.‬‭Tarun owned a plot of land having‬
+‭an‬‭area‬‭that‬‭was‬‭10%‬‭more‬‭than‬‭the‬‭area‬
+‭of‬ ‭the‬ ‭plot‬ ‭owned‬ ‭by‬ ‭Basab,‬ ‭while‬ ‭the‬
+‭area‬ ‭of‬ ‭the‬ ‭plot‬ ‭of‬‭land‬‭owned‬‭by‬‭Nakul‬
+‭was‬ ‭40%‬ ‭more‬ ‭than‬ ‭the‬‭area‬‭of‬‭the‬‭plot‬
+‭owned‬ ‭by‬ ‭Tarun.‬ ‭If‬ ‭the‬ ‭area‬ ‭of‬ ‭the‬ ‭plot‬
+‭owned‬ ‭by‬ ‭Nakul‬ ‭was‬ ‭2695‬ ‭square‬ ‭feet,‬
+‭what‬‭was‬‭the‬‭area‬‭(in‬‭square‬‭feet)‬‭of‬‭the‬
+‭plot owned by Basab ?‬
+‭SSC CGL 25/07/2023 (4th shift)‬
+‭(a) 1750  (b) 1740 (c) 1780  (d) 1800‬
+‭Q.266.‬ ‭A‬ ‭father‬ ‭gives‬‭8%‬‭of‬‭his‬‭monthly‬
+‭income‬ ‭to‬ ‭both‬ ‭his‬ ‭sons‬ ‭as‬ ‭pocket‬
+‭money.‬ ‭The‬ ‭elder‬ ‭son‬ ‭gets‬ ‭85%‬ ‭of‬ ‭the‬
+‭total‬ ‭amount‬ ‭given‬ ‭to‬‭both‬‭the‬‭sons.‬‭He‬
+‭spend‬‭90%‬‭of‬‭the‬‭amount‬‭and‬‭saves‬‭₹17.‬
+‭What is the monthly income of father ?‬
+‭SSC CGL 26/07/2023 (3rd shift)‬
+‭(a) ₹ 5,000‬
+‭(b) ₹ 4,500‬
+‭(c) ₹ 3,500‬
+‭(d) ₹ 2,500‬
+‭SSC Selection Post (Phase - XI)‬
+‭Q.267.‬‭During‬‭the‬‭previous‬‭year,‬‭the‬‭price‬
+‭of‬ ‭an‬ ‭electronic‬ ‭item‬ ‭increased‬ ‭by‬ ‭10%,‬
+‭and‬‭this‬‭year,‬‭the‬‭price‬‭of‬‭the‬‭same‬‭item‬
+‭decreased‬ ‭by‬ ‭10%.‬ ‭If‬ ‭the‬ ‭price‬ ‭of‬ ‭the‬
+‭electronic‬ ‭item‬ ‭at‬ ‭present‬ ‭is‬ ‭₹66,000,‬
+‭then‬‭what‬‭was‬‭the‬‭price‬‭of‬‭the‬‭discussed‬
+‭electronic‬ ‭item‬ ‭in‬ ‭the‬ ‭beginning‬ ‭of‬ ‭the‬
+‭previous‬ ‭year?‬ ‭(Rounded‬ ‭off‬ ‭to‬ ‭one‬
+‭decimal place)‬
+‭Graduate Level 28/06/2023 (Shift - 3)‬
+‭(a) ₹91,262.5‬
+‭(b) ₹72,432.4‬
+‭(c) ₹66,666.7‬
+‭(d) ₹ 82,345.4‬
+‭Q.268.‬ ‭If‬ ‭the‬ ‭numerator‬ ‭of‬ ‭a‬ ‭fraction‬ ‭is‬
+‭increased‬‭by‬‭12%‬‭and‬‭its‬‭denominator‬‭is‬
+‭reduced‬ ‭by‬ ‭8%,‬ ‭it‬ ‭gives‬ ‭a‬ ‭new‬ ‭fraction‬
+‭. What is the original fraction?‬
+‭16‬
+‭17‬
+‭Higher Secondary 27/06/2023 (Shift - 3)‬
+‭(a)‬
+‭(b)‬
+‭(c)‬
+‭(d)‬
+‭92‬
+‭119‬
+‭23‬
+‭28‬
+‭28‬
+‭23‬
+‭119‬
+‭92‬
+‭Q.269.‬ ‭The‬ ‭monthly‬ ‭income‬‭of‬‭a‬‭person‬
+‭was‬
+‭Rs.80,000‬
+‭and‬
+‭his‬
+‭monthly‬
+‭expenditure‬‭was‬‭Rs.45,000.‬‭Next‬‭year,‬‭his‬
+‭income‬ ‭increased‬ ‭by‬ ‭16%‬ ‭and‬ ‭his‬
+‭www.ssccglpinnacle.com                                                 Download Pinnacle Exam Preparation App‬
+
+‭Pinnacle‬
+‭Day: 65th - 69th‬
+‭Percentage‬
+‭expenditure‬ ‭increased‬ ‭by‬ ‭8%.‬ ‭Find‬ ‭the‬
+‭percentage‬ ‭increase‬ ‭in‬ ‭his‬ ‭savings‬
+‭(correct to 2 decimal places).‬
+‭Higher Secondary 30/06/2023 (Shift - 2)‬
+‭(a) 25.35%‬
+‭(b) 26.29%‬
+‭(c) 30.25%‬
+‭(d) 44.36%‬
+‭Q.270.‬ ‭While‬ ‭playing‬‭cards,‬‭a‬‭man‬‭loses‬
+‭75%‬‭of‬‭his‬‭money‬‭in‬‭the‬‭first‬‭round,‬‭75%‬
+‭of‬ ‭the‬ ‭remaining‬ ‭in‬ ‭the‬ ‭second‬ ‭round,‬
+‭and‬ ‭75%‬ ‭of‬ ‭the‬ ‭remaining‬ ‭in‬ ‭the‬ ‭third‬
+‭round.‬‭If‬‭he‬‭is‬‭left‬‭with‬‭Rs.100,‬‭how‬‭much‬
+‭money does he have initially?‬
+‭Matriculation Level 27/06/2023 (Shift - 2)‬
+‭(a) Rs.6,400‬
+‭(b) Rs.2,400‬
+‭(c) Rs.1,600‬
+‭(d) Rs.3,200‬
+‭Q.271.‬ ‭In‬ ‭an‬ ‭election‬ ‭between‬ ‭two‬
+‭candidates,‬‭one‬‭candidate‬‭got‬‭60%‬‭of‬‭the‬
+‭valid‬ ‭votes.‬ ‭If‬ ‭the‬ ‭total‬ ‭number‬‭of‬‭votes‬
+‭polled‬ ‭were‬ ‭8850,‬ ‭and‬ ‭10%‬ ‭of‬‭the‬‭votes‬
+‭were‬ ‭invalid,‬ ‭then‬ ‭find‬ ‭the‬ ‭number‬ ‭of‬
+‭valid votes that the other candidate got.‬
+‭Matriculation Level 28/06/2023 (Shift - 1)‬
+‭(a) 3816  (b) 3186  (c) 3681  (d) 3618‬
+‭Q.272.‬ ‭In‬ ‭an‬ ‭election‬ ‭between‬ ‭two‬
+‭candidates,‬ ‭84‬ ‭votes‬ ‭were‬ ‭declared‬ ‭as‬
+‭invalid.‬ ‭The‬ ‭winning‬ ‭candidate‬ ‭secures‬
+‭62%‬ ‭of‬ ‭the‬ ‭valid‬ ‭votes‬ ‭and‬ ‭wins‬ ‭by‬ ‭96‬
+‭votes. The number of votes polled is:‬
+‭Matriculation Level 28/06/2023 (Shift - 1)‬
+‭(a) 424   (b) 543   (c) 641   (d) 484‬
+‭Q.273.‬ ‭A‬ ‭family‬ ‭member‬‭spends‬‭25%‬‭of‬
+‭his‬ ‭monthly‬ ‭income‬ ‭on‬‭food,‬‭35%‬‭of‬‭the‬
+‭remaining‬ ‭on‬ ‭a‬ ‭home‬ ‭loan‬ ‭and‬ ‭other‬
+‭bank‬ ‭debts,‬ ‭and‬ ‭half‬ ‭of‬ ‭the‬ ‭rest‬ ‭on‬ ‭the‬
+‭education‬ ‭of‬‭the‬‭children.‬‭If‬‭the‬‭member‬
+‭saves‬ ‭$46,215‬ ‭every‬ ‭year,‬ ‭then‬ ‭the‬
+‭monthly income of the member is:‬
+‭Matriculation Level 30/06/2023 (Shift - 4)‬
+‭(a) $15,800‬
+‭(b) $190,248‬
+‭(c) $15,520‬
+‭(d) $19,200‬
+‭SSC CHSL 2022 Tier - 2‬
+‭Q.274.‬‭The‬‭annual‬‭growth‬‭rate‬‭of‬‭a‬‭city‬‭is‬
+‭2%.‬‭If‬‭its‬‭population‬‭in‬‭the‬‭year‬‭2020‬‭was‬
+‭1,50,000,‬‭then‬‭what‬‭will‬‭its‬‭population‬‭be‬
+‭in 2023?‬
+‭SSC CHSL Tier II (26/06/2023)‬
+‭(a) 1,59,181‬
+‭(b) 1,58,765‬
+‭(c) 1,58,413‬
+‭(d) 1,59,000‬
+‭Q.275.‬‭Gita‬‭purchases‬‭an‬‭apartment‬‭and‬
+‭pays‬‭EMI‬‭for‬‭that.‬‭Her‬‭monthly‬‭income‬‭is‬
+‭₹80,000.‬
+‭She‬
+‭spends‬
+‭15%‬ ‭on‬ ‭the‬
+‭education‬ ‭of‬ ‭her‬ ‭children,‬ ‭40%‬ ‭on‬
+‭household‬ ‭affairs,‬ ‭sends‬ ‭10%‬ ‭to‬ ‭GPF,‬
+‭saves‬‭15%‬‭in‬‭a‬‭savings‬‭bank‬‭account‬‭and‬
+‭pays‬‭the‬‭rest‬‭of‬‭the‬‭amount‬‭as‬‭EMI.‬‭How‬
+‭much EMI does she pay?‬
+‭SSC CHSL Tier II (26/06/2023)‬
+‭(a) ₹14,000‬
+‭(b) ₹18,000‬
+‭(c) ₹16,000‬
+‭(d) ₹20,000‬
+‭Q.276.‬ ‭In‬ ‭an‬ ‭election‬ ‭between‬ ‭two‬
+‭candidates.‬ ‭20%‬‭of‬‭the‬‭registered‬‭voters‬
+‭did‬‭not‬‭cast‬‭their‬‭vote‬‭and‬‭40‬‭votes‬‭were‬
+‭declared‬ ‭invalid.‬ ‭The‬ ‭winner‬ ‭got‬ ‭42%‬ ‭of‬
+‭the‬ ‭registered‬ ‭votes‬ ‭and‬ ‭was‬ ‭declared‬
+‭the‬ ‭winner‬ ‭by‬‭112‬‭votes.‬‭The‬‭number‬‭of‬
+‭registered voters was:‬
+‭SSC CHSL Tier II (26/06/2023)‬
+‭(a) 1500   (b) 1200   (c) 1800   (d) 3800‬
+‭SSC MTS 2022 Tier - 1‬
+‭Q.277.‬ ‭The‬ ‭price‬ ‭of‬ ‭a‬ ‭mobile‬ ‭is‬ ‭Rs.‬
+‭30,000.‬
+‭The‬
+‭value‬
+‭of‬
+‭the‬
+‭mobile‬
+‭depreciates‬‭by‬‭12%‬‭at‬‭the‬‭end‬‭of‬‭the‬‭first‬
+‭year‬ ‭and‬ ‭at‬ ‭the‬ ‭end‬ ‭of‬ ‭next‬ ‭year,‬ ‭it‬
+‭depreciates‬ ‭by‬ ‭15%.‬ ‭What‬ ‭will‬ ‭be‬ ‭the‬
+‭value‬ ‭of‬ ‭the‬ ‭mobile‬ ‭after‬ ‭2‬ ‭years‬ ‭?‬ ‭(In‬
+‭Rs.)‬
+‭SSC MTS 03/05/2023 (Afternoon)‬
+‭(a) 25,255 (b) 22,440 (c) 20,000 (d) 25,000‬
+‭Q.278.‬ ‭A‬ ‭alone‬ ‭can‬ ‭complete‬ ‭half‬ ‭of‬ ‭a‬
+‭work‬ ‭in‬ ‭150‬ ‭days.‬ ‭In‬ ‭50‬ ‭days,‬ ‭what‬
+‭percentage‬‭of‬‭the‬‭work‬‭will‬‭be‬‭completed‬
+‭by A ?‬
+‭SSC MTS 03/05/2023 (Evening)‬
+‭(a) 16.67 percent‬ ‭(b) 15 percent‬
+‭(c) 20 percent‬
+‭(d) 22.5 percent‬
+‭Q.279.‬ ‭Manisha‬ ‭has‬ ‭Rs.‬ ‭8000‬ ‭in‬ ‭her‬
+‭wallet.‬ ‭Then‬ ‭she‬ ‭increased‬ ‭it‬ ‭by‬ ‭10%.‬
+‭Now‬‭she‬‭spent‬‭5%‬‭of‬‭it.‬‭The‬‭final‬‭value‬‭of‬
+‭money‬ ‭in‬ ‭her‬ ‭wallet‬ ‭will‬ ‭be‬ ‭how‬ ‭much‬
+‭percent greater than the initial amount?‬
+‭SSC MTS 09 05/2023 (Evening)‬
+‭(a) 5%‬
+‭(b) 6%‬
+‭(c) 4.5%‬
+‭(d) 5.5%‬
+‭Q.280.‬ ‭The‬ ‭annual‬ ‭salary‬ ‭of‬ ‭Aniket‬
+‭increased‬ ‭from‬ ‭Rs.‬ ‭1000000‬ ‭to‬ ‭Rs.‬
+‭1400000. What is the percent increase?‬
+‭SSC MTS 16/05/2023 (Afternoon)‬
+‭(a) 14%‬ ‭(b) 40%‬
+‭(c) 20%    (d) 4%‬
+‭Q.281.‬ ‭If‬ ‭both‬ ‭length‬ ‭and‬ ‭breadth‬ ‭of‬ ‭a‬
+‭cuboid‬ ‭is‬ ‭increased‬ ‭by‬ ‭12‬ ‭percent,‬ ‭then‬
+‭by‬ ‭how‬ ‭much‬ ‭percent‬ ‭its‬ ‭height‬ ‭should‬
+‭be‬ ‭reduced‬ ‭so‬ ‭that‬ ‭the‬ ‭volume‬ ‭of‬ ‭the‬
+‭cuboid remains same?‬
+‭SSC MTS 16/05/2023 (Afternoon)‬
+‭(a) 14.56 percent‬ ‭(b) 24.72 percent‬
+‭(c) 20.28 percent‬ ‭(d) 28.44 percent‬
+‭Q.282.‬ ‭If‬ ‭the‬ ‭price‬ ‭of‬ ‭onion‬ ‭increases‬
+‭from‬‭Rs.‬‭60/kg‬‭to‬‭Rs.‬‭75/kg,‬‭then‬‭by‬‭what‬
+‭percentage‬‭a‬‭household‬‭should‬‭decrease‬
+‭the‬ ‭consumption‬ ‭of‬ ‭onion‬ ‭so‬ ‭that‬
+‭expenditure remains same ?‬
+‭SSC MTS 19/05/2023 (Evening)‬
+‭(a) 40 %‬ ‭(b) 25 %    (c) 20 %    (d) 30 %‬
+‭Q.283.‬‭A man multiplied a number by‬ ‭8‬
+‭5‬
+‭instead‬ ‭of‬
+‭,‬ ‭what‬ ‭is‬ ‭the‬ ‭percentage‬
+‭5‬
+‭8‬
+‭error in the calculation?‬
+‭SSC MTS 13/06/2023 (Afternoon)‬
+‭(a) 124%  (b) 162%  (c) 156%  (d) 100%‬
+‭Q.284.‬ ‭Vikas‬ ‭gave‬ ‭3‬ ‭examinations.‬ ‭The‬
+‭respective‬ ‭ratio‬ ‭of‬ ‭marks‬ ‭scored‬‭by‬‭him‬
+‭in‬ ‭the‬ ‭3‬ ‭examinations‬ ‭is‬ ‭3‬ ‭:‬ ‭5‬ ‭:‬ ‭6.‬ ‭The‬
+‭respective‬ ‭ratio‬ ‭of‬ ‭maximum‬ ‭marks‬ ‭of‬
+‭the‬ ‭3‬ ‭examination‬ ‭is‬ ‭7‬ ‭:‬ ‭11‬ ‭:‬ ‭10.‬ ‭If‬ ‭he‬
+‭scored‬‭50‬‭percent‬‭marks‬‭in‬‭total,‬‭then‬‭in‬
+‭how‬ ‭many‬ ‭examination‬ ‭has‬ ‭he‬ ‭scored‬
+‭marks more than 50 percent?‬
+‭SSC MTS 13/06/2023 (Afternoon)‬
+‭(a) None      (b) 1‬
+‭(c) 3‬
+‭(d) 2‬
+‭Q.285.‬ ‭If‬ ‭60‬ ‭is‬ ‭subtracted‬ ‭from‬ ‭30‬
+‭percent‬ ‭of‬ ‭a‬ ‭number,‬ ‭then‬ ‭the‬ ‭result‬ ‭is‬
+‭120. What is the value of the number?‬
+‭SSC MTS 13/06/2023 (Evening)‬
+‭(a) 550   (b) 600    (c) 700    (d) 630‬
+‭Q.286.‬ ‭In‬ ‭an‬ ‭examination‬ ‭out‬ ‭of‬ ‭6000‬
+‭students‬ ‭60%‬ ‭boys‬ ‭and‬ ‭90%‬ ‭girls‬ ‭are‬
+‭passed.‬ ‭If‬ ‭total‬ ‭pass‬ ‭percentage‬ ‭was‬
+‭65%,‬ ‭then‬ ‭what‬ ‭would‬‭be‬‭the‬‭number‬‭of‬
+‭boys?‬
+‭SSC MTS 20/06/2023 (Evening)‬
+‭(a) 3500   (b) 5000   (c) 4500   (d) 5500‬
+‭SSC CHSL 2022 Tier - 1‬
+‭Q.287.‬ ‭If‬ ‭20‬‭percent‬‭of‬‭P‬‭is‬‭added‬‭to‬‭40‬
+‭percent‬‭of‬‭Q,‬‭then‬‭the‬‭resultant‬‭comes‬‭as‬
+‭80 percent of Q . P is what percentage of‬
+‭Q ?‬
+‭SSC CHSL 09/03/2023 (1st Shift)‬
+‭(a) 125 % (b) 200 % (c)  225 % (d) 150 %‬
+‭Q.288.‬ ‭Out‬ ‭of‬ ‭two‬ ‭numbers,‬ ‭20‬ ‭percent‬
+‭of‬ ‭the‬ ‭smaller‬ ‭number‬ ‭is‬ ‭equal‬ ‭to‬ ‭14‬
+‭percent‬‭of‬‭the‬‭Larger‬‭number.‬‭If‬‭the‬‭sum‬
+‭of‬‭both‬‭the‬‭numbers‬‭is‬‭8942,‬‭then‬‭what‬‭is‬
+‭the value of larger number ?‬
+‭SSC CHSL 09/03/2023 (3rd Shift)‬
+‭(a) 4920   (b) 5260   (c) 5040   (d) 5160‬
+‭Q.289.‬‭In‬‭the‬‭Lok‬‭Sabha‬‭election,‬‭Party‬‭A‬
+‭got‬ ‭30%‬ ‭of‬ ‭the‬ ‭total‬ ‭votes.‬ ‭Party‬ ‭B‬ ‭got‬
+‭25%‬ ‭of‬ ‭the‬ ‭total‬ ‭votes.‬ ‭Party‬ ‭C‬ ‭got‬ ‭the‬
+‭remaining‬‭votes‬‭and‬‭they‬‭got‬‭9000‬‭more‬
+‭votes‬ ‭than‬ ‭Party‬ ‭A.‬ ‭Find‬ ‭the‬ ‭number‬ ‭of‬
+‭votes Party B got.‬
+‭SSC CHSL 10/03/2023 (2nd Shift)‬
+‭(a) 12000 (b) 18000 (c) 21000 (d) 15000‬
+‭Q.290.‬ ‭The‬ ‭price‬ ‭of‬ ‭a‬ ‭commodity‬ ‭is‬
+‭decreased‬‭by‬‭25‬‭percent‬‭and‬‭therefore‬‭a‬
+‭household‬‭increased‬‭the‬‭consumption‬‭of‬
+‭that‬ ‭commodity‬ ‭by‬ ‭20‬ ‭kg‬ ‭to‬ ‭keep‬ ‭the‬
+‭expenditure‬ ‭same.‬ ‭What‬ ‭was‬ ‭the‬ ‭earlier‬
+‭consumption?‬
+‭SSC CHSL 13/03/2023 (1st Shift)‬
+‭(a) 60 kg‬ ‭(b) 55 kg  (c) 75 kg  (d) 45 kg‬
+‭www.ssccglpinnacle.com                                                 Download Pinnacle Exam Preparation App‬
+
+‭Pinnacle‬
+‭Day: 65th - 69th‬
+‭Percentage‬
+‭Q.291.‬‭There‬‭are‬‭three‬‭numbers‬‭P,‬‭Q‬‭and‬
+‭R.‬ ‭30‬ ‭percent‬ ‭of‬ ‭P‬ ‭is‬ ‭equal‬ ‭to‬ ‭the‬ ‭15‬
+‭percent‬‭of‬‭Q‬‭.‬‭20‬‭percent‬‭of‬‭Q‬‭is‬‭equal‬‭to‬
+‭the‬‭10‬‭percent‬‭of‬‭R.‬‭By‬‭what‬‭percent‬‭is‬‭R‬
+‭more  than P ?‬
+‭SSC CHSL 13/03/2023 (2nd Shift)‬
+‭(a) 200‬
+‭(b) 300‬
+‭(c) 150‬
+‭(d) 250‬
+‭ ‬‭%‬
+‭%‬
+‭ ‬‭%‬
+‭%‬
+‭Q.292.‬ ‭In‬ ‭an‬ ‭election‬ ‭between‬ ‭two‬
+‭candidates,‬‭one‬‭got‬‭60%‬‭of‬‭the‬‭total‬‭valid‬
+‭votes,‬‭90%‬‭of‬‭the‬‭votes‬‭were‬‭valid.‬‭If‬‭the‬
+‭total‬ ‭number‬ ‭of‬ ‭votes‬ ‭was‬ ‭12000,‬ ‭then‬
+‭what‬‭was‬‭the‬‭number‬‭of‬‭valid‬‭votes‬‭that‬
+‭the other candidate got?‬
+‭SSC CHSL 13/03/2023 (4th Shift)‬
+‭(a) 8840   (b) 4320   (c) 10800   (d) 6200‬
+‭Q.293.‬ ‭Rajiv‬‭scored‬‭20‬‭percent‬‭marks‬‭in‬
+‭an‬ ‭exam‬ ‭and‬ ‭failed‬ ‭by‬ ‭25‬ ‭marks.‬ ‭If‬ ‭he‬
+‭scores‬‭50‬‭percent‬‭marks,‬‭then‬‭he‬‭gets‬‭20‬
+‭marks‬‭more‬‭than‬‭passing‬‭marks.‬‭What‬‭is‬
+‭the passing marks for the exam?‬
+‭SSC CHSL 14/03/2023 (1st Shift)‬
+‭(a) 40‬
+‭(b) 35‬
+‭(c) 55‬
+‭(d) 45‬
+‭Q.294.‬ ‭Student‬ ‭A‬ ‭got‬ ‭25‬ ‭marks‬ ‭more‬
+‭than‬ ‭the‬ ‭student‬ ‭B‬ ‭and‬ ‭the‬ ‭marks‬ ‭of‬ ‭A‬
+‭were‬‭equal‬‭to‬‭the‬‭60‬‭percent‬‭of‬‭the‬‭sum‬
+‭of‬ ‭their‬ ‭marks.‬ ‭What‬ ‭are‬ ‭the‬ ‭marks‬
+‭obtained by A and B respectively?‬
+‭SSC CHSL 14/03/2023 (3rd Shift)‬
+‭(a) 75, 100‬
+‭(b) 75, 50‬
+‭(c) 45, 120‬
+‭(d) 55, 80‬
+‭Q.295.‬ ‭Nakul‬ ‭went‬ ‭to‬ ‭the‬ ‭market‬‭to‬‭buy‬
+‭groceries.‬‭He‬‭has‬‭some‬‭money‬‭with‬‭him,‬
+‭20%‬‭of‬‭which‬‭he‬‭used‬‭to‬‭buy‬‭wheat‬‭flour,‬
+‭25%‬‭of‬‭the‬‭remaining‬‭money‬‭is‬‭spent‬‭on‬
+‭cooking‬ ‭oils.‬ ‭If‬ ‭he‬ ‭is‬ ‭left‬ ‭with‬ ‭Rs.900,‬
+‭then‬‭find‬‭out‬‭total‬‭amount‬‭of‬‭money‬‭that‬
+‭Nakul had.‬
+‭SSC CHSL 15/03/2023 (1st Shift)‬
+‭(a) Rs.1,500‬
+‭(b) Rs.1,200‬
+‭(c) Rs.1,350‬
+‭(d) Rs.1,800‬
+‭Q.296.‬‭If‬‭the‬‭price‬‭of‬‭an‬‭apple‬‭is‬‭reduced‬
+‭by‬‭30‬‭Percent,‬‭it‬‭enables‬‭the‬‭customer‬‭to‬
+‭buy‬ ‭5‬ ‭more‬ ‭apples‬ ‭for‬ ‭Rs.140.‬ ‭Find‬ ‭the‬
+‭reduced rate of apples.‬
+‭SSC CHSL 15/03/2023 (3rd Shift)‬
+‭(a) Rs.14‬ ‭(b) Rs.12  (c) Rs.7  (d) Rs.8.4‬
+‭Q.297.‬ ‭Price‬ ‭of‬ ‭15‬ ‭chairs‬ ‭is‬ ‭20‬ ‭percent‬
+‭more‬‭than‬‭the‬‭price‬‭of‬‭8‬‭tables.‬‭If‬‭price‬‭of‬
+‭2‬ ‭tables‬ ‭is‬ ‭Rs.‬ ‭2400,‬ ‭then‬ ‭what‬ ‭is‬ ‭the‬
+‭price of 15 chairs?‬
+‭SSC CHSL 16/03/2023 (1st Shift)‬
+‭(a) Rs. 10,320‬
+‭(b) Rs. 12,380‬
+‭(c) Rs. 11,520‬
+‭(d) Rs. 10,780‬
+‭Q.298.‬ ‭If‬ ‭the‬ ‭numerator‬ ‭of‬ ‭a‬ ‭fraction‬ ‭is‬
+‭increased‬ ‭by‬ ‭140%‬‭and‬‭the‬‭denominator‬
+‭of‬ ‭the‬ ‭fraction‬ ‭is‬ ‭decreased‬‭by‬‭20%,‬‭the‬
+‭resultant‬‭fraction‬‭is‬
+‭.‬‭Find‬‭the‬‭original‬
+‭12‬
+‭7‬
+‭fraction.‬
+‭SSC CHSL 17/03/2023 (1st Shift)‬
+‭(a)‬
+‭(b)‬
+‭(c)‬
+‭(d)‬
+‭4‬
+‭9‬
+‭4‬
+‭7‬
+‭7‬
+‭6‬
+‭8‬
+‭9‬
+‭Q.299.‬ ‭In‬ ‭an‬ ‭examination,‬ ‭45‬ ‭percent‬
+‭students‬ ‭passed‬ ‭in‬ ‭history‬ ‭and‬ ‭60‬
+‭percent‬ ‭students‬ ‭passed‬ ‭in‬ ‭hindi.‬ ‭If‬ ‭8‬
+‭percent‬ ‭students‬ ‭failed‬ ‭in‬ ‭both‬ ‭the‬
+‭subjects,‬‭then‬‭what‬‭percentage‬‭students‬
+‭passed in both the subjects?‬
+‭SSC CHSL 17/03/2023 (4th Shift)‬
+‭(a) 15 %   (b) 10 %   (c) 13 %   (d) 12 %‬
+‭Q.300.‬ ‭P's‬ ‭income‬ ‭is‬ ‭150‬‭percent‬‭of‬‭Q's‬
+‭income‬‭and‬‭P's‬‭expenditure‬‭is‬‭60‬‭percent‬
+‭of‬‭Q's‬‭expenditure.‬‭If‬‭Q‬‭saves‬‭20‬‭percent‬
+‭of‬
+‭his‬
+‭income,‬
+‭then‬
+‭how‬
+‭much‬
+‭percentage‬ ‭does‬ ‭P‬ ‭save‬ ‭of‬ ‭his‬ ‭own‬
+‭income?‬
+‭SSC CHSL 20/03/2023 (2nd Shift)‬
+‭(a) 68 %‬ ‭(b) 60 %   (c) 72 %   (d) 75 %‬
+‭Q.301.‬‭Tilak's‬‭salary‬‭increases‬‭by‬‭15%‬‭in‬
+‭the‬ ‭first‬ ‭year,‬ ‭decreases‬ ‭by‬ ‭20%‬ ‭in‬ ‭the‬
+‭second‬‭year‬‭and‬‭increases‬‭by‬‭25%‬‭in‬‭the‬
+‭third‬ ‭year.‬ ‭If‬ ‭Tilak's‬ ‭salary‬ ‭after‬ ‭these‬
+‭three‬ ‭years‬ ‭is‬ ‭Rs.23,000,‬ ‭then‬ ‭find‬ ‭the‬
+‭salary‬‭of‬‭Tilak‬‭in‬‭the‬‭beginning‬‭of‬‭these‬‭3‬
+‭years.‬
+‭SSC CHSL 21/03/2023 (1st Shift)‬
+‭(a) Rs.20,000‬
+‭(b) Rs.18,000‬
+‭(c) Rs.15,000‬
+‭(d) Rs.25,000‬
+‭SSC CGL 2022 Tier - 2‬
+‭Q.302.‬ ‭A‬ ‭basket‬ ‭contains‬ ‭350‬ ‭eggs.‬ ‭If‬
+‭12%‬ ‭of‬ ‭the‬ ‭eggs‬ ‭are‬ ‭rotten,‬ ‭how‬ ‭many‬
+‭eggs are good enough to be sold?‬
+‭SSC CGL Tier II (02/03/2023)‬
+‭(a) 408    (b) 310    (c) 308    (d) 410‬
+‭Q.303.‬‭If‬‭radius‬‭of‬‭a‬‭sphere‬‭is‬‭decreased‬
+‭by‬ ‭48%,‬ ‭then‬ ‭by‬ ‭what‬ ‭percent‬ ‭does‬ ‭its‬
+‭surface area decrease?‬
+‭SSC CGL Tier II (02/03/2023)‬
+‭(a) 82.91%‬
+‭(b) 72.96%‬
+‭(c) 78.98%‬
+‭(d) 86.26%‬
+‭Q.304.‬ ‭Two‬ ‭candidates‬ ‭contested‬ ‭an‬
+‭election.‬ ‭One‬ ‭of‬ ‭them‬ ‭got‬ ‭64%‬ ‭of‬ ‭the‬
+‭votes‬ ‭and‬ ‭won‬ ‭by‬ ‭434‬ ‭votes.‬ ‭What‬‭was‬
+‭the total number of votes polled?‬
+‭SSC CGL Tier II (03/03/2023)‬
+‭(a) 1550   (b) 1345   (c) 1680   (d) 1684‬
+‭Q.305.‬ ‭Mrs.‬ ‭Deepa‬‭Devi‬‭saves‬‭30%‬‭of‬‭her‬
+‭salary.‬‭If‬‭she‬‭receives‬‭Rs.42,000‬‭per‬‭month‬
+‭as‬ ‭her‬ ‭salary,‬ ‭what‬ ‭is‬ ‭her‬ ‭monthly‬
+‭expenditure?‬
+‭SSC CGL Tier II (06/03/2023)‬
+‭(a) Rs.29,200‬
+‭(b) Rs.29,400‬
+‭(c) Rs.29,300‬
+‭(d) Rs.29,100‬
+‭SSC CGL 2022 Tier - 1‬
+‭Q.306.‬ ‭The‬ ‭price‬ ‭of‬ ‭a‬‭scooter‬‭increases‬
+‭successively‬ ‭by‬ ‭10%,‬‭5%‬‭and‬‭15%.‬‭What‬
+‭is‬ ‭the‬ ‭total‬ ‭percentage‬ ‭increase‬ ‭in‬‭price‬
+‭of scooter ?‬
+‭SSC CGL 01/12/2022 (2nd Shift)‬
+‭(a) 32‬
+‭%‬
+‭(b) 34‬
+‭%‬
+‭33‬
+‭40‬
+‭21‬
+‭40‬
+‭(c) 30‬
+‭%‬
+‭(d) 36‬
+‭%‬
+‭11‬
+‭40‬
+‭31‬
+‭40‬
+‭Q.307.‬ ‭The‬ ‭ratio‬ ‭of‬ ‭expenditure‬ ‭to‬
+‭savings‬ ‭of‬ ‭a‬ ‭woman‬ ‭is‬ ‭5‬ ‭:‬ ‭1.‬ ‭If‬ ‭her‬
+‭income and expenditure are increased by‬
+‭10%‬ ‭and‬ ‭20%,‬ ‭respectively,‬‭then‬‭find‬‭the‬
+‭percentage change in her savings.‬
+‭SSC CGL 01/12/2022 (3rd Shift)‬
+‭(a) 55%‬ ‭(b) 60%‬ ‭(c) 50%     (d) 40%‬
+‭Q.308.‬ ‭Raju,‬ ‭Ravi‬ ‭and‬ ‭Ashok‬ ‭contested‬
+‭an‬‭election.‬‭5%‬‭votes‬‭polled‬‭were‬‭invalid.‬
+‭Raju‬‭got‬‭30%‬‭of‬‭the‬‭total‬‭votes.‬‭Ravi‬‭got‬
+‭32%‬ ‭of‬ ‭the‬ ‭total‬ ‭votes.‬ ‭The‬ ‭winner‬ ‭got‬
+‭5136‬ ‭more‬ ‭votes‬ ‭than‬ ‭the‬ ‭person‬ ‭who‬
+‭received‬ ‭the‬‭least‬‭number‬‭of‬‭votes.‬‭Find‬
+‭the total number of votes polled.‬
+‭SSC CGL 01/12/2022 (4th Shift)‬
+‭(a) 171200‬
+‭(b) 64200‬
+‭(c) 171220‬
+‭(d) 172100‬
+‭Q.309.‬ ‭In‬ ‭the‬ ‭election,‬ ‭8%‬ ‭of‬ ‭the‬ ‭voters‬
+‭did‬ ‭not‬‭cast‬‭their‬‭votes.‬‭Two‬‭candidates‬
+‭contested‬ ‭the‬ ‭election‬ ‭in‬ ‭which‬ ‭the‬
+‭winning‬ ‭candidate‬ ‭got‬ ‭48%‬ ‭of‬ ‭the‬ ‭total‬
+‭votes‬ ‭and‬ ‭won‬ ‭election‬ ‭by‬ ‭1100‬ ‭votes.‬
+‭Find‬ ‭the‬ ‭total‬ ‭number‬ ‭of‬ ‭voters‬ ‭in‬ ‭the‬
+‭election,‬ ‭given‬ ‭that‬ ‭all‬ ‭the‬ ‭votes‬ ‭cast‬
+‭were valid?‬
+‭SSC CGL 02/12/2022 (1st Shift)‬
+‭(a) 25500 (b) 26500 (c) 27500 (d) 28500‬
+‭Q.310.‬ ‭In‬ ‭an‬ ‭election‬ ‭between‬ ‭two‬
+‭candidates,‬ ‭12%‬ ‭of‬ ‭voters‬ ‭did‬ ‭not‬ ‭cast‬
+‭their‬‭votes.‬‭The‬‭winner‬‭by‬‭obtaining‬‭68%‬
+‭of‬‭the‬‭total‬‭votes‬‭defeated‬‭his‬‭contestant‬
+‭by‬ ‭2880‬ ‭votes.‬ ‭What‬ ‭was‬ ‭the‬ ‭total‬
+‭number‬‭of‬‭voters‬‭who‬‭cast‬‭their‬‭votes‬‭in‬
+‭the election?‬
+‭SSC CGL 02/12/2022 (3rd Shift)‬
+‭(a) 5280   (b) 8000   (c) 4000   (d) 6000‬
+‭Q.311.‬
+‭The‬
+‭number‬
+‭of‬
+‭books‬
+‭on‬
+‭Mathematics,‬‭Physics‬‭and‬‭Chemistry‬‭in‬‭a‬
+‭University‬ ‭library‬ ‭is‬ ‭in‬ ‭the‬ ‭ratio‬ ‭8‬‭:‬‭5‬‭:‬‭9.‬
+‭There‬ ‭is‬ ‭a‬ ‭proposal‬ ‭to‬ ‭increase‬ ‭these‬
+‭books‬ ‭by‬ ‭10%,‬ ‭5%‬ ‭and‬ ‭5%‬ ‭respectively.‬
+‭What‬ ‭will‬ ‭be‬ ‭the‬ ‭ratio‬ ‭of‬ ‭the‬ ‭number‬ ‭of‬
+‭books after increment?‬
+‭SSC CGL 02/12/2022 (4th Shift)‬
+‭(a) 212 : 117 : 47‬
+‭(b) 37 : 47 : 83‬
+‭(c) 176 : 105 : 189‬
+‭(d) 189 : 115 : 117‬
+‭Q.312.‬ ‭Ram‬ ‭loses‬ ‭12‬
+‭%‬ ‭of‬ ‭his‬ ‭money‬
+‭1‬
+‭2‬
+‭and after spending 75% of the remainder,‬
+‭www.ssccglpinnacle.com                                                 Download Pinnacle Exam Preparation App‬
+
+‭Pinnacle‬
+‭Day: 65th - 69th‬
+‭Percentage‬
+‭is‬ ‭left‬ ‭with‬ ‭₹630.‬ ‭How‬ ‭much‬ ‭money‬‭did‬
+‭Ram have initially ?‬
+‭SSC CGL 03/12/2022 (1st Shift)‬
+‭(a) ₹2,080 (b) ₹2,880 (c) ₹2,205 (d) ₹2,808‬
+‭Q.313.‬ ‭Mr.‬ ‭X‬ ‭has‬ ‭a‬ ‭monthly‬ ‭income‬ ‭of‬
+‭$26,500‬ ‭and‬ ‭his‬ ‭monthly‬ ‭expenditure‬ ‭is‬
+‭$20,500.‬ ‭The‬ ‭next‬ ‭year,‬ ‭his‬ ‭salary‬ ‭is‬
+‭increased‬ ‭by‬ ‭12%‬ ‭and‬ ‭expenditure‬ ‭is‬
+‭increased‬‭by‬‭6%.‬‭His‬‭savings‬‭increase‬‭by‬
+‭how much percent?‬
+‭SSC CGL 05/12/2022 (3rd Shift)‬
+‭(a) 32.5%  (b) 27.3%  (c) 32.0%  (d) 34.7%‬
+‭Q.314.‬
+‭During‬
+‭the‬
+‭first‬
+‭year,‬
+‭the‬
+‭population‬ ‭of‬ ‭a‬ ‭town‬ ‭increased‬ ‭by‬‭12%.‬
+‭The‬ ‭next‬ ‭year,‬ ‭due‬ ‭to‬ ‭some‬ ‭contagious‬
+‭disease,‬ ‭it‬ ‭decreased‬ ‭by‬ ‭8%.‬ ‭At‬ ‭the‬‭end‬
+‭of‬ ‭the‬ ‭second‬ ‭year,‬ ‭the‬ ‭population‬ ‭was‬
+‭64,400.‬ ‭Find‬ ‭the‬ ‭population‬ ‭of‬ ‭the‬ ‭town‬
+‭at beginning of the first year.‬
+‭SSC CGL 05/12/2022 (4th Shift)‬
+‭(a) 50,000‬
+‭(b) 54,750‬
+‭(c) 62,500‬
+‭(d) 50,500‬
+‭Q.315.‬
+‭Two‬
+‭candidates‬
+‭P‬
+‭and‬
+‭Q‬
+‭contested‬ ‭in‬ ‭an‬ ‭election.‬ ‭70%‬ ‭of‬ ‭the‬
+‭registered‬‭voters‬‭are‬‭P‬‭supporters.‬‭If‬‭60%‬
+‭of‬ ‭the‬ ‭P‬ ‭supporters‬ ‭and‬ ‭30%‬ ‭of‬ ‭the‬ ‭Q‬
+‭supporters‬ ‭are‬ ‭expected‬ ‭to‬ ‭vote‬ ‭for‬
+‭candidate‬‭P,‬‭then‬‭what‬‭percentage‬‭of‬‭the‬
+‭registered voters are expected to vote for‬
+‭candidate P ?‬
+‭SSC CGL 06/12/2022 (1st Shift)‬
+‭(a) 30%‬
+‭(b) 51%     (c) 26%      (d) 47%‬
+‭Q.316.‬ ‭If‬ ‭the‬‭price‬‭of‬‭petrol‬‭is‬‭increased‬
+‭by‬ ‭28%,‬ ‭by‬ ‭what‬ ‭percentage‬ ‭should‬ ‭the‬
+‭consumption‬
+‭be‬
+‭decreased‬
+‭by‬
+‭the‬
+‭consumer,‬ ‭if‬ ‭the‬ ‭expenditure‬ ‭on‬ ‭petrol‬
+‭remains‬
+‭unchanged?‬
+‭(Correct‬
+‭to‬ ‭2‬
+‭decimal places)‬
+‭SSC CGL 06/12/2022 (3rd Shift)‬
+‭(a) 12.35%‬
+‭(b) 21.88%‬
+‭(c) 20.25%‬
+‭(d) 25.75%‬
+‭Q.317.‬‭20%‬‭of‬‭the‬‭inhabitants‬‭of‬‭a‬‭village‬
+‭having‬ ‭died‬ ‭of‬ ‭malaria,‬ ‭a‬ ‭panic‬ ‭set‬ ‭in,‬
+‭during‬ ‭which‬ ‭30%‬ ‭of‬ ‭the‬ ‭remaining‬
+‭inhabitants‬
+‭left‬
+‭the‬
+‭village.‬
+‭The‬
+‭population‬ ‭was‬ ‭then‬ ‭reduced‬ ‭to‬ ‭12,000.‬
+‭What‬ ‭was‬ ‭the‬ ‭number‬ ‭of‬ ‭inhabitants‬
+‭initially (Consider integral part only)‬
+‭SSC CGL 07/12/2022 (2nd Shift)‬
+‭(a) 21000 (b) 21428 (c) 21500 (d) 30428‬
+‭Q.318.‬
+‭Three‬
+‭candidates‬
+‭were‬
+‭participating‬ ‭in‬ ‭an‬ ‭election.‬ ‭The‬ ‭person‬
+‭at‬ ‭third‬ ‭place‬ ‭got‬ ‭20%‬‭of‬‭the‬‭total‬‭votes‬
+‭while‬‭the‬‭difference‬‭between‬‭the‬‭votes‬‭of‬
+‭the‬ ‭winner‬ ‭and‬ ‭the‬ ‭first‬ ‭runner‬ ‭up‬ ‭was‬
+‭20%‬ ‭of‬ ‭the‬ ‭total‬ ‭votes.‬ ‭If‬ ‭the‬ ‭difference‬
+‭between‬ ‭the‬ ‭votes‬ ‭of‬ ‭the‬‭first‬‭runner‬‭up‬
+‭and‬ ‭the‬ ‭second‬ ‭runner‬ ‭up‬ ‭was‬ ‭37,000,‬
+‭how many votes did the winner receive?‬
+‭SSC CGL 07/12/2022 (4th Shift)‬
+‭(a) 1,80,000‬
+‭(b) 1,85,000‬
+‭(c) 1,75,000‬
+‭(d) 1,95,000‬
+‭Q.319.‬ ‭In‬‭the‬‭first‬‭year‬‭the‬‭population‬‭of‬
+‭a‬ ‭town‬ ‭decreased‬ ‭by‬ ‭5%‬ ‭due‬ ‭to‬ ‭the‬
+‭Corona‬‭virus‬‭first‬‭wave.‬‭In‬‭the‬‭next‬‭year‬‭it‬
+‭decreased‬‭again‬‭by‬‭5%‬‭due‬‭to‬‭the‬‭second‬
+‭wave‬‭and‬‭in‬‭the‬‭third‬‭year‬‭it‬‭increased‬‭by‬
+‭5%.‬ ‭At‬ ‭the‬ ‭end‬ ‭of‬ ‭the‬ ‭third‬ ‭year‬ ‭the‬
+‭population‬ ‭was‬ ‭9,47,625.‬ ‭What‬ ‭was‬ ‭the‬
+‭population‬ ‭at‬ ‭the‬ ‭beginning‬ ‭of‬ ‭the‬ ‭first‬
+‭year?‬
+‭SSC CGL 08/12/2022 (3rd Shift)‬
+‭(a) 7,00,000‬
+‭(b) 10,00,000‬
+‭(c) 8,97,993‬
+‭(d) 9,92,519‬
+‭Q.320.‬ ‭Three‬ ‭candidates‬ ‭P,‬ ‭Q‬ ‭and‬ ‭R‬
+‭participated‬ ‭in‬ ‭an‬ ‭election.‬ ‭P‬ ‭got‬ ‭35%‬
+‭more‬ ‭votes‬ ‭than‬‭Q,‬‭and‬‭R‬‭got‬‭15%‬‭more‬
+‭votes‬ ‭than‬ ‭Q,‬ ‭P‬ ‭overtook‬ ‭R‬ ‭by‬ ‭2,412‬
+‭votes.‬ ‭If‬ ‭90%‬ ‭of‬ ‭voters‬ ‭voted‬ ‭and‬ ‭no‬
+‭invalid‬ ‭or‬ ‭illegal‬ ‭votes‬ ‭were‬ ‭cast,‬ ‭then‬
+‭what‬ ‭was‬ ‭the‬ ‭number‬ ‭of‬ ‭voters‬ ‭in‬ ‭the‬
+‭voting list?‬
+‭SSC CGL 09/12/2022 (1st Shift)‬
+‭(a) 46,900‬
+‭(b) 42,800‬
+‭(c) 42,210‬
+‭(d) 48,500‬
+‭Q.321.‬‭In‬‭an‬‭election‬‭contested‬‭between‬
+‭two‬ ‭candidates,‬ ‭15%‬ ‭of‬ ‭the‬ ‭total‬ ‭voters‬
+‭did‬ ‭not‬ ‭cast‬ ‭their‬ ‭votes‬ ‭and‬ ‭100‬ ‭votes‬
+‭got‬‭disqualified.‬‭The‬‭candidate‬‭who‬‭won‬
+‭the‬ ‭election‬ ‭won‬ ‭it‬ ‭by‬ ‭securing‬ ‭45%‬ ‭of‬
+‭the‬ ‭total‬ ‭votes‬ ‭and‬ ‭won‬ ‭by‬ ‭a‬ ‭margin‬ ‭of‬
+‭400‬ ‭votes.‬ ‭Find‬ ‭the‬ ‭total‬ ‭number‬ ‭of‬
+‭voters?‬
+‭SSC CGL 09/12/2022 (2nd Shift)‬
+‭(a) 6,000‬‭(b) 3,600 (c) 10,000 (d) 3,500‬
+‭Q.322.‬‭A‬‭number‬‭is‬‭decreased‬‭by‬‭20%‬‭to‬
+‭get‬ ‭another‬ ‭number.‬ ‭The‬ ‭number‬ ‭so‬
+‭obtained‬ ‭is‬ ‭increased‬ ‭by‬ ‭200%‬ ‭to‬ ‭get‬ ‭a‬
+‭third‬ ‭number.‬ ‭The‬‭difference‬‭of‬‭the‬‭third‬
+‭number‬ ‭and‬ ‭the‬‭original‬‭number‬‭is‬‭what‬
+‭percentage‬ ‭more‬ ‭or‬ ‭less‬ ‭than‬ ‭the‬
+‭difference‬ ‭of‬ ‭second‬ ‭and‬ ‭the‬ ‭third‬
+‭number?‬
+‭SSC CGL 12/12/2022 (2nd Shift)‬
+‭(a) More, 15.7 %‬ ‭(b) Less, 15.7 %‬
+‭(c) More, 12.5 %‬ ‭(d) Less, 12.5 %‬
+‭SSC CPO 2022 Tier - 1‬
+‭Q.323.‬ ‭The‬ ‭monthly‬ ‭income‬ ‭of‬ ‭Ramesh‬
+‭was‬
+‭Rs.16,500‬
+‭and‬
+‭his‬
+‭monthly‬
+‭expenditure‬‭was‬‭Rs.10,500.‬‭Next‬‭year‬‭his‬
+‭income‬ ‭increased‬ ‭by‬ ‭25%‬ ‭and‬ ‭his‬
+‭expenditure‬ ‭increased‬ ‭by‬ ‭19%.‬ ‭Find‬ ‭the‬
+‭percentage increase in his saving.‬
+‭SSC CPO  09/11/2022 (Afternoon)‬
+‭(a) 33.5% (b) 34.5% (c) 32.5% (d) 35.5%‬
+‭Q.324.‬ ‭In‬ ‭a‬ ‭two-candidate‬ ‭election,‬ ‭10%‬
+‭of‬ ‭the‬ ‭voters‬ ‭did‬ ‭not‬ ‭cast‬ ‭their‬ ‭ballots.‬
+‭10%‬‭of‬‭the‬‭votes‬‭cast‬‭were‬‭found‬‭invalid.‬
+‭The‬ ‭winning‬ ‭candidate‬ ‭received‬ ‭54%‬ ‭of‬
+‭the‬‭valid‬‭votes‬‭and‬‭a‬‭1620-vote‬‭majority.‬
+‭Find‬ ‭the‬ ‭number‬ ‭of‬ ‭people‬ ‭on‬ ‭the‬ ‭voter‬
+‭list who have registered to vote.‬
+‭SSC CPO 09/11/2022 (Evening)‬
+‭(a) 25000 (b) 26000  (c) 24500 (d) 25500‬
+‭Q.325.‬
+‭The‬
+‭production‬ ‭of‬ ‭AB‬ ‭Co.‬
+‭increased‬ ‭by‬ ‭10%‬ ‭after‬ ‭one‬ ‭year,‬ ‭and‬ ‭in‬
+‭the‬ ‭next‬ ‭year‬‭it‬‭increased‬‭by‬‭22%.‬‭In‬‭the‬
+‭third‬ ‭year,‬ ‭it‬ ‭increased‬ ‭by‬ ‭5%.‬ ‭What‬
+‭overall‬ ‭change‬ ‭(in‬ ‭%)‬ ‭has‬ ‭been‬ ‭there‬ ‭in‬
+‭the‬ ‭production‬ ‭in‬ ‭three‬ ‭years‬ ‭from‬ ‭the‬
+‭original production?‬
+‭SSC CPO 10/11/2022 (Afternoon)‬
+‭(a) 41.5% (b) 40.9% (c) 41.2%  (d) 42.8%‬
+‭Q.326.‬ ‭In‬ ‭an‬ ‭assembly‬ ‭election,‬ ‭a‬
+‭candidate‬ ‭got‬ ‭60%‬ ‭of‬ ‭the‬ ‭total‬ ‭valid‬
+‭votes.‬ ‭2%‬ ‭of‬ ‭the‬ ‭total‬ ‭votes‬ ‭were‬
+‭declared‬ ‭invalid.‬ ‭If‬ ‭the‬ ‭total‬ ‭number‬ ‭of‬
+‭voters‬ ‭is‬ ‭1,50,000,‬ ‭then‬ ‭find‬ ‭the‬‭number‬
+‭of‬ ‭valid‬ ‭votes‬ ‭polled‬ ‭in‬ ‭favour‬ ‭of‬ ‭that‬
+‭candidate.‬
+‭SSC CPO 11/11/2022 (Afternoon)‬
+‭(a) 90,000‬
+‭(b) 78,000‬
+‭(c) 86,400‬
+‭(d) 88,200‬
+‭Q.327.‬ ‭In‬ ‭an‬ ‭election‬ ‭between‬ ‭two‬
+‭candidates,‬ ‭85%‬ ‭of‬ ‭the‬ ‭voters‬‭cast‬‭their‬
+‭votes,‬‭out‬‭of‬‭which‬‭4%‬‭of‬‭the‬‭votes‬‭were‬
+‭declared‬ ‭invalid.‬ ‭A‬ ‭candidate‬ ‭got‬ ‭6936‬
+‭votes‬‭which‬‭were‬‭85%‬‭of‬‭the‬‭valid‬‭votes.‬
+‭Find‬ ‭the‬ ‭total‬ ‭number‬ ‭of‬‭voters‬‭enrolled‬
+‭in that election.‬
+‭SSC CPO 11/11/2022 (Evening)‬
+‭(a) 10,500 (b) 10,800 (c) 10,000 (d) 10,700‬
+‭SSC CGL 2021 Tier - 2‬
+‭Q.328.‬ ‭Raju‬ ‭spends‬ ‭10‬ ‭percent‬ ‭and‬ ‭20‬
+‭percent‬ ‭of‬ ‭his‬ ‭income‬ ‭on‬ ‭transport‬ ‭and‬
+‭food‬ ‭respectively.‬ ‭He‬‭spends‬‭30‬‭percent‬
+‭of‬ ‭the‬‭remaining‬‭income‬‭on‬‭clothing.‬‭He‬
+‭saves‬‭the‬‭rest‬‭of‬‭his‬‭income.‬‭If‬‭his‬‭saving‬
+‭is‬
+‭26460,‬ ‭then‬ ‭what‬ ‭will‬ ‭be‬ ‭the‬ ‭total‬
+‭₹‬
+‭expenditure‬
+‭on‬
+‭food‬
+‭and‬
+‭clothing‬
+‭together?‬
+‭SSC CGL Tier II (08/08/2022)‬
+‭(a)‬ ‭26420‬
+‭(b)‬ ‭24480‬
+‭₹‬
+‭₹‬
+‭(c)‬ ‭22140‬
+‭(d)‬ ‭23440‬
+‭₹‬
+‭₹‬
+‭SSC Selection Post (Phase - X)‬
+‭Q.329.‬ ‭In‬‭an‬‭election‬‭,‬‭35%‬‭of‬‭the‬‭voters‬
+‭for‬ ‭candidate‬ ‭P‬ ‭whereas‬ ‭50%‬ ‭of‬ ‭the‬
+‭remaining‬ ‭voted‬ ‭for‬ ‭candidate‬ ‭Q‬ ‭The‬
+‭remaining‬ ‭voters‬ ‭did‬ ‭not‬ ‭vote.‬ ‭If‬ ‭the‬
+‭different‬ ‭between‬ ‭those‬ ‭who‬ ‭voted‬ ‭for‬
+‭candidate‬ ‭P‬ ‭and‬‭those‬‭who‬‭did‬‭not‬‭vote‬
+‭was‬ ‭1000,‬ ‭the‬ ‭number‬ ‭of‬ ‭individuals‬
+‭eligible‬‭for‬‭casting‬‭a‬‭vote‬‭in‬‭that‬‭election‬
+‭was:‬
+‭Graduate Level 01/08/2022 (Shift - 4)‬
+‭(a) 55000 (b) 60000 (c) 40000 (d) 75000‬
+‭www.ssccglpinnacle.com                                                 Download Pinnacle Exam Preparation App‬
+
+‭Pinnacle‬
+‭Day: 65th - 69th‬
+‭Percentage‬
+‭Q.330.‬‭28%‬‭of‬‭the‬‭people‬‭eligible‬‭to‬‭vote‬
+‭are‬ ‭between‬ ‭20‬ ‭to‬ ‭25‬ ‭years‬ ‭.In‬ ‭an‬
+‭election‬‭75%‬‭of‬‭those‬‭eligible‬‭to‬‭vote‬‭who‬
+‭were‬ ‭between‬ ‭20‬ ‭to‬ ‭25‬ ‭years‬ ‭actually‬
+‭voted.‬ ‭In‬ ‭that‬ ‭election‬ ‭the‬ ‭number‬ ‭of‬
+‭persons‬ ‭between‬‭20‬‭to‬‭25‬‭who‬‭actually‬
+‭voted‬ ‭was‬ ‭what‬ ‭percentage‬ ‭of‬ ‭those‬
+‭eligible to vote?‬
+‭Graduate Level 01/08/2022 (Shift - 4)‬
+‭(a) 22%    (b) 25%    (c) 28%    (d) 21%‬
+‭Q.331.‬ ‭A‬ ‭family‬ ‭saves‬ ‭30%‬ ‭of‬ ‭the‬ ‭total‬
+‭income‬‭and‬‭the‬‭savings‬‭amount‬‭to‬‭₹600‬
+‭less‬ ‭than‬ ‭half‬ ‭of‬ ‭the‬ ‭expenditure.‬ ‭If‬ ‭the‬
+‭total‬‭expenditure‬‭is‬‭spent‬‭on‬‭health,‬‭food‬
+‭and‬‭education‬‭in‬‭the‬‭ratio‬‭of‬‭3‬‭:‬‭5‬‭:‬‭6,‬‭then‬
+‭what‬ ‭amount‬ ‭of‬ ‭expenditure‬‭is‬‭spent‬‭on‬
+‭education?‬
+‭Graduate Level 02/08/2022 (Shift - 3)‬
+‭(a) ₹3,600 (b) ₹1,800 (c) ₹8,400 (d) ₹7,200‬
+‭Q.332.‬ ‭The‬ ‭income‬ ‭of‬ ‭an‬ ‭employee‬ ‭is‬
+‭30%‬ ‭more‬ ‭than‬ ‭his‬ ‭expenditure.‬ ‭If‬ ‭his‬
+‭income‬ ‭decreases‬ ‭by‬ ‭10%‬ ‭and‬ ‭his‬
+‭expenditure‬ ‭increases‬ ‭by‬ ‭3%,‬ ‭then‬ ‭by‬
+‭what percent does his savings decrease‬
+‭or increase?‬
+‭Graduate Level 04/08/2022 (Shift - 2)‬
+‭(a) 48‬
+‭% increase   (b) 52‬
+‭% decrease‬
+‭1‬
+‭3‬
+‭1‬
+‭4‬
+‭(c) 53‬
+‭% decrease  (d) 50‬
+‭% increase‬
+‭1‬
+‭3‬
+‭1‬
+‭4‬
+‭Q.333.‬ ‭Ranjeet‬ ‭spends‬ ‭30%‬ ‭of‬ ‭his‬
+‭monthly‬ ‭salary‬ ‭on‬ ‭food,‬ ‭15%‬ ‭of‬ ‭the‬
+‭remaining‬ ‭salary‬ ‭on‬ ‭clothes,‬ ‭25%‬ ‭of‬‭the‬
+‭remaining‬‭salary‬‭on‬‭rent,‬‭and‬‭20%‬‭of‬‭the‬
+‭remaining‬ ‭salary‬ ‭on‬ ‭fuel‬ ‭and‬ ‭still‬ ‭saves‬
+‭an‬ ‭amount‬ ‭of‬ ‭₹5,355.‬ ‭What‬ ‭is‬ ‭Ranjeet’s‬
+‭monthly salary ?‬
+‭Graduate Level 04/08/2022 (Shift - 4)‬
+‭(a) ₹12,000‬
+‭(b) ₹15,000‬
+‭(c) ₹20,000‬
+‭(d) ₹17,000‬
+‭Q.334.‬ ‭In‬ ‭an‬ ‭election‬ ‭there‬ ‭were‬ ‭two‬
+‭candidates‬ ‭Ram‬ ‭Singh‬ ‭and‬ ‭Sohan‬ ‭Lal.‬
+‭The‬
+‭total‬
+‭no.‬
+‭of‬
+‭voters‬
+‭in‬
+‭the‬
+‭constituency‬ ‭was‬ ‭80000‬‭and‬‭80%‬‭of‬‭the‬
+‭total‬ ‭votes‬ ‭were‬ ‭polled.‬ ‭If‬ ‭60%‬ ‭of‬ ‭the‬
+‭polled‬ ‭votes‬ ‭were‬ ‭cast‬‭in‬‭favour‬‭of‬‭Ram‬
+‭Singh,‬‭how‬‭many‬‭votes‬‭were‬‭received‬‭by‬
+‭Sohan Lal ?‬
+‭Higher Secondary 01/08/2022 (Shift - 3 )‬
+‭(a) 28000 (b) 38400 (c) 25600 (d) 26700‬
+‭SSC MTS 2021 Tier - 1‬
+‭Q.335.‬
+‭In‬
+‭a‬
+‭competitive‬
+‭exam,‬ ‭the‬
+‭minimum‬
+‭qualifying‬
+‭percentages‬
+‭for‬
+‭Category‬ ‭A‬ ‭and‬ ‭Category‬ ‭B‬ ‭jobs‬ ‭are‬ ‭25%‬
+‭and‬ ‭45%‬ ‭respectively.‬ ‭A‬‭candidate‬‭scored‬
+‭83‬ ‭marks‬ ‭and‬ ‭failed‬ ‭to‬ ‭get‬ ‭a‬ ‭Category‬ ‭B‬
+‭job‬ ‭by‬ ‭25‬ ‭marks.‬ ‭What‬ ‭is‬ ‭the‬ ‭minimum‬
+‭qualifying‬ ‭marks‬ ‭to‬ ‭secure‬ ‭a‬ ‭Category‬ ‭A‬
+‭job ?‬
+‭SSC MTS 06/07/2022 (Morning)‬
+‭(a) 55‬
+‭(b) 60‬
+‭(c) 50‬
+‭(d) 65‬
+‭Q.336.‬‭In‬‭a‬‭city‬‭60%‬‭of‬‭the‬‭population‬‭are‬
+‭males‬ ‭and‬ ‭the‬ ‭rest‬ ‭are‬ ‭females.‬ ‭If‬ ‭the‬
+‭ratio‬ ‭of‬ ‭married‬ ‭males‬ ‭to‬ ‭non-married‬
+‭males‬ ‭is‬ ‭5‬ ‭:‬ ‭7,‬ ‭and‬ ‭the‬ ‭ratio‬ ‭of‬ ‭married‬
+‭females‬ ‭to‬ ‭non-married‬ ‭females‬‭is‬‭2‬‭:‬‭3,‬
+‭then‬ ‭what‬ ‭percentage‬ ‭of‬ ‭the‬ ‭total‬
+‭population is married?‬
+‭SSC MTS 08/07/2022 (Afternoon)‬
+‭(a) 41%‬ ‭(b) 59%‬ ‭(c) 51%‬ ‭(d) 49%‬
+‭Q.337.‬ ‭A‬ ‭batsman‬ ‭scored‬ ‭120‬ ‭runs,‬
+‭which‬‭included‬‭4‬‭sixes‬‭and‬‭6‬‭fours.‬‭What‬
+‭percentage‬‭of‬‭his‬‭total‬‭score‬‭did‬‭he‬‭make‬
+‭by‬ ‭running‬ ‭between‬ ‭the‬ ‭wickets‬ ‭(runs‬
+‭that‬
+‭were‬
+‭scored‬ ‭only‬ ‭by‬ ‭running‬
+‭between‬ ‭the‬ ‭wickets‬ ‭and‬ ‭not‬ ‭by‬ ‭hitting‬
+‭fours and sixes) ?‬
+‭SSC MTS 11/07/2022 (Afternoon)‬
+‭(a) 30%‬ ‭(b) 50%‬ ‭(c) 60%‬ ‭(d) 40%‬
+‭Q.338.‬‭In‬‭an‬‭office‬‭of‬‭900‬‭employees,‬‭on‬
+‭a‬ ‭particular‬ ‭day,‬ ‭except‬ ‭for‬ ‭10%‬ ‭of‬ ‭the‬
+‭female‬ ‭employees,‬ ‭all‬ ‭employees‬ ‭were‬
+‭present.‬‭On‬‭the‬‭next‬‭day,‬‭except‬‭for‬‭8%‬‭of‬
+‭the‬‭male‬‭employees,‬‭all‬‭employees‬‭were‬
+‭present.‬ ‭The‬ ‭number‬ ‭of‬ ‭employees‬
+‭present‬ ‭on‬ ‭each‬ ‭of‬ ‭these‬ ‭two‬‭days‬‭was‬
+‭the same. Find the total number of male‬
+‭employees on the payrolls of this office.‬
+‭SSC MTS 12/07/2022 (Morning)‬
+‭(a) 550‬ ‭(b) 450‬ ‭(c) 800‬ ‭(d) 500‬
+‭Q.339.‬‭There are 45 students in a hostel.‬
+‭If the number of students increases by 5,‬
+‭the‬ ‭total‬ ‭expenses‬‭of‬‭the‬‭mess‬‭increase‬
+‭by‬ ‭₹30‬ ‭per‬ ‭day‬ ‭while‬ ‭the‬ ‭average‬ ‭daily‬
+‭expenditure‬ ‭per‬ ‭head‬ ‭diminishes‬ ‭by‬ ‭₹2.‬
+‭Find‬‭the‬‭original‬‭total‬‭daily‬‭expenditure‬‭of‬
+‭the mess.‬
+‭SSC MTS 13/07/2022 (Evening)‬
+‭(a) ₹1,170 (b) ₹1,710  (c) ₹1,200 (d) ₹1,250‬
+‭Q.340.‬ ‭In‬ ‭university‬ ‭exams‬ ‭where‬ ‭the‬
+‭total‬ ‭maximum‬ ‭marks‬ ‭were‬ ‭500,‬ ‭Mohit‬
+‭gets‬ ‭20%‬ ‭more‬ ‭than‬ ‭Surendra,‬ ‭Surendra‬
+‭gets‬ ‭20%‬ ‭more‬ ‭than‬ ‭Lalit,‬‭and‬‭Lalit‬‭gets‬
+‭15%‬‭less‬‭than‬‭Darshan.‬‭If‬‭Mohit‬‭gets‬‭366‬
+‭marks,‬‭what‬‭percentage‬‭of‬‭the‬‭full‬‭marks‬
+‭does‬ ‭Darshan‬ ‭get?‬ ‭[‬ ‭Give‬ ‭your‬ ‭answer‬
+‭correct to 2 decimal places]‬
+‭SSC MTS 14/07/2022 (Afternoon)‬
+‭(a) 82.50%‬
+‭(b) 59.80%‬
+‭(c) 58.02%‬
+‭(d) 80.50%‬
+‭Q.341.‬ ‭The‬ ‭number‬‭of‬‭adults‬‭who‬‭come‬
+‭only‬ ‭to‬ ‭walk‬ ‭in‬ ‭a‬ ‭park‬ ‭every‬ ‭day‬‭is‬‭140.‬
+‭18%‬
+‭of‬
+‭the‬ ‭adults‬ ‭come‬ ‭only‬ ‭to‬
+‭accompany‬ ‭their‬ ‭children‬ ‭in‬ ‭the‬ ‭park.‬
+‭54%‬‭of‬‭the‬‭adults‬‭come‬‭only‬‭to‬‭run‬‭in‬‭the‬
+‭park.‬ ‭What‬ ‭is‬ ‭the‬‭total‬‭number‬‭of‬‭adults‬
+‭who‬ ‭come‬ ‭to‬ ‭the‬ ‭park‬ ‭every‬ ‭day‬ ‭(if‬ ‭the‬
+‭adults‬ ‭come‬ ‭for‬ ‭no‬ ‭other‬ ‭activity‬ ‭other‬
+‭than for the given reasons) ?‬
+‭SSC MTS 14/07/2022 (Evening)‬
+‭(a) 400‬ ‭(b) 700‬ ‭(c) 500‬ ‭(d) 560‬
+‭Q.342.‬ ‭In‬ ‭a‬ ‭class‬ ‭of‬ ‭50‬ ‭students‬ ‭and‬ ‭6‬
+‭teachers,‬ ‭each‬‭student‬‭got‬‭a‬ ‭number‬‭of‬
+‭chocolates‬ ‭that‬ ‭is‬ ‭equal‬ ‭to‬ ‭16%‬ ‭of‬ ‭the‬
+‭total‬ ‭number‬ ‭of‬ ‭students‬ ‭,‬ ‭and‬ ‭each‬
+‭teacher‬‭got‬‭a‬‭number‬‭of‬‭chocolates‬‭that‬
+‭is‬ ‭equal‬ ‭to‬ ‭12%‬ ‭of‬ ‭the‬ ‭total‬ ‭number‬ ‭of‬
+‭students.‬ ‭How‬
+‭many‬ ‭chocolates‬ ‭were‬
+‭there in total ?‬
+‭SSC MTS 19/07/2022 (Morning)‬
+‭(a) 436‬ ‭(b) 420‬ ‭(c) 360‬ ‭(d) 450‬
+‭Q.343.‬‭The  male population of a city has‬
+‭increased‬‭by‬‭20%‬‭from‬‭the‬‭previous‬‭year,‬
+‭while‬
+‭the‬
+‭female‬
+‭population‬
+‭has‬
+‭increased‬
+‭by‬
+‭42.5%.‬
+‭If‬
+‭the‬
+‭total‬
+‭population‬ ‭of‬ ‭the‬ ‭city‬ ‭has‬ ‭increased‬ ‭by‬
+‭30%.‬ ‭Then‬‭the‬‭female‬‭population‬‭of‬ ‭the‬
+‭city‬ ‭was‬ ‭what‬ ‭percentage‬ ‭of‬ ‭male‬
+‭population in the previous year?‬
+‭SSC MTS 19/07/2022 (Evening)‬
+‭(a) 60%‬ ‭(b) 80%‬ ‭(c) 90%‬ ‭(d) 70%‬
+‭Q.344.‬ ‭15‬ ‭kg‬‭of‬‭grapes,‬‭in‬‭which‬‭90%‬‭of‬
+‭the‬ ‭content‬ ‭was‬ ‭water,‬ ‭were‬ ‭kept‬ ‭in‬
+‭sunlight.‬ ‭In‬ ‭presence‬ ‭of‬ ‭sunlight,‬ ‭the‬
+‭water‬‭content‬‭reduced‬‭to‬‭such‬‭an‬‭extent‬
+‭that‬‭now‬‭only‬ ‭85%‬‭of‬‭the‬‭total‬‭weight‬‭of‬
+‭the‬ ‭grapes‬
+‭was‬ ‭water.‬ ‭Find‬ ‭the‬ ‭total‬
+‭reduced weight of the grapes.‬
+‭SSC MTS 19/07/2022 (Evening)‬
+‭(a) 10 kg  (b) 14 kg   (c) 13 kg  (d) 12 kg‬
+‭Q.345.‬‭Mr.‬‭Stark‬‭gave‬‭30%‬‭of‬‭the‬‭money‬
+‭he‬‭had‬‭to‬‭Bruce.‬‭He‬‭also‬‭gave‬‭30%‬‭of‬‭the‬
+‭remaining‬ ‭amount‬ ‭to‬ ‭each‬ ‭of‬ ‭Natasha‬
+‭,Captain‬
+‭and‬
+‭Vision.‬
+‭Half‬
+‭of‬
+‭the‬
+‭remaining‬
+‭amount‬
+‭he‬
+‭spent‬
+‭on‬
+‭miscellaneous‬‭items.‬ ‭And‬‭the‬‭remaining‬
+‭amount‬ ‭of‬ ‭₹14,000‬ ‭he‬ ‭deposited‬ ‭in‬
+‭Marvel’s‬‭Fund.‬‭How‬‭much‬‭money‬‭did‬‭Mr.‬
+‭Stark Initially have?‬
+‭SSC MTS 20/07/2022 (Afternoon)‬
+‭(a) ₹ 390000‬
+‭(b) ₹ 400000‬
+‭(c) ₹ 370000‬
+‭(d) ₹ 300000‬
+‭Q.346.‬
+‭The‬
+‭total‬
+‭salary‬
+‭of‬
+‭two‬
+‭employees,‬ ‭A‬ ‭and‬ ‭B,‬ ‭in‬ ‭an‬ ‭organization‬
+‭was‬ ‭Rs‬ ‭40,000.‬ ‭After‬ ‭increasing‬ ‭the‬
+‭salary‬ ‭of‬ ‭A‬ ‭by‬ ‭9%‬ ‭and‬ ‭of‬ ‭B‬ ‭by‬ ‭11%,‬‭the‬
+‭total‬ ‭salary‬ ‭of‬ ‭A‬ ‭and‬ ‭B‬ ‭becomes‬ ‭Rs‬
+‭44,100. What was the initial salary of A?‬
+‭SSC MTS 22/07/2022 (Morning)‬
+‭(a) 15000 (b) 22500 (c) 25000 (d) 18000‬
+‭Q.347.‬ ‭Aman‬ ‭gave‬ ‭30%‬ ‭of‬ ‭his‬ ‭monthly‬
+‭income‬‭to‬‭his‬‭father‬‭and‬‭of‬‭the‬‭remaining‬
+‭income‬‭he‬‭gave‬‭30%‬‭to‬‭his‬‭daughter‬‭and‬
+‭25%‬ ‭to‬ ‭his‬ ‭wife.‬ ‭Aman‬ ‭invested‬ ‭the‬
+‭amount‬‭of‬‭money‬‭still‬‭remaining‬‭from‬‭his‬
+‭monthly‬
+‭income‬
+‭equally‬
+‭in‬
+‭three‬
+‭schemes.‬ ‭If‬‭he‬‭invested‬‭₹42,000‬‭in‬‭each‬
+‭scheme,‬‭what‬‭is‬‭Aman’s‬‭monthly‬‭income‬
+‭(in ₹thousand) ?‬
+‭www.ssccglpinnacle.com                                                 Download Pinnacle Exam Preparation App‬
+
+‭Pinnacle‬
+‭Day: 65th - 69th‬
+‭Percentage‬
+‭SSC MTS 25/07/2022 (Evening)‬
+‭(a) 300‬
+‭(b) 400‬
+‭(c) 200‬
+‭(d) 500‬
+‭SSC CHSL 2021 Tier - 1‬
+‭Q.348.‬ ‭70%‬ ‭of‬ ‭students‬ ‭in‬ ‭a‬ ‭class‬ ‭are‬
+‭girls‬ ‭and‬ ‭70%‬ ‭of‬ ‭the‬ ‭girls‬ ‭have‬ ‭chosen‬
+‭soccer‬‭as‬‭their‬‭favourite‬‭sport.‬‭If‬‭98‬‭girls‬
+‭have‬ ‭chosen‬ ‭soccer‬ ‭as‬ ‭their‬ ‭favourite‬
+‭sport,‬ ‭what‬ ‭is‬ ‭the‬ ‭total‬ ‭number‬ ‭of‬
+‭students in the class?‬
+‭SSC CHSL 24/05/2022 (Morning)‬
+‭(a) 180‬ ‭(b) 225‬ ‭(c) 175‬ ‭(d) 200‬
+‭Q.349.‬ ‭In‬ ‭an‬ ‭election‬ ‭between‬ ‭two‬
+‭candidates,‬ ‭80%‬ ‭of‬ ‭the‬ ‭eligible‬ ‭voters‬
+‭cast‬ ‭their‬ ‭votes,‬ ‭5%‬ ‭of‬ ‭the‬ ‭votes‬ ‭cast‬
+‭were‬ ‭declared‬ ‭invalid.‬ ‭A‬ ‭candidate‬ ‭got‬
+‭10545‬‭votes,‬‭which‬‭were‬‭75%‬‭of‬‭the‬‭total‬
+‭valid‬ ‭votes.‬ ‭Find‬ ‭the‬ ‭total‬ ‭number‬ ‭of‬
+‭eligible voters.‬
+‭SSC CHSL 24/05/2022 (Evening)‬
+‭(a) 17800 (b) 18500 (c) 18250 (d) 18000‬
+‭Q.350.‬‭In Class 8 of a school, the ratio of‬
+‭students‬ ‭playing‬‭cricket‬‭to‬‭those‬‭playing‬
+‭football‬‭is‬‭27‬‭:‬‭13,‬‭while‬‭the‬‭ratio‬‭of‬‭those‬
+‭playing‬ ‭football‬ ‭to‬ ‭those‬ ‭playing‬ ‭hockey‬
+‭is‬‭26‬‭:‬‭14.‬‭If‬‭the‬‭total‬‭number‬‭of‬‭students‬
+‭in‬‭Class‬‭8‬‭is‬‭470,‬‭and‬‭each‬‭student‬‭plays‬
+‭exactly‬‭one‬‭game,‬‭find‬‭the‬‭percentage‬‭of‬
+‭students‬ ‭of‬ ‭the‬ ‭class‬ ‭playing‬ ‭cricket.‬
+‭[Give‬‭your‬‭answer‬‭correct‬‭to‬‭two‬‭decimal‬
+‭places.]‬
+‭SSC CHSL 25/05/2022 (Afternoon)‬
+‭(a) 55.47%‬
+‭(b) 54.75%‬
+‭(c) 57.45%‬
+‭(d) 56.35%‬
+‭Q.351.‬ ‭In‬ ‭a‬ ‭Panchayat‬ ‭election,‬ ‭three‬
+‭candidates‬ ‭were‬ ‭there‬ ‭in‬ ‭the‬ ‭fray.‬ ‭The‬
+‭losing‬ ‭candidates‬ ‭got‬ ‭an‬ ‭equal‬ ‭number‬
+‭of‬ ‭votes‬ ‭and‬ ‭the‬ ‭winning‬ ‭candidate‬ ‭got‬
+‭as‬‭many‬‭votes‬‭as‬‭the‬‭rest‬‭of‬‭the‬‭two‬‭got‬
+‭collectively.‬‭If‬‭the‬‭total‬‭votes‬‭polled‬‭were‬
+‭1500,‬ ‭find‬ ‭the‬ ‭number‬ ‭of‬ ‭votes‬ ‭that‬ ‭the‬
+‭winning‬ ‭candidate‬ ‭got‬ ‭assume‬ ‭all‬‭votes‬
+‭polled were valid.‬
+‭SSC CHSL 25/05/2022 (Afternoon)‬
+‭(a) 750‬ ‭(b) 625‬ ‭(c) 575‬ ‭(d) 800‬
+‭Q.352.‬ ‭A‬ ‭software‬ ‭company‬ ‭has‬ ‭only‬ ‭3‬
+‭divisions‬ ‭that‬ ‭have‬ ‭20,‬ ‭30‬ ‭and‬ ‭40‬
+‭employees,‬ ‭respectively.‬ ‭If‬ ‭the‬ ‭working‬
+‭percentage‬ ‭of‬ ‭this‬ ‭during‬ ‭a‬ ‭weekend‬
+‭were‬ ‭20%,‬ ‭30%‬ ‭and‬ ‭40%,‬ ‭respectively,‬
+‭then‬‭the‬‭working‬‭percentage‬‭of‬‭the‬‭entire‬
+‭company‬ ‭during‬ ‭that‬ ‭weekend‬ ‭was‬
+‭approximately:‬
+‭SSC CHSL 25/05/2022 (Evening)‬
+‭(a) 0.0032   (b) 3.2   (c) 0.032   (d) 32‬
+‭Q.353.‬ ‭In‬ ‭an‬ ‭engineering‬ ‭institution,‬ ‭a‬
+‭student’s‬ ‭grade‬ ‭is‬ ‭assessed‬ ‭based‬ ‭on‬
+‭Internal‬ ‭tests‬ ‭(30%),‬ ‭assignments‬ ‭(30%)‬
+‭and‬ ‭external‬ ‭exams‬ ‭(40%).‬ ‭If‬ ‭a‬ ‭student‬
+‭scored‬ ‭90%‬ ‭in‬ ‭internal‬ ‭tests,‬ ‭95%‬ ‭in‬
+‭assignments‬ ‭and‬ ‭75%‬ ‭in‬ ‭the‬ ‭external‬
+‭exams,‬ ‭then‬ ‭the‬ ‭overall‬ ‭grade‬ ‭of‬ ‭the‬
+‭student is:‬
+‭SSC CHSL 27/05/2022 (Afternoon)‬
+‭(a) 86.25% (b) 85.25% (c) 86% (d) 85.50%‬
+‭Q.354.‬ ‭The‬ ‭salaries‬ ‭of‬‭P‬‭and‬‭Q‬‭together‬
+‭amount‬ ‭to‬ ‭₹1,20,000.‬ ‭P‬ ‭spends‬ ‭95%‬ ‭of‬
+‭his‬ ‭salary‬ ‭and‬ ‭Q‬ ‭85%‬ ‭of‬ ‭his.‬ ‭If‬ ‭their‬
+‭savings‬ ‭are‬ ‭the‬ ‭same,‬ ‭then‬ ‭what‬ ‭is‬ ‭P’s‬
+‭salary?‬
+‭SSC CHSL 31/05/2022 (Evening)‬
+‭(a) ₹80,000‬
+‭(b) ₹72,000‬
+‭(c) ₹90,000‬
+‭(d) ₹60,000‬
+‭Q.355.‬‭64%‬‭of‬‭the‬‭students‬‭of‬‭a‬‭class‬‭are‬
+‭girls‬‭and‬‭81.25%‬‭of‬‭the‬‭girls‬‭have‬‭chosen‬
+‭soccer‬ ‭as‬ ‭their‬ ‭favourite‬ ‭sport.‬ ‭If‬ ‭143‬
+‭girls‬ ‭have‬ ‭chosen‬ ‭soccer‬ ‭as‬ ‭their‬
+‭favourite‬ ‭sport,‬‭what‬‭is‬‭the‬‭total‬‭number‬
+‭of students in the class?‬
+‭SSC CHSL 03/06/2022 (Morning)‬
+‭(a) 270‬ ‭(b) 280‬ ‭(c) 300‬ ‭(d) 275‬
+‭Q.356.‬ ‭In‬ ‭an‬ ‭election‬ ‭between‬ ‭two‬
+‭candidates,‬‭15%‬‭of‬‭the‬‭voter‬‭did‬‭not‬‭cast‬
+‭their‬ ‭votes‬ ‭and‬ ‭10%‬ ‭of‬ ‭the‬ ‭votes‬ ‭polled‬
+‭found‬ ‭invalid.‬ ‭The‬ ‭successful‬ ‭candidate‬
+‭got‬ ‭55%‬‭of‬‭the‬‭valid‬‭votes‬‭and‬‭won‬‭by‬‭a‬
+‭majority‬ ‭of‬ ‭6120‬ ‭votes.‬ ‭The‬ ‭number‬ ‭of‬
+‭voters enrolled on the voters list was:‬
+‭SSC CHSL 03/06/2022 (Morning)‬
+‭(a) 70000 (b) 80000 (c) 72000 (d) 75000‬
+‭Q.357.‬ ‭In‬ ‭a‬ ‭school,‬ ‭the‬‭final‬‭grades‬‭of‬‭a‬
+‭subject‬
+‭for‬ ‭an‬ ‭academic‬ ‭year‬ ‭are‬
+‭calculated,‬ ‭based‬ ‭on‬ ‭the‬ ‭grades‬ ‭that‬ ‭a‬
+‭student‬ ‭gets‬ ‭in‬ ‭his‬ ‭assignments,‬ ‭tests‬
+‭and‬ ‭a‬ ‭final‬‭exam.‬‭Assignments‬‭have‬‭the‬
+‭weightage‬ ‭of‬ ‭28%,‬‭tests‬‭of‬‭22%,‬‭and‬‭the‬
+‭final‬ ‭exam‬ ‭of‬ ‭50%.‬ ‭If‬ ‭a‬ ‭student‬ ‭has‬ ‭an‬
+‭assignment‬ ‭grade‬ ‭of‬ ‭80,‬ ‭a‬‭test‬‭grade‬‭of‬
+‭75,‬‭an‬‭exam‬‭grade‬‭of‬‭86,‬‭then‬‭his‬‭overall‬
+‭grade for the year is _________.‬
+‭SSC CHSL 08/06/2022 (Morning)‬
+‭(a) 81.9‬ ‭(b) 80.5‬ ‭(c) 84.6‬ ‭(d) 90.2‬
+‭Q.358.‬ ‭Kumar’s‬ ‭salary‬ ‭is‬ ‭₹‬ ‭30,000‬ ‭per‬
+‭month.‬ ‭He‬ ‭spends‬ ‭25%‬ ‭of‬ ‭this‬ ‭on‬ ‭food‬
+‭and‬ ‭rent‬ ‭and‬ ‭20%‬ ‭of‬ ‭the‬ ‭remaining‬ ‭on‬
+‭education.‬ ‭But‬ ‭he‬ ‭pays‬ ‭5%‬ ‭of‬ ‭his‬ ‭total‬
+‭salary‬ ‭on‬ ‭paying‬ ‭the‬ ‭income‬ ‭tax‬ ‭and‬
+‭saves‬ ‭₹‬ ‭8,000‬ ‭after‬ ‭all‬ ‭these‬ ‭three‬
+‭deductions.‬ ‭What‬ ‭is‬ ‭the‬ ‭amount‬ ‭(in‬ ‭₹.)‬
+‭available with him after his savings?‬
+‭SSC CHSL 08/06/2022 (Evening)‬
+‭(a) 8500‬ ‭(b) 7500 (c) 7250 (d) 8550‬
+‭Q.359.‬‭A‬‭man‬‭spends‬‭20%‬‭of‬‭his‬‭monthly‬
+‭salary‬ ‭on‬ ‭food‬ ‭and‬ ‭one-fourth‬ ‭of‬ ‭the‬
+‭remaining‬ ‭salary‬ ‭on‬ ‭charity.‬ ‭If‬ ‭he‬ ‭saves‬
+‭₹9,600‬ ‭per‬ ‭month,‬‭which‬‭is‬‭equal‬‭to‬‭half‬
+‭of‬ ‭the‬ ‭balance‬ ‭after‬ ‭spending‬ ‭on‬ ‭food‬
+‭and charity, then his monthly salary is:‬
+‭SSC CHSL 10/06/2022 (Morning)‬
+‭(a) ₹28,000‬
+‭(b) ₹32,000‬
+‭(c) ₹26,000‬
+‭(d) ₹30,000‬
+‭Q.360.‬‭In a panchayat election Candidate‬
+‭A‬‭secured‬‭30%‬‭of‬‭the‬‭total‬‭votes‬‭and‬‭did‬
+‭NOT‬ ‭qualify‬ ‭by‬ ‭6‬ ‭votes.‬ ‭Candidate‬ ‭B‬
+‭secured‬‭40%‬‭of‬‭the‬‭total‬‭votes‬‭and‬‭got‬‭6‬
+‭votes‬ ‭more‬ ‭than‬ ‭the‬ ‭bare‬ ‭minimum‬ ‭to‬
+‭qualify.‬ ‭The‬ ‭total‬ ‭number‬ ‭of‬ ‭votes‬ ‭were‬
+‭_________.‬
+‭SSC CHSL 10/06/2022 (Afternoon)‬
+‭(a) 140‬ ‭(b) 160‬ ‭(c) 100‬ ‭(d) 120‬
+‭SSC CGL 2021 Tier - 1‬
+‭Q.361.‬ ‭Some‬ ‭students‬ ‭(only‬ ‭boys‬ ‭and‬
+‭girls)‬‭from‬‭different‬‭schools‬‭appeared‬‭for‬
+‭an‬‭Olympiad‬‭exam.‬‭20%‬‭of‬‭the‬‭boys‬‭and‬
+‭15%‬ ‭of‬ ‭the‬ ‭girls‬ ‭failed‬ ‭in‬ ‭the‬‭exam.‬‭The‬
+‭number‬ ‭of‬ ‭boys‬ ‭who‬ ‭passed‬ ‭the‬ ‭exam‬
+‭was‬ ‭70‬ ‭more‬ ‭than‬ ‭that‬ ‭of‬ ‭the‬ ‭girls‬‭who‬
+‭passed‬‭the‬‭exam’.‬‭A‬‭total‬‭of‬‭90‬‭students‬
+‭failed. Find the numbers of students that‬
+‭appeared for the exam.‬
+‭SSC CGL 11/04/2022 (Morning)‬
+‭(a) 420‬ ‭(b) 400‬ ‭(c) 500‬ ‭(d) 350‬
+‭Q.362.‬ ‭In‬ ‭a‬ ‭factory‬‭with‬‭400‬‭employees,‬
+‭the‬
+‭ratio‬ ‭of‬ ‭the‬ ‭number‬ ‭of‬ ‭male‬
+‭employees‬ ‭to‬ ‭that‬ ‭of‬ ‭female‬ ‭employees‬
+‭is‬ ‭5‬ ‭:‬ ‭3.‬ ‭There‬ ‭are‬ ‭87.5%‬ ‭regular‬
+‭employees‬‭in‬‭the‬‭factory.‬‭If‬‭92%‬‭of‬‭male‬
+‭employees‬ ‭are‬ ‭regular‬ ‭employees.‬ ‭Then‬
+‭what‬‭is‬‭the‬‭percentage‬‭of‬‭regular‬‭female‬
+‭employees?‬
+‭SSC CGL 13/04/2022 (Morning)‬
+‭(a) 80%‬ ‭(b) 78%   (c) 87.5%   (d) 85%‬
+‭Q.363.‬ ‭In‬ ‭an‬ ‭election‬ ‭between‬ ‭two‬
+‭candidates,‬ ‭5%‬ ‭of‬ ‭the‬ ‭registered‬ ‭voters‬
+‭did‬‭not‬‭caste‬‭their‬‭vote.‬‭10%‬‭of‬‭the‬‭votes‬
+‭were‬ ‭found‬ ‭to‬ ‭be‬ ‭either‬ ‭invalid‬ ‭or‬ ‭of‬
+‭NOTA.‬ ‭The‬ ‭winning‬ ‭candidate‬ ‭received‬
+‭60%‬ ‭of‬ ‭the‬ ‭votes‬ ‭in‬ ‭his‬ ‭favour‬ ‭and‬‭won‬
+‭the‬ ‭election‬ ‭by‬ ‭17271‬ ‭votes.‬ ‭FInd‬ ‭the‬
+‭number of registered voters.‬
+‭SSC CGL 18/04/2022 (Evening)‬
+‭(a) 90525‬
+‭(b) 100000‬
+‭(c) 101000‬
+‭(d) 102500‬
+‭Q.364.‬‭A‬‭man‬‭started‬‭off‬‭a‬‭business‬‭with‬
+‭a‬‭certain‬‭capital‬‭amount.‬‭In‬‭the‬‭first‬‭year,‬
+‭he‬‭earned‬‭60%‬‭Profit‬‭and‬‭donated‬‭50%‬‭of‬
+‭the‬ ‭total‬ ‭capital‬ ‭(initial‬‭amount‬‭+‬‭profit).‬
+‭He‬‭followed‬‭the‬‭same‬‭procedure‬‭with‬‭the‬
+‭remaining‬ ‭capital‬ ‭after‬ ‭the‬ ‭second‬ ‭and‬
+‭the‬ ‭third‬ ‭year.‬ ‭If‬ ‭at‬ ‭the‬ ‭end‬ ‭of‬ ‭the‬‭three‬
+‭years,‬‭he‬‭is‬‭left‬‭with‬‭Rs.‬‭15,360,‬‭what‬‭was‬
+‭the‬ ‭initial‬ ‭amount‬ ‭with‬ ‭which‬ ‭the‬ ‭man‬
+‭started his business?‬
+‭SSC CGL 19/04/2022 (Morning)‬
+‭(a) 20,000‬
+‭(b) 30,000‬
+‭(c) 25,000‬
+‭(d) 32,000‬
+‭www.ssccglpinnacle.com                                                 Download Pinnacle Exam Preparation App‬
+
+‭Pinnacle‬
+‭Day: 65th - 69th‬
+‭Percentage‬
+‭SSC CGL 2020 Tier - 2‬
+‭Q.365.‬ ‭The‬ ‭income‬ ‭of‬ ‭A‬ ‭is‬ ‭80%‬ ‭of‬ ‭B's‬
+‭income‬ ‭and‬ ‭the‬ ‭expenditure‬‭of‬‭A‬‭is‬‭60%‬
+‭of‬ ‭B's‬ ‭expenditure.‬ ‭If‬ ‭the‬‭income‬‭of‬‭A‬‭is‬
+‭equal‬ ‭to‬ ‭90%‬ ‭of‬‭B's‬‭expenditure,‬‭then‬‭by‬
+‭what‬ ‭percentage‬ ‭are‬ ‭the‬ ‭savings‬ ‭of‬ ‭A‬
+‭more than B's savings ?‬
+‭SSC CGL Tier II (29/01/2022)‬
+‭(a) 100%  (b) 125%  (c) 150%  (d) 140%‬
+‭Q.366.‬ ‭The‬ ‭monthly‬ ‭expenses‬ ‭of‬ ‭a‬
+‭person‬‭are‬‭66‬
+‭%‬‭more‬‭than‬‭her‬‭monthly‬
+‭2‬
+‭3‬
+‭savings.‬‭If‬‭her‬‭monthly‬‭income‬‭increases‬
+‭by‬ ‭44%‬ ‭and‬ ‭her‬ ‭monthly‬ ‭expenses‬
+‭increases‬ ‭by‬ ‭60%,‬ ‭then‬ ‭there‬ ‭is‬ ‭an‬
+‭increase‬ ‭of‬ ‭₹1,040‬ ‭in‬ ‭her‬ ‭monthly‬
+‭savings.‬ ‭What‬ ‭is‬ ‭the‬ ‭initial‬ ‭expenditure‬
+‭(in ₹) ?‬
+‭SSC CGL Tier II (29/01/2022)‬
+‭(a) 10,000 (b) 12,000 (c) 9,000 (d) 13,000‬
+‭Q.367.‬ ‭In‬ ‭an‬ ‭examination,‬ ‭B‬ ‭obtained‬
+‭20%‬‭more‬‭marks‬‭than‬‭those‬‭obtained‬‭by‬
+‭A,‬ ‭and‬ ‭A‬ ‭obtained‬ ‭10%‬ ‭less‬ ‭marks‬‭than‬
+‭those‬ ‭obtained‬ ‭by‬ ‭C.‬ ‭D‬ ‭obtained‬ ‭20%‬
+‭more‬‭marks‬‭than‬‭those‬‭obtained‬‭by‬‭C.‬‭By‬
+‭what‬‭percentage‬‭are‬‭the‬‭marks‬‭obtained‬
+‭by D more than those obtained by A ?‬
+‭SSC CGL Tier II (03/02/2022)‬
+‭(a) 33‬
+‭%‬
+‭(b) 13‬
+‭%‬
+‭1‬
+‭3‬
+‭1‬
+‭3‬
+‭(c) 43‬
+‭%‬
+‭(d) 23‬
+‭%‬
+‭1‬
+‭3‬
+‭1‬
+‭3‬
+‭SSC MTS 2020 Tier - 1‬
+‭Q.368.‬ ‭A‬ ‭number‬ ‭was‬ ‭divided‬ ‭by‬ ‭8,‬
+‭instead‬ ‭of‬ ‭being‬ ‭multiplied‬ ‭by‬ ‭8.‬ ‭As‬ ‭a‬
+‭result‬ ‭of‬ ‭this,‬ ‭there‬ ‭was‬ ‭an‬ ‭error‬ ‭in‬ ‭the‬
+‭answer.‬
+‭What‬
+‭is‬
+‭the‬
+‭percentage‬
+‭difference(correct‬ ‭to‬ ‭two‬ ‭places‬ ‭of‬
+‭decimal)‬ ‭in‬ ‭the‬ ‭answer‬ ‭due‬ ‭to‬ ‭this‬
+‭miscalculation?‬
+‭SSC MTS 08/10/2021 (Morning)‬
+‭(a) 48.67%‬
+‭(b) 67.33%‬
+‭(c) 98.44%‬
+‭(d) 72.00%‬
+‭Q.369.‬‭Varun‬‭gave‬‭60%‬‭of‬‭the‬‭money‬‭he‬
+‭had‬‭to‬‭his‬‭wife.‬‭He‬‭also‬‭gave‬‭20%‬‭of‬‭the‬
+‭remaining‬ ‭amount‬ ‭to‬ ‭each‬ ‭of‬ ‭his‬ ‭three‬
+‭children.‬ ‭Three-fifth‬ ‭of‬ ‭the‬ ‭amount‬ ‭now‬
+‭left‬ ‭was‬ ‭spent‬ ‭on‬ ‭miscellaneous‬ ‭items,‬
+‭and‬‭the‬‭remaining‬‭amount‬‭of‬‭₹9,600‬‭was‬
+‭deposited‬‭in‬‭the‬‭bank.‬‭How‬‭much‬‭money‬
+‭did Varun have initially?‬
+‭SSC MTS 13/10/2021 (Evening)‬
+‭(a) ₹2,00,000‬
+‭(b) ₹1,80,000‬
+‭(c) ₹1,50,000‬
+‭(d) ₹1,60,000‬
+‭Q.370.‬‭Last‬‭year,‬‭300‬‭students‬‭appeared‬
+‭for‬‭an‬‭examination‬‭from‬‭school‬‭A,‬‭and‬‭33‬
+‭%‬ ‭of‬ ‭the‬ ‭students‬ ‭failed.‬ ‭In‬‭the‬‭same‬
+‭1‬
+‭3‬
+‭year,‬ ‭480‬ ‭students‬ ‭appeared‬ ‭for‬ ‭the‬
+‭examination‬ ‭from‬ ‭school‬ ‭B.‬ ‭60%‬ ‭of‬ ‭the‬
+‭total‬ ‭students‬ ‭from‬ ‭schools‬ ‭A‬ ‭and‬ ‭B‬
+‭passed.‬ ‭What‬ ‭is‬ ‭the‬ ‭fail‬ ‭percentage‬ ‭of‬
+‭students from school B ?‬
+‭SSC MTS 14/10/2021 (Evening)‬
+‭(a) 43‬
+‭%‬
+‭(b) 40‬
+‭%‬
+‭3‬
+‭4‬
+‭2‬
+‭3‬
+‭(c) 42‬
+‭%‬
+‭(d) 44‬
+‭%‬
+‭1‬
+‭3‬
+‭1‬
+‭6‬
+‭Q.371.‬
+‭At‬
+‭a‬
+‭recruitment‬
+‭test,‬ ‭the‬
+‭candidates‬ ‭were‬ ‭tested‬ ‭for‬ ‭General‬
+‭Awareness‬
+‭(GA)‬
+‭and‬
+‭Quantitative‬
+‭Techniques‬ ‭(QT).‬ ‭54%‬ ‭and‬ ‭45%‬‭failed‬‭in‬
+‭GA‬‭and‬‭QT,‬‭respectively,‬‭while‬‭16%‬‭failed‬
+‭in‬‭both.‬‭If‬‭136‬‭candidates‬‭passed‬‭in‬‭both,‬
+‭what‬
+‭was‬
+‭the‬
+‭total‬
+‭number‬
+‭of‬
+‭candidates?‬
+‭SSC MTS 18/10/2021 (Evening)‬
+‭(a) 800‬ ‭(b) 640‬ ‭(c) 600‬ ‭(d) 850‬
+‭Q.372.‬ ‭When‬ ‭the‬ ‭price‬ ‭of‬ ‭sugar‬ ‭gets‬
+‭raised‬ ‭by‬ ‭30%,‬ ‭a‬ ‭person‬ ‭increases‬ ‭his‬
+‭expenditure‬ ‭on‬ ‭sugar‬ ‭by‬ ‭12%.‬ ‭By‬ ‭what‬
+‭percentage‬ ‭(correct‬ ‭up‬ ‭to‬ ‭two‬ ‭decimal‬
+‭places)‬
+‭should‬
+‭he‬
+‭reduce‬
+‭his‬
+‭consumption‬‭of‬‭sugar‬‭so‬‭as‬‭to‬‭be‬‭able‬‭to‬
+‭maintain‬ ‭the‬ ‭same‬ ‭level‬‭of‬‭expenditure?‬
+‭SSC MTS 20/10/2021 (Afternoon)‬
+‭(a) 12.75%‬
+‭(b) 13.85%‬
+‭(c) 11.54%‬
+‭(d) 15.75%‬
+‭Q.373.‬ ‭By‬ ‭what‬ ‭percentage‬ ‭is‬ ‭the‬
+‭percentage‬ ‭of‬ ‭the‬ ‭number‬ ‭of‬ ‭vowels‬ ‭in‬
+‭the‬ ‭word‬ ‭CONSONANT‬ ‭less‬ ‭than‬ ‭the‬
+‭percentage of consonants in it ?‬
+‭SSC MTS 02/11/2021 (Evening)‬
+‭(a) 33.33‬ ‭(b) 200    (c) 66.67    (d) 50‬
+‭SSC CGL 2020 Tier - 1‬
+‭Q.374.‬ ‭Chamanlal,‬ ‭Arshad‬ ‭and‬ ‭Jagjit‬
+‭Singh‬‭contested‬‭an‬‭election.‬‭All‬‭the‬‭votes‬
+‭polled‬‭were‬‭valid.‬‭Arshad‬‭got‬‭35%‬‭of‬‭the‬
+‭total‬‭votes.‬‭For‬‭every‬‭35‬‭votes‬‭Chamanlal‬
+‭got‬ ‭14‬‭votes.‬‭The‬‭winner‬‭got‬‭4950‬‭more‬
+‭votes‬ ‭than‬ ‭the‬ ‭person‬ ‭who‬ ‭received‬‭the‬
+‭least‬ ‭number‬ ‭of‬ ‭votes.‬ ‭Find‬ ‭the‬ ‭total‬
+‭number of votes polled.‬
+‭SSC CGL 16/08/2021 (Afternoon)‬
+‭(a) 13378 (b) 38000 (c) 99000 (d) 33000‬
+‭Q.375.‬ ‭If‬ ‭a‬ ‭number‬ ‭is‬ ‭first‬ ‭increased‬ ‭by‬
+‭15%‬ ‭then‬ ‭reduced‬ ‭by‬ ‭15%,‬ ‭it‬ ‭results‬ ‭in‬
+‭782.‬ ‭If‬‭the‬‭same‬‭number‬‭is‬‭first‬‭reduced‬
+‭by‬‭25%,‬‭then‬‭increased‬‭by‬‭25%‬‭and‬‭again‬
+‭reduced‬ ‭by‬ ‭20%,‬ ‭then‬ ‭what‬ ‭will‬ ‭be‬ ‭the‬
+‭resulting number?‬
+‭SSC CGL 16/08/2021 (Evening)‬
+‭(a) 712‬ ‭(b) 150‬ ‭(c) 750‬ ‭(d) 600‬
+‭Q.376.‬ ‭In‬ ‭a‬ ‭class‬ ‭the‬ ‭ratio‬ ‭of‬ ‭rural‬ ‭to‬
+‭urban‬‭students‬‭is‬‭4‬‭:‬‭7.‬‭In‬‭an‬‭examination‬
+‭the‬ ‭average‬ ‭percentage‬ ‭marks‬ ‭of‬ ‭the‬
+‭rural‬
+‭and‬
+‭the‬
+‭urban‬
+‭students‬
+‭are‬
+‭respectively‬ ‭65‬ ‭and‬ ‭63.‬ ‭What‬ ‭is‬ ‭the‬
+‭overall‬ ‭average‬ ‭percentage‬‭marks‬‭of‬‭the‬
+‭class (correct to two decimal places)?‬
+‭SSC CGL 17/08/2021 (Afternoon)‬
+‭(a) 65.87%‬
+‭(b) 73.63%‬
+‭(c) 63.73%‬
+‭(d) 64.37%‬
+‭Q.377.‬ ‭Rajan‬ ‭spent‬‭10%‬‭of‬‭his‬‭salary‬‭on‬
+‭rent.‬‭He‬‭spent‬‭20%‬‭of‬‭the‬‭remaining‬‭part‬
+‭of‬‭the‬‭salary‬‭on‬‭transport.‬‭After‬‭which‬‭he‬
+‭spent‬‭40%‬‭of‬‭the‬‭balance‬‭of‬‭the‬‭salary‬‭on‬
+‭food.‬ ‭Further,‬ ‭he‬ ‭spends‬ ‭80%‬ ‭of‬ ‭the‬
+‭balance‬ ‭on‬ ‭various‬ ‭bills.‬ ‭He‬ ‭deposits‬
+‭Rs.5000‬ ‭in‬ ‭the‬ ‭bank‬ ‭and‬ ‭kept‬ ‭the‬
+‭remaining‬ ‭Rs.1480‬ ‭for‬ ‭his‬ ‭own‬ ‭petty‬
+‭expenditure.‬ ‭Find‬ ‭the‬ ‭monthly‬ ‭salary‬ ‭(in‬
+‭Rs).‬
+‭SSC CGL 17/08/2021 (Afternoon)‬
+‭(a) 75000 (b) 80000 (c) 82500 (d) 64800‬
+‭Q.378.‬ ‭A‬ ‭sports-goods‬ ‭shop‬ ‭has‬ ‭tennis‬
+‭balls‬‭of‬‭3‬‭colours‬‭-‬‭red,‬‭green‬‭and‬‭white.‬
+‭The‬ ‭number‬ ‭of‬ ‭white‬ ‭balls‬ ‭is‬ ‭60%‬ ‭more‬
+‭than‬ ‭the‬ ‭number‬ ‭of‬ ‭red‬ ‭balls‬ ‭and‬ ‭the‬
+‭number‬‭of‬‭green‬‭balls‬‭is‬‭12.5%‬‭less‬‭than‬
+‭the‬ ‭number‬ ‭of‬ ‭white‬ ‭balls.‬ ‭If‬ ‭the‬ ‭total‬
+‭number‬ ‭of‬ ‭balls‬ ‭is‬ ‭120,‬ ‭then‬ ‭how‬ ‭many‬
+‭green balls are there?.‬
+‭SSC CGL 17/08/2021 (Evening)‬
+‭(a) 48‬
+‭(b) 40‬
+‭(c) 30‬
+‭(d) 42‬
+‭Q.379.‬ ‭The‬ ‭present‬ ‭population‬ ‭of‬ ‭a‬
+‭village‬ ‭is‬ ‭15280.‬ ‭If‬‭the‬‭number‬‭of‬‭males‬
+‭increases‬ ‭by‬ ‭25%‬ ‭and‬ ‭the‬ ‭number‬ ‭of‬
+‭females‬ ‭increases‬ ‭by‬ ‭15%,‬ ‭then‬ ‭the‬
+‭population‬ ‭will‬ ‭become‬ ‭18428.‬ ‭The‬
+‭difference‬
+‭between‬
+‭the‬
+‭present‬
+‭population‬ ‭of‬ ‭males‬ ‭and‬ ‭females‬ ‭in‬ ‭the‬
+‭village is:‬
+‭SSC CGL 20/08/2021 (Afternoon)‬
+‭(a) 1840‬‭(b) 1380‬‭(c) 920‬ ‭(d) 2760‬
+‭Q.380.‬ ‭Price‬ ‭of‬ ‭a‬ ‭one‬ ‭gram‬ ‭gold‬ ‭coin‬
+‭decreased‬ ‭by‬ ‭10%‬ ‭on‬ ‭its‬ ‭initial‬ ‭price‬ ‭on‬
+‭Monday‬ ‭and‬ ‭increased‬ ‭by‬ ‭20%‬ ‭on‬
+‭Tuesday‬ ‭and‬ ‭again‬ ‭increased‬ ‭by‬ ‭8%‬ ‭on‬
+‭Wednesday,‬
+‭and‬
+‭5%‬
+‭increase‬
+‭on‬
+‭Thursday.‬‭If‬‭the‬‭final‬‭price‬‭on‬‭Thursday‬‭is‬
+‭Rs.5511.24,‬ ‭then‬ ‭the‬ ‭initial‬‭price‬‭(in‬‭Rs.)‬
+‭of one gram gold coin on Monday was?‬
+‭SSC CGL 20/08/2021 (Evening)‬
+‭(a) 4500‬ ‭(b) 4250   (c) 4000   (d) 5000‬
+‭SSC CHSL 2020 Tier - 1‬
+‭Q.381‬‭.‬ ‭In‬ ‭an‬ ‭examination‬ ‭of‬ ‭180‬ ‭marks‬
+‭of‬ ‭subjects,‬‭75%‬‭marks‬‭are‬‭allocated‬‭for‬
+‭theory‬ ‭and‬ ‭the‬ ‭rest‬ ‭for‬ ‭project‬ ‭work.‬
+‭Veena‬ ‭scored‬ ‭60%‬ ‭in‬ ‭theory.‬ ‭What‬
+‭percentage‬ ‭of‬ ‭marks‬ ‭must‬ ‭she‬ ‭score‬ ‭in‬
+‭the‬ ‭project‬ ‭to‬ ‭achieve‬ ‭an‬ ‭overall‬ ‭62%‬
+‭marks in the subject ?‬
+‭SSC CHSL 13/04/2021 (Evening)‬
+‭(a) 65‬
+‭(b) 66‬
+‭(c) 68‬
+‭(d) 64‬
+‭www.ssccglpinnacle.com                                                 Download Pinnacle Exam Preparation App‬
+
+‭Pinnacle‬
+‭Day: 65th - 69th‬
+‭Percentage‬
+‭Q.382.‬‭The‬‭expenditure‬‭on‬‭food‬‭is‬‭35%‬‭of‬
+‭the‬ ‭income‬ ‭of‬ ‭a‬ ‭particular‬ ‭family.‬ ‭If‬ ‭the‬
+‭income‬‭is‬‭raised‬‭by‬‭30%,‬‭then‬‭how‬‭much‬
+‭percentage‬
+‭(to‬
+‭the‬
+‭nearest‬
+‭whole‬
+‭number)‬‭of‬‭food‬‭expenditure‬‭is‬‭less‬‭than‬
+‭the‬ ‭initial‬ ‭percentage‬ ‭to‬ ‭keep‬ ‭the‬ ‭food‬
+‭expenditure unchanged ?‬
+‭SSC CHSL 16/04/2021 (Morning)‬
+‭(a) 2‬
+‭(b) 20‬
+‭(c) 23‬
+‭(d) 17‬
+‭Q.383.‬ ‭The‬ ‭price‬ ‭of‬ ‭an‬‭article‬‭increases‬
+‭by‬ ‭5%‬ ‭every‬ ‭year.‬ ‭If‬ ‭the‬ ‭difference‬
+‭between‬ ‭its‬ ‭price‬ ‭at‬ ‭the‬ ‭end‬ ‭of‬ ‭the‬
+‭second‬‭and‬‭the‬‭third‬‭year‬‭is‬‭Rs.52.5,‬‭then‬
+‭what‬ ‭will‬ ‭be‬ ‭its‬ ‭price‬ ‭at‬ ‭the‬ ‭end‬ ‭of‬ ‭the‬
+‭first year ?‬
+‭SSC CHSL 19/04/2021 (Morning)‬
+‭(a) 1,000   (b) 950‬ ‭(c) 840‬ ‭(d) 900‬
+‭SSC CPO 2020 Tier - 1‬
+‭Q.384.‬‭If decreasing 110 by‬ ‭% gives the‬
+‭𝑥‬‭ ‬
+‭same‬‭result‬‭as‬‭increasing‬‭50‬‭by‬ ‭%,‬‭then‬
+‭𝑥‬
+‭%‬‭of‬‭650‬‭is‬‭what‬‭percentage‬‭more‬‭than‬
+‭𝑥‬
+‭(‬ ‭+‬ ‭20)‬ ‭%‬ ‭of‬ ‭180‬ ‭?‬ ‭(correct‬ ‭to‬ ‭nearest‬
+‭𝑥‬
+‭integer)‬
+‭SSC CPO 23/11/2020 (Morning)‬
+‭(a) 80%   (b) 90%   (c) 136%   (d) 154%‬
+‭Q.385.‬ ‭If‬ ‭the‬ ‭area‬ ‭of‬ ‭a‬ ‭square‬ ‭is‬
+‭decreased‬ ‭by‬ ‭19%,‬‭then‬ ‭the‬‭diagonal‬‭of‬
+‭the square is decreased by :‬
+‭SSC CPO 23/11/2020 (Evening)‬
+‭(a) 15%   (b) 10%   (c) 5%   (d) 12%‬
+‭Q.386.‬ ‭The‬ ‭monthly‬ ‭salary‬ ‭of‬ ‭a‬ ‭person‬
+‭was‬‭75,000.‬‭He‬‭used‬‭to‬‭spend‬‭on‬‭family‬
+‭expenses(E),‬ ‭Taxes(T),‬ ‭charity(C),‬ ‭and‬
+‭the‬ ‭rest‬ ‭were‬ ‭his‬ ‭savings,‬‭E‬‭was‬‭60%‬‭of‬
+‭the‬ ‭income,‬ ‭T‬ ‭was‬ ‭20%‬‭of‬‭E,‬‭and‬‭C‬‭was‬
+‭15%‬ ‭of‬ ‭T.‬ ‭When‬ ‭his‬ ‭salary‬‭got‬‭raised‬‭by‬
+‭40%,‬ ‭he‬‭maintained‬‭the‬‭percentage‬‭level‬
+‭of‬ ‭E,‬ ‭but‬ ‭T‬ ‭becomes‬ ‭30%‬ ‭of‬ ‭E‬ ‭and‬ ‭C‬
+‭becomes‬ ‭20%‬ ‭of‬ ‭T.‬ ‭The‬ ‭ratio‬ ‭of‬ ‭the‬
+‭saving‬ ‭of‬ ‭earlier‬ ‭to‬ ‭that‬ ‭of‬ ‭his‬ ‭present‬
+‭salary is:‬
+‭SSC CPO 24/11/2020 (Morning)‬
+‭(a) 337 : 325‬
+‭(b) 655 : 644‬
+‭(c) 644 : 655          (d) 325 : 337‬
+‭Q.387.‬‭If‬‭decreasing‬‭110‬‭by‬ ‭%‬‭gives‬‭the‬
+‭𝑥‬
+‭same‬‭result‬‭as‬‭increasing‬‭50‬‭by‬ ‭%,‬‭then‬
+‭𝑥‬
+‭%‬‭of‬‭650‬‭is‬‭what‬‭percentage‬‭(correct‬‭to‬
+‭𝑥‬
+‭the‬ ‭nearest‬ ‭integer)‬ ‭more‬‭than‬‭(‬ ‭-‬‭10)%‬
+‭𝑥‬
+‭of 780 ?‬
+‭SSC CPO 25/11/2020 (Morning)‬
+‭(a) 14%    (b) 12%    (c) 17%    (d) 18%‬
+‭Answer Key :-‬
+‭1.(a)‬
+‭2.(c)‬
+‭3.(d)‬
+‭4.(a)‬
+‭5.(c)‬
+‭6.(d)‬
+‭7.(a)‬
+‭8.(d)‬
+‭9.(b)‬
+‭10.(c)‬
+‭11.(d)‬
+‭12.(a)‬
+‭13.(b)‬
+‭14.(a)‬
+‭15.(a)‬
+‭16.(b)‬
+‭17.(a)‬
+‭18.(a)‬
+‭19.(c)‬
+‭20.(b)‬
+‭21.(a)‬
+‭22.(d)‬
+‭23.(a)‬
+‭24.(c)‬
+‭25.(a)‬
+‭26.(d)‬
+‭27.(a)‬
+‭28.(c)‬
+‭29.(b)‬
+‭30.(d)‬
+‭31.(a)‬
+‭32.(c)‬
+‭33.(b)‬
+‭34.(b)‬
+‭35.(a)‬
+‭36.(d)‬
+‭37.(d)‬
+‭38.(a)‬
+‭39.(b)‬
+‭40.(b)‬
+‭41.(a)‬
+‭42.(a)‬
+‭43.(b)‬
+‭44.(b)‬
+‭45.(d)‬
+‭46.(a)‬
+‭47.(c)‬
+‭48.(d)‬
+‭49.(b)‬
+‭50.(d)‬
+‭51.(a)‬
+‭52.(d)‬
+‭53.(c)‬
+‭54.(b)‬
+‭55.(a)‬
+‭56.(a)‬
+‭57.(b)‬
+‭58.(c)‬
+‭59.(b)‬
+‭60.(a)‬
+‭61.(b)‬
+‭62.(c)‬
+‭63.(a)‬
+‭64.(d)‬
+‭65.(c)‬
+‭66.(a)‬
+‭67.(d)‬
+‭68.(b)‬
+‭69.(a)‬
+‭70.(c)‬
+‭71.(d)‬
+‭72.(a)‬
+‭73.(d)‬
+‭74.(d)‬
+‭75.(b)‬
+‭76.(b)‬
+‭77.(c)‬
+‭78.(c)‬
+‭79.(a)‬
+‭80.(a)‬
+‭81.(d)‬
+‭82.(c)‬
+‭83.(c)‬
+‭84.(c)‬
+‭85.(d)‬
+‭86.(c)‬
+‭87.(a)‬
+‭88.(c)‬
+‭89.(c)‬
+‭90.(a)‬
+‭91.(a)‬
+‭92.(a)‬
+‭93.(a)‬
+‭94.(c)‬
+‭95.(c)‬
+‭96.(a)‬
+‭97.(d)‬
+‭98.(a)‬
+‭99.(b)‬
+‭100.(c)‬
+‭101.(c)‬
+‭102.(b)‬
+‭103.(d)‬
+‭104.(a)‬
+‭105.(a)‬
+‭106.(d)‬
+‭107.(c)‬
+‭108.(b)‬
+‭109.(c)‬
+‭110.(c)‬
+‭111.(d)‬
+‭112.(a)‬
+‭113.(a)‬
+‭114.(d)‬
+‭115.(c)‬
+‭116.(d)‬
+‭117.(a)‬
+‭118.(d)‬
+‭119.(a)‬
+‭120.(c)‬
+‭121.(c)‬
+‭122.(b)‬
+‭123.(b)‬
+‭124.(a)‬
+‭125.(b)‬
+‭126.(a)‬
+‭127.(c)‬
+‭128.(a)‬
+‭129.(b)‬
+‭130.(d)‬
+‭131.(a)‬
+‭132.(d)‬
+‭133.(d)‬
+‭134.(d)‬
+‭135.(d)‬
+‭136.(a)‬
+‭137.(c)‬
+‭138.(a)‬
+‭139.(a)‬
+‭140.(d)‬
+‭141.(d)‬
+‭142.(b)‬
+‭143.(a)‬
+‭144.(d)‬
+‭145.(a)‬
+‭146.(a)‬
+‭147.(d)‬
+‭148.(b)‬
+‭149.(d)‬
+‭150.(b)‬
+‭151.(d)‬
+‭152.(c)‬
+‭153.(b)‬
+‭154.(d)‬
+‭155.(b)‬
+‭156.(b)‬
+‭157.(b)‬
+‭158.(a)‬
+‭159.(d)‬
+‭160.(b)‬
+‭161.(c)‬
+‭162.(c)‬
+‭163.(a)‬
+‭164.(d)‬
+‭165.(d)‬
+‭166.(a)‬
+‭167.(b)‬
+‭168.(b)‬
+‭169.(a)‬
+‭170.(c)‬
+‭171.(b)‬
+‭172.(c)‬
+‭173.(b)‬
+‭174.(b)‬
+‭175.(a)‬
+‭176.(c)‬
+‭177.(b)‬
+‭178.(c)‬
+‭179.(d)‬
+‭180.(b)‬
+‭181.(b)‬
+‭182.(b)‬
+‭183.(c)‬
+‭184.(d)‬
+‭185.(a)‬
+‭186.(b)‬
+‭187.(a)‬
+‭188.(c)‬
+‭189.(c)‬
+‭190.(d)‬
+‭191.(d)‬
+‭192.(d)‬
+‭193.(c)‬
+‭194.(a)‬
+‭195.(c)‬
+‭196.(c)‬
+‭197.(b)‬
+‭198.(a)‬
+‭199.(d)‬
+‭200.(c)‬
+‭201.(c)‬
+‭202.(d)‬
+‭203.(a)‬
+‭204.(a)‬
+‭205.(b)‬
+‭206.(d)‬
+‭207.(c)‬
+‭208.(d)‬
+‭209.(b)‬
+‭210.(c)‬
+‭211.(d)‬
+‭212.(c)‬
+‭213.(a)‬
+‭214.(a)‬
+‭215.(a)‬
+‭216.(d)‬
+‭217.(b)‬
+‭218.(a)‬
+‭219.(b)‬
+‭220.(c)‬
+‭221.(b)‬
+‭222.(a)‬
+‭223.(a)‬
+‭224.(b)‬
+‭225.(a)‬
+‭226.(b)‬
+‭227.(b)‬
+‭228.(a)‬
+‭229.(d)‬
+‭230.(d)‬
+‭231.(b)‬
+‭232.(b)‬
+‭233.(c)‬
+‭234.(b)‬
+‭235.(b)‬
+‭236.(b)‬
+‭237.(b)‬
+‭238.(a)‬
+‭239.(c)‬
+‭240.(c)‬
+‭241.(b)‬
+‭242.(b)‬
+‭243.(b)‬
+‭244.(a)‬
+‭245.(d)‬
+‭246.(a)‬
+‭247.(a)‬
+‭248.(c)‬
+‭249.(c)‬
+‭250.(c)‬
+‭251.(c)‬
+‭252.(d)‬
+‭253.(a)‬
+‭254.(d)‬
+‭255.(d)‬
+‭256.(d)‬
+‭257.(d)‬
+‭258.(a)‬
+‭259.(b)‬
+‭260.(d)‬
+‭261.(b)‬
+‭262.(d)‬
+‭263.(a)‬
+‭264.(a)‬
+‭265.(a)‬
+‭266.(d)‬
+‭267.(c)‬
+‭268.(a)‬
+‭269.(b)‬
+‭270.(a)‬
+‭271.(b)‬
+‭272.(d)‬
+‭273.(a)‬
+‭274.(a)‬
+‭275.(c)‬
+‭276.(c)‬
+‭277.(b)‬
+‭278.(a)‬
+‭279.(c)‬
+‭280.(b)‬
+‭281.(c)‬
+‭282.(c)‬
+‭283.(c)‬
+‭284.(b)‬
+‭285.(b)‬
+‭286.(b)‬
+‭287.(b)‬
+‭288.(b)‬
+‭289.(d)‬
+‭290.(a)‬
+‭291.(b)‬
+‭292.(b)‬
+‭293.(c)‬
+‭294.(b)‬
+‭295.(a)‬
+‭296.(d)‬
+‭297.(c)‬
+‭298.(b)‬
+‭299.(c)‬
+‭300.(a)‬
+‭301.(a)‬
+‭302.(c)‬
+‭303.(b)‬
+‭304.(a)‬
+‭305.(b)‬
+‭306.(a)‬
+‭307.(d)‬
+‭308.(a)‬
+‭309.(c)‬
+‭310.(a)‬
+‭311.(c)‬
+‭312.(b)‬
+‭313.(a)‬
+‭314.(c)‬
+‭315.(b)‬
+‭316.(b)‬
+‭317.(b)‬
+‭318.(b)‬
+‭319.(b)‬
+‭320.(a)‬
+‭321.(a)‬
+‭322.(d)‬
+‭323.(d)‬
+‭324.(a)‬
+‭325.(b)‬
+‭326.(d)‬
+‭327.(c)‬
+‭328.(c)‬
+‭329.(c)‬
+‭330.(d)‬
+‭331.(a)‬
+‭332.(c)‬
+‭333.(b)‬
+‭334.(c)‬
+‭335.(b)‬
+‭336.(a)‬
+‭337.(c)‬
+‭338.(d)‬
+‭339.(a)‬
+‭340.(b)‬
+‭341.(c)‬
+‭342.(a)‬
+‭343.(b)‬
+‭344.(a)‬
+‭345.(b)‬
+‭346.(a)‬
+‭347.(b)‬
+‭348.(d)‬
+‭349.(b)‬
+‭350.(c)‬
+‭351.(a)‬
+‭352.(d)‬
+‭353.(d)‬
+‭354.(c)‬
+‭355.(d)‬
+‭356.(b)‬
+‭357.(a)‬
+‭358.(a)‬
+‭359.(b)‬
+‭360.(d)‬
+‭361.(c)‬
+‭362.(a)‬
+‭363.(c)‬
+‭364.(b)‬
+‭365.(d)‬
+‭366.(a)‬
+‭367.(a)‬
+‭368.(c)‬
+‭369.(c)‬
+‭370.(d)‬
+‭371.(a)‬
+‭372.(b)‬
+‭373.(d)‬
+‭374.(d)‬
+‭375.(d)‬
+‭376.(c)‬
+‭377.(a)‬
+‭378.(d)‬
+‭379.(a)‬
+‭380.(a)‬
+‭www.ssccglpinnacle.com                                                 Download Pinnacle Exam Preparation App‬
+
+‭Pinnacle‬
+‭Day: 65th - 69th‬
+‭Percentage‬
+‭381.(c)‬
+‭382.(c)‬
+‭383.(a)‬
+‭384.(c)‬
+‭385.(b)‬
+‭386.(b)‬
+‭387.(a)‬
+‭Solutions :-‬
+‭Sol.1.(a)‬‭Let price of rice = x‬
+‭Price of wheat = 5x‬
+‭Total price = 20 x + 8‬
+‭5x = 300‬
+‭x = 5‬
+×
+⇒
+‭New price of wheat = 25‬
+‭= 30‬
+× ‭6‬
+‭5‬
+‭Let new price of rice = y‬
+‭20‬
+‭y + 8‬
+‭30 = 300‬
+⇒
+×
+×
+‭20y = 60‬
+‭y = 3‬
+⇒
+⇒
+‭Now, Reduction percentage‬
+‭=‬
+‭100 = 40%‬
+‭5‬‭ ‬−‭ ‬‭3‬
+‭5‬
+×
+‭Sol.2.(c)‬‭59.375% =‬ ‭19‬
+‭32‬
+‭Valid‬
+‭vote‬
+‭difference‬
+‭between‬ ‭two‬
+‭candidate  = 6 unit‬
+‭according to question,‬
+‭16000(1 -‬
+‭) ×‬
+‭×‬
+‭= 2484‬
+‭𝑦‬
+‭100‬
+‭9‬
+‭10‬
+‭6‬
+‭32‬
+‭100 - y = 92 ⇒ Y  = 8‬
+‭Sol.3.(d)‬‭According to question,‬
+‭y % =‬
+‭× 100 = 20 %‬
+‭14400‬‭ ‬−‭ ‬‭12000‬
+‭12000‬
+‭x % =‬
+‭× 100 = 25 %‬
+‭12500‬‭ ‬−‭ ‬‭10000‬
+‭10000‬
+‭So,  (‬
+‭× 100)%‬
+‭𝑥‬‭ ‬−‭ ‬‭𝑦‬
+‭𝑦‬
+‭=  (‬
+‭× 100)% = 25%‬
+‭ ‬‭25‬−‭ ‬‭20‬
+‭20‬
+‭Sol.4.(a)‬ ‭Let the total valid votes be V.‬
+‭The‬ ‭defeated‬ ‭candidate‬‭received‬‭42%‬‭of‬
+‭the‬ ‭valid‬ ‭votes‬ ‭and‬ ‭lost‬ ‭by‬ ‭2545800‬
+‭votes.‬
+‭Therefore,‬
+‭the‬
+‭winning‬
+‭candidate‬
+‭received = 100% - 42%‬
+‭= 58% of the valid votes‬
+‭The‬ ‭difference‬‭in‬‭votes‬‭between‬‭the‬‭two‬
+‭candidates‬ ‭=‬ ‭58%‬ ‭-‬ ‭42%‬ ‭=‬ ‭16%‬ ‭of‬ ‭the‬
+‭valid votes.‬
+‭V × 16% = 2545800 ⇒ V = 15,911,250‬
+‭Total votes polled = 15,911,250 + 365500‬
+‭= 16,276,750‬
+‭30%‬‭of‬‭people‬‭did‬‭not‬‭cast‬‭their‬‭votes‬‭so‬
+‭70% did cast their vote.‬
+‭70% = 16,276,750‬
+‭(people‬‭who‬‭did‬‭not‬‭cast‬‭their‬‭votes)‬‭30%‬
+‭= 6,975,750‬
+‭So,‬‭approximate‬‭number‬‭of‬‭people‬‭in‬‭the‬
+‭electorate‬‭who‬‭did‬‭not‬‭cast‬‭their‬‭votes‬‭is‬
+‭7 million‬
+‭Sol.5.(c)‬‭According to the question,‬
+‭500‬‭×‬
+‭×‬
+‭×‬
+‭×‬
+‭×‬
+‭4‬
+‭5‬
+(‭100‬‭ ‬+‭ ‬‭𝑏‬)
+‭100‬
+‭4‬
+‭5‬
+(‭100‬‭ ‬+‭ ‬‭𝑏‬)
+‭100‬
+‭= 1024‬
+‭4‬
+‭5‬
+‭4 ×‬
+‭×‬
+‭×‬
+‭×‬
+(‭100‬‭ ‬ + ‭ ‬‭𝑏‬)
+‭4‬
+‭5‬
+(‭100‬‭ ‬+‭ ‬‭𝑏‬)
+‭100‬
+‭4‬
+‭5‬
+‭= 1024‬
+‭=‬
+‭100‬ + ‭𝑏‬
+(
+)
+‭2‬
+‭1024‬‭ ‬‭×‬‭ ‬‭5‬‭ ‬‭×‬‭ ‬‭5‬‭ ‬‭×‬‭ ‬‭100‬
+‭4‬‭ ‬‭×‬‭ ‬‭4‬‭ ‬‭×‬‭ ‬‭4‬
+‭= 16 × 25 × 100‬
+‭100 + b = 4 × 5 × 10 = 200 ⇒ b = 100‬
+‭Sol.6.(d)‬
+‭Due to fault‬
+‭R =  25 +‬
+‭+‬
+→
+‭𝑆‬
+‭2‬
+‭𝐼𝑛𝑣𝑎𝑙𝑖𝑑‬
+‭2‬
+‭= 25 + 12.5 + 5 = 42.5‬
+‭Overall‬‭percentage‬‭of‬‭votes‬‭secured‬‭by‬‭R‬
+‭=‬
+‭100 = 42.5%‬
+‭42‬.‭5‬
+‭100‬ ×
+‭Sol.7.(a)‬
+‭Let the total no of votes be 100 unit‬
+‭No of Invalid votes = 100 ×‬
+‭= 20 unit‬
+‭1‬
+‭5‬
+‭No of valid votes = 100 - 20 = 80 unit‬
+‭A + B = 80 --------------- (i)‬
+‭A - B = 10  --------------- (ii)‬
+‭Solving eqn. (i) and (ii) we get ;‬
+‭A = 45 unit , B = 35 unit‬
+‭Now, If 90% of invalid votes have been in‬
+‭favour of B. then,‬
+‭No‬ ‭of‬ ‭votes‬ ‭would‬ ‭have‬‭received‬‭by‬‭B‬‭=‬
+‭35 unit + 90% of 20 = 35 + 18 = 53 unit‬
+‭% of votes by which B won = 53 - 45 = 8%‬
+‭Sol.8.(d)‬‭Let‬‭the‬‭total‬‭no.‬‭of‬‭voters‬‭in‬‭the‬
+‭list be 100%‬
+‭Then the no. of valid votes = 88% - 84‬
+‭No. of votes received by winner = 54%‬
+‭No. of votes received by loser‬
+‭= (88% - 84) - 54% = 34% - 84‬
+‭According to question,‬
+‭54% - (34% - 84) = 1456‬
+‭20% + 84 = 1456 ⇒ 20% = 1372‬
+‭Then, 100% = 1372×5 = 6860‬
+‭Sol.9.(b)‬
+‭A         B‬
+‭Weight assigned‬
+‭2     :   1‬
+→
+‭% obtained‬
+‭80%‬
+→‭𝑥‬
+‭= 70%‬
+(‭2‬‭𝑥‬‭ ‬+‭ ‬‭80‬)‭%‬
+‭2‬‭ ‬+‭ ‬‭1‬
+‭2‬ ‭+ 80 = 210‬
+‭2‬ ‭= 130‬
+‭= 65%‬
+‭𝑥‬
+⇒‭𝑥‬
+⇒‭𝑥‬
+‭So,‬ ‭the‬ ‭marks‬ ‭obtained‬ ‭by‬ ‭Riddhi‬
+‭in‬
+‭paper A = 10 × 65% = 6.5‬
+‭Sol.10.(c)‬
+‭Total valid votes =‬
+‭× 100 = 19200‬
+‭12288‬
+‭64‬
+‭∴ Total casted votes =‬
+‭× 100‬
+‭19200‬
+‭96‬
+‭= 20000‬
+‭Now, Number of voters in election list‬
+‭=‬
+‭× 100 = 31250‬
+‭20000‬
+‭64‬
+‭Sol.11.(d)‬‭Let total money = 100 %‬
+‭Total Money spend‬
+‭= (25 + 26 + 23 + 19)% = 93%‬
+‭Money deposited in bank‬
+‭= (100 - 93)% = 7% ⇒ 7% = 26,600‬
+‭Money spends on food and recreation‬
+‭=‬
+‭45 = 1,71,000‬
+‭26‬,‭600‬
+‭7‬
+×
+‭Sol.12.(a)‬
+‭Ratio →               CP    :    SP‬
+‭Cost →                 22    :    25‬
+‭Faulty weight →‬
+‭:   1000‬
+‭𝑥‬
+‭----------------------------------‬
+‭Final   →                4     :      5‬
+‭The‬ ‭amount‬ ‭of‬ ‭weight‬ ‭that‬ ‭he‬ ‭gives‬ ‭in‬
+‭exchange for 1kg‬
+‭=‬
+‭= 909.09 g‬
+‭25‬‭ ‬‭×‬‭ ‬‭1000‬‭ ‬‭×‬‭ ‬‭4‬
+‭22‬‭ ‬‭×‬‭ ‬‭5‬
+‭Required % =‬
+‭× 100‬
+‭1000‬‭ ‬−‭ ‬‭909‬.‭09‬
+‭909‬.‭09‬
+‭= 10.00011% (10% approx)‬
+‭Sol.13.(b)‬‭According to the question,‬
+‭Let the total income of Swastik‬
+‭= 100 units‬
+‭80% = 15% + 12800 + 32000 + 7200‬
+‭65% = 52000‬
+‭(amount spent on food) 15%‬
+‭=‬
+‭× 15 = 12000 Rs‬
+‭52000‬
+‭65‬
+‭Sol.14.(a)‬
+‭Ratio - initial   :   final‬
+‭25       :    29‬
+‭5        :     6‬
+‭5        :     3‬
+‭-------------------------‬
+‭625     :    522‬
+‭Decreased % =‬
+‭× 100‬
+‭625‬‭ ‬−‭ ‬‭522‬
+‭625‬
+‭= 16‬
+‭%‬
+‭12‬
+‭25‬
+‭Sol.15.(a)‬‭Let the number be‬ ‭, then‬
+‭𝑥‬
+‭According to question,‬
+‭×‬
+‭×‬
+‭= 2619‬
+‭𝑥‬
+‭108‬
+‭100‬
+‭97‬
+‭100‬
+‭= 2619  ×‬
+‭×‬
+‭𝑥‬
+‭100‬
+‭108‬
+‭100‬
+‭97‬
+‭5% of‬
+‭= 2619 ×‬
+‭×‬
+‭×‬
+‭𝑥‬
+‭100‬
+‭108‬
+‭100‬
+‭97‬
+‭5‬
+‭100‬
+‭= 2619 ×‬
+‭×‬
+‭= 125‬
+‭100‬
+‭108‬
+‭5‬
+‭97‬
+‭Sol.16.(b)‬
+‭Income           = Expenditure  + Savings‬
+‭Initial  :-  100  =      68             +   32‬
+‭Final  :-   125   =   88.2            +  36.8‬
+‭Required % increase‬
+‭=‬
+‭=‬
+‭= 29‬
+‭%‬
+‭88‬.‭2‬‭ ‬−‭ ‬‭ ‬‭68‬
+‭68‬
+‭×‬‭100‬
+‭2020‬
+‭68‬
+‭12‬
+‭17‬
+‭Sol.17.(a)‬
+‭Income        =  Expenditure + Savings‬
+‭Initial :- 100 =          45         +     55‬
+‭www.ssccglpinnacle.com                                                 Download Pinnacle Exam Preparation App‬
+

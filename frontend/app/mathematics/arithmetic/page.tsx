@@ -7,8 +7,11 @@ import { ArrowLeft, Search } from "lucide-react";
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Priority = "very-high" | "high" | "medium" | "low" | "least";
 
+import Link from "next/link";
+
 interface Topic {
   id: number;
+  slug: string;
   name: string;
   subtopics: string[];
   priority: Priority;
@@ -18,17 +21,17 @@ interface Topic {
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 const TOPICS: Topic[] = [
-  { id: 1, priority: "very-high", icon: "📊", name: "Percentages", questions: "3-4", subtopics: ["Percentage increase", "Percentage decrease", "Value changes", "Conversion"] },
-  { id: 2, priority: "very-high", icon: "⚖️", name: "Ratio and Proportion", questions: "3-4", subtopics: ["Fundamental ratio", "Proportion rules", "Part-to-whole", "Mixture ratios"] },
-  { id: 3, priority: "high", icon: "√", name: "Square Roots", questions: "2-3", subtopics: ["Perfect squares", "Root simplification", "Estimation", "Radical operations"] },
-  { id: 4, priority: "high", icon: "➗", name: "Averages", questions: "2-3", subtopics: ["Arithmetic mean", "Weighted average", "Median and mode", "Group data"] },
-  { id: 5, priority: "very-high", icon: "💰", name: "Interest (Simple and Compound)", questions: "3-4", subtopics: ["Simple interest formula", "Compound interest formula", "CI compounding periods", "Rate/time changes"] },
-  { id: 6, priority: "very-high", icon: "📈", name: "Profit and Loss", questions: "3-4", subtopics: ["Cost price/Selling price", "Profit percent", "Loss percent", "Markup and markdown"] },
-  { id: 7, priority: "high", icon: "🏷️", name: "Discount", questions: "2-3", subtopics: ["Single discount", "Successive discounts", "Net price", "Marked price"] },
-  { id: 8, priority: "high", icon: "🤝", name: "Partnership Business", questions: "2-3", subtopics: ["Capital ratio", "Profit sharing", "Time-weighted share", "New partner"] },
-  { id: 9, priority: "medium", icon: "🥣", name: "Mixture and Alligation", questions: "2-3", subtopics: ["Alligation rule", "Mixture ratio", "Cost price average", "Quantity problems"] },
-  { id: 10, priority: "medium", icon: "⏱️", name: "Time and Distance", questions: "3-4", subtopics: ["Speed, distance, time", "Relative speed", "Average speed", "Circular motion"] },
-  { id: 11, priority: "medium", icon: "🛠️", name: "Time and Work", questions: "3-4", subtopics: ["Work rate", "Combined work", "Pipe problems", "Efficiency problems"] },
+  { id: 1, slug: "percentages", priority: "very-high", icon: "📊", name: "Percentages", questions: "3-4", subtopics: ["Percentage increase", "Percentage decrease", "Value changes", "Conversion"] },
+  { id: 2, slug: "ratio-and-proportion", priority: "very-high", icon: "⚖️", name: "Ratio and Proportion", questions: "3-4", subtopics: ["Fundamental ratio", "Proportion rules", "Part-to-whole", "Mixture ratios"] },
+  { id: 3, slug: "square-roots", priority: "high", icon: "√", name: "Square Roots", questions: "2-3", subtopics: ["Perfect squares", "Root simplification", "Estimation", "Radical operations"] },
+  { id: 4, slug: "averages", priority: "high", icon: "➗", name: "Averages", questions: "2-3", subtopics: ["Arithmetic mean", "Weighted average", "Median and mode", "Group data"] },
+  { id: 5, slug: "interest", priority: "very-high", icon: "💰", name: "Interest (Simple and Compound)", questions: "3-4", subtopics: ["Simple interest formula", "Compound interest formula", "CI compounding periods", "Rate/time changes"] },
+  { id: 6, slug: "profit-and-loss", priority: "very-high", icon: "📈", name: "Profit and Loss", questions: "3-4", subtopics: ["Cost price/Selling price", "Profit percent", "Loss percent", "Markup and markdown"] },
+  { id: 7, slug: "discount", priority: "high", icon: "🏷️", name: "Discount", questions: "2-3", subtopics: ["Single discount", "Successive discounts", "Net price", "Marked price"] },
+  { id: 8, slug: "partnership", priority: "high", icon: "🤝", name: "Partnership Business", questions: "2-3", subtopics: ["Capital ratio", "Profit sharing", "Time-weighted share", "New partner"] },
+  { id: 9, slug: "mixture-and-alligation", priority: "medium", icon: "🥣", name: "Mixture and Alligation", questions: "2-3", subtopics: ["Alligation rule", "Mixture ratio", "Cost price average", "Quantity problems"] },
+  { id: 10, slug: "time-and-distance", priority: "medium", icon: "⏱️", name: "Time and Distance", questions: "3-4", subtopics: ["Speed, distance, time", "Relative speed", "Average speed", "Circular motion"] },
+  { id: 11, slug: "time-and-work", priority: "medium", icon: "🛠️", name: "Time and Work", questions: "3-4", subtopics: ["Work rate", "Combined work", "Pipe problems", "Efficiency problems"] },
 ];
 
 // ── Priority config — no red/yellow ──────────────────────────────────────────
@@ -56,11 +59,11 @@ type TabId = typeof TABS[number]["id"];
 function TopicPill({ topic, index }: { topic: Topic; index: number }) {
   const cfg = PRIORITY_CONFIG[topic.priority];
   return (
-    <div className="pill-card" style={{ animationDelay: `${index * 45}ms` }}>
+    <Link href={`/mathematics/arithmetic/${topic.slug}`} className="pill-card" style={{ animationDelay: `${index * 45}ms` }}>
       <span className="pill-icon" style={{ background: cfg.iconAccent }}>{topic.icon}</span>
       <span className="pill-name">{topic.name}</span>
       <span className="pill-badge" style={{ background: cfg.iconAccent, color: cfg.badge }}>{cfg.label}</span>
-    </div>
+    </Link>
   );
 }
 

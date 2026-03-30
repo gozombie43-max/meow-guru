@@ -27,10 +27,13 @@ export default function MathText({ text, className = "" }: Props) {
     <span className={className}>
       {parts.map((p, i) => {
         if (p.type === "text") return <MathRenderer key={i} text={p.value} />;
-        const num = p.num.replace(/^\(|\)$/g, "");
-        const den = p.den.replace(/^\(|\)$/g, "");
+        let num = p.num.replace(/^\(|\)$/g, "");
+        let den = p.den.replace(/^\(|\)$/g, "");
+        const percentSuffix = den.endsWith("%") ? "%" : "";
+        if (percentSuffix) den = den.slice(0, -1).trim();
+
         return (
-          <span key={i} className="inline-block align-middle mx-1" style={{ display: "inline-block" }}>
+          <span key={i} className="inline-flex items-center gap-0.5 align-middle">
             <span className="inline-flex flex-col items-center leading-none" role="math">
               <span className="text-[var(--text-primary)] font-bold" style={{ fontSize: "0.85em" }}>
                 <MathRenderer text={num} />
@@ -40,6 +43,11 @@ export default function MathText({ text, className = "" }: Props) {
                 <MathRenderer text={den} />
               </span>
             </span>
+            {percentSuffix && (
+              <span className="text-[var(--text-primary)] font-semibold" style={{ fontSize: "0.95em" }}>
+                %
+              </span>
+            )}
           </span>
         );
       })}
