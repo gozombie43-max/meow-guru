@@ -27,7 +27,7 @@ export default function MathText({ text, className = "" }: Props) {
     <span className={className}>
       {parts.map((p, i) => {
         if (p.type === "text") return <MathRenderer key={i} text={p.value} />;
-        let num = p.num.replace(/^\(|\)$/g, "");
+        const num = p.num.replace(/^\(|\)$/g, "");
         let den = p.den.replace(/^\(|\)$/g, "");
         const percentSuffix = den.endsWith("%") ? "%" : "";
         if (percentSuffix) den = den.slice(0, -1).trim();
