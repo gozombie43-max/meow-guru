@@ -5,6 +5,7 @@ export interface PercentageQuestion {
   concept: string;
   formula: string;
   question: string;
+  solution: string;
   options: string[];
   correctAnswer: number;
   answer: string;
@@ -28,6 +29,7 @@ type RawPercentageQuestion = {
   formula?: string;
   question?: string;
   text?: string;
+  solution?: unknown;
   options?: unknown;
   correct_option_index?: number;
   correct?: string | number;
@@ -150,6 +152,7 @@ function normalizeRaw(raw: RawPercentageQuestion, i: number): PercentageQuestion
     concept: raw.concept ?? inferConcept(question),
     formula: raw.formula ?? "",
     question,
+    solution: String(raw.solution ?? ""),
     options,
     correctAnswer,
     answer: String(
