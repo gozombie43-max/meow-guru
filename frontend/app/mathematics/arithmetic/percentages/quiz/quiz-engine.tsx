@@ -297,7 +297,7 @@ function SolutionBottomSheet({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-[95] bg-slate-900/45 backdrop-blur-[2px]"
+          className="fixed inset-0 z-[95] bg-slate-900/45"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
