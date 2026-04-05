@@ -20,7 +20,6 @@ import {
   X,
   ArrowLeft,
   ArrowRight,
-  Lightbulb,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { updateProgress, toggleBookmark } from "@/lib/userApi";
@@ -439,105 +438,148 @@ function ConceptBadge({ concept }: { concept: string }) {
   );
 }
 
-/* ── Solution Modal ──────────────────────────────────────────────────────────
- * Displays detailed step-by-step solution for the current question.
- * Appears as a bottom sheet modal with the correct answer highlighted.
- * ─────────────────────────────────────────────────────────────────────────── */
-function SolutionModal({
+function formatMathBookSolutionLines(solution: string): string[] {
+  const base = solution
+    .replace(/\r\n?/g, "\n")
+    .replace(/\u00a0/g, " ")
+    .replace(/\s*(=>|→)\s*/g, " \\Rightarrow ")
+    .trim();
+
+  if (!base) return [];
+
+  // Expand derivation chains into display-style lines for textbook-like readability.
+  const expandedMath = base.replace(/\\\(([\s\S]*?)\\\)/g, (_match, expr: string) => {
+    const cleanExpr = expr.trim();
+    if (!cleanExpr.includes("\\Rightarrow")) {
+      return `\\(${cleanExpr}\\)`;
+    }
+
+    const chunks = cleanExpr
+      .split(/\s*\\Rightarrow\s*/)
+      .map((part) => part.trim())
+      .filter(Boolean);
+
+    return chunks
+      .map((chunk, index) =>
+        index === 0 ? `\\[${chunk}\\]` : `\\[\\Rightarrow ${chunk}\\]`
+      )
+      .join("\n");
+  });
+
+  const withSentenceBreaks = expandedMath
+    .replace(/\.\s+(?=[A-Z\\])/g, ".\n")
+    .replace(/:\s+(?=[A-Z\\])/g, ":\n")
+    .replace(/\n{3,}/g, "\n\n");
+
+  return withSentenceBreaks
+    .split(/\n+/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
+function SolutionBottomSheet({
   isOpen,
-  question,
+  solution,
+  questionNumber,
+  correctOptionIndex,
   onClose,
 }: {
   isOpen: boolean;
-  question: TrigonometryQuestion | undefined;
+  solution: string;
+  questionNumber: number;
+  correctOptionIndex: number;
   onClose: () => void;
 }) {
-  if (!question) return null;
+  const solutionLines = useMemo(
+    () => formatMathBookSolutionLines(solution),
+    [solution]
+  );
+  const optionLabel =
+    correctOptionIndex >= 0 && correctOptionIndex < 26
+      ? String.fromCharCode(97 + correctOptionIndex)
+      : "a";
 
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-[95] bg-slate-900/50 backdrop-blur-sm"
+          className="fixed inset-0 z-[95] bg-slate-900/45"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
+          transition={{ duration: 0.28, ease: "easeOut" }}
           onClick={onClose}
         >
           <motion.div
-            className="fixed bottom-0 left-0 right-0 max-h-[90vh] overflow-y-auto rounded-t-3xl bg-white shadow-2xl"
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 30, stiffness: 300 }}
-            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Question solution"
+            className="absolute bottom-0 left-0 right-0 mx-auto flex h-[40vh] w-full max-w-3xl flex-col rounded-t-3xl border border-slate-200 bg-white px-5 pt-4 shadow-[0_-16px_44px_rgba(15,23,42,0.35)]"
+            style={{
+              paddingBottom: "calc(env(safe-area-inset-bottom) + 14px)",
+            }}
+            initial={{ y: "108%", opacity: 0.98 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: "108%", opacity: 0.98 }}
+            transition={{
+              type: "spring",
+              stiffness: 180,
+              damping: 26,
+              mass: 0.9,
+            }}
+            onClick={(event) => event.stopPropagation()}
           >
-            {/* Header */}
-            <div className="sticky top-0 border-b border-slate-200 bg-white px-6 py-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Lightbulb className="w-5 h-5 text-amber-500" />
-                  <h3 className="text-lg font-semibold text-slate-900">Solution</h3>
-                </div>
-                <button
-                  onClick={onClose}
-                  className="p-1.5 rounded-full hover:bg-slate-100 transition-colors"
-                  aria-label="Close solution"
-                >
-                  <X className="w-5 h-5 text-slate-500" />
-                </button>
-              </div>
+            <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-slate-200" />
+
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-base font-semibold text-slate-800">Worked Solution</h3>
+              <button
+                onClick={onClose}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-700 transition-colors hover:bg-slate-50"
+                aria-label="Close solution"
+              >
+                <X className="h-4 w-4" />
+              </button>
             </div>
 
-            {/* Content */}
-            <div className="px-6 py-6 pb-8">
-              {/* Correct Answer */}
-              <div className="mb-6 rounded-2xl border-2 border-emerald-200 bg-emerald-50 p-4">
-                <div className="flex items-start gap-3">
-                  <CheckCircle2 className="w-6 h-6 text-emerald-600 shrink-0 mt-0.5" />
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-emerald-700 mb-1">Correct Answer:</p>
-                    <p className="text-base font-semibold text-emerald-900">
-                      <MathText text={question.options[question.correctAnswer]} />
-                    </p>
-                  </div>
-                </div>
-              </div>
+            <div
+              className="flex-1 overflow-y-auto rounded-2xl border border-slate-300 bg-[#f7f7f7] px-4 py-3 text-slate-900"
+              style={{
+                fontFamily:
+                  "'Cambria Math', 'STIX Two Text', 'Times New Roman', serif",
+                fontSize: 17,
+                lineHeight: 1.7,
+                textAlign: "left",
+                paddingLeft: "0.3cm",
+              }}
+            >
+              {solutionLines.length > 0 ? (
+                <div className="space-y-1.5">
+                  <p className="mb-1 text-[18px] font-semibold text-slate-950">
+                    Sol.{questionNumber}.({optionLabel})
+                  </p>
 
-              {/* Solution Text */}
-              {question.solution && (
-                <div className="mb-4">
-                  <h4 className="text-sm font-semibold text-slate-700 mb-3">Step-by-Step Solution:</h4>
-                  <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
-                    <div
-                      className="text-sm leading-relaxed text-slate-700"
-                      style={{ lineHeight: 1.8 }}
-                    >
-                      <MathRenderer text={question.solution} />
-                    </div>
-                  </div>
+                  {solutionLines.map((line, index) => {
+                    const isDisplayEquation = /^\\\[[\s\S]*\\\]$/.test(line);
+                    return (
+                      <div
+                        key={`worked-line-${index}`}
+                        className={isDisplayEquation ? "text-center" : ""}
+                        style={{
+                          marginTop: isDisplayEquation ? "0.15rem" : "0",
+                          marginBottom: isDisplayEquation ? "0.15rem" : "0",
+                        }}
+                      >
+                        <MathRenderer text={line} className="leading-relaxed" />
+                      </div>
+                    );
+                  })}
                 </div>
+              ) : (
+                <p className="text-sm text-slate-500">
+                  Solution is not available for this question yet.
+                </p>
               )}
-
-              {/* Answer Key Reference */}
-              <div className="mt-6 rounded-lg bg-blue-50 border border-blue-200 p-4">
-                <p className="text-xs font-semibold text-blue-700 mb-2">ANSWER KEY:</p>
-                <div className="grid grid-cols-4 gap-2">
-                  {question.options.map((opt, idx) => (
-                    <div
-                      key={idx}
-                      className={`p-2 rounded-lg text-center text-xs font-semibold transition-all ${
-                        idx === question.correctAnswer
-                          ? "bg-emerald-500 text-white"
-                          : "bg-slate-200 text-slate-600"
-                      }`}
-                    >
-                      <div className="font-bold">{String.fromCharCode(65 + idx)}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
           </motion.div>
         </motion.div>
@@ -633,7 +675,7 @@ export default function TrigQuizEngine() {
   const [started, setStarted] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [timeLeft, setTimeLeft] = useState(60);
-  const [showSolution, setShowSolution] = useState(false);
+  const [isSolutionOpen, setIsSolutionOpen] = useState(false);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const touchStartXRef = useRef<number | null>(null);
@@ -688,6 +730,7 @@ export default function TrigQuizEngine() {
     setSelectedAnswers({});
     setSubmittedQuestions(new Set());
     setIsPaletteOpen(false);
+    setIsSolutionOpen(false);
     setStreak(0);
     setShowAnalytics(false);
     setStarted(false);
@@ -738,6 +781,7 @@ export default function TrigQuizEngine() {
       const existingSelection = selectedAnswers[safeIndex];
       setSelectedAnswer(existingSelection ?? null);
       setSubmitError("");
+      setIsSolutionOpen(false);
       if (started && !showAnalytics && !submittedQuestions.has(safeIndex)) {
         startTimer();
       }
@@ -767,6 +811,8 @@ export default function TrigQuizEngine() {
 
   const openPalette = useCallback(() => setIsPaletteOpen(true), []);
   const closePalette = useCallback(() => setIsPaletteOpen(false), []);
+  const openSolution = useCallback(() => setIsSolutionOpen(true), []);
+  const closeSolution = useCallback(() => setIsSolutionOpen(false), []);
 
   const adaptDifficulty = useCallback(
     (correct: boolean) => {
@@ -896,6 +942,7 @@ export default function TrigQuizEngine() {
     } else {
       stopTimer();
       refreshUser();
+      setIsSolutionOpen(false);
       setShowAnalytics(true);
     }
   }
@@ -908,6 +955,7 @@ export default function TrigQuizEngine() {
     setSelectedAnswers({});
     setSubmittedQuestions(new Set());
     closePalette();
+    setIsSolutionOpen(false);
     setStreak(0);
     setBestStreak(0);
     setShowAnalytics(false);
@@ -1516,6 +1564,7 @@ export default function TrigQuizEngine() {
 
   const isCurrentSubmitted = submittedQuestions.has(currentIndex);
   const canSubmit = selectedAnswer !== null && !isCurrentSubmitted;
+  const canViewSolution = isCurrentSubmitted;
 
   // ── Quiz Screen ────────────────────────────────────────────────────────────
   return (
@@ -1775,8 +1824,26 @@ export default function TrigQuizEngine() {
               </button>
             );
           })}
+
+          {canViewSolution && (
+            <button
+              type="button"
+              onClick={openSolution}
+              className="mt-1 inline-flex h-12 w-full items-center justify-center rounded-2xl border border-violet-200 bg-violet-50 px-5 text-sm font-semibold text-violet-700 transition-colors hover:bg-violet-100"
+            >
+              View Solution
+            </button>
+          )}
         </section>
       </main>
+
+      <SolutionBottomSheet
+        isOpen={isSolutionOpen}
+        solution={currentQ.solution ?? ""}
+        questionNumber={currentIndex + 1}
+        correctOptionIndex={currentQ.correctAnswer}
+        onClose={closeSolution}
+      />
 
       {/* Submit error toast */}
       {submitError && (
@@ -1795,7 +1862,7 @@ export default function TrigQuizEngine() {
             paddingBottom: "calc(env(safe-area-inset-bottom) + 12px)",
           }}
         >
-          <div className="grid gap-3" style={{ gridTemplateColumns: isCurrentSubmitted ? "1fr 1fr 1fr" : "1fr 1fr" }}>
+          <div className="grid grid-cols-2 gap-3">
             <button
               onClick={handlePrev}
               disabled={currentIndex === 0}
@@ -1803,17 +1870,6 @@ export default function TrigQuizEngine() {
             >
               Previous
             </button>
-
-            {isCurrentSubmitted && (
-              <button
-                onClick={() => setShowSolution(true)}
-                className="inline-flex h-14 items-center justify-center rounded-2xl border-2 border-amber-400 bg-amber-50 px-5 text-base font-semibold text-amber-700 transition-colors hover:bg-amber-100"
-                aria-label="View solution"
-              >
-                <Lightbulb className="w-5 h-5 mr-2" />
-                Solution
-              </button>
-            )}
 
             <button
               onClick={() => {
@@ -1840,13 +1896,6 @@ export default function TrigQuizEngine() {
           </div>
         </div>
       </div>
-
-      {/* Solution Modal */}
-      <SolutionModal
-        isOpen={showSolution}
-        question={currentQ}
-        onClose={() => setShowSolution(false)}
-      />
     </div>
   );
 }
