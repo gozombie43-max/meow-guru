@@ -16,6 +16,7 @@ export interface TrigonometryQuestion {
   estimatedTime: number;    // seconds
   year: string;
   exam: string;
+  solution?: string;        // step-by-step solution
 }
 
 export const TRIG_CONCEPTS = [
@@ -99,12 +100,13 @@ interface RawQ {
   question?: string;
   text?: string;        // some dumps use "text" instead of "question"
   options: string[];
-  answer: string;       // may be full option text OR a letter "a"/"b"/"c"/"d"
+  answer?: string;      // may be full option text OR a letter "a"/"b"/"c"/"d"
   correct?: string;     // alternate field name in some exports
   year?: string;
   exam?: string;
   subject?: string;
   chapter?: string;
+  solution?: string;    // step-by-step solution
 }
 
 /* ── Resolve the correct-answer index robustly ──────────── */
@@ -173,6 +175,7 @@ export const trigonometryQuestions: TrigonometryQuestion[] = (
     estimatedTime: estimatedTime(difficulty),
     year: raw.year ?? "",
     exam: raw.exam ?? "",
+    solution: raw.solution ?? "",
   };
 });
 

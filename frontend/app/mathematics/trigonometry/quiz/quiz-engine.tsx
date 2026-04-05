@@ -20,6 +20,7 @@ import {
   X,
   ArrowLeft,
   ArrowRight,
+  Lightbulb,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { updateProgress, toggleBookmark } from "@/lib/userApi";
@@ -438,6 +439,113 @@ function ConceptBadge({ concept }: { concept: string }) {
   );
 }
 
+/* ── Solution Modal ──────────────────────────────────────────────────────────
+ * Displays detailed step-by-step solution for the current question.
+ * Appears as a bottom sheet modal with the correct answer highlighted.
+ * ─────────────────────────────────────────────────────────────────────────── */
+function SolutionModal({
+  isOpen,
+  question,
+  onClose,
+}: {
+  isOpen: boolean;
+  question: TrigonometryQuestion | undefined;
+  onClose: () => void;
+}) {
+  if (!question) return null;
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          className="fixed inset-0 z-[95] bg-slate-900/50 backdrop-blur-sm"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          onClick={onClose}
+        >
+          <motion.div
+            className="fixed bottom-0 left-0 right-0 max-h-[90vh] overflow-y-auto rounded-t-3xl bg-white shadow-2xl"
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 30, stiffness: 300 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="sticky top-0 border-b border-slate-200 bg-white px-6 py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Lightbulb className="w-5 h-5 text-amber-500" />
+                  <h3 className="text-lg font-semibold text-slate-900">Solution</h3>
+                </div>
+                <button
+                  onClick={onClose}
+                  className="p-1.5 rounded-full hover:bg-slate-100 transition-colors"
+                  aria-label="Close solution"
+                >
+                  <X className="w-5 h-5 text-slate-500" />
+                </button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="px-6 py-6 pb-8">
+              {/* Correct Answer */}
+              <div className="mb-6 rounded-2xl border-2 border-emerald-200 bg-emerald-50 p-4">
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="w-6 h-6 text-emerald-600 shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-emerald-700 mb-1">Correct Answer:</p>
+                    <p className="text-base font-semibold text-emerald-900">
+                      <MathText text={question.options[question.correctAnswer]} />
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Solution Text */}
+              {question.solution && (
+                <div className="mb-4">
+                  <h4 className="text-sm font-semibold text-slate-700 mb-3">Step-by-Step Solution:</h4>
+                  <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
+                    <div
+                      className="text-sm leading-relaxed text-slate-700"
+                      style={{ lineHeight: 1.8 }}
+                    >
+                      <MathRenderer text={question.solution} />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Answer Key Reference */}
+              <div className="mt-6 rounded-lg bg-blue-50 border border-blue-200 p-4">
+                <p className="text-xs font-semibold text-blue-700 mb-2">ANSWER KEY:</p>
+                <div className="grid grid-cols-4 gap-2">
+                  {question.options.map((opt, idx) => (
+                    <div
+                      key={idx}
+                      className={`p-2 rounded-lg text-center text-xs font-semibold transition-all ${
+                        idx === question.correctAnswer
+                          ? "bg-emerald-500 text-white"
+                          : "bg-slate-200 text-slate-600"
+                      }`}
+                    >
+                      <div className="font-bold">{String.fromCharCode(65 + idx)}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
 /* ════════════════════════════════════════════════════════════════════════════
    MAIN TRIG QUIZ ENGINE
    ════════════════════════════════════════════════════════════════════════════ */
@@ -525,6 +633,7 @@ export default function TrigQuizEngine() {
   const [started, setStarted] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [timeLeft, setTimeLeft] = useState(60);
+  const [showSolution, setShowSolution] = useState(false);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const touchStartXRef = useRef<number | null>(null);
@@ -1686,7 +1795,7 @@ export default function TrigQuizEngine() {
             paddingBottom: "calc(env(safe-area-inset-bottom) + 12px)",
           }}
         >
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid gap-3" style={{ gridTemplateColumns: isCurrentSubmitted ? "1fr 1fr 1fr" : "1fr 1fr" }}>
             <button
               onClick={handlePrev}
               disabled={currentIndex === 0}
@@ -1694,6 +1803,17 @@ export default function TrigQuizEngine() {
             >
               Previous
             </button>
+
+            {isCurrentSubmitted && (
+              <button
+                onClick={() => setShowSolution(true)}
+                className="inline-flex h-14 items-center justify-center rounded-2xl border-2 border-amber-400 bg-amber-50 px-5 text-base font-semibold text-amber-700 transition-colors hover:bg-amber-100"
+                aria-label="View solution"
+              >
+                <Lightbulb className="w-5 h-5 mr-2" />
+                Solution
+              </button>
+            )}
 
             <button
               onClick={() => {
@@ -1720,6 +1840,13 @@ export default function TrigQuizEngine() {
           </div>
         </div>
       </div>
+
+      {/* Solution Modal */}
+      <SolutionModal
+        isOpen={showSolution}
+        question={currentQ}
+        onClose={() => setShowSolution(false)}
+      />
     </div>
   );
 }
