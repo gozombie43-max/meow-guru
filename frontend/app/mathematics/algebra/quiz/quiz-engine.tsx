@@ -1,7 +1,6 @@
 "use client";
 
-import MathRenderer from "@/components/MathRenderer";
-import MathText from "@/components/MathText";
+import RichContent from "@/components/RichContent";
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useSearchParams } from "next/navigation";
@@ -1254,7 +1253,7 @@ export default function QuizEngine() {
                 paddingRight: "0.3cm",
               }}
             >
-              <MathText text={currentQ.question} className="leading-relaxed" />
+              <RichContent text={currentQ.question} className="leading-relaxed" />
             </div>
 
             {(currentQ as AlgebraQuestion & { image?: string }).image && (
@@ -1309,7 +1308,7 @@ export default function QuizEngine() {
                 type="button"
                 style={{
                   width: "100%",
-                  height: 58,
+                  minHeight: 58,
                   background: bg,
                   border: `1.5px solid ${border}`,
                   borderRadius: 16,
@@ -1359,11 +1358,9 @@ export default function QuizEngine() {
                 >
                   {String.fromCharCode(65 + i)}
                 </span>
-                <span
-                  style={{ fontSize: 17, fontWeight: 400, color: "#111827", lineHeight: 1.5 }}
-                >
-                  <MathText text={opt} />
-                </span>
+                <div style={{ fontSize: 17, fontWeight: 400, color: "#111827", lineHeight: 1.5 }}>
+                  <RichContent text={opt} />
+                </div>
                 {isCurrentSubmitted && i === currentQ.correctAnswer && (
                   <CheckCircle2
                     className="ml-auto h-5 w-5 shrink-0 text-emerald-600"

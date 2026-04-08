@@ -1,7 +1,7 @@
 "use client";
 
 import MathRenderer from "@/components/MathRenderer";
-import MathText from "@/components/MathText";
+import RichContent from "@/components/RichContent";
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useSearchParams } from "next/navigation";
@@ -494,6 +494,7 @@ function SolutionBottomSheet({
     () => formatMathBookSolutionLines(solution),
     [solution]
   );
+  const solutionHasImage = /!\[[^\]]*\]\([^)]+\)/.test(solution);
   const optionLabel =
     correctOptionIndex >= 0 && correctOptionIndex < 26
       ? String.fromCharCode(97 + correctOptionIndex)
@@ -559,21 +560,25 @@ function SolutionBottomSheet({
                     Sol.{questionNumber}.({optionLabel})
                   </p>
 
-                  {solutionLines.map((line, index) => {
-                    const isDisplayEquation = /^\\\[[\s\S]*\\\]$/.test(line);
-                    return (
-                      <div
-                        key={`worked-line-${index}`}
-                        className={isDisplayEquation ? "text-center" : ""}
-                        style={{
-                          marginTop: isDisplayEquation ? "0.15rem" : "0",
-                          marginBottom: isDisplayEquation ? "0.15rem" : "0",
-                        }}
-                      >
-                        <MathRenderer text={line} className="leading-relaxed" />
-                      </div>
-                    );
-                  })}
+                  {solutionHasImage ? (
+                    <RichContent text={solution} />
+                  ) : (
+                    solutionLines.map((line, index) => {
+                      const isDisplayEquation = /^\\\[[\s\S]*\\\]$/.test(line);
+                      return (
+                        <div
+                          key={`worked-line-${index}`}
+                          className={isDisplayEquation ? "text-center" : ""}
+                          style={{
+                            marginTop: isDisplayEquation ? "0.15rem" : "0",
+                            marginBottom: isDisplayEquation ? "0.15rem" : "0",
+                          }}
+                        >
+                          <MathRenderer text={line} className="leading-relaxed" />
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               ) : (
                 <p className="text-sm text-slate-500">
@@ -1691,10 +1696,7 @@ export default function TrigQuizEngine() {
                 paddingRight: "0.3cm",
               }}
             >
-              <MathRenderer
-                text={currentQ.question}
-                className="leading-relaxed"
-              />
+              <RichContent text={currentQ.question} className="leading-relaxed" />
             </div>
 
           </motion.div>
@@ -1742,7 +1744,7 @@ export default function TrigQuizEngine() {
                 type="button"
                 style={{
                   width: "100%",
-                  height: 58,
+                  minHeight: 58,
                   background: bg,
                   border: `1.5px solid ${border}`,
                   borderRadius: 16,
@@ -1795,7 +1797,7 @@ export default function TrigQuizEngine() {
                 </span>
 
                 {/* Option text */}
-                <span
+                <div
                   style={{
                     fontSize: 17,
                     fontWeight: 400,
@@ -1803,8 +1805,8 @@ export default function TrigQuizEngine() {
                     lineHeight: 1.5,
                   }}
                 >
-                  <MathText text={opt} />
-                </span>
+                  <RichContent text={opt} />
+                </div>
 
                 {/* Correct / wrong icons */}
                 {isCurrentSubmitted && i === currentQ.correctAnswer && (

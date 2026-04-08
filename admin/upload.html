@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SSC Admin — Add Question</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -178,6 +179,25 @@
       min-height: 80px;
     }
 
+    input[type="file"] {
+      padding: 8px 12px;
+    }
+
+    input[type="file"]::file-selector-button {
+      border: none;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.45);
+      color: #4a7a9b;
+      padding: 6px 10px;
+      margin-right: 10px;
+      cursor: pointer;
+    }
+
+    .field-hint {
+      font-size: 0.75rem;
+      color: rgba(74, 122, 155, 0.75);
+    }
+
     .options-section {
       grid-column: 1 / -1;
       display: flex;
@@ -189,8 +209,15 @@
       margin-bottom: 2px;
     }
 
-    .option-row {
+    .option-block {
       display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .option-row {
+      display: grid;
+      grid-template-columns: 32px 1fr 1fr 24px;
       align-items: center;
       gap: 10px;
     }
@@ -211,8 +238,9 @@
       border: 1px solid rgba(255,255,255,0.35);
     }
 
-    .option-row input[type="text"] {
-      flex: 1;
+    .option-row input[type="text"],
+    .option-row input[type="file"] {
+      width: 100%;
     }
 
     .option-row input[type="radio"] {
@@ -223,10 +251,128 @@
       cursor: pointer;
     }
 
+    .image-preview {
+      display: none;
+      border: 1px dashed rgba(74, 122, 155, 0.35);
+      border-radius: 12px;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    .image-preview.show {
+      display: block;
+    }
+
+    .image-preview img {
+      max-width: 100%;
+      max-height: 180px;
+      display: block;
+      border-radius: 10px;
+    }
+
+    .option-preview {
+      margin-left: 42px;
+    }
+
     .correct-hint {
       font-size: 0.75rem;
       color: #4a7a9b;
       margin-top: -4px;
+    }
+
+    .preview-section {
+      margin-top: 6px;
+    }
+
+    .live-preview {
+      display: grid;
+      gap: 14px;
+    }
+
+    .preview-card {
+      background: rgba(255, 255, 255, 0.22);
+      border: 1px solid rgba(255, 255, 255, 0.45);
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
+    }
+
+    .preview-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #4a7a9b;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 8px;
+    }
+
+    .preview-body {
+      font-size: 0.98rem;
+      color: var(--text-primary);
+      line-height: 1.6;
+      word-break: break-word;
+    }
+
+    .preview-options {
+      display: grid;
+      gap: 10px;
+    }
+
+    .preview-option {
+      display: grid;
+      grid-template-columns: 32px 1fr;
+      gap: 10px;
+      align-items: start;
+    }
+
+    .preview-label {
+      background: rgba(255,255,255,0.20);
+      color: #4a7a9b;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      border: 1px solid rgba(255,255,255,0.35);
+    }
+
+    .preview-empty {
+      color: rgba(74, 122, 155, 0.75);
+      font-size: 0.85rem;
+    }
+
+    .preview-image {
+      display: none;
+      border: 1px dashed rgba(74, 122, 155, 0.35);
+      border-radius: 12px;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.25);
+      margin-top: 8px;
+    }
+
+    .preview-image.show {
+      display: block;
+    }
+
+    .preview-image img {
+      max-width: 100%;
+      max-height: 180px;
+      display: block;
+      border-radius: 10px;
+    }
+
+    .preview-math-display {
+      display: block;
+      text-align: center;
+      margin: 0.35rem 0;
+    }
+
+    .preview-math-inline {
+      display: inline-block;
+      margin: 0 0.2rem;
     }
 
     .btn-bar {
@@ -323,6 +469,18 @@
     @media (max-width: 600px) {
       .form-grid { grid-template-columns: 1fr; }
       form { padding: 20px; }
+      .option-row {
+        grid-template-columns: 32px 1fr 24px;
+      }
+      .option-row input[type="file"] {
+        grid-column: 2 / -1;
+      }
+      .option-preview {
+        margin-left: 0;
+      }
+      .preview-option {
+        grid-template-columns: 28px 1fr;
+      }
     }
   </style>
 </head>
@@ -334,7 +492,7 @@
   </header>
 
   <div class="container">
-    <form id="questionForm">
+    <form id="questionForm" enctype="multipart/form-data">
       <div class="form-grid">
 
         <!-- Subject -->
@@ -343,11 +501,9 @@
           <select id="subject" required>
             <option value="">Select subject</option>
             <option>Mathematics</option>
-            <option>English</option>
-            <option>General Knowledge</option>
             <option>Reasoning</option>
-            <option>General Science</option>
-            <option>Hindi</option>
+            <option>English</option>
+            <option>General Awareness</option>
           </select>
         </div>
 
@@ -362,10 +518,26 @@
           </select>
         </div>
 
-        <!-- Chapter -->
+        <!-- Exam Name -->
         <div class="form-group">
-          <label>Chapter</label>
-          <input type="text" id="chapter" placeholder="e.g. Algebra, Idioms…">
+          <label>Exam Name</label>
+          <input type="text" id="exam" placeholder="e.g. SSC CGL">
+        </div>
+
+        <!-- Tags -->
+        <div class="form-group">
+          <label>Tags</label>
+          <input type="text" id="tags" placeholder="e.g. mensuration, volume, cone">
+          <p class="field-hint">Comma-separated tags for search and analysis.</p>
+        </div>
+
+        <!-- Topic -->
+        <div class="form-group">
+          <label>Topic</label>
+          <select id="chapter" disabled>
+            <option value="">Select topic</option>
+          </select>
+          <p class="field-hint">Select a subject to load its topics.</p>
         </div>
 
         <!-- Concept -->
@@ -411,33 +583,116 @@
         <!-- Question -->
         <div class="form-group full-width">
           <label>Question <span class="required">*</span></label>
-          <textarea id="question" placeholder="Type the full question text…" required></textarea>
+          <textarea id="question" placeholder="Type the full question text…"></textarea>
+          <input type="file" id="questionImage" accept="image/*">
+          <div class="image-preview" id="questionImagePreview"></div>
+          <p class="field-hint">Tip: Provide text, an image file, or both. Use \( ... \) or $...$ for inline math, and \[ ... \] or $$...$$ for display math.</p>
         </div>
 
         <!-- Options + Correct Answer -->
         <div class="options-section">
-          <label>Options <span class="required">*</span> &nbsp; <span style="font-weight:400; text-transform:none; color:#64748b;">(select radio for correct answer)</span></label>
-          <div class="option-row">
-            <span class="option-label">A</span>
-            <input type="text" id="optA" placeholder="Option A" required>
-            <input type="radio" name="correct" value="0" required title="Mark A as correct">
+          <label>Options <span class="required">*</span> &nbsp; <span style="font-weight:400; text-transform:none; color:#64748b;">(text + optional image, select radio for correct answer; KaTeX: \( ... \) or $...$)</span></label>
+
+          <div class="option-block">
+            <div class="option-row">
+              <span class="option-label">A</span>
+              <input type="text" id="optA" placeholder="Option A text">
+              <input type="file" id="optAImage" accept="image/*">
+              <input type="radio" name="correct" value="0" required title="Mark A as correct">
+            </div>
+            <div class="image-preview option-preview" id="optAImagePreview"></div>
           </div>
-          <div class="option-row">
-            <span class="option-label">B</span>
-            <input type="text" id="optB" placeholder="Option B" required>
-            <input type="radio" name="correct" value="1" title="Mark B as correct">
+
+          <div class="option-block">
+            <div class="option-row">
+              <span class="option-label">B</span>
+              <input type="text" id="optB" placeholder="Option B text">
+              <input type="file" id="optBImage" accept="image/*">
+              <input type="radio" name="correct" value="1" title="Mark B as correct">
+            </div>
+            <div class="image-preview option-preview" id="optBImagePreview"></div>
           </div>
-          <div class="option-row">
-            <span class="option-label">C</span>
-            <input type="text" id="optC" placeholder="Option C" required>
-            <input type="radio" name="correct" value="2" title="Mark C as correct">
+
+          <div class="option-block">
+            <div class="option-row">
+              <span class="option-label">C</span>
+              <input type="text" id="optC" placeholder="Option C text">
+              <input type="file" id="optCImage" accept="image/*">
+              <input type="radio" name="correct" value="2" title="Mark C as correct">
+            </div>
+            <div class="image-preview option-preview" id="optCImagePreview"></div>
           </div>
-          <div class="option-row">
-            <span class="option-label">D</span>
-            <input type="text" id="optD" placeholder="Option D" required>
-            <input type="radio" name="correct" value="3" title="Mark D as correct">
+
+          <div class="option-block">
+            <div class="option-row">
+              <span class="option-label">D</span>
+              <input type="text" id="optD" placeholder="Option D text">
+              <input type="file" id="optDImage" accept="image/*">
+              <input type="radio" name="correct" value="3" title="Mark D as correct">
+            </div>
+            <div class="image-preview option-preview" id="optDImagePreview"></div>
           </div>
+
           <p class="correct-hint">The selected radio button marks the correct answer.</p>
+        </div>
+
+        <!-- Solution -->
+        <div class="form-group full-width">
+          <label>Solution (Optional)</label>
+          <textarea id="solution" placeholder="Explain the steps, formulas, or reasoning..."></textarea>
+          <input type="file" id="solutionImage" accept="image/*">
+          <div class="image-preview" id="solutionImagePreview"></div>
+          <p class="field-hint">Add detailed steps. Use \( ... \) or $...$ for inline math, and \[ ... \] or $$...$$ for display math.</p>
+        </div>
+
+        <!-- Live Preview -->
+        <div class="form-group full-width preview-section">
+          <label>Live Preview</label>
+          <div class="live-preview">
+            <div class="preview-card">
+              <div class="preview-title">Question</div>
+              <div class="preview-body" id="previewQuestion"></div>
+              <div class="preview-image" id="previewQuestionImage"></div>
+            </div>
+            <div class="preview-card">
+              <div class="preview-title">Options</div>
+              <div class="preview-options">
+                <div class="preview-option">
+                  <span class="preview-label">A</span>
+                  <div>
+                    <div class="preview-body" id="previewOptA"></div>
+                    <div class="preview-image" id="previewOptAImage"></div>
+                  </div>
+                </div>
+                <div class="preview-option">
+                  <span class="preview-label">B</span>
+                  <div>
+                    <div class="preview-body" id="previewOptB"></div>
+                    <div class="preview-image" id="previewOptBImage"></div>
+                  </div>
+                </div>
+                <div class="preview-option">
+                  <span class="preview-label">C</span>
+                  <div>
+                    <div class="preview-body" id="previewOptC"></div>
+                    <div class="preview-image" id="previewOptCImage"></div>
+                  </div>
+                </div>
+                <div class="preview-option">
+                  <span class="preview-label">D</span>
+                  <div>
+                    <div class="preview-body" id="previewOptD"></div>
+                    <div class="preview-image" id="previewOptDImage"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="preview-card">
+              <div class="preview-title">Solution</div>
+              <div class="preview-body" id="previewSolution"></div>
+              <div class="preview-image" id="previewSolutionImage"></div>
+            </div>
+          </div>
         </div>
 
         <!-- Buttons -->
@@ -451,9 +706,303 @@
   </div>
 
   <div class="toast" id="toast"></div>
-
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
   <script>
-    const API_URL = 'http://localhost:3000/api/questions';
+    const API_URL = 'http://localhost:5000/api/questions';
+
+    const SUBJECT_TOPICS = {
+      Mathematics: [
+        'Number System',
+        'Arithmetic',
+        'Algebra',
+        'Geometry',
+        'Mensuration',
+        'Trigonometry',
+        'Statistics & Probability'
+      ],
+      Reasoning: [
+        'Coding & Decoding',
+        'Syllogism & Inferences',
+        'Puzzle & Seating Arrangement',
+        'Series',
+        'Analogy',
+        'Classification (Odd One Out)',
+        'Blood Relations',
+        'Direction & Distance',
+        'Venn Diagram',
+        'Inequalities',
+        'Mathematical & Symbolic Operations',
+        'Order & Ranking',
+        'Statement & Conclusion',
+        'Statement & Assumptions',
+        'Statement & Arguments',
+        'Problem Solving & Critical Thinking',
+        'Non-Verbal Figures',
+        'Paper Folding & Cutting',
+        'Mirror & Water Image',
+        'Cube & Dice',
+        'Matrix',
+        'Logical Sequence of Words',
+        'Emotional Intelligence',
+        'Social Intelligence',
+        'Word Building'
+      ],
+      English: [
+        'Synonyms & Antonyms',
+        'Homonyms & Homophones',
+        'One Word Substitution',
+        'Idioms & Phrases',
+        'Spelling / Misspelled Words',
+        'Active & Passive Voice',
+        'Direct & Indirect Narration',
+        'Subject-Verb Agreement',
+        'Tenses',
+        'Articles',
+        'Prepositions',
+        'Conjunctions',
+        'Modifiers',
+        'Pronouns',
+        'Sentence Structure',
+        'Parallelism',
+        'Spot the Error / Error Detection',
+        'Sentence Correction / Improvement',
+        'Fill in the Blanks',
+        'Cloze Test',
+        'Reading Comprehension',
+        'Para-Jumbles',
+        'Para / Sentence Completion'
+      ],
+      'General Awareness': [
+        'History',
+        'Polity',
+        'Geography',
+        'Economics',
+        'General Science',
+        'Current Affairs',
+        'Static GK'
+      ]
+    };
+
+    function updateTopicOptions() {
+      const subjectSelect = document.getElementById('subject');
+      const topicSelect = document.getElementById('chapter');
+      const subject = subjectSelect.value;
+      const topics = SUBJECT_TOPICS[subject] || [];
+
+      topicSelect.innerHTML = '';
+      const placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.textContent = 'Select topic';
+      topicSelect.appendChild(placeholder);
+
+      topics.forEach((topic) => {
+        const option = document.createElement('option');
+        option.value = topic;
+        option.textContent = topic;
+        topicSelect.appendChild(option);
+      });
+
+      topicSelect.disabled = topics.length === 0;
+      if (topicSelect.disabled) {
+        topicSelect.value = '';
+      }
+    }
+
+    function updateImagePreview(inputId, previewId) {
+      const input = document.getElementById(inputId);
+      const preview = document.getElementById(previewId);
+      if (!input || !preview) return;
+
+      const file = input.files && input.files[0];
+      const previousUrl = preview.dataset.objectUrl;
+      if (previousUrl) {
+        URL.revokeObjectURL(previousUrl);
+        delete preview.dataset.objectUrl;
+      }
+
+      if (!file) {
+        preview.classList.remove('show');
+        preview.textContent = '';
+        return;
+      }
+
+      preview.textContent = '';
+      const img = document.createElement('img');
+      const objectUrl = URL.createObjectURL(file);
+      preview.dataset.objectUrl = objectUrl;
+      img.src = objectUrl;
+      img.alt = 'Image preview';
+      preview.appendChild(img);
+      preview.classList.add('show');
+    }
+
+    function clearImagePreviews() {
+      const previews = document.querySelectorAll('.image-preview, .preview-image');
+      previews.forEach((preview) => {
+        const objectUrl = preview.dataset.objectUrl;
+        if (objectUrl) {
+          URL.revokeObjectURL(objectUrl);
+          delete preview.dataset.objectUrl;
+        }
+        preview.classList.remove('show');
+        preview.textContent = '';
+      });
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function splitMathParts(input) {
+      const parts = [];
+      const safeInput = String(input || '').replace(/\\\$/g, '__DOLLAR__');
+      const regex = /\\\[([\s\S]*?)\\\]|\\\(([\s\S]*?)\\\)|\$\$([\s\S]*?)\$\$|\$([^\n$]+?)\$/g;
+      let lastIndex = 0;
+      let match = null;
+
+      while ((match = regex.exec(safeInput)) !== null) {
+        if (match.index > lastIndex) {
+          parts.push({ type: 'text', content: safeInput.slice(lastIndex, match.index) });
+        }
+        if (match[1] !== undefined) {
+          parts.push({ type: 'display', content: match[1].trim() });
+        } else if (match[2] !== undefined) {
+          parts.push({ type: 'inline', content: match[2].trim() });
+        } else if (match[3] !== undefined) {
+          parts.push({ type: 'display', content: match[3].trim() });
+        } else if (match[4] !== undefined) {
+          parts.push({ type: 'inline', content: match[4].trim() });
+        }
+        lastIndex = regex.lastIndex;
+      }
+
+      if (lastIndex < safeInput.length) {
+        parts.push({ type: 'text', content: safeInput.slice(lastIndex) });
+      }
+
+      return parts.map((part) => ({
+        ...part,
+        content: part.content.replace(/__DOLLAR__/g, '$'),
+      }));
+    }
+
+    function renderMathHtml(text) {
+      if (!text) return '';
+      const parts = splitMathParts(text);
+      const hasKatex = typeof window.katex !== 'undefined';
+
+      return parts.map((part) => {
+        if (part.type === 'text') {
+          return escapeHtml(part.content).replace(/\n/g, '<br>');
+        }
+
+        if (!hasKatex) {
+          return escapeHtml(part.content);
+        }
+
+        const mathContent = part.content.replace(/(\d+)\s*\/\s*(\d+)/g, '\\tfrac{$1}{$2}');
+        let html = '';
+        try {
+          html = window.katex.renderToString(mathContent, {
+            throwOnError: false,
+            displayMode: part.type === 'display',
+          });
+        } catch {
+          html = escapeHtml(part.content);
+        }
+
+        return part.type === 'display'
+          ? `<span class="preview-math-display">${html}</span>`
+          : `<span class="preview-math-inline">${html}</span>`;
+      }).join('');
+    }
+
+    function updatePreviewText(inputId, previewId) {
+      const input = document.getElementById(inputId);
+      const preview = document.getElementById(previewId);
+      if (!preview) return;
+      const text = input ? input.value.trim() : '';
+      const html = renderMathHtml(text);
+      preview.innerHTML = html || '<span class="preview-empty">No text yet</span>';
+    }
+
+    function updatePreviewImage(inputId, previewId) {
+      const input = document.getElementById(inputId);
+      const preview = document.getElementById(previewId);
+      if (!input || !preview) return;
+
+      const file = input.files && input.files[0];
+      const previousUrl = preview.dataset.objectUrl;
+      if (previousUrl) {
+        URL.revokeObjectURL(previousUrl);
+        delete preview.dataset.objectUrl;
+      }
+
+      preview.textContent = '';
+
+      if (!file) {
+        preview.classList.remove('show');
+        return;
+      }
+
+      const img = document.createElement('img');
+      const objectUrl = URL.createObjectURL(file);
+      preview.dataset.objectUrl = objectUrl;
+      img.src = objectUrl;
+      img.alt = 'Preview image';
+      preview.appendChild(img);
+      preview.classList.add('show');
+    }
+
+    function updateAllPreviews(includeImages = false) {
+      updatePreviewText('question', 'previewQuestion');
+      updatePreviewText('optA', 'previewOptA');
+      updatePreviewText('optB', 'previewOptB');
+      updatePreviewText('optC', 'previewOptC');
+      updatePreviewText('optD', 'previewOptD');
+      updatePreviewText('solution', 'previewSolution');
+
+      if (!includeImages) return;
+      updatePreviewImage('questionImage', 'previewQuestionImage');
+      updatePreviewImage('optAImage', 'previewOptAImage');
+      updatePreviewImage('optBImage', 'previewOptBImage');
+      updatePreviewImage('optCImage', 'previewOptCImage');
+      updatePreviewImage('optDImage', 'previewOptDImage');
+      updatePreviewImage('solutionImage', 'previewSolutionImage');
+    }
+
+    ['questionImage', 'optAImage', 'optBImage', 'optCImage', 'optDImage', 'solutionImage'].forEach((id) => {
+      const previewId = `${id}Preview`;
+      const input = document.getElementById(id);
+      if (input) {
+        input.addEventListener('change', () => {
+          updateImagePreview(id, previewId);
+          const previewKey = `preview${id.charAt(0).toUpperCase()}${id.slice(1)}`;
+          updatePreviewImage(id, previewKey);
+        });
+      }
+    });
+
+    ['question', 'optA', 'optB', 'optC', 'optD', 'solution'].forEach((id) => {
+      const input = document.getElementById(id);
+      if (input) {
+        input.addEventListener('input', () => updateAllPreviews(false));
+        input.addEventListener('change', () => updateAllPreviews(false));
+      }
+    });
+
+    const subjectSelect = document.getElementById('subject');
+    if (subjectSelect) {
+      subjectSelect.addEventListener('change', updateTopicOptions);
+      updateTopicOptions();
+    }
+
+    updateAllPreviews(true);
 
     function showToast(message, type) {
       const toast = document.getElementById('toast');
@@ -465,12 +1014,32 @@
     document.getElementById('questionForm').addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      const options = [
+      const questionText = document.getElementById('question').value.trim();
+      const questionImage = document.getElementById('questionImage').files[0];
+
+      if (!questionText && !questionImage) {
+        showToast('Please add question text or an image file', 'error');
+        return;
+      }
+
+      const optionTexts = [
         document.getElementById('optA').value.trim(),
         document.getElementById('optB').value.trim(),
         document.getElementById('optC').value.trim(),
         document.getElementById('optD').value.trim()
       ];
+      const optionFiles = [
+        document.getElementById('optAImage').files[0],
+        document.getElementById('optBImage').files[0],
+        document.getElementById('optCImage').files[0],
+        document.getElementById('optDImage').files[0]
+      ];
+
+      const emptyIndex = optionTexts.findIndex((text, index) => !text && !optionFiles[index]);
+      if (emptyIndex !== -1) {
+        showToast('Each option needs text or an image file', 'error');
+        return;
+      }
 
       const correctRadio = document.querySelector('input[name="correct"]:checked');
       if (!correctRadio) {
@@ -478,39 +1047,64 @@
         return;
       }
 
-      const correctAnswer = options[parseInt(correctRadio.value)];
+      const correctIndex = parseInt(correctRadio.value, 10);
+      const formData = new FormData();
+      const solutionText = document.getElementById('solution').value.trim();
+      const solutionImage = document.getElementById('solutionImage').files[0];
 
-      const payload = {
-        subject:     document.getElementById('subject').value,
-        tier:        document.getElementById('tier').value,
-        chapter:     document.getElementById('chapter').value.trim(),
-        concept:     document.getElementById('concept').value.trim(),
-        difficulty:  document.getElementById('difficulty').value,
-        formula:     document.getElementById('formula').value.trim(),
-        trapType:    document.getElementById('trapType').value,
-        question:    document.getElementById('question').value.trim(),
-        options,
-        correctAnswer
-      };
+      formData.append('subject', document.getElementById('subject').value);
+      formData.append('tier', document.getElementById('tier').value);
+      formData.append('exam', document.getElementById('exam').value.trim());
+      formData.append('chapter', document.getElementById('chapter').value);
+      formData.append('concept', document.getElementById('concept').value.trim());
+      formData.append('difficulty', document.getElementById('difficulty').value);
+      formData.append('formula', document.getElementById('formula').value.trim());
+      formData.append('trapType', document.getElementById('trapType').value);
+      formData.append('tags', document.getElementById('tags').value.trim());
+      formData.append('questionText', questionText);
+      formData.append('optionAText', optionTexts[0]);
+      formData.append('optionBText', optionTexts[1]);
+      formData.append('optionCText', optionTexts[2]);
+      formData.append('optionDText', optionTexts[3]);
+      formData.append('correctIndex', String(correctIndex));
+      formData.append('solutionText', solutionText);
+
+      if (questionImage) formData.append('questionImage', questionImage);
+      if (optionFiles[0]) formData.append('optionAImage', optionFiles[0]);
+      if (optionFiles[1]) formData.append('optionBImage', optionFiles[1]);
+      if (optionFiles[2]) formData.append('optionCImage', optionFiles[2]);
+      if (optionFiles[3]) formData.append('optionDImage', optionFiles[3]);
+      if (solutionImage) formData.append('solutionImage', solutionImage);
 
       try {
         const res = await fetch(API_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+          body: formData
         });
 
-        const data = await res.json();
+        let data = {};
+        try {
+          data = await res.json();
+        } catch {
+          data = {};
+        }
 
         if (res.ok) {
           showToast('Question #' + data.question.id + ' added!', 'success');
           document.getElementById('questionForm').reset();
+          clearImagePreviews();
         } else {
           showToast(data.error || 'Failed to add question', 'error');
         }
       } catch (err) {
         showToast('Server unreachable — is the backend running?', 'error');
       }
+    });
+
+    document.getElementById('questionForm').addEventListener('reset', () => {
+      clearImagePreviews();
+      updateTopicOptions();
+      updateAllPreviews(true);
     });
   </script>
 

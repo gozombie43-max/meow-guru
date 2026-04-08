@@ -1,8 +1,3 @@
-/**
- * Central data access layer for the SSC platform.
- * All file I/O for questions and test history goes through here.
- */
-
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -13,8 +8,6 @@ const __dirname  = path.dirname(__filename);
 const DB_DIR         = path.join(__dirname);
 const QUESTIONS_PATH = path.join(DB_DIR, 'questions.json');
 const HISTORY_PATH   = path.join(DB_DIR, 'testHistory.json');
-
-// ─── Safe file helpers ───
 
 function readJSON(filePath, fallback = []) {
   try {
@@ -39,8 +32,6 @@ function writeJSON(filePath, data) {
   }
 }
 
-// ─── Questions ───
-
 function readQuestions() {
   return readJSON(QUESTIONS_PATH, []);
 }
@@ -52,8 +43,6 @@ function writeQuestions(questions) {
 function nextQuestionId(questions) {
   return questions.length > 0 ? Math.max(...questions.map(q => q.id)) + 1 : 1;
 }
-
-// ─── Test History ───
 
 function readHistory() {
   return readJSON(HISTORY_PATH, []);
@@ -67,8 +56,6 @@ function nextHistoryId(history) {
   return history.length > 0 ? Math.max(...history.map(h => h.id)) + 1 : 1;
 }
 
-// ─── Utility: shuffle array (Fisher-Yates) ───
-
 function shuffle(arr) {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -77,8 +64,6 @@ function shuffle(arr) {
   }
   return a;
 }
-
-// ─── Utility: case-insensitive match ───
 
 function ciMatch(value, target) {
   if (!value || !target) return false;

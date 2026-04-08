@@ -1,7 +1,6 @@
 "use client";
 
-import MathRenderer from "@/components/MathRenderer";
-import MathText from "@/components/MathText";
+import RichContent from "@/components/RichContent";
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useSearchParams } from "next/navigation";
@@ -1537,10 +1536,7 @@ export default function TrigQuizEngine() {
                 paddingRight: "0.3cm",
               }}
             >
-              <MathRenderer
-                text={currentQ.question}
-                className="leading-relaxed"
-              />
+              <RichContent text={currentQ.question} className="leading-relaxed" />
             </div>
 
           </motion.div>
@@ -1588,7 +1584,7 @@ export default function TrigQuizEngine() {
                 type="button"
                 style={{
                   width: "100%",
-                  height: 58,
+                  minHeight: 58,
                   background: bg,
                   border: `1.5px solid ${border}`,
                   borderRadius: 16,
@@ -1641,7 +1637,7 @@ export default function TrigQuizEngine() {
                 </span>
 
                 {/* Option text */}
-                <span
+                <div
                   style={{
                     fontSize: 17,
                     fontWeight: 400,
@@ -1649,8 +1645,8 @@ export default function TrigQuizEngine() {
                     lineHeight: 1.5,
                   }}
                 >
-                  <MathText text={opt} />
-                </span>
+                  <RichContent text={opt} />
+                </div>
 
                 {/* Correct / wrong icons */}
                 {isCurrentSubmitted && i === currentQ.correctAnswer && (

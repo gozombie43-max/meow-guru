@@ -4,26 +4,40 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import passport from './auth/passport.js';
 import { initPassport } from './auth/passport.js';
 import { initDB, initUsersDB } from './cosmos.js';
 import { initAuthRoutes } from './routes/auth.routes.js';
 import { initUserRoutes } from './routes/user.routes.js';
-
+import questionRoutes from './routes/questionRoutes.js';    // ← replaces createRequire block
 
 const app = express();
 const isProd = process.env.NODE_ENV === 'production';
-app.set('trust proxy', 1);  // ← ADD THIS LINE
+app.set('trust proxy', 1);
 
-
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // ── Middleware ──────────────────────────────────────────
 app.use(express.json());
+
+const allowedOrigins = new Set([
+  'http://localhost:3000',
+  'http://localhost:5000',
+  'https://brave-island-0a237e400.6.azurestaticapps.net',
+]);
+
 app.use(cors({
-  origin: ['http://localhost:3000', 'https://brave-island-0a237e400.6.azurestaticapps.net'],
+  origin: (origin, cb) => {
+    if (!origin || allowedOrigins.has(origin)) return cb(null, true);
+    return cb(new Error('Not allowed by CORS'));
+  },
   credentials: true,
 }));
+
 app.use(cookieParser());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use(session({
   secret:            process.env.SESSION_SECRET,
@@ -35,7 +49,9 @@ app.use(session({
     maxAge:   24 * 60 * 60 * 1000,
   },
 }));
+
 app.use(passport.initialize());
+app.use('/api/questions', questionRoutes);
 
 // ── Init DB + Routes ────────────────────────────────────
 (async () => {
@@ -46,14 +62,11 @@ app.use(passport.initialize());
     const usersContainer = await initUsersDB();
     console.log('Users DB Connected ✅');
 
-    // Init passport with usersContainer
     initPassport(usersContainer);
 
-    // Mount routes
     app.use('/auth',  initAuthRoutes(usersContainer));
     app.use('/users', initUserRoutes(usersContainer));
 
-    // ── Questions routes (existing) ─────────────────────
     app.get('/', (req, res) => res.send('Server running 🚀'));
 
     app.post('/questions', async (req, res) => {
@@ -85,7 +98,6 @@ app.use(passport.initialize());
       }
     });
 
-    // ── Start server ────────────────────────────────────
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => console.log(`Server running on port ${PORT} 🚀`));
 

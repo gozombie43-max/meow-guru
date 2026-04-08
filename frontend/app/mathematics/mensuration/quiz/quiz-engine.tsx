@@ -1,5 +1,6 @@
 "use client";
 
+import RichContent from "@/components/RichContent";
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
@@ -1154,7 +1155,7 @@ export default function MensurationQuizEngine() {
               </button>
             </div>
             <div style={{ fontSize: 18, fontWeight: 400, color: "#111827", lineHeight: 1.6, marginBottom: 28, letterSpacing: 0.01, paddingLeft: "0.3cm", paddingRight: "0.3cm" }}>
-              <MathText text={currentQ.question} />
+              <RichContent text={currentQ.question} renderText={(line) => <MathText text={line} />} />
             </div>
           </motion.div>
         </section>
@@ -1196,7 +1197,7 @@ export default function MensurationQuizEngine() {
                 type="button"
                 style={{
                   width: "100%",
-                  height: 58,
+                  minHeight: 58,
                   background: bg,
                   border: `1.5px solid ${border}`,
                   borderRadius: 16,
@@ -1229,9 +1230,9 @@ export default function MensurationQuizEngine() {
                 <span style={{ width: 34, height: 34, border: `1.5px solid ${letterBorder}`, borderRadius: "50%", background: letterBg, color: letterText, fontSize: 14, fontWeight: letterFontWeight, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginRight: 10, transition: "all 0.15s ease" }}>
                   {String.fromCharCode(65 + i)}
                 </span>
-                <span style={{ fontSize: 17, fontWeight: 400, color: "#111827", lineHeight: 1.5 }}>
-                  <MathText text={opt} />
-                </span>
+                <div style={{ fontSize: 17, fontWeight: 400, color: "#111827", lineHeight: 1.5 }}>
+                  <RichContent text={opt} renderText={(line) => <MathText text={line} />} />
+                </div>
                 {isCurrentSubmitted && i === currentQ.correctAnswer && (
                   <CheckCircle2 className="ml-auto h-5 w-5 shrink-0 text-emerald-600" aria-label="Correct option" />
                 )}

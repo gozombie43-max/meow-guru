@@ -17,28 +17,36 @@ type Part =
 
 function parseParts(input: string): Part[] {
   const parts: Part[] = [];
-  // matches \[ ... \] and \( ... \)
-  const regex = /\\\[([\s\S]*?)\\\]|\\\(([\s\S]*?)\\\)/g;
+  const safeInput = input.replace(/\\\$/g, "__DOLLAR__");
+  // matches \[ ... \], \( ... \), $$ ... $$, and $ ... $
+  const regex = /\\\[([\s\S]*?)\\\]|\\\(([\s\S]*?)\\\)|\$\$([\s\S]*?)\$\$|\$([^\n$]+?)\$/g;
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
-  while ((match = regex.exec(input)) !== null) {
+  while ((match = regex.exec(safeInput)) !== null) {
     if (match.index > lastIndex) {
-      parts.push({ type: "text", content: input.slice(lastIndex, match.index) });
+      parts.push({ type: "text", content: safeInput.slice(lastIndex, match.index) });
     }
     if (match[1] !== undefined) {
       parts.push({ type: "display", content: match[1].trim() });
     } else if (match[2] !== undefined) {
       parts.push({ type: "inline", content: match[2].trim() });
+    } else if (match[3] !== undefined) {
+      parts.push({ type: "display", content: match[3].trim() });
+    } else if (match[4] !== undefined) {
+      parts.push({ type: "inline", content: match[4].trim() });
     }
     lastIndex = regex.lastIndex;
   }
 
-  if (lastIndex < input.length) {
-    parts.push({ type: "text", content: input.slice(lastIndex) });
+  if (lastIndex < safeInput.length) {
+    parts.push({ type: "text", content: safeInput.slice(lastIndex) });
   }
 
-  return parts;
+  return parts.map((part) => ({
+    ...part,
+    content: part.content.replace(/__DOLLAR__/g, "$"),
+  }));
 }
 
 export default function MathRenderer({

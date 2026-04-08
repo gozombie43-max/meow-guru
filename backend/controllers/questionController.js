@@ -1,15 +1,105 @@
-const { readQuestions, writeQuestions, nextQuestionId, shuffle, ciMatch } = require('../../database/db');
+import { readQuestions, writeQuestions, nextQuestionId, shuffle, ciMatch } from '../database/db.js';
+
+function buildRichText(textValue, imagePath) {
+  const text = (textValue || '').trim();
+  const image = (imagePath || '').trim();
+
+  if (!text && !image) return '';
+  if (!image) return text;
+  if (!text) return `![image](${image})`;
+  return `${text}\n\n![image](${image})`;
+}
+
+function pickFile(files, key) {
+  if (!files || !files[key] || !files[key][0]) return null;
+  return files[key][0];
+}
+
+function uploadedPath(file) {
+  if (!file || !file.filename) return '';
+  return `/uploads/${file.filename}`;
+}
 
 // POST /api/questions — Add a new question
-exports.addQuestion = (req, res) => {
-  const { subject, tier, chapter, concept, difficulty, formula, trapType, question, options, correctAnswer } = req.body;
+const addQuestion = (req, res) => {
+  const {
+    subject,
+    tier,
+    chapter,
+    concept,
+    difficulty,
+    formula,
+    trapType,
+    question,
+    questionText,
+    optionAText,
+    optionBText,
+    optionCText,
+    optionDText,
+    options: optionsBody,
+    correctAnswer: correctAnswerBody,
+    correctIndex,
+    solution: solutionBody,
+    solutionText,
+  } = req.body;
 
-  if (!subject || !question || !options || correctAnswer === undefined) {
+  const questionImagePath = uploadedPath(pickFile(req.files, 'questionImage'));
+  const questionValue = buildRichText(questionText ?? question, questionImagePath);
+
+  let options = Array.isArray(optionsBody) ? optionsBody : null;
+  if (!options && typeof optionsBody === 'string') {
+    try {
+      const parsed = JSON.parse(optionsBody);
+      if (Array.isArray(parsed)) options = parsed;
+    } catch {
+      options = null;
+    }
+  }
+
+  if (!options) {
+    const optionTexts = [optionAText, optionBText, optionCText, optionDText];
+    const optionImages = [
+      uploadedPath(pickFile(req.files, 'optionAImage')),
+      uploadedPath(pickFile(req.files, 'optionBImage')),
+      uploadedPath(pickFile(req.files, 'optionCImage')),
+      uploadedPath(pickFile(req.files, 'optionDImage')),
+    ];
+
+    options = optionTexts.map((text, index) => buildRichText(text, optionImages[index]));
+  }
+
+  const parsedCorrectIndex = Number.isFinite(Number(correctIndex))
+    ? parseInt(correctIndex, 10)
+    : null;
+  let correctAnswer = correctAnswerBody;
+  if (parsedCorrectIndex !== null) {
+    if (parsedCorrectIndex < 0 || parsedCorrectIndex >= options.length) {
+      return res.status(400).json({ error: 'correctIndex is out of range' });
+    }
+    correctAnswer = options[parsedCorrectIndex];
+  }
+
+  if (typeof correctAnswer === 'number') {
+    if (correctAnswer < 0 || correctAnswer >= options.length) {
+      return res.status(400).json({ error: 'correctAnswer index is out of range' });
+    }
+    correctAnswer = options[correctAnswer];
+  }
+
+  const solutionImagePath = uploadedPath(pickFile(req.files, 'solutionImage'));
+  const solutionValue = buildRichText(solutionText ?? solutionBody, solutionImagePath);
+
+  if (!subject || !questionValue || !options || correctAnswer === undefined) {
     return res.status(400).json({ error: 'Missing required fields: subject, question, options, correctAnswer' });
   }
 
   if (!Array.isArray(options) || options.length < 2) {
     return res.status(400).json({ error: 'options must be an array with at least 2 choices' });
+  }
+
+  const emptyOptionIndex = options.findIndex((opt) => !String(opt || '').trim());
+  if (emptyOptionIndex !== -1) {
+    return res.status(400).json({ error: 'Each option needs text or an image' });
   }
 
   if (!options.includes(correctAnswer)) {
@@ -27,10 +117,11 @@ exports.addQuestion = (req, res) => {
     difficulty: difficulty || 'medium',
     formula: formula || '',
     trapType: trapType || '',
-    question,
+    question: questionValue,
     options,
     correctAnswer,
-    createdAt: new Date().toISOString()
+    solution: solutionValue,
+    createdAt: new Date().toISOString(),
   };
 
   questions.push(newQuestion);
@@ -40,38 +131,26 @@ exports.addQuestion = (req, res) => {
 };
 
 // GET /api/questions — Get all questions (with optional filters)
-exports.getQuestions = (req, res) => {
+const getQuestions = (req, res) => {
   let questions = readQuestions();
   const { subject, chapter, concept, difficulty } = req.query;
 
-  if (subject) {
-    questions = questions.filter(q => ciMatch(q.subject, subject));
-  }
-  if (chapter) {
-    questions = questions.filter(q => ciMatch(q.chapter, chapter));
-  }
-  if (concept) {
-    questions = questions.filter(q => ciMatch(q.concept, concept));
-  }
-  if (difficulty) {
-    questions = questions.filter(q => ciMatch(q.difficulty, difficulty));
-  }
+  if (subject)    questions = questions.filter(q => ciMatch(q.subject, subject));
+  if (chapter)    questions = questions.filter(q => ciMatch(q.chapter, chapter));
+  if (concept)    questions = questions.filter(q => ciMatch(q.concept, concept));
+  if (difficulty) questions = questions.filter(q => ciMatch(q.difficulty, difficulty));
 
   res.json({ count: questions.length, questions });
 };
 
 // GET /api/questions/practice-test — Generate a random practice test
-exports.generatePracticeTest = (req, res) => {
+const generatePracticeTest = (req, res) => {
   let questions = readQuestions();
   const { subject, count = 10, difficulty } = req.query;
   const limit = Math.min(parseInt(count, 10) || 10, 100);
 
-  if (subject) {
-    questions = questions.filter(q => ciMatch(q.subject, subject));
-  }
-  if (difficulty) {
-    questions = questions.filter(q => ciMatch(q.difficulty, difficulty));
-  }
+  if (subject)    questions = questions.filter(q => ciMatch(q.subject, subject));
+  if (difficulty) questions = questions.filter(q => ciMatch(q.difficulty, difficulty));
 
   if (questions.length === 0) {
     return res.status(404).json({ error: 'No questions found matching the criteria' });
@@ -79,29 +158,33 @@ exports.generatePracticeTest = (req, res) => {
 
   questions = shuffle(questions);
 
-  const testQuestions = questions.slice(0, Math.min(limit, questions.length)).map(q => ({
-    id: q.id,
-    subject: q.subject,
-    chapter: q.chapter,
-    concept: q.concept,
-    question: q.question,
-    options: q.options,
-    difficulty: q.difficulty
-  }));
+  const testQuestions = questions
+    .slice(0, Math.min(limit, questions.length))
+    .map(q => ({
+      id: q.id,
+      subject: q.subject,
+      chapter: q.chapter,
+      concept: q.concept,
+      question: q.question,
+      options: q.options,
+      difficulty: q.difficulty,
+    }));
 
   res.json({
     testName: `SSC Practice Test — ${subject || 'Mixed'}`,
     totalQuestions: testQuestions.length,
-    questions: testQuestions
+    questions: testQuestions,
   });
 };
 
 // POST /api/questions/analyze — Run exam analysis on submitted answers
-exports.runAnalysis = (req, res) => {
+const runAnalysis = (req, res) => {
   const { answers } = req.body;
 
   if (!Array.isArray(answers) || answers.length === 0) {
-    return res.status(400).json({ error: 'answers must be a non-empty array of { questionId, selectedAnswer }' });
+    return res.status(400).json({
+      error: 'answers must be a non-empty array of { questionId, selectedAnswer }',
+    });
   }
 
   const allQuestions = readQuestions();
@@ -147,9 +230,11 @@ exports.runAnalysis = (req, res) => {
       correct,
       incorrect,
       unattempted,
-      scorePercent: parseFloat(scorePercent)
+      scorePercent: parseFloat(scorePercent),
     },
     subjectBreakdown,
-    details
+    details,
   });
 };
+
+export default { addQuestion, getQuestions, generatePracticeTest, runAnalysis };
