@@ -3,7 +3,7 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
 import passport from '../auth/passport.js';
-import { signToken } from '../auth/jwt.js';
+import { signToken, signRefreshToken, verifyRefreshToken } from '../auth/jwt.js';
 
 const router = express.Router();
 let usersContainer;
@@ -13,15 +13,20 @@ export const initAuthRoutes = (container) => {
   return router;
 };
 
+const cookieOptions = {
+  httpOnly: true,
+  secure:   process.env.NODE_ENV === 'production',
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  maxAge:   365 * 24 * 60 * 60 * 1000,
+};
+
 // ── POST /auth/register ─────────────────────────────────
 router.post('/register', async (req, res) => {
   const { name, email, password } = req.body;
-
   if (!name || !email || !password)
     return res.status(400).json({ error: 'All fields required' });
 
   try {
-    // Check existing
     const { resources } = await usersContainer.items
       .query({
         query: 'SELECT * FROM c WHERE c.email = @email',
@@ -33,11 +38,9 @@ router.post('/register', async (req, res) => {
       return res.status(409).json({ error: 'Email already registered' });
 
     const passwordHash = await bcrypt.hash(password, 12);
-
     const user = {
       id:           `user-${uuid()}`,
-      name,
-      email,
+      name, email,
       authProvider: 'local',
       passwordHash,
       progress:     {},
@@ -47,8 +50,10 @@ router.post('/register', async (req, res) => {
 
     await usersContainer.items.create(user);
 
-    const token = signToken({ id: user.id, email: user.email, name: user.name });
+    const token        = signToken({ id: user.id, email: user.email, name: user.name });
+    const refreshToken = signRefreshToken({ id: user.id, email: user.email, name: user.name });
 
+    res.cookie('refreshToken', refreshToken, cookieOptions);
     res.status(201).json({
       message: 'Registered ✅',
       token,
@@ -65,14 +70,37 @@ router.post('/login', (req, res, next) => {
     if (err)   return next(err);
     if (!user) return res.status(401).json({ error: info?.message || 'Login failed' });
 
-    const token = signToken({ id: user.id, email: user.email, name: user.name });
+    const token        = signToken({ id: user.id, email: user.email, name: user.name });
+    const refreshToken = signRefreshToken({ id: user.id, email: user.email, name: user.name });
 
+    res.cookie('refreshToken', refreshToken, cookieOptions);
     res.json({
       message: 'Logged in ✅',
       token,
       user: { id: user.id, name: user.name, email: user.email },
     });
   })(req, res, next);
+});
+
+// ── POST /auth/refresh ──────────────────────────────────
+router.post('/refresh', (req, res) => {
+  const token = req.cookies.refreshToken;
+  if (!token) return res.status(401).json({ error: 'Not logged in' });
+
+  try {
+    const decoded = verifyRefreshToken(token);
+    const newToken = signToken({ id: decoded.id, email: decoded.email, name: decoded.name });
+    res.json({ token: newToken });
+  } catch {
+    res.clearCookie('refreshToken');
+    res.status(403).json({ error: 'Session expired, please login again' });
+  }
+});
+
+// ── POST /auth/logout ───────────────────────────────────
+router.post('/logout', (req, res) => {
+  res.clearCookie('refreshToken');
+  res.json({ message: 'Logged out ✅' });
 });
 
 // ── GET /auth/google ────────────────────────────────────
@@ -84,14 +112,10 @@ router.get('/google',
 router.get('/google/callback',
   passport.authenticate('google', { session: false, failureRedirect: '/login' }),
   (req, res) => {
-    const token = signToken({
-      id:    req.user.id,
-      email: req.user.email,
-      name:  req.user.name,
-    });
+    const token        = signToken({ id: req.user.id, email: req.user.email, name: req.user.name });
+    const refreshToken = signRefreshToken({ id: req.user.id, email: req.user.email, name: req.user.name });
 
-    // Redirect to frontend with token in query param
-    // Frontend reads it once and stores in localStorage
+    res.cookie('refreshToken', refreshToken, cookieOptions);
     res.redirect(`${process.env.FRONTEND_URL}/auth/callback?token=${token}`);
   }
 );

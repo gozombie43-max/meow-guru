@@ -25,9 +25,12 @@ const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser]       = useState<User | null>(null);
   const [token, setToken]     = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // start true to avoid flash
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    try {
+      await api.post('/auth/logout'); // clears refresh token cookie
+    } catch { /* ignore */ }
     setToken(null);
     setUser(null);
     localStorage.removeItem('token');
@@ -53,19 +56,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const stored = localStorage.getItem('token');
     if (!stored) return;
     try {
-      const res = await api.get('/users/me', {
-        headers: { Authorization: `Bearer ${stored}` },
-      });
+      const res = await api.get('/users/me');
       setUser(res.data);
-    } catch {
-      // ignore
-    }
+    } catch { /* ignore */ }
   }, []);
 
+  // On app load — try localStorage token, if expired try refresh cookie
   useEffect(() => {
     const stored = localStorage.getItem('token');
     if (stored) {
       login(stored);
+    } else {
+      // No token in localStorage — try refresh cookie (returning user)
+      api.post('/auth/refresh')
+        .then(({ data }) => login(data.token))
+        .catch(() => setLoading(false));
     }
   }, [login]);
 
