@@ -61,18 +61,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } catch { /* ignore */ }
   }, []);
 
-  // On app load — try localStorage token, if expired try refresh cookie
   useEffect(() => {
     const stored = localStorage.getItem('token');
     if (stored) {
-      login(stored);
+      login(stored).catch(() => {
+        api.post('/auth/refresh')
+          .then(({ data }) => login(data.token))
+          .catch(() => setLoading(false));
+      });
     } else {
-      // No token in localStorage — try refresh cookie (returning user)
       api.post('/auth/refresh')
         .then(({ data }) => login(data.token))
         .catch(() => setLoading(false));
     }
-  }, [login]);
+  }, []); // ← empty array, no [login] dependency
 
   return (
     <AuthContext.Provider value={{ user, token, login, logout, refreshUser, loading }}>

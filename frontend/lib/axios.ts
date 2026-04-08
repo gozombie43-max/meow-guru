@@ -34,9 +34,8 @@ api.interceptors.response.use(
         original.headers.Authorization = `Bearer ${data.token}`;
         return axios(original);
       } catch {
-        // Refresh failed — clear and redirect to login
+        // Refresh failed — clear auth state and let AuthContext handle navigation
         localStorage.removeItem('token');
-        window.location.href = '/login';
       }
     }
     return Promise.reject(error);
