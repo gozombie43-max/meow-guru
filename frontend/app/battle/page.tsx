@@ -84,7 +84,7 @@ function ScoreBar({
   const myWidth = Math.round((meScore / totalScore) * 100);
 
   return (
-    <div className="relative overflow-hidden rounded-3xl px-4 pt-4 pb-3 sm:px-6"
+    <div className="relative overflow-hidden px-4 pt-4 pb-3 sm:px-6"
       style={{
         background: "linear-gradient(120deg,#2a0a4a 0%,#3b0f63 45%,#0f2a4a 55%,#0b3a57 100%)",
       }}>
