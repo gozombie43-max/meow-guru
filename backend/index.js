@@ -11,7 +11,7 @@ import { initPassport } from './auth/passport.js';
 import { initDB, initUsersDB } from './cosmos.js';
 import { initAuthRoutes } from './routes/auth.routes.js';
 import { initUserRoutes } from './routes/user.routes.js';
-import questionRoutes from './routes/questionRoutes.js';    // ← replaces createRequire block
+import questionRoutes from './routes/questionRoutes.js';
 
 const app = express();
 const isProd = process.env.NODE_ENV === 'production';
@@ -53,21 +53,41 @@ app.use(session({
 app.use(passport.initialize());
 app.use('/api/questions', questionRoutes);
 
-// ── Init DB + Routes ────────────────────────────────────
-(async () => {
-  try {
-    const questionsContainer = await initDB();
-    console.log('Questions DB Connected ✅');
+// ── Health check (so Render port scan passes immediately) ──
+app.get('/', (req, res) => res.send('Server running 🚀'));
 
-    const usersContainer = await initUsersDB();
-    console.log('Users DB Connected ✅');
+// ── Start server FIRST ─────────────────────────────────
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT} 🚀`);
+  initWithRetry();  // connect DB after port is open
+});
+
+// ── Retry helper ───────────────────────────────────────
+async function connectWithRetry(fn, name, retries = 5, delay = 3000) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const result = await fn();
+      console.log(`${name} Connected ✅`);
+      return result;
+    } catch (err) {
+      console.warn(`${name} attempt ${i + 1}/${retries} failed: ${err.message}`);
+      if (i < retries - 1) await new Promise(r => setTimeout(r, delay));
+    }
+  }
+  throw new Error(`${name} failed after ${retries} retries`);
+}
+
+// ── Init DB + Routes after server is up ───────────────
+async function initWithRetry() {
+  try {
+    const questionsContainer = await connectWithRetry(initDB, 'Questions DB');
+    const usersContainer     = await connectWithRetry(initUsersDB, 'Users DB');
 
     initPassport(usersContainer);
 
     app.use('/auth',  initAuthRoutes(usersContainer));
     app.use('/users', initUserRoutes(usersContainer));
-
-    app.get('/', (req, res) => res.send('Server running 🚀'));
 
     app.post('/questions', async (req, res) => {
       try {
@@ -98,11 +118,10 @@ app.use('/api/questions', questionRoutes);
       }
     });
 
-    const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => console.log(`Server running on port ${PORT} 🚀`));
+    console.log('All routes registered ✅');
 
   } catch (err) {
-    console.error('Startup error ❌', err.message);
-    process.exit(1);
+    console.error('DB init failed after all retries ❌', err.message);
+    // Don't call process.exit(1) — server is still up, just DB-less
   }
-})();
+}
