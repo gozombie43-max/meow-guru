@@ -1,12 +1,13 @@
-import { readQuestions, writeQuestions, nextQuestionId, shuffle, ciMatch } from '../database/db.js';
+// controllers/questionController.js
+import { getQuestionsContainer } from '../containerStore.js';
 
+// ── Helpers (kept from your original) ─────────────────
 function buildRichText(textValue, imagePath) {
-  const text = (textValue || '').trim();
+  const text  = (textValue  || '').trim();
   const image = (imagePath || '').trim();
-
   if (!text && !image) return '';
   if (!image) return text;
-  if (!text) return `![image](${image})`;
+  if (!text)  return `![image](${image})`;
   return `${text}\n\n![image](${image})`;
 }
 
@@ -20,221 +21,273 @@ function uploadedPath(file) {
   return `/uploads/${file.filename}`;
 }
 
-// POST /api/questions — Add a new question
-const addQuestion = (req, res) => {
-  const {
-    subject,
-    tier,
-    chapter,
-    concept,
-    difficulty,
-    formula,
-    trapType,
-    question,
-    questionText,
-    optionAText,
-    optionBText,
-    optionCText,
-    optionDText,
-    options: optionsBody,
-    correctAnswer: correctAnswerBody,
-    correctIndex,
-    solution: solutionBody,
-    solutionText,
-  } = req.body;
+function ciMatch(a, b) {
+  return (a || '').toLowerCase() === (b || '').toLowerCase();
+}
 
-  const questionImagePath = uploadedPath(pickFile(req.files, 'questionImage'));
-  const questionValue = buildRichText(questionText ?? question, questionImagePath);
+// ── POST /api/questions ────────────────────────────────
+const addQuestion = async (req, res) => {
+  try {
+    const container = getQuestionsContainer();
 
-  let options = Array.isArray(optionsBody) ? optionsBody : null;
-  if (!options && typeof optionsBody === 'string') {
-    try {
-      const parsed = JSON.parse(optionsBody);
-      if (Array.isArray(parsed)) options = parsed;
-    } catch {
-      options = null;
+    const {
+      subject, tier, chapter, concept, difficulty,
+      formula, trapType, question, questionText,
+      optionAText, optionBText, optionCText, optionDText,
+      options: optionsBody, correctAnswer: correctAnswerBody,
+      correctIndex, solution: solutionBody, solutionText,
+    } = req.body;
+
+    const questionImagePath = uploadedPath(pickFile(req.files, 'questionImage'));
+    const questionValue     = buildRichText(questionText ?? question, questionImagePath);
+
+    let options = Array.isArray(optionsBody) ? optionsBody : null;
+    if (!options && typeof optionsBody === 'string') {
+      try {
+        const parsed = JSON.parse(optionsBody);
+        if (Array.isArray(parsed)) options = parsed;
+      } catch { options = null; }
     }
-  }
 
-  if (!options) {
-    const optionTexts = [optionAText, optionBText, optionCText, optionDText];
-    const optionImages = [
-      uploadedPath(pickFile(req.files, 'optionAImage')),
-      uploadedPath(pickFile(req.files, 'optionBImage')),
-      uploadedPath(pickFile(req.files, 'optionCImage')),
-      uploadedPath(pickFile(req.files, 'optionDImage')),
-    ];
-
-    options = optionTexts.map((text, index) => buildRichText(text, optionImages[index]));
-  }
-
-  const parsedCorrectIndex = Number.isFinite(Number(correctIndex))
-    ? parseInt(correctIndex, 10)
-    : null;
-  let correctAnswer = correctAnswerBody;
-  if (parsedCorrectIndex !== null) {
-    if (parsedCorrectIndex < 0 || parsedCorrectIndex >= options.length) {
-      return res.status(400).json({ error: 'correctIndex is out of range' });
+    if (!options) {
+      const optionTexts  = [optionAText, optionBText, optionCText, optionDText];
+      const optionImages = [
+        uploadedPath(pickFile(req.files, 'optionAImage')),
+        uploadedPath(pickFile(req.files, 'optionBImage')),
+        uploadedPath(pickFile(req.files, 'optionCImage')),
+        uploadedPath(pickFile(req.files, 'optionDImage')),
+      ];
+      options = optionTexts.map((text, i) => buildRichText(text, optionImages[i]));
     }
-    correctAnswer = options[parsedCorrectIndex];
-  }
 
-  if (typeof correctAnswer === 'number') {
-    if (correctAnswer < 0 || correctAnswer >= options.length) {
-      return res.status(400).json({ error: 'correctAnswer index is out of range' });
+    const parsedCorrectIndex = Number.isFinite(Number(correctIndex))
+      ? parseInt(correctIndex, 10) : null;
+
+    let correctAnswer = correctAnswerBody;
+    if (parsedCorrectIndex !== null) {
+      if (parsedCorrectIndex < 0 || parsedCorrectIndex >= options.length)
+        return res.status(400).json({ error: 'correctIndex is out of range' });
+      correctAnswer = options[parsedCorrectIndex];
     }
-    correctAnswer = options[correctAnswer];
+
+    if (typeof correctAnswer === 'number') {
+      if (correctAnswer < 0 || correctAnswer >= options.length)
+        return res.status(400).json({ error: 'correctAnswer index is out of range' });
+      correctAnswer = options[correctAnswer];
+    }
+
+    const solutionImagePath = uploadedPath(pickFile(req.files, 'solutionImage'));
+    const solutionValue     = buildRichText(solutionText ?? solutionBody, solutionImagePath);
+
+    if (!subject || !questionValue || !options || correctAnswer === undefined)
+      return res.status(400).json({ error: 'Missing required fields' });
+
+    if (!Array.isArray(options) || options.length < 2)
+      return res.status(400).json({ error: 'options must have at least 2 choices' });
+
+    const emptyIndex = options.findIndex(opt => !String(opt || '').trim());
+    if (emptyIndex !== -1)
+      return res.status(400).json({ error: 'Each option needs text or an image' });
+
+    if (!options.includes(correctAnswer))
+      return res.status(400).json({ error: 'correctAnswer must be one of the provided options' });
+
+    const newQuestion = {
+      id:          `q_${Date.now()}`,
+      topic:       chapter || subject,   // ← partition key REQUIRED
+      subject,
+      tier:        tier        || '',
+      chapter:     chapter     || '',
+      concept:     concept     || '',
+      difficulty:  difficulty  || 'medium',
+      formula:     formula     || '',
+      trapType:    trapType    || '',
+      question:    questionValue,
+      options,
+      correctAnswer,
+      solution:    solutionValue,
+      createdAt:   new Date().toISOString(),
+    };
+
+    await container.items.create(newQuestion);
+    res.status(201).json({ message: 'Question added ✅', question: newQuestion });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-
-  const solutionImagePath = uploadedPath(pickFile(req.files, 'solutionImage'));
-  const solutionValue = buildRichText(solutionText ?? solutionBody, solutionImagePath);
-
-  if (!subject || !questionValue || !options || correctAnswer === undefined) {
-    return res.status(400).json({ error: 'Missing required fields: subject, question, options, correctAnswer' });
-  }
-
-  if (!Array.isArray(options) || options.length < 2) {
-    return res.status(400).json({ error: 'options must be an array with at least 2 choices' });
-  }
-
-  const emptyOptionIndex = options.findIndex((opt) => !String(opt || '').trim());
-  if (emptyOptionIndex !== -1) {
-    return res.status(400).json({ error: 'Each option needs text or an image' });
-  }
-
-  if (!options.includes(correctAnswer)) {
-    return res.status(400).json({ error: 'correctAnswer must be one of the provided options' });
-  }
-
-  const questions = readQuestions();
-
-  const newQuestion = {
-    id: nextQuestionId(questions),
-    subject,
-    tier: tier || '',
-    chapter: chapter || '',
-    concept: concept || '',
-    difficulty: difficulty || 'medium',
-    formula: formula || '',
-    trapType: trapType || '',
-    question: questionValue,
-    options,
-    correctAnswer,
-    solution: solutionValue,
-    createdAt: new Date().toISOString(),
-  };
-
-  questions.push(newQuestion);
-  writeQuestions(questions);
-
-  res.status(201).json({ message: 'Question added successfully', question: newQuestion });
 };
 
-// GET /api/questions — Get all questions (with optional filters)
-const getQuestions = (req, res) => {
-  let questions = readQuestions();
-  const { subject, chapter, concept, difficulty } = req.query;
+// ── GET /api/questions ─────────────────────────────────
+const getQuestions = async (req, res) => {
+  try {
+    const container = getQuestionsContainer();
+    const { topic, subject, chapter, concept, difficulty, offset = 0, limit } = req.query;
 
-  if (subject)    questions = questions.filter(q => ciMatch(q.subject, subject));
-  if (chapter)    questions = questions.filter(q => ciMatch(q.chapter, chapter));
-  if (concept)    questions = questions.filter(q => ciMatch(q.concept, concept));
-  if (difficulty) questions = questions.filter(q => ciMatch(q.difficulty, difficulty));
+    let query = 'SELECT * FROM c WHERE 1=1';
+    const parameters = [];
 
-  res.json({ count: questions.length, questions });
-};
+    if (topic) {
+      query += ' AND (LOWER(c.topic) = LOWER(@topic) OR LOWER(c.chapter) = LOWER(@topic) OR LOWER(c.subject) = LOWER(@topic))';
+      parameters.push({ name: '@topic', value: topic });
+    }
+    if (subject) {
+      query += ' AND LOWER(c.subject) = LOWER(@subject)';
+      parameters.push({ name: '@subject', value: subject });
+    }
+    if (chapter) {
+      query += ' AND LOWER(c.chapter) = LOWER(@chapter)';
+      parameters.push({ name: '@chapter', value: chapter });
+    }
+    if (concept) {
+      query += ' AND LOWER(c.concept) = LOWER(@concept)';
+      parameters.push({ name: '@concept', value: concept });
+    }
+    if (difficulty) {
+      query += ' AND LOWER(c.difficulty) = LOWER(@difficulty)';
+      parameters.push({ name: '@difficulty', value: difficulty });
+    }
 
-// GET /api/questions/practice-test — Generate a random practice test
-const generatePracticeTest = (req, res) => {
-  let questions = readQuestions();
-  const { subject, count = 10, difficulty } = req.query;
-  const limit = Math.min(parseInt(count, 10) || 10, 100);
+    const parsedOffset = Number.isFinite(Number(offset)) ? parseInt(offset, 10) : 0;
+    const parsedLimit = Number.isFinite(Number(limit)) ? parseInt(limit, 10) : null;
 
-  if (subject)    questions = questions.filter(q => ciMatch(q.subject, subject));
-  if (difficulty) questions = questions.filter(q => ciMatch(q.difficulty, difficulty));
+    if (parsedLimit !== null && parsedLimit > 0) {
+      query += ` OFFSET ${parsedOffset} LIMIT ${parsedLimit}`;
+    } else if (parsedOffset > 0) {
+      query += ` OFFSET ${parsedOffset} LIMIT 99999`;
+    }
 
-  if (questions.length === 0) {
-    return res.status(404).json({ error: 'No questions found matching the criteria' });
+    const { resources } = await container.items
+      .query({ query, parameters })
+      .fetchAll();
+
+    res.json({ count: resources.length, questions: resources });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-
-  questions = shuffle(questions);
-
-  const testQuestions = questions
-    .slice(0, Math.min(limit, questions.length))
-    .map(q => ({
-      id: q.id,
-      subject: q.subject,
-      chapter: q.chapter,
-      concept: q.concept,
-      question: q.question,
-      options: q.options,
-      difficulty: q.difficulty,
-    }));
-
-  res.json({
-    testName: `SSC Practice Test — ${subject || 'Mixed'}`,
-    totalQuestions: testQuestions.length,
-    questions: testQuestions,
-  });
 };
 
-// POST /api/questions/analyze — Run exam analysis on submitted answers
-const runAnalysis = (req, res) => {
-  const { answers } = req.body;
+// ── GET /api/questions/practice-test ──────────────────
+const generatePracticeTest = async (req, res) => {
+  try {
+    const container = getQuestionsContainer();
+    const { subject, difficulty, count = 10 } = req.query;
+    const limit = Math.min(parseInt(count, 10) || 10, 100);
 
-  if (!Array.isArray(answers) || answers.length === 0) {
-    return res.status(400).json({
-      error: 'answers must be a non-empty array of { questionId, selectedAnswer }',
+    let query = 'SELECT * FROM c WHERE 1=1';
+    const parameters = [];
+
+    if (subject) {
+      query += ' AND LOWER(c.subject) = LOWER(@subject)';
+      parameters.push({ name: '@subject', value: subject });
+    }
+    if (difficulty) {
+      query += ' AND LOWER(c.difficulty) = LOWER(@difficulty)';
+      parameters.push({ name: '@difficulty', value: difficulty });
+    }
+
+    // Fetch more than needed, then shuffle
+    query += ` OFFSET 0 LIMIT ${limit * 3}`;
+
+    const { resources } = await container.items
+      .query({ query, parameters })
+      .fetchAll();
+
+    if (resources.length === 0)
+      return res.status(404).json({ error: 'No questions found matching criteria' });
+
+    const shuffled = resources
+      .sort(() => Math.random() - 0.5)
+      .slice(0, Math.min(limit, resources.length))
+      .map(q => ({
+        id:         q.id,
+        subject:    q.subject,
+        chapter:    q.chapter,
+        concept:    q.concept,
+        question:   q.question,
+        options:    q.options,
+        difficulty: q.difficulty,
+      }));
+
+    res.json({
+      testName:       `SSC Practice Test — ${subject || 'Mixed'}`,
+      totalQuestions: shuffled.length,
+      questions:      shuffled,
     });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
+};
 
-  const allQuestions = readQuestions();
-  const questionMap = new Map(allQuestions.map(q => [q.id, q]));
+// ── POST /api/questions/analyze ───────────────────────
+const runAnalysis = async (req, res) => {
+  try {
+    const container = getQuestionsContainer();
+    const { answers } = req.body;
 
-  let correct = 0;
-  let incorrect = 0;
-  let unattempted = 0;
-  const subjectBreakdown = {};
-  const details = [];
+    if (!Array.isArray(answers) || answers.length === 0)
+      return res.status(400).json({ error: 'answers must be a non-empty array' });
 
-  for (const ans of answers) {
-    const q = questionMap.get(ans.questionId);
-    if (!q) continue;
+    // Fetch all questions by id
+    const ids = answers.map(a => a.questionId);
 
-    const subj = q.subject;
-    if (!subjectBreakdown[subj]) {
-      subjectBreakdown[subj] = { correct: 0, incorrect: 0, unattempted: 0, total: 0 };
+    // Cosmos doesn't support IN queries easily, so fetch in parallel
+    const questionDocs = await Promise.all(
+      ids.map(async (id) => {
+        try {
+          const query = {
+            query: 'SELECT * FROM c WHERE c.id = @id',
+            parameters: [{ name: '@id', value: id }],
+          };
+          const { resources } = await container.items.query(query).fetchAll();
+          return resources[0] || null;
+        } catch { return null; }
+      })
+    );
+
+    const questionMap = new Map(
+      questionDocs.filter(Boolean).map(q => [q.id, q])
+    );
+
+    let correct = 0, incorrect = 0, unattempted = 0;
+    const subjectBreakdown = {};
+    const details = [];
+
+    for (const ans of answers) {
+      const q = questionMap.get(ans.questionId);
+      if (!q) continue;
+
+      const subj = q.subject;
+      if (!subjectBreakdown[subj])
+        subjectBreakdown[subj] = { correct: 0, incorrect: 0, unattempted: 0, total: 0 };
+
+      subjectBreakdown[subj].total++;
+
+      if (ans.selectedAnswer === null || ans.selectedAnswer === undefined) {
+        unattempted++;
+        subjectBreakdown[subj].unattempted++;
+        details.push({ questionId: q.id, status: 'unattempted' });
+      } else if (ans.selectedAnswer === q.correctAnswer) {
+        correct++;
+        subjectBreakdown[subj].correct++;
+        details.push({ questionId: q.id, status: 'correct' });
+      } else {
+        incorrect++;
+        subjectBreakdown[subj].incorrect++;
+        details.push({ questionId: q.id, status: 'incorrect', correctAnswer: q.correctAnswer });
+      }
     }
-    subjectBreakdown[subj].total++;
 
-    if (ans.selectedAnswer === null || ans.selectedAnswer === undefined) {
-      unattempted++;
-      subjectBreakdown[subj].unattempted++;
-      details.push({ questionId: q.id, status: 'unattempted' });
-    } else if (ans.selectedAnswer === q.correctAnswer) {
-      correct++;
-      subjectBreakdown[subj].correct++;
-      details.push({ questionId: q.id, status: 'correct' });
-    } else {
-      incorrect++;
-      subjectBreakdown[subj].incorrect++;
-      details.push({ questionId: q.id, status: 'incorrect', correctAnswer: q.correctAnswer });
-    }
+    const total = correct + incorrect + unattempted;
+    const scorePercent = total > 0 ? ((correct / total) * 100).toFixed(2) : 0;
+
+    res.json({
+      summary: { totalQuestions: total, correct, incorrect, unattempted, scorePercent: parseFloat(scorePercent) },
+      subjectBreakdown,
+      details,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-
-  const total = correct + incorrect + unattempted;
-  const scorePercent = total > 0 ? ((correct / total) * 100).toFixed(2) : 0;
-
-  res.json({
-    summary: {
-      totalQuestions: total,
-      correct,
-      incorrect,
-      unattempted,
-      scorePercent: parseFloat(scorePercent),
-    },
-    subjectBreakdown,
-    details,
-  });
 };
 
 export default { addQuestion, getQuestions, generatePracticeTest, runAnalysis };

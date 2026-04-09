@@ -12,6 +12,7 @@ import { initDB, initUsersDB } from './cosmos.js';
 import { initAuthRoutes } from './routes/auth.routes.js';
 import { initUserRoutes } from './routes/user.routes.js';
 import questionRoutes from './routes/questionRoutes.js';
+import { setQuestionsContainer, setUsersContainer } from './containerStore.js';
 
 const app = express();
 const isProd = process.env.NODE_ENV === 'production';
@@ -51,16 +52,15 @@ app.use(session({
 }));
 
 app.use(passport.initialize());
-app.use('/api/questions', questionRoutes);
 
-// ── Health check (so Render port scan passes immediately) ──
+// ── Health check ───────────────────────────────────────
 app.get('/', (req, res) => res.send('Server running 🚀'));
 
 // ── Start server FIRST ─────────────────────────────────
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT} 🚀`);
-  initWithRetry();  // connect DB after port is open
+  initWithRetry();
 });
 
 // ── Retry helper ───────────────────────────────────────
@@ -84,44 +84,22 @@ async function initWithRetry() {
     const questionsContainer = await connectWithRetry(initDB, 'Questions DB');
     const usersContainer     = await connectWithRetry(initUsersDB, 'Users DB');
 
+    // ✅ Store containers globally for controllers to access
+    setQuestionsContainer(questionsContainer);
+    setUsersContainer(usersContainer);
+
     initPassport(usersContainer);
 
+    // ✅ Register ALL routes here, after DB is ready
+    app.use('/api/questions', questionRoutes);   // ← moved here from top
     app.use('/auth',  initAuthRoutes(usersContainer));
     app.use('/users', initUserRoutes(usersContainer));
 
-    app.post('/questions', async (req, res) => {
-      try {
-        const newItem = { id: Date.now().toString(), ...req.body };
-        await questionsContainer.items.create(newItem);
-        res.json({ message: 'Question added ✅', data: newItem });
-      } catch (err) {
-        res.status(500).json({ error: err.message });
-      }
-    });
-
-    app.get('/questions', async (req, res) => {
-      try {
-        const category = req.query.category;
-        const querySpec = category
-          ? {
-              query:      'SELECT * FROM c WHERE c.category = @category',
-              parameters: [{ name: '@category', value: category }],
-            }
-          : { query: 'SELECT * FROM c' };
-
-        const { resources } = await questionsContainer.items
-          .query(querySpec)
-          .fetchAll();
-        res.json(resources);
-      } catch (err) {
-        res.status(500).json({ error: err.message });
-      }
-    });
+    // ✅ REMOVED the duplicate /questions routes that were here before
 
     console.log('All routes registered ✅');
 
   } catch (err) {
     console.error('DB init failed after all retries ❌', err.message);
-    // Don't call process.exit(1) — server is still up, just DB-less
   }
 }

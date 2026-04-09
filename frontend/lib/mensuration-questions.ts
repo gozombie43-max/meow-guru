@@ -1,5 +1,3 @@
-import rawData from "../data/mensuration_questions.json";
-
 export interface MensurationQuestion {
   id: number;
   concept: string;
@@ -24,24 +22,6 @@ export const CONCEPTS = [
   "Ratio, Scaling & Similarity",
   "Coordinate & Mixed Mensuration",
 ] as const;
-
-function normalizeRaw(raw: any, i: number): MensurationQuestion {
-  return {
-    id: raw.id ?? i + 1,
-    concept: raw.concept ?? "2D Area & Perimeter",
-    formula: raw.formula ?? "",
-    question: raw.question ?? "",
-    options: Array.isArray(raw.options) ? raw.options : [],
-    correctAnswer: Number.isFinite(raw.correct_option_index) ? raw.correct_option_index : 0,
-    answer: String(raw.correct_answer ?? raw.answer ?? ""),
-    difficulty: raw.difficulty === "medium" || raw.difficulty === "hard" ? raw.difficulty : "easy",
-    estimatedTime: Number(raw.estimatedTime ?? 60),
-    year: String(raw.year ?? ""),
-    exam: String(raw.exam ?? ""),
-  };
-}
-
-export const mensurationQuestions: MensurationQuestion[] = (rawData as any[]).map(normalizeRaw);
 
 export function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];

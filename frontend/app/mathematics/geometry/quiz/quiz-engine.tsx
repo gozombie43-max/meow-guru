@@ -22,12 +22,8 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { updateProgress, toggleBookmark } from "@/lib/userApi";
-import {
-  geometryQuestions,
-  shuffle,
-  type GeometryQuestion,
-  GEOM_CONCEPTS,
-} from "@/lib/geometry-questions";
+import { fetchQuestions, type Question as ApiQuestion } from "@/lib/api/questions";
+import { shuffle, type GeometryQuestion, GEOM_CONCEPTS } from "@/lib/geometry-questions";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 type QuizMode = "concept" | "formula" | "mixed" | "ai-challenge";
@@ -42,6 +38,78 @@ interface SessionResult {
   timeTaken: number;
   concept: string;
   difficulty: Difficulty;
+}
+
+function normalizeDifficulty(value?: string): Difficulty {
+  const lower = (value ?? "").toLowerCase();
+  if (lower.includes("hard")) return "hard";
+  if (lower.includes("easy")) return "easy";
+  return "medium";
+}
+
+function extractYear(exam: string): string {
+  const match = exam.match(/\b(19|20)\d{2}\b/);
+  return match?.[0] ?? "";
+}
+
+function resolveCorrectIndex(question: ApiQuestion, options: string[]): number {
+  const letter = (question.correctLetter ?? "").trim().toLowerCase();
+  if (letter) {
+    const idx = letter.charCodeAt(0) - 97;
+    if (idx >= 0 && idx < options.length) return idx;
+  }
+
+  const answerText = String(question.correctAnswer ?? "").trim();
+  if (answerText) {
+    if (/^[a-z]$/i.test(answerText)) {
+      const idx = answerText.toLowerCase().charCodeAt(0) - 97;
+      if (idx >= 0 && idx < options.length) return idx;
+    }
+
+    const exact = options.findIndex((opt) => opt.trim() === answerText);
+    if (exact >= 0) return exact;
+
+    const numeric = Number(answerText);
+    if (Number.isFinite(numeric)) {
+      if (numeric >= 0 && numeric < options.length) return numeric;
+      if (numeric >= 1 && numeric <= options.length) return numeric - 1;
+    }
+  }
+
+  return 0;
+}
+
+function toGeometryQuestion(question: ApiQuestion, index: number): GeometryQuestion {
+  const options = Array.isArray(question.options)
+    ? question.options.map((opt) => String(opt))
+    : [];
+  const difficulty = normalizeDifficulty(question.difficulty);
+  const correctAnswer = resolveCorrectIndex(question, options);
+  const exam = String(question.exam ?? "");
+  const concept =
+    String(question.concept ?? question.chapter ?? question.topic ?? "").trim() ||
+    GEOM_CONCEPTS[0] ||
+    "General Geometry";
+  const numericId = Number.parseInt(question.id, 10);
+  const id = Number.isFinite(numericId) ? numericId : index + 1;
+  const rawAnswer = String(question.correctAnswer ?? "").trim();
+  const answer = /^[a-z]$/i.test(rawAnswer)
+    ? options[correctAnswer] ?? ""
+    : rawAnswer || (options[correctAnswer] ?? "");
+
+  return {
+    id,
+    concept,
+    formula: "",
+    question: String(question.question ?? ""),
+    options,
+    correctAnswer,
+    answer,
+    difficulty,
+    estimatedTime: difficulty === "easy" ? 40 : difficulty === "hard" ? 80 : 60,
+    year: extractYear(exam),
+    exam,
+  };
 }
 
 // ── Constants ────────────────────────────────────────────────────────────────
@@ -445,6 +513,7 @@ export default function TrigQuizEngine() {
   const mode = (searchParams.get("mode") || "mixed") as QuizMode;
 
   // ── State ──────────────────────────────────────────────────────────────────
+  const [allQuestions, setAllQuestions] = useState<GeometryQuestion[]>([]);
   const [questions, setQuestions] = useState<GeometryQuestion[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
@@ -466,6 +535,23 @@ export default function TrigQuizEngine() {
   const [started, setStarted] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [timeLeft, setTimeLeft] = useState(60);
+
+  useEffect(() => {
+    let active = true;
+    fetchQuestions({ topic: "geometry" })
+      .then((data) => {
+        if (!active) return;
+        setAllQuestions(data.map(toGeometryQuestion));
+      })
+      .catch((error) => {
+        console.error(error);
+        if (active) setAllQuestions([]);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const touchStartXRef = useRef<number | null>(null);
@@ -506,48 +592,63 @@ export default function TrigQuizEngine() {
 
   const examOptions = useMemo(() => {
     const set = new Set<string>();
-    geometryQuestions.forEach((q) => {
+    allQuestions.forEach((q) => {
       const exam = normalizeExamName((q.exam ?? "").trim());
       if (exam) set.add(exam);
     });
     return ["all", ...Array.from(set).sort((a, b) => a.localeCompare(b))];
-  }, []);
+  }, [allQuestions]);
 
   const availableCount = useMemo(() => {
     const pool =
       mode === "concept"
         ? conceptFilter === "all"
-          ? [...geometryQuestions]
-          : geometryQuestions.filter((q) => q.concept === conceptFilter)
+          ? [...allQuestions]
+          : allQuestions.filter((q) => q.concept === conceptFilter)
         : mode === "formula" || mode === "ai-challenge"
-        ? [...geometryQuestions]
+        ? [...allQuestions]
         : mode === "mixed"
-        ? [...geometryQuestions]
-        : [...geometryQuestions];
+        ? [...allQuestions]
+        : [...allQuestions];
     return pool.length;
-  }, [mode, conceptFilter, examFilter]);
+  }, [allQuestions, mode, conceptFilter, examFilter]);
 
   // ── Build question set ─────────────────────────────────────────────────────
   /* eslint-disable react-hooks/exhaustive-deps */
   useEffect(() => {
+    if (allQuestions.length === 0) {
+      setQuestions([]);
+      setCurrentIndex(0);
+      setSelectedAnswer(null);
+      setResults([]);
+      setSelectedAnswers({});
+      setSubmittedQuestions(new Set());
+      setIsPaletteOpen(false);
+      setStreak(0);
+      setShowAnalytics(false);
+      setStarted(false);
+      setSubmitError("");
+      return;
+    }
+
     let pool: GeometryQuestion[];
 
     switch (mode) {
       case "concept":
         pool =
           conceptFilter === "all"
-            ? [...geometryQuestions]
-            : geometryQuestions.filter((q) => q.concept === conceptFilter);
+            ? [...allQuestions]
+            : allQuestions.filter((q) => q.concept === conceptFilter);
         break;
       case "formula":
-        pool = [...geometryQuestions];
+        pool = [...allQuestions];
         break;
       case "ai-challenge":
-        pool = [...geometryQuestions];
+        pool = [...allQuestions];
         break;
       case "mixed":
       default:
-        pool = shuffle([...geometryQuestions]);
+        pool = shuffle([...allQuestions]);
         break;
     }
 
@@ -571,7 +672,7 @@ export default function TrigQuizEngine() {
     setShowAnalytics(false);
     setStarted(false);
     setSubmitError("");
-  }, [mode, conceptFilter, examFilter]);
+  }, [allQuestions, mode, conceptFilter, examFilter]);
   /* eslint-enable react-hooks/exhaustive-deps */
 
   // ── Timer ──────────────────────────────────────────────────────────────────

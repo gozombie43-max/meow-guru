@@ -1,0 +1,56 @@
+const API = process.env.NEXT_PUBLIC_API_URL;
+
+export interface Question {
+  id: string;
+  topic: string;
+  subject: string;
+  chapter: string;
+  concept: string;
+  difficulty: string;
+  exam: string;
+  question: string;
+  options: string[];
+  correctAnswer: string;
+  correctLetter: string;
+  solution: string;
+}
+
+// Fetch questions with filters
+export async function fetchQuestions(params: {
+  topic?: string;
+  subject?: string;
+  difficulty?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<Question[]> {
+  const query = new URLSearchParams();
+  if (params.topic)      query.set('topic',      params.topic);
+  if (params.subject)    query.set('subject',    params.subject);
+  if (params.difficulty) query.set('difficulty', params.difficulty);
+  if (params.limit !== undefined)  query.set('limit',  String(params.limit));
+  if (params.offset !== undefined) query.set('offset', String(params.offset));
+
+  const res = await fetch(`${API}/api/questions?${query}`);
+  if (!res.ok) throw new Error('Failed to fetch questions');
+  const data = await res.json();
+  return data.questions;
+}
+
+// Fetch random questions for practice test
+export async function fetchPracticeTest(params: {
+  topic?: string;
+  subject?: string;
+  difficulty?: string;
+  count?: number;
+}): Promise<Question[]> {
+  const query = new URLSearchParams();
+  if (params.topic)      query.set('topic',      params.topic);
+  if (params.subject)    query.set('subject',    params.subject);
+  if (params.difficulty) query.set('difficulty', params.difficulty);
+  query.set('count', String(params.count ?? 10));
+
+  const res = await fetch(`${API}/api/questions/practice-test?${query}`);
+  if (!res.ok) throw new Error('Failed to fetch practice test');
+  const data = await res.json();
+  return data.questions;
+}

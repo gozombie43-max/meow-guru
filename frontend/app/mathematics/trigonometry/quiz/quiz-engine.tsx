@@ -23,12 +23,8 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { updateProgress, toggleBookmark } from "@/lib/userApi";
-import {
-  trigonometryQuestions,
-  shuffle,
-  type TrigonometryQuestion,
-  TRIG_CONCEPTS,
-} from "@/lib/trigonometry-questions";
+import { fetchQuestions, type Question as ApiQuestion } from "@/lib/api/questions";
+import { shuffle, type TrigonometryQuestion, TRIG_CONCEPTS } from "@/lib/trigonometry-questions";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 type QuizMode = "concept" | "formula" | "mixed" | "ai-challenge";
@@ -43,6 +39,79 @@ interface SessionResult {
   timeTaken: number;
   concept: string;
   difficulty: Difficulty;
+}
+
+function normalizeDifficulty(value?: string): Difficulty {
+  const lower = (value ?? "").toLowerCase();
+  if (lower.includes("hard")) return "hard";
+  if (lower.includes("easy")) return "easy";
+  return "medium";
+}
+
+function extractYear(exam: string): string {
+  const match = exam.match(/\b(19|20)\d{2}\b/);
+  return match?.[0] ?? "";
+}
+
+function resolveCorrectIndex(question: ApiQuestion, options: string[]): number {
+  const letter = (question.correctLetter ?? "").trim().toLowerCase();
+  if (letter) {
+    const idx = letter.charCodeAt(0) - 97;
+    if (idx >= 0 && idx < options.length) return idx;
+  }
+
+  const answerText = String(question.correctAnswer ?? "").trim();
+  if (answerText) {
+    if (/^[a-z]$/i.test(answerText)) {
+      const idx = answerText.toLowerCase().charCodeAt(0) - 97;
+      if (idx >= 0 && idx < options.length) return idx;
+    }
+
+    const exact = options.findIndex((opt) => opt.trim() === answerText);
+    if (exact >= 0) return exact;
+
+    const numeric = Number(answerText);
+    if (Number.isFinite(numeric)) {
+      if (numeric >= 0 && numeric < options.length) return numeric;
+      if (numeric >= 1 && numeric <= options.length) return numeric - 1;
+    }
+  }
+
+  return 0;
+}
+
+function toTrigonometryQuestion(question: ApiQuestion, index: number): TrigonometryQuestion {
+  const options = Array.isArray(question.options)
+    ? question.options.map((opt) => String(opt))
+    : [];
+  const difficulty = normalizeDifficulty(question.difficulty);
+  const correctAnswer = resolveCorrectIndex(question, options);
+  const exam = String(question.exam ?? "");
+  const concept =
+    String(question.concept ?? question.chapter ?? question.topic ?? "").trim() ||
+    TRIG_CONCEPTS[0] ||
+    "Simplification";
+  const numericId = Number.parseInt(question.id, 10);
+  const id = Number.isFinite(numericId) ? numericId : index + 1;
+  const rawAnswer = String(question.correctAnswer ?? "").trim();
+  const answer = /^[a-z]$/i.test(rawAnswer)
+    ? options[correctAnswer] ?? ""
+    : rawAnswer || (options[correctAnswer] ?? "");
+
+  return {
+    id,
+    concept,
+    formula: "",
+    question: String(question.question ?? ""),
+    options,
+    correctAnswer,
+    answer,
+    difficulty,
+    estimatedTime: difficulty === "easy" ? 40 : difficulty === "hard" ? 80 : 60,
+    year: extractYear(exam),
+    exam,
+    solution: String(question.solution ?? ""),
+  };
 }
 
 // ── Constants ────────────────────────────────────────────────────────────────
@@ -601,6 +670,7 @@ export default function TrigQuizEngine() {
   const mode = (searchParams.get("mode") || "mixed") as QuizMode;
 
   // ── State ──────────────────────────────────────────────────────────────────
+  const [allQuestions, setAllQuestions] = useState<TrigonometryQuestion[]>([]);
   const [questions, setQuestions] = useState<TrigonometryQuestion[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
@@ -646,12 +716,12 @@ export default function TrigQuizEngine() {
 
   const examOptions = useMemo(() => {
     const set = new Set<string>();
-    trigonometryQuestions.forEach((q) => {
+    allQuestions.forEach((q) => {
       const exam = normalizeExamName((q.exam ?? "").trim());
       if (exam) set.add(exam);
     });
     return ["all", ...Array.from(set).sort((a, b) => a.localeCompare(b))];
-  }, []);
+  }, [allQuestions]);
 
   const availableCount = useMemo(() => {
     let pool: TrigonometryQuestion[];
@@ -659,12 +729,12 @@ export default function TrigQuizEngine() {
     if (mode === "concept") {
       pool =
         conceptFilter === "all"
-          ? [...trigonometryQuestions]
-          : trigonometryQuestions.filter((q) => q.concept === conceptFilter);
+          ? [...allQuestions]
+          : allQuestions.filter((q) => q.concept === conceptFilter);
     } else if (mode === "formula" || mode === "ai-challenge") {
-      pool = [...trigonometryQuestions];
+      pool = [...allQuestions];
     } else {
-      pool = [...trigonometryQuestions];
+      pool = [...allQuestions];
     }
 
     if (examFilter.trim() !== "") {
@@ -675,12 +745,29 @@ export default function TrigQuizEngine() {
     }
 
     return pool.length;
-  }, [mode, conceptFilter, examFilter]);
+  }, [allQuestions, mode, conceptFilter, examFilter]);
 
   const [started, setStarted] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [timeLeft, setTimeLeft] = useState(60);
   const [isSolutionOpen, setIsSolutionOpen] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    fetchQuestions({ topic: "trigonometry" })
+      .then((data) => {
+        if (!active) return;
+        setAllQuestions(data.map(toTrigonometryQuestion));
+      })
+      .catch((error) => {
+        console.error(error);
+        if (active) setAllQuestions([]);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const touchStartXRef = useRef<number | null>(null);
@@ -698,24 +785,40 @@ export default function TrigQuizEngine() {
   // ── Build question set ─────────────────────────────────────────────────────
   /* eslint-disable react-hooks/exhaustive-deps */
   useEffect(() => {
+    if (allQuestions.length === 0) {
+      setQuestions([]);
+      setCurrentIndex(0);
+      setSelectedAnswer(null);
+      setResults([]);
+      setSelectedAnswers({});
+      setSubmittedQuestions(new Set());
+      setIsPaletteOpen(false);
+      setIsSolutionOpen(false);
+      setStreak(0);
+      setShowAnalytics(false);
+      setStarted(false);
+      setSubmitError("");
+      return;
+    }
+
     let pool: TrigonometryQuestion[];
 
     switch (mode) {
       case "concept":
         pool =
           conceptFilter === "all"
-            ? [...trigonometryQuestions]
-            : trigonometryQuestions.filter((q) => q.concept === conceptFilter);
+            ? [...allQuestions]
+            : allQuestions.filter((q) => q.concept === conceptFilter);
         break;
       case "formula":
-        pool = [...trigonometryQuestions];
+        pool = [...allQuestions];
         break;
       case "ai-challenge":
-        pool = [...trigonometryQuestions];
+        pool = [...allQuestions];
         break;
       case "mixed":
       default:
-        pool = shuffle([...trigonometryQuestions]);
+        pool = shuffle([...allQuestions]);
         break;
     }
 
@@ -740,7 +843,7 @@ export default function TrigQuizEngine() {
     setShowAnalytics(false);
     setStarted(false);
     setSubmitError("");
-  }, [mode, conceptFilter, examFilter]);
+  }, [allQuestions, mode, conceptFilter, examFilter]);
   /* eslint-enable react-hooks/exhaustive-deps */
 
   // ── Timer ──────────────────────────────────────────────────────────────────
