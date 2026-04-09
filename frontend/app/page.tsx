@@ -259,18 +259,18 @@ export default function Home() {
             ))}
           </div>
 
-          <div className="mt-24 flex justify-center">
-            <Link href="/battle" className="battle-cta" style={{ animationDelay: "1100ms" }}>
-              <span className="battle-cta-text">Battle Mode</span>
-            </Link>
-          </div>
         </div>
       </section>
 
       <div className="h-px w-full bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent" />
-      <p className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 text-black font-bold text-sm sm:text-base text-center">
-        Developed by : Gurucharan Murmu
-      </p>
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center" style={{ gap: "1cm" }}>
+        <Link href="/battle" className="battle-cta" style={{ animationDelay: "1100ms" }}>
+          <span className="battle-cta-text">Battle Mode</span>
+        </Link>
+        <p className="text-black font-bold text-sm sm:text-base text-center">
+          Developed by : Gurucharan Murmu
+        </p>
+      </div>
     </div>
   );
 }

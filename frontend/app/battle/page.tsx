@@ -84,81 +84,108 @@ function ScoreBar({
   const myWidth = Math.round((meScore / totalScore) * 100);
 
   return (
-    <div className="px-4 pt-3 pb-2">
-      {/* Player name row */}
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-full bg-violet-100 border-2 border-violet-400 flex items-center justify-center text-xs font-bold text-violet-700">
+    <div className="relative overflow-hidden rounded-3xl px-4 pt-4 pb-3 sm:px-6"
+      style={{
+        background: "linear-gradient(120deg,#2a0a4a 0%,#3b0f63 45%,#0f2a4a 55%,#0b3a57 100%)",
+      }}>
+      <div className="absolute inset-0" style={{
+        background: "linear-gradient(120deg, rgba(0,0,0,0) 44%, rgba(255,255,255,0.12) 49%, rgba(0,0,0,0) 55%)",
+      }} />
+      <div className="absolute inset-0" style={{
+        background: "radial-gradient(circle at 20% 10%, rgba(255,255,255,0.18), transparent 40%), radial-gradient(circle at 80% 10%, rgba(255,255,255,0.12), transparent 35%)",
+      }} />
+
+      {/* Header row */}
+      <div className="relative flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-fuchsia-200/90 border-2 border-fuchsia-300 flex items-center justify-center text-xs font-bold text-purple-800">
             {myName[0]?.toUpperCase()}
           </div>
           <div>
-            <span className="text-sm font-bold text-slate-800">{myName}</span>
-            {meAnswered && (
-              <span className="ml-1.5 text-[10px] font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-full px-1.5 py-0.5">
-                answered
-              </span>
-            )}
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-bold text-white">{myName}</span>
+              {meAnswered && (
+                <span className="text-[10px] font-semibold text-emerald-200 bg-emerald-500/20 border border-emerald-300/40 rounded-full px-2 py-0.5">
+                  answered
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
-        <span className="text-xs font-semibold text-slate-500 tabular-nums">
-          Q {questionIndex + 1}/{total}
-        </span>
+        <div className="flex flex-col items-center gap-1">
+          <span className="text-[11px] font-bold text-white/70 tracking-[0.3em]">QUIZ BATTLE</span>
+          <span className="text-xs font-semibold text-white/80 tabular-nums">
+            Q {questionIndex + 1}/{total}
+          </span>
+        </div>
 
-        <div className="flex items-center gap-2">
-          <div>
-            <span className="text-sm font-bold text-slate-800 text-right block">{oppName}</span>
-            {oppAnswered && (
-              <span className="ml-1.5 text-[10px] font-semibold text-amber-600 bg-amber-50 border border-amber-200 rounded-full px-1.5 py-0.5">
-                answered
-              </span>
-            )}
+        <div className="flex items-center gap-3">
+          <div className="text-right">
+            <div className="flex items-center gap-2 justify-end">
+              <span className="text-sm font-bold text-white">{oppName}</span>
+              {oppAnswered ? (
+                <span className="text-[10px] font-semibold text-emerald-200 bg-emerald-500/20 border border-emerald-300/40 rounded-full px-2 py-0.5">
+                  answered
+                </span>
+              ) : (
+                <span className="text-[10px] font-semibold text-amber-200 bg-amber-500/20 border border-amber-300/40 rounded-full px-2 py-0.5">
+                  thinking...
+                </span>
+              )}
+            </div>
           </div>
-          <div className="w-7 h-7 rounded-full bg-orange-100 border-2 border-orange-400 flex items-center justify-center text-xs font-bold text-orange-700">
+          <div className="w-10 h-10 rounded-full bg-cyan-300/90 border-2 border-cyan-200 flex items-center justify-center text-xs font-bold text-cyan-900">
             {oppName[0]?.toUpperCase()}
           </div>
         </div>
       </div>
 
+      {/* Score row */}
+      <div className="relative flex items-end justify-between mt-2">
+        <div className="flex flex-col">
+          <motion.span
+            key={`me-score-${meScore}`}
+            className="text-3xl font-black text-white tabular-nums"
+            initial={{ scale: 1.2 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.4 }}
+          >
+            {String(meScore).padStart(2, "0")}
+          </motion.span>
+          <span className="text-[11px] font-bold text-white/60 tracking-widest">YOUR SCORE</span>
+        </div>
+        <span className="text-[11px] font-bold text-white/40 tracking-[0.35em]">POINTS</span>
+        <div className="flex flex-col items-end">
+          <motion.span
+            key={`opp-score-${oppScore}`}
+            className="text-3xl font-black text-white tabular-nums"
+            initial={{ scale: 1.2 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.4 }}
+          >
+            {String(oppScore).padStart(2, "0")}
+          </motion.span>
+          <span className="text-[11px] font-bold text-white/60 tracking-widest">THEIR SCORE</span>
+        </div>
+      </div>
+
       {/* Score progress bar */}
-      <div className="h-2.5 w-full rounded-full bg-slate-100 overflow-hidden flex">
+      <div className="relative mt-3 h-2.5 w-full rounded-full bg-white/10 overflow-hidden flex">
         <motion.div
           key="my-bar"
           className="h-full rounded-full"
-          style={{ background: "linear-gradient(90deg,#7c3aed,#4f46e5)" }}
+          style={{ background: "linear-gradient(90deg,#e879f9,#c026d3)" }}
           animate={{ width: `${myWidth}%` }}
           transition={{ type: "spring", stiffness: 120, damping: 20 }}
         />
         <motion.div
           key="opp-bar"
           className="h-full rounded-full"
-          style={{ background: "linear-gradient(90deg,#f97316,#ef4444)" }}
+          style={{ background: "linear-gradient(90deg,#06b6d4,#0ea5e9)" }}
           animate={{ width: `${100 - myWidth}%` }}
           transition={{ type: "spring", stiffness: 120, damping: 20 }}
         />
-      </div>
-
-      {/* Score numbers */}
-      <div className="flex justify-between mt-1.5">
-        <motion.span
-          key={`me-score-${meScore}`}
-          className="text-base font-black text-violet-700 tabular-nums"
-          initial={{ scale: 1.4, color: "#16a34a" }}
-          animate={{ scale: 1, color: "#6d28d9" }}
-          transition={{ duration: 0.4 }}
-        >
-          {meScore}
-        </motion.span>
-        <span className="text-xs text-slate-400 font-medium">pts</span>
-        <motion.span
-          key={`opp-score-${oppScore}`}
-          className="text-base font-black text-orange-600 tabular-nums"
-          initial={{ scale: 1.4, color: "#16a34a" }}
-          animate={{ scale: 1, color: "#ea580c" }}
-          transition={{ duration: 0.4 }}
-        >
-          {oppScore}
-        </motion.span>
       </div>
     </div>
   );
@@ -443,9 +470,6 @@ export default function BattlePage() {
               WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
             }}>Friend</span>
           </h1>
-          <p className="text-sm text-slate-500 font-medium">
-            Real-time math battles. Same question. Who answers first?
-          </p>
         </motion.div>
 
         {/* Card */}
@@ -537,34 +561,38 @@ export default function BattlePage() {
             </div>
           </div>
 
-          {/* Create room */}
-          <button onClick={createRoom}
-            className="w-full h-14 rounded-2xl font-bold text-white text-base mb-4 flex items-center justify-center gap-2 transition-all"
-            style={{
-              background: "linear-gradient(135deg,#7c3aed 0%,#4f46e5 50%,#2563eb 100%)",
-              boxShadow: "0 8px 24px rgba(124,58,237,0.35), inset 0 1px 0 rgba(255,255,255,0.25)",
-            }}>
-            <Swords className="w-4 h-4" />
-            Create Battle Room
-          </button>
-
-          {/* Join room */}
-          <div className="flex gap-2">
-            <input
-              className="glass-input flex-1 font-mono font-bold tracking-widest uppercase text-center text-base"
-              placeholder="Room Code"
-              value={joinCode}
-              onChange={e => { setJoinCode(e.target.value.toUpperCase().slice(0,6)); setError(""); }}
-              maxLength={6}
-            />
-            <button onClick={joinRoom}
-              className="h-12 px-5 rounded-2xl font-bold text-white text-sm transition-all flex-shrink-0"
+          <div className="space-y-4">
+            {/* Create room */}
+            <button onClick={createRoom}
+              className="w-full h-14 rounded-2xl font-bold text-white text-base flex items-center justify-center gap-2 transition-all"
               style={{
-                background: "linear-gradient(135deg,#10b981,#059669)",
-                boxShadow: "0 4px 14px rgba(16,185,129,0.35)",
+                background: "linear-gradient(135deg,#7c3aed 0%,#4f46e5 50%,#2563eb 100%)",
+                boxShadow: "0 8px 24px rgba(124,58,237,0.35), inset 0 1px 0 rgba(255,255,255,0.25)",
               }}>
-              Join
+              <Swords className="w-4 h-4" />
+              Create Battle Room
             </button>
+
+            {/* Join room */}
+            <div className="flex gap-2 items-stretch rounded-2xl bg-white/70 border border-slate-100 p-2">
+              <input
+                className="glass-input font-mono font-bold tracking-widest uppercase text-center text-base h-14"
+                placeholder="Room Code"
+                value={joinCode}
+                onChange={e => { setJoinCode(e.target.value.toUpperCase().slice(0,6)); setError(""); }}
+                maxLength={6}
+                style={{ flexBasis: "62%", maxWidth: "62%" }}
+              />
+              <button onClick={joinRoom}
+                className="h-14 px-8 rounded-lg font-bold text-white text-base transition-all flex-shrink-0"
+                style={{
+                  background: "linear-gradient(135deg,#10b981,#059669)",
+                  boxShadow: "0 4px 14px rgba(16,185,129,0.35)",
+                  minWidth: "108px",
+                }}>
+                Join
+              </button>
+            </div>
           </div>
 
           {/* Error */}
