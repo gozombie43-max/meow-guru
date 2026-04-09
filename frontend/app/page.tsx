@@ -172,7 +172,21 @@ export default function Home() {
         @keyframes pill-glow-pulse { 0%,100% { opacity: 0.5; box-shadow: 0 0 20px color-mix(in srgb, var(--pill-glow) 60%, transparent); } 50% { opacity: 0.82; box-shadow: 0 0 32px color-mix(in srgb, var(--pill-glow) 86%, transparent); } }
         @keyframes pill-shimmer { 0% { transform: translateX(-170%) rotate(12deg); opacity: 0; } 10% { opacity: 0.9; } 22% { transform: translateX(330%) rotate(12deg); opacity: 0.9; } 30%,100% { transform: translateX(330%) rotate(12deg); opacity: 0; } }
         @media (max-width: 820px) { .pill-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 420px; gap: 0.75rem; padding: 0 0.85rem; } .pill-card { min-height: 58px; padding: 7px 14px; } .pill-content { font-size: clamp(0.85rem,3.8vw,1rem); } }
-        @media (max-width: 640px) { .hero-mobile-offset { padding-top: 9.5rem; padding-bottom: 2.75rem; } .pill-grid { max-width: 380px; gap: 0.55rem; padding: 0 0.65rem; } .pill-card { min-height: 50px; padding: 6px 10px; } .pill-content { font-size: clamp(0.72rem,2.9vw,0.84rem); letter-spacing: 0.02em; text-transform: none; padding: 0 0.15rem; } }
+        @media (max-width: 640px) {
+          .hero-mobile-offset { padding-top: 9.5rem; padding-bottom: 2.75rem; }
+          .pill-grid { max-width: 380px; gap: 0.55rem; padding: 0 0.65rem; }
+          .pill-card { min-height: 50px; padding: 6px 10px; }
+          .pill-content { font-size: clamp(0.72rem,2.9vw,0.84rem); letter-spacing: 0.02em; text-transform: none; padding: 0 0.15rem; }
+          .battle-cta {
+            width: min(86vw, 320px);
+            min-height: 52px;
+            padding: 12px 26px;
+            font-size: clamp(0.98rem, 4.2vw, 1.12rem);
+            letter-spacing: 0.08em;
+          }
+          .battle-cta-text { white-space: nowrap; line-height: 1; }
+          .battle-cta::before { inset: -10px; }
+        }
         @media (prefers-reduced-motion: reduce) { .pill-card { animation: none; transform: none; opacity: 1; transition: none; } .pill-card::before, .pill-card::after { animation: none; } }
       `}</style>
 
