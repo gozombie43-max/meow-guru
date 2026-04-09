@@ -1,5 +1,6 @@
 // backend/index.js
 import 'dotenv/config';
+import { createServer } from 'http';
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
@@ -13,8 +14,10 @@ import { initAuthRoutes } from './routes/auth.routes.js';
 import { initUserRoutes } from './routes/user.routes.js';
 import questionRoutes from './routes/questionRoutes.js';
 import { setQuestionsContainer, setUsersContainer } from './containerStore.js';
+import { initBattleSocket } from './battle/battleSocket.js';
 
 const app = express();
+const httpServer = createServer(app);
 const isProd = process.env.NODE_ENV === 'production';
 app.set('trust proxy', 1);
 
@@ -56,9 +59,9 @@ app.use(passport.initialize());
 // ── Health check ───────────────────────────────────────
 app.get('/', (req, res) => res.send('Server running 🚀'));
 
-// ── Start server FIRST ─────────────────────────────────
+// ── Start server ───────────────────────────────────────
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT} 🚀`);
   initWithRetry();
 });
@@ -90,6 +93,9 @@ async function initWithRetry() {
 
     initPassport(usersContainer);
 
+    // ✅ Init battle socket
+    initBattleSocket(httpServer, allowedOrigins);
+
     // ✅ Register ALL routes here, after DB is ready
     app.use('/api/questions', questionRoutes);   // ← moved here from top
     app.use('/auth',  initAuthRoutes(usersContainer));
@@ -100,6 +106,6 @@ async function initWithRetry() {
     console.log('All routes registered ✅');
 
   } catch (err) {
-    console.error('DB init failed after all retries ❌', err.message);
+    console.error('DB init failed ❌', err.message);
   }
 }

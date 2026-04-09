@@ -106,6 +106,66 @@ export default function Home() {
         }
         @keyframes guru-neon-shift { 0% { background-position: 0% 50%; filter: hue-rotate(0deg); } 50% { background-position: 100% 50%; filter: hue-rotate(68deg); } 100% { background-position: 0% 50%; filter: hue-rotate(0deg); } }
         .pill-content { position: relative; z-index: 2; font-family: "Trebuchet MS","Segoe UI",sans-serif; font-size: clamp(0.95rem,1.7vw,1.1rem); font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; text-shadow: 0 1px 2px rgba(0,0,0,0.28), 0 0 16px color-mix(in srgb, var(--pill-light) 55%, transparent); text-align: center; padding: 0 0.35rem; }
+        .battle-cta {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 18px 44px;
+          border-radius: 999px;
+          font-weight: 900;
+          font-size: clamp(1.05rem,2.3vw,1.45rem);
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          color: #f8fafc;
+          text-decoration: none;
+          background: linear-gradient(120deg, #8a4dff 0%, #b14cff 28%, #f084ff 52%, #7dd3fc 76%, #a855f7 100%);
+          background-size: 300% 300%;
+          border: 1px solid rgba(255,255,255,0.35);
+          box-shadow:
+            0 14px 30px rgba(138,77,255,0.35),
+            0 0 24px rgba(240,132,255,0.55),
+            inset 0 2px 0 rgba(255,255,255,0.4);
+          transform: translateY(8px) scale(0.96);
+          opacity: 0;
+          animation: battle-entry 520ms cubic-bezier(0.22,1.28,0.36,1) forwards, glow-pulse 3.6s ease-in-out infinite, color-wave 7.2s ease-in-out infinite;
+          transition: transform 200ms ease, box-shadow 200ms ease, filter 200ms ease;
+          overflow: hidden;
+        }
+        .battle-cta-text { position: relative; z-index: 2; text-shadow: 0 2px 6px rgba(0,0,0,0.45); }
+        .battle-cta::before {
+          content: "";
+          position: absolute;
+          inset: -14px;
+          border-radius: inherit;
+          background: radial-gradient(circle, rgba(240,132,255,0.5) 0%, rgba(240,132,255,0) 70%);
+          filter: blur(6px);
+          opacity: 0.9;
+          pointer-events: none;
+          z-index: 1;
+        }
+        .battle-cta::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          border-radius: inherit;
+          background: linear-gradient(130deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 55%);
+          opacity: 0.7;
+          animation: wind-sheen 3.8s ease-in-out infinite;
+          pointer-events: none;
+          z-index: 1;
+        }
+        .battle-cta:hover { transform: translateY(2px) scale(1.01); filter: brightness(1.05) saturate(1.1); box-shadow: 0 18px 36px rgba(138,77,255,0.45), 0 0 32px rgba(240,132,255,0.7), inset 0 2px 0 rgba(255,255,255,0.55); }
+        .battle-cta:active { transform: translateY(10px) scale(0.98); transition-duration: 80ms; }
+        @keyframes battle-entry { 0% { transform: translateY(18px) scale(0.9); opacity: 0; } 70% { transform: translateY(-2px) scale(1.03); opacity: 1; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
+        @keyframes glow-pulse { 0%,100% { box-shadow: 0 14px 30px rgba(138,77,255,0.32), 0 0 22px rgba(240,132,255,0.55), inset 0 2px 0 rgba(255,255,255,0.4); } 50% { box-shadow: 0 20px 40px rgba(138,77,255,0.5), 0 0 36px rgba(240,132,255,0.85), inset 0 2px 0 rgba(255,255,255,0.5); } }
+        @keyframes color-wave {
+          0% { background-position: 0% 50%; filter: hue-rotate(0deg); }
+          35% { background-position: 55% 45%; filter: hue-rotate(10deg); }
+          70% { background-position: 100% 55%; filter: hue-rotate(18deg); }
+          100% { background-position: 0% 50%; filter: hue-rotate(0deg); }
+        }
+        @keyframes wind-sheen { 0%,100% { opacity: 0.55; transform: translateX(-6%) translateY(0); } 50% { opacity: 0.9; transform: translateX(6%) translateY(-2%); } }
         @keyframes pill-entry { 0% { transform: scale(0.6); opacity: 0; } 70% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
         @keyframes pill-breathe { 0%,100% { box-shadow: 0 10px 20px color-mix(in srgb, var(--pill-base) 52%, transparent), 0 0 16px color-mix(in srgb, var(--pill-glow) 70%, transparent), inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -9px 16px rgba(10,20,40,0.14); } 50% { box-shadow: 0 12px 24px color-mix(in srgb, var(--pill-base) 58%, transparent), 0 0 28px color-mix(in srgb, var(--pill-glow) 88%, transparent), inset 0 1px 0 rgba(255,255,255,0.48), inset 0 -9px 16px rgba(10,20,40,0.16); } }
         @keyframes pill-chroma { 0%,100% { filter: hue-rotate(0deg) saturate(1); } 50% { filter: hue-rotate(14deg) saturate(1.08); } }
@@ -197,6 +257,12 @@ export default function Home() {
                 <div className="pill-gloss-bottom" aria-hidden="true" />
               </Link>
             ))}
+          </div>
+
+          <div className="mt-24 flex justify-center">
+            <Link href="/battle" className="battle-cta" style={{ animationDelay: "1100ms" }}>
+              <span className="battle-cta-text">Battle Mode</span>
+            </Link>
           </div>
         </div>
       </section>

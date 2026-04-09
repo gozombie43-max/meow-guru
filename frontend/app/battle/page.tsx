@@ -1,0 +1,911 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Swords, Copy, Check, Zap, Target } from "lucide-react";
+import RichContent from "@/components/RichContent";
+import { getSocket } from "@/lib/socket";
+
+// ── Types ────────────────────────────────────────────────────────────────────
+type BattleState = "lobby" | "waiting" | "playing" | "finished";
+
+interface Player {
+  name: string;
+  score: number;
+  answered: boolean;
+  lastCorrect?: boolean;
+}
+
+interface Scores {
+  [socketId: string]: Player;
+}
+
+interface BattleQuestion {
+  question: string;
+  options: string[];
+  questionIndex: number;
+  total: number;
+}
+
+interface SubjectOption {
+  value: string;
+  label: string;
+}
+
+interface TopicOption {
+  value: string;
+  label: string;
+  shortLabel?: string;
+  icon?: string;
+}
+
+// ── Constants ────────────────────────────────────────────────────────────────
+const SUBJECTS: SubjectOption[] = [
+  { value: "mathematics", label: "Mathematics" },
+  { value: "reasoning", label: "Reasoning" },
+  { value: "english", label: "English" },
+  { value: "general-awareness", label: "General Awareness" },
+];
+
+const MATH_TOPICS: TopicOption[] = [
+  { value: "trigonometry", label: "Trigonometry", shortLabel: "Trig", icon: "∫" },
+  { value: "algebra",      label: "Algebra",       shortLabel: "Algo", icon: "x²" },
+  { value: "geometry",     label: "Geometry",       shortLabel: "Geo", icon: "△" },
+  { value: "mensuration",  label: "Mensuration",    shortLabel: "Mens", icon: "⬡" },
+  { value: "percentages",  label: "Percentages",    shortLabel: "Perc", icon: "%" },
+];
+
+const TOPICS_BY_SUBJECT: Record<string, TopicOption[]> = {
+  mathematics: [{ value: "all", label: "All Topics", shortLabel: "All", icon: "ALL" }, ...MATH_TOPICS],
+  reasoning: [{ value: "all", label: "All Topics", shortLabel: "All", icon: "ALL" }],
+  english: [{ value: "all", label: "All Topics", shortLabel: "All", icon: "ALL" }],
+  "general-awareness": [{ value: "all", label: "All Topics", shortLabel: "All", icon: "ALL" }],
+};
+
+const QUESTION_COUNTS = [10, 20, 50, 100];
+
+// ── Score Bar ────────────────────────────────────────────────────────────────
+function ScoreBar({
+  scores, mySocketId, myName, questionIndex, total,
+}: {
+  scores: Scores; mySocketId: string; myName: string;
+  questionIndex: number; total: number;
+}) {
+  const players = Object.entries(scores);
+  const me = players.find(([id]) => id === mySocketId);
+  const opp = players.find(([id]) => id !== mySocketId);
+
+  const meScore = me?.[1]?.score ?? 0;
+  const oppScore = opp?.[1]?.score ?? 0;
+  const oppName = opp?.[1]?.name ?? "Opponent";
+  const meAnswered = me?.[1]?.answered ?? false;
+  const oppAnswered = opp?.[1]?.answered ?? false;
+  const totalScore = meScore + oppScore || 1;
+  const myWidth = Math.round((meScore / totalScore) * 100);
+
+  return (
+    <div className="px-4 pt-3 pb-2">
+      {/* Player name row */}
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-full bg-violet-100 border-2 border-violet-400 flex items-center justify-center text-xs font-bold text-violet-700">
+            {myName[0]?.toUpperCase()}
+          </div>
+          <div>
+            <span className="text-sm font-bold text-slate-800">{myName}</span>
+            {meAnswered && (
+              <span className="ml-1.5 text-[10px] font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-full px-1.5 py-0.5">
+                answered
+              </span>
+            )}
+          </div>
+        </div>
+
+        <span className="text-xs font-semibold text-slate-500 tabular-nums">
+          Q {questionIndex + 1}/{total}
+        </span>
+
+        <div className="flex items-center gap-2">
+          <div>
+            <span className="text-sm font-bold text-slate-800 text-right block">{oppName}</span>
+            {oppAnswered && (
+              <span className="ml-1.5 text-[10px] font-semibold text-amber-600 bg-amber-50 border border-amber-200 rounded-full px-1.5 py-0.5">
+                answered
+              </span>
+            )}
+          </div>
+          <div className="w-7 h-7 rounded-full bg-orange-100 border-2 border-orange-400 flex items-center justify-center text-xs font-bold text-orange-700">
+            {oppName[0]?.toUpperCase()}
+          </div>
+        </div>
+      </div>
+
+      {/* Score progress bar */}
+      <div className="h-2.5 w-full rounded-full bg-slate-100 overflow-hidden flex">
+        <motion.div
+          key="my-bar"
+          className="h-full rounded-full"
+          style={{ background: "linear-gradient(90deg,#7c3aed,#4f46e5)" }}
+          animate={{ width: `${myWidth}%` }}
+          transition={{ type: "spring", stiffness: 120, damping: 20 }}
+        />
+        <motion.div
+          key="opp-bar"
+          className="h-full rounded-full"
+          style={{ background: "linear-gradient(90deg,#f97316,#ef4444)" }}
+          animate={{ width: `${100 - myWidth}%` }}
+          transition={{ type: "spring", stiffness: 120, damping: 20 }}
+        />
+      </div>
+
+      {/* Score numbers */}
+      <div className="flex justify-between mt-1.5">
+        <motion.span
+          key={`me-score-${meScore}`}
+          className="text-base font-black text-violet-700 tabular-nums"
+          initial={{ scale: 1.4, color: "#16a34a" }}
+          animate={{ scale: 1, color: "#6d28d9" }}
+          transition={{ duration: 0.4 }}
+        >
+          {meScore}
+        </motion.span>
+        <span className="text-xs text-slate-400 font-medium">pts</span>
+        <motion.span
+          key={`opp-score-${oppScore}`}
+          className="text-base font-black text-orange-600 tabular-nums"
+          initial={{ scale: 1.4, color: "#16a34a" }}
+          animate={{ scale: 1, color: "#ea580c" }}
+          transition={{ duration: 0.4 }}
+        >
+          {oppScore}
+        </motion.span>
+      </div>
+    </div>
+  );
+}
+
+// ── Opponent Status ──────────────────────────────────────────────────────────
+function OpponentStatus({
+  scores, mySocketId, revealedAnswer,
+}: {
+  scores: Scores; mySocketId: string; revealedAnswer: string | null;
+}) {
+  const opp = Object.entries(scores).find(([id]) => id !== mySocketId);
+  if (!opp) return null;
+  const oppData = opp[1];
+
+  return (
+    <div className="flex items-center gap-2 px-4 py-2 bg-orange-50/80 border-b border-orange-100">
+      <div className="w-5 h-5 rounded-full bg-orange-200 flex items-center justify-center text-[10px] font-bold text-orange-700">
+        {oppData.name[0]?.toUpperCase()}
+      </div>
+      <span className="text-xs font-semibold text-orange-700">{oppData.name}</span>
+      {oppData.answered ? (
+        revealedAnswer ? (
+          <span className="text-xs text-slate-600">
+            answered: <span className="font-semibold text-slate-800">{revealedAnswer}</span>
+          </span>
+        ) : (
+          <span className="flex items-center gap-1 text-xs text-emerald-600 font-semibold">
+            <Check className="w-3 h-3" /> Answered
+          </span>
+        )
+      ) : (
+        <span className="flex items-center gap-1.5 text-xs text-amber-600">
+          <span className="flex gap-0.5">
+            {[0,1,2].map(i => (
+              <span key={i} className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-bounce"
+                style={{ animationDelay: `${i * 0.15}s` }} />
+            ))}
+          </span>
+          thinking...
+        </span>
+      )}
+    </div>
+  );
+}
+
+// ── Result Flash ─────────────────────────────────────────────────────────────
+function ResultFlash({ isCorrect }: { isCorrect: boolean | null }) {
+  if (isCorrect === null) return null;
+  return (
+    <AnimatePresence>
+      <motion.div
+        className={`fixed inset-0 pointer-events-none z-40 flex items-center justify-center`}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.15 }}
+      >
+        <motion.div
+          className={`rounded-3xl px-8 py-5 text-white text-2xl font-black shadow-2xl ${
+            isCorrect
+              ? "bg-emerald-500"
+              : "bg-red-500"
+          }`}
+          initial={{ scale: 0.5, y: 30 }}
+          animate={{ scale: 1, y: 0 }}
+          exit={{ scale: 0.8, opacity: 0 }}
+          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+        >
+          {isCorrect ? "✓ Correct! +10" : "✗ Wrong!"}
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+}
+
+// ── Confetti ─────────────────────────────────────────────────────────────────
+function Confetti() {
+  const pieces = Array.from({ length: 28 }, (_, i) => ({
+    id: i,
+    x: Math.random() * 100,
+    delay: Math.random() * 0.8,
+    color: ["#7c3aed","#2563eb","#10b981","#f59e0b","#ef4444","#ec4899"][Math.floor(Math.random()*6)],
+    size: 6 + Math.random() * 8,
+  }));
+  return (
+    <div className="fixed inset-0 pointer-events-none z-30 overflow-hidden">
+      {pieces.map(p => (
+        <motion.div key={p.id}
+          className="absolute rounded-sm"
+          style={{ left: `${p.x}%`, top: -20, width: p.size, height: p.size, background: p.color }}
+          initial={{ y: -20, rotate: 0, opacity: 1 }}
+          animate={{ y: "110vh", rotate: 720, opacity: [1, 1, 0] }}
+          transition={{ duration: 2.5 + Math.random(), delay: p.delay, ease: "easeIn" }}
+        />
+      ))}
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   MAIN BATTLE PAGE
+   ════════════════════════════════════════════════════════════════════════════ */
+export default function BattlePage() {
+  const [battleState, setBattleState]   = useState<BattleState>("lobby");
+  const [playerName, setPlayerName]     = useState("");
+  const [roomCode, setRoomCode]         = useState("");
+  const [joinCode, setJoinCode]         = useState("");
+  const [subject, setSubject]           = useState("mathematics");
+  const [topic, setTopic]               = useState("all");
+  const [questionCount, setQuestionCount] = useState(10);
+  const [players, setPlayers]           = useState<string[]>([]);
+  const [currentQ, setCurrentQ]         = useState<BattleQuestion | null>(null);
+  const [scores, setScores]             = useState<Scores>({});
+  const [selected, setSelected]         = useState<string | null>(null);
+  const [isCorrect, setIsCorrect]       = useState<boolean | null>(null);
+  const [isSubmitted, setIsSubmitted]   = useState(false);
+  const [finalScores, setFinalScores]   = useState<Scores>({});
+  const [copied, setCopied]             = useState(false);
+  const [error, setError]               = useState("");
+  const [showResult, setShowResult]     = useState(false);
+  const [opponentAnswer, setOpponentAnswer] = useState<string | null>(null);
+  const [mySocketId, setMySocketId]     = useState("");
+  const [isWinner, setIsWinner]         = useState(false);
+  const activeCode = roomCode || joinCode.toUpperCase();
+
+  // ── Socket setup ────────────────────────────────────────────────────────────
+  useEffect(() => {
+    const socket = getSocket();
+    setMySocketId(socket.id ?? "");
+
+    socket.on("connect", () => setMySocketId(socket.id ?? ""));
+
+    socket.on("room:created", ({ code }: { code: string }) => {
+      setRoomCode(code);
+      setBattleState("waiting");
+    });
+
+    socket.on("room:joined", ({ players }: { players: string[] }) => {
+      setPlayers(players);
+    });
+
+    socket.on("room:error", ({ message }: { message: string }) => {
+      setError(message);
+    });
+
+    socket.on("game:start", ({ total, topic: t }: { total: number; topic: string }) => {
+      setBattleState("playing");
+      setScores({});
+    });
+
+    socket.on("game:question", (q: BattleQuestion) => {
+      setCurrentQ(q);
+      setSelected(null);
+      setIsCorrect(null);
+      setShowResult(false);
+      setOpponentAnswer(null);
+      setIsSubmitted(false);
+    });
+
+    socket.on("game:answerResult", ({ isCorrect: correct, opponentAnswer: oppAns }: any) => {
+      setIsCorrect(correct);
+      setIsSubmitted(true);
+      setShowResult(true);
+      if (oppAns) setOpponentAnswer(oppAns);
+      setTimeout(() => setShowResult(false), 1500);
+    });
+
+    socket.on("game:scores", ({ scores: s }: { scores: Scores }) => {
+      setScores(s);
+    });
+
+    socket.on("game:opponentAnswer", ({ answer }: { answer: string }) => {
+      setOpponentAnswer(answer);
+    });
+
+    socket.on("game:end", ({ scores: s }: { scores: Scores }) => {
+      setFinalScores(s);
+      const myScore = s[mySocketId]?.score ?? 0;
+      const maxScore = Math.max(...Object.values(s).map(p => p.score));
+      setIsWinner(myScore === maxScore);
+      setBattleState("finished");
+    });
+
+    socket.on("room:playerLeft", ({ message }: { message: string }) => {
+      setError(message);
+      setBattleState("lobby");
+    });
+
+    return () => {
+      socket.off("connect");
+      socket.off("room:created");
+      socket.off("room:joined");
+      socket.off("room:error");
+      socket.off("game:start");
+      socket.off("game:question");
+      socket.off("game:answerResult");
+      socket.off("game:scores");
+      socket.off("game:opponentAnswer");
+      socket.off("game:end");
+      socket.off("room:playerLeft");
+    };
+  }, [mySocketId]);
+
+  const topicOptions = TOPICS_BY_SUBJECT[subject] || TOPICS_BY_SUBJECT.mathematics;
+  const subjectLabel = SUBJECTS.find(s => s.value === subject)?.label || "Subject";
+
+  // ── Actions ─────────────────────────────────────────────────────────────────
+  const createRoom = () => {
+    if (!playerName.trim()) { setError("Enter your name first"); return; }
+    if (!subject) { setError("Select a subject"); return; }
+    if (!topic) { setError("Select a topic"); return; }
+    setError("");
+    getSocket().emit("room:create", {
+      playerName: playerName.trim(),
+      subject,
+      topic,
+      questionCount,
+    });
+  };
+
+  const joinRoom = () => {
+    if (!playerName.trim()) { setError("Enter your name first"); return; }
+    if (!joinCode.trim())   { setError("Enter room code"); return; }
+    setError("");
+    getSocket().emit("room:join", { code: joinCode.trim().toUpperCase(), playerName: playerName.trim() });
+  };
+
+  const submitAnswer = (answer: string) => {
+    if (isSubmitted) return;
+    setSelected(answer);
+    getSocket().emit("game:answer", { code: activeCode, answer });
+  };
+
+  const copyCode = () => {
+    navigator.clipboard.writeText(roomCode);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const resetToLobby = () => {
+    setBattleState("lobby");
+    setRoomCode("");
+    setJoinCode("");
+    setCurrentQ(null);
+    setScores({});
+    setSelected(null);
+    setIsCorrect(null);
+    setFinalScores({});
+    setError("");
+    setPlayers([]);
+  };
+
+  /* ══════════════════════════════════════════════════════════════════════════
+     SCREENS
+     ══════════════════════════════════════════════════════════════════════════ */
+
+  // ── Lobby ───────────────────────────────────────────────────────────────────
+  if (battleState === "lobby") return (
+    <div className="min-h-screen relative overflow-hidden" style={{
+      background: "radial-gradient(ellipse at 30% 20%, #dce8f8 0%, #eef2ff 40%, #f0f4f8 100%)",
+    }}>
+      {/* Ambient blobs */}
+      <div className="bg-blob-1" />
+      <div className="bg-blob-2" />
+
+      <div className="relative z-10 mx-auto max-w-md px-4 pt-16 pb-10">
+        {/* Header */}
+        <motion.div className="text-center mb-10"
+          initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}>
+          <div className="inline-flex items-center gap-2 rounded-full px-4 py-2 mb-4"
+            style={{ background: "rgba(124,58,237,0.10)", border: "1px solid rgba(124,58,237,0.25)" }}>
+            <Swords className="w-4 h-4 text-violet-600" />
+            <span className="text-sm font-semibold text-violet-700">1v1 Battle Mode</span>
+          </div>
+          <h1 className="text-4xl font-black text-slate-900 leading-none mb-2"
+            style={{ fontFamily: "'SF Pro Display','Helvetica Neue',sans-serif" }}>
+            Challenge a{" "}
+            <span style={{
+              background: "linear-gradient(135deg,#7c3aed 0%,#2563eb 100%)",
+              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+            }}>Friend</span>
+          </h1>
+          <p className="text-sm text-slate-500 font-medium">
+            Real-time math battles. Same question. Who answers first?
+          </p>
+        </motion.div>
+
+        {/* Card */}
+        <motion.div className="glass-panel"
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}>
+
+          {/* Name input */}
+          <div className="mb-4">
+            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+              Your Name
+            </label>
+            <input
+              className="glass-input text-base font-semibold"
+              placeholder="Enter your name..."
+              value={playerName}
+              onChange={e => { setPlayerName(e.target.value); setError(""); }}
+              maxLength={20}
+            />
+          </div>
+
+          {/* Subject filter */}
+          <div className="mb-5">
+            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+              Subject
+            </label>
+            <div className="relative">
+              <select
+                className="glass-input w-full text-base font-semibold pr-10"
+                value={subject}
+                onChange={(e) => { setSubject(e.target.value); setTopic("all"); }}
+              >
+                {SUBJECTS.map(s => (
+                  <option key={s.value} value={s.value}>{s.label}</option>
+                ))}
+              </select>
+              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">▾</span>
+            </div>
+          </div>
+
+          {/* Topic filter */}
+          <div className="mb-6">
+            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+              Topic
+            </label>
+            <div className="relative">
+              <select
+                className="glass-input w-full text-base font-semibold pr-10"
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+              >
+                {topicOptions.map(t => (
+                  <option key={t.value} value={t.value}>{t.label}</option>
+                ))}
+              </select>
+              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">▾</span>
+            </div>
+          </div>
+
+          {/* Question count */}
+          <div className="mb-6">
+            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+              Questions
+            </label>
+            <div className="grid grid-cols-4 gap-2">
+              {QUESTION_COUNTS.map(count => (
+                <button key={count} onClick={() => setQuestionCount(count)}
+                  className="rounded-xl py-2 text-center text-sm font-bold transition-all"
+                  style={{
+                    background: questionCount === count ? "rgba(124,58,237,0.12)" : "rgba(255,255,255,0.5)",
+                    border: `1.5px solid ${questionCount === count ? "#7c3aed" : "rgba(255,255,255,0.6)"}`,
+                    color: questionCount === count ? "#6d28d9" : "#64748b",
+                  }}>
+                  {count}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="relative mb-5">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-200" />
+            </div>
+            <div className="relative flex justify-center">
+              <span className="bg-white/80 px-3 text-xs font-semibold text-slate-400 uppercase tracking-widest">
+                or
+              </span>
+            </div>
+          </div>
+
+          {/* Create room */}
+          <button onClick={createRoom}
+            className="w-full h-14 rounded-2xl font-bold text-white text-base mb-4 flex items-center justify-center gap-2 transition-all"
+            style={{
+              background: "linear-gradient(135deg,#7c3aed 0%,#4f46e5 50%,#2563eb 100%)",
+              boxShadow: "0 8px 24px rgba(124,58,237,0.35), inset 0 1px 0 rgba(255,255,255,0.25)",
+            }}>
+            <Swords className="w-4 h-4" />
+            Create Battle Room
+          </button>
+
+          {/* Join room */}
+          <div className="flex gap-2">
+            <input
+              className="glass-input flex-1 font-mono font-bold tracking-widest uppercase text-center text-base"
+              placeholder="Room Code"
+              value={joinCode}
+              onChange={e => { setJoinCode(e.target.value.toUpperCase().slice(0,6)); setError(""); }}
+              maxLength={6}
+            />
+            <button onClick={joinRoom}
+              className="h-12 px-5 rounded-2xl font-bold text-white text-sm transition-all flex-shrink-0"
+              style={{
+                background: "linear-gradient(135deg,#10b981,#059669)",
+                boxShadow: "0 4px 14px rgba(16,185,129,0.35)",
+              }}>
+              Join
+            </button>
+          </div>
+
+          {/* Error */}
+          <AnimatePresence>
+            {error && (
+              <motion.div className="mt-3 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-medium text-red-600"
+                initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+                {error}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+
+        {/* Stats row */}
+        <motion.div className="mt-6 grid grid-cols-3 gap-3"
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
+          {[
+            { icon: <Zap className="w-4 h-4 text-amber-500" />, label: `${questionCount} Questions` },
+            { icon: <Target className="w-4 h-4 text-violet-500" />, label: `${subjectLabel} Focus` },
+            { icon: <Swords className="w-4 h-4 text-emerald-500" />, label: "+10 per Hit" },
+          ].map((s, i) => (
+            <div key={`stat-${i}`} className="glass-card !p-3 text-center flex flex-col items-center gap-1">
+              {s.icon}
+              <span className="text-xs font-semibold text-slate-600">{s.label}</span>
+            </div>
+          ))}
+        </motion.div>
+      </div>
+    </div>
+  );
+
+  // ── Waiting ──────────────────────────────────────────────────────────────────
+  if (battleState === "waiting") return (
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 relative"
+      style={{ background: "radial-gradient(ellipse at 30% 20%, #dce8f8 0%, #eef2ff 40%, #f0f4f8 100%)" }}>
+      <div className="bg-blob-1" /><div className="bg-blob-2" />
+
+      <motion.div className="relative z-10 glass-panel w-full max-w-sm text-center"
+        initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
+
+        {/* Pulsing swords */}
+        <motion.div className="w-16 h-16 rounded-full mx-auto mb-5 flex items-center justify-center"
+          style={{ background: "rgba(124,58,237,0.10)", border: "1.5px solid rgba(124,58,237,0.25)" }}
+          animate={{ scale: [1, 1.08, 1] }} transition={{ repeat: Infinity, duration: 2 }}>
+          <Swords className="w-8 h-8 text-violet-600" />
+        </motion.div>
+
+        <h2 className="text-xl font-bold text-slate-800 mb-1">Waiting for opponent...</h2>
+        <p className="text-sm text-slate-500 mb-6">Share this code with your friend</p>
+
+        {/* Room code */}
+        <div className="relative mb-6">
+          <div className="rounded-2xl border-2 border-dashed border-violet-300 bg-violet-50 py-5 px-4">
+            <div className="font-mono text-5xl font-black tracking-[0.25em] text-violet-700 select-all">
+              {roomCode}
+            </div>
+          </div>
+          <button onClick={copyCode}
+            className="absolute -top-2 -right-2 w-9 h-9 rounded-full flex items-center justify-center shadow-md transition-all"
+            style={{ background: copied ? "#10b981" : "#7c3aed" }}>
+            {copied
+              ? <Check className="w-4 h-4 text-white" />
+              : <Copy className="w-4 h-4 text-white" />}
+          </button>
+        </div>
+
+        {/* Players joined */}
+        <div className="flex items-center justify-center gap-3 mb-4">
+          {[playerName, players[1]].map((p, i) => (
+            <div key={i} className="flex flex-col items-center gap-1">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all ${
+                p ? "border-violet-400 bg-violet-100 text-violet-700 scale-100" : "border-dashed border-slate-300 bg-slate-50 text-slate-400"
+              }`}>
+                {p ? p[0].toUpperCase() : "?"}
+              </div>
+              <span className="text-[11px] font-semibold text-slate-500">{p || "waiting..."}</span>
+            </div>
+          ))}
+          <span className="text-slate-300 text-lg font-bold mb-4">VS</span>
+        </div>
+
+        <div className="flex gap-1.5 justify-center">
+          {[0, 1, 2].map(i => (
+            <motion.div key={i} className="w-2 h-2 rounded-full bg-violet-400"
+              animate={{ opacity: [0.3, 1, 0.3] }}
+              transition={{ repeat: Infinity, duration: 1.2, delay: i * 0.2 }} />
+          ))}
+        </div>
+      </motion.div>
+    </div>
+  );
+
+  // ── Playing ──────────────────────────────────────────────────────────────────
+  if (battleState === "playing" && currentQ) return (
+    <div className="min-h-screen flex flex-col" style={{
+      background: "linear-gradient(165deg,#f5f0ff 0%,#eef2ff 38%,#f8faff 100%)",
+      fontFamily: "Poppins, Inter, 'Segoe UI', sans-serif",
+    }}>
+
+      {/* Result flash overlay */}
+      <AnimatePresence>
+        {showResult && <ResultFlash isCorrect={isCorrect} />}
+      </AnimatePresence>
+
+      {/* ── Header: Score bar ─────────────────────────────── */}
+      <div className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-100 shadow-sm">
+        <ScoreBar
+          scores={scores} mySocketId={mySocketId}
+          myName={playerName}
+          questionIndex={currentQ.questionIndex}
+          total={currentQ.total}
+        />
+      </div>
+
+      {/* ── Opponent status strip ──────────────────────────── */}
+      <OpponentStatus scores={scores} mySocketId={mySocketId} revealedAnswer={opponentAnswer} />
+
+      {/* ── Main content ──────────────────────────────────── */}
+      <main className="flex-1 mx-auto w-full max-w-2xl px-3 pt-4 pb-36 overflow-y-auto">
+
+        {/* Question count */}
+        <div className="flex items-center justify-between mb-3 px-1">
+          <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-3 py-1.5">
+            <span className="text-xs font-bold text-slate-500">
+              Q {currentQ.questionIndex + 1} of {currentQ.total}
+            </span>
+          </div>
+        </div>
+
+        {/* Question card */}
+        <AnimatePresence mode="wait">
+          <motion.div key={currentQ.questionIndex}
+            initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.22 }}
+            className="bg-white rounded-2xl shadow-[0_4px_20px_rgba(124,58,237,0.08)] px-5 py-5 sm:px-7 sm:py-6 mb-5"
+            style={{ minHeight: 140 }}>
+            <div className="text-[17px] font-normal text-slate-900 leading-relaxed"
+              style={{ paddingLeft: "0.2cm", paddingRight: "0.2cm" }}>
+              <RichContent text={currentQ.question} className="leading-relaxed" />
+            </div>
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Options */}
+        <div className="space-y-3">
+          {currentQ.options.map((opt, i) => {
+            const letter = String.fromCharCode(65 + i);
+            const isSelected = selected === opt;
+            const hasSubmitted = selected !== null;
+
+            let borderColor = "#E5E7EB";
+            let bg = "#FFFFFF";
+            let letterBg = "transparent";
+            let letterBorder = "#7C3AED";
+            let letterText = "#5B21B6";
+
+            if (hasSubmitted && isSelected && isCorrect === true) {
+              borderColor = "#16A34A"; bg = "#F0FDF4";
+              letterBg = "#16A34A"; letterBorder = "#16A34A"; letterText = "#fff";
+            } else if (hasSubmitted && isSelected && isCorrect === false) {
+              borderColor = "#DC2626"; bg = "#FEF2F2";
+              letterBg = "#DC2626"; letterBorder = "#DC2626"; letterText = "#fff";
+            } else if (!hasSubmitted && isSelected) {
+              borderColor = "#7C3AED"; bg = "#F5F3FF";
+              letterBg = "#7C3AED"; letterBorder = "#7C3AED"; letterText = "#fff";
+            }
+
+            return (
+              <motion.button key={i}
+                onClick={() => submitAnswer(opt)}
+                disabled={isSubmitted}
+                whileTap={!isSubmitted ? { scale: 0.97 } : undefined}
+                style={{
+                  width: "100%", minHeight: 58, background: bg,
+                  border: `1.5px solid ${borderColor}`, borderRadius: 16,
+                  padding: "0 16px", display: "flex", alignItems: "center",
+                  gap: 14, boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+                  cursor: isSubmitted ? "default" : "pointer",
+                  transition: "all 0.15s ease", fontSize: 17, fontWeight: 400,
+                  color: "#111827", outline: "none",
+                }}>
+                {/* Letter bubble */}
+                <span style={{
+                  width: 34, height: 34, border: `1.5px solid ${letterBorder}`,
+                  borderRadius: "50%", background: letterBg, color: letterText,
+                  fontSize: 13, fontWeight: 600, display: "flex",
+                  alignItems: "center", justifyContent: "center",
+                  flexShrink: 0, transition: "all 0.15s ease",
+                }}>
+                  {letter}
+                </span>
+
+                {/* Option text with KaTeX */}
+                <div style={{ fontSize: 16, fontWeight: 400, color: "#111827", lineHeight: 1.5, flex: 1, textAlign: "left" }}>
+                  <RichContent text={opt} />
+                </div>
+
+                {/* Opponent answered this? */}
+                {opponentAnswer === opt && (
+                  <span className="text-[10px] font-semibold text-orange-600 bg-orange-50 border border-orange-200 rounded-full px-1.5 py-0.5 flex-shrink-0">
+                    opp
+                  </span>
+                )}
+              </motion.button>
+            );
+          })}
+        </div>
+
+        {/* Waiting message after answering */}
+        <AnimatePresence>
+          {selected && (
+            <motion.div className="mt-4 rounded-2xl border border-violet-100 bg-violet-50 px-4 py-3 flex items-center gap-3"
+              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+              <div className="flex gap-1">
+                {[0,1,2].map(i => (
+                  <motion.div key={`ans-dot-${i}`} className="w-1.5 h-1.5 rounded-full bg-violet-400"
+                    animate={{ opacity: [0.3,1,0.3] }}
+                    transition={{ repeat: Infinity, duration: 1, delay: i*0.2 }} />
+                ))}
+              </div>
+              <span className="text-sm font-medium text-violet-700">
+                Waiting for opponent...
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </main>
+    </div>
+  );
+
+  // ── Finished ─────────────────────────────────────────────────────────────────
+  if (battleState === "finished") {
+    const sorted = Object.entries(finalScores).sort(([,a],[,b]) => b.score - a.score);
+    const me = finalScores[mySocketId];
+    const opp = Object.entries(finalScores).find(([id]) => id !== mySocketId);
+    const myScore = me?.score ?? 0;
+    const oppScore = opp?.[1]?.score ?? 0;
+    const isDraw = myScore === oppScore;
+
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-4 relative overflow-hidden"
+        style={{ background: "linear-gradient(165deg,#f5f0ff 0%,#eef2ff 38%,#f8faff 100%)" }}>
+        <div className="bg-blob-1" /><div className="bg-blob-2" />
+
+        {isWinner && !isDraw && <Confetti />}
+
+        <motion.div className="relative z-10 w-full max-w-sm"
+          initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}>
+
+          {/* Result banner */}
+          <div className="text-center mb-6">
+            <motion.div className="text-6xl mb-3"
+              initial={{ scale: 0 }} animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 200, delay: 0.2 }}>
+              {isDraw ? "🤝" : isWinner ? "🏆" : "💪"}
+            </motion.div>
+            <h2 className="text-3xl font-black text-slate-900 mb-1"
+              style={{ fontFamily: "'SF Pro Display','Helvetica Neue',sans-serif" }}>
+              {isDraw ? "It's a Draw!" : isWinner ? "You Win!" : "Good Fight!"}
+            </h2>
+            <p className="text-sm text-slate-500">
+              {isDraw ? "Both fought equally well" : isWinner ? "Outstanding performance!" : `${opp?.[1]?.name} wins this round`}
+            </p>
+          </div>
+
+          {/* Score cards */}
+          <div className="glass-panel mb-5">
+            <div className="space-y-3">
+              {sorted.map(([id, player], rank) => {
+                const isMe = id === mySocketId;
+                return (
+                  <motion.div key={id}
+                    className="flex items-center gap-3 rounded-2xl p-3"
+                    style={{
+                      background: isMe ? "rgba(124,58,237,0.08)" : "rgba(249,115,22,0.06)",
+                      border: `1.5px solid ${isMe ? "rgba(124,58,237,0.2)" : "rgba(249,115,22,0.2)"}`,
+                    }}
+                    initial={{ opacity: 0, x: isMe ? -20 : 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.3 + rank * 0.1 }}>
+                    <span className="text-xl">{rank === 0 ? "🥇" : "🥈"}</span>
+                    <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold border-2"
+                      style={{
+                        background: isMe ? "rgba(124,58,237,0.12)" : "rgba(249,115,22,0.12)",
+                        borderColor: isMe ? "#7c3aed" : "#f97316",
+                        color: isMe ? "#6d28d9" : "#ea580c",
+                      }}>
+                      {player.name[0].toUpperCase()}
+                    </div>
+                    <div className="flex-1">
+                      <span className="text-sm font-bold text-slate-800">{player.name}</span>
+                      {isMe && <span className="ml-1.5 text-[10px] text-violet-600 font-semibold">(you)</span>}
+                    </div>
+                    <motion.div className="text-right"
+                      initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 + rank * 0.1 }}>
+                      <div className="text-xl font-black"
+                        style={{ color: isMe ? "#6d28d9" : "#ea580c" }}>
+                        {player.score}
+                      </div>
+                      <div className="text-[10px] text-slate-400 font-semibold">pts</div>
+                    </motion.div>
+                  </motion.div>
+                );
+              })}
+            </div>
+
+            {/* Score diff */}
+            {!isDraw && (
+              <motion.div className="mt-4 text-center rounded-xl py-2.5"
+                style={{ background: isWinner ? "rgba(16,185,129,0.08)" : "rgba(239,68,68,0.06)" }}
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }}>
+                <span className="text-sm font-bold"
+                  style={{ color: isWinner ? "#059669" : "#dc2626" }}>
+                  {isWinner
+                    ? `You won by ${myScore - oppScore} points! 🎉`
+                    : `Lost by ${oppScore - myScore} points. Keep grinding! 💪`}
+                </span>
+              </motion.div>
+            )}
+          </div>
+
+          {/* Actions */}
+          <div className="flex flex-col gap-3">
+            <button onClick={resetToLobby}
+              className="h-14 rounded-2xl font-bold text-white text-base flex items-center justify-center gap-2"
+              style={{
+                background: "linear-gradient(135deg,#7c3aed 0%,#2563eb 100%)",
+                boxShadow: "0 8px 24px rgba(124,58,237,0.3)",
+              }}>
+              <Swords className="w-4 h-4" /> Play Again
+            </button>
+            <a href="/mathematics"
+              className="h-12 rounded-2xl font-semibold text-slate-700 text-sm flex items-center justify-center gap-2 border border-slate-200 bg-white/70">
+              Back to Practice
+            </a>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  return null;
+}
