@@ -23,23 +23,26 @@ app.set('trust proxy', 1);
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// ── Middleware ──────────────────────────────────────────
-app.use(express.json());
-
 const allowedOrigins = new Set([
   'http://localhost:3000',
   'http://localhost:5000',
-  'https://brave-island-0a237e400.6.azurestaticapps.net',
+  'https://brave-island-0a237e400.azurestaticapps.net',
 ]);
 
-app.use(cors({
+const corsOptions = {
   origin: (origin, cb) => {
     if (!origin || allowedOrigins.has(origin)) return cb(null, true);
     return cb(new Error('Not allowed by CORS'));
   },
   credentials: true,
-}));
+};
 
+// ── Middleware ──────────────────────────────────────────
+// CORS must be first — before every other middleware
+app.use(cors(corsOptions));
+app.options(/(.*)/, cors(corsOptions)); // handle preflight for all routes
+
+app.use(express.json());
 app.use(cookieParser());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -87,21 +90,16 @@ async function initWithRetry() {
     const questionsContainer = await connectWithRetry(initDB, 'Questions DB');
     const usersContainer     = await connectWithRetry(initUsersDB, 'Users DB');
 
-    // ✅ Store containers globally for controllers to access
     setQuestionsContainer(questionsContainer);
     setUsersContainer(usersContainer);
 
     initPassport(usersContainer);
 
-    // ✅ Init battle socket
     initBattleSocket(httpServer, allowedOrigins);
 
-    // ✅ Register ALL routes here, after DB is ready
-    app.use('/api/questions', questionRoutes);   // ← moved here from top
+    app.use('/api/questions', questionRoutes);
     app.use('/auth',  initAuthRoutes(usersContainer));
     app.use('/users', initUserRoutes(usersContainer));
-
-    // ✅ REMOVED the duplicate /questions routes that were here before
 
     console.log('All routes registered ✅');
 

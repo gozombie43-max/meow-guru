@@ -31,7 +31,6 @@
       overflow-x: hidden;
     }
 
-    /* Ambient blobs */
     body::before, body::after {
       content: '';
       position: fixed;
@@ -78,13 +77,8 @@
       z-index: 10;
     }
 
-    header h1 {
-      font-size: 1.4rem;
-      font-weight: 600;
-      color: var(--text-primary);
-    }
-
-    header span {
+    header h1 { font-size: 1.4rem; font-weight: 600; color: var(--text-primary); }
+    header .badge {
       background: linear-gradient(135deg, #00e5ff, #26c6da);
       color: var(--text-primary);
       font-size: 0.7rem;
@@ -103,7 +97,42 @@
       z-index: 1;
     }
 
-    form {
+    .tab-bar {
+      display: flex;
+      background: rgba(255,255,255,0.18);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1.5px solid rgba(255,255,255,0.38);
+      border-radius: 18px;
+      padding: 5px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 12px rgba(0,180,220,0.08);
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 10px 0;
+      border: none;
+      border-radius: 13px;
+      background: transparent;
+      color: rgba(74,122,155,0.80);
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.22s;
+      letter-spacing: 0.02em;
+    }
+    .tab-btn:hover { color: var(--text-primary); background: rgba(255,255,255,0.22); }
+    .tab-btn.active {
+      background: linear-gradient(135deg, #00e5ff, #26c6da);
+      color: var(--text-primary);
+      box-shadow: 0 2px 14px rgba(0,229,255,0.28);
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .glass-card {
       background: rgba(255,255,255,0.15);
       backdrop-filter: blur(18px) saturate(180%);
       -webkit-backdrop-filter: blur(18px) saturate(180%);
@@ -114,8 +143,7 @@
       position: relative;
       overflow: hidden;
     }
-
-    form::before {
+    .glass-card::before {
       content: '';
       position: absolute;
       top: 0; left: 0; right: 0;
@@ -129,14 +157,36 @@
       gap: 20px;
     }
 
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group.full-width { grid-column: 1 / -1; }
 
-    .form-group.full-width {
+    /* Quiz selector row — spans full width, 3 columns */
+    .quiz-selector-row {
       grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      background: rgba(0, 229, 255, 0.06);
+      border: 1.5px solid rgba(0, 229, 255, 0.22);
+      border-radius: 16px;
+      padding: 16px;
+    }
+    .quiz-selector-row .quiz-row-label {
+      grid-column: 1 / -1;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #00a8c6;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: -4px;
+    }
+    .quiz-arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(0,180,220,0.5);
+      font-size: 1.1rem;
+      padding-top: 24px;
     }
 
     label {
@@ -146,10 +196,7 @@
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
-
-    label .required {
-      color: #ef4444;
-    }
+    label .required { color: #ef4444; }
 
     input, select, textarea {
       background: rgba(255,255,255,0.20);
@@ -163,324 +210,271 @@
       font-family: inherit;
       transition: border-color 0.2s, box-shadow 0.2s;
     }
-
     input:focus, select:focus, textarea:focus {
       outline: none;
       border-color: rgba(0, 229, 255, 0.65);
       box-shadow: 0 0 0 3px rgba(0,229,255,0.15);
     }
-
-    input::placeholder, textarea::placeholder {
-      color: rgba(74, 122, 155, 0.55);
-    }
-
-    textarea {
-      resize: vertical;
-      min-height: 80px;
-    }
-
-    input[type="file"] {
-      padding: 8px 12px;
-    }
-
+    input::placeholder, textarea::placeholder { color: rgba(74, 122, 155, 0.55); }
+    textarea { resize: vertical; min-height: 80px; }
+    input[type="file"] { padding: 8px 12px; }
     input[type="file"]::file-selector-button {
-      border: none;
-      border-radius: 10px;
+      border: none; border-radius: 10px;
       background: rgba(255,255,255,0.45);
-      color: #4a7a9b;
-      padding: 6px 10px;
-      margin-right: 10px;
-      cursor: pointer;
+      color: #4a7a9b; padding: 6px 10px; margin-right: 10px; cursor: pointer;
     }
 
-    .field-hint {
-      font-size: 0.75rem;
-      color: rgba(74, 122, 155, 0.75);
-    }
+    .field-hint { font-size: 0.75rem; color: rgba(74, 122, 155, 0.75); }
 
     .options-section {
       grid-column: 1 / -1;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+      display: flex; flex-direction: column; gap: 10px;
     }
-
-    .options-section label {
-      margin-bottom: 2px;
-    }
-
-    .option-block {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
+    .options-section label { margin-bottom: 2px; }
+    .option-block { display: flex; flex-direction: column; gap: 6px; }
     .option-row {
       display: grid;
       grid-template-columns: 32px 1fr 1fr 24px;
-      align-items: center;
-      gap: 10px;
+      align-items: center; gap: 10px;
     }
-
     .option-label {
       background: rgba(255,255,255,0.20);
       backdrop-filter: blur(8px);
       color: #4a7a9b;
-      width: 32px;
-      height: 38px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 8px;
-      font-weight: 700;
-      font-size: 0.85rem;
-      flex-shrink: 0;
-      border: 1px solid rgba(255,255,255,0.35);
+      width: 32px; height: 38px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 8px; font-weight: 700; font-size: 0.85rem;
+      flex-shrink: 0; border: 1px solid rgba(255,255,255,0.35);
     }
-
-    .option-row input[type="text"],
-    .option-row input[type="file"] {
-      width: 100%;
-    }
-
+    .option-row input[type="text"], .option-row input[type="file"] { width: 100%; }
     .option-row input[type="radio"] {
-      accent-color: #00e5ff;
-      width: 18px;
-      height: 18px;
-      flex-shrink: 0;
-      cursor: pointer;
+      accent-color: #00e5ff; width: 18px; height: 18px; flex-shrink: 0; cursor: pointer;
     }
 
     .image-preview {
-      display: none;
-      border: 1px dashed rgba(74, 122, 155, 0.35);
-      border-radius: 12px;
-      padding: 10px;
-      background: rgba(255, 255, 255, 0.25);
+      display: none; border: 1px dashed rgba(74, 122, 155, 0.35);
+      border-radius: 12px; padding: 10px; background: rgba(255, 255, 255, 0.25);
     }
+    .image-preview.show { display: block; }
+    .image-preview img { max-width: 100%; max-height: 180px; display: block; border-radius: 10px; }
+    .option-preview { margin-left: 42px; }
+    .correct-hint { font-size: 0.75rem; color: #4a7a9b; margin-top: -4px; }
 
-    .image-preview.show {
-      display: block;
-    }
-
-    .image-preview img {
-      max-width: 100%;
-      max-height: 180px;
-      display: block;
-      border-radius: 10px;
-    }
-
-    .option-preview {
-      margin-left: 42px;
-    }
-
-    .correct-hint {
-      font-size: 0.75rem;
-      color: #4a7a9b;
-      margin-top: -4px;
-    }
-
-    .preview-section {
-      margin-top: 6px;
-    }
-
-    .live-preview {
-      display: grid;
-      gap: 14px;
-    }
-
+    .preview-section { margin-top: 6px; }
+    .live-preview { display: grid; gap: 14px; }
     .preview-card {
       background: rgba(255, 255, 255, 0.22);
       border: 1px solid rgba(255, 255, 255, 0.45);
-      border-radius: 16px;
-      padding: 14px;
+      border-radius: 16px; padding: 14px;
       box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
     }
-
     .preview-title {
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: #4a7a9b;
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
-      margin-bottom: 8px;
+      font-size: 0.75rem; font-weight: 700; color: #4a7a9b;
+      text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px;
     }
-
-    .preview-body {
-      font-size: 0.98rem;
-      color: var(--text-primary);
-      line-height: 1.6;
-      word-break: break-word;
-    }
-
-    .preview-options {
-      display: grid;
-      gap: 10px;
-    }
-
-    .preview-option {
-      display: grid;
-      grid-template-columns: 32px 1fr;
-      gap: 10px;
-      align-items: start;
-    }
-
+    .preview-body { font-size: 0.98rem; color: var(--text-primary); line-height: 1.6; word-break: break-word; }
+    .preview-options { display: grid; gap: 10px; }
+    .preview-option { display: grid; grid-template-columns: 32px 1fr; gap: 10px; align-items: start; }
     .preview-label {
-      background: rgba(255,255,255,0.20);
-      color: #4a7a9b;
-      width: 32px;
-      height: 32px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 8px;
-      font-weight: 700;
-      font-size: 0.85rem;
+      background: rgba(255,255,255,0.20); color: #4a7a9b;
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 8px; font-weight: 700; font-size: 0.85rem;
       border: 1px solid rgba(255,255,255,0.35);
     }
-
-    .preview-empty {
-      color: rgba(74, 122, 155, 0.75);
-      font-size: 0.85rem;
-    }
-
+    .preview-empty { color: rgba(74, 122, 155, 0.75); font-size: 0.85rem; }
     .preview-image {
-      display: none;
-      border: 1px dashed rgba(74, 122, 155, 0.35);
-      border-radius: 12px;
-      padding: 10px;
-      background: rgba(255, 255, 255, 0.25);
-      margin-top: 8px;
+      display: none; border: 1px dashed rgba(74, 122, 155, 0.35);
+      border-radius: 12px; padding: 10px; background: rgba(255, 255, 255, 0.25); margin-top: 8px;
     }
+    .preview-image.show { display: block; }
+    .preview-image img { max-width: 100%; max-height: 180px; display: block; border-radius: 10px; }
+    .preview-math-display { display: block; text-align: center; margin: 0.35rem 0; }
+    .preview-math-inline { display: inline-block; margin: 0 0.2rem; }
 
-    .preview-image.show {
-      display: block;
-    }
-
-    .preview-image img {
-      max-width: 100%;
-      max-height: 180px;
-      display: block;
-      border-radius: 10px;
-    }
-
-    .preview-math-display {
-      display: block;
-      text-align: center;
-      margin: 0.35rem 0;
-    }
-
-    .preview-math-inline {
-      display: inline-block;
-      margin: 0 0.2rem;
-    }
-
-    .btn-bar {
-      grid-column: 1 / -1;
-      display: flex;
-      gap: 12px;
-      margin-top: 8px;
-    }
+    .btn-bar { grid-column: 1 / -1; display: flex; gap: 12px; margin-top: 8px; }
 
     button {
-      padding: 12px 28px;
-      border: none;
-      border-radius: 18px;
-      font-size: 0.95rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-      position: relative;
-      overflow: hidden;
+      padding: 12px 28px; border: none; border-radius: 18px;
+      font-size: 0.95rem; font-weight: 600; cursor: pointer;
+      transition: all 0.2s; position: relative; overflow: hidden;
     }
-
     .btn-submit {
       background: linear-gradient(135deg, #00e5ff, #26c6da);
-      color: var(--text-primary);
-      flex: 1;
-      font-weight: 700;
+      color: var(--text-primary); flex: 1; font-weight: 700;
       box-shadow: 0 4px 20px rgba(0, 229, 255, 0.30);
     }
-
     .btn-submit::after {
-      content: '';
-      position: absolute;
-      bottom: -8px;
-      left: -20%;
-      width: 140%;
-      height: 50%;
+      content: ''; position: absolute; bottom: -8px; left: -20%;
+      width: 140%; height: 50%;
       background: linear-gradient(135deg, var(--liquid-cyan), var(--liquid-teal), var(--liquid-purple));
       border-radius: 60% 60% 0 0 / 40% 40% 0 0;
-      opacity: 0.4;
-      animation: liquidWave 4s ease-in-out infinite alternate;
-      filter: blur(2px);
+      opacity: 0.4; animation: liquidWave 4s ease-in-out infinite alternate; filter: blur(2px);
     }
-
-    .btn-submit:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--glow-cyan);
-    }
-
+    .btn-submit:hover { transform: translateY(-2px); box-shadow: var(--glow-cyan); }
+    .btn-submit:disabled { opacity: 0.45; transform: none; cursor: not-allowed; }
     .btn-reset {
-      background: rgba(255,255,255,0.18);
-      backdrop-filter: blur(10px);
-      color: #4a7a9b;
-      border: 1.5px solid rgba(255,255,255,0.40);
+      background: rgba(255,255,255,0.18); backdrop-filter: blur(10px);
+      color: #4a7a9b; border: 1.5px solid rgba(255,255,255,0.40);
+    }
+    .btn-reset:hover { background: rgba(255,255,255,0.28); color: var(--text-primary); }
+
+    /* ── Mass Upload ── */
+    .mu-section-label {
+      font-size: 0.75rem; font-weight: 700; color: #4a7a9b;
+      text-transform: uppercase; letter-spacing: 0.55px; margin: 20px 0 8px;
+    }
+    .mu-section-label:first-child { margin-top: 0; }
+
+    /* Quiz selector inside mass upload */
+    .mu-quiz-selector {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      background: rgba(0, 229, 255, 0.06);
+      border: 1.5px solid rgba(0, 229, 255, 0.22);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+    .mu-quiz-selector label {
+      display: block; font-size: 0.72rem; font-weight: 700;
+      color: #00a8c6; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px;
+    }
+    .mu-quiz-selector select {
+      width: 100%; font-size: 0.82rem; height: 34px; padding: 0 10px;
+      border-radius: 10px; border: 1.5px solid rgba(255,255,255,0.45);
+      background: rgba(255,255,255,0.20); color: var(--text-glass);
+    }
+    .mu-quiz-selector select:focus { outline: none; border-color: rgba(0,229,255,0.65); }
+
+    .mu-drop {
+      border: 1.5px dashed rgba(255,255,255,0.55);
+      border-radius: 16px; padding: 2.2rem; text-align: center;
+      cursor: pointer; transition: border-color 0.2s, background 0.2s;
+      background: rgba(255,255,255,0.08);
+    }
+    .mu-drop.over { border-color: rgba(0,229,255,0.7); background: rgba(0,229,255,0.07); }
+    .mu-drop.loaded { border-style: solid; border-color: rgba(0,229,255,0.45); }
+    .mu-drop-icon { width: 38px; height: 38px; margin: 0 auto 10px; opacity: 0.5; color: #4a7a9b; }
+    .mu-drop-title { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+    .mu-drop-sub { font-size: 0.8rem; color: rgba(74,122,155,0.8); }
+    .mu-drop-sub u { cursor: pointer; }
+
+    .mu-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 14px 0; }
+    .mu-stat {
+      background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.38);
+      border-radius: 14px; padding: 12px 14px;
+    }
+    .mu-stat-lbl { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #4a7a9b; margin-bottom: 4px; }
+    .mu-stat-val { font-size: 1.5rem; font-weight: 600; color: var(--text-primary); }
+    .mu-stat-val.ok  { color: #0d6f3d; }
+    .mu-stat-val.err { color: #a32d2d; }
+    .mu-stat-val.wrn { color: #854f0b; }
+
+    .mu-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+    .mu-controls select {
+      font-size: 0.82rem; height: 32px; padding: 0 10px; border-radius: 10px;
+      border: 1.5px solid rgba(255,255,255,0.45); background: rgba(255,255,255,0.20); color: var(--text-glass);
+    }
+    .mu-controls select:focus { outline: none; border-color: rgba(0,229,255,0.65); }
+
+    .mu-btn {
+      height: 32px; padding: 0 14px; font-size: 0.82rem; font-weight: 600;
+      border-radius: 10px; border: 1.5px solid rgba(255,255,255,0.42);
+      background: rgba(255,255,255,0.18); color: #4a7a9b; cursor: pointer; transition: all 0.18s;
+    }
+    .mu-btn:hover { background: rgba(255,255,255,0.30); color: var(--text-primary); }
+    .mu-btn.danger { border-color: rgba(220,50,50,0.35); color: #a32d2d; }
+    .mu-btn.danger:hover { background: rgba(254,226,226,0.35); }
+    .mu-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .mu-table-wrap { border: 1px solid rgba(255,255,255,0.40); border-radius: 14px; overflow: hidden; }
+    .mu-table-head {
+      display: grid; grid-template-columns: 44px 1fr 120px 90px 76px;
+      gap: 6px; padding: 7px 12px; font-size: 0.72rem; font-weight: 700;
+      color: #4a7a9b; text-transform: uppercase; letter-spacing: 0.04em;
+      background: rgba(255,255,255,0.10); border-bottom: 1px solid rgba(255,255,255,0.28);
+    }
+    .mu-list { max-height: 300px; overflow-y: auto; }
+    .mu-row {
+      display: grid; grid-template-columns: 44px 1fr 120px 90px 76px;
+      gap: 6px; padding: 9px 12px; font-size: 0.84rem;
+      border-bottom: 1px solid rgba(255,255,255,0.18); align-items: center;
+      cursor: pointer; transition: background 0.15s;
+    }
+    .mu-row:last-child { border-bottom: none; }
+    .mu-row:hover { background: rgba(255,255,255,0.14); }
+    .mu-row.sel { background: rgba(0,229,255,0.10); }
+    .mu-row-num { color: rgba(74,122,155,0.7); font-size: 0.78rem; font-family: 'Courier New', monospace; }
+    .mu-row-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-primary); }
+
+    .mu-badge { display: inline-block; font-size: 0.72rem; padding: 2px 8px; border-radius: 20px; font-weight: 600; }
+    .mu-badge-math  { background: #eaf3de; color: #3b6d11; }
+    .mu-badge-geo   { background: #e6f1fb; color: #185fa5; }
+    .mu-badge-trig  { background: #eeedfe; color: #534ab7; }
+    .mu-badge-arith { background: #faeeda; color: #854f0b; }
+    .mu-badge-other { background: rgba(255,255,255,0.35); color: #4a7a9b; }
+
+    .mu-diff-easy { color: #0d6f3d; font-size: 0.8rem; font-weight: 600; }
+    .mu-diff-med  { color: #854f0b; font-size: 0.8rem; font-weight: 600; }
+    .mu-diff-hard { color: #a32d2d; font-size: 0.8rem; font-weight: 600; }
+    .mu-status-ok  { font-size: 0.78rem; font-weight: 700; color: #0d6f3d; }
+    .mu-status-err { font-size: 0.78rem; font-weight: 700; color: #a32d2d; }
+    .mu-status-dupe {
+      font-size: 0.72rem; font-weight: 600; padding: 2px 7px; border-radius: 20px;
+      background: rgba(250,238,218,0.60); color: #854f0b;
     }
 
-    .btn-reset:hover {
-      background: rgba(255,255,255,0.28);
-      color: var(--text-primary);
-    }
+    .mu-bottom { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 14px; }
+    .mu-sel-label { font-size: 0.82rem; color: rgba(74,122,155,0.9); }
+    .mu-url-input { flex: 1; min-width: 220px; font-size: 0.8rem !important; height: 36px !important; padding: 0 12px !important; }
 
-    /* Toast notification */
+    .mu-progress { margin-top: 12px; display: none; }
+    .mu-prog-bg { height: 6px; background: rgba(255,255,255,0.20); border-radius: 3px; overflow: hidden; margin-bottom: 6px; }
+    .mu-prog-fill { height: 100%; background: linear-gradient(90deg, #00e5ff, #26c6da); border-radius: 3px; transition: width 0.2s; }
+    .mu-prog-label { font-size: 0.78rem; color: rgba(74,122,155,0.9); }
+
+    .mu-log {
+      font-family: 'Courier New', monospace; font-size: 0.78rem;
+      background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.28);
+      border-radius: 12px; padding: 10px 14px; max-height: 130px; overflow-y: auto;
+      margin-top: 10px; display: none;
+    }
+    .mu-log-line { margin-bottom: 2px; color: rgba(74,122,155,0.85); }
+    .mu-log-line.ok  { color: #0d6f3d; }
+    .mu-log-line.err { color: #a32d2d; }
+    .mu-empty { text-align: center; padding: 2.5rem 1rem; color: rgba(74,122,155,0.65); font-size: 0.85rem; }
+
     .toast {
-      position: fixed;
-      top: 24px;
-      right: 24px;
-      padding: 14px 24px;
-      border-radius: 18px;
-      font-weight: 600;
-      font-size: 0.9rem;
-      transform: translateX(120%);
-      transition: transform 0.35s ease;
-      z-index: 1000;
-      max-width: 380px;
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+      position: fixed; top: 24px; right: 24px; padding: 14px 24px;
+      border-radius: 18px; font-weight: 600; font-size: 0.9rem;
+      transform: translateX(120%); transition: transform 0.35s ease;
+      z-index: 1000; max-width: 380px;
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
     }
-
     .toast.show { transform: translateX(0); }
-
     .toast.success {
-      background: rgba(220, 252, 231, 0.85);
-      color: #166534;
-      border: 1px solid rgba(34, 197, 94, 0.40);
-      box-shadow: 0 4px 24px rgba(0, 180, 220, 0.12);
+      background: rgba(220, 252, 231, 0.85); color: #166534;
+      border: 1px solid rgba(34, 197, 94, 0.40); box-shadow: 0 4px 24px rgba(0, 180, 220, 0.12);
     }
-
     .toast.error {
-      background: rgba(254, 226, 226, 0.85);
-      color: #991b1b;
-      border: 1px solid rgba(248, 113, 113, 0.40);
-      box-shadow: 0 4px 24px rgba(220, 50, 50, 0.12);
+      background: rgba(254, 226, 226, 0.85); color: #991b1b;
+      border: 1px solid rgba(248, 113, 113, 0.40); box-shadow: 0 4px 24px rgba(220, 50, 50, 0.12);
     }
 
     @media (max-width: 600px) {
       .form-grid { grid-template-columns: 1fr; }
-      form { padding: 20px; }
-      .option-row {
-        grid-template-columns: 32px 1fr 24px;
-      }
-      .option-row input[type="file"] {
-        grid-column: 2 / -1;
-      }
-      .option-preview {
-        margin-left: 0;
-      }
-      .preview-option {
-        grid-template-columns: 28px 1fr;
-      }
+      .glass-card { padding: 20px; }
+      .quiz-selector-row { grid-template-columns: 1fr; }
+      .option-row { grid-template-columns: 32px 1fr 24px; }
+      .option-row input[type="file"] { grid-column: 2 / -1; }
+      .option-preview { margin-left: 0; }
+      .preview-option { grid-template-columns: 28px 1fr; }
+      .mu-stats { grid-template-columns: repeat(2, 1fr); }
+      .mu-quiz-selector { grid-template-columns: 1fr; }
+      .mu-table-head, .mu-row { grid-template-columns: 36px 1fr 90px 70px; }
+      .mu-table-head span:nth-child(4), .mu-row > *:nth-child(4) { display: none; }
     }
   </style>
 </head>
@@ -488,299 +482,469 @@
 
   <header>
     <h1>SSC Question Bank — Admin</h1>
-    <span>Upload</span>
+    <span class="badge">Upload</span>
   </header>
 
   <div class="container">
-    <form id="questionForm" enctype="multipart/form-data">
-      <div class="form-grid">
 
-        <!-- Subject -->
-        <div class="form-group">
-          <label>Subject <span class="required">*</span></label>
-          <select id="subject" required>
-            <option value="">Select subject</option>
-            <option>Mathematics</option>
-            <option>Reasoning</option>
-            <option>English</option>
-            <option>General Awareness</option>
-          </select>
-        </div>
+    <div class="tab-bar">
+      <button class="tab-btn active" id="tabSingle" onclick="switchTab('single')">Add Single Question</button>
+      <button class="tab-btn" id="tabMass" onclick="switchTab('mass')">Mass Upload (NDJSON)</button>
+    </div>
 
-        <!-- Tier -->
-        <div class="form-group">
-          <label>Tier <span class="required">*</span></label>
-          <select id="tier" required>
-            <option value="">Select tier</option>
-            <option>Tier 1</option>
-            <option>Tier 2</option>
-            <option>Tier 3</option>
-          </select>
-        </div>
+    <!-- ═══════════════════ SINGLE QUESTION TAB ═══════════════════ -->
+    <div class="tab-panel active" id="panelSingle">
+      <div class="glass-card">
+        <form id="questionForm" enctype="multipart/form-data">
+          <div class="form-grid">
 
-        <!-- Exam Name -->
-        <div class="form-group">
-          <label>Exam Name</label>
-          <input type="text" id="exam" placeholder="e.g. SSC CGL">
-        </div>
+            <!-- ── Quiz Target Selector (Subject → Topic → Quiz) ── -->
+            <div class="quiz-selector-row">
+              <div class="quiz-row-label">📂 Add to Quiz</div>
 
-        <!-- Tags -->
-        <div class="form-group">
-          <label>Tags</label>
-          <input type="text" id="tags" placeholder="e.g. mensuration, volume, cone">
-          <p class="field-hint">Comma-separated tags for search and analysis.</p>
-        </div>
+              <div class="form-group">
+                <label>Subject <span class="required">*</span></label>
+                <select id="quizSubject" required onchange="updateQuizTopics('quizSubject','quizTopic','quizName')">
+                  <option value="">Select subject</option>
+                  <option value="mathematics">Mathematics</option>
+                  <option value="reasoning">Reasoning</option>
+                  <option value="english">English</option>
+                  <option value="general-awareness">General Awareness</option>
+                </select>
+              </div>
 
-        <!-- Topic -->
-        <div class="form-group">
-          <label>Topic</label>
-          <select id="chapter" disabled>
-            <option value="">Select topic</option>
-          </select>
-          <p class="field-hint">Select a subject to load its topics.</p>
-        </div>
+              <div class="form-group">
+                <label>Topic <span class="required">*</span></label>
+                <select id="quizTopic" disabled onchange="updateQuizNames('quizSubject','quizTopic','quizName')">
+                  <option value="">Select topic first</option>
+                </select>
+              </div>
 
-        <!-- Concept -->
-        <div class="form-group">
-          <label>Concept</label>
-          <input type="text" id="concept" placeholder="e.g. Quadratic Equations">
-        </div>
-
-        <!-- Difficulty -->
-        <div class="form-group">
-          <label>Difficulty <span class="required">*</span></label>
-          <select id="difficulty" required>
-            <option value="">Select level</option>
-            <option value="easy">Easy</option>
-            <option value="medium">Medium</option>
-            <option value="hard">Hard</option>
-          </select>
-        </div>
-
-        <!-- Formula -->
-        <div class="form-group">
-          <label>Formula</label>
-          <input type="text" id="formula" placeholder="e.g. a² - b² = (a+b)(a-b)">
-        </div>
-
-        <!-- Trap Type -->
-        <div class="form-group">
-          <label>Trap Type</label>
-          <select id="trapType">
-            <option value="">None</option>
-            <option>Sign Error</option>
-            <option>Unit Confusion</option>
-            <option>Partial Calculation</option>
-            <option>Misread Question</option>
-            <option>Approximation Trick</option>
-            <option>Other</option>
-          </select>
-        </div>
-
-        <!-- empty cell for alignment -->
-        <div></div>
-
-        <!-- Question -->
-        <div class="form-group full-width">
-          <label>Question <span class="required">*</span></label>
-          <textarea id="question" placeholder="Type the full question text…"></textarea>
-          <input type="file" id="questionImage" accept="image/*">
-          <div class="image-preview" id="questionImagePreview"></div>
-          <p class="field-hint">Tip: Provide text, an image file, or both. Use \( ... \) or $...$ for inline math, and \[ ... \] or $$...$$ for display math.</p>
-        </div>
-
-        <!-- Options + Correct Answer -->
-        <div class="options-section">
-          <label>Options <span class="required">*</span> &nbsp; <span style="font-weight:400; text-transform:none; color:#64748b;">(text + optional image, select radio for correct answer; KaTeX: \( ... \) or $...$)</span></label>
-
-          <div class="option-block">
-            <div class="option-row">
-              <span class="option-label">A</span>
-              <input type="text" id="optA" placeholder="Option A text">
-              <input type="file" id="optAImage" accept="image/*">
-              <input type="radio" name="correct" value="0" required title="Mark A as correct">
+              <div class="form-group">
+                <label>Quiz <span class="required">*</span></label>
+                <select id="quizName" disabled>
+                  <option value="">Select topic first</option>
+                </select>
+              </div>
             </div>
-            <div class="image-preview option-preview" id="optAImagePreview"></div>
-          </div>
 
-          <div class="option-block">
-            <div class="option-row">
-              <span class="option-label">B</span>
-              <input type="text" id="optB" placeholder="Option B text">
-              <input type="file" id="optBImage" accept="image/*">
-              <input type="radio" name="correct" value="1" title="Mark B as correct">
+            <!-- ── Metadata ── -->
+            <div class="form-group">
+              <label>Subject (metadata)</label>
+              <select id="subject">
+                <option value="">Select subject</option>
+                <option>Mathematics</option>
+                <option>Reasoning</option>
+                <option>English</option>
+                <option>General Awareness</option>
+              </select>
             </div>
-            <div class="image-preview option-preview" id="optBImagePreview"></div>
-          </div>
 
-          <div class="option-block">
-            <div class="option-row">
-              <span class="option-label">C</span>
-              <input type="text" id="optC" placeholder="Option C text">
-              <input type="file" id="optCImage" accept="image/*">
-              <input type="radio" name="correct" value="2" title="Mark C as correct">
+            <div class="form-group">
+              <label>Tier <span class="required">*</span></label>
+              <select id="tier" required>
+                <option value="">Select tier</option>
+                <option>Tier 1</option>
+                <option>Tier 2</option>
+                <option>Tier 3</option>
+              </select>
             </div>
-            <div class="image-preview option-preview" id="optCImagePreview"></div>
-          </div>
 
-          <div class="option-block">
-            <div class="option-row">
-              <span class="option-label">D</span>
-              <input type="text" id="optD" placeholder="Option D text">
-              <input type="file" id="optDImage" accept="image/*">
-              <input type="radio" name="correct" value="3" title="Mark D as correct">
+            <div class="form-group">
+              <label>Exam Name</label>
+              <input type="text" id="exam" placeholder="e.g. SSC CGL">
             </div>
-            <div class="image-preview option-preview" id="optDImagePreview"></div>
-          </div>
 
-          <p class="correct-hint">The selected radio button marks the correct answer.</p>
-        </div>
-
-        <!-- Solution -->
-        <div class="form-group full-width">
-          <label>Solution (Optional)</label>
-          <textarea id="solution" placeholder="Explain the steps, formulas, or reasoning..."></textarea>
-          <input type="file" id="solutionImage" accept="image/*">
-          <div class="image-preview" id="solutionImagePreview"></div>
-          <p class="field-hint">Add detailed steps. Use \( ... \) or $...$ for inline math, and \[ ... \] or $$...$$ for display math.</p>
-        </div>
-
-        <!-- Live Preview -->
-        <div class="form-group full-width preview-section">
-          <label>Live Preview</label>
-          <div class="live-preview">
-            <div class="preview-card">
-              <div class="preview-title">Question</div>
-              <div class="preview-body" id="previewQuestion"></div>
-              <div class="preview-image" id="previewQuestionImage"></div>
+            <div class="form-group">
+              <label>Tags</label>
+              <input type="text" id="tags" placeholder="e.g. mensuration, volume, cone">
+              <p class="field-hint">Comma-separated tags for search and analysis.</p>
             </div>
-            <div class="preview-card">
-              <div class="preview-title">Options</div>
-              <div class="preview-options">
-                <div class="preview-option">
-                  <span class="preview-label">A</span>
-                  <div>
-                    <div class="preview-body" id="previewOptA"></div>
-                    <div class="preview-image" id="previewOptAImage"></div>
+
+            <div class="form-group">
+              <label>Topic</label>
+              <select id="chapter" disabled>
+                <option value="">Select topic</option>
+              </select>
+              <p class="field-hint">Select a subject to load its topics.</p>
+            </div>
+
+            <div class="form-group">
+              <label>Concept</label>
+              <input type="text" id="concept" placeholder="e.g. Quadratic Equations">
+            </div>
+
+            <div class="form-group">
+              <label>Difficulty <span class="required">*</span></label>
+              <select id="difficulty" required>
+                <option value="">Select level</option>
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Formula</label>
+              <input type="text" id="formula" placeholder="e.g. a² - b² = (a+b)(a-b)">
+            </div>
+
+            <div class="form-group">
+              <label>Trap Type</label>
+              <select id="trapType">
+                <option value="">None</option>
+                <option>Sign Error</option>
+                <option>Unit Confusion</option>
+                <option>Partial Calculation</option>
+                <option>Misread Question</option>
+                <option>Approximation Trick</option>
+                <option>Other</option>
+              </select>
+            </div>
+
+            <div></div>
+
+            <div class="form-group full-width">
+              <label>Question <span class="required">*</span></label>
+              <textarea id="question" placeholder="Type the full question text…"></textarea>
+              <input type="file" id="questionImage" accept="image/*">
+              <div class="image-preview" id="questionImagePreview"></div>
+              <p class="field-hint">Use \( ... \) or $...$ for inline math, and \[ ... \] or $$...$$ for display math.</p>
+            </div>
+
+            <div class="options-section">
+              <label>Options <span class="required">*</span> &nbsp; <span style="font-weight:400;text-transform:none;color:#64748b;">(select radio for correct answer)</span></label>
+
+              <div class="option-block">
+                <div class="option-row">
+                  <span class="option-label">A</span>
+                  <input type="text" id="optA" placeholder="Option A text">
+                  <input type="file" id="optAImage" accept="image/*">
+                  <input type="radio" name="correct" value="0" required title="Mark A as correct">
+                </div>
+                <div class="image-preview option-preview" id="optAImagePreview"></div>
+              </div>
+
+              <div class="option-block">
+                <div class="option-row">
+                  <span class="option-label">B</span>
+                  <input type="text" id="optB" placeholder="Option B text">
+                  <input type="file" id="optBImage" accept="image/*">
+                  <input type="radio" name="correct" value="1" title="Mark B as correct">
+                </div>
+                <div class="image-preview option-preview" id="optBImagePreview"></div>
+              </div>
+
+              <div class="option-block">
+                <div class="option-row">
+                  <span class="option-label">C</span>
+                  <input type="text" id="optC" placeholder="Option C text">
+                  <input type="file" id="optCImage" accept="image/*">
+                  <input type="radio" name="correct" value="2" title="Mark C as correct">
+                </div>
+                <div class="image-preview option-preview" id="optCImagePreview"></div>
+              </div>
+
+              <div class="option-block">
+                <div class="option-row">
+                  <span class="option-label">D</span>
+                  <input type="text" id="optD" placeholder="Option D text">
+                  <input type="file" id="optDImage" accept="image/*">
+                  <input type="radio" name="correct" value="3" title="Mark D as correct">
+                </div>
+                <div class="image-preview option-preview" id="optDImagePreview"></div>
+              </div>
+
+              <p class="correct-hint">The selected radio button marks the correct answer.</p>
+            </div>
+
+            <div class="form-group full-width">
+              <label>Solution (Optional)</label>
+              <textarea id="solution" placeholder="Explain the steps, formulas, or reasoning..."></textarea>
+              <input type="file" id="solutionImage" accept="image/*">
+              <div class="image-preview" id="solutionImagePreview"></div>
+              <p class="field-hint">Use \( ... \) or $...$ for inline math, and \[ ... \] or $$...$$ for display math.</p>
+            </div>
+
+            <div class="form-group full-width preview-section">
+              <label>Live Preview</label>
+              <div class="live-preview">
+                <div class="preview-card">
+                  <div class="preview-title">Question</div>
+                  <div class="preview-body" id="previewQuestion"></div>
+                  <div class="preview-image" id="previewQuestionImage"></div>
+                </div>
+                <div class="preview-card">
+                  <div class="preview-title">Options</div>
+                  <div class="preview-options">
+                    <div class="preview-option"><span class="preview-label">A</span><div><div class="preview-body" id="previewOptA"></div><div class="preview-image" id="previewOptAImage"></div></div></div>
+                    <div class="preview-option"><span class="preview-label">B</span><div><div class="preview-body" id="previewOptB"></div><div class="preview-image" id="previewOptBImage"></div></div></div>
+                    <div class="preview-option"><span class="preview-label">C</span><div><div class="preview-body" id="previewOptC"></div><div class="preview-image" id="previewOptCImage"></div></div></div>
+                    <div class="preview-option"><span class="preview-label">D</span><div><div class="preview-body" id="previewOptD"></div><div class="preview-image" id="previewOptDImage"></div></div></div>
                   </div>
                 </div>
-                <div class="preview-option">
-                  <span class="preview-label">B</span>
-                  <div>
-                    <div class="preview-body" id="previewOptB"></div>
-                    <div class="preview-image" id="previewOptBImage"></div>
-                  </div>
-                </div>
-                <div class="preview-option">
-                  <span class="preview-label">C</span>
-                  <div>
-                    <div class="preview-body" id="previewOptC"></div>
-                    <div class="preview-image" id="previewOptCImage"></div>
-                  </div>
-                </div>
-                <div class="preview-option">
-                  <span class="preview-label">D</span>
-                  <div>
-                    <div class="preview-body" id="previewOptD"></div>
-                    <div class="preview-image" id="previewOptDImage"></div>
-                  </div>
+                <div class="preview-card">
+                  <div class="preview-title">Solution</div>
+                  <div class="preview-body" id="previewSolution"></div>
+                  <div class="preview-image" id="previewSolutionImage"></div>
                 </div>
               </div>
             </div>
-            <div class="preview-card">
-              <div class="preview-title">Solution</div>
-              <div class="preview-body" id="previewSolution"></div>
-              <div class="preview-image" id="previewSolutionImage"></div>
+
+            <div class="btn-bar">
+              <button type="submit" class="btn-submit">Add Question</button>
+              <button type="reset" class="btn-reset">Clear</button>
             </div>
+
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ═══════════════════ MASS UPLOAD TAB ═══════════════════ -->
+    <div class="tab-panel" id="panelMass">
+      <div class="glass-card">
+
+        <p class="mu-section-label">1. Target Quiz</p>
+
+        <!-- Quiz selector for mass upload -->
+        <div class="mu-quiz-selector">
+          <div>
+            <label>Subject</label>
+            <select id="muQuizSubject" onchange="updateQuizTopics('muQuizSubject','muQuizTopic','muQuizName')">
+              <option value="">Select subject</option>
+              <option value="mathematics">Mathematics</option>
+              <option value="reasoning">Reasoning</option>
+              <option value="english">English</option>
+              <option value="general-awareness">General Awareness</option>
+            </select>
+          </div>
+          <div>
+            <label>Topic</label>
+            <select id="muQuizTopic" disabled onchange="updateQuizNames('muQuizSubject','muQuizTopic','muQuizName')">
+              <option value="">Select subject first</option>
+            </select>
+          </div>
+          <div>
+            <label>Quiz</label>
+            <select id="muQuizName" disabled>
+              <option value="">Select topic first</option>
+            </select>
           </div>
         </div>
 
-        <!-- Buttons -->
-        <div class="btn-bar">
-          <button type="submit" class="btn-submit">Add Question</button>
-          <button type="reset" class="btn-reset">Clear</button>
+        <p class="mu-section-label">2. Load File</p>
+
+        <div class="mu-drop" id="muDrop">
+          <div class="mu-drop-icon">
+            <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg" width="38" height="38">
+              <rect x="7" y="4" width="24" height="30" rx="3" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M13 15h12M13 20h8M13 25h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <circle cx="28" cy="28" r="8" fill="white" fill-opacity="0.6" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M28 24.5v7M25 28h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="mu-drop-title">Drop .ndjson / .jsonl file here</div>
+          <div class="mu-drop-sub">or <u id="muBrowseLink">browse files</u> — one JSON object per line</div>
+          <input type="file" id="muFileInput" accept=".ndjson,.jsonl,.json" style="display:none">
+        </div>
+
+        <div class="mu-stats" id="muStats" style="display:none">
+          <div class="mu-stat"><div class="mu-stat-lbl">Total</div><div class="mu-stat-val" id="muTotal">0</div></div>
+          <div class="mu-stat"><div class="mu-stat-lbl">Valid</div><div class="mu-stat-val ok" id="muValid">0</div></div>
+          <div class="mu-stat"><div class="mu-stat-lbl">Errors</div><div class="mu-stat-val err" id="muErrors">0</div></div>
+          <div class="mu-stat"><div class="mu-stat-lbl">Duplicates</div><div class="mu-stat-val wrn" id="muDupes">0</div></div>
+        </div>
+
+        <div id="muMainPanel" style="display:none">
+          <p class="mu-section-label">3. Review & Filter</p>
+
+          <div class="mu-controls">
+            <select id="muFilterSubj">
+              <option value="">All subjects</option>
+              <option>Mathematics</option>
+              <option>Geometry</option>
+              <option>Trigonometry</option>
+              <option>Arithmetic</option>
+              <option>Algebra</option>
+              <option>Mensuration</option>
+              <option>Reasoning</option>
+              <option>English</option>
+            </select>
+            <select id="muFilterDiff">
+              <option value="">All difficulty</option>
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+            <select id="muFilterStatus">
+              <option value="">All status</option>
+              <option value="valid">Valid only</option>
+              <option value="error">Errors only</option>
+              <option value="duplicate">Duplicates only</option>
+            </select>
+            <span style="flex:1"></span>
+            <button class="mu-btn" id="muSelectAll">Select all</button>
+            <button class="mu-btn" id="muDeselectAll">Deselect</button>
+            <button class="mu-btn danger" id="muRemoveSel">Remove selected</button>
+          </div>
+
+          <div id="muTableLabel" style="font-size:0.78rem;color:rgba(74,122,155,0.8);margin-bottom:6px;">0 questions</div>
+          <div class="mu-table-wrap">
+            <div class="mu-table-head">
+              <span>#</span><span>Question</span><span>Subject</span><span>Difficulty</span><span>Status</span>
+            </div>
+            <div class="mu-list" id="muList">
+              <div class="mu-empty">No questions loaded</div>
+            </div>
+          </div>
+
+          <p class="mu-section-label">4. Upload</p>
+
+          <div class="mu-bottom">
+            <span class="mu-sel-label" id="muSelLabel">0 selected</span>
+            <input type="text" id="muApiUrl" class="mu-url-input"
+              placeholder="Backend URL  e.g. https://mocktest-backend-243h.onrender.com/api/questions/bulk">
+            <button class="mu-btn btn-submit" id="muUploadBtn" disabled
+              style="padding:0 20px;height:36px;font-size:0.85rem;border-radius:14px;flex-shrink:0;">
+              Upload selected ↗
+            </button>
+            <button class="mu-btn" id="muClearBtn">Clear</button>
+          </div>
+
+          <div class="mu-progress" id="muProgress">
+            <div class="mu-prog-bg"><div class="mu-prog-fill" id="muProgFill" style="width:0%"></div></div>
+            <div class="mu-prog-label" id="muProgLabel">Uploading…</div>
+          </div>
+          <div class="mu-log" id="muLog"></div>
         </div>
 
       </div>
-    </form>
+    </div>
+
   </div>
 
   <div class="toast" id="toast"></div>
+
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
   <script>
+    // ─────────────────────────────────────────────
+    //  QUIZ STRUCTURE — mirrors your Next.js routes
+    //  mathematics/algebra/quiz, mathematics/trigonometry/quiz etc.
+    // ─────────────────────────────────────────────
+    const QUIZ_MODES = [
+      'Concept Drill',
+      'Formula Bank',
+      'Speed Test',
+      'Challenge',
+      'Topic Mix',
+      'Revision'
+    ];
+
+    const QUIZ_TREE = {
+      mathematics: {
+        label: 'Mathematics',
+        topics: {
+          algebra:                { label: 'Algebra',                quizzes: QUIZ_MODES },
+          arithmetic:             { label: 'Arithmetic',             quizzes: QUIZ_MODES },
+          geometry:               { label: 'Geometry',               quizzes: QUIZ_MODES },
+          mensuration:            { label: 'Mensuration',            quizzes: QUIZ_MODES },
+          'number-system':        { label: 'Number System',          quizzes: QUIZ_MODES },
+          'statistics-probability': { label: 'Statistics & Probability', quizzes: QUIZ_MODES },
+          trigonometry:           { label: 'Trigonometry',           quizzes: QUIZ_MODES },
+        }
+      },
+      reasoning: {
+        label: 'Reasoning',
+        topics: {
+          reasoning: { label: 'Reasoning', quizzes: QUIZ_MODES },
+        }
+      },
+      english: {
+        label: 'English',
+        topics: {
+          english: { label: 'English', quizzes: QUIZ_MODES },
+        }
+      },
+      'general-awareness': {
+        label: 'General Awareness',
+        topics: {
+          'general-awareness': { label: 'General Awareness', quizzes: QUIZ_MODES },
+        }
+      },
+    };
+
+    // ─────────────────────────────────────────────
+    //  QUIZ DROPDOWN CASCADE
+    // ─────────────────────────────────────────────
+    function updateQuizTopics(subjId, topicId, nameId) {
+      const subj = document.getElementById(subjId).value;
+      const topicSel = document.getElementById(topicId);
+      const nameSel = document.getElementById(nameId);
+
+      topicSel.innerHTML = '<option value="">Select topic</option>';
+      nameSel.innerHTML = '<option value="">Select topic first</option>';
+      topicSel.disabled = true;
+      nameSel.disabled = true;
+
+      if (!subj || !QUIZ_TREE[subj]) return;
+      const topics = QUIZ_TREE[subj].topics;
+      Object.entries(topics).forEach(([key, val]) => {
+        const opt = document.createElement('option');
+        opt.value = key; opt.textContent = val.label;
+        topicSel.appendChild(opt);
+      });
+      topicSel.disabled = false;
+    }
+
+    function updateQuizNames(subjId, topicId, nameId) {
+      const subj = document.getElementById(subjId).value;
+      const topic = document.getElementById(topicId).value;
+      const nameSel = document.getElementById(nameId);
+
+      nameSel.innerHTML = '<option value="">Select quiz</option>';
+      nameSel.disabled = true;
+
+      if (!subj || !topic || !QUIZ_TREE[subj]?.topics[topic]) return;
+      const quizzes = QUIZ_TREE[subj].topics[topic].quizzes;
+      quizzes.forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name; opt.textContent = name;
+        nameSel.appendChild(opt);
+      });
+      nameSel.disabled = false;
+    }
+
+    // ─────────────────────────────────────────────
+    //  TAB SWITCHER
+    // ─────────────────────────────────────────────
+    function switchTab(tab) {
+      document.getElementById('tabSingle').classList.toggle('active', tab === 'single');
+      document.getElementById('tabMass').classList.toggle('active', tab === 'mass');
+      document.getElementById('panelSingle').classList.toggle('active', tab === 'single');
+      document.getElementById('panelMass').classList.toggle('active', tab === 'mass');
+    }
+
+    // ─────────────────────────────────────────────
+    //  TOAST
+    // ─────────────────────────────────────────────
+    function showToast(message, type) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = 'toast ' + type + ' show';
+      setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+    // ─────────────────────────────────────────────
+    //  SINGLE QUESTION
+    // ─────────────────────────────────────────────
     const API_URL = 'http://localhost:5000/api/questions';
 
     const SUBJECT_TOPICS = {
-      Mathematics: [
-        'Number System',
-        'Arithmetic',
-        'Algebra',
-        'Geometry',
-        'Mensuration',
-        'Trigonometry',
-        'Statistics & Probability'
-      ],
-      Reasoning: [
-        'Coding & Decoding',
-        'Syllogism & Inferences',
-        'Puzzle & Seating Arrangement',
-        'Series',
-        'Analogy',
-        'Classification (Odd One Out)',
-        'Blood Relations',
-        'Direction & Distance',
-        'Venn Diagram',
-        'Inequalities',
-        'Mathematical & Symbolic Operations',
-        'Order & Ranking',
-        'Statement & Conclusion',
-        'Statement & Assumptions',
-        'Statement & Arguments',
-        'Problem Solving & Critical Thinking',
-        'Non-Verbal Figures',
-        'Paper Folding & Cutting',
-        'Mirror & Water Image',
-        'Cube & Dice',
-        'Matrix',
-        'Logical Sequence of Words',
-        'Emotional Intelligence',
-        'Social Intelligence',
-        'Word Building'
-      ],
-      English: [
-        'Synonyms & Antonyms',
-        'Homonyms & Homophones',
-        'One Word Substitution',
-        'Idioms & Phrases',
-        'Spelling / Misspelled Words',
-        'Active & Passive Voice',
-        'Direct & Indirect Narration',
-        'Subject-Verb Agreement',
-        'Tenses',
-        'Articles',
-        'Prepositions',
-        'Conjunctions',
-        'Modifiers',
-        'Pronouns',
-        'Sentence Structure',
-        'Parallelism',
-        'Spot the Error / Error Detection',
-        'Sentence Correction / Improvement',
-        'Fill in the Blanks',
-        'Cloze Test',
-        'Reading Comprehension',
-        'Para-Jumbles',
-        'Para / Sentence Completion'
-      ],
-      'General Awareness': [
-        'History',
-        'Polity',
-        'Geography',
-        'Economics',
-        'General Science',
-        'Current Affairs',
-        'Static GK'
-      ]
+      Mathematics: ['Number System','Arithmetic','Algebra','Geometry','Mensuration','Trigonometry','Statistics & Probability'],
+      Reasoning: ['Coding & Decoding','Syllogism & Inferences','Puzzle & Seating Arrangement','Series','Analogy','Classification (Odd One Out)','Blood Relations','Direction & Distance','Venn Diagram','Inequalities','Mathematical & Symbolic Operations','Order & Ranking','Statement & Conclusion','Statement & Assumptions','Statement & Arguments','Problem Solving & Critical Thinking','Non-Verbal Figures','Paper Folding & Cutting','Mirror & Water Image','Cube & Dice','Matrix','Logical Sequence of Words','Emotional Intelligence','Social Intelligence','Word Building'],
+      English: ['Synonyms & Antonyms','Homonyms & Homophones','One Word Substitution','Idioms & Phrases','Spelling / Misspelled Words','Active & Passive Voice','Direct & Indirect Narration','Subject-Verb Agreement','Tenses','Articles','Prepositions','Conjunctions','Modifiers','Pronouns','Sentence Structure','Parallelism','Spot the Error / Error Detection','Sentence Correction / Improvement','Fill in the Blanks','Cloze Test','Reading Comprehension','Para-Jumbles','Para / Sentence Completion'],
+      'General Awareness': ['History','Polity','Geography','Economics','General Science','Current Affairs','Static GK']
     };
 
     function updateTopicOptions() {
@@ -788,134 +952,75 @@
       const topicSelect = document.getElementById('chapter');
       const subject = subjectSelect.value;
       const topics = SUBJECT_TOPICS[subject] || [];
-
       topicSelect.innerHTML = '';
       const placeholder = document.createElement('option');
-      placeholder.value = '';
-      placeholder.textContent = 'Select topic';
+      placeholder.value = ''; placeholder.textContent = 'Select topic';
       topicSelect.appendChild(placeholder);
-
-      topics.forEach((topic) => {
+      topics.forEach(topic => {
         const option = document.createElement('option');
-        option.value = topic;
-        option.textContent = topic;
+        option.value = topic; option.textContent = topic;
         topicSelect.appendChild(option);
       });
-
       topicSelect.disabled = topics.length === 0;
-      if (topicSelect.disabled) {
-        topicSelect.value = '';
-      }
+      if (topicSelect.disabled) topicSelect.value = '';
     }
 
     function updateImagePreview(inputId, previewId) {
       const input = document.getElementById(inputId);
       const preview = document.getElementById(previewId);
       if (!input || !preview) return;
-
       const file = input.files && input.files[0];
       const previousUrl = preview.dataset.objectUrl;
-      if (previousUrl) {
-        URL.revokeObjectURL(previousUrl);
-        delete preview.dataset.objectUrl;
-      }
-
-      if (!file) {
-        preview.classList.remove('show');
-        preview.textContent = '';
-        return;
-      }
-
+      if (previousUrl) { URL.revokeObjectURL(previousUrl); delete preview.dataset.objectUrl; }
+      if (!file) { preview.classList.remove('show'); preview.textContent = ''; return; }
       preview.textContent = '';
       const img = document.createElement('img');
       const objectUrl = URL.createObjectURL(file);
       preview.dataset.objectUrl = objectUrl;
-      img.src = objectUrl;
-      img.alt = 'Image preview';
-      preview.appendChild(img);
-      preview.classList.add('show');
+      img.src = objectUrl; img.alt = 'Image preview';
+      preview.appendChild(img); preview.classList.add('show');
     }
 
     function clearImagePreviews() {
-      const previews = document.querySelectorAll('.image-preview, .preview-image');
-      previews.forEach((preview) => {
-        const objectUrl = preview.dataset.objectUrl;
-        if (objectUrl) {
-          URL.revokeObjectURL(objectUrl);
-          delete preview.dataset.objectUrl;
-        }
-        preview.classList.remove('show');
-        preview.textContent = '';
+      document.querySelectorAll('.image-preview, .preview-image').forEach(preview => {
+        const url = preview.dataset.objectUrl;
+        if (url) { URL.revokeObjectURL(url); delete preview.dataset.objectUrl; }
+        preview.classList.remove('show'); preview.textContent = '';
       });
     }
 
     function escapeHtml(value) {
-      return String(value)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
+      return String(value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
     }
 
     function splitMathParts(input) {
       const parts = [];
       const safeInput = String(input || '').replace(/\\\$/g, '__DOLLAR__');
       const regex = /\\\[([\s\S]*?)\\\]|\\\(([\s\S]*?)\\\)|\$\$([\s\S]*?)\$\$|\$([^\n$]+?)\$/g;
-      let lastIndex = 0;
-      let match = null;
-
+      let lastIndex = 0, match = null;
       while ((match = regex.exec(safeInput)) !== null) {
-        if (match.index > lastIndex) {
-          parts.push({ type: 'text', content: safeInput.slice(lastIndex, match.index) });
-        }
-        if (match[1] !== undefined) {
-          parts.push({ type: 'display', content: match[1].trim() });
-        } else if (match[2] !== undefined) {
-          parts.push({ type: 'inline', content: match[2].trim() });
-        } else if (match[3] !== undefined) {
-          parts.push({ type: 'display', content: match[3].trim() });
-        } else if (match[4] !== undefined) {
-          parts.push({ type: 'inline', content: match[4].trim() });
-        }
+        if (match.index > lastIndex) parts.push({ type: 'text', content: safeInput.slice(lastIndex, match.index) });
+        if (match[1] !== undefined) parts.push({ type: 'display', content: match[1].trim() });
+        else if (match[2] !== undefined) parts.push({ type: 'inline', content: match[2].trim() });
+        else if (match[3] !== undefined) parts.push({ type: 'display', content: match[3].trim() });
+        else if (match[4] !== undefined) parts.push({ type: 'inline', content: match[4].trim() });
         lastIndex = regex.lastIndex;
       }
-
-      if (lastIndex < safeInput.length) {
-        parts.push({ type: 'text', content: safeInput.slice(lastIndex) });
-      }
-
-      return parts.map((part) => ({
-        ...part,
-        content: part.content.replace(/__DOLLAR__/g, '$'),
-      }));
+      if (lastIndex < safeInput.length) parts.push({ type: 'text', content: safeInput.slice(lastIndex) });
+      return parts.map(p => ({ ...p, content: p.content.replace(/__DOLLAR__/g, '$') }));
     }
 
     function renderMathHtml(text) {
       if (!text) return '';
       const parts = splitMathParts(text);
       const hasKatex = typeof window.katex !== 'undefined';
-
-      return parts.map((part) => {
-        if (part.type === 'text') {
-          return escapeHtml(part.content).replace(/\n/g, '<br>');
-        }
-
-        if (!hasKatex) {
-          return escapeHtml(part.content);
-        }
-
+      return parts.map(part => {
+        if (part.type === 'text') return escapeHtml(part.content).replace(/\n/g, '<br>');
+        if (!hasKatex) return escapeHtml(part.content);
         const mathContent = part.content.replace(/(\d+)\s*\/\s*(\d+)/g, '\\tfrac{$1}{$2}');
         let html = '';
-        try {
-          html = window.katex.renderToString(mathContent, {
-            throwOnError: false,
-            displayMode: part.type === 'display',
-          });
-        } catch {
-          html = escapeHtml(part.content);
-        }
-
+        try { html = window.katex.renderToString(mathContent, { throwOnError: false, displayMode: part.type === 'display' }); }
+        catch { html = escapeHtml(part.content); }
         return part.type === 'display'
           ? `<span class="preview-math-display">${html}</span>`
           : `<span class="preview-math-inline">${html}</span>`;
@@ -935,28 +1040,16 @@
       const input = document.getElementById(inputId);
       const preview = document.getElementById(previewId);
       if (!input || !preview) return;
-
       const file = input.files && input.files[0];
       const previousUrl = preview.dataset.objectUrl;
-      if (previousUrl) {
-        URL.revokeObjectURL(previousUrl);
-        delete preview.dataset.objectUrl;
-      }
-
+      if (previousUrl) { URL.revokeObjectURL(previousUrl); delete preview.dataset.objectUrl; }
       preview.textContent = '';
-
-      if (!file) {
-        preview.classList.remove('show');
-        return;
-      }
-
+      if (!file) { preview.classList.remove('show'); return; }
       const img = document.createElement('img');
       const objectUrl = URL.createObjectURL(file);
       preview.dataset.objectUrl = objectUrl;
-      img.src = objectUrl;
-      img.alt = 'Preview image';
-      preview.appendChild(img);
-      preview.classList.add('show');
+      img.src = objectUrl; img.alt = 'Preview image';
+      preview.appendChild(img); preview.classList.add('show');
     }
 
     function updateAllPreviews(includeImages = false) {
@@ -966,7 +1059,6 @@
       updatePreviewText('optC', 'previewOptC');
       updatePreviewText('optD', 'previewOptD');
       updatePreviewText('solution', 'previewSolution');
-
       if (!includeImages) return;
       updatePreviewImage('questionImage', 'previewQuestionImage');
       updatePreviewImage('optAImage', 'previewOptAImage');
@@ -976,7 +1068,7 @@
       updatePreviewImage('solutionImage', 'previewSolutionImage');
     }
 
-    ['questionImage', 'optAImage', 'optBImage', 'optCImage', 'optDImage', 'solutionImage'].forEach((id) => {
+    ['questionImage','optAImage','optBImage','optCImage','optDImage','solutionImage'].forEach(id => {
       const previewId = `${id}Preview`;
       const input = document.getElementById(id);
       if (input) {
@@ -988,7 +1080,7 @@
       }
     });
 
-    ['question', 'optA', 'optB', 'optC', 'optD', 'solution'].forEach((id) => {
+    ['question','optA','optB','optC','optD','solution'].forEach(id => {
       const input = document.getElementById(id);
       if (input) {
         input.addEventListener('input', () => updateAllPreviews(false));
@@ -997,70 +1089,49 @@
     });
 
     const subjectSelect = document.getElementById('subject');
-    if (subjectSelect) {
-      subjectSelect.addEventListener('change', updateTopicOptions);
-      updateTopicOptions();
-    }
-
+    if (subjectSelect) { subjectSelect.addEventListener('change', updateTopicOptions); updateTopicOptions(); }
     updateAllPreviews(true);
-
-    function showToast(message, type) {
-      const toast = document.getElementById('toast');
-      toast.textContent = message;
-      toast.className = 'toast ' + type + ' show';
-      setTimeout(() => toast.classList.remove('show'), 3500);
-    }
 
     document.getElementById('questionForm').addEventListener('submit', async (e) => {
       e.preventDefault();
 
+      // Validate quiz selection
+      const quizSubject = document.getElementById('quizSubject').value;
+      const quizTopic   = document.getElementById('quizTopic').value;
+      const quizName    = document.getElementById('quizName').value;
+      if (!quizSubject || !quizTopic || !quizName) {
+        showToast('Please select a target quiz (Subject → Topic → Quiz)', 'error'); return;
+      }
+
       const questionText = document.getElementById('question').value.trim();
       const questionImage = document.getElementById('questionImage').files[0];
-
-      if (!questionText && !questionImage) {
-        showToast('Please add question text or an image file', 'error');
-        return;
-      }
-
-      const optionTexts = [
-        document.getElementById('optA').value.trim(),
-        document.getElementById('optB').value.trim(),
-        document.getElementById('optC').value.trim(),
-        document.getElementById('optD').value.trim()
-      ];
-      const optionFiles = [
-        document.getElementById('optAImage').files[0],
-        document.getElementById('optBImage').files[0],
-        document.getElementById('optCImage').files[0],
-        document.getElementById('optDImage').files[0]
-      ];
-
+      if (!questionText && !questionImage) { showToast('Please add question text or an image file', 'error'); return; }
+      const optionTexts = ['optA','optB','optC','optD'].map(id => document.getElementById(id).value.trim());
+      const optionFiles = ['optAImage','optBImage','optCImage','optDImage'].map(id => document.getElementById(id).files[0]);
       const emptyIndex = optionTexts.findIndex((text, index) => !text && !optionFiles[index]);
-      if (emptyIndex !== -1) {
-        showToast('Each option needs text or an image file', 'error');
-        return;
-      }
-
+      if (emptyIndex !== -1) { showToast('Each option needs text or an image file', 'error'); return; }
       const correctRadio = document.querySelector('input[name="correct"]:checked');
-      if (!correctRadio) {
-        showToast('Please select the correct answer', 'error');
-        return;
-      }
-
+      if (!correctRadio) { showToast('Please select the correct answer', 'error'); return; }
       const correctIndex = parseInt(correctRadio.value, 10);
+
       const formData = new FormData();
       const solutionText = document.getElementById('solution').value.trim();
       const solutionImage = document.getElementById('solutionImage').files[0];
 
-      formData.append('subject', document.getElementById('subject').value);
-      formData.append('tier', document.getElementById('tier').value);
-      formData.append('exam', document.getElementById('exam').value.trim());
-      formData.append('chapter', document.getElementById('chapter').value);
-      formData.append('concept', document.getElementById('concept').value.trim());
-      formData.append('difficulty', document.getElementById('difficulty').value);
-      formData.append('formula', document.getElementById('formula').value.trim());
-      formData.append('trapType', document.getElementById('trapType').value);
-      formData.append('tags', document.getElementById('tags').value.trim());
+      // Quiz target fields
+      formData.append('quizSubject', quizSubject);
+      formData.append('quizTopic',   quizTopic);
+      formData.append('quizName',    quizName);
+
+      formData.append('subject',     document.getElementById('subject').value);
+      formData.append('tier',        document.getElementById('tier').value);
+      formData.append('exam',        document.getElementById('exam').value.trim());
+      formData.append('chapter',     document.getElementById('chapter').value);
+      formData.append('concept',     document.getElementById('concept').value.trim());
+      formData.append('difficulty',  document.getElementById('difficulty').value);
+      formData.append('formula',     document.getElementById('formula').value.trim());
+      formData.append('trapType',    document.getElementById('trapType').value);
+      formData.append('tags',        document.getElementById('tags').value.trim());
       formData.append('questionText', questionText);
       formData.append('optionAText', optionTexts[0]);
       formData.append('optionBText', optionTexts[1]);
@@ -1068,7 +1139,6 @@
       formData.append('optionDText', optionTexts[3]);
       formData.append('correctIndex', String(correctIndex));
       formData.append('solutionText', solutionText);
-
       if (questionImage) formData.append('questionImage', questionImage);
       if (optionFiles[0]) formData.append('optionAImage', optionFiles[0]);
       if (optionFiles[1]) formData.append('optionBImage', optionFiles[1]);
@@ -1077,36 +1147,259 @@
       if (solutionImage) formData.append('solutionImage', solutionImage);
 
       try {
-        const res = await fetch(API_URL, {
-          method: 'POST',
-          body: formData
-        });
-
+        const res = await fetch(API_URL, { method: 'POST', body: formData });
         let data = {};
-        try {
-          data = await res.json();
-        } catch {
-          data = {};
-        }
-
+        try { data = await res.json(); } catch { data = {}; }
         if (res.ok) {
-          showToast('Question #' + data.question.id + ' added!', 'success');
+          showToast('Question #' + data.question.id + ' added to ' + quizName + '!', 'success');
           document.getElementById('questionForm').reset();
           clearImagePreviews();
         } else {
           showToast(data.error || 'Failed to add question', 'error');
         }
-      } catch (err) {
-        showToast('Server unreachable — is the backend running?', 'error');
-      }
+      } catch { showToast('Server unreachable — is the backend running?', 'error'); }
     });
 
     document.getElementById('questionForm').addEventListener('reset', () => {
-      clearImagePreviews();
-      updateTopicOptions();
-      updateAllPreviews(true);
+      clearImagePreviews(); updateTopicOptions(); updateAllPreviews(true);
+      // Reset quiz dropdowns
+      document.getElementById('quizTopic').innerHTML = '<option value="">Select topic first</option>';
+      document.getElementById('quizTopic').disabled = true;
+      document.getElementById('quizName').innerHTML = '<option value="">Select topic first</option>';
+      document.getElementById('quizName').disabled = true;
     });
-  </script>
 
+    // ─────────────────────────────────────────────
+    //  MASS UPLOAD
+    // ─────────────────────────────────────────────
+    let muAll = [];
+    let muSelected = new Set();
+    let muFiltered = [];
+
+    const muDrop = document.getElementById('muDrop');
+    const muFileInput = document.getElementById('muFileInput');
+    const muList = document.getElementById('muList');
+    const muUploadBtn = document.getElementById('muUploadBtn');
+    const muLog = document.getElementById('muLog');
+
+    document.getElementById('muBrowseLink').onclick = () => muFileInput.click();
+    muDrop.onclick = (e) => { if (e.target.id !== 'muBrowseLink') muFileInput.click(); };
+    muFileInput.onchange = (e) => muProcessFile(e.target.files[0]);
+
+    muDrop.addEventListener('dragover', e => { e.preventDefault(); muDrop.classList.add('over'); });
+    muDrop.addEventListener('dragleave', () => muDrop.classList.remove('over'));
+    muDrop.addEventListener('drop', e => {
+      e.preventDefault(); muDrop.classList.remove('over');
+      if (e.dataTransfer.files[0]) muProcessFile(e.dataTransfer.files[0]);
+    });
+
+    function muProcessFile(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const lines = e.target.result.split('\n').filter(l => l.trim());
+        const seenIds = new Set();
+        muAll = [];
+        lines.forEach((line, i) => {
+          let q, status = 'valid', issues = [];
+          try { q = JSON.parse(line); }
+          catch { muAll.push({ _idx: i, _raw: line.substring(0, 80), _status: 'error', _issue: 'JSON parse error' }); return; }
+          if (!q.question && !q.questionText && !q.q) issues.push('missing question text');
+          if (!q.options && !q.choices && !q.answers && !(q.optionA || q.optionAText)) issues.push('missing options');
+          if (!q.answer && !q.correctAnswer && !q.correct && q.correctIndex === undefined) issues.push('missing answer');
+          const id = q._id || q.id || q.questionId || null;
+          if (id && seenIds.has(String(id))) { status = 'duplicate'; issues.push('duplicate id'); }
+          else if (id) seenIds.add(String(id));
+          if (issues.length && status === 'valid') status = 'error';
+          muAll.push({ ...q, _idx: i, _status: status, _issue: issues.join(', ') });
+        });
+        muSelected = new Set(muAll.filter(q => q._status === 'valid').map(q => q._idx));
+        muUpdateStats(); muApplyFilter();
+        muDrop.classList.add('loaded');
+        muDrop.querySelector('.mu-drop-title').textContent = file.name;
+        muDrop.querySelector('.mu-drop-sub').textContent = `${lines.length} lines parsed`;
+        document.getElementById('muStats').style.display = 'grid';
+        document.getElementById('muMainPanel').style.display = 'block';
+      };
+      reader.readAsText(file);
+    }
+
+    function muUpdateStats() {
+      document.getElementById('muTotal').textContent  = muAll.length;
+      document.getElementById('muValid').textContent  = muAll.filter(q => q._status === 'valid').length;
+      document.getElementById('muErrors').textContent = muAll.filter(q => q._status === 'error').length;
+      document.getElementById('muDupes').textContent  = muAll.filter(q => q._status === 'duplicate').length;
+    }
+
+    function muApplyFilter() {
+      const subj   = document.getElementById('muFilterSubj').value.toLowerCase();
+      const diff   = document.getElementById('muFilterDiff').value.toLowerCase();
+      const status = document.getElementById('muFilterStatus').value;
+      muFiltered = muAll.filter(q => {
+        const qSubj = (q.subject || q.topic || q.category || '').toLowerCase();
+        const qDiff = (q.difficulty || q.level || '').toLowerCase();
+        if (subj && !qSubj.includes(subj)) return false;
+        if (diff && qDiff !== diff) return false;
+        if (status && q._status !== status) return false;
+        return true;
+      });
+      document.getElementById('muTableLabel').textContent = `${muFiltered.length} question${muFiltered.length !== 1 ? 's' : ''} shown`;
+      muRenderList();
+    }
+
+    document.getElementById('muFilterSubj').onchange   = muApplyFilter;
+    document.getElementById('muFilterDiff').onchange   = muApplyFilter;
+    document.getElementById('muFilterStatus').onchange = muApplyFilter;
+
+    function muBadgeClass(subj) {
+      const s = (subj || '').toLowerCase();
+      if (s.includes('geo'))   return 'mu-badge-geo';
+      if (s.includes('trig'))  return 'mu-badge-trig';
+      if (s.includes('arith') || s.includes('percent') || s.includes('ratio')) return 'mu-badge-arith';
+      if (s.includes('math') || s.includes('alg') || s.includes('mensur') || s.includes('numb')) return 'mu-badge-math';
+      return 'mu-badge-other';
+    }
+
+    function muDiffClass(d) {
+      const l = (d || '').toLowerCase();
+      if (l === 'easy') return 'mu-diff-easy';
+      if (l === 'hard') return 'mu-diff-hard';
+      return 'mu-diff-med';
+    }
+
+    function muRenderList() {
+      if (!muFiltered.length) {
+        muList.innerHTML = '<div class="mu-empty">No questions match the filter</div>';
+        muUpdateSelLabel(); return;
+      }
+      muList.innerHTML = muFiltered.map(q => {
+        const qt   = q.question || q.questionText || q.q || q._raw || '(no text)';
+        const subj = q.subject || q.topic || q.category || '—';
+        const diff = q.difficulty || q.level || '—';
+        const isSel = muSelected.has(q._idx);
+        let statusHtml = '';
+        if (q._status === 'valid')     statusHtml = '<span class="mu-status-ok">valid</span>';
+        else if (q._status === 'duplicate') statusHtml = '<span class="mu-status-dupe">dupe</span>';
+        else statusHtml = `<span class="mu-status-err" title="${q._issue || ''}">error</span>`;
+        return `<div class="mu-row${isSel ? ' sel' : ''}" data-idx="${q._idx}" onclick="muToggle(${q._idx}, this)">
+          <span class="mu-row-num">${q._idx + 1}</span>
+          <span class="mu-row-text">${escapeHtml(qt.substring(0, 85))}${qt.length > 85 ? '…' : ''}</span>
+          <span><span class="mu-badge ${muBadgeClass(subj)}">${escapeHtml(subj.substring(0, 14))}</span></span>
+          <span class="${muDiffClass(diff)}">${escapeHtml(diff)}</span>
+          <span>${statusHtml}</span>
+        </div>`;
+      }).join('');
+      muUpdateSelLabel();
+    }
+
+    function muToggle(idx, el) {
+      if (muSelected.has(idx)) { muSelected.delete(idx); el.classList.remove('sel'); }
+      else { muSelected.add(idx); el.classList.add('sel'); }
+      muUpdateSelLabel();
+    }
+
+    function muUpdateSelLabel() {
+      const n = muSelected.size;
+      document.getElementById('muSelLabel').textContent = `${n} selected`;
+      muUploadBtn.disabled = n === 0 || !document.getElementById('muApiUrl').value.trim();
+    }
+
+    document.getElementById('muApiUrl').addEventListener('input', muUpdateSelLabel);
+
+    document.getElementById('muSelectAll').onclick   = () => { muFiltered.forEach(q => muSelected.add(q._idx)); muRenderList(); };
+    document.getElementById('muDeselectAll').onclick = () => { muFiltered.forEach(q => muSelected.delete(q._idx)); muRenderList(); };
+    document.getElementById('muRemoveSel').onclick   = () => {
+      muAll = muAll.filter(q => !muSelected.has(q._idx));
+      muSelected.clear(); muUpdateStats(); muApplyFilter();
+    };
+
+    document.getElementById('muClearBtn').onclick = () => {
+      muAll = []; muSelected.clear(); muFiltered = [];
+      document.getElementById('muStats').style.display = 'none';
+      document.getElementById('muMainPanel').style.display = 'none';
+      muDrop.classList.remove('loaded');
+      muDrop.querySelector('.mu-drop-title').textContent = 'Drop .ndjson / .jsonl file here';
+      muDrop.querySelector('.mu-drop-sub').innerHTML = 'or <u id="muBrowseLink">browse files</u> — one JSON object per line';
+      document.getElementById('muBrowseLink').onclick = () => muFileInput.click();
+      muLog.style.display = 'none'; muLog.innerHTML = '';
+      document.getElementById('muProgress').style.display = 'none';
+    };
+
+    function muAddLog(msg, type = '') {
+      muLog.style.display = 'block';
+      const d = document.createElement('div');
+      d.className = 'mu-log-line ' + type;
+      d.textContent = msg;
+      muLog.appendChild(d);
+      muLog.scrollTop = muLog.scrollHeight;
+    }
+
+    muUploadBtn.onclick = async () => {
+      const url = document.getElementById('muApiUrl').value.trim();
+      if (!url) return;
+
+      // Validate quiz selection
+      const muQuizSubject = document.getElementById('muQuizSubject').value;
+      const muQuizTopic   = document.getElementById('muQuizTopic').value;
+      const muQuizName    = document.getElementById('muQuizName').value;
+      if (!muQuizSubject || !muQuizTopic || !muQuizName) {
+        showToast('Please select a target quiz before uploading', 'error'); return;
+      }
+
+      const toUpload = muAll.filter(q => muSelected.has(q._idx)).map(q => {
+        const clean = { ...q };
+        delete clean._idx; delete clean._status; delete clean._issue; delete clean._raw;
+        // Inject quiz target into every question
+        clean.quizSubject = muQuizSubject;
+        clean.quizTopic   = muQuizTopic;
+        clean.quizName    = muQuizName;
+        return clean;
+      });
+      if (!toUpload.length) return;
+
+      const progDiv   = document.getElementById('muProgress');
+      const progFill  = document.getElementById('muProgFill');
+      const progLabel = document.getElementById('muProgLabel');
+      progDiv.style.display = 'block';
+      muLog.style.display = 'block'; muLog.innerHTML = '';
+      muUploadBtn.disabled = true;
+
+      const BATCH = 50;
+      let uploaded = 0, errors = 0;
+      const total = toUpload.length;
+
+      for (let i = 0; i < total; i += BATCH) {
+        const batch    = toUpload.slice(i, i + BATCH);
+        const batchNum = Math.floor(i / BATCH) + 1;
+        try {
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(batch)
+          });
+          if (res.ok) {
+            uploaded += batch.length;
+            muAddLog(`Batch ${batchNum} → ${batch.length} uploaded to "${muQuizName}" (HTTP ${res.status})`, 'ok');
+          } else {
+            errors += batch.length;
+            muAddLog(`Batch ${batchNum} → HTTP ${res.status} ${res.statusText}`, 'err');
+          }
+        } catch (err) {
+          errors += batch.length;
+          muAddLog(`Batch ${batchNum} → Network error: ${err.message}`, 'err');
+        }
+        const pct = Math.round(((i + batch.length) / total) * 100);
+        progFill.style.width = Math.min(pct, 100) + '%';
+        progLabel.textContent = `${Math.min(i + BATCH, total)} / ${total} — ${errors} errors`;
+      }
+
+      progLabel.textContent = `Done — ${uploaded} uploaded, ${errors} failed`;
+      muAddLog(`Complete: ${uploaded} ok, ${errors} errors`, errors === 0 ? 'ok' : 'err');
+      showToast(
+        errors === 0 ? `${uploaded} questions added to "${muQuizName}"!` : `${uploaded} ok, ${errors} failed`,
+        errors === 0 ? 'success' : 'error'
+      );
+      muUploadBtn.disabled = false;
+    };
+  </script>
 </body>
 </html>
