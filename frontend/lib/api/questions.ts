@@ -1,4 +1,4 @@
-const API = process.env.NEXT_PUBLIC_API_URL;
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export interface Question {
   id: string;
