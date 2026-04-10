@@ -5,6 +5,7 @@ import fs from 'fs';
 import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 import questionController from '../controllers/questionController.js';
+import { getQuestionsContainer } from '../containerStore.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -45,6 +46,30 @@ const questionUpload = upload.fields([
   { name: 'optionDImage', maxCount: 1 },
   { name: 'solutionImage', maxCount: 1 },
 ]);
+
+// Bulk insert — POST /api/questions/bulk
+router.post('/bulk', async (req, res) => {
+  try {
+    const container = getQuestionsContainer();
+    if (!container) return res.status(503).json({ error: 'DB not ready' });
+
+    const questions = req.body; // array of question objects
+    if (!Array.isArray(questions) || questions.length === 0) {
+      return res.status(400).json({ error: 'Body must be a non-empty array' });
+    }
+
+    const results = await Promise.allSettled(
+      questions.map((q) => container.items.create(q))
+    );
+
+    const inserted = results.filter((r) => r.status === 'fulfilled').length;
+    const failed = results.filter((r) => r.status === 'rejected').length;
+
+    return res.json({ inserted, failed, total: questions.length });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
 
 router.post('/', questionUpload, questionController.addQuestion);
 router.get('/', questionController.getQuestions);
