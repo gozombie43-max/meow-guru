@@ -47,13 +47,15 @@ const questionUpload = upload.fields([
   { name: 'solutionImage', maxCount: 1 },
 ]);
 
+// ── Specific named routes FIRST (before /:id) ──────────
+
 // Bulk insert — POST /api/questions/bulk
 router.post('/bulk', async (req, res) => {
   try {
     const container = getQuestionsContainer();
     if (!container) return res.status(503).json({ error: 'DB not ready' });
 
-    const questions = req.body; // array of question objects
+    const questions = req.body;
     if (!Array.isArray(questions) || questions.length === 0) {
       return res.status(400).json({ error: 'Body must be a non-empty array' });
     }
@@ -71,13 +73,21 @@ router.post('/bulk', async (req, res) => {
   }
 });
 
+router.get('/practice-test', questionController.generatePracticeTest);
+router.post('/analyze', questionController.runAnalysis);
+
+// ── Generic routes ──────────────────────────────────────
+
 router.post('/', questionUpload, questionController.addQuestion);
 router.get('/', questionController.getQuestions);
+
+// ── Param routes LAST ───────────────────────────────────
+
 router.get('/:id', questionController.getQuestionById);
 router.put('/:id', questionController.updateQuestion);
 router.delete('/:id', questionController.deleteQuestion);
-router.get('/practice-test', questionController.generatePracticeTest);
-router.post('/analyze', questionController.runAnalysis);
+
+// ── Error handler ───────────────────────────────────────
 
 router.use((err, _req, res, _next) => {
   if (err) {
