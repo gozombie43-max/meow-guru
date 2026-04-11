@@ -10,6 +10,7 @@ export interface AlgebraQuestion {
   estimatedTime: number;
   year: string;
   exam: string;
+  solution?: string;
 }
 
 export const CONCEPTS = [
