@@ -290,4 +290,56 @@ const runAnalysis = async (req, res) => {
   }
 };
 
-export default { addQuestion, getQuestions, generatePracticeTest, runAnalysis };
+// ── GET /api/questions/:id ─────────────────────────────
+const getQuestionById = async (req, res) => {
+  try {
+    const container = getQuestionsContainer();
+    const { id } = req.params;
+    const { resources } = await container.items
+      .query({ query: 'SELECT * FROM c WHERE c.id = @id', parameters: [{ name: '@id', value: id }] })
+      .fetchAll();
+    if (!resources.length) return res.status(404).json({ error: 'Not found' });
+    res.json(resources[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// ── PUT /api/questions/:id ─────────────────────────────
+const updateQuestion = async (req, res) => {
+  try {
+    const container = getQuestionsContainer();
+    const { id } = req.params;
+    // fetch existing to get partition key (topic)
+    const { resources } = await container.items
+      .query({ query: 'SELECT * FROM c WHERE c.id = @id', parameters: [{ name: '@id', value: id }] })
+      .fetchAll();
+    if (!resources.length) return res.status(404).json({ error: 'Not found' });
+    const existing = resources[0];
+    const updated = { ...existing, ...req.body, id, topic: req.body.topic || existing.topic };
+    await container.items.upsert(updated);
+    res.json({ message: 'Updated ✅', question: updated });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// ── DELETE /api/questions/:id ──────────────────────────
+const deleteQuestion = async (req, res) => {
+  try {
+    const container = getQuestionsContainer();
+    const { id } = req.params;
+    // fetch to get partition key (topic) — required for delete
+    const { resources } = await container.items
+      .query({ query: 'SELECT * FROM c WHERE c.id = @id', parameters: [{ name: '@id', value: id }] })
+      .fetchAll();
+    if (!resources.length) return res.status(404).json({ error: 'Not found' });
+    const { topic } = resources[0];
+    await container.item(id, topic).delete();
+    res.json({ message: 'Deleted ✅' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export default { addQuestion, getQuestionById, updateQuestion, deleteQuestion, getQuestions, generatePracticeTest, runAnalysis };

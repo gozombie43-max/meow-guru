@@ -73,6 +73,9 @@ router.post('/bulk', async (req, res) => {
 
 router.post('/', questionUpload, questionController.addQuestion);
 router.get('/', questionController.getQuestions);
+router.get('/:id', questionController.getQuestionById);
+router.put('/:id', questionController.updateQuestion);
+router.delete('/:id', questionController.deleteQuestion);
 router.get('/practice-test', questionController.generatePracticeTest);
 router.post('/analyze', questionController.runAnalysis);
 
