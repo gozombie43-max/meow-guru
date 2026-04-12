@@ -56,7 +56,11 @@ export default function AdminPanel() {
   const [formData, setFormData] = useState<Omit<Question, "id">>(EMPTY_Q);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
-  // Derived filter options
+  // Multi-select
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+
   const topics = [...new Set(questions.map((q) => q.topic).filter(Boolean))].sort();
   const exams = [...new Set(questions.map((q) => q.exam).filter(Boolean))].sort();
 
@@ -73,6 +77,7 @@ export default function AdminPanel() {
       if (!res.ok) throw new Error(`Server error ${res.status}`);
       const data = await res.json();
       setQuestions(Array.isArray(data) ? data : data.questions || []);
+      setSelected(new Set());
       setPage(1);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to fetch");
@@ -102,34 +107,75 @@ export default function AdminPanel() {
     setTimeout(() => { setError(""); setSuccess(""); }, 3000);
   };
 
-  const openEdit = (q: Question) => {
-    setEditing(q);
-    setIsNew(false);
-    setFormData({ ...q });
+  // ── Checkbox helpers ──────────────────────────────────
+  const toggleOne = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
   };
 
-  const openNew = () => {
-    setEditing({ id: "" } as Question);
-    setIsNew(true);
-    setFormData({ ...EMPTY_Q });
+  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const paginatedIds = paginated.map((q) => q.id);
+  const allPageSelected = paginatedIds.length > 0 && paginatedIds.every((id) => selected.has(id));
+
+  const togglePage = () => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (allPageSelected) {
+        paginatedIds.forEach((id) => next.delete(id));
+      } else {
+        paginatedIds.forEach((id) => next.add(id));
+      }
+      return next;
+    });
   };
 
+  const selectAll = () => {
+    setSelected(new Set(filtered.map((q) => q.id)));
+  };
+
+  const clearSelection = () => setSelected(new Set());
+
+  // ── Bulk delete ───────────────────────────────────────
+  const handleBulkDelete = async () => {
+    setBulkDeleting(true);
+    let deleted = 0;
+    let failed = 0;
+    for (const id of selected) {
+      try {
+        const res = await fetch(`${API}/api/questions/${id}`, { method: "DELETE" });
+        if (res.ok) deleted++;
+        else failed++;
+      } catch {
+        failed++;
+      }
+    }
+    setBulkDeleting(false);
+    setBulkDeleteConfirm(false);
+    setSelected(new Set());
+    showMsg(failed > 0 ? `Deleted ${deleted}, failed ${failed}` : `Deleted ${deleted} questions ✓`);
+    fetchQuestions();
+  };
+
+  // ── Single CRUD ───────────────────────────────────────
+  const openEdit = (q: Question) => { setEditing(q); setIsNew(false); setFormData({ ...q }); };
+  const openNew = () => { setEditing({ id: "" } as Question); setIsNew(true); setFormData({ ...EMPTY_Q }); };
   const closeModal = () => { setEditing(null); setIsNew(false); };
 
   const handleSave = async () => {
     try {
       if (isNew) {
         const res = await fetch(`${API}/api/questions`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+          method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),
         });
         if (!res.ok) throw new Error(`Server error ${res.status}`);
         showMsg("Question created ✓");
       } else {
         const res = await fetch(`${API}/api/questions/${editing!.id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          method: "PUT", headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),
         });
         if (!res.ok) throw new Error(`Server error ${res.status}`);
@@ -154,14 +200,12 @@ export default function AdminPanel() {
     }
   };
 
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-
   const diffColor = (d: string) =>
     d === "easy" ? "#16a34a" : d === "hard" ? "#dc2626" : "#d97706";
 
   return (
-    <div style={{ fontFamily: "var(--font-sans, system-ui)", padding: "1.5rem", maxWidth: 1200, margin: "0 auto" }}>
+    <div style={{ fontFamily: "var(--font-sans, system-ui)", padding: "1.5rem", maxWidth: 1280, margin: "0 auto" }}>
 
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.5rem" }}>
@@ -169,11 +213,24 @@ export default function AdminPanel() {
           <h1 style={{ fontSize: 22, fontWeight: 500, margin: 0, color: "var(--color-text-primary)" }}>Question Bank Admin</h1>
           <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: "4px 0 0" }}>
             {filtered.length} of {questions.length} questions
+            {selected.size > 0 && <span style={{ marginLeft: 8, color: "#6d28d9", fontWeight: 500 }}>· {selected.size} selected</span>}
           </p>
         </div>
-        <button onClick={openNew} style={{ padding: "8px 16px", background: "#6d28d9", color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontSize: 14, fontWeight: 500 }}>
-          + Add Question
-        </button>
+        <div style={{ display: "flex", gap: 8 }}>
+          {selected.size > 0 && (
+            <>
+              <button onClick={clearSelection} style={{ padding: "8px 14px", background: "transparent", color: "var(--color-text-secondary)", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, cursor: "pointer", fontSize: 13 }}>
+                Clear
+              </button>
+              <button onClick={() => setBulkDeleteConfirm(true)} style={{ padding: "8px 14px", background: "#dc2626", color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontSize: 13, fontWeight: 500 }}>
+                Delete {selected.size} selected
+              </button>
+            </>
+          )}
+          <button onClick={openNew} style={{ padding: "8px 16px", background: "#6d28d9", color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontSize: 14, fontWeight: 500 }}>
+            + Add Question
+          </button>
+        </div>
       </div>
 
       {/* Toast */}
@@ -185,12 +242,8 @@ export default function AdminPanel() {
 
       {/* Filters */}
       <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr", gap: 10, marginBottom: "1rem" }}>
-        <input
-          placeholder="Search question, chapter, ID..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 14, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}
-        />
+        <input placeholder="Search question, chapter, ID..." value={search} onChange={(e) => setSearch(e.target.value)}
+          style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 14, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }} />
         <select value={filterSubject} onChange={(e) => setFilterSubject(e.target.value)}
           style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 14, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}>
           <option value="">All subjects</option>
@@ -213,11 +266,30 @@ export default function AdminPanel() {
         </select>
       </div>
 
+      {/* Select all banner */}
+      {selected.size > 0 && (
+        <div style={{ padding: "8px 14px", background: "#ede9fe", borderRadius: 8, marginBottom: 10, fontSize: 13, color: "#5b21b6", display: "flex", alignItems: "center", gap: 12 }}>
+          <span>{selected.size} question{selected.size > 1 ? "s" : ""} selected</span>
+          {selected.size < filtered.length && (
+            <button onClick={selectAll} style={{ background: "none", border: "none", cursor: "pointer", color: "#6d28d9", fontWeight: 500, fontSize: 13, padding: 0 }}>
+              Select all {filtered.length}
+            </button>
+          )}
+          <button onClick={clearSelection} style={{ background: "none", border: "none", cursor: "pointer", color: "#6d28d9", fontSize: 13, padding: 0, marginLeft: "auto" }}>
+            Clear selection
+          </button>
+        </div>
+      )}
+
       {/* Table */}
       <div style={{ border: "0.5px solid var(--color-border-tertiary)", borderRadius: 12, overflow: "hidden" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
           <thead>
             <tr style={{ background: "var(--color-background-secondary)" }}>
+              <th style={{ padding: "10px 14px", borderBottom: "0.5px solid var(--color-border-tertiary)", width: 40 }}>
+                <input type="checkbox" checked={allPageSelected} onChange={togglePage}
+                  style={{ cursor: "pointer", width: 15, height: 15 }} title="Select all on this page" />
+              </th>
               {["ID", "Topic", "Chapter", "Difficulty", "Exam", "Question", "Actions"].map((h) => (
                 <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontWeight: 500, color: "var(--color-text-secondary)", borderBottom: "0.5px solid var(--color-border-tertiary)", whiteSpace: "nowrap" }}>{h}</th>
               ))}
@@ -225,11 +297,18 @@ export default function AdminPanel() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={7} style={{ padding: 40, textAlign: "center", color: "var(--color-text-secondary)" }}>Loading...</td></tr>
+              <tr><td colSpan={8} style={{ padding: 40, textAlign: "center", color: "var(--color-text-secondary)" }}>Loading...</td></tr>
             ) : paginated.length === 0 ? (
-              <tr><td colSpan={7} style={{ padding: 40, textAlign: "center", color: "var(--color-text-secondary)" }}>No questions found</td></tr>
+              <tr><td colSpan={8} style={{ padding: 40, textAlign: "center", color: "var(--color-text-secondary)" }}>No questions found</td></tr>
             ) : paginated.map((q, i) => (
-              <tr key={q.id} style={{ borderBottom: "0.5px solid var(--color-border-tertiary)", background: i % 2 === 0 ? "var(--color-background-primary)" : "var(--color-background-secondary)" }}>
+              <tr key={q.id} style={{
+                borderBottom: "0.5px solid var(--color-border-tertiary)",
+                background: selected.has(q.id) ? "#ede9fe" : i % 2 === 0 ? "var(--color-background-primary)" : "var(--color-background-secondary)"
+              }}>
+                <td style={{ padding: "10px 14px" }}>
+                  <input type="checkbox" checked={selected.has(q.id)} onChange={() => toggleOne(q.id)}
+                    style={{ cursor: "pointer", width: 15, height: 15 }} />
+                </td>
                 <td style={{ padding: "10px 14px", color: "var(--color-text-secondary)", fontFamily: "monospace", fontSize: 11 }}>{q.id?.slice(0, 16)}...</td>
                 <td style={{ padding: "10px 14px" }}>
                   <span style={{ background: "#ede9fe", color: "#5b21b6", padding: "2px 8px", borderRadius: 6, fontSize: 12 }}>{q.topic}</span>
@@ -348,7 +427,7 @@ export default function AdminPanel() {
         </div>
       )}
 
-      {/* Delete Confirm */}
+      {/* Single Delete Confirm */}
       {deleteConfirm && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <div style={{ background: "var(--color-background-primary, #ffffff)", color: "var(--color-text-primary, #111827)", borderRadius: 16, padding: "1.5rem", width: 360, border: "0.5px solid var(--color-border-secondary, #e5e7eb)" }}>
@@ -357,6 +436,26 @@ export default function AdminPanel() {
             <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
               <button onClick={() => setDeleteConfirm(null)} style={{ padding: "7px 16px", borderRadius: 7, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: "pointer", fontSize: 13 }}>Cancel</button>
               <button onClick={() => handleDelete(deleteConfirm)} style={{ padding: "7px 16px", borderRadius: 7, border: "none", background: "#dc2626", color: "#fff", cursor: "pointer", fontSize: 13, fontWeight: 500 }}>Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Delete Confirm */}
+      {bulkDeleteConfirm && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ background: "var(--color-background-primary, #ffffff)", color: "var(--color-text-primary, #111827)", borderRadius: 16, padding: "1.5rem", width: 400, border: "0.5px solid var(--color-border-secondary, #e5e7eb)" }}>
+            <h2 style={{ fontSize: 16, fontWeight: 500, margin: "0 0 8px" }}>Delete {selected.size} questions?</h2>
+            <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: "0 0 1.25rem" }}>
+              This will permanently delete all {selected.size} selected questions. This cannot be undone.
+            </p>
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+              <button onClick={() => setBulkDeleteConfirm(false)} disabled={bulkDeleting}
+                style={{ padding: "7px 16px", borderRadius: 7, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: "pointer", fontSize: 13 }}>Cancel</button>
+              <button onClick={handleBulkDelete} disabled={bulkDeleting}
+                style={{ padding: "7px 16px", borderRadius: 7, border: "none", background: "#dc2626", color: "#fff", cursor: bulkDeleting ? "wait" : "pointer", fontSize: 13, fontWeight: 500, opacity: bulkDeleting ? 0.7 : 1 }}>
+                {bulkDeleting ? "Deleting..." : `Delete ${selected.size} questions`}
+              </button>
             </div>
           </div>
         </div>
