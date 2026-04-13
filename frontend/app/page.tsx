@@ -100,7 +100,8 @@ export default function Home() {
         .hero-section {
           position: relative;
           overflow: hidden;
-          min-height: 72vh;
+          min-height: 100vh;
+          min-height: 100svh;
           color: #f8fafc;
           background-image:
             linear-gradient(120deg, rgba(5, 16, 34, 0.75) 0%, rgba(7, 20, 40, 0.62) 46%, rgba(5, 14, 30, 0.45) 100%),
@@ -126,7 +127,8 @@ export default function Home() {
           display: grid;
           grid-template-columns: minmax(0, 1fr);
           align-items: center;
-          min-height: 72vh;
+          min-height: 100vh;
+          min-height: 100svh;
         }
         .hero-kicker {
           display: inline-flex;
@@ -342,8 +344,8 @@ export default function Home() {
         @keyframes pill-shimmer { 0% { transform: translateX(-170%) rotate(12deg); opacity: 0; } 10% { opacity: 0.9; } 22% { transform: translateX(330%) rotate(12deg); opacity: 0.9; } 30%,100% { transform: translateX(330%) rotate(12deg); opacity: 0; } }
         @media (max-width: 820px) { .pill-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 420px; gap: 0.8rem; padding: 0; } .pill-card { min-height: 60px; padding: 7px 14px; } .pill-content { font-size: clamp(0.85rem,3.8vw,1rem); } }
         @media (max-width: 640px) {
-          .hero-section { min-height: auto; background-position: center top; }
-          .hero-content { min-height: auto; padding-top: 7.75rem; padding-bottom: 3rem; text-align: center; }
+          .hero-section { min-height: 100vh; min-height: 100svh; background-position: center top; }
+          .hero-content { min-height: 100vh; min-height: 100svh; padding-top: 7.75rem; padding-bottom: 3rem; text-align: center; }
           .hero-kicker { letter-spacing: 0.24em; font-size: 0.68rem; justify-content: center; }
           .hero-title { font-size: clamp(2rem, 9vw, 3rem); }
           .hero-copy { margin: 0 auto 1.6rem; }
