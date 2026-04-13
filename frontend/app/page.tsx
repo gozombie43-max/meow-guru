@@ -242,10 +242,13 @@ export default function Home() {
           border-radius: 999px;
           letter-spacing: 0.16em;
           text-transform: uppercase;
+          justify-content: center;
         }
         .liquid-battle .btn-label {
           color: #f8fafc;
           font-weight: 900;
+          width: 100%;
+          text-align: center;
         }
         .pill-card {
           --pill-base: #5b9fe0;
