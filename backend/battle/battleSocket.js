@@ -27,23 +27,27 @@ export function initBattleSocket(httpServer, allowedOrigins) {
 
     // ── Join room ────────────────────────────────────────
     socket.on('room:join', async ({ code, playerName }) => {
-      const upperCode = code.toUpperCase();
-      const result = joinRoom(upperCode, socket.id, playerName);
+      const normalizedCode = String(code ?? '').replace(/\D/g, '').slice(0, 4);
+      if (normalizedCode.length !== 4) {
+        socket.emit('room:error', { message: 'Enter 4-digit room code' });
+        return;
+      }
+      const result = joinRoom(normalizedCode, socket.id, playerName);
 
       if (result.error) {
         socket.emit('room:error', { message: result.error });
         return;
       }
 
-      socket.join(upperCode);
+      socket.join(normalizedCode);
 
       // Notify both players of updated player list
-      io.to(upperCode).emit('room:joined', {
+      io.to(normalizedCode).emit('room:joined', {
         players: Object.values(result.room.players).map(p => p.name),
       });
 
       // Both players present — start the game
-      await startGame(io, upperCode);
+      await startGame(io, normalizedCode);
     });
 
     // ── Submit answer ────────────────────────────────────

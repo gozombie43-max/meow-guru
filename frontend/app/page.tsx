@@ -1,7 +1,7 @@
 'use client';
 
 import Link from "next/link";
-import { Menu, Zap } from "lucide-react";
+import { Zap } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 
@@ -33,6 +33,156 @@ export default function Home() {
   return (
     <div className="min-h-screen relative overflow-hidden">
       <style>{`
+        .hero-nav {
+          background: rgba(8, 20, 38, 0.6);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+          box-shadow: 0 10px 30px rgba(5, 10, 20, 0.2);
+        }
+        .nav-brand {
+          color: #dff6ff;
+        }
+        .nav-link {
+          color: rgba(226, 244, 255, 0.88);
+        }
+        .nav-link:hover {
+          color: #6ee7ff;
+        }
+        .auth-pill {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 8px 20px;
+          border-radius: 999px;
+          font-weight: 600;
+          font-size: 0.95rem;
+          letter-spacing: 0.01em;
+          transition: transform 200ms ease, box-shadow 200ms ease, background 200ms ease, color 200ms ease;
+        }
+        .auth-pill-outline {
+          background: rgba(255, 255, 255, 0.12);
+          border: 1px solid rgba(255, 255, 255, 0.4);
+          color: #e7f7ff;
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+        }
+        .auth-pill-outline:hover {
+          background: rgba(255, 255, 255, 0.2);
+          transform: translateY(-1px);
+        }
+        .auth-pill-solid {
+          background: linear-gradient(135deg, #22d3ee 0%, #0ea5e9 100%);
+          color: #031326;
+          box-shadow: 0 10px 24px rgba(14, 165, 233, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+          border: 1px solid rgba(255, 255, 255, 0.25);
+        }
+        .auth-pill-solid:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 14px 28px rgba(14, 165, 233, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+        }
+        .hero-section {
+          position: relative;
+          overflow: hidden;
+          min-height: 72vh;
+          color: #f8fafc;
+          background-image:
+            linear-gradient(120deg, rgba(5, 16, 34, 0.96) 0%, rgba(7, 20, 40, 0.88) 46%, rgba(5, 14, 30, 0.7) 100%),
+            radial-gradient(900px 360px at 14% 18%, rgba(34, 211, 238, 0.18), transparent 70%),
+            var(--hero-image, linear-gradient(135deg, #0b1c33 0%, #142746 45%, #0a1a2e 100%));
+          background-size: cover;
+          background-position: center;
+          background-repeat: no-repeat;
+        }
+        .hero-section::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(180deg, rgba(4, 10, 22, 0.35) 0%, rgba(4, 10, 22, 0.85) 100%);
+          z-index: 1;
+        }
+        .hero-content {
+          position: relative;
+          z-index: 2;
+          max-width: 1100px;
+          margin: 0 auto;
+          padding: 9.5rem 1.5rem 5.5rem;
+          display: grid;
+          grid-template-columns: minmax(0, 1fr);
+          align-items: center;
+          min-height: 72vh;
+        }
+        .hero-kicker {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-size: 0.85rem;
+          font-weight: 700;
+          letter-spacing: 0.4em;
+          text-transform: uppercase;
+          color: rgba(207, 243, 255, 0.85);
+          margin-bottom: 1.4rem;
+        }
+        .hero-title {
+          font-size: clamp(2.2rem, 4.8vw, 4.5rem);
+          font-weight: 800;
+          line-height: 1.05;
+          letter-spacing: -0.02em;
+          margin-bottom: 1.4rem;
+          text-shadow: 0 12px 30px rgba(2, 8, 18, 0.55);
+        }
+        .hero-highlight {
+          display: inline-block;
+          background: linear-gradient(90deg, #67e8f9 0%, #38bdf8 40%, #2dd4bf 100%);
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+          text-shadow: 0 0 24px rgba(103, 232, 249, 0.35);
+        }
+        .hero-copy {
+          max-width: 560px;
+          font-size: clamp(1rem, 2.1vw, 1.2rem);
+          color: rgba(226, 244, 255, 0.78);
+          line-height: 1.65;
+          margin-bottom: 2.2rem;
+          text-shadow: 0 8px 20px rgba(2, 8, 18, 0.4);
+        }
+        .hero-actions {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 1rem;
+        }
+        .battle-dock {
+          left: 50%;
+        }
+        .hero-btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 14px 28px;
+          border-radius: 999px;
+          font-weight: 700;
+          letter-spacing: 0.02em;
+          font-size: 1rem;
+          transition: transform 200ms ease, box-shadow 200ms ease, background 200ms ease, color 200ms ease;
+        }
+        .hero-btn-primary {
+          background: linear-gradient(120deg, #22d3ee 0%, #38bdf8 70%);
+          color: #031826;
+          box-shadow: 0 16px 30px rgba(34, 211, 238, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .hero-btn-primary:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 18px 34px rgba(34, 211, 238, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+        }
+        .hero-btn-ghost {
+          background: rgba(15, 23, 42, 0.55);
+          color: #e2f4ff;
+          border: 1px solid rgba(255, 255, 255, 0.32);
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+        .hero-btn-ghost:hover {
+          transform: translateY(-1px);
+          background: rgba(15, 23, 42, 0.7);
+        }
         .pill-grid {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -173,7 +323,15 @@ export default function Home() {
         @keyframes pill-shimmer { 0% { transform: translateX(-170%) rotate(12deg); opacity: 0; } 10% { opacity: 0.9; } 22% { transform: translateX(330%) rotate(12deg); opacity: 0.9; } 30%,100% { transform: translateX(330%) rotate(12deg); opacity: 0; } }
         @media (max-width: 820px) { .pill-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 420px; gap: 0.75rem; padding: 0 0.85rem; } .pill-card { min-height: 58px; padding: 7px 14px; } .pill-content { font-size: clamp(0.85rem,3.8vw,1rem); } }
         @media (max-width: 640px) {
-          .hero-mobile-offset { padding-top: 9.5rem; padding-bottom: 2.75rem; }
+          .hero-section { min-height: auto; background-position: center top; }
+          .hero-content { min-height: auto; padding-top: 7.75rem; padding-bottom: 3rem; text-align: center; }
+          .hero-kicker { letter-spacing: 0.24em; font-size: 0.68rem; justify-content: center; }
+          .hero-title { font-size: clamp(2rem, 9vw, 3rem); }
+          .hero-copy { margin: 0 auto 1.6rem; }
+          .hero-actions { flex-direction: column; align-items: center; }
+          .hero-btn { width: min(86vw, 320px); }
+          .auth-pill { padding: 6px 14px; font-size: 0.82rem; }
+          .nav-brand { font-size: 1rem; }
           .pill-grid { max-width: 380px; gap: 0.55rem; padding: 0 0.65rem; }
           .pill-card { min-height: 50px; padding: 6px 10px; }
           .pill-content { font-size: clamp(0.72rem,2.9vw,0.84rem); letter-spacing: 0.02em; text-transform: none; padding: 0 0.15rem; }
@@ -186,16 +344,21 @@ export default function Home() {
           }
           .battle-cta-text { white-space: nowrap; line-height: 1; }
           .battle-cta::before { inset: -10px; }
+          .battle-dock {
+            position: static;
+            transform: none;
+            margin: 2.25rem auto 2.75rem;
+          }
         }
         @media (prefers-reduced-motion: reduce) { .pill-card { animation: none; transform: none; opacity: 1; transition: none; } .pill-card::before, .pill-card::after { animation: none; } }
       `}</style>
 
       {/* ── Navigation ── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 glass">
+      <nav className="fixed top-0 left-0 right-0 z-50 glass hero-nav">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
             <Zap className="w-6 h-6 text-cyan-500" />
-            <span className="text-base sm:text-3xl font-extrabold tracking-wide font-sans guru-neon whitespace-nowrap leading-none">
+            <span className="text-base sm:text-3xl font-extrabold tracking-wide font-sans guru-neon whitespace-nowrap leading-none nav-brand">
               STUDY WITH GURU
             </span>
           </div>
@@ -204,23 +367,23 @@ export default function Home() {
           <div className="flex items-center gap-3">
             {user ? (
               <>
-                <span className="text-sm text-slate-600 hidden sm:block">Hi, {user.name.split(' ')[0]}</span>
-                <Link href="/dashboard" className="text-sm font-semibold text-slate-700 hover:text-cyan-500 transition">
+                <span className="text-sm text-slate-200 hidden sm:block">Hi, {user.name.split(' ')[0]}</span>
+                <Link href="/dashboard" className="text-sm font-semibold nav-link transition">
                   Dashboard
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="text-sm font-semibold text-red-400 hover:text-red-600 transition"
+                  className="text-sm font-semibold text-red-200 hover:text-red-400 transition"
                 >
                   Logout
                 </button>
               </>
             ) : (
               <>
-                <Link href="/login" className="text-sm font-semibold text-slate-700 hover:text-cyan-500 transition">
+                <Link href="/login" className="auth-pill auth-pill-outline">
                   Login
                 </Link>
-                <Link href="/register" className="text-sm font-semibold bg-cyan-500 text-white px-4 py-1.5 rounded-full hover:bg-cyan-600 transition">
+                <Link href="/register" className="auth-pill auth-pill-solid">
                   Sign Up
                 </Link>
               </>
@@ -230,18 +393,32 @@ export default function Home() {
       </nav>
 
       {/* ── Hero Section ── */}
-      <section className="relative pt-36 sm:pt-32 pb-24 px-6 hero-mobile-offset">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="animate-fade-in-up flex flex-col sm:flex-row items-center justify-center gap-4" style={{ animationDelay: "500ms" }}>
-            <button className="btn-outline px-8 py-3.5 rounded-xl font-medium text-base cursor-pointer">
-              Explore Subjects
-            </button>
+      <section className="hero-section" style={{ ["--hero-image" as string]: "url('/study-hero.jpg')" }}>
+        <div className="hero-content">
+          <div className="animate-fade-in-up" style={{ animationDelay: "250ms" }}>
+            <span className="hero-kicker">INDIA&apos;S FOCUSED EXAM PREP PLATFORM</span>
+            <h1 className="hero-title">
+              Study With Guru
+              <br />
+              <span className="hero-highlight">for faster rank improvement.</span>
+            </h1>
+            <p className="hero-copy">
+              Structured subject practice, exam-grade mock sessions, and live Battle Mode designed for serious aspirants.
+            </p>
+            <div className="hero-actions">
+              <Link href="#subjects" className="hero-btn hero-btn-primary">
+                Start Practice
+              </Link>
+              <Link href="/battle" className="hero-btn hero-btn-ghost">
+                Enter Battle Mode
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
       {/* ── Subject Boxes ── */}
-      <section className="relative pb-24">
+      <section className="relative pb-24" id="subjects">
         <div className="w-full">
           <div className="text-center mb-10 px-6 subject-heading-wrap">
             <h2 className="animate-fade-in-up text-[clamp(1.6rem,3.5vw,2.25rem)] font-bold mb-4 text-[var(--text-primary)] subject-heading-title" style={{ animationDelay: "600ms", fontFamily: "'SF Pro Display','Helvetica Neue',sans-serif" }}>
@@ -277,7 +454,7 @@ export default function Home() {
       </section>
 
       <div className="h-px w-full bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent" />
-      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center" style={{ gap: "1cm" }}>
+      <div className="battle-dock fixed bottom-4 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center" style={{ gap: "1cm" }}>
         <Link href="/battle" className="battle-cta" style={{ animationDelay: "1100ms" }}>
           <span className="battle-cta-text">Battle Mode</span>
         </Link>

@@ -310,7 +310,9 @@ export default function BattlePage() {
   const [opponentAnswer, setOpponentAnswer] = useState<string | null>(null);
   const [mySocketId, setMySocketId]     = useState("");
   const [isWinner, setIsWinner]         = useState(false);
-  const activeCode = roomCode || joinCode.toUpperCase();
+  const activeCode = roomCode || joinCode;
+
+  const normalizeJoinCode = (value: string) => value.replace(/\D/g, "").slice(0, 4);
 
   // ── Socket setup ────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -409,9 +411,9 @@ export default function BattlePage() {
 
   const joinRoom = () => {
     if (!playerName.trim()) { setError("Enter your name first"); return; }
-    if (!joinCode.trim())   { setError("Enter room code"); return; }
+    if (!/^\d{4}$/.test(joinCode)) { setError("Enter 4-digit room code"); return; }
     setError("");
-    getSocket().emit("room:join", { code: joinCode.trim().toUpperCase(), playerName: playerName.trim() });
+    getSocket().emit("room:join", { code: joinCode, playerName: playerName.trim() });
   };
 
   const submitAnswer = (answer: string) => {
@@ -545,8 +547,8 @@ export default function BattlePage() {
                 className="battle-input font-mono font-bold tracking-widest uppercase text-center"
                 placeholder="Code..."
                 value={joinCode}
-                onChange={e => { setJoinCode(e.target.value.toUpperCase().slice(0, 6)); setError(""); }}
-                maxLength={6}
+                onChange={e => { setJoinCode(normalizeJoinCode(e.target.value)); setError(""); }}
+                maxLength={4}
               />
             </div>
           </div>

@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef, type ChangeEvent } from "react";
 import RichContent from "@/components/RichContent";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
@@ -32,6 +32,159 @@ const DIFFICULTIES = ["easy", "medium", "hard"];
 const LETTERS = ["a", "b", "c", "d"];
 const SUBJECTS = ["mathematics", "reasoning", "english", "general awareness"];
 
+type SubjectKey = "mathematics" | "reasoning" | "english" | "general-awareness";
+type TopicOption = { value: string; label: string };
+type BulkStats = { total: number; ready: number; errors: number };
+
+const SUBJECT_OPTIONS: { value: SubjectKey; label: string }[] = [
+  { value: "mathematics", label: "Mathematics" },
+  { value: "reasoning", label: "Reasoning" },
+  { value: "english", label: "English" },
+  { value: "general-awareness", label: "General Awareness" },
+];
+
+const QUIZ_OPTIONS = [
+  "Concept Drill",
+  "Formula Bank",
+  "Speed Test",
+  "Challenge",
+  "Topic Mix",
+  "Revision",
+];
+
+const TOPIC_LABEL_OVERRIDES: Record<string, string> = {
+  "active-passive-voice": "Active & Passive Voice",
+  "direct-indirect-narration": "Direct & Indirect Narration",
+  "subject-verb-agreement": "Subject-Verb Agreement",
+  "homonyms-homophones": "Homonyms & Homophones",
+  "idioms-phrases": "Idioms & Phrases",
+  "synonyms-antonyms": "Synonyms & Antonyms",
+  "sentence-correction-improvement": "Sentence Correction / Improvement",
+  "spot-the-error-error-detection": "Spot the Error / Error Detection",
+  "para-sentence-completion": "Para / Sentence Completion",
+  "statement-conclusion": "Statement & Conclusion",
+  "statement-assumptions": "Statement & Assumptions",
+  "statement-arguments": "Statement & Arguments",
+  "problem-solving-critical-thinking": "Problem Solving & Critical Thinking",
+  "classification-odd-one-out": "Classification (Odd One Out)",
+  "logical-sequence-of-words": "Logical Sequence of Words",
+  "mathematical-symbolic-operations": "Mathematical & Symbolic Operations",
+  "direction-distance": "Direction & Distance",
+  "cube-dice": "Cube & Dice",
+  "mirror-water-image": "Mirror & Water Image",
+  "paper-folding-cutting": "Paper Folding & Cutting",
+  "mixture-and-alligation": "Mixture & Alligation",
+  "ratio-and-proportion": "Ratio & Proportion",
+  "time-and-distance": "Time & Distance",
+  "time-and-work": "Time & Work",
+  "profit-and-loss": "Profit & Loss",
+  "statistics-probability": "Statistics & Probability",
+  "number-system": "Number System",
+  "general-science": "General Science",
+  "current-affairs": "Current Affairs",
+  "static-gk": "Static GK",
+};
+
+const toTopicLabel = (slug: string) => {
+  const override = TOPIC_LABEL_OVERRIDES[slug];
+  if (override) return override;
+  return slug
+    .split("-")
+    .map((part) => (part ? part[0].toUpperCase() + part.slice(1) : part))
+    .join(" ");
+};
+
+const MATH_TOPICS = [
+  "algebra",
+  "geometry",
+  "mensuration",
+  "trigonometry",
+  "number-system",
+  "statistics-probability",
+  "averages",
+  "discount",
+  "interest",
+  "mixture-and-alligation",
+  "partnership",
+  "percentages",
+  "profit-and-loss",
+  "ratio-and-proportion",
+  "square-roots",
+  "time-and-distance",
+  "time-and-work",
+];
+
+const REASONING_TOPICS = [
+  "analogy",
+  "blood-relations",
+  "classification-odd-one-out",
+  "coding-decoding",
+  "cube-dice",
+  "direction-distance",
+  "emotional-intelligence",
+  "inequalities",
+  "logical-sequence-of-words",
+  "mathematical-symbolic-operations",
+  "matrix",
+  "mirror-water-image",
+  "non-verbal-figures",
+  "order-ranking",
+  "paper-folding-cutting",
+  "problem-solving-critical-thinking",
+  "puzzle-seating-arrangement",
+  "series",
+  "social-intelligence",
+  "statement-arguments",
+  "statement-assumptions",
+  "statement-conclusion",
+  "syllogism-inferences",
+  "venn-diagram",
+  "word-building",
+];
+
+const ENGLISH_TOPICS = [
+  "active-passive-voice",
+  "articles",
+  "cloze-test",
+  "conjunctions",
+  "direct-indirect-narration",
+  "fill-in-the-blanks",
+  "homonyms-homophones",
+  "idioms-phrases",
+  "modifiers",
+  "one-word-substitution",
+  "para-jumbles",
+  "para-sentence-completion",
+  "parallelism",
+  "prepositions",
+  "pronouns",
+  "reading-comprehension",
+  "sentence-correction-improvement",
+  "sentence-structure",
+  "spelling-misspelled-words",
+  "spot-the-error-error-detection",
+  "subject-verb-agreement",
+  "synonyms-antonyms",
+  "tenses",
+];
+
+const GA_TOPICS = [
+  "current-affairs",
+  "economics",
+  "general-science",
+  "geography",
+  "history",
+  "polity",
+  "static-gk",
+];
+
+const SUBJECT_TOPIC_OPTIONS: Record<SubjectKey, TopicOption[]> = {
+  mathematics: MATH_TOPICS.map((slug) => ({ value: slug, label: toTopicLabel(slug) })),
+  reasoning: REASONING_TOPICS.map((slug) => ({ value: slug, label: toTopicLabel(slug) })),
+  english: ENGLISH_TOPICS.map((slug) => ({ value: slug, label: toTopicLabel(slug) })),
+  "general-awareness": GA_TOPICS.map((slug) => ({ value: slug, label: toTopicLabel(slug) })),
+};
+
 export default function AdminPanel() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [filtered, setFiltered] = useState<Question[]>([]);
@@ -45,6 +198,17 @@ export default function AdminPanel() {
   const [filterSubject, setFilterSubject] = useState("");
   const [filterDifficulty, setFilterDifficulty] = useState("");
   const [filterExam, setFilterExam] = useState("");
+
+  // Mass upload
+  const [muSubject, setMuSubject] = useState<SubjectKey | "">("");
+  const [muTopic, setMuTopic] = useState("");
+  const [muQuiz, setMuQuiz] = useState("");
+  const [muFileName, setMuFileName] = useState("");
+  const [muStats, setMuStats] = useState<BulkStats>({ total: 0, ready: 0, errors: 0 });
+  const [muQuestions, setMuQuestions] = useState<Record<string, unknown>[]>([]);
+  const [muUploading, setMuUploading] = useState(false);
+  const [muApiUrl, setMuApiUrl] = useState(`${API}/api/questions/bulk`);
+  const muFileRef = useRef<HTMLInputElement | null>(null);
 
   // Pagination
   const [page, setPage] = useState(1);
@@ -63,6 +227,7 @@ export default function AdminPanel() {
 
   const topics = [...new Set(questions.map((q) => q.topic).filter(Boolean))].sort();
   const exams = [...new Set(questions.map((q) => q.exam).filter(Boolean))].sort();
+  const muTopicOptions = muSubject ? SUBJECT_TOPIC_OPTIONS[muSubject as SubjectKey] : [];
 
   const fetchQuestions = useCallback(async () => {
     setLoading(true);
@@ -105,6 +270,126 @@ export default function AdminPanel() {
   const showMsg = (msg: string, isErr = false) => {
     if (isErr) setError(msg); else setSuccess(msg);
     setTimeout(() => { setError(""); setSuccess(""); }, 3000);
+  };
+
+  const parseBulkFile = async (file: File) => {
+    const text = await file.text();
+    const trimmed = text.trim();
+
+    if (!trimmed) {
+      setMuQuestions([]);
+      setMuStats({ total: 0, ready: 0, errors: 1 });
+      showMsg("Bulk file is empty", true);
+      return;
+    }
+
+    let total = 0;
+    let errors = 0;
+    let items: unknown[] = [];
+
+    if (trimmed.startsWith("[")) {
+      let parsed: unknown = null;
+      try {
+        parsed = JSON.parse(trimmed);
+      } catch {
+        setMuQuestions([]);
+        setMuStats({ total: 0, ready: 0, errors: 1 });
+        showMsg("Bulk file JSON is invalid", true);
+        return;
+      }
+
+      if (!Array.isArray(parsed)) {
+        setMuQuestions([]);
+        setMuStats({ total: 0, ready: 0, errors: 1 });
+        showMsg("Bulk file must be a JSON array or NDJSON", true);
+        return;
+      }
+      total = parsed.length;
+      items = parsed;
+    } else {
+      const lines = text.split(/\r?\n/).filter((line) => line.trim());
+      total = lines.length;
+      for (const line of lines) {
+        try {
+          items.push(JSON.parse(line));
+        } catch {
+          errors += 1;
+        }
+      }
+    }
+
+    const normalized: Record<string, unknown>[] = [];
+    for (const item of items) {
+      if (item && typeof item === "object" && !Array.isArray(item)) {
+        normalized.push(item as Record<string, unknown>);
+      } else {
+        errors += 1;
+      }
+    }
+
+    setMuQuestions(normalized);
+    setMuStats({ total, ready: normalized.length, errors });
+    if (normalized.length === 0) {
+      showMsg("No valid objects found in bulk file", true);
+    }
+  };
+
+  const handleMuFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setMuFileName(file.name);
+    await parseBulkFile(file);
+  };
+
+  const handleMuClear = () => {
+    setMuFileName("");
+    setMuQuestions([]);
+    setMuStats({ total: 0, ready: 0, errors: 0 });
+    if (muFileRef.current) muFileRef.current.value = "";
+  };
+
+  const handleMuUpload = async () => {
+    if (!muSubject || !muTopic || !muQuiz) {
+      showMsg("Select subject, topic, and quiz before uploading", true);
+      return;
+    }
+    if (!muQuestions.length) {
+      showMsg("No questions loaded for upload", true);
+      return;
+    }
+
+    setMuUploading(true);
+    try {
+      const payload = muQuestions.map((q) => ({
+        ...q,
+        quizSubject: muSubject,
+        quizTopic: muTopic,
+        quizName: muQuiz,
+      }));
+
+      const res = await fetch(muApiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        let message = `Server error ${res.status}`;
+        try {
+          const data = await res.json();
+          if (data?.error) message = data.error;
+        } catch { /* ignore */ }
+        throw new Error(message);
+      }
+
+      const data = await res.json().catch(() => ({}));
+      const inserted = Number.isFinite(data?.inserted) ? data.inserted : payload.length;
+      showMsg(`Uploaded ${inserted} questions`, false);
+    } catch (e: unknown) {
+      showMsg(e instanceof Error ? e.message : "Bulk upload failed", true);
+    } finally {
+      setMuUploading(false);
+    }
   };
 
   // ── Checkbox helpers ──────────────────────────────────
@@ -239,6 +524,96 @@ export default function AdminPanel() {
           {error || success}
         </div>
       )}
+
+      {/* Mass Upload */}
+      <div style={{ border: "0.5px solid var(--color-border-tertiary)", borderRadius: 12, padding: "1rem", marginBottom: "1rem", background: "var(--color-background-secondary)" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
+          <div>
+            <h2 style={{ fontSize: 15, fontWeight: 600, margin: 0, color: "var(--color-text-primary)" }}>Mass Upload</h2>
+            <p style={{ fontSize: 12, color: "var(--color-text-secondary)", margin: "4px 0 0" }}>
+              Upload NDJSON/JSONL or a JSON array. Select subject, topic, and quiz.
+            </p>
+          </div>
+          <button onClick={handleMuClear} style={{ padding: "6px 12px", borderRadius: 8, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: "pointer", fontSize: 12, color: "var(--color-text-secondary)" }}>
+            Clear
+          </button>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 10, marginBottom: 10 }}>
+          <select
+            value={muSubject}
+            onChange={(e) => {
+              const next = e.target.value as SubjectKey | "";
+              setMuSubject(next);
+              setMuTopic("");
+              setMuQuiz("");
+            }}
+            style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 13, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}
+          >
+            <option value="">Select subject</option>
+            {SUBJECT_OPTIONS.map((s) => (
+              <option key={s.value} value={s.value}>{s.label}</option>
+            ))}
+          </select>
+
+          <select
+            value={muTopic}
+            onChange={(e) => {
+              setMuTopic(e.target.value);
+              setMuQuiz("");
+            }}
+            disabled={!muSubject}
+            style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 13, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}
+          >
+            <option value="">Select topic</option>
+            {muTopicOptions.map((t) => (
+              <option key={t.value} value={t.value}>{t.label}</option>
+            ))}
+          </select>
+
+          <select
+            value={muQuiz}
+            onChange={(e) => setMuQuiz(e.target.value)}
+            disabled={!muTopic}
+            style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 13, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}
+          >
+            <option value="">Select quiz</option>
+            {QUIZ_OPTIONS.map((q) => (
+              <option key={q} value={q}>{q}</option>
+            ))}
+          </select>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1.3fr 1fr auto", gap: 10, alignItems: "center" }}>
+          <input
+            ref={muFileRef}
+            type="file"
+            accept=".ndjson,.jsonl,.json"
+            onChange={handleMuFileChange}
+            style={{ padding: "6px 10px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 12, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}
+          />
+          <input
+            value={muApiUrl}
+            onChange={(e) => setMuApiUrl(e.target.value)}
+            placeholder="Bulk API URL"
+            style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 13, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}
+          />
+          <button
+            onClick={handleMuUpload}
+            disabled={muUploading || !muApiUrl || !muSubject || !muTopic || !muQuiz || muQuestions.length === 0}
+            style={{ padding: "8px 14px", borderRadius: 8, border: "none", background: muUploading ? "#a855f7" : "#6d28d9", color: "#fff", cursor: muUploading ? "wait" : "pointer", fontSize: 13, fontWeight: 500, opacity: muUploading ? 0.8 : 1 }}
+          >
+            {muUploading ? "Uploading..." : "Upload"}
+          </button>
+        </div>
+
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 14, marginTop: 10, fontSize: 12, color: "var(--color-text-secondary)" }}>
+          <span>File: {muFileName || "None"}</span>
+          <span>Total: {muStats.total}</span>
+          <span>Ready: {muStats.ready}</span>
+          <span>Errors: {muStats.errors}</span>
+        </div>
+      </div>
 
       {/* Filters */}
       <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr", gap: 10, marginBottom: "1rem" }}>

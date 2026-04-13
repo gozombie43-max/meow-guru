@@ -2,12 +2,16 @@
 
 const rooms = new Map();
 
-function generateCode() {
-  return Math.random().toString(36).substring(2, 8).toUpperCase(); // e.g. "X7K2PQ"
+function generateCode(existing) {
+  for (let i = 0; i < 20; i += 1) {
+    const code = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
+    if (!existing.has(code)) return code;
+  }
+  return String(Date.now() % 10000).padStart(4, '0');
 }
 
 export function createRoom(socketId, playerName, subject, topic, questionCount) {
-  const code = generateCode();
+  const code = generateCode(rooms);
   rooms.set(code, {
     code,
     subject,
