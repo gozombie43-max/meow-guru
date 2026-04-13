@@ -36,17 +36,7 @@ export default function Home() {
         .lower-shell {
           position: relative;
           padding: clamp(2.75rem, 6vw, 4.5rem) 0 clamp(3.5rem, 7vw, 5rem);
-          background:
-            linear-gradient(120deg, rgba(5, 16, 34, 0.96) 0%, rgba(7, 20, 40, 0.88) 46%, rgba(5, 14, 30, 0.7) 100%),
-            radial-gradient(900px 360px at 14% 18%, rgba(34, 211, 238, 0.18), transparent 70%);
-        }
-        .lower-shell::after {
-          content: "";
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(180deg, rgba(4, 10, 22, 0.35) 0%, rgba(4, 10, 22, 0.85) 100%);
-          opacity: 1;
-          pointer-events: none;
+          background: transparent;
         }
         .subject-panel {
           position: relative;
@@ -54,13 +44,11 @@ export default function Home() {
           width: min(980px, 92vw);
           margin: 0 auto;
           padding: clamp(2rem, 6vw, 3.25rem) clamp(1.4rem, 5vw, 3rem) clamp(2.2rem, 6vw, 3.2rem);
-          background: rgba(8, 20, 38, 0.65);
+          background: transparent;
           border-radius: 32px;
-          border: 1px solid rgba(255, 255, 255, 0.18);
-          box-shadow:
-            0 24px 60px rgba(5, 10, 20, 0.45),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1);
-          backdrop-filter: blur(18px);
+          border: none;
+          box-shadow: none;
+          backdrop-filter: none;
         }
         .subject-heading-title { color: #f8fafc; }
         .subject-heading-copy { color: rgba(226, 244, 255, 0.78); }
@@ -115,7 +103,7 @@ export default function Home() {
           min-height: 72vh;
           color: #f8fafc;
           background-image:
-            linear-gradient(120deg, rgba(5, 16, 34, 0.96) 0%, rgba(7, 20, 40, 0.88) 46%, rgba(5, 14, 30, 0.7) 100%),
+            linear-gradient(120deg, rgba(5, 16, 34, 0.75) 0%, rgba(7, 20, 40, 0.62) 46%, rgba(5, 14, 30, 0.45) 100%),
             radial-gradient(900px 360px at 14% 18%, rgba(34, 211, 238, 0.18), transparent 70%),
             var(--hero-image, linear-gradient(135deg, #0b1c33 0%, #142746 45%, #0a1a2e 100%));
           background-size: cover;
@@ -126,7 +114,7 @@ export default function Home() {
           content: "";
           position: absolute;
           inset: 0;
-          background: linear-gradient(180deg, rgba(4, 10, 22, 0.35) 0%, rgba(4, 10, 22, 0.85) 100%);
+          background: linear-gradient(180deg, rgba(4, 10, 22, 0.1) 0%, rgba(4, 10, 22, 0.75) 100%);
           z-index: 1;
         }
         .hero-content {
@@ -435,69 +423,50 @@ export default function Home() {
       {/* ── Hero Section ── */}
       <section className="hero-section" style={{ ["--hero-image" as string]: "url('/study-hero.jpg')" }}>
         <div className="hero-content">
-          <div className="animate-fade-in-up" style={{ animationDelay: "250ms" }}>
-            <span className="hero-kicker">INDIA&apos;S FOCUSED EXAM PREP PLATFORM</span>
-            <h1 className="hero-title">
-              Study With Guru
-              <br />
-              <span className="hero-highlight">for faster rank improvement.</span>
-            </h1>
-            <p className="hero-copy">
-              Structured subject practice, exam-grade mock sessions, and live Battle Mode designed for serious aspirants.
-            </p>
-            <div className="hero-actions">
-              <Link href="#subjects" className="hero-btn hero-btn-primary">
-                Start Practice
-              </Link>
-              <Link href="/battle" className="hero-btn hero-btn-ghost">
-                Enter Battle Mode
-              </Link>
+          <section className="lower-shell" id="subjects">
+            <div className="subject-panel">
+              <div className="text-center mb-10 px-4 sm:px-6 subject-heading-wrap">
+                <h2 className="animate-fade-in-up text-[clamp(1.6rem,3.5vw,2.25rem)] font-bold mb-3 subject-heading-title" style={{ animationDelay: "600ms", fontFamily: "'SF Pro Display','Helvetica Neue',sans-serif" }}>
+                  Choose Your <span className="gradient-text">Subject</span>
+                </h2>
+                <p className="animate-fade-in-up subject-heading-copy" style={{ animationDelay: "650ms" }}>
+                  Select a subject to begin your practice session
+                </p>
+              </div>
+
+              <div className="pill-grid">
+                {subjects.map((subject, i) => (
+                  <Link
+                    key={subject.title}
+                    href={subject.href}
+                    className="pill-card"
+                    style={{
+                      animationDelay: `${700 + i * 120}ms, ${i * 360}ms`,
+                      ["--pill-base" as string]: subject.baseColor,
+                      ["--pill-light" as string]: subject.lightColor,
+                      ["--pill-dark" as string]: subject.darkColor,
+                      ["--pill-glow" as string]: subject.glowColor,
+                    }}
+                  >
+                    <div className="pill-gloss-top" aria-hidden="true" />
+                    <div className="pill-content">{subject.title}</div>
+                    <div className="pill-gloss-bottom" aria-hidden="true" />
+                  </Link>
+                ))}
+              </div>
+
+              <div className="battle-dock">
+                <Link href="/battle" className="battle-cta" style={{ animationDelay: "1100ms" }}>
+                  <span className="battle-cta-text">Battle Mode</span>
+                </Link>
+                <p className="battle-credit">Developed by Gurucharan Murmu</p>
+              </div>
             </div>
-          </div>
+          </section>
         </div>
       </section>
 
       {/* ── Subject Boxes ── */}
-      <section className="lower-shell" id="subjects">
-        <div className="subject-panel">
-          <div className="text-center mb-10 px-4 sm:px-6 subject-heading-wrap">
-            <h2 className="animate-fade-in-up text-[clamp(1.6rem,3.5vw,2.25rem)] font-bold mb-3 subject-heading-title" style={{ animationDelay: "600ms", fontFamily: "'SF Pro Display','Helvetica Neue',sans-serif" }}>
-              Choose Your <span className="gradient-text">Subject</span>
-            </h2>
-            <p className="animate-fade-in-up subject-heading-copy" style={{ animationDelay: "650ms" }}>
-              Select a subject to begin your practice session
-            </p>
-          </div>
-
-          <div className="pill-grid">
-            {subjects.map((subject, i) => (
-              <Link
-                key={subject.title}
-                href={subject.href}
-                className="pill-card"
-                style={{
-                  animationDelay: `${700 + i * 120}ms, ${i * 360}ms`,
-                  ["--pill-base" as string]: subject.baseColor,
-                  ["--pill-light" as string]: subject.lightColor,
-                  ["--pill-dark" as string]: subject.darkColor,
-                  ["--pill-glow" as string]: subject.glowColor,
-                }}
-              >
-                <div className="pill-gloss-top" aria-hidden="true" />
-                <div className="pill-content">{subject.title}</div>
-                <div className="pill-gloss-bottom" aria-hidden="true" />
-              </Link>
-            ))}
-          </div>
-
-          <div className="battle-dock">
-            <Link href="/battle" className="battle-cta" style={{ animationDelay: "1100ms" }}>
-              <span className="battle-cta-text">Battle Mode</span>
-            </Link>
-            <p className="battle-credit">Developed by Gurucharan Murmu</p>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }
