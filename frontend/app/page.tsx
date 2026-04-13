@@ -212,6 +212,41 @@ export default function Home() {
           margin: 0 auto;
           padding: 0;
         }
+        .liquid-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 1rem;
+          max-width: 760px;
+          margin: 0 auto;
+          padding: 0;
+        }
+        .liquid-subject {
+          justify-content: center;
+          text-align: center;
+          border-radius: 999px;
+          min-height: 68px;
+          background: rgba(255, 255, 255, 0.16);
+          border: 1.5px solid rgba(255, 255, 255, 0.45);
+          box-shadow: 0 16px 32px rgba(8, 120, 160, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.65);
+        }
+        .liquid-subject .btn-label {
+          color: #f8fafc;
+          text-shadow: 0 2px 10px rgba(2, 8, 18, 0.55);
+          font-size: clamp(0.95rem, 1.8vw, 1.15rem);
+          letter-spacing: 0.02em;
+        }
+        .liquid-battle {
+          width: min(86vw, 420px);
+          min-height: 72px;
+          padding: 20px 40px;
+          border-radius: 999px;
+          letter-spacing: 0.16em;
+          text-transform: uppercase;
+        }
+        .liquid-battle .btn-label {
+          color: #f8fafc;
+          font-weight: 900;
+        }
         .pill-card {
           --pill-base: #5b9fe0;
           --pill-light: #a5cdf0;
@@ -342,7 +377,7 @@ export default function Home() {
         @keyframes pill-chroma { 0%,100% { filter: hue-rotate(0deg) saturate(1); } 50% { filter: hue-rotate(14deg) saturate(1.08); } }
         @keyframes pill-glow-pulse { 0%,100% { opacity: 0.5; box-shadow: 0 0 20px color-mix(in srgb, var(--pill-glow) 60%, transparent); } 50% { opacity: 0.82; box-shadow: 0 0 32px color-mix(in srgb, var(--pill-glow) 86%, transparent); } }
         @keyframes pill-shimmer { 0% { transform: translateX(-170%) rotate(12deg); opacity: 0; } 10% { opacity: 0.9; } 22% { transform: translateX(330%) rotate(12deg); opacity: 0.9; } 30%,100% { transform: translateX(330%) rotate(12deg); opacity: 0; } }
-        @media (max-width: 820px) { .pill-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 420px; gap: 0.8rem; padding: 0; } .pill-card { min-height: 60px; padding: 7px 14px; } .pill-content { font-size: clamp(0.85rem,3.8vw,1rem); } }
+        @media (max-width: 820px) { .pill-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 420px; gap: 0.8rem; padding: 0; } .pill-card { min-height: 60px; padding: 7px 14px; } .pill-content { font-size: clamp(0.85rem,3.8vw,1rem); } .liquid-grid { max-width: 420px; gap: 0.8rem; } .liquid-subject { min-height: 60px; padding: 10px 14px; } }
         @media (max-width: 640px) {
           .hero-section { min-height: 100vh; min-height: 100svh; background-position: center top; }
           .hero-content { min-height: 100vh; min-height: 100svh; padding-top: 7.75rem; padding-bottom: 3rem; text-align: center; }
@@ -356,6 +391,10 @@ export default function Home() {
           .pill-grid { max-width: 380px; gap: 0.6rem; padding: 0; }
           .pill-card { min-height: 54px; padding: 7px 10px; }
           .pill-content { font-size: clamp(0.78rem,3.2vw,0.92rem); letter-spacing: 0.01em; text-transform: none; padding: 0 0.15rem; }
+          .liquid-grid { max-width: 380px; gap: 0.6rem; }
+          .liquid-subject { min-height: 54px; padding: 8px 12px; }
+          .liquid-subject .btn-label { font-size: clamp(0.85rem, 3.2vw, 0.98rem); letter-spacing: 0.01em; }
+          .liquid-battle { min-height: 52px; padding: 12px 26px; font-size: clamp(0.98rem, 4.2vw, 1.12rem); letter-spacing: 0.1em; }
           .battle-cta {
             width: min(86vw, 320px);
             min-height: 52px;
@@ -436,30 +475,36 @@ export default function Home() {
                 </p>
               </div>
 
-              <div className="pill-grid">
+              <div className="liquid-grid">
                 {subjects.map((subject, i) => (
                   <Link
                     key={subject.title}
                     href={subject.href}
-                    className="pill-card"
+                    className="liquid-btn liquid-subject animate-fade-in-up"
                     style={{
-                      animationDelay: `${700 + i * 120}ms, ${i * 360}ms`,
-                      ["--pill-base" as string]: subject.baseColor,
-                      ["--pill-light" as string]: subject.lightColor,
-                      ["--pill-dark" as string]: subject.darkColor,
-                      ["--pill-glow" as string]: subject.glowColor,
+                      animationDelay: `${700 + i * 120}ms`,
+                      ["--liquid-cyan" as string]: subject.lightColor,
+                      ["--liquid-teal" as string]: subject.baseColor,
+                      ["--liquid-purple" as string]: subject.darkColor,
                     }}
                   >
-                    <div className="pill-gloss-top" aria-hidden="true" />
-                    <div className="pill-content">{subject.title}</div>
-                    <div className="pill-gloss-bottom" aria-hidden="true" />
+                    <span className="btn-label">{subject.title}</span>
                   </Link>
                 ))}
               </div>
 
               <div className="battle-dock">
-                <Link href="/battle" className="battle-cta" style={{ animationDelay: "1100ms" }}>
-                  <span className="battle-cta-text">Battle Mode</span>
+                <Link
+                  href="/battle"
+                  className="liquid-btn liquid-battle animate-fade-in-up"
+                  style={{
+                    animationDelay: "1100ms",
+                    ["--liquid-cyan" as string]: "#7c5cff",
+                    ["--liquid-teal" as string]: "#ff7ccf",
+                    ["--liquid-purple" as string]: "#7dd3fc",
+                  }}
+                >
+                  <span className="btn-label">Battle Mode</span>
                 </Link>
                 <p className="battle-credit">Developed by Gurucharan Murmu</p>
               </div>
