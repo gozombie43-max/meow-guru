@@ -530,3 +530,373 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* ========== Battle Theme (1v1 setup) ========== */
+
+.battle-theme {
+  --battle-gold: #c8a15b;
+  --battle-gold-bright: #f2d08a;
+  --battle-text: #f5e9d3;
+  --battle-muted: rgba(245, 233, 211, 0.65);
+  --battle-panel: rgba(18, 16, 14, 0.92);
+  --battle-border: rgba(200, 161, 91, 0.35);
+  --battle-shadow: 0 20px 55px rgba(0, 0, 0, 0.55);
+  color: var(--battle-text);
+  font-family: "Cinzel", "Garamond", "Times New Roman", serif;
+}
+
+.battle-lobby {
+  background: radial-gradient(ellipse at 30% 20%, #2a241b 0%, #161316 48%, #0b0b0d 100%);
+}
+
+.battle-glow {
+  position: fixed;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(2px);
+  opacity: 0.7;
+}
+
+.battle-glow-1 {
+  top: -120px;
+  left: -90px;
+  background: radial-gradient(circle, rgba(242, 208, 138, 0.35) 0%, transparent 70%);
+  animation: blobFloat 10s ease-in-out infinite alternate;
+}
+
+.battle-glow-2 {
+  bottom: -140px;
+  right: -110px;
+  background: radial-gradient(circle, rgba(200, 161, 91, 0.28) 0%, transparent 72%);
+  animation: blobFloat 12s ease-in-out infinite alternate-reverse;
+}
+
+.battle-panel {
+  background: linear-gradient(180deg, rgba(26, 22, 18, 0.96) 0%, rgba(14, 12, 10, 0.98) 100%);
+  border: 1.5px solid var(--battle-border);
+  border-radius: 28px;
+  padding: 26px 22px;
+  box-shadow: var(--battle-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  position: relative;
+}
+
+.battle-title {
+  font-size: 1.45rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--battle-gold-bright);
+}
+
+.battle-subtitle {
+  font-size: 0.9rem;
+  color: var(--battle-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.battle-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--battle-muted);
+}
+
+.battle-input {
+  width: 100%;
+  background: rgba(9, 8, 8, 0.85);
+  border: 1.5px solid rgba(200, 161, 91, 0.35);
+  border-radius: 12px;
+  padding: 12px 14px;
+  color: var(--battle-text);
+  font-size: 0.95rem;
+  outline: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.battle-input:focus {
+  border-color: var(--battle-gold-bright);
+  box-shadow: 0 0 0 3px rgba(200, 161, 91, 0.18);
+}
+
+.battle-input::placeholder {
+  color: rgba(245, 233, 211, 0.45);
+}
+
+.battle-counts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.battle-count-btn {
+  border-radius: 12px;
+  padding: 10px 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  border: 1.5px solid rgba(200, 161, 91, 0.35);
+  background: rgba(20, 18, 16, 0.75);
+  color: var(--battle-text);
+  transition: transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.battle-count-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(242, 208, 138, 0.7);
+}
+
+.battle-count-btn.is-active {
+  background: linear-gradient(135deg, #d7b06b 0%, #b88941 100%);
+  color: #1a140c;
+  border-color: #f2d08a;
+  box-shadow: 0 8px 18px rgba(200, 161, 91, 0.35);
+}
+
+.battle-divider {
+  position: relative;
+  text-align: center;
+  margin: 22px 0 18px;
+}
+
+.battle-divider::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(200, 161, 91, 0.4), transparent);
+}
+
+.battle-divider span {
+  position: relative;
+  padding: 0 12px;
+  background: var(--battle-panel);
+  color: var(--battle-muted);
+  font-size: 0.7rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+
+.battle-btn {
+  height: 52px;
+  border-radius: 16px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.battle-btn-primary {
+  background: linear-gradient(135deg, #d7b06b 0%, #b88941 100%);
+  color: #1c140a;
+  box-shadow: 0 12px 28px rgba(200, 161, 91, 0.4);
+}
+
+.battle-btn-primary:hover {
+  transform: translateY(-1px);
+}
+
+.battle-btn-secondary {
+  background: rgba(16, 14, 12, 0.92);
+  color: var(--battle-text);
+  border: 1.5px solid rgba(200, 161, 91, 0.4);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.battle-helper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(200, 161, 91, 0.25);
+  background: rgba(20, 18, 16, 0.75);
+  font-size: 0.82rem;
+  color: var(--battle-muted);
+}
+
+.battle-join {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+  padding: 8px;
+  border-radius: 16px;
+  border: 1px solid rgba(200, 161, 91, 0.25);
+  background: rgba(12, 10, 9, 0.85);
+}
+
+.battle-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.battle-stat {
+  border-radius: 14px;
+  border: 1px solid rgba(200, 161, 91, 0.25);
+  background: rgba(18, 16, 14, 0.8);
+  padding: 10px;
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--battle-muted);
+}
+
+.battle-code {
+  border-radius: 20px;
+  border: 2px dashed rgba(200, 161, 91, 0.45);
+  background: rgba(13, 11, 10, 0.9);
+  padding: 18px 14px;
+}
+
+.battle-code-text {
+  font-family: "Fira Mono", "Courier New", monospace;
+  font-size: 2.6rem;
+  letter-spacing: 0.28em;
+  color: var(--battle-gold-bright);
+}
+
+.battle-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  font-weight: 700;
+  border: 2px solid rgba(200, 161, 91, 0.45);
+  background: rgba(20, 16, 12, 0.85);
+  color: var(--battle-gold-bright);
+}
+
+.battle-avatar.is-empty {
+  border-style: dashed;
+  color: rgba(245, 233, 211, 0.5);
+}
+
+.battle-vs {
+  font-size: 1rem;
+  font-weight: 700;
+  color: rgba(245, 233, 211, 0.45);
+}
+
+.battle-copy {
+  background: linear-gradient(135deg, #d7b06b 0%, #b88941 100%);
+  color: #1c140a;
+  border-radius: 999px;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 16px rgba(200, 161, 91, 0.35);
+}
+
+.battle-error {
+  border-radius: 12px;
+  border: 1px solid rgba(239, 68, 68, 0.45);
+  background: rgba(64, 12, 12, 0.6);
+  color: #fca5a5;
+  padding: 10px 12px;
+  font-size: 0.85rem;
+}
+
+.battle-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  position: relative;
+  margin-bottom: 14px;
+  color: var(--battle-text);
+}
+
+.battle-back {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  border: 1px solid rgba(200, 161, 91, 0.35);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--battle-gold-bright);
+  background: rgba(10, 9, 8, 0.8);
+  position: absolute;
+  left: 0;
+}
+
+.battle-chip {
+  border-radius: 999px;
+  padding: 6px 12px;
+  border: 1px solid rgba(200, 161, 91, 0.35);
+  background: rgba(18, 16, 14, 0.85);
+  font-size: 0.82rem;
+  color: var(--battle-text);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.battle-info-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(200, 161, 91, 0.45);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  color: var(--battle-gold-bright);
+  background: rgba(12, 10, 9, 0.9);
+}
+
+.battle-cta {
+  height: 50px;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.battle-cta small {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 500;
+  opacity: 0.65;
+}
+
+.battle-focus {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--battle-muted);
+}
+
+.battle-feature {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--battle-text);
+}
+
+.battle-join-btn {
+  margin-top: 10px;
+  height: 46px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+
+.battle-footer {
+  margin-top: 12px;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--battle-muted);
+}

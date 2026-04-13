@@ -445,60 +445,38 @@ export default function BattlePage() {
 
   // ── Lobby ───────────────────────────────────────────────────────────────────
   if (battleState === "lobby") return (
-    <div className="min-h-screen relative overflow-hidden" style={{
-      background: "radial-gradient(ellipse at 30% 20%, #dce8f8 0%, #eef2ff 40%, #f0f4f8 100%)",
-    }}>
-      {/* Ambient blobs */}
-      <div className="bg-blob-1" />
-      <div className="bg-blob-2" />
+    <div className="min-h-screen relative overflow-hidden battle-theme battle-lobby">
+      <div className="battle-glow battle-glow-1" />
+      <div className="battle-glow battle-glow-2" />
 
-      <div className="relative z-10 mx-auto max-w-md px-4 pt-16 pb-10">
-        {/* Header */}
-        <motion.div className="text-center mb-10"
-          initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}>
-          <div className="inline-flex items-center gap-2 rounded-full px-4 py-2 mb-4"
-            style={{ background: "rgba(124,58,237,0.10)", border: "1px solid rgba(124,58,237,0.25)" }}>
-            <Swords className="w-4 h-4 text-violet-600" />
-            <span className="text-sm font-semibold text-violet-700">1v1 Battle Mode</span>
-          </div>
-          <h1 className="text-4xl font-black text-slate-900 leading-none mb-2"
-            style={{ fontFamily: "'SF Pro Display','Helvetica Neue',sans-serif" }}>
-            Challenge a{" "}
-            <span style={{
-              background: "linear-gradient(135deg,#7c3aed 0%,#2563eb 100%)",
-              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-            }}>Friend</span>
-          </h1>
+      <div className="relative z-10 mx-auto max-w-md px-5 pt-10 pb-10">
+        <motion.div className="battle-topbar"
+          initial={{ opacity: 0, y: -14 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45 }}>
+          <span className="battle-back">&lt;</span>
+          <span className="battle-title">1v1 Battle Setup</span>
         </motion.div>
 
-        {/* Card */}
-        <motion.div className="glass-panel"
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+        <motion.div className="battle-panel"
+          initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}>
 
-          {/* Name input */}
           <div className="mb-4">
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
-              Your Name
-            </label>
+            <label className="battle-label block mb-2">Player Name</label>
             <input
-              className="glass-input text-base font-semibold"
-              placeholder="Enter your name..."
+              className="battle-input"
+              placeholder="Enter name..."
               value={playerName}
               onChange={e => { setPlayerName(e.target.value); setError(""); }}
               maxLength={20}
             />
           </div>
 
-          {/* Subject filter */}
-          <div className="mb-5">
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
-              Subject
-            </label>
+          <div className="mb-4">
+            <label className="battle-label block mb-2">Subject</label>
             <div className="relative">
               <select
-                className="glass-input w-full text-base font-semibold pr-10"
+                className="battle-input w-full pr-10"
                 value={subject}
                 onChange={(e) => { setSubject(e.target.value); setTopic("all"); }}
               >
@@ -506,18 +484,15 @@ export default function BattlePage() {
                   <option key={s.value} value={s.value}>{s.label}</option>
                 ))}
               </select>
-              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">▾</span>
+              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-amber-200 text-sm">▾</span>
             </div>
           </div>
 
-          {/* Topic filter */}
-          <div className="mb-6">
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
-              Topic
-            </label>
+          <div className="mb-4">
+            <label className="battle-label block mb-2">Topic</label>
             <div className="relative">
               <select
-                className="glass-input w-full text-base font-semibold pr-10"
+                className="battle-input w-full pr-10"
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
               >
@@ -525,80 +500,60 @@ export default function BattlePage() {
                   <option key={t.value} value={t.value}>{t.label}</option>
                 ))}
               </select>
-              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">▾</span>
+              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-amber-200 text-sm">▾</span>
             </div>
           </div>
 
-          {/* Question count */}
-          <div className="mb-6">
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
-              Questions
-            </label>
-            <div className="grid grid-cols-4 gap-2">
+          <div className="mb-4">
+            <label className="battle-label block mb-3 text-center">Questions</label>
+            <div className="battle-counts">
               {QUESTION_COUNTS.map(count => (
-                <button key={count} onClick={() => setQuestionCount(count)}
-                  className="rounded-xl py-2 text-center text-sm font-bold transition-all"
-                  style={{
-                    background: questionCount === count ? "rgba(124,58,237,0.12)" : "rgba(255,255,255,0.5)",
-                    border: `1.5px solid ${questionCount === count ? "#7c3aed" : "rgba(255,255,255,0.6)"}`,
-                    color: questionCount === count ? "#6d28d9" : "#64748b",
-                  }}>
+                <button
+                  key={count}
+                  type="button"
+                  onClick={() => setQuestionCount(count)}
+                  className={`battle-count-btn ${questionCount === count ? "is-active" : ""}`}
+                >
                   {count}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Divider */}
-          <div className="relative mb-5">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-200" />
-            </div>
-            <div className="relative flex justify-center">
-              <span className="bg-white/80 px-3 text-xs font-semibold text-slate-400 uppercase tracking-widest">
-                or
-              </span>
-            </div>
+          <div className="battle-helper">
+            <span className="battle-info-dot">i</span>
+            <span>Game Focus: {questionCount} {subjectLabel} Focus</span>
+          </div>
+          <div className="battle-focus">* {questionCount} Questions</div>
+          <div className="battle-feature">
+            <span className="battle-chip">Feature: Reaction Core</span>
           </div>
 
-          <div className="space-y-4">
-            {/* Create room */}
-            <button onClick={createRoom}
-              className="w-full h-14 rounded-2xl font-bold text-white text-base flex items-center justify-center gap-2 transition-all"
-              style={{
-                background: "linear-gradient(135deg,#7c3aed 0%,#4f46e5 50%,#2563eb 100%)",
-                boxShadow: "0 8px 24px rgba(124,58,237,0.35), inset 0 1px 0 rgba(255,255,255,0.25)",
-              }}>
-              <Swords className="w-4 h-4" />
-              Create Battle Room
+          <div className="mt-5 space-y-3">
+            <button onClick={createRoom} className="battle-btn battle-btn-primary battle-cta w-full">
+              <span>Create Battle Room</span>
+              <small>Create Battle in 1v1 mode</small>
             </button>
 
-            {/* Join room */}
-            <div className="flex gap-2 items-stretch rounded-2xl bg-white/70 border border-slate-100 p-2">
+            <button onClick={joinRoom} className="battle-btn battle-btn-primary battle-join-btn w-full">
+              Join
+            </button>
+
+            <div className="mt-2">
+              <label className="battle-label block mb-2">Enter Code:</label>
               <input
-                className="glass-input font-mono font-bold tracking-widest uppercase text-center text-base h-14"
-                placeholder="Room Code"
+                className="battle-input font-mono font-bold tracking-widest uppercase text-center"
+                placeholder="Code..."
                 value={joinCode}
-                onChange={e => { setJoinCode(e.target.value.toUpperCase().slice(0,6)); setError(""); }}
+                onChange={e => { setJoinCode(e.target.value.toUpperCase().slice(0, 6)); setError(""); }}
                 maxLength={6}
-                style={{ flexBasis: "62%", maxWidth: "62%" }}
               />
-              <button onClick={joinRoom}
-                className="h-14 px-8 rounded-lg font-bold text-white text-base transition-all flex-shrink-0"
-                style={{
-                  background: "linear-gradient(135deg,#10b981,#059669)",
-                  boxShadow: "0 4px 14px rgba(16,185,129,0.35)",
-                  minWidth: "108px",
-                }}>
-                Join
-              </button>
             </div>
           </div>
 
-          {/* Error */}
           <AnimatePresence>
             {error && (
-              <motion.div className="mt-3 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-medium text-red-600"
+              <motion.div className="battle-error mt-3"
                 initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
                 {error}
               </motion.div>
@@ -606,77 +561,61 @@ export default function BattlePage() {
           </AnimatePresence>
         </motion.div>
 
-        {/* Stats row */}
-        <motion.div className="mt-6 grid grid-cols-3 gap-3"
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
-          {[
-            { icon: <Zap className="w-4 h-4 text-amber-500" />, label: `${questionCount} Questions` },
-            { icon: <Target className="w-4 h-4 text-violet-500" />, label: `${subjectLabel} Focus` },
-            { icon: <Swords className="w-4 h-4 text-emerald-500" />, label: "+10 per Hit" },
-          ].map((s, i) => (
-            <div key={`stat-${i}`} className="glass-card !p-3 text-center flex flex-col items-center gap-1">
-              {s.icon}
-              <span className="text-xs font-semibold text-slate-600">{s.label}</span>
-            </div>
-          ))}
-        </motion.div>
+        <div className="battle-footer">
+          <div>+10 Questions</div>
+          <div>10 Questions, +10 XP</div>
+        </div>
       </div>
     </div>
   );
 
   // ── Waiting ──────────────────────────────────────────────────────────────────
   if (battleState === "waiting") return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 relative"
-      style={{ background: "radial-gradient(ellipse at 30% 20%, #dce8f8 0%, #eef2ff 40%, #f0f4f8 100%)" }}>
-      <div className="bg-blob-1" /><div className="bg-blob-2" />
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 relative overflow-hidden battle-theme battle-lobby">
+      <div className="battle-glow battle-glow-1" />
+      <div className="battle-glow battle-glow-2" />
 
-      <motion.div className="relative z-10 glass-panel w-full max-w-sm text-center"
-        initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
+      <motion.div className="relative z-10 battle-panel w-full max-w-sm text-center"
+        initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}>
 
-        {/* Pulsing swords */}
-        <motion.div className="w-16 h-16 rounded-full mx-auto mb-5 flex items-center justify-center"
-          style={{ background: "rgba(124,58,237,0.10)", border: "1.5px solid rgba(124,58,237,0.25)" }}
+        <motion.div className="w-14 h-14 rounded-full mx-auto mb-5 flex items-center justify-center"
+          style={{ background: "rgba(18, 16, 14, 0.9)", border: "1.5px solid rgba(200, 161, 91, 0.45)" }}
           animate={{ scale: [1, 1.08, 1] }} transition={{ repeat: Infinity, duration: 2 }}>
-          <Swords className="w-8 h-8 text-violet-600" />
+          <Swords className="w-7 h-7 text-amber-300" />
         </motion.div>
 
-        <h2 className="text-xl font-bold text-slate-800 mb-1">Waiting for opponent...</h2>
-        <p className="text-sm text-slate-500 mb-6">Share this code with your friend</p>
+        <h2 className="text-lg font-semibold text-amber-100 mb-1">Waiting for opponent...</h2>
+        <p className="text-sm text-amber-200/70 mb-6">Share this code with your friend</p>
 
-        {/* Room code */}
         <div className="relative mb-6">
-          <div className="rounded-2xl border-2 border-dashed border-violet-300 bg-violet-50 py-5 px-4">
-            <div className="font-mono text-5xl font-black tracking-[0.25em] text-violet-700 select-all">
+          <div className="battle-code">
+            <div className="battle-code-text select-all">
               {roomCode}
             </div>
           </div>
           <button onClick={copyCode}
-            className="absolute -top-2 -right-2 w-9 h-9 rounded-full flex items-center justify-center shadow-md transition-all"
-            style={{ background: copied ? "#10b981" : "#7c3aed" }}>
+            className="absolute -top-2 -right-2 battle-copy">
             {copied
-              ? <Check className="w-4 h-4 text-white" />
-              : <Copy className="w-4 h-4 text-white" />}
+              ? <Check className="w-4 h-4" />
+              : <Copy className="w-4 h-4" />}
           </button>
         </div>
 
-        {/* Players joined */}
         <div className="flex items-center justify-center gap-3 mb-4">
           {[playerName, players[1]].map((p, i) => (
             <div key={i} className="flex flex-col items-center gap-1">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all ${
-                p ? "border-violet-400 bg-violet-100 text-violet-700 scale-100" : "border-dashed border-slate-300 bg-slate-50 text-slate-400"
-              }`}>
+              <div className={`battle-avatar ${p ? "" : "is-empty"}`}>
                 {p ? p[0].toUpperCase() : "?"}
               </div>
-              <span className="text-[11px] font-semibold text-slate-500">{p || "waiting..."}</span>
+              <span className="text-[11px] font-semibold text-amber-200/70">{p || "waiting..."}</span>
             </div>
           ))}
-          <span className="text-slate-300 text-lg font-bold mb-4">VS</span>
+          <span className="battle-vs">VS</span>
         </div>
 
         <div className="flex gap-1.5 justify-center">
           {[0, 1, 2].map(i => (
-            <motion.div key={i} className="w-2 h-2 rounded-full bg-violet-400"
+            <motion.div key={i} className="w-2 h-2 rounded-full bg-amber-300"
               animate={{ opacity: [0.3, 1, 0.3] }}
               transition={{ repeat: Infinity, duration: 1.2, delay: i * 0.2 }} />
           ))}
