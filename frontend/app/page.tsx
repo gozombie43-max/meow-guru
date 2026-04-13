@@ -33,6 +33,37 @@ export default function Home() {
   return (
     <div className="min-h-screen relative overflow-hidden">
       <style>{`
+        .lower-shell {
+          position: relative;
+          padding: clamp(2.75rem, 6vw, 4.5rem) 0 clamp(3.5rem, 7vw, 5rem);
+          background:
+            linear-gradient(120deg, rgba(5, 16, 34, 0.96) 0%, rgba(7, 20, 40, 0.88) 46%, rgba(5, 14, 30, 0.7) 100%),
+            radial-gradient(900px 360px at 14% 18%, rgba(34, 211, 238, 0.18), transparent 70%);
+        }
+        .lower-shell::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(180deg, rgba(4, 10, 22, 0.35) 0%, rgba(4, 10, 22, 0.85) 100%);
+          opacity: 1;
+          pointer-events: none;
+        }
+        .subject-panel {
+          position: relative;
+          z-index: 2;
+          width: min(980px, 92vw);
+          margin: 0 auto;
+          padding: clamp(2rem, 6vw, 3.25rem) clamp(1.4rem, 5vw, 3rem) clamp(2.2rem, 6vw, 3.2rem);
+          background: rgba(8, 20, 38, 0.65);
+          border-radius: 32px;
+          border: 1px solid rgba(255, 255, 255, 0.18);
+          box-shadow:
+            0 24px 60px rgba(5, 10, 20, 0.45),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+          backdrop-filter: blur(18px);
+        }
+        .subject-heading-title { color: #f8fafc; }
+        .subject-heading-copy { color: rgba(226, 244, 255, 0.78); }
         .hero-nav {
           background: rgba(8, 20, 38, 0.6);
           border-bottom: 1px solid rgba(255, 255, 255, 0.18);
@@ -186,10 +217,10 @@ export default function Home() {
         .pill-grid {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 0.85rem;
+          gap: 1rem;
           max-width: 760px;
           margin: 0 auto;
-          padding: 0 1rem;
+          padding: 0;
         }
         .pill-card {
           --pill-base: #5b9fe0;
@@ -203,20 +234,20 @@ export default function Home() {
           display: flex;
           align-items: center;
           justify-content: center;
-          min-height: 66px;
-          padding: 8px 18px;
+          min-height: 68px;
+          padding: 10px 18px;
           color: #fff;
           text-decoration: none;
           background:
-            radial-gradient(circle at 18% 16%, rgba(255,255,255,0.32) 0%, rgba(255,255,255,0.08) 26%, rgba(255,255,255,0) 58%),
-            radial-gradient(circle at 82% 84%, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 54%),
-            linear-gradient(126deg, color-mix(in srgb, var(--pill-light) 82%, #fff 18%) 0%, var(--pill-base) 46%, color-mix(in srgb, var(--pill-dark) 88%, #0f172a 12%) 100%);
-          border: 1px solid color-mix(in srgb, var(--pill-light) 62%, white 38%);
+            radial-gradient(circle at 16% 18%, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.1) 34%, rgba(255,255,255,0) 62%),
+            radial-gradient(circle at 80% 84%, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 60%),
+            linear-gradient(130deg, color-mix(in srgb, var(--pill-light) 78%, #fff 22%) 0%, var(--pill-base) 45%, color-mix(in srgb, var(--pill-dark) 84%, #111827 16%) 100%);
+          border: 1px solid color-mix(in srgb, var(--pill-light) 72%, white 28%);
           box-shadow:
-            0 10px 20px color-mix(in srgb, var(--pill-base) 50%, transparent),
-            0 0 18px color-mix(in srgb, var(--pill-glow) 70%, transparent),
-            inset 0 1px 0 rgba(255,255,255,0.46),
-            inset 0 -10px 18px rgba(10,20,40,0.16);
+            0 18px 36px color-mix(in srgb, var(--pill-base) 40%, transparent),
+            0 8px 18px rgba(15, 23, 42, 0.12),
+            inset 0 1px 0 rgba(255,255,255,0.5),
+            inset 0 -10px 18px rgba(15, 23, 42, 0.12);
           transform: scale(0.6);
           opacity: 0;
           animation: pill-entry 500ms cubic-bezier(0.34,1.56,0.64,1) forwards, pill-breathe 4.8s ease-in-out infinite, pill-chroma 6.6s linear infinite;
@@ -255,7 +286,7 @@ export default function Home() {
           text-shadow: 0 0 10px rgba(73,246,255,0.72), 0 0 20px rgba(255,138,0,0.48), 0 0 36px rgba(255,58,140,0.36);
         }
         @keyframes guru-neon-shift { 0% { background-position: 0% 50%; filter: hue-rotate(0deg); } 50% { background-position: 100% 50%; filter: hue-rotate(68deg); } 100% { background-position: 0% 50%; filter: hue-rotate(0deg); } }
-        .pill-content { position: relative; z-index: 2; font-family: "Trebuchet MS","Segoe UI",sans-serif; font-size: clamp(0.95rem,1.7vw,1.1rem); font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; text-shadow: 0 1px 2px rgba(0,0,0,0.28), 0 0 16px color-mix(in srgb, var(--pill-light) 55%, transparent); text-align: center; padding: 0 0.35rem; }
+        .pill-content { position: relative; z-index: 2; font-family: "Avenir Next","Segoe UI",sans-serif; font-size: clamp(0.95rem,1.8vw,1.15rem); font-weight: 700; letter-spacing: 0.02em; text-transform: none; text-shadow: 0 1px 2px rgba(0,0,0,0.22), 0 0 18px color-mix(in srgb, var(--pill-light) 55%, transparent); text-align: center; padding: 0 0.35rem; }
         .battle-cta {
           position: relative;
           display: inline-flex;
@@ -264,18 +295,18 @@ export default function Home() {
           padding: 18px 44px;
           border-radius: 999px;
           font-weight: 900;
-          font-size: clamp(1.05rem,2.3vw,1.45rem);
-          letter-spacing: 0.1em;
+          font-size: clamp(1.05rem,2.5vw,1.45rem);
+          letter-spacing: 0.12em;
           text-transform: uppercase;
           color: #f8fafc;
           text-decoration: none;
-          background: linear-gradient(120deg, #8a4dff 0%, #b14cff 28%, #f084ff 52%, #7dd3fc 76%, #a855f7 100%);
-          background-size: 300% 300%;
-          border: 1px solid rgba(255,255,255,0.35);
+          background: linear-gradient(120deg, #7c5cff 0%, #b76bff 38%, #ff7ccf 70%, #7dd3fc 100%);
+          background-size: 200% 200%;
+          border: 1px solid rgba(255,255,255,0.55);
           box-shadow:
-            0 14px 30px rgba(138,77,255,0.35),
-            0 0 24px rgba(240,132,255,0.55),
-            inset 0 2px 0 rgba(255,255,255,0.4);
+            0 18px 40px rgba(124, 92, 255, 0.35),
+            0 8px 18px rgba(15, 23, 42, 0.12),
+            inset 0 2px 0 rgba(255,255,255,0.5);
           transform: translateY(8px) scale(0.96);
           opacity: 0;
           animation: battle-entry 520ms cubic-bezier(0.22,1.28,0.36,1) forwards, glow-pulse 3.6s ease-in-out infinite, color-wave 7.2s ease-in-out infinite;
@@ -286,11 +317,11 @@ export default function Home() {
         .battle-cta::before {
           content: "";
           position: absolute;
-          inset: -14px;
+          inset: -12px;
           border-radius: inherit;
-          background: radial-gradient(circle, rgba(240,132,255,0.5) 0%, rgba(240,132,255,0) 70%);
-          filter: blur(6px);
-          opacity: 0.9;
+          background: radial-gradient(circle, rgba(147, 197, 253, 0.55) 0%, rgba(147, 197, 253, 0) 70%);
+          filter: blur(8px);
+          opacity: 0.85;
           pointer-events: none;
           z-index: 1;
         }
@@ -305,7 +336,7 @@ export default function Home() {
           pointer-events: none;
           z-index: 1;
         }
-        .battle-cta:hover { transform: translateY(2px) scale(1.01); filter: brightness(1.05) saturate(1.1); box-shadow: 0 18px 36px rgba(138,77,255,0.45), 0 0 32px rgba(240,132,255,0.7), inset 0 2px 0 rgba(255,255,255,0.55); }
+        .battle-cta:hover { transform: translateY(2px) scale(1.01); filter: brightness(1.05) saturate(1.05); box-shadow: 0 22px 44px rgba(124, 92, 255, 0.45), 0 0 30px rgba(248, 113, 113, 0.35), inset 0 2px 0 rgba(255,255,255,0.6); }
         .battle-cta:active { transform: translateY(10px) scale(0.98); transition-duration: 80ms; }
         @keyframes battle-entry { 0% { transform: translateY(18px) scale(0.9); opacity: 0; } 70% { transform: translateY(-2px) scale(1.03); opacity: 1; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
         @keyframes glow-pulse { 0%,100% { box-shadow: 0 14px 30px rgba(138,77,255,0.32), 0 0 22px rgba(240,132,255,0.55), inset 0 2px 0 rgba(255,255,255,0.4); } 50% { box-shadow: 0 20px 40px rgba(138,77,255,0.5), 0 0 36px rgba(240,132,255,0.85), inset 0 2px 0 rgba(255,255,255,0.5); } }
@@ -321,7 +352,7 @@ export default function Home() {
         @keyframes pill-chroma { 0%,100% { filter: hue-rotate(0deg) saturate(1); } 50% { filter: hue-rotate(14deg) saturate(1.08); } }
         @keyframes pill-glow-pulse { 0%,100% { opacity: 0.5; box-shadow: 0 0 20px color-mix(in srgb, var(--pill-glow) 60%, transparent); } 50% { opacity: 0.82; box-shadow: 0 0 32px color-mix(in srgb, var(--pill-glow) 86%, transparent); } }
         @keyframes pill-shimmer { 0% { transform: translateX(-170%) rotate(12deg); opacity: 0; } 10% { opacity: 0.9; } 22% { transform: translateX(330%) rotate(12deg); opacity: 0.9; } 30%,100% { transform: translateX(330%) rotate(12deg); opacity: 0; } }
-        @media (max-width: 820px) { .pill-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 420px; gap: 0.75rem; padding: 0 0.85rem; } .pill-card { min-height: 58px; padding: 7px 14px; } .pill-content { font-size: clamp(0.85rem,3.8vw,1rem); } }
+        @media (max-width: 820px) { .pill-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 420px; gap: 0.8rem; padding: 0; } .pill-card { min-height: 60px; padding: 7px 14px; } .pill-content { font-size: clamp(0.85rem,3.8vw,1rem); } }
         @media (max-width: 640px) {
           .hero-section { min-height: auto; background-position: center top; }
           .hero-content { min-height: auto; padding-top: 7.75rem; padding-bottom: 3rem; text-align: center; }
@@ -332,9 +363,9 @@ export default function Home() {
           .hero-btn { width: min(86vw, 320px); }
           .auth-pill { padding: 6px 14px; font-size: 0.82rem; }
           .nav-brand { font-size: 1rem; }
-          .pill-grid { max-width: 380px; gap: 0.55rem; padding: 0 0.65rem; }
-          .pill-card { min-height: 50px; padding: 6px 10px; }
-          .pill-content { font-size: clamp(0.72rem,2.9vw,0.84rem); letter-spacing: 0.02em; text-transform: none; padding: 0 0.15rem; }
+          .pill-grid { max-width: 380px; gap: 0.6rem; padding: 0; }
+          .pill-card { min-height: 54px; padding: 7px 10px; }
+          .pill-content { font-size: clamp(0.78rem,3.2vw,0.92rem); letter-spacing: 0.01em; text-transform: none; padding: 0 0.15rem; }
           .battle-cta {
             width: min(86vw, 320px);
             min-height: 52px;
@@ -344,11 +375,20 @@ export default function Home() {
           }
           .battle-cta-text { white-space: nowrap; line-height: 1; }
           .battle-cta::before { inset: -10px; }
-          .battle-dock {
-            position: static;
-            transform: none;
-            margin: 2.25rem auto 2.75rem;
-          }
+          .battle-dock { margin-top: 2rem; }
+        }
+        .battle-dock {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 1.25rem;
+          margin-top: 2.4rem;
+        }
+        .battle-credit {
+          color: rgba(226, 244, 255, 0.78);
+          font-weight: 600;
+          font-size: 0.95rem;
+          letter-spacing: 0.01em;
         }
         @media (prefers-reduced-motion: reduce) { .pill-card { animation: none; transform: none; opacity: 1; transition: none; } .pill-card::before, .pill-card::after { animation: none; } }
       `}</style>
@@ -418,13 +458,13 @@ export default function Home() {
       </section>
 
       {/* ── Subject Boxes ── */}
-      <section className="relative pb-24" id="subjects">
-        <div className="w-full">
-          <div className="text-center mb-10 px-6 subject-heading-wrap">
-            <h2 className="animate-fade-in-up text-[clamp(1.6rem,3.5vw,2.25rem)] font-bold mb-4 text-[var(--text-primary)] subject-heading-title" style={{ animationDelay: "600ms", fontFamily: "'SF Pro Display','Helvetica Neue',sans-serif" }}>
+      <section className="lower-shell" id="subjects">
+        <div className="subject-panel">
+          <div className="text-center mb-10 px-4 sm:px-6 subject-heading-wrap">
+            <h2 className="animate-fade-in-up text-[clamp(1.6rem,3.5vw,2.25rem)] font-bold mb-3 subject-heading-title" style={{ animationDelay: "600ms", fontFamily: "'SF Pro Display','Helvetica Neue',sans-serif" }}>
               Choose Your <span className="gradient-text">Subject</span>
             </h2>
-            <p className="animate-fade-in-up text-slate-500 subject-heading-copy" style={{ animationDelay: "650ms" }}>
+            <p className="animate-fade-in-up subject-heading-copy" style={{ animationDelay: "650ms" }}>
               Select a subject to begin your practice session
             </p>
           </div>
@@ -450,18 +490,14 @@ export default function Home() {
             ))}
           </div>
 
+          <div className="battle-dock">
+            <Link href="/battle" className="battle-cta" style={{ animationDelay: "1100ms" }}>
+              <span className="battle-cta-text">Battle Mode</span>
+            </Link>
+            <p className="battle-credit">Developed by Gurucharan Murmu</p>
+          </div>
         </div>
       </section>
-
-      <div className="h-px w-full bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent" />
-      <div className="battle-dock fixed bottom-4 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center" style={{ gap: "1cm" }}>
-        <Link href="/battle" className="battle-cta" style={{ animationDelay: "1100ms" }}>
-          <span className="battle-cta-text">Battle Mode</span>
-        </Link>
-        <p className="text-black font-bold text-sm sm:text-base text-center">
-          Developed by : Gurucharan Murmu
-        </p>
-      </div>
     </div>
   );
 }
