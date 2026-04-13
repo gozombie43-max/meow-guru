@@ -76,6 +76,80 @@ router.post('/bulk', async (req, res) => {
 router.get('/practice-test', questionController.generatePracticeTest);
 router.post('/analyze', questionController.runAnalysis);
 
+router.post('/check-duplicates', async (req, res) => {
+  try {
+    let container;
+    try {
+      container = getQuestionsContainer();
+    } catch (err) {
+      return res.status(503).json({ error: 'Database not ready' });
+    }
+
+    const { questions } = req.body;
+
+    if (!Array.isArray(questions) || questions.length === 0) {
+      return res.status(400).json({ error: 'questions must be a non-empty array' });
+    }
+
+    const ids = questions
+      .map((q) => String(q.id || q._id || q.questionId || ''))
+      .filter(Boolean);
+
+    if (ids.length === 0) {
+      return res.json({ results: [] });
+    }
+
+    const batchSize = 100;
+    const existingMap = new Map();
+
+    for (let i = 0; i < ids.length; i += batchSize) {
+      const batch = ids.slice(i, i + batchSize);
+      const paramList = batch.map((_, idx) => `@id${i + idx}`).join(', ');
+      const parameters = batch.map((id, idx) => ({
+        name: `@id${i + idx}`,
+        value: id,
+      }));
+
+      const { resources } = await container.items
+        .query({
+          query: `SELECT c.id, c.question, c.questionText FROM c WHERE c.id IN (${paramList})`,
+          parameters,
+        })
+        .fetchAll();
+
+      resources.forEach((r) => {
+        existingMap.set(r.id, r.question || r.questionText || '');
+      });
+    }
+
+    const results = questions.map((q) => {
+      const id = String(q.id || q._id || q.questionId || '');
+      if (!id || !existingMap.has(id)) {
+        return { id, status: 'new' };
+      }
+
+      const incomingText = (q.question || q.questionText || '').trim();
+      const existingText = existingMap.get(id).trim();
+
+      if (incomingText === existingText) {
+        return { id, status: 'exact-duplicate' };
+      }
+
+      return {
+        id,
+        status: 'id-conflict',
+        existingText: existingText.substring(0, 100),
+        incomingText: incomingText.substring(0, 100),
+      };
+    });
+
+    return res.json({ results });
+  } catch (err) {
+    console.error('[check-duplicates]', err.message);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // ── Generic routes ──────────────────────────────────────
 
 router.post('/', questionUpload, questionController.addQuestion);

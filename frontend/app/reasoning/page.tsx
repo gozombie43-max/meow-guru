@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Search } from "lucide-react";
 
@@ -14,6 +15,15 @@ interface Topic {
   priority: Priority;
   questions: string;
   icon: string;
+}
+
+function toSlug(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/&/g, " ")
+    .replace(/[()]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
 
 // ── Data ──────────────────────────────────────────────────────────────────────
@@ -194,8 +204,14 @@ type TabId = typeof TABS[number]["id"];
 // ── Topic Pill Card ───────────────────────────────────────────────────────────
 function TopicPill({ topic, index }: { topic: Topic; index: number }) {
   const cfg = PRIORITY_CONFIG[topic.priority];
+  const slug = toSlug(topic.name);
   return (
-    <div className="pill-card" style={{ animationDelay: `${index * 45}ms` }}>
+    <Link
+      href={`/reasoning/${slug}`}
+      className="pill-card"
+      style={{ animationDelay: `${index * 45}ms` }}
+      aria-label={`Open ${topic.name}`}
+    >
       <span className="pill-icon" style={{ background: cfg.iconAccent }}>
         {topic.icon}
       </span>
@@ -203,7 +219,7 @@ function TopicPill({ topic, index }: { topic: Topic; index: number }) {
       <span className="pill-badge" style={{ background: cfg.iconAccent, color: cfg.badge }}>
         {cfg.label}
       </span>
-    </div>
+    </Link>
   );
 }
 
