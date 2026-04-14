@@ -67,8 +67,8 @@ app.use(passport.initialize());
 app.get('/', (req, res) => res.send('Server running 🚀'));
 
 // ── Start server ───────────────────────────────────────
-const PORT = process.env.PORT || 5000;
-httpServer.listen(PORT, () => {
+const PORT = process.env.PORT || 10000;
+httpServer.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT} 🚀`);
   initWithRetry();
 });
