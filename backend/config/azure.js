@@ -1,7 +1,13 @@
 import { BlobServiceClient } from "@azure/storage-blob";
 
-const blobServiceClient = BlobServiceClient.fromConnectionString(
-  process.env.AZURE_STORAGE_CONNECTION_STRING
+const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
+
+if (!connectionString) {
+  throw new Error("AZURE_STORAGE_CONNECTION_STRING is not set");
+}
+
+export const blobServiceClient = BlobServiceClient.fromConnectionString(
+  connectionString
 );
 
 export const questionsContainer = blobServiceClient.getContainerClient(

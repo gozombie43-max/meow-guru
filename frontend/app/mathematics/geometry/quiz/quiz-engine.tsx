@@ -617,7 +617,7 @@ export default function TrigQuizEngine() {
   const maxTime = miniMode ? 20 : 60;
   const currentQ = questions[currentIndex] as GeometryQuestion | undefined;
   const isLongQuestion = (currentQ?.question?.length ?? 0) > 180;
-  const isImageQuestion = currentQ?.questionType === "image_mcq";
+  const isImageQuestion = !!(currentQ?.image || currentQ?.imageUrl);
 
   function normalizeExamName(exam: string): string {
     const normalized = (exam ?? "").trim();
