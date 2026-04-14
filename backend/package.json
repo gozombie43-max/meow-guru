@@ -6,6 +6,7 @@
   "type": "module",
   "dependencies": {
     "@azure/cosmos": "^4.9.2",
+    "@azure/storage-blob": "^12.31.0",
     "accepts": "^2.0.0",
     "bcryptjs": "^3.0.3",
     "body-parser": "^2.2.2",
@@ -81,6 +82,7 @@
     "send": "^1.2.1",
     "serve-static": "^2.2.1",
     "setprototypeof": "^1.2.0",
+    "sharp": "^0.34.5",
     "side-channel": "^1.1.0",
     "side-channel-list": "^1.0.0",
     "side-channel-map": "^1.0.1",

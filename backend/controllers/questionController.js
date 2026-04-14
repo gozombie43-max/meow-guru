@@ -160,6 +160,7 @@ const getQuestions = async (req, res) => {
       .query({ query, parameters })
       .fetchAll();
 
+    res.set("Cache-Control", "public, max-age=300");
     res.json({ count: resources.length, questions: resources });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -299,6 +300,7 @@ const getQuestionById = async (req, res) => {
       .query({ query: 'SELECT * FROM c WHERE c.id = @id', parameters: [{ name: '@id', value: id }] })
       .fetchAll();
     if (!resources.length) return res.status(404).json({ error: 'Not found' });
+    res.set("Cache-Control", "public, max-age=300");
     res.json(resources[0]);
   } catch (err) {
     res.status(500).json({ error: err.message });

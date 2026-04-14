@@ -15,6 +15,10 @@ export interface TrigonometryQuestion {
   year: string;
   exam: string;
   solution?: string;        // step-by-step solution
+  questionType?: string;
+  questionImage?: string;
+  optionRegions?: Record<string, { x: number; y: number; w: number; h: number }>;
+  correctLetter?: string;
 }
 
 export const TRIG_CONCEPTS = [

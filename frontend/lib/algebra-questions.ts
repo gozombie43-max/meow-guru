@@ -11,6 +11,10 @@ export interface AlgebraQuestion {
   year: string;
   exam: string;
   solution?: string;
+  questionType?: string;
+  questionImage?: string;
+  optionRegions?: Record<string, { x: number; y: number; w: number; h: number }>;
+  correctLetter?: string;
 }
 
 export const CONCEPTS = [

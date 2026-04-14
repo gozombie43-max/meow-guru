@@ -13,6 +13,7 @@ import { initDB, initUsersDB } from './cosmos.js';
 import { initAuthRoutes } from './routes/auth.routes.js';
 import { initUserRoutes } from './routes/user.routes.js';
 import questionRoutes from './routes/questionRoutes.js';
+import imageUploadRoutes from './routes/imageUpload.js';
 import { setQuestionsContainer, setUsersContainer } from './containerStore.js';
 import { initBattleSocket } from './battle/battleSocket.js';
 
@@ -101,6 +102,7 @@ async function initWithRetry() {
     initBattleSocket(httpServer, allowedOrigins);
 
     app.use('/api/questions', questionRoutes);
+    app.use('/api/upload', imageUploadRoutes);
     app.use('/auth',  initAuthRoutes(usersContainer));
     app.use('/users', initUserRoutes(usersContainer));
 

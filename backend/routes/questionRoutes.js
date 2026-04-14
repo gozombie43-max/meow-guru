@@ -1,17 +1,16 @@
-import express from 'express';
+import express from "express";
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 import questionController from '../controllers/questionController.js';
-import { getQuestionsContainer } from '../containerStore.js';
+import { getQuestionsContainer } from "../containerStore.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const router = express.Router();
-
 const uploadsDir = path.join(__dirname, '..', 'uploads');
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
@@ -147,6 +146,37 @@ router.post('/check-duplicates', async (req, res) => {
   } catch (err) {
     console.error('[check-duplicates]', err.message);
     return res.status(500).json({ error: err.message });
+  }
+});
+
+router.get("/image", async (req, res) => {
+  try {
+    const questionsContainer = getQuestionsContainer();
+    const { topic = "visual_reasoning", limit = 20 } = req.query;
+
+    const query = {
+      query: `
+        SELECT * FROM c
+        WHERE c.questionType = "image_mcq"
+        AND c.topic = @topic
+        OFFSET 0 LIMIT @limit
+      `,
+      parameters: [
+        { name: "@topic", value: topic },
+        { name: "@limit", value: parseInt(limit) },
+      ],
+    };
+
+    const { resources } = await questionsContainer.items
+      .query(query)
+      .fetchAll();
+
+    res.json({
+      count: resources.length,
+      questions: resources,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 

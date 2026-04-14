@@ -512,6 +512,12 @@ export default function AdminPanel() {
               </button>
             </>
           )}
+          <a
+            href="/admin/upload-image"
+            style={{ padding: "8px 14px", background: "transparent", color: "var(--color-text-secondary)", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, cursor: "pointer", fontSize: 13, textDecoration: "none", display: "inline-flex", alignItems: "center" }}
+          >
+            Upload Image Question
+          </a>
           <button onClick={openNew} style={{ padding: "8px 16px", background: "#6d28d9", color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontSize: 14, fontWeight: 500 }}>
             + Add Question
           </button>
@@ -613,6 +619,41 @@ export default function AdminPanel() {
           <span>Ready: {muStats.ready}</span>
           <span>Errors: {muStats.errors}</span>
         </div>
+      </div>
+
+      <div style={{ border: "0.5px solid var(--color-border-tertiary)", borderRadius: 12, padding: "1rem", marginBottom: "1rem", background: "var(--color-background-secondary)" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
+          <div>
+            <h2 style={{ fontSize: 15, fontWeight: 600, margin: 0, color: "var(--color-text-primary)" }}>Bulk Image Upload</h2>
+            <p style={{ fontSize: 12, color: "var(--color-text-secondary)", margin: "4px 0 0" }}>
+              Upload multiple image questions at once (max 20).
+            </p>
+          </div>
+        </div>
+        <input
+          type="file"
+          multiple
+          onChange={async (e) => {
+            const files = e.target.files;
+            if (!files) return;
+
+            const formData = new FormData();
+            for (const f of files) {
+              formData.append("images", f);
+            }
+
+            await fetch("http://localhost:5000/api/upload/bulk-image", {
+              method: "POST",
+              headers: {
+                "x-admin-secret": "quizguru_admin_987654",
+              },
+              body: formData,
+            });
+
+            alert("Bulk uploaded");
+          }}
+          style={{ padding: "6px 10px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 12, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}
+        />
       </div>
 
       {/* Filters */}

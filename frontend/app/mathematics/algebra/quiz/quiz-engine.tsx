@@ -2,6 +2,7 @@
 
 import MathRenderer from "@/components/MathRenderer";
 import RichContent from "@/components/RichContent";
+import ImageMCQ from "@/components/ImageMCQ";
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useSearchParams } from "next/navigation";
@@ -83,7 +84,14 @@ function resolveCorrectIndex(question: ApiQuestion, options: string[]): number {
 }
 
 function toAlgebraQuestion(question: ApiQuestion, index: number): AlgebraQuestion {
-  const options = Array.isArray(question.options)
+  const isImage = question.questionType === "image_mcq";
+  const imageOptionKeys =
+    question.optionRegions && Object.keys(question.optionRegions).length > 0
+      ? Object.keys(question.optionRegions).sort()
+      : ["a", "b", "c", "d"];
+  const options = isImage
+    ? imageOptionKeys.map((key) => key.toUpperCase())
+    : Array.isArray(question.options)
     ? question.options.map((opt) => String(opt))
     : [];
   const difficulty = normalizeDifficulty(question.difficulty);
@@ -113,6 +121,10 @@ function toAlgebraQuestion(question: ApiQuestion, index: number): AlgebraQuestio
     year: extractYear(exam),
     exam,
     solution: String(question.solution ?? ""),
+    questionType: question.questionType,
+    questionImage: question.questionImage,
+    optionRegions: question.optionRegions,
+    correctLetter: question.correctLetter,
   };
 }
 
@@ -603,6 +615,8 @@ export default function QuizEngine() {
   const [questions, setQuestions] = useState<AlgebraQuestion[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [submitted, setSubmitted] = useState(false);
   const [miniMode, setMiniMode] = useState(false);
   const [difficulty, setDifficulty] = useState<Difficulty>("medium");
   const [streak, setStreak] = useState(0);
@@ -648,6 +662,7 @@ export default function QuizEngine() {
   const maxTime = miniMode ? 20 : 60;
   const currentQ = questions[currentIndex] as AlgebraQuestion | undefined;
   const isLongQuestion = (currentQ?.question?.length ?? 0) > 180;
+  const isImageQuestion = currentQ?.questionType === "image_mcq";
 
   function normalizeExamName(exam: string): string {
     const normalized = (exam ?? "").trim();
@@ -704,6 +719,8 @@ export default function QuizEngine() {
       setQuestions([]);
       setCurrentIndex(0);
       setSelectedAnswer(null);
+      setSelected(null);
+      setSubmitted(false);
       setResults([]);
       setSelectedAnswers({});
       setSubmittedQuestions(new Set());
@@ -749,6 +766,8 @@ export default function QuizEngine() {
     setQuestions(nextQuestions);
     setCurrentIndex(0);
     setSelectedAnswer(null);
+    setSelected(null);
+    setSubmitted(false);
     setResults([]);
     setSelectedAnswers({});
     setSubmittedQuestions(new Set());
@@ -801,8 +820,20 @@ export default function QuizEngine() {
       const safeIndex = Math.max(0, Math.min(index, questions.length - 1));
       stopTimer();
       setCurrentIndex(safeIndex);
+      const nextQuestion = questions[safeIndex];
       const existingSelection = selectedAnswers[safeIndex];
       setSelectedAnswer(existingSelection ?? null);
+      if (nextQuestion?.questionType === "image_mcq") {
+        setSelected(
+          existingSelection !== undefined
+            ? String.fromCharCode(97 + existingSelection)
+            : null
+        );
+        setSubmitted(submittedQuestions.has(safeIndex));
+      } else {
+        setSelected(null);
+        setSubmitted(false);
+      }
       setSubmitError("");
       setIsSolutionOpen(false);
       if (started && !showAnalytics && !submittedQuestions.has(safeIndex)) {
@@ -810,7 +841,7 @@ export default function QuizEngine() {
       }
     },
     [
-      questions.length,
+      questions,
       selectedAnswers,
       showAnalytics,
       startTimer,
@@ -854,6 +885,23 @@ export default function QuizEngine() {
       if (index < 0 || index >= currentQ.options.length) return;
       setSelectedAnswer(index);
       setSelectedAnswers((prev) => ({ ...prev, [currentIndex]: index }));
+      if (currentQ.questionType === "image_mcq") {
+        setSelected(String.fromCharCode(97 + index));
+      }
+      setSubmitError("");
+    },
+    [currentIndex, currentQ, submittedQuestions]
+  );
+
+  const handleSelectImageAnswer = useCallback(
+    (letter: string) => {
+      if (!currentQ) return;
+      if (submittedQuestions.has(currentIndex)) return;
+      const idx = letter.toLowerCase().charCodeAt(0) - 97;
+      if (idx < 0 || idx >= currentQ.options.length) return;
+      setSelected(letter);
+      setSelectedAnswer(idx);
+      setSelectedAnswers((prev) => ({ ...prev, [currentIndex]: idx }));
       setSubmitError("");
     },
     [currentIndex, currentQ, submittedQuestions]
@@ -911,6 +959,10 @@ export default function QuizEngine() {
       return next;
     });
 
+    if (currentQ.questionType === "image_mcq") {
+      setSubmitted(true);
+    }
+
     setSubmitError("");
   }, [
     adaptDifficulty,
@@ -967,6 +1019,8 @@ export default function QuizEngine() {
     setQuestions([...questions].sort((a, b) => a.id - b.id));
     setCurrentIndex(0);
     setSelectedAnswer(null);
+    setSelected(null);
+    setSubmitted(false);
     setResults([]);
     setSelectedAnswers({});
     setSubmittedQuestions(new Set());
@@ -1533,116 +1587,154 @@ export default function QuizEngine() {
 
         {/* Options */}
         <section className="mb-5" style={{ marginTop: 28 }}>
-          {currentQ.options.slice(0, 4).map((opt, i) => {
-            let border = "#E5E7EB";
-            let bg = "#FFFFFF";
-            let letterBg = "transparent";
-            let letterBorder = "#3B82F6";
-            let letterText = "#1D4ED8";
-            const letterFontWeight = 600;
-
-            if (isCurrentSubmitted && i === currentQ.correctAnswer) {
-              border = "#16A34A";
-              bg = "#F0FDF4";
-              letterBg = "#16A34A";
-              letterBorder = "#16A34A";
-              letterText = "#fff";
-            } else if (
-              isCurrentSubmitted &&
-              selectedAnswer === i &&
-              i !== currentQ.correctAnswer
-            ) {
-              border = "#DC2626";
-              bg = "#FEF2F2";
-              letterBg = "#DC2626";
-              letterBorder = "#DC2626";
-              letterText = "#fff";
-            } else if (!isCurrentSubmitted && selectedAnswer === i) {
-              border = "#2563EB";
-              bg = "#EFF6FF";
-              letterBg = "#2563EB";
-              letterBorder = "#2563EB";
-              letterText = "#fff";
-            }
-
-            return (
+          {isImageQuestion ? (
+            <div className="flex flex-col gap-3">
+              <ImageMCQ key={currentQ.id} data={currentQ} onAnswer={handleSelectImageAnswer} />
               <button
-                key={i}
-                onClick={() => handleSelectAnswer(i)}
-                disabled={isCurrentSubmitted}
                 type="button"
-                style={{
-                  width: "100%",
-                  minHeight: 58,
-                  background: bg,
-                  border: `1.5px solid ${border}`,
-                  borderRadius: 16,
-                  padding: "0 16px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 14,
-                  boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
-                  marginBottom: 12,
-                  cursor: isCurrentSubmitted ? "default" : "pointer",
-                  transition: "all 0.15s ease",
-                  fontSize: 17,
-                  fontWeight: 400,
-                  color: "#111827",
-                  outline: "none",
-                }}
-                onMouseOver={(e) => {
-                  if (!isCurrentSubmitted && selectedAnswer !== i) {
-                    e.currentTarget.style.borderColor = "#93C5FD";
-                    e.currentTarget.style.background = "#EFF6FF";
+                disabled={submitted}
+                onClick={() => {
+                  if (!selected) {
+                    setSubmitError("Please choose an option before submitting.");
+                    return;
                   }
+                  setSubmitted(true);
+                  handleSubmitCurrent();
                 }}
-                onMouseOut={(e) => {
-                  if (!isCurrentSubmitted && selectedAnswer !== i) {
-                    e.currentTarget.style.borderColor = "#E5E7EB";
-                    e.currentTarget.style.background = "#FFFFFF";
-                  }
-                }}
+                className="inline-flex h-12 w-full items-center justify-center rounded-2xl border border-slate-300 bg-slate-100 px-5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <span
+                Submit
+              </button>
+              {submitted && (
+                <div
+                  className="text-sm font-semibold"
                   style={{
-                    width: 34,
-                    height: 34,
-                    border: `1.5px solid ${letterBorder}`,
-                    borderRadius: "50%",
-                    background: letterBg,
-                    color: letterText,
-                    fontSize: 14,
-                    fontWeight: letterFontWeight,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                    marginRight: 10,
-                    transition: "all 0.15s ease",
+                    color:
+                      selected?.toLowerCase() ===
+                      (currentQ.correctLetter ?? "").toLowerCase()
+                        ? "#16A34A"
+                        : "#DC2626",
                   }}
                 >
-                  {String.fromCharCode(65 + i)}
-                </span>
-                <div style={{ fontSize: 17, fontWeight: 400, color: "#111827", lineHeight: 1.5 }}>
-                  <RichContent text={opt} />
+                  {selected?.toLowerCase() ===
+                  (currentQ.correctLetter ?? "").toLowerCase()
+                    ? "Correct"
+                    : "Wrong"}
                 </div>
-                {isCurrentSubmitted && i === currentQ.correctAnswer && (
-                  <CheckCircle2
-                    className="ml-auto h-5 w-5 shrink-0 text-emerald-600"
-                    aria-label="Correct option"
-                  />
-                )}
-                {isCurrentSubmitted &&
-                  selectedAnswer === i &&
-                  i !== currentQ.correctAnswer && (
-                    <XCircle
-                      className="ml-auto h-5 w-5 shrink-0 text-red-600"
-                      aria-label="Wrong option"
+              )}
+            </div>
+          ) : (
+            currentQ.options.slice(0, 4).map((opt, i) => {
+              let border = "#E5E7EB";
+              let bg = "#FFFFFF";
+              let letterBg = "transparent";
+              let letterBorder = "#3B82F6";
+              let letterText = "#1D4ED8";
+              const letterFontWeight = 600;
+
+              if (isCurrentSubmitted && i === currentQ.correctAnswer) {
+                border = "#16A34A";
+                bg = "#F0FDF4";
+                letterBg = "#16A34A";
+                letterBorder = "#16A34A";
+                letterText = "#fff";
+              } else if (
+                isCurrentSubmitted &&
+                selectedAnswer === i &&
+                i !== currentQ.correctAnswer
+              ) {
+                border = "#DC2626";
+                bg = "#FEF2F2";
+                letterBg = "#DC2626";
+                letterBorder = "#DC2626";
+                letterText = "#fff";
+              } else if (!isCurrentSubmitted && selectedAnswer === i) {
+                border = "#2563EB";
+                bg = "#EFF6FF";
+                letterBg = "#2563EB";
+                letterBorder = "#2563EB";
+                letterText = "#fff";
+              }
+
+              return (
+                <button
+                  key={i}
+                  onClick={() => handleSelectAnswer(i)}
+                  disabled={isCurrentSubmitted}
+                  type="button"
+                  style={{
+                    width: "100%",
+                    minHeight: 58,
+                    background: bg,
+                    border: `1.5px solid ${border}`,
+                    borderRadius: 16,
+                    padding: "0 16px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 14,
+                    boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+                    marginBottom: 12,
+                    cursor: isCurrentSubmitted ? "default" : "pointer",
+                    transition: "all 0.15s ease",
+                    fontSize: 17,
+                    fontWeight: 400,
+                    color: "#111827",
+                    outline: "none",
+                  }}
+                  onMouseOver={(e) => {
+                    if (!isCurrentSubmitted && selectedAnswer !== i) {
+                      e.currentTarget.style.borderColor = "#93C5FD";
+                      e.currentTarget.style.background = "#EFF6FF";
+                    }
+                  }}
+                  onMouseOut={(e) => {
+                    if (!isCurrentSubmitted && selectedAnswer !== i) {
+                      e.currentTarget.style.borderColor = "#E5E7EB";
+                      e.currentTarget.style.background = "#FFFFFF";
+                    }
+                  }}
+                >
+                  <span
+                    style={{
+                      width: 34,
+                      height: 34,
+                      border: `1.5px solid ${letterBorder}`,
+                      borderRadius: "50%",
+                      background: letterBg,
+                      color: letterText,
+                      fontSize: 14,
+                      fontWeight: letterFontWeight,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                      marginRight: 10,
+                      transition: "all 0.15s ease",
+                    }}
+                  >
+                    {String.fromCharCode(65 + i)}
+                  </span>
+                  <div style={{ fontSize: 17, fontWeight: 400, color: "#111827", lineHeight: 1.5 }}>
+                    <RichContent text={opt} />
+                  </div>
+                  {isCurrentSubmitted && i === currentQ.correctAnswer && (
+                    <CheckCircle2
+                      className="ml-auto h-5 w-5 shrink-0 text-emerald-600"
+                      aria-label="Correct option"
                     />
                   )}
-              </button>
-            );
-          })}
+                  {isCurrentSubmitted &&
+                    selectedAnswer === i &&
+                    i !== currentQ.correctAnswer && (
+                      <XCircle
+                        className="ml-auto h-5 w-5 shrink-0 text-red-600"
+                        aria-label="Wrong option"
+                      />
+                    )}
+                </button>
+              );
+            })
+          )}
 
           {canViewSolution && (
             <button

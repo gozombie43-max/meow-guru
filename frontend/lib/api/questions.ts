@@ -11,8 +11,11 @@ export interface Question {
   question: string;
   options: string[];
   correctAnswer: string;
-  correctLetter: string;
+  correctLetter?: string;
   solution: string;
+  questionType?: string;
+  questionImage?: string;
+  optionRegions?: Record<string, { x: number; y: number; w: number; h: number }>;
 }
 
 // Fetch questions with filters
