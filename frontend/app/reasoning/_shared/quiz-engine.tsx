@@ -1975,125 +1975,127 @@ export default function ReasoningQuizEngine({
         </section>
 
         <section className="mb-5" style={{ marginTop: 28 }}>
-          {currentQ.options.slice(0, 4).map((opt, i) => {
-            let border = "#E5E7EB",
-              bg = "#FFFFFF",
-              letterBg = "transparent",
-              letterBorder = "#7C3AED",
-              letterText = "#5B21B6";
-            const letterFontWeight = 600;
+          <div className="max-h-[60vh] overflow-y-auto pr-1 sm:max-h-none sm:overflow-visible">
+            {currentQ.options.slice(0, 4).map((opt, i) => {
+              let border = "#E5E7EB",
+                bg = "#FFFFFF",
+                letterBg = "transparent",
+                letterBorder = "#7C3AED",
+                letterText = "#5B21B6";
+              const letterFontWeight = 600;
 
-            if (isCurrentSubmitted && i === currentQ.correctAnswer) {
-              border = "#16A34A";
-              bg = "#F0FDF4";
-              letterBg = "#16A34A";
-              letterBorder = "#16A34A";
-              letterText = "#fff";
-            } else if (
-              isCurrentSubmitted &&
-              selectedAnswer === i &&
-              i !== currentQ.correctAnswer
-            ) {
-              border = "#DC2626";
-              bg = "#FEF2F2";
-              letterBg = "#DC2626";
-              letterBorder = "#DC2626";
-              letterText = "#fff";
-            } else if (!isCurrentSubmitted && selectedAnswer === i) {
-              border = "#7C3AED";
-              bg = "#F5F3FF";
-              letterBg = "#7C3AED";
-              letterBorder = "#7C3AED";
-              letterText = "#fff";
-            }
+              if (isCurrentSubmitted && i === currentQ.correctAnswer) {
+                border = "#16A34A";
+                bg = "#F0FDF4";
+                letterBg = "#16A34A";
+                letterBorder = "#16A34A";
+                letterText = "#fff";
+              } else if (
+                isCurrentSubmitted &&
+                selectedAnswer === i &&
+                i !== currentQ.correctAnswer
+              ) {
+                border = "#DC2626";
+                bg = "#FEF2F2";
+                letterBg = "#DC2626";
+                letterBorder = "#DC2626";
+                letterText = "#fff";
+              } else if (!isCurrentSubmitted && selectedAnswer === i) {
+                border = "#7C3AED";
+                bg = "#F5F3FF";
+                letterBg = "#7C3AED";
+                letterBorder = "#7C3AED";
+                letterText = "#fff";
+              }
 
-            return (
-              <button
-                key={i}
-                onClick={() => handleSelectAnswer(i)}
-                disabled={isCurrentSubmitted}
-                type="button"
-                style={{
-                  width: "100%",
-                  minHeight: 58,
-                  background: bg,
-                  border: `1.5px solid ${border}`,
-                  borderRadius: 16,
-                  padding: "0 16px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 14,
-                  boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
-                  marginBottom: 12,
-                  cursor: isCurrentSubmitted ? "default" : "pointer",
-                  transition: "all 0.15s ease",
-                  fontSize: 17,
-                  fontWeight: 400,
-                  color: "#111827",
-                  outline: "none",
-                }}
-                onMouseOver={(e) => {
-                  if (!isCurrentSubmitted && selectedAnswer !== i) {
-                    e.currentTarget.style.borderColor = "#C4B5FD";
-                    e.currentTarget.style.background = "#F5F3FF";
-                  }
-                }}
-                onMouseOut={(e) => {
-                  if (!isCurrentSubmitted && selectedAnswer !== i) {
-                    e.currentTarget.style.borderColor = "#E5E7EB";
-                    e.currentTarget.style.background = "#FFFFFF";
-                  }
-                }}
-              >
-                <span
+              return (
+                <button
+                  key={i}
+                  onClick={() => handleSelectAnswer(i)}
+                  disabled={isCurrentSubmitted}
+                  type="button"
                   style={{
-                    width: 34,
-                    height: 34,
-                    border: `1.5px solid ${letterBorder}`,
-                    borderRadius: "50%",
-                    background: letterBg,
-                    color: letterText,
-                    fontSize: 14,
-                    fontWeight: letterFontWeight,
+                    width: "100%",
+                    minHeight: 58,
+                    background: bg,
+                    border: `1.5px solid ${border}`,
+                    borderRadius: 16,
+                    padding: "0 16px",
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                    marginRight: 10,
+                    gap: 14,
+                    boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+                    marginBottom: 12,
+                    cursor: isCurrentSubmitted ? "default" : "pointer",
                     transition: "all 0.15s ease",
-                  }}
-                >
-                  {String.fromCharCode(65 + i)}
-                </span>
-
-                <div
-                  style={{
                     fontSize: 17,
                     fontWeight: 400,
                     color: "#111827",
-                    lineHeight: 1.5,
+                    outline: "none",
+                  }}
+                  onMouseOver={(e) => {
+                    if (!isCurrentSubmitted && selectedAnswer !== i) {
+                      e.currentTarget.style.borderColor = "#C4B5FD";
+                      e.currentTarget.style.background = "#F5F3FF";
+                    }
+                  }}
+                  onMouseOut={(e) => {
+                    if (!isCurrentSubmitted && selectedAnswer !== i) {
+                      e.currentTarget.style.borderColor = "#E5E7EB";
+                      e.currentTarget.style.background = "#FFFFFF";
+                    }
                   }}
                 >
-                  <RichContent text={opt} />
-                </div>
+                  <span
+                    style={{
+                      width: 34,
+                      height: 34,
+                      border: `1.5px solid ${letterBorder}`,
+                      borderRadius: "50%",
+                      background: letterBg,
+                      color: letterText,
+                      fontSize: 14,
+                      fontWeight: letterFontWeight,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                      marginRight: 10,
+                      transition: "all 0.15s ease",
+                    }}
+                  >
+                    {String.fromCharCode(65 + i)}
+                  </span>
 
-                {isCurrentSubmitted && i === currentQ.correctAnswer && (
-                  <CheckCircle2
-                    className="ml-auto h-5 w-5 shrink-0 text-emerald-600"
-                    aria-label="Correct option"
-                  />
-                )}
-                {isCurrentSubmitted &&
-                  selectedAnswer === i &&
-                  i !== currentQ.correctAnswer && (
-                    <XCircle
-                      className="ml-auto h-5 w-5 shrink-0 text-red-600"
-                      aria-label="Wrong option"
+                  <div
+                    style={{
+                      fontSize: 17,
+                      fontWeight: 400,
+                      color: "#111827",
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    <RichContent text={opt} />
+                  </div>
+
+                  {isCurrentSubmitted && i === currentQ.correctAnswer && (
+                    <CheckCircle2
+                      className="ml-auto h-5 w-5 shrink-0 text-emerald-600"
+                      aria-label="Correct option"
                     />
                   )}
-              </button>
-            );
-          })}
+                  {isCurrentSubmitted &&
+                    selectedAnswer === i &&
+                    i !== currentQ.correctAnswer && (
+                      <XCircle
+                        className="ml-auto h-5 w-5 shrink-0 text-red-600"
+                        aria-label="Wrong option"
+                      />
+                    )}
+                </button>
+              );
+            })}
+          </div>
 
           {canViewSolution && (
             <button
