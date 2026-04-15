@@ -606,6 +606,12 @@ function SolutionBottomSheet({
 /* ══════════════════════════════════════════════════════════════════════════════
    MAIN QUIZ ENGINE
    ══════════════════════════════════════════════════════════════════════════════ */
+const prefetchQuestionImage = (url?: string) => {
+  if (!url || typeof window === "undefined") return;
+  const img = new window.Image();
+  img.src = url;
+};
+
 export default function QuizEngine() {
   const searchParams = useSearchParams();
   const mode = (searchParams.get("mode") || "mixed") as QuizMode;
@@ -663,6 +669,13 @@ export default function QuizEngine() {
   const currentQ = questions[currentIndex] as AlgebraQuestion | undefined;
   const isLongQuestion = (currentQ?.question?.length ?? 0) > 180;
   const isImageQuestion = currentQ?.questionType === "image_mcq";
+
+  useEffect(() => {
+    const next = questions[currentIndex + 1];
+    if (next?.questionImage) {
+      prefetchQuestionImage(next.questionImage);
+    }
+  }, [currentIndex, questions]);
 
   function normalizeExamName(exam: string): string {
     const normalized = (exam ?? "").trim();

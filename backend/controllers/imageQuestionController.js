@@ -2,6 +2,11 @@ import sharp from "sharp";
 import { questionsContainer as blobContainer } from "../config/azure.js";
 import { getQuestionsContainer } from "../containerStore.js";
 
+const IMAGE_CACHE_CONTROL = "public, max-age=31536000, immutable";
+const IMAGE_BASE_URL = (process.env.AZURE_CDN_URL || process.env.AZURE_STORAGE_URL || "").replace(/\/+$/, "");
+const buildImageUrl = (blobPath) =>
+  IMAGE_BASE_URL ? `${IMAGE_BASE_URL}/questions/${blobPath}` : `/questions/${blobPath}`;
+
 // POST /api/upload/image-question
 export const uploadImageQuestion = async (req, res) => {
   try {
@@ -11,8 +16,14 @@ export const uploadImageQuestion = async (req, res) => {
     }
 
     const {
-      topic, chapter, difficulty,
-      correctLetter, solution, optionRegions
+      topic,
+      chapter,
+      difficulty,
+      correctLetter,
+      solution,
+      optionRegions,
+      subject,
+      quizName,
     } = req.body;
 
     const questionId = `${topic || "visual"}_${Date.now()}`;
@@ -27,11 +38,13 @@ export const uploadImageQuestion = async (req, res) => {
     );
 
     await blockBlob.uploadData(compressed, {
-      blobHTTPHeaders: { blobContentType: "image/webp" },
+      blobHTTPHeaders: {
+        blobContentType: "image/webp",
+        blobCacheControl: IMAGE_CACHE_CONTROL,
+      },
     });
 
-    const questionImageUrl =
-      `${process.env.AZURE_CDN_URL}/questions/${questionId}/question.webp`;
+    const questionImageUrl = buildImageUrl(`${questionId}/question.webp`);
 
     let regions = optionRegions ? JSON.parse(optionRegions) : null;
     const defaultRegions = {
@@ -52,7 +65,9 @@ export const uploadImageQuestion = async (req, res) => {
     const doc = {
       id: questionId,
       questionType: "image_mcq",
+      subject: subject || null,
       topic: topic || "visual_reasoning",
+      quizName: quizName || null,
       chapter: chapter || "Analogy",
       difficulty: difficulty || "medium",
       questionImage: questionImageUrl,
@@ -99,10 +114,13 @@ export const bulkUpload = async (req, res) => {
       const blockBlob = blobContainer.getBlockBlobClient(blobPath);
 
       await blockBlob.uploadData(compressed, {
-        blobHTTPHeaders: { blobContentType: "image/webp" },
+        blobHTTPHeaders: {
+          blobContentType: "image/webp",
+          blobCacheControl: IMAGE_CACHE_CONTROL,
+        },
       });
 
-      const imageUrl = `${process.env.AZURE_STORAGE_URL}/questions/${blobPath}`;
+      const imageUrl = buildImageUrl(blobPath);
 
       const doc = {
         id,

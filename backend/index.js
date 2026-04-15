@@ -14,6 +14,7 @@ import { initAuthRoutes } from './routes/auth.routes.js';
 import { initUserRoutes } from './routes/user.routes.js';
 import questionRoutes from './routes/questionRoutes.js';
 import imageUploadRoutes from './routes/imageUpload.js';
+import massUploadImages from './routes/massUploadImages.js';
 import { setQuestionsContainer, setUsersContainer } from './containerStore.js';
 import { initBattleSocket } from './battle/battleSocket.js';
 
@@ -103,6 +104,7 @@ async function initWithRetry() {
 
     app.use('/api/questions', questionRoutes);
     app.use('/api/upload', imageUploadRoutes);
+    app.use('/api', massUploadImages);
     app.use('/auth',  initAuthRoutes(usersContainer));
     app.use('/users', initUserRoutes(usersContainer));
 

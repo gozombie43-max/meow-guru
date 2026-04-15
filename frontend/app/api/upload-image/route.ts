@@ -1,8 +1,9 @@
 export async function POST(req: Request) {
   const formData = await req.formData();
+  const backendUrl = process.env.API_URL || "http://localhost:10000";
 
   const res = await fetch(
-    "http://localhost:5000/api/upload/image-question",
+    `${backendUrl}/api/upload/image-question`,  // ← fixed path
     {
       method: "POST",
       headers: {

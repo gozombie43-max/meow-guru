@@ -33,7 +33,7 @@ export async function fetchQuestions(params: {
   if (params.limit !== undefined)  query.set('limit',  String(params.limit));
   if (params.offset !== undefined) query.set('offset', String(params.offset));
 
-  const res = await fetch(`${API}/api/questions?${query}`);
+  const res = await fetch(`${API}/api/questions?${query}`, { cache: "no-store" });
   if (!res.ok) throw new Error('Failed to fetch questions');
   const data = await res.json();
   return data.questions;
@@ -52,7 +52,7 @@ export async function fetchPracticeTest(params: {
   if (params.difficulty) query.set('difficulty', params.difficulty);
   query.set('count', String(params.count ?? 10));
 
-  const res = await fetch(`${API}/api/questions/practice-test?${query}`);
+  const res = await fetch(`${API}/api/questions/practice-test?${query}`, { cache: "no-store" });
   if (!res.ok) throw new Error('Failed to fetch practice test');
   const data = await res.json();
   return data.questions;

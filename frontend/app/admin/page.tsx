@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback, useRef, type ChangeEvent } from "react";
 import RichContent from "@/components/RichContent";
+import MassImageUpload from "../../components/admin/MassImageUpload";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -19,6 +20,8 @@ type Question = {
   concept: string;
   source: string;
   solution: string;
+  questionType?: string;
+  questionImage?: string;
 };
 
 const EMPTY_Q: Omit<Question, "id"> = {
@@ -35,6 +38,26 @@ const SUBJECTS = ["mathematics", "reasoning", "english", "general awareness"];
 type SubjectKey = "mathematics" | "reasoning" | "english" | "general-awareness";
 type TopicOption = { value: string; label: string };
 type BulkStats = { total: number; ready: number; errors: number };
+type BulkImageItem = {
+  id: string;
+  file: File;
+  previewUrl: string;
+};
+
+const MAX_BULK_IMAGES = 20;
+
+const formatBytes = (bytes: number) => {
+  if (!Number.isFinite(bytes) || bytes <= 0) return "0 B";
+  const units = ["B", "KB", "MB", "GB"];
+  let value = bytes;
+  let index = 0;
+  while (value >= 1024 && index < units.length - 1) {
+    value /= 1024;
+    index += 1;
+  }
+  const precision = value >= 10 || index === 0 ? 0 : 1;
+  return `${value.toFixed(precision)} ${units[index]}`;
+};
 
 const SUBJECT_OPTIONS: { value: SubjectKey; label: string }[] = [
   { value: "mathematics", label: "Mathematics" },
@@ -210,6 +233,12 @@ export default function AdminPanel() {
   const [muApiUrl, setMuApiUrl] = useState(`${API}/api/questions/bulk`);
   const muFileRef = useRef<HTMLInputElement | null>(null);
 
+  // Bulk image upload
+  const [bulkImages, setBulkImages] = useState<BulkImageItem[]>([]);
+  const [bulkImageNotice, setBulkImageNotice] = useState("");
+  const [bulkImageUploading, setBulkImageUploading] = useState(false);
+  const bulkImageRef = useRef<HTMLInputElement | null>(null);
+
   // Pagination
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 50;
@@ -224,10 +253,20 @@ export default function AdminPanel() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false);
   const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [imagePreview, setImagePreview] = useState<{
+    src: string;
+    title: string;
+  } | null>(null);
 
   const topics = [...new Set(questions.map((q) => q.topic).filter(Boolean))].sort();
   const exams = [...new Set(questions.map((q) => q.exam).filter(Boolean))].sort();
   const muTopicOptions = muSubject ? SUBJECT_TOPIC_OPTIONS[muSubject as SubjectKey] : [];
+  const selectedSubjectId = muSubject;
+  const selectedTopicId = muTopic;
+  const selectedQuizId = muQuiz;
+  const selectedSubjectName = SUBJECT_OPTIONS.find((s) => s.value === muSubject)?.label || "";
+  const selectedTopicName = muTopicOptions.find((t) => t.value === muTopic)?.label || "";
+  const selectedQuizName = muQuiz || "";
 
   const fetchQuestions = useCallback(async () => {
     setLoading(true);
@@ -392,6 +431,85 @@ export default function AdminPanel() {
     }
   };
 
+  const handleBulkImageFiles = (e: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+
+    const available = Math.max(0, MAX_BULK_IMAGES - bulkImages.length);
+    const accepted = files.slice(0, available);
+    const rejected = files.length - accepted.length;
+
+    if (rejected > 0) {
+      setBulkImageNotice(
+        `Max ${MAX_BULK_IMAGES} images allowed. ${rejected} file${rejected === 1 ? "" : "s"} ignored.`
+      );
+    } else {
+      setBulkImageNotice("");
+    }
+
+    const newItems: BulkImageItem[] = accepted.map((file) => ({
+      id: `bulk-${file.name}-${file.size}-${file.lastModified}-${Math.random().toString(36).slice(2, 8)}`,
+      file,
+      previewUrl: URL.createObjectURL(file),
+    }));
+
+    setBulkImages((prev) => [...prev, ...newItems]);
+    if (bulkImageRef.current) bulkImageRef.current.value = "";
+  };
+
+  const removeBulkImage = (id: string) => {
+    setBulkImages((prev) => {
+      const target = prev.find((item) => item.id === id);
+      if (target) URL.revokeObjectURL(target.previewUrl);
+      return prev.filter((item) => item.id !== id);
+    });
+  };
+
+  const clearBulkImages = () => {
+    bulkImages.forEach((item) => URL.revokeObjectURL(item.previewUrl));
+    setBulkImages([]);
+    setBulkImageNotice("");
+    if (bulkImageRef.current) bulkImageRef.current.value = "";
+  };
+
+  const handleBulkImageUpload = async () => {
+    if (!bulkImages.length) {
+      setBulkImageNotice("Select images before uploading.");
+      return;
+    }
+
+    setBulkImageUploading(true);
+    setBulkImageNotice("");
+    try {
+      const formData = new FormData();
+      bulkImages.forEach((item) => formData.append("images", item.file));
+
+      const res = await fetch(`${API}/api/upload/bulk-image`, {
+        method: "POST",
+        headers: { "x-admin-secret": "quizguru_admin_987654" },
+        body: formData,
+      });
+
+      if (!res.ok) {
+        let message = `Server error ${res.status}`;
+        try {
+          const data = await res.json();
+          if (data?.error) message = data.error;
+        } catch { /* ignore */ }
+        throw new Error(message);
+      }
+
+      const data = await res.json().catch(() => ({}));
+      const count = Number.isFinite(data?.count) ? data.count : bulkImages.length;
+      showMsg(`Uploaded ${count} image${count === 1 ? "" : "s"} ✓`, false);
+      clearBulkImages();
+    } catch (e: unknown) {
+      showMsg(e instanceof Error ? e.message : "Bulk image upload failed", true);
+    } finally {
+      setBulkImageUploading(false);
+    }
+  };
+
   // ── Checkbox helpers ──────────────────────────────────
   const toggleOne = (id: string) => {
     setSelected((prev) => {
@@ -430,7 +548,7 @@ export default function AdminPanel() {
     let failed = 0;
     for (const id of selected) {
       try {
-        const res = await fetch(`${API}/api/questions/${id}`, { method: "DELETE" });
+        const res = await fetch(`${API}/api/questions/${encodeURIComponent(id)}`, { method: "DELETE" });
         if (res.ok) deleted++;
         else failed++;
       } catch {
@@ -475,7 +593,7 @@ export default function AdminPanel() {
 
   const handleDelete = async (id: string) => {
     try {
-      const res = await fetch(`${API}/api/questions/${id}`, { method: "DELETE" });
+      const res = await fetch(`${API}/api/questions/${encodeURIComponent(id)}`, { method: "DELETE" });
       if (!res.ok) throw new Error(`Server error ${res.status}`);
       showMsg("Question deleted ✓");
       setDeleteConfirm(null);
@@ -619,6 +737,17 @@ export default function AdminPanel() {
           <span>Ready: {muStats.ready}</span>
           <span>Errors: {muStats.errors}</span>
         </div>
+
+        <div style={{ marginTop: 16 }}>
+          <MassImageUpload
+            subjectId={selectedSubjectId}
+            topicId={selectedTopicId}
+            quizId={selectedQuizId}
+            subjectName={selectedSubjectName}
+            topicName={selectedTopicName}
+            quizName={selectedQuizName}
+          />
+        </div>
       </div>
 
       <div style={{ border: "0.5px solid var(--color-border-tertiary)", borderRadius: 12, padding: "1rem", marginBottom: "1rem", background: "var(--color-background-secondary)" }}>
@@ -626,34 +755,170 @@ export default function AdminPanel() {
           <div>
             <h2 style={{ fontSize: 15, fontWeight: 600, margin: 0, color: "var(--color-text-primary)" }}>Bulk Image Upload</h2>
             <p style={{ fontSize: 12, color: "var(--color-text-secondary)", margin: "4px 0 0" }}>
-              Upload multiple image questions at once (max 20).
+              Upload multiple image questions at once (max {MAX_BULK_IMAGES}). Preview before uploading.
             </p>
           </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button
+              onClick={clearBulkImages}
+              disabled={bulkImageUploading || bulkImages.length === 0}
+              style={{
+                padding: "6px 12px",
+                borderRadius: 8,
+                border: "0.5px solid var(--color-border-secondary)",
+                background: "transparent",
+                cursor: bulkImageUploading || bulkImages.length === 0 ? "default" : "pointer",
+                fontSize: 12,
+                color: "var(--color-text-secondary)",
+                opacity: bulkImageUploading || bulkImages.length === 0 ? 0.6 : 1,
+              }}
+            >
+              Clear
+            </button>
+            <button
+              onClick={handleBulkImageUpload}
+              disabled={bulkImageUploading || bulkImages.length === 0}
+              style={{
+                padding: "6px 14px",
+                borderRadius: 8,
+                border: "none",
+                background: bulkImageUploading ? "#a855f7" : "#6d28d9",
+                color: "#fff",
+                cursor: bulkImageUploading || bulkImages.length === 0 ? "default" : "pointer",
+                fontSize: 12,
+                fontWeight: 500,
+                opacity: bulkImageUploading || bulkImages.length === 0 ? 0.7 : 1,
+              }}
+            >
+              {bulkImageUploading
+                ? "Uploading..."
+                : `Upload ${bulkImages.length} image${bulkImages.length === 1 ? "" : "s"}`}
+            </button>
+          </div>
         </div>
-        <input
-          type="file"
-          multiple
-          onChange={async (e) => {
-            const files = e.target.files;
-            if (!files) return;
 
-            const formData = new FormData();
-            for (const f of files) {
-              formData.append("images", f);
-            }
+        <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10, alignItems: "center" }}>
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 8,
+              border: "1.5px dashed var(--color-border-secondary)",
+              borderRadius: 10,
+              padding: "12px 14px",
+              cursor: "pointer",
+              color: "var(--color-text-secondary)",
+              fontSize: 12,
+              background: "var(--color-background-primary)",
+            }}
+          >
+            <span style={{ fontWeight: 600, color: "var(--color-text-primary)" }}>Choose images</span>
+            <span style={{ fontSize: 11, opacity: 0.75 }}>PNG, JPG, WEBP</span>
+            <input
+              ref={bulkImageRef}
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={handleBulkImageFiles}
+              style={{ display: "none" }}
+            />
+          </label>
+          <div style={{ fontSize: 12, color: "var(--color-text-secondary)" }}>
+            {bulkImages.length}/{MAX_BULK_IMAGES} selected
+          </div>
+        </div>
 
-            await fetch("http://localhost:5000/api/upload/bulk-image", {
-              method: "POST",
-              headers: {
-                "x-admin-secret": "quizguru_admin_987654",
-              },
-              body: formData,
-            });
+        {bulkImageNotice && (
+          <div style={{ marginTop: 10, fontSize: 12, color: "#b45309" }}>
+            {bulkImageNotice}
+          </div>
+        )}
 
-            alert("Bulk uploaded");
-          }}
-          style={{ padding: "6px 10px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 12, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}
-        />
+        {bulkImages.length === 0 ? (
+          <div style={{ marginTop: 12, fontSize: 12, color: "var(--color-text-secondary)" }}>
+            No images selected yet.
+          </div>
+        ) : (
+          <div
+            style={{
+              marginTop: 12,
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
+              gap: 10,
+            }}
+          >
+            {bulkImages.map((item) => (
+              <div
+                key={item.id}
+                style={{
+                  border: "0.5px solid var(--color-border-secondary)",
+                  borderRadius: 10,
+                  padding: 8,
+                  background: "var(--color-background-primary)",
+                }}
+              >
+                <div
+                  style={{
+                    width: "100%",
+                    height: 96,
+                    borderRadius: 8,
+                    overflow: "hidden",
+                    background: "#f1f5f9",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <img
+                    src={item.previewUrl}
+                    alt={item.file.name}
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  />
+                </div>
+                <div style={{ marginTop: 6 }}>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      color: "var(--color-text-primary)",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                    title={item.file.name}
+                  >
+                    {item.file.name}
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginTop: 4,
+                      fontSize: 10,
+                      color: "var(--color-text-secondary)",
+                    }}
+                  >
+                    <span>{formatBytes(item.file.size)}</span>
+                    <button
+                      onClick={() => removeBulkImage(item.id)}
+                      style={{
+                        border: "none",
+                        background: "transparent",
+                        cursor: "pointer",
+                        color: "#dc2626",
+                        fontSize: 10,
+                        padding: 0,
+                      }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Filters */}
@@ -736,12 +1001,31 @@ export default function AdminPanel() {
                 <td style={{ padding: "10px 14px", color: "var(--color-text-secondary)", maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 11 }}>{q.exam}</td>
                 <td style={{ padding: "10px 14px", maxWidth: 320 }}>
                   <div style={{ maxHeight: 64, overflow: "hidden" }}>
-                    <RichContent text={q.question || ""} />
+                    {q.question ? (
+                      <RichContent text={q.question} />
+                    ) : q.questionImage ? (
+                      <span style={{ fontSize: 12, color: "var(--color-text-secondary)" }}>
+                        Image question
+                      </span>
+                    ) : null}
                   </div>
                 </td>
                 <td style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>
                   <button onClick={() => openEdit(q)} style={{ marginRight: 6, padding: "4px 10px", borderRadius: 6, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: "pointer", fontSize: 12, color: "var(--color-text-primary)" }}>Edit</button>
                   <button onClick={() => setDeleteConfirm(q.id)} style={{ padding: "4px 10px", borderRadius: 6, border: "0.5px solid #fecaca", background: "transparent", cursor: "pointer", fontSize: 12, color: "#dc2626" }}>Delete</button>
+                  {(q.subject === "reasoning" || q.topic === "visual_reasoning") && q.questionImage && (
+                    <button
+                      onClick={() =>
+                        setImagePreview({
+                          src: q.questionImage || "",
+                          title: q.question || q.id,
+                        })
+                      }
+                      style={{ marginLeft: 6, padding: "4px 10px", borderRadius: 6, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: "pointer", fontSize: 12, color: "var(--color-text-primary)" }}
+                    >
+                      View Image
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}
@@ -872,6 +1156,60 @@ export default function AdminPanel() {
                 style={{ padding: "7px 16px", borderRadius: 7, border: "none", background: "#dc2626", color: "#fff", cursor: bulkDeleting ? "wait" : "pointer", fontSize: 13, fontWeight: 500, opacity: bulkDeleting ? 0.7 : 1 }}>
                 {bulkDeleting ? "Deleting..." : `Delete ${selected.size} questions`}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {imagePreview && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.6)",
+            zIndex: 1100,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "1.5rem",
+          }}
+          onClick={() => setImagePreview(null)}
+        >
+          <div
+            style={{
+              background: "var(--color-background-primary, #ffffff)",
+              borderRadius: 16,
+              padding: "1rem",
+              width: "100%",
+              maxWidth: 860,
+              border: "0.5px solid var(--color-border-secondary, #e5e7eb)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "var(--color-text-primary)" }}>
+                {imagePreview.title}
+              </div>
+              <button
+                onClick={() => setImagePreview(null)}
+                style={{ background: "none", border: "none", cursor: "pointer", fontSize: 18, color: "var(--color-text-secondary)" }}
+              >
+                ×
+              </button>
+            </div>
+            <div
+              style={{
+                borderRadius: 12,
+                border: "0.5px solid var(--color-border-secondary)",
+                background: "#f8fafc",
+                padding: 10,
+              }}
+            >
+              <img
+                src={imagePreview.src}
+                alt={imagePreview.title}
+                style={{ width: "100%", height: "auto", display: "block", borderRadius: 8 }}
+              />
             </div>
           </div>
         </div>

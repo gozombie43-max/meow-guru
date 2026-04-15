@@ -776,6 +776,12 @@ function SolutionBottomSheet({
   );
 }
 
+const prefetchQuestionImage = (url?: string) => {
+  if (!url || typeof window === "undefined") return;
+  const img = new window.Image();
+  img.src = url;
+};
+
 export default function EnglishQuizEngine({
   title,
   slug,
@@ -919,6 +925,13 @@ export default function EnglishQuizEngine({
   const currentQ = questions[currentIndex] as EnglishQuestion | undefined;
   const isLongQuestion = (currentQ?.question?.length ?? 0) > 180;
   const isImageQuestion = currentQ?.questionType === "image_mcq";
+
+  useEffect(() => {
+    const next = questions[currentIndex + 1];
+    if (next?.questionImage) {
+      prefetchQuestionImage(next.questionImage);
+    }
+  }, [currentIndex, questions]);
 
   useEffect(() => {
     if (allQuestions.length === 0) {

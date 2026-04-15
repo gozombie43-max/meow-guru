@@ -160,7 +160,7 @@ const getQuestions = async (req, res) => {
       .query({ query, parameters })
       .fetchAll();
 
-    res.set("Cache-Control", "public, max-age=300");
+    res.set("Cache-Control", "no-store, max-age=0");
     res.json({ count: resources.length, questions: resources });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -300,7 +300,7 @@ const getQuestionById = async (req, res) => {
       .query({ query: 'SELECT * FROM c WHERE c.id = @id', parameters: [{ name: '@id', value: id }] })
       .fetchAll();
     if (!resources.length) return res.status(404).json({ error: 'Not found' });
-    res.set("Cache-Control", "public, max-age=300");
+    res.set("Cache-Control", "no-store, max-age=0");
     res.json(resources[0]);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -331,13 +331,21 @@ const deleteQuestion = async (req, res) => {
   try {
     const container = getQuestionsContainer();
     const { id } = req.params;
+    const numericId = Number(id);
+    const query = {
+      query: `SELECT * FROM c WHERE c.id = @id${Number.isFinite(numericId) ? " OR c.id = @idNum" : ""}`,
+      parameters: [
+        { name: "@id", value: id },
+        ...(Number.isFinite(numericId) ? [{ name: "@idNum", value: numericId }] : []),
+      ],
+    };
     // fetch to get partition key (topic) — required for delete
     const { resources } = await container.items
-      .query({ query: 'SELECT * FROM c WHERE c.id = @id', parameters: [{ name: '@id', value: id }] })
+      .query(query)
       .fetchAll();
     if (!resources.length) return res.status(404).json({ error: 'Not found' });
     const { topic } = resources[0];
-    await container.item(id, topic).delete();
+    await container.item(resources[0].id, topic ?? null).delete();
     res.json({ message: 'Deleted ✅' });
   } catch (err) {
     res.status(500).json({ error: err.message });

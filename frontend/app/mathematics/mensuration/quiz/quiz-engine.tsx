@@ -461,6 +461,12 @@ function ConceptBadge({ concept }: { concept: string }) {
   );
 }
 
+const prefetchQuestionImage = (url?: string) => {
+  if (!url || typeof window === "undefined") return;
+  const img = new window.Image();
+  img.src = url;
+};
+
 export default function MensurationQuizEngine() {
   const searchParams = useSearchParams();
   const mode = (searchParams.get("mode") || "all") as QuizMode;
@@ -514,6 +520,13 @@ export default function MensurationQuizEngine() {
   const currentQ = questions[currentIndex] as MensurationQuestion | undefined;
   const isLongQuestion = (currentQ?.question?.length ?? 0) > 180;
   const isImageQuestion = currentQ?.questionType === "image_mcq";
+
+  useEffect(() => {
+    const next = questions[currentIndex + 1];
+    if (next?.questionImage) {
+      prefetchQuestionImage(next.questionImage);
+    }
+  }, [currentIndex, questions]);
 
   function normalizeExamName(exam: string): string {
     const normalized = (exam ?? "").trim();

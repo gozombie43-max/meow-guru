@@ -1,0 +1,35 @@
+[
+  {
+    "filename": "q1.png",
+    "correctAnswer": "A",
+    "explanation": "The missing figure follows the pattern of decreasing sides with an inverted orientation.",
+    "options": {
+      "A": { "x": 0.05, "y": 0.55, "w": 0.43, "h": 0.18 },
+      "B": { "x": 0.52, "y": 0.55, "w": 0.43, "h": 0.18 },
+      "C": { "x": 0.05, "y": 0.75, "w": 0.43, "h": 0.18 },
+      "D": { "x": 0.52, "y": 0.75, "w": 0.43, "h": 0.18 }
+    }
+  },
+  {
+    "filename": "q2.png",
+    "correctAnswer": "C",
+    "explanation": "",
+    "options": {
+      "A": { "x": 0.05, "y": 0.55, "w": 0.43, "h": 0.18 },
+      "B": { "x": 0.52, "y": 0.55, "w": 0.43, "h": 0.18 },
+      "C": { "x": 0.05, "y": 0.75, "w": 0.43, "h": 0.18 },
+      "D": { "x": 0.52, "y": 0.75, "w": 0.43, "h": 0.18 }
+    }
+  },
+  {
+    "filename": "q3.png",
+    "correctAnswer": "B",
+    "explanation": "",
+    "options": {
+      "A": { "x": 0.05, "y": 0.55, "w": 0.43, "h": 0.18 },
+      "B": { "x": 0.52, "y": 0.55, "w": 0.43, "h": 0.18 },
+      "C": { "x": 0.05, "y": 0.75, "w": 0.43, "h": 0.18 },
+      "D": { "x": 0.52, "y": 0.75, "w": 0.43, "h": 0.18 }
+    }
+  }
+]

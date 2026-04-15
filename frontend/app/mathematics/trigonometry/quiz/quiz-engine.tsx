@@ -677,6 +677,12 @@ function SolutionBottomSheet({
 /* ════════════════════════════════════════════════════════════════════════════
    MAIN TRIG QUIZ ENGINE
    ════════════════════════════════════════════════════════════════════════════ */
+const prefetchQuestionImage = (url?: string) => {
+  if (!url || typeof window === "undefined") return;
+  const img = new window.Image();
+  img.src = url;
+};
+
 export default function TrigQuizEngine() {
   const searchParams = useSearchParams();
   const mode = (searchParams.get("mode") || "mixed") as QuizMode;
@@ -796,6 +802,13 @@ export default function TrigQuizEngine() {
   const currentQ = questions[currentIndex] as TrigonometryQuestion | undefined;
   const isLongQuestion = (currentQ?.question?.length ?? 0) > 180;
   const isImageQuestion = currentQ?.questionType === "image_mcq";
+
+  useEffect(() => {
+    const next = questions[currentIndex + 1];
+    if (next?.questionImage) {
+      prefetchQuestionImage(next.questionImage);
+    }
+  }, [currentIndex, questions]);
 
   // ── Build question set ─────────────────────────────────────────────────────
   /* eslint-disable react-hooks/exhaustive-deps */
