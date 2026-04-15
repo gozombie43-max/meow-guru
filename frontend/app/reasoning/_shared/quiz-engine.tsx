@@ -1841,7 +1841,7 @@ export default function ReasoningQuizEngine({
         fontFamily: "Poppins, Inter, 'Segoe UI', sans-serif",
       }}
     >
-      <main className="mx-auto max-w-3xl px-3 pb-[110px] pt-3 sm:px-6 sm:pt-4">
+      <main className="mx-auto max-w-3xl px-3 pb-[160px] pt-3 sm:px-6 sm:pb-[110px] sm:pt-4">
         <section className="mb-3 flex items-center justify-end gap-2">
           {streak >= 2 && (
             <div className="flex items-center gap-1 rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-sm font-bold text-violet-600">
@@ -1975,7 +1975,10 @@ export default function ReasoningQuizEngine({
         </section>
 
         <section className="mb-5" style={{ marginTop: 28 }}>
-          <div className="max-h-[60vh] overflow-y-auto pr-1 sm:max-h-none sm:overflow-visible">
+          <div
+            className="max-h-[calc(100vh-360px)] overflow-y-auto pr-1 sm:max-h-none sm:overflow-visible"
+            style={{ paddingBottom: 96, WebkitOverflowScrolling: "touch" }}
+          >
             {currentQ.options.slice(0, 4).map((opt, i) => {
               let border = "#E5E7EB",
                 bg = "#FFFFFF",
