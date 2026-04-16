@@ -59,8 +59,39 @@ router.post('/bulk', async (req, res) => {
       return res.status(400).json({ error: 'Body must be a non-empty array' });
     }
 
+    const normalizedQuestions = questions.map((q, idx) => {
+      const item = (q && typeof q === 'object') ? { ...q } : { value: q };
+
+      if (item.id !== undefined && item.id !== null) {
+        item.id = String(item.id).trim();
+      }
+
+      if (!item.id) {
+        const suffix = crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(8).toString('hex');
+        item.id = `q_${Date.now()}_${idx}_${suffix}`;
+      }
+
+      const quizSubject = String(item.quizSubject ?? '').trim();
+      const quizTopic = String(item.quizTopic ?? '').trim();
+
+      if (!item.subject && quizSubject) item.subject = quizSubject;
+      if (!item.chapter && quizTopic) item.chapter = quizTopic;
+
+      if (quizTopic) {
+        item.topic = quizTopic;
+      }
+
+      if (!item.topic) {
+        item.topic = item.chapter || item.subject || item.category || 'misc';
+      }
+
+      item.topic = String(item.topic).trim() || 'misc';
+
+      return item;
+    });
+
     const results = await Promise.allSettled(
-      questions.map((q) => container.items.create(q))
+      normalizedQuestions.map((q) => container.items.create(q))
     );
 
     const inserted = results.filter((r) => r.status === 'fulfilled').length;

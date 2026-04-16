@@ -1006,7 +1006,27 @@
     //  SINGLE QUESTION
     // ─────────────────────────────────────────────
     const API_URL = 'http://localhost:5000/api/questions';
-    const CHECK_URL = 'http://localhost:5000/api/questions/check-duplicates';
+    const CHECK_URL = `${API_URL}/check-duplicates`;
+
+    function getCheckDuplicatesUrl() {
+      const raw = document.getElementById('muApiUrl')?.value.trim();
+      if (!raw) return CHECK_URL;
+      try {
+        const url = new URL(raw);
+        let path = url.pathname.replace(/\/+$/, '');
+        path = path.replace(/\/bulk$/i, '');
+        path = path.replace(/\/check-duplicates$/i, '');
+        if (path.endsWith('/api/questions')) {
+          return `${url.origin}${path}/check-duplicates`;
+        }
+        if (path.endsWith('/api')) {
+          return `${url.origin}${path}/questions/check-duplicates`;
+        }
+        return `${url.origin}/api/questions/check-duplicates`;
+      } catch {
+        return CHECK_URL;
+      }
+    }
 
     const SUBJECT_TOPICS = {
       Mathematics: ['Number System','Arithmetic','Algebra','Geometry','Mensuration','Trigonometry','Statistics & Probability'],
@@ -1243,6 +1263,8 @@
     let muAll = [];
     let muSelected = new Set();
     let muFiltered = [];
+    let muPendingDbCheck = false;
+    let muDbCheckInFlight = false;
 
     const muDrop = document.getElementById('muDrop');
     const muFileInput = document.getElementById('muFileInput');
@@ -1261,12 +1283,108 @@
       if (e.dataTransfer.files[0]) muProcessFile(e.dataTransfer.files[0]);
     });
 
+    async function muRunDbCheck() {
+      if (muDbCheckInFlight) return;
+
+      const questionsWithIds = muAll.filter(q =>
+        q.id || q._id || q.questionId
+      );
+      if (questionsWithIds.length === 0) return;
+
+      const apiUrlValue = document.getElementById('muApiUrl')?.value.trim();
+      if (!apiUrlValue) {
+        muPendingDbCheck = true;
+        muAddLog('Set Backend URL to enable DB duplicate check', '');
+        return;
+      }
+
+      muDbCheckInFlight = true;
+      muPendingDbCheck = false;
+
+      muAddLog(`Checking ${questionsWithIds.length} questions against database...`);
+
+      try {
+        const res = await fetch(getCheckDuplicatesUrl(), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ questions: questionsWithIds })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          const resultMap = new Map(data.results.map(r => [r.id, r]));
+
+          let exactDupes   = 0;
+          let idConflicts  = 0;
+
+          muAll = muAll.map(q => {
+            const id = String(q.id || q._id || q.questionId || '');
+            if (!id) return q;
+
+            const result = resultMap.get(id);
+            if (!result) return q;
+
+            if (result.status === 'exact-duplicate') {
+              exactDupes++;
+              return {
+                ...q,
+                _status: 'db-duplicate',
+                _issue: 'exact duplicate — same ID and same question text'
+              };
+            }
+
+            if (result.status === 'id-conflict') {
+              idConflicts++;
+              return {
+                ...q,
+                _status: 'id-conflict',
+                _issue: 'ID conflict — same ID but different question text',
+                _existingText: result.existingText,
+                _incomingText: result.incomingText,
+              };
+            }
+
+            return q;
+          });
+
+          // Auto-deselect exact duplicates
+          muAll
+            .filter(q => q._status === 'db-duplicate')
+            .forEach(q => muSelected.delete(q._idx));
+
+          // Keep id-conflicts SELECTED but highlighted
+          // User decides what to do with them
+
+          if (exactDupes > 0)
+            muAddLog(`${exactDupes} exact duplicates found — deselected`, 'err');
+          if (idConflicts > 0)
+            muAddLog(`⚠️ ${idConflicts} ID conflicts — same ID, different question!`, 'err');
+          if (exactDupes === 0 && idConflicts === 0)
+            muAddLog('No duplicates found ✓', 'ok');
+
+          muUpdateStats();
+          muApplyFilter();
+
+        } else {
+          muPendingDbCheck = true;
+          muAddLog('Could not check database', '');
+        }
+      } catch (err) {
+        muPendingDbCheck = true;
+        muAddLog(`DB check failed: ${err.message}`, 'err');
+      } finally {
+        muDbCheckInFlight = false;
+      }
+    }
+
     function muProcessFile(file) {
       const reader = new FileReader();
       reader.onload = async (e) => {
         const lines = e.target.result.split('\n').filter(l => l.trim());
         const seenIds = new Set();
         muAll = [];
+        muPendingDbCheck = false;
+        muDbCheckInFlight = false;
         lines.forEach((line, i) => {
           let q, status = 'valid', issues = [];
           try { q = JSON.parse(line); }
@@ -1289,82 +1407,7 @@
         document.getElementById('muMainPanel').style.display = 'block';
 
         // ── Step 3: Check CosmosDB ───────────────────────────
-        const questionsWithIds = muAll.filter(q =>
-          q.id || q._id || q.questionId
-        );
-
-        if (questionsWithIds.length > 0) {
-          muAddLog(`Checking ${questionsWithIds.length} questions against database...`);
-
-          try {
-            const res = await fetch(CHECK_URL, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ questions: questionsWithIds })
-            });
-
-            if (res.ok) {
-              const data = await res.json();
-              const resultMap = new Map(data.results.map(r => [r.id, r]));
-
-              let exactDupes   = 0;
-              let idConflicts  = 0;
-
-              muAll = muAll.map(q => {
-                const id = String(q.id || q._id || q.questionId || '');
-                if (!id) return q;
-
-                const result = resultMap.get(id);
-                if (!result) return q;
-
-                if (result.status === 'exact-duplicate') {
-                  exactDupes++;
-                  return {
-                    ...q,
-                    _status: 'db-duplicate',
-                    _issue: 'exact duplicate — same ID and same question text'
-                  };
-                }
-
-                if (result.status === 'id-conflict') {
-                  idConflicts++;
-                  return {
-                    ...q,
-                    _status: 'id-conflict',
-                    _issue: 'ID conflict — same ID but different question text',
-                    _existingText: result.existingText,
-                    _incomingText: result.incomingText,
-                  };
-                }
-
-                return q;
-              });
-
-              // Auto-deselect exact duplicates
-              muAll
-                .filter(q => q._status === 'db-duplicate')
-                .forEach(q => muSelected.delete(q._idx));
-
-              // Keep id-conflicts SELECTED but highlighted
-              // User decides what to do with them
-
-              if (exactDupes > 0)
-                muAddLog(`${exactDupes} exact duplicates found — deselected`, 'err');
-              if (idConflicts > 0)
-                muAddLog(`⚠️ ${idConflicts} ID conflicts — same ID, different question!`, 'err');
-              if (exactDupes === 0 && idConflicts === 0)
-                muAddLog('No duplicates found ✓', 'ok');
-
-              muUpdateStats();
-              muApplyFilter();
-
-            } else {
-              muAddLog('Could not check database', '');
-            }
-          } catch (err) {
-            muAddLog(`DB check failed: ${err.message}`, 'err');
-          }
-        }
+        muRunDbCheck();
       };
       reader.readAsText(file);
     }
@@ -1464,6 +1507,9 @@
     }
 
     document.getElementById('muApiUrl').addEventListener('input', muUpdateSelLabel);
+    document.getElementById('muApiUrl').addEventListener('change', () => {
+      if (muPendingDbCheck && muAll.length) muRunDbCheck();
+    });
 
     document.getElementById('muSelectAll').onclick   = () => { muFiltered.forEach(q => muSelected.add(q._idx)); muRenderList(); };
     document.getElementById('muDeselectAll').onclick = () => { muFiltered.forEach(q => muSelected.delete(q._idx)); muRenderList(); };
@@ -1500,6 +1546,8 @@
 
     document.getElementById('muClearBtn').onclick = () => {
       muAll = []; muSelected.clear(); muFiltered = [];
+      muPendingDbCheck = false;
+      muDbCheckInFlight = false;
       document.getElementById('muStats').style.display = 'none';
       document.getElementById('muMainPanel').style.display = 'none';
       muDrop.classList.remove('loaded');
