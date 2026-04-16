@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useRef, type ChangeEvent } from "react";
 import RichContent from "@/components/RichContent";
 import MassImageUpload from "../../components/admin/MassImageUpload";
+import MassSolutionUpload from "@/components/admin/MassSolutionUpload";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -649,7 +650,7 @@ export default function AdminPanel() {
         </div>
       )}
 
-      {/* Mass Upload */}
+      {/* ── Mass Upload ── */}
       <div style={{ border: "0.5px solid var(--color-border-tertiary)", borderRadius: 12, padding: "1rem", marginBottom: "1rem", background: "var(--color-background-secondary)" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
           <div>
@@ -750,6 +751,12 @@ export default function AdminPanel() {
         </div>
       </div>
 
+      {/* ── Mass Solution Upload ── */}
+      <div style={{ border: "0.5px solid var(--color-border-tertiary)", borderRadius: 12, padding: "1rem", marginBottom: "1rem", background: "var(--color-background-secondary)" }}>
+        <MassSolutionUpload />
+      </div>
+
+      {/* ── Bulk Image Upload ── */}
       <div style={{ border: "0.5px solid var(--color-border-tertiary)", borderRadius: 12, padding: "1rem", marginBottom: "1rem", background: "var(--color-background-secondary)" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
           <div>
@@ -1161,6 +1168,7 @@ export default function AdminPanel() {
         </div>
       )}
 
+      {/* Image Preview Modal */}
       {imagePreview && (
         <div
           style={{
