@@ -26,7 +26,14 @@ export const uploadImageQuestion = async (req, res) => {
       quizName,
     } = req.body;
 
-    const questionId = `${topic || "visual"}_${Date.now()}`;
+    const normalizedTopic = typeof topic === "string" && topic.trim()
+      ? topic.trim()
+      : "visual_reasoning";
+    const normalizedChapter = typeof chapter === "string" && chapter.trim()
+      ? chapter.trim()
+      : normalizedTopic;
+
+    const questionId = `${normalizedTopic || "visual"}_${Date.now()}`;
 
     const compressed = await sharp(file.buffer)
       .resize({ width: 1400, withoutEnlargement: true })
@@ -66,9 +73,9 @@ export const uploadImageQuestion = async (req, res) => {
       id: questionId,
       questionType: "image_mcq",
       subject: subject || null,
-      topic: topic || "visual_reasoning",
+      topic: normalizedTopic,
       quizName: quizName || null,
-      chapter: chapter || "Analogy",
+      chapter: normalizedChapter,
       difficulty: difficulty || "medium",
       questionImage: questionImageUrl,
       optionRegions: regions,

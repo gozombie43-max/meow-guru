@@ -43,6 +43,7 @@ export default function MassImageUpload({
   quizName,
 }: Props) {
   const fileRef = useRef<HTMLInputElement | null>(null);
+  const imageWrapRef = useRef<HTMLDivElement | null>(null);
   const [entries, setEntries] = useState<ImageEntry[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [activeLetter, setActiveLetter] = useState<string>("a");
@@ -86,7 +87,8 @@ export default function MassImageUpload({
     e: React.MouseEvent<HTMLImageElement>,
     entry: ImageEntry
   ) => {
-    const rect = e.currentTarget.getBoundingClientRect();
+    const rect = imageWrapRef.current?.getBoundingClientRect()
+      ?? e.currentTarget.getBoundingClientRect();
     const x = (e.clientX - rect.left) / rect.width;
     const y = (e.clientY - rect.top) / rect.height;
     updateEntry(entry.id, {
@@ -103,8 +105,9 @@ export default function MassImageUpload({
       const formData = new FormData();
       formData.append("questionImage", entry.file);
       formData.append("topic", topicId);
+      formData.append("chapter", topicName || topicId);
       formData.append("subject", subjectId);
-      formData.append("quizName", quizId);
+      formData.append("quizName", quizName || quizId);
       formData.append("correctLetter", entry.correctLetter);
       formData.append("optionRegions", JSON.stringify(entry.regions));
 
@@ -560,116 +563,129 @@ export default function MassImageUpload({
                 justifyContent: "center",
               }}
             >
-              <img
-                src={activeEntry.previewUrl}
-                alt={activeEntry.file.name}
-                onClick={(e) => handleImageClick(e, activeEntry)}
+              <div
+                ref={imageWrapRef}
                 style={{
-                  width: "100%",
-                  display: "block",
-                  cursor: "crosshair",
-                  userSelect: "none",
+                  position: "relative",
+                  display: "inline-block",
+                  maxWidth: "100%",
+                  maxHeight: 420,
                 }}
-                draggable={false}
-              />
-
-              {/* Region overlays */}
-              {Object.entries(activeEntry.regions).map(([letter, r]) => (
-                <div
-                  key={letter}
-                  draggable
-                  onDoubleClick={() => {
-                    const copy = { ...activeEntry.regions };
-                    delete copy[letter];
-                    updateEntry(activeEntry.id, { regions: copy });
-                  }}
-                  onDragEnd={(e) => {
-                    const rect =
-                      e.currentTarget.parentElement!.getBoundingClientRect();
-                    const x = (e.clientX - rect.left) / rect.width;
-                    const y = (e.clientY - rect.top) / rect.height;
-                    updateEntry(activeEntry.id, {
-                      regions: {
-                        ...activeEntry.regions,
-                        [letter]: { ...r, x, y },
-                      },
-                    });
-                  }}
+              >
+                <img
+                  src={activeEntry.previewUrl}
+                  alt={activeEntry.file.name}
+                  onClick={(e) => handleImageClick(e, activeEntry)}
                   style={{
-                    position: "absolute",
-                    left: `${r.x * 100}%`,
-                    top: `${r.y * 100}%`,
-                    width: `${r.w * 100}%`,
-                    height: `${r.h * 100}%`,
-                    border: `2px solid ${
-                      activeEntry.correctLetter === letter ? "#16a34a" : "#ef4444"
-                    }`,
-                    background:
-                      activeEntry.correctLetter === letter
-                        ? "rgba(22,163,74,0.15)"
-                        : "rgba(239,68,68,0.1)",
-                    cursor: "move",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color:
-                      activeEntry.correctLetter === letter
-                        ? "#16a34a"
-                        : "#ef4444",
-                    fontWeight: 700,
-                    fontSize: 13,
+                    display: "block",
+                    maxWidth: "100%",
+                    maxHeight: 420,
+                    width: "auto",
+                    height: "auto",
+                    cursor: "crosshair",
                     userSelect: "none",
                   }}
-                  title="Drag to move · Double-click to remove"
-                >
-                  {letter.toUpperCase()}
-                  {/* Resize handle */}
-                  <div
-                    onMouseDown={(e) => {
-                      e.stopPropagation();
-                      const startX = e.clientX;
-                      const startY = e.clientY;
-                      const startW = r.w;
-                      const startH = r.h;
-                      const parentRect =
-                        e.currentTarget.parentElement!.parentElement!.getBoundingClientRect();
+                  draggable={false}
+                />
 
-                      const onMove = (ev: MouseEvent) => {
-                        const dx = (ev.clientX - startX) / parentRect.width;
-                        const dy = (ev.clientY - startY) / parentRect.height;
-                        updateEntry(activeEntry.id, {
-                          regions: {
-                            ...activeEntry.regions,
-                            [letter]: {
-                              ...r,
-                              w: Math.max(0.05, startW + dx),
-                              h: Math.max(0.05, startH + dy),
-                            },
-                          },
-                        });
-                      };
-                      const onUp = () => {
-                        window.removeEventListener("mousemove", onMove);
-                        window.removeEventListener("mouseup", onUp);
-                      };
-                      window.addEventListener("mousemove", onMove);
-                      window.addEventListener("mouseup", onUp);
+                {/* Region overlays */}
+                {Object.entries(activeEntry.regions).map(([letter, r]) => (
+                  <div
+                    key={letter}
+                    draggable
+                    onDoubleClick={() => {
+                      const copy = { ...activeEntry.regions };
+                      delete copy[letter];
+                      updateEntry(activeEntry.id, { regions: copy });
+                    }}
+                    onDragEnd={(e) => {
+                      const rect = imageWrapRef.current?.getBoundingClientRect()
+                        ?? e.currentTarget.parentElement!.getBoundingClientRect();
+                      const x = (e.clientX - rect.left) / rect.width;
+                      const y = (e.clientY - rect.top) / rect.height;
+                      updateEntry(activeEntry.id, {
+                        regions: {
+                          ...activeEntry.regions,
+                          [letter]: { ...r, x, y },
+                        },
+                      });
                     }}
                     style={{
                       position: "absolute",
-                      bottom: 0,
-                      right: 0,
-                      width: 10,
-                      height: 10,
+                      left: `${r.x * 100}%`,
+                      top: `${r.y * 100}%`,
+                      width: `${r.w * 100}%`,
+                      height: `${r.h * 100}%`,
+                      border: `2px solid ${
+                        activeEntry.correctLetter === letter ? "#16a34a" : "#ef4444"
+                      }`,
                       background:
+                        activeEntry.correctLetter === letter
+                          ? "rgba(22,163,74,0.15)"
+                          : "rgba(239,68,68,0.1)",
+                      cursor: "move",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color:
                         activeEntry.correctLetter === letter
                           ? "#16a34a"
                           : "#ef4444",
-                      cursor: "nwse-resize",
+                      fontWeight: 700,
+                      fontSize: 13,
+                      userSelect: "none",
                     }}
-                  />
-                </div>
-              ))}
+                    title="Drag to move · Double-click to remove"
+                  >
+                    {letter.toUpperCase()}
+                    {/* Resize handle */}
+                    <div
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+                        const startX = e.clientX;
+                        const startY = e.clientY;
+                        const startW = r.w;
+                        const startH = r.h;
+                        const parentRect = imageWrapRef.current?.getBoundingClientRect()
+                          ?? e.currentTarget.parentElement!.parentElement!.getBoundingClientRect();
+
+                        const onMove = (ev: MouseEvent) => {
+                          const dx = (ev.clientX - startX) / parentRect.width;
+                          const dy = (ev.clientY - startY) / parentRect.height;
+                          updateEntry(activeEntry.id, {
+                            regions: {
+                              ...activeEntry.regions,
+                              [letter]: {
+                                ...r,
+                                w: Math.max(0.05, startW + dx),
+                                h: Math.max(0.05, startH + dy),
+                              },
+                            },
+                          });
+                        };
+                        const onUp = () => {
+                          window.removeEventListener("mousemove", onMove);
+                          window.removeEventListener("mouseup", onUp);
+                        };
+                        window.addEventListener("mousemove", onMove);
+                        window.addEventListener("mouseup", onUp);
+                      }}
+                      style={{
+                        position: "absolute",
+                        bottom: 0,
+                        right: 0,
+                        width: 10,
+                        height: 10,
+                        background:
+                          activeEntry.correctLetter === letter
+                            ? "#16a34a"
+                            : "#ef4444",
+                        cursor: "nwse-resize",
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
 
             <p style={{ fontSize: 11, color: "var(--color-text-secondary)", margin: "6px 0 0" }}>
