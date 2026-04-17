@@ -1,6 +1,7 @@
 "use client";
 
 import MathRenderer from "@/components/MathRenderer";
+import MathText from "@/components/MathText";
 import RichContent from "@/components/RichContent";
 import Image from "next/image";
 
@@ -438,9 +439,13 @@ function ReasoningQuizThemeStyles() {
         --quiz-text-soft: #94a3b8;
         --quiz-surface: rgba(255, 255, 255, 0.95);
         --quiz-surface-muted: rgba(248, 250, 252, 0.95);
+        --quiz-nav-bg: rgba(255, 255, 255, 0.9);
+        --quiz-nav-inner-bg: rgba(241, 245, 249, 0.95);
+        --quiz-nav-border: rgba(226, 232, 240, 0.9);
         --quiz-card-bg: #ffffff;
         --quiz-card-border: #e5e7eb;
         --quiz-card-shadow: 0 4px 20px rgba(124, 58, 237, 0.08);
+        --quiz-card-blur: blur(0px);
         --quiz-border: #e5e7eb;
         --quiz-border-strong: #cbd5e1;
         --quiz-divider: #9ca3af;
@@ -459,6 +464,8 @@ function ReasoningQuizThemeStyles() {
         --quiz-option-label-bg: transparent;
         --quiz-option-label-border: #7c3aed;
         --quiz-option-label-text: #5b21b6;
+        --quiz-option-shadow: 0 6px 14px rgba(15, 23, 42, 0.08);
+        --quiz-option-selected-shadow: 0 12px 24px rgba(124, 58, 237, 0.22);
         --quiz-option-selected-bg: #f5f3ff;
         --quiz-option-selected-border: #7c3aed;
         --quiz-option-selected-label-bg: #7c3aed;
@@ -482,6 +489,14 @@ function ReasoningQuizThemeStyles() {
         --quiz-error-border: #fecdd3;
         --quiz-error-text: #be123c;
         --quiz-ring-track: rgba(15, 23, 42, 0.08);
+        --quiz-quote-bg: rgba(124, 58, 237, 0.12);
+        --quiz-quote-border: rgba(124, 58, 237, 0.35);
+        --quiz-quote-text: #5b21b6;
+        --quiz-selected-icon: #7c3aed;
+        --quiz-toggle-bg: rgba(255, 255, 255, 0.9);
+        --quiz-toggle-border: rgba(148, 163, 184, 0.45);
+        --quiz-toggle-track: rgba(226, 232, 240, 0.9);
+        --quiz-toggle-thumb: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
         --quiz-status-current-bg: #7c3aed;
         --quiz-status-current-text: #ffffff;
         --quiz-status-current-border: #7c3aed;
@@ -515,36 +530,50 @@ function ReasoningQuizThemeStyles() {
             transparent 62%
           ),
           linear-gradient(150deg, #0b1020 0%, #0f172a 40%, #0b0f1a 100%);
-        --quiz-text: #f8fafc;
+        --quiz-text: #ffffff;
         --quiz-text-muted: #94a3b8;
-        --quiz-text-soft: #64748b;
-        --quiz-surface: rgba(15, 23, 42, 0.92);
-        --quiz-surface-muted: rgba(30, 41, 59, 0.86);
-        --quiz-card-bg: #0f172a;
-        --quiz-card-border: rgba(148, 163, 184, 0.2);
-        --quiz-card-shadow: 0 14px 32px rgba(2, 6, 23, 0.55), 0 0 0 1px rgba(148, 163, 184, 0.12);
-        --quiz-border: rgba(148, 163, 184, 0.25);
-        --quiz-border-strong: rgba(148, 163, 184, 0.35);
-        --quiz-divider: rgba(148, 163, 184, 0.45);
+        --quiz-text-soft: #7683a2;
+        --quiz-surface: #141b2d;
+        --quiz-surface-muted: #101728;
+        --quiz-nav-bg: #131a2a;
+        --quiz-nav-inner-bg: #0f1525;
+        --quiz-nav-border: #232c42;
+        --quiz-card-bg: linear-gradient(
+          150deg,
+          rgba(255, 255, 255, 0.14) 0%,
+          rgba(255, 255, 255, 0.1) 45%,
+          rgba(148, 163, 184, 0.08) 100%
+        );
+        --quiz-card-border: rgba(255, 255, 255, 0.28);
+        --quiz-card-shadow: 0 22px 40px rgba(2, 6, 23, 0.55),
+          0 0 22px rgba(99, 102, 241, 0.2),
+          inset 0 1px 0 rgba(255, 255, 255, 0.35),
+          inset 0 -12px 24px rgba(2, 6, 23, 0.28);
+        --quiz-card-blur: blur(12px) saturate(150%);
+        --quiz-border: #232c42;
+        --quiz-border-strong: #2f3b56;
+        --quiz-divider: #3b4866;
         --quiz-pill-bg: rgba(124, 58, 237, 0.18);
         --quiz-pill-text: #c4b5fd;
         --quiz-pill-border: rgba(124, 58, 237, 0.45);
         --quiz-accent-bg: rgba(124, 58, 237, 0.2);
         --quiz-accent-border: rgba(124, 58, 237, 0.5);
-        --quiz-accent-text: #c4b5fd;
+        --quiz-accent-text: #ddd6fe;
         --quiz-overlay: rgba(2, 6, 23, 0.65);
-        --quiz-option-bg: #0b1220;
-        --quiz-option-border: #1f2937;
-        --quiz-option-hover-bg: #111827;
-        --quiz-option-hover-border: #4c1d95;
-        --quiz-option-text: #f8fafc;
-        --quiz-option-label-bg: transparent;
-        --quiz-option-label-border: #a78bfa;
-        --quiz-option-label-text: #ddd6fe;
-        --quiz-option-selected-bg: rgba(124, 58, 237, 0.18);
-        --quiz-option-selected-border: #7c3aed;
-        --quiz-option-selected-label-bg: #7c3aed;
-        --quiz-option-selected-label-border: #7c3aed;
+        --quiz-option-bg: #151c2d;
+        --quiz-option-border: #2b3550;
+        --quiz-option-hover-bg: #1a2340;
+        --quiz-option-hover-border: #7c3aed;
+        --quiz-option-text: #ffffff;
+        --quiz-option-label-bg: #0f1525;
+        --quiz-option-label-border: #2b3550;
+        --quiz-option-label-text: #cbd5f5;
+        --quiz-option-shadow: 0 10px 22px rgba(2, 6, 23, 0.45);
+        --quiz-option-selected-shadow: 0 16px 28px rgba(124, 58, 237, 0.4);
+        --quiz-option-selected-bg: rgba(124, 58, 237, 0.35);
+        --quiz-option-selected-border: #8b5cf6;
+        --quiz-option-selected-label-bg: #8b5cf6;
+        --quiz-option-selected-label-border: #8b5cf6;
         --quiz-option-selected-label-text: #ffffff;
         --quiz-option-correct-bg: rgba(22, 163, 74, 0.18);
         --quiz-option-correct-border: #16a34a;
@@ -556,30 +585,38 @@ function ReasoningQuizThemeStyles() {
         --quiz-option-wrong-label-bg: #dc2626;
         --quiz-option-wrong-label-border: #dc2626;
         --quiz-option-wrong-label-text: #ffffff;
-        --quiz-footer-bg: rgba(15, 23, 42, 0.96);
-        --quiz-secondary-bg: rgba(30, 41, 59, 0.8);
-        --quiz-secondary-border: rgba(148, 163, 184, 0.35);
+        --quiz-footer-bg: rgba(12, 16, 30, 0.95);
+        --quiz-secondary-bg: #1b2337;
+        --quiz-secondary-border: #2f3b56;
         --quiz-secondary-text: #e2e8f0;
         --quiz-error-bg: rgba(248, 113, 113, 0.16);
         --quiz-error-border: rgba(248, 113, 113, 0.35);
         --quiz-error-text: #fca5a5;
         --quiz-ring-track: rgba(226, 232, 240, 0.08);
-        --quiz-status-current-bg: #7c3aed;
+        --quiz-quote-bg: rgba(124, 58, 237, 0.22);
+        --quiz-quote-border: rgba(124, 58, 237, 0.5);
+        --quiz-quote-text: #e9d5ff;
+        --quiz-selected-icon: #c4b5fd;
+        --quiz-toggle-bg: #121826;
+        --quiz-toggle-border: #1f2a3d;
+        --quiz-toggle-track: #0b1020;
+        --quiz-toggle-thumb: linear-gradient(135deg, #1f2937 0%, #0b1020 100%);
+        --quiz-status-current-bg: #8b5cf6;
         --quiz-status-current-text: #ffffff;
-        --quiz-status-current-border: #8b5cf6;
-        --quiz-status-current-shadow: 0 12px 28px rgba(124, 58, 237, 0.55);
-        --quiz-status-answered-bg: rgba(245, 158, 11, 0.2);
-        --quiz-status-answered-text: #fbbf24;
-        --quiz-status-answered-border: rgba(245, 158, 11, 0.5);
-        --quiz-status-correct-bg: rgba(16, 185, 129, 0.2);
-        --quiz-status-correct-text: #34d399;
-        --quiz-status-correct-border: rgba(16, 185, 129, 0.5);
-        --quiz-status-wrong-bg: rgba(244, 63, 94, 0.2);
+        --quiz-status-current-border: #a78bfa;
+        --quiz-status-current-shadow: 0 14px 26px rgba(124, 58, 237, 0.5);
+        --quiz-status-answered-bg: rgba(34, 197, 94, 0.18);
+        --quiz-status-answered-text: #4ade80;
+        --quiz-status-answered-border: rgba(34, 197, 94, 0.6);
+        --quiz-status-correct-bg: rgba(34, 197, 94, 0.22);
+        --quiz-status-correct-text: #4ade80;
+        --quiz-status-correct-border: rgba(34, 197, 94, 0.7);
+        --quiz-status-wrong-bg: rgba(244, 63, 94, 0.22);
         --quiz-status-wrong-text: #fb7185;
-        --quiz-status-wrong-border: rgba(244, 63, 94, 0.5);
-        --quiz-status-empty-bg: rgba(148, 163, 184, 0.16);
+        --quiz-status-wrong-border: rgba(244, 63, 94, 0.6);
+        --quiz-status-empty-bg: rgba(15, 23, 42, 0.9);
         --quiz-status-empty-text: #94a3b8;
-        --quiz-status-empty-border: rgba(148, 163, 184, 0.35);
+        --quiz-status-empty-border: #2b3550;
       }
 
       .reasoning-quiz .quiz-start {
@@ -619,6 +656,63 @@ function ReasoningQuizThemeStyles() {
         border-color: var(--quiz-status-empty-border);
       }
 
+      .reasoning-quiz .concept-badge {
+        border: 1.5px solid var(--concept-border);
+        border-radius: 999px;
+        padding: 4px 12px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: lowercase;
+        color: var(--concept-text);
+        background: var(--concept-bg);
+        letter-spacing: 0.04em;
+      }
+      .reasoning-quiz[data-theme="dark"] .concept-badge {
+        border-color: var(--quiz-pill-border);
+        background: var(--quiz-pill-bg);
+        color: var(--quiz-pill-text);
+      }
+
+      .reasoning-quiz .quote-highlight {
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 8px;
+        margin: 0 2px;
+        border-radius: 10px;
+        border: 1px solid var(--quiz-quote-border);
+        background: var(--quiz-quote-bg);
+        color: var(--quiz-quote-text);
+        font-weight: 600;
+      }
+
+      .reasoning-quiz .quiz-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+      .reasoning-quiz .quiz-topbar-group {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .reasoning-quiz .quiz-option {
+        border-radius: 18px;
+        box-shadow: var(--quiz-option-shadow);
+      }
+      .reasoning-quiz .quiz-option.is-selected {
+        box-shadow: var(--quiz-option-selected-shadow);
+      }
+      .reasoning-quiz .quiz-option-letter {
+        border-radius: 12px;
+      }
+
+      .reasoning-quiz .qnum-chip {
+        border-radius: 12px;
+      }
+
       .reasoning-quiz .quiz-icon-button {
         background: var(--quiz-surface);
         border: 1px solid var(--quiz-border);
@@ -637,8 +731,8 @@ function ReasoningQuizThemeStyles() {
         height: 34px;
         padding: 2px;
         border-radius: 999px;
-        border: 1px solid var(--quiz-border);
-        background: var(--quiz-surface);
+        border: 1px solid var(--quiz-toggle-border);
+        background: var(--quiz-toggle-bg);
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -650,7 +744,7 @@ function ReasoningQuizThemeStyles() {
         width: 100%;
         height: 100%;
         border-radius: 999px;
-        background: var(--quiz-surface-muted);
+        background: var(--quiz-toggle-track);
         position: relative;
         display: flex;
         align-items: center;
@@ -664,7 +758,7 @@ function ReasoningQuizThemeStyles() {
         width: 28px;
         height: 28px;
         border-radius: 999px;
-        background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
+        background: var(--quiz-toggle-thumb);
         box-shadow: 0 4px 10px rgba(15, 23, 42, 0.18);
         transition: transform 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
       }
@@ -864,11 +958,11 @@ function QuestionNavigator({
     <>
       <div
         className="rounded-2xl border p-2 shadow-[0_10px_24px_rgba(15,23,42,0.1)] backdrop-blur"
-        style={{ background: "var(--quiz-surface)", borderColor: "var(--quiz-border)" }}
+        style={{ background: "var(--quiz-nav-bg)", borderColor: "var(--quiz-nav-border)" }}
       >
         <div
           className="rounded-xl border px-1 py-1.5"
-          style={{ background: "var(--quiz-surface-muted)", borderColor: "var(--quiz-border)" }}
+          style={{ background: "var(--quiz-nav-inner-bg)", borderColor: "var(--quiz-nav-border)" }}
         >
           <div
             className="question-strip qnav-bar-scroll mx-auto"
@@ -1003,19 +1097,15 @@ function ConceptBadge({
   colours: Record<string, ConceptColour>;
 }) {
   const colour = colours[concept] ?? DEFAULT_CONCEPT_COLOUR;
+  const badgeStyle: React.CSSProperties = {
+    ["--concept-border" as string]: colour.border,
+    ["--concept-bg" as string]: colour.bg,
+    ["--concept-text" as string]: colour.text,
+  };
+  const label = concept.trim().replace(/\s+/g, "_").toLowerCase();
   return (
-    <span
-      style={{
-        border: `1.5px solid ${colour.border}`,
-        borderRadius: "999px",
-        padding: "3px 12px",
-        fontSize: "13px",
-        color: colour.text,
-        background: colour.bg,
-        fontWeight: 500,
-      }}
-    >
-      {concept}
+    <span className="concept-badge" style={badgeStyle}>
+      {label}
     </span>
   );
 }
@@ -1347,6 +1437,21 @@ export default function ReasoningQuizEngine({
   const isLongQuestion = (currentQ?.question?.length ?? 0) > 180;
   const hasQuestionText = Boolean(currentQ?.question?.trim());
   const hasQuestionImage = Boolean(currentQ?.questionImage);
+
+  const renderQuestionLine = useCallback((line: string) => {
+    const chunks = line.split(/'([^']+)'/g);
+    return chunks.map((chunk, index) => {
+      const key = `question-chunk-${index}`;
+      if (index % 2 === 1) {
+        return (
+          <span key={key} className="quote-highlight">
+            <MathText text={`'${chunk}'`} />
+          </span>
+        );
+      }
+      return <MathText key={key} text={chunk} />;
+    });
+  }, []);
 
   useEffect(() => {
     const next = questions[currentIndex + 1];
@@ -2241,38 +2346,19 @@ export default function ReasoningQuizEngine({
     >
       {themeStyles}
       <main className="mx-auto max-w-3xl px-3 pb-[160px] pt-3 sm:px-6 sm:pb-[110px] sm:pt-4">
-        <section className="mb-3 flex items-center justify-end gap-2">
-          <ThemeToggle isDark={isDark} onToggle={toggleTheme} />
-          {streak >= 2 && (
-            <div
-              className="flex items-center gap-1 rounded-full border px-3 py-1 text-sm font-bold"
-              style={{
-                background: "var(--quiz-accent-bg)",
-                borderColor: "var(--quiz-accent-border)",
-                color: "var(--quiz-accent-text)",
-              }}
-            >
-              <Flame className="w-3.5 h-3.5" />
-              {streak}
-            </div>
-          )}
-          <div
-            className="rounded-full border px-3 py-1 text-sm font-bold"
-            style={{
-              background: "var(--quiz-secondary-bg)",
-              borderColor: "var(--quiz-secondary-border)",
-              color: "var(--quiz-secondary-text)",
-            }}
-          >
-            {formatClock(timeLeft)}
+        <section className="quiz-topbar">
+          <div className="quiz-topbar-group">
+            <ThemeToggle isDark={isDark} onToggle={toggleTheme} />
           </div>
-          <button
-            onClick={openPalette}
-            className="quiz-icon-button inline-flex h-11 w-11 items-center justify-center rounded-full transition-colors"
-            aria-label="Open question palette"
-          >
-            <Menu className="h-4 w-4" />
-          </button>
+          <div className="quiz-topbar-group">
+            <button
+              onClick={openPalette}
+              className="quiz-icon-button inline-flex h-11 w-11 items-center justify-center rounded-full transition-colors"
+              aria-label="Open question palette"
+            >
+              <Menu className="h-4 w-4" />
+            </button>
+          </div>
         </section>
 
         <div className="mb-3">
@@ -2324,6 +2410,8 @@ export default function ReasoningQuizEngine({
               background: "var(--quiz-card-bg)",
               boxShadow: "var(--quiz-card-shadow)",
               border: "1px solid var(--quiz-card-border)",
+              backdropFilter: "var(--quiz-card-blur)",
+              WebkitBackdropFilter: "var(--quiz-card-blur)",
             }}
           >
             <div className="flex items-center mb-[14px] flex-wrap gap-2">
@@ -2359,16 +2447,21 @@ export default function ReasoningQuizEngine({
               <div
                 style={{
                   fontSize: 18,
-                  fontWeight: 400,
+                  fontWeight: 600,
                   color: "var(--quiz-text)",
-                  lineHeight: 1.6,
+                  lineHeight: 1.75,
                   marginBottom: hasQuestionImage ? 18 : 28,
-                  letterSpacing: 0.01,
+                  letterSpacing: 0.015,
+                  fontFamily: "'Poppins', 'SF Pro Text', 'Segoe UI', sans-serif",
                   paddingLeft: "0.3cm",
                   paddingRight: "0.3cm",
                 }}
               >
-                <RichContent text={currentQ.question} className="leading-relaxed" />
+                <RichContent
+                  text={currentQ.question}
+                  className="leading-relaxed"
+                  renderText={renderQuestionLine}
+                />
               </div>
             )}
 
@@ -2406,8 +2499,11 @@ export default function ReasoningQuizEngine({
                 bg = "var(--quiz-option-bg)",
                 letterBg = "var(--quiz-option-label-bg)",
                 letterBorder = "var(--quiz-option-label-border)",
-                letterText = "var(--quiz-option-label-text)";
+                letterText = "var(--quiz-option-label-text)",
+                shadow = "var(--quiz-option-shadow)";
               const letterFontWeight = 600;
+              const isSelected = selectedAnswer === i;
+              const showSelectedIndicator = !isCurrentSubmitted && isSelected;
 
               if (isCurrentSubmitted && i === currentQ.correctAnswer) {
                 border = "var(--quiz-option-correct-border)";
@@ -2433,28 +2529,33 @@ export default function ReasoningQuizEngine({
                 letterText = "var(--quiz-option-selected-label-text)";
               }
 
+              if (isSelected) {
+                shadow = "var(--quiz-option-selected-shadow)";
+              }
+
               return (
                 <button
                   key={i}
                   onClick={() => handleSelectAnswer(i)}
                   disabled={isCurrentSubmitted}
                   type="button"
+                  className={`quiz-option${isSelected ? " is-selected" : ""}`}
                   style={{
                     width: "100%",
-                    minHeight: 58,
+                    minHeight: 64,
                     background: bg,
                     border: `1.5px solid ${border}`,
-                    borderRadius: 16,
-                    padding: "0 16px",
+                    borderRadius: 18,
+                    padding: "16px 20px",
                     display: "flex",
                     alignItems: "center",
                     gap: 14,
-                    boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
-                    marginBottom: 12,
+                    boxShadow: shadow,
+                    marginBottom: 16,
                     cursor: isCurrentSubmitted ? "default" : "pointer",
                     transition: "all 0.15s ease",
-                    fontSize: 17,
-                    fontWeight: 400,
+                    fontSize: 16,
+                    fontWeight: 500,
                     color: "var(--quiz-option-text)",
                     outline: "none",
                   }}
@@ -2473,11 +2574,12 @@ export default function ReasoningQuizEngine({
                   }}
                 >
                   <span
+                    className="quiz-option-letter"
                     style={{
-                      width: 34,
-                      height: 34,
+                      width: 36,
+                      height: 36,
                       border: `1.5px solid ${letterBorder}`,
-                      borderRadius: "50%",
+                      borderRadius: 12,
                       background: letterBg,
                       color: letterText,
                       fontSize: 14,
@@ -2495,14 +2597,22 @@ export default function ReasoningQuizEngine({
 
                   <div
                     style={{
-                      fontSize: 17,
-                      fontWeight: 400,
+                      fontSize: 16,
+                      fontWeight: 500,
                       color: "var(--quiz-option-text)",
                       lineHeight: 1.5,
                     }}
                   >
                     <RichContent text={opt} />
                   </div>
+
+                  {showSelectedIndicator && (
+                    <CheckCircle2
+                      className="ml-auto h-5 w-5 shrink-0"
+                      style={{ color: "var(--quiz-selected-icon)" }}
+                      aria-label="Selected option"
+                    />
+                  )}
 
                   {isCurrentSubmitted && i === currentQ.correctAnswer && (
                     <CheckCircle2
@@ -2577,7 +2687,7 @@ export default function ReasoningQuizEngine({
             <button
               onClick={handlePrev}
               disabled={currentIndex === 0}
-              className="inline-flex h-14 items-center justify-center rounded-2xl border px-5 text-base font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-45"
+              className="inline-flex h-16 items-center justify-center rounded-2xl border px-6 text-base font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-45"
               style={{
                 background: "var(--quiz-secondary-bg)",
                 borderColor: "var(--quiz-secondary-border)",
@@ -2596,7 +2706,7 @@ export default function ReasoningQuizEngine({
                 handleNext();
               }}
               disabled={!canSubmit && !isCurrentSubmitted}
-              className="inline-flex h-14 items-center justify-center rounded-2xl px-5 text-base font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-45"
+              className="inline-flex h-16 items-center justify-center rounded-2xl px-6 text-base font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-45"
               style={{
                 background: isCurrentSubmitted
                   ? "linear-gradient(135deg, #5b21b6 0%, #1d4ed8 100%)"
