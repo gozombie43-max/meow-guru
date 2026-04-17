@@ -15,6 +15,8 @@ import {
   XCircle,
   Menu,
   Flame,
+  Sun,
+  Moon,
   Sparkles,
   Target,
   RotateCcw,
@@ -368,10 +370,13 @@ function MathFraction({
         {numerator}
       </span>
       <span
-        className="w-full border-t border-slate-400 my-[2px]"
-        style={{ minWidth: "1.2em" }}
+        className="w-full border-t my-[2px]"
+        style={{ minWidth: "1.2em", borderColor: "var(--quiz-divider)" }}
       />
-      <span className="text-slate-500 font-semibold" style={{ fontSize: "0.85em" }}>
+      <span
+        className="font-semibold"
+        style={{ fontSize: "0.85em", color: "var(--quiz-text-muted)" }}
+      >
         {denominator}
       </span>
     </span>
@@ -404,16 +409,312 @@ function getQuestionStatus({
 }
 
 function statusClasses(status: QuestionStatus) {
-  const base = "border transition-all duration-200";
-  if (status === "current")
-    return `${base} bg-violet-600 text-white border-violet-600 shadow-lg shadow-violet-400/40 scale-110 z-10`;
-  if (status === "answered")
-    return `${base} bg-amber-100 text-amber-700 border-amber-300`;
-  if (status === "correct")
-    return `${base} bg-emerald-100 text-emerald-700 border-emerald-300`;
-  if (status === "wrong")
-    return `${base} bg-rose-100 text-rose-700 border-rose-300`;
-  return `${base} bg-slate-100 text-slate-700 border-slate-300`;
+  const base = "qstatus border transition-all duration-200";
+  if (status === "current") return `${base} qstatus--current`;
+  if (status === "answered") return `${base} qstatus--answered`;
+  if (status === "correct") return `${base} qstatus--correct`;
+  if (status === "wrong") return `${base} qstatus--wrong`;
+  return `${base} qstatus--empty`;
+}
+
+function ReasoningQuizThemeStyles() {
+  return (
+    <style jsx global>{`
+      .reasoning-quiz {
+        --quiz-bg: linear-gradient(165deg, #f5f0ff 0%, #eef2ff 38%, #f8faff 100%);
+        --quiz-start-bg: radial-gradient(
+            1200px 600px at 20% -10%,
+            rgba(124, 58, 237, 0.12),
+            transparent 60%
+          ),
+          radial-gradient(
+            1000px 540px at 85% 110%,
+            rgba(37, 99, 235, 0.12),
+            transparent 62%
+          ),
+          linear-gradient(135deg, #faf8ff 0%, #eef4ff 45%, #faf8ff 100%);
+        --quiz-text: #111827;
+        --quiz-text-muted: #6b7280;
+        --quiz-text-soft: #94a3b8;
+        --quiz-surface: rgba(255, 255, 255, 0.95);
+        --quiz-surface-muted: rgba(248, 250, 252, 0.95);
+        --quiz-card-bg: #ffffff;
+        --quiz-card-border: #e5e7eb;
+        --quiz-card-shadow: 0 4px 20px rgba(124, 58, 237, 0.08);
+        --quiz-border: #e5e7eb;
+        --quiz-border-strong: #cbd5e1;
+        --quiz-divider: #9ca3af;
+        --quiz-pill-bg: #f5f3ff;
+        --quiz-pill-text: #5b21b6;
+        --quiz-pill-border: rgba(124, 58, 237, 0.25);
+        --quiz-accent-bg: #ede9fe;
+        --quiz-accent-border: rgba(124, 58, 237, 0.35);
+        --quiz-accent-text: #7c3aed;
+        --quiz-overlay: rgba(15, 23, 42, 0.45);
+        --quiz-option-bg: #ffffff;
+        --quiz-option-border: #e5e7eb;
+        --quiz-option-hover-bg: #f5f3ff;
+        --quiz-option-hover-border: #c4b5fd;
+        --quiz-option-text: #111827;
+        --quiz-option-label-bg: transparent;
+        --quiz-option-label-border: #7c3aed;
+        --quiz-option-label-text: #5b21b6;
+        --quiz-option-selected-bg: #f5f3ff;
+        --quiz-option-selected-border: #7c3aed;
+        --quiz-option-selected-label-bg: #7c3aed;
+        --quiz-option-selected-label-border: #7c3aed;
+        --quiz-option-selected-label-text: #ffffff;
+        --quiz-option-correct-bg: #f0fdf4;
+        --quiz-option-correct-border: #16a34a;
+        --quiz-option-correct-label-bg: #16a34a;
+        --quiz-option-correct-label-border: #16a34a;
+        --quiz-option-correct-label-text: #ffffff;
+        --quiz-option-wrong-bg: #fef2f2;
+        --quiz-option-wrong-border: #dc2626;
+        --quiz-option-wrong-label-bg: #dc2626;
+        --quiz-option-wrong-label-border: #dc2626;
+        --quiz-option-wrong-label-text: #ffffff;
+        --quiz-footer-bg: rgba(255, 255, 255, 0.95);
+        --quiz-secondary-bg: #f1f5f9;
+        --quiz-secondary-border: #cbd5e1;
+        --quiz-secondary-text: #475569;
+        --quiz-error-bg: #fff1f2;
+        --quiz-error-border: #fecdd3;
+        --quiz-error-text: #be123c;
+        --quiz-ring-track: rgba(15, 23, 42, 0.08);
+        --quiz-status-current-bg: #7c3aed;
+        --quiz-status-current-text: #ffffff;
+        --quiz-status-current-border: #7c3aed;
+        --quiz-status-current-shadow: 0 10px 25px rgba(124, 58, 237, 0.45);
+        --quiz-status-answered-bg: #fef3c7;
+        --quiz-status-answered-text: #b45309;
+        --quiz-status-answered-border: #fcd34d;
+        --quiz-status-correct-bg: #dcfce7;
+        --quiz-status-correct-text: #15803d;
+        --quiz-status-correct-border: #86efac;
+        --quiz-status-wrong-bg: #ffe4e6;
+        --quiz-status-wrong-text: #be123c;
+        --quiz-status-wrong-border: #fda4af;
+        --quiz-status-empty-bg: #f1f5f9;
+        --quiz-status-empty-text: #475569;
+        --quiz-status-empty-border: #cbd5e1;
+        --text-primary: var(--quiz-text);
+      }
+
+      .reasoning-quiz[data-theme="dark"] {
+        color-scheme: dark;
+        --quiz-bg: linear-gradient(165deg, #0b1020 0%, #0f172a 45%, #0b0f1a 100%);
+        --quiz-start-bg: radial-gradient(
+            900px 420px at 20% -10%,
+            rgba(124, 58, 237, 0.22),
+            transparent 60%
+          ),
+          radial-gradient(
+            900px 500px at 85% 110%,
+            rgba(37, 99, 235, 0.2),
+            transparent 62%
+          ),
+          linear-gradient(150deg, #0b1020 0%, #0f172a 40%, #0b0f1a 100%);
+        --quiz-text: #f8fafc;
+        --quiz-text-muted: #94a3b8;
+        --quiz-text-soft: #64748b;
+        --quiz-surface: rgba(15, 23, 42, 0.92);
+        --quiz-surface-muted: rgba(30, 41, 59, 0.86);
+        --quiz-card-bg: #0f172a;
+        --quiz-card-border: rgba(148, 163, 184, 0.2);
+        --quiz-card-shadow: 0 14px 32px rgba(2, 6, 23, 0.55), 0 0 0 1px rgba(148, 163, 184, 0.12);
+        --quiz-border: rgba(148, 163, 184, 0.25);
+        --quiz-border-strong: rgba(148, 163, 184, 0.35);
+        --quiz-divider: rgba(148, 163, 184, 0.45);
+        --quiz-pill-bg: rgba(124, 58, 237, 0.18);
+        --quiz-pill-text: #c4b5fd;
+        --quiz-pill-border: rgba(124, 58, 237, 0.45);
+        --quiz-accent-bg: rgba(124, 58, 237, 0.2);
+        --quiz-accent-border: rgba(124, 58, 237, 0.5);
+        --quiz-accent-text: #c4b5fd;
+        --quiz-overlay: rgba(2, 6, 23, 0.65);
+        --quiz-option-bg: #0b1220;
+        --quiz-option-border: #1f2937;
+        --quiz-option-hover-bg: #111827;
+        --quiz-option-hover-border: #4c1d95;
+        --quiz-option-text: #f8fafc;
+        --quiz-option-label-bg: transparent;
+        --quiz-option-label-border: #a78bfa;
+        --quiz-option-label-text: #ddd6fe;
+        --quiz-option-selected-bg: rgba(124, 58, 237, 0.18);
+        --quiz-option-selected-border: #7c3aed;
+        --quiz-option-selected-label-bg: #7c3aed;
+        --quiz-option-selected-label-border: #7c3aed;
+        --quiz-option-selected-label-text: #ffffff;
+        --quiz-option-correct-bg: rgba(22, 163, 74, 0.18);
+        --quiz-option-correct-border: #16a34a;
+        --quiz-option-correct-label-bg: #16a34a;
+        --quiz-option-correct-label-border: #16a34a;
+        --quiz-option-correct-label-text: #ffffff;
+        --quiz-option-wrong-bg: rgba(220, 38, 38, 0.18);
+        --quiz-option-wrong-border: #dc2626;
+        --quiz-option-wrong-label-bg: #dc2626;
+        --quiz-option-wrong-label-border: #dc2626;
+        --quiz-option-wrong-label-text: #ffffff;
+        --quiz-footer-bg: rgba(15, 23, 42, 0.96);
+        --quiz-secondary-bg: rgba(30, 41, 59, 0.8);
+        --quiz-secondary-border: rgba(148, 163, 184, 0.35);
+        --quiz-secondary-text: #e2e8f0;
+        --quiz-error-bg: rgba(248, 113, 113, 0.16);
+        --quiz-error-border: rgba(248, 113, 113, 0.35);
+        --quiz-error-text: #fca5a5;
+        --quiz-ring-track: rgba(226, 232, 240, 0.08);
+        --quiz-status-current-bg: #7c3aed;
+        --quiz-status-current-text: #ffffff;
+        --quiz-status-current-border: #8b5cf6;
+        --quiz-status-current-shadow: 0 12px 28px rgba(124, 58, 237, 0.55);
+        --quiz-status-answered-bg: rgba(245, 158, 11, 0.2);
+        --quiz-status-answered-text: #fbbf24;
+        --quiz-status-answered-border: rgba(245, 158, 11, 0.5);
+        --quiz-status-correct-bg: rgba(16, 185, 129, 0.2);
+        --quiz-status-correct-text: #34d399;
+        --quiz-status-correct-border: rgba(16, 185, 129, 0.5);
+        --quiz-status-wrong-bg: rgba(244, 63, 94, 0.2);
+        --quiz-status-wrong-text: #fb7185;
+        --quiz-status-wrong-border: rgba(244, 63, 94, 0.5);
+        --quiz-status-empty-bg: rgba(148, 163, 184, 0.16);
+        --quiz-status-empty-text: #94a3b8;
+        --quiz-status-empty-border: rgba(148, 163, 184, 0.35);
+      }
+
+      .reasoning-quiz .quiz-start {
+        background: var(--quiz-start-bg);
+        color: var(--quiz-text);
+      }
+
+      .reasoning-quiz .qstatus {
+        border: 1px solid var(--quiz-status-empty-border);
+      }
+      .reasoning-quiz .qstatus--current {
+        background: var(--quiz-status-current-bg);
+        color: var(--quiz-status-current-text);
+        border-color: var(--quiz-status-current-border);
+        box-shadow: var(--quiz-status-current-shadow);
+        transform: scale(1.1);
+        z-index: 10;
+      }
+      .reasoning-quiz .qstatus--answered {
+        background: var(--quiz-status-answered-bg);
+        color: var(--quiz-status-answered-text);
+        border-color: var(--quiz-status-answered-border);
+      }
+      .reasoning-quiz .qstatus--correct {
+        background: var(--quiz-status-correct-bg);
+        color: var(--quiz-status-correct-text);
+        border-color: var(--quiz-status-correct-border);
+      }
+      .reasoning-quiz .qstatus--wrong {
+        background: var(--quiz-status-wrong-bg);
+        color: var(--quiz-status-wrong-text);
+        border-color: var(--quiz-status-wrong-border);
+      }
+      .reasoning-quiz .qstatus--empty {
+        background: var(--quiz-status-empty-bg);
+        color: var(--quiz-status-empty-text);
+        border-color: var(--quiz-status-empty-border);
+      }
+
+      .reasoning-quiz .quiz-icon-button {
+        background: var(--quiz-surface);
+        border: 1px solid var(--quiz-border);
+        color: var(--quiz-text-muted);
+      }
+      .reasoning-quiz .quiz-icon-button:hover {
+        background: var(--quiz-surface-muted);
+      }
+
+      .reasoning-quiz .quiz-bookmark:hover {
+        background: var(--quiz-surface-muted);
+      }
+
+      .reasoning-quiz .theme-toggle {
+        width: 64px;
+        height: 34px;
+        padding: 2px;
+        border-radius: 999px;
+        border: 1px solid var(--quiz-border);
+        background: var(--quiz-surface);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+        transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+      .reasoning-quiz .theme-toggle-track {
+        width: 100%;
+        height: 100%;
+        border-radius: 999px;
+        background: var(--quiz-surface-muted);
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 7px;
+      }
+      .reasoning-quiz .theme-toggle-thumb {
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
+        box-shadow: 0 4px 10px rgba(15, 23, 42, 0.18);
+        transition: transform 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+      }
+      .reasoning-quiz .theme-toggle-icon {
+        width: 16px;
+        height: 16px;
+        z-index: 1;
+        transition: opacity 0.2s ease;
+      }
+      .reasoning-quiz .theme-toggle--light .theme-toggle-icon--sun {
+        color: #f59e0b;
+        opacity: 1;
+      }
+      .reasoning-quiz .theme-toggle--light .theme-toggle-icon--moon {
+        color: #94a3b8;
+        opacity: 0.5;
+      }
+      .reasoning-quiz .theme-toggle--dark .theme-toggle-thumb {
+        transform: translateX(30px);
+        background: linear-gradient(135deg, #1f2937 0%, #0b1020 100%);
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.45);
+      }
+      .reasoning-quiz .theme-toggle--dark .theme-toggle-icon--sun {
+        color: #fbbf24;
+        opacity: 0.4;
+      }
+      .reasoning-quiz .theme-toggle--dark .theme-toggle-icon--moon {
+        color: #e2e8f0;
+        opacity: 1;
+      }
+
+      .reasoning-quiz[data-theme="dark"] .glass-card {
+        background: rgba(15, 23, 42, 0.55);
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      }
+      .reasoning-quiz[data-theme="dark"] .glass-card:hover {
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+        border-color: rgba(148, 163, 184, 0.35);
+      }
+      .reasoning-quiz[data-theme="dark"] .btn-outline {
+        background: rgba(15, 23, 42, 0.4);
+        border-color: rgba(148, 163, 184, 0.35);
+        color: #e2e8f0;
+      }
+      .reasoning-quiz[data-theme="dark"] .btn-outline:hover {
+        background: rgba(30, 41, 59, 0.6);
+      }
+    `}</style>
+  );
 }
 
 function QuestionPaletteModal({
@@ -439,33 +740,34 @@ function QuestionPaletteModal({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-[90] bg-slate-900/45 backdrop-blur-sm"
+          className="fixed inset-0 z-[90] bg-[var(--quiz-overlay)] backdrop-blur-sm"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
         >
           <motion.div
-            className="h-full w-full bg-white/95 p-4"
+            className="h-full w-full p-4"
+            style={{ background: "var(--quiz-surface)", color: "var(--quiz-text)" }}
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 20, opacity: 0 }}
             transition={{ duration: 0.2 }}
           >
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-base font-semibold text-slate-800">
+              <h3 className="text-base font-semibold text-[color:var(--quiz-text)]">
                 Question Palette
               </h3>
               <button
                 onClick={onClose}
-                className="h-12 min-w-12 rounded-xl border border-slate-300 bg-white text-slate-700 shadow-sm"
+                className="quiz-icon-button h-12 min-w-12 rounded-xl shadow-sm transition-colors"
                 aria-label="Close question palette"
               >
                 <X className="mx-auto h-5 w-5" />
               </button>
             </div>
 
-            <div className="mb-3 flex flex-wrap gap-2 text-xs text-slate-600">
+            <div className="mb-3 flex flex-wrap gap-2 text-xs text-[color:var(--quiz-text-muted)]">
               <span className="rounded-md border border-violet-300 bg-violet-100 px-2 py-1">
                 Current
               </span>
@@ -478,12 +780,22 @@ function QuestionPaletteModal({
               <span className="rounded-md border border-rose-300 bg-rose-100 px-2 py-1">
                 Wrong
               </span>
-              <span className="rounded-md border border-slate-300 bg-slate-100 px-2 py-1">
+              <span
+                className="rounded-md border px-2 py-1"
+                style={{
+                  background: "var(--quiz-status-empty-bg)",
+                  borderColor: "var(--quiz-status-empty-border)",
+                  color: "var(--quiz-status-empty-text)",
+                }}
+              >
                 Not Answered
               </span>
             </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+            <div
+              className="rounded-2xl border p-3 shadow-sm"
+              style={{ background: "var(--quiz-card-bg)", borderColor: "var(--quiz-border)" }}
+            >
               <div className="question-grid question-grid--palette">
                 {Array.from({ length: total }, (_, index) => {
                   const status = getQuestionStatus({
@@ -550,8 +862,14 @@ function QuestionNavigator({
 
   return (
     <>
-      <div className="rounded-2xl border border-slate-200 bg-white/95 p-2 shadow-[0_10px_24px_rgba(15,23,42,0.1)] backdrop-blur">
-        <div className="rounded-xl border border-slate-200 bg-slate-50 px-1 py-1.5">
+      <div
+        className="rounded-2xl border p-2 shadow-[0_10px_24px_rgba(15,23,42,0.1)] backdrop-blur"
+        style={{ background: "var(--quiz-surface)", borderColor: "var(--quiz-border)" }}
+      >
+        <div
+          className="rounded-xl border px-1 py-1.5"
+          style={{ background: "var(--quiz-surface-muted)", borderColor: "var(--quiz-border)" }}
+        >
           <div
             className="question-strip qnav-bar-scroll mx-auto"
             style={{ scrollSnapType: "x mandatory" }}
@@ -624,7 +942,7 @@ function TimerCircle({
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="rgba(255,255,255,0.06)"
+          stroke="var(--quiz-ring-track)"
           strokeWidth={stroke}
         />
         <circle
@@ -650,6 +968,30 @@ function TimerCircle({
         {timeLeft}
       </span>
     </div>
+  );
+}
+
+function ThemeToggle({
+  isDark,
+  onToggle,
+}: {
+  isDark: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      className={`theme-toggle ${isDark ? "theme-toggle--dark" : "theme-toggle--light"}`}
+      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      aria-pressed={isDark}
+    >
+      <span className="theme-toggle-track">
+        <Sun className="theme-toggle-icon theme-toggle-icon--sun" aria-hidden="true" />
+        <Moon className="theme-toggle-icon theme-toggle-icon--moon" aria-hidden="true" />
+        <span className="theme-toggle-thumb" />
+      </span>
+    </button>
   );
 }
 
@@ -743,7 +1085,7 @@ function SolutionBottomSheet({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-[95] bg-slate-900/45"
+          className="fixed inset-0 z-[95] bg-[var(--quiz-overlay)]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -754,8 +1096,10 @@ function SolutionBottomSheet({
             role="dialog"
             aria-modal="true"
             aria-label="Question solution"
-            className="absolute bottom-0 left-0 right-0 mx-auto flex h-[40vh] w-full max-w-3xl flex-col rounded-t-3xl border border-slate-200 bg-white px-5 pt-4 shadow-[0_-16px_44px_rgba(15,23,42,0.35)]"
+            className="absolute bottom-0 left-0 right-0 mx-auto flex h-[40vh] w-full max-w-3xl flex-col rounded-t-3xl border px-5 pt-4 shadow-[0_-16px_44px_rgba(15,23,42,0.35)]"
             style={{
+              background: "var(--quiz-card-bg)",
+              borderColor: "var(--quiz-border)",
               paddingBottom: "calc(env(safe-area-inset-bottom) + 14px)",
             }}
             initial={{ y: "108%", opacity: 0.98 }}
@@ -769,15 +1113,15 @@ function SolutionBottomSheet({
             }}
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-slate-200" />
+            <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-[var(--quiz-border-strong)]" />
 
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-base font-semibold text-slate-800">
+              <h3 className="text-base font-semibold text-[color:var(--quiz-text)]">
                 Worked Solution
               </h3>
               <button
                 onClick={onClose}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-700 transition-colors hover:bg-slate-50"
+                className="quiz-icon-button inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors"
                 aria-label="Close solution"
               >
                 <X className="h-4 w-4" />
@@ -785,8 +1129,10 @@ function SolutionBottomSheet({
             </div>
 
             <div
-              className="flex-1 overflow-y-auto rounded-2xl border border-slate-300 bg-[#f7f7f7] px-4 py-3 text-slate-900"
+              className="flex-1 overflow-y-auto rounded-2xl border px-4 py-3 text-[color:var(--quiz-text)]"
               style={{
+                background: "var(--quiz-surface-muted)",
+                borderColor: "var(--quiz-border)",
                 fontFamily:
                   "'Cambria Math', 'STIX Two Text', 'Times New Roman', serif",
                 fontSize: 17,
@@ -797,7 +1143,7 @@ function SolutionBottomSheet({
             >
               {solutionLines.length > 0 ? (
                 <div className="space-y-1.5">
-                  <p className="mb-1 text-[18px] font-semibold text-slate-950">
+                  <p className="mb-1 text-[18px] font-semibold text-[color:var(--quiz-text)]">
                     Sol.{questionNumber}.({optionLabel})
                   </p>
 
@@ -822,7 +1168,7 @@ function SolutionBottomSheet({
                   )}
                 </div>
               ) : (
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-[color:var(--quiz-text-muted)]">
                   Solution is not available for this question yet.
                 </p>
               )}
@@ -846,6 +1192,25 @@ export default function ReasoningQuizEngine({
 }: ReasoningQuizEngineProps) {
   const searchParams = useSearchParams();
   const mode = normalizeMode(searchParams.get("mode"));
+
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const isDark = theme === "dark";
+  const themeStyles = <ReasoningQuizThemeStyles />;
+
+  const toggleTheme = useCallback(() => {
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  }, []);
+
+  useEffect(() => {
+    const stored = window.localStorage.getItem("reasoning-quiz-theme");
+    if (stored === "light" || stored === "dark") {
+      setTheme(stored);
+    }
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem("reasoning-quiz-theme", theme);
+  }, [theme]);
 
   const [allQuestions, setAllQuestions] = useState<ReasoningQuestion[]>([]);
   const [questions, setQuestions] = useState<ReasoningQuestion[]>([]);
@@ -1370,8 +1735,16 @@ export default function ReasoningQuizEngine({
 
   if (showAnalytics) {
     return (
-      <div className="min-h-screen relative overflow-hidden">
+      <div
+        className="reasoning-quiz min-h-screen relative overflow-hidden"
+        data-theme={theme}
+        style={{ background: "var(--quiz-bg)", color: "var(--quiz-text)" }}
+      >
+        {themeStyles}
         <div className="pt-28 pb-20 px-6 max-w-3xl mx-auto relative">
+          <div className="mb-6 flex justify-end">
+            <ThemeToggle isDark={isDark} onToggle={toggleTheme} />
+          </div>
           <h1
             className="animate-fade-in-up text-3xl font-bold mb-2 text-[var(--text-primary)]"
             style={{
@@ -1391,7 +1764,7 @@ export default function ReasoningQuizEngine({
             </span>
           </h1>
           <p
-            className="animate-fade-in-up text-slate-500 mb-10"
+            className="animate-fade-in-up text-[color:var(--quiz-text-muted)] mb-10"
             style={{ animationDelay: "100ms" }}
           >
             Here is how you performed in this {MODE_LABELS[mode]} session.
@@ -1421,7 +1794,9 @@ export default function ReasoningQuizEngine({
             ].map((s) => (
               <div key={s.label} className="glass-card rounded-xl p-5 text-center">
                 <div className={`text-2xl font-bold ${s.color}`}>{s.value}</div>
-                <div className="text-xs text-slate-500 mt-1">{s.label}</div>
+                <div className="text-xs text-[color:var(--quiz-text-soft)] mt-1">
+                  {s.label}
+                </div>
               </div>
             ))}
           </div>
@@ -1431,13 +1806,17 @@ export default function ReasoningQuizEngine({
             style={{ animationDelay: "250ms" }}
           >
             <div className="glass-card rounded-xl p-5">
-              <div className="text-sm text-slate-500 mb-1">Best Streak</div>
+              <div className="text-sm text-[color:var(--quiz-text-soft)] mb-1">
+                Best Streak
+              </div>
               <div className="text-xl font-bold text-violet-600 flex items-center gap-2">
                 <Flame className="w-5 h-5" /> {bestStreak}
               </div>
             </div>
             <div className="glass-card rounded-xl p-5">
-              <div className="text-sm text-slate-500 mb-1">Questions Done</div>
+              <div className="text-sm text-[color:var(--quiz-text-soft)] mb-1">
+                Questions Done
+              </div>
               <div className="text-xl font-bold text-[var(--text-primary)] flex items-center justify-center gap-2">
                 <MathFraction
                   numerator={results.length}
@@ -1480,7 +1859,9 @@ export default function ReasoningQuizEngine({
                   return (
                     <div key={concept}>
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm text-slate-600">{concept}</span>
+                        <span className="text-sm text-[color:var(--quiz-text-muted)]">
+                          {concept}
+                        </span>
                         <span
                           className="text-xs px-2 py-0.5 rounded-full font-semibold"
                           style={{
@@ -1492,7 +1873,7 @@ export default function ReasoningQuizEngine({
                           {pct}%
                         </span>
                       </div>
-                      <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
+                      <div className="h-1.5 w-full rounded-full bg-[var(--quiz-surface-muted)] overflow-hidden">
                         <div
                           className="h-full rounded-full transition-all duration-700"
                           style={{
@@ -1528,7 +1909,9 @@ export default function ReasoningQuizEngine({
                     key={wc.concept}
                     className="flex items-center justify-between"
                   >
-                    <span className="text-sm text-slate-600">{wc.concept}</span>
+                    <span className="text-sm text-[color:var(--quiz-text-muted)]">
+                      {wc.concept}
+                    </span>
                     <span className="text-xs px-2.5 py-1 rounded-full bg-red-500/10 text-red-500 border border-red-500/25">
                       {wc.accuracy}% accuracy
                     </span>
@@ -1573,15 +1956,22 @@ export default function ReasoningQuizEngine({
 
   if (!started) {
     return (
-      <div className="quiz-start min-h-screen relative overflow-hidden px-4 sm:px-6">
+      <div
+        className="reasoning-quiz quiz-start min-h-screen relative overflow-hidden px-4 sm:px-6"
+        data-theme={theme}
+      >
+        {themeStyles}
         <div className="w-full max-w-2xl mx-auto text-center min-h-screen flex flex-col pt-20 sm:pt-24 pb-8">
+          <div className="mb-6 flex justify-end">
+            <ThemeToggle isDark={isDark} onToggle={toggleTheme} />
+          </div>
           <div className="mb-2 flex items-center justify-center gap-2">
             <span
               className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-widest"
               style={{
-                background: "#F5F3FF",
-                color: "#7c3aed",
-                border: "1px solid #7c3aed30",
+                background: "var(--quiz-pill-bg)",
+                color: "var(--quiz-pill-text)",
+                border: "1px solid var(--quiz-pill-border)",
               }}
             >
               {title}
@@ -1603,10 +1993,13 @@ export default function ReasoningQuizEngine({
                 className="rounded-full px-4 py-2 text-sm font-semibold transition-all"
                 style={{
                   background:
-                    conceptFilter === "all" ? "#7c3aed" : "#F5F3FF",
-                  color: conceptFilter === "all" ? "#fff" : "#5B21B6",
+                    conceptFilter === "all" ? "#7c3aed" : "var(--quiz-pill-bg)",
+                  color:
+                    conceptFilter === "all" ? "#fff" : "var(--quiz-pill-text)",
                   border: `1.5px solid ${
-                    conceptFilter === "all" ? "#7c3aed" : "#7c3aed40"
+                    conceptFilter === "all"
+                      ? "#7c3aed"
+                      : "var(--quiz-pill-border)"
                   }`,
                 }}
               >
@@ -1634,11 +2027,14 @@ export default function ReasoningQuizEngine({
           )}
 
           <div className="mb-5 flex items-center justify-center" style={{ marginTop: "1cm" }}>
-            <div className="flex items-center gap-2 rounded-full border border-violet-200 bg-white/80 px-3 py-2 shadow-sm" style={{ minWidth: "280px" }}>
+            <div
+              className="flex items-center gap-2 rounded-full border px-3 py-2 shadow-sm"
+              style={{ minWidth: "280px", background: "var(--quiz-surface)", borderColor: "var(--quiz-pill-border)" }}
+            >
               <select
                 value={examFilter || "all"}
                 onChange={(e) => setExamFilter(e.target.value === "all" ? "" : e.target.value)}
-                className="rounded-full border-none bg-transparent px-4 py-2 text-base font-semibold text-slate-700 outline-none focus:ring-0"
+                className="rounded-full border-none bg-transparent px-4 py-2 text-base font-semibold text-[color:var(--quiz-text)] outline-none focus:ring-0"
                 style={{ minWidth: "220px" }}
               >
                 {examOptions.map((ex) => (
@@ -1651,7 +2047,8 @@ export default function ReasoningQuizEngine({
               {examFilter !== "" && (
                 <button
                   onClick={() => setExamFilter("")}
-                  className="rounded-full bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-700 hover:bg-violet-100"
+                  className="rounded-full px-3 py-1 text-xs font-semibold"
+                  style={{ background: "var(--quiz-accent-bg)", color: "var(--quiz-accent-text)" }}
                 >
                   Clear
                 </button>
@@ -1659,7 +2056,7 @@ export default function ReasoningQuizEngine({
             </div>
           </div>
 
-          <p className="text-sm font-medium text-slate-600 mb-5">
+          <p className="text-sm font-medium text-[color:var(--quiz-text-muted)] mb-5">
             {availableCount} questions available
           </p>
 
@@ -1677,17 +2074,7 @@ export default function ReasoningQuizEngine({
 
         <style jsx>{`
           .quiz-start {
-            background: radial-gradient(
-                1200px 600px at 20% -10%,
-                rgba(124, 58, 237, 0.12),
-                transparent 60%
-              ),
-              radial-gradient(
-                1000px 540px at 85% 110%,
-                rgba(37, 99, 235, 0.12),
-                transparent 62%
-              ),
-              linear-gradient(135deg, #faf8ff 0%, #eef4ff 45%, #faf8ff 100%);
+            background: var(--quiz-start-bg);
           }
           .quiz-start-button {
             position: relative;
@@ -1822,8 +2209,18 @@ export default function ReasoningQuizEngine({
 
   if (!currentQ) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-slate-500">
-        No questions available for this selection.
+      <div
+        className="reasoning-quiz min-h-screen relative flex items-center justify-center"
+        data-theme={theme}
+        style={{ background: "var(--quiz-bg)", color: "var(--quiz-text)" }}
+      >
+        {themeStyles}
+        <div className="absolute right-4 top-4">
+          <ThemeToggle isDark={isDark} onToggle={toggleTheme} />
+        </div>
+        <div className="text-[color:var(--quiz-text-muted)]">
+          No questions available for this selection.
+        </div>
       </div>
     );
   }
@@ -1834,27 +2231,44 @@ export default function ReasoningQuizEngine({
 
   return (
     <div
-      className="min-h-screen relative overflow-x-hidden"
+      className="reasoning-quiz min-h-screen relative overflow-x-hidden"
+      data-theme={theme}
       style={{
-        background:
-          "linear-gradient(165deg, #f5f0ff 0%, #eef2ff 38%, #f8faff 100%)",
+        background: "var(--quiz-bg)",
+        color: "var(--quiz-text)",
         fontFamily: "Poppins, Inter, 'Segoe UI', sans-serif",
       }}
     >
+      {themeStyles}
       <main className="mx-auto max-w-3xl px-3 pb-[160px] pt-3 sm:px-6 sm:pb-[110px] sm:pt-4">
         <section className="mb-3 flex items-center justify-end gap-2">
+          <ThemeToggle isDark={isDark} onToggle={toggleTheme} />
           {streak >= 2 && (
-            <div className="flex items-center gap-1 rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-sm font-bold text-violet-600">
+            <div
+              className="flex items-center gap-1 rounded-full border px-3 py-1 text-sm font-bold"
+              style={{
+                background: "var(--quiz-accent-bg)",
+                borderColor: "var(--quiz-accent-border)",
+                color: "var(--quiz-accent-text)",
+              }}
+            >
               <Flame className="w-3.5 h-3.5" />
               {streak}
             </div>
           )}
-          <div className="rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-sm font-bold text-slate-700">
+          <div
+            className="rounded-full border px-3 py-1 text-sm font-bold"
+            style={{
+              background: "var(--quiz-secondary-bg)",
+              borderColor: "var(--quiz-secondary-border)",
+              color: "var(--quiz-secondary-text)",
+            }}
+          >
             {formatClock(timeLeft)}
           </div>
           <button
             onClick={openPalette}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-700 transition-colors hover:bg-slate-50"
+            className="quiz-icon-button inline-flex h-11 w-11 items-center justify-center rounded-full transition-colors"
             aria-label="Open question palette"
           >
             <Menu className="h-4 w-4" />
@@ -1901,18 +2315,23 @@ export default function ReasoningQuizEngine({
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2 }}
-            className={`bg-white rounded-2xl shadow-[0_4px_20px_rgba(124,58,237,0.08)] px-6 py-6 sm:px-8 sm:py-8 ${
+            className={`rounded-2xl px-6 py-6 sm:px-8 sm:py-8 ${
               isLongQuestion
                 ? "min-h-[220px] sm:min-h-[260px]"
                 : "min-h-[150px] sm:min-h-[180px]"
             }`}
+            style={{
+              background: "var(--quiz-card-bg)",
+              boxShadow: "var(--quiz-card-shadow)",
+              border: "1px solid var(--quiz-card-border)",
+            }}
           >
             <div className="flex items-center mb-[14px] flex-wrap gap-2">
               <ConceptBadge concept={currentQ.concept} colours={conceptColours} />
               <span
                 style={{
                   fontSize: "13px",
-                  color: "#6B7280",
+                  color: "var(--quiz-text-muted)",
                   fontWeight: 500,
                 }}
               >
@@ -1921,7 +2340,7 @@ export default function ReasoningQuizEngine({
 
               <button
                 onClick={handleBookmark}
-                className="ml-auto sm:ml-0 p-1.5 rounded-full hover:bg-slate-100 transition-colors"
+                className="ml-auto sm:ml-0 p-1.5 rounded-full quiz-bookmark transition-colors"
                 aria-label={
                   bookmarked.has(String(currentQ.id))
                     ? "Remove bookmark"
@@ -1931,7 +2350,7 @@ export default function ReasoningQuizEngine({
                 {bookmarked.has(String(currentQ.id)) ? (
                   <BookmarkCheck className="w-5 h-5 text-violet-500" />
                 ) : (
-                  <Bookmark className="w-5 h-5 text-slate-400" />
+                  <Bookmark className="w-5 h-5 text-[color:var(--quiz-text-soft)]" />
                 )}
               </button>
             </div>
@@ -1941,7 +2360,7 @@ export default function ReasoningQuizEngine({
                 style={{
                   fontSize: 18,
                   fontWeight: 400,
-                  color: "#111827",
+                  color: "var(--quiz-text)",
                   lineHeight: 1.6,
                   marginBottom: hasQuestionImage ? 18 : 28,
                   letterSpacing: 0.01,
@@ -1955,7 +2374,10 @@ export default function ReasoningQuizEngine({
 
             {hasQuestionImage && currentQ.questionImage && (
               <div className="mt-3 sm:mt-4">
-                <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+                <div
+                  className="overflow-hidden rounded-xl border"
+                  style={{ borderColor: "var(--quiz-border)", background: "var(--quiz-surface-muted)" }}
+                >
                   <Image
                     src={currentQ.questionImage}
                     alt="Question"
@@ -1980,35 +2402,35 @@ export default function ReasoningQuizEngine({
             style={{ paddingBottom: 96, WebkitOverflowScrolling: "touch" }}
           >
             {currentQ.options.slice(0, 4).map((opt, i) => {
-              let border = "#E5E7EB",
-                bg = "#FFFFFF",
-                letterBg = "transparent",
-                letterBorder = "#7C3AED",
-                letterText = "#5B21B6";
+              let border = "var(--quiz-option-border)",
+                bg = "var(--quiz-option-bg)",
+                letterBg = "var(--quiz-option-label-bg)",
+                letterBorder = "var(--quiz-option-label-border)",
+                letterText = "var(--quiz-option-label-text)";
               const letterFontWeight = 600;
 
               if (isCurrentSubmitted && i === currentQ.correctAnswer) {
-                border = "#16A34A";
-                bg = "#F0FDF4";
-                letterBg = "#16A34A";
-                letterBorder = "#16A34A";
-                letterText = "#fff";
+                border = "var(--quiz-option-correct-border)";
+                bg = "var(--quiz-option-correct-bg)";
+                letterBg = "var(--quiz-option-correct-label-bg)";
+                letterBorder = "var(--quiz-option-correct-label-border)";
+                letterText = "var(--quiz-option-correct-label-text)";
               } else if (
                 isCurrentSubmitted &&
                 selectedAnswer === i &&
                 i !== currentQ.correctAnswer
               ) {
-                border = "#DC2626";
-                bg = "#FEF2F2";
-                letterBg = "#DC2626";
-                letterBorder = "#DC2626";
-                letterText = "#fff";
+                border = "var(--quiz-option-wrong-border)";
+                bg = "var(--quiz-option-wrong-bg)";
+                letterBg = "var(--quiz-option-wrong-label-bg)";
+                letterBorder = "var(--quiz-option-wrong-label-border)";
+                letterText = "var(--quiz-option-wrong-label-text)";
               } else if (!isCurrentSubmitted && selectedAnswer === i) {
-                border = "#7C3AED";
-                bg = "#F5F3FF";
-                letterBg = "#7C3AED";
-                letterBorder = "#7C3AED";
-                letterText = "#fff";
+                border = "var(--quiz-option-selected-border)";
+                bg = "var(--quiz-option-selected-bg)";
+                letterBg = "var(--quiz-option-selected-label-bg)";
+                letterBorder = "var(--quiz-option-selected-label-border)";
+                letterText = "var(--quiz-option-selected-label-text)";
               }
 
               return (
@@ -2033,19 +2455,20 @@ export default function ReasoningQuizEngine({
                     transition: "all 0.15s ease",
                     fontSize: 17,
                     fontWeight: 400,
-                    color: "#111827",
+                    color: "var(--quiz-option-text)",
                     outline: "none",
                   }}
                   onMouseOver={(e) => {
                     if (!isCurrentSubmitted && selectedAnswer !== i) {
-                      e.currentTarget.style.borderColor = "#C4B5FD";
-                      e.currentTarget.style.background = "#F5F3FF";
+                      e.currentTarget.style.borderColor =
+                        "var(--quiz-option-hover-border)";
+                      e.currentTarget.style.background = "var(--quiz-option-hover-bg)";
                     }
                   }}
                   onMouseOut={(e) => {
                     if (!isCurrentSubmitted && selectedAnswer !== i) {
-                      e.currentTarget.style.borderColor = "#E5E7EB";
-                      e.currentTarget.style.background = "#FFFFFF";
+                      e.currentTarget.style.borderColor = "var(--quiz-option-border)";
+                      e.currentTarget.style.background = "var(--quiz-option-bg)";
                     }
                   }}
                 >
@@ -2074,7 +2497,7 @@ export default function ReasoningQuizEngine({
                     style={{
                       fontSize: 17,
                       fontWeight: 400,
-                      color: "#111827",
+                      color: "var(--quiz-option-text)",
                       lineHeight: 1.5,
                     }}
                   >
@@ -2104,7 +2527,12 @@ export default function ReasoningQuizEngine({
             <button
               type="button"
               onClick={openSolution}
-              className="mt-1 inline-flex h-12 w-full items-center justify-center rounded-2xl border border-violet-200 bg-violet-50 px-5 text-sm font-semibold text-violet-700 transition-colors hover:bg-violet-100"
+              className="mt-1 inline-flex h-12 w-full items-center justify-center rounded-2xl border px-5 text-sm font-semibold transition-colors"
+              style={{
+                background: "var(--quiz-accent-bg)",
+                borderColor: "var(--quiz-accent-border)",
+                color: "var(--quiz-accent-text)",
+              }}
             >
               View Solution
             </button>
@@ -2122,13 +2550,23 @@ export default function ReasoningQuizEngine({
 
       {submitError && (
         <div className="fixed bottom-[86px] left-0 right-0 z-40 px-3 sm:px-6">
-          <div className="mx-auto max-w-3xl rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm font-medium text-rose-700 shadow-sm">
+          <div
+            className="mx-auto max-w-3xl rounded-xl border px-4 py-2.5 text-sm font-medium shadow-sm"
+            style={{
+              background: "var(--quiz-error-bg)",
+              borderColor: "var(--quiz-error-border)",
+              color: "var(--quiz-error-text)",
+            }}
+          >
             {submitError}
           </div>
         </div>
       )}
 
-      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 bg-white/95 backdrop-blur-md">
+      <div
+        className="fixed bottom-0 left-0 right-0 z-50 border-t backdrop-blur-md"
+        style={{ background: "var(--quiz-footer-bg)", borderColor: "var(--quiz-border)" }}
+      >
         <div
           className="mx-auto max-w-3xl px-3 pb-3 pt-3 sm:px-6"
           style={{
@@ -2139,7 +2577,12 @@ export default function ReasoningQuizEngine({
             <button
               onClick={handlePrev}
               disabled={currentIndex === 0}
-              className="inline-flex h-14 items-center justify-center rounded-2xl border border-slate-300 bg-slate-100 px-5 text-base font-semibold text-slate-700 transition-colors hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-45"
+              className="inline-flex h-14 items-center justify-center rounded-2xl border px-5 text-base font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-45"
+              style={{
+                background: "var(--quiz-secondary-bg)",
+                borderColor: "var(--quiz-secondary-border)",
+                color: "var(--quiz-secondary-text)",
+              }}
             >
               Previous
             </button>
