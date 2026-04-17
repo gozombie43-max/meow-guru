@@ -80,7 +80,7 @@ const QUIZ_THEME_STORAGE_KEY = "reasoning-quiz-theme";
 const QUIZ_THEME_SWITCH_MS = 180;
 let quizTheme: QuizTheme = "light";
 let quizThemeInitialized = false;
-let quizThemeSwitchTimer: ReturnType<typeof setTimeout> | null = null;
+let quizThemeSwitchTimer: number | null = null;
 const quizThemeListeners = new Set<() => void>();
 
 function notifyQuizThemeListeners() {
