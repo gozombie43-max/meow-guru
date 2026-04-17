@@ -5,7 +5,14 @@ import MathText from "@/components/MathText";
 import RichContent from "@/components/RichContent";
 import Image from "next/image";
 
-import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+  useSyncExternalStore,
+} from "react";
 import { useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
@@ -65,6 +72,127 @@ interface SessionResult {
   timeTaken: number;
   concept: string;
   difficulty: Difficulty;
+}
+
+type QuizTheme = "light" | "dark";
+
+const QUIZ_THEME_STORAGE_KEY = "reasoning-quiz-theme";
+const QUIZ_THEME_SWITCH_MS = 180;
+let quizTheme: QuizTheme = "light";
+let quizThemeInitialized = false;
+let quizThemeSwitchTimer: ReturnType<typeof setTimeout> | null = null;
+const quizThemeListeners = new Set<() => void>();
+
+function notifyQuizThemeListeners() {
+  quizThemeListeners.forEach((listener) => listener());
+}
+
+function syncQuizThemeToDom(
+  nextTheme: QuizTheme,
+  options?: {
+    animate?: boolean;
+  }
+) {
+  if (typeof document === "undefined") return;
+
+  const applyTheme = () => {
+    const containers = document.querySelectorAll<HTMLElement>(".reasoning-quiz");
+    containers.forEach((container) => {
+      container.dataset.theme = nextTheme;
+    });
+  };
+
+  if (!options?.animate) {
+    applyTheme();
+    return;
+  }
+
+  const addSwitchingClass = () => {
+    const containers = document.querySelectorAll<HTMLElement>(".reasoning-quiz");
+    containers.forEach((container) => container.classList.add("theme-switching"));
+  };
+
+  const removeSwitchingClass = () => {
+    const containers = document.querySelectorAll<HTMLElement>(
+      ".reasoning-quiz.theme-switching"
+    );
+    containers.forEach((container) => container.classList.remove("theme-switching"));
+  };
+
+  addSwitchingClass();
+
+  if (typeof window !== "undefined" && typeof window.requestAnimationFrame === "function") {
+    window.requestAnimationFrame(() => {
+      applyTheme();
+    });
+  } else {
+    applyTheme();
+  }
+
+  if (typeof window !== "undefined") {
+    if (quizThemeSwitchTimer !== null) {
+      window.clearTimeout(quizThemeSwitchTimer);
+    }
+    quizThemeSwitchTimer = window.setTimeout(() => {
+      removeSwitchingClass();
+    }, QUIZ_THEME_SWITCH_MS);
+  } else {
+    removeSwitchingClass();
+  }
+}
+
+function setQuizTheme(nextTheme: QuizTheme) {
+  if (quizTheme === nextTheme) {
+    syncQuizThemeToDom(nextTheme);
+    return;
+  }
+  quizTheme = nextTheme;
+  if (typeof window !== "undefined") {
+    try {
+      window.localStorage.setItem(QUIZ_THEME_STORAGE_KEY, nextTheme);
+    } catch {
+      // Ignore storage write errors.
+    }
+  }
+  syncQuizThemeToDom(nextTheme, { animate: true });
+  notifyQuizThemeListeners();
+}
+
+function initQuizTheme() {
+  if (quizThemeInitialized) return;
+  quizThemeInitialized = true;
+  if (typeof window !== "undefined") {
+    try {
+      const stored = window.localStorage.getItem(QUIZ_THEME_STORAGE_KEY);
+      if (stored === "light" || stored === "dark") {
+        quizTheme = stored;
+      }
+    } catch {
+      // Ignore storage read errors.
+    }
+  }
+  syncQuizThemeToDom(quizTheme);
+  notifyQuizThemeListeners();
+}
+
+function useQuizTheme() {
+  useEffect(() => {
+    initQuizTheme();
+    syncQuizThemeToDom(quizTheme);
+  }, []);
+
+  return useSyncExternalStore(
+    (listener) => {
+      quizThemeListeners.add(listener);
+      return () => quizThemeListeners.delete(listener);
+    },
+    () => quizTheme,
+    () => "light"
+  );
+}
+
+function toggleQuizTheme() {
+  setQuizTheme(quizTheme === "dark" ? "light" : "dark");
 }
 
 const TOPIC_CONCEPTS: Record<string, string[]> = {
@@ -807,6 +935,21 @@ function ReasoningQuizThemeStyles() {
       .reasoning-quiz[data-theme="dark"] .btn-outline:hover {
         background: rgba(30, 41, 59, 0.6);
       }
+
+      .reasoning-quiz.theme-switching .quiz-card,
+      .reasoning-quiz.theme-switching .glass-card,
+      .reasoning-quiz.theme-switching .quiz-option {
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        transition: none !important;
+      }
+
+      .reasoning-quiz.theme-switching .quiz-start-button,
+      .reasoning-quiz.theme-switching .quiz-start-button::after,
+      .reasoning-quiz.theme-switching .quiz-start-icon {
+        animation: none !important;
+      }
     `}</style>
   );
 }
@@ -1065,17 +1208,13 @@ function TimerCircle({
   );
 }
 
-function ThemeToggle({
-  isDark,
-  onToggle,
-}: {
-  isDark: boolean;
-  onToggle: () => void;
-}) {
+function ThemeToggle() {
+  const theme = useQuizTheme();
+  const isDark = theme === "dark";
   return (
     <button
       type="button"
-      onClick={onToggle}
+      onClick={toggleQuizTheme}
       className={`theme-toggle ${isDark ? "theme-toggle--dark" : "theme-toggle--light"}`}
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
       aria-pressed={isDark}
@@ -1283,24 +1422,7 @@ export default function ReasoningQuizEngine({
   const searchParams = useSearchParams();
   const mode = normalizeMode(searchParams.get("mode"));
 
-  const [theme, setTheme] = useState<"light" | "dark">("light");
-  const isDark = theme === "dark";
   const themeStyles = <ReasoningQuizThemeStyles />;
-
-  const toggleTheme = useCallback(() => {
-    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
-  }, []);
-
-  useEffect(() => {
-    const stored = window.localStorage.getItem("reasoning-quiz-theme");
-    if (stored === "light" || stored === "dark") {
-      setTheme(stored);
-    }
-  }, []);
-
-  useEffect(() => {
-    window.localStorage.setItem("reasoning-quiz-theme", theme);
-  }, [theme]);
 
   const [allQuestions, setAllQuestions] = useState<ReasoningQuestion[]>([]);
   const [questions, setQuestions] = useState<ReasoningQuestion[]>([]);
@@ -1842,13 +1964,13 @@ export default function ReasoningQuizEngine({
     return (
       <div
         className="reasoning-quiz min-h-screen relative overflow-hidden"
-        data-theme={theme}
+        data-theme="light"
         style={{ background: "var(--quiz-bg)", color: "var(--quiz-text)" }}
       >
         {themeStyles}
         <div className="pt-28 pb-20 px-6 max-w-3xl mx-auto relative">
           <div className="mb-6 flex justify-end">
-            <ThemeToggle isDark={isDark} onToggle={toggleTheme} />
+            <ThemeToggle />
           </div>
           <h1
             className="animate-fade-in-up text-3xl font-bold mb-2 text-[var(--text-primary)]"
@@ -2063,12 +2185,12 @@ export default function ReasoningQuizEngine({
     return (
       <div
         className="reasoning-quiz quiz-start min-h-screen relative overflow-hidden px-4 sm:px-6"
-        data-theme={theme}
+        data-theme="light"
       >
         {themeStyles}
         <div className="w-full max-w-2xl mx-auto text-center min-h-screen flex flex-col pt-20 sm:pt-24 pb-8">
           <div className="mb-6 flex justify-end">
-            <ThemeToggle isDark={isDark} onToggle={toggleTheme} />
+            <ThemeToggle />
           </div>
           <div className="mb-2 flex items-center justify-center gap-2">
             <span
@@ -2316,12 +2438,12 @@ export default function ReasoningQuizEngine({
     return (
       <div
         className="reasoning-quiz min-h-screen relative flex items-center justify-center"
-        data-theme={theme}
+        data-theme="light"
         style={{ background: "var(--quiz-bg)", color: "var(--quiz-text)" }}
       >
         {themeStyles}
         <div className="absolute right-4 top-4">
-          <ThemeToggle isDark={isDark} onToggle={toggleTheme} />
+          <ThemeToggle />
         </div>
         <div className="text-[color:var(--quiz-text-muted)]">
           No questions available for this selection.
@@ -2337,7 +2459,7 @@ export default function ReasoningQuizEngine({
   return (
     <div
       className="reasoning-quiz min-h-screen relative overflow-x-hidden"
-      data-theme={theme}
+      data-theme="light"
       style={{
         background: "var(--quiz-bg)",
         color: "var(--quiz-text)",
@@ -2348,7 +2470,7 @@ export default function ReasoningQuizEngine({
       <main className="mx-auto max-w-3xl px-3 pb-[160px] pt-3 sm:px-6 sm:pb-[110px] sm:pt-4">
         <section className="quiz-topbar">
           <div className="quiz-topbar-group">
-            <ThemeToggle isDark={isDark} onToggle={toggleTheme} />
+            <ThemeToggle />
           </div>
           <div className="quiz-topbar-group">
             <button
@@ -2401,7 +2523,7 @@ export default function ReasoningQuizEngine({
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2 }}
-            className={`rounded-2xl px-6 py-6 sm:px-8 sm:py-8 ${
+            className={`quiz-card rounded-2xl px-6 py-6 sm:px-8 sm:py-8 ${
               isLongQuestion
                 ? "min-h-[220px] sm:min-h-[260px]"
                 : "min-h-[150px] sm:min-h-[180px]"
@@ -2447,7 +2569,7 @@ export default function ReasoningQuizEngine({
               <div
                 style={{
                   fontSize: 18,
-                  fontWeight: 600,
+                  fontWeight: 500,
                   color: "var(--quiz-text)",
                   lineHeight: 1.75,
                   marginBottom: hasQuestionImage ? 18 : 28,
@@ -2503,7 +2625,6 @@ export default function ReasoningQuizEngine({
                 shadow = "var(--quiz-option-shadow)";
               const letterFontWeight = 600;
               const isSelected = selectedAnswer === i;
-              const showSelectedIndicator = !isCurrentSubmitted && isSelected;
 
               if (isCurrentSubmitted && i === currentQ.correctAnswer) {
                 border = "var(--quiz-option-correct-border)";
@@ -2605,14 +2726,6 @@ export default function ReasoningQuizEngine({
                   >
                     <RichContent text={opt} />
                   </div>
-
-                  {showSelectedIndicator && (
-                    <CheckCircle2
-                      className="ml-auto h-5 w-5 shrink-0"
-                      style={{ color: "var(--quiz-selected-icon)" }}
-                      aria-label="Selected option"
-                    />
-                  )}
 
                   {isCurrentSubmitted && i === currentQ.correctAnswer && (
                     <CheckCircle2
