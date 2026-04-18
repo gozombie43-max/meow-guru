@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { MouseEvent as ReactMouseEvent } from 'react';
+import type { MouseEventHandler } from 'react';
 import { Inter } from 'next/font/google';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuth } from '@/context/AuthContext';
@@ -163,7 +163,7 @@ function DashboardContent() {
     return () => document.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  const handleCardClick = (event: ReactMouseEvent<HTMLDivElement>) => {
+  const handleCardClick: MouseEventHandler<HTMLElement> = (event) => {
     const card = event.currentTarget;
     const rect = card.getBoundingClientRect();
     const ripple = document.createElement('span');
