@@ -314,17 +314,40 @@ function DashboardContent() {
                     })
                   : '';
                 const isClickable = Boolean(bookmarkHref);
-                const CardTag = isClickable ? Link : 'div';
+
+                // ✅ FIX: Split into two separate returns instead of dynamic CardTag
+                // to avoid TypeScript's href: string | undefined incompatibility with LinkProps
+                if (isClickable) {
+                  return (
+                    <Link
+                      key={entry.questionId}
+                      href={bookmarkHref}
+                      className="glass-card activity-item animate-in"
+                      style={{ animationDelay: `${(index + 1) * 0.1}s` }}
+                      onClick={handleCardClick}
+                    >
+                      <div
+                        className="activity-icon"
+                        style={{ background: gradient }}
+                      >
+                        {icon.toUpperCase()}
+                      </div>
+                      <div className="activity-content">
+                        <div className="activity-title">
+                          {entry.title || 'Saved Question'}
+                        </div>
+                        <div className="activity-subtitle">{questionLabel}</div>
+                      </div>
+                      <div className="activity-time">{timeLabel}</div>
+                    </Link>
+                  );
+                }
 
                 return (
-                  <CardTag
+                  <div
                     key={entry.questionId}
-                    {...(isClickable ? { href: bookmarkHref } : {})}
-                    className={`glass-card activity-item animate-in ${
-                      isClickable ? '' : 'is-disabled'
-                    }`}
+                    className="glass-card activity-item animate-in is-disabled"
                     style={{ animationDelay: `${(index + 1) * 0.1}s` }}
-                    onClick={isClickable ? handleCardClick : undefined}
                   >
                     <div
                       className="activity-icon"
@@ -339,7 +362,7 @@ function DashboardContent() {
                       <div className="activity-subtitle">{questionLabel}</div>
                     </div>
                     <div className="activity-time">{timeLabel}</div>
-                  </CardTag>
+                  </div>
                 );
               })
             )}
