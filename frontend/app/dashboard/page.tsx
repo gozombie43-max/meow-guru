@@ -1,26 +1,19 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { MouseEvent as ReactMouseEvent } from 'react';
-import { Manrope } from 'next/font/google';
+import { Inter } from 'next/font/google';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import { useAuth } from '@/context/AuthContext';
 
-const manrope = Manrope({
+const inter = Inter({
   subsets: ['latin'],
   weight: ['300', '400', '500', '600', '700'],
 });
 
 type TabKey = 'math' | 'eng' | 'reasoning' | 'ga';
 type NavKey = 'recent' | 'bookmark';
-
-type ActivityItem = {
-  id: string;
-  icon: string;
-  title: string;
-  subtitle: string;
-  time: string;
-  gradient?: string;
-};
 
 const TOP_TABS: { label: string; value: TabKey }[] = [
   { label: 'MATH', value: 'math' },
@@ -29,96 +22,66 @@ const TOP_TABS: { label: string; value: TabKey }[] = [
   { label: 'GA', value: 'ga' },
 ];
 
-const TAB_CONTENT: Record<TabKey, ActivityItem[]> = {
-  math: [
-    {
-      id: 'math-percentages',
-      icon: 'M',
-      title: 'Percentages',
-      subtitle: 'Q5 of 386',
-      time: '3:25 PM',
-      gradient: 'linear-gradient(135deg, #818cf8 0%, #6366f1 100%)',
-    },
-    {
-      id: 'math-algebra',
-      icon: 'A',
-      title: 'Algebra Basics',
-      subtitle: 'Q12 of 150',
-      time: '2:15 PM',
-      gradient: 'linear-gradient(135deg, #f472b6 0%, #db2777)',
-    },
-    {
-      id: 'math-geometry',
-      icon: 'G',
-      title: 'Geometry',
-      subtitle: 'Q8 of 200',
-      time: 'Yesterday',
-      gradient: 'linear-gradient(135deg, #34d399 0%, #059669)',
-    },
-    {
-      id: 'math-calculus',
-      icon: 'C',
-      title: 'Calculus I',
-      subtitle: 'Q3 of 120',
-      time: 'Yesterday',
-      gradient: 'linear-gradient(135deg, #fbbf24 0%, #d97706)',
-    },
-  ],
-  eng: [
-    {
-      id: 'eng-grammar',
-      icon: 'E',
-      title: 'Grammar Fundamentals',
-      subtitle: 'Q7 of 245',
-      time: '4:30 PM',
-      gradient: 'linear-gradient(135deg, #60a5fa 0%, #2563eb)',
-    },
-    {
-      id: 'eng-vocab',
-      icon: 'V',
-      title: 'Vocabulary Builder',
-      subtitle: 'Q15 of 500',
-      time: '1:20 PM',
-      gradient: 'linear-gradient(135deg, #a78bfa 0%, #7c3aed)',
-    },
-  ],
-  reasoning: [
-    {
-      id: 'reasoning-logic',
-      icon: 'L',
-      title: 'Logical Puzzles',
-      subtitle: 'Q4 of 180',
-      time: '5:45 PM',
-      gradient: 'linear-gradient(135deg, #f87171 0%, #dc2626)',
-    },
-    {
-      id: 'reasoning-analytical',
-      icon: 'A',
-      title: 'Analytical Reasoning',
-      subtitle: 'Q9 of 220',
-      time: '11:30 AM',
-      gradient: 'linear-gradient(135deg, #2dd4bf 0%, #0d9488)',
-    },
-  ],
-  ga: [
-    {
-      id: 'ga-history',
-      icon: 'W',
-      title: 'World History',
-      subtitle: 'Q6 of 300',
-      time: '6:00 PM',
-      gradient: 'linear-gradient(135deg, #fb923c 0%, #ea580c)',
-    },
-    {
-      id: 'ga-science',
-      icon: 'S',
-      title: 'Science & Tech',
-      subtitle: 'Q11 of 175',
-      time: '9:15 AM',
-      gradient: 'linear-gradient(135deg, #e879f9 0%, #c026d3)',
-    },
-  ],
+const SUBJECT_BY_TAB: Record<TabKey, string> = {
+  math: 'mathematics',
+  eng: 'english',
+  reasoning: 'reasoning',
+  ga: 'general-awareness',
 };
+
+const TAB_BY_SUBJECT: Record<string, TabKey> = {
+  mathematics: 'math',
+  english: 'eng',
+  reasoning: 'reasoning',
+  'general-awareness': 'ga',
+};
+
+const GRADIENTS = [
+  'linear-gradient(135deg, #818cf8 0%, #6366f1 100%)',
+  'linear-gradient(135deg, #f472b6 0%, #db2777)',
+  'linear-gradient(135deg, #34d399 0%, #059669)',
+  'linear-gradient(135deg, #fbbf24 0%, #d97706)',
+  'linear-gradient(135deg, #60a5fa 0%, #2563eb)',
+  'linear-gradient(135deg, #a78bfa 0%, #7c3aed)',
+  'linear-gradient(135deg, #f87171 0%, #dc2626)',
+  'linear-gradient(135deg, #2dd4bf 0%, #0d9488)',
+  'linear-gradient(135deg, #fb923c 0%, #ea580c)',
+  'linear-gradient(135deg, #e879f9 0%, #c026d3)',
+];
+
+function formatTimeLabel(iso?: string) {
+  if (!iso) return '--:--';
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '--:--';
+
+  const now = new Date();
+  const today = now.toDateString();
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+
+  if (date.toDateString() === today) {
+    return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  }
+  if (date.toDateString() === yesterday.toDateString()) {
+    return 'Yesterday';
+  }
+
+  return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+}
+
+function appendQuery(
+  base: string,
+  params: Record<string, string | number | undefined>
+) {
+  const [path, rawQuery] = base.split('?');
+  const query = new URLSearchParams(rawQuery || '');
+  Object.entries(params).forEach(([key, value]) => {
+    if (value === undefined || value === '') return;
+    query.set(key, String(value));
+  });
+  const queryString = query.toString();
+  return queryString ? `${path}?${queryString}` : path;
+}
 
 export default function DashboardPage() {
   return (
@@ -129,13 +92,52 @@ export default function DashboardPage() {
 }
 
 function DashboardContent() {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<TabKey>('math');
   const [activeNav, setActiveNav] = useState<NavKey>('recent');
   const [animationKey, setAnimationKey] = useState(0);
+  const subjectInitRef = useRef(false);
+
+  const recentQuizzes = useMemo(() => {
+    if (!user?.recentQuizzes) return [];
+    return [...user.recentQuizzes]
+      .filter((entry) => entry && entry.quizKey)
+      .sort((a, b) => {
+        const aTime = Date.parse(a.updatedAt || '') || 0;
+        const bTime = Date.parse(b.updatedAt || '') || 0;
+        return bTime - aTime;
+      });
+  }, [user?.recentQuizzes]);
+
+  const bookmarkEntries = useMemo(() => {
+    if (user?.bookmarkEntries?.length) {
+      return [...user.bookmarkEntries]
+        .filter((entry) => entry && entry.questionId)
+        .sort((a, b) => {
+          const aTime = Date.parse(a.updatedAt || '') || 0;
+          const bTime = Date.parse(b.updatedAt || '') || 0;
+          return bTime - aTime;
+        });
+    }
+
+    return (user?.bookmarks || []).map((id) => ({
+      questionId: id,
+      title: 'Saved Question',
+    }));
+  }, [user?.bookmarkEntries, user?.bookmarks]);
+
+  useEffect(() => {
+    if (subjectInitRef.current) return;
+    const nextSubject =
+      recentQuizzes[0]?.subject || bookmarkEntries[0]?.subject || 'mathematics';
+    const nextTab = TAB_BY_SUBJECT[nextSubject] || 'math';
+    setActiveTab(nextTab);
+    subjectInitRef.current = true;
+  }, [bookmarkEntries, recentQuizzes]);
 
   useEffect(() => {
     setAnimationKey((prev) => prev + 1);
-  }, [activeTab]);
+  }, [activeTab, activeNav]);
 
   useEffect(() => {
     const handleMouseMove = (event: globalThis.MouseEvent) => {
@@ -167,8 +169,28 @@ function DashboardContent() {
     window.setTimeout(() => ripple.remove(), 600);
   };
 
+  const subjectFilter = SUBJECT_BY_TAB[activeTab];
+  const filteredRecent = useMemo(
+    () => recentQuizzes.filter((entry) => entry.subject === subjectFilter),
+    [recentQuizzes, subjectFilter]
+  );
+  const filteredBookmarks = useMemo(
+    () =>
+      bookmarkEntries.filter(
+        (entry) => !entry.subject || entry.subject === subjectFilter
+      ),
+    [bookmarkEntries, subjectFilter]
+  );
+
+  const list = activeNav === 'recent' ? filteredRecent : filteredBookmarks;
+  const emptyCopy =
+    activeNav === 'recent'
+      ? 'No recent quizzes yet. Start one to see it here.'
+      : 'No bookmarks yet. Save a question to revisit it later.';
+  const sectionLabel = activeNav === 'recent' ? 'Recent Quiz' : 'Bookmarks';
+
   return (
-    <main className={`dashboard-shell relative ${manrope.className}`}>
+    <main className={`dashboard-shell relative ${inter.className}`}>
       <div className="blob blob-1" />
       <div className="blob blob-2" />
       <div className="blob blob-3" />
@@ -219,28 +241,104 @@ function DashboardContent() {
         </div>
 
         <div className="relative flex-1">
-          <div key={`${activeTab}-${animationKey}`} className="page-content">
-            <div className="section-label">Recent Quiz</div>
-            {TAB_CONTENT[activeTab].map((item, index) => (
-              <div
-                key={item.id}
-                className="glass-card activity-item animate-in"
-                style={{ animationDelay: `${(index + 1) * 0.1}s` }}
-                onClick={handleCardClick}
-              >
-                <div
-                  className="activity-icon"
-                  style={item.gradient ? { background: item.gradient } : undefined}
-                >
-                  {item.icon}
-                </div>
-                <div className="activity-content">
-                  <div className="activity-title">{item.title}</div>
-                  <div className="activity-subtitle">{item.subtitle}</div>
-                </div>
-                <div className="activity-time">{item.time}</div>
+          <div key={`${activeTab}-${activeNav}-${animationKey}`} className="page-content">
+            <div className="section-label">{sectionLabel}</div>
+            {list.length === 0 ? (
+              <div className="glass-card empty-state">
+                {emptyCopy}
               </div>
-            ))}
+            ) : (
+              list.map((entry, index) => {
+                const gradient = GRADIENTS[index % GRADIENTS.length];
+                const icon =
+                  (entry.title || entry.subject || 'Q').trim().charAt(0) || 'Q';
+                const timeLabel = formatTimeLabel(entry.updatedAt);
+
+                if (activeNav === 'recent') {
+                  const resumeHref = entry.href
+                    ? appendQuery(entry.href, {
+                        mode: entry.mode,
+                        resume: 1,
+                      })
+                    : '';
+                  const total = entry.totalQuestions ?? 0;
+                  const current = entry.currentIndex ?? 0;
+                  const progressLabel =
+                    total > 0
+                      ? `Q${Math.min(current + 1, total)} of ${total}`
+                      : 'Continue where you left off';
+                  const subtitle =
+                    entry.status === 'completed' ? 'Completed' : progressLabel;
+                  const isClickable = Boolean(resumeHref);
+                  const CardTag = isClickable ? Link : 'div';
+
+                  return (
+                    <CardTag
+                      key={entry.quizKey}
+                      {...(isClickable ? { href: resumeHref } : {})}
+                      className={`glass-card activity-item animate-in ${
+                        isClickable ? '' : 'is-disabled'
+                      }`}
+                      style={{ animationDelay: `${(index + 1) * 0.1}s` }}
+                      onClick={isClickable ? handleCardClick : undefined}
+                    >
+                      <div
+                        className="activity-icon"
+                        style={{ background: gradient }}
+                      >
+                        {icon.toUpperCase()}
+                      </div>
+                      <div className="activity-content">
+                        <div className="activity-title">
+                          {entry.title}
+                        </div>
+                        <div className="activity-subtitle">{subtitle}</div>
+                      </div>
+                      <div className="activity-time">{timeLabel}</div>
+                    </CardTag>
+                  );
+                }
+
+                const questionLabel =
+                  Number.isFinite(entry.questionIndex)
+                    ? `Question ${(entry.questionIndex ?? 0) + 1}`
+                    : 'Saved question';
+                const bookmarkHref = entry.href
+                  ? appendQuery(entry.href, {
+                      mode: entry.mode,
+                      qid: entry.questionId,
+                    })
+                  : '';
+                const isClickable = Boolean(bookmarkHref);
+                const CardTag = isClickable ? Link : 'div';
+
+                return (
+                  <CardTag
+                    key={entry.questionId}
+                    {...(isClickable ? { href: bookmarkHref } : {})}
+                    className={`glass-card activity-item animate-in ${
+                      isClickable ? '' : 'is-disabled'
+                    }`}
+                    style={{ animationDelay: `${(index + 1) * 0.1}s` }}
+                    onClick={isClickable ? handleCardClick : undefined}
+                  >
+                    <div
+                      className="activity-icon"
+                      style={{ background: gradient }}
+                    >
+                      {icon.toUpperCase()}
+                    </div>
+                    <div className="activity-content">
+                      <div className="activity-title">
+                        {entry.title || 'Saved Question'}
+                      </div>
+                      <div className="activity-subtitle">{questionLabel}</div>
+                    </div>
+                    <div className="activity-time">{timeLabel}</div>
+                  </CardTag>
+                );
+              })
+            )}
           </div>
         </div>
 
@@ -469,6 +567,12 @@ function DashboardContent() {
           gap: 16px;
           padding: 16px 20px;
           margin-bottom: 12px;
+          cursor: pointer;
+        }
+
+        .dashboard-shell .activity-item.is-disabled {
+          cursor: not-allowed;
+          opacity: 0.7;
         }
 
         .dashboard-shell .activity-icon {
@@ -505,6 +609,13 @@ function DashboardContent() {
           color: #9ca3af;
           font-size: 0.875rem;
           font-weight: 500;
+        }
+
+        .dashboard-shell .empty-state {
+          padding: 20px;
+          text-align: center;
+          color: #6b7280;
+          font-size: 0.875rem;
         }
 
         .dashboard-shell .search-btn {
