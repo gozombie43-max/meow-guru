@@ -19,12 +19,25 @@ interface RecentQuizEntry {
   updatedAt?: string;
 }
 
+interface BookmarkEntry {
+  questionId: string;
+  quizKey?: string;
+  title?: string;
+  subject?: string;
+  slug?: string;
+  href?: string;
+  mode?: string;
+  questionIndex?: number;
+  updatedAt?: string;
+}
+
 interface User {
   id: string;
   name: string;
   email: string;
   progress: Record<string, { attempted: number; correct: number }>;
   bookmarks: string[];
+  bookmarkEntries?: BookmarkEntry[];
   recentQuizzes?: RecentQuizEntry[];
 }
 

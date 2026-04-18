@@ -37,7 +37,7 @@ router.get('/me', protect, async (req, res) => {
 // ── PATCH /users/me/bookmarks ───────────────────────────
 // body: { questionId: "cgl-t2-algebra-62", action: "add" | "remove" }
 router.patch('/me/bookmarks', protect, async (req, res) => {
-  const { questionId, action } = req.body;
+  const { questionId, action, meta } = req.body;
 
   if (!questionId || !action)
     return res.status(400).json({ error: 'questionId and action required' });
@@ -46,19 +46,62 @@ router.patch('/me/bookmarks', protect, async (req, res) => {
     const user = await getUserById(req.user.id);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
+    const now = new Date().toISOString();
+    const safeId = String(questionId);
+    const metaObj = meta && typeof meta === 'object' ? meta : null;
+
     let bookmarks = user.bookmarks || [];
+    let bookmarkEntries = Array.isArray(user.bookmarkEntries)
+      ? user.bookmarkEntries
+      : [];
+
+    const patch = {
+      questionId: safeId,
+      updatedAt: now,
+    };
+
+    if (metaObj) {
+      if (typeof metaObj.quizKey === 'string') patch.quizKey = metaObj.quizKey;
+      if (typeof metaObj.title === 'string') patch.title = metaObj.title;
+      if (typeof metaObj.subject === 'string') patch.subject = metaObj.subject;
+      if (typeof metaObj.slug === 'string') patch.slug = metaObj.slug;
+      if (typeof metaObj.href === 'string') patch.href = metaObj.href;
+      if (typeof metaObj.mode === 'string') patch.mode = metaObj.mode;
+      if (Number.isFinite(Number(metaObj.questionIndex))) {
+        patch.questionIndex = Math.max(0, parseInt(metaObj.questionIndex, 10));
+      }
+    }
 
     if (action === 'add') {
-      if (!bookmarks.includes(questionId)) bookmarks.push(questionId);
+      if (!bookmarks.includes(safeId)) bookmarks.push(safeId);
+      const existingIndex = bookmarkEntries.findIndex((b) => b.questionId === safeId);
+      if (existingIndex >= 0) {
+        bookmarkEntries[existingIndex] = {
+          ...bookmarkEntries[existingIndex],
+          ...patch,
+        };
+      } else {
+        bookmarkEntries.unshift(patch);
+      }
     } else if (action === 'remove') {
-      bookmarks = bookmarks.filter(id => id !== questionId);
+      bookmarks = bookmarks.filter(id => id !== safeId);
+      bookmarkEntries = bookmarkEntries.filter((b) => b.questionId !== safeId);
     } else {
       return res.status(400).json({ error: 'action must be "add" or "remove"' });
     }
 
-    await usersContainer.items.upsert({ ...user, bookmarks });
+    bookmarkEntries = bookmarkEntries
+      .filter((b) => b && b.questionId)
+      .sort((a, b) => {
+        const aTime = Date.parse(a.updatedAt || '') || 0;
+        const bTime = Date.parse(b.updatedAt || '') || 0;
+        return bTime - aTime;
+      })
+      .slice(0, 60);
 
-    res.json({ message: 'Bookmarks updated ✅', bookmarks });
+    await usersContainer.items.upsert({ ...user, bookmarks, bookmarkEntries });
+
+    res.json({ message: 'Bookmarks updated ✅', bookmarks, bookmarkEntries });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

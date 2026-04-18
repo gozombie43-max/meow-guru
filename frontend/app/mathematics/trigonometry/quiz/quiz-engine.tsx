@@ -687,6 +687,8 @@ export default function TrigQuizEngine() {
   const searchParams = useSearchParams();
   const mode = (searchParams.get("mode") || "mixed") as QuizMode;
   const resumeRequested = searchParams.get("resume") === "1";
+  const jumpIdRaw = searchParams.get("qid");
+  const jumpId = Number.parseInt(jumpIdRaw ?? "", 10);
 
   // ── State ──────────────────────────────────────────────────────────────────
   const [allQuestions, setAllQuestions] = useState<TrigonometryQuestion[]>([]);
@@ -809,6 +811,7 @@ export default function TrigQuizEngine() {
     );
   }, [quizKey, resumeRequested, user?.recentQuizzes]);
   const resumeAppliedRef = useRef(false);
+  const jumpAppliedRef = useRef(false);
 
   const maxTime = miniMode ? 20 : 60;
   const currentQ = questions[currentIndex] as TrigonometryQuestion | undefined;
@@ -961,6 +964,51 @@ export default function TrigQuizEngine() {
 
     resumeAppliedRef.current = true;
   }, [questions, resumeEntry, resumeRequested, startTimer, stopTimer]);
+
+  useEffect(() => {
+    if (!jumpIdRaw) return;
+    if (!Number.isFinite(jumpId)) return;
+    if (resumeRequested || jumpAppliedRef.current) return;
+    if (questions.length === 0) return;
+
+    const targetIndex = questions.findIndex((q) => q.id === jumpId);
+    if (targetIndex < 0) return;
+
+    stopTimer();
+    setShowAnalytics(false);
+    setStarted(true);
+    setCurrentIndex(targetIndex);
+    const nextQuestion = questions[targetIndex];
+    const existingSelection = selectedAnswers[targetIndex];
+    setSelectedAnswer(existingSelection ?? null);
+    if (nextQuestion?.questionType === "image_mcq") {
+      setSelected(
+        existingSelection !== undefined
+          ? String.fromCharCode(97 + existingSelection)
+          : null
+      );
+      setSubmitted(submittedQuestions.has(targetIndex));
+    } else {
+      setSelected(null);
+      setSubmitted(false);
+    }
+    setSubmitError("");
+    setIsSolutionOpen(false);
+    if (!submittedQuestions.has(targetIndex)) {
+      startTimer();
+    }
+
+    jumpAppliedRef.current = true;
+  }, [
+    jumpId,
+    jumpIdRaw,
+    questions,
+    resumeRequested,
+    selectedAnswers,
+    startTimer,
+    stopTimer,
+    submittedQuestions,
+  ]);
 
   useEffect(() => () => stopTimer(), [stopTimer]);
 
@@ -1227,7 +1275,15 @@ export default function TrigQuizEngine() {
     });
 
     try {
-      await toggleBookmark(token, qId, action);
+      await toggleBookmark(token, qId, action, {
+        quizKey,
+        title: quizTitle,
+        subject: "mathematics",
+        slug: quizSlug,
+        href: quizHref,
+        mode,
+        questionIndex: currentIndex,
+      });
     } catch {
       setBookmarked((prev) => {
         const next = new Set(prev);
@@ -1235,7 +1291,17 @@ export default function TrigQuizEngine() {
         return next;
       });
     }
-  }, [currentQ, token, bookmarked]);
+  }, [
+    bookmarked,
+    currentIndex,
+    currentQ,
+    mode,
+    quizHref,
+    quizKey,
+    quizSlug,
+    quizTitle,
+    token,
+  ]);
 
   const handlePrev = useCallback(() => {
     if (currentIndex <= 0) return;

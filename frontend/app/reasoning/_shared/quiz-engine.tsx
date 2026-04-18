@@ -1422,6 +1422,8 @@ export default function ReasoningQuizEngine({
   const searchParams = useSearchParams();
   const mode = normalizeMode(searchParams.get("mode"));
   const resumeRequested = searchParams.get("resume") === "1";
+  const jumpIdRaw = searchParams.get("qid");
+  const jumpId = Number.parseInt(jumpIdRaw ?? "", 10);
 
   const themeStyles = <ReasoningQuizThemeStyles />;
 
@@ -1563,6 +1565,7 @@ export default function ReasoningQuizEngine({
     );
   }, [quizKey, resumeRequested, user?.recentQuizzes]);
   const resumeAppliedRef = useRef(false);
+  const jumpAppliedRef = useRef(false);
 
   const maxTime = miniMode ? 20 : 60;
   const currentQ = questions[currentIndex] as ReasoningQuestion | undefined;
@@ -1709,6 +1712,39 @@ export default function ReasoningQuizEngine({
 
     resumeAppliedRef.current = true;
   }, [questions, resumeEntry, resumeRequested, startTimer, stopTimer]);
+
+  useEffect(() => {
+    if (!jumpIdRaw) return;
+    if (!Number.isFinite(jumpId)) return;
+    if (resumeRequested || jumpAppliedRef.current) return;
+    if (questions.length === 0) return;
+
+    const targetIndex = questions.findIndex((q) => q.id === jumpId);
+    if (targetIndex < 0) return;
+
+    stopTimer();
+    setShowAnalytics(false);
+    setStarted(true);
+    setCurrentIndex(targetIndex);
+    const existingSelection = selectedAnswers[targetIndex];
+    setSelectedAnswer(existingSelection ?? null);
+    setSubmitError("");
+    setIsSolutionOpen(false);
+    if (!submittedQuestions.has(targetIndex)) {
+      startTimer();
+    }
+
+    jumpAppliedRef.current = true;
+  }, [
+    jumpId,
+    jumpIdRaw,
+    questions,
+    resumeRequested,
+    selectedAnswers,
+    startTimer,
+    stopTimer,
+    submittedQuestions,
+  ]);
 
   useEffect(() => () => stopTimer(), [stopTimer]);
 
@@ -1939,7 +1975,15 @@ export default function ReasoningQuizEngine({
     });
 
     try {
-      await toggleBookmark(token, qId, action);
+      await toggleBookmark(token, qId, action, {
+        quizKey,
+        title,
+        subject: "reasoning",
+        slug,
+        href: quizHref,
+        mode,
+        questionIndex: currentIndex,
+      });
     } catch {
       setBookmarked((prev) => {
         const next = new Set(prev);
@@ -1947,7 +1991,17 @@ export default function ReasoningQuizEngine({
         return next;
       });
     }
-  }, [currentQ, token, bookmarked]);
+  }, [
+    bookmarked,
+    currentIndex,
+    currentQ,
+    mode,
+    quizHref,
+    quizKey,
+    slug,
+    title,
+    token,
+  ]);
 
   const handlePrev = useCallback(() => {
     if (currentIndex <= 0) return;

@@ -49,6 +49,7 @@ router.post('/register', async (req, res) => {
       passwordHash,
       progress:     {},
       bookmarks:    [],
+      bookmarkEntries: [],
       recentQuizzes: [],
       createdAt:    new Date().toISOString(),
     };
