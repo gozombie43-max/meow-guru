@@ -124,6 +124,7 @@ function DashboardContent() {
       questionId: id,
       title: 'Saved Question',
       subject: undefined,
+      updatedAt: undefined,
     }));
   }, [user?.bookmarkEntries, user?.bookmarks]);
 
