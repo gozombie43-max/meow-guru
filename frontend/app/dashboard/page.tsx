@@ -202,52 +202,54 @@ function DashboardContent() {
       <div className="blob blob-2" />
       <div className="blob blob-3" />
 
-      <div className="relative z-10 mx-auto flex min-h-screen max-w-md flex-col p-6">
-        <div className="mb-6 flex items-start justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-indigo-600">
-              Dashboard
-            </p>
-            <h1 className="text-2xl font-bold text-gray-800">
-              Recent activity
-            </h1>
-          </div>
-          <button className="search-btn" type="button" aria-label="Search">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.3-4.3" />
-            </svg>
-          </button>
-        </div>
-
-        <div className="nav-container mb-6">
-          <div className="flex justify-between">
-            {TOP_TABS.map((tab) => (
-              <button
-                key={tab.value}
-                type="button"
-                onClick={() => setActiveTab(tab.value)}
-                className={`nav-tab ${
-                  activeTab === tab.value ? 'active' : ''
-                }`}
+      <div className="dashboard-frame relative z-10 mx-auto max-w-md">
+        <div className="dashboard-top">
+          <div className="mb-6 flex items-start justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-widest text-indigo-600">
+                Dashboard
+              </p>
+              <h1 className="text-2xl font-bold text-gray-800">
+                Recent activity
+              </h1>
+            </div>
+            <button className="search-btn" type="button" aria-label="Search">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               >
-                {tab.label}
-              </button>
-            ))}
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.3-4.3" />
+              </svg>
+            </button>
+          </div>
+
+          <div className="nav-container">
+            <div className="flex justify-between">
+              {TOP_TABS.map((tab) => (
+                <button
+                  key={tab.value}
+                  type="button"
+                  onClick={() => setActiveTab(tab.value)}
+                  className={`nav-tab ${
+                    activeTab === tab.value ? 'active' : ''
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
-        <div className="relative flex-1">
+        <div className="dashboard-scroll">
           <div key={`${activeTab}-${activeNav}-${animationKey}`} className="page-content">
             <div className="section-label">{sectionLabel}</div>
             {activeNav === 'recent' ? (
@@ -369,7 +371,7 @@ function DashboardContent() {
           </div>
         </div>
 
-        <div className="mt-6">
+        <div className="dashboard-bottom">
           <div className="bottom-nav">
             <button
               type="button"
@@ -403,8 +405,35 @@ function DashboardContent() {
             #d1d5ff 50%,
             #c7b8ff 100%
           );
-          min-height: 100vh;
+          min-height: 100svh;
           overflow-x: hidden;
+          height: 100svh;
+          overflow-y: hidden;
+        }
+
+        .dashboard-shell .dashboard-frame {
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          padding: 24px;
+          padding-top: max(24px, env(safe-area-inset-top));
+          padding-bottom: max(24px, env(safe-area-inset-bottom));
+        }
+
+        .dashboard-shell .dashboard-top,
+        .dashboard-shell .dashboard-bottom {
+          flex: 0 0 auto;
+        }
+
+        .dashboard-shell .dashboard-scroll {
+          flex: 1 1 auto;
+          min-height: 0;
+          overflow-y: auto;
+          padding-right: 4px;
+          padding-bottom: 8px;
+          -webkit-overflow-scrolling: touch;
+          overscroll-behavior: contain;
         }
 
         .dashboard-shell .blob {
