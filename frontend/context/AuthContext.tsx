@@ -71,6 +71,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.pathname.startsWith('/auth/callback')) {
+      setLoading(false);
+      return;
+    }
     const stored = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     if (stored) {
       login(stored).catch(() => {

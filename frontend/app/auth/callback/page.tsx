@@ -3,6 +3,7 @@
 import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import api from '@/lib/axios';
 
 function CallbackContent() {
   const { login } = useAuth();
@@ -13,10 +14,21 @@ function CallbackContent() {
     const token = params.get('token');
     if (token) {
       login(token)
-        .then(() => router.push('/dashboard'))
-        .catch(() => router.push('/login'));
+        .then(() => router.push('/'))
+        .catch(async () => {
+          try {
+            const { data } = await api.post('/auth/refresh');
+            await login(data.token);
+            router.push('/');
+          } catch {
+            router.push('/login');
+          }
+        });
     } else {
-      router.push('/login');
+      api.post('/auth/refresh')
+        .then(({ data }) => login(data.token))
+        .then(() => router.push('/'))
+        .catch(() => router.push('/login'));
     }
   }, []);
 
