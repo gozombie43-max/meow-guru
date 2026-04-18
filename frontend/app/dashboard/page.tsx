@@ -15,6 +15,10 @@ const inter = Inter({
 type TabKey = 'math' | 'eng' | 'reasoning' | 'ga';
 type NavKey = 'recent' | 'bookmark';
 
+type AuthUser = NonNullable<ReturnType<typeof useAuth>['user']>;
+type RecentQuizEntry = NonNullable<AuthUser['recentQuizzes']>[number];
+type BookmarkEntry = NonNullable<AuthUser['bookmarkEntries']>[number];
+
 const TOP_TABS: { label: string; value: TabKey }[] = [
   { label: 'MATH', value: 'math' },
   { label: 'ENG', value: 'eng' },
@@ -98,7 +102,7 @@ function DashboardContent() {
   const [animationKey, setAnimationKey] = useState(0);
   const subjectInitRef = useRef(false);
 
-  const recentQuizzes = useMemo(() => {
+  const recentQuizzes = useMemo<RecentQuizEntry[]>(() => {
     if (!user?.recentQuizzes) return [];
     return [...user.recentQuizzes]
       .filter((entry) => entry && entry.quizKey)
@@ -109,7 +113,7 @@ function DashboardContent() {
       });
   }, [user?.recentQuizzes]);
 
-  const bookmarkEntries = useMemo(() => {
+  const bookmarkEntries = useMemo<BookmarkEntry[]>(() => {
     if (user?.bookmarkEntries?.length) {
       return [...user.bookmarkEntries]
         .filter((entry) => entry && entry.questionId)
@@ -120,7 +124,7 @@ function DashboardContent() {
         });
     }
 
-    return (user?.bookmarks || []).map((id) => ({
+    return (user?.bookmarks || []).map<BookmarkEntry>((id) => ({
       questionId: id,
       title: 'Saved Question',
       subject: undefined,
@@ -184,12 +188,13 @@ function DashboardContent() {
     [bookmarkEntries, subjectFilter]
   );
 
-  const list = activeNav === 'recent' ? filteredRecent : filteredBookmarks;
   const emptyCopy =
     activeNav === 'recent'
       ? 'No recent quizzes yet. Start one to see it here.'
       : 'No bookmarks yet. Save a question to revisit it later.';
   const sectionLabel = activeNav === 'recent' ? 'Recent Quiz' : 'Bookmarks';
+  const recentList = filteredRecent;
+  const bookmarkList = filteredBookmarks;
 
   return (
     <main className={`dashboard-shell relative ${inter.className}`}>
@@ -245,24 +250,19 @@ function DashboardContent() {
         <div className="relative flex-1">
           <div key={`${activeTab}-${activeNav}-${animationKey}`} className="page-content">
             <div className="section-label">{sectionLabel}</div>
-            {list.length === 0 ? (
-              <div className="glass-card empty-state">
-                {emptyCopy}
-              </div>
-            ) : (
-              list.map((entry, index) => {
-                const gradient = GRADIENTS[index % GRADIENTS.length];
-                const icon =
-                  (entry.title || entry.subject || 'Q').trim().charAt(0) || 'Q';
-                const timeLabel = formatTimeLabel(entry.updatedAt);
-
-                if (activeNav === 'recent') {
-                  const resumeHref = entry.href
-                    ? appendQuery(entry.href, {
-                        mode: entry.mode,
-                        resume: 1,
-                      })
-                    : '';
+            {activeNav === 'recent' ? (
+              recentList.length === 0 ? (
+                <div className="glass-card empty-state">{emptyCopy}</div>
+              ) : (
+                recentList.map((entry, index) => {
+                  const gradient = GRADIENTS[index % GRADIENTS.length];
+                  const icon =
+                    (entry.title || entry.subject || 'Q').trim().charAt(0) || 'Q';
+                  const timeLabel = formatTimeLabel(entry.updatedAt);
+                  const resumeHref = appendQuery(entry.href, {
+                    mode: entry.mode,
+                    resume: 1,
+                  });
                   const total = entry.totalQuestions ?? 0;
                   const current = entry.currentIndex ?? 0;
                   const progressLabel =
@@ -271,18 +271,14 @@ function DashboardContent() {
                       : 'Continue where you left off';
                   const subtitle =
                     entry.status === 'completed' ? 'Completed' : progressLabel;
-                  const isClickable = Boolean(resumeHref);
-                  const CardTag = isClickable ? Link : 'div';
 
                   return (
-                    <CardTag
+                    <Link
                       key={entry.quizKey}
-                      {...(isClickable ? { href: resumeHref } : {})}
-                      className={`glass-card activity-item animate-in ${
-                        isClickable ? '' : 'is-disabled'
-                      }`}
+                      href={resumeHref}
+                      className="glass-card activity-item animate-in"
                       style={{ animationDelay: `${(index + 1) * 0.1}s` }}
-                      onClick={isClickable ? handleCardClick : undefined}
+                      onClick={handleCardClick}
                     >
                       <div
                         className="activity-icon"
@@ -291,16 +287,22 @@ function DashboardContent() {
                         {icon.toUpperCase()}
                       </div>
                       <div className="activity-content">
-                        <div className="activity-title">
-                          {entry.title}
-                        </div>
+                        <div className="activity-title">{entry.title}</div>
                         <div className="activity-subtitle">{subtitle}</div>
                       </div>
                       <div className="activity-time">{timeLabel}</div>
-                    </CardTag>
+                    </Link>
                   );
-                }
-
+                })
+              )
+            ) : bookmarkList.length === 0 ? (
+              <div className="glass-card empty-state">{emptyCopy}</div>
+            ) : (
+              bookmarkList.map((entry, index) => {
+                const gradient = GRADIENTS[index % GRADIENTS.length];
+                const icon =
+                  (entry.title || entry.subject || 'Q').trim().charAt(0) || 'Q';
+                const timeLabel = formatTimeLabel(entry.updatedAt);
                 const questionLabel =
                   Number.isFinite(entry.questionIndex)
                     ? `Question ${(entry.questionIndex ?? 0) + 1}`
