@@ -27,33 +27,42 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [token, setToken]     = useState<string | null>(null);
   const [loading, setLoading] = useState(true); // start true to avoid flash
 
+  const clearAuthState = useCallback(() => {
+    setToken(null);
+    setUser(null);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('token');
+    }
+  }, []);
+
   const logout = useCallback(async () => {
     try {
       await api.post('/auth/logout'); // clears refresh token cookie
     } catch { /* ignore */ }
-    setToken(null);
-    setUser(null);
-    localStorage.removeItem('token');
-  }, []);
+    clearAuthState();
+  }, [clearAuthState]);
 
   const login = useCallback(async (t: string) => {
     setLoading(true);
     setToken(t);
-    localStorage.setItem('token', t);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('token', t);
+    }
     try {
       const res = await api.get('/users/me', {
         headers: { Authorization: `Bearer ${t}` },
       });
       setUser(res.data);
-    } catch {
-      logout();
+    } catch (err) {
+      clearAuthState();
+      throw err;
     } finally {
       setLoading(false);
     }
-  }, [logout]);
+  }, [clearAuthState]);
 
   const refreshUser = useCallback(async () => {
-    const stored = localStorage.getItem('token');
+    const stored = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     if (!stored) return;
     try {
       const res = await api.get('/users/me');
@@ -62,19 +71,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    const stored = localStorage.getItem('token');
+    const stored = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     if (stored) {
       login(stored).catch(() => {
         api.post('/auth/refresh')
           .then(({ data }) => login(data.token))
-          .catch(() => setLoading(false));
+          .catch(() => {
+            clearAuthState();
+            setLoading(false);
+          });
       });
     } else {
       api.post('/auth/refresh')
         .then(({ data }) => login(data.token))
-        .catch(() => setLoading(false));
+        .catch(() => {
+          clearAuthState();
+          setLoading(false);
+        });
     }
-  }, []); // ← empty array, no [login] dependency
+  }, [login, clearAuthState]);
 
   return (
     <AuthContext.Provider value={{ user, token, login, logout, refreshUser, loading }}>

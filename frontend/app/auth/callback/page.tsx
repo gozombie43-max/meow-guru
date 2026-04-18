@@ -12,7 +12,9 @@ function CallbackContent() {
   useEffect(() => {
     const token = params.get('token');
     if (token) {
-      login(token).then(() => router.push('/dashboard'));
+      login(token)
+        .then(() => router.push('/dashboard'))
+        .catch(() => router.push('/login'));
     } else {
       router.push('/login');
     }
