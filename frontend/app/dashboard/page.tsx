@@ -123,6 +123,7 @@ function DashboardContent() {
     return (user?.bookmarks || []).map((id) => ({
       questionId: id,
       title: 'Saved Question',
+      subject: undefined,
     }));
   }, [user?.bookmarkEntries, user?.bookmarks]);
 
