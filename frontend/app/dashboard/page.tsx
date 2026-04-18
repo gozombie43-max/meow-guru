@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { MouseEventHandler } from 'react';
 import { Inter } from 'next/font/google';
+import { useRouter } from 'next/navigation';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuth } from '@/context/AuthContext';
 
@@ -97,9 +98,9 @@ export default function DashboardPage() {
 
 function DashboardContent() {
   const { user } = useAuth();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabKey>('math');
   const [activeNav, setActiveNav] = useState<NavKey>('recent');
-  const [animationKey, setAnimationKey] = useState(0);
   const subjectInitRef = useRef(false);
 
   const recentQuizzes = useMemo<RecentQuizEntry[]>(() => {
@@ -142,25 +143,38 @@ function DashboardContent() {
   }, [bookmarkEntries, recentQuizzes]);
 
   useEffect(() => {
-    setAnimationKey((prev) => prev + 1);
-  }, [activeTab, activeNav]);
+    let animationFrameId: number;
+    
+    // Cache the query so we don't scan the DOM on every mouse move
+    const blobs = Array.from(document.querySelectorAll<HTMLElement>('.dashboard-shell .blob'));
 
-  useEffect(() => {
     const handleMouseMove = (event: globalThis.MouseEvent) => {
-      const blobs = document.querySelectorAll<HTMLElement>(
-        '.dashboard-shell .blob'
-      );
-      blobs.forEach((blob, index) => {
-        const speed = (index + 1) * 20;
-        const xOffset = (window.innerWidth / 2 - event.clientX) / speed;
-        const yOffset = (window.innerHeight / 2 - event.clientY) / speed;
-        blob.style.setProperty('--blob-x', `${xOffset}px`);
-        blob.style.setProperty('--blob-y', `${yOffset}px`);
+      // Throttle mouse moves to the next screen refresh
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+      
+      animationFrameId = requestAnimationFrame(() => {
+        const clientX = event.clientX;
+        const clientY = event.clientY;
+        const centerX = window.innerWidth / 2;
+        const centerY = window.innerHeight / 2;
+
+        blobs.forEach((blob, index) => {
+          const speed = (index + 1) * 20;
+          const xOffset = (centerX - clientX) / speed;
+          const yOffset = (centerY - clientY) / speed;
+          blob.style.setProperty('--blob-x', `${xOffset}px`);
+          blob.style.setProperty('--blob-y', `${yOffset}px`);
+        });
       });
     };
 
     document.addEventListener('mousemove', handleMouseMove);
-    return () => document.removeEventListener('mousemove', handleMouseMove);
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+    };
   }, []);
 
   const handleCardClick: MouseEventHandler<HTMLElement> = (event) => {
@@ -173,6 +187,14 @@ function DashboardContent() {
     card.appendChild(ripple);
 
     window.setTimeout(() => ripple.remove(), 600);
+  };
+
+  const handleClose = () => {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      router.back();
+      return;
+    }
+    router.push('/');
   };
 
   const subjectFilter = SUBJECT_BY_TAB[activeTab];
@@ -209,25 +231,14 @@ function DashboardContent() {
               <p className="text-xs font-semibold uppercase tracking-widest text-indigo-600">
                 Dashboard
               </p>
-              <h1 className="text-2xl font-bold text-gray-800">
-                Recent activity
-              </h1>
             </div>
-            <button className="search-btn" type="button" aria-label="Search">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="11" cy="11" r="8" />
-                <path d="m21 21-4.3-4.3" />
-              </svg>
+            <button
+              className="close-btn"
+              type="button"
+              aria-label="Close dashboard"
+              onClick={handleClose}
+            >
+              <span aria-hidden="true">X</span>
             </button>
           </div>
 
@@ -250,7 +261,7 @@ function DashboardContent() {
         </div>
 
         <div className="dashboard-scroll">
-          <div key={`${activeTab}-${activeNav}-${animationKey}`} className="page-content">
+          <div key={`${activeTab}-${activeNav}`} className="page-content">
             <div className="section-label">{sectionLabel}</div>
             {activeNav === 'recent' ? (
               recentList.length === 0 ? (
@@ -278,8 +289,7 @@ function DashboardContent() {
                     <Link
                       key={entry.quizKey}
                       href={resumeHref}
-                      className="glass-card activity-item animate-in"
-                      style={{ animationDelay: `${(index + 1) * 0.1}s` }}
+                      className="glass-card activity-item"
                       onClick={handleCardClick}
                     >
                       <div
@@ -324,8 +334,7 @@ function DashboardContent() {
                     <Link
                       key={entry.questionId}
                       href={bookmarkHref}
-                      className="glass-card activity-item animate-in"
-                      style={{ animationDelay: `${(index + 1) * 0.1}s` }}
+                      className="glass-card activity-item"
                       onClick={handleCardClick}
                     >
                       <div
@@ -348,8 +357,7 @@ function DashboardContent() {
                 return (
                   <div
                     key={entry.questionId}
-                    className="glass-card activity-item animate-in is-disabled"
-                    style={{ animationDelay: `${(index + 1) * 0.1}s` }}
+                    className="glass-card activity-item is-disabled"
                   >
                     <div
                       className="activity-icon"
@@ -514,6 +522,7 @@ function DashboardContent() {
           transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
           position: relative;
           overflow: hidden;
+          will-change: transform, opacity;
         }
 
         .dashboard-shell .glass-card:hover {
@@ -524,8 +533,11 @@ function DashboardContent() {
         }
 
         .dashboard-shell .nav-container {
-          background: rgba(255, 255, 255, 0.4);
-          backdrop-filter: blur(20px);
+          background: rgba(255, 255, 255, 0.35);
+          backdrop-filter: blur(24px);
+          -webkit-backdrop-filter: blur(24px);
+          border: 1px solid rgba(255, 255, 255, 0.5);
+          box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.6);
           border-radius: 16px;
           padding: 6px;
           position: relative;
@@ -547,8 +559,8 @@ function DashboardContent() {
 
         .dashboard-shell .nav-tab.active {
           color: #4f46e5;
-          background: rgba(255, 255, 255, 0.9);
-          box-shadow: 0 4px 15px rgba(79, 70, 229, 0.2);
+          background: rgba(255, 255, 255, 0.95);
+          box-shadow: 0 4px 15px rgba(79, 70, 229, 0.25), inset 0 2px 4px rgba(255, 255, 255, 0.9);
         }
 
         .dashboard-shell .nav-tab:hover:not(.active) {
@@ -557,14 +569,15 @@ function DashboardContent() {
         }
 
         .dashboard-shell .bottom-nav {
-          background: rgba(255, 255, 255, 0.5);
-          backdrop-filter: blur(20px);
+          background: rgba(255, 255, 255, 0.4);
+          backdrop-filter: blur(28px);
+          -webkit-backdrop-filter: blur(28px);
           border-radius: 24px;
           padding: 8px;
           display: flex;
           gap: 8px;
-          box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
-          border: 1px solid rgba(255, 255, 255, 0.5);
+          box-shadow: 0 12px 40px rgba(31, 38, 135, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+          border: 1px solid rgba(255, 255, 255, 0.6);
         }
 
         .dashboard-shell .nav-pill {
@@ -585,9 +598,10 @@ function DashboardContent() {
         }
 
         .dashboard-shell .nav-pill.active {
-          background: rgba(255, 255, 255, 0.9);
+          background: rgba(255, 255, 255, 0.95);
           color: #4f46e5;
-          box-shadow: 0 4px 20px rgba(79, 70, 229, 0.25);
+          box-shadow: 0 4px 20px rgba(79, 70, 229, 0.3), inset 0 2px 4px rgba(255, 255, 255, 0.9);
+          border: 1px solid rgba(255, 255, 255, 0.8);
         }
 
         .dashboard-shell .nav-pill:not(.active):hover {
@@ -674,25 +688,27 @@ function DashboardContent() {
           font-size: 0.875rem;
         }
 
-        .dashboard-shell .search-btn {
-          width: 44px;
-          height: 44px;
-          border-radius: 14px;
-          background: rgba(255, 255, 255, 0.5);
-          backdrop-filter: blur(10px);
-          border: 1px solid rgba(255, 255, 255, 0.4);
+        .dashboard-shell .close-btn {
+          position: absolute;
+          top: max(12px, env(safe-area-inset-top));
+          right: max(12px, env(safe-area-inset-right));
+          background: transparent;
+          border: none;
+          padding: 0;
+          line-height: 1;
           display: flex;
           align-items: center;
           justify-content: center;
           cursor: pointer;
           transition: all 0.3s ease;
           color: #4b5563;
+          font-size: 1.125rem;
+          font-weight: 600;
         }
 
-        .dashboard-shell .search-btn:hover {
-          background: rgba(255, 255, 255, 0.8);
+        .dashboard-shell .close-btn:hover {
+          color: #1f2937;
           transform: scale(1.05);
-          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         .dashboard-shell .section-label {
@@ -706,22 +722,20 @@ function DashboardContent() {
         }
 
         .dashboard-shell .page-content {
-          transition: opacity 0.3s ease, transform 0.3s ease;
+          animation: liquidSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          opacity: 0;
+          transform-origin: top center;
         }
 
-        @keyframes slideUp {
-          from {
+        @keyframes liquidSlideUp {
+          0% {
             opacity: 0;
-            transform: translateY(20px);
+            transform: translateY(20px) scale(0.95);
           }
-          to {
+          100% {
             opacity: 1;
-            transform: translateY(0);
+            transform: translateY(0) scale(1);
           }
-        }
-
-        .dashboard-shell .animate-in {
-          animation: slideUp 0.5s ease forwards;
         }
 
         @keyframes ripple {
