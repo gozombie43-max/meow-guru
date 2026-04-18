@@ -755,7 +755,6 @@ export default function MensurationQuizEngine() {
       setSubmitted(false);
     }
     setSubmitError("");
-    setIsSolutionOpen(false);
     if (!submittedQuestions.has(targetIndex)) {
       startTimer();
     }
