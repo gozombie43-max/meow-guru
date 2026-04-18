@@ -3,12 +3,29 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import api from '@/lib/axios';
 
+interface RecentQuizEntry {
+  quizKey: string;
+  title: string;
+  subject: string;
+  slug?: string;
+  href: string;
+  mode?: string;
+  currentIndex?: number;
+  totalQuestions?: number;
+  selectedAnswers?: Record<number, number>;
+  submittedQuestions?: number[];
+  results?: unknown[];
+  status?: 'in-progress' | 'completed';
+  updatedAt?: string;
+}
+
 interface User {
   id: string;
   name: string;
   email: string;
   progress: Record<string, { attempted: number; correct: number }>;
   bookmarks: string[];
+  recentQuizzes?: RecentQuizEntry[];
 }
 
 interface AuthContextType {

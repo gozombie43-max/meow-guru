@@ -69,6 +69,7 @@ export const initPassport = (container) => {
             avatar:       profile.photos?.[0]?.value || '',
             progress:     {},
             bookmarks:    [],
+            recentQuizzes: [],
             createdAt:    new Date().toISOString(),
           };
           await usersContainer.items.create(user);

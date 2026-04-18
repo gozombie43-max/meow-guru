@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Zap } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
+import { useEffect, useMemo } from "react";
 
 interface Subject {
   title: string;
@@ -21,9 +22,59 @@ const subjects: Subject[] = [
   { title: "General Awareness", baseColor: "#F0A050", lightColor: "#F7C28E", darkColor: "#C08040", glowColor: "rgba(240, 160, 80, 0.4)", href: "/general-awareness" },
 ];
 
+const SUBJECT_META = {
+  mathematics: {
+    label: "Mathematics",
+    badge: "rgba(91, 159, 224, 0.25)",
+    text: "#d9efff",
+    accent: "linear-gradient(90deg, #7dd3fc, #38bdf8)",
+  },
+  reasoning: {
+    label: "Reasoning",
+    badge: "rgba(224, 91, 122, 0.25)",
+    text: "#ffd1df",
+    accent: "linear-gradient(90deg, #f472b6, #fb7185)",
+  },
+  english: {
+    label: "English",
+    badge: "rgba(122, 205, 106, 0.25)",
+    text: "#dafbd0",
+    accent: "linear-gradient(90deg, #86efac, #22c55e)",
+  },
+  "general-awareness": {
+    label: "General Awareness",
+    badge: "rgba(240, 160, 80, 0.25)",
+    text: "#ffe0c4",
+    accent: "linear-gradient(90deg, #fdba74, #fb923c)",
+  },
+  default: {
+    label: "Quiz",
+    badge: "rgba(148, 163, 184, 0.3)",
+    text: "#e2e8f0",
+    accent: "linear-gradient(90deg, #94a3b8, #cbd5f5)",
+  },
+} as const;
+
 export default function Home() {
-  const { user, logout } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
   const router = useRouter();
+
+  useEffect(() => {
+    if (!user) return;
+    refreshUser().catch(() => {});
+  }, [refreshUser, user?.id]);
+
+  const recentQuizzes = useMemo(() => {
+    if (!user?.recentQuizzes) return [];
+    return [...user.recentQuizzes]
+      .filter((entry) => entry && entry.quizKey)
+      .sort((a, b) => {
+        const aTime = Date.parse(a.updatedAt || "") || 0;
+        const bTime = Date.parse(b.updatedAt || "") || 0;
+        return bTime - aTime;
+      })
+      .slice(0, 4);
+  }, [user?.recentQuizzes]);
 
   const handleLogout = () => {
     logout();
@@ -422,6 +473,116 @@ export default function Home() {
           font-size: 0.95rem;
           letter-spacing: 0.01em;
         }
+        .recent-section {
+          margin-top: 2.5rem;
+          width: min(820px, 96%);
+        }
+        .recent-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 1rem;
+          margin-bottom: 1.2rem;
+        }
+        .recent-title {
+          font-size: 1.15rem;
+          font-weight: 700;
+          color: #f8fafc;
+        }
+        .recent-link {
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: #7dd3fc;
+          transition: color 200ms ease;
+        }
+        .recent-link:hover {
+          color: #a5f3fc;
+        }
+        .recent-empty {
+          color: rgba(226, 244, 255, 0.7);
+          font-size: 0.9rem;
+          text-align: center;
+          padding: 1rem 0 0.2rem;
+        }
+        .recent-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+          gap: 1rem;
+        }
+        .recent-card {
+          display: flex;
+          flex-direction: column;
+          gap: 0.4rem;
+          padding: 16px 18px;
+          border-radius: 22px;
+          background: rgba(10, 18, 34, 0.55);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          box-shadow: 0 14px 30px rgba(7, 15, 35, 0.35);
+          transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+        }
+        .recent-card:hover {
+          transform: translateY(-3px);
+          border-color: rgba(255, 255, 255, 0.4);
+          box-shadow: 0 18px 36px rgba(7, 15, 35, 0.45);
+        }
+        .recent-card-top {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.5rem;
+        }
+        .recent-tag {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 4px 10px;
+          border-radius: 999px;
+          font-size: 0.7rem;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+        }
+        .recent-progress {
+          font-size: 0.8rem;
+          font-weight: 600;
+          color: rgba(226, 244, 255, 0.8);
+        }
+        .recent-card-title {
+          font-size: 1rem;
+          font-weight: 700;
+          color: #f8fafc;
+        }
+        .recent-card-sub {
+          font-size: 0.8rem;
+          color: rgba(226, 244, 255, 0.7);
+        }
+        .recent-bar {
+          height: 6px;
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.12);
+          overflow: hidden;
+          margin-top: 0.2rem;
+        }
+        .recent-bar span {
+          display: block;
+          height: 100%;
+          border-radius: 999px;
+          transition: width 300ms ease;
+        }
+        .recent-action {
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: #7dd3fc;
+        }
+        @media (max-width: 640px) {
+          .recent-header {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+          .recent-section {
+            width: 100%;
+          }
+        }
         @media (prefers-reduced-motion: reduce) { .pill-card { animation: none; transform: none; opacity: 1; transition: none; } .pill-card::before, .pill-card::after { animation: none; } }
       `}</style>
 
@@ -510,6 +671,73 @@ export default function Home() {
                   <span className="btn-label">Battle Mode</span>
                 </Link>
                 <p className="battle-credit">Developed by Gurucharan Murmu</p>
+                <div className="recent-section">
+                  <div className="recent-header">
+                    <h3 className="recent-title">Recent Quizzes</h3>
+                    {user && recentQuizzes.length > 0 ? (
+                      <Link href="/dashboard" className="recent-link">
+                        View All
+                      </Link>
+                    ) : null}
+                  </div>
+                  {!user ? (
+                    <p className="recent-empty">Login to see your recent quizzes.</p>
+                  ) : recentQuizzes.length === 0 ? (
+                    <p className="recent-empty">
+                      No recent quizzes yet. Start one to see it here.
+                    </p>
+                  ) : (
+                    <div className="recent-grid">
+                      {recentQuizzes.map((entry) => {
+                        const meta =
+                          SUBJECT_META[
+                            entry.subject as keyof typeof SUBJECT_META
+                          ] || SUBJECT_META.default;
+                        const submittedCount =
+                          entry.submittedQuestions?.length ?? Math.max(entry.currentIndex ?? 0, 0);
+                        const total = entry.totalQuestions ?? 0;
+                        const progress =
+                          total > 0
+                            ? Math.round((submittedCount / total) * 100)
+                            : 0;
+                        const resumeHref = entry.mode
+                          ? `${entry.href}?mode=${entry.mode}&resume=1`
+                          : `${entry.href}?resume=1`;
+                        const currentLabel =
+                          total > 0
+                            ? `Q${Math.min((entry.currentIndex ?? 0) + 1, total)}`
+                            : "your last question";
+                        return (
+                          <Link key={entry.quizKey} href={resumeHref} className="recent-card">
+                            <div className="recent-card-top">
+                              <span
+                                className="recent-tag"
+                                style={{ background: meta.badge, color: meta.text }}
+                              >
+                                {meta.label}
+                              </span>
+                              <span className="recent-progress">
+                                {total > 0 ? `${submittedCount}/${total}` : `${submittedCount}+`}
+                              </span>
+                            </div>
+                            <div className="recent-card-title">{entry.title}</div>
+                            <div className="recent-card-sub">
+                              {entry.status === "completed"
+                                ? "Completed"
+                                : `Continue from ${currentLabel}`}
+                            </div>
+                            <div className="recent-bar">
+                              <span style={{ width: `${progress}%`, background: meta.accent }} />
+                            </div>
+                            <div className="recent-action">
+                              {entry.status === "completed" ? "Review →" : "Continue →"}
+                            </div>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </section>

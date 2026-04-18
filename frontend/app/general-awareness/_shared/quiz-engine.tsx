@@ -21,7 +21,7 @@ import {
   X,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { updateProgress, toggleBookmark } from "@/lib/userApi";
+import { saveRecentQuiz, updateProgress, toggleBookmark } from "@/lib/userApi";
 import { fetchQuestions, type Question as ApiQuestion } from "@/lib/api/questions";
 
 type QuizMode = "concept" | "formula" | "mixed" | "ai-challenge";
@@ -694,6 +694,7 @@ export default function GeneralAwarenessQuizEngine({
 }: GeneralAwarenessQuizEngineProps) {
   const searchParams = useSearchParams();
   const mode = normalizeMode(searchParams.get("mode"));
+  const resumeRequested = searchParams.get("resume") === "1";
 
   const [allQuestions, setAllQuestions] = useState<GeneralAwarenessQuestion[]>([]);
   const [questions, setQuestions] = useState<GeneralAwarenessQuestion[]>([]);
@@ -830,6 +831,15 @@ export default function GeneralAwarenessQuizEngine({
   const [bookmarked, setBookmarked] = useState<Set<string>>(
     new Set(user?.bookmarks ?? [])
   );
+  const quizKey = `general-awareness:${slug}`;
+  const quizHref = `/general-awareness/${slug}/quiz`;
+  const resumeEntry = useMemo(() => {
+    if (!resumeRequested) return null;
+    return (
+      user?.recentQuizzes?.find((entry) => entry.quizKey === quizKey) ?? null
+    );
+  }, [quizKey, resumeRequested, user?.recentQuizzes]);
+  const resumeAppliedRef = useRef(false);
 
   const maxTime = miniMode ? 20 : 60;
   const currentQ = questions[currentIndex] as GeneralAwarenessQuestion | undefined;
@@ -931,7 +941,128 @@ export default function GeneralAwarenessQuizEngine({
     if (timeLeft === 0) stopTimer();
   }, [stopTimer, timeLeft]);
 
+  useEffect(() => {
+    if (!resumeRequested || resumeAppliedRef.current) return;
+    if (!resumeEntry || resumeEntry.status === "completed") return;
+    if (questions.length === 0) return;
+
+    const safeIndex = Math.max(
+      0,
+      Math.min(resumeEntry.currentIndex ?? 0, questions.length - 1)
+    );
+    const savedAnswers = resumeEntry.selectedAnswers ?? {};
+    const savedSubmitted = resumeEntry.submittedQuestions ?? [];
+    const submittedSet = new Set<number>(savedSubmitted);
+
+    stopTimer();
+    setSelectedAnswers(savedAnswers);
+    setSubmittedQuestions(submittedSet);
+    const savedResults = Array.isArray(resumeEntry.results)
+      ? (resumeEntry.results as SessionResult[])
+      : [];
+    setResults(savedResults);
+    setShowAnalytics(false);
+    setStarted(true);
+    setCurrentIndex(safeIndex);
+    const nextQuestion = questions[safeIndex];
+    const existingSelection = savedAnswers[safeIndex];
+    setSelectedAnswer(existingSelection ?? null);
+    if (nextQuestion?.questionType === "image_mcq") {
+      setSelected(
+        existingSelection !== undefined
+          ? String.fromCharCode(97 + existingSelection)
+          : null
+      );
+      setSubmitted(submittedSet.has(safeIndex));
+    } else {
+      setSelected(null);
+      setSubmitted(false);
+    }
+    setSubmitError("");
+    setIsSolutionOpen(false);
+    if (!submittedSet.has(safeIndex)) {
+      startTimer();
+    }
+
+    resumeAppliedRef.current = true;
+  }, [questions, resumeEntry, resumeRequested, startTimer, stopTimer]);
+
   useEffect(() => () => stopTimer(), [stopTimer]);
+
+  useEffect(() => {
+    if (!token || !started || showAnalytics) return;
+    if (questions.length === 0) return;
+    if (resumeRequested && !resumeAppliedRef.current) return;
+
+    const submittedList = Array.from(submittedQuestions);
+    const saveTimeout = window.setTimeout(() => {
+      saveRecentQuiz(token, {
+        quizKey,
+        title,
+        subject: "general-awareness",
+        slug,
+        href: quizHref,
+        mode,
+        currentIndex,
+        totalQuestions: questions.length,
+        selectedAnswers,
+        submittedQuestions: submittedList,
+        results,
+        status: "in-progress",
+      }).catch(() => {});
+    }, 600);
+
+    return () => window.clearTimeout(saveTimeout);
+  }, [
+    currentIndex,
+    mode,
+    questions.length,
+    quizHref,
+    quizKey,
+    resumeRequested,
+    results,
+    selectedAnswers,
+    slug,
+    started,
+    submittedQuestions,
+    title,
+    token,
+    showAnalytics,
+  ]);
+
+  useEffect(() => {
+    if (!token || !showAnalytics) return;
+    if (questions.length === 0) return;
+
+    const submittedList = Array.from(submittedQuestions);
+    saveRecentQuiz(token, {
+      quizKey,
+      title,
+      subject: "general-awareness",
+      slug,
+      href: quizHref,
+      mode,
+      currentIndex,
+      totalQuestions: questions.length,
+      selectedAnswers,
+      submittedQuestions: submittedList,
+      results,
+      status: "completed",
+    }).catch(() => {});
+  }, [
+    currentIndex,
+    mode,
+    questions.length,
+    quizHref,
+    quizKey,
+    results,
+    selectedAnswers,
+    slug,
+    submittedQuestions,
+    title,
+    token,
+    showAnalytics,
+  ]);
 
   function handleStart() {
     setStarted(true);
