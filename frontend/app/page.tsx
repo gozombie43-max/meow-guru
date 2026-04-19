@@ -64,6 +64,17 @@ export default function Home() {
     refreshUser().catch(() => {});
   }, [refreshUser, user?.id]);
 
+  useEffect(() => {
+    const body = document.body;
+    const root = document.documentElement;
+    body.classList.add('home-hero');
+    root.classList.add('home-hero');
+    return () => {
+      body.classList.remove('home-hero');
+      root.classList.remove('home-hero');
+    };
+  }, []);
+
   const recentQuizzes = useMemo(() => {
     if (!user?.recentQuizzes) return [];
     return [...user.recentQuizzes]
@@ -82,7 +93,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
+    <div className="min-h-screen relative overflow-x-hidden">
       <style>{`
         .lower-shell {
           position: relative;
@@ -150,12 +161,12 @@ export default function Home() {
         }
         .hero-section {
           position: relative;
-          overflow: hidden;
+          overflow-x: hidden;
           min-height: 100vh;
           min-height: 100svh;
           color: #f8fafc;
           background-image:
-            linear-gradient(120deg, rgba(5, 16, 34, 0.75) 0%, rgba(7, 20, 40, 0.62) 46%, rgba(5, 14, 30, 0.45) 100%),
+            linear-gradient(120deg, rgba(6, 18, 38, 0.45) 0%, rgba(8, 22, 44, 0.35) 46%, rgba(6, 18, 36, 0.25) 100%),
             radial-gradient(900px 360px at 14% 18%, rgba(34, 211, 238, 0.18), transparent 70%),
             var(--hero-image, linear-gradient(135deg, #0b1c33 0%, #142746 45%, #0a1a2e 100%));
           background-size: cover;
@@ -166,7 +177,7 @@ export default function Home() {
           content: "";
           position: absolute;
           inset: 0;
-          background: linear-gradient(180deg, rgba(4, 10, 22, 0.1) 0%, rgba(4, 10, 22, 0.75) 100%);
+          background: linear-gradient(180deg, rgba(6, 12, 24, 0.05) 0%, rgba(6, 12, 24, 0.45) 100%);
           z-index: 1;
         }
         .hero-content {

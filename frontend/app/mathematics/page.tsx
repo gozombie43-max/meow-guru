@@ -1,6 +1,7 @@
 "use client";
 
 import type { CSSProperties } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 
@@ -105,6 +106,17 @@ function TopicCard({ topic }: { topic: TopicItem }) {
 }
 
 export default function MathematicsPage() {
+  useEffect(() => {
+    const body = document.body;
+    const root = document.documentElement;
+    body.classList.add("math-topics-surface");
+    root.classList.add("math-topics-surface");
+    return () => {
+      body.classList.remove("math-topics-surface");
+      root.classList.remove("math-topics-surface");
+    };
+  }, []);
+
   return (
     <main className="math-topics-page">
       <div className="math-shell">

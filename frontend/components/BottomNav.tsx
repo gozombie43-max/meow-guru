@@ -50,8 +50,11 @@ export default function BottomNav() {
 
   useEffect(() => {
     const body = document.body;
+    const root = document.documentElement;
     body.classList.toggle('theme-dark', theme === 'dark');
     body.classList.toggle('theme-light', theme === 'light');
+    root.classList.toggle('theme-dark', theme === 'dark');
+    root.classList.toggle('theme-light', theme === 'light');
     window.localStorage.setItem(THEME_STORAGE_KEY, theme);
   }, [theme]);
 

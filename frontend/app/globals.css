@@ -39,12 +39,36 @@
   box-sizing: border-box;
 }
 
-body {
+html {
   background: var(--bg-gradient);
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  min-height: 100%;
+}
+
+body {
+  background: transparent;
   color: var(--text-primary);
   font-family: 'Georgia', 'Palatino', serif;
   overflow-x: hidden;
-  min-height: 100vh;
+  overflow-y: visible;
+  min-height: 100%;
+}
+
+html.home-hero,
+body.home-hero {
+  background: linear-gradient(135deg, #0b1c33 0%, #142746 45%, #0a1a2e 100%);
+}
+
+html.math-topics-surface,
+body.math-topics-surface {
+  background: radial-gradient(circle at 20% 10%, #f1f5ff 0%, #e7ecf8 40%, #dfe5f3 100%);
+}
+
+html.math-topics-surface.theme-dark,
+body.math-topics-surface.theme-dark {
+  background: radial-gradient(circle at 18% 10%, #1d2b57 0%, #131a38 45%, #0b0f22 100%);
 }
 
 /* ========== Keyframe Animations ========== */
@@ -1061,13 +1085,13 @@ body.has-bottom-nav {
 }
 
 body.theme-dark .bottom-pill-nav {
-  background: linear-gradient(135deg, rgba(48, 28, 88, 0.8), rgba(24, 20, 50, 0.82));
+  background: linear-gradient(135deg, #2e1c56, #171432);
   border: 1px solid rgba(150, 128, 255, 0.4);
   box-shadow: 0 16px 32px rgba(8, 6, 24, 0.48), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 body.theme-dark .bottom-pill-nav.is-scrolled {
-  background: linear-gradient(135deg, rgba(58, 32, 102, 0.95), rgba(22, 18, 44, 0.94));
+  background: linear-gradient(135deg, #392066, #16122c);
   box-shadow: 0 22px 44px rgba(4, 4, 14, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.28);
 }
 
