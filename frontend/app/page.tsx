@@ -1,25 +1,21 @@
 'use client';
 
 import Link from "next/link";
-import { Zap } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 interface Subject {
   title: string;
-  baseColor: string;
-  lightColor: string;
-  darkColor: string;
-  glowColor: string;
+  accentColor: string;
   href: string;
 }
 
 const subjects: Subject[] = [
-  { title: "Mathematics", baseColor: "#5B9FE0", lightColor: "#A5CDF0", darkColor: "#4A80B3", glowColor: "rgba(91, 159, 224, 0.4)", href: "/mathematics" },
-  { title: "Reasoning", baseColor: "#E05B7A", lightColor: "#F0A6B8", darkColor: "#B34A62", glowColor: "rgba(224, 91, 122, 0.4)", href: "/reasoning" },
-  { title: "English", baseColor: "#7ACD6A", lightColor: "#B3E3A8", darkColor: "#62A457", glowColor: "rgba(122, 205, 106, 0.4)", href: "/english" },
-  { title: "General Awareness", baseColor: "#F0A050", lightColor: "#F7C28E", darkColor: "#C08040", glowColor: "rgba(240, 160, 80, 0.4)", href: "/general-awareness" },
+  { title: "Mathematics", accentColor: "#6AA4DF", href: "/mathematics" },
+  { title: "Reasoning", accentColor: "#D9869A", href: "/reasoning" },
+  { title: "English", accentColor: "#7FC494", href: "/english" },
+  { title: "General Awareness", accentColor: "#DCAA75", href: "/general-awareness" },
 ];
 
 const SUBJECT_META = {
@@ -58,6 +54,7 @@ const SUBJECT_META = {
 export default function Home() {
   const { user, logout, refreshUser } = useAuth();
   const router = useRouter();
+  const [isNavScrolled, setIsNavScrolled] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -72,6 +69,18 @@ export default function Home() {
     return () => {
       body.classList.remove('home-hero');
       root.classList.remove('home-hero');
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsNavScrolled(window.scrollY > 8);
+    };
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
@@ -118,6 +127,14 @@ export default function Home() {
           background: rgba(8, 20, 38, 0.6);
           border-bottom: 1px solid rgba(255, 255, 255, 0.18);
           box-shadow: 0 10px 30px rgba(5, 10, 20, 0.2);
+          transition: background 220ms ease, border-color 220ms ease, box-shadow 220ms ease, backdrop-filter 220ms ease;
+        }
+        .hero-nav.nav-scrolled {
+          background: rgb(8, 20, 38);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.26);
+          box-shadow: 0 12px 30px rgba(2, 8, 18, 0.45);
+          backdrop-filter: none;
+          -webkit-backdrop-filter: none;
         }
         .nav-brand {
           color: #dff6ff;
@@ -277,7 +294,7 @@ export default function Home() {
           margin: 0 auto;
           padding: 0;
         }
-        .liquid-grid {
+        .ios-card-grid {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 1rem;
@@ -285,42 +302,89 @@ export default function Home() {
           margin: 0 auto;
           padding: 0;
         }
-        .liquid-subject {
-          justify-content: center;
-          text-align: center;
-          border-radius: 999px;
-          min-height: 68px;
-          background: rgba(255, 255, 255, 0.85);
-          backdrop-filter: blur(20px);
-          border: 1.5px solid rgba(255, 255, 255, 0.95);
-          box-shadow: 0 12px 28px rgba(2, 6, 14, 0.15), inset 0 2px 0 rgba(255, 255, 255, 1);
-          transition: transform 200ms ease, box-shadow 200ms ease, filter 200ms ease;
-        }
-        .liquid-subject:hover {
-          transform: translateY(-2px);
-          background: rgba(255, 255, 255, 0.95);
-          box-shadow: 0 16px 36px rgba(2, 6, 14, 0.2), inset 0 2px 0 rgba(255, 255, 255, 1);
-        }
-        .liquid-subject .btn-label {
+        .ios-action-card {
+          --card-accent: #6aa4df;
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.9rem;
+          min-height: 84px;
+          padding: 1rem 1.1rem;
+          border-radius: 24px;
+          text-decoration: none;
           color: #0f172a;
-          font-weight: 800;
-          font-size: clamp(0.95rem, 1.8vw, 1.15rem);
-          letter-spacing: 0.02em;
+          background: linear-gradient(160deg, rgba(249, 250, 252, 0.5) 0%, rgba(236, 240, 245, 0.38) 52%, rgba(229, 233, 239, 0.3) 100%);
+          border: 1px solid rgba(255, 255, 255, 0.58);
+          backdrop-filter: blur(16px) saturate(135%);
+          -webkit-backdrop-filter: blur(16px) saturate(135%);
+          box-shadow:
+            0 18px 34px rgba(8, 15, 30, 0.22),
+            0 4px 12px rgba(8, 15, 30, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.74),
+            inset 0 -10px 18px rgba(148, 163, 184, 0.22);
+          transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease, background 220ms ease;
+          overflow: hidden;
         }
-        .liquid-battle {
-          width: min(86vw, 420px);
-          min-height: 72px;
-          padding: 20px 40px;
+        .ios-action-card::before {
+          content: "";
+          position: absolute;
+          inset: 1px;
+          border-radius: inherit;
+          background: linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.08) 56%, rgba(148, 163, 184, 0.12) 100%);
+          pointer-events: none;
+        }
+        .ios-action-card:hover {
+          transform: translateY(-2px);
+          border-color: rgba(255, 255, 255, 0.7);
+          box-shadow:
+            0 20px 36px rgba(8, 15, 30, 0.25),
+            0 6px 16px rgba(8, 15, 30, 0.12),
+            inset 0 1px 0 rgba(255, 255, 255, 0.8),
+            inset 0 -10px 18px rgba(148, 163, 184, 0.26);
+        }
+        .ios-action-card:active {
+          transform: translateY(0);
+        }
+        .ios-card-main {
+          display: flex;
+          align-items: center;
+          gap: 0.85rem;
+          position: relative;
+          z-index: 1;
+        }
+        .ios-card-accent {
+          width: 4px;
+          height: 34px;
           border-radius: 999px;
-          letter-spacing: 0.16em;
-          text-transform: uppercase;
-          justify-content: center;
+          background: var(--card-accent);
+          box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.55), 0 4px 10px rgba(30, 41, 59, 0.16);
+          flex-shrink: 0;
         }
-        .liquid-battle .btn-label {
-          color: #f8fafc;
-          font-weight: 900;
-          width: 100%;
-          text-align: center;
+        .ios-card-label {
+          font-weight: 700;
+          font-size: clamp(0.94rem, 1.8vw, 1.08rem);
+          letter-spacing: 0.01em;
+        }
+        .ios-card-chevron {
+          position: relative;
+          z-index: 1;
+          font-size: 1.15rem;
+          font-weight: 700;
+          color: rgba(30, 41, 59, 0.7);
+          line-height: 1;
+        }
+        .battle-action-card {
+          width: min(86vw, 420px);
+        }
+        .battle-action-card .ios-card-main {
+          flex: 1;
+        }
+        .battle-action-card .ios-card-label {
+          font-size: clamp(1rem, 2.1vw, 1.2rem);
+          font-weight: 800;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
         }
         .pill-card {
           --pill-base: #5b9fe0;
@@ -378,14 +442,6 @@ export default function Home() {
         .pill-card:active { transform: scale(0.97); transition-duration: 80ms; }
         .pill-gloss-top { position: absolute; top: -2%; left: 8%; width: 84%; height: 48%; background: radial-gradient(ellipse at top, rgba(255,255,255,0.68) 0%, rgba(255,255,255,0) 74%); opacity: 0.26; border-radius: 999px 999px 120px 120px; pointer-events: none; z-index: 1; }
         .pill-gloss-bottom { position: absolute; bottom: 8%; left: 20%; width: 55%; height: 20%; background: radial-gradient(ellipse at center, rgba(255,255,255,0.46) 0%, rgba(255,255,255,0) 74%); opacity: 0.2; border-radius: 999px; pointer-events: none; z-index: 1; }
-        .guru-neon {
-          background: linear-gradient(95deg, #49f6ff 0%, #39b5ff 18%, #72ff9f 36%, #faff58 52%, #ff8a00 70%, #ff3a8c 84%, #49f6ff 100%);
-          background-size: 340% 100%;
-          -webkit-background-clip: text; background-clip: text; color: transparent;
-          animation: guru-neon-shift 3.9s linear infinite;
-          text-shadow: 0 0 10px rgba(73,246,255,0.72), 0 0 20px rgba(255,138,0,0.48), 0 0 36px rgba(255,58,140,0.36);
-        }
-        @keyframes guru-neon-shift { 0% { background-position: 0% 50%; filter: hue-rotate(0deg); } 50% { background-position: 100% 50%; filter: hue-rotate(68deg); } 100% { background-position: 0% 50%; filter: hue-rotate(0deg); } }
         .pill-content { position: relative; z-index: 2; font-family: "Avenir Next","Segoe UI",sans-serif; font-size: clamp(0.95rem,1.8vw,1.15rem); font-weight: 700; letter-spacing: 0.02em; text-transform: none; text-shadow: 0 1px 2px rgba(0,0,0,0.22), 0 0 18px color-mix(in srgb, var(--pill-light) 55%, transparent); text-align: center; padding: 0 0.35rem; }
         .battle-cta {
           position: relative;
@@ -452,7 +508,7 @@ export default function Home() {
         @keyframes pill-chroma { 0%,100% { filter: hue-rotate(0deg) saturate(1); } 50% { filter: hue-rotate(14deg) saturate(1.08); } }
         @keyframes pill-glow-pulse { 0%,100% { opacity: 0.5; box-shadow: 0 0 20px color-mix(in srgb, var(--pill-glow) 60%, transparent); } 50% { opacity: 0.82; box-shadow: 0 0 32px color-mix(in srgb, var(--pill-glow) 86%, transparent); } }
         @keyframes pill-shimmer { 0% { transform: translateX(-170%) rotate(12deg); opacity: 0; } 10% { opacity: 0.9; } 22% { transform: translateX(330%) rotate(12deg); opacity: 0.9; } 30%,100% { transform: translateX(330%) rotate(12deg); opacity: 0; } }
-        @media (max-width: 820px) { .pill-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 420px; gap: 0.8rem; padding: 0; } .pill-card { min-height: 60px; padding: 7px 14px; } .pill-content { font-size: clamp(0.85rem,3.8vw,1rem); } .liquid-grid { max-width: 420px; gap: 0.8rem; } .liquid-subject { min-height: 60px; padding: 10px 14px; } }
+        @media (max-width: 820px) { .pill-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 420px; gap: 0.8rem; padding: 0; } .pill-card { min-height: 60px; padding: 7px 14px; } .pill-content { font-size: clamp(0.85rem,3.8vw,1rem); } .ios-card-grid { max-width: 420px; gap: 0.8rem; } .ios-action-card { min-height: 70px; padding: 0.8rem 0.9rem; border-radius: 20px; } .ios-card-accent { height: 30px; } }
         @media (max-width: 640px) {
           .hero-section { min-height: 100vh; min-height: 100svh; background-position: center top; }
           .hero-content { min-height: 100vh; min-height: 100svh; padding-top: 7.75rem; padding-bottom: calc(5.5rem + env(safe-area-inset-bottom)); text-align: center; }
@@ -463,13 +519,20 @@ export default function Home() {
           .hero-btn { width: min(86vw, 320px); }
           .auth-pill { padding: 6px 14px; font-size: 0.82rem; }
           .nav-brand { font-size: 1rem; }
+          .guru-neon { letter-spacing: 0.05em; font-size: 1.5rem; }
+          .guru-neon::before { text-shadow: -1px -1px 3px rgba(255,255,255,0.9); }
+          .guru-neon::after { text-shadow: 1px 1px 4px rgba(0,0,0,0.6); transform: none; opacity: 1; }
           .pill-grid { max-width: 380px; gap: 0.6rem; padding: 0; }
           .pill-card { min-height: 54px; padding: 7px 10px; }
           .pill-content { font-size: clamp(0.78rem,3.2vw,0.92rem); letter-spacing: 0.01em; text-transform: none; padding: 0 0.15rem; }
-          .liquid-grid { max-width: 380px; gap: 0.6rem; }
-          .liquid-subject { min-height: 54px; padding: 8px 12px; }
-          .liquid-subject .btn-label { font-size: clamp(0.85rem, 3.2vw, 0.98rem); letter-spacing: 0.01em; }
-          .liquid-battle { min-height: 52px; padding: 12px 26px; font-size: clamp(0.98rem, 4.2vw, 1.12rem); letter-spacing: 0.1em; }
+          .ios-card-grid { max-width: 380px; gap: 0.6rem; }
+          .ios-action-card { min-height: 62px; padding: 0.7rem 0.78rem; border-radius: 18px; }
+          .ios-card-main { gap: 0.65rem; }
+          .ios-card-accent { width: 3px; height: 26px; }
+          .ios-card-label { font-size: clamp(0.82rem, 3.2vw, 0.95rem); letter-spacing: 0.01em; }
+          .ios-card-chevron { font-size: 1rem; }
+          .battle-action-card { width: min(86vw, 320px); }
+          .battle-action-card .ios-card-label { font-size: clamp(0.95rem, 4.2vw, 1.1rem); letter-spacing: 0.07em; }
           .battle-cta {
             width: min(86vw, 320px);
             min-height: 52px;
@@ -608,11 +671,13 @@ export default function Home() {
       `}</style>
 
       {/* ── Navigation ── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 glass hero-nav">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-3">
+      <nav className={`fixed top-0 left-0 right-0 z-50 glass hero-nav ${isNavScrolled ? "nav-scrolled" : ""}`}>
+        <div
+          className="w-full h-14 sm:h-16 flex items-center justify-between gap-3"
+          style={{ paddingLeft: "1cm", paddingRight: "1cm" }}
+        >
           <div className="flex items-center gap-2.5">
-            <Zap className="w-6 h-6 text-cyan-500" />
-            <span className="text-base sm:text-3xl font-extrabold tracking-wide font-sans guru-neon whitespace-nowrap leading-none nav-brand">
+            <span className="text-base sm:text-2xl font-extrabold tracking-wide font-sans text-white whitespace-nowrap leading-none nav-brand">
               STUDY WITH GURU
             </span>
           </div>
@@ -655,25 +720,24 @@ export default function Home() {
                 <h2 className="animate-fade-in-up text-[clamp(1.6rem,3.5vw,2.25rem)] font-bold mb-3 subject-heading-title" style={{ animationDelay: "600ms", fontFamily: "'SF Pro Display','Helvetica Neue',sans-serif" }}>
                   Choose Your <span className="gradient-text">Subject</span>
                 </h2>
-                <p className="animate-fade-in-up subject-heading-copy" style={{ animationDelay: "650ms" }}>
-                  Select a subject to begin your practice session
-                </p>
               </div>
 
-              <div className="liquid-grid">
+              <div className="ios-card-grid">
                 {subjects.map((subject, i) => (
                   <Link
                     key={subject.title}
                     href={subject.href}
-                    className="liquid-btn liquid-subject animate-fade-in-up"
+                    className="ios-action-card animate-fade-in-up"
                     style={{
                       animationDelay: `${700 + i * 120}ms`,
-                      ["--liquid-cyan" as string]: subject.lightColor,
-                      ["--liquid-teal" as string]: subject.baseColor,
-                      ["--liquid-purple" as string]: subject.darkColor,
+                      ["--card-accent" as string]: subject.accentColor,
                     }}
                   >
-                    <span className="btn-label">{subject.title}</span>
+                    <span className="ios-card-main">
+                      <span className="ios-card-accent" aria-hidden="true" />
+                      <span className="ios-card-label">{subject.title}</span>
+                    </span>
+                    <span className="ios-card-chevron" aria-hidden="true">›</span>
                   </Link>
                 ))}
               </div>
@@ -681,15 +745,17 @@ export default function Home() {
               <div className="battle-dock">
                 <Link
                   href="/battle"
-                  className="liquid-btn liquid-battle animate-fade-in-up"
+                  className="ios-action-card battle-action-card animate-fade-in-up"
                   style={{
                     animationDelay: "1100ms",
-                    ["--liquid-cyan" as string]: "#7c5cff",
-                    ["--liquid-teal" as string]: "#ff7ccf",
-                    ["--liquid-purple" as string]: "#7dd3fc",
+                    ["--card-accent" as string]: "#9ba8ff",
                   }}
                 >
-                  <span className="btn-label">Battle Mode</span>
+                  <span className="ios-card-main">
+                    <span className="ios-card-accent" aria-hidden="true" />
+                    <span className="ios-card-label">BATTLE MODE</span>
+                  </span>
+                  <span className="ios-card-chevron" aria-hidden="true">›</span>
                 </Link>
                 <p className="battle-credit">Developed by Gurucharan Murmu</p>
                 <div className="recent-section">
