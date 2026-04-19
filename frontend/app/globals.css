@@ -904,8 +904,8 @@ body {
 
 /* ========== Bottom Pill Navigation ========== */
 
-.bottom-nav-spacer {
-  height: calc(84px + env(safe-area-inset-bottom));
+body.has-bottom-nav {
+  padding-bottom: calc(84px + env(safe-area-inset-bottom));
 }
 
 .bottom-pill-nav {
@@ -951,13 +951,14 @@ body {
 .bottom-nav-item {
   position: relative;
   z-index: 1;
+  isolation: isolate;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 4px;
   padding: 6px 0;
-  color: rgba(255, 255, 255, 0.62);
+  color: rgba(255, 255, 255, 0.92);
   text-decoration: none;
   font-size: 0.7rem;
   font-weight: 600;
@@ -973,7 +974,7 @@ body {
   width: 22px;
   height: 22px;
   stroke-width: 1.6;
-  opacity: 0.75;
+  opacity: 0.95;
   transition: opacity 220ms ease, filter 220ms ease, transform 220ms ease;
 }
 
@@ -994,21 +995,36 @@ body {
 }
 
 .bottom-pill-nav.is-light .bottom-nav-item {
-  color: rgba(15, 23, 42, 0.62);
+  color: #0b0d12;
+  text-shadow: none;
+}
+
+.bottom-pill-nav.is-light .bottom-nav-icon {
+  opacity: 1;
 }
 
 .bottom-pill-nav.is-light .bottom-nav-item.is-active {
-  color: #0f172a;
-  text-shadow: 0 0 10px rgba(56, 189, 248, 0.35);
+  color: #0b0d12;
+  text-shadow: none;
+}
+
+.bottom-pill-nav.is-light .bottom-nav-item.is-active::after {
+  content: "";
+  position: absolute;
+  inset: -6px 10px;
+  border-radius: 999px;
+  background: rgba(56, 189, 248, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  z-index: -1;
 }
 
 .bottom-pill-nav.is-light .bottom-nav-item.is-active .bottom-nav-icon {
-  filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.5));
-  animation: nav-active-pulse-light 2.6s ease-in-out infinite;
+  filter: none;
+  animation: none;
 }
 
 .bottom-pill-nav.is-light .bottom-nav-item:not(.is-active):hover {
-  color: rgba(15, 23, 42, 0.85);
+  color: #0b0d12;
 }
 
 .bottom-nav-item:not(.is-active):hover {
@@ -1030,10 +1046,6 @@ body {
   50% { filter: drop-shadow(0 0 14px rgba(125, 211, 252, 0.85)); }
 }
 
-@keyframes nav-active-pulse-light {
-  0%, 100% { filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.3)); }
-  50% { filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.6)); }
-}
 
 @media (max-width: 540px) {
   .bottom-pill-nav {
@@ -1041,8 +1053,8 @@ body {
     padding: 8px 10px;
   }
 
-  .bottom-nav-spacer {
-    height: calc(76px + env(safe-area-inset-bottom));
+  body.has-bottom-nav {
+    padding-bottom: calc(76px + env(safe-area-inset-bottom));
   }
 
   .bottom-nav-item {
