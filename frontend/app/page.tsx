@@ -1,7 +1,7 @@
 'use client';
 
 import Link from "next/link";
-import { Zap } from "lucide-react";
+import { Zap, Home as HomeIcon, ClipboardList, Play, Menu } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo } from "react";
@@ -583,7 +583,105 @@ export default function Home() {
             width: 100%;
           }
         }
-        @media (prefers-reduced-motion: reduce) { .pill-card { animation: none; transform: none; opacity: 1; transition: none; } .pill-card::before, .pill-card::after { animation: none; } }
+        .bottom-pill-nav {
+          position: fixed;
+          left: 50%;
+          bottom: calc(18px + env(safe-area-inset-bottom));
+          transform: translateX(-50%);
+          z-index: 60;
+          width: min(92vw, 420px);
+          padding: 10px 14px;
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 2px;
+          align-items: center;
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.12);
+          border: 1px solid rgba(255, 255, 255, 0.22);
+          box-shadow: 0 18px 34px rgba(5, 12, 28, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+          backdrop-filter: blur(24px) saturate(160%);
+          -webkit-backdrop-filter: blur(24px) saturate(160%);
+        }
+        .bottom-pill-nav::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          border-radius: inherit;
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), inset 0 -1px 0 rgba(255, 255, 255, 0.12);
+          opacity: 0.9;
+          pointer-events: none;
+        }
+        .bottom-nav-item {
+          position: relative;
+          z-index: 1;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 4px;
+          padding: 6px 0;
+          color: rgba(255, 255, 255, 0.62);
+          text-decoration: none;
+          font-size: 0.7rem;
+          font-weight: 600;
+          letter-spacing: 0.02em;
+          font-family: "SF Pro Text", "Inter", "Helvetica Neue", sans-serif;
+          transition: color 220ms ease, transform 220ms ease, opacity 220ms ease, text-shadow 220ms ease;
+        }
+        .bottom-nav-icon {
+          width: 22px;
+          height: 22px;
+          stroke-width: 1.6;
+          opacity: 0.75;
+          transition: opacity 220ms ease, filter 220ms ease, transform 220ms ease;
+        }
+        .bottom-nav-label {
+          line-height: 1;
+        }
+        .bottom-nav-item.is-active {
+          color: rgba(255, 255, 255, 0.98);
+          transform: scale(1.05);
+          text-shadow: 0 0 14px rgba(255, 255, 255, 0.45);
+        }
+        .bottom-nav-item.is-active .bottom-nav-icon {
+          opacity: 1;
+          filter: drop-shadow(0 0 10px rgba(125, 211, 252, 0.7));
+          animation: nav-active-pulse 2.6s ease-in-out infinite;
+        }
+        .bottom-nav-item:not(.is-active):hover {
+          color: rgba(255, 255, 255, 0.85);
+        }
+        .bottom-nav-item:active {
+          transform: scale(0.98);
+        }
+        .bottom-nav-item:focus-visible {
+          outline: none;
+          box-shadow: 0 0 0 2px rgba(125, 211, 252, 0.55);
+          border-radius: 16px;
+        }
+        @keyframes nav-active-pulse {
+          0%, 100% { filter: drop-shadow(0 0 8px rgba(125, 211, 252, 0.45)); }
+          50% { filter: drop-shadow(0 0 14px rgba(125, 211, 252, 0.85)); }
+        }
+        @media (max-width: 900px) {
+          .lower-shell {
+            padding-bottom: calc(7.5rem + env(safe-area-inset-bottom));
+          }
+        }
+        @media (max-width: 540px) {
+          .bottom-pill-nav {
+            width: min(94vw, 360px);
+            padding: 8px 10px;
+          }
+          .bottom-nav-item {
+            font-size: 0.62rem;
+          }
+          .bottom-nav-icon {
+            width: 20px;
+            height: 20px;
+          }
+        }
+        @media (prefers-reduced-motion: reduce) { .pill-card { animation: none; transform: none; opacity: 1; transition: none; } .pill-card::before, .pill-card::after { animation: none; } .bottom-nav-item.is-active { transform: none; } .bottom-nav-item.is-active .bottom-nav-icon { animation: none; } }
       `}</style>
 
       {/* ── Navigation ── */}
@@ -743,6 +841,26 @@ export default function Home() {
           </section>
         </div>
       </section>
+
+      {/* Bottom Nav */}
+      <nav className="bottom-pill-nav" aria-label="Primary">
+        <Link href="/" className="bottom-nav-item is-active" aria-current="page">
+          <HomeIcon className="bottom-nav-icon" />
+          <span className="bottom-nav-label">Home</span>
+        </Link>
+        <Link href="/mock-test/index.html" className="bottom-nav-item">
+          <ClipboardList className="bottom-nav-icon" />
+          <span className="bottom-nav-label">Mock</span>
+        </Link>
+        <Link href="#" className="bottom-nav-item" onClick={(event) => event.preventDefault()}>
+          <Play className="bottom-nav-icon" />
+          <span className="bottom-nav-label">Play</span>
+        </Link>
+        <Link href="#" className="bottom-nav-item" onClick={(event) => event.preventDefault()}>
+          <Menu className="bottom-nav-icon" />
+          <span className="bottom-nav-label">MENU</span>
+        </Link>
+      </nav>
 
       {/* ── Subject Boxes ── */}
     </div>
