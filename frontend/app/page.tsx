@@ -93,7 +93,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen relative overflow-x-hidden">
+    <div className="min-h-screen relative overflow-clip">
       <style>{`
         .lower-shell {
           position: relative;
@@ -149,6 +149,9 @@ export default function Home() {
           background: rgba(255, 255, 255, 0.2);
           transform: translateY(-1px);
         }
+        body.has-bottom-nav {
+          padding-bottom: 0 !important;
+        }
         .auth-pill-solid {
           background: linear-gradient(135deg, #22d3ee 0%, #0ea5e9 100%);
           color: #031326;
@@ -161,7 +164,7 @@ export default function Home() {
         }
         .hero-section {
           position: relative;
-          overflow-x: hidden;
+          overflow: clip;
           min-height: 100vh;
           min-height: 100svh;
           color: #f8fafc;
@@ -185,7 +188,7 @@ export default function Home() {
           z-index: 2;
           max-width: 1100px;
           margin: 0 auto;
-          padding: 9.5rem 1.5rem 5.5rem;
+          padding: 9.5rem 1.5rem calc(6.5rem + env(safe-area-inset-bottom));
           display: grid;
           grid-template-columns: minmax(0, 1fr);
           align-items: center;
@@ -287,13 +290,20 @@ export default function Home() {
           text-align: center;
           border-radius: 999px;
           min-height: 68px;
-          background: rgba(255, 255, 255, 0.16);
-          border: 1.5px solid rgba(255, 255, 255, 0.45);
-          box-shadow: 0 16px 32px rgba(8, 120, 160, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.65);
+          background: rgba(255, 255, 255, 0.85);
+          backdrop-filter: blur(20px);
+          border: 1.5px solid rgba(255, 255, 255, 0.95);
+          box-shadow: 0 12px 28px rgba(2, 6, 14, 0.15), inset 0 2px 0 rgba(255, 255, 255, 1);
+          transition: transform 200ms ease, box-shadow 200ms ease, filter 200ms ease;
+        }
+        .liquid-subject:hover {
+          transform: translateY(-2px);
+          background: rgba(255, 255, 255, 0.95);
+          box-shadow: 0 16px 36px rgba(2, 6, 14, 0.2), inset 0 2px 0 rgba(255, 255, 255, 1);
         }
         .liquid-subject .btn-label {
-          color: #f8fafc;
-          text-shadow: 0 2px 10px rgba(2, 8, 18, 0.55);
+          color: #0f172a;
+          font-weight: 800;
           font-size: clamp(0.95rem, 1.8vw, 1.15rem);
           letter-spacing: 0.02em;
         }
@@ -445,7 +455,7 @@ export default function Home() {
         @media (max-width: 820px) { .pill-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 420px; gap: 0.8rem; padding: 0; } .pill-card { min-height: 60px; padding: 7px 14px; } .pill-content { font-size: clamp(0.85rem,3.8vw,1rem); } .liquid-grid { max-width: 420px; gap: 0.8rem; } .liquid-subject { min-height: 60px; padding: 10px 14px; } }
         @media (max-width: 640px) {
           .hero-section { min-height: 100vh; min-height: 100svh; background-position: center top; }
-          .hero-content { min-height: 100vh; min-height: 100svh; padding-top: 7.75rem; padding-bottom: 3rem; text-align: center; }
+          .hero-content { min-height: 100vh; min-height: 100svh; padding-top: 7.75rem; padding-bottom: calc(5.5rem + env(safe-area-inset-bottom)); text-align: center; }
           .hero-kicker { letter-spacing: 0.24em; font-size: 0.68rem; justify-content: center; }
           .hero-title { font-size: clamp(2rem, 9vw, 3rem); }
           .hero-copy { margin: 0 auto 1.6rem; }

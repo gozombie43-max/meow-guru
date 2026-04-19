@@ -144,7 +144,7 @@ export default function MathematicsPage() {
           background: radial-gradient(circle at 20% 10%, #f1f5ff 0%, #e7ecf8 40%, #dfe5f3 100%);
           color: #0f172a;
           font-family: "Outfit", "Poppins", "Segoe UI", sans-serif;
-          overflow-x: hidden;
+          overflow: clip;
           --math-header-bg: rgba(255, 255, 255, 0.78);
           --math-header-border: rgba(15, 23, 42, 0.08);
           --math-header-text: #0f172a;
