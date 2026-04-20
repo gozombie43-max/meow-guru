@@ -7,7 +7,7 @@ import { z } from 'zod';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import api from '@/lib/axios';
+import api, { setStoredRefreshToken } from '@/lib/axios';
 import { useState } from 'react';
 
 const schema = z.object({
@@ -36,6 +36,7 @@ export default function LoginPage() {
     setError('');
     try {
       const res = await api.post('/auth/login', data);
+      if (res.data.refreshToken) setStoredRefreshToken(res.data.refreshToken);
       await login(res.data.token);
       router.push('/dashboard');
     } catch (err: unknown) {

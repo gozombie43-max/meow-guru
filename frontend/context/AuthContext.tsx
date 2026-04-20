@@ -1,7 +1,12 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import api from '@/lib/axios';
+import api, {
+  AUTH_TOKEN_CHANGED_EVENT,
+  AUTH_TOKEN_STORAGE_KEY,
+  getStoredRefreshToken,
+  setStoredRefreshToken,
+} from '@/lib/axios';
 
 const isAuthError = (err: unknown) => {
   const status = (err as { response?: { status?: number } })?.response?.status;
@@ -71,24 +76,33 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const persistToken = useCallback((t: string | null) => {
     setToken(t);
     if (typeof window !== 'undefined') {
-      if (t) localStorage.setItem('token', t);
-      else localStorage.removeItem('token');
+      if (t) localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, t);
+      else localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
     }
   }, []);
+
+  const refreshAccessToken = useCallback(async () => {
+    const refreshToken = getStoredRefreshToken();
+    const { data } = await api.post('/auth/refresh', refreshToken ? { refreshToken } : {});
+    persistToken(data.token);
+    if (data.refreshToken) setStoredRefreshToken(data.refreshToken);
+    return data.token as string;
+  }, [persistToken, getStoredRefreshToken, setStoredRefreshToken]);
 
   const fetchUser = useCallback(async (t?: string) => {
     const res = await api.get('/users/me', t ? {
       headers: { Authorization: `Bearer ${t}` },
     } : undefined);
     setUser(res.data);
-  }, []);
+  }, [setStoredRefreshToken]);
 
   const clearAuthState = useCallback(() => {
     setToken(null);
     setUser(null);
     if (typeof window !== 'undefined') {
-      localStorage.removeItem('token');
+      localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
     }
+    setStoredRefreshToken(null);
   }, []);
 
   const logout = useCallback(async () => {
@@ -105,25 +119,58 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       await fetchUser(t);
     } catch (err) {
       if (isAuthError(err)) {
-        clearAuthState();
+        try {
+          const refreshedToken = await refreshAccessToken();
+          await fetchUser(refreshedToken);
+        } catch {
+          clearAuthState();
+          throw err;
+        }
+        return;
       }
       throw err;
     } finally {
       setLoading(false);
     }
-  }, [clearAuthState, fetchUser, persistToken]);
+  }, [clearAuthState, fetchUser, persistToken, refreshAccessToken]);
 
   const refreshUser = useCallback(async () => {
-    const stored = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    const stored = typeof window !== 'undefined' ? localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) : null;
     if (!stored) return;
     try {
       await fetchUser(stored);
     } catch (err) {
       if (isAuthError(err)) {
-        clearAuthState();
+        try {
+          const refreshedToken = await refreshAccessToken();
+          await fetchUser(refreshedToken);
+        } catch {
+          clearAuthState();
+        }
       }
     }
-  }, [clearAuthState, fetchUser]);
+  }, [clearAuthState, fetchUser, refreshAccessToken]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const syncToken = (event?: Event) => {
+      if (event instanceof CustomEvent) {
+        setToken((event.detail as string | null) ?? null);
+        return;
+      }
+
+      setToken(localStorage.getItem(AUTH_TOKEN_STORAGE_KEY));
+    };
+
+    window.addEventListener(AUTH_TOKEN_CHANGED_EVENT, syncToken as EventListener);
+    window.addEventListener('storage', syncToken);
+
+    return () => {
+      window.removeEventListener(AUTH_TOKEN_CHANGED_EVENT, syncToken as EventListener);
+      window.removeEventListener('storage', syncToken);
+    };
+  }, []);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.location.pathname.startsWith('/auth/callback')) {
@@ -135,7 +182,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const bootstrap = async (attempt = 0) => {
       if (cancelled) return;
-      const stored = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const stored = typeof window !== 'undefined' ? localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) : null;
 
       try {
         setLoading(true);
@@ -143,16 +190,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           persistToken(stored);
           await fetchUser(stored);
         } else {
-          const { data } = await api.post('/auth/refresh');
-          persistToken(data.token);
-          await fetchUser(data.token);
+          const refreshedToken = await refreshAccessToken();
+          await fetchUser(refreshedToken);
         }
         if (!cancelled) setLoading(false);
       } catch (err) {
         if (isAuthError(err)) {
-          clearAuthState();
-          if (!cancelled) setLoading(false);
-          return;
+          try {
+            const refreshedToken = await refreshAccessToken();
+            await fetchUser(refreshedToken);
+            if (!cancelled) setLoading(false);
+            return;
+          } catch {
+            clearAuthState();
+            if (!cancelled) setLoading(false);
+            return;
+          }
         }
 
         if (isRetryableError(err) && attempt < 3) {
@@ -170,7 +223,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       cancelled = true;
       if (retryTimer) clearTimeout(retryTimer);
     };
-  }, [clearAuthState, fetchUser, persistToken]);
+  }, [clearAuthState, fetchUser, persistToken, refreshAccessToken]);
 
   return (
     <AuthContext.Provider value={{ user, token, login, logout, refreshUser, loading }}>

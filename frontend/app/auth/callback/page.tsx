@@ -3,7 +3,7 @@
 import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import api from '@/lib/axios';
+import api, { setStoredRefreshToken } from '@/lib/axios';
 
 function CallbackContent() {
   const { login } = useAuth();
@@ -12,12 +12,15 @@ function CallbackContent() {
 
   useEffect(() => {
     const token = params.get('token');
+    const refreshToken = params.get('refreshToken');
+    if (refreshToken) setStoredRefreshToken(refreshToken);
     if (token) {
       login(token)
         .then(() => router.push('/'))
         .catch(async () => {
           try {
             const { data } = await api.post('/auth/refresh');
+            if (data.refreshToken) setStoredRefreshToken(data.refreshToken);
             await login(data.token);
             router.push('/');
           } catch {
@@ -26,7 +29,10 @@ function CallbackContent() {
         });
     } else {
       api.post('/auth/refresh')
-        .then(({ data }) => login(data.token))
+        .then(({ data }) => {
+          if (data.refreshToken) setStoredRefreshToken(data.refreshToken);
+          return login(data.token);
+        })
         .then(() => router.push('/'))
         .catch(() => router.push('/login'));
     }

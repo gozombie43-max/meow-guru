@@ -17,12 +17,38 @@ const isProd = process.env.NODE_ENV === 'production'
   || process.env.RENDER === 'true'
   || Boolean(process.env.RENDER_EXTERNAL_URL);
 
+const refreshTokenMode = process.env.REFRESH_TOKEN_MODE || 'cookie';
+const sendRefreshTokenInBody = refreshTokenMode === 'body' || refreshTokenMode === 'both';
+const setRefreshCookie = refreshTokenMode === 'cookie' || refreshTokenMode === 'both';
+
 const cookieOptions = {
   httpOnly: true,
   secure:   isProd,
   sameSite: isProd ? 'none' : 'lax',
+  path:     '/',
   maxAge:   365 * 24 * 60 * 60 * 1000,
 };
+
+const getRefreshTokenFromRequest = (req) => {
+  const headerToken = req.headers['x-refresh-token'];
+  const bodyToken = req.body?.refreshToken;
+
+  if (req.cookies?.refreshToken) return req.cookies.refreshToken;
+  if (Array.isArray(headerToken)) return headerToken[0];
+  if (typeof headerToken === 'string') return headerToken;
+  if (typeof bodyToken === 'string') return bodyToken;
+  return null;
+};
+
+const applyRefreshToken = (res, refreshToken) => {
+  if (setRefreshCookie) {
+    res.cookie('refreshToken', refreshToken, cookieOptions);
+  }
+};
+
+const withRefreshToken = (payload, refreshToken) => (
+  sendRefreshTokenInBody ? { ...payload, refreshToken } : payload
+);
 
 // ── POST /auth/register ─────────────────────────────────
 router.post('/register', async (req, res) => {
@@ -59,12 +85,12 @@ router.post('/register', async (req, res) => {
     const token        = signToken({ id: user.id, email: user.email, name: user.name });
     const refreshToken = signRefreshToken({ id: user.id, email: user.email, name: user.name });
 
-    res.cookie('refreshToken', refreshToken, cookieOptions);
-    res.status(201).json({
+    applyRefreshToken(res, refreshToken);
+    res.status(201).json(withRefreshToken({
       message: 'Registered ✅',
       token,
       user: { id: user.id, name: user.name, email: user.email },
-    });
+    }, refreshToken));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -79,33 +105,40 @@ router.post('/login', (req, res, next) => {
     const token        = signToken({ id: user.id, email: user.email, name: user.name });
     const refreshToken = signRefreshToken({ id: user.id, email: user.email, name: user.name });
 
-    res.cookie('refreshToken', refreshToken, cookieOptions);
-    res.json({
+    applyRefreshToken(res, refreshToken);
+    res.json(withRefreshToken({
       message: 'Logged in ✅',
       token,
       user: { id: user.id, name: user.name, email: user.email },
-    });
+    }, refreshToken));
   })(req, res, next);
 });
 
 // ── POST /auth/refresh ──────────────────────────────────
 router.post('/refresh', (req, res) => {
-  const token = req.cookies.refreshToken;
+  const token = getRefreshTokenFromRequest(req);
   if (!token) return res.status(401).json({ error: 'Not logged in' });
 
   try {
     const decoded = verifyRefreshToken(token);
-    const newToken = signToken({ id: decoded.id, email: decoded.email, name: decoded.name });
-    res.json({ token: newToken });
+    const payload = { id: decoded.id, email: decoded.email, name: decoded.name };
+    const newToken = signToken(payload);
+    const newRefreshToken = signRefreshToken(payload);
+    applyRefreshToken(res, newRefreshToken);
+    res.json(withRefreshToken({ token: newToken }, newRefreshToken));
   } catch {
-    res.clearCookie('refreshToken');
+    if (setRefreshCookie) {
+      res.clearCookie('refreshToken', cookieOptions);
+    }
     res.status(403).json({ error: 'Session expired, please login again' });
   }
 });
 
 // ── POST /auth/logout ───────────────────────────────────
 router.post('/logout', (req, res) => {
-  res.clearCookie('refreshToken');
+  if (setRefreshCookie) {
+    res.clearCookie('refreshToken', cookieOptions);
+  }
   res.json({ message: 'Logged out ✅' });
 });
 
@@ -121,8 +154,13 @@ router.get('/google/callback',
     const token        = signToken({ id: req.user.id, email: req.user.email, name: req.user.name });
     const refreshToken = signRefreshToken({ id: req.user.id, email: req.user.email, name: req.user.name });
 
-    res.cookie('refreshToken', refreshToken, cookieOptions);
-    res.redirect(`${process.env.FRONTEND_URL}/auth/callback?token=${token}`);
+    applyRefreshToken(res, refreshToken);
+    const encodedToken = encodeURIComponent(token);
+    const encodedRefresh = encodeURIComponent(refreshToken);
+    const redirectUrl = sendRefreshTokenInBody
+      ? `${process.env.FRONTEND_URL}/auth/callback?token=${encodedToken}&refreshToken=${encodedRefresh}`
+      : `${process.env.FRONTEND_URL}/auth/callback?token=${encodedToken}`;
+    res.redirect(redirectUrl);
   }
 );
 
