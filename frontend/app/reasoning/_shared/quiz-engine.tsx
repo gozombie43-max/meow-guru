@@ -2917,22 +2917,22 @@ export default function ReasoningQuizEngine({
                 </button>
               );
             })}
-          </div>
 
-          {canViewSolution && (
-            <button
-              type="button"
-              onClick={openSolution}
-              className="mt-1 inline-flex h-12 w-full items-center justify-center rounded-2xl border px-5 text-sm font-semibold transition-colors"
-              style={{
-                background: "var(--quiz-accent-bg)",
-                borderColor: "var(--quiz-accent-border)",
-                color: "var(--quiz-accent-text)",
-              }}
-            >
-              View Solution
-            </button>
-          )}
+            {canViewSolution && (
+              <button
+                type="button"
+                onClick={openSolution}
+                className="mt-1 inline-flex h-12 w-full items-center justify-center rounded-2xl border px-5 text-sm font-semibold transition-colors"
+                style={{
+                  background: "var(--quiz-accent-bg)",
+                  borderColor: "var(--quiz-accent-border)",
+                  color: "var(--quiz-accent-text)",
+                }}
+              >
+                View Solution
+              </button>
+            )}
+          </div>
         </section>
       </main>
 
