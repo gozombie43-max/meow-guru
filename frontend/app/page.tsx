@@ -752,8 +752,9 @@ export default function Home() {
         }
         @media (max-width: 640px) {
           .recent-header {
-            flex-direction: column;
-            align-items: flex-start;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
           }
           .recent-section {
             width: 100%;
