@@ -429,6 +429,10 @@ function DashboardContent() {
           padding-bottom: max(24px, env(safe-area-inset-bottom));
         }
 
+        body.has-bottom-nav .dashboard-shell .dashboard-frame {
+          padding-bottom: calc(max(24px, env(safe-area-inset-bottom)) + 84px);
+        }
+
         .dashboard-shell .dashboard-top,
         .dashboard-shell .dashboard-bottom {
           flex: 0 0 auto;
