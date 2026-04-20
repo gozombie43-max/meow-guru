@@ -3,6 +3,17 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import api from '@/lib/axios';
 
+const isAuthError = (err: unknown) => {
+  const status = (err as { response?: { status?: number } })?.response?.status;
+  return status === 401 || status === 403;
+};
+
+const isRetryableError = (err: unknown) => {
+  const status = (err as { response?: { status?: number } })?.response?.status;
+  if (status === undefined) return true; // network error or no response
+  return status >= 500;
+};
+
 interface RecentQuizEntry {
   quizKey: string;
   title: string;
@@ -57,6 +68,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [token, setToken]     = useState<string | null>(null);
   const [loading, setLoading] = useState(true); // start true to avoid flash
 
+  const persistToken = useCallback((t: string | null) => {
+    setToken(t);
+    if (typeof window !== 'undefined') {
+      if (t) localStorage.setItem('token', t);
+      else localStorage.removeItem('token');
+    }
+  }, []);
+
+  const fetchUser = useCallback(async (t?: string) => {
+    const res = await api.get('/users/me', t ? {
+      headers: { Authorization: `Bearer ${t}` },
+    } : undefined);
+    setUser(res.data);
+  }, []);
+
   const clearAuthState = useCallback(() => {
     setToken(null);
     setUser(null);
@@ -74,56 +100,77 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const login = useCallback(async (t: string) => {
     setLoading(true);
-    setToken(t);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('token', t);
-    }
+    persistToken(t);
     try {
-      const res = await api.get('/users/me', {
-        headers: { Authorization: `Bearer ${t}` },
-      });
-      setUser(res.data);
+      await fetchUser(t);
     } catch (err) {
-      clearAuthState();
+      if (isAuthError(err)) {
+        clearAuthState();
+      }
       throw err;
     } finally {
       setLoading(false);
     }
-  }, [clearAuthState]);
+  }, [clearAuthState, fetchUser, persistToken]);
 
   const refreshUser = useCallback(async () => {
     const stored = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     if (!stored) return;
     try {
-      const res = await api.get('/users/me');
-      setUser(res.data);
-    } catch { /* ignore */ }
-  }, []);
+      await fetchUser(stored);
+    } catch (err) {
+      if (isAuthError(err)) {
+        clearAuthState();
+      }
+    }
+  }, [clearAuthState, fetchUser]);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.location.pathname.startsWith('/auth/callback')) {
       setLoading(false);
       return;
     }
-    const stored = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    if (stored) {
-      login(stored).catch(() => {
-        api.post('/auth/refresh')
-          .then(({ data }) => login(data.token))
-          .catch(() => {
-            clearAuthState();
-            setLoading(false);
-          });
-      });
-    } else {
-      api.post('/auth/refresh')
-        .then(({ data }) => login(data.token))
-        .catch(() => {
+    let cancelled = false;
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const bootstrap = async (attempt = 0) => {
+      if (cancelled) return;
+      const stored = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+
+      try {
+        setLoading(true);
+        if (stored) {
+          persistToken(stored);
+          await fetchUser(stored);
+        } else {
+          const { data } = await api.post('/auth/refresh');
+          persistToken(data.token);
+          await fetchUser(data.token);
+        }
+        if (!cancelled) setLoading(false);
+      } catch (err) {
+        if (isAuthError(err)) {
           clearAuthState();
-          setLoading(false);
-        });
-    }
-  }, [login, clearAuthState]);
+          if (!cancelled) setLoading(false);
+          return;
+        }
+
+        if (isRetryableError(err) && attempt < 3) {
+          retryTimer = setTimeout(() => bootstrap(attempt + 1), 1500 * (attempt + 1));
+          return;
+        }
+
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    bootstrap();
+
+    return () => {
+      cancelled = true;
+      if (retryTimer) clearTimeout(retryTimer);
+    };
+  }, [clearAuthState, fetchUser, persistToken]);
 
   return (
     <AuthContext.Provider value={{ user, token, login, logout, refreshUser, loading }}>

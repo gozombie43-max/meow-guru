@@ -33,9 +33,12 @@ api.interceptors.response.use(
         // Retry original request with new token
         original.headers.Authorization = `Bearer ${data.token}`;
         return axios(original);
-      } catch {
-        // Refresh failed — clear auth state and let AuthContext handle navigation
-        localStorage.removeItem('token');
+      } catch (refreshErr) {
+        // Refresh failed — clear token only for real auth failures
+        const status = (refreshErr as { response?: { status?: number } })?.response?.status;
+        if ((status === 401 || status === 403) && typeof window !== 'undefined') {
+          localStorage.removeItem('token');
+        }
       }
     }
     return Promise.reject(error);
