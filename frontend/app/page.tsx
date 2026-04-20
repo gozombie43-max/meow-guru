@@ -106,7 +106,7 @@ export default function Home() {
       <style>{`
         .lower-shell {
           position: relative;
-          padding: clamp(2.75rem, 6vw, 4.5rem) 0 clamp(3.5rem, 7vw, 5rem);
+          padding: clamp(2rem, 4.8vw, 3.6rem) 0 clamp(3.5rem, 7vw, 5rem);
           background: transparent;
         }
         .subject-panel {
@@ -207,7 +207,7 @@ export default function Home() {
           z-index: 2;
           max-width: 1100px;
           margin: 0 auto;
-          padding: 9.5rem 1.5rem calc(6.5rem + env(safe-area-inset-bottom));
+          padding: 8.25rem 1.5rem calc(6.5rem + env(safe-area-inset-bottom));
           display: grid;
           grid-template-columns: minmax(0, 1fr);
           align-items: center;
@@ -513,7 +513,7 @@ export default function Home() {
         @media (max-width: 820px) { .pill-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 420px; gap: 0.8rem; padding: 0; } .pill-card { min-height: 60px; padding: 7px 14px; } .pill-content { font-size: clamp(0.85rem,3.8vw,1rem); } .ios-card-grid { max-width: 420px; gap: 0.8rem; } .ios-action-card { min-height: 70px; padding: 0.8rem 0.9rem; border-radius: 20px; } .ios-card-accent { height: 30px; } }
         @media (max-width: 640px) {
           .hero-section { min-height: 100vh; min-height: 100svh; background-position: center top; }
-          .hero-content { min-height: 100vh; min-height: 100svh; padding-top: 7.75rem; padding-bottom: calc(5.5rem + env(safe-area-inset-bottom)); text-align: center; }
+          .hero-content { min-height: 100vh; min-height: 100svh; padding-top: 6.75rem; padding-bottom: calc(5.5rem + env(safe-area-inset-bottom)); text-align: center; }
           .hero-kicker { letter-spacing: 0.24em; font-size: 0.68rem; justify-content: center; }
           .hero-title { font-size: clamp(2rem, 9vw, 3rem); }
           .hero-copy { margin: 0 auto 1.6rem; }
@@ -756,7 +756,6 @@ export default function Home() {
                   </span>
                   <span className="ios-card-chevron" aria-hidden="true">›</span>
                 </Link>
-                <p className="battle-credit">Developed by Gurucharan Murmu</p>
                 <div className="recent-section">
                   <div className="recent-header">
                     <h3 className="recent-title">Recent Quizzes</h3>
