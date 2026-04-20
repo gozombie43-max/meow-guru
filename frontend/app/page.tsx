@@ -154,6 +154,8 @@ export default function Home() {
           font-weight: 600;
           font-size: 0.95rem;
           letter-spacing: 0.01em;
+          line-height: 1;
+          white-space: nowrap;
           transition: transform 200ms ease, box-shadow 200ms ease, background 200ms ease, color 200ms ease;
         }
         .auth-pill-outline {
@@ -517,7 +519,7 @@ export default function Home() {
           .hero-copy { margin: 0 auto 1.6rem; }
           .hero-actions { flex-direction: column; align-items: center; }
           .hero-btn { width: min(86vw, 320px); }
-          .auth-pill { padding: 6px 14px; font-size: 0.82rem; }
+          .auth-pill { padding: 6px 12px; font-size: 0.8rem; }
           .nav-brand { font-size: 1rem; }
           .guru-neon { letter-spacing: 0.05em; font-size: 1.5rem; }
           .guru-neon::before { text-shadow: -1px -1px 3px rgba(255,255,255,0.9); }
@@ -672,10 +674,7 @@ export default function Home() {
 
       {/* ── Navigation ── */}
       <nav className={`fixed top-0 left-0 right-0 z-50 glass hero-nav ${isNavScrolled ? "nav-scrolled" : ""}`}>
-        <div
-          className="w-full h-14 sm:h-16 flex items-center justify-between gap-3"
-          style={{ paddingLeft: "1cm", paddingRight: "1cm" }}
-        >
+        <div className="w-full h-14 sm:h-16 flex items-center justify-between gap-3 px-4 sm:px-6 md:px-10">
           <div className="flex items-center gap-2.5">
             <span className="text-base sm:text-2xl font-extrabold tracking-wide font-sans text-white whitespace-nowrap leading-none nav-brand">
               STUDY WITH GURU
@@ -683,7 +682,7 @@ export default function Home() {
           </div>
 
           {/* ── Auth buttons in navbar ── */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {user ? (
               <>
                 <span className="text-sm text-slate-200 hidden sm:block">Hi, {user.name.split(' ')[0]}</span>
