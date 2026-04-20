@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 interface Subject {
   title: string;
@@ -55,6 +55,9 @@ export default function Home() {
   const { user, logout, refreshUser } = useAuth();
   const router = useRouter();
   const [isNavScrolled, setIsNavScrolled] = useState(false);
+  const recentTrackRef = useRef<HTMLDivElement | null>(null);
+  const [activeRecentIndex, setActiveRecentIndex] = useState(0);
+  const activeRecentIndexRef = useRef(0);
 
   useEffect(() => {
     if (!user) return;
@@ -96,10 +99,57 @@ export default function Home() {
       .slice(0, 4);
   }, [user?.recentQuizzes]);
 
+  useEffect(() => {
+    activeRecentIndexRef.current = 0;
+    setActiveRecentIndex(0);
+    const track = recentTrackRef.current;
+    if (track) {
+      track.scrollTo({ left: 0, behavior: "auto" });
+    }
+  }, [recentQuizzes.length]);
+
+  const handleRecentScroll = () => {
+    const track = recentTrackRef.current;
+    if (!track) return;
+    const cards = Array.from(track.querySelectorAll<HTMLElement>(".recent-card"));
+    if (!cards.length) return;
+    const center = track.scrollLeft + track.clientWidth / 2;
+    let nextIndex = 0;
+    let nearest = Number.POSITIVE_INFINITY;
+
+    cards.forEach((card, index) => {
+      const cardCenter = card.offsetLeft + card.offsetWidth / 2;
+      const distance = Math.abs(cardCenter - center);
+      if (distance < nearest) {
+        nearest = distance;
+        nextIndex = index;
+      }
+    });
+
+    if (nextIndex !== activeRecentIndexRef.current) {
+      activeRecentIndexRef.current = nextIndex;
+      setActiveRecentIndex(nextIndex);
+    }
+  };
+
+  const handleRecentDotClick = (index: number) => {
+    const track = recentTrackRef.current;
+    if (!track) return;
+    const cards = track.querySelectorAll<HTMLElement>(".recent-card");
+    const target = cards[index];
+    if (!target) return;
+    target.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+  };
+
   const handleLogout = () => {
     logout();
     router.push('/');
   };
+
+  const activeRecentSafeIndex = Math.min(
+    activeRecentIndex,
+    Math.max(0, recentQuizzes.length - 1)
+  );
 
   return (
     <div className="min-h-screen relative overflow-clip">
@@ -513,7 +563,8 @@ export default function Home() {
         @media (max-width: 820px) { .pill-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 420px; gap: 0.8rem; padding: 0; } .pill-card { min-height: 60px; padding: 7px 14px; } .pill-content { font-size: clamp(0.85rem,3.8vw,1rem); } .ios-card-grid { max-width: 420px; gap: 0.8rem; } .ios-action-card { min-height: 70px; padding: 0.8rem 0.9rem; border-radius: 20px; } .ios-card-accent { height: 30px; } }
         @media (max-width: 640px) {
           .hero-section { min-height: 100vh; min-height: 100svh; background-position: center top; }
-          .hero-content { min-height: 100vh; min-height: 100svh; padding-top: 6.75rem; padding-bottom: calc(5.5rem + env(safe-area-inset-bottom)); text-align: center; }
+          .hero-content { min-height: 100vh; min-height: 100svh; padding-top: 5.5rem; padding-bottom: calc(5.5rem + env(safe-area-inset-bottom)); text-align: center; }
+          .lower-shell { padding-top: 1.25rem; }
           .hero-kicker { letter-spacing: 0.24em; font-size: 0.68rem; justify-content: center; }
           .hero-title { font-size: clamp(2rem, 9vw, 3rem); }
           .hero-copy { margin: 0 auto 1.6rem; }
@@ -590,10 +641,22 @@ export default function Home() {
           text-align: center;
           padding: 1rem 0 0.2rem;
         }
-        .recent-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        .recent-carousel {
+          position: relative;
+        }
+        .recent-track {
+          display: flex;
           gap: 1rem;
+          overflow-x: auto;
+          scroll-snap-type: x mandatory;
+          scroll-behavior: smooth;
+          padding: 0.2rem 0.25rem 0.85rem;
+          margin: 0 -0.25rem;
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: none;
+        }
+        .recent-track::-webkit-scrollbar {
+          display: none;
         }
         .recent-card {
           display: flex;
@@ -605,6 +668,9 @@ export default function Home() {
           border: 1px solid rgba(255, 255, 255, 0.2);
           box-shadow: 0 14px 30px rgba(7, 15, 35, 0.35);
           transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+          flex: 0 0 clamp(240px, 78vw, 360px);
+          scroll-snap-align: center;
+          scroll-snap-stop: always;
         }
         .recent-card:hover {
           transform: translateY(-3px);
@@ -660,6 +726,30 @@ export default function Home() {
           font-weight: 600;
           color: #7dd3fc;
         }
+        .recent-dots {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.45rem;
+          margin-top: 0.4rem;
+        }
+        .recent-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 999px;
+          background: rgba(226, 244, 255, 0.35);
+          border: none;
+          padding: 0;
+          cursor: pointer;
+          opacity: 0.65;
+          transition: width 200ms ease, background 200ms ease, opacity 200ms ease, box-shadow 200ms ease;
+        }
+        .recent-dot.is-active {
+          width: 22px;
+          background: #7dd3fc;
+          opacity: 1;
+          box-shadow: 0 0 14px rgba(125, 211, 252, 0.55);
+        }
         @media (max-width: 640px) {
           .recent-header {
             flex-direction: column;
@@ -669,7 +759,7 @@ export default function Home() {
             width: 100%;
           }
         }
-        @media (prefers-reduced-motion: reduce) { .pill-card { animation: none; transform: none; opacity: 1; transition: none; } .pill-card::before, .pill-card::after { animation: none; } }
+        @media (prefers-reduced-motion: reduce) { .pill-card { animation: none; transform: none; opacity: 1; transition: none; } .pill-card::before, .pill-card::after { animation: none; } .recent-track { scroll-behavior: auto; } }
       `}</style>
 
       {/* ── Navigation ── */}
@@ -772,54 +862,84 @@ export default function Home() {
                       No recent quizzes yet. Start one to see it here.
                     </p>
                   ) : (
-                    <div className="recent-grid">
-                      {recentQuizzes.map((entry) => {
-                        const meta =
-                          SUBJECT_META[
-                            entry.subject as keyof typeof SUBJECT_META
-                          ] || SUBJECT_META.default;
-                        const submittedCount =
-                          entry.submittedQuestions?.length ?? Math.max(entry.currentIndex ?? 0, 0);
-                        const total = entry.totalQuestions ?? 0;
-                        const progress =
-                          total > 0
-                            ? Math.round((submittedCount / total) * 100)
-                            : 0;
-                        const resumeHref = entry.mode
-                          ? `${entry.href}?mode=${entry.mode}&resume=1`
-                          : `${entry.href}?resume=1`;
-                        const currentLabel =
-                          total > 0
-                            ? `Q${Math.min((entry.currentIndex ?? 0) + 1, total)}`
-                            : "your last question";
-                        return (
-                          <Link key={entry.quizKey} href={resumeHref} className="recent-card">
-                            <div className="recent-card-top">
-                              <span
-                                className="recent-tag"
-                                style={{ background: meta.badge, color: meta.text }}
-                              >
-                                {meta.label}
-                              </span>
-                              <span className="recent-progress">
-                                {total > 0 ? `${submittedCount}/${total}` : `${submittedCount}+`}
-                              </span>
-                            </div>
-                            <div className="recent-card-title">{entry.title}</div>
-                            <div className="recent-card-sub">
-                              {entry.status === "completed"
-                                ? "Completed"
-                                : `Continue from ${currentLabel}`}
-                            </div>
-                            <div className="recent-bar">
-                              <span style={{ width: `${progress}%`, background: meta.accent }} />
-                            </div>
-                            <div className="recent-action">
-                              {entry.status === "completed" ? "Review →" : "Continue →"}
-                            </div>
-                          </Link>
-                        );
-                      })}
+                    <div className="recent-carousel">
+                      <div
+                        className="recent-track"
+                        ref={recentTrackRef}
+                        onScroll={handleRecentScroll}
+                        role="list"
+                      >
+                        {recentQuizzes.map((entry) => {
+                          const meta =
+                            SUBJECT_META[
+                              entry.subject as keyof typeof SUBJECT_META
+                            ] || SUBJECT_META.default;
+                          const submittedCount =
+                            entry.submittedQuestions?.length ?? Math.max(entry.currentIndex ?? 0, 0);
+                          const total = entry.totalQuestions ?? 0;
+                          const progress =
+                            total > 0
+                              ? Math.round((submittedCount / total) * 100)
+                              : 0;
+                          const resumeHref = entry.mode
+                            ? `${entry.href}?mode=${entry.mode}&resume=1`
+                            : `${entry.href}?resume=1`;
+                          const currentLabel =
+                            total > 0
+                              ? `Q${Math.min((entry.currentIndex ?? 0) + 1, total)}`
+                              : "your last question";
+                          return (
+                            <Link
+                              key={entry.quizKey}
+                              href={resumeHref}
+                              className="recent-card"
+                              role="listitem"
+                            >
+                              <div className="recent-card-top">
+                                <span
+                                  className="recent-tag"
+                                  style={{ background: meta.badge, color: meta.text }}
+                                >
+                                  {meta.label}
+                                </span>
+                                <span className="recent-progress">
+                                  {total > 0 ? `${submittedCount}/${total}` : `${submittedCount}+`}
+                                </span>
+                              </div>
+                              <div className="recent-card-title">{entry.title}</div>
+                              <div className="recent-card-sub">
+                                {entry.status === "completed"
+                                  ? "Completed"
+                                  : `Continue from ${currentLabel}`}
+                              </div>
+                              <div className="recent-bar">
+                                <span style={{ width: `${progress}%`, background: meta.accent }} />
+                              </div>
+                              <div className="recent-action">
+                                {entry.status === "completed" ? "Review →" : "Continue →"}
+                              </div>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                      {recentQuizzes.length > 1 ? (
+                        <div className="recent-dots">
+                          {recentQuizzes.map((entry, index) => (
+                            <button
+                              key={entry.quizKey ?? `${entry.subject}-${index}`}
+                              type="button"
+                              aria-label={`Go to recent quiz ${index + 1}`}
+                              aria-current={
+                                index === activeRecentSafeIndex ? "true" : undefined
+                              }
+                              className={`recent-dot ${
+                                index === activeRecentSafeIndex ? "is-active" : ""
+                              }`}
+                              onClick={() => handleRecentDotClick(index)}
+                            />
+                          ))}
+                        </div>
+                      ) : null}
                     </div>
                   )}
                 </div>
