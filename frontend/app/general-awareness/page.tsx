@@ -137,6 +137,9 @@ export default function GeneralAwarenessPage() {
           background: #f5f6f8;
           color: #1f2937;
           font-family: "Poppins", "Segoe UI", "Helvetica Neue", sans-serif;
+          position: relative;
+          overflow: clip;
+          isolation: isolate;
         }
 
         .ga-header {
@@ -192,6 +195,8 @@ export default function GeneralAwarenessPage() {
           max-width: 740px;
           margin: 0 auto;
           padding: 14px 14px 28px;
+          position: relative;
+          z-index: 1;
         }
 
         .search-wrap {
@@ -305,6 +310,117 @@ export default function GeneralAwarenessPage() {
           padding: 18px;
           font-size: 0.9rem;
           box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+        }
+
+        body.theme-dark {
+          background: radial-gradient(circle at 18% 10%, #1c2a52 0%, #0b1328 55%, #070c1a 100%);
+        }
+
+        body.theme-dark .ga-topics-page {
+          --ga-accent: #7ed0ff;
+          --ga-border: rgba(126, 208, 255, 0.2);
+          --ga-surface: rgba(11, 18, 36, 0.92);
+          --ga-ink: #e6edff;
+          --ga-subink: #9aa8c7;
+          background: transparent;
+          color: var(--ga-ink);
+        }
+
+        body.theme-dark .ga-topics-page::before,
+        body.theme-dark .ga-topics-page::after {
+          content: "";
+          position: absolute;
+          border-radius: 999px;
+          pointer-events: none;
+          z-index: 0;
+        }
+
+        body.theme-dark .ga-topics-page::before {
+          width: 260px;
+          height: 260px;
+          top: -80px;
+          right: -90px;
+          background: radial-gradient(circle, rgba(108, 178, 255, 0.45) 0%, transparent 70%);
+        }
+
+        body.theme-dark .ga-topics-page::after {
+          width: 220px;
+          height: 220px;
+          bottom: -90px;
+          left: -60px;
+          background: radial-gradient(circle, rgba(70, 216, 255, 0.28) 0%, transparent 70%);
+        }
+
+        body.theme-dark .ga-header {
+          background: rgba(8, 14, 30, 0.88);
+          border-bottom: 1px solid var(--ga-border);
+          box-shadow: 0 10px 30px rgba(2, 6, 23, 0.45);
+        }
+
+        body.theme-dark .header-back {
+          color: var(--ga-ink);
+        }
+
+        body.theme-dark .header-back:hover {
+          background: rgba(126, 208, 255, 0.14);
+        }
+
+        body.theme-dark .header-title {
+          color: var(--ga-ink);
+        }
+
+        body.theme-dark .search-icon {
+          color: var(--ga-accent);
+          opacity: 0.85;
+        }
+
+        body.theme-dark .search-input {
+          background: var(--ga-surface);
+          color: var(--ga-ink);
+          box-shadow: 0 14px 30px rgba(2, 6, 23, 0.6), 0 0 0 1px rgba(126, 208, 255, 0.18);
+        }
+
+        body.theme-dark .search-input::placeholder {
+          color: var(--ga-subink);
+        }
+
+        body.theme-dark .search-input:focus {
+          box-shadow: 0 18px 34px rgba(2, 6, 23, 0.72), 0 0 0 2px rgba(126, 208, 255, 0.45);
+        }
+
+        body.theme-dark .topic-card {
+          background: linear-gradient(135deg, rgba(14, 22, 42, 0.95), rgba(10, 16, 34, 0.95));
+          border: 1px solid var(--ga-border);
+          box-shadow: 0 16px 36px rgba(2, 6, 23, 0.65);
+        }
+
+        body.theme-dark .topic-card:hover {
+          box-shadow: 0 20px 40px rgba(2, 6, 23, 0.7);
+        }
+
+        body.theme-dark .topic-card:focus-visible {
+          outline: 2px solid rgba(126, 208, 255, 0.6);
+        }
+
+        body.theme-dark .topic-thumb-wrap {
+          background: rgba(6, 10, 22, 0.6);
+          border: 2px solid rgba(255, 255, 255, 0.14);
+          box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+        }
+
+        body.theme-dark .topic-title {
+          color: var(--ga-ink);
+        }
+
+        body.theme-dark .topic-subtitle {
+          color: var(--ga-subink);
+        }
+
+        body.theme-dark .empty-state {
+          background: rgba(11, 18, 36, 0.92);
+          color: var(--ga-subink);
+          border: 1px solid var(--ga-border);
+          box-shadow: 0 16px 36px rgba(2, 6, 23, 0.6);
         }
 
         @media (min-width: 768px) {
