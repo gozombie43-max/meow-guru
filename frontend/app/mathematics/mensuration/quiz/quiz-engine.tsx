@@ -21,7 +21,7 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { saveRecentQuiz, updateProgress, toggleBookmark } from "@/lib/userApi";
 import { fetchQuestions, type Question as ApiQuestion } from "@/lib/api/questions";
-import { shuffle, type MensurationQuestion, CONCEPTS } from "@/lib/mensuration-questions";
+import { shuffle, type MensurationQuestion } from "@/lib/mensuration-questions";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 type QuizMode = "all" | "concept" | "tier2" | "selection";
@@ -93,8 +93,7 @@ function toMensurationQuestion(question: ApiQuestion, index: number): Mensuratio
   const exam = String(question.exam ?? "");
   const concept =
     String(question.concept ?? question.chapter ?? question.topic ?? "").trim() ||
-    CONCEPTS[0] ||
-    "2D Area & Perimeter";
+    "General";
   const numericId = Number.parseInt(question.id, 10);
   const id = Number.isFinite(numericId) ? numericId : index + 1;
   const rawAnswer = String(question.correctAnswer ?? "").trim();
@@ -576,6 +575,21 @@ export default function MensurationQuizEngine() {
     });
     return ["all", ...Array.from(set).sort((a, b) => a.localeCompare(b))];
   }, [allQuestions]);
+
+  const conceptOptions = useMemo(() => {
+    const set = new Set<string>();
+    allQuestions.forEach((q) => {
+      const concept = String(q.concept || "").trim();
+      if (concept) set.add(concept);
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [allQuestions]);
+
+  useEffect(() => {
+    if (conceptFilter !== "all" && !conceptOptions.includes(conceptFilter)) {
+      setConceptFilter("all");
+    }
+  }, [conceptFilter, conceptOptions]);
 
   const availableCount = useMemo(() => {
     let pool: MensurationQuestion[] = [...allQuestions];
@@ -1257,7 +1271,7 @@ export default function MensurationQuizEngine() {
               >
                 All
               </button>
-              {CONCEPTS.map((c) => {
+              {conceptOptions.map((c) => {
                 const col = CONCEPT_COLOURS[c] ?? { border: "#7C3AED", bg: "#F5F3FF", text: "#5B21B6" };
                 const isActive = conceptFilter === c;
                 return (
@@ -1275,6 +1289,11 @@ export default function MensurationQuizEngine() {
                   </button>
                 );
               })}
+              {conceptOptions.length === 0 && (
+                <span className="px-3 py-2 text-xs font-semibold text-slate-500">
+                  No concepts found in this quiz yet.
+                </span>
+              )}
             </div>
           )}
 
