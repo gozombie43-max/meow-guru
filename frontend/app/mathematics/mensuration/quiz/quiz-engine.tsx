@@ -1,6 +1,7 @@
 "use client";
 
 import RichContent from "@/components/RichContent";
+import MathRenderer from "@/components/MathRenderer";
 import ImageMCQ from "@/components/ImageMCQ";
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useSearchParams } from "next/navigation";
@@ -113,6 +114,7 @@ function toMensurationQuestion(question: ApiQuestion, index: number): Mensuratio
     estimatedTime: difficulty === "easy" ? 40 : difficulty === "hard" ? 80 : 60,
     year: extractYear(exam),
     exam,
+    solution: String(question.solution ?? ""),
     questionType: question.questionType,
     questionImage: question.questionImage,
     optionRegions: question.optionRegions,
@@ -236,6 +238,160 @@ function MathText({ text, className = "" }: { text: string; className?: string }
   }
 
   return <span className={className}>{parts}</span>;
+}
+
+function formatMathBookSolutionLines(solution: string): string[] {
+  const base = solution
+    .replace(/\r\n?/g, "\n")
+    .replace(/\u00a0/g, " ")
+    .replace(/\s*(=>|→)\s*/g, " \\Rightarrow ")
+    .trim();
+
+  if (!base) return [];
+
+  const expandedMath = base.replace(/\\\(([\s\S]*?)\\\)/g, (_match, expr: string) => {
+    const cleanExpr = expr.trim();
+    if (!cleanExpr.includes("\\Rightarrow")) {
+      return `\\(${cleanExpr}\\)`;
+    }
+
+    const chunks = cleanExpr
+      .split(/\s*\\Rightarrow\s*/)
+      .map((part) => part.trim())
+      .filter(Boolean);
+
+    return chunks
+      .map((chunk, index) =>
+        index === 0 ? `\\[${chunk}\\]` : `\\[\\Rightarrow ${chunk}\\]`
+      )
+      .join("\n");
+  });
+
+  const withSentenceBreaks = expandedMath
+    .replace(/\.\s+(?=[A-Z\\])/g, ".\n")
+    .replace(/:\s+(?=[A-Z\\])/g, ":\n")
+    .replace(/\n{3,}/g, "\n\n");
+
+  return withSentenceBreaks
+    .split(/\n+/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
+function SolutionBottomSheet({
+  isOpen,
+  solution,
+  questionNumber,
+  correctOptionIndex,
+  onClose,
+}: {
+  isOpen: boolean;
+  solution: string;
+  questionNumber: number;
+  correctOptionIndex: number;
+  onClose: () => void;
+}) {
+  const solutionLines = useMemo(
+    () => formatMathBookSolutionLines(solution),
+    [solution]
+  );
+  const solutionHasImage = /!\[[^\]]*\]\([^)]+\)/.test(solution);
+  const optionLabel =
+    correctOptionIndex >= 0 && correctOptionIndex < 26
+      ? String.fromCharCode(97 + correctOptionIndex)
+      : "a";
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          className="fixed inset-0 z-[95] bg-slate-900/45"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.28, ease: "easeOut" }}
+          onClick={onClose}
+        >
+          <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Question solution"
+            className="absolute bottom-0 left-0 right-0 mx-auto flex h-[40vh] w-full max-w-3xl flex-col rounded-t-3xl border border-slate-200 bg-white px-5 pt-4 shadow-[0_-16px_44px_rgba(15,23,42,0.35)]"
+            style={{
+              paddingBottom: "calc(env(safe-area-inset-bottom) + 14px)",
+            }}
+            initial={{ y: "108%", opacity: 0.98 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: "108%", opacity: 0.98 }}
+            transition={{
+              type: "spring",
+              stiffness: 180,
+              damping: 26,
+              mass: 0.9,
+            }}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-slate-200" />
+
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-base font-semibold text-slate-800">Worked Solution</h3>
+              <button
+                onClick={onClose}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-700 transition-colors hover:bg-slate-50"
+                aria-label="Close solution"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div
+              className="flex-1 overflow-y-auto rounded-2xl border border-slate-300 bg-[#f7f7f7] px-4 py-3 text-slate-900"
+              style={{
+                fontFamily:
+                  "'Cambria Math', 'STIX Two Text', 'Times New Roman', serif",
+                fontSize: 17,
+                lineHeight: 1.7,
+                textAlign: "left",
+                paddingLeft: "0.3cm",
+              }}
+            >
+              {solutionLines.length > 0 ? (
+                <div className="space-y-1.5">
+                  <p className="mb-1 text-[18px] font-semibold text-slate-950">
+                    Sol.{questionNumber}.({optionLabel})
+                  </p>
+
+                  {solutionHasImage ? (
+                    <RichContent text={solution} />
+                  ) : (
+                    solutionLines.map((line, index) => {
+                      const isDisplayEquation = /^\\\[[\s\S]*\\\]$/.test(line);
+                      return (
+                        <div
+                          key={`worked-line-${index}`}
+                          className={isDisplayEquation ? "text-center" : ""}
+                          style={{
+                            marginTop: isDisplayEquation ? "0.15rem" : "0",
+                            marginBottom: isDisplayEquation ? "0.15rem" : "0",
+                          }}
+                        >
+                          <MathRenderer text={line} className="leading-relaxed" />
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              ) : (
+                <p className="text-sm text-slate-500">
+                  Solution is not available for this question yet.
+                </p>
+              )}
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
 }
 
 // ── Question status helpers ──────────────────────────────────────────────────
@@ -490,6 +646,7 @@ export default function MensurationQuizEngine() {
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
   const [submittedQuestions, setSubmittedQuestions] = useState<Set<number>>(new Set());
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  const [isSolutionOpen, setIsSolutionOpen] = useState(false);
   const [conceptFilter, setConceptFilter] = useState<string>("all");
   const [examFilter, setExamFilter] = useState<string>("");
   const [started, setStarted] = useState(false);
@@ -625,6 +782,7 @@ export default function MensurationQuizEngine() {
       setSelectedAnswers({});
       setSubmittedQuestions(new Set());
       setIsPaletteOpen(false);
+      setIsSolutionOpen(false);
       setStreak(0);
       setShowAnalytics(false);
       setStarted(false);
@@ -667,6 +825,7 @@ export default function MensurationQuizEngine() {
     setSelectedAnswers({});
     setSubmittedQuestions(new Set());
     setIsPaletteOpen(false);
+    setIsSolutionOpen(false);
     setStreak(0);
     setBestStreak(0);
     setShowAnalytics(false);
@@ -738,6 +897,7 @@ export default function MensurationQuizEngine() {
       setSubmitted(false);
     }
     setSubmitError("");
+    setIsSolutionOpen(false);
     if (!submittedSet.has(safeIndex)) {
       startTimer();
     }
@@ -773,6 +933,7 @@ export default function MensurationQuizEngine() {
       setSubmitted(false);
     }
     setSubmitError("");
+    setIsSolutionOpen(false);
     if (!submittedQuestions.has(targetIndex)) {
       startTimer();
     }
@@ -892,6 +1053,7 @@ export default function MensurationQuizEngine() {
         setSubmitted(false);
       }
       setSubmitError("");
+      setIsSolutionOpen(false);
       if (started && !showAnalytics && !submittedQuestions.has(safeIndex)) {
         startTimer();
       }
@@ -910,6 +1072,8 @@ export default function MensurationQuizEngine() {
 
   const openPalette = useCallback(() => setIsPaletteOpen(true), []);
   const closePalette = useCallback(() => setIsPaletteOpen(false), []);
+  const openSolution = useCallback(() => setIsSolutionOpen(true), []);
+  const closeSolution = useCallback(() => setIsSolutionOpen(false), []);
 
   const adaptDifficulty = useCallback(
     (correct: boolean) => {
@@ -1064,6 +1228,7 @@ export default function MensurationQuizEngine() {
     } else {
       stopTimer();
       refreshUser();
+      setIsSolutionOpen(false);
       setShowAnalytics(true);
     }
   }
@@ -1078,6 +1243,7 @@ export default function MensurationQuizEngine() {
     setSelectedAnswers({});
     setSubmittedQuestions(new Set());
     closePalette();
+    setIsSolutionOpen(false);
     setStreak(0);
     setBestStreak(0);
     setShowAnalytics(false);
@@ -1482,6 +1648,7 @@ export default function MensurationQuizEngine() {
 
   const isCurrentSubmitted = submittedQuestions.has(currentIndex);
   const canSubmit = selectedAnswer !== null && !isCurrentSubmitted;
+  const canViewSolution = isCurrentSubmitted;
 
   return (
     <div className="min-h-screen relative overflow-x-hidden" style={{ background: "linear-gradient(165deg, #ecf4ff 0%, #eef8ff 38%, #f7fbff 100%)", fontFamily: "Poppins, Inter, 'Segoe UI', sans-serif" }}>
@@ -1668,8 +1835,26 @@ export default function MensurationQuizEngine() {
               );
             })
           )}
+
+          {canViewSolution && (
+            <button
+              type="button"
+              onClick={openSolution}
+              className="mt-1 inline-flex h-12 w-full items-center justify-center rounded-2xl border border-violet-200 bg-violet-50 px-5 text-sm font-semibold text-violet-700 transition-colors hover:bg-violet-100"
+            >
+              View Solution
+            </button>
+          )}
         </section>
       </main>
+
+      <SolutionBottomSheet
+        isOpen={isSolutionOpen}
+        solution={currentQ.solution ?? ""}
+        questionNumber={currentIndex + 1}
+        correctOptionIndex={currentQ.correctAnswer}
+        onClose={closeSolution}
+      />
 
       {submitError && (
         <div className="fixed bottom-[86px] left-0 right-0 z-40 px-3 sm:px-6">

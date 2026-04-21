@@ -10,6 +10,7 @@ export interface MensurationQuestion {
   estimatedTime: number;
   year: string;
   exam: string;
+  solution?: string;
   questionType?: string;
   questionImage?: string;
   optionRegions?: Record<string, { x: number; y: number; w: number; h: number }>;
