@@ -1856,7 +1856,7 @@ export default function MensurationQuizEngine() {
             flex: 1;
             min-height: 0;
             overflow-y: auto;
-            padding-bottom: 140px;
+            padding-bottom: 120px;
           }
           .topic-card {
             border-radius: 16px;
@@ -1987,11 +1987,129 @@ export default function MensurationQuizEngine() {
           }
           @media (max-width: 640px) {
             .start-shell {
-              padding: 8px 10px 0;
+              padding: 6px 10px 0;
+            }
+            .start-nav {
+              margin-bottom: 2px;
+            }
+            .start-nav-label {
+              font-size: 0.7rem;
+              letter-spacing: 0.2em;
+            }
+            .start-back {
+              width: 38px;
+              height: 38px;
+            }
+            .start-qs {
+              font-size: 0.72rem;
+              padding: 4px 10px;
+            }
+            .start-exam-card {
+              padding: 6px 10px;
+              margin-bottom: 5px;
+            }
+            .exam-icon {
+              width: 26px;
+              height: 26px;
+              border-radius: 10px;
+            }
+            .exam-select {
+              font-size: 0.82rem;
+              padding: 4px 10px;
+            }
+            .start-search {
+              padding: 6px 8px;
+              margin-bottom: 5px;
+            }
+            .start-search input {
+              font-size: 0.85rem;
+            }
+            .search-icon {
+              width: 26px;
+              height: 26px;
+              border-radius: 10px;
+            }
+            .start-tabs {
+              gap: 10px;
+              padding-bottom: 5px;
+              margin-bottom: 5px;
+            }
+            .topic-tab {
+              min-width: 56px;
+              font-size: 0.74rem;
+              padding-bottom: 8px;
+            }
+            .topic-icon {
+              width: 22px;
+              height: 22px;
+            }
+            .topics-header h2 {
+              font-size: 1.02rem;
+            }
+            .select-all-btn {
+              font-size: 0.74rem;
+              padding: 4px 10px;
+            }
+            .topics-list {
+              gap: 7px;
+              padding-bottom: 110px;
+            }
+            .topic-card {
+              padding: 7px 9px;
+              border-radius: 14px;
+            }
+            .topic-index {
+              width: 30px;
+              height: 30px;
+              font-size: 0.82rem;
+            }
+            .topic-title {
+              font-size: 0.9rem;
+            }
+            .topic-meta {
+              font-size: 0.72rem;
             }
             .start-footer {
+              gap: 10px;
               padding: 10px 12px;
               padding-bottom: calc(env(safe-area-inset-bottom) + 10px);
+            }
+            .footer-pill {
+              padding: 6px 10px;
+              min-width: 58px;
+            }
+            .pill-value {
+              font-size: 0.9rem;
+            }
+            .pill-label {
+              font-size: 0.6rem;
+            }
+            .start-cta {
+              height: 46px;
+              font-size: 0.9rem;
+              border-radius: 12px;
+            }
+          }
+          @media (max-width: 420px) {
+            .start-shell {
+              padding: 6px 8px 0;
+            }
+            .start-tabs {
+              gap: 8px;
+            }
+            .topic-tab {
+              min-width: 52px;
+              font-size: 0.7rem;
+            }
+            .topics-list {
+              padding-bottom: 100px;
+            }
+            .topic-card {
+              padding: 6px 8px;
+            }
+            .topic-index {
+              width: 28px;
+              height: 28px;
             }
           }
         `}</style>
