@@ -13,6 +13,7 @@ export interface Question {
   correctAnswer: string;
   correctLetter?: string;
   solution: string;
+  quizName?: string;
   questionType?: string;
   questionImage?: string;
   optionRegions?: Record<string, { x: number; y: number; w: number; h: number }>;
@@ -23,6 +24,7 @@ export async function fetchQuestions(params: {
   topic?: string;
   subject?: string;
   difficulty?: string;
+  quizName?: string;
   limit?: number;
   offset?: number;
 }): Promise<Question[]> {
@@ -30,6 +32,7 @@ export async function fetchQuestions(params: {
   if (params.topic)      query.set('topic',      params.topic);
   if (params.subject)    query.set('subject',    params.subject);
   if (params.difficulty) query.set('difficulty', params.difficulty);
+  if (params.quizName)   query.set('quizName',   params.quizName);
   if (params.limit !== undefined)  query.set('limit',  String(params.limit));
   if (params.offset !== undefined) query.set('offset', String(params.offset));
 

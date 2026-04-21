@@ -20,7 +20,7 @@ function FeatureCard({ title, href, gradient, icon }: FeatureCardData) {
 
 const featureCards: FeatureCardData[] = [
   {
-    title: "All Concepts",
+    title: "PYQ",
     href: "/mathematics/mensuration/quiz?mode=all",
     gradient: "linear-gradient(135deg, #3f8cff 0%, #00c7ff 100%)",
     icon: (
@@ -35,7 +35,7 @@ const featureCards: FeatureCardData[] = [
     ),
   },
   {
-    title: "Each Concept",
+    title: "Careerwill",
     href: "/mathematics/mensuration/quiz?mode=concept",
     gradient: "linear-gradient(135deg, #7f5af0 0%, #3f8cff 100%)",
     icon: (
@@ -43,6 +43,19 @@ const featureCards: FeatureCardData[] = [
         <path d="M7 4h10" />
         <path d="M12 4v16" />
         <circle cx="12" cy="16" r="4" />
+      </svg>
+    ),
+  },
+  {
+    title: "Selection Way",
+    href: "/mathematics/mensuration/quiz?mode=selection",
+    gradient: "linear-gradient(135deg, #00b894 0%, #20bf6b 100%)",
+    icon: (
+      <svg viewBox="0 0 24 24" className="feature-icon" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 6h10" />
+        <path d="M4 12h8" />
+        <path d="M4 18h12" />
+        <circle cx="18" cy="12" r="3" />
       </svg>
     ),
   },

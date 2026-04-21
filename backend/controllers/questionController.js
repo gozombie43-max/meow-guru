@@ -36,7 +36,15 @@ const addQuestion = async (req, res) => {
       optionAText, optionBText, optionCText, optionDText,
       options: optionsBody, correctAnswer: correctAnswerBody,
       correctIndex, solution: solutionBody, solutionText,
+      quizSubject, quizTopic, quizName,
     } = req.body;
+
+    const normalizedQuizSubject = String(quizSubject || "").trim();
+    const normalizedQuizTopic = String(quizTopic || "").trim();
+    const normalizedQuizName = String(quizName || "").trim();
+    const normalizedSubject = String(subject || normalizedQuizSubject || "").trim();
+    const normalizedChapter = String(chapter || normalizedQuizTopic || "").trim();
+    const normalizedTopic = String(normalizedQuizTopic || chapter || subject || normalizedQuizSubject || "").trim();
 
     const questionImagePath = uploadedPath(pickFile(req.files, 'questionImage'));
     const questionValue     = buildRichText(questionText ?? question, questionImagePath);
@@ -79,7 +87,7 @@ const addQuestion = async (req, res) => {
     const solutionImagePath = uploadedPath(pickFile(req.files, 'solutionImage'));
     const solutionValue     = buildRichText(solutionText ?? solutionBody, solutionImagePath);
 
-    if (!subject || !questionValue || !options || correctAnswer === undefined)
+    if (!normalizedSubject || !questionValue || !options || correctAnswer === undefined)
       return res.status(400).json({ error: 'Missing required fields' });
 
     if (!Array.isArray(options) || options.length < 2)
@@ -94,10 +102,13 @@ const addQuestion = async (req, res) => {
 
     const newQuestion = {
       id:          `q_${Date.now()}`,
-      topic:       chapter || subject,   // ← partition key REQUIRED
-      subject,
+      topic:       normalizedTopic || normalizedChapter || normalizedSubject,   // ← partition key REQUIRED
+      subject:     normalizedSubject,
       tier:        tier        || '',
-      chapter:     chapter     || '',
+      chapter:     normalizedChapter,
+      quizSubject: normalizedQuizSubject || normalizedSubject,
+      quizTopic:   normalizedQuizTopic || normalizedTopic,
+      quizName:    normalizedQuizName,
       concept:     concept     || '',
       difficulty:  difficulty  || 'medium',
       formula:     formula     || '',
@@ -121,7 +132,7 @@ const addQuestion = async (req, res) => {
 const getQuestions = async (req, res) => {
   try {
     const container = getQuestionsContainer();
-    const { topic, subject, chapter, concept, difficulty, offset = 0, limit } = req.query;
+    const { topic, subject, chapter, concept, difficulty, quizName, offset = 0, limit } = req.query;
 
     let query = 'SELECT * FROM c WHERE 1=1';
     const parameters = [];
@@ -145,6 +156,10 @@ const getQuestions = async (req, res) => {
     if (difficulty) {
       query += ' AND LOWER(c.difficulty) = LOWER(@difficulty)';
       parameters.push({ name: '@difficulty', value: difficulty });
+    }
+    if (quizName) {
+      query += ' AND (LOWER(c.quizName) = LOWER(@quizName) OR LOWER(c.quizId) = LOWER(@quizName))';
+      parameters.push({ name: '@quizName', value: quizName });
     }
 
     const parsedOffset = Number.isFinite(Number(offset)) ? parseInt(offset, 10) : 0;

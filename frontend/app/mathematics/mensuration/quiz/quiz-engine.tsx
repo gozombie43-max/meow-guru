@@ -24,7 +24,7 @@ import { fetchQuestions, type Question as ApiQuestion } from "@/lib/api/question
 import { shuffle, type MensurationQuestion, CONCEPTS } from "@/lib/mensuration-questions";
 
 // ── Types ───────────────────────────────────────────────────────────────────
-type QuizMode = "all" | "concept" | "tier2";
+type QuizMode = "all" | "concept" | "tier2" | "selection";
 type Difficulty = "easy" | "medium" | "hard";
 
 interface SessionResult {
@@ -123,8 +123,9 @@ function toMensurationQuestion(question: ApiQuestion, index: number): Mensuratio
 
 // ── Constants ────────────────────────────────────────────────────────────────
 const MODE_LABELS: Record<QuizMode, string> = {
-  all: "All Concepts",
-  concept: "Each Concept",
+  all: "PYQ",
+  concept: "Careerwill",
+  selection: "Selection Way",
   tier2: "Tier 2",
 };
 
@@ -470,6 +471,7 @@ const prefetchQuestionImage = (url?: string) => {
 export default function MensurationQuizEngine() {
   const searchParams = useSearchParams();
   const mode = (searchParams.get("mode") || "all") as QuizMode;
+  const quizName = MODE_LABELS[mode];
   const resumeRequested = searchParams.get("resume") === "1";
   const jumpIdRaw = searchParams.get("qid");
   const jumpId = Number.parseInt(jumpIdRaw ?? "", 10);
@@ -497,7 +499,7 @@ export default function MensurationQuizEngine() {
 
   useEffect(() => {
     let active = true;
-    fetchQuestions({ topic: "mensuration" })
+    fetchQuestions({ topic: "mensuration", quizName })
       .then((data) => {
         if (!active) return;
         setAllQuestions(data.map(toMensurationQuestion));
@@ -510,7 +512,7 @@ export default function MensurationQuizEngine() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [quizName]);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const touchStartXRef = useRef<number | null>(null);
@@ -576,13 +578,16 @@ export default function MensurationQuizEngine() {
   }, [allQuestions]);
 
   const availableCount = useMemo(() => {
-    let pool = mode === "tier2"
-      ? allQuestions.filter((q) => q.difficulty === "hard")
-      : mode === "concept"
-      ? conceptFilter === "all"
-        ? [...allQuestions]
-        : allQuestions.filter((q) => q.concept === conceptFilter)
-      : [...allQuestions];
+    let pool: MensurationQuestion[] = [...allQuestions];
+
+    if (mode === "tier2") {
+      pool = allQuestions.filter((q) => q.difficulty === "hard");
+    } else if (mode === "concept") {
+      pool =
+        conceptFilter === "all"
+          ? [...allQuestions]
+          : allQuestions.filter((q) => q.concept === conceptFilter);
+    }
 
     if (examFilter.trim() !== "") {
       const examQuery = examFilter.trim().toLowerCase();
@@ -625,7 +630,6 @@ export default function MensurationQuizEngine() {
       case "tier2":
         pool = allQuestions.filter((q) => q.difficulty === "hard");
         break;
-      case "all":
       default:
         pool = [...allQuestions];
         break;

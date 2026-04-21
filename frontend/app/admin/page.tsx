@@ -67,7 +67,7 @@ const SUBJECT_OPTIONS: { value: SubjectKey; label: string }[] = [
   { value: "general-awareness", label: "General Awareness" },
 ];
 
-const QUIZ_OPTIONS = [
+const DEFAULT_QUIZ_OPTIONS = [
   "Concept Drill",
   "Formula Bank",
   "Speed Test",
@@ -75,6 +75,10 @@ const QUIZ_OPTIONS = [
   "Topic Mix",
   "Revision",
 ];
+
+const QUIZ_OPTIONS_BY_TOPIC: Record<string, string[]> = {
+  mensuration: ["PYQ", "Careerwill", "Selection Way", "Tier 2"],
+};
 
 const TOPIC_LABEL_OVERRIDES: Record<string, string> = {
   "active-passive-voice": "Active & Passive Voice",
@@ -268,6 +272,7 @@ export default function AdminPanel() {
   const selectedSubjectName = SUBJECT_OPTIONS.find((s) => s.value === muSubject)?.label || "";
   const selectedTopicName = muTopicOptions.find((t) => t.value === muTopic)?.label || "";
   const selectedQuizName = muQuiz || "";
+  const quizOptions = QUIZ_OPTIONS_BY_TOPIC[muTopic] ?? DEFAULT_QUIZ_OPTIONS;
 
   const fetchQuestions = useCallback(async () => {
     setLoading(true);
@@ -703,7 +708,7 @@ export default function AdminPanel() {
             style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 13, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}
           >
             <option value="">Select quiz</option>
-            {QUIZ_OPTIONS.map((q) => (
+            {quizOptions.map((q) => (
               <option key={q} value={q}>{q}</option>
             ))}
           </select>
