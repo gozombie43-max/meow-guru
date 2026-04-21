@@ -2,6 +2,7 @@
 
 import RichContent from "@/components/RichContent";
 import MathRenderer from "@/components/MathRenderer";
+import MathText from "@/components/MathText";
 import ImageMCQ from "@/components/ImageMCQ";
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useSearchParams } from "next/navigation";
@@ -11,10 +12,11 @@ import {
   Bookmark,
   BookmarkCheck,
   CheckCircle2,
+  ChevronLeft,
   XCircle,
   Menu,
   Flame,
-  Sparkles,
+  Play,
   Target,
   RotateCcw,
   X,
@@ -195,51 +197,6 @@ function MathFraction({
   );
 }
 
-function MathText({ text, className = "" }: { text: string; className?: string }) {
-  const fractionRe =
-    /(\([^()]+\)|[\w\d√∛⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾ᵃᵇⁿ.–^]+)\/((\([^()]+\))|[\w\d√∛⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾ᵃᵇⁿ.–^]+)/g;
-
-  const parts: React.ReactNode[] = [];
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
-
-  while ((match = fractionRe.exec(text)) !== null) {
-    if (match.index > lastIndex) {
-      parts.push(text.slice(lastIndex, match.index));
-    }
-
-    const rawNum = match[1];
-    const rawDen = match[2];
-    const num = rawNum.startsWith("(") && rawNum.endsWith(")") ? rawNum.slice(1, -1) : rawNum;
-    const den = rawDen.startsWith("(") && rawDen.endsWith(")") ? rawDen.slice(1, -1) : rawDen;
-
-    parts.push(
-      <span
-        key={match.index}
-        className="inline-flex flex-col items-center leading-none align-middle mx-[2px]"
-        role="math"
-        aria-label={`${num} over ${den}`}
-      >
-        <span className="font-semibold px-[3px]" style={{ fontSize: "0.88em" }}>
-          {num}
-        </span>
-        <span className="w-full my-[1px]" style={{ minWidth: "0.9em", borderTop: "1.5px solid currentColor" }} />
-        <span className="font-semibold px-[3px]" style={{ fontSize: "0.88em" }}>
-          {den}
-        </span>
-      </span>
-    );
-
-    lastIndex = match.index + match[0].length;
-  }
-
-  if (lastIndex < text.length) {
-    parts.push(text.slice(lastIndex));
-  }
-
-  return <span className={className}>{parts}</span>;
-}
-
 function formatMathBookSolutionLines(solution: string): string[] {
   const base = solution
     .replace(/\r\n?/g, "\n")
@@ -392,6 +349,80 @@ function SolutionBottomSheet({
       )}
     </AnimatePresence>
   );
+}
+
+const TOPIC_TABS = [
+  { key: "all", label: "All" },
+  { key: "cone", label: "Cone" },
+  { key: "sphere", label: "Sphere" },
+  { key: "cylinder", label: "Cylinder" },
+  { key: "cube", label: "Cube" },
+  { key: "pyramid", label: "Pyramid" },
+] as const;
+
+const CATEGORY_MATCHERS: Record<string, (value: string) => boolean> = {
+  cone: (value) => /cone/i.test(value),
+  sphere: (value) => /sphere|spherical/i.test(value),
+  cylinder: (value) => /cylinder/i.test(value),
+  cube: (value) => /cube|cuboid/i.test(value),
+  pyramid: (value) => /pyramid/i.test(value),
+};
+
+function TopicIcon({ kind, active }: { kind: string; active: boolean }) {
+  const stroke = active ? "#5b21b6" : "#b2b2c7";
+  const fill = active ? "#5b21b6" : "#d7d7e8";
+
+  switch (kind) {
+    case "cone":
+      return (
+        <svg viewBox="0 0 24 24" className="topic-icon" fill="none" stroke={stroke} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M4 18h16L12 5 4 18z" fill={fill} opacity="0.2" />
+          <path d="M4 18h16" />
+          <path d="M12 5 4 18h16L12 5z" />
+          <ellipse cx="12" cy="18" rx="7" ry="2" />
+        </svg>
+      );
+    case "sphere":
+      return (
+        <svg viewBox="0 0 24 24" className="topic-icon" fill="none" stroke={stroke} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="7" fill={fill} opacity="0.2" />
+          <circle cx="12" cy="12" r="7" />
+        </svg>
+      );
+    case "cylinder":
+      return (
+        <svg viewBox="0 0 24 24" className="topic-icon" fill="none" stroke={stroke} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <ellipse cx="12" cy="6" rx="7" ry="3" fill={fill} opacity="0.2" />
+          <path d="M5 6v10" />
+          <path d="M19 6v10" />
+          <ellipse cx="12" cy="16" rx="7" ry="3" />
+        </svg>
+      );
+    case "cube":
+      return (
+        <svg viewBox="0 0 24 24" className="topic-icon" fill="none" stroke={stroke} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M5 8 12 4 19 8 12 12 5 8z" fill={fill} opacity="0.2" />
+          <path d="M5 8v8l7 4 7-4V8" />
+          <path d="M12 12v8" />
+          <path d="M5 8 12 12 19 8" />
+        </svg>
+      );
+    case "pyramid":
+      return (
+        <svg viewBox="0 0 24 24" className="topic-icon" fill="none" stroke={stroke} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 4 3 19h18L12 4z" fill={fill} opacity="0.2" />
+          <path d="M12 4 3 19h18L12 4z" />
+          <path d="M7 13h10" />
+        </svg>
+      );
+    case "all":
+    default:
+      return (
+        <svg viewBox="0 0 24 24" className="topic-icon" fill="none" stroke={stroke} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M13 2 4 13h6l-1 9 9-11h-6l1-9z" />
+        </svg>
+      );
+  }
 }
 
 // ── Question status helpers ──────────────────────────────────────────────────
@@ -647,7 +678,9 @@ export default function MensurationQuizEngine() {
   const [submittedQuestions, setSubmittedQuestions] = useState<Set<number>>(new Set());
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [isSolutionOpen, setIsSolutionOpen] = useState(false);
-  const [conceptFilter, setConceptFilter] = useState<string>("all");
+  const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
+  const [activeCategory, setActiveCategory] = useState("all");
+  const [topicSearch, setTopicSearch] = useState("");
   const [examFilter, setExamFilter] = useState<string>("");
   const [started, setStarted] = useState(false);
   const [submitError, setSubmitError] = useState("");
@@ -673,6 +706,7 @@ export default function MensurationQuizEngine() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const touchStartXRef = useRef<number | null>(null);
   const touchStartYRef = useRef<number | null>(null);
+  const hasInitSelection = useRef(false);
 
   const { user, token, refreshUser } = useAuth();
   const [bookmarked, setBookmarked] = useState<Set<string>>(new Set(user?.bookmarks ?? []));
@@ -742,22 +776,73 @@ export default function MensurationQuizEngine() {
     return Array.from(set).sort((a, b) => a.localeCompare(b));
   }, [allQuestions]);
 
+  const selectedTopicSet = useMemo(() => new Set(selectedTopics), [selectedTopics]);
+
+  const conceptDifficultyMap = useMemo(() => {
+    const map: Record<string, { total: number; hard: number; medium: number; easy: number }> = {};
+    allQuestions.forEach((q) => {
+      const concept = String(q.concept || "").trim();
+      if (!concept) return;
+      if (!map[concept]) {
+        map[concept] = { total: 0, hard: 0, medium: 0, easy: 0 };
+      }
+      map[concept].total += 1;
+      if (q.difficulty === "hard") map[concept].hard += 1;
+      else if (q.difficulty === "easy") map[concept].easy += 1;
+      else map[concept].medium += 1;
+    });
+
+    const labelMap: Record<string, string> = {};
+    Object.entries(map).forEach(([concept, stats]) => {
+      if (stats.total === 0) {
+        labelMap[concept] = "General";
+        return;
+      }
+      const hardRatio = stats.hard / stats.total;
+      const mediumRatio = stats.medium / stats.total;
+      if (hardRatio >= 0.45) labelMap[concept] = "Advanced";
+      else if (mediumRatio >= 0.45) labelMap[concept] = "Intermediate";
+      else labelMap[concept] = "Basic";
+    });
+    return labelMap;
+  }, [allQuestions]);
+
+  const normalizedSearch = topicSearch.trim().toLowerCase();
+
+  const filteredConceptOptions = useMemo(() => {
+    return conceptOptions.filter((concept) => {
+      if (normalizedSearch && !concept.toLowerCase().includes(normalizedSearch)) return false;
+      if (activeCategory === "all") return true;
+      const matcher = CATEGORY_MATCHERS[activeCategory];
+      return matcher ? matcher(concept) : true;
+    });
+  }, [conceptOptions, normalizedSearch, activeCategory]);
+
   useEffect(() => {
-    if (conceptFilter !== "all" && !conceptOptions.includes(conceptFilter)) {
-      setConceptFilter("all");
-    }
-  }, [conceptFilter, conceptOptions]);
+    setSelectedTopics((prev) => {
+      if (!hasInitSelection.current) {
+        hasInitSelection.current = true;
+        return conceptOptions;
+      }
+      if (prev.length === 0) return prev;
+      const next = prev.filter((topic) => conceptOptions.includes(topic));
+      return next.length > 0 ? next : conceptOptions;
+    });
+  }, [conceptOptions]);
 
   const availableCount = useMemo(() => {
     let pool: MensurationQuestion[] = [...allQuestions];
 
     if (mode === "tier2") {
       pool = allQuestions.filter((q) => q.difficulty === "hard");
-    } else if (mode === "concept") {
-      pool =
-        conceptFilter === "all"
-          ? [...allQuestions]
-          : allQuestions.filter((q) => q.concept === conceptFilter);
+    }
+
+    if (selectedTopics.length === 0) {
+      return 0;
+    }
+
+    if (selectedTopics.length < conceptOptions.length) {
+      pool = pool.filter((q) => selectedTopicSet.has(q.concept));
     }
 
     if (examFilter.trim() !== "") {
@@ -768,7 +853,7 @@ export default function MensurationQuizEngine() {
     }
 
     return pool.length;
-  }, [allQuestions, mode, conceptFilter, examFilter]);
+  }, [allQuestions, mode, examFilter, selectedTopicSet, selectedTopics.length, conceptOptions.length]);
 
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
@@ -793,18 +878,18 @@ export default function MensurationQuizEngine() {
     let pool: MensurationQuestion[];
 
     switch (mode) {
-      case "concept":
-        pool =
-          conceptFilter === "all"
-            ? [...allQuestions]
-            : allQuestions.filter((q) => q.concept === conceptFilter);
-        break;
       case "tier2":
         pool = allQuestions.filter((q) => q.difficulty === "hard");
         break;
       default:
         pool = [...allQuestions];
         break;
+    }
+
+    if (selectedTopics.length === 0) {
+      pool = [];
+    } else if (selectedTopics.length < conceptOptions.length) {
+      pool = pool.filter((q) => selectedTopicSet.has(q.concept));
     }
 
     if (examFilter.trim() !== "") {
@@ -831,7 +916,7 @@ export default function MensurationQuizEngine() {
     setShowAnalytics(false);
     setStarted(false);
     setSubmitError("");
-  }, [allQuestions, mode, conceptFilter, examFilter]);
+  }, [allQuestions, mode, examFilter, selectedTopicSet, selectedTopics.length, conceptOptions.length]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
   const stopTimer = useCallback(() => {
@@ -1028,6 +1113,7 @@ export default function MensurationQuizEngine() {
   ]);
 
   function handleStart() {
+    if (selectedTopics.length === 0) return;
     setStarted(true);
     startTimer();
   }
@@ -1414,223 +1500,498 @@ export default function MensurationQuizEngine() {
   }
 
   if (!started) {
+    const activeTab = TOPIC_TABS.find((tab) => tab.key === activeCategory) ?? TOPIC_TABS[0];
+    const sectionTitle = activeTab.key === "all" ? "All Topics" : activeTab.label;
+    const isAllSelected = conceptOptions.length > 0 && selectedTopics.length === conceptOptions.length;
+    const isFilteredAllSelected =
+      filteredConceptOptions.length > 0 &&
+      filteredConceptOptions.every((topic) => selectedTopicSet.has(topic));
+    const canStart = selectedTopics.length > 0;
+
+    const toggleTopic = (topic: string) => {
+      setSelectedTopics((prev) => {
+        if (prev.includes(topic)) return prev.filter((item) => item !== topic);
+        return [...prev, topic];
+      });
+    };
+
+    const toggleFilteredSelection = () => {
+      if (filteredConceptOptions.length === 0) return;
+      setSelectedTopics((prev) => {
+        const next = new Set(prev);
+        const allSelected = filteredConceptOptions.every((topic) => next.has(topic));
+        if (allSelected) {
+          filteredConceptOptions.forEach((topic) => next.delete(topic));
+        } else {
+          filteredConceptOptions.forEach((topic) => next.add(topic));
+        }
+        return Array.from(next);
+      });
+    };
+
     return (
-      <div className="concept-start min-h-screen relative overflow-hidden px-4 sm:px-6">
-        <div className="w-full max-w-2xl mx-auto text-center min-h-screen flex flex-col pt-20 sm:pt-24 pb-8">
-          <h1 className="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-3 text-[var(--text-primary)]" style={{ fontFamily: "'SF Pro Display', 'Helvetica Neue', sans-serif" }}>
-            {MODE_LABELS[mode]}
-          </h1>
-          <p className="text-sm font-medium text-slate-600 mb-4">
-            {availableCount} questions available
-          </p>
+      <div className="mensuration-start">
+        <div className="start-shell">
+          <header className="start-nav">
+            <Link href="/mathematics/mensuration" className="start-back" aria-label="Back to mensuration modes">
+              <ChevronLeft className="h-5 w-5" />
+            </Link>
+            <span className="start-nav-label">SELECT TOPIC</span>
+            <span className="start-qs">{availableCount} Qs</span>
+          </header>
 
-          {mode === "concept" && (
-            <div className="mb-4 flex flex-wrap justify-center gap-2" style={{ width: "100%" }}>
-              <button
-                onClick={() => setConceptFilter("all")}
-                className="rounded-full px-4 py-2 text-sm font-semibold transition-all"
-                style={{
-                  background: conceptFilter === "all" ? "#7c3aed" : "#F5F3FF",
-                  color: conceptFilter === "all" ? "#fff" : "#5B21B6",
-                  border: `1.5px solid ${conceptFilter === "all" ? "#7c3aed" : "#7c3aed40"}`,
-                }}
-              >
-                All
-              </button>
-              {conceptOptions.map((c) => {
-                const col = CONCEPT_COLOURS[c] ?? { border: "#7C3AED", bg: "#F5F3FF", text: "#5B21B6" };
-                const isActive = conceptFilter === c;
-                return (
-                  <button
-                    key={c}
-                    onClick={() => setConceptFilter(c)}
-                    className="rounded-full px-4 py-2 text-sm font-semibold transition-all"
-                    style={{
-                      background: isActive ? col.text : col.bg,
-                      color: isActive ? "#fff" : col.text,
-                      border: `1.5px solid ${col.border}`,
-                    }}
-                  >
-                    {c}
-                  </button>
-                );
-              })}
-              {conceptOptions.length === 0 && (
-                <span className="px-3 py-2 text-xs font-semibold text-slate-500">
-                  No concepts found in this quiz yet.
-                </span>
-              )}
+          <div className="start-exam-card">
+            <div className="exam-label">
+              <span className="exam-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" className="exam-svg" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="6" y="4" width="12" height="16" rx="2" />
+                  <path d="M9 2h6" />
+                  <path d="M9 9h6" />
+                  <path d="M9 13h6" />
+                </svg>
+              </span>
+              <span>Exam</span>
             </div>
-          )}
-
-          <div className="mb-5 flex items-center justify-center" style={{ marginTop: "0.5rem" }}>
-            <div className="flex items-center gap-2 rounded-full border border-violet-200 bg-white/80 px-3 py-2 shadow-sm" style={{ minWidth: "220px" }}>
-              <select
-                value={examFilter || "all"}
-                onChange={(e) => setExamFilter(e.target.value === "all" ? "" : e.target.value)}
-                className="rounded-full border-none bg-transparent px-4 py-2 text-base font-semibold text-slate-700 outline-none focus:ring-0"
-              >
-                {examOptions.map((ex) => (
-                  <option key={ex} value={ex === "all" ? "all" : ex}>
-                    {ex === "all" ? "All exams" : ex}
-                  </option>
-                ))}
-              </select>
-
-              {examFilter !== "" && (
-                <button
-                  onClick={() => setExamFilter("")}
-                  className="rounded-full bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-700 hover:bg-violet-100"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
+            <select
+              value={examFilter || "all"}
+              onChange={(e) => setExamFilter(e.target.value === "all" ? "" : e.target.value)}
+              className="exam-select"
+            >
+              {examOptions.map((ex) => (
+                <option key={ex} value={ex === "all" ? "all" : ex}>
+                  {ex === "all" ? "All exams" : ex}
+                </option>
+              ))}
+            </select>
           </div>
 
-          <div className="flex-1 flex items-center justify-center">
-            <button onClick={handleStart} className="start-quiz-button mx-auto" aria-label="Start Quiz">
-              <Sparkles className="start-quiz-icon" aria-hidden="true" />
-              <span className="start-quiz-label">Start Quiz</span>
-            </button>
+          <div className="start-search">
+            <span className="search-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" className="search-svg" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="7" />
+                <path d="m20 20-3.5-3.5" />
+              </svg>
+            </span>
+            <input
+              type="search"
+              placeholder="Search any topic..."
+              value={topicSearch}
+              onChange={(e) => setTopicSearch(e.target.value)}
+            />
+          </div>
+
+          <div className="start-tabs">
+            {TOPIC_TABS.map((tab) => {
+              const isActive = activeCategory === tab.key;
+              return (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => setActiveCategory(tab.key)}
+                  className={`topic-tab${isActive ? " is-active" : ""}`}
+                  aria-pressed={isActive}
+                >
+                  <TopicIcon kind={tab.key} active={isActive} />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="topics-header">
+            <h2>{sectionTitle}</h2>
+            {filteredConceptOptions.length > 0 && (
+              <button type="button" onClick={toggleFilteredSelection} className="select-all-btn">
+                {isFilteredAllSelected ? "Deselect All" : "Select All"}
+              </button>
+            )}
+          </div>
+
+          <div className="topics-list">
+            {filteredConceptOptions.length === 0 ? (
+              <div className="topics-empty">No topics match this filter.</div>
+            ) : (
+              filteredConceptOptions.map((topic, index) => {
+                const isSelected = selectedTopicSet.has(topic);
+                const difficultyLabel = conceptDifficultyMap[topic] ?? "General";
+                return (
+                  <button
+                    key={topic}
+                    type="button"
+                    onClick={() => toggleTopic(topic)}
+                    className={`topic-card${isSelected ? " is-selected" : ""}`}
+                    aria-pressed={isSelected}
+                  >
+                    <div className={`topic-index${isSelected ? " is-selected" : ""}`}>{index + 1}</div>
+                    <div className="topic-body">
+                      <p className="topic-title">{topic}</p>
+                      <p className="topic-meta">{difficultyLabel}</p>
+                    </div>
+                    <div className={`topic-check${isSelected ? " is-selected" : ""}`}>
+                      {isSelected ? (
+                        <CheckCircle2 className="h-6 w-6" />
+                      ) : (
+                        <span className="topic-check-empty" />
+                      )}
+                    </div>
+                  </button>
+                );
+              })
+            )}
           </div>
         </div>
 
+        <div className="start-footer">
+          <div className="footer-pill">
+            <span className="pill-value">{isAllSelected ? "All" : selectedTopics.length}</span>
+            <span className="pill-label">Topics</span>
+          </div>
+          <button
+            type="button"
+            onClick={handleStart}
+            disabled={!canStart}
+            className="start-cta"
+          >
+            <Play className="h-4 w-4" />
+            Start Quiz
+          </button>
+        </div>
+
         <style jsx>{`
-          .concept-start {
-            background:
-              radial-gradient(1200px 600px at 20% -10%, rgba(56, 189, 248, 0.18), transparent 60%),
-              radial-gradient(1000px 540px at 85% 110%, rgba(16, 185, 129, 0.16), transparent 62%),
-              linear-gradient(135deg, #f8fbff 0%, #edf4ff 45%, #f8fbff 100%);
-          }
-          .start-quiz-button {
+          .mensuration-start {
+            height: 100vh;
+            overflow: hidden;
+            background: linear-gradient(180deg, #f6f3ff 0%, #f7f5ff 65%, #f4f1ff 100%);
+            font-family: "Poppins", "Inter", "Segoe UI", sans-serif;
+            color: #1f1b2e;
             position: relative;
-            width: min(78vw, 260px);
-            min-height: 54px;
-            border: 0;
-            border-radius: 999px;
-            cursor: pointer;
-            isolation: isolate;
             display: flex;
+            flex-direction: column;
+          }
+          .start-shell {
+            max-width: 560px;
+            margin: 0 auto;
+            padding: 10px 14px 0;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+          }
+          .start-nav {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 4px;
+          }
+          .start-back {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            border: 1px solid #e3ddf2;
+            background: #f0ecff;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 0.42rem;
-            padding: 0 1.2rem;
-            background: linear-gradient(130deg, #7c3aed 0%, #a21caf 48%, #2563eb 100%);
-            background-size: 190% 190%;
-            color: #ffffff;
-            box-shadow:
-              0 18px 32px rgba(37, 99, 235, 0.33),
-              0 0 22px rgba(139, 92, 246, 0.36),
-              0 0 40px rgba(168, 85, 247, 0.2),
-              inset 0 1.5px 0 rgba(255, 255, 255, 0.32);
-            transition: transform 0.4s ease, box-shadow 0.4s ease, filter 0.4s ease;
-            animation: button-breathe 3.4s ease-in-out infinite, gradient-shift 4.2s ease-in-out infinite;
+            color: #6d5bd0;
+            box-shadow: 0 6px 14px rgba(84, 72, 148, 0.12);
           }
-          .start-quiz-button::before,
-          .start-quiz-button::after {
+          .start-nav-label {
+            text-align: center;
+            font-size: 0.78rem;
+            letter-spacing: 0.28em;
+            color: #9a93b0;
+            font-weight: 600;
+          }
+          .start-qs {
+            justify-self: end;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #6b5bd4;
+            background: #ede9fe;
+            padding: 5px 12px;
+            border-radius: 999px;
+          }
+          .start-exam-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f0ecff;
+            border-radius: 16px;
+            padding: 8px 12px;
+            border: 1px solid #e4def2;
+            margin-bottom: 6px;
+          }
+          .exam-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            color: #3b3056;
+          }
+          .exam-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 12px;
+            background: #fff4e6;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #bb7b2f;
+          }
+          .exam-svg {
+            width: 18px;
+            height: 18px;
+          }
+          .exam-select {
+            border: none;
+            background: #ffffff;
+            color: #3b3056;
+            font-size: 0.9rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 999px;
+            box-shadow: inset 0 0 0 1px #e4def2;
+            cursor: pointer;
+          }
+          .start-search {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f0ecff;
+            border-radius: 16px;
+            padding: 8px 10px;
+            border: 1px solid #e4def2;
+            margin-bottom: 6px;
+          }
+          .start-search input {
+            border: none;
+            background: transparent;
+            width: 100%;
+            font-size: 0.9rem;
+            color: #3b3056;
+            outline: none;
+          }
+          .search-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 12px;
+            background: #f5f2ff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #9b95b1;
+          }
+          .search-svg {
+            width: 18px;
+            height: 18px;
+          }
+          .start-tabs {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #e8e2f2;
+            margin-bottom: 6px;
+          }
+          .start-tabs::-webkit-scrollbar {
+            display: none;
+          }
+          .topic-tab {
+            min-width: 60px;
+            background: none;
+            border: none;
+            color: #a19bb6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            position: relative;
+            padding-bottom: 10px;
+            cursor: pointer;
+          }
+          .topic-tab.is-active {
+            color: #3b3056;
+          }
+          .topic-tab.is-active::after {
             content: "";
             position: absolute;
-            inset: 0;
-            border-radius: inherit;
-            pointer-events: none;
+            bottom: 0;
+            left: 10%;
+            width: 80%;
+            height: 2px;
+            border-radius: 999px;
+            background: #6d5bd4;
           }
-          .start-quiz-button::before {
-            inset: 2px;
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.08) 42%, transparent 85%);
-            opacity: 0.85;
+          .topic-icon {
+            width: 24px;
+            height: 24px;
           }
-          .start-quiz-button::after {
-            background: linear-gradient(100deg, transparent 18%, rgba(255, 255, 255, 0.72) 47%, transparent 78%);
-            transform: translateX(-140%);
-            mix-blend-mode: screen;
-            opacity: 0.92;
-            animation: light-sweep 3s ease-in-out infinite;
+          .topics-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 4px;
           }
-          .start-quiz-icon {
-            position: relative;
-            z-index: 2;
-            width: 0.88rem;
-            height: 0.88rem;
-            stroke-width: 2.4;
+          .topics-header h2 {
+            font-size: 1.12rem;
+            font-weight: 700;
+            margin: 0;
+          }
+          .select-all-btn {
+            border: none;
+            background: #eae5ff;
+            color: #6d5bd4;
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 5px 12px;
+            border-radius: 999px;
+            cursor: pointer;
+          }
+          .topics-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            padding-bottom: 140px;
+          }
+          .topic-card {
+            border-radius: 16px;
+            border: 1.5px solid #ebe6f6;
+            background: #ffffff;
+            padding: 8px 10px;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 8px 18px rgba(76, 66, 131, 0.08);
+            text-align: left;
+            cursor: pointer;
+          }
+          .topic-card.is-selected {
+            border-color: #6d5bd4;
+            background: #f7f3ff;
+          }
+          .topic-index {
+            width: 34px;
+            height: 34px;
+            border-radius: 12px;
+            background: #f0ecff;
+            color: #9c94b5;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+          }
+          .topic-index.is-selected {
+            background: #6d5bd4;
             color: #ffffff;
-            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.55));
-            animation: icon-twinkle 2.8s ease-in-out infinite;
           }
-          .start-quiz-label {
-            position: relative;
-            z-index: 2;
-            font-size: clamp(0.88rem, 2.5vw, 1rem);
-            font-weight: 800;
-            letter-spacing: 0.02em;
+          .topic-title {
+            margin: 0;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #2e2546;
+          }
+          .topic-meta {
+            margin: 2px 0 0;
+            font-size: 0.78rem;
+            color: #9b95b1;
+          }
+          .topic-check {
+            width: 26px;
+            height: 26px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #22c55e;
+          }
+          .topic-check-empty {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 2px solid #d6d0e8;
+            display: inline-block;
+          }
+          .topics-empty {
+            text-align: center;
+            color: #9b95b1;
+            background: #f7f5ff;
+            padding: 16px 12px;
+            border-radius: 16px;
+            border: 1px dashed #ded7f0;
+          }
+          .start-footer {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: grid;
+            grid-template-columns: auto 1fr;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            background: #f4f1ff;
+            border-top: 1px solid #e4def2;
+            box-shadow: 0 -10px 26px rgba(76, 66, 131, 0.14);
+            padding-bottom: calc(env(safe-area-inset-bottom) + 12px);
+          }
+          .footer-pill {
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 8px 12px;
+            min-width: 64px;
+            text-align: center;
+            box-shadow: 0 6px 14px rgba(76, 66, 131, 0.12);
+          }
+          .pill-value {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #6d5bd4;
+            display: block;
+          }
+          .pill-label {
+            font-size: 0.68rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: #b0a7c9;
+          }
+          .start-cta {
+            border: none;
+            border-radius: 14px;
+            height: 52px;
+            background: #5b43f0;
             color: #ffffff;
-            text-shadow: 0 2px 10px rgba(30, 41, 59, 0.34);
+            font-weight: 700;
+            font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 16px 30px rgba(91, 67, 240, 0.32);
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
           }
-          .start-quiz-button:hover {
-            transform: translateY(-2px) scale(1.05);
-            filter: brightness(1.12);
-            box-shadow:
-              0 22px 42px rgba(37, 99, 235, 0.4),
-              0 0 30px rgba(139, 92, 246, 0.55),
-              0 0 58px rgba(168, 85, 247, 0.33),
-              inset 0 2px 0 rgba(255, 255, 255, 0.44);
+          .start-cta:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+            box-shadow: none;
           }
-          .start-quiz-button:focus-visible {
-            outline: 2px solid rgba(255, 255, 255, 0.72);
-            outline-offset: 4px;
-          }
-          @keyframes light-sweep {
-            0% {
-              transform: translateX(-140%);
-            }
-            55%,
-            100% {
-              transform: translateX(140%);
-            }
-          }
-          @keyframes button-breathe {
-            0%,
-            100% {
-              transform: translateY(0) scale(1);
-              box-shadow:
-                0 18px 32px rgba(37, 99, 235, 0.33),
-                0 0 22px rgba(139, 92, 246, 0.36),
-                0 0 40px rgba(168, 85, 247, 0.2),
-                inset 0 1.5px 0 rgba(255, 255, 255, 0.32);
-            }
-            50% {
-              transform: translateY(-4px) scale(1.018);
-              box-shadow:
-                0 23px 40px rgba(37, 99, 235, 0.4),
-                0 0 28px rgba(139, 92, 246, 0.48),
-                0 0 52px rgba(168, 85, 247, 0.3),
-                inset 0 2px 0 rgba(255, 255, 255, 0.42);
-            }
-          }
-          @keyframes gradient-shift {
-            0%,
-            100% {
-              background-position: 0% 50%;
-            }
-            50% {
-              background-position: 100% 50%;
-            }
-          }
-          @keyframes icon-twinkle {
-            0%,
-            100% {
-              transform: scale(1) rotate(0deg);
-              opacity: 0.92;
-            }
-            50% {
-              transform: scale(1.15) rotate(8deg);
-              opacity: 1;
-            }
+          .start-cta:not(:disabled):hover {
+            transform: translateY(-1px);
+            box-shadow: 0 18px 32px rgba(91, 67, 240, 0.38);
           }
           @media (max-width: 640px) {
-            .start-quiz-button {
-              width: min(72vw, 220px);
-              min-height: 50px;
+            .start-shell {
+              padding: 8px 10px 0;
+            }
+            .start-footer {
+              padding: 10px 12px;
+              padding-bottom: calc(env(safe-area-inset-bottom) + 10px);
             }
           }
         `}</style>
