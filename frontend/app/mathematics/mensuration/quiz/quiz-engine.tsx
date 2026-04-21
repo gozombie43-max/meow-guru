@@ -664,6 +664,7 @@ export default function MensurationQuizEngine() {
 
   const [questions, setQuestions] = useState<MensurationQuestion[]>([]);
   const [allQuestions, setAllQuestions] = useState<MensurationQuestion[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
@@ -688,14 +689,19 @@ export default function MensurationQuizEngine() {
 
   useEffect(() => {
     let active = true;
+    setIsLoading(true);
     fetchQuestions({ topic: "mensuration", quizName })
       .then((data) => {
         if (!active) return;
         setAllQuestions(data.map(toMensurationQuestion));
+        setIsLoading(false);
       })
       .catch((error) => {
         console.error(error);
-        if (active) setAllQuestions([]);
+        if (active) {
+          setAllQuestions([]);
+          setIsLoading(false);
+        }
       });
 
     return () => {
@@ -1506,7 +1512,7 @@ export default function MensurationQuizEngine() {
     const isFilteredAllSelected =
       filteredConceptOptions.length > 0 &&
       filteredConceptOptions.every((topic) => selectedTopicSet.has(topic));
-    const canStart = selectedTopics.length > 0;
+    const canStart = selectedTopics.length > 0 && !isLoading;
 
     const toggleTopic = (topic: string) => {
       setSelectedTopics((prev) => {
@@ -1608,7 +1614,16 @@ export default function MensurationQuizEngine() {
           </div>
 
           <div className="topics-list">
-            {filteredConceptOptions.length === 0 ? (
+            {isLoading ? (
+              <div className="topics-loader" role="status" aria-live="polite" aria-label="Loading topics">
+                <span className="loader-dot dot-red" />
+                <span className="loader-dot dot-blue" />
+                <span className="loader-dot dot-green" />
+                <span className="loader-dot dot-yellow" />
+                <span className="loader-dot dot-orange" />
+                <span className="loader-sr">Loading topics...</span>
+              </div>
+            ) : filteredConceptOptions.length === 0 ? (
               <div className="topics-empty">No topics match this filter.</div>
             ) : (
               filteredConceptOptions.map((topic, index) => {
@@ -1858,6 +1873,61 @@ export default function MensurationQuizEngine() {
             overflow-y: auto;
             padding-bottom: 120px;
           }
+          .topics-loader {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 28px 0;
+          }
+          .loader-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            animation: loader-bounce 1.1s infinite ease-in-out;
+          }
+          .loader-dot.dot-red {
+            background: #ea4335;
+            animation-delay: 0s;
+          }
+          .loader-dot.dot-blue {
+            background: #4285f4;
+            animation-delay: 0.12s;
+          }
+          .loader-dot.dot-green {
+            background: #34a853;
+            animation-delay: 0.24s;
+          }
+          .loader-dot.dot-yellow {
+            background: #fbbc05;
+            animation-delay: 0.36s;
+          }
+          .loader-dot.dot-orange {
+            background: #f27c00;
+            animation-delay: 0.48s;
+          }
+          .loader-sr {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+          }
+          @keyframes loader-bounce {
+            0%,
+            80%,
+            100% {
+              transform: translateY(0);
+              opacity: 0.7;
+            }
+            40% {
+              transform: translateY(-10px);
+              opacity: 1;
+            }
+          }
           .topic-card {
             border-radius: 16px;
             border: 1.5px solid #ebe6f6;
@@ -2054,6 +2124,14 @@ export default function MensurationQuizEngine() {
               gap: 7px;
               padding-bottom: 110px;
             }
+            .topics-loader {
+              gap: 10px;
+              padding: 24px 0;
+            }
+            .loader-dot {
+              width: 12px;
+              height: 12px;
+            }
             .topic-card {
               padding: 7px 9px;
               border-radius: 14px;
@@ -2103,6 +2181,14 @@ export default function MensurationQuizEngine() {
             }
             .topics-list {
               padding-bottom: 100px;
+            }
+            .topics-loader {
+              gap: 8px;
+              padding: 20px 0;
+            }
+            .loader-dot {
+              width: 11px;
+              height: 11px;
             }
             .topic-card {
               padding: 6px 8px;
