@@ -1,7 +1,9 @@
 // app/notes/edit/[id]/page.jsx
 import EditNoteClient from "./EditNoteClient";
 
-export function generateStaticParams() {
+export const dynamicParams = false;
+
+export async function generateStaticParams() {
   return [];
 }
 
