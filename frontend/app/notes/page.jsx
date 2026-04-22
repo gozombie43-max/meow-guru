@@ -156,7 +156,7 @@ export default function NotesPage() {
                 <div style={s.cardActions}>
                   <button
                     style={s.editBtn}
-                    onClick={() => router.push(`/notes/edit/${note.id}`)}
+                    onClick={() => router.push(`/notes/edit?id=${note.id}`)}
                   >
                     ✏️ Edit
                   </button>
