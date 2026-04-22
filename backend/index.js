@@ -9,14 +9,16 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import passport from './auth/passport.js';
 import { initPassport } from './auth/passport.js';
-import { initDB, initUsersDB } from './cosmos.js';
+import { initDB, initUsersDB, initNotesDB } from './cosmos.js';
 import { initAuthRoutes } from './routes/auth.routes.js';
 import { initUserRoutes } from './routes/user.routes.js';
 import questionRoutes from './routes/questionRoutes.js';
+import notesRoutes from './routes/notes.routes.js';
 import imageUploadRoutes from './routes/imageUpload.js';
+import uploadNoteImageRoutes from './routes/uploadNoteImage.js';
 import massUploadImages from './routes/massUploadImages.js';
 import massUploadSolutions from './routes/massUploadSolutions.js';
-import { setQuestionsContainer, setUsersContainer } from './containerStore.js';
+import { setQuestionsContainer, setUsersContainer, setNotesContainer } from './containerStore.js';
 import { initBattleSocket } from './battle/battleSocket.js';
 
 const app = express();
@@ -91,9 +93,11 @@ async function initWithRetry() {
   try {
     const questionsContainer = await connectWithRetry(initDB, 'Questions DB');
     const usersContainer     = await connectWithRetry(initUsersDB, 'Users DB');
+    const notesContainer     = await connectWithRetry(initNotesDB, 'Notes DB');
 
     setQuestionsContainer(questionsContainer);
     setUsersContainer(usersContainer);
+    setNotesContainer(notesContainer);
 
     initPassport(usersContainer);
 
@@ -103,7 +107,9 @@ async function initWithRetry() {
     app.use('/api/upload', imageUploadRoutes);
     app.use('/api', massUploadImages);
     app.use('/api', massUploadSolutions);
-    app.use('/auth',  initAuthRoutes(usersContainer));
+    app.use('/api/upload-note-image', uploadNoteImageRoutes);
+    app.use('/api/notes', notesRoutes);
+    app.use('/auth', initAuthRoutes(usersContainer));
     app.use('/users', initUserRoutes(usersContainer));
 
     console.log('All routes registered ✅');

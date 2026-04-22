@@ -111,6 +111,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/multer": "^2.1.0",
     "nodemon": "^3.1.14"
   }
 }

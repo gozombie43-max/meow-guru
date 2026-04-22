@@ -1,8 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: "export",
-  trailingSlash: true,
+  images: {
+    domains: ["quizguru12345.blob.core.windows.net"],
+  },
   turbopack: {
     root: process.cwd(),
   },

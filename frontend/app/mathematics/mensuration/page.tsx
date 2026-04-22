@@ -83,13 +83,9 @@ export default function MensurationPage() {
           <h1 className="mensuration-title">Mensuration</h1>
         </header>
 
-        <section className="promo-banner">
+        <Link href="/mathematics/mensuration/formula-notes" className="promo-banner" aria-label="Notes Formula & Tricks">
           <div className="banner-content">
-            <p className="banner-kicker">Mensuration Track 2026</p>
-            <h2>Master area, perimeter, and volume with smart drills</h2>
-            <p className="banner-subtitle">
-              Practice exam-style sets with guided progression from fundamentals to Tier 2 level.
-            </p>
+            <h2>Notes Formula & Tricks</h2>
           </div>
 
           <div className="banner-illustration" aria-hidden="true">
@@ -99,7 +95,7 @@ export default function MensurationPage() {
               <path d="M34 70h52" stroke="white" strokeWidth="2.2" strokeLinecap="round" />
             </svg>
           </div>
-        </section>
+        </Link>
 
         <section className="feature-section">
           <h2>Explore Features</h2>
@@ -160,6 +156,14 @@ export default function MensurationPage() {
           gap: 14px;
           margin-bottom: 22px;
           animation: fade-slide 520ms ease both;
+          text-decoration: none;
+          color: inherit;
+          cursor: pointer;
+        }
+
+        .promo-banner:focus-visible {
+          outline: 2px solid rgba(255, 255, 255, 0.9);
+          outline-offset: 3px;
         }
 
         .promo-banner::before,

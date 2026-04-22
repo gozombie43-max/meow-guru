@@ -37,4 +37,16 @@ export const initUsersDB = async () => {
  
   return container;
 };
+
+// ── Notes Container ─────────────────────────────────────
+export const initNotesDB = async () => {
+  const { database } = await client.databases.createIfNotExists({ id: 'quizDB' });
+
+  const { container } = await database.containers.createIfNotExists({
+    id: 'notes',
+    partitionKey: { paths: ['/id'] },
+  });
+
+  return container;
+};
  
