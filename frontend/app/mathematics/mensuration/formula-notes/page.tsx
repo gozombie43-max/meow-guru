@@ -23,58 +23,6 @@ const TOPIC_QUERIES = [
   "mensuration",
 ];
 
-const defaultNotes = [
-  {
-    id: "default-1",
-    title: "Mensuration Formula Map",
-    subtitle: "Area, perimeter, TSA and CSA at a glance",
-    time: "9:41 AM",
-    icon: Ruler,
-  },
-  {
-    id: "default-2",
-    title: "Circle and Sector",
-    subtitle: "Arc length, segment area, mixed tricks",
-    time: "9:41 AM",
-    icon: Circle,
-  },
-  {
-    id: "default-3",
-    title: "Triangle and Polygon",
-    subtitle: "Heron, centroid, similarity shortcuts",
-    time: "9:41 AM",
-    icon: Triangle,
-  },
-  {
-    id: "default-4",
-    title: "3D Solids",
-    subtitle: "Prism, pyramid, frustum quick rules",
-    time: "9:41 AM",
-    icon: Layers,
-  },
-  {
-    id: "default-5",
-    title: "Cylinder, Cone, Sphere",
-    subtitle: "Curved surface and volume summaries",
-    time: "8:30 AM",
-    icon: Calculator,
-  },
-  {
-    id: "default-6",
-    title: "Smart Tricks",
-    subtitle: "Ratio scaling, units, and exam hacks",
-    time: "7:15 AM",
-    icon: Sparkles,
-  },
-  {
-    id: "default-7",
-    title: "Revision Sheet",
-    subtitle: "Compact notes for last-minute review",
-    time: "7:15 AM",
-    icon: BookOpen,
-  },
-];
-
 type ApiNote = {
   id?: string | number;
   title?: string;
@@ -132,17 +80,14 @@ export default function MensurationFormulaNotesPage() {
     fetchNotes();
   }, [API]);
 
-  // Show API notes when present; otherwise fall back to demo notes.
-  const mergedNotes = apiNotes.length > 0
-    ? apiNotes.map((n) => ({
-        ...n,
-        title: n.title || "Untitled Note",
-        subtitle: n.topic || "Mensuration",
-        time: new Date(n.updatedAt || n.createdAt || 0).toLocaleDateString(),
-        icon: n.type === "formula" ? Calculator : FileText,
-        isApiRecord: true,
-      }))
-    : defaultNotes;
+  const mergedNotes = apiNotes.map((n) => ({
+    ...n,
+    title: n.title || "Untitled Note",
+    subtitle: n.topic || "Mensuration",
+    time: new Date(n.updatedAt || n.createdAt || 0).toLocaleDateString(),
+    icon: n.type === "formula" ? Calculator : FileText,
+    isApiRecord: true,
+  }));
   const showSyncing = loading && apiNotes.length === 0;
 
   return (
