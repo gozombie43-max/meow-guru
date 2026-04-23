@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, type ComponentType } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
   Activity,
   BookOpen,
@@ -56,7 +56,7 @@ const TOPIC_DEFAULT_NOTES: Record<string, ApiNote[]> = {
     {
       id: "default-4",
       title: "Functions & Graphs",
-      subtitle: "Domain, range, and shape summaries",
+      subtitle: "Domain, range and shape summaries",
       time: "8:30 AM",
       icon: Circle,
     },
@@ -183,10 +183,12 @@ function getDefaultNotes(topic: string) {
   ];
 }
 
-export default function TopicFormulaNotesPage() {
+interface FormulaNotesClientProps {
+  topic: string;
+}
+
+export default function FormulaNotesClient({ topic }: FormulaNotesClientProps) {
   const router = useRouter();
-  const params = useParams();
-  const topic = (params.topic || "").toString();
   const [activeTab, setActiveTab] = useState("Notes");
   const [apiNotes, setApiNotes] = useState<ApiNote[]>([]);
   const [loading, setLoading] = useState(true);
@@ -293,10 +295,10 @@ export default function TopicFormulaNotesPage() {
               );
             })
           ) : (
-            <div style={{ textAlign: 'center', padding: '1rem', color: 'rgba(0,0,0,0.5)' }}>No notes found.</div>
+            <div style={{ textAlign: "center", padding: "1rem", color: "rgba(0,0,0,0.5)" }}>No notes found.</div>
           )}
           {showSyncing ? (
-            <div style={{ textAlign: 'center', padding: '0.6rem 0', color: 'rgba(0,0,0,0.45)', fontSize: '0.75rem' }}>
+            <div style={{ textAlign: "center", padding: "0.6rem 0", color: "rgba(0,0,0,0.45)", fontSize: "0.75rem" }}>
               Syncing notes...
             </div>
           ) : null}
@@ -414,7 +416,6 @@ export default function TopicFormulaNotesPage() {
 
         .search-button:focus-visible {
           outline: 2px solid rgba(0, 122, 255, 0.5);
-          outline-offset: 3px;
         }
 
         .icon {
