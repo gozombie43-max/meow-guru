@@ -14,13 +14,15 @@ import {
   CheckCircle2,
   XCircle,
   Menu,
+  Brain,
+  Clock,
+  ChevronLeft,
+  ChevronRight,
   Flame,
   Sparkles,
   Target,
   RotateCcw,
   X,
-  ArrowLeft,
-  ArrowRight,
   BarChart3,
   Lightbulb,
 } from "lucide-react";
@@ -316,6 +318,72 @@ function QuestionPaletteModal({
   );
 }
 
+function QuestionPalettePanel({
+  total,
+  currentIndex,
+  selectedAnswers,
+  questions,
+  submittedQuestions,
+  onGoToQuestion,
+}: {
+  total: number;
+  currentIndex: number;
+  selectedAnswers: Record<number, number>;
+  questions: AlgebraQuestion[];
+  submittedQuestions: Set<number>;
+  onGoToQuestion: (questionNumber: number) => void;
+}) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="mb-3 flex items-center justify-between">
+        <h3 className="text-base font-semibold text-slate-800">Question Palette</h3>
+        <span className="text-xs font-semibold text-slate-500">
+          {currentIndex + 1}/{total}
+        </span>
+      </div>
+
+      <div className="mb-3 flex flex-wrap gap-2 text-xs text-slate-600">
+        <span className="rounded-md border border-blue-300 bg-blue-100 px-2 py-1">
+          Current
+        </span>
+        <span className="rounded-md border border-amber-300 bg-amber-100 px-2 py-1">
+          Answered
+        </span>
+        <span className="rounded-md border border-emerald-300 bg-emerald-100 px-2 py-1">
+          Correct
+        </span>
+        <span className="rounded-md border border-rose-300 bg-rose-100 px-2 py-1">
+          Wrong
+        </span>
+        <span className="rounded-md border border-slate-300 bg-slate-100 px-2 py-1">
+          Not Answered
+        </span>
+      </div>
+
+      <div className="question-grid question-grid--palette">
+        {Array.from({ length: total }, (_, index) => {
+          const status = getQuestionStatus({
+            index,
+            currentIndex,
+            selectedAnswers,
+            questions,
+            submittedQuestions,
+          });
+          return (
+            <button
+              key={index}
+              onClick={() => onGoToQuestion(index + 1)}
+              className={`question-button min-h-12 rounded-xl text-sm font-semibold ${statusClasses(status)}`}
+            >
+              {index + 1}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 /* ── Question Navigator ─────────────────────────────────────────────────────  */
 function QuestionNavigator({
   total,
@@ -391,6 +459,59 @@ function QuestionNavigator({
         onGoToQuestion={onGoToQuestion}
       />
     </>
+  );
+}
+
+function QuestionQuickBar({
+  total,
+  currentIndex,
+  selectedAnswers,
+  questions,
+  submittedQuestions,
+  onGoToQuestion,
+}: {
+  total: number;
+  currentIndex: number;
+  selectedAnswers: Record<number, number>;
+  questions: AlgebraQuestion[];
+  submittedQuestions: Set<number>;
+  onGoToQuestion: (questionNumber: number) => void;
+}) {
+  const quickButtonRefs = useRef<Array<HTMLButtonElement | null>>([]);
+
+  useEffect(() => {
+    const activeButton = quickButtonRefs.current[currentIndex];
+    if (!activeButton) return;
+    activeButton.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+  }, [currentIndex]);
+
+  return (
+    <div className="rounded-xl border border-slate-200 bg-slate-50 px-2 py-1.5">
+      <div className="question-strip qnav-bar-scroll" style={{ scrollSnapType: "x mandatory" }}>
+        {Array.from({ length: total }, (_, index) => {
+          const status = getQuestionStatus({
+            index,
+            currentIndex,
+            selectedAnswers,
+            questions,
+            submittedQuestions,
+          });
+          return (
+            <button
+              key={index}
+              ref={(el) => {
+                quickButtonRefs.current[index] = el;
+              }}
+              onClick={() => onGoToQuestion(index + 1)}
+              className={`h-8 w-8 min-h-8 min-w-8 rounded-lg text-xs font-semibold ${statusClasses(status)}`}
+              aria-label={`Question ${index + 1}`}
+            >
+              {index + 1}
+            </button>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 
@@ -1216,6 +1337,19 @@ export default function QuizEngine() {
     showQuestion(currentIndex - 1);
   }, [currentIndex, showQuestion]);
 
+  const handleClearResponse = useCallback(() => {
+    if (submittedQuestions.has(currentIndex)) return;
+    setSelectedAnswer(null);
+    setSelected(null);
+    setSelectedAnswers((prev) => {
+      if (!(currentIndex in prev)) return prev;
+      const next = { ...prev };
+      delete next[currentIndex];
+      return next;
+    });
+    setSubmitError("");
+  }, [currentIndex, submittedQuestions]);
+
   function handleNext() {
     if (currentIndex < questions.length - 1) {
       showQuestion(currentIndex + 1);
@@ -1663,20 +1797,79 @@ export default function QuizEngine() {
     <div
       className="min-h-screen relative overflow-x-hidden"
       style={{
-        background: "linear-gradient(165deg, #ecf4ff 0%, #eef8ff 38%, #f7fbff 100%)",
-        fontFamily: "Poppins, Inter, 'Segoe UI', sans-serif",
+        background: "#f0f4f8",
+        fontFamily: "'General Sans', 'Plus Jakarta Sans', system-ui, sans-serif",
       }}
     >
-      <main className="mx-auto max-w-3xl px-3 pb-[110px] pt-3 sm:px-6 sm:pt-4">
+      <header className="sticky top-0 z-40 hidden border-b border-slate-200 bg-white/95 backdrop-blur lg:block">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-3">
+          <div className="flex min-w-[220px] items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500">
+              <Brain className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-base font-semibold text-slate-900 leading-tight">
+                Mathematics Practice
+              </h1>
+              <p className="text-xs text-slate-500">Chapter — {currentQ.concept}</p>
+            </div>
+          </div>
+
+          <div className="flex flex-1 items-center justify-center gap-2">
+            <button
+              onClick={handlePrev}
+              disabled={currentIndex === 0}
+              className="nav-q-btn flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-slate-100 text-slate-500 transition-colors hover:bg-slate-200 disabled:opacity-40"
+              aria-label="Previous question"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <div className="w-full max-w-[560px]">
+              <QuestionQuickBar
+                total={questions.length}
+                currentIndex={currentIndex}
+                selectedAnswers={selectedAnswers}
+                questions={questions}
+                submittedQuestions={submittedQuestions}
+                onGoToQuestion={goToQuestion}
+              />
+            </div>
+            <button
+              onClick={handleNext}
+              disabled={currentIndex >= questions.length - 1}
+              className="nav-q-btn flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-slate-100 text-slate-500 transition-colors hover:bg-slate-200 disabled:opacity-40"
+              aria-label="Next question"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 rounded-xl border border-red-100 bg-red-50 px-3 py-1.5">
+              <Clock className="h-4 w-4 text-red-500" />
+              <span className="text-sm font-semibold text-red-600 tabular-nums tracking-wide">
+                {formatClock(timeLeft)}
+              </span>
+            </div>
+            <button className="flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-slate-100">
+              <Menu className="h-5 w-5 text-slate-500" />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-7xl px-3 pb-[110px] pt-3 sm:px-6 sm:pt-4 lg:px-8 lg:pb-10">
+        <div className="lg:flex lg:items-start lg:gap-6">
+          <div className="lg:flex-1">
 
         {/* Top bar */}
-        <section className="mb-3 flex items-center justify-end gap-2">
+        <section className="mb-3 flex items-center justify-end gap-2 lg:hidden">
           <div className="rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-sm font-bold text-slate-700">
             {formatClock(timeLeft)}
           </div>
           <button
             onClick={openPalette}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-700 transition-colors hover:bg-slate-50"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-700 transition-colors hover:bg-slate-50 lg:hidden"
             aria-label="Open question palette"
           >
             <Menu className="h-4 w-4" />
@@ -1684,7 +1877,7 @@ export default function QuizEngine() {
         </section>
 
         {/* Question Navigator Strip */}
-        <div className="mb-3">
+        <div className="mb-3 lg:hidden">
           <QuestionNavigator
             total={questions.length}
             currentIndex={currentIndex}
@@ -1720,44 +1913,43 @@ export default function QuizEngine() {
             else showQuestion(currentIndex + 1);
           }}
         >
+          <div className="mb-3 flex items-center justify-between">
+            <span className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-600">
+              <span className="h-2 w-2 rounded-sm bg-blue-500" />
+              {currentQ.concept}
+            </span>
+            <span className="text-xs font-semibold text-slate-500">
+              Question {currentIndex + 1} of {questions.length}
+            </span>
+          </div>
           <motion.div
             key={currentQ.id}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2 }}
-            className={`bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.08)] px-6 py-6 sm:px-8 sm:py-8 ${
+            className={`bg-white rounded-2xl border border-slate-200 shadow-sm px-6 py-6 sm:px-8 sm:py-8 ${
               isLongQuestion
                 ? "min-h-[220px] sm:min-h-[260px]"
                 : "min-h-[150px] sm:min-h-[180px]"
             }`}
           >
-            <div className="flex items-center mb-[14px]">
-              <span
-                style={{
-                  border: "1.5px solid #3B82F6",
-                  borderRadius: "999px",
-                  padding: "3px 12px",
-                  fontSize: "13px",
-                  color: "#3B82F6",
-                  background: "transparent",
-                  fontWeight: 500,
-                }}
-              >
-                {currentQ.concept}
+            <div className="flex items-start gap-4">
+              <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-blue-50 text-sm font-bold text-blue-600">
+                Q
               </span>
-              <span
-                style={{
-                  fontSize: "13px",
-                  color: "#6B7280",
-                  marginLeft: 8,
-                  fontWeight: 500,
-                }}
-              >
-                {currentQ.exam} {currentQ.year}
-              </span>
+              <div className="flex-1 text-[17px] font-normal leading-relaxed text-slate-800">
+                <RichContent text={currentQ.question} className="leading-relaxed" />
+                {currentQ.questionImage && (
+                  <img
+                    src={currentQ.questionImage}
+                    alt={`Question ${currentIndex + 1}`}
+                    className="mt-4 w-full rounded-2xl border border-slate-200"
+                  />
+                )}
+              </div>
               <button
                 onClick={handleBookmark}
-                className="ml-auto p-1.5 rounded-full hover:bg-slate-100 transition-colors"
+                className="ml-2 rounded-full p-1.5 transition-colors hover:bg-slate-100"
                 aria-label={
                   bookmarked.has(String(currentQ.id))
                     ? "Remove bookmark"
@@ -1765,35 +1957,12 @@ export default function QuizEngine() {
                 }
               >
                 {bookmarked.has(String(currentQ.id)) ? (
-                  <BookmarkCheck className="w-5 h-5 text-cyan-500" />
+                  <BookmarkCheck className="h-5 w-5 text-blue-500" />
                 ) : (
-                  <Bookmark className="w-5 h-5 text-slate-400" />
+                  <Bookmark className="h-5 w-5 text-slate-400" />
                 )}
               </button>
             </div>
-
-            <div
-              style={{
-                fontSize: 18,
-                fontWeight: 400,
-                color: "#111827",
-                lineHeight: 1.6,
-                marginBottom: 28, // More space below question
-                letterSpacing: 0.01,
-                paddingLeft: "0.3cm",
-                paddingRight: "0.3cm",
-              }}
-            >
-              <RichContent text={currentQ.question} className="leading-relaxed" />
-            </div>
-
-            {(currentQ as AlgebraQuestion & { image?: string }).image && (
-              <img
-                src={(currentQ as AlgebraQuestion & { image?: string }).image}
-                alt={`Question ${currentIndex + 1}`}
-                className="mt-4 w-full rounded-2xl border border-slate-200"
-              />
-            )}
           </motion.div>
         </section>
 
@@ -1836,116 +2005,124 @@ export default function QuizEngine() {
               )}
             </div>
           ) : (
-            currentQ.options.slice(0, 4).map((opt, i) => {
-              let border = "#E5E7EB";
-              let bg = "#FFFFFF";
-              let letterBg = "transparent";
-              let letterBorder = "#3B82F6";
-              let letterText = "#1D4ED8";
-              const letterFontWeight = 600;
+            <div className="grid gap-3 lg:grid-cols-2">
+              {currentQ.options.slice(0, 4).map((opt, i) => {
+                let border = "#E2E8F0";
+                let bg = "#FFFFFF";
+                let letterBg = "transparent";
+                let letterBorder = "#3B82F6";
+                let letterText = "#3B82F6";
+                const letterFontWeight = 600;
 
-              if (isCurrentSubmitted && i === currentQ.correctAnswer) {
-                border = "#16A34A";
-                bg = "#F0FDF4";
-                letterBg = "#16A34A";
-                letterBorder = "#16A34A";
-                letterText = "#fff";
-              } else if (
-                isCurrentSubmitted &&
-                selectedAnswer === i &&
-                i !== currentQ.correctAnswer
-              ) {
-                border = "#DC2626";
-                bg = "#FEF2F2";
-                letterBg = "#DC2626";
-                letterBorder = "#DC2626";
-                letterText = "#fff";
-              } else if (!isCurrentSubmitted && selectedAnswer === i) {
-                border = "#2563EB";
-                bg = "#EFF6FF";
-                letterBg = "#2563EB";
-                letterBorder = "#2563EB";
-                letterText = "#fff";
-              }
+                if (isCurrentSubmitted && i === currentQ.correctAnswer) {
+                  border = "#16A34A";
+                  bg = "#F0FDF4";
+                  letterBg = "#16A34A";
+                  letterBorder = "#16A34A";
+                  letterText = "#fff";
+                } else if (
+                  isCurrentSubmitted &&
+                  selectedAnswer === i &&
+                  i !== currentQ.correctAnswer
+                ) {
+                  border = "#DC2626";
+                  bg = "#FEF2F2";
+                  letterBg = "#DC2626";
+                  letterBorder = "#DC2626";
+                  letterText = "#fff";
+                } else if (!isCurrentSubmitted && selectedAnswer === i) {
+                  border = "#3B82F6";
+                  bg = "#EFF6FF";
+                  letterBg = "#3B82F6";
+                  letterBorder = "#3B82F6";
+                  letterText = "#fff";
+                }
 
-              return (
-                <button
-                  key={i}
-                  onClick={() => handleSelectAnswer(i)}
-                  disabled={isCurrentSubmitted}
-                  type="button"
-                  style={{
-                    width: "100%",
-                    minHeight: 58,
-                    background: bg,
-                    border: `1.5px solid ${border}`,
-                    borderRadius: 16,
-                    padding: "0 16px",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 14,
-                    boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
-                    marginBottom: 12,
-                    cursor: isCurrentSubmitted ? "default" : "pointer",
-                    transition: "all 0.15s ease",
-                    fontSize: 17,
-                    fontWeight: 400,
-                    color: "#111827",
-                    outline: "none",
-                  }}
-                  onMouseOver={(e) => {
-                    if (!isCurrentSubmitted && selectedAnswer !== i) {
-                      e.currentTarget.style.borderColor = "#93C5FD";
-                      e.currentTarget.style.background = "#EFF6FF";
-                    }
-                  }}
-                  onMouseOut={(e) => {
-                    if (!isCurrentSubmitted && selectedAnswer !== i) {
-                      e.currentTarget.style.borderColor = "#E5E7EB";
-                      e.currentTarget.style.background = "#FFFFFF";
-                    }
-                  }}
-                >
-                  <span
+                return (
+                  <button
+                    key={i}
+                    onClick={() => handleSelectAnswer(i)}
+                    disabled={isCurrentSubmitted}
+                    type="button"
                     style={{
-                      width: 34,
-                      height: 34,
-                      border: `1.5px solid ${letterBorder}`,
-                      borderRadius: "50%",
-                      background: letterBg,
-                      color: letterText,
-                      fontSize: 14,
-                      fontWeight: letterFontWeight,
+                      width: "100%",
+                      minHeight: 58,
+                      background: bg,
+                      border: `1.5px solid ${border}`,
+                      borderRadius: 16,
+                      padding: "0 16px",
                       display: "flex",
                       alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                      marginRight: 10,
+                      gap: 14,
+                      boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+                      cursor: isCurrentSubmitted ? "default" : "pointer",
                       transition: "all 0.15s ease",
+                      fontSize: 17,
+                      fontWeight: 400,
+                      color: "#111827",
+                      outline: "none",
+                    }}
+                    onMouseOver={(e) => {
+                      if (!isCurrentSubmitted && selectedAnswer !== i) {
+                        e.currentTarget.style.borderColor = "#93C5FD";
+                        e.currentTarget.style.background = "#EFF6FF";
+                      }
+                    }}
+                    onMouseOut={(e) => {
+                      if (!isCurrentSubmitted && selectedAnswer !== i) {
+                        e.currentTarget.style.borderColor = "#E5E7EB";
+                        e.currentTarget.style.background = "#FFFFFF";
+                      }
                     }}
                   >
-                    {String.fromCharCode(65 + i)}
-                  </span>
-                  <div style={{ fontSize: 17, fontWeight: 400, color: "#111827", lineHeight: 1.5 }}>
-                    <RichContent text={opt} />
-                  </div>
-                  {isCurrentSubmitted && i === currentQ.correctAnswer && (
-                    <CheckCircle2
-                      className="ml-auto h-5 w-5 shrink-0 text-emerald-600"
-                      aria-label="Correct option"
-                    />
-                  )}
-                  {isCurrentSubmitted &&
-                    selectedAnswer === i &&
-                    i !== currentQ.correctAnswer && (
-                      <XCircle
-                        className="ml-auto h-5 w-5 shrink-0 text-red-600"
-                        aria-label="Wrong option"
+                    <span
+                      style={{
+                        width: 34,
+                        height: 34,
+                        border: `1.5px solid ${letterBorder}`,
+                        borderRadius: "50%",
+                        background: letterBg,
+                        color: letterText,
+                        fontSize: 14,
+                        fontWeight: letterFontWeight,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                        marginRight: 10,
+                        transition: "all 0.15s ease",
+                      }}
+                    >
+                      {String.fromCharCode(65 + i)}
+                    </span>
+                    <div
+                      style={{
+                        fontSize: 17,
+                        fontWeight: 400,
+                        color: "#111827",
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      <RichContent text={opt} />
+                    </div>
+                    {isCurrentSubmitted && i === currentQ.correctAnswer && (
+                      <CheckCircle2
+                        className="ml-auto h-5 w-5 shrink-0 text-emerald-600"
+                        aria-label="Correct option"
                       />
                     )}
-                </button>
-              );
-            })
+                    {isCurrentSubmitted &&
+                      selectedAnswer === i &&
+                      i !== currentQ.correctAnswer && (
+                        <XCircle
+                          className="ml-auto h-5 w-5 shrink-0 text-red-600"
+                          aria-label="Wrong option"
+                        />
+                      )}
+                  </button>
+                );
+              })}
+            </div>
           )}
 
           {canViewSolution && (
@@ -1958,6 +2135,58 @@ export default function QuizEngine() {
             </button>
           )}
         </section>
+
+        <div className="mt-6 hidden items-center justify-between border-t border-slate-200 pt-4 lg:flex">
+          <button
+            onClick={handlePrev}
+            disabled={currentIndex === 0}
+            className="inline-flex h-12 items-center justify-center rounded-xl border border-slate-200 bg-slate-100 px-5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-45"
+          >
+            Previous
+          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleClearResponse}
+              disabled={isCurrentSubmitted}
+              className="inline-flex h-12 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45"
+            >
+              Clear Response
+            </button>
+            <button
+              onClick={handleNext}
+              disabled={!isCurrentSubmitted}
+              className="inline-flex h-12 items-center justify-center rounded-xl border border-slate-200 bg-slate-100 px-5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-45"
+            >
+              {currentIndex < questions.length - 1 ? "Next →" : "Finish"}
+            </button>
+            <button
+              onClick={() => {
+                if (!isCurrentSubmitted) {
+                  handleSubmitCurrent();
+                }
+              }}
+              disabled={!canSubmit}
+              className="inline-flex h-12 items-center justify-center rounded-xl bg-blue-600 px-6 text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-45"
+            >
+              Submit
+            </button>
+          </div>
+        </div>
+        </div>
+
+        <aside className="hidden lg:block lg:w-[320px]">
+          <div className="sticky top-6">
+            <QuestionPalettePanel
+              total={questions.length}
+              currentIndex={currentIndex}
+              selectedAnswers={selectedAnswers}
+              questions={questions}
+              submittedQuestions={submittedQuestions}
+              onGoToQuestion={goToQuestion}
+            />
+          </div>
+        </aside>
+        </div>
       </main>
 
       <SolutionBottomSheet
@@ -1978,7 +2207,7 @@ export default function QuizEngine() {
       )}
 
       {/* Bottom navigation */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 bg-white/95 backdrop-blur-md">
+      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 bg-white/95 backdrop-blur-md lg:hidden">
         <div
           className="mx-auto max-w-3xl px-3 pb-3 pt-3 sm:px-6"
           style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 12px)" }}
