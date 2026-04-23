@@ -62,26 +62,79 @@ function NoteViewContent() {
   }
 
   return (
-    <main style={styles.page}>
-      <header style={styles.header}>
-        <button type="button" style={styles.backButton} onClick={() => router.back()}>
-          Back
-        </button>
-        <div style={styles.headerText}>
-          <h1 style={styles.title}>{note.title || "Untitled Note"}</h1>
-          <p style={styles.subtitle}>{note.topic || "Formula note"}</p>
-        </div>
-      </header>
+    <>
+      <main className="note-view-page" style={styles.page}>
+        <header className="note-view-header" style={styles.header}>
+          <button type="button" style={styles.backButton} onClick={() => router.back()}>
+            Back
+          </button>
+          <div style={styles.headerText}>
+            <h1 style={styles.title}>{note.title || "Untitled Note"}</h1>
+            <p style={styles.subtitle}>{note.topic || "Formula note"}</p>
+          </div>
+        </header>
 
-      <section style={styles.viewerCard}>
-        <iframe
-          title={note.title || "Note preview"}
-          srcDoc={note.body || "<p>No HTML content found for this note.</p>"}
-          sandbox="allow-scripts"
-          style={styles.iframe}
-        />
-      </section>
-    </main>
+        <section className="note-view-card" style={styles.viewerCard}>
+          <iframe
+            className="note-view-frame"
+            title={note.title || "Note preview"}
+            srcDoc={note.body || "<p>No HTML content found for this note.</p>"}
+            sandbox="allow-scripts"
+            style={styles.iframe}
+          />
+        </section>
+      </main>
+
+      <style jsx>{`
+        .note-view-page {
+          min-height: 100svh;
+          display: flex;
+          flex-direction: column;
+          padding: 20px;
+        }
+
+        .note-view-header {
+          max-width: 1200px;
+          width: 100%;
+          margin: 0 auto 16px;
+        }
+
+        .note-view-card {
+          max-width: 1200px;
+          width: 100%;
+          margin: 0 auto;
+          border: 1px solid #30363d;
+          border-radius: 16px;
+          overflow: hidden;
+          flex: 1;
+          min-height: 0;
+        }
+
+        .note-view-frame {
+          width: 100%;
+          height: 100%;
+        }
+
+        @media (max-width: 768px) {
+          .note-view-page {
+            padding: 0;
+          }
+
+          .note-view-header {
+            margin: 0;
+            padding: 12px 16px;
+          }
+
+          .note-view-card {
+            margin: 0;
+            border-radius: 0;
+            border-left: 0;
+            border-right: 0;
+            border-bottom: 0;
+          }
+        }
+      `}</style>
+    </>
   );
 }
 
@@ -101,15 +154,11 @@ export default function NoteViewPage() {
 
 const styles = {
   page: {
-    minHeight: "100vh",
     background: "#0d1117",
     color: "#e2e8f0",
-    padding: "20px",
     fontFamily: "'Segoe UI', sans-serif",
   },
   header: {
-    maxWidth: "1200px",
-    margin: "0 auto 16px",
     display: "flex",
     alignItems: "center",
     gap: "14px",
@@ -128,20 +177,18 @@ const styles = {
     fontSize: "0.9rem",
   },
   viewerCard: {
-    maxWidth: "1200px",
-    margin: "0 auto",
-    border: "1px solid #30363d",
-    borderRadius: "16px",
-    overflow: "hidden",
     background: "#111827",
     boxShadow: "0 18px 40px rgba(0, 0, 0, 0.28)",
+    display: "flex",
+    flex: 1,
+    minHeight: 0,
   },
   iframe: {
     display: "block",
     width: "100%",
-    height: "calc(100vh - 120px)",
     border: "none",
     background: "#ffffff",
+    flex: 1,
   },
   backButton: {
     border: "1px solid #30363d",

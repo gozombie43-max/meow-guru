@@ -11,6 +11,8 @@ type ThemeMode = 'light' | 'dark';
 export default function BottomNav() {
   const pathname = usePathname() || '/';
   const isQuizRoute = pathname.split('/').includes('quiz');
+  const isNotesViewRoute = pathname === '/notes/view' || pathname.startsWith('/notes/view/');
+  const shouldHideNav = isQuizRoute || isNotesViewRoute;
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [theme, setTheme] = useState<ThemeMode>('light');
   const [isScrolled, setIsScrolled] = useState(false);
@@ -32,13 +34,13 @@ export default function BottomNav() {
 
   useEffect(() => {
     const body = document.body;
-    if (isQuizRoute) {
+    if (shouldHideNav) {
       body.classList.remove('has-bottom-nav');
       return;
     }
     body.classList.add('has-bottom-nav');
     return () => body.classList.remove('has-bottom-nav');
-  }, [isQuizRoute]);
+  }, [shouldHideNav]);
 
   useEffect(() => {
     const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
@@ -85,7 +87,7 @@ export default function BottomNav() {
     return () => window.removeEventListener('scroll', updateScroll);
   }, []);
 
-  if (isQuizRoute) return null;
+  if (shouldHideNav) return null;
 
   const isHome = pathname === '/';
   const isMock = pathname.startsWith('/mock-test');
