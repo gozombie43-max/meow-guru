@@ -71,10 +71,19 @@ const defaultNotes = [
   },
 ];
 
+type ApiNote = {
+  id?: string | number;
+  title?: string;
+  topic?: string;
+  type?: string;
+  updatedAt?: string;
+  createdAt?: string;
+};
+
 export default function TrigonometryFormulaNotesPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("Notes");
-  const [apiNotes, setApiNotes] = useState([]);
+  const [apiNotes, setApiNotes] = useState<ApiNote[]>([]);
   const [loading, setLoading] = useState(true);
 
   const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
@@ -84,7 +93,7 @@ export default function TrigonometryFormulaNotesPage() {
       try {
         const res = await fetch(`${API}/api/notes?topic=trigonometry`);
         if (res.ok) {
-          const data = await res.json();
+          const data = (await res.json()) as ApiNote[];
           setApiNotes(data);
         }
       } catch (err) {
@@ -102,7 +111,7 @@ export default function TrigonometryFormulaNotesPage() {
       ...n,
       title: n.title || "Untitled Note",
       subtitle: n.topic || "Trigonometry",
-      time: new Date(n.updatedAt || n.createdAt).toLocaleDateString(),
+      time: new Date(n.updatedAt || n.createdAt || 0).toLocaleDateString(),
       icon: n.type === "formula" ? Calculator : FileText,
       isApiRecord: true,
     })),
@@ -151,7 +160,7 @@ export default function TrigonometryFormulaNotesPage() {
                 <button
                   key={note.id || note.title}
                   onClick={() => {
-                    if (note.isApiRecord) {
+                    if ("isApiRecord" in note && note.isApiRecord) {
                       router.push(`/notes/edit?id=${note.id}`);
                     }
                   }}

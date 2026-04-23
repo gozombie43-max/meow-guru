@@ -75,10 +75,19 @@ const defaultNotes = [
   },
 ];
 
+type ApiNote = {
+  id?: string | number;
+  title?: string;
+  topic?: string;
+  type?: string;
+  updatedAt?: string;
+  createdAt?: string;
+};
+
 export default function MensurationFormulaNotesPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("Notes");
-  const [apiNotes, setApiNotes] = useState([]);
+  const [apiNotes, setApiNotes] = useState<ApiNote[]>([]);
   const [loading, setLoading] = useState(true);
 
   const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
@@ -86,29 +95,29 @@ export default function MensurationFormulaNotesPage() {
   useEffect(() => {
     const fetchNotes = async () => {
       try {
-        const queryByTopic = async (topic) => {
+        const queryByTopic = async (topic: string): Promise<ApiNote[]> => {
           const res = await fetch(`${API}/api/notes?topic=${encodeURIComponent(topic)}`);
           if (!res.ok) return [];
-          return res.json();
+          return (await res.json()) as ApiNote[];
         };
 
         const responses = await Promise.all(
           TOPIC_QUERIES.map((topic) => queryByTopic(topic))
         );
 
-        let merged = responses.flat();
+        let merged: ApiNote[] = responses.flat();
         if (merged.length === 0) {
           // If no mensuration-specific notes exist, fall back to formula notes.
           const res = await fetch(`${API}/api/notes?type=formula`);
-          if (res.ok) merged = await res.json();
+          if (res.ok) merged = (await res.json()) as ApiNote[];
         }
 
-        const unique = new Map();
+        const unique = new Map<string | number, ApiNote>();
         merged.forEach((note) => {
-          if (note?.id && !unique.has(note.id)) unique.set(note.id, note);
+          if (note?.id != null && !unique.has(note.id)) unique.set(note.id, note);
         });
 
-        const toTime = (note) => Date.parse(note?.updatedAt || note?.createdAt || 0);
+        const toTime = (note: ApiNote) => new Date(note?.updatedAt || note?.createdAt || 0).getTime();
         const ordered = Array.from(unique.values()).sort(
           (a, b) => toTime(b) - toTime(a)
         );
@@ -129,7 +138,7 @@ export default function MensurationFormulaNotesPage() {
         ...n,
         title: n.title || "Untitled Note",
         subtitle: n.topic || "Mensuration",
-        time: new Date(n.updatedAt || n.createdAt).toLocaleDateString(),
+        time: new Date(n.updatedAt || n.createdAt || 0).toLocaleDateString(),
         icon: n.type === "formula" ? Calculator : FileText,
         isApiRecord: true,
       }))
@@ -177,7 +186,7 @@ export default function MensurationFormulaNotesPage() {
                 <button
                   key={note.id || note.title}
                   onClick={() => {
-                    if (note.isApiRecord) {
+                    if ("isApiRecord" in note && note.isApiRecord) {
                       router.push(`/notes/view?id=${note.id}`);
                     }
                   }}

@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
-export default function NoteViewPage() {
+function NoteViewContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [note, setNote] = useState(null);
@@ -82,6 +82,20 @@ export default function NoteViewPage() {
         />
       </section>
     </main>
+  );
+}
+
+export default function NoteViewPage() {
+  return (
+    <Suspense
+      fallback={
+        <div style={styles.stateShell}>
+          <p style={styles.stateText}>Loading note...</p>
+        </div>
+      }
+    >
+      <NoteViewContent />
+    </Suspense>
   );
 }
 

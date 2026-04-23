@@ -2,7 +2,13 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    domains: ["quizguru12345.blob.core.windows.net"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "quizguru12345.blob.core.windows.net",
+        pathname: "/**",
+      },
+    ],
   },
   output: "export",
   trailingSlash: true,
