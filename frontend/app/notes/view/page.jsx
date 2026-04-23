@@ -64,6 +64,14 @@ function NoteViewContent() {
   return (
     <>
       <main className="note-view-page" style={styles.page}>
+        <button
+          type="button"
+          className="note-view-back"
+          style={styles.backButton}
+          onClick={() => router.back()}
+        >
+          Back
+        </button>
         <header className="note-view-header" style={styles.header}>
           <button type="button" style={styles.backButton} onClick={() => router.back()}>
             Back
@@ -88,9 +96,20 @@ function NoteViewContent() {
       <style jsx>{`
         .note-view-page {
           min-height: 100svh;
+          height: 100svh;
           display: flex;
           flex-direction: column;
           padding: 20px;
+          overflow: hidden;
+        }
+
+        .note-view-back {
+          position: fixed;
+          top: calc(16px + env(safe-area-inset-top));
+          left: 16px;
+          z-index: 6;
+          display: none;
+          box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
         }
 
         .note-view-header {
@@ -121,16 +140,18 @@ function NoteViewContent() {
           }
 
           .note-view-header {
-            margin: 0;
-            padding: 12px 16px;
+            display: none;
+          }
+
+          .note-view-back {
+            display: inline-flex;
+            align-items: center;
           }
 
           .note-view-card {
             margin: 0;
             border-radius: 0;
-            border-left: 0;
-            border-right: 0;
-            border-bottom: 0;
+            border: 0;
           }
         }
       `}</style>

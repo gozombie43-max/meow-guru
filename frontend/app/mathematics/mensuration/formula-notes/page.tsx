@@ -143,6 +143,7 @@ export default function MensurationFormulaNotesPage() {
         isApiRecord: true,
       }))
     : defaultNotes;
+  const showSyncing = loading && apiNotes.length === 0;
 
   return (
     <main className="formula-notes-page">
@@ -177,9 +178,7 @@ export default function MensurationFormulaNotesPage() {
         </div>
 
         <section className="glass-container">
-          {loading ? (
-             <div style={{ textAlign: 'center', padding: '1rem', color: 'rgba(0,0,0,0.5)' }}>Loading notes...</div>
-          ) : mergedNotes.length > 0 ? (
+          {mergedNotes.length > 0 ? (
             mergedNotes.map((note, index) => {
               const Icon = note.icon;
               return (
@@ -208,6 +207,11 @@ export default function MensurationFormulaNotesPage() {
           ) : (
             <div style={{ textAlign: 'center', padding: '1rem', color: 'rgba(0,0,0,0.5)' }}>No notes found.</div>
           )}
+          {showSyncing ? (
+            <div style={{ textAlign: 'center', padding: '0.6rem 0', color: 'rgba(0,0,0,0.45)', fontSize: '0.75rem' }}>
+              Syncing notes...
+            </div>
+          ) : null}
         </section>
       </div>
 
