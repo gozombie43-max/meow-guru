@@ -103,13 +103,14 @@ export default function AlgebraPage() {
           <h1 className="algebra-title">Algebra</h1>
         </header>
 
-        <section className="promo-banner">
+        <Link href="/mathematics/algebra/formula-notes" className="promo-banner" aria-label="Open Algebra notes and formulas">
           <div className="banner-content">
             <p className="banner-kicker">Algebra Sprint 2026</p>
             <h2>Learn smarter with daily algebra missions</h2>
             <p className="banner-subtitle">
               Bite-size practice sets, adaptive difficulty, and instant feedback to sharpen your speed.
             </p>
+            <p className="banner-action">Open formula notes</p>
           </div>
 
           <div className="banner-illustration" aria-hidden="true">
@@ -118,7 +119,7 @@ export default function AlgebraPage() {
               <path d="M60 28l10 26h22l-18 14 7 23-21-14-21 14 7-23-18-14h22L60 28z" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
-        </section>
+        </Link>
 
         <section className="feature-section">
           <h2>Explore Features</h2>

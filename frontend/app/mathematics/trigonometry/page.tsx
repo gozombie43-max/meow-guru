@@ -104,22 +104,23 @@ export default function TrigonometryPage() {
 					<h1 className="algebra-title">Trigonometry</h1>
 				</header>
 
-				<section className="promo-banner">
-					<div className="banner-content">
-						<p className="banner-kicker">Trigonometry Sprint 2026</p>
-						<h2>Explore trigonometry with daily missions</h2>
-						<p className="banner-subtitle">
-							Practice, formulas, and challenges to master trigonometric concepts and speed.
-						</p>
-					</div>
+<Link href="/mathematics/trigonometry/formula-notes" className="promo-banner" aria-label="Open Trigonometry notes and formulas">
+				<div className="banner-content">
+					<p className="banner-kicker">Trigonometry Sprint 2026</p>
+					<h2>Explore trigonometry with daily missions</h2>
+					<p className="banner-subtitle">
+						Practice, formulas, and challenges to master trigonometric concepts and speed.
+					</p>
+					<p className="banner-action">Open formula notes</p>
+				</div>
 
-					<div className="banner-illustration" aria-hidden="true">
-						<svg viewBox="0 0 120 120" className="rocket-svg" fill="none">
-							<circle cx="60" cy="60" r="38" stroke="rgba(255,255,255,0.35)" strokeWidth="2" />
-							<path d="M60 28l10 26h22l-18 14 7 23-21-14-21 14 7-23-18-14h22L60 28z" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-						</svg>
-					</div>
-				</section>
+				<div className="banner-illustration" aria-hidden="true">
+					<svg viewBox="0 0 120 120" className="rocket-svg" fill="none">
+						<circle cx="60" cy="60" r="38" stroke="rgba(255,255,255,0.35)" strokeWidth="2" />
+						<path d="M60 28l10 26h22l-18 14 7 23-21-14-21 14 7-23-18-14h22L60 28z" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+					</svg>
+				</div>
+			</Link>
 
 				<section className="feature-section">
 					<h2>Explore Features</h2>
