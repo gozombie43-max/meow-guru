@@ -3,79 +3,75 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
+  Activity,
   BookOpen,
   Calculator,
   Circle,
+  Compass,
   Layers,
+  MoveDiagonal,
   Plus,
   Ruler,
   Search,
-  Sparkles,
   Triangle,
   FileText
 } from "lucide-react";
 
 const tabs = ["Notes", "Formula", "Extra", "DPP"];
 
-const TOPIC_QUERIES = [
-  "mathematics/mensuration/formula-notes",
-  "mathematics/mensuration/formula-notes/",
-  "mensuration",
-];
-
 const defaultNotes = [
   {
     id: "default-1",
-    title: "Mensuration Formula Map",
-    subtitle: "Area, perimeter, TSA and CSA at a glance",
-    time: "9:41 AM",
-    icon: Ruler,
-  },
-  {
-    id: "default-2",
-    title: "Circle and Sector",
-    subtitle: "Arc length, segment area, mixed tricks",
-    time: "9:41 AM",
-    icon: Circle,
-  },
-  {
-    id: "default-3",
-    title: "Triangle and Polygon",
-    subtitle: "Heron, centroid, similarity shortcuts",
+    title: "Trigonometric Ratios",
+    subtitle: "Basic sine, cosine, tangent relations",
     time: "9:41 AM",
     icon: Triangle,
   },
   {
-    id: "default-4",
-    title: "3D Solids",
-    subtitle: "Prism, pyramid, frustum quick rules",
+    id: "default-2",
+    title: "Standard Angles",
+    subtitle: "Value tables for 0°, 30°, 45°, 60°, 90°",
     time: "9:41 AM",
-    icon: Layers,
+    icon: Ruler,
   },
   {
-    id: "default-5",
-    title: "Cylinder, Cone, Sphere",
-    subtitle: "Curved surface and volume summaries",
-    time: "8:30 AM",
+    id: "default-3",
+    title: "Important Identities",
+    subtitle: "Pythagorean, sum and difference formulas",
+    time: "9:41 AM",
     icon: Calculator,
   },
   {
+    id: "default-4",
+    title: "Quadrants & Signs",
+    subtitle: "ASTC rule and angle transformations",
+    time: "9:41 AM",
+    icon: Compass,
+  },
+  {
+    id: "default-5",
+    title: "Multiple Angles",
+    subtitle: "Formulas for 2θ, 3θ, and half angles",
+    time: "8:30 AM",
+    icon: Layers,
+  },
+  {
     id: "default-6",
-    title: "Smart Tricks",
-    subtitle: "Ratio scaling, units, and exam hacks",
+    title: "Heights & Distances",
+    subtitle: "Angles of elevation and depression",
     time: "7:15 AM",
-    icon: Sparkles,
+    icon: MoveDiagonal,
   },
   {
     id: "default-7",
-    title: "Revision Sheet",
-    subtitle: "Compact notes for last-minute review",
+    title: "Maxima & Minima",
+    subtitle: "Finding peak values of trigonometric expressions",
     time: "7:15 AM",
-    icon: BookOpen,
+    icon: Activity,
   },
 ];
 
-export default function MensurationFormulaNotesPage() {
+export default function TrigonometryFormulaNotesPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("Notes");
   const [apiNotes, setApiNotes] = useState([]);
@@ -86,34 +82,11 @@ export default function MensurationFormulaNotesPage() {
   useEffect(() => {
     const fetchNotes = async () => {
       try {
-        const queryByTopic = async (topic) => {
-          const res = await fetch(`${API}/api/notes?topic=${encodeURIComponent(topic)}`);
-          if (!res.ok) return [];
-          return res.json();
-        };
-
-        const responses = await Promise.all(
-          TOPIC_QUERIES.map((topic) => queryByTopic(topic))
-        );
-
-        let merged = responses.flat();
-        if (merged.length === 0) {
-          // If no mensuration-specific notes exist, fall back to formula notes.
-          const res = await fetch(`${API}/api/notes?type=formula`);
-          if (res.ok) merged = await res.json();
+        const res = await fetch(`${API}/api/notes?topic=trigonometry`);
+        if (res.ok) {
+          const data = await res.json();
+          setApiNotes(data);
         }
-
-        const unique = new Map();
-        merged.forEach((note) => {
-          if (note?.id && !unique.has(note.id)) unique.set(note.id, note);
-        });
-
-        const toTime = (note) => Date.parse(note?.updatedAt || note?.createdAt || 0);
-        const ordered = Array.from(unique.values()).sort(
-          (a, b) => toTime(b) - toTime(a)
-        );
-
-        setApiNotes(ordered);
       } catch (err) {
         console.error("Failed to load notes", err);
       } finally {
@@ -123,17 +96,18 @@ export default function MensurationFormulaNotesPage() {
     fetchNotes();
   }, [API]);
 
-  // Show API notes when present; otherwise fall back to demo notes.
-  const mergedNotes = apiNotes.length > 0
-    ? apiNotes.map((n) => ({
-        ...n,
-        title: n.title || "Untitled Note",
-        subtitle: n.topic || "Mensuration",
-        time: new Date(n.updatedAt || n.createdAt).toLocaleDateString(),
-        icon: n.type === "formula" ? Calculator : FileText,
-        isApiRecord: true,
-      }))
-    : defaultNotes;
+  // Merge default notes with API notes. Give API notes a generic icon.
+  const mergedNotes = [
+    ...apiNotes.map((n) => ({
+      ...n,
+      title: n.title || "Untitled Note",
+      subtitle: n.topic || "Trigonometry",
+      time: new Date(n.updatedAt || n.createdAt).toLocaleDateString(),
+      icon: n.type === "formula" ? Calculator : FileText,
+      isApiRecord: true,
+    })),
+    ...defaultNotes,
+  ];
 
   return (
     <main className="formula-notes-page">
@@ -145,14 +119,14 @@ export default function MensurationFormulaNotesPage() {
           <div className="title-block">
             <p className="eyebrow">Mathematics</p>
             <h1>Notes Formula &amp; Tricks</h1>
-            <p className="subtitle">Mensuration insights wrapped in a liquid glass layout.</p>
+            <p className="subtitle">Trigonometry insights wrapped in a liquid glass layout.</p>
           </div>
           <button className="search-button" type="button" aria-label="Search notes">
             <Search className="icon" />
           </button>
         </header>
 
-        <div className="tab-row" role="tablist" aria-label="Mensuration note categories">
+        <div className="tab-row" role="tablist" aria-label="Trigonometry note categories">
           {tabs.map((tab) => (
             <button
               key={tab}
@@ -178,7 +152,7 @@ export default function MensurationFormulaNotesPage() {
                   key={note.id || note.title}
                   onClick={() => {
                     if (note.isApiRecord) {
-                      router.push(`/notes/view?id=${note.id}`);
+                      router.push(`/notes/edit?id=${note.id}`);
                     }
                   }}
                   type="button"
@@ -202,7 +176,7 @@ export default function MensurationFormulaNotesPage() {
         </section>
       </div>
 
-      <button 
+      <button
         className="fab-button" 
         type="button" 
         aria-label="Create new note"
@@ -411,113 +385,109 @@ export default function MensurationFormulaNotesPage() {
             0 6px 16px rgba(0, 0, 0, 0.08);
         }
 
-        .note-card:active {
-          transform: scale(0.98);
-        }
-
-        .note-card:focus-visible {
-          outline: 2px solid rgba(0, 122, 255, 0.35);
-          outline-offset: 3px;
-        }
-
         .note-icon-bg {
           width: 44px;
           height: 44px;
           border-radius: 14px;
-          display: inline-flex;
+          background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.5) 100%);
+          box-shadow:
+            0 2px 6px rgba(0, 0, 0, 0.04),
+            inset 0 1px 0 rgba(255, 255, 255, 0.8),
+            inset 0 -1px 0 rgba(0, 0, 0, 0.02);
+          display: flex;
           align-items: center;
           justify-content: center;
-          background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.82) 100%);
-          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+          border: 0.5px solid var(--glass-edge);
           flex-shrink: 0;
         }
 
         .note-icon {
-          width: 18px;
-          height: 18px;
-          color: rgba(0, 0, 0, 0.35);
+          width: 20px;
+          height: 20px;
+          color: rgba(0, 0, 0, 0.65);
         }
 
         .note-main {
           display: flex;
           flex-direction: column;
-          gap: 4px;
           flex: 1;
-          min-width: 0;
         }
 
         .note-title {
-          font-size: 0.95rem;
           font-weight: 600;
-          line-height: 1.1;
+          font-size: 0.95rem;
+          color: rgba(0, 0, 0, 0.85);
+          letter-spacing: -0.01em;
         }
 
         .note-subtitle {
           font-size: 0.75rem;
-          color: var(--text-secondary);
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
+          color: rgba(0, 0, 0, 0.45);
+          margin-top: 1px;
+          line-height: 1.3;
         }
 
         .note-time {
-          font-size: 0.72rem;
-          color: var(--text-secondary);
+          font-size: 0.7rem;
+          color: rgba(0, 0, 0, 0.35);
           font-weight: 500;
           white-space: nowrap;
-          margin-left: auto;
         }
 
         .fab-button {
           position: fixed;
-          right: 24px;
           bottom: 24px;
+          right: 24px;
           width: 56px;
           height: 56px;
-          border-radius: 50%;
+          border-radius: 20px;
           border: none;
-          background: linear-gradient(135deg, rgba(0, 122, 255, 0.92) 0%, rgba(0, 100, 220, 0.98) 100%);
+          background: linear-gradient(135deg, #007aff 0%, #0060d0 100%);
+          color: white;
           box-shadow:
-            0 4px 16px rgba(0, 122, 255, 0.4),
-            0 2px 6px rgba(0, 122, 255, 0.2),
-            inset 0 1px 0 rgba(255, 255, 255, 0.25);
+            0 8px 24px rgba(0, 122, 255, 0.35),
+            0 2px 4px rgba(0, 122, 255, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3);
+          cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
-          cursor: pointer;
-          transition: transform 0.15s ease;
-          z-index: 5;
+          transition: transform 0.15s ease, box-shadow 0.15s ease, border-radius 0.15s ease;
+          animation: float 4s ease-in-out infinite;
+          z-index: 10;
         }
 
         .fab-button:active {
-          transform: scale(0.98);
+          transform: scale(0.92);
+          box-shadow:
+            0 4px 12px rgba(0, 122, 255, 0.35),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3);
+          border-radius: 24px;
         }
 
         .fab-icon {
           width: 24px;
           height: 24px;
-          color: #ffffff;
+          filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.25));
         }
 
         @keyframes fade-up {
-          from {
+          0% {
             opacity: 0;
-            transform: translateY(10px);
+            transform: translateY(12px) scale(0.98);
           }
-          to {
+          100% {
             opacity: 1;
-            transform: translateY(0);
+            transform: translateY(0) scale(1);
           }
         }
 
-        @media (max-width: 520px) {
-          .top-bar {
-            flex-direction: column;
-            align-items: flex-start;
+        @keyframes float {
+          0%, 100% {
+            transform: translateY(0);
           }
-
-          .search-button {
-            align-self: flex-end;
+          50% {
+            transform: translateY(-4px);
           }
         }
       `}</style>

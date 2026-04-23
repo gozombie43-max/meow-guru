@@ -9,19 +9,21 @@ const router = express.Router();
 router.get("/", async (req, res) => {
   try {
     const { topic, type } = req.query;
+    const normalizedTopic = typeof topic === "string" ? topic.toLowerCase() : topic;
+    const normalizedType  = typeof type === "string" ? type.toLowerCase() : type;
     let query      = "SELECT * FROM c ORDER BY c._ts DESC";
     const parameters = [];
 
     if (topic && type) {
-      query = "SELECT * FROM c WHERE c.topic = @topic AND c.type = @type ORDER BY c._ts DESC";
-      parameters.push({ name: "@topic", value: topic });
-      parameters.push({ name: "@type",  value: type  });
+      query = "SELECT * FROM c WHERE LOWER(c.topic) = @topic AND LOWER(c.type) = @type ORDER BY c._ts DESC";
+      parameters.push({ name: "@topic", value: normalizedTopic });
+      parameters.push({ name: "@type",  value: normalizedType  });
     } else if (topic) {
-      query = "SELECT * FROM c WHERE c.topic = @topic ORDER BY c._ts DESC";
-      parameters.push({ name: "@topic", value: topic });
+      query = "SELECT * FROM c WHERE LOWER(c.topic) = @topic ORDER BY c._ts DESC";
+      parameters.push({ name: "@topic", value: normalizedTopic });
     } else if (type) {
-      query = "SELECT * FROM c WHERE c.type = @type ORDER BY c._ts DESC";
-      parameters.push({ name: "@type", value: type });
+      query = "SELECT * FROM c WHERE LOWER(c.type) = @type ORDER BY c._ts DESC";
+      parameters.push({ name: "@type", value: normalizedType });
     }
 
     const { resources } = await getNotesContainer().items
