@@ -35,7 +35,7 @@ const featureCards: FeatureCardData[] = [
     ),
   },
   {
-    title: "Careerwill",
+    title: "CareerWill",
     href: "/mathematics/mensuration/quiz?mode=concept",
     gradient: "linear-gradient(135deg, #7f5af0 0%, #3f8cff 100%)",
     icon: (

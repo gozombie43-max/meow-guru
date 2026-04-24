@@ -130,7 +130,7 @@ function toMensurationQuestion(question: ApiQuestion, index: number): Mensuratio
 // ── Constants ────────────────────────────────────────────────────────────────
 const MODE_LABELS: Record<QuizMode, string> = {
   all: "PYQ",
-  concept: "Careerwill",
+  concept: "CareerWill",
   selection: "Selection Way",
   tier2: "Tier 2",
 };

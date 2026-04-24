@@ -21,7 +21,7 @@ function FeatureCard({ title, href, gradient, icon }: FeatureCardData) {
 
 const featureCards: FeatureCardData[] = [
   {
-    title: "Concept Drill",
+    title: "PYQ",
     href: "/mathematics/algebra/quiz?mode=concept",
     gradient: "linear-gradient(135deg, #7f5af0 0%, #3a86ff 100%)",
     icon: (
@@ -33,7 +33,7 @@ const featureCards: FeatureCardData[] = [
     ),
   },
   {
-    title: "Formula Bank",
+    title: "CareerWill",
     href: "/mathematics/algebra/quiz?mode=formula",
     gradient: "linear-gradient(135deg, #ff7eb3 0%, #ff9f1c 100%)",
     icon: (
@@ -46,7 +46,7 @@ const featureCards: FeatureCardData[] = [
     ),
   },
   {
-    title: "Speed Test",
+    title: "PW",
     href: "/mathematics/algebra/quiz?mode=mixed",
     gradient: "linear-gradient(135deg, #4f9cff 0%, #00d4ff 100%)",
     icon: (
@@ -57,7 +57,7 @@ const featureCards: FeatureCardData[] = [
     ),
   },
   {
-    title: "Challenge",
+    title: "Selection Way",
     href: "/mathematics/algebra/quiz?mode=ai-challenge",
     gradient: "linear-gradient(135deg, #ff5f6d 0%, #ff3d9a 100%)",
     icon: (
@@ -68,7 +68,7 @@ const featureCards: FeatureCardData[] = [
   },
   {
     title: "Topic Mix",
-    href: "/mathematics/algebra/quiz?mode=mixed",
+    href: "/mathematics/algebra/quiz?mode=topic-mix",
     gradient: "linear-gradient(135deg, #8961ff 0%, #3fa3ff 100%)",
     icon: (
       <svg viewBox="0 0 24 24" className="feature-icon" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
@@ -82,8 +82,8 @@ const featureCards: FeatureCardData[] = [
     ),
   },
   {
-    title: "Revision",
-    href: "/mathematics/algebra/quiz?mode=concept",
+    title: "Tier 2",
+    href: "/mathematics/algebra/quiz?mode=revision",
     gradient: "linear-gradient(135deg, #ff7bbf 0%, #ff8d4d 100%)",
     icon: (
       <svg viewBox="0 0 24 24" className="feature-icon" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">

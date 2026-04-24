@@ -32,7 +32,7 @@ import { fetchQuestions, type Question as ApiQuestion } from "@/lib/api/question
 import { shuffle, type AlgebraQuestion, CONCEPTS } from "@/lib/algebra-questions";
 
 // ── Types ────────────────────────────────────────────────────────────────────
-type QuizMode = "concept" | "formula" | "mixed" | "ai-challenge";
+type QuizMode = "concept" | "formula" | "mixed" | "ai-challenge" | "topic-mix" | "revision";
 type Difficulty = "easy" | "medium" | "hard";
 
 interface SessionResult {
@@ -113,7 +113,7 @@ function toAlgebraQuestion(question: ApiQuestion, index: number): AlgebraQuestio
   return {
     id,
     concept,
-    formula: "",
+    formula: String(question.formula ?? ""),
     question: String(question.question ?? ""),
     options,
     correctAnswer,
@@ -132,10 +132,12 @@ function toAlgebraQuestion(question: ApiQuestion, index: number): AlgebraQuestio
 
 // ── Constants ────────────────────────────────────────────────────────────────
 const MODE_LABELS: Record<QuizMode, string> = {
-  concept: "Concept Practice",
-  formula: "Formula Practice",
-  mixed: "Mixed Practice",
-  "ai-challenge": "AI Challenge",
+  concept: "PYQ",
+  formula: "CareerWill",
+  mixed: "PW",
+  "ai-challenge": "Selection Way",
+  "topic-mix": "Topic Mix",
+  revision: "Tier 2",
 };
 
 /* ── MathFraction ───────────────────────────────────────────────────────────
@@ -735,7 +737,21 @@ const prefetchQuestionImage = (url?: string) => {
 
 export default function QuizEngine() {
   const searchParams = useSearchParams();
-  const mode = (searchParams.get("mode") || "mixed") as QuizMode;
+  function normalizeMode(value: string | null): QuizMode {
+    switch (value) {
+      case "concept":
+      case "formula":
+      case "mixed":
+      case "ai-challenge":
+      case "topic-mix":
+      case "revision":
+        return value;
+      default:
+        return "mixed";
+    }
+  }
+
+  const mode = normalizeMode(searchParams.get("mode"));
   const resumeRequested = searchParams.get("resume") === "1";
   const jumpIdRaw = searchParams.get("qid");
   const jumpId = Number.parseInt(jumpIdRaw ?? "", 10);
@@ -852,14 +868,10 @@ export default function QuizEngine() {
         ? conceptFilter === "all"
           ? [...allQuestions]
           : allQuestions.filter((q) => q.concept === conceptFilter)
-        : mode === "formula" || mode === "ai-challenge"
-        ? [...allQuestions]
-        : mode === "mixed"
-        ? [...allQuestions]
-        : [...allQuestions];
+        : [];
 
     return pool.length;
-  }, [allQuestions, mode, conceptFilter, examFilter]);
+  }, [allQuestions, mode, conceptFilter]);
 
   // ── Build question set ─────────────────────────────────────────────────────
   /* eslint-disable react-hooks/exhaustive-deps */
@@ -891,15 +903,8 @@ export default function QuizEngine() {
             ? [...allQuestions]
             : allQuestions.filter((q) => q.concept === conceptFilter);
         break;
-      case "formula":
-        pool = [...allQuestions];
-        break;
-      case "ai-challenge":
-        pool = [...allQuestions];
-        break;
-      case "mixed":
       default:
-        pool = shuffle([...allQuestions]);
+        pool = [];
         break;
     }
 

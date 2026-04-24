@@ -68,16 +68,16 @@ const SUBJECT_OPTIONS: { value: SubjectKey; label: string }[] = [
 ];
 
 const DEFAULT_QUIZ_OPTIONS = [
-  "Concept Drill",
-  "Formula Bank",
-  "Speed Test",
-  "Challenge",
+  "PYQ",
+  "CareerWill",
+  "PW",
+  "Selection Way",
   "Topic Mix",
-  "Revision",
+  "Tier 2",
 ];
 
 const QUIZ_OPTIONS_BY_TOPIC: Record<string, string[]> = {
-  mensuration: ["PYQ", "Careerwill", "Selection Way", "Tier 2"],
+  mensuration: ["PYQ", "CareerWill", "Selection Way", "Tier 2"],
 };
 
 const TOPIC_LABEL_OVERRIDES: Record<string, string> = {

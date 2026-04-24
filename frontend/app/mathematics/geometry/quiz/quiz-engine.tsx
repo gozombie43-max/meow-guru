@@ -134,7 +134,7 @@ const MODE_LABELS: Record<QuizMode, string> = {
   concept: "Concept Practice",
   formula: "Formula Practice",
   mixed: "Mixed Practice",
-  "ai-challenge": "AI Challenge",
+  "ai-challenge": "Selection Way",
 };
 
 /* ── MathFraction ───────────────────────────────────────────────────────────

@@ -346,7 +346,7 @@ const MODE_LABELS: Record<QuizMode, string> = {
   concept: "Concept Practice",
   formula: "Pattern Practice",
   mixed: "Mixed Practice",
-  "ai-challenge": "AI Challenge",
+  "ai-challenge": "Selection Way",
 };
 
 const DEFAULT_CONCEPT_COLOUR: ConceptColour = {

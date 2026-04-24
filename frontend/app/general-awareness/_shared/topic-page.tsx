@@ -30,7 +30,7 @@ function FeatureCard({ title, href, gradient, icon }: FeatureCardData) {
 
 const buildFeatureCards = (slug: string): FeatureCardData[] => [
   {
-    title: "Concept Drill",
+    title: "PYQ",
     href: `/general-awareness/${slug}/quiz?mode=concept`,
     gradient: "linear-gradient(135deg, #f59e0b 0%, #fb7185 100%)",
     icon: (
@@ -55,7 +55,7 @@ const buildFeatureCards = (slug: string): FeatureCardData[] => [
     ),
   },
   {
-    title: "Speed Test",
+    title: "PW",
     href: `/general-awareness/${slug}/quiz?mode=mixed`,
     gradient: "linear-gradient(135deg, #60a5fa 0%, #6366f1 100%)",
     icon: (
@@ -66,7 +66,7 @@ const buildFeatureCards = (slug: string): FeatureCardData[] => [
     ),
   },
   {
-    title: "Challenge",
+    title: "Selection Way",
     href: `/general-awareness/${slug}/quiz?mode=ai-challenge`,
     gradient: "linear-gradient(135deg, #f97316 0%, #f43f5e 100%)",
     icon: (
@@ -91,7 +91,7 @@ const buildFeatureCards = (slug: string): FeatureCardData[] => [
     ),
   },
   {
-    title: "Revision",
+    title: "Tier 2",
     href: `/general-awareness/${slug}/quiz?mode=concept`,
     gradient: "linear-gradient(135deg, #f59e0b 0%, #facc15 100%)",
     icon: (

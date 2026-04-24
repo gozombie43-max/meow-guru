@@ -8,6 +8,7 @@ export interface Question {
   concept: string;
   difficulty: string;
   exam: string;
+  formula?: string;
   question: string;
   options: string[];
   correctAnswer: string;

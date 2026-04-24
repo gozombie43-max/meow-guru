@@ -21,7 +21,7 @@ function FeatureCard({ title, href, gradient, icon }: FeatureCardData) {
 
 const featureCards: FeatureCardData[] = [
   {
-    title: "Concept Drill",
+    title: "PYQ",
     href: "/mathematics/arithmetic/percentages/quiz?mode=concept",
     gradient: "linear-gradient(135deg, #7f5af0 0%, #3a86ff 100%)",
     icon: (
@@ -33,7 +33,7 @@ const featureCards: FeatureCardData[] = [
     ),
   },
   {
-    title: "Formula Bank",
+    title: "CareerWill",
     href: "/mathematics/arithmetic/percentages/quiz?mode=formula",
     gradient: "linear-gradient(135deg, #ff7eb3 0%, #ff9f1c 100%)",
     icon: (
@@ -46,7 +46,7 @@ const featureCards: FeatureCardData[] = [
     ),
   },
   {
-    title: "Speed Test",
+    title: "PW",
     href: "/mathematics/arithmetic/percentages/quiz?mode=mixed",
     gradient: "linear-gradient(135deg, #4f9cff 0%, #00d4ff 100%)",
     icon: (
@@ -57,7 +57,7 @@ const featureCards: FeatureCardData[] = [
     ),
   },
   {
-    title: "Challenge",
+    title: "Selection Way",
     href: "/mathematics/arithmetic/percentages/quiz?mode=ai-challenge",
     gradient: "linear-gradient(135deg, #ff5f6d 0%, #ff3d9a 100%)",
     icon: (
@@ -82,7 +82,7 @@ const featureCards: FeatureCardData[] = [
     ),
   },
   {
-    title: "Revision",
+    title: "Tier 2",
     href: "/mathematics/arithmetic/percentages/quiz?mode=concept",
     gradient: "linear-gradient(135deg, #ff7bbf 0%, #ff8d4d 100%)",
     icon: (
