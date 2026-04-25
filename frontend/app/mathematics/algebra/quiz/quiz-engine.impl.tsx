@@ -137,6 +137,22 @@ function isAiChallengeQuestion(question: {
   return matchesQuizTag(question, ["selectionway"]);
 }
 
+function isTopicMixQuestion(question: {
+  quizName?: string;
+  source?: string;
+  quizId?: string;
+}): boolean {
+  return matchesQuizTag(question, ["topicmix"]);
+}
+
+function isTier2Question(question: {
+  quizName?: string;
+  source?: string;
+  quizId?: string;
+}): boolean {
+  return matchesQuizTag(question, ["tier2"]);
+}
+
 function isTaggedModeQuestion(question: {
   quizName?: string;
   source?: string;
@@ -145,7 +161,9 @@ function isTaggedModeQuestion(question: {
   return (
     isFormulaQuestion(question) ||
     isMixedQuestion(question) ||
-    isAiChallengeQuestion(question)
+    isAiChallengeQuestion(question) ||
+    isTopicMixQuestion(question) ||
+    isTier2Question(question)
   );
 }
 
@@ -945,17 +963,13 @@ export default function QuizEngine() {
           ? allQuestions.filter((q) => isFormulaQuestion(q))
           : mode === "mixed"
             ? allQuestions.filter((q) => isMixedQuestion(q))
-        : mode === "easy"
-          ? allQuestions.filter(
-              (q) => !isTaggedModeQuestion(q) && q.difficulty === "easy"
-            )
-        : mode === "hard"
-          ? allQuestions.filter(
-              (q) => !isTaggedModeQuestion(q) && q.difficulty === "hard"
-            )
-        : mode === "ai-challenge"
-          ? allQuestions.filter((q) => isAiChallengeQuestion(q))
-          : [];
+            : mode === "easy"
+              ? allQuestions.filter((q) => isTopicMixQuestion(q))
+              : mode === "hard"
+                ? allQuestions.filter((q) => isTier2Question(q))
+                : mode === "ai-challenge"
+                  ? allQuestions.filter((q) => isAiChallengeQuestion(q))
+                  : [];
 
     return pool.length;
   }, [allQuestions, mode, conceptFilter]);
@@ -999,14 +1013,10 @@ export default function QuizEngine() {
         pool = allQuestions.filter((q) => isMixedQuestion(q));
         break;
       case "easy":
-        pool = allQuestions.filter(
-          (q) => !isTaggedModeQuestion(q) && q.difficulty === "easy"
-        );
+        pool = allQuestions.filter((q) => isTopicMixQuestion(q));
         break;
       case "hard":
-        pool = allQuestions.filter(
-          (q) => !isTaggedModeQuestion(q) && q.difficulty === "hard"
-        );
+        pool = allQuestions.filter((q) => isTier2Question(q));
         break;
       case "ai-challenge":
         pool = allQuestions.filter((q) => isAiChallengeQuestion(q));

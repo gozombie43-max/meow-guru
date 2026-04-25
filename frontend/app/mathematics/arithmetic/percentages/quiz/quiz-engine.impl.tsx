@@ -137,6 +137,22 @@ function isAiChallengeQuestion(question: {
   return matchesQuizTag(question, ["selectionway"]);
 }
 
+function isTopicMixQuestion(question: {
+  quizName?: string;
+  source?: string;
+  quizId?: string;
+}): boolean {
+  return matchesQuizTag(question, ["topicmix"]);
+}
+
+function isTier2Question(question: {
+  quizName?: string;
+  source?: string;
+  quizId?: string;
+}): boolean {
+  return matchesQuizTag(question, ["tier2"]);
+}
+
 function isTaggedModeQuestion(question: {
   quizName?: string;
   source?: string;
@@ -145,7 +161,9 @@ function isTaggedModeQuestion(question: {
   return (
     isFormulaQuestion(question) ||
     isMixedQuestion(question) ||
-    isAiChallengeQuestion(question)
+    isAiChallengeQuestion(question) ||
+    isTopicMixQuestion(question) ||
+    isTier2Question(question)
   );
 }
 
@@ -966,13 +984,9 @@ export default function PercentagesQuizEngine() {
     } else if (mode === "ai-challenge") {
       pool = allQuestions.filter((q) => isAiChallengeQuestion(q));
     } else if (mode === "hard") {
-      pool = allQuestions.filter(
-        (q) => !isTaggedModeQuestion(q) && q.difficulty === "hard"
-      );
+      pool = allQuestions.filter((q) => isTier2Question(q));
     } else if (mode === "easy") {
-      pool = allQuestions.filter(
-        (q) => !isTaggedModeQuestion(q) && q.difficulty === "easy"
-      );
+      pool = allQuestions.filter((q) => isTopicMixQuestion(q));
     } else {
       pool = allQuestions.filter((q) => isMixedQuestion(q));
     }
@@ -1080,14 +1094,10 @@ export default function PercentagesQuizEngine() {
         pool = allQuestions.filter((q) => isAiChallengeQuestion(q));
         break;
       case "hard":
-        pool = allQuestions.filter(
-          (q) => !isTaggedModeQuestion(q) && q.difficulty === "hard"
-        );
+        pool = allQuestions.filter((q) => isTier2Question(q));
         break;
       case "easy":
-        pool = allQuestions.filter(
-          (q) => !isTaggedModeQuestion(q) && q.difficulty === "easy"
-        );
+        pool = allQuestions.filter((q) => isTopicMixQuestion(q));
         break;
       case "mixed":
       default:
