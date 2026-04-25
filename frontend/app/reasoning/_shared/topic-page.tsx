@@ -77,7 +77,7 @@ const buildFeatureCards = (slug: string): FeatureCardData[] => [
   },
   {
     title: "Topic Mix",
-    href: `/reasoning/${slug}/quiz?mode=mixed`,
+    href: `/reasoning/${slug}/quiz?mode=easy`,
     gradient: "linear-gradient(135deg, #34d399 0%, #22c55e 100%)",
     icon: (
       <svg viewBox="0 0 24 24" className="feature-icon" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
@@ -92,7 +92,7 @@ const buildFeatureCards = (slug: string): FeatureCardData[] => [
   },
   {
     title: "Tier 2",
-    href: `/reasoning/${slug}/quiz?mode=concept`,
+    href: `/reasoning/${slug}/quiz?mode=hard`,
     gradient: "linear-gradient(135deg, #f472b6 0%, #fb7185 100%)",
     icon: (
       <svg viewBox="0 0 24 24" className="feature-icon" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">

@@ -158,7 +158,21 @@ const getQuestions = async (req, res) => {
       parameters.push({ name: '@difficulty', value: difficulty });
     }
     if (quizName) {
-      query += ' AND (LOWER(c.quizName) = LOWER(@quizName) OR LOWER(c.quizId) = LOWER(@quizName))';
+      const normalizedQuizName = String(quizName).trim().toLowerCase();
+      if (normalizedQuizName === 'pyq') {
+        // Backfill behavior for legacy questions created before quizName existed.
+        // Those older records should continue to appear in the PYQ quiz.
+        query += ` AND (
+          (IS_DEFINED(c.quizName) AND LOWER(c.quizName) = LOWER(@quizName))
+          OR (IS_DEFINED(c.quizId) AND LOWER(c.quizId) = LOWER(@quizName))
+          OR (IS_DEFINED(c.source) AND LOWER(c.source) = LOWER(@quizName))
+          OR NOT IS_DEFINED(c.quizName)
+          OR c.quizName = null
+          OR c.quizName = ""
+        )`;
+      } else {
+        query += ' AND ((IS_DEFINED(c.quizName) AND LOWER(c.quizName) = LOWER(@quizName)) OR (IS_DEFINED(c.quizId) AND LOWER(c.quizId) = LOWER(@quizName)) OR (IS_DEFINED(c.source) AND LOWER(c.source) = LOWER(@quizName)))';
+      }
       parameters.push({ name: '@quizName', value: quizName });
     }
 

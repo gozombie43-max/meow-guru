@@ -88,7 +88,7 @@ function buildDefaultFeatureCards(routeBase: string): FeatureCardData[] {
     },
     {
       title: "Topic Mix",
-      href: `${routeBase}/quiz?mode=mixed`,
+      href: `${routeBase}/quiz?mode=easy`,
       gradient: "linear-gradient(135deg, #8961ff 0%, #3fa3ff 100%)",
       icon: (
         <svg viewBox="0 0 24 24" className="feature-icon" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
@@ -103,7 +103,7 @@ function buildDefaultFeatureCards(routeBase: string): FeatureCardData[] {
     },
     {
       title: "Tier 2",
-      href: `${routeBase}/quiz?mode=concept`,
+      href: `${routeBase}/quiz?mode=hard`,
       gradient: "linear-gradient(135deg, #ff7bbf 0%, #ff8d4d 100%)",
       icon: (
         <svg viewBox="0 0 24 24" className="feature-icon" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">

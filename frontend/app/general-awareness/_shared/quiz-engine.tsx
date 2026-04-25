@@ -28,8 +28,19 @@ import { useAuth } from "@/context/AuthContext";
 import { saveRecentQuiz, updateProgress, toggleBookmark } from "@/lib/userApi";
 import { fetchQuestions, type Question as ApiQuestion } from "@/lib/api/questions";
 
-type QuizMode = "concept" | "formula" | "mixed" | "ai-challenge";
+type QuizMode =
+  | "concept"
+  | "formula"
+  | "mixed"
+  | "ai-challenge"
+  | "easy"
+  | "hard";
 type Difficulty = "easy" | "medium" | "hard";
+type GeneralAwarenessQuestionRecord = GeneralAwarenessQuestion & {
+  quizName?: string;
+  source?: string;
+  quizId?: string;
+};
 
 type ConceptColour = { border: string; bg: string; text: string };
 
@@ -125,6 +136,8 @@ const MODE_LABELS: Record<QuizMode, string> = {
   formula: "Fact Practice",
   mixed: "Mixed Practice",
   "ai-challenge": "Selection Way",
+  easy: "Topic Mix",
+  hard: "Tier 2",
 };
 
 const DEFAULT_CONCEPT_COLOUR: ConceptColour = {
@@ -145,7 +158,13 @@ const CONCEPT_PALETTE: ConceptColour[] = [
 ];
 
 function normalizeMode(value: string | null): QuizMode {
-  if (value === "formula" || value === "mixed" || value === "ai-challenge") {
+  if (
+    value === "formula" ||
+    value === "mixed" ||
+    value === "ai-challenge" ||
+    value === "easy" ||
+    value === "hard"
+  ) {
     return value;
   }
   return "concept";
@@ -207,11 +226,70 @@ function buildConceptColours(concepts: string[]): Record<string, ConceptColour> 
   return colours;
 }
 
+function normalizeQuizTag(value?: string): string {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "");
+}
+
+function matchesQuizTag(
+  question: {
+    quizName?: string;
+    source?: string;
+    quizId?: string;
+  },
+  tags: string[]
+): boolean {
+  const quizTag =
+    normalizeQuizTag(question.quizName) ||
+    normalizeQuizTag(question.quizId) ||
+    normalizeQuizTag(question.source);
+
+  return tags.includes(quizTag);
+}
+
+function isFormulaQuestion(question: {
+  quizName?: string;
+  source?: string;
+  quizId?: string;
+}): boolean {
+  return matchesQuizTag(question, ["careerwill", "factbank"]);
+}
+
+function isMixedQuestion(question: {
+  quizName?: string;
+  source?: string;
+  quizId?: string;
+}): boolean {
+  return matchesQuizTag(question, ["pw", "mixedpractice"]);
+}
+
+function isAiChallengeQuestion(question: {
+  quizName?: string;
+  source?: string;
+  quizId?: string;
+}): boolean {
+  return matchesQuizTag(question, ["selectionway"]);
+}
+
+function isTaggedModeQuestion(question: {
+  quizName?: string;
+  source?: string;
+  quizId?: string;
+}): boolean {
+  return (
+    isFormulaQuestion(question) ||
+    isMixedQuestion(question) ||
+    isAiChallengeQuestion(question)
+  );
+}
+
 function toGeneralAwarenessQuestion(
   question: ApiQuestion,
   index: number,
   fallbackConcept: string
-): GeneralAwarenessQuestion {
+): GeneralAwarenessQuestionRecord {
   const isImage = question.questionType === "image_mcq";
   const imageOptionKeys =
     question.optionRegions && Object.keys(question.optionRegions).length > 0
@@ -253,6 +331,9 @@ function toGeneralAwarenessQuestion(
     questionImage: question.questionImage,
     optionRegions: question.optionRegions,
     correctLetter: question.correctLetter,
+    quizName: question.quizName,
+    source: (question as ApiQuestion & { source?: string }).source,
+    quizId: (question as ApiQuestion & { quizId?: string }).quizId,
   };
 }
 
@@ -825,8 +906,8 @@ export default function GeneralAwarenessQuizEngine({
   const jumpIdRaw = searchParams.get("qid");
   const jumpId = Number.parseInt(jumpIdRaw ?? "", 10);
 
-  const [allQuestions, setAllQuestions] = useState<GeneralAwarenessQuestion[]>([]);
-  const [questions, setQuestions] = useState<GeneralAwarenessQuestion[]>([]);
+  const [allQuestions, setAllQuestions] = useState<GeneralAwarenessQuestionRecord[]>([]);
+  const [questions, setQuestions] = useState<GeneralAwarenessQuestionRecord[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
@@ -898,15 +979,29 @@ export default function GeneralAwarenessQuizEngine({
   }, [allQuestions]);
 
   const availableCount = useMemo(() => {
-    let pool: GeneralAwarenessQuestion[];
+    let pool: GeneralAwarenessQuestionRecord[];
 
     if (mode === "concept") {
       pool =
         conceptFilter === "all"
-          ? [...allQuestions]
-          : allQuestions.filter((q) => q.concept === conceptFilter);
+          ? allQuestions.filter((q) => !isTaggedModeQuestion(q))
+          : allQuestions.filter(
+              (q) => q.concept === conceptFilter && !isTaggedModeQuestion(q)
+            );
+    } else if (mode === "formula") {
+      pool = allQuestions.filter((q) => isFormulaQuestion(q));
+    } else if (mode === "ai-challenge") {
+      pool = allQuestions.filter((q) => isAiChallengeQuestion(q));
+    } else if (mode === "hard") {
+      pool = allQuestions.filter(
+        (q) => !isTaggedModeQuestion(q) && q.difficulty === "hard"
+      );
+    } else if (mode === "easy") {
+      pool = allQuestions.filter(
+        (q) => !isTaggedModeQuestion(q) && q.difficulty === "easy"
+      );
     } else {
-      pool = [...allQuestions];
+      pool = allQuestions.filter((q) => isMixedQuestion(q));
     }
 
     if (examFilter.trim() !== "") {
@@ -1002,22 +1097,36 @@ export default function GeneralAwarenessQuizEngine({
       return;
     }
 
-    let pool: GeneralAwarenessQuestion[];
+    let pool: GeneralAwarenessQuestionRecord[];
 
     switch (mode) {
       case "concept":
         pool =
           conceptFilter === "all"
-            ? [...allQuestions]
-            : allQuestions.filter((q) => q.concept === conceptFilter);
+            ? allQuestions.filter((q) => !isTaggedModeQuestion(q))
+            : allQuestions.filter(
+                (q) => q.concept === conceptFilter && !isTaggedModeQuestion(q)
+              );
         break;
       case "formula":
+        pool = allQuestions.filter((q) => isFormulaQuestion(q));
+        break;
       case "ai-challenge":
-        pool = [...allQuestions];
+        pool = allQuestions.filter((q) => isAiChallengeQuestion(q));
+        break;
+      case "hard":
+        pool = allQuestions.filter(
+          (q) => !isTaggedModeQuestion(q) && q.difficulty === "hard"
+        );
+        break;
+      case "easy":
+        pool = allQuestions.filter(
+          (q) => !isTaggedModeQuestion(q) && q.difficulty === "easy"
+        );
         break;
       case "mixed":
       default:
-        pool = shuffle([...allQuestions]);
+        pool = shuffle(allQuestions.filter((q) => isMixedQuestion(q)));
         break;
     }
 
