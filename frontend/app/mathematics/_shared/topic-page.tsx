@@ -481,7 +481,7 @@ export default function MathematicsTopicPage({
 
         @media (max-width: 480px) {
           .feature-grid {
-            grid-template-columns: 1fr;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
           }
         }
 
