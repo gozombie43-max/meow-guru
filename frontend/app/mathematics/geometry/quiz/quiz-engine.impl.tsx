@@ -226,6 +226,7 @@ const MODE_LABELS: Record<QuizMode, string> = {
 
 function normalizeMode(value: string | null): QuizMode {
   if (
+    value === "concept" ||
     value === "formula" ||
     value === "mixed" ||
     value === "ai-challenge" ||
