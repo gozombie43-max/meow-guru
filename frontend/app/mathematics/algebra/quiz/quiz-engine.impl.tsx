@@ -1974,7 +1974,7 @@ export default function QuizEngine() {
 
       <main className="mx-auto w-full max-w-[1150px] px-4 sm:px-6 lg:px-8 pb-[110px] pt-3 sm:pt-4 lg:pb-10">
         <div className="lg:flex lg:items-start lg:gap-8 xl:gap-10 lg:justify-center">
-          <div className="lg:flex-1 min-w-0 lg:ml-14 xl:ml-20 lg:max-w-[720px]">
+          <div className="lg:flex-1 min-w-0 lg:ml-14 xl:ml-20 lg:max-w-[720px]" style={{ paddingTop: 'clamp(24px, 3vw, 40px)' }}>
 
         {/* Top bar */}
         <section className="mb-3 flex items-center justify-end gap-2 lg:hidden">
