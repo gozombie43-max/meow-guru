@@ -25,6 +25,9 @@ import {
   X,
   BarChart3,
   Lightbulb,
+  ChevronDown,
+  BookOpen,
+  Send,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { saveRecentQuiz, updateProgress, toggleBookmark } from "@/lib/userApi";
@@ -295,14 +298,14 @@ function getQuestionStatus({
 function statusClasses(status: QuestionStatus) {
   const base = "border transition-all duration-200";
   if (status === "current")
-    return `${base} bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-400/40 scale-110 z-10`;
+    return `${base} bg-[#2563EB] text-white border-[#2563EB] z-10`;
   if (status === "answered")
-    return `${base} bg-amber-100 text-amber-700 border-amber-300`;
+    return `${base} bg-[#FACC15] text-slate-800 border-[#FACC15]`;
   if (status === "correct")
-    return `${base} bg-emerald-100 text-emerald-700 border-emerald-300`;
+    return `${base} bg-[#4ADE80] text-slate-800 border-[#4ADE80]`;
   if (status === "wrong")
-    return `${base} bg-rose-100 text-rose-700 border-rose-300`;
-  return `${base} bg-slate-100 text-slate-700 border-slate-300`;
+    return `${base} bg-[#F87171] text-slate-800 border-[#F87171]`;
+  return `${base} bg-[#F1F5F9] text-slate-600 border-[#E2E8F0]`;
 }
 
 /* ── Question Palette Modal ─────────────────────────────────────────────────  */
@@ -342,10 +345,7 @@ function QuestionPaletteModal({
             exit={{ y: 20, opacity: 0 }}
             transition={{ duration: 0.2 }}
           >
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-base font-semibold text-slate-800">
-                Question Palette
-              </h3>
+            <div className="mb-3 flex items-center justify-end">
               <button
                 onClick={onClose}
                 className="h-12 min-w-12 rounded-xl border border-slate-300 bg-white text-slate-700 shadow-sm"
@@ -421,30 +421,34 @@ function QuestionPalettePanel({
   onGoToQuestion: (questionNumber: number) => void;
 }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-base font-semibold text-slate-800">Question Palette</h3>
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="mb-4 flex items-center justify-end">
         <span className="text-xs font-semibold text-slate-500">
           {currentIndex + 1}/{total}
         </span>
       </div>
 
-      <div className="mb-3 flex flex-wrap gap-2 text-xs text-slate-600">
-        <span className="rounded-md border border-blue-300 bg-blue-100 px-2 py-1">
-          Current
-        </span>
-        <span className="rounded-md border border-amber-300 bg-amber-100 px-2 py-1">
-          Answered
-        </span>
-        <span className="rounded-md border border-emerald-300 bg-emerald-100 px-2 py-1">
-          Correct
-        </span>
-        <span className="rounded-md border border-rose-300 bg-rose-100 px-2 py-1">
-          Wrong
-        </span>
-        <span className="rounded-md border border-slate-300 bg-slate-100 px-2 py-1">
-          Not Answered
-        </span>
+      <div className="mb-4 flex flex-wrap gap-x-4 gap-y-2 text-[13px] text-slate-600">
+        <div className="flex items-center gap-1.5">
+          <span className="h-3 w-3 rounded-[3px] bg-[#2563EB]"></span>
+          <span>Current</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="h-3 w-3 rounded-[3px] bg-[#FACC15]"></span>
+          <span>Answered</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="h-3 w-3 rounded-[3px] bg-[#4ADE80]"></span>
+          <span>Correct</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="h-3 w-3 rounded-[3px] bg-[#F87171]"></span>
+          <span>Wrong</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="h-3 w-3 rounded-[3px] bg-[#F1F5F9] border border-slate-300"></span>
+          <span>Not Answered</span>
+        </div>
       </div>
 
       <div className="question-grid question-grid--palette">
@@ -573,31 +577,27 @@ function QuestionQuickBar({
   }, [currentIndex]);
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50 px-2 py-1.5">
-      <div className="question-strip qnav-bar-scroll" style={{ scrollSnapType: "x mandatory" }}>
-        {Array.from({ length: total }, (_, index) => {
-          const status = getQuestionStatus({
-            index,
-            currentIndex,
-            selectedAnswers,
-            questions,
-            submittedQuestions,
-          });
-          return (
-            <button
-              key={index}
-              ref={(el) => {
-                quickButtonRefs.current[index] = el;
-              }}
-              onClick={() => onGoToQuestion(index + 1)}
-              className={`h-8 w-8 min-h-8 min-w-8 rounded-lg text-xs font-semibold ${statusClasses(status)}`}
-              aria-label={`Question ${index + 1}`}
-            >
-              {index + 1}
-            </button>
-          );
-        })}
-      </div>
+    <div className="flex items-center gap-1.5 overflow-x-auto qnav-bar-scroll px-1 no-scrollbar" style={{ scrollSnapType: "x mandatory" }}>
+      {Array.from({ length: total }, (_, index) => {
+        const isCurrent = index === currentIndex;
+        return (
+          <button
+            key={index}
+            ref={(el) => {
+              quickButtonRefs.current[index] = el;
+            }}
+            onClick={() => onGoToQuestion(index + 1)}
+            className={`flex h-9 w-9 min-h-9 min-w-9 flex-shrink-0 items-center justify-center rounded-lg text-sm font-semibold transition-colors ${
+              isCurrent
+                ? "bg-[#1E3A8A] text-white shadow-sm"
+                : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+            }`}
+            aria-label={`Question ${index + 1}`}
+          >
+            {index + 1}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -1924,25 +1924,15 @@ export default function QuizEngine() {
         fontFamily: "'General Sans', 'Plus Jakarta Sans', system-ui, sans-serif",
       }}
     >
-      <header className="sticky top-0 z-40 hidden border-b border-slate-200 bg-white/95 backdrop-blur lg:block">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-3">
-          <div className="flex min-w-[220px] items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500">
-              <Brain className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-base font-semibold text-slate-900 leading-tight">
-                Mathematics Practice
-              </h1>
-              <p className="text-xs text-slate-500">Chapter — {currentQ.concept}</p>
-            </div>
-          </div>
+      <header className="sticky top-0 z-40 hidden border-b border-slate-200 bg-white lg:block shadow-sm">
+        <div className="mx-auto flex w-full max-w-[1150px] items-center justify-between gap-4 px-6 lg:px-8 py-3">
+          <div className="min-w-[240px]"></div>
 
           <div className="flex flex-1 items-center justify-center gap-2">
             <button
               onClick={handlePrev}
               disabled={currentIndex === 0}
-              className="nav-q-btn flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-slate-100 text-slate-500 transition-colors hover:bg-slate-200 disabled:opacity-40"
+              className="nav-q-btn flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-500 transition-colors hover:bg-slate-200 disabled:opacity-40"
               aria-label="Previous question"
             >
               <ChevronLeft className="h-4 w-4" />
@@ -1960,30 +1950,31 @@ export default function QuizEngine() {
             <button
               onClick={handleNext}
               disabled={currentIndex >= questions.length - 1}
-              className="nav-q-btn flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-slate-100 text-slate-500 transition-colors hover:bg-slate-200 disabled:opacity-40"
+              className="nav-q-btn flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-500 transition-colors hover:bg-slate-200 disabled:opacity-40"
               aria-label="Next question"
             >
               <ChevronRight className="h-4 w-4" />
             </button>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 rounded-xl border border-red-100 bg-red-50 px-3 py-1.5">
+          <div className="flex min-w-[240px] items-center justify-end gap-4">
+            <div className="flex items-center gap-2 rounded-xl bg-red-50 px-4 py-2">
               <Clock className="h-4 w-4 text-red-500" />
-              <span className="text-sm font-semibold text-red-600 tabular-nums tracking-wide">
+              <span className="text-[15px] font-bold text-red-600 tabular-nums tracking-wide">
                 {formatClock(timeLeft)}
               </span>
             </div>
-            <button className="flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-slate-100">
-              <Menu className="h-5 w-5 text-slate-500" />
+            <button className="flex h-10 items-center justify-center gap-1.5 px-3 rounded-lg transition-colors hover:bg-slate-100 text-slate-600">
+              <Menu className="h-5 w-5" />
+              <ChevronDown className="h-4 w-4 text-slate-400" />
             </button>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-3 pb-[110px] pt-3 sm:px-6 sm:pt-4 lg:px-8 lg:pb-10">
-        <div className="lg:flex lg:items-start lg:gap-6">
-          <div className="lg:flex-1">
+      <main className="mx-auto w-full max-w-[1150px] px-4 sm:px-6 lg:px-8 pb-[110px] pt-3 sm:pt-4 lg:pb-10">
+        <div className="lg:flex lg:items-start lg:gap-8 xl:gap-10 lg:justify-center">
+          <div className="lg:flex-1 min-w-0 lg:ml-14 xl:ml-20 lg:max-w-[720px]">
 
         {/* Top bar */}
         <section className="mb-3 flex items-center justify-end gap-2 lg:hidden">
@@ -2036,15 +2027,6 @@ export default function QuizEngine() {
             else showQuestion(currentIndex + 1);
           }}
         >
-          <div className="mb-3 flex items-center justify-between">
-            <span className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-600">
-              <span className="h-2 w-2 rounded-sm bg-blue-500" />
-              {currentQ.concept}
-            </span>
-            <span className="text-xs font-semibold text-slate-500">
-              Question {currentIndex + 1} of {questions.length}
-            </span>
-          </div>
           <motion.div
             key={currentQ.id}
             initial={{ opacity: 0, y: 12 }}
@@ -2056,23 +2038,16 @@ export default function QuizEngine() {
                 : "min-h-[150px] sm:min-h-[180px]"
             }`}
           >
-            <div className="flex items-start gap-4">
-              <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-blue-50 text-sm font-bold text-blue-600">
-                Q
+            <div className="mb-5 flex flex-wrap items-center gap-3">
+              <span className="inline-flex items-center rounded-full border border-[#2DD4BF] bg-white px-3 py-1 text-[13px] font-semibold text-[#0D9488]">
+                {currentQ.concept || "number_coding"}
               </span>
-              <div className="flex-1 text-[17px] font-normal leading-relaxed text-slate-800">
-                <RichContent text={currentQ.question} className="leading-relaxed" />
-                {currentQ.questionImage && (
-                  <img
-                    src={currentQ.questionImage}
-                    alt={`Question ${currentIndex + 1}`}
-                    className="mt-4 w-full rounded-2xl border border-slate-200"
-                  />
-                )}
-              </div>
+              <span className="text-[13px] font-medium text-slate-500">
+                {(currentQ as any).exam || "SSC CGL 08/12/2022 (2nd Shift) 2022"}
+              </span>
               <button
                 onClick={handleBookmark}
-                className="ml-2 rounded-full p-1.5 transition-colors hover:bg-slate-100"
+                className="flex items-center justify-center rounded-full p-1 transition-colors hover:bg-slate-100 text-slate-400"
                 aria-label={
                   bookmarked.has(String(currentQ.id))
                     ? "Remove bookmark"
@@ -2080,11 +2055,22 @@ export default function QuizEngine() {
                 }
               >
                 {bookmarked.has(String(currentQ.id)) ? (
-                  <BookmarkCheck className="h-5 w-5 text-blue-500" />
+                  <BookmarkCheck className="h-[18px] w-[18px] text-blue-600" />
                 ) : (
-                  <Bookmark className="h-5 w-5 text-slate-400" />
+                  <Bookmark className="h-[18px] w-[18px]" />
                 )}
               </button>
+            </div>
+            
+            <div className="text-[17px] font-normal leading-relaxed text-slate-800">
+              <RichContent text={currentQ.question} className="leading-relaxed" />
+              {currentQ.questionImage && (
+                <img
+                  src={currentQ.questionImage}
+                  alt={`Question ${currentIndex + 1}`}
+                  className="mt-4 w-full rounded-2xl border border-slate-200"
+                />
+              )}
             </div>
           </motion.div>
         </section>
@@ -2259,28 +2245,30 @@ export default function QuizEngine() {
           )}
         </section>
 
-        <div className="mt-6 hidden items-center justify-between border-t border-slate-200 pt-4 lg:flex">
+        <div className="mt-8 hidden items-center justify-between lg:flex px-1">
           <button
             onClick={handlePrev}
             disabled={currentIndex === 0}
-            className="inline-flex h-12 items-center justify-center rounded-xl border border-slate-200 bg-slate-100 px-5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-45"
+            className="inline-flex h-11 items-center justify-center gap-2 px-2 text-[15px] font-semibold text-slate-600 transition-colors hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-40"
           >
+            <ChevronLeft className="h-[18px] w-[18px]" />
             Previous
           </button>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-6">
             <button
               onClick={handleClearResponse}
               disabled={isCurrentSubmitted}
-              className="inline-flex h-12 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45"
+              className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 text-[14px] font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45"
             >
-              Clear Response
+              Clear Responses
             </button>
             <button
               onClick={handleNext}
               disabled={!isCurrentSubmitted}
-              className="inline-flex h-12 items-center justify-center rounded-xl border border-slate-200 bg-slate-100 px-5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-45"
+              className="inline-flex h-11 items-center justify-center gap-2 px-2 text-[15px] font-semibold text-slate-600 transition-colors hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-45"
             >
-              {currentIndex < questions.length - 1 ? "Next →" : "Finish"}
+              {currentIndex < questions.length - 1 ? "Next" : "Finish"}
+              {currentIndex < questions.length - 1 && <ChevronRight className="h-[18px] w-[18px]" />}
             </button>
             <button
               onClick={() => {
@@ -2289,16 +2277,17 @@ export default function QuizEngine() {
                 }
               }}
               disabled={!canSubmit}
-              className="inline-flex h-12 items-center justify-center rounded-xl bg-blue-600 px-6 text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-45"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#3B82F6] px-6 text-[15px] font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-45 shadow-sm"
             >
+              <Send className="h-[18px] w-[18px]" />
               Submit
             </button>
           </div>
         </div>
         </div>
 
-        <aside className="hidden lg:block lg:w-[320px]">
-          <div className="sticky top-6">
+        <aside className="hidden lg:block lg:w-[320px]" style={{ marginTop: '32px' }}>
+          <div className="sticky" style={{ top: '110px' }}>
             <QuestionPalettePanel
               total={questions.length}
               currentIndex={currentIndex}

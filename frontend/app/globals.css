@@ -186,13 +186,14 @@ body.math-topics-surface.theme-dark {
 .question-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
-  gap: 8px;
+  gap: 12px;
+  justify-content: center;
 }
 
 .question-grid--palette {
   max-height: min(70vh, 720px);
   overflow-y: auto;
-  padding-right: 2px;
+  padding: 4px 16px;
 }
 
 .question-button {
