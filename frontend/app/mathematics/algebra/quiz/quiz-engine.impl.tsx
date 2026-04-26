@@ -2039,7 +2039,10 @@ export default function QuizEngine() {
             }`}
           >
             <div className="mb-5 flex flex-wrap items-center gap-3">
-              <span className="inline-flex items-center rounded-full border border-[#2DD4BF] bg-white px-3 py-1 text-[13px] font-semibold text-[#0D9488]">
+              <span
+                className="inline-flex items-center rounded-full border border-[#2DD4BF] bg-white px-3 py-1 text-[13px] font-semibold text-[#0D9488]"
+                style={{ marginLeft: 40 }}
+              >
                 {currentQ.concept || "number_coding"}
               </span>
               <span className="text-[13px] font-medium text-slate-500">
@@ -2062,7 +2065,7 @@ export default function QuizEngine() {
               </button>
             </div>
             
-            <div className="text-[17px] font-normal leading-relaxed text-slate-800">
+            <div className="text-[17px] font-normal leading-relaxed text-slate-800" style={{ paddingLeft: 40 }}>
               <RichContent text={currentQ.question} className="leading-relaxed" />
               {currentQ.questionImage && (
                 <img
@@ -2153,24 +2156,24 @@ export default function QuizEngine() {
                     onClick={() => handleSelectAnswer(i)}
                     disabled={isCurrentSubmitted}
                     type="button"
-                    style={{
-                      width: "100%",
-                      minHeight: 58,
-                      background: bg,
-                      border: `1.5px solid ${border}`,
-                      borderRadius: 16,
-                      padding: "0 16px",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 14,
-                      boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
-                      cursor: isCurrentSubmitted ? "default" : "pointer",
-                      transition: "all 0.15s ease",
-                      fontSize: 17,
-                      fontWeight: 400,
-                      color: "#111827",
-                      outline: "none",
-                    }}
+                        style={{
+                          width: "100%",
+                          minHeight: 58,
+                          background: bg,
+                          border: `1.5px solid ${border}`,
+                          borderRadius: 16,
+                          padding: "10px 16px",
+                          display: "flex",
+                          alignItems: "center",
+                          position: "relative",
+                          boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+                          cursor: isCurrentSubmitted ? "default" : "pointer",
+                          transition: "all 0.15s ease",
+                          fontSize: 17,
+                          fontWeight: 400,
+                          color: "#111827",
+                          outline: "none",
+                        }}
                     onMouseOver={(e) => {
                       if (!isCurrentSubmitted && selectedAnswer !== i) {
                         e.currentTarget.style.borderColor = "#93C5FD";
@@ -2186,6 +2189,10 @@ export default function QuizEngine() {
                   >
                     <span
                       style={{
+                        position: "absolute",
+                        left: 12,
+                        top: "50%",
+                        transform: "translateY(-50%)",
                         width: 34,
                         height: 34,
                         border: `1.5px solid ${letterBorder}`,
@@ -2198,7 +2205,6 @@ export default function QuizEngine() {
                         alignItems: "center",
                         justifyContent: "center",
                         flexShrink: 0,
-                        marginRight: 10,
                         transition: "all 0.15s ease",
                       }}
                     >
@@ -2210,6 +2216,7 @@ export default function QuizEngine() {
                         fontWeight: 400,
                         color: "#111827",
                         lineHeight: 1.5,
+                        marginLeft: 40,
                       }}
                     >
                       <RichContent text={opt} />
