@@ -22,16 +22,17 @@ import {
   CheckCircle2,
   XCircle,
   Menu,
-  Brain,
   Clock,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Flame,
   Sun,
   Moon,
   Sparkles,
   Target,
   RotateCcw,
+  Send,
   X,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -1647,6 +1648,96 @@ function SolutionBottomSheet({
   );
 }
 
+function SolutionSidePanel({
+  isOpen,
+  solution,
+  questionNumber,
+  correctOptionIndex,
+  onClose,
+}: {
+  isOpen: boolean;
+  solution: string;
+  questionNumber: number;
+  correctOptionIndex: number;
+  onClose: () => void;
+}) {
+  const solutionLines = useMemo(
+    () => formatMathBookSolutionLines(solution),
+    [solution]
+  );
+  const solutionHasImage = /!\[[^\]]*\]\([^)]+\)/.test(solution);
+  const optionLabel =
+    correctOptionIndex >= 0 && correctOptionIndex < 26
+      ? String.fromCharCode(97 + correctOptionIndex)
+      : "a";
+
+  if (!isOpen) return null;
+
+  return (
+    <div
+      className="w-full min-h-[420px] rounded-2xl border border-slate-200 bg-white shadow-sm"
+      aria-label="Question solution"
+    >
+      <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3.5">
+        <div>
+          <p className="text-[15px] font-semibold text-slate-900">Worked Solution</p>
+          <p className="text-[12px] font-medium text-slate-500">
+            Sol.{questionNumber}.({optionLabel})
+          </p>
+        </div>
+        <button
+          onClick={onClose}
+          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50"
+          aria-label="Close solution"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+
+      <div
+        className="max-h-[72vh] overflow-y-auto px-7 py-4"
+        style={{
+          fontFamily: "'Cambria Math', 'STIX Two Text', 'Times New Roman', serif",
+          fontSize: 18,
+          lineHeight: 1.8,
+          textAlign: "left",
+          letterSpacing: "-0.01em",
+          paddingLeft: "28px",
+          paddingRight: "24px",
+        }}
+      >
+        {solutionLines.length > 0 ? (
+          <div className="space-y-1.5">
+            {solutionHasImage ? (
+              <RichContent text={solution} />
+            ) : (
+              solutionLines.map((line, index) => {
+                const isDisplayEquation = /^\\\[[\s\S]*\\\]$/.test(line);
+                return (
+                  <div
+                    key={`worked-line-panel-${index}`}
+                    className={isDisplayEquation ? "text-center" : ""}
+                    style={{
+                      marginTop: isDisplayEquation ? "0.15rem" : "0",
+                      marginBottom: isDisplayEquation ? "0.15rem" : "0",
+                    }}
+                  >
+                    <MathRenderer text={line} className="leading-relaxed" />
+                  </div>
+                );
+              })
+            )}
+          </div>
+        ) : (
+          <p className="text-sm text-slate-500">
+            Solution is not available for this question yet.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 const prefetchQuestionImage = (url?: string) => {
   if (!url || typeof window === "undefined") return;
   const img = new window.Image();
@@ -1771,6 +1862,7 @@ export default function ReasoningQuizEngine({
   const [submitError, setSubmitError] = useState("");
   const [timeLeft, setTimeLeft] = useState(60);
   const [isSolutionOpen, setIsSolutionOpen] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -1790,6 +1882,26 @@ export default function ReasoningQuizEngine({
       active = false;
     };
   }, [baseConcepts, slug]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mediaQuery = window.matchMedia("(min-width: 1024px)");
+    const update = () => setIsDesktop(mediaQuery.matches);
+    update();
+
+    const addListener =
+      mediaQuery.addEventListener?.bind(mediaQuery) ??
+      mediaQuery.addListener?.bind(mediaQuery);
+    const removeListener =
+      mediaQuery.removeEventListener?.bind(mediaQuery) ??
+      mediaQuery.removeListener?.bind(mediaQuery);
+
+    addListener?.("change", update);
+
+    return () => {
+      removeListener?.("change", update);
+    };
+  }, []);
 
   useEffect(() => {
     setConceptFilter("all");
@@ -2648,7 +2760,7 @@ export default function ReasoningQuizEngine({
             </span>
           </div>
           <h1
-            className="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-3 text-[var(--text-primary)]"
+            className="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-3 text-[color:var(--quiz-text)]"
             style={{
               fontFamily: "'SF Pro Display', 'Helvetica Neue', sans-serif",
             }}
@@ -2663,12 +2775,16 @@ export default function ReasoningQuizEngine({
                 className="rounded-full px-4 py-2 text-sm font-semibold transition-all"
                 style={{
                   background:
-                    conceptFilter === "all" ? "#7c3aed" : "var(--quiz-pill-bg)",
+                    conceptFilter === "all"
+                      ? "var(--quiz-accent-bg)"
+                      : "var(--quiz-pill-bg)",
                   color:
-                    conceptFilter === "all" ? "#fff" : "var(--quiz-pill-text)",
+                    conceptFilter === "all"
+                      ? "var(--quiz-accent-text)"
+                      : "var(--quiz-pill-text)",
                   border: `1.5px solid ${
                     conceptFilter === "all"
-                      ? "#7c3aed"
+                      ? "var(--quiz-accent-border)"
                       : "var(--quiz-pill-border)"
                   }`,
                 }}
@@ -2696,14 +2812,23 @@ export default function ReasoningQuizEngine({
             </div>
           )}
 
-          <div className="mb-5 flex items-center justify-center" style={{ marginTop: "1cm" }}>
+          <div
+            className="mb-5 flex items-center justify-center"
+            style={{ marginTop: "1cm" }}
+          >
             <div
               className="flex items-center gap-2 rounded-full border px-3 py-2 shadow-sm"
-              style={{ minWidth: "280px", background: "var(--quiz-surface)", borderColor: "var(--quiz-pill-border)" }}
+              style={{
+                minWidth: "280px",
+                background: "var(--quiz-surface)",
+                borderColor: "var(--quiz-pill-border)",
+              }}
             >
               <select
                 value={examFilter || "all"}
-                onChange={(e) => setExamFilter(e.target.value === "all" ? "" : e.target.value)}
+                onChange={(e) =>
+                  setExamFilter(e.target.value === "all" ? "" : e.target.value)
+                }
                 className="rounded-full border-none bg-transparent px-4 py-2 text-base font-semibold text-[color:var(--quiz-text)] outline-none focus:ring-0"
                 style={{ minWidth: "220px" }}
               >
@@ -2718,7 +2843,10 @@ export default function ReasoningQuizEngine({
                 <button
                   onClick={() => setExamFilter("")}
                   className="rounded-full px-3 py-1 text-xs font-semibold"
-                  style={{ background: "var(--quiz-accent-bg)", color: "var(--quiz-accent-text)" }}
+                  style={{
+                    background: "var(--quiz-accent-bg)",
+                    color: "var(--quiz-accent-text)",
+                  }}
                 >
                   Clear
                 </button>
@@ -2910,27 +3038,15 @@ export default function ReasoningQuizEngine({
       }}
     >
       {themeStyles}
-      <header className="sticky top-0 z-40 hidden border-b border-slate-200 bg-white/95 backdrop-blur lg:block">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-3">
-          <div className="flex min-w-[220px] items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500">
-              <Brain className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-base font-semibold leading-tight text-slate-900">
-                Reasoning Practice
-              </h1>
-              <p className="text-xs text-slate-500">
-                Chapter - {currentQ.concept || title}
-              </p>
-            </div>
-          </div>
+      <header className="sticky top-0 z-40 hidden border-b border-slate-200 bg-white lg:block shadow-sm">
+        <div className="mx-auto flex w-full max-w-[1150px] items-center justify-between gap-4 px-6 lg:px-8 py-3">
+          <div className="min-w-[240px]"></div>
 
           <div className="flex flex-1 items-center justify-center gap-2">
             <button
               onClick={handlePrev}
               disabled={currentIndex === 0}
-              className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-slate-100 text-slate-500 transition-colors hover:bg-slate-200 disabled:opacity-40"
+              className="nav-q-btn flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-500 transition-colors hover:bg-slate-200 disabled:opacity-40"
               aria-label="Previous question"
             >
               <ChevronLeft className="h-4 w-4" />
@@ -2948,34 +3064,35 @@ export default function ReasoningQuizEngine({
             <button
               onClick={handleNext}
               disabled={currentIndex >= questions.length - 1}
-              className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-slate-100 text-slate-500 transition-colors hover:bg-slate-200 disabled:opacity-40"
+              className="nav-q-btn flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-500 transition-colors hover:bg-slate-200 disabled:opacity-40"
               aria-label="Next question"
             >
               <ChevronRight className="h-4 w-4" />
             </button>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 rounded-xl border border-red-100 bg-red-50 px-3 py-1.5">
+          <div className="flex min-w-[240px] items-center justify-end gap-4">
+            <div className="flex items-center gap-2 rounded-xl bg-red-50 px-4 py-2">
               <Clock className="h-4 w-4 text-red-500" />
-              <span className="text-sm font-semibold tracking-wide text-red-600 tabular-nums">
+              <span className="text-[15px] font-bold text-red-600 tabular-nums tracking-wide">
                 {formatClock(timeLeft)}
               </span>
             </div>
             <ThemeToggle />
-            <button
-              className="flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-slate-100"
-              aria-label="Quiz options"
-            >
-              <Menu className="h-5 w-5 text-slate-500" />
+            <button className="flex h-10 items-center justify-center gap-1.5 px-3 rounded-lg transition-colors hover:bg-slate-100 text-slate-600">
+              <Menu className="h-5 w-5" />
+              <ChevronDown className="h-4 w-4 text-slate-400" />
             </button>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-3 pb-[160px] pt-3 sm:px-6 sm:pb-[110px] sm:pt-4 lg:px-8 lg:pb-10">
-        <div className="lg:flex lg:items-start lg:gap-6">
-          <div className="lg:flex-1">
+      <main className="mx-auto w-full max-w-6xl px-3 pb-[160px] pt-3 sm:px-6 sm:pb-[110px] sm:pt-4 lg:max-w-[1150px] lg:px-8 lg:pb-10">
+        <div className="lg:flex lg:items-start lg:gap-8 xl:gap-10 lg:justify-center">
+          <div
+            className="lg:flex-1 min-w-0 lg:ml-14 xl:ml-20 lg:max-w-[720px]"
+            style={{ paddingTop: "clamp(24px, 3vw, 40px)" }}
+          >
         <section className="quiz-topbar lg:hidden">
           <div className="quiz-topbar-group">
             <ThemeToggle />
@@ -3031,7 +3148,7 @@ export default function ReasoningQuizEngine({
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2 }}
-            className={`quiz-card rounded-2xl px-6 py-6 sm:px-8 sm:py-8 ${
+            className={`quiz-card rounded-2xl px-6 py-6 sm:px-8 sm:py-8 lg:pl-[72px] lg:pr-[32px] ${
               isLongQuestion
                 ? "min-h-[220px] sm:min-h-[260px]"
                 : "min-h-[150px] sm:min-h-[180px]"
@@ -3271,33 +3388,32 @@ export default function ReasoningQuizEngine({
           </div>
         </section>
 
-        <div className="mt-6 hidden items-center justify-between border-t pt-4 lg:flex" style={{ borderColor: "var(--quiz-border)" }}>
+        <div className="mt-8 hidden items-center justify-between lg:flex px-1">
           <button
             onClick={handlePrev}
             disabled={currentIndex === 0}
-            className="inline-flex h-12 items-center justify-center rounded-2xl border px-5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-45"
-            style={{
-              background: "var(--quiz-secondary-bg)",
-              borderColor: "var(--quiz-secondary-border)",
-              color: "var(--quiz-secondary-text)",
-            }}
+            className="inline-flex h-11 items-center justify-center gap-2 px-2 text-[15px] font-semibold text-slate-600 transition-colors hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-40"
           >
+            <ChevronLeft className="h-[18px] w-[18px]" />
             Previous
           </button>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-6">
             <button
               onClick={handleClearResponse}
               disabled={isCurrentSubmitted}
-              className="inline-flex h-12 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45"
+              className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 text-[14px] font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45"
             >
-              Clear Response
+              Clear Responses
             </button>
             <button
               onClick={handleNext}
               disabled={!isCurrentSubmitted}
-              className="inline-flex h-12 items-center justify-center rounded-xl border border-slate-200 bg-slate-100 px-5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-45"
+              className="inline-flex h-11 items-center justify-center gap-2 px-2 text-[15px] font-semibold text-slate-600 transition-colors hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-45"
             >
-              {currentIndex < questions.length - 1 ? "Next →" : "Finish"}
+              {currentIndex < questions.length - 1 ? "Next" : "Finish"}
+              {currentIndex < questions.length - 1 && (
+                <ChevronRight className="h-[18px] w-[18px]" />
+              )}
             </button>
             <button
               onClick={() => {
@@ -3306,36 +3422,49 @@ export default function ReasoningQuizEngine({
                 }
               }}
               disabled={!canSubmit}
-              className="inline-flex h-12 items-center justify-center rounded-xl bg-blue-600 px-6 text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-45"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#3B82F6] px-6 text-[15px] font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-45 shadow-sm"
             >
+              <Send className="h-[18px] w-[18px]" />
               Submit
             </button>
           </div>
         </div>
         </div>
 
-        <aside className="hidden lg:block lg:w-[320px]">
-          <div className="sticky top-24">
-            <QuestionPalettePanel
-              total={questions.length}
-              currentIndex={currentIndex}
-              selectedAnswers={selectedAnswers}
-              questions={questions}
-              submittedQuestions={submittedQuestions}
-              onGoToQuestion={goToQuestion}
-            />
+        <aside className="hidden lg:block lg:w-[360px]" style={{ marginTop: "32px" }}>
+          <div className="sticky" style={{ top: "110px" }}>
+            {isSolutionOpen ? (
+              <SolutionSidePanel
+                isOpen={isSolutionOpen}
+                solution={currentQ.solution ?? ""}
+                questionNumber={currentIndex + 1}
+                correctOptionIndex={currentQ.correctAnswer}
+                onClose={closeSolution}
+              />
+            ) : (
+              <QuestionPalettePanel
+                total={questions.length}
+                currentIndex={currentIndex}
+                selectedAnswers={selectedAnswers}
+                questions={questions}
+                submittedQuestions={submittedQuestions}
+                onGoToQuestion={goToQuestion}
+              />
+            )}
           </div>
         </aside>
         </div>
       </main>
 
-      <SolutionBottomSheet
-        isOpen={isSolutionOpen}
-        solution={currentQ.solution ?? ""}
-        questionNumber={currentIndex + 1}
-        correctOptionIndex={currentQ.correctAnswer}
-        onClose={closeSolution}
-      />
+      {!isDesktop && (
+        <SolutionBottomSheet
+          isOpen={isSolutionOpen}
+          solution={currentQ.solution ?? ""}
+          questionNumber={currentIndex + 1}
+          correctOptionIndex={currentQ.correctAnswer}
+          onClose={closeSolution}
+        />
+      )}
 
       {submitError && (
         <div className="fixed bottom-[86px] left-0 right-0 z-40 px-3 sm:px-6">
