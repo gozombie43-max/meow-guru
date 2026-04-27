@@ -811,6 +811,96 @@ function SolutionBottomSheet({
   );
 }
 
+function SolutionSidePanel({
+  isOpen,
+  solution,
+  questionNumber,
+  correctOptionIndex,
+  onClose,
+}: {
+  isOpen: boolean;
+  solution: string;
+  questionNumber: number;
+  correctOptionIndex: number;
+  onClose: () => void;
+}) {
+  const solutionLines = useMemo(
+    () => formatMathBookSolutionLines(solution),
+    [solution]
+  );
+  const solutionHasImage = /!\[[^\]]*\]\([^)]+\)/.test(solution);
+  const optionLabel =
+    correctOptionIndex >= 0 && correctOptionIndex < 26
+      ? String.fromCharCode(97 + correctOptionIndex)
+      : "a";
+
+  if (!isOpen) return null;
+
+  return (
+    <div
+      className="w-full min-h-[420px] rounded-2xl border border-slate-200 bg-white shadow-sm"
+      aria-label="Question solution"
+    >
+      <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3.5">
+        <div>
+          <p className="text-[15px] font-semibold text-slate-900">Worked Solution</p>
+          <p className="text-[12px] font-medium text-slate-500">
+            Sol.{questionNumber}.({optionLabel})
+          </p>
+        </div>
+        <button
+          onClick={onClose}
+          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50"
+          aria-label="Close solution"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+
+      <div
+        className="max-h-[72vh] overflow-y-auto px-7 py-4"
+        style={{
+          fontFamily: "'Cambria Math', 'STIX Two Text', 'Times New Roman', serif",
+          fontSize: 18,
+          lineHeight: 1.8,
+          textAlign: "left",
+          letterSpacing: "-0.01em",
+          paddingLeft: "28px",
+          paddingRight: "24px",
+        }}
+      >
+        {solutionLines.length > 0 ? (
+          <div className="space-y-1.5">
+            {solutionHasImage ? (
+              <RichContent text={solution} />
+            ) : (
+              solutionLines.map((line, index) => {
+                const isDisplayEquation = /^\\\[[\s\S]*\\\]$/.test(line);
+                return (
+                  <div
+                    key={`worked-line-panel-${index}`}
+                    className={isDisplayEquation ? "text-center" : ""}
+                    style={{
+                      marginTop: isDisplayEquation ? "0.15rem" : "0",
+                      marginBottom: isDisplayEquation ? "0.15rem" : "0",
+                    }}
+                  >
+                    <MathRenderer text={line} className="leading-relaxed" />
+                  </div>
+                );
+              })
+            )}
+          </div>
+        ) : (
+          <p className="text-sm text-slate-500">
+            Solution is not available for this question yet.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ══════════════════════════════════════════════════════════════════════════════
    MAIN QUIZ ENGINE
    ══════════════════════════════════════════════════════════════════════════════ */
@@ -867,6 +957,7 @@ export default function QuizEngine() {
   const [submitError, setSubmitError] = useState("");
   const [timeLeft, setTimeLeft] = useState(60);
   const [isSolutionOpen, setIsSolutionOpen] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -882,6 +973,27 @@ export default function QuizEngine() {
 
     return () => {
       active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mediaQuery = window.matchMedia("(min-width: 1024px)");
+    const update = () => setIsDesktop(mediaQuery.matches);
+    update();
+
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener("change", update);
+    } else {
+      mediaQuery.addListener(update);
+    }
+
+    return () => {
+      if (mediaQuery.addEventListener) {
+        mediaQuery.removeEventListener("change", update);
+      } else {
+        mediaQuery.removeListener(update);
+      }
     };
   }, []);
 
@@ -2293,28 +2405,40 @@ export default function QuizEngine() {
         </div>
         </div>
 
-        <aside className="hidden lg:block lg:w-[320px]" style={{ marginTop: '32px' }}>
+        <aside className="hidden lg:block lg:w-[360px]" style={{ marginTop: '32px' }}>
           <div className="sticky" style={{ top: '110px' }}>
-            <QuestionPalettePanel
-              total={questions.length}
-              currentIndex={currentIndex}
-              selectedAnswers={selectedAnswers}
-              questions={questions}
-              submittedQuestions={submittedQuestions}
-              onGoToQuestion={goToQuestion}
-            />
+            {isSolutionOpen ? (
+              <SolutionSidePanel
+                isOpen={isSolutionOpen}
+                solution={currentQ.solution ?? ""}
+                questionNumber={currentIndex + 1}
+                correctOptionIndex={currentQ.correctAnswer}
+                onClose={closeSolution}
+              />
+            ) : (
+              <QuestionPalettePanel
+                total={questions.length}
+                currentIndex={currentIndex}
+                selectedAnswers={selectedAnswers}
+                questions={questions}
+                submittedQuestions={submittedQuestions}
+                onGoToQuestion={goToQuestion}
+              />
+            )}
           </div>
         </aside>
         </div>
       </main>
 
-      <SolutionBottomSheet
-        isOpen={isSolutionOpen}
-        solution={currentQ.solution ?? ""}
-        questionNumber={currentIndex + 1}
-        correctOptionIndex={currentQ.correctAnswer}
-        onClose={closeSolution}
-      />
+      {!isDesktop && (
+        <SolutionBottomSheet
+          isOpen={isSolutionOpen}
+          solution={currentQ.solution ?? ""}
+          questionNumber={currentIndex + 1}
+          correctOptionIndex={currentQ.correctAnswer}
+          onClose={closeSolution}
+        />
+      )}
 
       {/* Submit error toast */}
       {submitError && (
