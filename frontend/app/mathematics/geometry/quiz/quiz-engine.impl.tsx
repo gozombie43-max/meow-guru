@@ -12,14 +12,15 @@ import {
   CheckCircle2,
   XCircle,
   Menu,
-  Brain,
   Clock,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Flame,
   Sparkles,
   Target,
   RotateCcw,
+  Send,
   X,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -2041,32 +2042,19 @@ export default function TrigQuizEngine() {
     <div
       className="min-h-screen relative overflow-x-hidden"
       style={{
-        background:
-          "linear-gradient(165deg, #f5f0ff 0%, #eef2ff 38%, #f8faff 100%)",
-        fontFamily: "Poppins, Inter, 'Segoe UI', sans-serif",
+        background: "#f0f4f8",
+        fontFamily: "'General Sans', 'Plus Jakarta Sans', system-ui, sans-serif",
       }}
     >
-      <header className="sticky top-0 z-40 hidden border-b border-slate-200 bg-white/95 backdrop-blur lg:block">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-3">
-          <div className="flex min-w-[220px] items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500">
-              <Brain className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-base font-semibold leading-tight text-slate-900">
-                Mathematics Practice
-              </h1>
-              <p className="text-xs text-slate-500">
-                Chapter - {currentQ.concept || "Geometry"}
-              </p>
-            </div>
-          </div>
+      <header className="sticky top-0 z-40 hidden border-b border-slate-200 bg-white lg:block shadow-sm">
+        <div className="mx-auto flex w-full max-w-[1150px] items-center justify-between gap-4 px-6 lg:px-8 py-3">
+          <div className="min-w-[240px]"></div>
 
           <div className="flex flex-1 items-center justify-center gap-2">
             <button
               onClick={handlePrev}
               disabled={currentIndex === 0}
-              className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-slate-100 text-slate-500 transition-colors hover:bg-slate-200 disabled:opacity-40"
+              className="nav-q-btn flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-500 transition-colors hover:bg-slate-200 disabled:opacity-40"
               aria-label="Previous question"
             >
               <ChevronLeft className="h-4 w-4" />
@@ -2084,33 +2072,34 @@ export default function TrigQuizEngine() {
             <button
               onClick={handleNext}
               disabled={currentIndex >= questions.length - 1}
-              className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-slate-100 text-slate-500 transition-colors hover:bg-slate-200 disabled:opacity-40"
+              className="nav-q-btn flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-500 transition-colors hover:bg-slate-200 disabled:opacity-40"
               aria-label="Next question"
             >
               <ChevronRight className="h-4 w-4" />
             </button>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 rounded-xl border border-red-100 bg-red-50 px-3 py-1.5">
+          <div className="flex min-w-[240px] items-center justify-end gap-4">
+            <div className="flex items-center gap-2 rounded-xl bg-red-50 px-4 py-2">
               <Clock className="h-4 w-4 text-red-500" />
-              <span className="text-sm font-semibold tracking-wide text-red-600 tabular-nums">
+              <span className="text-[15px] font-bold text-red-600 tabular-nums tracking-wide">
                 {formatClock(timeLeft)}
               </span>
             </div>
-            <button
-              className="flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-slate-100"
-              aria-label="Quiz options"
-            >
-              <Menu className="h-5 w-5 text-slate-500" />
+            <button className="flex h-10 items-center justify-center gap-1.5 px-3 rounded-lg transition-colors hover:bg-slate-100 text-slate-600">
+              <Menu className="h-5 w-5" />
+              <ChevronDown className="h-4 w-4 text-slate-400" />
             </button>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-3 pb-[110px] pt-3 sm:px-6 sm:pt-4 lg:px-8 lg:pb-10">
-        <div className="lg:flex lg:items-start lg:gap-6">
-          <div className="lg:flex-1">
+      <main className="mx-auto w-full max-w-[1150px] px-4 sm:px-6 lg:px-8 pb-[110px] pt-3 sm:pt-4 lg:pb-10">
+        <div className="lg:flex lg:items-start lg:gap-8 xl:gap-10 lg:justify-center">
+          <div
+            className="lg:flex-1 min-w-0 lg:ml-14 xl:ml-20 lg:max-w-[720px]"
+            style={{ paddingTop: "clamp(24px, 3vw, 40px)" }}
+          >
 
         {/* Top bar */}
         <section className="mb-3 flex items-center justify-end gap-2 lg:hidden">
@@ -2395,28 +2384,32 @@ export default function TrigQuizEngine() {
           )}
         </section>
 
-        <div className="mt-6 hidden items-center justify-between border-t border-slate-200 pt-4 lg:flex">
+        <div className="mt-8 hidden items-center justify-between lg:flex px-1">
           <button
             onClick={handlePrev}
             disabled={currentIndex === 0}
-            className="inline-flex h-12 items-center justify-center rounded-2xl border border-slate-300 bg-slate-100 px-5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-45"
+            className="inline-flex h-11 items-center justify-center gap-2 px-2 text-[15px] font-semibold text-slate-600 transition-colors hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-40"
           >
+            <ChevronLeft className="h-[18px] w-[18px]" />
             Previous
           </button>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-6">
             <button
               onClick={handleClearResponse}
               disabled={isCurrentSubmitted}
-              className="inline-flex h-12 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45"
+              className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 text-[14px] font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45"
             >
-              Clear Response
+              Clear Responses
             </button>
             <button
               onClick={handleNext}
               disabled={!isCurrentSubmitted}
-              className="inline-flex h-12 items-center justify-center rounded-xl border border-slate-200 bg-slate-100 px-5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-45"
+              className="inline-flex h-11 items-center justify-center gap-2 px-2 text-[15px] font-semibold text-slate-600 transition-colors hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-45"
             >
-              {currentIndex < questions.length - 1 ? "Next →" : "Finish"}
+              {currentIndex < questions.length - 1 ? "Next" : "Finish"}
+              {currentIndex < questions.length - 1 && (
+                <ChevronRight className="h-[18px] w-[18px]" />
+              )}
             </button>
             <button
               onClick={() => {
@@ -2425,16 +2418,17 @@ export default function TrigQuizEngine() {
                 }
               }}
               disabled={!canSubmit}
-              className="inline-flex h-12 items-center justify-center rounded-xl bg-blue-600 px-6 text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-45"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#3B82F6] px-6 text-[15px] font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-45 shadow-sm"
             >
+              <Send className="h-[18px] w-[18px]" />
               Submit
             </button>
           </div>
         </div>
         </div>
 
-        <aside className="hidden lg:block lg:w-[320px]">
-          <div className="sticky top-24">
+        <aside className="hidden lg:block lg:w-[360px]" style={{ marginTop: "32px" }}>
+          <div className="sticky" style={{ top: "110px" }}>
             <QuestionPalettePanel
               total={questions.length}
               currentIndex={currentIndex}
