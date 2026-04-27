@@ -982,18 +982,17 @@ export default function QuizEngine() {
     const update = () => setIsDesktop(mediaQuery.matches);
     update();
 
-    if (mediaQuery.addEventListener) {
-      mediaQuery.addEventListener("change", update);
-    } else {
-      mediaQuery.addListener(update);
-    }
+    const addListener =
+      mediaQuery.addEventListener?.bind(mediaQuery) ??
+      mediaQuery.addListener?.bind(mediaQuery);
+    const removeListener =
+      mediaQuery.removeEventListener?.bind(mediaQuery) ??
+      mediaQuery.removeListener?.bind(mediaQuery);
+
+    addListener?.("change", update);
 
     return () => {
-      if (mediaQuery.addEventListener) {
-        mediaQuery.removeEventListener("change", update);
-      } else {
-        mediaQuery.removeListener(update);
-      }
+      removeListener?.("change", update);
     };
   }, []);
 
