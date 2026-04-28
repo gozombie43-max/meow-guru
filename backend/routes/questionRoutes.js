@@ -90,8 +90,27 @@ router.post('/bulk', async (req, res) => {
       return item;
     });
 
+    const buildNewId = (idx, attempt = 0) => {
+      const suffix = crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(8).toString('hex');
+      return `q_${Date.now()}_${idx}_${attempt}_${suffix}`;
+    };
+
+    const createWithRetry = async (item, idx) => {
+      let current = { ...item };
+      for (let attempt = 0; attempt < 3; attempt += 1) {
+        try {
+          return await container.items.create(current);
+        } catch (err) {
+          const status = err?.code || err?.statusCode;
+          if (status !== 409) throw err;
+          current = { ...current, id: buildNewId(idx, attempt + 1) };
+        }
+      }
+      return await container.items.create({ ...current, id: buildNewId(idx, 99) });
+    };
+
     const results = await Promise.allSettled(
-      normalizedQuestions.map((q) => container.items.create(q))
+      normalizedQuestions.map((q, idx) => createWithRetry(q, idx))
     );
 
     const inserted = results.filter((r) => r.status === 'fulfilled').length;
