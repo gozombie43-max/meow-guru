@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import NoteEditor from "../components/NoteEditor";
+import { fetchWithRetry } from "@/lib/api/http";
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 
@@ -13,7 +14,7 @@ export default function EditNoteClient() {
 
   useEffect(() => {
     if (!noteId) return;
-    fetch(`${API}/api/notes/${noteId}`)
+    fetchWithRetry(`${API}/api/notes/${noteId}`)
       .then((r) => r.json())
       .then(setNote)
       .catch(() => alert("Failed to load note."));

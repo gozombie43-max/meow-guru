@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { fetchWithRetry } from "@/lib/api/http";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -25,7 +26,7 @@ function NoteViewContent() {
         setLoading(true);
         setError("");
 
-        const res = await fetch(`${API}/api/notes/${noteId}`);
+        const res = await fetchWithRetry(`${API}/api/notes/${noteId}`);
         if (!res.ok) {
           throw new Error("Failed to load note.");
         }

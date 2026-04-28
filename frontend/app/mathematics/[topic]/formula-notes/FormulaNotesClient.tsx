@@ -17,6 +17,7 @@ import {
   Triangle,
   FileText
 } from "lucide-react";
+import { fetchWithRetry } from "@/lib/api/http";
 
 const tabs = ["Notes", "Formula", "Extra", "DPP"];
 
@@ -204,7 +205,7 @@ export default function FormulaNotesClient({ topic }: FormulaNotesClientProps) {
       }
 
       try {
-        const res = await fetch(`${API}/api/notes?topic=${encodeURIComponent(topic)}`);
+        const res = await fetchWithRetry(`${API}/api/notes?topic=${encodeURIComponent(topic)}`);
         if (!res.ok) {
           setApiNotes([]);
           return;

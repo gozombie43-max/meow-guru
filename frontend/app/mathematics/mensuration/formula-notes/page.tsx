@@ -14,6 +14,7 @@ import {
   Triangle,
   FileText
 } from "lucide-react";
+import { fetchWithRetry } from "@/lib/api/http";
 
 const tabs = ["Notes", "Formula", "Extra", "DPP"];
 
@@ -44,7 +45,7 @@ export default function MensurationFormulaNotesPage() {
     const fetchNotes = async () => {
       try {
         const queryByTopic = async (topic: string): Promise<ApiNote[]> => {
-          const res = await fetch(`${API}/api/notes?topic=${encodeURIComponent(topic)}`);
+          const res = await fetchWithRetry(`${API}/api/notes?topic=${encodeURIComponent(topic)}`);
           if (!res.ok) return [];
           return (await res.json()) as ApiNote[];
         };
@@ -56,7 +57,7 @@ export default function MensurationFormulaNotesPage() {
         let merged: ApiNote[] = responses.flat();
         if (merged.length === 0) {
           // If no mensuration-specific notes exist, fall back to formula notes.
-          const res = await fetch(`${API}/api/notes?type=formula`);
+          const res = await fetchWithRetry(`${API}/api/notes?type=formula`);
           if (res.ok) merged = (await res.json()) as ApiNote[];
         }
 

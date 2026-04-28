@@ -35,7 +35,20 @@ const api = axios.create({
   baseURL:         process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000',
   headers:         { 'Content-Type': 'application/json' },
   withCredentials: true, // sends cookies automatically
+  timeout:         15000,
 });
+
+const RETRYABLE_STATUS = new Set([408, 425, 429, 500, 502, 503, 504]);
+const RETRYABLE_METHODS = new Set(['get', 'head', 'options']);
+const MAX_NETWORK_RETRIES = 2;
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const shouldRetryNetwork = (status: number | undefined, method: string) => {
+  if (!RETRYABLE_METHODS.has(method)) return false;
+  if (status === undefined) return true;
+  return RETRYABLE_STATUS.has(status);
+};
 
 // Attach token from localStorage to every request
 api.interceptors.request.use((config) => {
@@ -50,8 +63,11 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const original = error.config;
-    if (error.response?.status === 401 && !original._retry) {
+    const original = error.config || {};
+    const status = error.response?.status;
+    const method = (original.method || 'get').toLowerCase();
+
+    if (status === 401 && !original._retry) {
       original._retry = true;
       try {
         const refreshToken = getStoredRefreshToken();
@@ -67,13 +83,23 @@ api.interceptors.response.use(
         return api(original);
       } catch (refreshErr) {
         // Refresh failed — clear token only for real auth failures
-        const status = (refreshErr as { response?: { status?: number } })?.response?.status;
-        if (status === 401 || status === 403) {
+        const refreshStatus = (refreshErr as { response?: { status?: number } })?.response?.status;
+        if (refreshStatus === 401 || refreshStatus === 403) {
           updateStoredToken(null);
           setStoredRefreshToken(null);
         }
       }
     }
+
+    if (shouldRetryNetwork(status, method)) {
+      const retryCount = original._networkRetryCount || 0;
+      if (retryCount < MAX_NETWORK_RETRIES) {
+        original._networkRetryCount = retryCount + 1;
+        await sleep(1200 * (retryCount + 1));
+        return api(original);
+      }
+    }
+
     return Promise.reject(error);
   }
 );

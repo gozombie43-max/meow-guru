@@ -16,6 +16,7 @@ import {
   Triangle,
   FileText
 } from "lucide-react";
+import { fetchWithRetry } from "@/lib/api/http";
 
 const tabs = ["Notes", "Formula", "Extra", "DPP"];
 
@@ -91,7 +92,7 @@ export default function TrigonometryFormulaNotesPage() {
   useEffect(() => {
     const fetchNotes = async () => {
       try {
-        const res = await fetch(`${API}/api/notes?topic=trigonometry`);
+        const res = await fetchWithRetry(`${API}/api/notes?topic=trigonometry`);
         if (res.ok) {
           const data = (await res.json()) as ApiNote[];
           setApiNotes(data);

@@ -1,5 +1,6 @@
 "use client";
 import { useState, useRef } from "react";
+import { fetchWithRetry } from "@/lib/api/http";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:10000";
 
@@ -55,7 +56,7 @@ export default function MassSolutionUpload() {
       const formData = new FormData();
       formData.append("zipFile", zipFile);
 
-      const res = await fetch(`${API}/api/mass-upload-solutions`, {
+      const res = await fetchWithRetry(`${API}/api/mass-upload-solutions`, {
         method: "POST",
         body: formData,
       });

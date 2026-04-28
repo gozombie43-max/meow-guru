@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useRef, type ChangeEvent } from "reac
 import RichContent from "@/components/RichContent";
 import MassImageUpload from "../../components/admin/MassImageUpload";
 import MassSolutionUpload from "@/components/admin/MassSolutionUpload";
+import { fetchWithRetry } from "@/lib/api/http";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -283,7 +284,7 @@ export default function AdminPanel() {
       if (filterSubject) params.set("subject", filterSubject);
       if (filterDifficulty) params.set("difficulty", filterDifficulty);
       if (filterExam) params.set("exam", filterExam);
-      const res = await fetch(`${API}/api/questions?${params}`);
+      const res = await fetchWithRetry(`${API}/api/questions?${params}`);
       if (!res.ok) throw new Error(`Server error ${res.status}`);
       const data = await res.json();
       setQuestions(Array.isArray(data) ? data : data.questions || []);
@@ -412,7 +413,7 @@ export default function AdminPanel() {
         quizName: muQuiz,
       }));
 
-      const res = await fetch(muApiUrl, {
+      const res = await fetchWithRetry(muApiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -490,7 +491,7 @@ export default function AdminPanel() {
       const formData = new FormData();
       bulkImages.forEach((item) => formData.append("images", item.file));
 
-      const res = await fetch(`${API}/api/upload/bulk-image`, {
+      const res = await fetchWithRetry(`${API}/api/upload/bulk-image`, {
         method: "POST",
         headers: { "x-admin-secret": "quizguru_admin_987654" },
         body: formData,
@@ -554,7 +555,7 @@ export default function AdminPanel() {
     let failed = 0;
     for (const id of selected) {
       try {
-        const res = await fetch(`${API}/api/questions/${encodeURIComponent(id)}`, { method: "DELETE" });
+        const res = await fetchWithRetry(`${API}/api/questions/${encodeURIComponent(id)}`, { method: "DELETE" });
         if (res.ok) deleted++;
         else failed++;
       } catch {
@@ -576,14 +577,14 @@ export default function AdminPanel() {
   const handleSave = async () => {
     try {
       if (isNew) {
-        const res = await fetch(`${API}/api/questions`, {
+        const res = await fetchWithRetry(`${API}/api/questions`, {
           method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),
         });
         if (!res.ok) throw new Error(`Server error ${res.status}`);
         showMsg("Question created ✓");
       } else {
-        const res = await fetch(`${API}/api/questions/${editing!.id}`, {
+        const res = await fetchWithRetry(`${API}/api/questions/${editing!.id}`, {
           method: "PUT", headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),
         });
@@ -599,7 +600,7 @@ export default function AdminPanel() {
 
   const handleDelete = async (id: string) => {
     try {
-      const res = await fetch(`${API}/api/questions/${encodeURIComponent(id)}`, { method: "DELETE" });
+      const res = await fetchWithRetry(`${API}/api/questions/${encodeURIComponent(id)}`, { method: "DELETE" });
       if (!res.ok) throw new Error(`Server error ${res.status}`);
       showMsg("Question deleted ✓");
       setDeleteConfirm(null);

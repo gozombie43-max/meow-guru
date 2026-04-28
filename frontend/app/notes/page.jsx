@@ -2,6 +2,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { fetchWithRetry } from "@/lib/api/http";
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 
@@ -26,7 +27,7 @@ export default function NotesPage() {
       const params = new URLSearchParams();
       if (filterTopic) params.append("topic", filterTopic);
       if (filterType)  params.append("type",  filterType);
-      const res  = await fetch(`${API}/api/notes?${params}`);
+      const res  = await fetchWithRetry(`${API}/api/notes?${params}`);
       const data = await res.json();
       setNotes(data);
     } catch {
@@ -42,7 +43,7 @@ export default function NotesPage() {
     if (!confirm("Delete this note?")) return;
     setDeleting(id);
     try {
-      await fetch(`${API}/api/notes/${id}`, { method: "DELETE" });
+      await fetchWithRetry(`${API}/api/notes/${id}`, { method: "DELETE" });
       setNotes((prev) => prev.filter((n) => n.id !== id));
     } finally {
       setDeleting(null);

@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import Editor from "@monaco-editor/react";
+import { fetchWithRetry } from "@/lib/api/http";
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 
@@ -300,7 +301,7 @@ export default function NoteEditor({ initialNote = null, onSaved }) {
     try {
       const formData = new FormData();
       formData.append("image", file);
-      const res     = await fetch(`${API}/api/upload-note-image`, {
+      const res     = await fetchWithRetry(`${API}/api/upload-note-image`, {
         method: "POST",
         body:   formData,
       });
@@ -324,7 +325,7 @@ export default function NoteEditor({ initialNote = null, onSaved }) {
         ? `${API}/api/notes/${initialNote.id}`
         : `${API}/api/notes`;
 
-      const res = await fetch(endpoint, {
+      const res = await fetchWithRetry(endpoint, {
         method:  isEdit ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body:    JSON.stringify({
