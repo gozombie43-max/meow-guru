@@ -125,7 +125,13 @@ router.post('/check-duplicates', async (req, res) => {
       .map((q) => String(q.id || q._id || q.questionId || ''))
       .filter(Boolean);
 
-    if (ids.length === 0) {
+    const getQuestionText = (q) => String(q?.question ?? q?.questionText ?? q?.q ?? '').trim();
+    const incomingTexts = questions
+      .map((q) => getQuestionText(q))
+      .filter(Boolean);
+    const uniqueTexts = Array.from(new Set(incomingTexts));
+
+    if (ids.length === 0 && uniqueTexts.length === 0) {
       return res.json({ results: [] });
     }
 
@@ -152,25 +158,66 @@ router.post('/check-duplicates', async (req, res) => {
       });
     }
 
+    const textBatchSize = 50;
+    const existingTextMap = new Map();
+
+    for (let i = 0; i < uniqueTexts.length; i += textBatchSize) {
+      const batch = uniqueTexts.slice(i, i + textBatchSize);
+      const paramList = batch.map((_, idx) => `@text${i + idx}`).join(', ');
+      const parameters = batch.map((text, idx) => ({
+        name: `@text${i + idx}`,
+        value: text,
+      }));
+
+      const { resources } = await container.items
+        .query({
+          query: `SELECT c.id, c.question, c.questionText FROM c WHERE (IS_DEFINED(c.question) AND c.question IN (${paramList})) OR (IS_DEFINED(c.questionText) AND c.questionText IN (${paramList}))`,
+          parameters,
+        })
+        .fetchAll();
+
+      resources.forEach((r) => {
+        const text = String(r.question || r.questionText || '').trim();
+        if (text && !existingTextMap.has(text)) {
+          existingTextMap.set(text, { id: r.id, text });
+        }
+      });
+    }
+
     const results = questions.map((q) => {
       const id = String(q.id || q._id || q.questionId || '');
-      if (!id || !existingMap.has(id)) {
-        return { id, status: 'new' };
+      const incomingText = getQuestionText(q);
+      const textKey = incomingText;
+
+      if (id && existingMap.has(id)) {
+        const existingText = String(existingMap.get(id) || '').trim();
+
+        if (incomingText && incomingText === existingText) {
+          return { id, status: 'exact-duplicate', textKey };
+        }
+
+        return {
+          id,
+          status: 'id-conflict',
+          existingText: existingText.substring(0, 100),
+          incomingText: incomingText.substring(0, 100),
+          textKey,
+        };
       }
 
-      const incomingText = (q.question || q.questionText || '').trim();
-      const existingText = existingMap.get(id).trim();
-
-      if (incomingText === existingText) {
-        return { id, status: 'exact-duplicate' };
+      if (incomingText && existingTextMap.has(incomingText)) {
+        const matched = existingTextMap.get(incomingText);
+        return {
+          id,
+          status: 'text-duplicate',
+          existingId: matched?.id,
+          existingText: matched?.text?.substring(0, 100) || '',
+          incomingText: incomingText.substring(0, 100),
+          textKey,
+        };
       }
 
-      return {
-        id,
-        status: 'id-conflict',
-        existingText: existingText.substring(0, 100),
-        incomingText: incomingText.substring(0, 100),
-      };
+      return { id, status: 'new', textKey };
     });
 
     return res.json({ results });

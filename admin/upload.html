@@ -1293,10 +1293,10 @@
     async function muRunDbCheck() {
       if (muDbCheckInFlight) return;
 
-      const questionsWithIds = muAll.filter(q =>
-        q.id || q._id || q.questionId
+      const questionsForCheck = muAll.filter(q =>
+        q.id || q._id || q.questionId || q.question || q.questionText || q.q
       );
-      if (questionsWithIds.length === 0) return;
+      if (questionsForCheck.length === 0) return;
 
       const apiUrlValue = document.getElementById('muApiUrl')?.value.trim();
       if (!apiUrlValue) {
@@ -1308,27 +1308,32 @@
       muDbCheckInFlight = true;
       muPendingDbCheck = false;
 
-      muAddLog(`Checking ${questionsWithIds.length} questions against database...`);
+      muAddLog(`Checking ${questionsForCheck.length} questions against database...`);
 
       try {
         const res = await fetch(getCheckDuplicatesUrl(), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ questions: questionsWithIds })
+          body: JSON.stringify({ questions: questionsForCheck })
         });
 
         if (res.ok) {
           const data = await res.json();
-          const resultMap = new Map(data.results.map(r => [r.id, r]));
+          const resultMapById = new Map(
+            data.results.filter(r => r.id).map(r => [String(r.id), r])
+          );
+          const resultMapByText = new Map(
+            data.results.filter(r => r.textKey).map(r => [String(r.textKey), r])
+          );
 
           let exactDupes   = 0;
+          let textDupes    = 0;
           let idConflicts  = 0;
 
           muAll = muAll.map(q => {
             const id = String(q.id || q._id || q.questionId || '');
-            if (!id) return q;
-
-            const result = resultMap.get(id);
+            const textKey = String(q.question || q.questionText || q.q || '').trim();
+            const result = (id && resultMapById.get(id)) || (textKey && resultMapByText.get(textKey));
             if (!result) return q;
 
             if (result.status === 'exact-duplicate') {
@@ -1337,6 +1342,16 @@
                 ...q,
                 _status: 'db-duplicate',
                 _issue: 'exact duplicate — same ID and same question text'
+              };
+            }
+
+            if (result.status === 'text-duplicate') {
+              textDupes++;
+              const matchId = result.existingId ? ` (match ID: ${result.existingId})` : '';
+              return {
+                ...q,
+                _status: 'db-duplicate',
+                _issue: `exact text match in database${matchId}`
               };
             }
 
@@ -1363,10 +1378,12 @@
           // User decides what to do with them
 
           if (exactDupes > 0)
-            muAddLog(`${exactDupes} exact duplicates found — deselected`, 'err');
+            muAddLog(`${exactDupes} exact duplicates (same ID + text) found — deselected`, 'err');
+          if (textDupes > 0)
+            muAddLog(`${textDupes} text duplicates found — deselected`, 'err');
           if (idConflicts > 0)
             muAddLog(`⚠️ ${idConflicts} ID conflicts — same ID, different question!`, 'err');
-          if (exactDupes === 0 && idConflicts === 0)
+          if (exactDupes === 0 && textDupes === 0 && idConflicts === 0)
             muAddLog('No duplicates found ✓', 'ok');
 
           muUpdateStats();
@@ -1388,7 +1405,6 @@
       const reader = new FileReader();
       reader.onload = async (e) => {
         const lines = e.target.result.split('\n').filter(l => l.trim());
-        const seenIds = new Set();
         muAll = [];
         muPendingDbCheck = false;
         muDbCheckInFlight = false;
@@ -1399,9 +1415,6 @@
           if (!q.question && !q.questionText && !q.q) issues.push('missing question text');
           if (!q.options && !q.choices && !q.answers && !(q.optionA || q.optionAText)) issues.push('missing options');
           if (!q.answer && !q.correctAnswer && !q.correct && q.correctIndex === undefined) issues.push('missing answer');
-          const id = q._id || q.id || q.questionId || null;
-          if (id && seenIds.has(String(id))) { status = 'duplicate'; issues.push('duplicate id'); }
-          else if (id) seenIds.add(String(id));
           if (issues.length && status === 'valid') status = 'error';
           muAll.push({ ...q, _idx: i, _status: status, _issue: issues.join(', ') });
         });
@@ -1424,7 +1437,6 @@
       document.getElementById('muValid').textContent  = muAll.filter(q => q._status === 'valid').length;
       document.getElementById('muErrors').textContent = muAll.filter(q => q._status === 'error').length;
       document.getElementById('muDupes').textContent  = muAll.filter(q =>
-        q._status === 'duplicate' ||
         q._status === 'db-duplicate' ||
         q._status === 'id-conflict'
       ).length;
@@ -1440,7 +1452,7 @@
         if (subj && !qSubj.includes(subj)) return false;
         if (diff && qDiff !== diff) return false;
         if (status === 'error') return q._status === 'error' || q._status === 'id-conflict';
-        if (status === 'duplicate') return q._status === 'duplicate' || q._status === 'db-duplicate';
+        if (status === 'duplicate') return q._status === 'db-duplicate';
         if (status && q._status !== status) return false;
         return true;
       });
@@ -1481,8 +1493,6 @@
         let statusHtml = '';
         if (q._status === 'valid') {
           statusHtml = '<span class="mu-status-ok">valid</span>';
-        } else if (q._status === 'duplicate') {
-          statusHtml = '<span class="mu-status-dupe" title="Duplicate ID in file">dupe</span>';
         } else if (q._status === 'db-duplicate') {
           statusHtml = '<span class="mu-status-dupe" style="background:rgba(254,226,226,0.7);color:#a32d2d;" title="Exact duplicate — already in database">in DB</span>';
         } else if (q._status === 'id-conflict') {
