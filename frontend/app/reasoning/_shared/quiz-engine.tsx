@@ -917,19 +917,6 @@ function ReasoningQuizThemeStyles() {
         font-weight: 600;
       }
 
-      .reasoning-quiz .quiz-topbar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 12px;
-      }
-      .reasoning-quiz .quiz-topbar-group {
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-      }
-
       .reasoning-quiz .quiz-option {
         border-radius: 18px;
         box-shadow: var(--quiz-option-shadow);
@@ -1675,19 +1662,32 @@ function SolutionSidePanel({
 
   return (
     <div
-      className="w-full min-h-[420px] rounded-2xl border border-slate-200 bg-white shadow-sm"
+      className="w-full min-h-[420px] rounded-[28px] border p-4"
       aria-label="Question solution"
+      style={{
+        background: "var(--quiz-card-bg)",
+        borderColor: "var(--quiz-card-border)",
+        boxShadow: "var(--quiz-card-shadow)",
+        color: "var(--quiz-text)",
+        backdropFilter: "var(--quiz-card-blur)",
+        WebkitBackdropFilter: "var(--quiz-card-blur)",
+      }}
     >
-      <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3.5">
+      <div
+        className="flex items-center justify-between border-b px-2 pb-3.5"
+        style={{ borderColor: "var(--quiz-border)" }}
+      >
         <div>
-          <p className="text-[15px] font-semibold text-slate-900">Worked Solution</p>
-          <p className="text-[12px] font-medium text-slate-500">
+          <p className="text-[15px] font-semibold text-[color:var(--quiz-text)]">
+            Worked Solution
+          </p>
+          <p className="text-[12px] font-medium text-[color:var(--quiz-text-muted)]">
             Sol.{questionNumber}.({optionLabel})
           </p>
         </div>
         <button
           onClick={onClose}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50"
+          className="quiz-icon-button inline-flex h-9 w-9 items-center justify-center rounded-full transition-colors"
           aria-label="Close solution"
         >
           <X className="h-4 w-4" />
@@ -1695,14 +1695,16 @@ function SolutionSidePanel({
       </div>
 
       <div
-        className="max-h-[72vh] overflow-y-auto px-7 py-4"
+        className="mt-4 max-h-[72vh] overflow-y-auto rounded-2xl border px-6 py-4 text-[color:var(--quiz-text)]"
         style={{
+          background: "var(--quiz-surface-muted)",
+          borderColor: "var(--quiz-border)",
           fontFamily: "'Cambria Math', 'STIX Two Text', 'Times New Roman', serif",
           fontSize: 18,
           lineHeight: 1.8,
           textAlign: "left",
           letterSpacing: "-0.01em",
-          paddingLeft: "28px",
+          paddingLeft: "24px",
           paddingRight: "24px",
         }}
       >
@@ -3088,371 +3090,374 @@ export default function ReasoningQuizEngine({
       </header>
 
       <main className="mx-auto w-full max-w-6xl px-3 pb-[160px] pt-3 sm:px-6 sm:pb-[110px] sm:pt-4 lg:max-w-[1150px] lg:px-8 lg:pb-10">
-        <div className="lg:flex lg:items-start lg:gap-8 xl:gap-10 lg:justify-center">
-          <div
-            className="lg:flex-1 min-w-0 lg:ml-14 xl:ml-20 lg:max-w-[720px]"
-            style={{ paddingTop: "clamp(24px, 3vw, 40px)" }}
-          >
-        <section className="quiz-topbar lg:hidden">
-          <div className="quiz-topbar-group">
-            <ThemeToggle />
-          </div>
-          <div className="quiz-topbar-group">
-            <button
-              onClick={openPalette}
-              className="quiz-icon-button inline-flex h-11 w-11 items-center justify-center rounded-full transition-colors lg:hidden"
-              aria-label="Open question palette"
-            >
-              <Menu className="h-4 w-4" />
-            </button>
-          </div>
-        </section>
-
-        <div className="mb-3 lg:hidden">
-          <QuestionNavigator
-            total={questions.length}
-            currentIndex={currentIndex}
-            selectedAnswers={selectedAnswers}
-            questions={questions}
-            submittedQuestions={submittedQuestions}
-            onGoToQuestion={goToQuestion}
-            onOpenPalette={openPalette}
-            onClosePalette={closePalette}
-            isPaletteOpen={isPaletteOpen}
-          />
-        </div>
-
-        <section
-          className="mb-4"
-          onTouchStart={(event) => {
-            const touch = event.changedTouches[0];
-            touchStartXRef.current = touch.clientX;
-            touchStartYRef.current = touch.clientY;
-          }}
-          onTouchEnd={(event) => {
-            const startX = touchStartXRef.current;
-            const startY = touchStartYRef.current;
-            if (startX === null || startY === null) return;
-            const touch = event.changedTouches[0];
-            const deltaX = touch.clientX - startX;
-            const deltaY = touch.clientY - startY;
-            touchStartXRef.current = null;
-            touchStartYRef.current = null;
-            if (Math.abs(deltaX) < 50 || Math.abs(deltaY) > 90) return;
-            if (deltaX > 0) showQuestion(currentIndex - 1);
-            else showQuestion(currentIndex + 1);
-          }}
-        >
-          <motion.div
-            key={currentQ.id}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.2 }}
-            className={`quiz-card rounded-2xl px-6 py-6 sm:px-8 sm:py-8 lg:pl-[72px] lg:pr-[32px] ${
-              isLongQuestion
-                ? "min-h-[220px] sm:min-h-[260px]"
-                : "min-h-[150px] sm:min-h-[180px]"
-            }`}
-            style={{
-              background: "var(--quiz-card-bg)",
-              boxShadow: "var(--quiz-card-shadow)",
-              border: "1px solid var(--quiz-card-border)",
-              backdropFilter: "var(--quiz-card-blur)",
-              WebkitBackdropFilter: "var(--quiz-card-blur)",
-            }}
-          >
-            <div className="flex items-center mb-[14px] flex-wrap gap-2">
-              <ConceptBadge concept={currentQ.concept} colours={conceptColours} />
-              <span
-                style={{
-                  fontSize: "13px",
-                  color: "var(--quiz-text-muted)",
-                  fontWeight: 500,
-                }}
-              >
-                {currentQ.exam} {currentQ.year}
-              </span>
-
-              <button
-                onClick={handleBookmark}
-                className="ml-auto sm:ml-0 p-1.5 rounded-full quiz-bookmark transition-colors"
-                aria-label={
-                  bookmarked.has(String(currentQ.id))
-                    ? "Remove bookmark"
-                    : "Add bookmark"
-                }
-              >
-                {bookmarked.has(String(currentQ.id)) ? (
-                  <BookmarkCheck className="w-5 h-5 text-violet-500" />
-                ) : (
-                  <Bookmark className="w-5 h-5 text-[color:var(--quiz-text-soft)]" />
-                )}
-              </button>
-            </div>
-
-            {hasQuestionText && (
-              <div
-                style={{
-                  fontSize: 18,
-                  fontWeight: 500,
-                  color: "var(--quiz-text)",
-                  lineHeight: 1.75,
-                  marginBottom: hasQuestionImage ? 18 : 28,
-                  letterSpacing: 0.015,
-                  fontFamily: "'Poppins', 'SF Pro Text', 'Segoe UI', sans-serif",
-                  paddingLeft: "0.3cm",
-                  paddingRight: "0.3cm",
-                }}
-              >
-                <RichContent
-                  text={currentQ.question}
-                  className="leading-relaxed"
-                  renderText={renderQuestionLine}
-                />
+        <div className="lg:flex lg:items-start lg:justify-center lg:gap-8 lg:pt-8 xl:gap-10">
+          <div className="min-w-0 lg:max-w-[720px] lg:flex-1">
+            <section className="mb-3 flex items-center justify-between gap-3 lg:hidden">
+              <div className="flex items-center gap-2">
+                <ThemeToggle />
               </div>
-            )}
-
-            {hasQuestionImage && currentQ.questionImage && (
-              <div className="mt-3 sm:mt-4">
-                <div
-                  className="overflow-hidden rounded-xl border"
-                  style={{ borderColor: "var(--quiz-border)", background: "var(--quiz-surface-muted)" }}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={openPalette}
+                  className="quiz-icon-button inline-flex h-11 w-11 items-center justify-center rounded-full transition-colors lg:hidden"
+                  aria-label="Open question palette"
                 >
-                  <Image
-                    src={currentQ.questionImage}
-                    alt="Question"
-                    width={720}
-                    height={480}
-                    sizes="(max-width: 768px) 100vw, 720px"
-                    className="h-auto w-full object-contain"
-                    loading="eager"
-                    fetchPriority="high"
-                    decoding="async"
-                    unoptimized
-                  />
-                </div>
+                  <Menu className="h-4 w-4" />
+                </button>
               </div>
-            )}
-          </motion.div>
-        </section>
+            </section>
 
-        <section className="mb-5" style={{ marginTop: 28 }}>
-          <div
-            className="max-h-[calc(100vh-360px)] overflow-y-auto pr-1 sm:max-h-none sm:overflow-visible"
-            style={{ paddingBottom: 96, WebkitOverflowScrolling: "touch" }}
-          >
-            <div className="grid gap-3 lg:grid-cols-2">
-              {currentQ.options.slice(0, 4).map((opt, i) => {
-                let border = "var(--quiz-option-border)",
-                  bg = "var(--quiz-option-bg)",
-                  letterBg = "var(--quiz-option-label-bg)",
-                  letterBorder = "var(--quiz-option-label-border)",
-                  letterText = "var(--quiz-option-label-text)",
-                  shadow = "var(--quiz-option-shadow)";
-                const letterFontWeight = 600;
-                const isSelected = selectedAnswer === i;
-
-                if (isCurrentSubmitted && i === currentQ.correctAnswer) {
-                  border = "var(--quiz-option-correct-border)";
-                  bg = "var(--quiz-option-correct-bg)";
-                  letterBg = "var(--quiz-option-correct-label-bg)";
-                  letterBorder = "var(--quiz-option-correct-label-border)";
-                  letterText = "var(--quiz-option-correct-label-text)";
-                } else if (
-                  isCurrentSubmitted &&
-                  selectedAnswer === i &&
-                  i !== currentQ.correctAnswer
-                ) {
-                  border = "var(--quiz-option-wrong-border)";
-                  bg = "var(--quiz-option-wrong-bg)";
-                  letterBg = "var(--quiz-option-wrong-label-bg)";
-                  letterBorder = "var(--quiz-option-wrong-label-border)";
-                  letterText = "var(--quiz-option-wrong-label-text)";
-                } else if (!isCurrentSubmitted && selectedAnswer === i) {
-                  border = "var(--quiz-option-selected-border)";
-                  bg = "var(--quiz-option-selected-bg)";
-                  letterBg = "var(--quiz-option-selected-label-bg)";
-                  letterBorder = "var(--quiz-option-selected-label-border)";
-                  letterText = "var(--quiz-option-selected-label-text)";
-                }
-
-                if (isSelected) {
-                  shadow = "var(--quiz-option-selected-shadow)";
-                }
-
-                return (
-                  <button
-                    key={i}
-                    onClick={() => handleSelectAnswer(i)}
-                    disabled={isCurrentSubmitted}
-                    type="button"
-                    className={`quiz-option${isSelected ? " is-selected" : ""}`}
-                    style={{
-                      width: "100%",
-                      minHeight: 64,
-                      background: bg,
-                      border: `1.5px solid ${border}`,
-                      borderRadius: 18,
-                      padding: "16px 20px",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 14,
-                      boxShadow: shadow,
-                      cursor: isCurrentSubmitted ? "default" : "pointer",
-                      transition: "all 0.15s ease",
-                      fontSize: 16,
-                      fontWeight: 500,
-                      color: "var(--quiz-option-text)",
-                      outline: "none",
-                    }}
-                    onMouseOver={(e) => {
-                      if (!isCurrentSubmitted && selectedAnswer !== i) {
-                        e.currentTarget.style.borderColor =
-                          "var(--quiz-option-hover-border)";
-                        e.currentTarget.style.background = "var(--quiz-option-hover-bg)";
-                      }
-                    }}
-                    onMouseOut={(e) => {
-                      if (!isCurrentSubmitted && selectedAnswer !== i) {
-                        e.currentTarget.style.borderColor = "var(--quiz-option-border)";
-                        e.currentTarget.style.background = "var(--quiz-option-bg)";
-                      }
-                    }}
-                  >
-                    <span
-                      className="quiz-option-letter"
-                      style={{
-                        width: 36,
-                        height: 36,
-                        border: `1.5px solid ${letterBorder}`,
-                        borderRadius: 12,
-                        background: letterBg,
-                        color: letterText,
-                        fontSize: 14,
-                        fontWeight: letterFontWeight,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flexShrink: 0,
-                        marginRight: 10,
-                        transition: "all 0.15s ease",
-                      }}
-                    >
-                      {String.fromCharCode(65 + i)}
-                    </span>
-
-                    <div
-                      style={{
-                        fontSize: 16,
-                        fontWeight: 500,
-                        color: "var(--quiz-option-text)",
-                        lineHeight: 1.5,
-                      }}
-                    >
-                      <RichContent text={opt} />
-                    </div>
-
-                    {isCurrentSubmitted && i === currentQ.correctAnswer && (
-                      <CheckCircle2
-                        className="ml-auto h-5 w-5 shrink-0 text-emerald-600"
-                        aria-label="Correct option"
-                      />
-                    )}
-                    {isCurrentSubmitted &&
-                      selectedAnswer === i &&
-                      i !== currentQ.correctAnswer && (
-                        <XCircle
-                          className="ml-auto h-5 w-5 shrink-0 text-red-600"
-                          aria-label="Wrong option"
-                        />
-                      )}
-                  </button>
-                );
-              })}
-            </div>
-
-            {canViewSolution && (
-              <button
-                type="button"
-                onClick={openSolution}
-                className="mt-1 inline-flex h-12 w-full items-center justify-center rounded-2xl border px-5 text-sm font-semibold transition-colors"
-                style={{
-                  background: "var(--quiz-accent-bg)",
-                  borderColor: "var(--quiz-accent-border)",
-                  color: "var(--quiz-accent-text)",
-                }}
-              >
-                View Solution
-              </button>
-            )}
-          </div>
-        </section>
-
-        <div className="mt-8 hidden items-center justify-between lg:flex px-1">
-          <button
-            onClick={handlePrev}
-            disabled={currentIndex === 0}
-            className="inline-flex h-11 items-center justify-center gap-2 px-2 text-[15px] font-semibold text-slate-600 transition-colors hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            <ChevronLeft className="h-[18px] w-[18px]" />
-            Previous
-          </button>
-          <div className="flex items-center gap-6">
-            <button
-              onClick={handleClearResponse}
-              disabled={isCurrentSubmitted}
-              className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 text-[14px] font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45"
-            >
-              Clear Responses
-            </button>
-            <button
-              onClick={handleNext}
-              disabled={!isCurrentSubmitted}
-              className="inline-flex h-11 items-center justify-center gap-2 px-2 text-[15px] font-semibold text-slate-600 transition-colors hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-45"
-            >
-              {currentIndex < questions.length - 1 ? "Next" : "Finish"}
-              {currentIndex < questions.length - 1 && (
-                <ChevronRight className="h-[18px] w-[18px]" />
-              )}
-            </button>
-            <button
-              onClick={() => {
-                if (!isCurrentSubmitted) {
-                  handleSubmitCurrent();
-                }
-              }}
-              disabled={!canSubmit}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#3B82F6] px-6 text-[15px] font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-45 shadow-sm"
-            >
-              <Send className="h-[18px] w-[18px]" />
-              Submit
-            </button>
-          </div>
-        </div>
-        </div>
-
-        <aside className="hidden lg:block lg:w-[360px]" style={{ marginTop: "32px" }}>
-          <div className="sticky" style={{ top: "110px" }}>
-            {isSolutionOpen ? (
-              <SolutionSidePanel
-                isOpen={isSolutionOpen}
-                solution={currentQ.solution ?? ""}
-                questionNumber={currentIndex + 1}
-                correctOptionIndex={currentQ.correctAnswer}
-                onClose={closeSolution}
-              />
-            ) : (
-              <QuestionPalettePanel
+            <div className="mb-3 lg:hidden">
+              <QuestionNavigator
                 total={questions.length}
                 currentIndex={currentIndex}
                 selectedAnswers={selectedAnswers}
                 questions={questions}
                 submittedQuestions={submittedQuestions}
                 onGoToQuestion={goToQuestion}
+                onOpenPalette={openPalette}
+                onClosePalette={closePalette}
+                isPaletteOpen={isPaletteOpen}
               />
-            )}
+            </div>
+
+            <section
+              className="mb-4"
+              onTouchStart={(event) => {
+                const touch = event.changedTouches[0];
+                touchStartXRef.current = touch.clientX;
+                touchStartYRef.current = touch.clientY;
+              }}
+              onTouchEnd={(event) => {
+                const startX = touchStartXRef.current;
+                const startY = touchStartYRef.current;
+                if (startX === null || startY === null) return;
+                const touch = event.changedTouches[0];
+                const deltaX = touch.clientX - startX;
+                const deltaY = touch.clientY - startY;
+                touchStartXRef.current = null;
+                touchStartYRef.current = null;
+                if (Math.abs(deltaX) < 50 || Math.abs(deltaY) > 90) return;
+                if (deltaX > 0) showQuestion(currentIndex - 1);
+                else showQuestion(currentIndex + 1);
+              }}
+            >
+              <motion.div
+                key={currentQ.id}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+                className={`quiz-card rounded-2xl px-6 py-6 sm:px-8 sm:py-8 lg:pl-[72px] lg:pr-[32px] ${
+                  isLongQuestion
+                    ? "min-h-[220px] sm:min-h-[260px]"
+                    : "min-h-[150px] sm:min-h-[180px]"
+                }`}
+                style={{
+                  background: "var(--quiz-card-bg)",
+                  boxShadow: "var(--quiz-card-shadow)",
+                  border: "1px solid var(--quiz-card-border)",
+                  backdropFilter: "var(--quiz-card-blur)",
+                  WebkitBackdropFilter: "var(--quiz-card-blur)",
+                }}
+              >
+                <div className="mb-[14px] flex items-center flex-wrap gap-2">
+                  <ConceptBadge concept={currentQ.concept} colours={conceptColours} />
+                  <span
+                    style={{
+                      fontSize: "13px",
+                      color: "var(--quiz-text-muted)",
+                      fontWeight: 500,
+                    }}
+                  >
+                    {currentQ.exam} {currentQ.year}
+                  </span>
+
+                  <button
+                    onClick={handleBookmark}
+                    className="ml-auto sm:ml-0 p-1.5 rounded-full quiz-bookmark transition-colors"
+                    aria-label={
+                      bookmarked.has(String(currentQ.id))
+                        ? "Remove bookmark"
+                        : "Add bookmark"
+                    }
+                  >
+                    {bookmarked.has(String(currentQ.id)) ? (
+                      <BookmarkCheck className="w-5 h-5 text-violet-500" />
+                    ) : (
+                      <Bookmark className="w-5 h-5 text-[color:var(--quiz-text-soft)]" />
+                    )}
+                  </button>
+                </div>
+
+                {hasQuestionText && (
+                  <div
+                    style={{
+                      fontSize: 18,
+                      fontWeight: 500,
+                      color: "var(--quiz-text)",
+                      lineHeight: 1.75,
+                      marginBottom: hasQuestionImage ? 18 : 28,
+                      letterSpacing: 0.015,
+                      fontFamily: "'Poppins', 'SF Pro Text', 'Segoe UI', sans-serif",
+                      paddingLeft: "0.3cm",
+                      paddingRight: "0.3cm",
+                    }}
+                  >
+                    <RichContent
+                      text={currentQ.question}
+                      className="leading-relaxed"
+                      renderText={renderQuestionLine}
+                    />
+                  </div>
+                )}
+
+                {hasQuestionImage && currentQ.questionImage && (
+                  <div className="mt-3 sm:mt-4">
+                    <div
+                      className="overflow-hidden rounded-xl border"
+                      style={{
+                        borderColor: "var(--quiz-border)",
+                        background: "var(--quiz-surface-muted)",
+                      }}
+                    >
+                      <Image
+                        src={currentQ.questionImage}
+                        alt="Question"
+                        width={720}
+                        height={480}
+                        sizes="(max-width: 768px) 100vw, 720px"
+                        className="h-auto w-full object-contain"
+                        loading="eager"
+                        fetchPriority="high"
+                        decoding="async"
+                        unoptimized
+                      />
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            </section>
+
+            <section className="mb-5" style={{ marginTop: 28 }}>
+              <div
+                className="max-h-[calc(100vh-360px)] overflow-y-auto pr-1 sm:max-h-none sm:overflow-visible"
+                style={{ paddingBottom: 96, WebkitOverflowScrolling: "touch" }}
+              >
+                <div className="grid gap-3 lg:grid-cols-2">
+                  {currentQ.options.slice(0, 4).map((opt, i) => {
+                    let border = "var(--quiz-option-border)",
+                      bg = "var(--quiz-option-bg)",
+                      letterBg = "var(--quiz-option-label-bg)",
+                      letterBorder = "var(--quiz-option-label-border)",
+                      letterText = "var(--quiz-option-label-text)",
+                      shadow = "var(--quiz-option-shadow)";
+                    const letterFontWeight = 600;
+                    const isSelected = selectedAnswer === i;
+
+                    if (isCurrentSubmitted && i === currentQ.correctAnswer) {
+                      border = "var(--quiz-option-correct-border)";
+                      bg = "var(--quiz-option-correct-bg)";
+                      letterBg = "var(--quiz-option-correct-label-bg)";
+                      letterBorder = "var(--quiz-option-correct-label-border)";
+                      letterText = "var(--quiz-option-correct-label-text)";
+                    } else if (
+                      isCurrentSubmitted &&
+                      selectedAnswer === i &&
+                      i !== currentQ.correctAnswer
+                    ) {
+                      border = "var(--quiz-option-wrong-border)";
+                      bg = "var(--quiz-option-wrong-bg)";
+                      letterBg = "var(--quiz-option-wrong-label-bg)";
+                      letterBorder = "var(--quiz-option-wrong-label-border)";
+                      letterText = "var(--quiz-option-wrong-label-text)";
+                    } else if (!isCurrentSubmitted && selectedAnswer === i) {
+                      border = "var(--quiz-option-selected-border)";
+                      bg = "var(--quiz-option-selected-bg)";
+                      letterBg = "var(--quiz-option-selected-label-bg)";
+                      letterBorder = "var(--quiz-option-selected-label-border)";
+                      letterText = "var(--quiz-option-selected-label-text)";
+                    }
+
+                    if (isSelected) {
+                      shadow = "var(--quiz-option-selected-shadow)";
+                    }
+
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => handleSelectAnswer(i)}
+                        disabled={isCurrentSubmitted}
+                        type="button"
+                        className={`quiz-option${isSelected ? " is-selected" : ""}`}
+                        style={{
+                          width: "100%",
+                          minHeight: 64,
+                          background: bg,
+                          border: `1.5px solid ${border}`,
+                          borderRadius: 18,
+                          padding: "16px 20px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 14,
+                          boxShadow: shadow,
+                          cursor: isCurrentSubmitted ? "default" : "pointer",
+                          transition: "all 0.15s ease",
+                          fontSize: 16,
+                          fontWeight: 500,
+                          color: "var(--quiz-option-text)",
+                          outline: "none",
+                        }}
+                        onMouseOver={(e) => {
+                          if (!isCurrentSubmitted && selectedAnswer !== i) {
+                            e.currentTarget.style.borderColor =
+                              "var(--quiz-option-hover-border)";
+                            e.currentTarget.style.background =
+                              "var(--quiz-option-hover-bg)";
+                          }
+                        }}
+                        onMouseOut={(e) => {
+                          if (!isCurrentSubmitted && selectedAnswer !== i) {
+                            e.currentTarget.style.borderColor =
+                              "var(--quiz-option-border)";
+                            e.currentTarget.style.background =
+                              "var(--quiz-option-bg)";
+                          }
+                        }}
+                      >
+                        <span
+                          className="quiz-option-letter"
+                          style={{
+                            width: 36,
+                            height: 36,
+                            border: `1.5px solid ${letterBorder}`,
+                            borderRadius: 12,
+                            background: letterBg,
+                            color: letterText,
+                            fontSize: 14,
+                            fontWeight: letterFontWeight,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexShrink: 0,
+                            marginRight: 10,
+                            transition: "all 0.15s ease",
+                          }}
+                        >
+                          {String.fromCharCode(65 + i)}
+                        </span>
+
+                        <div
+                          style={{
+                            fontSize: 16,
+                            fontWeight: 500,
+                            color: "var(--quiz-option-text)",
+                            lineHeight: 1.5,
+                          }}
+                        >
+                          <RichContent text={opt} />
+                        </div>
+
+                        {isCurrentSubmitted && i === currentQ.correctAnswer && (
+                          <CheckCircle2
+                            className="ml-auto h-5 w-5 shrink-0 text-emerald-600"
+                            aria-label="Correct option"
+                          />
+                        )}
+                        {isCurrentSubmitted &&
+                          selectedAnswer === i &&
+                          i !== currentQ.correctAnswer && (
+                            <XCircle
+                              className="ml-auto h-5 w-5 shrink-0 text-red-600"
+                              aria-label="Wrong option"
+                            />
+                          )}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {canViewSolution && (
+                  <button
+                    type="button"
+                    onClick={openSolution}
+                    className="mt-1 inline-flex h-12 w-full items-center justify-center rounded-2xl border px-5 text-sm font-semibold transition-colors"
+                    style={{
+                      background: "var(--quiz-accent-bg)",
+                      borderColor: "var(--quiz-accent-border)",
+                      color: "var(--quiz-accent-text)",
+                    }}
+                  >
+                    View Solution
+                  </button>
+                )}
+              </div>
+            </section>
+
+            <div className="mt-8 hidden items-center justify-between lg:flex px-1">
+              <button
+                onClick={handlePrev}
+                disabled={currentIndex === 0}
+                className="inline-flex h-11 items-center justify-center gap-2 px-2 text-[15px] font-semibold text-slate-600 transition-colors hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <ChevronLeft className="h-[18px] w-[18px]" />
+                Previous
+              </button>
+              <div className="flex items-center gap-6">
+                <button
+                  onClick={handleClearResponse}
+                  disabled={isCurrentSubmitted}
+                  className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 text-[14px] font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45"
+                >
+                  Clear Responses
+                </button>
+                <button
+                  onClick={handleNext}
+                  disabled={!isCurrentSubmitted}
+                  className="inline-flex h-11 items-center justify-center gap-2 px-2 text-[15px] font-semibold text-slate-600 transition-colors hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-45"
+                >
+                  {currentIndex < questions.length - 1 ? "Next" : "Finish"}
+                  {currentIndex < questions.length - 1 && (
+                    <ChevronRight className="h-[18px] w-[18px]" />
+                  )}
+                </button>
+                <button
+                  onClick={() => {
+                    if (!isCurrentSubmitted) {
+                      handleSubmitCurrent();
+                    }
+                  }}
+                  disabled={!canSubmit}
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#3B82F6] px-6 text-[15px] font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-45 shadow-sm"
+                >
+                  <Send className="h-[18px] w-[18px]" />
+                  Submit
+                </button>
+              </div>
+            </div>
           </div>
-        </aside>
+
+          <aside className="hidden lg:block lg:w-[360px] lg:shrink-0">
+            <div className="sticky" style={{ top: "110px" }}>
+              {isSolutionOpen ? (
+                <SolutionSidePanel
+                  isOpen={isSolutionOpen}
+                  solution={currentQ.solution ?? ""}
+                  questionNumber={currentIndex + 1}
+                  correctOptionIndex={currentQ.correctAnswer}
+                  onClose={closeSolution}
+                />
+              ) : (
+                <QuestionPalettePanel
+                  total={questions.length}
+                  currentIndex={currentIndex}
+                  selectedAnswers={selectedAnswers}
+                  questions={questions}
+                  submittedQuestions={submittedQuestions}
+                  onGoToQuestion={goToQuestion}
+                />
+              )}
+            </div>
+          </aside>
         </div>
       </main>
 
