@@ -18,7 +18,8 @@ router.get('/', (req, res) => {
 
   questions = shuffle(questions);
 
-  const limit = Math.min(parseInt(count, 10) || questions.length, questions.length, 100);
+  const requestedCount = Number.isFinite(Number(count)) ? parseInt(count, 10) : questions.length;
+  const limit = Math.min(Math.max(1, requestedCount), questions.length);
   const selected = questions.slice(0, limit);
 
   res.json({

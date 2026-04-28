@@ -201,7 +201,8 @@ const generatePracticeTest = async (req, res) => {
   try {
     const container = getQuestionsContainer();
     const { subject, difficulty, count = 10 } = req.query;
-    const limit = Math.min(parseInt(count, 10) || 10, 100);
+    const requestedCount = Number.isFinite(Number(count)) ? parseInt(count, 10) : 10;
+    const limit = Math.max(1, requestedCount);
 
     let query = 'SELECT * FROM c WHERE 1=1';
     const parameters = [];
