@@ -25,6 +25,34 @@ function ciMatch(a, b) {
   return (a || '').toLowerCase() === (b || '').toLowerCase();
 }
 
+function normalizeSearchKey(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '');
+}
+
+function matchesNormalizedTopic(question, normalizedTopic) {
+  const candidates = [
+    question.topic,
+    question.chapter,
+    question.subject,
+    question.quizTopic,
+    question.quizName,
+    question.source,
+  ];
+  return candidates.some((field) => normalizeSearchKey(field) === normalizedTopic);
+}
+
+async function fetchAllQueryResults(container, query, parameters) {
+  const iterator = container.items.query(
+    { query, parameters },
+    { maxItemCount: 1000, enableCrossPartition: true }
+  );
+  const { resources } = await iterator.fetchAll({ maxItemCount: 1000, enableCrossPartition: true });
+  return resources;
+}
+
 // ── POST /api/questions ────────────────────────────────
 const addQuestion = async (req, res) => {
   try {
@@ -133,15 +161,15 @@ const getQuestions = async (req, res) => {
   try {
     const container = getQuestionsContainer();
     const { topic, subject, chapter, concept, difficulty, quizName, offset = 0, limit } = req.query;
+    const normalizedTopic = topic ? normalizeSearchKey(topic) : null;
 
     let query = 'SELECT * FROM c WHERE 1=1';
     const parameters = [];
 
     if (topic) {
-      query += ' AND (LOWER(c.topic) = LOWER(@topic) OR LOWER(c.chapter) = LOWER(@topic) OR LOWER(c.subject) = LOWER(@topic))';
+      query += ' AND (LOWER(c.topic) = LOWER(@topic) OR LOWER(c.chapter) = LOWER(@topic) OR LOWER(c.subject) = LOWER(@topic) OR LOWER(c.quizTopic) = LOWER(@topic) OR LOWER(c.quizName) = LOWER(@topic) OR LOWER(c.source) = LOWER(@topic))';
       parameters.push({ name: '@topic', value: topic });
-    }
-    if (subject) {
+    } else if (subject) {
       query += ' AND LOWER(c.subject) = LOWER(@subject)';
       parameters.push({ name: '@subject', value: subject });
     }
@@ -185,9 +213,10 @@ const getQuestions = async (req, res) => {
       query += ` OFFSET ${parsedOffset} LIMIT 99999`;
     }
 
-    const { resources } = await container.items
-      .query({ query, parameters })
-      .fetchAll();
+    let resources = await fetchAllQueryResults(container, query, parameters);
+    if (normalizedTopic) {
+      resources = resources.filter((q) => matchesNormalizedTopic(q, normalizedTopic));
+    }
 
     res.set("Cache-Control", "no-store, max-age=0");
     res.json({ count: resources.length, questions: resources });
@@ -219,9 +248,7 @@ const generatePracticeTest = async (req, res) => {
     // Fetch more than needed, then shuffle
     query += ` OFFSET 0 LIMIT ${limit * 3}`;
 
-    const { resources } = await container.items
-      .query({ query, parameters })
-      .fetchAll();
+    const resources = await fetchAllQueryResults(container, query, parameters);
 
     if (resources.length === 0)
       return res.status(404).json({ error: 'No questions found matching criteria' });

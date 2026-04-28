@@ -7,6 +7,25 @@ import {
 } from './roomManager.js';
 import { getQuestionsContainer } from '../containerStore.js';
 
+function normalizeSearchKey(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '');
+}
+
+function matchesNormalizedTopic(question, normalizedTopic) {
+  const candidates = [
+    question.topic,
+    question.chapter,
+    question.subject,
+    question.quizTopic,
+    question.quizName,
+    question.source,
+  ];
+  return candidates.some((field) => normalizeSearchKey(field) === normalizedTopic);
+}
+
 const REVEAL_DELAY  = 2000; // ms to show results before next question
 
 export function initBattleSocket(httpServer, allowedOrigins) {
@@ -123,17 +142,17 @@ async function startGame(io, code) {
       parameters.push({ name: '@subject', value: room.subject });
     }
 
-    if (room.topic && room.topic !== 'all') {
-      filters.push('(LOWER(c.topic) = LOWER(@topic) OR LOWER(c.chapter) = LOWER(@topic))');
-      parameters.push({ name: '@topic', value: room.topic });
-    }
-
+    const normalizedTopic = room.topic && room.topic !== 'all' ? normalizeSearchKey(room.topic) : null;
     const whereClause = filters.length ? ` WHERE ${filters.join(' AND ')}` : '';
 
-    const { resources } = await container.items.query({
-      query:      `SELECT * FROM c${whereClause} OFFSET 0 LIMIT ${room.questionCount * 4}`,
-      parameters,
-    }).fetchAll();
+    let { resources } = await container.items.query(
+      { query: `SELECT * FROM c${whereClause}`, parameters },
+      { enableCrossPartition: true, maxItemCount: 1000 }
+    ).fetchAll({ enableCrossPartition: true, maxItemCount: 1000 });
+
+    if (normalizedTopic) {
+      resources = resources.filter((q) => matchesNormalizedTopic(q, normalizedTopic));
+    }
 
     if (resources.length === 0) {
       const filterLabel = room.topic && room.topic !== 'all'
