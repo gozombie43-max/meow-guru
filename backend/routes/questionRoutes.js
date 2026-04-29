@@ -286,6 +286,7 @@ router.get('/', questionController.getQuestions);
 
 router.get('/:id', questionController.getQuestionById);
 router.put('/:id', questionController.updateQuestion);
+router.patch('/:id', questionController.updateQuestion);
 router.delete('/:id', questionController.deleteQuestion);
 
 // ── Error handler ───────────────────────────────────────

@@ -227,6 +227,7 @@ export default function AdminPanel() {
   const [filterSubject, setFilterSubject] = useState("");
   const [filterDifficulty, setFilterDifficulty] = useState("");
   const [filterExam, setFilterExam] = useState("");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   // Mass upload
   const [muSubject, setMuSubject] = useState<SubjectKey | "">("");
@@ -263,6 +264,8 @@ export default function AdminPanel() {
     src: string;
     title: string;
   } | null>(null);
+  const [solImgUploading, setSolImgUploading] = useState<string | null>(null); // holds question id being uploaded
+  const solImgRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   const topics = [...new Set(questions.map((q) => q.topic).filter(Boolean))].sort();
   const exams = [...new Set(questions.map((q) => q.exam).filter(Boolean))].sort();
@@ -301,17 +304,22 @@ export default function AdminPanel() {
 
   useEffect(() => {
     const q = search.toLowerCase();
-    setFiltered(
-      questions.filter(
-        (x) =>
-          !q ||
-          x.question?.toLowerCase().includes(q) ||
-          x.id?.toLowerCase().includes(q) ||
-          x.chapter?.toLowerCase().includes(q)
-      )
+    const filteredQuestions = questions.filter(
+      (x) =>
+        !q ||
+        x.question?.toLowerCase().includes(q) ||
+        x.id?.toLowerCase().includes(q) ||
+        x.chapter?.toLowerCase().includes(q)
     );
+
+    const sortedQuestions = filteredQuestions.slice().sort((a, b) => {
+      const cmp = a.id.localeCompare(b.id, undefined, { numeric: true, sensitivity: "base" });
+      return sortOrder === "asc" ? cmp : -cmp;
+    });
+
+    setFiltered(sortedQuestions);
     setPage(1);
-  }, [search, questions]);
+  }, [search, questions, sortOrder]);
 
   const showMsg = (msg: string, isErr = false) => {
     if (isErr) setError(msg); else setSuccess(msg);
@@ -514,6 +522,38 @@ export default function AdminPanel() {
       showMsg(e instanceof Error ? e.message : "Bulk image upload failed", true);
     } finally {
       setBulkImageUploading(false);
+    }
+  };
+
+  const handleSolutionImageUpload = async (questionId: string, file: File) => {
+    setSolImgUploading(questionId);
+    try {
+      const fd = new FormData();
+      fd.append("image", file);
+
+      // Step 1: upload image, get back URL
+      const uploadRes = await fetchWithRetry(`${API}/api/upload/solution-image`, {
+        method: "POST",
+        headers: { "x-admin-secret": "quizguru_admin_987654" },
+        body: fd,
+      });
+      if (!uploadRes.ok) throw new Error(`Upload failed ${uploadRes.status}`);
+      const { url } = await uploadRes.json(); // expects { url: "https://..." }
+
+      // Step 2: patch the question's solution field with image markdown
+      const patchRes = await fetchWithRetry(`${API}/api/questions/${encodeURIComponent(questionId)}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ solution: `![solution](${url})` }),
+      });
+      if (!patchRes.ok) throw new Error(`Patch failed ${patchRes.status}`);
+
+      showMsg("Solution image uploaded ✓");
+      fetchQuestions();
+    } catch (e: unknown) {
+      showMsg(e instanceof Error ? e.message : "Solution image upload failed", true);
+    } finally {
+      setSolImgUploading(null);
     }
   };
 
@@ -935,7 +975,7 @@ export default function AdminPanel() {
       </div>
 
       {/* Filters */}
-      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr", gap: 10, marginBottom: "1rem" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr 1fr", gap: 10, marginBottom: "1rem" }}>
         <input placeholder="Search question, chapter, ID..." value={search} onChange={(e) => setSearch(e.target.value)}
           style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 14, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }} />
         <select value={filterSubject} onChange={(e) => setFilterSubject(e.target.value)}
@@ -957,6 +997,11 @@ export default function AdminPanel() {
           style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 14, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}>
           <option value="">All exams</option>
           {exams.map((e) => <option key={e} value={e}>{e}</option>)}
+        </select>
+        <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
+          style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 14, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}>
+          <option value="asc">Sort by ID ↑</option>
+          <option value="desc">Sort by ID ↓</option>
         </select>
       </div>
 
@@ -1026,6 +1071,37 @@ export default function AdminPanel() {
                 <td style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>
                   <button onClick={() => openEdit(q)} style={{ marginRight: 6, padding: "4px 10px", borderRadius: 6, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: "pointer", fontSize: 12, color: "var(--color-text-primary)" }}>Edit</button>
                   <button onClick={() => setDeleteConfirm(q.id)} style={{ padding: "4px 10px", borderRadius: 6, border: "0.5px solid #fecaca", background: "transparent", cursor: "pointer", fontSize: 12, color: "#dc2626" }}>Delete</button>
+                  <>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={{ display: "none" }}
+                      ref={(el) => { solImgRefs.current[q.id] = el; }}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleSolutionImageUpload(q.id, file);
+                        e.target.value = "";
+                      }}
+                    />
+                    <button
+                      onClick={() => solImgRefs.current[q.id]?.click()}
+                      disabled={solImgUploading === q.id}
+                      style={{
+                        marginLeft: 6,
+                        padding: "4px 10px",
+                        borderRadius: 6,
+                        border: "0.5px solid #bbf7d0",
+                        background: "transparent",
+                        cursor: solImgUploading === q.id ? "wait" : "pointer",
+                        fontSize: 12,
+                        color: "#16a34a",
+                        opacity: solImgUploading === q.id ? 0.6 : 1,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {solImgUploading === q.id ? "Uploading..." : `${q.solution?.includes("![solution](") ? "✓ " : ""}Sol. Image`}
+                    </button>
+                  </>
                   {(q.subject === "reasoning" || q.topic === "visual_reasoning") && q.questionImage && (
                     <button
                       onClick={() =>

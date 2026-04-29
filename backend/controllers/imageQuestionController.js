@@ -149,3 +149,33 @@ export const bulkUpload = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+// POST /api/upload/solution-image
+export const uploadSolutionImage = async (req, res) => {
+  try {
+    const file = req.file;
+    if (!file) {
+      return res.status(400).json({ error: "Solution image required" });
+    }
+
+    const id = `solution_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const blobPath = `${id}/solution.webp`;
+    const compressed = await sharp(file.buffer)
+      .resize({ width: 1400, withoutEnlargement: true })
+      .webp({ quality: 90 })
+      .toBuffer();
+
+    const blockBlob = blobContainer.getBlockBlobClient(blobPath);
+    await blockBlob.uploadData(compressed, {
+      blobHTTPHeaders: {
+        blobContentType: "image/webp",
+        blobCacheControl: IMAGE_CACHE_CONTROL,
+      },
+    });
+
+    const url = buildImageUrl(blobPath);
+    res.json({ url });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};

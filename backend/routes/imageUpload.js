@@ -1,7 +1,7 @@
 import express from "express";
 import upload from "../middleware/upload.js";
 import auth from "../middleware/auth.js";
-import { bulkUpload, uploadImageQuestion } from "../controllers/imageQuestionController.js";
+import { bulkUpload, uploadImageQuestion, uploadSolutionImage } from "../controllers/imageQuestionController.js";
 
 const router = express.Router();
 
@@ -17,6 +17,13 @@ router.post(
   auth,
   upload.array("images", 20),
   bulkUpload
+);
+
+router.post(
+  "/solution-image",
+  auth,
+  upload.single("image"),
+  uploadSolutionImage
 );
 
 export default router;
