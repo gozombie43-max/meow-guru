@@ -160,7 +160,6 @@
     .form-group { display: flex; flex-direction: column; gap: 6px; }
     .form-group.full-width { grid-column: 1 / -1; }
 
-    /* Quiz selector row — spans full width, 3 columns */
     .quiz-selector-row {
       grid-column: 1 / -1;
       display: grid;
@@ -179,14 +178,6 @@
       text-transform: uppercase;
       letter-spacing: 0.6px;
       margin-bottom: -4px;
-    }
-    .quiz-arrow {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: rgba(0,180,220,0.5);
-      font-size: 1.1rem;
-      padding-top: 24px;
     }
 
     label {
@@ -217,25 +208,117 @@
     }
     input::placeholder, textarea::placeholder { color: rgba(74, 122, 155, 0.55); }
     textarea { resize: vertical; min-height: 80px; }
-    input[type="file"] { padding: 8px 12px; }
-    input[type="file"]::file-selector-button {
-      border: none; border-radius: 10px;
-      background: rgba(255,255,255,0.45);
-      color: #4a7a9b; padding: 6px 10px; margin-right: 10px; cursor: pointer;
-    }
 
     .field-hint { font-size: 0.75rem; color: rgba(74, 122, 155, 0.75); }
 
+    /* ── Image Input Block (URL + File) ── */
+    .img-input-block {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 6px;
+      background: rgba(0,229,255,0.04);
+      border: 1.5px dashed rgba(0,229,255,0.25);
+      border-radius: 12px;
+      padding: 10px 12px;
+    }
+    .img-input-block-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #00a8c6;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .img-input-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .img-input-row input[type="text"] {
+      flex: 1;
+      font-size: 0.82rem;
+      padding: 7px 10px;
+      border-radius: 9px;
+      height: 34px;
+    }
+    .img-file-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 0 12px;
+      height: 34px;
+      background: rgba(255,255,255,0.30);
+      border: 1.5px solid rgba(255,255,255,0.50);
+      border-radius: 9px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #4a7a9b;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.18s;
+      flex-shrink: 0;
+    }
+    .img-file-label:hover { background: rgba(255,255,255,0.45); color: var(--text-primary); }
+    .img-file-label input[type="file"] { display: none; }
+    .img-clear-btn {
+      width: 28px; height: 28px;
+      border-radius: 7px;
+      border: 1px solid rgba(220,50,50,0.30);
+      background: rgba(255,255,255,0.18);
+      color: #a32d2d;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+    .img-clear-btn.visible { display: flex; }
+    .img-clear-btn:hover { background: rgba(254,226,226,0.5); }
+
+    .img-thumb-wrap {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .img-thumb-wrap.visible { display: flex; }
+    .img-thumb {
+      width: 52px; height: 40px;
+      object-fit: cover;
+      border-radius: 7px;
+      border: 1px solid rgba(255,255,255,0.45);
+    }
+    .img-thumb-name {
+      font-size: 0.72rem;
+      color: rgba(74,122,155,0.80);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 160px;
+    }
+
+    /* ── Options ── */
     .options-section {
       grid-column: 1 / -1;
       display: flex; flex-direction: column; gap: 10px;
     }
-    .options-section label { margin-bottom: 2px; }
-    .option-block { display: flex; flex-direction: column; gap: 6px; }
-    .option-row {
+    .options-section > label { margin-bottom: 2px; }
+    .option-block {
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.30);
+      border-radius: 14px;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .option-top-row {
       display: grid;
-      grid-template-columns: 32px 1fr 1fr 24px;
-      align-items: center; gap: 10px;
+      grid-template-columns: 32px 1fr 32px;
+      align-items: center;
+      gap: 10px;
     }
     .option-label {
       background: rgba(255,255,255,0.20);
@@ -246,20 +329,13 @@
       border-radius: 8px; font-weight: 700; font-size: 0.85rem;
       flex-shrink: 0; border: 1px solid rgba(255,255,255,0.35);
     }
-    .option-row input[type="text"], .option-row input[type="file"] { width: 100%; }
-    .option-row input[type="radio"] {
+    .option-top-row input[type="radio"] {
       accent-color: #00e5ff; width: 18px; height: 18px; flex-shrink: 0; cursor: pointer;
+      justify-self: center;
     }
-
-    .image-preview {
-      display: none; border: 1px dashed rgba(74, 122, 155, 0.35);
-      border-radius: 12px; padding: 10px; background: rgba(255, 255, 255, 0.25);
-    }
-    .image-preview.show { display: block; }
-    .image-preview img { max-width: 100%; max-height: 180px; display: block; border-radius: 10px; }
-    .option-preview { margin-left: 42px; }
     .correct-hint { font-size: 0.75rem; color: #4a7a9b; margin-top: -4px; }
 
+    /* ── Live Preview ── */
     .preview-section { margin-top: 6px; }
     .live-preview { display: grid; gap: 14px; }
     .preview-card {
@@ -284,8 +360,10 @@
     }
     .preview-empty { color: rgba(74, 122, 155, 0.75); font-size: 0.85rem; }
     .preview-image {
-      display: none; border: 1px dashed rgba(74, 122, 155, 0.35);
-      border-radius: 12px; padding: 10px; background: rgba(255, 255, 255, 0.25); margin-top: 8px;
+      display: none;
+      border: 1px dashed rgba(74, 122, 155, 0.35);
+      border-radius: 12px; padding: 10px;
+      background: rgba(255, 255, 255, 0.25); margin-top: 8px;
     }
     .preview-image.show { display: block; }
     .preview-image img { max-width: 100%; max-height: 180px; display: block; border-radius: 10px; }
@@ -326,7 +404,6 @@
     }
     .mu-section-label:first-child { margin-top: 0; }
 
-    /* Quiz selector inside mass upload */
     .mu-quiz-selector {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
@@ -467,9 +544,7 @@
       .form-grid { grid-template-columns: 1fr; }
       .glass-card { padding: 20px; }
       .quiz-selector-row { grid-template-columns: 1fr; }
-      .option-row { grid-template-columns: 32px 1fr 24px; }
-      .option-row input[type="file"] { grid-column: 2 / -1; }
-      .option-preview { margin-left: 0; }
+      .option-top-row { grid-template-columns: 32px 1fr 28px; }
       .preview-option { grid-template-columns: 28px 1fr; }
       .mu-stats { grid-template-columns: repeat(2, 1fr); }
       .mu-quiz-selector { grid-template-columns: 1fr; }
@@ -498,10 +573,9 @@
         <form id="questionForm" enctype="multipart/form-data">
           <div class="form-grid">
 
-            <!-- ── Quiz Target Selector (Subject → Topic → Quiz) ── -->
+            <!-- Quiz Target -->
             <div class="quiz-selector-row">
               <div class="quiz-row-label">📂 Add to Quiz</div>
-
               <div class="form-group">
                 <label>Subject <span class="required">*</span></label>
                 <select id="quizSubject" required onchange="updateQuizTopics('quizSubject','quizTopic','quizName')">
@@ -512,14 +586,12 @@
                   <option value="general-awareness">General Awareness</option>
                 </select>
               </div>
-
               <div class="form-group">
                 <label>Topic <span class="required">*</span></label>
                 <select id="quizTopic" disabled onchange="updateQuizNames('quizSubject','quizTopic','quizName')">
                   <option value="">Select topic first</option>
                 </select>
               </div>
-
               <div class="form-group">
                 <label>Quiz <span class="required">*</span></label>
                 <select id="quizName" disabled>
@@ -528,7 +600,7 @@
               </div>
             </div>
 
-            <!-- ── Metadata ── -->
+            <!-- Metadata -->
             <div class="form-group">
               <label>Subject (metadata)</label>
               <select id="subject">
@@ -604,68 +676,141 @@
 
             <div></div>
 
+            <!-- Question -->
             <div class="form-group full-width">
               <label>Question <span class="required">*</span></label>
-              <textarea id="question" placeholder="Type the full question text…"></textarea>
-              <input type="file" id="questionImage" accept="image/*">
-              <div class="image-preview" id="questionImagePreview"></div>
-              <p class="field-hint">Use \( ... \) or $...$ for inline math, and \[ ... \] or $$...$$ for display math.</p>
+              <textarea id="question" placeholder="Type the full question text… Use \( ... \) for inline math, \[ ... \] for display math."></textarea>
+              <!-- Image block -->
+              <div class="img-input-block">
+                <span class="img-input-block-label">📷 Question Image (optional)</span>
+                <div class="img-input-row">
+                  <input type="text" id="questionImageUrl" placeholder="Paste image URL…" oninput="handleImgUrl('question')">
+                  <label class="img-file-label">
+                    📎 Upload
+                    <input type="file" id="questionImageFile" accept="image/*" onchange="handleImgFile('question')">
+                  </label>
+                  <button type="button" class="img-clear-btn" id="questionImageClear" onclick="clearImg('question')" title="Remove image">✕</button>
+                </div>
+                <div class="img-thumb-wrap" id="questionImageThumbWrap">
+                  <img class="img-thumb" id="questionImageThumb" src="" alt="">
+                  <span class="img-thumb-name" id="questionImageThumbName"></span>
+                </div>
+              </div>
             </div>
 
+            <!-- Options -->
             <div class="options-section">
-              <label>Options <span class="required">*</span> &nbsp; <span style="font-weight:400;text-transform:none;color:#64748b;">(select radio for correct answer)</span></label>
+              <label>Options <span class="required">*</span> &nbsp;<span style="font-weight:400;text-transform:none;color:#64748b;">(select radio = correct answer)</span></label>
 
+              <!-- Option A -->
               <div class="option-block">
-                <div class="option-row">
+                <div class="option-top-row">
                   <span class="option-label">A</span>
-                  <input type="text" id="optA" placeholder="Option A text">
-                  <input type="file" id="optAImage" accept="image/*">
+                  <input type="text" id="optA" placeholder="Option A text (LaTeX ok)">
                   <input type="radio" name="correct" value="0" required title="Mark A as correct">
                 </div>
-                <div class="image-preview option-preview" id="optAImagePreview"></div>
+                <div class="img-input-block">
+                  <span class="img-input-block-label">🖼 Option A Image</span>
+                  <div class="img-input-row">
+                    <input type="text" id="optAImageUrl" placeholder="Paste image URL…" oninput="handleImgUrl('optA')">
+                    <label class="img-file-label">📎 Upload<input type="file" id="optAImageFile" accept="image/*" onchange="handleImgFile('optA')"></label>
+                    <button type="button" class="img-clear-btn" id="optAImageClear" onclick="clearImg('optA')" title="Remove">✕</button>
+                  </div>
+                  <div class="img-thumb-wrap" id="optAImageThumbWrap">
+                    <img class="img-thumb" id="optAImageThumb" src="" alt="">
+                    <span class="img-thumb-name" id="optAImageThumbName"></span>
+                  </div>
+                </div>
               </div>
 
+              <!-- Option B -->
               <div class="option-block">
-                <div class="option-row">
+                <div class="option-top-row">
                   <span class="option-label">B</span>
-                  <input type="text" id="optB" placeholder="Option B text">
-                  <input type="file" id="optBImage" accept="image/*">
+                  <input type="text" id="optB" placeholder="Option B text (LaTeX ok)">
                   <input type="radio" name="correct" value="1" title="Mark B as correct">
                 </div>
-                <div class="image-preview option-preview" id="optBImagePreview"></div>
+                <div class="img-input-block">
+                  <span class="img-input-block-label">🖼 Option B Image</span>
+                  <div class="img-input-row">
+                    <input type="text" id="optBImageUrl" placeholder="Paste image URL…" oninput="handleImgUrl('optB')">
+                    <label class="img-file-label">📎 Upload<input type="file" id="optBImageFile" accept="image/*" onchange="handleImgFile('optB')"></label>
+                    <button type="button" class="img-clear-btn" id="optBImageClear" onclick="clearImg('optB')" title="Remove">✕</button>
+                  </div>
+                  <div class="img-thumb-wrap" id="optBImageThumbWrap">
+                    <img class="img-thumb" id="optBImageThumb" src="" alt="">
+                    <span class="img-thumb-name" id="optBImageThumbName"></span>
+                  </div>
+                </div>
               </div>
 
+              <!-- Option C -->
               <div class="option-block">
-                <div class="option-row">
+                <div class="option-top-row">
                   <span class="option-label">C</span>
-                  <input type="text" id="optC" placeholder="Option C text">
-                  <input type="file" id="optCImage" accept="image/*">
+                  <input type="text" id="optC" placeholder="Option C text (LaTeX ok)">
                   <input type="radio" name="correct" value="2" title="Mark C as correct">
                 </div>
-                <div class="image-preview option-preview" id="optCImagePreview"></div>
+                <div class="img-input-block">
+                  <span class="img-input-block-label">🖼 Option C Image</span>
+                  <div class="img-input-row">
+                    <input type="text" id="optCImageUrl" placeholder="Paste image URL…" oninput="handleImgUrl('optC')">
+                    <label class="img-file-label">📎 Upload<input type="file" id="optCImageFile" accept="image/*" onchange="handleImgFile('optC')"></label>
+                    <button type="button" class="img-clear-btn" id="optCImageClear" onclick="clearImg('optC')" title="Remove">✕</button>
+                  </div>
+                  <div class="img-thumb-wrap" id="optCImageThumbWrap">
+                    <img class="img-thumb" id="optCImageThumb" src="" alt="">
+                    <span class="img-thumb-name" id="optCImageThumbName"></span>
+                  </div>
+                </div>
               </div>
 
+              <!-- Option D -->
               <div class="option-block">
-                <div class="option-row">
+                <div class="option-top-row">
                   <span class="option-label">D</span>
-                  <input type="text" id="optD" placeholder="Option D text">
-                  <input type="file" id="optDImage" accept="image/*">
+                  <input type="text" id="optD" placeholder="Option D text (LaTeX ok)">
                   <input type="radio" name="correct" value="3" title="Mark D as correct">
                 </div>
-                <div class="image-preview option-preview" id="optDImagePreview"></div>
+                <div class="img-input-block">
+                  <span class="img-input-block-label">🖼 Option D Image</span>
+                  <div class="img-input-row">
+                    <input type="text" id="optDImageUrl" placeholder="Paste image URL…" oninput="handleImgUrl('optD')">
+                    <label class="img-file-label">📎 Upload<input type="file" id="optDImageFile" accept="image/*" onchange="handleImgFile('optD')"></label>
+                    <button type="button" class="img-clear-btn" id="optDImageClear" onclick="clearImg('optD')" title="Remove">✕</button>
+                  </div>
+                  <div class="img-thumb-wrap" id="optDImageThumbWrap">
+                    <img class="img-thumb" id="optDImageThumb" src="" alt="">
+                    <span class="img-thumb-name" id="optDImageThumbName"></span>
+                  </div>
+                </div>
               </div>
 
               <p class="correct-hint">The selected radio button marks the correct answer.</p>
             </div>
 
+            <!-- Solution -->
             <div class="form-group full-width">
               <label>Solution (Optional)</label>
-              <textarea id="solution" placeholder="Explain the steps, formulas, or reasoning..."></textarea>
-              <input type="file" id="solutionImage" accept="image/*">
-              <div class="image-preview" id="solutionImagePreview"></div>
-              <p class="field-hint">Use \( ... \) or $...$ for inline math, and \[ ... \] or $$...$$ for display math.</p>
+              <textarea id="solution" placeholder="Explain the steps, formulas, or reasoning… Use \( ... \) for inline math."></textarea>
+              <div class="img-input-block">
+                <span class="img-input-block-label">📷 Solution Image (optional)</span>
+                <div class="img-input-row">
+                  <input type="text" id="solutionImageUrl" placeholder="Paste image URL…" oninput="handleImgUrl('solution')">
+                  <label class="img-file-label">
+                    📎 Upload
+                    <input type="file" id="solutionImageFile" accept="image/*" onchange="handleImgFile('solution')">
+                  </label>
+                  <button type="button" class="img-clear-btn" id="solutionImageClear" onclick="clearImg('solution')" title="Remove image">✕</button>
+                </div>
+                <div class="img-thumb-wrap" id="solutionImageThumbWrap">
+                  <img class="img-thumb" id="solutionImageThumb" src="" alt="">
+                  <span class="img-thumb-name" id="solutionImageThumbName"></span>
+                </div>
+              </div>
             </div>
 
+            <!-- Live Preview -->
             <div class="form-group full-width preview-section">
               <label>Live Preview</label>
               <div class="live-preview">
@@ -706,8 +851,6 @@
       <div class="glass-card">
 
         <p class="mu-section-label">1. Target Quiz</p>
-
-        <!-- Quiz selector for mass upload -->
         <div class="mu-quiz-selector">
           <div>
             <label>Subject</label>
@@ -788,10 +931,7 @@
             <button class="mu-btn" id="muDeselectAll">Deselect</button>
             <button class="mu-btn danger" id="muRemoveSel">Remove selected</button>
             <button class="mu-btn danger" id="muRemoveDbDupes">Remove DB dupes</button>
-            <button class="mu-btn" id="muRemoveConflicts"
-              style="border-color:rgba(180,140,0,0.4);color:#854f0b;">
-              Remove conflicts
-            </button>
+            <button class="mu-btn" id="muRemoveConflicts" style="border-color:rgba(180,140,0,0.4);color:#854f0b;">Remove conflicts</button>
           </div>
 
           <div id="muTableLabel" style="font-size:0.78rem;color:rgba(74,122,155,0.8);margin-bottom:6px;">0 questions</div>
@@ -834,24 +974,110 @@
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
   <script>
     // ─────────────────────────────────────────────
-    //  QUIZ STRUCTURE — mirrors your Next.js routes
-    //  mathematics/algebra/quiz, mathematics/trigonometry/quiz etc.
+    //  IMAGE STATE
+    //  Each key: { src: string|null, file: File|null, isUrl: bool }
     // ─────────────────────────────────────────────
-    const QUIZ_MODES = [
-      'PYQ',
-      'CareerWill',
-      'PW',
-      'Selection Way',
-      'Topic Mix',
-      'Tier 2'
-    ];
+    const IMG_KEYS = ['question', 'optA', 'optB', 'optC', 'optD', 'solution'];
+    const imgState = {};
+    IMG_KEYS.forEach(k => { imgState[k] = { src: null, file: null, isUrl: false }; });
 
-    const MENSURATION_QUIZ_MODES = [
-      'PYQ',
-      'CareerWill',
-      'Selection Way',
-      'Tier 2'
-    ];
+    // Revo object URLs on clear/replace
+    function revokeIfObjectUrl(key) {
+      const s = imgState[key];
+      if (s.src && !s.isUrl) {
+        try { URL.revokeObjectURL(s.src); } catch {}
+      }
+    }
+
+    function setImgState(key, src, file, isUrl) {
+      revokeIfObjectUrl(key);
+      imgState[key] = { src, file, isUrl };
+      renderThumb(key, src, file ? file.name : (isUrl ? 'URL image' : ''));
+      renderPreviewImage(key);
+    }
+
+    function handleImgUrl(key) {
+      const urlInput = document.getElementById(key + 'ImageUrl');
+      const url = urlInput.value.trim();
+      if (url) {
+        setImgState(key, url, null, true);
+      } else {
+        clearImg(key);
+      }
+    }
+
+    function handleImgFile(key) {
+      const fileInput = document.getElementById(key + 'ImageFile');
+      const file = fileInput.files && fileInput.files[0];
+      if (!file) return;
+      revokeIfObjectUrl(key);
+      const objUrl = URL.createObjectURL(file);
+      // Clear URL field since file takes priority
+      const urlInput = document.getElementById(key + 'ImageUrl');
+      if (urlInput) urlInput.value = '';
+      setImgState(key, objUrl, file, false);
+    }
+
+    function clearImg(key) {
+      revokeIfObjectUrl(key);
+      imgState[key] = { src: null, file: null, isUrl: false };
+      const urlInput = document.getElementById(key + 'ImageUrl');
+      const fileInput = document.getElementById(key + 'ImageFile');
+      if (urlInput) urlInput.value = '';
+      if (fileInput) fileInput.value = '';
+      renderThumb(key, null, '');
+      renderPreviewImage(key);
+    }
+
+    function renderThumb(key, src, name) {
+      const thumbWrap = document.getElementById(key + 'ImageThumbWrap');
+      const thumb     = document.getElementById(key + 'ImageThumb');
+      const thumbName = document.getElementById(key + 'ImageThumbName');
+      const clearBtn  = document.getElementById(key + 'ImageClear');
+      if (!thumbWrap) return;
+      if (src) {
+        thumb.src = src;
+        if (thumbName) thumbName.textContent = name || '';
+        thumbWrap.classList.add('visible');
+        if (clearBtn) clearBtn.classList.add('visible');
+      } else {
+        thumb.src = '';
+        if (thumbName) thumbName.textContent = '';
+        thumbWrap.classList.remove('visible');
+        if (clearBtn) clearBtn.classList.remove('visible');
+      }
+    }
+
+    function renderPreviewImage(key) {
+      // Map key → preview element id
+      const map = {
+        question: 'previewQuestionImage',
+        optA: 'previewOptAImage',
+        optB: 'previewOptBImage',
+        optC: 'previewOptCImage',
+        optD: 'previewOptDImage',
+        solution: 'previewSolutionImage',
+      };
+      const el = document.getElementById(map[key]);
+      if (!el) return;
+      const src = imgState[key].src;
+      el.innerHTML = '';
+      if (src) {
+        const img = document.createElement('img');
+        img.src = src;
+        img.alt = key + ' image';
+        el.appendChild(img);
+        el.classList.add('show');
+      } else {
+        el.classList.remove('show');
+      }
+    }
+
+    // ─────────────────────────────────────────────
+    //  QUIZ STRUCTURE
+    // ─────────────────────────────────────────────
+    const QUIZ_MODES = ['PYQ','CareerWill','PW','Selection Way','Topic Mix','Tier 2'];
+    const MENSURATION_QUIZ_MODES = ['PYQ','CareerWill','Selection Way','Tier 2'];
 
     const QUIZ_TREE = {
       mathematics: {
@@ -949,21 +1175,18 @@
     };
 
     // ─────────────────────────────────────────────
-    //  QUIZ DROPDOWN CASCADE
+    //  QUIZ DROPDOWNS
     // ─────────────────────────────────────────────
     function updateQuizTopics(subjId, topicId, nameId) {
       const subj = document.getElementById(subjId).value;
       const topicSel = document.getElementById(topicId);
-      const nameSel = document.getElementById(nameId);
-
+      const nameSel  = document.getElementById(nameId);
       topicSel.innerHTML = '<option value="">Select topic</option>';
-      nameSel.innerHTML = '<option value="">Select topic first</option>';
-      topicSel.disabled = true;
-      nameSel.disabled = true;
-
+      nameSel.innerHTML  = '<option value="">Select topic first</option>';
+      topicSel.disabled  = true;
+      nameSel.disabled   = true;
       if (!subj || !QUIZ_TREE[subj]) return;
-      const topics = QUIZ_TREE[subj].topics;
-      Object.entries(topics).forEach(([key, val]) => {
+      Object.entries(QUIZ_TREE[subj].topics).forEach(([key, val]) => {
         const opt = document.createElement('option');
         opt.value = key; opt.textContent = val.label;
         topicSel.appendChild(opt);
@@ -972,16 +1195,13 @@
     }
 
     function updateQuizNames(subjId, topicId, nameId) {
-      const subj = document.getElementById(subjId).value;
+      const subj  = document.getElementById(subjId).value;
       const topic = document.getElementById(topicId).value;
       const nameSel = document.getElementById(nameId);
-
       nameSel.innerHTML = '<option value="">Select quiz</option>';
-      nameSel.disabled = true;
-
+      nameSel.disabled  = true;
       if (!subj || !topic || !QUIZ_TREE[subj]?.topics[topic]) return;
-      const quizzes = QUIZ_TREE[subj].topics[topic].quizzes;
-      quizzes.forEach(name => {
+      QUIZ_TREE[subj].topics[topic].quizzes.forEach(name => {
         const opt = document.createElement('option');
         opt.value = name; opt.textContent = name;
         nameSel.appendChild(opt);
@@ -1010,9 +1230,9 @@
     }
 
     // ─────────────────────────────────────────────
-    //  SINGLE QUESTION
+    //  MATH / TEXT PREVIEW
     // ─────────────────────────────────────────────
-    const API_URL = 'http://localhost:5000/api/questions';
+    const API_URL   = 'http://localhost:5000/api/questions';
     const CHECK_URL = `${API_URL}/check-duplicates`;
 
     function getCheckDuplicatesUrl() {
@@ -1023,16 +1243,10 @@
         let path = url.pathname.replace(/\/+$/, '');
         path = path.replace(/\/bulk$/i, '');
         path = path.replace(/\/check-duplicates$/i, '');
-        if (path.endsWith('/api/questions')) {
-          return `${url.origin}${path}/check-duplicates`;
-        }
-        if (path.endsWith('/api')) {
-          return `${url.origin}${path}/questions/check-duplicates`;
-        }
+        if (path.endsWith('/api/questions')) return `${url.origin}${path}/check-duplicates`;
+        if (path.endsWith('/api')) return `${url.origin}${path}/questions/check-duplicates`;
         return `${url.origin}/api/questions/check-duplicates`;
-      } catch {
-        return CHECK_URL;
-      }
+      } catch { return CHECK_URL; }
     }
 
     const SUBJECT_TOPICS = {
@@ -1044,44 +1258,16 @@
 
     function updateTopicOptions() {
       const subjectSelect = document.getElementById('subject');
-      const topicSelect = document.getElementById('chapter');
+      const topicSelect   = document.getElementById('chapter');
       const subject = subjectSelect.value;
-      const topics = SUBJECT_TOPICS[subject] || [];
-      topicSelect.innerHTML = '';
-      const placeholder = document.createElement('option');
-      placeholder.value = ''; placeholder.textContent = 'Select topic';
-      topicSelect.appendChild(placeholder);
+      const topics  = SUBJECT_TOPICS[subject] || [];
+      topicSelect.innerHTML = '<option value="">Select topic</option>';
       topics.forEach(topic => {
         const option = document.createElement('option');
         option.value = topic; option.textContent = topic;
         topicSelect.appendChild(option);
       });
       topicSelect.disabled = topics.length === 0;
-      if (topicSelect.disabled) topicSelect.value = '';
-    }
-
-    function updateImagePreview(inputId, previewId) {
-      const input = document.getElementById(inputId);
-      const preview = document.getElementById(previewId);
-      if (!input || !preview) return;
-      const file = input.files && input.files[0];
-      const previousUrl = preview.dataset.objectUrl;
-      if (previousUrl) { URL.revokeObjectURL(previousUrl); delete preview.dataset.objectUrl; }
-      if (!file) { preview.classList.remove('show'); preview.textContent = ''; return; }
-      preview.textContent = '';
-      const img = document.createElement('img');
-      const objectUrl = URL.createObjectURL(file);
-      preview.dataset.objectUrl = objectUrl;
-      img.src = objectUrl; img.alt = 'Image preview';
-      preview.appendChild(img); preview.classList.add('show');
-    }
-
-    function clearImagePreviews() {
-      document.querySelectorAll('.image-preview, .preview-image').forEach(preview => {
-        const url = preview.dataset.objectUrl;
-        if (url) { URL.revokeObjectURL(url); delete preview.dataset.objectUrl; }
-        preview.classList.remove('show'); preview.textContent = '';
-      });
     }
 
     function escapeHtml(value) {
@@ -1095,10 +1281,10 @@
       let lastIndex = 0, match = null;
       while ((match = regex.exec(safeInput)) !== null) {
         if (match.index > lastIndex) parts.push({ type: 'text', content: safeInput.slice(lastIndex, match.index) });
-        if (match[1] !== undefined) parts.push({ type: 'display', content: match[1].trim() });
-        else if (match[2] !== undefined) parts.push({ type: 'inline', content: match[2].trim() });
+        if (match[1] !== undefined)      parts.push({ type: 'display', content: match[1].trim() });
+        else if (match[2] !== undefined) parts.push({ type: 'inline',  content: match[2].trim() });
         else if (match[3] !== undefined) parts.push({ type: 'display', content: match[3].trim() });
-        else if (match[4] !== undefined) parts.push({ type: 'inline', content: match[4].trim() });
+        else if (match[4] !== undefined) parts.push({ type: 'inline',  content: match[4].trim() });
         lastIndex = regex.lastIndex;
       }
       if (lastIndex < safeInput.length) parts.push({ type: 'text', content: safeInput.slice(lastIndex) });
@@ -1123,74 +1309,46 @@
     }
 
     function updatePreviewText(inputId, previewId) {
-      const input = document.getElementById(inputId);
+      const input   = document.getElementById(inputId);
       const preview = document.getElementById(previewId);
       if (!preview) return;
       const text = input ? input.value.trim() : '';
-      const html = renderMathHtml(text);
-      preview.innerHTML = html || '<span class="preview-empty">No text yet</span>';
+      preview.innerHTML = renderMathHtml(text) || '<span class="preview-empty">No text yet</span>';
     }
 
-    function updatePreviewImage(inputId, previewId) {
-      const input = document.getElementById(inputId);
-      const preview = document.getElementById(previewId);
-      if (!input || !preview) return;
-      const file = input.files && input.files[0];
-      const previousUrl = preview.dataset.objectUrl;
-      if (previousUrl) { URL.revokeObjectURL(previousUrl); delete preview.dataset.objectUrl; }
-      preview.textContent = '';
-      if (!file) { preview.classList.remove('show'); return; }
-      const img = document.createElement('img');
-      const objectUrl = URL.createObjectURL(file);
-      preview.dataset.objectUrl = objectUrl;
-      img.src = objectUrl; img.alt = 'Preview image';
-      preview.appendChild(img); preview.classList.add('show');
-    }
-
-    function updateAllPreviews(includeImages = false) {
+    function updateAllPreviews() {
       updatePreviewText('question', 'previewQuestion');
       updatePreviewText('optA', 'previewOptA');
       updatePreviewText('optB', 'previewOptB');
       updatePreviewText('optC', 'previewOptC');
       updatePreviewText('optD', 'previewOptD');
       updatePreviewText('solution', 'previewSolution');
-      if (!includeImages) return;
-      updatePreviewImage('questionImage', 'previewQuestionImage');
-      updatePreviewImage('optAImage', 'previewOptAImage');
-      updatePreviewImage('optBImage', 'previewOptBImage');
-      updatePreviewImage('optCImage', 'previewOptCImage');
-      updatePreviewImage('optDImage', 'previewOptDImage');
-      updatePreviewImage('solutionImage', 'previewSolutionImage');
     }
 
-    ['questionImage','optAImage','optBImage','optCImage','optDImage','solutionImage'].forEach(id => {
-      const previewId = `${id}Preview`;
-      const input = document.getElementById(id);
-      if (input) {
-        input.addEventListener('change', () => {
-          updateImagePreview(id, previewId);
-          const previewKey = `preview${id.charAt(0).toUpperCase()}${id.slice(1)}`;
-          updatePreviewImage(id, previewKey);
-        });
-      }
-    });
-
+    // Text input listeners
     ['question','optA','optB','optC','optD','solution'].forEach(id => {
       const input = document.getElementById(id);
       if (input) {
-        input.addEventListener('input', () => updateAllPreviews(false));
-        input.addEventListener('change', () => updateAllPreviews(false));
+        input.addEventListener('input',  updateAllPreviews);
+        input.addEventListener('change', updateAllPreviews);
       }
     });
 
+    // Subject dropdown
     const subjectSelect = document.getElementById('subject');
-    if (subjectSelect) { subjectSelect.addEventListener('change', updateTopicOptions); updateTopicOptions(); }
-    updateAllPreviews(true);
+    if (subjectSelect) {
+      subjectSelect.addEventListener('change', updateTopicOptions);
+      updateTopicOptions();
+    }
 
+    updateAllPreviews();
+
+    // ─────────────────────────────────────────────
+    //  FORM SUBMIT
+    // ─────────────────────────────────────────────
     document.getElementById('questionForm').addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      // Validate quiz selection
       const quizSubject = document.getElementById('quizSubject').value;
       const quizTopic   = document.getElementById('quizTopic').value;
       const quizName    = document.getElementById('quizName').value;
@@ -1199,69 +1357,92 @@
       }
 
       const questionText = document.getElementById('question').value.trim();
-      const questionImage = document.getElementById('questionImage').files[0];
-      if (!questionText && !questionImage) { showToast('Please add question text or an image file', 'error'); return; }
-      const optionTexts = ['optA','optB','optC','optD'].map(id => document.getElementById(id).value.trim());
-      const optionFiles = ['optAImage','optBImage','optCImage','optDImage'].map(id => document.getElementById(id).files[0]);
-      const emptyIndex = optionTexts.findIndex((text, index) => !text && !optionFiles[index]);
-      if (emptyIndex !== -1) { showToast('Each option needs text or an image file', 'error'); return; }
+      const questionImg  = imgState['question'];
+      if (!questionText && !questionImg.src) {
+        showToast('Please add question text or an image', 'error'); return;
+      }
+
+      const optKeys   = ['optA','optB','optC','optD'];
+      const optTexts  = optKeys.map(k => document.getElementById(k).value.trim());
+      const emptyIdx  = optTexts.findIndex((text, i) => !text && !imgState[optKeys[i]].src);
+      if (emptyIdx !== -1) {
+        showToast('Each option needs text or an image', 'error'); return;
+      }
+
       const correctRadio = document.querySelector('input[name="correct"]:checked');
-      if (!correctRadio) { showToast('Please select the correct answer', 'error'); return; }
-      const correctIndex = parseInt(correctRadio.value, 10);
+      if (!correctRadio) {
+        showToast('Please select the correct answer', 'error'); return;
+      }
 
       const formData = new FormData();
       const solutionText = document.getElementById('solution').value.trim();
-      const solutionImage = document.getElementById('solutionImage').files[0];
 
-      // Quiz target fields
       formData.append('quizSubject', quizSubject);
       formData.append('quizTopic',   quizTopic);
       formData.append('quizName',    quizName);
-
-      formData.append('subject',     document.getElementById('subject').value);
-      formData.append('tier',        document.getElementById('tier').value);
-      formData.append('exam',        document.getElementById('exam').value.trim());
-      formData.append('chapter',     document.getElementById('chapter').value);
-      formData.append('concept',     document.getElementById('concept').value.trim());
-      formData.append('difficulty',  document.getElementById('difficulty').value);
-      formData.append('formula',     document.getElementById('formula').value.trim());
-      formData.append('trapType',    document.getElementById('trapType').value);
-      formData.append('tags',        document.getElementById('tags').value.trim());
-      formData.append('questionText', questionText);
-      formData.append('optionAText', optionTexts[0]);
-      formData.append('optionBText', optionTexts[1]);
-      formData.append('optionCText', optionTexts[2]);
-      formData.append('optionDText', optionTexts[3]);
-      formData.append('correctIndex', String(correctIndex));
+      formData.append('subject',    document.getElementById('subject').value);
+      formData.append('tier',       document.getElementById('tier').value);
+      formData.append('exam',       document.getElementById('exam').value.trim());
+      formData.append('chapter',    document.getElementById('chapter').value);
+      formData.append('concept',    document.getElementById('concept').value.trim());
+      formData.append('difficulty', document.getElementById('difficulty').value);
+      formData.append('formula',    document.getElementById('formula').value.trim());
+      formData.append('trapType',   document.getElementById('trapType').value);
+      formData.append('tags',       document.getElementById('tags').value.trim());
+      formData.append('questionText',  questionText);
+      formData.append('optionAText', optTexts[0]);
+      formData.append('optionBText', optTexts[1]);
+      formData.append('optionCText', optTexts[2]);
+      formData.append('optionDText', optTexts[3]);
+      formData.append('correctIndex', correctRadio.value);
       formData.append('solutionText', solutionText);
-      if (questionImage) formData.append('questionImage', questionImage);
-      if (optionFiles[0]) formData.append('optionAImage', optionFiles[0]);
-      if (optionFiles[1]) formData.append('optionBImage', optionFiles[1]);
-      if (optionFiles[2]) formData.append('optionCImage', optionFiles[2]);
-      if (optionFiles[3]) formData.append('optionDImage', optionFiles[3]);
-      if (solutionImage) formData.append('solutionImage', solutionImage);
+
+      // Attach images — prefer file, then URL
+      const imgMappings = [
+        { key: 'question',  field: 'questionImage',  urlField: 'questionImageUrl'  },
+        { key: 'optA',      field: 'optionAImage',   urlField: 'optAImageUrl'      },
+        { key: 'optB',      field: 'optionBImage',   urlField: 'optBImageUrl'      },
+        { key: 'optC',      field: 'optionCImage',   urlField: 'optCImageUrl'      },
+        { key: 'optD',      field: 'optionDImage',   urlField: 'optDImageUrl'      },
+        { key: 'solution',  field: 'solutionImage',  urlField: 'solutionImageUrl'  },
+      ];
+      imgMappings.forEach(({ key, field, urlField }) => {
+        const state = imgState[key];
+        if (state.file) {
+          formData.append(field, state.file);
+        } else if (state.isUrl && state.src) {
+          formData.append(urlField, state.src);
+        }
+      });
 
       try {
-        const res = await fetch(API_URL, { method: 'POST', body: formData });
-        let data = {};
-        try { data = await res.json(); } catch { data = {}; }
+        const res  = await fetch(API_URL, { method: 'POST', body: formData });
+        let data   = {};
+        try { data = await res.json(); } catch {}
         if (res.ok) {
-          showToast('Question #' + data.question.id + ' added to ' + quizName + '!', 'success');
+          showToast('Question #' + data.question?.id + ' added to ' + quizName + '!', 'success');
           document.getElementById('questionForm').reset();
-          clearImagePreviews();
+          IMG_KEYS.forEach(k => clearImg(k));
+          updateTopicOptions();
+          updateAllPreviews();
         } else {
           showToast(data.error || 'Failed to add question', 'error');
         }
-      } catch { showToast('Server unreachable — is the backend running?', 'error'); }
+      } catch {
+        showToast('Server unreachable — is the backend running?', 'error');
+      }
     });
 
     document.getElementById('questionForm').addEventListener('reset', () => {
-      clearImagePreviews(); updateTopicOptions(); updateAllPreviews(true);
+      // Clear all image states
+      IMG_KEYS.forEach(k => clearImg(k));
+      updateTopicOptions();
+      updateAllPreviews();
       // Reset quiz dropdowns
-      document.getElementById('quizTopic').innerHTML = '<option value="">Select topic first</option>';
-      document.getElementById('quizTopic').disabled = true;
-      document.getElementById('quizName').innerHTML = '<option value="">Select topic first</option>';
-      document.getElementById('quizName').disabled = true;
+      ['quizTopic','quizName'].forEach(id => {
+        document.getElementById(id).innerHTML = '<option value="">Select topic first</option>';
+        document.getElementById(id).disabled  = true;
+      });
     });
 
     // ─────────────────────────────────────────────
@@ -1270,14 +1451,14 @@
     let muAll = [];
     let muSelected = new Set();
     let muFiltered = [];
-    let muPendingDbCheck = false;
+    let muPendingDbCheck  = false;
     let muDbCheckInFlight = false;
 
-    const muDrop = document.getElementById('muDrop');
+    const muDrop      = document.getElementById('muDrop');
     const muFileInput = document.getElementById('muFileInput');
-    const muList = document.getElementById('muList');
+    const muList      = document.getElementById('muList');
     const muUploadBtn = document.getElementById('muUploadBtn');
-    const muLog = document.getElementById('muLog');
+    const muLog       = document.getElementById('muLog');
 
     document.getElementById('muBrowseLink').onclick = () => muFileInput.click();
     muDrop.onclick = (e) => { if (e.target.id !== 'muBrowseLink') muFileInput.click(); };
@@ -1292,122 +1473,50 @@
 
     async function muRunDbCheck() {
       if (muDbCheckInFlight) return;
-
       const questionsForCheck = muAll.filter(q =>
         q.id || q._id || q.questionId || q.question || q.questionText || q.q
       );
-      if (questionsForCheck.length === 0) return;
-
+      if (!questionsForCheck.length) return;
       const apiUrlValue = document.getElementById('muApiUrl')?.value.trim();
-      if (!apiUrlValue) {
-        muPendingDbCheck = true;
-        muAddLog('Set Backend URL to enable DB duplicate check', '');
-        return;
-      }
-
-      muDbCheckInFlight = true;
-      muPendingDbCheck = false;
-
-      muAddLog(`Checking ${questionsForCheck.length} questions against database...`);
-
+      if (!apiUrlValue) { muPendingDbCheck = true; muAddLog('Set Backend URL to enable DB duplicate check', ''); return; }
+      muDbCheckInFlight = true; muPendingDbCheck = false;
+      muAddLog(`Checking ${questionsForCheck.length} questions against database…`);
       try {
         const res = await fetch(getCheckDuplicatesUrl(), {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ questions: questionsForCheck })
         });
-
         if (res.ok) {
           const data = await res.json();
-          const resultMapById = new Map(
-            data.results.filter(r => r.id).map(r => [String(r.id), r])
-          );
-          const resultMapByText = new Map(
-            data.results.filter(r => r.textKey).map(r => [String(r.textKey), r])
-          );
-
-          let exactDupes   = 0;
-          let textDupes    = 0;
-          let idConflicts  = 0;
-
+          const byId   = new Map(data.results.filter(r => r.id).map(r => [String(r.id), r]));
+          const byText = new Map(data.results.filter(r => r.textKey).map(r => [String(r.textKey), r]));
+          let exactDupes = 0, textDupes = 0, idConflicts = 0;
           muAll = muAll.map(q => {
-            const id = String(q.id || q._id || q.questionId || '');
+            const id     = String(q.id || q._id || q.questionId || '');
             const textKey = String(q.question || q.questionText || q.q || '').trim();
-            const result = (id && resultMapById.get(id)) || (textKey && resultMapByText.get(textKey));
+            const result = (id && byId.get(id)) || (textKey && byText.get(textKey));
             if (!result) return q;
-
-            if (result.status === 'exact-duplicate') {
-              exactDupes++;
-              return {
-                ...q,
-                _status: 'db-duplicate',
-                _issue: 'exact duplicate — same ID and same question text'
-              };
-            }
-
-            if (result.status === 'text-duplicate') {
-              textDupes++;
-              const matchId = result.existingId ? ` (match ID: ${result.existingId})` : '';
-              return {
-                ...q,
-                _status: 'db-duplicate',
-                _issue: `exact text match in database${matchId}`
-              };
-            }
-
-            if (result.status === 'id-conflict') {
-              idConflicts++;
-              return {
-                ...q,
-                _status: 'id-conflict',
-                _issue: 'ID conflict — same ID but different question text',
-                _existingText: result.existingText,
-                _incomingText: result.incomingText,
-              };
-            }
-
+            if (result.status === 'exact-duplicate')  { exactDupes++;  return { ...q, _status: 'db-duplicate', _issue: 'exact duplicate — same ID and question text' }; }
+            if (result.status === 'text-duplicate')   { textDupes++;   return { ...q, _status: 'db-duplicate', _issue: `exact text match${result.existingId ? ` (match ID: ${result.existingId})` : ''}` }; }
+            if (result.status === 'id-conflict')      { idConflicts++; return { ...q, _status: 'id-conflict', _issue: 'ID conflict — same ID but different question', _existingText: result.existingText, _incomingText: result.incomingText }; }
             return q;
           });
-
-          // Auto-deselect exact duplicates
-          muAll
-            .filter(q => q._status === 'db-duplicate')
-            .forEach(q => muSelected.delete(q._idx));
-
-          // Keep id-conflicts SELECTED but highlighted
-          // User decides what to do with them
-
-          if (exactDupes > 0)
-            muAddLog(`${exactDupes} exact duplicates (same ID + text) found — deselected`, 'err');
-          if (textDupes > 0)
-            muAddLog(`${textDupes} text duplicates found — deselected`, 'err');
-          if (idConflicts > 0)
-            muAddLog(`⚠️ ${idConflicts} ID conflicts — same ID, different question!`, 'err');
-          if (exactDupes === 0 && textDupes === 0 && idConflicts === 0)
-            muAddLog('No duplicates found ✓', 'ok');
-
-          muUpdateStats();
-          muApplyFilter();
-
-        } else {
-          muPendingDbCheck = true;
-          muAddLog('Could not check database', '');
-        }
-      } catch (err) {
-        muPendingDbCheck = true;
-        muAddLog(`DB check failed: ${err.message}`, 'err');
-      } finally {
-        muDbCheckInFlight = false;
-      }
+          muAll.filter(q => q._status === 'db-duplicate').forEach(q => muSelected.delete(q._idx));
+          if (exactDupes)  muAddLog(`${exactDupes} exact duplicates — deselected`, 'err');
+          if (textDupes)   muAddLog(`${textDupes} text duplicates — deselected`, 'err');
+          if (idConflicts) muAddLog(`⚠️ ${idConflicts} ID conflicts — same ID, different question!`, 'err');
+          if (!exactDupes && !textDupes && !idConflicts) muAddLog('No duplicates found ✓', 'ok');
+          muUpdateStats(); muApplyFilter();
+        } else { muPendingDbCheck = true; muAddLog('Could not check database', ''); }
+      } catch (err) { muPendingDbCheck = true; muAddLog(`DB check failed: ${err.message}`, 'err'); }
+      finally { muDbCheckInFlight = false; }
     }
 
     function muProcessFile(file) {
       const reader = new FileReader();
       reader.onload = async (e) => {
         const lines = e.target.result.split('\n').filter(l => l.trim());
-        muAll = [];
-        muPendingDbCheck = false;
-        muDbCheckInFlight = false;
+        muAll = []; muPendingDbCheck = false; muDbCheckInFlight = false;
         lines.forEach((line, i) => {
           let q, status = 'valid', issues = [];
           try { q = JSON.parse(line); }
@@ -1415,18 +1524,16 @@
           if (!q.question && !q.questionText && !q.q) issues.push('missing question text');
           if (!q.options && !q.choices && !q.answers && !(q.optionA || q.optionAText)) issues.push('missing options');
           if (!q.answer && !q.correctAnswer && !q.correct && q.correctIndex === undefined) issues.push('missing answer');
-          if (issues.length && status === 'valid') status = 'error';
+          if (issues.length) status = 'error';
           muAll.push({ ...q, _idx: i, _status: status, _issue: issues.join(', ') });
         });
         muSelected = new Set(muAll.filter(q => q._status === 'valid').map(q => q._idx));
         muUpdateStats(); muApplyFilter();
         muDrop.classList.add('loaded');
         muDrop.querySelector('.mu-drop-title').textContent = file.name;
-        muDrop.querySelector('.mu-drop-sub').textContent = `${lines.length} lines parsed`;
-        document.getElementById('muStats').style.display = 'grid';
+        muDrop.querySelector('.mu-drop-sub').textContent   = `${lines.length} lines parsed`;
+        document.getElementById('muStats').style.display    = 'grid';
         document.getElementById('muMainPanel').style.display = 'block';
-
-        // ── Step 3: Check CosmosDB ───────────────────────────
         muRunDbCheck();
       };
       reader.readAsText(file);
@@ -1436,10 +1543,7 @@
       document.getElementById('muTotal').textContent  = muAll.length;
       document.getElementById('muValid').textContent  = muAll.filter(q => q._status === 'valid').length;
       document.getElementById('muErrors').textContent = muAll.filter(q => q._status === 'error').length;
-      document.getElementById('muDupes').textContent  = muAll.filter(q =>
-        q._status === 'db-duplicate' ||
-        q._status === 'id-conflict'
-      ).length;
+      document.getElementById('muDupes').textContent  = muAll.filter(q => q._status === 'db-duplicate' || q._status === 'id-conflict').length;
     }
 
     function muApplyFilter() {
@@ -1450,8 +1554,8 @@
         const qSubj = (q.subject || q.topic || q.category || '').toLowerCase();
         const qDiff = (q.difficulty || q.level || '').toLowerCase();
         if (subj && !qSubj.includes(subj)) return false;
-        if (diff && qDiff !== diff) return false;
-        if (status === 'error') return q._status === 'error' || q._status === 'id-conflict';
+        if (diff && qDiff !== diff)         return false;
+        if (status === 'error')     return q._status === 'error' || q._status === 'id-conflict';
         if (status === 'duplicate') return q._status === 'db-duplicate';
         if (status && q._status !== status) return false;
         return true;
@@ -1466,13 +1570,12 @@
 
     function muBadgeClass(subj) {
       const s = (subj || '').toLowerCase();
-      if (s.includes('geo'))   return 'mu-badge-geo';
-      if (s.includes('trig'))  return 'mu-badge-trig';
+      if (s.includes('geo'))  return 'mu-badge-geo';
+      if (s.includes('trig')) return 'mu-badge-trig';
       if (s.includes('arith') || s.includes('percent') || s.includes('ratio')) return 'mu-badge-arith';
       if (s.includes('math') || s.includes('alg') || s.includes('mensur') || s.includes('numb')) return 'mu-badge-math';
       return 'mu-badge-other';
     }
-
     function muDiffClass(d) {
       const l = (d || '').toLowerCase();
       if (l === 'easy') return 'mu-diff-easy';
@@ -1481,29 +1584,21 @@
     }
 
     function muRenderList() {
-      if (!muFiltered.length) {
-        muList.innerHTML = '<div class="mu-empty">No questions match the filter</div>';
-        muUpdateSelLabel(); return;
-      }
+      if (!muFiltered.length) { muList.innerHTML = '<div class="mu-empty">No questions match the filter</div>'; muUpdateSelLabel(); return; }
       muList.innerHTML = muFiltered.map(q => {
         const qt   = q.question || q.questionText || q.q || q._raw || '(no text)';
         const subj = q.subject || q.topic || q.category || '—';
         const diff = q.difficulty || q.level || '—';
         const isSel = muSelected.has(q._idx);
         let statusHtml = '';
-        if (q._status === 'valid') {
-          statusHtml = '<span class="mu-status-ok">valid</span>';
-        } else if (q._status === 'db-duplicate') {
-          statusHtml = '<span class="mu-status-dupe" style="background:rgba(254,226,226,0.7);color:#a32d2d;" title="Exact duplicate — already in database">in DB</span>';
-        } else if (q._status === 'id-conflict') {
-          statusHtml = `<span class="mu-status-dupe" style="background:rgba(250,200,50,0.25);color:#854f0b;cursor:help;" title="ID conflict!&#10;DB: ${(q._existingText || '').replace(/\"/g,'&quot;')}&#10;New: ${(q._incomingText || '').replace(/\"/g,'&quot;')}">⚠️ conflict</span>`;
-        } else {
-          statusHtml = `<span class="mu-status-err" title="${q._issue || ''}">error</span>`;
-        }
-        return `<div class="mu-row${isSel ? ' sel' : ''}" data-idx="${q._idx}" onclick="muToggle(${q._idx}, this)">
-          <span class="mu-row-num">${q._idx + 1}</span>
-          <span class="mu-row-text">${escapeHtml(qt.substring(0, 85))}${qt.length > 85 ? '…' : ''}</span>
-          <span><span class="mu-badge ${muBadgeClass(subj)}">${escapeHtml(subj.substring(0, 14))}</span></span>
+        if (q._status === 'valid') statusHtml = '<span class="mu-status-ok">valid</span>';
+        else if (q._status === 'db-duplicate') statusHtml = '<span class="mu-status-dupe" style="background:rgba(254,226,226,0.7);color:#a32d2d;" title="Exact duplicate — already in database">in DB</span>';
+        else if (q._status === 'id-conflict')  statusHtml = `<span class="mu-status-dupe" style="background:rgba(250,200,50,0.25);color:#854f0b;cursor:help;" title="ID conflict!&#10;DB: ${(q._existingText||'').replace(/\"/g,'&quot;')}&#10;New: ${(q._incomingText||'').replace(/\"/g,'&quot;')}">⚠️ conflict</span>`;
+        else statusHtml = `<span class="mu-status-err" title="${q._issue||''}">error</span>`;
+        return `<div class="mu-row${isSel?' sel':''}" data-idx="${q._idx}" onclick="muToggle(${q._idx},this)">
+          <span class="mu-row-num">${q._idx+1}</span>
+          <span class="mu-row-text">${escapeHtml(qt.substring(0,85))}${qt.length>85?'…':''}</span>
+          <span><span class="mu-badge ${muBadgeClass(subj)}">${escapeHtml(subj.substring(0,14))}</span></span>
           <span class="${muDiffClass(diff)}">${escapeHtml(diff)}</span>
           <span>${statusHtml}</span>
         </div>`;
@@ -1523,7 +1618,7 @@
       muUploadBtn.disabled = n === 0 || !document.getElementById('muApiUrl').value.trim();
     }
 
-    document.getElementById('muApiUrl').addEventListener('input', muUpdateSelLabel);
+    document.getElementById('muApiUrl').addEventListener('input',  muUpdateSelLabel);
     document.getElementById('muApiUrl').addEventListener('change', () => {
       if (muPendingDbCheck && muAll.length) muRunDbCheck();
     });
@@ -1534,38 +1629,28 @@
       muAll = muAll.filter(q => !muSelected.has(q._idx));
       muSelected.clear(); muUpdateStats(); muApplyFilter();
     };
-
     document.getElementById('muRemoveDbDupes')?.addEventListener('click', () => {
       const before = muAll.length;
       muAll = muAll.filter(q => q._status !== 'db-duplicate');
-      muSelected = new Set(
-        [...muSelected].filter(idx => muAll.some(q => q._idx === idx))
-      );
+      muSelected = new Set([...muSelected].filter(idx => muAll.some(q => q._idx === idx)));
       const removed = before - muAll.length;
-      muUpdateStats();
-      muApplyFilter();
+      muUpdateStats(); muApplyFilter();
       muAddLog(`Removed ${removed} DB duplicates`, 'ok');
       showToast(`Removed ${removed} DB duplicates`, 'success');
     });
-
     document.getElementById('muRemoveConflicts')?.addEventListener('click', () => {
       const before = muAll.length;
       muAll = muAll.filter(q => q._status !== 'id-conflict');
-      muSelected = new Set(
-        [...muSelected].filter(idx => muAll.some(q => q._idx === idx))
-      );
+      muSelected = new Set([...muSelected].filter(idx => muAll.some(q => q._idx === idx)));
       const removed = before - muAll.length;
-      muUpdateStats();
-      muApplyFilter();
+      muUpdateStats(); muApplyFilter();
       muAddLog(`Removed ${removed} ID conflicts`, 'ok');
       showToast(`Removed ${removed} ID conflicts`, 'success');
     });
-
     document.getElementById('muClearBtn').onclick = () => {
       muAll = []; muSelected.clear(); muFiltered = [];
-      muPendingDbCheck = false;
-      muDbCheckInFlight = false;
-      document.getElementById('muStats').style.display = 'none';
+      muPendingDbCheck = false; muDbCheckInFlight = false;
+      document.getElementById('muStats').style.display    = 'none';
       document.getElementById('muMainPanel').style.display = 'none';
       muDrop.classList.remove('loaded');
       muDrop.querySelector('.mu-drop-title').textContent = 'Drop .ndjson / .jsonl file here';
@@ -1587,19 +1672,15 @@
     muUploadBtn.onclick = async () => {
       const url = document.getElementById('muApiUrl').value.trim();
       if (!url) return;
-
-      // Validate quiz selection
       const muQuizSubject = document.getElementById('muQuizSubject').value;
       const muQuizTopic   = document.getElementById('muQuizTopic').value;
       const muQuizName    = document.getElementById('muQuizName').value;
       if (!muQuizSubject || !muQuizTopic || !muQuizName) {
         showToast('Please select a target quiz before uploading', 'error'); return;
       }
-
       const toUpload = muAll.filter(q => muSelected.has(q._idx)).map(q => {
         const clean = { ...q };
         delete clean._idx; delete clean._status; delete clean._issue; delete clean._raw;
-        // Inject quiz target into every question
         clean.quizSubject = muQuizSubject;
         clean.quizTopic   = muQuizTopic;
         clean.quizName    = muQuizName;
@@ -1623,8 +1704,7 @@
         const batchNum = Math.floor(i / BATCH) + 1;
         try {
           const res = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(batch)
           });
           if (res.ok) {
@@ -1639,7 +1719,7 @@
           muAddLog(`Batch ${batchNum} → Network error: ${err.message}`, 'err');
         }
         const pct = Math.round(((i + batch.length) / total) * 100);
-        progFill.style.width = Math.min(pct, 100) + '%';
+        progFill.style.width  = Math.min(pct, 100) + '%';
         progLabel.textContent = `${Math.min(i + BATCH, total)} / ${total} — ${errors} errors`;
       }
 
