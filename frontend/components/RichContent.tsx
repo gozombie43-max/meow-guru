@@ -19,7 +19,7 @@ function resolveImageSrc(src: string): string {
   if (/^(https?:)?\/\//i.test(trimmed)) return trimmed;
   if (trimmed.startsWith("data:") || trimmed.startsWith("blob:")) return trimmed;
 
-  const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const base = process.env.NEXT_PUBLIC_API_URL || "";
   if (trimmed.startsWith("/")) return `${base}${trimmed}`;
   return `${base}/${trimmed}`;
 }

@@ -32,7 +32,7 @@ const updateStoredToken = (token: string | null) => {
 };
 
 const api = axios.create({
-  baseURL:         process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000',
+  baseURL:         process.env.NEXT_PUBLIC_API_URL || '',
   headers:         { 'Content-Type': 'application/json' },
   withCredentials: true, // sends cookies automatically
   timeout:         15000,
@@ -72,7 +72,7 @@ api.interceptors.response.use(
       try {
         const refreshToken = getStoredRefreshToken();
         const { data } = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/auth/refresh`,
+          `${process.env.NEXT_PUBLIC_API_URL || ''}/auth/refresh`,
           refreshToken ? { refreshToken } : {},
           { withCredentials: true }
         );

@@ -1,6 +1,6 @@
 import { fetchWithRetry } from "./http";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_API_URL || "";
 
 export interface Question {
   id: string;

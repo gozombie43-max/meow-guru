@@ -2,7 +2,7 @@
 import { useState, useRef } from "react";
 import { fetchWithRetry } from "@/lib/api/http";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:10000";
+const API = process.env.NEXT_PUBLIC_API_URL || "";
 
 type UploadResult = {
   filename: string;

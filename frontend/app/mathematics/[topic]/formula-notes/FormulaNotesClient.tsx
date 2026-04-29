@@ -194,7 +194,7 @@ export default function FormulaNotesClient({ topic }: FormulaNotesClientProps) {
   const [apiNotes, setApiNotes] = useState<ApiNote[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const API = process.env.NEXT_PUBLIC_API_URL || "";
   const topicLabel = getTopicLabel(topic);
 
   useEffect(() => {

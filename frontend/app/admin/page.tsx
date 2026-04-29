@@ -5,7 +5,7 @@ import MassImageUpload from "../../components/admin/MassImageUpload";
 import MassSolutionUpload from "@/components/admin/MassSolutionUpload";
 import { fetchWithRetry } from "@/lib/api/http";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API = process.env.NEXT_PUBLIC_API_URL || "";
 
 type Question = {
   id: string;

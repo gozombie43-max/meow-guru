@@ -39,7 +39,7 @@ export default function MensurationFormulaNotesPage() {
   const [apiNotes, setApiNotes] = useState<ApiNote[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const API = process.env.NEXT_PUBLIC_API_URL || "";
 
   useEffect(() => {
     const fetchNotes = async () => {
