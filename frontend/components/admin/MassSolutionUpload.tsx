@@ -59,6 +59,12 @@ export default function MassSolutionUpload() {
       const res = await fetchWithRetry(`${API}/api/mass-upload-solutions`, {
         method: "POST",
         body: formData,
+      }, {
+        attempts: 2,
+        timeoutMs: 180000,
+        retryDelayMs: 3000,
+        retryMethods: ["POST"],
+        retryOnStatuses: [502, 503, 504],
       });
 
       const data: UploadResponse = await res.json();
@@ -69,7 +75,12 @@ export default function MassSolutionUpload() {
 
       setResponse(data);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Upload failed");
+      const message = e instanceof Error ? e.message : "Upload failed";
+      setError(
+        /abort|timed out|signal is aborted/i.test(message)
+          ? "Upload timed out before the server finished processing the ZIP. Try again or use a smaller batch."
+          : message
+      );
     } finally {
       setUploading(false);
     }
