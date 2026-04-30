@@ -190,12 +190,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           persistToken(stored);
           await fetchUser(stored);
         } else {
-          const refreshedToken = await refreshAccessToken();
-          await fetchUser(refreshedToken);
+          // Do not auto-refresh when there is no stored access token.
+          // This avoids unnecessary 401 responses for anonymous visitors.
+          if (!cancelled) setLoading(false);
+          return;
         }
         if (!cancelled) setLoading(false);
       } catch (err) {
-        if (isAuthError(err)) {
+        if (isAuthError(err) && stored) {
           try {
             const refreshedToken = await refreshAccessToken();
             await fetchUser(refreshedToken);
