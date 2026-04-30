@@ -1,25 +1,39 @@
 "use client";
 import { useEffect, useState } from "react";
+import { fetchWithRetry } from "@/lib/api/http";
 
 type Region = { x: number; y: number; w: number; h: number };
 
+function readDraft() {
+  if (typeof window === "undefined") {
+    return { regions: {} as Record<string, Region>, correct: "a" };
+  }
+
+  const saved = localStorage.getItem("image_mcq_draft");
+  if (!saved) {
+    return { regions: {} as Record<string, Region>, correct: "a" };
+  }
+
+  try {
+    const parsed = JSON.parse(saved);
+    return {
+      regions: parsed?.regions || {},
+      correct: parsed?.correct || "a",
+    };
+  } catch {
+    return { regions: {} as Record<string, Region>, correct: "a" };
+  }
+}
+
 export default function UploadImage() {
+  const draft = readDraft();
   const [image, setImage] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
-  const [regions, setRegions] = useState<Record<string, Region>>({});
+  const [regions, setRegions] = useState<Record<string, Region>>(draft.regions);
   const [current, setCurrent] = useState<string>("a");
-  const [correct, setCorrect] = useState<string>("a");
+  const [correct, setCorrect] = useState<string>(draft.correct);
   const [scale, setScale] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
-
-  useEffect(() => {
-    const saved = localStorage.getItem("image_mcq_draft");
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      setRegions(parsed.regions || {});
-      setCorrect(parsed.correct || "a");
-    }
-  }, []);
 
   useEffect(() => {
     const data = { regions, correct };
@@ -45,10 +59,20 @@ export default function UploadImage() {
     formData.append("correctLetter", correct);
     formData.append("optionRegions", JSON.stringify(regions));
 
-    const res = await fetch("/api/upload-image", {
-      method: "POST",
-      body: formData,
-    });
+    const res = await fetchWithRetry(
+      "/api/upload-image",
+      {
+        method: "POST",
+        body: formData,
+      },
+      {
+        attempts: 3,
+        timeoutMs: 20000,
+        retryDelayMs: 5000,
+        retryMethods: ["POST"],
+        retryOnStatuses: [502, 503, 504],
+      }
+    );
 
     let data = null;
     try {

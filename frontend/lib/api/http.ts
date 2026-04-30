@@ -1,4 +1,5 @@
 type FetchRetryConfig = {
+  attempts?: number;
   timeoutMs?: number;
   retries?: number;
   retryDelayMs?: number;
@@ -17,12 +18,14 @@ export async function fetchWithRetry(
   config: FetchRetryConfig = {}
 ) {
   const {
+    attempts,
     timeoutMs = 12000,
     retries = 2,
     retryDelayMs = 1200,
     retryOnStatuses = DEFAULT_RETRY_STATUSES,
     retryMethods = DEFAULT_RETRY_METHODS,
   } = config;
+  const resolvedRetries = Math.max(0, (attempts ?? (retries + 1)) - 1);
 
   const method = (options.method || "GET").toUpperCase();
   const shouldRetryMethod = retryMethods.includes(method);
@@ -30,7 +33,7 @@ export async function fetchWithRetry(
 
   let lastError: unknown;
 
-  for (let attempt = 0; attempt <= retries; attempt += 1) {
+  for (let attempt = 0; attempt <= resolvedRetries; attempt += 1) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -41,7 +44,7 @@ export async function fetchWithRetry(
       });
       clearTimeout(timeoutId);
 
-      if (shouldRetryMethod && retryOnStatuses.includes(res.status) && attempt < retries) {
+      if (shouldRetryMethod && retryOnStatuses.includes(res.status) && attempt < resolvedRetries) {
         await sleep(retryDelayMs * (attempt + 1));
         continue;
       }
@@ -52,7 +55,7 @@ export async function fetchWithRetry(
       lastError = err;
 
       if (externalSignal?.aborted) throw err;
-      if (!shouldRetryMethod || attempt >= retries) throw err;
+      if (!shouldRetryMethod || attempt >= resolvedRetries) throw err;
 
       await sleep(retryDelayMs * (attempt + 1));
     }

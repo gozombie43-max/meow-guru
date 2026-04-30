@@ -1,5 +1,6 @@
 "use client";
 import { useRef, useState, type ChangeEvent } from "react";
+import { fetchWithRetry } from "@/lib/api/http";
 
 type Region = { x: number; y: number; w: number; h: number };
 
@@ -111,10 +112,20 @@ export default function MassImageUpload({
       formData.append("correctLetter", entry.correctLetter);
       formData.append("optionRegions", JSON.stringify(entry.regions));
 
-      const res = await fetch("/api/upload-image", {
-        method: "POST",
-        body: formData,
-      });
+      const res = await fetchWithRetry(
+        "/api/upload-image",
+        {
+          method: "POST",
+          body: formData,
+        },
+        {
+          attempts: 3,
+          timeoutMs: 20000,
+          retryDelayMs: 5000,
+          retryMethods: ["POST"],
+          retryOnStatuses: [502, 503, 504],
+        }
+      );
 
       if (!res.ok) {
         let msg = `Server error ${res.status}`;
@@ -152,7 +163,8 @@ export default function MassImageUpload({
     let fail = 0;
     for (const entry of pending) {
       const success = await uploadOne(entry);
-      success ? ok++ : fail++;
+      if (success) ok += 1;
+      else fail += 1;
     }
     setUploading(false);
     showToast(

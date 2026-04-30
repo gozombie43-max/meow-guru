@@ -67,8 +67,16 @@ app.use(session({
 
 app.use(passport.initialize());
 
-// ── Health check ───────────────────────────────────────
+// ── Health checks ──────────────────────────────────────
 app.get('/', (req, res) => res.send('Server running 🚀'));
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    ok: true,
+    service: 'backend',
+    uptimeSeconds: Math.round(process.uptime()),
+    timestamp: new Date().toISOString(),
+  });
+});
 
 // ── Start server ───────────────────────────────────────
 const PORT = process.env.PORT || 10000;
