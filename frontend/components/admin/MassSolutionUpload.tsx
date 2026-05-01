@@ -101,8 +101,9 @@ export default function MassSolutionUpload() {
             Mass Solution Upload
           </h3>
           <p style={{ fontSize: 12, color: "var(--color-text-secondary)", margin: "4px 0 0", lineHeight: 1.5 }}>
-            Upload a ZIP of solution images. Each image patches the matching question with a{" "}
-            <code style={{ fontSize: 11, background: "var(--color-background-primary)", padding: "1px 5px", borderRadius: 4 }}>solutionImage</code> URL.
+            Upload a ZIP of solution images. Each image patches the matching question ID and adds the image into its{" "}
+            <code style={{ fontSize: 11, background: "var(--color-background-primary)", padding: "1px 5px", borderRadius: 4 }}>solution</code>{" "}
+            content for quiz rendering.
           </p>
         </div>
         {zipFile && (

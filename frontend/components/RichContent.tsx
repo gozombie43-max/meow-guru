@@ -16,7 +16,15 @@ const imageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
 function resolveImageSrc(src: string): string {
   const trimmed = (src || "").trim();
   if (!trimmed) return "";
-  if (/^(https?:)?\/\//i.test(trimmed)) return trimmed;
+  if (/^(https?:)?\/\//i.test(trimmed)) {
+    // Legacy mass solution uploads stored blob URLs without the container segment.
+    // Normalize "...blob.core.windows.net/solutions/..." to ".../questions/solutions/...".
+    const normalized = trimmed.replace(
+      /^(https?:\/\/[^/]+\.blob\.core\.windows\.net)\/solutions\//i,
+      "$1/questions/solutions/"
+    );
+    return normalized;
+  }
   if (trimmed.startsWith("data:") || trimmed.startsWith("blob:")) return trimmed;
 
   const base = process.env.NEXT_PUBLIC_API_URL || "";

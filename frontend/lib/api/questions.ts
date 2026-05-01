@@ -16,6 +16,7 @@ export interface Question {
   correctAnswer: string;
   correctLetter?: string;
   solution: string;
+  solutionImage?: string;
   quizName?: string;
   questionType?: string;
   questionImage?: string;

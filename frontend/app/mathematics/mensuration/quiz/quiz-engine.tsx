@@ -107,6 +107,15 @@ function toMensurationQuestion(question: ApiQuestion, index: number): Mensuratio
   const answer = /^[a-z]$/i.test(rawAnswer)
     ? options[correctAnswer] ?? ""
     : rawAnswer || (options[correctAnswer] ?? "");
+  const solutionText = String(question.solution ?? "").trim();
+  const solutionImageMarkdown = question.solutionImage
+    ? `![solution](${question.solutionImage})`
+    : "";
+  const solution = solutionText
+    ? /!\[[^\]]*\]\([^)]+\)/.test(solutionText) || !solutionImageMarkdown
+      ? solutionText
+      : `${solutionText}\n\n${solutionImageMarkdown}`
+    : solutionImageMarkdown;
 
   return {
     id,
@@ -120,7 +129,7 @@ function toMensurationQuestion(question: ApiQuestion, index: number): Mensuratio
     estimatedTime: difficulty === "easy" ? 40 : difficulty === "hard" ? 80 : 60,
     year: extractYear(exam),
     exam,
-    solution: String(question.solution ?? ""),
+    solution,
     questionType: question.questionType,
     questionImage: question.questionImage,
     optionRegions: question.optionRegions,

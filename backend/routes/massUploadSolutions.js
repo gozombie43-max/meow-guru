@@ -44,7 +44,17 @@ async function uploadSolutionToAzure(buffer, questionId) {
     blobHTTPHeaders: { blobContentType: "image/webp" },
   });
   const cdnBase = process.env.AZURE_CDN_URL.replace(/\/$/, "");
-  return `${cdnBase}/${blobName}`;
+  return `${cdnBase}/${containerClient.containerName}/${blobName}`;
+}
+
+function mergeSolutionContent(existingSolution, solutionImage) {
+  const imageMarkdown = `![solution](${solutionImage})`;
+  const textOnly = String(existingSolution || "")
+    .replace(/\s*!\[[^\]]*\]\([^)]+\)\s*/g, "\n\n")
+    .trim();
+
+  if (!textOnly) return imageMarkdown;
+  return `${textOnly}\n\n${imageMarkdown}`;
 }
 
 /**
@@ -66,7 +76,11 @@ async function patchSolutionImage(questionId, solutionImage) {
   }
 
   const doc = resources[0];
-  const updatedDoc = { ...doc, solutionImage };
+  const updatedDoc = {
+    ...doc,
+    solutionImage,
+    solution: mergeSolutionContent(doc.solution, solutionImage),
+  };
 
   await container.items.upsert(updatedDoc);
   return updatedDoc;
