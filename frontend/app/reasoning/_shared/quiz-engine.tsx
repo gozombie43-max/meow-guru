@@ -3,7 +3,6 @@
 import MathRenderer from "@/components/MathRenderer";
 import MathText from "@/components/MathText";
 import RichContent from "@/components/RichContent";
-import Image from "next/image";
 
 import React, {
   useState,
@@ -558,6 +557,16 @@ function toReasoningQuestion(
   const answer = /^[a-z]$/i.test(rawAnswer)
     ? options[correctAnswer] ?? ""
     : rawAnswer || (options[correctAnswer] ?? "");
+  const questionText = String(question.question ?? "").trim();
+  const questionImageMarkdown =
+    question.questionType !== "image_mcq" && question.questionImage
+      ? `![question](${question.questionImage})`
+      : "";
+  const questionContent = questionText
+    ? /!\[[^\]]*\]\([^)]+\)/.test(questionText) || !questionImageMarkdown
+      ? questionText
+      : `${questionText}\n\n${questionImageMarkdown}`
+    : questionImageMarkdown;
   const solutionText = String(question.solution ?? "").trim();
   const solutionImageMarkdown = question.solutionImage
     ? `![solution](${question.solutionImage})`
@@ -572,7 +581,7 @@ function toReasoningQuestion(
     id,
     concept,
     formula: "",
-    question: String(question.question ?? ""),
+    question: questionContent,
     options,
     correctAnswer,
     answer,
@@ -1942,7 +1951,6 @@ export default function ReasoningQuizEngine({
   const currentQ = questions[currentIndex] as ReasoningQuestion | undefined;
   const isLongQuestion = (currentQ?.question?.length ?? 0) > 180;
   const hasQuestionText = Boolean(currentQ?.question?.trim());
-  const hasQuestionImage = Boolean(currentQ?.questionImage);
 
   const renderQuestionLine = useCallback((line: string) => {
     const chunks = line.split(/'([^']+)'/g);
@@ -3205,7 +3213,7 @@ export default function ReasoningQuizEngine({
                       fontWeight: 500,
                       color: "var(--quiz-text)",
                       lineHeight: 1.75,
-                      marginBottom: hasQuestionImage ? 18 : 28,
+                      marginBottom: 28,
                       letterSpacing: 0.015,
                       fontFamily: "'Poppins', 'SF Pro Text', 'Segoe UI', sans-serif",
                       paddingLeft: "0.3cm",
@@ -3217,31 +3225,6 @@ export default function ReasoningQuizEngine({
                       className="leading-relaxed"
                       renderText={renderQuestionLine}
                     />
-                  </div>
-                )}
-
-                {hasQuestionImage && currentQ.questionImage && (
-                  <div className="mt-3 sm:mt-4">
-                    <div
-                      className="overflow-hidden rounded-xl border"
-                      style={{
-                        borderColor: "var(--quiz-border)",
-                        background: "var(--quiz-surface-muted)",
-                      }}
-                    >
-                      <Image
-                        src={currentQ.questionImage}
-                        alt="Question"
-                        width={720}
-                        height={480}
-                        sizes="(max-width: 768px) 100vw, 720px"
-                        className="h-auto w-full object-contain"
-                        loading="eager"
-                        fetchPriority="high"
-                        decoding="async"
-                        unoptimized
-                      />
-                    </div>
                   </div>
                 )}
               </motion.div>

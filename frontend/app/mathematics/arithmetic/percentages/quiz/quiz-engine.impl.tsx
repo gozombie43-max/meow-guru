@@ -192,6 +192,16 @@ function toPercentageQuestion(question: ApiQuestion, index: number): PercentageQ
   const answer = /^[a-z]$/i.test(rawAnswer)
     ? options[correctAnswer] ?? ""
     : rawAnswer || (options[correctAnswer] ?? "");
+  const questionText = String(question.question ?? "").trim();
+  const questionImageMarkdown =
+    question.questionType !== "image_mcq" && question.questionImage
+      ? `![question](${question.questionImage})`
+      : "";
+  const questionContent = questionText
+    ? /!\[[^\]]*\]\([^)]+\)/.test(questionText) || !questionImageMarkdown
+      ? questionText
+      : `${questionText}\n\n${questionImageMarkdown}`
+    : questionImageMarkdown;
   const solutionText = String(question.solution ?? "").trim();
   const solutionImageMarkdown = question.solutionImage
     ? `![solution](${question.solutionImage})`
@@ -206,7 +216,7 @@ function toPercentageQuestion(question: ApiQuestion, index: number): PercentageQ
     id,
     concept,
     formula: "",
-    question: String(question.question ?? ""),
+    question: questionContent,
     solution,
     options,
     correctAnswer,

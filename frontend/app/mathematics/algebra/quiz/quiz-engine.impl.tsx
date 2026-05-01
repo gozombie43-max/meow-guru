@@ -194,6 +194,16 @@ function toAlgebraQuestion(question: ApiQuestion, index: number): AlgebraQuestio
   const answer = /^[a-z]$/i.test(rawAnswer)
     ? options[correctAnswer] ?? ""
     : rawAnswer || (options[correctAnswer] ?? "");
+  const questionText = String(question.question ?? "").trim();
+  const questionImageMarkdown =
+    question.questionType !== "image_mcq" && question.questionImage
+      ? `![question](${question.questionImage})`
+      : "";
+  const questionContent = questionText
+    ? /!\[[^\]]*\]\([^)]+\)/.test(questionText) || !questionImageMarkdown
+      ? questionText
+      : `${questionText}\n\n${questionImageMarkdown}`
+    : questionImageMarkdown;
   const solutionText = String(question.solution ?? "").trim();
   const solutionImageMarkdown = question.solutionImage
     ? `![solution](${question.solutionImage})`
@@ -208,7 +218,7 @@ function toAlgebraQuestion(question: ApiQuestion, index: number): AlgebraQuestio
     id,
     concept,
     formula: String(question.formula ?? ""),
-    question: String(question.question ?? ""),
+    question: questionContent,
     options,
     correctAnswer,
     answer,
@@ -2187,13 +2197,6 @@ export default function QuizEngine() {
             
             <div className="text-[17px] font-normal leading-relaxed text-slate-800" style={{ paddingLeft: 40 }}>
               <RichContent text={currentQ.question} className="leading-relaxed" />
-              {currentQ.questionImage && (
-                <img
-                  src={currentQ.questionImage}
-                  alt={`Question ${currentIndex + 1}`}
-                  className="mt-4 w-full rounded-2xl border border-slate-200"
-                />
-              )}
             </div>
           </motion.div>
         </section>
