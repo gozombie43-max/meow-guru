@@ -22,6 +22,7 @@ type Question = {
   concept: string;
   source: string;
   solution: string;
+  solutionImage?: string;
   questionType?: string;
   questionImage?: string;
 };
@@ -1099,7 +1100,7 @@ export default function AdminPanel() {
                         whiteSpace: "nowrap",
                       }}
                     >
-                      {solImgUploading === q.id ? "Uploading..." : `${q.solution?.includes("![solution](") ? "✓ " : ""}Sol. Image`}
+                      {solImgUploading === q.id ? "Uploading..." : `${(q.solutionImage || q.solution?.includes("![solution](")) ? "✓ " : ""}Sol. Image`}
                     </button>
                   </>
                   {(q.subject === "reasoning" || q.topic === "visual_reasoning") && q.questionImage && (
