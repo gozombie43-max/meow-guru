@@ -1,6 +1,15 @@
 import { fetchWithRetry } from "./http";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "";
+const QUESTION_CACHE_TTL_MS = 2 * 60 * 1000;
+
+type CachedQuestionsEntry = {
+  expiresAt: number;
+  promise?: Promise<Question[]>;
+  value?: Question[];
+};
+
+const questionsCache = new Map<string, CachedQuestionsEntry>();
 
 export interface Question {
   id: string;
@@ -31,6 +40,7 @@ export async function fetchQuestions(params: {
   quizName?: string;
   limit?: number;
   offset?: number;
+  useCache?: boolean;
 }): Promise<Question[]> {
   const query = new URLSearchParams();
   if (params.topic)      query.set('topic',      params.topic);
@@ -39,11 +49,50 @@ export async function fetchQuestions(params: {
   if (params.quizName)   query.set('quizName',   params.quizName);
   if (params.limit !== undefined)  query.set('limit',  String(params.limit));
   if (params.offset !== undefined) query.set('offset', String(params.offset));
+  const cacheKey = query.toString();
+  const useCache = params.useCache !== false;
+  const now = Date.now();
+  const cached = useCache ? questionsCache.get(cacheKey) : undefined;
 
-  const res = await fetchWithRetry(`${API}/api/questions?${query}`, { cache: "no-store" });
-  if (!res.ok) throw new Error('Failed to fetch questions');
-  const data = await res.json();
-  return data.questions;
+  if (cached && cached.value && cached.expiresAt > now) {
+    return cached.value;
+  }
+
+  if (cached?.promise && cached.expiresAt > now) {
+    return cached.promise;
+  }
+
+  const request = (async () => {
+    const res = await fetchWithRetry(`${API}/api/questions?${query}`, { cache: "no-store" });
+    if (!res.ok) throw new Error('Failed to fetch questions');
+    const data = await res.json();
+    const value = data.questions as Question[];
+
+    if (useCache) {
+      questionsCache.set(cacheKey, {
+        value,
+        expiresAt: Date.now() + QUESTION_CACHE_TTL_MS,
+      });
+    }
+
+    return value;
+  })();
+
+  if (useCache) {
+    questionsCache.set(cacheKey, {
+      promise: request,
+      expiresAt: now + QUESTION_CACHE_TTL_MS,
+    });
+  }
+
+  try {
+    return await request;
+  } catch (error) {
+    if (useCache) {
+      questionsCache.delete(cacheKey);
+    }
+    throw error;
+  }
 }
 
 // Fetch random questions for practice test

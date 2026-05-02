@@ -30,7 +30,12 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { saveRecentQuiz, updateProgress, toggleBookmark } from "@/lib/userApi";
 import { fetchQuestions, type Question as ApiQuestion } from "@/lib/api/questions";
-import { shuffle, type TrigonometryQuestion, TRIG_CONCEPTS } from "@/lib/trigonometry-questions";
+import {
+  buildQuizIndex,
+  normalizeExamLabel,
+  resolveIndexedQuestions,
+} from "@/lib/quiz-index";
+import { type TrigonometryQuestion, TRIG_CONCEPTS } from "@/lib/trigonometry-questions";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 type QuizMode = "concept" | "formula" | "mixed" | "ai-challenge" | "easy" | "hard";
@@ -1051,70 +1056,44 @@ export default function TrigQuizEngine() {
   const [conceptFilter, setConceptFilter] = useState<string>("all");
   const [examFilter, setExamFilter] = useState<string>("");
 
-  function normalizeExamName(exam: string): string {
-    const normalized = (exam ?? "").trim();
-    const upper = normalized.toUpperCase();
-
-    if (upper.includes("SSC CGL") && upper.includes("TIER II")) return "SSC CGL Tier II";
-    if (upper.includes("SSC CGL")) return "SSC CGL";
-    if (upper.includes("SSC CHSL") && upper.includes("TIER II")) return "SSC CHSL Tier II";
-    if (upper.includes("SSC CHSL")) return "SSC CHSL";
-    if (upper.includes("SSC CPO")) return "SSC CPO";
-    if (upper.includes("GRADUATE LEVEL")) return "Graduate Level";
-    if (upper.includes("HIGHER SECONDARY")) return "Higher Secondary";
-    if (upper.includes("LECTURER")) return "Lecturer";
-    if (upper.includes("POLICE")) return "Police";
-    if (upper.includes("RAILWAY")) return "Railway";
-
-    const collapsed = normalized
-      .replace(/\b(?:\d{1,4}|\d{1,2}TH|\d{1,2}ND|\d{1,2}ST|\d{1,2}RD|SHIFT|SESSION|SET|PAPER|SLOT|AFTERNOON|MORNING|EVENING|TIER\s*I+|LEVEL)\b/gi, "")
-      .replace(/[\(\)\[\],\/\-]+/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
-
-    return collapsed;
-  }
+  const questionIndex = useMemo(
+    () =>
+      buildQuizIndex(allQuestions, {
+        getBucket: (question) => {
+          if (isFormulaQuestion(question)) return "formula";
+          if (isAiChallengeQuestion(question)) return "ai-challenge";
+          if (isTier2Question(question)) return "hard";
+          if (isTopicMixQuestion(question)) return "easy";
+          if (isMixedQuestion(question)) return "mixed";
+          return "concept";
+        },
+        getConcept: (question) => question.concept,
+        getExam: (question) => question.exam,
+        compare: (a, b) => a.id - b.id,
+      }),
+    [allQuestions]
+  );
 
   const examOptions = useMemo(() => {
     const set = new Set<string>();
     allQuestions.forEach((q) => {
-      const exam = normalizeExamName((q.exam ?? "").trim());
+      const exam = normalizeExamLabel((q.exam ?? "").trim());
       if (exam) set.add(exam);
     });
     return ["all", ...Array.from(set).sort((a, b) => a.localeCompare(b))];
   }, [allQuestions]);
 
-  const availableCount = useMemo(() => {
-    let pool: TrigonometryQuestionRecord[];
+  const filteredQuestions = useMemo(
+    () =>
+      resolveIndexedQuestions(questionIndex, {
+        bucket: mode,
+        concept: mode === "concept" ? conceptFilter : "all",
+        exam: examFilter,
+      }),
+    [questionIndex, mode, conceptFilter, examFilter]
+  );
 
-    if (mode === "concept") {
-      pool =
-        conceptFilter === "all"
-          ? allQuestions.filter((q) => !isTaggedModeQuestion(q))
-          : allQuestions.filter(
-              (q) => q.concept === conceptFilter && !isTaggedModeQuestion(q)
-            );
-    } else if (mode === "formula") {
-      pool = allQuestions.filter((q) => isFormulaQuestion(q));
-    } else if (mode === "ai-challenge") {
-      pool = allQuestions.filter((q) => isAiChallengeQuestion(q));
-    } else if (mode === "hard") {
-      pool = allQuestions.filter((q) => isTier2Question(q));
-    } else if (mode === "easy") {
-      pool = allQuestions.filter((q) => isTopicMixQuestion(q));
-    } else {
-      pool = allQuestions.filter((q) => isMixedQuestion(q));
-    }
-
-    if (examFilter.trim() !== "") {
-      const examQuery = examFilter.trim().toLowerCase();
-      pool = pool.filter((q) =>
-        normalizeExamName((q.exam ?? "").trim()).toLowerCase().includes(examQuery)
-      );
-    }
-
-    return pool.length;
-  }, [allQuestions, mode, conceptFilter, examFilter]);
+  const availableCount = filteredQuestions.length;
 
   const [started, setStarted] = useState(false);
   const [submitError, setSubmitError] = useState("");
@@ -1213,44 +1192,7 @@ export default function TrigQuizEngine() {
       return;
     }
 
-    let pool: TrigonometryQuestionRecord[];
-
-    switch (mode) {
-      case "concept":
-        pool =
-          conceptFilter === "all"
-            ? allQuestions.filter((q) => !isTaggedModeQuestion(q))
-            : allQuestions.filter(
-                (q) => q.concept === conceptFilter && !isTaggedModeQuestion(q)
-              );
-        break;
-      case "formula":
-        pool = allQuestions.filter((q) => isFormulaQuestion(q));
-        break;
-      case "ai-challenge":
-        pool = allQuestions.filter((q) => isAiChallengeQuestion(q));
-        break;
-      case "hard":
-        pool = allQuestions.filter((q) => isTier2Question(q));
-        break;
-      case "easy":
-        pool = allQuestions.filter((q) => isTopicMixQuestion(q));
-        break;
-      case "mixed":
-      default:
-        pool = shuffle(allQuestions.filter((q) => isMixedQuestion(q)));
-        break;
-    }
-
-    if (examFilter.trim() !== "") {
-      const examQuery = examFilter.trim().toLowerCase();
-      pool = pool.filter((q) => {
-        const norm = normalizeExamName((q.exam ?? "").trim()).toLowerCase();
-        return norm.includes(examQuery);
-      });
-    }
-
-    const nextQuestions = [...pool].sort((a, b) => a.id - b.id);
+    const nextQuestions = [...filteredQuestions];
     setQuestions(nextQuestions);
     setCurrentIndex(0);
     setSelectedAnswer(null);
@@ -1265,7 +1207,7 @@ export default function TrigQuizEngine() {
     setShowAnalytics(false);
     setStarted(false);
     setSubmitError("");
-  }, [allQuestions, mode, conceptFilter, examFilter]);
+  }, [allQuestions.length, filteredQuestions]);
   /* eslint-enable react-hooks/exhaustive-deps */
 
   // ── Timer ──────────────────────────────────────────────────────────────────

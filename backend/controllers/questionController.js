@@ -1,6 +1,9 @@
 // controllers/questionController.js
 import { getQuestionsContainer } from '../containerStore.js';
 
+const QUESTIONS_QUERY_CACHE_TTL_MS = 60 * 1000;
+const questionsQueryCache = new Map();
+
 // ── Helpers (kept from your original) ─────────────────
 function buildRichText(textValue, imagePath) {
   const text  = (textValue  || '').trim();
@@ -44,12 +47,24 @@ function matchesNormalizedTopic(question, normalizedTopic) {
   return candidates.some((field) => normalizeSearchKey(field) === normalizedTopic);
 }
 
-async function fetchAllQueryResults(container, query, parameters) {
+function buildQuestionsCacheKey(parameters) {
+  return JSON.stringify(parameters.map((entry) => [entry.name, entry.value]));
+}
+
+async function fetchAllQueryResults(container, query, parameters, options = {}) {
   const iterator = container.items.query(
     { query, parameters },
-    { maxItemCount: 1000, enableCrossPartition: true }
+    {
+      maxItemCount: 1000,
+      enableCrossPartition: options.partitionKey ? undefined : true,
+      ...(options.partitionKey ? { partitionKey: options.partitionKey } : {}),
+    }
   );
-  const { resources } = await iterator.fetchAll({ maxItemCount: 1000, enableCrossPartition: true });
+  const { resources } = await iterator.fetchAll({
+    maxItemCount: 1000,
+    enableCrossPartition: options.partitionKey ? undefined : true,
+    ...(options.partitionKey ? { partitionKey: options.partitionKey } : {}),
+  });
   return resources;
 }
 
@@ -162,13 +177,16 @@ const getQuestions = async (req, res) => {
     const container = getQuestionsContainer();
     const { topic, subject, chapter, concept, difficulty, quizName, offset = 0, limit } = req.query;
     const normalizedTopic = topic ? normalizeSearchKey(topic) : null;
+    const queryMode = topic ? 'topic' : subject ? 'subject' : 'global';
 
     let query = 'SELECT * FROM c WHERE 1=1';
     const parameters = [];
+    let partitionKey;
 
     if (topic) {
-      query += ' AND (LOWER(c.topic) = LOWER(@topic) OR LOWER(c.chapter) = LOWER(@topic) OR LOWER(c.subject) = LOWER(@topic) OR LOWER(c.quizTopic) = LOWER(@topic) OR LOWER(c.quizName) = LOWER(@topic) OR LOWER(c.source) = LOWER(@topic))';
+      query += ' AND c.topic = @topic';
       parameters.push({ name: '@topic', value: topic });
+      partitionKey = topic;
     } else if (subject) {
       query += ' AND LOWER(c.subject) = LOWER(@subject)';
       parameters.push({ name: '@subject', value: subject });
@@ -213,9 +231,33 @@ const getQuestions = async (req, res) => {
       query += ` OFFSET ${parsedOffset} LIMIT 99999`;
     }
 
-    let resources = await fetchAllQueryResults(container, query, parameters);
-    if (normalizedTopic) {
-      resources = resources.filter((q) => matchesNormalizedTopic(q, normalizedTopic));
+    const cacheable =
+      parsedOffset === 0 &&
+      (parsedLimit === null || parsedLimit > 0) &&
+      (queryMode === 'topic' || queryMode === 'subject');
+    const cacheKey = cacheable ? `${queryMode}:${buildQuestionsCacheKey(parameters)}` : null;
+    const cached = cacheKey ? questionsQueryCache.get(cacheKey) : null;
+
+    let resources = cached && cached.expiresAt > Date.now() ? cached.value : null;
+
+    if (!resources) {
+      resources = await fetchAllQueryResults(container, query, parameters, { partitionKey });
+
+      if (topic && resources.length === 0) {
+        const fallbackQuery = query.replace(' AND c.topic = @topic', ' AND (LOWER(c.topic) = LOWER(@topic) OR LOWER(c.chapter) = LOWER(@topic) OR LOWER(c.subject) = LOWER(@topic) OR LOWER(c.quizTopic) = LOWER(@topic) OR LOWER(c.quizName) = LOWER(@topic) OR LOWER(c.source) = LOWER(@topic))');
+        resources = await fetchAllQueryResults(container, fallbackQuery, parameters);
+      }
+
+      if (normalizedTopic && queryMode === 'topic') {
+        resources = resources.filter((q) => matchesNormalizedTopic(q, normalizedTopic));
+      }
+
+      if (cacheKey) {
+        questionsQueryCache.set(cacheKey, {
+          value: resources,
+          expiresAt: Date.now() + QUESTIONS_QUERY_CACHE_TTL_MS,
+        });
+      }
     }
 
     res.set("Cache-Control", "no-store, max-age=0");
