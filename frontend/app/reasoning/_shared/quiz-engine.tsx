@@ -558,10 +558,9 @@ function toReasoningQuestion(
     ? options[correctAnswer] ?? ""
     : rawAnswer || (options[correctAnswer] ?? "");
   const questionText = String(question.question ?? "").trim();
-  const questionImageMarkdown =
-    question.questionType !== "image_mcq" && question.questionImage
-      ? `![question](${question.questionImage})`
-      : "";
+  const questionImageMarkdown = question.questionImage
+    ? `![question](${question.questionImage})`
+    : "";
   const questionContent = questionText
     ? /!\[[^\]]*\]\([^)]+\)/.test(questionText) || !questionImageMarkdown
       ? questionText
