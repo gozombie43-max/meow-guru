@@ -32,9 +32,19 @@ export default function Navbar() {
               </Link>
               <button
                 onClick={handleLogout}
-                className="text-sm font-medium text-red-500 hover:text-red-700 transition"
+                className="h-9 w-9 overflow-hidden rounded-full border-2 border-white/70 bg-indigo-100 text-sm font-bold text-indigo-700 shadow-sm transition hover:border-indigo-300"
+                aria-label="Logout"
+                title="Logout"
               >
-                Logout
+                {user.avatar ? (
+                  <span
+                    aria-hidden="true"
+                    className="block h-full w-full bg-cover bg-center bg-no-repeat"
+                    style={{ backgroundImage: `url("${user.avatar}")` }}
+                  />
+                ) : (
+                  user.name.charAt(0).toUpperCase()
+                )}
               </button>
             </>
           ) : (

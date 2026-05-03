@@ -57,6 +57,7 @@ export const initPassport = (container) => {
           .fetchAll();
 
         let user = resources[0];
+        const googleAvatar = profile.photos?.[0]?.value || '';
 
         // Create if new
         if (!user) {
@@ -66,7 +67,7 @@ export const initPassport = (container) => {
             email,
             authProvider: 'google',
             googleId:     profile.id,
-            avatar:       profile.photos?.[0]?.value || '',
+            avatar:       googleAvatar,
             progress:     {},
             bookmarks:    [],
             bookmarkEntries: [],
@@ -74,6 +75,18 @@ export const initPassport = (container) => {
             createdAt:    new Date().toISOString(),
           };
           await usersContainer.items.create(user);
+        } else if (
+          user.avatar !== googleAvatar ||
+          user.googleId !== profile.id ||
+          !user.name
+        ) {
+          user = {
+            ...user,
+            name: user.name || profile.displayName,
+            googleId: user.googleId || profile.id,
+            avatar: googleAvatar || user.avatar || '',
+          };
+          await usersContainer.items.upsert(user);
         }
 
         return done(null, user);

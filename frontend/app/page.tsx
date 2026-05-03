@@ -231,6 +231,37 @@ export default function Home() {
           transform: translateY(-1px);
           box-shadow: 0 14px 28px rgba(14, 165, 233, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.6);
         }
+        .profile-avatar-button {
+          width: 36px;
+          height: 36px;
+          border-radius: 999px;
+          border: 2px solid rgba(255, 255, 255, 0.72);
+          background: rgba(255, 255, 255, 0.14);
+          box-shadow: 0 8px 18px rgba(2, 8, 18, 0.26), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+          overflow: hidden;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          color: #e7f7ff;
+          font-size: 0.86rem;
+          font-weight: 800;
+          line-height: 1;
+          flex: 0 0 auto;
+          transition: transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+        }
+        .profile-avatar-button:hover {
+          transform: translateY(-1px);
+          border-color: #7dd3fc;
+          box-shadow: 0 10px 22px rgba(14, 165, 233, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.32);
+        }
+        .profile-avatar {
+          width: 100%;
+          height: 100%;
+          display: block;
+          background-position: center;
+          background-size: cover;
+          background-repeat: no-repeat;
+        }
         .hero-section {
           position: relative;
           overflow: clip;
@@ -571,6 +602,7 @@ export default function Home() {
           .hero-actions { flex-direction: column; align-items: center; }
           .hero-btn { width: min(86vw, 320px); }
           .auth-pill { padding: 6px 12px; font-size: 0.8rem; }
+          .profile-avatar-button { width: 32px; height: 32px; font-size: 0.76rem; }
           .nav-brand { font-size: 1rem; }
           .guru-neon { letter-spacing: 0.05em; font-size: 1.5rem; }
           .guru-neon::before { text-shadow: -1px -1px 3px rgba(255,255,255,0.9); }
@@ -782,9 +814,19 @@ export default function Home() {
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="text-sm font-semibold text-red-200 hover:text-red-400 transition"
+                  className="profile-avatar-button"
+                  aria-label="Logout"
+                  title="Logout"
                 >
-                  Logout
+                  {user.avatar ? (
+                    <span
+                      aria-hidden="true"
+                      className="profile-avatar"
+                      style={{ backgroundImage: `url("${user.avatar}")` }}
+                    />
+                  ) : (
+                    user.name.charAt(0).toUpperCase()
+                  )}
                 </button>
               </>
             ) : (
