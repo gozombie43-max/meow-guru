@@ -26,6 +26,7 @@ import {
   ChevronRight,
   ChevronDown,
   Flame,
+  Search,
   Sun,
   Moon,
   Sparkles,
@@ -383,6 +384,68 @@ const CONCEPT_PALETTE: ConceptColour[] = [
   { border: "#14B8A6", bg: "#F0FDFA", text: "#0F766E" },
   { border: "#6B7280", bg: "#F8FAFC", text: "#475569" },
 ];
+
+const CLASSIFICATION_CATEGORY_META = [
+  {
+    id: "num",
+    label: "Number Based",
+    icon: "123",
+    accent: "#fb923c",
+    bg: "rgba(251, 146, 60, 0.1)",
+    border: "rgba(251, 146, 60, 0.28)",
+  },
+  {
+    id: "let",
+    label: "Letter Clusters",
+    icon: "ABC",
+    accent: "#2dd4a0",
+    bg: "rgba(45, 212, 160, 0.1)",
+    border: "rgba(45, 212, 160, 0.28)",
+  },
+  {
+    id: "word",
+    label: "Word Pairs",
+    icon: "Aa",
+    accent: "#d946ef",
+    bg: "rgba(217, 70, 239, 0.1)",
+    border: "rgba(217, 70, 239, 0.28)",
+  },
+  {
+    id: "sym",
+    label: "Symbolic / Figural",
+    icon: "<>",
+    accent: "#38bdf8",
+    bg: "rgba(56, 189, 248, 0.1)",
+    border: "rgba(56, 189, 248, 0.28)",
+  },
+  {
+    id: "other",
+    label: "General",
+    icon: "...",
+    accent: "#a78bfa",
+    bg: "rgba(167, 139, 250, 0.1)",
+    border: "rgba(167, 139, 250, 0.28)",
+  },
+] as const;
+
+type ClassificationCategoryId = (typeof CLASSIFICATION_CATEGORY_META)[number]["id"];
+
+function getClassificationCategoryId(concept: string): ClassificationCategoryId {
+  const normalized = concept.toLowerCase();
+  if (normalized.includes("number") || normalized.includes("digit")) return "num";
+  if (normalized.includes("letter") || normalized.includes("cluster")) return "let";
+  if (normalized.includes("word") || normalized.includes("semantic") || normalized.includes("mood")) {
+    return "word";
+  }
+  if (
+    normalized.includes("figural") ||
+    normalized.includes("figure") ||
+    normalized.includes("symbol")
+  ) {
+    return "sym";
+  }
+  return "other";
+}
 
 function normalizeMode(value: string | null): QuizMode {
   if (
@@ -1789,7 +1852,18 @@ export default function ReasoningQuizEngine({
   );
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [conceptFilter, setConceptFilter] = useState<string>("all");
+  const [selectedClassificationConcepts, setSelectedClassificationConcepts] = useState<
+    Set<string>
+  >(() => new Set());
   const [examFilter, setExamFilter] = useState<string>("");
+  const [classificationSearch, setClassificationSearch] = useState("");
+  const [classificationCategory, setClassificationCategory] = useState<"All" | string>("All");
+  const [openClassificationGroups, setOpenClassificationGroups] = useState<Set<string>>(
+    () => new Set()
+  );
+  const [expandedClassificationGroups, setExpandedClassificationGroups] = useState<
+    Record<string, boolean>
+  >({});
 
   const baseConcepts = useMemo(() => TOPIC_CONCEPTS[slug] ?? [], [slug]);
 
@@ -1835,15 +1909,51 @@ export default function ReasoningQuizEngine({
     return ["all", ...Array.from(set).sort((a, b) => a.localeCompare(b))];
   }, [allQuestions]);
 
-  const filteredQuestions = useMemo(
-    () =>
-      resolveIndexedQuestions(questionIndex, {
-        bucket: mode,
-        concept: mode === "concept" ? conceptFilter : "all",
-        exam: examFilter,
+  const classificationGroups = useMemo(() => {
+    const search = classificationSearch.trim().toLowerCase();
+    const grouped = CLASSIFICATION_CATEGORY_META.map((category) => ({
+      ...category,
+      concepts: conceptOptions.filter((concept) => {
+        if (getClassificationCategoryId(concept) !== category.id) return false;
+        if (classificationCategory !== "All" && classificationCategory !== category.label) {
+          return false;
+        }
+        return !search || concept.toLowerCase().includes(search);
       }),
-    [questionIndex, mode, conceptFilter, examFilter]
-  );
+    })).filter((category) => category.concepts.length > 0);
+
+    return grouped;
+  }, [classificationCategory, classificationSearch, conceptOptions]);
+
+  const isClassificationConceptMode =
+    slug === "classification-odd-one-out" && mode === "concept";
+
+  const filteredQuestions = useMemo(() => {
+    if (isClassificationConceptMode) {
+      const selected = selectedClassificationConcepts;
+      const baseQuestions = resolveIndexedQuestions(questionIndex, {
+        bucket: mode,
+        concept: "all",
+        exam: examFilter,
+      });
+
+      if (selected.size === 0) return baseQuestions;
+      return baseQuestions.filter((question) => selected.has(question.concept));
+    }
+
+    return resolveIndexedQuestions(questionIndex, {
+      bucket: mode,
+      concept: mode === "concept" ? conceptFilter : "all",
+      exam: examFilter,
+    });
+  }, [
+    questionIndex,
+    mode,
+    conceptFilter,
+    examFilter,
+    isClassificationConceptMode,
+    selectedClassificationConcepts,
+  ]);
 
   const availableCount = filteredQuestions.length;
 
@@ -1894,6 +2004,7 @@ export default function ReasoningQuizEngine({
 
   useEffect(() => {
     setConceptFilter("all");
+    setSelectedClassificationConcepts(new Set());
     setExamFilter("");
   }, [slug]);
 
@@ -2687,7 +2798,834 @@ export default function ReasoningQuizEngine({
     );
   }
 
+  const isClassificationConceptStart = isClassificationConceptMode;
+  const selectedConceptCount = selectedClassificationConcepts.size;
+  const visibleClassificationConceptCount = classificationGroups.reduce(
+    (total, category) => total + category.concepts.length,
+    0
+  );
+  const classificationCoverage =
+    selectedConceptCount === 0
+      ? 100
+      : Math.max(8, Math.min(100, Math.round((selectedConceptCount / conceptOptions.length) * 100)));
+  const allClassificationConceptsSelected =
+    selectedClassificationConcepts.size === conceptOptions.length && conceptOptions.length > 0;
+
   if (!started) {
+    if (isClassificationConceptStart) {
+      return (
+        <div
+          className="reasoning-quiz classification-concept-start quiz-start min-h-screen relative overflow-hidden"
+          data-theme="light"
+        >
+          {themeStyles}
+          <div className="concept-orb concept-orb-a" />
+          <div className="concept-orb concept-orb-b" />
+          <div className="concept-orb concept-orb-c" />
+
+          <div className="concept-wrap">
+            <div className="concept-theme-row">
+              <ThemeToggle />
+            </div>
+
+            <header className="concept-hdr">
+              <div className="concept-pill">
+                <span className="concept-dot" />
+                {title}
+              </div>
+              <h1>{MODE_LABELS[mode]}</h1>
+              <p>Pick concepts - build your quiz</p>
+            </header>
+
+            <div className="concept-search-wrap">
+              <label className="concept-search-box">
+                <Search className="concept-search-icon" aria-hidden="true" />
+                <input
+                  value={classificationSearch}
+                  onChange={(event) => setClassificationSearch(event.target.value)}
+                  placeholder="Search concepts..."
+                  type="search"
+                />
+                {classificationSearch && (
+                  <button
+                    type="button"
+                    onClick={() => setClassificationSearch("")}
+                    aria-label="Clear search"
+                  >
+                    <X className="h-3.5 w-3.5" aria-hidden="true" />
+                  </button>
+                )}
+              </label>
+            </div>
+
+            <div className="concept-filter-strip" aria-label="Concept category filters">
+              {[
+                {
+                  label: "All",
+                  accent: "var(--concept-acc)",
+                  count: conceptOptions.length,
+                },
+                ...CLASSIFICATION_CATEGORY_META.map((category) => ({
+                  label: category.label,
+                  accent: category.accent,
+                  count: conceptOptions.filter(
+                    (concept) => getClassificationCategoryId(concept) === category.id
+                  ).length,
+                })).filter((category) => category.count > 0),
+              ].map((item) => {
+                const isActive = classificationCategory === item.label;
+                return (
+                  <button
+                    key={item.label}
+                    type="button"
+                    onClick={() => setClassificationCategory(item.label)}
+                    className={isActive ? "active" : ""}
+                  >
+                    <span style={{ background: item.accent }} />
+                    {item.label}
+                    <strong>{item.count}</strong>
+                  </button>
+                );
+              })}
+            </div>
+
+            {selectedConceptCount > 0 && (
+              <div className="concept-selected-bar">
+                <div>
+                  <span>{selectedConceptCount}</span>
+                  {selectedConceptCount === 1 ? "concept selected" : "concepts selected"}
+                </div>
+                <span className="concept-selected-actions">
+                  {!allClassificationConceptsSelected && (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedClassificationConcepts(new Set(conceptOptions))}
+                    >
+                      Select all
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedClassificationConcepts(new Set())}
+                  >
+                    Clear all
+                  </button>
+                </span>
+              </div>
+            )}
+
+            <div className="concept-stats">
+              <div>
+                <strong>{conceptOptions.length}</strong>
+                <span>Concepts</span>
+              </div>
+              <div>
+                <strong>{selectedConceptCount}</strong>
+                <span>Selected</span>
+              </div>
+              <div>
+                <strong>{availableCount}</strong>
+                <span>Questions</span>
+              </div>
+            </div>
+
+            <div className="concept-groups">
+              {classificationGroups.map((category) => {
+                const isOpen = openClassificationGroups.has(category.id);
+                const selectedInGroup = category.concepts.filter(
+                  (concept) => selectedClassificationConcepts.has(concept)
+                ).length;
+                const allInGroupSelected = selectedInGroup === category.concepts.length;
+                const someInGroupSelected = selectedInGroup > 0 && !allInGroupSelected;
+                const showAll = expandedClassificationGroups[category.id] || Boolean(classificationSearch);
+                const shownConcepts = showAll ? category.concepts : category.concepts.slice(0, 10);
+                return (
+                  <section
+                    key={category.id}
+                    className={`concept-group-card${selectedInGroup > 0 ? " selected" : ""}`}
+                  >
+                    <div className="concept-group-head">
+                      <button
+                        type="button"
+                        className={`concept-group-select${
+                          allInGroupSelected ? " checked" : someInGroupSelected ? " partial" : ""
+                        }`}
+                        onClick={() => {
+                          setSelectedClassificationConcepts((previous) => {
+                            const next = new Set(previous);
+                            if (allInGroupSelected) {
+                              category.concepts.forEach((concept) => next.delete(concept));
+                            } else {
+                              category.concepts.forEach((concept) => next.add(concept));
+                            }
+                            return next;
+                          });
+                        }}
+                        aria-label={`Select ${category.label}`}
+                        aria-pressed={allInGroupSelected}
+                      >
+                        {allInGroupSelected ? "All" : someInGroupSelected ? "-" : ""}
+                      </button>
+                      <span
+                        className="concept-group-icon"
+                        style={{
+                          background: category.bg,
+                          borderColor: category.border,
+                          color: category.accent,
+                        }}
+                      >
+                        {category.icon}
+                      </span>
+                      <span className="concept-group-meta">
+                        <strong>{category.label}</strong>
+                        <span>
+                          <em
+                            style={{
+                              background: category.bg,
+                              borderColor: category.border,
+                              color: category.accent,
+                            }}
+                          >
+                            {category.concepts.length} concepts
+                          </em>
+                          {selectedInGroup > 0 && <b>{selectedInGroup} selected</b>}
+                        </span>
+                      </span>
+                      <button
+                        type="button"
+                        className={`concept-group-toggle${isOpen ? " open" : ""}`}
+                        onClick={() => {
+                          setOpenClassificationGroups((previous) => {
+                            const next = new Set(previous);
+                            if (next.has(category.id)) next.delete(category.id);
+                            else next.add(category.id);
+                            return next;
+                          });
+                        }}
+                        aria-label={isOpen ? `Collapse ${category.label}` : `Expand ${category.label}`}
+                      >
+                        <ChevronDown className={isOpen ? "open" : ""} aria-hidden="true" />
+                      </button>
+                    </div>
+
+                    {isOpen && (
+                      <div className="concept-tags">
+                        {shownConcepts.map((concept) => {
+                          const active = selectedClassificationConcepts.has(concept);
+                          return (
+                            <button
+                              key={concept}
+                              type="button"
+                              onClick={() => {
+                                setSelectedClassificationConcepts((previous) => {
+                                  const next = new Set(previous);
+                                  if (next.has(concept)) next.delete(concept);
+                                  else next.add(concept);
+                                  return next;
+                                });
+                              }}
+                              className={active ? "active" : ""}
+                              style={{
+                                color: category.accent,
+                                borderColor: category.border,
+                                background: active ? category.bg : "transparent",
+                              }}
+                            >
+                              {concept}
+                            </button>
+                          );
+                        })}
+                        {category.concepts.length > 10 && !classificationSearch && (
+                          <button
+                            type="button"
+                            className="concept-more"
+                            onClick={() =>
+                              setExpandedClassificationGroups((previous) => ({
+                                ...previous,
+                                [category.id]: !previous[category.id],
+                              }))
+                            }
+                          >
+                            {expandedClassificationGroups[category.id]
+                              ? "Show less"
+                              : `Show ${category.concepts.length - 10} more`}
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </section>
+                );
+              })}
+            </div>
+
+            {visibleClassificationConceptCount === 0 && (
+              <div className="concept-empty">
+                <Search className="mx-auto mb-3 h-8 w-8" aria-hidden="true" />
+                No concepts match &quot;{classificationSearch}&quot;
+              </div>
+            )}
+          </div>
+
+          <div className="concept-sticky">
+            <div className="concept-sticky-top">
+              <div>
+                <strong>{availableCount} questions</strong>
+                <span>ready to quiz</span>
+              </div>
+              <select
+                value={examFilter || "all"}
+                onChange={(event) =>
+                  setExamFilter(event.target.value === "all" ? "" : event.target.value)
+                }
+              >
+                {examOptions.map((exam) => (
+                  <option key={exam} value={exam === "all" ? "all" : exam}>
+                    {exam === "all" ? "All exams" : exam}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="concept-progress-label">
+              <span>Coverage</span>
+              <span>
+                {selectedConceptCount === 0
+                  ? "All topics"
+                  : `${selectedConceptCount} / ${conceptOptions.length} concepts`}
+              </span>
+            </div>
+            <div className="concept-progress">
+              <span style={{ width: `${classificationCoverage}%` }} />
+            </div>
+            <button type="button" onClick={handleStart} className="concept-start-btn">
+              <Sparkles className="h-4 w-4" aria-hidden="true" />
+              <span>Start Quiz</span>
+              <small>
+                - {selectedConceptCount > 0 ? `${selectedConceptCount} concept` : "all concepts"}
+              </small>
+            </button>
+          </div>
+
+          <style jsx>{`
+            .classification-concept-start {
+              --concept-bg: #f7f7ff;
+              --concept-bg2: #ffffff;
+              --concept-bg3: #f0efff;
+              --concept-surface: #ffffff;
+              --concept-border: rgba(30, 41, 59, 0.1);
+              --concept-border2: rgba(124, 110, 247, 0.22);
+              --concept-text: #211b35;
+              --concept-text2: #655d83;
+              --concept-text3: #8b83a4;
+              --concept-acc: #7c6ef7;
+              --concept-acc2: #6d5df5;
+              --concept-acc-bg: rgba(124, 110, 247, 0.1);
+              --concept-acc-bd: rgba(124, 110, 247, 0.28);
+              background: var(--concept-bg);
+              color: var(--concept-text);
+              font-family: "Sora", "Inter", "Segoe UI", sans-serif;
+              padding-bottom: 156px;
+            }
+            .classification-concept-start[data-theme="dark"] {
+              --concept-bg: #0d0b18;
+              --concept-bg2: #13101f;
+              --concept-bg3: #1c1830;
+              --concept-surface: #252040;
+              --concept-border: rgba(255, 255, 255, 0.06);
+              --concept-border2: rgba(255, 255, 255, 0.11);
+              --concept-text: #ede8ff;
+              --concept-text2: #9990bb;
+              --concept-text3: #5a5275;
+              --concept-acc: #7c6ef7;
+              --concept-acc2: #a78bfa;
+              --concept-acc-bg: rgba(124, 110, 247, 0.1);
+              --concept-acc-bd: rgba(124, 110, 247, 0.28);
+            }
+            .concept-wrap {
+              position: relative;
+              z-index: 1;
+              max-width: 480px;
+              margin: 0 auto;
+              padding: 0 14px;
+            }
+            .concept-theme-row {
+              display: flex;
+              justify-content: flex-end;
+              padding-top: 16px;
+            }
+            .concept-orb {
+              position: fixed;
+              border-radius: 999px;
+              filter: blur(90px);
+              pointer-events: none;
+              opacity: 0.12;
+            }
+            .concept-orb-a {
+              width: 280px;
+              height: 280px;
+              background: #6c5ce7;
+              top: -70px;
+              left: -60px;
+            }
+            .concept-orb-b {
+              width: 220px;
+              height: 220px;
+              background: #f97316;
+              top: 45%;
+              right: -70px;
+              opacity: 0.08;
+            }
+            .concept-orb-c {
+              width: 180px;
+              height: 180px;
+              background: #10d9a0;
+              bottom: 20%;
+              left: -40px;
+              opacity: 0.07;
+            }
+            .concept-hdr {
+              text-align: center;
+              padding: 10px 2px 14px;
+            }
+            .concept-pill {
+              display: inline-flex;
+              align-items: center;
+              gap: 6px;
+              margin-bottom: 10px;
+              border: 1px solid var(--concept-acc-bd);
+              border-radius: 999px;
+              background: var(--concept-acc-bg);
+              color: var(--concept-acc2);
+              padding: 4px 12px;
+              font-size: 9.5px;
+              font-weight: 700;
+              letter-spacing: 2.2px;
+              text-transform: uppercase;
+            }
+            .concept-dot {
+              width: 6px;
+              height: 6px;
+              border-radius: 999px;
+              background: var(--concept-acc);
+            }
+            .concept-hdr h1 {
+              margin: 0 0 3px;
+              font-size: 27px;
+              font-weight: 800;
+              letter-spacing: 0;
+              line-height: 1.15;
+              background: linear-gradient(130deg, var(--concept-text) 20%, var(--concept-acc2) 100%);
+              -webkit-background-clip: text;
+              background-clip: text;
+              color: transparent;
+            }
+            .concept-hdr p {
+              color: var(--concept-text3);
+              font-size: 11.5px;
+            }
+            .concept-search-wrap {
+              padding-bottom: 10px;
+            }
+            .concept-search-box {
+              display: flex;
+              align-items: center;
+              border: 1px solid var(--concept-border2);
+              border-radius: 999px;
+              background: var(--concept-bg3);
+              color: var(--concept-text3);
+              transition: border-color 0.2s, box-shadow 0.2s;
+            }
+            .concept-search-box:focus-within {
+              border-color: var(--concept-acc);
+              box-shadow: 0 0 0 3px rgba(124, 110, 247, 0.12);
+            }
+            .concept-search-icon {
+              width: 16px;
+              height: 16px;
+              margin-left: 14px;
+              flex: 0 0 auto;
+            }
+            .concept-search-box input {
+              min-width: 0;
+              flex: 1;
+              border: 0;
+              outline: none;
+              background: transparent;
+              padding: 11px 10px;
+              color: var(--concept-text);
+              font-size: 13.5px;
+              font-weight: 500;
+            }
+            .concept-search-box input::placeholder {
+              color: var(--concept-text3);
+            }
+            .concept-search-box button {
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              margin-right: 8px;
+              width: 26px;
+              height: 26px;
+              border: 0;
+              border-radius: 999px;
+              background: transparent;
+              color: var(--concept-text3);
+              cursor: pointer;
+            }
+            .concept-filter-strip {
+              display: flex;
+              gap: 7px;
+              padding-bottom: 12px;
+              overflow-x: auto;
+              scrollbar-width: none;
+            }
+            .concept-filter-strip::-webkit-scrollbar {
+              display: none;
+            }
+            .concept-filter-strip button {
+              flex: 0 0 auto;
+              display: inline-flex;
+              align-items: center;
+              gap: 5px;
+              border: 1px solid var(--concept-border2);
+              border-radius: 999px;
+              background: transparent;
+              color: var(--concept-text2);
+              padding: 6px 13px;
+              font-size: 11.5px;
+              font-weight: 600;
+              white-space: nowrap;
+            }
+            .concept-filter-strip button.active {
+              border-color: var(--concept-acc);
+              background: var(--concept-acc-bg);
+              color: var(--concept-acc2);
+            }
+            .concept-filter-strip button span {
+              width: 7px;
+              height: 7px;
+              border-radius: 999px;
+            }
+            .concept-filter-strip button strong {
+              font-family: "JetBrains Mono", ui-monospace, monospace;
+              font-size: 9.5px;
+              opacity: 0.58;
+            }
+            .concept-selected-bar {
+              margin-bottom: 10px;
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              border: 1px solid var(--concept-acc-bd);
+              border-radius: 12px;
+              background: var(--concept-acc-bg);
+              padding: 9px 13px;
+              color: var(--concept-acc2);
+              font-size: 12px;
+              font-weight: 600;
+            }
+            .concept-selected-bar div {
+              display: flex;
+              align-items: center;
+              gap: 8px;
+            }
+            .concept-selected-bar div > span {
+              display: inline-flex;
+              min-width: 24px;
+              height: 24px;
+              align-items: center;
+              justify-content: center;
+              border-radius: 999px;
+              background: var(--concept-acc);
+              color: #fff;
+              font-family: "JetBrains Mono", ui-monospace, monospace;
+              font-size: 11px;
+            }
+            .concept-selected-actions {
+              display: inline-flex;
+              align-items: center;
+              justify-content: flex-end;
+              gap: 6px;
+              flex-wrap: wrap;
+            }
+            .concept-selected-actions button {
+              border: 1px solid var(--concept-acc-bd);
+              border-radius: 999px;
+              background: transparent;
+              color: var(--concept-acc2);
+              padding: 4px 10px;
+              font-size: 11px;
+              font-weight: 600;
+              cursor: pointer;
+            }
+            .concept-stats {
+              display: flex;
+              gap: 8px;
+              padding-bottom: 14px;
+            }
+            .concept-stats div {
+              flex: 1;
+              border: 1px solid var(--concept-border);
+              border-radius: 12px;
+              background: var(--concept-bg2);
+              padding: 10px 12px;
+            }
+            .concept-stats strong {
+              display: block;
+              color: var(--concept-text);
+              font-family: "JetBrains Mono", ui-monospace, monospace;
+              font-size: 17px;
+              font-weight: 600;
+            }
+            .concept-stats span {
+              display: block;
+              color: var(--concept-text3);
+              font-size: 10px;
+              margin-top: 1px;
+            }
+            .concept-groups {
+              display: flex;
+              flex-direction: column;
+              gap: 9px;
+            }
+            .concept-group-card {
+              overflow: hidden;
+              border: 1px solid var(--concept-border);
+              border-radius: 18px;
+              background: var(--concept-bg2);
+            }
+            .concept-group-card.selected {
+              border-color: var(--concept-border2);
+            }
+            .concept-group-head {
+              width: 100%;
+              min-height: 58px;
+              display: flex;
+              align-items: center;
+              gap: 11px;
+              border: 0;
+              background: transparent;
+              padding: 13px 14px;
+              color: var(--concept-text);
+              text-align: left;
+            }
+            .concept-group-select {
+              width: 32px;
+              height: 32px;
+              flex: 0 0 auto;
+              border: 1px solid var(--concept-border2);
+              border-radius: 10px;
+              background: transparent;
+              color: var(--concept-text3);
+              font-size: 10px;
+              font-weight: 800;
+              cursor: pointer;
+              transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+            }
+            .concept-group-select.checked,
+            .concept-group-select.partial {
+              border-color: var(--concept-acc);
+              background: var(--concept-acc);
+              color: #fff;
+            }
+            .concept-group-icon {
+              width: 36px;
+              height: 36px;
+              flex: 0 0 auto;
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              border: 1px solid;
+              border-radius: 10px;
+              font-size: 12px;
+              font-weight: 800;
+            }
+            .concept-group-meta {
+              min-width: 0;
+              flex: 1;
+              display: flex;
+              flex-direction: column;
+              gap: 4px;
+            }
+            .concept-group-meta > strong {
+              color: var(--concept-text);
+              font-size: 14px;
+              font-weight: 700;
+            }
+            .concept-group-meta > span {
+              display: flex;
+              align-items: center;
+              gap: 7px;
+              flex-wrap: wrap;
+            }
+            .concept-group-meta em {
+              border: 1px solid;
+              border-radius: 999px;
+              padding: 2px 8px;
+              font-family: "JetBrains Mono", ui-monospace, monospace;
+              font-size: 10px;
+              font-style: normal;
+            }
+            .concept-group-meta b {
+              color: var(--concept-text3);
+              font-size: 10px;
+              font-weight: 600;
+            }
+            .concept-group-toggle {
+              width: 26px;
+              height: 26px;
+              flex: 0 0 auto;
+              border: 1px solid var(--concept-border);
+              border-radius: 8px;
+              background: var(--concept-bg3);
+              color: var(--concept-text3);
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              cursor: pointer;
+            }
+            .concept-group-toggle svg {
+              width: 14px;
+              height: 14px;
+              transition: transform 0.2s ease;
+            }
+            .concept-group-toggle svg.open {
+              transform: rotate(180deg);
+            }
+            .concept-group-toggle.open {
+              background: var(--concept-surface);
+            }
+            .concept-tags {
+              display: flex;
+              flex-wrap: wrap;
+              gap: 7px;
+              padding: 2px 12px 13px;
+            }
+            .concept-tags button {
+              display: inline-flex;
+              align-items: center;
+              border: 1px solid;
+              border-radius: 999px;
+              padding: 5px 12px;
+              font-size: 11.5px;
+              font-weight: 600;
+              line-height: 1.4;
+              cursor: pointer;
+            }
+            .concept-tags button.active {
+              box-shadow: 0 0 0 2px currentColor;
+            }
+            .concept-tags .concept-more {
+              width: 100%;
+              justify-content: center;
+              border-color: var(--concept-border2);
+              border-style: dashed;
+              border-radius: 12px;
+              background: transparent;
+              color: var(--concept-text3);
+              padding: 8px;
+            }
+            .concept-empty {
+              padding: 3rem 20px;
+              text-align: center;
+              color: var(--concept-text3);
+              font-size: 13px;
+            }
+            .concept-sticky {
+              position: fixed;
+              left: 0;
+              right: 0;
+              bottom: 0;
+              z-index: 1000;
+              border-top: 1px solid var(--concept-border2);
+              background: color-mix(in srgb, var(--concept-bg) 92%, transparent);
+              backdrop-filter: blur(24px) saturate(160%);
+              -webkit-backdrop-filter: blur(24px) saturate(160%);
+              padding: 10px 14px max(16px, env(safe-area-inset-bottom));
+            }
+            .concept-sticky-top {
+              max-width: 480px;
+              margin: 0 auto 9px;
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              gap: 12px;
+            }
+            .concept-sticky-top div {
+              display: flex;
+              flex-direction: column;
+              gap: 1px;
+            }
+            .concept-sticky-top strong {
+              color: var(--concept-text);
+              font-family: "JetBrains Mono", ui-monospace, monospace;
+              font-size: 16px;
+              font-weight: 600;
+            }
+            .concept-sticky-top span {
+              color: var(--concept-text3);
+              font-size: 10px;
+            }
+            .concept-sticky-top select {
+              border: 1px solid var(--concept-border2);
+              border-radius: 10px;
+              background: var(--concept-bg3);
+              color: var(--concept-text);
+              padding: 7px 11px;
+              font-size: 12px;
+              font-weight: 600;
+              outline: none;
+            }
+            .concept-progress-label {
+              max-width: 480px;
+              margin: 0 auto 5px;
+              display: flex;
+              justify-content: space-between;
+              color: var(--concept-text3);
+              font-size: 10px;
+            }
+            .concept-progress {
+              max-width: 480px;
+              height: 2px;
+              margin: 0 auto 9px;
+              overflow: hidden;
+              border-radius: 99px;
+              background: var(--concept-bg3);
+            }
+            .concept-progress span {
+              display: block;
+              height: 100%;
+              border-radius: inherit;
+              background: linear-gradient(90deg, var(--concept-acc), var(--concept-acc2));
+              transition: width 0.35s ease;
+            }
+            .concept-start-btn {
+              max-width: 480px;
+              width: 100%;
+              min-height: 50px;
+              margin: 0 auto;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              gap: 9px;
+              border: 0;
+              border-radius: 18px;
+              background: linear-gradient(130deg, #7c6ef7 0%, #a78bfa 100%);
+              color: #fff;
+              box-shadow: 0 3px 20px rgba(124, 110, 247, 0.38);
+              font-size: 15px;
+              font-weight: 800;
+              cursor: pointer;
+            }
+            .concept-start-btn small {
+              font-size: 11px;
+              font-weight: 500;
+              opacity: 0.75;
+            }
+          `}</style>
+        </div>
+      );
+    }
+
     return (
       <div
         className="reasoning-quiz quiz-start min-h-screen relative overflow-hidden px-4 sm:px-6"
