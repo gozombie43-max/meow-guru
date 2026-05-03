@@ -1925,8 +1925,7 @@ export default function ReasoningQuizEngine({
     return grouped;
   }, [classificationCategory, classificationSearch, conceptOptions]);
 
-  const isClassificationConceptMode =
-    slug === "classification-odd-one-out" && mode === "concept";
+  const isClassificationConceptMode = mode === "concept";
 
   const filteredQuestions = useMemo(() => {
     if (isClassificationConceptMode) {
