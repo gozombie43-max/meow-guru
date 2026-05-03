@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>QuizMaster - Profile Sidebar</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --primary-light: #e0e7ff;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --border: #e2e8f0;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --purple: #8b5cf6;
+            --overlay: rgba(0, 0, 0, 0.5);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            height: 100vh;
+        }
+
+        /* Main App */
+        .app {
+            max-width: 430px;
+            margin: 0 auto;
+            background: var(--bg);
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .main-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            background: var(--surface);
+        }
+
+        .menu-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .logo span {
+            color: var(--primary);
+        }
+
+        .header-right {
+            width: 28px;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 0 20px 100px;
+        }
+
+        .greeting {
+            margin: 20px 0;
+        }
+
+        .greeting h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .greeting p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* Continue Card */
+        .continue-card {
+            background: linear-gradient(135deg, #4338ca 0%, #6366f1 100%);
+            border-radius: 16px;
+            padding: 20px;
+            color: white;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .continue-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 200px;
+            height: 200px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+        }
+
+        .continue-label {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 4px;
+        }
+
+        .continue-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .continue-progress {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 6px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            width: 47%;
+            height: 100%;
+            background: rgba(255,255,255,0.9);
+            border-radius: 3px;
+        }
+
+        .continue-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+        }
+
+        .progress-text {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 8px;
+        }
+
+        /* Section Title */
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        /* Categories */
+        .categories {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .category-card {
+            min-width: 100px;
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .category-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 8px;
+            font-size: 20px;
+        }
+
+        .category-icon.purple { background: #ede9fe; }
+        .category-icon.green { background: #dcfce7; }
+        .category-icon.orange { background: #ffedd5; }
+
+        .category-name {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .category-count {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* Daily Challenge */
+        .challenge-card {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            border: 1px solid var(--border);
+        }
+
+        .challenge-info h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .challenge-info p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .challenge-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .challenge-gift {
+            font-size: 48px;
+        }
+
+        /* Recommended */
+        .quiz-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .quiz-item {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            border: 1px solid var(--border);
+        }
+
+        .quiz-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .quiz-icon.yellow { background: #fef9c3; }
+        .quiz-icon.red { background: #fee2e2; }
+
+        .quiz-info {
+            flex: 1;
+        }
+
+        .quiz-info h4 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .quiz-info p {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .quiz-arrow {
+            color: var(--text-muted);
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 430px;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0 20px;
+            z-index: 10;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 11px;
+            cursor: pointer;
+            padding: 4px 12px;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        .nav-item svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        /* Sidebar Overlay */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--overlay);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .sidebar-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 85%;
+            max-width: 360px;
+            height: 100vh;
+            background: var(--surface);
+            transform: translateX(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 101;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar.active {
+            transform: translateX(0);
+        }
+
+        .sidebar-header {
+            padding: 16px 20px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            color: var(--text-primary);
+        }
+
+        /* Profile Section */
+        .profile-section {
+            padding: 0 20px 20px;
+            text-align: center;
+        }
+
+        .profile-avatar {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 12px;
+        }
+
+        .profile-avatar img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--surface);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .edit-avatar {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 28px;
+            height: 28px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--surface);
+            color: white;
+        }
+
+        .profile-name {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .profile-email {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .level-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .xp-bar {
+            width: 100%;
+            max-width: 220px;
+            margin: 0 auto;
+        }
+
+        .xp-progress {
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 4px;
+        }
+
+        .xp-fill {
+            width: 69%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--purple));
+            border-radius: 3px;
+        }
+
+        .xp-text {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            padding: 0 20px;
+            margin-bottom: 24px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 12px 4px;
+        }
+
+        .stat-icon {
+            font-size: 20px;
+            margin-bottom: 6px;
+        }
+
+        .stat-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* Section Headers */
+        .sidebar-section-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 0 20px;
+            margin-bottom: 8px;
+        }
+
+        /* List Items */
+        .sidebar-list {
+            padding: 0 20px;
+            margin-bottom: 20px;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+        }
+
+        .sidebar-item:last-child {
+            border-bottom: none;
+        }
+
+        .item-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .item-icon.blue { background: #dbeafe; }
+        .item-icon.red { background: #fee2e2; }
+        .item-icon.green { background: #dcfce7; }
+        .item-icon.purple { background: #ede9fe; }
+        .item-icon.orange { background: #ffedd5; }
+        .item-icon.gray { background: #f1f5f9; }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .item-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .item-count {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .item-arrow {
+            color: var(--text-muted);
+        }
+
+        /* Achievements */
+        .achievements-row {
+            display: flex;
+            gap: 12px;
+            padding: 0 20px;
+            margin-bottom: 20px;
+        }
+
+        .achievement-item {
+            flex: 1;
+            background: var(--bg);
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+        }
+
+        .achievement-icon {
+            font-size: 20px;
+            margin-bottom: 6px;
+        }
+
+        .achievement-value {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .achievement-label {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* Settings */
+        .settings-list {
+            padding: 0 20px;
+            margin-bottom: 20px;
+        }
+
+        .setting-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+        }
+
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+
+        .setting-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg);
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .setting-name {
+            flex: 1;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .setting-value {
+            font-size: 13px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Toggle Switch */
+        .toggle {
+            width: 44px;
+            height: 24px;
+            background: var(--border);
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s;
+            flex-shrink: 0;
+        }
+
+        .toggle.active {
+            background: var(--primary);
+        }
+
+        .toggle-knob {
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .toggle.active .toggle-knob {
+            transform: translateX(20px);
+        }
+
+        /* Premium Banner */
+        .premium-banner {
+            margin: 0 20px 20px;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .premium-icon {
+            font-size: 28px;
+        }
+
+        .premium-info {
+            flex: 1;
+        }
+
+        .premium-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #92400e;
+            margin-bottom: 2px;
+        }
+
+        .premium-desc {
+            font-size: 12px;
+            color: #b45309;
+        }
+
+        .premium-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        /* Account Section */
+        .account-list {
+            padding: 0 20px;
+            margin-bottom: 20px;
+        }
+
+        .account-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+        }
+
+        .account-item:last-child {
+            border-bottom: none;
+        }
+
+        .account-item.logout {
+            color: var(--danger);
+        }
+
+        .account-item.logout .account-icon {
+            color: var(--danger);
+        }
+
+        .account-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg);
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .account-name {
+            flex: 1;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .account-badge {
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .account-arrow {
+            color: var(--text-muted);
+        }
+
+        /* Scrollbar hide */
+        .sidebar::-webkit-scrollbar {
+            width: 0;
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* SVG Icons */
+        .icon {
+            width: 24px;
+            height: 24px;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+        }
+
+        .icon-sm {
+            width: 20px;
+            height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- Main Header -->
+        <header class="main-header">
+            <button class="menu-btn" onclick="openSidebar()">
+                <svg class="icon" viewBox="0 0 24 24">
+                    <line x1="4" y1="6" x2="20" y2="6"/>
+                    <line x1="4" y1="12" x2="20" y2="12"/>
+                    <line x1="4" y1="18" x2="20" y2="18"/>
+                </svg>
+            </button>
+            <div class="logo">Quiz<span>Master</span></div>
+            <div class="header-right"></div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="greeting">
+                <h1>Hello, Alex! 👋</h1>
+                <p>Ready to test your knowledge today?</p>
+            </div>
+
+            <div class="continue-card">
+                <div class="continue-label">Continue Learning</div>
+                <div class="continue-title">General Knowledge Quiz</div>
+                <div class="continue-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                    <button class="continue-btn">Continue</button>
+                </div>
+                <div class="progress-text">7 / 15 Questions</div>
+            </div>
+
+            <h2 class="section-title">Choose a Category</h2>
+            <div class="categories">
+                <div class="category-card">
+                    <div class="category-icon purple">🧠</div>
+                    <div class="category-name">General Knowledge</div>
+                    <div class="category-count">120 Quizzes</div>
+                </div>
+                <div class="category-card">
+                    <div class="category-icon green">🧪</div>
+                    <div class="category-name">Science</div>
+                    <div class="category-count">95 Quizzes</div>
+                </div>
+                <div class="category-card">
+                    <div class="category-icon orange">🔧</div>
+                    <div class="category-name">Math</div>
+                    <div class="category-count">85 Quizzes</div>
+                </div>
+            </div>
+
+            <div class="challenge-card">
+                <div class="challenge-info">
+                    <h3>🎯 Daily Challenge</h3>
+                    <p>Play the daily quiz and win<br>bonus coins!</p>
+                    <button class="challenge-btn">Start Challenge</button>
+                </div>
+                <div class="challenge-gift">🎁</div>
+            </div>
+
+            <h2 class="section-title">Recommended for You</h2>
+            <div class="quiz-list">
+                <div class="quiz-item">
+                    <div class="quiz-icon yellow">❓</div>
+                    <div class="quiz-info">
+                        <h4>Mixed Quiz</h4>
+                        <p>10 Questions</p>
+                    </div>
+                    <div class="quiz-arrow">
+                        <svg class="icon icon-sm" viewBox="0 0 24 24">
+                            <polyline points="9 18 15 12 9 6"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="quiz-item">
+                    <div class="quiz-icon red">⚠️</div>
+                    <div class="quiz-info">
+                        <h4>Science Quiz</h4>
+                        <p>15 Questions</p>
+                    </div>
+                    <div class="quiz-arrow">
+                        <svg class="icon icon-sm" viewBox="0 0 24 24">
+                            <polyline points="9 18 15 12 9 6"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <button class="nav-item active">
+                <svg class="icon" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9 22 9 12 15 12 15 22" stroke="currentColor" stroke-width="2" fill="none"/>
+                </svg>
+                <span>Home</span>
+            </button>
+            <button class="nav-item">
+                <svg class="icon" viewBox="0 0 24 24">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                    <polyline points="10 9 9 9 8 9"/>
+                </svg>
+                <span>Quizzes</span>
+            </button>
+            <button class="nav-item">
+                <svg class="icon" viewBox="0 0 24 24">
+                    <rect x="18" y="3" width="4" height="18"/>
+                    <rect x="10" y="8" width="4" height="13"/>
+                    <rect x="2" y="13" width="4" height="8"/>
+                </svg>
+                <span>Leaderboards</span>
+            </button>
+            <button class="nav-item">
+                <svg class="icon" viewBox="0 0 24 24">
+                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+                </svg>
+                <span>Bookmarked</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" onclick="closeSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <button class="close-btn" onclick="closeSidebar()">
+                <svg class="icon" viewBox="0 0 24 24">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Profile -->
+        <div class="profile-section">
+            <div class="profile-avatar">
+                <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=face" alt="Alex Johnson">
+                <div class="edit-avatar">
+                    <svg class="icon icon-sm" viewBox="0 0 24 24" style="stroke: white;">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="profile-name">Alex Johnson</div>
+            <div class="profile-email">alex.johnson@gmail.com</div>
+            <div class="level-badge">
+                <svg class="icon icon-sm" viewBox="0 0 24 24" style="fill: currentColor; stroke: none;">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+                Level 12
+            </div>
+            <div class="xp-bar">
+                <div class="xp-progress">
+                    <div class="xp-fill"></div>
+                </div>
+                <div class="xp-text">XP: 3,450 / 5,000</div>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-icon">🎯</div>
+                <div class="stat-value">78%</div>
+                <div class="stat-label">Accuracy</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon">⚡</div>
+                <div class="stat-value">5</div>
+                <div class="stat-label">Day Streak</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon">🏆</div>
+                <div class="stat-value">250</div>
+                <div class="stat-label">Quizzes</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon">🔥</div>
+                <div class="stat-value">12</div>
+                <div class="stat-label">Best Streak</div>
+            </div>
+        </div>
+
+        <!-- My Learning -->
+        <div class="sidebar-section-title">My Learning</div>
+        <div class="sidebar-list">
+            <div class="sidebar-item">
+                <div class="item-icon blue">🔖</div>
+                <div class="item-info">
+                    <div class="item-name">Bookmarked Questions</div>
+                </div>
+                <div class="item-meta">
+                    <span class="item-count">24</span>
+                    <svg class="icon icon-sm" viewBox="0 0 24 24">
+                        <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="sidebar-item">
+                <div class="item-icon red">❌</div>
+                <div class="item-info">
+                    <div class="item-name">Incorrect Questions</div>
+                </div>
+                <div class="item-meta">
+                    <span class="item-count">56</span>
+                    <svg class="icon icon-sm" viewBox="0 0 24 24">
+                        <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="sidebar-item">
+                <div class="item-icon green">✅</div>
+                <div class="item-info">
+                    <div class="item-name">Completed Quizzes</div>
+                </div>
+                <div class="item-meta">
+                    <span class="item-count">38</span>
+                    <svg class="icon icon-sm" viewBox="0 0 24 24">
+                        <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="sidebar-item">
+                <div class="item-icon purple">🕐</div>
+                <div class="item-info">
+                    <div class="item-name">Practice History</div>
+                </div>
+                <div class="item-meta">
+                    <svg class="icon icon-sm" viewBox="0 0 24 24">
+                        <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Achievements -->
+        <div class="sidebar-section-title">Achievements</div>
+        <div class="achievements-row">
+            <div class="achievement-item">
+                <div class="achievement-icon">🪙</div>
+                <div class="achievement-value">1,250</div>
+                <div class="achievement-label">Coins</div>
+            </div>
+            <div class="achievement-item">
+                <div class="achievement-icon">🛡️</div>
+                <div class="achievement-value">18</div>
+                <div class="achievement-label">Badges</div>
+            </div>
+            <div class="achievement-item">
+                <div class="achievement-icon">📊</div>
+                <div class="achievement-value">Top 15%</div>
+                <div class="achievement-label">Leaderboard</div>
+            </div>
+        </div>
+
+        <!-- Settings -->
+        <div class="sidebar-section-title">Settings</div>
+        <div class="settings-list">
+            <div class="setting-item">
+                <div class="setting-icon">🌙</div>
+                <div class="setting-name">Appearance</div>
+                <div class="setting-value">
+                    Dark Mode
+                    <svg class="icon icon-sm" viewBox="0 0 24 24">
+                        <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="setting-item" onclick="toggleSound(this)">
+                <div class="setting-icon">🔊</div>
+                <div class="setting-name">Sound</div>
+                <div class="toggle active" id="soundToggle">
+                    <div class="toggle-knob"></div>
+                </div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-icon">🌐</div>
+                <div class="setting-name">Language</div>
+                <div class="setting-value">
+                    English
+                    <svg class="icon icon-sm" viewBox="0 0 24 24">
+                        <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-icon">🔔</div>
+                <div class="setting-name">Notifications</div>
+                <svg class="icon icon-sm" viewBox="0 0 24 24">
+                    <polyline points="9 18 15 12 9 6"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Premium -->
+        <div class="premium-banner">
+            <div class="premium-icon">👑</div>
+            <div class="premium-info">
+                <div class="premium-title">QuizMaster Premium</div>
+                <div class="premium-desc">Unlock unlimited quizzes, ads-free experience and more!</div>
+            </div>
+            <button class="premium-btn">Upgrade Now</button>
+        </div>
+
+        <!-- Account -->
+        <div class="sidebar-section-title">Account</div>
+        <div class="account-list">
+            <div class="account-item">
+                <div class="account-icon">👤</div>
+                <div class="account-name">Edit Profile</div>
+                <svg class="icon icon-sm" viewBox="0 0 24 24">
+                    <polyline points="9 18 15 12 9 6"/>
+                </svg>
+            </div>
+            <div class="account-item">
+                <div class="account-icon">🔒</div>
+                <div class="account-name">Change Password</div>
+                <svg class="icon icon-sm" viewBox="0 0 24 24">
+                    <polyline points="9 18 15 12 9 6"/>
+                </svg>
+            </div>
+            <div class="account-item">
+                <div class="account-icon">🎁</div>
+                <div class="account-name">Invite Friends</div>
+                <span class="account-badge">Earn Coins</span>
+                <svg class="icon icon-sm" viewBox="0 0 24 24">
+                    <polyline points="9 18 15 12 9 6"/>
+                </svg>
+            </div>
+            <div class="account-item">
+                <div class="account-icon">❓</div>
+                <div class="account-name">Help & Support</div>
+                <svg class="icon icon-sm" viewBox="0 0 24 24">
+                    <polyline points="9 18 15 12 9 6"/>
+                </svg>
+            </div>
+            <div class="account-item">
+                <div class="account-icon">ℹ️</div>
+                <div class="account-name">About QuizMaster</div>
+                <svg class="icon icon-sm" viewBox="0 0 24 24">
+                    <polyline points="9 18 15 12 9 6"/>
+                </svg>
+            </div>
+            <div class="account-item logout">
+                <div class="account-icon">↩️</div>
+                <div class="account-name">Logout</div>
+            </div>
+        </div>
+
+        <div style="height: 20px;"></div>
+    </aside>
+
+    <script>
+        function openSidebar() {
+            document.getElementById('sidebar').classList.add('active');
+            document.querySelector('.sidebar-overlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeSidebar() {
+            document.getElementById('sidebar').classList.remove('active');
+            document.querySelector('.sidebar-overlay').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function toggleSound(el) {
+            const toggle = el.querySelector('.toggle');
+            toggle.classList.toggle('active');
+        }
+
+        // Close on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeSidebar();
+        });
+
+        // Touch swipe to close
+        let touchStartX = 0;
+        const sidebar = document.getElementById('sidebar');
+
+        sidebar.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+        });
+
+        sidebar.addEventListener('touchmove', (e) => {
+            const touchX = e.touches[0].clientX;
+            const diff = touchX - touchStartX;
+            if (diff > 80) {
+                closeSidebar();
+            }
+        });
+    </script>
+</body>
+</html>

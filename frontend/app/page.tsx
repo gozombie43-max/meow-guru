@@ -57,6 +57,8 @@ export default function Home() {
   const [isNavScrolled, setIsNavScrolled] = useState(false);
   const recentTrackRef = useRef<HTMLDivElement | null>(null);
   const [activeRecentIndex, setActiveRecentIndex] = useState(0);
+  const [isProfileSidebarOpen, setIsProfileSidebarOpen] = useState(false);
+  const [isSoundOn, setIsSoundOn] = useState(true);
   const activeRecentIndexRef = useRef(0);
 
   useEffect(() => {
@@ -86,6 +88,23 @@ export default function Home() {
       window.removeEventListener("scroll", handleScroll);
     };
   }, []);
+
+  useEffect(() => {
+    if (!isProfileSidebarOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsProfileSidebarOpen(false);
+    };
+
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isProfileSidebarOpen]);
 
   const recentQuizzes = useMemo(() => {
     if (!user?.recentQuizzes) return [];
@@ -142,9 +161,17 @@ export default function Home() {
   };
 
   const handleLogout = () => {
+    setIsProfileSidebarOpen(false);
     logout();
     router.push('/');
   };
+
+  const progressEntries = Object.values(user?.progress || {});
+  const attemptedTotal = progressEntries.reduce((sum, item) => sum + (item.attempted || 0), 0);
+  const correctTotal = progressEntries.reduce((sum, item) => sum + (item.correct || 0), 0);
+  const accuracy = attemptedTotal > 0 ? Math.round((correctTotal / attemptedTotal) * 100) : 0;
+  const bookmarkCount = user?.bookmarkEntries?.length || user?.bookmarks?.length || 0;
+  const completedCount = user?.recentQuizzes?.filter((quiz) => quiz.status === "completed").length || 0;
 
   const activeRecentSafeIndex = Math.min(
     activeRecentIndex,
@@ -261,6 +288,405 @@ export default function Home() {
           background-position: center;
           background-size: cover;
           background-repeat: no-repeat;
+        }
+        .qm-sidebar-overlay {
+          position: fixed;
+          inset: 0;
+          border: 0;
+          background: rgba(0, 0, 0, 0.5);
+          opacity: 0;
+          visibility: hidden;
+          transition: opacity 0.3s ease, visibility 0.3s ease;
+          z-index: 90;
+        }
+        .qm-sidebar-overlay.active {
+          opacity: 1;
+          visibility: visible;
+        }
+        .qm-sidebar {
+          --qm-primary: #6366f1;
+          --qm-primary-light: #e0e7ff;
+          --qm-bg: #f8fafc;
+          --qm-surface: #ffffff;
+          --qm-text-primary: #1e293b;
+          --qm-text-secondary: #64748b;
+          --qm-text-muted: #94a3b8;
+          --qm-border: #e2e8f0;
+          --qm-danger: #ef4444;
+          --qm-purple: #8b5cf6;
+          position: fixed;
+          top: 0;
+          right: 0;
+          width: min(85vw, 360px);
+          height: 100vh;
+          height: 100dvh;
+          background: var(--qm-surface);
+          color: var(--qm-text-primary);
+          transform: translateX(100%);
+          transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          z-index: 91;
+          overflow-y: auto;
+          display: flex;
+          flex-direction: column;
+          box-shadow: -18px 0 44px rgba(2, 8, 18, 0.24);
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        .qm-sidebar.active {
+          transform: translateX(0);
+        }
+        .qm-sidebar::-webkit-scrollbar {
+          width: 0;
+        }
+        .qm-sidebar-header {
+          padding: 16px 20px;
+          display: flex;
+          justify-content: flex-end;
+        }
+        .qm-close-btn {
+          width: 32px;
+          height: 32px;
+          border: none;
+          background: transparent;
+          color: var(--qm-text-primary);
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 10px;
+        }
+        .qm-close-btn:hover {
+          background: var(--qm-bg);
+        }
+        .qm-icon {
+          width: 24px;
+          height: 24px;
+          stroke: currentColor;
+          stroke-width: 2;
+          stroke-linecap: round;
+          stroke-linejoin: round;
+          fill: none;
+        }
+        .qm-profile-section {
+          padding: 0 20px 20px;
+          text-align: center;
+        }
+        .qm-profile-avatar {
+          position: relative;
+          width: 80px;
+          height: 80px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 12px;
+          border-radius: 50%;
+          background: var(--qm-primary-light);
+          color: var(--qm-primary);
+          font-size: 1.65rem;
+          font-weight: 800;
+          border: 3px solid var(--qm-surface);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          overflow: visible;
+        }
+        .qm-profile-avatar-image {
+          width: 100%;
+          height: 100%;
+          border-radius: 50%;
+          background-position: center;
+          background-size: cover;
+          background-repeat: no-repeat;
+        }
+        .qm-edit-avatar {
+          position: absolute;
+          bottom: 0;
+          right: 0;
+          width: 28px;
+          height: 28px;
+          background: var(--qm-primary);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 2px solid var(--qm-surface);
+          color: white;
+        }
+        .qm-edit-avatar .qm-icon {
+          width: 16px;
+          height: 16px;
+        }
+        .qm-profile-name {
+          font-size: 20px;
+          font-weight: 700;
+          margin-bottom: 4px;
+        }
+        .qm-profile-email {
+          font-size: 13px;
+          color: var(--qm-text-secondary);
+          margin-bottom: 12px;
+          word-break: break-word;
+        }
+        .qm-level-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: var(--qm-primary-light);
+          color: var(--qm-primary);
+          padding: 4px 12px;
+          border-radius: 20px;
+          font-size: 13px;
+          font-weight: 600;
+          margin-bottom: 8px;
+        }
+        .qm-level-badge .qm-icon {
+          width: 16px;
+          height: 16px;
+          fill: currentColor;
+          stroke: none;
+        }
+        .qm-xp-bar {
+          width: 100%;
+          max-width: 220px;
+          margin: 0 auto;
+        }
+        .qm-xp-progress {
+          height: 6px;
+          background: var(--qm-border);
+          border-radius: 3px;
+          overflow: hidden;
+          margin-bottom: 4px;
+        }
+        .qm-xp-fill {
+          width: 69%;
+          height: 100%;
+          background: linear-gradient(90deg, var(--qm-primary), var(--qm-purple));
+          border-radius: 3px;
+        }
+        .qm-xp-text {
+          font-size: 12px;
+          color: var(--qm-text-muted);
+        }
+        .qm-stats-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 8px;
+          padding: 0 20px;
+          margin-bottom: 24px;
+        }
+        .qm-stat-item {
+          text-align: center;
+          padding: 12px 4px;
+        }
+        .qm-stat-icon {
+          font-size: 20px;
+          margin-bottom: 6px;
+        }
+        .qm-stat-value {
+          font-size: 16px;
+          font-weight: 700;
+          color: var(--qm-text-primary);
+          margin-bottom: 2px;
+        }
+        .qm-stat-label {
+          font-size: 11px;
+          color: var(--qm-text-muted);
+        }
+        .qm-sidebar-section-title {
+          font-size: 11px;
+          font-weight: 700;
+          color: var(--qm-text-muted);
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          padding: 0 20px;
+          margin-bottom: 8px;
+        }
+        .qm-sidebar-list,
+        .qm-settings-list,
+        .qm-account-list {
+          padding: 0 20px;
+          margin-bottom: 20px;
+        }
+        .qm-sidebar-item,
+        .qm-setting-item,
+        .qm-account-item {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          width: 100%;
+          padding: 12px 0;
+          border: 0;
+          border-bottom: 1px solid var(--qm-border);
+          background: transparent;
+          color: var(--qm-text-primary);
+          text-align: left;
+          cursor: pointer;
+          font: inherit;
+          text-decoration: none;
+        }
+        .qm-setting-item {
+          padding: 14px 0;
+        }
+        .qm-sidebar-item:last-child,
+        .qm-setting-item:last-child,
+        .qm-account-item:last-child {
+          border-bottom: none;
+        }
+        .qm-item-icon,
+        .qm-setting-icon,
+        .qm-account-icon {
+          width: 36px;
+          height: 36px;
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 18px;
+          flex-shrink: 0;
+          background: var(--qm-bg);
+        }
+        .qm-item-icon.blue { background: #dbeafe; }
+        .qm-item-icon.red { background: #fee2e2; }
+        .qm-item-icon.green { background: #dcfce7; }
+        .qm-item-icon.purple { background: #ede9fe; }
+        .qm-item-info {
+          flex: 1;
+          min-width: 0;
+        }
+        .qm-item-name,
+        .qm-setting-name,
+        .qm-account-name {
+          flex: 1;
+          font-size: 14px;
+          font-weight: 500;
+        }
+        .qm-item-meta,
+        .qm-setting-value {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 13px;
+          color: var(--qm-text-muted);
+        }
+        .qm-chevron {
+          color: var(--qm-text-muted);
+          font-size: 1.35rem;
+          line-height: 1;
+        }
+        .qm-achievements-row {
+          display: flex;
+          gap: 12px;
+          padding: 0 20px;
+          margin-bottom: 20px;
+        }
+        .qm-achievement-item {
+          flex: 1;
+          background: var(--qm-bg);
+          border-radius: 12px;
+          padding: 14px 8px;
+          text-align: center;
+        }
+        .qm-achievement-icon {
+          font-size: 20px;
+          margin-bottom: 6px;
+        }
+        .qm-achievement-value {
+          font-size: 15px;
+          font-weight: 700;
+          margin-bottom: 2px;
+        }
+        .qm-achievement-label {
+          font-size: 11px;
+          color: var(--qm-text-muted);
+        }
+        .qm-toggle {
+          width: 44px;
+          height: 24px;
+          background: var(--qm-border);
+          border-radius: 12px;
+          position: relative;
+          cursor: pointer;
+          transition: background 0.3s;
+          flex-shrink: 0;
+        }
+        .qm-toggle.active {
+          background: var(--qm-primary);
+        }
+        .qm-toggle-knob {
+          width: 20px;
+          height: 20px;
+          background: white;
+          border-radius: 50%;
+          position: absolute;
+          top: 2px;
+          left: 2px;
+          transition: transform 0.3s;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+        .qm-toggle.active .qm-toggle-knob {
+          transform: translateX(20px);
+        }
+        .qm-premium-banner {
+          margin: 0 20px 20px;
+          background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+          border-radius: 16px;
+          padding: 16px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        .qm-premium-icon {
+          font-size: 28px;
+        }
+        .qm-premium-info {
+          flex: 1;
+          min-width: 0;
+        }
+        .qm-premium-title {
+          font-size: 14px;
+          font-weight: 700;
+          color: #92400e;
+          margin-bottom: 2px;
+        }
+        .qm-premium-desc {
+          font-size: 12px;
+          color: #b45309;
+        }
+        .qm-premium-btn {
+          background: var(--qm-primary);
+          color: white;
+          border: none;
+          padding: 8px 16px;
+          border-radius: 8px;
+          font-size: 12px;
+          font-weight: 600;
+          cursor: pointer;
+          white-space: nowrap;
+        }
+        .qm-account-item.logout,
+        .qm-account-item.logout .qm-account-icon {
+          color: var(--qm-danger);
+        }
+        .qm-account-badge {
+          background: var(--qm-primary-light);
+          color: var(--qm-primary);
+          padding: 4px 10px;
+          border-radius: 12px;
+          font-size: 11px;
+          font-weight: 600;
+        }
+        @media (max-width: 420px) {
+          .qm-sidebar {
+            width: 88vw;
+          }
+          .qm-stats-grid {
+            gap: 4px;
+            padding: 0 14px;
+          }
+          .qm-premium-banner {
+            align-items: flex-start;
+            flex-wrap: wrap;
+          }
+          .qm-premium-btn {
+            margin-left: 40px;
+          }
         }
         .hero-section {
           position: relative;
@@ -813,10 +1239,11 @@ export default function Home() {
                   Dashboard
                 </Link>
                 <button
-                  onClick={handleLogout}
+                  onClick={() => setIsProfileSidebarOpen(true)}
                   className="profile-avatar-button"
-                  aria-label="Logout"
-                  title="Logout"
+                  aria-label="Open profile menu"
+                  aria-expanded={isProfileSidebarOpen}
+                  title="Profile"
                 >
                   {user.avatar ? (
                     <span
@@ -991,6 +1418,236 @@ export default function Home() {
           </section>
         </div>
       </section>
+
+      {user ? (
+        <>
+          <button
+            type="button"
+            className={`qm-sidebar-overlay ${isProfileSidebarOpen ? "active" : ""}`}
+            aria-label="Close profile menu"
+            onClick={() => setIsProfileSidebarOpen(false)}
+          />
+
+          <aside
+            className={`qm-sidebar ${isProfileSidebarOpen ? "active" : ""}`}
+            aria-hidden={!isProfileSidebarOpen}
+          >
+            <div className="qm-sidebar-header">
+              <button
+                type="button"
+                className="qm-close-btn"
+                aria-label="Close profile menu"
+                onClick={() => setIsProfileSidebarOpen(false)}
+              >
+                <svg className="qm-icon" viewBox="0 0 24 24">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="qm-profile-section">
+              <div className="qm-profile-avatar">
+                {user.avatar ? (
+                  <span
+                    className="qm-profile-avatar-image"
+                    aria-hidden="true"
+                    style={{ backgroundImage: `url("${user.avatar}")` }}
+                  />
+                ) : (
+                  user.name.charAt(0).toUpperCase()
+                )}
+                <div className="qm-edit-avatar" aria-hidden="true">
+                  <svg className="qm-icon" viewBox="0 0 24 24">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                  </svg>
+                </div>
+              </div>
+              <div className="qm-profile-name">{user.name}</div>
+              <div className="qm-profile-email">{user.email}</div>
+              <div className="qm-level-badge">
+                <svg className="qm-icon" viewBox="0 0 24 24">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                </svg>
+                Level 12
+              </div>
+              <div className="qm-xp-bar">
+                <div className="qm-xp-progress">
+                  <div className="qm-xp-fill" />
+                </div>
+                <div className="qm-xp-text">XP: 3,450 / 5,000</div>
+              </div>
+            </div>
+
+            <div className="qm-stats-grid">
+              <div className="qm-stat-item">
+                <div className="qm-stat-icon">🎯</div>
+                <div className="qm-stat-value">{accuracy}%</div>
+                <div className="qm-stat-label">Accuracy</div>
+              </div>
+              <div className="qm-stat-item">
+                <div className="qm-stat-icon">⚡</div>
+                <div className="qm-stat-value">5</div>
+                <div className="qm-stat-label">Day Streak</div>
+              </div>
+              <div className="qm-stat-item">
+                <div className="qm-stat-icon">🏆</div>
+                <div className="qm-stat-value">{attemptedTotal}</div>
+                <div className="qm-stat-label">Questions</div>
+              </div>
+              <div className="qm-stat-item">
+                <div className="qm-stat-icon">🔥</div>
+                <div className="qm-stat-value">12</div>
+                <div className="qm-stat-label">Best Streak</div>
+              </div>
+            </div>
+
+            <div className="qm-sidebar-section-title">My Learning</div>
+            <div className="qm-sidebar-list">
+              <Link href="/dashboard" className="qm-sidebar-item" onClick={() => setIsProfileSidebarOpen(false)}>
+                <div className="qm-item-icon blue">🔖</div>
+                <div className="qm-item-info">
+                  <div className="qm-item-name">Bookmarked Questions</div>
+                </div>
+                <div className="qm-item-meta">
+                  <span>{bookmarkCount}</span>
+                  <span className="qm-chevron">›</span>
+                </div>
+              </Link>
+              <button type="button" className="qm-sidebar-item">
+                <div className="qm-item-icon red">❌</div>
+                <div className="qm-item-info">
+                  <div className="qm-item-name">Incorrect Questions</div>
+                </div>
+                <div className="qm-item-meta">
+                  <span>56</span>
+                  <span className="qm-chevron">›</span>
+                </div>
+              </button>
+              <Link href="/dashboard" className="qm-sidebar-item" onClick={() => setIsProfileSidebarOpen(false)}>
+                <div className="qm-item-icon green">✅</div>
+                <div className="qm-item-info">
+                  <div className="qm-item-name">Completed Quizzes</div>
+                </div>
+                <div className="qm-item-meta">
+                  <span>{completedCount}</span>
+                  <span className="qm-chevron">›</span>
+                </div>
+              </Link>
+              <Link href="/dashboard" className="qm-sidebar-item" onClick={() => setIsProfileSidebarOpen(false)}>
+                <div className="qm-item-icon purple">🕐</div>
+                <div className="qm-item-info">
+                  <div className="qm-item-name">Practice History</div>
+                </div>
+                <div className="qm-item-meta">
+                  <span className="qm-chevron">›</span>
+                </div>
+              </Link>
+            </div>
+
+            <div className="qm-sidebar-section-title">Achievements</div>
+            <div className="qm-achievements-row">
+              <div className="qm-achievement-item">
+                <div className="qm-achievement-icon">🪙</div>
+                <div className="qm-achievement-value">1,250</div>
+                <div className="qm-achievement-label">Coins</div>
+              </div>
+              <div className="qm-achievement-item">
+                <div className="qm-achievement-icon">🛡️</div>
+                <div className="qm-achievement-value">18</div>
+                <div className="qm-achievement-label">Badges</div>
+              </div>
+              <div className="qm-achievement-item">
+                <div className="qm-achievement-icon">📊</div>
+                <div className="qm-achievement-value">Top 15%</div>
+                <div className="qm-achievement-label">Leaderboard</div>
+              </div>
+            </div>
+
+            <div className="qm-sidebar-section-title">Settings</div>
+            <div className="qm-settings-list">
+              <button type="button" className="qm-setting-item">
+                <div className="qm-setting-icon">🌙</div>
+                <div className="qm-setting-name">Appearance</div>
+                <div className="qm-setting-value">
+                  Dark Mode
+                  <span className="qm-chevron">›</span>
+                </div>
+              </button>
+              <button
+                type="button"
+                className="qm-setting-item"
+                onClick={() => setIsSoundOn((value) => !value)}
+              >
+                <div className="qm-setting-icon">🔊</div>
+                <div className="qm-setting-name">Sound</div>
+                <div className={`qm-toggle ${isSoundOn ? "active" : ""}`} aria-hidden="true">
+                  <div className="qm-toggle-knob" />
+                </div>
+              </button>
+              <button type="button" className="qm-setting-item">
+                <div className="qm-setting-icon">🌐</div>
+                <div className="qm-setting-name">Language</div>
+                <div className="qm-setting-value">
+                  English
+                  <span className="qm-chevron">›</span>
+                </div>
+              </button>
+              <button type="button" className="qm-setting-item">
+                <div className="qm-setting-icon">🔔</div>
+                <div className="qm-setting-name">Notifications</div>
+                <span className="qm-chevron">›</span>
+              </button>
+            </div>
+
+            <div className="qm-premium-banner">
+              <div className="qm-premium-icon">👑</div>
+              <div className="qm-premium-info">
+                <div className="qm-premium-title">QuizMaster Premium</div>
+                <div className="qm-premium-desc">Unlock unlimited quizzes, ads-free experience and more!</div>
+              </div>
+              <button type="button" className="qm-premium-btn">Upgrade Now</button>
+            </div>
+
+            <div className="qm-sidebar-section-title">Account</div>
+            <div className="qm-account-list">
+              <button type="button" className="qm-account-item">
+                <div className="qm-account-icon">👤</div>
+                <div className="qm-account-name">Edit Profile</div>
+                <span className="qm-chevron">›</span>
+              </button>
+              <button type="button" className="qm-account-item">
+                <div className="qm-account-icon">🔒</div>
+                <div className="qm-account-name">Change Password</div>
+                <span className="qm-chevron">›</span>
+              </button>
+              <button type="button" className="qm-account-item">
+                <div className="qm-account-icon">🎁</div>
+                <div className="qm-account-name">Invite Friends</div>
+                <span className="qm-account-badge">Earn Coins</span>
+                <span className="qm-chevron">›</span>
+              </button>
+              <button type="button" className="qm-account-item">
+                <div className="qm-account-icon">❓</div>
+                <div className="qm-account-name">Help & Support</div>
+                <span className="qm-chevron">›</span>
+              </button>
+              <button type="button" className="qm-account-item">
+                <div className="qm-account-icon">ℹ️</div>
+                <div className="qm-account-name">About QuizMaster</div>
+                <span className="qm-chevron">›</span>
+              </button>
+              <button type="button" className="qm-account-item logout" onClick={handleLogout}>
+                <div className="qm-account-icon">↩️</div>
+                <div className="qm-account-name">Logout</div>
+              </button>
+            </div>
+
+            <div style={{ height: 20 }} />
+          </aside>
+        </>
+      ) : null}
 
       {/* ── Subject Boxes ── */}
     </div>
