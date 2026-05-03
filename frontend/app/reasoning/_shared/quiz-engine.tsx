@@ -1942,7 +1942,7 @@ export default function ReasoningQuizEngine({
 
     return resolveIndexedQuestions(questionIndex, {
       bucket: mode,
-      concept: mode === "concept" ? conceptFilter : "all",
+      concept: "all",
       exam: examFilter,
     });
   }, [
@@ -3655,50 +3655,6 @@ export default function ReasoningQuizEngine({
           >
             {MODE_LABELS[mode]}
           </h1>
-
-          {mode === "concept" && (
-            <div className="mb-4 flex flex-wrap justify-center gap-2">
-              <button
-                onClick={() => setConceptFilter("all")}
-                className="rounded-full px-4 py-2 text-sm font-semibold transition-all"
-                style={{
-                  background:
-                    conceptFilter === "all"
-                      ? "var(--quiz-accent-bg)"
-                      : "var(--quiz-pill-bg)",
-                  color:
-                    conceptFilter === "all"
-                      ? "var(--quiz-accent-text)"
-                      : "var(--quiz-pill-text)",
-                  border: `1.5px solid ${
-                    conceptFilter === "all"
-                      ? "var(--quiz-accent-border)"
-                      : "var(--quiz-pill-border)"
-                  }`,
-                }}
-              >
-                All
-              </button>
-              {conceptOptions.map((concept) => {
-                const col = conceptColours[concept] ?? DEFAULT_CONCEPT_COLOUR;
-                const isActive = conceptFilter === concept;
-                return (
-                  <button
-                    key={concept}
-                    onClick={() => setConceptFilter(concept)}
-                    className="rounded-full px-4 py-2 text-sm font-semibold transition-all"
-                    style={{
-                      background: isActive ? col.text : col.bg,
-                      color: isActive ? "#fff" : col.text,
-                      border: `1.5px solid ${col.border}`,
-                    }}
-                  >
-                    {concept}
-                  </button>
-                );
-              })}
-            </div>
-          )}
 
           <div
             className="mb-5 flex items-center justify-center"
