@@ -74,15 +74,49 @@ function buildQuestionContext(
 }
 
 function normalizeTutorMarkdown(content: string) {
+  const hasLatexCommand = /\\(?:frac|dfrac|tfrac|sin|cos|tan|cot|sec|csc|theta|times|div|sqrt|text|Rightarrow|left|right|pi|alpha|beta|gamma|cdot|le|ge|neq|approx|therefore|because|degree)/;
+
+  const normalizeMathLine = (line: string) => {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("```")) return line;
+    if (trimmed.startsWith("$$") || trimmed.startsWith("\\[")) return line;
+    if (!hasLatexCommand.test(line)) return line;
+
+    const listPrefixMatch = line.match(/^(\s*(?:[-*+]|\d+[.)])\s+)(.*)$/);
+    const prefix = listPrefixMatch?.[1] ?? "";
+    const body = listPrefixMatch?.[2] ?? line;
+    const bodyTrimmed = body.trim();
+
+    const isRawEquation =
+      bodyTrimmed.startsWith("\\") ||
+      (/=/.test(bodyTrimmed) && !/[a-zA-Z]{4,}/.test(bodyTrimmed.replace(/\\[a-zA-Z]+/g, "")));
+
+    if (!isRawEquation) return line;
+
+    const math = bodyTrimmed
+      .replace(/^\$+|\$+$/g, "")
+      .replace(/\$\s+\$/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    return `${prefix}$$${math}$$`;
+  };
+
   return content
+    .replace(/\\\[/g, "$$")
+    .replace(/\\\]/g, "$$")
+    .replace(/\$\s+\$/g, " ")
     .replace(
-      /^\s*\[\s*((?=.*\\[a-zA-Z]+)[^\]\n]+)\s*\]\s*$/gm,
-      (_, math: string) => `$$${math.trim()}$$`
+      /\*\*((?=[^*\n]*\\(?:frac|sin|cos|tan|theta))[^*\n]+)\*\*/g,
+      (_, math: string) => `**$${math.trim().replace(/^\$+|\$+$/g, "")}$**`
     )
     .replace(
-      /(^|\n)(?![$\n])([^\n]*\\(?:frac|times|div|sqrt|text|Rightarrow|left|right)[^\n]*)(?=\n|$)/g,
-      (_, prefix: string, math: string) => `${prefix}$${math.trim()}$`
-    );
+      /^\s*\[\s*((?=.*\\[a-zA-Z]+)[^\]\n]+)\s*\]\s*$/gm,
+      (_, math: string) => `$$${math.trim().replace(/\$\s+\$/g, " ")}$$`
+    )
+    .split("\n")
+    .map(normalizeMathLine)
+    .join("\n");
 }
 
 function BotGlyph({ small = false }: { small?: boolean }) {
