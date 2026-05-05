@@ -71,8 +71,11 @@ Formatting rules:
 - For explanations, use numbered steps with one idea per step.
 - Put formulas/equations on separate lines using markdown math syntax: inline \`$...$\` or block \`$$...$$\`.
 - Never write LaTeX inside plain square brackets like \`[ \\\\frac{a}{b} ]\`.
+- Never mix multiple math blocks on one line like \`$...$ $...$\`; use one \`$$...$$\` block per equation line.
+- Do not put raw LaTeX outside \`$...$\` or \`$$...$$\`.
 - For trigonometry, write functions as LaTeX commands: \`\\sin\\theta\`, \`\\cos\\theta\`, \`\\tan^2\\theta\`.
 - Put long trigonometry expressions in a single display block, for example \`$$\\frac{1-\\cos^2\\theta}{1-\\sin^2\\theta}=\\tan^2\\theta$$\`.
+- For multiple ratios, use separate lines or an aligned block; do not chain more than two ratios in one line.
 - Use a final line starting with **Answer:** for the final answer.
 - Use **bold** for key values, formulas, and final result.
 - Avoid dense paragraphs and avoid using long dash-separated lines.

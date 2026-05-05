@@ -74,45 +74,58 @@ function buildQuestionContext(
 }
 
 function normalizeTutorMarkdown(content: string) {
-  const hasLatexCommand = /\\(?:frac|dfrac|tfrac|sin|cos|tan|cot|sec|csc|theta|times|div|sqrt|text|Rightarrow|left|right|pi|alpha|beta|gamma|cdot|le|ge|neq|approx|therefore|because|degree)/;
+  const latexCommand =
+    /\\(?:frac|dfrac|tfrac|sin|cos|tan|cot|sec|csc|theta|times|div|sqrt|text|Rightarrow|left|right|pi|alpha|beta|gamma|cdot|le|ge|neq|approx|therefore|because|degree|overline|angle|triangle|parallel|perp|infty|sum|prod|log|ln)/;
+
+  const cleanLatex = (value: string) =>
+    value
+      .replace(/\$+\s+\$+/g, " ")
+      .replace(/^\$+|\$+$/g, "")
+      .replace(/\$/g, "")
+      .replace(/\\operatorname\{([^}]+)\}/g, "\\text{$1}")
+      .replace(/\s+/g, " ")
+      .trim();
 
   const normalizeMathLine = (line: string) => {
     const trimmed = line.trim();
     if (!trimmed || trimmed.startsWith("```")) return line;
-    if (trimmed.startsWith("$$") || trimmed.startsWith("\\[")) return line;
-    if (!hasLatexCommand.test(line)) return line;
+    if (trimmed.startsWith("$$")) return line;
+    if (!latexCommand.test(line)) return line;
 
     const listPrefixMatch = line.match(/^(\s*(?:[-*+]|\d+[.)])\s+)(.*)$/);
     const prefix = listPrefixMatch?.[1] ?? "";
     const body = listPrefixMatch?.[2] ?? line;
     const bodyTrimmed = body.trim();
+    const proseProbe = bodyTrimmed
+      .replace(/\\[a-zA-Z]+/g, "")
+      .replace(/\{[^}]*\}/g, "")
+      .replace(/[0-9_{}^=+\-*/().,:%\s]/g, "");
 
     const isRawEquation =
       bodyTrimmed.startsWith("\\") ||
-      (/=/.test(bodyTrimmed) && !/[a-zA-Z]{4,}/.test(bodyTrimmed.replace(/\\[a-zA-Z]+/g, "")));
+      (/=/.test(bodyTrimmed) && proseProbe.length <= 2);
 
     if (!isRawEquation) return line;
 
-    const math = bodyTrimmed
-      .replace(/^\$+|\$+$/g, "")
-      .replace(/\$\s+\$/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
+    const math = cleanLatex(bodyTrimmed);
 
     return `${prefix}$$${math}$$`;
   };
 
   return content
-    .replace(/\\\[/g, "$$")
-    .replace(/\\\]/g, "$$")
-    .replace(/\$\s+\$/g, " ")
+    .replace(/\\\(([\s\S]*?)\\\)/g, (_, math: string) => `$${cleanLatex(math)}$`)
+    .replace(/\\\[([\s\S]*?)\\\]/g, (_, math: string) => `$$${cleanLatex(math)}$$`)
+    .replace(/\$+\s+\$+/g, " ")
+    .replace(/\$\s*\\displaystyle\s+/g, "$")
+    .replace(/\$\$([\s\S]*?)\$\$/g, (_, math: string) => `$$${cleanLatex(math)}$$`)
+    .replace(/\$([^$\n]*\\[a-zA-Z][^$\n]*)\$/g, (_, math: string) => `$${cleanLatex(math)}$`)
     .replace(
       /\*\*((?=[^*\n]*\\(?:frac|sin|cos|tan|theta))[^*\n]+)\*\*/g,
-      (_, math: string) => `**$${math.trim().replace(/^\$+|\$+$/g, "")}$**`
+      (_, math: string) => `**$${cleanLatex(math)}$**`
     )
     .replace(
       /^\s*\[\s*((?=.*\\[a-zA-Z]+)[^\]\n]+)\s*\]\s*$/gm,
-      (_, math: string) => `$$${math.trim().replace(/\$\s+\$/g, " ")}$$`
+      (_, math: string) => `$$${cleanLatex(math)}$$`
     )
     .split("\n")
     .map(normalizeMathLine)
@@ -323,7 +336,16 @@ export default function QuizChatbot({
                   <div className="msg-bubble">
                     <ReactMarkdown
                       remarkPlugins={[remarkMath]}
-                      rehypePlugins={[rehypeKatex]}
+                      rehypePlugins={[
+                        [
+                          rehypeKatex,
+                          {
+                            throwOnError: false,
+                            strict: "ignore",
+                            trust: false,
+                          },
+                        ],
+                      ]}
                     >
                       {normalizeTutorMarkdown(message.content)}
                     </ReactMarkdown>
@@ -462,9 +484,9 @@ export default function QuizChatbot({
           justify-content: center;
         }
         .quiz-chatbot-modal {
-          width: 100%;
-          max-width: 540px;
-          height: 85vh;
+          width: min(100vw, 920px);
+          max-width: calc(100vw - 24px);
+          height: 88vh;
           background: #0e1422;
           border-radius: 28px 28px 0 0;
           border-top: 1px solid #2d3c57;
@@ -489,7 +511,7 @@ export default function QuizChatbot({
           display: flex;
           align-items: center;
           gap: 13px;
-          padding: 18px 20px 15px;
+          padding: 18px 24px 15px;
           border-bottom: 1px solid #243048;
           flex-shrink: 0;
           background: rgba(17, 24, 39, 0.8);
@@ -564,7 +586,7 @@ export default function QuizChatbot({
           min-width: 0;
         }
         .modal-title h3 {
-          font-size: 15px;
+          font-size: 17px;
           font-weight: 800;
           background: linear-gradient(135deg, #5b6af0, #9b59f5);
           -webkit-background-clip: text;
@@ -572,7 +594,7 @@ export default function QuizChatbot({
           background-clip: text;
         }
         .modal-title p {
-          font-size: 11px;
+          font-size: 12px;
           color: #5c6b8a;
           margin-top: 1px;
           font-weight: 500;
@@ -595,12 +617,12 @@ export default function QuizChatbot({
           color: #e2e8f8;
         }
         .context-pill {
-          margin: 12px 16px 0;
-          padding: 10px 14px;
+          margin: 14px 22px 0;
+          padding: 11px 14px;
           background: rgba(91, 106, 240, 0.07);
           border: 1px solid rgba(91, 106, 240, 0.2);
           border-radius: 12px;
-          font-size: 12px;
+          font-size: 13px;
           color: #9ba8c8;
           line-height: 1.55;
           flex-shrink: 0;
@@ -627,12 +649,12 @@ export default function QuizChatbot({
         }
         .context-pill span:last-child {
           color: #9ba8c8;
-          font-size: 11px;
+          font-size: 12px;
         }
         .quick-prompts {
           display: flex;
           gap: 7px;
-          padding: 10px 16px;
+          padding: 12px 22px;
           overflow-x: auto;
           flex-shrink: 0;
           scrollbar-width: none;
@@ -642,12 +664,12 @@ export default function QuizChatbot({
         }
         .qp-btn {
           flex-shrink: 0;
-          padding: 7px 13px;
+          padding: 8px 14px;
           border-radius: 20px;
           border: 1px solid #2d3c57;
           background: #1a2236;
           color: #9ba8c8;
-          font-size: 11.5px;
+          font-size: 12.5px;
           font-weight: 600;
           cursor: pointer;
           transition: all 0.2s;
@@ -661,16 +683,16 @@ export default function QuizChatbot({
         .messages {
           flex: 1;
           overflow-y: auto;
-          padding: 14px 16px;
+          padding: 16px 22px 18px;
           display: flex;
           flex-direction: column;
-          gap: 14px;
+          gap: 16px;
           scrollbar-width: thin;
           scrollbar-color: #243048 transparent;
         }
         .msg {
           display: flex;
-          gap: 10px;
+          gap: 12px;
           animation: msgIn 0.28s cubic-bezier(0.34, 1.4, 0.64, 1) both;
         }
         .msg.user {
@@ -697,11 +719,13 @@ export default function QuizChatbot({
           color: #9ba8c8;
         }
         .msg-bubble {
-          max-width: 84%;
-          padding: 14px 16px;
+          max-width: 92%;
+          padding: 16px 18px;
           border-radius: 16px;
-          font-size: 13.5px;
-          line-height: 1.62;
+          font-size: 17px;
+          line-height: 1.76;
+          letter-spacing: 0;
+          overflow-wrap: anywhere;
         }
         .msg.bot .msg-bubble {
           background: #1a2236;
@@ -710,13 +734,14 @@ export default function QuizChatbot({
           color: #e2e8f8;
         }
         .msg.user .msg-bubble {
+          max-width: 78%;
           background: linear-gradient(135deg, #5b6af0, #9b59f5);
           border-bottom-right-radius: 5px;
           color: #fff;
           box-shadow: 0 4px 16px rgba(91, 106, 240, 0.3);
         }
         .msg-bubble :global(p) {
-          margin: 0 0 10px;
+          margin: 0 0 12px;
         }
         .msg-bubble :global(p:last-child) {
           margin-bottom: 0;
@@ -726,7 +751,7 @@ export default function QuizChatbot({
         .msg-bubble :global(h3) {
           margin: 0 0 10px;
           color: #c4b5fd;
-          font-size: 14px;
+          font-size: 17px;
           font-weight: 800;
           line-height: 1.35;
         }
@@ -736,10 +761,10 @@ export default function QuizChatbot({
         }
         .msg-bubble :global(ol),
         .msg-bubble :global(ul) {
-          margin: 8px 0 10px;
+          margin: 10px 0 12px;
           padding-left: 0;
           display: grid;
-          gap: 8px;
+          gap: 10px;
           list-style: none;
         }
         .msg-bubble :global(ol) {
@@ -747,7 +772,7 @@ export default function QuizChatbot({
         }
         .msg-bubble :global(li) {
           position: relative;
-          padding-left: 30px;
+          padding-left: 34px;
           color: #e2e8f8;
         }
         .msg-bubble :global(ol > li) {
@@ -767,7 +792,7 @@ export default function QuizChatbot({
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          font-size: 11px;
+          font-size: 12px;
           font-weight: 800;
           line-height: 1;
         }
@@ -786,8 +811,34 @@ export default function QuizChatbot({
           background: rgba(91, 106, 240, 0.15);
           padding: 2px 6px;
           border-radius: 5px;
-          font-size: 12px;
+          font-size: 14px;
           color: #86efac;
+        }
+        .msg-bubble :global(.math),
+        .msg-bubble :global(.katex) {
+          font-size: 1.16em;
+          line-height: 1.35;
+        }
+        .msg-bubble :global(.katex-display) {
+          margin: 0.55em 0 0.65em;
+          padding: 0.35em 0 0.45em;
+          overflow-x: auto;
+          overflow-y: hidden;
+          text-align: left;
+          white-space: nowrap;
+        }
+        .msg-bubble :global(.katex-display > .katex) {
+          display: inline-block;
+          min-width: max-content;
+          font-size: 1.42em;
+          text-align: left;
+        }
+        .msg-bubble :global(.katex .mfrac) {
+          font-size: 1.08em;
+        }
+        .msg-bubble :global(.katex-error) {
+          color: #f8fafc !important;
+          font-family: "Cambria Math", "Times New Roman", serif;
         }
         .msg-bubble :global(pre) {
           margin: 8px 0 10px;
@@ -837,7 +888,7 @@ export default function QuizChatbot({
         .input-bar {
           display: flex;
           gap: 10px;
-          padding: 12px 16px 22px;
+          padding: 13px 22px 22px;
           border-top: 1px solid #243048;
           flex-shrink: 0;
           background: #0e1422;
@@ -850,7 +901,7 @@ export default function QuizChatbot({
           border-radius: 14px;
           padding: 11px 14px;
           color: #e2e8f8;
-          font-size: 13.5px;
+          font-size: 15px;
           outline: none;
           resize: none;
           height: 46px;
