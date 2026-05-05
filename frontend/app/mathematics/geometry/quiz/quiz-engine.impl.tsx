@@ -2,6 +2,7 @@
 
 import RichContent from "@/components/RichContent";
 import ImageMCQ from "@/components/ImageMCQ";
+import QuizChatbot from "@/components/QuizChatbot";
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
@@ -2392,6 +2393,14 @@ export default function TrigQuizEngine() {
         </aside>
         </div>
       </main>
+
+      <QuizChatbot
+        key={currentQ.id}
+        isVisible={isCurrentSubmitted}
+        questionNumber={currentIndex + 1}
+        topicTitle={quizTitle}
+        question={currentQ}
+      />
 
       {/* Submit error toast */}
       {submitError && (

@@ -4,6 +4,7 @@ import RichContent from "@/components/RichContent";
 import MathRenderer from "@/components/MathRenderer";
 import MathText from "@/components/MathText";
 import ImageMCQ from "@/components/ImageMCQ";
+import QuizChatbot from "@/components/QuizChatbot";
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
@@ -2805,6 +2806,14 @@ export default function MensurationQuizEngine() {
           onClose={closeSolution}
         />
       )}
+
+      <QuizChatbot
+        key={currentQ.id}
+        isVisible={isCurrentSubmitted}
+        questionNumber={currentIndex + 1}
+        topicTitle={quizTitle}
+        question={currentQ}
+      />
 
       {submitError && (
         <div className="fixed bottom-[86px] left-0 right-0 z-40 px-3 sm:px-6">

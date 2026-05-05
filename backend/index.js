@@ -18,6 +18,7 @@ import imageUploadRoutes from './routes/imageUpload.js';
 import uploadNoteImageRoutes from './routes/uploadNoteImage.js';
 import massUploadImages from './routes/massUploadImages.js';
 import massUploadSolutions from './routes/massUploadSolutions.js';
+import aiRoutes from './routes/aiRoutes.js';
 import { setQuestionsContainer, setUsersContainer, setNotesContainer } from './containerStore.js';
 import { initBattleSocket } from './battle/battleSocket.js';
 
@@ -112,6 +113,7 @@ async function initWithRetry() {
     initBattleSocket(httpServer, allowedOrigins);
 
     app.use('/api/questions', questionRoutes);
+    app.use('/api/ai', aiRoutes);
     app.use('/api/upload', imageUploadRoutes);
     app.use('/api', massUploadImages);
     app.use('/api', massUploadSolutions);

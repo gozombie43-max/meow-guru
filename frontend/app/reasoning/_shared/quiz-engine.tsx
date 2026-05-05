@@ -3,6 +3,7 @@
 import MathRenderer from "@/components/MathRenderer";
 import MathText from "@/components/MathText";
 import RichContent from "@/components/RichContent";
+import QuizChatbot from "@/components/QuizChatbot";
 
 import React, {
   useState,
@@ -4287,6 +4288,14 @@ export default function ReasoningQuizEngine({
           onClose={closeSolution}
         />
       )}
+
+      <QuizChatbot
+        key={currentQ.id}
+        isVisible={isCurrentSubmitted}
+        questionNumber={currentIndex + 1}
+        topicTitle={title}
+        question={currentQ}
+      />
 
       {submitError && (
         <div className="fixed bottom-[86px] left-0 right-0 z-40 px-3 sm:px-6">

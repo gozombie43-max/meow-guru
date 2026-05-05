@@ -3,6 +3,7 @@
 import MathRenderer from "@/components/MathRenderer";
 import RichContent from "@/components/RichContent";
 import ImageMCQ from "@/components/ImageMCQ";
+import QuizChatbot from "@/components/QuizChatbot";
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useSearchParams } from "next/navigation";
@@ -2702,6 +2703,14 @@ export default function TrigQuizEngine() {
           onClose={closeSolution}
         />
       )}
+
+      <QuizChatbot
+        key={currentQ.id}
+        isVisible={isCurrentSubmitted}
+        questionNumber={currentIndex + 1}
+        topicTitle={quizTitle}
+        question={currentQ}
+      />
 
       {/* Submit error toast */}
       {submitError && (

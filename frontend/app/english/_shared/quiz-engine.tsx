@@ -3,6 +3,7 @@
 import MathRenderer from "@/components/MathRenderer";
 import RichContent from "@/components/RichContent";
 import ImageMCQ from "@/components/ImageMCQ";
+import QuizChatbot from "@/components/QuizChatbot";
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useSearchParams } from "next/navigation";
@@ -2755,6 +2756,14 @@ export default function EnglishQuizEngine({
           onClose={closeSolution}
         />
       )}
+
+      <QuizChatbot
+        key={currentQ.id}
+        isVisible={isCurrentSubmitted}
+        questionNumber={currentIndex + 1}
+        topicTitle={title}
+        question={currentQ}
+      />
 
       {submitError && (
         <div className="fixed bottom-[86px] left-0 right-0 z-40 px-3 sm:px-6">
