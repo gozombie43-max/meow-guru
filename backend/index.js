@@ -38,11 +38,25 @@ const allowedOrigins = new Set([
   'https://brave-island-0a237e400.6.azurestaticapps.net',
 ]);
 
+const allowedOriginPatterns = [
+  /^http:\/\/localhost:\d+$/,
+  /^http:\/\/127\.0\.0\.1:\d+$/,
+  /^http:\/\/\[::1\]:\d+$/,
+];
+
+const isOriginAllowed = (origin) => {
+  if (!origin) return true;
+  if (allowedOrigins.has(origin)) return true;
+  return allowedOriginPatterns.some((pattern) => pattern.test(origin));
+};
+
+const corsOrigin = (origin, cb) => {
+  if (isOriginAllowed(origin)) return cb(null, true);
+  return cb(new Error('Not allowed by CORS'));
+};
+
 const corsOptions = {
-  origin: (origin, cb) => {
-    if (!origin || allowedOrigins.has(origin)) return cb(null, true);
-    return cb(new Error('Not allowed by CORS'));
-  },
+  origin: corsOrigin,
   credentials: true,
 };
 
@@ -110,7 +124,7 @@ async function initWithRetry() {
 
     initPassport(usersContainer);
 
-    initBattleSocket(httpServer, allowedOrigins);
+    initBattleSocket(httpServer, corsOrigin);
 
     app.use('/api/questions', questionRoutes);
     app.use('/api/ai', aiRoutes);

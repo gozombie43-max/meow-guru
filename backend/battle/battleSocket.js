@@ -28,9 +28,9 @@ function matchesNormalizedTopic(question, normalizedTopic) {
 
 const REVEAL_DELAY  = 2000; // ms to show results before next question
 
-export function initBattleSocket(httpServer, allowedOrigins) {
+export function initBattleSocket(httpServer, corsOrigin) {
   const io = new Server(httpServer, {
-    cors: { origin: [...allowedOrigins], credentials: true },
+    cors: { origin: corsOrigin, credentials: true },
   });
 
   io.on('connection', (socket) => {

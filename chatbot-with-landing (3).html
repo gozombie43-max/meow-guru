@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>gpai</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --or:#F26522;--orl:#fff3ee;--orm:#fde0ce;
+  --pu:#6B5CF6;--pul:#f0eeff;
+  --dk:#1a1a1a;--gr:#6b7280;--grl:#f5f5f5;
+  --bd:#e8e8e8;--wh:#ffffff;--bg:#f7f7f7;
+  --sh:0 2px 16px rgba(0,0,0,0.07);
+  --sbody-c:#2d2d2d;--ares-bg:#fffaf7;--irow-bg:#f2f2f2;
+}
+body.dark{
+  --or:#FF7A3D;--orl:#2a1a0e;--orm:#4a2a14;
+  --pu:#9b8ffa;--pul:#1e1a3a;
+  --dk:#ececec;--gr:#8a929e;--grl:#252525;
+  --bd:#2e2e2e;--wh:#1c1c1c;--bg:#111111;
+  --sh:0 2px 20px rgba(0,0,0,0.5);
+  --sbody-c:#cccccc;--ares-bg:#1f1508;--irow-bg:#242424;
+}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:var(--bg);color:var(--dk);
+  display:flex;flex-direction:column;
+  max-width:480px;margin:0 auto;
+  transition:background .35s,color .35s;
+}
+
+/* TOPBAR */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 14px;background:var(--wh);
+  border-bottom:1px solid var(--bd);flex-shrink:0;
+  transition:background .35s,border-color .35s;
+}
+.closebtn{
+  width:32px;height:32px;border-radius:50%;border:1.5px solid var(--bd);
+  background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:18px;color:var(--gr);line-height:1;
+  transition:background .2s,border-color .35s,color .2s;flex-shrink:0;
+}
+.closebtn:hover{background:var(--grl);color:var(--dk)}
+.logo{font-size:16px;font-weight:700;letter-spacing:-0.5px;color:var(--dk);transition:color .35s}
+.hbtn{
+  width:28px;height:28px;display:flex;flex-direction:column;
+  justify-content:center;gap:4px;background:none;
+  border:1.5px solid var(--bd);border-radius:8px;padding:5px 6px;cursor:pointer;
+  transition:border-color .35s;
+}
+.hbtn span{display:block;height:1.5px;background:var(--dk);border-radius:2px;transition:background .35s}
+.hbtn span:nth-child(2){width:70%}
+.dmbtn{
+  width:28px;height:28px;border-radius:50%;border:1.5px solid var(--bd);
+  background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:14px;transition:background .2s,border-color .35s;flex-shrink:0;
+}
+.dmbtn:hover{background:var(--grl)}
+
+/* LANDING */
+#land{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--wh);transition:opacity .3s,transform .3s,background .35s}
+#land.out{opacity:0;transform:translateY(-14px);pointer-events:none}
+.lscroll{flex:1;overflow-y:auto;padding-bottom:8px}
+.lscroll::-webkit-scrollbar{width:4px}
+.lscroll::-webkit-scrollbar-thumb{background:var(--bd);border-radius:4px}
+.ctx{margin:16px 16px 0;background:var(--wh);border:1px solid var(--bd);border-radius:16px;padding:14px 16px;display:flex;align-items:flex-start;gap:12px;box-shadow:var(--sh);transition:background .35s,border-color .35s}
+.ctxi{width:38px;height:38px;background:var(--pu);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;color:#fff;flex-shrink:0;transition:background .35s}
+.ctxl{font-size:13px;font-weight:600;color:var(--pu);margin-bottom:2px;transition:color .35s}
+.ctxl span{color:var(--dk);font-weight:400;transition:color .35s}
+.ctxs{font-size:12px;color:var(--gr);margin-top:2px}
+.ltitle{text-align:center;font-size:26px;font-weight:700;letter-spacing:-0.5px;padding:28px 20px 20px;color:var(--dk);transition:color .35s}
+.opts{display:flex;flex-direction:column;gap:10px;padding:0 16px 20px}
+.opt{background:var(--wh);border:1px solid var(--bd);border-radius:16px;padding:15px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:background .15s,transform .12s,box-shadow .15s,border-color .35s;box-shadow:var(--sh);text-align:left;width:100%}
+.opt:hover{background:var(--grl);transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,0.12)}
+.opt:active{transform:scale(0.98)}
+.oi{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;transition:background .35s}
+.g{background:#e6faf0}.o{background:var(--orl)}.p{background:var(--pul)}.b{background:#e8f4ff}.y{background:#fffbe6}
+body.dark .g{background:#0d2b1a}
+body.dark .b{background:#0d1e2e}
+body.dark .y{background:#241e06}
+.ot{font-size:14.5px;font-weight:700;color:var(--dk);margin-bottom:2px;display:block;transition:color .35s}
+.os{font-size:12px;color:var(--gr)}
+
+/* BOTTOM BAR */
+.bbar{flex-shrink:0;background:var(--wh);padding:10px 14px 18px;border-top:1px solid var(--bd);transition:opacity .3s,background .35s,border-color .35s}
+#lbar.out{opacity:0;pointer-events:none}
+.irow{display:flex;align-items:center;gap:10px;background:var(--irow-bg);border-radius:50px;padding:8px 8px 8px 16px;transition:background .35s}
+.addb{width:36px;height:36px;background:var(--wh);border:1px solid var(--bd);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:300;color:var(--dk);cursor:pointer;flex-shrink:0;transition:background .35s,border-color .35s,color .35s}
+.ci{flex:1;border:none;background:transparent;font-size:15px;color:var(--dk);outline:none;min-width:0;transition:color .35s}
+.ci::placeholder{color:var(--gr)}
+.mic{width:40px;height:40px;background:var(--or);border-radius:50%;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;box-shadow:0 2px 8px rgba(242,101,34,0.35);transition:transform .15s,background .35s}
+.mic:hover{transform:scale(1.07)}
+.mic svg{width:18px;height:18px;fill:#fff}
+.snd{width:40px;height:40px;background:var(--or);border-radius:50%;border:none;display:none;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;box-shadow:0 2px 8px rgba(242,101,34,0.35);transition:background .35s}
+.snd svg{width:16px;height:16px;fill:#fff}
+.snd.on{display:flex}
+
+/* CHAT */
+#chat{flex:1;display:none;flex-direction:column;overflow:hidden;opacity:0;transform:translateY(14px);transition:opacity .3s,transform .3s}
+#chat.show{display:flex}
+#chat.in{opacity:1;transform:translateY(0)}
+.ca{flex:1;overflow-y:auto;padding:0 0 8px;scroll-behavior:smooth}
+.ca::-webkit-scrollbar{width:4px}
+.ca::-webkit-scrollbar-thumb{background:var(--bd);border-radius:4px}
+.mu{margin:16px 16px 0;background:var(--wh);border-radius:16px;padding:14px 16px;border:1px solid var(--bd);font-size:14.5px;font-weight:500;color:var(--dk);box-shadow:var(--sh);animation:fu .3s ease;transition:background .35s,border-color .35s,color .35s}
+.ma{margin:12px 16px 0;animation:fu .3s ease}
+@keyframes fu{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.ahead{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.albl{font-size:16px;font-weight:700;color:var(--dk);transition:color .35s}
+.ares{background:var(--ares-bg);border-radius:12px;padding:12px 16px;border:1px solid var(--orm);font-size:14px;color:var(--dk);margin-bottom:12px;line-height:1.7;font-family:monospace;transition:background .35s,border-color .35s,color .35s}
+.sb{background:var(--wh);border-radius:16px;border:1px solid var(--bd);overflow:hidden;box-shadow:var(--sh);transition:background .35s,border-color .35s}
+.sh2{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 0;margin-bottom:8px}
+.slbl2{font-size:16px;font-weight:700;color:var(--dk);transition:color .35s}
+.cpb{font-size:12px;font-weight:500;color:var(--gr);background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:5px;padding:4px 8px;border-radius:8px;transition:background .15s}
+.cpb:hover{background:var(--grl)}
+.sdiv{height:1px;background:var(--bd);margin:0 0 14px;transition:background .35s}
+.sbody{padding:0 16px 16px;font-size:14.5px;line-height:1.75;color:var(--sbody-c);transition:color .35s}
+.sbody p{margin-bottom:10px}
+.hl{color:var(--or);font-weight:600;transition:color .35s}
+.stit{font-size:15px;font-weight:700;margin:14px 0 6px;color:var(--dk);transition:color .35s}
+.sectit{font-size:14.5px;font-weight:700;margin:12px 0 6px;color:var(--dk);transition:color .35s}
+.mb{background:var(--grl);border-radius:10px;padding:12px 14px;margin:8px 0;font-family:monospace;font-size:13.5px;line-height:1.9;color:var(--dk);transition:background .35s,color .35s}
+.bul{display:flex;gap:8px;margin:6px 0;font-size:14px;align-items:flex-start}
+.bul::before{content:"•";color:var(--or);font-weight:700;flex-shrink:0;margin-top:1px;transition:color .35s}
+.fb{background:var(--wh);border:1.5px solid var(--dk);border-radius:10px;padding:10px 16px;font-family:monospace;font-size:13.5px;display:inline-block;margin-top:10px;color:var(--dk);transition:background .35s,border-color .35s,color .35s}
+.typing{display:flex;gap:5px;align-items:center;padding:6px 2px;margin:12px 16px 0}
+.typing span{width:7px;height:7px;border-radius:50%;background:var(--or);animation:bo .9s infinite;transition:background .35s}
+.typing span:nth-child(2){animation-delay:.15s}
+.typing span:nth-child(3){animation-delay:.3s}
+@keyframes bo{0%,100%{transform:translateY(0);opacity:.5}50%{transform:translateY(-5px);opacity:1}}
+.hidden{display:none!important}
+.swrap{margin:14px 0 4px}
+.swlbl{font-size:11px;font-weight:600;color:var(--gr);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px}
+.swlist{display:flex;flex-direction:column;gap:7px}
+.chip{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--wh);border:1px solid var(--bd);border-radius:12px;padding:11px 14px;cursor:pointer;font-size:13px;font-weight:500;color:var(--dk);text-align:left;width:100%;box-shadow:0 1px 4px rgba(0,0,0,0.05);transition:background .15s,border-color .15s,transform .1s,color .35s}
+.chip:hover{background:var(--orl);border-color:var(--orm);transform:translateX(2px)}
+.chip:active{transform:scale(0.98)}
+.chipl{display:flex;align-items:center;gap:9px}
+.chipa{color:var(--or);font-size:16px;transition:color .35s}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="hbtn"><span></span><span></span><span></span></button>
+  <div class="logo">gpai</div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <button class="dmbtn" id="dmBtn" title="Toggle dark mode">🌙</button>
+    <button class="closebtn" id="closeBtn" title="Close">&#10005;</button>
+  </div>
+</div>
+
+<!-- LANDING PAGE -->
+<div id="land">
+  <div class="lscroll">
+    <div class="ctx">
+      <div class="ctxi">Q</div>
+      <div>
+        <div class="ctxl">Context loaded: <span>Q1 &middot; Letter Coding &middot; SSC MTS 14/10/2024 (Evening)</span></div>
+        <div class="ctxs">Ask anything about this submitted question.</div>
+      </div>
+    </div>
+    <div class="ltitle">What can I help with?</div>
+    <div class="opts">
+      <button class="opt" onclick="go('Explain the step-by-step solution')">
+        <div class="oi g">&#9889;</div>
+        <div><span class="ot">Explain the step-by-step solution</span><span class="os">Get a clear, detailed solution in steps.</span></div>
+      </button>
+      <button class="opt" onclick="go('Why is the correct option right?')">
+        <div class="oi o">&#10003;</div>
+        <div><span class="ot">Why is the correct option right?</span><span class="os">Understand the logic and reasoning.</span></div>
+      </button>
+      <button class="opt" onclick="go('Give me a similar practice question')">
+        <div class="oi p">&#128196;</div>
+        <div><span class="ot">Give me a similar practice question</span><span class="os">Practice with a similar type of question.</span></div>
+      </button>
+      <button class="opt" onclick="go('What trap should I avoid?')">
+        <div class="oi b">&#9888;</div>
+        <div><span class="ot">What trap should I avoid?</span><span class="os">Learn common mistakes and how to avoid them.</span></div>
+      </button>
+      <button class="opt" onclick="go('What is the fastest shortcut?')">
+        <div class="oi y">&#9889;</div>
+        <div><span class="ot">What is the fastest shortcut?</span><span class="os">Get quick tricks to solve faster.</span></div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="bbar" id="lbar">
+  <div class="irow">
+    <button class="addb">+</button>
+    <input class="ci" id="li" placeholder="Ask Le Chat" autocomplete="off">
+    <button class="mic" id="lm"><svg viewBox="0 0 24 24"><path d="M12 1a4 4 0 014 4v7a4 4 0 01-8 0V5a4 4 0 014-4zm-2 4v7a2 2 0 004 0V5a2 2 0 00-4 0zm-3 7a5 5 0 0010 0h2a7 7 0 01-6 6.93V21h-2v-2.07A7 7 0 015 12H7z"/></svg></button>
+    <button class="snd" id="ls"><svg viewBox="0 0 24 24"><path d="M2 21L23 12 2 3v7l15 2-15 2z"/></svg></button>
+  </div>
+</div>
+
+<!-- CHAT PAGE -->
+<div id="chat">
+  <div class="ca" id="ca">
+    <div id="typ" class="typing hidden"><span></span><span></span><span></span></div>
+    <div style="height:12px"></div>
+  </div>
+  <div class="bbar">
+    <div class="irow">
+      <button class="addb">+</button>
+      <input class="ci" id="ci" placeholder="Ask Le Chat" autocomplete="off">
+      <button class="mic" id="cm"><svg viewBox="0 0 24 24"><path d="M12 1a4 4 0 014 4v7a4 4 0 01-8 0V5a4 4 0 014-4zm-2 4v7a2 2 0 004 0V5a2 2 0 00-4 0zm-3 7a5 5 0 0010 0h2a7 7 0 01-6 6.93V21h-2v-2.07A7 7 0 015 12H7z"/></svg></button>
+      <button class="snd" id="cs"><svg viewBox="0 0 24 24"><path d="M2 21L23 12 2 3v7l15 2-15 2z"/></svg></button>
+    </div>
+  </div>
+</div>
+
+<script>
+var R={
+  'Explain the step-by-step solution':{
+    a:'RISE is coded as TKUG (each letter shifts +2)',
+    b:'<p>In <span class="hl">Letter Coding</span>, each letter is replaced by another following a fixed pattern.</p><div class="sectit">Question (Q1 &ndash; SSC MTS 14/10/2024 Evening)</div><p>If <strong>CALM</strong> is coded as <strong>ECNO</strong>, how is <strong>RISE</strong> coded?</p><div class="stit">Step 1 &ndash; Find the pattern</div><div class="mb">C &rarr; E &nbsp;(+2)<br>A &rarr; C &nbsp;(+2)<br>L &rarr; N &nbsp;(+2)<br>M &rarr; O &nbsp;(+2)</div><div class="bul">Every letter shifts <strong>+2 positions</strong> forward in the alphabet.</div><div class="stit">Step 2 &ndash; Apply to RISE</div><div class="mb">R &rarr; T &nbsp;(+2)<br>I &rarr; K &nbsp;(+2)<br>S &rarr; U &nbsp;(+2)<br>E &rarr; G &nbsp;(+2)</div><div class="stit">Final Answer</div><div class="fb">RISE &rarr; <strong>TKUG</strong></div>'
+  },
+  'Why is the correct option right?':{
+    a:'Correct option is TKUG — uniform +2 shift on all letters.',
+    b:'<p>The answer is <strong>TKUG</strong> because the coding rule applies a <span class="hl">+2 letter shift</span> to every character consistently.</p><div class="sectit">Why other options fail</div><div class="bul"><strong>TKUF</strong> &ndash; Last letter E&rarr;F is only +1, breaks the rule.</div><div class="bul"><strong>SJRD</strong> &ndash; This is a &minus;1 shift, opposite direction.</div><div class="bul"><strong>TKVG</strong> &ndash; Third letter S&rarr;V is +3, inconsistent.</div><div class="stit">Key logic</div><p>Verify using the given example: <strong>CALM &rarr; ECNO</strong>. All 4 letters shift exactly +2. Apply the same rule uniformly to <strong>RISE</strong>.</p><div class="fb">&#10003; Pattern verified on all letters before applying.</div>'
+  },
+  'Give me a similar practice question':{
+    a:'Practice: Letter Coding — try this one!',
+    b:'<div class="sectit">Practice Question</div><p>If <strong>BOLD</strong> is coded as <strong>DQNF</strong>, how will <strong>FIRE</strong> be coded?</p><div class="mb">(A) HKTG &nbsp;&nbsp;(B) GKTH &nbsp;&nbsp;(C) HJSG &nbsp;&nbsp;(D) HKUG</div><div class="stit">Hint</div><div class="bul">Find the shift: B&rarr;D = how many steps?</div><div class="bul">Apply the same shift to each letter of FIRE.</div><div class="stit">Answer</div><div class="fb">FIRE &rarr; <strong>HKTG</strong> (Option A)</div><p style="margin-top:12px">Each letter +2: F&rarr;H, I&rarr;K, R&rarr;T, E&rarr;G.</p>'
+  },
+  'What trap should I avoid?':{
+    a:'Common traps in Letter Coding questions.',
+    b:'<div class="stit">Trap 1 &ndash; Confusing +2 with &times;2</div><div class="bul">+2 means move 2 steps forward. It does NOT mean multiply position by 2.</div><div class="stit">Trap 2 &ndash; Not checking all letters</div><div class="bul">Verify the pattern holds for <em>every</em> letter in the example, not just the first.</div><div class="stit">Trap 3 &ndash; Z wrap-around</div><div class="bul">Near end of alphabet: Y+2=A, Z+2=B (wraps around).</div><div class="stit">Trap 4 &ndash; Reverse coding</div><div class="bul">Some questions shift backwards. Read the example very carefully.</div><div class="fb">&#10003; Always establish the rule first, then apply uniformly.</div>'
+  },
+  'What is the fastest shortcut?':{
+    a:'Solve Letter Coding in under 10 seconds!',
+    b:'<p>Use the <span class="hl">Alphabet Position Trick</span> for maximum speed.</p><div class="stit">Method</div><div class="mb">Shift = coded_position &minus; original_position<br>Apply that shift to every letter of the target word.</div><div class="stit">Example &ndash; RISE (shift +2)</div><div class="mb">R(18)+2=20=T<br>I(9)+2=11=K<br>S(19)+2=21=U<br>E(5)+2=7=G</div><div class="bul">Target: <strong>&lt;8 seconds</strong> per question.</div><div class="bul">Anchor points: A=1, E=5, J=10, O=15, T=20, Z=26.</div><div class="fb">&#9889; Find nearest anchor &rarr; count &rarr; done.</div>'
+  }
+};
+
+// Dark mode
+var isDark=false;
+document.getElementById('dmBtn').addEventListener('click',function(){
+  isDark=!isDark;
+  document.body.classList.toggle('dark',isDark);
+  this.textContent=isDark?'☀️':'🌙';
+});
+
+function go(q){
+  var land=document.getElementById('land'),lbar=document.getElementById('lbar'),chat=document.getElementById('chat');
+  land.classList.add('out');lbar.classList.add('out');
+  setTimeout(function(){
+    land.style.display='none';lbar.style.display='none';
+    chat.classList.add('show');
+    requestAnimationFrame(function(){requestAnimationFrame(function(){chat.classList.add('in');});});
+    respond(q);
+  },300);
+}
+
+function respond(q){
+  var ca=document.getElementById('ca'),typ=document.getElementById('typ');
+  var ub=document.createElement('div');ub.className='mu';ub.textContent=q;
+  ca.insertBefore(ub,typ);typ.classList.remove('hidden');ca.scrollTop=ca.scrollHeight;
+  var d=R[q]||{a:'Here\'s what I found.',b:'<p>Ask me anything about this SSC MTS question!</p>'};
+  setTimeout(function(){
+    typ.classList.add('hidden');
+    var ab=document.createElement('div');ab.className='ma';
+    ab.innerHTML='<div class="ahead"><span class="albl">Answer</span></div>'+
+      '<div class="ares">'+d.a+'</div>'+
+      '<div class="sb"><div class="sh2"><span class="slbl2">Solution</span>'+
+      '<button class="cpb" onclick="cp(this)">&#128203; Copy</button></div>'+
+      '<div class="sdiv"></div><div class="sbody">'+d.b+'</div></div>'+
+      '<div class="swrap"><div class="swlbl">Continue exploring</div><div class="swlist">'+
+      '<button class="chip" onclick="sugg(this)"><div class="chipl"><span>&#9889;</span> What is the fastest shortcut?</div><span class="chipa">&#8250;</span></button>'+
+      '<button class="chip" onclick="sugg(this)"><div class="chipl"><span>&#128196;</span> Give me a similar practice question</div><span class="chipa">&#8250;</span></button>'+
+      '<button class="chip" onclick="sugg(this)"><div class="chipl"><span>&#9888;</span> What trap should I avoid?</div><span class="chipa">&#8250;</span></button>'+
+      '</div></div>';
+    ca.insertBefore(ab,typ);ca.scrollTop=ca.scrollHeight;
+  },1500);
+}
+
+function sugg(btn){
+  var t=btn.querySelector('.chipl').innerText.replace(/^[\s\S]{1}/,'').trim();
+  var w=btn.closest('.swrap');
+  if(w){w.style.opacity='0';w.style.transition='opacity .25s';setTimeout(function(){w.remove();},250);}
+  respond(t);
+}
+
+function cp(btn){
+  var t=btn.closest('.sb').querySelector('.sbody').innerText;
+  try{navigator.clipboard.writeText(t);}catch(e){}
+  btn.textContent='Copied!';
+  setTimeout(function(){btn.innerHTML='&#128203; Copy';},2000);
+}
+
+var ci=document.getElementById('ci'),cm=document.getElementById('cm'),cs=document.getElementById('cs');
+ci.addEventListener('input',function(){if(ci.value.trim()){cm.style.display='none';cs.classList.add('on');}else{cm.style.display='flex';cs.classList.remove('on');}});
+function sc(){var t=ci.value.trim();if(!t)return;ci.value='';cm.style.display='flex';cs.classList.remove('on');respond(t);}
+cs.addEventListener('click',sc);ci.addEventListener('keydown',function(e){if(e.key==='Enter')sc();});
+
+// Close button
+document.getElementById('closeBtn').addEventListener('click',function(){
+  if(window.parent!==window){window.parent.postMessage('close','*');}
+  else{document.body.style.transition='opacity .25s';document.body.style.opacity='0';setTimeout(function(){document.body.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-size:15px;color:#999;font-family:sans-serif">Window closed.</div>';document.body.style.opacity='1';},250);}
+});
+
+var li=document.getElementById('li'),lm=document.getElementById('lm'),ls=document.getElementById('ls');
+li.addEventListener('input',function(){if(li.value.trim()){lm.style.display='none';ls.classList.add('on');}else{lm.style.display='flex';ls.classList.remove('on');}});
+function sl(){var t=li.value.trim();if(!t)return;go(t);}
+ls.addEventListener('click',sl);li.addEventListener('keydown',function(e){if(e.key==='Enter')sl();});
+</script>
+</body>
+</html>
