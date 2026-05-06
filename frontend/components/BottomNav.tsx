@@ -91,6 +91,7 @@ export default function BottomNav() {
 
   const isHome = pathname === '/';
   const isMock = pathname.startsWith('/mock-test');
+  const isPlay = pathname === '/play' || pathname.startsWith('/play/');
   const isDarkMode = theme === 'dark';
 
   return (
@@ -117,10 +118,14 @@ export default function BottomNav() {
           <ClipboardList className="bottom-nav-icon" />
           <span className="bottom-nav-label">Mock</span>
         </Link>
-        <button className="bottom-nav-item" type="button">
+        <Link
+          href="/play"
+          className={`bottom-nav-item${isPlay ? ' is-active' : ''}`}
+          aria-current={isPlay ? 'page' : undefined}
+        >
           <Play className="bottom-nav-icon" />
           <span className="bottom-nav-label">Play</span>
-        </button>
+        </Link>
         <button
           className={`bottom-nav-item${isMenuOpen ? ' is-active' : ''}`}
           type="button"
