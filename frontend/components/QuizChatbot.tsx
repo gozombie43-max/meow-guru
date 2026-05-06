@@ -310,7 +310,16 @@ export default function QuizChatbot({
         title="Ask AI Tutor"
         aria-label="Ask AI Tutor"
       >
-        AI
+        <svg className="fab-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path
+            d="M12 2C6.48 2 2 6.48 2 12C2 14.05 2.63 15.96 3.7 17.54L2.29 21.71L6.46 20.3C8.04 21.37 9.95 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"
+            fill="white"
+            fillOpacity="0.95"
+          />
+          <circle cx="8.5" cy="12" r="1.3" fill="#7c6df0" />
+          <circle cx="12" cy="12" r="1.3" fill="#7c6df0" />
+          <circle cx="15.5" cy="12" r="1.3" fill="#7c6df0" />
+        </svg>
       </button>
 
       {isOpen && (
@@ -573,23 +582,51 @@ export default function QuizChatbot({
           position: fixed;
           bottom: 92px;
           right: 24px;
-          width: 56px;
-          height: 56px;
+          width: 64px;
+          height: 64px;
           border-radius: 50%;
           border: none;
           cursor: pointer;
-          background: #f26522;
-          color: #fff;
-          font-size: 13px;
-          font-weight: 800;
-          box-shadow: 0 6px 16px rgba(242, 101, 34, 0.35);
-          transition: transform 0.2s, box-shadow 0.2s;
+          background: linear-gradient(135deg, #7c6df0 0%, #f07c6d 100%);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 8px 32px rgba(124, 109, 240, 0.45);
+          position: fixed;
           z-index: 500;
+          animation: fabPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+          transition: transform 0.2s, box-shadow 0.2s;
         }
-        .quiz-chatbot-fab:hover {
-          transform: scale(1.05);
-          box-shadow: 0 8px 20px rgba(242, 101, 34, 0.45);
+        .quiz-chatbot-fab:hover { transform: scale(1.08); }
+
+        .quiz-chatbot-fab::before {
+          content: '';
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #7c6df0 0%, #f07c6d 100%);
+          opacity: 0.36;
+          animation: pulse 2s ease-out infinite;
         }
+        .quiz-chatbot-fab::after {
+          content: '';
+          position: absolute;
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          background: #fff;
+          top: 6px;
+          right: 8px;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+          animation: orbit 3s linear infinite;
+        }
+
+        .fab-icon { width: 32px; height: 32px; position: relative; z-index: 1; }
+
+        @keyframes fabPop { from { transform: scale(0) rotate(-20deg); opacity: 0; } to { transform: scale(1) rotate(0deg); opacity: 1; } }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 0.36; } 80% { transform: scale(1.9); opacity: 0; } 100% { opacity: 0; } }
+        @keyframes orbit { 0% { transform: rotate(0deg) translateX(26px); } 100% { transform: rotate(360deg) translateX(26px); } }
         .quiz-chatbot-overlay {
           position: fixed;
           inset: 0;
