@@ -930,9 +930,10 @@ export default function PlayPage() {
 
         /* ══ FEATURED MODE CARDS (scroll row) ══ */
         .scroll-row {
-          display: flex; gap: 14px;
-          padding: 4px 20px 16px;
+          display: flex; gap: 16px;
+          padding: 6px 24px 18px;
           overflow-x: auto; scroll-snap-type: x mandatory;
+          scroll-padding: 0 24px;
           -webkit-overflow-scrolling: touch;
           scrollbar-width: none;
         }
