@@ -58,6 +58,7 @@ export const initPassport = (container) => {
 
         let user = resources[0];
         const googleAvatar = profile.photos?.[0]?.value || '';
+        const displayName = profile.displayName?.trim();
 
         // Create if new
         if (!user) {
@@ -78,11 +79,12 @@ export const initPassport = (container) => {
         } else if (
           user.avatar !== googleAvatar ||
           user.googleId !== profile.id ||
+          (displayName && user.name !== displayName) ||
           !user.name
         ) {
           user = {
             ...user,
-            name: user.name || profile.displayName,
+            name: displayName || user.name || profile.displayName,
             googleId: user.googleId || profile.id,
             avatar: googleAvatar || user.avatar || '',
           };
