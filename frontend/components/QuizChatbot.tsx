@@ -641,6 +641,9 @@ export default function QuizChatbot({
           width: min(100vw, 480px);
           max-width: 100vw;
           height: min(100vh, 760px);
+          height: min(100svh, 760px);
+          height: min(100dvh, 760px);
+          max-height: 100dvh;
           border-radius: 20px 20px 0 0;
           overflow: hidden;
           box-shadow: 0 -18px 48px rgba(15, 23, 42, 0.28);
@@ -690,7 +693,7 @@ export default function QuizChatbot({
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 8px 14px;
+          padding: calc(8px + env(safe-area-inset-top)) 14px 8px;
           background: var(--wh);
           border-bottom: 1px solid var(--bd);
           flex-shrink: 0;
@@ -938,7 +941,7 @@ export default function QuizChatbot({
         .bbar {
           flex-shrink: 0;
           background: var(--wh);
-          padding: 10px 14px 18px;
+          padding: 10px 14px calc(18px + env(safe-area-inset-bottom));
           border-top: 1px solid var(--bd);
           transition: opacity 0.3s, background 0.35s, border-color 0.35s;
         }
@@ -1318,6 +1321,16 @@ export default function QuizChatbot({
         @media (min-width: 640px) {
           .quiz-chatbot-fab {
             bottom: 32px;
+          }
+        }
+        @media (max-width: 640px) {
+          .quiz-chatbot-overlay {
+            align-items: stretch;
+          }
+          .quiz-chatbot-modal {
+            height: 100dvh;
+            max-height: 100dvh;
+            border-radius: 0;
           }
         }
       `}</style>
