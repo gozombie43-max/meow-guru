@@ -111,7 +111,7 @@ export default function BottomNav() {
           <span className="bottom-nav-label">Home</span>
         </Link>
         <Link
-          href="/mock-test/index.html"
+          href="/mock-test"
           className={`bottom-nav-item${isMock ? ' is-active' : ''}`}
           aria-current={isMock ? 'page' : undefined}
         >

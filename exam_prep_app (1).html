@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>ExamPro – Exam Prep App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #7B3FF2;
+            --primary-light: #B57CFF;
+            --primary-dark: #5A1FD4;
+            --violet-deep: #3D1271;
+            --lavender: #E8D8FF;
+            --bg: #F7F7FA;
+            --card: #FFFFFF;
+            --shadow: rgba(123,63,242,0.13);
+            --shadow-soft: rgba(0,0,0,0.07);
+            --text-dark: #1A0A2E;
+            --text-mid: #5A5272;
+            --text-light: #9B91B2;
+            --accent-green: #22C97B;
+            --accent-orange: #FF7A3D;
+            --accent-blue: #3D9EFF;
+            --accent-red: #FF4D6D;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        html, body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: var(--text-dark);
+        }
+
+        /* ── APP WRAPPER ── */
+        .app {
+            max-width: 430px;
+            margin: 0 auto;
+            min-height: 100vh;
+            position: relative;
+            background: var(--bg);
+            overflow: hidden;
+        }
+
+        /* ══════════════════════════════
+           PAGE 1 – HOME
+        ══════════════════════════════ */
+        #home-page {
+            display: block;
+            min-height: 100vh;
+        }
+
+        /* ── HERO HEADER ── */
+        .hero {
+            background: linear-gradient(160deg, #3D1271 0%, #6A28D8 42%, #9C5EF5 72%, #C9A0FF 90%, #EDE0FF 100%);
+            padding: 52px 24px 80px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* floating orb decorations */
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 200px; height: 200px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 70%);
+            top: -60px; right: -40px;
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            width: 140px; height: 140px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+            bottom: 20px; left: -20px;
+        }
+
+        .hero-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-greeting {
+            font-family: 'Nunito', sans-serif;
+        }
+
+        .hero-greeting .wave {
+            font-size: 13px;
+            color: rgba(255,255,255,0.7);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .hero-greeting h1 {
+            font-size: 26px;
+            font-weight: 800;
+            color: #fff;
+            margin-top: 2px;
+            line-height: 1.1;
+        }
+
+        .hero-avatar {
+            width: 44px; height: 44px;
+            background: linear-gradient(135deg, #fff 0%, #EDE0FF 100%);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 900;
+            font-size: 17px;
+            color: var(--primary);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .notif-dot {
+            position: absolute;
+            top: 1px; right: 1px;
+            width: 10px; height: 10px;
+            background: var(--accent-orange);
+            border-radius: 50%;
+            border: 2px solid #fff;
+        }
+
+        /* stats strip */
+        .hero-stats {
+            display: flex;
+            gap: 10px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .stat-pill {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 20px;
+            padding: 8px 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex: 1;
+        }
+
+        .stat-pill .s-icon { font-size: 16px; }
+        .stat-pill .s-val {
+            font-family: 'Nunito', sans-serif;
+            font-weight: 800;
+            font-size: 15px;
+            color: #fff;
+        }
+        .stat-pill .s-lbl {
+            font-size: 11px;
+            color: rgba(255,255,255,0.65);
+            font-weight: 500;
+        }
+
+        /* curved white transition */
+        .hero-curve {
+            height: 50px;
+            background: var(--bg);
+            margin-top: -50px;
+            border-radius: 32px 32px 0 0;
+            position: relative;
+            z-index: 3;
+        }
+
+        /* ── HOME BODY ── */
+        .home-body {
+            padding: 0 20px 30px;
+            margin-top: -10px;
+        }
+
+        .section-label {
+            font-family: 'Nunito', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 14px;
+        }
+
+        /* ── CATEGORY CHIPS ── */
+        .category-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 22px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            scrollbar-width: none;
+        }
+        .category-row::-webkit-scrollbar { display: none; }
+
+        .cat-chip {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--card);
+            border: 2px solid transparent;
+            border-radius: 40px;
+            padding: 7px 16px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-mid);
+            cursor: pointer;
+            white-space: nowrap;
+            box-shadow: 0 2px 10px var(--shadow-soft);
+            transition: all 0.2s;
+            font-family: 'Nunito', sans-serif;
+        }
+        .cat-chip.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+            box-shadow: 0 4px 14px rgba(123,63,242,0.35);
+        }
+        .cat-chip .chip-emoji { font-size: 15px; }
+
+        /* ── EXAM GRID ── */
+        .exam-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .exam-card {
+            background: var(--card);
+            border-radius: 22px;
+            padding: 18px 16px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 18px var(--shadow-soft);
+            transition: transform 0.22s cubic-bezier(.34,1.56,.64,1), box-shadow 0.22s;
+            position: relative;
+            overflow: hidden;
+            border: 1.5px solid rgba(123,63,242,0.05);
+        }
+
+        .exam-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            border-radius: 22px 22px 0 0;
+        }
+
+        .exam-card.ssc::before { background: linear-gradient(90deg, #FF7A3D, #FFB347); }
+        .exam-card.rrb::before { background: linear-gradient(90deg, #3D9EFF, #80CFFF); }
+        .exam-card.upsc::before { background: linear-gradient(90deg, #22C97B, #7BE8C0); }
+        .exam-card.other::before { background: linear-gradient(90deg, var(--primary), var(--primary-light)); }
+
+        .exam-card:hover {
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 0 10px 30px rgba(123,63,242,0.18);
+        }
+        .exam-card:active { transform: scale(0.97); }
+
+        .card-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .exam-name {
+            font-family: 'Nunito', sans-serif;
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--text-dark);
+            line-height: 1.2;
+        }
+
+        .exam-logo-wrap {
+            width: 46px; height: 46px;
+            border-radius: 14px;
+            background: var(--bg);
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 2px 8px var(--shadow-soft);
+            flex-shrink: 0;
+        }
+
+        .exam-logo-wrap img {
+            width: 38px; height: 38px;
+            object-fit: contain;
+        }
+
+        /* text logo fallback */
+        .exam-logo-text {
+            font-family: 'Nunito', sans-serif;
+            font-size: 10px;
+            font-weight: 900;
+            color: var(--primary);
+            text-align: center;
+            line-height: 1.1;
+        }
+
+        .card-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-count {
+            font-size: 12px;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .card-badge {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        .badge-free { background: #E6FBF1; color: #22C97B; }
+        .badge-hot  { background: #FFF0EC; color: #FF7A3D; }
+        .badge-new  { background: #EEE6FF; color: var(--primary); }
+
+        /* ── STREAK BANNER ── */
+        .streak-banner {
+            background: linear-gradient(130deg, #3D1271, #7B3FF2);
+            border-radius: 22px;
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 22px;
+            box-shadow: 0 6px 24px rgba(123,63,242,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .streak-banner::after {
+            content: '🔥';
+            position: absolute;
+            right: 14px; top: 50%;
+            transform: translateY(-50%);
+            font-size: 44px;
+            opacity: 0.15;
+        }
+
+        .streak-icon-big { font-size: 28px; }
+
+        .streak-info .s-title {
+            font-family: 'Nunito', sans-serif;
+            font-weight: 800;
+            font-size: 16px;
+            color: #fff;
+        }
+        .streak-info .s-sub {
+            font-size: 12px;
+            color: rgba(255,255,255,0.7);
+            margin-top: 2px;
+        }
+
+        .streak-btn {
+            margin-left: auto;
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+            border: none;
+            border-radius: 30px;
+            padding: 8px 16px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Nunito', sans-serif;
+            white-space: nowrap;
+        }
+
+        /* ── BOTTOM NAV ── */
+        .bottom-nav {
+            position: sticky;
+            bottom: 0;
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(123,63,242,0.08);
+            display: flex;
+            padding: 10px 0 16px;
+            z-index: 100;
+        }
+
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            cursor: pointer;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-light);
+            font-family: 'Nunito', sans-serif;
+            transition: color 0.2s;
+        }
+
+        .nav-item.active { color: var(--primary); }
+
+        .nav-icon {
+            width: 24px; height: 24px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px;
+        }
+
+        .nav-center-btn {
+            width: 52px; height: 52px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border-radius: 18px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px;
+            margin-top: -18px;
+            box-shadow: 0 6px 20px rgba(123,63,242,0.4);
+        }
+
+
+        /* ══════════════════════════════
+           PAGE 2 – DETAIL
+        ══════════════════════════════ */
+        #detail-page {
+            display: none;
+            min-height: 100vh;
+            background: var(--bg);
+        }
+
+        /* ── DETAIL HERO ── */
+        .detail-hero {
+            background: linear-gradient(160deg, #3D1271 0%, #6A28D8 50%, #9C5EF5 85%, #C9A0FF 100%);
+            padding: 48px 22px 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .detail-hero::before {
+            content: '';
+            position: absolute;
+            width: 180px; height: 180px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            top: -50px; right: -30px;
+        }
+
+        .detail-back {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: rgba(255,255,255,0.85);
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 20px;
+            width: fit-content;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        .detail-title-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 22px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .detail-logo-wrap {
+            width: 56px; height: 56px;
+            border-radius: 18px;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border: 1.5px solid rgba(255,255,255,0.25);
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+        }
+
+        .detail-logo-wrap img {
+            width: 44px; height: 44px;
+            object-fit: contain;
+            filter: brightness(1.1);
+        }
+
+        .detail-title-info h2 {
+            font-family: 'Nunito', sans-serif;
+            font-size: 22px;
+            font-weight: 900;
+            color: #fff;
+        }
+
+        .detail-title-info .d-sub {
+            font-size: 12px;
+            color: rgba(255,255,255,0.65);
+            margin-top: 2px;
+        }
+
+        /* Tier toggle */
+        .tier-toggle {
+            display: flex;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 40px;
+            padding: 4px;
+            gap: 4px;
+        }
+
+        .tier-btn {
+            flex: 1;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 36px;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.25s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            background: transparent;
+            color: rgba(255,255,255,0.7);
+            font-family: 'Nunito', sans-serif;
+        }
+
+        .tier-btn.active {
+            background: #fff;
+            color: var(--primary-dark);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+
+        .tier-icon { width: 18px; height: 18px; }
+
+        /* wave curve */
+        .detail-curve {
+            height: 40px;
+            background: var(--bg);
+            margin-top: -40px;
+            border-radius: 28px 28px 0 0;
+            position: relative;
+            z-index: 3;
+        }
+
+        /* ── DETAIL BODY ── */
+        .detail-body {
+            padding: 4px 18px 30px;
+        }
+
+        /* quick stats row */
+        .quick-stats {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .qs-card {
+            flex: 1;
+            background: var(--card);
+            border-radius: 16px;
+            padding: 14px 10px;
+            text-align: center;
+            box-shadow: 0 2px 12px var(--shadow-soft);
+        }
+
+        .qs-num {
+            font-family: 'Nunito', sans-serif;
+            font-size: 20px;
+            font-weight: 900;
+            color: var(--primary);
+        }
+
+        .qs-lbl {
+            font-size: 11px;
+            color: var(--text-light);
+            font-weight: 500;
+            margin-top: 2px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            background: var(--card);
+            border-radius: 16px;
+            padding: 5px;
+            margin-bottom: 18px;
+            box-shadow: 0 2px 10px var(--shadow-soft);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 11px 6px;
+            border: none;
+            background: transparent;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            border-radius: 12px;
+            transition: all 0.25s;
+            color: var(--text-light);
+            font-family: 'Nunito', sans-serif;
+            white-space: nowrap;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(123,63,242,0.3);
+        }
+
+        /* Test cards */
+        .test-list { display: flex; flex-direction: column; gap: 11px; }
+
+        .test-card {
+            background: var(--card);
+            border-radius: 18px;
+            padding: 15px 14px;
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            box-shadow: 0 2px 12px var(--shadow-soft);
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1.5px solid rgba(123,63,242,0.04);
+        }
+
+        .test-card:hover {
+            transform: translateX(4px);
+            box-shadow: 0 6px 20px rgba(123,63,242,0.12);
+        }
+
+        .test-icon {
+            width: 44px; height: 44px;
+            background: linear-gradient(135deg, #EEE6FF, #F5F0FF);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .test-info { flex: 1; min-width: 0; }
+
+        .test-title {
+            font-family: 'Nunito', sans-serif;
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-bottom: 7px;
+            line-height: 1.3;
+        }
+
+        .test-meta {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            font-size: 11px;
+            color: var(--text-light);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            border: none;
+            padding: 9px 16px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            box-shadow: 0 4px 14px rgba(123,63,242,0.3);
+            font-family: 'Nunito', sans-serif;
+        }
+
+        .start-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 18px rgba(123,63,242,0.4);
+        }
+
+        .hidden { display: none !important; }
+
+        /* ── SCROLL BAR ── */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--lavender); border-radius: 10px; }
+
+        /* ── ANIMATIONS ── */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .exam-card { animation: fadeUp 0.4s ease both; }
+        .exam-card:nth-child(1) { animation-delay: 0.05s; }
+        .exam-card:nth-child(2) { animation-delay: 0.1s; }
+        .exam-card:nth-child(3) { animation-delay: 0.15s; }
+        .exam-card:nth-child(4) { animation-delay: 0.2s; }
+        .exam-card:nth-child(5) { animation-delay: 0.25s; }
+        .exam-card:nth-child(6) { animation-delay: 0.3s; }
+        .exam-card:nth-child(7) { animation-delay: 0.35s; }
+        .exam-card:nth-child(8) { animation-delay: 0.4s; }
+        .exam-card:nth-child(9) { animation-delay: 0.45s; }
+        .exam-card:nth-child(10){ animation-delay: 0.5s; }
+    </style>
+</head>
+<body>
+<div class="app">
+
+<!-- ══════════════════════════
+     PAGE 1 – HOME
+══════════════════════════ -->
+<div id="home-page">
+
+    <!-- HERO -->
+    <div class="hero">
+        <div class="hero-top">
+            <div class="hero-greeting">
+                <div class="wave">👋 Welcome back</div>
+                <h1>Hello, Sulu!</h1>
+            </div>
+            <div class="hero-avatar">
+                S
+                <div class="notif-dot"></div>
+            </div>
+        </div>
+
+        <div class="hero-stats">
+            <div class="stat-pill">
+                <span class="s-icon">🔥</span>
+                <div>
+                    <div class="s-val">12</div>
+                    <div class="s-lbl">Day Streak</div>
+                </div>
+            </div>
+            <div class="stat-pill">
+                <span class="s-icon">✅</span>
+                <div>
+                    <div class="s-val">248</div>
+                    <div class="s-lbl">Tests Done</div>
+                </div>
+            </div>
+            <div class="stat-pill">
+                <span class="s-icon">⭐</span>
+                <div>
+                    <div class="s-val">82%</div>
+                    <div class="s-lbl">Accuracy</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="hero-curve"></div>
+
+    <!-- HOME BODY -->
+    <div class="home-body">
+
+        <!-- Category chips -->
+        <div class="section-label">Browse Exams</div>
+        <div class="category-row">
+            <div class="cat-chip active"><span class="chip-emoji">📚</span> All</div>
+            <div class="cat-chip"><span class="chip-emoji">🏛️</span> SSC</div>
+            <div class="cat-chip"><span class="chip-emoji">🚂</span> RRB</div>
+            <div class="cat-chip"><span class="chip-emoji">🇮🇳</span> UPSC</div>
+            <div class="cat-chip"><span class="chip-emoji">🎓</span> CAT</div>
+            <div class="cat-chip"><span class="chip-emoji">📊</span> Banking</div>
+        </div>
+
+        <!-- Exam Grid -->
+        <div class="exam-grid">
+
+            <!-- SSC CGL -->
+            <div class="exam-card ssc" onclick="openDetail('SSC CGL','ssc')">
+                <div class="card-top">
+                    <div class="exam-name">SSC CGL</div>
+                    <div class="exam-logo-wrap">
+                        <img 
+                            src="https://upload.wikimedia.org/wikipedia/en/thumb/b/b4/Staff_Selection_Commission_of_India.svg/240px-Staff_Selection_Commission_of_India.svg.png"
+                            onerror="this.onerror=null; this.style.display='none'; this.parentNode.innerHTML='<div class=\'exam-logo-text\'>SSC</div>'"
+                            alt="SSC Logo">
+                    </div>
+                </div>
+                <div class="card-meta">
+                    <div class="card-count">82 Tests</div>
+                    <div class="card-badge badge-hot">🔥 Hot</div>
+                </div>
+            </div>
+
+            <!-- SSC CHSL -->
+            <div class="exam-card ssc" onclick="openDetail('SSC CHSL','ssc')">
+                <div class="card-top">
+                    <div class="exam-name">SSC CHSL</div>
+                    <div class="exam-logo-wrap">
+                        <img 
+                            src="https://upload.wikimedia.org/wikipedia/en/thumb/b/b4/Staff_Selection_Commission_of_India.svg/240px-Staff_Selection_Commission_of_India.svg.png"
+                            onerror="this.onerror=null; this.style.display='none'; this.parentNode.innerHTML='<div class=\'exam-logo-text\'>SSC</div>'"
+                            alt="SSC Logo">
+                    </div>
+                </div>
+                <div class="card-meta">
+                    <div class="card-count">64 Tests</div>
+                    <div class="card-badge badge-free">Free</div>
+                </div>
+            </div>
+
+            <!-- SSC MTS -->
+            <div class="exam-card ssc" onclick="openDetail('SSC MTS','ssc')">
+                <div class="card-top">
+                    <div class="exam-name">SSC MTS</div>
+                    <div class="exam-logo-wrap">
+                        <img 
+                            src="https://upload.wikimedia.org/wikipedia/en/thumb/b/b4/Staff_Selection_Commission_of_India.svg/240px-Staff_Selection_Commission_of_India.svg.png"
+                            onerror="this.onerror=null; this.style.display='none'; this.parentNode.innerHTML='<div class=\'exam-logo-text\'>SSC</div>'"
+                            alt="SSC Logo">
+                    </div>
+                </div>
+                <div class="card-meta">
+                    <div class="card-count">48 Tests</div>
+                    <div class="card-badge badge-free">Free</div>
+                </div>
+            </div>
+
+            <!-- SSC CPO -->
+            <div class="exam-card ssc" onclick="openDetail('SSC CPO','ssc')">
+                <div class="card-top">
+                    <div class="exam-name">SSC CPO</div>
+                    <div class="exam-logo-wrap">
+                        <img 
+                            src="https://upload.wikimedia.org/wikipedia/en/thumb/b/b4/Staff_Selection_Commission_of_India.svg/240px-Staff_Selection_Commission_of_India.svg.png"
+                            onerror="this.onerror=null; this.style.display='none'; this.parentNode.innerHTML='<div class=\'exam-logo-text\'>SSC</div>'"
+                            alt="SSC Logo">
+                    </div>
+                </div>
+                <div class="card-meta">
+                    <div class="card-count">36 Tests</div>
+                    <div class="card-badge badge-new">New</div>
+                </div>
+            </div>
+
+            <!-- SSC GD -->
+            <div class="exam-card ssc" onclick="openDetail('SSC GD','ssc')">
+                <div class="card-top">
+                    <div class="exam-name">SSC GD</div>
+                    <div class="exam-logo-wrap">
+                        <img 
+                            src="https://upload.wikimedia.org/wikipedia/en/thumb/b/b4/Staff_Selection_Commission_of_India.svg/240px-Staff_Selection_Commission_of_India.svg.png"
+                            onerror="this.onerror=null; this.style.display='none'; this.parentNode.innerHTML='<div class=\'exam-logo-text\'>SSC</div>'"
+                            alt="SSC Logo">
+                    </div>
+                </div>
+                <div class="card-meta">
+                    <div class="card-count">52 Tests</div>
+                    <div class="card-badge badge-hot">🔥 Hot</div>
+                </div>
+            </div>
+
+            <!-- RRB NTPC -->
+            <div class="exam-card rrb" onclick="openDetail('RRB NTPC','rrb')">
+                <div class="card-top">
+                    <div class="exam-name">RRB NTPC</div>
+                    <div class="exam-logo-wrap">
+                        <img 
+                            src="https://upload.wikimedia.org/wikipedia/en/thumb/8/83/Railway_Recruitment_Board_logo.svg/240px-Railway_Recruitment_Board_logo.svg.png"
+                            onerror="this.onerror=null; this.style.display='none'; this.parentNode.innerHTML='<div class=\'exam-logo-text\'>RRB</div>'"
+                            alt="RRB Logo">
+                    </div>
+                </div>
+                <div class="card-meta">
+                    <div class="card-count">70 Tests</div>
+                    <div class="card-badge badge-hot">🔥 Hot</div>
+                </div>
+            </div>
+
+            <!-- RRB ALP -->
+            <div class="exam-card rrb" onclick="openDetail('RRB ALP','rrb')">
+                <div class="card-top">
+                    <div class="exam-name">RRB ALP</div>
+                    <div class="exam-logo-wrap">
+                        <img 
+                            src="https://upload.wikimedia.org/wikipedia/en/thumb/8/83/Railway_Recruitment_Board_logo.svg/240px-Railway_Recruitment_Board_logo.svg.png"
+                            onerror="this.onerror=null; this.style.display='none'; this.parentNode.innerHTML='<div class=\'exam-logo-text\'>RRB</div>'"
+                            alt="RRB Logo">
+                    </div>
+                </div>
+                <div class="card-meta">
+                    <div class="card-count">45 Tests</div>
+                    <div class="card-badge badge-free">Free</div>
+                </div>
+            </div>
+
+            <!-- RRB GROUP D -->
+            <div class="exam-card rrb" onclick="openDetail('RRB GROUP D','rrb')">
+                <div class="card-top">
+                    <div class="exam-name">RRB GRP D</div>
+                    <div class="exam-logo-wrap">
+                        <img 
+                            src="https://upload.wikimedia.org/wikipedia/en/thumb/8/83/Railway_Recruitment_Board_logo.svg/240px-Railway_Recruitment_Board_logo.svg.png"
+                            onerror="this.onerror=null; this.style.display='none'; this.parentNode.innerHTML='<div class=\'exam-logo-text\'>RRB</div>'"
+                            alt="RRB Logo">
+                    </div>
+                </div>
+                <div class="card-meta">
+                    <div class="card-count">58 Tests</div>
+                    <div class="card-badge badge-new">New</div>
+                </div>
+            </div>
+
+            <!-- CAT -->
+            <div class="exam-card other" onclick="openDetail('CAT','other')">
+                <div class="card-top">
+                    <div class="exam-name">CAT</div>
+                    <div class="exam-logo-wrap" style="background: linear-gradient(135deg,#1565c0,#42a5f5);">
+                        <div class="exam-logo-text" style="color:#fff;font-size:13px;">CAT</div>
+                    </div>
+                </div>
+                <div class="card-meta">
+                    <div class="card-count">120 Tests</div>
+                    <div class="card-badge badge-hot">🔥 Hot</div>
+                </div>
+            </div>
+
+            <!-- UPSC -->
+            <div class="exam-card upsc" onclick="openDetail('UPSC','upsc')">
+                <div class="card-top">
+                    <div class="exam-name">UPSC</div>
+                    <div class="exam-logo-wrap">
+                        <img 
+                            src="https://upload.wikimedia.org/wikipedia/en/thumb/f/f5/Emblem_of_the_Union_Public_Service_Commission.svg/240px-Emblem_of_the_Union_Public_Service_Commission.svg.png"
+                            onerror="this.onerror=null; this.style.display='none'; this.parentNode.innerHTML='<div class=\'exam-logo-text\'>UPSC</div>'"
+                            alt="UPSC Logo">
+                    </div>
+                </div>
+                <div class="card-meta">
+                    <div class="card-count">200 Tests</div>
+                    <div class="card-badge badge-hot">🔥 Hot</div>
+                </div>
+            </div>
+
+        </div><!-- /exam-grid -->
+
+        <!-- Streak Banner -->
+        <div class="streak-banner">
+            <span class="streak-icon-big">🔥</span>
+            <div class="streak-info">
+                <div class="s-title">12 Day Streak! Keep it up!</div>
+                <div class="s-sub">Practice daily to climb the leaderboard</div>
+            </div>
+            <button class="streak-btn">Practice →</button>
+        </div>
+
+    </div><!-- /home-body -->
+
+    <!-- BOTTOM NAV -->
+    <div class="bottom-nav">
+        <div class="nav-item active">
+            <div class="nav-icon">🏠</div>
+            Home
+        </div>
+        <div class="nav-item">
+            <div class="nav-icon">📊</div>
+            Progress
+        </div>
+        <div class="nav-item">
+            <div class="nav-center-btn">⚡</div>
+            &nbsp;
+        </div>
+        <div class="nav-item">
+            <div class="nav-icon">🏆</div>
+            Rank
+        </div>
+        <div class="nav-item">
+            <div class="nav-icon">👤</div>
+            Profile
+        </div>
+    </div>
+
+</div><!-- /home-page -->
+
+
+<!-- ══════════════════════════
+     PAGE 2 – DETAIL
+══════════════════════════ -->
+<div id="detail-page">
+
+    <!-- DETAIL HERO -->
+    <div class="detail-hero">
+        <div class="detail-back" onclick="goBack()">
+            ← &nbsp;Back
+        </div>
+
+        <div class="detail-title-row">
+            <div class="detail-logo-wrap" id="detail-logo-wrap">
+                <img id="detail-logo" src="" alt="Exam Logo">
+            </div>
+            <div class="detail-title-info">
+                <h2 id="detail-exam-name">SSC CGL</h2>
+                <div class="d-sub">Combined Graduate Level Exam</div>
+            </div>
+        </div>
+
+        <!-- Tier Toggle -->
+        <div class="tier-toggle">
+            <button class="tier-btn active" id="tier1-btn" onclick="switchTier('tier1')">
+                <svg class="tier-icon" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                TIER I
+            </button>
+            <button class="tier-btn" id="tier2-btn" onclick="switchTier('tier2')">
+                <svg class="tier-icon" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                TIER II
+            </button>
+        </div>
+    </div>
+
+    <div class="detail-curve"></div>
+
+    <!-- DETAIL BODY -->
+    <div class="detail-body">
+
+        <!-- Quick stats -->
+        <div class="quick-stats">
+            <div class="qs-card">
+                <div class="qs-num">82</div>
+                <div class="qs-lbl">Mock Tests</div>
+            </div>
+            <div class="qs-card">
+                <div class="qs-num">853</div>
+                <div class="qs-lbl">Prev. Papers</div>
+            </div>
+            <div class="qs-card">
+                <div class="qs-num">74%</div>
+                <div class="qs-lbl">Avg Score</div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" id="mock-tab" onclick="switchTab('mock')">
+                📋 Mocks (82)
+            </button>
+            <button class="tab-btn" id="prev-tab" onclick="switchTab('prev')">
+                📅 Prev Years (853)
+            </button>
+        </div>
+
+        <!-- Mock Tests -->
+        <div id="mock-content" class="test-list">
+            <div class="test-card">
+                <div class="test-icon">📋</div>
+                <div class="test-info">
+                    <div class="test-title">SSC CGL Tier I 2026 – Free Mock Test</div>
+                    <div class="test-meta">
+                        <span class="meta-item">❓ 100 Qs</span>
+                        <span class="meta-item">✅ 200 Marks</span>
+                        <span class="meta-item">⏱ 60 Min</span>
+                    </div>
+                </div>
+                <button class="start-btn">Start</button>
+            </div>
+            <div class="test-card">
+                <div class="test-icon">📋</div>
+                <div class="test-info">
+                    <div class="test-title">SSC CGL Tier I 2026 – Full Mock Test 1</div>
+                    <div class="test-meta">
+                        <span class="meta-item">❓ 100 Qs</span>
+                        <span class="meta-item">✅ 200 Marks</span>
+                        <span class="meta-item">⏱ 60 Min</span>
+                    </div>
+                </div>
+                <button class="start-btn">Start</button>
+            </div>
+            <div class="test-card">
+                <div class="test-icon">📋</div>
+                <div class="test-info">
+                    <div class="test-title">SSC CGL Tier I 2026 – Full Mock Test 2</div>
+                    <div class="test-meta">
+                        <span class="meta-item">❓ 100 Qs</span>
+                        <span class="meta-item">✅ 200 Marks</span>
+                        <span class="meta-item">⏱ 60 Min</span>
+                    </div>
+                </div>
+                <button class="start-btn">Start</button>
+            </div>
+            <div class="test-card">
+                <div class="test-icon">📋</div>
+                <div class="test-info">
+                    <div class="test-title">SSC CGL Tier I 2026 – Full Mock Test 3</div>
+                    <div class="test-meta">
+                        <span class="meta-item">❓ 100 Qs</span>
+                        <span class="meta-item">✅ 200 Marks</span>
+                        <span class="meta-item">⏱ 60 Min</span>
+                    </div>
+                </div>
+                <button class="start-btn">Start</button>
+            </div>
+            <div class="test-card">
+                <div class="test-icon">📋</div>
+                <div class="test-info">
+                    <div class="test-title">SSC CGL Tier I 2026 – Full Mock Test 4</div>
+                    <div class="test-meta">
+                        <span class="meta-item">❓ 100 Qs</span>
+                        <span class="meta-item">✅ 200 Marks</span>
+                        <span class="meta-item">⏱ 60 Min</span>
+                    </div>
+                </div>
+                <button class="start-btn">Start</button>
+            </div>
+            <div class="test-card">
+                <div class="test-icon">📋</div>
+                <div class="test-info">
+                    <div class="test-title">SSC CGL Tier I 2026 – Full Mock Test 5</div>
+                    <div class="test-meta">
+                        <span class="meta-item">❓ 100 Qs</span>
+                        <span class="meta-item">✅ 200 Marks</span>
+                        <span class="meta-item">⏱ 60 Min</span>
+                    </div>
+                </div>
+                <button class="start-btn">Start</button>
+            </div>
+            <div class="test-card">
+                <div class="test-icon">📋</div>
+                <div class="test-info">
+                    <div class="test-title">SSC CGL Tier I 2026 – Full Mock Test 6</div>
+                    <div class="test-meta">
+                        <span class="meta-item">❓ 100 Qs</span>
+                        <span class="meta-item">✅ 200 Marks</span>
+                        <span class="meta-item">⏱ 60 Min</span>
+                    </div>
+                </div>
+                <button class="start-btn">Start</button>
+            </div>
+            <div class="test-card">
+                <div class="test-icon">📋</div>
+                <div class="test-info">
+                    <div class="test-title">SSC CGL Tier I 2026 – Full Mock Test 7</div>
+                    <div class="test-meta">
+                        <span class="meta-item">❓ 100 Qs</span>
+                        <span class="meta-item">✅ 200 Marks</span>
+                        <span class="meta-item">⏱ 60 Min</span>
+                    </div>
+                </div>
+                <button class="start-btn">Start</button>
+            </div>
+        </div>
+
+        <!-- Previous Year Papers -->
+        <div id="prev-content" class="test-list hidden">
+            <div class="test-card">
+                <div class="test-icon">📅</div>
+                <div class="test-info">
+                    <div class="test-title">SSC CGL Tier I 2025 – Previous Year Paper</div>
+                    <div class="test-meta">
+                        <span class="meta-item">❓ 100 Qs</span>
+                        <span class="meta-item">✅ 200 Marks</span>
+                        <span class="meta-item">⏱ 60 Min</span>
+                    </div>
+                </div>
+                <button class="start-btn">Start</button>
+            </div>
+            <div class="test-card">
+                <div class="test-icon">📅</div>
+                <div class="test-info">
+                    <div class="test-title">SSC CGL Tier I 2024 – Previous Year Paper</div>
+                    <div class="test-meta">
+                        <span class="meta-item">❓ 100 Qs</span>
+                        <span class="meta-item">✅ 200 Marks</span>
+                        <span class="meta-item">⏱ 60 Min</span>
+                    </div>
+                </div>
+                <button class="start-btn">Start</button>
+            </div>
+            <div class="test-card">
+                <div class="test-icon">📅</div>
+                <div class="test-info">
+                    <div class="test-title">SSC CGL Tier I 2023 – Previous Year Paper</div>
+                    <div class="test-meta">
+                        <span class="meta-item">❓ 100 Qs</span>
+                        <span class="meta-item">✅ 200 Marks</span>
+                        <span class="meta-item">⏱ 60 Min</span>
+                    </div>
+                </div>
+                <button class="start-btn">Start</button>
+            </div>
+            <div class="test-card">
+                <div class="test-icon">📅</div>
+                <div class="test-info">
+                    <div class="test-title">SSC CGL Tier I 2022 – Previous Year Paper</div>
+                    <div class="test-meta">
+                        <span class="meta-item">❓ 100 Qs</span>
+                        <span class="meta-item">✅ 200 Marks</span>
+                        <span class="meta-item">⏱ 60 Min</span>
+                    </div>
+                </div>
+                <button class="start-btn">Start</button>
+            </div>
+            <div class="test-card">
+                <div class="test-icon">📅</div>
+                <div class="test-info">
+                    <div class="test-title">SSC CGL Tier I 2021 – Previous Year Paper</div>
+                    <div class="test-meta">
+                        <span class="meta-item">❓ 100 Qs</span>
+                        <span class="meta-item">✅ 200 Marks</span>
+                        <span class="meta-item">⏱ 60 Min</span>
+                    </div>
+                </div>
+                <button class="start-btn">Start</button>
+            </div>
+        </div>
+
+    </div><!-- /detail-body -->
+</div><!-- /detail-page -->
+
+</div><!-- /app -->
+
+<script>
+    const logos = {
+        ssc:  'https://upload.wikimedia.org/wikipedia/en/thumb/b/b4/Staff_Selection_Commission_of_India.svg/240px-Staff_Selection_Commission_of_India.svg.png',
+        rrb:  'https://upload.wikimedia.org/wikipedia/en/thumb/8/83/Railway_Recruitment_Board_logo.svg/240px-Railway_Recruitment_Board_logo.svg.png',
+        upsc: 'https://upload.wikimedia.org/wikipedia/en/thumb/f/f5/Emblem_of_the_Union_Public_Service_Commission.svg/240px-Emblem_of_the_Union_Public_Service_Commission.svg.png',
+        other: ''
+    };
+
+    function openDetail(examName, type) {
+        document.getElementById('home-page').style.display = 'none';
+        document.getElementById('detail-page').style.display = 'block';
+
+        document.getElementById('detail-exam-name').textContent = examName;
+
+        const logoEl = document.getElementById('detail-logo');
+        const wrapEl = document.getElementById('detail-logo-wrap');
+
+        if (logos[type]) {
+            logoEl.src = logos[type];
+            logoEl.style.display = 'block';
+            logoEl.onerror = function() {
+                this.style.display = 'none';
+                wrapEl.innerHTML = '<div style="color:#fff;font-family:Nunito,sans-serif;font-weight:900;font-size:12px;">'+type.toUpperCase()+'</div>';
+            };
+        } else {
+            logoEl.style.display = 'none';
+            wrapEl.innerHTML = '<div style="color:#fff;font-family:Nunito,sans-serif;font-weight:900;font-size:13px;">'+examName.split(' ')[0]+'</div>';
+        }
+
+        window.scrollTo(0, 0);
+
+        // reset tabs
+        switchTab('mock');
+        switchTier('tier1');
+    }
+
+    function goBack() {
+        document.getElementById('detail-page').style.display = 'none';
+        document.getElementById('home-page').style.display = 'block';
+        window.scrollTo(0, 0);
+    }
+
+    function switchTier(tier) {
+        document.getElementById('tier1-btn').classList.toggle('active', tier === 'tier1');
+        document.getElementById('tier2-btn').classList.toggle('active', tier === 'tier2');
+    }
+
+    function switchTab(tab) {
+        const isMock = tab === 'mock';
+        document.getElementById('mock-tab').classList.toggle('active', isMock);
+        document.getElementById('prev-tab').classList.toggle('active', !isMock);
+        document.getElementById('mock-content').classList.toggle('hidden', !isMock);
+        document.getElementById('prev-content').classList.toggle('hidden', isMock);
+    }
+
+    // Category chip filter
+    document.querySelectorAll('.cat-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+        });
+    });
+</script>
+</body>
+</html>
