@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
+import api from "@/lib/axios";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 interface Subject {
   title: string;
@@ -51,8 +52,123 @@ const SUBJECT_META = {
   },
 } as const;
 
+const LOADER_COLORS = ["#f0604a", "#4d90e8", "#2d9e4f", "#f0a020", "#a855f7", "#ec4899"] as const;
+
+type ConfettiDot = {
+  id: string;
+  left: number;
+  top: number;
+  color: string;
+  duration: number;
+  delay: number;
+};
+
+const createConfettiDots = () =>
+  Array.from({ length: 18 }, (_, index): ConfettiDot => ({
+    id: `dot-${Date.now()}-${index}`,
+    color: LOADER_COLORS[Math.floor(Math.random() * LOADER_COLORS.length)],
+    left: 20 + Math.random() * 60,
+    top: 40 + Math.random() * 30,
+    duration: 0.6 + Math.random() * 0.6,
+    delay: Math.random() * 0.3,
+  }));
+
+function HomeLoadingOverlay({ ready, onDone }: { ready: boolean; onDone: () => void }) {
+  const [pct, setPct] = useState(0);
+  const [done, setDone] = useState(false);
+  const [confettiDots, setConfettiDots] = useState<ConfettiDot[]>([]);
+  const startedAtRef = useRef<number>(Date.now());
+  const doneTriggeredRef = useRef(false);
+
+  useEffect(() => {
+    if (pct >= 100) return;
+
+    const speed = ready
+      ? 20
+      : pct < 15
+        ? 80
+        : pct < 85
+          ? 35 + Math.random() * 40
+          : 90 + Math.random() * 60;
+
+    const timer = window.setTimeout(() => {
+      setPct((current) => {
+        if (ready) {
+          const jump = Math.max(1, Math.ceil((100 - current) / 6));
+          return Math.min(100, current + jump);
+        }
+
+        const increment = current < 85 ? (Math.random() < 0.15 ? 0 : 1) : 1;
+        const cap = ready ? 100 : 95;
+        return Math.min(cap, current + increment);
+      });
+    }, speed);
+
+    return () => window.clearTimeout(timer);
+  }, [pct, ready]);
+
+  useEffect(() => {
+    if (pct < 100 || doneTriggeredRef.current) return;
+
+    doneTriggeredRef.current = true;
+    setDone(true);
+    setConfettiDots(createConfettiDots());
+
+    let hideTimer: number | undefined;
+
+    const showTimer = window.setTimeout(() => {
+      const elapsed = Date.now() - startedAtRef.current;
+      const remaining = Math.max(0, 900 - elapsed);
+      hideTimer = window.setTimeout(onDone, remaining);
+    }, 700);
+
+    return () => {
+      window.clearTimeout(showTimer);
+      if (hideTimer) window.clearTimeout(hideTimer);
+    };
+  }, [pct, onDone]);
+
+  useEffect(() => {
+    if (!confettiDots.length) return;
+    const timer = window.setTimeout(() => setConfettiDots([]), 2000);
+    return () => window.clearTimeout(timer);
+  }, [confettiDots.length]);
+
+  return (
+    <div className="home-loader" aria-busy={true} aria-live="polite">
+      <div className="home-loader__scene">
+        <div className="home-loader__bar-wrap">
+          <div className="home-loader__bar-track">
+            <div
+              className={`home-loader__bar-fill${pct >= 100 ? " done" : ""}`}
+              style={{ width: `${pct}%` }}
+            />
+            <span className="home-loader__bar-label">LOADING {pct}%</span>
+          </div>
+          <div className={`home-loader__done-msg${done ? " show" : ""}`}>✓ READY!</div>
+        </div>
+      </div>
+      <div className="home-loader__confetti" aria-hidden="true">
+        {confettiDots.map((dot) => (
+          <span
+            key={dot.id}
+            className="home-loader__dot"
+            style={{
+              left: `${dot.left}vw`,
+              top: `${dot.top}vh`,
+              background: dot.color,
+              animationDuration: `${dot.duration}s`,
+              animationDelay: `${dot.delay}s`,
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
-  const { user, logout, refreshUser } = useAuth();
+  const { user, logout, refreshUser, loading } = useAuth();
   const router = useRouter();
   const [isNavScrolled, setIsNavScrolled] = useState(false);
   const recentTrackRef = useRef<HTMLDivElement | null>(null);
@@ -60,11 +176,60 @@ export default function Home() {
   const [isProfileSidebarOpen, setIsProfileSidebarOpen] = useState(false);
   const [isSoundOn, setIsSoundOn] = useState(true);
   const activeRecentIndexRef = useRef(0);
+  const [hasWarmup, setHasWarmup] = useState(false);
+  const [hasWindowLoaded, setHasWindowLoaded] = useState(false);
+  const [isAppReady, setIsAppReady] = useState(false);
+  const [showLoader, setShowLoader] = useState(true);
 
   useEffect(() => {
     if (!user) return;
     refreshUser().catch(() => {});
   }, [refreshUser, user?.id]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const handleLoad = () => {
+      if (!cancelled) setHasWindowLoaded(true);
+    };
+
+    if (document.readyState === "complete") {
+      handleLoad();
+    } else {
+      window.addEventListener("load", handleLoad, { once: true });
+    }
+
+    const warmup = async () => {
+      try {
+        await api.get("/health", { timeout: 20000 });
+      } catch {
+        // ignore warmup failures
+      } finally {
+        if (!cancelled) setHasWarmup(true);
+      }
+    };
+
+    warmup();
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener("load", handleLoad);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isAppReady) return;
+    if (!loading && hasWarmup && hasWindowLoaded) {
+      setIsAppReady(true);
+    }
+  }, [hasWarmup, hasWindowLoaded, isAppReady, loading]);
+
+  useEffect(() => {
+    if (isAppReady) return;
+    const fallback = window.setTimeout(() => setIsAppReady(true), 45000);
+    return () => window.clearTimeout(fallback);
+  }, [isAppReady]);
+
+  const handleLoaderDone = useCallback(() => setShowLoader(false), []);
 
   useEffect(() => {
     const body = document.body;
@@ -180,6 +345,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen relative overflow-clip">
+      {showLoader ? <HomeLoadingOverlay ready={isAppReady} onDone={handleLoaderDone} /> : null}
       <style>{`
         .lower-shell {
           position: relative;

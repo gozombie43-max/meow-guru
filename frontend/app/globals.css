@@ -1,5 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Nunito+Sans:wght@400;600;700&display=swap");
 @import url("https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&f[]=satoshi@400,500,600,700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap");
 @import "tailwindcss";
 
 /* ========== Liquid Glass Palette ========== */
@@ -897,6 +898,152 @@ body.math-topics-surface.theme-dark {
   font-size: 0.68rem;
   font-weight: 500;
   opacity: 0.65;
+}
+
+/* ========== Home Loader Overlay ========== */
+
+.home-loader {
+  position: fixed;
+  inset: 0;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  font-family: "Space Mono", "Courier New", monospace;
+  overflow: hidden;
+  pointer-events: auto;
+}
+
+.home-loader__scene {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 48px;
+}
+
+.home-loader__bar-wrap {
+  width: min(340px, 84vw);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.home-loader__bar-track {
+  width: 100%;
+  height: 54px;
+  border: 2.5px solid #1a1a1a;
+  border-radius: 14px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  padding: 6px;
+  position: relative;
+  overflow: hidden;
+}
+
+.home-loader__bar-fill {
+  height: 100%;
+  background: #2d9e4f;
+  border-radius: 9px;
+  width: 0%;
+  transition: width 0.05s linear;
+  position: relative;
+  overflow: hidden;
+}
+
+.home-loader__bar-fill::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  animation: homeLoaderShine 1.4s ease-in-out infinite;
+}
+
+.home-loader__bar-label {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #1a1a1a;
+  white-space: nowrap;
+  z-index: 2;
+}
+
+.home-loader__done-msg {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #2d9e4f;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  text-transform: uppercase;
+}
+
+.home-loader__done-msg.show {
+  opacity: 1;
+}
+
+.home-loader__confetti {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.home-loader__dot {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  opacity: 0;
+  animation-name: homeLoaderPop;
+  animation-timing-function: ease-out;
+  animation-fill-mode: forwards;
+}
+
+@keyframes homeLoaderShine {
+  0% {
+    left: -60%;
+  }
+  100% {
+    left: 120%;
+  }
+}
+
+@keyframes homeLoaderPop {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-120px) scale(0);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-loader__bar-fill {
+    transition: none;
+  }
+
+  .home-loader__bar-fill::after {
+    animation: none;
+  }
+
+  .home-loader__dot {
+    animation: none;
+    opacity: 1;
+  }
 }
 
 .battle-focus {
