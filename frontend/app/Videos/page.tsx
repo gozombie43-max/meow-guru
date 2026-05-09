@@ -132,9 +132,13 @@ function PlaylistThumbnail({ playlist }: { playlist: Playlist }) {
         </div>
         <div className="lesson-badge">
           <GraduationCap size={19} strokeWidth={2.4} />
-          <span>
+          <span className="lesson-badge-full">
             {playlist.type} · {playlist.lessons} lessons
           </span>
+          <span className="lesson-badge-compact">{playlist.lessons} lessons</span>
+        </div>
+        <div className="play-affordance" aria-hidden="true">
+          <PlayCircle size={38} strokeWidth={2.2} />
         </div>
       </div>
     </div>
@@ -196,7 +200,7 @@ export default function VideosPage() {
           background: #ffffff;
           color: #0f0f0f;
           font-family: "Outfit", "Roboto", "Helvetica Neue", Arial, sans-serif;
-          padding: 18px 14px 28px;
+          padding: 12px 12px calc(26px + env(safe-area-inset-bottom));
         }
 
         .videos-shell {
@@ -205,12 +209,21 @@ export default function VideosPage() {
         }
 
         .video-filters {
+          position: sticky;
+          top: 0;
+          z-index: 20;
           display: flex;
           align-items: center;
-          gap: 10px;
+          gap: 8px;
           overflow-x: auto;
-          padding: 4px 4px 12px;
+          margin: 0 -12px;
+          padding: 8px 12px 10px;
+          background: rgba(255, 255, 255, 0.94);
+          box-shadow: 0 1px 0 rgba(15, 23, 42, 0.06);
+          scroll-padding-inline: 12px;
+          scroll-snap-type: x proximity;
           scrollbar-width: none;
+          -webkit-overflow-scrolling: touch;
         }
 
         .video-filters::-webkit-scrollbar {
@@ -219,16 +232,17 @@ export default function VideosPage() {
 
         .video-chip {
           flex: 0 0 auto;
-          min-height: 52px;
-          border: 0;
-          border-radius: 13px;
-          padding: 0 22px;
-          background: #f2f2f2;
+          min-height: 42px;
+          border: 1px solid transparent;
+          border-radius: 999px;
+          padding: 0 16px;
+          background: #f3f4f6;
           color: #0c0c0c;
-          font-size: clamp(1rem, 4.5vw, 1.25rem);
+          font-size: 0.96rem;
           font-weight: 700;
           line-height: 1;
           cursor: pointer;
+          scroll-snap-align: start;
           transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
         }
 
@@ -244,26 +258,28 @@ export default function VideosPage() {
         .playlist-list {
           display: flex;
           flex-direction: column;
-          gap: 38px;
-          padding: 42px 0 18px;
+          gap: 30px;
+          padding: 24px 0 18px;
         }
 
         .playlist-card {
           display: flex;
           flex-direction: column;
-          gap: 14px;
+          gap: 12px;
+          content-visibility: auto;
+          contain-intrinsic-size: 280px;
         }
 
         .playlist-thumb {
           position: relative;
-          padding-top: 18px;
+          padding-top: 13px;
           isolation: isolate;
         }
 
         .playlist-stack {
           position: absolute;
-          height: 26px;
-          border-radius: 18px 18px 7px 7px;
+          height: 20px;
+          border-radius: 14px 14px 6px 6px;
           border: 1px solid rgba(15, 23, 42, 0.13);
           box-shadow:
             0 9px 18px rgba(15, 23, 42, 0.13),
@@ -285,7 +301,7 @@ export default function VideosPage() {
         }
 
         .stack-back {
-          top: -13px;
+          top: -9px;
           left: 12%;
           right: 12%;
           z-index: 0;
@@ -295,7 +311,7 @@ export default function VideosPage() {
         }
 
         .stack-one {
-          top: -5px;
+          top: -3px;
           left: 8%;
           right: 8%;
           z-index: 1;
@@ -352,7 +368,7 @@ export default function VideosPage() {
           z-index: 3;
           aspect-ratio: 16 / 9;
           overflow: hidden;
-          border-radius: 18px;
+          border-radius: 14px;
           background:
             linear-gradient(90deg, rgba(8, 12, 20, 0.9), rgba(8, 12, 20, 0.72)),
             repeating-linear-gradient(25deg, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px 36px),
@@ -422,11 +438,11 @@ export default function VideosPage() {
           width: max-content;
           max-width: 96%;
           margin: 0 auto;
-          padding: 3px 8px;
+          padding: 3px 7px;
           border-radius: 999px;
           background: #ffffff;
           color: #050505;
-          font-size: clamp(0.68rem, 3.2vw, 1.2rem);
+          font-size: clamp(0.62rem, 2.8vw, 1rem);
           line-height: 1.1;
           font-weight: 900;
           white-space: nowrap;
@@ -439,7 +455,7 @@ export default function VideosPage() {
           left: 5%;
           max-width: 68%;
           color: #050505;
-          font-size: clamp(2.15rem, 12vw, 5.4rem);
+          font-size: clamp(1.85rem, 10vw, 4.8rem);
           line-height: 0.9;
           font-style: italic;
           font-weight: 900;
@@ -462,7 +478,7 @@ export default function VideosPage() {
         .theme-green .thumb-primary {
           left: 7%;
           max-width: 74%;
-          font-size: clamp(1.45rem, 7.4vw, 3.4rem);
+          font-size: clamp(1.16rem, 6.2vw, 3.1rem);
           line-height: 0.92;
           white-space: nowrap;
         }
@@ -479,7 +495,7 @@ export default function VideosPage() {
           bottom: 26%;
           max-width: 62%;
           color: #ffffff;
-          font-size: clamp(1rem, 5.2vw, 2.3rem);
+          font-size: clamp(0.86rem, 4.3vw, 2.1rem);
           font-weight: 900;
           line-height: 1.08;
           text-shadow: 0 2px 2px rgba(0, 0, 0, 0.45);
@@ -499,14 +515,14 @@ export default function VideosPage() {
           left: 5%;
           bottom: 8%;
           color: #ffe100;
-          font-size: clamp(0.9rem, 4.8vw, 2rem);
+          font-size: clamp(0.82rem, 4vw, 1.8rem);
           font-weight: 900;
           line-height: 1;
         }
 
         .theme-green .thumb-lesson {
           color: #ffffff;
-          font-size: clamp(1.25rem, 6vw, 2.5rem);
+          font-size: clamp(1rem, 5vw, 2.3rem);
           letter-spacing: 0.04em;
         }
 
@@ -545,33 +561,69 @@ export default function VideosPage() {
         .lesson-badge {
           position: absolute;
           z-index: 3;
-          right: 2%;
+          right: 3%;
           bottom: 4%;
           display: inline-flex;
           align-items: center;
-          gap: 6px;
-          max-width: 44%;
-          border-radius: 9px;
-          padding: 8px 10px;
+          gap: 5px;
+          max-width: 52%;
+          border-radius: 8px;
+          padding: 7px 8px;
           background: rgba(0, 0, 0, 0.6);
           color: #ffffff;
-          font-size: clamp(0.76rem, 3.6vw, 1.1rem);
+          font-size: clamp(0.68rem, 3vw, 1rem);
           font-weight: 800;
           line-height: 1;
           backdrop-filter: blur(4px);
         }
 
+        .lesson-badge span {
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .lesson-badge-compact {
+          display: none;
+        }
+
+        .play-affordance {
+          position: absolute;
+          z-index: 4;
+          right: 50%;
+          top: 50%;
+          transform: translate(50%, -50%);
+          width: 54px;
+          height: 54px;
+          border-radius: 999px;
+          display: grid;
+          place-items: center;
+          color: #ffffff;
+          background: rgba(0, 0, 0, 0.42);
+          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.26);
+          opacity: 0;
+          transition: opacity 0.18s ease, transform 0.18s ease;
+          pointer-events: none;
+        }
+
+        .playlist-card:active .play-affordance,
+        .playlist-card:hover .play-affordance {
+          opacity: 1;
+          transform: translate(50%, -50%) scale(0.98);
+        }
+
         .playlist-meta-row {
           display: grid;
-          grid-template-columns: 48px minmax(0, 1fr) 34px;
+          grid-template-columns: 40px minmax(0, 1fr) 36px;
           align-items: start;
-          gap: 12px;
-          padding: 0 4px;
+          gap: 10px;
+          padding: 0 2px;
         }
 
         .channel-logo {
-          width: 42px;
-          height: 42px;
+          width: 38px;
+          height: 38px;
           border-radius: 50%;
           display: inline-flex;
           align-items: center;
@@ -579,7 +631,7 @@ export default function VideosPage() {
           border: 2px solid #e5e7eb;
           color: #008080;
           background: #ffffff;
-          font-size: 0.86rem;
+          font-size: 0.78rem;
           font-weight: 900;
           line-height: 1;
           box-shadow: inset 0 0 0 2px rgba(0, 128, 128, 0.12);
@@ -592,30 +644,42 @@ export default function VideosPage() {
         .playlist-copy h2 {
           margin: 0;
           color: #0f0f0f;
-          font-size: clamp(1.15rem, 5.2vw, 1.65rem);
-          font-weight: 500;
-          line-height: 1.2;
+          font-size: clamp(1rem, 4.2vw, 1.45rem);
+          font-weight: 600;
+          line-height: 1.24;
           letter-spacing: 0;
+          display: -webkit-box;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 2;
+          overflow: hidden;
         }
 
         .playlist-copy p {
-          margin: 6px 0 0;
+          margin: 4px 0 0;
           color: #606060;
-          font-size: clamp(0.92rem, 4.2vw, 1.08rem);
+          font-size: clamp(0.82rem, 3.5vw, 1.02rem);
           line-height: 1.2;
           font-weight: 400;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
         .more-btn {
           border: 0;
           background: transparent;
           color: #0b0b0b;
-          width: 34px;
+          width: 36px;
           height: 40px;
           display: inline-flex;
           align-items: center;
           justify-content: center;
           cursor: pointer;
+          border-radius: 999px;
+        }
+
+        .more-btn:active {
+          background: #f3f4f6;
         }
 
         .empty-state {
@@ -644,6 +708,8 @@ export default function VideosPage() {
           .video-chip {
             min-height: 56px;
             border-radius: 14px;
+            padding: 0 22px;
+            font-size: 1.18rem;
           }
 
           .playlist-list {
@@ -651,13 +717,66 @@ export default function VideosPage() {
             padding-top: 48px;
           }
 
+          .playlist-thumb {
+            padding-top: 18px;
+          }
+
+          .playlist-stack {
+            height: 26px;
+            border-radius: 18px 18px 7px 7px;
+          }
+
+          .stack-back {
+            top: -13px;
+          }
+
+          .stack-one {
+            top: -5px;
+          }
+
+          .thumb-stage {
+            border-radius: 18px;
+          }
+
           .playlist-meta-row {
             grid-template-columns: 54px minmax(0, 1fr) 40px;
+            gap: 12px;
+            padding: 0 4px;
           }
 
           .channel-logo {
             width: 48px;
             height: 48px;
+            font-size: 0.86rem;
+          }
+
+          .play-affordance {
+            width: 64px;
+            height: 64px;
+          }
+        }
+
+        @media (max-width: 540px) {
+          .videos-page {
+            min-height: calc(100vh - 76px);
+          }
+
+          .lesson-badge svg {
+            width: 16px;
+            height: 16px;
+          }
+
+          .more-btn svg {
+            width: 24px;
+            height: 24px;
+          }
+
+          .lesson-badge-full {
+            display: none;
+          }
+
+          .lesson-badge-compact {
+            display: inline;
           }
         }
 
@@ -667,19 +786,50 @@ export default function VideosPage() {
             padding-right: 10px;
           }
 
-          .video-chip {
-            padding: 0 17px;
-            min-height: 48px;
+          .video-filters {
+            margin-left: -10px;
+            margin-right: -10px;
+            padding-left: 10px;
+            padding-right: 10px;
           }
 
-          .summary-strip {
-            gap: 8px;
-            padding: 0 12px;
+          .video-chip {
+            padding: 0 14px;
+            min-height: 40px;
+            font-size: 0.9rem;
+          }
+
+          .thumb-primary {
+            font-size: clamp(1.58rem, 9vw, 3rem);
+          }
+
+          .theme-green .thumb-primary {
+            font-size: clamp(1rem, 5.7vw, 2.4rem);
           }
 
           .playlist-list {
-            padding-top: 36px;
-            gap: 34px;
+            padding-top: 22px;
+            gap: 28px;
+          }
+
+          .playlist-meta-row {
+            grid-template-columns: 38px minmax(0, 1fr) 34px;
+            gap: 8px;
+          }
+
+          .channel-logo {
+            width: 36px;
+            height: 36px;
+          }
+
+          .lesson-badge {
+            max-width: 54%;
+            padding: 6px 7px;
+          }
+
+          .play-affordance {
+            width: 46px;
+            height: 46px;
           }
         }
       `}</style>
