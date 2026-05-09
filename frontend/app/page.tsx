@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
+import { useThemeMode } from "@/hooks/useTheme";
 import api from "@/lib/axios";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -175,11 +176,17 @@ export default function Home() {
   const [activeRecentIndex, setActiveRecentIndex] = useState(0);
   const [isProfileSidebarOpen, setIsProfileSidebarOpen] = useState(false);
   const [isSoundOn, setIsSoundOn] = useState(true);
+  const { theme, toggleThemeMode } = useThemeMode();
   const activeRecentIndexRef = useRef(0);
   const [hasWarmup, setHasWarmup] = useState(false);
+  const [warmupOk, setWarmupOk] = useState(false);
   const [hasWindowLoaded, setHasWindowLoaded] = useState(false);
   const [isAppReady, setIsAppReady] = useState(false);
-  const [showLoader, setShowLoader] = useState(true);
+  const [showLoader, setShowLoader] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return window.sessionStorage.getItem("home_loader_ready") !== "true";
+  });
+  const isDarkMode = theme === "dark";
 
   useEffect(() => {
     if (!user) return;
@@ -201,8 +208,10 @@ export default function Home() {
     const warmup = async () => {
       try {
         await api.get("/health", { timeout: 20000 });
+        if (!cancelled) setWarmupOk(true);
       } catch {
         // ignore warmup failures
+        if (!cancelled) setWarmupOk(false);
       } finally {
         if (!cancelled) setHasWarmup(true);
       }
@@ -230,6 +239,13 @@ export default function Home() {
   }, [isAppReady]);
 
   const handleLoaderDone = useCallback(() => setShowLoader(false), []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!showLoader && isAppReady && warmupOk) {
+      window.sessionStorage.setItem("home_loader_ready", "true");
+    }
+  }, [isAppReady, showLoader, warmupOk]);
 
   useEffect(() => {
     const body = document.body;
@@ -1795,12 +1811,19 @@ export default function Home() {
 
             <div className="qm-sidebar-section-title">Settings</div>
             <div className="qm-settings-list">
-              <button type="button" className="qm-setting-item">
-                <div className="qm-setting-icon">🌙</div>
+              <button
+                type="button"
+                className="qm-setting-item"
+                role="switch"
+                aria-checked={isDarkMode}
+                aria-label={`Switch to ${isDarkMode ? "light" : "dark"} mode`}
+                onClick={toggleThemeMode}
+              >
+                <div className="qm-setting-icon">{isDarkMode ? "🌙" : "☀️"}</div>
                 <div className="qm-setting-name">Appearance</div>
-                <div className="qm-setting-value">
-                  Dark Mode
-                  <span className="qm-chevron">›</span>
+                <div className="qm-setting-value">{isDarkMode ? "Dark" : "Light"}</div>
+                <div className={`qm-toggle ${isDarkMode ? "active" : ""}`} aria-hidden="true">
+                  <div className="qm-toggle-knob" />
                 </div>
               </button>
               <button

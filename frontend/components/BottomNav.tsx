@@ -3,10 +3,8 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { ClipboardList, Home as HomeIcon, Menu, Moon, Play, Sun } from 'lucide-react';
-
-const THEME_STORAGE_KEY = 'ui-theme';
-type ThemeMode = 'light' | 'dark';
+import { ClipboardList, Home as HomeIcon, Menu, Play } from 'lucide-react';
+import { useThemeMode } from '@/hooks/useTheme';
 
 export default function BottomNav() {
   const pathname = usePathname() || '/';
@@ -14,7 +12,7 @@ export default function BottomNav() {
   const isNotesViewRoute = pathname === '/notes/view' || pathname.startsWith('/notes/view/');
   const shouldHideNav = isQuizRoute || isNotesViewRoute;
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [theme, setTheme] = useState<ThemeMode>('light');
+  const { theme } = useThemeMode();
   const [isScrolled, setIsScrolled] = useState(false);
   const lightSurfacePrefixes = [
     '/mathematics',
@@ -41,24 +39,6 @@ export default function BottomNav() {
     body.classList.add('has-bottom-nav');
     return () => body.classList.remove('has-bottom-nav');
   }, [shouldHideNav]);
-
-  useEffect(() => {
-    const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
-    const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
-    const initialTheme: ThemeMode =
-      stored === 'dark' || stored === 'light' ? stored : prefersDark ? 'dark' : 'light';
-    setTheme(initialTheme);
-  }, []);
-
-  useEffect(() => {
-    const body = document.body;
-    const root = document.documentElement;
-    body.classList.toggle('theme-dark', theme === 'dark');
-    body.classList.toggle('theme-light', theme === 'light');
-    root.classList.toggle('theme-dark', theme === 'dark');
-    root.classList.toggle('theme-light', theme === 'light');
-    window.localStorage.setItem(THEME_STORAGE_KEY, theme);
-  }, [theme]);
 
   useEffect(() => {
     setIsMenuOpen(false);
@@ -92,8 +72,6 @@ export default function BottomNav() {
   const isHome = pathname === '/';
   const isMock = pathname.startsWith('/mock-test');
   const isPlay = pathname === '/play' || pathname.startsWith('/play/');
-  const isDarkMode = theme === 'dark';
-
   return (
     <>
       <nav
@@ -152,25 +130,6 @@ export default function BottomNav() {
         aria-hidden={!isMenuOpen}
       >
         <div className="bottom-menu-title">Menu</div>
-        <div className="bottom-menu-row">
-          <div className="bottom-menu-text">
-            <span className="bottom-menu-label">Appearance</span>
-            <span className="bottom-menu-caption">{isDarkMode ? 'Dark' : 'Light'} mode</span>
-          </div>
-          <button
-            type="button"
-            className={`theme-toggle${isDarkMode ? ' is-dark' : ''}`}
-            role="switch"
-            aria-checked={isDarkMode}
-            onClick={() => setTheme(isDarkMode ? 'light' : 'dark')}
-          >
-            <span className="theme-toggle-icon" aria-hidden="true">
-              {isDarkMode ? <Moon size={14} /> : <Sun size={14} />}
-            </span>
-            <span className="theme-toggle-label">{isDarkMode ? 'Dark' : 'Light'}</span>
-            <span className="theme-switch" aria-hidden="true" />
-          </button>
-        </div>
       </div>
     </>
   );
