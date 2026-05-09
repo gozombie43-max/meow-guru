@@ -212,11 +212,6 @@ export default function MockTestPage() {
               <div className={styles.heroTop}>
                 <div className={`${styles.heroGreeting} ${nunito.className}`}>
                   <div className={styles.wave}>👋 Welcome back</div>
-                  <h1 className={styles.heroTitle}>Hello, Sulu!</h1>
-                </div>
-                <div className={`${styles.heroAvatar} ${nunito.className}`}>
-                  S
-                  <div className={styles.notifDot} />
                 </div>
               </div>
 
@@ -380,21 +375,6 @@ export default function MockTestPage() {
             <div className={styles.detailCurve} />
 
             <section className={styles.detailBody}>
-              <div className={styles.quickStats}>
-                <div className={styles.qsCard}>
-                  <div className={`${styles.qsNum} ${nunito.className}`}>82</div>
-                  <div className={styles.qsLbl}>Mock Tests</div>
-                </div>
-                <div className={styles.qsCard}>
-                  <div className={`${styles.qsNum} ${nunito.className}`}>853</div>
-                  <div className={styles.qsLbl}>Prev. Papers</div>
-                </div>
-                <div className={styles.qsCard}>
-                  <div className={`${styles.qsNum} ${nunito.className}`}>74%</div>
-                  <div className={styles.qsLbl}>Avg Score</div>
-                </div>
-              </div>
-
               <div className={styles.tabs}>
                 <button
                   type="button"
