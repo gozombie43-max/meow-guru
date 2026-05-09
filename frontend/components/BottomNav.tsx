@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { ClipboardList, Home as HomeIcon, Menu, Play } from 'lucide-react';
+import { ClipboardList, Home as HomeIcon, Play, Video } from 'lucide-react';
 import { useThemeMode } from '@/hooks/useTheme';
 
 export default function BottomNav() {
@@ -111,8 +111,8 @@ export default function BottomNav() {
           aria-controls="bottom-nav-menu"
           onClick={() => setIsMenuOpen((prev) => !prev)}
         >
-          <Menu className="bottom-nav-icon" />
-          <span className="bottom-nav-label">MENU</span>
+          <Video className="bottom-nav-icon" />
+          <span className="bottom-nav-label">Videos</span>
         </button>
       </nav>
 
@@ -129,7 +129,7 @@ export default function BottomNav() {
         aria-modal="true"
         aria-hidden={!isMenuOpen}
       >
-        <div className="bottom-menu-title">Menu</div>
+        <div className="bottom-menu-title">Videos</div>
       </div>
     </>
   );

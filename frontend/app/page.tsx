@@ -182,16 +182,18 @@ export default function Home() {
   const [warmupOk, setWarmupOk] = useState(false);
   const [hasWindowLoaded, setHasWindowLoaded] = useState(false);
   const [isAppReady, setIsAppReady] = useState(false);
-  const [showLoader, setShowLoader] = useState(() => {
-    if (typeof window === "undefined") return true;
-    return window.sessionStorage.getItem("home_loader_ready") !== "true";
-  });
+  const [showLoader, setShowLoader] = useState(true);
   const isDarkMode = theme === "dark";
 
   useEffect(() => {
     if (!user) return;
     refreshUser().catch(() => {});
   }, [refreshUser, user?.id]);
+
+  useEffect(() => {
+    const shouldShowLoader = window.sessionStorage.getItem("home_loader_ready") !== "true";
+    setShowLoader(shouldShowLoader);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
