@@ -1,5 +1,6 @@
 "use client";
 
+import type { KeyboardEvent } from "react";
 import { useMemo, useState } from "react";
 import {
   GraduationCap,
@@ -16,6 +17,7 @@ type Playlist = {
   type: "Course" | "Playlist";
   lessons: number;
   status: "unwatched" | "watched";
+  href?: string;
   accent: string;
   theme: "yellow" | "green" | "blue" | "purple";
   primary: string;
@@ -40,6 +42,7 @@ const playlists: Playlist[] = [
     type: "Course",
     lessons: 25,
     status: "unwatched",
+    href: "/videos/SSC_Pratham_12_StudyWithGuru%20(1).html",
     accent: "#ffe100",
     theme: "yellow",
     primary: "ALGEBRA",
@@ -146,8 +149,32 @@ function PlaylistThumbnail({ playlist }: { playlist: Playlist }) {
 }
 
 function PlaylistCard({ playlist }: { playlist: Playlist }) {
+  const openPlaylist = () => {
+    if (playlist.href) {
+      window.location.href = playlist.href;
+    }
+  };
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
+    if (!playlist.href) {
+      return;
+    }
+
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      openPlaylist();
+    }
+  };
+
   return (
-    <article className="playlist-card">
+    <article
+      className={`playlist-card${playlist.href ? " is-clickable" : ""}`}
+      onClick={openPlaylist}
+      onKeyDown={handleKeyDown}
+      tabIndex={playlist.href ? 0 : undefined}
+      role={playlist.href ? "link" : undefined}
+      aria-label={playlist.href ? `Open ${playlist.title}` : undefined}
+    >
       <PlaylistThumbnail playlist={playlist} />
 
       <div className="playlist-meta-row">
@@ -158,7 +185,12 @@ function PlaylistCard({ playlist }: { playlist: Playlist }) {
             {playlist.channel} · {playlist.type}
           </p>
         </div>
-        <button type="button" className="more-btn" aria-label={`More options for ${playlist.title}`}>
+        <button
+          type="button"
+          className="more-btn"
+          aria-label={`More options for ${playlist.title}`}
+          onClick={(event) => event.stopPropagation()}
+        >
           <MoreVertical size={28} strokeWidth={2.8} />
         </button>
       </div>
@@ -268,6 +300,20 @@ export default function VideosPage() {
           gap: 12px;
           content-visibility: auto;
           contain-intrinsic-size: 280px;
+        }
+
+        .playlist-card.is-clickable {
+          cursor: pointer;
+          outline: none;
+        }
+
+        .playlist-card.is-clickable:focus-visible .thumb-stage {
+          box-shadow:
+            0 0 0 3px #ffffff,
+            0 0 0 6px #050505,
+            0 18px 34px rgba(15, 23, 42, 0.18),
+            0 4px 0 rgba(15, 23, 42, 0.08),
+            inset 0 1px 0 rgba(255, 255, 255, 0.16);
         }
 
         .playlist-thumb {
