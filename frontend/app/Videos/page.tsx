@@ -2,11 +2,9 @@
 
 import { useMemo, useState } from "react";
 import {
-  ChevronDown,
   GraduationCap,
   MoreVertical,
   PlayCircle,
-  Sparkles,
 } from "lucide-react";
 
 type FilterKey = "all" | "shorts" | "unwatched" | "watched" | "videos";
@@ -121,6 +119,7 @@ function VideoFilters({
 function PlaylistThumbnail({ playlist }: { playlist: Playlist }) {
   return (
     <div className={`playlist-thumb theme-${playlist.theme}`}>
+      <div className="playlist-stack stack-back" aria-hidden="true" />
       <div className="playlist-stack stack-one" aria-hidden="true" />
       <div className="playlist-stack stack-two" aria-hidden="true" />
       <div className="thumb-stage">
@@ -159,15 +158,6 @@ function PlaylistCard({ playlist }: { playlist: Playlist }) {
           <MoreVertical size={28} strokeWidth={2.8} />
         </button>
       </div>
-
-      <button type="button" className="lesson-row" aria-label={`Open ${playlist.title} lessons`}>
-        <span className="lesson-count">{playlist.lessons} videos</span>
-        <span className={`mini-thumb theme-${playlist.theme}`} aria-hidden="true">
-          <span />
-        </span>
-        <span className="lesson-title">Algebra With Basics For #SSC_...</span>
-        <ChevronDown className="lesson-chevron" size={26} strokeWidth={3} />
-      </button>
     </article>
   );
 }
@@ -187,15 +177,6 @@ export default function VideosPage() {
     <main className="videos-page">
       <div className="videos-shell">
         <VideoFilters active={activeFilter} onChange={setActiveFilter} />
-
-        <button type="button" className="summary-strip">
-          <span className="summary-icon" aria-hidden="true">
-            <Sparkles size={22} fill="currentColor" />
-          </span>
-          <span className="summary-title">Summary</span>
-          <span className="summary-copy">आदित्य रंजन इस कक्षा में बीजगणित के महत्वपूर्ण...</span>
-          <ChevronDown className="summary-chevron" size={30} strokeWidth={3} />
-        </button>
 
         <section className="playlist-list" aria-label="Video playlists">
           {visiblePlaylists.length > 0 ? (
@@ -260,52 +241,11 @@ export default function VideosPage() {
           transform: scale(0.97);
         }
 
-        .summary-strip {
-          width: 100%;
-          display: grid;
-          grid-template-columns: auto auto minmax(0, 1fr) auto;
-          align-items: center;
-          gap: 12px;
-          min-height: 58px;
-          border: 0;
-          border-radius: 12px;
-          padding: 0 16px;
-          background: #f7f0f2;
-          color: #111111;
-          font: inherit;
-          text-align: left;
-          cursor: pointer;
-        }
-
-        .summary-icon {
-          display: inline-flex;
-          color: #050505;
-        }
-
-        .summary-title {
-          font-size: clamp(1rem, 4.2vw, 1.22rem);
-          font-weight: 800;
-          white-space: nowrap;
-        }
-
-        .summary-copy {
-          min-width: 0;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-          font-size: clamp(0.95rem, 4vw, 1.13rem);
-          font-weight: 500;
-        }
-
-        .summary-chevron {
-          color: #090909;
-        }
-
         .playlist-list {
           display: flex;
           flex-direction: column;
           gap: 38px;
-          padding: 52px 0 18px;
+          padding: 42px 0 18px;
         }
 
         .playlist-card {
@@ -316,54 +256,100 @@ export default function VideosPage() {
 
         .playlist-thumb {
           position: relative;
-          padding-top: 10px;
+          padding-top: 18px;
+          isolation: isolate;
         }
 
         .playlist-stack {
           position: absolute;
-          left: 6%;
-          right: 6%;
-          height: 14px;
-          border-radius: 18px 18px 0 0;
-          border: 1px solid rgba(15, 23, 42, 0.12);
+          height: 26px;
+          border-radius: 18px 18px 7px 7px;
+          border: 1px solid rgba(15, 23, 42, 0.13);
+          box-shadow:
+            0 9px 18px rgba(15, 23, 42, 0.13),
+            inset 0 1px 0 rgba(255, 255, 255, 0.72),
+            inset 0 -1px 0 rgba(15, 23, 42, 0.08);
+          transform-origin: center bottom;
+          pointer-events: none;
+        }
+
+        .playlist-stack::after {
+          content: "";
+          position: absolute;
+          left: 12px;
+          right: 12px;
+          bottom: 4px;
+          height: 1px;
+          background: rgba(15, 23, 42, 0.11);
+          opacity: 0.7;
+        }
+
+        .stack-back {
+          top: -13px;
+          left: 12%;
+          right: 12%;
+          z-index: 0;
+          background: linear-gradient(180deg, #e7eef7 0%, #c8d6e6 100%);
+          opacity: 0.74;
+          transform: translateY(0) scaleX(0.99);
         }
 
         .stack-one {
-          top: -14px;
-          background: #d4e0ef;
+          top: -5px;
+          left: 8%;
+          right: 8%;
+          z-index: 1;
+          background: linear-gradient(180deg, #dce7f3 0%, #b7c8da 100%);
+          opacity: 0.88;
         }
 
         .stack-two {
-          top: -6px;
-          background: #aebdcc;
+          top: 3px;
+          left: 4.5%;
+          right: 4.5%;
+          z-index: 2;
+          background: linear-gradient(180deg, #c9d7e7 0%, #9eb1c5 100%);
+        }
+
+        .theme-green .stack-back {
+          background: linear-gradient(180deg, #e2f4ec 0%, #c9e2d7 100%);
         }
 
         .theme-green .stack-one {
-          background: #d5eee4;
+          background: linear-gradient(180deg, #d5eee4 0%, #b8d9ca 100%);
         }
 
         .theme-green .stack-two {
-          background: #b9d7ca;
+          background: linear-gradient(180deg, #c1e0d3 0%, #99bdad 100%);
+        }
+
+        .theme-blue .stack-back {
+          background: linear-gradient(180deg, #e4f2ff 0%, #c9dcf2 100%);
         }
 
         .theme-blue .stack-one {
-          background: #d8ebff;
+          background: linear-gradient(180deg, #d8ebff 0%, #b5cce8 100%);
         }
 
         .theme-blue .stack-two {
-          background: #b8cce6;
+          background: linear-gradient(180deg, #c6dbf2 0%, #9db4d0 100%);
+        }
+
+        .theme-purple .stack-back {
+          background: linear-gradient(180deg, #f1e8ff 0%, #decaf8 100%);
         }
 
         .theme-purple .stack-one {
-          background: #eadcff;
+          background: linear-gradient(180deg, #eadcff 0%, #d0b3ee 100%);
         }
 
         .theme-purple .stack-two {
-          background: #d4baf5;
+          background: linear-gradient(180deg, #dbc5f8 0%, #b99ce2 100%);
         }
 
         .thumb-stage {
           position: relative;
+          z-index: 3;
           aspect-ratio: 16 / 9;
           overflow: hidden;
           border-radius: 18px;
@@ -372,7 +358,10 @@ export default function VideosPage() {
             repeating-linear-gradient(25deg, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px 36px),
             #101820;
           border: 1px solid rgba(15, 23, 42, 0.16);
-          box-shadow: 0 2px 0 rgba(15, 23, 42, 0.08);
+          box-shadow:
+            0 18px 34px rgba(15, 23, 42, 0.18),
+            0 4px 0 rgba(15, 23, 42, 0.08),
+            inset 0 1px 0 rgba(255, 255, 255, 0.16);
         }
 
         .theme-green .thumb-stage {
@@ -629,90 +618,6 @@ export default function VideosPage() {
           cursor: pointer;
         }
 
-        .lesson-row {
-          width: 100%;
-          min-height: 58px;
-          display: grid;
-          grid-template-columns: auto 82px minmax(0, 1fr) auto;
-          align-items: center;
-          gap: 12px;
-          border: 0;
-          border-radius: 12px;
-          padding: 8px 14px;
-          background: #f4f6fb;
-          color: #101010;
-          font: inherit;
-          text-align: left;
-          cursor: pointer;
-        }
-
-        .lesson-count {
-          font-size: clamp(0.92rem, 4.1vw, 1.05rem);
-          font-weight: 500;
-          white-space: nowrap;
-        }
-
-        .mini-thumb {
-          display: block;
-          width: 82px;
-          aspect-ratio: 16 / 9;
-          overflow: hidden;
-          border-radius: 3px;
-          background: #101820;
-          position: relative;
-        }
-
-        .mini-thumb::before {
-          content: "";
-          position: absolute;
-          left: 0;
-          right: 0;
-          top: 28%;
-          height: 30%;
-          background: #ffe100;
-          transform: skewX(-13deg);
-        }
-
-        .mini-thumb.theme-green {
-          background: #0b3f34;
-        }
-
-        .mini-thumb.theme-green::before {
-          top: 12%;
-          height: 22%;
-          background: #ffffff;
-          transform: none;
-        }
-
-        .mini-thumb.theme-blue {
-          background: #092656;
-        }
-
-        .mini-thumb.theme-blue::before {
-          background: #3dd5ff;
-        }
-
-        .mini-thumb.theme-purple {
-          background: #261545;
-        }
-
-        .mini-thumb.theme-purple::before {
-          background: #c9a7ff;
-        }
-
-        .lesson-title {
-          min-width: 0;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-          font-size: clamp(0.98rem, 4.5vw, 1.16rem);
-          font-weight: 400;
-        }
-
-        .lesson-chevron {
-          color: #111111;
-        }
-
         .empty-state {
           min-height: 220px;
           display: grid;
@@ -741,13 +646,9 @@ export default function VideosPage() {
             border-radius: 14px;
           }
 
-          .summary-strip {
-            min-height: 62px;
-          }
-
           .playlist-list {
             gap: 46px;
-            padding-top: 58px;
+            padding-top: 48px;
           }
 
           .playlist-meta-row {
@@ -777,19 +678,8 @@ export default function VideosPage() {
           }
 
           .playlist-list {
-            padding-top: 44px;
+            padding-top: 36px;
             gap: 34px;
-          }
-
-          .lesson-row {
-            grid-template-columns: auto 66px minmax(0, 1fr) auto;
-            gap: 9px;
-            padding-left: 10px;
-            padding-right: 10px;
-          }
-
-          .mini-thumb {
-            width: 66px;
           }
         }
       `}</style>
