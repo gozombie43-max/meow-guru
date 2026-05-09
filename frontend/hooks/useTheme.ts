@@ -49,7 +49,9 @@ export function useThemeMode() {
 
     const handleTheme = (nextTheme: ThemeMode) => setTheme(nextTheme);
     listeners.add(handleTheme);
-    return () => listeners.delete(handleTheme);
+    return () => {
+      listeners.delete(handleTheme);
+    };
   }, []);
 
   const setThemeMode = useCallback((nextTheme: ThemeMode) => {
