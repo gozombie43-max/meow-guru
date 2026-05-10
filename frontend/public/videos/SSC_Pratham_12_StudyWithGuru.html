@@ -91,6 +91,23 @@ header{background:rgba(240,241,251,0.96)!important}
 .topic-count{font-size:11px;font-weight:900;opacity:0.88;margin-top:6px}
 .topic-open{font-size:22px;opacity:0.88}
 .topic-back{margin-bottom:12px}
+.reason-panel{display:flex;flex-direction:column;gap:12px}
+.reason-search{display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border2);border-radius:20px;padding:13px 16px;box-shadow:0 8px 22px rgba(15,16,48,0.06)}
+.reason-search i{color:var(--text3);font-size:13px}
+.reason-search input{width:100%;border:0;outline:0;background:transparent;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700}
+.reason-filters{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+.reason-filters::-webkit-scrollbar{display:none}
+.reason-chip{border:1px solid var(--border2);border-radius:999px;background:var(--surface2);color:var(--text2);font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:900;padding:9px 15px;cursor:pointer;transition:0.2s ease}
+.reason-chip.active{border-color:var(--p1);background:linear-gradient(135deg,var(--p1),#4f7cff);color:#fff;box-shadow:0 8px 18px rgba(79,124,255,0.25)}
+.reason-count{font-size:11px;font-weight:800;color:var(--text3);padding-left:2px}
+.reason-topic-list{display:flex;flex-direction:column;gap:9px}
+.reason-topic-card{min-height:56px;border:1px solid var(--border);border-radius:24px;background:var(--surface2);display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:12px;padding:8px 12px 8px 10px;text-align:left;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;box-shadow:0 8px 22px rgba(15,16,48,0.07);transition:0.2s ease}
+.reason-topic-card:hover{transform:translateY(-1px);border-color:rgba(99,102,241,0.3);box-shadow:0 12px 28px rgba(15,16,48,0.11)}
+.reason-topic-icon{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:#eaf4ff;font-size:18px}
+.reason-topic-name{font-size:13px;font-weight:900;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.reason-topic-pill{border-radius:999px;font-size:10px;font-weight:900;padding:5px 9px}
+.reason-topic-pill.core{background:#e7efff;color:#4f7cff}.reason-topic-pill.high{background:#dcf8ec;color:#12a166}.reason-topic-pill.medium{background:#f0e9ff;color:#7c5be8}.reason-topic-pill.low{background:#e4f8ff;color:#2da8d9}.reason-topic-pill.least{background:#eef2f7;color:#8da0b8}
+.reason-topic-empty{display:none;text-align:center;color:var(--text3);font-size:13px;font-weight:800;padding:24px}
 .litem{background:var(--surface);border:1px solid var(--border);border-radius:var(--r16);padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all 0.22s ease;animation:liIn 0.3s ease both;}
 @keyframes liIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
 .litem:hover{border-color:var(--p1);background:rgba(99,102,241,0.06);transform:translateX(5px);box-shadow:inset 3px 0 0 var(--p1)}
@@ -101,6 +118,20 @@ header{background:rgba(240,241,251,0.96)!important}
 .li-sub{font-size:10px;color:var(--text3);font-weight:600;margin-top:3px}
 .li-open{width:38px;height:38px;border-radius:12px;flex-shrink:0;border:none;cursor:pointer;background:linear-gradient(135deg,var(--p1),var(--p2));color:#fff;font-size:14px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px var(--pg);transition:all 0.2s ease;}
 .li-open:hover{transform:scale(1.12) rotate(10deg);box-shadow:0 5px 16px var(--pg)}
+.yt-list{display:flex;flex-direction:column;gap:14px}
+.yt-item{width:100%;border:0;background:transparent;padding:0;display:grid;grid-template-columns:minmax(142px,38%) minmax(0,1fr) 28px;gap:12px;text-align:left;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;animation:liIn 0.3s ease both}
+.yt-thumb{position:relative;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:linear-gradient(135deg,#0f5132,#18734d 52%,#facc15 52%,#facc15 58%,#f8fafc 58%);box-shadow:0 2px 10px rgba(15,16,48,0.12)}
+.yt-thumb::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,255,255,0.92) 0 30%,transparent 30%),radial-gradient(circle at 76% 44%,rgba(255,255,255,0.92) 0 18%,transparent 18%);opacity:0.9}
+.yt-tag{position:absolute;left:9px;top:9px;right:38px;color:#06324a;font-size:10px;font-weight:900;line-height:1;text-transform:uppercase;letter-spacing:0.3px;z-index:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.yt-class{position:absolute;right:8px;top:8px;z-index:1;width:32px;height:32px;border-radius:50%;background:#fff;color:#dc2626;display:grid;place-items:center;font-size:15px;font-weight:900;box-shadow:0 2px 8px rgba(15,16,48,0.14)}
+.yt-play{position:absolute;left:50%;top:50%;z-index:1;transform:translate(-50%,-50%);width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:rgba(0,0,0,0.68);color:#fff;font-size:13px}
+.yt-time{position:absolute;right:7px;bottom:7px;z-index:1;border-radius:5px;background:rgba(0,0,0,0.78);color:#fff;font-size:10px;font-weight:800;padding:3px 6px}
+.yt-title{font-size:16px;font-weight:800;line-height:1.28;color:var(--text);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-top:2px}
+.yt-meta{font-size:12px;color:var(--text3);font-weight:700;line-height:1.45;margin-top:8px}
+.yt-topic{color:var(--text2)}
+.yt-menu{width:28px;height:28px;border:0;background:transparent;color:var(--text);font-size:18px;display:flex;align-items:flex-start;justify-content:center;padding-top:2px;cursor:pointer}
+.yt-item:hover .yt-title{color:var(--p1)}
+.yt-item:hover .yt-thumb{box-shadow:0 7px 20px rgba(15,16,48,0.18)}
 .bread{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12px;color:var(--text3);margin-bottom:14px}
 .bread a{color:var(--p1);font-weight:700;cursor:pointer;text-decoration:none}
 .bread a:hover{text-decoration:underline}
@@ -121,6 +152,7 @@ header{background:rgba(240,241,251,0.96)!important}
 .empty-ico{font-size:52px;opacity:0.3}
 .empty p{font-size:14px;font-weight:700;color:var(--text3)}
 
+@media(max-width:560px){.yt-item{grid-template-columns:44% minmax(0,1fr) 22px;gap:10px}.yt-title{font-size:13px;-webkit-line-clamp:3}.yt-meta{font-size:11px;margin-top:5px}.yt-tag{font-size:8px;right:30px}.yt-class{width:26px;height:26px;font-size:12px}.yt-play{width:30px;height:30px;font-size:11px}.yt-time{font-size:9px;padding:2px 5px}.yt-menu{width:22px;font-size:16px}}
 @media(max-width:500px){.grid{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
@@ -199,6 +231,33 @@ const VIDEO_TOPICS = [
   { key: 'trigonometry', label: 'Trigonometry', icon: 'θ', desc: 'Ratios, identities, heights and distances practice', words: ['trigonometry','trigo','sin','cos','tan','height','distance'] },
   { key: 'statistics', label: 'Statistics & Probability', icon: '📊', desc: 'Mean, median, mode, DI and probability rules', words: ['statistics','probability','mean','median','mode','di','data interpretation','bar graph','pie chart'] },
   { key: 'number-system', label: 'Number System', icon: '#', desc: 'HCF, LCM, divisibility, primes and base concepts', words: ['number','hcf','lcm','divisibility','prime','remainder','unit digit','bodmas','fraction','decimal'] }
+];
+const REASONING_TOPICS = [
+  { key: 'coding', label: 'Coding & Decoding', icon: '🔐', level: 'Core', words: ['coding', 'decoding', 'coded'] },
+  { key: 'syllogism', label: 'Syllogism & Inferences', icon: '💬', level: 'Core', words: ['syllogism', 'inference'] },
+  { key: 'puzzle', label: 'Puzzle & Seating Arrangement', icon: '🧩', level: 'Core', words: ['puzzle', 'seating', 'arrangement', 'analytical reasoning'] },
+  { key: 'series', label: 'Series', icon: '🔢', level: 'Core', words: ['series'] },
+  { key: 'analogy', label: 'Analogy', icon: '🔗', level: 'Core', words: ['analogy'] },
+  { key: 'classification', label: 'Classification (Odd One Out)', icon: '🗂️', level: 'Core', words: ['classification', 'odd one out'] },
+  { key: 'blood', label: 'Blood Relations', icon: '👨‍👩‍👧', level: 'High', words: ['blood relation'] },
+  { key: 'direction', label: 'Direction & Distance', icon: '🧭', level: 'High', words: ['direction', 'distance'] },
+  { key: 'venn', label: 'Venn Diagram', icon: '⭕', level: 'High', words: ['venn'] },
+  { key: 'inequality', label: 'Inequalities', icon: '⚖️', level: 'High', words: ['inequality', 'inequalities'] },
+  { key: 'operations', label: 'Mathematical & Symbolic Operations', icon: '➕', level: 'High', words: ['mathematical operation', 'symbolic operation', 'coded equation', 'arithmetic reasoning'] },
+  { key: 'ranking', label: 'Order & Ranking', icon: '🏆', level: 'High', words: ['ranking', 'order', 'comparison'] },
+  { key: 'conclusion', label: 'Statement & Conclusion', icon: '📋', level: 'Medium', words: ['statement conclusion', 'conclusion'] },
+  { key: 'assumption', label: 'Statement & Assumptions', icon: '🧐', level: 'Medium', words: ['assumption'] },
+  { key: 'argument', label: 'Statement & Arguments', icon: '⚔️', level: 'Medium', words: ['argument'] },
+  { key: 'critical', label: 'Problem Solving & Critical Thinking', icon: '💡', level: 'Medium', words: ['problem solving', 'critical', 'decision making', 'calendar', 'clock'] },
+  { key: 'non-verbal', label: 'Non-Verbal Figures', icon: '🖼️', level: 'Medium', words: ['non verbal', 'non-verbal', 'figure'] },
+  { key: 'paper-folding', label: 'Paper Folding & Cutting', icon: '📄', level: 'Medium', words: ['paper folding', 'paper cutting'] },
+  { key: 'mirror-water', label: 'Mirror & Water Image', icon: '🪞', level: 'Low', words: ['mirror', 'water image'] },
+  { key: 'cube-dice', label: 'Cube & Dice', icon: '🎲', level: 'Low', words: ['cube', 'cuboid', 'dice'] },
+  { key: 'matrix', label: 'Matrix', icon: '▣', level: 'Low', words: ['matrix'] },
+  { key: 'logical-sequence', label: 'Logical Sequence of Words', icon: 'abc', level: 'Low', words: ['logical sequence', 'dictionary', 'jumbling', 'alphabet test', 'alphabetical'] },
+  { key: 'emotional', label: 'Emotional Intelligence', icon: '😊', level: 'Least', words: ['emotional intelligence'] },
+  { key: 'social', label: 'Social Intelligence', icon: '🤝', level: 'Least', words: ['social intelligence'] },
+  { key: 'word-building', label: 'Word Building', icon: '🔠', level: 'Least', words: ['word formation', 'word building', 'pair formation'] }
 ];
 
 /* SEARCH HOME */
@@ -384,28 +443,150 @@ function getSubjectItems(batchKey, subKey, folderKey) {
   return items;
 }
 
-function getMathTopic(item) {
+function getTopicDefinitions(category) {
+  if (category === 'reasoning') return REASONING_TOPICS;
+  return VIDEO_TOPICS;
+}
+
+function getItemTopic(item, category) {
   var text = ((item.title || '') + ' ' + (item.topicName || '')).toLowerCase();
-  for (var i = 0; i < VIDEO_TOPICS.length; i++) {
-    if (VIDEO_TOPICS[i].words.some(function(word) { return text.includes(word); })) {
-      return VIDEO_TOPICS[i].key;
+  var topics = getTopicDefinitions(category);
+  for (var i = 0; i < topics.length; i++) {
+    if (topics[i].words.some(function(word) { return text.includes(word); })) {
+      return topics[i].key;
     }
   }
   return 'other';
 }
 
-function getVisibleMathTopics(items) {
+function getMathTopic(item) {
+  return getItemTopic(item, 'math');
+}
+
+function getVisibleTopics(items, category) {
   var counts = {};
   items.forEach(function(item) {
-    var key = getMathTopic(item);
+    var key = getItemTopic(item, category);
     counts[key] = (counts[key] || 0) + 1;
   });
-  var topics = VIDEO_TOPICS.filter(function(topic) { return counts[topic.key]; });
+  var topics = getTopicDefinitions(category).filter(function(topic) { return counts[topic.key]; });
   if (counts.other) {
-      topics.push({ key: 'other', label: 'Other', icon: '⋯', desc: 'Remaining classes, PDFs and uncategorized practice', count: counts.other });
+      topics.push({ key: 'other', label: 'Other', icon: '⋯', desc: 'Remaining classes, PDFs and uncategorized practice', level: 'Least', count: counts.other });
   }
   topics.forEach(function(topic) { topic.count = counts[topic.key] || topic.count || 0; });
   return topics;
+}
+
+function getVisibleMathTopics(items) {
+  return getVisibleTopics(items, 'math');
+}
+
+function getVisibleReasoningTopics(items) {
+  var counts = {};
+  items.forEach(function(item) {
+    var key = getItemTopic(item, 'reasoning');
+    counts[key] = (counts[key] || 0) + 1;
+  });
+  return REASONING_TOPICS.map(function(topic) {
+    var copy = Object.assign({}, topic);
+    copy.count = counts[topic.key] || 0;
+    return copy;
+  });
+}
+
+function escapeHtml(value) {
+  return String(value || '').replace(/[&<>"']/g, function(ch) {
+    return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch];
+  });
+}
+
+function getClassNo(title) {
+  var match = String(title || '').match(/class\s*[- ]\s*(\d+)/i);
+  return match ? match[1].padStart(2, '0').slice(-2) : '';
+}
+
+function getTopicLabel(topicKey) {
+  var topic = VIDEO_TOPICS.find(function(t) { return t.key === topicKey; });
+  return topic ? topic.label : 'Math';
+}
+
+function getReasoningTopicLabel(topicKey) {
+  var topic = REASONING_TOPICS.find(function(t) { return t.key === topicKey; });
+  return topic ? topic.label : 'Reasoning';
+}
+
+function filterReasoningTopics(panel) {
+  var q = (panel.querySelector('.reason-topic-search').value || '').trim().toLowerCase();
+  var active = panel.dataset.level || 'all';
+  var shown = 0;
+  panel.querySelectorAll('.reason-topic-card').forEach(function(card) {
+    var matchText = card.dataset.label.includes(q);
+    var matchLevel = active === 'all' || card.dataset.level === active;
+    var visible = matchText && matchLevel;
+    card.style.display = visible ? '' : 'none';
+    if (visible) shown++;
+  });
+  panel.querySelector('.reason-count').textContent = shown + ' topics';
+  panel.querySelector('.reason-topic-empty').style.display = shown ? 'none' : 'block';
+}
+
+function renderReasoningTopics(list, topics, batchKey, subKey, folderKey) {
+  list.innerHTML = '<div class="reason-panel" data-level="all">'
+                 + '<label class="reason-search"><i class="fa-solid fa-magnifying-glass"></i><input class="reason-topic-search" type="text" placeholder="Search topics..." aria-label="Search reasoning topics"></label>'
+                 + '<div class="reason-filters"><button class="reason-chip active" type="button" data-level="all">All</button><button class="reason-chip" type="button" data-level="core">Core</button><button class="reason-chip" type="button" data-level="high">High</button><button class="reason-chip" type="button" data-level="medium">Medium</button><button class="reason-chip" type="button" data-level="low">Low</button><button class="reason-chip" type="button" data-level="least">Least</button></div>'
+                 + '<div class="reason-count">' + topics.length + ' topics</div>'
+                 + '<div class="reason-topic-list"></div>'
+                 + '<div class="reason-topic-empty">No topics found</div>'
+                 + '</div>';
+  var panel = list.querySelector('.reason-panel');
+  var topicList = list.querySelector('.reason-topic-list');
+  topics.forEach(function(topic) {
+    var level = (topic.level || 'Least').toLowerCase();
+    var el = document.createElement('button');
+    el.type = 'button';
+    el.className = 'reason-topic-card';
+    el.dataset.level = level;
+    el.dataset.label = topic.label.toLowerCase();
+    el.innerHTML = '<div class="reason-topic-icon">' + topic.icon + '</div>'
+                 + '<div><div class="reason-topic-name">' + escapeHtml(topic.label) + '</div>'
+                 + '<div class="topic-count">' + topic.count + ' ' + folderKey.toLowerCase() + '</div></div>'
+                 + '<span class="reason-topic-pill ' + level + '">' + escapeHtml(topic.level || 'Least') + '</span>';
+    el.onclick = function() {
+      cVideoTopic = topic.key;
+      renderSubjectList(batchKey, subKey, folderKey);
+    };
+    topicList.appendChild(el);
+  });
+  panel.querySelector('.reason-topic-search').addEventListener('input', function() { filterReasoningTopics(panel); });
+  panel.querySelectorAll('.reason-chip').forEach(function(chip) {
+    chip.addEventListener('click', function() {
+      panel.dataset.level = chip.dataset.level;
+      panel.querySelectorAll('.reason-chip').forEach(function(btn) { btn.classList.toggle('active', btn === chip); });
+      filterReasoningTopics(panel);
+    });
+  });
+}
+
+function renderMathVideoItem(list, item, idx, subKey, topicKey) {
+  var el = document.createElement('button');
+  var classNo = getClassNo(item.title);
+  var topicLabel = getTopicLabel(topicKey || getMathTopic(item));
+  el.type = 'button';
+  el.className = 'yt-item';
+  el.style.animationDelay = (idx * 0.025) + 's';
+  el.dataset.url = item.url;
+  el.innerHTML = '<div class="yt-thumb">'
+               + '<div class="yt-tag">' + escapeHtml(topicLabel) + '</div>'
+               + (classNo ? '<div class="yt-class">' + classNo + '</div>' : '')
+               + '<div class="yt-play"><i class="fa-solid fa-play"></i></div>'
+               + '<div class="yt-time">Video</div>'
+               + '</div>'
+               + '<div><div class="yt-title">' + escapeHtml(item.title) + '</div>'
+               + '<div class="yt-meta"><div>' + escapeHtml(subKey) + '</div>'
+               + '<div><span class="yt-topic">' + escapeHtml(topicLabel) + '</span> &bull; Videos</div></div></div>'
+               + '<span class="yt-menu" aria-hidden="true">⋮</span>';
+  el.onclick = function() { window.open(el.dataset.url, '_blank'); };
+  list.appendChild(el);
 }
 
 function setSubjectFolder(folderKey) {
@@ -423,7 +604,8 @@ function renderSubjectList(batchKey, subKey, folderKey) {
   var list = document.getElementById('fitems');
   list.innerHTML = '';
   var items = getSubjectItems(batchKey, subKey, folderKey);
-  var useTopicCards = (folderKey === 'Videos' || folderKey === 'PDFs') && getSubjectCategory(subKey) === 'math';
+  var subjectCategory = getSubjectCategory(subKey);
+  var useTopicCards = ((folderKey === 'Videos' || folderKey === 'PDFs') && subjectCategory === 'math') || (folderKey === 'Videos' && subjectCategory === 'reasoning');
 
   if (!items.length) {
     list.innerHTML = '<div class="empty"><div class="empty-ico">&#x1F4ED;</div><p>No ' + folderKey + ' here</p></div>';
@@ -431,7 +613,11 @@ function renderSubjectList(batchKey, subKey, folderKey) {
   }
 
   if (useTopicCards && !cVideoTopic) {
-    var topics = getVisibleMathTopics(items);
+    var topics = subjectCategory === 'reasoning' ? getVisibleReasoningTopics(items) : getVisibleMathTopics(items);
+    if (subjectCategory === 'reasoning') {
+      renderReasoningTopics(list, topics, batchKey, subKey, folderKey);
+      return;
+    }
     list.innerHTML = '<div class="topic-grid"></div>';
     var topicGrid = list.querySelector('.topic-grid');
     topics.forEach(function(topic) {
@@ -453,8 +639,9 @@ function renderSubjectList(batchKey, subKey, folderKey) {
   }
 
   if (useTopicCards && cVideoTopic) {
-    items = items.filter(function(item) { return getMathTopic(item) === cVideoTopic; });
-    var topic = VIDEO_TOPICS.find(function(t) { return t.key === cVideoTopic; }) || { label: 'Other' };
+    items = items.filter(function(item) { return getItemTopic(item, subjectCategory) === cVideoTopic; });
+    var topicSource = subjectCategory === 'reasoning' ? REASONING_TOPICS : VIDEO_TOPICS;
+    var topic = topicSource.find(function(t) { return t.key === cVideoTopic; }) || { label: 'Other' };
     var back = document.createElement('button');
     back.type = 'button';
     back.className = 'bkbtn topic-back';
@@ -464,8 +651,25 @@ function renderSubjectList(batchKey, subKey, folderKey) {
       renderSubjectList(batchKey, subKey, folderKey);
     };
     list.appendChild(back);
+    if (!items.length) {
+      var emptyTopic = document.createElement('div');
+      emptyTopic.className = 'empty';
+      emptyTopic.innerHTML = '<div class="empty-ico">&#x1F4ED;</div><p>No ' + folderKey.toLowerCase() + ' in ' + escapeHtml(topic.label) + '</p>';
+      list.appendChild(emptyTopic);
+      return;
+    }
   } else {
     cVideoTopic = null;
+  }
+
+  if (folderKey === 'Videos' && subjectCategory === 'math') {
+    var ytList = document.createElement('div');
+    ytList.className = 'yt-list';
+    list.appendChild(ytList);
+    items.forEach(function(item, idx) {
+      renderMathVideoItem(ytList, item, idx, subKey, cVideoTopic);
+    });
+    return;
   }
 
   items.forEach(function(item, idx) {
