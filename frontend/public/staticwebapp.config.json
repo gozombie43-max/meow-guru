@@ -2,17 +2,11 @@
   "routes": [
     {
       "route": "/videos/SSC_Pratham_12_StudyWithGuru.html",
-      "serve": "/videos/SSC_Pratham_12_StudyWithGuru (1).html",
+      "serve": "/videos/SSC_Pratham_12_StudyWithGuru.html",
       "statusCode": 200
     }
   ],
-  "navigationFallback": {
-    "rewrite": "/index.html",
-    "exclude": [
-      "/*.html",
-      "/videos/*.html",
-      "/images/*",
-      "/*.{css,js,ico,png,svg,json,woff,woff2}"
-    ]
+  "platform": {
+    "apiRuntime": "node:18"
   }
 }
