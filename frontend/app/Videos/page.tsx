@@ -42,7 +42,7 @@ const playlists: Playlist[] = [
     type: "Course",
     lessons: 25,
     status: "unwatched",
-    href: "/videos/SSC_Pratham_12_StudyWithGuru%20(1).html",
+    href: "/videos/SSC_Pratham_12_StudyWithGuru.html",
     accent: "#ffe100",
     theme: "yellow",
     primary: "ALGEBRA",
