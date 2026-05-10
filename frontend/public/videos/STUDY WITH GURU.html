@@ -125,6 +125,9 @@
             padding: 15px;
         }
         .player-section {
+            position: sticky;
+            top: 0;
+            z-index: 900;
             width: 100%;
             margin-bottom: 15px;
             background: var(--card-bg);
@@ -337,6 +340,63 @@
             font-weight: 600;
             cursor: pointer;
         }
+        .topic-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 1200;
+            background: rgba(15, 23, 42, 0.46);
+            padding: 12px;
+        }
+        .topic-modal.open {
+            display: none;
+        }
+        .topic-modal-panel {
+            width: min(520px, 100%);
+            max-height: 78vh;
+            margin: auto auto 0;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 14px 14px 8px 8px;
+            box-shadow: 0 18px 46px rgba(15, 23, 42, 0.24);
+            overflow: hidden;
+        }
+        .topic-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 14px 16px 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .topic-modal-title {
+            color: var(--text-color);
+            font-size: 15px;
+            font-weight: 700;
+        }
+        .topic-modal-close {
+            width: 32px;
+            height: 32px;
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            background: var(--card-bg);
+            color: var(--text-color);
+            font-size: 20px;
+            line-height: 1;
+            cursor: pointer;
+        }
+        .topic-modal-list {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+            max-height: calc(78vh - 64px);
+            overflow-y: auto;
+            padding: 12px;
+        }
+        .topic-modal-list .topic-btn {
+            min-height: 42px;
+            text-align: center;
+        }
         #videos-tab .list-box {
             padding: 12px;
         }
@@ -498,9 +558,11 @@
                 padding: 6px;
             }
             .player-section {
+                top: 0;
                 margin-bottom: 8px;
                 padding: 8px;
                 border-radius: 6px;
+                box-shadow: 0 6px 18px rgba(15, 23, 42, 0.14);
             }
             .video-title {
                 margin-bottom: 6px;
@@ -570,46 +632,42 @@
                 border-radius: 6px;
                 touch-action: manipulation;
             }
-            .content-layout {
+            .content-layout,
+            .content-layout.sidebar-closed {
                 grid-template-columns: 1fr;
                 gap: 8px;
             }
-            .content-layout.sidebar-closed {
-                grid-template-columns: 1fr;
-            }
             .topic-sidebar {
-                max-height: 128px;
-                padding: 8px;
+                max-height: none;
+                padding: 0;
+                border: 0;
+                box-shadow: none;
+                background: transparent;
                 border-radius: 6px;
             }
             .content-layout.sidebar-closed .topic-sidebar {
-                max-height: 42px;
-                padding: 6px;
+                max-height: none;
+                padding: 0;
             }
             .topic-toggle-btn {
-                min-height: 32px;
-                margin-bottom: 7px;
-                padding: 7px 10px;
-                font-size: 12px;
+                min-height: 38px;
+                margin-bottom: 0;
+                padding: 9px 12px;
+                font-size: 13px;
                 border-radius: 6px;
                 touch-action: manipulation;
             }
             .content-layout.sidebar-closed .topic-toggle-btn {
                 width: 100%;
-                height: 30px;
-                font-size: 12px;
+                height: 38px;
+                font-size: 13px;
             }
             .content-layout.sidebar-closed .topic-toggle-btn::before {
                 content: "";
             }
-            .topic-title {
-                display: none;
-            }
+            .topic-title,
             .topic-list {
-                flex-direction: row;
-                gap: 6px;
-                overflow-x: auto;
-                padding-bottom: 1px;
+                display: none;
             }
             .topic-btn {
                 flex: 0 0 auto;
@@ -619,6 +677,12 @@
                 text-align: center;
                 border-radius: 6px;
                 touch-action: manipulation;
+            }
+            .topic-modal.open {
+                display: flex;
+            }
+            .topic-modal-list {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
             }
             .list-box {
                 max-height: none;
@@ -807,6 +871,15 @@
                 <div class="topic-title">Topics</div>
                 <div class="topic-list" id="topic-list"></div>
             </aside>
+            <div class="topic-modal" id="topic-modal" onclick="closeTopicModal(event)" aria-hidden="true">
+                <div class="topic-modal-panel" role="dialog" aria-modal="true" aria-labelledby="topic-modal-title" onclick="event.stopPropagation()">
+                    <div class="topic-modal-header">
+                        <div class="topic-modal-title" id="topic-modal-title">Choose Topic</div>
+                        <button class="topic-modal-close" type="button" onclick="closeTopicModal()" aria-label="Close topics">&times;</button>
+                    </div>
+                    <div class="topic-modal-list" id="topic-modal-list"></div>
+                </div>
+            </div>
             <div class="content-main">
         <div id="videos-tab" class="tab-content active">
             <div class="list-box">
@@ -920,24 +993,57 @@
         }
         function renderTopicSidebar() {
             var topicList = document.getElementById('topic-list');
+            var modalTopicList = document.getElementById('topic-modal-list');
             var topics = topicDefinitions[currentSubject] || [];
             var buttons = [{ id: 'all', label: 'All Topics' }].concat(topics);
-            topicList.innerHTML = buttons.map(function(topic) {
+            var topicButtons = buttons.map(function(topic) {
                 var activeClass = topic.id === currentTopic ? ' active' : '';
-                return '<button class="topic-btn' + activeClass + '" onclick="setTopic(\'' + topic.id + '\')">' + topic.label + '</button>';
+                return '<button class="topic-btn' + activeClass + '" onclick="setTopic(\'' + topic.id + '\')">' + escapeHTML(topic.label) + '</button>';
             }).join('');
+            if (topicList) topicList.innerHTML = topicButtons;
+            if (modalTopicList) modalTopicList.innerHTML = topicButtons;
             updateTopicSidebarState();
+        }
+        function isMobileTopicPicker() {
+            return window.matchMedia && window.matchMedia('(max-width: 600px)').matches;
+        }
+        function getCurrentTopicLabel() {
+            if (currentTopic === 'all') return 'All Topics';
+            var topics = topicDefinitions[currentSubject] || [];
+            for (var i = 0; i < topics.length; i++) {
+                if (topics[i].id === currentTopic) return topics[i].label;
+            }
+            return 'Choose Topic';
         }
         function updateTopicSidebarState() {
             var layout = document.querySelector('.content-layout');
             var toggleBtn = document.getElementById('topic-toggle-btn');
             if (!layout || !toggleBtn) return;
             layout.classList.toggle('sidebar-closed', !isTopicSidebarOpen);
-            toggleBtn.textContent = isTopicSidebarOpen ? 'Hide Topics' : 'Show Topics';
+            toggleBtn.textContent = isMobileTopicPicker() ? getCurrentTopicLabel() : (isTopicSidebarOpen ? 'Hide Topics' : 'Show Topics');
         }
         function toggleTopicSidebar() {
+            if (isMobileTopicPicker()) {
+                openTopicModal();
+                return;
+            }
             isTopicSidebarOpen = !isTopicSidebarOpen;
             updateTopicSidebarState();
+        }
+        function openTopicModal() {
+            var modal = document.getElementById('topic-modal');
+            if (!modal) return;
+            modal.classList.add('open');
+            modal.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeTopicModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            var modal = document.getElementById('topic-modal');
+            if (!modal) return;
+            modal.classList.remove('open');
+            modal.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
         }
         function escapeHTML(text) {
             return text.replace(/[&<>"']/g, function(char) {
@@ -1031,6 +1137,9 @@
             currentTopic = topicId;
             renderTopicSidebar();
             filterItems();
+            if (isMobileTopicPicker()) {
+                closeTopicModal();
+            }
         }
         function filterItems() {
             const searchTerm = document.querySelector('.search-bar').value.toLowerCase();
@@ -1223,6 +1332,17 @@
             enhanceVideoList();
             renderTopicSidebar();
             filterItems();
+            window.addEventListener('resize', function() {
+                updateTopicSidebarState();
+                if (!isMobileTopicPicker()) {
+                    closeTopicModal();
+                }
+            });
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') {
+                    closeTopicModal();
+                }
+            });
             var firstVideo = document.querySelector('#videos-tab .list-item');
             if(firstVideo) {
                 setTimeout(function() {
