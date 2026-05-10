@@ -1,0 +1,31 @@
+
+> frontend@0.1.0 dev
+> next dev -p 3000
+
+▲ Next.js 16.1.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://10.129.26.93:3000
+- Environments: .env.local
+
+✓ Starting...
+Creating turbopack project { dir: 'C:\\Users\\91906\\Ai ssc\\frontend', testMode: true }
+✓ Ready in 1562ms
+ GET / 200 in 2.0s (compile: 1655ms, render: 391ms)
+ GET / 200 in 165ms (compile: 13ms, render: 151ms)
+ GET / 200 in 83ms (compile: 6ms, render: 78ms)
+▲ Next.js 16.1.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://10.129.26.93:3000
+- Environments: .env.local
+
+✓ Starting...
+Creating turbopack project { dir: 'C:\\Users\\91906\\Ai ssc\\frontend', testMode: true }
+✓ Ready in 2.4s
+ GET / 200 in 1944ms (compile: 1576ms, render: 368ms)
+ GET / 200 in 272ms (compile: 147ms, render: 125ms)
+ GET / 200 in 54ms (compile: 9ms, render: 45ms)
+ GET /Videos/ 200 in 183ms (compile: 135ms, render: 48ms)
+ GET /Videos/ 200 in 345ms (compile: 8ms, render: 337ms)
+ GET /Videos/ 200 in 128ms (compile: 9ms, render: 120ms)
+✓ Compiled in 345ms
+[?25h

@@ -57,6 +57,7 @@ const playlists: Playlist[] = [
     type: "Playlist",
     lessons: 10,
     status: "unwatched",
+    href: "/videos/STUDY%20WITH%20GURU.html",
     accent: "#f1e83b",
     theme: "green",
     primary: "QUANT ALGEBRA",
