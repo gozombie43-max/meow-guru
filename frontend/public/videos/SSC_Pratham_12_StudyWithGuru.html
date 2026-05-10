@@ -107,6 +107,8 @@ header{background:rgba(240,241,251,0.96)!important}
 .reason-topic-name{font-size:13px;font-weight:900;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .reason-topic-pill{border-radius:999px;font-size:10px;font-weight:900;padding:5px 9px}
 .reason-topic-pill.core{background:#e7efff;color:#4f7cff}.reason-topic-pill.high{background:#dcf8ec;color:#12a166}.reason-topic-pill.medium{background:#f0e9ff;color:#7c5be8}.reason-topic-pill.low{background:#e4f8ff;color:#2da8d9}.reason-topic-pill.least{background:#eef2f7;color:#8da0b8}
+.reason-topic-pill.vocabulary{background:#e7efff;color:#4f7cff}.reason-topic-pill.grammar{background:#dcf8ec;color:#12a166}.reason-topic-pill.sentence-skills{background:#f0e9ff;color:#7c5be8}.reason-topic-pill.passage-based{background:#fff0dc;color:#dc7a00}.reason-topic-pill.arrangement{background:#ffedf8;color:#d83ca5}
+.reason-topic-pill.current{background:#e7efff;color:#4f7cff}.reason-topic-pill.science{background:#dcf8ec;color:#12a166}.reason-topic-pill.social-studies{background:#f0e9ff;color:#7c5be8}.reason-topic-pill.static-gk{background:#fff0dc;color:#dc7a00}.reason-topic-pill.economy{background:#ffedf8;color:#d83ca5}
 .reason-topic-empty{display:none;text-align:center;color:var(--text3);font-size:13px;font-weight:800;padding:24px}
 .litem{background:var(--surface);border:1px solid var(--border);border-radius:var(--r16);padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all 0.22s ease;animation:liIn 0.3s ease both;}
 @keyframes liIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
@@ -259,6 +261,43 @@ const REASONING_TOPICS = [
   { key: 'social', label: 'Social Intelligence', icon: '🤝', level: 'Least', words: ['social intelligence'] },
   { key: 'word-building', label: 'Word Building', icon: '🔠', level: 'Least', words: ['word formation', 'word building', 'pair formation'] }
 ];
+const ENGLISH_TOPICS = [
+  { key: 'synonyms-antonyms', label: 'Synonyms & Antonyms', icon: 'abc', level: 'Vocabulary', words: ['synonym', 'antonym', 'vocab foundation', 'vocab development', 'root word', 'vocab'] },
+  { key: 'homonyms', label: 'Homonyms & Homophones', icon: '🔊', level: 'Vocabulary', words: ['homonym', 'homophone'] },
+  { key: 'one-word', label: 'One Word Substitution', icon: '💡', level: 'Vocabulary', words: ['one word', 'one-word'] },
+  { key: 'idioms', label: 'Idioms & Phrases', icon: '🗣️', level: 'Vocabulary', words: ['idiom', 'phrase', 'phrasal verb'] },
+  { key: 'spelling', label: 'Spelling / Misspelled Words', icon: '✅', level: 'Vocabulary', words: ['spelling', 'misspelled'] },
+  { key: 'voice', label: 'Active & Passive Voice', icon: '🔄', level: 'Grammar', words: ['voice', 'active', 'passive'] },
+  { key: 'narration', label: 'Direct & Indirect Narration', icon: '💬', level: 'Grammar', words: ['narration', 'direct', 'indirect'] },
+  { key: 'sva', label: 'Subject-Verb Agreement', icon: '⚖️', level: 'Grammar', words: ['subject verb', 'subject-verb', 'agreement'] },
+  { key: 'tenses', label: 'Tenses', icon: '⏰', level: 'Grammar', words: ['tense', 'verb basic', 'verb advance', 'verb and tense', 'modal', 'conditional', 'mood'] },
+  { key: 'articles', label: 'Articles', icon: '📌', level: 'Grammar', words: ['article', 'determiner'] },
+  { key: 'prepositions', label: 'Prepositions', icon: '🗺️', level: 'Grammar', words: ['preposition'] },
+  { key: 'conjunctions', label: 'Conjunctions', icon: '🔗', level: 'Grammar', words: ['conjunction'] },
+  { key: 'modifiers', label: 'Modifiers', icon: '🎯', level: 'Grammar', words: ['modifier', 'noun', 'adjective', 'adverb'] },
+  { key: 'pronouns', label: 'Pronouns', icon: '♟️', level: 'Grammar', words: ['pronoun'] },
+  { key: 'sentence-structure', label: 'Sentence Structure', icon: '🧱', level: 'Grammar', words: ['sentence structure', 'grammar foundation', 'question tag'] },
+  { key: 'parallelism', label: 'Parallelism', icon: '⚡', level: 'Grammar', words: ['parallelism'] },
+  { key: 'spot-error', label: 'Spot the Error / Error Detection', icon: '🔍', level: 'Sentence Skills', words: ['spot the error', 'error detection'] },
+  { key: 'sentence-correction', label: 'Sentence Correction / Improvement', icon: '🖊️', level: 'Sentence Skills', words: ['sentence correction', 'sentence improvement', 'improvement'] },
+  { key: 'fill-blanks', label: 'Fill in the Blanks', icon: '🧩', level: 'Sentence Skills', words: ['fill in the blanks', 'fillers'] },
+  { key: 'cloze', label: 'Cloze Test', icon: '📖', level: 'Passage Based', words: ['cloze', 'ct'] },
+  { key: 'reading-comprehension', label: 'Reading Comprehension', icon: '📰', level: 'Passage Based', words: ['reading comprehension', 'comprehension', 'rc-', 'rc ', 'summary writing', 'tone', 'question types'] },
+  { key: 'para-jumbles', label: 'Para-Jumbles', icon: '🔀', level: 'Arrangement', words: ['parajumble', 'para-jumble', 'para jumble'] },
+  { key: 'sentence-completion', label: 'Para / Sentence Completion', icon: '🧲', level: 'Arrangement', words: ['sentence completion', 'para completion'] }
+];
+const GK_TOPICS = [
+  { key: 'current-affairs', label: 'Current Affairs', icon: '🗞️', level: 'Current', words: ['current affairs'] },
+  { key: 'static-gk', label: 'Static GK', icon: '🏛️', level: 'Static GK', words: ['static gk', 'gi tag', 'national park', 'national park', 'unesco', 'विश्व धरोहर', 'लोक नृत्य', 'त्यौहार', 'मेले', 'वाद्य', 'gharana', 'temple', 'dance', 'personality', 'tribe', 'जनजाति', 'revolution', 'क्रांति'] },
+  { key: 'physics', label: 'Physics', icon: '⚡', level: 'Science', words: ['physics', 'optics', 'lens', 'mirror', 'heat', 'wave', 'fluid', 'kinematics', 'newton', 'motion', 'gravitation', 'projectile', 'work, power', 'energy'] },
+  { key: 'chemistry', label: 'Chemistry', icon: '⚗️', level: 'Science', words: ['chem', 'chemistry', 'atomic', 'radioactivity', 'acid', 'base', 'salt', 'metal', 'metalloid', 'chemical', 'carbon', 'compound'] },
+  { key: 'biology', label: 'Biology', icon: '🧬', level: 'Science', words: ['bio', 'biology', 'plant', 'animal', 'nutrition', 'respiration', 'circulation', 'excretion', 'reproduction', 'cytology', 'dna', 'vitamin', 'disease'] },
+  { key: 'geography', label: 'Geography', icon: '🌍', level: 'Social Studies', words: ['geo', 'geography', 'border of india', 'mountain', 'solar system', 'continent', 'ocean', 'mineral', 'desert', 'volcano', 'plateau', 'strait', 'atmosphere', 'वायुमंडल', 'महाद्वीप', 'महासागर', 'ज्वालामुखी'] },
+  { key: 'polity', label: 'Polity & Constitution', icon: '📜', level: 'Social Studies', words: ['polity', 'constitution', 'constitutional', 'citizenship', 'fundamental right', 'मूल अधिकार', 'governor', 'judiciary', 'prime minister', 'vice president', 'commission', 'amendment', 'संविधान'] },
+  { key: 'history', label: 'History', icon: '🏺', level: 'Social Studies', words: ['history', 'his', 'medieval', 'vedic', 'buddhism', 'jain', 'indus', 'sindhu', '1857', 'revolt', 'congress', 'viceroy', 'governor', 'slave dynasty', 'turkish', 'islam', 'vedic period', 'बौद्ध', 'जैन', 'सिंधु'] },
+  { key: 'economy', label: 'Economy', icon: '📊', level: 'Economy', words: ['economy', 'economics', 'economic', 'finance commission', 'national income', 'money', 'banking', 'financial market', 'rbi', 'unemployment', 'planning', 'पंचवर्षीय'] },
+  { key: 'science-tech', label: 'Science Facts & Discoveries', icon: '🔬', level: 'Science', words: ['science', 'scientific', 'scientist', 'invention', 'discovery', 'खोजकर्ता', 'आविष्कार', 'विज्ञान की शाखा', 'scientific name'] }
+];
 
 /* SEARCH HOME */
 function doSearchHome() {
@@ -354,7 +393,7 @@ function getSubjectCategory(name) {
   if (n.includes('math') || n.includes('maths') || n.includes('quant') || n.includes('abhinay') || n.includes('rakesh')) return 'math';
   if (n.includes('reasoning') || n.includes('piyush') || n.includes('arun')) return 'reasoning';
   if (n.includes('english') || n.includes('jaideep') || n.includes('satyendra') || n.includes('gopal')) return 'english';
-  if (n.includes('gk') || n.includes('general studies') || n.includes('current affairs') || n.includes('static') || n.includes('shiv') || n.includes('history') || n.includes('geo') || n.includes('pol') || n.includes('eco')) return 'gk';
+  if (n.includes('gk') || n.includes('general studies') || n.includes('current affairs') || n.includes('static') || n.includes('shiv') || n.includes('history') || n.includes('geo') || n.includes('polity') || n.includes('economy') || n.includes('economics')) return 'gk';
   return 'all';
 }
 
@@ -445,6 +484,8 @@ function getSubjectItems(batchKey, subKey, folderKey) {
 
 function getTopicDefinitions(category) {
   if (category === 'reasoning') return REASONING_TOPICS;
+  if (category === 'english') return ENGLISH_TOPICS;
+  if (category === 'gk') return GK_TOPICS;
   return VIDEO_TOPICS;
 }
 
@@ -494,6 +535,32 @@ function getVisibleReasoningTopics(items) {
   });
 }
 
+function getVisibleEnglishTopics(items) {
+  var counts = {};
+  items.forEach(function(item) {
+    var key = getItemTopic(item, 'english');
+    counts[key] = (counts[key] || 0) + 1;
+  });
+  return ENGLISH_TOPICS.map(function(topic) {
+    var copy = Object.assign({}, topic);
+    copy.count = counts[topic.key] || 0;
+    return copy;
+  });
+}
+
+function getVisibleGkTopics(items) {
+  var counts = {};
+  items.forEach(function(item) {
+    var key = getItemTopic(item, 'gk');
+    counts[key] = (counts[key] || 0) + 1;
+  });
+  return GK_TOPICS.map(function(topic) {
+    var copy = Object.assign({}, topic);
+    copy.count = counts[topic.key] || 0;
+    return copy;
+  });
+}
+
 function escapeHtml(value) {
   return String(value || '').replace(/[&<>"']/g, function(ch) {
     return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch];
@@ -505,14 +572,14 @@ function getClassNo(title) {
   return match ? match[1].padStart(2, '0').slice(-2) : '';
 }
 
-function getTopicLabel(topicKey) {
-  var topic = VIDEO_TOPICS.find(function(t) { return t.key === topicKey; });
-  return topic ? topic.label : 'Math';
+function getTopicLabel(topicKey, category) {
+  var topic = getTopicDefinitions(category).find(function(t) { return t.key === topicKey; });
+  var fallback = { math: 'Math', reasoning: 'Reasoning', english: 'English', gk: 'GK' };
+  return topic ? topic.label : (fallback[category] || 'Videos');
 }
 
-function getReasoningTopicLabel(topicKey) {
-  var topic = REASONING_TOPICS.find(function(t) { return t.key === topicKey; });
-  return topic ? topic.label : 'Reasoning';
+function topicLevelSlug(level) {
+  return String(level || 'Other').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
 
 function filterReasoningTopics(panel) {
@@ -530,10 +597,13 @@ function filterReasoningTopics(panel) {
   panel.querySelector('.reason-topic-empty').style.display = shown ? 'none' : 'block';
 }
 
-function renderReasoningTopics(list, topics, batchKey, subKey, folderKey) {
+function renderTopicBrowser(list, topics, batchKey, subKey, folderKey, filterOrder, placeholder) {
+  var chips = ['<button class="reason-chip active" type="button" data-level="all">All</button>'].concat(filterOrder.map(function(level) {
+    return '<button class="reason-chip" type="button" data-level="' + topicLevelSlug(level) + '">' + escapeHtml(level) + '</button>';
+  })).join('');
   list.innerHTML = '<div class="reason-panel" data-level="all">'
-                 + '<label class="reason-search"><i class="fa-solid fa-magnifying-glass"></i><input class="reason-topic-search" type="text" placeholder="Search topics..." aria-label="Search reasoning topics"></label>'
-                 + '<div class="reason-filters"><button class="reason-chip active" type="button" data-level="all">All</button><button class="reason-chip" type="button" data-level="core">Core</button><button class="reason-chip" type="button" data-level="high">High</button><button class="reason-chip" type="button" data-level="medium">Medium</button><button class="reason-chip" type="button" data-level="low">Low</button><button class="reason-chip" type="button" data-level="least">Least</button></div>'
+                 + '<label class="reason-search"><i class="fa-solid fa-magnifying-glass"></i><input class="reason-topic-search" type="text" placeholder="' + escapeHtml(placeholder) + '" aria-label="Search topics"></label>'
+                 + '<div class="reason-filters">' + chips + '</div>'
                  + '<div class="reason-count">' + topics.length + ' topics</div>'
                  + '<div class="reason-topic-list"></div>'
                  + '<div class="reason-topic-empty">No topics found</div>'
@@ -541,7 +611,7 @@ function renderReasoningTopics(list, topics, batchKey, subKey, folderKey) {
   var panel = list.querySelector('.reason-panel');
   var topicList = list.querySelector('.reason-topic-list');
   topics.forEach(function(topic) {
-    var level = (topic.level || 'Least').toLowerCase();
+    var level = topicLevelSlug(topic.level);
     var el = document.createElement('button');
     el.type = 'button';
     el.className = 'reason-topic-card';
@@ -567,10 +637,22 @@ function renderReasoningTopics(list, topics, batchKey, subKey, folderKey) {
   });
 }
 
-function renderMathVideoItem(list, item, idx, subKey, topicKey) {
+function renderReasoningTopics(list, topics, batchKey, subKey, folderKey) {
+  renderTopicBrowser(list, topics, batchKey, subKey, folderKey, ['Core', 'High', 'Medium', 'Low', 'Least'], 'Search topics...');
+}
+
+function renderEnglishTopics(list, topics, batchKey, subKey, folderKey) {
+  renderTopicBrowser(list, topics, batchKey, subKey, folderKey, ['Vocabulary', 'Grammar', 'Sentence Skills', 'Passage Based', 'Arrangement'], 'Search topics or subtopics...');
+}
+
+function renderGkTopics(list, topics, batchKey, subKey, folderKey) {
+  renderTopicBrowser(list, topics, batchKey, subKey, folderKey, ['Current', 'Science', 'Social Studies', 'Static GK', 'Economy'], 'Search GK topics...');
+}
+
+function renderYoutubeVideoItem(list, item, idx, subKey, topicKey, category) {
   var el = document.createElement('button');
   var classNo = getClassNo(item.title);
-  var topicLabel = getTopicLabel(topicKey || getMathTopic(item));
+  var topicLabel = getTopicLabel(topicKey || getItemTopic(item, category), category);
   el.type = 'button';
   el.className = 'yt-item';
   el.style.animationDelay = (idx * 0.025) + 's';
@@ -605,7 +687,7 @@ function renderSubjectList(batchKey, subKey, folderKey) {
   list.innerHTML = '';
   var items = getSubjectItems(batchKey, subKey, folderKey);
   var subjectCategory = getSubjectCategory(subKey);
-  var useTopicCards = ((folderKey === 'Videos' || folderKey === 'PDFs') && subjectCategory === 'math') || (folderKey === 'Videos' && subjectCategory === 'reasoning');
+  var useTopicCards = ((folderKey === 'Videos' || folderKey === 'PDFs') && subjectCategory === 'math') || (folderKey === 'Videos' && (subjectCategory === 'reasoning' || subjectCategory === 'english' || subjectCategory === 'gk'));
 
   if (!items.length) {
     list.innerHTML = '<div class="empty"><div class="empty-ico">&#x1F4ED;</div><p>No ' + folderKey + ' here</p></div>';
@@ -613,9 +695,17 @@ function renderSubjectList(batchKey, subKey, folderKey) {
   }
 
   if (useTopicCards && !cVideoTopic) {
-    var topics = subjectCategory === 'reasoning' ? getVisibleReasoningTopics(items) : getVisibleMathTopics(items);
+    var topics = subjectCategory === 'reasoning' ? getVisibleReasoningTopics(items) : subjectCategory === 'english' ? getVisibleEnglishTopics(items) : subjectCategory === 'gk' ? getVisibleGkTopics(items) : getVisibleMathTopics(items);
     if (subjectCategory === 'reasoning') {
       renderReasoningTopics(list, topics, batchKey, subKey, folderKey);
+      return;
+    }
+    if (subjectCategory === 'english') {
+      renderEnglishTopics(list, topics, batchKey, subKey, folderKey);
+      return;
+    }
+    if (subjectCategory === 'gk') {
+      renderGkTopics(list, topics, batchKey, subKey, folderKey);
       return;
     }
     list.innerHTML = '<div class="topic-grid"></div>';
@@ -640,7 +730,7 @@ function renderSubjectList(batchKey, subKey, folderKey) {
 
   if (useTopicCards && cVideoTopic) {
     items = items.filter(function(item) { return getItemTopic(item, subjectCategory) === cVideoTopic; });
-    var topicSource = subjectCategory === 'reasoning' ? REASONING_TOPICS : VIDEO_TOPICS;
+    var topicSource = subjectCategory === 'reasoning' ? REASONING_TOPICS : subjectCategory === 'english' ? ENGLISH_TOPICS : subjectCategory === 'gk' ? GK_TOPICS : VIDEO_TOPICS;
     var topic = topicSource.find(function(t) { return t.key === cVideoTopic; }) || { label: 'Other' };
     var back = document.createElement('button');
     back.type = 'button';
@@ -662,12 +752,12 @@ function renderSubjectList(batchKey, subKey, folderKey) {
     cVideoTopic = null;
   }
 
-  if (folderKey === 'Videos' && subjectCategory === 'math') {
+  if (folderKey === 'Videos' && (subjectCategory === 'math' || subjectCategory === 'reasoning' || subjectCategory === 'english' || subjectCategory === 'gk')) {
     var ytList = document.createElement('div');
     ytList.className = 'yt-list';
     list.appendChild(ytList);
     items.forEach(function(item, idx) {
-      renderMathVideoItem(ytList, item, idx, subKey, cVideoTopic);
+      renderYoutubeVideoItem(ytList, item, idx, subKey, cVideoTopic, subjectCategory);
     });
     return;
   }
