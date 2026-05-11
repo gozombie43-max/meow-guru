@@ -72,6 +72,7 @@ const playlists: Playlist[] = [
     type: "Course",
     lessons: 18,
     status: "watched",
+    href: "/videos/SSC%20Pratham.html",
     accent: "#3dd5ff",
     theme: "blue",
     primary: "SSC ALGEBRA",
