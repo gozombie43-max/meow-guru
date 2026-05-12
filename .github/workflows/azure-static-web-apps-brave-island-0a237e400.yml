@@ -47,6 +47,9 @@ jobs:
           ###### End of Repository/Build Configurations ######
         env:
           NEXT_PUBLIC_API_URL: https://mocktest-backend-243h.onrender.com
+          AZURE_TRANSLATOR_KEY: ${{ secrets.AZURE_TRANSLATOR_KEY }}
+          NEXT_PUBLIC_AZURE_TRANSLATOR_ENDPOINT: https://api.cognitive.microsofttranslator.com
+          NEXT_PUBLIC_AZURE_TRANSLATOR_REGION: eastasia
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
