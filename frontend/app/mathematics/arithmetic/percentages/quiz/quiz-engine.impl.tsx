@@ -4,6 +4,8 @@ import MathRenderer from "@/components/MathRenderer";
 import RichContent from "@/components/RichContent";
 import ImageMCQ from "@/components/ImageMCQ";
 import QuizChatbot from "@/components/QuizChatbot";
+import { LangToggle } from "@/components/LangToggle";
+import { useTranslation } from "@/hooks/useTranslation";
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useSearchParams } from "next/navigation";
@@ -1159,6 +1161,9 @@ export default function PercentagesQuizEngine() {
   const currentQ = questions[currentIndex] as PercentageQuestion | undefined;
   const isLongQuestion = (currentQ?.question?.length ?? 0) > 180;
   const isImageQuestion = currentQ?.questionType === "image_mcq";
+  const { activeLang, setActiveLang, translate, isTranslating } = useTranslation();
+  const [displayedQuestion, setDisplayedQuestion] = useState(currentQ?.question ?? "");
+  const [displayedOptions, setDisplayedOptions] = useState<string[]>(currentQ?.options ?? []);
 
   useEffect(() => {
     const next = questions[currentIndex + 1];
@@ -1166,6 +1171,33 @@ export default function PercentagesQuizEngine() {
       prefetchQuestionImage(next.questionImage);
     }
   }, [currentIndex, questions]);
+
+  useEffect(() => {
+    if (!currentQ) {
+      setDisplayedQuestion("");
+      setDisplayedOptions([]);
+      return;
+    }
+
+    if (activeLang === "en" || isImageQuestion) {
+      setDisplayedQuestion(currentQ.question);
+      setDisplayedOptions(currentQ.options);
+      return;
+    }
+
+    let cancelled = false;
+    const allTexts = [currentQ.question, ...currentQ.options];
+
+    translate(allTexts, activeLang).then((translated) => {
+      if (cancelled) return;
+      setDisplayedQuestion(translated[0] ?? currentQ.question);
+      setDisplayedOptions(translated.slice(1));
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeLang, currentQ, isImageQuestion, translate]);
 
   // ── Build question set ─────────────────────────────────────────────────────
   /* eslint-disable react-hooks/exhaustive-deps */
@@ -2400,34 +2432,42 @@ export default function PercentagesQuizEngine() {
             }`}
           >
             {/* Card header */}
-            <div className="flex items-center mb-[14px] flex-wrap gap-2">
-              <ConceptBadge concept={currentQ.concept} />
-              <span
-                style={{
-                  fontSize: "13px",
-                  color: "#6B7280",
-                  fontWeight: 500,
-                }}
-              >
-                {currentQ.exam} {currentQ.year}
-              </span>
+            <div className="mb-[14px] flex items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <ConceptBadge concept={currentQ.concept} />
+                <span
+                  style={{
+                    fontSize: "13px",
+                    color: "#6B7280",
+                    fontWeight: 500,
+                  }}
+                >
+                  {currentQ.exam} {currentQ.year}
+                </span>
+              </div>
 
-
-              <button
-                onClick={handleBookmark}
-                className="ml-auto sm:ml-0 p-1.5 rounded-full hover:bg-slate-100 transition-colors"
-                aria-label={
-                  bookmarked.has(String(currentQ.id))
-                    ? "Remove bookmark"
-                    : "Add bookmark"
-                }
-              >
-                {bookmarked.has(String(currentQ.id)) ? (
-                  <BookmarkCheck className="w-5 h-5 text-violet-500" />
-                ) : (
-                  <Bookmark className="w-5 h-5 text-slate-400" />
-                )}
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleBookmark}
+                  className="p-1.5 rounded-full hover:bg-slate-100 transition-colors"
+                  aria-label={
+                    bookmarked.has(String(currentQ.id))
+                      ? "Remove bookmark"
+                      : "Add bookmark"
+                  }
+                >
+                  {bookmarked.has(String(currentQ.id)) ? (
+                    <BookmarkCheck className="w-5 h-5 text-violet-500" />
+                  ) : (
+                    <Bookmark className="w-5 h-5 text-slate-400" />
+                  )}
+                </button>
+                <LangToggle
+                  active={activeLang}
+                  loading={isTranslating}
+                  onChange={setActiveLang}
+                />
+              </div>
             </div>
 
             {/* Question text */}
@@ -2443,7 +2483,7 @@ export default function PercentagesQuizEngine() {
                 paddingRight: "0.3cm",
               }}
             >
-              <RichContent text={currentQ.question} className="leading-relaxed" />
+              <RichContent text={displayedQuestion} className="leading-relaxed" />
             </div>
 
           </motion.div>
@@ -2489,7 +2529,7 @@ export default function PercentagesQuizEngine() {
             </div>
           ) : (
             <div className="grid gap-3 lg:grid-cols-2">
-              {currentQ.options.slice(0, 4).map((opt, i) => {
+              {displayedOptions.slice(0, 4).map((opt, i) => {
               let border = "#E5E7EB",
                 bg = "#FFFFFF",
                 letterBg = "transparent",
