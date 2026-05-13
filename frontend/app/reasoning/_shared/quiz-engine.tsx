@@ -4,6 +4,8 @@ import MathRenderer from "@/components/MathRenderer";
 import MathText from "@/components/MathText";
 import RichContent from "@/components/RichContent";
 import QuizChatbot from "@/components/QuizChatbot";
+import { LangToggle } from "@/components/LangToggle";
+import { useTranslatedQuestion } from "@/hooks/useTranslatedQuestion";
 
 import React, {
   useState,
@@ -2004,7 +2006,15 @@ export default function ReasoningQuizEngine({
   const maxTime = miniMode ? 20 : 60;
   const currentQ = questions[currentIndex] as ReasoningQuestion | undefined;
   const isLongQuestion = (currentQ?.question?.length ?? 0) > 180;
+  const isImageQuestion = currentQ?.questionType === "image_mcq";
   const hasQuestionText = Boolean(currentQ?.question?.trim());
+  const {
+    activeLang,
+    setActiveLang,
+    isTranslating,
+    displayedQuestion,
+    displayedOptions,
+  } = useTranslatedQuestion(currentQ, isImageQuestion);
 
   const renderQuestionLine = useCallback((line: string) => {
     const chunks = line.split(/'([^']+)'/g);
@@ -3890,7 +3900,12 @@ export default function ReasoningQuizEngine({
             </button>
           </div>
 
-          <div className="flex min-w-[240px] items-center justify-end gap-4">
+          <div className="flex min-w-[240px] items-center justify-end gap-3">
+            <LangToggle
+              active={activeLang}
+              loading={isTranslating}
+              onChange={setActiveLang}
+            />
             <div className="flex items-center gap-2 rounded-xl bg-red-50 px-4 py-2">
               <Clock className="h-4 w-4 text-red-500" />
               <span className="text-[15px] font-bold text-red-600 tabular-nums tracking-wide">
@@ -3914,6 +3929,11 @@ export default function ReasoningQuizEngine({
                 <ThemeToggle />
               </div>
               <div className="flex items-center gap-2">
+                <LangToggle
+                  active={activeLang}
+                  loading={isTranslating}
+                  onChange={setActiveLang}
+                />
                 <button
                   onClick={openPalette}
                   className="quiz-icon-button inline-flex h-11 w-11 items-center justify-center rounded-full transition-colors lg:hidden"
@@ -4021,7 +4041,7 @@ export default function ReasoningQuizEngine({
                     }}
                   >
                     <RichContent
-                      text={currentQ.question}
+                      text={displayedQuestion}
                       className="leading-relaxed"
                       renderText={renderQuestionLine}
                     />
@@ -4036,7 +4056,7 @@ export default function ReasoningQuizEngine({
                 style={{ paddingBottom: 96, WebkitOverflowScrolling: "touch" }}
               >
                 <div className="grid gap-3 lg:grid-cols-2">
-                  {currentQ.options.slice(0, 4).map((opt, i) => {
+                  {displayedOptions.slice(0, 4).map((opt, i) => {
                     let border = "var(--quiz-option-border)",
                       bg = "var(--quiz-option-bg)",
                       letterBg = "var(--quiz-option-label-bg)",

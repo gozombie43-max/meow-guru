@@ -5,6 +5,8 @@ import MathRenderer from "@/components/MathRenderer";
 import MathText from "@/components/MathText";
 import ImageMCQ from "@/components/ImageMCQ";
 import QuizChatbot from "@/components/QuizChatbot";
+import { LangToggle } from "@/components/LangToggle";
+import { useTranslatedQuestion } from "@/hooks/useTranslatedQuestion";
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
@@ -977,6 +979,13 @@ export default function MensurationQuizEngine() {
   const currentQ = questions[currentIndex] as MensurationQuestion | undefined;
   const isLongQuestion = (currentQ?.question?.length ?? 0) > 180;
   const isImageQuestion = currentQ?.questionType === "image_mcq";
+  const {
+    activeLang,
+    setActiveLang,
+    isTranslating,
+    displayedQuestion,
+    displayedOptions,
+  } = useTranslatedQuestion(currentQ, isImageQuestion);
 
   useEffect(() => {
     const next = questions[currentIndex + 1];
@@ -2513,7 +2522,12 @@ export default function MensurationQuizEngine() {
             </button>
           </div>
 
-          <div className="flex min-w-[240px] items-center justify-end gap-4">
+          <div className="flex min-w-[240px] items-center justify-end gap-3">
+            <LangToggle
+              active={activeLang}
+              loading={isTranslating}
+              onChange={setActiveLang}
+            />
             <div className="flex items-center gap-2 rounded-xl bg-red-50 px-4 py-2">
               <Clock className="h-4 w-4 text-red-500" />
               <span className="text-[15px] font-bold text-red-600 tabular-nums tracking-wide">
@@ -2541,6 +2555,11 @@ export default function MensurationQuizEngine() {
               {streak}
             </div>
           )}
+          <LangToggle
+            active={activeLang}
+            loading={isTranslating}
+            onChange={setActiveLang}
+          />
           <div className="rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-sm font-bold text-slate-700">
             {formatClock(timeLeft)}
           </div>
@@ -2591,7 +2610,7 @@ export default function MensurationQuizEngine() {
               </button>
             </div>
             <div style={{ fontSize: 18, fontWeight: 400, color: "#111827", lineHeight: 1.6, marginBottom: 28, letterSpacing: 0.01, paddingLeft: "0.3cm", paddingRight: "0.3cm" }}>
-              <RichContent text={currentQ.question} renderText={(line) => <MathText text={line} />} />
+              <RichContent text={displayedQuestion} renderText={(line) => <MathText text={line} />} />
             </div>
           </motion.div>
         </section>
@@ -2635,7 +2654,7 @@ export default function MensurationQuizEngine() {
             </div>
           ) : (
             <div className="grid gap-3 lg:grid-cols-2">
-              {currentQ.options.slice(0, 4).map((opt, i) => {
+              {displayedOptions.slice(0, 4).map((opt, i) => {
               let border = "#E5E7EB";
               let bg = "#FFFFFF";
               let letterBg = "transparent";

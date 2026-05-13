@@ -4,6 +4,8 @@ import MathRenderer from "@/components/MathRenderer";
 import RichContent from "@/components/RichContent";
 import ImageMCQ from "@/components/ImageMCQ";
 import QuizChatbot from "@/components/QuizChatbot";
+import { LangToggle } from "@/components/LangToggle";
+import { useTranslatedQuestion } from "@/hooks/useTranslatedQuestion";
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useSearchParams } from "next/navigation";
@@ -1186,6 +1188,13 @@ export default function GeneralAwarenessQuizEngine({
   const currentQ = questions[currentIndex] as GeneralAwarenessQuestion | undefined;
   const isLongQuestion = (currentQ?.question?.length ?? 0) > 180;
   const isImageQuestion = currentQ?.questionType === "image_mcq";
+  const {
+    activeLang,
+    setActiveLang,
+    isTranslating,
+    displayedQuestion,
+    displayedOptions,
+  } = useTranslatedQuestion(currentQ, isImageQuestion);
 
   useEffect(() => {
     const next = questions[currentIndex + 1];
@@ -2286,7 +2295,12 @@ export default function GeneralAwarenessQuizEngine({
             </button>
           </div>
 
-          <div className="flex min-w-[240px] items-center justify-end gap-4">
+          <div className="flex min-w-[240px] items-center justify-end gap-3">
+            <LangToggle
+              active={activeLang}
+              loading={isTranslating}
+              onChange={setActiveLang}
+            />
             <div className="flex items-center gap-2 rounded-xl bg-red-50 px-4 py-2">
               <Clock className="h-4 w-4 text-red-500" />
               <span className="text-[15px] font-bold text-red-600 tabular-nums tracking-wide">
@@ -2314,6 +2328,11 @@ export default function GeneralAwarenessQuizEngine({
               {streak}
             </div>
           )}
+          <LangToggle
+            active={activeLang}
+            loading={isTranslating}
+            onChange={setActiveLang}
+          />
           <div className="rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-sm font-bold text-slate-700">
             {formatClock(timeLeft)}
           </div>
@@ -2413,7 +2432,7 @@ export default function GeneralAwarenessQuizEngine({
                 paddingRight: "0.3cm",
               }}
             >
-              <RichContent text={currentQ.question} className="leading-relaxed" />
+              <RichContent text={displayedQuestion} className="leading-relaxed" />
             </div>
           </motion.div>
         </section>
@@ -2457,7 +2476,7 @@ export default function GeneralAwarenessQuizEngine({
             </div>
           ) : (
             <div className="grid gap-3 lg:grid-cols-2">
-              {currentQ.options.slice(0, 4).map((opt, i) => {
+              {displayedOptions.slice(0, 4).map((opt, i) => {
               let border = "#E5E7EB",
                 bg = "#FFFFFF",
                 letterBg = "transparent",
