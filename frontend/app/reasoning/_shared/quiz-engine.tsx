@@ -1023,67 +1023,41 @@ function ReasoningQuizThemeStyles() {
       }
 
       .reasoning-quiz .theme-toggle {
-        width: 64px;
+        width: 34px;
         height: 34px;
-        padding: 2px;
+        padding: 0;
         border-radius: 999px;
-        border: 1px solid var(--quiz-toggle-border);
-        background: var(--quiz-toggle-bg);
+        border: 0;
+        background: transparent;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         position: relative;
-        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
-        transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+        box-shadow: none;
+        transition: transform 0.18s ease, background 0.2s ease,
+          border-color 0.2s ease, box-shadow 0.2s ease;
       }
-      .reasoning-quiz .theme-toggle-track {
-        width: 100%;
-        height: 100%;
-        border-radius: 999px;
-        background: var(--quiz-toggle-track);
-        position: relative;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 7px;
+      .reasoning-quiz .theme-toggle:hover {
+        transform: translateY(-1px);
+        background: var(--quiz-toggle-bg);
+        box-shadow: none;
       }
-      .reasoning-quiz .theme-toggle-thumb {
-        position: absolute;
-        top: 2px;
-        left: 2px;
-        width: 28px;
-        height: 28px;
-        border-radius: 999px;
-        background: var(--quiz-toggle-thumb);
-        box-shadow: 0 4px 10px rgba(15, 23, 42, 0.18);
-        transition: transform 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+      .reasoning-quiz .theme-toggle:active {
+        transform: translateY(0);
       }
       .reasoning-quiz .theme-toggle-icon {
-        width: 16px;
-        height: 16px;
-        z-index: 1;
-        transition: opacity 0.2s ease;
+        width: 19px;
+        height: 19px;
+        transition: color 0.2s ease, transform 0.2s ease;
       }
-      .reasoning-quiz .theme-toggle--light .theme-toggle-icon--sun {
+      .reasoning-quiz .theme-toggle:hover .theme-toggle-icon {
+        transform: scale(1.05);
+      }
+      .reasoning-quiz .theme-toggle--light .theme-toggle-icon {
         color: #f59e0b;
-        opacity: 1;
       }
-      .reasoning-quiz .theme-toggle--light .theme-toggle-icon--moon {
-        color: #94a3b8;
-        opacity: 0.5;
-      }
-      .reasoning-quiz .theme-toggle--dark .theme-toggle-thumb {
-        transform: translateX(30px);
-        background: linear-gradient(135deg, #1f2937 0%, #0b1020 100%);
-        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.45);
-      }
-      .reasoning-quiz .theme-toggle--dark .theme-toggle-icon--sun {
-        color: #fbbf24;
-        opacity: 0.4;
-      }
-      .reasoning-quiz .theme-toggle--dark .theme-toggle-icon--moon {
+      .reasoning-quiz .theme-toggle--dark .theme-toggle-icon {
         color: #e2e8f0;
-        opacity: 1;
       }
 
       .reasoning-quiz[data-theme="dark"] .glass-card {
@@ -1522,11 +1496,11 @@ function ThemeToggle() {
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
       aria-pressed={isDark}
     >
-      <span className="theme-toggle-track">
-        <Sun className="theme-toggle-icon theme-toggle-icon--sun" aria-hidden="true" />
-        <Moon className="theme-toggle-icon theme-toggle-icon--moon" aria-hidden="true" />
-        <span className="theme-toggle-thumb" />
-      </span>
+      {isDark ? (
+        <Moon className="theme-toggle-icon" aria-hidden="true" />
+      ) : (
+        <Sun className="theme-toggle-icon" aria-hidden="true" />
+      )}
     </button>
   );
 }
