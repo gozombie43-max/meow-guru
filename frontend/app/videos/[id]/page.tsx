@@ -24,6 +24,16 @@ const SUBJECT_MAP: Record<string, string> = {
   general_awareness: 'General Awareness',
 };
 
+async function readApiJson(response: Response) {
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw new Error(data?.error || `Request failed with status ${response.status}`);
+  }
+
+  return data;
+}
+
 export default function VideoPlayerPage() {
   const params = useParams();
   const router = useRouter();
@@ -51,12 +61,12 @@ export default function VideoPlayerPage() {
     setLoadingStream(true);
     setError(null);
     try {
-      const res = await fetch(`${API_URL}/api/videos/stream/${video.id}`);
-      const data = await res.json();
+      const res = await fetch(`${API_URL}/api/videos/stream/${encodeURIComponent(video.id)}`);
+      const data = await readApiJson(res);
       if (data.success) setVideoUrl(data.url);
       else setError('Could not load video.');
-    } catch {
-      setError('Stream error. Try again.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Stream error. Try again.');
     } finally {
       setLoadingStream(false);
     }
@@ -66,16 +76,16 @@ export default function VideoPlayerPage() {
     setLoadingList(true);
     setError(null);
     try {
-      const res = await fetch(`${API_URL}/api/videos?subject=${subject}`);
-      const data = await res.json();
+      const res = await fetch(`${API_URL}/api/videos?subject=${encodeURIComponent(subject)}`);
+      const data = await readApiJson(res);
       if (data.success) {
         setVideos(data.videos);
         if (data.videos.length > 0) {
           streamVideo(data.videos[0]);
         }
       }
-    } catch {
-      setError('Failed to load videos.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load videos.');
     } finally {
       setLoadingList(false);
     }
