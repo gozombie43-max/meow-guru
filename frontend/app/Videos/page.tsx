@@ -1,9 +1,13 @@
 "use client";
 
-import type { KeyboardEvent } from "react";
+import type { CSSProperties, KeyboardEvent } from "react";
 import { useMemo, useState } from "react";
 import {
+  Brain,
+  Calculator,
+  Globe2,
   GraduationCap,
+  Languages,
   MoreVertical,
   PlayCircle,
 } from "lucide-react";
@@ -24,6 +28,7 @@ type Playlist = {
   secondary: string;
   lessonLabel: string;
   logo: string;
+  icon: "reasoning" | "math" | "english" | "general-awareness";
 };
 
 const filters: { key: FilterKey; label: string }[] = [
@@ -36,65 +41,134 @@ const filters: { key: FilterKey; label: string }[] = [
 
 const playlists: Playlist[] = [
   {
-    id: "algebra-pawan",
-    title: "Algebra For SSC/CDS By Pawan Rao Sir",
-    channel: "Maths with Pawan Rao",
+    id: "reasoning",
+    title: "Reasoning",
+    channel: "SSC reasoning video course",
     type: "Course",
     lessons: 25,
     status: "unwatched",
-    href: "/videos/SSC_Pratham_12_StudyWithGuru.html",
+    href: "/videos/reasoning",
     accent: "#ffe100",
     theme: "yellow",
-    primary: "ALGEBRA",
-    secondary: "Basic To Advance level",
-    lessonLabel: "Lesson -1",
-    logo: "P",
+    primary: "REASONING",
+    secondary: "Logic, series, analogy and puzzles",
+    lessonLabel: "SSC CGL | CHSL | CPO",
+    logo: "R",
+    icon: "reasoning",
   },
   {
-    id: "quant-algebra",
-    title: "ALGEBRA",
-    channel: "MBA Wallah",
+    id: "math",
+    title: "Math",
+    channel: "Quantitative aptitude video course",
     type: "Playlist",
     lessons: 10,
+    status: "unwatched",
+    href: "/videos/math",
+    accent: "#f1e83b",
+    theme: "green",
+    primary: "MATH",
+    secondary: "Arithmetic, algebra and geometry",
+    lessonLabel: "Problem solving batch",
+    logo: "M",
+    icon: "math",
+  },
+  {
+    id: "english",
+    title: "English",
+    channel: "English language video course",
+    type: "Course",
+    lessons: 18,
+    status: "watched",
+    href: "/videos/english",
+    accent: "#3dd5ff",
+    theme: "blue",
+    primary: "ENGLISH",
+    secondary: "Grammar, vocabulary and comprehension",
+    lessonLabel: "Foundation batch",
+    logo: "E",
+    icon: "english",
+  },
+  {
+    id: "general-awareness",
+    title: "General Awareness",
+    channel: "General awareness video course",
+    type: "Playlist",
+    lessons: 12,
+    status: "unwatched",
+    href: "/videos/general_awareness",
+    accent: "#c9a7ff",
+    theme: "purple",
+    primary: "GENERAL AWARENESS",
+    secondary: "GK, current affairs and static facts",
+    lessonLabel: "Exam ready",
+    logo: "GA",
+    icon: "general-awareness",
+  },
+  {
+    id: "ssc-pratham-11",
+    title: "SSC Pratham 11",
+    channel: "Rakesh Sir & team videos and notes",
+    type: "Course",
+    lessons: 100,
+    status: "unwatched",
+    href: "/videos/SSC%20Pratham.html",
+    accent: "#ffe100",
+    theme: "yellow",
+    primary: "SSC PRATHAM 11",
+    secondary: "Maths, reasoning, English and GS batch",
+    lessonLabel: "Recorded batch",
+    logo: "P11",
+    icon: "reasoning",
+  },
+  {
+    id: "ssc-pratham-12",
+    title: "SSC Pratham 12",
+    channel: "SSC complete recorded batch",
+    type: "Course",
+    lessons: 100,
+    status: "unwatched",
+    href: "/videos/SSC_Pratham_12_StudyWithGuru.html",
+    accent: "#3dd5ff",
+    theme: "blue",
+    primary: "SSC PRATHAM 12",
+    secondary: "Latest classes, PDFs and exam prep videos",
+    lessonLabel: "Study with Guru",
+    logo: "P12",
+    icon: "general-awareness",
+  },
+  {
+    id: "study-with-guru",
+    title: "Study With Guru",
+    channel: "Recorded foundation video batch",
+    type: "Playlist",
+    lessons: 100,
     status: "unwatched",
     href: "/videos/STUDY%20WITH%20GURU.html",
     accent: "#f1e83b",
     theme: "green",
-    primary: "QUANT ALGEBRA",
-    secondary: "EQUATIONS VS EXPRESSIONS",
-    lessonLabel: "CAT EXAM",
-    logo: "PW",
-  },
-  {
-    id: "ssc-foundation",
-    title: "SSC CGL Algebra Complete Foundation",
-    channel: "Exam Prep Studio",
-    type: "Course",
-    lessons: 18,
-    status: "watched",
-    href: "/videos/SSC%20Pratham.html",
-    accent: "#3dd5ff",
-    theme: "blue",
-    primary: "SSC ALGEBRA",
-    secondary: "Identities, Roots & Polynomials",
-    lessonLabel: "Foundation batch",
-    logo: "EP",
-  },
-  {
-    id: "fast-revision",
-    title: "Algebra Fast Revision for CGL Mains",
-    channel: "Quant Sprint",
-    type: "Playlist",
-    lessons: 12,
-    status: "unwatched",
-    accent: "#c9a7ff",
-    theme: "purple",
-    primary: "REVISION",
-    secondary: "Most repeated algebra questions",
-    lessonLabel: "Exam ready",
-    logo: "QS",
+    primary: "STUDY WITH GURU",
+    secondary: "Maths foundation and reasoning practice",
+    lessonLabel: "Recorded batch",
+    logo: "SG",
+    icon: "math",
   },
 ];
+
+function SubjectIcon({ icon }: { icon: Playlist["icon"] }) {
+  if (icon === "math") {
+    return <Calculator size={48} strokeWidth={2.15} />;
+  }
+
+  if (icon === "english") {
+    return <Languages size={48} strokeWidth={2.15} />;
+  }
+
+  if (icon === "general-awareness") {
+    return <Globe2 size={48} strokeWidth={2.15} />;
+  }
+
+  return <Brain size={48} strokeWidth={2.15} />;
+}
 
 function VideoFilters({
   active,
@@ -123,18 +197,22 @@ function VideoFilters({
 
 function PlaylistThumbnail({ playlist }: { playlist: Playlist }) {
   return (
-    <div className={`playlist-thumb theme-${playlist.theme}`}>
+    <div
+      className={`playlist-thumb theme-${playlist.theme}`}
+      data-subject={playlist.icon}
+      style={{ "--thumb-accent": playlist.accent } as CSSProperties}
+    >
       <div className="playlist-stack stack-back" aria-hidden="true" />
       <div className="playlist-stack stack-one" aria-hidden="true" />
       <div className="playlist-stack stack-two" aria-hidden="true" />
       <div className="thumb-stage">
-        <div className="thumb-topline">SSC CGL | CHSL | CPO | MTS | Railway</div>
+        <div className="thumb-icon" aria-hidden="true">
+          <SubjectIcon icon={playlist.icon} />
+        </div>
+        <div className="thumb-topline">{playlist.lessonLabel}</div>
         <div className="thumb-primary">{playlist.primary}</div>
         <div className="thumb-secondary">{playlist.secondary}</div>
-        <div className="thumb-lesson">{playlist.lessonLabel}</div>
-        <div className="thumb-person" aria-hidden="true">
-          <span />
-        </div>
+        <div className="thumb-lesson">Start learning</div>
         <div className="lesson-badge">
           <GraduationCap size={19} strokeWidth={2.4} />
           <span className="lesson-badge-full">
@@ -418,8 +496,9 @@ export default function VideosPage() {
           overflow: hidden;
           border-radius: 14px;
           background:
-            linear-gradient(90deg, rgba(8, 12, 20, 0.9), rgba(8, 12, 20, 0.72)),
-            repeating-linear-gradient(25deg, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px 36px),
+            radial-gradient(circle at 83% 18%, rgba(255, 225, 0, 0.22), transparent 28%),
+            linear-gradient(135deg, rgba(8, 12, 20, 0.98), rgba(8, 12, 20, 0.78)),
+            repeating-linear-gradient(28deg, rgba(255, 255, 255, 0.07) 0 1px, transparent 1px 34px),
             #101820;
           border: 1px solid rgba(15, 23, 42, 0.16);
           box-shadow:
@@ -430,22 +509,25 @@ export default function VideosPage() {
 
         .theme-green .thumb-stage {
           background:
-            linear-gradient(90deg, rgba(7, 50, 40, 0.95), rgba(13, 84, 60, 0.72)),
-            radial-gradient(circle at 75% 45%, rgba(255, 255, 255, 0.15), transparent 32%),
+            radial-gradient(circle at 82% 18%, rgba(241, 232, 59, 0.22), transparent 30%),
+            linear-gradient(135deg, rgba(7, 50, 40, 0.98), rgba(13, 84, 60, 0.78)),
+            repeating-linear-gradient(28deg, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 34px),
             #0b3f34;
         }
 
         .theme-blue .thumb-stage {
           background:
-            linear-gradient(90deg, rgba(8, 28, 75, 0.94), rgba(11, 81, 126, 0.78)),
-            radial-gradient(circle at 80% 35%, rgba(61, 213, 255, 0.22), transparent 34%),
+            radial-gradient(circle at 82% 18%, rgba(61, 213, 255, 0.24), transparent 30%),
+            linear-gradient(135deg, rgba(8, 28, 75, 0.96), rgba(11, 81, 126, 0.8)),
+            repeating-linear-gradient(28deg, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 34px),
             #092656;
         }
 
         .theme-purple .thumb-stage {
           background:
-            linear-gradient(90deg, rgba(35, 18, 64, 0.94), rgba(89, 39, 124, 0.76)),
-            radial-gradient(circle at 80% 35%, rgba(201, 167, 255, 0.24), transparent 34%),
+            radial-gradient(circle at 82% 18%, rgba(201, 167, 255, 0.28), transparent 30%),
+            linear-gradient(135deg, rgba(35, 18, 64, 0.96), rgba(89, 39, 124, 0.8)),
+            repeating-linear-gradient(28deg, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 34px),
             #261545;
         }
 
@@ -455,155 +537,109 @@ export default function VideosPage() {
         .theme-purple .thumb-stage::before {
           content: "";
           position: absolute;
-          inset: 22% -8% auto -2%;
-          height: 33%;
-          transform: skewX(-13deg);
+          inset: auto -8% 0 -2%;
+          height: 42%;
+          transform: skewX(-10deg) translateY(22%);
           background: var(--thumb-accent, #ffe100);
           z-index: 1;
         }
 
         .theme-green .thumb-stage::before {
-          --thumb-accent: #ffffff;
-          height: 20%;
-          top: 7%;
-          transform: none;
+          height: 42%;
+          top: auto;
+          transform: skewX(-10deg) translateY(22%);
         }
 
-        .theme-blue .thumb-stage::before {
-          --thumb-accent: #3dd5ff;
-        }
-
-        .theme-purple .thumb-stage::before {
-          --thumb-accent: #c9a7ff;
+        .thumb-icon {
+          position: absolute;
+          z-index: 3;
+          right: 6%;
+          top: 12%;
+          width: clamp(64px, 17vw, 108px);
+          height: clamp(64px, 17vw, 108px);
+          border-radius: 26px;
+          display: grid;
+          place-items: center;
+          color: #ffffff;
+          background: rgba(255, 255, 255, 0.12);
+          border: 1px solid rgba(255, 255, 255, 0.22);
+          box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.2),
+            0 16px 36px rgba(0, 0, 0, 0.2);
+          backdrop-filter: blur(8px);
         }
 
         .thumb-topline {
           position: absolute;
           z-index: 2;
-          top: 6%;
-          left: 0;
-          right: 0;
-          width: max-content;
-          max-width: 96%;
-          margin: 0 auto;
-          padding: 3px 7px;
+          top: 8%;
+          left: 5%;
+          max-width: 60%;
+          padding: 5px 9px;
           border-radius: 999px;
-          background: #ffffff;
-          color: #050505;
-          font-size: clamp(0.62rem, 2.8vw, 1rem);
+          background: rgba(255, 255, 255, 0.12);
+          color: rgba(255, 255, 255, 0.88);
+          border: 1px solid rgba(255, 255, 255, 0.18);
+          font-size: clamp(0.62rem, 2.5vw, 0.94rem);
           line-height: 1.1;
           font-weight: 900;
           white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
         .thumb-primary {
           position: absolute;
-          z-index: 2;
-          top: 28%;
+          z-index: 3;
+          top: 30%;
           left: 5%;
-          max-width: 68%;
-          color: #050505;
-          font-size: clamp(1.85rem, 10vw, 4.8rem);
-          line-height: 0.9;
-          font-style: italic;
+          max-width: 70%;
+          color: #ffffff;
+          font-size: clamp(2.15rem, 10.4vw, 4.9rem);
+          line-height: 0.86;
+          font-style: normal;
           font-weight: 900;
           letter-spacing: 0;
-        }
-
-        .theme-green .thumb-primary,
-        .theme-blue .thumb-primary,
-        .theme-purple .thumb-primary {
-          top: 9%;
-          color: #063650;
-          font-size: clamp(1.7rem, 9vw, 4rem);
-          font-style: normal;
-        }
-
-        .theme-green .thumb-topline {
-          display: none;
+          text-shadow: 0 3px 14px rgba(0, 0, 0, 0.3);
         }
 
         .theme-green .thumb-primary {
-          left: 7%;
-          max-width: 74%;
-          font-size: clamp(1.16rem, 6.2vw, 3.1rem);
-          line-height: 0.92;
-          white-space: nowrap;
+          color: #ffffff;
+          font-size: clamp(2.4rem, 12vw, 5.4rem);
         }
 
-        .theme-blue .thumb-primary,
-        .theme-purple .thumb-primary {
-          color: #ffffff;
+        .playlist-thumb[data-subject="general-awareness"] .thumb-primary {
+          max-width: 78%;
+          font-size: clamp(1.8rem, 7vw, 3.8rem);
+          line-height: 0.94;
         }
 
         .thumb-secondary {
           position: absolute;
-          z-index: 2;
+          z-index: 3;
           left: 5%;
-          bottom: 26%;
-          max-width: 62%;
+          bottom: 21%;
+          max-width: 72%;
           color: #ffffff;
-          font-size: clamp(0.86rem, 4.3vw, 2.1rem);
-          font-weight: 900;
-          line-height: 1.08;
-          text-shadow: 0 2px 2px rgba(0, 0, 0, 0.45);
-        }
-
-        .theme-green .thumb-secondary {
-          color: #ffee2d;
-          max-width: 58%;
-          text-align: center;
-          left: 9%;
-          bottom: 30%;
+          font-size: clamp(0.86rem, 3.9vw, 1.45rem);
+          font-weight: 800;
+          line-height: 1.16;
+          text-shadow: 0 2px 10px rgba(0, 0, 0, 0.38);
         }
 
         .thumb-lesson {
           position: absolute;
-          z-index: 2;
+          z-index: 3;
           left: 5%;
-          bottom: 8%;
-          color: #ffe100;
-          font-size: clamp(0.82rem, 4vw, 1.8rem);
+          bottom: 7%;
+          color: #050505;
+          font-size: clamp(0.78rem, 3.3vw, 1.1rem);
           font-weight: 900;
           line-height: 1;
-        }
-
-        .theme-green .thumb-lesson {
-          color: #ffffff;
-          font-size: clamp(1rem, 5vw, 2.3rem);
-          letter-spacing: 0.04em;
-        }
-
-        .thumb-person {
-          position: absolute;
-          z-index: 2;
-          right: 2%;
-          bottom: 0;
-          width: 31%;
-          height: 74%;
-          border-radius: 50% 50% 0 0;
-          background:
-            radial-gradient(circle at 50% 18%, #d6a57c 0 14%, transparent 15%),
-            linear-gradient(#18203b 0 100%);
-          clip-path: polygon(22% 20%, 74% 20%, 92% 100%, 8% 100%);
-        }
-
-        .theme-green .thumb-person {
-          background:
-            radial-gradient(circle at 50% 15%, #e1b28e 0 13%, transparent 14%),
-            linear-gradient(#262a2f 0 100%);
-        }
-
-        .theme-blue .thumb-person {
-          background:
-            radial-gradient(circle at 50% 15%, #d8a57d 0 13%, transparent 14%),
-            linear-gradient(#0c1f43 0 100%);
-        }
-
-        .theme-purple .thumb-person {
-          background:
-            radial-gradient(circle at 50% 15%, #d3a17d 0 13%, transparent 14%),
-            linear-gradient(#221833 0 100%);
+          border-radius: 999px;
+          padding: 7px 10px;
+          background: var(--thumb-accent, #ffe100);
+          box-shadow: 0 8px 18px rgba(0, 0, 0, 0.16);
         }
 
         .lesson-badge {
@@ -615,7 +651,7 @@ export default function VideosPage() {
           align-items: center;
           gap: 5px;
           max-width: 52%;
-          border-radius: 8px;
+          border-radius: 999px;
           padding: 7px 8px;
           background: rgba(0, 0, 0, 0.6);
           color: #ffffff;
@@ -853,6 +889,10 @@ export default function VideosPage() {
 
           .theme-green .thumb-primary {
             font-size: clamp(1rem, 5.7vw, 2.4rem);
+          }
+
+          .playlist-thumb[data-subject="general-awareness"] .thumb-primary {
+            font-size: clamp(1.45rem, 6.4vw, 2.6rem);
           }
 
           .playlist-list {

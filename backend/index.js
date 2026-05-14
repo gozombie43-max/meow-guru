@@ -19,6 +19,7 @@ import uploadNoteImageRoutes from './routes/uploadNoteImage.js';
 import massUploadImages from './routes/massUploadImages.js';
 import massUploadSolutions from './routes/massUploadSolutions.js';
 import aiRoutes from './routes/aiRoutes.js';
+import videoRoutes from './routes/videos.js';
 import { setQuestionsContainer, setUsersContainer, setNotesContainer } from './containerStore.js';
 import { initBattleSocket } from './battle/battleSocket.js';
 
@@ -135,6 +136,7 @@ async function initWithRetry() {
     app.use('/api/notes', notesRoutes);
     app.use('/auth', initAuthRoutes(usersContainer));
     app.use('/users', initUserRoutes(usersContainer));
+    app.use('/api/videos', videoRoutes);
 
     console.log('All routes registered ✅');
 
