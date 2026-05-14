@@ -22,7 +22,7 @@ export default function BottomNav() {
     '/admin',
     '/login',
     '/register',
-    '/Videos',
+    '/videos',
   ];
   const isLightSurface =
     theme === 'light' &&
@@ -55,7 +55,7 @@ export default function BottomNav() {
   const isHome = pathname === '/';
   const isMock = pathname.startsWith('/mock-test');
   const isPlay = pathname === '/play' || pathname.startsWith('/play/');
-  const isVideos = pathname === '/Videos' || pathname.startsWith('/Videos/');
+  const isVideos = pathname === '/videos' || pathname.startsWith('/videos/');
   return (
     <nav
       className={`bottom-pill-nav${isLightSurface ? ' is-light' : ''}${
@@ -88,7 +88,7 @@ export default function BottomNav() {
         <span className="bottom-nav-label">Play</span>
       </Link>
       <Link
-        href="/Videos"
+        href="/videos"
         className={`bottom-nav-item${isVideos ? ' is-active' : ''}`}
         aria-current={isVideos ? 'page' : undefined}
       >
