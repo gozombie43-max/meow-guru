@@ -130,7 +130,6 @@ export default function MathematicsTopicPage({
   routeBase,
   eyebrow = "Mathematics",
   bannerKicker,
-  bannerTitle,
   bannerSubtitle,
   bannerHref,
   bannerActionLabel,
@@ -142,12 +141,14 @@ export default function MathematicsTopicPage({
   featureCards,
 }: MathTopicPageProps) {
   const baseRoute = routeBase ?? `/mathematics/${slug}`;
+  const notesHref = bannerHref ?? `/mathematics/${slug}/formula-notes`;
   const cards = featureCards ?? buildDefaultFeatureCards(baseRoute);
   const kickerText = bannerKicker ?? `${title} Sprint 2026`;
-  const headlineText = bannerTitle ?? `Sharpen ${title} with daily practice`;
+  const headlineText = "Notes Formula & Tricks";
   const subtitleText =
     bannerSubtitle ??
     "Smart drills, quick recall, and exam-ready accuracy for stronger mathematics scores.";
+  const actionText = bannerActionLabel ?? "Open formula notes";
   const bannerStyle = {
     "--math-banner-bg": bannerGradient,
   } as CSSProperties;
@@ -159,7 +160,7 @@ export default function MathematicsTopicPage({
         {kickerText ? <p className="banner-kicker">{kickerText}</p> : null}
         <h2>{headlineText}</h2>
         {subtitleText ? <p className="banner-subtitle">{subtitleText}</p> : null}
-        {bannerActionLabel ? <p className="banner-action">{bannerActionLabel}</p> : null}
+        {actionText ? <p className="banner-action">{actionText}</p> : null}
       </div>
 
       <div className="banner-illustration" aria-hidden="true">
@@ -176,20 +177,14 @@ export default function MathematicsTopicPage({
           <h1 className="math-topic-title">{title}</h1>
         </header>
 
-        {bannerHref ? (
-          <Link
-            href={bannerHref}
-            className="promo-banner promo-banner-link"
-            aria-label={bannerAriaLabel ?? `Open ${title} notes and formulas`}
-            style={bannerStyle}
-          >
-            {bannerContent}
-          </Link>
-        ) : (
-          <section className="promo-banner" style={bannerStyle}>
-            {bannerContent}
-          </section>
-        )}
+        <Link
+          href={notesHref}
+          className="promo-banner promo-banner-link"
+          aria-label={bannerAriaLabel ?? `Open ${title} notes and formulas`}
+          style={bannerStyle}
+        >
+          {bannerContent}
+        </Link>
 
         <section className="feature-section">
           <h2>{featureTitle}</h2>

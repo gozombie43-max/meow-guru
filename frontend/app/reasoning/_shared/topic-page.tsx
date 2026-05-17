@@ -108,12 +108,11 @@ export default function ReasoningTopicPage({
   slug,
   eyebrow = "Reasoning",
   bannerKicker,
-  bannerTitle,
   bannerSubtitle,
 }: ReasoningTopicPageProps) {
   const featureCards = buildFeatureCards(slug);
   const kickerText = bannerKicker ?? `${title} Sprint 2026`;
-  const headlineText = bannerTitle ?? `Master ${title} with daily missions`;
+  const headlineText = "Notes Formula & Tricks";
   const subtitleText =
     bannerSubtitle ??
     "Practice logic, patterns, and speed to boost your reasoning score.";
@@ -126,7 +125,11 @@ export default function ReasoningTopicPage({
           <h1 className="reasoning-title">{title}</h1>
         </header>
 
-        <section className="promo-banner">
+        <Link
+          href={`/reasoning/${slug}/formula-notes`}
+          className="promo-banner promo-banner-link"
+          aria-label={`Open ${title} notes, formulas, and tricks`}
+        >
           <div className="banner-content">
             <p className="banner-kicker">{kickerText}</p>
             <h2>{headlineText}</h2>
@@ -139,7 +142,7 @@ export default function ReasoningTopicPage({
               <path d="M60 28l10 26h22l-18 14 7 23-21-14-21 14 7-23-18-14h22L60 28z" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
-        </section>
+        </Link>
 
         <section className="feature-section">
           <h2>Explore Features</h2>
@@ -200,6 +203,16 @@ export default function ReasoningTopicPage({
           gap: 14px;
           margin-bottom: 22px;
           animation: fade-slide 520ms ease both;
+        }
+
+        .promo-banner-link {
+          color: inherit;
+          text-decoration: none;
+        }
+
+        .promo-banner-link:focus-visible {
+          outline: 2px solid rgba(255, 255, 255, 0.9);
+          outline-offset: 3px;
         }
 
         .promo-banner::before,

@@ -8,9 +8,19 @@ import { useThemeMode } from '@/hooks/useTheme';
 
 export default function BottomNav() {
   const pathname = usePathname() || '/';
+  const normalizedPathname = pathname.replace(/\/+$/, '') || '/';
   const isQuizRoute = pathname.split('/').includes('quiz');
   const isNotesViewRoute = pathname === '/notes/view' || pathname.startsWith('/notes/view/');
-  const shouldHideNav = isQuizRoute || isNotesViewRoute;
+  const formulaNotesSubjects = [
+    '/mathematics/',
+    '/reasoning/',
+    '/english/',
+    '/general-awareness/',
+  ];
+  const isFormulaNotesRoute =
+    formulaNotesSubjects.some((prefix) => normalizedPathname.startsWith(prefix)) &&
+    normalizedPathname.endsWith('/formula-notes');
+  const shouldHideNav = isQuizRoute || isNotesViewRoute || isFormulaNotesRoute;
   const { theme } = useThemeMode();
   const [isScrolled, setIsScrolled] = useState(false);
   const lightSurfacePrefixes = [
