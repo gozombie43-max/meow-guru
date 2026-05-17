@@ -231,7 +231,8 @@ router.get('/stream/:id', async (req, res) => {
     const exists = await containerClient.getBlobClient(blobPath).exists();
     if (!exists) return res.status(404).json({ error: 'PDF not found' });
 
-    res.redirect(generateReadUrl(blobPath));
+    const url = generateReadUrl(blobPath);
+    res.json({ url });
   } catch (err) {
     console.error('GET /api/pdfs/stream error:', err);
     res.status(500).json({ error: err.message || 'Failed to open PDF' });

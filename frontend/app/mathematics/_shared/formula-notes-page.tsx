@@ -108,8 +108,19 @@ export default function FormulaNotesPage({
     return `${(size / (1024 * 1024)).toFixed(1)} MB`;
   };
 
-  const openPdf = (pdf: TopicPdf) => {
-    window.location.href = apiUrl(pdf.streamUrl);
+  const openPdf = async (pdf: TopicPdf) => {
+    try {
+      const res = await fetch(apiUrl(pdf.streamUrl));
+      const data = await res.json();
+      const isMeowApp = navigator.userAgent.includes("MeowApp");
+      if (isMeowApp) {
+        window.location.href = data.url;
+      } else {
+        window.open(data.url, "_blank", "noopener,noreferrer");
+      }
+    } catch {
+      window.open(apiUrl(pdf.streamUrl), "_blank");
+    }
   };
 
   const chooseUploadCategory = (category: string) => {
