@@ -109,7 +109,7 @@ export default function FormulaNotesPage({
   };
 
   const openPdf = (pdf: TopicPdf) => {
-    window.open(apiUrl(pdf.streamUrl), "_blank", "noopener,noreferrer");
+    window.location.href = apiUrl(pdf.streamUrl);
   };
 
   const chooseUploadCategory = (category: string) => {
