@@ -57,6 +57,20 @@ const titleFromBlobPath = (blobPath) =>
     .replace(/[-_]+/g, ' ')
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 
+const getSafePdfFileName = (fileName) => {
+  const baseName = String(fileName || 'document.pdf')
+    .split(/[\\/]/)
+    .pop()
+    .trim()
+    .replace(/[<>:"|?*\x00-\x1F]/g, '')
+    .replace(/\s+/g, ' ');
+
+  const resolvedName = baseName || 'document.pdf';
+  return resolvedName.toLowerCase().endsWith('.pdf')
+    ? resolvedName
+    : `${resolvedName}.pdf`;
+};
+
 const getPdfId = (blobPath) =>
   `pdf-${Buffer.from(blobPath, 'utf8').toString('base64url')}`;
 
@@ -122,19 +136,9 @@ const listTopicPdfs = async (topic, category = 'notes') => {
   );
 };
 
-const getNextPdfPath = async (topic, category = 'notes') => {
+const getPdfPath = (topic, category = 'notes', fileName) => {
   const normalizedCategory = normalizeCategory(category);
-  const existing = await listTopicPdfs(topic, normalizedCategory);
-  const prefix = `${topic}/${normalizedCategory}/`;
-  const matcher = new RegExp(`^${topic}(\\d+)\\.pdf$`, 'i');
-  const maxIndex = existing.reduce((max, pdf) => {
-    if (!pdf.blobPath.startsWith(prefix)) return max;
-    const fileName = pdf.blobPath.slice(prefix.length);
-    const match = fileName.match(matcher);
-    return match ? Math.max(max, Number(match[1])) : max;
-  }, 0);
-
-  return `${topic}/${normalizedCategory}/${topic}${maxIndex + 1}.pdf`;
+  return `${topic}/${normalizedCategory}/${getSafePdfFileName(fileName)}`;
 };
 
 const generateReadUrl = (blobPath) => {
@@ -183,7 +187,7 @@ router.post('/', upload.single('pdf'), async (req, res) => {
     const containerClient = getContainerClient();
     await containerClient.createIfNotExists();
 
-    const blobPath = await getNextPdfPath(topic, category);
+    const blobPath = getPdfPath(topic, category, req.file.originalname);
     const blockBlobClient = containerClient.getBlockBlobClient(blobPath);
     await blockBlobClient.uploadData(req.file.buffer, {
       blobHTTPHeaders: {
