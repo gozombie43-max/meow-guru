@@ -539,8 +539,10 @@ export default function FormulaNotesPage({
 
         .note-title {
           font-size: 0.95rem;
-          font-weight: 600;
-          line-height: 1.1;
+          font-weight: 560;
+          line-height: 1.18;
+          color: rgba(0, 0, 0, 0.74);
+          overflow-wrap: anywhere;
         }
 
         .note-time {
@@ -707,6 +709,29 @@ export default function FormulaNotesPage({
           .tab-row {
             margin-bottom: 10px;
             padding-bottom: 4px;
+          }
+
+          .note-card {
+            align-items: center;
+            gap: 12px;
+          }
+
+          .note-main {
+            width: 100%;
+            flex: 1 1 auto;
+          }
+
+          .note-title {
+            font-size: 0.9rem;
+            font-weight: 540;
+            line-height: 1.2;
+            color: rgba(0, 0, 0, 0.7);
+            overflow-wrap: normal;
+            word-break: normal;
+          }
+
+          .note-time {
+            display: none;
           }
         }
       `}</style>
