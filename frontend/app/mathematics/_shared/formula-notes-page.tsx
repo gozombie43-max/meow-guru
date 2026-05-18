@@ -182,6 +182,7 @@ export default function FormulaNotesPage({
         <header className="top-bar">
           <div className="title-block">
             <p className="eyebrow">{subject}</p>
+            <p className="topic-name">{topicLabel}</p>
             <h1>Notes Formula &amp; Tricks</h1>
             <p className="subtitle">{topicLabel} insights wrapped in a liquid glass layout.</p>
           </div>
@@ -220,7 +221,6 @@ export default function FormulaNotesPage({
                 </span>
                 <span className="note-main">
                   <span className="note-title">{pdf.title || pdf.fileName || `${topicLabel} PDF`}</span>
-                  <span className="note-subtitle">{pdf.fileName || `${topic} PDF`}</span>
                 </span>
                 <span className="note-time">{formatDate(pdf.updatedAt || pdf.uploadedAt) || formatSize(pdf.size)}</span>
               </button>
@@ -310,6 +310,8 @@ export default function FormulaNotesPage({
           padding: 28px 18px 92px;
           position: relative;
           overflow: hidden;
+          height: 100vh;
+          height: 100dvh;
         }
 
         .background-orb {
@@ -341,6 +343,10 @@ export default function FormulaNotesPage({
           margin: 0 auto;
           position: relative;
           z-index: 1;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          min-height: 0;
         }
 
         .top-bar {
@@ -348,7 +354,8 @@ export default function FormulaNotesPage({
           align-items: flex-start;
           justify-content: space-between;
           gap: 16px;
-          margin-bottom: 18px;
+          margin-bottom: 12px;
+          flex: 0 0 auto;
         }
 
         .title-block h1 {
@@ -365,6 +372,13 @@ export default function FormulaNotesPage({
           text-transform: uppercase;
           color: var(--text-secondary);
           font-weight: 600;
+        }
+
+        .topic-name {
+          margin: 8px 0 0;
+          font-size: 0.82rem;
+          font-weight: 700;
+          color: rgba(0, 0, 0, 0.62);
         }
 
         .subtitle {
@@ -408,8 +422,12 @@ export default function FormulaNotesPage({
           flex-wrap: nowrap;
           overflow-x: auto;
           padding-bottom: 6px;
-          margin-bottom: 18px;
+          margin-bottom: 12px;
           scrollbar-width: none;
+          position: sticky;
+          top: 0;
+          z-index: 3;
+          flex: 0 0 auto;
         }
 
         .tab-row::-webkit-scrollbar {
@@ -455,6 +473,11 @@ export default function FormulaNotesPage({
           display: flex;
           flex-direction: column;
           gap: 12px;
+          flex: 1 1 auto;
+          min-height: 0;
+          overflow-y: auto;
+          overscroll-behavior: contain;
+          scrollbar-width: thin;
         }
 
         .glass-card {
@@ -510,7 +533,6 @@ export default function FormulaNotesPage({
         .note-main {
           display: flex;
           flex-direction: column;
-          gap: 4px;
           flex: 1;
           min-width: 0;
         }
@@ -519,14 +541,6 @@ export default function FormulaNotesPage({
           font-size: 0.95rem;
           font-weight: 600;
           line-height: 1.1;
-        }
-
-        .note-subtitle {
-          font-size: 0.75rem;
-          color: var(--text-secondary);
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
         }
 
         .note-time {
@@ -668,13 +682,31 @@ export default function FormulaNotesPage({
         }
 
         @media (max-width: 520px) {
+          .formula-notes-page {
+            padding: 20px 18px 76px;
+          }
+
           .top-bar {
-            flex-direction: column;
-            align-items: flex-start;
+            position: relative;
+            display: block;
+            padding-right: 58px;
+            margin-bottom: 10px;
           }
 
           .search-button {
-            align-self: flex-end;
+            position: fixed;
+            top: 20px;
+            right: 18px;
+            z-index: 6;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow:
+              0 8px 22px rgba(15, 23, 42, 0.12),
+              inset 0 1px 0 rgba(255, 255, 255, 0.9);
+          }
+
+          .tab-row {
+            margin-bottom: 10px;
+            padding-bottom: 4px;
           }
         }
       `}</style>
