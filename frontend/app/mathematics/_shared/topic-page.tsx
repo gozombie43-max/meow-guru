@@ -26,9 +26,9 @@ interface MathTopicPageProps {
   featureCards?: FeatureCardData[];
 }
 
-function FeatureCard({ title, href, gradient, icon }: FeatureCardData) {
+function FeatureCard({ title, href, icon }: FeatureCardData) {
   return (
-    <Link href={href} className="neo-feature-card" style={{ background: gradient }}>
+    <Link href={href} className="neo-feature-card">
       <div className="neo-start-header">
         <div className="neo-icon-wrapper">{icon}</div>
         <svg className="neo-dots-icon" viewBox="0 0 24 24" fill="white" aria-hidden="true">
@@ -213,7 +213,7 @@ export default function MathematicsTopicPage({
         .math-topic-page {
           min-height: 100vh;
           background: #f6f7fb;
-          padding: 16px 14px 32px;
+          padding: 12px 12px 24px;
           font-family: "Poppins", "Segoe UI", sans-serif;
         }
 
@@ -225,7 +225,7 @@ export default function MathematicsTopicPage({
         }
 
         .math-topic-header {
-          margin: 4px 2px 12px;
+          margin: 0 2px 10px;
           animation: fade-slide 420ms ease both;
         }
 
@@ -239,24 +239,24 @@ export default function MathematicsTopicPage({
         }
 
         .math-topic-title {
-          margin: 4px 0 0;
+          margin: 2px 0 0;
           color: #202846;
-          font-size: clamp(1.4rem, 1.2rem + 1vw, 2rem);
-          line-height: 1.15;
+          font-size: clamp(1.25rem, 1.1rem + 1vw, 1.7rem);
+          line-height: 1.1;
           font-weight: 700;
         }
 
         .promo-banner {
           position: relative;
           overflow: hidden;
-          border-radius: 24px;
-          padding: 22px 18px;
+          border-radius: 16px;
+          padding: 14px 14px;
           background: var(--math-banner-bg);
-          box-shadow: 0 14px 32px rgba(99, 102, 241, 0.2);
+          box-shadow: 0 10px 20px rgba(99, 102, 241, 0.15);
           display: grid;
           grid-template-columns: 1fr auto;
-          gap: 14px;
-          margin-bottom: 22px;
+          gap: 10px;
+          margin-bottom: 16px;
           animation: fade-slide 520ms ease both;
         }
 
@@ -376,41 +376,45 @@ export default function MathematicsTopicPage({
         }
 
         .banner-kicker {
-          font-size: 0.78rem;
+          font-size: 0.65rem;
           font-weight: 600;
-          letter-spacing: 0.08em;
+          letter-spacing: 0.05em;
           text-transform: uppercase;
           opacity: 0.9;
-          margin: 0 0 6px;
+          margin: 0 0 2px;
         }
 
         .banner-content h2 {
-          font-size: clamp(1.2rem, 2vw + 0.9rem, 2rem);
-          line-height: 1.2;
-          margin: 0 0 8px;
+          font-size: clamp(1rem, 3.5vw, 1.25rem);
+          line-height: 1.15;
+          margin: 0 0 4px;
           font-weight: 700;
         }
 
         .banner-subtitle {
-          font-size: 0.92rem;
-          line-height: 1.45;
+          font-size: 0.8rem;
+          line-height: 1.25;
           opacity: 0.92;
           max-width: 42ch;
           margin: 0;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
         }
 
         .banner-action {
-          margin: 12px 0 0;
-          font-size: 0.84rem;
+          margin: 6px 0 0;
+          font-size: 0.75rem;
           font-weight: 600;
           letter-spacing: 0.01em;
           opacity: 0.95;
         }
 
         .banner-illustration {
-          width: 72px;
-          height: 72px;
-          border-radius: 20px;
+          width: 46px;
+          height: 46px;
+          border-radius: 12px;
           background: rgba(255, 255, 255, 0.2);
           border: 1px solid rgba(255, 255, 255, 0.4);
           display: flex;
@@ -423,43 +427,45 @@ export default function MathematicsTopicPage({
         }
 
         .banner-svg {
-          width: 44px;
-          height: 44px;
+          width: 24px;
+          height: 24px;
         }
 
         .feature-section h2 {
           margin: 0;
           color: #1f2a44;
           font-weight: 650;
-          font-size: 1.1rem;
+          font-size: 1rem;
           letter-spacing: 0.01em;
           animation: fade-slide 620ms ease both;
         }
 
         .feature-subtitle {
-          margin: 6px 0 14px;
+          margin: 4px 0 10px;
           color: #68738f;
-          font-size: 0.9rem;
-          line-height: 1.4;
+          font-size: 0.85rem;
+          line-height: 1.35;
           animation: fade-slide 680ms ease both;
         }
 
         .feature-grid {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 16px;
+          gap: 12px;
         }
 
         .neo-feature-card {
           text-decoration: none;
-          border-radius: 28px;
-          padding: 20px;
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 20px;
+          padding: 16px;
           display: flex;
           flex-direction: column;
-          gap: 24px;
+          gap: 16px;
           box-shadow: 
-            -6px -6px 14px rgba(255, 255, 255, 0.1), 
-            8px 8px 20px rgba(0, 0, 0, 0.25);
+            -6px -6px 14px rgba(255, 255, 255, 0.03), 
+            8px 8px 18px rgba(0, 0, 0, 0.3);
           color: white;
           transition: transform 0.26s ease, box-shadow 0.26s ease;
           animation: card-in 540ms ease both;
