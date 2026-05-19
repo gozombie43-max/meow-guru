@@ -209,6 +209,8 @@ export default function MathematicsTopicPage({
         .math-topic-container {
           max-width: 1040px;
           margin: 0 auto;
+          position: relative;
+          z-index: 1;
         }
 
         .math-topic-header {
@@ -450,6 +452,312 @@ export default function MathematicsTopicPage({
         .feature-card:focus-visible {
           outline: 2px solid rgba(80, 120, 255, 0.8);
           outline-offset: 2px;
+        }
+
+        body.theme-dark {
+          background: #050713;
+        }
+
+        body.theme-dark .math-topic-page {
+          color: #f8fbff;
+          background:
+            radial-gradient(ellipse at 16% 8%, rgba(118, 92, 255, 0.34) 0%, transparent 36%),
+            radial-gradient(ellipse at 88% 28%, rgba(224, 73, 161, 0.18) 0%, transparent 34%),
+            radial-gradient(ellipse at 38% 84%, rgba(42, 179, 198, 0.14) 0%, transparent 34%),
+            linear-gradient(155deg, #08091b 0%, #16133a 38%, #28215d 68%, #111229 100%);
+          padding: 20px 20px 40px;
+          position: relative;
+          overflow: hidden;
+        }
+
+        body.theme-dark .math-topic-page::before,
+        body.theme-dark .math-topic-page::after {
+          content: "";
+          position: fixed;
+          border-radius: 999px;
+          pointer-events: none;
+          filter: blur(18px);
+          opacity: 0.8;
+        }
+
+        body.theme-dark .math-topic-page::before {
+          width: 220px;
+          height: 220px;
+          left: -90px;
+          top: 130px;
+          background: rgba(59, 130, 246, 0.18);
+        }
+
+        body.theme-dark .math-topic-page::after {
+          width: 260px;
+          height: 260px;
+          right: -120px;
+          bottom: 10%;
+          background: rgba(168, 85, 247, 0.18);
+        }
+
+        body.theme-dark .math-topic-eyebrow {
+          color: rgba(199, 210, 254, 0.72);
+          font-size: 0.9rem;
+          letter-spacing: 0.32em;
+          font-weight: 500;
+        }
+
+        body.theme-dark .math-topic-title,
+        body.theme-dark .feature-section h2 {
+          color: #f8fbff;
+          text-shadow: 0 1px 18px rgba(129, 140, 248, 0.18);
+          font-weight: 800;
+          letter-spacing: -0.01em;
+        }
+
+        body.theme-dark .math-topic-title {
+          margin-top: 14px;
+          font-size: clamp(2.35rem, 8vw, 4.6rem);
+          line-height: 0.98;
+        }
+
+        body.theme-dark .math-topic-header {
+          margin: 0 0 72px;
+        }
+
+        body.theme-dark .feature-section h2 {
+          font-size: clamp(1.85rem, 5.8vw, 3rem);
+          line-height: 1.02;
+        }
+
+        body.theme-dark .feature-subtitle {
+          color: rgba(214, 220, 255, 0.78);
+          font-size: clamp(1.05rem, 3.5vw, 1.55rem);
+          line-height: 1.45;
+          margin: 18px 0 28px;
+        }
+
+        body.theme-dark .promo-banner {
+          margin-bottom: 76px;
+          padding: clamp(30px, 7vw, 70px) clamp(26px, 6vw, 68px);
+          min-height: clamp(190px, 38vw, 310px);
+          border-radius: clamp(34px, 7vw, 72px);
+          background: linear-gradient(135deg, rgba(92, 87, 148, 0.74) 0%, rgba(72, 67, 132, 0.72) 100%) !important;
+          border: 1px solid rgba(205, 210, 255, 0.18);
+          box-shadow:
+            0 24px 60px rgba(5, 5, 24, 0.34),
+            inset 0 1px 0 rgba(255, 255, 255, 0.16);
+          backdrop-filter: blur(22px) saturate(150%);
+          -webkit-backdrop-filter: blur(22px) saturate(150%);
+        }
+
+        body.theme-dark .promo-banner::before,
+        body.theme-dark .promo-banner::after {
+          display: none;
+        }
+
+        body.theme-dark .banner-kicker {
+          color: rgba(201, 210, 255, 0.86);
+          font-size: clamp(0.82rem, 2.6vw, 1.45rem);
+          letter-spacing: 0.32em;
+          font-weight: 600;
+          margin-bottom: 28px;
+        }
+
+        body.theme-dark .banner-content h2 {
+          font-size: clamp(2rem, 5vw, 4.1rem);
+          line-height: 1.02;
+          font-weight: 800;
+          letter-spacing: -0.02em;
+          margin-bottom: 26px;
+        }
+
+        body.theme-dark .banner-subtitle {
+          color: rgba(238, 241, 255, 0.72);
+          font-size: clamp(1.15rem, 3.8vw, 2.2rem);
+          line-height: 1.45;
+          max-width: 22ch;
+        }
+
+        body.theme-dark .feature-card {
+          aspect-ratio: 1.08 / 1;
+          min-height: 174px;
+          border-radius: clamp(28px, 6vw, 58px);
+          border: 1px solid rgba(150, 157, 255, 0.16);
+          box-shadow:
+            0 28px 58px rgba(4, 5, 22, 0.48),
+            0 10px 24px rgba(87, 76, 178, 0.16),
+            inset 0 1px 0 rgba(255, 255, 255, 0.16),
+            inset 0 -1px 0 rgba(5, 7, 24, 0.26);
+          gap: 28px;
+        }
+
+        body.theme-dark .feature-card::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          border-radius: inherit;
+          background: linear-gradient(180deg, rgba(255, 255, 255, 0.14), transparent 44%);
+          opacity: 0.78;
+          pointer-events: none;
+          z-index: 0;
+        }
+
+        body.theme-dark .feature-card::after,
+        body.theme-dark .feature-glow {
+          display: none;
+        }
+
+        body.theme-dark .feature-card:nth-child(1) {
+          background: linear-gradient(135deg, rgba(166, 48, 127, 0.74), rgba(99, 42, 119, 0.76)) !important;
+        }
+
+        body.theme-dark .feature-card:nth-child(2) {
+          background: linear-gradient(135deg, rgba(82, 83, 178, 0.78), rgba(45, 51, 133, 0.82)) !important;
+        }
+
+        body.theme-dark .feature-card:nth-child(3) {
+          background: linear-gradient(135deg, rgba(39, 131, 155, 0.78), rgba(27, 62, 112, 0.86)) !important;
+        }
+
+        body.theme-dark .feature-card:nth-child(4) {
+          background: linear-gradient(135deg, rgba(179, 132, 57, 0.72), rgba(81, 53, 57, 0.84)) !important;
+        }
+
+        body.theme-dark .feature-card:nth-child(5) {
+          background: linear-gradient(135deg, rgba(41, 145, 105, 0.72), rgba(37, 96, 102, 0.82)) !important;
+        }
+
+        body.theme-dark .feature-card:nth-child(6) {
+          background: linear-gradient(135deg, rgba(172, 80, 134, 0.72), rgba(110, 66, 129, 0.82)) !important;
+        }
+
+        body.theme-dark .feature-card:hover {
+          box-shadow:
+            0 24px 46px rgba(2, 6, 23, 0.58),
+            0 0 0 1px rgba(255, 255, 255, 0.12),
+            inset 0 1px 0 rgba(255, 255, 255, 0.28);
+        }
+
+        body.theme-dark .feature-icon-wrap,
+        body.theme-dark .banner-illustration {
+          background: linear-gradient(180deg, rgba(210, 216, 255, 0.22), rgba(184, 190, 246, 0.09));
+          border-color: rgba(219, 224, 255, 0.2);
+          box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.22),
+            0 14px 32px rgba(8, 8, 28, 0.18);
+          backdrop-filter: blur(18px) saturate(150%);
+          -webkit-backdrop-filter: blur(18px) saturate(150%);
+        }
+
+        body.theme-dark .feature-icon-wrap {
+          width: clamp(76px, 17vw, 150px);
+          height: clamp(76px, 17vw, 150px);
+          border-radius: clamp(24px, 5vw, 42px);
+        }
+
+        body.theme-dark .feature-icon {
+          width: clamp(34px, 7vw, 62px);
+          height: clamp(34px, 7vw, 62px);
+        }
+
+        body.theme-dark .feature-title {
+          font-size: clamp(1.25rem, 4.2vw, 2.3rem);
+          line-height: 1.05;
+          font-weight: 800;
+        }
+
+        body.theme-dark .banner-illustration {
+          width: clamp(76px, 15vw, 142px);
+          height: clamp(76px, 15vw, 142px);
+          border-radius: clamp(24px, 5vw, 42px);
+        }
+
+        body.theme-dark .banner-svg {
+          width: clamp(42px, 8vw, 80px);
+          height: clamp(42px, 8vw, 80px);
+        }
+
+        body.theme-dark .feature-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: clamp(20px, 4vw, 38px);
+        }
+
+        @media (max-width: 540px) {
+          body.theme-dark .math-topic-page {
+            padding: 18px 14px 28px;
+          }
+
+          body.theme-dark .math-topic-header {
+            margin-bottom: 44px;
+          }
+
+          body.theme-dark .math-topic-title {
+            font-size: clamp(2rem, 9vw, 2.45rem);
+          }
+
+          body.theme-dark .promo-banner {
+            min-height: 268px;
+            margin-bottom: 52px;
+            padding: 28px 26px;
+            border-radius: 30px;
+          }
+
+          body.theme-dark .banner-kicker {
+            font-size: 0.78rem;
+            margin-bottom: 24px;
+          }
+
+          body.theme-dark .banner-content h2 {
+            font-size: clamp(1.75rem, 8vw, 2.05rem);
+            margin-bottom: 26px;
+          }
+
+          body.theme-dark .banner-subtitle {
+            font-size: 1rem;
+            max-width: 18ch;
+          }
+
+          body.theme-dark .banner-illustration {
+            width: 74px;
+            height: 74px;
+            border-radius: 22px;
+          }
+
+          body.theme-dark .feature-section h2 {
+            font-size: 1.65rem;
+          }
+
+          body.theme-dark .feature-subtitle {
+            font-size: 0.98rem;
+            margin: 12px 0 22px;
+          }
+
+          body.theme-dark .feature-grid {
+            gap: 14px;
+          }
+
+          body.theme-dark .feature-card {
+            min-height: 158px;
+            border-radius: 28px;
+            gap: 20px;
+            box-shadow:
+              0 22px 42px rgba(4, 5, 22, 0.5),
+              0 8px 18px rgba(87, 76, 178, 0.18),
+              inset 0 1px 0 rgba(255, 255, 255, 0.18),
+              inset 0 -1px 0 rgba(5, 7, 24, 0.28);
+          }
+
+          body.theme-dark .feature-icon-wrap {
+            width: 66px;
+            height: 66px;
+            border-radius: 20px;
+          }
+
+          body.theme-dark .feature-icon {
+            width: 31px;
+            height: 31px;
+          }
+
+          body.theme-dark .feature-title {
+            font-size: 1.12rem;
+          }
         }
 
         @keyframes fade-slide {
