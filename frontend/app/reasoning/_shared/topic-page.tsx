@@ -162,6 +162,7 @@ export default function ReasoningTopicPage({
           background: #f6f7fb;
           padding: 16px 14px 32px;
           font-family: "Poppins", "Segoe UI", sans-serif;
+          overflow-x: hidden;
         }
 
         .reasoning-container {
@@ -169,6 +170,7 @@ export default function ReasoningTopicPage({
           margin: 0 auto;
           position: relative;
           z-index: 1;
+          min-width: 0;
         }
 
         .reasoning-header {
@@ -191,6 +193,7 @@ export default function ReasoningTopicPage({
           font-size: clamp(1.4rem, 1.2rem + 1vw, 2rem);
           line-height: 1.15;
           font-weight: 700;
+          overflow-wrap: anywhere;
         }
 
         .promo-banner {
@@ -245,6 +248,7 @@ export default function ReasoningTopicPage({
           position: relative;
           z-index: 1;
           color: #fff;
+          min-width: 0;
         }
 
         .banner-kicker {
@@ -261,6 +265,7 @@ export default function ReasoningTopicPage({
           line-height: 1.2;
           margin: 0 0 8px;
           font-weight: 700;
+          overflow-wrap: anywhere;
         }
 
         .banner-subtitle {
@@ -269,6 +274,7 @@ export default function ReasoningTopicPage({
           opacity: 0.92;
           max-width: 40ch;
           margin: 0;
+          overflow-wrap: anywhere;
         }
 
         .banner-illustration {
@@ -319,6 +325,7 @@ export default function ReasoningTopicPage({
           border-radius: 18px;
           aspect-ratio: 1 / 1;
           min-height: 140px;
+          padding: 16px 10px;
           text-decoration: none;
           color: #fff;
           box-shadow: 0 12px 22px rgba(76, 95, 179, 0.24);
@@ -389,6 +396,7 @@ export default function ReasoningTopicPage({
           font-weight: 600;
           letter-spacing: 0.01em;
           text-align: center;
+          max-width: calc(100% - 16px);
           position: relative;
           z-index: 1;
         }
@@ -690,14 +698,18 @@ export default function ReasoningTopicPage({
           }
 
           body.theme-dark .feature-grid {
-            gap: 10px;
+            grid-template-columns: 1fr;
+            gap: 12px;
           }
 
           body.theme-dark .feature-card {
-            aspect-ratio: 1.32 / 1;
-            min-height: 112px;
+            aspect-ratio: auto;
+            min-height: 88px;
+            flex-direction: row;
+            justify-content: flex-start;
             border-radius: 22px;
-            gap: 10px;
+            gap: 14px;
+            padding: 16px 18px;
             box-shadow:
               0 16px 30px rgba(4, 5, 22, 0.46),
               0 8px 18px rgba(87, 76, 178, 0.18),
@@ -706,6 +718,7 @@ export default function ReasoningTopicPage({
           }
 
           body.theme-dark .feature-icon-wrap {
+            flex: 0 0 50px;
             width: 50px;
             height: 50px;
             border-radius: 16px;
@@ -718,6 +731,37 @@ export default function ReasoningTopicPage({
 
           body.theme-dark .feature-title {
             font-size: 0.9rem;
+            line-height: 1.15;
+            max-width: none;
+            text-align: left;
+          }
+        }
+
+        @media (max-width: 340px) {
+          body.theme-dark .reasoning-topic-page {
+            padding-left: 10px;
+            padding-right: 10px;
+          }
+
+          body.theme-dark .feature-grid {
+            grid-template-columns: 1fr;
+            gap: 12px;
+          }
+
+          body.theme-dark .feature-card {
+            min-height: 88px;
+            padding: 16px 18px;
+          }
+
+          body.theme-dark .feature-icon-wrap {
+            flex: 0 0 48px;
+            width: 48px;
+            height: 48px;
+          }
+
+          body.theme-dark .feature-title {
+            max-width: none;
+            text-align: left;
           }
         }
 

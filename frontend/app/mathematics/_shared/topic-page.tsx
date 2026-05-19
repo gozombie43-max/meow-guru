@@ -28,12 +28,23 @@ interface MathTopicPageProps {
 
 function FeatureCard({ title, href, gradient, icon }: FeatureCardData) {
   return (
-    <Link href={href} className="feature-card" style={{ background: gradient }}>
-      <div className="feature-glow" aria-hidden="true" />
-      <div className="feature-icon-wrap" aria-hidden="true">
-        {icon}
+    <Link href={href} className="neo-feature-card" style={{ background: gradient }}>
+      <div className="neo-start-header">
+        <div className="neo-icon-wrapper">{icon}</div>
+        <svg className="neo-dots-icon" viewBox="0 0 24 24" fill="white" aria-hidden="true">
+          <circle cx="12" cy="6" r="1.5" />
+          <circle cx="12" cy="12" r="1.5" />
+          <circle cx="12" cy="18" r="1.5" />
+        </svg>
       </div>
-      <p className="feature-title">{title}</p>
+      <div className="neo-start-body">
+        <div className="neo-vertical-line" />
+        <div className="neo-text-wrap">
+          <h3>{title}</h3>
+          <p>Practice now</p>
+        </div>
+      </div>
+      <span className="neo-start-button">Start</span>
     </Link>
   );
 }
@@ -269,6 +280,81 @@ export default function MathematicsTopicPage({
           filter: blur(0.4px);
         }
 
+        .neo-start-card {
+          background: #392464;
+          border-radius: 28px;
+          padding: 24px;
+          margin-bottom: 24px;
+          display: flex;
+          flex-direction: column;
+          gap: 32px;
+          box-shadow: 
+            -8px -8px 20px rgba(88, 59, 148, 0.4), 
+            10px 10px 24px rgba(33, 19, 60, 0.6);
+          color: white;
+          max-width: 260px;
+        }
+        
+        .neo-start-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        
+        .neo-lock-icon {
+          width: 24px;
+          height: 24px;
+        }
+        
+        .neo-dots-icon {
+          width: 20px;
+          height: 20px;
+        }
+        
+        .neo-start-body {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 12px;
+        }
+        
+        .neo-vertical-line {
+          width: 3px;
+          height: 48px;
+          background: #d946ef;
+          border-radius: 2px;
+        }
+        
+        .neo-text-wrap > h3 {
+          font-size: 1.1rem;
+          font-weight: 700;
+          margin: 0 0 4px;
+        }
+        
+        .neo-text-wrap > p {
+          font-size: 0.9rem;
+          color: rgba(255, 255, 255, 0.7);
+          margin: 0;
+        }
+        
+        .neo-start-button {
+          background: #f1f5f9;
+          color: #392464;
+          border: none;
+          padding: 14px;
+          border-radius: 24px;
+          font-weight: 600;
+          font-size: 0.95rem;
+          cursor: pointer;
+          letter-spacing: 0.5px;
+          text-transform: uppercase;
+          transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .neo-start-button:active {
+          transform: scale(0.97);
+        }
+
         .promo-banner::before {
           width: 130px;
           height: 130px;
@@ -361,97 +447,107 @@ export default function MathematicsTopicPage({
         .feature-grid {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 12px;
+          gap: 16px;
         }
 
-        .feature-card {
-          position: relative;
-          border-radius: 18px;
-          aspect-ratio: 1 / 1;
-          min-height: 140px;
+        .neo-feature-card {
           text-decoration: none;
-          color: #fff;
-          box-shadow: 0 12px 22px rgba(76, 95, 179, 0.24);
+          border-radius: 28px;
+          padding: 20px;
           display: flex;
           flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: 12px;
-          overflow: hidden;
-          transition: transform 0.26s ease, box-shadow 0.26s ease, filter 0.26s ease;
-          isolation: isolate;
+          gap: 24px;
+          box-shadow: 
+            -6px -6px 14px rgba(255, 255, 255, 0.1), 
+            8px 8px 20px rgba(0, 0, 0, 0.25);
+          color: white;
+          transition: transform 0.26s ease, box-shadow 0.26s ease;
           animation: card-in 540ms ease both;
         }
 
-        .feature-card:nth-child(1) { animation-delay: 80ms; }
-        .feature-card:nth-child(2) { animation-delay: 130ms; }
-        .feature-card:nth-child(3) { animation-delay: 180ms; }
-        .feature-card:nth-child(4) { animation-delay: 230ms; }
-        .feature-card:nth-child(5) { animation-delay: 280ms; }
-        .feature-card:nth-child(6) { animation-delay: 330ms; }
+        .neo-feature-card:nth-child(1) { animation-delay: 80ms; }
+        .neo-feature-card:nth-child(2) { animation-delay: 130ms; }
+        .neo-feature-card:nth-child(3) { animation-delay: 180ms; }
+        .neo-feature-card:nth-child(4) { animation-delay: 230ms; }
+        .neo-feature-card:nth-child(5) { animation-delay: 280ms; }
+        .neo-feature-card:nth-child(6) { animation-delay: 330ms; }
 
-        .feature-card::after {
-          content: "";
-          position: absolute;
-          width: 90px;
-          height: 90px;
-          border-radius: 999px;
-          top: -22px;
-          right: -22px;
-          background: rgba(255, 255, 255, 0.18);
-          z-index: 0;
+        .neo-feature-card:hover {
+          transform: translateY(-4px);
         }
 
-        .feature-glow {
-          position: absolute;
-          width: 120px;
-          height: 120px;
-          border-radius: 999px;
-          left: -24px;
-          bottom: -30px;
-          background: rgba(255, 255, 255, 0.15);
-          filter: blur(2px);
-          z-index: 0;
+        .neo-feature-card:focus-visible {
+          outline: 2px solid rgba(80, 120, 255, 0.8);
+          outline-offset: 2px;
         }
 
-        .feature-icon-wrap {
-          width: 56px;
-          height: 56px;
-          border-radius: 16px;
-          border: 1px solid rgba(255, 255, 255, 0.35);
-          background: rgba(255, 255, 255, 0.16);
+        .neo-start-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        
+        .neo-icon-wrapper {
+          width: 32px;
+          height: 32px;
           display: flex;
           align-items: center;
           justify-content: center;
-          position: relative;
-          z-index: 1;
+        }
+        
+        .neo-icon-wrapper svg {
+          width: 100%;
+          height: 100%;
         }
 
-        .feature-icon {
-          width: 30px;
-          height: 30px;
-          color: #ffffff;
+        .neo-dots-icon {
+          width: 20px;
+          height: 20px;
+        }
+        
+        .neo-start-body {
+          display: flex;
+          align-items: stretch;
+          gap: 12px;
+        }
+        
+        .neo-vertical-line {
+          width: 3px;
+          background: #d946ef;
+          border-radius: 2px;
+        }
+        
+        .neo-text-wrap {
+          flex: 1;
         }
 
-        .feature-title {
+        .neo-text-wrap > h3 {
+          font-size: 1.05rem;
+          font-weight: 700;
+          margin: 0 0 4px;
+        }
+        
+        .neo-text-wrap > p {
+          font-size: 0.85rem;
+          color: rgba(255, 255, 255, 0.8);
           margin: 0;
-          font-size: 0.94rem;
-          font-weight: 600;
-          letter-spacing: 0.01em;
+        }
+        
+        .neo-start-button {
+          background: rgba(255, 255, 255, 0.95);
+          color: #392464;
           text-align: center;
-          position: relative;
-          z-index: 1;
+          padding: 12px;
+          border-radius: 24px;
+          font-weight: 600;
+          font-size: 0.9rem;
+          letter-spacing: 0.5px;
+          text-transform: uppercase;
+          transition: transform 0.2s, background 0.2s;
         }
-
-        .feature-card:hover {
-          transform: translateY(-4px) scale(1.03);
-          box-shadow: 0 18px 30px rgba(70, 88, 166, 0.34);
-          filter: saturate(1.05);
-        }
-
-        .feature-card:focus-visible {
-          outline: 2px solid rgba(80, 120, 255, 0.8);
-          outline-offset: 2px;
+        
+        .neo-start-button:active {
+          transform: scale(0.97);
         }
 
         body.theme-dark {
