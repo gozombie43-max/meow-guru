@@ -39,6 +39,11 @@ const encodeBlobPath = (blobPath) =>
     .map((part) => encodeURIComponent(part))
     .join('/');
 
+const nameCollator = new Intl.Collator(undefined, {
+  numeric: true,
+  sensitivity: 'base'
+});
+
 const normalizeTopic = (topic) =>
   String(topic || '')
     .trim()
@@ -53,11 +58,32 @@ const normalizeCategory = (category) => {
 
 const titleFromBlobPath = (blobPath) =>
   (blobPath.split('/').pop() || blobPath)
-    .replace(/\.pdf$/i, '')
+    .replace(/\.(pdf|html?|docx?)$/i, '')
     .replace(/[-_]+/g, ' ')
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 
-const getSafePdfFileName = (fileName) => {
+const allowedExtensions = new Set(['.pdf', '.html', '.htm', '.doc', '.docx']);
+
+const getFileExtension = (fileName = '') => {
+  const match = String(fileName).toLowerCase().match(/\.[a-z0-9]+$/);
+  return match ? match[0] : '';
+};
+
+const getContentType = (fileName = '', mimeType = '') => {
+  const extension = getFileExtension(fileName);
+  if (extension === '.pdf') return 'application/pdf';
+  if (extension === '.html' || extension === '.htm') return 'text/html; charset=utf-8';
+  if (extension === '.doc') return 'application/msword';
+  if (extension === '.docx') return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+  return mimeType || 'application/octet-stream';
+};
+
+const isAllowedDocument = (file) => {
+  const extension = getFileExtension(file?.originalname);
+  return allowedExtensions.has(extension);
+};
+
+const getSafeFileName = (fileName) => {
   const baseName = String(fileName || 'document.pdf')
     .split(/[\\/]/)
     .pop()
@@ -66,7 +92,8 @@ const getSafePdfFileName = (fileName) => {
     .replace(/\s+/g, ' ');
 
   const resolvedName = baseName || 'document.pdf';
-  return resolvedName.toLowerCase().endsWith('.pdf')
+  const extension = getFileExtension(resolvedName);
+  return allowedExtensions.has(extension)
     ? resolvedName
     : `${resolvedName}.pdf`;
 };
@@ -91,7 +118,7 @@ const getContainerClient = () => {
   return blobServiceClient.getContainerClient(pdfContainerName);
 };
 
-const isPdfBlob = (blobPath) => blobPath.toLowerCase().endsWith('.pdf');
+const isDocumentBlob = (blobPath) => allowedExtensions.has(getFileExtension(blobPath));
 
 const listTopicPdfs = async (topic, category = 'notes') => {
   const containerClient = getContainerClient();
@@ -106,7 +133,7 @@ const listTopicPdfs = async (topic, category = 'notes') => {
 
   for (const prefix of prefixes) {
     for await (const blob of containerClient.listBlobsFlat({ prefix })) {
-      if (!isPdfBlob(blob.name) || seen.has(blob.name)) continue;
+      if (!isDocumentBlob(blob.name) || seen.has(blob.name)) continue;
       if (normalizedCategory === 'notes') {
         const rest = blob.name.slice(`${topic}/`.length);
         if (rest.includes('/') && !rest.startsWith('notes/')) continue;
@@ -129,16 +156,13 @@ const listTopicPdfs = async (topic, category = 'notes') => {
   }
 
   return pdfs.sort((a, b) =>
-    a.fileName.localeCompare(b.fileName, undefined, {
-      numeric: true,
-      sensitivity: 'base'
-    })
+    nameCollator.compare(a.title || a.fileName || '', b.title || b.fileName || '')
   );
 };
 
 const getPdfPath = (topic, category = 'notes', fileName) => {
   const normalizedCategory = normalizeCategory(category);
-  return `${topic}/${normalizedCategory}/${getSafePdfFileName(fileName)}`;
+  return `${topic}/${normalizedCategory}/${getSafeFileName(fileName)}`;
 };
 
 const generateReadUrl = (blobPath) => {
@@ -174,62 +198,74 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.post('/', upload.single('pdf'), async (req, res) => {
+router.post('/', upload.fields([
+  { name: 'files', maxCount: 20 },
+  { name: 'pdfs', maxCount: 20 },
+  { name: 'pdf', maxCount: 20 }
+]), async (req, res) => {
   try {
     const topic = normalizeTopic(req.body.topic);
     const category = normalizeCategory(req.body.category);
     if (!topic) return res.status(400).json({ error: 'topic is required' });
-    if (!req.file) return res.status(400).json({ error: 'PDF file is required' });
-    if (req.file.mimetype !== 'application/pdf' && !req.file.originalname.toLowerCase().endsWith('.pdf')) {
-      return res.status(400).json({ error: 'Only PDF files are allowed' });
-    }
+    const files = [
+      ...(req.files?.files || []),
+      ...(req.files?.pdfs || []),
+      ...(req.files?.pdf || [])
+    ];
+    if (!files.length) return res.status(400).json({ error: 'At least one PDF, HTML, DOC, or DOCX file is required' });
+
+    const invalidFile = files.find((file) => !isAllowedDocument(file));
+    if (invalidFile) return res.status(400).json({ error: 'Only PDF, HTML, DOC, and DOCX files are allowed' });
 
     const containerClient = getContainerClient();
     await containerClient.createIfNotExists();
 
-    const blobPath = getPdfPath(topic, category, req.file.originalname);
-    const blockBlobClient = containerClient.getBlockBlobClient(blobPath);
-    await blockBlobClient.uploadData(req.file.buffer, {
-      blobHTTPHeaders: {
-        blobContentType: 'application/pdf',
-        blobCacheControl: 'no-cache'
-      },
-      metadata: {
+    const pdfs = [];
+    for (const file of files) {
+      const blobPath = getPdfPath(topic, category, file.originalname);
+      const blockBlobClient = containerClient.getBlockBlobClient(blobPath);
+      await blockBlobClient.uploadData(file.buffer, {
+        blobHTTPHeaders: {
+          blobContentType: getContentType(file.originalname, file.mimetype),
+          blobCacheControl: 'no-cache'
+        },
+        metadata: {
+          topic,
+          category,
+          originalname: encodeURIComponent(file.originalname)
+        }
+      });
+
+      pdfs.push({
+        id: getPdfId(blobPath),
+        title: titleFromBlobPath(blobPath),
         topic,
         category,
-        originalname: encodeURIComponent(req.file.originalname)
-      }
-    });
+        blobPath,
+        fileName: blobPath.split('/').pop() || blobPath,
+        size: file.size,
+        uploadedAt: new Date().toISOString(),
+        streamUrl: `/api/pdfs/stream/${getPdfId(blobPath)}`
+      });
+    }
 
-    const pdf = {
-      id: getPdfId(blobPath),
-      title: titleFromBlobPath(blobPath),
-      topic,
-      category,
-      blobPath,
-      fileName: blobPath.split('/').pop() || blobPath,
-      size: req.file.size,
-      uploadedAt: new Date().toISOString(),
-      streamUrl: `/api/pdfs/stream/${getPdfId(blobPath)}`
-    };
-
-    res.status(201).json({ success: true, pdf });
+    res.status(201).json({ success: true, pdf: pdfs[0], pdfs });
   } catch (err) {
     console.error('POST /api/pdfs error:', err);
-    res.status(500).json({ error: err.message || 'Failed to upload PDF' });
+    res.status(500).json({ error: err.message || 'Failed to upload files' });
   }
 });
 
 router.get('/stream/:id', async (req, res) => {
   try {
     const blobPath = getBlobPathFromPdfId(req.params.id);
-    if (!blobPath || !isPdfBlob(blobPath)) {
-      return res.status(404).json({ error: 'PDF not found' });
+    if (!blobPath || !isDocumentBlob(blobPath)) {
+      return res.status(404).json({ error: 'File not found' });
     }
 
     const containerClient = getContainerClient();
     const exists = await containerClient.getBlobClient(blobPath).exists();
-    if (!exists) return res.status(404).json({ error: 'PDF not found' });
+    if (!exists) return res.status(404).json({ error: 'File not found' });
 
     const url = generateReadUrl(blobPath);
     res.json({ url });

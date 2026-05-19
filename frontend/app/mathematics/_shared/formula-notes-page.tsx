@@ -6,6 +6,7 @@ import { FileText, Plus, Search } from "lucide-react";
 import { fetchWithRetry } from "@/lib/api/http";
 
 const tabs = ["Notes", "Formula", "Extra", "DPP"];
+const nameCollator = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
 
 const TOPIC_LABELS: Record<string, string> = {
   arithmetic: "Arithmetic",
@@ -47,6 +48,12 @@ function getTopicLabel(topic: string) {
     .join(" ");
 }
 
+function sortByName(files: TopicPdf[]) {
+  return [...files].sort((a, b) =>
+    nameCollator.compare(a.title || a.fileName || "", b.title || b.fileName || "")
+  );
+}
+
 export default function FormulaNotesPage({
   topic: topicProp,
   subject = "Mathematics",
@@ -83,7 +90,7 @@ export default function FormulaNotesPage({
         );
         if (!res.ok) throw new Error(`PDF fetch failed: ${res.status}`);
         const data = (await res.json()) as { pdfs?: TopicPdf[] };
-        setPdfs(data.pdfs || []);
+        setPdfs(sortByName(data.pdfs || []));
       } catch (err) {
         console.error("Failed to load PDFs", err);
         setNotice("Unable to load PDFs.");
@@ -102,8 +109,14 @@ export default function FormulaNotesPage({
     return Number.isNaN(date.getTime()) ? "" : date.toLocaleDateString();
   };
 
-  const formatSize = (size?: number) => {
-    if (!size) return "PDF";
+  const formatSize = (size?: number, fileName?: string) => {
+    const lowerName = fileName?.toLowerCase() || "";
+    const fallbackType = lowerName.endsWith(".html")
+      ? "HTML"
+      : lowerName.endsWith(".doc") || lowerName.endsWith(".docx")
+        ? "DOC"
+        : "PDF";
+    if (!size) return fallbackType;
     if (size < 1024 * 1024) return `${Math.max(1, Math.round(size / 1024))} KB`;
     return `${(size / (1024 * 1024)).toFixed(1)} MB`;
   };
@@ -131,19 +144,29 @@ export default function FormulaNotesPage({
   };
 
   const handlePdfUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+    const files = Array.from(event.target.files || []);
     event.target.value = "";
-    if (!file || !topic) return;
+    if (!files.length || !topic) return;
 
-    if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
-      setNotice("Select a PDF file.");
+    const invalidFile = files.find((file) => {
+      const name = file.name.toLowerCase();
+      return (
+        !name.endsWith(".pdf") &&
+        !name.endsWith(".html") &&
+        !name.endsWith(".htm") &&
+        !name.endsWith(".doc") &&
+        !name.endsWith(".docx")
+      );
+    });
+    if (invalidFile) {
+      setNotice("Select PDF, HTML, DOC, or DOCX files only.");
       return;
     }
 
     const formData = new FormData();
     formData.append("topic", topic);
     formData.append("category", uploadCategory);
-    formData.append("pdf", file);
+    files.forEach((file) => formData.append("files", file));
 
     setUploading(true);
     setNotice("");
@@ -160,14 +183,16 @@ export default function FormulaNotesPage({
         throw new Error(data?.error || `Upload failed: ${res.status}`);
       }
 
-      const data = (await res.json()) as { pdf?: TopicPdf };
-      if (data.pdf && data.pdf.category === categoryFromTab(activeTab)) {
-        setPdfs((current) => [...current, data.pdf as TopicPdf]);
+      const data = (await res.json()) as { pdf?: TopicPdf; pdfs?: TopicPdf[] };
+      const uploadedFiles = data.pdfs || (data.pdf ? [data.pdf] : []);
+      const visibleUploads = uploadedFiles.filter((pdf) => pdf.category === categoryFromTab(activeTab));
+      if (visibleUploads.length) {
+        setPdfs((current) => sortByName([...current, ...visibleUploads]));
       }
-      setNotice(`PDF uploaded to ${uploadCategory.toUpperCase()}.`);
+      setNotice(`${uploadedFiles.length} file${uploadedFiles.length === 1 ? "" : "s"} uploaded to ${uploadCategory.toUpperCase()}.`);
     } catch (err) {
-      console.error("Failed to upload PDF", err);
-      setNotice(err instanceof Error ? err.message : "PDF upload failed.");
+      console.error("Failed to upload files", err);
+      setNotice(err instanceof Error ? err.message : "File upload failed.");
     } finally {
       setUploading(false);
     }
@@ -222,13 +247,15 @@ export default function FormulaNotesPage({
                 <span className="note-main">
                   <span className="note-title">{pdf.title || pdf.fileName || `${topicLabel} PDF`}</span>
                 </span>
-                <span className="note-time">{formatDate(pdf.updatedAt || pdf.uploadedAt) || formatSize(pdf.size)}</span>
+                <span className="note-time">
+                  {formatDate(pdf.updatedAt || pdf.uploadedAt) || formatSize(pdf.size, pdf.fileName)}
+                </span>
               </button>
             ))
           ) : (
-            <div className="empty-state">No PDFs found.</div>
+            <div className="empty-state">No files found.</div>
           )}
-          {showSyncing ? <div className="inline-notice">Loading PDFs...</div> : null}
+          {showSyncing ? <div className="inline-notice">Loading files...</div> : null}
           {notice ? <div className="inline-notice">{notice}</div> : null}
         </section>
       </div>
@@ -236,7 +263,8 @@ export default function FormulaNotesPage({
       <input
         ref={fileInputRef}
         type="file"
-        accept="application/pdf,.pdf"
+        accept="application/pdf,text/html,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.pdf,.html,.htm,.doc,.docx"
+        multiple
         className="pdf-input"
         onChange={handlePdfUpload}
       />
@@ -244,7 +272,7 @@ export default function FormulaNotesPage({
       <button
         className="fab-button"
         type="button"
-        aria-label={`Add ${topicLabel} PDF`}
+        aria-label={`Add ${topicLabel} files`}
         disabled={uploading}
         onClick={() => setShowAddModal(true)}
       >
@@ -260,7 +288,7 @@ export default function FormulaNotesPage({
             aria-labelledby="add-pdf-title"
             onClick={(event) => event.stopPropagation()}
           >
-            <h2 id="add-pdf-title">Add PDF to</h2>
+            <h2 id="add-pdf-title">Add files to</h2>
             <div className="modal-options">
               {tabs.map((tab) => {
                 const category = categoryFromTab(tab);
