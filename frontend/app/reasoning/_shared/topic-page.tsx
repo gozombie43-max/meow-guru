@@ -631,82 +631,93 @@ export default function ReasoningTopicPage({
 
         @media (max-width: 540px) {
           body.theme-dark .reasoning-topic-page {
-            padding: 18px 14px 28px;
+            padding: 14px 14px 24px;
           }
 
           body.theme-dark .reasoning-header {
-            margin-bottom: 44px;
+            margin-bottom: 22px;
           }
 
           body.theme-dark .reasoning-title {
-            font-size: clamp(2rem, 9vw, 2.45rem);
+            font-size: clamp(1.8rem, 8vw, 2.2rem);
+            margin-top: 8px;
           }
 
           body.theme-dark .promo-banner {
-            min-height: 268px;
-            margin-bottom: 52px;
-            padding: 28px 26px;
-            border-radius: 30px;
+            min-height: 164px;
+            margin-bottom: 26px;
+            padding: 20px 18px;
+            border-radius: 24px;
+            gap: 10px;
           }
 
           body.theme-dark .banner-kicker {
-            font-size: 0.78rem;
-            margin-bottom: 24px;
+            font-size: 0.66rem;
+            margin-bottom: 12px;
+            letter-spacing: 0.24em;
           }
 
           body.theme-dark .banner-content h2 {
-            font-size: clamp(1.75rem, 8vw, 2.05rem);
-            margin-bottom: 26px;
+            font-size: clamp(1.35rem, 6.6vw, 1.75rem);
+            margin-bottom: 12px;
           }
 
           body.theme-dark .banner-subtitle {
-            font-size: 1rem;
-            max-width: 18ch;
+            font-size: 0.84rem;
+            line-height: 1.32;
+            max-width: 20ch;
           }
 
           body.theme-dark .banner-illustration {
-            width: 74px;
-            height: 74px;
-            border-radius: 22px;
+            width: 58px;
+            height: 58px;
+            border-radius: 18px;
+          }
+
+          body.theme-dark .rocket-svg {
+            width: 34px;
+            height: 34px;
           }
 
           body.theme-dark .feature-section h2 {
-            font-size: 1.65rem;
+            font-size: 1.35rem;
           }
 
           body.theme-dark .feature-subtitle {
-            font-size: 0.98rem;
-            margin: 12px 0 22px;
+            font-size: 0.84rem;
+            line-height: 1.32;
+            margin: 8px 0 14px;
           }
 
           body.theme-dark .feature-grid {
-            gap: 14px;
+            gap: 10px;
           }
 
           body.theme-dark .feature-card {
-            min-height: 158px;
-            border-radius: 28px;
-            gap: 20px;
+            aspect-ratio: 1.32 / 1;
+            min-height: 112px;
+            border-radius: 22px;
+            gap: 10px;
             box-shadow:
-              0 22px 42px rgba(4, 5, 22, 0.5),
+              0 16px 30px rgba(4, 5, 22, 0.46),
               0 8px 18px rgba(87, 76, 178, 0.18),
               inset 0 1px 0 rgba(255, 255, 255, 0.18),
               inset 0 -1px 0 rgba(5, 7, 24, 0.28);
           }
 
           body.theme-dark .feature-icon-wrap {
-            width: 66px;
-            height: 66px;
-            border-radius: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 16px;
           }
 
           body.theme-dark .feature-icon {
-            width: 31px;
-            height: 31px;
+            width: 25px;
+            height: 25px;
           }
 
           body.theme-dark .feature-title {
-            font-size: 1.12rem;
+            font-size: 0.9rem;
           }
         }
 
