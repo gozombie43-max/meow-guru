@@ -162,6 +162,7 @@ export default function EnglishTopicPage({
           background: #f6f7fb;
           padding: 16px 14px 32px;
           font-family: "Poppins", "Segoe UI", sans-serif;
+          overflow-x: hidden;
         }
 
         .english-container {
@@ -169,6 +170,7 @@ export default function EnglishTopicPage({
           margin: 0 auto;
           position: relative;
           z-index: 1;
+          min-width: 0;
         }
 
         .english-header {
@@ -191,6 +193,7 @@ export default function EnglishTopicPage({
           font-size: clamp(1.4rem, 1.2rem + 1vw, 2rem);
           line-height: 1.15;
           font-weight: 700;
+          overflow-wrap: anywhere;
         }
 
         .promo-banner {
@@ -198,8 +201,8 @@ export default function EnglishTopicPage({
           overflow: hidden;
           border-radius: 24px;
           padding: 22px 18px;
-          background: linear-gradient(135deg, #61d08a 0%, #3fbf87 60%, #2bb6ad 100%);
-          box-shadow: 0 14px 32px rgba(47, 185, 167, 0.25);
+          background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+          box-shadow: 0 14px 32px rgba(99, 102, 241, 0.25);
           display: grid;
           grid-template-columns: 1fr auto;
           gap: 14px;
@@ -245,6 +248,7 @@ export default function EnglishTopicPage({
           position: relative;
           z-index: 1;
           color: #fff;
+          min-width: 0;
         }
 
         .banner-kicker {
@@ -261,6 +265,7 @@ export default function EnglishTopicPage({
           line-height: 1.2;
           margin: 0 0 8px;
           font-weight: 700;
+          overflow-wrap: anywhere;
         }
 
         .banner-subtitle {
@@ -269,6 +274,7 @@ export default function EnglishTopicPage({
           opacity: 0.92;
           max-width: 40ch;
           margin: 0;
+          overflow-wrap: anywhere;
         }
 
         .banner-illustration {
@@ -319,6 +325,7 @@ export default function EnglishTopicPage({
           border-radius: 18px;
           aspect-ratio: 1 / 1;
           min-height: 140px;
+          padding: 16px 10px;
           text-decoration: none;
           color: #fff;
           box-shadow: 0 12px 22px rgba(76, 95, 179, 0.24);
@@ -389,6 +396,7 @@ export default function EnglishTopicPage({
           font-weight: 600;
           letter-spacing: 0.01em;
           text-align: center;
+          max-width: calc(100% - 16px);
           position: relative;
           z-index: 1;
         }
@@ -488,7 +496,7 @@ export default function EnglishTopicPage({
           padding: clamp(30px, 7vw, 70px) clamp(26px, 6vw, 68px);
           min-height: clamp(190px, 38vw, 310px);
           border-radius: clamp(34px, 7vw, 72px);
-          background: linear-gradient(135deg, rgba(92, 87, 148, 0.74) 0%, rgba(72, 67, 132, 0.72) 100%) !important;
+          background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%) !important;
           border: 1px solid rgba(205, 210, 255, 0.18);
           box-shadow:
             0 24px 60px rgba(5, 5, 24, 0.34),
@@ -631,82 +639,129 @@ export default function EnglishTopicPage({
 
         @media (max-width: 540px) {
           body.theme-dark .english-topic-page {
-            padding: 18px 14px 28px;
+            padding: 14px 14px 24px;
           }
 
           body.theme-dark .english-header {
-            margin-bottom: 44px;
+            margin-bottom: 22px;
           }
 
           body.theme-dark .english-title {
-            font-size: clamp(2rem, 9vw, 2.45rem);
+            font-size: clamp(1.8rem, 8vw, 2.2rem);
+            margin-top: 8px;
           }
 
           body.theme-dark .promo-banner {
-            min-height: 268px;
-            margin-bottom: 52px;
-            padding: 28px 26px;
-            border-radius: 30px;
+            min-height: 164px;
+            margin-bottom: 26px;
+            padding: 20px 18px;
+            border-radius: 24px;
+            gap: 10px;
           }
 
           body.theme-dark .banner-kicker {
-            font-size: 0.78rem;
-            margin-bottom: 24px;
+            font-size: 0.66rem;
+            margin-bottom: 12px;
+            letter-spacing: 0.24em;
           }
 
           body.theme-dark .banner-content h2 {
-            font-size: clamp(1.75rem, 8vw, 2.05rem);
-            margin-bottom: 26px;
+            font-size: clamp(1.35rem, 6.6vw, 1.75rem);
+            margin-bottom: 12px;
           }
 
           body.theme-dark .banner-subtitle {
-            font-size: 1rem;
-            max-width: 18ch;
+            font-size: 0.84rem;
+            line-height: 1.32;
+            max-width: 20ch;
           }
 
           body.theme-dark .banner-illustration {
-            width: 74px;
-            height: 74px;
-            border-radius: 22px;
+            width: 58px;
+            height: 58px;
+            border-radius: 18px;
+          }
+
+          body.theme-dark .rocket-svg {
+            width: 34px;
+            height: 34px;
           }
 
           body.theme-dark .feature-section h2 {
-            font-size: 1.65rem;
+            font-size: 1.35rem;
           }
 
           body.theme-dark .feature-subtitle {
-            font-size: 0.98rem;
-            margin: 12px 0 22px;
+            font-size: 0.84rem;
+            line-height: 1.32;
+            margin: 8px 0 14px;
           }
 
           body.theme-dark .feature-grid {
-            gap: 14px;
+            grid-template-columns: 1fr;
+            gap: 12px;
           }
 
           body.theme-dark .feature-card {
-            min-height: 158px;
-            border-radius: 28px;
-            gap: 20px;
+            aspect-ratio: auto;
+            min-height: 88px;
+            flex-direction: row;
+            justify-content: flex-start;
+            border-radius: 22px;
+            gap: 14px;
+            padding: 16px 18px;
             box-shadow:
-              0 22px 42px rgba(4, 5, 22, 0.5),
+              0 16px 30px rgba(4, 5, 22, 0.46),
               0 8px 18px rgba(87, 76, 178, 0.18),
               inset 0 1px 0 rgba(255, 255, 255, 0.18),
               inset 0 -1px 0 rgba(5, 7, 24, 0.28);
           }
 
           body.theme-dark .feature-icon-wrap {
-            width: 66px;
-            height: 66px;
-            border-radius: 20px;
+            flex: 0 0 50px;
+            width: 50px;
+            height: 50px;
+            border-radius: 16px;
           }
 
           body.theme-dark .feature-icon {
-            width: 31px;
-            height: 31px;
+            width: 25px;
+            height: 25px;
           }
 
           body.theme-dark .feature-title {
-            font-size: 1.12rem;
+            font-size: 0.9rem;
+            line-height: 1.15;
+            max-width: none;
+            text-align: left;
+          }
+        }
+
+        @media (max-width: 340px) {
+          body.theme-dark .english-topic-page {
+            padding-left: 10px;
+            padding-right: 10px;
+          }
+
+          body.theme-dark .feature-grid {
+            grid-template-columns: 1fr;
+            gap: 12px;
+          }
+
+          body.theme-dark .feature-card {
+            min-height: 88px;
+            padding: 16px 18px;
+          }
+
+          body.theme-dark .feature-icon-wrap {
+            flex: 0 0 48px;
+            width: 48px;
+            height: 48px;
+          }
+
+          body.theme-dark .feature-title {
+            max-width: none;
+            text-align: left;
           }
         }
 
