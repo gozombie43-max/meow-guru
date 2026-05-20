@@ -26,25 +26,14 @@ interface MathTopicPageProps {
   featureCards?: FeatureCardData[];
 }
 
-function FeatureCard({ title, href, icon }: FeatureCardData) {
+function FeatureCard({ title, href, gradient, icon }: FeatureCardData) {
   return (
-    <Link href={href} className="neo-feature-card">
-      <div className="neo-start-header">
-        <div className="neo-icon-wrapper">{icon}</div>
-        <svg className="neo-dots-icon" viewBox="0 0 24 24" fill="white" aria-hidden="true">
-          <circle cx="12" cy="6" r="1.5" />
-          <circle cx="12" cy="12" r="1.5" />
-          <circle cx="12" cy="18" r="1.5" />
-        </svg>
+    <Link href={href} className="feature-card" style={{ background: gradient }}>
+      <div className="feature-glow" aria-hidden="true" />
+      <div className="feature-icon-wrap" aria-hidden="true">
+        {icon}
       </div>
-      <div className="neo-start-body">
-        <div className="neo-vertical-line" />
-        <div className="neo-text-wrap">
-          <h3>{title}</h3>
-          <p>Practice now</p>
-        </div>
-      </div>
-      <span className="neo-start-button">Start</span>
+      <p className="feature-title">{title}</p>
     </Link>
   );
 }
@@ -213,8 +202,9 @@ export default function MathematicsTopicPage({
         .math-topic-page {
           min-height: 100vh;
           background: #f6f7fb;
-          padding: 12px 12px 24px;
+          padding: 16px 14px 32px;
           font-family: "Poppins", "Segoe UI", sans-serif;
+          overflow-x: hidden;
         }
 
         .math-topic-container {
@@ -222,10 +212,11 @@ export default function MathematicsTopicPage({
           margin: 0 auto;
           position: relative;
           z-index: 1;
+          min-width: 0;
         }
 
         .math-topic-header {
-          margin: 0 2px 10px;
+          margin: 4px 2px 12px;
           animation: fade-slide 420ms ease both;
         }
 
@@ -239,30 +230,31 @@ export default function MathematicsTopicPage({
         }
 
         .math-topic-title {
-          margin: 2px 0 0;
+          margin: 4px 0 0;
           color: #202846;
-          font-size: clamp(1.25rem, 1.1rem + 1vw, 1.7rem);
-          line-height: 1.1;
+          font-size: clamp(1.4rem, 1.2rem + 1vw, 2rem);
+          line-height: 1.15;
           font-weight: 700;
+          overflow-wrap: anywhere;
         }
 
         .promo-banner {
           position: relative;
           overflow: hidden;
-          border-radius: 16px;
-          padding: 14px 14px;
-          background: var(--math-banner-bg);
-          box-shadow: 0 10px 20px rgba(99, 102, 241, 0.15);
+          border-radius: 24px;
+          padding: 22px 18px;
+          background: linear-gradient(135deg, #ff7aa2 0%, #ffb26b 100%);
+          box-shadow: 0 14px 32px rgba(255, 122, 162, 0.24);
           display: grid;
           grid-template-columns: 1fr auto;
-          gap: 10px;
-          margin-bottom: 16px;
+          gap: 14px;
+          margin-bottom: 22px;
           animation: fade-slide 520ms ease both;
         }
 
         .promo-banner-link {
-          text-decoration: none;
           color: inherit;
+          text-decoration: none;
         }
 
         .promo-banner-link:focus-visible {
@@ -278,81 +270,6 @@ export default function MathematicsTopicPage({
           pointer-events: none;
           background: rgba(255, 255, 255, 0.22);
           filter: blur(0.4px);
-        }
-
-        .neo-start-card {
-          background: #392464;
-          border-radius: 28px;
-          padding: 24px;
-          margin-bottom: 24px;
-          display: flex;
-          flex-direction: column;
-          gap: 32px;
-          box-shadow: 
-            -8px -8px 20px rgba(88, 59, 148, 0.4), 
-            10px 10px 24px rgba(33, 19, 60, 0.6);
-          color: white;
-          max-width: 260px;
-        }
-        
-        .neo-start-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-        
-        .neo-lock-icon {
-          width: 24px;
-          height: 24px;
-        }
-        
-        .neo-dots-icon {
-          width: 20px;
-          height: 20px;
-        }
-        
-        .neo-start-body {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          margin-bottom: 12px;
-        }
-        
-        .neo-vertical-line {
-          width: 3px;
-          height: 48px;
-          background: #d946ef;
-          border-radius: 2px;
-        }
-        
-        .neo-text-wrap > h3 {
-          font-size: 1.1rem;
-          font-weight: 700;
-          margin: 0 0 4px;
-        }
-        
-        .neo-text-wrap > p {
-          font-size: 0.9rem;
-          color: rgba(255, 255, 255, 0.7);
-          margin: 0;
-        }
-        
-        .neo-start-button {
-          background: #f1f5f9;
-          color: #392464;
-          border: none;
-          padding: 14px;
-          border-radius: 24px;
-          font-weight: 600;
-          font-size: 0.95rem;
-          cursor: pointer;
-          letter-spacing: 0.5px;
-          text-transform: uppercase;
-          transition: transform 0.2s, box-shadow 0.2s;
-        }
-        
-        .neo-start-button:active {
-          transform: scale(0.97);
         }
 
         .promo-banner::before {
@@ -373,48 +290,39 @@ export default function MathematicsTopicPage({
           position: relative;
           z-index: 1;
           color: #fff;
+          min-width: 0;
         }
 
         .banner-kicker {
-          font-size: 0.65rem;
+          font-size: 0.78rem;
           font-weight: 600;
-          letter-spacing: 0.05em;
+          letter-spacing: 0.08em;
           text-transform: uppercase;
           opacity: 0.9;
-          margin: 0 0 2px;
+          margin-bottom: 6px;
         }
 
         .banner-content h2 {
-          font-size: clamp(1rem, 3.5vw, 1.25rem);
-          line-height: 1.15;
-          margin: 0 0 4px;
+          font-size: clamp(1.2rem, 2vw + 0.9rem, 2rem);
+          line-height: 1.2;
+          margin: 0 0 8px;
           font-weight: 700;
+          overflow-wrap: anywhere;
         }
 
         .banner-subtitle {
-          font-size: 0.8rem;
-          line-height: 1.25;
+          font-size: 0.92rem;
+          line-height: 1.45;
           opacity: 0.92;
-          max-width: 42ch;
+          max-width: 40ch;
           margin: 0;
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-
-        .banner-action {
-          margin: 6px 0 0;
-          font-size: 0.75rem;
-          font-weight: 600;
-          letter-spacing: 0.01em;
-          opacity: 0.95;
+          overflow-wrap: anywhere;
         }
 
         .banner-illustration {
-          width: 46px;
-          height: 46px;
-          border-radius: 12px;
+          width: 72px;
+          height: 72px;
+          border-radius: 20px;
           background: rgba(255, 255, 255, 0.2);
           border: 1px solid rgba(255, 255, 255, 0.4);
           display: flex;
@@ -426,25 +334,25 @@ export default function MathematicsTopicPage({
           backdrop-filter: blur(3px);
         }
 
-        .banner-svg {
-          width: 24px;
-          height: 24px;
+        .rocket-svg {
+          width: 44px;
+          height: 44px;
         }
 
         .feature-section h2 {
           margin: 0;
           color: #1f2a44;
           font-weight: 650;
-          font-size: 1rem;
+          font-size: 1.1rem;
           letter-spacing: 0.01em;
           animation: fade-slide 620ms ease both;
         }
 
         .feature-subtitle {
-          margin: 4px 0 10px;
+          margin: 6px 0 14px;
           color: #68738f;
-          font-size: 0.85rem;
-          line-height: 1.35;
+          font-size: 0.9rem;
+          line-height: 1.4;
           animation: fade-slide 680ms ease both;
         }
 
@@ -454,106 +362,96 @@ export default function MathematicsTopicPage({
           gap: 12px;
         }
 
-        .neo-feature-card {
+        .feature-card {
+          position: relative;
+          border-radius: 18px;
+          aspect-ratio: 1 / 1;
+          min-height: 140px;
+          padding: 16px 10px;
           text-decoration: none;
-          background: rgba(255, 255, 255, 0.04);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          border-radius: 20px;
-          padding: 16px;
+          color: #fff;
+          box-shadow: 0 12px 22px rgba(76, 95, 179, 0.24);
           display: flex;
           flex-direction: column;
-          gap: 16px;
-          box-shadow: 
-            -6px -6px 14px rgba(255, 255, 255, 0.03), 
-            8px 8px 18px rgba(0, 0, 0, 0.3);
-          color: white;
-          transition: transform 0.26s ease, box-shadow 0.26s ease;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          overflow: hidden;
+          transition: transform 0.26s ease, box-shadow 0.26s ease, filter 0.26s ease;
+          isolation: isolate;
           animation: card-in 540ms ease both;
         }
 
-        .neo-feature-card:nth-child(1) { animation-delay: 80ms; }
-        .neo-feature-card:nth-child(2) { animation-delay: 130ms; }
-        .neo-feature-card:nth-child(3) { animation-delay: 180ms; }
-        .neo-feature-card:nth-child(4) { animation-delay: 230ms; }
-        .neo-feature-card:nth-child(5) { animation-delay: 280ms; }
-        .neo-feature-card:nth-child(6) { animation-delay: 330ms; }
+        .feature-card:nth-child(1) { animation-delay: 80ms; }
+        .feature-card:nth-child(2) { animation-delay: 130ms; }
+        .feature-card:nth-child(3) { animation-delay: 180ms; }
+        .feature-card:nth-child(4) { animation-delay: 230ms; }
+        .feature-card:nth-child(5) { animation-delay: 280ms; }
+        .feature-card:nth-child(6) { animation-delay: 330ms; }
 
-        .neo-feature-card:hover {
-          transform: translateY(-4px);
+        .feature-card::after {
+          content: "";
+          position: absolute;
+          width: 90px;
+          height: 90px;
+          border-radius: 999px;
+          top: -22px;
+          right: -22px;
+          background: rgba(255, 255, 255, 0.18);
+          z-index: 0;
         }
 
-        .neo-feature-card:focus-visible {
-          outline: 2px solid rgba(80, 120, 255, 0.8);
-          outline-offset: 2px;
+        .feature-glow {
+          position: absolute;
+          width: 120px;
+          height: 120px;
+          border-radius: 999px;
+          left: -24px;
+          bottom: -30px;
+          background: rgba(255, 255, 255, 0.15);
+          filter: blur(2px);
+          z-index: 0;
         }
 
-        .neo-start-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-        
-        .neo-icon-wrapper {
-          width: 32px;
-          height: 32px;
+        .feature-icon-wrap {
+          width: 56px;
+          height: 56px;
+          border-radius: 16px;
+          border: 1px solid rgba(255, 255, 255, 0.35);
+          background: rgba(255, 255, 255, 0.16);
           display: flex;
           align-items: center;
           justify-content: center;
-        }
-        
-        .neo-icon-wrapper svg {
-          width: 100%;
-          height: 100%;
+          position: relative;
+          z-index: 1;
         }
 
-        .neo-dots-icon {
-          width: 20px;
-          height: 20px;
-        }
-        
-        .neo-start-body {
-          display: flex;
-          align-items: stretch;
-          gap: 12px;
-        }
-        
-        .neo-vertical-line {
-          width: 3px;
-          background: #d946ef;
-          border-radius: 2px;
-        }
-        
-        .neo-text-wrap {
-          flex: 1;
+        .feature-icon {
+          width: 30px;
+          height: 30px;
+          color: #ffffff;
         }
 
-        .neo-text-wrap > h3 {
-          font-size: 1.05rem;
-          font-weight: 700;
-          margin: 0 0 4px;
-        }
-        
-        .neo-text-wrap > p {
-          font-size: 0.85rem;
-          color: rgba(255, 255, 255, 0.8);
+        .feature-title {
           margin: 0;
-        }
-        
-        .neo-start-button {
-          background: rgba(255, 255, 255, 0.95);
-          color: #392464;
-          text-align: center;
-          padding: 12px;
-          border-radius: 24px;
+          font-size: 0.94rem;
           font-weight: 600;
-          font-size: 0.9rem;
-          letter-spacing: 0.5px;
-          text-transform: uppercase;
-          transition: transform 0.2s, background 0.2s;
+          letter-spacing: 0.01em;
+          text-align: center;
+          max-width: calc(100% - 16px);
+          position: relative;
+          z-index: 1;
         }
-        
-        .neo-start-button:active {
-          transform: scale(0.97);
+
+        .feature-card:hover {
+          transform: translateY(-4px) scale(1.03);
+          box-shadow: 0 18px 30px rgba(70, 88, 166, 0.34);
+          filter: saturate(1.05);
+        }
+
+        .feature-card:focus-visible {
+          outline: 2px solid rgba(255, 255, 255, 0.8);
+          outline-offset: 2px;
         }
 
         body.theme-dark {
@@ -771,7 +669,7 @@ export default function MathematicsTopicPage({
           border-radius: clamp(24px, 5vw, 42px);
         }
 
-        body.theme-dark .banner-svg {
+        body.theme-dark .rocket-svg {
           width: clamp(42px, 8vw, 80px);
           height: clamp(42px, 8vw, 80px);
         }
@@ -783,82 +681,129 @@ export default function MathematicsTopicPage({
 
         @media (max-width: 540px) {
           body.theme-dark .math-topic-page {
-            padding: 18px 14px 28px;
+            padding: 14px 14px 24px;
           }
 
           body.theme-dark .math-topic-header {
-            margin-bottom: 44px;
+            margin-bottom: 22px;
           }
 
           body.theme-dark .math-topic-title {
-            font-size: clamp(2rem, 9vw, 2.45rem);
+            font-size: clamp(1.8rem, 8vw, 2.2rem);
+            margin-top: 8px;
           }
 
           body.theme-dark .promo-banner {
-            min-height: 268px;
-            margin-bottom: 52px;
-            padding: 28px 26px;
-            border-radius: 30px;
+            min-height: 164px;
+            margin-bottom: 26px;
+            padding: 20px 18px;
+            border-radius: 24px;
+            gap: 10px;
           }
 
           body.theme-dark .banner-kicker {
-            font-size: 0.78rem;
-            margin-bottom: 24px;
+            font-size: 0.66rem;
+            margin-bottom: 12px;
+            letter-spacing: 0.24em;
           }
 
           body.theme-dark .banner-content h2 {
-            font-size: clamp(1.75rem, 8vw, 2.05rem);
-            margin-bottom: 26px;
+            font-size: clamp(1.35rem, 6.6vw, 1.75rem);
+            margin-bottom: 12px;
           }
 
           body.theme-dark .banner-subtitle {
-            font-size: 1rem;
-            max-width: 18ch;
+            font-size: 0.84rem;
+            line-height: 1.32;
+            max-width: 20ch;
           }
 
           body.theme-dark .banner-illustration {
-            width: 74px;
-            height: 74px;
-            border-radius: 22px;
+            width: 58px;
+            height: 58px;
+            border-radius: 18px;
+          }
+
+          body.theme-dark .rocket-svg {
+            width: 34px;
+            height: 34px;
           }
 
           body.theme-dark .feature-section h2 {
-            font-size: 1.65rem;
+            font-size: 1.35rem;
           }
 
           body.theme-dark .feature-subtitle {
-            font-size: 0.98rem;
-            margin: 12px 0 22px;
+            font-size: 0.84rem;
+            line-height: 1.32;
+            margin: 8px 0 14px;
           }
 
           body.theme-dark .feature-grid {
-            gap: 14px;
+            grid-template-columns: 1fr;
+            gap: 12px;
           }
 
           body.theme-dark .feature-card {
-            min-height: 158px;
-            border-radius: 28px;
-            gap: 20px;
+            aspect-ratio: auto;
+            min-height: 88px;
+            flex-direction: row;
+            justify-content: flex-start;
+            border-radius: 22px;
+            gap: 14px;
+            padding: 16px 18px;
             box-shadow:
-              0 22px 42px rgba(4, 5, 22, 0.5),
+              0 16px 30px rgba(4, 5, 22, 0.46),
               0 8px 18px rgba(87, 76, 178, 0.18),
               inset 0 1px 0 rgba(255, 255, 255, 0.18),
               inset 0 -1px 0 rgba(5, 7, 24, 0.28);
           }
 
           body.theme-dark .feature-icon-wrap {
-            width: 66px;
-            height: 66px;
-            border-radius: 20px;
+            flex: 0 0 50px;
+            width: 50px;
+            height: 50px;
+            border-radius: 16px;
           }
 
           body.theme-dark .feature-icon {
-            width: 31px;
-            height: 31px;
+            width: 25px;
+            height: 25px;
           }
 
           body.theme-dark .feature-title {
-            font-size: 1.12rem;
+            font-size: 0.9rem;
+            line-height: 1.15;
+            max-width: none;
+            text-align: left;
+          }
+        }
+
+        @media (max-width: 340px) {
+          body.theme-dark .math-topic-page {
+            padding-left: 10px;
+            padding-right: 10px;
+          }
+
+          body.theme-dark .feature-grid {
+            grid-template-columns: 1fr;
+            gap: 12px;
+          }
+
+          body.theme-dark .feature-card {
+            min-height: 88px;
+            padding: 16px 18px;
+          }
+
+          body.theme-dark .feature-icon-wrap {
+            flex: 0 0 48px;
+            width: 48px;
+            height: 48px;
+          }
+
+          body.theme-dark .feature-title {
+            max-width: none;
+            text-align: left;
           }
         }
 
@@ -884,12 +829,6 @@ export default function MathematicsTopicPage({
           }
         }
 
-        @media (max-width: 480px) {
-          .feature-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-          }
-        }
-
         @media (min-width: 640px) {
           .math-topic-page {
             padding: 26px 20px 44px;
@@ -900,31 +839,11 @@ export default function MathematicsTopicPage({
           }
 
           .promo-banner {
-            padding: 28px 24px;
-            gap: 18px;
+            padding: 26px 24px;
           }
 
-          .banner-illustration {
-            width: 84px;
-            height: 84px;
-          }
-
-          .feature-grid {
-            gap: 16px;
-          }
-
-          .feature-card {
-            min-height: 160px;
-          }
-        }
-
-        @media (min-width: 900px) {
           .feature-grid {
             grid-template-columns: repeat(3, minmax(0, 1fr));
-          }
-
-          .feature-card {
-            min-height: 172px;
           }
         }
       `}</style>
