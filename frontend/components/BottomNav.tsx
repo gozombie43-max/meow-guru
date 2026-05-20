@@ -89,6 +89,26 @@ export default function BottomNav() {
         <ClipboardList className="bottom-nav-icon" />
         <span className="bottom-nav-label">Mock</span>
       </Link>
+
+      <div className="bottom-nav-center-item">
+        <Link href="/dashboard" className="bottom-nav-center-btn" aria-label="AI Assistant">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="w-8 h-8"
+          >
+            <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
+            <path d="M10.5 7.5L11 9.5L13 10L11 10.5L10.5 12.5L10 10.5L8 10L10 9.5L10.5 7.5z" fill="currentColor" />
+            <path d="M14.5 12L14.8 13.2L16 13.5L14.8 13.8L14.5 15L14.2 13.8L13 13.5L14.2 13.2L14.5 12z" fill="currentColor" />
+          </svg>
+        </Link>
+      </div>
+
       <Link
         href="/play"
         className={`bottom-nav-item${isPlay ? ' is-active' : ''}`}
