@@ -10,7 +10,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  trailingSlash: true,
   turbopack: {
     root: process.cwd(),
   },
