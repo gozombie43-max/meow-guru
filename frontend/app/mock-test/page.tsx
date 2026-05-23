@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { DM_Sans, Nunito } from 'next/font/google';
 import { Search, Bell, Clock, Award, ChevronLeft, Share2, Filter, ChevronRight, Play, CheckCircle, Lock } from 'lucide-react';
 import styles from './page.module.css';
@@ -94,6 +94,17 @@ export default function MockTestPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [logoErrors, setLogoErrors] = useState<Record<string, boolean>>({});
 
+  useEffect(() => {
+    const body = document.body;
+    const root = document.documentElement;
+    body.classList.add('mock-test-surface');
+    root.classList.add('mock-test-surface');
+    return () => {
+      body.classList.remove('mock-test-surface');
+      root.classList.remove('mock-test-surface');
+    };
+  }, []);
+
   const filteredExams = useMemo(() => {
     return examCards.filter(exam => {
       const matchCat = activeCategory === 'all' || exam.type === activeCategory;
@@ -116,10 +127,34 @@ export default function MockTestPage() {
 
   const renderTestStatus = (status: TestStatus, score?: number) => {
     switch (status) {
-      case 'completed': return <div className={styles.statusCompleted}><CheckCircle size={14} /> Score: {score}/200</div>;
-      case 'paused': return <div className={styles.statusPaused}><Clock size={14} /> Resume</div>;
-      case 'not_started': return <div className={styles.statusNotStarted}>Start Test</div>;
-      case 'locked': return <div className={styles.statusLocked}><Lock size={14} /> Pro</div>;
+      case 'completed': 
+        return (
+          <div className={styles.statusCompleted}>
+            <div className={styles.scoreWrap}>
+              <Award size={16} />
+              <span>Score: <strong>{score}</strong>/200</span>
+            </div>
+            <button className={styles.viewBtn}>View Analysis</button>
+          </div>
+        );
+      case 'paused': 
+        return (
+          <button className={styles.statusPaused}>
+            <Clock size={16} /> Resume
+          </button>
+        );
+      case 'not_started': 
+        return (
+          <button className={styles.statusNotStarted}>
+            <Play size={16} fill="currentColor" /> Start Test
+          </button>
+        );
+      case 'locked': 
+        return (
+          <button className={styles.statusLocked}>
+            <Lock size={16} /> Unlock Pro
+          </button>
+        );
     }
   };
 
@@ -229,7 +264,7 @@ export default function MockTestPage() {
               </div>
               <div className={styles.detailHero}>
                 <div className={styles.detailHeroLogo}>
-                  {selectedExam.logoUrl ? <img src={selectedExam.logoUrl} alt="" /> : <span>{selectedExam.logoText}</span>}
+                  <span>{selectedExam.logoText}</span>
                 </div>
                 <div>
                   <h1 className={`${styles.detailTitle} ${nunito.className}`}>{selectedExam.name} Test Series</h1>
@@ -283,11 +318,10 @@ export default function MockTestPage() {
                     <div key={test.id} className={`${styles.testLineCard} ${test.status === 'locked' ? styles.lockedCard : ''}`}>
                       <div className={styles.testLineInfo}>
                         <div className={styles.testLineHeader}>
-                          {test.isFree && <span className={styles.freeBadge}>FREE</span>}
                           <h4 className={styles.testLineTitle}>{test.title}</h4>
                         </div>
                         <div className={styles.testLineMeta}>
-                          <span>{test.questions} Qs</span> • <span>{test.marks} Marks</span> • <span>{test.minutes} Mins</span>
+                          <span>{test.questions} Qs</span><span>{test.marks} Marks</span><span>{test.minutes} Mins</span>
                         </div>
                       </div>
                       <div className={styles.testLineAction}>
