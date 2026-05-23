@@ -15,7 +15,8 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  .page {
+  :global(body:not(.theme-light)) .page,
+  :global(html:not(.theme-light)) .page {
     --primary: #8a57ff;
     --primary-light: #b08dff;
     --primary-bg: #2a1b4d;
@@ -28,7 +29,8 @@
   }
 }
 
-:global(.dark) .page {
+:global(body.theme-dark) .page,
+:global(html.theme-dark) .page {
   --primary: #8a57ff;
   --primary-light: #b08dff;
   --primary-bg: #2a1b4d;
