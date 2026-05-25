@@ -18,15 +18,15 @@
 }
 
 .study-modes-wrapper.dark {
-  --bg: #212428;
-  --shadow-d: #16181c;
-  --shadow-l: #2c3036;
-  --text-main: #dde3ed;
-  --text-dim: #5a6070;
-  --text-faint: #4a5260;
-  --accent: #3b82f6;
-  --accent-h: #60a5fa;
-  --badge-col: #3b82f6;
+  --bg: #181a1f;
+  --shadow-d: #090a0c;
+  --shadow-l: #272a32;
+  --text-main: #ffffff;
+  --text-dim: #b3c1d6;
+  --text-faint: #8a99a8;
+  --accent: #4a8ff6;
+  --accent-h: #73b0fa;
+  --badge-col: #4a8ff6;
 }
 
 .study-modes-wrapper .container {
@@ -150,5 +150,5 @@ body:has(.study-modes-wrapper) {
   background-color: #e0e5ec;
 }
 body.theme-dark:has(.study-modes-wrapper) {
-  background-color: #212428;
+  background-color: #181a1f;
 }
