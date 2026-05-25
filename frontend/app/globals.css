@@ -1690,3 +1690,35 @@ body.theme-dark .bottom-pill-nav::after {
     height: 25px;
   }
 }
+
+/* Universal gap fix for bottom navigation in dark mode */
+body.theme-dark {
+  background-color: #121214;
+}
+
+/* Universal gap fix for bottom navigation across the entire app */
+body.has-bottom-nav [class*="min-h-screen"] {
+  min-height: calc(100vh - 84px);
+}
+body.has-bottom-nav [class*="h-screen"] {
+  height: calc(100vh - 84px);
+}
+@media (max-width: 1024px) {
+  body.has-bottom-nav [class*="min-h-screen"] { min-height: calc(100vh - 74px); }
+  body.has-bottom-nav [class*="h-screen"] { height: calc(100vh - 74px); }
+}
+@media (max-width: 540px) {
+  body.has-bottom-nav [class*="min-h-screen"] { min-height: calc(100vh - 76px); }
+  body.has-bottom-nav [class*="h-screen"] { height: calc(100vh - 76px); }
+}
+
+body.has-bottom-nav .videos-page, body.has-bottom-nav .dashboard-shell {
+  min-height: calc(100vh - 84px) !important;
+  height: auto !important;
+}
+@media (max-width: 1024px) {
+  body.has-bottom-nav .videos-page, body.has-bottom-nav .dashboard-shell { min-height: calc(100vh - 74px) !important; }
+}
+@media (max-width: 540px) {
+  body.has-bottom-nav .videos-page, body.has-bottom-nav .dashboard-shell { min-height: calc(100vh - 76px) !important; }
+}

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, BookmarkPlus, CheckCircle, Circle, PlayCircle } from 'lucide-react';
+import { useThemeMode } from '@/hooks/useTheme';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000';
 
@@ -24,6 +25,62 @@ const SUBJECT_MAP: Record<string, string> = {
   general_awareness: 'General Awareness',
 };
 
+const lightVideoTheme = {
+  pageBg: '#ffffff',
+  pageFg: '#0f0f0f',
+  headerBg: '#ffffff',
+  headerBorder: '#f0f0f0',
+  headerShadow: '0 1px 0 rgba(0,0,0,0.06)',
+  title: '#0f0f0f',
+  muted: '#606060',
+  faint: '#888888',
+  divider: '#f0f0f0',
+  progressTrack: '#f0f0f0',
+  progressFill: '#050505',
+  buttonBg: '#ffffff',
+  buttonBorder: '#e5e7eb',
+  buttonFg: '#0f0f0f',
+  activeButtonBg: '#050505',
+  activeButtonFg: '#ffffff',
+  nextBg: '#fafafa',
+  chapterBg: '#ffffff',
+  chapterSelectedBg: '#f9f9f9',
+  selectedBorder: '#0f0f0f',
+  indexBg: '#f3f4f6',
+  indexFg: '#606060',
+  playingBar: '#0f0f0f',
+  topicHeader: '#aaaaaa',
+  loadingText: '#cccccc',
+};
+
+const darkVideoTheme = {
+  pageBg: '#000000',
+  pageFg: '#ffffff',
+  headerBg: 'rgba(0, 0, 0, 0.92)',
+  headerBorder: '#1f1f23',
+  headerShadow: '0 1px 0 rgba(255,255,255,0.08)',
+  title: '#ffffff',
+  muted: 'rgba(235, 235, 245, 0.62)',
+  faint: 'rgba(235, 235, 245, 0.48)',
+  divider: '#1f1f23',
+  progressTrack: '#2c2c2e',
+  progressFill: '#ffffff',
+  buttonBg: '#151517',
+  buttonBorder: '#2c2c2e',
+  buttonFg: '#ffffff',
+  activeButtonBg: '#ffffff',
+  activeButtonFg: '#000000',
+  nextBg: '#111113',
+  chapterBg: '#000000',
+  chapterSelectedBg: '#151517',
+  selectedBorder: '#ffffff',
+  indexBg: '#1c1c1e',
+  indexFg: 'rgba(235, 235, 245, 0.62)',
+  playingBar: '#ffffff',
+  topicHeader: 'rgba(235, 235, 245, 0.42)',
+  loadingText: 'rgba(235, 235, 245, 0.5)',
+};
+
 async function readApiJson(response: Response) {
   const data = await response.json().catch(() => null);
 
@@ -37,7 +94,9 @@ async function readApiJson(response: Response) {
 export default function VideoPlayerPage() {
   const params = useParams();
   const router = useRouter();
+  const { theme } = useThemeMode();
   const subject = params.id as string;
+  const videoTheme = theme === 'dark' ? darkVideoTheme : lightVideoTheme;
 
   const [videos, setVideos] = useState<Video[]>([]);
   const [selected, setSelected] = useState<Video | null>(null);
@@ -116,8 +175,9 @@ export default function VideoPlayerPage() {
   return (
     <main style={{
       minHeight: '100vh',
-      background: '#ffffff',
-      color: '#0f0f0f',
+      background: videoTheme.pageBg,
+      color: videoTheme.pageFg,
+      colorScheme: theme === 'dark' ? 'dark' : 'light',
       fontFamily: '"Outfit", "Roboto", "Helvetica Neue", Arial, sans-serif',
     }}>
       {/* Header */}
@@ -125,27 +185,29 @@ export default function VideoPlayerPage() {
         position: 'sticky', top: 0, zIndex: 50,
         display: 'flex', alignItems: 'center', gap: 12,
         padding: '0 16px', height: 52,
-        background: '#ffffff',
-        borderBottom: '1px solid #f0f0f0',
-        boxShadow: '0 1px 0 rgba(0,0,0,0.06)',
+        background: videoTheme.headerBg,
+        borderBottom: `1px solid ${videoTheme.headerBorder}`,
+        boxShadow: videoTheme.headerShadow,
+        backdropFilter: theme === 'dark' ? 'blur(16px)' : 'none',
+        WebkitBackdropFilter: theme === 'dark' ? 'blur(16px)' : 'none',
       }}>
         <button
           onClick={() => router.back()}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 6, borderRadius: 8, display: 'flex', alignItems: 'center', color: '#0f0f0f' }}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 6, borderRadius: 8, display: 'flex', alignItems: 'center', color: videoTheme.title }}
         >
           <ArrowLeft size={22} strokeWidth={2.4} />
         </button>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: '#0f0f0f', lineHeight: 1 }}>
+          <div style={{ fontSize: 15, fontWeight: 700, color: videoTheme.title, lineHeight: 1 }}>
             {SUBJECT_MAP[subject] || subject}
           </div>
-          <div style={{ fontSize: 11, color: '#606060', marginTop: 2 }}>
+          <div style={{ fontSize: 11, color: videoTheme.muted, marginTop: 2 }}>
             {watched.size}/{videos.length} completed
           </div>
         </div>
         {/* Progress bar */}
-        <div style={{ width: 80, height: 4, background: '#f0f0f0', borderRadius: 2, overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: `${progress}%`, background: '#050505', borderRadius: 2, transition: 'width 0.3s' }} />
+        <div style={{ width: 80, height: 4, background: videoTheme.progressTrack, borderRadius: 2, overflow: 'hidden' }}>
+          <div style={{ height: '100%', width: `${progress}%`, background: videoTheme.progressFill, borderRadius: 2, transition: 'width 0.3s' }} />
         </div>
       </div>
 
@@ -178,17 +240,17 @@ export default function VideoPlayerPage() {
 
       {/* Now playing info */}
       {selected && (
-        <div style={{ padding: '14px 16px 10px', borderBottom: '1px solid #f0f0f0' }}>
-          <div style={{ fontSize: 16, fontWeight: 700, color: '#0f0f0f', lineHeight: 1.3 }}>
+        <div style={{ padding: '14px 16px 10px', borderBottom: `1px solid ${videoTheme.divider}` }}>
+          <div style={{ fontSize: 16, fontWeight: 700, color: videoTheme.title, lineHeight: 1.3 }}>
             {selected.chapter}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
-            <span style={{ fontSize: 12, color: '#606060' }}>{selected.topic}</span>
-            <span style={{ fontSize: 12, color: '#ccc' }}>·</span>
-            <span style={{ fontSize: 12, color: '#606060' }}>⏱ {selected.duration}</span>
+            <span style={{ fontSize: 12, color: videoTheme.muted }}>{selected.topic}</span>
+            <span style={{ fontSize: 12, color: videoTheme.loadingText }}>·</span>
+            <span style={{ fontSize: 12, color: videoTheme.muted }}>⏱ {selected.duration}</span>
           </div>
           {selected.description && (
-            <div style={{ fontSize: 13, color: '#606060', marginTop: 8, lineHeight: 1.6 }}>
+            <div style={{ fontSize: 13, color: videoTheme.muted, marginTop: 8, lineHeight: 1.6 }}>
               {selected.description}
             </div>
           )}
@@ -198,9 +260,9 @@ export default function VideoPlayerPage() {
               style={{
                 display: 'flex', alignItems: 'center', gap: 6,
                 padding: '7px 14px', borderRadius: 20,
-                border: '1px solid #e5e7eb',
-                background: watched.has(selected.id) ? '#050505' : '#fff',
-                color: watched.has(selected.id) ? '#fff' : '#0f0f0f',
+                border: `1px solid ${videoTheme.buttonBorder}`,
+                background: watched.has(selected.id) ? videoTheme.activeButtonBg : videoTheme.buttonBg,
+                color: watched.has(selected.id) ? videoTheme.activeButtonFg : videoTheme.buttonFg,
                 fontSize: 13, fontWeight: 600, cursor: 'pointer',
               }}
             >
@@ -211,8 +273,8 @@ export default function VideoPlayerPage() {
             <button style={{
               display: 'flex', alignItems: 'center', gap: 6,
               padding: '7px 14px', borderRadius: 20,
-              border: '1px solid #e5e7eb', background: '#fff',
-              fontSize: 13, fontWeight: 600, cursor: 'pointer', color: '#0f0f0f',
+              border: `1px solid ${videoTheme.buttonBorder}`, background: videoTheme.buttonBg,
+              fontSize: 13, fontWeight: 600, cursor: 'pointer', color: videoTheme.buttonFg,
             }}>
               <BookmarkPlus size={15} /> Save
             </button>
@@ -227,19 +289,19 @@ export default function VideoPlayerPage() {
           style={{
             display: 'flex', alignItems: 'center', gap: 12,
             padding: '12px 16px', cursor: 'pointer',
-            borderBottom: '1px solid #f0f0f0',
-            background: '#fafafa',
+            borderBottom: `1px solid ${videoTheme.divider}`,
+            background: videoTheme.nextBg,
           }}
         >
-          <div style={{ fontSize: 11, color: '#606060', whiteSpace: 'nowrap' }}>Up next</div>
-          <div style={{ width: 36, height: 36, borderRadius: 8, background: '#0f0f0f', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <PlayCircle size={18} color="#fff" strokeWidth={2} />
+          <div style={{ fontSize: 11, color: videoTheme.muted, whiteSpace: 'nowrap' }}>Up next</div>
+          <div style={{ width: 36, height: 36, borderRadius: 8, background: videoTheme.progressFill, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <PlayCircle size={18} color={theme === 'dark' ? '#000' : '#fff'} strokeWidth={2} />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: '#0f0f0f', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: videoTheme.title, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {nextVideo.chapter}
             </div>
-            <div style={{ fontSize: 11, color: '#606060', marginTop: 2 }}>{nextVideo.duration}</div>
+            <div style={{ fontSize: 11, color: videoTheme.muted, marginTop: 2 }}>{nextVideo.duration}</div>
           </div>
         </div>
       )}
@@ -253,14 +315,14 @@ export default function VideoPlayerPage() {
         )}
 
         {loadingList ? (
-          <div style={{ padding: 32, textAlign: 'center', color: '#ccc', fontSize: 13 }}>Loading chapters...</div>
+          <div style={{ padding: 32, textAlign: 'center', color: videoTheme.loadingText, fontSize: 13 }}>Loading chapters...</div>
         ) : videos.length === 0 ? (
-          <div style={{ padding: 32, textAlign: 'center', color: '#ccc', fontSize: 13 }}>No videos yet for this subject.</div>
+          <div style={{ padding: 32, textAlign: 'center', color: videoTheme.loadingText, fontSize: 13 }}>No videos yet for this subject.</div>
         ) : (
           Object.entries(grouped).map(([topic, topicVideos]) => (
             <div key={topic}>
               {/* Topic header */}
-              <div style={{ padding: '14px 16px 6px', fontSize: 11, fontWeight: 700, color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+              <div style={{ padding: '14px 16px 6px', fontSize: 11, fontWeight: 700, color: videoTheme.topicHeader, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
                 {topic}
               </div>
               {topicVideos.map((v, i) => (
@@ -270,8 +332,8 @@ export default function VideoPlayerPage() {
                   style={{
                     display: 'flex', alignItems: 'center', gap: 12,
                     padding: '11px 16px', cursor: 'pointer',
-                    borderLeft: `3px solid ${selected?.id === v.id ? '#0f0f0f' : 'transparent'}`,
-                    background: selected?.id === v.id ? '#f9f9f9' : '#fff',
+                    borderLeft: `3px solid ${selected?.id === v.id ? videoTheme.selectedBorder : 'transparent'}`,
+                    background: selected?.id === v.id ? videoTheme.chapterSelectedBg : videoTheme.chapterBg,
                     transition: 'all 0.1s',
                   }}
                 >
@@ -279,8 +341,8 @@ export default function VideoPlayerPage() {
                   <div style={{
                     width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    background: watched.has(v.id) ? '#0f0f0f' : '#f3f4f6',
-                    color: watched.has(v.id) ? '#fff' : '#606060',
+                    background: watched.has(v.id) ? videoTheme.progressFill : videoTheme.indexBg,
+                    color: watched.has(v.id) ? (theme === 'dark' ? '#000' : '#fff') : videoTheme.indexFg,
                     fontSize: 12, fontWeight: 700,
                   }}>
                     {watched.has(v.id) ? '✓' : i + 1}
@@ -290,11 +352,11 @@ export default function VideoPlayerPage() {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{
                       fontSize: 13, fontWeight: selected?.id === v.id ? 700 : 500,
-                      color: '#0f0f0f', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                      color: videoTheme.title, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                     }}>
                       {v.chapter}
                     </div>
-                    <div style={{ fontSize: 11, color: '#888', marginTop: 2 }}>{v.duration}</div>
+                    <div style={{ fontSize: 11, color: videoTheme.faint, marginTop: 2 }}>{v.duration}</div>
                   </div>
 
                   {/* Playing indicator */}
@@ -302,7 +364,7 @@ export default function VideoPlayerPage() {
                     <div style={{ display: 'flex', gap: 2, alignItems: 'flex-end', height: 16, flexShrink: 0 }}>
                       {[1, 2, 3].map(n => (
                         <div key={n} style={{
-                          width: 3, borderRadius: 2, background: '#0f0f0f',
+                          width: 3, borderRadius: 2, background: videoTheme.playingBar,
                           height: `${8 + n * 4}px`,
                           animation: `bar${n} 0.8s ease-in-out infinite alternate`,
                           animationDelay: `${n * 0.15}s`,

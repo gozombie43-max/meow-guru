@@ -308,11 +308,170 @@ export default function VideosPage() {
 
       <style>{`
         .videos-page {
+          --video-page-bg: #ffffff;
+          --video-page-fg: #0f0f0f;
+          --video-filter-bg: rgba(255, 255, 255, 0.94);
+          --video-filter-shadow: 0 1px 0 rgba(15, 23, 42, 0.06);
+          --video-filter-backdrop: none;
+          --video-chip-bg: #f3f4f6;
+          --video-chip-fg: #0c0c0c;
+          --video-chip-border: transparent;
+          --video-chip-active-bg: #050505;
+          --video-chip-active-fg: #ffffff;
+          --video-chip-active-border: transparent;
+          --video-chip-press-bg: #f3f4f6;
+          --video-chip-active-press-bg: #050505;
+          --video-stack-border: rgba(15, 23, 42, 0.13);
+          --video-stack-shadow:
+            0 9px 18px rgba(15, 23, 42, 0.13),
+            inset 0 1px 0 rgba(255, 255, 255, 0.72),
+            inset 0 -1px 0 rgba(15, 23, 42, 0.08);
+          --video-stack-filter: none;
+          --video-stack-divider: rgba(15, 23, 42, 0.11);
+          --video-focus-inner: #ffffff;
+          --video-focus-outer: #050505;
+          --video-focus-shadow: rgba(15, 23, 42, 0.18);
+          --video-channel-bg: #ffffff;
+          --video-channel-border: #e5e7eb;
+          --video-channel-fg: #008080;
+          --video-channel-shadow: inset 0 0 0 2px rgba(0, 128, 128, 0.12);
+          --video-title-fg: #0f0f0f;
+          --video-muted-fg: #606060;
+          --video-more-fg: #0b0b0b;
+          --video-more-press-bg: #f3f4f6;
+          --video-empty-fg: #606060;
+          --video-card-bg: transparent;
+          --video-card-border: transparent;
+          --video-card-shadow: none;
+          --video-card-padding: 0;
+          --video-card-radius: 0;
+          --video-card-hover-bg: transparent;
+          --video-thumb-border: rgba(15, 23, 42, 0.16);
+          --video-thumb-shadow:
+            0 18px 34px rgba(15, 23, 42, 0.18),
+            0 4px 0 rgba(15, 23, 42, 0.08),
+            inset 0 1px 0 rgba(255, 255, 255, 0.16);
           min-height: 100vh;
-          background: #ffffff;
-          color: #0f0f0f;
+          background: var(--video-page-bg);
+          color: var(--video-page-fg);
           font-family: "Outfit", "Roboto", "Helvetica Neue", Arial, sans-serif;
           padding: 12px 12px calc(26px + env(safe-area-inset-bottom));
+        }
+
+        body.theme-dark .videos-page {
+          --video-page-bg:
+            linear-gradient(180deg, #181b20 0%, #111419 44%, #15171b 100%);
+          --video-page-fg: #f4f7fb;
+          --video-filter-bg: rgba(22, 25, 31, 0.86);
+          --video-filter-shadow:
+            inset 0 -1px 0 rgba(255, 255, 255, 0.08),
+            0 16px 34px rgba(8, 10, 14, 0.32);
+          --video-filter-backdrop: blur(18px) saturate(150%);
+          --video-chip-bg: rgba(255, 255, 255, 0.075);
+          --video-chip-fg: #dce3ea;
+          --video-chip-border: rgba(255, 255, 255, 0.08);
+          --video-chip-active-bg: linear-gradient(180deg, #f7fafc 0%, #dfe8ef 100%);
+          --video-chip-active-fg: #101317;
+          --video-chip-active-border: rgba(255, 255, 255, 0.7);
+          --video-chip-press-bg: rgba(255, 255, 255, 0.12);
+          --video-chip-active-press-bg: #dce5ed;
+          --video-stack-border: rgba(198, 213, 226, 0.18);
+          --video-stack-shadow:
+            0 12px 24px rgba(5, 8, 12, 0.36),
+            inset 0 1px 0 rgba(255, 255, 255, 0.18),
+            inset 0 -1px 0 rgba(0, 0, 0, 0.32);
+          --video-stack-filter: brightness(0.78) saturate(0.98);
+          --video-stack-divider: rgba(8, 12, 16, 0.34);
+          --video-focus-inner: #15191f;
+          --video-focus-outer: #e9f2f7;
+          --video-focus-shadow: rgba(6, 9, 14, 0.5);
+          --video-channel-bg:
+            linear-gradient(180deg, rgba(38, 54, 59, 0.92), rgba(22, 29, 34, 0.92));
+          --video-channel-border: rgba(137, 211, 204, 0.22);
+          --video-channel-fg: #8bd8c7;
+          --video-channel-shadow:
+            inset 0 0 0 1px rgba(139, 216, 199, 0.16),
+            0 10px 22px rgba(0, 0, 0, 0.24);
+          --video-title-fg: #f7fafc;
+          --video-muted-fg: #a9b4c0;
+          --video-more-fg: #d6dee7;
+          --video-more-press-bg: rgba(255, 255, 255, 0.1);
+          --video-empty-fg: #a9b4c0;
+          --video-card-bg:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.055) 0%, rgba(255, 255, 255, 0.026) 100%);
+          --video-card-border: rgba(255, 255, 255, 0.075);
+          --video-card-shadow:
+            0 20px 45px rgba(5, 8, 13, 0.28),
+            inset 0 1px 0 rgba(255, 255, 255, 0.055);
+          --video-card-padding: 10px;
+          --video-card-radius: 20px;
+          --video-card-hover-bg:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.075) 0%, rgba(255, 255, 255, 0.035) 100%);
+          --video-thumb-border: rgba(207, 223, 234, 0.16);
+          --video-thumb-shadow:
+            0 24px 48px rgba(4, 8, 13, 0.42),
+            0 1px 0 rgba(255, 255, 255, 0.06),
+            inset 0 1px 0 rgba(255, 255, 255, 0.18);
+          color-scheme: dark;
+        }
+
+        @media (prefers-color-scheme: dark) {
+          body:not(.theme-light) .videos-page {
+            --video-page-bg:
+              linear-gradient(180deg, #181b20 0%, #111419 44%, #15171b 100%);
+            --video-page-fg: #f4f7fb;
+            --video-filter-bg: rgba(22, 25, 31, 0.86);
+            --video-filter-shadow:
+              inset 0 -1px 0 rgba(255, 255, 255, 0.08),
+              0 16px 34px rgba(8, 10, 14, 0.32);
+            --video-filter-backdrop: blur(18px) saturate(150%);
+            --video-chip-bg: rgba(255, 255, 255, 0.075);
+            --video-chip-fg: #dce3ea;
+            --video-chip-border: rgba(255, 255, 255, 0.08);
+            --video-chip-active-bg: linear-gradient(180deg, #f7fafc 0%, #dfe8ef 100%);
+            --video-chip-active-fg: #101317;
+            --video-chip-active-border: rgba(255, 255, 255, 0.7);
+            --video-chip-press-bg: rgba(255, 255, 255, 0.12);
+            --video-chip-active-press-bg: #dce5ed;
+            --video-stack-border: rgba(198, 213, 226, 0.18);
+            --video-stack-shadow:
+              0 12px 24px rgba(5, 8, 12, 0.36),
+              inset 0 1px 0 rgba(255, 255, 255, 0.18),
+              inset 0 -1px 0 rgba(0, 0, 0, 0.32);
+            --video-stack-filter: brightness(0.78) saturate(0.98);
+            --video-stack-divider: rgba(8, 12, 16, 0.34);
+            --video-focus-inner: #15191f;
+            --video-focus-outer: #e9f2f7;
+            --video-focus-shadow: rgba(6, 9, 14, 0.5);
+            --video-channel-bg:
+              linear-gradient(180deg, rgba(38, 54, 59, 0.92), rgba(22, 29, 34, 0.92));
+            --video-channel-border: rgba(137, 211, 204, 0.22);
+            --video-channel-fg: #8bd8c7;
+            --video-channel-shadow:
+              inset 0 0 0 1px rgba(139, 216, 199, 0.16),
+              0 10px 22px rgba(0, 0, 0, 0.24);
+            --video-title-fg: #f7fafc;
+            --video-muted-fg: #a9b4c0;
+            --video-more-fg: #d6dee7;
+            --video-more-press-bg: rgba(255, 255, 255, 0.1);
+            --video-empty-fg: #a9b4c0;
+            --video-card-bg:
+              linear-gradient(180deg, rgba(255, 255, 255, 0.055) 0%, rgba(255, 255, 255, 0.026) 100%);
+            --video-card-border: rgba(255, 255, 255, 0.075);
+            --video-card-shadow:
+              0 20px 45px rgba(5, 8, 13, 0.28),
+              inset 0 1px 0 rgba(255, 255, 255, 0.055);
+            --video-card-padding: 10px;
+            --video-card-radius: 20px;
+            --video-card-hover-bg:
+              linear-gradient(180deg, rgba(255, 255, 255, 0.075) 0%, rgba(255, 255, 255, 0.035) 100%);
+            --video-thumb-border: rgba(207, 223, 234, 0.16);
+            --video-thumb-shadow:
+              0 24px 48px rgba(4, 8, 13, 0.42),
+              0 1px 0 rgba(255, 255, 255, 0.06),
+              inset 0 1px 0 rgba(255, 255, 255, 0.18);
+            color-scheme: dark;
+          }
         }
 
         .videos-shell {
@@ -330,8 +489,10 @@ export default function VideosPage() {
           overflow-x: auto;
           margin: 0 -12px;
           padding: 8px 12px 10px;
-          background: rgba(255, 255, 255, 0.94);
-          box-shadow: 0 1px 0 rgba(15, 23, 42, 0.06);
+          background: var(--video-filter-bg);
+          box-shadow: var(--video-filter-shadow);
+          backdrop-filter: var(--video-filter-backdrop);
+          -webkit-backdrop-filter: var(--video-filter-backdrop);
           scroll-padding-inline: 12px;
           scroll-snap-type: x proximity;
           scrollbar-width: none;
@@ -345,26 +506,36 @@ export default function VideosPage() {
         .video-chip {
           flex: 0 0 auto;
           min-height: 42px;
-          border: 1px solid transparent;
+          border: 1px solid var(--video-chip-border);
           border-radius: 999px;
           padding: 0 16px;
-          background: #f3f4f6;
-          color: #0c0c0c;
+          background: var(--video-chip-bg);
+          color: var(--video-chip-fg);
           font-size: 0.96rem;
           font-weight: 700;
           line-height: 1;
           cursor: pointer;
           scroll-snap-align: start;
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
           transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
         }
 
         .video-chip.is-active {
-          background: #050505;
-          color: #ffffff;
+          background: var(--video-chip-active-bg);
+          color: var(--video-chip-active-fg);
+          border-color: var(--video-chip-active-border);
+          box-shadow:
+            0 10px 22px rgba(4, 8, 12, 0.18),
+            inset 0 1px 0 rgba(255, 255, 255, 0.58);
         }
 
         .video-chip:active {
+          background: var(--video-chip-press-bg);
           transform: scale(0.97);
+        }
+
+        .video-chip.is-active:active {
+          background: var(--video-chip-active-press-bg);
         }
 
         .playlist-list {
@@ -378,8 +549,17 @@ export default function VideosPage() {
           display: flex;
           flex-direction: column;
           gap: 12px;
+          padding: var(--video-card-padding);
+          border: 1px solid var(--video-card-border);
+          border-radius: var(--video-card-radius);
+          background: var(--video-card-bg);
+          box-shadow: var(--video-card-shadow);
           content-visibility: auto;
           contain-intrinsic-size: 280px;
+          transition:
+            background 0.18s ease,
+            border-color 0.18s ease,
+            transform 0.18s ease;
         }
 
         .playlist-card.is-clickable {
@@ -387,11 +567,15 @@ export default function VideosPage() {
           outline: none;
         }
 
+        .playlist-card.is-clickable:hover {
+          background: var(--video-card-hover-bg);
+        }
+
         .playlist-card.is-clickable:focus-visible .thumb-stage {
           box-shadow:
-            0 0 0 3px #ffffff,
-            0 0 0 6px #050505,
-            0 18px 34px rgba(15, 23, 42, 0.18),
+            0 0 0 3px var(--video-focus-inner),
+            0 0 0 6px var(--video-focus-outer),
+            0 18px 34px var(--video-focus-shadow),
             0 4px 0 rgba(15, 23, 42, 0.08),
             inset 0 1px 0 rgba(255, 255, 255, 0.16);
         }
@@ -406,11 +590,9 @@ export default function VideosPage() {
           position: absolute;
           height: 20px;
           border-radius: 14px 14px 6px 6px;
-          border: 1px solid rgba(15, 23, 42, 0.13);
-          box-shadow:
-            0 9px 18px rgba(15, 23, 42, 0.13),
-            inset 0 1px 0 rgba(255, 255, 255, 0.72),
-            inset 0 -1px 0 rgba(15, 23, 42, 0.08);
+          border: 1px solid var(--video-stack-border);
+          box-shadow: var(--video-stack-shadow);
+          filter: var(--video-stack-filter);
           transform-origin: center bottom;
           pointer-events: none;
         }
@@ -422,7 +604,7 @@ export default function VideosPage() {
           right: 12px;
           bottom: 4px;
           height: 1px;
-          background: rgba(15, 23, 42, 0.11);
+          background: var(--video-stack-divider);
           opacity: 0.7;
         }
 
@@ -500,11 +682,8 @@ export default function VideosPage() {
             linear-gradient(135deg, rgba(8, 12, 20, 0.98), rgba(8, 12, 20, 0.78)),
             repeating-linear-gradient(28deg, rgba(255, 255, 255, 0.07) 0 1px, transparent 1px 34px),
             #101820;
-          border: 1px solid rgba(15, 23, 42, 0.16);
-          box-shadow:
-            0 18px 34px rgba(15, 23, 42, 0.18),
-            0 4px 0 rgba(15, 23, 42, 0.08),
-            inset 0 1px 0 rgba(255, 255, 255, 0.16);
+          border: 1px solid var(--video-thumb-border);
+          box-shadow: var(--video-thumb-shadow);
         }
 
         .theme-green .thumb-stage {
@@ -712,13 +891,13 @@ export default function VideosPage() {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          border: 2px solid #e5e7eb;
-          color: #008080;
-          background: #ffffff;
+          border: 2px solid var(--video-channel-border);
+          color: var(--video-channel-fg);
+          background: var(--video-channel-bg);
           font-size: 0.78rem;
           font-weight: 900;
           line-height: 1;
-          box-shadow: inset 0 0 0 2px rgba(0, 128, 128, 0.12);
+          box-shadow: var(--video-channel-shadow);
         }
 
         .playlist-copy {
@@ -727,7 +906,7 @@ export default function VideosPage() {
 
         .playlist-copy h2 {
           margin: 0;
-          color: #0f0f0f;
+          color: var(--video-title-fg);
           font-size: clamp(1rem, 4.2vw, 1.45rem);
           font-weight: 600;
           line-height: 1.24;
@@ -740,7 +919,7 @@ export default function VideosPage() {
 
         .playlist-copy p {
           margin: 4px 0 0;
-          color: #606060;
+          color: var(--video-muted-fg);
           font-size: clamp(0.82rem, 3.5vw, 1.02rem);
           line-height: 1.2;
           font-weight: 400;
@@ -752,7 +931,7 @@ export default function VideosPage() {
         .more-btn {
           border: 0;
           background: transparent;
-          color: #0b0b0b;
+          color: var(--video-more-fg);
           width: 36px;
           height: 40px;
           display: inline-flex;
@@ -763,7 +942,7 @@ export default function VideosPage() {
         }
 
         .more-btn:active {
-          background: #f3f4f6;
+          background: var(--video-more-press-bg);
         }
 
         .empty-state {
@@ -772,7 +951,7 @@ export default function VideosPage() {
           place-items: center;
           align-content: center;
           gap: 10px;
-          color: #606060;
+          color: var(--video-empty-fg);
           font-size: 1rem;
         }
 
@@ -920,6 +1099,7 @@ export default function VideosPage() {
             height: 46px;
           }
         }
+
       `}</style>
     </main>
   );

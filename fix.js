@@ -1,9 +1,9 @@
-'use client';
+const fs = require('fs');
+const content = \'use client';
 
 import Link from 'next/link';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useThemeMode } from '@/hooks/useTheme';
 import './play.css';
 
 type PlayCategory = 'All' | 'Tests' | 'Practice' | 'Review';
@@ -34,8 +34,11 @@ const playModes: PlayMode[] = [
 export default function PlayPage() {
   const router = useRouter();
   const [category, setCategory] = useState<PlayCategory>('All');
-  const { theme, setThemeMode } = useThemeMode();
-  const isDark = theme === 'dark';
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    // Optionally default to dark if preferred
+  }, []);
 
   const filteredModes = useMemo(() => {
     return playModes.filter((mode) => {
@@ -49,7 +52,7 @@ export default function PlayPage() {
   };
 
   return (
-    <div className={`study-modes-wrapper ${isDark ? 'dark' : ''}`}>
+    <div className={\\\study-modes-wrapper \\\\\\}>
       <main className="container">
         <div className="topbar">
           <div className="toggle-wrap">
@@ -60,7 +63,7 @@ export default function PlayPage() {
               <input
                 type="checkbox"
                 checked={isDark}
-                onChange={(e) => setThemeMode(e.target.checked ? 'dark' : 'light')}
+                onChange={(e) => setIsDark(e.target.checked)}
               />
               <div className="track"></div>
               <div className="thumb" id="thumb-icon">
@@ -74,13 +77,15 @@ export default function PlayPage() {
           {categories.map((cat) => (
             <button
               key={cat}
-              className={`tab ${category === cat ? 'active' : ''}`}
+              className={\\\	ab \\\\\\}
               onClick={() => setCategory(cat)}
             >
               {cat}
             </button>
           ))}
         </div>
+        
+        <div className="modes-badge">📈 {playModes.length} modes</div>
 
         <div>
           {filteredModes.map((mode) => (
@@ -101,3 +106,5 @@ export default function PlayPage() {
     </div>
   );
 }
+\;
+fs.writeFileSync('c:/Users/91906/Ai ssc/frontend/app/play/page.tsx', content);
