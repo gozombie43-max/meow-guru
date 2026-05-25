@@ -292,7 +292,9 @@ export default function VideosPage() {
   return (
     <main className="videos-page">
       <div className="videos-shell">
-        <VideoFilters active={activeFilter} onChange={setActiveFilter} />
+        <div className="videos-header">
+          <VideoFilters active={activeFilter} onChange={setActiveFilter} />
+        </div>
 
         <section className="playlist-list" aria-label="Video playlists">
           {visiblePlaylists.length > 0 ? (
@@ -308,6 +310,7 @@ export default function VideosPage() {
 
       <style>{`
         .videos-page {
+          --video-header-height: 60px;
           --video-page-bg: #ffffff;
           --video-page-fg: #0f0f0f;
           --video-filter-bg: rgba(255, 255, 255, 0.94);
@@ -355,7 +358,8 @@ export default function VideosPage() {
           background: var(--video-page-bg);
           color: var(--video-page-fg);
           font-family: "Outfit", "Roboto", "Helvetica Neue", Arial, sans-serif;
-          padding: 12px 12px calc(26px + env(safe-area-inset-bottom));
+          padding: calc(12px + var(--video-header-height)) 12px
+            calc(26px + env(safe-area-inset-bottom));
         }
 
         body.theme-dark .videos-page {
@@ -479,20 +483,27 @@ export default function VideosPage() {
           margin: 0 auto;
         }
 
-        .video-filters {
-          position: sticky;
+        .videos-header {
+          position: fixed;
           top: 0;
-          z-index: 20;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          overflow-x: auto;
-          margin: 0 -12px;
-          padding: 8px 12px 10px;
+          left: 0;
+          right: 0;
+          z-index: 25;
+          height: var(--video-header-height);
           background: var(--video-filter-bg);
           box-shadow: var(--video-filter-shadow);
           backdrop-filter: var(--video-filter-backdrop);
           -webkit-backdrop-filter: var(--video-filter-backdrop);
+        }
+
+        .video-filters {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          overflow-x: auto;
+          width: min(100%, 720px);
+          margin: 0 auto;
+          padding: 0 12px;
           scroll-padding-inline: 12px;
           scroll-snap-type: x proximity;
           scrollbar-width: none;

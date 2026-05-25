@@ -410,15 +410,19 @@ export default function Home() {
         .subject-heading-title { color: #f8fafc; }
         .subject-heading-copy { color: rgba(226, 244, 255, 0.78); }
         .hero-nav {
-          background: rgba(8, 20, 38, 0.6);
-          border-bottom: 1px solid rgba(255, 255, 255, 0.18);
-          box-shadow: 0 10px 30px rgba(5, 10, 20, 0.2);
+          background: transparent;
+          border: none;
+          border-bottom: 1px solid transparent;
+          box-shadow: none;
+          backdrop-filter: none;
+          -webkit-backdrop-filter: none;
           transition: background 220ms ease, border-color 220ms ease, box-shadow 220ms ease, backdrop-filter 220ms ease;
         }
         .hero-nav.nav-scrolled {
-          background: rgb(8, 20, 38);
-          border-bottom: 1px solid rgba(255, 255, 255, 0.26);
-          box-shadow: 0 12px 30px rgba(2, 8, 18, 0.45);
+          background: rgba(8, 20, 38, 0.35);
+          border: none;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+          box-shadow: none;
           backdrop-filter: none;
           -webkit-backdrop-filter: none;
         }
