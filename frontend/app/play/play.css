@@ -34,63 +34,6 @@
   margin: 0 auto;
 }
 
-/* ── Top bar ── */
-.study-modes-wrapper .topbar {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  margin-bottom: 22px;
-}
-
-/* Toggle switch */
-.study-modes-wrapper .toggle-wrap {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.study-modes-wrapper .toggle-label {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text-dim);
-  transition: color 0.3s;
-  user-select: none;
-}
-.study-modes-wrapper .toggle {
-  position: relative;
-  width: 54px;
-  height: 28px;
-  cursor: pointer;
-}
-.study-modes-wrapper .toggle input {
-  display: none;
-}
-.study-modes-wrapper .track {
-  position: absolute;
-  inset: 0;
-  border-radius: 999px;
-  background: var(--bg);
-  box-shadow: inset 4px 4px 8px var(--shadow-d), inset -4px -4px 8px var(--shadow-l);
-  transition: background 0.35s, box-shadow 0.35s;
-}
-.study-modes-wrapper .thumb {
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.25);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s;
-  display: grid;
-  place-items: center;
-  font-size: 11px;
-  color: #fff;
-}
-.study-modes-wrapper .toggle input:checked ~ .thumb {
-  transform: translateX(26px);
-}
-
 /* ── Tabs ── */
 .study-modes-wrapper .tabs {
   display: flex;

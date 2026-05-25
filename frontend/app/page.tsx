@@ -78,7 +78,7 @@ function HomeLoadingOverlay({ ready, onDone }: { ready: boolean; onDone: () => v
   const [pct, setPct] = useState(0);
   const [done, setDone] = useState(false);
   const [confettiDots, setConfettiDots] = useState<ConfettiDot[]>([]);
-  const startedAtRef = useRef<number>(Date.now());
+  const startedAtRef = useRef<number>(0);
   const doneTriggeredRef = useRef(false);
 
   useEffect(() => {
@@ -109,22 +109,30 @@ function HomeLoadingOverlay({ ready, onDone }: { ready: boolean; onDone: () => v
   }, [pct, ready]);
 
   useEffect(() => {
+    startedAtRef.current = Date.now();
+  }, []);
+
+  useEffect(() => {
     if (pct < 100 || doneTriggeredRef.current) return;
 
     doneTriggeredRef.current = true;
-    setDone(true);
-    setConfettiDots(createConfettiDots());
-
     let hideTimer: number | undefined;
+    let showTimer: number | undefined;
 
-    const showTimer = window.setTimeout(() => {
-      const elapsed = Date.now() - startedAtRef.current;
-      const remaining = Math.max(0, 900 - elapsed);
-      hideTimer = window.setTimeout(onDone, remaining);
-    }, 700);
+    const completeTimer = window.setTimeout(() => {
+      setDone(true);
+      setConfettiDots(createConfettiDots());
+
+      showTimer = window.setTimeout(() => {
+        const elapsed = Date.now() - startedAtRef.current;
+        const remaining = Math.max(0, 900 - elapsed);
+        hideTimer = window.setTimeout(onDone, remaining);
+      }, 700);
+    }, 0);
 
     return () => {
-      window.clearTimeout(showTimer);
+      window.clearTimeout(completeTimer);
+      if (showTimer) window.clearTimeout(showTimer);
       if (hideTimer) window.clearTimeout(hideTimer);
     };
   }, [pct, onDone]);
@@ -186,7 +194,7 @@ export default function Home() {
   const isDarkMode = theme === "dark";
 
   useEffect(() => {
-    if (!user) return;
+    if (!user?.id) return;
     refreshUser().catch(() => {});
   }, [refreshUser, user?.id]);
 
@@ -362,20 +370,37 @@ export default function Home() {
   );
 
   return (
-    <div className="min-h-screen relative overflow-clip">
+    <div className="home-page min-h-screen relative overflow-x-clip">
       {showLoader ? <HomeLoadingOverlay ready={isAppReady} onDone={handleLoaderDone} /> : null}
       <style>{`
         .lower-shell {
           position: relative;
-          padding: clamp(2rem, 4.8vw, 3.6rem) 0 clamp(3.5rem, 7vw, 5rem);
+          padding: clamp(1rem, 3.5vw, 2.2rem) 0 clamp(1.5rem, 4vw, 2.6rem);
           background: transparent;
+        }
+        .home-page {
+          --home-bottom-nav-clearance: clamp(68px, 9vh, 108px);
+          height: 100svh;
+          min-height: 100svh;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+        }
+        html.home-hero,
+        body.home-hero {
+          overflow-x: clip;
+          overflow-y: hidden;
+          height: 100%;
+        }
+        body.home-hero {
+          overscroll-behavior: none;
         }
         .subject-panel {
           position: relative;
           z-index: 2;
           width: min(980px, 92vw);
           margin: 0 auto;
-          padding: clamp(2rem, 6vw, 3.25rem) clamp(1.4rem, 5vw, 3rem) clamp(2.2rem, 6vw, 3.2rem);
+          padding: clamp(1.5rem, 4vw, 2.6rem) clamp(1.1rem, 4vw, 2.4rem) clamp(1.6rem, 4.5vw, 2.6rem);
           background: transparent;
           border-radius: 32px;
           border: none;
@@ -428,9 +453,6 @@ export default function Home() {
         .auth-pill-outline:hover {
           background: rgba(255, 255, 255, 0.2);
           transform: translateY(-1px);
-        }
-        body.has-bottom-nav {
-          padding-bottom: 0 !important;
         }
         .auth-pill-solid {
           background: linear-gradient(135deg, #22d3ee 0%, #0ea5e9 100%);
@@ -936,7 +958,9 @@ export default function Home() {
         }
         .hero-section {
           position: relative;
-          overflow: clip;
+          overflow: visible;
+          flex: 1 1 auto;
+          min-height: 0;
           min-height: 100vh;
           min-height: 100svh;
           color: #f8fafc;
@@ -960,12 +984,12 @@ export default function Home() {
           z-index: 2;
           max-width: 1100px;
           margin: 0 auto;
-          padding: 8.25rem 1.5rem calc(6.5rem + env(safe-area-inset-bottom));
-          display: grid;
-          grid-template-columns: minmax(0, 1fr);
-          align-items: center;
-          min-height: 100vh;
-          min-height: 100svh;
+          padding: clamp(4.5rem, 9vh, 7rem) 1.5rem calc(1.25rem + var(--home-bottom-nav-clearance));
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          height: 100%;
+          min-height: 0;
         }
         .hero-kicker {
           display: inline-flex;
@@ -1264,10 +1288,19 @@ export default function Home() {
         @keyframes pill-glow-pulse { 0%,100% { opacity: 0.5; box-shadow: 0 0 20px color-mix(in srgb, var(--pill-glow) 60%, transparent); } 50% { opacity: 0.82; box-shadow: 0 0 32px color-mix(in srgb, var(--pill-glow) 86%, transparent); } }
         @keyframes pill-shimmer { 0% { transform: translateX(-170%) rotate(12deg); opacity: 0; } 10% { opacity: 0.9; } 22% { transform: translateX(330%) rotate(12deg); opacity: 0.9; } 30%,100% { transform: translateX(330%) rotate(12deg); opacity: 0; } }
         @media (max-width: 820px) { .pill-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 420px; gap: 0.8rem; padding: 0; } .pill-card { min-height: 60px; padding: 7px 14px; } .pill-content { font-size: clamp(0.85rem,3.8vw,1rem); } .ios-card-grid { max-width: 420px; gap: 0.8rem; } .ios-action-card { min-height: 70px; padding: 0.8rem 0.9rem; border-radius: 20px; } .ios-card-accent { height: 30px; } }
+        @media (min-width: 641px) and (max-height: 780px) {
+          .hero-content { padding-top: 4.5rem !important; }
+          .lower-shell { padding-top: 0 !important; padding-bottom: 2.5rem !important; }
+          .subject-panel { padding-top: 1.25rem !important; padding-bottom: 2rem !important; }
+          .subject-heading-wrap { margin-bottom: 1.25rem !important; }
+          .battle-dock { margin-top: 1.5rem !important; gap: 0.9rem !important; }
+          .recent-section { margin-top: 0.5rem !important; }
+        }
         @media (max-width: 640px) {
           .hero-section { min-height: 100vh; min-height: 100svh; background-position: center top; }
-          .hero-content { min-height: 100vh; min-height: 100svh; padding-top: 5.5rem; padding-bottom: calc(5.5rem + env(safe-area-inset-bottom)); text-align: center; }
-          .lower-shell { padding-top: 1.25rem; }
+          .home-page { --home-bottom-nav-clearance: calc(76px + env(safe-area-inset-bottom)); }
+          .hero-content { min-height: 100vh; min-height: 100svh; padding-top: 4.5rem; padding-bottom: calc(0.9rem + var(--home-bottom-nav-clearance)); text-align: center; }
+          .lower-shell { padding: 0.9rem 0 1.3rem; }
           .hero-kicker { letter-spacing: 0.24em; font-size: 0.68rem; justify-content: center; }
           .hero-title { font-size: clamp(2rem, 9vw, 3rem); }
           .hero-copy { margin: 0 auto 1.6rem; }
@@ -1299,14 +1332,24 @@ export default function Home() {
           }
           .battle-cta-text { white-space: nowrap; line-height: 1; }
           .battle-cta::before { inset: -10px; }
-          .battle-dock { margin-top: 2rem; }
+          .battle-dock { margin-top: 1.25rem; }
+        }
+        @media (max-height: 720px) {
+          .home-page { --home-bottom-nav-clearance: clamp(64px, 8vh, 84px); }
+          .hero-content { padding-top: 4.25rem; padding-bottom: calc(0.75rem + var(--home-bottom-nav-clearance)); }
+          .lower-shell { padding: 0.75rem 0 1.1rem; }
+          .battle-dock { gap: 0.8rem; margin-top: 1.1rem; }
+          .recent-section { margin-top: 1rem; }
+          .recent-card { padding: 12px 14px; border-radius: 18px; }
+          .recent-card-title { font-size: 0.92rem; }
+          .recent-card-sub { font-size: 0.75rem; }
         }
         .battle-dock {
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 1.25rem;
-          margin-top: 2.4rem;
+          gap: clamp(0.85rem, 2.5vh, 1.25rem);
+          margin-top: clamp(1.4rem, 3vh, 2rem);
         }
         .battle-credit {
           color: rgba(226, 244, 255, 0.78);
@@ -1315,7 +1358,7 @@ export default function Home() {
           letter-spacing: 0.01em;
         }
         .recent-section {
-          margin-top: 2.5rem;
+          margin-top: clamp(1.25rem, 2.8vh, 2rem);
           width: min(820px, 96%);
         }
         .recent-header {

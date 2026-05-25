@@ -33,6 +33,8 @@ export default function BottomNav() {
     '/login',
     '/register',
     '/videos',
+    '/mock-test',
+    '/play',
   ];
   const isLightSurface =
     theme === 'light' &&

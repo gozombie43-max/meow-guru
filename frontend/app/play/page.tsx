@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useThemeMode } from '@/hooks/useTheme';
@@ -34,7 +33,7 @@ const playModes: PlayMode[] = [
 export default function PlayPage() {
   const router = useRouter();
   const [category, setCategory] = useState<PlayCategory>('All');
-  const { theme, setThemeMode } = useThemeMode();
+  const { theme } = useThemeMode();
   const isDark = theme === 'dark';
 
   const filteredModes = useMemo(() => {
@@ -51,25 +50,6 @@ export default function PlayPage() {
   return (
     <div className={`study-modes-wrapper ${isDark ? 'dark' : ''}`}>
       <main className="container">
-        <div className="topbar">
-          <div className="toggle-wrap">
-            <span className="toggle-label" id="toggle-lbl">
-              {isDark ? '🌙 Dark' : '☀️ Light'}
-            </span>
-            <label className="toggle">
-              <input
-                type="checkbox"
-                checked={isDark}
-                onChange={(e) => setThemeMode(e.target.checked ? 'dark' : 'light')}
-              />
-              <div className="track"></div>
-              <div className="thumb" id="thumb-icon">
-                {isDark ? '🌙' : '☀️'}
-              </div>
-            </label>
-          </div>
-        </div>
-
         <div className="tabs">
           {categories.map((cat) => (
             <button
