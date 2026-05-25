@@ -1,13 +1,14 @@
 .study-modes-wrapper {
-  --bg: #e0e5ec;
-  --shadow-d: #b8b9be;
+  --bg: #f1f5f9;
+  --card-bg: #ffffff;
+  --shadow-d: #cbd5e1;
   --shadow-l: #ffffff;
-  --text-main: #2d3748;
-  --text-dim: #718096;
-  --text-faint: #a0aec0;
-  --accent: #3b82f6;
-  --accent-h: #60a5fa;
-  --badge-col: #3b82f6;
+  --text-main: #0f172a;
+  --text-dim: #475569;
+  --text-faint: #94a3b8;
+  --accent: #2563eb;
+  --accent-h: #3b82f6;
+  --badge-col: #2563eb;
 
   font-family: 'Segoe UI', system-ui, sans-serif;
   background: var(--bg);
@@ -18,15 +19,16 @@
 }
 
 .study-modes-wrapper.dark {
-  --bg: #181a1f;
-  --shadow-d: #090a0c;
-  --shadow-l: #272a32;
-  --text-main: #ffffff;
-  --text-dim: #b3c1d6;
-  --text-faint: #8a99a8;
-  --accent: #4a8ff6;
-  --accent-h: #73b0fa;
-  --badge-col: #4a8ff6;
+  --bg: #0f172a;
+  --card-bg: #1e293b;
+  --shadow-d: #020617;
+  --shadow-l: #334155;
+  --text-main: #f8fafc;
+  --text-dim: #94a3b8;
+  --text-faint: #64748b;
+  --accent: #3b82f6;
+  --accent-h: #60a5fa;
+  --badge-col: #3b82f6;
 }
 
 .study-modes-wrapper .container {
@@ -63,7 +65,7 @@
 
 /* ── Cards ── */
 .study-modes-wrapper .card {
-  background: var(--bg);
+  background: var(--card-bg);
   border-radius: 24px;
   padding: 22px 24px;
   margin-bottom: 18px;
@@ -71,11 +73,13 @@
   align-items: center;
   justify-content: space-between;
   box-shadow: 10px 10px 20px var(--shadow-d), -10px -10px 20px var(--shadow-l);
-  transition: box-shadow 0.3s, transform 0.3s, background 0.35s;
+  transition: box-shadow 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+              transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+              background 0.35s ease;
 }
 .study-modes-wrapper .card:hover {
-  box-shadow: 14px 14px 28px var(--shadow-d), -14px -14px 28px var(--shadow-l);
-  transform: translateY(-2px);
+  box-shadow: 16px 16px 32px var(--shadow-d), -16px -16px 32px var(--shadow-l);
+  transform: translateY(-5px) scale(1.015);
 }
 .study-modes-wrapper .card-left {
   display: flex;
@@ -88,11 +92,15 @@
   border-radius: 14px;
   display: grid;
   place-items: center;
-  font-size: 22px;
-  background: var(--bg);
+  background: var(--card-bg);
   box-shadow: 5px 5px 10px var(--shadow-d), -5px -5px 10px var(--shadow-l);
   flex-shrink: 0;
   transition: background 0.35s, box-shadow 0.35s;
+  color: var(--accent);
+}
+
+.text-accent {
+  color: var(--accent);
 }
 .study-modes-wrapper .info .category {
   font-size: 10px;
@@ -120,20 +128,21 @@
 
 /* ── Button ── */
 .study-modes-wrapper .btn {
-  padding: 13px 20px;
-  border-radius: 20px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 50%;
   border: none;
   background: var(--accent);
   color: #fff;
   font-weight: 800;
-  font-size: 13px;
+  font-size: 20px;
   cursor: pointer;
   display: flex;
   align-items: center;
-  white-space: nowrap;
+  justify-content: center;
   flex-shrink: 0;
   box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.25);
-  letter-spacing: 0.3px;
   transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
 }
 .study-modes-wrapper .btn:hover {
@@ -147,8 +156,8 @@
 
 /* Fix white gap below bottom nav */
 body:has(.study-modes-wrapper) {
-  background-color: #e0e5ec;
+  background-color: #f1f5f9;
 }
 body.theme-dark:has(.study-modes-wrapper) {
-  background-color: #181a1f;
+  background-color: #0f172a;
 }
