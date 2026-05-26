@@ -1,9 +1,20 @@
 // backend/ai/azureClient.js
 import OpenAI from "openai";
 
+const apiKey =
+  process.env.AZURE_OPENAI_KEY ||
+  process.env.NEXT_PUBLIC_AZURE_OPENAI_KEY ||
+  process.env.VITE_AZURE_OPENAI_KEY;
+
+const baseURL =
+  process.env.AZURE_OPENAI_BASE_URL ||
+  process.env.NEXT_PUBLIC_AZURE_OPENAI_BASE_URL ||
+  process.env.VITE_AZURE_OPENAI_BASE_URL ||
+  "https://quizguru-ai.openai.azure.com/openai/v1";
+
 const client = new OpenAI({
-  apiKey: process.env.AZURE_OPENAI_KEY,
-  baseURL: "https://quizguru-ai.openai.azure.com/openai/v1",
+  apiKey,
+  baseURL,
 });
 
 export async function chatComplete(userPrompt, model = "o4-mini", systemPrompt = null) {
