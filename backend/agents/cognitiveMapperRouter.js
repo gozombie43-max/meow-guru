@@ -248,4 +248,97 @@ function buildQuizSummary(tagged) {
   };
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /api/agent/seed-demo-data
+// [DEV ONLY] Generate sample failure data for testing/demo purposes
+// ─────────────────────────────────────────────────────────────────────────────
+router.post("/seed-demo-data", async (req, res) => {
+  try {
+    const { userId } = req.body;
+    if (!userId) return res.status(400).json({ error: "userId required" });
+
+    // Sample test data with variety of failure dimensions
+    const sampleFailures = [
+      // Mirror Images topic
+      { questionId: "q1", topic: "Mirror Images", concept: "Clock Face Rotation", dimension: "CONCEPTUAL_GAP", count: 4 },
+      { questionId: "q2", topic: "Mirror Images", concept: "Shape Reflection", dimension: "APPLICATION_ERROR", count: 3 },
+      { questionId: "q3", topic: "Mirror Images", concept: "Pattern Recognition", dimension: "TRAP_CAUGHT", count: 2 },
+      
+      // Analogy topic
+      { questionId: "q4", topic: "Analogy", concept: "Word Relations", dimension: "CONCEPTUAL_GAP", count: 3 },
+      { questionId: "q5", topic: "Analogy", concept: "Synonym Pairs", dimension: "SPEED_PANIC", count: 2 },
+      
+      // Classification topic
+      { questionId: "q6", topic: "Classification", concept: "Category Grouping", dimension: "BLIND_SPOT", count: 5 },
+      { questionId: "q7", topic: "Classification", concept: "Odd One Out", dimension: "TRAP_CAUGHT", count: 1 },
+      
+      // Math topic
+      { questionId: "q8", topic: "Mathematics", concept: "Percentage Calculations", dimension: "APPLICATION_ERROR", count: 4 },
+      { questionId: "q9", topic: "Mathematics", concept: "Profit & Loss", dimension: "CONCEPTUAL_GAP", count: 2 },
+    ];
+
+    const container = getUsersContainer();
+    let profile;
+    try {
+      const { resources } = await container.items
+        .query({ query: "SELECT * FROM c WHERE c.id = @id", parameters: [{ name: "@id", value: userId }] })
+        .fetchAll();
+      profile = resources[0] || null;
+    } catch {
+      profile = null;
+    }
+
+    if (!profile) {
+      profile = {
+        id: userId,
+        userId,
+        failureMap: {},
+        masteryMap: {},
+        timePerQuestion: {},
+        createdAt: new Date().toISOString(),
+      };
+    }
+
+    // Build failure map from sample data
+    const failureMap = { ...profile.failureMap };
+    const now = new Date().toISOString();
+
+    for (const sample of sampleFailures) {
+      const key = `${sample.topic}::${sample.concept}`;
+      if (!failureMap[key]) {
+        failureMap[key] = {
+          CONCEPTUAL_GAP: 0,
+          APPLICATION_ERROR: 0,
+          TRAP_CAUGHT: 0,
+          SPEED_PANIC: 0,
+          BLIND_SPOT: 0,
+          lastSeen: null,
+          totalWrong: 0,
+        };
+      }
+      failureMap[key][sample.dimension] = (failureMap[key][sample.dimension] || 0) + sample.count;
+      failureMap[key].totalWrong = (failureMap[key].totalWrong || 0) + sample.count;
+      failureMap[key].lastSeen = now;
+    }
+
+    // Upsert profile
+    await container.items.upsert({
+      ...profile,
+      failureMap,
+      lastActiveDate: Date.now(),
+    });
+
+    res.json({
+      success: true,
+      message: "Demo data seeded successfully",
+      userId,
+      conceptsSeeded: Object.keys(failureMap).length,
+      totalFailuresSeeded: sampleFailures.reduce((sum, s) => sum + s.count, 0),
+    });
+  } catch (err) {
+    console.error("[seed-demo-data]", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default router;
