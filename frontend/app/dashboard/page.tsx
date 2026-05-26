@@ -6,6 +6,7 @@ import type { MouseEventHandler } from 'react';
 import { Inter } from 'next/font/google';
 import { useRouter } from 'next/navigation';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import BrainScanDashboard from '@/components/BrainScanDashboard';
 import { useAuth } from '@/context/AuthContext';
 
 const inter = Inter({
@@ -376,6 +377,19 @@ function DashboardContent() {
                 );
               })
             )}
+
+            {user?.id ? (
+              <div className="brain-scan-section">
+                <div className="section-label">Brain Scan</div>
+                <div className="brain-scan-card">
+                  <BrainScanDashboard userId={user.id} />
+                </div>
+              </div>
+            ) : (
+              <div className="glass-card empty-state">
+                Sign in to view your Brain Scan insights.
+              </div>
+            )}
           </div>
         </div>
 
@@ -723,6 +737,14 @@ function DashboardContent() {
           color: #6b7280;
           margin-bottom: 12px;
           padding-left: 8px;
+        }
+
+        .dashboard-shell .brain-scan-section {
+          margin-top: 20px;
+        }
+
+        .dashboard-shell .brain-scan-card {
+          margin-top: 8px;
         }
 
         .dashboard-shell .page-content {
