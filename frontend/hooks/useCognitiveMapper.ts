@@ -19,6 +19,20 @@ export interface TaggedAnswer {
   confidence: number;
 }
 
+export interface WrongAnswerPayload {
+  questionId: string;
+  topic: string;
+  concept: string;
+  question?: string;
+  options?: string[];
+  userAnswer?: string;
+  correctAnswer?: string;
+  solution?: string;
+  timeSpent?: number;
+  changedAnswer?: boolean;
+  skipped?: boolean;
+}
+
 export interface WeakConcept {
   key: string;
   topic: string;
@@ -34,6 +48,8 @@ export interface BrainScanData {
   globalDistribution: Record<string, number>;
   totalConceptsTracked: number;
   hasSufficientData: boolean;
+  lastActiveDate?: string;
+  source?: "failureMap" | "recentQuizzes" | "none";
 }
 
 // ─── Hook: tag a single wrong answer in real-time ────────────────────────────
@@ -81,7 +97,7 @@ export function useTagQuizResults() {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<TaggedAnswer[]>([]);
 
-  const tagQuizResults = useCallback(async (wrongAnswers: any[]) => {
+  const tagQuizResults = useCallback(async (wrongAnswers: WrongAnswerPayload[]) => {
     if (!wrongAnswers.length) return null;
     setLoading(true);
     try {

@@ -3,6 +3,7 @@
 
 import express from "express";
 import {
+  DIMENSIONS,
   tagFailure,
   tagFailureBatch,
   updateFailureMap,
@@ -20,6 +21,93 @@ const getUserById = async (id) => {
     })
     .fetchAll();
   return resources[0];
+};
+
+const DIMENSION_KEYS = Object.values(DIMENSIONS);
+
+const createEmptyDistribution = () => ({
+  [DIMENSIONS.CONCEPTUAL_GAP]: 0,
+  [DIMENSIONS.APPLICATION_ERROR]: 0,
+  [DIMENSIONS.TRAP_CAUGHT]: 0,
+  [DIMENSIONS.SPEED_PANIC]: 0,
+  [DIMENSIONS.BLIND_SPOT]: 0,
+});
+
+const isRecord = (value) =>
+  value !== null && typeof value === "object" && !Array.isArray(value);
+
+const getEntryWrongTotal = (entry) => {
+  if (!isRecord(entry)) return 0;
+  const explicitTotal = Number(entry.totalWrong);
+  if (Number.isFinite(explicitTotal) && explicitTotal > 0) return explicitTotal;
+  return DIMENSION_KEYS.reduce((total, dim) => total + (Number(entry[dim]) || 0), 0);
+};
+
+const getFailureTotal = (failureMap = {}) =>
+  Object.values(failureMap).reduce((total, entry) => total + getEntryWrongTotal(entry), 0);
+
+const buildGlobalDistribution = (failureMap = {}) => {
+  const distribution = createEmptyDistribution();
+
+  for (const entry of Object.values(failureMap)) {
+    if (!isRecord(entry)) continue;
+    for (const dim of DIMENSION_KEYS) {
+      distribution[dim] += Number(entry[dim]) || 0;
+    }
+  }
+
+  return distribution;
+};
+
+const getAttemptDimension = (result) => {
+  const timeTaken = Number(result?.timeTaken);
+  if (result?.selected === null) return DIMENSIONS.BLIND_SPOT;
+  if (Number.isFinite(timeTaken) && timeTaken > 0 && timeTaken < 6) {
+    return DIMENSIONS.BLIND_SPOT;
+  }
+  return DIMENSIONS.APPLICATION_ERROR;
+};
+
+const getAttemptReason = (result) => {
+  const timeTaken = Number(result?.timeTaken);
+  if (result?.selected === null) return "Question was left unanswered in the saved attempt.";
+  if (Number.isFinite(timeTaken) && timeTaken > 0 && timeTaken < 6) {
+    return `Answered in ${timeTaken}s in the saved attempt.`;
+  }
+  return "Wrong answer from saved quiz attempt.";
+};
+
+const buildFailureMapFromRecentQuizzes = (recentQuizzes = []) => {
+  const tagged = [];
+
+  for (const quiz of recentQuizzes) {
+    if (!Array.isArray(quiz?.results)) continue;
+
+    const topic = String(quiz.subject || quiz.title || "Current Attempt");
+    const taggedAt = quiz.updatedAt || new Date().toISOString();
+
+    for (const result of quiz.results) {
+      if (!isRecord(result) || result.isCorrect !== false) continue;
+
+      const concept = String(result.concept || quiz.title || "Attempted Question");
+      const questionId = String(
+        result.questionId ?? `${quiz.quizKey || "quiz"}:${result.questionIndex ?? tagged.length}`
+      );
+
+      tagged.push({
+        questionId,
+        topic,
+        concept,
+        dimension: getAttemptDimension(result),
+        reason: getAttemptReason(result),
+        confidence: 1,
+        source: "attempt",
+        taggedAt,
+      });
+    }
+  }
+
+  return updateFailureMap({}, tagged);
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -181,36 +269,33 @@ router.get("/brain-scan/:userId", async (req, res) => {
     const { userId } = req.params;
 
     const profile = await getUserById(userId);
-    if (!profile?.failureMap) {
+    if (!profile) {
       return res.json({
-        failureMap: {},
         topWeakConcepts: [],
+        globalDistribution: createEmptyDistribution(),
+        totalConceptsTracked: 0,
         hasSufficientData: false,
+        source: "none",
       });
     }
 
-    const topWeak = getTopWeakConcepts(profile.failureMap, 10);
-
-    // Dimension distribution across all concepts
-    const globalDist = {
-      CONCEPTUAL_GAP: 0,
-      APPLICATION_ERROR: 0,
-      TRAP_CAUGHT: 0,
-      SPEED_PANIC: 0,
-      BLIND_SPOT: 0,
-    };
-    for (const entry of Object.values(profile.failureMap)) {
-      for (const dim of Object.keys(globalDist)) {
-        globalDist[dim] += entry[dim] || 0;
-      }
-    }
+    const storedFailureMap = isRecord(profile.failureMap) ? profile.failureMap : {};
+    const storedFailureTotal = getFailureTotal(storedFailureMap);
+    const recentQuizFailureMap =
+      storedFailureTotal > 0 ? {} : buildFailureMapFromRecentQuizzes(profile.recentQuizzes);
+    const failureMap = storedFailureTotal > 0 ? storedFailureMap : recentQuizFailureMap;
+    const totalFailures = getFailureTotal(failureMap);
+    const topWeak = getTopWeakConcepts(failureMap, 10);
+    const globalDist = buildGlobalDistribution(failureMap);
 
     res.json({
       topWeakConcepts: topWeak,
       globalDistribution: globalDist,
-      totalConceptsTracked: Object.keys(profile.failureMap).length,
-      hasSufficientData: Object.keys(profile.failureMap).length >= 3,
+      totalConceptsTracked: Object.keys(failureMap).length,
+      hasSufficientData: totalFailures > 0,
       lastActiveDate: profile.lastActiveDate,
+      source:
+        storedFailureTotal > 0 ? "failureMap" : totalFailures > 0 ? "recentQuizzes" : "none",
     });
   } catch (err) {
     console.error("[brain-scan]", err);

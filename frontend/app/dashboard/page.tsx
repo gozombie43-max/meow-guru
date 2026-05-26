@@ -1,10 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { MouseEventHandler } from 'react';
 import { Inter } from 'next/font/google';
 import { useRouter } from 'next/navigation';
+import { Bookmark, Brain, History, X } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import BrainScanDashboard from '@/components/BrainScanDashboard';
 import { useAuth } from '@/context/AuthContext';
@@ -15,7 +16,7 @@ const inter = Inter({
 });
 
 type TabKey = 'math' | 'eng' | 'reasoning' | 'ga';
-type NavKey = 'recent' | 'bookmark';
+type NavKey = 'recent' | 'bookmark' | 'brain';
 
 type AuthUser = NonNullable<ReturnType<typeof useAuth>['user']>;
 type RecentQuizEntry = NonNullable<AuthUser['recentQuizzes']>[number];
@@ -27,6 +28,12 @@ const TOP_TABS: { label: string; value: TabKey }[] = [
   { label: 'REASONING', value: 'reasoning' },
   { label: 'GA', value: 'ga' },
 ];
+
+const SECTION_NAV = [
+  { label: 'Recent Quiz', value: 'recent', icon: History },
+  { label: 'Bookmark', value: 'bookmark', icon: Bookmark },
+  { label: 'Brain Scan', value: 'brain', icon: Brain },
+] as const;
 
 const SUBJECT_BY_TAB: Record<TabKey, string> = {
   math: 'mathematics',
@@ -100,24 +107,26 @@ export default function DashboardPage() {
 function DashboardContent() {
   const { user } = useAuth();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<TabKey>('math');
+  const [selectedTab, setSelectedTab] = useState<TabKey | null>(null);
   const [activeNav, setActiveNav] = useState<NavKey>('recent');
-  const subjectInitRef = useRef(false);
+  const userRecentQuizzes = user?.recentQuizzes;
+  const userBookmarkEntries = user?.bookmarkEntries;
+  const userBookmarks = user?.bookmarks;
 
   const recentQuizzes = useMemo<RecentQuizEntry[]>(() => {
-    if (!user?.recentQuizzes) return [];
-    return [...user.recentQuizzes]
+    if (!userRecentQuizzes) return [];
+    return [...userRecentQuizzes]
       .filter((entry) => entry && entry.quizKey)
       .sort((a, b) => {
         const aTime = Date.parse(a.updatedAt || '') || 0;
         const bTime = Date.parse(b.updatedAt || '') || 0;
         return bTime - aTime;
       });
-  }, [user?.recentQuizzes]);
+  }, [userRecentQuizzes]);
 
   const bookmarkEntries = useMemo<BookmarkEntry[]>(() => {
-    if (user?.bookmarkEntries?.length) {
-      return [...user.bookmarkEntries]
+    if (userBookmarkEntries?.length) {
+      return [...userBookmarkEntries]
         .filter((entry) => entry && entry.questionId)
         .sort((a, b) => {
           const aTime = Date.parse(a.updatedAt || '') || 0;
@@ -126,22 +135,21 @@ function DashboardContent() {
         });
     }
 
-    return (user?.bookmarks || []).map<BookmarkEntry>((id) => ({
+    return (userBookmarks || []).map<BookmarkEntry>((id) => ({
       questionId: id,
       title: 'Saved Question',
       subject: undefined,
       updatedAt: undefined,
     }));
-  }, [user?.bookmarkEntries, user?.bookmarks]);
+  }, [userBookmarkEntries, userBookmarks]);
 
-  useEffect(() => {
-    if (subjectInitRef.current) return;
+  const inferredTab = useMemo<TabKey>(() => {
     const nextSubject =
       recentQuizzes[0]?.subject || bookmarkEntries[0]?.subject || 'mathematics';
-    const nextTab = TAB_BY_SUBJECT[nextSubject] || 'math';
-    setActiveTab(nextTab);
-    subjectInitRef.current = true;
+    return TAB_BY_SUBJECT[nextSubject] || 'math';
   }, [bookmarkEntries, recentQuizzes]);
+
+  const activeTab = selectedTab ?? inferredTab;
 
   useEffect(() => {
     let animationFrameId: number;
@@ -214,8 +222,15 @@ function DashboardContent() {
   const emptyCopy =
     activeNav === 'recent'
       ? 'No recent quizzes yet. Start one to see it here.'
-      : 'No bookmarks yet. Save a question to revisit it later.';
-  const sectionLabel = activeNav === 'recent' ? 'Recent Quiz' : 'Bookmarks';
+      : activeNav === 'bookmark'
+        ? 'No bookmarks yet. Save a question to revisit it later.'
+        : '';
+  const sectionLabel =
+    activeNav === 'recent'
+      ? 'Recent Quiz'
+      : activeNav === 'bookmark'
+        ? 'Bookmarks'
+        : 'Brain Scan';
   const recentList = filteredRecent;
   const bookmarkList = filteredBookmarks;
 
@@ -227,7 +242,27 @@ function DashboardContent() {
 
       <div className="dashboard-frame relative z-10 mx-auto max-w-md">
         <div className="dashboard-top">
-          <div className="mb-6 flex items-start justify-between">
+          <div className="section-switcher" role="tablist" aria-label="Dashboard sections">
+            {SECTION_NAV.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeNav === item.value;
+              return (
+                <button
+                  key={item.value}
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  className={`section-pill ${isActive ? 'active' : ''}`}
+                  onClick={() => setActiveNav(item.value)}
+                >
+                  <Icon className="section-pill-icon" aria-hidden="true" />
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="dashboard-title-row">
             <div>
               <p className="text-xs font-semibold uppercase tracking-widest text-indigo-600">
                 Dashboard
@@ -239,32 +274,44 @@ function DashboardContent() {
               aria-label="Close dashboard"
               onClick={handleClose}
             >
-              <span aria-hidden="true">X</span>
+              <X aria-hidden="true" size={18} strokeWidth={2.4} />
             </button>
           </div>
 
-          <div className="nav-container">
-            <div className="flex justify-between">
-              {TOP_TABS.map((tab) => (
-                <button
-                  key={tab.value}
-                  type="button"
-                  onClick={() => setActiveTab(tab.value)}
-                  className={`nav-tab ${
-                    activeTab === tab.value ? 'active' : ''
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
+          {activeNav !== 'brain' && (
+            <div className="nav-container">
+              <div className="subject-tabs">
+                {TOP_TABS.map((tab) => (
+                  <button
+                    key={tab.value}
+                    type="button"
+                    onClick={() => setSelectedTab(tab.value)}
+                    className={`nav-tab ${
+                      activeTab === tab.value ? 'active' : ''
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         <div className="dashboard-scroll">
           <div key={`${activeTab}-${activeNav}`} className="page-content">
             <div className="section-label">{sectionLabel}</div>
-            {activeNav === 'recent' ? (
+            {activeNav === 'brain' ? (
+              user?.id ? (
+                <div className="brain-scan-card">
+                  <BrainScanDashboard userId={user.id} />
+                </div>
+              ) : (
+                <div className="glass-card empty-state">
+                  Sign in to view your Brain Scan insights.
+                </div>
+              )
+            ) : activeNav === 'recent' ? (
               recentList.length === 0 ? (
                 <div className="glass-card empty-state">{emptyCopy}</div>
               ) : (
@@ -328,8 +375,6 @@ function DashboardContent() {
                   : '';
                 const isClickable = Boolean(bookmarkHref);
 
-                // ✅ FIX: Split into two separate returns instead of dynamic CardTag
-                // to avoid TypeScript's href: string | undefined incompatibility with LinkProps
                 if (isClickable) {
                   return (
                     <Link
@@ -377,44 +422,6 @@ function DashboardContent() {
                 );
               })
             )}
-
-            {user?.id ? (
-              <div className="brain-scan-section">
-                <div className="section-label">Brain Scan</div>
-                <div className="brain-scan-card">
-                  <BrainScanDashboard userId={user.id} />
-                </div>
-              </div>
-            ) : (
-              <div className="glass-card empty-state">
-                Sign in to view your Brain Scan insights.
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="dashboard-bottom">
-          <div className="bottom-nav">
-            <button
-              type="button"
-              className={`nav-pill ${activeNav === 'recent' ? 'active' : ''}`}
-              onClick={() => setActiveNav('recent')}
-            >
-              <div className="diamond" />
-              <span>RECENT QUIZ</span>
-            </button>
-            <button
-              type="button"
-              className={`nav-pill ${activeNav === 'bookmark' ? 'active' : ''}`}
-              onClick={() => setActiveNav('bookmark')}
-            >
-              <div
-                className={`bookmark-dot ${
-                  activeNav === 'bookmark' ? 'active' : ''
-                }`}
-              />
-              <span>BOOKMARK</span>
-            </button>
           </div>
         </div>
       </div>
@@ -437,19 +444,16 @@ function DashboardContent() {
           height: 100%;
           display: flex;
           flex-direction: column;
-          gap: 16px;
+          gap: 14px;
           padding: 24px;
           padding-top: max(24px, env(safe-area-inset-top));
           padding-bottom: max(24px, env(safe-area-inset-bottom));
         }
 
-        body.has-bottom-nav .dashboard-shell .dashboard-frame {
-          padding-bottom: calc(max(24px, env(safe-area-inset-bottom)) + 84px);
-        }
-
-        .dashboard-shell .dashboard-top,
-        .dashboard-shell .dashboard-bottom {
+        .dashboard-shell .dashboard-top {
           flex: 0 0 auto;
+          position: relative;
+          z-index: 20;
         }
 
         .dashboard-shell .dashboard-scroll {
@@ -458,6 +462,7 @@ function DashboardContent() {
           overflow-y: auto;
           padding-right: 4px;
           padding-bottom: 8px;
+          scroll-behavior: smooth;
           -webkit-overflow-scrolling: touch;
           overscroll-behavior: contain;
         }
@@ -550,6 +555,80 @@ function DashboardContent() {
           background: rgba(255, 255, 255, 0.35);
         }
 
+        .dashboard-shell .section-switcher {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 6px;
+          padding: 8px;
+          margin-bottom: 16px;
+          border-radius: 28px;
+          background: rgba(255, 255, 255, 0.42);
+          border: 1px solid rgba(255, 255, 255, 0.65);
+          box-shadow: 0 16px 42px rgba(79, 70, 229, 0.18),
+            inset 0 1px 0 rgba(255, 255, 255, 0.75);
+          backdrop-filter: blur(28px);
+          -webkit-backdrop-filter: blur(28px);
+        }
+
+        .dashboard-shell .section-pill {
+          min-width: 0;
+          min-height: 52px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 7px;
+          border-radius: 21px;
+          color: rgba(75, 85, 99, 0.72);
+          font-size: 0.77rem;
+          font-weight: 700;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+          line-height: 1;
+          transition:
+            transform 0.24s ease,
+            color 0.24s ease,
+            background 0.24s ease,
+            box-shadow 0.24s ease;
+        }
+
+        .dashboard-shell .section-pill span {
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .dashboard-shell .section-pill-icon {
+          width: 18px;
+          height: 18px;
+          flex: 0 0 auto;
+          stroke-width: 2.6;
+        }
+
+        .dashboard-shell .section-pill:hover {
+          color: #4f46e5;
+          background: rgba(255, 255, 255, 0.25);
+        }
+
+        .dashboard-shell .section-pill:active {
+          transform: scale(0.98);
+        }
+
+        .dashboard-shell .section-pill.active {
+          color: #4f46e5;
+          background: rgba(255, 255, 255, 0.96);
+          box-shadow: 0 12px 28px rgba(79, 70, 229, 0.22),
+            inset 0 1px 0 rgba(255, 255, 255, 0.95);
+        }
+
+        .dashboard-shell .dashboard-title-row {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 12px;
+          margin-bottom: 16px;
+        }
+
         .dashboard-shell .nav-container {
           background: rgba(255, 255, 255, 0.35);
           backdrop-filter: blur(24px);
@@ -562,17 +641,25 @@ function DashboardContent() {
           overflow: hidden;
         }
 
+        .dashboard-shell .subject-tabs {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 4px;
+        }
+
         .dashboard-shell .nav-tab {
           position: relative;
           z-index: 1;
           transition: all 0.3s ease;
           cursor: pointer;
           border-radius: 12px;
-          padding: 10px 20px;
+          padding: 10px 8px;
           font-weight: 600;
           font-size: 0.875rem;
           color: rgba(75, 85, 99, 0.8);
           letter-spacing: 0.05em;
+          text-align: center;
+          white-space: nowrap;
         }
 
         .dashboard-shell .nav-tab.active {
@@ -584,69 +671,6 @@ function DashboardContent() {
         .dashboard-shell .nav-tab:hover:not(.active) {
           color: #6366f1;
           background: rgba(255, 255, 255, 0.2);
-        }
-
-        .dashboard-shell .bottom-nav {
-          background: rgba(255, 255, 255, 0.4);
-          backdrop-filter: blur(28px);
-          -webkit-backdrop-filter: blur(28px);
-          border-radius: 24px;
-          padding: 8px;
-          display: flex;
-          gap: 8px;
-          box-shadow: 0 12px 40px rgba(31, 38, 135, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.8);
-          border: 1px solid rgba(255, 255, 255, 0.6);
-        }
-
-        .dashboard-shell .nav-pill {
-          flex: 1;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-          padding: 12px 24px;
-          border-radius: 18px;
-          font-weight: 600;
-          font-size: 0.875rem;
-          cursor: pointer;
-          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-          position: relative;
-          overflow: hidden;
-          color: rgba(75, 85, 99, 0.7);
-        }
-
-        .dashboard-shell .nav-pill.active {
-          background: rgba(255, 255, 255, 0.95);
-          color: #4f46e5;
-          box-shadow: 0 4px 20px rgba(79, 70, 229, 0.3), inset 0 2px 4px rgba(255, 255, 255, 0.9);
-          border: 1px solid rgba(255, 255, 255, 0.8);
-        }
-
-        .dashboard-shell .nav-pill:not(.active):hover {
-          background: rgba(255, 255, 255, 0.3);
-          color: #6366f1;
-        }
-
-        .dashboard-shell .diamond {
-          width: 12px;
-          height: 12px;
-          background: #4f46e5;
-          transform: rotate(45deg);
-          border-radius: 2px;
-          box-shadow: 0 2px 8px rgba(79, 70, 229, 0.4);
-        }
-
-        .dashboard-shell .bookmark-dot {
-          width: 12px;
-          height: 12px;
-          border-radius: 999px;
-          background: #9ca3af;
-          transition: all 0.3s ease;
-        }
-
-        .dashboard-shell .bookmark-dot.active {
-          background: #4f46e5;
-          box-shadow: 0 2px 8px rgba(79, 70, 229, 0.4);
         }
 
         .dashboard-shell .activity-item {
@@ -679,6 +703,7 @@ function DashboardContent() {
 
         .dashboard-shell .activity-content {
           flex: 1;
+          min-width: 0;
         }
 
         .dashboard-shell .activity-title {
@@ -686,17 +711,24 @@ function DashboardContent() {
           color: #1f2937;
           font-size: 1rem;
           margin-bottom: 4px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
 
         .dashboard-shell .activity-subtitle {
           color: #6b7280;
           font-size: 0.875rem;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
 
         .dashboard-shell .activity-time {
           color: #9ca3af;
           font-size: 0.875rem;
           font-weight: 500;
+          flex: 0 0 auto;
         }
 
         .dashboard-shell .empty-state {
@@ -707,11 +739,12 @@ function DashboardContent() {
         }
 
         .dashboard-shell .close-btn {
-          position: absolute;
-          top: max(12px, env(safe-area-inset-top));
-          right: max(12px, env(safe-area-inset-right));
-          background: transparent;
+          width: 34px;
+          height: 34px;
+          flex: 0 0 auto;
+          background: rgba(255, 255, 255, 0.36);
           border: none;
+          border-radius: 12px;
           padding: 0;
           line-height: 1;
           display: flex;
@@ -726,6 +759,7 @@ function DashboardContent() {
 
         .dashboard-shell .close-btn:hover {
           color: #1f2937;
+          background: rgba(255, 255, 255, 0.58);
           transform: scale(1.05);
         }
 
@@ -739,18 +773,81 @@ function DashboardContent() {
           padding-left: 8px;
         }
 
-        .dashboard-shell .brain-scan-section {
-          margin-top: 20px;
-        }
-
         .dashboard-shell .brain-scan-card {
-          margin-top: 8px;
+          min-width: 0;
         }
 
         .dashboard-shell .page-content {
           animation: liquidSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
           opacity: 0;
           transform-origin: top center;
+        }
+
+        @media (max-width: 480px) {
+          .dashboard-shell .dashboard-frame {
+            padding: 16px;
+            padding-top: max(16px, env(safe-area-inset-top));
+            padding-bottom: max(16px, env(safe-area-inset-bottom));
+            gap: 12px;
+          }
+
+          .dashboard-shell .section-switcher {
+            padding: 6px;
+            gap: 5px;
+            margin-bottom: 14px;
+            border-radius: 24px;
+          }
+
+          .dashboard-shell .section-pill {
+            min-height: 46px;
+            border-radius: 18px;
+            gap: 5px;
+            padding: 0 5px;
+            font-size: 0.68rem;
+            letter-spacing: 0.02em;
+          }
+
+          .dashboard-shell .section-pill-icon {
+            width: 16px;
+            height: 16px;
+          }
+
+          .dashboard-shell .dashboard-title-row {
+            margin-bottom: 12px;
+          }
+
+          .dashboard-shell .nav-container {
+            padding: 5px;
+            border-radius: 14px;
+          }
+
+          .dashboard-shell .nav-tab {
+            padding: 9px 4px;
+            font-size: 0.72rem;
+            letter-spacing: 0.02em;
+          }
+
+          .dashboard-shell .activity-item {
+            gap: 12px;
+            padding: 14px;
+            border-radius: 18px;
+          }
+
+          .dashboard-shell .activity-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 14px;
+            font-size: 1rem;
+          }
+
+          .dashboard-shell .activity-title {
+            font-size: 0.94rem;
+          }
+
+          .dashboard-shell .activity-subtitle,
+          .dashboard-shell .activity-time {
+            font-size: 0.8rem;
+          }
         }
 
         @keyframes liquidSlideUp {
