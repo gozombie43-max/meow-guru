@@ -124,3 +124,27 @@ export function useBrainScan(userId: string) {
 
   return { data, loading, fetchBrainScan };
 }
+
+// ─── Hook: seed demo data (for development/testing) ──────────────────────────
+
+export function useSeedDemoData() {
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  const seedDemoData = useCallback(async (userId: string) => {
+    setLoading(true);
+    setSuccess(false);
+    try {
+      const { data } = await axios.post("/api/agent/seed-demo-data", { userId });
+      setSuccess(data.success);
+      return data;
+    } catch (err) {
+      console.error("seedDemoData error:", err);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { seedDemoData, loading, success };
+}

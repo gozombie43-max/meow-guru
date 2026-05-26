@@ -4,8 +4,8 @@
 
 "use client";
 
-import { useEffect } from "react";
-import { useBrainScan, WeakConcept } from "@/hooks/useCognitiveMapper";
+import { useEffect, useState } from "react";
+import { useBrainScan, useSeedDemoData, WeakConcept } from "@/hooks/useCognitiveMapper";
 
 const DIMENSION_META: Record<string, { label: string; color: string; bg: string; desc: string; emoji: string }> = {
   CONCEPTUAL_GAP: { label: "Conceptual Gap", color: "#A32D2D", bg: "#FCEBEB", desc: "Don't know the rule", emoji: "📚" },
@@ -31,14 +31,28 @@ const PRESCRIPTION: Record<string, string> = {
 
 interface Props {
   userId: string;
+  demo?: boolean;
 }
 
-export default function BrainScanDashboard({ userId }: Props) {
+export default function BrainScanDashboard({ userId, demo = false }: Props) {
   const { data, loading, fetchBrainScan } = useBrainScan(userId);
+  const { seedDemoData, loading: seeding } = useSeedDemoData();
+  const [showSeeded, setShowSeeded] = useState(false);
 
   useEffect(() => {
     fetchBrainScan();
   }, [fetchBrainScan]);
+
+  const handleSeedDemo = async () => {
+    const result = await seedDemoData(userId);
+    if (result?.success) {
+      setShowSeeded(true);
+      // Refresh brain scan data after seeding
+      setTimeout(() => {
+        fetchBrainScan();
+      }, 500);
+    }
+  };
 
   if (loading) {
     return (
@@ -49,24 +63,56 @@ export default function BrainScanDashboard({ userId }: Props) {
     );
   }
 
-  if (!data?.hasSufficientData) {
+  if (!data?.hasSufficientData && !demo && !showSeeded) {
     return (
       <div className="brain-scan-empty">
         <p>Complete at least 3 quizzes to unlock your Brain Scan.</p>
         <p className="sub">Every wrong answer is being tracked — the map builds as you practice.</p>
+        <button
+          onClick={handleSeedDemo}
+          disabled={seeding}
+          style={{
+            marginTop: "1rem",
+            padding: "8px 16px",
+            background: "#5B21B6",
+            color: "#fff",
+            border: "none",
+            borderRadius: "6px",
+            cursor: seeding ? "not-allowed" : "pointer",
+            opacity: seeding ? 0.6 : 1,
+            fontSize: "0.85rem",
+            fontWeight: "600",
+          }}
+        >
+          {seeding ? "Seeding..." : "🧪 View Demo Data"}
+        </button>
       </div>
     );
   }
 
-  const total = Object.values(data.globalDistribution).reduce((a, b) => a + b, 0);
+  // Fallback: Show empty data structure if no data available
+  const displayData = data || {
+    topWeakConcepts: [],
+    globalDistribution: {
+      CONCEPTUAL_GAP: 0,
+      APPLICATION_ERROR: 0,
+      TRAP_CAUGHT: 0,
+      SPEED_PANIC: 0,
+      BLIND_SPOT: 0,
+    },
+    totalConceptsTracked: 0,
+    hasSufficientData: false,
+  };
+
+  const total = Object.values(displayData.globalDistribution).reduce((a, b) => a + b, 0);
 
   return (
     <div className="brain-scan">
       {/* Header */}
       <div className="bscan-header">
-        <h2>🧠 Brain Scan</h2>
+        <h2>🧠 Brain Scan {demo && "(DEMO MODE)"}</h2>
         <p className="subtitle">
-          {data.totalConceptsTracked} concepts tracked · {total} failures analyzed
+          {displayData.totalConceptsTracked} concepts tracked · {total} failures analyzed
         </p>
       </div>
 
@@ -74,7 +120,7 @@ export default function BrainScanDashboard({ userId }: Props) {
       <div className="dimension-bar-section">
         <h3>Failure Pattern Overview</h3>
         <div className="dimension-bars">
-          {Object.entries(data.globalDistribution)
+          {Object.entries(displayData.globalDistribution)
             .sort((a, b) => b[1] - a[1])
             .map(([dim, count]) => {
               const pct = total > 0 ? Math.round((count / total) * 100) : 0;
@@ -99,11 +145,15 @@ export default function BrainScanDashboard({ userId }: Props) {
       {/* Top Weak Concepts */}
       <div className="weak-concepts-section">
         <h3>Top Weak Concepts</h3>
-        <div className="concept-cards">
-          {data.topWeakConcepts.map((concept) => (
-            <ConceptCard key={concept.key} concept={concept} />
-          ))}
-        </div>
+        {displayData.topWeakConcepts.length === 0 ? (
+          <p style={{ color: "#999", fontSize: "0.85rem" }}>No concept failures tracked yet.</p>
+        ) : (
+          <div className="concept-cards">
+            {displayData.topWeakConcepts.map((concept) => (
+              <ConceptCard key={concept.key} concept={concept} />
+            ))}
+          </div>
+        )}
       </div>
 
       <style>{`
