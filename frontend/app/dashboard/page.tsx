@@ -428,6 +428,8 @@ function DashboardContent() {
 
       <style jsx global>{`
         .dashboard-shell {
+          position: fixed;
+          inset: 0;
           background: linear-gradient(
             135deg,
             #e0e7ff 0%,
@@ -438,6 +440,7 @@ function DashboardContent() {
           overflow-x: hidden;
           height: 100svh;
           overflow-y: hidden;
+          touch-action: pan-y;
         }
 
         .dashboard-shell .dashboard-frame {
@@ -464,7 +467,7 @@ function DashboardContent() {
           padding-bottom: 8px;
           scroll-behavior: smooth;
           -webkit-overflow-scrolling: touch;
-          overscroll-behavior: contain;
+          overscroll-behavior-y: contain;
         }
 
         .dashboard-shell .blob {
