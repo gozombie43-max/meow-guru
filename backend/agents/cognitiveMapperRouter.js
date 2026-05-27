@@ -10,6 +10,7 @@ import {
   getTopWeakConcepts,
 } from "./cognitiveMapper.js";
 import { getUsersContainer } from "../containerStore.js";
+import { chatJSON } from "../ai/azureClient.js";
 
 const router = express.Router();
 
@@ -57,6 +58,392 @@ const buildGlobalDistribution = (failureMap = {}) => {
   }
 
   return distribution;
+};
+
+const DIMENSION_FIXES = {
+  [DIMENSIONS.CONCEPTUAL_GAP]: {
+    why: "The rule itself is missing or unclear.",
+    fix: "Review the rule, then solve a few easy questions before timing.",
+  },
+  [DIMENSIONS.APPLICATION_ERROR]: {
+    why: "The concept is known, but one step went wrong.",
+    fix: "Slow down and compare each step against the worked solution.",
+  },
+  [DIMENSIONS.TRAP_CAUGHT]: {
+    why: "A distractor looked more convincing than the correct option.",
+    fix: "Write why the wrong option is tempting before choosing.",
+  },
+  [DIMENSIONS.SPEED_PANIC]: {
+    why: "The answer changed under pressure or too quickly.",
+    fix: "Use short timed sets and avoid second-guessing.",
+  },
+  [DIMENSIONS.BLIND_SPOT]: {
+    why: "The question was skipped, guessed, or rushed.",
+    fix: "Force a written reason before answering.",
+  },
+};
+
+const normalizeText = (value, fallback = "") => {
+  const text = String(value ?? "").trim();
+  return text || fallback;
+};
+
+const average = (values = []) => {
+  if (!values.length) return 0;
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
+};
+
+const round = (value) => Math.round(Number.isFinite(value) ? value : 0);
+
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const buildWrongAnswerRows = (recentQuizzes = []) => {
+  const rows = [];
+
+  for (const quiz of recentQuizzes) {
+    if (!Array.isArray(quiz?.results)) continue;
+
+    const subject = normalizeText(quiz.subject, "Unknown Subject");
+    const topic = normalizeText(quiz.title || quiz.slug || quiz.subject, "Unknown Topic");
+    const updatedAt = quiz.updatedAt || new Date().toISOString();
+
+    for (const result of quiz.results) {
+      if (!isRecord(result) || result.isCorrect !== false) continue;
+
+      rows.push({
+        subject,
+        topic,
+        concept: normalizeText(result.concept, topic),
+        timeTaken: Number(result.timeTaken) || 0,
+        selected: result.selected ?? null,
+        updatedAt,
+      });
+    }
+  }
+
+  return rows;
+};
+
+const buildHeatmap = (wrongRows = [], fallbackConcepts = []) => {
+  const subjectMap = new Map();
+
+  const ensureSubject = (subject) => {
+    if (!subjectMap.has(subject)) {
+      subjectMap.set(subject, {
+        subject,
+        totalWrong: 0,
+        topics: new Map(),
+      });
+    }
+    return subjectMap.get(subject);
+  };
+
+  for (const row of wrongRows) {
+    const subjectEntry = ensureSubject(row.subject);
+    const topicKey = row.topic;
+    if (!subjectEntry.topics.has(topicKey)) {
+      subjectEntry.topics.set(topicKey, {
+        topic: topicKey,
+        totalWrong: 0,
+        concepts: new Set(),
+        avgTimeValues: [],
+        recentAt: row.updatedAt,
+      });
+    }
+
+    const topicEntry = subjectEntry.topics.get(topicKey);
+    topicEntry.totalWrong += 1;
+    topicEntry.concepts.add(row.concept);
+    topicEntry.avgTimeValues.push(row.timeTaken);
+    if (!topicEntry.recentAt || Date.parse(row.updatedAt) > Date.parse(topicEntry.recentAt)) {
+      topicEntry.recentAt = row.updatedAt;
+    }
+
+    subjectEntry.totalWrong += 1;
+  }
+
+  if (subjectMap.size === 0 && fallbackConcepts.length > 0) {
+    const subjectEntry = ensureSubject("Practice History");
+    for (const concept of fallbackConcepts) {
+      const topicKey = concept.topic || "General";
+      if (!subjectEntry.topics.has(topicKey)) {
+        subjectEntry.topics.set(topicKey, {
+          topic: topicKey,
+          totalWrong: 0,
+          concepts: new Set(),
+          avgTimeValues: [],
+          recentAt: concept.lastSeen,
+        });
+      }
+
+      const topicEntry = subjectEntry.topics.get(topicKey);
+      topicEntry.totalWrong += concept.totalWrong || 0;
+      topicEntry.concepts.add(concept.concept || topicKey);
+      subjectEntry.totalWrong += concept.totalWrong || 0;
+    }
+  }
+
+  return Array.from(subjectMap.values())
+    .map((subjectEntry) => {
+      const topics = Array.from(subjectEntry.topics.values())
+        .map((topicEntry) => ({
+          topic: topicEntry.topic,
+          totalWrong: topicEntry.totalWrong,
+          concepts: topicEntry.concepts.size,
+          avgTime: round(average(topicEntry.avgTimeValues)),
+          recentAt: topicEntry.recentAt,
+        }))
+        .sort((a, b) => b.totalWrong - a.totalWrong)
+        .slice(0, 5);
+
+      return {
+        subject: subjectEntry.subject,
+        totalWrong: subjectEntry.totalWrong,
+        topics,
+      };
+    })
+    .sort((a, b) => b.totalWrong - a.totalWrong);
+};
+
+const buildConfidenceProfile = (allResults = []) => {
+  const wrongResults = allResults.filter((result) => result.isCorrect === false);
+  const correctResults = allResults.filter((result) => result.isCorrect === true);
+  const skippedResults = wrongResults.filter((result) => result.selected === null);
+  const fastWrongResults = wrongResults.filter((result) => (Number(result.timeTaken) || 0) <= 5);
+
+  const skipRate = wrongResults.length > 0 ? skippedResults.length / wrongResults.length : 0;
+  const fastWrongRate = wrongResults.length > 0 ? fastWrongResults.length / wrongResults.length : 0;
+  const avgWrongTime = round(average(wrongResults.map((result) => Number(result.timeTaken) || 0)));
+  const avgCorrectTime = round(average(correctResults.map((result) => Number(result.timeTaken) || 0)));
+
+  let label = "Balanced";
+  let detail = "Your pace and accuracy are relatively even.";
+
+  if (skipRate >= 0.3) {
+    label = "Guess/Skip Heavy";
+    detail = "Skipped or guessed answers are driving the misses.";
+  } else if (fastWrongRate >= 0.45) {
+    label = "Panic Prone";
+    detail = "Most wrong answers happen very quickly under pressure.";
+  } else if (avgWrongTime > avgCorrectTime + 5) {
+    label = "Slow Misfire";
+    detail = "You spend time, but the final check still needs work.";
+  }
+
+  return {
+    label,
+    detail,
+    fastWrongRate: round(fastWrongRate * 100),
+    skipRate: round(skipRate * 100),
+    avgWrongTime,
+    avgCorrectTime,
+  };
+};
+
+const buildAdaptiveNextDrill = ({ topWeakConcepts = [], globalDist = {}, subjectHeatmap = [] }) => {
+  const dominantDimension = Object.entries(globalDist).sort((a, b) => b[1] - a[1])[0]?.[0] || DIMENSIONS.APPLICATION_ERROR;
+  const topConcept = topWeakConcepts[0] || null;
+  const topSubject = subjectHeatmap[0] || null;
+  const count = topConcept?.totalWrong >= 5 ? 10 : topConcept?.totalWrong >= 3 ? 8 : 5;
+  const drillType =
+    dominantDimension === DIMENSIONS.TRAP_CAUGHT
+      ? "trap-awareness"
+      : dominantDimension === DIMENSIONS.SPEED_PANIC
+        ? "timed-pressure"
+        : dominantDimension === DIMENSIONS.BLIND_SPOT
+          ? "forced-explanation"
+          : dominantDimension === DIMENSIONS.CONCEPTUAL_GAP
+            ? "concept-rebuild"
+            : "step-by-step";
+
+  return {
+    count,
+    drillType,
+    subject: topSubject?.subject || topConcept?.topic || "General",
+    topic: topConcept?.topic || topSubject?.topics?.[0]?.topic || "General",
+    concept: topConcept?.concept || topConcept?.topic || "General",
+    difficulty:
+      dominantDimension === DIMENSIONS.CONCEPTUAL_GAP || dominantDimension === DIMENSIONS.BLIND_SPOT
+        ? "easy"
+        : dominantDimension === DIMENSIONS.SPEED_PANIC
+          ? "medium"
+          : "medium",
+    reason: topConcept
+      ? `Most misses are concentrated in ${topConcept.concept} (${topConcept.totalWrong} wrong).`
+      : "Use the current weakness map to keep practice targeted.",
+    focus: DIMENSION_FIXES[dominantDimension]?.fix || "Keep the next drill short and focused.",
+    dominantDimension,
+  };
+};
+
+const buildRevisionPack = (topWeakConcepts = []) =>
+  topWeakConcepts.slice(0, 6).map((concept) => ({
+    subject: concept.topic || "General",
+    topic: concept.topic || "General",
+    concept: concept.concept,
+    totalWrong: concept.totalWrong,
+    drillSize: concept.totalWrong >= 5 ? 10 : concept.totalWrong >= 3 ? 8 : 5,
+    drillType: DIMENSION_FIXES[concept.dominantDimension]?.why || "Review the concept, then test it again.",
+  }));
+
+const buildTrapRadar = (topWeakConcepts = [], globalDist = {}) => {
+  const trapCount = Number(globalDist[DIMENSIONS.TRAP_CAUGHT]) || 0;
+  const total = DIMENSION_KEYS.reduce((sum, key) => sum + (Number(globalDist[key]) || 0), 0);
+  const trapShare = total > 0 ? trapCount / total : 0;
+
+  const trapHotspots = topWeakConcepts
+    .filter((concept) => (concept.breakdown?.[DIMENSIONS.TRAP_CAUGHT] || 0) > 0)
+    .slice(0, 3)
+    .map((concept) => ({
+      concept: concept.concept,
+      topic: concept.topic,
+      hits: concept.breakdown?.[DIMENSIONS.TRAP_CAUGHT] || 0,
+    }));
+
+  return {
+    label:
+      trapShare >= 0.3 ? "High Trap Risk" : trapShare >= 0.15 ? "Watch Traps" : "Low Trap Pressure",
+    detail:
+      trapShare >= 0.3
+        ? "Distractors are a major source of errors right now."
+        : trapShare >= 0.15
+          ? "Trap-style mistakes are showing up often enough to warrant review."
+          : "Trap errors are present, but not the main pattern.",
+    trapShare: round(trapShare * 100),
+    hotspots: trapHotspots,
+  };
+};
+
+const buildProgressNarrative = (recentQuizzes = [], confidenceProfile, topWeakConcepts = []) => {
+  const ordered = [...recentQuizzes].sort((a, b) => Date.parse(b.updatedAt || "") - Date.parse(a.updatedAt || ""));
+  const latest = ordered[0];
+  const previous = ordered[1];
+
+  const summarizeQuiz = (quiz) => {
+    const results = Array.isArray(quiz?.results) ? quiz.results : [];
+    const correct = results.filter((result) => result.isCorrect === true).length;
+    const wrong = results.filter((result) => result.isCorrect === false).length;
+    const avgTime = round(average(results.map((result) => Number(result.timeTaken) || 0)));
+    const accuracy = results.length > 0 ? round((correct / results.length) * 100) : 0;
+    return { correct, wrong, avgTime, accuracy };
+  };
+
+  if (!latest || !previous) {
+    return {
+      headline: "Baseline set",
+      detail: "Keep practicing and the next scan will reveal a real trend line.",
+    };
+  }
+
+  const latestStats = summarizeQuiz(latest);
+  const previousStats = summarizeQuiz(previous);
+  const deltaWrong = previousStats.wrong - latestStats.wrong;
+  const deltaAccuracy = latestStats.accuracy - previousStats.accuracy;
+  const deltaSpeed = previousStats.avgTime - latestStats.avgTime;
+
+  let headline = "Steady";
+  let detail = `Your latest accuracy is ${latestStats.accuracy}% with ${latestStats.wrong} wrong.`;
+
+  if (deltaWrong > 0 && deltaAccuracy >= 0) {
+    headline = "Improving";
+    detail = `Wrong answers dropped by ${deltaWrong} since the previous session.`;
+  } else if (deltaWrong < 0) {
+    headline = "Needs attention";
+    detail = `The latest session had ${Math.abs(deltaWrong)} more wrong answers than the previous one.`;
+  }
+
+  if (confidenceProfile.label === "Panic Prone") {
+    detail += " Speed pressure is still part of the problem.";
+  } else if (deltaSpeed > 0) {
+    detail += ` You are also answering ${deltaSpeed} seconds faster on average.`;
+  }
+
+  if ((topWeakConcepts[0]?.totalWrong || 0) >= 5) {
+    detail += ` ${topWeakConcepts[0].concept} remains the main anchor point.`;
+  }
+
+  return { headline, detail };
+};
+
+const buildMistakeCoach = async ({ topWeakConcepts = [], confidenceProfile, trapRadar }) => {
+  if (!topWeakConcepts.length) return [];
+
+  const summary = topWeakConcepts.slice(0, 4).map((concept) => ({
+    concept: concept.concept,
+    topic: concept.topic,
+    dominantDimension: concept.dominantDimension,
+    totalWrong: concept.totalWrong,
+    breakdown: concept.breakdown,
+  }));
+
+  const prompt = `Create a concise JSON coaching response for an SSC exam dashboard.
+Analytics:\n${JSON.stringify({ summary, confidenceProfile, trapRadar })}\n\nReturn JSON with this exact shape:\n{\n  "mistakeCoach": [\n    {"concept":"","dimension":"","why":"","fix":""}\n  ]\n}\n\nRules:\n- include 3 to 4 items\n- keep each why/fix under 18 words\n- use the dominantDimension where possible\n- if there is no strong signal, explain in plain exam language`;
+
+  const aiResponse = chatJSON(prompt, undefined, "You are a concise SSC exam coach.")
+    .then((response) => {
+      if (Array.isArray(response?.mistakeCoach) && response.mistakeCoach.length > 0) {
+        return response.mistakeCoach.slice(0, 4);
+      }
+      return null;
+    })
+    .catch((err) => {
+      console.warn("[brain-insights] mistake coach fallback:", err.message);
+      return null;
+    });
+
+  const timeout = wait(3500).then(() => null);
+
+  const response = await Promise.race([aiResponse, timeout]);
+  if (response) return response;
+
+  return summary.slice(0, 4).map((concept) => ({
+    concept: concept.concept,
+    dimension: concept.dominantDimension,
+    why: DIMENSION_FIXES[concept.dominantDimension]?.why || "The pattern needs another review pass.",
+    fix: DIMENSION_FIXES[concept.dominantDimension]?.fix || "Rework the concept with one short drill.",
+  }));
+};
+
+const buildBrainInsights = async ({
+  recentQuizzes,
+  failureMap,
+  topWeakConcepts,
+  globalDist,
+  totalFailures,
+}) => {
+  const wrongRows = buildWrongAnswerRows(recentQuizzes);
+  const allResults = (recentQuizzes || []).flatMap((quiz) =>
+    Array.isArray(quiz?.results)
+      ? quiz.results.map((result) => ({
+          isCorrect: result?.isCorrect === true,
+          selected: result?.selected ?? null,
+          timeTaken: Number(result?.timeTaken) || 0,
+        }))
+      : []
+  );
+
+  const subjectHeatmap = buildHeatmap(wrongRows, topWeakConcepts);
+  const confidenceProfile = buildConfidenceProfile(allResults);
+  const adaptiveNextDrill = buildAdaptiveNextDrill({ topWeakConcepts, globalDist, subjectHeatmap });
+  const revisionPack = buildRevisionPack(topWeakConcepts);
+  const trapRadar = buildTrapRadar(topWeakConcepts, globalDist);
+  const progressNarrative = buildProgressNarrative(recentQuizzes, confidenceProfile, topWeakConcepts);
+  const mistakeCoach = await buildMistakeCoach({ topWeakConcepts, confidenceProfile, trapRadar });
+
+  return {
+    adaptiveNextDrill,
+    mistakeCoach,
+    subjectHeatmap,
+    confidenceProfile,
+    revisionPack,
+    trapRadar,
+    progressNarrative,
+    summary: {
+      totalFailures,
+      trackedConcepts: Object.keys(failureMap || {}).length,
+      weakestSubject: subjectHeatmap[0]?.subject || null,
+    },
+  };
 };
 
 const getAttemptDimension = (result) => {
@@ -287,6 +674,13 @@ router.get("/brain-scan/:userId", async (req, res) => {
     const totalFailures = getFailureTotal(failureMap);
     const topWeak = getTopWeakConcepts(failureMap, 10);
     const globalDist = buildGlobalDistribution(failureMap);
+    const insights = await buildBrainInsights({
+      recentQuizzes: profile.recentQuizzes || [],
+      failureMap,
+      topWeakConcepts: topWeak,
+      globalDist,
+      totalFailures,
+    });
 
     res.json({
       topWeakConcepts: topWeak,
@@ -296,6 +690,7 @@ router.get("/brain-scan/:userId", async (req, res) => {
       lastActiveDate: profile.lastActiveDate,
       source:
         storedFailureTotal > 0 ? "failureMap" : totalFailures > 0 ? "recentQuizzes" : "none",
+      insights,
     });
   } catch (err) {
     console.error("[brain-scan]", err);

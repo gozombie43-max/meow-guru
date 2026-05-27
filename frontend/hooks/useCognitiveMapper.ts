@@ -50,6 +50,72 @@ export interface BrainScanData {
   hasSufficientData: boolean;
   lastActiveDate?: string;
   source?: "failureMap" | "recentQuizzes" | "none";
+  insights?: {
+    adaptiveNextDrill?: {
+      count: number;
+      drillType: string;
+      subject: string;
+      topic: string;
+      concept: string;
+      difficulty: string;
+      reason: string;
+      focus: string;
+      dominantDimension: string;
+    };
+    mistakeCoach?: Array<{
+      concept: string;
+      topic?: string;
+      dimension: string;
+      why: string;
+      fix: string;
+    }>;
+    subjectHeatmap?: Array<{
+      subject: string;
+      totalWrong: number;
+      topics: Array<{
+        topic: string;
+        totalWrong: number;
+        concepts: number;
+        avgTime: number;
+        recentAt?: string;
+      }>;
+    }>;
+    confidenceProfile?: {
+      label: string;
+      detail: string;
+      fastWrongRate: number;
+      skipRate: number;
+      avgWrongTime: number;
+      avgCorrectTime: number;
+    };
+    revisionPack?: Array<{
+      subject: string;
+      topic: string;
+      concept: string;
+      totalWrong: number;
+      drillSize: number;
+      drillType: string;
+    }>;
+    trapRadar?: {
+      label: string;
+      detail: string;
+      trapShare: number;
+      hotspots: Array<{
+        concept: string;
+        topic: string;
+        hits: number;
+      }>;
+    };
+    progressNarrative?: {
+      headline: string;
+      detail: string;
+    };
+    summary?: {
+      totalFailures: number;
+      trackedConcepts: number;
+      weakestSubject: string | null;
+    };
+  };
 }
 
 // ─── Hook: tag a single wrong answer in real-time ────────────────────────────
@@ -132,7 +198,10 @@ export function useBrainScan(userId: string) {
       const { data: res } = await axios.get(`/api/agent/brain-scan/${userId}`);
       setData(res);
     } catch (err) {
-      console.error("brainScan error:", err);
+      const message = err instanceof Error ? err.message : String(err);
+      if (!message.toLowerCase().includes("timeout")) {
+        console.error("brainScan error:", err);
+      }
     } finally {
       setLoading(false);
     }

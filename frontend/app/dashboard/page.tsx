@@ -262,21 +262,14 @@ function DashboardContent() {
             })}
           </div>
 
-          <div className="dashboard-title-row">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-indigo-600">
-                Dashboard
-              </p>
-            </div>
-            <button
-              className="close-btn"
-              type="button"
-              aria-label="Close dashboard"
-              onClick={handleClose}
-            >
-              <X aria-hidden="true" size={18} strokeWidth={2.4} />
-            </button>
-          </div>
+          <button
+            className="close-btn"
+            type="button"
+            aria-label="Close dashboard"
+            onClick={handleClose}
+          >
+            <X aria-hidden="true" size={18} strokeWidth={2.4} />
+          </button>
 
           {activeNav !== 'brain' && (
             <div className="nav-container">
@@ -447,10 +440,10 @@ function DashboardContent() {
           height: 100%;
           display: flex;
           flex-direction: column;
-          gap: 14px;
-          padding: 24px;
-          padding-top: max(24px, env(safe-area-inset-top));
-          padding-bottom: max(24px, env(safe-area-inset-bottom));
+          gap: 12px;
+          padding: 20px;
+          padding-top: max(20px, env(safe-area-inset-top));
+          padding-bottom: max(20px, env(safe-area-inset-bottom));
         }
 
         .dashboard-shell .dashboard-top {
@@ -624,14 +617,6 @@ function DashboardContent() {
             inset 0 1px 0 rgba(255, 255, 255, 0.95);
         }
 
-        .dashboard-shell .dashboard-title-row {
-          display: flex;
-          align-items: flex-start;
-          justify-content: space-between;
-          gap: 12px;
-          margin-bottom: 16px;
-        }
-
         .dashboard-shell .nav-container {
           background: rgba(255, 255, 255, 0.35);
           backdrop-filter: blur(24px);
@@ -788,10 +773,10 @@ function DashboardContent() {
 
         @media (max-width: 480px) {
           .dashboard-shell .dashboard-frame {
-            padding: 16px;
-            padding-top: max(16px, env(safe-area-inset-top));
-            padding-bottom: max(16px, env(safe-area-inset-bottom));
-            gap: 12px;
+            padding: 14px;
+            padding-top: max(14px, env(safe-area-inset-top));
+            padding-bottom: max(14px, env(safe-area-inset-bottom));
+            gap: 10px;
           }
 
           .dashboard-shell .section-switcher {
@@ -813,10 +798,6 @@ function DashboardContent() {
           .dashboard-shell .section-pill-icon {
             width: 16px;
             height: 16px;
-          }
-
-          .dashboard-shell .dashboard-title-row {
-            margin-bottom: 12px;
           }
 
           .dashboard-shell .nav-container {
