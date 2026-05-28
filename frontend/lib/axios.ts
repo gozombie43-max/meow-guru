@@ -31,8 +31,11 @@ const updateStoredToken = (token: string | null) => {
   window.dispatchEvent(new CustomEvent(AUTH_TOKEN_CHANGED_EVENT, { detail: token }));
 };
 
+// Default to local backend in dev when NEXT_PUBLIC_API_URL isn't provided
+const defaultApiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000';
+
 const api = axios.create({
-  baseURL:         process.env.NEXT_PUBLIC_API_URL || '',
+  baseURL:         defaultApiBase,
   headers:         { 'Content-Type': 'application/json' },
   withCredentials: true, // sends cookies automatically
   timeout:         15000,

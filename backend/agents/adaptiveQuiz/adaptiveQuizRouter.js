@@ -3,6 +3,7 @@
 
 import express from "express";
 import { analyzePatternAndConfigure, SUBJECT_TOPICS } from "./patternAnalyzer.js";
+import TOPIC_MAP from "./topicCategoryMap.js";
 import { buildAdaptiveQuiz, saveQuizAttempts } from "./quizBuilder.js";
 import { CosmosClient } from "@azure/cosmos";
 
@@ -308,7 +309,64 @@ router.get("/preview/:userId", async (req, res) => {
 // Returns available topics grouped by subject for the frontend topic picker
 router.get('/topics', async (req, res) => {
   try {
-    res.json({ subjects: SUBJECT_TOPICS });
+    const userId = req.query.userId;
+
+    // Default shape: subject -> [topicName]
+    const subjectsOut = {};
+    Object.entries(SUBJECT_TOPICS).forEach(([subject, topics]) => {
+      subjectsOut[subject] = topics.slice();
+    });
+
+    if (!userId) {
+      return res.json({ subjects: subjectsOut });
+    }
+
+    // If userId provided, run a lightweight analysis to categorize topics
+    try {
+      const profile = await getUserProfile(userId);
+      const perfSummary = (profile?.attemptHistory || []).reduce((acc, a) => {
+        // keep only needed fields
+        acc.push({ topic: a.topic, subject: a.subject, isCorrect: a.isCorrect, timeSpent: a.timeSpent });
+        return acc;
+      }, []);
+
+      const config = await analyzePatternAndConfigure({
+        attemptHistory: profile?.attemptHistory || [],
+        failureMap: profile?.failureMap || {},
+        masteryMap: profile?.masteryMap || {},
+        subjects: Object.keys(SUBJECT_TOPICS),
+        questionCount: 20,
+      });
+
+      const allocations = Array.isArray(config?.topicAllocations) ? config.topicAllocations : [];
+      const maxCount = allocations.reduce((m, a) => Math.max(m, a.questionCount || 0), 0) || 1;
+
+      // Build category map: topic -> category
+      const topicCategory = {};
+      for (const a of allocations) {
+        const q = a.questionCount || 0;
+        if (q >= Math.ceil(maxCount * 0.6)) topicCategory[a.topic] = 'High';
+        else if (q >= Math.ceil(maxCount * 0.3)) topicCategory[a.topic] = 'Medium';
+        else topicCategory[a.topic] = 'Low';
+      }
+
+      // Never attempted topics -> Least
+      const attemptedSet = new Set((profile?.attemptHistory || []).map((it) => it.topic).filter(Boolean));
+
+      Object.entries(subjectsOut).forEach(([subject, topics]) => {
+        subjectsOut[subject] = topics.map((t) => {
+          const catFromAlloc = topicCategory[t];
+          const catFromMap = TOPIC_MAP[t];
+          const category = catFromAlloc || catFromMap || (attemptedSet.has(t) ? 'Least' : 'Least');
+          return { name: t, category };
+        });
+      });
+
+      return res.json({ subjects: subjectsOut });
+    } catch (err) {
+      console.warn('[adaptive-quiz/topics] failed to build user categories:', err.message);
+      return res.json({ subjects: subjectsOut });
+    }
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -17,9 +17,12 @@ type Part =
 
 function parseParts(input: string): Part[] {
   const parts: Part[] = [];
-  const safeInput = input.replace(/\\\$/g, "__DOLLAR__");
-  // matches \[ ... \], \( ... \), $$ ... $$, and $ ... $
-  const regex = /\\\[([\s\S]*?)\\\]|\\\(([\s\S]*?)\\\)|\$\$([\s\S]*?)\$\$|\$([^\n$]+?)\$/g;
+    // Normalize repeated backslashes (e.g. "\\\\(" or "\\(") to a single backslash
+    // so delimiters like \( ... \) are detected reliably even when double-escaped in JSON.
+    const normalizedBackslashes = input.replace(/\\{2,}/g, "\\");
+    const safeInput = normalizedBackslashes.replace(/\\\$/g, "__DOLLAR__");
+    // Accept delimiters with one or more backslashes, e.g. \(...\), \\\(...\\\), $$...$$, and $...$
+    const regex = /\\+\[([\s\S]*?)\\+\]|\\+\(([\s\S]*?)\\+\)|\$\$([\s\S]*?)\$\$|\$([^\n$]+?)\$/g;
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
@@ -60,7 +63,33 @@ export default function MathRenderer({
 
   const rendered = parts.map((part, i) => {
     if (part.type === "text") {
-      return <span key={i}>{part.content}</span>;
+      // Render plain text but detect simple inline fractions like 3/4 or x/100
+      const fracRegex = /\(?[^\s\/=()]+\)?\s*\/\s*\(?[^\s\/=()]+\)?/g;
+      const nodes: React.ReactNode[] = [];
+      let lastIndex = 0;
+      let match: RegExpExecArray | null;
+      while ((match = fracRegex.exec(part.content)) !== null) {
+        const idx = match.index;
+        if (idx > lastIndex) nodes.push(<span key={`${i}-t-${lastIndex}`}>{part.content.slice(lastIndex, idx)}</span>);
+        const frac = match[0];
+        const partsFrac = frac.split('/');
+        const rawNum = partsFrac[0].trim().replace(/^\(|\)$/g, '');
+        let rawDen = partsFrac.slice(1).join('/').trim().replace(/^\(|\)$/g, '');
+        const hasPercent = rawDen.endsWith('%');
+        if (hasPercent) rawDen = rawDen.slice(0, -1).trim();
+        try {
+          const html = katex.renderToString(`\\tfrac{${rawNum}}{${rawDen}}`, { throwOnError: false, displayMode: false });
+          nodes.push(
+            <span key={`${i}-f-${idx}`} dangerouslySetInnerHTML={{ __html: html }} />
+          );
+          if (hasPercent) nodes.push(<span key={`${i}-f-pct-${idx}`}>%</span>);
+        } catch {
+          nodes.push(<span key={`${i}-f-fallback-${idx}`}>{frac}</span>);
+        }
+        lastIndex = fracRegex.lastIndex;
+      }
+      if (lastIndex < part.content.length) nodes.push(<span key={`${i}-t-last`}>{part.content.slice(lastIndex)}</span>);
+      return <span key={i}>{nodes}</span>;
     }
 
     // Fallback: convert simple ASCII numeric fractions (e.g. 3/4) into \tfrac{3}{4}
