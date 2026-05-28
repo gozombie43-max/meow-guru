@@ -607,18 +607,19 @@
 .testList {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   padding-bottom: 40px;
 }
 
 .testLineCard {
   background: var(--card);
-  border-radius: 16px;
-  padding: 14px 16px;
+  border-radius: 14px;
+  padding: 10px 12px 10px 16px;
   border: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 128px;
+  align-items: center;
+  gap: 10px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.02);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
@@ -662,8 +663,9 @@
 .testLineInfo {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 5px;
   padding-left: 2px;
+  min-width: 0;
 }
 
 .testLineHeader {
@@ -686,20 +688,21 @@
 }
 
 .testLineTitle {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 800;
   color: var(--text-dark);
   margin: 0;
-  line-height: 1.4;
+  line-height: 1.25;
 }
 
 .testLineMeta {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text-muted);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   font-weight: 500;
+  flex-wrap: wrap;
 }
 .testLineMeta span {
   display: flex;
@@ -717,47 +720,51 @@
 
 .testLineAction {
   margin-top: 2px;
-  padding-top: 12px;
-  border-top: 1px dashed var(--border);
+  padding-top: 0;
+  border-top: 0;
   display: flex;
   justify-content: flex-end;
 }
 
 .statusCompleted {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  width: 128px;
 }
 
 .scoreWrap {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   color: #10b981;
-  font-size: 14px;
+  font-size: 12px;
   background: rgba(16, 185, 129, 0.1);
-  padding: 6px 12px;
-  border-radius: 10px;
+  padding: 5px 8px;
+  border-radius: 9px;
+  white-space: nowrap;
 }
 .scoreWrap span {
   color: var(--text-dark);
 }
 .scoreWrap strong {
   color: #10b981;
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .viewBtn {
   background: transparent;
   color: var(--primary);
   border: 1px solid var(--primary);
-  padding: 6px 12px;
-  border-radius: 10px;
-  font-size: 13px;
+  padding: 5px 8px;
+  border-radius: 9px;
+  font-size: 12px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
+  width: 100%;
 }
 .viewBtn:hover {
   background: var(--primary-bg);
@@ -771,12 +778,13 @@
   background: #fffbeb;
   color: #d97706;
   border: 1px solid #fde68a;
-  padding: 10px 0;
-  border-radius: 12px;
-  font-size: 14px;
+  min-height: 34px;
+  padding: 0 10px;
+  border-radius: 10px;
+  font-size: 12px;
   font-weight: 700;
   cursor: pointer;
-  width: 100%;
+  width: 128px;
   transition: all 0.2s;
 }
 .statusPaused:active {
@@ -790,13 +798,14 @@
   gap: 8px;
   background: linear-gradient(135deg, var(--primary), #8b5cf6);
   color: #fff;
-  padding: 10px 0;
-  border-radius: 12px;
-  font-size: 14px;
+  min-height: 34px;
+  padding: 0 10px;
+  border-radius: 10px;
+  font-size: 12px;
   font-weight: 700;
   cursor: pointer;
   border: none;
-  width: 100%;
+  width: 128px;
   box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
   transition: all 0.2s;
 }
@@ -814,13 +823,14 @@
   justify-content: center;
   gap: 8px;
   color: var(--text-muted);
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 700;
   background: var(--bg);
   border: 1px dashed var(--text-light);
-  padding: 10px 0;
-  border-radius: 12px;
-  width: 100%;
+  min-height: 34px;
+  padding: 0 10px;
+  border-radius: 10px;
+  width: 128px;
   cursor: pointer;
   transition: all 0.2s;
 }
