@@ -1218,6 +1218,14 @@ body.has-bottom-nav {
   box-shadow: 0 18px 34px rgba(15, 23, 42, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.95);
 }
 
+/* Keep light surface appearance even when scrolled — avoid accidental dark overrides */
+.bottom-pill-nav.is-scrolled-light,
+.bottom-pill-nav.is-light.is-scrolled-light {
+  background: rgba(255, 255, 255, 0.98) !important;
+  box-shadow: 0 18px 34px rgba(15, 23, 42, 0.18) !important;
+  border: 1px solid rgba(15, 23, 42, 0.06) !important;
+}
+
 .bottom-nav-item {
   position: relative;
   z-index: 1;

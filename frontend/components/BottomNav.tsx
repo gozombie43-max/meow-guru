@@ -27,6 +27,7 @@ export default function BottomNav() {
     '/mathematics',
     '/reasoning',
     '/english',
+    '/adaptive-quiz',
     '/general-awareness',
     '/dashboard',
     '/admin',
@@ -68,11 +69,11 @@ export default function BottomNav() {
   const isMock = pathname.startsWith('/mock-test');
   const isPlay = pathname === '/play' || pathname.startsWith('/play/');
   const isVideos = pathname === '/videos' || pathname.startsWith('/videos/');
+  const scrollClass = isScrolled ? (isLightSurface ? ' is-scrolled-light' : ' is-scrolled') : '';
+
   return (
     <nav
-      className={`bottom-pill-nav${isLightSurface ? ' is-light' : ''}${
-        isScrolled ? ' is-scrolled' : ''
-      }`}
+      className={`bottom-pill-nav${isLightSurface ? ' is-light' : ''}${scrollClass}`}
       aria-label="Primary"
     >
       <Link
