@@ -22,6 +22,7 @@ import aiRoutes from './routes/aiRoutes.js';
 import videoRoutes from './routes/videos.js';
 import pdfRoutes from './routes/pdfs.js';
 import cognitiveMapperRouter from './agents/cognitiveMapperRouter.js';
+import adaptiveQuizRouter from './agents/adaptiveQuiz/adaptiveQuizRouter.js';
 import { setQuestionsContainer, setUsersContainer, setNotesContainer } from './containerStore.js';
 import { initBattleSocket } from './battle/battleSocket.js';
 
@@ -132,6 +133,7 @@ async function initWithRetry() {
     app.use('/api/questions', questionRoutes);
     app.use('/api/ai', aiRoutes);
     app.use('/api/agent', cognitiveMapperRouter);
+    app.use('/api/adaptive-quiz', adaptiveQuizRouter);
     app.use('/api/upload', imageUploadRoutes);
     app.use('/api', massUploadImages);
     app.use('/api', massUploadSolutions);
