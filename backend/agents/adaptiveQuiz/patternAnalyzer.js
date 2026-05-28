@@ -53,7 +53,7 @@ export const SUBJECT_TOPICS = {
     "Idioms Phrases",
     "Error Spotting",
     "Sentence Improvement",
-    "Active Passive",
+    "Active & Passive Voice",
     "Direct Indirect",
     "Para Jumbles",
     "Cloze Test",

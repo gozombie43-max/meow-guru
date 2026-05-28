@@ -115,6 +115,25 @@ export default function AdaptiveQuizPage() {
   const [subjects, setSubjects] = useState(['Reasoning', 'Mathematics', 'English', 'General Awareness']);
   const [qCount, setQCount] = useState(20);
   const [mode, setMode] = useState('adaptive');
+  const [excludeOwn, setExcludeOwn] = useState(false);
+  const [topicsModalOpen, setTopicsModalOpen] = useState(false);
+  const [availableTopics, setAvailableTopics] = useState<Record<string, string[]>>({});
+  const [topicsSelected, setTopicsSelected] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!topicsModalOpen) return;
+    let canceled = false;
+    (async () => {
+      try {
+        const { data } = await axios.get('/api/adaptive-quiz/topics');
+        if (canceled) return;
+        setAvailableTopics(data.subjects || {});
+      } catch {
+        // ignore
+      }
+    })();
+    return () => { canceled = true; };
+  }, [topicsModalOpen]);
 
   const [quizId, setQuizId] = useState('');
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -155,6 +174,12 @@ export default function AdaptiveQuizPage() {
         subjects,
         questionCount: qCount,
         mode,
+        excludeOwn,
+        topics: topicsSelected.length > 0 ? topicsSelected : undefined,
+      }, {
+        // Adaptive generation can take longer when Cosmos is sparse and
+        // Azure OpenAI fallback is used.
+        timeout: 90000,
       });
 
       setQuizId(data.quizId);
@@ -162,11 +187,17 @@ export default function AdaptiveQuizPage() {
       setMeta(data.meta);
       setPhase('briefing');
     } catch (requestError: any) {
-      setError(requestError.response?.data?.error || 'Failed to generate quiz. Check your connection.');
+      if (requestError?.code === 'ECONNABORTED') {
+        setError('Quiz generation is taking longer than expected. Please try again in a few seconds.');
+      } else if (requestError?.message === 'canceled') {
+        setError('Request was canceled. Please generate the quiz again.');
+      } else {
+        setError(requestError.response?.data?.error || 'Failed to generate quiz. Check your connection.');
+      }
     } finally {
       setLoading(false);
     }
-  }, [mode, qCount, subjects, userId]);
+  }, [mode, qCount, subjects, userId, excludeOwn, topicsSelected]);
 
   const selectAnswer = (option: string) => {
     if (answers[questions[currentIdx]?.id]) return;
@@ -339,6 +370,68 @@ export default function AdaptiveQuizPage() {
         >
           {loading ? 'Analyzing your pattern…' : 'Generate Adaptive Quiz →'}
         </button>
+        <div style={{ display: 'flex', gap: 8, marginTop: 8, alignItems: 'center' }}>
+        <label style={{ fontSize: '.9rem', color: 'var(--color-text-secondary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <input type="checkbox" checked={excludeOwn} onChange={(e) => setExcludeOwn(e.target.checked)} /> Exclude my own questions
+        </label>
+        <button onClick={() => setTopicsModalOpen(true)} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid var(--color-border-tertiary)', background: 'transparent', cursor: 'pointer' }}>Choose topics…</button>
+      </div>
+
+      {topicsModalOpen && (
+        <div style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.4)' }}>
+          <div style={{ width: 720, maxHeight: '80vh', overflow: 'auto', background: 'var(--color-background-secondary)', padding: 16, borderRadius: 12 }}>
+            <h3 style={{ margin: 0, marginBottom: 8 }}>Choose topics to focus</h3>
+            <p style={{ marginTop: 0, marginBottom: 12, color: 'var(--color-text-secondary)' }}>Select one or more topics across subjects. Max 6 topics will be used.</p>
+
+            <div style={{ display: 'flex', gap: 12 }}>
+              <div style={{ minWidth: 180 }}>
+                <div style={{ fontSize: '.85rem', fontWeight: 600, marginBottom: 8 }}>Subjects</div>
+                {Object.keys(availableTopics).map((sub) => (
+                  <div key={sub} style={{ marginBottom: 6 }}>
+                    <button onClick={() => { /* noop - subject selector could be added */ }} style={{ width: '100%', padding: '8px', borderRadius: 8, textAlign: 'left', background: 'transparent', border: '1px solid var(--color-border-tertiary)' }}>{sub}</button>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ flex: 1 }}>
+                {Object.entries(availableTopics).map(([sub, topics]) => (
+                  <div key={sub} style={{ marginBottom: 12 }}>
+                    <div style={{ fontSize: '.85rem', fontWeight: 600, marginBottom: 6 }}>{sub}</div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                      {topics.map((t) => {
+                        const active = topicsSelected.includes(t);
+                        return (
+                          <button
+                            key={t}
+                            onClick={() => {
+                              setTopicsSelected((prev) => {
+                                if (prev.includes(t)) return prev.filter(x => x !== t);
+                                if (prev.length >= 6) return prev; // limit
+                                return [...prev, t];
+                              });
+                            }}
+                            style={{
+                              padding: '6px 10px', borderRadius: 20, cursor: 'pointer', border: `1px solid ${active ? '#534AB7' : 'var(--color-border-tertiary)'}`,
+                              background: active ? '#EEF2FF' : 'transparent', color: active ? '#382B8A' : 'var(--color-text-primary)'
+                            }}
+                          >
+                            {t}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 8 }}>
+              <button onClick={() => setTopicsModalOpen(false)} style={{ padding: '8px 12px', borderRadius: 8 }}>Close</button>
+              <button onClick={() => setTopicsModalOpen(false)} style={{ padding: '8px 12px', borderRadius: 8, background: '#534AB7', color: '#fff' }}>Apply</button>
+            </div>
+          </div>
+        </div>
+      )}
       </div>
     );
   }

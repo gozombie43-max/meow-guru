@@ -2,7 +2,7 @@
 // QuizGuru — Adaptive Quiz API Routes
 
 import express from "express";
-import { analyzePatternAndConfigure } from "./patternAnalyzer.js";
+import { analyzePatternAndConfigure, SUBJECT_TOPICS } from "./patternAnalyzer.js";
 import { buildAdaptiveQuiz, saveQuizAttempts } from "./quizBuilder.js";
 import { CosmosClient } from "@azure/cosmos";
 
@@ -23,6 +23,25 @@ async function getUserProfile(userId) {
     return resource;
   } catch {
     return null;
+  }
+}
+
+async function getUserQuestionIds(userId) {
+  const DB = process.env.COSMOS_DB_NAME || "quizDB";
+  const CONT = process.env.COSMOS_CONTAINER || "questions";
+  try {
+    const { resources } = await cosmosClient
+      .database(DB)
+      .container(CONT)
+      .items.query({
+        query: `SELECT c.id FROM c WHERE c.createdBy = @user OR c.uploader = @user OR c.author = @user`,
+        parameters: [{ name: "@user", value: userId }],
+      })
+      .fetchAll();
+    return (resources || []).map(r => r.id).filter(Boolean);
+  } catch (err) {
+    console.warn("[adaptiveQuiz] failed to fetch user's question ids:", err.message);
+    return [];
   }
 }
 
@@ -50,7 +69,13 @@ router.post("/generate", async (req, res) => {
     const attemptHistory   = profile?.attemptHistory   || [];
     const failureMap       = profile?.failureMap       || {};
     const masteryMap       = profile?.masteryMap       || {};
-    const recentAttemptIds = (profile?.recentAttemptIds || []).map(r => r.id);
+    let recentAttemptIds = (profile?.recentAttemptIds || []).map(r => r.id);
+
+    // Optionally exclude questions uploaded/created by the user
+    if (req.body.excludeOwn) {
+      const ownIds = await getUserQuestionIds(userId);
+      recentAttemptIds = [...new Set([...(recentAttemptIds || []), ...ownIds])];
+    }
 
     // 2. Apply mode overrides to subjects/count
     let effectiveSubjects = subjects;
@@ -78,13 +103,36 @@ router.post("/generate", async (req, res) => {
       mode,
     });
 
+    // If client supplied explicit topics, override analyzer with simple allocation
+    if (Array.isArray(req.body.topics) && req.body.topics.length > 0) {
+      const topics = req.body.topics.slice(0, 6);
+      const perTopic = Math.floor(effectiveCount / topics.length);
+      const remainder = effectiveCount - perTopic * topics.length;
+      config.topicAllocations = topics.map((t, i) => ({
+        topic: t,
+        subject: effectiveSubjects[0] || 'Reasoning',
+        questionCount: perTopic + (i === 0 ? remainder : 0),
+        difficultyMix: { easy: Math.ceil((perTopic + (i === 0 ? remainder : 0)) * 0.4), medium: Math.ceil((perTopic + (i === 0 ? remainder : 0)) * 0.4), hard: 0 },
+        reason: 'User selected topic',
+      }));
+      config.quizStrategy = 'developing';
+    }
+
     // 4. Build quiz from Cosmos DB
     const { questions, meta } = await buildAdaptiveQuiz(config, recentAttemptIds);
 
     if (questions.length === 0) {
+      // Avoid returning the raw `config` object which may contain
+      // non-serializable fields from the analyzer (can cause
+      // "Converting circular structure to JSON" errors).
       return res.status(404).json({
         error: "No questions found for your profile. Try adding more topics to your question bank.",
-        config,
+        // Send a small, safe summary instead of the full config
+        configSummary: {
+          topicCount: Array.isArray(config?.topicAllocations) ? config.topicAllocations.length : 0,
+          quizStrategy: config?.quizStrategy || null,
+          estimatedDuration: config?.estimatedDuration || null,
+        },
       });
     }
 
@@ -251,6 +299,16 @@ router.get("/preview/:userId", async (req, res) => {
     });
 
     res.json({ config });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/adaptive-quiz/topics
+// Returns available topics grouped by subject for the frontend topic picker
+router.get('/topics', async (req, res) => {
+  try {
+    res.json({ subjects: SUBJECT_TOPICS });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

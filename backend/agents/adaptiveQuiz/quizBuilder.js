@@ -3,11 +3,27 @@
 // Fetches questions from Cosmos DB based on AI-generated topic allocations
 
 import { CosmosClient } from "@azure/cosmos";
+import { chatJSON } from "../../ai/azureClient.js";
 
 const cosmosClient = new CosmosClient({
   endpoint: process.env.COSMOS_ENDPOINT,
   key: process.env.COSMOS_KEY,
 });
+
+const AOAI_MODEL = process.env.AZURE_OPENAI_MODEL || process.env.AZURE_OPENAI_DEPLOYMENT || "o4-mini";
+
+function normalizeTopicName(topic) {
+  const value = String(topic || "").trim().toLowerCase();
+  if (
+    value === "active & passive voice" ||
+    value === "active passive" ||
+    value === "active voice" ||
+    value === "active voices"
+  ) {
+    return "Active Passive";
+  }
+  return topic;
+}
 
 const DB   = process.env.COSMOS_DB_NAME   || "quizDB";
 const CONT = process.env.COSMOS_CONTAINER || "questions";
@@ -21,6 +37,8 @@ function getContainer() {
 async function fetchForAllocation({ topic, subject, difficultyMix, excludeIds = [] }) {
   const container = getContainer();
   const questions = [];
+  const normalizedTopic = normalizeTopicName(topic);
+  const requiredTotal = Object.values(difficultyMix).reduce((a, b) => a + b, 0);
 
   // Fetch per difficulty level in parallel
   const difficulties = Object.entries(difficultyMix).filter(([, count]) => count > 0);
@@ -32,21 +50,23 @@ async function fetchForAllocation({ topic, subject, difficultyMix, excludeIds = 
       ? `AND NOT ARRAY_CONTAINS(@excluded, c.id)`
       : "";
 
+    // Be tolerant: some question sources use `topic`, others `chapter` or `concept`.
+    // Also compare `subject` case-insensitively (Maths vs Mathematics vs Maths).
     const query = {
       query: `SELECT TOP @count c.id, c.topic, c.subject, c.chapter, c.concept,
                      c.difficulty, c.question, c.options, c.correctAnswer,
                      c.correctLetter, c.solution, c.exam
               FROM c
-              WHERE c.topic = @topic
+              WHERE (c.topic = @topic OR c.chapter = @topic OR c.concept = @topic)
               AND c.difficulty = @difficulty
-              AND c.subject = @subject
+              AND LOWER(c.subject) = @subjectLower
               ${excludeClause}
               ORDER BY c._ts DESC`,
       parameters: [
-        { name: "@count",     value: fetchCount },
-        { name: "@topic",     value: topic },
+        { name: "@count",      value: fetchCount },
+        { name: "@topic",      value: normalizedTopic },
         { name: "@difficulty", value: difficulty },
-        { name: "@subject",   value: subject },
+        { name: "@subjectLower", value: (subject || "").toLowerCase() },
         ...(excludeIds.length > 0
           ? [{ name: "@excluded", value: excludeIds.slice(-300) }]
           : []),
@@ -54,9 +74,9 @@ async function fetchForAllocation({ topic, subject, difficultyMix, excludeIds = 
     };
 
     try {
-      const { resources } = await container.items.query(query, {
-        partitionKey: topic,
-      }).fetchAll();
+      // Do not force a partition key here — question documents across sources
+      // may have different partition schemes. Let the query engine route.
+      const { resources } = await container.items.query(query).fetchAll();
 
       // Randomly pick only what we need from the buffer
       const shuffled = resources.sort(() => Math.random() - 0.5);
@@ -71,28 +91,42 @@ async function fetchForAllocation({ topic, subject, difficultyMix, excludeIds = 
   questions.push(...results.flat());
 
   // If not enough questions for this topic, top-up with any difficulty
-  if (questions.length < Object.values(difficultyMix).reduce((a, b) => a + b, 0)) {
-    const needed = Object.values(difficultyMix).reduce((a, b) => a + b, 0) - questions.length;
+  if (questions.length < requiredTotal) {
+    const needed = requiredTotal - questions.length;
     const existingIds = new Set(questions.map(q => q.id));
     const topupQuery = {
       query: `SELECT TOP @count c.id, c.topic, c.subject, c.chapter, c.concept,
                      c.difficulty, c.question, c.options, c.correctAnswer,
                      c.correctLetter, c.solution, c.exam
               FROM c
-              WHERE c.topic = @topic
+              WHERE (c.topic = @topic OR c.chapter = @topic OR c.concept = @topic)
               AND NOT ARRAY_CONTAINS(@excluded, c.id)`,
       parameters: [
         { name: "@count",    value: needed + 5 },
-        { name: "@topic",    value: topic },
+        { name: "@topic",    value: normalizedTopic },
         { name: "@excluded", value: [...excludeIds.slice(-200), ...existingIds] },
       ],
     };
     try {
-      const { resources } = await container.items.query(topupQuery, {
-        partitionKey: topic,
-      }).fetchAll();
+      const { resources } = await container.items.query(topupQuery).fetchAll();
       questions.push(...resources.slice(0, needed));
     } catch (_) {}
+  }
+
+  // If still short, try generating synthetic similar questions using Azure OpenAI.
+  // This is the main fallback path when Cosmos has no rows for a topic like
+  // Active & Passive Voice.
+  if (questions.length < requiredTotal) {
+    const stillNeeded = requiredTotal - questions.length;
+    const generated = await generateSyntheticQuestions(normalizedTopic, subject, stillNeeded, difficultyMix, excludeIds);
+    questions.push(...generated.slice(0, stillNeeded));
+  }
+
+  // Final safety net: if Cosmos returned nothing and OpenAI generation failed,
+  // produce a minimal synthetic set so the UI never hard-stops on an empty topic.
+  if (questions.length === 0 && requiredTotal > 0) {
+    const fallbackGenerated = await generateSyntheticQuestions(normalizedTopic, subject, requiredTotal, difficultyMix, excludeIds, true);
+    questions.push(...fallbackGenerated.slice(0, requiredTotal));
   }
 
   return questions;
@@ -232,5 +266,39 @@ export async function saveQuizAttempts(userId, attempts) {
   } catch (err) {
     console.error("[saveQuizAttempts]", err.message);
     return { success: false, error: err.message };
+  }
+}
+
+// Generate synthetic question variations using Azure OpenAI (best-effort)
+async function generateSyntheticQuestions(topic, subject, count, difficultyMix, excludeIds = [], forceFallback = false) {
+  const prompt = `Create ${count} unique multiple-choice questions for the topic "${topic}" (subject: ${subject}).
+${forceFallback ? "There are zero Cosmos DB questions for this topic, so generate the entire quiz from scratch." : "Use this as a backup to fill missing quiz slots."}
+Return JSON array of objects with keys: id, topic, subject, difficulty (easy|medium|hard), question, options (array of 4), correctAnswer, correctLetter, solution.
+Do not include any copyrighted passages. Keep each question concise.
+If the topic is Active & Passive Voice, generate transformation questions, not vocabulary questions.`;
+
+  try {
+    const parsed = await chatJSON(
+      prompt,
+      AOAI_MODEL,
+      "You are a helpful question generator. Return only valid JSON."
+    );
+
+    const list = Array.isArray(parsed) ? parsed : (Array.isArray(parsed?.questions) ? parsed.questions : []);
+    // Add synthetic ids and basic metadata
+    return list.map((q, i) => ({
+      id: `synth_${Date.now()}_${Math.random().toString(36).slice(2, 8)}_${i}`,
+      topic,
+      subject,
+      difficulty: q.difficulty || (i % 3 === 0 ? "easy" : i % 3 === 1 ? "medium" : "hard"),
+      question: q.question || q.prompt || "",
+      options: q.options || q.choices || [],
+      correctAnswer: q.correctAnswer || q.answer || null,
+      correctLetter: q.correctLetter || null,
+      solution: q.solution || q.explanation || "",
+    }));
+  } catch (err) {
+    console.error("[quizBuilder] generateSyntheticQuestions failed:", err?.message || err);
+    return [];
   }
 }
