@@ -73,8 +73,8 @@ function MathText({ text }: { text: string }) {
     if (typeof window !== 'undefined' && (window as any).katex) {
       try {
         const html = text
-          .replace(/\\\[(.*?)\\\]/gs, (_, value) => (window as any).katex.renderToString(value, { displayMode: true, throwOnError: false }))
-          .replace(/\\\((.*?)\\\)/gs, (_, value) => (window as any).katex.renderToString(value, { displayMode: false, throwOnError: false }));
+          .replace(/\\\[([\s\S]*?)\\\]/g, (_, value) => (window as any).katex.renderToString(value, { displayMode: true, throwOnError: false }))
+          .replace(/\\\(([\s\S]*?)\\\)/g, (_, value) => (window as any).katex.renderToString(value, { displayMode: false, throwOnError: false }));
         ref.current.innerHTML = html;
         return;
       } catch {
