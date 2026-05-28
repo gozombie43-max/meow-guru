@@ -140,7 +140,7 @@ export default function AdaptiveQuizPage() {
       timerRef.current = setInterval(() => setElapsed((value) => value + 1), 1000);
     }
 
-    return () => clearInterval(timerRef.current);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [phase]);
 
   const formatTime = (value: number) => `${String(Math.floor(value / 60)).padStart(2, '0')}:${String(value % 60).padStart(2, '0')}`;
@@ -206,7 +206,7 @@ export default function AdaptiveQuizPage() {
       setScore(data.score);
       setTopicAccuracy(data.topicAccuracy);
       setPhase('results');
-      clearInterval(timerRef.current);
+      if (timerRef.current) clearInterval(timerRef.current);
     } catch (requestError: any) {
       setError(requestError.response?.data?.error || 'Submission failed.');
     } finally {
