@@ -96,51 +96,42 @@ const SUBJECT_OPTIONS = [
 const MODE_OPTIONS: Array<{
   value: QuizMode;
   label: string;
-  desc: string;
-  chip: string;
   accent: string;
 }> = [
   {
     value: 'adaptive',
     label: 'Adaptive',
-    desc: 'AI balances weak areas and exam pacing.',
-    chip: 'Most balanced',
     accent: 'rgba(83, 74, 183, 0.16)',
   },
   {
     value: 'weak-only',
     label: 'Weak Topics',
-    desc: 'Focus on topics below 60% accuracy.',
-    chip: 'Targeted',
     accent: 'rgba(255, 75, 110, 0.16)',
   },
   {
     value: 'revision',
     label: 'Revision',
-    desc: 'Bring back topics not practiced recently.',
-    chip: 'Review mode',
     accent: 'rgba(0, 229, 200, 0.16)',
   },
   {
     value: 'explore',
     label: 'Explore',
-    desc: 'Mix known topics with fresh challenges.',
-    chip: 'Discovery',
     accent: 'rgba(255, 201, 77, 0.16)',
   },
 ];
+
+const QUESTION_COUNT_OPTIONS = [10, 15, 25] as const;
+const QUESTION_DURATION_MINUTES: Record<number, number> = {
+  10: 5,
+  15: 10,
+  25: 15,
+};
 
 const DIFFICULTY_STYLES: Record<string, { background: string; color: string; border: string }> = {
   easy: { background: 'rgba(34, 197, 94, 0.16)', color: '#166534', border: 'rgba(34, 197, 94, 0.25)' },
   medium: { background: 'rgba(245, 158, 11, 0.16)', color: '#92400e', border: 'rgba(245, 158, 11, 0.25)' },
   hard: { background: 'rgba(239, 68, 68, 0.16)', color: '#991b1b', border: 'rgba(239, 68, 68, 0.25)' },
 };
-
-const DEFAULT_METRICS = [
-  { label: 'Focus', value: 'AI-tuned' },
-  { label: 'Question count', value: '10-40' },
-  { label: 'Typical duration', value: '~7-28 min' },
-];
 
 function MathText({ text }: { text: string }) {
   const ref = useRef<HTMLSpanElement>(null);
@@ -175,13 +166,13 @@ export default function AdaptiveQuizPage() {
     padding: '24px 16px 56px',
     background: isDark
       ? 'radial-gradient(circle at top left, rgba(99, 102, 241, 0.18), transparent 26%), radial-gradient(circle at top right, rgba(20, 184, 166, 0.10), transparent 22%), linear-gradient(180deg, #040816 0%, #08111f 100%)'
-      : 'radial-gradient(circle at top left, rgba(83, 74, 183, 0.14), transparent 26%), radial-gradient(circle at top right, rgba(20, 184, 166, 0.10), transparent 22%), linear-gradient(180deg, #f8fafc 0%, #eef2ff 52%, #f8fafc 100%)',
-    color: isDark ? '#ecf3ff' : '#0f172a',
+      : 'linear-gradient(180deg, #f2f2f7 0%, #edf1f6 100%)',
+    color: isDark ? '#ecf3ff' : '#1c1c1e',
     fontFamily: "'Satoshi', 'General Sans', 'Outfit', sans-serif",
-    '--color-text-primary': isDark ? '#ecf3ff' : '#0f172a',
-    '--color-text-secondary': isDark ? '#9fb1cf' : '#475569',
-    '--color-text-tertiary': isDark ? '#6b7c97' : '#94a3b8',
-    '--color-border-tertiary': isDark ? 'rgba(148, 163, 184, 0.18)' : '#e2e8f0',
+    '--color-text-primary': isDark ? '#ecf3ff' : '#1c1c1e',
+    '--color-text-secondary': isDark ? '#9fb1cf' : '#636366',
+    '--color-text-tertiary': isDark ? '#6b7c97' : '#8e8e93',
+    '--color-border-tertiary': isDark ? 'rgba(148, 163, 184, 0.18)' : '#d1d1d6',
     '--color-background-secondary': isDark ? 'rgba(15, 23, 42, 0.78)' : '#ffffff',
     '--color-background-danger': isDark ? 'rgba(127, 29, 29, 0.24)' : '#fee2e2',
     '--color-text-danger': isDark ? '#fecaca' : '#991b1b',
@@ -191,8 +182,17 @@ export default function AdaptiveQuizPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const [subjects, setSubjects] = useState(['Reasoning', 'Mathematics', 'English', 'General Awareness']);
-  const [qCount, setQCount] = useState(20);
+  // Responsive: detect mobile viewport and adjust layout
+  const [isMobileView, setIsMobileView] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobileView(typeof window !== 'undefined' ? window.innerWidth <= 640 : false);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
+  const [subjects, setSubjects] = useState<string[]>([]);
+  const [qCount, setQCount] = useState(15);
   const [mode, setMode] = useState<QuizMode>('adaptive');
   const [excludeOwn, setExcludeOwn] = useState(false);
   const [topicsModalOpen, setTopicsModalOpen] = useState(false);
@@ -232,7 +232,7 @@ export default function AdaptiveQuizPage() {
   const [expandedResult, setExpandedResult] = useState<string | null>(null);
 
   const frameStyle: CSSProperties = {
-    maxWidth: 1120,
+    maxWidth: isMobileView ? '100%' : 1120,
     margin: '0 auto',
     position: 'relative',
     zIndex: 1,
@@ -254,11 +254,11 @@ export default function AdaptiveQuizPage() {
   };
 
   const shellCardStyle: CSSProperties = {
-    background: isDark ? 'rgba(7, 12, 24, 0.82)' : 'rgba(255, 255, 255, 0.78)',
-    border: `1px solid ${isDark ? 'rgba(148, 163, 184, 0.14)' : 'rgba(148, 163, 184, 0.20)'}`,
-    boxShadow: isDark ? '0 22px 70px rgba(0, 0, 0, 0.36)' : '0 24px 70px rgba(15, 23, 42, 0.10)',
-    backdropFilter: 'blur(18px)',
-    WebkitBackdropFilter: 'blur(18px)',
+    background: isDark ? 'rgba(7, 12, 24, 0.82)' : '#ffffff',
+    border: `1px solid ${isDark ? 'rgba(148, 163, 184, 0.14)' : '#e5e5ea'}`,
+    boxShadow: isDark ? '0 22px 70px rgba(0, 0, 0, 0.36)' : '0 10px 26px rgba(15, 23, 42, 0.08)',
+    backdropFilter: isDark ? 'blur(18px)' : 'none',
+    WebkitBackdropFilter: isDark ? 'blur(18px)' : 'none',
   };
 
   const roundedCardStyle: CSSProperties = {
@@ -268,8 +268,8 @@ export default function AdaptiveQuizPage() {
 
   const sectionCardStyle: CSSProperties = {
     ...shellCardStyle,
-    borderRadius: 24,
-    padding: 20,
+    borderRadius: isMobileView ? 16 : 22,
+    padding: isMobileView ? 14 : 18,
   };
 
   const headingStyle: CSSProperties = {
@@ -302,8 +302,8 @@ export default function AdaptiveQuizPage() {
 
   const actionButtonStyle: CSSProperties = {
     border: 'none',
-    borderRadius: 18,
-    padding: '16px 18px',
+    borderRadius: 16,
+    padding: isMobileView ? '12px 14px' : '16px 18px',
     fontSize: 15,
     fontWeight: 800,
     letterSpacing: '0.02em',
@@ -322,10 +322,8 @@ export default function AdaptiveQuizPage() {
   );
 
   const selectedMode = MODE_OPTIONS.find((item) => item.value === mode) || MODE_OPTIONS[0];
-  const estimatedMinutes = Math.max(7, Math.round(qCount * 0.7));
-  const selectedSubjectCount = subjects.length;
+  const estimatedMinutes = QUESTION_DURATION_MINUTES[qCount] ?? 10;
   const selectedSubjectMeta = SUBJECT_OPTIONS.filter((subject) => subjects.includes(subject.name));
-  const totalConfigTouches = DEFAULT_METRICS.length + selectedSubjectCount;
   const visibleTopics = Object.entries(availableTopics).filter(([subject]) => subjects.includes(subject));
   const visibleTopicNames = new Set(visibleTopics.flatMap(([, topics]) => topics));
   const topicsForSelectedSubjects = topicsSelected.filter((topic) => visibleTopicNames.has(topic));
@@ -480,31 +478,6 @@ export default function AdaptiveQuizPage() {
             </div>
           </div>
 
-          <section style={{ ...roundedCardStyle, padding: 22, marginBottom: 18 }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                <div style={badgeStyle}>Quiz setup</div>
-                <div>
-                  <h1 style={{ margin: 0, fontSize: 'clamp(2.1rem, 4.2vw, 4rem)', lineHeight: 0.98, letterSpacing: '-0.06em', color: 'var(--color-text-primary)' }}>
-                    Design a quiz around the way you actually study.
-                  </h1>
-                  <p style={{ ...subtextStyle, maxWidth: 700, marginTop: 14 }}>
-                    The engine analyses your weak spots, recent revisions, and topic coverage, then assembles a clean quiz flow with the right amount of pressure.
-                  </p>
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10 }}>
-                {DEFAULT_METRICS.map((metric) => (
-                  <div key={metric.label} style={{ borderRadius: 18, padding: '14px 16px', background: isDark ? 'rgba(15, 23, 42, 0.62)' : 'rgba(248, 250, 252, 0.92)', border: '1px solid var(--color-border-tertiary)' }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-text-tertiary)' }}>{metric.label}</div>
-                    <div style={{ marginTop: 6, fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)' }}>{metric.value}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
           {error && (
             <div style={{ ...sectionCardStyle, marginBottom: 18, background: isDark ? 'rgba(127, 29, 29, 0.20)' : 'rgba(254, 226, 226, 0.88)', borderColor: isDark ? 'rgba(248, 113, 113, 0.28)' : 'rgba(248, 113, 113, 0.40)' }}>
               <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6, color: 'var(--color-text-danger)' }}>Generation issue</div>
@@ -512,19 +485,19 @@ export default function AdaptiveQuizPage() {
             </div>
           )}
 
-          <div style={{ display: 'grid', gap: 16 }}>
+          <div style={{ display: 'grid', gap: isMobileView ? 12 : 16 }}>
             <section style={sectionCardStyle}>
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 16 }}>
                 <div>
                   <div style={headingStyle}>Subjects</div>
                   <div style={subtextStyle}>Pick the mix you want the generator to optimize.</div>
                 </div>
-                <button onClick={() => setTopicsModalOpen(true)} style={{ ...actionButtonStyle, padding: '12px 14px', background: isDark ? 'rgba(99, 102, 241, 0.18)' : 'rgba(83, 74, 183, 0.10)', color: 'var(--color-text-primary)', border: '1px solid var(--color-border-tertiary)' }}>
+                <button onClick={() => setTopicsModalOpen(true)} style={{ ...actionButtonStyle, padding: isMobileView ? '10px 12px' : '12px 14px', background: isDark ? 'rgba(99, 102, 241, 0.18)' : '#eef2f7', color: 'var(--color-text-primary)', border: '1px solid var(--color-border-tertiary)' }}>
                   Choose topics
                 </button>
               </div>
 
-              <div style={{ display: 'grid', gap: 10 }}>
+              <div style={{ display: 'grid', gap: 10, gridTemplateColumns: isMobileView ? '1fr' : 'repeat(2, minmax(0, 1fr))' }}>
                 {SUBJECT_OPTIONS.map((subject) => {
                   const active = subjects.includes(subject.name);
                   return (
@@ -535,80 +508,80 @@ export default function AdaptiveQuizPage() {
                       style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 14,
+                        gap: isMobileView ? 10 : 12,
                         width: '100%',
-                        padding: 14,
-                        borderRadius: 20,
+                        padding: isMobileView ? 10 : 12,
+                        borderRadius: isMobileView ? 12 : 16,
                         textAlign: 'left',
                         cursor: 'pointer',
-                        border: `1px solid ${active ? SUBJECT_COLORS[subject.name] : 'var(--color-border-tertiary)'}`,
-                        background: active ? (isDark ? 'rgba(83, 74, 183, 0.18)' : `${SUBJECT_COLORS[subject.name]}12`) : (isDark ? 'rgba(15, 23, 42, 0.40)' : 'rgba(248, 250, 252, 0.92)'),
+                        border: `1px solid ${active ? (isDark ? 'rgba(83, 74, 183, 0.35)' : '#0a84ff') : 'var(--color-border-tertiary)'}`,
+                        background: active ? (isDark ? 'rgba(83, 74, 183, 0.18)' : '#f2f8ff') : (isDark ? 'rgba(15, 23, 42, 0.40)' : '#fbfbfd'),
                         color: 'var(--color-text-primary)',
-                        boxShadow: active ? '0 12px 28px rgba(83, 74, 183, 0.12)' : 'none',
+                        boxShadow: active ? (isDark ? '0 12px 28px rgba(83, 74, 183, 0.12)' : '0 8px 18px rgba(10, 132, 255, 0.16)') : 'none',
                       }}
                     >
-                      <div style={{ width: 42, height: 42, borderRadius: 14, display: 'grid', placeItems: 'center', fontSize: 18, background: subject.accent, flexShrink: 0 }}>{subject.icon}</div>
+                      <div style={{ width: isMobileView ? 32 : 36, height: isMobileView ? 32 : 36, borderRadius: isMobileView ? 10 : 12, display: 'grid', placeItems: 'center', fontSize: isMobileView ? 14 : 16, background: subject.accent, flexShrink: 0 }}>{subject.icon}</div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-                          <div style={{ fontSize: 15, fontWeight: 800 }}>{subject.name}</div>
-                          <div style={{ width: 34, height: 20, borderRadius: 999, background: active ? 'rgba(83, 74, 183, 0.24)' : 'rgba(148, 163, 184, 0.22)', border: `1px solid ${active ? 'rgba(83, 74, 183, 0.28)' : 'rgba(148, 163, 184, 0.20)'}`, position: 'relative', flexShrink: 0 }}>
-                            <div style={{ width: 14, height: 14, borderRadius: 999, background: active ? '#ffffff' : 'rgba(148, 163, 184, 0.78)', position: 'absolute', top: 2.5, left: active ? 17 : 2.5, transition: 'left 160ms ease' }} />
+                          <div style={{ fontSize: isMobileView ? 14 : 15, fontWeight: 800 }}>{subject.name}</div>
+                          <div style={{ width: 44, height: 26, borderRadius: 999, background: active ? '#34c759' : '#d1d1d6', border: '1px solid rgba(0,0,0,0.06)', position: 'relative', flexShrink: 0, transition: 'background 160ms ease' }}>
+                            <div style={{ width: 22, height: 22, borderRadius: 999, background: '#ffffff', position: 'absolute', top: 1, left: active ? 21 : 1, transition: 'left 160ms ease', boxShadow: '0 1px 3px rgba(0,0,0,0.24)' }} />
                           </div>
                         </div>
-                        <div style={{ ...subtextStyle, marginTop: 4 }}>{subject.meta}</div>
+                        {!isMobileView && <div style={{ ...subtextStyle, marginTop: 4, fontSize: 12 }}>{subject.meta}</div>}
                       </div>
                     </button>
                   );
                 })}
               </div>
 
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 14 }}>
-                {subjects.map((subject) => (
-                  <span key={subject} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 999, fontSize: 12, fontWeight: 700, background: `${SUBJECT_COLORS[subject]}14`, color: SUBJECT_COLORS[subject], border: `1px solid ${SUBJECT_COLORS[subject]}22` }}>
-                    <span style={{ width: 7, height: 7, borderRadius: 999, background: SUBJECT_COLORS[subject] }} />
-                    {subject}
-                  </span>
-                ))}
-              </div>
             </section>
 
             <section style={sectionCardStyle}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginBottom: 16 }}>
                 <div>
                   <div style={headingStyle}>Questions</div>
-                  <div style={subtextStyle}>Control depth, pace, and runtime.</div>
+                  {!isMobileView && <div style={subtextStyle}>Control depth, pace, and runtime.</div>}
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 42, lineHeight: 1, fontWeight: 900, letterSpacing: '-0.08em', color: 'var(--color-text-primary)' }}>{qCount}</div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-tertiary)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>~{estimatedMinutes} min</div>
+                  <div style={{ fontSize: isMobileView ? 32 : 42, lineHeight: 1, fontWeight: 900, letterSpacing: '-0.08em', color: 'var(--color-text-primary)' }}>{qCount}</div>
+                  <div style={{ fontSize: isMobileView ? 11 : 12, fontWeight: 700, color: 'var(--color-text-tertiary)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>{estimatedMinutes} min</div>
                 </div>
               </div>
 
-              <div style={{ padding: '4px 2px 0' }}>
-                <input
-                  type="range"
-                  min={10}
-                  max={40}
-                  step={5}
-                  value={qCount}
-                  onChange={(event) => setQCount(+event.target.value)}
-                  style={{ width: '100%', accentColor: '#534ab7', cursor: 'pointer' }}
-                />
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', marginTop: 12, gap: 10 }}>
-                  <div style={{ fontSize: 12, color: 'var(--color-text-tertiary)' }}>10<br />Short warm-up</div>
-                  <div style={{ fontSize: 12, color: 'var(--color-text-tertiary)', textAlign: 'center' }}>25<br />Balanced session</div>
-                  <div style={{ fontSize: 12, color: 'var(--color-text-tertiary)', textAlign: 'right' }}>40<br />Full drill</div>
-                </div>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobileView ? 'repeat(3, 1fr)' : 'repeat(3, minmax(0, 1fr))', gap: isMobileView ? 8 : 10 }}>
+                {QUESTION_COUNT_OPTIONS.map((count) => {
+                  const active = qCount === count;
+                  return (
+                    <button
+                      key={count}
+                      type="button"
+                      onClick={() => setQCount(count)}
+                      style={{
+                        ...actionButtonStyle,
+                        padding: '10px 12px',
+                        borderRadius: 14,
+                        border: `1px solid ${active ? (isDark ? 'rgba(83, 74, 183, 0.35)' : '#0a84ff') : 'var(--color-border-tertiary)'}`,
+                        background: active
+                          ? (isDark ? 'rgba(83, 74, 183, 0.24)' : '#f2f8ff')
+                          : (isDark ? 'rgba(15, 23, 42, 0.44)' : '#fbfbfd'),
+                        color: 'var(--color-text-primary)',
+                        boxShadow: active ? (isDark ? '0 12px 22px rgba(83, 74, 183, 0.14)' : '0 8px 16px rgba(10, 132, 255, 0.14)') : 'none',
+                      }}
+                    >
+                      {count}
+                    </button>
+                  );
+                })}
               </div>
             </section>
 
             <section style={sectionCardStyle}>
-              <div style={{ marginBottom: 16 }}>
+              <div style={{ marginBottom: 12 }}>
                 <div style={headingStyle}>Mode</div>
-                <div style={subtextStyle}>Choose the selection strategy for the generator.</div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 10 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobileView ? '1fr' : 'repeat(2, minmax(0, 1fr))', gap: isMobileView ? 8 : 10 }}>
                 {MODE_OPTIONS.map((item) => {
                   const active = mode === item.value;
                   return (
@@ -619,18 +592,17 @@ export default function AdaptiveQuizPage() {
                       style={{
                         ...actionButtonStyle,
                         textAlign: 'left',
-                        background: active ? (isDark ? 'rgba(83, 74, 183, 0.20)' : 'rgba(83, 74, 183, 0.10)') : (isDark ? 'rgba(15, 23, 42, 0.42)' : 'rgba(248, 250, 252, 0.92)'),
+                        padding: isMobileView ? '10px 12px' : '12px 14px',
+                        background: active ? (isDark ? 'rgba(83, 74, 183, 0.20)' : '#f2f8ff') : (isDark ? 'rgba(15, 23, 42, 0.42)' : '#fbfbfd'),
                         color: 'var(--color-text-primary)',
-                        border: `1px solid ${active ? 'rgba(83, 74, 183, 0.30)' : 'var(--color-border-tertiary)'}`,
-                        boxShadow: active ? '0 18px 34px rgba(83, 74, 183, 0.12)' : 'none',
+                        border: `1px solid ${active ? (isDark ? 'rgba(83, 74, 183, 0.30)' : '#0a84ff') : 'var(--color-border-tertiary)'}`,
+                        boxShadow: active ? (isDark ? '0 18px 34px rgba(83, 74, 183, 0.12)' : '0 10px 20px rgba(10, 132, 255, 0.15)') : 'none',
                       }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         <div style={{ width: 10, height: 10, borderRadius: 999, background: item.accent, boxShadow: `0 0 0 4px ${item.accent}` }} />
-                        <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'var(--color-text-tertiary)' }}>{item.chip}</span>
+                        <div style={{ fontSize: isMobileView ? 14 : 15, fontWeight: 800 }}>{item.label}</div>
                       </div>
-                      <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 4 }}>{item.label}</div>
-                      <div style={subtextStyle}>{item.desc}</div>
                     </button>
                   );
                 })}
@@ -638,46 +610,48 @@ export default function AdaptiveQuizPage() {
             </section>
 
             <section style={sectionCardStyle}>
-              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 14, marginBottom: 14 }}>
+              <div style={{ display: 'flex', flexDirection: isMobileView ? 'column' : 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
                 <label style={{ display: 'inline-flex', alignItems: 'center', gap: 10, color: 'var(--color-text-secondary)', fontSize: 14, fontWeight: 700 }}>
-                  <input type="checkbox" checked={excludeOwn} onChange={(e) => setExcludeOwn(e.target.checked)} style={{ width: 18, height: 18, accentColor: '#00b4a0' }} />
+                  <div
+                    aria-hidden="true"
+                    style={{
+                      width: 44,
+                      height: 26,
+                      borderRadius: 999,
+                      background: excludeOwn ? '#34c759' : '#d1d1d6',
+                      border: '1px solid rgba(0,0,0,0.06)',
+                      position: 'relative',
+                      transition: 'background 160ms ease',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <span style={{ width: 22, height: 22, borderRadius: 999, background: '#ffffff', position: 'absolute', top: 1, left: excludeOwn ? 21 : 1, transition: 'left 160ms ease', boxShadow: '0 1px 3px rgba(0,0,0,0.24)' }} />
+                  </div>
+                  <input type="checkbox" checked={excludeOwn} onChange={(e) => setExcludeOwn(e.target.checked)} style={{ position: 'absolute', opacity: 0, width: 1, height: 1, pointerEvents: 'none' }} />
                   Exclude my own questions
                 </label>
-                <button type="button" onClick={() => setTopicsModalOpen(true)} style={{ ...actionButtonStyle, padding: '12px 14px', background: 'linear-gradient(135deg, rgba(0, 180, 160, 0.18), rgba(83, 74, 183, 0.14))', color: 'var(--color-text-primary)', border: '1px solid var(--color-border-tertiary)' }}>
-                  Choose topics
-                </button>
+
+                <div style={{ width: isMobileView ? '100%' : 'auto' }}>
+                  <button
+                    onClick={generateQuiz}
+                    disabled={loading || subjects.length === 0}
+                    style={{
+                      ...actionButtonStyle,
+                      width: '100%',
+                      padding: isMobileView ? '12px 14px' : undefined,
+                      background: loading || subjects.length === 0 ? 'rgba(148, 163, 184, 0.55)' : 'linear-gradient(135deg, #534ab7 0%, #5b40ff 48%, #00b4a0 120%)',
+                      color: '#fff',
+                      boxShadow: loading || subjects.length === 0 ? 'none' : '0 18px 40px rgba(83, 74, 183, 0.30)',
+                      cursor: loading || subjects.length === 0 ? 'not-allowed' : 'pointer',
+                    }}
+                  >
+                    {loading ? 'Analyzing your pattern…' : 'Generate Adaptive Quiz →'}
+                  </button>
+                </div>
+
               </div>
 
-              <button
-                onClick={generateQuiz}
-                disabled={loading || subjects.length === 0}
-                style={{
-                  ...actionButtonStyle,
-                  width: '100%',
-                  background: loading || subjects.length === 0 ? 'rgba(148, 163, 184, 0.55)' : 'linear-gradient(135deg, #534ab7 0%, #5b40ff 48%, #00b4a0 120%)',
-                  color: '#fff',
-                  boxShadow: loading || subjects.length === 0 ? 'none' : '0 18px 40px rgba(83, 74, 183, 0.30)',
-                  cursor: loading || subjects.length === 0 ? 'not-allowed' : 'pointer',
-                }}
-              >
-                {loading ? 'Analyzing your pattern…' : 'Generate Adaptive Quiz →'}
-              </button>
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10, marginTop: 14 }}>
-                <div style={{ borderRadius: 16, padding: 14, background: isDark ? 'rgba(15, 23, 42, 0.66)' : 'rgba(248, 250, 252, 0.92)', border: '1px solid var(--color-border-tertiary)' }}>
-                  <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-text-tertiary)' }}>Subjects</div>
-                  <div style={{ marginTop: 6, fontSize: 15, fontWeight: 800 }}>{selectedSubjectCount}</div>
-                </div>
-                <div style={{ borderRadius: 16, padding: 14, background: isDark ? 'rgba(15, 23, 42, 0.66)' : 'rgba(248, 250, 252, 0.92)', border: '1px solid var(--color-border-tertiary)' }}>
-                  <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-text-tertiary)' }}>Mode</div>
-                  <div style={{ marginTop: 6, fontSize: 15, fontWeight: 800 }}>{selectedMode.label}</div>
-                </div>
-                <div style={{ borderRadius: 16, padding: 14, background: isDark ? 'rgba(15, 23, 42, 0.66)' : 'rgba(248, 250, 252, 0.92)', border: '1px solid var(--color-border-tertiary)' }}>
-                  <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-text-tertiary)' }}>Touches</div>
-                  <div style={{ marginTop: 6, fontSize: 15, fontWeight: 800 }}>{totalConfigTouches}</div>
-                </div>
-              </div>
-            </section>
+              </section>
           </div>
 
           {topicsModalOpen && (
