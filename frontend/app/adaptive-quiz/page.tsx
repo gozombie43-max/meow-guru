@@ -211,9 +211,8 @@ export default function AdaptiveQuizPage() {
         const { data } = await axios.get(`/api/adaptive-quiz/topics?userId=${encodeURIComponent(userId)}`);
         if (canceled) return;
         setAvailableTopics(data.subjects || {});
-      } catch (err) {
-        // Backend may not be running in local dev — fall back to bundled SUBJECT_TOPICS
-        console.warn('Failed to fetch topics from backend, using fallback subjects', err?.message || err);
+      } catch (err: unknown) {
+        console.warn('Failed to fetch topics from backend, using fallback subjects', err instanceof Error ? err.message : err);
         if (!canceled) setAvailableTopics(FALLBACK_SUBJECT_TOPICS as any);
       }
     })();
