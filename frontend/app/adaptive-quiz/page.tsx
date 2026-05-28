@@ -126,7 +126,7 @@ export default function AdaptiveQuizPage() {
   const [firstAnswer, setFirstAnswer] = useState<string | null>(null);
 
   const [elapsed, setElapsed] = useState(0);
-  const timerRef = useRef<ReturnType<typeof setInterval>>();
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const [results, setResults] = useState<Result[]>([]);
   const [score, setScore] = useState(0);
