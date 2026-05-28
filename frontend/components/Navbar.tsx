@@ -25,6 +25,12 @@ export default function Navbar() {
             <>
               <span className="text-sm text-gray-600">Hi, {user.name.split(' ')[0]}</span>
               <Link
+                href="/adaptive-quiz"
+                className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition"
+              >
+                Adaptive Quiz
+              </Link>
+              <Link
                 href="/dashboard"
                 className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition"
               >
@@ -49,6 +55,12 @@ export default function Navbar() {
             </>
           ) : (
             <>
+              <Link
+                href="/adaptive-quiz"
+                className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition"
+              >
+                Adaptive Quiz
+              </Link>
               <Link
                 href="/login"
                 className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition"

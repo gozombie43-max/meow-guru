@@ -32,7 +32,7 @@ const categories: PlayCategory[] = ['All', 'Tests', 'Practice', 'Review'];
 
 const playModes: PlayMode[] = [
   { id: 'mock', title: 'Exam Simulation', category: 'Tests', duration: '60 min', questions: '100 Qs', href: '/mock-test', icon: <ClipboardList size={22} className="lucide-icon text-accent" /> },
-  { id: 'adaptive', title: 'AI Adaptive', category: 'Practice', duration: '40 min', questions: 'Mixed', href: '/dashboard', icon: <Zap size={22} className="lucide-icon text-accent" /> },
+  { id: 'adaptive', title: 'AI Adaptive', category: 'Practice', duration: '40 min', questions: 'Mixed', href: '/adaptive-quiz', icon: <Zap size={22} className="lucide-icon text-accent" /> },
   { id: 'weak-area', title: 'Weak Area Target', category: 'Practice', duration: '30 min', questions: '25 Qs', href: '/dashboard', icon: <Target size={22} className="lucide-icon text-accent" /> },
   { id: 'speed', title: 'Speed Drill', category: 'Practice', duration: '20 min', questions: '20 Qs', href: '/mathematics/arithmetic/percentages/quiz', icon: <Timer size={22} className="lucide-icon text-accent" /> },
   { id: 'revision', title: 'Revision Mode', category: 'Review', duration: '25 min', questions: 'Notes + Qs', href: '/mathematics', icon: <BookOpen size={22} className="lucide-icon text-accent" /> },
