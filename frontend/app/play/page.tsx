@@ -73,7 +73,7 @@ export default function PlayPage() {
           ))}
         </div>
 
-        <div>
+        <div className="mode-list">
           {filteredModes.map((mode) => (
             <div key={mode.id} className="card">
               <div className="card-left">

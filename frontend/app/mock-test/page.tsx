@@ -37,12 +37,86 @@ type MockTest = {
   isFree?: boolean;
 };
 
+const svgToDataUri = (svg: string) => `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+
+const makeTextLogo = (label: string, background: string, accent: string) => svgToDataUri(`
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="${label} logo">
+    <defs>
+      <linearGradient id="${label.toLowerCase()}Bg" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="${background}" />
+        <stop offset="100%" stop-color="${accent}" />
+      </linearGradient>
+    </defs>
+    <rect width="160" height="160" rx="28" fill="url(#${label.toLowerCase()}Bg)" />
+    <circle cx="80" cy="62" r="34" fill="#ffffff" opacity="0.12" />
+    <path d="M40 112h80" stroke="#ffffff" stroke-width="8" stroke-linecap="round" opacity="0.9" />
+    <text x="80" y="84" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="800" fill="#ffffff" letter-spacing="1.5">${label}</text>
+  </svg>
+`);
+
 const logos: Record<ExamType, string> = {
-  ssc: 'https://upload.wikimedia.org/wikipedia/en/thumb/b/b4/Staff_Selection_Commission_of_India.svg/240px-Staff_Selection_Commission_of_India.svg.png',
-  rrb: 'https://upload.wikimedia.org/wikipedia/en/thumb/8/83/Railway_Recruitment_Board_logo.svg/240px-Railway_Recruitment_Board_logo.svg.png',
-  upsc: 'https://upload.wikimedia.org/wikipedia/en/thumb/f/f5/Emblem_of_the_Union_Public_Service_Commission.svg/240px-Emblem_of_the_Union_Public_Service_Commission.svg.png',
-  banking: 'https://upload.wikimedia.org/wikipedia/en/thumb/c/cf/State_Bank_of_India_logo.svg/240px-State_Bank_of_India_logo.svg.png',
-  other: '',
+  ssc: svgToDataUri(`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="SSC logo">
+      <defs>
+        <linearGradient id="sscBg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#0f4c81" />
+          <stop offset="100%" stop-color="#143a66" />
+        </linearGradient>
+      </defs>
+      <rect width="160" height="160" rx="28" fill="url(#sscBg)" />
+      <circle cx="80" cy="62" r="34" fill="#f59e0b" opacity="0.18" />
+      <path d="M34 118h92" stroke="#f8fafc" stroke-width="8" stroke-linecap="round" opacity="0.9" />
+      <path d="M46 104h68" stroke="#f59e0b" stroke-width="8" stroke-linecap="round" opacity="0.95" />
+      <text x="80" y="76" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="800" fill="#ffffff" letter-spacing="2">SSC</text>
+    </svg>
+  `),
+  rrb: svgToDataUri(`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="RRB logo">
+      <defs>
+        <linearGradient id="rrbBg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#0b4f8a" />
+          <stop offset="100%" stop-color="#1d3f72" />
+        </linearGradient>
+      </defs>
+      <rect width="160" height="160" rx="28" fill="url(#rrbBg)" />
+      <path d="M35 108h90" stroke="#e0f2fe" stroke-width="8" stroke-linecap="round" opacity="0.95" />
+      <path d="M42 94h74" stroke="#38bdf8" stroke-width="8" stroke-linecap="round" opacity="0.9" />
+      <path d="M54 50h52c10 0 18 8 18 18v18H36V68c0-10 8-18 18-18Z" fill="#f8fafc" opacity="0.95" />
+      <circle cx="58" cy="82" r="6" fill="#1d4ed8" />
+      <circle cx="102" cy="82" r="6" fill="#1d4ed8" />
+      <text x="80" y="74" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="800" fill="#0f4c81" letter-spacing="1.5">RRB</text>
+    </svg>
+  `),
+  upsc: svgToDataUri(`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="UPSC logo">
+      <defs>
+        <linearGradient id="upscBg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#9a3412" />
+          <stop offset="100%" stop-color="#c2410c" />
+        </linearGradient>
+      </defs>
+      <rect width="160" height="160" rx="28" fill="url(#upscBg)" />
+      <circle cx="80" cy="58" r="24" fill="#fde68a" opacity="0.9" />
+      <path d="M80 34l7 20h21l-17 12 7 20-18-12-18 12 7-20-17-12h21z" fill="#fff7ed" opacity="0.95" />
+      <text x="80" y="118" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="800" fill="#fff7ed" letter-spacing="1.5">UPSC</text>
+    </svg>
+  `),
+  banking: svgToDataUri(`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="SBI logo">
+      <defs>
+        <linearGradient id="sbiBg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#1d4ed8" />
+          <stop offset="100%" stop-color="#1e40af" />
+        </linearGradient>
+      </defs>
+      <rect width="160" height="160" rx="28" fill="url(#sbiBg)" />
+      <circle cx="80" cy="64" r="34" fill="#ffffff" opacity="0.18" />
+      <circle cx="80" cy="64" r="20" fill="none" stroke="#ffffff" stroke-width="12" stroke-dasharray="88 28" stroke-linecap="round" transform="rotate(120 80 64)" />
+      <path d="M80 52v24" stroke="#ffffff" stroke-width="6" stroke-linecap="round" opacity="0.9" />
+      <text x="80" y="116" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="800" fill="#ffffff" letter-spacing="1.5">SBI</text>
+    </svg>
+  `),
+  other: makeTextLogo('CAT', '#7c3aed', '#4338ca'),
 };
 
 const mockTestsData: MockTest[] = [
@@ -80,10 +154,10 @@ const examCards: ExamCard[] = [
   { id: 'ibps-po', name: 'IBPS PO', type: 'banking', count: '96 Tests', badge: 'New', badgeTone: 'new', logoUrl: logos.banking, logoText: 'IBPS' },
   { id: 'sbi-po', name: 'SBI PO', type: 'banking', count: '110 Tests', badge: '🔥 Hot', badgeTone: 'hot', logoUrl: logos.banking, logoText: 'SBI' },
   { id: 'ibps-clerk', name: 'IBPS Clerk', type: 'banking', count: '80 Tests', badge: 'Free', badgeTone: 'free', logoUrl: logos.banking, logoText: 'IBPS' },
-  { id: 'cat', name: 'CAT', type: 'other', count: '120 Tests', badge: 'Premium', badgeTone: 'premium', logoText: 'CAT' },
+  { id: 'cat', name: 'CAT', type: 'other', count: '120 Tests', badge: 'Premium', badgeTone: 'premium', logoUrl: logos.other, logoText: 'CAT' },
   { id: 'upsc', name: 'UPSC CSE', type: 'upsc', count: '200 Tests', badge: 'Premium', badgeTone: 'premium', logoUrl: logos.upsc, logoText: 'UPSC' },
-  { id: 'nda', name: 'NDA', type: 'other', count: '65 Tests', badge: 'Free', badgeTone: 'free', logoText: 'NDA' },
-  { id: 'cds', name: 'CDS', type: 'other', count: '40 Tests', badge: 'New', badgeTone: 'new', logoText: 'CDS' },
+  { id: 'nda', name: 'NDA', type: 'other', count: '65 Tests', badge: 'Free', badgeTone: 'free', logoUrl: logos.other, logoText: 'NDA' },
+  { id: 'cds', name: 'CDS', type: 'other', count: '40 Tests', badge: 'New', badgeTone: 'new', logoUrl: logos.other, logoText: 'CDS' },
 ];
 
 export default function MockTestPage() {
@@ -264,7 +338,15 @@ export default function MockTestPage() {
               </div>
               <div className={styles.detailHero}>
                 <div className={styles.detailHeroLogo}>
-                  <span>{selectedExam.logoText}</span>
+                  {selectedExam.logoUrl && !logoErrors[selectedExam.id] ? (
+                    <img
+                      src={selectedExam.logoUrl}
+                      alt={selectedExam.name}
+                      onError={() => setLogoErrors(p => ({ ...p, [selectedExam.id]: true }))}
+                    />
+                  ) : (
+                    <span>{selectedExam.logoText}</span>
+                  )}
                 </div>
                 <div>
                   <h1 className={`${styles.detailTitle} ${nunito.className}`}>{selectedExam.name} Test Series</h1>
