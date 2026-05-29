@@ -3,57 +3,54 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import axios from '@/lib/axios';
+import MathRenderer from '@/components/MathRenderer';
 import { SUBJECT_TOPICS as FALLBACK_SUBJECT_TOPICS } from '@/lib/subjectTopics';
 import { useThemeMode } from '@/hooks/useTheme';
 
 interface Question {
   id: string;
-  topic: string;
-  subject: string;
-  concept: string;
-  difficulty: 'easy' | 'medium' | 'hard';
-  question: string;
-  options: string[];
+  question?: string;
+  options?: string[];
+  subject?: string;
+  topic?: string;
+  difficulty?: string;
+  exam?: string;
+  year?: string | number;
   _adaptiveReason?: string;
-}
-
-interface QuizMeta {
-  quizStrategy: string;
-  overallInsight: string;
-  focusArea: string;
-  estimatedDuration: number;
-  totalQuestions: number;
-  topicBreakdown: { topic: string; count: number }[];
-  source: string;
 }
 
 interface Answer {
   questionId: string;
   userAnswer: string;
   timeSpent: number;
-  changedAnswer: boolean;
+  changedAnswer?: boolean;
 }
 
 interface Result {
   questionId: string;
-  isCorrect: boolean;
-  correctAnswer: string;
-  solution: string;
-  userAnswer: string;
   topic: string;
-  subject: string;
+  isCorrect: boolean;
+  userAnswer: string;
+  correctAnswer: string;
+  solution?: string;
 }
 
-type Phase = 'config' | 'briefing' | 'quiz' | 'results';
+interface TopicBreakdownItem {
+  topic: string;
+  count: number;
+}
 
-const SUBJECT_COLORS: Record<string, string> = {
-  Reasoning: '#534AB7',
-  Mathematics: '#185FA5',
-  English: '#0F6E56',
-  'General Awareness': '#854F0B',
-};
+interface QuizMeta {
+  source?: string;
+  quizStrategy?: string;
+  overallInsight?: string;
+  totalQuestions?: number;
+  estimatedDuration?: number; // seconds
+  focusArea?: string;
+  topicBreakdown?: TopicBreakdownItem[];
+}
 
-const DIFFICULTY_LABEL: Record<string, string> = {
+const DIFFICULTY_LABEL = {
   easy: 'Easy',
   medium: 'Medium',
   hard: 'Hard',
@@ -66,6 +63,8 @@ const STRATEGY_LABEL: Record<string, string> = {
 };
 
 type QuizMode = 'adaptive' | 'weak-only' | 'revision' | 'explore';
+
+type Phase = 'config' | 'briefing' | 'quiz' | 'results';
 
 const SUBJECT_OPTIONS = [
   {
@@ -93,6 +92,13 @@ const SUBJECT_OPTIONS = [
     accent: 'linear-gradient(135deg, rgba(133, 79, 11, 0.18), rgba(133, 79, 11, 0.08))',
   },
 ];
+
+const SUBJECT_COLORS: Record<string, string> = {
+  'Reasoning': '#534ab7',
+  'Mathematics': '#165fA5',
+  'English': '#0f6e56',
+  'General Awareness': '#85500b',
+};
 
 const MODE_OPTIONS: Array<{
   value: QuizMode;
@@ -135,27 +141,7 @@ const DIFFICULTY_STYLES: Record<string, { background: string; color: string; bor
 };
 
 function MathText({ text }: { text: string }) {
-  const ref = useRef<HTMLSpanElement>(null);
-
-  useEffect(() => {
-    if (!ref.current) return;
-
-    if (typeof window !== 'undefined' && (window as any).katex) {
-      try {
-        const html = text
-          .replace(/\\\[([\s\S]*?)\\\]/g, (_, value) => (window as any).katex.renderToString(value, { displayMode: true, throwOnError: false }))
-          .replace(/\\\(([\s\S]*?)\\\)/g, (_, value) => (window as any).katex.renderToString(value, { displayMode: false, throwOnError: false }));
-        ref.current.innerHTML = html;
-        return;
-      } catch {
-        // Fall back to plain text below.
-      }
-    }
-
-    ref.current.textContent = text;
-  }, [text]);
-
-  return <span ref={ref} />;
+  return <MathRenderer text={text} />;
 }
 
 export default function AdaptiveQuizPage() {
@@ -290,6 +276,16 @@ export default function AdaptiveQuizPage() {
     borderRadius: isMobileView ? 12 : 28,
   };
 
+  const topicsModalCardStyle: CSSProperties = {
+    ...roundedCardStyle,
+    background: isDark ? '#0b1120' : roundedCardStyle.background,
+    boxShadow: isDark ? '0 28px 70px rgba(0,0,0,0.72)' : roundedCardStyle.boxShadow,
+    display: 'flex',
+    flexDirection: 'column',
+    backdropFilter: 'none',
+    WebkitBackdropFilter: 'none',
+  };
+
   const sectionCardStyle: CSSProperties = {
     ...shellCardStyle,
     borderRadius: isMobileView ? 10 : 22,
@@ -348,6 +344,12 @@ export default function AdaptiveQuizPage() {
   const selectedMode = MODE_OPTIONS.find((item) => item.value === mode) || MODE_OPTIONS[0];
   const estimatedMinutes = QUESTION_DURATION_MINUTES[qCount] ?? 10;
   const selectedSubjectMeta = SUBJECT_OPTIONS.filter((subject) => subjects.includes(subject.name));
+  const insightSourceLabel = meta?.source === 'azure-openai'
+    ? 'AI generated'
+    : meta?.source === 'rule-based'
+      ? 'Rule-based'
+      : meta?.source || 'Unknown';
+  const questionBankSourceLabel = 'Cosmos DB';
   // If no subjects are selected, show topics for all subjects in the picker.
   const visibleTopics = subjects.length === 0
     ? Object.entries(availableTopics)
@@ -683,109 +685,62 @@ export default function AdaptiveQuizPage() {
               </section>
           </div>
 
-          {topicsModalOpen && (
-            <div style={{ position: 'fixed', inset: 0, zIndex: 50, padding: 0, background: 'rgba(2, 6, 23, 0.55)', backdropFilter: 'blur(6px)' }}>
-              <div style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: isMobileView ? '100%' : 'min(520px, 100%)', overflow: 'auto', padding: isMobileView ? 10 : 20,
-                background: isDark ? 'linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.03))' : roundedCardStyle.background,
-                border: isDark ? '1px solid rgba(255,255,255,0.06)' : roundedCardStyle.border,
-                boxShadow: isDark ? '0 24px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.02)' : roundedCardStyle.boxShadow,
-                borderRadius: roundedCardStyle.borderRadius }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <div style={badgeStyle}>Focus topics</div>
-                    <div style={{ color: 'var(--color-text-tertiary)', fontSize: 13 }}>Categorize and pick topics</div>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <button type="button" onClick={() => { setCategoryFilter(null); setTopicsSelected([]); }} style={{ border: 'none', background: 'transparent', color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: 13 }}>Clear filters</button>
-                    <button type="button" onClick={() => setTopicsModalOpen(false)} style={{ border: 'none', background: 'transparent', color: 'var(--color-text-secondary)', fontSize: 18, fontWeight: 700, cursor: 'pointer' }}>✕</button>
-                  </div>
-                </div>
+                {topicsModalOpen && (
+                  <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(2,6,23,0.55)' }}>
+                    <div style={{ width: isMobileView ? '95%' : 'min(520px, 100%)', maxHeight: isMobileView ? '86vh' : '90vh', overflow: 'hidden', padding: isMobileView ? 10 : 20, ...topicsModalCardStyle, border: isDark ? '1px solid rgba(255,255,255,0.08)' : roundedCardStyle.border }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                        <div style={badgeStyle}>Focus topics</div>
+                        <button type="button" onClick={() => setTopicsModalOpen(false)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontSize: 18 }}>✕</button>
+                      </div>
 
-                {/* Category tabs */}
-                <div style={{ display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' }}>
-                  {['Core', 'High', 'Medium', 'Low', 'Least'].map((cat) => {
-                    const active = categoryFilter === cat;
-                    return (
-                      <button key={cat} type="button" onClick={() => setCategoryFilter(active ? null : cat)} style={{ borderRadius: 999, padding: '8px 12px', border: `1px solid ${active ? (isDark ? 'rgba(255,255,255,0.08)' : '#534ab7') : 'var(--color-border-tertiary)'}`, background: active ? (isDark ? 'linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))' : 'rgba(83, 74, 183, 0.12)') : 'transparent', color: active ? (isDark ? '#fff' : '#fff') : 'var(--color-text-primary)', cursor: 'pointer', fontWeight: 800, fontSize: 13 }}>
-                        {cat}
-                      </button>
-                    );
-                  })}
-                </div>
+                      <div style={{ display: 'grid', gap: 10, minHeight: 0, overflowY: 'auto', paddingRight: 4 }}>
+                        <div style={{ display: 'grid', gap: 6 }}>
+                          <div style={{ fontSize: 12, color: 'var(--color-text-tertiary)' }}>Questions source</div>
+                          <div style={{ fontWeight: 800 }}>{questionBankSourceLabel}</div>
+                          <div style={{ fontSize: 12, color: 'var(--color-text-tertiary)' }}>Insight source</div>
+                          <div style={{ fontWeight: 800 }}>{insightSourceLabel}</div>
+                        </div>
 
-                <div style={{ display: 'grid', gap: 12 }}>
-                  {visibleTopics.length === 0 ? (
-                    <section style={{ borderRadius: 20, padding: 18, background: isDark ? 'linear-gradient(180deg, rgba(255,255,255,0.012), rgba(255,255,255,0.02))' : 'rgba(248, 250, 252, 0.92)', border: '1px solid var(--color-border-tertiary)', color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>
-                      Select one or more subjects first to see their topics here.
-                    </section>
-                  ) : visibleTopics.map(([subject, topics]) => (
-                    <section key={subject} style={{ borderRadius: 20, padding: 12, background: isDark ? 'linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.015))' : 'rgba(248, 250, 252, 0.92)', border: '1px solid var(--color-border-tertiary)' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 8 }}>
                         <div>
-                          <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--color-text-primary)' }}>{subject}</div>
-                          <div style={{ fontSize: 12, color: 'var(--color-text-tertiary)', marginTop: 4 }}>{topics.length} topic{topics.length === 1 ? '' : 's'} available</div>
-                        </div>
-                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 10px', borderRadius: 999, background: 'rgba(0, 180, 160, 0.10)', color: '#00b4a0', fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                          {topicsForSelectedSubjects.filter((topic) => (topics || []).some((t: any) => (typeof t === 'string' ? t === topic : t?.name === topic))).length} selected
+                          {visibleTopics.length === 0 ? (
+                            <div style={{ color: 'var(--color-text-secondary)' }}>Select one or more subjects first to see their topics here.</div>
+                          ) : visibleTopics.map(([subject, topics]) => {
+                            const topicNames = (topics || []).map((t: any) => (typeof t === 'string' ? t : t?.name)).filter(Boolean);
+                            const selectAllForSubject = () => setTopicsSelected((prev) => Array.from(new Set([...prev, ...topicNames])));
+                            return (
+                              <div key={subject} style={{ marginBottom: 10 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                  <div style={{ fontWeight: 800 }}>{subject} · {topicNames.length} topic{topicNames.length === 1 ? '' : 's'}</div>
+                                  <div style={{ display: 'flex', gap: 8 }}>
+                                    <button type="button" onClick={selectAllForSubject} style={{ border: 'none', background: 'transparent', color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: 13 }}>Select all</button>
+                                  </div>
+                                </div>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: isMobileView ? 'repeat(2, minmax(0, 1fr))' : 'repeat(3, minmax(0, 1fr))', gap: 8, marginTop: 8 }}>
+                                  {topicNames.map((name: string) => {
+                                    const checked = topicsSelected.includes(name);
+                                    return (
+                                      <label key={name} onClick={(e) => { e.preventDefault(); setTopicsSelected((prev) => (prev.includes(name) ? prev.filter((v) => v !== name) : [...prev, name])); }} style={{ display: 'block', cursor: 'pointer' }}>
+                                        <input type="checkbox" checked={checked} readOnly style={{ position: 'absolute', opacity: 0, width: 1, height: 1, pointerEvents: 'none' }} />
+                                        <div style={{ padding: '10px 12px', borderRadius: 12, border: `1px solid ${checked ? 'rgba(83, 74, 183, 0.9)' : 'var(--color-border-tertiary)'}`, background: checked ? 'linear-gradient(90deg, rgba(83, 74, 183, 0.14), rgba(0, 180, 160, 0.06))' : 'transparent', fontSize: 14, fontWeight: 700, textAlign: 'center' }}>{name}</div>
+                                      </label>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
 
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                        {['Core', 'High', 'Medium', 'Low', 'Least'].filter((cat) => !categoryFilter || categoryFilter === cat).map((cat) => {
-                          const topicsInCat = (topics || []).filter((topic: any) => {
-                            const name = typeof topic === 'string' ? topic : topic?.name;
-                            return (topicsCategory[name] || 'Least') === cat;
-                          });
-                          if (topicsInCat.length === 0) return null;
-                          return (
-                            <div key={cat} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                                <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--color-text-tertiary)' }}>{cat}</div>
-                                <div style={{ fontSize: 12, color: 'var(--color-text-tertiary)' }}>{topicsInCat.length} topic{topicsInCat.length === 1 ? '' : 's'}</div>
-                              </div>
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: isMobileView ? 6 : 8 }}>
-                                {topicsInCat.map((topic: any) => {
-                                  const name = typeof topic === 'string' ? topic : topic?.name;
-                                  const checked = topicsSelected.includes(name);
-                                  const disabled = !checked && topicsSelected.length >= 6;
-                                  return (
-                                    <label key={name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: isMobileView ? 8 : 12, padding: isMobileView ? '8px 10px' : '10px 12px', borderRadius: isMobileView ? 8 : 12, border: `1px solid ${checked ? (isDark ? 'rgba(83,74,183,0.9)' : '#534ab7') : 'var(--color-border-tertiary)'}`, background: checked ? (isDark ? 'linear-gradient(90deg, rgba(83,74,183,0.12), rgba(0,180,160,0.04))' : 'rgba(83, 74, 183, 0.04)') : 'transparent', cursor: disabled ? 'not-allowed' : 'pointer' }}>
-                                      <div style={{ display: 'flex', alignItems: 'center', gap: isMobileView ? 8 : 12 }}>
-                                        <input type="checkbox" checked={checked} disabled={disabled} onChange={() => {
-                                          setTopicsSelected((previous) => {
-                                            if (previous.includes(name)) return previous.filter((v) => v !== name);
-                                            if (previous.length >= 6) return previous;
-                                            return [...previous, name];
-                                          });
-                                        }} style={{ width: isMobileView ? 16 : 18, height: isMobileView ? 16 : 18, accentColor: isDark ? '#aab7ff' : '#534ab7' }} />
-                                        <div style={{ fontSize: isMobileView ? 14 : 15, fontWeight: 700, color: 'var(--color-text-primary)' }}>{name}</div>
-                                      </div>
-                                      <div style={{ display: 'flex', alignItems: 'center', gap: isMobileView ? 8 : 10 }}>
-                                        <div style={{ padding: isMobileView ? '4px 8px' : '6px 10px', borderRadius: 999, background: isDark ? 'rgba(255,255,255,0.04)' : '#fff', color: '#534ab7', fontSize: isMobileView ? 11 : 12, fontWeight: 800, border: isDark ? '1px solid rgba(255,255,255,0.04)' : '1px solid rgba(83,74,183,0.08)' }}>{cat}</div>
-                                      </div>
-                                    </label>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          );
-                        })}
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 14, paddingTop: 12, borderTop: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid var(--color-border-tertiary)', flexShrink: 0 }}>
+                        <button type="button" onClick={() => setTopicsSelected([])} style={{ ...actionButtonStyle, padding: '8px 10px', background: 'transparent', border: '1px solid var(--color-border-tertiary)', color: 'var(--color-text-secondary)' }}>Clear</button>
+                        <button type="button" onClick={() => setTopicsModalOpen(false)} style={{ ...actionButtonStyle, padding: '8px 10px', background: 'transparent', border: '1px solid var(--color-border-tertiary)' }}>Close</button>
+                        <button type="button" onClick={() => setTopicsModalOpen(false)} style={{ ...actionButtonStyle, padding: '8px 10px', background: 'linear-gradient(135deg, #534ab7 0%, #00b4a0 120%)', color: '#fff' }}>Apply topics</button>
                       </div>
-                    </section>
-                  ))}
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 18 }}>
-                  <button type="button" onClick={() => setTopicsModalOpen(false)} style={{ ...actionButtonStyle, padding: '12px 14px', background: 'transparent', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border-tertiary)' }}>
-                    Close
-                  </button>
-                  <button type="button" onClick={() => setTopicsModalOpen(false)} style={{ ...actionButtonStyle, padding: '12px 14px', background: 'linear-gradient(135deg, #534ab7 0%, #00b4a0 120%)', color: '#fff', boxShadow: '0 18px 34px rgba(83, 74, 183, 0.25)' }}>
-                    Apply topics
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+                    </div>
+                  </div>
+                )}
         </div>
       </div>
     );
@@ -808,11 +763,11 @@ export default function AdaptiveQuizPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: isMobileView ? 10 : 12 }}>
               <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
                 <div style={{ maxWidth: isMobileView ? '100%' : 680 }}>
-                  <div style={{ ...badgeStyle, padding: '6px 10px', fontSize: 11 }}>{STRATEGY_LABEL[meta.quizStrategy] || 'Adaptive Mode'}</div>
+                  <div style={{ ...badgeStyle, padding: '6px 10px', fontSize: 11 }}>{(meta.quizStrategy && STRATEGY_LABEL[meta.quizStrategy]) || 'Adaptive Mode'}</div>
                   <h1 style={{ margin: '8px 0 6px', fontSize: isMobileView ? '1.4rem' : 'clamp(1.4rem, 2.6vw, 2.2rem)', lineHeight: 1.04, letterSpacing: '-0.04em' }}>
                     Your quiz is tuned and ready.
                   </h1>
-                  <p style={{ ...subtextStyle, fontSize: 13, maxWidth: 720, margin: 0 }}>{meta.overallInsight}</p>
+                  {!isMobileView && <p style={{ ...subtextStyle, fontSize: 13, maxWidth: 720, margin: 0 }}>{meta.overallInsight}</p>}
                 </div>
 
                 <div style={{ minWidth: 140, display: 'grid', gap: 8 }}>
@@ -822,23 +777,19 @@ export default function AdaptiveQuizPage() {
                   </div>
                   <div style={{ borderRadius: 12, padding: '8px 10px', background: isDark ? 'linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02))' : 'rgba(248, 250, 252, 0.94)', border: '1px solid var(--color-border-tertiary)' }}>
                     <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-text-tertiary)' }}>Estimated</div>
-                    <div style={{ marginTop: 4, fontSize: 18, fontWeight: 900 }}>{Math.ceil(meta.estimatedDuration / 60)} min</div>
+                    <div style={{ marginTop: 4, fontSize: 18, fontWeight: 900 }}>{Math.ceil(((meta.estimatedDuration ?? (estimatedMinutes * 60)) as number) / 60)} min</div>
                   </div>
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: isMobileView ? '1fr' : 'repeat(3, minmax(0, 1fr))', gap: 8 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobileView ? 'repeat(2, minmax(0, 1fr))' : 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
                 <div style={{ borderRadius: 12, padding: '8px 10px', background: isDark ? 'linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.015))' : 'rgba(248, 250, 252, 0.94)', border: '1px solid var(--color-border-tertiary)' }}>
                   <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-text-tertiary)' }}>Focus area</div>
                   <div style={{ marginTop: 6, fontSize: 13, fontWeight: 800 }}>{meta.focusArea}</div>
                 </div>
                 <div style={{ borderRadius: 12, padding: '8px 10px', background: isDark ? 'linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.015))' : 'rgba(248, 250, 252, 0.94)', border: '1px solid var(--color-border-tertiary)' }}>
                   <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-text-tertiary)' }}>Source</div>
-                  <div style={{ marginTop: 6, fontSize: 13, fontWeight: 800 }}>{meta.source}</div>
-                </div>
-                <div style={{ borderRadius: 12, padding: '8px 10px', background: isDark ? 'linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.015))' : 'rgba(248, 250, 252, 0.94)', border: '1px solid var(--color-border-tertiary)' }}>
-                  <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-text-tertiary)' }}>Mode</div>
-                  <div style={{ marginTop: 6, fontSize: 13, fontWeight: 800 }}>{selectedMode.label}</div>
+                  <div style={{ marginTop: 6, fontSize: 13, fontWeight: 800 }}>{questionBankSourceLabel}</div>
                 </div>
               </div>
             </div>
@@ -852,7 +803,7 @@ export default function AdaptiveQuizPage() {
               </div>
 
               <div style={{ display: 'grid', gap: 10 }}>
-                {meta.topicBreakdown.map((topic, index) => {
+                {(meta.topicBreakdown || []).map((topic, index) => {
                   const subject = SUBJECT_OPTIONS[index % SUBJECT_OPTIONS.length];
                   return (
                     <div key={topic.topic} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 14, borderRadius: 18, background: isDark ? 'rgba(15, 23, 42, 0.56)' : 'rgba(248, 250, 252, 0.94)', border: '1px solid var(--color-border-tertiary)' }}>
@@ -925,8 +876,8 @@ export default function AdaptiveQuizPage() {
           <section style={{ ...roundedCardStyle, padding: 20 }}>
             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 14 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 999, fontSize: 12, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', background: `${SUBJECT_COLORS[question?.subject] || '#534ab7'}14`, color: SUBJECT_COLORS[question?.subject] || '#534ab7', border: `1px solid ${SUBJECT_COLORS[question?.subject] || '#534ab7'}20` }}>{question?.subject}</span>
-                <span style={{ ...badgeStyle, textTransform: 'none', letterSpacing: 0, padding: '8px 10px', background: DIFFICULTY_STYLES[question?.difficulty || 'medium']?.background || 'rgba(148, 163, 184, 0.16)', color: DIFFICULTY_STYLES[question?.difficulty || 'medium']?.color || 'inherit', borderColor: DIFFICULTY_STYLES[question?.difficulty || 'medium']?.border || 'transparent' }}>{DIFFICULTY_LABEL[question?.difficulty] || 'Question'}</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 999, fontSize: 12, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', background: `${SUBJECT_COLORS[(question?.subject ?? '')] || '#534ab7'}14`, color: SUBJECT_COLORS[(question?.subject ?? '')] || '#534ab7', border: `1px solid ${SUBJECT_COLORS[(question?.subject ?? '')] || '#534ab7'}20` }}>{question?.subject}</span>
+                <span style={{ ...badgeStyle, textTransform: 'none', letterSpacing: 0, padding: '8px 10px', background: DIFFICULTY_STYLES[(question?.difficulty ?? 'medium') as keyof typeof DIFFICULTY_STYLES]?.background || 'rgba(148, 163, 184, 0.16)', color: DIFFICULTY_STYLES[(question?.difficulty ?? 'medium') as keyof typeof DIFFICULTY_STYLES]?.color || 'inherit', borderColor: DIFFICULTY_STYLES[(question?.difficulty ?? 'medium') as keyof typeof DIFFICULTY_STYLES]?.border || 'transparent' }}>{DIFFICULTY_LABEL[(question?.difficulty ?? 'medium') as keyof typeof DIFFICULTY_LABEL] || 'Question'}</span>
               </div>
               <div style={{ fontSize: 12, color: 'var(--color-text-tertiary)', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>{Math.max(0, progress)}% complete</div>
             </div>
@@ -935,9 +886,9 @@ export default function AdaptiveQuizPage() {
               <div style={{ height: '100%', width: `${progress}%`, borderRadius: 999, background: 'linear-gradient(90deg, #534ab7 0%, #00b4a0 100%)', transition: 'width .3s ease' }} />
             </div>
 
-            {question?._adaptiveReason && (
+            {question?.exam && (
               <div style={{ marginBottom: 16, padding: '12px 14px', borderRadius: 16, background: isDark ? 'rgba(15, 23, 42, 0.56)' : 'rgba(248, 250, 252, 0.92)', border: '1px solid var(--color-border-tertiary)', color: 'var(--color-text-secondary)', fontSize: 14, lineHeight: 1.55 }}>
-                <strong style={{ color: 'var(--color-text-primary)' }}>Why this question:</strong> {question._adaptiveReason}
+                <strong style={{ color: 'var(--color-text-primary)' }}>Exam:</strong> {question.exam}{question.year ? ` · ${question.year}` : ''}
               </div>
             )}
 
@@ -1023,21 +974,25 @@ export default function AdaptiveQuizPage() {
       <div style={shellStyle}>
         {renderBackdrop}
         <div style={{ ...frameStyle, maxWidth: 960 }}>
-          <section style={{ ...roundedCardStyle, padding: 22, marginBottom: 18 }}>
-            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+          <section style={{ ...roundedCardStyle, padding: isMobileView ? 14 : 22, marginBottom: 18 }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: isMobileView ? 12 : 16 }}>
               <div style={{ maxWidth: 640 }}>
                 <div style={badgeStyle}>Results</div>
-                <h1 style={{ margin: '14px 0 10px', fontSize: 'clamp(2rem, 4vw, 3.5rem)', lineHeight: 0.98, letterSpacing: '-0.06em' }}>
+                <h1 style={{ margin: '14px 0 10px', fontSize: isMobileView ? '1.7rem' : 'clamp(2rem, 4vw, 3.5rem)', lineHeight: 0.98, letterSpacing: '-0.06em' }}>
                   Your session has a clear profile now.
                 </h1>
-                <p style={{ ...subtextStyle, fontSize: 15 }}>The score below is paired with topic-level signals so you can see what to keep, what to review, and what to attack next.</p>
+                {!isMobileView && (
+                  <p style={{ ...subtextStyle, fontSize: 15 }}>The score below is paired with topic-level signals so you can see what to keep, what to review, and what to attack next.</p>
+                )}
               </div>
 
-              <div style={{ width: 240, borderRadius: 28, padding: 18, background: pct >= 70 ? 'rgba(34, 197, 94, 0.14)' : pct >= 50 ? 'rgba(245, 158, 11, 0.16)' : 'rgba(239, 68, 68, 0.16)', border: `1px solid ${pct >= 70 ? 'rgba(34, 197, 94, 0.24)' : pct >= 50 ? 'rgba(245, 158, 11, 0.26)' : 'rgba(239, 68, 68, 0.26)'}` }}>
+              <div style={{ width: isMobileView ? '100%' : 240, borderRadius: isMobileView ? 20 : 28, padding: isMobileView ? 14 : 18, background: pct >= 70 ? 'rgba(34, 197, 94, 0.14)' : pct >= 50 ? 'rgba(245, 158, 11, 0.16)' : 'rgba(239, 68, 68, 0.16)', border: `1px solid ${pct >= 70 ? 'rgba(34, 197, 94, 0.24)' : pct >= 50 ? 'rgba(245, 158, 11, 0.26)' : 'rgba(239, 68, 68, 0.26)'}` }}>
                 <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: scoreColor(pct) }}>Score</div>
-                <div style={{ marginTop: 6, fontSize: 64, lineHeight: 0.95, fontWeight: 900, letterSpacing: '-0.08em', color: scoreColor(pct) }}>{pct}%</div>
-                <div style={{ marginTop: 8, fontSize: 14, fontWeight: 700, color: scoreColor(pct) }}>{correct} / {results.length} correct</div>
-                <div style={{ marginTop: 4, fontSize: 12, color: 'var(--color-text-secondary)' }}>{formatTime(elapsed)} elapsed · raw score {score}</div>
+                <div style={{ marginTop: 4, fontSize: isMobileView ? 52 : 64, lineHeight: 0.95, fontWeight: 900, letterSpacing: '-0.08em', color: scoreColor(pct) }}>{pct}%</div>
+                <div style={{ marginTop: 8, fontSize: isMobileView ? 13 : 14, fontWeight: 700, color: scoreColor(pct) }}>{correct} / {results.length} correct</div>
+                {!isMobileView && (
+                  <div style={{ marginTop: 4, fontSize: 12, color: 'var(--color-text-secondary)' }}>{formatTime(elapsed)} elapsed · raw score {score}</div>
+                )}
               </div>
             </div>
           </section>
@@ -1089,10 +1044,10 @@ export default function AdaptiveQuizPage() {
                         <div style={{ padding: '0 16px 16px', borderTop: '1px solid rgba(239, 68, 68, 0.18)' }}>
                           <div style={{ display: 'grid', gap: 8, marginTop: 14 }}>
                             <div style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>
-                              You answered <strong style={{ color: 'var(--color-text-primary)' }}>{result.userAnswer}</strong>
+                              You answered <strong style={{ color: 'var(--color-text-primary)' }}><MathText text={result.userAnswer} /></strong>
                             </div>
                             <div style={{ fontSize: 13, color: '#16a34a' }}>
-                              Correct answer <strong>{result.correctAnswer}</strong>
+                              Correct answer <strong><MathText text={result.correctAnswer} /></strong>
                             </div>
                             {result.solution && (
                               <div style={{ padding: 14, borderRadius: 16, background: isDark ? 'rgba(15, 23, 42, 0.56)' : '#ffffff', border: '1px solid var(--color-border-tertiary)', fontSize: 14, lineHeight: 1.7, color: 'var(--color-text-primary)' }}>

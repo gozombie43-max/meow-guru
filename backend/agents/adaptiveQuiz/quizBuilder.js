@@ -54,8 +54,8 @@ async function fetchForAllocation({ topic, subject, difficultyMix, excludeIds = 
     // Also compare `subject` case-insensitively (Maths vs Mathematics vs Maths).
     const query = {
       query: `SELECT TOP @count c.id, c.topic, c.subject, c.chapter, c.concept,
-                     c.difficulty, c.question, c.options, c.correctAnswer,
-                     c.correctLetter, c.solution, c.exam
+             c.difficulty, c.question, c.options, c.correctAnswer,
+             c.correctLetter, c.solution, c.exam, c.year
               FROM c
               WHERE (c.topic = @topic OR c.chapter = @topic OR c.concept = @topic)
               AND c.difficulty = @difficulty
@@ -96,8 +96,8 @@ async function fetchForAllocation({ topic, subject, difficultyMix, excludeIds = 
     const existingIds = new Set(questions.map(q => q.id));
     const topupQuery = {
       query: `SELECT TOP @count c.id, c.topic, c.subject, c.chapter, c.concept,
-                     c.difficulty, c.question, c.options, c.correctAnswer,
-                     c.correctLetter, c.solution, c.exam
+             c.difficulty, c.question, c.options, c.correctAnswer,
+             c.correctLetter, c.solution, c.exam, c.year
               FROM c
               WHERE (c.topic = @topic OR c.chapter = @topic OR c.concept = @topic)
               AND NOT ARRAY_CONTAINS(@excluded, c.id)`,
