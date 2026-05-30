@@ -113,13 +113,21 @@ function AiChatPageContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const bbarRef = useRef<HTMLDivElement>(null);
 
   const context = useMemo(() => ASSISTANT_CONTEXT, []);
 
   useEffect(() => {
+    // keep messages scrolled to bottom when in chat view
     if (!isChatView) return;
     const node = scrollRef.current;
     if (node) node.scrollTop = node.scrollHeight;
+    // ensure bottom input bar is visible (mobile keyboards can cover it)
+    setTimeout(() => {
+      try {
+        bbarRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      } catch (e) {}
+    }, 120);
   }, [messages, isLoading, isChatView]);
 
   if (!isOpen) return null;
@@ -286,7 +294,7 @@ function AiChatPageContent() {
               </div>
             </div>
           </div>
-          <div className="bbar lbar">
+              <div className="bbar lbar" ref={bbarRef}>
             <div className="irow">
               <button type="button" className="addb" aria-label="Attach context" onClick={handleClear}>
                 +
@@ -419,7 +427,7 @@ function AiChatPageContent() {
         .y { background: #fffbe6; color: #b7791f; }
         .ot { font-size: 14.5px; font-weight: 700; color: var(--dk); margin-bottom: 2px; display: block; transition: color 0.35s; }
         .os { font-size: 12px; color: var(--gr); }
-        .bbar { flex-shrink: 0; background: var(--wh); padding: 10px 14px calc(18px + env(safe-area-inset-bottom)); border-top: 1px solid var(--bd); transition: opacity 0.3s, background 0.35s, border-color 0.35s; }
+        .bbar { position: fixed; left: 50%; transform: translateX(-50%); bottom: env(safe-area-inset-bottom, 12px); width: min(100vw, 520px); max-width: 100%; z-index: 60; flex-shrink: 0; background: transparent; padding: 10px 14px calc(18px + env(safe-area-inset-bottom)); transition: opacity 0.3s, background 0.35s, border-color 0.35s; pointer-events: auto; }
         .bbar.out { opacity: 0; pointer-events: none; }
         .irow { display: flex; align-items: center; gap: 10px; background: var(--irow-bg); border-radius: 50px; padding: 8px 8px 8px 16px; transition: background 0.35s; }
         .addb { width: 36px; height: 36px; background: var(--wh); border: 1px solid var(--bd); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 300; color: var(--dk); cursor: pointer; flex-shrink: 0; transition: background 0.35s, border-color 0.35s, color 0.35s; }
@@ -433,7 +441,7 @@ function AiChatPageContent() {
         .chat { opacity: 0; transform: translateY(14px); pointer-events: none; }
         .chat.show { opacity: 1; pointer-events: auto; }
         .chat.in { transform: translateY(0); }
-        .ca { flex: 1; min-height: 0; overflow-y: auto; padding: 0 0 8px; scroll-behavior: smooth; }
+        .ca { flex: 1; min-height: 0; overflow-y: auto; padding: 0 0 96px; scroll-behavior: smooth; }
         .ca::-webkit-scrollbar, .lscroll::-webkit-scrollbar { width: 4px; }
         .ca::-webkit-scrollbar-thumb, .lscroll::-webkit-scrollbar-thumb { background: var(--bd); border-radius: 4px; }
         .mu { margin: 16px 16px 0; background: var(--wh); border-radius: 16px; padding: 14px 16px; border: 1px solid var(--bd); font-size: 14.5px; font-weight: 500; color: var(--dk); box-shadow: var(--sh); animation: fu 0.3s ease; transition: background 0.35s, border-color 0.35s, color 0.35s; }

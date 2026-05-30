@@ -11,6 +11,7 @@ export default function BottomNav() {
   const normalizedPathname = pathname.replace(/\/+$/, '') || '/';
   const isQuizRoute = pathname.split('/').includes('quiz');
   const isNotesViewRoute = pathname === '/notes/view' || pathname.startsWith('/notes/view/');
+  const isAiChat = pathname === '/ai-chat' || pathname.startsWith('/ai-chat/');
   const formulaNotesSubjects = [
     '/mathematics/',
     '/reasoning/',
@@ -20,7 +21,7 @@ export default function BottomNav() {
   const isFormulaNotesRoute =
     formulaNotesSubjects.some((prefix) => normalizedPathname.startsWith(prefix)) &&
     normalizedPathname.endsWith('/formula-notes');
-  const shouldHideNav = isQuizRoute || isNotesViewRoute || isFormulaNotesRoute;
+  const shouldHideNav = isQuizRoute || isNotesViewRoute || isFormulaNotesRoute || isAiChat;
   const { theme } = useThemeMode();
   const [isScrolled, setIsScrolled] = useState(false);
   const lightSurfacePrefixes = [
@@ -68,7 +69,6 @@ export default function BottomNav() {
 
   const isHome = pathname === '/';
   const isMock = pathname.startsWith('/mock-test');
-  const isAiChat = pathname === '/ai-chat' || pathname.startsWith('/ai-chat/');
   const isPlay = pathname === '/play' || pathname.startsWith('/play/');
   const isVideos = pathname === '/videos' || pathname.startsWith('/videos/');
   const scrollClass = isScrolled ? (isLightSurface ? ' is-scrolled-light' : ' is-scrolled') : '';
