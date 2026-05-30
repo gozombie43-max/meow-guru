@@ -1609,6 +1609,20 @@ export default function Home() {
                   </span>
                   <span className="ios-card-chevron" aria-hidden="true">›</span>
                 </Link>
+                <Link
+                  href="/resource"
+                  className="ios-action-card books-action-card animate-fade-in-up"
+                  style={{
+                    animationDelay: "1120ms",
+                    ["--card-accent" as string]: "#f59e0b",
+                  }}
+                >
+                  <span className="ios-card-main">
+                    <span className="ios-card-accent" aria-hidden="true" />
+                    <span className="ios-card-label">ALL BOOKS &amp; NOTES</span>
+                  </span>
+                  <span className="ios-card-chevron" aria-hidden="true">›</span>
+                </Link>
                 <div className="recent-section">
                   <div className="recent-header">
                     <h3 className="recent-title">Recent Quizzes</h3>

@@ -14,7 +14,11 @@ const upload = multer({
 });
 
 const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
-const pdfContainerName = process.env.AZURE_STORAGE_CONTAINER_QUIZ_PDFS || 'quiz-pdfs';
+const pdfContainerName =
+  process.env.AZURE_STORAGE_CONTAINER_ALL_PDFS ||
+  process.env.AZURE_BLOB_CONTAINER_NAME2 ||
+  process.env.AZURE_STORAGE_CONTAINER_QUIZ_PDFS ||
+  'all-pdfs';
 
 const getConnectionValue = (key) => {
   const part = connectionString

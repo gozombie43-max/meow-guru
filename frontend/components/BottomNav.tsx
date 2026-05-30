@@ -12,6 +12,7 @@ export default function BottomNav() {
   const isQuizRoute = pathname.split('/').includes('quiz');
   const isNotesViewRoute = pathname === '/notes/view' || pathname.startsWith('/notes/view/');
   const isAiChat = pathname === '/ai-chat' || pathname.startsWith('/ai-chat/');
+  const isResourceRoute = pathname === '/resource' || pathname.startsWith('/resource/');
   const formulaNotesSubjects = [
     '/mathematics/',
     '/reasoning/',
@@ -21,7 +22,7 @@ export default function BottomNav() {
   const isFormulaNotesRoute =
     formulaNotesSubjects.some((prefix) => normalizedPathname.startsWith(prefix)) &&
     normalizedPathname.endsWith('/formula-notes');
-  const shouldHideNav = isQuizRoute || isNotesViewRoute || isFormulaNotesRoute || isAiChat;
+  const shouldHideNav = isQuizRoute || isNotesViewRoute || isFormulaNotesRoute || isAiChat || isResourceRoute;
   const { theme } = useThemeMode();
   const [isScrolled, setIsScrolled] = useState(false);
   const lightSurfacePrefixes = [
