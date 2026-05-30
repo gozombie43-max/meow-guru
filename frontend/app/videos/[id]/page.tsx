@@ -1,11 +1,12 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, BookmarkPlus, CheckCircle, Circle, PlayCircle } from 'lucide-react';
+import { ArrowLeft, BookmarkPlus, CheckCircle, Circle, PlayCircle, Search } from 'lucide-react';
 import { useThemeMode } from '@/hooks/useTheme';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000';
+const HEADER_HEIGHT = 96;
 
 type Video = {
   id: string;
@@ -54,31 +55,31 @@ const lightVideoTheme = {
 };
 
 const darkVideoTheme = {
-  pageBg: '#000000',
-  pageFg: '#ffffff',
-  headerBg: 'rgba(0, 0, 0, 0.92)',
-  headerBorder: '#1f1f23',
-  headerShadow: '0 1px 0 rgba(255,255,255,0.08)',
-  title: '#ffffff',
-  muted: 'rgba(235, 235, 245, 0.62)',
-  faint: 'rgba(235, 235, 245, 0.48)',
-  divider: '#1f1f23',
-  progressTrack: '#2c2c2e',
-  progressFill: '#ffffff',
-  buttonBg: '#151517',
-  buttonBorder: '#2c2c2e',
-  buttonFg: '#ffffff',
-  activeButtonBg: '#ffffff',
-  activeButtonFg: '#000000',
-  nextBg: '#111113',
-  chapterBg: '#000000',
-  chapterSelectedBg: '#151517',
-  selectedBorder: '#ffffff',
-  indexBg: '#1c1c1e',
-  indexFg: 'rgba(235, 235, 245, 0.62)',
-  playingBar: '#ffffff',
-  topicHeader: 'rgba(235, 235, 245, 0.42)',
-  loadingText: 'rgba(235, 235, 245, 0.5)',
+  pageBg: '#0d1117',
+  pageFg: '#e6e8eb',
+  headerBg: 'rgba(15, 20, 28, 0.94)',
+  headerBorder: '#262d37',
+  headerShadow: '0 1px 0 rgba(255,255,255,0.06)',
+  title: '#f3f4f6',
+  muted: '#b6bdc8',
+  faint: '#959ead',
+  divider: '#262d37',
+  progressTrack: '#2c3440',
+  progressFill: '#e6e8eb',
+  buttonBg: '#1a212b',
+  buttonBorder: '#313b48',
+  buttonFg: '#e6e8eb',
+  activeButtonBg: '#e6e8eb',
+  activeButtonFg: '#0d1117',
+  nextBg: '#121923',
+  chapterBg: '#0d1117',
+  chapterSelectedBg: '#1a212b',
+  selectedBorder: '#e6e8eb',
+  indexBg: '#242d39',
+  indexFg: '#c2c8d2',
+  playingBar: '#e6e8eb',
+  topicHeader: '#8d96a6',
+  loadingText: '#a5aebb',
 };
 
 async function readApiJson(response: Response) {
@@ -96,6 +97,7 @@ export default function VideoPlayerPage() {
   const router = useRouter();
   const { theme } = useThemeMode();
   const subject = params.id as string;
+  const fixedPlayerEnabled = subject === 'reasoning' || subject === 'math';
   const videoTheme = theme === 'dark' ? darkVideoTheme : lightVideoTheme;
 
   const [videos, setVideos] = useState<Video[]>([]);
@@ -105,10 +107,20 @@ export default function VideoPlayerPage() {
   const [loadingStream, setLoadingStream] = useState(false);
   const [watched, setWatched] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const videoRef = useRef<HTMLVideoElement>(null);
 
+  const filteredVideos = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return videos;
+
+    return videos.filter((video) =>
+      `${video.chapter} ${video.topic} ${video.description}`.toLowerCase().includes(query)
+    );
+  }, [searchQuery, videos]);
+
   // Group by topic
-  const grouped = videos.reduce<Record<string, Video[]>>((acc, v) => {
+  const grouped = filteredVideos.reduce<Record<string, Video[]>>((acc, v) => {
     if (!acc[v.topic]) acc[v.topic] = [];
     acc[v.topic].push(v);
     return acc;
@@ -139,16 +151,13 @@ export default function VideoPlayerPage() {
       const data = await readApiJson(res);
       if (data.success) {
         setVideos(data.videos);
-        if (data.videos.length > 0) {
-          streamVideo(data.videos[0]);
-        }
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load videos.');
     } finally {
       setLoadingList(false);
     }
-  }, [streamVideo, subject]);
+  }, [subject]);
 
   useEffect(() => {
     fetchVideos();
@@ -182,37 +191,79 @@ export default function VideoPlayerPage() {
     }}>
       {/* Header */}
       <div style={{
-        position: 'sticky', top: 0, zIndex: 50,
-        display: 'flex', alignItems: 'center', gap: 12,
-        padding: '0 16px', height: 52,
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50,
+        display: 'flex', flexDirection: 'column', justifyContent: 'center',
+        gap: 8, padding: '10px 16px 12px', height: HEADER_HEIGHT,
         background: videoTheme.headerBg,
         borderBottom: `1px solid ${videoTheme.headerBorder}`,
         boxShadow: videoTheme.headerShadow,
         backdropFilter: theme === 'dark' ? 'blur(16px)' : 'none',
         WebkitBackdropFilter: theme === 'dark' ? 'blur(16px)' : 'none',
       }}>
-        <button
-          onClick={() => router.back()}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 6, borderRadius: 8, display: 'flex', alignItems: 'center', color: videoTheme.title }}
-        >
-          <ArrowLeft size={22} strokeWidth={2.4} />
-        </button>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: videoTheme.title, lineHeight: 1 }}>
-            {SUBJECT_MAP[subject] || subject}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%' }}>
+          <button
+            onClick={() => router.back()}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 6, borderRadius: 8, display: 'flex', alignItems: 'center', color: videoTheme.title }}
+          >
+            <ArrowLeft size={22} strokeWidth={2.4} />
+          </button>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: videoTheme.title, lineHeight: 1 }}>
+              {SUBJECT_MAP[subject] || subject}
+            </div>
+            <div style={{ fontSize: 11, color: videoTheme.muted, marginTop: 2 }}>
+              {watched.size}/{videos.length} completed
+            </div>
           </div>
-          <div style={{ fontSize: 11, color: videoTheme.muted, marginTop: 2 }}>
-            {watched.size}/{videos.length} completed
+          {/* Progress bar */}
+          <div style={{ width: 80, height: 4, background: videoTheme.progressTrack, borderRadius: 2, overflow: 'hidden' }}>
+            <div style={{ height: '100%', width: `${progress}%`, background: videoTheme.progressFill, borderRadius: 2, transition: 'width 0.3s' }} />
           </div>
         </div>
-        {/* Progress bar */}
-        <div style={{ width: 80, height: 4, background: videoTheme.progressTrack, borderRadius: 2, overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: `${progress}%`, background: videoTheme.progressFill, borderRadius: 2, transition: 'width 0.3s' }} />
+
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 8, width: '100%',
+          borderRadius: 10, border: `1px solid ${videoTheme.buttonBorder}`,
+          background: videoTheme.buttonBg, padding: '7px 10px',
+        }}>
+          <Search size={16} color={videoTheme.muted} />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            placeholder="Search videos by name"
+            style={{
+              flex: 1,
+              border: 'none',
+              outline: 'none',
+              background: 'transparent',
+              color: videoTheme.title,
+              fontSize: 13,
+              fontWeight: 500,
+            }}
+          />
         </div>
       </div>
 
+        <div aria-hidden style={{ height: HEADER_HEIGHT }} />
+
       {/* Video player */}
-      <div style={{ position: 'relative', background: '#000', aspectRatio: '16/9', maxHeight: '56vw' }}>
+      {fixedPlayerEnabled && <div aria-hidden className="yt-player-spacer" style={{ aspectRatio: '16/9', maxHeight: '56vw' }} />}
+      <div
+        className={fixedPlayerEnabled ? 'yt-player-shell yt-player-shell-fixed' : 'yt-player-shell'}
+        style={{
+          position: fixedPlayerEnabled ? 'fixed' : 'relative',
+          top: fixedPlayerEnabled ? HEADER_HEIGHT : undefined,
+          left: fixedPlayerEnabled ? 0 : undefined,
+          right: fixedPlayerEnabled ? 0 : undefined,
+          zIndex: fixedPlayerEnabled ? 40 : undefined,
+          width: '100%',
+          background: '#000',
+          aspectRatio: '16/9',
+          maxHeight: '56vw',
+          boxShadow: fixedPlayerEnabled ? (theme === 'dark' ? '0 8px 20px rgba(0, 0, 0, 0.55)' : '0 8px 20px rgba(15, 23, 42, 0.12)') : undefined,
+        }}
+      >
         {loadingStream && (
           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#050709', zIndex: 2 }}>
             <div style={{ width: 36, height: 36, border: '3px solid #222', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite', marginBottom: 10 }} />
@@ -237,6 +288,8 @@ export default function VideoPlayerPage() {
           />
         )}
       </div>
+
+      <div className="yt-watch-content">
 
       {/* Now playing info */}
       {selected && (
@@ -318,6 +371,8 @@ export default function VideoPlayerPage() {
           <div style={{ padding: 32, textAlign: 'center', color: videoTheme.loadingText, fontSize: 13 }}>Loading chapters...</div>
         ) : videos.length === 0 ? (
           <div style={{ padding: 32, textAlign: 'center', color: videoTheme.loadingText, fontSize: 13 }}>No videos yet for this subject.</div>
+        ) : filteredVideos.length === 0 ? (
+          <div style={{ padding: 32, textAlign: 'center', color: videoTheme.loadingText, fontSize: 13 }}>No videos found for "{searchQuery}".</div>
         ) : (
           Object.entries(grouped).map(([topic, topicVideos]) => (
             <div key={topic}>
@@ -379,11 +434,43 @@ export default function VideoPlayerPage() {
         )}
       </div>
 
+      </div>
+
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes bar1 { from { height: 6px; } to { height: 14px; } }
         @keyframes bar2 { from { height: 10px; } to { height: 18px; } }
         @keyframes bar3 { from { height: 8px; } to { height: 16px; } }
+        .yt-player-spacer {
+          width: 100%;
+          background: transparent;
+        }
+        .yt-watch-content {
+          width: 100%;
+          max-width: 980px;
+          margin: 0 auto;
+        }
+        .yt-player-shell {
+          width: 100%;
+          margin: 0 auto;
+        }
+        .yt-player-shell video {
+          background: #000;
+        }
+        @media (min-width: 1024px) {
+          .yt-player-shell-fixed {
+            left: 50% !important;
+            right: auto !important;
+            width: min(100vw - 48px, 980px) !important;
+            transform: translateX(-50%);
+            border-radius: 12px;
+            overflow: hidden;
+          }
+          .yt-player-spacer {
+            max-width: 980px;
+            margin: 0 auto;
+          }
+        }
         * { box-sizing: border-box; }
         ::-webkit-scrollbar { width: 0; }
       `}</style>
