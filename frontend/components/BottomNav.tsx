@@ -29,6 +29,7 @@ export default function BottomNav() {
     '/english',
     '/adaptive-quiz',
     '/general-awareness',
+    '/ai-chat',
     '/dashboard',
     '/admin',
     '/login',
@@ -67,6 +68,7 @@ export default function BottomNav() {
 
   const isHome = pathname === '/';
   const isMock = pathname.startsWith('/mock-test');
+  const isAiChat = pathname === '/ai-chat' || pathname.startsWith('/ai-chat/');
   const isPlay = pathname === '/play' || pathname.startsWith('/play/');
   const isVideos = pathname === '/videos' || pathname.startsWith('/videos/');
   const scrollClass = isScrolled ? (isLightSurface ? ' is-scrolled-light' : ' is-scrolled') : '';
@@ -94,7 +96,12 @@ export default function BottomNav() {
       </Link>
 
       <div className="bottom-nav-center-item">
-        <Link href="/dashboard" className="bottom-nav-center-btn" aria-label="AI Assistant">
+        <Link
+          href="/ai-chat"
+          className={`bottom-nav-center-btn${isAiChat ? ' is-active' : ''}`}
+          aria-label="AI Assistant"
+          aria-current={isAiChat ? 'page' : undefined}
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
