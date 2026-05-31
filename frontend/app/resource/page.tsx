@@ -13,7 +13,6 @@ import {
   Plus,
   Search,
   Shapes,
-  UploadCloud,
   X,
 } from "lucide-react";
 import { fetchWithRetry } from "@/lib/api/http";
@@ -248,16 +247,24 @@ export default function ResourcePage() {
             <p className="eyebrow">Resources</p>
             <h1>All Books &amp; Notes</h1>
           </div>
-          <button
-            type="button"
-            className="upload-button"
-            onClick={() => beginUpload(activeSubject, activeTab)}
-            disabled={uploading}
-            aria-label={`Upload ${selectedSubject.label} ${activeTab} files`}
-          >
-            <UploadCloud size={17} strokeWidth={2.4} />
-            <span>{uploading ? "Uploading" : "Upload"}</span>
-          </button>
+          <div className="search-row header-search">
+            <span className="search-icon" aria-hidden="true">
+              <Search size={17} />
+            </span>
+            <input
+              type="text"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search files"
+              aria-label="Search files"
+              suppressHydrationWarning
+            />
+            {query ? (
+              <button type="button" className="clear-search" onClick={() => setQuery("")} aria-label="Clear search">
+                <X size={15} />
+              </button>
+            ) : null}
+          </div>
         </header>
 
         <section className="subject-strip" aria-label="Subjects">
@@ -308,25 +315,6 @@ export default function ResourcePage() {
                 {tab}
               </button>
             ))}
-          </div>
-
-          <div className="search-row">
-            <span className="search-icon" aria-hidden="true">
-              <Search size={17} />
-            </span>
-            <input
-              type="text"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search files"
-              aria-label="Search files"
-              suppressHydrationWarning
-            />
-            {query ? (
-              <button type="button" className="clear-search" onClick={() => setQuery("")} aria-label="Clear search">
-                <X size={15} />
-              </button>
-            ) : null}
           </div>
 
           <div className="file-list" aria-live="polite">
@@ -467,13 +455,12 @@ export default function ResourcePage() {
 
         .resource-header {
           display: grid;
-          grid-template-columns: 42px 1fr auto;
+          grid-template-columns: 42px minmax(0, 1fr) minmax(220px, 320px);
           align-items: center;
           gap: 12px;
         }
 
         .back-link,
-        .upload-button,
         .subject-chip,
         .tab-pill,
         .clear-search,
@@ -520,24 +507,6 @@ export default function ResourcePage() {
           overflow-wrap: anywhere;
         }
 
-        .upload-button {
-          height: 42px;
-          padding: 0 14px;
-          border-radius: 999px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-          background: #111827;
-          color: #ffffff;
-          font: inherit;
-          font-size: 0.86rem;
-          font-weight: 800;
-          white-space: nowrap;
-          box-shadow: 0 12px 26px rgba(17, 24, 39, 0.2);
-        }
-
-        .upload-button:disabled,
         .fab:disabled {
           opacity: 0.68;
           cursor: wait;
@@ -662,6 +631,11 @@ export default function ResourcePage() {
           position: relative;
         }
 
+        .header-search {
+          min-width: 0;
+          width: 100%;
+        }
+
         .search-icon {
           position: absolute;
           top: 50%;
@@ -740,7 +714,6 @@ export default function ResourcePage() {
         .file-card:focus-visible,
         .subject-chip:focus-visible,
         .tab-pill:focus-visible,
-        .upload-button:focus-visible,
         .fab:focus-visible,
         .back-link:focus-visible {
           outline: 2px solid rgba(37, 99, 235, 0.45);
@@ -962,17 +935,15 @@ export default function ResourcePage() {
           }
 
           .resource-header {
-            grid-template-columns: 40px 1fr 42px;
+            grid-template-columns: 40px minmax(0, 1fr);
           }
 
-          .upload-button {
-            width: 42px;
-            padding: 0;
-            border-radius: 50%;
+          .header-search {
+            grid-column: 1 / -1;
           }
 
-          .upload-button span {
-            display: none;
+          .header-search input {
+            height: 44px;
           }
 
           .subject-strip {
