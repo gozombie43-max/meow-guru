@@ -210,11 +210,7 @@ export default function ResourcePage() {
     setNotice("");
 
     try {
-      const res = await fetchWithRetry(
-        apiUrl("/api/pdfs"),
-        { method: "POST", body: formData },
-        { timeoutMs: 60000, retries: 0 }
-      );
+      const res = await fetch(apiUrl("/api/pdfs"), { method: "POST", body: formData });
 
       if (!res.ok) {
         const data = (await res.json().catch(() => null)) as { error?: string } | null;
