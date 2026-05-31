@@ -64,9 +64,6 @@ type ResourceFile = {
   fileName?: string;
   topic: string;
   category?: string;
-  size?: number;
-  uploadedAt?: string;
-  updatedAt?: string;
   streamUrl: string;
 };
 
@@ -79,25 +76,6 @@ function getCategory(tab: ResourceTab) {
   if (tab === "Books") return "notes";
   if (tab === "Chapter Wise") return "formula";
   return tab.toLowerCase();
-}
-
-function formatDate(value?: string) {
-  if (!value) return "";
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? "" : date.toLocaleDateString();
-}
-
-function formatSize(size?: number, fileName?: string) {
-  const lowerName = fileName?.toLowerCase() || "";
-  const fallbackType = lowerName.endsWith(".html")
-    ? "HTML"
-    : lowerName.endsWith(".doc") || lowerName.endsWith(".docx")
-      ? "DOC"
-      : "PDF";
-
-  if (!size) return fallbackType;
-  if (size < 1024 * 1024) return `${Math.max(1, Math.round(size / 1024))} KB`;
-  return `${(size / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 function sortFiles(files: ResourceFile[]) {
@@ -368,9 +346,6 @@ export default function ResourcePage() {
                   </span>
                   <span className="file-copy">
                     <span className="file-title">{file.title || file.fileName || "Untitled file"}</span>
-                    <span className="file-meta">
-                      {formatDate(file.updatedAt || file.uploadedAt) || formatSize(file.size, file.fileName)}
-                    </span>
                   </span>
                   <span className="file-action" aria-hidden="true">
                     <Download size={18} strokeWidth={2.35} />
@@ -798,12 +773,6 @@ export default function ResourcePage() {
           line-height: 1.22;
           font-weight: 800;
           overflow-wrap: anywhere;
-        }
-
-        .file-meta {
-          color: #64748b;
-          font-size: 0.76rem;
-          font-weight: 700;
         }
 
         .file-action {
