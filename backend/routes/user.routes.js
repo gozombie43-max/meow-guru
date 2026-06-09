@@ -211,4 +211,116 @@ router.patch('/me/recent-quizzes', protect, async (req, res) => {
   }
 });
 
+// ── GET /users/me/ai-chats ─────────────────────────────
+router.get('/me/ai-chats', protect, async (req, res) => {
+  try {
+    const user = await getUserById(req.user.id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const aiChats = Array.isArray(user.aiChats) ? user.aiChats : [];
+    const safeChats = aiChats
+      .filter((chat) => chat && chat.id && Array.isArray(chat.messages))
+      .sort((a, b) => {
+        const aTime = Date.parse(a.updatedAt || '') || 0;
+        const bTime = Date.parse(b.updatedAt || '') || 0;
+        return bTime - aTime;
+      })
+      .slice(0, 30);
+
+    res.json({ aiChats: safeChats });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── PUT /users/me/ai-chats/:chatId ─────────────────────
+router.put('/me/ai-chats/:chatId', protect, async (req, res) => {
+  const { chatId } = req.params;
+  const { title, messages } = req.body;
+
+  if (!chatId) return res.status(400).json({ error: 'chatId is required' });
+  if (!Array.isArray(messages)) return res.status(400).json({ error: 'messages must be an array' });
+
+  const safeMessages = messages
+    .filter((message) => {
+      return (
+        message &&
+        (message.role === 'bot' || message.role === 'user') &&
+        typeof message.content === 'string'
+      );
+    })
+    .slice(-80)
+    .map((message) => ({
+      role: message.role,
+      content: message.content.slice(0, 12000),
+    }));
+
+  if (safeMessages.length === 0) {
+    return res.status(400).json({ error: 'at least one valid message is required' });
+  }
+
+  try {
+    const user = await getUserById(req.user.id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const updatedAt = new Date().toISOString();
+    const safeTitle = typeof title === 'string' && title.trim()
+      ? title.trim().slice(0, 80)
+      : 'New chat';
+
+    const entry = {
+      id: String(chatId),
+      title: safeTitle,
+      messages: safeMessages,
+      updatedAt,
+    };
+
+    let aiChats = Array.isArray(user.aiChats) ? user.aiChats : [];
+    const existingIndex = aiChats.findIndex((chat) => chat.id === entry.id);
+
+    if (existingIndex >= 0) {
+      aiChats[existingIndex] = { ...aiChats[existingIndex], ...entry };
+    } else {
+      aiChats.unshift(entry);
+    }
+
+    aiChats = aiChats
+      .filter((chat) => chat && chat.id && Array.isArray(chat.messages))
+      .sort((a, b) => {
+        const aTime = Date.parse(a.updatedAt || '') || 0;
+        const bTime = Date.parse(b.updatedAt || '') || 0;
+        return bTime - aTime;
+      })
+      .slice(0, 30);
+
+    await usersContainer.items.upsert({ ...user, aiChats });
+
+    res.json({ message: 'AI chat saved ✅', aiChat: entry, aiChats });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── DELETE /users/me/ai-chats/:chatId ──────────────────
+router.delete('/me/ai-chats/:chatId', protect, async (req, res) => {
+  const { chatId } = req.params;
+
+  if (!chatId) return res.status(400).json({ error: 'chatId is required' });
+
+  try {
+    const user = await getUserById(req.user.id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const aiChats = (Array.isArray(user.aiChats) ? user.aiChats : [])
+      .filter((chat) => chat && chat.id !== chatId)
+      .slice(0, 30);
+
+    await usersContainer.items.upsert({ ...user, aiChats });
+
+    res.json({ message: 'AI chat deleted ✅', aiChats });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default router;
