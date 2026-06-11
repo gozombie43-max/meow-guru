@@ -1142,6 +1142,13 @@ function AiChatPageContent() {
         @media (max-width: 900px) {
           .ai-chat-page {
             grid-template-columns: 1fr;
+            width: 100%;
+            min-height: 100svh;
+            overflow-x: hidden;
+          }
+
+          .ai-chat-page.sidebar-collapsed {
+            grid-template-columns: 1fr;
           }
 
           .ai-sidebar {
@@ -1167,7 +1174,35 @@ function AiChatPageContent() {
           }
 
           .chat-topbar {
-            padding: 0 12px;
+            height: auto;
+            min-height: 62px;
+            padding: 8px 12px;
+            align-items: center;
+            gap: 10px;
+          }
+
+          .topbar-left {
+            flex: 1 1 auto;
+            min-width: 0;
+            gap: 10px;
+          }
+
+          .topbar-left > div {
+            min-width: 0;
+          }
+
+          .chat-title,
+          .chat-status {
+            min-width: 0;
+          }
+
+          .chat-status {
+            line-height: 1.35;
+          }
+
+          .clear-btn {
+            flex: 0 0 auto;
+            padding: 0 10px;
           }
 
           .prompt-grid {
@@ -1182,15 +1217,85 @@ function AiChatPageContent() {
 
           .message-list,
           .composer-wrap {
-            width: min(100% - 24px, 760px);
+            width: calc(100% - 24px);
           }
 
           .message-bubble {
             max-width: 88%;
           }
 
+          .composer-wrap {
+            padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+          }
+
           .mic-btn {
             display: none;
+          }
+        }
+
+        @media (max-width: 420px) {
+          .chat-topbar {
+            padding-inline: 8px;
+          }
+
+          .icon-btn {
+            width: 36px;
+            height: 36px;
+          }
+
+          .chat-title {
+            font-size: 15px;
+          }
+
+          .chat-status {
+            font-size: 11px;
+          }
+
+          .clear-btn {
+            width: 38px;
+            padding: 0;
+          }
+
+          .clear-btn svg {
+            width: 17px;
+            height: 17px;
+          }
+
+          .clear-btn {
+            font-size: 0;
+            gap: 0;
+          }
+
+          .message-list,
+          .composer-wrap,
+          .welcome-panel {
+            width: calc(100% - 16px);
+          }
+
+          .message-bubble {
+            max-width: 86%;
+            font-size: 14px;
+            padding: 10px 13px;
+          }
+
+          .assistant-avatar {
+            display: none;
+          }
+
+          .message-row {
+            gap: 8px;
+          }
+
+          .composer {
+            min-height: 54px;
+            gap: 6px;
+            padding: 8px;
+          }
+
+          .composer-tool,
+          .send-btn {
+            width: 36px;
+            height: 36px;
           }
         }
       `}</style>
