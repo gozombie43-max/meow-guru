@@ -187,7 +187,6 @@ export default function Home() {
   const { theme, toggleThemeMode } = useThemeMode();
   const activeRecentIndexRef = useRef(0);
   const [hasWarmup, setHasWarmup] = useState(false);
-  const [warmupOk, setWarmupOk] = useState(false);
   const [hasWindowLoaded, setHasWindowLoaded] = useState(false);
   const [isAppReady, setIsAppReady] = useState(false);
   const [showLoader, setShowLoader] = useState(true);
@@ -218,10 +217,10 @@ export default function Home() {
     const warmup = async () => {
       try {
         await api.get("/health", { timeout: 20000 });
-        if (!cancelled) setWarmupOk(true);
+        // Health warmup is best-effort. The home UI must stay usable even if
+        // the backend is cold, restarting, or temporarily unavailable.
       } catch {
         // ignore warmup failures
-        if (!cancelled) setWarmupOk(false);
       } finally {
         if (!cancelled) setHasWarmup(true);
       }
@@ -252,10 +251,10 @@ export default function Home() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    if (!showLoader && isAppReady && warmupOk) {
+    if (!showLoader && isAppReady) {
       window.sessionStorage.setItem("home_loader_ready", "true");
     }
-  }, [isAppReady, showLoader, warmupOk]);
+  }, [isAppReady, showLoader]);
 
   useEffect(() => {
     const body = document.body;

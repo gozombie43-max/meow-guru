@@ -99,6 +99,9 @@ app.get('/health', (req, res) => {
 
 // ── Start server ───────────────────────────────────────
 const PORT = process.env.PORT || 10000;
+httpServer.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on port ${PORT} 🚀`);
+});
 
 // ── Retry helper ───────────────────────────────────────
 async function connectWithRetry(fn, name, retries = 5, delay = 3000) {
@@ -145,10 +148,6 @@ async function initWithRetry() {
     app.use('/api/pdfs', pdfRoutes);
 
     console.log('All routes registered ✅');
-
-    httpServer.listen(PORT, '0.0.0.0', () => {
-      console.log(`Server running on port ${PORT} 🚀`);
-    });
 
   } catch (err) {
     console.error('DB init failed ❌', err.message);

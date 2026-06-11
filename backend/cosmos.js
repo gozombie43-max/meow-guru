@@ -4,15 +4,22 @@ import { CosmosClient } from "@azure/cosmos";
 const endpoint = process.env.COSMOS_ENDPOINT;
 const key = process.env.COSMOS_KEY;
 
-if (!endpoint) throw new Error("Cosmos ENV not loaded ❌");
-if (!key) throw new Error("Cosmos KEY not loaded ❌");
+let client;
 
-console.log("Endpoint and Key loaded ✅");
+const getClient = () => {
+  if (!endpoint) throw new Error("COSMOS_ENDPOINT env var is not configured");
+  if (!key) throw new Error("COSMOS_KEY env var is not configured");
 
-const client = new CosmosClient({ endpoint, key });
+  if (!client) {
+    client = new CosmosClient({ endpoint, key });
+    console.log("Cosmos endpoint and key loaded");
+  }
+
+  return client;
+};
 
 export const initDB = async () => {
-  const { database } = await client.databases.createIfNotExists({
+  const { database } = await getClient().databases.createIfNotExists({
     id: "quizDB",
   });
 
@@ -28,7 +35,7 @@ export const initDB = async () => {
 
 // ── Users Container ─────────────────────────────────────
 export const initUsersDB = async () => {
-  const { database } = await client.databases.createIfNotExists({ id: 'quizDB' });
+  const { database } = await getClient().databases.createIfNotExists({ id: 'quizDB' });
  
   const { container } = await database.containers.createIfNotExists({
     id: 'users',
@@ -40,7 +47,7 @@ export const initUsersDB = async () => {
 
 // ── Notes Container ─────────────────────────────────────
 export const initNotesDB = async () => {
-  const { database } = await client.databases.createIfNotExists({ id: 'quizDB' });
+  const { database } = await getClient().databases.createIfNotExists({ id: 'quizDB' });
 
   const { container } = await database.containers.createIfNotExists({
     id: 'notes',

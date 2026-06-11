@@ -75,7 +75,7 @@ api.interceptors.response.use(
       try {
         const refreshToken = getStoredRefreshToken();
         const { data } = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL || ''}/auth/refresh`,
+          `${defaultApiBase}/auth/refresh`,
           refreshToken ? { refreshToken } : {},
           { withCredentials: true }
         );
