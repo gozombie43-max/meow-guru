@@ -1,6 +1,6 @@
 // backend/routes/aiRoutes.js
 import express from "express";
-import { chatComplete, chatJSON } from "../ai/azureClient.js";
+import { chatComplete, chatCompleteMessages, chatJSON } from "../ai/azureClient.js";
 
 const router = express.Router();
 
@@ -57,7 +57,7 @@ Give a clear step-by-step explanation. Keep it concise.`;
 
 // ── 2b. Tutor chat for submitted quiz questions ───────
 router.post("/tutor-chat", async (req, res) => {
-  const { context, message } = req.body;
+  const { context, message, history } = req.body;
 
   if (!context) return res.status(400).json({ error: "context is required" });
   if (!message) return res.status(400).json({ error: "message is required" });
@@ -80,19 +80,52 @@ Formatting rules:
 - Use **bold** for key values, formulas, and final result.
 - Avoid dense paragraphs and avoid using long dash-separated lines.
 - Keep answers under 180 words unless the student asks for more detail.
+- Use the recent conversation to understand follow-up questions and references like "this", "same", "above", or "explain again".
 - Never repeat the full question back unnecessarily.
 - If asked for practice, create a similar exam-style MCQ with options and answer.`;
 
-  const userPrompt = `Question context:
-${context}
+  const safeHistory = Array.isArray(history)
+    ? history
+        .filter((item) => {
+          return (
+            item &&
+            (item.role === "user" || item.role === "bot" || item.role === "assistant") &&
+            typeof item.content === "string" &&
+            item.content.trim()
+          );
+        })
+        .slice(-16)
+        .map((item) => ({
+          role: item.role === "user" ? "user" : "assistant",
+          content: item.content.trim().slice(0, 4000),
+        }))
+    : [];
 
-Student question:
-${message}
+  const chatMessages = [
+    { role: "system", content: systemPrompt },
+    {
+      role: "user",
+      content: `Study context for this chat:
+${String(context).slice(0, 4000)}
 
-Return a clean markdown response using the formatting rules.`;
+Use this as background for the conversation. Reply only when the student asks a question.`,
+    },
+    {
+      role: "assistant",
+      content: "Understood. I will use this study context and the recent conversation for follow-up questions.",
+    },
+    ...safeHistory,
+    {
+      role: "user",
+      content: `Student question:
+${String(message).trim().slice(0, 4000)}
+
+Return a clean markdown response using the formatting rules.`,
+    },
+  ];
 
   try {
-    const reply = await chatComplete(userPrompt, "o4-mini", systemPrompt);
+    const reply = await chatCompleteMessages(chatMessages, "o4-mini");
     res.json({ success: true, reply });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });

@@ -22,6 +22,10 @@ export async function chatComplete(userPrompt, model = "o4-mini", systemPrompt =
   if (systemPrompt) messages.push({ role: "system", content: systemPrompt });
   messages.push({ role: "user", content: userPrompt });
 
+  return chatCompleteMessages(messages, model);
+}
+
+export async function chatCompleteMessages(messages, model = "o4-mini") {
   const response = await client.chat.completions.create({
     model,
     messages,

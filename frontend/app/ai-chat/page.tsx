@@ -257,7 +257,11 @@ function AiChatPageContent() {
       const response = await fetch(`${API}/api/ai/tutor-chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ context, message: text }),
+        body: JSON.stringify({
+          context,
+          message: text,
+          history: previousMessages.slice(-16),
+        }),
       });
 
       const data = await response.json();
