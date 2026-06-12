@@ -1,9 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import ReactMarkdown from 'react-markdown';
-import rehypeKatex from 'rehype-katex';
-import remarkMath from 'remark-math';
 import {
   BookOpen,
   Brain,
@@ -20,6 +17,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import VisualResponse from '@/components/ai/VisualResponse';
 import api from '@/lib/axios';
 
 const API = process.env.NEXT_PUBLIC_API_URL || '';
@@ -39,7 +37,21 @@ type ChatSession = {
 const ASSISTANT_CONTEXT = `You are a friendly AI study partner for SSC CGL and CHSL aspirants.
 Help with concept clarification, step-by-step solutions, shortcuts, practice questions, and revision notes.
 Keep answers concise, structured, and easy to scan.
-Use markdown for formatting and LaTeX math with $...$ or $$...$$ when needed.`;
+Use markdown for formatting and LaTeX math with $...$ or $$...$$ when needed.
+When a chart, table, or geometry diagram would help, add one fenced JSON block after the explanation:
+\`\`\`ssc-visual
+{"type":"table","title":"Short title","headers":["Column 1","Column 2"],"rows":[["A","B"]]}
+\`\`\`
+or
+\`\`\`ssc-visual
+{"type":"chart","chartType":"bar","title":"Short title","labels":["A","B"],"values":[10,20],"unit":"%"}
+\`\`\`
+or
+\`\`\`ssc-visual
+{"type":"diagram","title":"Short title","diagram":{"scale":40,"width":280,"height":220,"shapes":[]}}
+\`\`\`
+Use only these visual types: table, chart, diagram.
+Never create raw markdown pipe tables. For any table, always use the ssc-visual table JSON format.`;
 
 function createChatId() {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
@@ -140,6 +152,97 @@ function summarizeReply(content: string) {
     return cleaned.slice(0, sentenceEnd + 1);
   }
   return `${cleaned.slice(0, 137).trim()}...`;
+}
+
+function splitSimpleTableLine(line: string, expectedColumns?: number): string[] | null {
+  const trimmed = line
+    .trim()
+    .replace(/^#{1,6}\s+/, '')
+    .replace(/\*\*/g, '')
+    .replace(/__/g, '')
+    .replace(/`/g, '');
+  if (!trimmed) return null;
+
+  const spaced = trimmed.split(/\s{2,}|\t+/).map((cell) => cell.trim()).filter(Boolean);
+  if (spaced.length >= 2) return spaced;
+
+  const gluedHeader = trimmed.match(/[A-Z][a-z]+|[A-Z]+(?=[A-Z]|$)/g);
+  if (!expectedColumns && gluedHeader && gluedHeader.length >= 2 && gluedHeader.join('') === trimmed) {
+    return gluedHeader;
+  }
+
+  const trailingNumber = trimmed.match(/^(.+?)[\s]*([-+]?\d+(?:\.\d+)?%?)$/);
+  if (trailingNumber && trailingNumber[1].trim() && /\D/.test(trailingNumber[1])) {
+    return [trailingNumber[1].trim(), trailingNumber[2]];
+  }
+
+  const words = trimmed.split(/\s+/).filter(Boolean);
+  if (!expectedColumns && words.length >= 2 && words.length <= 5) return words;
+  if (expectedColumns && words.length === expectedColumns) return words;
+
+  return null;
+}
+
+function normalizeSimpleTables(content: string) {
+  if (/```(?:ssc-visual|visual|visual-json)/i.test(content)) return content;
+
+  const lines = content.split(/\r?\n/);
+  const remove = new Set<number>();
+  const visualBlocks: string[] = [];
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const header = splitSimpleTableLine(lines[index]);
+    if (!header || header.length < 2 || header.length > 6) continue;
+
+    const rows: string[][] = [];
+    let cursor = index + 1;
+
+    while (cursor < lines.length) {
+      const row = splitSimpleTableLine(lines[cursor], header.length);
+      if (!row || row.length !== header.length) break;
+      rows.push(row);
+      cursor += 1;
+    }
+
+    if (rows.length < 2) continue;
+
+    let title = 'Table';
+    let titleIndex = index - 1;
+    while (titleIndex >= 0 && !lines[titleIndex].trim()) titleIndex -= 1;
+    if (
+      titleIndex >= 0 &&
+      lines[titleIndex].trim().length <= 70 &&
+      !/[.!?]$/.test(lines[titleIndex].trim())
+    ) {
+      title = lines[titleIndex].trim();
+      remove.add(titleIndex);
+    }
+
+    visualBlocks.push(
+      `\`\`\`ssc-visual\n${JSON.stringify({
+        type: 'table',
+        title,
+        headers: header,
+        rows,
+      })}\n\`\`\``
+    );
+
+    for (let removeIndex = index; removeIndex < cursor; removeIndex += 1) {
+      remove.add(removeIndex);
+    }
+
+    index = cursor - 1;
+  }
+
+  if (visualBlocks.length === 0) return content;
+
+  const markdown = lines
+    .filter((_line, index) => !remove.has(index))
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+
+  return [markdown, ...visualBlocks].filter(Boolean).join('\n\n');
 }
 
 function AiChatPageContent() {
@@ -267,7 +370,7 @@ function AiChatPageContent() {
       const data = await response.json();
       const reply =
         data.reply || data.explanation || data.error || 'I could not generate a response. Please try again.';
-      const nextMessages = [...userMessages, { role: 'bot' as const, content: reply }];
+      const nextMessages = [...userMessages, { role: 'bot' as const, content: normalizeSimpleTables(reply) }];
       setMessages(nextMessages);
       saveSessionMessages(chatId, nextMessages, text);
     } catch {
@@ -474,12 +577,10 @@ function AiChatPageContent() {
                           </button>
                         </div>
                         <div className="answer-body">
-                          <ReactMarkdown
-                            remarkPlugins={[remarkMath]}
-                            rehypePlugins={[[rehypeKatex, { throwOnError: false, strict: 'ignore', trust: false }]]}
-                          >
-                            {normalizeTutorMarkdown(message.content)}
-                          </ReactMarkdown>
+                          <VisualResponse
+                            content={message.content}
+                            normalizeMarkdown={normalizeTutorMarkdown}
+                          />
                         </div>
                       </div>
                     </div>

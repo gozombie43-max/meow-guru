@@ -1,3 +1,5 @@
+import type { GeometryDiagram } from "@/components/geometry/diagramSchema";
+
 export interface GeometryQuestion {
   id: number;
   concept: string;
@@ -14,6 +16,8 @@ export interface GeometryQuestion {
   questionImage?: string;
   optionRegions?: Record<string, { x: number; y: number; w: number; h: number }>;
   correctLetter?: string;
+  diagram?: GeometryDiagram;
+  needs_diagram?: boolean;
 }
 
 export const GEOM_CONCEPTS = [

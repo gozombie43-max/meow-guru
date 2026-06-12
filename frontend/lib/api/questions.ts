@@ -1,3 +1,4 @@
+import type { GeometryDiagram } from "@/components/geometry/diagramSchema";
 import { fetchWithRetry } from "./http";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "";
@@ -30,6 +31,8 @@ export interface Question {
   questionType?: string;
   questionImage?: string;
   optionRegions?: Record<string, { x: number; y: number; w: number; h: number }>;
+  diagram?: GeometryDiagram;
+  needs_diagram?: boolean;
 }
 
 // Fetch questions with filters

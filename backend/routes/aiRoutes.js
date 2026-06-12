@@ -82,7 +82,22 @@ Formatting rules:
 - Keep answers under 180 words unless the student asks for more detail.
 - Use the recent conversation to understand follow-up questions and references like "this", "same", "above", or "explain again".
 - Never repeat the full question back unnecessarily.
-- If asked for practice, create a similar exam-style MCQ with options and answer.`;
+- If asked for practice, create a similar exam-style MCQ with options and answer.
+- If a chart, comparison table, or diagram would make the explanation clearer, add exactly one fenced JSON block after the text using this format:
+\`\`\`ssc-visual
+{"type":"table","title":"Short title","headers":["Column 1","Column 2"],"rows":[["A","B"],["C","D"]]}
+\`\`\`
+or
+\`\`\`ssc-visual
+{"type":"chart","chartType":"bar","title":"Short title","labels":["A","B"],"values":[10,20],"unit":"%"}
+\`\`\`
+or
+\`\`\`ssc-visual
+{"type":"diagram","title":"Short title","diagram":{"scale":40,"width":280,"height":220,"shapes":[{"type":"right_triangle","vertices":{"A":{"x":4,"y":3},"B":{"x":0,"y":0},"C":{"x":4,"y":0}},"right_angle_at":"C","labels":{"AB":"5","BC":"4","CA":"3"}}]}}
+\`\`\`
+- For diagram JSON, use the existing geometry schema only: triangle, right_triangle, circle, line, angle, axis, rectangle, polygon.
+- Do not put visual JSON inside ordinary markdown code blocks. Use only \`\`\`ssc-visual fences for visual JSON.
+- Never create raw markdown pipe tables like \`| Name | Marks |\`. For any table, always use the \`\`\`ssc-visual table JSON format.`;
 
   const safeHistory = Array.isArray(history)
     ? history

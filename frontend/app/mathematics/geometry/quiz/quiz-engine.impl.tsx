@@ -3,6 +3,7 @@
 import RichContent from "@/components/RichContent";
 import ImageMCQ from "@/components/ImageMCQ";
 import QuizChatbot from "@/components/QuizChatbot";
+import QuizCard, { type QuizQuestion } from "@/components/geometry/QuizCard";
 import { LangToggle } from "@/components/LangToggle";
 import { useTranslatedQuestion } from "@/hooks/useTranslatedQuestion";
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
@@ -216,6 +217,8 @@ function toGeometryQuestion(question: ApiQuestion, index: number): GeometryQuest
     questionImage: question.questionImage,
     optionRegions: question.optionRegions,
     correctLetter: question.correctLetter,
+    diagram: question.diagram,
+    needs_diagram: question.needs_diagram,
     quizName: question.quizName,
     source: (question as ApiQuestion & { source?: string }).source,
     quizId: (question as ApiQuestion & { quizId?: string }).quizId,
@@ -1997,6 +2000,19 @@ export default function TrigQuizEngine() {
 
   const isCurrentSubmitted = submittedQuestions.has(currentIndex);
   const canSubmit = selectedAnswer !== null && !isCurrentSubmitted;
+  const usesGeometryQuizCard =
+    !isImageQuestion && Boolean(currentQ.diagram || currentQ.needs_diagram);
+  const geometryQuizCardQuestion: QuizQuestion | null = usesGeometryQuizCard
+    ? {
+        id: String(currentQ.id),
+        question: displayedQuestion,
+        options: displayedOptions.slice(0, 4),
+        answer: displayedOptions[currentQ.correctAnswer] ?? currentQ.answer,
+        explanation: currentQ.formula || undefined,
+        diagram: currentQ.diagram,
+        needs_diagram: currentQ.needs_diagram,
+      }
+    : null;
 
   // ── Quiz Screen ────────────────────────────────────────────────────────────
   return (
@@ -2170,26 +2186,46 @@ export default function TrigQuizEngine() {
               </button>
             </div>
 
-            {/* Question text */}
-            <div
-              style={{
-                fontSize: 18,
-                fontWeight: 400,
-                color: "#111827",
-                lineHeight: 1.6,
-                marginBottom: 28,
-                letterSpacing: 0.01,
-                paddingLeft: "0.3cm",
-                paddingRight: "0.3cm",
-              }}
-            >
-              <RichContent text={displayedQuestion} className="leading-relaxed" />
-            </div>
+            {geometryQuizCardQuestion ? (
+              <div className="flex justify-center">
+                <QuizCard
+                  question={geometryQuizCardQuestion}
+                  selectedAnswer={
+                    selectedAnswer === null
+                      ? null
+                      : geometryQuizCardQuestion.options[selectedAnswer] ?? null
+                  }
+                  submitted={isCurrentSubmitted}
+                  onAnswer={(opt) => {
+                    const optionIndex = geometryQuizCardQuestion.options.findIndex(
+                      (item) => item === opt
+                    );
+                    if (optionIndex >= 0) handleSelectAnswer(optionIndex);
+                  }}
+                />
+              </div>
+            ) : (
+              <div
+                style={{
+                  fontSize: 18,
+                  fontWeight: 400,
+                  color: "#111827",
+                  lineHeight: 1.6,
+                  marginBottom: 28,
+                  letterSpacing: 0.01,
+                  paddingLeft: "0.3cm",
+                  paddingRight: "0.3cm",
+                }}
+              >
+                <RichContent text={displayedQuestion} className="leading-relaxed" />
+              </div>
+            )}
 
           </motion.div>
         </section>
 
         {/* Options */}
+        {!usesGeometryQuizCard && (
         <section className="mb-5" style={{ marginTop: 28 }}>
           {isImageQuestion ? (
             <div className="flex flex-col gap-3">
@@ -2354,6 +2390,7 @@ export default function TrigQuizEngine() {
             </div>
           )}
         </section>
+        )}
 
         <div className="mt-8 hidden items-center justify-between lg:flex px-1">
           <button
