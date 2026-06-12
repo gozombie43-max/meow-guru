@@ -154,6 +154,18 @@ function summarizeReply(content: string) {
   return `${cleaned.slice(0, 137).trim()}...`;
 }
 
+function splitCompactMathTokens(value: string) {
+  const compact = value.replace(/\s+/g, '');
+  if (!compact || compact.length !== value.replace(/\s+/g, '').length) return null;
+
+  const tokens = compact.match(
+    /(?:\\Delta(?:\^\d+)?[A-Za-z](?:_\d+|\d*)?|Δ(?:\^\d+|[²³])?[A-Za-z](?:_\d+|\d*)?|[A-Za-z](?:_\d+|\d+)?)/g
+  );
+
+  if (!tokens || tokens.length < 2 || tokens.join('') !== compact) return null;
+  return tokens;
+}
+
 function splitSimpleTableLine(line: string, expectedColumns?: number): string[] | null {
   const trimmed = line
     .trim()
@@ -165,6 +177,15 @@ function splitSimpleTableLine(line: string, expectedColumns?: number): string[] 
 
   const spaced = trimmed.split(/\s{2,}|\t+/).map((cell) => cell.trim()).filter(Boolean);
   if (spaced.length >= 2) return spaced;
+
+  const compactMathTokens = splitCompactMathTokens(trimmed);
+  if (
+    compactMathTokens &&
+    (!expectedColumns ||
+      (compactMathTokens.length >= 2 && compactMathTokens.length <= expectedColumns))
+  ) {
+    return compactMathTokens;
+  }
 
   const gluedHeader = trimmed.match(/[A-Z][a-z]+|[A-Z]+(?=[A-Z]|$)/g);
   if (!expectedColumns && gluedHeader && gluedHeader.length >= 2 && gluedHeader.join('') === trimmed) {
@@ -178,7 +199,7 @@ function splitSimpleTableLine(line: string, expectedColumns?: number): string[] 
 
   const words = trimmed.split(/\s+/).filter(Boolean);
   if (!expectedColumns && words.length >= 2 && words.length <= 5) return words;
-  if (expectedColumns && words.length === expectedColumns) return words;
+  if (expectedColumns && words.length >= 2 && words.length <= expectedColumns) return words;
 
   return null;
 }
@@ -199,7 +220,7 @@ function normalizeSimpleTables(content: string) {
 
     while (cursor < lines.length) {
       const row = splitSimpleTableLine(lines[cursor], header.length);
-      if (!row || row.length !== header.length) break;
+      if (!row || row.length < 2 || row.length > header.length) break;
       rows.push(row);
       cursor += 1;
     }

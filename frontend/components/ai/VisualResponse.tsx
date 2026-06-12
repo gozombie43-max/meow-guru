@@ -120,6 +120,18 @@ function isLikelyPipeTableLine(line: string) {
   return line.includes("|") && splitTableCells(line).length >= 2;
 }
 
+function splitCompactMathTokens(value: string) {
+  const compact = value.replace(/\s+/g, "");
+  if (!compact || compact.length !== value.replace(/\s+/g, "").length) return null;
+
+  const tokens = compact.match(
+    /(?:\\Delta(?:\^\d+)?[A-Za-z](?:_\d+|\d*)?|Δ(?:\^\d+|[²³])?[A-Za-z](?:_\d+|\d*)?|[A-Za-z](?:_\d+|\d+)?)/g
+  );
+
+  if (!tokens || tokens.length < 2 || tokens.join("") !== compact) return null;
+  return tokens;
+}
+
 function splitLooseTableRow(line: string, expectedColumns?: number): string[] | null {
   const trimmed = line
     .trim()
@@ -131,6 +143,15 @@ function splitLooseTableRow(line: string, expectedColumns?: number): string[] | 
 
   const wideSpaceCells = trimmed.split(/\s{2,}|\t+/).map((cell) => cell.trim()).filter(Boolean);
   if (wideSpaceCells.length >= 2) return wideSpaceCells;
+
+  const compactMathTokens = splitCompactMathTokens(trimmed);
+  if (
+    compactMathTokens &&
+    (!expectedColumns ||
+      (compactMathTokens.length >= 2 && compactMathTokens.length <= expectedColumns))
+  ) {
+    return compactMathTokens;
+  }
 
   const gluedHeaderCells = trimmed.match(/[A-Z][a-z]+|[A-Z]+(?=[A-Z]|$)/g);
   if (
@@ -149,7 +170,7 @@ function splitLooseTableRow(line: string, expectedColumns?: number): string[] | 
 
   const words = trimmed.split(/\s+/).filter(Boolean);
   if (!expectedColumns && words.length >= 2 && words.length <= 5) return words;
-  if (expectedColumns && words.length === expectedColumns) return words;
+  if (expectedColumns && words.length >= 2 && words.length <= expectedColumns) return words;
 
   return null;
 }
@@ -178,7 +199,7 @@ function extractLooseTextTables(content: string): ParsedResponse {
 
     while (cursor < lines.length) {
       const row = splitLooseTableRow(lines[cursor], header.length);
-      if (!row || row.length !== header.length) break;
+      if (!row || row.length < 2 || row.length > header.length) break;
       rows.push(row);
       cursor += 1;
     }
@@ -320,6 +341,23 @@ function extractVisuals(content: string): ParsedResponse {
 }
 
 function TableVisual({ block }: { block: VisualTable }) {
+  const normalizeCellMath = (value: string | number | undefined) => {
+    const text = String(value ?? "").trim();
+    if (!text || /\$/.test(text)) return text;
+    const looksMathy =
+      /\\[A-Za-z]+|[_^=]|[Δ²³]|^[A-Za-z]\d+$|^[A-Z]\([^)]+\)$/.test(text) &&
+      !/[|]/.test(text);
+
+    if (!looksMathy) return text;
+
+    return `$${text
+      .replace(/Δ/g, "\\Delta ")
+      .replace(/²/g, "^2")
+      .replace(/³/g, "^3")
+      .replace(/\s+/g, " ")
+      .trim()}$`;
+  };
+
   const renderCell = (value: string | number | undefined) => (
     <ReactMarkdown
       remarkPlugins={[remarkMath]}
@@ -328,7 +366,7 @@ function TableVisual({ block }: { block: VisualTable }) {
         p: ({ children }) => <span>{children}</span>,
       }}
     >
-      {String(value ?? "")}
+      {normalizeCellMath(value)}
     </ReactMarkdown>
   );
 
