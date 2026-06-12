@@ -320,6 +320,18 @@ function extractVisuals(content: string): ParsedResponse {
 }
 
 function TableVisual({ block }: { block: VisualTable }) {
+  const renderCell = (value: string | number | undefined) => (
+    <ReactMarkdown
+      remarkPlugins={[remarkMath]}
+      rehypePlugins={[[rehypeKatex, { throwOnError: false, strict: "ignore", trust: false }]]}
+      components={{
+        p: ({ children }) => <span>{children}</span>,
+      }}
+    >
+      {String(value ?? "")}
+    </ReactMarkdown>
+  );
+
   return (
     <div className="table-visual-block">
       {block.title && <h3 className="table-title">{block.title}</h3>}
@@ -328,7 +340,7 @@ function TableVisual({ block }: { block: VisualTable }) {
           <thead>
             <tr>
               {block.headers.map((header) => (
-                <th key={header}>{header}</th>
+                <th key={header}>{renderCell(header)}</th>
               ))}
             </tr>
           </thead>
@@ -340,7 +352,7 @@ function TableVisual({ block }: { block: VisualTable }) {
                     key={`${header}-${columnIndex}`}
                     className={columnIndex > 0 ? "numeric-cell" : undefined}
                   >
-                    {row[columnIndex] ?? ""}
+                    {renderCell(row[columnIndex])}
                   </td>
                 ))}
               </tr>
@@ -530,6 +542,21 @@ export default function VisualResponse({ content, normalizeMarkdown }: VisualRes
 
         .numeric-cell {
           text-align: center;
+        }
+
+        th :global(.katex),
+        td :global(.katex) {
+          font-size: 0.92em;
+        }
+
+        th :global(p),
+        td :global(p) {
+          margin: 0;
+        }
+
+        td :global(.katex-display) {
+          margin: 0;
+          overflow: visible;
         }
 
         svg {
