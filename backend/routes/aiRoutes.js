@@ -1,8 +1,192 @@
 // backend/routes/aiRoutes.js
 import express from "express";
+import multer from "multer";
+import { PDFParse } from "pdf-parse";
+import sharp from "sharp";
+import { createWorker, PSM } from "tesseract.js";
 import { chatComplete, chatCompleteMessages, chatJSON } from "../ai/azureClient.js";
 
 const router = express.Router();
+
+const tutorUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 18 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    const allowed =
+      file.mimetype.startsWith("image/") || file.mimetype === "application/pdf";
+    if (allowed) return cb(null, true);
+    return cb(new Error("Only image files and PDFs are allowed"));
+  },
+});
+
+function parseMaybeJSON(value, fallback) {
+  if (value === undefined || value === null) return fallback;
+  if (typeof value !== "string") return value;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return fallback;
+  }
+}
+
+async function extractPdfText(file) {
+  const parser = new PDFParse({ data: file.buffer });
+  try {
+    const result = await parser.getText();
+    return String(result.text || "").replace(/\s+\n/g, "\n").trim();
+  } finally {
+    await parser.destroy();
+  }
+}
+
+function cleanOcrText(value) {
+  return String(value || "")
+    .replace(/\r/g, "\n")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .replace(/[|]{3,}/g, "")
+    .replace(/[^\S\n]+/g, " ")
+    .trim();
+}
+
+function hasUsefulPdfText(text) {
+  const compact = String(text || "").replace(/\s+/g, " ").trim();
+  const optionLike = /\b(?:A|B|C|D|a|b|c|d)[).]\s*\S/.test(compact);
+  const numberRich = (compact.match(/\d/g) || []).length >= 8;
+  return compact.length >= 180 || (compact.length >= 80 && (optionLike || numberRich));
+}
+
+async function prepareImageForOcr(buffer) {
+  return sharp(buffer, { limitInputPixels: false })
+    .rotate()
+    .resize({ width: 2200, height: 2200, fit: "inside", withoutEnlargement: false })
+    .grayscale()
+    .normalize()
+    .sharpen({ sigma: 1 })
+    .png()
+    .toBuffer();
+}
+
+async function prepareImageForVision(buffer) {
+  const output = await sharp(buffer, { limitInputPixels: false })
+    .rotate()
+    .resize({ width: 1600, height: 1600, fit: "inside", withoutEnlargement: true })
+    .jpeg({ quality: 86, mozjpeg: true })
+    .toBuffer();
+
+  return {
+    type: "image_url",
+    image_url: {
+      url: `data:image/jpeg;base64,${output.toString("base64")}`,
+    },
+  };
+}
+
+async function recognizeImageText(buffer) {
+  let worker;
+  try {
+    const image = await prepareImageForOcr(buffer);
+    worker = await createWorker("eng");
+    await worker.setParameters({
+      tessedit_pageseg_mode: PSM.AUTO,
+      preserve_interword_spaces: "1",
+    });
+    const result = await worker.recognize(image);
+    return {
+      text: cleanOcrText(result.data?.text),
+      confidence: Math.round(Number(result.data?.confidence || 0)),
+    };
+  } finally {
+    if (worker) await worker.terminate();
+  }
+}
+
+async function renderPdfPagesForOcr(file, firstPages = 4) {
+  const parser = new PDFParse({ data: file.buffer });
+  try {
+    const result = await parser.getScreenshot({
+      first: firstPages,
+      desiredWidth: 1800,
+      imageBuffer: true,
+      imageDataUrl: false,
+    });
+
+    return result.pages.map((page) => ({
+      pageNumber: page.pageNumber,
+      buffer: Buffer.from(page.data),
+    }));
+  } finally {
+    await parser.destroy();
+  }
+}
+
+async function extractAttachmentContext(attachment) {
+  const context = {
+    text: "",
+    imageParts: [],
+    source: "",
+  };
+
+  if (!attachment) return context;
+
+  if (attachment.mimetype.startsWith("image/")) {
+    const [ocr, visionImage] = await Promise.all([
+      recognizeImageText(attachment.buffer),
+      prepareImageForVision(attachment.buffer),
+    ]);
+
+    context.source = "image";
+    context.imageParts.push(visionImage);
+    context.text = [
+      `Attached image: ${attachment.originalname || "question image"}`,
+      ocr.text
+        ? `OCR text from image (confidence ${ocr.confidence}%):\n${ocr.text}`
+        : "OCR could not confidently read text from this image. Use the image itself and ask for clarification if needed.",
+    ].join("\n\n");
+    return context;
+  }
+
+  if (attachment.mimetype === "application/pdf") {
+    const directText = await extractPdfText(attachment);
+    const lines = [`Attached PDF: ${attachment.originalname || "document.pdf"}`];
+
+    if (hasUsefulPdfText(directText)) {
+      lines.push(`Selectable PDF text:\n${directText.slice(0, 12000)}`);
+      context.source = "pdf-text";
+      context.text = lines.join("\n\n");
+      return context;
+    }
+
+    const pages = await renderPdfPagesForOcr(attachment);
+    const ocrPages = [];
+
+    for (const page of pages) {
+      const ocr = await recognizeImageText(page.buffer);
+      if (ocr.text) {
+        ocrPages.push(`Page ${page.pageNumber} OCR (confidence ${ocr.confidence}%):\n${ocr.text}`);
+      }
+
+      if (context.imageParts.length === 0) {
+        context.imageParts.push(await prepareImageForVision(page.buffer));
+      }
+    }
+
+    context.source = "pdf-ocr";
+    lines.push(
+      directText
+        ? `Selectable PDF text was sparse, so OCR was also used.\nSelectable text:\n${directText.slice(0, 3000)}`
+        : "No useful selectable PDF text found, so OCR was used on rendered pages."
+    );
+    lines.push(
+      ocrPages.length > 0
+        ? `OCR text from PDF pages:\n\n${ocrPages.join("\n\n").slice(0, 12000)}`
+        : "OCR could not confidently read this PDF. Ask the student for a clearer screenshot/photo of the page."
+    );
+    context.text = lines.join("\n\n");
+  }
+
+  return context;
+}
 
 // ── 1. Generate Questions ─────────────────────────────
 router.post("/generate-questions", async (req, res) => {
@@ -56,11 +240,14 @@ Give a clear step-by-step explanation. Keep it concise.`;
 });
 
 // ── 2b. Tutor chat for submitted quiz questions ───────
-router.post("/tutor-chat", async (req, res) => {
-  const { context, message, history } = req.body;
+router.post("/tutor-chat", tutorUpload.single("attachment"), async (req, res) => {
+  const context = req.body.context;
+  const message = req.body.message;
+  const history = parseMaybeJSON(req.body.history, []);
+  const attachment = req.file;
 
   if (!context) return res.status(400).json({ error: "context is required" });
-  if (!message) return res.status(400).json({ error: "message is required" });
+  if (!message && !attachment) return res.status(400).json({ error: "message or attachment is required" });
 
   const systemPrompt = `You are a friendly, expert SSC exam tutor.
 Your answer must be structured, easy to scan, and easy for a student to understand.
@@ -69,8 +256,10 @@ Formatting rules:
 - Use markdown only.
 - Start with a short heading: **Approach**, **Steps**, **Shortcut**, or **Practice Question**.
 - For explanations, use numbered steps with one idea per step.
-- Put formulas/equations on separate lines using markdown math syntax: inline \`$...$\` or block \`$$...$$\`.
-- Never write LaTeX inside plain square brackets like \`[ \\\\frac{a}{b} ]\`.
+- Put formulas/equations on separate lines using markdown math syntax: inline \`$...$\` or block \`$$...$$\`.  - When displaying tabular data, always use markdown table syntax:
+    | Header 1 | Header 2 |
+    |----------|----------|
+    | value    | value    |- Never write LaTeX inside plain square brackets like \`[ \\\\frac{a}{b} ]\`.
 - Never mix multiple math blocks on one line like \`$...$ $...$\`; use one \`$$...$$\` block per equation line.
 - Do not put raw LaTeX outside \`$...$\` or \`$$...$$\`.
 - For trigonometry, write functions as LaTeX commands: \`\\sin\\theta\`, \`\\cos\\theta\`, \`\\tan^2\\theta\`.
@@ -83,6 +272,7 @@ Formatting rules:
 - Use the recent conversation to understand follow-up questions and references like "this", "same", "above", or "explain again".
 - Never repeat the full question back unnecessarily.
 - If asked for practice, create a similar exam-style MCQ with options and answer.
+- If the student attaches an image or PDF, read the attached question/context first and solve what is visible. If anything is unclear, state the assumption briefly.
 - If a chart, comparison table, or diagram would make the explanation clearer, add exactly one fenced JSON block after the text using this format:
 \`\`\`ssc-visual
 {"type":"table","title":"Short title","headers":["Column 1","Column 2"],"rows":[["A","B"],["C","D"]]}
@@ -116,6 +306,34 @@ or
         }))
     : [];
 
+  let attachmentContext = { text: "", imageParts: [], source: "" };
+
+  if (attachment) {
+    try {
+      attachmentContext = await extractAttachmentContext(attachment);
+    } catch (err) {
+      return res.status(400).json({
+        success: false,
+        error: `I could not read this attachment. ${err.message || "Try uploading a clearer image or PDF page."}`,
+      });
+    }
+  }
+
+  const userText = `Student question:
+${String(message || "Please solve the attached question.").trim().slice(0, 4000)}
+
+${attachmentContext.text}
+
+Return a clean markdown response using the formatting rules.
+If OCR text and image context disagree, prefer the visible image/PDF page and mention any unclear text briefly.`;
+
+  const finalUserContent = attachmentContext.imageParts.length > 0
+    ? [
+        { type: "text", text: userText },
+        ...attachmentContext.imageParts,
+      ]
+    : userText;
+
   const chatMessages = [
     { role: "system", content: systemPrompt },
     {
@@ -132,15 +350,24 @@ Use this as background for the conversation. Reply only when the student asks a 
     ...safeHistory,
     {
       role: "user",
-      content: `Student question:
-${String(message).trim().slice(0, 4000)}
-
-Return a clean markdown response using the formatting rules.`,
+      content: finalUserContent,
     },
   ];
 
+  const textOnlyChatMessages = finalUserContent === userText
+    ? chatMessages
+    : chatMessages.map((item, index) =>
+        index === chatMessages.length - 1 ? { ...item, content: userText } : item
+      );
+
   try {
-    const reply = await chatCompleteMessages(chatMessages, "o4-mini");
+    let reply;
+    try {
+      reply = await chatCompleteMessages(chatMessages, "o4-mini");
+    } catch (err) {
+      if (finalUserContent === userText) throw err;
+      reply = await chatCompleteMessages(textOnlyChatMessages, "o4-mini");
+    }
     res.json({ success: true, reply });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });

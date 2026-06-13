@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
+import remarkGfm from "remark-gfm";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -435,7 +436,7 @@ export default function QuizChatbot({
                             <div className="sdiv" />
                             <div className="sbody">
                               <ReactMarkdown
-                                remarkPlugins={[remarkMath]}
+                                remarkPlugins={[remarkMath, remarkGfm]}
                                 rehypePlugins={[
                                   [
                                     rehypeKatex,
@@ -446,6 +447,15 @@ export default function QuizChatbot({
                                     },
                                   ],
                                 ]}
+                                components={{
+                                  table: ({ node, ...props }) => (
+                                    <div className="table-wrapper">
+                                      <table {...props} />
+                                    </div>
+                                  ),
+                                  th: ({ node, ...props }) => <th {...props} />,
+                                  td: ({ node, ...props }) => <td {...props} />,
+                                }}
                               >
                                 {normalizeTutorMarkdown(message.content)}
                               </ReactMarkdown>

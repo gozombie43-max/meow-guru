@@ -23,7 +23,8 @@
     "mongodb": "^7.1.0",
     "mongoose": "^9.3.1",
     "react-konva": "^19.2.5",
-    "react-transition-group": "^4.4.5"
+    "react-transition-group": "^4.4.5",
+    "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
     "@types/react-transition-group": "^4.4.12"

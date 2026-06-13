@@ -1,20 +1,25 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
+import NextImage from 'next/image';
 import {
   BookOpen,
   Brain,
   ChevronRight,
   Copy,
   Edit3,
+  FileText,
+  Image as ImageIcon,
   Menu,
   Mic,
   PanelLeft,
+  Paperclip,
   Plus,
   Search,
   SendHorizontal,
   Sparkles,
   Trash2,
+  X,
 } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import VisualResponse from '@/components/ai/VisualResponse';
@@ -275,7 +280,11 @@ function AiChatPageContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
+  const [attachmentPreview, setAttachmentPreview] = useState<string | null>(null);
+  const [attachmentError, setAttachmentError] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const context = useMemo(() => ASSISTANT_CONTEXT, []);
 
@@ -314,6 +323,12 @@ function AiChatPageContent() {
     if (node) node.scrollTop = node.scrollHeight;
   }, [messages, isLoading]);
 
+  useEffect(() => {
+    return () => {
+      if (attachmentPreview) URL.revokeObjectURL(attachmentPreview);
+    };
+  }, [attachmentPreview]);
+
   const persistSession = async (session: ChatSession) => {
     try {
       await api.put(`/users/me/ai-chats/${encodeURIComponent(session.id)}`, {
@@ -351,6 +366,7 @@ function AiChatPageContent() {
     setMessages([]);
     setInput('');
     setCopiedIndex(null);
+    removeAttachment();
   };
 
   const openChat = (session: ChatSession) => {
@@ -365,35 +381,57 @@ function AiChatPageContent() {
 
   async function sendMessage(nextText?: string) {
     const text = (nextText ?? input).trim();
-    if (!text || isLoading) return;
+    const fileToSend = attachmentFile;
+    if ((!text && !fileToSend) || isLoading) return;
 
     const chatId = activeChatId || createChatId();
     const previousMessages = activeChatId ? messages : [];
-    const userMessages = [...previousMessages, { role: 'user' as const, content: text }];
+    const displayText = [
+      fileToSend ? `Attached: ${fileToSend.name}` : '',
+      text || (fileToSend ? 'Please solve the attached question.' : ''),
+    ]
+      .filter(Boolean)
+      .join('\n');
+    const userMessages = [...previousMessages, { role: 'user' as const, content: displayText }];
 
     if (!activeChatId) setActiveChatId(chatId);
     setInput('');
+    removeAttachment();
     setMessages(userMessages);
-    saveSessionMessages(chatId, userMessages, text);
+    saveSessionMessages(chatId, userMessages, text || fileToSend?.name || 'Attached question');
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API}/api/ai/tutor-chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          context,
-          message: text,
-          history: previousMessages.slice(-16),
-        }),
-      });
+      const requestOptions: RequestInit = fileToSend
+        ? (() => {
+            const formData = new FormData();
+            formData.append('context', context);
+            formData.append('message', text || 'Please solve the attached question.');
+            formData.append('history', JSON.stringify(previousMessages.slice(-16)));
+            formData.append('attachment', fileToSend);
+            return {
+              method: 'POST',
+              body: formData,
+            };
+          })()
+        : {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              context,
+              message: text,
+              history: previousMessages.slice(-16),
+            }),
+          };
+
+      const response = await fetch(`${API}/api/ai/tutor-chat`, requestOptions);
 
       const data = await response.json();
       const reply =
         data.reply || data.explanation || data.error || 'I could not generate a response. Please try again.';
       const nextMessages = [...userMessages, { role: 'bot' as const, content: normalizeSimpleTables(reply) }];
       setMessages(nextMessages);
-      saveSessionMessages(chatId, nextMessages, text);
+      saveSessionMessages(chatId, nextMessages, text || fileToSend?.name || 'Attached question');
     } catch {
       const nextMessages = [
         ...userMessages,
@@ -403,7 +441,7 @@ function AiChatPageContent() {
         },
       ];
       setMessages(nextMessages);
-      saveSessionMessages(chatId, nextMessages, text);
+      saveSessionMessages(chatId, nextMessages, text || fileToSend?.name || 'Attached question');
     } finally {
       setIsLoading(false);
     }
@@ -439,7 +477,7 @@ function AiChatPageContent() {
     'Cloze test strategy',
   ];
 
-  const hasInput = input.trim().length > 0;
+  const hasInput = input.trim().length > 0 || Boolean(attachmentFile);
   const hasMessages = messages.length > 0;
   const visibleSessions = chatSessions.filter((session) =>
     session.title.toLowerCase().includes(searchTerm.trim().toLowerCase())
@@ -458,6 +496,41 @@ function AiChatPageContent() {
     } catch {
       setCopiedIndex(null);
     }
+  };
+
+  const removeAttachment = () => {
+    setAttachmentFile(null);
+    setAttachmentError('');
+    setAttachmentPreview((current) => {
+      if (current) URL.revokeObjectURL(current);
+      return null;
+    });
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleAttachmentChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const isAllowed = file.type.startsWith('image/') || file.type === 'application/pdf';
+    if (!isAllowed) {
+      setAttachmentError('Upload an image or PDF file.');
+      event.target.value = '';
+      return;
+    }
+
+    if (file.size > 18 * 1024 * 1024) {
+      setAttachmentError('File must be under 18 MB.');
+      event.target.value = '';
+      return;
+    }
+
+    setAttachmentError('');
+    setAttachmentFile(file);
+    setAttachmentPreview((current) => {
+      if (current) URL.revokeObjectURL(current);
+      return file.type.startsWith('image/') ? URL.createObjectURL(file) : null;
+    });
   };
 
   const handleClear = () => {
@@ -597,7 +670,7 @@ function AiChatPageContent() {
                             {copiedIndex === index ? 'Copied' : 'Copy'}
                           </button>
                         </div>
-                        <div className="answer-body">
+                        <div className="answer-body ai-message-content">
                           <VisualResponse
                             content={message.content}
                             normalizeMarkdown={normalizeTutorMarkdown}
@@ -630,9 +703,53 @@ function AiChatPageContent() {
             handleSend();
           }}
         >
+          {(attachmentFile || attachmentError) && (
+            <div className="attachment-panel">
+              {attachmentFile && (
+                <div className="attachment-chip">
+                  {attachmentPreview ? (
+                    <NextImage
+                      className="attachment-thumb"
+                      src={attachmentPreview}
+                      alt=""
+                      width={42}
+                      height={42}
+                      unoptimized
+                    />
+                  ) : (
+                    <span className="file-icon">
+                      {attachmentFile.type === 'application/pdf' ? <FileText size={18} /> : <ImageIcon size={18} />}
+                    </span>
+                  )}
+                  <div>
+                    <strong>{attachmentFile.name}</strong>
+                    <span>{attachmentFile.type === 'application/pdf' ? 'PDF document' : 'Question image'}</span>
+                  </div>
+                  <button type="button" onClick={removeAttachment} aria-label="Remove attachment">
+                    <X size={16} />
+                  </button>
+                </div>
+              )}
+              {attachmentError && <div className="attachment-error">{attachmentError}</div>}
+            </div>
+          )}
           <div className="composer">
-            <button className="composer-tool" type="button" aria-label="Add context">
-              <Plus size={20} />
+            <input
+              ref={fileInputRef}
+              className="file-input"
+              type="file"
+              accept="image/*,application/pdf"
+              onChange={handleAttachmentChange}
+            />
+            <button
+              className="composer-tool"
+              type="button"
+              aria-label="Attach question image or PDF"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isLoading}
+              title="Attach image or PDF"
+            >
+              <Paperclip size={19} />
             </button>
             <textarea
               value={input}
@@ -1184,6 +1301,100 @@ function AiChatPageContent() {
           background: linear-gradient(180deg, rgba(255, 255, 255, 0), #ffffff 22%);
         }
 
+        .attachment-panel {
+          margin-bottom: 10px;
+        }
+
+        .attachment-chip {
+          min-height: 58px;
+          max-width: min(520px, 100%);
+          border: 1px solid var(--line);
+          border-radius: 8px;
+          background: #ffffff;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 8px 9px;
+          box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+        }
+
+        .attachment-chip :global(.attachment-thumb),
+        .file-icon {
+          width: 42px;
+          height: 42px;
+          border-radius: 8px;
+          flex: 0 0 auto;
+        }
+
+        .attachment-chip :global(.attachment-thumb) {
+          object-fit: cover;
+          border: 1px solid #e4e4e7;
+        }
+
+        .file-icon {
+          background: #effaf6;
+          color: var(--accent-dark);
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .attachment-chip div {
+          min-width: 0;
+          flex: 1;
+        }
+
+        .attachment-chip strong,
+        .attachment-chip span {
+          display: block;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .attachment-chip strong {
+          color: #202123;
+          font-size: 13px;
+          line-height: 1.3;
+        }
+
+        .attachment-chip span {
+          color: var(--muted);
+          font-size: 12px;
+          margin-top: 2px;
+        }
+
+        .attachment-chip button {
+          width: 32px;
+          height: 32px;
+          border: 0;
+          border-radius: 8px;
+          background: transparent;
+          color: #52525b;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          flex: 0 0 auto;
+        }
+
+        .attachment-chip button:hover {
+          background: #f2f2f2;
+        }
+
+        .attachment-error {
+          display: inline-flex;
+          align-items: center;
+          min-height: 34px;
+          border: 1px solid #fecaca;
+          border-radius: 8px;
+          background: #fef2f2;
+          color: #991b1b;
+          padding: 0 10px;
+          font-size: 13px;
+          font-weight: 600;
+        }
+
         .composer {
           min-height: 58px;
           border: 1px solid #d9d9e3;
@@ -1194,6 +1405,10 @@ function AiChatPageContent() {
           gap: 8px;
           padding: 9px;
           box-shadow: 0 12px 32px rgba(15, 23, 42, 0.1);
+        }
+
+        .file-input {
+          display: none;
         }
 
         .composer textarea {

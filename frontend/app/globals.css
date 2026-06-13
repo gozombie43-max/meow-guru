@@ -3,6 +3,41 @@
 @import url("https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap");
 @import "tailwindcss";
 
+/* AI chat markdown table styling */
+.ai-message-content table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  font-family: var(--font-mono, monospace);
+  margin: 1rem 0;
+}
+
+.ai-message-content table th {
+  padding: 9px 14px;
+  text-align: center;
+  font-weight: 500;
+  font-family: inherit;
+  font-size: 13px;
+  background: #f5f5f5;
+  border: 1px solid #d0d0d0;
+  white-space: nowrap;
+}
+
+.ai-message-content table td {
+  padding: 8px 14px;
+  text-align: center;
+  border: 1px solid #e0e0e0;
+  white-space: nowrap;
+}
+
+.ai-message-content table tbody tr:nth-child(even) {
+  background: #fafafa;
+}
+
+.ai-message-content table tbody tr:hover {
+  background: #f0f4ff;
+}
+
 /* ========== iOS Safe Area & Mobile Optimization ========== */
 
 :root {
@@ -1751,4 +1786,53 @@ body.has-bottom-nav .videos-page, body.has-bottom-nav .dashboard-shell {
 }
 @media (max-width: 540px) {
   body.has-bottom-nav .videos-page, body.has-bottom-nav .dashboard-shell { min-height: calc(100vh - 76px) !important; }
+}
+
+/* Markdown Table Styles */
+.table-wrapper {
+  overflow-x: auto;
+  margin: 1rem 0;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.table-wrapper table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+.table-wrapper thead {
+  background-color: #f5f6f7;
+}
+
+.table-wrapper th {
+  padding: 10px 16px;
+  font-weight: 600;
+  font-size: 13px;
+  text-align: left;
+  border-bottom: 2px solid #d0d0d0;
+  border-right: 1px solid #e0e0e0;
+  color: #333;
+  white-space: nowrap;
+}
+
+.table-wrapper td {
+  padding: 9px 16px;
+  border-bottom: 1px solid #ebebeb;
+  border-right: 1px solid #ebebeb;
+  color: #222;
+}
+
+.table-wrapper th:last-child,
+.table-wrapper td:last-child {
+  border-right: none;
+}
+
+.table-wrapper tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table-wrapper tbody tr:hover {
+  background-color: #f0f7ff;
 }

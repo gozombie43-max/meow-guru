@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import ReactMarkdown from "react-markdown";
 import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
+import remarkGfm from "remark-gfm";
 import type { GeometryDiagram } from "@/components/geometry/diagramSchema";
 
 const GeometryRenderer = dynamic(() => import("@/components/geometry/GeometryRenderer"), {
@@ -360,7 +361,7 @@ function TableVisual({ block }: { block: VisualTable }) {
 
   const renderCell = (value: string | number | undefined) => (
     <ReactMarkdown
-      remarkPlugins={[remarkMath]}
+      remarkPlugins={[remarkMath, remarkGfm]}
       rehypePlugins={[[rehypeKatex, { throwOnError: false, strict: "ignore", trust: false }]]}
       components={{
         p: ({ children }) => <span>{children}</span>,
@@ -377,8 +378,8 @@ function TableVisual({ block }: { block: VisualTable }) {
         <table>
           <thead>
             <tr>
-              {block.headers.map((header) => (
-                <th key={header}>{renderCell(header)}</th>
+              {block.headers.map((header, columnIndex) => (
+                <th key={`${header}-${columnIndex}`}>{renderCell(header)}</th>
               ))}
             </tr>
           </thead>
@@ -492,8 +493,17 @@ export default function VisualResponse({ content, normalizeMarkdown }: VisualRes
     <>
       {markdown && (
         <ReactMarkdown
-          remarkPlugins={[remarkMath]}
+          remarkPlugins={[remarkMath, remarkGfm]}
           rehypePlugins={[[rehypeKatex, { throwOnError: false, strict: "ignore", trust: false }]]}
+          components={{
+            table: ({ node, ...props }) => (
+              <div className="table-wrapper">
+                <table {...props} />
+              </div>
+            ),
+            th: ({ node, ...props }) => <th {...props} />,
+            td: ({ node, ...props }) => <td {...props} />,
+          }}
         >
           {normalizeMarkdown(markdown)}
         </ReactMarkdown>
