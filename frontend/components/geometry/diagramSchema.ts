@@ -10,6 +10,12 @@ export type ShapeType =
   | "triangle"
   | "right_triangle"
   | "circle"
+  | "sphere"
+  | "hemisphere"
+  | "cone"
+  | "cylinder"
+  | "frustum"
+  | "cylinder_with_hemisphere"
   | "line"
   | "angle"
   | "rectangle"
@@ -43,6 +49,24 @@ export interface CircleShape {
   label?: string;                          // e.g. "O"
   show_center?: boolean;
   chord?: { from: Point; to: Point; label?: string };
+}
+
+export interface SolidShape {
+  type: "sphere" | "hemisphere" | "cone" | "cylinder" | "frustum" | "cylinder_with_hemisphere";
+  center?: Point;                           // base/central reference point
+  radius?: number;                          // sphere, hemisphere, cone, cylinder
+  top_radius?: number;                      // frustum smaller radius
+  bottom_radius?: number;                   // frustum larger radius
+  height?: number;                          // cone/cylinder/frustum height
+  slant_height?: number;                    // cone/frustum slant height label
+  label?: string;
+  labels?: {
+    radius?: string;
+    top_radius?: string;
+    bottom_radius?: string;
+    height?: string;
+    slant_height?: string;
+  };
 }
 
 export interface LineShape {
@@ -88,6 +112,7 @@ export interface PolygonShape {
 export type Shape =
   | TriangleShape
   | CircleShape
+  | SolidShape
   | LineShape
   | AngleShape
   | AxisShape

@@ -16,7 +16,7 @@ import {
   Paperclip,
   Plus,
   Search,
-  SendHorizontal,
+  ArrowUp,
   Sparkles,
   Trash2,
   X,
@@ -55,6 +55,8 @@ or
 \`\`\`ssc-visual
 {"type":"diagram","title":"Short title","diagram":{"scale":40,"width":280,"height":220,"shapes":[]}}
 \`\`\`
+For mensuration diagrams, supported shape types include sphere, hemisphere, cone, cylinder, frustum, and cylinder_with_hemisphere. Use 2D exam-style 3D notation with radius, height, and slant-height labels where useful.
+For a cylinder with hemispherical top, use: {"type":"cylinder_with_hemisphere","radius":3,"height":8,"labels":{"radius":"r = 3 cm","height":"cylinder height = 8 cm"}}
 Use only these visual types: table, chart, diagram.
 Never create raw markdown pipe tables. For any table, always use the ssc-visual table JSON format.`;
 
@@ -283,6 +285,7 @@ function AiChatPageContent() {
   const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
   const [attachmentPreview, setAttachmentPreview] = useState<string | null>(null);
   const [attachmentError, setAttachmentError] = useState('');
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -664,8 +667,8 @@ function AiChatPageContent() {
                       <div className="answer-summary">{summarizeReply(message.content)}</div>
                       <div className="answer-card">
                         <div className="answer-head">
-                          <span>Solution</span>
-                          <button type="button" onClick={() => handleCopy(message.content, index)}>
+                          <span>AI Response</span>
+                          <button type="button" onClick={() => handleCopy(message.content, index)} title="Copy entire AI response">
                             <Copy size={15} />
                             {copiedIndex === index ? 'Copied' : 'Copy'}
                           </button>
@@ -703,77 +706,98 @@ function AiChatPageContent() {
             handleSend();
           }}
         >
-          {(attachmentFile || attachmentError) && (
-            <div className="attachment-panel">
-              {attachmentFile && (
-                <div className="attachment-chip">
-                  {attachmentPreview ? (
-                    <NextImage
-                      className="attachment-thumb"
-                      src={attachmentPreview}
-                      alt=""
-                      width={42}
-                      height={42}
-                      unoptimized
-                    />
-                  ) : (
-                    <span className="file-icon">
-                      {attachmentFile.type === 'application/pdf' ? <FileText size={18} /> : <ImageIcon size={18} />}
-                    </span>
-                  )}
-                  <div>
-                    <strong>{attachmentFile.name}</strong>
-                    <span>{attachmentFile.type === 'application/pdf' ? 'PDF document' : 'Question image'}</span>
-                  </div>
-                  <button type="button" onClick={removeAttachment} aria-label="Remove attachment">
-                    <X size={16} />
-                  </button>
-                </div>
-              )}
-              {attachmentError && <div className="attachment-error">{attachmentError}</div>}
-            </div>
-          )}
           <div className="composer">
-            <input
-              ref={fileInputRef}
-              className="file-input"
-              type="file"
-              accept="image/*,application/pdf"
-              onChange={handleAttachmentChange}
-            />
-            <button
-              className="composer-tool"
-              type="button"
-              aria-label="Attach question image or PDF"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isLoading}
-              title="Attach image or PDF"
-            >
-              <Paperclip size={19} />
-            </button>
-            <textarea
-              value={input}
-              onChange={(event) => setInput(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' && !event.shiftKey) {
-                  event.preventDefault();
-                  handleSend();
-                }
-              }}
-              placeholder="Message AI Tutor"
-              rows={1}
-              disabled={isLoading}
-            />
-            <button className="composer-tool mic-btn" type="button" aria-label="Voice input">
-              <Mic size={19} />
-            </button>
-            <button className="send-btn" type="submit" disabled={!hasInput || isLoading} aria-label="Send message">
-              <SendHorizontal size={20} />
-            </button>
+            {(attachmentFile || attachmentError) && (
+              <div className="attachment-panel">
+                {attachmentFile && (
+                  <div className="attachment-chip">
+                    {attachmentPreview ? (
+                      <div className="image-preview-wrapper" onClick={() => setIsPreviewModalOpen(true)}>
+                        <NextImage
+                          className="attachment-thumb"
+                          src={attachmentPreview}
+                          alt=""
+                          width={60}
+                          height={60}
+                          unoptimized
+                        />
+                        <button type="button" className="remove-image-btn" onClick={(e) => { e.stopPropagation(); removeAttachment(); }} aria-label="Remove attachment">
+                          <X size={12} strokeWidth={3} />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="file-preview-wrapper">
+                        <span className="file-icon">
+                          {attachmentFile.type === 'application/pdf' ? <FileText size={24} /> : <ImageIcon size={24} />}
+                        </span>
+                        <div className="file-info">
+                          <strong>{attachmentFile.name}</strong>
+                          <span>{attachmentFile.type === 'application/pdf' ? 'PDF document' : 'Question image'}</span>
+                        </div>
+                        <button type="button" className="remove-file-btn" onClick={removeAttachment} aria-label="Remove attachment">
+                          <X size={16} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {attachmentError && <div className="attachment-error">{attachmentError}</div>}
+              </div>
+            )}
+            
+            <div className="composer-row">
+              <input
+                ref={fileInputRef}
+                className="file-input"
+                type="file"
+                accept="image/*,application/pdf"
+                onChange={handleAttachmentChange}
+              />
+              <button
+                className="composer-tool clip-btn"
+                type="button"
+                aria-label="Attach question image or PDF"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isLoading}
+                title="Attach image or PDF"
+              >
+                <Plus size={22} />
+              </button>
+              <textarea
+                value={input}
+                onChange={(event) => setInput(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault();
+                    handleSend();
+                  }
+                }}
+                placeholder="Ask ChatGPT"
+                rows={1}
+                disabled={isLoading}
+              />
+              <button className="composer-tool mic-btn" type="button" aria-label="Voice input">
+                <Mic size={20} />
+              </button>
+              <button className="send-btn" type="submit" disabled={!hasInput || isLoading} aria-label="Send message">
+                <ArrowUp size={20} className="send-icon" strokeWidth={2.5} />
+              </button>
+            </div>
           </div>
           <div className="composer-note">AI Tutor can make mistakes. Verify important exam facts and calculations.</div>
         </form>
       </section>
+
+      {isPreviewModalOpen && attachmentPreview && (
+        <div className="image-modal-overlay" onClick={() => setIsPreviewModalOpen(false)}>
+          <div className="image-modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="image-modal-close" onClick={() => setIsPreviewModalOpen(false)}>
+              <X size={24} />
+            </button>
+            <img src={attachmentPreview} alt="Preview" className="image-modal-img" />
+          </div>
+        </div>
+      )}
 
       <style jsx>{`
         .ai-chat-page {
@@ -1301,85 +1325,132 @@ function AiChatPageContent() {
           background: linear-gradient(180deg, rgba(255, 255, 255, 0), #ffffff 22%);
         }
 
+        .composer {
+          min-height: 58px;
+          border: 1px solid #d9d9e3;
+          border-radius: 20px;
+          background: #ffffff;
+          display: flex;
+          flex-direction: column;
+          padding: 8px 12px 10px;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+
+        .composer-row {
+          display: flex;
+          align-items: flex-end;
+          gap: 6px;
+        }
+
         .attachment-panel {
-          margin-bottom: 10px;
+          margin-bottom: 8px;
+          padding: 4px 8px;
         }
 
         .attachment-chip {
-          min-height: 58px;
-          max-width: min(520px, 100%);
-          border: 1px solid var(--line);
-          border-radius: 8px;
+          display: inline-flex;
+          align-items: center;
+        }
+
+        .image-preview-wrapper {
+          position: relative;
+          width: 56px;
+          height: 56px;
+          border-radius: 12px;
+          overflow: hidden;
+          background: #f4f4f5;
+          cursor: pointer;
+        }
+
+        .image-preview-wrapper :global(.attachment-thumb) {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .remove-image-btn {
+          position: absolute;
+          top: 4px;
+          right: 4px;
+          width: 20px;
+          height: 20px;
+          border: 0;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.9);
+          color: #171717;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          backdrop-filter: blur(4px);
+          box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .remove-image-btn:hover {
           background: #ffffff;
+        }
+
+        .file-preview-wrapper {
           display: flex;
           align-items: center;
           gap: 10px;
-          padding: 8px 9px;
-          box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+          border: 1px solid var(--line);
+          border-radius: 12px;
+          padding: 8px 12px;
+          background: #fafafa;
         }
 
-        .attachment-chip :global(.attachment-thumb),
-        .file-icon {
-          width: 42px;
-          height: 42px;
-          border-radius: 8px;
-          flex: 0 0 auto;
-        }
-
-        .attachment-chip :global(.attachment-thumb) {
-          object-fit: cover;
-          border: 1px solid #e4e4e7;
-        }
-
-        .file-icon {
+        .file-preview-wrapper .file-icon {
           background: #effaf6;
           color: var(--accent-dark);
+          width: 40px;
+          height: 40px;
+          border-radius: 8px;
           display: inline-flex;
           align-items: center;
           justify-content: center;
         }
 
-        .attachment-chip div {
-          min-width: 0;
+        .file-info {
           flex: 1;
+          min-width: 0;
         }
 
-        .attachment-chip strong,
-        .attachment-chip span {
+        .file-info strong,
+        .file-info span {
           display: block;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
         }
 
-        .attachment-chip strong {
-          color: #202123;
+        .file-info strong {
+          color: #171717;
           font-size: 13px;
-          line-height: 1.3;
+          font-weight: 600;
         }
 
-        .attachment-chip span {
+        .file-info span {
           color: var(--muted);
-          font-size: 12px;
-          margin-top: 2px;
+          font-size: 11px;
         }
 
-        .attachment-chip button {
-          width: 32px;
-          height: 32px;
+        .remove-file-btn {
+          width: 28px;
+          height: 28px;
           border: 0;
-          border-radius: 8px;
+          border-radius: 50%;
           background: transparent;
-          color: #52525b;
-          display: inline-flex;
+          color: var(--muted);
+          display: flex;
           align-items: center;
           justify-content: center;
           cursor: pointer;
-          flex: 0 0 auto;
         }
 
-        .attachment-chip button:hover {
-          background: #f2f2f2;
+        .remove-file-btn:hover {
+          background: #e4e4e7;
+          color: #171717;
         }
 
         .attachment-error {
@@ -1393,18 +1464,6 @@ function AiChatPageContent() {
           padding: 0 10px;
           font-size: 13px;
           font-weight: 600;
-        }
-
-        .composer {
-          min-height: 58px;
-          border: 1px solid #d9d9e3;
-          border-radius: 14px;
-          background: #ffffff;
-          display: flex;
-          align-items: flex-end;
-          gap: 8px;
-          padding: 9px;
-          box-shadow: 0 12px 32px rgba(15, 23, 42, 0.1);
         }
 
         .file-input {
@@ -1444,21 +1503,32 @@ function AiChatPageContent() {
         }
 
         .send-btn {
-          width: 38px;
-          height: 38px;
-          border-radius: 8px;
-          background: var(--accent);
+          width: 34px;
+          height: 34px;
+          border-radius: 50%;
+          background: #171717;
           color: white;
           flex: 0 0 auto;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 2px;
+          margin-right: 4px;
         }
 
         .send-btn:hover:not(:disabled) {
-          background: var(--accent-dark);
+          background: #000000;
         }
 
         .send-btn:disabled {
           background: #d4d4d8;
+          color: #a1a1aa;
           cursor: not-allowed;
+        }
+
+        .send-btn .send-icon {
+          width: 18px;
+          height: 18px;
         }
 
         .composer-note {
@@ -1466,6 +1536,62 @@ function AiChatPageContent() {
           text-align: center;
           color: var(--muted);
           font-size: 12px;
+        }
+
+        .image-modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.7);
+          z-index: 1000;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          backdrop-filter: blur(4px);
+          padding: 24px;
+        }
+
+        .image-modal-content {
+          position: relative;
+          max-width: 90vw;
+          max-height: 90vh;
+          border-radius: 12px;
+          overflow: hidden;
+          background: #000;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .image-modal-close {
+          position: absolute;
+          top: 16px;
+          right: 16px;
+          width: 40px;
+          height: 40px;
+          border: 0;
+          border-radius: 50%;
+          background: rgba(0, 0, 0, 0.5);
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: background 0.2s;
+        }
+
+        .image-modal-close:hover {
+          background: rgba(0, 0, 0, 0.8);
+        }
+
+        .image-modal-img {
+          max-width: 100%;
+          max-height: 90vh;
+          object-fit: contain;
+          display: block;
         }
 
         @keyframes typingBounce {

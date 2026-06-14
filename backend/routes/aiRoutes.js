@@ -285,7 +285,13 @@ or
 \`\`\`ssc-visual
 {"type":"diagram","title":"Short title","diagram":{"scale":40,"width":280,"height":220,"shapes":[{"type":"right_triangle","vertices":{"A":{"x":4,"y":3},"B":{"x":0,"y":0},"C":{"x":4,"y":0}},"right_angle_at":"C","labels":{"AB":"5","BC":"4","CA":"3"}}]}}
 \`\`\`
-- For diagram JSON, use the existing geometry schema only: triangle, right_triangle, circle, line, angle, axis, rectangle, polygon.
+For mensuration, you may also use:
+\`\`\`ssc-visual
+{"type":"diagram","title":"Frustum","diagram":{"scale":32,"width":320,"height":240,"shapes":[{"type":"frustum","top_radius":3,"bottom_radius":5,"height":7,"slant_height":7,"labels":{"top_radius":"r = 3 cm","bottom_radius":"R = 5 cm","slant_height":"l = 7 cm"}}]}}
+\`\`\`
+- For diagram JSON, use the existing geometry schema only: triangle, right_triangle, circle, line, angle, axis, rectangle, polygon, sphere, hemisphere, cone, cylinder, frustum, cylinder_with_hemisphere.
+- For sphere/hemisphere/cone/cylinder/frustum/cylinder_with_hemisphere, use 2D exam-style 3D notation with visible radius, height, and slant-height labels where useful.
+- For "Cylinder with Hemispherical Top", use shape type cylinder_with_hemisphere, for example: {"type":"cylinder_with_hemisphere","radius":3,"height":8,"labels":{"radius":"r = 3 cm","height":"cylinder height = 8 cm"}}
 - Do not put visual JSON inside ordinary markdown code blocks. Use only \`\`\`ssc-visual fences for visual JSON.
 - Never create raw markdown pipe tables like \`| Name | Marks |\`. For any table, always use the \`\`\`ssc-visual table JSON format.`;
 

@@ -9,6 +9,7 @@ import type { GeometryDiagram } from "@/components/geometry/diagramSchema";
 
 const GeometryRenderer = dynamic(() => import("@/components/geometry/GeometryRenderer"), {
   ssr: false,
+  loading: () => <div style={{ padding: "20px", textAlign: "center", color: "#6b7280", fontFamily: "sans-serif", fontSize: 13 }}>Loading diagram...</div>
 });
 
 type VisualTable = {
@@ -46,7 +47,6 @@ type VisualResponseProps = {
 };
 
 const visualFenceRegex = /```(?:ssc-visual|visual|visual-json)\s*([\s\S]*?)```/gi;
-const tableSeparatorRegex = /^:?-{3,}:?$/;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value && typeof value === "object" && !Array.isArray(value));
@@ -56,6 +56,139 @@ function isStringArray(value: unknown): value is string[] {
   return Array.isArray(value) && value.every((item) => typeof item === "string");
 }
 
+function getNumber(value: unknown, fallback: number) {
+  const numberValue = Number(value);
+  return Number.isFinite(numberValue) && numberValue > 0 ? numberValue : fallback;
+}
+
+function getPoint(value: unknown, fallback: { x: number; y: number }) {
+  if (!isRecord(value)) return fallback;
+  const x = Number(value.x);
+  const y = Number(value.y);
+  return Number.isFinite(x) && Number.isFinite(y) ? { x, y } : fallback;
+}
+
+function normalizeDiagramShape(shape: unknown) {
+  if (!isRecord(shape) || typeof shape.type !== "string") return shape;
+
+  const rawType = [
+    shape.type,
+    typeof shape.name === "string" ? shape.name : "",
+    typeof shape.solid === "string" ? shape.solid : "",
+    typeof shape.description === "string" ? shape.description : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const type = rawType.toLowerCase().replace(/[\s-]+/g, "_");
+  const label =
+    typeof shape.label === "string"
+      ? shape.label
+      : typeof shape.caption === "string"
+        ? shape.caption
+        : undefined;
+
+  if (
+    /cyl(?:i|y)nder/.test(type) &&
+    (/hemi/.test(type) || /dome/.test(type) || /top/.test(type))
+  ) {
+    const radius = getNumber(shape.radius ?? shape.r, 2);
+    const height = getNumber(shape.height ?? shape.cylinder_height ?? shape.h, radius * 2);
+    return {
+      type: "cylinder_with_hemisphere",
+      center: getPoint(shape.center, { x: 0, y: 0 }),
+      radius,
+      height,
+      label,
+      labels: {
+        ...(isRecord(shape.labels) ? shape.labels : {}),
+        radius: isRecord(shape.labels) && typeof shape.labels.radius === "string" ? shape.labels.radius : "Radius",
+        height: isRecord(shape.labels) && typeof shape.labels.height === "string" ? shape.labels.height : "height",
+      },
+    };
+  }
+
+  if (type === "sphere" || type === "hemisphere") {
+    const radius = getNumber(shape.radius ?? shape.r, 2);
+    return {
+      type,
+      center: getPoint(shape.center, { x: 0, y: 0 }),
+      radius,
+      label,
+      labels: {
+        ...(isRecord(shape.labels) ? shape.labels : {}),
+        radius: isRecord(shape.labels) && typeof shape.labels.radius === "string" ? shape.labels.radius : `r = ${radius}`,
+      },
+    };
+  }
+
+  if (type === "cone" || type === "right_circular_cone") {
+    const radius = getNumber(shape.radius ?? shape.base_radius ?? shape.bottom_radius, 2);
+    const height = getNumber(shape.height ?? shape.slant_height ?? shape.slantHeight, radius * 1.7);
+    return {
+      type: "cone",
+      center: getPoint(shape.center, { x: 0, y: 0 }),
+      radius,
+      height,
+      slant_height: getNumber(shape.slant_height ?? shape.slantHeight, 0) || undefined,
+      label,
+      labels: {
+        ...(isRecord(shape.labels) ? shape.labels : {}),
+        radius: isRecord(shape.labels) && typeof shape.labels.radius === "string" ? shape.labels.radius : "Radius",
+        height: isRecord(shape.labels) && typeof shape.labels.height === "string" ? shape.labels.height : "height",
+        slant_height: isRecord(shape.labels) && typeof shape.labels.slant_height === "string" ? shape.labels.slant_height : undefined,
+      },
+    };
+  }
+
+  if (type === "frustum" || type === "frustrum" || type === "truncated_cone") {
+    const topRadius = getNumber(shape.top_radius ?? shape.r1 ?? shape.small_radius, 1.5);
+    const bottomRadius = getNumber(shape.bottom_radius ?? shape.r2 ?? shape.large_radius, topRadius + 1);
+    const height = getNumber(shape.height ?? shape.slant_height ?? shape.slantHeight, bottomRadius * 1.4);
+    return {
+      type: "frustum",
+      center: getPoint(shape.center, { x: 0, y: 0 }),
+      top_radius: topRadius,
+      bottom_radius: bottomRadius,
+      height,
+      slant_height: getNumber(shape.slant_height ?? shape.slantHeight, 0) || undefined,
+      label,
+      labels: {
+        ...(isRecord(shape.labels) ? shape.labels : {}),
+        top_radius: isRecord(shape.labels) && typeof shape.labels.top_radius === "string" ? shape.labels.top_radius : `r = ${topRadius}`,
+        bottom_radius: isRecord(shape.labels) && typeof shape.labels.bottom_radius === "string" ? shape.labels.bottom_radius : `R = ${bottomRadius}`,
+        height: isRecord(shape.labels) && typeof shape.labels.height === "string" ? shape.labels.height : `h = ${height}`,
+        slant_height: isRecord(shape.labels) && typeof shape.labels.slant_height === "string" ? shape.labels.slant_height : undefined,
+      },
+    };
+  }
+
+  if (type === "cylinder" || type === "cyclinder") {
+    const radius = getNumber(shape.radius ?? shape.r, 2);
+    const height = getNumber(shape.height ?? shape.h, radius * 2);
+    return {
+      type: "cylinder",
+      center: getPoint(shape.center, { x: 0, y: 0 }),
+      radius,
+      height,
+      label,
+      labels: {
+        ...(isRecord(shape.labels) ? shape.labels : {}),
+        radius: isRecord(shape.labels) && typeof shape.labels.radius === "string" ? shape.labels.radius : `r = ${radius}`,
+        height: isRecord(shape.labels) && typeof shape.labels.height === "string" ? shape.labels.height : `h = ${height}`,
+      },
+    };
+  }
+
+  return shape;
+}
+
+function normalizeDiagram(diagram: Record<string, unknown>): GeometryDiagram {
+  return {
+    ...(diagram as unknown as GeometryDiagram),
+    shapes: Array.isArray(diagram.shapes) ? diagram.shapes.map(normalizeDiagramShape) as GeometryDiagram["shapes"] : [],
+  };
+}
+
 function normalizeVisual(value: unknown): VisualBlock | null {
   if (!isRecord(value) || typeof value.type !== "string") return null;
 
@@ -63,8 +196,35 @@ function normalizeVisual(value: unknown): VisualBlock | null {
     return {
       type: "diagram",
       title: typeof value.title === "string" ? value.title : undefined,
-      diagram: value.diagram as unknown as GeometryDiagram,
+      diagram: normalizeDiagram(value.diagram),
     };
+  }
+
+  if (value.type === "diagram" && isRecord(value.diagram)) {
+    const diagramShape =
+      typeof value.diagram.shape === "string"
+        ? value.diagram.shape
+        : typeof value.diagram.solid === "string"
+          ? value.diagram.solid
+          : typeof value.diagram.name === "string"
+            ? value.diagram.name
+            : "";
+
+    if (diagramShape) {
+      return {
+        type: "diagram",
+        title: typeof value.title === "string" ? value.title : undefined,
+        diagram: normalizeDiagram({
+          ...value.diagram,
+          shapes: [
+            {
+              ...value.diagram,
+              type: diagramShape,
+            },
+          ],
+        }),
+      };
+    }
   }
 
   if (value.type === "table" && isStringArray(value.headers) && Array.isArray(value.rows)) {
@@ -102,242 +262,29 @@ function normalizeVisual(value: unknown): VisualBlock | null {
   return null;
 }
 
-function splitTableCells(line: string) {
-  return line
-    .trim()
-    .replace(/^\|/, "")
-    .replace(/\|$/, "")
-    .split("|")
-    .map((cell) => cell.trim())
-    .filter(Boolean);
-}
-
-function isTableSeparatorLine(line: string) {
-  const cells = splitTableCells(line);
-  return cells.length > 0 && cells.every((cell) => /^:?-{3,}:?$/.test(cell));
-}
-
-function isLikelyPipeTableLine(line: string) {
-  return line.includes("|") && splitTableCells(line).length >= 2;
-}
-
-function splitCompactMathTokens(value: string) {
-  const compact = value.replace(/\s+/g, "");
-  if (!compact || compact.length !== value.replace(/\s+/g, "").length) return null;
-
-  const tokens = compact.match(
-    /(?:\\Delta(?:\^\d+)?[A-Za-z](?:_\d+|\d*)?|Δ(?:\^\d+|[²³])?[A-Za-z](?:_\d+|\d*)?|[A-Za-z](?:_\d+|\d+)?)/g
-  );
-
-  if (!tokens || tokens.length < 2 || tokens.join("") !== compact) return null;
-  return tokens;
-}
-
-function splitLooseTableRow(line: string, expectedColumns?: number): string[] | null {
-  const trimmed = line
-    .trim()
-    .replace(/^#{1,6}\s+/, "")
-    .replace(/\*\*/g, "")
-    .replace(/__/g, "")
-    .replace(/`/g, "");
-  if (!trimmed || /^[-*_]{3,}$/.test(trimmed)) return null;
-
-  const wideSpaceCells = trimmed.split(/\s{2,}|\t+/).map((cell) => cell.trim()).filter(Boolean);
-  if (wideSpaceCells.length >= 2) return wideSpaceCells;
-
-  const compactMathTokens = splitCompactMathTokens(trimmed);
-  if (
-    compactMathTokens &&
-    (!expectedColumns ||
-      (compactMathTokens.length >= 2 && compactMathTokens.length <= expectedColumns))
-  ) {
-    return compactMathTokens;
-  }
-
-  const gluedHeaderCells = trimmed.match(/[A-Z][a-z]+|[A-Z]+(?=[A-Z]|$)/g);
-  if (
-    !expectedColumns &&
-    gluedHeaderCells &&
-    gluedHeaderCells.length >= 2 &&
-    gluedHeaderCells.join("") === trimmed
-  ) {
-    return gluedHeaderCells;
-  }
-
-  const trailingNumber = trimmed.match(/^(.+?)[\s]*([-+]?\d+(?:\.\d+)?%?)$/);
-  if (trailingNumber && trailingNumber[1].trim() && /\D/.test(trailingNumber[1])) {
-    return [trailingNumber[1].trim(), trailingNumber[2]];
-  }
-
-  const words = trimmed.split(/\s+/).filter(Boolean);
-  if (!expectedColumns && words.length >= 2 && words.length <= 5) return words;
-  if (expectedColumns && words.length >= 2 && words.length <= expectedColumns) return words;
-
-  return null;
-}
-
-function isPlainTableTitle(line: string) {
-  const trimmed = line.trim();
-  if (!trimmed || trimmed.length > 70) return false;
-  if (/^#{1,6}\s/.test(trimmed)) return false;
-  if (/[.!?]$/.test(trimmed)) return false;
-  return /^[A-Za-z0-9][A-Za-z0-9\s'():/-]*$/.test(trimmed);
-}
-
-function extractLooseTextTables(content: string): ParsedResponse {
-  const visuals: VisualBlock[] = [];
-  const lines = content.split("\n");
-  const remove = new Set<number>();
-
-  for (let index = 0; index < lines.length; index += 1) {
-    if (remove.has(index)) continue;
-
-    const header = splitLooseTableRow(lines[index]);
-    if (!header || header.length < 2 || header.length > 6) continue;
-
-    const rows: string[][] = [];
-    let cursor = index + 1;
-
-    while (cursor < lines.length) {
-      const row = splitLooseTableRow(lines[cursor], header.length);
-      if (!row || row.length < 2 || row.length > header.length) break;
-      rows.push(row);
-      cursor += 1;
-    }
-
-    if (rows.length < 2) continue;
-
-    let title: string | undefined;
-    let titleIndex = index - 1;
-    while (titleIndex >= 0 && !lines[titleIndex].trim()) titleIndex -= 1;
-    if (titleIndex >= 0 && isPlainTableTitle(lines[titleIndex])) {
-      title = lines[titleIndex].trim();
-      remove.add(titleIndex);
-    }
-
-    visuals.push({
-      type: "table",
-      title,
-      headers: header,
-      rows,
-    });
-
-    for (let removeIndex = index; removeIndex < cursor; removeIndex += 1) {
-      remove.add(removeIndex);
-    }
-
-    index = cursor - 1;
-  }
-
-  return {
-    markdown: lines
-      .filter((_line, index) => !remove.has(index))
-      .join("\n")
-      .replace(/\n{3,}/g, "\n\n")
-      .trim(),
-    visuals,
-  };
-}
-
-function tableFromCells(cells: string[], title?: string): VisualTable | null {
-  const firstSeparatorIndex = cells.findIndex((cell) => tableSeparatorRegex.test(cell));
-  if (firstSeparatorIndex <= 0) return null;
-
-  const headers = cells.slice(0, firstSeparatorIndex);
-  const dataCells = cells.slice(firstSeparatorIndex).filter((cell) => !tableSeparatorRegex.test(cell));
-  if (headers.length < 2 || dataCells.length < headers.length) return null;
-
-  const rows: string[][] = [];
-  for (let index = 0; index + headers.length - 1 < dataCells.length; index += headers.length) {
-    rows.push(dataCells.slice(index, index + headers.length));
-  }
-
-  return {
-    type: "table",
-    title,
-    headers,
-    rows,
-  };
-}
-
-function extractPipeTables(content: string): ParsedResponse {
-  const visuals: VisualBlock[] = [];
-  const lines = content.split("\n");
-  const nextLines: string[] = [];
-
-  for (let index = 0; index < lines.length; index += 1) {
-    const line = lines[index];
-    const trimmed = line.trim();
-    const inlineTable = tableFromCells(splitTableCells(line));
-
-    if (inlineTable) {
-      visuals.push(inlineTable);
-      continue;
-    }
-
-    if (
-      isLikelyPipeTableLine(line) &&
-      index + 1 < lines.length &&
-      isTableSeparatorLine(lines[index + 1])
-    ) {
-      const headers = splitTableCells(line);
-      const rows: string[][] = [];
-      index += 2;
-
-      while (index < lines.length && isLikelyPipeTableLine(lines[index])) {
-        const row = splitTableCells(lines[index]);
-        if (row.length > 0) rows.push(row);
-        index += 1;
-      }
-
-      index -= 1;
-
-      if (headers.length > 1 && rows.length > 0) {
-        visuals.push({
-          type: "table",
-          title: undefined,
-          headers,
-          rows,
-        });
-        continue;
-      }
-    }
-
-    if (trimmed !== "|") {
-      nextLines.push(line);
-    }
-  }
-
-  return {
-    markdown: nextLines.join("\n").replace(/\n{3,}/g, "\n\n").trim(),
-    visuals,
-  };
-}
-
 function extractVisuals(content: string): ParsedResponse {
   const visuals: VisualBlock[] = [];
   const normalizedContent = content.replace(/<br\s*\/?>/gi, "\n");
-  const markdownWithoutVisualJson = normalizedContent.replace(visualFenceRegex, (_match, rawJson: string) => {
-    try {
-      const parsed = JSON.parse(rawJson.trim());
-      const candidates = Array.isArray(parsed) ? parsed : [parsed];
-      for (const candidate of candidates) {
-        const visual = normalizeVisual(candidate);
-        if (visual) visuals.push(visual);
+  const markdown = normalizedContent
+    .replace(visualFenceRegex, (_match, rawJson: string) => {
+      try {
+        const parsed = JSON.parse(rawJson.trim());
+        const candidates = Array.isArray(parsed) ? parsed : [parsed];
+        for (const candidate of candidates) {
+          const visual = normalizeVisual(candidate);
+          if (visual) visuals.push(visual);
+        }
+      } catch {
+        return "\n\n_[Diagram could not be rendered: invalid visual data.]_\n\n";
       }
-    } catch {
-      return _match;
-    }
-
-    return "";
-  });
-
-  const tableParsed = extractPipeTables(markdownWithoutVisualJson);
-  const looseTableParsed = extractLooseTextTables(tableParsed.markdown);
+      return "\n\n";
+    })
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 
   return {
-    markdown: looseTableParsed.markdown,
-    visuals: [...visuals, ...tableParsed.visuals, ...looseTableParsed.visuals],
+    markdown,
+    visuals: visuals,
   };
 }
 
@@ -481,7 +428,11 @@ function DiagramVisual({ block }: { block: VisualDiagram }) {
   return (
     <div className="visual-block diagram-block">
       {block.title && <div className="visual-title">{block.title}</div>}
-      <GeometryRenderer diagram={block.diagram} />
+      <div style={{ display: "flex", justifyContent: "center", overflowX: "auto", padding: "10px", width: "100%", boxSizing: "border-box" }}>
+        <div style={{ minWidth: "fit-content" }}>
+          <GeometryRenderer diagram={block.diagram} />
+        </div>
+      </div>
     </div>
   );
 }
@@ -496,13 +447,13 @@ export default function VisualResponse({ content, normalizeMarkdown }: VisualRes
           remarkPlugins={[remarkMath, remarkGfm]}
           rehypePlugins={[[rehypeKatex, { throwOnError: false, strict: "ignore", trust: false }]]}
           components={{
-            table: ({ node, ...props }) => (
+            table: (props) => (
               <div className="table-wrapper">
                 <table {...props} />
               </div>
             ),
-            th: ({ node, ...props }) => <th {...props} />,
-            td: ({ node, ...props }) => <td {...props} />,
+            th: (props) => <th {...props} />,
+            td: (props) => <td {...props} />,
           }}
         >
           {normalizeMarkdown(markdown)}
