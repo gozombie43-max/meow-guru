@@ -379,17 +379,17 @@ export default function Home() {
         }
         .home-page {
           --home-bottom-nav-clearance: clamp(68px, 9vh, 108px);
-          height: 100svh;
           min-height: 100svh;
-          overflow: hidden;
+          overflow-x: clip;
+          overflow-y: visible;
           display: flex;
           flex-direction: column;
         }
         html.home-hero,
         body.home-hero {
           overflow-x: clip;
-          overflow-y: hidden;
-          height: 100%;
+          overflow-y: auto;
+          min-height: 100%;
         }
         body.home-hero {
           overscroll-behavior: none;
@@ -1500,6 +1500,115 @@ export default function Home() {
           opacity: 1;
           box-shadow: 0 0 14px rgba(125, 211, 252, 0.55);
         }
+        .home-footer {
+          position: relative;
+          z-index: 2;
+          background:
+            linear-gradient(180deg, rgba(6, 12, 24, 0.95) 0%, rgba(10, 23, 42, 0.98) 100%),
+            radial-gradient(700px 280px at 14% 0%, rgba(34, 211, 238, 0.16), transparent 68%);
+          color: #e2f4ff;
+          border-top: 1px solid rgba(255, 255, 255, 0.12);
+          padding: clamp(2.5rem, 6vw, 4.75rem) 1.5rem calc(2.5rem + env(safe-area-inset-bottom));
+          font-family: "SF Pro Text", "Inter", "Helvetica Neue", Arial, sans-serif;
+        }
+        .home-footer__inner {
+          width: min(1120px, 100%);
+          margin: 0 auto;
+          display: grid;
+          grid-template-columns: minmax(0, 1.25fr) minmax(220px, 0.75fr) minmax(220px, 0.75fr);
+          gap: clamp(1.5rem, 4vw, 3rem);
+        }
+        .home-footer__brand {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+        }
+        .home-footer__eyebrow {
+          display: inline-flex;
+          width: fit-content;
+          align-items: center;
+          border-radius: 999px;
+          border: 1px solid rgba(125, 211, 252, 0.32);
+          background: rgba(14, 165, 233, 0.12);
+          padding: 0.4rem 0.75rem;
+          color: #b9f4ff;
+          font-size: 0.72rem;
+          font-weight: 800;
+          letter-spacing: 0.16em;
+          text-transform: uppercase;
+        }
+        .home-footer__title {
+          margin: 0;
+          color: #f8fafc;
+          font-size: clamp(1.6rem, 3vw, 2.35rem);
+          line-height: 1.08;
+          font-weight: 850;
+        }
+        .home-footer__copy {
+          max-width: 620px;
+          color: rgba(226, 244, 255, 0.72);
+          font-size: 0.98rem;
+          line-height: 1.7;
+        }
+        .home-footer__badges {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.65rem;
+          margin-top: 0.25rem;
+        }
+        .home-footer__badge {
+          border-radius: 999px;
+          border: 1px solid rgba(255, 255, 255, 0.16);
+          background: rgba(255, 255, 255, 0.07);
+          color: rgba(241, 248, 255, 0.9);
+          padding: 0.48rem 0.72rem;
+          font-size: 0.78rem;
+          font-weight: 700;
+          white-space: nowrap;
+        }
+        .home-footer__column {
+          display: flex;
+          flex-direction: column;
+          gap: 0.85rem;
+        }
+        .home-footer__heading {
+          color: #ffffff;
+          font-size: 0.82rem;
+          font-weight: 800;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+        }
+        .home-footer__links {
+          display: grid;
+          gap: 0.62rem;
+        }
+        .home-footer__link,
+        .home-footer__text {
+          color: rgba(226, 244, 255, 0.7);
+          font-size: 0.92rem;
+          line-height: 1.45;
+          text-decoration: none;
+        }
+        .home-footer__link {
+          transition: color 180ms ease, transform 180ms ease;
+        }
+        .home-footer__link:hover {
+          color: #7dd3fc;
+          transform: translateX(2px);
+        }
+        .home-footer__bottom {
+          width: min(1120px, 100%);
+          margin: clamp(1.75rem, 4vw, 3rem) auto 0;
+          padding-top: 1.1rem;
+          border-top: 1px solid rgba(255, 255, 255, 0.1);
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.85rem;
+          color: rgba(226, 244, 255, 0.58);
+          font-size: 0.82rem;
+        }
         @media (max-width: 640px) {
           .recent-header {
             flex-direction: row;
@@ -1508,6 +1617,13 @@ export default function Home() {
           }
           .recent-section {
             width: 100%;
+          }
+          .home-footer__inner {
+            grid-template-columns: 1fr;
+          }
+          .home-footer__bottom {
+            align-items: flex-start;
+            flex-direction: column;
           }
         }
         @media (prefers-reduced-motion: reduce) { .pill-card { animation: none; transform: none; opacity: 1; transition: none; } .pill-card::before, .pill-card::after { animation: none; } .recent-track { scroll-behavior: auto; } }
@@ -1724,6 +1840,52 @@ export default function Home() {
           </section>
         </div>
       </section>
+
+      <footer className="home-footer">
+        <div className="home-footer__inner">
+          <div className="home-footer__brand">
+            <span className="home-footer__eyebrow">Smart SSC quiz platform</span>
+            <h2 className="home-footer__title">Meow Guru keeps exam practice clean, fast, and visual.</h2>
+            <p className="home-footer__copy">
+              Built for competitive exam preparation like SSC CGL, with structured MCQs,
+              KaTeX-powered math rendering, diagram-friendly questions, and a focused UI for
+              high-performance practice.
+            </p>
+            <div className="home-footer__badges" aria-label="Project highlights">
+              <span className="home-footer__badge">Math + diagrams</span>
+              <span className="home-footer__badge">JSON / NDJSON questions</span>
+              <span className="home-footer__badge">Adaptive practice</span>
+              <span className="home-footer__badge">Progress tracking</span>
+            </div>
+          </div>
+
+          <div className="home-footer__column">
+            <h3 className="home-footer__heading">Practice</h3>
+            <nav className="home-footer__links" aria-label="Practice links">
+              <Link href="/mathematics" className="home-footer__link">Mathematics</Link>
+              <Link href="/reasoning" className="home-footer__link">Reasoning</Link>
+              <Link href="/english" className="home-footer__link">English</Link>
+              <Link href="/general-awareness" className="home-footer__link">General Awareness</Link>
+              <Link href="/battle" className="home-footer__link">Battle Mode</Link>
+            </nav>
+          </div>
+
+          <div className="home-footer__column">
+            <h3 className="home-footer__heading">Project</h3>
+            <div className="home-footer__links">
+              <Link href="/resource" className="home-footer__link">Books and Notes</Link>
+              <Link href="/mock-test" className="home-footer__link">Mock Test</Link>
+              <Link href="/adaptive-quiz" className="home-footer__link">Adaptive Quiz</Link>
+              <Link href="/ai-chat" className="home-footer__link">AI Explanations</Link>
+              <Link href="/dashboard" className="home-footer__link">Progress Dashboard</Link>
+            </div>
+          </div>
+        </div>
+        <div className="home-footer__bottom">
+          <span>Next.js, React, Tailwind CSS, KaTeX, and Node.js power the platform.</span>
+          <span>Meow Guru - focused SSC preparation with fewer distractions.</span>
+        </div>
+      </footer>
 
       {user ? (
         <>
