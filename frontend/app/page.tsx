@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import {
   BarChart3,
@@ -36,7 +37,7 @@ const subjects = [
 ] as const;
 
 const railItems = [
-  { label: 'Home', href: '/', icon: HomeIcon, active: true },
+  { label: 'Home', href: '/', icon: HomeIcon },
   { label: 'Mock', href: '/mock-test', icon: FileCheck2 },
   { label: 'Play', href: '/play', icon: Play },
   { label: 'Videos', href: '/videos', icon: Video },
@@ -85,6 +86,7 @@ function StudyStackArt() {
 }
 
 export default function Home() {
+  const pathname = usePathname() || '/';
   const { user, logout } = useAuth();
   const { theme, toggleThemeMode } = useThemeMode();
   const isDark = theme === 'dark';
@@ -114,16 +116,20 @@ export default function Home() {
       <aside className={styles.sidebar}>
         <SkillLearnLogo />
         <nav className={styles.railNav} aria-label="Primary">
-          {railItems.map((item) => (
-            <Link
-              key={item.label}
-              href={item.href}
-              className={`${styles.railLink} ${item.active ? styles.railActive : ''}`}
-            >
-              <item.icon size={20} strokeWidth={item.active ? 2.6 : 1.8} />
-              <span>{item.label}</span>
-            </Link>
-          ))}
+          {railItems.map((item) => {
+            const active = pathname === item.href;
+            return (
+              <Link
+                key={item.label}
+                href={item.href}
+                className={`${styles.railLink} ${active ? styles.railActive : ''}`}
+                aria-current={active ? 'page' : undefined}
+              >
+                <item.icon size={20} strokeWidth={active ? 2.6 : 1.8} />
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
         </nav>
 
         <section className={styles.premium}>
