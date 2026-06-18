@@ -321,28 +321,28 @@
 }
 
 .hero {
-  min-height: 390px;
+  min-height: 292px;
   border: 1px solid var(--line);
   border-radius: 12px;
   background:
-    linear-gradient(105deg, var(--surface) 0 40%, transparent 41%),
+    linear-gradient(105deg, var(--surface) 0 42%, transparent 43%),
     linear-gradient(180deg, rgba(123, 69, 255, 0.06), rgba(123, 69, 255, 0.02));
   position: relative;
   overflow: hidden;
   display: grid;
-  grid-template-columns: 38% 62%;
+  grid-template-columns: minmax(270px, 37%) minmax(0, 63%);
 }
 
 .heroCopy {
   position: relative;
   z-index: 3;
-  padding: clamp(30px, 4vw, 44px) 0 34px clamp(26px, 4vw, 38px);
+  padding: clamp(24px, 3vw, 34px) 0 28px clamp(24px, 3.4vw, 36px);
 }
 
 .hero h1 {
-  margin: 0 0 12px;
-  font-size: clamp(40px, 4.4vw, 62px);
-  line-height: 0.96;
+  margin: 0 0 10px;
+  font-size: clamp(38px, 4vw, 54px);
+  line-height: 0.92;
   letter-spacing: 0;
 }
 
@@ -353,9 +353,9 @@
 
 .hero p {
   color: var(--muted);
-  font-size: 18px;
-  line-height: 1.35;
-  margin: 0 0 22px;
+  font-size: 17px;
+  line-height: 1.32;
+  margin: 0 0 18px;
 }
 
 .primaryCta,
@@ -374,8 +374,8 @@
 }
 
 .primaryCta {
-  min-height: 44px;
-  padding: 0 20px;
+  min-height: 42px;
+  padding: 0 19px;
   font-size: 14px;
 }
 
@@ -388,17 +388,17 @@
   position: absolute;
   right: 0;
   bottom: 0;
-  width: 94%;
-  height: 100%;
+  width: 92%;
+  height: 82%;
   background: linear-gradient(135deg, #7c2bec, #4e19b9);
-  border-radius: 55% 0 0 12% / 44% 0 0 28%;
+  border-radius: 56% 0 0 12% / 48% 0 0 30%;
 }
 
 .heroImage {
   position: absolute;
-  right: 14%;
-  bottom: -6px;
-  width: min(42vw, 390px);
+  right: 13%;
+  bottom: -44px;
+  width: min(35vw, 340px);
   height: auto;
   z-index: 2;
   filter: drop-shadow(0 20px 18px rgba(23, 13, 58, 0.12));
@@ -851,19 +851,19 @@
 
   .hero {
     grid-template-columns: 1fr;
-    min-height: 440px;
+    min-height: 326px;
     border: 0;
     background: transparent;
   }
 
   .heroCopy {
-    padding: 40px 0 0 4px;
+    padding: 28px 0 0 4px;
     width: 48%;
   }
 
   .heroVisual {
     position: absolute;
-    inset: 76px 0 0 36%;
+    inset: 48px 0 0 36%;
   }
 
   .wave {
@@ -876,7 +876,8 @@
 
   .heroImage {
     right: 8%;
-    width: min(48vw, 330px);
+    bottom: -28px;
+    width: min(43vw, 300px);
   }
 
   .contentGrid {
@@ -953,32 +954,32 @@
   }
 
   .hero {
-    min-height: 420px;
-    margin-top: 28px;
+    min-height: 306px;
+    margin-top: 20px;
   }
 
   .heroCopy {
     padding: 0;
-    width: 52%;
+    width: 56%;
   }
 
   .hero h1 {
-    font-size: clamp(36px, 9.5vw, 48px);
+    font-size: clamp(32px, 8.8vw, 44px);
   }
 
   .hero p {
-    font-size: 16px;
-    margin-bottom: 22px;
+    font-size: 15px;
+    margin-bottom: 16px;
   }
 
   .primaryCta {
-    min-height: 42px;
-    padding: 0 18px;
-    font-size: 13px;
+    min-height: 38px;
+    padding: 0 15px;
+    font-size: 12px;
   }
 
   .heroVisual {
-    inset: 44px -22px 0 38%;
+    inset: 32px -22px 0 40%;
   }
 
   .wave {
@@ -989,8 +990,8 @@
 
   .heroImage {
     right: 2%;
-    bottom: 0;
-    width: min(58vw, 300px);
+    bottom: -24px;
+    width: min(52vw, 270px);
   }
 
   .floatIcon,
@@ -1124,15 +1125,15 @@
   }
 
   .hero {
-    min-height: 374px;
+    min-height: 282px;
   }
 
   .hero h1 {
-    font-size: 34px;
+    font-size: 31px;
   }
 
   .hero p {
-    font-size: 15px;
+    font-size: 14px;
   }
 
   .primaryCta {
@@ -1142,7 +1143,8 @@
   }
 
   .heroImage {
-    width: 58vw;
+    bottom: -18px;
+    width: 52vw;
   }
 
   .subjectCard {
