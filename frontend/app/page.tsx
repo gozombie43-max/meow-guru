@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   BarChart3,
   Bookmark,
@@ -13,7 +13,6 @@ import {
   ChevronRight,
   FileCheck2,
   Home as HomeIcon,
-  LogOut,
   Menu,
   Moon,
   Play,
@@ -89,6 +88,7 @@ export default function Home() {
   const pathname = usePathname() || '/';
   const { user, logout } = useAuth();
   const { theme, toggleThemeMode } = useThemeMode();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const isDark = theme === 'dark';
 
   useEffect(() => {
@@ -113,8 +113,30 @@ export default function Home() {
 
   return (
     <main className={`${styles.page} ${isDark ? styles.dark : styles.light}`}>
-      <aside className={styles.sidebar}>
+      <button
+        type="button"
+        className={`${styles.sidebarBackdrop} ${sidebarOpen ? styles.sidebarBackdropOpen : ''}`}
+        onClick={() => setSidebarOpen(false)}
+        aria-label="Close menu"
+      />
+
+      <aside className={`${styles.sidebar} ${sidebarOpen ? styles.sidebarOpen : ''}`}>
         <SkillLearnLogo />
+        <button
+          type="button"
+          className={styles.sidebarThemeToggle}
+          onClick={toggleThemeMode}
+          aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+          aria-pressed={isDark}
+        >
+          <span className={styles.sidebarThemeIcon} aria-hidden="true">
+            {isDark ? <Moon size={16} /> : <Sun size={16} />}
+          </span>
+          <span>{isDark ? 'Dark mode' : 'Light mode'}</span>
+          <span className={styles.sidebarThemeSwitch} aria-hidden="true">
+            <span />
+          </span>
+        </button>
         <nav className={styles.railNav} aria-label="Primary">
           {railItems.map((item) => {
             const active = pathname === item.href;
@@ -124,6 +146,7 @@ export default function Home() {
                 href={item.href}
                 className={`${styles.railLink} ${active ? styles.railActive : ''}`}
                 aria-current={active ? 'page' : undefined}
+                onClick={() => setSidebarOpen(false)}
               >
                 <item.icon size={20} strokeWidth={active ? 2.6 : 1.8} />
                 <span>{item.label}</span>
@@ -147,9 +170,24 @@ export default function Home() {
           <SkillLearnLogo />
           <div className={styles.headerActions}>
             {user ? (
-              <button type="button" className={styles.loginButton} onClick={logout}>
-                <LogOut size={18} />
-                <span>Log out</span>
+              <button
+                type="button"
+                className={styles.profileButton}
+                onClick={logout}
+                aria-label="Log out"
+                title="Log out"
+              >
+                {user.avatar ? (
+                  <span
+                    aria-hidden="true"
+                    className={styles.profileImage}
+                    style={{ backgroundImage: `url("${user.avatar}")` }}
+                  />
+                ) : (
+                  <span aria-hidden="true" className={styles.profileInitial}>
+                    {user.name.charAt(0).toUpperCase()}
+                  </span>
+                )}
               </button>
             ) : (
               <Link href="/login" className={styles.loginButton}>
@@ -164,7 +202,13 @@ export default function Home() {
             >
               {isDark ? <Sun size={23} /> : <Moon size={23} />}
             </button>
-            <button type="button" className={styles.menuButton} aria-label="Menu">
+            <button
+              type="button"
+              className={styles.menuButton}
+              onClick={() => setSidebarOpen(true)}
+              aria-label="Open menu"
+              aria-expanded={sidebarOpen}
+            >
               <Menu size={30} />
             </button>
           </div>
@@ -172,10 +216,6 @@ export default function Home() {
 
         <section className={styles.hero}>
           <div className={styles.heroCopy}>
-            <span className={styles.badge}>
-              <Zap size={22} fill="currentColor" />
-              Skill-Based Learning
-            </span>
             <h1>
               Choose Your
               <span>Subject</span>

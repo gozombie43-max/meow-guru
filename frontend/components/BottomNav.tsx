@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ClipboardList, Home as HomeIcon, Play, Video } from 'lucide-react';
 import { useThemeMode } from '@/hooks/useTheme';
 
@@ -22,9 +22,10 @@ export default function BottomNav() {
   const isFormulaNotesRoute =
     formulaNotesSubjects.some((prefix) => normalizedPathname.startsWith(prefix)) &&
     normalizedPathname.endsWith('/formula-notes');
-  const shouldHideNav = isQuizRoute || isNotesViewRoute || isFormulaNotesRoute || isAiChat || isResourceRoute;
+  const shouldHideNav = isQuizRoute || isNotesViewRoute || isFormulaNotesRoute || isResourceRoute;
   const { theme } = useThemeMode();
-  const [isScrolled, setIsScrolled] = useState(false);
+  const [isNavHidden, setIsNavHidden] = useState(false);
+  const lastScrollY = useRef(0);
   const lightSurfacePrefixes = [
     '/mathematics',
     '/reasoning',
@@ -57,14 +58,27 @@ export default function BottomNav() {
   }, [shouldHideNav]);
 
   useEffect(() => {
-    const updateScroll = () => {
-      setIsScrolled(window.scrollY > 4);
+    if (shouldHideNav) return;
+
+    lastScrollY.current = window.scrollY;
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      const scrollingDown = currentScrollY > lastScrollY.current + 6;
+      const scrollingUp = currentScrollY < lastScrollY.current - 6;
+
+      if (currentScrollY < 12 || scrollingUp) {
+        setIsNavHidden(false);
+      } else if (scrollingDown) {
+        setIsNavHidden(true);
+      }
+
+      lastScrollY.current = currentScrollY;
     };
 
-    updateScroll();
-    window.addEventListener('scroll', updateScroll, { passive: true });
-    return () => window.removeEventListener('scroll', updateScroll);
-  }, []);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [shouldHideNav]);
 
   if (shouldHideNav) return null;
 
@@ -72,11 +86,10 @@ export default function BottomNav() {
   const isMock = pathname.startsWith('/mock-test');
   const isPlay = pathname === '/play' || pathname.startsWith('/play/');
   const isVideos = pathname === '/videos' || pathname.startsWith('/videos/');
-  const scrollClass = isScrolled ? (isLightSurface ? ' is-scrolled-light' : ' is-scrolled') : '';
 
   return (
     <nav
-      className={`bottom-pill-nav${isLightSurface ? ' is-light' : ''}${scrollClass}`}
+      className={`bottom-pill-nav${isLightSurface ? ' is-light' : ''}${isNavHidden ? ' is-hidden' : ''}`}
       aria-label="Primary"
     >
       <Link

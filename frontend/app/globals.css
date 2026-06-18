@@ -1601,8 +1601,15 @@ body.theme-dark .bottom-nav-center-btn { box-shadow: 0 4px 14px rgba(168, 85, 24
   background: rgba(255, 255, 255, 0.98);
   border: 1px solid rgba(0, 0, 0, 0.04);
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  transition: transform 220ms ease, opacity 220ms ease, background 220ms ease, box-shadow 220ms ease;
 }
 .bottom-pill-nav::before { display: none; }
+
+.bottom-pill-nav.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(calc(100% + 24px + env(safe-area-inset-bottom)));
+}
 
 .bottom-pill-nav.is-light {
   background: white;
@@ -1612,13 +1619,13 @@ body.theme-dark .bottom-nav-center-btn { box-shadow: 0 4px 14px rgba(168, 85, 24
 .bottom-pill-nav.is-light::before { display: none; }
 
 body.theme-dark .bottom-pill-nav {
-  background: #1e1e24;
+  background: #000;
   border: none;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.72);
 }
 
 body.theme-dark .bottom-pill-nav.is-scrolled {
-  background: #1e1e24;
+  background: #000;
 }
 
 /* Active Colours for Icons and Text */
@@ -1676,7 +1683,7 @@ body.theme-dark .bottom-nav-item.is-active .bottom-nav-icon {
   border-radius: 4px;
 }
 body.theme-dark .bottom-pill-nav::after {
-  background: #3f3f46;
+  background: #18181b;
 }
 
 /* Center Button Override */
@@ -1708,6 +1715,10 @@ body.theme-dark .bottom-pill-nav::after {
     -webkit-backdrop-filter: blur(18px) saturate(160%);
   }
 
+  .bottom-pill-nav.is-hidden {
+    transform: translateY(calc(100% + env(safe-area-inset-bottom)));
+  }
+
   .bottom-pill-nav.is-light {
     background: rgba(255, 255, 255, 0.98);
     border-top: 1px solid rgba(15, 23, 42, 0.1);
@@ -1715,9 +1726,11 @@ body.theme-dark .bottom-pill-nav::after {
   }
 
   body.theme-dark .bottom-pill-nav {
-    background: rgba(18, 18, 22, 0.98);
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 -10px 28px rgba(0, 0, 0, 0.4);
+    background: #000;
+    border-top: 1px solid #101014;
+    box-shadow: 0 -10px 28px rgba(0, 0, 0, 0.72);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
 
   .bottom-pill-nav::after {

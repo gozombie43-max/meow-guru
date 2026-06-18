@@ -3,17 +3,12 @@
 import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
 import NextImage from 'next/image';
 import {
-  BookOpen,
-  Brain,
-  ChevronRight,
   Copy,
-  Edit3,
   FileText,
   Image as ImageIcon,
   Menu,
   Mic,
   PanelLeft,
-  Paperclip,
   Plus,
   Search,
   ArrowUp,
@@ -281,7 +276,10 @@ function AiChatPageContent() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return window.innerWidth > 900;
+  });
   const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
   const [attachmentPreview, setAttachmentPreview] = useState<string | null>(null);
   const [attachmentError, setAttachmentError] = useState('');
@@ -292,10 +290,6 @@ function AiChatPageContent() {
   const context = useMemo(() => ASSISTANT_CONTEXT, []);
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.innerWidth <= 900) {
-      setSidebarOpen(false);
-    }
-
     let cancelled = false;
 
     const loadBackendChats = async () => {
@@ -305,10 +299,6 @@ function AiChatPageContent() {
 
         const backendChats = Array.isArray(data.aiChats) ? (data.aiChats as ChatSession[]) : [];
         setChatSessions(backendChats);
-        if (backendChats[0]) {
-          setActiveChatId(backendChats[0].id);
-          setMessages(backendChats[0].messages);
-        }
       } catch (err) {
         console.warn('Could not load AI chat history', err);
       }
@@ -449,29 +439,6 @@ function AiChatPageContent() {
       setIsLoading(false);
     }
   }
-
-  const promptCards = [
-    {
-      title: 'Explain a concept',
-      text: 'Explain profit and loss shortcuts for SSC CGL with examples.',
-      icon: BookOpen,
-    },
-    {
-      title: 'Solve a question',
-      text: 'Solve this step by step and show the fastest method.',
-      icon: Brain,
-    },
-    {
-      title: 'Make practice',
-      text: 'Create 5 mixed SSC questions from percentage and ratio.',
-      icon: Edit3,
-    },
-    {
-      title: 'Find traps',
-      text: 'What common traps should I avoid in time and work questions?',
-      icon: Sparkles,
-    },
-  ];
 
   const starterPrompts = [
     'Mensuration formula revision',
@@ -633,21 +600,6 @@ function AiChatPageContent() {
               </div>
               <h1>How can I help you study today?</h1>
               <p>Ask for shortcuts, explanations, practice questions, revision notes, or paste a question for a clean solution.</p>
-              <div className="prompt-grid">
-                {promptCards.map((card) => {
-                  const Icon = card.icon;
-                  return (
-                    <button className="prompt-card" type="button" key={card.title} onClick={() => sendMessage(card.text)}>
-                      <span className="prompt-icon">
-                        <Icon size={18} />
-                      </span>
-                      <strong>{card.title}</strong>
-                      <span>{card.text}</span>
-                      <ChevronRight size={16} className="prompt-arrow" />
-                    </button>
-                  );
-                })}
-              </div>
             </section>
           ) : (
             <div className="message-list">
@@ -1098,70 +1050,10 @@ function AiChatPageContent() {
         .welcome-panel p {
           width: min(620px, 100%);
           text-align: center;
-          margin: 14px auto 30px;
+          margin: 14px auto 0;
           color: var(--muted);
           font-size: 15px;
           line-height: 1.6;
-        }
-
-        .prompt-grid {
-          display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 12px;
-        }
-
-        .prompt-card {
-          position: relative;
-          min-height: 124px;
-          border: 1px solid var(--line);
-          border-radius: 8px;
-          background: #ffffff;
-          padding: 16px 44px 16px 16px;
-          text-align: left;
-          color: var(--ink);
-          cursor: pointer;
-          transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
-        }
-
-        .prompt-card:hover {
-          border-color: #c9cbd1;
-          background: #fafafa;
-          box-shadow: 0 8px 24px rgba(15, 23, 42, 0.07);
-        }
-
-        .prompt-icon {
-          width: 32px;
-          height: 32px;
-          border-radius: 8px;
-          background: #effaf6;
-          color: var(--accent-dark);
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          margin-bottom: 12px;
-        }
-
-        .prompt-card strong,
-        .prompt-card span {
-          display: block;
-        }
-
-        .prompt-card strong {
-          font-size: 14px;
-          margin-bottom: 5px;
-        }
-
-        .prompt-card span:not(.prompt-icon) {
-          color: var(--muted);
-          font-size: 13px;
-          line-height: 1.45;
-        }
-
-        .prompt-arrow {
-          position: absolute;
-          right: 16px;
-          top: 18px;
-          color: #9ca3af;
         }
 
         .message-list {
@@ -1670,10 +1562,6 @@ function AiChatPageContent() {
           .clear-btn {
             flex: 0 0 auto;
             padding: 0 10px;
-          }
-
-          .prompt-grid {
-            grid-template-columns: 1fr;
           }
 
           .welcome-panel {
