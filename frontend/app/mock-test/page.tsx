@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { DM_Sans, Nunito } from 'next/font/google';
-import { Search, Bell, Clock, Award, ChevronLeft, Share2, Filter, ChevronRight, Play, CheckCircle, Lock } from 'lucide-react';
+import { Search, Bell, Clock, Award, ChevronLeft, Share2, Filter, Play, CheckCircle, Lock } from 'lucide-react';
 import styles from './page.module.css';
 
 const dmSans = DM_Sans({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
@@ -324,7 +324,7 @@ export default function MockTestPage() {
                   ))}
                 </div>
                 {filteredExams.length === 0 && (
-                  <div className={styles.emptyState}>No exams found for "{searchQuery}"</div>
+                  <div className={styles.emptyState}>No exams found for &quot;{searchQuery}&quot;</div>
                 )}
               </section>
             </div>
@@ -361,7 +361,7 @@ export default function MockTestPage() {
                   <button 
                     key={t} 
                     className={`${styles.tabBtn} ${tab === t ? styles.activeTabBtn : ''} ${nunito.className}`}
-                    onClick={() => setTab(t as any)}
+                    onClick={() => setTab(t as 'overview' | 'mock' | 'prev')}
                   >
                     {t === 'overview' ? 'Overview' : t === 'mock' ? 'Mock Tests' : 'Previous Year'}
                   </button>
