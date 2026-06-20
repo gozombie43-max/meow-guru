@@ -37,6 +37,9 @@ type ChatSession = {
 const ASSISTANT_CONTEXT = `You are a friendly AI study partner for SSC CGL and CHSL aspirants.
 Help with concept clarification, step-by-step solutions, shortcuts, practice questions, and revision notes.
 Keep answers concise, structured, and easy to scan.
+For each new step or distinct idea, use a numbered item like 1., 2., 3. or a bullet dot like •.
+For practice questions, present each question as its own numbered item so the list is easy to follow.
+Never write multiple practice questions as plain paragraphs under one heading; every new question prompt must start with a number or bullet.
 Use markdown for formatting and LaTeX math with $...$ or $$...$$ when needed.
 When a chart, table, or geometry diagram would help, add one fenced JSON block after the explanation:
 \`\`\`ssc-visual
@@ -71,6 +74,9 @@ function getChatTitle(message: string) {
 function normalizeTutorMarkdown(content: string) {
   const latexCommand =
     /\\(?:frac|dfrac|tfrac|sin|cos|tan|cot|sec|csc|theta|times|div|sqrt|text|Rightarrow|left|right|pi|alpha|beta|gamma|cdot|le|ge|neq|approx|therefore|because|degree|overline|angle|triangle|parallel|perp|infty|sum|prod|log|ln)/;
+  const practiceHeadingPattern = /^(?:#{1,6}\s*)?(?:\*\*)?Practice Questions?(?:\*\*)?:?\s*$/i;
+  const practicePromptPattern =
+    /^(?:solve|find|determine|factorise|factorize|compute|simplify|evaluate|show|prove|add|subtract|calculate|compare|derive)\b/i;
 
   const cleanLatex = (value: string) =>
     value
@@ -80,6 +86,32 @@ function normalizeTutorMarkdown(content: string) {
       .replace(/\\operatorname\{([^}]+)\}/g, '\\text{$1}')
       .replace(/\s+/g, ' ')
       .trim();
+
+  const isMathLikeLine = (line: string) => {
+    const trimmed = String(line || '').trim();
+    if (!trimmed) return false;
+    if (trimmed.startsWith('$$') || trimmed.startsWith('$') || trimmed.startsWith('\\')) return true;
+    if (/\\[a-zA-Z]+/.test(trimmed)) return true;
+    if (/[=<>]/.test(trimmed)) return true;
+    return /^[\d\s()[\]{}.+\-*/^,:]+$/.test(trimmed);
+  };
+
+  const isPracticePromptLine = (line: string) => {
+    const trimmed = line.trim();
+    if (!trimmed) return false;
+    if (
+      /^#{1,6}\s+/.test(trimmed) ||
+      /^(\*\*.*\*\*|>|\d+[.)]|\s*[-*+•])\s*/.test(trimmed) ||
+      trimmed.startsWith('```') ||
+      trimmed.startsWith('$$') ||
+      trimmed.startsWith('$') ||
+      trimmed.startsWith('\\')
+    ) {
+      return false;
+    }
+
+    return trimmed.endsWith(':') || practicePromptPattern.test(trimmed);
+  };
 
   const normalizeMathLine = (line: string) => {
     const trimmed = line.trim();
@@ -123,7 +155,57 @@ function normalizeTutorMarkdown(content: string) {
     )
     .split('\n')
     .map(normalizeMathLine)
-    .join('\n');
+    .reduce<{ lines: string[]; inPractice: boolean; inPracticeItem: boolean }>(
+      (state, line) => {
+        const trimmed = line.trim();
+
+        if (practiceHeadingPattern.test(trimmed)) {
+          state.inPractice = true;
+          state.inPracticeItem = false;
+          state.lines.push(line);
+          return state;
+        }
+
+        if (state.inPractice && /^#{1,6}\s+/.test(trimmed) && !practiceHeadingPattern.test(trimmed)) {
+          state.inPractice = false;
+          state.inPracticeItem = false;
+        }
+
+        if (state.inPractice && /^(\*\*Answer:\*\*|Answer:)/i.test(trimmed)) {
+          state.inPractice = false;
+          state.inPracticeItem = false;
+        }
+
+        if (
+          state.inPractice &&
+          trimmed &&
+          !/^(\d+[.)]|\s*[-*+•])\s+/.test(trimmed) &&
+          isPracticePromptLine(line)
+        ) {
+          state.lines.push(`- ${trimmed}`);
+          state.inPracticeItem = true;
+          return state;
+        }
+
+        if (state.inPractice && state.inPracticeItem && trimmed && isMathLikeLine(trimmed)) {
+          state.lines.push(`  ${trimmed}`);
+          return state;
+        }
+
+        if (state.inPractice && !trimmed) {
+          state.lines.push(line);
+          return state;
+        }
+
+        if (state.inPractice && trimmed && /^(\d+[.)]|\s*[-*+•])\s+/.test(trimmed)) {
+          state.inPracticeItem = true;
+        }
+
+        state.lines.push(line);
+        return state;
+      },
+      { lines: [], inPractice: false, inPracticeItem: false }
+    ).lines.join('\n');
 }
 
 function stripMarkdown(value: string) {
@@ -288,6 +370,12 @@ function AiChatPageContent() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const context = useMemo(() => ASSISTANT_CONTEXT, []);
+
+  useEffect(() => {
+    const body = document.body;
+    body.classList.add('ai-chat-route');
+    return () => body.classList.remove('ai-chat-route');
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -521,6 +609,14 @@ function AiChatPageContent() {
 
   return (
     <main className={`ai-chat-page${sidebarOpen ? '' : ' sidebar-collapsed'}`}>
+      {sidebarOpen && (
+        <button
+          type="button"
+          className="sidebar-backdrop"
+          aria-label="Close sidebar"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
       <aside className={`ai-sidebar${sidebarOpen ? '' : ' is-collapsed'}`} aria-label="AI chat sidebar">
         <div className="sidebar-head">
           <button className="icon-btn" type="button" onClick={() => setSidebarOpen((value) => !value)} aria-label="Toggle sidebar">
@@ -769,6 +865,10 @@ function AiChatPageContent() {
           font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         }
 
+        :global(body.ai-chat-route.has-bottom-nav) {
+          padding-bottom: 0 !important;
+        }
+
         .ai-chat-page.sidebar-collapsed {
           grid-template-columns: 76px minmax(0, 1fr);
         }
@@ -780,6 +880,17 @@ function AiChatPageContent() {
           flex-direction: column;
           min-width: 0;
           transition: width 180ms ease, transform 180ms ease;
+        }
+
+        .sidebar-backdrop {
+          display: none;
+          position: fixed;
+          inset: 0;
+          z-index: 35;
+          border: 0;
+          background: rgba(15, 23, 42, 0.32);
+          backdrop-filter: blur(1px);
+          -webkit-backdrop-filter: blur(1px);
         }
 
         .ai-sidebar.is-collapsed {
@@ -1016,6 +1127,7 @@ function AiChatPageContent() {
           min-height: 0;
           overflow-y: auto;
           scroll-behavior: smooth;
+          padding-bottom: 18px;
         }
 
         .welcome-panel {
@@ -1506,6 +1618,10 @@ function AiChatPageContent() {
             overflow-x: hidden;
           }
 
+          .sidebar-backdrop {
+            display: block;
+          }
+
           .ai-chat-page.sidebar-collapsed {
             grid-template-columns: 1fr;
           }
@@ -1575,12 +1691,20 @@ function AiChatPageContent() {
             width: calc(100% - 24px);
           }
 
+          .chat-scroll {
+            padding-bottom: 168px;
+          }
+
           .message-bubble {
             max-width: 88%;
           }
 
           .composer-wrap {
-            padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+            position: sticky;
+            bottom: calc(74px + env(safe-area-inset-bottom, 0px));
+            z-index: 20;
+            padding: 12px 0 0;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0), #ffffff 28%);
           }
 
           .mic-btn {
@@ -1625,6 +1749,10 @@ function AiChatPageContent() {
           .composer-wrap,
           .welcome-panel {
             width: calc(100% - 16px);
+          }
+
+          .chat-scroll {
+            padding-bottom: 182px;
           }
 
           .message-bubble {

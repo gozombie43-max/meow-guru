@@ -56,6 +56,85 @@ function hasUsefulPdfText(text) {
   return compact.length >= 180 || (compact.length >= 80 && (optionLike || numberRich));
 }
 
+function isPracticeQuestionHeading(line) {
+  return /^(?:#{1,6}\s*)?(?:\*\*)?Practice Questions?(?:\*\*)?:?\s*$/i.test(String(line || "").trim());
+}
+
+function isMathLikeLine(line) {
+  const trimmed = String(line || "").trim();
+  if (!trimmed) return false;
+  if (trimmed.startsWith("$$") || trimmed.startsWith("$") || trimmed.startsWith("\\")) return true;
+  if (/\\[a-zA-Z]+/.test(trimmed)) return true;
+  if (/[=<>]/.test(trimmed)) return true;
+  return /^[\d\s()[\]{}.+\-*/^,:]+$/.test(trimmed);
+}
+
+function numberPracticeQuestionPrompts(content) {
+  const lines = String(content || "").replace(/\r/g, "\n").split("\n");
+  const output = [];
+  let inPracticeSection = false;
+  let inPracticeItem = false;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    if (isPracticeQuestionHeading(trimmed)) {
+      inPracticeSection = true;
+      inPracticeItem = false;
+      output.push(line);
+      continue;
+    }
+
+    if (inPracticeSection && /^#{1,6}\s+/.test(trimmed) && !isPracticeQuestionHeading(trimmed)) {
+      inPracticeSection = false;
+      inPracticeItem = false;
+      output.push(line);
+      continue;
+    }
+
+    if (inPracticeSection && /^(?:\*\*Answer:\*\*|Answer:)/i.test(trimmed)) {
+      inPracticeSection = false;
+      inPracticeItem = false;
+      output.push(line);
+      continue;
+    }
+
+    if (
+      inPracticeSection &&
+      trimmed &&
+      !/^(\d+[.)]|\s*[-*+•])\s+/.test(trimmed) &&
+      !isMathLikeLine(trimmed)
+    ) {
+      output.push(`- ${trimmed}`);
+      inPracticeItem = true;
+      continue;
+    }
+
+    if (inPracticeSection && inPracticeItem && trimmed && isMathLikeLine(trimmed)) {
+      output.push(`  ${trimmed}`);
+      continue;
+    }
+
+    if (inPracticeSection && inPracticeItem && !trimmed) {
+      output.push(line);
+      continue;
+    }
+
+    if (inPracticeSection && !trimmed) {
+      output.push(line);
+      continue;
+    }
+
+    if (inPracticeSection && trimmed && /^(\d+[.)]|\s*[-*+•])\s+/.test(trimmed)) {
+      inPracticeItem = true;
+    }
+
+    output.push(line);
+  }
+
+  return output.join("\n");
+}
+
 async function prepareImageForOcr(buffer) {
   return sharp(buffer, { limitInputPixels: false })
     .rotate()
@@ -256,6 +335,10 @@ Formatting rules:
 - Use markdown only.
 - Start with a short heading: **Approach**, **Steps**, **Shortcut**, or **Practice Question**.
 - For explanations, use numbered steps with one idea per step.
+- For separate step paragraphs, use either numbered items like \`1.\`, \`2.\`, \`3.\` or bullet dots like \`•\`.
+- For practice questions, list each question as its own numbered item so they are easy to scan.
+- Never write multiple practice questions as plain paragraphs under one heading; every new question prompt must start with a number or bullet.
+- When showing a sequence of worked steps, keep each line focused on one idea and separate the next step clearly.
 - Put formulas/equations on separate lines using markdown math syntax: inline \`$...$\` or block \`$$...$$\`.  - When displaying tabular data, always use markdown table syntax:
     | Header 1 | Header 2 |
     |----------|----------|
@@ -374,7 +457,7 @@ Use this as background for the conversation. Reply only when the student asks a 
       if (finalUserContent === userText) throw err;
       reply = await chatCompleteMessages(textOnlyChatMessages, "o4-mini");
     }
-    res.json({ success: true, reply });
+    res.json({ success: true, reply: numberPracticeQuestionPrompts(reply) });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

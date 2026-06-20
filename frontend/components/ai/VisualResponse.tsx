@@ -443,21 +443,23 @@ export default function VisualResponse({ content, normalizeMarkdown }: VisualRes
   return (
     <>
       {markdown && (
-        <ReactMarkdown
-          remarkPlugins={[remarkMath, remarkGfm]}
-          rehypePlugins={[[rehypeKatex, { throwOnError: false, strict: "ignore", trust: false }]]}
-          components={{
-            table: (props) => (
-              <div className="table-wrapper">
-                <table {...props} />
-              </div>
-            ),
-            th: (props) => <th {...props} />,
-            td: (props) => <td {...props} />,
-          }}
-        >
-          {normalizeMarkdown(markdown)}
-        </ReactMarkdown>
+        <div className="markdown-body">
+          <ReactMarkdown
+            remarkPlugins={[remarkMath, remarkGfm]}
+            rehypePlugins={[[rehypeKatex, { throwOnError: false, strict: "ignore", trust: false }]]}
+            components={{
+              table: (props) => (
+                <div className="table-wrapper">
+                  <table {...props} />
+                </div>
+              ),
+              th: (props) => <th {...props} />,
+              td: (props) => <td {...props} />,
+            }}
+          >
+            {normalizeMarkdown(markdown)}
+          </ReactMarkdown>
+        </div>
       )}
 
       {visuals.map((visual, index) => {
@@ -574,6 +576,46 @@ export default function VisualResponse({ content, normalizeMarkdown }: VisualRes
 
         .diagram-block .visual-title {
           align-self: stretch;
+        }
+
+        .markdown-body :global(p) {
+          margin: 0 0 10px;
+        }
+
+        .markdown-body :global(p:last-child) {
+          margin-bottom: 0;
+        }
+
+        .markdown-body :global(strong) {
+          color: #202123;
+          font-weight: 700;
+        }
+
+        .markdown-body :global(ol),
+        .markdown-body :global(ul) {
+          margin: 8px 0 10px;
+          padding-left: 0;
+          list-style: none;
+          display: grid;
+          gap: 6px;
+        }
+
+        .markdown-body :global(li) {
+          padding-left: 20px;
+          position: relative;
+        }
+
+        .markdown-body :global(li::before) {
+          content: "•";
+          color: #f07c6d;
+          font-weight: 700;
+          position: absolute;
+          left: 0;
+          top: 0;
+        }
+
+        .markdown-body :global(li > p) {
+          margin: 0;
         }
       `}</style>
     </>

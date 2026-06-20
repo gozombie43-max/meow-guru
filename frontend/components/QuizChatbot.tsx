@@ -76,6 +76,9 @@ function buildQuestionContext(
 function normalizeTutorMarkdown(content: string) {
   const latexCommand =
     /\\(?:frac|dfrac|tfrac|sin|cos|tan|cot|sec|csc|theta|times|div|sqrt|text|Rightarrow|left|right|pi|alpha|beta|gamma|cdot|le|ge|neq|approx|therefore|because|degree|overline|angle|triangle|parallel|perp|infty|sum|prod|log|ln)/;
+  const practiceHeadingPattern = /^(?:#{1,6}\s*)?(?:\*\*)?Practice Questions?(?:\*\*)?:?\s*$/i;
+  const practicePromptPattern =
+    /^(?:solve|find|determine|factorise|factorize|compute|simplify|evaluate|show|prove|add|subtract|calculate|compare|derive)\b/i;
 
   const cleanLatex = (value: string) =>
     value
@@ -85,6 +88,32 @@ function normalizeTutorMarkdown(content: string) {
       .replace(/\\operatorname\{([^}]+)\}/g, "\\text{$1}")
       .replace(/\s+/g, " ")
       .trim();
+
+  const isMathLikeLine = (line: string) => {
+    const trimmed = String(line || "").trim();
+    if (!trimmed) return false;
+    if (trimmed.startsWith("$$") || trimmed.startsWith("$") || trimmed.startsWith("\\")) return true;
+    if (/\\[a-zA-Z]+/.test(trimmed)) return true;
+    if (/[=<>]/.test(trimmed)) return true;
+    return /^[\d\s()[\]{}.+\-*/^,:]+$/.test(trimmed);
+  };
+
+  const isPracticePromptLine = (line: string) => {
+    const trimmed = line.trim();
+    if (!trimmed) return false;
+    if (
+      /^#{1,6}\s+/.test(trimmed) ||
+      /^(\*\*.*\*\*|>|\d+[.)]|\s*[-*+•])\s*/.test(trimmed) ||
+      trimmed.startsWith("```") ||
+      trimmed.startsWith("$$") ||
+      trimmed.startsWith("$") ||
+      trimmed.startsWith("\\")
+    ) {
+      return false;
+    }
+
+    return trimmed.endsWith(":") || practicePromptPattern.test(trimmed);
+  };
 
   const normalizeMathLine = (line: string) => {
     const trimmed = line.trim();
@@ -129,7 +158,57 @@ function normalizeTutorMarkdown(content: string) {
     )
     .split("\n")
     .map(normalizeMathLine)
-    .join("\n");
+    .reduce<{ lines: string[]; inPractice: boolean; inPracticeItem: boolean }>(
+      (state, line) => {
+        const trimmed = line.trim();
+
+        if (practiceHeadingPattern.test(trimmed)) {
+          state.inPractice = true;
+          state.inPracticeItem = false;
+          state.lines.push(line);
+          return state;
+        }
+
+        if (state.inPractice && /^#{1,6}\s+/.test(trimmed) && !practiceHeadingPattern.test(trimmed)) {
+          state.inPractice = false;
+          state.inPracticeItem = false;
+        }
+
+        if (state.inPractice && /^(\*\*Answer:\*\*|Answer:)/i.test(trimmed)) {
+          state.inPractice = false;
+          state.inPracticeItem = false;
+        }
+
+        if (
+          state.inPractice &&
+          trimmed &&
+          !/^(\d+[.)]|\s*[-*+•])\s+/.test(trimmed) &&
+          isPracticePromptLine(line)
+        ) {
+          state.lines.push(`- ${trimmed}`);
+          state.inPracticeItem = true;
+          return state;
+        }
+
+        if (state.inPractice && state.inPracticeItem && trimmed && isMathLikeLine(trimmed)) {
+          state.lines.push(`  ${trimmed}`);
+          return state;
+        }
+
+        if (state.inPractice && !trimmed) {
+          state.lines.push(line);
+          return state;
+        }
+
+        if (state.inPractice && trimmed && /^(\d+[.)]|\s*[-*+•])\s+/.test(trimmed)) {
+          state.inPracticeItem = true;
+        }
+
+        state.lines.push(line);
+        return state;
+      },
+      { lines: [], inPractice: false, inPracticeItem: false }
+    ).lines.join("\n");
 }
 
 function stripMarkdown(value: string) {
