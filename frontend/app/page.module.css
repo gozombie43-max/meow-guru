@@ -1125,26 +1125,57 @@
   }
 
   .hero {
-    min-height: 282px;
+    min-height: 248px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(112px, 0.78fr);
+    align-items: center;
+    gap: 8px;
   }
 
   .hero h1 {
-    font-size: 31px;
+    font-size: 29px;
   }
 
   .hero p {
-    font-size: 14px;
+    font-size: 13px;
+    margin-bottom: 12px;
   }
 
   .primaryCta {
-    min-height: 38px;
-    padding-inline: 15px;
-    font-size: 12px;
+    min-height: 32px;
+    padding-inline: 12px;
+    font-size: 11px;
+    gap: 7px;
+  }
+
+  .heroCopy {
+    width: auto;
+    padding: 18px 0 18px 2px;
+  }
+
+  .heroVisual {
+    position: relative;
+    inset: auto;
+    min-height: 100%;
+    align-self: stretch;
+  }
+
+  .wave {
+    right: -18px;
+    bottom: -8px;
+    width: 110%;
+    height: 82%;
   }
 
   .heroImage {
-    bottom: -18px;
-    width: 52vw;
+    right: -2px;
+    bottom: -10px;
+    width: min(38vw, 178px);
+  }
+
+  .primaryCta svg {
+    width: 15px;
+    height: 15px;
   }
 
   .subjectCard {
@@ -1224,5 +1255,38 @@
     right: 6px;
     bottom: 8px;
     transform: scale(0.48);
+  }
+}
+
+@media (max-width: 420px) and (orientation: portrait) {
+  .hero {
+    min-height: 228px;
+    grid-template-columns: minmax(0, 1fr) minmax(96px, 0.66fr);
+    gap: 6px;
+  }
+
+  .heroCopy {
+    padding-top: 14px;
+    padding-left: 0;
+  }
+
+  .hero h1 {
+    font-size: 27px;
+  }
+
+  .hero p {
+    font-size: 12px;
+    margin-bottom: 10px;
+  }
+
+  .primaryCta {
+    min-height: 30px;
+    padding-inline: 11px;
+    font-size: 10px;
+  }
+
+  .heroImage {
+    width: min(35vw, 152px);
+    bottom: -8px;
   }
 }
