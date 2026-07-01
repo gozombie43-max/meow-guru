@@ -28,7 +28,8 @@ function FeatureCard({ title, href, gradient, icon }: FeatureCardData) {
   );
 }
 
-const buildFeatureCards = (slug: string): FeatureCardData[] => [
+const buildFeatureCards = (slug: string): FeatureCardData[] => {
+  const cards: FeatureCardData[] = [
   {
     title: "PYQ",
     href: `/english/${slug}/quiz?mode=concept`,
@@ -101,7 +102,25 @@ const buildFeatureCards = (slug: string): FeatureCardData[] => [
       </svg>
     ),
   },
-];
+  ];
+
+  if (slug === "synonyms-antonyms") {
+    cards.splice(4, 0, {
+      title: "Study Mode",
+      href: `/english/${slug}/study-mode`,
+      gradient: "linear-gradient(135deg, #a855f7 0%, #6d28d9 100%)",
+      icon: (
+        <svg viewBox="0 0 24 24" className="feature-icon" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 5v14" />
+          <path d="M7 9l5-4 5 4" />
+          <path d="M7 15h10" />
+        </svg>
+      ),
+    });
+  }
+
+  return cards;
+};
 
 export default function EnglishTopicPage({
   title,
@@ -802,6 +821,115 @@ export default function EnglishTopicPage({
 
           .feature-grid {
             grid-template-columns: repeat(3, minmax(0, 1fr));
+          }
+        }
+
+        @media (min-width: 1024px) {
+          body.theme-dark .english-topic-page {
+            padding: 28px 28px 48px;
+          }
+
+          body.theme-dark .english-container {
+            max-width: 1160px;
+          }
+
+          body.theme-dark .english-header {
+            margin-bottom: 20px;
+          }
+
+          body.theme-dark .english-title {
+            font-size: clamp(2.2rem, 4.2vw, 3.4rem);
+            line-height: 1.02;
+            max-width: 12ch;
+          }
+
+          body.theme-dark .promo-banner {
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: center;
+            min-height: 220px;
+            margin-bottom: 34px;
+            padding: 34px 34px 34px 38px;
+            border-radius: 34px;
+          }
+
+          body.theme-dark .banner-content {
+            max-width: 64ch;
+          }
+
+          body.theme-dark .banner-kicker {
+            font-size: 0.8rem;
+            margin-bottom: 18px;
+          }
+
+          body.theme-dark .banner-content h2 {
+            font-size: clamp(1.8rem, 3.4vw, 2.8rem);
+            margin-bottom: 16px;
+            max-width: 16ch;
+          }
+
+          body.theme-dark .banner-subtitle {
+            font-size: 1rem;
+            max-width: 34ch;
+          }
+
+          body.theme-dark .banner-illustration {
+            width: 108px;
+            height: 108px;
+          }
+
+          body.theme-dark .rocket-svg {
+            width: 60px;
+            height: 60px;
+          }
+
+          body.theme-dark .feature-section h2 {
+            font-size: clamp(1.5rem, 2vw, 2rem);
+          }
+
+          body.theme-dark .feature-subtitle {
+            font-size: 1rem;
+            margin: 10px 0 18px;
+            max-width: 44ch;
+          }
+
+          body.theme-dark .feature-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+          }
+
+          body.theme-dark .feature-card {
+            min-height: 132px;
+            aspect-ratio: 1 / 1;
+            border-radius: 24px;
+            gap: 14px;
+            padding: 18px 14px;
+          }
+
+          body.theme-dark .feature-icon-wrap {
+            width: 56px;
+            height: 56px;
+            border-radius: 18px;
+          }
+
+          body.theme-dark .feature-icon {
+            width: 30px;
+            height: 30px;
+          }
+
+          body.theme-dark .feature-title {
+            font-size: 0.94rem;
+            line-height: 1.15;
+          }
+        }
+
+        @media (min-width: 1320px) {
+          body.theme-dark .feature-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+          }
+
+          body.theme-dark .feature-card {
+            min-height: 124px;
           }
         }
       `}</style>
