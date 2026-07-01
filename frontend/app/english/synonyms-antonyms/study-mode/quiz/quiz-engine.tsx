@@ -935,34 +935,46 @@ export default function StudyModeQuizEngine() {
 
           .content {
             flex: 0 0 auto;
-            padding: 12px 12px 0;
+            padding: 14px 12px 0;
           }
 
           .section-label {
-            font-size: 13px;
-            margin-bottom: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
           }
 
-          .def,
-          .bn,
+          .def {
+            font-size: 15px;
+            line-height: 1.7;
+          }
+
+          .bn {
+            font-size: 14px;
+            line-height: 1.6;
+          }
+
           .syn-list li {
-            font-size: 13px;
-            line-height: 1.55;
+            font-size: 15px;
+            line-height: 1.7;
+            padding-bottom: 8px;
           }
 
           .meaning-space {
-            margin-top: 6px;
+            margin-top: 10px;
           }
 
           .slider-head {
-            margin-top: 14px;
+            margin-top: 16px;
             gap: 10px;
           }
 
           .slider-title {
             min-width: 98px;
-            font-size: 13px;
-            letter-spacing: 1.4px;
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: 1px;
           }
 
           .nav-btn {
@@ -971,37 +983,40 @@ export default function StudyModeQuizEngine() {
           }
 
           .slider-viewport {
-            margin-top: 6px;
+            margin-top: 8px;
           }
 
           .syn-list {
-            gap: 7px;
+            gap: 8px;
           }
 
-          .syn-list li {
-            padding-bottom: 6px;
+          .syn-en {
+            font-size: 15px;
+            font-weight: 500;
           }
 
           .syn-bn {
-            font-size: 12px;
+            font-size: 14px;
           }
 
           .dots {
-            margin-top: 10px;
+            margin-top: 12px;
           }
 
           .word-nav {
             position: static;
-            margin-top: 14px;
-            padding: 10px 12px calc(12px + env(safe-area-inset-bottom));
+            margin-top: 16px;
+            padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
             gap: 10px;
             border-top-width: 1px;
           }
 
           .word-nav button {
-            font-size: 12px;
-            padding: 10px 10px;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 11px 10px;
             box-shadow: 2px 2px 0 var(--ink);
+            letter-spacing: 0.5px;
           }
 
           .word-nav .arrow {
