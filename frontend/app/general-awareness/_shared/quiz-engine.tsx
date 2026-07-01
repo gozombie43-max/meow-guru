@@ -1,3 +1,4 @@
+
 "use client";
 
 import MathRenderer from "@/components/MathRenderer";
@@ -45,6 +46,7 @@ type QuizMode =
   | "easy"
   | "hard";
 type Difficulty = "easy" | "medium" | "hard";
+type HistoryEraFilter = "all" | "ancient" | "medieval" | "modern";
 type GeneralAwarenessQuestionRecord = GeneralAwarenessQuestion & {
   quizName?: string;
   source?: string;
@@ -90,11 +92,54 @@ interface SessionResult {
 
 const TOPIC_CONCEPTS: Record<string, string[]> = {
   history: [
-    "Ancient India",
-    "Medieval India",
-    "Modern India",
-    "Freedom Struggle",
-    "World History",
+    "Pre-historic period",
+    "Indus Valley Civilization",
+    "Vedic Age",
+    "Religious movements: Buddhism, Jainism",
+    "Mahajanapadas",
+    "Magadha Empire & rise of Magadha",
+    "Persian and Greek invasions",
+    "Maurya Empire",
+    "Post-Mauryan period",
+    "Sangam Age",
+    "Gupta Empire",
+    "Post-Gupta period",
+    "Ancient South Indian dynasties",
+    "Art, architecture & literature of ancient India",
+    "Ancient Indian science, mathematics, astronomy",
+    "Early medieval North India",
+    "Arab invasion of Sindh",
+    "Delhi Sultanate",
+    "Vijayanagara Empire",
+    "Bahmani Kingdom",
+    "Bhakti Movement",
+    "Sufi Movement",
+    "Mughal Empire",
+    "Maratha Empire",
+    "Sikh Empire",
+    "Regional kingdoms",
+    "Arrival of Europeans",
+    "Establishment of British rule",
+    "British administrative & economic policies",
+    "Social & religious reform movements",
+    "Revolt of 1857",
+    "Rise of Indian nationalism",
+    "Indian National Congress - formation & early phase",
+    "Partition of Bengal & Swadeshi Movement",
+    "Extremist phase",
+    "Revolutionary movements",
+    "Home Rule Movement",
+    "Gandhian Era",
+    "Jallianwala Bagh Massacre",
+    "Khilafat Movement",
+    "Simon Commission, Round Table Conferences",
+    "Poona Pact, Communal Award",
+    "Subhas Chandra Bose & INA",
+    "World War I & II impact on India",
+    "Cripps Mission, Cabinet Mission",
+    "Partition of India & Independence",
+    "Integration of princely states",
+    "Constitutional developments",
   ],
   polity: [
     "Constitution",
@@ -165,6 +210,74 @@ const CONCEPT_PALETTE: ConceptColour[] = [
   { border: "#14B8A6", bg: "#F0FDFA", text: "#0F766E" },
   { border: "#6B7280", bg: "#F8FAFC", text: "#475569" },
 ];
+
+const HISTORY_ERA_CONCEPTS: Record<Exclude<HistoryEraFilter, "all">, string[]> = {
+  ancient: [
+    "Pre-historic period",
+    "Indus Valley Civilization",
+    "Vedic Age",
+    "Religious movements: Buddhism, Jainism",
+    "Mahajanapadas",
+    "Magadha Empire & rise of Magadha",
+    "Persian and Greek invasions",
+    "Maurya Empire",
+    "Post-Mauryan period",
+    "Sangam Age",
+    "Gupta Empire",
+    "Post-Gupta period",
+    "Ancient South Indian dynasties",
+    "Art, architecture & literature of ancient India",
+    "Ancient Indian science, mathematics, astronomy",
+  ],
+  medieval: [
+    "Early medieval North India",
+    "Arab invasion of Sindh",
+    "Delhi Sultanate",
+    "Vijayanagara Empire",
+    "Bahmani Kingdom",
+    "Bhakti Movement",
+    "Sufi Movement",
+    "Mughal Empire",
+    "Maratha Empire",
+    "Sikh Empire",
+    "Regional kingdoms",
+    "Arrival of Europeans",
+  ],
+  modern: [
+    "Establishment of British rule",
+    "British administrative & economic policies",
+    "Social & religious reform movements",
+    "Revolt of 1857",
+    "Rise of Indian nationalism",
+    "Indian National Congress - formation & early phase",
+    "Partition of Bengal & Swadeshi Movement",
+    "Extremist phase",
+    "Revolutionary movements",
+    "Home Rule Movement",
+    "Gandhian Era",
+    "Jallianwala Bagh Massacre",
+    "Khilafat Movement",
+    "Simon Commission, Round Table Conferences",
+    "Poona Pact, Communal Award",
+    "Subhas Chandra Bose & INA",
+    "World War I & II impact on India",
+    "Cripps Mission, Cabinet Mission",
+    "Partition of India & Independence",
+    "Integration of princely states",
+    "Constitutional developments",
+  ],
+};
+
+const HISTORY_FILTER_CHIPS: Array<{ value: HistoryEraFilter; label: string }> = [
+  { value: "all", label: "All" },
+  { value: "ancient", label: "Ancient" },
+  { value: "medieval", label: "Medieval" },
+  { value: "modern", label: "Modern" },
+];
+
+function normalizeConceptKey(value: string): string {
+  return String(value ?? "").trim().toLowerCase();
+}
 
 function normalizeMode(value: string | null): QuizMode {
   if (
@@ -1053,18 +1166,22 @@ export default function GeneralAwarenessQuizEngine({
   );
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [conceptFilter, setConceptFilter] = useState<string>("all");
+  const [historyEraFilter, setHistoryEraFilter] = useState<HistoryEraFilter>("all");
   const [examFilter, setExamFilter] = useState<string>("");
 
   const baseConcepts = useMemo(() => TOPIC_CONCEPTS[slug] ?? [], [slug]);
 
   const conceptOptions = useMemo(() => {
     const set = new Set<string>();
-    baseConcepts.forEach((concept) => set.add(concept));
     allQuestions.forEach((question) => {
-      if (question.concept) set.add(question.concept);
+      const concept = String(question.concept ?? "").trim();
+      if (concept) set.add(concept);
     });
-    const list = Array.from(set);
-    return list.length > 0 ? list : ["General"];
+
+    const list = Array.from(set).sort((a, b) => a.localeCompare(b));
+    if (list.length > 0) return list;
+    if (baseConcepts.length > 0) return baseConcepts;
+    return ["General"];
   }, [allQuestions, baseConcepts]);
 
   const conceptColours = useMemo(
@@ -1099,15 +1216,37 @@ export default function GeneralAwarenessQuizEngine({
     return ["all", ...Array.from(set).sort((a, b) => a.localeCompare(b))];
   }, [allQuestions]);
 
-  const filteredQuestions = useMemo(
-    () =>
-      resolveIndexedQuestions(questionIndex, {
-        bucket: mode,
-        concept: mode === "concept" ? conceptFilter : "all",
-        exam: examFilter,
-      }),
-    [questionIndex, mode, conceptFilter, examFilter]
+  const historyEraConceptSets = useMemo(
+    () => ({
+      ancient: new Set(HISTORY_ERA_CONCEPTS.ancient.map(normalizeConceptKey)),
+      medieval: new Set(HISTORY_ERA_CONCEPTS.medieval.map(normalizeConceptKey)),
+      modern: new Set(HISTORY_ERA_CONCEPTS.modern.map(normalizeConceptKey)),
+    }),
+    []
   );
+
+  const filteredQuestions = useMemo(() => {
+    const base = resolveIndexedQuestions(questionIndex, {
+        bucket: mode,
+        concept: mode === "concept" && slug !== "history" ? conceptFilter : "all",
+        exam: examFilter,
+      });
+
+    if (slug !== "history" || historyEraFilter === "all") {
+      return base;
+    }
+
+    const eraSet = historyEraConceptSets[historyEraFilter];
+    return base.filter((question) => eraSet.has(normalizeConceptKey(question.concept)));
+  }, [
+    questionIndex,
+    mode,
+    conceptFilter,
+    examFilter,
+    slug,
+    historyEraFilter,
+    historyEraConceptSets,
+  ]);
 
   const availableCount = filteredQuestions.length;
 
@@ -1162,8 +1301,15 @@ export default function GeneralAwarenessQuizEngine({
 
   useEffect(() => {
     setConceptFilter("all");
+    setHistoryEraFilter("all");
     setExamFilter("");
   }, [slug]);
+
+  useEffect(() => {
+    if (conceptFilter === "all") return;
+    if (conceptOptions.includes(conceptFilter)) return;
+    setConceptFilter("all");
+  }, [conceptFilter, conceptOptions]);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const touchStartXRef = useRef<number | null>(null);
@@ -1993,248 +2139,188 @@ export default function GeneralAwarenessQuizEngine({
   }
 
   if (!started) {
+    const eraTopics =
+      slug === "history"
+        ? historyEraFilter === "all"
+          ? TOPIC_CONCEPTS.history
+          : HISTORY_ERA_CONCEPTS[historyEraFilter]
+        : TOPIC_CONCEPTS[slug] ?? conceptOptions;
+
     return (
-      <div className="quiz-start min-h-screen relative overflow-hidden px-4 sm:px-6">
-        <div className="w-full max-w-2xl mx-auto text-center min-h-screen flex flex-col pt-20 sm:pt-24 pb-8">
-          <div className="mb-2 flex items-center justify-center gap-2">
-            <span
-              className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-widest"
-              style={{
-                background: "#F5F3FF",
-                color: "#7c3aed",
-                border: "1px solid #7c3aed30",
-              }}
-            >
-              {title}
-            </span>
-          </div>
-          <h1
-            className="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-3 text-[var(--text-primary)]"
-            style={{
-              fontFamily: "'SF Pro Display', 'Helvetica Neue', sans-serif",
-            }}
-          >
-            {MODE_LABELS[mode]}
-          </h1>
+      <div className="quiz-start min-h-[100dvh] relative overflow-hidden">
+        <div className="topbar">
+          <Link href={`/general-awareness/${slug}`} className="back-btn" aria-label="Back">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 12H5M12 19l-7-7 7-7" strokeWidth="2" stroke="currentColor" fill="none" strokeLinecap="round" strokeLinejoin="round"></path></svg>
+          </Link>
+          <span className="topbar-title">{title}</span>
+        </div>
 
-          {mode === "concept" && (
-            <div className="mb-4 flex flex-wrap justify-center gap-2">
-              <button
-                onClick={() => setConceptFilter("all")}
-                className="rounded-full px-4 py-2 text-sm font-semibold transition-all"
-                style={{
-                  background:
-                    conceptFilter === "all" ? "#7c3aed" : "#F5F3FF",
-                  color: conceptFilter === "all" ? "#fff" : "#5B21B6",
-                  border: `1.5px solid ${
-                    conceptFilter === "all" ? "#7c3aed" : "#7c3aed40"
-                  }`,
-                }}
-              >
-                All
-              </button>
-              {conceptOptions.map((concept) => {
-                const col = conceptColours[concept] ?? DEFAULT_CONCEPT_COLOUR;
-                const isActive = conceptFilter === concept;
-                return (
+        <div className="content">
+          
+
+          <div className={`filter-row ${slug === "history" ? "filter-row--history" : ""}`}>
+            {slug === "history"
+              ? HISTORY_FILTER_CHIPS.map((chip) => (
                   <button
-                    key={concept}
-                    onClick={() => setConceptFilter(concept)}
-                    className="rounded-full px-4 py-2 text-sm font-semibold transition-all"
-                    style={{
-                      background: isActive ? col.text : col.bg,
-                      color: isActive ? "#fff" : col.text,
-                      border: `1.5px solid ${col.border}`,
-                    }}
+                    key={chip.value}
+                    className={`filter-chip ${historyEraFilter === chip.value ? "active" : ""}`}
+                    onClick={() => setHistoryEraFilter(chip.value)}
                   >
-                    {concept}
+                    {chip.label}
                   </button>
-                );
-              })}
-            </div>
-          )}
+                ))
+              : (
+                <>
+                  <button
+                    className={`filter-chip ${conceptFilter === "all" ? "active" : ""}`}
+                    onClick={() => setConceptFilter("all")}
+                  >
+                    All
+                  </button>
+                  {conceptOptions.map((c) => (
+                    <button
+                      key={c}
+                      className={`filter-chip ${conceptFilter === c ? "active" : ""}`}
+                      onClick={() => setConceptFilter(c)}
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </>
+              )}
+          </div>
 
-          <div className="mb-5 flex items-center justify-center" style={{ marginTop: "1cm" }}>
-            <div className="flex items-center gap-2 rounded-full border border-violet-200 bg-white/80 px-3 py-2 shadow-sm" style={{ minWidth: "280px" }}>
+          <div className="stats-row">
+            <div className="stat-chip">
+              <div className="val">{availableCount}</div>
+              <div className="lbl">Questions</div>
+            </div>
+            <div className="stat-chip stat-select-wrap">
+              <select className="stat-select" defaultValue="2022">
+                <option>2026</option>
+                <option>2025</option>
+                <option>2024</option>
+                <option>2023</option>
+                <option>2022</option>
+              </select>
+              <div className="lbl">Year</div>
+            </div>
+            <div className="stat-chip stat-select-wrap">
               <select
-                value={examFilter || "all"}
-                onChange={(e) => setExamFilter(e.target.value === "all" ? "" : e.target.value)}
-                className="rounded-full border-none bg-transparent px-4 py-2 text-base font-semibold text-slate-700 outline-none focus:ring-0"
-                style={{ minWidth: "220px" }}
+                className="stat-select"
+                value={examFilter || 'all'}
+                onChange={(e) => setExamFilter(e.target.value === 'all' ? '' : e.target.value)}
               >
                 {examOptions.map((ex) => (
-                  <option key={ex} value={ex === "all" ? "all" : ex}>
-                    {ex === "all" ? "All exams" : ex}
+                  <option key={ex} value={ex === 'all' ? 'all' : ex}>
+                    {ex === 'all' ? 'All' : ex}
                   </option>
                 ))}
               </select>
-
-              {examFilter !== "" && (
-                <button
-                  onClick={() => setExamFilter("")}
-                  className="rounded-full bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-700 hover:bg-violet-100"
-                >
-                  Clear
-                </button>
-              )}
+              <div className="lbl">Exam</div>
             </div>
           </div>
 
-          <p className="text-sm font-medium text-slate-600 mb-5">
-            {availableCount} questions available
-          </p>
+          <div className="section-label">Topics</div>
+          <div className="topic-groups">
+            {eraTopics && eraTopics.length > 0 ? (
+              <>
+                <details className="topic-group open">
+                  <summary className="topic-group-header">
+                    <div className="topic-group-left">
+                      <div className="era-dot" style={{ background: '#e07a5f' }} />
+                      <span className="topic-group-title">Topics</span>
+                      <span className="topic-count">{eraTopics.length} topics</span>
+                    </div>
+                    <svg className="chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9" /></svg>
+                  </summary>
+                  <div className="topic-list">
+                    {eraTopics.map((t: string, i: number) => (
+                      <div className="topic-item" key={t + i} onClick={(e) => {
+                        const cb = (e.currentTarget.querySelector('input') as HTMLInputElement);
+                        if (cb) cb.checked = !cb.checked;
+                      }}>
+                        <input type="checkbox" className="topic-cb" /> <span>{t}</span>
+                      </div>
+                    ))}
+                  </div>
+                </details>
+              </>
+            ) : null}
+          </div>
 
-          <div className="flex-1 flex items-center justify-center">
-            <button
-              onClick={handleStart}
-              className="quiz-start-button mx-auto"
-              aria-label="Start Quiz"
-            >
-              <Sparkles className="quiz-start-icon" aria-hidden="true" />
-              <span className="quiz-start-label">Start Quiz</span>
-            </button>
+          <div className="spacer" />
+
+          <div className="cta-wrap">
+            <button className="start-btn" onClick={handleStart} id="startQuizBtn">Start Quiz</button>
           </div>
         </div>
 
         <style jsx>{`
-          .quiz-start {
-            background: radial-gradient(
-                1200px 600px at 20% -10%,
-                rgba(124, 58, 237, 0.12),
-                transparent 60%
-              ),
-              radial-gradient(
-                1000px 540px at 85% 110%,
-                rgba(37, 99, 235, 0.12),
-                transparent 62%
-              ),
-              linear-gradient(135deg, #faf8ff 0%, #eef4ff 45%, #faf8ff 100%);
+          *{box-sizing:border-box}
+          /* Scope light theme under .quiz-start to override dark parent themes */
+          .quiz-start{background:#f8f9fb !important;color:#111827 !important}
+          .quiz-start :where(.content, .topbar, .filter-row, .stats-row, .topic-groups, .cta-wrap){background:transparent}
+          .quiz-start{--bg:#f8f9fb;--card:#ffffff;--muted:#6b7280;--accent:#5b6df0;--accent-2:#7c3aed;--text:#111827}
+          .quiz-start .topbar{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--card) !important;border-bottom:1px solid #eceff3;position:sticky;top:0;z-index:10}
+          .quiz-start .back-btn{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:12px;background:#eef2f7;color:#64748b;border:1px solid #e6ebf2;flex-shrink:0}
+          .quiz-start .back-btn svg{width:20px;height:20px}
+          .quiz-start .topbar-title{font-size:15px;font-weight:700;color:#0f172a;letter-spacing:0.2px;line-height:1.15}
+          .quiz-start .content{flex:1;padding:12px 16px calc(env(safe-area-inset-bottom,0) + 20px);display:flex;flex-direction:column;background:var(--bg);color:var(--text);min-height:calc(100dvh - 61px)}
+
+          .quiz-start .filter-row{display:flex;gap:10px;margin-top:6px;margin-bottom:16px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:6px;scrollbar-width:none}
+          .quiz-start .filter-row::-webkit-scrollbar{display:none}
+          .quiz-start .filter-chip{flex-shrink:0;padding:12px 18px;border-radius:12px;background:var(--card) !important;font-size:14px;font-weight:600;color:var(--text) !important;cursor:pointer;border:1px solid #eee;box-shadow:0 1px 2px rgba(16,24,40,0.03)}
+          .quiz-start .filter-chip.active{background:var(--accent) !important;color:#fff !important;border-color:transparent}
+          .quiz-start .filter-row--history{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));overflow:visible;padding-bottom:0}
+          .quiz-start .filter-row--history .filter-chip{min-width:0;padding:12px 8px;text-align:center}
+
+          .quiz-start .stats-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:18px}
+          .quiz-start .stat-chip{background:var(--card);border:1px solid #f0f0f3;border-radius:12px;padding:14px;text-align:center;min-width:0}
+          .quiz-start .stat-chip .val{font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px}
+          .quiz-start .stat-chip .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em}
+          .stat-select-wrap{position:relative}
+          .stat-select{appearance:none;border:none;background:transparent;font-size:15px;font-weight:700;color:var(--text);text-align:center;width:100%;cursor:pointer;padding-right:18px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right center;background-size:12px}
+
+          .quiz-start .section-label{font-size:14px;font-weight:700;color:var(--text);margin-bottom:8px}
+          .quiz-start .topic-groups{display:flex;flex-direction:column;gap:10px;margin-bottom:18px}
+          .quiz-start .topic-group{background:var(--card);border:1px solid #f0f0f3;border-radius:12px;overflow:hidden}
+          .topic-group summary{list-style:none;display:flex;align-items:center;justify-content:space-between;padding:12px 14px;cursor:pointer}
+          .topic-group-left{display:flex;align-items:center;gap:10px}
+          .era-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+          .topic-group-title{font-size:14px;font-weight:700;color:var(--text)}
+          .topic-count{font-size:12px;color:var(--muted);background:#f6f7fb;padding:4px 8px;border-radius:16px}
+          .chevron{width:16px;height:16px;stroke:#c8cdd4;stroke-width:2;fill:none;flex-shrink:0}
+          .quiz-start .topic-list{display:flex;flex-direction:column;border-top:1px solid #f4f6f9;padding:6px 0;max-height:min(46vh,360px);overflow-y:auto;-webkit-overflow-scrolling:touch}
+          .quiz-start .topic-item{display:flex;align-items:center;gap:12px;padding:12px 14px;font-size:14px;color:var(--text);cursor:pointer}
+          .quiz-start .topic-item:hover{background:#fbfdff}
+          .quiz-start .topic-cb{width:18px;height:18px;accent-color:var(--accent);cursor:pointer;flex-shrink:0}
+
+          .quiz-start .spacer{flex:1}
+          .quiz-start .cta-wrap{position:sticky;bottom:0;z-index:6;padding:12px 0 calc(env(safe-area-inset-bottom,0) + 6px);background:linear-gradient(180deg, rgba(248,249,251,0) 0%, rgba(248,249,251,0.9) 60%, rgba(248,249,251,1) 100%)}
+          .quiz-start .start-btn{width:100%;padding:18px;border:none;border-radius:14px;background:linear-gradient(90deg,var(--accent) 0%,var(--accent-2) 100%);color:#fff;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 8px 20px rgba(92,96,240,0.16)}
+          .quiz-start .start-btn:active{transform:translateY(1px);opacity:0.98}
+          .quiz-start .disclaimer{text-align:center;font-size:12px;color:var(--muted);margin-top:8px}
+
+          /* Responsive / Mobile optimisations */
+          @media (max-width: 640px){
+            .quiz-start .topbar{padding:10px 12px}
+            .quiz-start .back-btn{width:42px;height:42px;border-radius:12px}
+            .quiz-start .back-btn svg{width:19px;height:19px}
+            .quiz-start .topbar-title{font-size:14px}
+            .quiz-start .content{padding:10px 12px calc(env(safe-area-inset-bottom,0) + 18px);min-height:calc(100dvh - 60px)}
+            .quiz-start .filter-chip{padding:12px 14px;font-size:14px;border-radius:10px}
+            .quiz-start .filter-row--history{gap:8px}
+            .quiz-start .filter-row--history .filter-chip{font-size:13px;padding:11px 6px}
+            .quiz-start .stats-row{gap:8px}
+            .quiz-start .stat-chip{padding:12px}
+            .quiz-start .topic-item{padding:14px 12px;font-size:15px}
+            .quiz-start .start-btn{padding:18px;font-size:17px;border-radius:12px}
+            .quiz-start .cta-wrap{padding:10px 0 calc(env(safe-area-inset-bottom,0) + 8px)}
           }
-          .quiz-start-button {
-            position: relative;
-            width: min(78vw, 260px);
-            min-height: 54px;
-            border: 0;
-            border-radius: 999px;
-            cursor: pointer;
-            isolation: isolate;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.42rem;
-            padding: 0 1.2rem;
-            background: linear-gradient(
-              130deg,
-              #7c3aed 0%,
-              #4f46e5 48%,
-              #2563eb 100%
-            );
-            background-size: 190% 190%;
-            color: #ffffff;
-            box-shadow: 0 18px 32px rgba(124, 58, 237, 0.35),
-              0 0 22px rgba(79, 70, 229, 0.3), 0 0 40px rgba(37, 99, 235, 0.2),
-              inset 0 1.5px 0 rgba(255, 255, 255, 0.32);
-            transition: transform 0.4s ease, box-shadow 0.4s ease,
-              filter 0.4s ease;
-            animation: quiz-breathe 3.4s ease-in-out infinite;
-          }
-          .quiz-start-button::before,
-          .quiz-start-button::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            border-radius: inherit;
-            pointer-events: none;
-          }
-          .quiz-start-button::before {
-            inset: 2px;
-            background: linear-gradient(
-              180deg,
-              rgba(255, 255, 255, 0.42),
-              rgba(255, 255, 255, 0.08) 42%,
-              transparent 85%
-            );
-            opacity: 0.85;
-          }
-          .quiz-start-button::after {
-            background: linear-gradient(
-              100deg,
-              transparent 18%,
-              rgba(255, 255, 255, 0.72) 47%,
-              transparent 78%
-            );
-            transform: translateX(-140%);
-            mix-blend-mode: screen;
-            opacity: 0.92;
-            animation: quiz-sweep 3s ease-in-out infinite;
-          }
-          .quiz-start-icon {
-            position: relative;
-            z-index: 2;
-            width: 0.88rem;
-            height: 0.88rem;
-            stroke-width: 2.4;
-            color: #ffffff;
-            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.55));
-            animation: quiz-twinkle 2.8s ease-in-out infinite;
-          }
-          .quiz-start-label {
-            position: relative;
-            z-index: 2;
-            font-size: clamp(0.88rem, 2.5vw, 1rem);
-            font-weight: 800;
-            letter-spacing: 0.02em;
-            color: #ffffff;
-            text-shadow: 0 2px 10px rgba(30, 41, 59, 0.34);
-          }
-          .quiz-start-button:hover {
-            transform: translateY(-2px) scale(1.05);
-            filter: brightness(1.12);
-            box-shadow: 0 22px 42px rgba(124, 58, 237, 0.45),
-              0 0 30px rgba(79, 70, 229, 0.45), 0 0 58px rgba(37, 99, 235, 0.3),
-              inset 0 2px 0 rgba(255, 255, 255, 0.44);
-          }
-          .quiz-start-button:focus-visible {
-            outline: 2px solid rgba(255, 255, 255, 0.72);
-            outline-offset: 4px;
-          }
-          @keyframes quiz-sweep {
-            0% {
-              transform: translateX(-140%);
-            }
-            55%,
-            100% {
-              transform: translateX(140%);
-            }
-          }
-          @keyframes quiz-breathe {
-            0%,
-            100% {
-              transform: translateY(0) scale(1);
-            }
-            50% {
-              transform: translateY(-4px) scale(1.018);
-            }
-          }
-          @keyframes quiz-gradient {
-            0%,
-            100% {
-              background-position: 0% 50%;
-            }
-            50% {
-              background-position: 100% 50%;
-            }
-          }
-          @keyframes quiz-twinkle {
-            0%,
-            100% {
-              transform: scale(1) rotate(0deg);
-              opacity: 0.92;
-            }
-            50% {
-              transform: scale(1.15) rotate(8deg);
-              opacity: 1;
-            }
+
+          @media (prefers-reduced-motion: reduce){
+            .start-btn, .filter-chip { transition: none !important }
           }
         `}</style>
       </div>
@@ -2254,8 +2340,8 @@ export default function GeneralAwarenessQuizEngine({
   const canViewSolution = isCurrentSubmitted;
 
   return (
-    <div
-      className="min-h-screen relative overflow-x-hidden"
+      <div
+        className="min-h-[100dvh] relative overflow-x-hidden"
       style={{
         background:
           "linear-gradient(165deg, #f5f0ff 0%, #eef2ff 38%, #f8faff 100%)",
@@ -2315,7 +2401,7 @@ export default function GeneralAwarenessQuizEngine({
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-6xl px-3 pb-[110px] pt-3 sm:px-6 sm:pt-4 lg:max-w-[1150px] lg:px-8 lg:pb-10">
+      <main className="mx-auto w-full max-w-6xl px-3 pb-[128px] pt-3 sm:px-6 sm:pb-[116px] sm:pt-4 lg:max-w-[1150px] lg:px-8 lg:pb-10">
         <div className="lg:flex lg:items-start lg:gap-8 xl:gap-10 lg:justify-center">
           <div
             className="lg:flex-1 min-w-0 lg:ml-14 xl:ml-20 lg:max-w-[720px]"
