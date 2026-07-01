@@ -843,8 +843,6 @@ export default function StudyModeQuizEngine() {
         @media (max-width: 460px) {
           .quiz-page {
             padding-top: env(safe-area-inset-top);
-            height: 100dvh;
-            overflow: hidden;
           }
 
           .desktop-header {
@@ -909,104 +907,105 @@ export default function StudyModeQuizEngine() {
           }
 
           .card {
-            height: calc(100dvh - 46px - env(safe-area-inset-top));
             min-height: calc(100dvh - 46px - env(safe-area-inset-top));
-            overflow: hidden;
           }
 
           .word-zone {
-            padding: 14px 12px 10px;
+            padding: 16px 12px 12px;
           }
 
           .word {
-            font-size: clamp(1.9rem, 9.2vw, 2.35rem);
+            font-size: clamp(2rem, 9.8vw, 2.55rem);
           }
 
           .pos {
-            letter-spacing: 1.2px;
-            font-size: 11px;
+            letter-spacing: 1.4px;
+            font-size: 12px;
           }
 
           .bubble-row {
-            margin-top: 8px;
-            gap: 7px;
+            margin-top: 10px;
+            gap: 8px;
           }
 
           .bubble {
-            width: 10px;
-            height: 10px;
+            width: 11px;
+            height: 11px;
           }
 
           .content {
-            padding: 10px 12px 2px;
+            flex: 0 0 auto;
+            padding: 12px 12px 0;
           }
 
           .section-label {
-            font-size: 12px;
-            margin-bottom: 6px;
+            font-size: 13px;
+            margin-bottom: 8px;
           }
 
           .def,
           .bn,
           .syn-list li {
-            font-size: 12px;
-            line-height: 1.45;
+            font-size: 13px;
+            line-height: 1.55;
           }
 
           .meaning-space {
-            margin-top: 4px;
+            margin-top: 6px;
           }
 
           .slider-head {
-            margin-top: 12px;
-            gap: 8px;
+            margin-top: 14px;
+            gap: 10px;
           }
 
           .slider-title {
-            min-width: 92px;
-            font-size: 12px;
-            letter-spacing: 1.2px;
+            min-width: 98px;
+            font-size: 13px;
+            letter-spacing: 1.4px;
           }
 
           .nav-btn {
-            width: 22px;
-            height: 22px;
+            width: 24px;
+            height: 24px;
           }
 
           .slider-viewport {
-            margin-top: 4px;
+            margin-top: 6px;
           }
 
           .syn-list {
-            gap: 5px;
+            gap: 7px;
           }
 
           .syn-list li {
-            padding-bottom: 4px;
+            padding-bottom: 6px;
           }
 
           .syn-bn {
-            font-size: 11px;
+            font-size: 12px;
           }
 
           .dots {
-            margin-top: 8px;
+            margin-top: 10px;
           }
 
           .word-nav {
-            padding: 8px 12px calc(10px + env(safe-area-inset-bottom));
-            gap: 8px;
+            position: static;
+            margin-top: 14px;
+            padding: 10px 12px calc(12px + env(safe-area-inset-bottom));
+            gap: 10px;
             border-top-width: 1px;
           }
 
           .word-nav button {
-            font-size: 11px;
-            padding: 8px 10px;
+            font-size: 12px;
+            padding: 10px 10px;
             box-shadow: 2px 2px 0 var(--ink);
           }
 
           .word-nav .arrow {
-            font-size: 11px;
+            font-size: 12px;
           }
 
           .theme-toggle svg {
