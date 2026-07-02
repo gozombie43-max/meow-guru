@@ -47,6 +47,13 @@ function matchesNormalizedTopic(question, normalizedTopic) {
   return candidates.some((field) => normalizeSearchKey(field) === normalizedTopic);
 }
 
+function normalizeQuizKey(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '');
+}
+
 function buildQuestionsCacheKey(parameters) {
   return JSON.stringify(parameters.map((entry) => [entry.name, entry.value]));
 }
@@ -88,6 +95,12 @@ const addQuestion = async (req, res) => {
     const normalizedSubject = String(subject || normalizedQuizSubject || "").trim();
     const normalizedChapter = String(chapter || normalizedQuizTopic || "").trim();
     const normalizedTopic = String(normalizedQuizTopic || chapter || subject || normalizedQuizSubject || "").trim();
+
+    if (/study\s*mode/i.test(normalizedQuizName)) {
+      return res.status(400).json({
+        error: 'Study Mode uploads must use the study-mode schema via bulk upload.',
+      });
+    }
 
     const questionImagePath = uploadedPath(pickFile(req.files, 'questionImage'));
     const questionValue     = buildRichText(questionText ?? question, questionImagePath);
@@ -175,8 +188,19 @@ const addQuestion = async (req, res) => {
 const getQuestions = async (req, res) => {
   try {
     const container = getQuestionsContainer();
-    const { topic, subject, chapter, concept, difficulty, quizName, offset = 0, limit } = req.query;
+    const {
+      topic,
+      subject,
+      chapter,
+      concept,
+      difficulty,
+      quizName,
+      questionType,
+      offset = 0,
+      limit,
+    } = req.query;
     const normalizedTopic = topic ? normalizeSearchKey(topic) : null;
+    const normalizedQuizName = quizName ? normalizeQuizKey(quizName) : null;
     const queryMode = topic ? 'topic' : subject ? 'subject' : 'global';
 
     let query = 'SELECT * FROM c WHERE 1=1';
@@ -204,22 +228,25 @@ const getQuestions = async (req, res) => {
       parameters.push({ name: '@difficulty', value: difficulty });
     }
     if (quizName) {
-      const normalizedQuizName = String(quizName).trim().toLowerCase();
       if (normalizedQuizName === 'pyq') {
         // Backfill behavior for legacy questions created before quizName existed.
         // Those older records should continue to appear in the PYQ quiz.
         query += ` AND (
-          (IS_DEFINED(c.quizName) AND LOWER(c.quizName) = LOWER(@quizName))
-          OR (IS_DEFINED(c.quizId) AND LOWER(c.quizId) = LOWER(@quizName))
-          OR (IS_DEFINED(c.source) AND LOWER(c.source) = LOWER(@quizName))
+          (IS_DEFINED(c.quizName) AND LOWER(REPLACE(REPLACE(c.quizName, '-', ''), ' ', '')) = @normalizedQuizName)
+          OR (IS_DEFINED(c.quizId) AND LOWER(REPLACE(REPLACE(c.quizId, '-', ''), ' ', '')) = @normalizedQuizName)
+          OR (IS_DEFINED(c.source) AND LOWER(REPLACE(REPLACE(c.source, '-', ''), ' ', '')) = @normalizedQuizName)
           OR NOT IS_DEFINED(c.quizName)
           OR c.quizName = null
           OR c.quizName = ""
         )`;
       } else {
-        query += ' AND ((IS_DEFINED(c.quizName) AND LOWER(c.quizName) = LOWER(@quizName)) OR (IS_DEFINED(c.quizId) AND LOWER(c.quizId) = LOWER(@quizName)) OR (IS_DEFINED(c.source) AND LOWER(c.source) = LOWER(@quizName)))';
+        query += ` AND ((IS_DEFINED(c.quizName) AND LOWER(REPLACE(REPLACE(c.quizName, '-', ''), ' ', '')) = @normalizedQuizName) OR (IS_DEFINED(c.quizId) AND LOWER(REPLACE(REPLACE(c.quizId, '-', ''), ' ', '')) = @normalizedQuizName) OR (IS_DEFINED(c.source) AND LOWER(REPLACE(REPLACE(c.source, '-', ''), ' ', '')) = @normalizedQuizName))`;
       }
-      parameters.push({ name: '@quizName', value: quizName });
+      parameters.push({ name: '@normalizedQuizName', value: normalizedQuizName });
+    }
+    if (questionType) {
+      query += ' AND LOWER(c.questionType) = LOWER(@questionType)';
+      parameters.push({ name: '@questionType', value: String(questionType) });
     }
 
     const parsedOffset = Number.isFinite(Number(offset)) ? parseInt(offset, 10) : 0;

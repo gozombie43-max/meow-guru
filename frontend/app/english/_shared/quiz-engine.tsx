@@ -1218,7 +1218,10 @@ export default function EnglishQuizEngine({
     fetchQuestions({ subject: "english", topic: slug })
       .then((data) => {
         if (!active) return;
-        setAllQuestions(data.map((item, index) => toEnglishQuestion(item, index, fallbackConcept)));
+        const filtered = data.filter((item) => item.questionType !== "study-mode");
+        setAllQuestions(
+          filtered.map((item, index) => toEnglishQuestion(item, index, fallbackConcept))
+        );
       })
       .catch((error) => {
         console.error(error);

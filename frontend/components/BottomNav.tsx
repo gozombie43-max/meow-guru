@@ -13,6 +13,9 @@ export default function BottomNav() {
   const isNotesViewRoute = pathname === '/notes/view' || pathname.startsWith('/notes/view/');
   const isAiChat = pathname === '/ai-chat' || pathname.startsWith('/ai-chat/');
   const isResourceRoute = pathname === '/resource' || pathname.startsWith('/resource/');
+  const isStudyModeRoute =
+    normalizedPathname === '/english/synonyms-antonyms/study-mode' ||
+    normalizedPathname.startsWith('/english/synonyms-antonyms/study-mode/');
   const formulaNotesSubjects = [
     '/mathematics/',
     '/reasoning/',
@@ -22,7 +25,12 @@ export default function BottomNav() {
   const isFormulaNotesRoute =
     formulaNotesSubjects.some((prefix) => normalizedPathname.startsWith(prefix)) &&
     normalizedPathname.endsWith('/formula-notes');
-  const shouldHideNav = isQuizRoute || isNotesViewRoute || isFormulaNotesRoute || isResourceRoute;
+  const shouldHideNav =
+    isQuizRoute ||
+    isNotesViewRoute ||
+    isFormulaNotesRoute ||
+    isResourceRoute ||
+    isStudyModeRoute;
   const { theme } = useThemeMode();
   const [isNavHidden, setIsNavHidden] = useState(false);
   const lastScrollY = useRef(0);

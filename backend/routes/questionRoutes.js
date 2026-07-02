@@ -46,6 +46,18 @@ const questionUpload = upload.fields([
   { name: 'solutionImage', maxCount: 1 },
 ]);
 
+function isStudyModeRecord(item) {
+  return Boolean(
+    item &&
+    typeof item === 'object' &&
+    typeof item.word === 'string' &&
+    item.word.trim() &&
+    Array.isArray(item.meanings) &&
+    Array.isArray(item.synonyms) &&
+    Array.isArray(item.antonyms)
+  );
+}
+
 // ── Specific named routes FIRST (before /:id) ──────────
 
 // Bulk insert — POST /api/questions/bulk
@@ -73,6 +85,11 @@ router.post('/bulk', async (req, res) => {
 
       const quizSubject = String(item.quizSubject ?? '').trim();
       const quizTopic = String(item.quizTopic ?? '').trim();
+
+      if (isStudyModeRecord(item)) {
+        item.questionType = item.questionType || 'study-mode';
+        item.quizName = String(item.quizName || 'Study Mode').trim();
+      }
 
       if (!item.subject && quizSubject) item.subject = quizSubject;
       if (!item.chapter && quizTopic) item.chapter = quizTopic;

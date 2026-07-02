@@ -33,6 +33,10 @@ export interface Question {
   optionRegions?: Record<string, { x: number; y: number; w: number; h: number }>;
   diagram?: GeometryDiagram;
   needs_diagram?: boolean;
+  word?: string;
+  meanings?: Array<{ pos?: string; definition?: string; translation?: string }>;
+  synonyms?: Array<{ word?: string; translation?: string }>;
+  antonyms?: Array<{ word?: string; translation?: string }>;
 }
 
 // Fetch questions with filters
@@ -41,6 +45,7 @@ export async function fetchQuestions(params: {
   subject?: string;
   difficulty?: string;
   quizName?: string;
+  questionType?: string;
   limit?: number;
   offset?: number;
   useCache?: boolean;
@@ -50,6 +55,7 @@ export async function fetchQuestions(params: {
   if (params.subject)    query.set('subject',    params.subject);
   if (params.difficulty) query.set('difficulty', params.difficulty);
   if (params.quizName)   query.set('quizName',   params.quizName);
+  if (params.questionType) query.set('questionType', params.questionType);
   if (params.limit !== undefined)  query.set('limit',  String(params.limit));
   if (params.offset !== undefined) query.set('offset', String(params.offset));
   const cacheKey = query.toString();

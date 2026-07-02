@@ -1,39 +1,157 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { fetchQuestions } from "@/lib/api/questions";
 
-const DEMO_CARD = {
+type StudyModeMeaning = {
+  pos?: string;
+  definition?: string;
+  translation?: string;
+};
+
+type StudyModeEntry = {
+  id?: string;
+  word?: string;
+  meanings?: StudyModeMeaning[];
+  synonyms?: Array<{ word?: string; translation?: string }>;
+  antonyms?: Array<{ word?: string; translation?: string }>;
+};
+
+type StudyModeCard = {
+  id: string;
+  word: string;
+  meanings: StudyModeMeaning[];
+  synonyms: Array<{ word: string; translation?: string }>;
+  antonyms: Array<{ word: string; translation?: string }>;
+};
+
+const DEMO_CARD: StudyModeCard = {
+  id: "demo",
   word: "Abandon",
-  pos: "VERB / NOUN",
-  meaningVerb: "To leave or give up completely.",
-  meaningNoun: "A complete lack of restraint.",
-  bengaliVerb: "ত্যাগ করা / পরিত্যাগ করা",
-  bengaliNoun: "উচ্ছৃঙ্খলতা / বেপরোয়া ভাব",
+  meanings: [
+    {
+      pos: "v.",
+      definition: "To leave or give up completely.",
+      translation: "ত্যাগ করা / পরিত্যাগ করা",
+    },
+    {
+      pos: "n.",
+      definition: "A complete lack of restraint.",
+      translation: "উচ্ছৃঙ্খলতা / বেপরোয়া ভাব",
+    },
+  ],
   synonyms: [
-    ["Desert", "পরিত্যাগ করা"],
-    ["Forsake", "ত্যাগ করা"],
-    ["Relinquish", "ছেড়ে দেওয়া"],
-    ["Leave", "ছেড়ে যাওয়া"],
-    ["Dereliction", "অবহেলা"],
-    ["Discontinue", "বন্ধ করা"],
-    ["Unrestraint", "অসংযম"],
+    { word: "Desert", translation: "পরিত্যাগ করা" },
+    { word: "Forsake", translation: "ত্যাগ করা" },
+    { word: "Relinquish", translation: "ছেড়ে দেওয়া" },
+    { word: "Leave", translation: "ছেড়ে যাওয়া" },
+    { word: "Dereliction", translation: "অবহেলা" },
+    { word: "Discontinue", translation: "বন্ধ করা" },
+    { word: "Unrestraint", translation: "অসংযম" },
   ],
   antonyms: [
-    ["Retain", "ধরে রাখা"],
-    ["Continue", "চালিয়ে যাওয়া"],
-    ["Keep", "রাখা"],
-    ["Adopt", "গ্রহণ করা"],
-    ["Constraint", "সংযম"],
+    { word: "Retain", translation: "ধরে রাখা" },
+    { word: "Continue", translation: "চালিয়ে যাওয়া" },
+    { word: "Keep", translation: "রাখা" },
+    { word: "Adopt", translation: "গ্রহণ করা" },
+    { word: "Constraint", translation: "সংযম" },
   ],
-} as const;
+};
+
+function toStudyModeCard(entry: StudyModeEntry, index: number): StudyModeCard | null {
+  const word = String(entry.word ?? "").trim();
+  if (!word) return null;
+
+  const meanings = Array.isArray(entry.meanings)
+    ? entry.meanings
+        .map((meaning) => ({
+          pos: meaning?.pos?.trim(),
+          definition: meaning?.definition?.trim(),
+          translation: meaning?.translation?.trim(),
+        }))
+        .filter((meaning) => Boolean(meaning.definition))
+    : [];
+
+  const synonyms = Array.isArray(entry.synonyms)
+    ? entry.synonyms
+        .map((item) => ({
+          word: String(item?.word ?? "").trim(),
+          translation: item?.translation?.trim(),
+        }))
+        .filter((item) => Boolean(item.word))
+    : [];
+
+  const antonyms = Array.isArray(entry.antonyms)
+    ? entry.antonyms
+        .map((item) => ({
+          word: String(item?.word ?? "").trim(),
+          translation: item?.translation?.trim(),
+        }))
+        .filter((item) => Boolean(item.word))
+    : [];
+
+  return {
+    id: String(entry.id ?? index + 1),
+    word,
+    meanings,
+    synonyms,
+    antonyms,
+  };
+}
 
 export default function StudyModeQuizEngine() {
   const [slideIndex, setSlideIndex] = useState<0 | 1>(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  const [cards, setCards] = useState<StudyModeCard[]>([]);
+  const touchStartXRef = useRef<number | null>(null);
+  const touchStartYRef = useRef<number | null>(null);
+
+  const totalCards = Math.max(cards.length, 1);
+  const currentIndex = Math.min(Math.max(currentPage - 1, 0), totalCards - 1);
+  const activeCard = cards[currentIndex] ?? DEMO_CARD;
+  const posLabel = activeCard.meanings
+    .map((meaning) => String(meaning.pos ?? "").replace(/\.+$/, "").trim())
+    .filter(Boolean)
+    .map((pos) => pos.toUpperCase())
+    .join(" / ");
 
   const slideTitle = slideIndex === 0 ? "SYNONYMS" : "ANTONYMS";
+
+  useEffect(() => {
+    let active = true;
+
+    fetchQuestions({
+      subject: "english",
+      topic: "synonyms-antonyms",
+      questionType: "study-mode",
+    })
+      .then((data) => {
+        if (!active) return;
+        const mapped = data
+          .map((entry, index) => toStudyModeCard(entry as StudyModeEntry, index))
+          .filter(Boolean) as StudyModeCard[];
+        setCards(mapped);
+      })
+      .catch(() => {
+        if (active) setCards([]);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (cards.length === 0) {
+      setCurrentPage(1);
+      return;
+    }
+    if (currentPage > cards.length) {
+      setCurrentPage(cards.length);
+    }
+  }, [cards.length, currentPage]);
 
   useEffect(() => {
     try {
@@ -76,7 +194,7 @@ export default function StudyModeQuizEngine() {
         </div>
 
         <div className="desktop-header-meta">
-          <span className="question-count">{currentPage}/13</span>
+          <span className="question-count">{currentPage}/{totalCards}</span>
 
           <button
             type="button"
@@ -127,7 +245,7 @@ export default function StudyModeQuizEngine() {
         </div>
 
           <div className="mobile-header-meta">
-            <span className="question-count">{currentPage}/13</span>
+            <span className="question-count">{currentPage}/{totalCards}</span>
 
             <button
               type="button"
@@ -186,7 +304,7 @@ export default function StudyModeQuizEngine() {
             </div>
 
             <div className="question-palette-grid" role="list" aria-label="Question numbers">
-              {Array.from({ length: 13 }, (_, index) => index + 1).map((page) => (
+              {Array.from({ length: totalCards }, (_, index) => index + 1).map((page) => (
                 <button
                   key={page}
                   type="button"
@@ -205,8 +323,8 @@ export default function StudyModeQuizEngine() {
         )}
 
         <section className="word-zone">
-          <div className="word">{DEMO_CARD.word}</div>
-          <div className="pos">{DEMO_CARD.pos}</div>
+          <div className="word">{activeCard.word}</div>
+          <div className="pos">{posLabel || "VOCAB"}</div>
           <div className="bubble-row" aria-hidden="true">
             <div className="bubble filled" />
             <div className="bubble" />
@@ -217,10 +335,18 @@ export default function StudyModeQuizEngine() {
 
         <section className="content">
           <div className="section-label">MEANING</div>
-          <div className="def"><b>(V.)</b> {DEMO_CARD.meaningVerb}</div>
-          <div className="bn">({DEMO_CARD.bengaliVerb})</div>
-          <div className="def meaning-space"><b>(N.)</b> {DEMO_CARD.meaningNoun}</div>
-          <div className="bn">({DEMO_CARD.bengaliNoun})</div>
+          {activeCard.meanings.length === 0 ? (
+            <div className="def">No meanings available yet.</div>
+          ) : (
+            activeCard.meanings.map((meaning, index) => (
+              <div key={`${meaning.definition || "meaning"}-${index}`}>
+                <div className={`def${index > 0 ? " meaning-space" : ""}`}>
+                  {meaning.pos ? <b>({meaning.pos})</b> : null} {meaning.definition}
+                </div>
+                {meaning.translation ? <div className="bn">({meaning.translation})</div> : null}
+              </div>
+            ))
+          )}
 
           <div className="slider-head">
             <button
@@ -247,27 +373,60 @@ export default function StudyModeQuizEngine() {
             </button>
           </div>
 
-          <div className="slider-viewport">
+          <div
+            className="slider-viewport"
+            onTouchStart={(event) => {
+              const touch = event.touches[0];
+              touchStartXRef.current = touch?.clientX ?? null;
+              touchStartYRef.current = touch?.clientY ?? null;
+            }}
+            onTouchEnd={(event) => {
+              const touch = event.changedTouches[0];
+              const startX = touchStartXRef.current;
+              const startY = touchStartYRef.current;
+              touchStartXRef.current = null;
+              touchStartYRef.current = null;
+              if (startX === null || startY === null || !touch) return;
+              const deltaX = touch.clientX - startX;
+              const deltaY = touch.clientY - startY;
+              if (Math.abs(deltaX) < 40 || Math.abs(deltaX) < Math.abs(deltaY)) return;
+              setSlideIndex(deltaX > 0 ? 0 : 1);
+            }}
+          >
             <div className="slider-track" style={{ transform: `translateX(-${slideIndex * 50}%)` }}>
               <div className="slide synonyms">
                 <ul className="syn-list">
-                  {DEMO_CARD.synonyms.map(([english, bengali]) => (
-                    <li key={english}>
-                      <span className="syn-en">{english}</span>
-                      <span className="syn-bn">{bengali}</span>
+                  {activeCard.synonyms.length === 0 ? (
+                    <li>
+                      <span className="syn-en">No synonyms yet</span>
+                      <span className="syn-bn">—</span>
                     </li>
-                  ))}
+                  ) : (
+                    activeCard.synonyms.map((item) => (
+                      <li key={item.word}>
+                        <span className="syn-en">{item.word}</span>
+                        <span className="syn-bn">{item.translation || "—"}</span>
+                      </li>
+                    ))
+                  )}
                 </ul>
               </div>
 
               <div className="slide antonyms">
                 <ul className="syn-list">
-                  {DEMO_CARD.antonyms.map(([english, bengali]) => (
-                    <li key={english}>
-                      <span className="syn-en">{english}</span>
-                      <span className="syn-bn">{bengali}</span>
+                  {activeCard.antonyms.length === 0 ? (
+                    <li>
+                      <span className="syn-en">No antonyms yet</span>
+                      <span className="syn-bn">—</span>
                     </li>
-                  ))}
+                  ) : (
+                    activeCard.antonyms.map((item) => (
+                      <li key={item.word}>
+                        <span className="syn-en">{item.word}</span>
+                        <span className="syn-bn">{item.translation || "—"}</span>
+                      </li>
+                    ))
+                  )}
                 </ul>
               </div>
             </div>
@@ -283,7 +442,10 @@ export default function StudyModeQuizEngine() {
           <button type="button" onClick={() => setCurrentPage((value) => Math.max(1, value - 1))}>
             <span className="arrow">&lt;</span> Previous
           </button>
-          <button type="button" onClick={() => setCurrentPage((value) => Math.min(13, value + 1))}>
+          <button
+            type="button"
+            onClick={() => setCurrentPage((value) => Math.min(totalCards, value + 1))}
+          >
             Next <span className="arrow">&gt;</span>
           </button>
         </div>

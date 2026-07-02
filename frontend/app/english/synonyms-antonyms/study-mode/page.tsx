@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { fetchQuestions } from "@/lib/api/questions";
 
 export default function SynonymsAntonymsStudyModePage() {
   const [theme, setTheme] = useState<"light" | "dark">("dark");
+  const [questionCount, setQuestionCount] = useState<number | null>(null);
 
   useEffect(() => {
     try {
@@ -25,54 +27,83 @@ export default function SynonymsAntonymsStudyModePage() {
     }
   }, [theme]);
 
+  useEffect(() => {
+    let active = true;
+    fetchQuestions({
+      subject: "english",
+      topic: "synonyms-antonyms",
+      questionType: "study-mode",
+      useCache: false,
+    })
+      .then((data) => {
+        if (!active) return;
+        setQuestionCount(data.length);
+      })
+      .catch(() => {
+        if (active) setQuestionCount(0);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const countLabel =
+    questionCount === null
+      ? "Loading questions..."
+      : questionCount === 0
+      ? "No questions available"
+      : `${questionCount} question${questionCount === 1 ? "" : "s"} available`;
+
   return (
     <main className="start-page" data-theme={theme}>
-      <button
-        type="button"
-        className="theme-toggle"
-        aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
-        aria-pressed={theme === "dark"}
-        onClick={() => setTheme((value) => (value === "dark" ? "light" : "dark"))}
-      >
-        <span className="theme-toggle-label">{theme === "dark" ? "Light" : "Dark"}</span>
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.9"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden="true"
-        >
-          {theme === "dark" ? (
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-          ) : (
-            <>
-              <path d="M12 3v2" />
-              <path d="M12 19v2" />
-              <path d="M5.64 5.64l1.42 1.42" />
-              <path d="M16.94 16.94l1.42 1.42" />
-              <path d="M3 12h2" />
-              <path d="M19 12h2" />
-              <path d="M5.64 18.36l1.42-1.42" />
-              <path d="M16.94 7.06l1.42-1.42" />
-              <circle cx="12" cy="12" r="4" />
-            </>
-          )}
-        </svg>
-      </button>
-
       <div className="card-shell">
         <div className="perf" />
 
         <div className="header-bar">
           <span>Vocabulary</span>
+          <button
+            type="button"
+            className="theme-toggle"
+            aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
+            aria-pressed={theme === "dark"}
+            onClick={() => setTheme((value) => (value === "dark" ? "light" : "dark"))}
+          >
+            <span className="theme-toggle-label">
+              {theme === "dark" ? "Light" : "Dark"}
+            </span>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.9"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              {theme === "dark" ? (
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+              ) : (
+                <>
+                  <path d="M12 3v2" />
+                  <path d="M12 19v2" />
+                  <path d="M5.64 5.64l1.42 1.42" />
+                  <path d="M16.94 16.94l1.42 1.42" />
+                  <path d="M3 12h2" />
+                  <path d="M19 12h2" />
+                  <path d="M5.64 18.36l1.42-1.42" />
+                  <path d="M16.94 7.06l1.42-1.42" />
+                  <circle cx="12" cy="12" r="4" />
+                </>
+              )}
+            </svg>
+          </button>
         </div>
 
         <div className="center-zone">
-          <div className="eyebrow">English / Synonyms &amp; Antonyms</div>
+          <div className="eyebrow">English</div>
           <div className="quiz-title">
-            Study <span className="accent">Mode</span>
+            Antonyms <span className="accent">Synonyms</span>
           </div>
 
           <div className="bubble-row" aria-hidden="true">
@@ -82,13 +113,9 @@ export default function SynonymsAntonymsStudyModePage() {
 
           <div className="available-tag">
             <span className="dot" />
-            <b>1</b>&nbsp;demo question ready
+            {countLabel}
           </div>
 
-          <p className="intro">
-            A separate start page for revision-first practice. Review the word card,
-            then begin the demo engine when you are ready.
-          </p>
         </div>
 
         <div className="start-bar">
@@ -116,32 +143,6 @@ export default function SynonymsAntonymsStudyModePage() {
             radial-gradient(circle at top left, rgba(214, 154, 45, 0.14), transparent 28%),
             radial-gradient(circle at 85% 22%, rgba(47, 75, 70, 0.14), transparent 24%),
             linear-gradient(180deg, #f4efe3 0%, #ece4d3 100%);
-          color: #1c1c1c;
-        }
-
-        .theme-toggle {
-          position: fixed;
-          top: 14px;
-          right: 14px;
-          z-index: 20;
-          min-width: 42px;
-          height: 42px;
-          padding: 0 10px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-          border-radius: 12px;
-          border: 1.5px solid #4a4234;
-          background: #1f1c18;
-          color: #f2ead9;
-          box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
-          cursor: pointer;
-        }
-
-        .start-page[data-theme="light"] .theme-toggle {
-          border-color: #c9bfa5;
-          background: #ffffff;
           color: #1c1c1c;
         }
 
@@ -175,10 +176,41 @@ export default function SynonymsAntonymsStudyModePage() {
         }
 
         .header-bar {
-          padding: 16px 20px;
+          min-height: 56px;
+          padding: 12px 20px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
           text-align: center;
           border-bottom: 1.5px solid #4a4234;
           background: #1f1c18;
+          position: relative;
+        }
+
+        .theme-toggle {
+          position: absolute;
+          right: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+          min-width: 42px;
+          height: 34px;
+          padding: 0 10px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          border-radius: 12px;
+          border: 1.5px solid #4a4234;
+          background: #1f1c18;
+          color: #f2ead9;
+          box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
+          cursor: pointer;
+        }
+
+        .start-page[data-theme="light"] .theme-toggle {
+          border-color: #c9bfa5;
+          background: #ffffff;
+          color: #1c1c1c;
         }
 
         .start-page[data-theme="light"] .header-bar {
@@ -201,7 +233,7 @@ export default function SynonymsAntonymsStudyModePage() {
           align-items: center;
           justify-content: center;
           text-align: center;
-          padding: 32px 24px;
+          padding: 26px 24px 22px;
         }
 
         .eyebrow {
@@ -224,6 +256,8 @@ export default function SynonymsAntonymsStudyModePage() {
           line-height: 1.1;
           letter-spacing: 0.5px;
           color: #f2ead9;
+          margin-top: 2px;
+          margin-bottom: 8px;
         }
 
         .start-page[data-theme="light"] .quiz-title,
@@ -271,6 +305,7 @@ export default function SynonymsAntonymsStudyModePage() {
         }
 
         .available-tag {
+          margin-top: 10px;
           display: inline-flex;
           align-items: center;
           gap: 6px;

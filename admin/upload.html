@@ -425,6 +425,42 @@
     }
     .mu-quiz-selector select:focus { outline: none; border-color: rgba(0,229,255,0.65); }
 
+    .schema-prototype {
+      margin-top: 12px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1.5px solid rgba(0, 229, 255, 0.18);
+      background: rgba(255, 255, 255, 0.18);
+      backdrop-filter: blur(10px);
+    }
+    .schema-prototype h3 {
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: #00a8c6;
+      text-transform: uppercase;
+      letter-spacing: 0.55px;
+      margin-bottom: 8px;
+    }
+    .schema-prototype p {
+      font-size: 0.8rem;
+      color: rgba(74, 122, 155, 0.9);
+      margin-bottom: 10px;
+      line-height: 1.5;
+    }
+    .schema-prototype pre {
+      overflow-x: auto;
+      margin: 0;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.28);
+      border: 1px solid rgba(255, 255, 255, 0.42);
+      color: #18314a;
+      font-size: 0.74rem;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
     .mu-drop {
       border: 1.5px dashed rgba(255,255,255,0.55);
       border-radius: 16px; padding: 2.2rem; text-align: center;
@@ -598,6 +634,36 @@
                   <option value="">Select topic first</option>
                 </select>
               </div>
+            </div>
+
+            <div class="schema-prototype">
+              <h3>Study Mode Schema Prototype</h3>
+              <p>Use this object for Synonyms & Antonyms study-mode uploads. Keep <code>word</code> as the headword and provide Bengali translations where available.</p>
+              <pre>{
+  "id": "vocab_0001",
+  "topic": "anto-syno",
+  "subject": "english",
+  "word": "abandon",
+  "meanings": [
+    {
+      "pos": "v.",
+      "definition": "To leave completely.",
+      "translation": "সম্পূর্ণভাবে ত্যাগ করা"
+    }
+  ],
+  "synonyms": [
+    {
+      "word": "forsake",
+      "translation": "ত্যাগ করা"
+    }
+  ],
+  "antonyms": [
+    {
+      "word": "retain",
+      "translation": "ধরে রাখা"
+    }
+  ]
+}</pre>
             </div>
 
             <!-- Metadata -->
@@ -1078,6 +1144,7 @@
     // ─────────────────────────────────────────────
     const QUIZ_MODES = ['PYQ','CareerWill','PW','Selection Way','Topic Mix','Tier 2'];
     const MENSURATION_QUIZ_MODES = ['PYQ','CareerWill','Selection Way','Tier 2'];
+    const SYNONYMS_QUIZ_MODES = [...QUIZ_MODES, 'Study Mode'];
 
     const QUIZ_TREE = {
       mathematics: {
@@ -1156,7 +1223,7 @@
           'spelling-misspelled-words': { label: 'Spelling / Misspelled Words', quizzes: QUIZ_MODES },
           'spot-the-error-error-detection': { label: 'Spot the Error / Error Detection', quizzes: QUIZ_MODES },
           'subject-verb-agreement': { label: 'Subject-Verb Agreement', quizzes: QUIZ_MODES },
-          'synonyms-antonyms': { label: 'Synonyms & Antonyms', quizzes: QUIZ_MODES },
+          'synonyms-antonyms': { label: 'Synonyms & Antonyms', quizzes: SYNONYMS_QUIZ_MODES },
           tenses: { label: 'Tenses', quizzes: QUIZ_MODES },
         }
       },
@@ -1356,6 +1423,11 @@
         showToast('Please select a target quiz (Subject → Topic → Quiz)', 'error'); return;
       }
 
+      if (/study\s*mode/i.test(quizName)) {
+        showToast('Study Mode uploads must use the Study Mode schema in Mass Upload.', 'error');
+        return;
+      }
+
       const questionText = document.getElementById('question').value.trim();
       const questionImg  = imgState['question'];
       if (!questionText && !questionImg.src) {
@@ -1474,7 +1546,7 @@
     async function muRunDbCheck() {
       if (muDbCheckInFlight) return;
       const questionsForCheck = muAll.filter(q =>
-        q.id || q._id || q.questionId || q.question || q.questionText || q.q
+        q.id || q._id || q.questionId || q.question || q.questionText || q.q || q.word
       );
       if (!questionsForCheck.length) return;
       const apiUrlValue = document.getElementById('muApiUrl')?.value.trim();
@@ -1493,7 +1565,7 @@
           let exactDupes = 0, textDupes = 0, idConflicts = 0;
           muAll = muAll.map(q => {
             const id     = String(q.id || q._id || q.questionId || '');
-            const textKey = String(q.question || q.questionText || q.q || '').trim();
+            const textKey = String(q.question || q.questionText || q.q || q.word || '').trim();
             const result = (id && byId.get(id)) || (textKey && byText.get(textKey));
             if (!result) return q;
             if (result.status === 'exact-duplicate')  { exactDupes++;  return { ...q, _status: 'db-duplicate', _issue: 'exact duplicate — same ID and question text' }; }
@@ -1521,9 +1593,7 @@
           let q, status = 'valid', issues = [];
           try { q = JSON.parse(line); }
           catch { muAll.push({ _idx: i, _raw: line.substring(0, 80), _status: 'error', _issue: 'JSON parse error' }); return; }
-          if (!q.question && !q.questionText && !q.q) issues.push('missing question text');
-          if (!q.options && !q.choices && !q.answers && !(q.optionA || q.optionAText)) issues.push('missing options');
-          if (!q.answer && !q.correctAnswer && !q.correct && q.correctIndex === undefined) issues.push('missing answer');
+          issues = muValidateRecordShape(q);
           if (issues.length) status = 'error';
           muAll.push({ ...q, _idx: i, _status: status, _issue: issues.join(', ') });
         });
@@ -1586,7 +1656,7 @@
     function muRenderList() {
       if (!muFiltered.length) { muList.innerHTML = '<div class="mu-empty">No questions match the filter</div>'; muUpdateSelLabel(); return; }
       muList.innerHTML = muFiltered.map(q => {
-        const qt   = q.question || q.questionText || q.q || q._raw || '(no text)';
+        const qt   = muGetDisplayText(q) || q._raw || '(no text)';
         const subj = q.subject || q.topic || q.category || '—';
         const diff = q.difficulty || q.level || '—';
         const isSel = muSelected.has(q._idx);
@@ -1669,6 +1739,40 @@
       muLog.scrollTop = muLog.scrollHeight;
     }
 
+    function muIsStudyModeRecord(q) {
+      return Boolean(
+        q &&
+        typeof q === 'object' &&
+        !Array.isArray(q) &&
+        typeof q.word === 'string' && q.word.trim() &&
+        Array.isArray(q.meanings) &&
+        Array.isArray(q.synonyms) &&
+        Array.isArray(q.antonyms)
+      );
+    }
+
+    function muGetDisplayText(q) {
+      if (muIsStudyModeRecord(q)) return String(q.word || '').trim();
+      return String(q.question || q.questionText || q.q || q.word || q._raw || '').trim();
+    }
+
+    function muValidateRecordShape(q) {
+      if (muIsStudyModeRecord(q)) {
+        const issues = [];
+        if (!String(q.id || '').trim()) issues.push('missing id');
+        if (!String(q.topic || '').trim()) issues.push('missing topic');
+        if (!String(q.subject || '').trim()) issues.push('missing subject');
+        if (!String(q.word || '').trim()) issues.push('missing word');
+        return issues;
+      }
+
+      const issues = [];
+      if (!q.question && !q.questionText && !q.q) issues.push('missing question text');
+      if (!q.options && !q.choices && !q.answers && !(q.optionA || q.optionAText)) issues.push('missing options');
+      if (!q.answer && !q.correctAnswer && !q.correct && q.correctIndex === undefined) issues.push('missing answer');
+      return issues;
+    }
+
     muUploadBtn.onclick = async () => {
       const url = document.getElementById('muApiUrl').value.trim();
       if (!url) return;
@@ -1678,6 +1782,22 @@
       if (!muQuizSubject || !muQuizTopic || !muQuizName) {
         showToast('Please select a target quiz before uploading', 'error'); return;
       }
+
+      const isStudyModeTarget = /study\s*mode/i.test(muQuizName);
+      const selectedRows = muAll.filter(q => muSelected.has(q._idx));
+      const hasStudyModeRows = selectedRows.some(muIsStudyModeRecord);
+      const hasNonStudyRows = selectedRows.some(q => !muIsStudyModeRecord(q));
+
+      if (hasStudyModeRows && !isStudyModeTarget) {
+        showToast('Study mode rows can only be uploaded to the Study Mode quiz', 'error');
+        return;
+      }
+
+      if (isStudyModeTarget && hasNonStudyRows) {
+        showToast('Study Mode uploads must use the study-mode schema only', 'error');
+        return;
+      }
+
       const toUpload = muAll.filter(q => muSelected.has(q._idx)).map(q => {
         const clean = { ...q };
         delete clean._idx; delete clean._status; delete clean._issue; delete clean._raw;
