@@ -15,7 +15,9 @@ export default function BottomNav() {
   const isResourceRoute = pathname === '/resource' || pathname.startsWith('/resource/');
   const isStudyModeRoute =
     normalizedPathname === '/english/synonyms-antonyms/study-mode' ||
-    normalizedPathname.startsWith('/english/synonyms-antonyms/study-mode/');
+    normalizedPathname.startsWith('/english/synonyms-antonyms/study-mode/') ||
+    normalizedPathname === '/english/one-word-substitution/study-mode' ||
+    normalizedPathname.startsWith('/english/one-word-substitution/study-mode/');
   const formulaNotesSubjects = [
     '/mathematics/',
     '/reasoning/',

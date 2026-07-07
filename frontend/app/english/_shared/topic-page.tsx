@@ -104,7 +104,7 @@ const buildFeatureCards = (slug: string): FeatureCardData[] => {
   },
   ];
 
-  if (slug === "synonyms-antonyms") {
+  if (["synonyms-antonyms", "one-word-substitution"].includes(slug)) {
     cards.splice(4, 0, {
       title: "Study Mode",
       href: `/english/${slug}/study-mode`,
