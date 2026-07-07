@@ -46,9 +46,11 @@ const promptFields = [
   "clue",
 ];
 
-function getFirstString(entry: Record<string, unknown>, keys: string[]): string {
+function getFirstString(entry: unknown, keys: string[]): string {
+  if (!entry || typeof entry !== "object") return "";
+  const record = entry as Record<string, unknown>;
   for (const key of keys) {
-    const value = entry[key];
+    const value = record[key];
     if (typeof value === "string" && value.trim()) {
       return value.trim();
     }
@@ -63,8 +65,7 @@ function toSubstitutionCard(entry: StudyModeEntry, index: number): SubstitutionC
         .filter(Boolean)[0] ?? ""
     : "";
 
-  const prompt =
-    getFirstString(entry as Record<string, unknown>, promptFields) || promptFromMeaning;
+  const prompt = getFirstString(entry, promptFields) || promptFromMeaning;
 
   const answer =
     String(
@@ -83,7 +84,7 @@ function toSubstitutionCard(entry: StudyModeEntry, index: number): SubstitutionC
         .filter(Boolean)[0]
     : "";
 
-  const answerTranslation = getFirstString(entry as Record<string, unknown>, [
+  const answerTranslation = getFirstString(entry, [
     "answerTranslation",
     "wordTranslation",
     "translation",
