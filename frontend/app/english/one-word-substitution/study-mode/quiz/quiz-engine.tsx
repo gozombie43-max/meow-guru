@@ -37,6 +37,19 @@ const DEMO_CARD: SubstitutionCard = {
   label: "Noun",
 };
 
+const DEMO_CARDS: SubstitutionCard[] = [
+  DEMO_CARD,
+  {
+    id: "demo-bibliophile",
+    prompt:
+      'A person who loves and collects books.\n\nMemory hook: "Biblio-" (book) + "-phile" (lover) - same root as bibliography.',
+    answer: "Bibliophile",
+    definitionTranslation: "যে ব্যক্তি বই ভালোবাসে এবং সংগ্রহ করে",
+    answerTranslation: "গ্রন্থপ্রেমী, বইপ্রেমী",
+    label: "Noun",
+  },
+];
+
 const promptFields = [
   "prompt",
   "phrase",
@@ -102,17 +115,24 @@ function toSubstitutionCard(entry: StudyModeEntry, index: number): SubstitutionC
   };
 }
 
+/*
 export default function StudyModeQuizEngine() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [theme, setTheme] = useState<"light" | "dark">("dark");
+  const [theme, setTheme] = useState<"light" | "dark">(() => {
+    if (typeof window === "undefined") return "dark";
+    const savedTheme = window.localStorage.getItem("study-mode-theme");
+    return savedTheme === "light" || savedTheme === "dark" ? savedTheme : "dark";
+  });
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [cards, setCards] = useState<SubstitutionCard[]>([]);
+  const scrollerRef = useRef<HTMLDivElement>(null);
   const touchStartXRef = useRef<number | null>(null);
   const touchStartYRef = useRef<number | null>(null);
 
-  const totalCards = Math.max(cards.length, 1);
+  const studyCards = cards.length ? cards : DEMO_CARDS;
+  const totalCards = studyCards.length;
   const currentIndex = Math.min(Math.max(currentPage - 1, 0), totalCards - 1);
-  const activeCard = cards[currentIndex] ?? DEMO_CARD;
+  const activeCard = studyCards[currentIndex];
 
   useEffect(() => {
     let active = true;
@@ -127,10 +147,10 @@ export default function StudyModeQuizEngine() {
         const mapped = data
           .map((entry, index) => toSubstitutionCard(entry as StudyModeEntry, index))
           .filter(Boolean) as SubstitutionCard[];
-        setCards(mapped.length ? [DEMO_CARD, ...mapped] : [DEMO_CARD]);
+        setCards(mapped.length ? [...DEMO_CARDS, ...mapped] : DEMO_CARDS);
       })
       .catch(() => {
-        if (active) setCards([DEMO_CARD]);
+        if (active) setCards(DEMO_CARDS);
       });
 
     return () => {
@@ -167,6 +187,27 @@ export default function StudyModeQuizEngine() {
     }
   }, [theme]);
 
+  useEffect(() => {
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && entry.intersectionRatio > 0.6) {
+            const index = Number((entry.target as HTMLElement).dataset.index);
+            setCurrentPage(index + 1);
+          }
+        });
+      },
+      { root: scroller, threshold: [0.6] }
+    );
+
+    const slides = scroller.querySelectorAll<HTMLElement>("[data-index]");
+    slides.forEach((slide) => observer.observe(slide));
+    return () => observer.disconnect();
+  }, [cards.length]);
+
   const [definitionText, memoryHookText] = (() => {
     const [definition, memory] = activeCard.prompt.split(/Memory hook:/i);
     return [definition?.trim() ?? "", memory?.trim() ?? ""];
@@ -189,7 +230,7 @@ export default function StudyModeQuizEngine() {
           </button>
           <div>
             <div className="desktop-header-kicker">English</div>
-            <div className="desktop-header-title">Study Mode</div>
+            <div className="desktop-header-title">One Word Substitution</div>
           </div>
         </div>
 
@@ -240,7 +281,7 @@ export default function StudyModeQuizEngine() {
           </button>
           <div>
             <div className="mobile-header-kicker">English</div>
-            <div className="mobile-header-title">Study Mode</div>
+            <div className="mobile-header-title">One Word Substitution</div>
           </div>
         </div>
 
@@ -303,200 +344,97 @@ export default function StudyModeQuizEngine() {
             type="button"
             className="palette-backdrop"
             aria-label="Close question palette"
-            onClick={() => setIsPaletteOpen(false)}
-          />
-        )}
+            const goToCard = (index: number) => {
+              scrollerRef.current
+                ?.querySelector<HTMLElement>(`[data-index="${index}"]`)
+                ?.scrollIntoView({ behavior: "smooth", block: "center" });
+              setCurrentPage(index + 1);
+            };
 
+            return (
+              <>
+                <main className="ows-page" data-theme={theme}>
+                  <div className="ows-header">
+                    <div className="ows-header-text">
         {isPaletteOpen && (
           <section className="question-palette" aria-label="Question palette">
-            <div className="question-palette-head">
+                      className="ows-menu-button"
               <div>
                 <div className="question-palette-kicker">Navigation</div>
                 <div className="question-palette-title">Question Palette</div>
               </div>
-              <button
-                type="button"
-                className="palette-close"
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
+                        <line x1="3" y1="6" x2="21" y2="6" />
+                        <line x1="3" y1="12" x2="21" y2="12" />
+                        <line x1="3" y1="18" x2="21" y2="18" />
+                      </svg>
                 aria-label="Close question palette"
                 onClick={() => setIsPaletteOpen(false)}
-              >
-                ×
+                      <div className="ows-header-label">English</div>
+                      <div className="ows-header-title">One Word Substitution</div>
               </button>
-            </div>
-
-            <div className="question-palette-grid" role="list" aria-label="Question numbers">
-              {Array.from({ length: totalCards }, (_, index) => index + 1).map((page) => (
-                <button
-                  key={page}
-                  type="button"
-                  className={`palette-pill ${currentPage === page ? "active" : ""}`}
-                  onClick={() => {
-                    setCurrentPage(page);
-                    setIsPaletteOpen(false);
-                  }}
-                  aria-pressed={currentPage === page}
-                >
-                  {page}
-                </button>
-              ))}
-            </div>
-          </section>
-        )}
-
-        <section className="content">
-          <div className="def">
-            <RichContent text={definitionText} />
-          </div>
-          {activeCard.definitionTranslation ? (
-            <div className="bn">({activeCard.definitionTranslation})</div>
-          ) : null}
-        </section>
-
-        <section className="word-zone">
-          <div className="word">{activeCard.answer}</div>
-          <div className="pos">{(activeCard.label || "One Word").toUpperCase()}</div>
-          <div className="bubble-row" aria-hidden="true">
-            <div className="bubble filled" />
-            <div className="bubble" />
-            <div className="bubble" />
-            <div className="bubble" />
-          </div>
-        </section>
-
-        <div className="section-divider" aria-hidden="true" />
-
-        <section className="content memory-block">
-          <div className="divider dotted" />
-          <div className="section-label">MEMORY HOOK</div>
-          <div className="memory-text">
-            {memoryHookText ? <RichContent text={memoryHookText} /> : "--"}
-          </div>
-          {activeCard.answerTranslation ? (
-            <div className="memory-translation">{activeCard.answerTranslation}</div>
-          ) : null}
-        </section>
-
-        <div className="word-nav">
-          <button type="button" onClick={() => setCurrentPage((value) => Math.max(1, value - 1))}>
-            <span className="arrow">&lt;</span> Previous
-          </button>
-          <button
-            type="button"
-            onClick={() => setCurrentPage((value) => Math.min(totalCards, value + 1))}
-          >
-            Next <span className="arrow">&gt;</span>
-          </button>
-        </div>
-      </div>
-
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Archivo+Black&family=Noto+Sans+Bengali:wght@400;600&display=swap');
-
-        :root {
-          --paper: #181613;
-          --paper-raised: #1f1c18;
-          --ink: #f2ead9;
-          --ink-dim: #c9bfa9;
-          --scarlet: #ff7a5c;
-          --teal: #7fd4bd;
-          --mustard: #f0b649;
-          --line: #4a4234;
-        }
-
+                    </div>
+                    <div className="ows-header-actions">
+                      <span className="ows-counter">{currentPage}/{totalCards}</span>
+                      <button
+                        type="button"
+                        className="ows-theme-toggle"
+                        aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
+                        aria-pressed={theme === "dark"}
+                        onClick={() => setTheme((value) => (value === "dark" ? "light" : "dark"))}
+                      >
+                        <span>{theme === "dark" ? "Dark" : "Light"}</span>
+                        {theme === "dark" ? (
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M12 2v2.4M12 19.6V22M4.4 4.4l1.7 1.7M17.9 17.9l1.7 1.7M2 12h2.4M19.6 12H22M4.4 19.6l1.7-1.7M17.9 6.1l1.7-1.7" /><circle cx="12" cy="12" r="4.2" /></svg>
+                        ) : (
+                          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 14.5a8.5 8.5 0 1 1-9-13 7 7 0 0 0 9 13Z" /></svg>
+                        )}
+                      </button>
+                    </div>
+          --ink-dim: #8a8a8a;
+          --card-ink: #f2ead9;
+                  <div
+                    ref={scrollerRef}
+                    className="ows-scroller"
+          --teal: #6ea89c;
+          --line: #262626;
+          goToCard(deltaX > 0 ? Math.max(0, currentIndex - 1) : Math.min(totalCards - 1, currentIndex + 1));
         .quiz-page {
-          min-height: 100vh;
+          min-height: 100dvh;
+          {studyCards.map((card, index) => {
+            const [definition, memory] = card.prompt.split(/Memory hook:/i);
+            return (
+              <section className="ows-slide" data-index={index} key={card.id}>
+                <article className="ows-card">
+                  <div className="ows-word">{card.answer}</div>
+                  <div className="ows-pos">{(card.label || "One Word").toUpperCase()}</div>
+                  {card.answerTranslation ? <div className="ows-word-bn">{card.answerTranslation}</div> : null}
+                  <div className="ows-divider" />
+                  <div className="ows-phrase"><RichContent text={definition.trim()} /></div>
+                  {card.definitionTranslation ? <div className="ows-bn">{card.definitionTranslation}</div> : null}
+                  <div className="ows-hook">
+                    <div className="ows-hook-label">Memory Hook</div>
+                    <div className="ows-hook-text">{memory?.trim() ? <RichContent text={memory.trim()} /> : "--"}</div>
+                  </div>
+                </article>
+              </section>
+            );
+          })}
+        </div>
+
+        <div className="ows-dots" aria-label={`Card ${currentPage} of ${totalCards}`}>
+          {studyCards.map((card, index) => (
+          border-radius: 10px;
+            key={card.id}
           background: var(--paper);
-          color: var(--ink);
-          font-family: 'Space Mono', monospace;
-          -webkit-font-smoothing: antialiased;
-          position: relative;
-          padding-top: 58px;
-        }
-
-        .quiz-page[data-theme="light"] {
-          --paper: #f4efe3;
-          --paper-raised: #ffffff;
-          --ink: #1c1c1c;
-          --ink-dim: #5b5b52;
-          --scarlet: #b6412e;
-          --teal: #2f4b46;
-          --mustard: #d69a2d;
-          --line: #c9bfa5;
-        }
-
-        .quiz-page[data-theme="light"] .card {
-          background: var(--paper);
-        }
-
-        .desktop-header {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          z-index: 25;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 14px;
-          padding: 12px 14px 10px;
-          background: var(--paper);
-          border-bottom: 1.5px solid var(--line);
-          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-        }
-
-        .desktop-header-copy,
-        .mobile-header-copy {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          min-width: 0;
-        }
-
-        .desktop-header-meta,
-        .mobile-header-meta {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          flex: 0 0 auto;
-        }
-
-        .desktop-header-copy {
-          min-width: 0;
-        }
-
-        .desktop-header-kicker {
-          font-size: 10px;
-          letter-spacing: 3px;
-          text-transform: uppercase;
-          color: var(--ink-dim);
-        }
-
-        .desktop-header-title {
-          margin-top: 3px;
-          font-family: 'Archivo Black', sans-serif;
-          font-size: 18px;
-          line-height: 1;
-          color: var(--ink);
-        }
-
-        .menu-toggle {
-          width: 40px;
-          height: 40px;
-          padding: 10px;
-          display: inline-flex;
-          flex-direction: column;
-          justify-content: center;
-          gap: 4px;
-          border-radius: 12px;
-          border: 1.5px solid var(--line);
-          background: var(--paper);
-          color: var(--ink);
+            className={`ows-dot ${currentIndex === index ? "active" : ""}`}
           cursor: pointer;
           flex: 0 0 auto;
-        }
+            onClick={() => goToCard(index)}
 
         .menu-toggle span {
-          display: block;
+        </div>
+      </main>
           width: 100%;
           height: 2px;
           border-radius: 999px;
@@ -505,17 +443,17 @@ export default function StudyModeQuizEngine() {
 
         .theme-toggle {
           min-width: 42px;
-          height: 42px;
-          padding: 0 10px;
+          height: 34px;
+          padding: 0 12px;
           display: inline-flex;
           align-items: center;
           justify-content: center;
           gap: 8px;
-          border-radius: 12px;
+          border-radius: 999px;
           border: 1.5px solid var(--line);
-          background: var(--paper-raised);
+          background: var(--paper);
           color: var(--ink);
-          box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
+          box-shadow: none;
           cursor: pointer;
         }
 
@@ -523,9 +461,9 @@ export default function StudyModeQuizEngine() {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          min-width: 52px;
-          height: 30px;
-          padding: 0 10px;
+          min-width: 58px;
+          height: 34px;
+          padding: 0 12px;
           border-radius: 999px;
           border: 1.5px solid var(--line);
           background: var(--paper);
@@ -537,7 +475,7 @@ export default function StudyModeQuizEngine() {
         }
 
         .quiz-page[data-theme="light"] .desktop-header {
-          background: var(--paper);
+          background: var(--paper-raised);
         }
 
         .quiz-page[data-theme="light"] .theme-toggle {
@@ -545,7 +483,7 @@ export default function StudyModeQuizEngine() {
         }
 
         .quiz-page[data-theme="light"] .menu-toggle {
-          background: var(--paper);
+          background: var(--paper-raised);
         }
 
         .mobile-header {
@@ -569,7 +507,8 @@ export default function StudyModeQuizEngine() {
           width: 100%;
           max-width: 520px;
           margin: 0 auto;
-          min-height: 100vh;
+          min-height: calc(100dvh - 67px);
+          padding: 34px 48px 34px 22px;
           background: var(--paper);
           display: flex;
           flex-direction: column;
@@ -577,9 +516,39 @@ export default function StudyModeQuizEngine() {
           position: relative;
         }
 
+        .progress-dots {
+          position: fixed;
+          top: 50%;
+          left: calc(50% + min(260px, 50vw - 14px));
+          z-index: 15;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          transform: translateY(-50%);
+        }
+
+        .progress-dot {
+          width: 5px;
+          height: 5px;
+          padding: 0;
+          border: 0;
+          border-radius: 50%;
+          background: var(--ink);
+          cursor: pointer;
+          opacity: 0.25;
+          transition: opacity 0.2s, height 0.2s, background 0.2s;
+        }
+
+        .progress-dot.active {
+          height: 16px;
+          border-radius: 3px;
+          background: var(--scarlet);
+          opacity: 1;
+        }
+
         .palette-backdrop {
           position: fixed;
-          inset: 58px 0 0 0;
+          inset: 0;
           z-index: 30;
           border: 0;
           padding: 0;
@@ -589,15 +558,17 @@ export default function StudyModeQuizEngine() {
 
         .question-palette {
           position: fixed;
-          top: 58px;
-          left: 12px;
-          right: 12px;
+          top: 0;
+          left: 0;
+          right: auto;
+          bottom: 0;
           z-index: 35;
-          max-width: 520px;
-          margin: 0 auto;
-          padding: 14px;
-          border: 1.5px solid var(--line);
-          border-radius: 20px;
+          width: min(280px, 80vw);
+          margin: 0;
+          padding: 18px;
+          border: 0;
+          border-right: 1.5px solid var(--line);
+          border-radius: 0;
           background: var(--paper-raised);
           box-shadow: 0 18px 38px rgba(0, 0, 0, 0.2);
         }
@@ -623,33 +594,35 @@ export default function StudyModeQuizEngine() {
 
         .question-palette-title {
           margin-top: 3px;
-          font-family: 'Archivo Black', sans-serif;
-          font-size: 16px;
-          line-height: 1;
+          font-size: 11px;
+          line-height: 1.2;
+          letter-spacing: 2.5px;
+          text-transform: uppercase;
           color: var(--ink);
         }
 
         .palette-close {
-          width: 36px;
-          height: 36px;
-          border-radius: 10px;
+          width: 30px;
+          height: 30px;
+          border-radius: 8px;
           border: 1.5px solid var(--line);
           background: var(--paper);
           color: var(--ink);
-          font-size: 22px;
+          font-size: 20px;
           line-height: 1;
           cursor: pointer;
         }
 
         .question-palette-grid {
           display: grid;
-          grid-template-columns: repeat(5, minmax(0, 1fr));
+          grid-template-columns: repeat(4, minmax(0, 1fr));
           gap: 10px;
         }
 
         .palette-pill {
-          height: 44px;
-          border-radius: 14px;
+          aspect-ratio: 1;
+          height: auto;
+          border-radius: 8px;
           border: 1.5px solid var(--line);
           background: var(--paper);
           color: var(--ink-dim);
@@ -661,55 +634,48 @@ export default function StudyModeQuizEngine() {
         .palette-pill.active {
           background: var(--scarlet);
           border-color: var(--scarlet);
-          color: #181613;
+          color: #ffffff;
         }
 
         .word-zone {
+          width: 100%;
+          margin: auto 0 0;
           text-align: center;
-          padding: 0 20px 6px;
-          background: repeating-linear-gradient(135deg, transparent, transparent 18px, rgba(255, 122, 92, 0.07) 18px, rgba(255, 122, 92, 0.07) 19px);
-        }
-
-        .quiz-page[data-theme="light"] .word-zone {
-          background: repeating-linear-gradient(135deg, transparent, transparent 18px, rgba(182, 65, 46, 0.04) 18px, rgba(182, 65, 46, 0.04) 19px);
+          padding: 44px 30px 0;
+          background: var(--card);
+          border: 1px solid var(--card-line);
+          border-bottom: 0;
+          border-radius: 14px 14px 0 0;
+          box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
         }
 
         .word {
           font-family: 'Archivo Black', sans-serif;
-          font-size: 46px;
-          letter-spacing: 1px;
-          color: var(--ink);
+          font-size: clamp(2rem, 6vw, 2.75rem);
+          letter-spacing: 0;
+          color: var(--card-ink);
         }
 
         .pos {
-          margin-top: 4px;
-          font-size: 13.5px;
+          margin-top: 10px;
+          font-size: 11px;
           color: var(--scarlet);
           letter-spacing: 2px;
           font-weight: 700;
         }
 
-        .bubble-row {
-          display: flex;
-          justify-content: center;
-          gap: 10px;
-          margin-top: 12px;
-        }
-
-        .bubble {
-          width: 14px;
-          height: 14px;
-          border: 1.5px solid var(--ink);
-          border-radius: 50%;
-        }
-
-        .bubble.filled {
-          background: var(--scarlet);
-          border-color: var(--scarlet);
+        .word-translation {
+          margin-top: 10px;
+          color: var(--teal);
+          font-family: 'Noto Sans Bengali', sans-serif;
+          font-size: 15px;
+          font-weight: 600;
+          line-height: 1.7;
         }
 
         .content {
-          padding: 8px 20px 0;
+          width: 100%;
+          padding: 20px 30px 0;
           flex: 0 0 auto;
           display: flex;
           flex-direction: column;
@@ -717,71 +683,74 @@ export default function StudyModeQuizEngine() {
         }
 
         .section-divider {
-          margin: 0;
-          border-top: 1.5px solid #f2ead9;
+          width: 36px;
+          height: 2px;
+          margin: 20px auto 0;
+          background: var(--card-line);
+          border: 0;
         }
 
         .section-label {
           font-family: 'Space Mono', monospace;
-          font-size: 16.5px;
-          letter-spacing: 2px;
+          font-size: 11px;
+          letter-spacing: 3px;
           color: var(--teal);
-          font-weight: 400;
+          font-weight: 700;
           margin: 0;
           text-align: center;
           text-transform: uppercase;
         }
 
         .def {
-          font-size: 15px;
-          line-height: 1.65;
-          color: var(--ink);
+          font-size: 14.5px;
+          line-height: 1.85;
+          color: var(--card-ink);
           text-align: center;
         }
 
         .bn {
           font-family: 'Noto Sans Bengali', sans-serif;
-          font-size: 15px;
-          color: var(--teal);
+          margin-top: 12px;
+          font-size: 14px;
+          line-height: 1.9;
+          color: var(--card-ink-dim);
           text-align: center;
         }
 
         .divider {
           height: 1px;
-          background: var(--line);
+          background: var(--card-line);
           width: 100%;
         }
 
         .divider.dotted {
           background: none;
-          border-top: 1px dashed var(--line);
-          margin: 6px 0 2px;
+          border-top: 1px dashed var(--card-line);
+          margin: 2px 0 0;
         }
 
         .memory-text {
-          font-size: 15px;
-          line-height: 1.7;
-          color: var(--ink-dim);
-          text-align: center;
-        }
-
-        .memory-translation {
-          font-family: 'Noto Sans Bengali', sans-serif;
-          font-size: 15px;
-          color: var(--mustard);
+          margin-top: 10px;
+          font-size: 13px;
+          line-height: 1.8;
+          color: var(--card-ink-dim);
           text-align: center;
         }
 
         .word-nav {
-          margin-top: auto;
+          width: 100%;
+          margin: 0;
+          padding: 20px 30px 40px;
           display: flex;
           justify-content: space-between;
           gap: 12px;
-          padding: 14px 20px calc(18px + env(safe-area-inset-bottom));
-          position: sticky;
-          bottom: 0;
-          background: var(--paper);
-          border-top: 1.5px dashed var(--line);
+          position: relative;
+          bottom: auto;
+          background: var(--card);
+          border: 1px solid var(--card-line);
+          border-top: 0;
+          border-radius: 0 0 14px 14px;
+          box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
         }
 
         .quiz-page[data-theme="light"] .word-nav {
@@ -799,25 +768,25 @@ export default function StudyModeQuizEngine() {
           font-size: 13.5px;
           letter-spacing: 1px;
           text-transform: uppercase;
-          color: var(--ink);
-          background: var(--paper);
-          border: 1.5px solid var(--ink);
+          color: var(--card-ink);
+          background: transparent;
+          border: 1.5px solid var(--card-ink);
           border-radius: 999px;
           padding: 10px 14px;
           cursor: pointer;
-          box-shadow: 3px 3px 0 var(--ink);
+          box-shadow: none;
           transition: transform 0.12s, box-shadow 0.12s, background 0.12s, color 0.12s;
         }
 
         .word-nav button:hover {
           background: var(--scarlet);
-          color: var(--paper);
+          color: #ffffff;
           border-color: var(--scarlet);
         }
 
         .word-nav button:active {
           transform: translate(3px, 3px);
-          box-shadow: 0 0 0 var(--ink);
+          box-shadow: none;
         }
 
         .word-nav .arrow {
@@ -827,58 +796,28 @@ export default function StudyModeQuizEngine() {
 
         @media (max-width: 460px) {
           .quiz-page {
-            padding-top: env(safe-area-inset-top);
+            padding-top: calc(67px + env(safe-area-inset-top));
           }
 
           .desktop-header {
-            display: none;
+            display: flex;
           }
 
           .mobile-header {
-            position: sticky;
-            top: 0;
-            z-index: 25;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            padding: 8px 12px 7px;
-            background: var(--paper-raised);
-            border-bottom: 1.5px solid var(--line);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-          }
-
-
-          .mobile-header-copy {
-            min-width: 0;
-          }
-
-          .mobile-header-kicker {
-            font-size: 9px;
-            letter-spacing: 2.5px;
-            text-transform: uppercase;
-            color: var(--ink-dim);
-          }
-
-          .mobile-header-title {
-            margin-top: 2px;
-            font-family: 'Archivo Black', sans-serif;
-            font-size: 15px;
-            line-height: 1;
-            color: var(--ink);
+            display: none;
           }
 
           .theme-toggle {
-            min-width: 64px;
+            min-width: 42px;
             height: 34px;
-            padding: 0 10px;
+            padding: 0 8px;
             flex: 0 0 auto;
             gap: 5px;
             border-radius: 999px;
-            background: var(--scarlet);
-            color: #181613;
-            border-color: var(--scarlet);
-            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+            background: var(--paper);
+            color: var(--ink);
+            border-color: var(--line);
+            box-shadow: none;
           }
 
           .theme-toggle-label {
@@ -893,11 +832,12 @@ export default function StudyModeQuizEngine() {
           }
 
           .card {
-            min-height: calc(100dvh - 46px - env(safe-area-inset-top));
+            min-height: calc(100dvh - 67px - env(safe-area-inset-top));
+            padding: 24px 30px 24px 16px;
           }
 
           .word-zone {
-            padding: 0 12px 8px;
+            padding: 36px 22px 0;
           }
 
           .word {
@@ -909,19 +849,9 @@ export default function StudyModeQuizEngine() {
             font-size: 12px;
           }
 
-          .bubble-row {
-            margin-top: 8px;
-            gap: 8px;
-          }
-
-          .bubble {
-            width: 11px;
-            height: 11px;
-          }
-
           .content {
             flex: 0 0 auto;
-            padding: 7px 12px 0;
+            padding: 18px 22px 0;
             gap: 5px;
           }
 
@@ -930,9 +860,9 @@ export default function StudyModeQuizEngine() {
           }
 
           .section-label {
-            font-size: 15px;
+            font-size: 11px;
             font-weight: 600;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
           }
 
           .def {
@@ -946,27 +876,23 @@ export default function StudyModeQuizEngine() {
           }
 
           .memory-text {
-            font-size: 14px;
+            font-size: 12.5px;
             line-height: 1.65;
           }
 
-          .memory-translation {
-            font-size: 14px;
-          }
-
           .word-nav {
-            position: static;
-            margin-top: 14px;
-            padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
+            position: relative;
+            margin: 0;
+            padding: 18px 22px calc(32px + env(safe-area-inset-bottom));
             gap: 10px;
-            border-top-width: 1px;
+            border-top: 0;
           }
 
           .word-nav button {
             font-size: 13px;
             font-weight: 600;
             padding: 11px 10px;
-            box-shadow: 2px 2px 0 var(--ink);
+            box-shadow: none;
             letter-spacing: 0.5px;
           }
 
@@ -979,20 +905,17 @@ export default function StudyModeQuizEngine() {
             height: 14px;
           }
 
-          .quiz-page[data-theme="light"] .mobile-header {
-            background: var(--paper-raised);
-          }
-
           .palette-backdrop {
-            inset: 46px 0 0 0;
+            inset: 0;
           }
 
           .question-palette {
-            top: 46px;
-            left: 8px;
-            right: 8px;
-            padding: 10px;
-            border-radius: 16px;
+            top: 0;
+            left: 0;
+            right: auto;
+            bottom: 0;
+            padding: 18px;
+            border-radius: 0;
           }
 
           .question-palette-head {
@@ -1009,10 +932,200 @@ export default function StudyModeQuizEngine() {
           }
 
           .palette-pill {
-            height: 38px;
-            border-radius: 12px;
+            height: auto;
+            border-radius: 8px;
+          }
+
+          .progress-dots {
+            left: auto;
+            right: 12px;
           }
         }
+      `}</style>
+    </main>
+  );
+}
+*/
+
+function splitPrompt(prompt: string) {
+  const [definition, memoryHook] = prompt.split(/Memory hook:/i);
+  return { definition: definition.trim(), memoryHook: memoryHook?.trim() ?? "" };
+}
+
+export default function StudyModeQuizEngine() {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [theme, setTheme] = useState<"light" | "dark">("dark");
+  const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  const [cards, setCards] = useState<SubstitutionCard[]>([]);
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const studyCards = cards.length ? cards : DEMO_CARDS;
+  const currentIndex = Math.min(Math.max(currentPage - 1, 0), studyCards.length - 1);
+
+  useEffect(() => {
+    let active = true;
+    fetchQuestions({ subject: "english", topic: "one-word-substitution", questionType: "study-mode" })
+      .then((data) => {
+        if (!active) return;
+        const mapped = data
+          .map((entry, index) => toSubstitutionCard(entry as StudyModeEntry, index))
+          .filter(Boolean) as SubstitutionCard[];
+        setCards(mapped.length ? [...DEMO_CARDS, ...mapped] : DEMO_CARDS);
+      })
+      .catch(() => {
+        if (active) setCards(DEMO_CARDS);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem("study-mode-theme", theme);
+    } catch {
+      // Ignore storage access issues.
+    }
+  }, [theme]);
+
+  useEffect(() => {
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && entry.intersectionRatio > 0.6) {
+            setCurrentPage(Number((entry.target as HTMLElement).dataset.index) + 1);
+          }
+        });
+      },
+      { root: scroller, threshold: [0.6] }
+    );
+    scroller.querySelectorAll<HTMLElement>("[data-index]").forEach((slide) => observer.observe(slide));
+    return () => observer.disconnect();
+  }, [cards.length]);
+
+  const goToCard = (index: number) => {
+    scrollerRef.current
+      ?.querySelector<HTMLElement>(`[data-index="${index}"]`)
+      ?.scrollIntoView({ behavior: "smooth", block: "center" });
+    setCurrentPage(index + 1);
+    setIsPaletteOpen(false);
+  };
+
+  return (
+    <main className="ows-page" data-theme={theme}>
+      <div className="ows-wrap">
+        <header className="ows-header">
+          <button
+            type="button"
+            className="ows-menu-btn"
+            aria-label="Open word palette"
+            aria-expanded={isPaletteOpen}
+            onClick={() => setIsPaletteOpen(true)}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+          </button>
+          <div className="ows-header-text">
+            <div className="ows-header-label">English</div>
+            <div className="ows-header-title">One Word Substitution</div>
+          </div>
+          <div className="ows-header-actions">
+            <span className="ows-counter">{currentPage}/{studyCards.length}</span>
+            <button
+              type="button"
+              className="ows-theme-toggle"
+              aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
+              onClick={() => setTheme((value) => value === "dark" ? "light" : "dark")}
+            >
+              <span>{theme === "dark" ? "Dark" : "Light"}</span>
+              {theme === "dark" ? (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="4.2" />
+                  <path d="M12 2v2.4M12 19.6V22M4.4 4.4l1.7 1.7M17.9 17.9l1.7 1.7M2 12h2.4M19.6 12H22M4.4 19.6l1.7-1.7M17.9 6.1l1.7-1.7" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M20.5 14.5a8.5 8.5 0 1 1-9-13 7 7 0 0 0 9 13Z" />
+                </svg>
+              )}
+            </button>
+          </div>
+        </header>
+
+        <div className="ows-scroller" ref={scrollerRef}>
+          {studyCards.map((card, index) => {
+            const { definition, memoryHook } = splitPrompt(card.prompt);
+            return (
+              <section className="ows-slide" data-index={index} key={card.id}>
+                <article className="ows-card">
+                  <div className="ows-word">{card.answer}</div>
+                  <div className="ows-pos">{(card.label || "One Word").toUpperCase()}</div>
+                  {card.answerTranslation ? <div className="ows-word-bn">{card.answerTranslation}</div> : null}
+                  <div className="ows-divider" />
+                  <div className="ows-phrase"><RichContent text={definition} /></div>
+                  {card.definitionTranslation ? <div className="ows-bn">{card.definitionTranslation}</div> : null}
+                  <div className="ows-hook">
+                    <div className="ows-hook-label">Memory Hook</div>
+                    <div className="ows-hook-text">{memoryHook ? <RichContent text={memoryHook} /> : "--"}</div>
+                  </div>
+                </article>
+              </section>
+            );
+          })}
+        </div>
+
+        <div className="ows-dots" aria-label={`Card ${currentPage} of ${studyCards.length}`}>
+          {studyCards.map((card, index) => (
+            <button
+              key={card.id}
+              type="button"
+              className={`ows-dot ${currentIndex === index ? "active" : ""}`}
+              aria-label={`Go to card ${index + 1}`}
+              onClick={() => goToCard(index)}
+            />
+          ))}
+        </div>
+      </div>
+
+      <button
+        type="button"
+        className={`ows-overlay ${isPaletteOpen ? "open" : ""}`}
+        aria-label="Close word palette"
+        onClick={() => setIsPaletteOpen(false)}
+      />
+      <aside className={`ows-drawer ${isPaletteOpen ? "open" : ""}`} aria-label="Word palette">
+        <div className="ows-drawer-head">
+          <span>Word Palette</span>
+          <button type="button" aria-label="Close word palette" onClick={() => setIsPaletteOpen(false)}>×</button>
+        </div>
+        <div className="ows-palette-grid">
+          {studyCards.map((card, index) => (
+            <button
+              key={card.id}
+              type="button"
+              className={currentIndex === index ? "active" : ""}
+              onClick={() => goToCard(index)}
+            >
+              {index + 1}
+            </button>
+          ))}
+        </div>
+      </aside>
+
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Archivo+Black&family=Noto+Sans+Bengali:wght@400;600&display=swap');
+        .ows-page{--bg:#000;--panel:#0d0d0d;--ink:#f5f5f5;--ink-dim:#8a8a8a;--line:#262626;--card:#1a1712;--card-ink:#f2ead9;--card-ink-dim:#b9ae98;--card-line:rgba(242,234,217,.12);--scarlet:#e2664a;--teal:#6ea89c;--shadow:rgba(0,0,0,.55);position:fixed;inset:0;background:var(--bg);font-family:'Space Mono',monospace;-webkit-font-smoothing:antialiased}
+        .ows-page[data-theme="light"]{--bg:#f5f1e8;--panel:#fff;--ink:#1a1712;--ink-dim:#8a8072;--line:#e3dcc9;--card:#fffdf8;--card-ink:#1a1712;--card-ink-dim:#6b6255;--card-line:rgba(26,23,18,.12);--scarlet:#c94b34;--teal:#2f7a6c;--shadow:rgba(26,23,18,.14)}
+        .ows-page *{box-sizing:border-box}.ows-wrap{max-width:520px;height:100dvh;margin:0 auto;position:relative;display:flex;flex-direction:column}.ows-header{flex-shrink:0;z-index:20;background:var(--panel);display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:1.5px solid var(--line)}
+        .ows-menu-btn{flex-shrink:0;width:38px;height:38px;display:flex;align-items:center;justify-content:center;background:var(--bg);border:1.5px solid var(--line);border-radius:10px;color:var(--ink);cursor:pointer}.ows-menu-btn svg{width:16px;height:16px}.ows-header-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}.ows-header-label{font-size:10.5px;letter-spacing:3px;color:var(--ink-dim);text-transform:uppercase}.ows-header-title{font-weight:500;font-size:13px;letter-spacing:.3px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ows-header-actions{flex-shrink:0;display:flex;align-items:center;gap:8px}.ows-counter,.ows-theme-toggle{font-family:'Space Mono',monospace;font-weight:700;background:var(--bg);border:1.5px solid var(--line);border-radius:999px;color:var(--ink)}.ows-counter{font-size:13px;color:var(--ink-dim);padding:8px 14px;white-space:nowrap}.ows-theme-toggle{display:flex;align-items:center;gap:7px;font-size:11.5px;letter-spacing:1.5px;text-transform:uppercase;padding:8px 14px;cursor:pointer}.ows-theme-toggle svg{width:14px;height:14px}
+        .ows-scroller{flex:1;min-height:0;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none}.ows-scroller::-webkit-scrollbar{display:none}.ows-slide{height:100%;scroll-snap-align:center;display:flex;align-items:center;justify-content:center;padding:34px 22px}.ows-card{width:100%;background:var(--card);border:1px solid var(--card-line);border-radius:14px;padding:44px 30px 40px;text-align:center;box-shadow:0 18px 40px var(--shadow)}.ows-word{font-family:'Archivo Black',sans-serif;font-size:32px;color:var(--card-ink);line-height:1.2}.ows-pos{margin-top:10px;font-size:11px;font-weight:700;letter-spacing:2.5px;color:var(--scarlet)}.ows-word-bn{font-family:'Noto Sans Bengali',sans-serif;font-weight:600;font-size:15px;line-height:1.7;color:var(--teal);margin-top:10px}.ows-divider{width:36px;height:2px;background:var(--card-line);margin:20px auto}.ows-phrase{font-size:14.5px;line-height:1.85;color:var(--card-ink);opacity:.82;max-width:400px;margin:0 auto}.ows-bn{font-family:'Noto Sans Bengali',sans-serif;font-weight:600;font-size:14px;line-height:1.9;color:var(--card-ink-dim);margin-top:16px}.ows-hook{margin-top:26px;padding-top:22px;border-top:1px dashed var(--card-line)}.ows-hook-label{font-weight:700;font-size:11px;letter-spacing:3px;color:var(--teal);text-transform:uppercase}.ows-hook-text{margin-top:10px;font-size:13px;line-height:1.8;color:var(--card-ink-dim)}
+        .ows-dots{position:absolute;right:14px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;z-index:10}.ows-dot{width:5px;height:5px;padding:0;border:0;border-radius:50%;background:var(--ink);opacity:.25;cursor:pointer;transition:opacity .2s,height .2s,background .2s}.ows-dot.active{opacity:1;background:var(--scarlet);height:16px;border-radius:3px}
+        .ows-overlay{position:fixed;inset:0;border:0;background:rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:opacity .2s;z-index:30}.ows-overlay.open{opacity:1;pointer-events:auto}.ows-drawer{position:fixed;top:0;left:0;bottom:0;width:280px;max-width:80%;background:var(--panel);border-right:1.5px solid var(--line);transform:translateX(-100%);transition:transform .25s ease;z-index:31;display:flex;flex-direction:column}.ows-drawer.open{transform:translateX(0)}.ows-drawer-head{display:flex;align-items:center;justify-content:space-between;padding:18px 18px 14px;border-bottom:1.5px solid var(--line);font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--ink-dim)}.ows-drawer-head button{width:30px;height:30px;background:var(--bg);border:1.5px solid var(--line);border-radius:8px;color:var(--ink);font-size:20px;cursor:pointer}.ows-palette-grid{padding:18px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;overflow-y:auto}.ows-palette-grid button{aspect-ratio:1;font-family:'Space Mono',monospace;font-weight:700;font-size:14px;color:var(--ink-dim);background:var(--bg);border:1.5px solid var(--line);border-radius:8px;cursor:pointer}.ows-palette-grid button.active{background:var(--scarlet);border-color:var(--scarlet);color:#fff}
+        @media (max-width:400px){.ows-word{font-size:26px}.ows-card{padding:36px 22px 32px}.ows-phrase{font-size:13.5px}.ows-hook-text{font-size:12.5px}}
       `}</style>
     </main>
   );
