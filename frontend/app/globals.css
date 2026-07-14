@@ -126,6 +126,49 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+.page-transition-shell {
+  min-height: 100%;
+}
+
+.page-transition-shell__page {
+  animation: page-transition-enter 220ms ease-out both;
+}
+
+.page-transition-shell__progress {
+  position: fixed;
+  z-index: 200;
+  top: 0;
+  right: 0;
+  width: min(42vw, 32rem);
+  height: 3px;
+  background: #0f766e;
+  box-shadow: 0 1px 8px rgba(15, 118, 110, 0.42);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(110%);
+}
+
+.page-transition-shell__progress.is-active {
+  opacity: 1;
+  animation: page-transition-progress 1.05s ease-in-out infinite;
+}
+
+@keyframes page-transition-enter {
+  from {
+    opacity: 0;
+    transform: translateX(1.25rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes page-transition-progress {
+  from { transform: translateX(110%); }
+  to { transform: translateX(-245%); }
+}
+
 .route-boundary {
   display: block;
   min-height: 55vh;

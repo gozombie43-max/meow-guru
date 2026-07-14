@@ -7,6 +7,7 @@ import BottomNav from '@/components/BottomNav';
 import AppWarmup from '@/components/AppWarmup';
 import AppRecovery from '@/components/AppRecovery';
 import FeedbackToast from '@/components/FeedbackToast';
+import PageTransitionShell from '@/components/PageTransitionShell';
 
 const geist = Geist({ subsets: ['latin'] });
 
@@ -30,7 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AuthProvider>
           <AppRecovery />
           <AppWarmup />
-          {children}
+          <PageTransitionShell>{children}</PageTransitionShell>
           <BottomNav />
           <FeedbackToast />
         </AuthProvider>
