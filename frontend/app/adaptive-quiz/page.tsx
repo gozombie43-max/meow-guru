@@ -50,6 +50,22 @@ interface QuizMeta {
   topicBreakdown?: TopicBreakdownItem[];
 }
 
+interface SavedQuizSession {
+  version: 1;
+  userId: string;
+  quizId: string;
+  questions: Question[];
+  meta: QuizMeta | null;
+  currentIdx: number;
+  answers: Record<string, Answer>;
+  selected: string | null;
+  firstAnswer: string | null;
+  questionStartTime: number;
+  elapsed: number;
+}
+
+const QUIZ_SESSION_STORAGE_KEY = 'adaptive-quiz-session-v1';
+
 const DIFFICULTY_LABEL = {
   easy: 'Easy',
   medium: 'Medium',
@@ -238,6 +254,8 @@ export default function AdaptiveQuizPage() {
   const [score, setScore] = useState(0);
   const [topicAccuracy, setTopicAccuracy] = useState<any[]>([]);
   const [expandedResult, setExpandedResult] = useState<string | null>(null);
+  const [savedSession, setSavedSession] = useState<SavedQuizSession | null>(null);
+  const [submissionError, setSubmissionError] = useState('');
 
   const frameStyle: CSSProperties = {
     maxWidth: isMobileView ? '100%' : 1120,
@@ -369,6 +387,55 @@ export default function AdaptiveQuizPage() {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [phase]);
 
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(QUIZ_SESSION_STORAGE_KEY);
+      if (!stored) return;
+
+      const parsed = JSON.parse(stored) as SavedQuizSession;
+      if (parsed.version !== 1 || parsed.userId !== userId || !parsed.quizId || parsed.questions.length === 0) {
+        window.localStorage.removeItem(QUIZ_SESSION_STORAGE_KEY);
+        return;
+      }
+
+      setSavedSession(parsed);
+    } catch {
+      window.localStorage.removeItem(QUIZ_SESSION_STORAGE_KEY);
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    if (phase !== 'quiz') return;
+
+    const session: SavedQuizSession = {
+      version: 1,
+      userId,
+      quizId,
+      questions,
+      meta,
+      currentIdx,
+      answers,
+      selected,
+      firstAnswer,
+      questionStartTime,
+      elapsed,
+    };
+    window.localStorage.setItem(QUIZ_SESSION_STORAGE_KEY, JSON.stringify(session));
+    setSavedSession(session);
+  }, [answers, currentIdx, elapsed, firstAnswer, meta, phase, questionStartTime, questions, quizId, selected, userId]);
+
+  useEffect(() => {
+    if (phase !== 'quiz') return;
+
+    const confirmLeave = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', confirmLeave);
+    return () => window.removeEventListener('beforeunload', confirmLeave);
+  }, [phase]);
+
   const formatTime = (value: number) => `${String(Math.floor(value / 60)).padStart(2, '0')}:${String(value % 60).padStart(2, '0')}`;
 
   const generateQuiz = useCallback(async () => {
@@ -431,6 +498,7 @@ export default function AdaptiveQuizPage() {
 
   const submitQuiz = async () => {
     setLoading(true);
+    setSubmissionError('');
 
     try {
       const answersArr = Object.values(answers);
@@ -444,9 +512,11 @@ export default function AdaptiveQuizPage() {
       setScore(data.score);
       setTopicAccuracy(data.topicAccuracy);
       setPhase('results');
+      window.localStorage.removeItem(QUIZ_SESSION_STORAGE_KEY);
+      setSavedSession(null);
       if (timerRef.current) clearInterval(timerRef.current);
     } catch (requestError: any) {
-      setError(requestError.response?.data?.error || 'Submission failed.');
+      setSubmissionError(requestError.response?.data?.error || 'Submission failed. Your answers are saved locally.');
     } finally {
       setLoading(false);
     }
@@ -465,6 +535,8 @@ export default function AdaptiveQuizPage() {
   };
 
   const resetQuiz = () => {
+    window.localStorage.removeItem(QUIZ_SESSION_STORAGE_KEY);
+    setSavedSession(null);
     setPhase('config');
     setQuestions([]);
     setAnswers({});
@@ -476,6 +548,28 @@ export default function AdaptiveQuizPage() {
     setExpandedResult(null);
     setScore(0);
     setTopicAccuracy([]);
+    setSubmissionError('');
+  };
+
+  const resumeSavedQuiz = () => {
+    if (!savedSession) return;
+
+    setQuizId(savedSession.quizId);
+    setQuestions(savedSession.questions);
+    setMeta(savedSession.meta);
+    setCurrentIdx(savedSession.currentIdx);
+    setAnswers(savedSession.answers);
+    setSelected(savedSession.selected);
+    setFirstAnswer(savedSession.firstAnswer);
+    setQuestionStartTime(Date.now());
+    setElapsed(savedSession.elapsed);
+    setSubmissionError('');
+    setPhase('quiz');
+  };
+
+  const saveAndExit = () => {
+    if (!window.confirm('Save this quiz and exit? You can resume it from the quiz setup page.')) return;
+    setPhase('config');
   };
 
   if (phase === 'config') {
@@ -508,6 +602,21 @@ export default function AdaptiveQuizPage() {
               AI Adaptive
             </div>
           </div>
+
+          {savedSession && (
+            <section style={{ ...sectionCardStyle, marginBottom: 16, borderColor: isDark ? 'rgba(0, 180, 160, 0.36)' : 'rgba(0, 180, 160, 0.32)' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                <div>
+                  <div style={headingStyle}>Unfinished quiz saved</div>
+                  <div style={subtextStyle}>Question {savedSession.currentIdx + 1} of {savedSession.questions.length} · {formatTime(savedSession.elapsed)} elapsed</div>
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  <button type="button" onClick={resetQuiz} style={{ ...actionButtonStyle, padding: '9px 12px', background: 'transparent', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border-tertiary)' }}>Discard</button>
+                  <button type="button" onClick={resumeSavedQuiz} style={{ ...actionButtonStyle, padding: '9px 12px', background: 'linear-gradient(135deg, #185FA5 0%, #00b4a0 120%)', color: '#fff' }}>Resume test</button>
+                </div>
+              </div>
+            </section>
+          )}
 
           {error && (
             <div style={{ ...sectionCardStyle, marginBottom: 18, background: isDark ? 'rgba(127, 29, 29, 0.20)' : 'rgba(254, 226, 226, 0.88)', borderColor: isDark ? 'rgba(248, 113, 113, 0.28)' : 'rgba(248, 113, 113, 0.40)' }}>
@@ -873,6 +982,12 @@ export default function AdaptiveQuizPage() {
             </div>
           </div>
 
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+            <button type="button" onClick={saveAndExit} style={{ ...actionButtonStyle, padding: '9px 12px', background: 'transparent', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border-tertiary)' }}>
+              Save and exit
+            </button>
+          </div>
+
           <section style={{ ...roundedCardStyle, padding: 20 }}>
             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 14 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -959,6 +1074,15 @@ export default function AdaptiveQuizPage() {
               >
                 {currentIdx === questions.length - 1 ? 'Submit quiz →' : 'Next question →'}
               </button>
+            )}
+
+            {submissionError && (
+              <div role="alert" style={{ marginTop: 14, padding: 14, borderRadius: 14, background: 'var(--color-background-danger)', color: 'var(--color-text-danger)', border: '1px solid rgba(239, 68, 68, 0.28)', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                <span style={{ fontSize: 14, fontWeight: 700 }}>{submissionError}</span>
+                <button type="button" onClick={submitQuiz} disabled={loading} style={{ ...actionButtonStyle, padding: '9px 12px', background: '#991b1b', color: '#fff', opacity: loading ? 0.65 : 1 }}>
+                  {loading ? 'Retrying…' : 'Retry submission'}
+                </button>
+              </div>
             )}
           </section>
         </div>
