@@ -126,6 +126,71 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+.route-boundary {
+  display: grid;
+  min-height: 55vh;
+  place-items: center;
+  padding: 2rem 1.25rem;
+}
+
+.route-boundary__content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #334155;
+  font-family: 'Nunito Sans', sans-serif;
+  font-size: 0.95rem;
+}
+
+.route-boundary__spinner {
+  width: 1.25rem;
+  height: 1.25rem;
+  animation: route-boundary-spin 0.8s linear infinite;
+  color: #0f766e;
+}
+
+.route-boundary__content--error {
+  max-width: 28rem;
+  align-items: flex-start;
+  color: #b42318;
+}
+
+.route-boundary__content--error h1 {
+  color: #1e293b;
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.route-boundary__content--error p {
+  margin-top: 0.25rem;
+  color: #475569;
+}
+
+.route-boundary__retry {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #0f766e;
+  border-radius: 0.375rem;
+  background: #0f766e;
+  color: #ffffff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.route-boundary__retry:focus-visible {
+  outline: 3px solid #67e8f9;
+  outline-offset: 3px;
+}
+
+@keyframes route-boundary-spin {
+  to { transform: rotate(360deg); }
+}
+
 html.home-hero,
 body.home-hero {
   background: linear-gradient(135deg, #0b1c33 0%, #142746 45%, #0a1a2e 100%);
