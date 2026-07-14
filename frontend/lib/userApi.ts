@@ -1,4 +1,5 @@
 import api from './axios';
+import { announceFeedback } from './feedback';
 
 export interface RecentQuizPayload {
   quizKey: string;
@@ -38,6 +39,9 @@ export const toggleBookmark = (
 ) =>
   api.patch('/users/me/bookmarks', { questionId, action, meta }, {
     headers: { Authorization: `Bearer ${token}` },
+  }).then((response) => {
+    announceFeedback(action === 'add' ? 'Bookmark added' : 'Bookmark removed');
+    return response;
   });
 
 export const saveRecentQuiz = (token: string, payload: RecentQuizPayload) =>

@@ -16,6 +16,7 @@ import {
   X,
 } from "lucide-react";
 import { fetchWithRetry } from "@/lib/api/http";
+import { announceFeedback } from "@/lib/feedback";
 
 const resourceTabs = ["Books", "Chapter Wise", "Extra", "DPP"] as const;
 
@@ -196,7 +197,9 @@ export default function ResourcePage() {
     });
 
     if (invalidFile) {
-      setNotice("Select PDF, HTML, DOC, or DOCX files only.");
+      const message = "Select PDF, HTML, DOC, or DOCX files only.";
+      setNotice(message);
+      announceFeedback(message, "error");
       uploadTargetRef.current = null;
       return;
     }
@@ -225,7 +228,9 @@ export default function ResourcePage() {
       );
     } catch (err) {
       console.error("Failed to upload resources", err);
-      setNotice(err instanceof Error ? err.message : "File upload failed.");
+      const message = err instanceof Error ? err.message : "File upload failed.";
+      setNotice(message);
+      announceFeedback(message, "error");
     } finally {
       uploadTargetRef.current = null;
       setUploading(false);
@@ -315,7 +320,12 @@ export default function ResourcePage() {
 
           <div className="file-list" aria-live="polite">
             {loading ? (
-              <div className="state-box">Loading files...</div>
+              <div className="resource-file-skeletons" aria-busy="true" aria-label="Loading resource files">
+                <span className="sr-only" role="status">Loading resource files</span>
+                <div aria-hidden="true" />
+                <div aria-hidden="true" />
+                <div aria-hidden="true" />
+              </div>
             ) : visibleFiles.length > 0 ? (
               visibleFiles.map((file, index) => (
                 <button
@@ -765,6 +775,23 @@ export default function ResourcePage() {
           font-weight: 700;
           text-align: center;
           box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.06);
+        }
+
+        .resource-file-skeletons {
+          display: grid;
+          gap: 10px;
+        }
+
+        .resource-file-skeletons > div {
+          min-height: 68px;
+          border-radius: 18px;
+          background: linear-gradient(90deg, #edf2f7 25%, #f8fafc 38%, #edf2f7 63%);
+          background-size: 400% 100%;
+          animation: resourceSkeletonShimmer 1.35s ease infinite;
+        }
+
+        @keyframes resourceSkeletonShimmer {
+          to { background-position: -100% 0; }
         }
 
         .state-box.empty {

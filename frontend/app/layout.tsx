@@ -6,6 +6,7 @@ import { AuthProvider } from '@/context/AuthContext';
 import BottomNav from '@/components/BottomNav';
 import AppWarmup from '@/components/AppWarmup';
 import AppRecovery from '@/components/AppRecovery';
+import FeedbackToast from '@/components/FeedbackToast';
 
 const geist = Geist({ subsets: ['latin'] });
 
@@ -31,6 +32,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <AppWarmup />
           {children}
           <BottomNav />
+          <FeedbackToast />
         </AuthProvider>
       </body>
     </html>

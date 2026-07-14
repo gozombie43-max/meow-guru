@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { announceFeedback } from "@/lib/feedback";
 
 const OFFLINE_DETECTED_KEY = "app-recovery-offline-detected";
 const PENDING_RELOAD_KEY = "app-recovery-pending-reload";
@@ -61,7 +62,8 @@ export default function AppRecovery() {
 
       sessionStorage.removeItem(OFFLINE_DETECTED_KEY);
       sessionStorage.removeItem(PENDING_RELOAD_KEY);
-      reloadApp();
+      announceFeedback("Connection restored. Refreshing the app.", "info");
+      window.setTimeout(reloadApp, 700);
     };
 
     const recoverOrDefer = () => {

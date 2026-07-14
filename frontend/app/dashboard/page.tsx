@@ -105,7 +105,7 @@ export default function DashboardPage() {
 }
 
 function DashboardContent() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [selectedTab, setSelectedTab] = useState<TabKey | null>(null);
   const [activeNav, setActiveNav] = useState<NavKey>('recent');
@@ -304,6 +304,13 @@ function DashboardContent() {
                   Sign in to view your Brain Scan insights.
                 </div>
               )
+            ) : authLoading ? (
+              <div className="dashboard-card-skeletons" aria-busy="true" aria-label="Loading dashboard cards">
+                <span className="sr-only" role="status">Loading dashboard cards</span>
+                <div className="glass-card dashboard-card-skeleton" aria-hidden="true" />
+                <div className="glass-card dashboard-card-skeleton" aria-hidden="true" />
+                <div className="glass-card dashboard-card-skeleton" aria-hidden="true" />
+              </div>
             ) : activeNav === 'recent' ? (
               recentList.length === 0 ? (
                 <div className="glass-card empty-state">{emptyCopy}</div>
@@ -444,6 +451,23 @@ function DashboardContent() {
           padding: 20px;
           padding-top: max(20px, env(safe-area-inset-top));
           padding-bottom: max(20px, env(safe-area-inset-bottom));
+        }
+
+        .dashboard-card-skeletons {
+          display: grid;
+          gap: 12px;
+        }
+
+        .dashboard-card-skeleton {
+          min-height: 78px;
+          overflow: hidden;
+          background: linear-gradient(90deg, rgba(255, 255, 255, 0.62) 25%, rgba(255, 255, 255, 0.94) 38%, rgba(255, 255, 255, 0.62) 63%);
+          background-size: 400% 100%;
+          animation: dashboardSkeletonShimmer 1.35s ease infinite;
+        }
+
+        @keyframes dashboardSkeletonShimmer {
+          to { background-position: -100% 0; }
         }
 
         .dashboard-shell .dashboard-top {

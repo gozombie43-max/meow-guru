@@ -4,8 +4,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import axios from '@/lib/axios';
 import MathRenderer from '@/components/MathRenderer';
+import RouteLoadingState from '@/components/RouteLoadingState';
 import { SUBJECT_TOPICS as FALLBACK_SUBJECT_TOPICS } from '@/lib/subjectTopics';
 import { useThemeMode } from '@/hooks/useTheme';
+import { announceFeedback } from '@/lib/feedback';
 
 interface Question {
   id: string;
@@ -494,6 +496,7 @@ export default function AdaptiveQuizPage() {
         changedAnswer: firstAnswer !== null && firstAnswer !== selected,
       },
     }));
+    announceFeedback('Answer saved');
   };
 
   const submitQuiz = async () => {
@@ -515,6 +518,7 @@ export default function AdaptiveQuizPage() {
       window.localStorage.removeItem(QUIZ_SESSION_STORAGE_KEY);
       setSavedSession(null);
       if (timerRef.current) clearInterval(timerRef.current);
+      announceFeedback('Quiz submitted');
     } catch (requestError: any) {
       setSubmissionError(requestError.response?.data?.error || 'Submission failed. Your answers are saved locally.');
     } finally {
@@ -571,6 +575,10 @@ export default function AdaptiveQuizPage() {
     if (!window.confirm('Save this quiz and exit? You can resume it from the quiz setup page.')) return;
     setPhase('config');
   };
+
+  if (phase === 'config' && loading) {
+    return <RouteLoadingState label="your adaptive quiz" />;
+  }
 
   if (phase === 'config') {
     return (

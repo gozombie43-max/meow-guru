@@ -19,6 +19,7 @@ import {
 import ProtectedRoute from '@/components/ProtectedRoute';
 import VisualResponse from '@/components/ai/VisualResponse';
 import api from '@/lib/axios';
+import { announceFeedback } from '@/lib/feedback';
 
 const API = process.env.NEXT_PUBLIC_API_URL || '';
 
@@ -354,6 +355,7 @@ function AiChatPageContent() {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
+  const [isHistoryLoading, setIsHistoryLoading] = useState(true);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -389,6 +391,8 @@ function AiChatPageContent() {
         setChatSessions(backendChats);
       } catch (err) {
         console.warn('Could not load AI chat history', err);
+      } finally {
+        if (!cancelled) setIsHistoryLoading(false);
       }
     };
 
@@ -550,6 +554,7 @@ function AiChatPageContent() {
     try {
       await navigator.clipboard.writeText(content);
       setCopiedIndex(index);
+      announceFeedback('Copy successful');
       setTimeout(() => setCopiedIndex(null), 1800);
     } catch {
       setCopiedIndex(null);
@@ -639,8 +644,15 @@ function AiChatPageContent() {
         </div>
 
         <div className="sidebar-section">
-          <div className="section-label">{visibleSessions.length > 0 ? 'Saved chats' : 'Start with'}</div>
-          {visibleSessions.length > 0
+          <div className="section-label">{isHistoryLoading || visibleSessions.length > 0 ? 'Saved chats' : 'Start with'}</div>
+          {isHistoryLoading ? (
+            <div className="history-skeletons" aria-busy="true" aria-label="Loading chat history">
+              <span className="sr-only" role="status">Loading chat history</span>
+              <span aria-hidden="true" />
+              <span aria-hidden="true" />
+              <span aria-hidden="true" />
+            </div>
+          ) : visibleSessions.length > 0
             ? visibleSessions.map((session) => (
                 <button
                   className={`history-item${session.id === activeChatId ? ' is-active' : ''}`}
@@ -1012,6 +1024,24 @@ function AiChatPageContent() {
         .history-item.is-active {
           background: #e8e8eb;
           font-weight: 600;
+        }
+
+        .history-skeletons {
+          display: grid;
+          gap: 9px;
+          padding: 7px 9px;
+        }
+
+        .history-skeletons > span:not(.sr-only) {
+          height: 34px;
+          border-radius: 8px;
+          background: linear-gradient(90deg, #ececf0 25%, #f8f8fa 38%, #ececf0 63%);
+          background-size: 400% 100%;
+          animation: historySkeletonShimmer 1.35s ease infinite;
+        }
+
+        @keyframes historySkeletonShimmer {
+          to { background-position: -100% 0; }
         }
 
         .sidebar-footer {
