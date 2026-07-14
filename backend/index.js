@@ -88,14 +88,17 @@ app.use(passport.initialize());
 
 // ── Health checks ──────────────────────────────────────
 app.get('/', (req, res) => res.send('Server running 🚀'));
-app.get('/health', (req, res) => {
+const healthCheck = (req, res) => {
   res.status(200).json({
     ok: true,
     service: 'backend',
     uptimeSeconds: Math.round(process.uptime()),
     timestamp: new Date().toISOString(),
   });
-});
+};
+
+app.get('/health', healthCheck);
+app.get('/api/health', healthCheck);
 
 // ── Start server ───────────────────────────────────────
 const PORT = process.env.PORT || 10000;
