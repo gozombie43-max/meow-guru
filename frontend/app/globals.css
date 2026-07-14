@@ -179,6 +179,33 @@ body {
   border-radius: 0.5rem;
 }
 
+.route-boundary__recovery {
+  width: min(100%, 68rem);
+  margin: 1.5rem auto 0;
+  padding: 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.82);
+  color: #1e293b;
+}
+
+.route-boundary__recovery h1 {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.route-boundary__recovery p {
+  margin-top: 0.25rem;
+  color: #475569;
+}
+
+.route-boundary__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.875rem;
+}
+
 .route-boundary__content--error {
   max-width: 28rem;
   align-items: flex-start;
@@ -217,8 +244,33 @@ body {
   outline-offset: 3px;
 }
 
+.route-boundary__retry:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.route-boundary__home {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #64748b;
+  border-radius: 0.375rem;
+  color: #334155;
+  font-weight: 700;
+}
+
+.route-boundary__spin {
+  animation: route-boundary-spin 0.8s linear infinite;
+}
+
 @keyframes route-boundary-shimmer {
   to { background-position: -100% 0; }
+}
+
+@keyframes route-boundary-spin {
+  to { transform: rotate(360deg); }
 }
 
 .feedback-toast-region {
