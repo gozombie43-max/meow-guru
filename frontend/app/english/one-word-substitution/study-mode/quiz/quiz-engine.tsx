@@ -962,6 +962,16 @@ function splitPrompt(prompt: string) {
   return { definition: definition.trim(), memoryHook: memoryHook?.trim() ?? "" };
 }
 
+function MemoryHookContent({ text }: { text: string }) {
+  return text.split(/(bibliography)/i).map((part, index) =>
+    part.toLowerCase() === "bibliography" ? (
+      <span className="ows-memory-highlight" key={`${part}-${index}`}>{part}</span>
+    ) : (
+      <RichContent key={`${part}-${index}`} text={part} />
+    )
+  );
+}
+
 export default function StudyModeQuizEngine() {
   const [currentPage, setCurrentPage] = useState(1);
   const [theme, setTheme] = useState<"light" | "dark">("dark");
@@ -1063,20 +1073,21 @@ export default function StudyModeQuizEngine() {
             return (
               <section className="ows-slide" data-index={index} key={card.id}>
                 <article className="ows-card">
-                  <div className="ows-leaf-spray" aria-hidden="true"><i /><i /><i /><i /><i /></div>
+                  <div className="ows-corner-ornament ows-corner-ornament--top" aria-hidden="true" />
                   <div className="ows-book-mark" aria-hidden="true"><BookOpen /></div>
                   <div className="ows-word">{card.answer}</div>
                   <div className="ows-pos">{(card.label || "One Word").toUpperCase()}</div>
                   {card.answerTranslation ? <div className="ows-word-bn">{card.answerTranslation}</div> : null}
-                  <div className="ows-divider" />
+                  <div className="ows-divider" aria-hidden="true"><span>❖</span></div>
                   <div className="ows-phrase"><RichContent text={definition} /></div>
+                  <div className="ows-mini-divider" aria-hidden="true"><i /><b /><i /></div>
                   {card.definitionTranslation ? <div className="ows-bn">{card.definitionTranslation}</div> : null}
                   <div className="ows-hook">
                     <div className="ows-hook-label">Memory Hook</div>
-                    <BookOpen className="ows-hook-icon" aria-hidden="true" />
-                    <div className="ows-hook-text">{memoryHook ? <RichContent text={memoryHook} /> : "--"}</div>
+                    <div className="ows-hook-emblem" aria-hidden="true"><i /><BookOpen className="ows-hook-icon" /><i /></div>
+                    <div className="ows-hook-text">{memoryHook ? <MemoryHookContent text={memoryHook} /> : "--"}</div>
                   </div>
-                  <div className="ows-shelf" aria-hidden="true"><i /><i /><i /><i /></div>
+                  <div className="ows-corner-ornament ows-corner-ornament--bottom" aria-hidden="true" />
                 </article>
               </section>
             );
@@ -1134,6 +1145,202 @@ export default function StudyModeQuizEngine() {
         .ows-overlay{position:fixed;inset:0;border:0;background:rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:opacity .2s;z-index:30}.ows-overlay.open{opacity:1;pointer-events:auto}.ows-drawer{position:fixed;top:0;left:0;bottom:0;width:280px;max-width:80%;background:var(--panel);border-right:1.5px solid var(--line);transform:translateX(-100%);transition:transform .25s ease;z-index:31;display:flex;flex-direction:column}.ows-drawer.open{transform:translateX(0)}.ows-drawer-head{display:flex;align-items:center;justify-content:space-between;padding:18px 18px 14px;border-bottom:1.5px solid var(--line);font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--ink-dim)}.ows-drawer-head button{width:30px;height:30px;background:var(--bg);border:1.5px solid var(--line);border-radius:8px;color:var(--ink);font-size:20px;cursor:pointer}.ows-palette-grid{padding:18px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;overflow-y:auto}.ows-palette-grid button{aspect-ratio:1;font-family:'Space Mono',monospace;font-weight:700;font-size:14px;color:var(--ink-dim);background:var(--bg);border:1.5px solid var(--line);border-radius:8px;cursor:pointer}.ows-palette-grid button.active{background:var(--scarlet);border-color:var(--scarlet);color:#fff}
         @media (max-width:600px){.ows-wrap{min-height:100dvh;height:100dvh}.ows-header{padding:calc(10px + env(safe-area-inset-top)) 14px 10px;gap:10px}.ows-menu-btn{width:44px;height:44px;border-radius:12px}.ows-menu-btn svg{width:21px;height:21px}.ows-header-text{gap:2px}.ows-header-label{font-size:10px;letter-spacing:2.5px}.ows-header-title{font-size:13px}.ows-header-actions{gap:6px}.ows-counter{min-width:0;padding:8px 9px;font-size:12px}.ows-theme-toggle{width:44px;height:38px;justify-content:center;padding:0}.ows-theme-toggle span{display:none}.ows-theme-toggle svg{width:18px;height:18px}.ows-slide{align-items:flex-start;padding:18px 14px calc(24px + env(safe-area-inset-bottom));overflow-y:auto}.ows-card{min-height:0;padding:74px 20px 56px;border-radius:20px}.ows-word{font-size:clamp(32px,9.5vw,46px);overflow-wrap:anywhere}.ows-pos{margin-top:14px;font-size:11px;letter-spacing:3px}.ows-word-bn{margin-top:12px;font-size:17px;line-height:1.5}.ows-divider{width:48px;height:3px;margin:25px auto}.ows-phrase{font-size:15px;line-height:1.75}.ows-bn{margin-top:22px;font-size:15px;line-height:1.7}.ows-hook{margin-top:28px;padding-top:27px}.ows-hook-label{font-size:11px;letter-spacing:3px}.ows-hook-icon{width:31px;height:31px;margin:15px auto 12px}.ows-hook-text{font-size:13px;line-height:1.65}.ows-book-mark{top:21px;right:17px;width:43px;height:43px}.ows-book-mark svg{width:21px;height:21px}.ows-leaf-spray{transform:scale(.55) rotate(-20deg);transform-origin:top left}.ows-shelf{height:60px}.ows-shelf i:nth-child(1){right:59px;height:39px;width:19px}.ows-shelf i:nth-child(2){right:39px;height:48px;width:19px}.ows-shelf i:nth-child(3){right:19px;height:58px;width:19px}.ows-shelf i:nth-child(4){height:68px;width:19px}.ows-drawer{width:min(280px,86vw)}}
         @media (max-width:400px){.ows-header{padding-left:10px;padding-right:10px}.ows-header-title{font-size:12px}.ows-slide{padding-left:10px;padding-right:10px}.ows-card{padding:67px 16px 48px}.ows-word{font-size:clamp(29px,9vw,38px)}.ows-phrase{font-size:14px}.ows-hook-text{font-size:12.5px}}
+      `}</style>
+      <style>{`
+        .ows-page {
+          --emerald-deep: #071c18;
+          --emerald-mid: #0d2a24;
+          --emerald-card: #0f2d26;
+          --cream: #f6efe3;
+          --gold: #c79a55;
+          --teal: #6ea89c;
+          --copper: #c86a45;
+          background:
+            radial-gradient(circle at 48% 13%, rgba(54, 111, 93, .2), transparent 31%),
+            radial-gradient(circle at 100% 75%, rgba(15, 72, 61, .22), transparent 36%),
+            linear-gradient(155deg, var(--emerald-deep), var(--emerald-mid)) !important;
+          color: var(--cream) !important;
+          isolation: isolate;
+        }
+        .ows-page::before {
+          content: "";
+          position: fixed;
+          inset: 0;
+          z-index: -1;
+          pointer-events: none;
+          opacity: .025;
+          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.9'/%3E%3C/svg%3E");
+        }
+        .ows-wrap { max-width: 760px !important; }
+        .ows-header {
+          min-height: 114px !important;
+          padding: 26px 36px !important;
+          gap: 26px !important;
+          background: transparent !important;
+          border-bottom-color: rgba(246, 239, 227, .15) !important;
+        }
+        .ows-menu-btn {
+          width: 62px !important;
+          height: 62px !important;
+          border-radius: 18px !important;
+          color: var(--cream) !important;
+          background: rgba(7, 28, 24, .42) !important;
+          border-color: rgba(110, 168, 156, .25) !important;
+          box-shadow: inset 0 1px rgba(255,255,255,.04), 0 12px 28px rgba(0,0,0,.2) !important;
+        }
+        .ows-menu-btn svg { width: 27px !important; height: 27px !important; }
+        .ows-header-label { color: var(--teal) !important; font-size: 16px !important; letter-spacing: 6px !important; }
+        .ows-header-title { color: var(--cream) !important; font-size: 22px !important; font-family: Georgia, 'Times New Roman', serif !important; }
+        .ows-header-actions { gap: 18px !important; }
+        .ows-counter {
+          min-width: 88px !important;
+          padding: 14px 17px !important;
+          color: var(--teal) !important;
+          background: rgba(7, 28, 24, .34) !important;
+          border-color: rgba(110, 168, 156, .22) !important;
+        }
+        .ows-theme-toggle {
+          width: 54px !important;
+          height: 44px !important;
+          padding: 0 !important;
+          justify-content: center !important;
+          color: var(--gold) !important;
+          background: transparent !important;
+          border: 0 !important;
+          border-left: 1px solid rgba(246, 239, 227, .16) !important;
+          border-radius: 0 !important;
+        }
+        .ows-theme-toggle span { display: none !important; }
+        .ows-theme-toggle svg { width: 27px !important; height: 27px !important; }
+        .ows-scroller { background: transparent !important; }
+        .ows-slide { padding: 42px 36px 76px !important; align-items: flex-start !important; }
+        .ows-card {
+          min-height: min(1120px, calc(100dvh - 196px)) !important;
+          padding: 142px 60px 110px !important;
+          overflow: hidden !important;
+          border-radius: 28px !important;
+          background: linear-gradient(145deg, rgba(19, 58, 50, .88), rgba(8, 38, 32, .92)) !important;
+          border-color: rgba(246, 239, 227, .15) !important;
+          box-shadow: inset 0 1px rgba(255,255,255,.07), 0 28px 65px rgba(0,0,0,.35) !important;
+          backdrop-filter: blur(18px) saturate(120%);
+        }
+        .ows-card::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          background: radial-gradient(circle at 50% 25%, rgba(110,168,156,.09), transparent 28%);
+        }
+        .ows-word { color: var(--cream) !important; font-size: clamp(52px, 8vw, 76px) !important; text-shadow: 0 5px 15px rgba(0,0,0,.28); }
+        .ows-pos { color: var(--copper) !important; }
+        .ows-word-bn { color: var(--teal) !important; }
+        .ows-divider { width: min(270px, 68%) !important; height: 24px !important; margin: 35px auto !important; display: flex !important; align-items: center !important; justify-content: center !important; background: none !important; }
+        .ows-divider::before, .ows-divider::after { content: ""; height: 1px; flex: 1; background: var(--gold); opacity: .78; }
+        .ows-divider span { padding: 0 13px; color: var(--gold); font-family: Georgia, serif; font-size: 24px; line-height: 1; }
+        .ows-phrase { color: #f7f7f7 !important; font-family: 'Space Mono', monospace !important; font-size: 21px !important; line-height: 1.95 !important; opacity: .94 !important; }
+        .ows-mini-divider { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 32px auto 0; }
+        .ows-mini-divider i { display: block; width: 38px; height: 1px; background: var(--teal); opacity: .65; }
+        .ows-mini-divider b { display: block; width: 8px; height: 8px; border-radius: 50%; background: var(--gold); }
+        .ows-bn { color: #d3a35d !important; font-size: 20px !important; line-height: 1.85 !important; margin-top: 30px !important; }
+        .ows-hook { border-top-color: rgba(110,168,156,.42) !important; margin-top: 47px !important; padding-top: 40px !important; }
+        .ows-hook-label { color: var(--teal) !important; }
+        .ows-hook-emblem { display: flex; align-items: center; justify-content: center; gap: 15px; margin: 22px auto 16px; color: var(--gold); }
+        .ows-hook-emblem i { width: 20px; height: 1px; background: currentColor; position: relative; opacity: .82; }
+        .ows-hook-emblem i::after { content: ""; position: absolute; width: 1px; height: 12px; top: -6px; background: currentColor; }
+        .ows-hook-emblem i:first-child::after { right: 4px; transform: rotate(-55deg); }
+        .ows-hook-emblem i:last-child::after { left: 4px; transform: rotate(55deg); }
+        .ows-hook-icon { color: var(--gold) !important; margin: 0 !important; }
+        .ows-hook-text { color: var(--cream) !important; font-family: 'Space Mono', monospace !important; font-size: 18px !important; line-height: 1.8 !important; }
+        .ows-memory-highlight { color: var(--teal); }
+        .ows-hook-text :global(strong), .ows-hook-text :global(em) { color: var(--teal) !important; }
+        .ows-book-mark { color: var(--gold) !important; border-color: rgba(110,168,156,.28) !important; background: rgba(3,28,23,.36) !important; }
+        .ows-corner-ornament {
+          position: absolute;
+          z-index: 0;
+          width: 178px;
+          height: 178px;
+          opacity: .65;
+          pointer-events: none;
+          color: var(--gold);
+          background:
+            radial-gradient(circle at 28px 28px, currentColor 0 2px, transparent 2.5px),
+            radial-gradient(circle at 49px 49px, currentColor 0 1.5px, transparent 2px),
+            linear-gradient(currentColor, currentColor) 17px 17px / 96px 1px no-repeat,
+            linear-gradient(currentColor, currentColor) 17px 17px / 1px 96px no-repeat;
+        }
+        .ows-corner-ornament::before,
+        .ows-corner-ornament::after {
+          content: "";
+          position: absolute;
+          border-color: currentColor;
+          opacity: .68;
+        }
+        .ows-corner-ornament::before {
+          top: 35px;
+          left: 35px;
+          width: 83px;
+          height: 83px;
+          border-top: 1px solid;
+          border-left: 1px solid;
+          border-radius: 22px 0 0;
+        }
+        .ows-corner-ornament::after {
+          top: 58px;
+          left: 58px;
+          width: 30px;
+          height: 30px;
+          border: 1px solid;
+          transform: rotate(45deg);
+          box-shadow: 0 0 0 7px rgba(199,154,85,.07);
+        }
+        .ows-corner-ornament--top { top: 27px; left: 22px; }
+        .ows-corner-ornament--bottom { right: 22px; bottom: 19px; transform: rotate(180deg); opacity: .43; }
+        .ows-page[data-theme="light"] {
+          --cream: #19362e;
+          --gold: #a97436;
+          --teal: #397c70;
+          --copper: #a95339;
+          background: radial-gradient(circle at 48% 10%, rgba(154,194,180,.4), transparent 31%), linear-gradient(155deg, #eaf0e8, #d9e5dd) !important;
+        }
+        .ows-page[data-theme="light"] .ows-header { border-bottom-color: rgba(25,54,46,.15) !important; }
+        .ows-page[data-theme="light"] .ows-menu-btn,
+        .ows-page[data-theme="light"] .ows-counter { background: rgba(255,255,255,.38) !important; border-color: rgba(25,54,46,.18) !important; }
+        .ows-page[data-theme="light"] .ows-card { background: linear-gradient(145deg, rgba(250,252,247,.88), rgba(226,238,229,.9)) !important; border-color: rgba(25,54,46,.16) !important; box-shadow: inset 0 1px rgba(255,255,255,.85), 0 28px 65px rgba(37,73,62,.16) !important; }
+        .ows-page[data-theme="light"] .ows-card::after { background: radial-gradient(circle at 50% 25%, rgba(92,148,132,.13), transparent 31%); }
+        .ows-page[data-theme="light"] .ows-word,
+        .ows-page[data-theme="light"] .ows-phrase,
+        .ows-page[data-theme="light"] .ows-hook-text,
+        .ows-page[data-theme="light"] .ows-header-title { color: #19362e !important; text-shadow: none !important; }
+        .ows-page[data-theme="light"] .ows-bn { color: #9a6430 !important; }
+        .ows-page[data-theme="light"] .ows-book-mark { background: rgba(255,255,255,.28) !important; border-color: rgba(25,54,46,.17) !important; }
+        .ows-page[data-theme="light"] .ows-corner-ornament { opacity: .5; }
+        .ows-drawer { background: #0b2520 !important; border-color: rgba(246,239,227,.14) !important; }
+        .ows-drawer-head, .ows-palette-grid button { color: var(--cream) !important; border-color: rgba(246,239,227,.14) !important; }
+        .ows-drawer-head button, .ows-palette-grid button { background: rgba(7,28,24,.6) !important; }
+        .ows-palette-grid button.active { background: var(--copper) !important; border-color: var(--copper) !important; }
+        .ows-dot.active { background: var(--gold) !important; }
+        @media (max-width: 600px) {
+          .ows-header { min-height: 96px !important; padding: calc(18px + env(safe-area-inset-top)) 20px 16px !important; gap: 14px !important; }
+          .ows-menu-btn { width: 52px !important; height: 52px !important; border-radius: 16px !important; }
+          .ows-header-label { font-size: 11px !important; letter-spacing: 4px !important; }
+          .ows-header-title { font-size: 16px !important; }
+          .ows-counter { min-width: 65px !important; padding: 10px 9px !important; font-size: 13px !important; }
+          .ows-theme-toggle { width: 39px !important; height: 38px !important; }
+          .ows-theme-toggle svg { width: 21px !important; height: 21px !important; }
+          .ows-slide { padding: 25px 18px calc(38px + env(safe-area-inset-bottom)) !important; }
+          .ows-card { min-height: calc(100dvh - 160px) !important; padding: 105px 23px 72px !important; border-radius: 27px !important; }
+          .ows-word { font-size: clamp(43px, 11.4vw, 58px) !important; }
+          .ows-pos { margin-top: 18px !important; font-size: 12px !important; letter-spacing: 4px !important; }
+          .ows-word-bn { font-size: 19px !important; margin-top: 15px !important; }
+          .ows-divider { margin: 27px auto !important; }
+          .ows-phrase { font-size: 16px !important; line-height: 1.9 !important; }
+          .ows-bn { margin-top: 23px !important; font-size: 16px !important; }
+          .ows-hook { margin-top: 36px !important; padding-top: 31px !important; }
+          .ows-hook-label { font-size: 12px !important; letter-spacing: 4px !important; }
+          .ows-hook-text { font-size: 13px !important; line-height: 1.75 !important; }
+          .ows-corner-ornament { transform: scale(.64); transform-origin: top left; }
+          .ows-corner-ornament--bottom { transform: rotate(180deg) scale(.64); transform-origin: bottom right; }
+        }
       `}</style>
     </main>
   );
