@@ -1073,7 +1073,6 @@ export default function StudyModeQuizEngine() {
             return (
               <section className="ows-slide" data-index={index} key={card.id}>
                 <article className="ows-card">
-                  <div className="ows-corner-ornament ows-corner-ornament--top" aria-hidden="true" />
                   <div className="ows-book-mark" aria-hidden="true"><BookOpen /></div>
                   <div className="ows-word">{card.answer}</div>
                   <div className="ows-pos">{(card.label || "One Word").toUpperCase()}</div>
@@ -1087,7 +1086,6 @@ export default function StudyModeQuizEngine() {
                     <div className="ows-hook-emblem" aria-hidden="true"><i /><BookOpen className="ows-hook-icon" /><i /></div>
                     <div className="ows-hook-text">{memoryHook ? <MemoryHookContent text={memoryHook} /> : "--"}</div>
                   </div>
-                  <div className="ows-corner-ornament ows-corner-ornament--bottom" aria-hidden="true" />
                 </article>
               </section>
             );
@@ -1320,24 +1318,26 @@ export default function StudyModeQuizEngine() {
         .ows-palette-grid button.active { background: var(--copper) !important; border-color: var(--copper) !important; }
         .ows-dot.active { background: var(--gold) !important; }
         @media (max-width: 600px) {
-          .ows-header { min-height: 96px !important; padding: calc(18px + env(safe-area-inset-top)) 20px 16px !important; gap: 14px !important; }
-          .ows-menu-btn { width: 52px !important; height: 52px !important; border-radius: 16px !important; }
-          .ows-header-label { font-size: 11px !important; letter-spacing: 4px !important; }
-          .ows-header-title { font-size: 16px !important; }
-          .ows-counter { min-width: 65px !important; padding: 10px 9px !important; font-size: 13px !important; }
-          .ows-theme-toggle { width: 39px !important; height: 38px !important; }
-          .ows-theme-toggle svg { width: 21px !important; height: 21px !important; }
-          .ows-slide { padding: 25px 18px calc(38px + env(safe-area-inset-bottom)) !important; }
-          .ows-card { min-height: calc(100dvh - 160px) !important; padding: 105px 23px 72px !important; border-radius: 27px !important; }
-          .ows-word { font-size: clamp(43px, 11.4vw, 58px) !important; }
-          .ows-pos { margin-top: 18px !important; font-size: 12px !important; letter-spacing: 4px !important; }
-          .ows-word-bn { font-size: 19px !important; margin-top: 15px !important; }
-          .ows-divider { margin: 27px auto !important; }
-          .ows-phrase { font-size: 16px !important; line-height: 1.9 !important; }
-          .ows-bn { margin-top: 23px !important; font-size: 16px !important; }
-          .ows-hook { margin-top: 36px !important; padding-top: 31px !important; }
-          .ows-hook-label { font-size: 12px !important; letter-spacing: 4px !important; }
-          .ows-hook-text { font-size: 13px !important; line-height: 1.75 !important; }
+          .ows-header { min-height: 72px !important; padding: calc(10px + env(safe-area-inset-top)) 12px 10px !important; gap: 10px !important; }
+          .ows-menu-btn { width: 42px !important; height: 42px !important; border-radius: 12px !important; }
+          .ows-header-label { font-size: 10px !important; letter-spacing: 3px !important; }
+          .ows-header-title { font-size: 13px !important; }
+          .ows-counter { min-width: 58px !important; padding: 8px !important; font-size: 12px !important; }
+          .ows-theme-toggle { width: 34px !important; height: 34px !important; }
+          .ows-theme-toggle svg { width: 18px !important; height: 18px !important; }
+          .ows-slide { align-items: center !important; padding: 12px 24px calc(24px + env(safe-area-inset-bottom)) !important; }
+          .ows-card { min-height: 0 !important; padding: 46px 16px 28px !important; border-radius: 18px !important; }
+          .ows-word { font-size: clamp(30px, 8.8vw, 41px) !important; }
+          .ows-pos { margin-top: 10px !important; font-size: 10px !important; letter-spacing: 2.5px !important; }
+          .ows-word-bn { font-size: 15px !important; margin-top: 9px !important; }
+          .ows-divider { margin: 18px auto !important; }
+          .ows-phrase { font-size: 14px !important; line-height: 1.65 !important; }
+          .ows-bn { margin-top: 16px !important; font-size: 14px !important; }
+          .ows-hook { margin-top: 22px !important; padding-top: 20px !important; }
+          .ows-hook-label { font-size: 11px !important; letter-spacing: 3px !important; }
+          .ows-hook-text { font-size: 12px !important; line-height: 1.55 !important; }
+          .ows-book-mark { top: 14px !important; right: 14px !important; width: 38px !important; height: 38px !important; }
+          .ows-book-mark svg { width: 18px !important; height: 18px !important; }
           .ows-corner-ornament { transform: scale(.64); transform-origin: top left; }
           .ows-corner-ornament--bottom { transform: rotate(180deg) scale(.64); transform-origin: bottom right; }
         }
