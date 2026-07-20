@@ -22,39 +22,39 @@
 @media (prefers-color-scheme: dark) {
   :global(html.mock-test-surface:not(.theme-light)),
   :global(body.mock-test-surface:not(.theme-light)) {
-    background: #0f172a;
+    background: #000000;
   }
 
   :global(body:not(.theme-light)) .page,
   :global(html:not(.theme-light)) .page {
-    --primary: #8a57ff;
-    --primary-light: #b08dff;
-    --primary-bg: #2a1b4d;
-    --bg: #0f172a;
-    --card: #1e293b;
-    --text-dark: #f8fafc;
-    --text-muted: #94a3b8;
-    --text-light: #64748b;
-    --border: #334155;
+    --primary: #0a84ff;
+    --primary-light: #47a1ff;
+    --primary-bg: #11284d;
+    --bg: #000000;
+    --card: #1c1c1e;
+    --text-dark: #ffffff;
+    --text-muted: rgba(235, 235, 245, 0.55);
+    --text-light: rgba(235, 235, 245, 0.3);
+    --border: rgba(255, 255, 255, 0.08);
   }
 }
 
 :global(body.theme-dark) .page,
 :global(html.theme-dark) .page {
-  --primary: #8a57ff;
-  --primary-light: #b08dff;
-  --primary-bg: #2a1b4d;
-  --bg: #0f172a;
-  --card: #1e293b;
-  --text-dark: #f8fafc;
-  --text-muted: #94a3b8;
-  --text-light: #64748b;
-  --border: #334155;
+  --primary: #0a84ff;
+    --primary-light: #47a1ff;
+    --primary-bg: #11284d;
+    --bg: #000000;
+    --card: #1c1c1e;
+    --text-dark: #ffffff;
+    --text-muted: rgba(235, 235, 245, 0.55);
+    --text-light: rgba(235, 235, 245, 0.3);
+    --border: rgba(255, 255, 255, 0.08);
 }
 
 :global(html.mock-test-surface.theme-dark),
 :global(body.mock-test-surface.theme-dark) {
-  background: #0f172a;
+  background: #000000;
 }
 
 .app {
@@ -1209,22 +1209,19 @@
 @media (min-width: 1025px) {
   :global(body.theme-dark.mock-test-surface),
   :global(html.theme-dark.mock-test-surface) {
-    background: #0f172a;
+    background: #000000;
   }
 
   :global(body.theme-dark) .page,
   :global(html.theme-dark) .page {
-    background:
-      radial-gradient(circle at 12% 8%, rgba(138, 87, 255, 0.16), transparent 28%),
-      radial-gradient(circle at 88% 14%, rgba(14, 165, 233, 0.12), transparent 26%),
-      linear-gradient(180deg, #0f172a 0%, #111827 100%);
+    background: transparent;
   }
 
   :global(body.theme-dark) .header,
   :global(html.theme-dark) .header {
-    background:
-      linear-gradient(135deg, rgba(30, 41, 59, 0.96), rgba(15, 23, 42, 0.94)),
-      linear-gradient(135deg, rgba(138, 87, 255, 0.14), rgba(14, 165, 233, 0.08));
-    border-color: rgba(51, 65, 85, 0.9);
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border-color: rgba(255, 255, 255, 0.08);
   }
 }

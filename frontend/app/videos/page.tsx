@@ -26,9 +26,11 @@ type Playlist = {
   theme: "yellow" | "green" | "blue" | "purple";
   primary: string;
   secondary: string;
+
   lessonLabel: string;
   logo: string;
   icon: "reasoning" | "math" | "english" | "general-awareness";
+  image?: string;
 };
 
 const filters: { key: FilterKey; label: string }[] = [
@@ -43,7 +45,7 @@ const playlists: Playlist[] = [
   {
     id: "reasoning",
     title: "Reasoning",
-    channel: "SSC reasoning video course",
+    channel: "SSC reasoning",
     type: "Course",
     lessons: 25,
     status: "unwatched",
@@ -55,11 +57,12 @@ const playlists: Playlist[] = [
     lessonLabel: "SSC CGL | CHSL | CPO",
     logo: "R",
     icon: "reasoning",
+    image: "/images/reasoning_thumb.jpg",
   },
   {
     id: "math",
     title: "Math",
-    channel: "Quantitative aptitude video course",
+    channel: "Quantitative aptitude",
     type: "Playlist",
     lessons: 10,
     status: "unwatched",
@@ -71,11 +74,12 @@ const playlists: Playlist[] = [
     lessonLabel: "Problem solving batch",
     logo: "M",
     icon: "math",
+    image: "/images/math_thumb.jpg",
   },
   {
     id: "english",
     title: "English",
-    channel: "English language video course",
+    channel: "English language",
     type: "Course",
     lessons: 18,
     status: "watched",
@@ -87,11 +91,12 @@ const playlists: Playlist[] = [
     lessonLabel: "Foundation batch",
     logo: "E",
     icon: "english",
+    image: "/images/english_thumb.jpg",
   },
   {
     id: "general-awareness",
     title: "General Awareness",
-    channel: "General awareness video course",
+    channel: "General awareness",
     type: "Playlist",
     lessons: 12,
     status: "unwatched",
@@ -103,11 +108,12 @@ const playlists: Playlist[] = [
     lessonLabel: "Exam ready",
     logo: "GA",
     icon: "general-awareness",
+    image: "/images/ga_thumb.jpg",
   },
   {
     id: "ssc-pratham-11",
     title: "SSC Pratham 11",
-    channel: "Rakesh Sir & team videos and notes",
+    channel: "Rakesh Sir & team",
     type: "Course",
     lessons: 100,
     status: "unwatched",
@@ -123,7 +129,7 @@ const playlists: Playlist[] = [
   {
     id: "ssc-pratham-12",
     title: "SSC Pratham 12",
-    channel: "SSC complete recorded batch",
+    channel: "Recorded batch",
     type: "Course",
     lessons: 100,
     status: "unwatched",
@@ -135,11 +141,12 @@ const playlists: Playlist[] = [
     lessonLabel: "Study with Guru",
     logo: "P12",
     icon: "general-awareness",
+    image: "/images/ga_thumb.jpg",
   },
   {
     id: "study-with-guru",
     title: "Study With Guru",
-    channel: "Recorded foundation video batch",
+    channel: "Foundation batch",
     type: "Playlist",
     lessons: 100,
     status: "unwatched",
@@ -151,6 +158,7 @@ const playlists: Playlist[] = [
     lessonLabel: "Recorded batch",
     logo: "SG",
     icon: "math",
+    image: "/images/math_thumb.jpg",
   },
 ];
 
@@ -202,27 +210,16 @@ function PlaylistThumbnail({ playlist }: { playlist: Playlist }) {
       data-subject={playlist.icon}
       style={{ "--thumb-accent": playlist.accent } as CSSProperties}
     >
-      <div className="playlist-stack stack-back" aria-hidden="true" />
-      <div className="playlist-stack stack-one" aria-hidden="true" />
-      <div className="playlist-stack stack-two" aria-hidden="true" />
       <div className="thumb-stage">
         <div className="thumb-icon" aria-hidden="true">
           <SubjectIcon icon={playlist.icon} />
         </div>
-        <div className="thumb-topline">{playlist.lessonLabel}</div>
-        <div className="thumb-primary">{playlist.primary}</div>
-        <div className="thumb-secondary">{playlist.secondary}</div>
-        <div className="thumb-lesson">Start learning</div>
-        <div className="lesson-badge">
-          <GraduationCap size={19} strokeWidth={2.4} />
-          <span className="lesson-badge-full">
-            {playlist.type} · {playlist.lessons} lessons
-          </span>
-          <span className="lesson-badge-compact">{playlist.lessons} lessons</span>
-        </div>
-        <div className="play-affordance" aria-hidden="true">
-          <PlayCircle size={38} strokeWidth={2.2} />
-        </div>
+      </div>
+      <div className="lesson-badge">
+        <span className="lesson-badge-compact">{playlist.lessons} videos</span>
+      </div>
+      <div className="play-affordance" aria-hidden="true">
+        <PlayCircle size={32} strokeWidth={2.2} />
       </div>
     </div>
   );
@@ -260,10 +257,8 @@ function PlaylistCard({ playlist }: { playlist: Playlist }) {
       <div className="playlist-meta-row">
         <div className="channel-logo">{playlist.logo}</div>
         <div className="playlist-copy">
-          <h2>{playlist.title}</h2>
-          <p>
-            {playlist.channel} · {playlist.type}
-          </p>
+          <h2 title={playlist.title}>{playlist.title}</h2>
+          <p title={playlist.channel} className="meta-channel">{playlist.channel}</p>
         </div>
         <button
           type="button"
@@ -271,7 +266,7 @@ function PlaylistCard({ playlist }: { playlist: Playlist }) {
           aria-label={`More options for ${playlist.title}`}
           onClick={(event) => event.stopPropagation()}
         >
-          <MoreVertical size={28} strokeWidth={2.8} />
+          <MoreVertical size={20} strokeWidth={2.8} />
         </button>
       </div>
     </article>
@@ -293,8 +288,11 @@ export default function VideosPage() {
     <main className="videos-page">
       <div className="videos-shell">
         <div className="videos-header">
-          <VideoFilters active={activeFilter} onChange={setActiveFilter} />
-        </div>
+            <div className="header-top">
+              <h1 className="header-title">Videos</h1>
+            </div>
+            <VideoFilters active={activeFilter} onChange={setActiveFilter} />
+          </div>
 
         <section className="playlist-list" aria-label="Video playlists">
           {visiblePlaylists.length > 0 ? (
@@ -309,191 +307,32 @@ export default function VideosPage() {
       </div>
 
       <style>{`
-        .videos-page {
-          --video-header-height: 60px;
-          --video-page-bg: #ffffff;
-          --video-page-fg: #0f0f0f;
-          --video-filter-bg: rgba(255, 255, 255, 0.94);
-          --video-filter-shadow: 0 1px 0 rgba(15, 23, 42, 0.06);
-          --video-filter-backdrop: none;
-          --video-chip-bg: #f3f4f6;
-          --video-chip-fg: #0c0c0c;
-          --video-chip-border: transparent;
-          --video-chip-active-bg: #050505;
-          --video-chip-active-fg: #ffffff;
-          --video-chip-active-border: transparent;
-          --video-chip-press-bg: #f3f4f6;
-          --video-chip-active-press-bg: #050505;
-          --video-stack-border: rgba(15, 23, 42, 0.13);
-          --video-stack-shadow:
-            0 9px 18px rgba(15, 23, 42, 0.13),
-            inset 0 1px 0 rgba(255, 255, 255, 0.72),
-            inset 0 -1px 0 rgba(15, 23, 42, 0.08);
-          --video-stack-filter: none;
-          --video-stack-divider: rgba(15, 23, 42, 0.11);
-          --video-focus-inner: #ffffff;
-          --video-focus-outer: #050505;
-          --video-focus-shadow: rgba(15, 23, 42, 0.18);
-          --video-channel-bg: #ffffff;
-          --video-channel-border: #e5e7eb;
-          --video-channel-fg: #008080;
-          --video-channel-shadow: inset 0 0 0 2px rgba(0, 128, 128, 0.12);
-          --video-title-fg: #0f0f0f;
-          --video-muted-fg: #606060;
-          --video-more-fg: #0b0b0b;
-          --video-more-press-bg: #f3f4f6;
-          --video-empty-fg: #606060;
-          --video-card-bg: transparent;
-          --video-card-border: transparent;
-          --video-card-shadow: none;
-          --video-card-padding: 0;
-          --video-card-radius: 0;
-          --video-card-hover-bg: transparent;
-          --video-thumb-border: rgba(15, 23, 42, 0.16);
-          --video-thumb-shadow:
-            0 18px 34px rgba(15, 23, 42, 0.18),
-            0 4px 0 rgba(15, 23, 42, 0.08),
-            inset 0 1px 0 rgba(255, 255, 255, 0.16);
-          min-height: 100vh;
-          background: var(--video-page-bg);
+
+        .header-top {
+          padding: 16px 20px 8px;
+        }
+
+        .header-title {
+          font-size: 2rem;
+          font-weight: 800;
+          letter-spacing: -0.5px;
           color: var(--video-page-fg);
-          font-family: "Outfit", "Roboto", "Helvetica Neue", Arial, sans-serif;
-          padding: calc(12px + var(--video-header-height)) 12px
-            calc(26px + env(safe-area-inset-bottom));
-        }
-
-        body.theme-dark .videos-page {
-          --video-page-bg:
-            linear-gradient(180deg, #181b20 0%, #111419 44%, #15171b 100%);
-          --video-page-fg: #f4f7fb;
-          --video-filter-bg: rgba(22, 25, 31, 0.86);
-          --video-filter-shadow:
-            inset 0 -1px 0 rgba(255, 255, 255, 0.08),
-            0 16px 34px rgba(8, 10, 14, 0.32);
-          --video-filter-backdrop: blur(18px) saturate(150%);
-          --video-chip-bg: rgba(255, 255, 255, 0.075);
-          --video-chip-fg: #dce3ea;
-          --video-chip-border: rgba(255, 255, 255, 0.08);
-          --video-chip-active-bg: linear-gradient(180deg, #f7fafc 0%, #dfe8ef 100%);
-          --video-chip-active-fg: #101317;
-          --video-chip-active-border: rgba(255, 255, 255, 0.7);
-          --video-chip-press-bg: rgba(255, 255, 255, 0.12);
-          --video-chip-active-press-bg: #dce5ed;
-          --video-stack-border: rgba(198, 213, 226, 0.18);
-          --video-stack-shadow:
-            0 12px 24px rgba(5, 8, 12, 0.36),
-            inset 0 1px 0 rgba(255, 255, 255, 0.18),
-            inset 0 -1px 0 rgba(0, 0, 0, 0.32);
-          --video-stack-filter: brightness(0.78) saturate(0.98);
-          --video-stack-divider: rgba(8, 12, 16, 0.34);
-          --video-focus-inner: #15191f;
-          --video-focus-outer: #e9f2f7;
-          --video-focus-shadow: rgba(6, 9, 14, 0.5);
-          --video-channel-bg:
-            linear-gradient(180deg, rgba(38, 54, 59, 0.92), rgba(22, 29, 34, 0.92));
-          --video-channel-border: rgba(137, 211, 204, 0.22);
-          --video-channel-fg: #8bd8c7;
-          --video-channel-shadow:
-            inset 0 0 0 1px rgba(139, 216, 199, 0.16),
-            0 10px 22px rgba(0, 0, 0, 0.24);
-          --video-title-fg: #f7fafc;
-          --video-muted-fg: #a9b4c0;
-          --video-more-fg: #d6dee7;
-          --video-more-press-bg: rgba(255, 255, 255, 0.1);
-          --video-empty-fg: #a9b4c0;
-          --video-card-bg:
-            linear-gradient(180deg, rgba(255, 255, 255, 0.055) 0%, rgba(255, 255, 255, 0.026) 100%);
-          --video-card-border: rgba(255, 255, 255, 0.075);
-          --video-card-shadow:
-            0 20px 45px rgba(5, 8, 13, 0.28),
-            inset 0 1px 0 rgba(255, 255, 255, 0.055);
-          --video-card-padding: 10px;
-          --video-card-radius: 20px;
-          --video-card-hover-bg:
-            linear-gradient(180deg, rgba(255, 255, 255, 0.075) 0%, rgba(255, 255, 255, 0.035) 100%);
-          --video-thumb-border: rgba(207, 223, 234, 0.16);
-          --video-thumb-shadow:
-            0 24px 48px rgba(4, 8, 13, 0.42),
-            0 1px 0 rgba(255, 255, 255, 0.06),
-            inset 0 1px 0 rgba(255, 255, 255, 0.18);
-          color-scheme: dark;
-        }
-
-        @media (prefers-color-scheme: dark) {
-          body:not(.theme-light) .videos-page {
-            --video-page-bg:
-              linear-gradient(180deg, #181b20 0%, #111419 44%, #15171b 100%);
-            --video-page-fg: #f4f7fb;
-            --video-filter-bg: rgba(22, 25, 31, 0.86);
-            --video-filter-shadow:
-              inset 0 -1px 0 rgba(255, 255, 255, 0.08),
-              0 16px 34px rgba(8, 10, 14, 0.32);
-            --video-filter-backdrop: blur(18px) saturate(150%);
-            --video-chip-bg: rgba(255, 255, 255, 0.075);
-            --video-chip-fg: #dce3ea;
-            --video-chip-border: rgba(255, 255, 255, 0.08);
-            --video-chip-active-bg: linear-gradient(180deg, #f7fafc 0%, #dfe8ef 100%);
-            --video-chip-active-fg: #101317;
-            --video-chip-active-border: rgba(255, 255, 255, 0.7);
-            --video-chip-press-bg: rgba(255, 255, 255, 0.12);
-            --video-chip-active-press-bg: #dce5ed;
-            --video-stack-border: rgba(198, 213, 226, 0.18);
-            --video-stack-shadow:
-              0 12px 24px rgba(5, 8, 12, 0.36),
-              inset 0 1px 0 rgba(255, 255, 255, 0.18),
-              inset 0 -1px 0 rgba(0, 0, 0, 0.32);
-            --video-stack-filter: brightness(0.78) saturate(0.98);
-            --video-stack-divider: rgba(8, 12, 16, 0.34);
-            --video-focus-inner: #15191f;
-            --video-focus-outer: #e9f2f7;
-            --video-focus-shadow: rgba(6, 9, 14, 0.5);
-            --video-channel-bg:
-              linear-gradient(180deg, rgba(38, 54, 59, 0.92), rgba(22, 29, 34, 0.92));
-            --video-channel-border: rgba(137, 211, 204, 0.22);
-            --video-channel-fg: #8bd8c7;
-            --video-channel-shadow:
-              inset 0 0 0 1px rgba(139, 216, 199, 0.16),
-              0 10px 22px rgba(0, 0, 0, 0.24);
-            --video-title-fg: #f7fafc;
-            --video-muted-fg: #a9b4c0;
-            --video-more-fg: #d6dee7;
-            --video-more-press-bg: rgba(255, 255, 255, 0.1);
-            --video-empty-fg: #a9b4c0;
-            --video-card-bg:
-              linear-gradient(180deg, rgba(255, 255, 255, 0.055) 0%, rgba(255, 255, 255, 0.026) 100%);
-            --video-card-border: rgba(255, 255, 255, 0.075);
-            --video-card-shadow:
-              0 20px 45px rgba(5, 8, 13, 0.28),
-              inset 0 1px 0 rgba(255, 255, 255, 0.055);
-            --video-card-padding: 10px;
-            --video-card-radius: 20px;
-            --video-card-hover-bg:
-              linear-gradient(180deg, rgba(255, 255, 255, 0.075) 0%, rgba(255, 255, 255, 0.035) 100%);
-            --video-thumb-border: rgba(207, 223, 234, 0.16);
-            --video-thumb-shadow:
-              0 24px 48px rgba(4, 8, 13, 0.42),
-              0 1px 0 rgba(255, 255, 255, 0.06),
-              inset 0 1px 0 rgba(255, 255, 255, 0.18);
-            color-scheme: dark;
-          }
-        }
-
-        .videos-shell {
-          width: min(100%, 720px);
-          margin: 0 auto;
+          margin: 0;
         }
 
         .videos-header {
-          position: fixed;
+          position: sticky;
           top: 0;
-          left: 0;
-          right: 0;
-          z-index: 25;
-          height: var(--video-header-height);
-          background: var(--video-filter-bg);
-          box-shadow: var(--video-filter-shadow);
-          backdrop-filter: var(--video-filter-backdrop);
-          -webkit-backdrop-filter: var(--video-filter-backdrop);
+          z-index: 100;
+          background: var(--video-header-bg, #ffffff);
+          backdrop-filter: var(--video-filter-backdrop, saturate(180%) blur(20px));
+          -webkit-backdrop-filter: var(--video-filter-backdrop, saturate(180%) blur(20px));
+          border-bottom: 1px solid var(--video-header-border, transparent);
+        }
+
+        body.theme-dark .videos-header {
+          --video-header-bg: rgba(0, 0, 0, 0.72);
+          --video-header-border: rgba(255, 255, 255, 0.08);
         }
 
         .video-filters {
@@ -515,8 +354,9 @@ export default function VideosPage() {
         }
 
         .video-chip {
-          flex: 0 0 auto;
-          min-height: 42px;
+            flex: 0 0 auto;
+            min-height: 36px;
+            font-size: 0.9rem;
           border: 1px solid var(--video-chip-border);
           border-radius: 999px;
           padding: 0 16px;
@@ -549,317 +389,67 @@ export default function VideosPage() {
           background: var(--video-chip-active-press-bg);
         }
 
+        
         .playlist-list {
-          display: flex;
-          flex-direction: column;
-          gap: 30px;
-          padding: 24px 0 18px;
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 16px;
+          padding: 24px 10px 18px;
         }
 
         .playlist-card {
           display: flex;
           flex-direction: column;
-          gap: 12px;
-          padding: var(--video-card-padding);
-          border: 1px solid var(--video-card-border);
-          border-radius: var(--video-card-radius);
-          background: var(--video-card-bg);
-          box-shadow: var(--video-card-shadow);
-          content-visibility: auto;
-          contain-intrinsic-size: 280px;
-          transition:
-            background 0.18s ease,
-            border-color 0.18s ease,
-            transform 0.18s ease;
+          gap: 8px;
+          padding: 0;
+          background: transparent;
+          border: none;
+          box-shadow: none;
+          border-radius: 0;
         }
 
-        .playlist-card.is-clickable {
-          cursor: pointer;
-          outline: none;
-        }
-
-        .playlist-card.is-clickable:hover {
-          background: var(--video-card-hover-bg);
-        }
-
-        .playlist-card.is-clickable:focus-visible .thumb-stage {
-          box-shadow:
-            0 0 0 3px var(--video-focus-inner),
-            0 0 0 6px var(--video-focus-outer),
-            0 18px 34px var(--video-focus-shadow),
-            0 4px 0 rgba(15, 23, 42, 0.08),
-            inset 0 1px 0 rgba(255, 255, 255, 0.16);
+        body.theme-dark .playlist-card {
+          background: transparent;
+          border: none;
         }
 
         .playlist-thumb {
           position: relative;
-          padding-top: 13px;
-          isolation: isolate;
+          width: 100%;
+          aspect-ratio: 16 / 9;
+          border-radius: 12px;
+          overflow: hidden;
+          background: #333; /* Fallback */
         }
-
-        .playlist-stack {
-          position: absolute;
-          height: 20px;
-          border-radius: 14px 14px 6px 6px;
-          border: 1px solid var(--video-stack-border);
-          box-shadow: var(--video-stack-shadow);
-          filter: var(--video-stack-filter);
-          transform-origin: center bottom;
-          pointer-events: none;
-        }
-
-        .playlist-stack::after {
-          content: "";
-          position: absolute;
-          left: 12px;
-          right: 12px;
-          bottom: 4px;
-          height: 1px;
-          background: var(--video-stack-divider);
-          opacity: 0.7;
-        }
-
-        .stack-back {
-          top: -9px;
-          left: 12%;
-          right: 12%;
-          z-index: 0;
-          background: linear-gradient(180deg, #e7eef7 0%, #c8d6e6 100%);
-          opacity: 0.74;
-          transform: translateY(0) scaleX(0.99);
-        }
-
-        .stack-one {
-          top: -3px;
-          left: 8%;
-          right: 8%;
-          z-index: 1;
-          background: linear-gradient(180deg, #dce7f3 0%, #b7c8da 100%);
-          opacity: 0.88;
-        }
-
-        .stack-two {
-          top: 3px;
-          left: 4.5%;
-          right: 4.5%;
-          z-index: 2;
-          background: linear-gradient(180deg, #c9d7e7 0%, #9eb1c5 100%);
-        }
-
-        .theme-green .stack-back {
-          background: linear-gradient(180deg, #e2f4ec 0%, #c9e2d7 100%);
-        }
-
-        .theme-green .stack-one {
-          background: linear-gradient(180deg, #d5eee4 0%, #b8d9ca 100%);
-        }
-
-        .theme-green .stack-two {
-          background: linear-gradient(180deg, #c1e0d3 0%, #99bdad 100%);
-        }
-
-        .theme-blue .stack-back {
-          background: linear-gradient(180deg, #e4f2ff 0%, #c9dcf2 100%);
-        }
-
-        .theme-blue .stack-one {
-          background: linear-gradient(180deg, #d8ebff 0%, #b5cce8 100%);
-        }
-
-        .theme-blue .stack-two {
-          background: linear-gradient(180deg, #c6dbf2 0%, #9db4d0 100%);
-        }
-
-        .theme-purple .stack-back {
-          background: linear-gradient(180deg, #f1e8ff 0%, #decaf8 100%);
-        }
-
-        .theme-purple .stack-one {
-          background: linear-gradient(180deg, #eadcff 0%, #d0b3ee 100%);
-        }
-
-        .theme-purple .stack-two {
-          background: linear-gradient(180deg, #dbc5f8 0%, #b99ce2 100%);
-        }
+        
+        /* Gradients for themes */
+        .theme-yellow { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .theme-green { background: linear-gradient(135deg, #10b981, #059669); }
+        .theme-blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .theme-purple { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
 
         .thumb-stage {
+          width: 100%;
+          height: 100%;
+          display: grid;
+          place-items: center;
           position: relative;
-          z-index: 3;
-          aspect-ratio: 16 / 9;
-          overflow: hidden;
-          border-radius: 14px;
-          background:
-            radial-gradient(circle at 83% 18%, rgba(255, 225, 0, 0.22), transparent 28%),
-            linear-gradient(135deg, rgba(8, 12, 20, 0.98), rgba(8, 12, 20, 0.78)),
-            repeating-linear-gradient(28deg, rgba(255, 255, 255, 0.07) 0 1px, transparent 1px 34px),
-            #101820;
-          border: 1px solid var(--video-thumb-border);
-          box-shadow: var(--video-thumb-shadow);
-        }
-
-        .theme-green .thumb-stage {
-          background:
-            radial-gradient(circle at 82% 18%, rgba(241, 232, 59, 0.22), transparent 30%),
-            linear-gradient(135deg, rgba(7, 50, 40, 0.98), rgba(13, 84, 60, 0.78)),
-            repeating-linear-gradient(28deg, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 34px),
-            #0b3f34;
-        }
-
-        .theme-blue .thumb-stage {
-          background:
-            radial-gradient(circle at 82% 18%, rgba(61, 213, 255, 0.24), transparent 30%),
-            linear-gradient(135deg, rgba(8, 28, 75, 0.96), rgba(11, 81, 126, 0.8)),
-            repeating-linear-gradient(28deg, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 34px),
-            #092656;
-        }
-
-        .theme-purple .thumb-stage {
-          background:
-            radial-gradient(circle at 82% 18%, rgba(201, 167, 255, 0.28), transparent 30%),
-            linear-gradient(135deg, rgba(35, 18, 64, 0.96), rgba(89, 39, 124, 0.8)),
-            repeating-linear-gradient(28deg, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 34px),
-            #261545;
-        }
-
-        .theme-yellow .thumb-stage::before,
-        .theme-green .thumb-stage::before,
-        .theme-blue .thumb-stage::before,
-        .theme-purple .thumb-stage::before {
-          content: "";
-          position: absolute;
-          inset: auto -8% 0 -2%;
-          height: 42%;
-          transform: skewX(-10deg) translateY(22%);
-          background: var(--thumb-accent, #ffe100);
-          z-index: 1;
-        }
-
-        .theme-green .thumb-stage::before {
-          height: 42%;
-          top: auto;
-          transform: skewX(-10deg) translateY(22%);
         }
 
         .thumb-icon {
-          position: absolute;
-          z-index: 3;
-          right: 6%;
-          top: 12%;
-          width: clamp(64px, 17vw, 108px);
-          height: clamp(64px, 17vw, 108px);
-          border-radius: 26px;
-          display: grid;
-          place-items: center;
-          color: #ffffff;
-          background: rgba(255, 255, 255, 0.12);
-          border: 1px solid rgba(255, 255, 255, 0.22);
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.2),
-            0 16px 36px rgba(0, 0, 0, 0.2);
-          backdrop-filter: blur(8px);
-        }
-
-        .thumb-topline {
-          position: absolute;
-          z-index: 2;
-          top: 8%;
-          left: 5%;
-          max-width: 60%;
-          padding: 5px 9px;
-          border-radius: 999px;
-          background: rgba(255, 255, 255, 0.12);
-          color: rgba(255, 255, 255, 0.88);
-          border: 1px solid rgba(255, 255, 255, 0.18);
-          font-size: clamp(0.62rem, 2.5vw, 0.94rem);
-          line-height: 1.1;
-          font-weight: 900;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-
-        .thumb-primary {
-          position: absolute;
-          z-index: 3;
-          top: 30%;
-          left: 5%;
-          max-width: 70%;
-          color: #ffffff;
-          font-size: clamp(2.15rem, 10.4vw, 4.9rem);
-          line-height: 0.86;
-          font-style: normal;
-          font-weight: 900;
-          letter-spacing: 0;
-          text-shadow: 0 3px 14px rgba(0, 0, 0, 0.3);
-        }
-
-        .theme-green .thumb-primary {
-          color: #ffffff;
-          font-size: clamp(2.4rem, 12vw, 5.4rem);
-        }
-
-        .playlist-thumb[data-subject="general-awareness"] .thumb-primary {
-          max-width: 78%;
-          font-size: clamp(1.8rem, 7vw, 3.8rem);
-          line-height: 0.94;
-        }
-
-        .thumb-secondary {
-          position: absolute;
-          z-index: 3;
-          left: 5%;
-          bottom: 21%;
-          max-width: 72%;
-          color: #ffffff;
-          font-size: clamp(0.86rem, 3.9vw, 1.45rem);
-          font-weight: 800;
-          line-height: 1.16;
-          text-shadow: 0 2px 10px rgba(0, 0, 0, 0.38);
-        }
-
-        .thumb-lesson {
-          position: absolute;
-          z-index: 3;
-          left: 5%;
-          bottom: 7%;
-          color: #050505;
-          font-size: clamp(0.78rem, 3.3vw, 1.1rem);
-          font-weight: 900;
-          line-height: 1;
-          border-radius: 999px;
-          padding: 7px 10px;
-          background: var(--thumb-accent, #ffe100);
-          box-shadow: 0 8px 18px rgba(0, 0, 0, 0.16);
+          color: rgba(255, 255, 255, 0.95);
         }
 
         .lesson-badge {
           position: absolute;
-          z-index: 3;
-          right: 3%;
-          bottom: 4%;
-          display: inline-flex;
-          align-items: center;
-          gap: 5px;
-          max-width: 52%;
-          border-radius: 999px;
-          padding: 7px 8px;
-          background: rgba(0, 0, 0, 0.6);
-          color: #ffffff;
-          font-size: clamp(0.68rem, 3vw, 1rem);
-          font-weight: 800;
-          line-height: 1;
-          backdrop-filter: blur(4px);
-        }
-
-        .lesson-badge span {
-          min-width: 0;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-        }
-
-        .lesson-badge-compact {
-          display: none;
+          bottom: 6px;
+          right: 6px;
+          background: rgba(0, 0, 0, 0.75);
+          color: #fff;
+          font-size: 0.75rem;
+          padding: 2px 6px;
+          border-radius: 4px;
+          font-weight: 600;
         }
 
         .play-affordance {
@@ -868,47 +458,40 @@ export default function VideosPage() {
           right: 50%;
           top: 50%;
           transform: translate(50%, -50%);
-          width: 54px;
-          height: 54px;
+          width: 44px;
+          height: 44px;
           border-radius: 999px;
           display: grid;
           place-items: center;
           color: #ffffff;
           background: rgba(0, 0, 0, 0.42);
-          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.26);
           opacity: 0;
-          transition: opacity 0.18s ease, transform 0.18s ease;
+          transition: opacity 0.18s ease;
           pointer-events: none;
         }
 
-        .playlist-card:active .play-affordance,
         .playlist-card:hover .play-affordance {
           opacity: 1;
-          transform: translate(50%, -50%) scale(0.98);
         }
 
         .playlist-meta-row {
           display: grid;
-          grid-template-columns: 40px minmax(0, 1fr) 36px;
+          grid-template-columns: 32px minmax(0, 1fr) 24px;
+          gap: 8px;
           align-items: start;
-          gap: 10px;
-          padding: 0 2px;
         }
 
         .channel-logo {
-          width: 38px;
-          height: 38px;
+          width: 32px;
+          height: 32px;
           border-radius: 50%;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          border: 2px solid var(--video-channel-border);
-          color: var(--video-channel-fg);
-          background: var(--video-channel-bg);
-          font-size: 0.78rem;
-          font-weight: 900;
-          line-height: 1;
-          box-shadow: var(--video-channel-shadow);
+          background: #475569;
+          color: #fff;
+          display: grid;
+          place-items: center;
+          font-size: 0.7rem;
+          font-weight: bold;
+          margin-top: 2px;
         }
 
         .playlist-copy {
@@ -917,58 +500,38 @@ export default function VideosPage() {
 
         .playlist-copy h2 {
           margin: 0;
-          color: var(--video-title-fg);
-          font-size: clamp(1rem, 4.2vw, 1.45rem);
+          font-size: 0.95rem;
           font-weight: 600;
-          line-height: 1.24;
-          letter-spacing: 0;
+          line-height: 1.2;
+          color: var(--video-title-fg);
           display: -webkit-box;
           -webkit-box-orient: vertical;
           -webkit-line-clamp: 2;
           overflow: hidden;
         }
 
-        .playlist-copy p {
-          margin: 4px 0 0;
+        .meta-primary, .meta-channel {
+          margin: 2px 0 0;
+          font-size: 0.8rem;
           color: var(--video-muted-fg);
-          font-size: clamp(0.82rem, 3.5vw, 1.02rem);
-          line-height: 1.2;
-          font-weight: 400;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
         }
 
         .more-btn {
-          border: 0;
           background: transparent;
+          border: none;
           color: var(--video-more-fg);
-          width: 36px;
-          height: 40px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
           cursor: pointer;
-          border-radius: 999px;
+          display: flex;
+          align-items: flex-start;
+          justify-content: flex-end;
+          padding: 2px 0;
         }
 
-        .more-btn:active {
-          background: var(--video-more-press-bg);
-        }
-
-        .empty-state {
-          min-height: 220px;
-          display: grid;
-          place-items: center;
-          align-content: center;
-          gap: 10px;
-          color: var(--video-empty-fg);
-          font-size: 1rem;
-        }
-
-        .empty-state p {
-          margin: 0;
-        }
+        .empty-state { min-height: 220px; display: grid; place-items: center; color: var(--video-empty-fg); }
+        .empty-state p { margin: 0; }
 
         @media (min-width: 768px) {
           .videos-page {
@@ -980,20 +543,17 @@ export default function VideosPage() {
           }
 
           .video-chip {
-            min-height: 56px;
-            border-radius: 14px;
-            padding: 0 22px;
-            font-size: 1.18rem;
-          }
+              min-height: 40px;
+              border-radius: 14px;
+              padding: 0 16px;
+              font-size: 0.95rem;
+            }
 
-          .playlist-list {
-            gap: 46px;
-            padding-top: 48px;
-          }
-
-          .playlist-thumb {
-            padding-top: 18px;
-          }
+            .playlist-list {
+              grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+              gap: 24px;
+              padding-top: 48px;
+            }
 
           .playlist-stack {
             height: 26px;
@@ -1019,10 +579,10 @@ export default function VideosPage() {
           }
 
           .channel-logo {
-            width: 48px;
-            height: 48px;
-            font-size: 0.86rem;
-          }
+              width: 36px;
+              height: 36px;
+              font-size: 0.75rem;
+            }
 
           .play-affordance {
             width: 64px;
@@ -1085,10 +645,86 @@ export default function VideosPage() {
             font-size: clamp(1.45rem, 6.4vw, 2.6rem);
           }
 
-          .playlist-list {
-            padding-top: 22px;
-            gap: 28px;
+          
+
+          .playlist-meta-row {
+            grid-template-columns: 38px minmax(0, 1fr) 34px;
+            gap: 8px;
           }
+
+          .channel-logo {
+            width: 36px;
+            height: 36px;
+          }
+
+          .lesson-badge {
+            max-width: 54%;
+            padding: 6px 7px;
+          }
+            }
+
+          .play-affordance {
+            width: 64px;
+            height: 64px;
+          }
+        }
+
+        @media (max-width: 540px) {
+          .videos-page {
+            min-height: calc(100vh - 76px);
+          }
+
+          .lesson-badge svg {
+            width: 16px;
+            height: 16px;
+          }
+
+          .more-btn svg {
+            width: 24px;
+            height: 24px;
+          }
+
+          .lesson-badge-full {
+            display: none;
+          }
+
+          .lesson-badge-compact {
+            display: inline;
+          }
+        }
+
+        @media (max-width: 390px) {
+          .videos-page {
+            padding-left: 10px;
+            padding-right: 10px;
+          }
+
+          .video-filters {
+            margin-left: -10px;
+            margin-right: -10px;
+            padding-left: 10px;
+            padding-right: 10px;
+          }
+
+          .video-chip {
+            padding: 0 14px;
+            min-height: 40px;
+            font-size: 0.9rem;
+          }
+
+          .thumb-primary {
+            font-size: clamp(1.58rem, 9vw, 3rem);
+          }
+
+          .theme-green .thumb-primary {
+            font-size: clamp(1rem, 5.7vw, 2.4rem);
+          }
+
+          .playlist-thumb[data-subject="general-awareness"] .thumb-primary {
+            font-size: clamp(1.45rem, 6.4vw, 2.6rem);
+          }
+
+          
 
           .playlist-meta-row {
             grid-template-columns: 38px minmax(0, 1fr) 34px;
@@ -1109,6 +745,40 @@ export default function VideosPage() {
             width: 46px;
             height: 46px;
           }
+        }
+
+        body.theme-dark {
+          background: #000000;
+        }
+
+        body.theme-dark .videos-page {
+          --video-page-bg: #000000;
+          --video-page-fg: #ffffff;
+          --video-title-fg: #ffffff;
+          --video-muted-fg: rgba(235, 235, 245, 0.6);
+          --video-more-fg: #ffffff;
+          --video-empty-fg: rgba(235, 235, 245, 0.6);
+          --video-filter-bg: rgba(0, 0, 0, 0.72);
+          --video-filter-shadow: none;
+          --video-filter-backdrop: blur(20px) saturate(180%);
+          --video-chip-bg: rgba(255, 255, 255, 0.08);
+          --video-chip-fg: rgba(235, 235, 245, 0.6);
+          --video-chip-border: rgba(255, 255, 255, 0.08);
+          --video-chip-active-bg: #ffffff;
+          --video-chip-active-fg: #000000;
+          --video-chip-active-border: #ffffff;
+          --video-chip-press-bg: rgba(255, 255, 255, 0.12);
+          --video-chip-active-press-bg: #e5e5ea;
+        }
+
+        body.theme-dark .playlist-card {
+          background: transparent;
+          border: none;
+        }
+
+        body.theme-dark .channel-logo {
+          background: #2c2c2e;
+          color: #fff;
         }
 
       `}</style>

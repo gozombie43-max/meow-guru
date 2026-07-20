@@ -313,48 +313,30 @@ export default function GeneralAwarenessPage() {
         }
 
         body.theme-dark {
-          background: radial-gradient(circle at 18% 10%, #1c2a52 0%, #0b1328 55%, #070c1a 100%);
+          background: #000000;
         }
 
         body.theme-dark .ga-topics-page {
-          --ga-accent: #7ed0ff;
-          --ga-border: rgba(126, 208, 255, 0.2);
-          --ga-surface: rgba(11, 18, 36, 0.92);
-          --ga-ink: #e6edff;
-          --ga-subink: #9aa8c7;
+          --ga-accent: #0a84ff;
+          --ga-border: rgba(255, 255, 255, 0.08);
+          --ga-surface: #1c1c1e;
+          --ga-ink: #ffffff;
+          --ga-subink: rgba(235, 235, 245, 0.55);
           background: transparent;
           color: var(--ga-ink);
         }
 
         body.theme-dark .ga-topics-page::before,
         body.theme-dark .ga-topics-page::after {
-          content: "";
-          position: absolute;
-          border-radius: 999px;
-          pointer-events: none;
-          z-index: 0;
-        }
-
-        body.theme-dark .ga-topics-page::before {
-          width: 260px;
-          height: 260px;
-          top: -80px;
-          right: -90px;
-          background: radial-gradient(circle, rgba(108, 178, 255, 0.45) 0%, transparent 70%);
-        }
-
-        body.theme-dark .ga-topics-page::after {
-          width: 220px;
-          height: 220px;
-          bottom: -90px;
-          left: -60px;
-          background: radial-gradient(circle, rgba(70, 216, 255, 0.28) 0%, transparent 70%);
+          display: none;
         }
 
         body.theme-dark .ga-header {
-          background: rgba(8, 14, 30, 0.88);
-          border-bottom: 1px solid var(--ga-border);
-          box-shadow: 0 10px 30px rgba(2, 6, 23, 0.45);
+          background: rgba(0, 0, 0, 0.72);
+          backdrop-filter: saturate(180%) blur(20px);
+          -webkit-backdrop-filter: saturate(180%) blur(20px);
+          border-bottom: 0.5px solid var(--ga-border);
+          box-shadow: none;
         }
 
         body.theme-dark .header-back {
@@ -362,7 +344,7 @@ export default function GeneralAwarenessPage() {
         }
 
         body.theme-dark .header-back:hover {
-          background: rgba(126, 208, 255, 0.14);
+          background: rgba(255, 255, 255, 0.1);
         }
 
         body.theme-dark .header-title {
@@ -377,7 +359,8 @@ export default function GeneralAwarenessPage() {
         body.theme-dark .search-input {
           background: var(--ga-surface);
           color: var(--ga-ink);
-          box-shadow: 0 14px 30px rgba(2, 6, 23, 0.6), 0 0 0 1px rgba(126, 208, 255, 0.18);
+          box-shadow: none;
+          border: 1px solid var(--ga-border);
         }
 
         body.theme-dark .search-input::placeholder {
@@ -385,27 +368,28 @@ export default function GeneralAwarenessPage() {
         }
 
         body.theme-dark .search-input:focus {
-          box-shadow: 0 18px 34px rgba(2, 6, 23, 0.72), 0 0 0 2px rgba(126, 208, 255, 0.45);
+          box-shadow: none;
+          border-color: var(--ga-accent);
         }
 
         body.theme-dark .topic-card {
-          background: linear-gradient(135deg, rgba(14, 22, 42, 0.95), rgba(10, 16, 34, 0.95));
+          background: var(--ga-surface);
           border: 1px solid var(--ga-border);
-          box-shadow: 0 16px 36px rgba(2, 6, 23, 0.65);
+          box-shadow: none;
         }
 
         body.theme-dark .topic-card:hover {
-          box-shadow: 0 20px 40px rgba(2, 6, 23, 0.7);
+          background: #2c2c2e;
         }
 
         body.theme-dark .topic-card:focus-visible {
-          outline: 2px solid rgba(126, 208, 255, 0.6);
+          outline: 2px solid var(--ga-accent);
         }
 
         body.theme-dark .topic-thumb-wrap {
-          background: rgba(6, 10, 22, 0.6);
-          border: 2px solid rgba(255, 255, 255, 0.14);
-          box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          box-shadow: none;
         }
 
         body.theme-dark .topic-title {
@@ -417,51 +401,54 @@ export default function GeneralAwarenessPage() {
         }
 
         body.theme-dark .empty-state {
-          background: rgba(11, 18, 36, 0.92);
+          background: var(--ga-surface);
           color: var(--ga-subink);
           border: 1px solid var(--ga-border);
-          box-shadow: 0 16px 36px rgba(2, 6, 23, 0.6);
+          box-shadow: none;
         }
 
+        /* ── DESKTOP PC DESIGN (>= 768px) ── */
         @media (min-width: 768px) {
-          .header-inner {
-            min-height: 70px;
-            padding: 12px 22px;
-          }
-
-          .header-title {
-            font-size: 1.15rem;
+          .ga-header .header-inner {
+            max-width: 100%;
+            padding: 12px 40px;
           }
 
           .content-wrap {
-            padding: 20px 20px 40px;
+            max-width: 1240px;
+            padding: 32px 40px 80px;
           }
 
           .search-wrap {
-            margin: 4px 2px 20px;
+            max-width: 500px;
+            margin: 0 auto 32px;
           }
 
           .topic-list {
-            gap: 14px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
           }
 
           .topic-card {
             border-radius: 20px;
-            padding: 16px;
-            gap: 16px;
+            padding: 14px;
+            gap: 14px;
+            height: 100%;
           }
 
           .topic-thumb-wrap {
-            width: 70px;
-            height: 70px;
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
           }
 
           .topic-title {
-            font-size: 1.08rem;
+            font-size: 1.05rem;
           }
 
           .topic-subtitle {
-            font-size: 0.9rem;
+            font-size: 0.88rem;
           }
         }
       `}</style>

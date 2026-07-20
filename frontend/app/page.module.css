@@ -19,19 +19,42 @@
 }
 
 .dark {
-  --bg: #05070c;
-  --surface: rgba(12, 15, 24, 0.9);
-  --surface-soft: rgba(24, 18, 43, 0.78);
+  --bg: #000000;
+  --surface: #1c1c1e;
+  --surface-soft: #2c2c2e;
   --text: #ffffff;
-  --muted: #9aa2b6;
-  --line: rgba(169, 131, 255, 0.28);
-  --purple: #8e3cff;
-  --purple-2: #5e22d7;
-  --shadow: 0 22px 55px rgba(0, 0, 0, 0.34);
-  background:
-    radial-gradient(circle at 86% 12%, rgba(95, 37, 196, 0.22), transparent 34%),
-    #05070c;
+  --muted: rgba(235, 235, 245, 0.55);
+  --line: rgba(255, 255, 255, 0.1);
+  --purple: #0a84ff;
+  --purple-2: #0071e3;
+  --orange: #ff9f0a;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  background: #000000;
 }
+
+/* iOS dark mode overrides */
+.dark .sidebar { background: #1c1c1e; border-right-color: rgba(255,255,255,0.08); }
+.dark .topbar { background: rgba(0,0,0,0.72); backdrop-filter: saturate(180%) blur(20px); border-bottom: 0.5px solid rgba(255,255,255,0.08); }
+.dark .logoText strong:first-child { color: #0a84ff; }
+.dark .railLink { color: rgba(235,235,245,0.5); }
+.dark .railActive { color: #0a84ff; background: rgba(10,132,255,0.12); }
+.dark .premium { background: #1c1c1e; border-color: rgba(255,255,255,0.08); box-shadow: none; }
+.dark .premium a { background: #0a84ff; }
+.dark .premiumIcon { background: rgba(10,132,255,0.2); color: #0a84ff; }
+.dark .hero { border-color: rgba(255,255,255,0.07); background: linear-gradient(105deg, rgba(28,28,30,0.98) 0 42%, transparent 43%), linear-gradient(180deg, rgba(10,132,255,0.06), rgba(10,132,255,0.01)); border-radius: 16px; }
+.dark .wave { background: linear-gradient(135deg, #0a84ff 0%, #0055d4 100%); }
+.dark .subjectCard { background: #1c1c1e; border-color: rgba(255,255,255,0.07); box-shadow: none; }
+.dark .subjectCard:hover { background: #2c2c2e; border-color: rgba(255,255,255,0.12); }
+.dark .resourceCard { background: rgba(10,132,255,0.1); border-color: rgba(10,132,255,0.18); }
+.dark .battleCard { background: rgba(191,90,242,0.1); border-color: rgba(191,90,242,0.18); }
+.dark .quizCard { background: radial-gradient(circle at 76% 22%, rgba(10,132,255,0.3), transparent 34%), linear-gradient(135deg, #1c1c1e, #2c2c2e); border: 1px solid rgba(255,255,255,0.08); }
+.dark .recentSection, .dark .featureStrip { border-left-color: rgba(255,255,255,0.08); border-top-color: rgba(255,255,255,0.08); }
+.dark .featureItem:nth-child(1) { color: #0a84ff; }
+.dark .featureItem:nth-child(2) { color: #30d158; }
+.dark .featureItem:nth-child(3) { color: #64d2ff; }
+.dark .featureItem:nth-child(4) { color: #ff9f0a; }
+.dark .primaryCta, .dark .continueButton { background: linear-gradient(135deg, #ff9f0a, #ff6b00); box-shadow: 0 8px 20px rgba(255,106,0,0.28); }
+.dark .loginButton { border-color: #0a84ff; color: #0a84ff; }
 
 .sidebar {
   position: sticky;
@@ -397,10 +420,13 @@
 .heroImage {
   position: absolute;
   right: 13%;
-  bottom: -44px;
+  top: 0;
+    bottom: 0;
   width: min(35vw, 340px);
-  height: auto;
-  z-index: 2;
+  height: 100%;
+  object-fit: contain;
+    object-position: top center;
+    z-index: 2;
   filter: drop-shadow(0 20px 18px rgba(23, 13, 58, 0.12));
 }
 
@@ -876,9 +902,12 @@
 
   .heroImage {
     right: 8%;
-    bottom: -28px;
+    top: 0;
+    bottom: 0;
     width: min(43vw, 300px);
-  }
+  
+    object-fit: contain;
+    object-position: top center;}
 
   .contentGrid {
     grid-template-columns: 1fr;
@@ -990,9 +1019,12 @@
 
   .heroImage {
     right: 2%;
-    bottom: -24px;
+    top: 0;
+    bottom: 0;
     width: min(52vw, 270px);
-  }
+  
+    object-fit: contain;
+    object-position: top center;}
 
   .floatIcon,
   .floatDots {
@@ -1169,9 +1201,12 @@
 
   .heroImage {
     right: -2px;
-    bottom: -10px;
+    top: 0;
+    bottom: 0;
     width: min(38vw, 178px);
-  }
+  
+    object-fit: contain;
+    object-position: top center;}
 
   .primaryCta svg {
     width: 15px;
@@ -1287,6 +1322,9 @@
 
   .heroImage {
     width: min(35vw, 152px);
-    bottom: -8px;
-  }
+    top: 0;
+    bottom: 0;
+  
+    object-fit: contain;
+    object-position: top center;}
 }

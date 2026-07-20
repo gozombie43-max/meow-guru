@@ -570,51 +570,33 @@ export default function EnglishTopicsPage() {
         .empty-sub { font-size: 0.88rem; color: #94a3b8; }
 
         body.theme-dark {
-          background: radial-gradient(circle at 20% 10%, #1b2b52 0%, #0b1328 55%, #070c1a 100%);
+          background: #000000;
         }
 
         body.theme-dark .page {
-          --page-accent: #7cc4ff;
-          --page-accent-strong: #4e8cff;
-          --page-border: rgba(124, 196, 255, 0.22);
-          --page-surface: rgba(11, 18, 36, 0.92);
-          --page-surface-2: rgba(17, 26, 48, 0.88);
-          --page-ink: #e6edff;
-          --page-subink: #9aa8c7;
-          --page-shadow: 0 18px 36px rgba(2, 6, 23, 0.65);
+          --page-accent: #0a84ff;
+          --page-accent-strong: #0071e3;
+          --page-border: rgba(255, 255, 255, 0.1);
+          --page-surface: #1c1c1e;
+          --page-surface-2: #2c2c2e;
+          --page-ink: #ffffff;
+          --page-subink: rgba(235, 235, 245, 0.55);
+          --page-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
           background: transparent;
           color: var(--page-ink);
         }
 
         body.theme-dark .page::before,
         body.theme-dark .page::after {
-          content: "";
-          position: absolute;
-          border-radius: 999px;
-          pointer-events: none;
-          z-index: 0;
-        }
-
-        body.theme-dark .page::before {
-          width: 240px;
-          height: 240px;
-          top: -70px;
-          right: -90px;
-          background: radial-gradient(circle, rgba(92, 160, 255, 0.45) 0%, transparent 70%);
-        }
-
-        body.theme-dark .page::after {
-          width: 220px;
-          height: 220px;
-          bottom: -80px;
-          left: -70px;
-          background: radial-gradient(circle, rgba(63, 203, 255, 0.28) 0%, transparent 70%);
+          display: none;
         }
 
         body.theme-dark .topbar {
-          background: rgba(8, 14, 30, 0.88);
-          border-bottom: 1px solid var(--page-border);
-          box-shadow: 0 10px 30px rgba(2, 6, 23, 0.45);
+          background: rgba(0, 0, 0, 0.72);
+          backdrop-filter: saturate(180%) blur(20px);
+          -webkit-backdrop-filter: saturate(180%) blur(20px);
+          border-bottom: 0.5px solid rgba(255, 255, 255, 0.08);
+          box-shadow: none;
         }
 
         body.theme-dark .back-btn {
@@ -622,7 +604,7 @@ export default function EnglishTopicsPage() {
         }
 
         body.theme-dark .back-btn:hover {
-          background: rgba(124, 196, 255, 0.14);
+          background: rgba(255, 255, 255, 0.1);
         }
 
         body.theme-dark .topbar-title {
@@ -637,7 +619,8 @@ export default function EnglishTopicsPage() {
         body.theme-dark .search-field {
           background: var(--page-surface);
           color: var(--page-ink);
-          box-shadow: 0 14px 30px rgba(2, 6, 23, 0.6), 0 0 0 1px rgba(124, 196, 255, 0.18);
+          box-shadow: none;
+          border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         body.theme-dark .search-field::placeholder {
@@ -645,35 +628,36 @@ export default function EnglishTopicsPage() {
         }
 
         body.theme-dark .search-field:focus {
-          box-shadow: 0 18px 34px rgba(2, 6, 23, 0.72), 0 0 0 2px rgba(124, 196, 255, 0.45);
+          box-shadow: none;
+          border-color: var(--page-accent);
         }
 
         body.theme-dark .search-clear {
-          background: rgba(124, 196, 255, 0.18);
-          color: #e2e8ff;
+          background: rgba(255, 255, 255, 0.12);
+          color: #ffffff;
         }
 
         body.theme-dark .search-clear:hover {
-          background: rgba(124, 196, 255, 0.3);
+          background: rgba(255, 255, 255, 0.2);
         }
 
         body.theme-dark .tab-btn {
           background: var(--page-surface-2);
           border-color: var(--page-border);
-          color: #c7d2fe;
+          color: var(--page-subink);
         }
 
         body.theme-dark .tab-btn:hover {
-          background: rgba(24, 34, 62, 0.95);
-          border-color: rgba(124, 196, 255, 0.5);
-          color: #e5f1ff;
+          background: rgba(255, 255, 255, 0.1);
+          border-color: rgba(255, 255, 255, 0.2);
+          color: var(--page-ink);
         }
 
         body.theme-dark .tab-active {
-          background: linear-gradient(135deg, #5aaeff 0%, #4d8bff 60%, #2fd4ff 120%);
-          border-color: transparent !important;
-          color: #0b1220 !important;
-          box-shadow: 0 10px 24px rgba(64, 126, 255, 0.45);
+          background: var(--page-accent) !important;
+          border-color: var(--page-accent) !important;
+          color: #ffffff !important;
+          box-shadow: none;
         }
 
         body.theme-dark .count-text {
@@ -681,21 +665,21 @@ export default function EnglishTopicsPage() {
         }
 
         body.theme-dark .clear-btn {
-          color: #7fd7ff;
+          color: var(--page-accent);
         }
 
         body.theme-dark .pill-card {
-          background: rgba(12, 19, 38, 0.92);
-          border: 1px solid rgba(124, 196, 255, 0.2);
-          box-shadow: var(--page-shadow);
+          background: var(--page-surface);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          box-shadow: none;
         }
 
         body.theme-dark .pill-card:hover {
-          box-shadow: 0 20px 40px rgba(2, 6, 23, 0.7);
+          background: var(--page-surface-2);
         }
 
         body.theme-dark .pill-icon {
-          box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+          box-shadow: none;
         }
 
         body.theme-dark .pill-name {
@@ -709,7 +693,73 @@ export default function EnglishTopicsPage() {
         body.theme-dark .empty-sub {
           color: var(--page-subink);
         }
+
+        /* ── DESKTOP PC DESIGN (>= 768px) ── */
+        @media (min-width: 768px) {
+          .body {
+            max-width: 1240px; /* Wider max-width to fit more columns */
+            padding: 32px 40px 80px;
+          }
+
+          /* Center search for a cleaner header look */
+          .search-row {
+            max-width: 500px;
+            margin: 0 auto 20px;
+          }
+
+          /* Make tabs wrap and center instead of scrolling */
+          .tabs-scroll {
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 24px;
+            overflow: visible;
+          }
+
+          .tab-btn {
+            height: 38px;
+            padding: 0 20px;
+          }
+
+          .count-row {
+            max-width: 100%;
+            margin-bottom: 16px;
+          }
+
+          /* Ultra dense grid to eliminate scrolling */
+          .pill-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 14px;
+          }
+          
+          /* Keep cards horizontal and compact like mobile, just in a grid */
+          .pill-card {
+            padding: 10px 14px 10px 10px;
+            border-radius: 16px;
+          }
+
+          .pill-icon {
+            width: 42px;
+            height: 42px;
+            font-size: 1.1rem;
+          }
+
+          .pill-name {
+            font-size: 0.95rem;
+          }
+
+          .topbar {
+            height: 64px;
+            padding: 0 40px;
+          }
+          
+          .topbar-title {
+            font-size: 1.1rem;
+          }
+        }
       `}</style>
+
     </main>
   );
 }
