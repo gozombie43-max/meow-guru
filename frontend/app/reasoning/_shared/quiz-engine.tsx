@@ -66,6 +66,7 @@ type ConceptColour = { border: string; bg: string; text: string };
 interface ReasoningQuizEngineProps {
   title: string;
   slug: string;
+  presentation?: "default" | "ios-dark";
 }
 
 interface ReasoningQuestion {
@@ -1802,6 +1803,7 @@ const prefetchQuestionImage = (url?: string) => {
 export default function ReasoningQuizEngine({
   title,
   slug,
+  presentation = "default",
 }: ReasoningQuizEngineProps) {
   const searchParams = useSearchParams();
   const mode = normalizeMode(searchParams.get("mode"));
@@ -1810,6 +1812,7 @@ export default function ReasoningQuizEngine({
   const jumpId = Number.parseInt(jumpIdRaw ?? "", 10);
 
   const themeStyles = <ReasoningQuizThemeStyles />;
+  const isIosDark = presentation === "ios-dark";
 
   const [allQuestions, setAllQuestions] = useState<ReasoningQuestionRecord[]>([]);
   const [questions, setQuestions] = useState<ReasoningQuestionRecord[]>([]);
@@ -1933,7 +1936,7 @@ export default function ReasoningQuizEngine({
 
   const availableCount = filteredQuestions.length;
 
-  const [started, setStarted] = useState(false);
+  const [started, setStarted] = useState(isIosDark);
   const [submitError, setSubmitError] = useState("");
   const [timeLeft, setTimeLeft] = useState(60);
   const [isSolutionOpen, setIsSolutionOpen] = useState(false);
@@ -3855,6 +3858,262 @@ export default function ReasoningQuizEngine({
   const isCurrentSubmitted = submittedQuestions.has(currentIndex);
   const canSubmit = selectedAnswer !== null && !isCurrentSubmitted;
   const canViewSolution = isCurrentSubmitted;
+
+  if (isIosDark) {
+    return (
+      <div className="ios-series-quiz reasoning-quiz" data-theme="dark">
+        {themeStyles}
+        <div className="ios-series-device">
+          <header className="ios-series-header">
+            <button
+              type="button"
+              className="ios-series-icon-button"
+              onClick={() => syncQuizThemeToDom("light", { animate: true })}
+              aria-label="Use light theme"
+            >
+              <Moon aria-hidden="true" />
+            </button>
+            <LangToggle
+              active={activeLang}
+              loading={isTranslating}
+              onChange={setActiveLang}
+            />
+            <button
+              type="button"
+              className="ios-series-icon-button"
+              onClick={openPalette}
+              aria-label="Open question navigator"
+            >
+              <Menu aria-hidden="true" />
+            </button>
+          </header>
+
+          <nav className="ios-series-rail" aria-label="Question navigation">
+            {questions.map((question, index) => {
+              const status = getQuestionStatus({
+                index,
+                currentIndex,
+                selectedAnswers,
+                questions,
+                submittedQuestions
+              });
+              return (
+                <button
+                  key={question.id}
+                  type="button"
+                  onClick={() => goToQuestion(index + 1)}
+                  className={`ios-series-question ${status === "current" ? "is-current" : ""} ${status === "answered" || status === "correct" ? "is-answered" : ""} ${status === "wrong" ? "is-wrong" : ""}`}
+                  aria-label={`Question ${index + 1}`}
+                  aria-current={index === currentIndex ? "step" : undefined}
+                >
+                  {index + 1}
+                </button>
+              );
+            })}
+          </nav>
+
+          <main className="ios-series-content">
+            <div className="ios-series-meta-row">
+              <ConceptBadge concept={currentQ.concept} colours={conceptColours} />
+              <span>{currentQ.exam || `${title} concept practice`}</span>
+            </div>
+
+            <motion.section
+              key={currentQ.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
+              className="ios-series-question-card"
+            >
+              <button
+                type="button"
+                className="ios-series-bookmark"
+                onClick={handleBookmark}
+                aria-label={bookmarked.has(String(currentQ.id)) ? "Remove bookmark" : "Add bookmark"}
+              >
+                {bookmarked.has(String(currentQ.id)) ? (
+                  <BookmarkCheck aria-hidden="true" />
+                ) : (
+                  <Bookmark aria-hidden="true" />
+                )}
+              </button>
+              {hasQuestionText && (
+                <div className="ios-series-prompt">
+                  <RichContent
+                    text={displayedQuestion}
+                    renderText={renderQuestionLine}
+                  />
+                </div>
+              )}
+            </motion.section>
+
+            <section className="ios-series-options" aria-label="Answer options">
+              {displayedOptions.slice(0, 4).map((option, index) => {
+                const isCorrect = isCurrentSubmitted && index === currentQ.correctAnswer;
+                const isWrong =
+                  isCurrentSubmitted && selectedAnswer === index && index !== currentQ.correctAnswer;
+                const isSelected = selectedAnswer === index;
+                return (
+                  <button
+                    key={`${currentQ.id}-${index}`}
+                    type="button"
+                    disabled={isCurrentSubmitted}
+                    onClick={() => handleSelectAnswer(index)}
+                    className={`ios-series-option ${isSelected ? "is-selected" : ""} ${isCorrect ? "is-correct" : ""} ${isWrong ? "is-wrong" : ""}`}
+                  >
+                    <span className="ios-series-option-letter">
+                      {String.fromCharCode(65 + index)}
+                    </span>
+                    <span className="ios-series-option-value">
+                      <RichContent text={option} />
+                    </span>
+                    {isCorrect && <CheckCircle2 className="ios-series-answer-icon" aria-label="Correct option" />}
+                    {isWrong && <XCircle className="ios-series-answer-icon" aria-label="Incorrect option" />}
+                  </button>
+                );
+              })}
+            </section>
+
+            {canViewSolution && (
+              <button type="button" className="ios-series-solution" onClick={openSolution}>
+                View solution
+              </button>
+            )}
+            {submitError && <p className="ios-series-error">{submitError}</p>}
+          </main>
+
+          <footer className="ios-series-footer">
+            <button
+              type="button"
+              onClick={handlePrev}
+              disabled={currentIndex === 0}
+              className="ios-series-footer-secondary"
+            >
+              Previous
+            </button>
+            <button
+              type="button"
+              onClick={() => (isCurrentSubmitted ? handleNext() : handleSubmitCurrent())}
+              disabled={!canSubmit && !isCurrentSubmitted}
+              className="ios-series-footer-primary"
+            >
+              {!isCurrentSubmitted ? "Submit" : currentIndex < questions.length - 1 ? "Next" : "Finish"}
+            </button>
+          </footer>
+
+          {isPaletteOpen && (
+            <div className="ios-series-palette" role="dialog" aria-modal="true" aria-label="Question navigator">
+              <button type="button" className="ios-series-palette-backdrop" onClick={closePalette} aria-label="Close navigator" />
+              <div className="ios-series-palette-panel">
+                <div className="ios-series-palette-title">
+                  <span>Questions</span>
+                  <button type="button" onClick={closePalette} aria-label="Close question navigator"><X /></button>
+                </div>
+                <div className="ios-series-palette-grid">
+                  {questions.map((question, index) => (
+                    <button
+                      key={`palette-${question.id}`}
+                      type="button"
+                      className={index === currentIndex ? "is-current" : ""}
+                      onClick={() => {
+                        goToQuestion(index + 1);
+                        closePalette();
+                      }}
+                    >
+                      {index + 1}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        <SolutionBottomSheet
+          isOpen={isSolutionOpen}
+          solution={currentQ.solution ?? ""}
+          questionNumber={currentIndex + 1}
+          correctOptionIndex={currentQ.correctAnswer}
+          onClose={closeSolution}
+        />
+        <QuizChatbot
+          key={currentQ.id}
+          isVisible={isCurrentSubmitted}
+          questionNumber={currentIndex + 1}
+          topicTitle={title}
+          question={currentQ}
+        />
+        <style jsx global>{`
+          .ios-series-quiz {
+            min-height: 100svh;
+            background: #000;
+            color: #f2f2f7;
+            font-family: "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+          }
+          .ios-series-device {
+            min-height: 100svh;
+            max-width: 430px;
+            margin: 0 auto;
+            background: radial-gradient(120% 50% at 50% -10%, rgba(94, 92, 230, .17), transparent 58%), #000;
+            padding-bottom: 112px;
+          }
+          .ios-series-header { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:calc(env(safe-area-inset-top) + 12px) 16px 14px; border-bottom:1px solid rgba(255,255,255,.09); }
+          .ios-series-icon-button { width:36px; height:36px; display:grid; place-items:center; padding:0; border:1px solid rgba(255,255,255,.09); border-radius:11px; color:#f2f2f7; background:#1c1c1e; cursor:pointer; }
+          .ios-series-icon-button svg { width:17px; height:17px; }
+          .ios-series-quiz .lang-toggle { flex:0 1 auto; }
+          .ios-series-quiz .lang-toggle-option { min-width:0; padding-inline:9px; }
+          .ios-series-rail { display:flex; gap:8px; overflow-x:auto; padding:16px; border-bottom:1px solid rgba(255,255,255,.09); scrollbar-width:none; }
+          .ios-series-rail::-webkit-scrollbar { display:none; }
+          .ios-series-question { flex:0 0 44px; height:44px; border:1px solid rgba(255,255,255,.14); border-radius:13px; background:#1c1c1e; color:rgba(235,235,245,.6); font-size:15px; font-weight:700; cursor:pointer; }
+          .ios-series-question.is-current { border-color:transparent; color:#fff; background:linear-gradient(135deg,#5e5ce6,#bf5af2); box-shadow:0 4px 14px -2px rgba(94,92,230,.55); }
+          .ios-series-question.is-answered { border-color:rgba(48,209,88,.55); color:#86efac; }
+          .ios-series-question.is-wrong { border-color:rgba(255,69,58,.6); color:#ff9f9a; }
+          .ios-series-content { padding:18px 16px 8px; }
+          .ios-series-meta-row { display:flex; align-items:center; gap:9px; min-width:0; margin-bottom:16px; color:rgba(235,235,245,.42); font-size:12px; font-weight:600; }
+          .ios-series-meta-row > span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+          .ios-series-quiz .concept-badge { flex:none; border-radius:8px; padding:6px 10px; letter-spacing:0; }
+          .ios-series-question-card { position:relative; min-height:158px; padding:20px 54px 22px 20px; border:1px solid rgba(255,255,255,.14); border-radius:22px; background:linear-gradient(180deg,#242426,#1c1c1e); }
+          .ios-series-bookmark { position:absolute; top:15px; right:14px; display:grid; place-items:center; width:32px; height:32px; border:0; border-radius:9px; color:rgba(235,235,245,.48); background:transparent; cursor:pointer; }
+          .ios-series-bookmark svg { width:20px; height:20px; }
+          .ios-series-prompt { color:#f2f2f7; font-size:18px; font-weight:700; line-height:1.48; }
+          .ios-series-prompt p { margin:0; }
+          .ios-series-prompt p + p { margin-top:14px; font-family:Georgia,serif; font-size:25px; font-weight:500; letter-spacing:.02em; }
+          .ios-series-options { display:grid; gap:12px; margin-top:16px; }
+          .ios-series-option { width:100%; min-height:64px; display:flex; align-items:center; gap:14px; padding:13px 16px; border:1px solid rgba(255,255,255,.14); border-radius:18px; background:#1c1c1e; color:#f2f2f7; text-align:left; cursor:pointer; transition:background .16s ease,border-color .16s ease,transform .16s ease; }
+          .ios-series-option:not(:disabled):hover { border-color:rgba(191,90,242,.75); background:#242426; }
+          .ios-series-option:not(:disabled):active { transform:scale(.99); }
+          .ios-series-option:disabled { cursor:default; }
+          .ios-series-option.is-selected { border-color:#bf5af2; background:rgba(191,90,242,.17); }
+          .ios-series-option.is-correct { border-color:#30d158; background:rgba(48,209,88,.14); }
+          .ios-series-option.is-wrong { border-color:#ff453a; background:rgba(255,69,58,.14); }
+          .ios-series-option-letter { width:36px; height:36px; flex:0 0 36px; display:grid; place-items:center; border:1px solid rgba(255,255,255,.14); border-radius:11px; background:#242426; color:rgba(235,235,245,.68); font-size:14px; font-weight:700; }
+          .ios-series-option.is-selected .ios-series-option-letter { border-color:#bf5af2; background:#bf5af2; color:#fff; }
+          .ios-series-option.is-correct .ios-series-option-letter { border-color:#30d158; background:#30d158; color:#071b0d; }
+          .ios-series-option.is-wrong .ios-series-option-letter { border-color:#ff453a; background:#ff453a; color:#fff; }
+          .ios-series-option-value { min-width:0; font-size:17px; font-weight:600; line-height:1.4; }
+          .ios-series-answer-icon { width:20px; height:20px; margin-left:auto; flex:none; }
+          .ios-series-option.is-correct .ios-series-answer-icon { color:#30d158; }
+          .ios-series-option.is-wrong .ios-series-answer-icon { color:#ff6961; }
+          .ios-series-solution { width:100%; min-height:46px; margin-top:14px; border:1px solid rgba(191,90,242,.4); border-radius:14px; background:rgba(191,90,242,.14); color:#e5c2ff; font:inherit; font-size:14px; font-weight:700; cursor:pointer; }
+          .ios-series-error { margin:12px 2px 0; color:#ff9f9a; font-size:13px; font-weight:600; }
+          .ios-series-footer { position:fixed; z-index:30; right:0; bottom:0; left:0; display:grid; grid-template-columns:1fr 1fr; gap:10px; max-width:430px; margin:auto; padding:14px 16px calc(env(safe-area-inset-bottom) + 14px); background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.94) 25%,#000); }
+          .ios-series-footer button { min-width:0; height:52px; border-radius:16px; font:inherit; font-size:16px; font-weight:700; cursor:pointer; }
+          .ios-series-footer button:disabled { opacity:.42; cursor:not-allowed; }
+          .ios-series-footer-secondary { border:1px solid rgba(255,255,255,.14); background:#1c1c1e; color:#f2f2f7; }
+          .ios-series-footer-primary { border:0; background:linear-gradient(135deg,#5e5ce6,#0a84ff); color:#fff; }
+          .ios-series-palette { position:fixed; z-index:70; inset:0; display:flex; align-items:flex-end; justify-content:center; }
+          .ios-series-palette-backdrop { position:absolute; inset:0; border:0; background:rgba(0,0,0,.64); }
+          .ios-series-palette-panel { position:relative; width:min(430px,100%); max-height:72svh; overflow:auto; padding:16px 18px calc(env(safe-area-inset-bottom) + 22px); border:1px solid rgba(255,255,255,.14); border-bottom:0; border-radius:24px 24px 0 0; background:#1c1c1e; box-shadow:0 -16px 44px rgba(0,0,0,.45); }
+          .ios-series-palette-title { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; color:#f2f2f7; font-size:17px; font-weight:700; }
+          .ios-series-palette-title button { display:grid; place-items:center; width:34px; height:34px; padding:0; border:1px solid rgba(255,255,255,.14); border-radius:50%; background:#242426; color:#f2f2f7; }
+          .ios-series-palette-title svg { width:17px; height:17px; }
+          .ios-series-palette-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; }
+          .ios-series-palette-grid button { height:43px; border:1px solid rgba(255,255,255,.14); border-radius:12px; background:#242426; color:rgba(235,235,245,.7); font:inherit; font-weight:700; }
+          .ios-series-palette-grid button.is-current { border-color:transparent; background:linear-gradient(135deg,#5e5ce6,#bf5af2); color:#fff; }
+          @media (min-width:431px) { .ios-series-device { box-shadow:0 0 0 1px rgba(255,255,255,.08); } }
+        `}</style>
+      </div>
+    );
+  }
 
   return (
     <div
