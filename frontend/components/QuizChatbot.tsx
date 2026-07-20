@@ -29,6 +29,7 @@ interface QuizChatbotProps {
   questionNumber: number;
   topicTitle: string;
   question?: QuizChatbotQuestion;
+  renderTrigger?: (onClick: () => void) => React.ReactNode;
 }
 
 function resolveCorrectAnswer(question?: QuizChatbotQuestion) {
@@ -245,6 +246,7 @@ export default function QuizChatbot({
   questionNumber,
   topicTitle,
   question,
+  renderTrigger,
 }: QuizChatbotProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isDark, setIsDark] = useState(false);
@@ -254,6 +256,22 @@ export default function QuizChatbot({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const originalOverflow = document.body.style.overflow;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsOpen(false);
+    };
+
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [isOpen]);
 
   const context = useMemo(
     () => buildQuestionContext(questionNumber, topicTitle, question),
@@ -383,24 +401,28 @@ export default function QuizChatbot({
 
   return (
     <>
-      <button
-        type="button"
-        className="quiz-chatbot-fab"
-        onClick={() => setIsOpen(true)}
-        title="Ask AI Tutor"
-        aria-label="Ask AI Tutor"
-      >
-        <svg className="fab-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <path
-            d="M12 2C6.48 2 2 6.48 2 12C2 14.05 2.63 15.96 3.7 17.54L2.29 21.71L6.46 20.3C8.04 21.37 9.95 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"
-            fill="white"
-            fillOpacity="0.95"
-          />
-          <circle cx="8.5" cy="12" r="1.3" fill="#7c6df0" />
-          <circle cx="12" cy="12" r="1.3" fill="#7c6df0" />
-          <circle cx="15.5" cy="12" r="1.3" fill="#7c6df0" />
-        </svg>
-      </button>
+      {renderTrigger ? (
+        renderTrigger(() => setIsOpen(true))
+      ) : (
+        <button
+          type="button"
+          className="quiz-chatbot-fab"
+          onClick={() => setIsOpen(true)}
+          title="Ask AI Tutor"
+          aria-label="Ask AI Tutor"
+        >
+          <svg className="fab-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path
+              d="M12 2C6.48 2 2 6.48 2 12C2 14.05 2.63 15.96 3.7 17.54L2.29 21.71L6.46 20.3C8.04 21.37 9.95 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z"
+              fill="white"
+              fillOpacity="0.95"
+            />
+            <circle cx="8.5" cy="12" r="1.3" fill="#7c6df0" />
+            <circle cx="12" cy="12" r="1.3" fill="#7c6df0" />
+            <circle cx="15.5" cy="12" r="1.3" fill="#7c6df0" />
+          </svg>
+        </button>
+      )}
 
       {isOpen && (
         <div
@@ -409,15 +431,21 @@ export default function QuizChatbot({
             if (event.target === event.currentTarget) setIsOpen(false);
           }}
         >
-          <section className="quiz-chatbot-modal" aria-label="AI Tutor chat">
+          <section
+            className="quiz-chatbot-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="quiz-chatbot-title"
+          >
             <div className={`quiz-chatbot-shell${isDark ? " dark" : ""}`}>
+              <div className="mobile-sheet-handle" aria-hidden="true" />
               <div className="topbar">
                 <button type="button" className="hbtn" aria-label="Open menu">
                   <span />
                   <span />
                   <span />
                 </button>
-                <div className="logo">AI Tutor</div>
+                <div id="quiz-chatbot-title" className="logo">AI Tutor</div>
                 <div className="top-actions">
                   <button
                     type="button"
@@ -737,6 +765,7 @@ export default function QuizChatbot({
           overflow: hidden;
           box-shadow: 0 -18px 48px rgba(15, 23, 42, 0.28);
         }
+        .mobile-sheet-handle { display: none; }
         .quiz-chatbot-shell {
           --or: #f26522;
           --orl: #fff3ee;
@@ -1414,12 +1443,53 @@ export default function QuizChatbot({
         }
         @media (max-width: 640px) {
           .quiz-chatbot-overlay {
-            align-items: stretch;
+            align-items: flex-end;
+            padding-top: max(12px, env(safe-area-inset-top));
           }
           .quiz-chatbot-modal {
-            height: 100dvh;
-            max-height: 100dvh;
-            border-radius: 0;
+            height: min(92dvh, 760px);
+            max-height: 92dvh;
+            border-radius: 24px 24px 0 0;
+          }
+          .mobile-sheet-handle {
+            display: block;
+            width: 40px;
+            height: 4px;
+            flex: 0 0 auto;
+            margin: 10px auto 0;
+            border-radius: 999px;
+            background: var(--bd);
+          }
+          .topbar {
+            padding-top: 8px;
+          }
+          .ctx {
+            margin: 12px 12px 0;
+            padding: 12px;
+          }
+          .ltitle {
+            font-size: 22px;
+            padding: 20px 16px 16px;
+          }
+          .opts {
+            gap: 8px;
+            padding: 0 12px 16px;
+          }
+          .opt {
+            padding: 12px 14px;
+          }
+          .oi {
+            width: 38px;
+            height: 38px;
+            font-size: 18px;
+          }
+          .bbar {
+            padding: 8px 12px calc(12px + env(safe-area-inset-bottom));
+          }
+          .ma,
+          .mu {
+            margin-left: 12px;
+            margin-right: 12px;
           }
         }
       `}</style>

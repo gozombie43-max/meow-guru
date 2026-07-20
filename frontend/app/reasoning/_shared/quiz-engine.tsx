@@ -66,7 +66,7 @@ type ConceptColour = { border: string; bg: string; text: string };
 interface ReasoningQuizEngineProps {
   title: string;
   slug: string;
-  presentation?: "default" | "ios-dark";
+  presentation?: "default" | "ios-dark" | "ios-light" | "mac-dark" | "mac-light";
 }
 
 interface ReasoningQuestion {
@@ -662,6 +662,27 @@ function toReasoningQuestion(
   };
 }
 
+
+function ensureUniqueQuestionIds(questions: ReasoningQuestionRecord[]): ReasoningQuestionRecord[] {
+  const usedIds = new Set<number>();
+  let nextId = questions.reduce((highestId, question) => Math.max(highestId, question.id), 0) + 1;
+
+  return questions.map((question) => {
+    if (question.id > 0 && !usedIds.has(question.id)) {
+      usedIds.add(question.id);
+      return question;
+    }
+
+    while (usedIds.has(nextId)) {
+      nextId += 1;
+    }
+
+    const id = nextId;
+    usedIds.add(id);
+    nextId += 1;
+    return { ...question, id };
+  });
+}
 function MathFraction({
   numerator,
   denominator,
@@ -1605,7 +1626,7 @@ function SolutionBottomSheet({
             role="dialog"
             aria-modal="true"
             aria-label="Question solution"
-            className="absolute bottom-0 left-0 right-0 mx-auto flex h-[40vh] w-full max-w-3xl flex-col rounded-t-3xl border px-5 pt-4 shadow-[0_-16px_44px_rgba(15,23,42,0.35)]"
+            className="absolute bottom-0 left-0 right-0 mx-auto flex h-[78svh] max-h-[78dvh] w-full max-w-3xl flex-col rounded-t-3xl border px-5 pt-4 shadow-[0_-16px_44px_rgba(15,23,42,0.35)] sm:h-[40vh] sm:max-h-none"
             style={{
               background: "var(--quiz-card-bg)",
               borderColor: "var(--quiz-border)",
@@ -1638,7 +1659,7 @@ function SolutionBottomSheet({
             </div>
 
             <div
-              className="flex-1 overflow-y-auto rounded-2xl border px-4 py-3 text-[color:var(--quiz-text)]"
+              className="flex-1 overscroll-contain overflow-y-auto rounded-2xl border px-4 py-3 text-[color:var(--quiz-text)]"
               style={{
                 background: "var(--quiz-surface-muted)",
                 borderColor: "var(--quiz-border)",
@@ -1806,17 +1827,34 @@ export default function ReasoningQuizEngine({
   presentation = "default",
 }: ReasoningQuizEngineProps) {
   const searchParams = useSearchParams();
+  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
+  const [submittedQuestions, setSubmittedQuestions] = useState<Set<number>>(new Set());
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const isIos = presentation?.startsWith("ios");
+  const isMac = presentation?.startsWith("mac");
+  const theme = useQuizTheme();
+  const initialThemeForced = useRef(false);
+
+  useEffect(() => {
+    if (initialThemeForced.current) return;
+    initialThemeForced.current = true;
+    
+    if (presentation === "ios-light" || presentation === "mac-light") {
+      setQuizTheme("light");
+    } else if (presentation === "ios-dark" || presentation === "mac-dark") {
+      setQuizTheme("dark");
+    }
+  }, [presentation]);
   const mode = normalizeMode(searchParams.get("mode"));
   const resumeRequested = searchParams.get("resume") === "1";
   const jumpIdRaw = searchParams.get("qid");
   const jumpId = Number.parseInt(jumpIdRaw ?? "", 10);
 
   const themeStyles = <ReasoningQuizThemeStyles />;
-  const isIosDark = presentation === "ios-dark";
 
   const [allQuestions, setAllQuestions] = useState<ReasoningQuestionRecord[]>([]);
   const [questions, setQuestions] = useState<ReasoningQuestionRecord[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [miniMode, setMiniMode] = useState(false);
   const [difficulty, setDifficulty] = useState<Difficulty>("medium");
@@ -1824,12 +1862,6 @@ export default function ReasoningQuizEngine({
   const [bestStreak, setBestStreak] = useState(0);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [results, setResults] = useState<SessionResult[]>([]);
-  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>(
-    {}
-  );
-  const [submittedQuestions, setSubmittedQuestions] = useState<Set<number>>(
-    new Set()
-  );
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [conceptFilter, setConceptFilter] = useState<string>("all");
   const [selectedClassificationConcepts, setSelectedClassificationConcepts] = useState<
@@ -1935,8 +1967,9 @@ export default function ReasoningQuizEngine({
   ]);
 
   const availableCount = filteredQuestions.length;
+  const [sessionResults, setSessionResults] = useState<SessionResult[]>([]);
 
-  const [started, setStarted] = useState(isIosDark);
+  const [started, setStarted] = useState(isIos);
   const [submitError, setSubmitError] = useState("");
   const [timeLeft, setTimeLeft] = useState(60);
   const [isSolutionOpen, setIsSolutionOpen] = useState(false);
@@ -1949,7 +1982,11 @@ export default function ReasoningQuizEngine({
     fetchQuestions({ subject: "reasoning", topic: slug })
       .then((data) => {
         if (!active) return;
-        setAllQuestions(data.map((item, index) => toReasoningQuestion(item, index, fallbackConcept)));
+        setAllQuestions(
+          ensureUniqueQuestionIds(
+            data.map((item, index) => toReasoningQuestion(item, index, fallbackConcept))
+          )
+        );
       })
       .catch((error) => {
         console.error(error);
@@ -3859,19 +3896,517 @@ export default function ReasoningQuizEngine({
   const canSubmit = selectedAnswer !== null && !isCurrentSubmitted;
   const canViewSolution = isCurrentSubmitted;
 
-  if (isIosDark) {
+  if (isMac) {
     return (
-      <div className="ios-series-quiz reasoning-quiz" data-theme="dark">
+      <div className="mac-series-quiz reasoning-quiz" data-theme={theme}>
+        {themeStyles}
+        <div className="mac-series-desktop">
+          <div className="mac-series-window">
+            <header className="mac-series-header">
+              <div className="mac-series-traffic-lights">
+                <div className="mac-dot mac-red"></div>
+                <div className="mac-dot mac-yellow"></div>
+                <div className="mac-dot mac-green"></div>
+              </div>
+              <div className="mac-series-title">{title} - {mode === "concept" ? "Concept Practice" : "Quiz"}</div>
+              <div className="mac-series-header-right">
+                <button
+                  type="button"
+                  className="mac-series-icon-button"
+                  onClick={toggleQuizTheme}
+                  aria-label={theme === "dark" ? "Use light theme" : "Use dark theme"}
+                >
+                  {theme === "dark" ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
+                </button>
+                <LangToggle
+                  active={activeLang}
+                  loading={isTranslating}
+                  onChange={setActiveLang}
+                />
+              </div>
+            </header>
+            
+            <div className="mac-series-body">
+              <aside className="mac-series-sidebar">
+                <div className="mac-sidebar-title">Questions</div>
+                <div className="mac-series-palette-grid">
+                  {questions.map((question, index) => {
+                    const status = getQuestionStatus({
+                      index,
+                      currentIndex,
+                      selectedAnswers,
+                      questions,
+                      submittedQuestions
+                    });
+                    return (
+                      <button
+                        key={`mac-palette-${question.id}-${index}`}
+                        type="button"
+                        className={`mac-palette-btn ${status === "current" ? "is-current" : ""} ${status === "answered" || status === "correct" ? "is-answered" : ""} ${status === "wrong" ? "is-wrong" : ""}`}
+                        onClick={() => goToQuestion(index + 1)}
+                      >
+                        {index + 1}
+                      </button>
+                    );
+                  })}
+                </div>
+              </aside>
+              
+              <main className="mac-series-main">
+                <div className="mac-series-meta-row">
+                  <ConceptBadge concept={currentQ.concept} colours={conceptColours} />
+                  <span>{currentQ.exam || `${title} concept practice`}</span>
+                  
+                  <button
+                    type="button"
+                    className="mac-series-bookmark"
+                    onClick={handleBookmark}
+                    aria-label={bookmarked.has(String(currentQ.id)) ? "Remove bookmark" : "Add bookmark"}
+                  >
+                    {bookmarked.has(String(currentQ.id)) ? (
+                      <BookmarkCheck aria-hidden="true" />
+                    ) : (
+                      <Bookmark aria-hidden="true" />
+                    )}
+                  </button>
+                </div>
+
+                <motion.section
+                  key={currentQ.id}
+                  initial={{ opacity: 0, x: 10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="mac-series-question-card"
+                >
+                  {hasQuestionText && (
+                    <div className="mac-series-prompt">
+                      <RichContent
+                        text={displayedQuestion}
+                        renderText={renderQuestionLine}
+                      />
+                    </div>
+                  )}
+                </motion.section>
+
+                <section className="mac-series-options" aria-label="Answer options">
+                  {displayedOptions.slice(0, 4).map((option, index) => {
+                    const isCorrect = isCurrentSubmitted && index === currentQ.correctAnswer;
+                    const isWrong =
+                      isCurrentSubmitted && selectedAnswer === index && index !== currentQ.correctAnswer;
+                    const isSelected = selectedAnswer === index;
+                    return (
+                      <button
+                        key={`${currentQ.id}-${index}`}
+                        type="button"
+                        disabled={isCurrentSubmitted}
+                        onClick={() => handleSelectAnswer(index)}
+                        className={`mac-series-option ${isSelected ? "is-selected" : ""} ${isCorrect ? "is-correct" : ""} ${isWrong ? "is-wrong" : ""}`}
+                      >
+                        <span className="mac-series-option-letter">
+                          {String.fromCharCode(65 + index)}
+                        </span>
+                        <span className="mac-series-option-value">
+                          <RichContent text={option} />
+                        </span>
+                        {isCorrect && <CheckCircle2 className="mac-series-answer-icon" aria-label="Correct option" />}
+                        {isWrong && <XCircle className="mac-series-answer-icon" aria-label="Incorrect option" />}
+                      </button>
+                    );
+                  })}
+                </section>
+
+                <div className="mac-series-actions">
+                  {submitError && <p className="mac-series-error">{submitError}</p>}
+                  
+                  <div className="mac-series-footer-buttons">
+                    <button
+                      type="button"
+                      onClick={handlePrev}
+                      disabled={currentIndex === 0}
+                      className="mac-series-footer-secondary"
+                    >
+                      Previous
+                    </button>
+                    {canViewSolution && (
+                      <button type="button" className="mac-series-footer-solution" onClick={openSolution}>
+                        View solution
+                      </button>
+                    )}
+                    <QuizChatbot
+                      key={currentQ.id}
+                      isVisible={isCurrentSubmitted}
+                      questionNumber={currentIndex + 1}
+                      topicTitle={title}
+                      question={currentQ}
+                      renderTrigger={(onOpen) => (
+                        <button type="button" className="mac-series-footer-ai" onClick={onOpen}>
+                          Ask AI Tutor
+                        </button>
+                      )}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => (isCurrentSubmitted ? handleNext() : handleSubmitCurrent())}
+                      disabled={!canSubmit && !isCurrentSubmitted}
+                      className="mac-series-footer-primary"
+                    >
+                      {!isCurrentSubmitted ? "Submit" : currentIndex < questions.length - 1 ? "Next" : "Finish"}
+                    </button>
+                  </div>
+                </div>
+              </main>
+            </div>
+          </div>
+        </div>
+        <SolutionBottomSheet
+          isOpen={isSolutionOpen}
+          solution={currentQ.solution ?? ""}
+          questionNumber={currentIndex + 1}
+          correctOptionIndex={currentQ.correctAnswer}
+          onClose={closeSolution}
+        />
+        <style jsx global>{`
+          .mac-series-quiz {
+            min-height: 100svh;
+            background: #000;
+            color: #f2f2f7;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+          }
+          .mac-series-desktop {
+            height: 100svh;
+            width: 100%;
+            padding: 0;
+            background: linear-gradient(135deg, #13151a, #000);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          .mac-series-window {
+            width: 100%;
+            height: 100%;
+            max-width: none;
+            display: flex;
+            flex-direction: column;
+            border-radius: 0;
+            overflow: hidden;
+            background: rgba(30, 30, 30, 0.85);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: none;
+          }
+          .mac-series-header {
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            user-select: none;
+          }
+          .mac-series-traffic-lights {
+            display: flex;
+            gap: 8px;
+            width: 80px;
+          }
+          .mac-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+          }
+          .mac-red { background: #ff5f56; border: 1px solid #e0443e; }
+          .mac-yellow { background: #ffbd2e; border: 1px solid #dea123; }
+          .mac-green { background: #27c93f; border: 1px solid #1aab29; }
+          .mac-series-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.8);
+            text-align: center;
+            flex: 1;
+          }
+          .mac-series-header-right {
+            display: flex;
+            gap: 12px;
+            width: auto;
+            justify-content: flex-end;
+            align-items: center;
+          }
+          .mac-series-icon-button {
+            background: transparent;
+            border: none;
+            color: rgba(255,255,255,0.7);
+            cursor: pointer;
+            display: grid;
+            place-items: center;
+            padding: 4px;
+            border-radius: 6px;
+          }
+          .mac-series-icon-button:hover { background: rgba(255,255,255,0.1); }
+          .mac-series-icon-button svg { width: 16px; height: 16px; }
+          .mac-series-body {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+          }
+          .mac-series-sidebar {
+            width: 260px;
+            background: rgba(0, 0, 0, 0.2);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            overflow-y: auto;
+          }
+          .mac-sidebar-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+          }
+          .mac-series-palette-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+          }
+          .mac-palette-btn {
+            height: 36px;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            background: rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+          }
+          .mac-palette-btn:hover { background: rgba(255, 255, 255, 0.15); }
+          .mac-palette-btn.is-current { background: #007aff; color: #fff; box-shadow: 0 2px 8px rgba(0,122,255,0.4); }
+          .mac-palette-btn.is-answered { border-color: rgba(40, 205, 65, 0.5); color: #34c759; }
+          .mac-palette-btn.is-wrong { border-color: rgba(255, 59, 48, 0.5); color: #ff3b30; }
+          
+          .mac-series-main {
+            flex: 1;
+            padding: 32px 48px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+          }
+          .mac-series-meta-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 24px;
+          }
+          .mac-series-quiz .concept-badge {
+            border-radius: 6px;
+            padding: 4px 10px;
+          }
+          .mac-series-bookmark {
+            margin-left: auto;
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+          }
+          .mac-series-bookmark:hover { color: #fff; }
+          .mac-series-bookmark svg { width: 18px; height: 18px; }
+          
+          .mac-series-prompt {
+            font-size: 20px;
+            font-weight: 500;
+            line-height: 1.5;
+            margin-bottom: 32px;
+          }
+          
+          .mac-series-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: auto;
+          }
+          .mac-series-option {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+          }
+          .mac-series-option:not(:disabled):hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+          }
+          .mac-series-option:active { transform: scale(0.98); }
+          .mac-series-option:disabled { cursor: default; }
+          .mac-series-option.is-selected {
+            background: rgba(0, 122, 255, 0.15);
+            border-color: #007aff;
+          }
+          .mac-series-option.is-correct {
+            background: rgba(40, 205, 65, 0.15);
+            border-color: #34c759;
+          }
+          .mac-series-option.is-wrong {
+            background: rgba(255, 59, 48, 0.15);
+            border-color: #ff3b30;
+          }
+          .mac-series-option-letter {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            display: grid;
+            place-items: center;
+            font-size: 13px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.7);
+          }
+          .mac-series-option.is-selected .mac-series-option-letter { background: #007aff; color: #fff; }
+          .mac-series-option.is-correct .mac-series-option-letter { background: #34c759; color: #fff; }
+          .mac-series-option.is-wrong .mac-series-option-letter { background: #ff3b30; color: #fff; }
+          .mac-series-option-value { font-size: 16px; font-weight: 500; }
+          .mac-series-answer-icon { margin-left: auto; width: 20px; height: 20px; }
+          .mac-series-option.is-correct .mac-series-answer-icon { color: #34c759; }
+          .mac-series-option.is-wrong .mac-series-answer-icon { color: #ff3b30; }
+          
+          .mac-series-actions { margin-top: 40px; }
+          .mac-series-error { color: #ff3b30; font-size: 13px; margin-bottom: 12px; }
+          .mac-series-footer-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+          }
+          .mac-series-footer-buttons button {
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+          }
+          .mac-series-footer-buttons button:disabled { opacity: 0.5; cursor: not-allowed; }
+          .mac-series-footer-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+          }
+          .mac-series-footer-secondary:not(:disabled):hover { background: rgba(255, 255, 255, 0.15); }
+          .mac-series-footer-solution {
+            background: rgba(142, 68, 173, 0.2);
+            border: 1px solid rgba(142, 68, 173, 0.5);
+            color: #d2b4de;
+          }
+          .mac-series-footer-primary {
+            background: #007aff;
+            border: none;
+            color: #fff;
+          }
+          .mac-series-footer-primary:not(:disabled):hover { background: #0062cc; }
+          .mac-series-footer-ai {
+            background: linear-gradient(135deg, #7c6df0, #f07c6d);
+            border: none;
+            color: #fff;
+          }
+          .mac-series-footer-ai:not(:disabled):hover { opacity: 0.9; }
+
+          /* Light Theme Overrides */
+          .mac-series-quiz[data-theme="light"] .mac-series-desktop {
+             background: linear-gradient(135deg, #f0f4f8, #e0e5ec);
+          }
+          .mac-series-quiz[data-theme="light"] .mac-series-window {
+            background: rgba(255, 255, 255, 0.85);
+            border-color: rgba(0, 0, 0, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+          }
+          .mac-series-quiz[data-theme="light"] .mac-series-header {
+            background: rgba(255, 255, 255, 0.4);
+            border-color: rgba(0, 0, 0, 0.1);
+          }
+          .mac-series-quiz[data-theme="light"] .mac-series-title { color: rgba(0, 0, 0, 0.8); }
+          .mac-series-quiz[data-theme="light"] .mac-series-icon-button { color: rgba(0, 0, 0, 0.7); }
+          .mac-series-quiz[data-theme="light"] .mac-series-icon-button:hover { background: rgba(0, 0, 0, 0.05); }
+          
+          .mac-series-quiz[data-theme="light"] .mac-series-sidebar {
+            background: rgba(255, 255, 255, 0.5);
+            border-color: rgba(0, 0, 0, 0.1);
+          }
+          .mac-series-quiz[data-theme="light"] .mac-sidebar-title { color: rgba(0, 0, 0, 0.5); }
+          .mac-series-quiz[data-theme="light"] .mac-palette-btn {
+            background: rgba(0, 0, 0, 0.05);
+            color: rgba(0, 0, 0, 0.8);
+          }
+          .mac-series-quiz[data-theme="light"] .mac-palette-btn:hover { background: rgba(0, 0, 0, 0.1); }
+          .mac-series-quiz[data-theme="light"] .mac-palette-btn.is-current { background: #007aff; color: #fff; }
+          .mac-series-quiz[data-theme="light"] .mac-palette-btn.is-answered { border-color: rgba(52, 199, 89, 0.5); color: #34c759; }
+          .mac-series-quiz[data-theme="light"] .mac-palette-btn.is-wrong { border-color: rgba(255, 59, 48, 0.5); color: #ff3b30; }
+
+          .mac-series-quiz[data-theme="light"] .mac-series-meta-row { color: rgba(0, 0, 0, 0.5); }
+          .mac-series-quiz[data-theme="light"] .mac-series-bookmark { color: rgba(0, 0, 0, 0.5); }
+          .mac-series-quiz[data-theme="light"] .mac-series-bookmark:hover { color: #000; }
+          .mac-series-quiz[data-theme="light"] .mac-series-prompt { color: #000; }
+          
+          .mac-series-quiz[data-theme="light"] .mac-series-option {
+            background: rgba(255, 255, 255, 0.6);
+            border-color: rgba(0, 0, 0, 0.1);
+            color: #000;
+          }
+          .mac-series-quiz[data-theme="light"] .mac-series-option:not(:disabled):hover {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: rgba(0, 0, 0, 0.2);
+          }
+          .mac-series-quiz[data-theme="light"] .mac-series-option.is-selected { background: rgba(0, 122, 255, 0.1); border-color: #007aff; }
+          .mac-series-quiz[data-theme="light"] .mac-series-option.is-correct { background: rgba(52, 199, 89, 0.1); border-color: #34c759; }
+          .mac-series-quiz[data-theme="light"] .mac-series-option.is-wrong { background: rgba(255, 59, 48, 0.1); border-color: #ff3b30; }
+          .mac-series-quiz[data-theme="light"] .mac-series-option-letter {
+            background: rgba(0, 0, 0, 0.05);
+            color: rgba(0, 0, 0, 0.7);
+          }
+          .mac-series-quiz[data-theme="light"] .mac-series-option.is-selected .mac-series-option-letter { background: #007aff; color: #fff; }
+          .mac-series-quiz[data-theme="light"] .mac-series-option.is-correct .mac-series-option-letter { background: #34c759; color: #fff; }
+          .mac-series-quiz[data-theme="light"] .mac-series-option.is-wrong .mac-series-option-letter { background: #ff3b30; color: #fff; }
+
+          .mac-series-quiz[data-theme="light"] .mac-series-footer-secondary {
+            background: rgba(0, 0, 0, 0.05);
+            border-color: rgba(0, 0, 0, 0.1);
+            color: #000;
+          }
+          .mac-series-quiz[data-theme="light"] .mac-series-footer-secondary:not(:disabled):hover { background: rgba(0, 0, 0, 0.1); }
+          
+          /* Responsive fixes for Mac layout */
+          @media (max-width: 900px) {
+            .mac-series-body { flex-direction: column; }
+            .mac-series-sidebar { width: 100%; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); height: 120px; overflow-y: auto; padding: 12px; }
+            .mac-series-palette-grid { display: flex; overflow-x: auto; padding-bottom: 8px; }
+            .mac-palette-btn { flex: 0 0 36px; }
+            .mac-series-options { grid-template-columns: 1fr; }
+            .mac-series-main { padding: 24px; }
+          }
+        `}</style>
+      </div>
+    );
+  }
+
+  if (isIos) {
+    return (
+      <div className="ios-series-quiz reasoning-quiz" data-theme={theme}>
         {themeStyles}
         <div className="ios-series-device">
           <header className="ios-series-header">
             <button
               type="button"
               className="ios-series-icon-button"
-              onClick={() => syncQuizThemeToDom("light", { animate: true })}
-              aria-label="Use light theme"
+              onClick={toggleQuizTheme}
+              aria-label={theme === "dark" ? "Use light theme" : "Use dark theme"}
             >
-              <Moon aria-hidden="true" />
+              {theme === "dark" ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
             </button>
             <LangToggle
               active={activeLang}
@@ -3899,7 +4434,7 @@ export default function ReasoningQuizEngine({
               });
               return (
                 <button
-                  key={question.id}
+                  key={`rail-${question.id}-${index}`}
                   type="button"
                   onClick={() => goToQuestion(index + 1)}
                   className={`ios-series-question ${status === "current" ? "is-current" : ""} ${status === "answered" || status === "correct" ? "is-answered" : ""} ${status === "wrong" ? "is-wrong" : ""}`}
@@ -3919,7 +4454,7 @@ export default function ReasoningQuizEngine({
             </div>
 
             <motion.section
-              key={currentQ.id}
+              key={`ios-question-${currentQ.id}`}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2 }}
@@ -3975,9 +4510,23 @@ export default function ReasoningQuizEngine({
             </section>
 
             {canViewSolution && (
-              <button type="button" className="ios-series-solution" onClick={openSolution}>
-                View solution
-              </button>
+              <div className="ios-series-actions">
+                <button type="button" className="ios-series-solution" onClick={openSolution}>
+                  View solution
+                </button>
+                <QuizChatbot
+                  key={`ios-chat-${currentQ.id}`}
+                  isVisible={isCurrentSubmitted}
+                  questionNumber={currentIndex + 1}
+                  topicTitle={title}
+                  question={currentQ}
+                  renderTrigger={(onOpen) => (
+                    <button type="button" className="ios-series-ai-btn" onClick={onOpen}>
+                      Ask AI Tutor
+                    </button>
+                  )}
+                />
+              </div>
             )}
             {submitError && <p className="ios-series-error">{submitError}</p>}
           </main>
@@ -4012,7 +4561,7 @@ export default function ReasoningQuizEngine({
                 <div className="ios-series-palette-grid">
                   {questions.map((question, index) => (
                     <button
-                      key={`palette-${question.id}`}
+                      key={`palette-${question.id}-${index}`}
                       type="button"
                       className={index === currentIndex ? "is-current" : ""}
                       onClick={() => {
@@ -4034,13 +4583,6 @@ export default function ReasoningQuizEngine({
           questionNumber={currentIndex + 1}
           correctOptionIndex={currentQ.correctAnswer}
           onClose={closeSolution}
-        />
-        <QuizChatbot
-          key={currentQ.id}
-          isVisible={isCurrentSubmitted}
-          questionNumber={currentIndex + 1}
-          topicTitle={title}
-          question={currentQ}
         />
         <style jsx global>{`
           .ios-series-quiz {
@@ -4093,7 +4635,10 @@ export default function ReasoningQuizEngine({
           .ios-series-answer-icon { width:20px; height:20px; margin-left:auto; flex:none; }
           .ios-series-option.is-correct .ios-series-answer-icon { color:#30d158; }
           .ios-series-option.is-wrong .ios-series-answer-icon { color:#ff6961; }
-          .ios-series-solution { width:100%; min-height:46px; margin-top:14px; border:1px solid rgba(191,90,242,.4); border-radius:14px; background:rgba(191,90,242,.14); color:#e5c2ff; font:inherit; font-size:14px; font-weight:700; cursor:pointer; }
+          .ios-series-actions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:14px; }
+          .ios-series-solution { width:100%; min-width:0; min-height:46px; border:1px solid rgba(191,90,242,.4); border-radius:14px; background:transparent; color:#e5c2ff; font:inherit; font-size:14px; font-weight:700; cursor:pointer; }
+          .ios-series-ai-btn { width:100%; min-width:0; min-height:46px; border:1px solid #14b8a6; border-radius:14px; background:transparent; color:#5eead4; font:inherit; font-size:14px; font-weight:700; cursor:pointer; }
+          .ios-series-ai-btn:active { opacity:0.8; }
           .ios-series-error { margin:12px 2px 0; color:#ff9f9a; font-size:13px; font-weight:600; }
           .ios-series-footer { position:fixed; z-index:30; right:0; bottom:0; left:0; display:grid; grid-template-columns:1fr 1fr; gap:10px; max-width:430px; margin:auto; padding:14px 16px calc(env(safe-area-inset-bottom) + 14px); background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.94) 25%,#000); }
           .ios-series-footer button { min-width:0; height:52px; border-radius:16px; font:inherit; font-size:16px; font-weight:700; cursor:pointer; }
@@ -4110,6 +4655,38 @@ export default function ReasoningQuizEngine({
           .ios-series-palette-grid button { height:43px; border:1px solid rgba(255,255,255,.14); border-radius:12px; background:#242426; color:rgba(235,235,245,.7); font:inherit; font-weight:700; }
           .ios-series-palette-grid button.is-current { border-color:transparent; background:linear-gradient(135deg,#5e5ce6,#bf5af2); color:#fff; }
           @media (min-width:431px) { .ios-series-device { box-shadow:0 0 0 1px rgba(255,255,255,.08); } }
+
+          /* Light Theme Overrides */
+          .ios-series-quiz[data-theme="light"] { background: #f2f2f7; color: #000; }
+          .ios-series-quiz[data-theme="light"] .ios-series-device { background: radial-gradient(120% 50% at 50% -10%, rgba(94, 92, 230, .1), transparent 58%), #f2f2f7; }
+          .ios-series-quiz[data-theme="light"] .ios-series-header { border-color: rgba(0,0,0,.08); }
+          .ios-series-quiz[data-theme="light"] .ios-series-icon-button { border-color: rgba(0,0,0,.08); color: #000; background: #fff; }
+          .ios-series-quiz[data-theme="light"] .ios-series-rail { border-color: rgba(0,0,0,.08); }
+          .ios-series-quiz[data-theme="light"] .ios-series-question { border-color: rgba(0,0,0,.08); background: #fff; color: rgba(60,60,67,.6); }
+          .ios-series-quiz[data-theme="light"] .ios-series-question.is-current { color: #fff; background: linear-gradient(135deg, #5e5ce6, #bf5af2); }
+          .ios-series-quiz[data-theme="light"] .ios-series-question.is-answered { border-color: rgba(52,199,89,.4); color: #34c759; }
+          .ios-series-quiz[data-theme="light"] .ios-series-question.is-wrong { border-color: rgba(255,59,48,.4); color: #ff3b30; }
+          .ios-series-quiz[data-theme="light"] .ios-series-meta-row { color: rgba(60,60,67,.6); }
+          .ios-series-quiz[data-theme="light"] .ios-series-question-card { border-color: rgba(0,0,0,.08); background: #fff; box-shadow: 0 4px 20px rgba(0,0,0,.04); }
+          .ios-series-quiz[data-theme="light"] .ios-series-bookmark { color: rgba(60,60,67,.6); }
+          .ios-series-quiz[data-theme="light"] .ios-series-prompt { color: #000; }
+          .ios-series-quiz[data-theme="light"] .ios-series-option { border-color: rgba(0,0,0,.08); background: #fff; color: #000; }
+          .ios-series-quiz[data-theme="light"] .ios-series-option:not(:disabled):hover { border-color: rgba(191,90,242,.4); background: #fafafa; }
+          .ios-series-quiz[data-theme="light"] .ios-series-option-letter { border-color: rgba(0,0,0,.08); background: #f2f2f7; color: rgba(60,60,67,.6); }
+          .ios-series-quiz[data-theme="light"] .ios-series-option.is-selected { border-color: #bf5af2; background: rgba(191,90,242,.08); }
+          .ios-series-quiz[data-theme="light"] .ios-series-option.is-selected .ios-series-option-letter { color: #fff; background: #bf5af2; }
+          .ios-series-quiz[data-theme="light"] .ios-series-option.is-correct { border-color: #34c759; background: rgba(52,199,89,.08); }
+          .ios-series-quiz[data-theme="light"] .ios-series-option.is-correct .ios-series-option-letter { color: #fff; background: #34c759; border-color: #34c759; }
+          .ios-series-quiz[data-theme="light"] .ios-series-option.is-wrong { border-color: #ff3b30; background: rgba(255,59,48,.08); }
+          .ios-series-quiz[data-theme="light"] .ios-series-option.is-wrong .ios-series-option-letter { color: #fff; background: #ff3b30; border-color: #ff3b30; }
+          .ios-series-quiz[data-theme="light"] .ios-series-footer { background: linear-gradient(180deg, rgba(242,242,247,0), rgba(242,242,247,.94) 25%, #f2f2f7); }
+          .ios-series-quiz[data-theme="light"] .ios-series-footer-secondary { border-color: rgba(0,0,0,.08); background: #fff; color: #000; }
+          .ios-series-quiz[data-theme="light"] .ios-series-palette-backdrop { background: rgba(0,0,0,.4); }
+          .ios-series-quiz[data-theme="light"] .ios-series-palette-panel { border-color: rgba(0,0,0,.08); background: #f2f2f7; }
+          .ios-series-quiz[data-theme="light"] .ios-series-palette-title { color: #000; }
+          .ios-series-quiz[data-theme="light"] .ios-series-palette-title button { border-color: rgba(0,0,0,.08); background: #fff; color: #000; }
+          .ios-series-quiz[data-theme="light"] .ios-series-palette-grid button { border-color: rgba(0,0,0,.08); background: #fff; color: rgba(60,60,67,.6); }
+          .ios-series-quiz[data-theme="light"] .ios-series-palette-grid button.is-current { color: #fff; background: linear-gradient(135deg, #5e5ce6, #bf5af2); }
         `}</style>
       </div>
     );
