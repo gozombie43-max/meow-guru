@@ -10,6 +10,7 @@ import { useTranslatedQuestion } from "@/hooks/useTranslatedQuestion";
 import React, {
   useState,
   useEffect,
+  useLayoutEffect,
   useCallback,
   useMemo,
   useRef,
@@ -791,7 +792,7 @@ function SeriesConceptStart({
   const selectedCount = selected.size;
   const selectedQuestionLabel = selectedCount === 0 ? "all concepts" : `${selectedCount} concept${selectedCount === 1 ? "" : "s"}`;
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setHasMounted(true);
   }, []);
 
@@ -804,6 +805,22 @@ function SeriesConceptStart({
         <strong>{title}</strong>
         <span aria-hidden="true" />
       </header>
+
+      <aside className="series-concept-aside" aria-label="Quiz overview">
+        <span>Reasoning</span>
+        <h1>{title}</h1>
+        <p>Concept Practice</p>
+        <dl>
+          <div>
+            <dt>Concepts</dt>
+            <dd>{conceptCount}</dd>
+          </div>
+          <div>
+            <dt>Questions</dt>
+            <dd>{questionCount}</dd>
+          </div>
+        </dl>
+      </aside>
 
       <main className="series-concept-content">
         <label className="series-concept-search">
@@ -889,7 +906,7 @@ function SeriesConceptStart({
       </footer>
 
       <style jsx>{`
-        .series-concept-screen { --series-bg: #f2f2f7; --series-card: #fff; --series-separator: rgba(60, 60, 67, .18); --series-ink: #1c1c1e; --series-muted: #6e6a85; --series-subtle: rgba(60, 60, 67, .6); --series-field: rgba(118, 118, 128, .12); --series-nav: rgba(242, 242, 247, .9); --series-accent: #6c5ce0; min-height: 100dvh; background: var(--series-bg); color: var(--series-ink); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif; padding-bottom: 132px; transition: background .18s ease, color .18s ease; }
+        .series-concept-screen { --series-bg: #f2f2f7; --series-card: #fff; --series-separator: rgba(60, 60, 67, .18); --series-ink: #1c1c1e; --series-muted: #6e6a85; --series-subtle: rgba(60, 60, 67, .6); --series-field: rgba(118, 118, 128, .12); --series-nav: rgba(242, 242, 247, .9); --series-accent: #6c5ce0; min-height: 100dvh; background: var(--series-bg); color: var(--series-ink); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif; padding-bottom: 132px; }
         .series-concept-screen[data-theme="dark"] { color-scheme: dark; --series-bg: #000; --series-card: #1c1c1e; --series-separator: rgba(84, 84, 88, .65); --series-ink: #fff; --series-muted: #98989f; --series-subtle: rgba(235, 235, 245, .6); --series-field: rgba(118, 118, 128, .24); --series-nav: rgba(0, 0, 0, .78); --series-accent: #7c6cf0; }
         .series-concept-nav { height: 44px; display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; border-bottom: 0.5px solid var(--series-separator); background: var(--series-nav); position: sticky; top: 0; z-index: 5; backdrop-filter: blur(20px); }
         .series-concept-nav strong { justify-self: center; font-size: 17px; font-weight: 600; }
@@ -929,7 +946,31 @@ function SeriesConceptStart({
         .series-concept-start { width: 100%; min-height: 50px; display: flex; align-items: center; justify-content: center; gap: 7px; border: 0; border-radius: 12px; background: var(--series-accent); color: #fff; font-size: 17px; font-weight: 700; box-shadow: 0 2px 8px rgba(108, 92, 224, .22); }
         .series-concept-start:active { opacity: .72; }
         .series-concept-start :global(svg) { width: 16px; height: 16px; fill: currentColor; }
-        @media (min-width: 431px) { .series-concept-screen { border-inline: 1px solid var(--series-separator); max-width: 430px; margin: 0 auto; } .series-concept-nav { position: sticky; } .series-concept-toolbar { left: 50%; width: 430px; transform: translateX(-50%); padding-inline: 16px; } }
+        .series-concept-aside { display: none; }
+        @media (min-width: 1024px) {
+          .series-concept-screen { display: grid; grid-template-columns: minmax(210px, 1fr) minmax(520px, 760px) minmax(260px, 1fr); grid-template-rows: 68px minmax(calc(100dvh - 68px), auto); min-height: 100dvh; padding: 0; }
+          .series-concept-nav { grid-column: 1 / -1; height: 68px; grid-template-columns: minmax(210px, 1fr) minmax(520px, 760px) minmax(260px, 1fr); border-bottom: 1px solid var(--series-separator); padding: 0 38px; }
+          .series-concept-nav strong { grid-column: 2; font-size: 18px; letter-spacing: 0; }
+          .series-concept-back { position: absolute; left: 28px; width: 44px; height: 68px; }
+          .series-concept-aside { grid-column: 1; grid-row: 2; display: flex; flex-direction: column; align-items: flex-end; padding: 64px 44px; border-right: 1px solid var(--series-separator); text-align: right; }
+          .series-concept-aside > span { color: var(--series-accent); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+          .series-concept-aside h1 { margin: 8px 0 2px; color: var(--series-ink); font-size: 28px; line-height: 1.12; letter-spacing: 0; }
+          .series-concept-aside > p { margin: 0; color: var(--series-muted); font-size: 15px; }
+          .series-concept-aside dl { display: grid; grid-template-columns: repeat(2, max-content); gap: 20px; margin: 52px 0 0; }
+          .series-concept-aside dl div { display: flex; flex-direction: column-reverse; gap: 3px; }
+          .series-concept-aside dt { color: var(--series-muted); font-size: 12px; }
+          .series-concept-aside dd { margin: 0; color: var(--series-ink); font-size: 22px; font-weight: 700; }
+          .series-concept-content { grid-column: 2; grid-row: 2; width: 100%; margin: 0; padding: 58px 44px 72px; }
+          .series-concept-search { height: 42px; }
+          .series-concept-chips { padding: 18px 2px 22px; }
+          .series-concept-heading { margin-left: 0; }
+          .series-concept-list { border: 1px solid var(--series-separator); border-radius: 8px; }
+          .series-concept-row { min-height: 76px; padding: 14px 18px; transition: background .15s ease; }
+          .series-concept-row:hover { background: var(--series-field); }
+          .series-concept-toolbar { position: sticky; grid-column: 3; grid-row: 2; align-self: start; width: auto; margin: 46px 38px; border: 1px solid var(--series-separator); border-radius: 8px; background: var(--series-card); padding: 20px; transform: none; backdrop-filter: none; }
+          .series-concept-toolbar p { margin-bottom: 16px; text-align: left; font-size: 14px; }
+          .series-concept-start { min-height: 48px; border-radius: 8px; font-size: 16px; }
+        }
       `}</style>
     </div>
   );
