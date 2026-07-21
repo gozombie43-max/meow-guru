@@ -21,6 +21,7 @@ import Link from "next/link";
 import {
   Bookmark,
   BookmarkCheck,
+  Check,
   CheckCircle2,
   XCircle,
   Menu,
@@ -39,6 +40,7 @@ import {
   X,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { useThemeMode } from "@/hooks/useTheme";
 import { saveRecentQuiz, updateProgress, toggleBookmark } from "@/lib/userApi";
 import { fetchQuestions, type Question as ApiQuestion } from "@/lib/api/questions";
 import {
@@ -749,6 +751,188 @@ function statusClasses(status: QuestionStatus) {
   if (status === "correct") return `${base} qstatus--correct`;
   if (status === "wrong") return `${base} qstatus--wrong`;
   return `${base} qstatus--empty`;
+}
+
+type ClassificationGroup = (typeof CLASSIFICATION_CATEGORY_META)[number] & {
+  concepts: string[];
+};
+
+function SeriesConceptStart({
+  title,
+  slug,
+  groups,
+  category,
+  categoryCounts,
+  search,
+  selected,
+  conceptCount,
+  questionCount,
+  onCategoryChange,
+  onSearchChange,
+  onToggleGroup,
+  onStart,
+}: {
+  title: string;
+  slug: string;
+  groups: ClassificationGroup[];
+  category: string;
+  categoryCounts: Record<string, number>;
+  search: string;
+  selected: Set<string>;
+  conceptCount: number;
+  questionCount: number;
+  onCategoryChange: (category: string) => void;
+  onSearchChange: (search: string) => void;
+  onToggleGroup: (concepts: string[]) => void;
+  onStart: () => void;
+}) {
+  const { theme } = useThemeMode();
+  const [hasMounted, setHasMounted] = useState(false);
+  const selectedCount = selected.size;
+  const selectedQuestionLabel = selectedCount === 0 ? "all concepts" : `${selectedCount} concept${selectedCount === 1 ? "" : "s"}`;
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  return (
+    <div className="series-concept-screen" data-theme={hasMounted ? theme : "light"}>
+      <header className="series-concept-nav">
+        <Link href={`/reasoning/${slug}`} className="series-concept-back" aria-label="Back to Series">
+          <ChevronLeft aria-hidden="true" />
+        </Link>
+        <strong>{title}</strong>
+        <span aria-hidden="true" />
+      </header>
+
+      <main className="series-concept-content">
+        <label className="series-concept-search">
+          <Search aria-hidden="true" />
+          <input
+            type="search"
+            value={search}
+            onChange={(event) => onSearchChange(event.target.value)}
+            placeholder="Search concepts"
+          />
+          {search && (
+            <button type="button" onClick={() => onSearchChange("")} aria-label="Clear search">
+              <X aria-hidden="true" />
+            </button>
+          )}
+        </label>
+
+        <div className="series-concept-chips" aria-label="Concept category filters">
+          <button
+            type="button"
+            className={category === "All" ? "active" : ""}
+            onClick={() => onCategoryChange("All")}
+          >
+            <i className="chip-indigo" />All <span>{conceptCount}</span>
+          </button>
+          {CLASSIFICATION_CATEGORY_META.filter((item) => categoryCounts[item.label] > 0).map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className={category === item.label ? "active" : ""}
+              onClick={() => onCategoryChange(item.label)}
+            >
+              <i style={{ background: item.accent }} />{item.label} <span>{categoryCounts[item.label]}</span>
+            </button>
+          ))}
+        </div>
+
+        <p className="series-concept-heading">Concept Groups</p>
+        <section className="series-concept-list" aria-label="Concept groups">
+          {groups.map((group) => {
+            const selectedInGroup = group.concepts.filter((concept) => selected.has(concept)).length;
+            const groupIsSelected = selectedInGroup === group.concepts.length && group.concepts.length > 0;
+            const groupIsPartial = selectedInGroup > 0 && !groupIsSelected;
+            return (
+              <button
+                key={group.id}
+                type="button"
+                className="series-concept-row"
+                onClick={() => onToggleGroup(group.concepts)}
+                aria-pressed={groupIsSelected}
+              >
+                <span className={`series-concept-check${groupIsSelected || groupIsPartial ? " checked" : ""}`}>
+                  {(groupIsSelected || groupIsPartial) && <Check aria-hidden="true" />}
+                </span>
+                <span
+                  className="series-concept-tile"
+                  style={{ background: group.bg, color: group.accent }}
+                >
+                  {group.icon}
+                </span>
+                <span className="series-concept-row-copy">
+                  <strong>{group.label}</strong>
+                  <small>
+                    {group.concepts.length} concept{group.concepts.length === 1 ? "" : "s"}
+                    {selectedInGroup > 0 ? ` · ${selectedInGroup} selected` : ""}
+                  </small>
+                </span>
+              </button>
+            );
+          })}
+          {groups.length === 0 && (
+            <p className="series-concept-empty">No concept groups match &quot;{search}&quot;.</p>
+          )}
+        </section>
+      </main>
+
+      <footer className="series-concept-toolbar">
+        <p><b>{questionCount}</b> questions ready - <span>{selectedQuestionLabel}</span></p>
+        <button type="button" onClick={onStart} className="series-concept-start">
+          <Sparkles aria-hidden="true" />
+          Start Quiz
+        </button>
+      </footer>
+
+      <style jsx>{`
+        .series-concept-screen { --series-bg: #f2f2f7; --series-card: #fff; --series-separator: rgba(60, 60, 67, .18); --series-ink: #1c1c1e; --series-muted: #6e6a85; --series-subtle: rgba(60, 60, 67, .6); --series-field: rgba(118, 118, 128, .12); --series-nav: rgba(242, 242, 247, .9); --series-accent: #6c5ce0; min-height: 100dvh; background: var(--series-bg); color: var(--series-ink); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif; padding-bottom: 132px; transition: background .18s ease, color .18s ease; }
+        .series-concept-screen[data-theme="dark"] { color-scheme: dark; --series-bg: #000; --series-card: #1c1c1e; --series-separator: rgba(84, 84, 88, .65); --series-ink: #fff; --series-muted: #98989f; --series-subtle: rgba(235, 235, 245, .6); --series-field: rgba(118, 118, 128, .24); --series-nav: rgba(0, 0, 0, .78); --series-accent: #7c6cf0; }
+        .series-concept-nav { height: 44px; display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; border-bottom: 0.5px solid var(--series-separator); background: var(--series-nav); position: sticky; top: 0; z-index: 5; backdrop-filter: blur(20px); }
+        .series-concept-nav strong { justify-self: center; font-size: 17px; font-weight: 600; }
+        .series-concept-back { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; color: var(--series-accent); }
+        .series-concept-back :global(svg) { width: 23px; height: 23px; stroke-width: 2.3; }
+        .series-concept-content { width: min(100%, 430px); margin: 0 auto; padding: 12px 16px 24px; }
+        .series-concept-search { height: 36px; display: flex; align-items: center; gap: 7px; padding: 0 10px; border-radius: 10px; background: var(--series-field); color: var(--series-subtle); }
+        .series-concept-search :global(svg) { width: 16px; height: 16px; flex: 0 0 auto; }
+        .series-concept-search input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--series-ink); font: inherit; font-size: 17px; }
+        .series-concept-search input::placeholder { color: var(--series-subtle); }
+        .series-concept-search button { display: grid; place-items: center; width: 24px; height: 24px; border: 0; border-radius: 50%; background: var(--series-field); color: var(--series-muted); }
+        .series-concept-search button :global(svg) { width: 13px; height: 13px; }
+        .series-concept-chips { display: flex; gap: 8px; overflow-x: auto; padding: 16px 2px 18px; margin: 0 -2px; scrollbar-width: none; }
+        .series-concept-chips::-webkit-scrollbar { display: none; }
+        .series-concept-chips button { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px; border: 0; border-radius: 999px; background: var(--series-field); padding: 7px 13px; color: var(--series-ink); font-size: 14px; font-weight: 600; white-space: nowrap; }
+        .series-concept-chips button.active { background: var(--series-accent); color: #fff; }
+        .series-concept-chips i { width: 6px; height: 6px; border-radius: 50%; background: var(--series-accent); }
+        .series-concept-chips button.active i { background: #fff !important; }
+        .series-concept-chips span { color: var(--series-subtle); font-weight: 500; }
+        .series-concept-chips button.active span { color: rgba(255, 255, 255, .76); }
+        .series-concept-heading { margin: 0 0 6px 16px; color: var(--series-subtle); font-size: 13px; font-weight: 600; text-transform: uppercase; }
+        .series-concept-list { overflow: hidden; border-radius: 12px; background: var(--series-card); }
+        .series-concept-row { position: relative; width: 100%; min-height: 64px; display: flex; align-items: center; gap: 12px; border: 0; background: var(--series-card); padding: 11px 16px; text-align: left; color: var(--series-ink); }
+        .series-concept-row:not(:last-child)::after { content: ""; position: absolute; right: 0; bottom: 0; left: 60px; height: .5px; background: var(--series-separator); }
+        .series-concept-check { width: 22px; height: 22px; flex: 0 0 auto; display: grid; place-items: center; border: 1.6px solid #c7c7cc; border-radius: 50%; color: #fff; }
+        .series-concept-screen[data-theme="dark"] .series-concept-check { border-color: #545458; }
+        .series-concept-check.checked { border-color: var(--series-accent); background: var(--series-accent); }
+        .series-concept-check :global(svg) { width: 13px; height: 13px; stroke-width: 3; }
+        .series-concept-tile { width: 30px; height: 30px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 7px; font-size: 10px; font-weight: 800; }
+        .series-concept-row-copy { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+        .series-concept-row-copy strong { font-size: 16px; font-weight: 600; }
+        .series-concept-row-copy small { color: var(--series-muted); font-size: 13px; }
+        .series-concept-empty { padding: 28px 16px; margin: 0; color: var(--series-muted); text-align: center; font-size: 14px; }
+        .series-concept-toolbar { position: fixed; z-index: 10; right: 0; bottom: 0; left: 0; border-top: .5px solid var(--series-separator); background: var(--series-nav); padding: 10px max(16px, calc((100vw - 430px) / 2 + 16px)) calc(10px + env(safe-area-inset-bottom)); backdrop-filter: blur(20px); }
+        .series-concept-toolbar p { margin: 0 0 8px; color: var(--series-muted); text-align: center; font-size: 13px; }
+        .series-concept-toolbar b { color: var(--series-ink); font-weight: 700; }
+        .series-concept-start { width: 100%; min-height: 50px; display: flex; align-items: center; justify-content: center; gap: 7px; border: 0; border-radius: 12px; background: var(--series-accent); color: #fff; font-size: 17px; font-weight: 700; box-shadow: 0 2px 8px rgba(108, 92, 224, .22); }
+        .series-concept-start:active { opacity: .72; }
+        .series-concept-start :global(svg) { width: 16px; height: 16px; fill: currentColor; }
+        @media (min-width: 431px) { .series-concept-screen { border-inline: 1px solid var(--series-separator); max-width: 430px; margin: 0 auto; } .series-concept-nav { position: sticky; } .series-concept-toolbar { left: 50%; width: 430px; transform: translateX(-50%); padding-inline: 16px; } }
+      `}</style>
+    </div>
+  );
 }
 
 function ReasoningQuizThemeStyles() {
@@ -1834,12 +2018,8 @@ export default function ReasoningQuizEngine({
   const isIos = presentation?.startsWith("ios");
   const isMac = presentation?.startsWith("mac");
   const theme = useQuizTheme();
-  const initialThemeForced = useRef(false);
 
   useEffect(() => {
-    if (initialThemeForced.current) return;
-    initialThemeForced.current = true;
-    
     if (presentation === "ios-light" || presentation === "mac-light") {
       setQuizTheme("light");
     } else if (presentation === "ios-dark" || presentation === "mac-dark") {
@@ -1921,7 +2101,7 @@ export default function ReasoningQuizEngine({
     return ["all", ...Array.from(set).sort((a, b) => a.localeCompare(b))];
   }, [allQuestions]);
 
-  const classificationGroups = useMemo(() => {
+  const classificationGroups = useMemo<ClassificationGroup[]>(() => {
     const search = classificationSearch.trim().toLowerCase();
     const grouped = CLASSIFICATION_CATEGORY_META.map((category) => ({
       ...category,
@@ -1938,6 +2118,19 @@ export default function ReasoningQuizEngine({
   }, [classificationCategory, classificationSearch, conceptOptions]);
 
   const isClassificationConceptMode = mode === "concept";
+
+  const classificationCategoryCounts = useMemo(
+    () =>
+      Object.fromEntries(
+        CLASSIFICATION_CATEGORY_META.map((category) => [
+          category.label,
+          conceptOptions.filter(
+            (concept) => getClassificationCategoryId(concept) === category.id
+          ).length,
+        ])
+      ),
+    [conceptOptions]
+  );
 
   const filteredQuestions = useMemo(() => {
     if (isClassificationConceptMode) {
@@ -1969,7 +2162,7 @@ export default function ReasoningQuizEngine({
   const availableCount = filteredQuestions.length;
   const [sessionResults, setSessionResults] = useState<SessionResult[]>([]);
 
-  const [started, setStarted] = useState(isIos);
+  const [started, setStarted] = useState(isIos && mode !== "concept");
   const [submitError, setSubmitError] = useState("");
   const [timeLeft, setTimeLeft] = useState(60);
   const [isSolutionOpen, setIsSolutionOpen] = useState(false);
@@ -2836,6 +3029,38 @@ export default function ReasoningQuizEngine({
     selectedClassificationConcepts.size === conceptOptions.length && conceptOptions.length > 0;
 
   if (!started) {
+    if (isClassificationConceptStart && slug === "series") {
+      return (
+        <SeriesConceptStart
+          title={title}
+          slug={slug}
+          groups={classificationGroups}
+          category={classificationCategory}
+          categoryCounts={classificationCategoryCounts}
+          search={classificationSearch}
+          selected={selectedClassificationConcepts}
+          conceptCount={conceptOptions.length}
+          questionCount={availableCount}
+          onCategoryChange={setClassificationCategory}
+          onSearchChange={setClassificationSearch}
+          onToggleGroup={(concepts) => {
+            const allSelected = concepts.every((concept) =>
+              selectedClassificationConcepts.has(concept)
+            );
+            setSelectedClassificationConcepts((previous) => {
+              const next = new Set(previous);
+              concepts.forEach((concept) => {
+                if (allSelected) next.delete(concept);
+                else next.add(concept);
+              });
+              return next;
+            });
+          }}
+          onStart={handleStart}
+        />
+      );
+    }
+
     if (isClassificationConceptStart) {
       return (
         <div
