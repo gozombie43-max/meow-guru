@@ -698,7 +698,7 @@ export default function EnglishTopicsPage() {
         @media (min-width: 768px) {
           .body {
             max-width: 1240px; /* Wider max-width to fit more columns */
-            padding: 32px 40px 80px;
+            padding: 32px 40px 0;
           }
 
           /* Center search for a cleaner header look */

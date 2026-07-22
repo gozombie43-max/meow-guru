@@ -194,7 +194,7 @@ export default function MathematicsPage() {
         .content-wrap {
           max-width: 740px;
           margin: 0 auto;
-          padding: 14px 14px 28px;
+          padding: 14px 14px 0;
           position: relative;
           z-index: 1;
         }
@@ -239,7 +239,7 @@ export default function MathematicsPage() {
           display: flex;
           flex-direction: column;
           gap: 12px;
-          padding-bottom: 10px;
+          padding-bottom: 0;
         }
 
         .topic-card {
@@ -416,7 +416,7 @@ export default function MathematicsPage() {
 
           .content-wrap {
             max-width: 1240px;
-            padding: 32px 40px 80px;
+            padding: 32px 40px 0;
           }
 
           .search-wrap {

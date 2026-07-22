@@ -1424,7 +1424,7 @@ button:active:not(:disabled) {
 /* ========== Bottom Pill Navigation ========== */
 
 body.has-bottom-nav {
-  padding-bottom: calc(112px + env(safe-area-inset-bottom));
+  padding-bottom: calc(98px + env(safe-area-inset-bottom));
 }
 
 .bottom-pill-nav {
@@ -1792,7 +1792,7 @@ body.theme-dark .theme-switch {
   }
 
   body.has-bottom-nav {
-    padding-bottom: calc(116px + env(safe-area-inset-bottom));
+    padding-bottom: calc(82px + env(safe-area-inset-bottom));
   }
 
   .bottom-nav-item {
@@ -1921,7 +1921,7 @@ body.theme-dark .bottom-pill-nav::after {
 
 @media (max-width: 1024px) {
   body.has-bottom-nav {
-    padding-bottom: calc(114px + env(safe-area-inset-bottom));
+    padding-bottom: calc(82px + env(safe-area-inset-bottom));
   }
 
   .bottom-pill-nav {

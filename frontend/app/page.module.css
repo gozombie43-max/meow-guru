@@ -864,7 +864,7 @@
   }
 
   .workspace {
-    padding: 22px 24px 96px;
+    padding: 22px 24px 8px;
   }
 
   .topbar {
@@ -931,7 +931,7 @@
   }
 
   .workspace {
-    padding: 0 22px 94px;
+    padding: 0 22px 8px;
   }
 
   .topbar {
