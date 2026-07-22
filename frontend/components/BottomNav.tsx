@@ -34,8 +34,6 @@ export default function BottomNav() {
     isResourceRoute ||
     isStudyModeRoute;
   const { theme } = useThemeMode();
-  const [isNavHidden, setIsNavHidden] = useState(false);
-  const lastScrollY = useRef(0);
   const lightSurfacePrefixes = [
     '/mathematics',
     '/reasoning',
@@ -67,29 +65,6 @@ export default function BottomNav() {
     return () => body.classList.remove('has-bottom-nav');
   }, [shouldHideNav]);
 
-  useEffect(() => {
-    if (shouldHideNav) return;
-
-    lastScrollY.current = window.scrollY;
-
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      const scrollingDown = currentScrollY > lastScrollY.current + 6;
-      const scrollingUp = currentScrollY < lastScrollY.current - 6;
-
-      if (currentScrollY < 12 || scrollingUp) {
-        setIsNavHidden(false);
-      } else if (scrollingDown) {
-        setIsNavHidden(true);
-      }
-
-      lastScrollY.current = currentScrollY;
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [shouldHideNav]);
-
   if (shouldHideNav) return null;
 
   const isHome = pathname === '/';
@@ -99,7 +74,7 @@ export default function BottomNav() {
 
   return (
     <nav
-      className={`bottom-pill-nav${isLightSurface ? ' is-light' : ''}${isNavHidden ? ' is-hidden' : ''}`}
+      className={`bottom-pill-nav${isLightSurface ? ' is-light' : ''}`}
       aria-label="Primary"
     >
       <Link

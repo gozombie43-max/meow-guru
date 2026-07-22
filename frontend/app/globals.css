@@ -2078,3 +2078,8 @@ body.has-bottom-nav .videos-page, body.has-bottom-nav .dashboard-shell {
 .table-wrapper tbody tr:hover {
   background-color: #f0f7ff;
 }
+
+/* Global fix for bottom nav overlapping content on all pages */
+body.has-bottom-nav .page-transition-shell__page > main {
+  padding-bottom: calc(94px + env(safe-area-inset-bottom)) !important;
+}
