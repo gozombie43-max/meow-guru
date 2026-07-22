@@ -202,7 +202,7 @@ export default function MathematicsTopicPage({
         .math-topic-page {
           min-height: 100vh;
           background: #f6f7fb;
-          padding: 16px 14px 32px;
+          padding: 16px 14px 0;
           font-family: "Poppins", "Segoe UI", sans-serif;
           overflow-x: hidden;
         }

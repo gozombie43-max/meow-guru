@@ -1424,7 +1424,7 @@ button:active:not(:disabled) {
 /* ========== Bottom Pill Navigation ========== */
 
 body.has-bottom-nav {
-  padding-bottom: calc(72px + env(safe-area-inset-bottom));
+  padding-bottom: calc(112px + env(safe-area-inset-bottom));
 }
 
 .bottom-pill-nav {
@@ -1792,7 +1792,7 @@ body.theme-dark .theme-switch {
   }
 
   body.has-bottom-nav {
-    padding-bottom: calc(76px + env(safe-area-inset-bottom));
+    padding-bottom: calc(116px + env(safe-area-inset-bottom));
   }
 
   .bottom-nav-item {
@@ -1921,7 +1921,7 @@ body.theme-dark .bottom-pill-nav::after {
 
 @media (max-width: 1024px) {
   body.has-bottom-nav {
-    padding-bottom: calc(74px + env(safe-area-inset-bottom));
+    padding-bottom: calc(114px + env(safe-area-inset-bottom));
   }
 
   .bottom-pill-nav {
@@ -2077,9 +2077,4 @@ body.has-bottom-nav .videos-page, body.has-bottom-nav .dashboard-shell {
 
 .table-wrapper tbody tr:hover {
   background-color: #f0f7ff;
-}
-
-/* Global fix for bottom nav overlapping content on all pages */
-body.has-bottom-nav .page-transition-shell__page > main {
-  padding-bottom: calc(94px + env(safe-area-inset-bottom)) !important;
 }
