@@ -21,7 +21,7 @@ export default function QuizEngine() {
   }, []);
 
   const devicePrefix = isDesktop ? "mac" : "ios";
-  const presentation = isConcept ? `${devicePrefix}-${theme}` : `${devicePrefix}-dark`;
+  const presentation = `${devicePrefix}-${theme}`;
 
   return (
     <ReasoningQuizEngine

@@ -16,7 +16,7 @@ import React, {
   useRef,
   useSyncExternalStore,
 } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import {
@@ -796,12 +796,21 @@ function SeriesConceptStart({
     setHasMounted(true);
   }, []);
 
+  const router = useRouter();
+  const handleBack = () => {
+    if (typeof window !== "undefined" && window.history.length > 2) {
+      router.back();
+    } else {
+      router.push(`/reasoning/${slug}`);
+    }
+  };
+
   return (
     <div className="series-concept-screen" data-theme={hasMounted ? theme : "light"}>
       <header className="series-concept-nav">
-        <Link href={`/reasoning/${slug}`} className="series-concept-back" aria-label="Back to Series">
+        <button type="button" onClick={handleBack} className="series-concept-back" aria-label="Back to Series">
           <ChevronLeft aria-hidden="true" />
-        </Link>
+        </button>
         <strong>{title}</strong>
         <span aria-hidden="true" />
       </header>
@@ -919,18 +928,18 @@ function SeriesConceptStart({
         .series-concept-search input::placeholder { color: var(--series-subtle); }
         .series-concept-search button { display: grid; place-items: center; width: 24px; height: 24px; border: 0; border-radius: 50%; background: var(--series-field); color: var(--series-muted); }
         .series-concept-search button :global(svg) { width: 13px; height: 13px; }
-        .series-concept-chips { display: flex; gap: 8px; overflow-x: auto; padding: 16px 2px 18px; margin: 0 -2px; scrollbar-width: none; }
+        .series-concept-chips { display: flex; gap: 10px; overflow-x: auto; padding: 12px 2px 16px; margin: 0 -2px; scrollbar-width: none; }
         .series-concept-chips::-webkit-scrollbar { display: none; }
-        .series-concept-chips button { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px; border: 0; border-radius: 999px; background: var(--series-field); padding: 7px 13px; color: var(--series-ink); font-size: 14px; font-weight: 600; white-space: nowrap; }
-        .series-concept-chips button.active { background: var(--series-accent); color: #fff; }
-        .series-concept-chips i { width: 6px; height: 6px; border-radius: 50%; background: var(--series-accent); }
-        .series-concept-chips button.active i { background: #fff !important; }
-        .series-concept-chips span { color: var(--series-subtle); font-weight: 500; }
-        .series-concept-chips button.active span { color: rgba(255, 255, 255, .76); }
+        .series-concept-chips button { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 8px; border: 0; border-radius: 999px; background: var(--series-field); padding: 8px 16px; color: var(--series-ink); font-size: 15px; font-weight: 700; white-space: nowrap; transition: all 0.15s ease; cursor: pointer; }
+        .series-concept-chips button.active { background: var(--series-accent); color: #ffffff; box-shadow: 0 2px 8px rgba(108, 92, 224, 0.25); }
+        .series-concept-chips i { width: 7px; height: 7px; border-radius: 50%; background: var(--series-accent); flex-shrink: 0; }
+        .series-concept-chips button.active i { background: #ffffff !important; }
+        .series-concept-chips span { color: var(--series-muted); font-size: 14px; font-weight: 600; margin-left: 1px; }
+        .series-concept-chips button.active span { color: rgba(255, 255, 255, 0.85); }
         .series-concept-heading { margin: 0 0 6px 16px; color: var(--series-subtle); font-size: 13px; font-weight: 600; text-transform: uppercase; }
         .series-concept-list { overflow: hidden; border-radius: 12px; background: var(--series-card); }
         .series-concept-row { position: relative; width: 100%; min-height: 64px; display: flex; align-items: center; gap: 12px; border: 0; background: var(--series-card); padding: 11px 16px; text-align: left; color: var(--series-ink); }
-        .series-concept-row:not(:last-child)::after { content: ""; position: absolute; right: 0; bottom: 0; left: 60px; height: .5px; background: var(--series-separator); }
+        .series-concept-row:not(:last-child)::after { content: ""; position: absolute; right: 0; bottom: 0; left: 56px; height: 1px; background: var(--series-separator); opacity: 0.8; }
         .series-concept-check { width: 22px; height: 22px; flex: 0 0 auto; display: grid; place-items: center; border: 1.6px solid #c7c7cc; border-radius: 50%; color: #fff; }
         .series-concept-screen[data-theme="dark"] .series-concept-check { border-color: #545458; }
         .series-concept-check.checked { border-color: var(--series-accent); background: var(--series-accent); }
@@ -970,6 +979,600 @@ function SeriesConceptStart({
           .series-concept-toolbar { position: sticky; grid-column: 3; grid-row: 2; align-self: start; width: auto; margin: 46px 38px; border: 1px solid var(--series-separator); border-radius: 8px; background: var(--series-card); padding: 20px; transform: none; backdrop-filter: none; }
           .series-concept-toolbar p { margin-bottom: 16px; text-align: left; font-size: 14px; }
           .series-concept-start { min-height: 48px; border-radius: 8px; font-size: 16px; }
+        }
+      `}</style>
+    </div>
+  );
+}
+function SeriesFormulaStart({
+  title,
+  slug,
+  mode,
+  examFilter,
+  examOptions,
+  questionCount,
+  onExamChange,
+  groups,
+  category,
+  categoryCounts,
+  search,
+  selected,
+  conceptCount,
+  onCategoryChange,
+  onSearchChange,
+  onToggleGroup,
+  onStart,
+}: {
+  title: string;
+  slug: string;
+  mode: QuizMode;
+  examFilter: string;
+  examOptions: string[];
+  questionCount: number;
+  onExamChange: (exam: string) => void;
+  groups: ClassificationGroup[];
+  category: string;
+  categoryCounts: Record<string, number>;
+  search: string;
+  selected: Set<string>;
+  conceptCount: number;
+  onCategoryChange: (category: string) => void;
+  onSearchChange: (search: string) => void;
+  onToggleGroup: (concepts: string[]) => void;
+  onStart: () => void;
+}) {
+  const { theme } = useThemeMode();
+  const [hasMounted, setHasMounted] = useState(false);
+
+  useLayoutEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  const activeTheme = hasMounted ? theme : "light";
+
+  const router = useRouter();
+  const handleBack = () => {
+    if (typeof window !== "undefined" && window.history.length > 2) {
+      router.back();
+    } else {
+      router.push(`/reasoning/${slug}`);
+    }
+  };
+
+  const selectedCount = selected.size;
+  const selectedQuestionLabel = selectedCount === 0 ? "all concepts" : `${selectedCount} concept${selectedCount === 1 ? "" : "s"}`;
+
+  return (
+    <div className="series-concept-screen" data-theme={activeTheme}>
+      <header className="series-concept-nav">
+        <button type="button" onClick={handleBack} className="series-concept-back" aria-label={`Back to ${title}`}>
+          <ChevronLeft aria-hidden="true" />
+        </button>
+        <strong>{title} - {MODE_LABELS[mode]}</strong>
+        <span aria-hidden="true" />
+      </header>
+
+      <aside className="series-concept-aside" aria-label="Quiz overview">
+        <span>Reasoning</span>
+        <h1>{title}</h1>
+        <p>{MODE_LABELS[mode]}</p>
+        <dl>
+          <div>
+            <dt>Concepts</dt>
+            <dd>{conceptCount}</dd>
+          </div>
+          <div>
+            <dt>Questions</dt>
+            <dd>{questionCount}</dd>
+          </div>
+        </dl>
+      </aside>
+
+      <main className="series-concept-content">
+        <p className="series-concept-heading">Select Exam Target</p>
+        <div className="series-dropdown-container mb-6">
+          <div className="series-dropdown-row">
+            <span className="series-concept-tile" style={{ background: "rgba(124, 108, 240, 0.15)", color: "var(--series-accent)" }}>
+              <Target aria-hidden="true" className="w-4 h-4" />
+            </span>
+            <span className="series-dropdown-label">Exam Name</span>
+            <div className="series-select-wrapper">
+              <select
+                value={examFilter || "all"}
+                onChange={(e) => onExamChange(e.target.value === "all" ? "" : e.target.value)}
+                className="series-dropdown-select"
+              >
+                {examOptions.map((ex) => (
+                  <option key={ex} value={ex === "all" ? "all" : ex}>
+                    {ex === "all" ? "All Exams" : ex}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="series-select-chevron" />
+            </div>
+          </div>
+        </div>
+
+        <div className="series-concept-chips mb-4" aria-label="Concept category filters">
+          <button
+            type="button"
+            className={category === "All" ? "active" : ""}
+            onClick={() => onCategoryChange("All")}
+          >
+            <i className="chip-indigo" />All <span>{conceptCount}</span>
+          </button>
+          {CLASSIFICATION_CATEGORY_META.filter((item) => categoryCounts[item.label] > 0).map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className={category === item.label ? "active" : ""}
+              onClick={() => onCategoryChange(item.label)}
+            >
+              <i style={{ background: item.accent }} />{item.label} <span>{categoryCounts[item.label]}</span>
+            </button>
+          ))}
+        </div>
+
+        <p className="series-concept-heading">Concept Groups</p>
+        <section className="series-concept-list mb-6" aria-label="Concept groups">
+          {groups.map((group) => {
+            const selectedInGroup = group.concepts.filter((concept) => selected.has(concept)).length;
+            const groupIsSelected = selectedInGroup === group.concepts.length && group.concepts.length > 0;
+            const groupIsPartial = selectedInGroup > 0 && !groupIsSelected;
+            return (
+              <button
+                key={group.id}
+                type="button"
+                className="series-concept-row"
+                onClick={() => onToggleGroup(group.concepts)}
+                aria-pressed={groupIsSelected}
+              >
+                <span className={`series-concept-check${groupIsSelected || groupIsPartial ? " checked" : ""}`}>
+                  {(groupIsSelected || groupIsPartial) && <Check aria-hidden="true" />}
+                </span>
+                <span
+                  className="series-concept-tile"
+                  style={{ background: group.bg, color: group.accent }}
+                >
+                  {group.icon}
+                </span>
+                <span className="series-concept-row-copy">
+                  <strong>{group.label}</strong>
+                  <small>
+                    {group.concepts.length} concept{group.concepts.length === 1 ? "" : "s"}
+                    {selectedInGroup > 0 ? ` · ${selectedInGroup} selected` : ""}
+                  </small>
+                </span>
+              </button>
+            );
+          })}
+          {groups.length === 0 && (
+            <p className="series-concept-empty">No concept groups match &quot;{search}&quot;.</p>
+          )}
+        </section>
+      </main>
+
+      <footer className="series-concept-toolbar">
+        <p>
+          <b>{questionCount}</b> questions ready - <span>{selectedQuestionLabel}</span>
+        </p>
+        <button type="button" onClick={onStart} className="series-concept-start">
+          <Sparkles aria-hidden="true" />
+          Start Quiz
+        </button>
+      </footer>
+
+      <style jsx>{`
+        .series-concept-screen {
+          --series-bg: #f2f2f7;
+          --series-card: #ffffff;
+          --series-separator: rgba(60, 60, 67, 0.18);
+          --series-ink: #1c1c1e;
+          --series-muted: #6e6a85;
+          --series-subtle: rgba(60, 60, 67, 0.6);
+          --series-field: rgba(118, 118, 128, 0.12);
+          --series-nav: rgba(242, 242, 247, 0.9);
+          --series-accent: #6c5ce0;
+          height: 100dvh;
+          max-height: 100dvh;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+          background: var(--series-bg);
+          color: var(--series-ink);
+          font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+          padding-bottom: 0;
+        }
+        .series-concept-screen[data-theme="dark"] {
+          color-scheme: dark;
+          --series-bg: #000000;
+          --series-card: #1c1c1e;
+          --series-separator: rgba(84, 84, 88, 0.65);
+          --series-ink: #ffffff;
+          --series-muted: #98989f;
+          --series-subtle: rgba(235, 235, 245, 0.6);
+          --series-field: rgba(118, 118, 128, 0.24);
+          --series-nav: rgba(0, 0, 0, 0.78);
+          --series-accent: #7c6cf0;
+        }
+        .series-concept-nav {
+          height: 44px;
+          display: grid;
+          grid-template-columns: 44px 1fr auto;
+          align-items: center;
+          border-bottom: 0.5px solid var(--series-separator);
+          background: var(--series-nav);
+          position: sticky;
+          top: 0;
+          z-index: 5;
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+        }
+        .series-concept-nav strong {
+          justify-self: center;
+          font-size: 17px;
+          font-weight: 600;
+        }
+        .series-concept-back {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 44px;
+          height: 44px;
+          color: var(--series-accent);
+        }
+        .series-concept-back :global(svg) {
+          width: 23px;
+          height: 23px;
+          stroke-width: 2.3;
+        }
+        .series-concept-content {
+          width: min(100%, 430px);
+          margin: 0 auto;
+          padding: 10px 16px 12px;
+          flex: 1 1 auto;
+          min-height: 0;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+        }
+        .series-concept-pill {
+          background: var(--series-field);
+          color: var(--series-accent);
+          padding: 4px 10px;
+          border-radius: 999px;
+          font-size: 12px;
+          font-weight: 600;
+        }
+        .series-concept-heading {
+          margin: 0 0 6px 16px;
+          color: var(--series-subtle);
+          font-size: 13px;
+          font-weight: 600;
+          text-transform: uppercase;
+        }
+        .series-concept-list {
+          overflow-y: auto;
+          flex: 1 1 auto;
+          min-height: 0;
+          border-radius: 12px;
+          background: var(--series-card);
+        }
+        .series-concept-row {
+          position: relative;
+          width: 100%;
+          min-height: 52px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          border: 0;
+          background: var(--series-card);
+          padding: 8px 14px;
+          text-align: left;
+          color: var(--series-ink);
+        }
+        .series-concept-row:not(:last-child)::after {
+          content: "";
+          position: absolute;
+          right: 0;
+          bottom: 0;
+          left: 56px;
+          height: 1px;
+          background: var(--series-separator);
+          opacity: 0.8;
+        }
+        .series-concept-check {
+          width: 22px;
+          height: 22px;
+          flex: 0 0 auto;
+          display: grid;
+          place-items: center;
+          border: 1.6px solid #c7c7cc;
+          border-radius: 50%;
+          color: #fff;
+        }
+        .series-concept-screen[data-theme="dark"] .series-concept-check {
+          border-color: #545458;
+        }
+        .series-concept-check.checked {
+          border-color: var(--series-accent);
+          background: var(--series-accent);
+        }
+        .series-concept-check :global(svg) {
+          width: 13px;
+          height: 13px;
+          stroke-width: 3;
+        }
+        .series-concept-tile {
+          width: 30px;
+          height: 30px;
+          flex: 0 0 auto;
+          display: grid;
+          place-items: center;
+          border-radius: 7px;
+        }
+        .series-concept-row-copy {
+          min-width: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+        .series-concept-row-copy strong {
+          font-size: 16px;
+          font-weight: 600;
+        }
+        .series-concept-row-copy small {
+          color: var(--series-muted);
+          font-size: 13px;
+        }
+        .series-concept-chips { display: flex; gap: 10px; overflow-x: auto; padding: 12px 2px 16px; margin: 0 -2px; scrollbar-width: none; }
+        .series-concept-chips::-webkit-scrollbar { display: none; }
+        .series-concept-chips button { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 8px; border: 0; border-radius: 999px; background: var(--series-field); padding: 8px 16px; color: var(--series-ink); font-size: 15px; font-weight: 700; white-space: nowrap; transition: all 0.15s ease; cursor: pointer; }
+        .series-concept-chips button.active { background: var(--series-accent); color: #ffffff; box-shadow: 0 2px 8px rgba(108, 92, 224, 0.25); }
+        .series-concept-chips i { width: 7px; height: 7px; border-radius: 50%; background: var(--series-accent); flex-shrink: 0; }
+        .series-concept-chips button.active i { background: #ffffff !important; }
+        .series-concept-chips span { color: var(--series-muted); font-size: 14px; font-weight: 600; margin-left: 1px; }
+        .series-concept-chips button.active span { color: rgba(255, 255, 255, 0.85); }
+        .chip-indigo { background: #6c5ce0 !important; }
+        .series-dropdown-container {
+          overflow: hidden;
+          border-radius: 12px;
+          background: var(--series-card);
+          border: 1px solid var(--series-separator);
+        }
+        .series-dropdown-row {
+          position: relative;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 12px 16px;
+          min-height: 56px;
+          width: 100%;
+          box-sizing: border-box;
+        }
+        .series-dropdown-label {
+          font-size: 15px;
+          font-weight: 600;
+          color: var(--series-ink);
+          white-space: nowrap;
+          flex-shrink: 0;
+        }
+        .series-select-wrapper {
+          position: relative;
+          display: flex;
+          align-items: center;
+          margin-left: auto;
+          min-width: 0;
+          max-width: calc(100% - 140px);
+        }
+        .series-dropdown-select {
+          appearance: none;
+          -webkit-appearance: none;
+          background: var(--series-field);
+          color: var(--series-accent);
+          font-size: 14px;
+          font-weight: 600;
+          padding: 8px 30px 8px 12px;
+          border-radius: 10px;
+          border: 1px solid var(--series-separator);
+          outline: none;
+          cursor: pointer;
+          transition: all 0.15s ease;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          overflow: hidden;
+          max-width: 100%;
+          box-sizing: border-box;
+        }
+        .series-dropdown-select option {
+          background: var(--series-card);
+          color: var(--series-ink);
+        }
+        .series-dropdown-select:focus {
+          border-color: var(--series-accent);
+        }
+        .series-select-chevron {
+          position: absolute;
+          right: 10px;
+          width: 14px;
+          height: 14px;
+          color: var(--series-accent);
+          pointer-events: none;
+        }
+        .series-formula-card {
+          overflow: hidden;
+          border-radius: 12px;
+          background: var(--series-card);
+          padding: 16px;
+        }
+        .series-formula-card-row {
+          display: flex;
+          align-items: flex-start;
+          gap: 12px;
+        }
+        .series-concept-toolbar {
+          position: relative;
+          z-index: 10;
+          flex: 0 0 auto;
+          border-top: 0.5px solid var(--series-separator);
+          background: var(--series-nav);
+          padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+        }
+        .series-concept-toolbar p {
+          margin: 0 0 8px;
+          color: var(--series-muted);
+          text-align: center;
+          font-size: 13px;
+        }
+        .series-concept-toolbar b {
+          color: var(--series-ink);
+          font-weight: 700;
+        }
+        .series-concept-start {
+          width: 100%;
+          min-height: 50px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 7px;
+          border: 0;
+          border-radius: 12px;
+          background: var(--series-accent);
+          color: #fff;
+          font-size: 17px;
+          font-weight: 700;
+          box-shadow: 0 2px 8px rgba(108, 92, 224, 0.22);
+        }
+        .series-concept-start:active {
+          opacity: 0.72;
+        }
+        .series-concept-aside {
+          display: none;
+        }
+        @media (min-width: 1024px) {
+          .series-concept-screen {
+            display: grid;
+            grid-template-columns: minmax(210px, 1fr) minmax(520px, 760px) minmax(260px, 1fr);
+            grid-template-rows: 68px minmax(calc(100dvh - 68px), auto);
+            min-height: 100dvh;
+            padding: 0;
+          }
+          .series-concept-nav {
+            grid-column: 1 / -1;
+            height: 68px;
+            grid-template-columns: minmax(210px, 1fr) minmax(520px, 760px) minmax(260px, 1fr);
+            border-bottom: 1px solid var(--series-separator);
+            padding: 0 38px;
+          }
+          .series-concept-nav strong {
+            grid-column: 2;
+            font-size: 18px;
+            letter-spacing: 0;
+          }
+          .series-concept-back {
+            position: absolute;
+            left: 28px;
+            width: 44px;
+            height: 68px;
+          }
+          .series-concept-aside {
+            grid-column: 1;
+            grid-row: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            padding: 64px 44px;
+            border-right: 1px solid var(--series-separator);
+            text-align: right;
+          }
+          .series-concept-aside > span {
+            color: var(--series-accent);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+          }
+          .series-concept-aside h1 {
+            margin: 8px 0 2px;
+            color: var(--series-ink);
+            font-size: 28px;
+            line-height: 1.12;
+            letter-spacing: 0;
+          }
+          .series-concept-aside > p {
+            margin: 0;
+            color: var(--series-muted);
+            font-size: 15px;
+          }
+          .series-concept-aside dl {
+            display: grid;
+            grid-template-columns: repeat(2, max-content);
+            gap: 20px;
+            margin: 52px 0 0;
+          }
+          .series-concept-aside dl div {
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 3px;
+          }
+          .series-concept-aside dt {
+            color: var(--series-muted);
+            font-size: 12px;
+          }
+          .series-concept-aside dd {
+            margin: 0;
+            color: var(--series-ink);
+            font-size: 22px;
+            font-weight: 700;
+          }
+          .series-concept-content {
+            grid-column: 2;
+            grid-row: 2;
+            width: 100%;
+            margin: 0;
+            padding: 58px 44px 72px;
+          }
+          .series-concept-heading {
+            margin-left: 0;
+          }
+          .series-concept-list {
+            border: 1px solid var(--series-separator);
+            border-radius: 8px;
+          }
+          .series-concept-row {
+            min-height: 76px;
+            padding: 14px 18px;
+            transition: background 0.15s ease;
+          }
+          .series-concept-row:hover {
+            background: var(--series-field);
+          }
+          .series-concept-toolbar {
+            position: sticky;
+            grid-column: 3;
+            grid-row: 2;
+            align-self: start;
+            width: auto;
+            margin: 46px 38px;
+            border: 1px solid var(--series-separator);
+            border-radius: 8px;
+            background: var(--series-card);
+            padding: 20px;
+            transform: none;
+            backdrop-filter: none;
+          }
+          .series-concept-toolbar p {
+            margin-bottom: 16px;
+            text-align: left;
+            font-size: 14px;
+          }
+          .series-concept-start {
+            min-height: 48px;
+            border-radius: 8px;
+            font-size: 16px;
+          }
         }
       `}</style>
     </div>
@@ -2174,7 +2777,7 @@ export default function ReasoningQuizEngine({
   );
 
   const filteredQuestions = useMemo(() => {
-    if (isClassificationConceptMode) {
+    if (isClassificationConceptMode || slug === "series") {
       const selected = selectedClassificationConcepts;
       const baseQuestions = resolveIndexedQuestions(questionIndex, {
         bucket: mode,
@@ -2201,9 +2804,10 @@ export default function ReasoningQuizEngine({
   ]);
 
   const availableCount = filteredQuestions.length;
+  const router = useRouter();
   const [sessionResults, setSessionResults] = useState<SessionResult[]>([]);
 
-  const [started, setStarted] = useState(isIos && mode !== "concept");
+  const [started, setStarted] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [timeLeft, setTimeLeft] = useState(60);
   const [isSolutionOpen, setIsSolutionOpen] = useState(false);
@@ -3070,6 +3674,42 @@ export default function ReasoningQuizEngine({
     selectedClassificationConcepts.size === conceptOptions.length && conceptOptions.length > 0;
 
   if (!started) {
+    if (slug === "series" || mode === "formula") {
+      return (
+        <SeriesFormulaStart
+          title={title}
+          slug={slug}
+          mode={mode}
+          examFilter={examFilter}
+          examOptions={examOptions}
+          questionCount={availableCount}
+          onExamChange={setExamFilter}
+          groups={classificationGroups}
+          category={classificationCategory}
+          categoryCounts={classificationCategoryCounts}
+          search={classificationSearch}
+          selected={selectedClassificationConcepts}
+          conceptCount={conceptOptions.length}
+          onCategoryChange={setClassificationCategory}
+          onSearchChange={setClassificationSearch}
+          onToggleGroup={(concepts) => {
+            const allSelected = concepts.every((concept) =>
+              selectedClassificationConcepts.has(concept)
+            );
+            setSelectedClassificationConcepts((previous) => {
+              const next = new Set(previous);
+              concepts.forEach((concept) => {
+                if (allSelected) next.delete(concept);
+                else next.add(concept);
+              });
+              return next;
+            });
+          }}
+          onStart={handleStart}
+        />
+      );
+    }
+
     if (isClassificationConceptStart && slug === "series") {
       return (
         <SeriesConceptStart
@@ -3918,224 +4558,106 @@ export default function ReasoningQuizEngine({
 
     return (
       <div
-        className="reasoning-quiz quiz-start min-h-screen relative overflow-hidden px-4 sm:px-6"
-        data-theme="light"
+        className="reasoning-quiz min-h-screen w-full relative overflow-y-auto"
+        data-theme="dark"
+        style={{
+          background: "#000000",
+          color: "#ffffff",
+          fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif"
+        }}
       >
         {themeStyles}
-        <div className="w-full max-w-2xl mx-auto text-center min-h-screen flex flex-col pt-20 sm:pt-24 pb-8">
-          <div className="mb-6 flex justify-end">
-            <ThemeToggle />
-          </div>
-          <div className="mb-2 flex items-center justify-center gap-2">
-            <span
-              className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-widest"
-              style={{
-                background: "var(--quiz-pill-bg)",
-                color: "var(--quiz-pill-text)",
-                border: "1px solid var(--quiz-pill-border)",
-              }}
-            >
-              {title}
-            </span>
-          </div>
-          <h1
-            className="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-3 text-[color:var(--quiz-text)]"
-            style={{
-              fontFamily: "'SF Pro Display', 'Helvetica Neue', sans-serif",
+
+        {/* Top Navigation */}
+        <div className="flex justify-between items-center px-4 pt-12 pb-2">
+          <button
+            type="button"
+            onClick={() => {
+              if (typeof window !== "undefined" && window.history.length > 2) {
+                router.back();
+              } else {
+                router.push(`/reasoning/${slug}`);
+              }
             }}
+            className="flex items-center text-[#0A84FF] active:opacity-70 transition-opacity"
           >
-            {MODE_LABELS[mode]}
-          </h1>
-
-          <div
-            className="mb-5 flex items-center justify-center"
-            style={{ marginTop: "1cm" }}
-          >
-            <div
-              className="flex items-center gap-2 rounded-full border px-3 py-2 shadow-sm"
-              style={{
-                minWidth: "280px",
-                background: "var(--quiz-surface)",
-                borderColor: "var(--quiz-pill-border)",
-              }}
-            >
-              <select
-                value={examFilter || "all"}
-                onChange={(e) =>
-                  setExamFilter(e.target.value === "all" ? "" : e.target.value)
-                }
-                className="rounded-full border-none bg-transparent px-4 py-2 text-base font-semibold text-[color:var(--quiz-text)] outline-none focus:ring-0"
-                style={{ minWidth: "220px" }}
-              >
-                {examOptions.map((ex) => (
-                  <option key={ex} value={ex === "all" ? "all" : ex}>
-                    {ex === "all" ? "All exams" : ex}
-                  </option>
-                ))}
-              </select>
-
-              {examFilter !== "" && (
-                <button
-                  onClick={() => setExamFilter("")}
-                  className="rounded-full px-3 py-1 text-xs font-semibold"
-                  style={{
-                    background: "var(--quiz-accent-bg)",
-                    color: "var(--quiz-accent-text)",
-                  }}
-                >
-                  Clear
-                </button>
-              )}
-            </div>
-          </div>
-
-          <p className="text-sm font-medium text-[color:var(--quiz-text-muted)] mb-5">
-            {availableCount} questions available
-          </p>
-
-          <div className="flex-1 flex items-center justify-center">
-            <button
-              onClick={handleStart}
-              className="quiz-start-button mx-auto"
-              aria-label="Start Quiz"
-            >
-              <Sparkles className="quiz-start-icon" aria-hidden="true" />
-              <span className="quiz-start-label">Start Quiz</span>
-            </button>
-          </div>
+            <ChevronLeft className="w-7 h-7 -ml-2" strokeWidth={2.5} />
+            <span className="text-[17px] -ml-1">Back</span>
+          </button>
+          <ThemeToggle />
         </div>
 
-        <style jsx>{`
-          .quiz-start {
-            background: var(--quiz-start-bg);
-          }
-          .quiz-start-button {
-            position: relative;
-            width: min(78vw, 260px);
-            min-height: 54px;
-            border: 0;
-            border-radius: 999px;
-            cursor: pointer;
-            isolation: isolate;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.42rem;
-            padding: 0 1.2rem;
-            background: linear-gradient(
-              130deg,
-              #7c3aed 0%,
-              #4f46e5 48%,
-              #2563eb 100%
-            );
-            background-size: 190% 190%;
-            color: #ffffff;
-            box-shadow: 0 18px 32px rgba(124, 58, 237, 0.35),
-              0 0 22px rgba(79, 70, 229, 0.3), 0 0 40px rgba(37, 99, 235, 0.2),
-              inset 0 1.5px 0 rgba(255, 255, 255, 0.32);
-            transition: transform 0.4s ease, box-shadow 0.4s ease,
-              filter 0.4s ease;
-            animation: quiz-breathe 3.4s ease-in-out infinite;
-          }
-          .quiz-start-button::before,
-          .quiz-start-button::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            border-radius: inherit;
-            pointer-events: none;
-          }
-          .quiz-start-button::before {
-            inset: 2px;
-            background: linear-gradient(
-              180deg,
-              rgba(255, 255, 255, 0.42),
-              rgba(255, 255, 255, 0.08) 42%,
-              transparent 85%
-            );
-            opacity: 0.85;
-          }
-          .quiz-start-button::after {
-            background: linear-gradient(
-              100deg,
-              transparent 18%,
-              rgba(255, 255, 255, 0.72) 47%,
-              transparent 78%
-            );
-            transform: translateX(-140%);
-            mix-blend-mode: screen;
-            opacity: 0.92;
-            animation: quiz-sweep 3s ease-in-out infinite;
-          }
-          .quiz-start-icon {
-            position: relative;
-            z-index: 2;
-            width: 0.88rem;
-            height: 0.88rem;
-            stroke-width: 2.4;
-            color: #ffffff;
-            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.55));
-            animation: quiz-twinkle 2.8s ease-in-out infinite;
-          }
-          .quiz-start-label {
-            position: relative;
-            z-index: 2;
-            font-size: clamp(0.88rem, 2.5vw, 1rem);
-            font-weight: 800;
-            letter-spacing: 0.02em;
-            color: #ffffff;
-            text-shadow: 0 2px 10px rgba(30, 41, 59, 0.34);
-          }
-          .quiz-start-button:hover {
-            transform: translateY(-2px) scale(1.05);
-            filter: brightness(1.12);
-            box-shadow: 0 22px 42px rgba(124, 58, 237, 0.45),
-              0 0 30px rgba(79, 70, 229, 0.45), 0 0 58px rgba(37, 99, 235, 0.3),
-              inset 0 2px 0 rgba(255, 255, 255, 0.44);
-          }
-          .quiz-start-button:focus-visible {
-            outline: 2px solid rgba(255, 255, 255, 0.72);
-            outline-offset: 4px;
-          }
-          @keyframes quiz-sweep {
-            0% {
-              transform: translateX(-140%);
-            }
-            55%,
-            100% {
-              transform: translateX(140%);
-            }
-          }
-          @keyframes quiz-breathe {
-            0%,
-            100% {
-              transform: translateY(0) scale(1);
-            }
-            50% {
-              transform: translateY(-4px) scale(1.018);
-            }
-          }
-          @keyframes quiz-gradient {
-            0%,
-            100% {
-              background-position: 0% 50%;
-            }
-            50% {
-              background-position: 100% 50%;
-            }
-          }
-          @keyframes quiz-twinkle {
-            0%,
-            100% {
-              transform: scale(1) rotate(0deg);
-              opacity: 0.92;
-            }
-            50% {
-              transform: scale(1.15) rotate(8deg);
-              opacity: 1;
-            }
-          }
-        `}</style>
+        <div className="px-4 pb-[100px] pt-2">
+          {/* Large Title */}
+          <div className="mb-6">
+            <h1 className="text-[34px] font-bold tracking-tight text-white leading-tight">
+              {MODE_LABELS[mode]}
+            </h1>
+          </div>
+
+          {/* Intro Text */}
+          <p className="text-[#EBEBF5]/60 text-[15px] leading-relaxed mb-8 px-1">
+            Master patterns and formulas in this targeted practice session. Configure your quiz below.
+          </p>
+
+          {/* Inset Grouped List - iOS Settings Style */}
+          <div className="bg-[#1C1C1E] rounded-[10px] overflow-hidden mb-6">
+            
+            <div className="flex items-center justify-between px-4 min-h-[44px] border-b border-[#38383A]">
+              <span className="text-[17px] text-white">Topic</span>
+              <span className="text-[17px] text-[#EBEBF5]/60">{title}</span>
+            </div>
+            
+            <div className="flex items-center justify-between px-4 min-h-[44px] border-b border-[#38383A]">
+              <span className="text-[17px] text-white">Questions Ready</span>
+              <span className="text-[17px] text-[#EBEBF5]/60">{availableCount}</span>
+            </div>
+
+            <div className="relative flex items-center justify-between px-4 min-h-[44px]">
+              <span className="text-[17px] text-white">Exam Filter</span>
+              <div className="flex items-center gap-1">
+                <select
+                  value={examFilter || "all"}
+                  onChange={(e) => setExamFilter(e.target.value === "all" ? "" : e.target.value)}
+                  className="appearance-none bg-transparent text-[17px] text-right text-[#EBEBF5]/60 outline-none pr-5 z-10 min-w-[120px]"
+                  dir="rtl"
+                >
+                  {examOptions.map((ex) => (
+                    <option key={ex} value={ex === "all" ? "all" : ex} className="bg-[#1c1c1e] text-white text-left">
+                      {ex === "all" ? "All Exams" : ex}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute right-4 text-[#EBEBF5]/30 pointer-events-none">
+                  <ChevronDown className="w-4 h-4" />
+                </div>
+              </div>
+            </div>
+
+          </div>
+          
+          {examFilter !== "" && (
+            <div className="flex justify-center mb-8">
+              <button
+                onClick={() => setExamFilter("")}
+                className="text-[#0A84FF] text-[15px] active:opacity-70"
+              >
+                Clear Exam Filter
+              </button>
+            </div>
+          )}
+
+        </div>
+        
+        {/* Fixed Bottom Button Area - iOS styling */}
+        <div className="fixed bottom-0 left-0 right-0 p-4 pb-8 bg-black/80 backdrop-blur-xl border-t border-[#38383A]">
+          <button
+            onClick={handleStart}
+            className="w-full h-[50px] rounded-[12px] bg-[#0A84FF] active:bg-[#0070DF] text-white text-[17px] font-semibold flex items-center justify-center transition-colors"
+          >
+            Start Quiz
+          </button>
+        </div>
       </div>
     );
   }
