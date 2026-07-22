@@ -371,7 +371,7 @@ export default function ReasoningTopicsPage() {
         .body {
           max-width: 520px;
           margin: 0 auto;
-          padding: 16px 14px 48px;
+          padding: 16px 14px 12px;
           position: relative;
           z-index: 1;
         }
