@@ -132,6 +132,7 @@ export default function ReasoningTopicPage({
           color: var(--label);
           font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", sans-serif;
           -webkit-font-smoothing: antialiased;
+          padding-top: calc(56px + max(env(safe-area-inset-top, 0px), 0px));
           padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px));
           transition: background .25s ease, color .25s ease;
         }
@@ -144,11 +145,13 @@ export default function ReasoningTopicPage({
         .bg-teal { background: linear-gradient(150deg,#41ab9d,var(--tint)); color: white; }
         .bg-orange { background: linear-gradient(150deg,#ffb84d,var(--orange)); color: white; }
 
-        /* ── Sticky NavBar (iOS Reference) ── */
+        /* ── Fixed NavBar (iOS Reference) ── */
         .sg-navbar {
-          position: sticky;
+          position: fixed;
           top: 0;
-          z-index: 10;
+          left: 0;
+          right: 0;
+          z-index: 50;
           padding: max(env(safe-area-inset-top, 0px), 0px) 16px 0;
           background: #000;
         }
