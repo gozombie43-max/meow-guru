@@ -1,11 +1,8 @@
-import Link from "next/link";
+"use client";
 
-interface FeatureCardData {
-  title: string;
-  href: string;
-  gradient: string;
-  icon: React.ReactNode;
-}
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import React from "react";
 
 interface ReasoningTopicPageProps {
   title: string;
@@ -16,91 +13,68 @@ interface ReasoningTopicPageProps {
   bannerSubtitle?: string;
 }
 
-function FeatureCard({ title, href, gradient, icon }: FeatureCardData) {
-  return (
-    <Link href={href} className="feature-card" style={{ background: gradient }}>
-      <div className="feature-glow" aria-hidden="true" />
-      <div className="feature-icon-wrap" aria-hidden="true">
-        {icon}
-      </div>
-      <p className="feature-title">{title}</p>
-    </Link>
-  );
-}
+/* ── SVG Icons ───────────────────────────────── */
+const IconPYQ = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-3"/><rect x="9" y="1" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/>
+  </svg>
+);
+const IconPatternBank = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>
+  </svg>
+);
+const IconPW = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor">
+    <path d="M13 2L4.5 14h5.5L11 22l8.5-12H14l-1-8z"/>
+  </svg>
+);
+const IconSelection = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 2l2.6 6.8L21 11l-6.4 2.2L12 20l-2.6-6.8L3 11l6.4-2.2z"/>
+  </svg>
+);
+const IconTopicMix = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+    <circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/>
+  </svg>
+);
+const IconTier2 = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 2C9 6 7 9.5 7 13a5 5 0 0 0 10 0c0-3.5-2-7-5-11z"/>
+  </svg>
+);
 
-const buildFeatureCards = (slug: string): FeatureCardData[] => [
-  {
-    title: "PYQ",
-    href: `/reasoning/${slug}/quiz?mode=concept`,
-    gradient: "linear-gradient(135deg, #ff7aa2 0%, #ffb26b 100%)",
-    icon: (
-      <svg viewBox="0 0 24 24" className="feature-icon" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M7 4h10" />
-        <path d="M12 4v16" />
-        <circle cx="12" cy="16" r="4" />
-      </svg>
-    ),
-  },
-  {
-    title: "Pattern Bank",
-    href: `/reasoning/${slug}/quiz?mode=formula`,
-    gradient: "linear-gradient(135deg, #7f5af0 0%, #4cc9f0 100%)",
-    icon: (
-      <svg viewBox="0 0 24 24" className="feature-icon" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="4" y="3" width="16" height="18" rx="2" />
-        <path d="M8 8h8" />
-        <path d="M8 12h8" />
-        <path d="M8 16h5" />
-      </svg>
-    ),
-  },
-  {
-    title: "PW",
-    href: `/reasoning/${slug}/quiz?mode=mixed`,
-    gradient: "linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%)",
-    icon: (
-      <svg viewBox="0 0 24 24" className="feature-icon" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 3a9 9 0 1 0 9 9" />
-        <path d="M12 12l5-5" />
-      </svg>
-    ),
-  },
-  {
-    title: "Selection Way",
-    href: `/reasoning/${slug}/quiz?mode=ai-challenge`,
-    gradient: "linear-gradient(135deg, #f97316 0%, #ec4899 100%)",
-    icon: (
-      <svg viewBox="0 0 24 24" className="feature-icon" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 2l2.4 4.86L20 8l-4 3.9.95 5.6L12 15l-4.95 2.5L8 11.9 4 8l5.6-1.14L12 2z" />
-      </svg>
-    ),
-  },
-  {
-    title: "Topic Mix",
-    href: `/reasoning/${slug}/quiz?mode=easy`,
-    gradient: "linear-gradient(135deg, #34d399 0%, #22c55e 100%)",
-    icon: (
-      <svg viewBox="0 0 24 24" className="feature-icon" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M4 7h16" />
-        <path d="M4 12h16" />
-        <path d="M4 17h16" />
-        <circle cx="8" cy="7" r="1.5" />
-        <circle cx="15" cy="12" r="1.5" />
-        <circle cx="11" cy="17" r="1.5" />
-      </svg>
-    ),
-  },
-  {
-    title: "Tier 2",
-    href: `/reasoning/${slug}/quiz?mode=hard`,
-    gradient: "linear-gradient(135deg, #f472b6 0%, #fb7185 100%)",
-    icon: (
-      <svg viewBox="0 0 24 24" className="feature-icon" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M21 12a9 9 0 1 1-2.64-6.36" />
-        <path d="M21 3v6h-6" />
-      </svg>
-    ),
-  },
+const IconBanner = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 2l1.8 5.6H20l-4.6 3.4 1.8 5.6L12 13.2 6.8 16.6l1.8-5.6L4 7.6h6.2z"/>
+  </svg>
+);
+
+/* Chevron — colour driven by CSS var so theme can override */
+const Chevron = ({ size = 7 }: { size?: number }) => (
+  <svg width={size} height={size * 1.7} viewBox="0 0 7 12" fill="none" className="sg-chev">
+    <path d="M1.5 1.5 6 6l-4.5 4.5"
+      stroke="currentColor" strokeWidth="1.8"
+      strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+/* Back icon */
+const IconBack = () => (
+  <svg viewBox="0 0 12 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M10 2L2 10l8 8"/>
+  </svg>
+);
+
+/* iOS badge classes */
+const badgeClasses = [
+  "bg-blue",
+  "bg-purple",
+  "bg-mustard",
+  "bg-scarlet",
+  "bg-teal",
+  "bg-orange",
 ];
 
 export default function ReasoningTopicPage({
@@ -108,703 +82,385 @@ export default function ReasoningTopicPage({
   slug,
   eyebrow = "Reasoning",
   bannerKicker,
+  bannerTitle,
   bannerSubtitle,
 }: ReasoningTopicPageProps) {
-  const featureCards = buildFeatureCards(slug);
-  const kickerText = bannerKicker ?? `${title} Sprint 2026`;
-  const headlineText = "Notes Formula & Tricks";
-  const subtitleText =
-    bannerSubtitle ??
-    "Practice logic, patterns, and speed to boost your reasoning score.";
+  const router = useRouter();
+
+  const modes = [
+    { title: "PYQ",          sub: "Previous year questions", href: `/reasoning/${slug}/quiz?mode=concept`,      Icon: IconPYQ    },
+    { title: "Pattern Bank", sub: "Core formulas",           href: `/reasoning/${slug}/quiz?mode=formula`,      Icon: IconPatternBank },
+    { title: "PW",           sub: "Mixed practice",          href: `/reasoning/${slug}/quiz?mode=mixed`,        Icon: IconPW   },
+    { title: "Selection",    sub: "AI challenge",            href: `/reasoning/${slug}/quiz?mode=ai-challenge`, Icon: IconSelection },
+    { title: "Topic Mix",    sub: "Easy questions",          href: `/reasoning/${slug}/quiz?mode=easy`,         Icon: IconTopicMix },
+    { title: "Tier 2",       sub: "Advanced level",          href: `/reasoning/${slug}/quiz?mode=hard`,         Icon: IconTier2   },
+  ];
+
+  const kickerText = bannerKicker ?? "Sprint 2026";
+  const headlineText = bannerTitle ?? "Notes, Formula & Tricks";
+  const subtitleText = bannerSubtitle ?? `Curated shortcuts to crack ${title}`;
 
   return (
-    <main className="reasoning-topic-page">
-      <div className="reasoning-container">
-        <header className="reasoning-header">
-          <p className="reasoning-eyebrow">{eyebrow}</p>
-          <h1 className="reasoning-title">{title}</h1>
-        </header>
-
-        <Link
-          href={`/reasoning/${slug}/formula-notes`}
-          className="promo-banner promo-banner-link"
-          aria-label={`Open ${title} notes, formulas, and tricks`}
-        >
-          <div className="banner-content">
-            <p className="banner-kicker">{kickerText}</p>
-            <h2>{headlineText}</h2>
-            <p className="banner-subtitle">{subtitleText}</p>
-          </div>
-
-          <div className="banner-illustration" aria-hidden="true">
-            <svg viewBox="0 0 120 120" className="rocket-svg" fill="none">
-              <circle cx="60" cy="60" r="38" stroke="rgba(255,255,255,0.35)" strokeWidth="2" />
-              <path d="M60 28l10 26h22l-18 14 7 23-21-14-21 14 7-23-18-14h22L60 28z" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-        </Link>
-
-        <section className="feature-section">
-          <h2>Explore Features</h2>
-          <p className="feature-subtitle">Pick a mode and begin your personalized practice flow.</p>
-
-          <div className="feature-grid">
-            {featureCards.map((card) => (
-              <FeatureCard key={card.title} {...card} />
-            ))}
-          </div>
-        </section>
-      </div>
-
+    <>
       <style>{`
-        .reasoning-topic-page {
-          min-height: 100vh;
-          background: #f6f7fb;
-          padding: 16px 14px 0;
-          font-family: "Poppins", "Segoe UI", sans-serif;
-          overflow-x: hidden;
-        }
+        @keyframes sg-up { from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)} }
+        @keyframes sg-in { from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)} }
 
-        .reasoning-container {
-          max-width: 1040px;
-          margin: 0 auto;
-          position: relative;
-          z-index: 1;
-          min-width: 0;
-        }
+        /* ════════════════════════════════════
+           DARK THEME (Mobile & Desktop Defaults)
+           ════════════════════════════════════ */
+        .sg-page {
+          --bg: #000000;
+          --card: #1C1C1E;
+          --card-2: #232326;
+          --sep: rgba(255,255,255,0.11);
+          --label: #FFFFFF;
+          --label-2: rgba(235,235,245,0.6);
+          --label-3: rgba(235,235,245,0.3);
+          --tint: #2E8F82;
+          --scarlet: #FF5B4D;
+          --mustard: #F0A82E;
+          --blue: #0A84FF;
+          --purple: #BF5AF2;
+          --green: #30D158;
+          --orange: #FF9F0A;
 
-        .reasoning-header {
-          margin: 4px 2px 12px;
-          animation: fade-slide 420ms ease both;
-        }
-
-        .reasoning-eyebrow {
-          margin: 0;
-          font-size: 0.76rem;
-          color: #6a7493;
-          letter-spacing: 0.08em;
-          font-weight: 600;
-          text-transform: uppercase;
-        }
-
-        .reasoning-title {
-          margin: 4px 0 0;
-          color: #202846;
-          font-size: clamp(1.4rem, 1.2rem + 1vw, 2rem);
-          line-height: 1.15;
-          font-weight: 700;
-          overflow-wrap: anywhere;
-        }
-
-        .promo-banner {
-          position: relative;
+          height: 100dvh;
           overflow: hidden;
-          border-radius: 24px;
-          padding: 22px 18px;
-          background: linear-gradient(135deg, #ff7aa2 0%, #ffb26b 100%);
-          box-shadow: 0 14px 32px rgba(255, 122, 162, 0.24);
-          display: grid;
-          grid-template-columns: 1fr auto;
-          gap: 14px;
-          margin-bottom: 22px;
-          animation: fade-slide 520ms ease both;
+          background: #050505;
+          color: var(--label);
+          font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", sans-serif;
+          -webkit-font-smoothing: antialiased;
+          padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px));
+          transition: background .25s ease, color .25s ease;
         }
 
-        .promo-banner-link {
-          color: inherit;
-          text-decoration: none;
+        /* Gradient backgrounds for badges */
+        .bg-blue { background: linear-gradient(150deg,#3d9bff,var(--blue)); color: white; }
+        .bg-purple { background: linear-gradient(150deg,#d17dff,var(--purple)); color: white; }
+        .bg-mustard { background: linear-gradient(150deg,#ffc257,var(--mustard)); color: white; }
+        .bg-scarlet { background: linear-gradient(150deg,#ff7a6e,var(--scarlet)); color: white; }
+        .bg-teal { background: linear-gradient(150deg,#41ab9d,var(--tint)); color: white; }
+        .bg-orange { background: linear-gradient(150deg,#ffb84d,var(--orange)); color: white; }
+
+        /* ── Sticky NavBar (iOS Reference) ── */
+        .sg-navbar {
+          position: sticky;
+          top: 0;
+          z-index: 10;
+          padding: max(env(safe-area-inset-top, 0px), 0px) 16px 0;
+          background: #000;
         }
-
-        .promo-banner-link:focus-visible {
-          outline: 2px solid rgba(255, 255, 255, 0.9);
-          outline-offset: 3px;
-        }
-
-        .promo-banner::before,
-        .promo-banner::after {
-          content: "";
-          position: absolute;
-          border-radius: 999px;
-          pointer-events: none;
-          background: rgba(255, 255, 255, 0.22);
-          filter: blur(0.4px);
-        }
-
-        .promo-banner::before {
-          width: 130px;
-          height: 130px;
-          top: -48px;
-          right: -26px;
-        }
-
-        .promo-banner::after {
-          width: 90px;
-          height: 90px;
-          bottom: -34px;
-          left: -22px;
-        }
-
-        .banner-content {
-          position: relative;
-          z-index: 1;
-          color: #fff;
-          min-width: 0;
-        }
-
-        .banner-kicker {
-          font-size: 0.78rem;
-          font-weight: 600;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          opacity: 0.9;
-          margin-bottom: 6px;
-        }
-
-        .banner-content h2 {
-          font-size: clamp(1.2rem, 2vw + 0.9rem, 2rem);
-          line-height: 1.2;
-          margin: 0 0 8px;
-          font-weight: 700;
-          overflow-wrap: anywhere;
-        }
-
-        .banner-subtitle {
-          font-size: 0.92rem;
-          line-height: 1.45;
-          opacity: 0.92;
-          max-width: 40ch;
-          margin: 0;
-          overflow-wrap: anywhere;
-        }
-
-        .banner-illustration {
-          width: 72px;
-          height: 72px;
-          border-radius: 20px;
-          background: rgba(255, 255, 255, 0.2);
-          border: 1px solid rgba(255, 255, 255, 0.4);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          align-self: center;
-          position: relative;
-          z-index: 1;
-          backdrop-filter: blur(3px);
-        }
-
-        .rocket-svg {
-          width: 44px;
-          height: 44px;
-        }
-
-        .feature-section h2 {
-          margin: 0;
-          color: #1f2a44;
-          font-weight: 650;
-          font-size: 1.1rem;
-          letter-spacing: 0.01em;
-          animation: fade-slide 620ms ease both;
-        }
-
-        .feature-subtitle {
-          margin: 6px 0 14px;
-          color: #68738f;
-          font-size: 0.9rem;
-          line-height: 1.4;
-          animation: fade-slide 680ms ease both;
-        }
-
-        .feature-grid {
-          display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 12px;
-        }
-
-        .feature-card {
-          position: relative;
-          border-radius: 18px;
-          aspect-ratio: 1 / 1;
-          min-height: 140px;
-          padding: 16px 10px;
-          text-decoration: none;
-          color: #fff;
-          box-shadow: 0 12px 22px rgba(76, 95, 179, 0.24);
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: 12px;
-          overflow: hidden;
-          transition: transform 0.26s ease, box-shadow 0.26s ease, filter 0.26s ease;
-          isolation: isolate;
-          animation: card-in 540ms ease both;
-        }
-
-        .feature-card:nth-child(1) { animation-delay: 80ms; }
-        .feature-card:nth-child(2) { animation-delay: 130ms; }
-        .feature-card:nth-child(3) { animation-delay: 180ms; }
-        .feature-card:nth-child(4) { animation-delay: 230ms; }
-        .feature-card:nth-child(5) { animation-delay: 280ms; }
-        .feature-card:nth-child(6) { animation-delay: 330ms; }
-
-        .feature-card::after {
-          content: "";
-          position: absolute;
-          width: 90px;
-          height: 90px;
-          border-radius: 999px;
-          top: -22px;
-          right: -22px;
-          background: rgba(255, 255, 255, 0.18);
-          z-index: 0;
-        }
-
-        .feature-glow {
-          position: absolute;
-          width: 120px;
-          height: 120px;
-          border-radius: 999px;
-          left: -24px;
-          bottom: -30px;
-          background: rgba(255, 255, 255, 0.15);
-          filter: blur(2px);
-          z-index: 0;
-        }
-
-        .feature-icon-wrap {
-          width: 56px;
+        .sg-nav-inline {
           height: 56px;
-          border-radius: 16px;
-          border: 1px solid rgba(255, 255, 255, 0.35);
-          background: rgba(255, 255, 255, 0.16);
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          display: flex; align-items: center; justify-content: center;
           position: relative;
-          z-index: 1;
+          margin: 0 -16px; padding: 0 16px;
+          border-bottom: 1px solid rgba(255,255,255,0.14);
+        }
+        .sg-back {
+          display: flex; align-items: center; color: var(--label);
+          position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+          background: transparent; border: none; padding: 10px; cursor: pointer;
+        }
+        .sg-back svg { width: 16px; height: 26px; }
+        .sg-nav-title {
+          font-size: 17px; font-weight: 600; letter-spacing: -0.2px;
+          margin: 0; color: var(--label);
         }
 
-        .feature-icon {
-          width: 30px;
-          height: 30px;
-          color: #ffffff;
+        /* ── Banner (iOS feature card style) ── */
+        .sg-banner-wrap {
+          padding: 16px 16px 8px;
+          animation: sg-in .38s cubic-bezier(.22,1,.36,1) both .06s;
+        }
+        .sg-banner {
+          background: linear-gradient(160deg, #1d2b29, #17211f 60%, #14201d);
+          border-radius: 20px;
+          padding: 16px;
+          display: flex; align-items: center; gap: 14px;
+          margin: 6px 0 28px;
+          border: 0.5px solid rgba(255,255,255,0.08);
+          text-decoration: none;
+          -webkit-tap-highlight-color: transparent;
+          transition: transform .1s, opacity .1s, background .25s, border-color .25s, box-shadow .25s;
+        }
+        .sg-banner:active { transform: scale(.977); opacity: .9; }
+        .sg-banner-icon {
+          width: 48px; height: 48px; border-radius: 13px; flex-shrink: 0;
+          background: linear-gradient(155deg, #38a294, #1f6d61);
+          display: flex; align-items: center; justify-content: center;
+          box-shadow: inset 0 1px 1px rgba(255,255,255,0.25);
+          color: white;
+        }
+        .sg-banner-icon svg { width: 24px; height: 24px; }
+        .sg-banner-body { flex: 1; min-width: 0; }
+        .sg-banner-kicker {
+          font-size: 11px; font-weight: 700; color: var(--tint);
+          letter-spacing: 0.4px; text-transform: uppercase; margin-bottom: 2px;
+        }
+        .sg-banner-title {
+          font-size: 16px; font-weight: 700; margin: 0 0 2px;
+          letter-spacing: -0.2px; color: var(--label);
+        }
+        .sg-banner-sub {
+          font-size: 13px; color: var(--label-2); margin: 0;
+        }
+        .sg-banner-arr { flex-shrink: 0; color: var(--label-3); display: flex; align-items: center; }
+
+        /* ── Section label ── */
+        .sg-section {
+          font-size: 13px; font-weight: 600; color: var(--label-2);
+          text-transform: uppercase; letter-spacing: 0.3px;
+          padding: 0 20px 8px;
+          animation: sg-up .34s ease both .1s;
         }
 
-        .feature-title {
-          margin: 0;
-          font-size: 0.94rem;
-          font-weight: 600;
-          letter-spacing: 0.01em;
-          text-align: center;
-          max-width: calc(100% - 16px);
-          position: relative;
-          z-index: 1;
-        }
-
-        .feature-card:hover {
-          transform: translateY(-4px) scale(1.03);
-          box-shadow: 0 18px 30px rgba(70, 88, 166, 0.34);
-          filter: saturate(1.05);
-        }
-
-        .feature-card:focus-visible {
-          outline: 2px solid rgba(255, 255, 255, 0.8);
-          outline-offset: 2px;
-        }
-
-        body.theme-dark {
-          background: #050713;
-        }
-
-        body.theme-dark .reasoning-topic-page {
-          color: #f8fbff;
-          background:
-            radial-gradient(ellipse at 16% 8%, rgba(118, 92, 255, 0.34) 0%, transparent 36%),
-            radial-gradient(ellipse at 88% 28%, rgba(224, 73, 161, 0.18) 0%, transparent 34%),
-            radial-gradient(ellipse at 38% 84%, rgba(42, 179, 198, 0.14) 0%, transparent 34%),
-            linear-gradient(155deg, #08091b 0%, #16133a 38%, #28215d 68%, #111229 100%);
-          padding: 20px 20px 40px;
-          position: relative;
+        /* ── MOBILE LIST (iOS Grouped Style) ── */
+        .sg-grid {
+          background: var(--card);
+          border-radius: 14px;
           overflow: hidden;
+          margin: 0 16px 28px;
+          display: flex; flex-direction: column;
+          animation: sg-up .38s ease both .14s;
         }
 
-        body.theme-dark .reasoning-topic-page::before,
-        body.theme-dark .reasoning-topic-page::after {
+        /* ── MOBILE LIST ROW ── */
+        .sg-card {
+          display: flex; align-items: center; gap: 12px;
+          padding: 11px 14px;
+          position: relative;
+          text-decoration: none;
+          -webkit-tap-highlight-color: transparent;
+          transition: background .12s;
+        }
+        .sg-card:not(:last-child)::after {
           content: "";
-          position: fixed;
-          border-radius: 999px;
-          pointer-events: none;
-          filter: blur(18px);
-          opacity: 0.8;
+          position: absolute; left: 52px; right: 0; bottom: 0;
+          height: 0.5px; background: var(--sep);
+        }
+        .sg-card:active { background: rgba(255,255,255,0.06); }
+        
+        .sg-badge {
+          width: 29px; height: 29px; border-radius: 7.5px; flex-shrink: 0;
+          display: flex; align-items: center; justify-content: center;
+          box-shadow: inset 0 1px 0.5px rgba(255,255,255,0.3);
+        }
+        .sg-badge svg { width: 16px; height: 16px; }
+        
+        .sg-card-bottom {
+          flex: 1; min-width: 0;
+          display: flex; flex-direction: column;
+        }
+        .sg-card-name {
+          font-size: 16px; font-weight: 590; letter-spacing: -0.2px; margin: 0;
+          color: var(--label);
+        }
+        .sg-card-sub {
+          font-size: 13px; color: var(--label-2); margin: 1px 0 0;
+        }
+        
+        .sg-card-chev {
+          color: var(--label-3); flex-shrink: 0;
+          display: flex; align-items: center;
         }
 
-        body.theme-dark .reasoning-topic-page::before {
-          width: 220px;
-          height: 220px;
-          left: -90px;
-          top: 130px;
-          background: rgba(59, 130, 246, 0.18);
+        /* ════════════════════════════════════
+           iOS LIGHT THEME OVERRIDES
+           Triggered by body.theme-light
+           ════════════════════════════════════ */
+        body.theme-light .sg-page {
+          --bg: #f2f2f7;
+          --card: #ffffff;
+          --card-2: #f2f2f7;
+          --sep: rgba(60,60,67,0.29);
+          --label: #000000;
+          --label-2: rgba(60,60,67,0.6);
+          --label-3: rgba(60,60,67,0.3);
+          background: var(--bg);
+        }
+        body.theme-light .sg-navbar { background: #fff; }
+        body.theme-light .sg-nav-inline { border-bottom-color: rgba(0,0,0,0.1); }
+        body.theme-light .sg-card:active { background: rgba(0,0,0,0.05); }
+        body.theme-light .sg-banner {
+          background: #ffffff;
+          border-color: rgba(0,0,0,0.06);
+          box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+        }
+        body.theme-light .sg-notes-btn {
+          background: #ffffff;
+          border-color: rgba(0,0,0,0.1);
+          box-shadow: 0 1px 4px rgba(0,0,0,0.04);
         }
 
-        body.theme-dark .reasoning-topic-page::after {
-          width: 260px;
-          height: 260px;
-          right: -120px;
-          bottom: 10%;
-          background: rgba(168, 85, 247, 0.18);
-        }
-
-        body.theme-dark .reasoning-eyebrow {
-          color: rgba(199, 210, 254, 0.72);
-          font-size: 0.9rem;
-          letter-spacing: 0.32em;
-          font-weight: 500;
-        }
-
-        body.theme-dark .reasoning-title,
-        body.theme-dark .feature-section h2 {
-          color: #f8fbff;
-          text-shadow: 0 1px 18px rgba(129, 140, 248, 0.18);
-          font-weight: 800;
-          letter-spacing: -0.01em;
-        }
-
-        body.theme-dark .reasoning-title {
-          margin-top: 14px;
-          font-size: clamp(2.35rem, 8vw, 4.6rem);
-          line-height: 0.98;
-        }
-
-        body.theme-dark .reasoning-header {
-          margin: 0 0 72px;
-        }
-
-        body.theme-dark .feature-section h2 {
-          font-size: clamp(1.85rem, 5.8vw, 3rem);
-          line-height: 1.02;
-        }
-
-        body.theme-dark .feature-subtitle {
-          color: rgba(214, 220, 255, 0.78);
-          font-size: clamp(1.05rem, 3.5vw, 1.55rem);
-          line-height: 1.45;
-          margin: 18px 0 28px;
-        }
-
-        body.theme-dark .promo-banner {
-          margin-bottom: 76px;
-          padding: clamp(30px, 7vw, 70px) clamp(26px, 6vw, 68px);
-          min-height: clamp(190px, 38vw, 310px);
-          border-radius: clamp(34px, 7vw, 72px);
-          background: linear-gradient(135deg, rgba(92, 87, 148, 0.74) 0%, rgba(72, 67, 132, 0.72) 100%) !important;
-          border: 1px solid rgba(205, 210, 255, 0.18);
-          box-shadow:
-            0 24px 60px rgba(5, 5, 24, 0.34),
-            inset 0 1px 0 rgba(255, 255, 255, 0.16);
-          backdrop-filter: blur(22px) saturate(150%);
-          -webkit-backdrop-filter: blur(22px) saturate(150%);
-        }
-
-        body.theme-dark .promo-banner::before,
-        body.theme-dark .promo-banner::after {
-          display: none;
-        }
-
-        body.theme-dark .banner-kicker {
-          color: rgba(201, 210, 255, 0.86);
-          font-size: clamp(0.82rem, 2.6vw, 1.45rem);
-          letter-spacing: 0.32em;
-          font-weight: 600;
-          margin-bottom: 28px;
-        }
-
-        body.theme-dark .banner-content h2 {
-          font-size: clamp(2rem, 5vw, 4.1rem);
-          line-height: 1.02;
-          font-weight: 800;
-          letter-spacing: -0.02em;
-          margin-bottom: 26px;
-        }
-
-        body.theme-dark .banner-subtitle {
-          color: rgba(238, 241, 255, 0.72);
-          font-size: clamp(1.15rem, 3.8vw, 2.2rem);
-          line-height: 1.45;
-          max-width: 22ch;
-        }
-
-        body.theme-dark .feature-card {
-          aspect-ratio: 1.08 / 1;
-          min-height: 174px;
-          border-radius: clamp(28px, 6vw, 58px);
-          border: 1px solid rgba(150, 157, 255, 0.16);
-          box-shadow:
-            0 28px 58px rgba(4, 5, 22, 0.48),
-            0 10px 24px rgba(87, 76, 178, 0.16),
-            inset 0 1px 0 rgba(255, 255, 255, 0.16),
-            inset 0 -1px 0 rgba(5, 7, 24, 0.26);
-          gap: 28px;
-        }
-
-        body.theme-dark .feature-card::before {
-          content: "";
-          position: absolute;
-          inset: 0;
-          border-radius: inherit;
-          background: linear-gradient(180deg, rgba(255, 255, 255, 0.14), transparent 44%);
-          opacity: 0.78;
-          pointer-events: none;
-          z-index: 0;
-        }
-
-        body.theme-dark .feature-card::after,
-        body.theme-dark .feature-glow {
-          display: none;
-        }
-
-        body.theme-dark .feature-card:nth-child(1) {
-          background: linear-gradient(135deg, rgba(166, 48, 127, 0.74), rgba(99, 42, 119, 0.76)) !important;
-        }
-
-        body.theme-dark .feature-card:nth-child(2) {
-          background: linear-gradient(135deg, rgba(82, 83, 178, 0.78), rgba(45, 51, 133, 0.82)) !important;
-        }
-
-        body.theme-dark .feature-card:nth-child(3) {
-          background: linear-gradient(135deg, rgba(39, 131, 155, 0.78), rgba(27, 62, 112, 0.86)) !important;
-        }
-
-        body.theme-dark .feature-card:nth-child(4) {
-          background: linear-gradient(135deg, rgba(179, 132, 57, 0.72), rgba(81, 53, 57, 0.84)) !important;
-        }
-
-        body.theme-dark .feature-card:nth-child(5) {
-          background: linear-gradient(135deg, rgba(41, 145, 105, 0.72), rgba(37, 96, 102, 0.82)) !important;
-        }
-
-        body.theme-dark .feature-card:nth-child(6) {
-          background: linear-gradient(135deg, rgba(172, 80, 134, 0.72), rgba(110, 66, 129, 0.82)) !important;
-        }
-
-        body.theme-dark .feature-card:hover {
-          box-shadow:
-            0 24px 46px rgba(2, 6, 23, 0.58),
-            0 0 0 1px rgba(255, 255, 255, 0.12),
-            inset 0 1px 0 rgba(255, 255, 255, 0.28);
-        }
-
-        body.theme-dark .feature-icon-wrap,
-        body.theme-dark .banner-illustration {
-          background: linear-gradient(180deg, rgba(210, 216, 255, 0.22), rgba(184, 190, 246, 0.09));
-          border-color: rgba(219, 224, 255, 0.2);
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.22),
-            0 14px 32px rgba(8, 8, 28, 0.18);
-          backdrop-filter: blur(18px) saturate(150%);
-          -webkit-backdrop-filter: blur(18px) saturate(150%);
-        }
-
-        body.theme-dark .feature-icon-wrap {
-          width: clamp(76px, 17vw, 150px);
-          height: clamp(76px, 17vw, 150px);
-          border-radius: clamp(24px, 5vw, 42px);
-        }
-
-        body.theme-dark .feature-icon {
-          width: clamp(34px, 7vw, 62px);
-          height: clamp(34px, 7vw, 62px);
-        }
-
-        body.theme-dark .feature-title {
-          font-size: clamp(1.25rem, 4.2vw, 2.3rem);
-          line-height: 1.05;
-          font-weight: 800;
-        }
-
-        body.theme-dark .banner-illustration {
-          width: clamp(76px, 15vw, 142px);
-          height: clamp(76px, 15vw, 142px);
-          border-radius: clamp(24px, 5vw, 42px);
-        }
-
-        body.theme-dark .rocket-svg {
-          width: clamp(42px, 8vw, 80px);
-          height: clamp(42px, 8vw, 80px);
-        }
-
-        body.theme-dark .feature-grid {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: clamp(20px, 4vw, 38px);
-        }
-
-        @media (max-width: 540px) {
-          body.theme-dark .reasoning-topic-page {
-            padding: 14px 14px 24px;
+        /* ════════════════════════════════════
+           DESKTOP (PC) LAYOUT
+           ════════════════════════════════════ */
+        @media (min-width: 900px) {
+          .sg-page {
+            height: auto;
+            min-height: 100dvh;
+            overflow: visible;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
           }
-
-          body.theme-dark .reasoning-header {
-            margin-bottom: 22px;
-          }
-
-          body.theme-dark .reasoning-title {
-            font-size: clamp(1.8rem, 8vw, 2.2rem);
-            margin-top: 8px;
-          }
-
-          body.theme-dark .promo-banner {
-            min-height: 164px;
-            margin-bottom: 26px;
-            padding: 20px 18px;
-            border-radius: 24px;
-            gap: 10px;
-          }
-
-          body.theme-dark .banner-kicker {
-            font-size: 0.66rem;
-            margin-bottom: 12px;
-            letter-spacing: 0.24em;
-          }
-
-          body.theme-dark .banner-content h2 {
-            font-size: clamp(1.35rem, 6.6vw, 1.75rem);
-            margin-bottom: 12px;
-          }
-
-          body.theme-dark .banner-subtitle {
-            font-size: 0.84rem;
-            line-height: 1.32;
-            max-width: 20ch;
-          }
-
-          body.theme-dark .banner-illustration {
-            width: 58px;
-            height: 58px;
-            border-radius: 18px;
-          }
-
-          body.theme-dark .rocket-svg {
-            width: 34px;
-            height: 34px;
-          }
-
-          body.theme-dark .feature-section h2 {
-            font-size: 1.35rem;
-          }
-
-          body.theme-dark .feature-subtitle {
-            font-size: 0.84rem;
-            line-height: 1.32;
-            margin: 8px 0 14px;
-          }
-
-          body.theme-dark .feature-grid {
-            grid-template-columns: 1fr;
-            gap: 12px;
-          }
-
-          body.theme-dark .feature-card {
-            aspect-ratio: auto;
-            min-height: 88px;
+          .sg-desktop-container {
+            display: flex;
             flex-direction: row;
-            justify-content: flex-start;
-            border-radius: 22px;
-            gap: 14px;
-            padding: 16px 18px;
-            box-shadow:
-              0 16px 30px rgba(4, 5, 22, 0.46),
-              0 8px 18px rgba(87, 76, 178, 0.18),
-              inset 0 1px 0 rgba(255, 255, 255, 0.18),
-              inset 0 -1px 0 rgba(5, 7, 24, 0.28);
+            align-items: stretch;
+            gap: 60px;
+            max-width: 1080px;
+            width: 100%;
+            margin: 0 auto;
+          }
+          .sg-left-pane {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+          }
+          .sg-right-pane {
+            flex: 1.4;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+          }
+          
+          /* Change the navbar for desktop since sticky doesn't make sense in this centered pane layout */
+          .sg-navbar {
+            position: relative; padding: 0 0 32px 0; background: transparent;
+            z-index: 1;
+          }
+          .sg-nav-inline {
+            border-bottom: none; justify-content: flex-start; height: auto; margin: 0; padding: 0;
+          }
+          .sg-back { display: none; }
+          .sg-nav-title {
+            font-size: 2.2rem; font-weight: 800; letter-spacing: -0.04em;
+          }
+          
+          .sg-banner-wrap { padding: 0; }
+          .sg-banner { margin: 0; }
+          .sg-section { padding: 0; margin-bottom: 20px; }
+          
+          /* Revert list-card back to grid */
+          .sg-grid {
+            background: transparent;
+            border-radius: 0;
+            margin: 0;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            overflow: visible;
+          }
+          
+          /* Revert list-row back to sg-card */
+          .sg-card {
+            border-radius: 18px;
+            background: var(--card);
+            border: 0.5px solid rgba(255,255,255,0.07);
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: stretch;
+            padding: 13px;
+            height: 154px;
+            transition: transform 0.12s ease, background 0.15s, border-color 0.25s, box-shadow 0.25s;
+          }
+          .sg-card:not(:last-child)::after { display: none; }
+          .sg-card:active { transform: scale(0.93); background: var(--card-2); }
+          .sg-card::after {
+            content: '';
+            position: absolute; inset: 0; border-radius: inherit;
+            background: linear-gradient(175deg,rgba(255,255,255,0.04) 0%,transparent 50%);
+            pointer-events: none;
+            transition: background 0.25s;
+          }
+          
+          .sg-badge {
+            width: 42px; height: 42px; border-radius: 12px;
+          }
+          .sg-badge svg { width: 22px; height: 22px; }
+          
+          .sg-card-bottom {
+            flex: none; display: block;
+          }
+          .sg-card-name { font-size: 0.97rem; font-weight: 700; margin-bottom: 0px; }
+          .sg-card-sub { font-size: 0.7rem; margin-top: 3px; }
+          
+          /* Position chevron at top right on desktop */
+          .sg-card-chev {
+            position: absolute;
+            top: 15px;
+            right: 15px;
           }
 
-          body.theme-dark .feature-icon-wrap {
-            flex: 0 0 50px;
-            width: 50px;
-            height: 50px;
-            border-radius: 16px;
+          /* Desktop Light Theme specific overrides */
+          body.theme-light .sg-navbar { background: transparent; }
+          body.theme-light .sg-card {
+            border-color: rgba(0,0,0,0.06);
+            box-shadow: 0 1px 8px rgba(0,0,0,0.06);
           }
-
-          body.theme-dark .feature-icon {
-            width: 25px;
-            height: 25px;
-          }
-
-          body.theme-dark .feature-title {
-            font-size: 0.9rem;
-            line-height: 1.15;
-            max-width: none;
-            text-align: left;
-          }
-        }
-
-        @media (max-width: 340px) {
-          body.theme-dark .reasoning-topic-page {
-            padding-left: 10px;
-            padding-right: 10px;
-          }
-
-          body.theme-dark .feature-grid {
-            grid-template-columns: 1fr;
-            gap: 12px;
-          }
-
-          body.theme-dark .feature-card {
-            min-height: 88px;
-            padding: 16px 18px;
-          }
-
-          body.theme-dark .feature-icon-wrap {
-            flex: 0 0 48px;
-            width: 48px;
-            height: 48px;
-          }
-
-          body.theme-dark .feature-title {
-            max-width: none;
-            text-align: left;
-          }
-        }
-
-        @keyframes fade-slide {
-          from {
-            opacity: 0;
-            transform: translateY(8px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes card-in {
-          from {
-            opacity: 0;
-            transform: translateY(10px) scale(0.97);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-        }
-
-        @media (min-width: 640px) {
-          .reasoning-topic-page {
-            padding: 26px 20px 44px;
-          }
-
-          .reasoning-header {
-            margin-bottom: 16px;
-          }
-
-          .promo-banner {
-            padding: 26px 24px;
-          }
-
-          .feature-grid {
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+          body.theme-light .sg-card::after {
+            background: linear-gradient(175deg,rgba(255,255,255,0.8) 0%,transparent 50%);
           }
         }
       `}</style>
-    </main>
+
+      <div className="sg-page page">
+        <div className="sg-navbar">
+          <div className="sg-nav-inline">
+            <button className="sg-back" onClick={() => router.back()} aria-label="Go back">
+              <IconBack />
+            </button>
+            <h1 className="sg-nav-title">{title}</h1>
+          </div>
+        </div>
+        
+        <div className="sg-desktop-container">
+          
+          <div className="sg-left-pane">
+            {/* BANNER */}
+            <div className="sg-banner-wrap">
+              <Link href={`/reasoning/${slug}/formula-notes`} className="sg-banner">
+                <div className="sg-banner-icon"><IconBanner /></div>
+                <div className="sg-banner-body">
+                  <div className="sg-banner-kicker">{kickerText}</div>
+                  <div className="sg-banner-title">{headlineText}</div>
+                  <div className="sg-banner-sub">{subtitleText}</div>
+                </div>
+                <div className="sg-banner-arr"><Chevron size={8} /></div>
+              </Link>
+            </div>
+          </div>
+
+          <div className="sg-right-pane">
+            {/* SECTION LABEL */}
+            <div className="sg-section">Practice Modes</div>
+
+            {/* CARD GRID / LIST */}
+            <div className="sg-grid">
+              {modes.map((m, i) => (
+                <Link key={m.title} href={m.href} className="sg-card">
+                  <div className={`sg-badge ${badgeClasses[i]}`}>
+                    <m.Icon />
+                  </div>
+                  <div className="sg-card-bottom">
+                    <div className="sg-card-name">{m.title}</div>
+                    <div className="sg-card-sub">{m.sub}</div>
+                  </div>
+                  <div className="sg-card-chev">
+                    <Chevron size={8} />
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </>
   );
 }
