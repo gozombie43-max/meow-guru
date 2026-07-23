@@ -126,7 +126,8 @@ export default function ReasoningTopicPage({
           --orange: #FF9F0A;
 
           height: 100dvh;
-          overflow: hidden;
+          overflow-y: auto;
+          overflow-x: hidden;
           background: #050505;
           color: var(--label);
           font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", sans-serif;
