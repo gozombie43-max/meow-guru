@@ -764,12 +764,13 @@ function SeriesConceptStart({
   groups,
   category,
   categoryCounts,
-  search,
+  examFilter,
+  examOptions,
   selected,
   conceptCount,
   questionCount,
   onCategoryChange,
-  onSearchChange,
+  onExamChange,
   onToggleGroup,
   onStart,
 }: {
@@ -778,12 +779,13 @@ function SeriesConceptStart({
   groups: ClassificationGroup[];
   category: string;
   categoryCounts: Record<string, number>;
-  search: string;
+  examFilter: string;
+  examOptions: string[];
   selected: Set<string>;
   conceptCount: number;
   questionCount: number;
   onCategoryChange: (category: string) => void;
-  onSearchChange: (search: string) => void;
+  onExamChange: (exam: string) => void;
   onToggleGroup: (concepts: string[]) => void;
   onStart: () => void;
 }) {
@@ -832,22 +834,31 @@ function SeriesConceptStart({
       </aside>
 
       <main className="series-concept-content">
-        <label className="series-concept-search">
-          <Search aria-hidden="true" />
-          <input
-            type="search"
-            value={search}
-            onChange={(event) => onSearchChange(event.target.value)}
-            placeholder="Search concepts"
-          />
-          {search && (
-            <button type="button" onClick={() => onSearchChange("")} aria-label="Clear search">
-              <X aria-hidden="true" />
-            </button>
-          )}
-        </label>
+        <p className="series-concept-heading">Select Exam Target</p>
+        <div className="series-dropdown-container mb-6">
+          <div className="series-dropdown-row">
+            <span className="series-concept-tile" style={{ background: "rgba(124, 108, 240, 0.15)", color: "var(--series-accent)" }}>
+              <Target aria-hidden="true" className="w-4 h-4" />
+            </span>
+            <span className="series-dropdown-label">Exam Name</span>
+            <div className="series-select-wrapper">
+              <select
+                value={examFilter || "all"}
+                onChange={(e) => onExamChange(e.target.value === "all" ? "" : e.target.value)}
+                className="series-dropdown-select"
+              >
+                {examOptions.map((ex) => (
+                  <option key={ex} value={ex === "all" ? "all" : ex}>
+                    {ex === "all" ? "All Exams" : ex}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="series-select-chevron" />
+            </div>
+          </div>
+        </div>
 
-        <div className="series-concept-chips" aria-label="Concept category filters">
+        <div className="series-concept-chips mb-4" aria-label="Concept category filters">
           <button
             type="button"
             className={category === "All" ? "active" : ""}
@@ -901,7 +912,7 @@ function SeriesConceptStart({
             );
           })}
           {groups.length === 0 && (
-            <p className="series-concept-empty">No concept groups match &quot;{search}&quot;.</p>
+            <p className="series-concept-empty">No concept groups found.</p>
           )}
         </section>
       </main>
@@ -922,12 +933,14 @@ function SeriesConceptStart({
         .series-concept-back { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; color: var(--series-accent); }
         .series-concept-back :global(svg) { width: 23px; height: 23px; stroke-width: 2.3; }
         .series-concept-content { width: min(100%, 430px); margin: 0 auto; padding: 12px 16px 24px; }
-        .series-concept-search { height: 36px; display: flex; align-items: center; gap: 7px; padding: 0 10px; border-radius: 10px; background: var(--series-field); color: var(--series-subtle); }
-        .series-concept-search :global(svg) { width: 16px; height: 16px; flex: 0 0 auto; }
-        .series-concept-search input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--series-ink); font: inherit; font-size: 17px; }
-        .series-concept-search input::placeholder { color: var(--series-subtle); }
-        .series-concept-search button { display: grid; place-items: center; width: 24px; height: 24px; border: 0; border-radius: 50%; background: var(--series-field); color: var(--series-muted); }
-        .series-concept-search button :global(svg) { width: 13px; height: 13px; }
+        .series-dropdown-container { overflow: hidden; border-radius: 12px; background: var(--series-card); border: 1px solid var(--series-separator); }
+        .series-dropdown-row { position: relative; display: flex; align-items: center; gap: 12px; padding: 12px 16px; min-height: 56px; width: 100%; box-sizing: border-box; }
+        .series-dropdown-label { font-size: 15px; font-weight: 600; color: var(--series-ink); white-space: nowrap; flex-shrink: 0; }
+        .series-select-wrapper { position: relative; display: flex; align-items: center; margin-left: auto; min-width: 0; max-width: calc(100% - 140px); }
+        .series-dropdown-select { appearance: none; -webkit-appearance: none; background: var(--series-field); color: var(--series-accent); font-size: 14px; font-weight: 600; padding: 8px 30px 8px 12px; border-radius: 10px; border: 1px solid var(--series-separator); outline: none; cursor: pointer; transition: all 0.15s ease; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; max-width: 100%; box-sizing: border-box; }
+        .series-dropdown-select option { background: var(--series-card); color: var(--series-ink); }
+        .series-dropdown-select:focus { border-color: var(--series-accent); }
+        .series-select-chevron { position: absolute; right: 10px; width: 14px; height: 14px; color: var(--series-accent); pointer-events: none; }
         .series-concept-chips { display: flex; gap: 10px; overflow-x: auto; padding: 12px 2px 16px; margin: 0 -2px; scrollbar-width: none; }
         .series-concept-chips::-webkit-scrollbar { display: none; }
         .series-concept-chips button { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 8px; border: 0; border-radius: 999px; background: var(--series-field); padding: 8px 16px; color: var(--series-ink); font-size: 15px; font-weight: 700; white-space: nowrap; transition: all 0.15s ease; cursor: pointer; }
@@ -970,7 +983,7 @@ function SeriesConceptStart({
           .series-concept-aside dt { color: var(--series-muted); font-size: 12px; }
           .series-concept-aside dd { margin: 0; color: var(--series-ink); font-size: 22px; font-weight: 700; }
           .series-concept-content { grid-column: 2; grid-row: 2; width: 100%; margin: 0; padding: 58px 44px 72px; }
-          .series-concept-search { height: 42px; }
+
           .series-concept-chips { padding: 18px 2px 22px; }
           .series-concept-heading { margin-left: 0; }
           .series-concept-list { border: 1px solid var(--series-separator); border-radius: 8px; }
@@ -3690,12 +3703,13 @@ export default function ReasoningQuizEngine({
           groups={classificationGroups}
           category={classificationCategory}
           categoryCounts={classificationCategoryCounts}
-          search={classificationSearch}
+          examFilter={examFilter}
+          examOptions={examOptions}
           selected={selectedClassificationConcepts}
           conceptCount={conceptOptions.length}
           questionCount={availableCount}
           onCategoryChange={setClassificationCategory}
-          onSearchChange={setClassificationSearch}
+          onExamChange={setExamFilter}
           onToggleGroup={(concepts) => {
             const allSelected = concepts.every((concept) =>
               selectedClassificationConcepts.has(concept)
