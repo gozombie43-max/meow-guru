@@ -4481,11 +4481,12 @@ export default function ReasoningQuizEngine({
             font-family: "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
           }
           .ios-series-device {
-            min-height: 100svh;
+            height: 100svh;
+            display: flex;
+            flex-direction: column;
             max-width: 430px;
             margin: 0 auto;
             background: radial-gradient(120% 50% at 50% -10%, rgba(94, 92, 230, .17), transparent 58%), #000;
-            padding-bottom: 112px;
           }
           .ios-series-header { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:calc(env(safe-area-inset-top) + 12px) 16px 14px; border-bottom:1px solid rgba(255,255,255,.09); }
           .ios-series-icon-button { width:36px; height:36px; display:grid; place-items:center; padding:0; border:1px solid rgba(255,255,255,.09); border-radius:11px; color:#f2f2f7; background:#1c1c1e; cursor:pointer; }
@@ -4498,7 +4499,7 @@ export default function ReasoningQuizEngine({
           .ios-series-question.is-current { border-color:transparent; color:#fff; background:linear-gradient(135deg,#5e5ce6,#bf5af2); box-shadow:0 4px 14px -2px rgba(94,92,230,.55); }
           .ios-series-question.is-answered { border-color:rgba(48,209,88,.55); color:#86efac; }
           .ios-series-question.is-wrong { border-color:rgba(255,69,58,.6); color:#ff9f9a; }
-          .ios-series-content { padding:18px 16px 8px; }
+          .ios-series-content { flex: 1; overflow-y: auto; padding: 18px 16px 8px; }
           .ios-series-meta-row { display:flex; align-items:center; gap:9px; min-width:0; margin-bottom:16px; color:rgba(235,235,245,.42); font-size:12px; font-weight:600; }
           .ios-series-meta-row > span { flex: 1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
           .ios-series-quiz .concept-badge { flex:none; border-radius:8px; padding:6px 10px; letter-spacing:0; }
@@ -4529,7 +4530,7 @@ export default function ReasoningQuizEngine({
           .ios-series-ai-btn { width:100%; min-width:0; min-height:46px; border:1px solid #14b8a6; border-radius:14px; background:transparent; color:#5eead4; font:inherit; font-size:14px; font-weight:700; cursor:pointer; }
           .ios-series-ai-btn:active { opacity:0.8; }
           .ios-series-error { margin:12px 2px 0; color:#ff9f9a; font-size:13px; font-weight:600; }
-          .ios-series-footer { position:fixed; z-index:30; right:0; bottom:0; left:0; display:grid; grid-template-columns:1fr 1fr; gap:10px; max-width:430px; margin:auto; padding:14px 16px calc(env(safe-area-inset-bottom) + 14px); background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.94) 25%,#000); }
+          .ios-series-footer { z-index:30; display:grid; grid-template-columns:1fr 1fr; gap:10px; width:100%; max-width:430px; margin:0 auto; padding:14px 16px calc(env(safe-area-inset-bottom) + 14px); background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.94) 25%,#000); flex-shrink: 0; }
           .ios-series-footer button { min-width:0; height:52px; border-radius:16px; font:inherit; font-size:16px; font-weight:700; cursor:pointer; }
           .ios-series-footer button:disabled { opacity:.42; cursor:not-allowed; }
           .ios-series-footer-secondary { border:1px solid rgba(255,255,255,.14); background:#1c1c1e; color:#f2f2f7; }
@@ -4646,7 +4647,7 @@ export default function ReasoningQuizEngine({
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-6xl px-3 pb-[160px] pt-3 sm:px-6 sm:pb-[110px] sm:pt-4 lg:max-w-[1150px] lg:px-8 lg:pb-10">
+      <main className="mx-auto w-full max-w-6xl px-3 pt-3 sm:px-6 sm:pt-4 lg:max-w-[1150px] lg:px-8 lg:pb-10 flex-1">
         <div className="lg:flex lg:items-start lg:justify-center lg:gap-8 lg:pt-8 xl:gap-10">
           <div className="min-w-0 lg:max-w-[720px] lg:flex-1">
             <section className="mb-3 flex items-center justify-between gap-3 lg:hidden">
@@ -5032,7 +5033,7 @@ export default function ReasoningQuizEngine({
       )}
 
       <div
-        className="fixed bottom-0 left-0 right-0 z-50 border-t backdrop-blur-md lg:hidden"
+        className="sticky bottom-0 z-50 border-t backdrop-blur-md lg:hidden"
         style={{ background: "var(--quiz-footer-bg)", borderColor: "var(--quiz-border)" }}
       >
         <div
