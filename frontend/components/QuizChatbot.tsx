@@ -29,6 +29,7 @@ interface QuizChatbotProps {
   questionNumber: number;
   topicTitle: string;
   question?: QuizChatbotQuestion;
+  theme?: string;
   renderTrigger?: (onClick: () => void) => React.ReactNode;
 }
 
@@ -246,10 +247,18 @@ export default function QuizChatbot({
   questionNumber,
   topicTitle,
   question,
+  theme,
   renderTrigger,
 }: QuizChatbotProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [isDark, setIsDark] = useState(false);
+  const [isDark, setIsDark] = useState(theme === "dark");
+
+  useEffect(() => {
+    if (theme) {
+      setIsDark(theme === "dark");
+    }
+  }, [theme]);
+
   const [isChatView, setIsChatView] = useState(false);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);

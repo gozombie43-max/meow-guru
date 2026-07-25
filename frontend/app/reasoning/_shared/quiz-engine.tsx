@@ -2449,101 +2449,257 @@ function SolutionBottomSheet({
   const solutionHasImage = /!\[[^\]]*\]\([^)]+\)/.test(solution);
   const optionLabel =
     correctOptionIndex >= 0 && correctOptionIndex < 26
-      ? String.fromCharCode(97 + correctOptionIndex)
-      : "a";
+      ? String.fromCharCode(65 + correctOptionIndex)
+      : "A";
+  const theme = useQuizTheme();
 
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-[95] bg-[var(--quiz-overlay)]"
+          className="ios-solution-backdrop"
+          data-theme={theme}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.28, ease: "easeOut" }}
+          transition={{ duration: 0.25, ease: "easeOut" }}
           onClick={onClose}
         >
           <motion.div
             role="dialog"
             aria-modal="true"
             aria-label="Question solution"
-            className="absolute bottom-0 left-0 right-0 mx-auto flex h-[78svh] max-h-[78dvh] w-full max-w-3xl flex-col rounded-t-3xl border px-5 pt-4 shadow-[0_-16px_44px_rgba(15,23,42,0.35)] sm:h-[40vh] sm:max-h-none"
-            style={{
-              background: "var(--quiz-card-bg)",
-              borderColor: "var(--quiz-border)",
-              paddingBottom: "calc(env(safe-area-inset-bottom) + 14px)",
-            }}
-            initial={{ y: "108%", opacity: 0.98 }}
+            className="ios-solution-sheet"
+            initial={{ y: "100%", opacity: 0.95 }}
             animate={{ y: 0, opacity: 1 }}
-            exit={{ y: "108%", opacity: 0.98 }}
+            exit={{ y: "100%", opacity: 0.95 }}
             transition={{
               type: "spring",
-              stiffness: 180,
-              damping: 26,
+              stiffness: 240,
+              damping: 28,
               mass: 0.9,
             }}
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-[var(--quiz-border-strong)]" />
+            <div className="ios-sheet-handle-container">
+              <div className="ios-sheet-handle" />
+            </div>
 
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-base font-semibold text-[color:var(--quiz-text)]">
-                Worked Solution
-              </h3>
+            <div className="ios-solution-header">
+              <span className="ios-header-placeholder"></span>
+              <h3 className="ios-solution-title">Worked Solution</h3>
               <button
+                type="button"
                 onClick={onClose}
-                className="quiz-icon-button inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors"
+                className="ios-done-btn"
                 aria-label="Close solution"
               >
-                <X className="h-4 w-4" />
+                Done
               </button>
             </div>
 
-            <div
-              className="flex-1 overscroll-contain overflow-y-auto rounded-2xl border px-4 py-3 text-[color:var(--quiz-text)]"
-              style={{
-                background: "var(--quiz-surface-muted)",
-                borderColor: "var(--quiz-border)",
-                fontFamily:
-                  "'Cambria Math', 'STIX Two Text', 'Times New Roman', serif",
-                fontSize: 17,
-                lineHeight: 1.7,
-                textAlign: "left",
-                paddingLeft: "0.3cm",
-              }}
-            >
-              {solutionLines.length > 0 ? (
-                <div className="space-y-1.5">
-                  <p className="mb-1 text-[18px] font-semibold text-[color:var(--quiz-text)]">
-                    Sol.{questionNumber}.({optionLabel})
-                  </p>
+            <div className="ios-solution-body">
+              <div className="ios-solution-card">
+                {solutionLines.length > 0 ? (
+                  <div className="space-y-4">
+                    <div className="ios-solution-badge">
+                      <span className="ios-badge-qnum">Question {questionNumber}</span>
+                      <span className="ios-badge-divider">•</span>
+                      <span className="ios-badge-correct">Option ({optionLabel}) is Correct</span>
+                    </div>
 
-                  {solutionHasImage ? (
-                    <RichContent text={solution} />
-                  ) : (
-                    solutionLines.map((line, index) => {
-                      const isDisplayEquation = /^\\\[[\s\S]*\\\]$/.test(line);
-                      return (
-                        <div
-                          key={`worked-line-${index}`}
-                          className={isDisplayEquation ? "text-center" : ""}
-                          style={{
-                            marginTop: isDisplayEquation ? "0.15rem" : "0",
-                            marginBottom: isDisplayEquation ? "0.15rem" : "0",
-                          }}
-                        >
-                          <MathRenderer text={line} className="leading-relaxed" />
-                        </div>
-                      );
-                    })
-                  )}
-                </div>
-              ) : (
-                <p className="text-sm text-[color:var(--quiz-text-muted)]">
-                  Solution is not available for this question yet.
-                </p>
-              )}
+                    <div className="ios-solution-content-text">
+                      {solutionHasImage ? (
+                        <RichContent text={solution} />
+                      ) : (
+                        solutionLines.map((line, index) => {
+                          const isDisplayEquation = /^\\\[[\s\S]*\\\]$/.test(line);
+                          return (
+                            <div
+                              key={`worked-line-${index}`}
+                              className={`my-2.5 leading-relaxed ${isDisplayEquation ? "text-center my-4" : ""}`}
+                            >
+                              <MathRenderer text={line} className="leading-relaxed" />
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-center py-8 opacity-60 text-sm">
+                    Solution is not available for this question yet.
+                  </p>
+                )}
+              </div>
             </div>
+
+            <style jsx global>{`
+              .ios-solution-backdrop {
+                position: fixed;
+                inset: 0;
+                z-index: 9999;
+                background: rgba(0, 0, 0, 0.65);
+                backdrop-filter: blur(8px);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: flex-end;
+                font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
+              }
+              .ios-solution-sheet {
+                width: 100%;
+                max-width: 680px;
+                max-height: 86svh;
+                display: flex;
+                flex-direction: column;
+                background: #1c1c1e;
+                border-radius: 28px 28px 0 0;
+                overflow: hidden;
+                box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+                border: 1px solid rgba(255, 255, 255, 0.12);
+                border-bottom: none;
+                padding-bottom: calc(env(safe-area-inset-bottom) + 16px);
+              }
+              .ios-sheet-handle-container {
+                width: 100%;
+                display: flex;
+                justify-content: center;
+                padding-top: 10px;
+                padding-bottom: 4px;
+                flex-shrink: 0;
+              }
+              .ios-sheet-handle {
+                width: 44px;
+                height: 5px;
+                border-radius: 99px;
+                background: rgba(255, 255, 255, 0.22);
+              }
+              .ios-solution-header {
+                display: grid;
+                grid-template-columns: 1fr auto 1fr;
+                align-items: center;
+                padding: 10px 20px 14px 20px;
+                border-bottom: 0.5px solid rgba(255, 255, 255, 0.12);
+                flex-shrink: 0;
+              }
+              .ios-solution-title {
+                margin: 0;
+                font-size: 18px;
+                font-weight: 600;
+                color: #ffffff;
+                text-align: center;
+                letter-spacing: -0.01em;
+              }
+              .ios-done-btn {
+                background: transparent;
+                border: none;
+                padding: 4px 0 4px 12px;
+                font-size: 17px;
+                font-weight: 600;
+                color: #0a84ff;
+                cursor: pointer;
+                justify-self: end;
+              }
+              .ios-done-btn:active {
+                opacity: 0.6;
+              }
+              .ios-solution-body {
+                flex: 1;
+                overflow-y: auto;
+                padding: 20px 18px;
+                overscroll-behavior: contain;
+              }
+              .ios-solution-card {
+                background: #242426;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 20px;
+                padding: 22px 20px;
+                color: #f2f2f7;
+                font-size: 17px;
+              }
+              .ios-solution-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                background: rgba(48, 209, 88, 0.16);
+                border: 1px solid rgba(48, 209, 88, 0.35);
+                color: #30d158;
+                font-size: 14px;
+                font-weight: 600;
+                padding: 6px 14px;
+                border-radius: 99px;
+                margin-bottom: 8px;
+              }
+              .ios-badge-divider {
+                opacity: 0.6;
+              }
+              .ios-solution-content-text {
+                font-family: "SF Pro Text", "Helvetica Neue", Georgia, serif;
+                font-size: 17px;
+                line-height: 1.65;
+                color: #e5e5ea;
+              }
+
+              /* Light Theme Overrides */
+              .ios-solution-backdrop[data-theme="light"] {
+                background: rgba(0, 0, 0, 0.35);
+              }
+              .ios-solution-backdrop[data-theme="light"] .ios-solution-sheet {
+                background: #f2f2f7;
+                border-color: rgba(0, 0, 0, 0.1);
+                color: #000;
+              }
+              .ios-solution-backdrop[data-theme="light"] .ios-sheet-handle {
+                background: rgba(0, 0, 0, 0.18);
+              }
+              .ios-solution-backdrop[data-theme="light"] .ios-solution-header {
+                border-bottom-color: rgba(60, 60, 67, 0.15);
+              }
+              .ios-solution-backdrop[data-theme="light"] .ios-solution-title {
+                color: #000;
+              }
+              .ios-solution-backdrop[data-theme="light"] .ios-done-btn {
+                color: #007aff;
+              }
+              .ios-solution-backdrop[data-theme="light"] .ios-solution-card {
+                background: #ffffff;
+                border-color: rgba(0, 0, 0, 0.08);
+                box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
+                color: #000000;
+              }
+              .ios-solution-backdrop[data-theme="light"] .ios-solution-content-text {
+                color: #1c1c1e;
+              }
+              .ios-solution-backdrop[data-theme="light"] .ios-solution-badge {
+                background: rgba(52, 199, 89, 0.12);
+                border-color: rgba(52, 199, 89, 0.3);
+                color: #248a3d;
+              }
+
+              /* PC / Desktop optimization */
+              @media (min-width: 640px) {
+                .ios-solution-backdrop {
+                  justify-content: center;
+                  padding: 32px;
+                }
+                .ios-solution-sheet {
+                  max-height: 76vh;
+                  border-radius: 26px !important;
+                  border: 1px solid rgba(255, 255, 255, 0.16);
+                  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+                }
+                .ios-sheet-handle-container {
+                  display: none;
+                }
+                .ios-solution-header {
+                  padding: 16px 24px;
+                }
+                .ios-solution-body {
+                  padding: 24px 28px;
+                }
+              }
+            `}</style>
           </motion.div>
         </motion.div>
       )}
@@ -2671,6 +2827,21 @@ export default function ReasoningQuizEngine({
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
   const [submittedQuestions, setSubmittedQuestions] = useState<Set<number>>(new Set());
   const [currentIndex, setCurrentIndex] = useState(0);
+  const activeRailBtnRef = useRef<HTMLButtonElement | null>(null);
+  const activeMacBtnRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    if (activeRailBtnRef.current) {
+      try {
+        activeRailBtnRef.current.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+      } catch (e) {}
+    }
+    if (activeMacBtnRef.current) {
+      try {
+        activeMacBtnRef.current.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+      } catch (e) {}
+    }
+  }, [currentIndex]);
 
   const [isLargeScreen, setIsLargeScreen] = useState(false);
   useEffect(() => {
@@ -3840,11 +4011,13 @@ export default function ReasoningQuizEngine({
       <>
         {startScreen}
         {resumeData && (
-          <div className="ios-resume-backdrop">
+          <div className="ios-resume-backdrop" data-theme={theme}>
             <div className="ios-resume-modal">
               <div className="ios-resume-content">
                 <h3>Resume Quiz?</h3>
-                <p>You answered {resumeData.submittedQuestions?.length || 0} of {availableCount} questions in this {title} set.</p>
+                <p className="resume-question-info">
+                  Resuming from Question {(resumeData.currentIndex ?? 0) + 1}
+                </p>
                 <div className="ios-resume-progress">
                   <div className="ios-resume-track">
                     <div 
@@ -3872,7 +4045,7 @@ export default function ReasoningQuizEngine({
               .ios-resume-modal { width:100%; max-width:320px; background:#2c2c2e; border-radius:14px; overflow:hidden; box-shadow: 0 16px 40px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.08); }
               .ios-resume-content { padding:20px 16px; text-align:center; border-bottom: 0.5px solid rgba(255,255,255,0.15); }
               .ios-resume-content h3 { margin:0 0 6px 0; color:#fff; font-size:17px; font-weight:600; }
-              .ios-resume-content p { margin:0 0 16px 0; color:rgba(235,235,245,0.6); font-size:13px; line-height:1.4; }
+              .resume-question-info { margin:4px 0 16px 0; color:#60a5fa; font-weight:600; font-size:15px; }
               .ios-resume-progress { display:flex; align-items:center; gap:12px; }
               .ios-resume-track { flex:1; height:4px; background:rgba(255,255,255,0.1); border-radius:2px; overflow:hidden; }
               .ios-resume-bar { height:100%; background:#0a84ff; border-radius:2px; }
@@ -3885,6 +4058,20 @@ export default function ReasoningQuizEngine({
               .action-resume { font-weight: 600; }
               .action-cancel { font-weight: 400; }
               .ios-resume-btn:active { background:rgba(255,255,255,0.1); }
+
+              /* Light Theme Overrides */
+              .ios-resume-backdrop[data-theme="light"] { background: rgba(0, 0, 0, 0.35); }
+              .ios-resume-backdrop[data-theme="light"] .ios-resume-modal { background: #ffffff; border: 1px solid rgba(0,0,0,0.1); box-shadow: 0 20px 48px rgba(0,0,0,0.15); }
+              .ios-resume-backdrop[data-theme="light"] .ios-resume-content { border-bottom-color: rgba(60,60,67,0.18); }
+              .ios-resume-backdrop[data-theme="light"] .ios-resume-content h3 { color: #000000; }
+              .ios-resume-backdrop[data-theme="light"] .resume-question-info { color: #007aff; }
+              .ios-resume-backdrop[data-theme="light"] .ios-resume-track { background: rgba(0,0,0,0.08); }
+              .ios-resume-backdrop[data-theme="light"] .ios-resume-bar { background: #007aff; }
+              .ios-resume-backdrop[data-theme="light"] .ios-resume-progress span { color: rgba(60,60,67,0.6); }
+              .ios-resume-backdrop[data-theme="light"] .ios-resume-btn { border-top-color: rgba(60,60,67,0.18); }
+              .ios-resume-backdrop[data-theme="light"] .ios-resume-btn.blue { color: #007aff; }
+              .ios-resume-backdrop[data-theme="light"] .ios-resume-btn.red { color: #ff3b30; }
+              .ios-resume-backdrop[data-theme="light"] .ios-resume-btn:active { background: rgba(0,0,0,0.05); }
 
               /* PC / Desktop optimization */
               @media (min-width: 640px) {
@@ -3911,6 +4098,10 @@ export default function ReasoningQuizEngine({
                 .action-cancel { order: 1; font-weight: 500; color: rgba(235,235,245,0.7); }
                 .action-restart { order: 2; font-weight: 500; }
                 .action-resume { order: 3; font-weight: 600; }
+
+                .ios-resume-backdrop[data-theme="light"] .ios-resume-actions { border-top-color: rgba(60,60,67,0.18); }
+                .ios-resume-backdrop[data-theme="light"] .ios-resume-btn { border-right-color: rgba(60,60,67,0.18); }
+                .ios-resume-backdrop[data-theme="light"] .action-cancel { color: rgba(60,60,67,0.65); }
               }
             `}</style>
           </div>
@@ -3987,6 +4178,7 @@ export default function ReasoningQuizEngine({
                       <button
                         key={`mac-palette-${question.id}-${index}`}
                         type="button"
+                        ref={index === currentIndex ? activeMacBtnRef : null}
                         className={`mac-palette-btn ${status === "current" ? "is-current" : ""} ${status === "answered" || status === "correct" ? "is-answered" : ""} ${status === "wrong" ? "is-wrong" : ""}`}
                         onClick={() => goToQuestion(index + 1)}
                       >
@@ -4083,6 +4275,7 @@ export default function ReasoningQuizEngine({
                       questionNumber={currentIndex + 1}
                       topicTitle={title}
                       question={currentQ}
+                      theme={theme}
                       renderTrigger={(onOpen) => (
                         <button type="button" className="mac-series-footer-ai" onClick={onOpen}>
                           Ask AI Tutor
@@ -4481,6 +4674,7 @@ export default function ReasoningQuizEngine({
                 <button
                   key={`rail-${question.id}-${index}`}
                   type="button"
+                  ref={index === currentIndex ? activeRailBtnRef : null}
                   onClick={() => goToQuestion(index + 1)}
                   className={`ios-series-question ${status === "current" ? "is-current" : ""} ${status === "answered" || status === "correct" ? "is-answered" : ""} ${status === "wrong" ? "is-wrong" : ""}`}
                   aria-label={`Question ${index + 1}`}
@@ -4565,6 +4759,7 @@ export default function ReasoningQuizEngine({
                   questionNumber={currentIndex + 1}
                   topicTitle={title}
                   question={currentQ}
+                  theme={theme}
                   renderTrigger={(onOpen) => (
                     <button type="button" className="ios-series-ai-btn" onClick={onOpen}>
                       Ask AI Tutor
@@ -5171,6 +5366,7 @@ export default function ReasoningQuizEngine({
         questionNumber={currentIndex + 1}
         topicTitle={title}
         question={currentQ}
+        theme={theme}
       />
 
       {submitError && (
