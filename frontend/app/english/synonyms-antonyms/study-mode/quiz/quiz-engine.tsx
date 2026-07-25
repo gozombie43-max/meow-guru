@@ -673,12 +673,15 @@ export default function StudyModeQuizEngine() {
           --system-blue: #007aff;
 
           min-height: 100vh;
+          height: 100vh;
+          max-height: 100vh;
+          overflow: hidden;
           background: var(--desktop-bg);
           color: var(--text-primary);
           font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Arial, sans-serif;
           display: flex;
           flex-direction: column;
-          padding: 12px;
+          padding: 0;
         }
 
         .apple-dict-viewport[data-theme="light"] {
@@ -700,20 +703,22 @@ export default function StudyModeQuizEngine() {
 
         /* ── macOS Application Window Frame ── */
         .apple-app-window {
-          width: 100%;
-          max-width: 100%;
+          width: 100vw;
+          max-width: 100vw;
+          height: 100vh;
+          max-height: 100vh;
           background: var(--workspace-bg);
-          border: 0.5px solid var(--window-border);
-          box-shadow: 0 24px 75px rgba(0, 0, 0, 0.6);
-          border-radius: 14px;
+          border: none;
+          box-shadow: none;
+          border-radius: 0;
           display: flex;
           flex-direction: column;
           overflow: hidden;
-          margin: 0 auto;
+          margin: 0;
         }
 
         .apple-dict-viewport[data-theme="light"] .apple-app-window {
-          box-shadow: 0 16px 50px rgba(0, 0, 0, 0.18);
+          box-shadow: none;
         }
 
         /* ── Left Navigation Sidebar (Default hidden on Mobile) ── */
@@ -1007,17 +1012,20 @@ export default function StudyModeQuizEngine() {
           }
 
           .apple-app-window {
-            width: calc(100vw - 32px);
-            max-width: 1400px;
-            height: calc(100vh - 32px);
-            max-height: 920px;
+            width: 100vw;
+            max-width: 100vw;
+            height: 100vh;
+            max-height: 100vh;
+            border-radius: 0;
+            border: none;
+            box-shadow: none;
             flex-direction: row;
-            margin: auto;
+            margin: 0;
           }
 
           /* ── Left Navigation Sidebar (Master List) ── */
           .macos-sidebar {
-            width: 270px;
+            width: 285px;
             display: flex;
             flex-direction: column;
             background: var(--sidebar-bg);
