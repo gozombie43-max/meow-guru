@@ -3,5 +3,5 @@
 import EnglishQuizEngine from "../../_shared/quiz-engine";
 
 export default function QuizEngine() {
-  return <EnglishQuizEngine title="Tenses" slug="tenses" />;
+  return <EnglishQuizEngine title="Tenses" slug="tenses" routeBase="/english/tenses" />;
 }

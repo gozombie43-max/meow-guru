@@ -3,5 +3,5 @@
 import GeneralAwarenessQuizEngine from "../../_shared/quiz-engine";
 
 export default function QuizEngine() {
-  return <GeneralAwarenessQuizEngine title="Static GK" slug="static-gk" />;
+  return <GeneralAwarenessQuizEngine title="Static GK" slug="static-gk" routeBase="/general-awareness/static-gk" />;
 }

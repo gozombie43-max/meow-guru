@@ -3,5 +3,5 @@
 import EnglishQuizEngine from "../../_shared/quiz-engine";
 
 export default function QuizEngine() {
-  return <EnglishQuizEngine title="Para-Jumbles" slug="para-jumbles" />;
+  return <EnglishQuizEngine title="Para-Jumbles" slug="para-jumbles" routeBase="/english/para-jumbles" />;
 }

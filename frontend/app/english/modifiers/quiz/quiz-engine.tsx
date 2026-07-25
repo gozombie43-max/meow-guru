@@ -3,5 +3,5 @@
 import EnglishQuizEngine from "../../_shared/quiz-engine";
 
 export default function QuizEngine() {
-  return <EnglishQuizEngine title="Modifiers" slug="modifiers" />;
+  return <EnglishQuizEngine title="Modifiers" slug="modifiers" routeBase="/english/modifiers" />;
 }

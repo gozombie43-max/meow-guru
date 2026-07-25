@@ -3,5 +3,5 @@
 import EnglishQuizEngine from "../../_shared/quiz-engine";
 
 export default function QuizEngine() {
-  return <EnglishQuizEngine title="Synonyms & Antonyms" slug="synonyms-antonyms" />;
+  return <EnglishQuizEngine title="Synonyms & Antonyms" slug="synonyms-antonyms" routeBase="/english/synonyms-antonyms" />;
 }

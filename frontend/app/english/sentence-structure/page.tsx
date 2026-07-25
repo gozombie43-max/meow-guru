@@ -1,5 +1,5 @@
 import EnglishTopicPage from "../_shared/topic-page";
 
-export default function SentenceStructurePage() {
-  return <EnglishTopicPage title="Sentence Structure" slug="sentence-structure" />;
+export default function Page() {
+  return <EnglishTopicPage title="Sentence Structure" slug="sentence-structure" routeBase="/english/sentence-structure" />;
 }

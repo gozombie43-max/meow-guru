@@ -1,5 +1,5 @@
 import EnglishTopicPage from "../_shared/topic-page";
 
-export default function ReadingComprehensionPage() {
-  return <EnglishTopicPage title="Reading Comprehension" slug="reading-comprehension" />;
+export default function Page() {
+  return <EnglishTopicPage title="Reading Comprehension" slug="reading-comprehension" routeBase="/english/reading-comprehension" />;
 }

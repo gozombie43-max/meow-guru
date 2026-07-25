@@ -1,12 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { fetchQuestions } from "@/lib/api/questions";
 
 export default function SynonymsAntonymsStudyModePage() {
+  const router = useRouter();
   const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [questionCount, setQuestionCount] = useState<number | null>(null);
+  const [isHoveringLights, setIsHoveringLights] = useState(false);
 
   useEffect(() => {
     try {
@@ -48,384 +51,507 @@ export default function SynonymsAntonymsStudyModePage() {
     };
   }, []);
 
+  // Keyboard shortcut: Press Enter or Cmd+Enter to open suite
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey || e.key === "Enter") && e.target === document.body) {
+        router.push("/english/synonyms-antonyms/study-mode/quiz");
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [router]);
+
   const countLabel =
     questionCount === null
-      ? "Loading questions..."
+      ? "Initializing Dictionary..."
       : questionCount === 0
-      ? "No questions available"
-      : `${questionCount} question${questionCount === 1 ? "" : "s"} available`;
+      ? "Ready for practice"
+      : `${questionCount} entries indexed`;
 
   return (
-    <main className="start-page" data-theme={theme}>
-      <div className="card-shell">
-        <div className="perf" />
-
-        <div className="header-bar">
-          <span>Vocabulary</span>
-          <button
-            type="button"
-            className="theme-toggle"
-            aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
-            aria-pressed={theme === "dark"}
-            onClick={() => setTheme((value) => (value === "dark" ? "light" : "dark"))}
+    <main className="apple-desktop-viewport" data-theme={theme}>
+      {/* ── Authentic macOS Welcome Window ── */}
+      <div className="apple-welcome-window">
+        
+        {/* Left Translucent Sidebar with Embedded Traffic Lights */}
+        <aside className="apple-sidebar">
+          <div
+            className="traffic-lights-bar"
+            onMouseEnter={() => setIsHoveringLights(true)}
+            onMouseLeave={() => setIsHoveringLights(false)}
           >
-            <span className="theme-toggle-label">
-              {theme === "dark" ? "Light" : "Dark"}
-            </span>
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.9"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
+            <button
+              type="button"
+              className="light red"
+              onClick={() => router.back()}
+              aria-label="Close and return to topic"
+              title="Close & return to topic"
+            >
+              {isHoveringLights && <span className="symbol">×</span>}
+            </button>
+            <button
+              type="button"
+              className="light yellow"
+              onClick={() => router.back()}
+              aria-label="Minimize and return"
+              title="Minimize & return"
+            >
+              {isHoveringLights && <span className="symbol">-</span>}
+            </button>
+            <button
+              type="button"
+              className="light green"
+              onClick={() => router.push("/english/synonyms-antonyms/study-mode/quiz")}
+              aria-label="Launch dictionary"
+              title="Expand to study suite"
+            >
+              {isHoveringLights && <span className="symbol">+</span>}
+            </button>
+          </div>
+
+          <div className="sidebar-app-brand">
+            <div className="apple-dict-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-0.5-5.006L20 17" />
+                <path d="M6 12h8" />
+                <path d="M6 16h8" />
+              </svg>
+            </div>
+            <div className="app-title-group">
+              <div className="app-name">Dictionary Suite</div>
+              <div className="app-ver">Version 2.4 · macOS Edition</div>
+            </div>
+          </div>
+
+          <div className="sidebar-footer">
+            <div className="index-pill">
+              <span className="dot-ready" />
+              <span className="index-text">{countLabel}</span>
+            </div>
+          </div>
+        </aside>
+
+        {/* Right Main Content Panel */}
+        <section className="apple-workspace">
+          <div className="workspace-topbar">
+            <button
+              type="button"
+              className="appearance-btn"
+              onClick={() => setTheme((v) => (v === "dark" ? "light" : "dark"))}
+              aria-label="Toggle light or dark mode"
             >
               {theme === "dark" ? (
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                <svg viewBox="0 0 24 24" fill="currentColor" className="icon-appr">
+                  <path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z" />
+                </svg>
               ) : (
-                <>
-                  <path d="M12 3v2" />
-                  <path d="M12 19v2" />
-                  <path d="M5.64 5.64l1.42 1.42" />
-                  <path d="M16.94 16.94l1.42 1.42" />
-                  <path d="M3 12h2" />
-                  <path d="M19 12h2" />
-                  <path d="M5.64 18.36l1.42-1.42" />
-                  <path d="M16.94 7.06l1.42-1.42" />
-                  <circle cx="12" cy="12" r="4" />
-                </>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="icon-appr">
+                  <circle cx="12" cy="12" r="5" />
+                  <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+                </svg>
               )}
-            </svg>
-          </button>
-        </div>
-
-        <div className="center-zone">
-          <div className="eyebrow">English</div>
-          <div className="quiz-title">
-            Antonyms <span className="accent">Synonyms</span>
+              <span>{theme === "dark" ? "Dark Mode" : "Light Mode"}</span>
+            </button>
           </div>
 
-          <div className="bubble-row" aria-hidden="true">
-            <div className="bubble" />
-            <div className="bubble" />
+          <div className="workspace-hero">
+            <h1 className="welcome-heading">Welcome to Synonyms &amp; Antonyms</h1>
+            <p className="welcome-subtitle">
+              An authentic Apple Dictionary and learning environment designed for precision, speed, and deep vocabulary retention.
+            </p>
           </div>
 
-          <div className="available-tag">
-            <span className="dot" />
-            {countLabel}
+          <div className="apple-preferences-group">
+            <div className="pref-row">
+              <div className="icon-box system-blue">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2" />
+                  <line x1="9" y1="3" x2="9" y2="21" />
+                  <line x1="15" y1="3" x2="15" y2="21" />
+                </svg>
+              </div>
+              <div className="row-text">
+                <div className="row-label">Master-Detail Navigation Sidebar</div>
+                <div className="row-caption">Search and filter words immediately from the dedicated left sidebar column on PC.</div>
+              </div>
+            </div>
+
+            <div className="pref-row">
+              <div className="icon-box system-green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 20V10" />
+                  <path d="M18 20V4" />
+                  <path d="M6 20v-4" />
+                </svg>
+              </div>
+              <div className="row-text">
+                <div className="row-label">Simultaneous Comparison Tables</div>
+                <div className="row-caption">View structured Synonyms and Antonyms side-by-side with crisp Apple table hierarchy.</div>
+              </div>
+            </div>
+
+            <div className="pref-row">
+              <div className="icon-box system-purple">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="2" y1="12" x2="22" y2="12" />
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                </svg>
+              </div>
+              <div className="row-text">
+                <div className="row-label">Dual English &amp; Bengali Meanings</div>
+                <div className="row-caption">Standardized definitions paired with regional translation notes and grammar tags.</div>
+              </div>
+            </div>
           </div>
 
-        </div>
-
-        <div className="start-bar">
-          <Link className="start-btn" href="/english/synonyms-antonyms/study-mode/quiz">
-            Begin Study Quiz <span className="arrow">▶</span>
-          </Link>
-        </div>
+          <div className="workspace-footer">
+            <button
+              type="button"
+              className="apple-secondary-btn"
+              onClick={() => router.back()}
+            >
+              Cancel
+            </button>
+            <Link className="apple-primary-btn" href="/english/synonyms-antonyms/study-mode/quiz">
+              <span>Launch Dictionary Suite</span>
+              <kbd className="shortcut-tag">⌘↵</kbd>
+            </Link>
+          </div>
+        </section>
       </div>
 
-      <style>{`
-        .start-page {
+      <style jsx>{`
+        /* ════════════════════════════════════════════════════
+           AUTHENTIC APPLE DESIGN SYSTEM MATERIALS & TOKENS
+           ════════════════════════════════════════════════════ */
+        .apple-desktop-viewport {
+          --desktop-bg: #000000;
+          --sidebar-bg: rgba(30, 30, 35, 0.88);
+          --workspace-bg: rgba(24, 24, 28, 0.95);
+          --window-border: rgba(255, 255, 255, 0.16);
+          --divider: rgba(255, 255, 255, 0.08);
+          --text-primary: #ffffff;
+          --text-secondary: #98989d;
+          --text-muted: #636366;
+          --row-bg: rgba(255, 255, 255, 0.04);
+          --btn-secondary: rgba(255, 255, 255, 0.1);
+          --system-blue: #007aff;
+          --system-green: #30db5b;
+          --system-purple: #bf5af2;
+
           min-height: 100vh;
-          position: relative;
-          background:
-            radial-gradient(circle at top left, rgba(255, 122, 92, 0.12), transparent 28%),
-            radial-gradient(circle at 85% 22%, rgba(127, 212, 189, 0.12), transparent 24%),
-            linear-gradient(180deg, #181613 0%, #11100e 100%);
-          padding: 0;
-          color: #f2ead9;
-          transition: background 0.2s ease, color 0.2s ease;
+          background: var(--desktop-bg);
+          color: var(--text-primary);
+          font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+          display: flex;
+          flex-direction: column;
+          padding: 16px;
         }
 
-        .start-page[data-theme="light"] {
-          background:
-            radial-gradient(circle at top left, rgba(214, 154, 45, 0.14), transparent 28%),
-            radial-gradient(circle at 85% 22%, rgba(47, 75, 70, 0.14), transparent 24%),
-            linear-gradient(180deg, #f4efe3 0%, #ece4d3 100%);
-          color: #1c1c1c;
+        .apple-desktop-viewport[data-theme="light"] {
+          --desktop-bg: #e5e5eb;
+          --sidebar-bg: rgba(230, 230, 235, 0.9);
+          --workspace-bg: #ffffff;
+          --window-border: rgba(0, 0, 0, 0.16);
+          --divider: rgba(0, 0, 0, 0.07);
+          --text-primary: #1d1d1f;
+          --text-secondary: #6e6e73;
+          --text-muted: #86868b;
+          --row-bg: rgba(0, 0, 0, 0.03);
+          --btn-secondary: rgba(0, 0, 0, 0.06);
+          --system-blue: #007aff;
+          --system-green: #28cd41;
+          --system-purple: #af52de;
         }
 
-        .card-shell {
+        /* ── macOS Welcome Application Window ── */
+        .apple-welcome-window {
           width: 100%;
-          max-width: 520px;
-          min-height: 100vh;
+          max-width: 620px;
           margin: 0 auto;
+          border-radius: 14px;
+          border: 0.5px solid var(--window-border);
+          box-shadow: 0 22px 70px rgba(0, 0, 0, 0.55);
+          background: var(--workspace-bg);
+          overflow: hidden;
           display: flex;
           flex-direction: column;
-          background: #181613;
-          color: #f2ead9;
-          overflow-x: hidden;
         }
 
-        .start-page[data-theme="light"] .card-shell {
-          background: #f4efe3;
-          color: #1c1c1c;
+        .apple-desktop-viewport[data-theme="light"] .apple-welcome-window {
+          box-shadow: 0 16px 50px rgba(0, 0, 0, 0.18);
         }
 
-        .perf {
-          height: 14px;
-          background-image: radial-gradient(circle, #000000 2.5px, transparent 2.6px);
-          background-size: 16px 16px;
-          background-position: 4px center;
-          border-bottom: 1px dashed #4a4234;
+        /* ── Left Navigation Sidebar (Translucent Material) ── */
+        .apple-sidebar {
+          background: var(--sidebar-bg);
+          backdrop-filter: blur(40px);
+          -webkit-backdrop-filter: blur(40px);
+          border-bottom: 0.5px solid var(--divider);
+          padding: 16px 20px;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          gap: 24px;
         }
 
-        .start-page[data-theme="light"] .perf {
-          border-bottom-color: #c9bfa5;
-        }
-
-        .header-bar {
-          min-height: 56px;
-          padding: 12px 20px;
+        .traffic-lights-bar {
           display: flex;
           align-items: center;
-          justify-content: center;
-          text-align: center;
-          border-bottom: 1.5px solid #4a4234;
-          background: #1f1c18;
-          position: relative;
-        }
-
-        .theme-toggle {
-          position: absolute;
-          right: 12px;
-          top: 50%;
-          transform: translateY(-50%);
-          min-width: 42px;
-          height: 34px;
-          padding: 0 10px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
           gap: 8px;
-          border-radius: 12px;
-          border: 1.5px solid #4a4234;
-          background: #1f1c18;
-          color: #f2ead9;
-          box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
-          cursor: pointer;
         }
 
-        .start-page[data-theme="light"] .theme-toggle {
-          border-color: #c9bfa5;
-          background: #ffffff;
-          color: #1c1c1c;
-        }
-
-        .start-page[data-theme="light"] .header-bar {
-          background: #ffffff;
-          border-bottom-color: #c9bfa5;
-        }
-
-        .header-bar span {
-          font-size: 13px;
-          font-weight: 700;
-          letter-spacing: 4px;
-          color: #7fd4bd;
-          text-transform: uppercase;
-        }
-
-        .center-zone {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          text-align: center;
-          padding: 26px 24px 22px;
-        }
-
-        .eyebrow {
-          font-size: 11px;
-          letter-spacing: 3px;
-          color: #c9bfa9;
-          text-transform: uppercase;
-          margin-bottom: 14px;
-        }
-
-        .start-page[data-theme="light"] .header-bar span,
-        .start-page[data-theme="light"] .eyebrow,
-        .start-page[data-theme="light"] .intro {
-          color: #5b5b52;
-        }
-
-        .quiz-title {
-          font-family: "Archivo Black", sans-serif;
-          font-size: 34px;
-          line-height: 1.1;
-          letter-spacing: 0.5px;
-          color: #f2ead9;
-          margin-top: 2px;
-          margin-bottom: 8px;
-        }
-
-        .start-page[data-theme="light"] .quiz-title,
-        .start-page[data-theme="light"] .available-tag b,
-        .start-page[data-theme="light"] .start-btn {
-          color: #1c1c1c;
-        }
-
-        .accent {
-          color: #ff7a5c;
-        }
-
-        .start-page[data-theme="light"] .accent,
-        .start-page[data-theme="light"] .available-tag .dot {
-          background: #d69a2d;
-          border-color: #d69a2d;
-        }
-
-        .bubble-row {
-          display: flex;
-          justify-content: center;
-          gap: 10px;
-          margin-top: 16px;
-        }
-
-        .bubble {
+        .light {
           width: 12px;
           height: 12px;
-          border: 1.5px solid #f2ead9;
           border-radius: 50%;
+          border: none;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          padding: 0;
         }
 
-        .start-page[data-theme="light"] .bubble {
-          border-color: #1c1c1c;
+        .red { background: #ff5f56; border: 0.5px solid #e0443e; }
+        .yellow { background: #ffbd2e; border: 0.5px solid #dea123; }
+        .green { background: #27c93f; border: 0.5px solid #1aab29; }
+
+        .symbol {
+          font-size: 8px;
+          font-weight: 800;
+          color: rgba(0, 0, 0, 0.7);
+          line-height: 1;
         }
 
-        .bubble:first-child {
-          background: #ff7a5c;
-          border-color: #ff7a5c;
+        .sidebar-app-brand {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 12px;
         }
 
-        .start-page[data-theme="light"] .bubble:first-child {
-          background: #d69a2d;
-          border-color: #d69a2d;
+        .apple-dict-icon {
+          width: 54px;
+          height: 54px;
+          border-radius: 13px;
+          background: linear-gradient(180deg, #007aff 0%, #0051a8 100%);
+          color: #ffffff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
         }
 
-        .available-tag {
-          margin-top: 10px;
+        .apple-dict-icon svg { width: 30px; height: 30px; }
+
+        .app-title-group { display: flex; flex-direction: column; gap: 2px; }
+        .app-name { font-size: 18px; font-weight: 700; color: var(--text-primary); }
+        .app-ver { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+
+        .sidebar-footer { display: flex; align-items: center; }
+        .index-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 5px 12px;
+          border-radius: 100px;
+          background: rgba(0, 0, 0, 0.15);
+          border: 0.5px solid var(--divider);
+          font-size: 11.5px;
+          font-weight: 600;
+          color: var(--text-secondary);
+        }
+
+        .apple-desktop-viewport[data-theme="light"] .index-pill {
+          background: rgba(0, 0, 0, 0.04);
+        }
+
+        .dot-ready {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          background: var(--system-green);
+        }
+
+        /* ── Right Workspace Panel ── */
+        .apple-workspace {
+          flex: 1;
+          padding: 24px;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          gap: 24px;
+        }
+
+        .workspace-topbar {
+          display: flex;
+          justify-content: flex-end;
+        }
+
+        .appearance-btn {
           display: inline-flex;
           align-items: center;
           gap: 6px;
-          margin-top: 18px;
           padding: 5px 12px;
-          font-size: 11px;
-          letter-spacing: 1px;
-          color: #7fd4bd;
-          border: 1px dashed #4a4234;
-          border-radius: 999px;
-          background: rgba(255, 255, 255, 0.02);
+          border-radius: 6px;
+          border: 0.5px solid var(--divider);
+          background: var(--btn-secondary);
+          color: var(--text-primary);
+          font-size: 12.5px;
+          font-weight: 500;
+          cursor: pointer;
         }
 
-        .start-page[data-theme="light"] .available-tag {
-          border-color: #c9bfa5;
-          background: rgba(255, 255, 255, 0.7);
+        .icon-appr { width: 15px; height: 15px; color: var(--text-secondary); }
+
+        .workspace-hero {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
         }
 
-        .available-tag .dot {
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-          background: #7fd4bd;
-        }
-
-        .available-tag b {
-          color: #f0b649;
+        .welcome-heading {
+          font-size: clamp(1.6rem, 3vw, 2.1rem);
           font-weight: 700;
+          letter-spacing: -0.02em;
+          margin: 0;
+          color: var(--text-primary);
         }
 
-        .intro {
-          margin: 18px 0 0;
-          max-width: 34ch;
-          color: #c9bfa9;
+        .welcome-subtitle {
           font-size: 14px;
-          line-height: 1.65;
+          line-height: 1.5;
+          color: var(--text-secondary);
+          margin: 0;
+          max-width: 480px;
         }
 
-        .start-bar {
-          padding: 16px 20px calc(18px + env(safe-area-inset-bottom));
-          position: sticky;
-          bottom: 0;
-          background: #181613;
-          border-top: 1.5px dashed #4a4234;
+        /* Apple System Settings Rows */
+        .apple-preferences-group {
+          background: var(--row-bg);
+          border: 0.5px solid var(--divider);
+          border-radius: 12px;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
         }
 
-        .start-page[data-theme="light"] .start-bar {
-          background: #f4efe3;
-          border-top-color: #c9bfa5;
+        .pref-row {
+          display: flex;
+          align-items: flex-start;
+          gap: 14px;
+          padding: 14px 16px;
+          transition: background 0.15s ease;
         }
 
-        .start-btn {
-          width: 100%;
+        .pref-row:not(:last-child) {
+          border-bottom: 0.5px solid var(--divider);
+        }
+
+        .icon-box {
+          width: 32px;
+          height: 32px;
+          border-radius: 7px;
+          color: #ffffff;
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 10px;
-          font-family: "Space Mono", monospace;
-          font-weight: 700;
-          font-size: 16px;
-          letter-spacing: 2px;
-          text-transform: uppercase;
-          color: #181613;
-          background: #ff7a5c;
-          border: 1.5px solid #ff7a5c;
-          border-radius: 999px;
-          padding: 15px 14px;
+          flex-shrink: 0;
+        }
+
+        .system-blue { background: var(--system-blue); }
+        .system-green { background: var(--system-green); }
+        .system-purple { background: var(--system-purple); }
+
+        .icon-box svg { width: 18px; height: 18px; }
+
+        .row-text { display: flex; flex-direction: column; gap: 3px; }
+        .row-label { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+        .row-caption { font-size: 12.5px; color: var(--text-secondary); line-height: 1.4; }
+
+        /* Footer Action Buttons */
+        .workspace-footer {
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          gap: 12px;
+          border-top: 0.5px solid var(--divider);
+          padding-top: 18px;
+        }
+
+        .apple-secondary-btn {
+          padding: 6px 16px;
+          border-radius: 6px;
+          border: 0.5px solid var(--divider);
+          background: var(--btn-secondary);
+          color: var(--text-primary);
+          font-size: 13.5px;
+          font-weight: 600;
+          cursor: pointer;
+        }
+
+        .apple-primary-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 7px 18px;
+          border-radius: 6px;
+          background: var(--system-blue);
+          color: #ffffff;
+          font-size: 13.5px;
+          font-weight: 600;
           text-decoration: none;
-          box-shadow: 4px 4px 0 #f2ead9;
+          box-shadow: 0 2px 6px rgba(0, 122, 255, 0.3);
+          transition: filter 0.15s ease, transform 0.1s ease;
         }
 
-        .start-page[data-theme="light"] .start-btn {
-          box-shadow: 4px 4px 0 #1c1c1c;
-        }
+        .apple-primary-btn:hover { filter: brightness(1.08); }
+        .apple-primary-btn:active { transform: scale(0.98); }
 
-        .theme-toggle svg {
-          width: 18px;
-          height: 18px;
-        }
-
-        .theme-toggle-label {
-          font-size: 12px;
+        .shortcut-tag {
+          font-size: 11.5px;
+          background: rgba(255, 255, 255, 0.2);
+          padding: 1px 6px;
+          border-radius: 4px;
           font-weight: 700;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
         }
 
-        .start-btn:active {
-          transform: translate(4px, 4px);
-          box-shadow: 0 0 0 #f2ead9;
-        }
-
-        .arrow {
-          font-size: 14px;
-        }
-
-        @media (max-width: 460px) {
-          .theme-toggle {
-            min-width: 72px;
-            height: 38px;
-            padding: 0 12px;
-            gap: 6px;
-            border-radius: 999px;
+        /* ════════════════════════════════════════════════════
+           PC DESKTOP ZERO-SCROLL WELCOME WINDOW (min-width: 900px)
+           ════════════════════════════════════════════════════ */
+        @media (min-width: 900px) {
+          .apple-desktop-viewport {
+            height: 100vh;
+            max-height: 100vh;
+            overflow: hidden;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
           }
 
-          .theme-toggle-label {
-            font-size: 11px;
+          .apple-welcome-window {
+            max-width: 780px;
+            width: calc(100vw - 60px);
+            height: 480px;
+            max-height: calc(100vh - 60px);
+            flex-direction: row;
+            margin: auto;
           }
 
-          .quiz-title {
-            font-size: 28px;
+          .apple-sidebar {
+            width: 260px;
+            border-bottom: none;
+            border-right: 0.5px solid var(--divider);
+            padding: 16px 20px 20px;
           }
 
-          .center-zone {
-            padding: 28px 18px;
-          }
-
-          .theme-toggle svg {
-            width: 16px;
-            height: 16px;
+          .apple-workspace {
+            padding: 24px 28px;
+            overflow: hidden;
           }
         }
       `}</style>

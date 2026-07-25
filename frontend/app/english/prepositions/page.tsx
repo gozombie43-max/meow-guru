@@ -1,5 +1,5 @@
 import EnglishTopicPage from "../_shared/topic-page";
 
-export default function PrepositionsPage() {
-  return <EnglishTopicPage title="Prepositions" slug="prepositions" />;
+export default function Page() {
+  return <EnglishTopicPage title="Prepositions" slug="prepositions" routeBase="/english/prepositions" />;
 }

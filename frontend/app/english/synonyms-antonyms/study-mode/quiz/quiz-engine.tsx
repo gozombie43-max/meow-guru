@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { fetchQuestions } from "@/lib/api/questions";
 
@@ -31,12 +32,12 @@ const DEMO_CARD: StudyModeCard = {
   meanings: [
     {
       pos: "v.",
-      definition: "To leave or give up completely.",
-      translation: "ত্যাগ করা / পরিত্যাগ করা",
+      definition: "To leave or give up completely without intent to return.",
+      translation: "ত্যাগ করা / সম্পূর্ণভাবে পরিত্যাগ করা",
     },
     {
       pos: "n.",
-      definition: "A complete lack of restraint.",
+      definition: "A complete lack of restraint or inhibition.",
       translation: "উচ্ছৃঙ্খলতা / বেপরোয়া ভাব",
     },
   ],
@@ -100,42 +101,48 @@ function toStudyModeCard(entry: StudyModeEntry, index: number): StudyModeCard | 
 }
 
 export default function StudyModeQuizEngine() {
-  const [slideIndex, setSlideIndex] = useState<0 | 1>(0);
-  const [currentPage, setCurrentPage] = useState(1);
+  const router = useRouter();
   const [theme, setTheme] = useState<"light" | "dark">("dark");
-  const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [cards, setCards] = useState<StudyModeCard[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [viewMode, setViewMode] = useState<"all" | "synonyms" | "antonyms">("all");
+  const [mobileTab, setMobileTab] = useState<"synonyms" | "antonyms">("synonyms");
+  const [loading, setLoading] = useState(true);
+  const [isHoveringLights, setIsHoveringLights] = useState(false);
+  const [isMobilePaletteOpen, setIsMobilePaletteOpen] = useState(false);
+
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const touchStartXRef = useRef<number | null>(null);
   const touchStartYRef = useRef<number | null>(null);
 
-  const totalCards = Math.max(cards.length, 1);
-  const currentIndex = Math.min(Math.max(currentPage - 1, 0), totalCards - 1);
-  const activeCard = cards[currentIndex] ?? DEMO_CARD;
-  const posLabel = activeCard.meanings
-    .map((meaning) => String(meaning.pos ?? "").replace(/\.+$/, "").trim())
-    .filter(Boolean)
-    .map((pos) => pos.toUpperCase())
-    .join(" / ");
-
-  const slideTitle = slideIndex === 0 ? "SYNONYMS" : "ANTONYMS";
-
   useEffect(() => {
     let active = true;
-
+    setLoading(true);
     fetchQuestions({
       subject: "english",
       topic: "synonyms-antonyms",
       questionType: "study-mode",
+      useCache: false,
     })
       .then((data) => {
         if (!active) return;
-        const mapped = data
-          .map((entry, index) => toStudyModeCard(entry as StudyModeEntry, index))
-          .filter(Boolean) as StudyModeCard[];
-        setCards(mapped);
+        const normalized = (Array.isArray(data) ? data : [])
+          .map((entry, idx) => toStudyModeCard(entry as StudyModeEntry, idx))
+          .filter((card): card is StudyModeCard => card !== null);
+
+        if (normalized.length > 0) {
+          setCards(normalized);
+        } else {
+          setCards([DEMO_CARD]);
+        }
+        setLoading(false);
       })
       .catch(() => {
-        if (active) setCards([]);
+        if (active) {
+          setCards([DEMO_CARD]);
+          setLoading(false);
+        }
       });
 
     return () => {
@@ -144,11 +151,7 @@ export default function StudyModeQuizEngine() {
   }, []);
 
   useEffect(() => {
-    if (cards.length === 0) {
-      setCurrentPage(1);
-      return;
-    }
-    if (currentPage > cards.length) {
+    if (cards.length > 0 && currentPage > cards.length) {
       setCurrentPage(cards.length);
     }
   }, [cards.length, currentPage]);
@@ -172,1057 +175,1058 @@ export default function StudyModeQuizEngine() {
     }
   }, [theme]);
 
+  // Desktop Keyboard navigation & Cmd+F Search focus
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "f") {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+        return;
+      }
+      if (document.activeElement === searchInputRef.current) {
+        if (e.key === "Escape") {
+          setSearchQuery("");
+          searchInputRef.current?.blur();
+        }
+        return;
+      }
+      if (e.key === "ArrowLeft" && currentPage > 1) {
+        setCurrentPage((prev) => prev - 1);
+      } else if (e.key === "ArrowRight" && currentPage < cards.length) {
+        setCurrentPage((prev) => prev + 1);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [currentPage, cards.length]);
+
+  if (loading) {
+    return (
+      <main className="apple-dict-viewport" data-theme={theme}>
+        <div className="loading-state">
+          <div className="spinner" />
+          <p>Indexing Apple Dictionary...</p>
+        </div>
+        <style jsx>{`
+          .apple-dict-viewport {
+            min-height: 100vh;
+            background: #000000;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+          }
+          .apple-dict-viewport[data-theme="light"] {
+            background: #e5e5eb;
+            color: #1d1d1f;
+          }
+          .loading-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+          }
+          .spinner {
+            width: 38px;
+            height: 38px;
+            border: 3px solid rgba(0, 122, 255, 0.2);
+            border-top-color: #007aff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+          }
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+        `}</style>
+      </main>
+    );
+  }
+
+  const filteredCards = cards.filter((c) =>
+    c.word.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const activeCard = cards[currentPage - 1] || DEMO_CARD;
+  const totalCards = cards.length || 1;
+  const posLabel = activeCard.meanings.map((m) => m.pos).filter(Boolean).join(" · ");
+
   return (
-    <main className="quiz-page" data-theme={theme}>
-      <div className="desktop-header">
-        <div className="desktop-header-copy">
-          <button
-            type="button"
-            className="menu-toggle"
-            aria-label="Open question palette"
-            aria-expanded={isPaletteOpen}
-            onClick={() => setIsPaletteOpen((value) => !value)}
+    <main className="apple-dict-viewport" data-theme={theme}>
+      {/* ── Authentic macOS Apple Dictionary Window (Zero Scroll on PC) ── */}
+      <div className="apple-app-window">
+        
+        {/* ── Left Master-Detail Navigation Sidebar (PC Exclusive) ── */}
+        <aside className="macos-sidebar">
+          {/* Traffic Lights inside Sidebar */}
+          <div
+            className="traffic-lights"
+            onMouseEnter={() => setIsHoveringLights(true)}
+            onMouseLeave={() => setIsHoveringLights(false)}
           >
-            <span />
-            <span />
-            <span />
-          </button>
-          <div>
-            <div className="desktop-header-kicker">English</div>
-            <div className="desktop-header-title">Study Mode</div>
-          </div>
-        </div>
-
-        <div className="desktop-header-meta">
-          <span className="question-count">{currentPage}/{totalCards}</span>
-
-          <button
-            type="button"
-            className="theme-toggle"
-            aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
-            aria-pressed={theme === "dark"}
-            onClick={() => setTheme((value) => (value === "dark" ? "light" : "dark"))}
-          >
-            <span className="theme-toggle-label">{theme === "dark" ? "Light" : "Dark"}</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              {theme === "dark" ? (
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-              ) : (
-                <>
-                  <path d="M12 3v2" />
-                  <path d="M12 19v2" />
-                  <path d="M5.64 5.64l1.42 1.42" />
-                  <path d="M16.94 16.94l1.42 1.42" />
-                  <path d="M3 12h2" />
-                  <path d="M19 12h2" />
-                  <path d="M5.64 18.36l1.42-1.42" />
-                  <path d="M16.94 7.06l1.42-1.42" />
-                  <circle cx="12" cy="12" r="4" />
-                </>
-              )}
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      <div className="mobile-header">
-        <div className="mobile-header-copy">
-          <button
-            type="button"
-            className="menu-toggle"
-            aria-label="Open question palette"
-            aria-expanded={isPaletteOpen}
-            onClick={() => setIsPaletteOpen((value) => !value)}
-          >
-            <span />
-            <span />
-            <span />
-          </button>
-          <div>
-            <div className="mobile-header-kicker">English</div>
-            <div className="mobile-header-title">Study Mode</div>
-          </div>
-        </div>
-
-          <div className="mobile-header-meta">
-            <span className="question-count">{currentPage}/{totalCards}</span>
-
             <button
               type="button"
-              className="theme-toggle"
-              aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
-              aria-pressed={theme === "dark"}
-              onClick={() => setTheme((value) => (value === "dark" ? "light" : "dark"))}
+              className="light red"
+              onClick={() => router.push("/english/synonyms-antonyms/study-mode")}
+              aria-label="Close and return"
+              title="Close to welcome screen"
             >
-              <span className="theme-toggle-label">{theme === "dark" ? "Light" : "Dark"}</span>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                {theme === "dark" ? (
-                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-                ) : (
-                  <>
-                    <path d="M12 3v2" />
-                    <path d="M12 19v2" />
-                    <path d="M5.64 5.64l1.42 1.42" />
-                    <path d="M16.94 16.94l1.42 1.42" />
-                    <path d="M3 12h2" />
-                    <path d="M19 12h2" />
-                    <path d="M5.64 18.36l1.42-1.42" />
-                    <path d="M16.94 7.06l1.42-1.42" />
-                    <circle cx="12" cy="12" r="4" />
-                  </>
-                )}
-              </svg>
+              {isHoveringLights && <span className="symbol">×</span>}
+            </button>
+            <button
+              type="button"
+              className="light yellow"
+              onClick={() => router.push("/english/synonyms-antonyms/study-mode")}
+              aria-label="Minimize"
+              title="Minimize to topic"
+            >
+              {isHoveringLights && <span className="symbol">-</span>}
+            </button>
+            <button
+              type="button"
+              className="light green"
+              onClick={() => {}}
+              aria-label="Zoom window"
+              title="Full screen view"
+            >
+              {isHoveringLights && <span className="symbol">+</span>}
             </button>
           </div>
-      </div>
 
-      <div className="card">
-        {isPaletteOpen && (
-          <button
-            type="button"
-            className="palette-backdrop"
-            aria-label="Close question palette"
-            onClick={() => setIsPaletteOpen(false)}
-          />
-        )}
+          {/* Apple Search Field */}
+          <div className="sidebar-search">
+            <div className="search-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="search-icon">
+                <circle cx="11" cy="11" r="8" />
+                <path d="M21 21l-4.35-4.35" />
+              </svg>
+              <input
+                ref={searchInputRef}
+                type="search"
+                className="search-input"
+                placeholder="Search vocab (⌘F)"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  className="clear-search"
+                  onClick={() => setSearchQuery("")}
+                  aria-label="Clear search"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          </div>
 
-        {isPaletteOpen && (
-          <section className="question-palette" aria-label="Question palette">
-            <div className="question-palette-head">
-              <div>
-                <div className="question-palette-kicker">Navigation</div>
-                <div className="question-palette-title">Question Palette</div>
-              </div>
+          <div className="sidebar-section-title">VOCABULARY INDEX ({filteredCards.length})</div>
+
+          {/* Scrollable Wordlist */}
+          <div className="sidebar-word-list">
+            {filteredCards.length === 0 ? (
+              <div className="sidebar-empty">No matching terms</div>
+            ) : (
+              filteredCards.map((card) => {
+                const realIdx = cards.findIndex((c) => c.id === card.id);
+                const pageNum = realIdx !== -1 ? realIdx + 1 : 1;
+                const isSelected = currentPage === pageNum;
+                return (
+                  <button
+                    key={card.id}
+                    type="button"
+                    className={`word-row ${isSelected ? "selected" : ""}`}
+                    onClick={() => {
+                      setCurrentPage(pageNum);
+                      setSearchQuery("");
+                    }}
+                  >
+                    <span className="row-word">{card.word}</span>
+                    <span className="row-badge">{card.meanings[0]?.pos || "v."}</span>
+                  </button>
+                );
+              })
+            )}
+          </div>
+        </aside>
+
+        {/* ── Main Dictionary Content Workspace ── */}
+        <div className="macos-workspace">
+          
+          {/* Top Unified Toolbar */}
+          <header className="unified-toolbar">
+            <div className="toolbar-left">
               <button
                 type="button"
-                className="palette-close"
-                aria-label="Close question palette"
-                onClick={() => setIsPaletteOpen(false)}
+                className="nav-arrow"
+                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                aria-label="Previous Word"
+                title="Previous word (Left Arrow)"
               >
-                ×
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M15 18l-6-6 6-6" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                className="nav-arrow"
+                onClick={() => setCurrentPage((prev) => Math.min(totalCards, prev + 1))}
+                disabled={currentPage === totalCards}
+                aria-label="Next Word"
+                title="Next word (Right Arrow)"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 18l6-6-6-6" />
+                </svg>
+              </button>
+
+              {/* Mobile back button */}
+              <button
+                type="button"
+                className="mobile-back-btn"
+                onClick={() => router.push("/english/synonyms-antonyms/study-mode")}
+              >
+                <span>Exit</span>
               </button>
             </div>
 
-            <div className="question-palette-grid" role="list" aria-label="Question numbers">
-              {Array.from({ length: totalCards }, (_, index) => index + 1).map((page) => (
+            <div className="toolbar-center">
+              {/* Apple Segmented View Switcher (PC) */}
+              <div className="apple-segmented-control" role="tablist">
                 <button
-                  key={page}
                   type="button"
-                  className={`palette-pill ${currentPage === page ? "active" : ""}`}
-                  onClick={() => {
-                    setCurrentPage(page);
-                    setIsPaletteOpen(false);
-                  }}
-                  aria-pressed={currentPage === page}
+                  className={`segment-item ${viewMode === "all" ? "active" : ""}`}
+                  onClick={() => setViewMode("all")}
                 >
-                  {page}
+                  All Tables
                 </button>
-              ))}
-            </div>
-          </section>
-        )}
-
-        <section className="word-zone">
-          <div className="word">{activeCard.word}</div>
-          <div className="pos">{posLabel || "VOCAB"}</div>
-          <div className="bubble-row" aria-hidden="true">
-            <div className="bubble filled" />
-            <div className="bubble" />
-            <div className="bubble" />
-            <div className="bubble" />
-          </div>
-        </section>
-
-        <section className="content">
-          <div className="section-label">MEANING</div>
-          {activeCard.meanings.length === 0 ? (
-            <div className="def">No meanings available yet.</div>
-          ) : (
-            activeCard.meanings.map((meaning, index) => (
-              <div key={`${meaning.definition || "meaning"}-${index}`}>
-                <div className={`def${index > 0 ? " meaning-space" : ""}`}>
-                  {meaning.pos ? <b>({meaning.pos})</b> : null} {meaning.definition}
-                </div>
-                {meaning.translation ? <div className="bn">({meaning.translation})</div> : null}
+                <button
+                  type="button"
+                  className={`segment-item ${viewMode === "synonyms" ? "active" : ""}`}
+                  onClick={() => setViewMode("synonyms")}
+                >
+                  Synonyms
+                </button>
+                <button
+                  type="button"
+                  className={`segment-item ${viewMode === "antonyms" ? "active" : ""}`}
+                  onClick={() => setViewMode("antonyms")}
+                >
+                  Antonyms
+                </button>
               </div>
-            ))
+
+              {/* Mobile title */}
+              <div className="mobile-toolbar-title">{activeCard.word}</div>
+            </div>
+
+            <div className="toolbar-right">
+              <button
+                type="button"
+                className="mobile-grid-btn"
+                onClick={() => setIsMobilePaletteOpen(true)}
+              >
+                <span>{currentPage}/{totalCards}</span>
+              </button>
+
+              <button
+                type="button"
+                className="appearance-toggle"
+                onClick={() => setTheme((v) => (v === "dark" ? "light" : "dark"))}
+                aria-label="Toggle theme appearance"
+              >
+                {theme === "dark" ? (
+                  <svg viewBox="0 0 24 24" fill="currentColor" className="icon-theme">
+                    <path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z" />
+                  </svg>
+                ) : (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="icon-theme">
+                    <circle cx="12" cy="12" r="5" />
+                    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+                  </svg>
+                )}
+              </button>
+            </div>
+          </header>
+
+          {/* Mobile Word Palette Sheet Modal */}
+          {isMobilePaletteOpen && (
+            <div className="mobile-modal-backdrop" onClick={() => setIsMobilePaletteOpen(false)}>
+              <div className="mobile-modal-sheet" onClick={(e) => e.stopPropagation()}>
+                <div className="sheet-header">
+                  <span className="sheet-title">Vocabulary Index ({totalCards})</span>
+                  <button type="button" className="btn-close" onClick={() => setIsMobilePaletteOpen(false)}>✕</button>
+                </div>
+                <div className="sheet-grid">
+                  {Array.from({ length: totalCards }, (_, i) => i + 1).map((p) => (
+                    <button
+                      key={p}
+                      type="button"
+                      className={`sheet-pill ${currentPage === p ? "active" : ""}`}
+                      onClick={() => {
+                        setCurrentPage(p);
+                        setIsMobilePaletteOpen(false);
+                      }}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
           )}
 
-          <div className="slider-head">
-            <button
-              className="nav-btn nav-left"
-              type="button"
-              onClick={() => setSlideIndex(0)}
-              aria-label="Show synonyms"
-            >
-              &lt;
-            </button>
-
-            <div className="slider-label-group">
-              <span className="slider-title">{slideTitle}</span>
-              <span className="rule" aria-hidden="true" />
-            </div>
-
-            <button
-              className="nav-btn nav-right"
-              type="button"
-              onClick={() => setSlideIndex(1)}
-              aria-label="Show antonyms"
-            >
-              &gt;
-            </button>
-          </div>
-
-          <div
-            className="slider-viewport"
-            onTouchStart={(event) => {
-              const touch = event.touches[0];
-              touchStartXRef.current = touch?.clientX ?? null;
-              touchStartYRef.current = touch?.clientY ?? null;
-            }}
-            onTouchEnd={(event) => {
-              const touch = event.changedTouches[0];
-              const startX = touchStartXRef.current;
-              const startY = touchStartYRef.current;
-              touchStartXRef.current = null;
-              touchStartYRef.current = null;
-              if (startX === null || startY === null || !touch) return;
-              const deltaX = touch.clientX - startX;
-              const deltaY = touch.clientY - startY;
-              if (Math.abs(deltaX) < 40 || Math.abs(deltaX) < Math.abs(deltaY)) return;
-              setSlideIndex(deltaX > 0 ? 0 : 1);
-            }}
-          >
-            <div className="slider-track" style={{ transform: `translateX(-${slideIndex * 50}%)` }}>
-              <div className="slide synonyms">
-                <ul className="syn-list">
-                  {activeCard.synonyms.length === 0 ? (
-                    <li>
-                      <span className="syn-en">No synonyms yet</span>
-                      <span className="syn-bn">—</span>
-                    </li>
-                  ) : (
-                    activeCard.synonyms.map((item) => (
-                      <li key={item.word}>
-                        <span className="syn-en">{item.word}</span>
-                        <span className="syn-bn">{item.translation || "—"}</span>
-                      </li>
-                    ))
-                  )}
-                </ul>
+          {/* Main Dictionary Workspace Body */}
+          <div className="dictionary-body-scroll">
+            
+            {/* Centerpiece Word Profile */}
+            <section className="dict-word-profile">
+              <div className="word-heading-line">
+                <h1 className="dict-main-word">{activeCard.word}</h1>
+                {posLabel && <span className="grammar-tag">{posLabel}</span>}
               </div>
 
-              <div className="slide antonyms">
-                <ul className="syn-list">
-                  {activeCard.antonyms.length === 0 ? (
-                    <li>
-                      <span className="syn-en">No antonyms yet</span>
-                      <span className="syn-bn">—</span>
-                    </li>
-                  ) : (
-                    activeCard.antonyms.map((item) => (
-                      <li key={item.word}>
-                        <span className="syn-en">{item.word}</span>
-                        <span className="syn-bn">{item.translation || "—"}</span>
-                      </li>
-                    ))
-                  )}
-                </ul>
+              <div className="meanings-container">
+                {activeCard.meanings.map((m, idx) => (
+                  <div key={idx} className="dict-meaning-block">
+                    <div className="meaning-eng">
+                      {m.pos && <strong className="pos-inline">{m.pos} </strong>}
+                      {m.definition}
+                    </div>
+                    {m.translation && (
+                      <blockquote className="meaning-bng-quote">
+                        <span className="quote-icon">❝</span>
+                        <span>{m.translation}</span>
+                      </blockquote>
+                    )}
+                  </div>
+                ))}
               </div>
+            </section>
+
+            {/* PC Split Comparison Tables (NSTableView Style) */}
+            <section className="apple-tables-grid">
+              {(viewMode === "all" || viewMode === "synonyms") && (
+                <div className="ns-table-container">
+                  <div className="table-header">
+                    <span className="table-title">SYNONYMS</span>
+                    <span className="table-count">{activeCard.synonyms.length} words</span>
+                  </div>
+                  <div className="table-body">
+                    {activeCard.synonyms.length === 0 ? (
+                      <div className="table-empty">No documented synonyms</div>
+                    ) : (
+                      activeCard.synonyms.map((s, i) => (
+                        <div key={i} className={`table-row ${i % 2 === 1 ? "alt-row" : ""}`}>
+                          <span className="cell-term">{s.word}</span>
+                          <span className="cell-trans">{s.translation || "—"}</span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {(viewMode === "all" || viewMode === "antonyms") && (
+                <div className="ns-table-container">
+                  <div className="table-header">
+                    <span className="table-title">ANTONYMS</span>
+                    <span className="table-count">{activeCard.antonyms.length} words</span>
+                  </div>
+                  <div className="table-body">
+                    {activeCard.antonyms.length === 0 ? (
+                      <div className="table-empty">No documented antonyms</div>
+                    ) : (
+                      activeCard.antonyms.map((a, i) => (
+                        <div key={i} className={`table-row ${i % 2 === 1 ? "alt-row" : ""}`}>
+                          <span className="cell-term">{a.word}</span>
+                          <span className="cell-trans">{a.translation || "—"}</span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </section>
+
+            {/* Mobile Swipe Segmented Suite (<900px) */}
+            <section className="mobile-suite">
+              <div className="mobile-seg-control">
+                <button
+                  type="button"
+                  className={`m-tab ${mobileTab === "synonyms" ? "active m-syn" : ""}`}
+                  onClick={() => setMobileTab("synonyms")}
+                >
+                  Synonyms ({activeCard.synonyms.length})
+                </button>
+                <button
+                  type="button"
+                  className={`m-tab ${mobileTab === "antonyms" ? "active m-ant" : ""}`}
+                  onClick={() => setMobileTab("antonyms")}
+                >
+                  Antonyms ({activeCard.antonyms.length})
+                </button>
+              </div>
+
+              <div
+                className="mobile-swipe-viewport"
+                onTouchStart={(e) => {
+                  const t = e.touches[0];
+                  touchStartXRef.current = t?.clientX ?? null;
+                  touchStartYRef.current = t?.clientY ?? null;
+                }}
+                onTouchEnd={(e) => {
+                  const t = e.changedTouches[0];
+                  const sx = touchStartXRef.current;
+                  const sy = touchStartYRef.current;
+                  if (sx === null || sy === null || !t) return;
+                  const dx = t.clientX - sx;
+                  const dy = t.clientY - sy;
+                  if (Math.abs(dx) < 45 || Math.abs(dx) < Math.abs(dy)) return;
+                  if (dx < 0 && mobileTab === "synonyms") setMobileTab("antonyms");
+                  if (dx > 0 && mobileTab === "antonyms") setMobileTab("synonyms");
+                }}
+              >
+                <div className="ns-table-container">
+                  <div className="table-body">
+                    {mobileTab === "synonyms" ? (
+                      activeCard.synonyms.length === 0 ? (
+                        <div className="table-empty">No documented synonyms</div>
+                      ) : (
+                        activeCard.synonyms.map((s, i) => (
+                          <div key={i} className="table-row">
+                            <span className="cell-term">{s.word}</span>
+                            <span className="cell-trans">{s.translation || "—"}</span>
+                          </div>
+                        ))
+                      )
+                    ) : (
+                      activeCard.antonyms.length === 0 ? (
+                        <div className="table-empty">No documented antonyms</div>
+                      ) : (
+                        activeCard.antonyms.map((a, i) => (
+                          <div key={i} className="table-row">
+                            <span className="cell-term">{a.word}</span>
+                            <span className="cell-trans">{a.translation || "—"}</span>
+                          </div>
+                        ))
+                      )
+                    )}
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          {/* Bottom Apple Status Bar (PC & Mobile) */}
+          <footer className="macos-status-bar">
+            <div className="status-left">
+              <span>Entry {currentPage} of {totalCards}</span>
             </div>
-          </div>
 
-          <div className="dots" aria-hidden="true">
-            <button type="button" className={`dot ${slideIndex === 0 ? "active" : ""}`} onClick={() => setSlideIndex(0)} />
-            <button type="button" className={`dot ${slideIndex === 1 ? "active" : ""}`} onClick={() => setSlideIndex(1)} />
-          </div>
-        </section>
+            <div className="status-center">
+              <span>Desktop keyboard navigation: Use <kbd>←</kbd> <kbd>→</kbd> arrow keys</span>
+            </div>
 
-        <div className="word-nav">
-          <button type="button" onClick={() => setCurrentPage((value) => Math.max(1, value - 1))}>
-            <span className="arrow">&lt;</span> Previous
-          </button>
-          <button
-            type="button"
-            onClick={() => setCurrentPage((value) => Math.min(totalCards, value + 1))}
-          >
-            Next <span className="arrow">&gt;</span>
-          </button>
+            <div className="status-right">
+              <button
+                type="button"
+                className="status-btn"
+                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </button>
+              <button
+                type="button"
+                className="status-btn"
+                onClick={() => setCurrentPage((prev) => Math.min(totalCards, prev + 1))}
+                disabled={currentPage === totalCards}
+              >
+                Next
+              </button>
+            </div>
+          </footer>
         </div>
       </div>
 
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Archivo+Black&family=Noto+Sans+Bengali:wght@400;600&display=swap');
+      <style jsx>{`
+        /* ════════════════════════════════════════════════════
+           AUTHENTIC APPLE DICTIONARY MATERIALS & SYSTEM COLOR TOKENS
+           ════════════════════════════════════════════════════ */
+        .apple-dict-viewport {
+          --desktop-bg: #000000;
+          --sidebar-bg: rgba(30, 30, 35, 0.88);
+          --workspace-bg: rgba(24, 24, 28, 0.96);
+          --window-border: rgba(255, 255, 255, 0.16);
+          --divider: rgba(255, 255, 255, 0.09);
+          --text-primary: #ffffff;
+          --text-secondary: #98989d;
+          --text-muted: #636366;
+          --item-hover: rgba(255, 255, 255, 0.06);
+          --table-header: rgba(255, 255, 255, 0.03);
+          --table-alt: rgba(255, 255, 255, 0.02);
+          --quote-bg: rgba(255, 255, 255, 0.04);
+          --quote-border: #007aff;
+          --system-blue: #007aff;
 
-        :root {
-          --paper: #181613;
-          --paper-raised: #1f1c18;
-          --ink: #f2ead9;
-          --ink-dim: #c9bfa9;
-          --scarlet: #ff7a5c;
-          --teal: #7fd4bd;
-          --mustard: #f0b649;
-          --line: #4a4234;
-        }
-
-        .quiz-page {
           min-height: 100vh;
-          background: var(--paper);
-          color: var(--ink);
-          font-family: 'Space Mono', monospace;
-          -webkit-font-smoothing: antialiased;
-          position: relative;
-          padding-top: 58px;
-        }
-
-        .quiz-page[data-theme="light"] {
-          --paper: #f4efe3;
-          --paper-raised: #ffffff;
-          --ink: #1c1c1c;
-          --ink-dim: #5b5b52;
-          --scarlet: #b6412e;
-          --teal: #2f4b46;
-          --mustard: #d69a2d;
-          --line: #c9bfa5;
-        }
-
-        .quiz-page[data-theme="light"] .card {
-          background: var(--paper);
-        }
-
-        .desktop-header {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          z-index: 25;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 14px;
-          padding: 12px 14px 10px;
-          background: var(--paper);
-          border-bottom: 1.5px solid var(--line);
-          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-        }
-
-        .desktop-header-copy,
-        .mobile-header-copy {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          min-width: 0;
-        }
-
-        .desktop-header-meta,
-        .mobile-header-meta {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          flex: 0 0 auto;
-        }
-
-        .desktop-header-copy {
-          min-width: 0;
-        }
-
-        .desktop-header-kicker {
-          font-size: 10px;
-          letter-spacing: 3px;
-          text-transform: uppercase;
-          color: var(--ink-dim);
-        }
-
-        .desktop-header-title {
-          margin-top: 3px;
-          font-family: 'Archivo Black', sans-serif;
-          font-size: 18px;
-          line-height: 1;
-          color: var(--ink);
-        }
-
-        .menu-toggle {
-          width: 40px;
-          height: 40px;
-          padding: 10px;
-          display: inline-flex;
-          flex-direction: column;
-          justify-content: center;
-          gap: 4px;
-          border-radius: 12px;
-          border: 1.5px solid var(--line);
-          background: var(--paper);
-          color: var(--ink);
-          cursor: pointer;
-          flex: 0 0 auto;
-        }
-
-        .menu-toggle span {
-          display: block;
-          width: 100%;
-          height: 2px;
-          border-radius: 999px;
-          background: currentColor;
-        }
-
-        .theme-toggle {
-          min-width: 42px;
-          height: 42px;
-          padding: 0 10px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-          border-radius: 12px;
-          border: 1.5px solid var(--line);
-          background: var(--paper-raised);
-          color: var(--ink);
-          box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
-          cursor: pointer;
-        }
-
-        .question-count {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          min-width: 52px;
-          height: 30px;
-          padding: 0 10px;
-          border-radius: 999px;
-          border: 1.5px solid var(--line);
-          background: var(--paper);
-          color: var(--ink-dim);
-          font-family: 'Space Mono', monospace;
-          font-size: 12px;
-          font-weight: 700;
-          letter-spacing: 0.04em;
-        }
-
-        .quiz-page[data-theme="light"] .desktop-header {
-          background: var(--paper);
-        }
-
-        .quiz-page[data-theme="light"] .theme-toggle {
-          background: var(--paper);
-        }
-
-        .quiz-page[data-theme="light"] .menu-toggle {
-          background: var(--paper);
-        }
-
-        .mobile-header {
-          display: none;
-        }
-
-        .theme-toggle svg {
-          width: 18px;
-          height: 18px;
-        }
-
-        .theme-toggle-label {
-          font-size: 12px;
-          font-weight: 700;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-        }
-
-        .card {
-          width: 100%;
-          max-width: 520px;
-          margin: 0 auto;
-          min-height: 100vh;
-          background: var(--paper);
+          background: var(--desktop-bg);
+          color: var(--text-primary);
+          font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Arial, sans-serif;
           display: flex;
           flex-direction: column;
-          overflow-x: hidden;
-          position: relative;
+          padding: 12px;
         }
 
-        .palette-backdrop {
-          position: fixed;
-          inset: 58px 0 0 0;
-          z-index: 30;
-          border: 0;
-          padding: 0;
-          background: rgba(0, 0, 0, 0.35);
-          backdrop-filter: blur(2px);
+        .apple-dict-viewport[data-theme="light"] {
+          --desktop-bg: #e5e5eb;
+          --sidebar-bg: rgba(235, 235, 240, 0.92);
+          --workspace-bg: #ffffff;
+          --window-border: rgba(0, 0, 0, 0.15);
+          --divider: rgba(0, 0, 0, 0.08);
+          --text-primary: #1d1d1f;
+          --text-secondary: #6e6e73;
+          --text-muted: #86868b;
+          --item-hover: rgba(0, 0, 0, 0.04);
+          --table-header: rgba(0, 0, 0, 0.025);
+          --table-alt: rgba(0, 0, 0, 0.015);
+          --quote-bg: rgba(0, 0, 0, 0.03);
+          --quote-border: #007aff;
+          --system-blue: #007aff;
         }
 
-        .question-palette {
-          position: fixed;
-          top: 58px;
-          left: 12px;
-          right: 12px;
-          z-index: 35;
-          max-width: 520px;
-          margin: 0 auto;
-          padding: 14px;
-          border: 1.5px solid var(--line);
-          border-radius: 20px;
-          background: var(--paper-raised);
-          box-shadow: 0 18px 38px rgba(0, 0, 0, 0.2);
-        }
-
-        .quiz-page[data-theme="light"] .question-palette {
-          background: var(--paper);
-        }
-
-        .question-palette-head {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 10px;
-          margin-bottom: 12px;
-        }
-
-        .question-palette-kicker {
-          font-size: 10px;
-          letter-spacing: 3px;
-          text-transform: uppercase;
-          color: var(--ink-dim);
-        }
-
-        .question-palette-title {
-          margin-top: 3px;
-          font-family: 'Archivo Black', sans-serif;
-          font-size: 16px;
-          line-height: 1;
-          color: var(--ink);
-        }
-
-        .palette-close {
-          width: 36px;
-          height: 36px;
-          border-radius: 10px;
-          border: 1.5px solid var(--line);
-          background: var(--paper);
-          color: var(--ink);
-          font-size: 22px;
-          line-height: 1;
-          cursor: pointer;
-        }
-
-        .question-palette-grid {
-          display: grid;
-          grid-template-columns: repeat(5, minmax(0, 1fr));
-          gap: 10px;
-        }
-
-        .palette-pill {
-          height: 44px;
+        /* ── macOS Application Window Frame ── */
+        .apple-app-window {
+          width: 100%;
+          max-width: 100%;
+          background: var(--workspace-bg);
+          border: 0.5px solid var(--window-border);
+          box-shadow: 0 24px 75px rgba(0, 0, 0, 0.6);
           border-radius: 14px;
-          border: 1.5px solid var(--line);
-          background: var(--paper);
-          color: var(--ink-dim);
-          font-family: 'Space Mono', monospace;
-          font-weight: 700;
-          cursor: pointer;
-        }
-
-        .palette-pill.active {
-          background: var(--scarlet);
-          border-color: var(--scarlet);
-          color: #181613;
-        }
-
-        .page-strip {
-          display: none;
-        }
-
-        .word-zone {
-          text-align: center;
-          padding: 22px 20px 16px;
-          border-bottom: 1.5px solid var(--ink);
-          background: repeating-linear-gradient(135deg, transparent, transparent 18px, rgba(255, 122, 92, 0.07) 18px, rgba(255, 122, 92, 0.07) 19px);
-        }
-
-        .quiz-page[data-theme="light"] .word-zone {
-          background: repeating-linear-gradient(135deg, transparent, transparent 18px, rgba(182, 65, 46, 0.04) 18px, rgba(182, 65, 46, 0.04) 19px);
-        }
-
-        .word {
-          font-family: 'Archivo Black', sans-serif;
-          font-size: 46px;
-          letter-spacing: 1px;
-          color: var(--ink);
-        }
-
-        .pos {
-          margin-top: 4px;
-          font-size: 13.5px;
-          color: var(--scarlet);
-          letter-spacing: 2px;
-          font-weight: 700;
-        }
-
-        .bubble-row {
-          display: flex;
-          justify-content: center;
-          gap: 10px;
-          margin-top: 12px;
-        }
-
-        .bubble {
-          width: 14px;
-          height: 14px;
-          border: 1.5px solid var(--ink);
-          border-radius: 50%;
-        }
-
-        .bubble.filled {
-          background: var(--scarlet);
-          border-color: var(--scarlet);
-        }
-
-        .content {
-          padding: 16px 20px 4px;
-          flex: 1;
           display: flex;
           flex-direction: column;
-        }
-
-        .section-label {
-          font-family: 'Space Mono', monospace;
-          font-size: 16.5px;
-          letter-spacing: 2px;
-          color: var(--teal);
-          font-weight: 400;
-          margin: 0 0 10px;
-          text-align: center;
-          text-transform: uppercase;
-        }
-
-        .def {
-          font-size: 15px;
-          line-height: 1.6;
-          color: var(--ink);
-        }
-
-        .def b {
-          color: var(--scarlet);
-        }
-
-        .meaning-space {
-          margin-top: 8px;
-        }
-
-        .bn {
-          font-family: 'Noto Sans Bengali', sans-serif;
-          font-size: 15px;
-          color: var(--teal);
-          margin-top: 2px;
-        }
-
-        .slider-head {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 14px;
-          margin-top: 20px;
-        }
-
-        .slider-label-group {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex: 1;
-        }
-
-        .slider-title {
-          font-family: 'Space Mono', monospace;
-          font-size: 16.5px;
-          letter-spacing: 2px;
-          color: var(--teal);
-          font-weight: 400;
-          text-align: center;
-          text-transform: uppercase;
-          min-width: 130px;
-        }
-
-        .rule {
-          display: none;
-        }
-
-        .nav-btn {
-          width: 26px;
-          height: 26px;
-          border: 1.5px solid var(--ink);
-          border-radius: 50%;
-          background: var(--paper);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          font-family: 'Space Mono', monospace;
-          font-weight: 700;
-          color: var(--ink);
-          user-select: none;
-          flex-shrink: 0;
-          transition: background 0.15s, color 0.15s;
-        }
-
-        .nav-btn:hover {
-          background: var(--scarlet);
-          color: var(--paper);
-          border-color: var(--scarlet);
-        }
-
-        .nav-left {
-          margin-right: 8px;
-        }
-
-        .nav-right {
-          margin-left: 8px;
-        }
-
-        .slider-viewport {
           overflow: hidden;
-          margin-top: 8px;
+          margin: 0 auto;
         }
 
-        .slider-track {
+        .apple-dict-viewport[data-theme="light"] .apple-app-window {
+          box-shadow: 0 16px 50px rgba(0, 0, 0, 0.18);
+        }
+
+        /* ── Left Navigation Sidebar (Default hidden on Mobile) ── */
+        .macos-sidebar {
+          display: none;
+        }
+
+        /* ── Main Workspace Area ── */
+        .macos-workspace {
+          flex: 1;
           display: flex;
-          width: 200%;
-          transition: transform 0.5s cubic-bezier(.2,.7,.3,1);
+          flex-direction: column;
+          overflow: hidden;
         }
 
-        .slide {
-          width: 50%;
+        /* Top Unified Toolbar */
+        .unified-toolbar {
+          height: 48px;
+          border-bottom: 0.5px solid var(--divider);
+          background: var(--sidebar-bg);
+          backdrop-filter: blur(30px);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0 16px;
           flex-shrink: 0;
         }
 
-        .syn-list {
-          list-style: none;
-          margin: 0;
-          padding: 0;
+        .toolbar-left, .toolbar-right {
           display: flex;
-          flex-direction: column;
-          gap: 9px;
+          align-items: center;
+          gap: 8px;
         }
 
-        .syn-list li {
-          display: flex;
-          justify-content: space-between;
-          align-items: baseline;
-          font-size: 15px;
-          border-bottom: 1px dotted var(--line);
-          padding-bottom: 7px;
-          padding-right: 4px;
-        }
-
-        .syn-en {
-          font-weight: 400;
-          color: var(--ink);
-          letter-spacing: 0.3px;
-        }
-
-        .slide.antonyms .syn-en {
-          color: var(--scarlet);
-        }
-
-        .syn-bn {
-          font-family: 'Noto Sans Bengali', sans-serif;
-          color: var(--teal);
-          font-size: 15px;
-          text-align: right;
-        }
-
-        .dots {
-          display: flex;
-          justify-content: center;
-          gap: 6px;
-          margin-top: 12px;
-        }
-
-        .dot {
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-          background: var(--line);
-          border: 1px solid var(--ink);
-          cursor: pointer;
-          padding: 0;
-        }
-
-        .dot.active {
-          background: var(--scarlet);
-          border-color: var(--scarlet);
-        }
-
-        .word-nav {
-          margin-top: auto;
-          display: flex;
-          justify-content: space-between;
-          gap: 12px;
-          padding: 14px 20px calc(18px + env(safe-area-inset-bottom));
-          position: sticky;
-          bottom: 0;
-          background: var(--paper);
-          border-top: 1.5px dashed var(--line);
-        }
-
-        .quiz-page[data-theme="light"] .word-nav {
-          background: var(--paper);
-        }
-
-        .word-nav button {
-          flex: 1;
+        .nav-arrow {
+          width: 28px;
+          height: 28px;
+          border-radius: 6px;
+          border: none;
+          background: var(--item-hover);
+          color: var(--text-primary);
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 6px;
-          font-family: 'Space Mono', monospace;
-          font-weight: 700;
-          font-size: 13.5px;
-          letter-spacing: 1px;
-          text-transform: uppercase;
-          color: var(--ink);
-          background: var(--paper);
-          border: 1.5px solid var(--ink);
-          border-radius: 999px;
-          padding: 10px 14px;
           cursor: pointer;
-          box-shadow: 3px 3px 0 var(--ink);
-          transition: transform 0.12s, box-shadow 0.12s, background 0.12s, color 0.12s;
         }
 
-        .word-nav button:hover {
-          background: var(--scarlet);
-          color: var(--paper);
-          border-color: var(--scarlet);
+        .nav-arrow:disabled {
+          color: var(--text-muted);
+          opacity: 0.4;
+          cursor: not-allowed;
         }
 
-        .word-nav button:active {
-          transform: translate(3px, 3px);
-          box-shadow: 0 0 0 var(--ink);
+        .nav-arrow svg { width: 16px; height: 16px; }
+
+        .mobile-back-btn {
+          border: none;
+          background: none;
+          color: var(--system-blue);
+          font-size: 15px;
+          font-weight: 600;
+          padding: 4px;
         }
 
-        .word-nav .arrow {
+        .apple-segmented-control {
+          display: none;
+        }
+
+        .mobile-toolbar-title {
+          font-size: 16px;
+          font-weight: 700;
+          color: var(--text-primary);
+        }
+
+        .mobile-grid-btn {
+          padding: 4px 10px;
+          border-radius: 6px;
+          background: var(--item-hover);
+          border: 0.5px solid var(--divider);
           font-size: 13px;
-          line-height: 1;
+          font-weight: 600;
+          color: var(--text-primary);
         }
 
-        @media (max-width: 460px) {
-          .quiz-page {
-            padding-top: env(safe-area-inset-top);
+        .appearance-toggle {
+          width: 28px;
+          height: 28px;
+          border-radius: 6px;
+          background: var(--item-hover);
+          border: 0.5px solid var(--divider);
+          color: var(--text-primary);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+        }
+
+        .icon-theme { width: 16px; height: 16px; }
+
+        /* Dictionary Body Content Area */
+        .dictionary-body-scroll {
+          flex: 1;
+          overflow-y: auto;
+          padding: 24px 16px;
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
+        }
+
+        /* Centerpiece Word Profile */
+        .dict-word-profile {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          border-bottom: 0.5px solid var(--divider);
+          padding-bottom: 20px;
+        }
+
+        .word-heading-line {
+          display: flex;
+          align-items: baseline;
+          gap: 12px;
+          flex-wrap: wrap;
+        }
+
+        .dict-main-word {
+          font-size: clamp(2.2rem, 4vw, 3.2rem);
+          font-weight: 700;
+          letter-spacing: -0.03em;
+          margin: 0;
+          color: var(--text-primary);
+        }
+
+        .grammar-tag {
+          font-size: 15px;
+          font-weight: 600;
+          color: var(--text-secondary);
+          font-style: italic;
+        }
+
+        .meanings-container {
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+        }
+
+        .dict-meaning-block {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .meaning-eng {
+          font-size: 16px;
+          line-height: 1.5;
+          color: var(--text-primary);
+        }
+
+        .pos-inline { color: var(--system-blue); font-weight: 600; }
+
+        .meaning-bng-quote {
+          margin: 0;
+          padding: 8px 14px;
+          border-left: 3px solid var(--quote-border);
+          background: var(--quote-bg);
+          border-radius: 0 8px 8px 0;
+          font-size: 15px;
+          font-weight: 500;
+          color: var(--text-secondary);
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .quote-icon { font-size: 14px; color: var(--system-blue); opacity: 0.8; }
+
+        /* PC Apple Tables Grid (Hidden on Mobile) */
+        .apple-tables-grid { display: none; }
+
+        /* Mobile Touch Suite */
+        .mobile-suite { display: flex; flex-direction: column; gap: 14px; }
+        .mobile-seg-control {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          background: var(--item-hover);
+          padding: 3px;
+          border-radius: 8px;
+          border: 0.5px solid var(--divider);
+        }
+
+        .m-tab {
+          padding: 8px;
+          border: none;
+          background: none;
+          border-radius: 6px;
+          font-size: 14px;
+          font-weight: 600;
+          color: var(--text-secondary);
+        }
+
+        .m-tab.active { background: var(--workspace-bg); color: var(--text-primary); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+
+        .ns-table-container {
+          border: 0.5px solid var(--divider);
+          border-radius: 10px;
+          overflow: hidden;
+        }
+
+        .table-body { display: flex; flex-direction: column; }
+        .table-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 11px 14px;
+          border-bottom: 0.5px solid var(--divider);
+          font-size: 14.5px;
+        }
+
+        .table-row:last-child { border-bottom: none; }
+        .alt-row { background: var(--table-alt); }
+        .cell-term { font-weight: 600; color: var(--text-primary); }
+        .cell-trans { color: var(--text-secondary); }
+        .table-empty { padding: 20px; text-align: center; color: var(--text-muted); font-size: 14px; }
+
+        /* Bottom Status Bar */
+        .macos-status-bar {
+          height: 44px;
+          border-top: 0.5px solid var(--divider);
+          background: var(--sidebar-bg);
+          padding: 0 16px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          font-size: 12px;
+          color: var(--text-secondary);
+        }
+
+        .status-center { display: none; }
+        .status-btn {
+          padding: 6px 14px;
+          border-radius: 6px;
+          background: var(--item-hover);
+          border: 0.5px solid var(--divider);
+          color: var(--text-primary);
+          font-size: 13px;
+          font-weight: 600;
+        }
+
+        .status-btn:disabled { opacity: 0.4; }
+
+        /* Mobile Palette Sheet */
+        .mobile-modal-backdrop {
+          position: fixed;
+          inset: 0;
+          z-index: 100;
+          background: rgba(0, 0, 0, 0.6);
+          display: flex;
+          align-items: flex-end;
+        }
+
+        .mobile-modal-sheet {
+          background: var(--workspace-bg);
+          width: 100%;
+          max-height: 70vh;
+          overflow-y: auto;
+          border-radius: 20px 20px 0 0;
+          padding: 20px 16px 40px;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+
+        .sheet-header { display: flex; justify-content: space-between; align-items: center; font-weight: 700; }
+        .btn-close { border: none; background: none; font-size: 18px; color: var(--text-primary); }
+        .sheet-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap: 8px; }
+        .sheet-pill { height: 38px; border-radius: 8px; border: 0.5px solid var(--divider); background: var(--item-hover); font-weight: 600; color: var(--text-primary); }
+        .sheet-pill.active { background: var(--system-blue); color: white; border-color: var(--system-blue); }
+
+        /* ════════════════════════════════════════════════════
+           PC DESKTOP ZERO-SCROLL MASTER-DETAIL SUITE (min-width: 900px)
+           ════════════════════════════════════════════════════ */
+        @media (min-width: 900px) {
+          .apple-dict-viewport {
+            height: 100vh;
+            max-height: 100vh;
+            overflow: hidden; /* ABSOLUTELY ZERO PAGE SCROLLING! */
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
           }
 
-          .desktop-header {
-            display: none;
+          .apple-app-window {
+            width: calc(100vw - 32px);
+            max-width: 1400px;
+            height: calc(100vh - 32px);
+            max-height: 920px;
+            flex-direction: row;
+            margin: auto;
           }
 
-          .mobile-header {
-            position: sticky;
-            top: 0;
-            z-index: 25;
+          /* ── Left Navigation Sidebar (Master List) ── */
+          .macos-sidebar {
+            width: 270px;
+            display: flex;
+            flex-direction: column;
+            background: var(--sidebar-bg);
+            backdrop-filter: blur(40px);
+            border-right: 0.5px solid var(--divider);
+            flex-shrink: 0;
+            user-select: none;
+          }
+
+          .traffic-lights {
+            padding: 16px 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+          }
+
+          .light {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            padding: 0;
+          }
+
+          .red { background: #ff5f56; border: 0.5px solid #e0443e; }
+          .yellow { background: #ffbd2e; border: 0.5px solid #dea123; }
+          .green { background: #27c93f; border: 0.5px solid #1aab29; }
+          .symbol { font-size: 8px; font-weight: 800; color: rgba(0, 0, 0, 0.7); line-height: 1; }
+
+          .sidebar-search {
+            padding: 0 12px 12px;
+          }
+
+          .search-box {
+            background: rgba(0, 0, 0, 0.16);
+            border: 0.5px solid var(--divider);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            padding: 4px 8px;
+            gap: 6px;
+          }
+
+          .apple-dict-viewport[data-theme="light"] .search-box {
+            background: rgba(0, 0, 0, 0.05);
+          }
+
+          .search-icon { width: 14px; height: 14px; color: var(--text-muted); }
+          .search-input {
+            border: none;
+            background: none;
+            font-size: 13px;
+            color: var(--text-primary);
+            width: 100%;
+            outline: none;
+          }
+          .search-input::placeholder { color: var(--text-muted); }
+
+          .clear-search { border: none; background: none; color: var(--text-muted); font-size: 12px; cursor: pointer; }
+
+          .sidebar-section-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            padding: 6px 16px;
+            letter-spacing: 0.03em;
+          }
+
+          .sidebar-word-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 4px 8px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+          }
+
+          .sidebar-word-list::-webkit-scrollbar { width: 5px; }
+          .sidebar-word-list::-webkit-scrollbar-thumb { background: rgba(150, 150, 150, 0.3); border-radius: 10px; }
+
+          .word-row {
+            height: 34px;
+            padding: 0 10px;
+            border-radius: 6px;
+            border: none;
+            background: transparent;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 10px;
-            padding: 8px 12px 7px;
-            background: var(--paper-raised);
-            border-bottom: 1.5px solid var(--line);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            cursor: pointer;
+            transition: background 0.1s ease;
           }
 
-          .mobile-header-copy {
-            min-width: 0;
+          .word-row:hover:not(.selected) {
+            background: var(--item-hover);
           }
 
-          .mobile-header-kicker {
-            font-size: 9px;
-            letter-spacing: 2.5px;
-            text-transform: uppercase;
-            color: var(--ink-dim);
+          .word-row.selected {
+            background: var(--system-blue);
+            color: #ffffff;
           }
 
-          .mobile-header-title {
-            margin-top: 2px;
-            font-family: 'Archivo Black', sans-serif;
-            font-size: 15px;
-            line-height: 1;
-            color: var(--ink);
+          .row-word { font-size: 13.5px; font-weight: 500; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
+          .word-row.selected .row-word { font-weight: 600; }
+
+          .row-badge { font-size: 11.5px; color: var(--text-secondary); font-style: italic; }
+          .word-row.selected .row-badge { color: rgba(255, 255, 255, 0.85); }
+
+          .sidebar-empty { padding: 20px; text-align: center; color: var(--text-muted); font-size: 13px; }
+
+          /* ── Main Workspace ── */
+          .mobile-back-btn { display: none; }
+          .mobile-toolbar-title { display: none; }
+          .mobile-grid-btn { display: none; }
+          .mobile-suite { display: none; }
+
+          .apple-segmented-control {
+            display: inline-flex;
+            background: var(--item-hover);
+            border: 0.5px solid var(--divider);
+            padding: 2px;
+            border-radius: 7px;
           }
 
-          .theme-toggle {
-            min-width: 64px;
-            height: 34px;
-            padding: 0 10px;
-            flex: 0 0 auto;
-            gap: 5px;
-            border-radius: 999px;
-            background: var(--scarlet);
-            color: #181613;
-            border-color: var(--scarlet);
-            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
-          }
-
-          .theme-toggle-label {
-            font-size: 10px;
-          }
-
-          .question-count {
-            min-width: 46px;
-            height: 26px;
-            padding: 0 8px;
-            font-size: 10px;
-          }
-
-          .card {
-            min-height: calc(100dvh - 46px - env(safe-area-inset-top));
-          }
-
-          .word-zone {
-            padding: 16px 12px 12px;
-          }
-
-          .word {
-            font-size: clamp(2rem, 9.8vw, 2.55rem);
-          }
-
-          .pos {
-            letter-spacing: 1.4px;
-            font-size: 12px;
-          }
-
-          .bubble-row {
-            margin-top: 10px;
-            gap: 8px;
-          }
-
-          .bubble {
-            width: 11px;
-            height: 11px;
-          }
-
-          .content {
-            flex: 0 0 auto;
-            padding: 14px 12px 0;
-          }
-
-          .section-label {
-            font-size: 15px;
-            font-weight: 600;
-            margin-bottom: 10px;
-            letter-spacing: 1px;
-          }
-
-          .def {
-            font-size: 15px;
-            line-height: 1.7;
-          }
-
-          .bn {
-            font-size: 14px;
-            line-height: 1.6;
-          }
-
-          .syn-list li {
-            font-size: 15px;
-            line-height: 1.7;
-            padding-bottom: 8px;
-          }
-
-          .meaning-space {
-            margin-top: 10px;
-          }
-
-          .slider-head {
-            margin-top: 16px;
-            gap: 10px;
-          }
-
-          .slider-title {
-            min-width: 98px;
-            font-size: 15px;
-            font-weight: 600;
-            letter-spacing: 1px;
-          }
-
-          .nav-btn {
-            width: 24px;
-            height: 24px;
-          }
-
-          .slider-viewport {
-            margin-top: 8px;
-          }
-
-          .syn-list {
-            gap: 8px;
-          }
-
-          .syn-en {
-            font-size: 15px;
+          .segment-item {
+            padding: 4px 14px;
+            border: none;
+            background: none;
+            border-radius: 5px;
+            font-size: 12.5px;
             font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
           }
 
-          .syn-bn {
-            font-size: 14px;
-          }
-
-          .dots {
-            margin-top: 12px;
-          }
-
-          .word-nav {
-            position: static;
-            margin-top: 16px;
-            padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
-            gap: 10px;
-            border-top-width: 1px;
-          }
-
-          .word-nav button {
-            font-size: 13px;
+          .segment-item.active {
+            background: var(--workspace-bg);
+            color: var(--text-primary);
             font-weight: 600;
-            padding: 11px 10px;
-            box-shadow: 2px 2px 0 var(--ink);
-            letter-spacing: 0.5px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
           }
 
-          .word-nav .arrow {
-            font-size: 12px;
+          .dictionary-body-scroll {
+            padding: 32px 40px;
           }
 
-          .theme-toggle svg {
-            width: 14px;
-            height: 14px;
+          .dictionary-body-scroll::-webkit-scrollbar { width: 6px; }
+          .dictionary-body-scroll::-webkit-scrollbar-thumb { background: rgba(150, 150, 150, 0.3); border-radius: 10px; }
+
+          /* Apple Tables Grid */
+          .apple-tables-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
           }
 
-          .quiz-page[data-theme="light"] .mobile-header {
-            background: var(--paper-raised);
+          .ns-table-container {
+            border: 0.5px solid var(--divider);
+            border-radius: 8px;
+            background: var(--item-hover);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
           }
 
-          .palette-backdrop {
-            inset: 46px 0 0 0;
+          .table-header {
+            padding: 8px 14px;
+            background: var(--table-header);
+            border-bottom: 0.5px solid var(--divider);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
           }
 
-          .question-palette {
-            top: 46px;
-            left: 8px;
-            right: 8px;
-            padding: 10px;
-            border-radius: 16px;
+          .table-title { font-size: 11.5px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.05em; }
+          .table-count { font-size: 11.5px; color: var(--text-muted); }
+
+          .table-row {
+            padding: 9px 14px;
+            font-size: 13.5px;
           }
 
-          .question-palette-head {
-            margin-bottom: 10px;
+          .macos-status-bar {
+            height: 28px;
+            padding: 0 16px;
+            font-size: 11.5px;
           }
 
-          .question-palette-title {
-            font-size: 14px;
+          .status-center {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
           }
 
-          .question-palette-grid {
-            gap: 8px;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
+          kbd {
+            background: var(--item-hover);
+            border: 0.5px solid var(--divider);
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-primary);
           }
 
-          .palette-pill {
-            height: 38px;
-            border-radius: 12px;
-          }
+          .status-right { display: none; }
         }
       `}</style>
     </main>

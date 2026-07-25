@@ -1,19 +1,30 @@
 "use client";
 
 import MathRenderer from "@/components/MathRenderer";
+import MathText from "@/components/MathText";
 import RichContent from "@/components/RichContent";
-import ImageMCQ from "@/components/ImageMCQ";
 import QuizChatbot from "@/components/QuizChatbot";
 import { LangToggle } from "@/components/LangToggle";
 import { useTranslatedQuestion } from "@/hooks/useTranslatedQuestion";
+import ImageMCQ from "@/components/ImageMCQ";
+import QuizCard, { type QuizQuestion as GeometryQuizQuestion } from "@/components/geometry/QuizCard";
 
-import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { useSearchParams } from "next/navigation";
+import React, {
+  useState,
+  useEffect,
+  useLayoutEffect,
+  useCallback,
+  useMemo,
+  useRef,
+  useSyncExternalStore,
+} from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import {
   Bookmark,
   BookmarkCheck,
+  Check,
   CheckCircle2,
   XCircle,
   Menu,
@@ -22,6 +33,9 @@ import {
   ChevronRight,
   ChevronDown,
   Flame,
+  Search,
+  Sun,
+  Moon,
   Sparkles,
   Target,
   RotateCcw,
@@ -29,6 +43,7 @@ import {
   X,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { useThemeMode } from "@/hooks/useTheme";
 import { saveRecentQuiz, updateProgress, toggleBookmark } from "@/lib/userApi";
 import { fetchQuestions, type Question as ApiQuestion } from "@/lib/api/questions";
 import {
@@ -56,6 +71,8 @@ type ConceptColour = { border: string; bg: string; text: string };
 interface EnglishQuizEngineProps {
   title: string;
   slug: string;
+  routeBase?: string;
+  presentation?: "default" | "ios-dark" | "ios-light" | "mac-dark" | "mac-light";
 }
 
 interface EnglishQuestion {
@@ -75,6 +92,8 @@ interface EnglishQuestion {
   questionImage?: string;
   optionRegions?: Record<string, { x: number; y: number; w: number; h: number }>;
   correctLetter?: string;
+  diagram?: any;
+  needs_diagram?: boolean;
 }
 
 interface SessionResult {
@@ -88,150 +107,151 @@ interface SessionResult {
   difficulty: Difficulty;
 }
 
+type QuizTheme = "light" | "dark";
+
+const QUIZ_THEME_STORAGE_KEY = "english-quiz-theme";
+const QUIZ_THEME_SWITCH_MS = 180;
+let quizTheme: QuizTheme = "light";
+let quizThemeInitialized = false;
+let quizThemeSwitchTimer: number | null = null;
+const quizThemeListeners = new Set<() => void>();
+
+function notifyQuizThemeListeners() {
+  quizThemeListeners.forEach((listener) => listener());
+}
+
+function syncQuizThemeToDom(
+  nextTheme: QuizTheme,
+  options?: {
+    animate?: boolean;
+  }
+) {
+  if (typeof document === "undefined") return;
+
+  const applyTheme = () => {
+    const containers = document.querySelectorAll<HTMLElement>(".english-quiz");
+    containers.forEach((container) => {
+      container.dataset.theme = nextTheme;
+    });
+  };
+
+  if (!options?.animate) {
+    applyTheme();
+    return;
+  }
+
+  const addSwitchingClass = () => {
+    const containers = document.querySelectorAll<HTMLElement>(".english-quiz");
+    containers.forEach((container) => container.classList.add("theme-switching"));
+  };
+
+  const removeSwitchingClass = () => {
+    const containers = document.querySelectorAll<HTMLElement>(
+      ".english-quiz.theme-switching"
+    );
+    containers.forEach((container) => container.classList.remove("theme-switching"));
+  };
+
+  addSwitchingClass();
+
+  if (typeof window !== "undefined" && typeof window.requestAnimationFrame === "function") {
+    window.requestAnimationFrame(() => {
+      applyTheme();
+    });
+  } else {
+    applyTheme();
+  }
+
+  if (typeof window !== "undefined") {
+    if (quizThemeSwitchTimer !== null) {
+      window.clearTimeout(quizThemeSwitchTimer);
+    }
+    quizThemeSwitchTimer = window.setTimeout(() => {
+      removeSwitchingClass();
+    }, QUIZ_THEME_SWITCH_MS);
+  } else {
+    removeSwitchingClass();
+  }
+}
+
+function setQuizTheme(nextTheme: QuizTheme) {
+  if (quizTheme === nextTheme) {
+    syncQuizThemeToDom(nextTheme);
+    return;
+  }
+  quizTheme = nextTheme;
+  if (typeof window !== "undefined") {
+    try {
+      window.localStorage.setItem(QUIZ_THEME_STORAGE_KEY, nextTheme);
+    } catch {
+      // Ignore storage write errors.
+    }
+  }
+  syncQuizThemeToDom(nextTheme, { animate: true });
+  notifyQuizThemeListeners();
+}
+
+function initQuizTheme() {
+  if (quizThemeInitialized) return;
+  quizThemeInitialized = true;
+  if (typeof window !== "undefined") {
+    try {
+      const stored = window.localStorage.getItem(QUIZ_THEME_STORAGE_KEY);
+      if (stored === "light" || stored === "dark") {
+        quizTheme = stored;
+      }
+    } catch {
+      // Ignore storage read errors.
+    }
+  }
+  syncQuizThemeToDom(quizTheme);
+  notifyQuizThemeListeners();
+}
+
+function useQuizTheme() {
+  useEffect(() => {
+    initQuizTheme();
+    syncQuizThemeToDom(quizTheme);
+  }, []);
+
+  return useSyncExternalStore(
+    (listener) => {
+      quizThemeListeners.add(listener);
+      return () => quizThemeListeners.delete(listener);
+    },
+    () => quizTheme,
+    () => "light"
+  );
+}
+
+function toggleQuizTheme() {
+  setQuizTheme(quizTheme === "dark" ? "light" : "dark");
+}
+
 const TOPIC_CONCEPTS: Record<string, string[]> = {
-  "synonyms-antonyms": [
-    "Synonym Selection",
-    "Antonym Selection",
-    "Contextual Usage",
-    "Degree of Meaning",
-  ],
-  "homonyms-homophones": [
-    "Same Sound Different Meaning",
-    "Same Spelling Different Meaning",
-    "Contextual Disambiguation",
-  ],
-  "one-word-substitution": [
-    "People & Professions",
-    "Places & Institutions",
-    "Actions & Behaviors",
-    "Science & Nature Terms",
-  ],
-  "idioms-phrases": [
-    "Meaning Identification",
-    "Correct Usage",
-    "Fill in the Blank with Idiom",
-    "Origin & Context",
-  ],
-  "spelling-misspelled-words": [
-    "Detect the Misspelled Word",
-    "Correct the Spelling",
-    "Commonly Confused Words",
-  ],
-  "active-passive-voice": [
-    "Simple Tense Conversions",
-    "Modal Voice Change",
-    "Interrogative & Negative",
-    "Complex Sentences",
-  ],
-  "direct-indirect-narration": [
-    "Statements",
-    "Questions",
-    "Commands & Requests",
-    "Exclamations",
-    "Tense Backshift Rules",
-  ],
-  "subject-verb-agreement": [
-    "Collective Nouns",
-    "Indefinite Pronouns",
-    "Either/Neither",
-    "Intervening Phrases",
-    "Inversion",
-  ],
-  tenses: [
-    "Simple Tenses",
-    "Continuous Tenses",
-    "Perfect Tenses",
-    "Perfect Continuous",
-    "Mixed Tense Errors",
-  ],
-  articles: [
-    "A / An Usage",
-    "The Usage",
-    "Zero Article",
-    "Articles with Proper Nouns",
-  ],
-  prepositions: [
-    "Place & Position",
-    "Time Prepositions",
-    "Direction & Movement",
-    "Phrasal Prepositions",
-    "Idiomatic Use",
-  ],
-  conjunctions: [
-    "Coordinating",
-    "Subordinating",
-    "Correlative Pairs",
-    "Conjunctive Adverbs",
-  ],
-  modifiers: [
-    "Dangling Modifiers",
-    "Misplaced Modifiers",
-    "Squinting Modifiers",
-    "Adjective vs Adverb",
-  ],
-  pronouns: [
-    "Pronoun-Antecedent Agreement",
-    "Case of Pronouns",
-    "Reflexive Pronouns",
-    "Relative Pronouns",
-  ],
-  "sentence-structure": [
-    "Simple / Compound / Complex",
-    "Clause Types",
-    "Phrase Types",
-    "Transformation of Sentences",
-  ],
-  parallelism: [
-    "Parallel Verbs",
-    "Parallel Nouns & Phrases",
-    "Correlative Parallelism",
-    "List Parallelism",
-  ],
-  "spot-the-error-error-detection": [
-    "Grammar Errors",
-    "Word Choice Errors",
-    "Punctuation Errors",
-    "Part-wise Error Spotting",
-  ],
-  "sentence-correction-improvement": [
-    "Replace Underlined Part",
-    "Rewrite Correctly",
-    "Choose Best Alternative",
-    "No Improvement Cases",
-  ],
-  "fill-in-the-blanks": [
-    "Grammar Based",
-    "Vocabulary Based",
-    "Double Blanks",
-    "Contextual Inference",
-  ],
-  "cloze-test": [
-    "Vocabulary Cloze",
-    "Grammar Cloze",
-    "Contextual Cloze",
-    "Discourse Cloze",
-  ],
-  "reading-comprehension": [
-    "Main Idea / Title",
-    "Inference Questions",
-    "Vocabulary in Context",
-    "Author's Tone & Purpose",
-    "Factual Detail",
-    "Editorial / Current Affairs Passage",
-    "Story-Based Passage",
-  ],
-  "para-jumbles": [
-    "Identify Opening Sentence",
-    "Logical Sequence",
-    "Connector Words",
-    "Pronoun Reference Links",
-  ],
-  "para-sentence-completion": [
-    "Choose Best Concluding Sentence",
-    "Opening Sentence Completion",
-    "Contextual Fit",
-    "Tone Matching",
-  ],
+  "synonyms-antonyms": ["Synonym Selection", "Antonym Selection", "Contextual Usage", "Degree of Meaning"],
+  "homonyms-homophones": ["Same Sound Different Meaning", "Same Spelling Different Meaning", "Contextual Disambiguation"],
+  "one-word-substitution": ["People & Professions", "Places & Institutions", "Actions & Behaviors", "Science & Nature Terms"],
+  "idioms-phrases": ["Meaning Identification", "Correct Usage", "Fill in the Blank with Idiom", "Origin & Context"],
+  "spelling-misspelled-words": ["Detect the Misspelled Word", "Correct the Spelling", "Commonly Confused Words"],
+  "active-passive-voice": ["Simple Tense Conversions", "Modal Voice Change", "Interrogative & Negative", "Complex Sentences"],
+  "direct-indirect-narration": ["Statements", "Questions", "Commands & Requests", "Exclamations", "Tense Backshift Rules"],
+  "subject-verb-agreement": ["Collective Nouns", "Indefinite Pronouns", "Either/Neither", "Intervening Phrases", "Inversion"],
+  tenses: ["Simple Tenses", "Continuous Tenses", "Perfect Tenses", "Perfect Continuous", "Mixed Tense Errors"],
+  articles: ["A / An Usage", "The Usage", "Zero Article", "Articles with Proper Nouns"],
+  prepositions: ["Place & Position", "Time Prepositions", "Direction & Movement", "Phrasal Prepositions", "Idiomatic Use"],
+  conjunctions: ["Coordinating", "Subordinating", "Correlative Pairs", "Conjunctive Adverbs"],
+  modifiers: ["Dangling Modifiers", "Misplaced Modifiers", "Squinting Modifiers", "Adjective vs Adverb"],
+  pronouns: ["Pronoun-Antecedent Agreement", "Case of Pronouns", "Reflexive Pronouns", "Relative Pronouns"],
+  "sentence-structure": ["Simple / Compound / Complex", "Clause Types", "Phrase Types", "Transformation of Sentences"],
+  parallelism: ["Parallel Verbs", "Parallel Nouns & Phrases", "Correlative Parallelism", "List Parallelism"],
+  "spot-the-error-error-detection": ["Grammar Errors", "Word Choice Errors", "Punctuation Errors", "Part-wise Error Spotting"],
+  "sentence-correction-improvement": ["Replace Underlined Part", "Rewrite Correctly", "Choose Best Alternative", "No Improvement Cases"],
+  "fill-in-the-blanks": ["Grammar Based", "Vocabulary Based", "Double Blanks", "Contextual Inference"],
+  "cloze-test": ["Vocabulary Cloze", "Grammar Cloze", "Contextual Cloze", "Discourse Cloze"],
+  "reading-comprehension": ["Main Idea / Title", "Inference Questions", "Vocabulary in Context", "Author's Tone & Purpose", "Factual Detail", "Editorial / Current Affairs Passage", "Story-Based Passage"],
+  "para-jumbles": ["Identify Opening Sentence", "Logical Sequence", "Connector Words", "Pronoun Reference Links"],
+  "para-sentence-completion": ["Choose Best Concluding Sentence", "Opening Sentence Completion", "Contextual Fit", "Tone Matching"],
 };
 
 const MODE_LABELS: Record<QuizMode, string> = {
@@ -259,6 +279,25 @@ const CONCEPT_PALETTE: ConceptColour[] = [
   { border: "#14B8A6", bg: "#F0FDFA", text: "#0F766E" },
   { border: "#6B7280", bg: "#F8FAFC", text: "#475569" },
 ];
+
+const CLASSIFICATION_CATEGORY_META = [
+  { id: "vocab", label: "Vocabulary", icon: "ABC", accent: "#fb923c", bg: "rgba(251, 146, 60, 0.1)", border: "rgba(251, 146, 60, 0.28)" },
+  { id: "grammar", label: "Grammar", icon: "Grm", accent: "#2dd4a0", bg: "rgba(45, 212, 160, 0.1)", border: "rgba(45, 212, 160, 0.28)" },
+  { id: "sentence", label: "Sentence Skills", icon: "Sen", accent: "#d946ef", bg: "rgba(217, 70, 239, 0.1)", border: "rgba(217, 70, 239, 0.28)" },
+  { id: "passage", label: "Passage Based", icon: "Psg", accent: "#38bdf8", bg: "rgba(56, 189, 248, 0.1)", border: "rgba(56, 189, 248, 0.28)" },
+  { id: "other", label: "General", icon: "...", accent: "#a78bfa", bg: "rgba(167, 139, 250, 0.1)", border: "rgba(167, 139, 250, 0.28)" },
+] as const;
+
+type ClassificationCategoryId = (typeof CLASSIFICATION_CATEGORY_META)[number]["id"];
+
+function getClassificationCategoryId(concept: string): ClassificationCategoryId {
+  const normalized = concept.toLowerCase();
+  if (normalized.includes("synonym") || normalized.includes("antonym") || normalized.includes("word") || normalized.includes("idiom") || normalized.includes("spelling") || normalized.includes("vocabulary")) return "vocab";
+  if (normalized.includes("tense") || normalized.includes("voice") || normalized.includes("narration") || normalized.includes("verb") || normalized.includes("article") || normalized.includes("preposition") || normalized.includes("conjunction") || normalized.includes("pronoun") || normalized.includes("grammar")) return "grammar";
+  if (normalized.includes("sentence") || normalized.includes("error") || normalized.includes("blank") || normalized.includes("modifier") || normalized.includes("parallelism")) return "sentence";
+  if (normalized.includes("cloze") || normalized.includes("reading") || normalized.includes("passage") || normalized.includes("jumble") || normalized.includes("completion")) return "passage";
+  return "other";
+}
 
 function normalizeMode(value: string | null): QuizMode {
   if (
@@ -348,7 +387,7 @@ function isFormulaQuestion(question: {
   source?: string;
   quizId?: string;
 }): boolean {
-  return matchesQuizTag(question, ["careerwill", "vocabularybank"]);
+  return matchesQuizTag(question, ["careerwill", "patternbank"]);
 }
 
 function isMixedQuestion(question: {
@@ -407,11 +446,15 @@ function toEnglishQuestion(
     question.optionRegions && Object.keys(question.optionRegions).length > 0
       ? Object.keys(question.optionRegions).sort()
       : ["a", "b", "c", "d"];
-  const options = isImage
-    ? imageOptionKeys.map((key) => key.toUpperCase())
-    : Array.isArray(question.options)
+  const textOptions = Array.isArray(question.options)
     ? question.options.map((opt) => String(opt))
     : [];
+  const options =
+    textOptions.length > 0
+      ? textOptions
+      : isImage
+      ? imageOptionKeys.map((key) => key.toUpperCase())
+      : [];
   const difficulty = normalizeDifficulty(question.difficulty);
   const correctAnswer = resolveCorrectIndex(question, options);
   const exam = String(question.exam ?? "");
@@ -426,10 +469,9 @@ function toEnglishQuestion(
     ? options[correctAnswer] ?? ""
     : rawAnswer || (options[correctAnswer] ?? "");
   const questionText = String(question.question ?? "").trim();
-  const questionImageMarkdown =
-    question.questionType !== "image_mcq" && question.questionImage
-      ? `![question](${question.questionImage})`
-      : "";
+  const questionImageMarkdown = question.questionImage
+    ? `![question](${question.questionImage})`
+    : "";
   const questionContent = questionText
     ? /!\[[^\]]*\]\([^)]+\)/.test(questionText) || !questionImageMarkdown
       ? questionText
@@ -465,9 +507,32 @@ function toEnglishQuestion(
     quizName: question.quizName,
     source: (question as ApiQuestion & { source?: string }).source,
     quizId: (question as ApiQuestion & { quizId?: string }).quizId,
+    diagram: (question as any).diagram,
+    needs_diagram: (question as any).needs_diagram,
   };
 }
 
+
+function ensureUniqueQuestionIds(questions: EnglishQuestionRecord[]): EnglishQuestionRecord[] {
+  const usedIds = new Set<number>();
+  let nextId = questions.reduce((highestId, question) => Math.max(highestId, question.id), 0) + 1;
+
+  return questions.map((question) => {
+    if (question.id > 0 && !usedIds.has(question.id)) {
+      usedIds.add(question.id);
+      return question;
+    }
+
+    while (usedIds.has(nextId)) {
+      nextId += 1;
+    }
+
+    const id = nextId;
+    usedIds.add(id);
+    nextId += 1;
+    return { ...question, id };
+  });
+}
 function MathFraction({
   numerator,
   denominator,
@@ -489,10 +554,13 @@ function MathFraction({
         {numerator}
       </span>
       <span
-        className="w-full border-t border-slate-400 my-[2px]"
-        style={{ minWidth: "1.2em" }}
+        className="w-full border-t my-[2px]"
+        style={{ minWidth: "1.2em", borderColor: "var(--quiz-divider)" }}
       />
-      <span className="text-slate-500 font-semibold" style={{ fontSize: "0.85em" }}>
+      <span
+        className="font-semibold"
+        style={{ fontSize: "0.85em", color: "var(--quiz-text-muted)" }}
+      >
         {denominator}
       </span>
     </span>
@@ -525,16 +593,1223 @@ function getQuestionStatus({
 }
 
 function statusClasses(status: QuestionStatus) {
-  const base = "border transition-all duration-200";
-  if (status === "current")
-    return `${base} bg-violet-600 text-white border-violet-600 shadow-lg shadow-violet-400/40 scale-110 z-10`;
-  if (status === "answered")
-    return `${base} bg-amber-100 text-amber-700 border-amber-300`;
-  if (status === "correct")
-    return `${base} bg-emerald-100 text-emerald-700 border-emerald-300`;
-  if (status === "wrong")
-    return `${base} bg-rose-100 text-rose-700 border-rose-300`;
-  return `${base} bg-slate-100 text-slate-700 border-slate-300`;
+  const base = "qstatus border transition-all duration-200";
+  if (status === "current") return `${base} qstatus--current`;
+  if (status === "answered") return `${base} qstatus--answered`;
+  if (status === "correct") return `${base} qstatus--correct`;
+  if (status === "wrong") return `${base} qstatus--wrong`;
+  return `${base} qstatus--empty`;
+}
+
+type ClassificationGroup = (typeof CLASSIFICATION_CATEGORY_META)[number] & {
+  concepts: string[];
+};
+
+function SeriesConceptStart({
+  title,
+  slug,
+  routeBase,
+  groups,
+  category,
+  categoryCounts,
+  examFilter,
+  examOptions,
+  selected,
+  conceptCount,
+  questionCount,
+  onCategoryChange,
+  onExamChange,
+  onToggleGroup,
+  onStart,
+}: {
+  title: string;
+  slug: string;
+  routeBase?: string;
+  groups: ClassificationGroup[];
+  category: string;
+  categoryCounts: Record<string, number>;
+  examFilter: string;
+  examOptions: string[];
+  selected: Set<string>;
+  conceptCount: number;
+  questionCount: number;
+  onCategoryChange: (category: string) => void;
+  onExamChange: (exam: string) => void;
+  onToggleGroup: (concepts: string[]) => void;
+  onStart: () => void;
+}) {
+  const { theme } = useThemeMode();
+  const [hasMounted, setHasMounted] = useState(false);
+  const selectedCount = selected.size;
+  const selectedQuestionLabel = selectedCount === 0 ? "all concepts" : `${selectedCount} concept${selectedCount === 1 ? "" : "s"}`;
+
+  useLayoutEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  const router = useRouter();
+  const handleBack = () => {
+    if (typeof window !== "undefined" && window.history.length > 2) {
+      router.back();
+    } else {
+      router.push(routeBase ?? `/english/${slug}`);
+    }
+  };
+
+  return (
+    <div className="series-concept-screen" data-theme={hasMounted ? theme : "light"}>
+      <header className="series-concept-nav">
+        <button type="button" onClick={handleBack} className="series-concept-back" aria-label="Back to Series">
+          <ChevronLeft aria-hidden="true" />
+        </button>
+        <strong>{title}</strong>
+        <span aria-hidden="true" />
+      </header>
+
+      <aside className="series-concept-aside" aria-label="Quiz overview">
+        <span>English</span>
+        <h1>{title}</h1>
+        <p>Concept Practice</p>
+        <dl>
+          <div>
+            <dt>Concepts</dt>
+            <dd>{conceptCount}</dd>
+          </div>
+          <div>
+            <dt>Questions</dt>
+            <dd>{questionCount}</dd>
+          </div>
+        </dl>
+      </aside>
+
+      <main className="series-concept-content">
+        <p className="series-concept-heading">Select Exam Target</p>
+        <div className="series-dropdown-container mb-6">
+          <div className="series-dropdown-row">
+            <span className="series-concept-tile" style={{ background: "rgba(124, 108, 240, 0.15)", color: "var(--series-accent)" }}>
+              <Target aria-hidden="true" className="w-4 h-4" />
+            </span>
+            <span className="series-dropdown-label">Exam Name</span>
+            <div className="series-select-wrapper">
+              <select
+                value={examFilter || "all"}
+                onChange={(e) => onExamChange(e.target.value === "all" ? "" : e.target.value)}
+                className="series-dropdown-select"
+              >
+                {examOptions.map((ex) => (
+                  <option key={ex} value={ex === "all" ? "all" : ex}>
+                    {ex === "all" ? "All Exams" : ex}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="series-select-chevron" />
+            </div>
+          </div>
+        </div>
+
+        <div className="series-concept-chips mb-4" aria-label="Concept category filters">
+          <button
+            type="button"
+            className={category === "All" ? "active" : ""}
+            onClick={() => onCategoryChange("All")}
+          >
+            <i className="chip-indigo" />All <span>{conceptCount}</span>
+          </button>
+          {CLASSIFICATION_CATEGORY_META.filter((item) => categoryCounts[item.label] > 0).map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className={category === item.label ? "active" : ""}
+              onClick={() => onCategoryChange(item.label)}
+            >
+              <i style={{ background: item.accent }} />{item.label} <span>{categoryCounts[item.label]}</span>
+            </button>
+          ))}
+        </div>
+
+        <p className="series-concept-heading">Concept Groups</p>
+        <section className="series-concept-list" aria-label="Concept groups">
+          {groups.map((group) => {
+            const selectedInGroup = group.concepts.filter((concept) => selected.has(concept)).length;
+            const groupIsSelected = selectedInGroup === group.concepts.length && group.concepts.length > 0;
+            const groupIsPartial = selectedInGroup > 0 && !groupIsSelected;
+            return (
+              <button
+                key={group.id}
+                type="button"
+                className="series-concept-row"
+                onClick={() => onToggleGroup(group.concepts)}
+                aria-pressed={groupIsSelected}
+              >
+                <span className={`series-concept-check${groupIsSelected || groupIsPartial ? " checked" : ""}`}>
+                  {(groupIsSelected || groupIsPartial) && <Check aria-hidden="true" />}
+                </span>
+                <span
+                  className="series-concept-tile"
+                  style={{ background: group.bg, color: group.accent }}
+                >
+                  {group.icon}
+                </span>
+                <span className="series-concept-row-copy">
+                  <strong>{group.label}</strong>
+                  <small>
+                    {group.concepts.length} concept{group.concepts.length === 1 ? "" : "s"}
+                    {selectedInGroup > 0 ? ` · ${selectedInGroup} selected` : ""}
+                  </small>
+                </span>
+              </button>
+            );
+          })}
+          {groups.length === 0 && (
+            <p className="series-concept-empty">No concept groups found.</p>
+          )}
+        </section>
+      </main>
+
+      <footer className="series-concept-toolbar">
+        <p><b>{questionCount}</b> questions ready - <span>{selectedQuestionLabel}</span></p>
+        <button type="button" onClick={onStart} className="series-concept-start">
+          <Sparkles aria-hidden="true" />
+          Start Quiz
+        </button>
+      </footer>
+
+      <style jsx>{`
+        .series-concept-screen { --series-bg: #f2f2f7; --series-card: #fff; --series-separator: rgba(60, 60, 67, .18); --series-ink: #1c1c1e; --series-muted: #6e6a85; --series-subtle: rgba(60, 60, 67, .6); --series-field: rgba(118, 118, 128, .12); --series-nav: rgba(242, 242, 247, .9); --series-accent: #6c5ce0; min-height: 100dvh; background: var(--series-bg); color: var(--series-ink); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif; padding-bottom: 132px; }
+        .series-concept-screen[data-theme="dark"] { color-scheme: dark; --series-bg: #000; --series-card: #1c1c1e; --series-separator: rgba(84, 84, 88, .65); --series-ink: #fff; --series-muted: #98989f; --series-subtle: rgba(235, 235, 245, .6); --series-field: rgba(118, 118, 128, .24); --series-nav: rgba(0, 0, 0, .78); --series-accent: #7c6cf0; }
+        .series-concept-nav { height: 44px; display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; border-bottom: 0.5px solid var(--series-separator); background: var(--series-nav); position: sticky; top: 0; z-index: 5; backdrop-filter: blur(20px); }
+        .series-concept-nav strong { justify-self: center; font-size: 17px; font-weight: 600; }
+        .series-concept-back { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; color: var(--series-accent); }
+        .series-concept-back :global(svg) { width: 23px; height: 23px; stroke-width: 2.3; }
+        .series-concept-content { width: min(100%, 430px); margin: 0 auto; padding: 12px 16px 24px; }
+        .series-dropdown-container { overflow: hidden; border-radius: 12px; background: var(--series-card); border: 1px solid var(--series-separator); }
+        .series-dropdown-row { position: relative; display: flex; align-items: center; gap: 12px; padding: 12px 16px; min-height: 56px; width: 100%; box-sizing: border-box; }
+        .series-dropdown-label { font-size: 15px; font-weight: 600; color: var(--series-ink); white-space: nowrap; flex-shrink: 0; }
+        .series-select-wrapper { position: relative; display: flex; align-items: center; margin-left: auto; min-width: 0; max-width: calc(100% - 140px); }
+        .series-dropdown-select { appearance: none; -webkit-appearance: none; background: var(--series-field); color: var(--series-accent); font-size: 14px; font-weight: 600; padding: 8px 30px 8px 12px; border-radius: 10px; border: 1px solid var(--series-separator); outline: none; cursor: pointer; transition: all 0.15s ease; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; max-width: 100%; box-sizing: border-box; }
+        .series-dropdown-select option { background: var(--series-card); color: var(--series-ink); }
+        .series-dropdown-select:focus { border-color: var(--series-accent); }
+        .series-select-chevron { position: absolute; right: 10px; width: 14px; height: 14px; color: var(--series-accent); pointer-events: none; }
+        .series-concept-chips { display: flex; gap: 10px; overflow-x: auto; padding: 12px 2px 16px; margin: 0 -2px; scrollbar-width: none; }
+        .series-concept-chips::-webkit-scrollbar { display: none; }
+        .series-concept-chips button { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 8px; border: 0; border-radius: 999px; background: var(--series-field); padding: 8px 16px; color: var(--series-ink); font-size: 15px; font-weight: 700; white-space: nowrap; transition: all 0.15s ease; cursor: pointer; }
+        .series-concept-chips button.active { background: var(--series-accent); color: #ffffff; box-shadow: 0 2px 8px rgba(108, 92, 224, 0.25); }
+        .series-concept-chips i { width: 7px; height: 7px; border-radius: 50%; background: var(--series-accent); flex-shrink: 0; }
+        .series-concept-chips button.active i { background: #ffffff !important; }
+        .series-concept-chips span { color: var(--series-muted); font-size: 14px; font-weight: 600; margin-left: 1px; }
+        .series-concept-chips button.active span { color: rgba(255, 255, 255, 0.85); }
+        .series-concept-heading { margin: 0 0 6px 16px; color: var(--series-subtle); font-size: 13px; font-weight: 600; text-transform: uppercase; }
+        .series-concept-list { overflow: hidden; border-radius: 12px; background: var(--series-card); }
+        .series-concept-row { position: relative; width: 100%; min-height: 64px; display: flex; align-items: center; gap: 12px; border: 0; background: var(--series-card); padding: 11px 16px; text-align: left; color: var(--series-ink); }
+        .series-concept-row:not(:last-child)::after { content: ""; position: absolute; right: 0; bottom: 0; left: 56px; height: 1px; background: var(--series-separator); opacity: 0.8; }
+        .series-concept-check { width: 22px; height: 22px; flex: 0 0 auto; display: grid; place-items: center; border: 1.6px solid #c7c7cc; border-radius: 50%; color: #fff; }
+        .series-concept-screen[data-theme="dark"] .series-concept-check { border-color: #545458; }
+        .series-concept-check.checked { border-color: var(--series-accent); background: var(--series-accent); }
+        .series-concept-check :global(svg) { width: 13px; height: 13px; stroke-width: 3; }
+        .series-concept-tile { width: 30px; height: 30px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 7px; font-size: 10px; font-weight: 800; }
+        .series-concept-row-copy { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+        .series-concept-row-copy strong { font-size: 16px; font-weight: 600; }
+        .series-concept-row-copy small { color: var(--series-muted); font-size: 13px; }
+        .series-concept-empty { padding: 28px 16px; margin: 0; color: var(--series-muted); text-align: center; font-size: 14px; }
+        .series-concept-toolbar { position: fixed; z-index: 10; right: 0; bottom: 0; left: 0; border-top: .5px solid var(--series-separator); background: var(--series-nav); padding: 10px max(16px, calc((100vw - 430px) / 2 + 16px)) calc(10px + env(safe-area-inset-bottom)); backdrop-filter: blur(20px); }
+        .series-concept-toolbar p { margin: 0 0 8px; color: var(--series-muted); text-align: center; font-size: 13px; }
+        .series-concept-toolbar b { color: var(--series-ink); font-weight: 700; }
+        .series-concept-start { width: 100%; min-height: 50px; display: flex; align-items: center; justify-content: center; gap: 7px; border: 0; border-radius: 12px; background: var(--series-accent); color: #fff; font-size: 17px; font-weight: 700; box-shadow: 0 2px 8px rgba(108, 92, 224, .22); }
+        .series-concept-start:active { opacity: .72; }
+        .series-concept-start :global(svg) { width: 16px; height: 16px; fill: currentColor; }
+        .series-concept-aside { display: none; }
+        @media (min-width: 1024px) {
+          .series-concept-screen { display: grid; grid-template-columns: minmax(210px, 1fr) minmax(520px, 760px) minmax(260px, 1fr); grid-template-rows: 68px minmax(calc(100dvh - 68px), auto); min-height: 100dvh; padding: 0; }
+          .series-concept-nav { grid-column: 1 / -1; height: 68px; grid-template-columns: minmax(210px, 1fr) minmax(520px, 760px) minmax(260px, 1fr); border-bottom: 1px solid var(--series-separator); padding: 0 38px; }
+          .series-concept-nav strong { grid-column: 2; font-size: 18px; letter-spacing: 0; }
+          .series-concept-back { position: absolute; left: 28px; width: 44px; height: 68px; }
+          .series-concept-aside { grid-column: 1; grid-row: 2; display: flex; flex-direction: column; align-items: flex-end; padding: 64px 44px; border-right: 1px solid var(--series-separator); text-align: right; }
+          .series-concept-aside > span { color: var(--series-accent); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+          .series-concept-aside h1 { margin: 8px 0 2px; color: var(--series-ink); font-size: 28px; line-height: 1.12; letter-spacing: 0; }
+          .series-concept-aside > p { margin: 0; color: var(--series-muted); font-size: 15px; }
+          .series-concept-aside dl { display: grid; grid-template-columns: repeat(2, max-content); gap: 20px; margin: 52px 0 0; }
+          .series-concept-aside dl div { display: flex; flex-direction: column-reverse; gap: 3px; }
+          .series-concept-aside dt { color: var(--series-muted); font-size: 12px; }
+          .series-concept-aside dd { margin: 0; color: var(--series-ink); font-size: 22px; font-weight: 700; }
+          .series-concept-content { grid-column: 2; grid-row: 2; width: 100%; margin: 0; padding: 58px 44px 72px; }
+
+          .series-concept-chips { padding: 18px 2px 22px; }
+          .series-concept-heading { margin-left: 0; }
+          .series-concept-list { border: 1px solid var(--series-separator); border-radius: 8px; }
+          .series-concept-row { min-height: 76px; padding: 14px 18px; transition: background .15s ease; }
+          .series-concept-row:hover { background: var(--series-field); }
+          .series-concept-toolbar { position: sticky; grid-column: 3; grid-row: 2; align-self: start; width: auto; margin: 46px 38px; border: 1px solid var(--series-separator); border-radius: 8px; background: var(--series-card); padding: 20px; transform: none; backdrop-filter: none; }
+          .series-concept-toolbar p { margin-bottom: 16px; text-align: left; font-size: 14px; }
+          .series-concept-start { min-height: 48px; border-radius: 8px; font-size: 16px; }
+        }
+      `}</style>
+    </div>
+  );
+}
+function SeriesFormulaStart({
+  title,
+  slug,
+  routeBase,
+  mode,
+  examFilter,
+  examOptions,
+  questionCount,
+  onExamChange,
+  groups,
+  category,
+  categoryCounts,
+  search,
+  selected,
+  conceptCount,
+  onCategoryChange,
+  onSearchChange,
+  onToggleGroup,
+  onStart,
+}: {
+  title: string;
+  slug: string;
+  routeBase?: string;
+  mode: QuizMode;
+  examFilter: string;
+  examOptions: string[];
+  questionCount: number;
+  onExamChange: (exam: string) => void;
+  groups: ClassificationGroup[];
+  category: string;
+  categoryCounts: Record<string, number>;
+  search: string;
+  selected: Set<string>;
+  conceptCount: number;
+  onCategoryChange: (category: string) => void;
+  onSearchChange: (search: string) => void;
+  onToggleGroup: (concepts: string[]) => void;
+  onStart: () => void;
+}) {
+  const { theme } = useThemeMode();
+  const [hasMounted, setHasMounted] = useState(false);
+
+  useLayoutEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  const activeTheme = hasMounted ? theme : "light";
+
+  const router = useRouter();
+  const handleBack = () => {
+    if (typeof window !== "undefined" && window.history.length > 2) {
+      router.back();
+    } else {
+      router.push(routeBase ?? `/english/${slug}`);
+    }
+  };
+
+  const selectedCount = selected.size;
+  const selectedQuestionLabel = selectedCount === 0 ? "all concepts" : `${selectedCount} concept${selectedCount === 1 ? "" : "s"}`;
+
+  return (
+    <div className="series-concept-screen" data-theme={activeTheme}>
+      <header className="series-concept-nav">
+        <button type="button" onClick={handleBack} className="series-concept-back" aria-label={`Back to ${title}`}>
+          <ChevronLeft aria-hidden="true" />
+        </button>
+        <strong>{title} - {MODE_LABELS[mode]}</strong>
+        <span aria-hidden="true" />
+      </header>
+
+      <aside className="series-concept-aside" aria-label="Quiz overview">
+        <span>English</span>
+        <h1>{title}</h1>
+        <p>{MODE_LABELS[mode]}</p>
+        <dl>
+          <div>
+            <dt>Concepts</dt>
+            <dd>{conceptCount}</dd>
+          </div>
+          <div>
+            <dt>Questions</dt>
+            <dd>{questionCount}</dd>
+          </div>
+        </dl>
+      </aside>
+
+      <main className="series-concept-content">
+        <p className="series-concept-heading">Select Exam Target</p>
+        <div className="series-dropdown-container mb-6">
+          <div className="series-dropdown-row">
+            <span className="series-concept-tile" style={{ background: "rgba(124, 108, 240, 0.15)", color: "var(--series-accent)" }}>
+              <Target aria-hidden="true" className="w-4 h-4" />
+            </span>
+            <span className="series-dropdown-label">Exam Name</span>
+            <div className="series-select-wrapper">
+              <select
+                value={examFilter || "all"}
+                onChange={(e) => onExamChange(e.target.value === "all" ? "" : e.target.value)}
+                className="series-dropdown-select"
+              >
+                {examOptions.map((ex) => (
+                  <option key={ex} value={ex === "all" ? "all" : ex}>
+                    {ex === "all" ? "All Exams" : ex}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="series-select-chevron" />
+            </div>
+          </div>
+        </div>
+
+        <div className="series-concept-chips mb-4" aria-label="Concept category filters">
+          <button
+            type="button"
+            className={category === "All" ? "active" : ""}
+            onClick={() => onCategoryChange("All")}
+          >
+            <i className="chip-indigo" />All <span>{conceptCount}</span>
+          </button>
+          {CLASSIFICATION_CATEGORY_META.filter((item) => categoryCounts[item.label] > 0).map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className={category === item.label ? "active" : ""}
+              onClick={() => onCategoryChange(item.label)}
+            >
+              <i style={{ background: item.accent }} />{item.label} <span>{categoryCounts[item.label]}</span>
+            </button>
+          ))}
+        </div>
+
+        <p className="series-concept-heading">Concept Groups</p>
+        <section className="series-concept-list mb-6" aria-label="Concept groups">
+          {groups.map((group) => {
+            const selectedInGroup = group.concepts.filter((concept) => selected.has(concept)).length;
+            const groupIsSelected = selectedInGroup === group.concepts.length && group.concepts.length > 0;
+            const groupIsPartial = selectedInGroup > 0 && !groupIsSelected;
+            return (
+              <button
+                key={group.id}
+                type="button"
+                className="series-concept-row"
+                onClick={() => onToggleGroup(group.concepts)}
+                aria-pressed={groupIsSelected}
+              >
+                <span className={`series-concept-check${groupIsSelected || groupIsPartial ? " checked" : ""}`}>
+                  {(groupIsSelected || groupIsPartial) && <Check aria-hidden="true" />}
+                </span>
+                <span
+                  className="series-concept-tile"
+                  style={{ background: group.bg, color: group.accent }}
+                >
+                  {group.icon}
+                </span>
+                <span className="series-concept-row-copy">
+                  <strong>{group.label}</strong>
+                  <small>
+                    {group.concepts.length} concept{group.concepts.length === 1 ? "" : "s"}
+                    {selectedInGroup > 0 ? ` · ${selectedInGroup} selected` : ""}
+                  </small>
+                </span>
+              </button>
+            );
+          })}
+          {groups.length === 0 && (
+            <p className="series-concept-empty">No concept groups match &quot;{search}&quot;.</p>
+          )}
+        </section>
+      </main>
+
+      <footer className="series-concept-toolbar">
+        <p>
+          <b>{questionCount}</b> questions ready - <span>{selectedQuestionLabel}</span>
+        </p>
+        <button type="button" onClick={onStart} className="series-concept-start">
+          <Sparkles aria-hidden="true" />
+          Start Quiz
+        </button>
+      </footer>
+
+      <style jsx>{`
+        .series-concept-screen {
+          --series-bg: #f2f2f7;
+          --series-card: #ffffff;
+          --series-separator: rgba(60, 60, 67, 0.18);
+          --series-ink: #1c1c1e;
+          --series-muted: #6e6a85;
+          --series-subtle: rgba(60, 60, 67, 0.6);
+          --series-field: rgba(118, 118, 128, 0.12);
+          --series-nav: rgba(242, 242, 247, 0.9);
+          --series-accent: #6c5ce0;
+          height: 100dvh;
+          max-height: 100dvh;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+          background: var(--series-bg);
+          color: var(--series-ink);
+          font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+          padding-bottom: 0;
+        }
+        .series-concept-screen[data-theme="dark"] {
+          color-scheme: dark;
+          --series-bg: #000000;
+          --series-card: #1c1c1e;
+          --series-separator: rgba(84, 84, 88, 0.65);
+          --series-ink: #ffffff;
+          --series-muted: #98989f;
+          --series-subtle: rgba(235, 235, 245, 0.6);
+          --series-field: rgba(118, 118, 128, 0.24);
+          --series-nav: rgba(0, 0, 0, 0.78);
+          --series-accent: #7c6cf0;
+        }
+        .series-concept-nav {
+          height: 44px;
+          display: grid;
+          grid-template-columns: 44px 1fr auto;
+          align-items: center;
+          border-bottom: 0.5px solid var(--series-separator);
+          background: var(--series-nav);
+          position: sticky;
+          top: 0;
+          z-index: 5;
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+        }
+        .series-concept-nav strong {
+          justify-self: center;
+          font-size: 17px;
+          font-weight: 600;
+        }
+        .series-concept-back {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 44px;
+          height: 44px;
+          color: var(--series-accent);
+        }
+        .series-concept-back :global(svg) {
+          width: 23px;
+          height: 23px;
+          stroke-width: 2.3;
+        }
+        .series-concept-content {
+          width: min(100%, 430px);
+          margin: 0 auto;
+          padding: 10px 16px 12px;
+          flex: 1 1 auto;
+          min-height: 0;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+        }
+        .series-concept-pill {
+          background: var(--series-field);
+          color: var(--series-accent);
+          padding: 4px 10px;
+          border-radius: 999px;
+          font-size: 12px;
+          font-weight: 600;
+        }
+        .series-concept-heading {
+          margin: 0 0 6px 16px;
+          color: var(--series-subtle);
+          font-size: 13px;
+          font-weight: 600;
+          text-transform: uppercase;
+        }
+        .series-concept-list {
+          overflow-y: auto;
+          flex: 1 1 auto;
+          min-height: 0;
+          border-radius: 12px;
+          background: var(--series-card);
+        }
+        .series-concept-row {
+          position: relative;
+          width: 100%;
+          min-height: 52px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          border: 0;
+          background: var(--series-card);
+          padding: 8px 14px;
+          text-align: left;
+          color: var(--series-ink);
+        }
+        .series-concept-row:not(:last-child)::after {
+          content: "";
+          position: absolute;
+          right: 0;
+          bottom: 0;
+          left: 56px;
+          height: 1px;
+          background: var(--series-separator);
+          opacity: 0.8;
+        }
+        .series-concept-check {
+          width: 22px;
+          height: 22px;
+          flex: 0 0 auto;
+          display: grid;
+          place-items: center;
+          border: 1.6px solid #c7c7cc;
+          border-radius: 50%;
+          color: #fff;
+        }
+        .series-concept-screen[data-theme="dark"] .series-concept-check {
+          border-color: #545458;
+        }
+        .series-concept-check.checked {
+          border-color: var(--series-accent);
+          background: var(--series-accent);
+        }
+        .series-concept-check :global(svg) {
+          width: 13px;
+          height: 13px;
+          stroke-width: 3;
+        }
+        .series-concept-tile {
+          width: 30px;
+          height: 30px;
+          flex: 0 0 auto;
+          display: grid;
+          place-items: center;
+          border-radius: 7px;
+        }
+        .series-concept-row-copy {
+          min-width: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+        .series-concept-row-copy strong {
+          font-size: 16px;
+          font-weight: 600;
+        }
+        .series-concept-row-copy small {
+          color: var(--series-muted);
+          font-size: 13px;
+        }
+        .series-concept-chips { display: flex; gap: 10px; overflow-x: auto; padding: 12px 2px 16px; margin: 0 -2px; scrollbar-width: none; }
+        .series-concept-chips::-webkit-scrollbar { display: none; }
+        .series-concept-chips button { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 8px; border: 0; border-radius: 999px; background: var(--series-field); padding: 8px 16px; color: var(--series-ink); font-size: 15px; font-weight: 700; white-space: nowrap; transition: all 0.15s ease; cursor: pointer; }
+        .series-concept-chips button.active { background: var(--series-accent); color: #ffffff; box-shadow: 0 2px 8px rgba(108, 92, 224, 0.25); }
+        .series-concept-chips i { width: 7px; height: 7px; border-radius: 50%; background: var(--series-accent); flex-shrink: 0; }
+        .series-concept-chips button.active i { background: #ffffff !important; }
+        .series-concept-chips span { color: var(--series-muted); font-size: 14px; font-weight: 600; margin-left: 1px; }
+        .series-concept-chips button.active span { color: rgba(255, 255, 255, 0.85); }
+        .chip-indigo { background: #6c5ce0 !important; }
+        .series-dropdown-container {
+          overflow: hidden;
+          border-radius: 12px;
+          background: var(--series-card);
+          border: 1px solid var(--series-separator);
+        }
+        .series-dropdown-row {
+          position: relative;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 12px 16px;
+          min-height: 56px;
+          width: 100%;
+          box-sizing: border-box;
+        }
+        .series-dropdown-label {
+          font-size: 15px;
+          font-weight: 600;
+          color: var(--series-ink);
+          white-space: nowrap;
+          flex-shrink: 0;
+        }
+        .series-select-wrapper {
+          position: relative;
+          display: flex;
+          align-items: center;
+          margin-left: auto;
+          min-width: 0;
+          max-width: calc(100% - 140px);
+        }
+        .series-dropdown-select {
+          appearance: none;
+          -webkit-appearance: none;
+          background: var(--series-field);
+          color: var(--series-accent);
+          font-size: 14px;
+          font-weight: 600;
+          padding: 8px 30px 8px 12px;
+          border-radius: 10px;
+          border: 1px solid var(--series-separator);
+          outline: none;
+          cursor: pointer;
+          transition: all 0.15s ease;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          overflow: hidden;
+          max-width: 100%;
+          box-sizing: border-box;
+        }
+        .series-dropdown-select option {
+          background: var(--series-card);
+          color: var(--series-ink);
+        }
+        .series-dropdown-select:focus {
+          border-color: var(--series-accent);
+        }
+        .series-select-chevron {
+          position: absolute;
+          right: 10px;
+          width: 14px;
+          height: 14px;
+          color: var(--series-accent);
+          pointer-events: none;
+        }
+        .series-formula-card {
+          overflow: hidden;
+          border-radius: 12px;
+          background: var(--series-card);
+          padding: 16px;
+        }
+        .series-formula-card-row {
+          display: flex;
+          align-items: flex-start;
+          gap: 12px;
+        }
+        .series-concept-toolbar {
+          position: relative;
+          z-index: 10;
+          flex: 0 0 auto;
+          border-top: 0.5px solid var(--series-separator);
+          background: var(--series-nav);
+          padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+        }
+        .series-concept-toolbar p {
+          margin: 0 0 8px;
+          color: var(--series-muted);
+          text-align: center;
+          font-size: 13px;
+        }
+        .series-concept-toolbar b {
+          color: var(--series-ink);
+          font-weight: 700;
+        }
+        .series-concept-start {
+          width: 100%;
+          min-height: 50px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 7px;
+          border: 0;
+          border-radius: 12px;
+          background: var(--series-accent);
+          color: #fff;
+          font-size: 17px;
+          font-weight: 700;
+          box-shadow: 0 2px 8px rgba(108, 92, 224, 0.22);
+        }
+        .series-concept-start:active {
+          opacity: 0.72;
+        }
+        .series-concept-aside {
+          display: none;
+        }
+        @media (min-width: 1024px) {
+          .series-concept-screen {
+            display: grid;
+            grid-template-columns: minmax(210px, 1fr) minmax(520px, 760px) minmax(260px, 1fr);
+            grid-template-rows: 68px minmax(calc(100dvh - 68px), auto);
+            min-height: 100dvh;
+            padding: 0;
+          }
+          .series-concept-nav {
+            grid-column: 1 / -1;
+            height: 68px;
+            grid-template-columns: minmax(210px, 1fr) minmax(520px, 760px) minmax(260px, 1fr);
+            border-bottom: 1px solid var(--series-separator);
+            padding: 0 38px;
+          }
+          .series-concept-nav strong {
+            grid-column: 2;
+            font-size: 18px;
+            letter-spacing: 0;
+          }
+          .series-concept-back {
+            position: absolute;
+            left: 28px;
+            width: 44px;
+            height: 68px;
+          }
+          .series-concept-aside {
+            grid-column: 1;
+            grid-row: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            padding: 64px 44px;
+            border-right: 1px solid var(--series-separator);
+            text-align: right;
+          }
+          .series-concept-aside > span {
+            color: var(--series-accent);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+          }
+          .series-concept-aside h1 {
+            margin: 8px 0 2px;
+            color: var(--series-ink);
+            font-size: 28px;
+            line-height: 1.12;
+            letter-spacing: 0;
+          }
+          .series-concept-aside > p {
+            margin: 0;
+            color: var(--series-muted);
+            font-size: 15px;
+          }
+          .series-concept-aside dl {
+            display: grid;
+            grid-template-columns: repeat(2, max-content);
+            gap: 20px;
+            margin: 52px 0 0;
+          }
+          .series-concept-aside dl div {
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 3px;
+          }
+          .series-concept-aside dt {
+            color: var(--series-muted);
+            font-size: 12px;
+          }
+          .series-concept-aside dd {
+            margin: 0;
+            color: var(--series-ink);
+            font-size: 22px;
+            font-weight: 700;
+          }
+          .series-concept-content {
+            grid-column: 2;
+            grid-row: 2;
+            width: 100%;
+            margin: 0;
+            padding: 58px 44px 72px;
+          }
+          .series-concept-heading {
+            margin-left: 0;
+          }
+          .series-concept-list {
+            border: 1px solid var(--series-separator);
+            border-radius: 8px;
+          }
+          .series-concept-row {
+            min-height: 76px;
+            padding: 14px 18px;
+            transition: background 0.15s ease;
+          }
+          .series-concept-row:hover {
+            background: var(--series-field);
+          }
+          .series-concept-toolbar {
+            position: sticky;
+            grid-column: 3;
+            grid-row: 2;
+            align-self: start;
+            width: auto;
+            margin: 46px 38px;
+            border: 1px solid var(--series-separator);
+            border-radius: 8px;
+            background: var(--series-card);
+            padding: 20px;
+            transform: none;
+            backdrop-filter: none;
+          }
+          .series-concept-toolbar p {
+            margin-bottom: 16px;
+            text-align: left;
+            font-size: 14px;
+          }
+          .series-concept-start {
+            min-height: 48px;
+            border-radius: 8px;
+            font-size: 16px;
+          }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+function EnglishQuizThemeStyles() {
+  return (
+    <style jsx global>{`
+      .english-quiz {
+        --quiz-bg: linear-gradient(165deg, #f5f0ff 0%, #eef2ff 38%, #f8faff 100%);
+        --quiz-start-bg: radial-gradient(
+            1200px 600px at 20% -10%,
+            rgba(124, 58, 237, 0.12),
+            transparent 60%
+          ),
+          radial-gradient(
+            1000px 540px at 85% 110%,
+            rgba(37, 99, 235, 0.12),
+            transparent 62%
+          ),
+          linear-gradient(135deg, #faf8ff 0%, #eef4ff 45%, #faf8ff 100%);
+        --quiz-text: #111827;
+        --quiz-text-muted: #6b7280;
+        --quiz-text-soft: #94a3b8;
+        --quiz-surface: rgba(255, 255, 255, 0.95);
+        --quiz-surface-muted: rgba(248, 250, 252, 0.95);
+        --quiz-nav-bg: rgba(255, 255, 255, 0.9);
+        --quiz-nav-inner-bg: rgba(241, 245, 249, 0.95);
+        --quiz-nav-border: rgba(226, 232, 240, 0.9);
+        --quiz-card-bg: #ffffff;
+        --quiz-card-border: #e5e7eb;
+        --quiz-card-shadow: 0 4px 20px rgba(124, 58, 237, 0.08);
+        --quiz-card-blur: blur(0px);
+        --quiz-border: #e5e7eb;
+        --quiz-border-strong: #cbd5e1;
+        --quiz-divider: #9ca3af;
+        --quiz-pill-bg: #f5f3ff;
+        --quiz-pill-text: #5b21b6;
+        --quiz-pill-border: rgba(124, 58, 237, 0.25);
+        --quiz-accent-bg: #ede9fe;
+        --quiz-accent-border: rgba(124, 58, 237, 0.35);
+        --quiz-accent-text: #7c3aed;
+        --quiz-overlay: rgba(15, 23, 42, 0.45);
+        --quiz-option-bg: #ffffff;
+        --quiz-option-border: #e5e7eb;
+        --quiz-option-hover-bg: #f5f3ff;
+        --quiz-option-hover-border: #c4b5fd;
+        --quiz-option-text: #111827;
+        --quiz-option-label-bg: transparent;
+        --quiz-option-label-border: #7c3aed;
+        --quiz-option-label-text: #5b21b6;
+        --quiz-option-shadow: 0 6px 14px rgba(15, 23, 42, 0.08);
+        --quiz-option-selected-shadow: 0 12px 24px rgba(124, 58, 237, 0.22);
+        --quiz-option-selected-bg: #f5f3ff;
+        --quiz-option-selected-border: #7c3aed;
+        --quiz-option-selected-label-bg: #7c3aed;
+        --quiz-option-selected-label-border: #7c3aed;
+        --quiz-option-selected-label-text: #ffffff;
+        --quiz-option-correct-bg: #f0fdf4;
+        --quiz-option-correct-border: #16a34a;
+        --quiz-option-correct-label-bg: #16a34a;
+        --quiz-option-correct-label-border: #16a34a;
+        --quiz-option-correct-label-text: #ffffff;
+        --quiz-option-wrong-bg: #fef2f2;
+        --quiz-option-wrong-border: #dc2626;
+        --quiz-option-wrong-label-bg: #dc2626;
+        --quiz-option-wrong-label-border: #dc2626;
+        --quiz-option-wrong-label-text: #ffffff;
+        --quiz-footer-bg: rgba(255, 255, 255, 0.95);
+        --quiz-secondary-bg: #f1f5f9;
+        --quiz-secondary-border: #cbd5e1;
+        --quiz-secondary-text: #475569;
+        --quiz-error-bg: #fff1f2;
+        --quiz-error-border: #fecdd3;
+        --quiz-error-text: #be123c;
+        --quiz-ring-track: rgba(15, 23, 42, 0.08);
+        --quiz-quote-bg: rgba(124, 58, 237, 0.12);
+        --quiz-quote-border: rgba(124, 58, 237, 0.35);
+        --quiz-quote-text: #5b21b6;
+        --quiz-selected-icon: #7c3aed;
+        --quiz-toggle-bg: rgba(255, 255, 255, 0.9);
+        --quiz-toggle-border: rgba(148, 163, 184, 0.45);
+        --quiz-toggle-track: rgba(226, 232, 240, 0.9);
+        --quiz-toggle-thumb: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
+        --quiz-status-current-bg: #7c3aed;
+        --quiz-status-current-text: #ffffff;
+        --quiz-status-current-border: #7c3aed;
+        --quiz-status-current-shadow: 0 10px 25px rgba(124, 58, 237, 0.45);
+        --quiz-status-answered-bg: #fef3c7;
+        --quiz-status-answered-text: #b45309;
+        --quiz-status-answered-border: #fcd34d;
+        --quiz-status-correct-bg: #dcfce7;
+        --quiz-status-correct-text: #15803d;
+        --quiz-status-correct-border: #86efac;
+        --quiz-status-wrong-bg: #ffe4e6;
+        --quiz-status-wrong-text: #be123c;
+        --quiz-status-wrong-border: #fda4af;
+        --quiz-status-empty-bg: #f1f5f9;
+        --quiz-status-empty-text: #475569;
+        --quiz-status-empty-border: #cbd5e1;
+        --text-primary: var(--quiz-text);
+      }
+
+      .english-quiz[data-theme="dark"] {
+        color-scheme: dark;
+        --quiz-bg: linear-gradient(165deg, #0b1020 0%, #0f172a 45%, #0b0f1a 100%);
+        --quiz-start-bg: radial-gradient(
+            900px 420px at 20% -10%,
+            rgba(124, 58, 237, 0.22),
+            transparent 60%
+          ),
+          radial-gradient(
+            900px 500px at 85% 110%,
+            rgba(37, 99, 235, 0.2),
+            transparent 62%
+          ),
+          linear-gradient(150deg, #0b1020 0%, #0f172a 40%, #0b0f1a 100%);
+        --quiz-text: #ffffff;
+        --quiz-text-muted: #94a3b8;
+        --quiz-text-soft: #7683a2;
+        --quiz-surface: #141b2d;
+        --quiz-surface-muted: #101728;
+        --quiz-nav-bg: #131a2a;
+        --quiz-nav-inner-bg: #0f1525;
+        --quiz-nav-border: #232c42;
+        --quiz-card-bg: linear-gradient(
+          150deg,
+          rgba(255, 255, 255, 0.14) 0%,
+          rgba(255, 255, 255, 0.1) 45%,
+          rgba(148, 163, 184, 0.08) 100%
+        );
+        --quiz-card-border: rgba(255, 255, 255, 0.28);
+        --quiz-card-shadow: 0 22px 40px rgba(2, 6, 23, 0.55),
+          0 0 22px rgba(99, 102, 241, 0.2),
+          inset 0 1px 0 rgba(255, 255, 255, 0.35),
+          inset 0 -12px 24px rgba(2, 6, 23, 0.28);
+        --quiz-card-blur: blur(12px) saturate(150%);
+        --quiz-border: #232c42;
+        --quiz-border-strong: #2f3b56;
+        --quiz-divider: #3b4866;
+        --quiz-pill-bg: rgba(124, 58, 237, 0.18);
+        --quiz-pill-text: #c4b5fd;
+        --quiz-pill-border: rgba(124, 58, 237, 0.45);
+        --quiz-accent-bg: rgba(124, 58, 237, 0.2);
+        --quiz-accent-border: rgba(124, 58, 237, 0.5);
+        --quiz-accent-text: #ddd6fe;
+        --quiz-overlay: rgba(2, 6, 23, 0.65);
+        --quiz-option-bg: #151c2d;
+        --quiz-option-border: #2b3550;
+        --quiz-option-hover-bg: #1a2340;
+        --quiz-option-hover-border: #7c3aed;
+        --quiz-option-text: #ffffff;
+        --quiz-option-label-bg: #0f1525;
+        --quiz-option-label-border: #2b3550;
+        --quiz-option-label-text: #cbd5f5;
+        --quiz-option-shadow: 0 10px 22px rgba(2, 6, 23, 0.45);
+        --quiz-option-selected-shadow: 0 16px 28px rgba(124, 58, 237, 0.4);
+        --quiz-option-selected-bg: rgba(124, 58, 237, 0.35);
+        --quiz-option-selected-border: #8b5cf6;
+        --quiz-option-selected-label-bg: #8b5cf6;
+        --quiz-option-selected-label-border: #8b5cf6;
+        --quiz-option-selected-label-text: #ffffff;
+        --quiz-option-correct-bg: rgba(22, 163, 74, 0.18);
+        --quiz-option-correct-border: #16a34a;
+        --quiz-option-correct-label-bg: #16a34a;
+        --quiz-option-correct-label-border: #16a34a;
+        --quiz-option-correct-label-text: #ffffff;
+        --quiz-option-wrong-bg: rgba(220, 38, 38, 0.18);
+        --quiz-option-wrong-border: #dc2626;
+        --quiz-option-wrong-label-bg: #dc2626;
+        --quiz-option-wrong-label-border: #dc2626;
+        --quiz-option-wrong-label-text: #ffffff;
+        --quiz-footer-bg: rgba(12, 16, 30, 0.95);
+        --quiz-secondary-bg: #1b2337;
+        --quiz-secondary-border: #2f3b56;
+        --quiz-secondary-text: #e2e8f0;
+        --quiz-error-bg: rgba(248, 113, 113, 0.16);
+        --quiz-error-border: rgba(248, 113, 113, 0.35);
+        --quiz-error-text: #fca5a5;
+        --quiz-ring-track: rgba(226, 232, 240, 0.08);
+        --quiz-quote-bg: rgba(124, 58, 237, 0.22);
+        --quiz-quote-border: rgba(124, 58, 237, 0.5);
+        --quiz-quote-text: #e9d5ff;
+        --quiz-selected-icon: #c4b5fd;
+        --quiz-toggle-bg: #121826;
+        --quiz-toggle-border: #1f2a3d;
+        --quiz-toggle-track: #0b1020;
+        --quiz-toggle-thumb: linear-gradient(135deg, #1f2937 0%, #0b1020 100%);
+        --quiz-status-current-bg: #8b5cf6;
+        --quiz-status-current-text: #ffffff;
+        --quiz-status-current-border: #a78bfa;
+        --quiz-status-current-shadow: 0 14px 26px rgba(124, 58, 237, 0.5);
+        --quiz-status-answered-bg: rgba(34, 197, 94, 0.18);
+        --quiz-status-answered-text: #4ade80;
+        --quiz-status-answered-border: rgba(34, 197, 94, 0.6);
+        --quiz-status-correct-bg: rgba(34, 197, 94, 0.22);
+        --quiz-status-correct-text: #4ade80;
+        --quiz-status-correct-border: rgba(34, 197, 94, 0.7);
+        --quiz-status-wrong-bg: rgba(244, 63, 94, 0.22);
+        --quiz-status-wrong-text: #fb7185;
+        --quiz-status-wrong-border: rgba(244, 63, 94, 0.6);
+        --quiz-status-empty-bg: rgba(15, 23, 42, 0.9);
+        --quiz-status-empty-text: #94a3b8;
+        --quiz-status-empty-border: #2b3550;
+      }
+
+      .english-quiz .quiz-start {
+        background: var(--quiz-start-bg);
+        color: var(--quiz-text);
+      }
+
+      .english-quiz .qstatus {
+        border: 1px solid var(--quiz-status-empty-border);
+      }
+      .english-quiz .qstatus--current {
+        background: var(--quiz-status-current-bg);
+        color: var(--quiz-status-current-text);
+        border-color: var(--quiz-status-current-border);
+        box-shadow: var(--quiz-status-current-shadow);
+        transform: scale(1.1);
+        z-index: 10;
+      }
+      .english-quiz .qstatus--answered {
+        background: var(--quiz-status-answered-bg);
+        color: var(--quiz-status-answered-text);
+        border-color: var(--quiz-status-answered-border);
+      }
+      .english-quiz .qstatus--correct {
+        background: var(--quiz-status-correct-bg);
+        color: var(--quiz-status-correct-text);
+        border-color: var(--quiz-status-correct-border);
+      }
+      .english-quiz .qstatus--wrong {
+        background: var(--quiz-status-wrong-bg);
+        color: var(--quiz-status-wrong-text);
+        border-color: var(--quiz-status-wrong-border);
+      }
+      .english-quiz .qstatus--empty {
+        background: var(--quiz-status-empty-bg);
+        color: var(--quiz-status-empty-text);
+        border-color: var(--quiz-status-empty-border);
+      }
+
+      .english-quiz .concept-badge {
+        border: 1.5px solid var(--concept-border);
+        border-radius: 999px;
+        padding: 4px 12px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: lowercase;
+        color: var(--concept-text);
+        background: var(--concept-bg);
+        letter-spacing: 0.04em;
+      }
+      .english-quiz[data-theme="dark"] .concept-badge {
+        border-color: var(--quiz-pill-border);
+        background: var(--quiz-pill-bg);
+        color: var(--quiz-pill-text);
+      }
+
+      .english-quiz .quote-highlight {
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 8px;
+        margin: 0 2px;
+        border-radius: 10px;
+        border: 1px solid var(--quiz-quote-border);
+        background: var(--quiz-quote-bg);
+        color: var(--quiz-quote-text);
+        font-weight: 600;
+      }
+
+      .english-quiz .quiz-option {
+        border-radius: 18px;
+        box-shadow: var(--quiz-option-shadow);
+      }
+      .english-quiz .quiz-option.is-selected {
+        box-shadow: var(--quiz-option-selected-shadow);
+      }
+      .english-quiz .quiz-option-letter {
+        border-radius: 12px;
+      }
+
+      .english-quiz .qnum-chip {
+        border-radius: 12px;
+      }
+
+      .english-quiz .quiz-icon-button {
+        background: var(--quiz-surface);
+        border: 1px solid var(--quiz-border);
+        color: var(--quiz-text-muted);
+      }
+      .english-quiz .quiz-icon-button:hover {
+        background: var(--quiz-surface-muted);
+      }
+
+      .english-quiz .quiz-bookmark:hover {
+        background: var(--quiz-surface-muted);
+      }
+
+      .english-quiz .theme-toggle {
+        width: 34px;
+        height: 34px;
+        padding: 0;
+        border-radius: 999px;
+        border: 0;
+        background: transparent;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        box-shadow: none;
+        transition: transform 0.18s ease, background 0.2s ease,
+          border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+      .english-quiz .theme-toggle:hover {
+        transform: translateY(-1px);
+        background: var(--quiz-toggle-bg);
+        box-shadow: none;
+      }
+      .english-quiz .theme-toggle:active {
+        transform: translateY(0);
+      }
+      .english-quiz .theme-toggle-icon {
+        width: 19px;
+        height: 19px;
+        transition: color 0.2s ease, transform 0.2s ease;
+      }
+      .english-quiz .theme-toggle:hover .theme-toggle-icon {
+        transform: scale(1.05);
+      }
+      .english-quiz .theme-toggle--light .theme-toggle-icon {
+        color: #f59e0b;
+      }
+      .english-quiz .theme-toggle--dark .theme-toggle-icon {
+        color: #e2e8f0;
+      }
+
+      .english-quiz[data-theme="dark"] .glass-card {
+        background: rgba(15, 23, 42, 0.55);
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      }
+      .english-quiz[data-theme="dark"] .glass-card:hover {
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+        border-color: rgba(148, 163, 184, 0.35);
+      }
+      .english-quiz[data-theme="dark"] .btn-outline {
+        background: rgba(15, 23, 42, 0.4);
+        border-color: rgba(148, 163, 184, 0.35);
+        color: #e2e8f0;
+      }
+      .english-quiz[data-theme="dark"] .btn-outline:hover {
+        background: rgba(30, 41, 59, 0.6);
+      }
+
+      .english-quiz.theme-switching .quiz-card,
+      .english-quiz.theme-switching .glass-card,
+      .english-quiz.theme-switching .quiz-option {
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        transition: none !important;
+      }
+
+      .english-quiz.theme-switching .quiz-start-button,
+      .english-quiz.theme-switching .quiz-start-button::after,
+      .english-quiz.theme-switching .quiz-start-icon {
+        animation: none !important;
+      }
+    `}</style>
+  );
 }
 
 function QuestionPaletteModal({
@@ -560,33 +1835,34 @@ function QuestionPaletteModal({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-[90] bg-slate-900/45 backdrop-blur-sm"
+          className="fixed inset-0 z-[90] bg-[var(--quiz-overlay)] backdrop-blur-sm"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
         >
           <motion.div
-            className="h-full w-full bg-white/95 p-4"
+            className="h-full w-full p-4"
+            style={{ background: "var(--quiz-surface)", color: "var(--quiz-text)" }}
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 20, opacity: 0 }}
             transition={{ duration: 0.2 }}
           >
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-base font-semibold text-slate-800">
+              <h3 className="text-base font-semibold text-[color:var(--quiz-text)]">
                 Question Palette
               </h3>
               <button
                 onClick={onClose}
-                className="h-12 min-w-12 rounded-xl border border-slate-300 bg-white text-slate-700 shadow-sm"
+                className="quiz-icon-button h-12 min-w-12 rounded-xl shadow-sm transition-colors"
                 aria-label="Close question palette"
               >
                 <X className="mx-auto h-5 w-5" />
               </button>
             </div>
 
-            <div className="mb-3 flex flex-wrap gap-2 text-xs text-slate-600">
+            <div className="mb-3 flex flex-wrap gap-2 text-xs text-[color:var(--quiz-text-muted)]">
               <span className="rounded-md border border-violet-300 bg-violet-100 px-2 py-1">
                 Current
               </span>
@@ -599,12 +1875,22 @@ function QuestionPaletteModal({
               <span className="rounded-md border border-rose-300 bg-rose-100 px-2 py-1">
                 Wrong
               </span>
-              <span className="rounded-md border border-slate-300 bg-slate-100 px-2 py-1">
+              <span
+                className="rounded-md border px-2 py-1"
+                style={{
+                  background: "var(--quiz-status-empty-bg)",
+                  borderColor: "var(--quiz-status-empty-border)",
+                  color: "var(--quiz-status-empty-text)",
+                }}
+              >
                 Not Answered
               </span>
             </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+            <div
+              className="rounded-2xl border p-3 shadow-sm"
+              style={{ background: "var(--quiz-card-bg)", borderColor: "var(--quiz-border)" }}
+            >
               <div className="question-grid question-grid--palette">
                 {Array.from({ length: total }, (_, index) => {
                   const status = getQuestionStatus({
@@ -652,15 +1938,20 @@ function QuestionPalettePanel({
   onGoToQuestion: (questionNumber: number) => void;
 }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div
+      className="rounded-2xl border p-4 shadow-sm"
+      style={{ background: "var(--quiz-card-bg)", borderColor: "var(--quiz-border)" }}
+    >
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-base font-semibold text-slate-800">Question Palette</h3>
-        <span className="text-xs font-semibold text-slate-500">
+        <h3 className="text-base font-semibold text-[color:var(--quiz-text)]">
+          Question Palette
+        </h3>
+        <span className="text-xs font-semibold text-[color:var(--quiz-text-muted)]">
           {currentIndex + 1}/{total}
         </span>
       </div>
 
-      <div className="mb-3 flex flex-wrap gap-2 text-xs text-slate-600">
+      <div className="mb-3 flex flex-wrap gap-2 text-xs text-[color:var(--quiz-text-muted)]">
         <span className="rounded-md border border-violet-300 bg-violet-100 px-2 py-1">
           Current
         </span>
@@ -673,7 +1964,14 @@ function QuestionPalettePanel({
         <span className="rounded-md border border-rose-300 bg-rose-100 px-2 py-1">
           Wrong
         </span>
-        <span className="rounded-md border border-slate-300 bg-slate-100 px-2 py-1">
+        <span
+          className="rounded-md border px-2 py-1"
+          style={{
+            background: "var(--quiz-status-empty-bg)",
+            borderColor: "var(--quiz-status-empty-border)",
+            color: "var(--quiz-status-empty-text)",
+          }}
+        >
           Not Answered
         </span>
       </div>
@@ -737,8 +2035,14 @@ function QuestionNavigator({
 
   return (
     <>
-      <div className="rounded-2xl border border-slate-200 bg-white/95 p-2 shadow-[0_10px_24px_rgba(15,23,42,0.1)] backdrop-blur">
-        <div className="rounded-xl border border-slate-200 bg-slate-50 px-1 py-1.5">
+      <div
+        className="rounded-2xl border p-2 shadow-[0_10px_24px_rgba(15,23,42,0.1)] backdrop-blur"
+        style={{ background: "var(--quiz-nav-bg)", borderColor: "var(--quiz-nav-border)" }}
+      >
+        <div
+          className="rounded-xl border px-1 py-1.5"
+          style={{ background: "var(--quiz-nav-inner-bg)", borderColor: "var(--quiz-nav-border)" }}
+        >
           <div
             className="question-strip qnav-bar-scroll mx-auto"
             style={{ scrollSnapType: "x mandatory" }}
@@ -840,27 +2144,97 @@ function QuestionQuickBar({
   );
 }
 
+function TimerCircle({
+  timeLeft,
+  maxTime,
+  mini,
+}: {
+  timeLeft: number;
+  maxTime: number;
+  mini?: boolean;
+}) {
+  const size = mini ? 48 : 64;
+  const stroke = mini ? 3 : 4;
+  const radius = (size - stroke * 2) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const progress = timeLeft / maxTime;
+  const offset = circumference * (1 - progress);
+  const isLow = timeLeft <= 5;
+
+  return (
+    <div
+      className="relative flex items-center justify-center"
+      style={{ width: size, height: size }}
+    >
+      <svg width={size} height={size} className="-rotate-90">
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke="var(--quiz-ring-track)"
+          strokeWidth={stroke}
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke={isLow ? "#ef4444" : "#7c3aed"}
+          strokeWidth={stroke}
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          strokeLinecap="round"
+          className={`transition-all duration-1000 linear ${
+            isLow ? "animate-pulse" : ""
+          }`}
+        />
+      </svg>
+      <span
+        className={`absolute text-sm font-bold ${
+          isLow ? "text-red-500" : "text-[var(--text-primary)]"
+        }`}
+      >
+        {timeLeft}
+      </span>
+    </div>
+  );
+}
+
+function ThemeToggle() {
+  const theme = useQuizTheme();
+  const isDark = theme === "dark";
+  return (
+    <button
+      type="button"
+      onClick={toggleQuizTheme}
+      className={`theme-toggle ${isDark ? "theme-toggle--dark" : "theme-toggle--light"}`}
+      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+      aria-pressed={isDark}
+    >
+      {isDark ? (
+        <Moon className="theme-toggle-icon" aria-hidden="true" />
+      ) : (
+        <Sun className="theme-toggle-icon" aria-hidden="true" />
+      )}
+    </button>
+  );
+}
+
 function ConceptBadge({
   concept,
-  colours,
 }: {
   concept: string;
   colours: Record<string, ConceptColour>;
 }) {
-  const colour = colours[concept] ?? DEFAULT_CONCEPT_COLOUR;
+  const label = concept
+    .trim()
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+
   return (
-    <span
-      style={{
-        border: `1.5px solid ${colour.border}`,
-        borderRadius: "999px",
-        padding: "3px 12px",
-        fontSize: "13px",
-        color: colour.text,
-        background: colour.bg,
-        fontWeight: 500,
-      }}
-    >
-      {concept}
+    <span style={{ fontSize: "inherit", fontWeight: "inherit" }}>
+      {label}
     </span>
   );
 }
@@ -923,97 +2297,260 @@ function SolutionBottomSheet({
   const solutionHasImage = /!\[[^\]]*\]\([^)]+\)/.test(solution);
   const optionLabel =
     correctOptionIndex >= 0 && correctOptionIndex < 26
-      ? String.fromCharCode(97 + correctOptionIndex)
-      : "a";
+      ? String.fromCharCode(65 + correctOptionIndex)
+      : "A";
+  const theme = useQuizTheme();
 
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-[95] bg-slate-900/45"
+          className="ios-solution-backdrop"
+          data-theme={theme}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.28, ease: "easeOut" }}
+          transition={{ duration: 0.25, ease: "easeOut" }}
           onClick={onClose}
         >
           <motion.div
             role="dialog"
             aria-modal="true"
             aria-label="Question solution"
-            className="absolute bottom-0 left-0 right-0 mx-auto flex h-[40vh] w-full max-w-3xl flex-col rounded-t-3xl border border-slate-200 bg-white px-5 pt-4 shadow-[0_-16px_44px_rgba(15,23,42,0.35)]"
-            style={{
-              paddingBottom: "calc(env(safe-area-inset-bottom) + 14px)",
-            }}
-            initial={{ y: "108%", opacity: 0.98 }}
+            className="ios-solution-sheet"
+            initial={{ y: "100%", opacity: 0.95 }}
             animate={{ y: 0, opacity: 1 }}
-            exit={{ y: "108%", opacity: 0.98 }}
+            exit={{ y: "100%", opacity: 0.95 }}
             transition={{
               type: "spring",
-              stiffness: 180,
-              damping: 26,
+              stiffness: 240,
+              damping: 28,
               mass: 0.9,
             }}
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-slate-200" />
+            <div className="ios-sheet-handle-container">
+              <div className="ios-sheet-handle" />
+            </div>
 
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-base font-semibold text-slate-800">
-                Worked Solution
-              </h3>
+            <div className="ios-solution-header">
+              <span className="ios-header-placeholder"></span>
+              <h3 className="ios-solution-title">Worked Solution</h3>
               <button
+                type="button"
                 onClick={onClose}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-700 transition-colors hover:bg-slate-50"
+                className="ios-done-btn"
                 aria-label="Close solution"
               >
-                <X className="h-4 w-4" />
+                Done
               </button>
             </div>
 
-            <div
-              className="flex-1 overflow-y-auto rounded-2xl border border-slate-300 bg-[#f7f7f7] px-4 py-3 text-slate-900"
-              style={{
-                fontFamily:
-                  "'Cambria Math', 'STIX Two Text', 'Times New Roman', serif",
-                fontSize: 17,
-                lineHeight: 1.7,
-                textAlign: "left",
-                paddingLeft: "0.3cm",
-              }}
-            >
+            <div className="ios-solution-body">
               {solutionLines.length > 0 ? (
-                <div className="space-y-1.5">
-                  <p className="mb-1 text-[18px] font-semibold text-slate-950">
-                    Sol.{questionNumber}.({optionLabel})
-                  </p>
+                <div className="ios-solution-container">
+                  <div className="ios-solution-badge">
+                    <span className="ios-badge-qnum">Question {questionNumber}</span>
+                    <span className="ios-badge-divider">•</span>
+                    <span className="ios-badge-correct">Option ({optionLabel}) is Correct</span>
+                  </div>
 
-                  {solutionHasImage ? (
-                    <RichContent text={solution} />
-                  ) : (
-                    solutionLines.map((line, index) => {
-                      const isDisplayEquation = /^\\\[[\s\S]*\\\]$/.test(line);
-                      return (
-                        <div
-                          key={`worked-line-${index}`}
-                          className={isDisplayEquation ? "text-center" : ""}
-                          style={{
-                            marginTop: isDisplayEquation ? "0.15rem" : "0",
-                            marginBottom: isDisplayEquation ? "0.15rem" : "0",
-                          }}
-                        >
-                          <MathRenderer text={line} className="leading-relaxed" />
-                        </div>
-                      );
-                    })
-                  )}
+                  <div className="ios-solution-content-text">
+                    {solutionHasImage ? (
+                      <RichContent text={solution} />
+                    ) : (
+                      solutionLines.map((line, index) => {
+                        const isDisplayEquation = /^\\\[[\s\S]*\\\]$/.test(line);
+                        return (
+                          <div
+                            key={`worked-line-${index}`}
+                            className={`ios-solution-step ${isDisplayEquation ? "is-equation" : ""}`}
+                          >
+                            <MathRenderer text={line} className="leading-relaxed" />
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
                 </div>
               ) : (
-                <p className="text-sm text-slate-500">
+                <p className="text-center py-12 opacity-60 text-base">
                   Solution is not available for this question yet.
                 </p>
               )}
             </div>
+
+            <style jsx global>{`
+              .ios-solution-backdrop {
+                position: fixed;
+                inset: 0;
+                z-index: 9999;
+                background: rgba(0, 0, 0, 0.65);
+                backdrop-filter: blur(8px);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: flex-end;
+                font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
+              }
+              .ios-solution-sheet {
+                width: 100%;
+                max-width: 680px;
+                max-height: 86svh;
+                display: flex;
+                flex-direction: column;
+                background: #1c1c1e;
+                border-radius: 28px 28px 0 0;
+                overflow: hidden;
+                box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+                border: 1px solid rgba(255, 255, 255, 0.12);
+                border-bottom: none;
+                padding-bottom: calc(env(safe-area-inset-bottom) + 16px);
+              }
+              .ios-sheet-handle-container {
+                width: 100%;
+                display: flex;
+                justify-content: center;
+                padding-top: 10px;
+                padding-bottom: 4px;
+                flex-shrink: 0;
+              }
+              .ios-sheet-handle {
+                width: 44px;
+                height: 5px;
+                border-radius: 99px;
+                background: rgba(255, 255, 255, 0.22);
+              }
+              .ios-solution-header {
+                display: grid;
+                grid-template-columns: 1fr auto 1fr;
+                align-items: center;
+                padding: 10px 20px 14px 20px;
+                border-bottom: 0.5px solid rgba(255, 255, 255, 0.12);
+                flex-shrink: 0;
+              }
+              .ios-solution-title {
+                margin: 0;
+                font-size: 18px;
+                font-weight: 600;
+                color: #ffffff;
+                text-align: center;
+                letter-spacing: -0.01em;
+              }
+              .ios-done-btn {
+                background: transparent;
+                border: none;
+                padding: 4px 0 4px 12px;
+                font-size: 17px;
+                font-weight: 600;
+                color: #0a84ff;
+                cursor: pointer;
+                justify-self: end;
+              }
+              .ios-done-btn:active {
+                opacity: 0.6;
+              }
+              .ios-solution-body {
+                flex: 1;
+                overflow-y: auto;
+                padding: 24px 22px 48px 22px;
+                overscroll-behavior: contain;
+              }
+              .ios-solution-container {
+                display: flex;
+                flex-direction: column;
+              }
+              .ios-solution-badge {
+                display: inline-flex;
+                align-items: center;
+                align-self: flex-start;
+                gap: 8px;
+                background: rgba(48, 209, 88, 0.16);
+                border: 1px solid rgba(48, 209, 88, 0.35);
+                color: #30d158;
+                font-size: 15px;
+                font-weight: 600;
+                padding: 7px 16px;
+                border-radius: 99px;
+                margin-bottom: 22px;
+                letter-spacing: 0.01em;
+              }
+              .ios-badge-divider {
+                opacity: 0.6;
+              }
+              .ios-solution-content-text {
+                font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", "Segoe UI", Roboto, sans-serif;
+                font-size: 18px;
+                line-height: 1.85;
+                color: #f5f5f7;
+                letter-spacing: 0.012em;
+              }
+              .ios-solution-step {
+                margin-top: 14px;
+                margin-bottom: 14px;
+              }
+              .ios-solution-step:first-of-type {
+                margin-top: 0;
+              }
+              .ios-solution-step.is-equation {
+                text-align: center;
+                margin-top: 24px;
+                margin-bottom: 24px;
+              }
+
+              /* Light Theme Overrides */
+              .ios-solution-backdrop[data-theme="light"] {
+                background: rgba(0, 0, 0, 0.35);
+              }
+              .ios-solution-backdrop[data-theme="light"] .ios-solution-sheet {
+                background: #ffffff;
+                border-color: rgba(0, 0, 0, 0.1);
+                color: #1d1d1f;
+              }
+              .ios-solution-backdrop[data-theme="light"] .ios-sheet-handle {
+                background: rgba(0, 0, 0, 0.18);
+              }
+              .ios-solution-backdrop[data-theme="light"] .ios-solution-header {
+                border-bottom-color: rgba(0, 0, 0, 0.08);
+              }
+              .ios-solution-backdrop[data-theme="light"] .ios-solution-title {
+                color: #1d1d1f;
+              }
+              .ios-solution-backdrop[data-theme="light"] .ios-done-btn {
+                color: #007aff;
+              }
+              .ios-solution-backdrop[data-theme="light"] .ios-solution-content-text {
+                color: #1d1d1f;
+              }
+              .ios-solution-backdrop[data-theme="light"] .ios-solution-badge {
+                background: rgba(52, 199, 89, 0.12);
+                border-color: rgba(52, 199, 89, 0.3);
+                color: #248a3d;
+              }
+
+              /* PC / Desktop optimization */
+              @media (min-width: 640px) {
+                .ios-solution-backdrop {
+                  justify-content: center;
+                  padding: 32px;
+                }
+                .ios-solution-sheet {
+                  max-height: 78vh;
+                  border-radius: 26px !important;
+                  border: 1px solid rgba(255, 255, 255, 0.16);
+                  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+                }
+                .ios-sheet-handle-container {
+                  display: none;
+                }
+                .ios-solution-header {
+                  padding: 16px 28px;
+                }
+                .ios-solution-body {
+                  padding: 28px 32px 52px 32px;
+                }
+              }
+            `}</style>
           </motion.div>
         </motion.div>
       )}
@@ -1048,19 +2585,32 @@ function SolutionSidePanel({
 
   return (
     <div
-      className="w-full min-h-[420px] rounded-2xl border border-slate-200 bg-white shadow-sm"
+      className="w-full min-h-[420px] rounded-[28px] border p-4"
       aria-label="Question solution"
+      style={{
+        background: "var(--quiz-card-bg)",
+        borderColor: "var(--quiz-card-border)",
+        boxShadow: "var(--quiz-card-shadow)",
+        color: "var(--quiz-text)",
+        backdropFilter: "var(--quiz-card-blur)",
+        WebkitBackdropFilter: "var(--quiz-card-blur)",
+      }}
     >
-      <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3.5">
+      <div
+        className="flex items-center justify-between border-b px-2 pb-3.5"
+        style={{ borderColor: "var(--quiz-border)" }}
+      >
         <div>
-          <p className="text-[15px] font-semibold text-slate-900">Worked Solution</p>
-          <p className="text-[12px] font-medium text-slate-500">
+          <p className="text-[15px] font-semibold text-[color:var(--quiz-text)]">
+            Worked Solution
+          </p>
+          <p className="text-[12px] font-medium text-[color:var(--quiz-text-muted)]">
             Sol.{questionNumber}.({optionLabel})
           </p>
         </div>
         <button
           onClick={onClose}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50"
+          className="quiz-icon-button inline-flex h-9 w-9 items-center justify-center rounded-full transition-colors"
           aria-label="Close solution"
         >
           <X className="h-4 w-4" />
@@ -1068,14 +2618,16 @@ function SolutionSidePanel({
       </div>
 
       <div
-        className="max-h-[72vh] overflow-y-auto px-7 py-4"
+        className="mt-4 max-h-[72vh] overflow-y-auto rounded-2xl border px-6 py-4 text-[color:var(--quiz-text)]"
         style={{
+          background: "var(--quiz-surface-muted)",
+          borderColor: "var(--quiz-border)",
           fontFamily: "'Cambria Math', 'STIX Two Text', 'Times New Roman', serif",
           fontSize: 18,
           lineHeight: 1.8,
           textAlign: "left",
           letterSpacing: "-0.01em",
-          paddingLeft: "28px",
+          paddingLeft: "24px",
           paddingRight: "24px",
         }}
       >
@@ -1120,34 +2672,78 @@ const prefetchQuestionImage = (url?: string) => {
 export default function EnglishQuizEngine({
   title,
   slug,
+  routeBase,
+  presentation = "default",
 }: EnglishQuizEngineProps) {
   const searchParams = useSearchParams();
+  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
+  const [submittedQuestions, setSubmittedQuestions] = useState<Set<number>>(new Set());
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const activeRailBtnRef = useRef<HTMLButtonElement | null>(null);
+  const activeMacBtnRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    if (activeRailBtnRef.current) {
+      try {
+        activeRailBtnRef.current.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+      } catch (e) {}
+    }
+    if (activeMacBtnRef.current) {
+      try {
+        activeMacBtnRef.current.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+      } catch (e) {}
+    }
+  }, [currentIndex]);
+
+  const [isLargeScreen, setIsLargeScreen] = useState(false);
+  useEffect(() => {
+    const handleResize = () => setIsLargeScreen(window.innerWidth > 768);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const isIos = presentation !== "default" ? presentation.startsWith("ios") : !isLargeScreen;
+  const isMac = presentation !== "default" ? presentation.startsWith("mac") : isLargeScreen;
+  const theme = useQuizTheme();
+
+  useEffect(() => {
+    if (presentation === "ios-light" || presentation === "mac-light") {
+      setQuizTheme("light");
+    } else if (presentation === "ios-dark" || presentation === "mac-dark") {
+      setQuizTheme("dark");
+    }
+  }, [presentation]);
   const mode = normalizeMode(searchParams.get("mode"));
   const resumeRequested = searchParams.get("resume") === "1";
   const jumpIdRaw = searchParams.get("qid");
   const jumpId = Number.parseInt(jumpIdRaw ?? "", 10);
 
+  const themeStyles = <EnglishQuizThemeStyles />;
+
   const [allQuestions, setAllQuestions] = useState<EnglishQuestionRecord[]>([]);
   const [questions, setQuestions] = useState<EnglishQuestionRecord[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
-  const [selected, setSelected] = useState<string | null>(null);
-  const [submitted, setSubmitted] = useState(false);
   const [miniMode, setMiniMode] = useState(false);
   const [difficulty, setDifficulty] = useState<Difficulty>("medium");
   const [streak, setStreak] = useState(0);
   const [bestStreak, setBestStreak] = useState(0);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [results, setResults] = useState<SessionResult[]>([]);
-  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>(
-    {}
-  );
-  const [submittedQuestions, setSubmittedQuestions] = useState<Set<number>>(
-    new Set()
-  );
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [conceptFilter, setConceptFilter] = useState<string>("all");
+  const [selectedClassificationConcepts, setSelectedClassificationConcepts] = useState<
+    Set<string>
+  >(() => new Set());
   const [examFilter, setExamFilter] = useState<string>("");
+  const [classificationSearch, setClassificationSearch] = useState("");
+  const [classificationCategory, setClassificationCategory] = useState<"All" | string>("All");
+  const [openClassificationGroups, setOpenClassificationGroups] = useState<Set<string>>(
+    () => new Set()
+  );
+  const [expandedClassificationGroups, setExpandedClassificationGroups] = useState<
+    Record<string, boolean>
+  >({});
 
   const baseConcepts = useMemo(() => TOPIC_CONCEPTS[slug] ?? [], [slug]);
 
@@ -1193,23 +2789,75 @@ export default function EnglishQuizEngine({
     return ["all", ...Array.from(set).sort((a, b) => a.localeCompare(b))];
   }, [allQuestions]);
 
-  const filteredQuestions = useMemo(
-    () =>
-      resolveIndexedQuestions(questionIndex, {
-        bucket: mode,
-        concept: mode === "concept" ? conceptFilter : "all",
-        exam: examFilter,
+  const classificationGroups = useMemo<ClassificationGroup[]>(() => {
+    const search = classificationSearch.trim().toLowerCase();
+    const grouped = CLASSIFICATION_CATEGORY_META.map((category) => ({
+      ...category,
+      concepts: conceptOptions.filter((concept) => {
+        if (getClassificationCategoryId(concept) !== category.id) return false;
+        if (classificationCategory !== "All" && classificationCategory !== category.label) {
+          return false;
+        }
+        return !search || concept.toLowerCase().includes(search);
       }),
-    [questionIndex, mode, conceptFilter, examFilter]
+    })).filter((category) => category.concepts.length > 0);
+
+    return grouped;
+  }, [classificationCategory, classificationSearch, conceptOptions]);
+
+  const isClassificationConceptMode = mode === "concept";
+
+  const classificationCategoryCounts = useMemo(
+    () =>
+      Object.fromEntries(
+        CLASSIFICATION_CATEGORY_META.map((category) => [
+          category.label,
+          conceptOptions.filter(
+            (concept) => getClassificationCategoryId(concept) === category.id
+          ).length,
+        ])
+      ),
+    [conceptOptions]
   );
 
+  const filteredQuestions = useMemo(() => {
+    if (isClassificationConceptMode || slug === "series") {
+      const selected = selectedClassificationConcepts;
+      const baseQuestions = resolveIndexedQuestions(questionIndex, {
+        bucket: mode,
+        concept: "all",
+        exam: examFilter,
+      });
+
+      if (selected.size === 0) return baseQuestions;
+      return baseQuestions.filter((question) => selected.has(question.concept));
+    }
+
+    return resolveIndexedQuestions(questionIndex, {
+      bucket: mode,
+      concept: "all",
+      exam: examFilter,
+    });
+  }, [
+    questionIndex,
+    mode,
+    conceptFilter,
+    examFilter,
+    isClassificationConceptMode,
+    selectedClassificationConcepts,
+  ]);
+
   const availableCount = filteredQuestions.length;
+  const router = useRouter();
+  const [sessionResults, setSessionResults] = useState<SessionResult[]>([]);
 
   const [started, setStarted] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [timeLeft, setTimeLeft] = useState(60);
   const [isSolutionOpen, setIsSolutionOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
+  const [resumeData, setResumeData] = useState<any>(null);
+  const storageKey = `english_quiz_resume_${slug}_${mode}`;
 
   useEffect(() => {
     let active = true;
@@ -1218,9 +2866,10 @@ export default function EnglishQuizEngine({
     fetchQuestions({ subject: "english", topic: slug })
       .then((data) => {
         if (!active) return;
-        const filtered = data.filter((item) => item.questionType !== "study-mode");
         setAllQuestions(
-          filtered.map((item, index) => toEnglishQuestion(item, index, fallbackConcept))
+          ensureUniqueQuestionIds(
+            data.map((item, index) => toEnglishQuestion(item, index, fallbackConcept))
+          )
         );
       })
       .catch((error) => {
@@ -1255,6 +2904,7 @@ export default function EnglishQuizEngine({
 
   useEffect(() => {
     setConceptFilter("all");
+    setSelectedClassificationConcepts(new Set());
     setExamFilter("");
   }, [slug]);
 
@@ -1267,7 +2917,7 @@ export default function EnglishQuizEngine({
     new Set(user?.bookmarks ?? [])
   );
   const quizKey = `english:${slug}`;
-  const quizHref = `/english/${slug}/quiz`;
+  const quizHref = `${routeBase ?? `/english/${slug}`}/quiz`;
   const resumeEntry = useMemo(() => {
     if (!resumeRequested) return null;
     return (
@@ -1281,6 +2931,7 @@ export default function EnglishQuizEngine({
   const currentQ = questions[currentIndex] as EnglishQuestion | undefined;
   const isLongQuestion = (currentQ?.question?.length ?? 0) > 180;
   const isImageQuestion = currentQ?.questionType === "image_mcq";
+  const hasQuestionText = Boolean(currentQ?.question?.trim());
   const {
     activeLang,
     setActiveLang,
@@ -1288,6 +2939,21 @@ export default function EnglishQuizEngine({
     displayedQuestion,
     displayedOptions,
   } = useTranslatedQuestion(currentQ, isImageQuestion);
+
+  const renderQuestionLine = useCallback((line: string) => {
+    const chunks = line.split(/'([^']+)'/g);
+    return chunks.map((chunk, index) => {
+      const key = `question-chunk-${index}`;
+      if (index % 2 === 1) {
+        return (
+          <span key={key} className="quote-highlight">
+            <MathText text={`'${chunk}'`} />
+          </span>
+        );
+      }
+      return <MathText key={key} text={chunk} />;
+    });
+  }, []);
 
   useEffect(() => {
     const next = questions[currentIndex + 1];
@@ -1301,8 +2967,6 @@ export default function EnglishQuizEngine({
       setQuestions([]);
       setCurrentIndex(0);
       setSelectedAnswer(null);
-      setSelected(null);
-      setSubmitted(false);
       setResults([]);
       setSelectedAnswers({});
       setSubmittedQuestions(new Set());
@@ -1319,8 +2983,6 @@ export default function EnglishQuizEngine({
     setQuestions(nextQuestions);
     setCurrentIndex(0);
     setSelectedAnswer(null);
-    setSelected(null);
-    setSubmitted(false);
     setResults([]);
     setSelectedAnswers({});
     setSubmittedQuestions(new Set());
@@ -1380,20 +3042,8 @@ export default function EnglishQuizEngine({
     setShowAnalytics(false);
     setStarted(true);
     setCurrentIndex(safeIndex);
-    const nextQuestion = questions[safeIndex];
     const existingSelection = savedAnswers[safeIndex];
     setSelectedAnswer(existingSelection ?? null);
-    if (nextQuestion?.questionType === "image_mcq") {
-      setSelected(
-        existingSelection !== undefined
-          ? String.fromCharCode(97 + existingSelection)
-          : null
-      );
-      setSubmitted(submittedSet.has(safeIndex));
-    } else {
-      setSelected(null);
-      setSubmitted(false);
-    }
     setSubmitError("");
     setIsSolutionOpen(false);
     if (!submittedSet.has(safeIndex)) {
@@ -1416,20 +3066,8 @@ export default function EnglishQuizEngine({
     setShowAnalytics(false);
     setStarted(true);
     setCurrentIndex(targetIndex);
-    const nextQuestion = questions[targetIndex];
     const existingSelection = selectedAnswers[targetIndex];
     setSelectedAnswer(existingSelection ?? null);
-    if (nextQuestion?.questionType === "image_mcq") {
-      setSelected(
-        existingSelection !== undefined
-          ? String.fromCharCode(97 + existingSelection)
-          : null
-      );
-      setSubmitted(submittedQuestions.has(targetIndex));
-    } else {
-      setSelected(null);
-      setSubmitted(false);
-    }
     setSubmitError("");
     setIsSolutionOpen(false);
     if (!submittedQuestions.has(targetIndex)) {
@@ -1525,9 +3163,80 @@ export default function EnglishQuizEngine({
     showAnalytics,
   ]);
 
+  useEffect(() => {
+    if (typeof window === "undefined" || !started || questions.length === 0) return;
+    if (submittedQuestions.size === 0) return;
+
+    const stateToSave = {
+      selectedAnswers,
+      submittedQuestions: Array.from(submittedQuestions),
+      currentIndex,
+      mode,
+      conceptFilter,
+      examFilter,
+      selectedClassificationConcepts: Array.from(selectedClassificationConcepts),
+      difficulty,
+    };
+    try {
+      window.localStorage.setItem(storageKey, JSON.stringify(stateToSave));
+    } catch (e) {}
+  }, [
+    started,
+    questions.length,
+    selectedAnswers,
+    submittedQuestions,
+    currentIndex,
+    mode,
+    conceptFilter,
+    examFilter,
+    selectedClassificationConcepts,
+    difficulty,
+    storageKey,
+  ]);
+
   function handleStart() {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = window.localStorage.getItem(storageKey);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && parsed.submittedQuestions && parsed.submittedQuestions.length > 0) {
+            setResumeData(parsed);
+            return;
+          }
+        }
+      } catch (e) {}
+    }
     setStarted(true);
     startTimer();
+  }
+
+  function handleResume() {
+    if (resumeData) {
+      if (resumeData.selectedAnswers) setSelectedAnswers(resumeData.selectedAnswers);
+      if (resumeData.submittedQuestions) setSubmittedQuestions(new Set(resumeData.submittedQuestions));
+      if (resumeData.currentIndex !== undefined) setCurrentIndex(resumeData.currentIndex);
+      if (resumeData.conceptFilter) setConceptFilter(resumeData.conceptFilter);
+      if (resumeData.examFilter) setExamFilter(resumeData.examFilter);
+      if (resumeData.selectedClassificationConcepts) setSelectedClassificationConcepts(new Set(resumeData.selectedClassificationConcepts));
+      if (resumeData.difficulty) setDifficulty(resumeData.difficulty);
+    }
+    setResumeData(null);
+    setStarted(true);
+    startTimer();
+  }
+
+  function handleRestartFromPopup() {
+    try {
+      window.localStorage.removeItem(storageKey);
+    } catch (e) {}
+    setResumeData(null);
+    setStarted(true);
+    startTimer();
+  }
+
+  function handleCancelResume() {
+    setResumeData(null);
   }
 
   const showQuestion = useCallback(
@@ -1539,17 +3248,6 @@ export default function EnglishQuizEngine({
       const nextQuestion = questions[safeIndex];
       const existingSelection = selectedAnswers[safeIndex];
       setSelectedAnswer(existingSelection ?? null);
-      if (nextQuestion?.questionType === "image_mcq") {
-        setSelected(
-          existingSelection !== undefined
-            ? String.fromCharCode(97 + existingSelection)
-            : null
-        );
-        setSubmitted(submittedQuestions.has(safeIndex));
-      } else {
-        setSelected(null);
-        setSubmitted(false);
-      }
       setSubmitError("");
       setIsSolutionOpen(false);
       if (started && !showAnalytics && !submittedQuestions.has(safeIndex)) {
@@ -1601,23 +3299,6 @@ export default function EnglishQuizEngine({
       if (index < 0 || index >= currentQ.options.length) return;
       setSelectedAnswer(index);
       setSelectedAnswers((prev) => ({ ...prev, [currentIndex]: index }));
-      if (currentQ.questionType === "image_mcq") {
-        setSelected(String.fromCharCode(97 + index));
-      }
-      setSubmitError("");
-    },
-    [currentIndex, currentQ, submittedQuestions]
-  );
-
-  const handleSelectImageAnswer = useCallback(
-    (letter: string) => {
-      if (!currentQ) return;
-      if (submittedQuestions.has(currentIndex)) return;
-      const idx = letter.toLowerCase().charCodeAt(0) - 97;
-      if (idx < 0 || idx >= currentQ.options.length) return;
-      setSelected(letter);
-      setSelectedAnswer(idx);
-      setSelectedAnswers((prev) => ({ ...prev, [currentIndex]: idx }));
       setSubmitError("");
     },
     [currentIndex, currentQ, submittedQuestions]
@@ -1678,10 +3359,6 @@ export default function EnglishQuizEngine({
       next.add(currentIndex);
       return next;
     });
-
-    if (currentQ.questionType === "image_mcq") {
-      setSubmitted(true);
-    }
 
     setSubmitError("");
   }, [
@@ -1745,7 +3422,6 @@ export default function EnglishQuizEngine({
   const handleClearResponse = useCallback(() => {
     if (submittedQuestions.has(currentIndex)) return;
     setSelectedAnswer(null);
-    setSelected(null);
     setSelectedAnswers((prev) => {
       if (!(currentIndex in prev)) return prev;
       const next = { ...prev };
@@ -1770,8 +3446,6 @@ export default function EnglishQuizEngine({
     setQuestions([...questions].sort((a, b) => a.id - b.id));
     setCurrentIndex(0);
     setSelectedAnswer(null);
-    setSelected(null);
-    setSubmitted(false);
     setResults([]);
     setSelectedAnswers({});
     setSubmittedQuestions(new Set());
@@ -1884,8 +3558,16 @@ export default function EnglishQuizEngine({
 
   if (showAnalytics) {
     return (
-      <div className="min-h-screen relative overflow-hidden">
+      <div
+        className="english-quiz min-h-screen relative overflow-hidden"
+        data-theme="light"
+        style={{ background: "var(--quiz-bg)", color: "var(--quiz-text)" }}
+      >
+        {themeStyles}
         <div className="pt-28 pb-20 px-6 max-w-3xl mx-auto relative">
+          <div className="mb-6 flex justify-end">
+            <ThemeToggle />
+          </div>
           <h1
             className="animate-fade-in-up text-3xl font-bold mb-2 text-[var(--text-primary)]"
             style={{
@@ -1905,7 +3587,7 @@ export default function EnglishQuizEngine({
             </span>
           </h1>
           <p
-            className="animate-fade-in-up text-slate-500 mb-10"
+            className="animate-fade-in-up text-[color:var(--quiz-text-muted)] mb-10"
             style={{ animationDelay: "100ms" }}
           >
             Here is how you performed in this {MODE_LABELS[mode]} session.
@@ -1935,7 +3617,9 @@ export default function EnglishQuizEngine({
             ].map((s) => (
               <div key={s.label} className="glass-card rounded-xl p-5 text-center">
                 <div className={`text-2xl font-bold ${s.color}`}>{s.value}</div>
-                <div className="text-xs text-slate-500 mt-1">{s.label}</div>
+                <div className="text-xs text-[color:var(--quiz-text-soft)] mt-1">
+                  {s.label}
+                </div>
               </div>
             ))}
           </div>
@@ -1945,13 +3629,17 @@ export default function EnglishQuizEngine({
             style={{ animationDelay: "250ms" }}
           >
             <div className="glass-card rounded-xl p-5">
-              <div className="text-sm text-slate-500 mb-1">Best Streak</div>
+              <div className="text-sm text-[color:var(--quiz-text-soft)] mb-1">
+                Best Streak
+              </div>
               <div className="text-xl font-bold text-violet-600 flex items-center gap-2">
                 <Flame className="w-5 h-5" /> {bestStreak}
               </div>
             </div>
             <div className="glass-card rounded-xl p-5">
-              <div className="text-sm text-slate-500 mb-1">Questions Done</div>
+              <div className="text-sm text-[color:var(--quiz-text-soft)] mb-1">
+                Questions Done
+              </div>
               <div className="text-xl font-bold text-[var(--text-primary)] flex items-center justify-center gap-2">
                 <MathFraction
                   numerator={results.length}
@@ -1994,7 +3682,9 @@ export default function EnglishQuizEngine({
                   return (
                     <div key={concept}>
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm text-slate-600">{concept}</span>
+                        <span className="text-sm text-[color:var(--quiz-text-muted)]">
+                          {concept}
+                        </span>
                         <span
                           className="text-xs px-2 py-0.5 rounded-full font-semibold"
                           style={{
@@ -2006,7 +3696,7 @@ export default function EnglishQuizEngine({
                           {pct}%
                         </span>
                       </div>
-                      <div className="h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
+                      <div className="h-1.5 w-full rounded-full bg-[var(--quiz-surface-muted)] overflow-hidden">
                         <div
                           className="h-full rounded-full transition-all duration-700"
                           style={{
@@ -2042,7 +3732,9 @@ export default function EnglishQuizEngine({
                     key={wc.concept}
                     className="flex items-center justify-between"
                   >
-                    <span className="text-sm text-slate-600">{wc.concept}</span>
+                    <span className="text-sm text-[color:var(--quiz-text-muted)]">
+                      {wc.concept}
+                    </span>
                     <span className="text-xs px-2.5 py-1 rounded-full bg-red-500/10 text-red-500 border border-red-500/25">
                       {wc.accuracy}% accuracy
                     </span>
@@ -2068,7 +3760,7 @@ export default function EnglishQuizEngine({
               <RotateCcw className="w-4 h-4" /> Practice Again
             </button>
             <Link
-              href={`/english/${slug}`}
+              href={routeBase ?? `/english/${slug}`}
               className="btn-outline px-6 py-3 rounded-xl font-medium text-center cursor-pointer"
             >
               Change Mode
@@ -2085,259 +3777,207 @@ export default function EnglishQuizEngine({
     );
   }
 
+  const isClassificationConceptStart = isClassificationConceptMode;
+  const selectedConceptCount = selectedClassificationConcepts.size;
+  const visibleClassificationConceptCount = classificationGroups.reduce(
+    (total, category) => total + category.concepts.length,
+    0
+  );
+  const classificationCoverage =
+    selectedConceptCount === 0
+      ? 100
+      : Math.max(8, Math.min(100, Math.round((selectedConceptCount / conceptOptions.length) * 100)));
+  const allClassificationConceptsSelected =
+    selectedClassificationConcepts.size === conceptOptions.length && conceptOptions.length > 0;
+
   if (!started) {
+    let startScreen;
+    if (isClassificationConceptMode) {
+      startScreen = (
+        <SeriesConceptStart
+          title={title}
+          slug={slug}
+          routeBase={routeBase}
+          groups={classificationGroups}
+          category={classificationCategory}
+          categoryCounts={classificationCategoryCounts}
+          examFilter={examFilter}
+          examOptions={examOptions}
+          selected={selectedClassificationConcepts}
+          conceptCount={conceptOptions.length}
+          questionCount={availableCount}
+          onCategoryChange={setClassificationCategory}
+          onExamChange={setExamFilter}
+          onToggleGroup={(concepts) => {
+            const allSelected = concepts.every((concept) =>
+              selectedClassificationConcepts.has(concept)
+            );
+            setSelectedClassificationConcepts((previous) => {
+              const next = new Set(previous);
+              concepts.forEach((concept) => {
+                if (allSelected) next.delete(concept);
+                else next.add(concept);
+              });
+              return next;
+            });
+          }}
+          onStart={handleStart}
+        />
+      );
+    } else {
+      startScreen = (
+        <SeriesFormulaStart
+          title={title}
+          slug={slug}
+          routeBase={routeBase}
+          mode={mode}
+          examFilter={examFilter}
+          examOptions={examOptions}
+          questionCount={availableCount}
+          onExamChange={setExamFilter}
+          groups={classificationGroups}
+          category={classificationCategory}
+          categoryCounts={classificationCategoryCounts}
+          search={classificationSearch}
+          selected={selectedClassificationConcepts}
+          conceptCount={conceptOptions.length}
+          onCategoryChange={setClassificationCategory}
+          onSearchChange={setClassificationSearch}
+          onToggleGroup={(concepts) => {
+            const allSelected = concepts.every((concept) =>
+              selectedClassificationConcepts.has(concept)
+            );
+            setSelectedClassificationConcepts((previous) => {
+              const next = new Set(previous);
+              concepts.forEach((concept) => {
+                if (allSelected) next.delete(concept);
+                else next.add(concept);
+              });
+              return next;
+            });
+          }}
+          onStart={handleStart}
+        />
+      );
+    }
+
     return (
-      <div className="quiz-start min-h-screen relative overflow-hidden px-4 sm:px-6">
-        <div className="w-full max-w-2xl mx-auto text-center min-h-screen flex flex-col pt-20 sm:pt-24 pb-8">
-          <div className="mb-2 flex items-center justify-center gap-2">
-            <span
-              className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-widest"
-              style={{
-                background: "#F5F3FF",
-                color: "#7c3aed",
-                border: "1px solid #7c3aed30",
-              }}
-            >
-              {title}
-            </span>
-          </div>
-          <h1
-            className="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-3 text-[var(--text-primary)]"
-            style={{
-              fontFamily: "'SF Pro Display', 'Helvetica Neue', sans-serif",
-            }}
-          >
-            {MODE_LABELS[mode]}
-          </h1>
-
-          {mode === "concept" && (
-            <div className="mb-4 flex flex-wrap justify-center gap-2">
-              <button
-                onClick={() => setConceptFilter("all")}
-                className="rounded-full px-4 py-2 text-sm font-semibold transition-all"
-                style={{
-                  background:
-                    conceptFilter === "all" ? "#7c3aed" : "#F5F3FF",
-                  color: conceptFilter === "all" ? "#fff" : "#5B21B6",
-                  border: `1.5px solid ${
-                    conceptFilter === "all" ? "#7c3aed" : "#7c3aed40"
-                  }`,
-                }}
-              >
-                All
-              </button>
-              {conceptOptions.map((concept) => {
-                const col = conceptColours[concept] ?? DEFAULT_CONCEPT_COLOUR;
-                const isActive = conceptFilter === concept;
-                return (
-                  <button
-                    key={concept}
-                    onClick={() => setConceptFilter(concept)}
-                    className="rounded-full px-4 py-2 text-sm font-semibold transition-all"
-                    style={{
-                      background: isActive ? col.text : col.bg,
-                      color: isActive ? "#fff" : col.text,
-                      border: `1.5px solid ${col.border}`,
-                    }}
-                  >
-                    {concept}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-
-          <div className="mb-5 flex items-center justify-center" style={{ marginTop: "1cm" }}>
-            <div className="flex items-center gap-2 rounded-full border border-violet-200 bg-white/80 px-3 py-2 shadow-sm" style={{ minWidth: "280px" }}>
-              <select
-                value={examFilter || "all"}
-                onChange={(e) => setExamFilter(e.target.value === "all" ? "" : e.target.value)}
-                className="rounded-full border-none bg-transparent px-4 py-2 text-base font-semibold text-slate-700 outline-none focus:ring-0"
-                style={{ minWidth: "220px" }}
-              >
-                {examOptions.map((ex) => (
-                  <option key={ex} value={ex === "all" ? "all" : ex}>
-                    {ex === "all" ? "All exams" : ex}
-                  </option>
-                ))}
-              </select>
-
-              {examFilter !== "" && (
-                <button
-                  onClick={() => setExamFilter("")}
-                  className="rounded-full bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-700 hover:bg-violet-100"
-                >
-                  Clear
+      <>
+        {startScreen}
+        {resumeData && (
+          <div className="ios-resume-backdrop" data-theme={theme}>
+            <div className="ios-resume-modal">
+              <div className="ios-resume-content">
+                <h3>Resume Quiz?</h3>
+                <p className="resume-question-info">
+                  Resuming from Question {(resumeData.currentIndex ?? 0) + 1}
+                </p>
+                <div className="ios-resume-progress">
+                  <div className="ios-resume-track">
+                    <div 
+                      className="ios-resume-bar" 
+                      style={{ width: `${Math.min(100, ((resumeData.submittedQuestions?.length || 0) / availableCount) * 100)}%` }} 
+                    />
+                  </div>
+                  <span>{resumeData.submittedQuestions?.length || 0}/{availableCount}</span>
+                </div>
+              </div>
+              <div className="ios-resume-actions">
+                <button type="button" className="ios-resume-btn blue action-resume" onClick={handleResume}>
+                  Resume
                 </button>
-              )}
+                <button type="button" className="ios-resume-btn red action-restart" onClick={handleRestartFromPopup}>
+                  Restart
+                </button>
+                <button type="button" className="ios-resume-btn blue action-cancel" onClick={handleCancelResume}>
+                  Cancel
+                </button>
+              </div>
             </div>
+            <style jsx>{`
+              .ios-resume-backdrop { position:fixed; inset:0; z-index:99999; background:rgba(0,0,0,0.6); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif; backdrop-filter: blur(4px); }
+              .ios-resume-modal { width:100%; max-width:320px; background:#2c2c2e; border-radius:14px; overflow:hidden; box-shadow: 0 16px 40px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.08); }
+              .ios-resume-content { padding:20px 16px; text-align:center; border-bottom: 0.5px solid rgba(255,255,255,0.15); }
+              .ios-resume-content h3 { margin:0 0 6px 0; color:#fff; font-size:17px; font-weight:600; }
+              .resume-question-info { margin:4px 0 16px 0; color:#60a5fa; font-weight:600; font-size:15px; }
+              .ios-resume-progress { display:flex; align-items:center; gap:12px; }
+              .ios-resume-track { flex:1; height:4px; background:rgba(255,255,255,0.1); border-radius:2px; overflow:hidden; }
+              .ios-resume-bar { height:100%; background:#0a84ff; border-radius:2px; }
+              .ios-resume-progress span { font-size:13px; color:rgba(235,235,245,0.6); font-variant-numeric:tabular-nums; }
+              .ios-resume-actions { display:flex; flex-direction:column; }
+              .ios-resume-btn { width:100%; height:50px; background:transparent; border:none; border-top:0.5px solid rgba(255,255,255,0.15); font-size:17px; font-weight:400; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+              .ios-resume-actions .ios-resume-btn:first-child { border-top: none; }
+              .ios-resume-btn.blue { color:#0a84ff; }
+              .ios-resume-btn.red { color:#ff453a; }
+              .action-resume { font-weight: 600; }
+              .action-cancel { font-weight: 400; }
+              .ios-resume-btn:active { background:rgba(255,255,255,0.1); }
+
+              /* Light Theme Overrides */
+              .ios-resume-backdrop[data-theme="light"] { background: rgba(0, 0, 0, 0.35); }
+              .ios-resume-backdrop[data-theme="light"] .ios-resume-modal { background: #ffffff; border: 1px solid rgba(0,0,0,0.1); box-shadow: 0 20px 48px rgba(0,0,0,0.15); }
+              .ios-resume-backdrop[data-theme="light"] .ios-resume-content { border-bottom-color: rgba(60,60,67,0.18); }
+              .ios-resume-backdrop[data-theme="light"] .ios-resume-content h3 { color: #000000; }
+              .ios-resume-backdrop[data-theme="light"] .resume-question-info { color: #007aff; }
+              .ios-resume-backdrop[data-theme="light"] .ios-resume-track { background: rgba(0,0,0,0.08); }
+              .ios-resume-backdrop[data-theme="light"] .ios-resume-bar { background: #007aff; }
+              .ios-resume-backdrop[data-theme="light"] .ios-resume-progress span { color: rgba(60,60,67,0.6); }
+              .ios-resume-backdrop[data-theme="light"] .ios-resume-btn { border-top-color: rgba(60,60,67,0.18); }
+              .ios-resume-backdrop[data-theme="light"] .ios-resume-btn.blue { color: #007aff; }
+              .ios-resume-backdrop[data-theme="light"] .ios-resume-btn.red { color: #ff3b30; }
+              .ios-resume-backdrop[data-theme="light"] .ios-resume-btn:active { background: rgba(0,0,0,0.05); }
+
+              /* PC / Desktop optimization */
+              @media (min-width: 640px) {
+                .ios-resume-modal {
+                  max-width: 440px;
+                  border: 1px solid rgba(255,255,255,0.14);
+                  border-radius: 18px;
+                  box-shadow: 0 24px 48px rgba(0,0,0,0.5);
+                }
+                .ios-resume-actions {
+                  display: grid;
+                  grid-template-columns: 1fr 1fr 1fr;
+                  border-top: 0.5px solid rgba(255,255,255,0.15);
+                }
+                .ios-resume-btn {
+                  height: 48px;
+                  font-size: 16px;
+                  border-top: none !important;
+                  border-right: 0.5px solid rgba(255,255,255,0.15);
+                }
+                .ios-resume-btn:last-child {
+                  border-right: none;
+                }
+                .action-cancel { order: 1; font-weight: 500; color: rgba(235,235,245,0.7); }
+                .action-restart { order: 2; font-weight: 500; }
+                .action-resume { order: 3; font-weight: 600; }
+
+                .ios-resume-backdrop[data-theme="light"] .ios-resume-actions { border-top-color: rgba(60,60,67,0.18); }
+                .ios-resume-backdrop[data-theme="light"] .ios-resume-btn { border-right-color: rgba(60,60,67,0.18); }
+                .ios-resume-backdrop[data-theme="light"] .action-cancel { color: rgba(60,60,67,0.65); }
+              }
+            `}</style>
           </div>
-
-          <p className="text-sm font-medium text-slate-600 mb-5">
-            {availableCount} questions available
-          </p>
-
-          <div className="flex-1 flex items-center justify-center">
-            <button
-              onClick={handleStart}
-              className="quiz-start-button mx-auto"
-              aria-label="Start Quiz"
-            >
-              <Sparkles className="quiz-start-icon" aria-hidden="true" />
-              <span className="quiz-start-label">Start Quiz</span>
-            </button>
-          </div>
-        </div>
-
-        <style jsx>{`
-          .quiz-start {
-            background: radial-gradient(
-                1200px 600px at 20% -10%,
-                rgba(124, 58, 237, 0.12),
-                transparent 60%
-              ),
-              radial-gradient(
-                1000px 540px at 85% 110%,
-                rgba(37, 99, 235, 0.12),
-                transparent 62%
-              ),
-              linear-gradient(135deg, #faf8ff 0%, #eef4ff 45%, #faf8ff 100%);
-          }
-          .quiz-start-button {
-            position: relative;
-            width: min(78vw, 260px);
-            min-height: 54px;
-            border: 0;
-            border-radius: 999px;
-            cursor: pointer;
-            isolation: isolate;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.42rem;
-            padding: 0 1.2rem;
-            background: linear-gradient(
-              130deg,
-              #7c3aed 0%,
-              #4f46e5 48%,
-              #2563eb 100%
-            );
-            background-size: 190% 190%;
-            color: #ffffff;
-            box-shadow: 0 18px 32px rgba(124, 58, 237, 0.35),
-              0 0 22px rgba(79, 70, 229, 0.3), 0 0 40px rgba(37, 99, 235, 0.2),
-              inset 0 1.5px 0 rgba(255, 255, 255, 0.32);
-            transition: transform 0.4s ease, box-shadow 0.4s ease,
-              filter 0.4s ease;
-            animation: quiz-breathe 3.4s ease-in-out infinite;
-          }
-          .quiz-start-button::before,
-          .quiz-start-button::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            border-radius: inherit;
-            pointer-events: none;
-          }
-          .quiz-start-button::before {
-            inset: 2px;
-            background: linear-gradient(
-              180deg,
-              rgba(255, 255, 255, 0.42),
-              rgba(255, 255, 255, 0.08) 42%,
-              transparent 85%
-            );
-            opacity: 0.85;
-          }
-          .quiz-start-button::after {
-            background: linear-gradient(
-              100deg,
-              transparent 18%,
-              rgba(255, 255, 255, 0.72) 47%,
-              transparent 78%
-            );
-            transform: translateX(-140%);
-            mix-blend-mode: screen;
-            opacity: 0.92;
-            animation: quiz-sweep 3s ease-in-out infinite;
-          }
-          .quiz-start-icon {
-            position: relative;
-            z-index: 2;
-            width: 0.88rem;
-            height: 0.88rem;
-            stroke-width: 2.4;
-            color: #ffffff;
-            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.55));
-            animation: quiz-twinkle 2.8s ease-in-out infinite;
-          }
-          .quiz-start-label {
-            position: relative;
-            z-index: 2;
-            font-size: clamp(0.88rem, 2.5vw, 1rem);
-            font-weight: 800;
-            letter-spacing: 0.02em;
-            color: #ffffff;
-            text-shadow: 0 2px 10px rgba(30, 41, 59, 0.34);
-          }
-          .quiz-start-button:hover {
-            transform: translateY(-2px) scale(1.05);
-            filter: brightness(1.12);
-            box-shadow: 0 22px 42px rgba(124, 58, 237, 0.45),
-              0 0 30px rgba(79, 70, 229, 0.45), 0 0 58px rgba(37, 99, 235, 0.3),
-              inset 0 2px 0 rgba(255, 255, 255, 0.44);
-          }
-          .quiz-start-button:focus-visible {
-            outline: 2px solid rgba(255, 255, 255, 0.72);
-            outline-offset: 4px;
-          }
-          @keyframes quiz-sweep {
-            0% {
-              transform: translateX(-140%);
-            }
-            55%,
-            100% {
-              transform: translateX(140%);
-            }
-          }
-          @keyframes quiz-breathe {
-            0%,
-            100% {
-              transform: translateY(0) scale(1);
-            }
-            50% {
-              transform: translateY(-4px) scale(1.018);
-            }
-          }
-          @keyframes quiz-gradient {
-            0%,
-            100% {
-              background-position: 0% 50%;
-            }
-            50% {
-              background-position: 100% 50%;
-            }
-          }
-          @keyframes quiz-twinkle {
-            0%,
-            100% {
-              transform: scale(1) rotate(0deg);
-              opacity: 0.92;
-            }
-            50% {
-              transform: scale(1.15) rotate(8deg);
-              opacity: 1;
-            }
-          }
-        `}</style>
-      </div>
+        )}
+      </>
     );
   }
 
   if (!currentQ) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-slate-500">
-        No questions available for this selection.
+      <div
+        className="english-quiz min-h-screen relative flex items-center justify-center"
+        data-theme="light"
+        style={{ background: "var(--quiz-bg)", color: "var(--quiz-text)" }}
+      >
+        {themeStyles}
+        <div className="absolute right-4 top-4">
+          <ThemeToggle />
+        </div>
+        <div className="text-[color:var(--quiz-text-muted)]">
+          No questions available for this selection.
+        </div>
       </div>
     );
   }
@@ -2346,15 +3986,836 @@ export default function EnglishQuizEngine({
   const canSubmit = selectedAnswer !== null && !isCurrentSubmitted;
   const canViewSolution = isCurrentSubmitted;
 
+  if (isMac) {
+    return (
+      <div className="mac-series-quiz english-quiz" data-theme={theme}>
+        {themeStyles}
+        <div className="mac-series-desktop">
+          <div className="mac-series-window">
+            <header className="mac-series-header">
+              <div className="mac-series-traffic-lights">
+                <div className="mac-dot mac-red"></div>
+                <div className="mac-dot mac-yellow"></div>
+                <div className="mac-dot mac-green"></div>
+              </div>
+              <div className="mac-series-title">{title} - {mode === "concept" ? "Concept Practice" : "Quiz"}</div>
+              <div className="mac-series-header-right">
+                <button
+                  type="button"
+                  className="mac-series-icon-button"
+                  onClick={toggleQuizTheme}
+                  aria-label={theme === "dark" ? "Use light theme" : "Use dark theme"}
+                >
+                  {theme === "dark" ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
+                </button>
+                <LangToggle
+                  active={activeLang}
+                  loading={isTranslating}
+                  onChange={setActiveLang}
+                />
+              </div>
+            </header>
+            
+            <div className="mac-series-body">
+              <aside className="mac-series-sidebar">
+                <div className="mac-sidebar-title">Questions</div>
+                <div className="mac-series-palette-grid">
+                  {questions.map((question, index) => {
+                    const status = getQuestionStatus({
+                      index,
+                      currentIndex,
+                      selectedAnswers,
+                      questions,
+                      submittedQuestions
+                    });
+                    return (
+                      <button
+                        key={`mac-palette-${question.id}-${index}`}
+                        type="button"
+                        ref={index === currentIndex ? activeMacBtnRef : null}
+                        className={`mac-palette-btn ${status === "current" ? "is-current" : ""} ${status === "answered" || status === "correct" ? "is-answered" : ""} ${status === "wrong" ? "is-wrong" : ""}`}
+                        onClick={() => goToQuestion(index + 1)}
+                      >
+                        {index + 1}
+                      </button>
+                    );
+                  })}
+                </div>
+              </aside>
+              
+              <main className="mac-series-main">
+                <div className="mac-series-meta-row">
+                  <ConceptBadge concept={currentQ.concept} colours={conceptColours} />
+                  <span>{currentQ.exam || `${title} concept practice`}</span>
+                  
+                  <button
+                    type="button"
+                    className="mac-series-bookmark"
+                    onClick={handleBookmark}
+                    aria-label={bookmarked.has(String(currentQ.id)) ? "Remove bookmark" : "Add bookmark"}
+                  >
+                    {bookmarked.has(String(currentQ.id)) ? (
+                      <BookmarkCheck aria-hidden="true" />
+                    ) : (
+                      <Bookmark aria-hidden="true" />
+                    )}
+                  </button>
+                </div>
+
+                <motion.section
+                  key={currentQ.id}
+                  initial={{ opacity: 0, x: 10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="mac-series-question-card"
+                >
+                  {hasQuestionText && (
+                    <div className="mac-series-prompt">
+                      <RichContent
+                        text={displayedQuestion}
+                        renderText={renderQuestionLine}
+                      />
+                    </div>
+                  )}
+                </motion.section>
+
+                <section className="mac-series-options" aria-label="Answer options">
+                  {displayedOptions.slice(0, 4).map((option, index) => {
+                    const isCorrect = isCurrentSubmitted && index === currentQ.correctAnswer;
+                    const isWrong =
+                      isCurrentSubmitted && selectedAnswer === index && index !== currentQ.correctAnswer;
+                    const isSelected = selectedAnswer === index;
+                    return (
+                      <button
+                        key={`${currentQ.id}-${index}`}
+                        type="button"
+                        disabled={isCurrentSubmitted}
+                        onClick={() => handleSelectAnswer(index)}
+                        className={`mac-series-option ${isSelected ? "is-selected" : ""} ${isCorrect ? "is-correct" : ""} ${isWrong ? "is-wrong" : ""}`}
+                      >
+                        <span className="mac-series-option-letter">
+                          {String.fromCharCode(65 + index)}
+                        </span>
+                        <span className="mac-series-option-value">
+                          <RichContent text={option} />
+                        </span>
+                        {isCorrect && <CheckCircle2 className="mac-series-answer-icon" aria-label="Correct option" />}
+                        {isWrong && <XCircle className="mac-series-answer-icon" aria-label="Incorrect option" />}
+                      </button>
+                    );
+                  })}
+                </section>
+
+                <div className="mac-series-actions">
+                  {submitError && <p className="mac-series-error">{submitError}</p>}
+                  
+                  <div className="mac-series-footer-buttons">
+                    <button
+                      type="button"
+                      onClick={handlePrev}
+                      disabled={currentIndex === 0}
+                      className="mac-series-footer-secondary"
+                    >
+                      Previous
+                    </button>
+                    {canViewSolution && (
+                      <button type="button" className="mac-series-footer-solution" onClick={openSolution}>
+                        View solution
+                      </button>
+                    )}
+                    <QuizChatbot
+                      key={currentQ.id}
+                      isVisible={isCurrentSubmitted}
+                      questionNumber={currentIndex + 1}
+                      topicTitle={title}
+                      question={currentQ}
+                      theme={theme}
+                      renderTrigger={(onOpen) => (
+                        <button type="button" className="mac-series-footer-ai" onClick={onOpen}>
+                          Ask AI Tutor
+                        </button>
+                      )}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => (isCurrentSubmitted ? handleNext() : handleSubmitCurrent())}
+                      disabled={!canSubmit && !isCurrentSubmitted}
+                      className="mac-series-footer-primary"
+                    >
+                      {!isCurrentSubmitted ? "Submit" : currentIndex < questions.length - 1 ? "Next" : "Finish"}
+                    </button>
+                  </div>
+                </div>
+              </main>
+            </div>
+          </div>
+        </div>
+        <SolutionBottomSheet
+          isOpen={isSolutionOpen}
+          solution={currentQ.solution ?? ""}
+          questionNumber={currentIndex + 1}
+          correctOptionIndex={currentQ.correctAnswer}
+          onClose={closeSolution}
+        />
+        <style jsx global>{`
+          .mac-series-quiz {
+            min-height: 100svh;
+            background: #000;
+            color: #f2f2f7;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+          }
+          .mac-series-desktop {
+            height: 100svh;
+            width: 100%;
+            padding: 0;
+            background: linear-gradient(135deg, #13151a, #000);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          .mac-series-window {
+            width: 100%;
+            height: 100%;
+            max-width: none;
+            display: flex;
+            flex-direction: column;
+            border-radius: 0;
+            overflow: hidden;
+            background: rgba(30, 30, 30, 0.85);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: none;
+          }
+          .mac-series-header {
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            user-select: none;
+          }
+          .mac-series-traffic-lights {
+            display: flex;
+            gap: 8px;
+            width: 80px;
+          }
+          .mac-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+          }
+          .mac-red { background: #ff5f56; border: 1px solid #e0443e; }
+          .mac-yellow { background: #ffbd2e; border: 1px solid #dea123; }
+          .mac-green { background: #27c93f; border: 1px solid #1aab29; }
+          .mac-series-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.8);
+            text-align: center;
+            flex: 1;
+          }
+          .mac-series-header-right {
+            display: flex;
+            gap: 12px;
+            width: auto;
+            justify-content: flex-end;
+            align-items: center;
+          }
+          .mac-series-icon-button {
+            background: transparent;
+            border: none;
+            color: rgba(255,255,255,0.7);
+            cursor: pointer;
+            display: grid;
+            place-items: center;
+            padding: 4px;
+            border-radius: 6px;
+          }
+          .mac-series-icon-button:hover { background: rgba(255,255,255,0.1); }
+          .mac-series-icon-button svg { width: 16px; height: 16px; }
+          .mac-series-body {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+          }
+          .mac-series-sidebar {
+            width: 260px;
+            background: rgba(0, 0, 0, 0.2);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            overflow-y: auto;
+          }
+          .mac-sidebar-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+          }
+          .mac-series-palette-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+          }
+          .mac-palette-btn {
+            height: 36px;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            background: rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+          }
+          .mac-palette-btn:hover { background: rgba(255, 255, 255, 0.15); }
+          .mac-palette-btn.is-current { background: #007aff; color: #fff; box-shadow: 0 2px 8px rgba(0,122,255,0.4); }
+          .mac-palette-btn.is-answered { border-color: rgba(40, 205, 65, 0.5); color: #34c759; }
+          .mac-palette-btn.is-wrong { border-color: rgba(255, 59, 48, 0.5); color: #ff3b30; }
+          
+          .mac-series-main {
+            flex: 1;
+            padding: 32px 48px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+          }
+          .mac-series-meta-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 24px;
+          }
+          .mac-series-quiz .concept-badge {
+            border-radius: 6px;
+            padding: 4px 10px;
+          }
+          .mac-series-bookmark {
+            margin-left: auto;
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+          }
+          .mac-series-bookmark:hover { color: #fff; }
+          .mac-series-bookmark svg { width: 18px; height: 18px; }
+          
+          .mac-series-prompt {
+            font-size: 20px;
+            font-weight: 500;
+            line-height: 1.5;
+            margin-bottom: 32px;
+          }
+          
+          .mac-series-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: auto;
+          }
+          .mac-series-option {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+          }
+          .mac-series-option:not(:disabled):hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+          }
+          .mac-series-option:active { transform: scale(0.98); }
+          .mac-series-option:disabled { cursor: default; }
+          .mac-series-option.is-selected {
+            background: rgba(0, 122, 255, 0.15);
+            border-color: #007aff;
+          }
+          .mac-series-option.is-correct {
+            background: rgba(40, 205, 65, 0.15);
+            border-color: #34c759;
+          }
+          .mac-series-option.is-wrong {
+            background: rgba(255, 59, 48, 0.15);
+            border-color: #ff3b30;
+          }
+          .mac-series-option-letter {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            display: grid;
+            place-items: center;
+            font-size: 13px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.7);
+          }
+          .mac-series-option.is-selected .mac-series-option-letter { background: #007aff; color: #fff; }
+          .mac-series-option.is-correct .mac-series-option-letter { background: #34c759; color: #fff; }
+          .mac-series-option.is-wrong .mac-series-option-letter { background: #ff3b30; color: #fff; }
+          .mac-series-option-value { font-size: 16px; font-weight: 500; }
+          .mac-series-answer-icon { margin-left: auto; width: 20px; height: 20px; }
+          .mac-series-option.is-correct .mac-series-answer-icon { color: #34c759; }
+          .mac-series-option.is-wrong .mac-series-answer-icon { color: #ff3b30; }
+          
+          .mac-series-actions { margin-top: 40px; }
+          .mac-series-error { color: #ff3b30; font-size: 13px; margin-bottom: 12px; }
+          .mac-series-footer-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+          }
+          .mac-series-footer-buttons button {
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+          }
+          .mac-series-footer-buttons button:disabled { opacity: 0.5; cursor: not-allowed; }
+          .mac-series-footer-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+          }
+          .mac-series-footer-secondary:not(:disabled):hover { background: rgba(255, 255, 255, 0.15); }
+          .mac-series-footer-solution {
+            background: rgba(142, 68, 173, 0.2);
+            border: 1px solid rgba(142, 68, 173, 0.5);
+            color: #d2b4de;
+          }
+          .mac-series-footer-primary {
+            background: #007aff;
+            border: none;
+            color: #fff;
+          }
+          .mac-series-footer-primary:not(:disabled):hover { background: #0062cc; }
+          .mac-series-footer-ai {
+            background: linear-gradient(135deg, #7c6df0, #f07c6d);
+            border: none;
+            color: #fff;
+          }
+          .mac-series-footer-ai:not(:disabled):hover { opacity: 0.9; }
+
+          /* Light Theme Overrides */
+          .mac-series-quiz[data-theme="light"] .mac-series-desktop {
+             background: linear-gradient(135deg, #f0f4f8, #e0e5ec);
+          }
+          .mac-series-quiz[data-theme="light"] .mac-series-window {
+            background: rgba(255, 255, 255, 0.85);
+            border-color: rgba(0, 0, 0, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+          }
+          .mac-series-quiz[data-theme="light"] .mac-series-header {
+            background: rgba(255, 255, 255, 0.4);
+            border-color: rgba(0, 0, 0, 0.1);
+          }
+          .mac-series-quiz[data-theme="light"] .mac-series-title { color: rgba(0, 0, 0, 0.8); }
+          .mac-series-quiz[data-theme="light"] .mac-series-icon-button { color: rgba(0, 0, 0, 0.7); }
+          .mac-series-quiz[data-theme="light"] .mac-series-icon-button:hover { background: rgba(0, 0, 0, 0.05); }
+          
+          .mac-series-quiz[data-theme="light"] .mac-series-sidebar {
+            background: rgba(255, 255, 255, 0.5);
+            border-color: rgba(0, 0, 0, 0.1);
+          }
+          .mac-series-quiz[data-theme="light"] .mac-sidebar-title { color: rgba(0, 0, 0, 0.5); }
+          .mac-series-quiz[data-theme="light"] .mac-palette-btn {
+            background: rgba(0, 0, 0, 0.05);
+            color: rgba(0, 0, 0, 0.8);
+          }
+          .mac-series-quiz[data-theme="light"] .mac-palette-btn:hover { background: rgba(0, 0, 0, 0.1); }
+          .mac-series-quiz[data-theme="light"] .mac-palette-btn.is-current { background: #007aff; color: #fff; }
+          .mac-series-quiz[data-theme="light"] .mac-palette-btn.is-answered { border-color: rgba(52, 199, 89, 0.5); color: #34c759; }
+          .mac-series-quiz[data-theme="light"] .mac-palette-btn.is-wrong { border-color: rgba(255, 59, 48, 0.5); color: #ff3b30; }
+
+          .mac-series-quiz[data-theme="light"] .mac-series-meta-row { color: rgba(0, 0, 0, 0.5); }
+          .mac-series-quiz[data-theme="light"] .mac-series-bookmark { color: rgba(0, 0, 0, 0.5); }
+          .mac-series-quiz[data-theme="light"] .mac-series-bookmark:hover { color: #000; }
+          .mac-series-quiz[data-theme="light"] .mac-series-prompt { color: #000; }
+          
+          .mac-series-quiz[data-theme="light"] .mac-series-option {
+            background: rgba(255, 255, 255, 0.6);
+            border-color: rgba(0, 0, 0, 0.1);
+            color: #000;
+          }
+          .mac-series-quiz[data-theme="light"] .mac-series-option:not(:disabled):hover {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: rgba(0, 0, 0, 0.2);
+          }
+          .mac-series-quiz[data-theme="light"] .mac-series-option.is-selected { background: rgba(0, 122, 255, 0.1); border-color: #007aff; }
+          .mac-series-quiz[data-theme="light"] .mac-series-option.is-correct { background: rgba(52, 199, 89, 0.1); border-color: #34c759; }
+          .mac-series-quiz[data-theme="light"] .mac-series-option.is-wrong { background: rgba(255, 59, 48, 0.1); border-color: #ff3b30; }
+          .mac-series-quiz[data-theme="light"] .mac-series-option-letter {
+            background: rgba(0, 0, 0, 0.05);
+            color: rgba(0, 0, 0, 0.7);
+          }
+          .mac-series-quiz[data-theme="light"] .mac-series-option.is-selected .mac-series-option-letter { background: #007aff; color: #fff; }
+          .mac-series-quiz[data-theme="light"] .mac-series-option.is-correct .mac-series-option-letter { background: #34c759; color: #fff; }
+          .mac-series-quiz[data-theme="light"] .mac-series-option.is-wrong .mac-series-option-letter { background: #ff3b30; color: #fff; }
+
+          .mac-series-quiz[data-theme="light"] .mac-series-footer-secondary {
+            background: rgba(0, 0, 0, 0.05);
+            border-color: rgba(0, 0, 0, 0.1);
+            color: #000;
+          }
+          .mac-series-quiz[data-theme="light"] .mac-series-footer-secondary:not(:disabled):hover { background: rgba(0, 0, 0, 0.1); }
+          
+          /* Responsive fixes for Mac layout */
+          @media (max-width: 900px) {
+            .mac-series-body { flex-direction: column; }
+            .mac-series-sidebar { width: 100%; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); height: 120px; overflow-y: auto; padding: 12px; }
+            .mac-series-palette-grid { display: flex; overflow-x: auto; padding-bottom: 8px; }
+            .mac-palette-btn { flex: 0 0 36px; }
+            .mac-series-options { grid-template-columns: 1fr; }
+            .mac-series-main { padding: 24px; }
+          }
+        `}</style>
+      </div>
+    );
+  }
+
+  if (isIos) {
+    return (
+      <div className="ios-series-quiz english-quiz" data-theme={theme}>
+        {themeStyles}
+        <div className="ios-series-device">
+          <header className="ios-series-header">
+            <button
+              type="button"
+              className="ios-series-icon-button"
+              onClick={toggleQuizTheme}
+              aria-label={theme === "dark" ? "Use light theme" : "Use dark theme"}
+            >
+              {theme === "dark" ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
+            </button>
+            <LangToggle
+              active={activeLang}
+              loading={isTranslating}
+              onChange={setActiveLang}
+            />
+            <button
+              type="button"
+              className="ios-series-icon-button"
+              onClick={openPalette}
+              aria-label="Open question navigator"
+            >
+              <Menu aria-hidden="true" />
+            </button>
+          </header>
+
+          <nav className="ios-series-rail" aria-label="Question navigation">
+            {questions.map((question, index) => {
+              const status = getQuestionStatus({
+                index,
+                currentIndex,
+                selectedAnswers,
+                questions,
+                submittedQuestions
+              });
+              return (
+                <button
+                  key={`rail-${question.id}-${index}`}
+                  type="button"
+                  ref={index === currentIndex ? activeRailBtnRef : null}
+                  onClick={() => goToQuestion(index + 1)}
+                  className={`ios-series-question ${status === "current" ? "is-current" : ""} ${status === "correct" ? "is-correct" : ""} ${status === "wrong" ? "is-wrong" : ""} ${status === "answered" ? "is-unsubmitted" : ""}`}
+                  aria-label={`Question ${index + 1}`}
+                  aria-current={index === currentIndex ? "step" : undefined}
+                >
+                  {index + 1}
+                </button>
+              );
+            })}
+          </nav>
+
+          <main className="ios-series-content">
+            <div className="ios-series-meta-row">
+              <ConceptBadge concept={currentQ.concept} colours={conceptColours} />
+              <span>{currentQ.exam || `${title} concept practice`}</span>
+              <button
+                type="button"
+                className="ios-series-bookmark"
+                onClick={handleBookmark}
+                aria-label={bookmarked.has(String(currentQ.id)) ? "Remove bookmark" : "Add bookmark"}
+              >
+                {bookmarked.has(String(currentQ.id)) ? (
+                  <BookmarkCheck aria-hidden="true" />
+                ) : (
+                  <Bookmark aria-hidden="true" />
+                )}
+              </button>
+            </div>
+
+            <motion.section
+              key={`ios-question-${currentQ.id}`}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
+              className="ios-series-question-card"
+            >
+              {hasQuestionText && (
+                <div className="ios-series-prompt">
+                  <RichContent
+                    text={displayedQuestion}
+                    renderText={renderQuestionLine}
+                  />
+                </div>
+              )}
+            </motion.section>
+
+            <section className="ios-series-options" aria-label="Answer options">
+              {displayedOptions.slice(0, 4).map((option, index) => {
+                const isCorrect = isCurrentSubmitted && index === currentQ.correctAnswer;
+                const isWrong =
+                  isCurrentSubmitted && selectedAnswer === index && index !== currentQ.correctAnswer;
+                const isSelected = selectedAnswer === index;
+                return (
+                  <button
+                    key={`${currentQ.id}-${index}`}
+                    type="button"
+                    disabled={isCurrentSubmitted}
+                    onClick={() => handleSelectAnswer(index)}
+                    className={`ios-series-option ${isSelected ? "is-selected" : ""} ${isCorrect ? "is-correct" : ""} ${isWrong ? "is-wrong" : ""}`}
+                  >
+                    <span className="ios-series-option-letter">
+                      {String.fromCharCode(65 + index)}
+                    </span>
+                    <span className="ios-series-option-value">
+                      <RichContent text={option} />
+                    </span>
+                    {isCorrect && <CheckCircle2 className="ios-series-answer-icon" aria-label="Correct option" />}
+                    {isWrong && <XCircle className="ios-series-answer-icon" aria-label="Incorrect option" />}
+                  </button>
+                );
+              })}
+            </section>
+
+            {canViewSolution && (
+              <div className="ios-series-actions">
+                <button type="button" className="ios-series-solution" onClick={openSolution}>
+                  View solution
+                </button>
+                <QuizChatbot
+                  key={`ios-chat-${currentQ.id}`}
+                  isVisible={isCurrentSubmitted}
+                  questionNumber={currentIndex + 1}
+                  topicTitle={title}
+                  question={currentQ}
+                  theme={theme}
+                  renderTrigger={(onOpen) => (
+                    <button type="button" className="ios-series-ai-btn" onClick={onOpen}>
+                      Ask AI Tutor
+                    </button>
+                  )}
+                />
+              </div>
+            )}
+            {submitError && <p className="ios-series-error">{submitError}</p>}
+          </main>
+
+          <footer className="ios-series-footer">
+            <button
+              type="button"
+              onClick={handlePrev}
+              disabled={currentIndex === 0}
+              className="ios-series-footer-secondary"
+            >
+              Previous
+            </button>
+            <button
+              type="button"
+              onClick={() => (isCurrentSubmitted ? handleNext() : handleSubmitCurrent())}
+              disabled={!canSubmit && !isCurrentSubmitted}
+              className="ios-series-footer-primary"
+            >
+              {!isCurrentSubmitted ? "Submit" : currentIndex < questions.length - 1 ? "Next" : "Finish"}
+            </button>
+          </footer>
+
+          {isPaletteOpen && (
+            <div className="ios-series-palette" role="dialog" aria-modal="true" aria-label="Question navigator">
+              <button type="button" className="ios-series-palette-backdrop" onClick={closePalette} aria-label="Close navigator" />
+              <div className="ios-series-palette-panel">
+                <div className="ios-series-palette-title">
+                  <span>Questions</span>
+                  <button type="button" onClick={closePalette} aria-label="Close question navigator"><X /></button>
+                </div>
+                <div className="ios-series-palette-grid">
+                  {questions.map((question, index) => {
+                    const status = getQuestionStatus({
+                      index,
+                      currentIndex,
+                      selectedAnswers,
+                      questions,
+                      submittedQuestions
+                    });
+                    return (
+                      <button
+                        key={`palette-${question.id}-${index}`}
+                        type="button"
+                        className={`${status === "current" ? "is-current" : ""} ${status === "correct" ? "is-correct" : ""} ${status === "wrong" ? "is-wrong" : ""} ${status === "answered" ? "is-unsubmitted" : ""}`}
+                        onClick={() => {
+                          goToQuestion(index + 1);
+                          closePalette();
+                        }}
+                      >
+                        {index + 1}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        <SolutionBottomSheet
+          isOpen={isSolutionOpen}
+          solution={currentQ.solution ?? ""}
+          questionNumber={currentIndex + 1}
+          correctOptionIndex={currentQ.correctAnswer}
+          onClose={closeSolution}
+        />
+        <style jsx global>{`
+          .ios-series-quiz {
+            min-height: 100svh;
+            background: #000;
+            color: #f2f2f7;
+            font-family: "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+          }
+          .ios-series-device {
+            height: 100svh;
+            display: flex;
+            flex-direction: column;
+            max-width: 430px;
+            margin: 0 auto;
+            background: radial-gradient(120% 50% at 50% -10%, rgba(94, 92, 230, .17), transparent 58%), #000;
+          }
+          .ios-series-header { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:calc(env(safe-area-inset-top) + 12px) 16px 14px; border-bottom:1px solid rgba(255,255,255,.09); }
+          .ios-series-icon-button { width:36px; height:36px; display:grid; place-items:center; padding:0; border:1px solid rgba(255,255,255,.09); border-radius:11px; color:#f2f2f7; background:#1c1c1e; cursor:pointer; }
+          .ios-series-icon-button svg { width:17px; height:17px; }
+          .ios-series-quiz .lang-toggle { flex:0 1 auto; }
+          .ios-series-quiz .lang-toggle-option { min-width:0; padding-inline:9px; }
+          .ios-series-rail { display:flex; gap:8px; overflow-x:auto; padding:16px; border-bottom:1px solid rgba(255,255,255,.09); scrollbar-width:none; }
+          .ios-series-rail::-webkit-scrollbar { display:none; }
+          .ios-series-question { flex:0 0 44px; height:44px; border:1px solid rgba(255,255,255,.14); border-radius:13px; background:#1c1c1e; color:rgba(235,235,245,.6); font-size:15px; font-weight:700; cursor:pointer; }
+          .ios-series-question.is-current { border-color:transparent; color:#fff; background:#007aff; box-shadow:0 4px 14px -2px rgba(0,122,255,.55); }
+          .ios-series-question.is-correct, .ios-series-question.is-answered { border-color:rgba(48,209,88,.6); background:rgba(48,209,88,.18); color:#30d158; }
+          .ios-series-question.is-wrong { border-color:rgba(255,69,58,.6); background:rgba(255,69,58,.18); color:#ff453a; }
+          .ios-series-question.is-unsubmitted { border-color:rgba(255,159,10,.6); background:rgba(255,159,10,.18); color:#ff9f0a; }
+          .ios-series-content { flex: 1; overflow-y: auto; padding: 18px 16px 8px; }
+          .ios-series-meta-row { display:flex; align-items:center; gap:9px; min-width:0; margin-bottom:16px; color:rgba(235,235,245,.42); font-size:12px; font-weight:600; }
+          .ios-series-meta-row > span { flex: 1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+          .ios-series-quiz .concept-badge { flex:none; border-radius:8px; padding:6px 10px; letter-spacing:0; }
+          .ios-series-question-card { position:relative; min-height:158px; padding:20px 20px 22px 20px; border:1px solid rgba(255,255,255,.14); border-radius:22px; background:linear-gradient(180deg,#242426,#1c1c1e); }
+          .ios-series-bookmark { display:grid; place-items:center; width:32px; height:32px; border:0; border-radius:9px; color:rgba(235,235,245,.48); background:transparent; cursor:pointer; flex-shrink: 0; margin-left: auto; }
+          .ios-series-bookmark svg { width:20px; height:20px; }
+          .ios-series-prompt { color:#f2f2f7; font-size:16px; font-weight:500; line-height:1.48; }
+          .ios-series-prompt p { margin:0; }
+          .ios-series-prompt p + p { margin-top:14px; font-family:Georgia,serif; font-size:22px; font-weight:400; letter-spacing:.02em; }
+          .ios-series-options { display:grid; gap:12px; margin-top:16px; }
+          .ios-series-option { width:100%; min-height:64px; display:flex; align-items:center; gap:14px; padding:13px 16px; border:1px solid rgba(255,255,255,.14); border-radius:18px; background:#1c1c1e; color:#f2f2f7; text-align:left; cursor:pointer; transition:background .16s ease,border-color .16s ease,transform .16s ease; }
+          .ios-series-option:not(:disabled):hover { border-color:rgba(0,122,255,.75); background:#242426; }
+          .ios-series-option:not(:disabled):active { transform:scale(.99); }
+          .ios-series-option:disabled { cursor:default; }
+          .ios-series-option.is-selected { border-color:#007aff; background:rgba(0,122,255,.15); }
+          .ios-series-option.is-correct { border-color:#30d158; background:rgba(48,209,88,.14); }
+          .ios-series-option.is-wrong { border-color:#ff453a; background:rgba(255,69,58,.14); }
+          .ios-series-option-letter { width:36px; height:36px; flex:0 0 36px; display:grid; place-items:center; border:1px solid rgba(255,255,255,.14); border-radius:11px; background:#242426; color:rgba(235,235,245,.68); font-size:14px; font-weight:700; }
+          .ios-series-option.is-selected .ios-series-option-letter { border-color:#007aff; background:#007aff; color:#fff; }
+          .ios-series-option.is-correct .ios-series-option-letter { border-color:#30d158; background:#30d158; color:#071b0d; }
+          .ios-series-option.is-wrong .ios-series-option-letter { border-color:#ff453a; background:#ff453a; color:#fff; }
+          .ios-series-option-value { min-width:0; font-size:17px; font-weight:600; line-height:1.4; }
+          .ios-series-answer-icon { width:20px; height:20px; margin-left:auto; flex:none; }
+          .ios-series-option.is-correct .ios-series-answer-icon { color:#30d158; }
+          .ios-series-option.is-wrong .ios-series-answer-icon { color:#ff6961; }
+          .ios-series-actions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:14px; }
+          .ios-series-solution { width:100%; min-width:0; min-height:46px; border:1px solid rgba(191,90,242,.4); border-radius:14px; background:transparent; color:#e5c2ff; font:inherit; font-size:14px; font-weight:700; cursor:pointer; }
+          .ios-series-ai-btn { width:100%; min-width:0; min-height:46px; border:1px solid #14b8a6; border-radius:14px; background:transparent; color:#5eead4; font:inherit; font-size:14px; font-weight:700; cursor:pointer; }
+          .ios-series-ai-btn:active { opacity:0.8; }
+          .ios-series-error { margin:12px 2px 0; color:#ff9f9a; font-size:13px; font-weight:600; }
+          .ios-series-footer { z-index:30; display:grid; grid-template-columns:1fr 1fr; gap:10px; width:100%; max-width:430px; margin:0 auto; padding:14px 16px calc(env(safe-area-inset-bottom) + 14px); background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.94) 25%,#000); flex-shrink: 0; }
+          .ios-series-footer button { min-width:0; height:52px; border-radius:16px; font:inherit; font-size:16px; font-weight:700; cursor:pointer; }
+          .ios-series-footer button:disabled { opacity:.42; cursor:not-allowed; }
+          .ios-series-footer-secondary { border:1px solid rgba(255,255,255,.14); background:#1c1c1e; color:#f2f2f7; }
+          .ios-series-footer-primary { border:0; background:#007aff; color:#fff; box-shadow:0 4px 16px -4px rgba(0,122,255,0.5); }
+          .ios-series-footer-primary:not(:disabled):active { transform:scale(.98); }
+          .ios-series-palette { position:fixed; z-index:70; inset:0; display:flex; align-items:flex-end; justify-content:center; }
+          .ios-series-palette-backdrop { position:absolute; inset:0; border:0; background:rgba(0,0,0,.64); }
+          .ios-series-palette-panel { position:relative; width:min(430px,100%); max-height:75svh; display:flex; flex-direction:column; overflow:hidden; padding:0; border:1px solid rgba(255,255,255,.14); border-bottom:0; border-radius:24px 24px 0 0; background:#1c1c1e; box-shadow:0 -16px 44px rgba(0,0,0,.45); }
+          .ios-series-palette-title { flex:none; display:flex; align-items:center; justify-content:space-between; padding:18px 20px 16px; border-bottom:1px solid rgba(255,255,255,.1); color:#f2f2f7; font-size:18px; font-weight:700; background:#1c1c1e; z-index:10; }
+          .ios-series-palette-title button { display:grid; place-items:center; width:32px; height:32px; padding:0; border:1px solid rgba(255,255,255,.14); border-radius:50%; background:#242426; color:#f2f2f7; cursor:pointer; }
+          .ios-series-palette-title svg { width:16px; height:16px; }
+          .ios-series-palette-grid { flex:1; overflow-y:auto; padding:18px 20px calc(env(safe-area-inset-bottom) + 24px); display:grid; grid-template-columns:repeat(5,1fr); align-content:flex-start; gap:12px; }
+          .ios-series-palette-grid button { height:43px; border:1px solid rgba(255,255,255,.14); border-radius:12px; background:#242426; color:rgba(235,235,245,.7); font:inherit; font-weight:700; transition:all 0.15s ease; }
+          .ios-series-palette-grid button.is-current { border-color:transparent; background:#007aff; color:#fff; box-shadow:0 2px 8px rgba(0,122,255,0.4); }
+          .ios-series-palette-grid button.is-correct, .ios-series-palette-grid button.is-answered { border-color:rgba(48,209,88,.6); background:rgba(48,209,88,.18); color:#30d158; }
+          .ios-series-palette-grid button.is-wrong { border-color:rgba(255,69,58,.6); background:rgba(255,69,58,.18); color:#ff453a; }
+          .ios-series-palette-grid button.is-unsubmitted { border-color:rgba(255,159,10,.6); background:rgba(255,159,10,.18); color:#ff9f0a; }
+          @media (min-width:431px) { .ios-series-device { box-shadow:0 0 0 1px rgba(255,255,255,.08); } }
+
+          /* Light Theme Overrides */
+          .ios-series-quiz[data-theme="light"] { background: #f2f2f7; color: #000; }
+          .ios-series-quiz[data-theme="light"] .ios-series-device { background: radial-gradient(120% 50% at 50% -10%, rgba(0, 122, 255, .06), transparent 58%), #f2f2f7; }
+          .ios-series-quiz[data-theme="light"] .ios-series-header { border-color: rgba(0,0,0,.08); }
+          .ios-series-quiz[data-theme="light"] .ios-series-icon-button { border-color: rgba(0,0,0,.08); color: #000; background: #fff; }
+          .ios-series-quiz[data-theme="light"] .ios-series-rail { border-color: rgba(0,0,0,.08); }
+          .ios-series-quiz[data-theme="light"] .ios-series-question { border-color: rgba(0,0,0,.08); background: #fff; color: rgba(60,60,67,.6); }
+          .ios-series-quiz[data-theme="light"] .ios-series-question.is-current { color: #fff; background: #007aff; box-shadow:0 4px 14px -2px rgba(0,122,255,0.4); }
+          .ios-series-quiz[data-theme="light"] .ios-series-question.is-correct, .ios-series-quiz[data-theme="light"] .ios-series-question.is-answered { border-color: rgba(52,199,89,.5); background: rgba(52,199,89,.12); color: #248a3d; }
+          .ios-series-quiz[data-theme="light"] .ios-series-question.is-wrong { border-color: rgba(255,59,48,.5); background: rgba(255,59,48,.12); color: #d70015; }
+          .ios-series-quiz[data-theme="light"] .ios-series-question.is-unsubmitted { border-color: rgba(255,149,0,.5); background: rgba(255,149,0,.12); color: #b45309; }
+          .ios-series-quiz[data-theme="light"] .ios-series-meta-row { color: rgba(60,60,67,.6); }
+          .ios-series-quiz[data-theme="light"] .ios-series-question-card { border-color: rgba(0,0,0,.08); background: #fff; box-shadow: 0 4px 20px rgba(0,0,0,.04); }
+          .ios-series-quiz[data-theme="light"] .ios-series-bookmark { color: rgba(60,60,67,.6); }
+          .ios-series-quiz[data-theme="light"] .ios-series-prompt { color: #000; }
+          .ios-series-quiz[data-theme="light"] .ios-series-option { border-color: rgba(0,0,0,.08); background: #fff; color: #000; }
+          .ios-series-quiz[data-theme="light"] .ios-series-option:not(:disabled):hover { border-color: rgba(0,122,255,.4); background: #fafafa; }
+          .ios-series-quiz[data-theme="light"] .ios-series-option-letter { border-color: rgba(0,0,0,.08); background: #f2f2f7; color: rgba(60,60,67,.6); }
+          .ios-series-quiz[data-theme="light"] .ios-series-option.is-selected { border-color: #007aff; background: rgba(0,122,255,.1); }
+          .ios-series-quiz[data-theme="light"] .ios-series-option.is-selected .ios-series-option-letter { color: #fff; background: #007aff; border-color: #007aff; }
+          .ios-series-quiz[data-theme="light"] .ios-series-option.is-correct { border-color: #34c759; background: rgba(52,199,89,.08); }
+          .ios-series-quiz[data-theme="light"] .ios-series-option.is-correct .ios-series-option-letter { color: #fff; background: #34c759; border-color: #34c759; }
+          .ios-series-quiz[data-theme="light"] .ios-series-option.is-wrong { border-color: #ff3b30; background: rgba(255,59,48,.08); }
+          .ios-series-quiz[data-theme="light"] .ios-series-option.is-wrong .ios-series-option-letter { color: #fff; background: #ff3b30; border-color: #ff3b30; }
+          .ios-series-quiz[data-theme="light"] .ios-series-footer { background: linear-gradient(180deg, rgba(242,242,247,0), rgba(242,242,247,.94) 25%, #f2f2f7); }
+          .ios-series-quiz[data-theme="light"] .ios-series-footer-secondary { border-color: rgba(0,0,0,.08); background: #fff; color: #000; }
+          .ios-series-quiz[data-theme="light"] .ios-series-palette-backdrop { background: rgba(0,0,0,.4); }
+          .ios-series-quiz[data-theme="light"] .ios-series-palette-panel { border-color: rgba(0,0,0,.08); background: #f2f2f7; }
+          .ios-series-quiz[data-theme="light"] .ios-series-palette-title { color: #000; border-bottom-color: rgba(0,0,0,.08); background: #f2f2f7; }
+          .ios-series-quiz[data-theme="light"] .ios-series-palette-title button { border-color: rgba(0,0,0,.08); background: #fff; color: #000; }
+          .ios-series-quiz[data-theme="light"] .ios-series-palette-grid button { border-color: rgba(0,0,0,.08); background: #fff; color: rgba(60,60,67,.6); }
+          .ios-series-quiz[data-theme="light"] .ios-series-palette-grid button.is-current { color: #fff; background: #007aff; box-shadow:0 2px 8px rgba(0,122,255,0.4); }
+          .ios-series-quiz[data-theme="light"] .ios-series-palette-grid button.is-correct, .ios-series-quiz[data-theme="light"] .ios-series-palette-grid button.is-answered { border-color: rgba(52,199,89,.5); background: rgba(52,199,89,.15); color: #248a3d; }
+          .ios-series-quiz[data-theme="light"] .ios-series-palette-grid button.is-wrong { border-color: rgba(255,59,48,.5); background: rgba(255,59,48,.15); color: #d70015; }
+          .ios-series-quiz[data-theme="light"] .ios-series-palette-grid button.is-unsubmitted { border-color: rgba(255,149,0,.5); background: rgba(255,149,0,.15); color: #b45309; }
+        `}</style>
+      </div>
+    );
+  }
+
   return (
     <div
-      className="min-h-screen relative overflow-x-hidden"
+      className="english-quiz min-h-screen relative overflow-x-hidden"
+      data-theme="light"
       style={{
-        background:
-          "linear-gradient(165deg, #f5f0ff 0%, #eef2ff 38%, #f8faff 100%)",
+        background: "var(--quiz-bg)",
+        color: "var(--quiz-text)",
         fontFamily: "Poppins, Inter, 'Segoe UI', sans-serif",
       }}
     >
+      {themeStyles}
       <header className="sticky top-0 z-40 hidden border-b border-slate-200 bg-white lg:block shadow-sm">
         <div className="mx-auto flex w-full max-w-[1150px] items-center justify-between gap-4 px-6 lg:px-8 py-3">
           <div className="min-w-[240px]"></div>
@@ -2400,6 +4861,7 @@ export default function EnglishQuizEngine({
                 {formatClock(timeLeft)}
               </span>
             </div>
+            <ThemeToggle />
             <button className="flex h-10 items-center justify-center gap-1.5 px-3 rounded-lg transition-colors hover:bg-slate-100 text-slate-600">
               <Menu className="h-5 w-5" />
               <ChevronDown className="h-4 w-4 text-slate-400" />
@@ -2408,364 +4870,397 @@ export default function EnglishQuizEngine({
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-6xl px-3 pb-[110px] pt-3 sm:px-6 sm:pt-4 lg:max-w-[1150px] lg:px-8 lg:pb-10">
-        <div className="lg:flex lg:items-start lg:gap-8 xl:gap-10 lg:justify-center">
-          <div
-            className="lg:flex-1 min-w-0 lg:ml-14 xl:ml-20 lg:max-w-[720px]"
-            style={{ paddingTop: "clamp(24px, 3vw, 40px)" }}
-          >
-        <section className="mb-3 flex items-center justify-end gap-2 lg:hidden">
-          {streak >= 2 && (
-            <div className="flex items-center gap-1 rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-sm font-bold text-violet-600">
-              <Flame className="w-3.5 h-3.5" />
-              {streak}
-            </div>
-          )}
-          <LangToggle
-            active={activeLang}
-            loading={isTranslating}
-            onChange={setActiveLang}
-          />
-          <div className="rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-sm font-bold text-slate-700">
-            {formatClock(timeLeft)}
-          </div>
-          <button
-            onClick={openPalette}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-300 bg-white text-slate-700 transition-colors hover:bg-slate-50 lg:hidden"
-            aria-label="Open question palette"
-          >
-            <Menu className="h-4 w-4" />
-          </button>
-        </section>
-
-        <div className="mb-3 lg:hidden">
-          <QuestionNavigator
-            total={questions.length}
-            currentIndex={currentIndex}
-            selectedAnswers={selectedAnswers}
-            questions={questions}
-            submittedQuestions={submittedQuestions}
-            onGoToQuestion={goToQuestion}
-            onOpenPalette={openPalette}
-            onClosePalette={closePalette}
-            isPaletteOpen={isPaletteOpen}
-          />
-        </div>
-
-        <section
-          className="mb-4"
-          onTouchStart={(event) => {
-            const touch = event.changedTouches[0];
-            touchStartXRef.current = touch.clientX;
-            touchStartYRef.current = touch.clientY;
-          }}
-          onTouchEnd={(event) => {
-            const startX = touchStartXRef.current;
-            const startY = touchStartYRef.current;
-            if (startX === null || startY === null) return;
-            const touch = event.changedTouches[0];
-            const deltaX = touch.clientX - startX;
-            const deltaY = touch.clientY - startY;
-            touchStartXRef.current = null;
-            touchStartYRef.current = null;
-            if (Math.abs(deltaX) < 50 || Math.abs(deltaY) > 90) return;
-            if (deltaX > 0) showQuestion(currentIndex - 1);
-            else showQuestion(currentIndex + 1);
-          }}
-        >
-          <motion.div
-            key={currentQ.id}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.2 }}
-            className={`bg-white rounded-2xl shadow-[0_4px_20px_rgba(124,58,237,0.08)] px-6 py-6 sm:px-8 sm:py-8 lg:pl-[72px] lg:pr-[32px] ${
-              isLongQuestion
-                ? "min-h-[220px] sm:min-h-[260px]"
-                : "min-h-[150px] sm:min-h-[180px]"
-            }`}
-          >
-            <div className="flex items-center mb-[14px] flex-wrap gap-2">
-              <ConceptBadge concept={currentQ.concept} colours={conceptColours} />
-              <span
-                style={{
-                  fontSize: "13px",
-                  color: "#6B7280",
-                  fontWeight: 500,
-                }}
-              >
-                {currentQ.exam} {currentQ.year}
-              </span>
-
-              <button
-                onClick={handleBookmark}
-                className="ml-auto sm:ml-0 p-1.5 rounded-full hover:bg-slate-100 transition-colors"
-                aria-label={
-                  bookmarked.has(String(currentQ.id))
-                    ? "Remove bookmark"
-                    : "Add bookmark"
-                }
-              >
-                {bookmarked.has(String(currentQ.id)) ? (
-                  <BookmarkCheck className="w-5 h-5 text-violet-500" />
-                ) : (
-                  <Bookmark className="w-5 h-5 text-slate-400" />
-                )}
-              </button>
-            </div>
-
-            <div
-              style={{
-                fontSize: 18,
-                fontWeight: 400,
-                color: "#111827",
-                lineHeight: 1.6,
-                marginBottom: 28,
-                letterSpacing: 0.01,
-                paddingLeft: "0.3cm",
-                paddingRight: "0.3cm",
-              }}
-            >
-              <RichContent text={displayedQuestion} className="leading-relaxed" />
-            </div>
-          </motion.div>
-        </section>
-
-        <section className="mb-5" style={{ marginTop: 28 }}>
-          {isImageQuestion ? (
-            <div className="flex flex-col gap-3">
-              <ImageMCQ key={currentQ.id} data={currentQ} onAnswer={handleSelectImageAnswer} />
-              <button
-                type="button"
-                disabled={submitted}
-                onClick={() => {
-                  if (!selected) {
-                    setSubmitError("Please choose an option before submitting.");
-                    return;
-                  }
-                  setSubmitted(true);
-                  handleSubmitCurrent();
-                }}
-                className="inline-flex h-12 w-full items-center justify-center rounded-2xl border border-slate-300 bg-slate-100 px-5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Submit
-              </button>
-              {submitted && (
-                <div
-                  className="text-sm font-semibold"
-                  style={{
-                    color:
-                      selected?.toLowerCase() ===
-                      (currentQ.correctLetter ?? "").toLowerCase()
-                        ? "#16A34A"
-                        : "#DC2626",
-                  }}
-                >
-                  {selected?.toLowerCase() ===
-                  (currentQ.correctLetter ?? "").toLowerCase()
-                    ? "Correct"
-                    : "Wrong"}
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="grid gap-3 lg:grid-cols-2">
-              {displayedOptions.slice(0, 4).map((opt, i) => {
-              let border = "#E5E7EB",
-                bg = "#FFFFFF",
-                letterBg = "transparent",
-                letterBorder = "#7C3AED",
-                letterText = "#5B21B6";
-              const letterFontWeight = 600;
-
-              if (isCurrentSubmitted && i === currentQ.correctAnswer) {
-                border = "#16A34A";
-                bg = "#F0FDF4";
-                letterBg = "#16A34A";
-                letterBorder = "#16A34A";
-                letterText = "#fff";
-              } else if (
-                isCurrentSubmitted &&
-                selectedAnswer === i &&
-                i !== currentQ.correctAnswer
-              ) {
-                border = "#DC2626";
-                bg = "#FEF2F2";
-                letterBg = "#DC2626";
-                letterBorder = "#DC2626";
-                letterText = "#fff";
-              } else if (!isCurrentSubmitted && selectedAnswer === i) {
-                border = "#7C3AED";
-                bg = "#F5F3FF";
-                letterBg = "#7C3AED";
-                letterBorder = "#7C3AED";
-                letterText = "#fff";
-              }
-
-              return (
+      <main className="mx-auto w-full max-w-6xl px-3 pt-3 sm:px-6 sm:pt-4 lg:max-w-[1150px] lg:px-8 lg:pb-10 flex-1">
+        <div className="lg:flex lg:items-start lg:justify-center lg:gap-8 lg:pt-8 xl:gap-10">
+          <div className="min-w-0 lg:max-w-[720px] lg:flex-1">
+            <section className="mb-3 flex items-center justify-between gap-3 lg:hidden">
+              <div className="flex items-center gap-2">
+                <ThemeToggle />
+              </div>
+              <div className="flex items-center gap-2">
+                <LangToggle
+                  active={activeLang}
+                  loading={isTranslating}
+                  onChange={setActiveLang}
+                />
                 <button
-                  key={i}
-                  onClick={() => handleSelectAnswer(i)}
-                  disabled={isCurrentSubmitted}
-                  type="button"
-                  style={{
-                    width: "100%",
-                    minHeight: 58,
-                    background: bg,
-                    border: `1.5px solid ${border}`,
-                    borderRadius: 16,
-                    padding: "0 16px",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 14,
-                    boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
-                    cursor: isCurrentSubmitted ? "default" : "pointer",
-                    transition: "all 0.15s ease",
-                    fontSize: 17,
-                    fontWeight: 400,
-                    color: "#111827",
-                    outline: "none",
-                  }}
-                  onMouseOver={(e) => {
-                    if (!isCurrentSubmitted && selectedAnswer !== i) {
-                      e.currentTarget.style.borderColor = "#C4B5FD";
-                      e.currentTarget.style.background = "#F5F3FF";
-                    }
-                  }}
-                  onMouseOut={(e) => {
-                    if (!isCurrentSubmitted && selectedAnswer !== i) {
-                      e.currentTarget.style.borderColor = "#E5E7EB";
-                      e.currentTarget.style.background = "#FFFFFF";
-                    }
-                  }}
+                  onClick={openPalette}
+                  className="quiz-icon-button inline-flex h-11 w-11 items-center justify-center rounded-full transition-colors lg:hidden"
+                  aria-label="Open question palette"
                 >
-                  <span
-                    style={{
-                      width: 34,
-                      height: 34,
-                      border: `1.5px solid ${letterBorder}`,
-                      borderRadius: "50%",
-                      background: letterBg,
-                      color: letterText,
-                      fontSize: 14,
-                      fontWeight: letterFontWeight,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                      marginRight: 10,
-                      transition: "all 0.15s ease",
-                    }}
-                  >
-                    {String.fromCharCode(65 + i)}
-                  </span>
-
-                  <div
-                    style={{
-                      fontSize: 17,
-                      fontWeight: 400,
-                      color: "#111827",
-                      lineHeight: 1.5,
-                    }}
-                  >
-                    <RichContent text={opt} />
-                  </div>
-
-                  {isCurrentSubmitted && i === currentQ.correctAnswer && (
-                    <CheckCircle2
-                      className="ml-auto h-5 w-5 shrink-0 text-emerald-600"
-                      aria-label="Correct option"
-                    />
-                  )}
-                  {isCurrentSubmitted &&
-                    selectedAnswer === i &&
-                    i !== currentQ.correctAnswer && (
-                      <XCircle
-                        className="ml-auto h-5 w-5 shrink-0 text-red-600"
-                        aria-label="Wrong option"
-                      />
-                    )}
+                  <Menu className="h-4 w-4" />
                 </button>
-              );
-              })}
-            </div>
-          )}
+              </div>
+            </section>
 
-          {canViewSolution && (
-            <button
-              type="button"
-              onClick={openSolution}
-              className="mt-1 inline-flex h-12 w-full items-center justify-center rounded-2xl border border-violet-200 bg-violet-50 px-5 text-sm font-semibold text-violet-700 transition-colors hover:bg-violet-100"
-            >
-              View Solution
-            </button>
-          )}
-        </section>
-
-        <div className="mt-8 hidden items-center justify-between lg:flex px-1">
-          <button
-            onClick={handlePrev}
-            disabled={currentIndex === 0}
-            className="inline-flex h-11 items-center justify-center gap-2 px-2 text-[15px] font-semibold text-slate-600 transition-colors hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            <ChevronLeft className="h-[18px] w-[18px]" />
-            Previous
-          </button>
-          <div className="flex items-center gap-6">
-            <button
-              onClick={handleClearResponse}
-              disabled={isCurrentSubmitted}
-              className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 text-[14px] font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45"
-            >
-              Clear Responses
-            </button>
-            <button
-              onClick={handleNext}
-              disabled={!isCurrentSubmitted}
-              className="inline-flex h-11 items-center justify-center gap-2 px-2 text-[15px] font-semibold text-slate-600 transition-colors hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-45"
-            >
-              {currentIndex < questions.length - 1 ? "Next" : "Finish"}
-              {currentIndex < questions.length - 1 && (
-                <ChevronRight className="h-[18px] w-[18px]" />
-              )}
-            </button>
-            <button
-              onClick={() => {
-                if (!isCurrentSubmitted) {
-                  handleSubmitCurrent();
-                }
-              }}
-              disabled={!canSubmit}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#3B82F6] px-6 text-[15px] font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-45 shadow-sm"
-            >
-              <Send className="h-[18px] w-[18px]" />
-              Submit
-            </button>
-          </div>
-        </div>
-        </div>
-
-        <aside className="hidden lg:block lg:w-[360px]" style={{ marginTop: "32px" }}>
-          <div className="sticky" style={{ top: "110px" }}>
-            {isSolutionOpen ? (
-              <SolutionSidePanel
-                isOpen={isSolutionOpen}
-                solution={currentQ.solution ?? ""}
-                questionNumber={currentIndex + 1}
-                correctOptionIndex={currentQ.correctAnswer}
-                onClose={closeSolution}
-              />
-            ) : (
-              <QuestionPalettePanel
+            <div className="mb-3 lg:hidden">
+              <QuestionNavigator
                 total={questions.length}
                 currentIndex={currentIndex}
                 selectedAnswers={selectedAnswers}
                 questions={questions}
                 submittedQuestions={submittedQuestions}
                 onGoToQuestion={goToQuestion}
+                onOpenPalette={openPalette}
+                onClosePalette={closePalette}
+                isPaletteOpen={isPaletteOpen}
               />
-            )}
+            </div>
+
+            <section
+              className="mb-4"
+              onTouchStart={(event) => {
+                const touch = event.changedTouches[0];
+                touchStartXRef.current = touch.clientX;
+                touchStartYRef.current = touch.clientY;
+              }}
+              onTouchEnd={(event) => {
+                const startX = touchStartXRef.current;
+                const startY = touchStartYRef.current;
+                if (startX === null || startY === null) return;
+                const touch = event.changedTouches[0];
+                const deltaX = touch.clientX - startX;
+                const deltaY = touch.clientY - startY;
+                touchStartXRef.current = null;
+                touchStartYRef.current = null;
+                if (Math.abs(deltaX) < 50 || Math.abs(deltaY) > 90) return;
+                if (deltaX > 0) showQuestion(currentIndex - 1);
+                else showQuestion(currentIndex + 1);
+              }}
+            >
+              <motion.div
+                key={currentQ.id}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+                className={`quiz-card rounded-2xl px-6 py-6 sm:px-8 sm:py-8 lg:pl-[72px] lg:pr-[32px] ${
+                  isLongQuestion
+                    ? "min-h-[220px] sm:min-h-[260px]"
+                    : "min-h-[150px] sm:min-h-[180px]"
+                }`}
+                style={{
+                  background: "var(--quiz-card-bg)",
+                  boxShadow: "var(--quiz-card-shadow)",
+                  border: "1px solid var(--quiz-card-border)",
+                  backdropFilter: "var(--quiz-card-blur)",
+                  WebkitBackdropFilter: "var(--quiz-card-blur)",
+                }}
+              >
+                <div className="mb-[14px] flex items-center flex-wrap gap-2">
+                  <ConceptBadge concept={currentQ.concept} colours={conceptColours} />
+                  <span
+                    style={{
+                      fontSize: "13px",
+                      color: "var(--quiz-text-muted)",
+                      fontWeight: 500,
+                    }}
+                  >
+                    {currentQ.exam} {currentQ.year}
+                  </span>
+
+                  <button
+                    onClick={handleBookmark}
+                    className="ml-auto sm:ml-0 p-1.5 rounded-full quiz-bookmark transition-colors"
+                    aria-label={
+                      bookmarked.has(String(currentQ.id))
+                        ? "Remove bookmark"
+                        : "Add bookmark"
+                    }
+                  >
+                    {bookmarked.has(String(currentQ.id)) ? (
+                      <BookmarkCheck className="w-5 h-5 text-violet-500" />
+                    ) : (
+                      <Bookmark className="w-5 h-5 text-[color:var(--quiz-text-soft)]" />
+                    )}
+                  </button>
+                </div>
+
+                {Boolean(currentQ.diagram || currentQ.needs_diagram) ? (
+                  <div className="flex justify-center my-4">
+                    <QuizCard
+                      question={{
+                        id: String(currentQ.id),
+                        question: displayedQuestion,
+                        options: displayedOptions.slice(0, 4),
+                        answer: displayedOptions[currentQ.correctAnswer] ?? currentQ.answer,
+                        explanation: currentQ.formula || undefined,
+                        diagram: currentQ.diagram,
+                        needs_diagram: currentQ.needs_diagram,
+                      }}
+                      selectedAnswer={
+                        selectedAnswer === null
+                          ? null
+                          : displayedOptions[selectedAnswer] ?? null
+                      }
+                      submitted={isCurrentSubmitted}
+                      onAnswer={(opt: string) => {
+                        const optionIndex = displayedOptions.findIndex(
+                          (item: string) => item === opt
+                        );
+                        if (optionIndex >= 0 && !isCurrentSubmitted) {
+                          handleSelectAnswer(optionIndex);
+                        }
+                      }}
+                    />
+                  </div>
+                ) : currentQ.questionType === "image_mcq" ? (
+                  <div className="flex flex-col gap-3 my-4">
+                    <ImageMCQ
+                      key={currentQ.id}
+                      data={currentQ as any}
+                      onAnswer={(idx: number) => {
+                        if (!isCurrentSubmitted) {
+                          handleSelectAnswer(idx);
+                        }
+                      }}
+                    />
+                  </div>
+                ) : (
+                  hasQuestionText && (
+                    <div
+                      style={{
+                        fontSize: 18,
+                        fontWeight: 500,
+                        color: "var(--quiz-text)",
+                        lineHeight: 1.75,
+                        marginBottom: 28,
+                        letterSpacing: 0.015,
+                        fontFamily: "'Poppins', 'SF Pro Text', 'Segoe UI', sans-serif",
+                        paddingLeft: "0.3cm",
+                        paddingRight: "0.3cm",
+                      }}
+                    >
+                      <RichContent
+                        text={displayedQuestion}
+                        className="leading-relaxed"
+                        renderText={renderQuestionLine}
+                      />
+                    </div>
+                  )
+                )}
+              </motion.div>
+            </section>
+
+            <section className="mb-5" style={{ marginTop: 28, display: Boolean(currentQ.diagram || currentQ.needs_diagram) || currentQ.questionType === 'image_mcq' ? 'none' : 'block' }}>
+              <div
+                className="max-h-[calc(100vh-360px)] overflow-y-auto pr-1 sm:max-h-none sm:overflow-visible"
+                style={{ paddingBottom: 96, WebkitOverflowScrolling: "touch" }}
+              >
+                <div className="grid gap-3 lg:grid-cols-2">
+                  {displayedOptions.slice(0, 4).map((opt, i) => {
+                    let border = "var(--quiz-option-border)",
+                      bg = "var(--quiz-option-bg)",
+                      letterBg = "var(--quiz-option-label-bg)",
+                      letterBorder = "var(--quiz-option-label-border)",
+                      letterText = "var(--quiz-option-label-text)",
+                      shadow = "var(--quiz-option-shadow)";
+                    const letterFontWeight = 600;
+                    const isSelected = selectedAnswer === i;
+
+                    if (isCurrentSubmitted && i === currentQ.correctAnswer) {
+                      border = "var(--quiz-option-correct-border)";
+                      bg = "var(--quiz-option-correct-bg)";
+                      letterBg = "var(--quiz-option-correct-label-bg)";
+                      letterBorder = "var(--quiz-option-correct-label-border)";
+                      letterText = "var(--quiz-option-correct-label-text)";
+                    } else if (
+                      isCurrentSubmitted &&
+                      selectedAnswer === i &&
+                      i !== currentQ.correctAnswer
+                    ) {
+                      border = "var(--quiz-option-wrong-border)";
+                      bg = "var(--quiz-option-wrong-bg)";
+                      letterBg = "var(--quiz-option-wrong-label-bg)";
+                      letterBorder = "var(--quiz-option-wrong-label-border)";
+                      letterText = "var(--quiz-option-wrong-label-text)";
+                    } else if (!isCurrentSubmitted && selectedAnswer === i) {
+                      border = "var(--quiz-option-selected-border)";
+                      bg = "var(--quiz-option-selected-bg)";
+                      letterBg = "var(--quiz-option-selected-label-bg)";
+                      letterBorder = "var(--quiz-option-selected-label-border)";
+                      letterText = "var(--quiz-option-selected-label-text)";
+                    }
+
+                    if (isSelected) {
+                      shadow = "var(--quiz-option-selected-shadow)";
+                    }
+
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => handleSelectAnswer(i)}
+                        disabled={isCurrentSubmitted}
+                        type="button"
+                        className={`quiz-option${isSelected ? " is-selected" : ""}`}
+                        style={{
+                          width: "100%",
+                          minHeight: 64,
+                          background: bg,
+                          border: `1.5px solid ${border}`,
+                          borderRadius: 18,
+                          padding: "16px 20px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 14,
+                          boxShadow: shadow,
+                          cursor: isCurrentSubmitted ? "default" : "pointer",
+                          transition: "all 0.15s ease",
+                          fontSize: 16,
+                          fontWeight: 500,
+                          color: "var(--quiz-option-text)",
+                          outline: "none",
+                        }}
+                        onMouseOver={(e) => {
+                          if (!isCurrentSubmitted && selectedAnswer !== i) {
+                            e.currentTarget.style.borderColor =
+                              "var(--quiz-option-hover-border)";
+                            e.currentTarget.style.background =
+                              "var(--quiz-option-hover-bg)";
+                          }
+                        }}
+                        onMouseOut={(e) => {
+                          if (!isCurrentSubmitted && selectedAnswer !== i) {
+                            e.currentTarget.style.borderColor =
+                              "var(--quiz-option-border)";
+                            e.currentTarget.style.background =
+                              "var(--quiz-option-bg)";
+                          }
+                        }}
+                      >
+                        <span
+                          className="quiz-option-letter"
+                          style={{
+                            width: 36,
+                            height: 36,
+                            border: `1.5px solid ${letterBorder}`,
+                            borderRadius: 12,
+                            background: letterBg,
+                            color: letterText,
+                            fontSize: 14,
+                            fontWeight: letterFontWeight,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexShrink: 0,
+                            marginRight: 10,
+                            transition: "all 0.15s ease",
+                          }}
+                        >
+                          {String.fromCharCode(65 + i)}
+                        </span>
+
+                        <div
+                          style={{
+                            fontSize: 16,
+                            fontWeight: 500,
+                            color: "var(--quiz-option-text)",
+                            lineHeight: 1.5,
+                          }}
+                        >
+                          <RichContent text={opt} />
+                        </div>
+
+                        {isCurrentSubmitted && i === currentQ.correctAnswer && (
+                          <CheckCircle2
+                            className="ml-auto h-5 w-5 shrink-0 text-emerald-600"
+                            aria-label="Correct option"
+                          />
+                        )}
+                        {isCurrentSubmitted &&
+                          selectedAnswer === i &&
+                          i !== currentQ.correctAnswer && (
+                            <XCircle
+                              className="ml-auto h-5 w-5 shrink-0 text-red-600"
+                              aria-label="Wrong option"
+                            />
+                          )}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {canViewSolution && (
+                  <button
+                    type="button"
+                    onClick={openSolution}
+                    className="mt-1 inline-flex h-12 w-full items-center justify-center rounded-2xl border px-5 text-sm font-semibold transition-colors"
+                    style={{
+                      background: "var(--quiz-accent-bg)",
+                      borderColor: "var(--quiz-accent-border)",
+                      color: "var(--quiz-accent-text)",
+                    }}
+                  >
+                    View Solution
+                  </button>
+                )}
+              </div>
+            </section>
+
+            <div className="mt-8 hidden items-center justify-between lg:flex px-1">
+              <button
+                onClick={handlePrev}
+                disabled={currentIndex === 0}
+                className="inline-flex h-11 items-center justify-center gap-2 px-2 text-[15px] font-semibold text-slate-600 transition-colors hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <ChevronLeft className="h-[18px] w-[18px]" />
+                Previous
+              </button>
+              <div className="flex items-center gap-6">
+                <button
+                  onClick={handleClearResponse}
+                  disabled={isCurrentSubmitted}
+                  className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 text-[14px] font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45"
+                >
+                  Clear Responses
+                </button>
+                <button
+                  onClick={handleNext}
+                  disabled={!isCurrentSubmitted}
+                  className="inline-flex h-11 items-center justify-center gap-2 px-2 text-[15px] font-semibold text-slate-600 transition-colors hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-45"
+                >
+                  {currentIndex < questions.length - 1 ? "Next" : "Finish"}
+                  {currentIndex < questions.length - 1 && (
+                    <ChevronRight className="h-[18px] w-[18px]" />
+                  )}
+                </button>
+                <button
+                  onClick={() => {
+                    if (!isCurrentSubmitted) {
+                      handleSubmitCurrent();
+                    }
+                  }}
+                  disabled={!canSubmit}
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#3B82F6] px-6 text-[15px] font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-45 shadow-sm"
+                >
+                  <Send className="h-[18px] w-[18px]" />
+                  Submit
+                </button>
+              </div>
+            </div>
           </div>
-        </aside>
+
+          <aside className="hidden lg:block lg:w-[360px] lg:shrink-0">
+            <div className="sticky" style={{ top: "110px" }}>
+              {isSolutionOpen ? (
+                <SolutionSidePanel
+                  isOpen={isSolutionOpen}
+                  solution={currentQ.solution ?? ""}
+                  questionNumber={currentIndex + 1}
+                  correctOptionIndex={currentQ.correctAnswer}
+                  onClose={closeSolution}
+                />
+              ) : (
+                <QuestionPalettePanel
+                  total={questions.length}
+                  currentIndex={currentIndex}
+                  selectedAnswers={selectedAnswers}
+                  questions={questions}
+                  submittedQuestions={submittedQuestions}
+                  onGoToQuestion={goToQuestion}
+                />
+              )}
+            </div>
+          </aside>
         </div>
       </main>
 
@@ -2785,17 +5280,28 @@ export default function EnglishQuizEngine({
         questionNumber={currentIndex + 1}
         topicTitle={title}
         question={currentQ}
+        theme={theme}
       />
 
       {submitError && (
         <div className="fixed bottom-[86px] left-0 right-0 z-40 px-3 sm:px-6">
-          <div className="mx-auto max-w-3xl rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm font-medium text-rose-700 shadow-sm">
+          <div
+            className="mx-auto max-w-3xl rounded-xl border px-4 py-2.5 text-sm font-medium shadow-sm"
+            style={{
+              background: "var(--quiz-error-bg)",
+              borderColor: "var(--quiz-error-border)",
+              color: "var(--quiz-error-text)",
+            }}
+          >
             {submitError}
           </div>
         </div>
       )}
 
-      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 bg-white/95 backdrop-blur-md lg:hidden">
+      <div
+        className="sticky bottom-0 z-50 border-t backdrop-blur-md lg:hidden"
+        style={{ background: "var(--quiz-footer-bg)", borderColor: "var(--quiz-border)" }}
+      >
         <div
           className="mx-auto max-w-3xl px-3 pb-3 pt-3 sm:px-6"
           style={{
@@ -2806,7 +5312,12 @@ export default function EnglishQuizEngine({
             <button
               onClick={handlePrev}
               disabled={currentIndex === 0}
-              className="inline-flex h-14 items-center justify-center rounded-2xl border border-slate-300 bg-slate-100 px-5 text-base font-semibold text-slate-700 transition-colors hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-45"
+              className="inline-flex h-16 items-center justify-center rounded-2xl border px-6 text-base font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-45"
+              style={{
+                background: "var(--quiz-secondary-bg)",
+                borderColor: "var(--quiz-secondary-border)",
+                color: "var(--quiz-secondary-text)",
+              }}
             >
               Previous
             </button>
@@ -2820,7 +5331,7 @@ export default function EnglishQuizEngine({
                 handleNext();
               }}
               disabled={!canSubmit && !isCurrentSubmitted}
-              className="inline-flex h-14 items-center justify-center rounded-2xl px-5 text-base font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-45"
+              className="inline-flex h-16 items-center justify-center rounded-2xl px-6 text-base font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-45"
               style={{
                 background: isCurrentSubmitted
                   ? "linear-gradient(135deg, #5b21b6 0%, #1d4ed8 100%)"

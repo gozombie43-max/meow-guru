@@ -3,5 +3,5 @@
 import GeneralAwarenessQuizEngine from "../../_shared/quiz-engine";
 
 export default function QuizEngine() {
-  return <GeneralAwarenessQuizEngine title="Polity" slug="polity" />;
+  return <GeneralAwarenessQuizEngine title="Polity" slug="polity" routeBase="/general-awareness/polity" />;
 }
