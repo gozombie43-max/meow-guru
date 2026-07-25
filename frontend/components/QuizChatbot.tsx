@@ -5,6 +5,7 @@ import ReactMarkdown from "react-markdown";
 import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
 import remarkGfm from "remark-gfm";
+import { Sun, Moon, X, Plus, Mic, Send, Zap, CheckCircle2, FileText, AlertTriangle, Sparkles } from "lucide-react";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -213,35 +214,6 @@ function normalizeTutorMarkdown(content: string) {
     ).lines.join("\n");
 }
 
-function stripMarkdown(value: string) {
-  return value
-    .replace(/`{1,3}([^`]+)`{1,3}/g, "$1")
-    .replace(/\*\*([^*]+)\*\*/g, "$1")
-    .replace(/__([^_]+)__/g, "$1")
-    .replace(/\*([^*]+)\*/g, "$1")
-    .replace(/_([^_]+)_/g, "$1")
-    .replace(/\[(.*?)\]\(.*?\)/g, "$1")
-    .replace(/^#+\s*/g, "")
-    .replace(/^>\s*/g, "")
-    .replace(/^\s*[-*+]\s+/g, "")
-    .trim();
-}
-
-function summarizeReply(content: string) {
-  const firstLine = content
-    .split("\n")
-    .map((line) => line.trim())
-    .find((line) => line.length > 0) || "";
-  const cleaned = stripMarkdown(firstLine).replace(/\s+/g, " ").trim();
-  if (!cleaned) return "Here is a clear walkthrough.";
-  if (cleaned.length <= 140) return cleaned;
-  const sentenceEnd = cleaned.search(/[.!?]\s/);
-  if (sentenceEnd > 40 && sentenceEnd < 160) {
-    return cleaned.slice(0, sentenceEnd + 1);
-  }
-  return `${cleaned.slice(0, 137).trim()}...`;
-}
-
 export default function QuizChatbot({
   isVisible,
   questionNumber,
@@ -340,35 +312,35 @@ export default function QuizChatbot({
       subtitle: "Get a clear, detailed solution in steps.",
       prompt: "Explain the step-by-step solution",
       tone: "g",
-      icon: "⚡",
+      icon: <Zap className="w-5 h-5 shrink-0" />,
     },
     {
       title: "Why is the correct option right?",
       subtitle: "Understand the logic and reasoning.",
       prompt: "Why is the correct option right?",
       tone: "o",
-      icon: "✓",
+      icon: <CheckCircle2 className="w-5 h-5 shrink-0" />,
     },
     {
       title: "Give me a similar practice question",
       subtitle: "Practice with a similar type of question.",
       prompt: "Give me a similar practice question",
       tone: "p",
-      icon: "📄",
+      icon: <FileText className="w-5 h-5 shrink-0" />,
     },
     {
       title: "What trap should I avoid?",
       subtitle: "Learn common mistakes and how to avoid them.",
       prompt: "What trap should I avoid?",
       tone: "b",
-      icon: "⚠️",
+      icon: <AlertTriangle className="w-5 h-5 shrink-0" />,
     },
     {
       title: "What is the fastest shortcut?",
       subtitle: "Get quick tricks to solve faster.",
       prompt: "What is the fastest shortcut?",
       tone: "y",
-      icon: "⚡",
+      icon: <Sparkles className="w-5 h-5 shrink-0" />,
     },
   ];
 
@@ -376,17 +348,17 @@ export default function QuizChatbot({
     {
       label: "What is the fastest shortcut?",
       prompt: "What is the fastest shortcut?",
-      icon: "⚡",
+      icon: <Sparkles className="w-4 h-4 shrink-0" />,
     },
     {
       label: "Give me a similar practice question",
       prompt: "Give me a similar practice question",
-      icon: "📄",
+      icon: <FileText className="w-4 h-4 shrink-0" />,
     },
     {
       label: "What trap should I avoid?",
       prompt: "What trap should I avoid?",
-      icon: "⚠️",
+      icon: <AlertTriangle className="w-4 h-4 shrink-0" />,
     },
   ];
 
@@ -463,7 +435,11 @@ export default function QuizChatbot({
                     title="Toggle dark mode"
                     aria-label="Toggle dark mode"
                   >
-                    {isDark ? "☀️" : "🌙"}
+                    {isDark ? (
+                      <Sun className="w-4 h-4 text-amber-400 shrink-0" />
+                    ) : (
+                      <Moon className="w-4 h-4 text-sky-500 shrink-0" />
+                    )}
                   </button>
                   <button
                     type="button"
@@ -472,7 +448,7 @@ export default function QuizChatbot({
                     title="Close"
                     aria-label="Close"
                   >
-                    ×
+                    <X className="w-4.5 h-4.5 text-zinc-500 dark:text-zinc-300 shrink-0" />
                   </button>
                 </div>
               </div>
@@ -534,10 +510,6 @@ export default function QuizChatbot({
 
                       return (
                         <div className="ma" key={`${message.role}-${index}`}>
-                          <div className="ahead">
-                            <span className="albl">Answer</span>
-                          </div>
-                          <div className="ares">{summarizeReply(message.content)}</div>
                           <div className="sb">
                             <div className="sh2">
                               <span className="slbl2">Solution</span>
@@ -612,7 +584,7 @@ export default function QuizChatbot({
                   <div className="bbar">
                     <div className="irow">
                       <button type="button" className="addb" aria-label="Attach context">
-                        +
+                        <Plus className="w-4 h-4 text-zinc-500 dark:text-zinc-400 shrink-0" />
                       </button>
                       <input
                         className="ci"
@@ -634,9 +606,7 @@ export default function QuizChatbot({
                         aria-label="Voice input"
                         style={{ display: hasInput ? "none" : "flex" }}
                       >
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                          <path d="M12 1a4 4 0 014 4v7a4 4 0 01-8 0V5a4 4 0 014-4zm-2 4v7a2 2 0 004 0V5a2 2 0 00-4 0zm-3 7a5 5 0 0010 0h2a7 7 0 01-6 6.93V21h-2v-2.07A7 7 0 015 12H7z" />
-                        </svg>
+                        <Mic className="w-4.5 h-4.5 text-white shrink-0" />
                       </button>
                       <button
                         type="button"
@@ -645,9 +615,7 @@ export default function QuizChatbot({
                         aria-label="Send message"
                         disabled={isLoading || !hasInput}
                       >
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                          <path d="M2 21L23 12 2 3v7l15 2-15 2z" />
-                        </svg>
+                        <Send className="w-4 h-4 text-white shrink-0" />
                       </button>
                     </div>
                   </div>
@@ -658,7 +626,7 @@ export default function QuizChatbot({
                 <div className="bbar lbar">
                   <div className="irow">
                     <button type="button" className="addb" aria-label="Attach context">
-                      +
+                      <Plus className="w-4 h-4 text-zinc-500 dark:text-zinc-400 shrink-0" />
                     </button>
                     <input
                       className="ci"
@@ -680,9 +648,7 @@ export default function QuizChatbot({
                       aria-label="Voice input"
                       style={{ display: hasInput ? "none" : "flex" }}
                     >
-                      <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M12 1a4 4 0 014 4v7a4 4 0 01-8 0V5a4 4 0 014-4zm-2 4v7a2 2 0 004 0V5a2 2 0 00-4 0zm-3 7a5 5 0 0010 0h2a7 7 0 01-6 6.93V21h-2v-2.07A7 7 0 015 12H7z" />
-                      </svg>
+                      <Mic className="w-4.5 h-4.5 text-white shrink-0" />
                     </button>
                     <button
                       type="button"
@@ -691,9 +657,7 @@ export default function QuizChatbot({
                       aria-label="Send message"
                       disabled={isLoading || !hasInput}
                     >
-                      <svg viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M2 21L23 12 2 3v7l15 2-15 2z" />
-                      </svg>
+                      <Send className="w-4 h-4 text-white shrink-0" />
                     </button>
                   </div>
                 </div>
@@ -776,128 +740,108 @@ export default function QuizChatbot({
         }
         .mobile-sheet-handle { display: none; }
         .quiz-chatbot-shell {
-          --or: #f26522;
-          --orl: #fff3ee;
-          --orm: #fde0ce;
-          --pu: #6b5cf6;
-          --pul: #f0eeff;
-          --dk: #1a1a1a;
-          --gr: #6b7280;
-          --grl: #f5f5f5;
-          --bd: #e8e8e8;
+          --or: #007aff;
+          --orl: rgba(0, 122, 255, 0.08);
+          --orm: rgba(0, 122, 255, 0.22);
+          --pu: #007aff;
+          --pul: rgba(0, 122, 255, 0.08);
+          --dk: #1d1d1f;
+          --gr: rgba(60, 60, 67, 0.6);
+          --grl: #f2f2f7;
+          --bd: rgba(0, 0, 0, 0.08);
           --wh: #ffffff;
-          --bg: #f7f7f7;
-          --sh: 0 2px 16px rgba(0, 0, 0, 0.07);
-          --sbody-c: #2d2d2d;
-          --ares-bg: #fffaf7;
-          --irow-bg: #f2f2f2;
+          --bg: #ffffff;
+          --sh: 0 4px 24px rgba(0, 0, 0, 0.06);
+          --sbody-c: #1d1d1f;
+          --ares-bg: rgba(0, 122, 255, 0.06);
+          --irow-bg: #f2f2f7;
           background: var(--bg);
           color: var(--dk);
           display: flex;
           flex-direction: column;
           height: 100%;
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+          font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", "Segoe UI", Roboto, sans-serif;
           transition: background 0.35s, color 0.35s;
         }
         .quiz-chatbot-shell.dark {
-          --or: #ff7a3d;
-          --orl: #2a1a0e;
-          --orm: #4a2a14;
-          --pu: #9b8ffa;
-          --pul: #1e1a3a;
-          --dk: #ececec;
-          --gr: #8a929e;
-          --grl: #252525;
-          --bd: #2e2e2e;
-          --wh: #1c1c1c;
-          --bg: #111111;
-          --sh: 0 2px 20px rgba(0, 0, 0, 0.5);
-          --sbody-c: #cccccc;
-          --ares-bg: #1f1508;
-          --irow-bg: #242424;
+          --or: #0a84ff;
+          --orl: rgba(10, 132, 255, 0.15);
+          --orm: rgba(10, 132, 255, 0.35);
+          --pu: #0a84ff;
+          --pul: rgba(10, 132, 255, 0.15);
+          --dk: #ffffff;
+          --gr: rgba(235, 235, 245, 0.6);
+          --grl: #2c2c2e;
+          --bd: rgba(255, 255, 255, 0.14);
+          --wh: #242426;
+          --bg: #1c1c1e;
+          --sh: 0 4px 30px rgba(0, 0, 0, 0.4);
+          --sbody-c: #ebebf5;
+          --ares-bg: rgba(10, 132, 255, 0.12);
+          --irow-bg: #242426;
         }
         .topbar {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: calc(8px + env(safe-area-inset-top)) 14px 8px;
-          background: var(--wh);
-          border-bottom: 1px solid var(--bd);
+          padding: calc(10px + env(safe-area-inset-top)) 18px 12px;
+          background: var(--bg);
+          border-bottom: 0.5px solid var(--bd);
           flex-shrink: 0;
           transition: background 0.35s, border-color 0.35s;
         }
         .top-actions {
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 10px;
         }
         .closebtn {
-          width: 32px;
-          height: 32px;
-          border-radius: 50%;
-          border: 1.5px solid var(--bd);
-          background: none;
+          width: 34px !important;
+          height: 34px !important;
+          aspect-ratio: 1;
+          border-radius: 50% !important;
+          border: 1px solid var(--bd);
+          background: var(--grl);
           cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 18px;
-          color: var(--gr);
-          line-height: 1;
-          transition: background 0.2s, border-color 0.35s, color 0.2s;
-          flex-shrink: 0;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          padding: 0 !important;
+          transition: all 0.15s ease;
+          flex-shrink: 0 !important;
         }
         .closebtn:hover {
-          background: var(--grl);
-          color: var(--dk);
+          background: var(--or);
+          color: #ffffff;
+          border-color: transparent;
         }
         .logo {
-          font-size: 16px;
+          font-size: 18px;
           font-weight: 700;
-          letter-spacing: -0.5px;
+          letter-spacing: -0.3px;
           color: var(--dk);
           transition: color 0.35s;
         }
         .hbtn {
-          width: 28px;
-          height: 28px;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          gap: 4px;
-          background: none;
-          border: 1.5px solid var(--bd);
-          border-radius: 8px;
-          padding: 5px 6px;
-          cursor: pointer;
-          transition: border-color 0.35s;
-        }
-        .hbtn span {
-          display: block;
-          height: 1.5px;
-          background: var(--dk);
-          border-radius: 2px;
-          transition: background 0.35s;
-        }
-        .hbtn span:nth-child(2) {
-          width: 70%;
+          display: none;
         }
         .dmbtn {
-          width: 28px;
-          height: 28px;
-          border-radius: 50%;
-          border: 1.5px solid var(--bd);
-          background: none;
+          width: 34px !important;
+          height: 34px !important;
+          aspect-ratio: 1;
+          border-radius: 50% !important;
+          border: 1px solid var(--bd);
+          background: var(--grl);
           cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 14px;
-          transition: background 0.2s, border-color 0.35s;
-          flex-shrink: 0;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          padding: 0 !important;
+          transition: all 0.15s ease;
+          flex-shrink: 0 !important;
         }
         .dmbtn:hover {
-          background: var(--grl);
+          background: var(--orm);
         }
         .views {
           flex: 1;
@@ -1025,33 +969,44 @@ export default function QuizChatbot({
           transition: background 0.35s;
         }
         .g {
-          background: #e6faf0;
-          color: #0f8f57;
+          background: rgba(52, 199, 89, 0.14);
+          color: #248a3d;
         }
         .o {
-          background: var(--orl);
-          color: var(--or);
+          background: rgba(255, 149, 0, 0.14);
+          color: #b45309;
         }
         .p {
-          background: var(--pul);
-          color: var(--pu);
+          background: rgba(175, 82, 222, 0.14);
+          color: #8028a0;
         }
         .b {
-          background: #e8f4ff;
-          color: #2563eb;
+          background: rgba(0, 122, 255, 0.14);
+          color: #0060df;
         }
         .y {
-          background: #fffbe6;
-          color: #b7791f;
+          background: rgba(255, 204, 0, 0.18);
+          color: #a16207;
         }
         .dark .g {
-          background: #0d2b1a;
+          background: rgba(48, 209, 88, 0.18);
+          color: #30d158;
+        }
+        .dark .o {
+          background: rgba(255, 159, 10, 0.18);
+          color: #ff9f0a;
+        }
+        .dark .p {
+          background: rgba(191, 90, 242, 0.18);
+          color: #bf5af2;
         }
         .dark .b {
-          background: #0d1e2e;
+          background: rgba(10, 132, 255, 0.18);
+          color: #0a84ff;
         }
         .dark .y {
-          background: #241e06;
+          background: rgba(255, 214, 10, 0.18);
+          color: #ffd60a;
         }
         .ot {
           font-size: 14.5px;
@@ -1082,23 +1037,22 @@ export default function QuizChatbot({
           gap: 10px;
           background: var(--irow-bg);
           border-radius: 50px;
-          padding: 8px 8px 8px 16px;
+          padding: 6px 8px 6px 12px;
           transition: background 0.35s;
         }
         .addb {
-          width: 36px;
-          height: 36px;
+          width: 32px !important;
+          height: 32px !important;
+          aspect-ratio: 1;
           background: var(--wh);
           border: 1px solid var(--bd);
-          border-radius: 10px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 20px;
-          font-weight: 300;
-          color: var(--dk);
+          border-radius: 50% !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          padding: 0 !important;
           cursor: pointer;
-          flex-shrink: 0;
+          flex-shrink: 0 !important;
           transition: background 0.35s, border-color 0.35s, color 0.35s;
         }
         .ci {
@@ -1114,49 +1068,32 @@ export default function QuizChatbot({
         .ci::placeholder {
           color: var(--gr);
         }
-        .mic {
-          width: 40px;
-          height: 40px;
+        .mic,
+        .snd {
+          width: 34px !important;
+          height: 34px !important;
+          aspect-ratio: 1;
           background: var(--or);
-          border-radius: 50%;
-          border: none;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          border-radius: 50% !important;
+          border: none !important;
+          padding: 0 !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
           cursor: pointer;
-          flex-shrink: 0;
-          box-shadow: 0 2px 8px rgba(242, 101, 34, 0.35);
+          flex-shrink: 0 !important;
+          box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
           transition: transform 0.15s, background 0.35s;
         }
-        .mic:hover {
-          transform: scale(1.07);
-        }
-        .mic svg {
-          width: 18px;
-          height: 18px;
-          fill: #fff;
+        .mic:hover,
+        .snd:hover {
+          transform: scale(1.05);
         }
         .snd {
-          width: 40px;
-          height: 40px;
-          background: var(--or);
-          border-radius: 50%;
-          border: none;
-          display: none;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          flex-shrink: 0;
-          box-shadow: 0 2px 8px rgba(242, 101, 34, 0.35);
-          transition: background 0.35s;
-        }
-        .snd svg {
-          width: 16px;
-          height: 16px;
-          fill: #fff;
+          display: none !important;
         }
         .snd.on {
-          display: flex;
+          display: flex !important;
         }
         .chat {
           opacity: 0;
@@ -1185,20 +1122,22 @@ export default function QuizChatbot({
           border-radius: 4px;
         }
         .mu {
-          margin: 16px 16px 0;
-          background: var(--wh);
-          border-radius: 16px;
-          padding: 14px 16px;
-          border: 1px solid var(--bd);
-          font-size: 14.5px;
-          font-weight: 500;
-          color: var(--dk);
-          box-shadow: var(--sh);
+          margin: 16px 16px 0 auto;
+          max-width: 80%;
+          background: #007aff;
+          border-radius: 20px 20px 4px 20px;
+          padding: 14px 18px;
+          border: none;
+          font-size: 16px;
+          font-weight: 600;
+          color: #ffffff;
+          box-shadow: 0 4px 14px rgba(0, 122, 255, 0.3);
           animation: fu 0.3s ease;
-          transition: background 0.35s, border-color 0.35s, color 0.35s;
+          line-height: 1.5;
+          transition: background 0.35s, color 0.35s;
         }
         .ma {
-          margin: 12px 16px 0;
+          margin: 14px 16px 0;
           animation: fu 0.3s ease;
         }
         .ahead {
@@ -1214,31 +1153,34 @@ export default function QuizChatbot({
           transition: color 0.35s;
         }
         .ares {
-          background: var(--ares-bg);
-          border-radius: 12px;
-          padding: 12px 16px;
+          background: var(--orl);
+          border-radius: 14px;
+          padding: 14px 18px;
           border: 1px solid var(--orm);
-          font-size: 14px;
-          color: var(--dk);
-          margin-bottom: 12px;
-          line-height: 1.7;
-          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-          transition: background 0.35s, border-color 0.35s, color 0.35s;
+          font-size: 16px;
+          font-weight: 600;
+          color: var(--or);
+          margin-bottom: 16px;
+          line-height: 1.6;
+          font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", "Segoe UI", Roboto, sans-serif;
+          transition: all 0.35s ease;
         }
         .sb {
-          background: var(--wh);
-          border-radius: 16px;
-          border: 1px solid var(--bd);
-          overflow: hidden;
-          box-shadow: var(--sh);
-          transition: background 0.35s, border-color 0.35s;
+          background: transparent;
+          border-radius: 0;
+          border: none;
+          overflow: visible;
+          box-shadow: none;
+          padding: 4px 0 12px;
+          transition: all 0.35s ease;
         }
         .sh2 {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 14px 16px 0;
-          margin-bottom: 8px;
+          padding: 0 0 10px;
+          margin-bottom: 6px;
+          border-bottom: 1px solid var(--bd);
         }
         .slbl2 {
           font-size: 16px;
@@ -1264,16 +1206,15 @@ export default function QuizChatbot({
           background: var(--grl);
         }
         .sdiv {
-          height: 1px;
-          background: var(--bd);
-          margin: 0 0 14px;
-          transition: background 0.35s;
+          display: none;
         }
         .sbody {
-          padding: 0 16px 16px;
-          font-size: 14.5px;
-          line-height: 1.75;
+          padding: 12px 0 16px;
+          font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", "Segoe UI", Roboto, sans-serif;
+          font-size: 17px;
+          line-height: 1.8;
           color: var(--sbody-c);
+          letter-spacing: 0.01em;
           transition: color 0.35s;
         }
         .sbody :global(p) {
@@ -1449,8 +1390,54 @@ export default function QuizChatbot({
           .quiz-chatbot-fab {
             bottom: 32px;
           }
+          .quiz-chatbot-overlay {
+            align-items: center;
+            justify-content: center;
+            padding: 32px;
+          }
+          .quiz-chatbot-modal {
+            width: 100%;
+            max-width: 820px;
+            height: min(82vh, 680px);
+            max-height: 82vh;
+            border-radius: 26px !important;
+            border: 1px solid var(--bd);
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.45);
+          }
+          .topbar {
+            padding: 16px 28px;
+          }
+          .ctx {
+            margin: 24px 28px 0;
+            padding: 16px 20px;
+          }
+          .ltitle {
+            font-size: 26px;
+            padding: 24px 28px 20px;
+          }
+          .opts {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+            padding: 0 28px 28px;
+          }
+          .mu {
+            margin: 22px 28px 0 auto;
+            max-width: 72%;
+            font-size: 17px;
+          }
+          .ma {
+            margin: 18px 28px 0;
+          }
+          .sbody {
+            font-size: 18px;
+            line-height: 1.85;
+          }
+          .bbar {
+            padding: 16px 28px;
+          }
         }
-        @media (max-width: 640px) {
+        @media (max-width: 639px) {
           .quiz-chatbot-overlay {
             align-items: flex-end;
             padding-top: max(12px, env(safe-area-inset-top));
