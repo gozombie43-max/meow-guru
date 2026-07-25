@@ -2372,20 +2372,17 @@ function ThemeToggle() {
 
 function ConceptBadge({
   concept,
-  colours,
 }: {
   concept: string;
   colours: Record<string, ConceptColour>;
 }) {
-  const colour = colours[concept] ?? DEFAULT_CONCEPT_COLOUR;
-  const badgeStyle: React.CSSProperties = {
-    ["--concept-border" as string]: colour.border,
-    ["--concept-bg" as string]: colour.bg,
-    ["--concept-text" as string]: colour.text,
-  };
-  const label = concept.trim().replace(/\s+/g, "_").toLowerCase();
+  const label = concept
+    .trim()
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+
   return (
-    <span className="concept-badge" style={badgeStyle}>
+    <span style={{ fontSize: "inherit", fontWeight: "inherit" }}>
       {label}
     </span>
   );
@@ -2499,39 +2496,37 @@ function SolutionBottomSheet({
             </div>
 
             <div className="ios-solution-body">
-              <div className="ios-solution-card">
-                {solutionLines.length > 0 ? (
-                  <div className="space-y-4">
-                    <div className="ios-solution-badge">
-                      <span className="ios-badge-qnum">Question {questionNumber}</span>
-                      <span className="ios-badge-divider">•</span>
-                      <span className="ios-badge-correct">Option ({optionLabel}) is Correct</span>
-                    </div>
-
-                    <div className="ios-solution-content-text">
-                      {solutionHasImage ? (
-                        <RichContent text={solution} />
-                      ) : (
-                        solutionLines.map((line, index) => {
-                          const isDisplayEquation = /^\\\[[\s\S]*\\\]$/.test(line);
-                          return (
-                            <div
-                              key={`worked-line-${index}`}
-                              className={`my-2.5 leading-relaxed ${isDisplayEquation ? "text-center my-4" : ""}`}
-                            >
-                              <MathRenderer text={line} className="leading-relaxed" />
-                            </div>
-                          );
-                        })
-                      )}
-                    </div>
+              {solutionLines.length > 0 ? (
+                <div className="ios-solution-container">
+                  <div className="ios-solution-badge">
+                    <span className="ios-badge-qnum">Question {questionNumber}</span>
+                    <span className="ios-badge-divider">•</span>
+                    <span className="ios-badge-correct">Option ({optionLabel}) is Correct</span>
                   </div>
-                ) : (
-                  <p className="text-center py-8 opacity-60 text-sm">
-                    Solution is not available for this question yet.
-                  </p>
-                )}
-              </div>
+
+                  <div className="ios-solution-content-text">
+                    {solutionHasImage ? (
+                      <RichContent text={solution} />
+                    ) : (
+                      solutionLines.map((line, index) => {
+                        const isDisplayEquation = /^\\\[[\s\S]*\\\]$/.test(line);
+                        return (
+                          <div
+                            key={`worked-line-${index}`}
+                            className={`ios-solution-step ${isDisplayEquation ? "is-equation" : ""}`}
+                          >
+                            <MathRenderer text={line} className="leading-relaxed" />
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <p className="text-center py-12 opacity-60 text-base">
+                  Solution is not available for this question yet.
+                </p>
+              )}
             </div>
 
             <style jsx global>{`
@@ -2607,38 +2602,49 @@ function SolutionBottomSheet({
               .ios-solution-body {
                 flex: 1;
                 overflow-y: auto;
-                padding: 20px 18px;
+                padding: 24px 22px 48px 22px;
                 overscroll-behavior: contain;
               }
-              .ios-solution-card {
-                background: #242426;
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                border-radius: 20px;
-                padding: 22px 20px;
-                color: #f2f2f7;
-                font-size: 17px;
+              .ios-solution-container {
+                display: flex;
+                flex-direction: column;
               }
               .ios-solution-badge {
                 display: inline-flex;
                 align-items: center;
+                align-self: flex-start;
                 gap: 8px;
                 background: rgba(48, 209, 88, 0.16);
                 border: 1px solid rgba(48, 209, 88, 0.35);
                 color: #30d158;
-                font-size: 14px;
+                font-size: 15px;
                 font-weight: 600;
-                padding: 6px 14px;
+                padding: 7px 16px;
                 border-radius: 99px;
-                margin-bottom: 8px;
+                margin-bottom: 22px;
+                letter-spacing: 0.01em;
               }
               .ios-badge-divider {
                 opacity: 0.6;
               }
               .ios-solution-content-text {
-                font-family: "SF Pro Text", "Helvetica Neue", Georgia, serif;
-                font-size: 17px;
-                line-height: 1.65;
-                color: #e5e5ea;
+                font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", "Segoe UI", Roboto, sans-serif;
+                font-size: 18px;
+                line-height: 1.85;
+                color: #f5f5f7;
+                letter-spacing: 0.012em;
+              }
+              .ios-solution-step {
+                margin-top: 14px;
+                margin-bottom: 14px;
+              }
+              .ios-solution-step:first-of-type {
+                margin-top: 0;
+              }
+              .ios-solution-step.is-equation {
+                text-align: center;
+                margin-top: 24px;
+                margin-bottom: 24px;
               }
 
               /* Light Theme Overrides */
@@ -2646,30 +2652,24 @@ function SolutionBottomSheet({
                 background: rgba(0, 0, 0, 0.35);
               }
               .ios-solution-backdrop[data-theme="light"] .ios-solution-sheet {
-                background: #f2f2f7;
+                background: #ffffff;
                 border-color: rgba(0, 0, 0, 0.1);
-                color: #000;
+                color: #1d1d1f;
               }
               .ios-solution-backdrop[data-theme="light"] .ios-sheet-handle {
                 background: rgba(0, 0, 0, 0.18);
               }
               .ios-solution-backdrop[data-theme="light"] .ios-solution-header {
-                border-bottom-color: rgba(60, 60, 67, 0.15);
+                border-bottom-color: rgba(0, 0, 0, 0.08);
               }
               .ios-solution-backdrop[data-theme="light"] .ios-solution-title {
-                color: #000;
+                color: #1d1d1f;
               }
               .ios-solution-backdrop[data-theme="light"] .ios-done-btn {
                 color: #007aff;
               }
-              .ios-solution-backdrop[data-theme="light"] .ios-solution-card {
-                background: #ffffff;
-                border-color: rgba(0, 0, 0, 0.08);
-                box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
-                color: #000000;
-              }
               .ios-solution-backdrop[data-theme="light"] .ios-solution-content-text {
-                color: #1c1c1e;
+                color: #1d1d1f;
               }
               .ios-solution-backdrop[data-theme="light"] .ios-solution-badge {
                 background: rgba(52, 199, 89, 0.12);
@@ -2684,7 +2684,7 @@ function SolutionBottomSheet({
                   padding: 32px;
                 }
                 .ios-solution-sheet {
-                  max-height: 76vh;
+                  max-height: 78vh;
                   border-radius: 26px !important;
                   border: 1px solid rgba(255, 255, 255, 0.16);
                   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
@@ -2693,10 +2693,10 @@ function SolutionBottomSheet({
                   display: none;
                 }
                 .ios-solution-header {
-                  padding: 16px 24px;
+                  padding: 16px 28px;
                 }
                 .ios-solution-body {
-                  padding: 24px 28px;
+                  padding: 28px 32px 52px 32px;
                 }
               }
             `}</style>
