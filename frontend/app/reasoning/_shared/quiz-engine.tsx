@@ -2833,6 +2833,8 @@ export default function ReasoningQuizEngine({
   const [timeLeft, setTimeLeft] = useState(60);
   const [isSolutionOpen, setIsSolutionOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
+  const [resumeData, setResumeData] = useState<any>(null);
+  const storageKey = `reasoning_quiz_resume_${slug}_${mode}`;
 
   useEffect(() => {
     let active = true;
@@ -3138,9 +3140,80 @@ export default function ReasoningQuizEngine({
     showAnalytics,
   ]);
 
+  useEffect(() => {
+    if (typeof window === "undefined" || !started || questions.length === 0) return;
+    if (submittedQuestions.size === 0) return;
+
+    const stateToSave = {
+      selectedAnswers,
+      submittedQuestions: Array.from(submittedQuestions),
+      currentIndex,
+      mode,
+      conceptFilter,
+      examFilter,
+      selectedClassificationConcepts: Array.from(selectedClassificationConcepts),
+      difficulty,
+    };
+    try {
+      window.localStorage.setItem(storageKey, JSON.stringify(stateToSave));
+    } catch (e) {}
+  }, [
+    started,
+    questions.length,
+    selectedAnswers,
+    submittedQuestions,
+    currentIndex,
+    mode,
+    conceptFilter,
+    examFilter,
+    selectedClassificationConcepts,
+    difficulty,
+    storageKey,
+  ]);
+
   function handleStart() {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = window.localStorage.getItem(storageKey);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && parsed.submittedQuestions && parsed.submittedQuestions.length > 0) {
+            setResumeData(parsed);
+            return;
+          }
+        }
+      } catch (e) {}
+    }
     setStarted(true);
     startTimer();
+  }
+
+  function handleResume() {
+    if (resumeData) {
+      if (resumeData.selectedAnswers) setSelectedAnswers(resumeData.selectedAnswers);
+      if (resumeData.submittedQuestions) setSubmittedQuestions(new Set(resumeData.submittedQuestions));
+      if (resumeData.currentIndex !== undefined) setCurrentIndex(resumeData.currentIndex);
+      if (resumeData.conceptFilter) setConceptFilter(resumeData.conceptFilter);
+      if (resumeData.examFilter) setExamFilter(resumeData.examFilter);
+      if (resumeData.selectedClassificationConcepts) setSelectedClassificationConcepts(new Set(resumeData.selectedClassificationConcepts));
+      if (resumeData.difficulty) setDifficulty(resumeData.difficulty);
+    }
+    setResumeData(null);
+    setStarted(true);
+    startTimer();
+  }
+
+  function handleRestartFromPopup() {
+    try {
+      window.localStorage.removeItem(storageKey);
+    } catch (e) {}
+    setResumeData(null);
+    setStarted(true);
+    startTimer();
+  }
+
+  function handleCancelResume() {
+    setResumeData(null);
   }
 
   const showQuestion = useCallback(
@@ -3695,8 +3768,9 @@ export default function ReasoningQuizEngine({
     selectedClassificationConcepts.size === conceptOptions.length && conceptOptions.length > 0;
 
   if (!started) {
+    let startScreen;
     if (isClassificationConceptMode) {
-      return (
+      startScreen = (
         <SeriesConceptStart
           title={title}
           slug={slug}
@@ -3726,40 +3800,122 @@ export default function ReasoningQuizEngine({
           onStart={handleStart}
         />
       );
+    } else {
+      startScreen = (
+        <SeriesFormulaStart
+          title={title}
+          slug={slug}
+          mode={mode}
+          examFilter={examFilter}
+          examOptions={examOptions}
+          questionCount={availableCount}
+          onExamChange={setExamFilter}
+          groups={classificationGroups}
+          category={classificationCategory}
+          categoryCounts={classificationCategoryCounts}
+          search={classificationSearch}
+          selected={selectedClassificationConcepts}
+          conceptCount={conceptOptions.length}
+          onCategoryChange={setClassificationCategory}
+          onSearchChange={setClassificationSearch}
+          onToggleGroup={(concepts) => {
+            const allSelected = concepts.every((concept) =>
+              selectedClassificationConcepts.has(concept)
+            );
+            setSelectedClassificationConcepts((previous) => {
+              const next = new Set(previous);
+              concepts.forEach((concept) => {
+                if (allSelected) next.delete(concept);
+                else next.add(concept);
+              });
+              return next;
+            });
+          }}
+          onStart={handleStart}
+        />
+      );
     }
 
     return (
-      <SeriesFormulaStart
-        title={title}
-        slug={slug}
-        mode={mode}
-        examFilter={examFilter}
-        examOptions={examOptions}
-        questionCount={availableCount}
-        onExamChange={setExamFilter}
-        groups={classificationGroups}
-        category={classificationCategory}
-        categoryCounts={classificationCategoryCounts}
-        search={classificationSearch}
-        selected={selectedClassificationConcepts}
-        conceptCount={conceptOptions.length}
-        onCategoryChange={setClassificationCategory}
-        onSearchChange={setClassificationSearch}
-        onToggleGroup={(concepts) => {
-          const allSelected = concepts.every((concept) =>
-            selectedClassificationConcepts.has(concept)
-          );
-          setSelectedClassificationConcepts((previous) => {
-            const next = new Set(previous);
-            concepts.forEach((concept) => {
-              if (allSelected) next.delete(concept);
-              else next.add(concept);
-            });
-            return next;
-          });
-        }}
-        onStart={handleStart}
-      />
+      <>
+        {startScreen}
+        {resumeData && (
+          <div className="ios-resume-backdrop">
+            <div className="ios-resume-modal">
+              <div className="ios-resume-content">
+                <h3>Resume Quiz?</h3>
+                <p>You answered {resumeData.submittedQuestions?.length || 0} of {availableCount} questions in this {title} set.</p>
+                <div className="ios-resume-progress">
+                  <div className="ios-resume-track">
+                    <div 
+                      className="ios-resume-bar" 
+                      style={{ width: `${Math.min(100, ((resumeData.submittedQuestions?.length || 0) / availableCount) * 100)}%` }} 
+                    />
+                  </div>
+                  <span>{resumeData.submittedQuestions?.length || 0}/{availableCount}</span>
+                </div>
+              </div>
+              <div className="ios-resume-actions">
+                <button type="button" className="ios-resume-btn blue action-resume" onClick={handleResume}>
+                  Resume
+                </button>
+                <button type="button" className="ios-resume-btn red action-restart" onClick={handleRestartFromPopup}>
+                  Restart
+                </button>
+                <button type="button" className="ios-resume-btn blue action-cancel" onClick={handleCancelResume}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+            <style jsx>{`
+              .ios-resume-backdrop { position:fixed; inset:0; z-index:99999; background:rgba(0,0,0,0.6); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif; backdrop-filter: blur(4px); }
+              .ios-resume-modal { width:100%; max-width:320px; background:#2c2c2e; border-radius:14px; overflow:hidden; box-shadow: 0 16px 40px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.08); }
+              .ios-resume-content { padding:20px 16px; text-align:center; border-bottom: 0.5px solid rgba(255,255,255,0.15); }
+              .ios-resume-content h3 { margin:0 0 6px 0; color:#fff; font-size:17px; font-weight:600; }
+              .ios-resume-content p { margin:0 0 16px 0; color:rgba(235,235,245,0.6); font-size:13px; line-height:1.4; }
+              .ios-resume-progress { display:flex; align-items:center; gap:12px; }
+              .ios-resume-track { flex:1; height:4px; background:rgba(255,255,255,0.1); border-radius:2px; overflow:hidden; }
+              .ios-resume-bar { height:100%; background:#0a84ff; border-radius:2px; }
+              .ios-resume-progress span { font-size:13px; color:rgba(235,235,245,0.6); font-variant-numeric:tabular-nums; }
+              .ios-resume-actions { display:flex; flex-direction:column; }
+              .ios-resume-btn { width:100%; height:50px; background:transparent; border:none; border-top:0.5px solid rgba(255,255,255,0.15); font-size:17px; font-weight:400; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+              .ios-resume-actions .ios-resume-btn:first-child { border-top: none; }
+              .ios-resume-btn.blue { color:#0a84ff; }
+              .ios-resume-btn.red { color:#ff453a; }
+              .action-resume { font-weight: 600; }
+              .action-cancel { font-weight: 400; }
+              .ios-resume-btn:active { background:rgba(255,255,255,0.1); }
+
+              /* PC / Desktop optimization */
+              @media (min-width: 640px) {
+                .ios-resume-modal {
+                  max-width: 440px;
+                  border: 1px solid rgba(255,255,255,0.14);
+                  border-radius: 18px;
+                  box-shadow: 0 24px 48px rgba(0,0,0,0.5);
+                }
+                .ios-resume-actions {
+                  display: grid;
+                  grid-template-columns: 1fr 1fr 1fr;
+                  border-top: 0.5px solid rgba(255,255,255,0.15);
+                }
+                .ios-resume-btn {
+                  height: 48px;
+                  font-size: 16px;
+                  border-top: none !important;
+                  border-right: 0.5px solid rgba(255,255,255,0.15);
+                }
+                .ios-resume-btn:last-child {
+                  border-right: none;
+                }
+                .action-cancel { order: 1; font-weight: 500; color: rgba(235,235,245,0.7); }
+                .action-restart { order: 2; font-weight: 500; }
+                .action-resume { order: 3; font-weight: 600; }
+              }
+            `}</style>
+          </div>
+        )}
+      </>
     );
   }
 
