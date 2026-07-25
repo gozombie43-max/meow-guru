@@ -1,7 +1,7 @@
 "use client";
 
-import GenericQuizEngine from "../../_shared/GenericQuizEngine";
+import MathematicsQuizEngine from "../../../_shared/quiz-engine";
 
 export default function QuizEngine() {
-  return <GenericQuizEngine topicTitle="Mixture and Alligation" topicRoute="/mathematics/arithmetic/mixture-and-alligation" />;
+  return <MathematicsQuizEngine title="Mixture & Alligation" slug="mixture-and-alligation" routeBase="/mathematics/arithmetic/mixture-and-alligation" />;
 }

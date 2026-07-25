@@ -1,7 +1,7 @@
 "use client";
 
-import GenericQuizEngine from "../../_shared/GenericQuizEngine";
+import MathematicsQuizEngine from "../../../_shared/quiz-engine";
 
 export default function QuizEngine() {
-  return <GenericQuizEngine topicTitle="Time and Distance" topicRoute="/mathematics/arithmetic/time-and-distance" />;
+  return <MathematicsQuizEngine title="Time & Distance" slug="time-and-distance" routeBase="/mathematics/arithmetic/time-and-distance" />;
 }

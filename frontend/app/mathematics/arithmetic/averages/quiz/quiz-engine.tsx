@@ -1,7 +1,7 @@
 "use client";
 
-import GenericQuizEngine from "../../_shared/GenericQuizEngine";
+import MathematicsQuizEngine from "../../../_shared/quiz-engine";
 
 export default function QuizEngine() {
-  return <GenericQuizEngine topicTitle="Averages" topicRoute="/mathematics/arithmetic/averages" />;
+  return <MathematicsQuizEngine title="Averages" slug="averages" routeBase="/mathematics/arithmetic/averages" />;
 }

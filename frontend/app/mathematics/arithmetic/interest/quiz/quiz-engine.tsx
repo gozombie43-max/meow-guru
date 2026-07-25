@@ -1,7 +1,7 @@
 "use client";
 
-import GenericQuizEngine from "../../_shared/GenericQuizEngine";
+import MathematicsQuizEngine from "../../../_shared/quiz-engine";
 
 export default function QuizEngine() {
-  return <GenericQuizEngine topicTitle="Interest (Simple and Compound)" topicRoute="/mathematics/arithmetic/interest" />;
+  return <MathematicsQuizEngine title="Interest & Compound Interest" slug="interest" routeBase="/mathematics/arithmetic/interest" />;
 }

@@ -1,7 +1,7 @@
 "use client";
 
-import GenericQuizEngine from "../../_shared/GenericQuizEngine";
+import MathematicsQuizEngine from "../../../_shared/quiz-engine";
 
 export default function QuizEngine() {
-  return <GenericQuizEngine topicTitle="Profit and Loss" topicRoute="/mathematics/arithmetic/profit-and-loss" />;
+  return <MathematicsQuizEngine title="Profit & Loss" slug="profit-and-loss" routeBase="/mathematics/arithmetic/profit-and-loss" />;
 }

@@ -1,7 +1,7 @@
 "use client";
 
-import GenericQuizEngine from "../../_shared/GenericQuizEngine";
+import MathematicsQuizEngine from "../../../_shared/quiz-engine";
 
 export default function QuizEngine() {
-  return <GenericQuizEngine topicTitle="Ratio and Proportion" topicRoute="/mathematics/arithmetic/ratio-and-proportion" />;
+  return <MathematicsQuizEngine title="Ratio & Proportion" slug="ratio-and-proportion" routeBase="/mathematics/arithmetic/ratio-and-proportion" />;
 }

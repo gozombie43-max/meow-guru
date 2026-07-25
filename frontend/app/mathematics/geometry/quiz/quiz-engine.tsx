@@ -3,5 +3,5 @@
 import MathematicsQuizEngine from "../../_shared/quiz-engine";
 
 export default function QuizEngine() {
-  return <MathematicsQuizEngine slug="geometry" />;
+  return <MathematicsQuizEngine title="Geometry" slug="geometry" routeBase="/mathematics/geometry" />;
 }
