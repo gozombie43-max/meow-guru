@@ -1431,8 +1431,8 @@ button:active:not(:disabled) {
 /* ========== Bottom Pill Navigation ========== */
 
 body.has-bottom-nav {
-  /* Desktop pill nav: 18px gap + ~60px nav + safe area */
-  padding-bottom: calc(90px + env(safe-area-inset-bottom));
+  /* Desktop pill nav: 18px gap + ~60px nav + 30px content gap + safe area */
+  padding-bottom: calc(120px + env(safe-area-inset-bottom));
 }
 
 .bottom-pill-nav {
@@ -1448,9 +1448,9 @@ body.has-bottom-nav {
   gap: 2px;
   align-items: center;
   border-radius: 999px;
-  background: rgba(36, 36, 40, 0.82);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.36), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  background: linear-gradient(160deg, #0d0d0d 0%, #000000 60%, #050505 100%);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.07);
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
   transition: backdrop-filter 220ms ease, background 220ms ease, box-shadow 220ms ease, border 220ms ease;
@@ -1467,9 +1467,9 @@ body.has-bottom-nav {
 }
 
 .bottom-pill-nav.is-light {
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(15, 23, 42, 0.12);
-  box-shadow: 0 16px 30px rgba(15, 23, 42, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  background: linear-gradient(160deg, #ffffff 0%, #f8f8f8 60%, #ffffff 100%);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 16px 30px rgba(15, 23, 42, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1);
 }
 
 .bottom-pill-nav.is-light::before {
@@ -1479,21 +1479,21 @@ body.has-bottom-nav {
 .bottom-pill-nav.is-scrolled {
   backdrop-filter: blur(32px) saturate(200%);
   -webkit-backdrop-filter: blur(32px) saturate(200%);
-  background: rgba(30, 30, 34, 0.92);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.48), inset 0 1px 0 rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(160deg, #0d0d0d 0%, #000000 60%, #050505 100%);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.07);
 }
 
 .bottom-pill-nav.is-light.is-scrolled {
-  background: rgba(255, 255, 255, 0.97);
-  box-shadow: 0 18px 34px rgba(15, 23, 42, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  background: #ffffff;
+  box-shadow: 0 18px 34px rgba(15, 23, 42, 0.14), inset 0 1px 0 rgba(255, 255, 255, 1);
 }
 
 /* Keep light surface appearance even when scrolled — avoid accidental dark overrides */
 .bottom-pill-nav.is-scrolled-light,
 .bottom-pill-nav.is-light.is-scrolled-light {
-  background: rgba(255, 255, 255, 0.98) !important;
-  box-shadow: 0 18px 34px rgba(15, 23, 42, 0.18) !important;
+  background: #ffffff !important;
+  box-shadow: 0 18px 34px rgba(15, 23, 42, 0.12) !important;
   border: 1px solid rgba(15, 23, 42, 0.06) !important;
 }
 
@@ -1547,7 +1547,7 @@ body.has-bottom-nav {
 }
 
 .bottom-nav-item.is-active {
-  color: #a855f7;
+  color: #007AFF;
   transform: scale(1.05);
   text-shadow: none;
 }
@@ -1559,7 +1559,7 @@ body.has-bottom-nav {
 
 .bottom-nav-item.is-active .bottom-nav-icon {
   opacity: 1;
-  stroke: #a855f7;
+  stroke: #007AFF;
   filter: none;
   animation: none;
 }
@@ -1574,7 +1574,7 @@ body.has-bottom-nav {
 }
 
 .bottom-pill-nav.is-light .bottom-nav-item.is-active {
-  color: #a855f7;
+  color: #007AFF;
   text-shadow: none;
 }
 
@@ -1612,14 +1612,14 @@ body.has-bottom-nav {
 }
 
 body.theme-dark .bottom-pill-nav {
-  background: rgba(28, 28, 30, 0.88);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.52), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  background: linear-gradient(160deg, #0d0d0d 0%, #000000 60%, #050505 100%);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.07);
 }
 
 body.theme-dark .bottom-pill-nav.is-scrolled {
-  background: rgba(22, 22, 24, 0.94);
-  box-shadow: 0 22px 48px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.11);
+  background: linear-gradient(160deg, #0a0a0a 0%, #000000 70%, #030303 100%);
+  box-shadow: 0 22px 48px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.07);
 }
 
 body.theme-dark .bottom-nav-item {
@@ -1627,12 +1627,12 @@ body.theme-dark .bottom-nav-item {
 }
 
 body.theme-dark .bottom-nav-item.is-active {
-  color: #bf7cf8;
+  color: #007AFF;
   text-shadow: none;
 }
 
 body.theme-dark .bottom-nav-item.is-active .bottom-nav-icon {
-  stroke: #bf7cf8;
+  stroke: #007AFF;
   filter: none;
 }
 
@@ -1800,7 +1800,7 @@ body.theme-dark .theme-switch {
   }
 
   body.has-bottom-nav {
-    padding-bottom: calc(82px + env(safe-area-inset-bottom));
+    padding-bottom: calc(112px + env(safe-area-inset-bottom));
   }
 
   .bottom-nav-item {
@@ -1823,20 +1823,20 @@ body.theme-dark .theme-switch {
   }
 }
 .bottom-nav-center-item { display: flex; justify-content: center; align-items: center; position: relative; z-index: 10; }
-.bottom-nav-center-btn { display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 50%; background: #a855f7; color: white; box-shadow: 0 4px 14px rgba(168, 85, 247, 0.4); transition: transform 250ms ease, box-shadow 250ms ease; transform: translateY(-3px); }
-.bottom-nav-center-btn:hover, .bottom-nav-center-btn:focus-visible { transform: scale(1.06) translateY(-5px); box-shadow: 0 6px 20px rgba(168, 85, 247, 0.5); outline: none; }
+.bottom-nav-center-btn { display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 50%; background: #007AFF; color: white; box-shadow: 0 4px 14px rgba(0, 122, 255, 0.4); transition: transform 250ms ease, box-shadow 250ms ease; transform: translateY(-3px); }
+.bottom-nav-center-btn:hover, .bottom-nav-center-btn:focus-visible { transform: scale(1.06) translateY(-5px); box-shadow: 0 6px 20px rgba(0, 122, 255, 0.5); outline: none; }
 .bottom-nav-center-btn:active { transform: scale(0.96) translateY(-3px); }
 .bottom-nav-center-btn svg { width: 24px; height: 24px; stroke: white; fill: none; }
-body.theme-dark .bottom-nav-center-btn { box-shadow: 0 4px 14px rgba(168, 85, 247, 0.4); }
+body.theme-dark .bottom-nav-center-btn { box-shadow: 0 4px 14px rgba(0, 122, 255, 0.4); }
 
 /* Overrides — iOS-style grey-dark frosted glass */
 .bottom-pill-nav {
   padding: 6px 10px;
   width: min(88vw, 360px);
   gap: 0px;
-  background: rgba(255, 255, 255, 0.97);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(160deg, #0d0d0d 0%, #000000 60%, #050505 100%);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
   transition: transform 220ms ease, opacity 220ms ease, background 220ms ease, box-shadow 220ms ease;
 }
 .bottom-pill-nav::before { display: none; }
@@ -1848,30 +1848,29 @@ body.theme-dark .bottom-nav-center-btn { box-shadow: 0 4px 14px rgba(168, 85, 24
 }
 
 .bottom-pill-nav.is-light {
-  background: rgba(255, 255, 255, 0.97);
+  background: #ffffff;
   border: 1px solid rgba(0, 0, 0, 0.06);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
 }
 .bottom-pill-nav.is-light::before { display: none; }
 
 body.theme-dark .bottom-pill-nav {
-  /* iOS dark tab bar: warm graphite, not pure black */
-  background: rgba(28, 28, 30, 0.88);
+  background: linear-gradient(160deg, #0d0d0d 0%, #000000 60%, #050505 100%);
   border: 1px solid rgba(255, 255, 255, 0.07);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
 }
 
 body.theme-dark .bottom-pill-nav.is-scrolled {
-  background: rgba(22, 22, 24, 0.95);
-  box-shadow: 0 12px 44px rgba(0, 0, 0, 0.72);
+  background: linear-gradient(160deg, #0a0a0a 0%, #000000 70%, #030303 100%);
+  box-shadow: 0 12px 44px rgba(0, 0, 0, 0.9);
 }
 
 /* Active Colours for Icons and Text */
 .bottom-nav-item.is-active,
 .bottom-pill-nav.is-light .bottom-nav-item.is-active {
-  color: #7c3aed !important;
+  color: #007AFF !important;
   text-shadow: none !important;
   transform: none !important;
 }
@@ -1882,18 +1881,18 @@ body.theme-dark .bottom-pill-nav.is-scrolled {
 }
 .bottom-nav-item.is-active .bottom-nav-icon,
 .bottom-pill-nav.is-light .bottom-nav-item.is-active .bottom-nav-icon {
-  stroke: #7c3aed !important;
+  stroke: #007AFF !important;
   filter: none !important;
   opacity: 1 !important;
   animation: none !important;
 }
 
 body.theme-dark .bottom-nav-item.is-active {
-  color: #bf7cf8 !important;
+  color: #007AFF !important;
   text-shadow: none !important;
 }
 body.theme-dark .bottom-nav-item.is-active .bottom-nav-icon {
-  stroke: #bf7cf8 !important;
+  stroke: #007AFF !important;
   filter: none !important;
 }
 
@@ -1936,8 +1935,8 @@ body.theme-dark .bottom-pill-nav::after {
 
 @media (max-width: 1024px) {
   body.has-bottom-nav {
-    /* Full-width mobile nav sits flush at bottom: ~56px tap area + safe area */
-    padding-bottom: calc(64px + env(safe-area-inset-bottom));
+    /* Full-width mobile nav sits flush at bottom: ~56px tap area + 30px gap + safe area */
+    padding-bottom: calc(94px + env(safe-area-inset-bottom));
   }
 
   .bottom-pill-nav {
@@ -1953,8 +1952,8 @@ body.theme-dark .bottom-pill-nav::after {
     border-radius: 0;
     border: 0;
     border-top: 1px solid rgba(60, 60, 67, 0.12);
-    background: rgba(249, 249, 249, 0.94);
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+    background: linear-gradient(160deg, #0d0d0d 0%, #000000 60%, #050505 100%);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
   }
@@ -1964,16 +1963,15 @@ body.theme-dark .bottom-pill-nav::after {
   }
 
   .bottom-pill-nav.is-light {
-    background: rgba(255, 255, 255, 0.98);
+    background: #ffffff;
     border-top: 1px solid rgba(15, 23, 42, 0.1);
     box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.1);
   }
 
   body.theme-dark .bottom-pill-nav {
-    /* iOS dark tab bar — warm graphite, not pure black */
-    background: rgba(28, 28, 30, 0.92);
+    background: linear-gradient(160deg, #0d0d0d 0%, #000000 60%, #050505 100%);
     border-top: 1px solid rgba(255, 255, 255, 0.07);
-    box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.8);
     backdrop-filter: blur(24px) saturate(180%);
     -webkit-backdrop-filter: blur(24px) saturate(180%);
   }
