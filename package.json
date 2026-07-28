@@ -27,6 +27,8 @@
     "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
-    "@types/react-transition-group": "^4.4.12"
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/react-transition-group": "^4.4.12",
+    "tailwindcss": "^4.3.3"
   }
 }

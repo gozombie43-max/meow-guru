@@ -112,6 +112,8 @@ html {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   min-height: 100%;
+  /* Prevent horizontal bounce on iOS */
+  overscroll-behavior-x: none;
 }
 
 body {
@@ -119,11 +121,16 @@ body {
   color: var(--text-primary);
   font-family: 'Georgia', 'Palatino', serif;
   overflow-x: hidden;
-  overflow-y: visible;
+  /* Must be auto (not visible) on mobile for scroll to work correctly */
+  overflow-y: auto;
   min-height: 100%;
+  /* iOS momentum scrolling */
+  -webkit-overflow-scrolling: touch;
   /* iOS font smoothing */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Prevent horizontal bounce on iOS */
+  overscroll-behavior-x: none;
 }
 
 .page-transition-shell {
@@ -1424,7 +1431,8 @@ button:active:not(:disabled) {
 /* ========== Bottom Pill Navigation ========== */
 
 body.has-bottom-nav {
-  padding-bottom: calc(98px + env(safe-area-inset-bottom));
+  /* Desktop pill nav: 18px gap + ~60px nav + safe area */
+  padding-bottom: calc(90px + env(safe-area-inset-bottom));
 }
 
 .bottom-pill-nav {
@@ -1440,11 +1448,11 @@ body.has-bottom-nav {
   gap: 2px;
   align-items: center;
   border-radius: 999px;
-  background: linear-gradient(135deg, rgba(32, 36, 70, 0.78), rgba(22, 26, 54, 0.8));
-  border: 1px solid rgba(150, 160, 255, 0.28);
-  box-shadow: 0 14px 28px rgba(5, 12, 28, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.18);
-  backdrop-filter: blur(8px) saturate(160%);
-  -webkit-backdrop-filter: blur(8px) saturate(160%);
+  background: rgba(36, 36, 40, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.36), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
   transition: backdrop-filter 220ms ease, background 220ms ease, box-shadow 220ms ease, border 220ms ease;
 }
 
@@ -1453,8 +1461,8 @@ body.has-bottom-nav {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), inset 0 -1px 0 rgba(255, 255, 255, 0.12);
-  opacity: 0.9;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+  opacity: 1;
   pointer-events: none;
 }
 
@@ -1469,11 +1477,11 @@ body.has-bottom-nav {
 }
 
 .bottom-pill-nav.is-scrolled {
-  backdrop-filter: blur(24px) saturate(170%);
-  -webkit-backdrop-filter: blur(24px) saturate(170%);
-  background: linear-gradient(135deg, rgba(36, 40, 82, 0.92), rgba(18, 22, 52, 0.9));
-  box-shadow: 0 18px 36px rgba(5, 12, 28, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.3);
-  border: 1px solid rgba(165, 175, 255, 0.38);
+  backdrop-filter: blur(32px) saturate(200%);
+  -webkit-backdrop-filter: blur(32px) saturate(200%);
+  background: rgba(30, 30, 34, 0.92);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.48), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .bottom-pill-nav.is-light.is-scrolled {
@@ -1604,27 +1612,27 @@ body.has-bottom-nav {
 }
 
 body.theme-dark .bottom-pill-nav {
-  background: linear-gradient(135deg, #2e1c56, #171432);
-  border: 1px solid rgba(150, 128, 255, 0.4);
-  box-shadow: 0 16px 32px rgba(8, 6, 24, 0.48), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  background: rgba(28, 28, 30, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.52), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 body.theme-dark .bottom-pill-nav.is-scrolled {
-  background: linear-gradient(135deg, #392066, #16122c);
-  box-shadow: 0 22px 44px rgba(4, 4, 14, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  background: rgba(22, 22, 24, 0.94);
+  box-shadow: 0 22px 48px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.11);
 }
 
 body.theme-dark .bottom-nav-item {
-  color: rgba(233, 231, 255, 0.92);
+  color: rgba(235, 235, 245, 0.75);
 }
 
 body.theme-dark .bottom-nav-item.is-active {
-  color: #a855f7;
+  color: #bf7cf8;
   text-shadow: none;
 }
 
 body.theme-dark .bottom-nav-item.is-active .bottom-nav-icon {
-  stroke: #a855f7;
+  stroke: #bf7cf8;
   filter: none;
 }
 
@@ -1821,14 +1829,14 @@ body.theme-dark .theme-switch {
 .bottom-nav-center-btn svg { width: 24px; height: 24px; stroke: white; fill: none; }
 body.theme-dark .bottom-nav-center-btn { box-shadow: 0 4px 14px rgba(168, 85, 247, 0.4); }
 
-/* Overrides to match the design EXACTLY */
+/* Overrides — iOS-style grey-dark frosted glass */
 .bottom-pill-nav {
   padding: 6px 10px;
   width: min(88vw, 360px);
   gap: 0px;
-  background: rgba(255, 255, 255, 0.98);
-  border: 1px solid rgba(0, 0, 0, 0.04);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.97);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   transition: transform 220ms ease, opacity 220ms ease, background 220ms ease, box-shadow 220ms ease;
 }
 .bottom-pill-nav::before { display: none; }
@@ -1840,20 +1848,24 @@ body.theme-dark .bottom-nav-center-btn { box-shadow: 0 4px 14px rgba(168, 85, 24
 }
 
 .bottom-pill-nav.is-light {
-  background: white;
-  border: none;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  background: rgba(255, 255, 255, 0.97);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
 }
 .bottom-pill-nav.is-light::before { display: none; }
 
 body.theme-dark .bottom-pill-nav {
-  background: #000;
-  border: none;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.72);
+  /* iOS dark tab bar: warm graphite, not pure black */
+  background: rgba(28, 28, 30, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
 }
 
 body.theme-dark .bottom-pill-nav.is-scrolled {
-  background: #000;
+  background: rgba(22, 22, 24, 0.95);
+  box-shadow: 0 12px 44px rgba(0, 0, 0, 0.72);
 }
 
 /* Active Colours for Icons and Text */
@@ -1877,41 +1889,44 @@ body.theme-dark .bottom-pill-nav.is-scrolled {
 }
 
 body.theme-dark .bottom-nav-item.is-active {
-  color: #a855f7 !important;
+  color: #bf7cf8 !important;
   text-shadow: none !important;
 }
 body.theme-dark .bottom-nav-item.is-active .bottom-nav-icon {
-  stroke: #a855f7 !important;
+  stroke: #bf7cf8 !important;
   filter: none !important;
 }
 
 /* Reset hover states that might conflict */
 .bottom-nav-item {
-  color: #a0a0a0;
+  color: #8e8e93; /* iOS secondaryLabel grey */
   padding: 7px 0 12px 0;
   font-size: 0.62rem;
 }
+body.theme-dark .bottom-nav-item {
+  color: rgba(235, 235, 245, 0.55); /* iOS dark secondaryLabel */
+}
 .bottom-pill-nav.is-light .bottom-nav-item {
-  color: #71717a;
+  color: #8e8e93;
 }
 .bottom-pill-nav.is-light .bottom-nav-item:not(.is-active):hover {
-  color: #3f3f46;
+  color: #3a3a3c;
 }
 
-/* Base Pill Line Indicator */
+/* iOS-style home indicator line */
 .bottom-pill-nav::after {
   content: '';
   position: absolute;
-  bottom: 8px;
+  bottom: 7px;
   left: 50%;
   transform: translateX(-50%);
   width: 108px;
   height: 4px;
-  background: #d4d4d8;
+  background: rgba(60, 60, 67, 0.18);
   border-radius: 4px;
 }
 body.theme-dark .bottom-pill-nav::after {
-  background: #18181b;
+  background: rgba(235, 235, 245, 0.18);
 }
 
 /* Center Button Override */
@@ -1921,7 +1936,8 @@ body.theme-dark .bottom-pill-nav::after {
 
 @media (max-width: 1024px) {
   body.has-bottom-nav {
-    padding-bottom: calc(82px + env(safe-area-inset-bottom));
+    /* Full-width mobile nav sits flush at bottom: ~56px tap area + safe area */
+    padding-bottom: calc(64px + env(safe-area-inset-bottom));
   }
 
   .bottom-pill-nav {
@@ -1936,11 +1952,11 @@ body.theme-dark .bottom-pill-nav::after {
     overflow: visible;
     border-radius: 0;
     border: 0;
-    border-top: 1px solid rgba(15, 23, 42, 0.1);
-    background: rgba(255, 255, 255, 0.98);
-    box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.1);
-    backdrop-filter: blur(18px) saturate(160%);
-    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    border-top: 1px solid rgba(60, 60, 67, 0.12);
+    background: rgba(249, 249, 249, 0.94);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
   }
 
   .bottom-pill-nav.is-hidden {
@@ -1954,11 +1970,12 @@ body.theme-dark .bottom-pill-nav::after {
   }
 
   body.theme-dark .bottom-pill-nav {
-    background: #000;
-    border-top: 1px solid #101014;
-    box-shadow: 0 -10px 28px rgba(0, 0, 0, 0.72);
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
+    /* iOS dark tab bar — warm graphite, not pure black */
+    background: rgba(28, 28, 30, 0.92);
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
   }
 
   .bottom-pill-nav::after {
@@ -1998,36 +2015,17 @@ body.theme-dark .bottom-pill-nav::after {
   }
 }
 
-/* Universal gap fix for bottom navigation in dark mode */
+/* Dark mode background */
 body.theme-dark {
   background-color: #121214;
 }
 
-/* Universal gap fix for bottom navigation across the entire app */
-body.has-bottom-nav [class*="min-h-screen"] {
-  min-height: calc(100vh - 84px);
-}
-body.has-bottom-nav [class*="h-screen"] {
-  height: calc(100vh - 84px);
-}
-@media (max-width: 1024px) {
-  body.has-bottom-nav [class*="min-h-screen"] { min-height: calc(100vh - 74px); }
-  body.has-bottom-nav [class*="h-screen"] { height: calc(100vh - 74px); }
-}
-@media (max-width: 540px) {
-  body.has-bottom-nav [class*="min-h-screen"] { min-height: calc(100vh - 76px); }
-  body.has-bottom-nav [class*="h-screen"] { height: calc(100vh - 76px); }
-}
-
-body.has-bottom-nav .videos-page, body.has-bottom-nav .dashboard-shell {
-  min-height: calc(100vh - 84px) !important;
+/* Ensure the page content scrolls naturally above the fixed nav.
+   Use padding-bottom on body (set above) rather than shrinking heights,
+   which blocks natural scroll on mobile. */
+body.has-bottom-nav .videos-page,
+body.has-bottom-nav .dashboard-shell {
   height: auto !important;
-}
-@media (max-width: 1024px) {
-  body.has-bottom-nav .videos-page, body.has-bottom-nav .dashboard-shell { min-height: calc(100vh - 74px) !important; }
-}
-@media (max-width: 540px) {
-  body.has-bottom-nav .videos-page, body.has-bottom-nav .dashboard-shell { min-height: calc(100vh - 76px) !important; }
 }
 
 /* Markdown Table Styles */
