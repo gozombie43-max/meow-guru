@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
   images: {
@@ -11,10 +12,9 @@ const nextConfig: NextConfig = {
     ],
   },
   turbopack: {
-    // Pin root to the frontend dir so Turbopack doesn't pick the parent
-    // monorepo package.json as the workspace root (avoids tailwindcss
-    // resolution errors and the "multiple lockfiles" warning).
-    root: "C:\\Users\\91906\\Ai ssc\\frontend",
+    // Use __dirname so this resolves correctly on any OS / CI environment.
+    // The hardcoded Windows path broke Azure Linux builds.
+    root: path.resolve(__dirname),
   },
 };
 
