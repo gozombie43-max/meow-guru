@@ -620,35 +620,6 @@ export default function StudyModeQuizEngine() {
             </section>
           </div>
 
-          {/* Bottom Apple Status Bar (PC & Mobile) */}
-          <footer className="macos-status-bar">
-            <div className="status-left">
-              <span>Entry {currentPage} of {totalCards}</span>
-            </div>
-
-            <div className="status-center">
-              <span>Desktop keyboard navigation: Use <kbd>←</kbd> <kbd>→</kbd> arrow keys</span>
-            </div>
-
-            <div className="status-right">
-              <button
-                type="button"
-                className="status-btn"
-                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-                disabled={currentPage === 1}
-              >
-                Previous
-              </button>
-              <button
-                type="button"
-                className="status-btn"
-                onClick={() => setCurrentPage((prev) => Math.min(totalCards, prev + 1))}
-                disabled={currentPage === totalCards}
-              >
-                Next
-              </button>
-            </div>
-          </footer>
         </div>
       </div>
 
@@ -1178,6 +1149,21 @@ export default function StudyModeQuizEngine() {
 
           .dictionary-body-scroll::-webkit-scrollbar { width: 6px; }
           .dictionary-body-scroll::-webkit-scrollbar-thumb { background: rgba(150, 150, 150, 0.3); border-radius: 10px; }
+
+          .dict-word-profile {
+            flex-direction: row;
+            align-items: flex-start;
+            gap: 40px;
+          }
+
+          .word-heading-line {
+            flex: 0 0 auto;
+            max-width: 35%;
+          }
+
+          .meanings-container {
+            flex: 1 1 auto;
+          }
 
           /* Apple Tables Grid */
           .apple-tables-grid {
