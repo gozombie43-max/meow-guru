@@ -5,6 +5,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Swords, Copy, Check, Zap, Target } from "lucide-react";
 import RichContent from "@/components/RichContent";
 import { getSocket } from "@/lib/socket";
+import { useAuth } from "@/context/AuthContext";
+import "./battle.css";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 type BattleState = "lobby" | "waiting" | "playing" | "finished";
@@ -62,7 +64,7 @@ const TOPICS_BY_SUBJECT: Record<string, TopicOption[]> = {
   "general-awareness": [{ value: "all", label: "All Topics", shortLabel: "All", icon: "ALL" }],
 };
 
-const QUESTION_COUNTS = [10, 20, 50, 100];
+const QUESTION_COUNTS = [10, 15, 25, 50];
 
 // ── Score Bar ────────────────────────────────────────────────────────────────
 function ScoreBar({
@@ -290,6 +292,7 @@ function Confetti() {
    MAIN BATTLE PAGE
    ════════════════════════════════════════════════════════════════════════════ */
 export default function BattlePage() {
+  const { user } = useAuth();
   const [battleState, setBattleState]   = useState<BattleState>("lobby");
   const [playerName, setPlayerName]     = useState("");
   const [roomCode, setRoomCode]         = useState("");
@@ -310,7 +313,15 @@ export default function BattlePage() {
   const [opponentAnswer, setOpponentAnswer] = useState<string | null>(null);
   const [mySocketId, setMySocketId]     = useState("");
   const [isWinner, setIsWinner]         = useState(false);
+  const [playTab, setPlayTab]           = useState<"create" | "join">("create");
+  const [pickerType, setPickerType]     = useState<"subject" | "topic" | null>(null);
   const activeCode = roomCode || joinCode;
+
+  useEffect(() => {
+    if (user?.name) {
+      setPlayerName(prev => prev || user.name);
+    }
+  }, [user]);
 
   const normalizeJoinCode = (value: string) => value.replace(/\D/g, "").slice(0, 4);
 
@@ -447,126 +458,211 @@ export default function BattlePage() {
 
   // ── Lobby ───────────────────────────────────────────────────────────────────
   if (battleState === "lobby") return (
-    <div className="min-h-screen relative overflow-hidden battle-theme battle-lobby">
-      <div className="battle-glow battle-glow-1" />
-      <div className="battle-glow battle-glow-2" />
+    <div className="battle-container">
+      {/* Desktop Topbar */}
+      <div className="desktop-topbar desktop-only">
+        <div className="desktop-topbar-inner">
+          <button className="desktop-back-link">
+            <svg viewBox="0 0 8 14" fill="none"><path d="M7 1L1 7L7 13" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            Battle
+          </button>
+          <span className="desktop-topbar-title">1v1 Setup</span>
+        </div>
+      </div>
 
-      <div className="relative z-10 mx-auto max-w-md px-5 pt-10 pb-10">
-        <motion.div className="battle-topbar"
-          initial={{ opacity: 0, y: -14 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45 }}>
-          <span className="battle-back">&lt;</span>
-          <span className="battle-title">1v1 Battle Setup</span>
-        </motion.div>
+      <div className="device">
+        <div className="navbar mobile-only">
+          <div className="navbar-row">
+            <button className="nav-back">
+              <svg viewBox="0 0 11 19" fill="none"><path d="M9.5 1.5L1.5 9.5L9.5 17.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            </button>
+            <div className="nav-title-inline">1v1 Setup</div>
+          </div>
+        </div>
 
-        <motion.div className="battle-panel"
-          initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}>
-
-          <div className="mb-4">
-            <label className="battle-label block mb-2">Player Name</label>
-            <input
-              className="battle-input"
-              placeholder="Enter name..."
-              value={playerName}
-              onChange={e => { setPlayerName(e.target.value); setError(""); }}
-              maxLength={20}
-            />
+        <div className="content">
+          {/* Desktop Page Head */}
+          <div className="desktop-page-head desktop-only">
+            <h1 className="desktop-page-title">1v1 Battle Setup</h1>
+            <p className="desktop-page-sub">Configure your match, then create a room or join one with a code.</p>
           </div>
 
-          <div className="mb-4">
-            <label className="battle-label block mb-2">Subject</label>
-            <div className="relative">
-              <select
-                className="battle-input w-full pr-10"
-                value={subject}
-                onChange={(e) => { setSubject(e.target.value); setTopic("all"); }}
-              >
-                {SUBJECTS.map(s => (
-                  <option key={s.value} value={s.value}>{s.label}</option>
-                ))}
-              </select>
-              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-amber-200 text-sm">▾</span>
+          <div className="layout-grid">
+            {/* LEFT COLUMN: Match Settings */}
+            <div className="left-col">
+              <div className="section-header">Match Setup</div>
+          <div className="group">
+            <div className="row">
+              <div className="icon-chip" style={{ background: "var(--scarlet)" }}>
+                <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="white" strokeWidth="2"/><path d="M4 20c0-4 3.6-6 8-6s8 2 8 6" stroke="white" strokeWidth="2" strokeLinecap="round"/></svg>
+              </div>
+              <span className="row-label">Name</span>
+              <input className="row-input" type="text" placeholder="Enter name" value={playerName} onChange={e => { setPlayerName(e.target.value); setError(""); }} maxLength={20} />
+            </div>
+            <div className="row">
+              <div className="icon-chip" style={{ background: "var(--violet)" }}>
+                <svg viewBox="0 0 24 24" fill="none"><path d="M6 4h12M6 12h12M6 20h8" stroke="white" strokeWidth="2" strokeLinecap="round"/></svg>
+              </div>
+              <span className="row-label">Subject</span>
+              <button type="button" className="row-value-btn" onClick={() => setPickerType("subject")}>
+                {SUBJECTS.find(s => s.value === subject)?.label}
+                <svg className="chevron" viewBox="0 0 8 13" fill="none"><path d="M1.5 1.5l5 5-5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </button>
+            </div>
+            <div className="row">
+              <div className="icon-chip" style={{ background: "var(--teal)" }}>
+                <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="7" height="7" rx="1.5" stroke="white" strokeWidth="2"/><rect x="13" y="4" width="7" height="7" rx="1.5" stroke="white" strokeWidth="2"/><rect x="4" y="13" width="7" height="7" rx="1.5" stroke="white" strokeWidth="2"/><rect x="13" y="13" width="7" height="7" rx="1.5" stroke="white" strokeWidth="2"/></svg>
+              </div>
+              <span className="row-label">Topic</span>
+              <button type="button" className="row-value-btn" onClick={() => setPickerType("topic")}>
+                {topicOptions.find(t => t.value === topic)?.label}
+                <svg className="chevron" viewBox="0 0 8 13" fill="none"><path d="M1.5 1.5l5 5-5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </button>
             </div>
           </div>
+          <div className="picker-hint">Tap Subject or Topic to choose from a list</div>
 
-          <div className="mb-4">
-            <label className="battle-label block mb-2">Topic</label>
-            <div className="relative">
-              <select
-                className="battle-input w-full pr-10"
-                value={topic}
-                onChange={(e) => setTopic(e.target.value)}
-              >
-                {topicOptions.map(t => (
-                  <option key={t.value} value={t.value}>{t.label}</option>
-                ))}
-              </select>
-              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-amber-200 text-sm">▾</span>
-            </div>
-          </div>
-
-          <div className="mb-4">
-            <label className="battle-label block mb-3 text-center">Questions</label>
-            <div className="battle-counts">
+          <div className="section-header" style={{ marginTop: 24 }}>Questions</div>
+          <div className="segmented-wrap">
+            <div className="segmented">
               {QUESTION_COUNTS.map(count => (
                 <button
                   key={count}
                   type="button"
                   onClick={() => setQuestionCount(count)}
-                  className={`battle-count-btn ${questionCount === count ? "is-active" : ""}`}
+                  className={`segment ${questionCount === count ? "active" : ""}`}
                 >
                   {count}
                 </button>
               ))}
             </div>
           </div>
+        </div>
 
-          <div className="battle-helper">
-            <span className="battle-info-dot">i</span>
-            <span>Game Focus: {questionCount} {subjectLabel} Focus</span>
-          </div>
-          <div className="battle-focus">* {questionCount} Questions</div>
-          <div className="battle-feature">
-            <span className="battle-chip">Feature: Reaction Core</span>
-          </div>
-
-          <div className="mt-5 space-y-3">
-            <button onClick={createRoom} className="battle-btn battle-btn-primary battle-cta w-full">
-              <span>Create Battle Room</span>
-              <small>Create Battle in 1v1 mode</small>
-            </button>
-
-            <button onClick={joinRoom} className="battle-btn battle-btn-primary battle-join-btn w-full">
-              Join
-            </button>
-
-            <div className="mt-2">
-              <label className="battle-label block mb-2">Enter Code:</label>
-              <input
-                className="battle-input font-mono font-bold tracking-widest uppercase text-center"
-                placeholder="Code..."
-                value={joinCode}
-                onChange={e => { setJoinCode(normalizeJoinCode(e.target.value)); setError(""); }}
-                maxLength={4}
-              />
+        {/* RIGHT COLUMN: Play Card */}
+        <div className="play-col">
+          <div className="section-header mobile-only" style={{ marginTop: 8 }}>Play</div>
+          
+          <div className="play-card">
+            <div className="play-tabs">
+              <button 
+                className={`play-tab ${playTab === "create" ? "active-create" : ""}`} 
+                onClick={() => setPlayTab("create")}
+              >
+                Create Room
+              </button>
+              <button 
+                className={`play-tab ${playTab === "join" ? "active-join" : ""}`} 
+                onClick={() => setPlayTab("join")}
+              >
+                Join Room
+              </button>
             </div>
+
+            {playTab === "create" && (
+              <div className="panel panel-create">
+                <div className="panel-icon" style={{ background: "var(--ios-blue)" }}>
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="white" strokeWidth="2.4" strokeLinecap="round"/></svg>
+                </div>
+                <div className="panel-title">Host a new match</div>
+                <div className="panel-sub">Set the rules, share the code, and battle starts the moment they join.</div>
+                <button className="panel-btn create" onClick={createRoom}>Create Battle Room</button>
+              </div>
+            )}
+
+            {playTab === "join" && (
+              <div className="panel panel-join">
+                <div className="panel-title">Enter room code</div>
+                <div className="panel-sub">Ask your opponent for their 4-character code.</div>
+                <div className="otp-row">
+                  {[0, 1, 2, 3].map((index) => (
+                    <input
+                      key={index}
+                      id={`otp-${index}`}
+                      className="otp-cell"
+                      maxLength={1}
+                      inputMode="text"
+                      value={joinCode[index] || ""}
+                      onChange={(e) => {
+                        const val = e.target.value.toUpperCase();
+                        let newCode = joinCode.split('');
+                        newCode[index] = val;
+                        setJoinCode(newCode.join('').slice(0, 4));
+                        setError("");
+                        if (val && index < 3) {
+                          document.getElementById(`otp-${index + 1}`)?.focus();
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Backspace' && !joinCode[index] && index > 0) {
+                          document.getElementById(`otp-${index - 1}`)?.focus();
+                        }
+                      }}
+                    />
+                  ))}
+                </div>
+                <button className="panel-btn join" onClick={joinRoom}>Join Room</button>
+              </div>
+            )}
           </div>
 
           <AnimatePresence>
             {error && (
-              <motion.div className="battle-error mt-3"
+              <motion.div className="mt-3 text-red-500 text-sm text-center font-medium"
                 initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
                 {error}
               </motion.div>
             )}
           </AnimatePresence>
-        </motion.div>
-
-        <div className="battle-footer">
-          <div>+10 Questions</div>
-          <div>10 Questions, +10 XP</div>
         </div>
+      </div>
+    </div>
+    
+    {/* iOS-Style Picker Modal */}
+        <AnimatePresence>
+          {pickerType && (
+            <>
+              <motion.div 
+                className="ios-modal-backdrop"
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                onClick={() => setPickerType(null)}
+              />
+              <motion.div 
+                className="ios-action-sheet"
+                initial={{ scale: 0.95, opacity: 0, x: "-50%", y: "-45%" }} 
+                animate={{ scale: 1, opacity: 1, x: "-50%", y: "-50%" }} 
+                exit={{ scale: 0.95, opacity: 0, x: "-50%", y: "-45%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              >
+                <div className="ios-action-sheet-header">
+                  <h3>Select {pickerType === "subject" ? "Subject" : "Topic"}</h3>
+                  <button type="button" onClick={() => setPickerType(null)}>Done</button>
+                </div>
+                <div className="ios-action-sheet-content">
+                  {(pickerType === "subject" ? SUBJECTS : topicOptions).map(opt => {
+                    const isSelected = (pickerType === "subject" ? subject : topic) === opt.value;
+                    return (
+                      <button 
+                        key={opt.value}
+                        type="button"
+                        className={`ios-action-sheet-item ${isSelected ? "selected" : ""}`}
+                        onClick={() => {
+                          if (pickerType === "subject") { setSubject(opt.value); setTopic("all"); }
+                          else { setTopic(opt.value); }
+                          setPickerType(null);
+                        }}
+                      >
+                        {opt.label}
+                        {isSelected && <Check className="w-5 h-5 text-blue-500" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
       </div>
     </div>
   );
