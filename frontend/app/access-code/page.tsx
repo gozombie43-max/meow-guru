@@ -15,6 +15,7 @@ export default function AccessCodePage() {
   const [loading, setLoading] = useState(false);
   const [shaking, setShaking] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [attempts, setAttempts] = useState(0);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   // Must wait for mount before using portal (SSR safety)
@@ -47,6 +48,7 @@ export default function AccessCodePage() {
   }, []);
 
   const verifyCode = useCallback(async (code: string) => {
+    if (attempts >= 3) return;
     setLoading(true);
     setError('');
 
@@ -69,7 +71,13 @@ export default function AccessCodePage() {
           router.push('/');
         }, 600);
       } else {
-        setError(data.error || 'Invalid access code');
+        const newAttempts = attempts + 1;
+        setAttempts(newAttempts);
+        if (newAttempts >= 3) {
+          setError('Maximum attempts reached. Contact your instructor.');
+        } else {
+          setError(data.error || 'Invalid access code');
+        }
         triggerShake();
         setLoading(false);
         // Clear inputs after error
@@ -110,9 +118,11 @@ export default function AccessCodePage() {
         return next;
       });
 
-      setError('');
+      if (attempts < 3) {
+        setError('');
+      }
     },
-    [verifyCode]
+    [verifyCode, attempts]
   );
 
   const handleKeyDown = useCallback(
@@ -141,6 +151,7 @@ export default function AccessCodePage() {
   const handlePaste = useCallback(
     (e: React.ClipboardEvent) => {
       e.preventDefault();
+      if (attempts >= 3) return;
       const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, CODE_LENGTH);
       if (!pasted) return;
 
@@ -220,7 +231,7 @@ export default function AccessCodePage() {
               onChange={(e) => handleChange(i, e.target.value)}
               onKeyDown={(e) => handleKeyDown(i, e)}
               onPaste={i === 0 ? handlePaste : undefined}
-              disabled={loading || success}
+              disabled={loading || success || attempts >= 3}
               className={`${styles.codeInput} ${
                 error ? styles.codeInputError : ''
               } ${success ? styles.codeInputSuccess : ''}`}
@@ -250,7 +261,7 @@ export default function AccessCodePage() {
         {/* Continue button */}
         <button
           className={styles.continueBtn}
-          disabled={!allFilled || loading || success}
+          disabled={!allFilled || loading || success || attempts >= 3}
           onClick={handleSubmit}
         >
           {loading ? (
