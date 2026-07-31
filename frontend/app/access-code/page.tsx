@@ -107,7 +107,7 @@ export default function AccessCodePage() {
       triggerShake();
       setLoading(false);
     }
-  }, [router, triggerShake]);
+  }, [router, triggerShake, attempts]);
 
   const handleChange = useCallback(
     (index: number, value: string) => {
