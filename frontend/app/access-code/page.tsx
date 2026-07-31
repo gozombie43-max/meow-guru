@@ -39,7 +39,20 @@ export default function AccessCodePage() {
 
   // Focus first input on mount
   useEffect(() => {
-    if (mounted) inputRefs.current[0]?.focus();
+    if (mounted) {
+      const blockUntil = localStorage.getItem('accessCodeBlockUntil');
+      if (blockUntil) {
+        const blockTime = parseInt(blockUntil, 10);
+        if (blockTime > Date.now()) {
+          setAttempts(3);
+          setError('Maximum attempts reached. Try again in 24 hours.');
+          return;
+        } else {
+          localStorage.removeItem('accessCodeBlockUntil');
+        }
+      }
+      inputRefs.current[0]?.focus();
+    }
   }, [mounted]);
 
   const triggerShake = useCallback(() => {
@@ -76,7 +89,8 @@ export default function AccessCodePage() {
         const newAttempts = attempts + 1;
         setAttempts(newAttempts);
         if (newAttempts >= 3) {
-          setError('Maximum attempts reached. Contact your instructor.');
+          localStorage.setItem('accessCodeBlockUntil', (Date.now() + 24 * 60 * 60 * 1000).toString());
+          setError('Maximum attempts reached. Try again in 24 hours.');
         } else {
           setError(data.error || 'Invalid access code');
         }
