@@ -68,7 +68,7 @@ export default function AccessCodePage() {
         setLoading(false);
         // Brief success animation, then redirect
         setTimeout(() => {
-          router.push('/');
+          window.location.href = '/';
         }, 600);
       } else {
         const newAttempts = attempts + 1;
