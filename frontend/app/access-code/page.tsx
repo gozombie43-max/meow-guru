@@ -64,6 +64,8 @@ export default function AccessCodePage() {
       const data = await res.json();
 
       if (data.valid) {
+        // Set the cookie on the frontend domain so proxy.ts can read it
+        document.cookie = 'access_session=1; path=/; max-age=2592000';
         setSuccess(true);
         setLoading(false);
         // Brief success animation, then redirect
