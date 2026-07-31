@@ -63,6 +63,7 @@ export default function AccessCodePage() {
 
       if (data.valid) {
         setSuccess(true);
+        setLoading(false);
         // Brief success animation, then redirect
         setTimeout(() => {
           router.push('/');
