@@ -382,14 +382,7 @@ export default function StudyModeQuizEngine() {
                 </svg>
               </button>
 
-              {/* Mobile back button */}
-              <button
-                type="button"
-                className="mobile-back-btn"
-                onClick={() => router.push("/english/synonyms-antonyms/study-mode")}
-              >
-                <span>Exit</span>
-              </button>
+
             </div>
 
             <div className="toolbar-center">
@@ -745,14 +738,6 @@ export default function StudyModeQuizEngine() {
 
         .nav-arrow svg { width: 16px; height: 16px; }
 
-        .mobile-back-btn {
-          border: none;
-          background: none;
-          color: var(--system-blue);
-          font-size: 15px;
-          font-weight: 600;
-          padding: 4px;
-        }
 
         .apple-segmented-control {
           display: none;
@@ -1112,7 +1097,7 @@ export default function StudyModeQuizEngine() {
           .sidebar-empty { padding: 20px; text-align: center; color: var(--text-muted); font-size: 13px; }
 
           /* ── Main Workspace ── */
-          .mobile-back-btn { display: none; }
+
           .mobile-toolbar-title { display: none; }
           .mobile-grid-btn { display: none; }
           .mobile-suite { display: none; }
