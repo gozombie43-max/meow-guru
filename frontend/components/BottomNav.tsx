@@ -37,6 +37,7 @@ export default function BottomNav() {
     isAccessCodeRoute;
   const { theme } = useThemeMode();
   const lightSurfacePrefixes = [
+    '/',
     '/mathematics',
     '/reasoning',
     '/english',
