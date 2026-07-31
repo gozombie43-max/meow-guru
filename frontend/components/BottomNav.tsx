@@ -27,12 +27,14 @@ export default function BottomNav() {
   const isFormulaNotesRoute =
     formulaNotesSubjects.some((prefix) => normalizedPathname.startsWith(prefix)) &&
     normalizedPathname.endsWith('/formula-notes');
+  const isAccessCodeRoute = pathname === '/access-code' || pathname.startsWith('/access-code/');
   const shouldHideNav =
     isQuizRoute ||
     isNotesViewRoute ||
     isFormulaNotesRoute ||
     isResourceRoute ||
-    isStudyModeRoute;
+    isStudyModeRoute ||
+    isAccessCodeRoute;
   const { theme } = useThemeMode();
   const lightSurfacePrefixes = [
     '/mathematics',

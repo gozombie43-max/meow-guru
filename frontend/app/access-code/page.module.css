@@ -1,0 +1,302 @@
+/* ========== Access Code Page — iOS Dark Glass ========== */
+
+.pageWrapper {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0a0a0f;
+  background-image:
+    radial-gradient(ellipse at 20% 0%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(6, 182, 212, 0.10) 0%, transparent 50%);
+  padding: 24px 16px;
+  z-index: 9999;
+  overflow-y: auto;
+}
+
+/* ===== glass card ===== */
+.card {
+  width: 100%;
+  max-width: 380px;
+  background: rgba(28, 28, 30, 0.85);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 28px;
+  padding: 40px 28px 36px;
+  box-shadow:
+    0 24px 80px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+    0 1px 0 rgba(255, 255, 255, 0.06) inset;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ===== brand lockup ===== */
+.brandLockup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 32px;
+}
+
+.brandWord {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 800;
+  font-size: 19px;
+  letter-spacing: -0.3px;
+  line-height: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.brandStudy {
+  color: #6366f1;
+}
+
+.brandGuru {
+  color: #ffffff;
+}
+
+/* ===== heading ===== */
+.title {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: #ffffff;
+  text-align: center;
+  letter-spacing: -0.4px;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  font-size: 15px;
+  color: #8e8e93;
+  text-align: center;
+  line-height: 1.45;
+  max-width: 280px;
+  margin-bottom: 36px;
+}
+
+.subtitleBold {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* ===== 4-digit code entry ===== */
+.codeRow {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.codeInput {
+  width: 58px;
+  height: 70px;
+  background: rgba(44, 44, 46, 0.9);
+  border: 1.5px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+  font-size: 30px;
+  font-weight: 600;
+  color: #ffffff;
+  text-align: center;
+  caret-color: #0a84ff;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
+}
+
+/* Hide number spinner */
+.codeInput::-webkit-inner-spin-button,
+.codeInput::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.codeInput:focus {
+  border-color: rgba(10, 132, 255, 0.6);
+  box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.15), 0 0 20px rgba(10, 132, 255, 0.1);
+}
+
+.codeInput::placeholder {
+  color: rgba(255, 255, 255, 0.12);
+  font-size: 28px;
+}
+
+/* ===== error ===== */
+.errorMsg {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  font-size: 13px;
+  color: #ff453a;
+  text-align: center;
+  min-height: 18px;
+  margin-bottom: 8px;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.errorVisible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ===== success ===== */
+.successMsg {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  font-size: 13px;
+  color: #30d158;
+  text-align: center;
+  min-height: 18px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* ===== shake animation ===== */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+  20%, 40%, 60%, 80% { transform: translateX(4px); }
+}
+
+.shake {
+  animation: shake 0.5s ease;
+}
+
+.codeInputError {
+  border-color: rgba(255, 69, 58, 0.5) !important;
+  box-shadow: 0 0 0 2px rgba(255, 69, 58, 0.15) !important;
+}
+
+/* ===== continue button ===== */
+.continueBtn {
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-radius: 14px;
+  background: #0a84ff;
+  color: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  cursor: pointer;
+  transition: background 0.2s ease, opacity 0.2s ease, transform 0.1s ease;
+  margin-top: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.continueBtn:hover:not(:disabled) {
+  background: #409cff;
+}
+
+.continueBtn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.continueBtn:disabled {
+  background: rgba(44, 44, 46, 0.9);
+  color: #636366;
+  cursor: not-allowed;
+}
+
+/* Loading spinner */
+.spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ===== info text ===== */
+.infoText {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  font-size: 13px;
+  color: #636366;
+  text-align: center;
+  margin-top: 20px;
+  line-height: 1.4;
+}
+
+/* ===== lock icon ===== */
+.lockIcon {
+  width: 48px;
+  height: 48px;
+  background: rgba(99, 102, 241, 0.12);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+/* ===== pulse success glow ===== */
+@keyframes successPulse {
+  0% { box-shadow: 0 0 0 0 rgba(48, 209, 88, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(48, 209, 88, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(48, 209, 88, 0); }
+}
+
+.codeInputSuccess {
+  border-color: rgba(48, 209, 88, 0.5) !important;
+  animation: successPulse 0.6s ease;
+}
+
+/* ===== responsive ===== */
+@media (max-width: 400px) {
+  .card {
+    padding: 32px 20px 28px;
+    border-radius: 24px;
+  }
+
+  .codeInput {
+    width: 52px;
+    height: 64px;
+    font-size: 26px;
+    border-radius: 12px;
+  }
+
+  .codeRow {
+    gap: 10px;
+  }
+
+  .title {
+    font-size: 22px;
+  }
+}
+
+/* ===== fade in page ===== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card {
+  animation: fadeInUp 0.5s ease-out;
+}

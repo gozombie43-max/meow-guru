@@ -45,6 +45,18 @@ export const initUsersDB = async () => {
   return container;
 };
 
+// ── Access Codes Container ──────────────────────────────
+export const initAccessCodesDB = async () => {
+  const { database } = await getClient().databases.createIfNotExists({ id: 'quizDB' });
+
+  const { container } = await database.containers.createIfNotExists({
+    id: 'accessCodes',
+    partitionKey: { paths: ['/code'] },
+  });
+
+  return container;
+};
+
 // ── Notes Container ─────────────────────────────────────
 export const initNotesDB = async () => {
   const { database } = await getClient().databases.createIfNotExists({ id: 'quizDB' });

@@ -9,7 +9,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import passport from './auth/passport.js';
 import { initPassport } from './auth/passport.js';
-import { initDB, initUsersDB, initNotesDB } from './cosmos.js';
+import { initDB, initUsersDB, initNotesDB, initAccessCodesDB } from './cosmos.js';
 import { initAuthRoutes } from './routes/auth.routes.js';
 import { initUserRoutes } from './routes/user.routes.js';
 import questionRoutes from './routes/questionRoutes.js';
@@ -21,9 +21,10 @@ import massUploadSolutions from './routes/massUploadSolutions.js';
 import aiRoutes from './routes/aiRoutes.js';
 import videoRoutes from './routes/videos.js';
 import pdfRoutes from './routes/pdfs.js';
+import accessCodeRoutes from './routes/accessCodes.js';
 import cognitiveMapperRouter from './agents/cognitiveMapperRouter.js';
 import adaptiveQuizRouter from './agents/adaptiveQuiz/adaptiveQuizRouter.js';
-import { setQuestionsContainer, setUsersContainer, setNotesContainer } from './containerStore.js';
+import { setQuestionsContainer, setUsersContainer, setNotesContainer, setAccessCodesContainer } from './containerStore.js';
 import { initBattleSocket } from './battle/battleSocket.js';
 
 const app = express();
@@ -124,13 +125,15 @@ async function connectWithRetry(fn, name, retries = 5, delay = 3000) {
 // ── Init DB + Routes after server is up ───────────────
 async function initWithRetry() {
   try {
-    const questionsContainer = await connectWithRetry(initDB, 'Questions DB');
-    const usersContainer     = await connectWithRetry(initUsersDB, 'Users DB');
-    const notesContainer     = await connectWithRetry(initNotesDB, 'Notes DB');
+    const questionsContainer    = await connectWithRetry(initDB, 'Questions DB');
+    const usersContainer       = await connectWithRetry(initUsersDB, 'Users DB');
+    const notesContainer       = await connectWithRetry(initNotesDB, 'Notes DB');
+    const accessCodesContainer = await connectWithRetry(initAccessCodesDB, 'Access Codes DB');
 
     setQuestionsContainer(questionsContainer);
     setUsersContainer(usersContainer);
     setNotesContainer(notesContainer);
+    setAccessCodesContainer(accessCodesContainer);
 
     initPassport(usersContainer);
 
@@ -149,6 +152,7 @@ async function initWithRetry() {
     app.use('/users', initUserRoutes(usersContainer));
     app.use('/api/videos', videoRoutes);
     app.use('/api/pdfs', pdfRoutes);
+    app.use('/api/access-code', accessCodeRoutes);
 
     console.log('All routes registered ✅');
 
