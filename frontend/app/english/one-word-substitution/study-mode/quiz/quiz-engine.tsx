@@ -1,8 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { BookOpen, Menu, Moon, Sun } from "lucide-react";
-import RichContent from "@/components/RichContent";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { fetchQuestions, type Question as ApiQuestion } from "@/lib/api/questions";
 
 type StudyModeMeaning = {
@@ -18,7 +16,7 @@ type StudyModeEntry = ApiQuestion & {
   answer?: string;
 };
 
-type SubstitutionCard = {
+export type SubstitutionCard = {
   id: string;
   prompt: string;
   answer: string;
@@ -27,19 +25,16 @@ type SubstitutionCard = {
   label?: string;
 };
 
-const DEMO_CARD: SubstitutionCard = {
-  id: "demo",
-  prompt:
-    "An inscription on a tombstone in memory of the person who has died.\n\n" +
-    "Memory hook: \"Epi-\" (upon) + \"taph\" (tomb) - literally, words written upon a tomb.",
-  answer: "Epitaph",
-  definitionTranslation: "সমাধিফলকে মৃত ব্যক্তির স্মরণে লেখা অনুশোচনা বা প্রশস্তি",
-  answerTranslation: "সমাধি-লেখ, স্মৃতি-লেখ",
-  label: "Noun",
-};
-
 const DEMO_CARDS: SubstitutionCard[] = [
-  DEMO_CARD,
+  {
+    id: "demo",
+    prompt:
+      'An inscription on a tombstone in memory of the person who has died.\n\nMemory hook: "Epi-" (upon) + "taph" (tomb) - literally, words written upon a tomb.',
+    answer: "Epitaph",
+    definitionTranslation: "সমাধিফলকে মৃত ব্যক্তির স্মরণে লেখা অনুশোচনা বা প্রশস্তি",
+    answerTranslation: "সমাধি-লেখ, স্মৃতি-লেখ",
+    label: "Study of",
+  },
   {
     id: "demo-bibliophile",
     prompt:
@@ -47,64 +42,40 @@ const DEMO_CARDS: SubstitutionCard[] = [
     answer: "Bibliophile",
     definitionTranslation: "যে ব্যক্তি বই ভালোবাসে এবং সংগ্রহ করে",
     answerTranslation: "গ্রন্থপ্রেমী, বইপ্রেমী",
-    label: "Noun",
+    label: "People",
   },
 ];
 
-const promptFields = [
-  "prompt",
-  "phrase",
-  "question",
-  "definition",
-  "meaning",
-  "clue",
-];
+const promptFields = ["prompt", "phrase", "question", "definition", "meaning", "clue"];
 
 function getFirstString(entry: unknown, keys: string[]): string {
   if (!entry || typeof entry !== "object") return "";
   const record = entry as Record<string, unknown>;
   for (const key of keys) {
     const value = record[key];
-    if (typeof value === "string" && value.trim()) {
-      return value.trim();
-    }
+    if (typeof value === "string" && value.trim()) return value.trim();
   }
   return "";
 }
 
 function toSubstitutionCard(entry: StudyModeEntry, index: number): SubstitutionCard | null {
   const promptFromMeaning = Array.isArray(entry.meanings)
-    ? entry.meanings
-        .map((meaning) => String(meaning?.definition ?? "").trim())
-        .filter(Boolean)[0] ?? ""
+    ? entry.meanings.map((m) => String(m?.definition ?? "").trim()).filter(Boolean)[0] ?? ""
     : "";
 
   const prompt = getFirstString(entry, promptFields) || promptFromMeaning;
-
-  const answer =
-    String(
-      entry.word ||
-        entry.correctAnswer ||
-        entry.answer ||
-        entry.solution ||
-        ""
-    ).trim();
+  const answer = String(entry.word || entry.correctAnswer || entry.answer || entry.solution || "").trim();
 
   if (!prompt || !answer) return null;
 
   const translation = Array.isArray(entry.meanings)
-    ? entry.meanings
-        .map((meaning) => String(meaning?.translation ?? "").trim())
-        .filter(Boolean)[0]
+    ? entry.meanings.map((m) => String(m?.translation ?? "").trim()).filter(Boolean)[0]
     : "";
 
-  const answerTranslation = getFirstString(entry, [
-    "answerTranslation",
-    "wordTranslation",
-    "translation",
-  ]);
-
-  const label = entry.concept ? String(entry.concept).trim() : "";
+  const answerTranslation = getFirstString(entry, ["answerTranslation", "wordTranslation", "translation"]);
+  let label = entry.concept ? String(entry.concept).trim() : "General";
+  
+  if (label.toLowerCase() === "one-word substitution") label = "General";
 
   return {
     id: String(entry.id ?? index + 1),
@@ -116,1232 +87,587 @@ function toSubstitutionCard(entry: StudyModeEntry, index: number): SubstitutionC
   };
 }
 
-/*
-export default function StudyModeQuizEngine() {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [theme, setTheme] = useState<"light" | "dark">(() => {
-    if (typeof window === "undefined") return "dark";
-    const savedTheme = window.localStorage.getItem("study-mode-theme");
-    return savedTheme === "light" || savedTheme === "dark" ? savedTheme : "dark";
-  });
-  const [isPaletteOpen, setIsPaletteOpen] = useState(false);
-  const [cards, setCards] = useState<SubstitutionCard[]>([]);
-  const scrollerRef = useRef<HTMLDivElement>(null);
-  const touchStartXRef = useRef<number | null>(null);
-  const touchStartYRef = useRef<number | null>(null);
+// -------------------------------------------------------------
+// MOBILE VIEW COMPONENTS
+// -------------------------------------------------------------
+function SwipeableCard({ card, isBookmarked, onToggleBookmark }: { card: SubstitutionCard; isBookmarked: boolean; onToggleBookmark: (id: string) => void }) {
+  const [swiped, setSwiped] = useState(false);
+  const startXRef = useRef<number | null>(null);
+  const currentXRef = useRef<number>(0);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const draggingRef = useRef(false);
+  const movedRef = useRef(false);
 
-  const studyCards = cards.length ? cards : DEMO_CARDS;
-  const totalCards = studyCards.length;
-  const currentIndex = Math.min(Math.max(currentPage - 1, 0), totalCards - 1);
-  const activeCard = studyCards[currentIndex];
+  const [definition] = useMemo(() => {
+    const [def] = card.prompt.split(/Memory hook:/i);
+    return [def?.trim() ?? ""];
+  }, [card.prompt]);
 
-  useEffect(() => {
-    let active = true;
+  const handlePointerDown = (e: React.PointerEvent) => {
+    draggingRef.current = true;
+    movedRef.current = false;
+    startXRef.current = e.clientX;
+    if (cardRef.current) cardRef.current.style.transition = 'none';
+  };
 
-    fetchQuestions({
-      subject: "english",
-      topic: "one-word-substitution",
-      questionType: "study-mode",
-    })
-      .then((data) => {
-        if (!active) return;
-        const mapped = data
-          .map((entry, index) => toSubstitutionCard(entry as StudyModeEntry, index))
-          .filter(Boolean) as SubstitutionCard[];
-        setCards(mapped.length ? [...DEMO_CARDS, ...mapped] : DEMO_CARDS);
-      })
-      .catch(() => {
-        if (active) setCards(DEMO_CARDS);
-      });
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!draggingRef.current || startXRef.current === null) return;
+    const currentX = e.clientX - startXRef.current;
+    if (Math.abs(currentX) > 6) movedRef.current = true;
+    
+    let clamped = Math.min(0, Math.max(currentX, -84));
+    if (swiped) clamped = Math.min(0, Math.max(currentX - 84, -84));
+    
+    if (cardRef.current) cardRef.current.style.transform = `translateX(${clamped}px)`;
+    currentXRef.current = currentX;
+  };
 
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (cards.length === 0) {
-      setCurrentPage(1);
-      return;
+  const endDrag = () => {
+    if (!draggingRef.current) return;
+    draggingRef.current = false;
+    if (cardRef.current) {
+      cardRef.current.style.transition = '';
+      cardRef.current.style.transform = '';
     }
-    if (currentPage > cards.length) {
-      setCurrentPage(cards.length);
-    }
-  }, [cards.length, currentPage]);
-
-  useEffect(() => {
-    try {
-      const savedTheme = window.localStorage.getItem("study-mode-theme");
-      if (savedTheme === "light" || savedTheme === "dark") {
-        setTheme(savedTheme);
-      }
-    } catch {
-      // Ignore storage access issues.
-    }
-  }, []);
-
-  useEffect(() => {
-    try {
-      const savedTheme = window.localStorage.getItem("study-mode-theme");
-      if (savedTheme === "light" || savedTheme === "dark") setTheme(savedTheme);
-    } catch {
-      // Ignore storage access issues.
-    }
-  }, []);
-
-  useEffect(() => {
-    try {
-      window.localStorage.setItem("study-mode-theme", theme);
-    } catch {
-      // Ignore storage access issues.
-    }
-  }, [theme]);
-
-  useEffect(() => {
-    const scroller = scrollerRef.current;
-    if (!scroller) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && entry.intersectionRatio > 0.6) {
-            const index = Number((entry.target as HTMLElement).dataset.index);
-            setCurrentPage(index + 1);
-          }
-        });
-      },
-      { root: scroller, threshold: [0.6] }
-    );
-
-    const slides = scroller.querySelectorAll<HTMLElement>("[data-index]");
-    slides.forEach((slide) => observer.observe(slide));
-    return () => observer.disconnect();
-  }, [cards.length]);
-
-  const [definitionText, memoryHookText] = (() => {
-    const [definition, memory] = activeCard.prompt.split(/Memory hook:/i);
-    return [definition?.trim() ?? "", memory?.trim() ?? ""];
-  })();
+    const totalDrag = swiped ? currentXRef.current - 84 : currentXRef.current;
+    setSwiped(totalDrag < -40);
+    currentXRef.current = 0;
+    startXRef.current = null;
+  };
 
   return (
-    <main className="quiz-page" data-theme={theme}>
-      <div className="desktop-header">
-        <div className="desktop-header-copy">
-          <button
-            type="button"
-            className="menu-toggle"
-            aria-label="Open question palette"
-            aria-expanded={isPaletteOpen}
-            onClick={() => setIsPaletteOpen((value) => !value)}
-          >
-            <span />
-            <span />
-            <span />
-          </button>
-          <div>
-            <div className="desktop-header-kicker">English</div>
-            <div className="desktop-header-title">One Word Substitution</div>
+    <div className="ows-row relative overflow-hidden border-b border-[var(--divider)] last:border-b-0">
+      <div className="swipe-action absolute top-0 right-0 h-full w-[84px] flex flex-col items-center justify-center bg-[var(--mint)] text-white text-[11.5px] font-semibold gap-[3px] cursor-pointer"
+        onClick={() => { onToggleBookmark(card.id); setSwiped(false); }}>
+        <svg viewBox="0 0 24 24" fill={isBookmarked ? 'currentColor' : 'none'} className="w-[19px] h-[19px]">
+          <path d="M6 3h12v18l-6-4.5L6 21V3z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+        </svg>
+        {isBookmarked ? 'Saved' : 'Save'}
+      </div>
+      <div ref={cardRef} className={`ows-card bg-[var(--card)] p-[15px_16px] relative will-change-transform cursor-pointer transition-transform duration-[0.28s] ease-[cubic-bezier(.22,1,.36,1)] ${swiped ? 'translate-x-[-84px]' : 'translate-x-0'} active:bg-[color-mix(in_srgb,var(--card)_90%,var(--ink)_4%)]`}
+        onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={endDrag} onPointerCancel={endDrag}
+        onClick={() => { if (movedRef.current) { movedRef.current = false; return; } if (swiped) setSwiped(false); }}>
+        <div className="flex items-start justify-between gap-[10px]">
+          <div className="flex items-center gap-[8px] min-w-0">
+            {isBookmarked && <span className="w-[6px] h-[6px] rounded-full bg-[var(--amber)] shrink-0" />}
+            <span className="text-[17px] font-semibold tracking-[-0.2px] whitespace-nowrap overflow-hidden text-ellipsis text-[var(--ink)]">{card.answer}</span>
           </div>
+          {card.answerTranslation && <span className="bengali bn text-[14.5px] font-medium text-[var(--ink-soft)] text-right shrink-0 whitespace-nowrap">{card.answerTranslation}</span>}
         </div>
-
-        <div className="desktop-header-meta">
-          <span className="question-count">{currentPage}/{totalCards}</span>
-
-          <button
-            type="button"
-            className="theme-toggle"
-            aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
-            aria-pressed={theme === "dark"}
-            onClick={() => setTheme((value) => (value === "dark" ? "light" : "dark"))}
-          >
-            <span className="theme-toggle-label">{theme === "dark" ? "Light" : "Dark"}</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              {theme === "dark" ? (
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-              ) : (
-                <>
-                  <path d="M12 3v2" />
-                  <path d="M12 19v2" />
-                  <path d="M5.64 5.64l1.42 1.42" />
-                  <path d="M16.94 16.94l1.42 1.42" />
-                  <path d="M3 12h2" />
-                  <path d="M19 12h2" />
-                  <path d="M5.64 18.36l1.42-1.42" />
-                  <path d="M16.94 7.06l1.42-1.42" />
-                  <circle cx="12" cy="12" r="4" />
-                </>
-              )}
-            </svg>
-          </button>
+        <div className="text-[14px] text-[var(--accent)] leading-[1.42] mt-[5px] max-w-[92%]">{definition}</div>
+        {card.definitionTranslation && <div className="definition-bn bn text-[13.5px] text-[var(--ink-soft)] leading-[1.4] mt-[4px] max-w-[92%]">{card.definitionTranslation}</div>}
+        <div className="flex gap-[6px] mt-[9px]">
+          <span className="text-[11px] font-semibold px-[8px] py-[3px] rounded-[8px] bg-[var(--accent-soft)] text-[var(--ink-soft)]">{card.label}</span>
         </div>
       </div>
+    </div>
+  );
+}
 
-      <div className="mobile-header">
-        <div className="mobile-header-copy">
-          <button
-            type="button"
-            className="menu-toggle"
-            aria-label="Open question palette"
-            aria-expanded={isPaletteOpen}
-            onClick={() => setIsPaletteOpen((value) => !value)}
-          >
-            <span />
-            <span />
-            <span />
-          </button>
-          <div>
-            <div className="mobile-header-kicker">English</div>
-            <div className="mobile-header-title">One Word Substitution</div>
+function MobileQuizView({ cards, bookmarked, toggleBookmark, theme, setTheme, categories }: any) {
+  const [query, setQuery] = useState("");
+  const [miniQuery, setMiniQuery] = useState("");
+  const [activeCats, setActiveCats] = useState<Set<string>>(new Set());
+  const [bookmarkedOnly, setBookmarkedOnly] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [catSectionCollapsed, setCatSectionCollapsed] = useState(false);
+  const [statusSectionCollapsed, setStatusSectionCollapsed] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const filteredCards = useMemo(() => {
+    let items = cards as SubstitutionCard[];
+    if (bookmarkedOnly) items = items.filter(d => bookmarked.has(d.id));
+    if (activeCats.size > 0) items = items.filter(d => activeCats.has(d.label || "General"));
+    const q = (query || miniQuery).trim().toLowerCase();
+    if (q) items = items.filter(d => d.answer.toLowerCase().includes(q) || d.prompt.toLowerCase().includes(q));
+    return items;
+  }, [cards, bookmarkedOnly, activeCats, query, miniQuery, bookmarked]);
+
+  const toggleCat = (cat: string) => {
+    setActiveCats(prev => {
+      const next = new Set(prev);
+      if (next.has(cat)) next.delete(cat); else next.add(cat);
+      return next;
+    });
+  };
+
+  const handleSegmentClick = (filter: string) => {
+    if (filter === "all") { setActiveCats(new Set()); setBookmarkedOnly(false); }
+    else if (filter === "bookmarked") { setActiveCats(new Set()); setBookmarkedOnly(true); }
+    else { setActiveCats(new Set([filter])); setBookmarkedOnly(false); }
+  };
+
+  let activeSegment = "all";
+  if (bookmarkedOnly && activeCats.size === 0) activeSegment = "bookmarked";
+  else if (!bookmarkedOnly && activeCats.size === 1) activeSegment = [...activeCats][0];
+  else if (activeCats.size > 0) activeSegment = "custom";
+
+  const handleSearchChange = (val: string) => { setQuery(val); setMiniQuery(val); };
+  const circ = 2 * Math.PI * 8;
+  const offset = cards.length === 0 ? circ : circ - (bookmarked.size / cards.length) * circ;
+  const filterBadgeCount = activeCats.size + (bookmarkedOnly ? 1 : 0);
+
+  return (
+    <div className="ows-app" data-theme={theme}>
+      <div className={`navbar ${scrolled ? 'scrolled' : ''}`}>
+        <div className="navbar-row">
+          <div className="nav-left">
+            <div className="mini-search">
+              <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+              <input type="text" placeholder="Search terms" value={miniQuery} onChange={e => handleSearchChange(e.target.value)} />
+            </div>
+            <button className={`mini-filter-btn ${filterBadgeCount > 0 ? 'has-active' : ''}`} onClick={() => setIsSheetOpen(true)}>
+              <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+              {filterBadgeCount > 0 && <span className="filter-badge mini-filter-badge">{filterBadgeCount}</span>}
+            </button>
+          </div>
+          <div className="nav-right">
+            <div className="progress-pill">
+              <svg className="progress-svg" viewBox="0 0 20 20">
+                <circle className="progress-svg-bg" cx="10" cy="10" r="8"/>
+                <circle className="progress-svg-fg" cx="10" cy="10" r="8" strokeDasharray={circ} strokeDashoffset={offset}/>
+              </svg>
+              <span style={{ fontStyle: 'normal', fontWeight: 600 }}>{bookmarked.size}/{cards.length}</span>
+            </div>
+            <button className="theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+              {theme === 'dark' ? <svg viewBox="0 0 24 24" fill="none"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              : <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/><circle cx="12" cy="12" r="4.5" stroke="currentColor" strokeWidth="1.8"/></svg>}
+            </button>
           </div>
         </div>
-
-        <div className="mobile-header-meta">
-          <span className="question-count">{currentPage}/{totalCards}</span>
-
-          <button
-            type="button"
-            className="theme-toggle"
-            aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
-            aria-pressed={theme === "dark"}
-            onClick={() => setTheme((value) => (value === "dark" ? "light" : "dark"))}
-          >
-            <span className="theme-toggle-label">{theme === "dark" ? "Light" : "Dark"}</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              {theme === "dark" ? (
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-              ) : (
-                <>
-                  <path d="M12 3v2" />
-                  <path d="M12 19v2" />
-                  <path d="M5.64 5.64l1.42 1.42" />
-                  <path d="M16.94 16.94l1.42 1.42" />
-                  <path d="M3 12h2" />
-                  <path d="M19 12h2" />
-                  <path d="M5.64 18.36l1.42-1.42" />
-                  <path d="M16.94 7.06l1.42-1.42" />
-                  <circle cx="12" cy="12" r="4" />
-                </>
-              )}
-            </svg>
-          </button>
-        </div>
       </div>
-
-      <div
-        className="card"
-        onTouchStart={(event) => {
-          const touch = event.touches[0];
-          touchStartXRef.current = touch?.clientX ?? null;
-          touchStartYRef.current = touch?.clientY ?? null;
-        }}
-        onTouchEnd={(event) => {
-          const touch = event.changedTouches[0];
-          const startX = touchStartXRef.current;
-          const startY = touchStartYRef.current;
-          touchStartXRef.current = null;
-          touchStartYRef.current = null;
-          if (startX === null || startY === null || !touch) return;
-          const deltaX = touch.clientX - startX;
-          const deltaY = touch.clientY - startY;
-          if (Math.abs(deltaX) < 40 || Math.abs(deltaX) < Math.abs(deltaY)) return;
-          setCurrentPage((value) =>
-            deltaX > 0 ? Math.max(1, value - 1) : Math.min(totalCards, value + 1)
-          );
-        }}
-      >
-        {isPaletteOpen && (
-          <button
-            type="button"
-            className="palette-backdrop"
-            aria-label="Close question palette"
-            const goToCard = (index: number) => {
-              scrollerRef.current
-                ?.querySelector<HTMLElement>(`[data-index="${index}"]`)
-                ?.scrollIntoView({ behavior: "smooth", block: "center" });
-              setCurrentPage(index + 1);
-            };
-
-            return (
-              <>
-                <main className="ows-page" data-theme={theme}>
-                  <div className="ows-header">
-                    <div className="ows-header-text">
-        {isPaletteOpen && (
-          <section className="question-palette" aria-label="Question palette">
-                      className="ows-menu-button"
-              <div>
-                <div className="question-palette-kicker">Navigation</div>
-                <div className="question-palette-title">Question Palette</div>
+      <div className="large-title"><h1>One word substitution</h1><p>Swipe left to save a term</p></div>
+      <div className="search-wrap">
+        <div className="search-bar">
+          <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+          <input type="text" placeholder="Search terms" value={query} onChange={e => handleSearchChange(e.target.value)} />
+        </div>
+        <button className={`filter-btn ${filterBadgeCount > 0 ? 'has-active' : ''}`} onClick={() => setIsSheetOpen(true)}>
+          <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+          {filterBadgeCount > 0 && <span className="filter-badge">{filterBadgeCount}</span>}
+        </button>
+      </div>
+      <div className="segment-scroll">
+        <div className={`ows-chip ${activeSegment === 'all' ? 'active' : ''}`} onClick={() => handleSegmentClick('all')}>All · {cards.length}</div>
+        <div className={`ows-chip ${activeSegment === 'bookmarked' ? 'active' : ''}`} onClick={() => handleSegmentClick('bookmarked')}>Bookmarked</div>
+        {categories.map((cat: string) => <div key={cat} className={`ows-chip ${activeSegment === cat ? 'active' : ''}`} onClick={() => handleSegmentClick(cat)}>{cat}</div>)}
+      </div>
+      <div className="list-label">Terms</div>
+      <div className="list">
+        {filteredCards.length > 0 ? filteredCards.map((card: SubstitutionCard) => <SwipeableCard key={card.id} card={card} isBookmarked={bookmarked.has(card.id)} onToggleBookmark={toggleBookmark} />) : <div style={{ textAlign: 'center', padding: '40px 16px', color: 'var(--ink-faint)', fontSize: '14px' }}>No terms match.</div>}
+      </div>
+      <footer className="spacer" />
+      <div className={`sheet-overlay ${isSheetOpen ? 'open' : ''}`} onClick={() => setIsSheetOpen(false)} />
+      <div className={`filter-sheet ${isSheetOpen ? 'open' : ''}`}>
+        <div className="sheet-handle" />
+        <div className="sheet-header"><h2>Filters</h2><button className="sheet-close" onClick={() => setIsSheetOpen(false)}><svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg></button></div>
+        <div className="sheet-body">
+          <div className={`sheet-section ${catSectionCollapsed ? 'collapsed' : ''}`}>
+            <div className="sheet-section-head"><span>Category</span><button className="section-toggle" onClick={() => setCatSectionCollapsed(!catSectionCollapsed)}>{catSectionCollapsed ? '+' : '—'}</button></div>
+            <div className="chip-grid">
+              {categories.map((cat: string) => {
+                const count = cards.filter((d: SubstitutionCard) => (d.label || "General") === cat).length;
+                return <div key={cat} className={`ows-chip ${activeCats.has(cat) ? 'active' : ''}`} onClick={() => toggleCat(cat)}>{cat} · {count}</div>;
+              })}
+            </div>
+          </div>
+          <div className={`sheet-section ${statusSectionCollapsed ? 'collapsed' : ''}`}>
+            <div className="sheet-section-head"><span>Status</span><button className="section-toggle" onClick={() => setStatusSectionCollapsed(!statusSectionCollapsed)}>{statusSectionCollapsed ? '+' : '—'}</button></div>
+            <div className="check-list">
+              <div className={`check-row ${bookmarkedOnly ? 'checked' : ''}`} onClick={() => setBookmarkedOnly(!bookmarkedOnly)}>
+                <span className="check-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg></span>
+                <span className="check-label">Bookmarked only</span><span className="check-count">{bookmarked.size}</span>
               </div>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
-                        <line x1="3" y1="6" x2="21" y2="6" />
-                        <line x1="3" y1="12" x2="21" y2="12" />
-                        <line x1="3" y1="18" x2="21" y2="18" />
-                      </svg>
-                aria-label="Close question palette"
-                onClick={() => setIsPaletteOpen(false)}
-                      <div className="ows-header-label">English</div>
-                      <div className="ows-header-title">One Word Substitution</div>
-              </button>
-                    </div>
-                    <div className="ows-header-actions">
-                      <span className="ows-counter">{currentPage}/{totalCards}</span>
-                      <button
-                        type="button"
-                        className="ows-theme-toggle"
-                        aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
-                        aria-pressed={theme === "dark"}
-                        onClick={() => setTheme((value) => (value === "dark" ? "light" : "dark"))}
-                      >
-                        <span>{theme === "dark" ? "Dark" : "Light"}</span>
-                        {theme === "dark" ? (
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M12 2v2.4M12 19.6V22M4.4 4.4l1.7 1.7M17.9 17.9l1.7 1.7M2 12h2.4M19.6 12H22M4.4 19.6l1.7-1.7M17.9 6.1l1.7-1.7" /><circle cx="12" cy="12" r="4.2" /></svg>
-                        ) : (
-                          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.5 14.5a8.5 8.5 0 1 1-9-13 7 7 0 0 0 9 13Z" /></svg>
-                        )}
-                      </button>
-                    </div>
-          --ink-dim: #8a8a8a;
-          --card-ink: #f2ead9;
-                  <div
-                    ref={scrollerRef}
-                    className="ows-scroller"
-          --teal: #6ea89c;
-          --line: #262626;
-          goToCard(deltaX > 0 ? Math.max(0, currentIndex - 1) : Math.min(totalCards - 1, currentIndex + 1));
-        .quiz-page {
-          min-height: 100dvh;
-          {studyCards.map((card, index) => {
-            const [definition, memory] = card.prompt.split(/Memory hook:/i);
-            return (
-              <section className="ows-slide" data-index={index} key={card.id}>
-                <article className="ows-card">
-                  <div className="ows-word">{card.answer}</div>
-                  <div className="ows-pos">{(card.label || "One Word").toUpperCase()}</div>
-                  {card.answerTranslation ? <div className="ows-word-bn">{card.answerTranslation}</div> : null}
-                  <div className="ows-divider" />
-                  <div className="ows-phrase"><RichContent text={definition.trim()} /></div>
-                  {card.definitionTranslation ? <div className="ows-bn">{card.definitionTranslation}</div> : null}
-                  <div className="ows-hook">
-                    <div className="ows-hook-label">Memory Hook</div>
-                    <div className="ows-hook-text">{memory?.trim() ? <RichContent text={memory.trim()} /> : "--"}</div>
+            </div>
+          </div>
+        </div>
+        <div className="sheet-footer">
+          <button className="reset-btn" onClick={() => { setActiveCats(new Set()); setBookmarkedOnly(false); }}>Reset</button>
+          <button className="done-btn" onClick={() => setIsSheetOpen(false)}>Show {filteredCards.length} results</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// -------------------------------------------------------------
+// DESKTOP VIEW COMPONENT
+// -------------------------------------------------------------
+function DesktopQuizView({ cards, bookmarked, toggleBookmark, theme, setTheme, categories }: any) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("all");
+  const [selectedId, setSelectedId] = useState<string | null>(cards[0]?.id || null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const sidebarListRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'f') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const visibleSidebarData = useMemo(() => {
+    if (!searchQuery.trim()) return cards as SubstitutionCard[];
+    const q = searchQuery.toLowerCase();
+    return (cards as SubstitutionCard[]).filter(d => d.answer.toLowerCase().includes(q) || d.prompt.toLowerCase().includes(q));
+  }, [cards, searchQuery]);
+
+  // Sync selectedId if missing
+  useEffect(() => {
+    if (cards.length > 0 && (!selectedId || !cards.find((c: SubstitutionCard) => c.id === selectedId))) {
+      setSelectedId(cards[0].id);
+    }
+  }, [cards, selectedId]);
+
+  const selectedIndex = cards.findIndex((c: SubstitutionCard) => c.id === selectedId);
+  const activeCard = cards[selectedIndex] || cards[0];
+
+  const goPrev = () => { if (selectedIndex > 0) setSelectedId(cards[selectedIndex - 1].id); };
+  const goNext = () => { if (selectedIndex < cards.length - 1) setSelectedId(cards[selectedIndex + 1].id); };
+
+  // Scroll active sidebar item into view automatically when selected via prev/next
+  useEffect(() => {
+    if (sidebarListRef.current && selectedId) {
+      const activeEl = sidebarListRef.current.querySelector('.active');
+      activeEl?.scrollIntoView({ block: 'nearest' });
+    }
+  }, [selectedId]);
+
+  const getAbbr = (cat: string) => {
+    if (cat.toLowerCase().includes('noun') || cat === 'People' || cat === 'Study of') return 'n.';
+    if (cat.toLowerCase().includes('verb')) return 'v.';
+    if (cat.toLowerCase().includes('adj')) return 'adj.';
+    return '';
+  };
+
+  const isBookmarked = activeCard ? bookmarked.has(activeCard.id) : false;
+
+  return (
+    <div className="dt-app" data-theme={theme}>
+      <div className="dt-shell">
+        <aside className="dt-sidebar">
+          <div className="dt-traffic"><span className="r"></span><span className="y"></span><span className="g"></span></div>
+          <div className="dt-search-box">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+            <input ref={searchInputRef} type="text" placeholder="Search vocab" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} />
+            <span className="kbd">⌘F</span>
+          </div>
+          <div className="dt-idx-label">VOCABULARY INDEX ({visibleSidebarData.length})</div>
+          <div className="dt-sidebar-list" ref={sidebarListRef}>
+            {visibleSidebarData.map(d => (
+              <div key={d.id} className={`dt-sidebar-item ${d.id === selectedId ? 'active' : ''}`} onClick={() => setSelectedId(d.id)}>
+                <span className="dt-term">{d.answer}</span>
+                <span className="dt-pos">{getAbbr(d.label || '')}</span>
+              </div>
+            ))}
+          </div>
+        </aside>
+        <main className="dt-main">
+          <div className="dt-topbar">
+            <div className="dt-nav-arrows">
+              <button disabled={selectedIndex <= 0} onClick={goPrev} aria-label="Previous">‹</button>
+              <button disabled={selectedIndex >= cards.length - 1} onClick={goNext} aria-label="Next">›</button>
+            </div>
+            <div className="dt-tabs">
+              <button className={`dt-tab ${activeTab === 'all' ? 'active' : ''}`} onClick={() => setActiveTab('all')}>All Tables</button>
+              {categories.map((cat: string) => (
+                <button key={cat} className={`dt-tab ${activeTab === cat ? 'active' : ''}`} onClick={() => setActiveTab(cat)}>{cat}</button>
+              ))}
+            </div>
+            <button className="dt-theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} aria-label="Toggle theme">
+              {theme === 'dark' ? <svg viewBox="0 0 24 24" fill="none"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              : <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/><circle cx="12" cy="12" r="4.5" stroke="currentColor" strokeWidth="1.8"/></svg>}
+            </button>
+          </div>
+          <div className="dt-content-scroll">
+            {activeCard && (
+              <div className="dt-hero">
+                <div className="dt-hero-word-row">
+                  <h1>{activeCard.answer}</h1>
+                  <span className="dt-pos-italic">{getAbbr(activeCard.label || '')}</span>
+                  <button className={`dt-save-btn ${isBookmarked ? 'saved' : ''}`} onClick={() => toggleBookmark(activeCard.id)}>
+                    <svg viewBox="0 0 24 24" fill={isBookmarked ? 'currentColor' : 'none'} className="w-[19px] h-[19px]">
+                      <path d="M6 3h12v18l-6-4.5L6 21V3z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+                    </svg>
+                    {isBookmarked ? 'Saved' : 'Save'}
+                  </button>
+                </div>
+                <div className="dt-hero-meta-line"><b>{getAbbr(activeCard.label || '')}</b> <span>{activeCard.prompt.split(/Memory hook:/i)[0]?.trim()}</span></div>
+                {(activeCard.answerTranslation || activeCard.definitionTranslation) && (
+                  <div className="dt-quote-box">
+                    <span className="dt-qmark">&ldquo;</span>
+                    <span className="bn">{activeCard.answerTranslation} {activeCard.answerTranslation && activeCard.definitionTranslation ? '/' : ''} {activeCard.definitionTranslation}</span>
                   </div>
-                </article>
-              </section>
-            );
-          })}
-        </div>
-
-        <div className="ows-dots" aria-label={`Card ${currentPage} of ${totalCards}`}>
-          {studyCards.map((card, index) => (
-          border-radius: 10px;
-            key={card.id}
-          background: var(--paper);
-            className={`ows-dot ${currentIndex === index ? "active" : ""}`}
-          cursor: pointer;
-          flex: 0 0 auto;
-            onClick={() => goToCard(index)}
-
-        .menu-toggle span {
-        </div>
-      </main>
-          width: 100%;
-          height: 2px;
-          border-radius: 999px;
-          background: currentColor;
-        }
-
-        .theme-toggle {
-          min-width: 42px;
-          height: 34px;
-          padding: 0 12px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-          border-radius: 999px;
-          border: 1.5px solid var(--line);
-          background: var(--paper);
-          color: var(--ink);
-          box-shadow: none;
-          cursor: pointer;
-        }
-
-        .question-count {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          min-width: 58px;
-          height: 34px;
-          padding: 0 12px;
-          border-radius: 999px;
-          border: 1.5px solid var(--line);
-          background: var(--paper);
-          color: var(--ink-dim);
-          font-family: 'Space Mono', monospace;
-          font-size: 12px;
-          font-weight: 700;
-          letter-spacing: 0.04em;
-        }
-
-        .quiz-page[data-theme="light"] .desktop-header {
-          background: var(--paper-raised);
-        }
-
-        .quiz-page[data-theme="light"] .theme-toggle {
-          background: var(--paper);
-        }
-
-        .quiz-page[data-theme="light"] .menu-toggle {
-          background: var(--paper-raised);
-        }
-
-        .mobile-header {
-          display: none;
-        }
-
-
-        .theme-toggle svg {
-          width: 18px;
-          height: 18px;
-        }
-
-        .theme-toggle-label {
-          font-size: 12px;
-          font-weight: 700;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-        }
-
-        .card {
-          width: 100%;
-          max-width: 520px;
-          margin: 0 auto;
-          min-height: calc(100dvh - 67px);
-          padding: 34px 48px 34px 22px;
-          background: var(--paper);
-          display: flex;
-          flex-direction: column;
-          overflow-x: hidden;
-          position: relative;
-        }
-
-        .progress-dots {
-          position: fixed;
-          top: 50%;
-          left: calc(50% + min(260px, 50vw - 14px));
-          z-index: 15;
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          transform: translateY(-50%);
-        }
-
-        .progress-dot {
-          width: 5px;
-          height: 5px;
-          padding: 0;
-          border: 0;
-          border-radius: 50%;
-          background: var(--ink);
-          cursor: pointer;
-          opacity: 0.25;
-          transition: opacity 0.2s, height 0.2s, background 0.2s;
-        }
-
-        .progress-dot.active {
-          height: 16px;
-          border-radius: 3px;
-          background: var(--scarlet);
-          opacity: 1;
-        }
-
-        .palette-backdrop {
-          position: fixed;
-          inset: 0;
-          z-index: 30;
-          border: 0;
-          padding: 0;
-          background: rgba(0, 0, 0, 0.35);
-          backdrop-filter: blur(2px);
-        }
-
-        .question-palette {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: auto;
-          bottom: 0;
-          z-index: 35;
-          width: min(280px, 80vw);
-          margin: 0;
-          padding: 18px;
-          border: 0;
-          border-right: 1.5px solid var(--line);
-          border-radius: 0;
-          background: var(--paper-raised);
-          box-shadow: 0 18px 38px rgba(0, 0, 0, 0.2);
-        }
-
-        .quiz-page[data-theme="light"] .question-palette {
-          background: var(--paper);
-        }
-
-        .question-palette-head {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 10px;
-          margin-bottom: 12px;
-        }
-
-        .question-palette-kicker {
-          font-size: 10px;
-          letter-spacing: 3px;
-          text-transform: uppercase;
-          color: var(--ink-dim);
-        }
-
-        .question-palette-title {
-          margin-top: 3px;
-          font-size: 11px;
-          line-height: 1.2;
-          letter-spacing: 2.5px;
-          text-transform: uppercase;
-          color: var(--ink);
-        }
-
-        .palette-close {
-          width: 30px;
-          height: 30px;
-          border-radius: 8px;
-          border: 1.5px solid var(--line);
-          background: var(--paper);
-          color: var(--ink);
-          font-size: 20px;
-          line-height: 1;
-          cursor: pointer;
-        }
-
-        .question-palette-grid {
-          display: grid;
-          grid-template-columns: repeat(4, minmax(0, 1fr));
-          gap: 10px;
-        }
-
-        .palette-pill {
-          aspect-ratio: 1;
-          height: auto;
-          border-radius: 8px;
-          border: 1.5px solid var(--line);
-          background: var(--paper);
-          color: var(--ink-dim);
-          font-family: 'Space Mono', monospace;
-          font-weight: 700;
-          cursor: pointer;
-        }
-
-        .palette-pill.active {
-          background: var(--scarlet);
-          border-color: var(--scarlet);
-          color: #ffffff;
-        }
-
-        .word-zone {
-          width: 100%;
-          margin: auto 0 0;
-          text-align: center;
-          padding: 44px 30px 0;
-          background: var(--card);
-          border: 1px solid var(--card-line);
-          border-bottom: 0;
-          border-radius: 14px 14px 0 0;
-          box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
-        }
-
-        .word {
-          font-family: 'Archivo Black', sans-serif;
-          font-size: clamp(2rem, 6vw, 2.75rem);
-          letter-spacing: 0;
-          color: var(--card-ink);
-        }
-
-        .pos {
-          margin-top: 10px;
-          font-size: 11px;
-          color: var(--scarlet);
-          letter-spacing: 2px;
-          font-weight: 700;
-        }
-
-        .word-translation {
-          margin-top: 10px;
-          color: var(--teal);
-          font-family: 'Noto Sans Bengali', sans-serif;
-          font-size: 15px;
-          font-weight: 600;
-          line-height: 1.7;
-        }
-
-        .content {
-          width: 100%;
-          padding: 20px 30px 0;
-          flex: 0 0 auto;
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-        }
-
-        .section-divider {
-          width: 36px;
-          height: 2px;
-          margin: 20px auto 0;
-          background: var(--card-line);
-          border: 0;
-        }
-
-        .section-label {
-          font-family: 'Space Mono', monospace;
-          font-size: 11px;
-          letter-spacing: 3px;
-          color: var(--teal);
-          font-weight: 700;
-          margin: 0;
-          text-align: center;
-          text-transform: uppercase;
-        }
-
-        .def {
-          font-size: 14.5px;
-          line-height: 1.85;
-          color: var(--card-ink);
-          text-align: center;
-        }
-
-        .bn {
-          font-family: 'Noto Sans Bengali', sans-serif;
-          margin-top: 12px;
-          font-size: 14px;
-          line-height: 1.9;
-          color: var(--card-ink-dim);
-          text-align: center;
-        }
-
-        .divider {
-          height: 1px;
-          background: var(--card-line);
-          width: 100%;
-        }
-
-        .divider.dotted {
-          background: none;
-          border-top: 1px dashed var(--card-line);
-          margin: 2px 0 0;
-        }
-
-        .memory-text {
-          margin-top: 10px;
-          font-size: 13px;
-          line-height: 1.8;
-          color: var(--card-ink-dim);
-          text-align: center;
-        }
-
-        .word-nav {
-          width: 100%;
-          margin: 0;
-          padding: 20px 30px 40px;
-          display: flex;
-          justify-content: space-between;
-          gap: 12px;
-          position: relative;
-          bottom: auto;
-          background: var(--card);
-          border: 1px solid var(--card-line);
-          border-top: 0;
-          border-radius: 0 0 14px 14px;
-          box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
-        }
-
-        .quiz-page[data-theme="light"] .word-nav {
-          background: var(--paper);
-        }
-
-        .word-nav button {
-          flex: 1;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 6px;
-          font-family: 'Space Mono', monospace;
-          font-weight: 700;
-          font-size: 13.5px;
-          letter-spacing: 1px;
-          text-transform: uppercase;
-          color: var(--card-ink);
-          background: transparent;
-          border: 1.5px solid var(--card-ink);
-          border-radius: 999px;
-          padding: 10px 14px;
-          cursor: pointer;
-          box-shadow: none;
-          transition: transform 0.12s, box-shadow 0.12s, background 0.12s, color 0.12s;
-        }
-
-        .word-nav button:hover {
-          background: var(--scarlet);
-          color: #ffffff;
-          border-color: var(--scarlet);
-        }
-
-        .word-nav button:active {
-          transform: translate(3px, 3px);
-          box-shadow: none;
-        }
-
-        .word-nav .arrow {
-          font-size: 13px;
-          line-height: 1;
-        }
-
-        @media (max-width: 460px) {
-          .quiz-page {
-            padding-top: calc(67px + env(safe-area-inset-top));
-          }
-
-          .desktop-header {
-            display: flex;
-          }
-
-          .mobile-header {
-            display: none;
-          }
-
-          .theme-toggle {
-            min-width: 42px;
-            height: 34px;
-            padding: 0 8px;
-            flex: 0 0 auto;
-            gap: 5px;
-            border-radius: 999px;
-            background: var(--paper);
-            color: var(--ink);
-            border-color: var(--line);
-            box-shadow: none;
-          }
-
-          .theme-toggle-label {
-            font-size: 10px;
-          }
-
-          .question-count {
-            min-width: 46px;
-            height: 26px;
-            padding: 0 8px;
-            font-size: 10px;
-          }
-
-          .card {
-            min-height: calc(100dvh - 67px - env(safe-area-inset-top));
-            padding: 24px 30px 24px 16px;
-          }
-
-          .word-zone {
-            padding: 36px 22px 0;
-          }
-
-          .word {
-            font-size: clamp(2rem, 9.8vw, 2.55rem);
-          }
-
-          .pos {
-            letter-spacing: 1.4px;
-            font-size: 12px;
-          }
-
-          .content {
-            flex: 0 0 auto;
-            padding: 18px 22px 0;
-            gap: 5px;
-          }
-
-          .section-divider {
-            margin: 0;
-          }
-
-          .section-label {
-            font-size: 11px;
-            font-weight: 600;
-            letter-spacing: 2px;
-          }
-
-          .def {
-            font-size: 15px;
-            line-height: 1.65;
-          }
-
-          .bn {
-            font-size: 14px;
-            line-height: 1.55;
-          }
-
-          .memory-text {
-            font-size: 12.5px;
-            line-height: 1.65;
-          }
-
-          .word-nav {
-            position: relative;
-            margin: 0;
-            padding: 18px 22px calc(32px + env(safe-area-inset-bottom));
-            gap: 10px;
-            border-top: 0;
-          }
-
-          .word-nav button {
-            font-size: 13px;
-            font-weight: 600;
-            padding: 11px 10px;
-            box-shadow: none;
-            letter-spacing: 0.5px;
-          }
-
-          .word-nav .arrow {
-            font-size: 12px;
-          }
-
-          .theme-toggle svg {
-            width: 14px;
-            height: 14px;
-          }
-
-          .palette-backdrop {
-            inset: 0;
-          }
-
-          .question-palette {
-            top: 0;
-            left: 0;
-            right: auto;
-            bottom: 0;
-            padding: 18px;
-            border-radius: 0;
-          }
-
-          .question-palette-head {
-            margin-bottom: 10px;
-          }
-
-          .question-palette-title {
-            font-size: 14px;
-          }
-
-          .question-palette-grid {
-            gap: 8px;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-          }
-
-          .palette-pill {
-            height: auto;
-            border-radius: 8px;
-          }
-
-          .progress-dots {
-            left: auto;
-            right: 12px;
-          }
-        }
-      `}</style>
-    </main>
-  );
-}
-*/
-
-function splitPrompt(prompt: string) {
-  const [definition, memoryHook] = prompt.split(/Memory hook:/i);
-  return { definition: definition.trim(), memoryHook: memoryHook?.trim() ?? "" };
-}
-
-function MemoryHookContent({ text }: { text: string }) {
-  return text.split(/(bibliography)/i).map((part, index) =>
-    part.toLowerCase() === "bibliography" ? (
-      <span className="ows-memory-highlight" key={`${part}-${index}`}>{part}</span>
-    ) : (
-      <RichContent key={`${part}-${index}`} text={part} />
-    )
+                )}
+              </div>
+            )}
+            <div className={`dt-tables-grid ${activeTab !== 'all' ? 'single' : ''}`}>
+              {categories.map((cat: string) => {
+                if (activeTab !== 'all' && activeTab !== cat) return null;
+                const catCards = cards.filter((c: SubstitutionCard) => (c.label || "General") === cat);
+                if (catCards.length === 0) return null;
+                return (
+                  <div key={cat} className="dt-table-card">
+                    <div className="dt-table-head"><span>{cat.toUpperCase()}</span><span>{catCards.length} words</span></div>
+                    <div>
+                      {catCards.map((c: SubstitutionCard) => (
+                        <div key={c.id} className={`dt-table-row ${c.id === selectedId ? 'active' : ''}`} onClick={() => setSelectedId(c.id)}>
+                          <span className="dt-term">{c.answer}</span>
+                          <span className="dt-bn-word bn">{c.answerTranslation}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
   );
 }
 
+// -------------------------------------------------------------
+// MAIN HYBRID COMPONENT
+// -------------------------------------------------------------
 export default function StudyModeQuizEngine() {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [theme, setTheme] = useState<"light" | "dark">("dark");
-  const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  const [theme, setTheme] = useState<"light" | "dark">("light");
   const [cards, setCards] = useState<SubstitutionCard[]>([]);
-  const scrollerRef = useRef<HTMLDivElement>(null);
-  const studyCards = cards.length ? cards : DEMO_CARDS;
-  const currentIndex = Math.min(Math.max(currentPage - 1, 0), studyCards.length - 1);
+  const [bookmarked, setBookmarked] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    try {
+      const savedTheme = window.localStorage.getItem("ows-theme");
+      if (savedTheme === "light" || savedTheme === "dark") setTheme(savedTheme);
+      const savedBms = window.localStorage.getItem("ows-bookmarks");
+      if (savedBms) setBookmarked(new Set(JSON.parse(savedBms)));
+    } catch {}
+  }, []);
+
+  useEffect(() => { try { window.localStorage.setItem("ows-theme", theme); } catch {} }, [theme]);
+  useEffect(() => { try { window.localStorage.setItem("ows-bookmarks", JSON.stringify([...bookmarked])); } catch {} }, [bookmarked]);
 
   useEffect(() => {
     let active = true;
     fetchQuestions({ subject: "english", topic: "one-word-substitution", questionType: "study-mode" })
       .then((data) => {
         if (!active) return;
-        const mapped = data
-          .map((entry, index) => toSubstitutionCard(entry as StudyModeEntry, index))
-          .filter(Boolean) as SubstitutionCard[];
-        setCards(mapped.length ? [...DEMO_CARDS, ...mapped] : DEMO_CARDS);
+        const mapped = data.map((entry, index) => toSubstitutionCard(entry as StudyModeEntry, index)).filter(Boolean) as SubstitutionCard[];
+        setCards(mapped.length ? mapped : DEMO_CARDS);
       })
-      .catch(() => {
-        if (active) setCards(DEMO_CARDS);
-      });
-    return () => {
-      active = false;
-    };
+      .catch(() => { if (active) setCards(DEMO_CARDS); });
+    return () => { active = false; };
   }, []);
 
-  useEffect(() => {
-    try {
-      window.localStorage.setItem("study-mode-theme", theme);
-    } catch {
-      // Ignore storage access issues.
-    }
-  }, [theme]);
+  const studyCards = cards.length ? cards : DEMO_CARDS;
+  const categories = Array.from(new Set(studyCards.map(c => c.label || "General")));
 
-  useEffect(() => {
-    const scroller = scrollerRef.current;
-    if (!scroller) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && entry.intersectionRatio > 0.6) {
-            setCurrentPage(Number((entry.target as HTMLElement).dataset.index) + 1);
-          }
-        });
-      },
-      { root: scroller, threshold: [0.6] }
-    );
-    scroller.querySelectorAll<HTMLElement>("[data-index]").forEach((slide) => observer.observe(slide));
-    return () => observer.disconnect();
-  }, [cards.length]);
-
-  const goToCard = (index: number) => {
-    scrollerRef.current
-      ?.querySelector<HTMLElement>(`[data-index="${index}"]`)
-      ?.scrollIntoView({ behavior: "smooth", block: "center" });
-    setCurrentPage(index + 1);
-    setIsPaletteOpen(false);
+  const toggleBookmark = (id: string) => {
+    setBookmarked(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
   };
 
+  const sharedProps = { cards: studyCards, bookmarked, toggleBookmark, theme, setTheme, categories };
+
   return (
-    <main className="ows-page" data-theme={theme}>
-      <div className="ows-wrap">
-        <header className="ows-header">
-          <button
-            type="button"
-            className="ows-menu-btn"
-            aria-label="Open word palette"
-            aria-expanded={isPaletteOpen}
-            onClick={() => setIsPaletteOpen(true)}
-          >
-            <Menu aria-hidden="true" />
-          </button>
-          <div className="ows-header-text">
-            <div className="ows-header-label">English</div>
-            <div className="ows-header-title">One Word Substitution</div>
-          </div>
-          <div className="ows-header-actions">
-            <span className="ows-counter">{currentPage}/{studyCards.length}</span>
-            <button
-              type="button"
-              className="ows-theme-toggle"
-              aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
-              onClick={() => setTheme((value) => value === "dark" ? "light" : "dark")}
-            >
-              <span>{theme === "dark" ? "Dark" : "Light"}</span>
-              {theme === "dark" ? (
-                <Sun aria-hidden="true" />
-              ) : (
-                <Moon aria-hidden="true" />
-              )}
-            </button>
-          </div>
-        </header>
-
-        <div className="ows-scroller" ref={scrollerRef}>
-          {studyCards.map((card, index) => {
-            const { definition, memoryHook } = splitPrompt(card.prompt);
-            return (
-              <section className="ows-slide" data-index={index} key={card.id}>
-                <article className="ows-card">
-                  <div className="ows-book-mark" aria-hidden="true"><BookOpen /></div>
-                  <div className="ows-word">{card.answer}</div>
-                  <div className="ows-pos">{(card.label || "One Word").toUpperCase()}</div>
-                  {card.answerTranslation ? <div className="ows-word-bn">{card.answerTranslation}</div> : null}
-                  <div className="ows-divider" aria-hidden="true"><span>❖</span></div>
-                  <div className="ows-phrase"><RichContent text={definition} /></div>
-                  <div className="ows-mini-divider" aria-hidden="true"><i /><b /><i /></div>
-                  {card.definitionTranslation ? <div className="ows-bn">{card.definitionTranslation}</div> : null}
-                  <div className="ows-hook">
-                    <div className="ows-hook-label">Memory Hook</div>
-                    <div className="ows-hook-emblem" aria-hidden="true"><i /><BookOpen className="ows-hook-icon" /><i /></div>
-                    <div className="ows-hook-text">{memoryHook ? <MemoryHookContent text={memoryHook} /> : "--"}</div>
-                  </div>
-                </article>
-              </section>
-            );
-          })}
-        </div>
-
-        <div className="ows-dots" aria-label={`Card ${currentPage} of ${studyCards.length}`}>
-          {studyCards.map((card, index) => (
-            <button
-              key={card.id}
-              type="button"
-              className={`ows-dot ${currentIndex === index ? "active" : ""}`}
-              aria-label={`Go to card ${index + 1}`}
-              onClick={() => goToCard(index)}
-            />
-          ))}
-        </div>
+    <>
+      <div className="mobile-view-container">
+        <MobileQuizView {...sharedProps} />
       </div>
+      <div className="desktop-view-container">
+        <DesktopQuizView {...sharedProps} />
+      </div>
+      <style jsx global>{`
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap');
 
-      <button
-        type="button"
-        className={`ows-overlay ${isPaletteOpen ? "open" : ""}`}
-        aria-label="Close word palette"
-        onClick={() => setIsPaletteOpen(false)}
-      />
-      <aside className={`ows-drawer ${isPaletteOpen ? "open" : ""}`} aria-label="Word palette">
-        <div className="ows-drawer-head">
-          <span>Word Palette</span>
-          <button type="button" aria-label="Close word palette" onClick={() => setIsPaletteOpen(false)}>×</button>
-        </div>
-        <div className="ows-palette-grid">
-          {studyCards.map((card, index) => (
-            <button
-              key={card.id}
-              type="button"
-              className={currentIndex === index ? "active" : ""}
-              onClick={() => goToCard(index)}
-            >
-              {index + 1}
-            </button>
-          ))}
-        </div>
-      </aside>
+        /* Toggle display based on screen size */
+        .desktop-view-container { display: none; }
+        .mobile-view-container { display: block; }
+        
+        @media (min-width: 861px) {
+          .desktop-view-container { display: block; height: 100vh; overflow: hidden; }
+          .mobile-view-container { display: none; }
+        }
 
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Archivo+Black&family=Noto+Sans+Bengali:wght@400;600&display=swap');
-        .ows-page{--bg:#000;--panel:#0d0d0d;--ink:#f5f5f5;--ink-dim:#8a8a8a;--line:#262626;--card:#1a1712;--card-ink:#f2ead9;--card-ink-dim:#b9ae98;--card-line:rgba(242,234,217,.12);--scarlet:#e2664a;--teal:#6ea89c;--shadow:rgba(0,0,0,.55);width:100%;min-height:100dvh;overflow:hidden;background:var(--bg);font-family:'Space Mono',monospace;-webkit-font-smoothing:antialiased}
-        .ows-page[data-theme="light"]{--bg:#f5f1e8;--panel:#fff;--ink:#1a1712;--ink-dim:#8a8072;--line:#e3dcc9;--card:#fffdf8;--card-ink:#1a1712;--card-ink-dim:#6b6255;--card-line:rgba(26,23,18,.12);--scarlet:#c94b34;--teal:#2f7a6c;--shadow:rgba(26,23,18,.14)}
-        .ows-page *{box-sizing:border-box}.ows-wrap{max-width:520px;height:100dvh;margin:0 auto;position:relative;display:flex;flex-direction:column}.ows-header{flex-shrink:0;z-index:20;background:var(--panel);display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:1.5px solid var(--line)}
-        .ows-menu-btn{flex-shrink:0;width:38px;height:38px;display:flex;align-items:center;justify-content:center;background:var(--bg);border:1.5px solid var(--line);border-radius:10px;color:var(--ink);cursor:pointer}.ows-menu-btn svg{width:16px;height:16px}.ows-header-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}.ows-header-label{font-size:10.5px;letter-spacing:3px;color:var(--ink-dim);text-transform:uppercase}.ows-header-title{font-weight:500;font-size:13px;letter-spacing:.3px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ows-header-actions{flex-shrink:0;display:flex;align-items:center;gap:8px}.ows-counter,.ows-theme-toggle{font-family:'Space Mono',monospace;font-weight:700;background:var(--bg);border:1.5px solid var(--line);border-radius:999px;color:var(--ink)}.ows-counter{font-size:13px;color:var(--ink-dim);padding:8px 14px;white-space:nowrap}.ows-theme-toggle{display:flex;align-items:center;gap:7px;font-size:11.5px;letter-spacing:1.5px;text-transform:uppercase;padding:8px 14px;cursor:pointer}.ows-theme-toggle svg{width:14px;height:14px}
-        .ows-scroller{flex:1;min-height:0;overflow-y:auto;scroll-snap-type:y mandatory;scrollbar-width:none}.ows-scroller::-webkit-scrollbar{display:none}.ows-slide{height:100%;scroll-snap-align:center;display:flex;align-items:center;justify-content:center;padding:34px 22px}.ows-card{width:100%;background:var(--card);border:1px solid var(--card-line);border-radius:14px;padding:44px 30px 40px;text-align:center;box-shadow:0 18px 40px var(--shadow)}.ows-word{font-family:'Archivo Black',sans-serif;font-size:32px;color:var(--card-ink);line-height:1.2}.ows-pos{margin-top:10px;font-size:11px;font-weight:700;letter-spacing:2.5px;color:var(--scarlet)}.ows-word-bn{font-family:'Noto Sans Bengali',sans-serif;font-weight:600;font-size:15px;line-height:1.7;color:var(--teal);margin-top:10px}.ows-divider{width:36px;height:2px;background:var(--card-line);margin:20px auto}.ows-phrase{font-size:14.5px;line-height:1.85;color:var(--card-ink);opacity:.82;max-width:400px;margin:0 auto}.ows-bn{font-family:'Noto Sans Bengali',sans-serif;font-weight:600;font-size:14px;line-height:1.9;color:var(--card-ink-dim);margin-top:16px}.ows-hook{margin-top:26px;padding-top:22px;border-top:1px dashed var(--card-line)}.ows-hook-label{font-weight:700;font-size:11px;letter-spacing:3px;color:var(--teal);text-transform:uppercase}.ows-hook-text{margin-top:10px;font-size:13px;line-height:1.8;color:var(--card-ink-dim)}
-        .ows-dots{position:absolute;right:14px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;z-index:10}.ows-dot{width:5px;height:5px;padding:0;border:0;border-radius:50%;background:var(--ink);opacity:.25;cursor:pointer;transition:opacity .2s,height .2s,background .2s}.ows-dot.active{opacity:1;background:var(--scarlet);height:16px;border-radius:3px}
-        .ows-wrap{max-width:760px}.ows-header{min-height:134px;padding:28px 36px;gap:26px}.ows-menu-btn{width:74px;height:74px;border-radius:18px;background:color-mix(in srgb,var(--panel) 78%,var(--bg));box-shadow:0 3px 10px var(--shadow)}.ows-menu-btn svg{width:31px;height:31px}.ows-header-text{gap:8px}.ows-header-label{font-size:17px;letter-spacing:6px;color:var(--teal);font-weight:700}.ows-header-title{font-size:22px;letter-spacing:0}.ows-header-actions{gap:14px}.ows-counter{min-width:104px;padding:17px 20px;font-size:20px;color:var(--teal)}.ows-theme-toggle{gap:12px;padding:16px 23px;font-size:17px;color:#c58b43}.ows-theme-toggle svg{width:26px;height:26px}.ows-slide{align-items:flex-start;overflow-y:auto;padding:102px 44px 118px}.ows-card{position:relative;min-height:min(1120px,calc(100dvh - 254px));padding:148px 56px 104px;border-radius:32px;overflow:hidden;background:radial-gradient(circle at 50% 32%,color-mix(in srgb,var(--card) 94%,#fff 6%),var(--card));box-shadow:0 22px 42px var(--shadow)}.ows-word{position:relative;z-index:1;font-family:Georgia,'Times New Roman',serif;font-size:clamp(44px,7vw,70px);line-height:1.05;letter-spacing:0}.ows-pos{position:relative;z-index:1;margin-top:25px;font-size:18px;letter-spacing:6px}.ows-word-bn{position:relative;z-index:1;font-size:27px;line-height:1.55;margin-top:24px}.ows-divider{position:relative;z-index:1;width:72px;height:4px;margin:42px auto;background:color-mix(in srgb,var(--teal) 72%,transparent)}.ows-phrase{position:relative;z-index:1;max-width:550px;font-size:24px;line-height:2.05;opacity:.88}.ows-bn{position:relative;z-index:1;font-size:21px;line-height:1.85;margin-top:48px;color:color-mix(in srgb,var(--card-ink) 72%,var(--scarlet))}.ows-hook{position:relative;z-index:1;margin-top:54px;padding-top:48px;border-top:1px dashed color-mix(in srgb,var(--teal) 34%,transparent)}.ows-hook-label{font-size:18px;letter-spacing:7px}.ows-hook-icon{width:54px;height:54px;margin:26px auto 21px;color:#c58b43;stroke-width:1.25}.ows-hook-text{max-width:580px;margin:0 auto;font-size:20px;line-height:1.9}.ows-book-mark{position:absolute;right:34px;top:50px;width:74px;height:74px;border-radius:50%;border:1px solid var(--card-line);display:grid;place-items:center;color:var(--teal);background:color-mix(in srgb,var(--card) 75%,transparent)}.ows-book-mark svg{width:34px;height:34px;stroke-width:1.35}.ows-leaf-spray{position:absolute;top:54px;left:-19px;width:190px;height:225px;transform:rotate(-20deg);opacity:.58}.ows-leaf-spray::before{content:'';position:absolute;left:69px;top:0;width:2px;height:238px;background:color-mix(in srgb,var(--teal) 55%,transparent);transform:rotate(25deg);transform-origin:top}.ows-leaf-spray i{position:absolute;width:49px;height:20px;border-radius:100% 0 100% 0;background:color-mix(in srgb,var(--teal) 50%,transparent);transform:rotate(18deg)}.ows-leaf-spray i:nth-child(1){left:66px;top:27px}.ows-leaf-spray i:nth-child(2){left:25px;top:74px;transform:rotate(151deg)}.ows-leaf-spray i:nth-child(3){left:81px;top:100px}.ows-leaf-spray i:nth-child(4){left:14px;top:137px;transform:rotate(151deg)}.ows-leaf-spray i:nth-child(5){left:67px;top:170px}.ows-shelf{position:absolute;right:0;bottom:26px;left:0;height:120px;border-bottom:13px solid #bd7c3e;background:linear-gradient(180deg,transparent 90%,color-mix(in srgb,#bd7c3e 55%,transparent) 90%)}.ows-shelf i{position:absolute;bottom:12px;width:37px;border-radius:5px 5px 0 0;border:1px solid color-mix(in srgb,#d9b16d 60%,transparent);background:linear-gradient(90deg,#315d52,#183b34 70%,#467262);box-shadow:inset -7px 0 rgba(0,0,0,.18)}.ows-shelf i:nth-child(1){right:112px;height:84px}.ows-shelf i:nth-child(2){right:74px;height:101px;background:linear-gradient(90deg,#cd6334,#8d331d 70%,#e68342)}.ows-shelf i:nth-child(3){right:36px;height:122px;background:linear-gradient(90deg,#8c4b20,#4d2614 70%,#bd6e2d)}.ows-shelf i:nth-child(4){right:0;height:148px;background:linear-gradient(90deg,#8c4b20,#4d2614 70%,#bd6e2d)}.ows-page[data-theme="light"] .ows-card{background:radial-gradient(circle at 50% 29%,#fffefb,var(--card))}.ows-page[data-theme="light"] .ows-shelf{opacity:.78}.ows-page[data-theme="light"] .ows-leaf-spray{opacity:.43}.ows-page[data-theme="light"] .ows-theme-toggle{color:#9d6530}.ows-page[data-theme="light"] .ows-menu-btn{box-shadow:0 3px 10px rgba(70,50,20,.08)}
-        @media (max-width:600px){.ows-header{min-height:0;padding:18px 20px;gap:15px}.ows-menu-btn{width:54px;height:54px;border-radius:14px}.ows-menu-btn svg{width:25px;height:25px}.ows-header-label{font-size:13px;letter-spacing:4px}.ows-header-title{font-size:17px}.ows-header-actions{gap:8px}.ows-counter{min-width:72px;padding:11px 12px;font-size:15px}.ows-theme-toggle{padding:11px 13px;font-size:13px;gap:7px}.ows-theme-toggle svg{width:20px;height:20px}.ows-slide{padding:72px 24px 90px}.ows-card{min-height:calc(100dvh - 242px);padding:112px 27px 84px;border-radius:27px}.ows-word{font-size:clamp(39px,10vw,57px)}.ows-pos{font-size:14px;letter-spacing:4px;margin-top:19px}.ows-word-bn{font-size:21px;margin-top:17px}.ows-divider{margin:34px auto;width:60px}.ows-phrase{font-size:18px;line-height:1.9}.ows-bn{margin-top:36px;font-size:17px}.ows-hook{margin-top:42px;padding-top:38px}.ows-hook-label{font-size:15px;letter-spacing:5px}.ows-hook-icon{width:45px;height:45px;margin:20px auto 18px}.ows-hook-text{font-size:16px}.ows-book-mark{top:38px;right:24px;width:60px;height:60px}.ows-book-mark svg{width:29px;height:29px}.ows-leaf-spray{transform:scale(.78) rotate(-20deg);transform-origin:top left}.ows-shelf{height:94px}.ows-shelf i:nth-child(1){right:88px;height:61px;width:29px}.ows-shelf i:nth-child(2){right:58px;height:75px;width:29px}.ows-shelf i:nth-child(3){right:28px;height:92px;width:29px}.ows-shelf i:nth-child(4){height:108px;width:29px}.ows-dots{display:none}}
-        .ows-overlay{position:fixed;inset:0;border:0;background:rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:opacity .2s;z-index:30}.ows-overlay.open{opacity:1;pointer-events:auto}.ows-drawer{position:fixed;top:0;left:0;bottom:0;width:280px;max-width:80%;background:var(--panel);border-right:1.5px solid var(--line);transform:translateX(-100%);transition:transform .25s ease;z-index:31;display:flex;flex-direction:column}.ows-drawer.open{transform:translateX(0)}.ows-drawer-head{display:flex;align-items:center;justify-content:space-between;padding:18px 18px 14px;border-bottom:1.5px solid var(--line);font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--ink-dim)}.ows-drawer-head button{width:30px;height:30px;background:var(--bg);border:1.5px solid var(--line);border-radius:8px;color:var(--ink);font-size:20px;cursor:pointer}.ows-palette-grid{padding:18px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;overflow-y:auto}.ows-palette-grid button{aspect-ratio:1;font-family:'Space Mono',monospace;font-weight:700;font-size:14px;color:var(--ink-dim);background:var(--bg);border:1.5px solid var(--line);border-radius:8px;cursor:pointer}.ows-palette-grid button.active{background:var(--scarlet);border-color:var(--scarlet);color:#fff}
-        @media (max-width:600px){.ows-wrap{min-height:100dvh;height:100dvh}.ows-header{padding:calc(10px + env(safe-area-inset-top)) 14px 10px;gap:10px}.ows-menu-btn{width:44px;height:44px;border-radius:12px}.ows-menu-btn svg{width:21px;height:21px}.ows-header-text{gap:2px}.ows-header-label{font-size:10px;letter-spacing:2.5px}.ows-header-title{font-size:13px}.ows-header-actions{gap:6px}.ows-counter{min-width:0;padding:8px 9px;font-size:12px}.ows-theme-toggle{width:44px;height:38px;justify-content:center;padding:0}.ows-theme-toggle span{display:none}.ows-theme-toggle svg{width:18px;height:18px}.ows-slide{align-items:flex-start;padding:18px 14px calc(24px + env(safe-area-inset-bottom));overflow-y:auto}.ows-card{min-height:0;padding:74px 20px 56px;border-radius:20px}.ows-word{font-size:clamp(32px,9.5vw,46px);overflow-wrap:anywhere}.ows-pos{margin-top:14px;font-size:11px;letter-spacing:3px}.ows-word-bn{margin-top:12px;font-size:17px;line-height:1.5}.ows-divider{width:48px;height:3px;margin:25px auto}.ows-phrase{font-size:15px;line-height:1.75}.ows-bn{margin-top:22px;font-size:15px;line-height:1.7}.ows-hook{margin-top:28px;padding-top:27px}.ows-hook-label{font-size:11px;letter-spacing:3px}.ows-hook-icon{width:31px;height:31px;margin:15px auto 12px}.ows-hook-text{font-size:13px;line-height:1.65}.ows-book-mark{top:21px;right:17px;width:43px;height:43px}.ows-book-mark svg{width:21px;height:21px}.ows-leaf-spray{transform:scale(.55) rotate(-20deg);transform-origin:top left}.ows-shelf{height:60px}.ows-shelf i:nth-child(1){right:59px;height:39px;width:19px}.ows-shelf i:nth-child(2){right:39px;height:48px;width:19px}.ows-shelf i:nth-child(3){right:19px;height:58px;width:19px}.ows-shelf i:nth-child(4){height:68px;width:19px}.ows-drawer{width:min(280px,86vw)}}
-        @media (max-width:400px){.ows-header{padding-left:10px;padding-right:10px}.ows-header-title{font-size:12px}.ows-slide{padding-left:10px;padding-right:10px}.ows-card{padding:67px 16px 48px}.ows-word{font-size:clamp(29px,9vw,38px)}.ows-phrase{font-size:14px}.ows-hook-text{font-size:12.5px}}
+        .bn { font-family: "Noto Sans Bengali", -apple-system, sans-serif !important; line-height: 1.6 !important; }
+
+        /* -------------------------------------------
+           MOBILE STYLES (from previous implementation)
+           ------------------------------------------- */
+        .ows-app[data-theme="light"] { --bg: #F2F1F7; --card: #FFFFFF; --ink: #1C1C29; --ink-soft: #6B6B78; --ink-faint: #A6A6B2; --line: rgba(28,28,41,0.07); --divider: rgba(28,28,41,0.14); --accent: #4A55E1; --accent-soft: #EEEFFC; --mint: #2FB876; --mint-soft: #E4F6EC; --amber: #E0982E; --amber-soft: #FBF0DD; --radius-card: 20px; --safe-top: env(safe-area-inset-top, 0px); --safe-bottom: env(safe-area-inset-bottom, 0px); }
+        .ows-app[data-theme="dark"] { --bg: #0B0B10; --card: #17171F; --ink: #F2F2F5; --ink-soft: #9797A3; --ink-faint: #5C5C66; --line: rgba(255,255,255,0.08); --divider: rgba(255,255,255,0.16); --accent: #7C86FF; --accent-soft: #1D1F3B; --mint: #3FD98E; --mint-soft: #12291F; --amber: #F0AC4A; --amber-soft: #2E2413; --radius-card: 20px; --safe-top: env(safe-area-inset-top, 0px); --safe-bottom: env(safe-area-inset-bottom, 0px); }
+        .ows-app { max-width: 520px; margin: 0 auto; min-height: 100dvh; position: relative; background: var(--bg); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif; color: var(--ink); transition: background .35s ease, color .35s ease; overflow-x: hidden; -webkit-font-smoothing: antialiased; overscroll-behavior-y: none; }
+        .navbar { position: sticky; top: 0; z-index: 30; padding-top: calc(var(--safe-top) + 10px); background: color-mix(in srgb, var(--bg) 82%, transparent); -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px); border-bottom: 0.5px solid transparent; transition: border-color .2s ease; }
+        .navbar.scrolled { border-bottom-color: var(--line); }
+        .navbar-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 16px 10px; }
+        .nav-left { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; opacity: 0; transform: translateY(6px); pointer-events: none; transition: opacity .2s ease, transform .2s ease; }
+        .navbar.scrolled .nav-left { opacity: 1; transform: translateY(0); pointer-events: auto; }
+        .mini-search { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; background: var(--card); border: 0.5px solid var(--line); border-radius: 10px; padding: 6px 10px; }
+        .mini-search svg { width: 14px; height: 14px; color: var(--ink-faint); flex-shrink: 0; }
+        .mini-search input { border: none; outline: none; background: transparent; width: 100%; font-size: 14px; color: var(--ink); font-family: inherit; }
+        .mini-search input::placeholder { color: var(--ink-faint); }
+        .mini-filter-btn { position: relative; flex-shrink: 0; width: 30px; height: 30px; border-radius: 10px; background: var(--card); border: 0.5px solid var(--line); display: flex; align-items: center; justify-content: center; color: var(--ink); cursor: pointer; }
+        .mini-filter-btn svg { width: 15px; height: 15px; }
+        .mini-filter-btn.has-active { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .mini-filter-badge { display: none; }
+        .mini-filter-btn.has-active .mini-filter-badge { display: flex; }
+        .nav-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+        .progress-pill { display: flex; align-items: center; gap: 6px; background: var(--card); border: 0.5px solid var(--line); border-radius: 20px; padding: 5px 12px 5px 6px; font-size: 13px; font-weight: 600; color: var(--ink); font-style: normal; }
+        .progress-svg { width: 20px; height: 20px; transform: rotate(-90deg); border: none !important; background: transparent !important; box-shadow: none !important; outline: none !important; margin: 0; padding: 0; }
+        .progress-svg-bg { fill: none; stroke: var(--line); stroke-width: 3; }
+        .progress-svg-fg { fill: none; stroke: var(--mint); stroke-width: 3; stroke-linecap: round; transition: stroke-dashoffset .6s cubic-bezier(.22,1,.36,1); }
+        .theme-toggle { width: 34px; height: 34px; border-radius: 50%; background: var(--card) !important; border: 0.5px solid var(--line) !important; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--ink); padding: 0; margin: 0; outline: none; box-shadow: none !important; }
+        .theme-toggle svg { width: 17px; height: 17px; }
+        .large-title { padding: 2px 16px 14px; }
+        .large-title h1 { font-size: 32px; font-weight: 700; letter-spacing: -0.6px; margin: 0 0 2px; }
+        .large-title p { margin: 0; font-size: 14px; color: var(--ink-soft); font-weight: 400; }
+        .search-wrap { padding: 0 16px 12px; display: flex; align-items: center; gap: 8px; }
+        .search-bar { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; background: var(--card); border-radius: 12px; padding: 9px 12px; border: 0.5px solid var(--line); }
+        .search-bar svg { width: 17px; height: 17px; color: var(--ink-faint); flex-shrink: 0; }
+        .search-bar input { border: none; outline: none; background: transparent; width: 100%; font-size: 15px; color: var(--ink); font-family: inherit; }
+        .search-bar input::placeholder { color: var(--ink-faint); }
+        .filter-btn { position: relative; flex-shrink: 0; width: 38px; height: 38px; border-radius: 12px; background: var(--card); border: 0.5px solid var(--line); display: flex; align-items: center; justify-content: center; color: var(--ink); cursor: pointer; transition: background .15s ease, border-color .15s ease, color .15s ease; }
+        .filter-btn svg { width: 18px; height: 18px; }
+        .filter-btn.has-active { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .filter-badge { position: absolute; top: -5px; right: -5px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; background: var(--mint); color: #fff; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid var(--bg); }
+        .segment-scroll { display: flex; gap: 8px; padding: 2px 16px 16px; overflow-x: auto; scrollbar-width: none; }
+        .segment-scroll::-webkit-scrollbar { display: none; }
+        .ows-chip { flex-shrink: 0; padding: 8px 15px; border-radius: 18px; font-size: 13.5px; font-weight: 600; border: 0.5px solid var(--line); background: var(--card); color: var(--ink-soft); cursor: pointer; transition: background .15s ease, color .15s ease, border-color .15s ease; user-select: none; }
+        .ows-chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+        .list-label { padding: 4px 16px 8px; font-size: 12.5px; font-weight: 600; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.4px; }
+        .list { margin: 0 16px 8px; padding: 0; display: flex; flex-direction: column; background: var(--card); border: 0.5px solid var(--line); border-radius: var(--radius-card); overflow: hidden; }
+        .ows-row { position: relative; overflow: hidden; }
+        .ows-row:not(:last-child) { border-bottom: 1px solid var(--divider); }
+        .swipe-action { position: absolute; top: 0; right: 0; height: 100%; width: 84px; display: flex; align-items: center; justify-content: center; background: var(--mint); color: #fff; flex-direction: column; gap: 3px; font-size: 11.5px; font-weight: 600; cursor: pointer; }
+        .swipe-action svg { width: 19px; height: 19px; }
+        .ows-card { background: var(--card); padding: 15px 16px; position: relative; transform: translateX(0); transition: transform .28s cubic-bezier(.22,1,.36,1), background .35s ease; will-change: transform; cursor: pointer; user-select: none; touch-action: pan-y; }
+        .ows-card.swiped { transform: translateX(-84px) !important; }
+        .ows-card:active { background: color-mix(in srgb, var(--card) 90%, var(--ink) 4%); }
+        .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+        .term-block { display: flex; align-items: center; gap: 8px; min-width: 0; }
+        .term { font-size: 17px; font-weight: 600; letter-spacing: -0.2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .bookmark-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--amber); flex-shrink: 0; display: none; }
+        .ows-card.bookmarked .bookmark-dot { display: block; }
+        .definition { font-size: 14px; color: var(--accent); line-height: 1.42; margin-top: 5px; max-width: 92%; }
+        .tag-row { display: flex; gap: 6px; margin-top: 9px; }
+        .tag { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 8px; background: var(--accent-soft); color: var(--ink-soft); }
+        .spacer { height: calc(24px + var(--safe-bottom)); }
+        .sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); opacity: 0; pointer-events: none; transition: opacity .25s ease; z-index: 40; }
+        .sheet-overlay.open { opacity: 1; pointer-events: auto; }
+        .filter-sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 41; max-width: 520px; margin: 0 auto; background: var(--card); border-radius: 20px 20px 0 0; transform: translateY(100%); transition: transform .32s cubic-bezier(.22,1,.36,1); max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 -8px 30px rgba(0,0,0,0.18); }
+        .filter-sheet.open { transform: translateY(0); }
+        .sheet-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--line); margin: 10px auto 2px; }
+        .sheet-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 18px 8px; }
+        .sheet-header h2 { font-size: 19px; font-weight: 700; margin: 0; letter-spacing: -0.3px; }
+        .sheet-close { width: 30px; height: 30px; border-radius: 50%; background: var(--accent-soft); border: none; color: var(--ink-soft); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .sheet-close svg { width: 14px; height: 14px; }
+        .sheet-body { overflow-y: auto; padding: 4px 18px 8px; }
+        .sheet-section { padding: 14px 0; border-bottom: 0.5px solid var(--line); }
+        .sheet-section:last-child { border-bottom: none; }
+        .sheet-section-head { display: flex; align-items: center; justify-content: space-between; font-size: 16px; font-weight: 700; margin-bottom: 12px; }
+        .section-toggle { width: 26px; height: 26px; border-radius: 50%; background: var(--accent-soft); border: none; color: var(--accent); font-size: 16px; font-weight: 700; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .sheet-section.collapsed .chip-grid, .sheet-section.collapsed .check-list { display: none; }
+        .sheet-section.collapsed .section-toggle { transform: rotate(45deg); }
+        .chip-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+        .chip-grid .ows-chip { border-radius: 12px; padding: 9px 14px; }
+        .chip-grid .ows-chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+        .check-list { display: flex; flex-direction: column; gap: 2px; }
+        .check-row { display: flex; align-items: center; gap: 12px; padding: 9px 2px; cursor: pointer; user-select: none; }
+        .check-box { width: 20px; height: 20px; border-radius: 6px; flex-shrink: 0; border: 1.5px solid var(--ink-faint); background: transparent; display: flex; align-items: center; justify-content: center; transition: background .15s ease, border-color .15s ease; }
+        .check-box svg { width: 12px; height: 12px; opacity: 0; transition: opacity .12s ease; }
+        .check-row.checked .check-box { background: var(--accent); border-color: var(--accent); }
+        .check-row.checked .check-box svg { opacity: 1; }
+        .check-label { font-size: 15px; color: var(--ink); flex: 1; }
+        .check-count { font-size: 13px; color: var(--ink-faint); font-weight: 500; }
+        .sheet-footer { display: flex; gap: 10px; padding: 12px 18px calc(14px + var(--safe-bottom)); border-top: 0.5px solid var(--line); }
+        .reset-btn { flex: 0 0 auto; padding: 0 18px; border-radius: 14px; background: transparent; border: none; color: var(--ink-soft); font-size: 15px; font-weight: 600; cursor: pointer; }
+        .done-btn { flex: 1; padding: 14px; border-radius: 14px; background: var(--ink); color: var(--bg); border: none; font-size: 16px; font-weight: 700; cursor: pointer; transition: opacity .15s ease; }
+        .done-btn:active { opacity: 0.85; }
+        @media (max-width: 480px) { .large-title h1 { font-size: 26px; } .large-title p { font-size: 13px; } .term { font-size: 16px; } .bengali { font-size: 13.5px; } .definition { font-size: 13.5px; } .definition-bn { font-size: 12.5px; } .ows-card { padding: 12px 14px; } .nav-right { gap: 6px; } .progress-pill { padding: 4px 10px 4px 5px; font-size: 12px; } .spacer { height: calc(36px + var(--safe-bottom)); } }
+
+        /* -------------------------------------------
+           DESKTOP STYLES
+           ------------------------------------------- */
+        .dt-app[data-theme="light"] { --dt-bg-app:#EDEDF0; --dt-bg-sidebar:#F5F5F7; --dt-bg-main:#FFFFFF; --dt-bg-row-alt:#F7F7F9; --dt-bg-head:#F5F5F7; --dt-ink:#1D1D1F; --dt-ink-soft:#6E6E73; --dt-ink-faint:#AEAEB2; --dt-border:#E3E3E7; --dt-blue:#0A84FF; --dt-blue-soft:#E8F2FF; --dt-radius:12px; }
+        .dt-app[data-theme="dark"] { --dt-bg-app:#000000; --dt-bg-sidebar:#1C1C1E; --dt-bg-main:#232326; --dt-bg-row-alt:#2A2A2D; --dt-bg-head:#28282B; --dt-ink:#F2F2F5; --dt-ink-soft:#9A9AA0; --dt-ink-faint:#5C5C60; --dt-border:#38383B; --dt-blue:#3A9AFF; --dt-blue-soft:#0F2338; }
+        .dt-shell { display: flex; height: 100vh; padding: 14px; gap: 14px; background: var(--dt-bg-app); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif; color: var(--dt-ink); transition: background .3s ease, color .3s ease; }
+        .dt-sidebar { width: 280px; flex-shrink: 0; background: var(--dt-bg-sidebar); border-radius: var(--dt-radius); display: flex; flex-direction: column; overflow: hidden; }
+        .dt-traffic { display: flex; gap: 8px; padding: 16px 16px 14px; }
+        .dt-traffic span { width: 12px; height: 12px; border-radius: 50%; display: block; }
+        .dt-traffic .r { background: #FF5F57; }
+        .dt-traffic .y { background: #FEBC2E; }
+        .dt-traffic .g { background: #28C840; }
+        .dt-search-box { margin: 0 14px 16px; display: flex; align-items: center; gap: 7px; background: var(--dt-bg-main); border: 1px solid var(--dt-border); border-radius: 8px; padding: 7px 10px; }
+        .dt-search-box svg { width: 14px; height: 14px; color: var(--dt-ink-faint); flex-shrink: 0; }
+        .dt-search-box input { border: none; outline: none; background: transparent; width: 100%; font-size: 13px; color: var(--dt-ink); font-family: inherit; }
+        .dt-search-box input::placeholder { color: var(--dt-ink-faint); }
+        .dt-search-box .kbd { font-size: 11px; color: var(--dt-ink-faint); background: var(--dt-bg-sidebar); border: 1px solid var(--dt-border); border-radius: 4px; padding: 1px 5px; flex-shrink: 0; }
+        .dt-idx-label { padding: 0 16px 8px; font-size: 11px; font-weight: 700; color: var(--dt-ink-faint); letter-spacing: 0.5px; }
+        .dt-sidebar-list { flex: 1; overflow-y: auto; padding: 0 8px 12px; }
+        .dt-sidebar-list::-webkit-scrollbar { width: 0; }
+        .dt-sidebar-item { display: flex; align-items: center; justify-content: space-between; padding: 9px 10px; border-radius: 8px; margin-bottom: 1px; cursor: pointer; font-size: 14px; }
+        .dt-sidebar-item:hover { background: var(--dt-bg-main); }
+        .dt-sidebar-item .dt-term { font-weight: 600; color: var(--dt-ink); }
+        .dt-sidebar-item .dt-pos { font-size: 12.5px; font-style: italic; color: var(--dt-ink-faint); flex-shrink: 0; margin-left: 8px; }
+        .dt-sidebar-item.active { background: var(--dt-blue); }
+        .dt-sidebar-item.active .dt-term { color: #fff; }
+        .dt-sidebar-item.active .dt-pos { color: rgba(255,255,255,0.8); }
+        
+        .dt-main { flex: 1; min-width: 0; background: var(--dt-bg-main); border-radius: var(--dt-radius); display: flex; flex-direction: column; overflow: hidden; }
+        .dt-topbar { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--dt-border); flex-shrink: 0; }
+        .dt-nav-arrows { display: flex; gap: 6px; }
+        .dt-nav-arrows button { width: 28px; height: 28px; border-radius: 8px; background: var(--dt-bg-sidebar); border: 1px solid var(--dt-border); color: var(--dt-ink-soft); font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; outline: none; }
+        .dt-nav-arrows button:disabled { opacity: 0.35; cursor: default; }
+        .dt-nav-arrows button:not(:disabled):hover { background: var(--dt-border); }
+        .dt-tabs { display: flex; background: var(--dt-bg-sidebar); border-radius: 9px; padding: 3px; gap: 2px; }
+        .dt-tab { border: none; background: transparent; padding: 6px 16px; border-radius: 7px; font-size: 13px; font-weight: 600; color: var(--dt-ink-soft); cursor: pointer; outline: none; }
+        .dt-tab.active { background: var(--dt-bg-main); color: var(--dt-ink); box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+        .dt-theme-toggle { width: 28px; height: 28px; border-radius: 50%; background: var(--dt-bg-sidebar); border: 1px solid var(--dt-border); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--dt-ink); padding: 0; outline: none; }
+        .dt-theme-toggle svg { width: 14px; height: 14px; }
+        .dt-content-scroll { flex: 1; overflow-y: auto; padding: 40px 44px 50px; }
+        
+        .dt-hero-meta-line { text-align: left; font-size: 17px; color: var(--dt-ink); margin: 0 0 22px; line-height: 1.5; }
+        .dt-hero-meta-line b { color: var(--dt-blue); font-weight: 700; font-style: italic; margin-right: 4px; }
+        .dt-hero-word-row { display: flex; align-items: baseline; gap: 14px; margin-bottom: 18px; }
+        .dt-hero-word-row h1 { font-size: 56px; font-weight: 800; letter-spacing: -1.5px; margin: 0; line-height: 1; }
+        .dt-pos-italic { font-size: 19px; font-style: italic; color: var(--dt-ink-faint); font-weight: 500; }
+        
+        .dt-save-btn { margin-left: auto; display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; font-size: 14px; font-weight: 600; border: 1.5px solid var(--dt-border); background: var(--dt-bg-sidebar); color: var(--dt-ink); cursor: pointer; transition: all 0.2s; outline: none; }
+        .dt-save-btn.saved { border-color: var(--dt-blue); background: var(--dt-blue); color: #fff; }
+
+        .dt-quote-box { display: flex; align-items: center; gap: 12px; background: var(--dt-bg-sidebar); border-left: 3px solid var(--dt-blue); border-radius: 0 8px 8px 0; padding: 14px 18px; font-size: 16px; color: var(--dt-ink); }
+        .dt-qmark { color: var(--dt-blue); font-size: 20px; font-weight: 800; }
+        
+        .dt-tables-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 38px; }
+        .dt-tables-grid.single { grid-template-columns: 1fr; }
+        .dt-table-card { border: 1px solid var(--dt-border); border-radius: 10px; overflow: hidden; }
+        .dt-table-head { display: flex; align-items: center; justify-content: space-between; background: var(--dt-bg-head); padding: 10px 16px; font-size: 11.5px; font-weight: 700; color: var(--dt-ink-soft); letter-spacing: 0.6px; border-bottom: 1px solid var(--dt-border); }
+        .dt-table-head span:last-child { font-weight: 500; letter-spacing: 0; color: var(--dt-ink-faint); }
+        .dt-table-row { display: flex; align-items: center; justify-content: space-between; padding: 13px 16px; cursor: pointer; border-bottom: 1px solid var(--dt-border); }
+        .dt-table-row:last-child { border-bottom: none; }
+        .dt-table-row:nth-child(even) { background: var(--dt-bg-row-alt); }
+        .dt-table-row:hover { background: var(--dt-blue-soft); }
+        .dt-table-row.active { background: var(--dt-blue-soft); }
+        .dt-table-row .dt-term { font-weight: 700; font-size: 14.5px; }
+        .dt-table-row .dt-bn-word { font-size: 14.5px; color: var(--dt-ink-soft); }
+
+        @media (prefers-reduced-motion: reduce) { * { transition-duration: .01ms !important; animation-duration: .01ms !important; } }
       `}</style>
-      <style>{`
-        .ows-page {
-          --emerald-deep: #071c18;
-          --emerald-mid: #0d2a24;
-          --emerald-card: #0f2d26;
-          --cream: #f6efe3;
-          --gold: #c79a55;
-          --teal: #6ea89c;
-          --copper: #c86a45;
-          background:
-            radial-gradient(circle at 48% 13%, rgba(54, 111, 93, .2), transparent 31%),
-            radial-gradient(circle at 100% 75%, rgba(15, 72, 61, .22), transparent 36%),
-            linear-gradient(155deg, var(--emerald-deep), var(--emerald-mid)) !important;
-          color: var(--cream) !important;
-          isolation: isolate;
-        }
-        .ows-page::before {
-          content: "";
-          position: fixed;
-          inset: 0;
-          z-index: -1;
-          pointer-events: none;
-          opacity: .025;
-          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.9'/%3E%3C/svg%3E");
-        }
-        .ows-wrap { max-width: 760px !important; }
-        .ows-header {
-          min-height: 114px !important;
-          padding: 26px 36px !important;
-          gap: 26px !important;
-          background: transparent !important;
-          border-bottom-color: rgba(246, 239, 227, .15) !important;
-        }
-        .ows-menu-btn {
-          width: 62px !important;
-          height: 62px !important;
-          border-radius: 18px !important;
-          color: var(--cream) !important;
-          background: rgba(7, 28, 24, .42) !important;
-          border-color: rgba(110, 168, 156, .25) !important;
-          box-shadow: inset 0 1px rgba(255,255,255,.04), 0 12px 28px rgba(0,0,0,.2) !important;
-        }
-        .ows-menu-btn svg { width: 27px !important; height: 27px !important; }
-        .ows-header-label { color: var(--teal) !important; font-size: 16px !important; letter-spacing: 6px !important; }
-        .ows-header-title { color: var(--cream) !important; font-size: 22px !important; font-family: Georgia, 'Times New Roman', serif !important; }
-        .ows-header-actions { gap: 18px !important; }
-        .ows-counter {
-          min-width: 88px !important;
-          padding: 14px 17px !important;
-          color: var(--teal) !important;
-          background: rgba(7, 28, 24, .34) !important;
-          border-color: rgba(110, 168, 156, .22) !important;
-        }
-        .ows-theme-toggle {
-          width: 54px !important;
-          height: 44px !important;
-          padding: 0 !important;
-          justify-content: center !important;
-          color: var(--gold) !important;
-          background: transparent !important;
-          border: 0 !important;
-          border-left: 1px solid rgba(246, 239, 227, .16) !important;
-          border-radius: 0 !important;
-        }
-        .ows-theme-toggle span { display: none !important; }
-        .ows-theme-toggle svg { width: 27px !important; height: 27px !important; }
-        .ows-scroller { background: transparent !important; }
-        .ows-slide { padding: 42px 36px 76px !important; align-items: flex-start !important; }
-        .ows-card {
-          min-height: min(1120px, calc(100dvh - 196px)) !important;
-          padding: 142px 60px 110px !important;
-          overflow: hidden !important;
-          border-radius: 28px !important;
-          background: linear-gradient(145deg, rgba(19, 58, 50, .88), rgba(8, 38, 32, .92)) !important;
-          border-color: rgba(246, 239, 227, .15) !important;
-          box-shadow: inset 0 1px rgba(255,255,255,.07), 0 28px 65px rgba(0,0,0,.35) !important;
-          backdrop-filter: blur(18px) saturate(120%);
-        }
-        .ows-card::after {
-          content: "";
-          position: absolute;
-          inset: 0;
-          pointer-events: none;
-          background: radial-gradient(circle at 50% 25%, rgba(110,168,156,.09), transparent 28%);
-        }
-        .ows-word { color: var(--cream) !important; font-size: clamp(52px, 8vw, 76px) !important; text-shadow: 0 5px 15px rgba(0,0,0,.28); }
-        .ows-pos { color: var(--copper) !important; }
-        .ows-word-bn { color: var(--teal) !important; }
-        .ows-divider { width: min(270px, 68%) !important; height: 24px !important; margin: 35px auto !important; display: flex !important; align-items: center !important; justify-content: center !important; background: none !important; }
-        .ows-divider::before, .ows-divider::after { content: ""; height: 1px; flex: 1; background: var(--gold); opacity: .78; }
-        .ows-divider span { padding: 0 13px; color: var(--gold); font-family: Georgia, serif; font-size: 24px; line-height: 1; }
-        .ows-phrase { color: #f7f7f7 !important; font-family: 'Space Mono', monospace !important; font-size: 21px !important; line-height: 1.95 !important; opacity: .94 !important; }
-        .ows-mini-divider { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 32px auto 0; }
-        .ows-mini-divider i { display: block; width: 38px; height: 1px; background: var(--teal); opacity: .65; }
-        .ows-mini-divider b { display: block; width: 8px; height: 8px; border-radius: 50%; background: var(--gold); }
-        .ows-bn { color: #d3a35d !important; font-size: 20px !important; line-height: 1.85 !important; margin-top: 30px !important; }
-        .ows-hook { border-top-color: rgba(110,168,156,.42) !important; margin-top: 47px !important; padding-top: 40px !important; }
-        .ows-hook-label { color: var(--teal) !important; }
-        .ows-hook-emblem { display: flex; align-items: center; justify-content: center; gap: 15px; margin: 22px auto 16px; color: var(--gold); }
-        .ows-hook-emblem i { width: 20px; height: 1px; background: currentColor; position: relative; opacity: .82; }
-        .ows-hook-emblem i::after { content: ""; position: absolute; width: 1px; height: 12px; top: -6px; background: currentColor; }
-        .ows-hook-emblem i:first-child::after { right: 4px; transform: rotate(-55deg); }
-        .ows-hook-emblem i:last-child::after { left: 4px; transform: rotate(55deg); }
-        .ows-hook-icon { color: var(--gold) !important; margin: 0 !important; }
-        .ows-hook-text { color: var(--cream) !important; font-family: 'Space Mono', monospace !important; font-size: 18px !important; line-height: 1.8 !important; }
-        .ows-memory-highlight { color: var(--teal); }
-        .ows-hook-text :global(strong), .ows-hook-text :global(em) { color: var(--teal) !important; }
-        .ows-book-mark { color: var(--gold) !important; border-color: rgba(110,168,156,.28) !important; background: rgba(3,28,23,.36) !important; }
-        .ows-corner-ornament {
-          position: absolute;
-          z-index: 0;
-          width: 178px;
-          height: 178px;
-          opacity: .65;
-          pointer-events: none;
-          color: var(--gold);
-          background:
-            radial-gradient(circle at 28px 28px, currentColor 0 2px, transparent 2.5px),
-            radial-gradient(circle at 49px 49px, currentColor 0 1.5px, transparent 2px),
-            linear-gradient(currentColor, currentColor) 17px 17px / 96px 1px no-repeat,
-            linear-gradient(currentColor, currentColor) 17px 17px / 1px 96px no-repeat;
-        }
-        .ows-corner-ornament::before,
-        .ows-corner-ornament::after {
-          content: "";
-          position: absolute;
-          border-color: currentColor;
-          opacity: .68;
-        }
-        .ows-corner-ornament::before {
-          top: 35px;
-          left: 35px;
-          width: 83px;
-          height: 83px;
-          border-top: 1px solid;
-          border-left: 1px solid;
-          border-radius: 22px 0 0;
-        }
-        .ows-corner-ornament::after {
-          top: 58px;
-          left: 58px;
-          width: 30px;
-          height: 30px;
-          border: 1px solid;
-          transform: rotate(45deg);
-          box-shadow: 0 0 0 7px rgba(199,154,85,.07);
-        }
-        .ows-corner-ornament--top { top: 27px; left: 22px; }
-        .ows-corner-ornament--bottom { right: 22px; bottom: 19px; transform: rotate(180deg); opacity: .43; }
-        .ows-page[data-theme="light"] {
-          --cream: #19362e;
-          --gold: #a97436;
-          --teal: #397c70;
-          --copper: #a95339;
-          background: radial-gradient(circle at 48% 10%, rgba(154,194,180,.4), transparent 31%), linear-gradient(155deg, #eaf0e8, #d9e5dd) !important;
-        }
-        .ows-page[data-theme="light"] .ows-header { border-bottom-color: rgba(25,54,46,.15) !important; }
-        .ows-page[data-theme="light"] .ows-menu-btn,
-        .ows-page[data-theme="light"] .ows-counter { background: rgba(255,255,255,.38) !important; border-color: rgba(25,54,46,.18) !important; }
-        .ows-page[data-theme="light"] .ows-card { background: linear-gradient(145deg, rgba(250,252,247,.88), rgba(226,238,229,.9)) !important; border-color: rgba(25,54,46,.16) !important; box-shadow: inset 0 1px rgba(255,255,255,.85), 0 28px 65px rgba(37,73,62,.16) !important; }
-        .ows-page[data-theme="light"] .ows-card::after { background: radial-gradient(circle at 50% 25%, rgba(92,148,132,.13), transparent 31%); }
-        .ows-page[data-theme="light"] .ows-word,
-        .ows-page[data-theme="light"] .ows-phrase,
-        .ows-page[data-theme="light"] .ows-hook-text,
-        .ows-page[data-theme="light"] .ows-header-title { color: #19362e !important; text-shadow: none !important; }
-        .ows-page[data-theme="light"] .ows-bn { color: #9a6430 !important; }
-        .ows-page[data-theme="light"] .ows-book-mark { background: rgba(255,255,255,.28) !important; border-color: rgba(25,54,46,.17) !important; }
-        .ows-page[data-theme="light"] .ows-corner-ornament { opacity: .5; }
-        .ows-drawer { background: #0b2520 !important; border-color: rgba(246,239,227,.14) !important; }
-        .ows-drawer-head, .ows-palette-grid button { color: var(--cream) !important; border-color: rgba(246,239,227,.14) !important; }
-        .ows-drawer-head button, .ows-palette-grid button { background: rgba(7,28,24,.6) !important; }
-        .ows-palette-grid button.active { background: var(--copper) !important; border-color: var(--copper) !important; }
-        .ows-dot.active { background: var(--gold) !important; }
-        @media (max-width: 600px) {
-          .ows-header { min-height: 72px !important; padding: calc(10px + env(safe-area-inset-top)) 12px 10px !important; gap: 10px !important; }
-          .ows-menu-btn { width: 42px !important; height: 42px !important; border-radius: 12px !important; }
-          .ows-header-label { font-size: 10px !important; letter-spacing: 3px !important; }
-          .ows-header-title { font-size: 13px !important; }
-          .ows-counter { min-width: 58px !important; padding: 8px !important; font-size: 12px !important; }
-          .ows-theme-toggle { width: 34px !important; height: 34px !important; }
-          .ows-theme-toggle svg { width: 18px !important; height: 18px !important; }
-          .ows-slide { align-items: center !important; padding: 12px 24px calc(24px + env(safe-area-inset-bottom)) !important; }
-          .ows-card { min-height: 0 !important; padding: 46px 16px 28px !important; border-radius: 18px !important; }
-          .ows-word { font-size: clamp(30px, 8.8vw, 41px) !important; }
-          .ows-pos { margin-top: 10px !important; font-size: 10px !important; letter-spacing: 2.5px !important; }
-          .ows-word-bn { font-size: 15px !important; margin-top: 9px !important; }
-          .ows-divider { margin: 18px auto !important; }
-          .ows-phrase { font-size: 14px !important; line-height: 1.65 !important; }
-          .ows-bn { margin-top: 16px !important; font-size: 14px !important; }
-          .ows-hook { margin-top: 22px !important; padding-top: 20px !important; }
-          .ows-hook-label { font-size: 11px !important; letter-spacing: 3px !important; }
-          .ows-hook-text { font-size: 12px !important; line-height: 1.55 !important; }
-          .ows-book-mark { top: 14px !important; right: 14px !important; width: 38px !important; height: 38px !important; }
-          .ows-book-mark svg { width: 18px !important; height: 18px !important; }
-          .ows-corner-ornament { transform: scale(.64); transform-origin: top left; }
-          .ows-corner-ornament--bottom { transform: rotate(180deg) scale(.64); transform-origin: bottom right; }
-        }
-      `}</style>
-    </main>
+    </>
   );
 }
