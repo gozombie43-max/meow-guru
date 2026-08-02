@@ -17,7 +17,9 @@ export default function BottomNav() {
     normalizedPathname === '/english/synonyms-antonyms/study-mode' ||
     normalizedPathname.startsWith('/english/synonyms-antonyms/study-mode/') ||
     normalizedPathname === '/english/one-word-substitution/study-mode' ||
-    normalizedPathname.startsWith('/english/one-word-substitution/study-mode/');
+    normalizedPathname.startsWith('/english/one-word-substitution/study-mode/') ||
+    normalizedPathname === '/english/idioms-phrases/study-mode' ||
+    normalizedPathname.startsWith('/english/idioms-phrases/study-mode/');
   const formulaNotesSubjects = [
     '/mathematics/',
     '/reasoning/',
