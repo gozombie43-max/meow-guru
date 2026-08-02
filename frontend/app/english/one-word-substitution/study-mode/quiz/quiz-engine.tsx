@@ -151,10 +151,14 @@ function SwipeableCard({ card, isBookmarked, onToggleBookmark }: { card: Substit
           <div className="flex items-center gap-[8px] min-w-0">
             {isBookmarked && <span className="w-[6px] h-[6px] rounded-full bg-[var(--amber)] shrink-0" />}
             <span className="text-[17px] font-semibold tracking-[-0.2px] whitespace-nowrap overflow-hidden text-ellipsis text-[var(--ink)]">{card.answer}</span>
+            <div onClick={(e) => e.stopPropagation()} className="shrink-0 flex"><SpeakerBtn text={card.answer} size={26} /></div>
           </div>
           {card.answerTranslation && <span className="bengali bn text-[14.5px] font-medium text-[var(--ink-soft)] text-right shrink-0 whitespace-nowrap">{card.answerTranslation}</span>}
         </div>
-        <div className="text-[14px] text-[var(--accent)] leading-[1.42] mt-[5px] max-w-[92%]">{definition}</div>
+        <div className="flex items-start justify-between gap-[10px] mt-[5px]">
+          <div className="text-[14px] text-[var(--accent)] leading-[1.42]">{definition}</div>
+          <div onClick={(e) => e.stopPropagation()} className="shrink-0 flex mt-[2px]"><SpeakerBtn text={definition} size={22} /></div>
+        </div>
         {card.definitionTranslation && <div className="definition-bn bn text-[13.5px] text-[var(--ink-soft)] leading-[1.4] mt-[4px] max-w-[92%]">{card.definitionTranslation}</div>}
         <div className="flex gap-[6px] mt-[9px]">
           <span className="text-[11px] font-semibold px-[8px] py-[3px] rounded-[8px] bg-[var(--accent-soft)] text-[var(--ink-soft)]">{card.label}</span>
@@ -299,6 +303,126 @@ function MobileQuizView({ cards, bookmarked, toggleBookmark, theme, setTheme, ca
 // -------------------------------------------------------------
 // DESKTOP VIEW COMPONENT
 // -------------------------------------------------------------
+
+const TICKS = Array.from({ length: 12 });
+
+function SpeakerBtn({ text, size = 22 }: { text: string; size?: number }) {
+  const [state, setState] = useState<"idle" | "loading" | "speaking">("idle");
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const handleClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    // Tap again to stop
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current = null;
+      setState("idle");
+      return;
+    }
+
+    setState("loading");
+    try {
+      const res = await fetch("/api/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: text.trim() }),
+      });
+      if (!res.ok) throw new Error("TTS failed");
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audioRef.current = audio;
+      audio.onplay   = () => setState("speaking");
+      audio.onended  = () => { setState("idle"); URL.revokeObjectURL(url); audioRef.current = null; };
+      audio.onerror  = () => { setState("idle"); URL.revokeObjectURL(url); audioRef.current = null; };
+      await audio.play();
+    } catch {
+      setState("idle");
+    }
+  };
+
+  const speaking = state === "speaking";
+  const loading  = state === "loading";
+
+  return (
+    <button
+      className={`dt-speaker-btn ${speaking ? "speaking" : ""} ${loading ? "loading" : ""}`}
+      onClick={handleClick}
+      aria-label="Speak"
+      style={{ width: size, height: size }}
+    >
+      <svg viewBox="0 0 48 48" width={size * 0.55} height={size * 0.55} fill="none">
+        {loading ? (
+          <g>
+            {TICKS.map((_, i) => (
+              <rect
+                key={i}
+                className="ios-tick"
+                x="22.5"
+                y="4"
+                width="3"
+                height="9"
+                rx="1.5"
+                fill="currentColor"
+                transform={`rotate(${i * 30} 24 24)`}
+                style={{ animationDelay: `${-1 + (i / 12)}s` }}
+              />
+            ))}
+          </g>
+        ) : (
+          <g>
+            {/* SF Symbols-style speaker cone */}
+            <path
+              d="M6 18v12h6.5l10.5 9.5V8.5L12.5 18H6z"
+              fill="currentColor"
+            />
+            {/* wave arcs, drawn in one after another while speaking */}
+            <path
+              className={`ios-arc ios-arc-1 ${speaking ? "is-speaking" : ""}`}
+              d="M29 17a10 10 0 0 1 0 14"
+              stroke="currentColor"
+              strokeWidth="2.8"
+              strokeLinecap="round"
+              fill="none"
+              pathLength="100"
+              strokeDasharray="100"
+              strokeDashoffset={speaking ? undefined : 0}
+              style={!speaking ? { opacity: 0.3 } : undefined}
+            />
+            <path
+              className={`ios-arc ios-arc-2 ${speaking ? "is-speaking" : ""}`}
+              d="M34.5 11.5a18 18 0 0 1 0 25"
+              stroke="currentColor"
+              strokeWidth="2.8"
+              strokeLinecap="round"
+              fill="none"
+              pathLength="100"
+              strokeDasharray="100"
+              strokeDashoffset={speaking ? undefined : 100}
+              style={!speaking ? { opacity: 0 } : undefined}
+            />
+            <path
+              className={`ios-arc ios-arc-3 ${speaking ? "is-speaking" : ""}`}
+              d="M40 6a26 26 0 0 1 0 36"
+              stroke="currentColor"
+              strokeWidth="2.8"
+              strokeLinecap="round"
+              fill="none"
+              pathLength="100"
+              strokeDasharray="100"
+              strokeDashoffset={speaking ? undefined : 100}
+              style={!speaking ? { opacity: 0 } : undefined}
+            />
+          </g>
+        )}
+      </svg>
+    </button>
+  );
+}
+
 function DesktopQuizView({ cards, bookmarked, toggleBookmark, theme, setTheme, categories }: any) {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
@@ -396,6 +520,7 @@ function DesktopQuizView({ cards, bookmarked, toggleBookmark, theme, setTheme, c
                 <div className="dt-hero-word-row">
                   <h1>{activeCard.answer}</h1>
                   <span className="dt-pos-italic">{getAbbr(activeCard.label || '')}</span>
+                  <SpeakerBtn text={activeCard.answer} size={34} />
                   <button className={`dt-save-btn ${isBookmarked ? 'saved' : ''}`} onClick={() => toggleBookmark(activeCard.id)}>
                     <svg viewBox="0 0 24 24" fill={isBookmarked ? 'currentColor' : 'none'} className="w-[19px] h-[19px]">
                       <path d="M6 3h12v18l-6-4.5L6 21V3z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
@@ -403,7 +528,10 @@ function DesktopQuizView({ cards, bookmarked, toggleBookmark, theme, setTheme, c
                     {isBookmarked ? 'Saved' : 'Save'}
                   </button>
                 </div>
-                <div className="dt-hero-meta-line"><b>{getAbbr(activeCard.label || '')}</b> <span>{activeCard.prompt.split(/Memory hook:/i)[0]?.trim()}</span></div>
+                <div className="dt-hero-meta-line" style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                  <span><b style={{ color: 'var(--dt-blue)', fontWeight: 700, fontStyle: 'italic', marginRight: 4 }}>{getAbbr(activeCard.label || '')}</b> {activeCard.prompt.split(/Memory hook:/i)[0]?.trim()}</span>
+                  <SpeakerBtn text={activeCard.prompt.split(/Memory hook:/i)[0]?.trim() ?? ''} size={26} />
+                </div>
                 {(activeCard.answerTranslation || activeCard.definitionTranslation) && (
                   <div className="dt-quote-box">
                     <span className="dt-qmark">&ldquo;</span>
@@ -649,6 +777,55 @@ export default function StudyModeQuizEngine() {
         
         .dt-save-btn { margin-left: auto; display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; font-size: 14px; font-weight: 600; border: 1.5px solid var(--dt-border); background: var(--dt-bg-sidebar); color: var(--dt-ink); cursor: pointer; transition: all 0.2s; outline: none; }
         .dt-save-btn.saved { border-color: var(--dt-blue); background: var(--dt-blue); color: #fff; }
+
+        .dt-speaker-btn { display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--dt-blue) 40%, transparent); background: transparent; color: var(--dt-blue); cursor: pointer; padding: 0; flex-shrink: 0; transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); outline: none; opacity: 0.85; -webkit-tap-highlight-color: transparent; }
+        .dt-speaker-btn:hover { opacity: 1; transform: scale(1.08); border-color: color-mix(in srgb, var(--dt-blue) 70%, transparent); }
+        .dt-speaker-btn:active { transform: scale(0.88); opacity: 0.7; }
+        .dt-speaker-btn.loading { opacity: 0.8; cursor: wait; }
+        
+        .ios-tick { animation: ios-tick-fade 1s steps(1) infinite; }
+        @keyframes ios-tick-fade {
+          0%   { opacity: 1; }
+          8.3% { opacity: 0.85; }
+          16.6%{ opacity: 0.7; }
+          25%  { opacity: 0.55; }
+          33.3%{ opacity: 0.42; }
+          41.6%{ opacity: 0.32; }
+          50%  { opacity: 0.24; }
+          58.3%{ opacity: 0.18; }
+          66.6%{ opacity: 0.15; }
+          100% { opacity: 0.15; }
+        }
+
+        .ios-arc { opacity: 0; }
+        .ios-arc.is-speaking { animation-duration: 2s; animation-timing-function: ease; animation-iteration-count: infinite; }
+        .ios-arc-1.is-speaking { animation-name: ios-draw-1; }
+        .ios-arc-2.is-speaking { animation-name: ios-draw-2; }
+        .ios-arc-3.is-speaking { animation-name: ios-draw-3; }
+
+        @keyframes ios-draw-1 {
+          0%   { stroke-dashoffset: 100; opacity: 0; }
+          16%  { stroke-dashoffset: 0;   opacity: 1; }
+          75%  { stroke-dashoffset: 0;   opacity: 1; }
+          85%  { stroke-dashoffset: 0;   opacity: 0; }
+          100% { stroke-dashoffset: 100; opacity: 0; }
+        }
+        @keyframes ios-draw-2 {
+          0%   { stroke-dashoffset: 100; opacity: 0; }
+          16%  { stroke-dashoffset: 100; opacity: 0; }
+          32%  { stroke-dashoffset: 0;   opacity: 1; }
+          75%  { stroke-dashoffset: 0;   opacity: 1; }
+          85%  { stroke-dashoffset: 0;   opacity: 0; }
+          100% { stroke-dashoffset: 100; opacity: 0; }
+        }
+        @keyframes ios-draw-3 {
+          0%   { stroke-dashoffset: 100; opacity: 0; }
+          32%  { stroke-dashoffset: 100; opacity: 0; }
+          48%  { stroke-dashoffset: 0;   opacity: 1; }
+          75%  { stroke-dashoffset: 0;   opacity: 1; }
+          85%  { stroke-dashoffset: 0;   opacity: 0; }
+          100% { stroke-dashoffset: 100; opacity: 0; }
+        }
 
         .dt-quote-box { display: flex; align-items: center; gap: 12px; background: var(--dt-bg-sidebar); border-left: 3px solid var(--dt-blue); border-radius: 0 8px 8px 0; padding: 14px 18px; font-size: 16px; color: var(--dt-ink); }
         .dt-qmark { color: var(--dt-blue); font-size: 20px; font-weight: 800; }
