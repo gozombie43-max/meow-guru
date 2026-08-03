@@ -12,11 +12,14 @@ import {
   Calculator,
   ChevronRight,
   FileCheck2,
+  Clock,
+  GraduationCap,
   Home as HomeIcon,
   Menu,
   Moon,
   Play,
   Settings,
+  Smartphone,
   Sparkles,
   Swords,
   Sun,
@@ -215,36 +218,56 @@ export default function Home() {
         </header>
 
         <section className={styles.hero}>
+          <div className={styles.heroDotsTopRight} aria-hidden="true" />
+          
+          
           <div className={styles.heroCopy}>
+            <div className={styles.heroBadge}>
+              <div className={styles.heroBadgeIcon}>
+                <GraduationCap size={16} strokeWidth={2.5} />
+              </div>
+              <span>Knowledge That Empowers</span>
+            </div>
+
             <h1>
               Choose Your
               <span>Subject</span>
             </h1>
+            <div className={styles.heroLine} />
             <p>
               Learn your way.
               <br />
               Anywhere, anytime.
             </p>
+            
+            <div className={styles.heroFeatures}>
+              <div className={styles.heroFeature}>
+                <BookOpen size={18} className={styles.featureIcon} />
+                <span>Wide Range</span>
+              </div>
+              <div className={styles.featureDivider} />
+              <div className={styles.heroFeature}>
+                <Clock size={18} className={styles.featureIcon} />
+                <span>Learn Anytime</span>
+              </div>
+              <div className={styles.featureDivider} />
+              <div className={styles.heroFeature}>
+                <Smartphone size={18} className={styles.featureIcon} />
+                <span>Study Anywhere</span>
+              </div>
+            </div>
+
             <Link href="#subjects" className={styles.primaryCta}>
               Explore Subjects
-              <ChevronRight size={26} />
+              <ChevronRight size={20} strokeWidth={2.5} />
             </Link>
           </div>
 
           <div className={styles.heroVisual}>
-            <span className={styles.wave} aria-hidden="true" />
-            <span className={`${styles.floatIcon} ${styles.floatBook}`} aria-hidden="true">
-              ▱
-            </span>
-            <span className={`${styles.floatIcon} ${styles.floatBrain}`} aria-hidden="true">
-              ◌
-            </span>
-            <span className={`${styles.floatIcon} ${styles.floatDots}`} aria-hidden="true" />
             <Image
               src="/hero-image.png"
-              alt="Graduate student holding study notes"
-              width={740}
-              height={820}
+              alt="Graduate student"
+              fill
               priority
               className={styles.heroImage}
             />
