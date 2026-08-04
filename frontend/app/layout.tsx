@@ -8,6 +8,7 @@ import AppWarmup from '@/components/AppWarmup';
 import AppRecovery from '@/components/AppRecovery';
 import FeedbackToast from '@/components/FeedbackToast';
 import PageTransitionShell from '@/components/PageTransitionShell';
+import StudyTimeTracker from '@/components/StudyTimeTracker';
 
 const geist = Geist({ subsets: ['latin'] });
 
@@ -29,6 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className={geist.className}>
         <AuthProvider>
+          <StudyTimeTracker />
           <AppRecovery />
           <AppWarmup />
           <PageTransitionShell>{children}</PageTransitionShell>

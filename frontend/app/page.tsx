@@ -9,6 +9,7 @@ import {
   BarChart3,
   Bookmark,
   BookOpen,
+  Bot,
   Brain,
   Calculator,
   ChevronRight,
@@ -16,6 +17,7 @@ import {
   Clock,
   GraduationCap,
   Home as HomeIcon,
+  LayoutDashboard,
   Menu,
   Moon,
   Play,
@@ -44,9 +46,8 @@ const railItems = [
   { label: 'Mock', href: '/mock-test', icon: FileCheck2 },
   { label: 'Play', href: '/play', icon: Play },
   { label: 'Videos', href: '/videos', icon: Video },
-  { label: 'Progress', href: '/dashboard', icon: BarChart3 },
-  { label: 'Bookmarks', href: '/dashboard', icon: Bookmark },
-  { label: 'Settings', href: '/dashboard', icon: Settings },
+  { label: 'AI Chat', href: '/ai-chat', icon: Bot },
+  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
 ] as const;
 
 const features = [
@@ -206,9 +207,6 @@ export default function Home() {
         </nav>
 
         <section className={styles.premium}>
-          <span className={styles.premiumIcon}>
-            <Sparkles size={22} />
-          </span>
           <h2>Go Premium</h2>
           <p>Unlock all features and learn without limits.</p>
           <Link href="/resource">Upgrade Now</Link>

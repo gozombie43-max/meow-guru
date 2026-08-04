@@ -56,6 +56,7 @@ interface User {
   bookmarks: string[];
   bookmarkEntries?: BookmarkEntry[];
   recentQuizzes?: RecentQuizEntry[];
+  studyTime?: number;
 }
 
 interface AuthContextType {
@@ -64,6 +65,7 @@ interface AuthContextType {
   login: (token: string) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
+  syncStudyTime: (seconds: number) => Promise<void>;
   loading: boolean;
 }
 
@@ -148,9 +150,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         } catch {
           clearAuthState();
         }
+      } else {
+        console.error('Failed to refresh user:', err);
       }
     }
   }, [clearAuthState, fetchUser, refreshAccessToken]);
+
+  const syncStudyTime = useCallback(async (seconds: number) => {
+    if (seconds <= 0) return;
+    // Defer the state update to avoid React "update during render" warnings
+    // when triggered by synchronous window events (like beforeunload) during route changes.
+    setTimeout(() => {
+      setUser(prev => prev ? { ...prev, studyTime: (prev.studyTime || 0) + seconds } : prev);
+    }, 0);
+    try {
+      await api.patch('/users/me/usage', { activeSeconds: seconds });
+    } catch (err) {
+      console.error('Failed to sync study time', err);
+    }
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -229,7 +247,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [clearAuthState, fetchUser, persistToken, refreshAccessToken]);
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, refreshUser, loading }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        login,
+        logout,
+        refreshUser,
+        syncStudyTime,
+        loading,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

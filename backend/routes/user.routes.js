@@ -211,6 +211,29 @@ router.patch('/me/recent-quizzes', protect, async (req, res) => {
   }
 });
 
+// ── PATCH /users/me/usage ──────────────────────────────
+// body: { activeSeconds: 30 }
+router.patch('/me/usage', protect, async (req, res) => {
+  const { activeSeconds } = req.body;
+  if (!activeSeconds || typeof activeSeconds !== 'number') {
+    return res.status(400).json({ error: 'activeSeconds is required and must be a number' });
+  }
+
+  try {
+    const user = await getUserById(req.user.id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const currentStudyTime = user.studyTime || 0;
+    const newStudyTime = currentStudyTime + activeSeconds;
+
+    await usersContainer.items.upsert({ ...user, studyTime: newStudyTime });
+
+    res.json({ message: 'Usage tracked ✅', studyTime: newStudyTime });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── GET /users/me/ai-chats ─────────────────────────────
 router.get('/me/ai-chats', protect, async (req, res) => {
   try {

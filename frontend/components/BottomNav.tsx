@@ -30,13 +30,15 @@ export default function BottomNav() {
     formulaNotesSubjects.some((prefix) => normalizedPathname.startsWith(prefix)) &&
     normalizedPathname.endsWith('/formula-notes');
   const isAccessCodeRoute = pathname === '/access-code' || pathname.startsWith('/access-code/');
+  const isDashboardRoute = pathname === '/dashboard' || pathname.startsWith('/dashboard/');
   const shouldHideNav =
     isQuizRoute ||
     isNotesViewRoute ||
     isFormulaNotesRoute ||
     isResourceRoute ||
     isStudyModeRoute ||
-    isAccessCodeRoute;
+    isAccessCodeRoute ||
+    isDashboardRoute;
   const { theme } = useThemeMode();
   const lightSurfacePrefixes = [
     '/',
