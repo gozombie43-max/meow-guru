@@ -248,7 +248,7 @@ export default function Home() {
                 typedColor="var(--purple)"
                 font={{
                   fontFamily: 'inherit',
-                  fontSize: 'clamp(30px, 3.5vw, 42px)',
+                  fontSize: 'clamp(26px, 3.2vw, 36px)',
                   fontWeight: '700',
                   letterSpacing: '-0.8px',
                   lineHeight: '1.05'
