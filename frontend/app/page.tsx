@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import heroImage from '@/public/hero-image.webp';
 import {
   BarChart3,
   Bookmark,
@@ -265,10 +266,12 @@ export default function Home() {
 
           <div className={styles.heroVisual}>
             <Image
-              src="/hero-image.png"
+              src={heroImage}
               alt="Graduate student"
               fill
               priority
+              placeholder="blur"
+              sizes="(max-width: 768px) 50vw, 50vw"
               className={styles.heroImage}
             />
           </div>
