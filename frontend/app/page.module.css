@@ -52,7 +52,7 @@
 .dark .featureItem:nth-child(2) { color: #30d158; }
 .dark .featureItem:nth-child(3) { color: #64d2ff; }
 .dark .featureItem:nth-child(4) { color: #ff9f0a; }
-.dark .primaryCta, .dark .continueButton { background: linear-gradient(135deg, #ff9f0a, #ff6b00); box-shadow: 0 8px 20px rgba(255,106,0,0.28); }
+.dark .primaryCta, .dark .continueButton { box-shadow: 0 8px 20px rgba(10,132,255,0.28); }
 .dark .loginButton { border-color: #0a84ff; color: #0a84ff; }
 
 .sidebar {
@@ -1053,7 +1053,7 @@
 
   .hero {
     flex-direction: row;
-    min-height: 200px;
+    min-height: 260px;
     margin-top: 16px;
   }
 
@@ -1220,7 +1220,7 @@
 
   .hero {
     margin-top: 16px;
-    min-height: 170px;
+    min-height: 230px;
   }
 
   .heroBadge {
@@ -1245,7 +1245,10 @@
   }
 
   .heroCopy {
-    padding: 12px 14px;
+    padding: 24px 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
 
   .primaryCta svg {
@@ -1336,11 +1339,11 @@
 @media (max-width: 420px) and (orientation: portrait) {
   .hero {
     margin-top: 8px;
-    min-height: 150px;
+    min-height: 210px;
   }
 
   .heroCopy {
-    padding: 12px 12px;
+    padding: 16px 12px;
   }
 
   .hero h1 {
