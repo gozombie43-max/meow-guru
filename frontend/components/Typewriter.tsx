@@ -193,7 +193,7 @@ function __OriginkitBase_Typewriter(props: Props) {
 type Props = {
     texts?: string[]
     prefix?: string
-    ease?: AnimationOptions
+    ease?: any
     deleteSpeed?: number
     showCursor?: boolean
     hideCursorOnType?: boolean
@@ -216,7 +216,7 @@ const COMPONENT_DEFAULTS = {
         duration: 0.07,
         delay: 1.5,
         ease: "easeInOut",
-    },
+    } as any,
     deleteSpeed: 0.1,
     showCursor: true,
     hideCursorOnType: false,
