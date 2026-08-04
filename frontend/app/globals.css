@@ -119,7 +119,7 @@ html {
 body {
   background: transparent;
   color: var(--text-primary);
-  font-family: 'Georgia', 'Palatino', serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, sans-serif;
   overflow-x: hidden;
   /* Must be auto (not visible) on mobile for scroll to work correctly */
   overflow-y: auto;

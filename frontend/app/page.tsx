@@ -264,7 +264,6 @@ export default function Home() {
 
             <Link href="#subjects" className={styles.primaryCta}>
               Explore Subjects
-              <ChevronRight size={20} strokeWidth={2.5} />
             </Link>
           </div>
 
@@ -290,7 +289,6 @@ export default function Home() {
                     <subject.icon size={30} />
                   </span>
                   <span>{subject.title}</span>
-                  <ChevronRight className={styles.chevron} size={26} />
                 </Link>
               ))}
             </div>
@@ -303,7 +301,6 @@ export default function Home() {
                 <strong>ALL BOOKS & NOTES</strong>
                 <small>Books, chapter notes, extras & DPP</small>
               </span>
-              <ChevronRight size={30} />
             </Link>
 
             <Link href="/battle" className={styles.battleCard}>
@@ -314,7 +311,6 @@ export default function Home() {
                 <strong>BATTLE MODE</strong>
                 <small>Challenge yourself & win rewards</small>
               </span>
-              <ChevronRight size={30} />
             </Link>
           </div>
 
@@ -323,7 +319,6 @@ export default function Home() {
               <h2 id="recent-title">Recent Quizzes</h2>
               <Link href="/dashboard">
                 View All
-                <ChevronRight size={21} />
               </Link>
             </div>
 
@@ -337,7 +332,6 @@ export default function Home() {
                 </span>
                 <span className={styles.continueButton}>
                   Continue
-                  <ChevronRight size={27} />
                 </span>
               </div>
               <span className={styles.quizCount}>{submittedCount}/{totalCount}</span>
