@@ -495,9 +495,9 @@
   top: 0;
   width: 48%;
   height: 100%;
-  border-top-left-radius: 24px;
-  border-bottom-left-radius: 24px;
-  border-left: 1px solid var(--line);
+  border-top-left-radius: 300px;
+  border-bottom-left-radius: 300px;
+  border-left: 2px solid var(--purple);
   background-color: var(--surface-soft);
   overflow: hidden;
   z-index: 2;
@@ -1113,6 +1113,7 @@
 
   .contentGrid {
     gap: 26px;
+    margin-top: 24px;
   }
 
   .subjectGrid {
