@@ -57,7 +57,7 @@ export default function DashboardPage() {
 function DashboardContent() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'Mathematics' | 'Reasoning' | 'English' | 'General Awareness'>('Mathematics');
+  const [activeTab, setActiveTab] = useState<'All' | 'Mathematics' | 'Reasoning' | 'English' | 'General Awareness'>('All');
 
   const userRecentQuizzes = user?.recentQuizzes;
   
@@ -74,13 +74,18 @@ function DashboardContent() {
   const recentQuizzes = useMemo<RecentQuizEntry[]>(() => {
     if (!userRecentQuizzes) return [];
     return [...userRecentQuizzes]
-      .filter((entry) => entry && entry.quizKey)
+      .filter((entry) => {
+        if (!entry || !entry.quizKey) return false;
+        if (activeTab === 'All') return true;
+        // Normalize subject comparison
+        return entry.subject?.toLowerCase() === activeTab.toLowerCase();
+      })
       .sort((a, b) => {
         const aTime = Date.parse(a.updatedAt || '') || 0;
         const bTime = Date.parse(b.updatedAt || '') || 0;
         return bTime - aTime;
       });
-  }, [userRecentQuizzes]);
+  }, [userRecentQuizzes, activeTab]);
 
   const handleClose = () => {
     if (typeof window !== 'undefined' && window.history.length > 1) {
@@ -184,6 +189,13 @@ function DashboardContent() {
 
           <div className={styles.pills}>
             <button 
+              className={`${styles.pill} ${activeTab === 'All' ? styles.active : ''}`}
+              onClick={() => setActiveTab('All')}
+            >
+              <span className={styles.dot} style={{ background: activeTab === 'All' ? '#fff' : 'var(--text-dim)' }}></span>
+              All
+            </button>
+            <button 
               className={`${styles.pill} ${activeTab === 'Mathematics' ? styles.active : ''}`}
               onClick={() => setActiveTab('Mathematics')}
             >
@@ -222,10 +234,11 @@ function DashboardContent() {
             <div className={styles.cardsBox}>
               <div className={styles.cards}>
                 {authLoading ? (
-              <div className={styles.emptyState}>Loading...</div>
-            ) : recentQuizzes.length > 0 ? (
-              recentQuizzes.map((entry, index) => {
-                const colors = [
+                  <div className={styles.emptyState}>Loading...</div>
+                ) : userRecentQuizzes && userRecentQuizzes.length > 0 ? (
+                  recentQuizzes.length > 0 ? (
+                    recentQuizzes.map((entry, index) => {
+                      const colors = [
                   { grad: 'linear-gradient(155deg,#ff8a80,var(--ios-red))', track: 'linear-gradient(90deg, var(--ios-red), #ff8a80)' },
                   { grad: 'linear-gradient(155deg,#6ee0d0,var(--ios-teal))', track: 'linear-gradient(90deg, var(--ios-teal), #6ee0d0)' },
                   { grad: 'linear-gradient(155deg,#ffc861,var(--ios-orange))', track: 'linear-gradient(90deg, var(--ios-orange), #ffc861)' },
@@ -262,7 +275,11 @@ function DashboardContent() {
                 );
               })
             ) : (
-              // Fallback to static cards if no real data
+              <div className={styles.emptyState} style={{ padding: '24px', textAlign: 'center', color: 'var(--text-dim)' }}>
+                No recent practice found in this subject.
+              </div>
+            )) : (
+              // Fallback to static cards if no real data at all
               <>
                 <div className={styles.card}>
                   <div className={styles.cardIcon} style={{ background: 'linear-gradient(155deg,#ff8a80,var(--ios-red))' }}>📐</div>

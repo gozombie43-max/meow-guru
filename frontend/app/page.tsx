@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import heroImage from '@/public/hero-image.webp';
+import Typewriter from '@/components/Typewriter';
 import {
   BarChart3,
   Bookmark,
@@ -233,10 +234,29 @@ export default function Home() {
             </div>
 
             <h1>
-              Choose Your
-              <span>Subject</span>
+              Choose Your <br />
+              Subject
             </h1>
             <div className={styles.heroLine} />
+            
+            <div style={{ minHeight: '45px', marginBottom: '16px' }}>
+              <Typewriter 
+                texts={['MATH', 'ENGLISH', 'REASONING', 'GK']} 
+                showCursor={false} 
+                hideCursorOnType={true}
+                color="var(--purple)"
+                typedColor="var(--purple)"
+                font={{
+                  fontFamily: 'inherit',
+                  fontSize: 'clamp(30px, 3.5vw, 42px)',
+                  fontWeight: '700',
+                  letterSpacing: '-0.8px',
+                  lineHeight: '1.05'
+                }}
+                style={{ justifyContent: 'flex-start' }}
+              />
+            </div>
+
             <p>
               Learn your way.
               <br />
@@ -259,10 +279,6 @@ export default function Home() {
                 <span>Study Anywhere</span>
               </div>
             </div>
-
-            <Link href="#subjects" className={styles.primaryCta}>
-              Explore Subjects
-            </Link>
           </div>
 
           <div className={styles.heroVisual}>
