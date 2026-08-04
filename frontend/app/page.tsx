@@ -115,6 +115,52 @@ export default function Home() {
     ? `${recent.href}${recent.mode ? `?mode=${recent.mode}&resume=1` : '?resume=1'}`
     : '/mathematics/arithmetic/percentages';
 
+  const renderHeaderActions = (className: string) => (
+    <div className={className}>
+      {user ? (
+        <button
+          type="button"
+          className={styles.profileButton}
+          aria-label="User Profile"
+          title="User Profile"
+        >
+          {user.avatar ? (
+            <span
+              aria-hidden="true"
+              className={styles.profileImage}
+              style={{ backgroundImage: `url("${user.avatar}")` }}
+            />
+          ) : (
+            <span aria-hidden="true" className={styles.profileInitial}>
+              {user.name.charAt(0).toUpperCase()}
+            </span>
+          )}
+        </button>
+      ) : (
+        <Link href="/login" className={styles.loginButton}>
+          Log in
+        </Link>
+      )}
+      <button
+        type="button"
+        className={styles.iconButton}
+        onClick={toggleThemeMode}
+        aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+      >
+        {isDark ? <Sun size={23} /> : <Moon size={23} />}
+      </button>
+      <button
+        type="button"
+        className={styles.menuButton}
+        onClick={() => setSidebarOpen(true)}
+        aria-label="Open menu"
+        aria-expanded={sidebarOpen}
+      >
+        <Menu size={30} />
+      </button>
+    </div>
+  );
+
   return (
     <main className={`${styles.page} ${isDark ? styles.dark : styles.light}`}>
       <button
@@ -172,53 +218,11 @@ export default function Home() {
       <section className={styles.workspace}>
         <header className={styles.topbar}>
           <SkillLearnLogo />
-          <div className={styles.headerActions}>
-            {user ? (
-              <button
-                type="button"
-                className={styles.profileButton}
-                onClick={logout}
-                aria-label="Log out"
-                title="Log out"
-              >
-                {user.avatar ? (
-                  <span
-                    aria-hidden="true"
-                    className={styles.profileImage}
-                    style={{ backgroundImage: `url("${user.avatar}")` }}
-                  />
-                ) : (
-                  <span aria-hidden="true" className={styles.profileInitial}>
-                    {user.name.charAt(0).toUpperCase()}
-                  </span>
-                )}
-              </button>
-            ) : (
-              <Link href="/login" className={styles.loginButton}>
-                Log in
-              </Link>
-            )}
-            <button
-              type="button"
-              className={styles.iconButton}
-              onClick={toggleThemeMode}
-              aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-            >
-              {isDark ? <Sun size={23} /> : <Moon size={23} />}
-            </button>
-            <button
-              type="button"
-              className={styles.menuButton}
-              onClick={() => setSidebarOpen(true)}
-              aria-label="Open menu"
-              aria-expanded={sidebarOpen}
-            >
-              <Menu size={30} />
-            </button>
-          </div>
+          {renderHeaderActions(styles.headerActionsMobile)}
         </header>
 
         <section className={styles.hero}>
+          {renderHeaderActions(styles.headerActionsDesktop)}
           <div className={styles.heroDotsTopRight} aria-hidden="true" />
           
           

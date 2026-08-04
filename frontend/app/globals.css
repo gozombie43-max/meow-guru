@@ -1435,6 +1435,15 @@ body.has-bottom-nav {
   padding-bottom: calc(120px + env(safe-area-inset-bottom));
 }
 
+@media (min-width: 1025px) {
+  body.has-bottom-nav {
+    padding-bottom: 0 !important;
+  }
+  .bottom-pill-nav {
+    display: none !important;
+  }
+}
+
 .bottom-pill-nav {
   position: fixed;
   left: 50%;

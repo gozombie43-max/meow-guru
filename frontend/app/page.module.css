@@ -56,17 +56,14 @@
 .dark .loginButton { border-color: #0a84ff; color: #0a84ff; }
 
 .sidebar {
-  position: sticky;
-  top: 0;
-  height: 100svh;
-  padding: 34px 22px 24px;
+  padding: 24px 22px;
   border-right: 1px solid var(--line);
   background: var(--surface);
   backdrop-filter: saturate(180%) blur(24px);
   -webkit-backdrop-filter: saturate(180%) blur(24px);
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: 20px;
 }
 
 .sidebarBackdrop {
@@ -201,7 +198,7 @@
 }
 
 .premium {
-  margin-top: auto;
+  margin-top: 24px;
   padding: 16px;
   border: 1px solid var(--line);
   border-radius: 20px;
@@ -254,7 +251,7 @@
 
 .workspace {
   min-width: 0;
-  padding: 30px 30px 34px;
+  padding: 30px 30px 0;
 }
 
 .topbar {
@@ -268,7 +265,15 @@
   display: none;
 }
 
-.headerActions {
+.headerActionsMobile {
+  display: none;
+}
+
+.headerActionsDesktop {
+  position: absolute;
+  top: 24px;
+  right: 32px;
+  z-index: 10;
   display: flex;
   align-items: center;
   gap: 16px;
@@ -918,9 +923,8 @@
     inset: 0 auto 0 0;
     z-index: 50;
     width: min(82vw, 304px);
-    height: 100svh;
     display: flex;
-    background: var(--bg);
+    background: var(--surface);
     box-shadow: 22px 0 55px rgba(17, 24, 52, 0.18);
     transform: translateX(-104%);
     transition: transform 180ms ease;
@@ -1024,11 +1028,18 @@
     font-size: 19px;
   }
 
-  .headerActions {
+  .headerActionsDesktop {
+    display: none;
+  }
+
+  .headerActionsMobile {
     position: absolute;
     top: max(22px, calc(env(safe-area-inset-top) + 14px));
     right: 22px;
+    display: flex;
+    align-items: center;
     gap: 12px;
+    z-index: 100;
   }
 
   .loginButton {
@@ -1202,7 +1213,7 @@
     padding-inline: 16px;
   }
 
-  .headerActions {
+  .headerActionsMobile {
     right: 16px;
     gap: 9px;
   }
