@@ -681,7 +681,24 @@ export default function AdminPanel() {
     d === "easy" ? "#16a34a" : d === "hard" ? "#dc2626" : "#d97706";
 
   return (
-    <div style={{ fontFamily: "var(--font-sans, system-ui)", padding: "1.5rem", maxWidth: 1280, margin: "0 auto" }}>
+    <div style={{
+      fontFamily: "var(--font-sans, system-ui)",
+      padding: "1.5rem",
+      maxWidth: 1280,
+      margin: "0 auto",
+      minHeight: "100vh",
+      background: "#ffffff",
+      /* Force Light Theme Variables */
+      "--color-text-primary": "#1c1c1e",
+      "--color-text-secondary": "#636366",
+      "--color-text-tertiary": "#8e8e93",
+      "--color-border-secondary": "#e5e7eb",
+      "--color-border-tertiary": "#d1d1d6",
+      "--color-background-primary": "#ffffff",
+      "--color-background-secondary": "#f8fafc",
+      "--color-background-danger": "#fee2e2",
+      "--color-text-danger": "#991b1b",
+    } as React.CSSProperties}>
 
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.5rem" }}>
@@ -736,39 +753,6 @@ export default function AdminPanel() {
           </button>
         </div>
 
-        <div style={{ marginBottom: 12, padding: "12px 14px", borderRadius: 10, border: "1px solid rgba(109, 40, 217, 0.14)", background: "rgba(255, 255, 255, 0.65)" }}>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: "#6d28d9", marginBottom: 6 }}>
-            Study Mode Schema Prototype
-          </div>
-          <div style={{ fontSize: 12, color: "var(--color-text-secondary)", marginBottom: 10, lineHeight: 1.5 }}>
-            For <strong>Synonyms &amp; Antonyms</strong> study-mode uploads, use a vocabulary object like the one below.
-          </div>
-          <pre style={{ margin: 0, padding: 12, borderRadius: 8, overflowX: "auto", background: "#f8fafc", border: "1px solid var(--color-border-secondary)", color: "var(--color-text-primary)", fontSize: 11, lineHeight: 1.5, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{`{
-  "id": "vocab_0001",
-  "topic": "anto-syno",
-  "subject": "english",
-  "word": "abandon",
-  "meanings": [
-    {
-      "pos": "v.",
-      "definition": "To leave completely.",
-      "translation": "সম্পূর্ণভাবে ত্যাগ করা"
-    }
-  ],
-  "synonyms": [
-    {
-      "word": "forsake",
-      "translation": "ত্যাগ করা"
-    }
-  ],
-  "antonyms": [
-    {
-      "word": "retain",
-      "translation": "ধরে রাখা"
-    }
-  ]
-}`}</pre>
-        </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 10, marginBottom: 10 }}>
           <select
