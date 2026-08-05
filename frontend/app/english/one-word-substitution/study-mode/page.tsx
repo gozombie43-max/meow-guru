@@ -1,12 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { fetchQuestions } from "@/lib/api/questions";
 
 export default function OneWordSubstitutionStudyModePage() {
+  const router = useRouter();
   const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [questionCount, setQuestionCount] = useState<number | null>(null);
+  const [isHoveringLights, setIsHoveringLights] = useState(false);
 
   useEffect(() => {
     try {
@@ -48,358 +51,363 @@ export default function OneWordSubstitutionStudyModePage() {
     };
   }, []);
 
+  // Keyboard shortcut: Press Enter or Cmd+Enter to open suite immediately
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.key === "Enter") && e.target === document.body) {
+        router.push("/english/one-word-substitution/study-mode/quiz");
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [router]);
+
   const countLabel =
     questionCount === null
-      ? "Loading questions..."
+      ? "Checking indexing..."
       : questionCount === 0
-      ? "No questions available"
-      : `${questionCount} question${questionCount === 1 ? "" : "s"} available`;
+      ? "Ready to study"
+      : `${questionCount} vocabulary entries ready`;
 
   return (
-    <main className="start-page" data-theme={theme}>
-      <div className="card-shell">
-        <div className="perf" />
-
-        <div className="header-bar">
-          <span>Vocabulary</span>
+    <main className="apple-fullscreen-app" data-theme={theme}>
+      {/* Top Unified Navigation Toolbar */}
+      <header className="fullscreen-topbar">
+        <div
+          className="traffic-lights"
+          onMouseEnter={() => setIsHoveringLights(true)}
+          onMouseLeave={() => setIsHoveringLights(false)}
+        >
           <button
             type="button"
-            className="theme-toggle"
-            aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
-            aria-pressed={theme === "dark"}
-            onClick={() => setTheme((value) => (value === "dark" ? "light" : "dark"))}
+            className="light red"
+            onClick={() => router.back()}
+            title="Exit to Topic Selection"
+            aria-label="Exit"
           >
-            <span className="theme-toggle-label">
-              {theme === "dark" ? "Light" : "Dark"}
-            </span>
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.9"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              {theme === "dark" ? (
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-              ) : (
-                <>
-                  <path d="M12 3v2" />
-                  <path d="M12 19v2" />
-                  <path d="M5.64 5.64l1.42 1.42" />
-                  <path d="M16.94 16.94l1.42 1.42" />
-                  <path d="M3 12h2" />
-                  <path d="M19 12h2" />
-                  <path d="M5.64 18.36l1.42-1.42" />
-                  <path d="M16.94 7.06l1.42-1.42" />
-                  <circle cx="12" cy="12" r="4" />
-                </>
-              )}
-            </svg>
+            {isHoveringLights && <span className="symbol">×</span>}
+          </button>
+          <button
+            type="button"
+            className="light yellow"
+            onClick={() => router.back()}
+            title="Minimize"
+            aria-label="Minimize"
+          >
+            {isHoveringLights && <span className="symbol">-</span>}
+          </button>
+          <button
+            type="button"
+            className="light green"
+            onClick={() => router.push("/english/one-word-substitution/study-mode/quiz")}
+            title="Open Study Suite"
+            aria-label="Open study mode"
+          >
+            {isHoveringLights && <span className="symbol">+</span>}
           </button>
         </div>
 
-        <div className="center-zone">
-          <div className="eyebrow">English</div>
-          <div className="quiz-title">
-            One Word <span className="accent">Substitution</span>
-          </div>
-
-          <div className="bubble-row" aria-hidden="true">
-            <div className="bubble" />
-            <div className="bubble" />
-          </div>
-
-          <div className="available-tag">
-            <span className="dot" />
-            {countLabel}
-          </div>
-
-          <p className="intro">
-            Rapid recall drills to convert long phrases into sharp, single-word answers.
-          </p>
+        <div className="topbar-right">
+          <button
+            type="button"
+            className="appearance-pill"
+            onClick={() => setTheme((v) => (v === "dark" ? "light" : "dark"))}
+            aria-label="Toggle Appearance"
+          >
+            {theme === "dark" ? (
+              <svg viewBox="0 0 24 24" fill="currentColor" className="icon-theme">
+                <path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="icon-theme">
+                <circle cx="12" cy="12" r="5" />
+                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+              </svg>
+            )}
+            <span>{theme === "dark" ? "Dark" : "Light"}</span>
+          </button>
         </div>
+      </header>
 
-        <div className="start-bar">
-          <Link className="start-btn" href="/english/one-word-substitution/study-mode/quiz">
-            Begin Study Quiz <span className="arrow">&gt;</span>
-          </Link>
+      {/* Centerpiece Minimalist Launcher */}
+      <section className="launcher-body">
+        <div className="centerpiece-content">
+          <div className="apple-dict-emblem">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-0.5-5.006L20 17" />
+              <path d="M6 12h8" />
+              <path d="M6 16h8" />
+            </svg>
+          </div>
+
+          <div className="title-group">
+            <span className="subtitle-tag">ENGLISH VOCABULARY SUITE</span>
+            <h1 className="hero-title">One Word Substitution</h1>
+            <p className="hero-caption">
+              Interactive study deck with bilingual Bengali translations &amp; usage definitions.
+            </p>
+          </div>
+
+          <div className="status-badge">
+            <span className="status-dot" />
+            <span>{countLabel}</span>
+          </div>
+
+          <div className="action-row">
+            <button
+              type="button"
+              className="btn-launch-primary"
+              onClick={() => router.push("/english/one-word-substitution/study-mode/quiz")}
+            >
+              <span>Start Study Mode</span>
+              <kbd className="key-hint">↵</kbd>
+            </button>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <style>{`
-        .start-page {
-          min-height: 100vh;
-          position: relative;
-          background:
-            radial-gradient(circle at 10% 15%, rgba(255, 185, 120, 0.16), transparent 32%),
-            radial-gradient(circle at 85% 20%, rgba(92, 132, 255, 0.18), transparent 28%),
-            linear-gradient(180deg, #12151d 0%, #0e1117 100%);
+      <style jsx>{`
+        /* ════════════════════════════════════════════════════
+           FULL SCREEN MINIMALIST APPLE DESIGN (BOTH PC & MOBILE)
+           ════════════════════════════════════════════════════ */
+        .apple-fullscreen-app {
+          --app-bg: radial-gradient(circle at 50% 35%, rgba(0, 122, 255, 0.12) 0%, transparent 65%), #09090b;
+          --topbar-bg: rgba(18, 18, 22, 0.7);
+          --border-color: rgba(255, 255, 255, 0.08);
+          --text-main: #ffffff;
+          --text-sub: #a1a1aa;
+          --text-dim: #71717a;
+          --pill-bg: rgba(255, 255, 255, 0.08);
+          --btn-secondary: rgba(255, 255, 255, 0.06);
+          --system-blue: #007aff;
+          --system-green: #30db5b;
+
+          width: 100vw;
+          height: 100vh;
+          max-width: 100vw;
+          max-height: 100vh;
+          overflow: hidden;
+          background: var(--app-bg);
+          color: var(--text-main);
+          font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Roboto, Arial, sans-serif;
+          display: flex;
+          flex-direction: column;
+          margin: 0;
           padding: 0;
-          color: #eef1ff;
-          transition: background 0.2s ease, color 0.2s ease;
         }
 
-        .start-page[data-theme="light"] {
-          background:
-            radial-gradient(circle at 10% 15%, rgba(255, 170, 90, 0.2), transparent 32%),
-            radial-gradient(circle at 85% 20%, rgba(60, 97, 194, 0.16), transparent 28%),
-            linear-gradient(180deg, #f2f4fb 0%, #e7e9f5 100%);
-          color: #1f2533;
+        .apple-fullscreen-app[data-theme="light"] {
+          --app-bg: radial-gradient(circle at 50% 35%, rgba(0, 122, 255, 0.08) 0%, transparent 65%), #f4f4f7;
+          --topbar-bg: rgba(240, 240, 245, 0.8);
+          --border-color: rgba(0, 0, 0, 0.07);
+          --text-main: #18181b;
+          --text-sub: #52525b;
+          --text-dim: #71717a;
+          --pill-bg: rgba(0, 0, 0, 0.05);
+          --btn-secondary: rgba(0, 0, 0, 0.05);
         }
 
-        .card-shell {
-          width: 100%;
-          max-width: 520px;
-          min-height: 100vh;
-          margin: 0 auto;
+        /* Top Bar */
+        .fullscreen-topbar {
+          height: 54px;
+          padding: 0 24px;
           display: flex;
-          flex-direction: column;
-          background: #12151d;
-          color: #eef1ff;
-          overflow-x: hidden;
+          align-items: center;
+          justify-content: space-between;
+          border-bottom: 0.5px solid var(--border-color);
+          background: var(--topbar-bg);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          z-index: 50;
+          flex-shrink: 0;
         }
 
-        .start-page[data-theme="light"] .card-shell {
-          background: #f2f4fb;
-          color: #1f2533;
+        .traffic-lights {
+          display: flex;
+          align-items: center;
+          gap: 9px;
         }
 
-        .perf {
+        .light {
+          width: 14px;
           height: 14px;
-          background-image: radial-gradient(circle, rgba(238, 241, 255, 0.8) 2px, transparent 2.6px);
-          background-size: 16px 16px;
-          background-position: 4px center;
-          border-bottom: 1px dashed rgba(122, 141, 196, 0.5);
-        }
-
-        .start-page[data-theme="light"] .perf {
-          background-image: radial-gradient(circle, rgba(31, 37, 51, 0.6) 2px, transparent 2.6px);
-          border-bottom-color: rgba(31, 37, 51, 0.2);
-        }
-
-        .header-bar {
-          min-height: 56px;
-          padding: 12px 20px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          text-align: center;
-          border-bottom: 1.5px solid rgba(122, 141, 196, 0.5);
-          background: #171a24;
-          position: relative;
-        }
-
-        .theme-toggle {
-          position: absolute;
-          right: 12px;
-          top: 50%;
-          transform: translateY(-50%);
-          min-width: 42px;
-          height: 34px;
-          padding: 0 10px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-          border-radius: 12px;
-          border: 1.5px solid rgba(122, 141, 196, 0.5);
-          background: #171a24;
-          color: #eef1ff;
-          box-shadow: 0 10px 22px rgba(0, 0, 0, 0.15);
-          cursor: pointer;
-        }
-
-        .start-page[data-theme="light"] .theme-toggle {
-          border-color: rgba(31, 37, 51, 0.2);
-          background: #ffffff;
-          color: #1f2533;
-        }
-
-        .start-page[data-theme="light"] .header-bar {
-          background: #ffffff;
-          border-bottom-color: rgba(31, 37, 51, 0.2);
-        }
-
-        .header-bar span {
-          font-size: 13px;
-          font-weight: 700;
-          letter-spacing: 4px;
-          color: #7dd5ff;
-          text-transform: uppercase;
-        }
-
-        .center-zone {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          text-align: center;
-          padding: 26px 24px 22px;
-        }
-
-        .eyebrow {
-          font-size: 11px;
-          letter-spacing: 3px;
-          color: #a8b5df;
-          text-transform: uppercase;
-          margin-bottom: 14px;
-        }
-
-        .start-page[data-theme="light"] .header-bar span,
-        .start-page[data-theme="light"] .eyebrow,
-        .start-page[data-theme="light"] .intro {
-          color: #4d576d;
-        }
-
-        .quiz-title {
-          font-family: "Fraunces", serif;
-          font-size: 34px;
-          line-height: 1.1;
-          letter-spacing: 0.4px;
-          color: #eef1ff;
-          margin-top: 2px;
-          margin-bottom: 8px;
-        }
-
-        .start-page[data-theme="light"] .quiz-title,
-        .start-page[data-theme="light"] .available-tag b,
-        .start-page[data-theme="light"] .start-btn {
-          color: #1f2533;
-        }
-
-        .accent {
-          color: #ffb45f;
-        }
-
-        .start-page[data-theme="light"] .accent,
-        .start-page[data-theme="light"] .available-tag .dot {
-          background: #d88a3d;
-          border-color: #d88a3d;
-        }
-
-        .bubble-row {
-          display: flex;
-          justify-content: center;
-          gap: 10px;
-          margin-top: 16px;
-        }
-
-        .bubble {
-          width: 12px;
-          height: 12px;
-          border: 1.5px solid #eef1ff;
           border-radius: 50%;
+          border: none;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          padding: 0;
         }
 
-        .start-page[data-theme="light"] .bubble {
-          border-color: #1f2533;
+        .red { background: #ff5f56; border: 0.5px solid #e0443e; }
+        .yellow { background: #ffbd2e; border: 0.5px solid #dea123; }
+        .green { background: #27c93f; border: 0.5px solid #1aab29; }
+
+        .symbol {
+          font-size: 9px;
+          font-weight: 800;
+          color: rgba(0, 0, 0, 0.7);
+          line-height: 1;
         }
 
-        .bubble:first-child {
-          background: #ffb45f;
-          border-color: #ffb45f;
-        }
-
-        .start-page[data-theme="light"] .bubble:first-child {
-          background: #d88a3d;
-          border-color: #d88a3d;
-        }
-
-        .available-tag {
-          margin-top: 10px;
+        .appearance-pill {
           display: inline-flex;
           align-items: center;
           gap: 6px;
-          margin-top: 18px;
-          padding: 5px 12px;
-          font-size: 11px;
-          letter-spacing: 1px;
-          color: #7dd5ff;
-          border: 1px dashed rgba(122, 141, 196, 0.5);
-          border-radius: 999px;
-          background: rgba(255, 255, 255, 0.02);
+          padding: 6px 14px;
+          border-radius: 100px;
+          background: var(--pill-bg);
+          border: 0.5px solid var(--border-color);
+          color: var(--text-main);
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: transform 0.1s ease, filter 0.15s ease;
         }
 
-        .start-page[data-theme="light"] .available-tag {
-          border-color: rgba(31, 37, 51, 0.2);
-          background: rgba(255, 255, 255, 0.7);
-        }
+        .appearance-pill:active { transform: scale(0.96); }
+        .icon-theme { width: 16px; height: 16px; color: var(--text-sub); }
 
-        .available-tag .dot {
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-          background: #7dd5ff;
-        }
-
-        .available-tag b {
-          color: #ffb45f;
-          font-weight: 700;
-        }
-
-        .intro {
-          margin: 18px 0 0;
-          max-width: 34ch;
-          color: #a8b5df;
-          font-size: 14px;
-          line-height: 1.65;
-        }
-
-        .start-bar {
-          padding: 16px 20px calc(18px + env(safe-area-inset-bottom));
-          position: sticky;
-          bottom: 0;
-          background: #12151d;
-          border-top: 1.5px dashed rgba(122, 141, 196, 0.5);
-        }
-
-        .start-page[data-theme="light"] .start-bar {
-          background: #f2f4fb;
-          border-top-color: rgba(31, 37, 51, 0.2);
-        }
-
-        .start-btn {
-          width: 100%;
+        /* Centerpiece Launcher */
+        .launcher-body {
+          flex: 1;
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 10px;
-          font-family: "Space Mono", monospace;
-          font-weight: 700;
-          font-size: 16px;
-          letter-spacing: 2px;
-          text-transform: uppercase;
-          color: #12151d;
-          background: #ffb45f;
-          border: 1.5px solid #ffb45f;
-          border-radius: 999px;
-          padding: 15px 14px;
-          text-decoration: none;
-          box-shadow: 4px 4px 0 #eef1ff;
+          padding: 24px 20px;
+          overflow: hidden;
         }
 
-        .start-page[data-theme="light"] .start-btn {
-          box-shadow: 4px 4px 0 #1f2533;
+        .centerpiece-content {
+          max-width: 520px;
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          gap: 28px;
         }
 
-        .theme-toggle svg {
-          width: 18px;
-          height: 18px;
+        .apple-dict-emblem {
+          width: 76px;
+          height: 76px;
+          border-radius: 20px;
+          background: linear-gradient(180deg, #007aff 0%, #0051b4 100%);
+          color: #ffffff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 12px 35px rgba(0, 122, 255, 0.35);
         }
 
-        .theme-toggle-label {
+        .apple-dict-emblem svg { width: 42px; height: 42px; }
+
+        .title-group {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .subtitle-tag {
           font-size: 12px;
           font-weight: 700;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          color: var(--system-blue);
         }
 
-        .start-btn:active {
-          transform: translate(4px, 4px);
-          box-shadow: 0 0 0 #eef1ff;
+        .hero-title {
+          font-size: clamp(2.4rem, 6vw, 3.4rem);
+          font-weight: 800;
+          letter-spacing: -0.04em;
+          margin: 0;
+          line-height: 1.1;
+          color: var(--text-main);
+        }
+
+        .hero-caption {
+          font-size: clamp(15px, 2vw, 17px);
+          line-height: 1.5;
+          color: var(--text-sub);
+          margin: 0;
+          max-width: 440px;
+        }
+
+        .status-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 6px 16px;
+          border-radius: 100px;
+          background: var(--pill-bg);
+          border: 0.5px solid var(--border-color);
+          font-size: 13px;
+          font-weight: 600;
+          color: var(--text-sub);
+        }
+
+        .status-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: var(--system-green);
+          box-shadow: 0 0 8px var(--system-green);
+        }
+
+        /* Action Controls */
+        .action-row {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 16px;
+          width: 100%;
+          flex-wrap: wrap;
+          margin-top: 6px;
+        }
+
+        .btn-launch-primary {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          padding: 15px 40px;
+          border-radius: 12px;
+          background: #007aff;
+          color: #ffffff;
+          font-size: 17px;
+          font-weight: 700;
+          cursor: pointer;
+          border: 1.5px solid rgba(255, 255, 255, 0.25);
+          box-shadow: 0 10px 28px rgba(0, 122, 255, 0.4);
+          transition: filter 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+        }
+
+        .btn-launch-primary:hover {
+          filter: brightness(1.1);
+          box-shadow: 0 14px 34px rgba(0, 122, 255, 0.5);
+        }
+
+        .btn-launch-primary:active {
+          transform: scale(0.97);
+        }
+
+        .key-hint {
+          font-size: 13px;
+          background: rgba(128, 128, 128, 0.18);
+          border: 0.5px solid var(--border-color);
+          color: var(--text-main);
+          padding: 2px 8px;
+          border-radius: 6px;
+          font-weight: 700;
+          line-height: 1;
+        }
+
+        /* Responsive spacing for smaller mobile phones */
+        @media (max-height: 620px) {
+          .centerpiece-content { gap: 16px; }
+          .apple-dict-emblem { width: 56px; height: 56px; }
+          .hero-title { font-size: 2rem; }
         }
       `}</style>
     </main>

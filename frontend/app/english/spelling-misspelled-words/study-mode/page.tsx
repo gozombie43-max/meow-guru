@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { fetchQuestions } from "@/lib/api/questions";
 
-export default function IdiomsPhrasesStudyModePage() {
+export default function SpellingMisspelledWordsStudyModePage() {
   const router = useRouter();
   const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [questionCount, setQuestionCount] = useState<number | null>(null);
@@ -34,7 +34,7 @@ export default function IdiomsPhrasesStudyModePage() {
     let active = true;
     fetchQuestions({
       subject: "english",
-      topic: "idioms-phrases",
+      topic: "spelling-misspelled-words",
       questionType: "study-mode",
       useCache: false,
     })
@@ -55,7 +55,7 @@ export default function IdiomsPhrasesStudyModePage() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.key === "Enter") && e.target === document.body) {
-        router.push("/english/idioms-phrases/study-mode/quiz");
+        router.push("/english/spelling-misspelled-words/study-mode/quiz");
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -99,7 +99,7 @@ export default function IdiomsPhrasesStudyModePage() {
           <button
             type="button"
             className="light green"
-            onClick={() => router.push("/english/idioms-phrases/study-mode/quiz")}
+            onClick={() => router.push("/english/spelling-misspelled-words/study-mode/quiz")}
             title="Open Study Suite"
             aria-label="Open study mode"
           >
@@ -142,7 +142,7 @@ export default function IdiomsPhrasesStudyModePage() {
 
           <div className="title-group">
             <span className="subtitle-tag">ENGLISH VOCABULARY SUITE</span>
-            <h1 className="hero-title">Idioms &amp; Phrases</h1>
+            <h1 className="hero-title">Spelling &amp; Misspelled Words</h1>
             <p className="hero-caption">
               Interactive study deck with bilingual Bengali translations &amp; usage definitions.
             </p>
@@ -157,7 +157,7 @@ export default function IdiomsPhrasesStudyModePage() {
             <button
               type="button"
               className="btn-launch-primary"
-              onClick={() => router.push("/english/idioms-phrases/study-mode/quiz")}
+              onClick={() => router.push("/english/spelling-misspelled-words/study-mode/quiz")}
             >
               <span>Start Study Mode</span>
               <kbd className="key-hint">↵</kbd>
