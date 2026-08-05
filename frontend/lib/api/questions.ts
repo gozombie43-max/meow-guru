@@ -71,21 +71,25 @@ export async function fetchQuestions(params: {
     return cached.promise;
   }
 
-  const request = (async () => {
-    const res = await fetchWithRetry(`${API}/api/questions?${query}`, { cache: "no-store" });
-    if (!res.ok) throw new Error('Failed to fetch questions');
-    const data = await res.json();
-    const value = data.questions as Question[];
+    const request = (async () => {
+      const res = await fetchWithRetry(`${API}/api/questions?${query}`, { cache: "no-store" });
+      if (!res.ok) throw new Error('Failed to fetch questions');
+      const data = await res.json();
+      let value = data.questions as Question[];
 
-    if (useCache) {
-      questionsCache.set(cacheKey, {
-        value,
-        expiresAt: Date.now() + QUESTION_CACHE_TTL_MS,
-      });
-    }
+      if (params.questionType !== "study-mode") {
+        value = value.filter(q => q.questionType !== "study-mode");
+      }
 
-    return value;
-  })();
+      if (useCache) {
+        questionsCache.set(cacheKey, {
+          value,
+          expiresAt: Date.now() + QUESTION_CACHE_TTL_MS,
+        });
+      }
+
+      return value;
+    })();
 
   if (useCache) {
     questionsCache.set(cacheKey, {
