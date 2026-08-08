@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import GradientWaves from '@/components/GradientWaves';
 import heroImage from '@/public/hero-image.webp';
 import Typewriter from '@/components/Typewriter';
 import {
@@ -25,6 +26,7 @@ import {
   Settings,
   Smartphone,
   Sparkles,
+  Globe,
   Swords,
   Sun,
   Trophy,
@@ -36,10 +38,10 @@ import { useThemeMode } from '@/hooks/useTheme';
 import styles from './page.module.css';
 
 const subjects = [
-  { title: 'Mathematics', href: '/mathematics', icon: Calculator, tone: 'math' },
-  { title: 'Reasoning', href: '/reasoning', icon: Brain, tone: 'reasoning' },
-  { title: 'English', href: '/english', icon: Bookmark, tone: 'english' },
-  { title: 'General Awareness', href: '/general-awareness', icon: Sparkles, tone: 'gk' },
+  { title: 'MATH', href: '/mathematics', icon: Calculator, tone: 'math' },
+  { title: 'REASONING', href: '/reasoning', icon: Brain, tone: 'reasoning' },
+  { title: 'ENGLISH', href: '/english', icon: Bookmark, tone: 'english' },
+  { title: 'GK', href: '/general-awareness', icon: Globe, tone: 'gk' },
 ] as const;
 
 const railItems = [
@@ -165,6 +167,39 @@ export default function Home() {
 
   return (
     <main className={`${styles.page} ${isDark ? styles.dark : styles.light}`}>
+      {/* GradientWaves — fixed full-page background */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: -1,
+          pointerEvents: 'none',
+        }}
+      >
+        <GradientWaves
+          horizonColor="#5227FF"
+          waveColor="#a78bfa"
+          crestColor="#ffffff"
+          speed={0.35}
+          amplitude={3.15}
+          waveScale={0.8}
+          waveRatio={0.9}
+          swell={30}
+          turbulence={18}
+          tilt={1.15}
+          zoom={1.0}
+          height={5.5}
+          fogDepth={14}
+          detail="medium"
+          brightness={1.0}
+          opacity={0.92}
+          mouseInteraction={true}
+          parallaxStrength={0.45}
+          grain={true}
+          grainIntensity={0.04}
+        />
+      </div>
       <button
         type="button"
         className={`${styles.sidebarBackdrop} ${sidebarOpen ? styles.sidebarBackdropOpen : ''}`}

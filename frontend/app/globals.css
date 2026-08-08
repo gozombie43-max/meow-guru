@@ -127,6 +127,11 @@ html {
   overscroll-behavior-x: none;
 }
 
+/* Home page: let the fixed GradientWaves canvas show through */
+html.home-redesign {
+  background: transparent;
+}
+
 body {
   background: transparent;
   color: var(--text-primary);
