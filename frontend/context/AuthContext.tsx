@@ -163,10 +163,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setTimeout(() => {
       setUser(prev => prev ? { ...prev, studyTime: (prev.studyTime || 0) + seconds } : prev);
     }, 0);
+    // Fire-and-forget telemetry — use a short timeout so a slow/offline backend
+    // never hangs or logs noisy errors. Silently discard all network failures.
     try {
-      await api.patch('/users/me/usage', { activeSeconds: seconds });
-    } catch (err) {
-      console.error('Failed to sync study time', err);
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 5000);
+      await api.patch('/users/me/usage', { activeSeconds: seconds }, {
+        signal: controller.signal,
+      });
+      clearTimeout(timer);
+    } catch {
+      // Intentionally silent — study-time sync is best-effort telemetry.
     }
   }, []);
 
