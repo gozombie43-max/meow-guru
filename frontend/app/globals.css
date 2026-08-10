@@ -154,7 +154,7 @@ body {
 }
 
 .page-transition-shell__page {
-  animation: page-transition-enter 220ms ease-out both;
+  animation: page-transition-enter 220ms ease-out;
 }
 
 .page-transition-shell__progress {

@@ -1212,7 +1212,7 @@
           'homonyms-homophones': { label: 'Homonyms & Homophones', quizzes: QUIZ_MODES },
           'idioms-phrases': { label: 'Idioms & Phrases', quizzes: QUIZ_MODES },
           modifiers: { label: 'Modifiers', quizzes: QUIZ_MODES },
-          'one-word-substitution': { label: 'One Word Substitution', quizzes: QUIZ_MODES },
+          'one-word-substitution': { label: 'One Word Substitution', quizzes: SYNONYMS_QUIZ_MODES },
           'para-jumbles': { label: 'Para Jumbles', quizzes: QUIZ_MODES },
           'para-sentence-completion': { label: 'Para / Sentence Completion', quizzes: QUIZ_MODES },
           parallelism: { label: 'Parallelism', quizzes: QUIZ_MODES },
@@ -1745,10 +1745,7 @@
         q &&
         typeof q === 'object' &&
         !Array.isArray(q) &&
-        typeof q.word === 'string' && q.word.trim() &&
-        Array.isArray(q.meanings) &&
-        Array.isArray(q.synonyms) &&
-        Array.isArray(q.antonyms)
+        (q.questionType === 'study-mode' || (typeof q.word === 'string' && q.word.trim() && Array.isArray(q.meanings)))
       );
     }
 

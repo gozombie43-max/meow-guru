@@ -81,6 +81,7 @@ const DEFAULT_QUIZ_OPTIONS = [
 const QUIZ_OPTIONS_BY_TOPIC: Record<string, string[]> = {
   mensuration: ["PYQ", "CareerWill", "Selection Way", "Tier 2"],
   "synonyms-antonyms": [...DEFAULT_QUIZ_OPTIONS, "Study Mode"],
+  "one-word-substitution": [...DEFAULT_QUIZ_OPTIONS, "Study Mode"],
 };
 
 const TOPIC_LABEL_OVERRIDES: Record<string, string> = {
