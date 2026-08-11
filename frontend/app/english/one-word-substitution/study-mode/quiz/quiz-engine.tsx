@@ -172,43 +172,44 @@ function MobileQuizView({ cards, bookmarked, toggleBookmark, theme, setTheme, ca
 
   return (
     <div className="ows-app" data-theme={theme}>
-      <div className={`navbar ${scrolled ? 'scrolled' : ''}`}>
-        <div className="navbar-row">
-          <div className="nav-left">
-            <span style={{ fontSize: '17px', fontWeight: 600, color: 'var(--ink)' }}>Vocabulary</span>
-          </div>
-          <div className="nav-right">
-            <div className="progress-pill">
-              <svg className="progress-svg" viewBox="0 0 20 20">
-                <circle className="progress-svg-bg" cx="10" cy="10" r="8"/>
-                <circle className="progress-svg-fg" cx="10" cy="10" r="8" strokeDasharray={circ} strokeDashoffset={offset}/>
-              </svg>
-              <span style={{ fontStyle: 'normal', fontWeight: 600 }}>{bookmarked.size}/{cards.length}</span>
+      <div className="mobile-header-fixed">
+        <div className="ows-navbar-row">
+          <div className="nav-left" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '0' }}>
+              <span style={{ fontSize: '18px', fontWeight: 700, color: 'var(--ink)', letterSpacing: '-0.3px' }}>One word substitution</span>
+              <span style={{ fontSize: '12px', color: 'var(--ink-soft)' }}>Tap a term to save it</span>
             </div>
-            <button className="theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
-              {theme === 'dark' ? <svg viewBox="0 0 24 24" fill="none"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              : <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/><circle cx="12" cy="12" r="4.5" stroke="currentColor" strokeWidth="1.8"/></svg>}
-            </button>
+            <div className="nav-right">
+              <div className="progress-pill">
+                <svg className="progress-svg" viewBox="0 0 20 20">
+                  <circle className="progress-svg-bg" cx="10" cy="10" r="8"/>
+                  <circle className="progress-svg-fg" cx="10" cy="10" r="8" strokeDasharray={circ} strokeDashoffset={offset}/>
+                </svg>
+                <span style={{ fontStyle: 'normal', fontWeight: 600 }}>{bookmarked.size}/{cards.length}</span>
+              </div>
+              <button className="theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+                {theme === 'dark' ? <svg viewBox="0 0 24 24" fill="none"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                : <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/><circle cx="12" cy="12" r="4.5" stroke="currentColor" strokeWidth="1.8"/></svg>}
+              </button>
+            </div>
+        </div>
+        <div className="search-wrap">
+          <div className="search-bar">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+            <input type="text" placeholder="Search terms" value={query} onChange={e => handleSearchChange(e.target.value)} />
           </div>
+          <button className={`filter-btn ${filterBadgeCount > 0 ? 'has-active' : ''}`} onClick={() => setIsSheetOpen(true)}>
+            <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+            {filterBadgeCount > 0 && <span className="filter-badge">{filterBadgeCount}</span>}
+          </button>
         </div>
-      </div>
-      <div className="large-title"><h1>One word substitution</h1><p>Tap a term to save it</p></div>
-      <div className={`search-wrap ${scrolled ? 'scrolled' : ''}`}>
-        <div className="search-bar">
-          <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
-          <input type="text" placeholder="Search terms" value={query} onChange={e => handleSearchChange(e.target.value)} />
-        </div>
-        <button className={`filter-btn ${filterBadgeCount > 0 ? 'has-active' : ''}`} onClick={() => setIsSheetOpen(true)}>
-          <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
-          {filterBadgeCount > 0 && <span className="filter-badge">{filterBadgeCount}</span>}
-        </button>
       </div>
 
-      <div className="list-label">Terms</div>
-      <div className="list">
-        {filteredCards.length > 0 ? filteredCards.map((card: SubstitutionCard) => <StudyCard key={card.id} card={card} isBookmarked={bookmarked.has(card.id)} onToggleBookmark={toggleBookmark} />) : <div style={{ textAlign: 'center', padding: '40px 16px', color: 'var(--ink-faint)', fontSize: '14px' }}>No terms match.</div>}
+      <div className="mobile-list-scrollable">
+        <div className="list">
+          {filteredCards.length > 0 ? filteredCards.map((card: SubstitutionCard) => <StudyCard key={card.id} card={card} isBookmarked={bookmarked.has(card.id)} onToggleBookmark={toggleBookmark} />) : <div style={{ textAlign: 'center', padding: '40px 16px', color: 'var(--ink-faint)', fontSize: '14px' }}>No terms match.</div>}
+        </div>
+        <footer className="spacer" />
       </div>
-      <footer className="spacer" />
       <div className={`sheet-overlay ${isSheetOpen ? 'open' : ''}`} onClick={() => setIsSheetOpen(false)} />
       <div className={`filter-sheet ${isSheetOpen ? 'open' : ''}`}>
         <div className="sheet-handle" />
@@ -620,39 +621,34 @@ export default function StudyModeQuizEngine() {
            ------------------------------------------- */
         .ows-app[data-theme="light"] { --bg: #F2F1F7; --card: #FFFFFF; --ink: #1C1C29; --ink-soft: #6B6B78; --ink-faint: #A6A6B2; --line: rgba(28,28,41,0.07); --divider: rgba(28,28,41,0.14); --accent: #4A55E1; --accent-soft: #EEEFFC; --mint: #2FB876; --mint-soft: #E4F6EC; --amber: #E0982E; --amber-soft: #FBF0DD; --radius-card: 20px; --safe-top: env(safe-area-inset-top, 0px); --safe-bottom: env(safe-area-inset-bottom, 0px); }
         .ows-app[data-theme="dark"] { --bg: #0B0B10; --card: #17171F; --ink: #F2F2F5; --ink-soft: #9797A3; --ink-faint: #5C5C66; --line: rgba(255,255,255,0.08); --divider: rgba(255,255,255,0.16); --accent: #7C86FF; --accent-soft: #1D1F3B; --mint: #3FD98E; --mint-soft: #12291F; --amber: #F0AC4A; --amber-soft: #2E2413; --radius-card: 20px; --safe-top: env(safe-area-inset-top, 0px); --safe-bottom: env(safe-area-inset-bottom, 0px); }
-        .ows-app { max-width: 520px; margin: 0 auto; min-height: 100dvh; position: relative; background: var(--bg); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif; color: var(--ink); transition: background .35s ease, color .35s ease; overflow-x: clip; -webkit-font-smoothing: antialiased; }
-        .navbar { position: sticky; top: 0; z-index: 30; padding-top: calc(var(--safe-top) + 10px); background: color-mix(in srgb, var(--bg) 82%, transparent); -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px); }
-        .navbar-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 16px 10px; }
-        .nav-left { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; opacity: 0; transform: translateY(6px); pointer-events: none; transition: opacity .2s ease, transform .2s ease; }
-        .navbar.scrolled .nav-left { opacity: 1; transform: translateY(0); pointer-events: auto; }
-        .nav-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-        .progress-pill { display: flex; align-items: center; gap: 6px; background: var(--card); border: 0.5px solid var(--line); border-radius: 20px; padding: 5px 12px 5px 6px; font-size: 13px; font-weight: 600; color: var(--ink); font-style: normal; }
-        .progress-svg { width: 20px; height: 20px; transform: rotate(-90deg); border: none !important; background: transparent !important; box-shadow: none !important; outline: none !important; margin: 0; padding: 0; }
+        .ows-app { max-width: 520px; margin: 0 auto; height: 100dvh; display: flex; flex-direction: column; position: relative; background: var(--bg); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif; color: var(--ink); transition: background .35s ease, color .35s ease; overflow: hidden; -webkit-font-smoothing: antialiased; }
+        .mobile-header-fixed { flex-shrink: 0; z-index: 30; background: color-mix(in srgb, var(--bg) 82%, transparent); -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px); padding-top: calc(var(--safe-top) + 8px); border-bottom: 0.5px solid var(--line); transition: background .35s ease, border-color .35s ease; }
+        .mobile-list-scrollable { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-top: 6px; }
+        .ows-navbar-row { display: flex; align-items: center; justify-content: space-between; padding: 0 16px 8px; }
+        .nav-left { display: flex; align-items: flex-start; justify-content: center; gap: 0; flex: 1; min-width: 0; opacity: 1; }
+        .nav-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+        .progress-pill { display: flex; align-items: center; gap: 5px; background: var(--card); border: 0.5px solid var(--line); border-radius: 16px; padding: 4px 10px 4px 5px; font-size: 12px; font-weight: 600; color: var(--ink); font-style: normal; transition: background .35s ease, border-color .35s ease, color .35s ease; }
+        .progress-svg { width: 16px; height: 16px; transform: rotate(-90deg); border: none !important; background: transparent !important; box-shadow: none !important; outline: none !important; margin: 0; padding: 0; }
         .progress-svg-bg { fill: none; stroke: var(--line); stroke-width: 3; }
         .progress-svg-fg { fill: none; stroke: var(--mint); stroke-width: 3; stroke-linecap: round; transition: stroke-dashoffset .6s cubic-bezier(.22,1,.36,1); }
-        .theme-toggle { width: 34px; height: 34px; border-radius: 50%; background: var(--card) !important; border: 0.5px solid var(--line) !important; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--ink); padding: 0; margin: 0; outline: none; box-shadow: none !important; }
-        .theme-toggle svg { width: 17px; height: 17px; }
-        .large-title { padding: 2px 16px 14px; }
-        .large-title h1 { font-size: 32px; font-weight: 700; letter-spacing: -0.6px; margin: 0 0 2px; }
-        .large-title p { margin: 0; font-size: 14px; color: var(--ink-soft); font-weight: 400; }
-        .search-wrap { padding: 4px 16px 12px; display: flex; align-items: center; gap: 8px; position: sticky; top: calc(var(--safe-top) + 60px); z-index: 29; background: color-mix(in srgb, var(--bg) 82%, transparent); -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px); border-bottom: 0.5px solid transparent; transition: border-color .2s ease; }
-        .search-wrap.scrolled { border-bottom-color: var(--line); }
-        .search-bar { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; background: var(--card); border-radius: 12px; padding: 9px 12px; border: 0.5px solid var(--line); }
-        .search-bar svg { width: 17px; height: 17px; color: var(--ink-faint); flex-shrink: 0; }
-        .search-bar input { border: none; outline: none; background: transparent; width: 100%; font-size: 15px; color: var(--ink); font-family: inherit; }
+        .theme-toggle { width: 30px; height: 30px; border-radius: 50%; background: var(--card) !important; border: 0.5px solid var(--line) !important; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--ink); padding: 0; margin: 0; outline: none; box-shadow: none !important; transition: background .35s ease, border-color .35s ease, color .35s ease; }
+        .theme-toggle svg { width: 15px; height: 15px; }
+        .search-wrap { padding: 0 16px 10px; display: flex; align-items: center; gap: 8px; }
+        .search-bar { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; background: var(--card); border-radius: 10px; padding: 6px 10px; border: 0.5px solid var(--line); transition: background .35s ease, border-color .35s ease; }
+        .search-bar svg { width: 15px; height: 15px; color: var(--ink-faint); flex-shrink: 0; }
+        .search-bar input { border: none; outline: none; background: transparent; width: 100%; font-size: 14px; color: var(--ink); font-family: inherit; }
         .search-bar input::placeholder { color: var(--ink-faint); }
-        .filter-btn { position: relative; flex-shrink: 0; width: 38px; height: 38px; border-radius: 12px; background: var(--card); border: 0.5px solid var(--line); display: flex; align-items: center; justify-content: center; color: var(--ink); cursor: pointer; transition: background .15s ease, border-color .15s ease, color .15s ease; }
-        .filter-btn svg { width: 18px; height: 18px; }
+        .filter-btn { position: relative; flex-shrink: 0; width: 33px; height: 33px; border-radius: 10px; background: var(--card); border: 0.5px solid var(--line); display: flex; align-items: center; justify-content: center; color: var(--ink); cursor: pointer; transition: background .35s ease, border-color .35s ease, color .35s ease; }
+        .filter-btn svg { width: 16px; height: 16px; }
         .filter-btn.has-active { background: var(--accent); border-color: var(--accent); color: #fff; }
         .filter-badge { position: absolute; top: -5px; right: -5px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; background: var(--mint); color: #fff; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid var(--bg); }
         .segment-scroll { display: flex; gap: 8px; padding: 2px 16px 16px; overflow-x: auto; scrollbar-width: none; }
         .segment-scroll::-webkit-scrollbar { display: none; }
         .ows-chip { flex-shrink: 0; padding: 8px 15px; border-radius: 18px; font-size: 13.5px; font-weight: 600; border: 0.5px solid var(--line); background: var(--card); color: var(--ink-soft); cursor: pointer; transition: background .15s ease, color .15s ease, border-color .15s ease; user-select: none; }
         .ows-chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-        .list-label { padding: 4px 16px 8px; font-size: 12.5px; font-weight: 600; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.4px; }
-        .list { margin: 0 16px 8px; padding: 0; display: flex; flex-direction: column; background: var(--card); border: 0.5px solid var(--line); border-radius: var(--radius-card); overflow: hidden; }
+        .list { margin: 0 16px 8px; padding: 0; display: flex; flex-direction: column; background: var(--card); border: 0.5px solid var(--line); border-radius: var(--radius-card); overflow: hidden; transition: background .35s ease, border-color .35s ease; }
         .ows-row { position: relative; overflow: hidden; }
-        .ows-row:not(:last-child) { border-bottom: 1px solid var(--divider); }
+        .ows-row:not(:last-child) { border-bottom: 1px solid var(--divider); transition: border-color .35s ease; }
         .swipe-action { position: absolute; top: 0; right: 0; height: 100%; width: 84px; display: flex; align-items: center; justify-content: center; background: var(--mint); color: #fff; flex-direction: column; gap: 3px; font-size: 11.5px; font-weight: 600; cursor: pointer; }
         .swipe-action svg { width: 19px; height: 19px; }
         .ows-card { background: var(--card); padding: 15px 16px; position: relative; transform: translateX(0); transition: transform .28s cubic-bezier(.22,1,.36,1), background .35s ease; will-change: transform; cursor: pointer; user-select: none; touch-action: pan-y; }
@@ -698,7 +694,7 @@ export default function StudyModeQuizEngine() {
         .reset-btn { flex: 0 0 auto; padding: 0 18px; border-radius: 14px; background: transparent; border: none; color: var(--ink-soft); font-size: 15px; font-weight: 600; cursor: pointer; }
         .done-btn { flex: 1; padding: 14px; border-radius: 14px; background: var(--ink); color: var(--bg); border: none; font-size: 16px; font-weight: 700; cursor: pointer; transition: opacity .15s ease; }
         .done-btn:active { opacity: 0.85; }
-        @media (max-width: 480px) { .large-title h1 { font-size: 26px; } .large-title p { font-size: 13px; } .term { font-size: 16px; } .bengali { font-size: 13.5px; } .definition { font-size: 13.5px; } .definition-bn { font-size: 12.5px; } .ows-card { padding: 12px 14px; } .nav-right { gap: 6px; } .progress-pill { padding: 4px 10px 4px 5px; font-size: 12px; } .spacer { height: calc(36px + var(--safe-bottom)); } }
+        @media (max-width: 480px) { .term { font-size: 16px; } .bengali { font-size: 13.5px; } .definition { font-size: 13.5px; } .definition-bn { font-size: 12.5px; } .ows-card { padding: 12px 14px; } .spacer { height: calc(36px + var(--safe-bottom)); } }
 
         /* -------------------------------------------
            DESKTOP STYLES
