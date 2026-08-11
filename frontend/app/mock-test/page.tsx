@@ -358,6 +358,11 @@ export default function MockTestPage() {
                     key={t} 
                     className={`${styles.tabBtn} ${tab === t ? styles.activeTabBtn : ''}`}
                     onClick={() => setTab(t as 'overview' | 'mock' | 'prev')}
+                  >
+                    {t === 'overview' ? 'Overview' : t === 'mock' ? 'Mock Tests' : 'Previous Year'}
+                  </button>
+                ))}
+              </div>
 
               {tab === 'overview' && (
                 <div className={styles.overviewTab}>
