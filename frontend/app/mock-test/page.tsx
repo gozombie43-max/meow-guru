@@ -1,12 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { DM_Sans, Nunito } from 'next/font/google';
 import { Search, Bell, Clock, Award, ChevronLeft, Share2, Filter, Play, CheckCircle, Lock } from 'lucide-react';
 import styles from './page.module.css';
-
-const dmSans = DM_Sans({ subsets: ['latin'], weight: ['400', '500', '600', '700'] });
-const nunito = Nunito({ subsets: ['latin'], weight: ['400', '600', '700', '800', '900'] });
 
 type ExamType = 'ssc' | 'rrb' | 'upsc' | 'banking' | 'other';
 
@@ -233,7 +229,7 @@ export default function MockTestPage() {
   };
 
   return (
-    <main className={`${styles.page} ${dmSans.className}`}>
+    <main className={styles.page}>
       <div className={styles.app}>
         {view === 'home' ? (
           <div className={styles.homeContainer}>
@@ -241,7 +237,7 @@ export default function MockTestPage() {
             <header className={styles.header}>
               <div className={styles.headerTop}>
                 <div>
-                  <h1 className={`${styles.greeting} ${nunito.className}`}>Hi, Student 👋</h1>
+                  <h1 className={styles.greeting}>Hi, Student 👋</h1>
                   <p className={styles.subtitle}>Ready to practice today?</p>
                 </div>
                 <div className={styles.headerActions}>
@@ -291,7 +287,7 @@ export default function MockTestPage() {
                   {categories.map((cat) => (
                     <button
                       key={cat.id}
-                      className={`${styles.catChip} ${activeCategory === cat.id ? styles.activeChip : ''} ${nunito.className}`}
+                      className={`${styles.catChip} ${activeCategory === cat.id ? styles.activeChip : ''}`}
                       onClick={() => setActiveCategory(cat.id)}
                     >
                       <span>{cat.emoji}</span> {cat.label}
@@ -318,7 +314,7 @@ export default function MockTestPage() {
                         </div>
                         <span className={`${styles.badge} ${styles['badge' + card.badgeTone]}`}>{card.badge}</span>
                       </div>
-                      <h3 className={`${styles.examName} ${nunito.className}`}>{card.name}</h3>
+                      <h3 className={styles.examName}>{card.name}</h3>
                       <p className={styles.examCount}>{card.count} included</p>
                     </div>
                   ))}
@@ -349,7 +345,7 @@ export default function MockTestPage() {
                   )}
                 </div>
                 <div>
-                  <h1 className={`${styles.detailTitle} ${nunito.className}`}>{selectedExam.name} Test Series</h1>
+                  <h1 className={styles.detailTitle}>{selectedExam.name} Test Series</h1>
                   <p className={styles.detailSubtitle}>Comprehensive preparation package</p>
                 </div>
               </div>
@@ -360,13 +356,8 @@ export default function MockTestPage() {
                 {['overview', 'mock', 'prev'].map((t) => (
                   <button 
                     key={t} 
-                    className={`${styles.tabBtn} ${tab === t ? styles.activeTabBtn : ''} ${nunito.className}`}
+                    className={`${styles.tabBtn} ${tab === t ? styles.activeTabBtn : ''}`}
                     onClick={() => setTab(t as 'overview' | 'mock' | 'prev')}
-                  >
-                    {t === 'overview' ? 'Overview' : t === 'mock' ? 'Mock Tests' : 'Previous Year'}
-                  </button>
-                ))}
-              </div>
 
               {tab === 'overview' && (
                 <div className={styles.overviewTab}>
