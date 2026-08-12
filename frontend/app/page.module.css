@@ -605,19 +605,39 @@
 }
 
 .math {
-  background: linear-gradient(145deg, #8058ff, #5237ed);
+  background: transparent;
+}
+
+.math svg {
+  width: 44px;
+  height: 44px;
 }
 
 .reasoning {
-  background: linear-gradient(145deg, #ff4a95, #ec2f70);
+  background: transparent;
+}
+
+.reasoning svg {
+  width: 44px;
+  height: 44px;
 }
 
 .english {
-  background: linear-gradient(145deg, #48cf86, #16a765);
+  background: transparent;
+}
+
+.english svg {
+  width: 44px;
+  height: 44px;
 }
 
 .gk {
-  background: linear-gradient(145deg, #ffb33f, #ff7a00);
+  background: transparent;
+}
+
+.gk svg {
+  width: 44px;
+  height: 44px;
 }
 
 .resources {

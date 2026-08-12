@@ -36,12 +36,16 @@ import {
 import { useAuth } from '@/context/AuthContext';
 import { useThemeMode } from '@/hooks/useTheme';
 import styles from './page.module.css';
+import MathIcon from '@/components/MathIcon';
+import ReasoningIcon from '@/components/ReasoningIcon';
+import EnglishIcon from '@/components/EnglishIcon';
+import GkIcon from '@/components/GkIcon';
 
 const subjects = [
-  { title: 'MATH', href: '/mathematics', icon: Calculator, tone: 'math' },
-  { title: 'REASONING', href: '/reasoning', icon: Brain, tone: 'reasoning' },
-  { title: 'ENGLISH', href: '/english', icon: Bookmark, tone: 'english' },
-  { title: 'GK', href: '/general-awareness', icon: Globe, tone: 'gk' },
+  { title: 'MATH', href: '/mathematics', icon: MathIcon, tone: 'math' },
+  { title: 'REASONING', href: '/reasoning', icon: ReasoningIcon, tone: 'reasoning' },
+  { title: 'ENGLISH', href: '/english', icon: EnglishIcon, tone: 'english' },
+  { title: 'GK', href: '/general-awareness', icon: GkIcon, tone: 'gk' },
 ] as const;
 
 const railItems = [

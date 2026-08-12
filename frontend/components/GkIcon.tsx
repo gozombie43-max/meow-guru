@@ -1,0 +1,41 @@
+import React from 'react';
+
+export interface GkIconProps extends React.SVGProps<SVGSVGElement> {
+  size?: number | string;
+}
+
+export default function GkIcon({ size = 24, ...props }: GkIconProps) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" viewBox="0 0 64 64" width={size} height={size} {...props}>
+      <defs>
+        <linearGradient id="zNxkO-WROgn35Px3ToweHa" x1="32" x2="32" y1="60" y2="55.96" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#7aa8d7"/>
+          <stop offset="1" stopColor="#c3d2e7"/>
+        </linearGradient>
+        <linearGradient id="zNxkO-WROgn35Px3ToweHc" x1="32" x2="32" y1="62" y2="56" xlinkHref="#zNxkO-WROgn35Px3ToweHa"/>
+        <linearGradient id="zNxkO-WROgn35Px3ToweHb" x1="17" x2="17" y1="56" y2="43.04" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#fbcc88"/>
+          <stop offset="1" stopColor="#ffe5c3"/>
+        </linearGradient>
+        <linearGradient id="zNxkO-WROgn35Px3ToweHd" x1="18.5" x2="18.5" y1="56" y2="46.05" xlinkHref="#zNxkO-WROgn35Px3ToweHb"/>
+        <linearGradient id="zNxkO-WROgn35Px3ToweHe" x1="21" x2="21" y1="56" y2="48.68" xlinkHref="#zNxkO-WROgn35Px3ToweHb"/>
+        <linearGradient id="zNxkO-WROgn35Px3ToweHf" x1="17" x2="17" y1="56" y2="43.04" gradientTransform="matrix(-1 0 0 1 64 0)" xlinkHref="#zNxkO-WROgn35Px3ToweHb"/>
+        <linearGradient id="zNxkO-WROgn35Px3ToweHg" x1="18.5" x2="18.5" y1="56" y2="46.05" gradientTransform="matrix(-1 0 0 1 64 0)" xlinkHref="#zNxkO-WROgn35Px3ToweHb"/>
+        <linearGradient id="zNxkO-WROgn35Px3ToweHh" x1="21" x2="21" y1="56" y2="48.68" gradientTransform="matrix(-1 0 0 1 64 0)" xlinkHref="#zNxkO-WROgn35Px3ToweHb"/>
+        <linearGradient id="zNxkO-WROgn35Px3ToweHi" x1="14" x2="50" y1="20" y2="20" xlinkHref="#zNxkO-WROgn35Px3ToweHa"/>
+      </defs>
+      <g data-name="general knowledge">
+        <path fill="url(#zNxkO-WROgn35Px3ToweHa)" d="M60,60H4a4,4,0,0,1-4-4c0-.1-1.62,0,64,0A4,4,0,0,1,60,60Z"/>
+        <path fill="url(#zNxkO-WROgn35Px3ToweHc)" d="M32,62a3,3,0,0,1-3-3V56h6v3A3,3,0,0,1,32,62Z"/>
+        <path fill="url(#zNxkO-WROgn35Px3ToweHb)" d="M32,56V50.48a7.44,7.44,0,0,0-10-7l-18,6.76A3,3,0,0,0,2,53.05v3Z"/>
+        <path fill="url(#zNxkO-WROgn35Px3ToweHd)" d="M32,56V53.47a7.42,7.42,0,0,0-10-6.93l-15.66,6A2,2,0,0,0,5,54.38V56Z"/>
+        <path fill="url(#zNxkO-WROgn35Px3ToweHe)" d="M32,56v-.93a6.4,6.4,0,0,0-8.2-6.13l-12.57,3.7A1.72,1.72,0,0,0,11.72,56Z"/>
+        <path fill="url(#zNxkO-WROgn35Px3ToweHf)" d="M32,56V50.48a7.44,7.44,0,0,1,10-7l18,6.76A3,3,0,0,1,62,53.05v3Z"/>
+        <path fill="url(#zNxkO-WROgn35Px3ToweHg)" d="M32,56V53.47a7.42,7.42,0,0,1,10-6.93l15.66,6A2,2,0,0,1,59,54.38V56Z"/>
+        <path fill="url(#zNxkO-WROgn35Px3ToweHh)" d="M32,56v-.93a6.4,6.4,0,0,1,8.2-6.13l12.57,3.7A1.72,1.72,0,0,1,52.28,56Z"/>
+        <circle cx="32" cy="20" r="18" fill="url(#zNxkO-WROgn35Px3ToweHi)"/>
+        <path fill="#d3e0ef" d="M50,21a16.68,16.68,0,0,0,0-2H42a21.26,21.26,0,0,0-1-5.73,17.52,17.52,0,0,0,5.7-3.73A15.31,15.31,0,0,0,45.4,8a15,15,0,0,1-5.17,3.43,23,23,0,0,0-7.64-9.23,1,1,0,0,0-1.18,0,23,23,0,0,0-7.64,9.23A15,15,0,0,1,18.6,8a15.31,15.31,0,0,0-1.24,1.55,17.52,17.52,0,0,0,5.7,3.73A21.26,21.26,0,0,0,22,19H14a16.68,16.68,0,0,0,0,2h8a21.26,21.26,0,0,0,1,5.73,17.52,17.52,0,0,0-5.7,3.73A15.31,15.31,0,0,0,18.6,32a15,15,0,0,1,5.17-3.43,23,23,0,0,0,7.64,9.23,1,1,0,0,0,1.18,0,23,23,0,0,0,7.64-9.23A15,15,0,0,1,45.4,32a15.31,15.31,0,0,0,1.24-1.55,17.52,17.52,0,0,0-5.7-3.73A21.26,21.26,0,0,0,42,21ZM32,4.25a20.75,20.75,0,0,1,6.33,7.85,22.71,22.71,0,0,1-12.66,0A20.75,20.75,0,0,1,32,4.25Zm0,31.5a20.75,20.75,0,0,1-6.33-7.85,22.71,22.71,0,0,1,12.66,0A20.75,20.75,0,0,1,32,35.75Zm7-9.71A24.36,24.36,0,0,0,25,26,18.72,18.72,0,0,1,24,21H40A18.72,18.72,0,0,1,39.05,26ZM24,19A18.72,18.72,0,0,1,25,14a24.36,24.36,0,0,0,14.1,0A18.72,18.72,0,0,1,40,19Z"/>
+      </g>
+    </svg>
+  );
+}
