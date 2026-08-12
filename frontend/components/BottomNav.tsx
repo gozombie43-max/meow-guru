@@ -39,7 +39,8 @@ export default function BottomNav() {
     isResourceRoute ||
     isStudyModeRoute ||
     isAccessCodeRoute ||
-    isDashboardRoute;
+    isDashboardRoute ||
+    isAiChat;
   const { theme } = useThemeMode();
   const lightSurfacePrefixes = [
     '/',
