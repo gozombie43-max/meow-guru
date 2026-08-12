@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useMemo } from "react";
+import React, { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import { fetchQuestions, type Question as ApiQuestion } from "@/lib/api/questions";
 
 type StudyModeMeaning = {
@@ -90,46 +90,99 @@ function toSubstitutionCard(entry: StudyModeEntry, index: number): SubstitutionC
 // -------------------------------------------------------------
 // MOBILE VIEW COMPONENTS
 // -------------------------------------------------------------
-function StudyCard({ card, isBookmarked, onToggleBookmark }: { card: SubstitutionCard; isBookmarked: boolean; onToggleBookmark: (id: string) => void }) {
+const StudyCard = React.memo(function StudyCard({ card, isBookmarked, onToggleBookmark }: { card: SubstitutionCard; isBookmarked: boolean; onToggleBookmark: (id: string) => void }) {
   const [definition] = useMemo(() => {
     const [def] = card.prompt.split(/Memory hook:/i);
     return [def?.trim() ?? ""];
   }, [card.prompt]);
 
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const [isSwiping, setIsSwiping] = useState(false);
+  const startX = useRef(0);
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    startX.current = e.touches[0].clientX;
+    setIsSwiping(true);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    if (!isSwiping) return;
+    const diff = e.touches[0].clientX - startX.current;
+    if (diff < 0) {
+      setSwipeOffset(Math.max(diff, -100)); // allow pull past 84 slightly
+    } else if (swipeOffset < 0) {
+      setSwipeOffset(Math.min(0, -84 + diff)); // closing from open state
+    }
+  };
+
+  const onTouchEnd = () => {
+    setIsSwiping(false);
+    if (swipeOffset < -42) {
+      setSwipeOffset(-84); // snap open
+    } else {
+      setSwipeOffset(0); // snap closed
+    }
+  };
+
   return (
-    <div className="ows-row relative overflow-hidden border-b border-[var(--divider)] last:border-b-0">
-      <div className="ows-card bg-[var(--card)] p-[15px_16px] relative cursor-pointer active:bg-[color-mix(in_srgb,var(--card)_90%,var(--ink)_4%)]"
-        onClick={() => onToggleBookmark(card.id)}>
-        <div className="flex items-start justify-between gap-[10px]">
-          <div className="flex items-center gap-[8px] min-w-0">
-            {isBookmarked && <span className="w-[6px] h-[6px] rounded-full bg-[var(--amber)] shrink-0" />}
-            <span className="text-[17px] font-semibold tracking-[-0.2px] whitespace-nowrap overflow-hidden text-ellipsis text-[var(--ink)]">{card.answer}</span>
+    <div className="ows-row">
+      <div 
+        className="swipe-action" 
+        onClick={(e) => { e.stopPropagation(); onToggleBookmark(card.id); setSwipeOffset(0); }} 
+        style={{ background: isBookmarked ? 'var(--amber)' : 'var(--mint)' }}
+      >
+        <svg viewBox="0 0 24 24" fill={isBookmarked ? "currentColor" : "none"} stroke={isBookmarked ? "none" : "currentColor"} strokeWidth={isBookmarked ? "0" : "2"}>
+          <path d="M6 3h12v18l-6-4.5L6 21V3z" strokeLinejoin="round" />
+        </svg>
+        {isBookmarked ? 'Unsave' : 'Save'}
+      </div>
+      <div 
+        className={`ows-card ${isBookmarked ? 'bookmarked' : ''}`}
+        style={{ transform: `translateX(${swipeOffset}px)`, transition: isSwiping ? 'none' : 'transform .28s cubic-bezier(.22,1,.36,1), background .35s ease' }}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+        onClick={() => { if (swipeOffset < 0) setSwipeOffset(0); else onToggleBookmark(card.id); }}
+      >
+        <div className="card-top">
+          <div className="term-block">
+            <span className="bookmark-dot" />
+            <span className="term">{card.answer}</span>
             <div onClick={(e) => e.stopPropagation()} className="shrink-0 flex"><SpeakerBtn text={card.answer} size={26} /></div>
           </div>
           {card.answerTranslation && <span className="bengali bn text-[14.5px] font-medium text-[var(--ink-soft)] text-right shrink-0 whitespace-nowrap">{card.answerTranslation}</span>}
         </div>
         <div className="flex items-start justify-between gap-[10px] mt-[5px]">
-          <div className="text-[14px] text-[var(--accent)] leading-[1.42]">{definition}</div>
+          <div className="definition">{definition}</div>
           <div onClick={(e) => e.stopPropagation()} className="shrink-0 flex mt-[2px]"><SpeakerBtn text={definition} size={22} /></div>
         </div>
         {card.definitionTranslation && <div className="definition-bn bn text-[13.5px] text-[var(--ink-soft)] leading-[1.4] mt-[4px] max-w-[92%]">{card.definitionTranslation}</div>}
-        <div className="flex gap-[6px] mt-[9px]">
-          <span className="text-[11px] font-semibold px-[8px] py-[3px] rounded-[8px] bg-[var(--accent-soft)] text-[var(--ink-soft)]">{card.label}</span>
+        <div className="tag-row">
+          <span className="tag">{card.label || "General"}</span>
         </div>
       </div>
     </div>
   );
-}
+});
 
 function MobileQuizView({ cards, bookmarked, toggleBookmark, theme, setTheme, categories }: any) {
   const [query, setQuery] = useState("");
   const [miniQuery, setMiniQuery] = useState("");
   const [activeCats, setActiveCats] = useState<Set<string>>(new Set());
+  const [activeLetters, setActiveLetters] = useState<Set<string>>(new Set());
   const [bookmarkedOnly, setBookmarkedOnly] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [catSectionCollapsed, setCatSectionCollapsed] = useState(false);
+  const [lettersSectionCollapsed, setLettersSectionCollapsed] = useState(false);
   const [statusSectionCollapsed, setStatusSectionCollapsed] = useState(false);
+
+  const categoryCounts = useMemo(() => {
+    return categories.map((cat: string) => ({
+      cat,
+      count: cards.filter((d: SubstitutionCard) => (d.label || "General") === cat).length
+    })).sort((a: any, b: any) => b.count - a.count);
+  }, [categories, cards]);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 40);
@@ -141,10 +194,11 @@ function MobileQuizView({ cards, bookmarked, toggleBookmark, theme, setTheme, ca
     let items = cards as SubstitutionCard[];
     if (bookmarkedOnly) items = items.filter(d => bookmarked.has(d.id));
     if (activeCats.size > 0) items = items.filter(d => activeCats.has(d.label || "General"));
+    if (activeLetters.size > 0) items = items.filter(d => activeLetters.has(d.answer.charAt(0).toUpperCase()));
     const q = (query || miniQuery).trim().toLowerCase();
     if (q) items = items.filter(d => d.answer.toLowerCase().includes(q) || d.prompt.toLowerCase().includes(q));
     return items;
-  }, [cards, bookmarkedOnly, activeCats, query, miniQuery, bookmarked]);
+  }, [cards, bookmarkedOnly, activeCats, activeLetters, query, miniQuery, bookmarked]);
 
   const toggleCat = (cat: string) => {
     setActiveCats(prev => {
@@ -168,7 +222,7 @@ function MobileQuizView({ cards, bookmarked, toggleBookmark, theme, setTheme, ca
   const handleSearchChange = (val: string) => { setQuery(val); setMiniQuery(val); };
   const circ = 2 * Math.PI * 8;
   const offset = cards.length === 0 ? circ : circ - (bookmarked.size / cards.length) * circ;
-  const filterBadgeCount = activeCats.size + (bookmarkedOnly ? 1 : 0);
+  const filterBadgeCount = activeCats.size + activeLetters.size + (bookmarkedOnly ? 1 : 0);
 
   return (
     <div className="ows-app" data-theme={theme}>
@@ -218,9 +272,28 @@ function MobileQuizView({ cards, bookmarked, toggleBookmark, theme, setTheme, ca
           <div className={`sheet-section ${catSectionCollapsed ? 'collapsed' : ''}`}>
             <div className="sheet-section-head"><span>Category</span><button className="section-toggle" onClick={() => setCatSectionCollapsed(!catSectionCollapsed)}>{catSectionCollapsed ? '+' : '—'}</button></div>
             <div className="chip-grid">
-              {categories.map((cat: string) => {
-                const count = cards.filter((d: SubstitutionCard) => (d.label || "General") === cat).length;
+              {categoryCounts.map(({cat, count}: any) => {
                 return <div key={cat} className={`ows-chip ${activeCats.has(cat) ? 'active' : ''}`} onClick={() => toggleCat(cat)}>{cat} · {count}</div>;
+              })}
+            </div>
+          </div>
+          <div className={`sheet-section ${lettersSectionCollapsed ? 'collapsed' : ''}`}>
+            <div className="sheet-section-head"><span>First Letter</span><button className="section-toggle" onClick={() => setLettersSectionCollapsed(!lettersSectionCollapsed)}>{lettersSectionCollapsed ? '+' : '—'}</button></div>
+            <div className="chip-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(36px, 1fr))', gap: '8px' }}>
+              {Array.from("ABCDEFGHIJKLMNOPQRSTUVWXYZ").map(letter => {
+                return (
+                  <div key={letter}
+                    className={`ows-chip ${activeLetters.has(letter) ? 'active' : ''}`}
+                    onClick={() => {
+                      const next = new Set(activeLetters);
+                      if (next.has(letter)) next.delete(letter); else next.add(letter);
+                      setActiveLetters(next);
+                    }}
+                    style={{ padding: '8px 0', textAlign: 'center', borderRadius: '10px' }}
+                  >
+                    {letter}
+                  </div>
+                )
               })}
             </div>
           </div>
@@ -235,7 +308,7 @@ function MobileQuizView({ cards, bookmarked, toggleBookmark, theme, setTheme, ca
           </div>
         </div>
         <div className="sheet-footer">
-          <button className="reset-btn" onClick={() => { setActiveCats(new Set()); setBookmarkedOnly(false); }}>Reset</button>
+          <button className="reset-btn" onClick={() => { setActiveCats(new Set()); setActiveLetters(new Set()); setBookmarkedOnly(false); }}>Reset</button>
           <button className="done-btn" onClick={() => setIsSheetOpen(false)}>Show {filteredCards.length} results</button>
         </div>
       </div>
@@ -366,14 +439,33 @@ function SpeakerBtn({ text, size = 22 }: { text: string; size?: number }) {
   );
 }
 
+const SidebarItem = React.memo(function SidebarItem({ d, selectedId, setSelectedId, getAbbr }: any) {
+  return (
+    <div className={`dt-sidebar-item ${d.id === selectedId ? 'active' : ''}`} onClick={() => setSelectedId(d.id)}>
+      <span className="dt-term">{d.answer}</span>
+      <span className="dt-pos">{getAbbr(d.label || '')}</span>
+    </div>
+  );
+});
+
 function DesktopQuizView({ cards, bookmarked, toggleBookmark, theme, setTheme, categories }: any) {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCats, setActiveCats] = useState<Set<string>>(new Set());
+  const [activeLetters, setActiveLetters] = useState<Set<string>>(new Set());
   const [bookmarkedOnly, setBookmarkedOnly] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [catSectionCollapsed, setCatSectionCollapsed] = useState(false);
+  const [lettersSectionCollapsed, setLettersSectionCollapsed] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(cards[0]?.id || null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const sidebarListRef = useRef<HTMLDivElement>(null);
+
+  const categoryCounts = useMemo(() => {
+    return categories.map((cat: string) => ({
+      cat,
+      count: cards.filter((d: SubstitutionCard) => (d.label || "General") === cat).length
+    })).sort((a: any, b: any) => b.count - a.count);
+  }, [categories, cards]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -390,22 +482,25 @@ function DesktopQuizView({ cards, bookmarked, toggleBookmark, theme, setTheme, c
     let items = cards as SubstitutionCard[];
     if (bookmarkedOnly) items = items.filter(d => bookmarked.has(d.id));
     if (activeCats.size > 0) items = items.filter(d => activeCats.has(d.label || "General"));
+    if (activeLetters.size > 0) items = items.filter(d => activeLetters.has(d.answer.charAt(0).toUpperCase()));
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       items = items.filter(d => d.answer.toLowerCase().includes(q) || d.prompt.toLowerCase().includes(q));
     }
     return items;
-  }, [cards, searchQuery, bookmarkedOnly, activeCats, bookmarked]);
+  }, [cards, searchQuery, bookmarkedOnly, activeCats, activeLetters, bookmarked]);
 
-  // Sync selectedId if missing
+  // Sync selectedId if missing or not in currently filtered view
   useEffect(() => {
-    if (cards.length > 0 && (!selectedId || !cards.find((c: SubstitutionCard) => c.id === selectedId))) {
-      setSelectedId(cards[0].id);
+    if (visibleSidebarData.length > 0 && (!selectedId || !visibleSidebarData.find((c: SubstitutionCard) => c.id === selectedId))) {
+      setSelectedId(visibleSidebarData[0].id);
+    } else if (visibleSidebarData.length === 0) {
+      setSelectedId(null);
     }
-  }, [cards, selectedId]);
+  }, [visibleSidebarData, selectedId]);
 
   const selectedIndex = cards.findIndex((c: SubstitutionCard) => c.id === selectedId);
-  const activeCard = cards[selectedIndex] || cards[0];
+  const activeCard = selectedId ? cards[selectedIndex] : null;
 
   const goPrev = () => { if (selectedIndex > 0) setSelectedId(cards[selectedIndex - 1].id); };
   const goNext = () => { if (selectedIndex < cards.length - 1) setSelectedId(cards[selectedIndex + 1].id); };
@@ -447,10 +542,7 @@ function DesktopQuizView({ cards, bookmarked, toggleBookmark, theme, setTheme, c
           <div className="dt-idx-label">VOCABULARY INDEX ({visibleSidebarData.length})</div>
           <div className="dt-sidebar-list" ref={sidebarListRef}>
             {visibleSidebarData.map(d => (
-              <div key={d.id} className={`dt-sidebar-item ${d.id === selectedId ? 'active' : ''}`} onClick={() => setSelectedId(d.id)}>
-                <span className="dt-term">{d.answer}</span>
-                <span className="dt-pos">{getAbbr(d.label || '')}</span>
-              </div>
+              <SidebarItem key={d.id} d={d} selectedId={selectedId} setSelectedId={setSelectedId} getAbbr={getAbbr} />
             ))}
           </div>
         </aside>
@@ -505,27 +597,60 @@ function DesktopQuizView({ cards, bookmarked, toggleBookmark, theme, setTheme, c
             <svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
           </button>
         </div>
-        <div className="sheet-body">
-          <div className="sheet-section">
-            <div className="sheet-section-head" style={{ color: 'var(--dt-ink)' }}><span>Category</span></div>
-            <div className="chip-grid">
-              {categories.map((cat: string) => {
-                const count = cards.filter((d: SubstitutionCard) => (d.label || "General") === cat).length;
-                return (
-                  <div key={cat} 
-                    className={`ows-chip ${activeCats.has(cat) ? 'active' : ''}`} 
-                    onClick={() => {
-                      const next = new Set(activeCats);
-                      if (next.has(cat)) next.delete(cat); else next.add(cat);
-                      setActiveCats(next);
-                    }}
-                    style={{ background: activeCats.has(cat) ? 'var(--dt-blue)' : 'var(--dt-bg-sidebar)', color: activeCats.has(cat) ? '#fff' : 'var(--dt-ink)', borderColor: activeCats.has(cat) ? 'var(--dt-blue)' : 'var(--dt-border)' }}
-                  >
-                    {cat} · {count}
-                  </div>
-                );
-              })}
+        <div className="sheet-body" style={{ overflowY: 'auto' }}>
+          <div className={`sheet-section ${catSectionCollapsed ? 'collapsed' : ''}`} style={{ borderBottom: '1px solid var(--dt-border)', paddingBottom: '16px', marginBottom: '16px' }}>
+            <div className="sheet-section-head" style={{ color: 'var(--dt-ink)', display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontWeight: 600 }}>
+              <span>Category</span>
+              <button onClick={() => setCatSectionCollapsed(!catSectionCollapsed)} style={{ background: 'transparent', border: 'none', color: 'var(--dt-ink-soft)', cursor: 'pointer', fontSize: '18px', padding: '0 4px' }}>
+                {catSectionCollapsed ? '+' : '—'}
+              </button>
             </div>
+            {!catSectionCollapsed && (
+              <div className="chip-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {categoryCounts.map(({cat, count}: any) => {
+                  return (
+                    <div key={cat} 
+                      className={`ows-chip ${activeCats.has(cat) ? 'active' : ''}`} 
+                      onClick={() => {
+                        const next = new Set(activeCats);
+                        if (next.has(cat)) next.delete(cat); else next.add(cat);
+                        setActiveCats(next);
+                      }}
+                      style={{ background: activeCats.has(cat) ? 'var(--dt-blue)' : 'var(--dt-bg-sidebar)', color: activeCats.has(cat) ? '#fff' : 'var(--dt-ink)', border: `1px solid ${activeCats.has(cat) ? 'var(--dt-blue)' : 'var(--dt-border)'}`, borderRadius: '12px', padding: '6px 12px', fontSize: '13.5px', cursor: 'pointer' }}
+                    >
+                      {cat} · {count}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+          <div className={`sheet-section ${lettersSectionCollapsed ? 'collapsed' : ''}`} style={{ borderBottom: '1px solid var(--dt-border)', paddingBottom: '16px', marginBottom: '16px' }}>
+            <div className="sheet-section-head" style={{ color: 'var(--dt-ink)', display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontWeight: 600 }}>
+              <span>First Letter</span>
+              <button onClick={() => setLettersSectionCollapsed(!lettersSectionCollapsed)} style={{ background: 'transparent', border: 'none', color: 'var(--dt-ink-soft)', cursor: 'pointer', fontSize: '18px', padding: '0 4px' }}>
+                {lettersSectionCollapsed ? '+' : '—'}
+              </button>
+            </div>
+            {!lettersSectionCollapsed && (
+              <div className="chip-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(36px, 1fr))', gap: '6px' }}>
+                {Array.from("ABCDEFGHIJKLMNOPQRSTUVWXYZ").map(letter => {
+                  return (
+                    <div key={letter}
+                      className={`ows-chip ${activeLetters.has(letter) ? 'active' : ''}`}
+                      onClick={() => {
+                        const next = new Set(activeLetters);
+                        if (next.has(letter)) next.delete(letter); else next.add(letter);
+                        setActiveLetters(next);
+                      }}
+                      style={{ background: activeLetters.has(letter) ? 'var(--dt-blue)' : 'var(--dt-bg-sidebar)', color: activeLetters.has(letter) ? '#fff' : 'var(--dt-ink)', border: `1px solid ${activeLetters.has(letter) ? 'var(--dt-blue)' : 'var(--dt-border)'}`, borderRadius: '8px', padding: '8px 0', fontSize: '14px', cursor: 'pointer', textAlign: 'center' }}
+                    >
+                      {letter}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
           </div>
           <div className="sheet-section" style={{ borderBottom: 'none' }}>
             <div className="sheet-section-head" style={{ color: 'var(--dt-ink)' }}><span>Status</span></div>
@@ -541,7 +666,7 @@ function DesktopQuizView({ cards, bookmarked, toggleBookmark, theme, setTheme, c
           </div>
         </div>
         <div className="sheet-footer" style={{ borderTop: '0.5px solid var(--dt-border)' }}>
-          <button className="reset-btn" onClick={() => { setActiveCats(new Set()); setBookmarkedOnly(false); }} style={{ color: 'var(--dt-ink-soft)' }}>Reset</button>
+          <button className="reset-btn" onClick={() => { setActiveCats(new Set()); setActiveLetters(new Set()); setBookmarkedOnly(false); }} style={{ color: 'var(--dt-ink-soft)' }}>Reset</button>
           <button className="done-btn" onClick={() => setIsFilterOpen(false)} style={{ background: 'var(--dt-blue)', color: '#fff' }}>Show {visibleSidebarData.length} results</button>
         </div>
       </div>
@@ -584,13 +709,13 @@ export default function StudyModeQuizEngine() {
   const studyCards = cards.length ? cards : DEMO_CARDS;
   const categories = Array.from(new Set(studyCards.map(c => c.label || "General")));
 
-  const toggleBookmark = (id: string) => {
+  const toggleBookmark = useCallback((id: string) => {
     setBookmarked(prev => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id); else next.add(id);
       return next;
     });
-  };
+  }, []);
 
   const sharedProps = { cards: studyCards, bookmarked, toggleBookmark, theme, setTheme, categories };
 
