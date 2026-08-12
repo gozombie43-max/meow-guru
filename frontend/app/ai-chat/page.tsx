@@ -39,12 +39,15 @@ type ChatSession = {
 
 const ASSISTANT_CONTEXT = `You are a friendly AI study partner for SSC CGL and CHSL aspirants.
 Help with concept clarification, step-by-step solutions, shortcuts, practice questions, and revision notes.
-Keep answers concise, structured, and easy to scan.
-For each new step or distinct idea, use a numbered item like 1., 2., 3. or a bullet dot like •.
-For practice questions, present each question as its own numbered item so the list is easy to follow.
-Never write multiple practice questions as plain paragraphs under one heading; every new question prompt must start with a number or bullet.
+Keep answers extremely concise, structured, and visually organized.
+Use bold headings ('### Heading') for distinct sections. 
+Keep paragraphs under 2 sentences. 
+For each new step, concept, or distinct idea, ALWAYS use a numbered list ('1., 2., 3.') or bullet points ('- '). 
+For practice questions, present each question as its own numbered item. Never group multiple practice questions into a single paragraph.
 Use markdown for formatting and LaTeX math with $...$ or $$...$$ when needed.
-When a chart or geometry diagram would help, add one fenced JSON block after the explanation:
+When a chart or geometry diagram would help, add EXACTLY ONE fenced JSON block after the explanation. 
+CRITICAL RULE: NEVER format your responses as tables. Even if presenting data like synonyms or comparisons, ALWAYS use bulleted or numbered lists instead of tables.
+
 \`\`\`ssc-visual
 {"type":"chart","chartType":"bar","title":"Short title","labels":["A","B"],"values":[10,20],"unit":"%"}
 \`\`\`
@@ -54,8 +57,7 @@ or
 \`\`\`
 For mensuration diagrams, supported shape types include sphere, hemisphere, cone, cylinder, frustum, and cylinder_with_hemisphere. Use 2D exam-style 3D notation with radius, height, and slant-height labels where useful.
 For a cylinder with hemispherical top, use: {"type":"cylinder_with_hemisphere","radius":3,"height":8,"labels":{"radius":"r = 3 cm","height":"cylinder height = 8 cm"}}
-Use only these visual types: chart, diagram.
-Never create markdown tables or visual tables. Give data in a clear list format instead.`;
+Use only these visual types: table, chart, diagram.`;
 
 function createChatId() {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
@@ -288,65 +290,7 @@ function splitSimpleTableLine(line: string, expectedColumns?: number): string[] 
 }
 
 function normalizeSimpleTables(content: string) {
-  if (/```(?:ssc-visual|visual|visual-json)/i.test(content)) return content;
-
-  const lines = content.split(/\r?\n/);
-  const remove = new Set<number>();
-  const visualBlocks: string[] = [];
-
-  for (let index = 0; index < lines.length; index += 1) {
-    const header = splitSimpleTableLine(lines[index]);
-    if (!header || header.length < 2 || header.length > 6) continue;
-
-    const rows: string[][] = [];
-    let cursor = index + 1;
-
-    while (cursor < lines.length) {
-      const row = splitSimpleTableLine(lines[cursor], header.length);
-      if (!row || row.length < 2 || row.length > header.length) break;
-      rows.push(row);
-      cursor += 1;
-    }
-
-    if (rows.length < 2) continue;
-
-    let title = 'Table';
-    let titleIndex = index - 1;
-    while (titleIndex >= 0 && !lines[titleIndex].trim()) titleIndex -= 1;
-    if (
-      titleIndex >= 0 &&
-      lines[titleIndex].trim().length <= 70 &&
-      !/[.!?]$/.test(lines[titleIndex].trim())
-    ) {
-      title = lines[titleIndex].trim();
-      remove.add(titleIndex);
-    }
-
-    visualBlocks.push(
-      `\`\`\`ssc-visual\n${JSON.stringify({
-        type: 'table',
-        title,
-        headers: header,
-        rows,
-      })}\n\`\`\``
-    );
-
-    for (let removeIndex = index; removeIndex < cursor; removeIndex += 1) {
-      remove.add(removeIndex);
-    }
-
-    index = cursor - 1;
-  }
-
-  if (visualBlocks.length === 0) return content;
-
-  const markdown = lines
-    .filter((_line, index) => !remove.has(index))
-    .join('\n')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim();
-
-  return [markdown, ...visualBlocks].filter(Boolean).join('\n\n');
+  return content;
 }
 
 function AiChatPageContent() {
@@ -871,7 +815,8 @@ function AiChatPageContent() {
           --bubble-ai-text: #000000;
           --surface-transparent: rgba(255, 255, 255, 0);
 
-          min-height: 100dvh;
+          height: 100dvh;
+          overflow: hidden;
           display: grid;
           grid-template-columns: 288px minmax(0, 1fr);
           background: var(--surface);
@@ -1107,7 +1052,7 @@ function AiChatPageContent() {
 
         .chat-workspace {
           min-width: 0;
-          min-height: 100dvh;
+          height: 100dvh;
           display: grid;
           grid-template-rows: auto minmax(0, 1fr) auto;
           background: var(--surface);
@@ -1697,8 +1642,8 @@ function AiChatPageContent() {
           .ai-chat-page {
             grid-template-columns: 1fr;
             width: 100%;
-            min-height: 100svh;
-            overflow-x: hidden;
+            height: 100dvh;
+            overflow: hidden;
           }
 
           .sidebar-backdrop {
