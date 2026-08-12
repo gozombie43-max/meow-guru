@@ -41,6 +41,7 @@ import EnglishIcon from '@/components/EnglishIcon';
 import GkIcon from '@/components/GkIcon';
 import BooksIcon from '@/components/BooksIcon';
 import BattleIcon from '@/components/BattleIcon';
+import { AiChatIcon } from '@/components/AiChatIcon';
 
 const subjects = [
   { title: 'MATH', href: '/mathematics', icon: MathIcon, tone: 'math' },
@@ -54,7 +55,7 @@ const railItems = [
   { label: 'Mock', href: '/mock-test', icon: FileCheck2 },
   { label: 'Play', href: '/play', icon: Play },
   { label: 'Videos', href: '/videos', icon: Video },
-  { label: 'AI Chat', href: '/ai-chat', icon: Bot },
+  { label: 'AI Chat', href: '/ai-chat', icon: AiChatIcon },
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
 ] as const;
 

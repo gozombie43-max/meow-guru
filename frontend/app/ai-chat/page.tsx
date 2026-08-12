@@ -12,10 +12,11 @@ import {
   Plus,
   Search,
   ArrowUp,
-  Sparkles,
+  Share,
   Trash2,
   X,
 } from 'lucide-react';
+import { AiChatIcon } from '@/components/AiChatIcon';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import VisualResponse from '@/components/ai/VisualResponse';
 import api from '@/lib/axios';
@@ -680,7 +681,7 @@ function AiChatPageContent() {
         </div>
       </aside>
 
-      <section className="chat-workspace" aria-label="AI Tutor chat">
+      <section className={`chat-workspace ${!hasMessages ? 'is-empty' : ''}`} aria-label="AI Tutor chat">
         <header className="chat-topbar">
           <div className="topbar-left">
             <button className="mobile-menu icon-btn" type="button" onClick={() => setSidebarOpen((value) => !value)} aria-label="Open sidebar">
@@ -703,9 +704,7 @@ function AiChatPageContent() {
         <div className="chat-scroll" ref={scrollRef}>
           {!hasMessages ? (
             <section className="welcome-panel">
-              <div className="assistant-mark">
-                <Sparkles size={26} />
-              </div>
+              <AiChatIcon size={48} style={{ color: 'var(--text-primary)', display: 'block', margin: '0 auto 16px auto' }} />
               <h1>How can I help you study today?</h1>
               <p>Ask for shortcuts, explanations, practice questions, revision notes, or paste a question for a clean solution.</p>
             </section>
@@ -1676,6 +1675,12 @@ function AiChatPageContent() {
 
           .mobile-menu {
             display: inline-flex;
+          }
+
+          .chat-workspace.is-empty {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
           }
 
           .chat-topbar {
