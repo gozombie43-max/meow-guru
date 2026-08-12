@@ -586,8 +586,6 @@
   height: 22px;
 }
 
-.resourceIcon svg,
-.battleIcon svg,
 .featureItem svg {
   width: 24px;
   height: 24px;
@@ -679,11 +677,17 @@
 }
 
 .resourceIcon {
-  background: linear-gradient(145deg, #18b6c8, #0d7490);
+  background: transparent;
 }
 
 .battleIcon {
-  background: linear-gradient(145deg, #7b22d8, #5018b5);
+  background: transparent;
+}
+
+.resourceIcon svg,
+.battleIcon svg {
+  width: 48px;
+  height: 48px;
 }
 
 .resourceCard strong,

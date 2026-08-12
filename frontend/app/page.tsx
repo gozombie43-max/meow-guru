@@ -27,7 +27,6 @@ import {
   Smartphone,
   Sparkles,
   Globe,
-  Swords,
   Sun,
   Trophy,
   Video,
@@ -40,6 +39,8 @@ import MathIcon from '@/components/MathIcon';
 import ReasoningIcon from '@/components/ReasoningIcon';
 import EnglishIcon from '@/components/EnglishIcon';
 import GkIcon from '@/components/GkIcon';
+import BooksIcon from '@/components/BooksIcon';
+import BattleIcon from '@/components/BattleIcon';
 
 const subjects = [
   { title: 'MATH', href: '/mathematics', icon: MathIcon, tone: 'math' },
@@ -348,7 +349,7 @@ export default function Home() {
 
             <Link href="/resource" className={styles.resourceCard}>
               <span className={styles.resourceIcon}>
-                <BookOpen size={34} />
+                <BooksIcon size={48} />
               </span>
               <span>
                 <strong>ALL BOOKS & NOTES</strong>
@@ -358,7 +359,7 @@ export default function Home() {
 
             <Link href="/battle" className={styles.battleCard}>
               <span className={styles.battleIcon}>
-                <Swords size={34} />
+                <BattleIcon size={48} />
               </span>
               <span>
                 <strong>BATTLE MODE</strong>

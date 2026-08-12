@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
-  const { text, voice = "en-IN-NeerjaNeural", rate = "0%" } = await req.json();
+  const { text, bengaliText, voice = "en-IN-NeerjaNeural", rate = "0%" } = await req.json();
 
   const key = process.env.AZURE_TTS_KEY;
   const region = process.env.AZURE_TTS_REGION || "centralindia";
@@ -14,14 +14,25 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Missing text" }, { status: 400 });
   }
 
-  const ssml = `
+  let ssml = `
 <speak version='1.0' xml:lang='en-IN'>
   <voice xml:lang='en-IN' name='${voice}'>
     <prosody rate='${rate}'>
       ${text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}
     </prosody>
-  </voice>
-</speak>`.trim();
+  </voice>`;
+
+  if (bengaliText && typeof bengaliText === "string") {
+    ssml += `
+  <voice xml:lang='bn-IN' name='bn-IN-TanishaaNeural'>
+    <prosody rate='${rate}'>
+      ${bengaliText.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}
+    </prosody>
+  </voice>`;
+  }
+
+  ssml += `
+</speak>`;
 
   const ttsResponse = await fetch(
     `https://${region}.tts.speech.microsoft.com/cognitiveservices/v1`,

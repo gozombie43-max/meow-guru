@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { fetchQuestions } from "@/lib/api/questions";
+import { Volume2, ListFilter } from "lucide-react";
 
 type StudyModeMeaning = {
   pos?: string;
@@ -102,7 +103,7 @@ function toStudyModeCard(entry: StudyModeEntry, index: number): StudyModeCard | 
 
 const TICKS = Array.from({ length: 12 });
 
-function SpeakerBtn({ text, size = 22 }: { text: string; size?: number }) {
+function SpeakerBtn({ text, bengaliText, size = 22 }: { text: string; bengaliText?: string; size?: number }) {
   const [state, setState] = useState<"idle" | "loading" | "speaking">("idle");
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -123,7 +124,10 @@ function SpeakerBtn({ text, size = 22 }: { text: string; size?: number }) {
       const res = await fetch("/api/tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: text.trim() }),
+        body: JSON.stringify({ 
+          text: text.trim(),
+          bengaliText: bengaliText ? bengaliText.trim() : undefined
+        }),
       });
       if (!res.ok) throw new Error("TTS failed");
 
@@ -220,6 +224,43 @@ function SpeakerBtn({ text, size = 22 }: { text: string; size?: number }) {
 }
 
 export default function StudyModeQuizEngine() {
+  const [activeSpeech, setActiveSpeech] = useState<string | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const handleRowClick = async (word: string, translation?: string) => {
+    if (activeSpeech === word && audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+      setActiveSpeech(null);
+      return;
+    }
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+    setActiveSpeech(word);
+    try {
+      const res = await fetch("/api/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          text: word.trim(),
+          bengaliText: translation ? translation.trim() : undefined
+        }),
+      });
+      if (!res.ok) throw new Error("TTS failed");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audioRef.current = audio;
+      audio.onended = () => { setActiveSpeech(null); URL.revokeObjectURL(url); audioRef.current = null; };
+      audio.onerror = () => { setActiveSpeech(null); URL.revokeObjectURL(url); audioRef.current = null; };
+      await audio.play();
+    } catch {
+      setActiveSpeech(null);
+    }
+  };
+
   const router = useRouter();
   const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [cards, setCards] = useState<StudyModeCard[]>([]);
@@ -233,7 +274,19 @@ export default function StudyModeQuizEngine() {
   const [mobileSheetSearch, setMobileSheetSearch] = useState("");
   const [mobileSheetLetter, setMobileSheetLetter] = useState<string | null>(null);
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
+  const [stagedLetter, setStagedLetter] = useState<string | null>(null);
   const [isLetterDropdownOpen, setIsLetterDropdownOpen] = useState(false);
+
+  // Filter cards by search + selected letter (memoized)
+  const filteredCards = useMemo(
+    () =>
+      cards.filter((c) => {
+        const matchSearch = c.word.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchLetter = !selectedLetter || c.word[0]?.toUpperCase() === selectedLetter;
+        return matchSearch && matchLetter;
+      }),
+    [cards, searchQuery, selectedLetter]
+  );
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const touchStartXRef = useRef<number | null>(null);
@@ -316,13 +369,13 @@ export default function StudyModeQuizEngine() {
       }
       if (e.key === "ArrowLeft" && currentPage > 1) {
         setCurrentPage((prev) => prev - 1);
-      } else if (e.key === "ArrowRight" && currentPage < cards.length) {
+      } else if (e.key === "ArrowRight" && currentPage < filteredCards.length) {
         setCurrentPage((prev) => prev + 1);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [currentPage, cards.length]);
+  }, [currentPage, filteredCards.length]);
 
   // Close letter dropdown when clicking outside
   useEffect(() => {
@@ -346,16 +399,12 @@ export default function StudyModeQuizEngine() {
     [cards]
   );
 
-  // Filter cards by search + selected letter (memoized — avoids iterating 5612 cards on every render)
-  const filteredCards = useMemo(
-    () =>
-      cards.filter((c) => {
-        const matchSearch = c.word.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchLetter = !selectedLetter || c.word[0]?.toUpperCase() === selectedLetter;
-        return matchSearch && matchLetter;
-      }),
-    [cards, searchQuery, selectedLetter]
-  );
+  // If filteredCards changes and currentPage is out of bounds, adjust it
+  useEffect(() => {
+    if (filteredCards.length > 0 && currentPage > filteredCards.length) {
+      setCurrentPage(1);
+    }
+  }, [filteredCards.length, currentPage]);
 
   if (loading) {
     return (
@@ -401,8 +450,8 @@ export default function StudyModeQuizEngine() {
   }
 
 
-  const activeCard = cards[currentPage - 1] || DEMO_CARD;
-  const totalCards = cards.length || 1;
+  const totalCards = filteredCards.length || 1;
+  const activeCard = filteredCards[Math.min(currentPage - 1, totalCards - 1)] || DEMO_CARD;
   const posLabel = activeCard.meanings.map((m) => m.pos).filter(Boolean).join(" · ");
 
   return (
@@ -456,6 +505,7 @@ export default function StudyModeQuizEngine() {
                 className={`letter-filter-btn ${selectedLetter ? "active" : ""} ${isLetterDropdownOpen ? "open" : ""}`}
                 onMouseDown={(e) => {
                   e.stopPropagation();
+                  setStagedLetter(selectedLetter);
                   setIsLetterDropdownOpen((v) => !v);
                 }}
                 aria-label="Filter by letter"
@@ -480,7 +530,7 @@ export default function StudyModeQuizEngine() {
                         type="button"
                         className="letter-clear-btn"
                         onMouseDown={(e) => e.stopPropagation()}
-                        onClick={() => { setSelectedLetter(null); setIsLetterDropdownOpen(false); }}
+                        onClick={() => { setSelectedLetter(null); setStagedLetter(null); setIsLetterDropdownOpen(false); setCurrentPage(1); }}
                       >
                         Clear
                       </button>
@@ -491,17 +541,23 @@ export default function StudyModeQuizEngine() {
                       <button
                         key={letter}
                         type="button"
-                        className={`letter-tile ${selectedLetter === letter ? "active" : ""}`}
+                        className={`letter-tile ${stagedLetter === letter ? "active" : ""}`}
                         onClick={() => {
-                          setSelectedLetter(selectedLetter === letter ? null : letter);
-                          setIsLetterDropdownOpen(false);
-                          setSearchQuery("");
+                          setStagedLetter(stagedLetter === letter ? null : letter);
                         }}
                       >
                         {letter}
                       </button>
                     ))}
                   </div>
+                  {stagedLetter && (
+                    <div className="dropdown-actions" style={{ display: 'flex', gap: '8px', padding: '10px 14px', borderTop: '0.5px solid var(--divider)' }}>
+                      <button type="button" style={{ flex: 1, padding: '8px', borderRadius: '6px', background: 'var(--item-hover)', fontWeight: 600, color: 'var(--text-primary)' }} onClick={() => { setStagedLetter(null); setSelectedLetter(null); setIsLetterDropdownOpen(false); setCurrentPage(1); }}>Reset</button>
+                      <button type="button" style={{ flex: 2, padding: '8px', borderRadius: '6px', background: '#007aff', color: '#fff', fontWeight: 600 }} onClick={() => { setSelectedLetter(stagedLetter); setIsLetterDropdownOpen(false); setCurrentPage(1); }}>
+                        Show {cards.filter(c => c.word[0]?.toUpperCase() === stagedLetter).length} results
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -542,9 +598,8 @@ export default function StudyModeQuizEngine() {
             {filteredCards.length === 0 ? (
               <div className="sidebar-empty">No matching terms</div>
             ) : (
-              filteredCards.map((card) => {
-                const realIdx = cards.findIndex((c) => c.id === card.id);
-                const pageNum = realIdx !== -1 ? realIdx + 1 : 1;
+              filteredCards.map((card, idx) => {
+                const pageNum = idx + 1;
                 const isSelected = currentPage === pageNum;
                 return (
                   <button
@@ -553,7 +608,6 @@ export default function StudyModeQuizEngine() {
                     className={`word-row ${isSelected ? "selected" : ""}`}
                     onClick={() => {
                       setCurrentPage(pageNum);
-                      setSearchQuery("");
                     }}
                   >
                     <span className="row-word">{card.word}</span>
@@ -629,12 +683,17 @@ export default function StudyModeQuizEngine() {
             </div>
 
             <div className="toolbar-right">
+              <span className="mobile-counter-top">
+                {currentPage}/{totalCards}
+              </span>
+
               <button
                 type="button"
-                className="mobile-grid-btn"
+                className="mobile-filter-top"
                 onClick={() => setIsMobilePaletteOpen(true)}
+                aria-label="Filter words"
               >
-                <span>{currentPage}/{totalCards}</span>
+                <ListFilter size={16} />
               </button>
 
               <button
@@ -710,6 +769,16 @@ export default function StudyModeQuizEngine() {
                   ))}
                 </div>
 
+                {/* Filter Actions */}
+                {mobileSheetLetter && (
+                  <div className="sheet-filter-actions" style={{ display: 'flex', gap: '10px', padding: '12px 16px', borderBottom: '0.5px solid var(--divider)' }}>
+                    <button type="button" style={{ flex: 1, padding: '10px', borderRadius: '8px', background: 'var(--item-hover)', fontWeight: 600, color: 'var(--text-primary)' }} onClick={() => { setMobileSheetLetter(null); setSelectedLetter(null); setCurrentPage(1); }}>Reset</button>
+                    <button type="button" style={{ flex: 2, padding: '10px', borderRadius: '8px', background: '#007aff', color: '#fff', fontWeight: 600 }} onClick={() => { setSelectedLetter(mobileSheetLetter); setIsMobilePaletteOpen(false); setCurrentPage(1); }}>
+                      Show {cards.filter(c => c.word[0]?.toUpperCase() === mobileSheetLetter).length} results
+                    </button>
+                  </div>
+                )}
+
                 {/* Word List */}
                 <div className="sheet-word-list">
                   {(() => {
@@ -722,16 +791,17 @@ export default function StudyModeQuizEngine() {
                       return <div className="sheet-empty">No matching words</div>;
                     }
                     return sheetCards.map((card) => {
-                      const realIdx = cards.findIndex((c) => c.id === card.id);
-                      const pageNum = realIdx !== -1 ? realIdx + 1 : 1;
-                      const isActive = currentPage === pageNum;
+                      const isActive = activeCard.id === card.id;
                       return (
                         <button
                           key={card.id}
                           type="button"
                           className={`sheet-word-row ${isActive ? "active" : ""}`}
                           onClick={() => {
-                            setCurrentPage(pageNum);
+                            setSearchQuery(mobileSheetSearch);
+                            setSelectedLetter(mobileSheetLetter);
+                            const idx = sheetCards.findIndex((c) => c.id === card.id);
+                            setCurrentPage(idx !== -1 ? idx + 1 : 1);
                             setIsMobilePaletteOpen(false);
                             setMobileSheetSearch("");
                             setMobileSheetLetter(null);
@@ -756,7 +826,7 @@ export default function StudyModeQuizEngine() {
             <section className="dict-word-profile">
               <div className="word-heading-line">
                 <h1 className="dict-main-word">{activeCard.word}</h1>
-                <SpeakerBtn text={activeCard.word} size={34} />
+                <SpeakerBtn text={activeCard.word} bengaliText={activeCard.meanings[0]?.translation} size={34} />
                 {posLabel && <span className="grammar-tag">{posLabel}</span>}
               </div>
 
@@ -768,7 +838,7 @@ export default function StudyModeQuizEngine() {
                         {m.pos && <strong className="pos-inline">{m.pos} </strong>}
                         {m.definition}
                       </div>
-                      <SpeakerBtn text={m.definition || ''} size={22} />
+                      <SpeakerBtn text={m.definition || ''} bengaliText={m.translation} size={22} />
                     </div>
                     {m.translation && (
                       <blockquote className="meaning-bng-quote">
@@ -794,8 +864,11 @@ export default function StudyModeQuizEngine() {
                       <div className="table-empty">No documented synonyms</div>
                     ) : (
                       activeCard.synonyms.map((s, i) => (
-                        <div key={i} className={`table-row ${i % 2 === 1 ? "alt-row" : ""}`}>
-                          <span className="cell-term">{s.word}</span>
+                        <div key={i} className={`table-row ${i % 2 === 1 ? "alt-row" : ""}`} onClick={() => handleRowClick(s.word, s.translation)} style={{ cursor: "pointer" }}>
+                          <span className="cell-term" style={{ display: 'flex', alignItems: 'center' }}>
+                            {s.word}
+                            {activeSpeech === s.word && <Volume2 size={16} style={{ marginLeft: 8, color: '#007aff' }} />}
+                          </span>
                           <span className="cell-trans">{s.translation || "—"}</span>
                         </div>
                       ))
@@ -815,8 +888,11 @@ export default function StudyModeQuizEngine() {
                       <div className="table-empty">No documented antonyms</div>
                     ) : (
                       activeCard.antonyms.map((a, i) => (
-                        <div key={i} className={`table-row ${i % 2 === 1 ? "alt-row" : ""}`}>
-                          <span className="cell-term">{a.word}</span>
+                        <div key={i} className={`table-row ${i % 2 === 1 ? "alt-row" : ""}`} onClick={() => handleRowClick(a.word, a.translation)} style={{ cursor: "pointer" }}>
+                          <span className="cell-term" style={{ display: 'flex', alignItems: 'center' }}>
+                            {a.word}
+                            {activeSpeech === a.word && <Volume2 size={16} style={{ marginLeft: 8, color: '#007aff' }} />}
+                          </span>
                           <span className="cell-trans">{a.translation || "—"}</span>
                         </div>
                       ))
@@ -871,8 +947,11 @@ export default function StudyModeQuizEngine() {
                         <div className="table-empty">No documented synonyms</div>
                       ) : (
                         activeCard.synonyms.map((s, i) => (
-                          <div key={i} className="table-row">
-                            <span className="cell-term">{s.word}</span>
+                          <div key={i} className="table-row" onClick={() => handleRowClick(s.word, s.translation)} style={{ cursor: "pointer" }}>
+                            <span className="cell-term" style={{ display: 'flex', alignItems: 'center' }}>
+                              {s.word}
+                              {activeSpeech === s.word && <Volume2 size={16} style={{ marginLeft: 8, color: '#007aff' }} />}
+                            </span>
                             <span className="cell-trans">{s.translation || "—"}</span>
                           </div>
                         ))
@@ -882,8 +961,11 @@ export default function StudyModeQuizEngine() {
                         <div className="table-empty">No documented antonyms</div>
                       ) : (
                         activeCard.antonyms.map((a, i) => (
-                          <div key={i} className="table-row">
-                            <span className="cell-term">{a.word}</span>
+                          <div key={i} className="table-row" onClick={() => handleRowClick(a.word, a.translation)} style={{ cursor: "pointer" }}>
+                            <span className="cell-term" style={{ display: 'flex', alignItems: 'center' }}>
+                              {a.word}
+                              {activeSpeech === a.word && <Volume2 size={16} style={{ marginLeft: 8, color: '#007aff' }} />}
+                            </span>
                             <span className="cell-trans">{a.translation || "—"}</span>
                           </div>
                         ))
@@ -908,15 +990,6 @@ export default function StudyModeQuizEngine() {
                 <path d="M15 18l-6-6 6-6" />
               </svg>
               <span>Previous</span>
-            </button>
-
-            <button
-              type="button"
-              className="mobile-footer-counter"
-              onClick={() => setIsMobilePaletteOpen(true)}
-              aria-label="Open word index"
-            >
-              {currentPage} / {totalCards}
             </button>
 
             <button
@@ -1129,8 +1202,34 @@ export default function StudyModeQuizEngine() {
           color: var(--text-primary);
         }
 
-        /* Counter moved to fixed footer — hide old mobile toolbar counter */
-        .mobile-grid-btn { display: none; }
+        .mobile-counter-top {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: var(--item-hover);
+          color: var(--text-secondary);
+          font-size: 13px;
+          font-weight: 600;
+          height: 28px;
+          padding: 0 10px;
+          border-radius: 6px;
+          margin-right: 8px;
+          border: 0.5px solid var(--divider);
+        }
+
+        .mobile-filter-top {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: var(--item-hover);
+          color: var(--text-primary);
+          height: 28px;
+          width: 28px;
+          border-radius: 6px;
+          margin-right: 8px;
+          border: 0.5px solid var(--divider);
+          cursor: pointer;
+        }
 
         .appearance-toggle {
           width: 28px;
@@ -1724,6 +1823,8 @@ export default function StudyModeQuizEngine() {
           .mobile-toolbar-title { display: none; }
           .mobile-grid-btn { display: none; }
           .mobile-suite { display: none; }
+          .mobile-counter-top { display: none; }
+          .mobile-filter-top { display: none; }
           .mobile-nav-footer { display: none; }
           .nav-arrow-pc { display: flex; }
 
