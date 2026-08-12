@@ -15,7 +15,7 @@ export default function ReasoningIcon({ size = 24, ...props }: ReasoningIconProp
       fillRule="evenodd"
       {...props}
     >
-      <g fill="#007aff" fillRule="evenodd" stroke="none" strokeWidth="1" strokeLinecap="butt" strokeLinejoin="round" strokeMiterlimit="2" strokeDasharray="" strokeDashoffset="0" fontFamily="none" fontWeight="none" fontSize="none" textAnchor="none" style={{mixBlendMode: "normal"}}>
+      <g fill="#007aff" fillRule="evenodd" stroke="none" strokeWidth="1" strokeLinecap="butt" strokeLinejoin="round" strokeMiterlimit="2" strokeDasharray="" strokeDashoffset="0" style={{mixBlendMode: "normal"}}>
         <g transform="scale(0.7191,0.7191)">
           <path d="M91.204,122.569c0,17.439 14.158,31.598 31.597,31.598c17.439,0 31.597,-14.159 31.597,-31.598c0,-5.216 -1.268,-10.139 -3.51,-14.478c-1.407,-2.724 -4.762,-3.793 -7.486,-2.385c-2.724,1.407 -3.793,4.762 -2.385,7.486c1.452,2.81 2.27,5.999 2.27,9.377c0,11.307 -9.179,20.487 -20.486,20.487c-11.307,0 -20.486,-9.18 -20.486,-20.487c0,-3.066 -2.49,-5.555 -5.556,-5.555c-3.066,0 -5.555,2.489 -5.555,5.555z"></path>
           <path d="M123.988,108.443c-9.502,-10.715 -23.37,-17.471 -38.803,-17.471c-19.057,0 -35.729,10.302 -44.738,25.639c-1.553,2.644 -0.668,6.051 1.976,7.604c2.644,1.553 6.051,0.668 7.604,-1.976c7.081,-12.054 20.18,-20.156 35.158,-20.156c12.127,0 23.023,5.312 30.49,13.732c2.034,2.294 5.548,2.505 7.842,0.47c2.294,-2.034 2.505,-5.548 0.471,-7.842z"></path>

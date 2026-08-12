@@ -26,7 +26,7 @@ export default function MathIcon({ size = 24, ...props }: MathIconProps) {
         <linearGradient x1="19" y1="40.667" x2="19" y2="49.373" gradientUnits="userSpaceOnUse" id="color-8"><stop offset="0" stopColor="#007aff"></stop><stop offset="1" stopColor="#e6abff"></stop></linearGradient>
         <linearGradient x1="45" y1="41.75" x2="45" y2="44.251" gradientUnits="userSpaceOnUse" id="color-9"><stop offset="0" stopColor="#007aff"></stop><stop offset="1" stopColor="#e6abff"></stop></linearGradient>
       </defs>
-      <g fill="none" fillRule="nonzero" stroke="none" strokeWidth="1" strokeLinecap="butt" strokeLinejoin="miter" strokeMiterlimit="10" strokeDasharray="" strokeDashoffset="0" fontFamily="none" fontWeight="none" fontSize="none" textAnchor="none" style={{mixBlendMode: "normal"}}>
+      <g fill="none" fillRule="nonzero" stroke="none" strokeWidth="1" strokeLinecap="butt" strokeLinejoin="miter" strokeMiterlimit="10" strokeDasharray="" strokeDashoffset="0" style={{mixBlendMode: "normal"}}>
         <g transform="scale(4,4)">
           <path d="M40,46h10v2h-10z" fill="url(#color-1)"></path>
           <path d="M27,30h-16c-1.654,0 -3,-1.346 -3,-3v-16c0,-1.654 1.346,-3 3,-3h16c1.654,0 3,1.346 3,3v16c0,1.654 -1.346,3 -3,3zM11,10c-0.552,0 -1,0.448 -1,1v16c0,0.552 0.448,1 1,1h16c0.552,0 1,-0.448 1,-1v-16c0,-0.552 -0.448,-1 -1,-1z" fill="url(#color-2)"></path>
