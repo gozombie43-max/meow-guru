@@ -1720,7 +1720,7 @@ function AiChatPageContent() {
           }
 
           .chat-scroll {
-            padding-bottom: 168px;
+            padding-bottom: 24px;
           }
 
           .message-bubble {
@@ -1728,10 +1728,7 @@ function AiChatPageContent() {
           }
 
           .composer-wrap {
-            position: sticky;
-            bottom: calc(74px + env(safe-area-inset-bottom, 0px));
-            z-index: 20;
-            padding: 12px 0 16px;
+            padding: 12px 0 calc(16px + env(safe-area-inset-bottom, 0px));
             background: linear-gradient(180deg, var(--surface-transparent), var(--surface) 28%);
           }
 
@@ -1780,7 +1777,7 @@ function AiChatPageContent() {
           }
 
           .chat-scroll {
-            padding-bottom: 182px;
+            padding-bottom: 24px;
           }
 
           .message-bubble {
