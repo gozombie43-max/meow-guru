@@ -44,11 +44,7 @@ For each new step or distinct idea, use a numbered item like 1., 2., 3. or a bul
 For practice questions, present each question as its own numbered item so the list is easy to follow.
 Never write multiple practice questions as plain paragraphs under one heading; every new question prompt must start with a number or bullet.
 Use markdown for formatting and LaTeX math with $...$ or $$...$$ when needed.
-When a chart, table, or geometry diagram would help, add one fenced JSON block after the explanation:
-\`\`\`ssc-visual
-{"type":"table","title":"Short title","headers":["Column 1","Column 2"],"rows":[["A","B"]]}
-\`\`\`
-or
+When a chart or geometry diagram would help, add one fenced JSON block after the explanation:
 \`\`\`ssc-visual
 {"type":"chart","chartType":"bar","title":"Short title","labels":["A","B"],"values":[10,20],"unit":"%"}
 \`\`\`
@@ -58,8 +54,8 @@ or
 \`\`\`
 For mensuration diagrams, supported shape types include sphere, hemisphere, cone, cylinder, frustum, and cylinder_with_hemisphere. Use 2D exam-style 3D notation with radius, height, and slant-height labels where useful.
 For a cylinder with hemispherical top, use: {"type":"cylinder_with_hemisphere","radius":3,"height":8,"labels":{"radius":"r = 3 cm","height":"cylinder height = 8 cm"}}
-Use only these visual types: table, chart, diagram.
-Never create raw markdown pipe tables. For any table, always use the ssc-visual table JSON format.`;
+Use only these visual types: chart, diagram.
+Never create markdown tables or visual tables. Give data in a clear list format instead.`;
 
 function createChatId() {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
