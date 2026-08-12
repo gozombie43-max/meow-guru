@@ -724,7 +724,6 @@ function AiChatPageContent() {
                   <article className="message-row assistant-row" key={`${message.role}-${index}`}>
                     <div className="assistant-avatar">AI</div>
                     <div className="assistant-message">
-                      <div className="answer-summary">{summarizeReply(message.content)}</div>
                       <div className="answer-card">
                         <div className="answer-head">
                           <span>AI Response</span>

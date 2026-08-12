@@ -471,17 +471,17 @@ export default function VisualResponse({ content, normalizeMarkdown }: VisualRes
       <style jsx>{`
         .visual-block {
           margin: 14px 0 4px;
-          border: 1px solid #e5e7eb;
+          border: 1px solid var(--line);
           border-radius: 8px;
-          background: #ffffff;
+          background: var(--surface);
           overflow: hidden;
         }
 
         .visual-title {
-          border-bottom: 1px solid #e5e7eb;
-          background: #fafafa;
+          border-bottom: 1px solid var(--line);
+          background: var(--surface-soft);
           padding: 9px 12px;
-          color: #202123;
+          color: var(--ink);
           font-size: 13px;
           font-weight: 700;
         }
@@ -492,7 +492,7 @@ export default function VisualResponse({ content, normalizeMarkdown }: VisualRes
 
         .table-title {
           margin: 0 0 18px;
-          color: #07111f;
+          color: var(--ink);
           font-size: clamp(26px, 4vw, 42px);
           line-height: 1.08;
           font-weight: 800;
@@ -501,8 +501,8 @@ export default function VisualResponse({ content, normalizeMarkdown }: VisualRes
 
         .table-scroll {
           overflow-x: auto;
-          border: 2px solid #6b7280;
-          background: #ffffff;
+          border: 2px solid var(--line);
+          background: var(--surface);
         }
 
         table {
@@ -511,7 +511,7 @@ export default function VisualResponse({ content, normalizeMarkdown }: VisualRes
           border-collapse: collapse;
           table-layout: fixed;
           border: 0;
-          background: #ffffff;
+          background: var(--surface);
           font-size: clamp(22px, 3.4vw, 32px);
           line-height: 1.25;
           font-variant-numeric: tabular-nums;
@@ -519,7 +519,7 @@ export default function VisualResponse({ content, normalizeMarkdown }: VisualRes
 
         th,
         td {
-          border: 2px solid #6b7280;
+          border: 2px solid var(--line);
           padding: 28px 38px;
           text-align: left;
           vertical-align: middle;
@@ -527,17 +527,17 @@ export default function VisualResponse({ content, normalizeMarkdown }: VisualRes
         }
 
         th {
-          background: #f8fafc;
-          color: #07111f;
+          background: var(--surface-soft);
+          color: var(--ink);
           font-weight: 800;
           text-align: center;
-          border-color: #6b7280;
+          border-color: var(--line);
           white-space: nowrap;
         }
 
         tbody td {
           height: 92px;
-          color: #07111f;
+          color: var(--ink);
           font-weight: 400;
         }
 
@@ -587,7 +587,7 @@ export default function VisualResponse({ content, normalizeMarkdown }: VisualRes
         }
 
         .markdown-body :global(strong) {
-          color: #202123;
+          color: var(--ink);
           font-weight: 700;
         }
 
