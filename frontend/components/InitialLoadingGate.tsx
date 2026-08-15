@@ -48,6 +48,7 @@ export default function InitialLoadingGate() {
     if (typeof window !== "undefined") {
       try {
         sessionStorage.setItem(BOOT_SESSION_KEY, "1");
+        document.documentElement.classList.remove("app-is-booting");
       } catch {
         // Safe fallback if sessionStorage is restricted
       }
@@ -208,12 +209,12 @@ export default function InitialLoadingGate() {
   }, [authLoading, finishAndOpenWebsite, updateCondition, user]);
 
   useEffect(() => {
-    setMounted(true);
     if (typeof window !== "undefined") {
       // Allow manual trigger via console
       (window as unknown as { __triggerSystemDiagnostics?: () => void }).__triggerSystemDiagnostics = () => {
         try {
           sessionStorage.removeItem(BOOT_SESSION_KEY);
+          document.documentElement.classList.add("app-is-booting");
         } catch { /* ignore */ }
         setShowGate(true);
         setIsExiting(false);
@@ -241,15 +242,12 @@ export default function InitialLoadingGate() {
       const alreadyBooted = sessionStorage.getItem(BOOT_SESSION_KEY) === "1";
       if (alreadyBooted) {
         setShowGate(false);
+        document.documentElement.classList.remove("app-is-booting");
         return;
       }
     }
     runAllChecks();
   }, [runAllChecks, retryIndex]);
-
-  if (!mounted || !showGate) {
-    return null;
-  }
 
   const handleRetry = () => {
     setRetryIndex((idx) => idx + 1);
@@ -259,9 +257,10 @@ export default function InitialLoadingGate() {
     finishAndOpenWebsite();
   };
 
-  const content = (
+  return (
     <aside
-      className={`${styles.overlay} ${isExiting ? styles.overlayExiting : ""}`}
+      id="app-initial-boot-overlay"
+      className={`${styles.overlay} ${!showGate ? styles.overlayHidden : isExiting ? styles.overlayExiting : ""}`}
       aria-label="Application loading and system diagnostics"
       role="dialog"
       aria-modal="true"
@@ -270,10 +269,36 @@ export default function InitialLoadingGate() {
       <div className={styles.ambientGlow} aria-hidden="true" />
 
       <main className={styles.container}>
-        {/* Brand Badge */}
-        <header className={styles.brandBadge}>
-          <span className={styles.brandDot} aria-hidden="true" />
-          <span>System Initialization</span>
+        {/* Study Guru Brand Logo matching home page */}
+        <header className={styles.logoWrapper} aria-label="Study Guru">
+          <span className={styles.logoMark} aria-hidden="true">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 256 256"
+              width="46"
+              height="46"
+              fillRule="nonzero"
+            >
+              <g
+                fill="#0084ff"
+                fillRule="nonzero"
+                stroke="none"
+                strokeWidth="1"
+                strokeLinecap="butt"
+                strokeLinejoin="miter"
+                strokeMiterlimit="10"
+                style={{ mixBlendMode: "normal" }}
+              >
+                <g transform="scale(4,4)">
+                  <path d="M56,41.7c0,0 -2.11,-0.54 -4,-0.7c0,0 1.22,1.92 1.5,4.5c0,0 -2.26,-0.55 -4.42,-0.5c0,0 1.62,1.91 1.92,4c0,0 -1.915,1.62 -6.315,4.12c0,0 -0.073,-2.17 -1.185,-6.12h-2c0,0 -0.068,4.899 -1.5,10.3c-3,3.7 -8,3.7 -8,3.7c0,0 -5,0 -8,-3.7c-1.432,-5.401 -1.5,-10.3 -1.5,-10.3h-2c-1.111,3.95 -1.185,6.12 -1.185,6.12c-4.4,-2.5 -6.315,-4.12 -6.315,-4.12c0.3,-2.09 1.92,-4 1.92,-4c-2.16,-0.05 -4.42,0.5 -4.42,0.5c0.28,-2.58 1.5,-4.5 1.5,-4.5c-1.89,0.16 -4,0.7 -4,0.7c0.36,-2.4 2,-4.7 2,-4.7c-2.41,0.27 -4,1 -4,1c3,-14 15,-21 15,-21c-4.02,-4.35 -7.4,-7 -7.4,-7c0,0 -1.17,4.47 -0.6,10.4l-4,4.1c-1,-9.5 1.8,-20.5 1.8,-20.5l1.5,-0.5l12.7,10.5c0,0 2.46,-0.48 7,-0.48c4.54,0 7,0.48 7,0.48l12.7,-10.5l1.5,0.5c0,0 2.8,11 1.8,20.5l-4,-4.1c0.57,-5.93 -0.6,-10.4 -0.6,-10.4c0,0 -3.38,2.65 -7.4,7c0,0 12,7 15,21c0,0 -1.59,-0.73 -4,-1c0,0 1.64,2.3 2,4.7zM26.799,38c-0.143,-2.57 -1.082,-3.92 -1.614,-4.38c-1.741,-0.59 -3.813,-0.58 -5.185,-0.43c2.15,4.75 6.297,4.81 6.348,4.81zM37.652,38c0.051,0 4.198,-0.06 6.348,-4.81c-1.372,-0.15 -3.444,-0.16 -5.185,0.43c-0.532,0.46 -1.471,1.81 -1.614,4.38zM32,52c-2,0 -4,1 -4,1c1,4 4,4 4,4c0,0 3,0 4,-4c0,0 -2,-1 -4,-1z" />
+                </g>
+              </g>
+            </svg>
+          </span>
+          <span className={styles.logoText}>
+            <strong className={styles.logoStudy}>STUDY</strong>
+            <strong className={styles.logoGuru}>GURU</strong>
+          </span>
         </header>
 
         {/* Outer Capsule Progress Bar matching reference image */}
@@ -396,6 +421,4 @@ export default function InitialLoadingGate() {
       </main>
     </aside>
   );
-
-  return createPortal(content, document.body);
 }

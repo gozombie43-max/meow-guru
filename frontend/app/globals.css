@@ -3,6 +3,14 @@
 @import url("https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap");
 @import "tailwindcss";
 
+/* Force initial loading gate to render instantly on first site visit */
+html.app-is-booting #app-initial-boot-overlay {
+  display: flex !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  z-index: 99999999 !important;
+}
+
 /* AI chat markdown table styling */
 .ai-message-content table {
   width: 100%;

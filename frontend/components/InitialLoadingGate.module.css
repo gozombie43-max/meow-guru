@@ -26,6 +26,13 @@
   pointer-events: none;
 }
 
+.overlayHidden {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
 /* Background Ambient Lighting */
 .ambientGlow {
   position: absolute;
@@ -65,42 +72,54 @@
   box-sizing: border-box;
 }
 
-/* Top App Brand / Header */
-.brandBadge {
+/* Top Study Guru Brand Logo matching home page */
+.logoWrapper {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
-  border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(12px);
-  font-size: 12px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #7dd3fc;
-  margin-bottom: 36px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  gap: 12px;
+  margin-bottom: 34px;
+  text-decoration: none;
+  filter: drop-shadow(0 0 24px rgba(0, 140, 255, 0.5));
+  animation: logoFloat 3s ease-in-out infinite alternate;
 }
 
-.brandDot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #38bdf8;
-  box-shadow: 0 0 10px #38bdf8, 0 0 20px #0284c7;
-  animation: pulseDot 1.5s infinite;
+@keyframes logoFloat {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-3px);
+  }
 }
 
-@keyframes pulseDot {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.4);
-    opacity: 0.6;
-  }
+.logoMark {
+  width: 48px;
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.logoText {
+  display: flex;
+  flex-direction: column;
+  line-height: 0.92;
+  letter-spacing: -0.03em;
+  font-size: 24px;
+  font-weight: 900;
+  text-align: left;
+  font-family: var(--font-outfit, 'Outfit', sans-serif);
+}
+
+.logoStudy {
+  color: #0084ff;
+  text-shadow: 0 0 16px rgba(0, 132, 255, 0.6);
+}
+
+.logoGuru {
+  color: #ffffff;
+  text-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
 }
 
 /* Outer Glowing Progress Capsule Bar matching reference image */
