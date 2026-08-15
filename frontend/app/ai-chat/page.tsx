@@ -1324,30 +1324,29 @@ function AiChatPageContent() {
         }
 
         .typing-card {
-          height: 42px;
-          min-width: 72px;
-          border-radius: 8px;
-          background: #f7f7f8;
+          height: 32px;
+          min-width: auto;
+          background: transparent;
           display: inline-flex;
           align-items: center;
-          gap: 5px;
-          padding: 0 14px;
+          gap: 6px;
+          padding: 0 6px;
         }
 
         .typing-card span {
-          width: 7px;
-          height: 7px;
+          width: 8px;
+          height: 8px;
           border-radius: 50%;
-          background: var(--accent);
+          background: var(--accent, #38bdf8);
           animation: typingBounce 900ms infinite ease-in-out;
         }
 
         .typing-card span:nth-child(2) {
-          animation-delay: 130ms;
+          animation-delay: 150ms;
         }
 
         .typing-card span:nth-child(3) {
-          animation-delay: 260ms;
+          animation-delay: 300ms;
         }
 
         .composer-wrap {

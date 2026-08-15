@@ -11,6 +11,8 @@ import FeedbackToast from '@/components/FeedbackToast';
 import PageTransitionShell from '@/components/PageTransitionShell';
 import StudyTimeTracker from '@/components/StudyTimeTracker';
 
+import InitialLoadingGate from '@/components/InitialLoadingGate';
+
 const geist = Geist({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
@@ -31,6 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className={geist.className}>
         <AuthProvider>
+          <InitialLoadingGate />
           <StudyTimeTracker />
           <AppRecovery />
           <AppWarmup />
