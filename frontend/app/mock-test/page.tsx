@@ -230,7 +230,32 @@ export default function MockTestPage() {
 
   return (
     <main className={styles.page}>
-      <div className={styles.app}>
+      <div className={styles.macosWindow}>
+        {/* Desktop Sidebar */}
+        <aside className={styles.macosSidebar}>
+          <div className={styles.macosTrafficLights}>
+            <div className={`${styles.trafficLight} ${styles.close}`}></div>
+            <div className={`${styles.trafficLight} ${styles.minimize}`}></div>
+            <div className={`${styles.trafficLight} ${styles.maximize}`}></div>
+          </div>
+          
+          <h2 className={styles.sidebarTitle}>Categories</h2>
+          <div className={styles.sidebarNav}>
+            {categories.map((cat) => (
+              <button
+                key={cat.id}
+                className={`${styles.sidebarTab} ${activeCategory === cat.id ? styles.activeSidebarTab : ''}`}
+                onClick={() => setActiveCategory(cat.id)}
+              >
+                <span>{cat.emoji}</span> {cat.label}
+              </button>
+            ))}
+          </div>
+        </aside>
+
+        {/* Content Area */}
+        <div className={styles.macosContent}>
+          <div className={styles.app}>
         {view === 'home' ? (
           <div className={styles.homeContainer}>
             {/* Header Area */}
@@ -261,25 +286,7 @@ export default function MockTestPage() {
 
             {/* Content Body */}
             <div className={styles.contentBody}>
-              {/* Continue Learning */}
-              {searchQuery === '' && (
-                <section className={styles.section}>
-                  <div className={styles.sectionHeader}>
-                    <h2 className={styles.sectionTitle}>Continue Preparation</h2>
-                  </div>
-                  <div className={styles.continueCard}>
-                    <div className={styles.continueIconWrap}>
-                      <Clock size={20} className={styles.continueIcon} />
-                    </div>
-                    <div className={styles.continueInfo}>
-                      <h3>SSC CGL Tier 1 - Mock 2</h3>
-                      <p>Time remaining: 45:20</p>
-                      <div className={styles.progressBar}><div className={styles.progressFill} style={{width: '35%'}}></div></div>
-                    </div>
-                    <button className={styles.resumeBtn}><Play size={16} fill="currentColor" /></button>
-                  </div>
-                </section>
-              )}
+              {/* Continue Learning removed for cleaner layout */}
 
               {/* Categories */}
               <section className={styles.section}>
@@ -412,6 +419,8 @@ export default function MockTestPage() {
             </div>
           </div>
         )}
+          </div>
+        </div>
       </div>
     </main>
   );

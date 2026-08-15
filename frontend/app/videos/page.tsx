@@ -3,11 +3,7 @@
 import type { CSSProperties, KeyboardEvent } from "react";
 import { useMemo, useState } from "react";
 import {
-  Brain,
-  Calculator,
-  Globe2,
   GraduationCap,
-  Languages,
   MoreVertical,
   PlayCircle,
 } from "lucide-react";
@@ -163,19 +159,11 @@ const playlists: Playlist[] = [
 ];
 
 function SubjectIcon({ icon }: { icon: Playlist["icon"] }) {
-  if (icon === "math") {
-    return <Calculator size={48} strokeWidth={2.15} />;
-  }
-
-  if (icon === "english") {
-    return <Languages size={48} strokeWidth={2.15} />;
-  }
-
-  if (icon === "general-awareness") {
-    return <Globe2 size={48} strokeWidth={2.15} />;
-  }
-
-  return <Brain size={48} strokeWidth={2.15} />;
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="100%" height="100%" style={{ maxHeight: '100px', maxWidth: '100px' }}>
+      <linearGradient id="-x78YR_vzjNg1cy7pYFfQa" x1="16" x2="16" y1="4.905" y2="27.01" gradientUnits="userSpaceOnUse"><stop offset="0" stopColor="#00b5f0"/><stop offset="1" stopColor="#008cc7"/></linearGradient><path fill="url(#-x78YR_vzjNg1cy7pYFfQa)" d="M26,27H6c-1.105,0-2-0.895-2-2V7c0-1.105,0.895-2,2-2h4.027c0.623,0,1.22,0.247,1.66,0.688	l0.624,0.624C12.753,6.753,13.35,7,13.973,7H26c1.105,0,2,0.895,2,2v16C28,26.105,27.105,27,26,27z"/><linearGradient id="-x78YR_vzjNg1cy7pYFfQb" x1="16" x2="16" y1="5" y2="27" gradientUnits="userSpaceOnUse"><stop offset="0" stopOpacity=".02"/><stop offset="1" stopOpacity=".15"/></linearGradient><path fill="url(#-x78YR_vzjNg1cy7pYFfQb)" d="M26,7H13.973	c-0.623,0-1.22-0.247-1.66-0.688l-0.625-0.625C11.247,5.247,10.65,5,10.027,5H6C4.895,5,4,5.895,4,7v18c0,1.105,0.895,2,2,2h20	c1.105,0,2-0.895,2-2V9C28,7.895,27.105,7,26,7z M27.75,25c0,0.965-0.785,1.75-1.75,1.75H6c-0.965,0-1.75-0.785-1.75-1.75V7	c0-0.965,0.785-1.75,1.75-1.75h4.027c0.56,0,1.087,0.218,1.484,0.615l0.625,0.625c0.491,0.491,1.143,0.761,1.837,0.761H26	c0.965,0,1.75,0.785,1.75,1.75V25z"/><linearGradient id="-x78YR_vzjNg1cy7pYFfQc" x1="16" x2="16" y1="8.922" y2="27.008" gradientUnits="userSpaceOnUse"><stop offset="0" stopColor="#00dcff"/><stop offset=".859" stopColor="#00bfff"/><stop offset="1" stopColor="#00a8e0"/></linearGradient><path fill="url(#-x78YR_vzjNg1cy7pYFfQc)" d="M27,27H5c-1.105,0-2-0.895-2-2V11	c0-1.105,0.895-2,2-2h22c1.105,0,2,0.895,2,2v14C29,26.105,28.105,27,27,27z"/><linearGradient id="-x78YR_vzjNg1cy7pYFfQd" x1="16" x2="16" y1="9" y2="27" gradientUnits="userSpaceOnUse"><stop offset="0" stopOpacity=".02"/><stop offset="1" stopOpacity=".15"/></linearGradient><path fill="url(#-x78YR_vzjNg1cy7pYFfQd)" d="M27,9H5c-1.105,0-2,0.895-2,2v14	c0,1.105,0.895,2,2,2h22c1.105,0,2-0.895,2-2V11C29,9.895,28.105,9,27,9z M28.75,25c0,0.965-0.785,1.75-1.75,1.75H5	c-0.965,0-1.75-0.785-1.75-1.75V11c0-0.965,0.785-1.75,1.75-1.75h22c0.965,0,1.75,0.785,1.75,1.75V25z"/><g opacity=".2"><linearGradient id="-x78YR_vzjNg1cy7pYFfQe" x1="17.208" x2="17.208" y1="13.134" y2="22.866" gradientUnits="userSpaceOnUse"><stop offset="0" stopOpacity=".1"/><stop offset="1" stopOpacity=".7"/></linearGradient><path fill="url(#-x78YR_vzjNg1cy7pYFfQe)" d="M13.552,13.135 c-0.442,0-0.802,0.36-0.802,0.802v8.128c0,0.442,0.36,0.802,0.802,0.802c0.134,0,0.269-0.035,0.388-0.102l7.315-4.064 c0.258-0.143,0.412-0.405,0.412-0.7c0-0.295-0.154-0.557-0.412-0.7l-7.315-4.064C13.82,13.17,13.686,13.135,13.552,13.135 L13.552,13.135z"/></g><path fill="#fff" d="M21.133,17.518l-7.315-4.064C13.451,13.251,13,13.516,13,13.936v8.128	c0,0.42,0.451,0.686,0.818,0.482l7.315-4.064C21.511,18.272,21.511,17.728,21.133,17.518z"/><linearGradient id="-x78YR_vzjNg1cy7pYFfQf" x1="16" x2="16" y1="10.94" y2="25.154" gradientUnits="userSpaceOnUse"><stop offset=".001" stopOpacity=".1"/><stop offset="1" stopOpacity=".15"/></linearGradient><path fill="url(#-x78YR_vzjNg1cy7pYFfQf)" d="M26.5,25h-1c-0.276,0-0.5-0.224-0.5-0.5v-1	c0-0.276,0.224-0.5,0.5-0.5h1c0.276,0,0.5,0.224,0.5,0.5v1C27,24.776,26.776,25,26.5,25z M27,20.5v-1c0-0.276-0.224-0.5-0.5-0.5h-1	c-0.276,0-0.5,0.224-0.5,0.5v1c0,0.276,0.224,0.5,0.5,0.5h1C26.776,21,27,20.776,27,20.5z M27,16.5v-1c0-0.276-0.224-0.5-0.5-0.5h-1	c-0.276,0-0.5,0.224-0.5,0.5v1c0,0.276,0.224,0.5,0.5,0.5h1C26.776,17,27,16.776,27,16.5z M27,12.5v-1c0-0.276-0.224-0.5-0.5-0.5h-1	c-0.276,0-0.5,0.224-0.5,0.5v1c0,0.276,0.224,0.5,0.5,0.5h1C26.776,13,27,12.776,27,12.5z M7,24.5v-1C7,23.224,6.776,23,6.5,23h-1	C5.224,23,5,23.224,5,23.5v1C5,24.776,5.224,25,5.5,25h1C6.776,25,7,24.776,7,24.5z M7,20.5v-1C7,19.224,6.776,19,6.5,19h-1	C5.224,19,5,19.224,5,19.5v1C5,20.776,5.224,21,5.5,21h1C6.776,21,7,20.776,7,20.5z M7,16.5v-1C7,15.224,6.776,15,6.5,15h-1	C5.224,15,5,15.224,5,15.5v1C5,16.776,5.224,17,5.5,17h1C6.776,17,7,16.776,7,16.5z M7,12.5v-1C7,11.224,6.776,11,6.5,11h-1	C5.224,11,5,11.224,5,11.5v1C5,12.776,5.224,13,5.5,13h1C6.776,13,7,12.776,7,12.5z"/>
+    </svg>
+  );
 }
 
 function VideoFilters({
@@ -215,9 +203,7 @@ function PlaylistThumbnail({ playlist }: { playlist: Playlist }) {
           <SubjectIcon icon={playlist.icon} />
         </div>
       </div>
-      <div className="lesson-badge">
-        <span className="lesson-badge-compact">{playlist.lessons} videos</span>
-      </div>
+
       <div className="play-affordance" aria-hidden="true">
         <PlayCircle size={32} strokeWidth={2.2} />
       </div>
@@ -286,24 +272,38 @@ export default function VideosPage() {
 
   return (
     <main className="videos-page">
-      <div className="videos-shell">
-        <div className="videos-header">
-            <div className="header-top">
-              <h1 className="header-title">Videos</h1>
-            </div>
+      <div className="macos-window">
+        {/* Desktop Sidebar / Mobile Header */}
+        <aside className="macos-sidebar">
+          <div className="macos-traffic-lights">
+            <div className="traffic-light close"></div>
+            <div className="traffic-light minimize"></div>
+            <div className="traffic-light maximize"></div>
+          </div>
+          
+          <div className="sidebar-content">
+            <h2 className="sidebar-title">Library</h2>
             <VideoFilters active={activeFilter} onChange={setActiveFilter} />
           </div>
+        </aside>
 
-        <section className="playlist-list" aria-label="Video playlists">
-          {visiblePlaylists.length > 0 ? (
-            visiblePlaylists.map((playlist) => <PlaylistCard key={playlist.id} playlist={playlist} />)
-          ) : (
-            <div className="empty-state">
-              <PlayCircle size={42} strokeWidth={1.8} />
-              <p>No playlists in this filter yet.</p>
-            </div>
-          )}
-        </section>
+        {/* Main scrollable content */}
+        <div className="macos-content">
+          <div className="videos-header-mobile">
+            <h1 className="header-title">Videos</h1>
+          </div>
+
+          <section className="playlist-list" aria-label="Video playlists">
+            {visiblePlaylists.length > 0 ? (
+              visiblePlaylists.map((playlist) => <PlaylistCard key={playlist.id} playlist={playlist} />)
+            ) : (
+              <div className="empty-state">
+                <PlayCircle size={42} strokeWidth={1.8} />
+                <p>No playlists in this filter yet.</p>
+              </div>
+            )}
+          </section>
+        </div>
       </div>
 
       <style>{`
@@ -330,7 +330,8 @@ export default function VideosPage() {
           border-bottom: 1px solid var(--video-header-border, transparent);
         }
 
-        body.theme-dark .videos-header {
+        body.theme-dark .videos-header,
+        body.theme-dark .macos-sidebar {
           --video-header-bg: rgba(0, 0, 0, 0.72);
           --video-header-border: rgba(255, 255, 255, 0.08);
         }
@@ -419,14 +420,14 @@ export default function VideosPage() {
           aspect-ratio: 16 / 9;
           border-radius: 12px;
           overflow: hidden;
-          background: #333; /* Fallback */
+          background: transparent;
         }
         
         /* Gradients for themes */
-        .theme-yellow { background: linear-gradient(135deg, #f59e0b, #d97706); }
-        .theme-green { background: linear-gradient(135deg, #10b981, #059669); }
-        .theme-blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
-        .theme-purple { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+        .theme-yellow { background: transparent; }
+        .theme-green { background: transparent; }
+        .theme-blue { background: transparent; }
+        .theme-purple { background: transparent; }
 
         .thumb-stage {
           width: 100%;
@@ -779,6 +780,238 @@ export default function VideosPage() {
         body.theme-dark .channel-logo {
           background: #2c2c2e;
           color: #fff;
+        }
+
+      
+
+        /* --- macOS Window Styles --- */
+        .videos-page {
+          min-height: 100vh;
+          background: var(--video-page-bg, #f5f5f7);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .videos-header-mobile {
+          display: none;
+        }
+
+        .macos-window {
+          display: flex;
+          width: 100%;
+          height: 100vh;
+          background: transparent;
+        }
+
+        .macos-sidebar {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .macos-traffic-lights {
+          display: none;
+        }
+
+        .macos-content {
+          flex: 1;
+          overflow-y: auto;
+          background: var(--video-page-bg, #f5f5f7);
+        }
+
+        .sidebar-title {
+          display: none;
+        }
+
+        @media (max-width: 767px) {
+          .macos-window {
+            flex-direction: column;
+          }
+          .macos-sidebar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--video-header-bg, #ffffff);
+            backdrop-filter: var(--video-filter-backdrop, saturate(180%) blur(20px));
+            -webkit-backdrop-filter: var(--video-filter-backdrop, saturate(180%) blur(20px));
+            border-bottom: 1px solid var(--video-header-border, transparent);
+            padding: 16px 0 8px;
+          }
+          .videos-header-mobile {
+            display: block;
+            padding: 16px 20px 0;
+          }
+          .videos-header-mobile .header-title {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--video-page-fg);
+            margin: 0;
+          }
+          .sidebar-content {
+             display: flex;
+             align-items: center;
+          }
+        }
+
+        @media (min-width: 768px) {
+          .videos-page {
+            padding: 40px;
+            background: url('https://images.unsplash.com/photo-1604871000636-074fa5117945?q=80&w=2940&auto=format&fit=crop') no-repeat center center / cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+          }
+
+          body.theme-dark .videos-page {
+            background: url('https://images.unsplash.com/photo-1620121692029-d088224ddc74?q=80&w=2940&auto=format&fit=crop') no-repeat center center / cover;
+          }
+
+          .macos-window {
+            max-width: 1200px;
+            width: 100%;
+            height: calc(100vh - 80px);
+            max-height: 800px;
+            background: var(--macos-window-bg, rgba(255, 255, 255, 0.8));
+            backdrop-filter: blur(40px) saturate(150%);
+            -webkit-backdrop-filter: blur(40px) saturate(150%);
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255,255,255,0.2) inset;
+            overflow: hidden;
+            display: flex;
+            flex-direction: row;
+          }
+
+          body.theme-dark .macos-window {
+            --macos-window-bg: rgba(30, 30, 30, 0.75);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255,255,255,0.1) inset;
+          }
+
+          .macos-sidebar {
+            width: 240px;
+            background: var(--macos-sidebar-bg, rgba(245, 245, 247, 0.5));
+            border-right: 1px solid var(--macos-border, rgba(0,0,0,0.1));
+            display: flex;
+            flex-direction: column;
+            padding: 16px 12px;
+          }
+
+          body.theme-dark .macos-sidebar {
+            --macos-sidebar-bg: rgba(40, 40, 40, 0.5);
+            --macos-border: rgba(255,255,255,0.1);
+          }
+
+          .macos-traffic-lights {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            padding-left: 8px;
+          }
+
+          .traffic-light {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+          }
+
+          .traffic-light.close { background: #ff5f56; border: 1px solid #e0443e; }
+          .traffic-light.minimize { background: #ffbd2e; border: 1px solid #dea123; }
+          .traffic-light.maximize { background: #27c93f; border: 1px solid #1aab29; }
+
+          .sidebar-title {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--video-muted-fg);
+            margin: 0 0 8px 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+
+          .macos-content {
+            flex: 1;
+            padding: 32px;
+            background: transparent;
+            overflow-y: auto;
+          }
+
+          .videos-header-mobile {
+            display: block;
+            margin-bottom: 24px;
+          }
+
+          .videos-header-mobile .header-title {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--video-page-fg);
+            margin: 0;
+          }
+
+          .video-filters {
+            flex-direction: column;
+            align-items: stretch;
+            width: 100%;
+            padding: 0;
+            gap: 4px;
+            overflow: visible;
+          }
+
+          .video-chip {
+            text-align: left;
+            padding: 8px 12px;
+            border-radius: 6px;
+            min-height: 0;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+          }
+
+          .video-chip.is-active {
+            background: var(--macos-active-bg, rgba(0, 0, 0, 0.08));
+            color: var(--video-page-fg);
+            box-shadow: none;
+          }
+
+          body.theme-dark .video-chip.is-active {
+            --macos-active-bg: rgba(255, 255, 255, 0.15);
+          }
+
+          .playlist-list {
+            padding: 0;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 24px;
+          }
+        }
+
+
+        :global(.macos-content::-webkit-scrollbar) {
+          width: 12px;
+        }
+        :global(.macos-content::-webkit-scrollbar-track) {
+          background: transparent;
+        }
+        :global(.macos-content::-webkit-scrollbar-thumb) {
+          background-color: rgba(0, 0, 0, 0.2);
+          border-radius: 10px;
+          border: 3px solid transparent;
+          background-clip: padding-box;
+        }
+        :global(body.theme-dark .macos-content::-webkit-scrollbar-thumb) {
+          background-color: rgba(255, 255, 255, 0.25);
+          border: 3px solid transparent;
+          background-clip: padding-box;
+        }
+        :global(.macos-content::-webkit-scrollbar-thumb:hover) {
+          background-color: rgba(0, 0, 0, 0.35);
+          border-width: 2px;
+        }
+        :global(body.theme-dark .macos-content::-webkit-scrollbar-thumb:hover) {
+          background-color: rgba(255, 255, 255, 0.4);
+          border-width: 2px;
         }
 
       `}</style>

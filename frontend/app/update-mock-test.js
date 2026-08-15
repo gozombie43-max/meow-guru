@@ -1,52 +1,68 @@
 const fs = require('fs');
 
-let css = fs.readFileSync('frontend/app/mock-test/page.module.css', 'utf8');
+let content = fs.readFileSync('frontend/app/mock-test/page.tsx', 'utf8');
 
-// Replace dark mode variables in both media query and body.theme-dark block
-const oldDarkVarsRegex = /--primary: #8a57ff;\s*--primary-light: #b08dff;\s*--primary-bg: #2a1b4d;\s*--bg: #0f172a;\s*--card: #1e293b;\s*--text-dark: #f8fafc;\s*--text-muted: #94a3b8;\s*--text-light: #64748b;\s*--border: #334155;/g;
+// The original JSX structure we need to wrap:
+// return (
+//   <main className={styles.page}>
+//     <div className={styles.app}>
 
-const newDarkVars = `--primary: #0a84ff;
-    --primary-light: #47a1ff;
-    --primary-bg: #11284d;
-    --bg: #000000;
-    --card: #1c1c1e;
-    --text-dark: #ffffff;
-    --text-muted: rgba(235, 235, 245, 0.55);
-    --text-light: rgba(235, 235, 245, 0.3);
-    --border: rgba(255, 255, 255, 0.08);`;
+const oldJsxStart = `  return (
+    <main className={styles.page}>
+      <div className={styles.app}>`;
 
-css = css.replace(oldDarkVarsRegex, newDarkVars);
+const newJsxStart = `  return (
+    <main className={styles.page}>
+      <div className={styles.macosWindow}>
+        {/* Desktop Sidebar */}
+        <aside className={styles.macosSidebar}>
+          <div className={styles.macosTrafficLights}>
+            <div className={\`\${styles.trafficLight} \${styles.close}\`}></div>
+            <div className={\`\${styles.trafficLight} \${styles.minimize}\`}></div>
+            <div className={\`\${styles.trafficLight} \${styles.maximize}\`}></div>
+          </div>
+          
+          <h2 className={styles.sidebarTitle}>Categories</h2>
+          <div className={styles.sidebarNav}>
+            {categories.map((cat) => (
+              <button
+                key={cat.id}
+                className={\`\${styles.sidebarTab} \${activeCategory === cat.id ? styles.activeSidebarTab : ''}\`}
+                onClick={() => setActiveCategory(cat.id)}
+              >
+                <span>{cat.emoji}</span> {cat.label}
+              </button>
+            ))}
+          </div>
+        </aside>
 
-// Replace the surface background overrides
-const oldSurface1 = /background: #0f172a;/g;
-css = css.replace(oldSurface1, 'background: #000000;');
+        {/* Content Area */}
+        <div className={styles.macosContent}>
+          <div className={styles.app}>`;
 
-// Replace desktop dark mode header styles
-const oldDesktopDarkHeaderRegex = /:global\(body\.theme-dark\) \.header,\s*:global\(html\.theme-dark\) \.header \{[\s\S]*?\}/;
-const newDesktopDarkHeader = `:global(body.theme-dark) .header,
-  :global(html.theme-dark) .header {
-    background: rgba(0, 0, 0, 0.72);
-    backdrop-filter: saturate(180%) blur(20px);
-    -webkit-backdrop-filter: saturate(180%) blur(20px);
-    border-color: rgba(255, 255, 255, 0.08);
-  }`;
-css = css.replace(oldDesktopDarkHeaderRegex, newDesktopDarkHeader);
+content = content.replace(oldJsxStart, newJsxStart);
 
-// We should also add mobile dark mode header frosted glass.
-// We can just append it before the @media (min-width: 768px) block.
-if (!css.includes(':global(body.theme-dark) .header {')) {
-  css = css.replace(
-    /@media \(min-width: 768px\)/,
-    `:global(body.theme-dark) .header {
-  background: rgba(0, 0, 0, 0.72);
-  backdrop-filter: saturate(180%) blur(20px);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
+// At the end of the file, we need to close the two extra divs.
+// It looks like:
+//         )}
+//       </div>
+//     </main>
+//   );
+// }
 
-@media (min-width: 768px)`
+const oldJsxEnd = `      </div>
+    </main>
   );
-}
+}`;
 
-fs.writeFileSync('frontend/app/mock-test/page.module.css', css);
-console.log('Mock-test dark theme replaced with iOS HIG!');
+const newJsxEnd = `          </div>
+        </div>
+      </div>
+    </main>
+  );
+}`;
+
+content = content.replace(oldJsxEnd, newJsxEnd);
+
+fs.writeFileSync('frontend/app/mock-test/page.tsx', content);
+console.log('page.tsx wrapped successfully.');

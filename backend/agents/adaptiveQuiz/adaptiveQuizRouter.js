@@ -109,13 +109,20 @@ router.post("/generate", async (req, res) => {
       const topics = req.body.topics.slice(0, 6);
       const perTopic = Math.floor(effectiveCount / topics.length);
       const remainder = effectiveCount - perTopic * topics.length;
-      config.topicAllocations = topics.map((t, i) => ({
-        topic: t,
-        subject: effectiveSubjects[0] || 'Reasoning',
-        questionCount: perTopic + (i === 0 ? remainder : 0),
-        difficultyMix: { easy: Math.ceil((perTopic + (i === 0 ? remainder : 0)) * 0.4), medium: Math.ceil((perTopic + (i === 0 ? remainder : 0)) * 0.4), hard: 0 },
-        reason: 'User selected topic',
-      }));
+      config.topicAllocations = topics.map((t, i) => {
+        const countForTopic = perTopic + (i === 0 ? remainder : 0);
+        const easyCount = Math.ceil(countForTopic * 0.4);
+        const mediumCount = Math.ceil(countForTopic * 0.4);
+        const hardCount = Math.max(0, countForTopic - easyCount - mediumCount);
+        
+        return {
+          topic: t,
+          subject: effectiveSubjects[0] || 'Reasoning',
+          questionCount: countForTopic,
+          difficultyMix: { easy: easyCount, medium: mediumCount, hard: hardCount },
+          reason: 'User selected topic',
+        };
+      });
       config.quizStrategy = 'developing';
     }
 

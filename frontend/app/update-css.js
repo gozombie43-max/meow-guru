@@ -1,73 +1,210 @@
 const fs = require('fs');
-let css = fs.readFileSync('frontend/app/page.module.css', 'utf8');
 
-// 1. Replace dark theme variables
-const darkRegex = /\.dark \{([\s\S]*?)\}/;
-const iosDark = `.dark {
-  --bg: #000000;
-  --surface: #1c1c1e;
-  --surface-soft: #2c2c2e;
-  --text: #ffffff;
-  --muted: rgba(235, 235, 245, 0.55);
-  --line: rgba(255, 255, 255, 0.1);
-  --purple: #0a84ff;
-  --purple-2: #0071e3;
-  --orange: #ff9f0a;
-  --shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-  background: #000000;
-}
+let content = fs.readFileSync('frontend/app/videos/page.tsx', 'utf8');
 
-/* iOS dark mode overrides */
-.dark .sidebar { background: #1c1c1e; border-right-color: rgba(255,255,255,0.08); }
-.dark .topbar { background: rgba(0,0,0,0.72); backdrop-filter: saturate(180%) blur(20px); border-bottom: 0.5px solid rgba(255,255,255,0.08); }
-.dark .logoText strong:first-child { color: #0a84ff; }
-.dark .railLink { color: rgba(235,235,245,0.5); }
-.dark .railActive { color: #0a84ff; background: rgba(10,132,255,0.12); }
-.dark .premium { background: #1c1c1e; border-color: rgba(255,255,255,0.08); box-shadow: none; }
-.dark .premium a { background: #0a84ff; }
-.dark .premiumIcon { background: rgba(10,132,255,0.2); color: #0a84ff; }
-.dark .hero { border-color: rgba(255,255,255,0.07); background: linear-gradient(105deg, rgba(28,28,30,0.98) 0 42%, transparent 43%), linear-gradient(180deg, rgba(10,132,255,0.06), rgba(10,132,255,0.01)); border-radius: 16px; }
-.dark .wave { background: linear-gradient(135deg, #0a84ff 0%, #0055d4 100%); }
-.dark .subjectCard { background: #1c1c1e; border-color: rgba(255,255,255,0.07); box-shadow: none; }
-.dark .subjectCard:hover { background: #2c2c2e; border-color: rgba(255,255,255,0.12); }
-.dark .resourceCard { background: rgba(10,132,255,0.1); border-color: rgba(10,132,255,0.18); }
-.dark .battleCard { background: rgba(191,90,242,0.1); border-color: rgba(191,90,242,0.18); }
-.dark .quizCard { background: radial-gradient(circle at 76% 22%, rgba(10,132,255,0.3), transparent 34%), linear-gradient(135deg, #1c1c1e, #2c2c2e); border: 1px solid rgba(255,255,255,0.08); }
-.dark .recentSection, .dark .featureStrip { border-left-color: rgba(255,255,255,0.08); border-top-color: rgba(255,255,255,0.08); }
-.dark .featureItem:nth-child(1) { color: #0a84ff; }
-.dark .featureItem:nth-child(2) { color: #30d158; }
-.dark .featureItem:nth-child(3) { color: #64d2ff; }
-.dark .featureItem:nth-child(4) { color: #ff9f0a; }
-.dark .primaryCta, .dark .continueButton { background: linear-gradient(135deg, #ff9f0a, #ff6b00); box-shadow: 0 8px 20px rgba(255,106,0,0.28); }
-.dark .loginButton { border-color: #0a84ff; color: #0a84ff; }`;
-css = css.replace(darkRegex, iosDark);
+const macosCSS = `
 
-// 2. Fix hero image in all breakpoints
-css = css.replace(/\.heroImage\s*\{([\s\S]*?)\}/g, (match, body) => {
-  let newBody = body;
-  
-  // Replace bottom
-  newBody = newBody.replace(/bottom:\s*-[0-9]+px;/, 'top: 0;\n    bottom: 0;');
-  
-  // Ensure object-fit
-  if (!newBody.includes('object-fit')) {
-    if (newBody.includes('z-index')) {
-      newBody = newBody.replace(/z-index/g, 'object-fit: contain;\n    object-position: top center;\n    z-index');
-    } else {
-      newBody = newBody.replace(/\}$/, '    object-fit: contain;\n    object-position: top center;\n  }');
-    }
-  }
-  
-  // Add object-fit if it was missed
-  if (!newBody.includes('object-fit')) {
-    newBody += '\n    object-fit: contain;\n    object-position: top center;';
-  }
-  
-  // Fix height
-  newBody = newBody.replace(/height:\s*auto;/, 'height: 100%;');
-  
-  return `.heroImage {${newBody}}`;
-});
+        /* --- macOS Window Styles --- */
+        .videos-page {
+          min-height: 100vh;
+          background: var(--video-page-bg, #f5f5f7);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
 
-fs.writeFileSync('frontend/app/page.module.css', css);
-console.log('Successfully updated CSS.');
+        .videos-header-mobile {
+          display: none;
+        }
+
+        .macos-window {
+          display: flex;
+          width: 100%;
+          height: 100vh;
+          background: transparent;
+        }
+
+        .macos-sidebar {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .macos-traffic-lights {
+          display: none;
+        }
+
+        .macos-content {
+          flex: 1;
+          overflow-y: auto;
+          background: var(--video-page-bg, #f5f5f7);
+        }
+
+        .sidebar-title {
+          display: none;
+        }
+
+        @media (max-width: 767px) {
+          .macos-window {
+            flex-direction: column;
+          }
+          .macos-sidebar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--video-header-bg, #ffffff);
+            backdrop-filter: var(--video-filter-backdrop, saturate(180%) blur(20px));
+            -webkit-backdrop-filter: var(--video-filter-backdrop, saturate(180%) blur(20px));
+            border-bottom: 1px solid var(--video-header-border, transparent);
+            padding: 16px 0 8px;
+          }
+          .videos-header-mobile {
+            display: block;
+            padding: 16px 20px 0;
+          }
+          .videos-header-mobile .header-title {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--video-page-fg);
+            margin: 0;
+          }
+          .sidebar-content {
+             display: flex;
+             align-items: center;
+          }
+        }
+
+        @media (min-width: 768px) {
+          .videos-page {
+            padding: 40px;
+            background: url('https://images.unsplash.com/photo-1579546929518-9e396f3cc809?q=80&w=2940&auto=format&fit=crop') no-repeat center center / cover;
+          }
+
+          body.theme-dark .videos-page {
+            background: url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2940&auto=format&fit=crop') no-repeat center center / cover;
+          }
+
+          .macos-window {
+            max-width: 1200px;
+            width: 100%;
+            height: calc(100vh - 80px);
+            max-height: 800px;
+            background: var(--macos-window-bg, rgba(255, 255, 255, 0.8));
+            backdrop-filter: blur(40px) saturate(150%);
+            -webkit-backdrop-filter: blur(40px) saturate(150%);
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255,255,255,0.2) inset;
+            overflow: hidden;
+            display: flex;
+            flex-direction: row;
+          }
+
+          body.theme-dark .macos-window {
+            --macos-window-bg: rgba(30, 30, 30, 0.75);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255,255,255,0.1) inset;
+          }
+
+          .macos-sidebar {
+            width: 240px;
+            background: var(--macos-sidebar-bg, rgba(245, 245, 247, 0.5));
+            border-right: 1px solid var(--macos-border, rgba(0,0,0,0.1));
+            display: flex;
+            flex-direction: column;
+            padding: 16px 12px;
+          }
+
+          body.theme-dark .macos-sidebar {
+            --macos-sidebar-bg: rgba(40, 40, 40, 0.5);
+            --macos-border: rgba(255,255,255,0.1);
+          }
+
+          .macos-traffic-lights {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            padding-left: 8px;
+          }
+
+          .traffic-light {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+          }
+
+          .traffic-light.close { background: #ff5f56; border: 1px solid #e0443e; }
+          .traffic-light.minimize { background: #ffbd2e; border: 1px solid #dea123; }
+          .traffic-light.maximize { background: #27c93f; border: 1px solid #1aab29; }
+
+          .sidebar-title {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--video-muted-fg);
+            margin: 0 0 8px 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+
+          .macos-content {
+            flex: 1;
+            padding: 32px;
+            background: transparent;
+            overflow-y: auto;
+          }
+
+          .videos-header-mobile {
+            display: block;
+            margin-bottom: 24px;
+          }
+
+          .videos-header-mobile .header-title {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--video-page-fg);
+            margin: 0;
+          }
+
+          .video-filters {
+            flex-direction: column;
+            align-items: stretch;
+            width: 100%;
+            padding: 0;
+            gap: 4px;
+            overflow: visible;
+          }
+
+          .video-chip {
+            text-align: left;
+            padding: 8px 12px;
+            border-radius: 6px;
+            min-height: 0;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+          }
+
+          .video-chip.is-active {
+            background: var(--macos-active-bg, rgba(0, 0, 0, 0.08));
+            color: var(--video-page-fg);
+            box-shadow: none;
+          }
+
+          body.theme-dark .video-chip.is-active {
+            --macos-active-bg: rgba(255, 255, 255, 0.15);
+          }
+
+          .playlist-list {
+            padding: 0;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 24px;
+          }
+        }
+`;
+
+content = content.replace('`}</style>', macosCSS + '\n      `}</style>');
+
+fs.writeFileSync('frontend/app/videos/page.tsx', content);
+console.log('CSS updated successfully.');

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Geist } from 'next/font/google';
 import 'katex/dist/katex.min.css';
 import './globals.css';
+import './adaptive-quiz/adaptive-quiz.css';
 import { AuthProvider } from '@/context/AuthContext';
 import BottomNav from '@/components/BottomNav';
 import AppWarmup from '@/components/AppWarmup';

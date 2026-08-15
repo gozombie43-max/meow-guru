@@ -60,37 +60,72 @@ export default function PlayPage() {
 
   return (
     <div className={`study-modes-wrapper ${isDark ? 'dark' : ''}`}>
-      <main className="container">
-        <div className="tabs">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              className={`tab ${category === cat ? 'active' : ''}`}
-              onClick={() => setCategory(cat)}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-
-        <div className="mode-list">
-          {filteredModes.map((mode) => (
-            <div key={mode.id} className="card">
-              <div className="card-left">
-                <div className="icon">{mode.icon}</div>
-                <div className="info">
-                  <div className="category">{mode.category}</div>
-                  <h3>{mode.title}</h3>
-                  <div className="meta">⏱ {mode.duration} · {mode.questions}</div>
-                </div>
-              </div>
-              <button className="btn" onClick={() => handleStart(mode.href)}>
-                <ChevronRight size={24} color="#fff" strokeWidth={3} />
+      <div className="macos-window">
+        {/* Desktop Sidebar */}
+        <aside className="macos-sidebar">
+          <div className="macos-traffic-lights">
+            <div className="traffic-light close"></div>
+            <div className="traffic-light minimize"></div>
+            <div className="traffic-light maximize"></div>
+          </div>
+          
+          <h2 className="sidebar-title">Categories</h2>
+          <div className="sidebar-nav">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                className={`sidebar-tab ${category === cat ? 'active' : ''}`}
+                onClick={() => setCategory(cat)}
+              >
+                {cat}
               </button>
+            ))}
+          </div>
+        </aside>
+
+        {/* Content Area */}
+        <div className="macos-content">
+          <main className="container">
+            {/* iOS Mobile Header */}
+            <div className="ios-header">
+              <h1 className="ios-large-title">Play</h1>
+              
+              <div className="ios-segmented-control">
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    className={`segment ${category === cat ? 'active' : ''}`}
+                    onClick={() => setCategory(cat)}
+                  >
+                    <span>{cat}</span>
+                  </button>
+                ))}
+              </div>
             </div>
-          ))}
+
+            {/* Grouped List */}
+            <div className="ios-list-group">
+              {filteredModes.map((mode, index) => (
+                <div key={mode.id} className="ios-list-cell" onClick={() => handleStart(mode.href)}>
+                  <div className={`cell-icon theme-${mode.category.toLowerCase()}`}>
+                    {mode.icon}
+                  </div>
+                  <div className="cell-body">
+                    <div className="cell-content">
+                      <div className="cell-title">{mode.title}</div>
+                      <div className="cell-subtitle">{mode.duration} · {mode.questions}</div>
+                    </div>
+                    <div className="cell-accessory">
+                      <ChevronRight size={20} className="chevron" strokeWidth={2.5} />
+                    </div>
+                  </div>
+                  {index < filteredModes.length - 1 && <div className="cell-separator" />}
+                </div>
+              ))}
+            </div>
+          </main>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
