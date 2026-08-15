@@ -359,13 +359,22 @@ export default function ReasoningTopicsPage() {
 
         .topbar-title {
           text-align: center;
-          font-size: 0.97rem;
+          font-size: 1.05rem;
           font-weight: 700;
           letter-spacing: -0.01em;
           color: #0f172a;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
-        .topbar-spacer { width: 36px; }
+        .topbar-spacer {
+          width: 36px;
+          height: 36px;
+        }
 
         /* ── Body ── */
         .body {

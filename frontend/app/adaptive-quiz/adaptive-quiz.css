@@ -44,8 +44,7 @@ body.theme-dark .adaptive-quiz-page {
   .macos-window { height: auto !important; }
     .macos-content { overflow: visible !important; }
   .macos-sidebar-title { margin: 0 !important; font-size: 17px !important; flex: 1; text-align: center; }
-  .ai-badge { display: none !important; }
-  .back-btn { display: none !important; }
+  .macos-window .back-btn { display: none !important; }
   .macos-window {
     flex-direction: column;
   }
