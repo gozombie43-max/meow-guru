@@ -51,7 +51,6 @@ export default function InitialLoadingGate() {
   const [displayProgress, setDisplayProgress] = useState(15);
   const targetProgressRef = useRef(15);
   const currentProgressRef = useRef(15);
-  const hasRunRef = useRef(false);
 
   const [quoteIndex, setQuoteIndex] = useState(0);
   const [showRecoveryOption, setShowRecoveryOption] = useState(false);
@@ -106,7 +105,6 @@ export default function InitialLoadingGate() {
       const current = currentProgressRef.current;
 
       if (current < target) {
-        // Continuous smooth easing step (minimum 0.35% per frame)
         const diff = target - current;
         const step = Math.max(0.35, diff * 0.085);
         const next = Math.min(target, current + step);
@@ -355,33 +353,33 @@ export default function InitialLoadingGate() {
                 <g fill="#0084ff">
                   <g transform="scale(4,4)">
                     <path d="M56,41.7c0,0 -2.11,-0.54 -4,-0.7c0,0 1.22,1.92 1.5,4.5c0,0 -2.26,-0.55 -4.42,-0.5c0,0 1.62,1.91 1.92,4c0,0 -1.915,1.62 -6.315,4.12c0,0 -0.073,-2.17 -1.185,-6.12h-2c0,0 -0.068,4.899 -1.5,10.3c-3,3.7 -8,3.7 -8,3.7c0,0 -5,0 -8,-3.7c-1.432,-5.401 -1.5,-10.3 -1.5,-10.3h-2c-1.111,3.95 -1.185,6.12 -1.185,6.12c-4.4,-2.5 -6.315,-4.12 -6.315,-4.12c0.3,-2.09 1.92,-4 1.92,-4c-2.16,-0.05 -4.42,0.5 -4.42,0.5c0.28,-2.58 1.5,-4.5 1.5,-4.5c-1.89,0.16 -4,0.7 -4,0.7c0.36,-2.4 2,-4.7 2,-4.7c-2.41,0.27 -4,1 -4,1c3,-14 15,-21 15,-21c-4.02,-4.35 -7.4,-7 -7.4,-7c0,0 -1.17,4.47 -0.6,10.4l-4,4.1c-1,-9.5 1.8,-20.5 1.8,-20.5l1.5,-0.5l12.7,10.5c0,0 2.46,-0.48 7,-0.48c4.54,0 7,0.48 7,0.48l12.7,-10.5l1.5,0.5c0,0 2.8,11 1.8,20.5l-4,-4.1c0.57,-5.93 -0.6,-10.4 -0.6,-10.4c0,0 -3.38,2.65 -7.4,7c0,0 12,7 15,21c0,0 -1.59,-0.73 -4,-1c0,0 1.64,2.3 2,4.7zM26.799,38c-0.143,-2.57 -1.082,-3.92 -1.614,-4.38c-1.741,-0.59 -3.813,-0.58 -5.185,-0.43c2.15,4.75 6.297,4.81 6.348,4.81zM37.652,38c0.051,0 4.198,-0.06 6.348,-4.81c-1.372,-0.15 -3.444,-0.16 -5.185,0.43c-0.532,0.46 -1.471,1.81 -1.614,4.38zM32,52c-2,0 -4,1 -4,1c1,4 4,4 4,4c0,0 3,0 4,-4c0,0 -2,-1 -4,-1z" />
-                    </g>
                   </g>
-                </svg>
-              </div>
-              <div className={styles.brandTextBlock}>
-                <div className={styles.brandTitle}>
-                  <span className={styles.brandStudy}>STUDY</span>{" "}
-                  <span className={styles.brandGuru}>GURU</span>
-                </div>
-                <div className={styles.brandTagline}>Learn • Practice • Achieve</div>
-              </div>
+                </g>
+              </svg>
             </div>
+            <div className={styles.brandTextBlock}>
+              <div className={styles.brandTitle}>
+                <span className={styles.brandStudy}>STUDY</span>{" "}
+                <span className={styles.brandGuru}>GURU</span>
+              </div>
+              <div className={styles.brandTagline}>Learn • Practice • Achieve</div>
+            </div>
+          </div>
 
-            {/* Seamless Study Hero Artwork gradually blending into theme */}
-            <div className={styles.heroArtworkContainer}>
-              <div className={styles.heroArtworkSeamless}>
-                <Image
-                  src="/loading_study_hero.webp"
-                  alt="Student studying mock test at night"
-                  width={560}
-                  height={315}
-                  priority
-                  className={styles.heroArtworkImg}
-                />
-                <div className={styles.heroArtworkBlend} aria-hidden="true" />
-              </div>
+          {/* Seamless Study Hero Artwork gradually blending into theme */}
+          <div className={styles.heroArtworkContainer}>
+            <div className={styles.heroArtworkSeamless}>
+              <Image
+                src="/loading_study_hero.webp"
+                alt="Student studying mock test at night"
+                width={560}
+                height={315}
+                priority
+                className={styles.heroArtworkImg}
+              />
+              <div className={styles.heroArtworkBlend} aria-hidden="true" />
             </div>
+          </div>
         </header>
 
         {/* 2-COLUMN DESKTOP / 1-COLUMN MOBILE CONTENT GRID */}
@@ -524,65 +522,68 @@ export default function InitialLoadingGate() {
 
           {/* RIGHT CARD: Motivational Quote & Growth Chart */}
           <aside className={styles.quoteCard} aria-label="Study motivation and progress visualization">
-            <div className={styles.quoteCardContent}>
-              {/* Quote Mark Icon */}
-              <div className={styles.quoteMarkSymbol} aria-hidden="true">
-                “
+            <div className={styles.quoteCardMain}>
+              {/* Quote Text Section */}
+              <div className={styles.quoteCardContent}>
+                {/* Quote Mark Icon */}
+                <div className={styles.quoteMarkSymbol} aria-hidden="true">
+                  “
+                </div>
+
+                {/* Quote Text & Author */}
+                <blockquote className={styles.quoteBody}>
+                  {currentQuote.text}
+                </blockquote>
+                <div className={styles.quoteAuthorTag}>— {currentQuote.author}</div>
               </div>
 
-              {/* Quote Text & Author */}
-              <blockquote className={styles.quoteBody}>
-                {currentQuote.text}
-              </blockquote>
-              <div className={styles.quoteAuthorTag}>— {currentQuote.author}</div>
-            </div>
+              {/* Ascending Growth Chart with Flag */}
+              <div className={styles.chartGraphicArea} aria-hidden="true">
+                {/* Trajectory Dashed Path with Glowing Goal Flag */}
+                <div className={styles.chartFlagIcon}>
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M4 15C4 15 5 14 8 14C11 14 13 16 16 16C19 16 20 15 20 15V3C20 3 19 4 16 4C13 4 11 2 8 2C5 2 4 3 4 3V22"
+                      stroke="#38bdf8"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      fill="rgba(56, 189, 248, 0.45)"
+                    />
+                  </svg>
+                </div>
 
-            {/* Ascending Growth Chart with Flag */}
-            <div className={styles.chartGraphicArea} aria-hidden="true">
-              {/* Trajectory Dashed Path with Glowing Goal Flag */}
-              <div className={styles.chartFlagIcon}>
                 <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
+                  className={styles.trajectorySvg}
+                  viewBox="0 0 180 80"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="M4 15C4 15 5 14 8 14C11 14 13 16 16 16C19 16 20 15 20 15V3C20 3 19 4 16 4C13 4 11 2 8 2C5 2 4 3 4 3V22"
-                    stroke="#38bdf8"
-                    strokeWidth="2.5"
+                    d="M10 68 C 60 52, 110 38, 160 12"
+                    stroke="#0084ff"
+                    strokeWidth="2"
+                    strokeDasharray="3 3"
                     strokeLinecap="round"
-                    strokeLinejoin="round"
-                    fill="rgba(56, 189, 248, 0.45)"
                   />
+                  <circle cx="160" cy="12" r="3.5" fill="#38bdf8" />
                 </svg>
-              </div>
 
-              <svg
-                className={styles.trajectorySvg}
-                viewBox="0 0 180 80"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M10 68 C 60 52, 110 38, 160 12"
-                  stroke="#0084ff"
-                  strokeWidth="2"
-                  strokeDasharray="3 3"
-                  strokeLinecap="round"
-                />
-                <circle cx="160" cy="12" r="3.5" fill="#38bdf8" />
-              </svg>
-
-              {/* Ascending Bar Columns */}
-              <div className={styles.barColumns}>
-                <div className={`${styles.barCol} ${styles.bar1}`} />
-                <div className={`${styles.barCol} ${styles.bar2}`} />
-                <div className={`${styles.barCol} ${styles.bar3}`} />
-                <div className={`${styles.barCol} ${styles.bar4}`} />
-                <div className={`${styles.barCol} ${styles.bar5}`} />
-                <div className={`${styles.barCol} ${styles.bar6}`} />
+                {/* Ascending Bar Columns */}
+                <div className={styles.barColumns}>
+                  <div className={`${styles.barCol} ${styles.bar1}`} />
+                  <div className={`${styles.barCol} ${styles.bar2}`} />
+                  <div className={`${styles.barCol} ${styles.bar3}`} />
+                  <div className={`${styles.barCol} ${styles.bar4}`} />
+                  <div className={`${styles.barCol} ${styles.bar5}`} />
+                  <div className={`${styles.barCol} ${styles.bar6}`} />
+                </div>
               </div>
             </div>
 

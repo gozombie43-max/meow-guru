@@ -186,7 +186,6 @@
   width: 100%;
   height: 185px;
   overflow: visible;
-  /* Smooth multi-stop gradient masks feathering all outer edges into background */
   -webkit-mask-image: 
     radial-gradient(ellipse at 58% 46%, rgba(0,0,0,1) 40%, rgba(0,0,0,0.85) 65%, rgba(0,0,0,0.25) 86%, transparent 100%),
     linear-gradient(to bottom, rgba(0,0,0,1) 65%, transparent 100%),
@@ -571,6 +570,13 @@
   overflow: hidden;
 }
 
+.quoteCardMain {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
 .quoteCardContent {
   display: flex;
   flex-direction: column;
@@ -942,29 +948,88 @@
     padding: 2.5px 7px;
   }
 
+  /* Compact Sleek Quote Card on Mobile */
   .quoteCard {
-    padding: 16px 14px;
+    padding: 12px 14px;
     border-radius: 16px;
   }
 
+  .quoteCardMain {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .quoteCardContent {
+    flex: 1;
+    min-width: 0;
+    text-align: left;
+  }
+
   .quoteMarkSymbol {
-    font-size: 34px;
+    font-size: 26px;
+    margin-bottom: -4px;
+    line-height: 1;
   }
 
   .quoteBody {
-    font-size: 14.5px;
+    font-size: 12.5px;
+    line-height: 1.32;
+    font-weight: 600;
+  }
+
+  .quoteAuthorTag {
+    font-size: 11px;
+    margin-top: 3px;
   }
 
   .chartGraphicArea {
-    height: 80px;
+    width: 95px;
+    height: 56px;
+    flex-shrink: 0;
+    margin-top: 0;
+    padding-right: 2px;
+  }
+
+  .barColumns {
+    gap: 5px;
   }
 
   .barCol {
-    width: 10px;
+    width: 7px;
+    border-radius: 2px 2px 0 0;
+  }
+
+  .bar1 { height: 10px; }
+  .bar2 { height: 18px; }
+  .bar3 { height: 26px; }
+  .bar4 { height: 35px; }
+  .bar5 { height: 44px; }
+  .bar6 {
+    height: 52px;
+  }
+
+  .chartFlagIcon {
+    top: -4px;
+    right: 0px;
   }
 
   .carouselIndicators {
     display: flex;
+    margin-top: 6px;
+    gap: 6px;
+  }
+
+  .indicatorDot {
+    width: 5px;
+    height: 5px;
+  }
+
+  .indicatorDotActive {
+    width: 12px;
   }
 
   .trustBadgePill {
@@ -982,8 +1047,21 @@
     height: 155px;
   }
 
-  .loadingCard, .quoteCard {
+  .loadingCard {
     padding: 14px 12px;
+  }
+
+  .quoteCard {
+    padding: 10px 12px;
+  }
+
+  .quoteBody {
+    font-size: 12px;
+  }
+
+  .chartGraphicArea {
+    width: 85px;
+    height: 50px;
   }
 
   .stepIconBox {
