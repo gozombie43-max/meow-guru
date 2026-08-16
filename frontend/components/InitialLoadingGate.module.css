@@ -8,20 +8,23 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(ellipse at 50% 45%, #1c367b 0%, #10214e 35%, #09132e 70%, #030612 100%);
+  background: radial-gradient(ellipse at 50% 20%, #0c1c44 0%, #07122b 45%, #030816 80%, #02040d 100%);
   color: #ffffff;
   user-select: none;
   -webkit-user-select: none;
-  overflow: hidden;
-  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s;
+  overflow-x: hidden;
+  overflow-y: auto;
+  transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1), transform 0.55s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.55s;
   opacity: 1;
   transform: scale(1);
   visibility: visible;
+  padding: 16px 20px;
+  box-sizing: border-box;
 }
 
 .overlayExiting {
   opacity: 0;
-  transform: scale(1.04);
+  transform: scale(1.03);
   visibility: hidden;
   pointer-events: none;
 }
@@ -34,449 +37,758 @@
 }
 
 /* Background Ambient Lighting */
-.ambientGlow {
+.ambientGlowTop {
   position: absolute;
-  top: 40%;
+  top: 15%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 600px;
-  height: 350px;
-  background: radial-gradient(ellipse at center, rgba(0, 170, 255, 0.22) 0%, rgba(0, 110, 255, 0.08) 50%, transparent 80%);
-  filter: blur(50px);
+  width: 750px;
+  height: 400px;
+  background: radial-gradient(ellipse at center, rgba(0, 132, 255, 0.2) 0%, rgba(0, 70, 180, 0.06) 55%, transparent 75%);
+  filter: blur(60px);
   pointer-events: none;
-  animation: pulseGlow 4s ease-in-out infinite alternate;
+  animation: pulseTopGlow 5s ease-in-out infinite alternate;
 }
 
-@keyframes pulseGlow {
-  0% {
-    opacity: 0.7;
-    transform: translate(-50%, -50%) scale(0.95);
-  }
-  100% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1.08);
-  }
+.ambientGlowBottom {
+  position: absolute;
+  bottom: 0%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 900px;
+  height: 280px;
+  background: radial-gradient(ellipse at center, rgba(0, 132, 255, 0.16) 0%, rgba(56, 189, 248, 0.05) 60%, transparent 80%);
+  filter: blur(70px);
+  pointer-events: none;
 }
 
-/* Main Container */
+@keyframes pulseTopGlow {
+  0% { opacity: 0.65; transform: translate(-50%, -50%) scale(0.96); }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(1.06); }
+}
+
+/* Star Sparkles */
+.sparklesLayer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.sparkle {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 0 6px 1px #38bdf8;
+  animation: sparkleTwinkle 3.2s ease-in-out infinite alternate;
+}
+
+.sparkle1 { top: 16%; left: 12%; animation-delay: 0s; width: 4px; height: 4px; }
+.sparkle2 { top: 30%; left: 88%; animation-delay: 0.7s; }
+.sparkle3 { top: 70%; left: 10%; animation-delay: 1.5s; width: 3.5px; height: 3.5px; }
+.sparkle4 { top: 84%; left: 86%; animation-delay: 0.3s; }
+.sparkle5 { top: 48%; left: 95%; animation-delay: 1.8s; }
+
+@keyframes sparkleTwinkle {
+  0% { opacity: 0.2; transform: scale(0.7); }
+  50% { opacity: 0.95; transform: scale(1.3); }
+  100% { opacity: 0.3; transform: scale(0.8); }
+}
+
+/* Central Container */
 .container {
   position: relative;
   z-index: 2;
   width: 100%;
-  max-width: 680px;
-  padding: 24px;
+  max-width: 900px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
+  gap: 18px;
+  margin: auto;
   box-sizing: border-box;
 }
 
-/* Top Study Guru Brand Logo matching home page */
-.logoWrapper {
-  display: inline-flex;
+/* ═══════════════════════════════════════════════════════════
+   HEADER ROW (Brand & Seamless Study Artwork)
+   ═══════════════════════════════════════════════════════════ */
+.headerRow {
+  display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 34px;
-  text-decoration: none;
-  filter: drop-shadow(0 0 24px rgba(0, 140, 255, 0.5));
-  animation: logoFloat 3s ease-in-out infinite alternate;
+  justify-content: space-between;
+  gap: 24px;
+  width: 100%;
+  padding: 0 4px;
+  box-sizing: border-box;
 }
 
-@keyframes logoFloat {
-  0% {
-    transform: translateY(0);
-  }
-  100% {
-    transform: translateY(-3px);
-  }
+.brandWrapper {
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
 
-.logoMark {
+.brandLogoIcon {
   width: 48px;
   height: 48px;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  filter: drop-shadow(0 0 16px rgba(0, 132, 255, 0.75));
 }
 
-.logoText {
+.brandTextBlock {
   display: flex;
   flex-direction: column;
-  line-height: 0.92;
-  letter-spacing: -0.03em;
-  font-size: 24px;
-  font-weight: 900;
+  gap: 3px;
   text-align: left;
+}
+
+.brandTitle {
   font-family: var(--font-outfit, 'Outfit', sans-serif);
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
 }
 
-.logoStudy {
+.brandStudy {
   color: #0084ff;
-  text-shadow: 0 0 16px rgba(0, 132, 255, 0.6);
+  text-shadow: 0 0 16px rgba(0, 132, 255, 0.7);
 }
 
-.logoGuru {
+.brandGuru {
   color: #ffffff;
   text-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
 }
 
-/* Outer Glowing Progress Capsule Bar matching reference image */
-.progressCapsuleWrapper {
-  width: 100%;
-  max-width: 580px;
-  height: 42px;
-  border-radius: 9999px;
-  background: #0d162a;
-  border: 2.5px solid #233558;
-  box-shadow:
-    0 0 30px rgba(0, 180, 255, 0.3),
-    0 4px 20px rgba(0, 0, 0, 0.6),
-    inset 0 2px 8px rgba(0, 0, 0, 0.9),
-    inset 0 0 4px rgba(0, 180, 255, 0.2);
-  padding: 3px;
-  position: relative;
-  box-sizing: border-box;
-  overflow: hidden;
+.brandTagline {
+  font-size: 13px;
+  font-weight: 500;
+  color: #94a3b8;
+  letter-spacing: 0.04em;
 }
 
-/* Inner Liquid Fill Track */
-.progressTrack {
+/* Hero Artwork Seamlessly blending into theme on PC */
+.heroArtworkContainer {
+  flex-shrink: 0;
+  width: 420px;
+  max-width: 48%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.heroArtworkSeamless {
   position: relative;
   width: 100%;
+  height: 185px;
+  overflow: visible;
+  /* Smooth multi-stop gradient masks feathering all outer edges into background */
+  -webkit-mask-image: 
+    radial-gradient(ellipse at 58% 46%, rgba(0,0,0,1) 40%, rgba(0,0,0,0.85) 65%, rgba(0,0,0,0.25) 86%, transparent 100%),
+    linear-gradient(to bottom, rgba(0,0,0,1) 65%, transparent 100%),
+    linear-gradient(to left, rgba(0,0,0,1) 75%, transparent 100%);
+  mask-image: 
+    radial-gradient(ellipse at 58% 46%, rgba(0,0,0,1) 40%, rgba(0,0,0,0.85) 65%, rgba(0,0,0,0.25) 86%, transparent 100%),
+    linear-gradient(to bottom, rgba(0,0,0,1) 65%, transparent 100%),
+    linear-gradient(to left, rgba(0,0,0,1) 75%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+
+.heroArtworkImg {
+  width: 100%;
   height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+  display: block;
+}
+
+.heroArtworkBlend {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 75% 25%, transparent 50%, rgba(2, 6, 18, 0.4) 100%);
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MAIN 2-COLUMN GRID (PC)
+   ═══════════════════════════════════════════════════════════ */
+.mainGrid {
+  display: grid;
+  grid-template-columns: 1.45fr 1fr;
+  gap: 18px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ── Left Card: Loading Experience & Stepper ────────────── */
+.loadingCard {
+  background: rgba(8, 17, 36, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(56, 189, 248, 0.16);
+  border-radius: 20px;
+  padding: 22px 24px;
+  box-shadow:
+    0 12px 34px rgba(0, 0, 0, 0.5),
+    0 0 28px rgba(0, 132, 255, 0.12),
+    inset 0 1px 1px rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-sizing: border-box;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cardHeaderText {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: left;
+}
+
+.cardHeading {
+  font-family: var(--font-outfit, 'Outfit', sans-serif);
+  font-size: 19px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.mobileHeading {
+  display: none;
+}
+
+.desktopHeading {
+  display: inline;
+}
+
+.cardSubheading {
+  font-size: 12.5px;
+  color: #94a3b8;
+  margin: 0;
+  font-weight: 400;
+}
+
+.desktopOnlySubhead {
+  display: block;
+}
+
+.mobileOnlySubhead {
+  display: none;
+}
+
+.progressPercent {
+  font-family: var(--font-outfit, 'Outfit', sans-serif);
+  font-size: 22px;
+  font-weight: 800;
+  color: #0084ff;
+  text-shadow: 0 0 14px rgba(0, 132, 255, 0.65);
+  flex-shrink: 0;
+}
+
+/* Glowing Progress Capsule Bar */
+.progressBarWrapper {
+  width: 100%;
+  margin-top: 2px;
+  margin-bottom: 2px;
+}
+
+.progressBarTrack {
+  width: 100%;
+  height: 12px;
+  background: #060e20;
   border-radius: 9999px;
-  background: #091020;
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.8),
+    0 0 12px rgba(0, 132, 255, 0.18);
   overflow: hidden;
+  position: relative;
 }
 
 .progressBarFill {
   height: 100%;
   border-radius: 9999px;
-  background: linear-gradient(90deg, #0091ff 0%, #00c6ff 45%, #00f0ff 85%, #7bf5ff 100%);
+  background: linear-gradient(90deg, #0066ff 0%, #00a2ff 60%, #00e5ff 100%);
   box-shadow:
-    0 0 24px rgba(0, 220, 255, 0.85),
-    0 0 45px rgba(0, 150, 255, 0.55),
-    inset 0 1px 3px rgba(255, 255, 255, 0.8),
-    inset 0 -2px 4px rgba(0, 80, 160, 0.6);
-  transition: width 0.35s cubic-bezier(0.2, 0.8, 0.3, 1);
+    0 0 16px rgba(0, 160, 255, 0.85),
+    inset 0 1px 2px rgba(255, 255, 255, 0.6);
+  transition: width 0.12s linear;
   position: relative;
   overflow: hidden;
-  min-width: 8px;
 }
 
-/* Floating Bubbles & Sparkles inside liquid bar */
-.bubblesContainer {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.bubble {
-  position: absolute;
-  border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.95), rgba(165, 243, 252, 0.75) 60%, rgba(6, 182, 212, 0.3) 100%);
-  box-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
-  animation: floatBubble linear infinite;
-}
-
-.bubble1 { width: 6px; height: 6px; top: 22%; left: 8%; animation-duration: 2.2s; animation-delay: 0s; }
-.bubble2 { width: 10px; height: 10px; top: 12%; left: 24%; animation-duration: 3.1s; animation-delay: 0.4s; }
-.bubble3 { width: 5px; height: 5px; top: 48%; left: 38%; animation-duration: 1.9s; animation-delay: 0.8s; }
-.bubble4 { width: 9px; height: 9px; top: 18%; left: 52%; animation-duration: 2.8s; animation-delay: 0.2s; }
-.bubble5 { width: 7px; height: 7px; top: 35%; left: 68%; animation-duration: 2.5s; animation-delay: 0.9s; }
-.bubble6 { width: 11px; height: 11px; top: 15%; left: 82%; animation-duration: 3.4s; animation-delay: 0.5s; }
-.bubble7 { width: 5px; height: 5px; top: 55%; left: 91%; animation-duration: 2.1s; animation-delay: 1.1s; }
-.bubble8 { width: 8px; height: 8px; top: 28%; left: 16%; animation-duration: 2.6s; animation-delay: 1.3s; }
-.bubble9 { width: 6px; height: 6px; top: 40%; left: 45%; animation-duration: 2.3s; animation-delay: 0.6s; }
-.bubble10 { width: 10px; height: 10px; top: 20%; left: 74%; animation-duration: 3s; animation-delay: 1.5s; }
-
-@keyframes floatBubble {
-  0% {
-    transform: translate(0, 0) scale(0.85);
-    opacity: 0.5;
-  }
-  50% {
-    transform: translate(6px, -2px) scale(1.15);
-    opacity: 0.95;
-  }
-  100% {
-    transform: translate(12px, 1px) scale(0.85);
-    opacity: 0.5;
-  }
-}
-
-/* Shimmer Light Sweep on the Progress Bar */
-.shimmerWave {
+.progressBarShimmer {
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 60px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+  width: 40px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
   transform: skewX(-20deg);
-  animation: shimmerPass 2s infinite ease-in-out;
+  animation: shimmerPass 1.8s infinite ease-in-out;
 }
 
 @keyframes shimmerPass {
-  0% { left: -70px; }
-  100% { left: 115%; }
+  0% { left: -50px; }
+  100% { left: 120%; }
 }
 
-/* Glowing Leading Edge */
-.edgeGlow {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  right: -2px;
-  width: 14px;
-  background: radial-gradient(circle at center, #ffffff 0%, #38bdf8 60%, transparent 100%);
-  filter: blur(2px);
+/* Diagnostic Stepper Wrapper */
+.stepperWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.stepRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  padding: 3px 0;
+}
+
+/* Step Indicator Col & Track */
+.stepIndicatorCol {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 20px;
+  flex-shrink: 0;
+}
+
+.indicatorCircle {
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  animation: pulseEdge 1s infinite alternate;
-}
-
-@keyframes pulseEdge {
-  0% { opacity: 0.7; transform: scaleY(0.9); }
-  100% { opacity: 1; transform: scaleY(1.1); }
-}
-
-/* LOADING... Typography matching reference image */
-.loadingText {
-  margin-top: 24px;
-  font-family: var(--font-outfit, 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
-  font-size: 26px;
-  font-weight: 800;
-  letter-spacing: 0.16em;
-  color: #ffffff;
-  text-shadow:
-    0 0 16px rgba(0, 210, 255, 0.75),
-    0 0 32px rgba(0, 140, 255, 0.45),
-    0 2px 6px rgba(0, 0, 0, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-}
-
-.dots {
-  display: inline-flex;
-  margin-left: 2px;
-}
-
-.dotOne, .dotTwo, .dotThree {
-  animation: blinkDot 1.4s infinite both;
-}
-
-.dotOne { animation-delay: 0s; }
-.dotTwo { animation-delay: 0.2s; }
-.dotThree { animation-delay: 0.4s; }
-
-@keyframes blinkDot {
-  0%, 80%, 100% {
-    opacity: 0.15;
-    transform: translateY(0);
-  }
-  40% {
-    opacity: 1;
-    transform: translateY(-2px);
-  }
-}
-
-/* Status and Percentage Row */
-.statusRow {
-  margin-top: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  max-width: 580px;
-  font-size: 13.5px;
-  color: #94a3b8;
-  padding: 0 4px;
+  z-index: 2;
+  transition: all 0.3s ease;
   box-sizing: border-box;
 }
 
-.statusMessage {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #bae6fd;
-  font-weight: 500;
-  text-shadow: 0 0 8px rgba(0, 190, 255, 0.3);
+.indicatorDone {
+  background: #14532d;
+  border: 1.5px solid #22c55e;
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.45);
 }
 
-.percentBadge {
-  font-family: 'Space Mono', monospace;
-  font-size: 13px;
-  font-weight: 700;
-  color: #38bdf8;
-  background: rgba(14, 165, 233, 0.14);
-  border: 1px solid rgba(56, 189, 248, 0.3);
-  padding: 2px 10px;
-  border-radius: 9999px;
-  letter-spacing: 0.05em;
-  box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+.checkSvg {
+  color: #4ade80;
 }
 
-/* Conditions Checklist Grid */
-.conditionsGrid {
-  margin-top: 32px;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  width: 100%;
-  max-width: 620px;
+.indicatorProgress {
+  background: #0369a1;
+  border: 1.5px solid #38bdf8;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
 }
 
-.conditionCard {
-  background: rgba(15, 23, 42, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(12px);
-  border-radius: 9999px;
-  padding: 6px 14px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  font-weight: 500;
-  color: #94a3b8;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  box-sizing: border-box;
+.pulsePoint {
+  width: 5px;
+  height: 5px;
+  background: #38bdf8;
+  border-radius: 50%;
+  box-shadow: 0 0 6px #ffffff;
+  animation: pulsePoint 1.2s ease-in-out infinite alternate;
 }
 
-.conditionCardActive {
-  background: rgba(8, 47, 73, 0.75);
-  border-color: rgba(56, 189, 248, 0.5);
-  color: #e0f2fe;
-  box-shadow: 0 0 16px rgba(14, 165, 233, 0.25);
-  transform: translateY(-1px);
+@keyframes pulsePoint {
+  0% { transform: scale(0.8); opacity: 0.6; }
+  100% { transform: scale(1.3); opacity: 1; }
 }
 
-.conditionCardWarn {
-  background: rgba(69, 26, 3, 0.5);
-  border-color: rgba(245, 158, 11, 0.4);
-  color: #fef3c7;
+.indicatorWarning {
+  background: #78350f;
+  border: 1.5px solid #f59e0b;
 }
 
-.conditionIcon {
-  width: 16px;
-  height: 16px;
+.indicatorPending {
+  background: #0b1329;
+  border: 1.5px solid #334155;
+}
+
+.timelineConnector {
+  position: absolute;
+  top: 20px;
+  bottom: -15px;
+  width: 2px;
+  border-left: 2px dashed #334155;
+  z-index: 1;
+}
+
+.connectorDone {
+  border-left: 2px dashed #22c55e;
+}
+
+.connectorProgress {
+  border-left: 2px dashed #38bdf8;
+}
+
+.connectorPending {
+  border-left: 2px dashed #1e293b;
+}
+
+/* Step Icon Box */
+.stepIconBox {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.iconBoxDone {
+  background: rgba(14, 165, 233, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  box-shadow: 0 0 8px rgba(14, 165, 233, 0.15);
+}
+
+.iconBoxProgress {
+  background: rgba(14, 165, 233, 0.18);
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  box-shadow: 0 0 12px rgba(14, 165, 233, 0.28);
+}
+
+.iconBoxPending {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .iconSpin {
-  animation: spin 1.2s linear infinite;
+  animation: spinSlow 1.4s linear infinite;
 }
 
-@keyframes spin {
+@keyframes spinSlow {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
 
-.conditionLabel {
+/* Step Info */
+.stepInfoBlock {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  text-align: left;
+  min-width: 0;
+}
+
+.stepTitle {
+  font-family: var(--font-outfit, 'Outfit', sans-serif);
+  font-size: 14px;
+  font-weight: 600;
+  color: #f8fafc;
+  letter-spacing: -0.01em;
+}
+
+.stepSubtext {
+  font-size: 11.5px;
+  color: #94a3b8;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.conditionStatusTag {
-  font-size: 10px;
+/* Step Badge Col */
+.stepBadgeCol {
+  flex-shrink: 0;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 9999px;
+  font-size: 11px;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 1px 6px;
-  border-radius: 4px;
+  letter-spacing: 0.02em;
+  transition: all 0.3s ease;
 }
 
-.tagActive {
-  background: rgba(34, 197, 94, 0.2);
+.badgeDone {
+  background: rgba(34, 197, 94, 0.16);
   color: #4ade80;
-  border: 1px solid rgba(74, 222, 128, 0.3);
+  border: 1px solid rgba(74, 222, 128, 0.35);
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.15);
 }
 
-.tagChecking {
-  background: rgba(56, 189, 248, 0.15);
+.badgeProgress {
+  background: rgba(14, 165, 233, 0.18);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  box-shadow: 0 0 10px rgba(14, 165, 233, 0.22);
+}
+
+.badgeWarning {
+  background: rgba(245, 158, 11, 0.16);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.badgePending {
+  background: rgba(30, 41, 59, 0.5);
+  color: #64748b;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+/* ── Right Card: Motivational Quote & Growth Chart ────────── */
+.quoteCard {
+  background: rgba(8, 17, 36, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(56, 189, 248, 0.16);
+  border-radius: 20px;
+  padding: 22px 22px;
+  box-shadow:
+    0 12px 34px rgba(0, 0, 0, 0.5),
+    0 0 28px rgba(0, 132, 255, 0.12),
+    inset 0 1px 1px rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+}
+
+.quoteCardContent {
+  display: flex;
+  flex-direction: column;
+}
+
+.quoteMarkSymbol {
+  font-family: Georgia, serif;
+  font-size: 42px;
+  line-height: 1;
+  color: #0084ff;
+  text-shadow: 0 0 16px rgba(0, 132, 255, 0.7);
+  margin-bottom: -8px;
+  text-align: left;
+}
+
+.quoteBody {
+  font-family: var(--font-outfit, 'Outfit', sans-serif);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: #ffffff;
+  margin: 0;
+  text-align: left;
+  letter-spacing: -0.01em;
+}
+
+.quoteAuthorTag {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0084ff;
+  text-shadow: 0 0 10px rgba(0, 132, 255, 0.5);
+  margin-top: 6px;
+  text-align: left;
+}
+
+/* Ascending Bar Growth Chart Graphic */
+.chartGraphicArea {
+  position: relative;
+  width: 100%;
+  height: 95px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  margin-top: 10px;
+  padding-right: 8px;
+  box-sizing: border-box;
+}
+
+.barColumns {
+  display: flex;
+  align-items: flex-end;
+  gap: 7px;
+  z-index: 1;
+}
+
+.barCol {
+  width: 13px;
+  border-radius: 3px 3px 0 0;
+  background: linear-gradient(180deg, #0084ff 0%, #003e9c 100%);
+  box-shadow: 0 0 10px rgba(0, 132, 255, 0.35);
+  transition: height 0.6s ease;
+}
+
+.bar1 { height: 16px; opacity: 0.35; }
+.bar2 { height: 28px; opacity: 0.5; }
+.bar3 { height: 42px; opacity: 0.65; }
+.bar4 { height: 56px; opacity: 0.8; }
+.bar5 { height: 70px; opacity: 0.95; }
+.bar6 {
+  height: 84px;
+  background: linear-gradient(180deg, #38bdf8 0%, #0084ff 100%);
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.8);
+}
+
+.trajectorySvg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.chartFlagIcon {
+  position: absolute;
+  top: -2px;
+  right: 6px;
+  z-index: 3;
+  filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.8));
+  animation: flagWave 2s ease-in-out infinite alternate;
+}
+
+@keyframes flagWave {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-3px); }
+}
+
+.carouselIndicators {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.indicatorDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.indicatorDotActive {
+  width: 14px;
+  border-radius: 9999px;
+  background: #0084ff;
+  box-shadow: 0 0 8px rgba(0, 132, 255, 0.8);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FOOTER ROW (Trust & Security Pill)
+   ═══════════════════════════════════════════════════════════ */
+.footerRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-top: 2px;
+}
+
+.trustBadgePill {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(10, 22, 48, 0.75);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 9999px;
+  padding: 7px 22px;
+  box-shadow:
+    0 4px 18px rgba(0, 0, 0, 0.4),
+    0 0 16px rgba(0, 132, 255, 0.15);
+}
+
+.trustItem {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #bae6fd;
+  letter-spacing: 0.02em;
+}
+
+.trustIcon {
   color: #38bdf8;
 }
 
-.tagOffline {
-  background: rgba(245, 158, 11, 0.2);
-  color: #fcd34d;
+.trustDot {
+  color: rgba(56, 189, 248, 0.4);
+  font-size: 13px;
 }
 
-/* Fallback & Recovery Controls */
-.recoveryBox {
-  margin-top: 24px;
+/* Recovery Panel */
+.recoveryPanel {
   width: 100%;
-  max-width: 580px;
-  background: rgba(15, 23, 42, 0.85);
+  background: rgba(15, 23, 42, 0.9);
   border: 1px solid rgba(245, 158, 11, 0.3);
   border-radius: 12px;
-  padding: 14px 18px;
+  padding: 10px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-  animation: fadeIn 0.4s ease;
+  gap: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  animation: fadeIn 0.3s ease;
+  box-sizing: border-box;
 }
 
-.recoveryText {
-  text-align: left;
+.recoveryNotice {
   font-size: 12.5px;
-  color: #fcd34d;
+  color: #fde68a;
+  text-align: left;
 }
 
-.recoveryActions {
+.recoveryButtons {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
 }
 
-.retryBtn {
+.btnRetry {
   background: #0284c7;
   color: #ffffff;
   border: none;
-  padding: 7px 14px;
-  border-radius: 8px;
-  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 7px;
+  font-size: 11.5px;
   font-weight: 600;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  transition: all 0.2s ease;
-  box-shadow: 0 0 12px rgba(2, 132, 199, 0.4);
+  gap: 5px;
+  box-shadow: 0 0 8px rgba(2, 132, 199, 0.4);
 }
 
-.retryBtn:hover {
-  background: #0369a1;
-  transform: translateY(-1px);
-}
-
-.bypassBtn {
-  background: rgba(255, 255, 255, 0.1);
-  color: #e2e8f0;
+.btnBypass {
+  background: rgba(255, 255, 255, 0.12);
+  color: #f1f5f9;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 7px 12px;
-  border-radius: 8px;
-  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 7px;
+  font-size: 11.5px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.bypassBtn:hover {
-  background: rgba(255, 255, 255, 0.18);
 }
 
 @keyframes fadeIn {
@@ -484,39 +796,198 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Mobile Adjustments */
-@media (max-width: 640px) {
+/* Bottom Decorative Vector Wave Layer */
+.bottomWavesLayer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100px;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.waveSvgPath {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  min-width: 1100px;
+  height: 100px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE DESIGN (MOBILE & TABLET ADAPTATIONS)
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width: 899px) {
+  .overlay {
+    padding: 8px 12px 20px 12px;
+    justify-content: flex-start;
+  }
+
   .container {
-    padding: 16px;
+    gap: 10px;
+    max-width: 440px;
   }
 
-  .progressCapsuleWrapper {
-    height: 34px;
+  /* Stack Top Section: Hero Image at top, Brand below */
+  .headerRow {
+    flex-direction: column-reverse;
+    align-items: center;
+    gap: 6px;
   }
 
-  .loadingText {
-    font-size: 20px;
-    margin-top: 18px;
+  .heroArtworkContainer {
+    width: 100%;
+    max-width: 100%;
+    justify-content: center;
+    margin-top: -6px;
+    margin-bottom: 2px;
   }
 
-  .conditionsGrid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-    margin-top: 24px;
+  .heroArtworkSeamless {
+    height: 180px;
+    -webkit-mask-image: 
+      linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 50%, rgba(0,0,0,0.3) 85%, transparent 100%),
+      radial-gradient(ellipse at 50% 40%, rgba(0,0,0,1) 60%, rgba(0,0,0,0.5) 85%, transparent 100%);
+    mask-image: 
+      linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 50%, rgba(0,0,0,0.3) 85%, transparent 100%),
+      radial-gradient(ellipse at 50% 40%, rgba(0,0,0,1) 60%, rgba(0,0,0,0.5) 85%, transparent 100%);
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
   }
 
-  .conditionCard {
-    padding: 8px 10px;
+  .brandWrapper {
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .brandTextBlock {
+    align-items: center;
+    text-align: center;
+  }
+
+  .brandTitle {
+    font-size: 22px;
+  }
+
+  .brandTagline {
+    font-size: 12px;
+  }
+
+  /* Single Column Stack for Cards */
+  .mainGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .loadingCard {
+    padding: 16px 14px;
+    border-radius: 16px;
+    gap: 10px;
+  }
+
+  .desktopHeading {
+    display: none;
+  }
+
+  .mobileHeading {
+    display: inline;
+  }
+
+  .desktopOnlySubhead {
+    display: none;
+  }
+
+  .mobileOnlySubhead {
+    display: block;
+    text-align: center;
+    margin-top: -2px;
+    margin-bottom: 2px;
+  }
+
+  .cardHeading {
+    font-size: 17px;
+  }
+
+  .cardSubheading {
+    font-size: 11.5px;
+  }
+
+  .progressPercent {
+    font-size: 19px;
+  }
+
+  .stepperWrapper {
+    gap: 9px;
+  }
+
+  .stepRow {
+    gap: 9px;
+  }
+
+  .stepTitle {
+    font-size: 13px;
+  }
+
+  .stepSubtext {
+    font-size: 10.5px;
+  }
+
+  .statusBadge {
+    font-size: 10px;
+    padding: 2.5px 7px;
+  }
+
+  .quoteCard {
+    padding: 16px 14px;
+    border-radius: 16px;
+  }
+
+  .quoteMarkSymbol {
+    font-size: 34px;
+  }
+
+  .quoteBody {
+    font-size: 14.5px;
+  }
+
+  .chartGraphicArea {
+    height: 80px;
+  }
+
+  .barCol {
+    width: 10px;
+  }
+
+  .carouselIndicators {
+    display: flex;
+  }
+
+  .trustBadgePill {
+    padding: 5px 16px;
+    gap: 10px;
+  }
+
+  .trustItem {
     font-size: 11px;
   }
+}
 
-  .recoveryBox {
-    flex-direction: column;
-    align-items: flex-start;
+@media (max-width: 400px) {
+  .heroArtworkSeamless {
+    height: 155px;
   }
 
-  .recoveryActions {
-    width: 100%;
-    justify-content: flex-end;
+  .loadingCard, .quoteCard {
+    padding: 14px 12px;
+  }
+
+  .stepIconBox {
+    width: 30px;
+    height: 30px;
   }
 }

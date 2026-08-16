@@ -1,18 +1,36 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
-import { createPortal } from "react-dom";
-import { CheckCircle2, Loader2, AlertTriangle, RefreshCw, Wifi, Database, UserCheck, Server, Sparkles } from "lucide-react";
+import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
+import Image from "next/image";
+import {
+  Wifi,
+  Database,
+  Shield,
+  Rocket,
+  Check,
+  Loader2,
+  Lock,
+  Zap,
+  ShieldCheck,
+  RefreshCw,
+} from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import styles from "./InitialLoadingGate.module.css";
 
-interface ConditionState {
-  id: string;
-  name: string;
+interface StepItem {
+  id: "connecting" | "resources" | "session" | "finalizing";
+  title: string;
+  subtext: string;
   icon: React.ElementType;
-  status: "pending" | "checking" | "active" | "warning";
-  label: string;
+  status: "pending" | "progress" | "done" | "ready" | "warning";
+  statusLabel: string;
 }
+
+const MOTIVATIONAL_QUOTES = [
+  { text: "Small daily progress leads to big results.", author: "Keep Going!" },
+  { text: "Consistency beats talent when talent doesn't work hard.", author: "Study Guru" },
+  { text: "Every mock test is one step closer to your dream rank.", author: "Stay Focused" },
+];
 
 const BOOT_SESSION_KEY = "app-initial-boot-complete";
 
@@ -20,37 +38,108 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export default function InitialLoadingGate() {
   const { user, loading: authLoading } = useAuth();
-  const [mounted, setMounted] = useState(false);
+  const authLoadingRef = useRef(authLoading);
+  const userRef = useRef(user);
+
+  useEffect(() => {
+    authLoadingRef.current = authLoading;
+    userRef.current = user;
+  }, [authLoading, user]);
+
   const [showGate, setShowGate] = useState(true);
   const [isExiting, setIsExiting] = useState(false);
-  const [progress, setProgress] = useState(8);
-  const [statusMessage, setStatusMessage] = useState("Initializing system diagnostics...");
+  const [displayProgress, setDisplayProgress] = useState(15);
+  const targetProgressRef = useRef(15);
+  const currentProgressRef = useRef(15);
+  const hasRunRef = useRef(false);
+
+  const [quoteIndex, setQuoteIndex] = useState(0);
   const [showRecoveryOption, setShowRecoveryOption] = useState(false);
   const [retryIndex, setRetryIndex] = useState(0);
 
-  const [conditions, setConditions] = useState<ConditionState[]>([
-    { id: "network", name: "Network", icon: Wifi, status: "pending", label: "Checking connection..." },
-    { id: "storage", name: "Storage", icon: Database, status: "pending", label: "Checking client cache..." },
-    { id: "auth", name: "Session", icon: UserCheck, status: "pending", label: "Verifying credentials..." },
-    { id: "api", name: "API Health", icon: Server, status: "pending", label: "Connecting to services..." },
-    { id: "ui", name: "UI Engine", icon: Sparkles, status: "pending", label: "Loading fonts & theme..." },
+  const [steps, setSteps] = useState<StepItem[]>([
+    {
+      id: "connecting",
+      title: "Connecting",
+      subtext: "Establishing secure connection",
+      icon: Wifi,
+      status: "progress",
+      statusLabel: "In Progress",
+    },
+    {
+      id: "resources",
+      title: "Loading Resources",
+      subtext: "Fetching questions & data",
+      icon: Database,
+      status: "pending",
+      statusLabel: "Pending",
+    },
+    {
+      id: "session",
+      title: "Verifying Session",
+      subtext: "Checking your session",
+      icon: Shield,
+      status: "pending",
+      statusLabel: "Pending",
+    },
+    {
+      id: "finalizing",
+      title: "Finalizing",
+      subtext: "Almost there...",
+      icon: Rocket,
+      status: "pending",
+      statusLabel: "Pending",
+    },
   ]);
 
-  const updateCondition = useCallback((id: string, updates: Partial<ConditionState>) => {
-    setConditions((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, ...updates } : c))
-    );
+  // Strictly monotonic target progress increment helper
+  const setTargetProgress = useCallback((val: number) => {
+    targetProgressRef.current = Math.max(targetProgressRef.current, Math.min(100, val));
   }, []);
 
+  // Smooth frame-by-frame interpolation loop for 60fps/120fps fluid progress
+  useEffect(() => {
+    let animationFrameId: number;
+
+    const animateProgress = () => {
+      const target = targetProgressRef.current;
+      const current = currentProgressRef.current;
+
+      if (current < target) {
+        // Continuous smooth easing step (minimum 0.35% per frame)
+        const diff = target - current;
+        const step = Math.max(0.35, diff * 0.085);
+        const next = Math.min(target, current + step);
+        currentProgressRef.current = next;
+        setDisplayProgress(Math.round(next));
+      }
+
+      animationFrameId = requestAnimationFrame(animateProgress);
+    };
+
+    animationFrameId = requestAnimationFrame(animateProgress);
+    return () => cancelAnimationFrame(animationFrameId);
+  }, []);
+
+  const updateStep = useCallback(
+    (id: StepItem["id"], updates: Partial<StepItem>) => {
+      setSteps((prev) =>
+        prev.map((s) => (s.id === id ? { ...s, ...updates } : s))
+      );
+    },
+    []
+  );
+
   const finishAndOpenWebsite = useCallback(() => {
-    setProgress(100);
-    setStatusMessage("All systems active. Opening website...");
+    setTargetProgress(100);
+    updateStep("finalizing", { status: "done", statusLabel: "Done" });
+
     if (typeof window !== "undefined") {
       try {
         sessionStorage.setItem(BOOT_SESSION_KEY, "1");
         document.documentElement.classList.remove("app-is-booting");
       } catch {
-        // Safe fallback if sessionStorage is restricted
+        // Safe fallback
       }
     }
 
@@ -60,178 +149,144 @@ export default function InitialLoadingGate() {
         setShowGate(false);
       }, 650);
     }, 600);
-  }, []);
+  }, [setTargetProgress, updateStep]);
 
   const runAllChecks = useCallback(async () => {
     setShowRecoveryOption(false);
-    setProgress(12);
-    setStatusMessage("Starting system availability diagnostics...");
+    setTargetProgress(20);
 
-    // Timeout guard: after 8 seconds, show recovery/bypass buttons if anything is slow
     const recoveryTimer = setTimeout(() => {
       setShowRecoveryOption(true);
     }, 8000);
 
     try {
-      // ── Step 1: Check Network Condition ──────────────────
-      updateCondition("network", { status: "checking", label: "Testing connectivity..." });
-      setStatusMessage("Checking network connectivity...");
-      await sleep(320);
+      // ── Step 1: Connecting ────────────────────────────────
+      updateStep("connecting", { status: "progress", statusLabel: "In Progress" });
+      await sleep(400);
 
       const isOnline = typeof navigator !== "undefined" ? navigator.onLine : true;
       if (isOnline) {
-        updateCondition("network", { status: "active", label: "Network Online" });
+        updateStep("connecting", { status: "done", statusLabel: "Done" });
       } else {
-        updateCondition("network", { status: "warning", label: "Offline Mode" });
+        updateStep("connecting", { status: "warning", statusLabel: "Offline" });
       }
-      setProgress(28);
+      setTargetProgress(45);
 
-      // ── Step 2: Check Client Storage & Cache Engine ─────
-      updateCondition("storage", { status: "checking", label: "Checking local storage..." });
-      setStatusMessage("Verifying local storage & cache engine...");
-      await sleep(320);
+      // ── Step 2: Loading Resources & Storage ──────────────
+      updateStep("resources", { status: "progress", statusLabel: "In Progress" });
+      await sleep(450);
 
-      let storageAvailable = true;
+      let storageHealthy = true;
       try {
         const testKey = "__test_app_storage__";
         localStorage.setItem(testKey, "1");
         localStorage.removeItem(testKey);
       } catch {
-        storageAvailable = false;
+        storageHealthy = false;
       }
 
-      if (storageAvailable) {
-        updateCondition("storage", { status: "active", label: "Storage Ready" });
+      if (storageHealthy) {
+        updateStep("resources", { status: "ready", statusLabel: "Ready" });
       } else {
-        updateCondition("storage", { status: "warning", label: "Storage Restricted" });
+        updateStep("resources", { status: "warning", statusLabel: "Cached" });
       }
-      setProgress(48);
+      setTargetProgress(70);
 
-      // ── Step 3: Check Auth & Session State ──────────────
-      updateCondition("auth", { status: "checking", label: "Resolving session credentials..." });
-      setStatusMessage("Verifying user session & security token...");
+      // ── Step 3: Verifying Session ────────────────────────
+      updateStep("session", { status: "progress", statusLabel: "In Progress" });
 
-      if (authLoading) {
+      if (authLoadingRef.current) {
         await Promise.race([
           new Promise((resolve) => {
             const checkAuth = setInterval(() => {
-              if (!authLoading) {
+              if (!authLoadingRef.current) {
                 clearInterval(checkAuth);
                 resolve(true);
               }
             }, 80);
           }),
-          sleep(1800),
+          sleep(1400),
         ]);
       } else {
-        await sleep(300);
+        await sleep(350);
       }
 
-      updateCondition("auth", {
-        status: "active",
-        label: user ? `User: ${user.name?.split(" ")[0] || "Active"}` : "Guest Active",
+      const currentUser = userRef.current;
+      updateStep("session", {
+        status: "done",
+        statusLabel: "Done",
+        subtext: currentUser ? `User: ${currentUser.name?.split(" ")[0] || "Active"}` : "Session verified",
       });
-      setProgress(68);
+      setTargetProgress(90);
 
-      // ── Step 4: Check API & Backend Health ───────────────
-      updateCondition("api", { status: "checking", label: "Pinging API backend..." });
-      setStatusMessage("Connecting to API backend & database services...");
+      // ── Step 4: Finalizing ───────────────────────────────
+      updateStep("finalizing", { status: "progress", statusLabel: "In Progress" });
 
       const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:10000";
-      let apiHealthy = false;
-
       try {
         const controller = new AbortController();
-        const apiTimeout = setTimeout(() => controller.abort(), 2500);
-
-        const healthRes = await fetch(`${apiBase.replace(/\/$/, "")}/health`, {
+        const apiTimeout = setTimeout(() => controller.abort(), 1200);
+        await fetch(`${apiBase.replace(/\/$/, "")}/health`, {
           method: "GET",
           signal: controller.signal,
           cache: "no-store",
-        });
+        }).catch(() => null);
         clearTimeout(apiTimeout);
-
-        if (healthRes.ok) {
-          apiHealthy = true;
-        }
       } catch {
-        try {
-          const controller2 = new AbortController();
-          const apiTimeout2 = setTimeout(() => controller2.abort(), 1500);
-          const healthRes2 = await fetch(`${apiBase.replace(/\/$/, "")}/api/health`, {
-            method: "GET",
-            signal: controller2.signal,
-            cache: "no-store",
-          });
-          clearTimeout(apiTimeout2);
-          if (healthRes2.ok) apiHealthy = true;
-        } catch {
-          apiHealthy = false;
-        }
+        // Safe skip
       }
-
-      await sleep(320);
-
-      if (apiHealthy) {
-        updateCondition("api", { status: "active", label: "Backend Active" });
-      } else {
-        updateCondition("api", { status: "warning", label: "Local / Standalone" });
-      }
-      setProgress(88);
-
-      // ── Step 5: Check UI Fonts & Core Assets ─────────────
-      updateCondition("ui", { status: "checking", label: "Rendering fonts & styles..." });
-      setStatusMessage("Initializing typography & core visual assets...");
 
       if (typeof document !== "undefined" && "fonts" in document) {
         try {
-          await Promise.race([
-            document.fonts.ready,
-            sleep(600),
-          ]);
+          await Promise.race([document.fonts.ready, sleep(300)]);
         } catch {
-          // ignore font loading fallback
+          // ignore
         }
       }
-      await sleep(280);
 
-      updateCondition("ui", { status: "active", label: "UI Assets Ready" });
-      setProgress(100);
-
+      await sleep(350);
       clearTimeout(recoveryTimer);
-
-      // All condition checks complete -> transition to website
       finishAndOpenWebsite();
     } catch (err) {
-      console.warn("Bootstrap condition check completed with fallback:", err);
+      console.warn("Bootstrap diagnostics fallback:", err);
       finishAndOpenWebsite();
     }
-  }, [authLoading, finishAndOpenWebsite, updateCondition, user]);
+  }, [finishAndOpenWebsite, setTargetProgress, updateStep]);
+
+  // Quote rotation timer
+  useEffect(() => {
+    const quoteInterval = setInterval(() => {
+      setQuoteIndex((prev) => (prev + 1) % MOTIVATIONAL_QUOTES.length);
+    }, 4000);
+    return () => clearInterval(quoteInterval);
+  }, []);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      // Allow manual trigger via console
       (window as unknown as { __triggerSystemDiagnostics?: () => void }).__triggerSystemDiagnostics = () => {
         try {
           sessionStorage.removeItem(BOOT_SESSION_KEY);
           document.documentElement.classList.add("app-is-booting");
         } catch { /* ignore */ }
+        targetProgressRef.current = 15;
+        currentProgressRef.current = 15;
+        setDisplayProgress(15);
         setShowGate(true);
         setIsExiting(false);
         setRetryIndex((r) => r + 1);
       };
 
-      (window as unknown as { __previewLoadingScreen?: (duration?: number) => void }).__previewLoadingScreen = (duration = 6000) => {
+      (window as unknown as { __previewLoadingScreen?: (duration?: number) => void }).__previewLoadingScreen = (duration = 30000) => {
         setShowGate(true);
         setIsExiting(false);
-        setProgress(55);
-        setStatusMessage("Verifying user session & security token...");
-        setConditions([
-          { id: "network", name: "Network", icon: Wifi, status: "active", label: "Network Online" },
-          { id: "storage", name: "Storage Engine", icon: Database, status: "active", label: "Storage Ready" },
-          { id: "auth", name: "User Session", icon: UserCheck, status: "checking", label: "Resolving session..." },
-          { id: "api", name: "API & Backend", icon: Server, status: "pending", label: "Connecting to services..." },
-          { id: "ui", name: "Core Assets", icon: Sparkles, status: "pending", label: "Loading fonts & theme..." },
+        targetProgressRef.current = 48;
+        currentProgressRef.current = 48;
+        setDisplayProgress(48);
+        setSteps([
+          { id: "connecting", title: "Connecting", subtext: "Establishing secure connection", icon: Wifi, status: "done", statusLabel: "Done" },
+          { id: "resources", title: "Loading Resources", subtext: "Fetching questions & data", icon: Database, status: "ready", statusLabel: "Ready" },
+          { id: "session", title: "Verifying Session", subtext: "Checking your session", icon: Shield, status: "progress", statusLabel: "In Progress" },
+          { id: "finalizing", title: "Finalizing", subtext: "Almost there...", icon: Rocket, status: "pending", statusLabel: "Pending" },
         ]);
         setTimeout(() => {
           setIsExiting(true);
@@ -246,16 +301,22 @@ export default function InitialLoadingGate() {
         return;
       }
     }
+
     runAllChecks();
-  }, [runAllChecks, retryIndex]);
+  }, [retryIndex, runAllChecks]);
 
   const handleRetry = () => {
+    targetProgressRef.current = 15;
+    currentProgressRef.current = 15;
+    setDisplayProgress(15);
     setRetryIndex((idx) => idx + 1);
   };
 
   const handleForceOpen = () => {
     finishAndOpenWebsite();
   };
+
+  const currentQuote = useMemo(() => MOTIVATIONAL_QUOTES[quoteIndex], [quoteIndex]);
 
   return (
     <aside
@@ -265,160 +326,349 @@ export default function InitialLoadingGate() {
       role="dialog"
       aria-modal="true"
     >
-      {/* Background Ambient Radial Glow */}
-      <div className={styles.ambientGlow} aria-hidden="true" />
+      {/* Background Ambient Glows & Vector Waves */}
+      <div className={styles.ambientGlowTop} aria-hidden="true" />
+      <div className={styles.ambientGlowBottom} aria-hidden="true" />
 
-      <main className={styles.container}>
-        {/* Study Guru Brand Logo matching home page */}
-        <header className={styles.logoWrapper} aria-label="Study Guru">
-          <span className={styles.logoMark} aria-hidden="true">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 256 256"
-              width="46"
-              height="46"
-              fillRule="nonzero"
-            >
-              <g
-                fill="#0084ff"
+      {/* Floating Sparkle Particles */}
+      <div className={styles.sparklesLayer} aria-hidden="true">
+        <span className={`${styles.sparkle} ${styles.sparkle1}`} />
+        <span className={`${styles.sparkle} ${styles.sparkle2}`} />
+        <span className={`${styles.sparkle} ${styles.sparkle3}`} />
+        <span className={`${styles.sparkle} ${styles.sparkle4}`} />
+        <span className={`${styles.sparkle} ${styles.sparkle5}`} />
+      </div>
+
+      <div className={styles.container}>
+        {/* TOP BRAND & SEAMLESS ARTWORK HEADER */}
+        <header className={styles.headerRow}>
+          {/* Brand Logo Info */}
+          <div className={styles.brandWrapper}>
+            <div className={styles.brandLogoIcon} aria-hidden="true">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 256 256"
+                width="48"
+                height="48"
                 fillRule="nonzero"
-                stroke="none"
-                strokeWidth="1"
-                strokeLinecap="butt"
-                strokeLinejoin="miter"
-                strokeMiterlimit="10"
-                style={{ mixBlendMode: "normal" }}
               >
-                <g transform="scale(4,4)">
-                  <path d="M56,41.7c0,0 -2.11,-0.54 -4,-0.7c0,0 1.22,1.92 1.5,4.5c0,0 -2.26,-0.55 -4.42,-0.5c0,0 1.62,1.91 1.92,4c0,0 -1.915,1.62 -6.315,4.12c0,0 -0.073,-2.17 -1.185,-6.12h-2c0,0 -0.068,4.899 -1.5,10.3c-3,3.7 -8,3.7 -8,3.7c0,0 -5,0 -8,-3.7c-1.432,-5.401 -1.5,-10.3 -1.5,-10.3h-2c-1.111,3.95 -1.185,6.12 -1.185,6.12c-4.4,-2.5 -6.315,-4.12 -6.315,-4.12c0.3,-2.09 1.92,-4 1.92,-4c-2.16,-0.05 -4.42,0.5 -4.42,0.5c0.28,-2.58 1.5,-4.5 1.5,-4.5c-1.89,0.16 -4,0.7 -4,0.7c0.36,-2.4 2,-4.7 2,-4.7c-2.41,0.27 -4,1 -4,1c3,-14 15,-21 15,-21c-4.02,-4.35 -7.4,-7 -7.4,-7c0,0 -1.17,4.47 -0.6,10.4l-4,4.1c-1,-9.5 1.8,-20.5 1.8,-20.5l1.5,-0.5l12.7,10.5c0,0 2.46,-0.48 7,-0.48c4.54,0 7,0.48 7,0.48l12.7,-10.5l1.5,0.5c0,0 2.8,11 1.8,20.5l-4,-4.1c0.57,-5.93 -0.6,-10.4 -0.6,-10.4c0,0 -3.38,2.65 -7.4,7c0,0 12,7 15,21c0,0 -1.59,-0.73 -4,-1c0,0 1.64,2.3 2,4.7zM26.799,38c-0.143,-2.57 -1.082,-3.92 -1.614,-4.38c-1.741,-0.59 -3.813,-0.58 -5.185,-0.43c2.15,4.75 6.297,4.81 6.348,4.81zM37.652,38c0.051,0 4.198,-0.06 6.348,-4.81c-1.372,-0.15 -3.444,-0.16 -5.185,0.43c-0.532,0.46 -1.471,1.81 -1.614,4.38zM32,52c-2,0 -4,1 -4,1c1,4 4,4 4,4c0,0 3,0 4,-4c0,0 -2,-1 -4,-1z" />
-                </g>
-              </g>
-            </svg>
-          </span>
-          <span className={styles.logoText}>
-            <strong className={styles.logoStudy}>STUDY</strong>
-            <strong className={styles.logoGuru}>GURU</strong>
-          </span>
+                <g fill="#0084ff">
+                  <g transform="scale(4,4)">
+                    <path d="M56,41.7c0,0 -2.11,-0.54 -4,-0.7c0,0 1.22,1.92 1.5,4.5c0,0 -2.26,-0.55 -4.42,-0.5c0,0 1.62,1.91 1.92,4c0,0 -1.915,1.62 -6.315,4.12c0,0 -0.073,-2.17 -1.185,-6.12h-2c0,0 -0.068,4.899 -1.5,10.3c-3,3.7 -8,3.7 -8,3.7c0,0 -5,0 -8,-3.7c-1.432,-5.401 -1.5,-10.3 -1.5,-10.3h-2c-1.111,3.95 -1.185,6.12 -1.185,6.12c-4.4,-2.5 -6.315,-4.12 -6.315,-4.12c0.3,-2.09 1.92,-4 1.92,-4c-2.16,-0.05 -4.42,0.5 -4.42,0.5c0.28,-2.58 1.5,-4.5 1.5,-4.5c-1.89,0.16 -4,0.7 -4,0.7c0.36,-2.4 2,-4.7 2,-4.7c-2.41,0.27 -4,1 -4,1c3,-14 15,-21 15,-21c-4.02,-4.35 -7.4,-7 -7.4,-7c0,0 -1.17,4.47 -0.6,10.4l-4,4.1c-1,-9.5 1.8,-20.5 1.8,-20.5l1.5,-0.5l12.7,10.5c0,0 2.46,-0.48 7,-0.48c4.54,0 7,0.48 7,0.48l12.7,-10.5l1.5,0.5c0,0 2.8,11 1.8,20.5l-4,-4.1c0.57,-5.93 -0.6,-10.4 -0.6,-10.4c0,0 -3.38,2.65 -7.4,7c0,0 12,7 15,21c0,0 -1.59,-0.73 -4,-1c0,0 1.64,2.3 2,4.7zM26.799,38c-0.143,-2.57 -1.082,-3.92 -1.614,-4.38c-1.741,-0.59 -3.813,-0.58 -5.185,-0.43c2.15,4.75 6.297,4.81 6.348,4.81zM37.652,38c0.051,0 4.198,-0.06 6.348,-4.81c-1.372,-0.15 -3.444,-0.16 -5.185,0.43c-0.532,0.46 -1.471,1.81 -1.614,4.38zM32,52c-2,0 -4,1 -4,1c1,4 4,4 4,4c0,0 3,0 4,-4c0,0 -2,-1 -4,-1z" />
+                    </g>
+                  </g>
+                </svg>
+              </div>
+              <div className={styles.brandTextBlock}>
+                <div className={styles.brandTitle}>
+                  <span className={styles.brandStudy}>STUDY</span>{" "}
+                  <span className={styles.brandGuru}>GURU</span>
+                </div>
+                <div className={styles.brandTagline}>Learn • Practice • Achieve</div>
+              </div>
+            </div>
+
+            {/* Seamless Study Hero Artwork gradually blending into theme */}
+            <div className={styles.heroArtworkContainer}>
+              <div className={styles.heroArtworkSeamless}>
+                <Image
+                  src="/loading_study_hero.webp"
+                  alt="Student studying mock test at night"
+                  width={560}
+                  height={315}
+                  priority
+                  className={styles.heroArtworkImg}
+                />
+                <div className={styles.heroArtworkBlend} aria-hidden="true" />
+              </div>
+            </div>
         </header>
 
-        {/* Outer Capsule Progress Bar matching reference image */}
-        <section
-          className={styles.progressCapsuleWrapper}
-          role="progressbar"
-          aria-valuenow={Math.round(progress)}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-label="Loading progress"
-        >
-          <div className={styles.progressTrack}>
+        {/* 2-COLUMN DESKTOP / 1-COLUMN MOBILE CONTENT GRID */}
+        <main className={styles.mainGrid}>
+          {/* LEFT / PRIMARY CARD: Loading Experience & Diagnostic Stepper */}
+          <section className={styles.loadingCard} aria-label="Loading your experience">
+            {/* Header: Title and Percentage */}
+            <div className={styles.cardHeader}>
+              <div className={styles.cardHeaderText}>
+                <h1 className={styles.cardHeading}>
+                  <span className={styles.desktopHeading}>Loading your experience</span>
+                  <span className={styles.mobileHeading}>Loading...</span>
+                </h1>
+                <p className={`${styles.cardSubheading} ${styles.desktopOnlySubhead}`}>
+                  Preparing the best experience for you
+                </p>
+              </div>
+              <div className={styles.progressPercent}>{displayProgress}%</div>
+            </div>
+
+            {/* Glowing Capsule Progress Bar */}
             <div
-              className={styles.progressBarFill}
-              style={{ width: `${Math.min(100, Math.max(8, progress))}%` }}
+              className={styles.progressBarWrapper}
+              role="progressbar"
+              aria-valuenow={displayProgress}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label="Experience load progress"
             >
-              {/* Effervescent glowing bubble particles inside the progress stream */}
-              <div className={styles.bubblesContainer} aria-hidden="true">
-                <span className={`${styles.bubble} ${styles.bubble1}`} />
-                <span className={`${styles.bubble} ${styles.bubble2}`} />
-                <span className={`${styles.bubble} ${styles.bubble3}`} />
-                <span className={`${styles.bubble} ${styles.bubble4}`} />
-                <span className={`${styles.bubble} ${styles.bubble5}`} />
-                <span className={`${styles.bubble} ${styles.bubble6}`} />
-                <span className={`${styles.bubble} ${styles.bubble7}`} />
-                <span className={`${styles.bubble} ${styles.bubble8}`} />
-                <span className={`${styles.bubble} ${styles.bubble9}`} />
-                <span className={`${styles.bubble} ${styles.bubble10}`} />
-              </div>
-
-              {/* Shimmer sweep animation */}
-              <div className={styles.shimmerWave} aria-hidden="true" />
-
-              {/* Glowing leading edge tip */}
-              <div className={styles.edgeGlow} aria-hidden="true" />
-            </div>
-          </div>
-        </section>
-
-        {/* LOADING... Typography matching reference image */}
-        <h1 className={styles.loadingText}>
-          LOADING
-          <span className={styles.dots} aria-hidden="true">
-            <span className={styles.dotOne}>.</span>
-            <span className={styles.dotTwo}>.</span>
-            <span className={styles.dotThree}>.</span>
-          </span>
-        </h1>
-
-        {/* Status Message and Percentage Row */}
-        <div className={styles.statusRow}>
-          <div className={styles.statusMessage} role="status" aria-live="polite">
-            <Loader2 size={15} className={styles.iconSpin} aria-hidden="true" />
-            <span>{statusMessage}</span>
-          </div>
-          <span className={styles.percentBadge}>{Math.round(progress)}%</span>
-        </div>
-
-        {/* Conditions Checklist Grid */}
-        <section className={styles.conditionsGrid} aria-label="System diagnostic conditions">
-          {conditions.map((item) => {
-            const Icon = item.icon;
-            const isActive = item.status === "active";
-            const isChecking = item.status === "checking";
-            const isWarn = item.status === "warning";
-
-            return (
-              <div
-                key={item.id}
-                className={`${styles.conditionCard} ${
-                  isActive ? styles.conditionCardActive : ""
-                } ${isWarn ? styles.conditionCardWarn : ""}`}
-              >
-                <div className={styles.conditionIcon} aria-hidden="true">
-                  {isChecking && <Loader2 size={14} className={styles.iconSpin} color="#38bdf8" />}
-                  {isActive && <CheckCircle2 size={14} color="#4ade80" />}
-                  {isWarn && <AlertTriangle size={14} color="#fcd34d" />}
-                  {item.status === "pending" && <Icon size={14} color="#64748b" />}
-                </div>
-                <span className={styles.conditionLabel}>{item.name}</span>
-                <span
-                  className={`${styles.conditionStatusTag} ${
-                    isActive ? styles.tagActive : isChecking ? styles.tagChecking : isWarn ? styles.tagOffline : ""
-                  }`}
+              <div className={styles.progressBarTrack}>
+                <div
+                  className={styles.progressBarFill}
+                  style={{ width: `${Math.min(100, Math.max(8, displayProgress))}%` }}
                 >
-                  {isActive ? "Active" : isChecking ? "Checking" : isWarn ? "Offline" : "Pending"}
-                </span>
+                  <div className={styles.progressBarShimmer} aria-hidden="true" />
+                </div>
               </div>
-            );
-          })}
-        </section>
-
-        {/* Recovery Fallback if diagnostics take longer */}
-        {showRecoveryOption && (
-          <aside className={styles.recoveryBox} aria-live="polite">
-            <div className={styles.recoveryText}>
-              Backend or network is taking longer to respond. You can retry or continue immediately.
             </div>
-            <div className={styles.recoveryActions}>
+
+            {/* Mobile Subheading below progress bar */}
+            <p className={`${styles.cardSubheading} ${styles.mobileOnlySubhead}`}>
+              Preparing the best experience for you
+            </p>
+
+            {/* Vertical Diagnostic Stepper */}
+            <div className={styles.stepperWrapper}>
+              {steps.map((step, idx) => {
+                const IconComp = step.icon;
+                const isDone = step.status === "done" || step.status === "ready";
+                const isProgress = step.status === "progress";
+                const isPending = step.status === "pending";
+                const isWarning = step.status === "warning";
+
+                return (
+                  <div
+                    key={step.id}
+                    className={`${styles.stepRow} ${
+                      isDone ? styles.stepRowDone : isProgress ? styles.stepRowProgress : styles.stepRowPending
+                    }`}
+                  >
+                    {/* Left Timeline Indicator Node & Track */}
+                    <div className={styles.stepIndicatorCol}>
+                      <div
+                        className={`${styles.indicatorCircle} ${
+                          isDone
+                            ? styles.indicatorDone
+                            : isProgress
+                            ? styles.indicatorProgress
+                            : isWarning
+                            ? styles.indicatorWarning
+                            : styles.indicatorPending
+                        }`}
+                      >
+                        {isDone && <Check size={11} strokeWidth={3} className={styles.checkSvg} />}
+                        {isProgress && <span className={styles.pulsePoint} />}
+                      </div>
+
+                      {/* Vertical connector line */}
+                      {idx < steps.length - 1 && (
+                        <div
+                          className={`${styles.timelineConnector} ${
+                            isDone
+                              ? styles.connectorDone
+                              : isProgress
+                              ? styles.connectorProgress
+                              : styles.connectorPending
+                          }`}
+                        />
+                      )}
+                    </div>
+
+                    {/* Step Rounded Icon Box */}
+                    <div
+                      className={`${styles.stepIconBox} ${
+                        isDone
+                          ? styles.iconBoxDone
+                          : isProgress
+                          ? styles.iconBoxProgress
+                          : styles.iconBoxPending
+                      }`}
+                    >
+                      {isProgress ? (
+                        <Loader2 size={16} className={styles.iconSpin} color="#38bdf8" />
+                      ) : (
+                        <IconComp
+                          size={16}
+                          color={isDone || isProgress ? "#38bdf8" : "#64748b"}
+                        />
+                      )}
+                    </div>
+
+                    {/* Step Title & Subtext */}
+                    <div className={styles.stepInfoBlock}>
+                      <div className={styles.stepTitle}>{step.title}</div>
+                      <div className={styles.stepSubtext}>{step.subtext}</div>
+                    </div>
+
+                    {/* Step Status Pill */}
+                    <div className={styles.stepBadgeCol}>
+                      <span
+                        className={`${styles.statusBadge} ${
+                          isDone
+                            ? styles.badgeDone
+                            : isProgress
+                            ? styles.badgeProgress
+                            : isWarning
+                            ? styles.badgeWarning
+                            : styles.badgePending
+                        }`}
+                      >
+                        <span>{step.statusLabel}</span>
+                        {isDone && <Check size={11} strokeWidth={2.5} />}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* RIGHT CARD: Motivational Quote & Growth Chart */}
+          <aside className={styles.quoteCard} aria-label="Study motivation and progress visualization">
+            <div className={styles.quoteCardContent}>
+              {/* Quote Mark Icon */}
+              <div className={styles.quoteMarkSymbol} aria-hidden="true">
+                “
+              </div>
+
+              {/* Quote Text & Author */}
+              <blockquote className={styles.quoteBody}>
+                {currentQuote.text}
+              </blockquote>
+              <div className={styles.quoteAuthorTag}>— {currentQuote.author}</div>
+            </div>
+
+            {/* Ascending Growth Chart with Flag */}
+            <div className={styles.chartGraphicArea} aria-hidden="true">
+              {/* Trajectory Dashed Path with Glowing Goal Flag */}
+              <div className={styles.chartFlagIcon}>
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M4 15C4 15 5 14 8 14C11 14 13 16 16 16C19 16 20 15 20 15V3C20 3 19 4 16 4C13 4 11 2 8 2C5 2 4 3 4 3V22"
+                    stroke="#38bdf8"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    fill="rgba(56, 189, 248, 0.45)"
+                  />
+                </svg>
+              </div>
+
+              <svg
+                className={styles.trajectorySvg}
+                viewBox="0 0 180 80"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M10 68 C 60 52, 110 38, 160 12"
+                  stroke="#0084ff"
+                  strokeWidth="2"
+                  strokeDasharray="3 3"
+                  strokeLinecap="round"
+                />
+                <circle cx="160" cy="12" r="3.5" fill="#38bdf8" />
+              </svg>
+
+              {/* Ascending Bar Columns */}
+              <div className={styles.barColumns}>
+                <div className={`${styles.barCol} ${styles.bar1}`} />
+                <div className={`${styles.barCol} ${styles.bar2}`} />
+                <div className={`${styles.barCol} ${styles.bar3}`} />
+                <div className={`${styles.barCol} ${styles.bar4}`} />
+                <div className={`${styles.barCol} ${styles.bar5}`} />
+                <div className={`${styles.barCol} ${styles.bar6}`} />
+              </div>
+            </div>
+
+            {/* Mobile Pagination Carousel Indicator */}
+            <div className={styles.carouselIndicators} aria-hidden="true">
+              {MOTIVATIONAL_QUOTES.map((_, i) => (
+                <span
+                  key={i}
+                  className={`${styles.indicatorDot} ${i === quoteIndex ? styles.indicatorDotActive : ""}`}
+                />
+              ))}
+            </div>
+          </aside>
+        </main>
+
+        {/* BOTTOM STRIP: Trust & Security Badges */}
+        <footer className={styles.footerRow}>
+          <div className={styles.trustBadgePill}>
+            <div className={styles.trustItem}>
+              <Lock size={12.5} className={styles.trustIcon} />
+              <span>Secure</span>
+            </div>
+            <span className={styles.trustDot}>•</span>
+            <div className={styles.trustItem}>
+              <Zap size={12.5} className={styles.trustIcon} />
+              <span>Fast</span>
+            </div>
+            <span className={styles.trustDot}>•</span>
+            <div className={styles.trustItem}>
+              <ShieldCheck size={12.5} className={styles.trustIcon} />
+              <span>Reliable</span>
+            </div>
+          </div>
+        </footer>
+
+        {/* Fallback Recovery Modal if checks stall */}
+        {showRecoveryOption && (
+          <aside className={styles.recoveryPanel} aria-live="polite">
+            <div className={styles.recoveryNotice}>
+              Diagnostics taking longer to respond. You can retry or open the website immediately.
+            </div>
+            <div className={styles.recoveryButtons}>
               <button
                 type="button"
-                className={styles.retryBtn}
+                className={styles.btnRetry}
                 onClick={handleRetry}
-                aria-label="Retry system diagnostics"
+                aria-label="Retry connection checks"
               >
-                <RefreshCw size={13} aria-hidden="true" />
-                Retry Checks
+                <RefreshCw size={12} aria-hidden="true" />
+                Retry
               </button>
               <button
                 type="button"
-                className={styles.bypassBtn}
+                className={styles.btnBypass}
                 onClick={handleForceOpen}
-                aria-label="Continue to website immediately"
+                aria-label="Continue immediately to the app"
               >
                 Open Website
               </button>
             </div>
           </aside>
         )}
-      </main>
+      </div>
+
+      {/* Decorative Bottom Curved Lines */}
+      <div className={styles.bottomWavesLayer} aria-hidden="true">
+        <svg
+          className={styles.waveSvgPath}
+          viewBox="0 0 1440 160"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M-50 110 C 250 50, 650 150, 980 70 C 1220 15, 1380 80, 1500 65"
+            stroke="rgba(0, 132, 255, 0.32)"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+          />
+          <path
+            d="M-50 140 C 220 85, 520 170, 850 100 C 1150 35, 1350 120, 1500 95"
+            stroke="rgba(56, 189, 248, 0.2)"
+            strokeWidth="1.2"
+            strokeLinecap="round"
+          />
+        </svg>
+      </div>
     </aside>
   );
 }
