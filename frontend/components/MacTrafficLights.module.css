@@ -1,0 +1,55 @@
+.trafficLights {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.15);
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.dot:hover {
+  filter: brightness(0.92);
+}
+
+.dot:active {
+  transform: scale(0.92);
+}
+
+.close {
+  background-color: #ff5f56;
+  border: 0.5px solid #e0443e;
+}
+
+.minimize {
+  background-color: #ffbd2e;
+  border: 0.5px solid #dea123;
+}
+
+.maximize {
+  background-color: #27c93f;
+  border: 0.5px solid #1aab29;
+}
+
+.icon {
+  width: 8px;
+  height: 8px;
+  color: rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+
+.trafficLights:hover .icon {
+  opacity: 0.85;
+}

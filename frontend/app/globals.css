@@ -137,10 +137,20 @@ html {
   overscroll-behavior-x: none;
 }
 
-/* Home page: let the fixed GradientWaves canvas show through */
+/* Home page: let the fixed GradientWaves canvas show through & prevent scrolling on desktop */
 html.home-redesign {
   background: transparent;
 }
+
+@media (min-width: 1024px) {
+  html.home-redesign,
+  body.home-redesign {
+    overflow: hidden !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+  }
+}
+
 
 body {
   background: transparent;
@@ -1462,11 +1472,11 @@ body.has-bottom-nav {
 }
 
 @media (min-width: 1025px) {
-  body.has-bottom-nav {
-    padding-bottom: 0 !important;
-  }
   .bottom-pill-nav {
     display: none !important;
+  }
+  body.has-bottom-nav {
+    padding-bottom: 0 !important;
   }
 }
 
@@ -2120,3 +2130,12 @@ body.has-bottom-nav .dashboard-shell {
 .table-wrapper tbody tr:hover {
   background-color: #f0f7ff;
 }
+
+@media (min-width: 1025px) {
+  .bottom-pill-nav {
+    display: none !important;
+  }
+  body.has-bottom-nav {
+    padding-bottom: 0 !important;
+  }
+}
