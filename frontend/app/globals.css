@@ -130,8 +130,6 @@ html.app-is-booting #app-initial-boot-overlay {
 html {
   background: var(--bg-gradient);
   overflow-x: hidden;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
   min-height: 100%;
   /* Prevent horizontal bounce on iOS */
   overscroll-behavior-x: none;

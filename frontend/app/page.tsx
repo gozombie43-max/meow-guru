@@ -552,10 +552,10 @@ export default function Home() {
                         typedColor="var(--mac-primary)"
                         font={{
                           fontFamily: 'inherit',
-                          fontSize: 'clamp(20px, 2.2vw, 26px)',
+                          fontSize: 'clamp(20px, 2.2vw, 24px)',
                           fontWeight: '800',
                           letterSpacing: '-0.5px',
-                          lineHeight: '1.05',
+                          lineHeight: '1.2',
                         }}
                         style={{ justifyContent: 'flex-start' }}
                       />

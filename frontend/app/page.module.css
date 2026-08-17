@@ -288,13 +288,13 @@
   font-size: 12.5px;
   font-weight: 600;
   text-decoration: none;
-  transition: background 0.18s ease, transform 0.15s ease;
+  transition: background 0.18s ease, box-shadow 0.18s ease;
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
 }
 
 .premiumButton:hover {
   background: var(--mac-primary-hover);
-  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
 }
 
 /* Desktop Main Workspace */
@@ -561,8 +561,9 @@
   position: relative;
   overflow: hidden;
   display: flex;
-  min-height: 195px;
-  max-height: 215px;
+  height: 205px;
+  min-height: 205px;
+  max-height: 205px;
 }
 
 .dark .heroCard {
@@ -618,9 +619,12 @@
 }
 
 .typewriterWrapper {
-  min-height: 26px;
+  height: 32px;
+  min-height: 32px;
+  max-height: 32px;
   display: flex;
   align-items: center;
+  overflow: hidden;
 }
 
 .heroSubtitle {
@@ -729,13 +733,19 @@
   gap: 12px;
   text-decoration: none;
   color: var(--mac-text-primary);
-  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  transition: background 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  will-change: box-shadow, border-color;
+  backface-visibility: hidden;
 }
 
 .subjectCard:hover {
-  transform: translateY(-2px);
   box-shadow: var(--mac-shadow-hover);
-  border-color: rgba(37, 99, 235, 0.3);
+  border-color: rgba(37, 99, 235, 0.35);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.dark .subjectCard:hover {
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .subjectCardInfo {
@@ -812,6 +822,7 @@
   overflow-y: auto;
   padding-right: 5px;
   scrollbar-width: thin;
+  scrollbar-gutter: stable;
   scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
 }
 
@@ -859,13 +870,19 @@
   gap: 12px;
   text-decoration: none;
   color: var(--mac-text-primary);
-  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  transition: background 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  will-change: box-shadow, border-color;
+  backface-visibility: hidden;
 }
 
 .recentQuizCard:hover {
-  transform: translateY(-2px);
   box-shadow: var(--mac-shadow-hover);
-  border-color: rgba(37, 99, 235, 0.3);
+  border-color: rgba(37, 99, 235, 0.35);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.dark .recentQuizCard:hover {
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .quizCardMain {
@@ -913,23 +930,23 @@
 }
 
 .gk {
-  background: #e1f7ec;
-  color: #059669;
+  background: #e0edff;
+  color: #2563eb;
 }
 
 .dark .gk {
-  background: rgba(5, 150, 105, 0.2);
-  color: #34d399;
+  background: rgba(37, 99, 235, 0.2);
+  color: #60a5fa;
 }
 
 .math {
-  background: #fef3c7;
-  color: #d97706;
+  background: #e0edff;
+  color: #2563eb;
 }
 
 .dark .math {
-  background: rgba(217, 119, 6, 0.2);
-  color: #fbbf24;
+  background: rgba(37, 99, 235, 0.2);
+  color: #60a5fa;
 }
 
 .quizProgressRatio {

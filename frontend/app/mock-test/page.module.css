@@ -11,6 +11,7 @@
   
   background: var(--bg);
   min-height: 100vh;
+  min-height: 100dvh;
   color: var(--text-dark);
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
@@ -59,9 +60,11 @@
 }
 
 .app {
+  width: 100%;
   max-width: 430px;
   margin: 0 auto;
   min-height: 100vh;
+  min-height: 100dvh;
   background: var(--bg);
   position: relative;
   box-shadow: 0 0 20px rgba(0,0,0,0.05);
@@ -74,19 +77,19 @@
 
 .header {
   background: var(--card);
-  padding: 16px 16px 12px;
+  padding: 12px 16px 0;
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
   z-index: 10;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
+  touch-action: pan-y;
 }
 
 .headerLeft {
-  display: flex;
-  flex-direction: column;
+  display: none;
 }
 
 .greeting {
@@ -181,11 +184,11 @@
 }
 
 .contentBody {
-  padding: 0 16px 20px;
+  padding: 16px 16px 20px;
 }
 
 .section {
-  margin-top: 24px;
+  margin-top: 0;
 }
 
 .sectionHeader {
@@ -273,11 +276,14 @@
 .categoryScroll {
   display: flex;
   overflow-x: auto;
-  gap: 10px;
-  padding-bottom: 4px;
+  gap: 18px;
+  padding: 2px 2px 0;
+  margin: 0;
   scrollbar-width: none;
-  margin-right: -20px;
-  padding-right: 20px;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y;
+  overscroll-behavior-x: contain;
+  overscroll-behavior-y: auto;
 }
 .categoryScroll::-webkit-scrollbar { display: none; }
 
@@ -285,22 +291,49 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 16px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 30px;
+  padding: 6px 2px 10px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
   font-size: 14px;
   font-weight: 600;
   color: var(--text-muted);
   white-space: nowrap;
   flex-shrink: 0;
   cursor: pointer;
+  position: relative;
+  touch-action: manipulation;
+  transition: color 0.15s ease;
+}
+
+.catChip:hover {
+  color: var(--text-dark);
 }
 
 .activeChip {
-  background: var(--primary);
-  color: #fff;
-  border-color: var(--primary);
+  color: #007aff;
+  font-weight: 700;
+}
+
+:global(body.theme-dark) .activeChip,
+:global(html.theme-dark) .activeChip {
+  color: #2997ff;
+}
+
+.activeChip::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2.5px;
+  background: #007aff;
+  border-radius: 3px 3px 0 0;
+}
+
+:global(body.theme-dark) .activeChip::after,
+:global(html.theme-dark) .activeChip::after {
+  background: #2997ff;
 }
 
 .examGrid {
@@ -317,6 +350,8 @@
   cursor: pointer;
   box-shadow: 0 1px 4px rgba(0,0,0,0.02);
   transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 .examCard:active {
   transform: scale(0.98);
@@ -1056,6 +1091,8 @@
   }
 
   .headerLeft {
+    display: flex;
+    flex-direction: column;
     flex-shrink: 0;
   }
 

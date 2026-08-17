@@ -257,30 +257,25 @@ export default function MockTestPage() {
                     <div className={styles.avatar}>ST</div>
                   </div>
                 </div>
+
+                {/* Categories Scroll for Mobile */}
+                <div className={styles.categoryScroll}>
+                  {categories.map((cat) => (
+                    <button
+                      key={cat.id}
+                      className={`${styles.catChip} ${activeCategory === cat.id ? styles.activeChip : ''}`}
+                      onClick={() => setActiveCategory(cat.id)}
+                    >
+                      <span>{cat.emoji}</span> {cat.label}
+                    </button>
+                  ))}
+                </div>
               </header>
 
               {/* Content Body */}
               <div className={styles.contentBody}>
-                {/* Categories Scroll for Mobile */}
-                <section className={styles.section}>
-                  <div className={styles.categoryScroll}>
-                    {categories.map((cat) => (
-                      <button
-                        key={cat.id}
-                        className={`${styles.catChip} ${activeCategory === cat.id ? styles.activeChip : ''}`}
-                        onClick={() => setActiveCategory(cat.id)}
-                      >
-                        <span>{cat.emoji}</span> {cat.label}
-                      </button>
-                    ))}
-                  </div>
-                </section>
-
                 {/* Exam Grid */}
                 <section className={styles.section}>
-                  <div className={styles.sectionHeader}>
-                    <h2 className={styles.sectionTitle}>Explore Test Series</h2>
-                  </div>
                   <div className={styles.examGrid}>
                     {filteredExams.map((card) => (
                       <div key={card.id} className={styles.examCard} onClick={() => openDetail(card)}>
