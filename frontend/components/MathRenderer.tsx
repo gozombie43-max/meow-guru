@@ -52,7 +52,7 @@ function parseParts(input: string): Part[] {
   }));
 }
 
-export default function MathRenderer({
+const MathRenderer = React.memo(function MathRenderer({
   text,
   className = "",
   inline = false,
@@ -126,4 +126,6 @@ export default function MathRenderer({
       {rendered}
     </span>
   );
-}
+});
+
+export default MathRenderer;

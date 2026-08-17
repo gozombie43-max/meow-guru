@@ -5,7 +5,7 @@ type Props = { text: string; className?: string };
 
 const fracRegex = /(\([^)]+\)|[^\s/()]+)\s*\/\s*(\([^)]+\)|[^\s/()]+)/g;
 
-export default function MathText({ text, className = "" }: Props) {
+const MathText = React.memo(function MathText({ text, className = "" }: Props) {
   if (!text) return <span className={className} />;
 
   const parts: Array<
@@ -53,4 +53,6 @@ export default function MathText({ text, className = "" }: Props) {
       })}
     </span>
   );
-}
+});
+
+export default MathText;
