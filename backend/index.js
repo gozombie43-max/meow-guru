@@ -9,10 +9,11 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import passport from './auth/passport.js';
 import { initPassport } from './auth/passport.js';
-import { initDB, initUsersDB, initNotesDB, initAccessCodesDB } from './cosmos.js';
+import { initDB, initUsersDB, initNotesDB, initAccessCodesDB, initMockAttemptsDB, initMockSlotsDB } from './cosmos.js';
 import { initAuthRoutes } from './routes/auth.routes.js';
 import { initUserRoutes } from './routes/user.routes.js';
 import questionRoutes from './routes/questionRoutes.js';
+import mocktestRoutes from './routes/mocktest.js';
 import notesRoutes from './routes/notes.routes.js';
 import imageUploadRoutes from './routes/imageUpload.js';
 import uploadNoteImageRoutes from './routes/uploadNoteImage.js';
@@ -24,7 +25,7 @@ import pdfRoutes from './routes/pdfs.js';
 import accessCodeRoutes from './routes/accessCodes.js';
 import cognitiveMapperRouter from './agents/cognitiveMapperRouter.js';
 import adaptiveQuizRouter from './agents/adaptiveQuiz/adaptiveQuizRouter.js';
-import { setQuestionsContainer, setUsersContainer, setNotesContainer, setAccessCodesContainer } from './containerStore.js';
+import { setQuestionsContainer, setUsersContainer, setNotesContainer, setAccessCodesContainer, setMockAttemptsContainer, setMockSlotsContainer } from './containerStore.js';
 import { initBattleSocket } from './battle/battleSocket.js';
 
 const app = express();
@@ -129,17 +130,22 @@ async function initWithRetry() {
     const usersContainer       = await connectWithRetry(initUsersDB, 'Users DB');
     const notesContainer       = await connectWithRetry(initNotesDB, 'Notes DB');
     const accessCodesContainer = await connectWithRetry(initAccessCodesDB, 'Access Codes DB');
+    const mockAttemptsContainer = await connectWithRetry(initMockAttemptsDB, 'Mock Attempts DB');
+    const mockSlotsContainer    = await connectWithRetry(initMockSlotsDB, 'Mock Slots DB');
 
     setQuestionsContainer(questionsContainer);
     setUsersContainer(usersContainer);
     setNotesContainer(notesContainer);
     setAccessCodesContainer(accessCodesContainer);
+    setMockAttemptsContainer(mockAttemptsContainer);
+    setMockSlotsContainer(mockSlotsContainer);
 
     initPassport(usersContainer);
 
     initBattleSocket(httpServer, corsOrigin);
 
     app.use('/api/questions', questionRoutes);
+    app.use('/api/mocktest', mocktestRoutes);
     app.use('/api/ai', aiRoutes);
     app.use('/api/agent', cognitiveMapperRouter);
     app.use('/api/adaptive-quiz', adaptiveQuizRouter);

@@ -37,6 +37,7 @@ import {
   Search,
   Smartphone,
   Sun,
+  Swords,
   Video,
   X,
 } from 'lucide-react';
@@ -85,6 +86,8 @@ const railItems = [
   { label: 'Home', href: '/', icon: HomeIcon },
   { label: 'Mock', href: '/mock-test', icon: FileCheck2 },
   { label: 'Play', href: '/play', icon: Play },
+  { label: 'Battle Mode', href: '/battle', icon: Swords },
+  { label: 'All Books & Notes', href: '/resource', icon: BookOpen },
   { label: 'Videos', href: '/videos', icon: Video },
   { label: 'AI Chat', href: '/ai-chat', icon: AiChatIcon },
   { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -96,7 +99,7 @@ const recentQuizzesData = [
     tagTone: 'english',
     title: 'Synonyms & Antonyms',
     subtitle: 'Continue from Q17',
-    progress: '0/970',
+    progress: '17/970',
     progressPercent: 18,
     href: '/english',
   },
@@ -105,7 +108,7 @@ const recentQuizzesData = [
     tagTone: 'reasoning',
     title: 'Coding – Decoding',
     subtitle: 'Continue from Q23',
-    progress: '0/850',
+    progress: '23/850',
     progressPercent: 24,
     href: '/reasoning',
   },
@@ -114,9 +117,72 @@ const recentQuizzesData = [
     tagTone: 'gk',
     title: 'Indian Polity',
     subtitle: 'Continue from Q12',
-    progress: '0/680',
+    progress: '12/680',
     progressPercent: 14,
     href: '/general-awareness',
+  },
+  {
+    tag: 'MATH',
+    tagTone: 'math',
+    title: 'Percentages & Fractions',
+    subtitle: 'Continue from Q31',
+    progress: '31/520',
+    progressPercent: 35,
+    href: '/mathematics',
+  },
+  {
+    tag: 'ENGLISH',
+    tagTone: 'english',
+    title: 'One Word Substitution',
+    subtitle: 'Continue from Q45',
+    progress: '45/780',
+    progressPercent: 42,
+    href: '/english',
+  },
+  {
+    tag: 'REASONING',
+    tagTone: 'reasoning',
+    title: 'Syllogism & Inferences',
+    subtitle: 'Continue from Q8',
+    progress: '8/410',
+    progressPercent: 19,
+    href: '/reasoning',
+  },
+  {
+    tag: 'GK',
+    tagTone: 'gk',
+    title: 'Modern Indian History',
+    subtitle: 'Continue from Q19',
+    progress: '19/640',
+    progressPercent: 28,
+    href: '/general-awareness',
+  },
+  {
+    tag: 'MATH',
+    tagTone: 'math',
+    title: 'Profit & Loss',
+    subtitle: 'Continue from Q14',
+    progress: '14/490',
+    progressPercent: 22,
+    href: '/mathematics',
+  },
+  {
+    tag: 'ENGLISH',
+    tagTone: 'english',
+    title: 'Idioms & Phrases',
+    subtitle: 'Continue from Q36',
+    progress: '36/890',
+    progressPercent: 38,
+    href: '/english',
+  },
+  {
+    tag: 'REASONING',
+    tagTone: 'reasoning',
+    title: 'Blood Relations',
+    subtitle: 'Continue from Q27',
+    progress: '27/360',
+    progressPercent: 52,
+    href: '/reasoning',
   },
 ];
 
@@ -618,12 +684,6 @@ export default function Home() {
                     </Link>
                   ))}
                 </div>
-
-                {/* View All Quizzes Action Button */}
-                <Link href="/dashboard" className={styles.viewAllQuizzesButton}>
-                  <span>View All Quizzes</span>
-                  <ChevronRight size={16} />
-                </Link>
               </aside>
             </div>
           </div>

@@ -68,4 +68,28 @@ export const initNotesDB = async () => {
 
   return container;
 };
- 
+
+// ── Mock Attempts Container ──────────────────────────────
+export const initMockAttemptsDB = async () => {
+  const { database } = await getClient().databases.createIfNotExists({ id: 'quizDB' });
+
+  const { container } = await database.containers.createIfNotExists({
+    id: 'mockAttempts',
+    partitionKey: { paths: ['/userId'] },
+  });
+
+  return container;
+};
+
+// ── Mock Test Slots Container ────────────────────────────
+export const initMockSlotsDB = async () => {
+  const { database } = await getClient().databases.createIfNotExists({ id: 'quizDB' });
+
+  const { container } = await database.containers.createIfNotExists({
+    id: 'mockTestSlots',
+    partitionKey: { paths: ['/examSlug'] },
+  });
+
+  return container;
+};
+

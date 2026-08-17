@@ -1,36 +1,24 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Search, Bell, Clock, Award, ChevronLeft, Share2, Filter, Play, CheckCircle, Lock } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Search, Bell, Filter } from 'lucide-react';
 import styles from './page.module.css';
 
-type ExamType = 'ssc' | 'rrb' | 'upsc' | 'banking' | 'other';
+type ExamType = 'ssc' | 'rrb' | 'banking' | 'upsc' | 'defence' | 'other';
 
 type ExamCard = {
   id: string;
   name: string;
   type: ExamType;
   count: string;
-  badge: string;
-  badgeTone: 'hot' | 'free' | 'new' | 'premium';
+  badge?: string;
+  badgeTone?: 'hot' | 'free' | 'new' | 'premium';
   logoUrl?: string;
   logoText: string;
   logoBackground?: string;
   logoTextColor?: string;
   logoTextSize?: string;
-};
-
-type TestStatus = 'completed' | 'paused' | 'not_started' | 'locked';
-
-type MockTest = {
-  id: string;
-  title: string;
-  questions: number;
-  marks: number;
-  minutes: number;
-  status: TestStatus;
-  score?: number;
-  isFree?: boolean;
 };
 
 const svgToDataUri = (svg: string) => `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
@@ -50,7 +38,7 @@ const makeTextLogo = (label: string, background: string, accent: string) => svgT
   </svg>
 `);
 
-const logos: Record<ExamType, string> = {
+const logos: Record<string, string> = {
   ssc: svgToDataUri(`
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="SSC logo">
       <defs>
@@ -83,20 +71,6 @@ const logos: Record<ExamType, string> = {
       <text x="80" y="74" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="800" fill="#0f4c81" letter-spacing="1.5">RRB</text>
     </svg>
   `),
-  upsc: svgToDataUri(`
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="UPSC logo">
-      <defs>
-        <linearGradient id="upscBg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="#9a3412" />
-          <stop offset="100%" stop-color="#c2410c" />
-        </linearGradient>
-      </defs>
-      <rect width="160" height="160" rx="28" fill="url(#upscBg)" />
-      <circle cx="80" cy="58" r="24" fill="#fde68a" opacity="0.9" />
-      <path d="M80 34l7 20h21l-17 12 7 20-18-12-18 12 7-20-17-12h21z" fill="#fff7ed" opacity="0.95" />
-      <text x="80" y="118" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="800" fill="#fff7ed" letter-spacing="1.5">UPSC</text>
-    </svg>
-  `),
   banking: svgToDataUri(`
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="SBI logo">
       <defs>
@@ -112,55 +86,98 @@ const logos: Record<ExamType, string> = {
       <text x="80" y="116" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="800" fill="#ffffff" letter-spacing="1.5">SBI</text>
     </svg>
   `),
+  upsc: svgToDataUri(`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="UPSC logo">
+      <defs>
+        <linearGradient id="upscBg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#9a3412" />
+          <stop offset="100%" stop-color="#c2410c" />
+        </linearGradient>
+      </defs>
+      <rect width="160" height="160" rx="28" fill="url(#upscBg)" />
+      <circle cx="80" cy="58" r="24" fill="#fde68a" opacity="0.9" />
+      <path d="M80 34l7 20h21l-17 12 7 20-18-12-18 12 7-20-17-12h21z" fill="#fff7ed" opacity="0.95" />
+      <text x="80" y="118" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="800" fill="#fff7ed" letter-spacing="1.5">UPSC</text>
+    </svg>
+  `),
+  uppsc: svgToDataUri(`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="UPPSC logo">
+      <defs>
+        <linearGradient id="uppscBg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#047857" />
+          <stop offset="100%" stop-color="#064e3b" />
+        </linearGradient>
+      </defs>
+      <rect width="160" height="160" rx="28" fill="url(#uppscBg)" />
+      <circle cx="80" cy="58" r="30" fill="#34d399" opacity="0.2" />
+      <path d="M52 58h56M80 36v44" stroke="#a7f3d0" stroke-width="7" stroke-linecap="round" />
+      <circle cx="80" cy="58" r="8" fill="#fef3c7" />
+      <text x="80" y="124" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="800" fill="#ffffff" letter-spacing="1.5">UPPSC</text>
+    </svg>
+  `),
+  wbcs: svgToDataUri(`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="WBCS logo">
+      <defs>
+        <linearGradient id="wbcsBg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#0284c7" />
+          <stop offset="100%" stop-color="#0f172a" />
+        </linearGradient>
+      </defs>
+      <rect width="160" height="160" rx="28" fill="url(#wbcsBg)" />
+      <circle cx="80" cy="56" r="28" fill="#38bdf8" opacity="0.2" />
+      <path d="M54 44l26 24 26-24M54 68l26 24 26-24" stroke="#e0f2fe" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
+      <text x="80" y="132" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="800" fill="#ffffff" letter-spacing="1.5">WBCS</text>
+    </svg>
+  `),
+  defence: makeTextLogo('DEFENCE', '#4b5563', '#1f2937'),
   other: makeTextLogo('CAT', '#7c3aed', '#4338ca'),
 };
-
-const mockTestsData: MockTest[] = [
-  { id: 'm1', title: 'SSC CGL Tier I 2026 – Full Mock Test 1', questions: 100, marks: 200, minutes: 60, status: 'completed', score: 145, isFree: true },
-  { id: 'm2', title: 'SSC CGL Tier I 2026 – Full Mock Test 2', questions: 100, marks: 200, minutes: 60, status: 'paused', isFree: true },
-  { id: 'm3', title: 'SSC CGL Tier I 2026 – Full Mock Test 3', questions: 100, marks: 200, minutes: 60, status: 'not_started', isFree: true },
-  { id: 'm4', title: 'SSC CGL Tier I 2026 – Full Mock Test 4', questions: 100, marks: 200, minutes: 60, status: 'locked' },
-  { id: 'm5', title: 'SSC CGL Tier I 2026 – Full Mock Test 5', questions: 100, marks: 200, minutes: 60, status: 'locked' },
-];
-
-const prevTestsData: MockTest[] = [
-  { id: 'p1', title: 'SSC CGL Tier I 2025 – Previous Year Paper (Shift 1)', questions: 100, marks: 200, minutes: 60, status: 'not_started', isFree: true },
-  { id: 'p2', title: 'SSC CGL Tier I 2025 – Previous Year Paper (Shift 2)', questions: 100, marks: 200, minutes: 60, status: 'not_started' },
-  { id: 'p3', title: 'SSC CGL Tier I 2024 – Previous Year Paper (Shift 1)', questions: 100, marks: 200, minutes: 60, status: 'locked' },
-];
 
 const categories = [
   { id: 'all', label: 'All', emoji: '📚' },
   { id: 'ssc', label: 'SSC', emoji: '🏛️' },
-  { id: 'rrb', label: 'RRB', emoji: '🚂' },
+  { id: 'rrb', label: 'Railway', emoji: '🚂' },
   { id: 'banking', label: 'Banking', emoji: '📊' },
-  { id: 'upsc', label: 'UPSC', emoji: '🇮🇳' },
-  { id: 'other', label: 'Other', emoji: '🎓' },
+  { id: 'upsc', label: 'UPSC & State PSC', emoji: '🏛️' },
+  { id: 'defence', label: 'Defence & Univ', emoji: '🎖️' },
+  { id: 'other', label: 'Management', emoji: '🎓' },
 ];
 
 const examCards: ExamCard[] = [
-  { id: 'ssc-cgl', name: 'SSC CGL', type: 'ssc', count: '142 Tests', badge: '🔥 Hot', badgeTone: 'hot', logoUrl: logos.ssc, logoText: 'SSC' },
-  { id: 'ssc-chsl', name: 'SSC CHSL', type: 'ssc', count: '84 Tests', badge: 'Free', badgeTone: 'free', logoUrl: logos.ssc, logoText: 'SSC' },
-  { id: 'ssc-mts', name: 'SSC MTS', type: 'ssc', count: '48 Tests', badge: 'Free', badgeTone: 'free', logoUrl: logos.ssc, logoText: 'SSC' },
-  { id: 'ssc-cpo', name: 'SSC CPO', type: 'ssc', count: '36 Tests', badge: 'New', badgeTone: 'new', logoUrl: logos.ssc, logoText: 'SSC' },
-  { id: 'ssc-gd', name: 'SSC GD', type: 'ssc', count: '52 Tests', badge: '🔥 Hot', badgeTone: 'hot', logoUrl: logos.ssc, logoText: 'SSC' },
-  { id: 'rrb-ntpc', name: 'RRB NTPC', type: 'rrb', count: '70 Tests', badge: '🔥 Hot', badgeTone: 'hot', logoUrl: logos.rrb, logoText: 'RRB' },
-  { id: 'rrb-alp', name: 'RRB ALP', type: 'rrb', count: '45 Tests', badge: 'Free', badgeTone: 'free', logoUrl: logos.rrb, logoText: 'RRB' },
-  { id: 'rrb-grp-d', name: 'RRB Group D', type: 'rrb', count: '58 Tests', badge: 'New', badgeTone: 'new', logoUrl: logos.rrb, logoText: 'RRB' },
-  { id: 'ibps-po', name: 'IBPS PO', type: 'banking', count: '96 Tests', badge: 'New', badgeTone: 'new', logoUrl: logos.banking, logoText: 'IBPS' },
-  { id: 'sbi-po', name: 'SBI PO', type: 'banking', count: '110 Tests', badge: '🔥 Hot', badgeTone: 'hot', logoUrl: logos.banking, logoText: 'SBI' },
-  { id: 'ibps-clerk', name: 'IBPS Clerk', type: 'banking', count: '80 Tests', badge: 'Free', badgeTone: 'free', logoUrl: logos.banking, logoText: 'IBPS' },
-  { id: 'cat', name: 'CAT', type: 'other', count: '120 Tests', badge: 'Premium', badgeTone: 'premium', logoUrl: logos.other, logoText: 'CAT' },
-  { id: 'upsc', name: 'UPSC CSE', type: 'upsc', count: '200 Tests', badge: 'Premium', badgeTone: 'premium', logoUrl: logos.upsc, logoText: 'UPSC' },
-  { id: 'nda', name: 'NDA', type: 'other', count: '65 Tests', badge: 'Free', badgeTone: 'free', logoUrl: logos.other, logoText: 'NDA' },
-  { id: 'cds', name: 'CDS', type: 'other', count: '40 Tests', badge: 'New', badgeTone: 'new', logoUrl: logos.other, logoText: 'CDS' },
+  // SSC
+  { id: 'ssc-cgl', name: 'SSC CGL', type: 'ssc', count: '142 Tests', logoUrl: logos.ssc, logoText: 'SSC' },
+  { id: 'ssc-chsl', name: 'SSC CHSL', type: 'ssc', count: '84 Tests', logoUrl: logos.ssc, logoText: 'SSC' },
+  { id: 'ssc-mts', name: 'SSC MTS', type: 'ssc', count: '48 Tests', logoUrl: logos.ssc, logoText: 'SSC' },
+  { id: 'ssc-gd', name: 'SSC GD', type: 'ssc', count: '52 Tests', logoUrl: logos.ssc, logoText: 'SSC' },
+
+  // Railway
+  { id: 'rrb-ntpc', name: 'RRB NTPC', type: 'rrb', count: '70 Tests', logoUrl: logos.rrb, logoText: 'RRB' },
+  { id: 'rrb-group-d', name: 'RRB Group D', type: 'rrb', count: '58 Tests', logoUrl: logos.rrb, logoText: 'RRB' },
+  { id: 'rrb-je', name: 'RRB JE', type: 'rrb', count: '45 Tests', logoUrl: logos.rrb, logoText: 'RRB' },
+
+  // Banking
+  { id: 'ibps-po', name: 'IBPS PO', type: 'banking', count: '96 Tests', logoUrl: logos.banking, logoText: 'IBPS' },
+  { id: 'ibps-clerk', name: 'IBPS Clerk', type: 'banking', count: '80 Tests', logoUrl: logos.banking, logoText: 'IBPS' },
+  { id: 'sbi-po', name: 'SBI PO', type: 'banking', count: '110 Tests', logoUrl: logos.banking, logoText: 'SBI' },
+  { id: 'sbi-clerk', name: 'SBI Clerk', type: 'banking', count: '80 Tests', logoUrl: logos.banking, logoText: 'SBI' },
+
+  // UPSC & State PSC
+  { id: 'upsc', name: 'UPSC CSE (IAS / IPS)', type: 'upsc', count: '95 Tests', logoUrl: logos.upsc, logoText: 'UPSC' },
+  { id: 'uppsc', name: 'UPPSC (Uttar Pradesh)', type: 'upsc', count: '65 Tests', logoUrl: logos.uppsc, logoText: 'UPPSC' },
+  { id: 'wbcs', name: 'WBCS / WBPSC (West Bengal)', type: 'upsc', count: '55 Tests', logoUrl: logos.wbcs, logoText: 'WBCS' },
+
+  // Defence & University
+  { id: 'nda', name: 'NDA', type: 'defence', count: '65 Tests', logoUrl: logos.defence, logoText: 'NDA' },
+  { id: 'cds', name: 'CDS', type: 'defence', count: '40 Tests', logoUrl: logos.defence, logoText: 'CDS' },
+  { id: 'cuet', name: 'CUET', type: 'defence', count: '50 Tests', logoUrl: logos.other, logoText: 'CUET' },
+
+  // Management
+  { id: 'cat', name: 'CAT', type: 'other', count: '120 Tests', logoUrl: logos.other, logoText: 'CAT' },
 ];
 
 export default function MockTestPage() {
+  const router = useRouter();
   const [activeCategory, setActiveCategory] = useState('all');
-  const [view, setView] = useState<'home' | 'detail'>('home');
-  const [selectedExam, setSelectedExam] = useState<ExamCard>(examCards[0]);
-  const [tab, setTab] = useState<'overview' | 'mock' | 'prev'>('mock');
   const [searchQuery, setSearchQuery] = useState('');
   const [logoErrors, setLogoErrors] = useState<Record<string, boolean>>({});
 
@@ -184,48 +201,7 @@ export default function MockTestPage() {
   }, [activeCategory, searchQuery]);
 
   const openDetail = (exam: ExamCard) => {
-    setSelectedExam(exam);
-    setView('detail');
-    setTab('mock');
-    window.scrollTo(0, 0);
-  };
-
-  const goBack = () => {
-    setView('home');
-    window.scrollTo(0, 0);
-  };
-
-  const renderTestStatus = (status: TestStatus, score?: number) => {
-    switch (status) {
-      case 'completed': 
-        return (
-          <div className={styles.statusCompleted}>
-            <div className={styles.scoreWrap}>
-              <Award size={16} />
-              <span>Score: <strong>{score}</strong>/200</span>
-            </div>
-            <button className={styles.viewBtn}>View Analysis</button>
-          </div>
-        );
-      case 'paused': 
-        return (
-          <button className={styles.statusPaused}>
-            <Clock size={16} /> Resume
-          </button>
-        );
-      case 'not_started': 
-        return (
-          <button className={styles.statusNotStarted}>
-            <Play size={16} fill="currentColor" /> Start Test
-          </button>
-        );
-      case 'locked': 
-        return (
-          <button className={styles.statusLocked}>
-            <Lock size={16} /> Unlock Pro
-          </button>
-        );
-    }
+    router.push(`/mock-test/${exam.id}`);
   };
 
   return (
@@ -256,169 +232,78 @@ export default function MockTestPage() {
         {/* Content Area */}
         <div className={styles.macosContent}>
           <div className={styles.app}>
-        {view === 'home' ? (
-          <div className={styles.homeContainer}>
-            {/* Header Area */}
-            <header className={styles.header}>
-              <div className={styles.headerTop}>
-                <div>
-                  <h1 className={styles.greeting}>Hi, Student 👋</h1>
-                  <p className={styles.subtitle}>Ready to practice today?</p>
+            <div className={styles.homeContainer}>
+              {/* Header Area */}
+              <header className={styles.header}>
+                <div className={styles.headerLeft}>
+                  <h1 className={styles.greeting}>Hi, Aspirant 👋</h1>
+                  <p className={styles.subtitle}>Choose your target exam to begin mock test series</p>
                 </div>
-                <div className={styles.headerActions}>
-                  <button className={styles.iconBtn}><Bell size={20} /></button>
-                  <div className={styles.avatar}>ST</div>
-                </div>
-              </div>
 
-              <div className={styles.searchWrap}>
-                <Search size={18} className={styles.searchIcon} />
-                <input 
-                  type="text" 
-                  placeholder="Search exams, test series..." 
-                  className={styles.searchInput}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <button className={styles.filterBtn}><Filter size={18} /></button>
-              </div>
-            </header>
-
-            {/* Content Body */}
-            <div className={styles.contentBody}>
-              {/* Continue Learning removed for cleaner layout */}
-
-              {/* Categories */}
-              <section className={styles.section}>
-                <div className={styles.categoryScroll}>
-                  {categories.map((cat) => (
-                    <button
-                      key={cat.id}
-                      className={`${styles.catChip} ${activeCategory === cat.id ? styles.activeChip : ''}`}
-                      onClick={() => setActiveCategory(cat.id)}
-                    >
-                      <span>{cat.emoji}</span> {cat.label}
-                    </button>
-                  ))}
-                </div>
-              </section>
-
-              {/* Exam Grid */}
-              <section className={styles.section}>
-                <div className={styles.sectionHeader}>
-                  <h2 className={styles.sectionTitle}>Explore Test Series</h2>
-                </div>
-                <div className={styles.examGrid}>
-                  {filteredExams.map((card) => (
-                    <div key={card.id} className={styles.examCard} onClick={() => openDetail(card)}>
-                      <div className={styles.examTop}>
-                        <div className={styles.examLogoBox}>
-                          {card.logoUrl && !logoErrors[card.id] ? (
-                            <img src={card.logoUrl} alt={card.name} onError={() => setLogoErrors(p => ({...p, [card.id]: true}))} />
-                          ) : (
-                            <span style={{ fontSize: card.logoTextSize || '12px' }}>{card.logoText}</span>
-                          )}
-                        </div>
-                        <span className={`${styles.badge} ${styles['badge' + card.badgeTone]}`}>{card.badge}</span>
-                      </div>
-                      <h3 className={styles.examName}>{card.name}</h3>
-                      <p className={styles.examCount}>{card.count} included</p>
-                    </div>
-                  ))}
-                </div>
-                {filteredExams.length === 0 && (
-                  <div className={styles.emptyState}>No exams found for &quot;{searchQuery}&quot;</div>
-                )}
-              </section>
-            </div>
-          </div>
-        ) : (
-          <div className={styles.detailContainer}>
-            <header className={styles.detailHeader}>
-              <div className={styles.detailTopNav}>
-                <button onClick={goBack} className={styles.backBtn}><ChevronLeft size={24} /></button>
-                <button className={styles.iconBtn}><Share2 size={20} /></button>
-              </div>
-              <div className={styles.detailHero}>
-                <div className={styles.detailHeroLogo}>
-                  {selectedExam.logoUrl && !logoErrors[selectedExam.id] ? (
-                    <img
-                      src={selectedExam.logoUrl}
-                      alt={selectedExam.name}
-                      onError={() => setLogoErrors(p => ({ ...p, [selectedExam.id]: true }))}
+                <div className={styles.headerRight}>
+                  <div className={styles.searchWrap}>
+                    <Search size={15} className={styles.searchIcon} />
+                    <input 
+                      type="text" 
+                      placeholder="Search exams, test series..." 
+                      className={styles.searchInput}
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
                     />
-                  ) : (
-                    <span>{selectedExam.logoText}</span>
+                    <button className={styles.filterBtn} aria-label="Filter"><Filter size={14} /></button>
+                  </div>
+                  <div className={styles.headerActions}>
+                    <button className={styles.iconBtn} aria-label="Notifications"><Bell size={15} /></button>
+                    <div className={styles.avatar}>ST</div>
+                  </div>
+                </div>
+              </header>
+
+              {/* Content Body */}
+              <div className={styles.contentBody}>
+                {/* Categories Scroll for Mobile */}
+                <section className={styles.section}>
+                  <div className={styles.categoryScroll}>
+                    {categories.map((cat) => (
+                      <button
+                        key={cat.id}
+                        className={`${styles.catChip} ${activeCategory === cat.id ? styles.activeChip : ''}`}
+                        onClick={() => setActiveCategory(cat.id)}
+                      >
+                        <span>{cat.emoji}</span> {cat.label}
+                      </button>
+                    ))}
+                  </div>
+                </section>
+
+                {/* Exam Grid */}
+                <section className={styles.section}>
+                  <div className={styles.sectionHeader}>
+                    <h2 className={styles.sectionTitle}>Explore Test Series</h2>
+                  </div>
+                  <div className={styles.examGrid}>
+                    {filteredExams.map((card) => (
+                      <div key={card.id} className={styles.examCard} onClick={() => openDetail(card)}>
+                        <div className={styles.examTop}>
+                          <div className={styles.examLogoBox}>
+                            {card.logoUrl && !logoErrors[card.id] ? (
+                              <img src={card.logoUrl} alt={card.name} onError={() => setLogoErrors(p => ({...p, [card.id]: true}))} />
+                            ) : (
+                              <span style={{ fontSize: card.logoTextSize || '12px' }}>{card.logoText}</span>
+                            )}
+                          </div>
+                        </div>
+                        <h3 className={styles.examName}>{card.name}</h3>
+                        <p className={styles.examCount}>{card.count} included</p>
+                      </div>
+                    ))}
+                  </div>
+                  {filteredExams.length === 0 && (
+                    <div className={styles.emptyState}>No exams found for &quot;{searchQuery}&quot;</div>
                   )}
-                </div>
-                <div>
-                  <h1 className={styles.detailTitle}>{selectedExam.name} Test Series</h1>
-                  <p className={styles.detailSubtitle}>Comprehensive preparation package</p>
-                </div>
+                </section>
               </div>
-            </header>
-
-            <div className={styles.detailBody}>
-              <div className={styles.tabsNav}>
-                {['overview', 'mock', 'prev'].map((t) => (
-                  <button 
-                    key={t} 
-                    className={`${styles.tabBtn} ${tab === t ? styles.activeTabBtn : ''}`}
-                    onClick={() => setTab(t as 'overview' | 'mock' | 'prev')}
-                  >
-                    {t === 'overview' ? 'Overview' : t === 'mock' ? 'Mock Tests' : 'Previous Year'}
-                  </button>
-                ))}
-              </div>
-
-              {tab === 'overview' && (
-                <div className={styles.overviewTab}>
-                  <div className={styles.statBoxGrid}>
-                    <div className={styles.statBox}>
-                      <Award size={24} className={styles.statBoxIcon} />
-                      <div className={styles.statBoxNum}>142</div>
-                      <div className={styles.statBoxLbl}>Total Tests</div>
-                    </div>
-                    <div className={styles.statBox}>
-                      <CheckCircle size={24} className={styles.statBoxIcon} />
-                      <div className={styles.statBoxNum}>12.5k+</div>
-                      <div className={styles.statBoxLbl}>Enrolled</div>
-                    </div>
-                  </div>
-                  <div className={styles.cardSection}>
-                    <h3 className={styles.cardSectionTitle}>About Package</h3>
-                    <ul className={styles.featureList}>
-                      <li><CheckCircle size={16}/> Latest exact exam pattern</li>
-                      <li><CheckCircle size={16}/> Detailed step-by-step solutions</li>
-                      <li><CheckCircle size={16}/> Compete with All-India ranking</li>
-                      <li><CheckCircle size={16}/> Performance analysis & weak area detection</li>
-                    </ul>
-                  </div>
-                </div>
-              )}
-
-              {(tab === 'mock' || tab === 'prev') && (
-                <div className={styles.testList}>
-                  {(tab === 'mock' ? mockTestsData : prevTestsData).map((test) => (
-                    <div key={test.id} className={`${styles.testLineCard} ${test.status === 'locked' ? styles.lockedCard : ''}`}>
-                      <div className={styles.testLineInfo}>
-                        <div className={styles.testLineHeader}>
-                          <h4 className={styles.testLineTitle}>{test.title}</h4>
-                        </div>
-                        <div className={styles.testLineMeta}>
-                          <span>{test.questions} Qs</span><span>{test.marks} Marks</span><span>{test.minutes} Mins</span>
-                        </div>
-                      </div>
-                      <div className={styles.testLineAction}>
-                        {renderTestStatus(test.status, test.score)}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
-          </div>
-        )}
           </div>
         </div>
       </div>

@@ -32,6 +32,8 @@ export default function BottomNav() {
     normalizedPathname.endsWith('/formula-notes');
   const isAccessCodeRoute = pathname === '/access-code' || pathname.startsWith('/access-code/');
   const isDashboardRoute = pathname === '/dashboard' || pathname.startsWith('/dashboard/');
+  const isMockExamRoute =
+    normalizedPathname.startsWith('/mock-test/') && normalizedPathname !== '/mock-test';
   const shouldHideNav =
     isQuizRoute ||
     isNotesViewRoute ||
@@ -40,6 +42,7 @@ export default function BottomNav() {
     isStudyModeRoute ||
     isAccessCodeRoute ||
     isDashboardRoute ||
+    isMockExamRoute ||
     isAiChat;
   const { theme } = useThemeMode();
   const lightSurfacePrefixes = [

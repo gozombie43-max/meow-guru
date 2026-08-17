@@ -28,3 +28,17 @@ export const getAccessCodesContainer = () => {
   if (!accessCodesContainer) throw new Error("Access codes container not initialized ❌");
   return accessCodesContainer;
 };
+
+let mockAttemptsContainer = null;
+export const setMockAttemptsContainer = (c) => { mockAttemptsContainer = c; };
+export const getMockAttemptsContainer = () => {
+  if (!mockAttemptsContainer) throw new Error("Mock Attempts container not initialized ❌");
+  return mockAttemptsContainer;
+};
+
+let mockSlotsContainer = null;
+export const setMockSlotsContainer = (c) => { mockSlotsContainer = c; };
+export const getMockSlotsContainer = () => {
+  if (!mockSlotsContainer) throw new Error("Mock Slots container not initialized ❌");
+  return mockSlotsContainer;
+};

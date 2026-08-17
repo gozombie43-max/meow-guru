@@ -122,7 +122,7 @@
   border: 1px solid var(--mac-border);
   box-shadow: var(--mac-shadow-window);
   display: grid;
-  grid-template-columns: 220px minmax(0, 1fr);
+  grid-template-columns: 228px minmax(0, 1fr);
   overflow: hidden;
   position: relative;
   backdrop-filter: blur(20px);
@@ -134,12 +134,17 @@
 .desktopSidebar {
   background: var(--mac-sidebar-bg);
   border-right: 1px solid var(--mac-border);
-  padding: 18px 16px;
+  padding: 16px 12px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   z-index: 20;
-  overflow: hidden;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.desktopSidebar::-webkit-scrollbar {
+  display: none;
 }
 
 .sidebarHeader {
@@ -194,20 +199,21 @@
 .railNav {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 .railLink {
-  min-height: 38px;
-  border-radius: 10px;
+  min-height: 35px;
+  border-radius: 9px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 0 12px;
+  gap: 10px;
+  padding: 0 10px;
   color: var(--mac-text-secondary);
   text-decoration: none;
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 500;
+  white-space: nowrap;
   transition: all 0.18s ease;
 }
 
@@ -802,6 +808,43 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  max-height: 390px;
+  overflow-y: auto;
+  padding-right: 5px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+}
+
+:global(body.theme-dark) .recentQuizList,
+:global(.dark) .recentQuizList {
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.recentQuizList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.recentQuizList::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.recentQuizList::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.15);
+  border-radius: 10px;
+}
+
+:global(body.theme-dark) .recentQuizList::-webkit-scrollbar-thumb,
+:global(.dark) .recentQuizList::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.recentQuizList::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+:global(body.theme-dark) .recentQuizList::-webkit-scrollbar-thumb:hover,
+:global(.dark) .recentQuizList::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.35);
 }
 
 .recentQuizCard {
@@ -877,6 +920,16 @@
 .dark .gk {
   background: rgba(5, 150, 105, 0.2);
   color: #34d399;
+}
+
+.math {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.dark .math {
+  background: rgba(217, 119, 6, 0.2);
+  color: #fbbf24;
 }
 
 .quizProgressRatio {

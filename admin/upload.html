@@ -573,7 +573,291 @@
     }
     .toast.error {
       background: rgba(254, 226, 226, 0.85); color: #991b1b;
-      border: 1px solid rgba(248, 113, 113, 0.40); box-shadow: 0 4px 24px rgba(220, 50, 50, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.40); box-shadow: 0 4px 24px rgba(239, 68, 68, 0.12);
+    }
+    /* ═══════════════════ MOCK TEST & PYQ TAB STYLES ═══════════════════ */
+    .mock-type-toggle {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .mock-type-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px;
+      border-radius: 16px;
+      border: 1.5px solid rgba(255,255,255,0.40);
+      background: rgba(255,255,255,0.14);
+      color: var(--text-glass);
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.22s;
+    }
+    .mock-type-btn:hover { background: rgba(255,255,255,0.28); color: var(--text-primary); }
+    .mock-type-btn.active {
+      background: linear-gradient(135deg, #00e5ff, #26c6da);
+      color: #0c2e4e;
+      border-color: #00e5ff;
+      box-shadow: 0 4px 18px rgba(0,229,255,0.35);
+    }
+
+    /* ═══════════════════ MOCK NDJSON / JSON DRAG & DROP ═══════════════════ */
+    .mock-dropzone {
+      border: 2px dashed rgba(0, 229, 255, 0.45);
+      border-radius: 18px;
+      padding: 24px 20px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.08);
+      transition: all 0.22s ease-in-out;
+      cursor: pointer;
+      position: relative;
+      margin-bottom: 14px;
+    }
+    .mock-dropzone:hover {
+      border-color: rgba(0, 229, 255, 0.85);
+      background: rgba(0, 229, 255, 0.06);
+      box-shadow: 0 4px 20px rgba(0, 229, 255, 0.12);
+    }
+    .mock-dropzone.over {
+      border-color: #00e5ff !important;
+      background: rgba(0, 229, 255, 0.14) !important;
+      box-shadow: 0 0 25px rgba(0, 229, 255, 0.35) !important;
+      transform: scale(1.008);
+    }
+    .mock-dropzone.loaded {
+      border-style: solid;
+      border-color: rgba(0, 229, 255, 0.55);
+      background: rgba(0, 229, 255, 0.06);
+      padding: 16px 20px;
+    }
+    .mock-drop-icon {
+      margin-bottom: 8px;
+      display: inline-block;
+    }
+    .mock-drop-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    .mock-drop-sub {
+      font-size: 0.82rem;
+      color: #4a7a9b;
+      margin-bottom: 14px;
+      max-width: 520px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .mock-drop-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .mock-browse-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 22px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #0c2e4e;
+      background: linear-gradient(135deg, #00e5ff, #26c6da);
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(0, 229, 255, 0.30);
+      transition: all 0.2s ease;
+    }
+    .mock-browse-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(0, 229, 255, 0.45);
+      background: linear-gradient(135deg, #33ebff, #00d4eb);
+    }
+    .mock-format-pill {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.22);
+      border: 1px solid rgba(255, 255, 255, 0.45);
+      color: #007c91;
+    }
+    .mock-drop-loaded {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+      text-align: left;
+    }
+    .mock-loaded-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .mock-loaded-icon {
+      font-size: 2.2rem;
+      line-height: 1;
+    }
+    .mock-loaded-name {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--text-primary);
+      word-break: break-all;
+    }
+    .mock-loaded-sub {
+      font-size: 0.8rem;
+      color: #008fa3;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+    .mock-loaded-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .mock-action-btn {
+      padding: 6px 14px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-radius: 10px;
+      border: 1.5px solid rgba(255, 255, 255, 0.45);
+      background: rgba(255, 255, 255, 0.22);
+      color: var(--text-glass);
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .mock-action-btn:hover {
+      background: rgba(255, 255, 255, 0.35);
+      color: var(--text-primary);
+    }
+    .mock-action-btn.danger {
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #a32d2d;
+    }
+    .mock-action-btn.danger:hover {
+      background: rgba(254, 226, 226, 0.5);
+    }
+
+    .mock-section-box {
+      background: rgba(0, 229, 255, 0.05);
+      border: 1.5px solid rgba(0, 229, 255, 0.22);
+      border-radius: 18px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .mock-counts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .mock-count-chip {
+      background: rgba(255,255,255,0.22);
+      border: 1px solid rgba(255,255,255,0.45);
+      border-radius: 12px;
+      padding: 10px;
+      text-align: center;
+    }
+    .mock-count-num {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #00a8c6;
+    }
+    .mock-count-lbl {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #4a7a9b;
+      margin-top: 2px;
+    }
+
+    .mock-table-wrap {
+      border: 1.5px solid rgba(255,255,255,0.40);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-top: 16px;
+      background: rgba(255,255,255,0.10);
+    }
+    .mock-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    .mock-table th {
+      padding: 10px 14px;
+      text-align: left;
+      font-weight: 700;
+      color: #4a7a9b;
+      text-transform: uppercase;
+      font-size: 0.72rem;
+      letter-spacing: 0.5px;
+      background: rgba(255,255,255,0.20);
+      border-bottom: 1px solid rgba(255,255,255,0.30);
+    }
+    .mock-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.15);
+      color: var(--text-primary);
+    }
+    .mock-table tr:hover {
+      background: rgba(255,255,255,0.15);
+    }
+    .mock-table .badge-free {
+      background: #dcfce7;
+      color: #166534;
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+    .mock-table .badge-pro {
+      background: #fef3c7;
+      color: #92400e;
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+    .mock-table .badge-pyq {
+      background: #e0f2fe;
+      color: #0369a1;
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+    .mock-table .badge-mock {
+      background: #f3e8ff;
+      color: #6b21a8;
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+
+    .btn-action-del {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #dc2626;
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-action-del:hover {
+      background: #dc2626;
+      color: #fff;
     }
 
     @media (max-width: 600px) {
@@ -586,6 +870,7 @@
       .mu-quiz-selector { grid-template-columns: 1fr; }
       .mu-table-head, .mu-row { grid-template-columns: 36px 1fr 90px 70px; }
       .mu-table-head span:nth-child(4), .mu-row > *:nth-child(4) { display: none; }
+      .mock-type-toggle { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -601,6 +886,7 @@
     <div class="tab-bar">
       <button class="tab-btn active" id="tabSingle" onclick="switchTab('single')">Add Single Question</button>
       <button class="tab-btn" id="tabMass" onclick="switchTab('mass')">Mass Upload (NDJSON)</button>
+      <button class="tab-btn" id="tabMock" onclick="switchTab('mock')">Mock Tests &amp; PYQs</button>
     </div>
 
     <!-- ═══════════════════ SINGLE QUESTION TAB ═══════════════════ -->
@@ -954,7 +1240,15 @@
             </svg>
           </div>
           <div class="mu-drop-title">Drop .ndjson / .jsonl file here</div>
-          <div class="mu-drop-sub">or <u id="muBrowseLink">browse files</u> — one JSON object per line</div>
+          <div class="mu-drop-sub">Drag &amp; drop file anywhere here or browse from device</div>
+          <div style="margin-top: 12px; display: flex; justify-content: center; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <button type="button" class="mock-browse-btn" id="muBrowseBtn" style="padding: 7px 18px; font-size: 0.84rem;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Browse NDJSON File
+            </button>
+            <span class="mock-format-pill">NDJSON</span>
+            <span class="mock-format-pill">JSONL</span>
+          </div>
           <input type="file" id="muFileInput" accept=".ndjson,.jsonl,.json" style="display:none">
         </div>
 
@@ -1031,6 +1325,278 @@
           <div class="mu-log" id="muLog"></div>
         </div>
 
+      </div>
+    </div>
+
+    <!-- ═══════════════════ MOCK TEST & PYQ TAB ═══════════════════ -->
+    <div class="tab-panel" id="panelMock">
+      <!-- Card 1: Mock Test & PYQ Upload Form -->
+      <div class="glass-card" style="margin-bottom: 24px;">
+        <div class="mock-type-toggle">
+          <button type="button" class="mock-type-btn active" id="mockTypeBtnMock" onclick="setMockType('mock')">
+            🎯 Full Mock Test
+          </button>
+          <button type="button" class="mock-type-btn" id="mockTypeBtnPyq" onclick="setMockType('pyq')">
+            🏛️ Previous Year Paper (PYQ)
+          </button>
+        </div>
+
+        <form id="mockUploadForm">
+          <div class="form-grid">
+
+            <!-- Target Exam Selection -->
+            <div class="form-group">
+              <label>Target Exam <span class="required">*</span></label>
+              <select id="mockExamSelect" required onchange="onMockExamChange()">
+                <option value="ssc-cgl">SSC CGL</option>
+                <option value="ssc-chsl">SSC CHSL</option>
+                <option value="ssc-mts">SSC MTS</option>
+                <option value="ssc-gd">SSC GD</option>
+                <option value="rrb-ntpc">RRB NTPC</option>
+                <option value="rrb-group-d">RRB Group D</option>
+                <option value="rrb-je">RRB JE</option>
+                <option value="ibps-po">IBPS PO</option>
+                <option value="ibps-clerk">IBPS Clerk</option>
+                <option value="sbi-po">SBI PO</option>
+                <option value="sbi-clerk">SBI Clerk</option>
+                <option value="cat">CAT</option>
+                <option value="nda">NDA</option>
+                <option value="cds">CDS</option>
+                <option value="cuet">CUET</option>
+              </select>
+            </div>
+
+            <!-- Tier / Stage Selection -->
+            <div class="form-group">
+              <label>Stage / Tier <span class="required">*</span></label>
+              <select id="mockTierSelect" required onchange="onMockTierChange()">
+                <!-- Populated dynamically -->
+              </select>
+            </div>
+
+            <!-- Blueprint Config Key -->
+            <div class="form-group">
+              <label>Syllabus &amp; Blueprint Config <span class="required">*</span></label>
+              <select id="mockConfigKeySelect" required>
+                <!-- Populated dynamically -->
+              </select>
+              <p class="field-hint">Defines sections, marking scheme (+2 / -0.5), and duration.</p>
+            </div>
+
+            <!-- Test Title -->
+            <div class="form-group">
+              <label>Paper Title <span class="required">*</span></label>
+              <input type="text" id="mockTitleInput" placeholder="e.g. SSC CGL 2024 Tier I (Shift 1) Official Paper" required>
+            </div>
+
+            <!-- Unique Test ID -->
+            <div class="form-group">
+              <label>Unique Test ID <span class="required">*</span></label>
+              <div style="display: flex; gap: 8px;">
+                <input type="text" id="mockIdInput" placeholder="e.g. cgl-pyq-2024-s1" required style="flex: 1;">
+                <button type="button" class="mu-btn" onclick="autoGenerateMockId()" style="flex-shrink: 0; padding: 0 12px; font-size: 0.8rem;">Auto ID</button>
+              </div>
+            </div>
+
+            <!-- PYQ Year (Shown for PYQ) -->
+            <div class="form-group" id="mockYearGroup" style="display: none;">
+              <label>Exam Year</label>
+              <input type="number" id="mockYearInput" placeholder="e.g. 2024" min="2015" max="2030">
+            </div>
+
+            <!-- PYQ Shift / Date (Shown for PYQ) -->
+            <div class="form-group" id="mockShiftGroup" style="display: none;">
+              <label>Shift / Date</label>
+              <input type="text" id="mockShiftInput" placeholder="e.g. Shift 1 (9:00 AM - 10:00 AM)">
+            </div>
+
+            <!-- Access Status -->
+            <div class="form-group">
+              <label>Access Mode</label>
+              <select id="mockAccessSelect">
+                <option value="free">Free for All Candidates</option>
+                <option value="locked">Pro / Access Code Required</option>
+              </select>
+            </div>
+
+            <!-- Display Order -->
+            <div class="form-group">
+              <label>Display Order / Index</label>
+              <input type="number" id="mockOrderInput" value="1" min="1" max="500">
+            </div>
+
+            <!-- Question Source Selection -->
+            <div class="form-group full-width">
+              <div class="mock-section-box">
+                <label style="color: #00a8c6; font-weight: 800; margin-bottom: 8px; display: block;">
+                  📄 Question Set Source &amp; Paper Payload
+                </label>
+                
+                <div style="display: flex; gap: 16px; margin-bottom: 12px; flex-wrap: wrap;">
+                  <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; text-transform: none; font-size: 0.88rem; color: var(--text-primary);">
+                    <input type="radio" name="mockPaperSource" value="upload" checked onchange="onMockSourceModeChange()">
+                    Upload Complete Question Set (JSON / NDJSON)
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; text-transform: none; font-size: 0.88rem; color: var(--text-primary);">
+                    <input type="radio" name="mockPaperSource" value="dynamic" onchange="onMockSourceModeChange()">
+                    Dynamic Generator Slot (Draw from Question Bank)
+                  </label>
+                </div>
+
+                <div id="mockQuestionsUploadArea">
+                  <div class="mock-dropzone" id="mockDropzone">
+                    <div class="mock-drop-default" id="mockDropDefault">
+                      <div class="mock-drop-icon">
+                        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="44" height="44">
+                          <rect x="8" y="6" width="32" height="36" rx="6" fill="rgba(0,229,255,0.08)" stroke="rgba(0,229,255,0.4)" stroke-width="2"/>
+                          <path d="M16 18h16M16 24h10M16 30h8" stroke="#00a8c6" stroke-width="2" stroke-linecap="round"/>
+                          <circle cx="34" cy="34" r="10" fill="#00e5ff" />
+                          <path d="M34 29v10M30 33l4-4 4 4" stroke="#0c2e4e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </div>
+                      <div class="mock-drop-title">Drag &amp; Drop <strong>.ndjson</strong> or <strong>.json</strong> file here</div>
+                      <div class="mock-drop-sub">Accepts SSC full paper NDJSON (one question per line) or JSON array with solutions</div>
+                      <div class="mock-drop-actions">
+                        <button type="button" class="mock-browse-btn" id="mockBrowseBtn">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                          Browse NDJSON / JSON File
+                        </button>
+                        <span class="mock-format-pill">NDJSON</span>
+                        <span class="mock-format-pill">JSONL</span>
+                        <span class="mock-format-pill">JSON</span>
+                      </div>
+                    </div>
+
+                    <!-- Active / Loaded File State -->
+                    <div class="mock-drop-loaded" id="mockDropLoaded" style="display: none;">
+                      <div class="mock-loaded-info">
+                        <div class="mock-loaded-icon">📑</div>
+                        <div class="mock-loaded-meta">
+                          <div class="mock-loaded-name" id="mockLoadedFileName">filename.ndjson</div>
+                          <div class="mock-loaded-sub" id="mockLoadedFileSize">0 KB • 0 questions parsed</div>
+                        </div>
+                      </div>
+                      <div class="mock-loaded-actions">
+                        <button type="button" class="mock-action-btn" id="mockReplaceBtn">🔄 Replace</button>
+                        <button type="button" class="mock-action-btn danger" onclick="clearMockFile()">✕ Clear</button>
+                      </div>
+                    </div>
+
+                    <input type="file" id="mockFileInput" accept=".ndjson,.jsonl,.json,.txt" style="display: none;" onchange="handleMockFileSelect(event)">
+                  </div>
+
+                  <div class="form-group">
+                    <label>Or Paste Raw JSON / NDJSON Array:</label>
+                    <textarea id="mockJsonPaste" rows="5" placeholder='[&#10;  { "question": "...", "options": ["A","B","C","D"], "correctAnswer": 0, "sectionKey": "quant", "solution": "..." }&#10;]' oninput="onMockPasteChange()"></textarea>
+                  </div>
+
+                  <!-- Question Section Counts Chip Bar -->
+                  <div id="mockStatsArea" style="display: none;">
+                    <div class="mock-counts-grid" id="mockCountsGrid">
+                      <!-- Filled dynamically -->
+                    </div>
+                  </div>
+
+                  <!-- Live Parsed Question Preview Table -->
+                  <div class="mock-table-wrap" id="mockPreviewWrap" style="display: none; max-height: 240px; overflow-y: auto;">
+                    <table class="mock-table">
+                      <thead>
+                        <tr>
+                          <th style="width: 40px;">#</th>
+                          <th>Question</th>
+                          <th>Section</th>
+                          <th>Answer</th>
+                        </tr>
+                      </thead>
+                      <tbody id="mockPreviewBody">
+                        <!-- Filled dynamically -->
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div id="mockDynamicNotice" style="display: none; padding: 14px; background: rgba(0,229,255,0.08); border-radius: 12px; font-size: 0.85rem; color: var(--text-glass);">
+                  💡 <strong>Dynamic Mode:</strong> This creates an active test slot. When candidates start this mock, the backend engine will automatically assemble questions matching the difficulty curve (30% easy / 50% medium / 20% hard) from your Cosmos question bank.
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Admin Authentication -->
+            <div class="form-group">
+              <label>Admin Secret Key <span class="required">*</span></label>
+              <input type="password" id="mockAdminSecret" placeholder="Enter ADMIN_SECRET" required>
+              <p class="field-hint">Stored securely in your local browser storage.</p>
+            </div>
+
+            <div class="form-group">
+              <label>API Base URL</label>
+              <input type="text" id="mockApiUrl" value="http://localhost:5000/api/mocktest">
+            </div>
+
+            <!-- Submit Button Row -->
+            <div class="form-group full-width" style="margin-top: 10px;">
+              <button type="submit" class="btn-submit" id="mockDeployBtn">
+                🚀 Deploy Mock / PYQ Paper to Cloud
+              </button>
+            </div>
+
+          </div>
+        </form>
+      </div>
+
+      <!-- Card 2: Manage Live Cosmos DB Slots -->
+      <div class="glass-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary);">🌐 Live Mock Tests &amp; PYQ Slots</h2>
+            <p style="font-size: 0.8rem; color: #4a7a9b;">Real-time slots stored in Cosmos DB (<code>mockTestSlots</code>)</p>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <select id="mockFilterExam" onchange="loadLiveSlots()" style="font-size: 0.85rem; padding: 6px 12px; height: 36px;">
+              <option value="all">All 15 Exams</option>
+              <option value="ssc-cgl">SSC CGL</option>
+              <option value="ssc-chsl">SSC CHSL</option>
+              <option value="ssc-mts">SSC MTS</option>
+              <option value="ssc-gd">SSC GD</option>
+              <option value="rrb-ntpc">RRB NTPC</option>
+              <option value="rrb-group-d">RRB Group D</option>
+              <option value="rrb-je">RRB JE</option>
+              <option value="ibps-po">IBPS PO</option>
+              <option value="ibps-clerk">IBPS Clerk</option>
+              <option value="sbi-po">SBI PO</option>
+              <option value="sbi-clerk">SBI Clerk</option>
+              <option value="cat">CAT</option>
+              <option value="nda">NDA</option>
+              <option value="cds">CDS</option>
+              <option value="cuet">CUET</option>
+            </select>
+            <button type="button" class="mu-btn" onclick="loadLiveSlots()" style="height: 36px; padding: 0 12px; font-size: 0.8rem;">🔄 Refresh</button>
+            <button type="button" class="mu-btn" onclick="seedLiveDefaultSlots()" style="height: 36px; padding: 0 12px; font-size: 0.8rem;">⚡ Seed Defaults</button>
+          </div>
+        </div>
+
+        <div class="mock-table-wrap">
+          <table class="mock-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Exam</th>
+                <th>Stage/Tier</th>
+                <th>Type</th>
+                <th>Title</th>
+                <th>Questions</th>
+                <th>Access</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="mockLiveSlotsBody">
+              <tr>
+                <td colspan="8" style="text-align: center; color: #4a7a9b; padding: 24px;">Click "Refresh" or switch tabs to view live slots</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -1283,8 +1849,13 @@
     function switchTab(tab) {
       document.getElementById('tabSingle').classList.toggle('active', tab === 'single');
       document.getElementById('tabMass').classList.toggle('active', tab === 'mass');
+      document.getElementById('tabMock').classList.toggle('active', tab === 'mock');
       document.getElementById('panelSingle').classList.toggle('active', tab === 'single');
       document.getElementById('panelMass').classList.toggle('active', tab === 'mass');
+      document.getElementById('panelMock').classList.toggle('active', tab === 'mock');
+      if (tab === 'mock') {
+        loadLiveSlots();
+      }
     }
 
     // ─────────────────────────────────────────────
@@ -1533,15 +2104,24 @@
     const muUploadBtn = document.getElementById('muUploadBtn');
     const muLog       = document.getElementById('muLog');
 
-    document.getElementById('muBrowseLink').onclick = () => muFileInput.click();
-    muDrop.onclick = (e) => { if (e.target.id !== 'muBrowseLink') muFileInput.click(); };
-    muFileInput.onchange = (e) => muProcessFile(e.target.files[0]);
+    const muBrowseBtn = document.getElementById('muBrowseBtn');
+    if (muBrowseBtn) muBrowseBtn.onclick = (e) => { e.stopPropagation(); muFileInput.click(); };
+    const muBrowseLink = document.getElementById('muBrowseLink');
+    if (muBrowseLink) muBrowseLink.onclick = (e) => { e.stopPropagation(); muFileInput.click(); };
+    muDrop.onclick = (e) => { if (!e.target.closest('#muBrowseBtn') && !e.target.closest('#muBrowseLink')) muFileInput.click(); };
+    muFileInput.onchange = (e) => {
+      if (e.target.files && e.target.files[0]) {
+        muProcessFile(e.target.files[0]);
+      }
+    };
 
     muDrop.addEventListener('dragover', e => { e.preventDefault(); muDrop.classList.add('over'); });
     muDrop.addEventListener('dragleave', () => muDrop.classList.remove('over'));
     muDrop.addEventListener('drop', e => {
       e.preventDefault(); muDrop.classList.remove('over');
-      if (e.dataTransfer.files[0]) muProcessFile(e.dataTransfer.files[0]);
+      if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+        muProcessFile(e.dataTransfer.files[0]);
+      }
     });
 
     async function muRunDbCheck() {
@@ -1849,6 +2429,613 @@
       );
       muUploadBtn.disabled = false;
     };
+
+    // ─────────────────────────────────────────────
+    //  MOCK TEST & PYQ MANAGEMENT LOGIC
+    // ─────────────────────────────────────────────
+
+    const MOCK_EXAM_PRESETS = {
+      'ssc-cgl': {
+        name: 'SSC CGL',
+        tiers: [
+          { label: 'Tier I (Prelims)', tier: 'Tier I', configKey: 'ssc-cgl-tier1' },
+          { label: 'Tier II (Mains)', tier: 'Tier II', configKey: 'ssc-cgl-tier2' },
+        ]
+      },
+      'ssc-chsl': {
+        name: 'SSC CHSL',
+        tiers: [
+          { label: 'Tier I (Prelims)', tier: 'Tier I', configKey: 'ssc-chsl-tier1' },
+          { label: 'Tier II (Mains)', tier: 'Tier II', configKey: 'ssc-chsl-tier2' },
+        ]
+      },
+      'ssc-mts': {
+        name: 'SSC MTS',
+        tiers: [
+          { label: 'Tier I (CBT)', tier: 'Tier I', configKey: 'ssc-mts' }
+        ]
+      },
+      'ssc-gd': {
+        name: 'SSC GD Constable',
+        tiers: [
+          { label: 'CBT (Computer Based Test)', tier: 'CBT', configKey: 'ssc-gd' }
+        ]
+      },
+      'rrb-ntpc': {
+        name: 'RRB NTPC',
+        tiers: [
+          { label: 'CBT 1 (Stage 1)', tier: 'CBT 1', configKey: 'rrb-ntpc-cbt1' },
+          { label: 'CBT 2 (Stage 2)', tier: 'CBT 2', configKey: 'rrb-ntpc-cbt2' },
+        ]
+      },
+      'rrb-group-d': {
+        name: 'RRB Group D',
+        tiers: [
+          { label: 'CBT (Stage 1)', tier: 'CBT', configKey: 'rrb-group-d' }
+        ]
+      },
+      'rrb-je': {
+        name: 'RRB JE',
+        tiers: [
+          { label: 'CBT 1 (Non-Tech)', tier: 'CBT 1', configKey: 'rrb-je-cbt1' },
+          { label: 'CBT 2 (Technical)', tier: 'CBT 2', configKey: 'rrb-je-cbt2' },
+        ]
+      },
+      'ibps-po': {
+        name: 'IBPS PO',
+        tiers: [
+          { label: 'Prelims (Online Exam)', tier: 'Prelims', configKey: 'ibps-po-prelims' },
+          { label: 'Mains (Main Exam)', tier: 'Mains', configKey: 'ibps-po-mains' },
+        ]
+      },
+      'ibps-clerk': {
+        name: 'IBPS Clerk',
+        tiers: [
+          { label: 'Prelims (Online Exam)', tier: 'Prelims', configKey: 'ibps-clerk-prelims' },
+          { label: 'Mains (Main Exam)', tier: 'Mains', configKey: 'ibps-clerk-mains' },
+        ]
+      },
+      'sbi-po': {
+        name: 'SBI PO',
+        tiers: [
+          { label: 'Prelims (Online Exam)', tier: 'Prelims', configKey: 'sbi-po-prelims' },
+          { label: 'Mains (Main Exam)', tier: 'Mains', configKey: 'sbi-po-mains' },
+        ]
+      },
+      'sbi-clerk': {
+        name: 'SBI Clerk',
+        tiers: [
+          { label: 'Prelims (Online Exam)', tier: 'Prelims', configKey: 'sbi-clerk-prelims' },
+          { label: 'Mains (Main Exam)', tier: 'Mains', configKey: 'sbi-clerk-mains' },
+        ]
+      },
+      'cat': {
+        name: 'CAT (IIMs)',
+        tiers: [
+          { label: 'Standard CAT (VARC/DILR/QA)', tier: 'CAT', configKey: 'cat' }
+        ]
+      },
+      'nda': {
+        name: 'NDA & NA',
+        tiers: [
+          { label: 'Paper I (Mathematics)', tier: 'Maths', configKey: 'nda-maths' },
+          { label: 'Paper II (GAT)', tier: 'GAT', configKey: 'nda-gat' },
+        ]
+      },
+      'cds': {
+        name: 'CDS (Combined Defence Services)',
+        tiers: [
+          { label: 'English & GK (OTA & IMA)', tier: 'OTA/IMA', configKey: 'cds-general' }
+        ]
+      },
+      'cuet': {
+        name: 'CUET (UG)',
+        tiers: [
+          { label: 'Section III (General Test)', tier: 'General Test', configKey: 'cuet-general-test' }
+        ]
+      },
+    };
+
+    let currentMockType = 'mock'; // 'mock' or 'pyq'
+    let parsedMockQuestions = [];
+
+    // Initialize Mock Tab defaults
+    function initMockTab() {
+      const storedSecret = localStorage.getItem('adminSecret');
+      if (storedSecret) {
+        const input = document.getElementById('mockAdminSecret');
+        if (input) input.value = storedSecret;
+      }
+      onMockExamChange();
+      setupMockDropzone();
+    }
+
+    // Set up drag-and-drop & button handlers for Mock NDJSON upload
+    function setupMockDropzone() {
+      const dropzone = document.getElementById('mockDropzone');
+      const fileInput = document.getElementById('mockFileInput');
+      const browseBtn = document.getElementById('mockBrowseBtn');
+      const replaceBtn = document.getElementById('mockReplaceBtn');
+
+      if (!dropzone || !fileInput) return;
+
+      if (browseBtn) {
+        browseBtn.onclick = (e) => {
+          e.stopPropagation();
+          fileInput.click();
+        };
+      }
+
+      if (replaceBtn) {
+        replaceBtn.onclick = (e) => {
+          e.stopPropagation();
+          fileInput.click();
+        };
+      }
+
+      dropzone.onclick = (e) => {
+        if (e.target.closest('.mock-action-btn') || e.target.closest('.mock-browse-btn')) return;
+        fileInput.click();
+      };
+
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evtName => {
+        dropzone.addEventListener(evtName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }, false);
+      });
+
+      ['dragenter', 'dragover'].forEach(evtName => {
+        dropzone.addEventListener(evtName, () => {
+          dropzone.classList.add('over');
+        }, false);
+      });
+
+      ['dragleave', 'drop'].forEach(evtName => {
+        dropzone.addEventListener(evtName, () => {
+          dropzone.classList.remove('over');
+        }, false);
+      });
+
+      dropzone.addEventListener('drop', (e) => {
+        if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+          processMockFile(e.dataTransfer.files[0]);
+        }
+      });
+    }
+
+    function handleMockFileSelect(e) {
+      if (e.target.files && e.target.files[0]) {
+        processMockFile(e.target.files[0]);
+      }
+    }
+
+    function processMockFile(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        const text = evt.target.result;
+        document.getElementById('mockJsonPaste').value = text;
+        parseMockQuestions(text, file.name);
+
+        // Update loaded card state
+        const defaultUI = document.getElementById('mockDropDefault');
+        const loadedUI  = document.getElementById('mockDropLoaded');
+        const dropzone  = document.getElementById('mockDropzone');
+        const nameEl    = document.getElementById('mockLoadedFileName');
+        const sizeEl    = document.getElementById('mockLoadedFileSize');
+
+        if (defaultUI && loadedUI && dropzone) {
+          defaultUI.style.display = 'none';
+          loadedUI.style.display = 'flex';
+          dropzone.classList.add('loaded');
+          if (nameEl) nameEl.textContent = file.name;
+          const sizeKb = (file.size / 1024).toFixed(1);
+          if (sizeEl) sizeEl.textContent = `${sizeKb} KB • ${parsedMockQuestions.length} questions parsed`;
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function clearMockFile() {
+      const fileInput = document.getElementById('mockFileInput');
+      if (fileInput) fileInput.value = '';
+      const pasteArea = document.getElementById('mockJsonPaste');
+      if (pasteArea) pasteArea.value = '';
+      parsedMockQuestions = [];
+      renderMockPreview();
+
+      const defaultUI = document.getElementById('mockDropDefault');
+      const loadedUI  = document.getElementById('mockDropLoaded');
+      const dropzone  = document.getElementById('mockDropzone');
+      if (defaultUI && loadedUI && dropzone) {
+        defaultUI.style.display = 'block';
+        loadedUI.style.display = 'none';
+        dropzone.classList.remove('loaded');
+      }
+      showToast('Mock paper file cleared', 'success');
+    }
+
+    function setMockType(type) {
+      currentMockType = type;
+      document.getElementById('mockTypeBtnMock').classList.toggle('active', type === 'mock');
+      document.getElementById('mockTypeBtnPyq').classList.toggle('active', type === 'pyq');
+      
+      const isPyq = type === 'pyq';
+      document.getElementById('mockYearGroup').style.display = isPyq ? 'flex' : 'none';
+      document.getElementById('mockShiftGroup').style.display = isPyq ? 'flex' : 'none';
+      
+      autoGenerateMockId();
+    }
+
+    function onMockExamChange() {
+      const examSlug = document.getElementById('mockExamSelect').value;
+      const preset = MOCK_EXAM_PRESETS[examSlug];
+      const tierSelect = document.getElementById('mockTierSelect');
+      const configSelect = document.getElementById('mockConfigKeySelect');
+
+      tierSelect.innerHTML = '';
+      configSelect.innerHTML = '';
+
+      if (preset && preset.tiers) {
+        preset.tiers.forEach((t, i) => {
+          const opt1 = document.createElement('option');
+          opt1.value = t.tier;
+          opt1.textContent = t.label;
+          tierSelect.appendChild(opt1);
+
+          const opt2 = document.createElement('option');
+          opt2.value = t.configKey;
+          opt2.textContent = `${t.configKey} (${t.label})`;
+          configSelect.appendChild(opt2);
+        });
+      }
+
+      autoGenerateMockId();
+    }
+
+    function onMockTierChange() {
+      const examSlug = document.getElementById('mockExamSelect').value;
+      const tierVal = document.getElementById('mockTierSelect').value;
+      const preset = MOCK_EXAM_PRESETS[examSlug];
+      const matched = preset?.tiers?.find(t => t.tier === tierVal);
+      if (matched) {
+        document.getElementById('mockConfigKeySelect').value = matched.configKey;
+      }
+      autoGenerateMockId();
+    }
+
+    function autoGenerateMockId() {
+      const examSlug = document.getElementById('mockExamSelect').value;
+      const tier = document.getElementById('mockTierSelect').value;
+      const year = document.getElementById('mockYearInput').value.trim() || new Date().getFullYear();
+      const prefix = examSlug.replace('ssc-', '').replace('rrb-', '').replace('ibps-', '').replace('sbi-', '');
+
+      if (currentMockType === 'pyq') {
+        const shift = document.getElementById('mockShiftInput').value.trim().toLowerCase().replace(/[^a-z0-9]/g, '') || 's1';
+        document.getElementById('mockIdInput').value = `${prefix}-pyq-${year}-${shift}`;
+        document.getElementById('mockTitleInput').value = `${MOCK_EXAM_PRESETS[examSlug]?.name || examSlug.toUpperCase()} ${year} ${tier} (${shift.toUpperCase()}) Official Paper`;
+      } else {
+        const randomNum = Math.floor(Math.random() * 90) + 10;
+        document.getElementById('mockIdInput').value = `${prefix}-mock-${randomNum}`;
+        document.getElementById('mockTitleInput').value = `${MOCK_EXAM_PRESETS[examSlug]?.name || examSlug.toUpperCase()} Full Mock Test ${randomNum}`;
+      }
+    }
+
+    function onMockSourceModeChange() {
+      const mode = document.querySelector('input[name="mockPaperSource"]:checked').value;
+      const uploadArea = document.getElementById('mockQuestionsUploadArea');
+      const dynamicNotice = document.getElementById('mockDynamicNotice');
+      if (mode === 'upload') {
+        uploadArea.style.display = 'block';
+        dynamicNotice.style.display = 'none';
+      } else {
+        uploadArea.style.display = 'none';
+        dynamicNotice.style.display = 'block';
+      }
+    }
+
+    function onMockPasteChange() {
+      const text = document.getElementById('mockJsonPaste').value.trim();
+      parseMockQuestions(text);
+    }
+
+    function parseMockQuestions(text, fileName = '') {
+      parsedMockQuestions = [];
+      if (!text) {
+        renderMockPreview();
+        return 0;
+      }
+
+      try {
+        let parsed = null;
+        const trimmed = text.trim();
+        if (trimmed.startsWith('[')) {
+          parsed = JSON.parse(trimmed);
+        } else if (trimmed.startsWith('{') && (trimmed.endsWith('}') || !trimmed.includes('\n'))) {
+          const obj = JSON.parse(trimmed);
+          parsed = obj.questions || [obj];
+        } else {
+          // NDJSON / JSONL format: line-by-line JSON
+          const lines = trimmed.split('\n');
+          const results = [];
+          let parseErrors = 0;
+          for (const line of lines) {
+            const l = line.trim();
+            if (!l) continue;
+            try {
+              results.push(JSON.parse(l));
+            } catch {
+              parseErrors++;
+            }
+          }
+          parsed = results;
+          if (parseErrors > 0) {
+            console.warn(`Encountered ${parseErrors} unparseable lines in NDJSON payload.`);
+          }
+        }
+
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          parsedMockQuestions = parsed;
+          showToast(`Parsed ${parsed.length} questions successfully${fileName ? ' from ' + fileName : ''}!`, 'success');
+        } else if (Array.isArray(parsed) && parsed.length === 0) {
+          showToast('No valid questions found in file/input', 'error');
+        }
+      } catch (err) {
+        console.warn('Mock question parse error:', err.message);
+        showToast('Failed to parse NDJSON/JSON: ' + err.message, 'error');
+      }
+
+      renderMockPreview();
+      return parsedMockQuestions.length;
+    }
+
+    function renderMockPreview() {
+      const statsArea = document.getElementById('mockStatsArea');
+      const countsGrid = document.getElementById('mockCountsGrid');
+      const previewWrap = document.getElementById('mockPreviewWrap');
+      const previewBody = document.getElementById('mockPreviewBody');
+
+      if (parsedMockQuestions.length === 0) {
+        statsArea.style.display = 'none';
+        previewWrap.style.display = 'none';
+        return;
+      }
+
+      statsArea.style.display = 'block';
+      previewWrap.style.display = 'block';
+
+      const counts = { total: parsedMockQuestions.length };
+      parsedMockQuestions.forEach(q => {
+        const sec = (q.sectionKey || q.subject || q.section || 'General').toLowerCase();
+        counts[sec] = (counts[sec] || 0) + 1;
+      });
+
+      countsGrid.innerHTML = `
+        <div class="mock-count-chip">
+          <div class="mock-count-num">${counts.total}</div>
+          <div class="mock-count-lbl">Total Questions</div>
+        </div>
+      `;
+
+      Object.entries(counts).forEach(([k, v]) => {
+        if (k === 'total') return;
+        const chip = document.createElement('div');
+        chip.className = 'mock-count-chip';
+        chip.innerHTML = `
+          <div class="mock-count-num">${v}</div>
+          <div class="mock-count-lbl">${k}</div>
+        `;
+        countsGrid.appendChild(chip);
+      });
+
+      previewBody.innerHTML = '';
+      parsedMockQuestions.slice(0, 25).forEach((q, idx) => {
+        const tr = document.createElement('tr');
+        const ans = q.correctAnswer !== undefined ? q.correctAnswer : (q.answer || 'A');
+        tr.innerHTML = `
+          <td style="font-family: monospace; color: #4a7a9b;">${idx + 1}</td>
+          <td style="max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(q.question || '')}</td>
+          <td><span class="mu-badge mu-badge-math">${q.sectionKey || q.subject || 'General'}</span></td>
+          <td><strong>${ans}</strong></td>
+        `;
+        previewBody.appendChild(tr);
+      });
+    }
+
+    // Submit / Deploy Form Handler
+    document.getElementById('mockUploadForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const adminSecret = document.getElementById('mockAdminSecret').value.trim();
+      if (!adminSecret) {
+        showToast('Please provide the Admin Secret Key', 'error');
+        return;
+      }
+      localStorage.setItem('adminSecret', adminSecret);
+
+      const examSlug = document.getElementById('mockExamSelect').value;
+      const tier = document.getElementById('mockTierSelect').value;
+      const configKey = document.getElementById('mockConfigKeySelect').value;
+      const title = document.getElementById('mockTitleInput').value.trim();
+      const id = document.getElementById('mockIdInput').value.trim();
+      const isFree = document.getElementById('mockAccessSelect').value === 'free';
+      const order = parseInt(document.getElementById('mockOrderInput').value) || 1;
+      const year = document.getElementById('mockYearInput').value ? parseInt(document.getElementById('mockYearInput').value) : null;
+      const shift = document.getElementById('mockShiftInput').value.trim() || null;
+      const apiUrl = document.getElementById('mockApiUrl').value.trim() || 'http://localhost:5000/api/mocktest';
+
+      const sourceMode = document.querySelector('input[name="mockPaperSource"]:checked').value;
+      const deployBtn = document.getElementById('mockDeployBtn');
+      deployBtn.disabled = true;
+      deployBtn.textContent = '⏳ Deploying to Cosmos DB...';
+
+      const slotData = {
+        id,
+        examSlug,
+        configKey,
+        title,
+        tier,
+        type: currentMockType,
+        year,
+        shift,
+        isFree,
+        order,
+      };
+
+      try {
+        if (sourceMode === 'upload' && parsedMockQuestions.length > 0) {
+          const res = await fetch(`${apiUrl}/admin/upload-paper`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-admin-secret': adminSecret,
+            },
+            body: JSON.stringify({
+              slot: slotData,
+              questions: parsedMockQuestions,
+            }),
+          });
+
+          const data = await res.json();
+          if (res.ok) {
+            showToast(`✅ Successfully deployed ${title} (${data.totalQuestions} questions)!`, 'success');
+            loadLiveSlots();
+            document.getElementById('mockJsonPaste').value = '';
+            parsedMockQuestions = [];
+            renderMockPreview();
+          } else {
+            showToast(data.error || 'Failed to deploy mock paper', 'error');
+          }
+        } else {
+          const res = await fetch(`${apiUrl}/admin/slots`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-admin-secret': adminSecret,
+            },
+            body: JSON.stringify(slotData),
+          });
+
+          const data = await res.json();
+          if (res.ok) {
+            showToast(`✅ Created dynamic slot: ${title}!`, 'success');
+            loadLiveSlots();
+          } else {
+            showToast(data.error || 'Failed to create slot', 'error');
+          }
+        }
+      } catch (err) {
+        showToast('Network error connecting to backend API: ' + err.message, 'error');
+      } finally {
+        deployBtn.disabled = false;
+        deployBtn.textContent = '🚀 Deploy Mock / PYQ Paper to Cloud';
+      }
+    });
+
+    // Load Live Slots Table
+    async function loadLiveSlots() {
+      const examFilter = document.getElementById('mockFilterExam').value;
+      const apiUrl = document.getElementById('mockApiUrl').value.trim() || 'http://localhost:5000/api/mocktest';
+      const adminSecret = document.getElementById('mockAdminSecret')?.value.trim() || localStorage.getItem('adminSecret') || '';
+      const tbody = document.getElementById('mockLiveSlotsBody');
+
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #4a7a9b; padding: 20px;">Fetching slots from Cosmos DB...</td></tr>`;
+
+      try {
+        let res = null;
+        if (adminSecret) {
+          res = await fetch(`${apiUrl}/admin/all-slots?exam=${encodeURIComponent(examFilter)}`, {
+            headers: { 'x-admin-secret': adminSecret }
+          });
+        }
+
+        let slots = [];
+        if (res && res.ok) {
+          const data = await res.json();
+          slots = data.slots || [];
+        } else {
+          const target = examFilter === 'all' ? 'ssc-cgl' : examFilter;
+          const pubRes = await fetch(`${apiUrl}/${target}/slots`);
+          if (pubRes.ok) {
+            const pubData = await pubRes.json();
+            slots = pubData.slots || [];
+          }
+        }
+
+        if (slots.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #4a7a9b; padding: 24px;">No slots found for this filter. Click "Seed Defaults" to load preset papers.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = '';
+        slots.forEach(slot => {
+          const tr = document.createElement('tr');
+          const isPyq = slot.type === 'pyq' || slot.id.includes('pyq');
+          tr.innerHTML = `
+            <td><code>${slot.id}</code></td>
+            <td><strong>${slot.examSlug}</strong></td>
+            <td>${slot.tier || '—'}</td>
+            <td><span class="${isPyq ? 'badge-pyq' : 'badge-mock'}">${isPyq ? 'PYQ' : 'MOCK'}</span></td>
+            <td>${slot.title}</td>
+            <td>${slot.questionCount || (slot.hasFixedPaper ? 'Fixed' : 'Dynamic')}</td>
+            <td><span class="${slot.isFree ? 'badge-free' : 'badge-pro'}">${slot.isFree ? 'FREE' : 'PRO'}</span></td>
+            <td>
+              <button class="btn-action-del" onclick="deleteLiveSlot('${slot.id}', '${slot.examSlug}')">Delete</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #ef4444; padding: 20px;">Failed to connect to API: ${err.message}</td></tr>`;
+      }
+    }
+
+    async function deleteLiveSlot(slotId, examSlug) {
+      if (!confirm(`Are you sure you want to delete slot "${slotId}"?`)) return;
+      const adminSecret = document.getElementById('mockAdminSecret')?.value.trim() || localStorage.getItem('adminSecret') || '';
+      const apiUrl = document.getElementById('mockApiUrl').value.trim() || 'http://localhost:5000/api/mocktest';
+
+      try {
+        const res = await fetch(`${apiUrl}/admin/slots/${slotId}?examSlug=${encodeURIComponent(examSlug)}`, {
+          method: 'DELETE',
+          headers: { 'x-admin-secret': adminSecret }
+        });
+        if (res.ok) {
+          showToast(`Deleted slot ${slotId}`, 'success');
+          loadLiveSlots();
+        } else {
+          showToast('Failed to delete slot', 'error');
+        }
+      } catch (err) {
+        showToast('Network error: ' + err.message, 'error');
+      }
+    }
+
+    async function seedLiveDefaultSlots() {
+      const adminSecret = document.getElementById('mockAdminSecret')?.value.trim() || localStorage.getItem('adminSecret') || '';
+      const apiUrl = document.getElementById('mockApiUrl').value.trim() || 'http://localhost:5000/api/mocktest';
+
+      try {
+        const res = await fetch(`${apiUrl}/admin/slots/seed`, {
+          method: 'POST',
+          headers: { 'x-admin-secret': adminSecret }
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(`Seeded ${data.totalSeeded || 0} default slots!`, 'success');
+          loadLiveSlots();
+        } else {
+          showToast(data.error || 'Failed to seed default slots', 'error');
+        }
+      } catch (err) {
+        showToast('Network error: ' + err.message, 'error');
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initMockTab();
+    });
   </script>
 </body>
 </html>
