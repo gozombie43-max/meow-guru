@@ -305,12 +305,30 @@ export async function uploadFullPaper({ slotData, questions }) {
 
   // 2. Also optionally batch upsert questions into question bank
   let insertedToBank = 0;
-  for (const q of normalizedQuestions) {
+  if (normalizedQuestions.length > 0) {
     try {
-      await questionsContainer.items.upsert(q);
-      insertedToBank++;
+      const operations = normalizedQuestions.map((q) => ({
+        operationType: 'Upsert',
+        resourceBody: q,
+      }));
+
+      const bulkResponse = await questionsContainer.items.bulk(operations);
+
+      // Count successfully inserted items (status codes 200, 201)
+      insertedToBank = bulkResponse.filter(
+        (r) => r.statusCode >= 200 && r.statusCode < 300
+      ).length;
+
+      // Log warnings for any items that failed
+      for (let i = 0; i < bulkResponse.length; i++) {
+        const r = bulkResponse[i];
+        if (r.statusCode >= 400) {
+          const failedId = normalizedQuestions[i]?.id || 'unknown';
+          console.warn(`Bulk upsert warning for question ${failedId}: status ${r.statusCode}`);
+        }
+      }
     } catch (err) {
-      console.warn(`Upsert question ${q.id} warning:`, err.message);
+      console.error('Bulk upsert failed, some or all questions may not have been saved to the bank:', err.message);
     }
   }
 

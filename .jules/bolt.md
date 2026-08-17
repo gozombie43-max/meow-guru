@@ -1,3 +1,3 @@
-## 2024-05-18 - MathRenderer optimization
-**Learning:** Parsing strings and executing `katex.renderToString` on every render causes significant main thread blocking, specifically because quiz option updates trigger re-renders that re-evaluate all formulas. `React.memo` effectively caches the complex string parsing and rendering per distinct text input.
-**Action:** Always verify memoization strategies around third-party, CPU-heavy DOM manipulation libraries like `katex`, particularly when integrated into rapidly changing state structures like quiz selections.
+## 2024-08-17 - Cosmos DB Bulk Upsert Performance
+**Learning:** Sequential DB operations in Cosmos DB take a long time due to individual database roundtrips. In this case, 100 upserts sequentially took ~530ms, while Cosmos DB bulk API (`container.items.bulk(operations)`) took ~15ms, significantly reducing latency and Request Unit (RU) overhead. The Cosmos DB JS SDK's `OperationResponse` object does not contain an `operationIndex` property.
+**Action:** When performing multiple database operations (inserts, updates, deletes) in a loop using Cosmos DB, always prefer the `.bulk()` execution API for batching the requests to reduce latency and improve throughput. When matching responses to original requests, iterate manually rather than relying on non-existent index properties on the response.
