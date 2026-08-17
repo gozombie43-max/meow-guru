@@ -2,6 +2,7 @@
 import express from "express";
 import { v4 as uuidv4 } from "uuid";
 import { getNotesContainer } from "../containerStore.js";
+import adminAuth from "../middleware/auth.js";
 
 const router = express.Router();
 
@@ -50,7 +51,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // POST /api/notes
-router.post("/", async (req, res) => {
+router.post("/", adminAuth, async (req, res) => {
   try {
     const note = {
       id:        uuidv4(),
@@ -67,7 +68,7 @@ router.post("/", async (req, res) => {
 });
 
 // PUT /api/notes/:id
-router.put("/:id", async (req, res) => {
+router.put("/:id", adminAuth, async (req, res) => {
   try {
     const { resource: existing } = await getNotesContainer()
       .item(req.params.id, req.params.id)
@@ -92,7 +93,7 @@ router.put("/:id", async (req, res) => {
 });
 
 // DELETE /api/notes/:id
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", adminAuth, async (req, res) => {
   try {
     await getNotesContainer()
       .item(req.params.id, req.params.id)

@@ -5,6 +5,8 @@ import { PDFParse } from "pdf-parse";
 import sharp from "sharp";
 import { createWorker, PSM } from "tesseract.js";
 import { chatComplete, chatCompleteMessages, chatJSON } from "../ai/azureClient.js";
+import adminAuth from "../middleware/auth.js";
+import { protect } from "../middleware/protect.js";
 
 const router = express.Router();
 
@@ -268,7 +270,7 @@ async function extractAttachmentContext(attachment) {
 }
 
 // ── 1. Generate Questions ─────────────────────────────
-router.post("/generate-questions", async (req, res) => {
+router.post("/generate-questions", adminAuth, async (req, res) => {
   const { topic, difficulty = "medium", count = 5 } = req.body;
 
   if (!topic) return res.status(400).json({ error: "topic is required" });
@@ -298,7 +300,7 @@ Return a JSON array like this:
 });
 
 // ── 2. Generate Explanation for a Question ────────────
-router.post("/explain", async (req, res) => {
+router.post("/explain", protect, async (req, res) => {
   const { question, correctAnswer, options } = req.body;
 
   if (!question) return res.status(400).json({ error: "question is required" });
@@ -319,7 +321,7 @@ Give a clear step-by-step explanation. Keep it concise.`;
 });
 
 // ── 2b. Tutor chat for submitted quiz questions ───────
-router.post("/tutor-chat", tutorUpload.single("attachment"), async (req, res) => {
+router.post("/tutor-chat", protect, tutorUpload.single("attachment"), async (req, res) => {
   const context = req.body.context;
   const message = req.body.message;
   const history = parseMaybeJSON(req.body.history, []);
@@ -464,7 +466,7 @@ Use this as background for the conversation. Reply only when the student asks a 
 });
 
 // ── 3. Tag a Question ─────────────────────────────────
-router.post("/tag-question", async (req, res) => {
+router.post("/tag-question", adminAuth, async (req, res) => {
   const { question } = req.body;
 
   if (!question) return res.status(400).json({ error: "question is required" });

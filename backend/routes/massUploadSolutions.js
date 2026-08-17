@@ -16,6 +16,7 @@ import JSZip from "jszip";
 import { BlobServiceClient } from "@azure/storage-blob";
 import sharp from "sharp";
 import { getQuestionsContainer } from "../containerStore.js";
+import adminAuth from "../middleware/auth.js";
 
 const router = express.Router();
 const upload = multer({
@@ -105,6 +106,7 @@ function isImage(filename) {
 
 router.post(
   "/mass-upload-solutions",
+  adminAuth,
   upload.single("zipFile"),
   async (req, res) => {
     // 1. Validate zip

@@ -4,7 +4,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import api, {
   AUTH_TOKEN_CHANGED_EVENT,
   AUTH_TOKEN_STORAGE_KEY,
-  getStoredRefreshToken,
+  requestTokenRefresh,
   setStoredRefreshToken,
 } from '@/lib/axios';
 
@@ -85,19 +85,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const refreshAccessToken = useCallback(async () => {
-    const refreshToken = getStoredRefreshToken();
-    const { data } = await api.post('/auth/refresh', refreshToken ? { refreshToken } : {});
-    persistToken(data.token);
-    if (data.refreshToken) setStoredRefreshToken(data.refreshToken);
-    return data.token as string;
-  }, [persistToken, getStoredRefreshToken, setStoredRefreshToken]);
+    const newToken = await requestTokenRefresh();
+    if (!newToken) {
+      throw new Error('Failed to refresh token');
+    }
+    setToken(newToken);
+    return newToken;
+  }, []);
 
   const fetchUser = useCallback(async (t?: string) => {
     const res = await api.get('/users/me', t ? {
       headers: { Authorization: `Bearer ${t}` },
     } : undefined);
     setUser(res.data);
-  }, [setStoredRefreshToken]);
+  }, []);
 
   const clearAuthState = useCallback(() => {
     setToken(null);

@@ -292,7 +292,7 @@ function Confetti() {
    MAIN BATTLE PAGE
    ════════════════════════════════════════════════════════════════════════════ */
 export default function BattlePage() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [battleState, setBattleState]   = useState<BattleState>("lobby");
   const [playerName, setPlayerName]     = useState("");
   const [roomCode, setRoomCode]         = useState("");
@@ -327,10 +327,24 @@ export default function BattlePage() {
 
   // ── Socket setup ────────────────────────────────────────────────────────────
   useEffect(() => {
-    const socket = getSocket();
+    const socket = getSocket(token || undefined);
     setMySocketId(socket.id ?? "");
 
-    socket.on("connect", () => setMySocketId(socket.id ?? ""));
+    const onConnect = () => {
+      setMySocketId(socket.id ?? "");
+      setError("");
+    };
+
+    const onConnectError = (err: Error) => {
+      if (err.message?.includes("Authentication") || err.message?.includes("token")) {
+        setError("Please log in to participate in 1v1 Battle Mode.");
+      } else {
+        setError(err.message || "Failed to connect to battle server");
+      }
+    };
+
+    socket.on("connect", onConnect);
+    socket.on("connect_error", onConnectError);
 
     socket.on("room:created", ({ code }: { code: string }) => {
       setRoomCode(code);
@@ -389,7 +403,8 @@ export default function BattlePage() {
     });
 
     return () => {
-      socket.off("connect");
+      socket.off("connect", onConnect);
+      socket.off("connect_error", onConnectError);
       socket.off("room:created");
       socket.off("room:joined");
       socket.off("room:error");
@@ -401,18 +416,22 @@ export default function BattlePage() {
       socket.off("game:end");
       socket.off("room:playerLeft");
     };
-  }, [mySocketId]);
+  }, [mySocketId, token]);
 
   const topicOptions = TOPICS_BY_SUBJECT[subject] || TOPICS_BY_SUBJECT.mathematics;
   const subjectLabel = SUBJECTS.find(s => s.value === subject)?.label || "Subject";
 
   // ── Actions ─────────────────────────────────────────────────────────────────
   const createRoom = () => {
+    if (!token && !(typeof window !== 'undefined' && localStorage.getItem("token"))) {
+      setError("Please log in to create a battle room.");
+      return;
+    }
     if (!playerName.trim()) { setError("Enter your name first"); return; }
     if (!subject) { setError("Select a subject"); return; }
     if (!topic) { setError("Select a topic"); return; }
     setError("");
-    getSocket().emit("room:create", {
+    getSocket(token || undefined).emit("room:create", {
       playerName: playerName.trim(),
       subject,
       topic,
@@ -421,16 +440,20 @@ export default function BattlePage() {
   };
 
   const joinRoom = () => {
+    if (!token && !(typeof window !== 'undefined' && localStorage.getItem("token"))) {
+      setError("Please log in to join a battle room.");
+      return;
+    }
     if (!playerName.trim()) { setError("Enter your name first"); return; }
     if (!/^\d{4}$/.test(joinCode)) { setError("Enter 4-digit room code"); return; }
     setError("");
-    getSocket().emit("room:join", { code: joinCode, playerName: playerName.trim() });
+    getSocket(token || undefined).emit("room:join", { code: joinCode, playerName: playerName.trim() });
   };
 
   const submitAnswer = (answer: string) => {
     if (isSubmitted) return;
     setSelected(answer);
-    getSocket().emit("game:answer", { code: activeCode, answer });
+    getSocket(token || undefined).emit("game:answer", { code: activeCode, answer });
   };
 
   const copyCode = () => {

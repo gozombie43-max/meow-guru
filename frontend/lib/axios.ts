@@ -19,7 +19,7 @@ export const setStoredRefreshToken = (token: string | null) => {
   }
 };
 
-const updateStoredToken = (token: string | null) => {
+export const updateStoredToken = (token: string | null) => {
   if (typeof window === 'undefined') return;
 
   if (token) {
@@ -53,6 +53,44 @@ const shouldRetryNetwork = (status: number | undefined, method: string) => {
   return RETRYABLE_STATUS.has(status);
 };
 
+// Single in-flight refresh promise to cleanly handle concurrent 401s
+let inFlightRefreshPromise: Promise<string | null> | null = null;
+
+export const requestTokenRefresh = async (): Promise<string | null> => {
+  if (inFlightRefreshPromise) return inFlightRefreshPromise;
+
+  inFlightRefreshPromise = (async () => {
+    try {
+      const refreshToken = getStoredRefreshToken();
+      const { data } = await axios.post(
+        `${defaultApiBase}/auth/refresh`,
+        refreshToken ? { refreshToken } : {},
+        { withCredentials: true }
+      );
+
+      if (data.refreshToken) {
+        setStoredRefreshToken(data.refreshToken);
+      }
+      if (data.token) {
+        updateStoredToken(data.token);
+        return data.token as string;
+      }
+      return null;
+    } catch (refreshErr) {
+      const refreshStatus = (refreshErr as { response?: { status?: number } })?.response?.status;
+      if (refreshStatus === 401 || refreshStatus === 403) {
+        updateStoredToken(null);
+        setStoredRefreshToken(null);
+      }
+      return null;
+    } finally {
+      inFlightRefreshPromise = null;
+    }
+  })();
+
+  return inFlightRefreshPromise;
+};
+
 // Attach token from localStorage to every request
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
@@ -69,28 +107,19 @@ api.interceptors.response.use(
     const original = error.config || {};
     const status = error.response?.status;
     const method = (original.method || 'get').toLowerCase();
+    const isRefreshCall = typeof original.url === 'string' && original.url.includes('/auth/refresh');
 
-    if (status === 401 && !original._retry) {
+    if (status === 401 && !original._retry && !isRefreshCall) {
       original._retry = true;
       try {
-        const refreshToken = getStoredRefreshToken();
-        const { data } = await axios.post(
-          `${defaultApiBase}/auth/refresh`,
-          refreshToken ? { refreshToken } : {},
-          { withCredentials: true }
-        );
-        if (data.refreshToken) setStoredRefreshToken(data.refreshToken);
-        updateStoredToken(data.token);
-        // Retry original request with new token
-        original.headers.Authorization = `Bearer ${data.token}`;
-        return api(original);
-      } catch (refreshErr) {
-        // Refresh failed — clear token only for real auth failures
-        const refreshStatus = (refreshErr as { response?: { status?: number } })?.response?.status;
-        if (refreshStatus === 401 || refreshStatus === 403) {
-          updateStoredToken(null);
-          setStoredRefreshToken(null);
+        const newToken = await requestTokenRefresh();
+        if (newToken) {
+          original.headers = original.headers || {};
+          original.headers.Authorization = `Bearer ${newToken}`;
+          return api(original);
         }
+      } catch {
+        // Handled in requestTokenRefresh
       }
     }
 

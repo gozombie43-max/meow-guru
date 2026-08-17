@@ -6,6 +6,7 @@ import {
   StorageSharedKeyCredential,
   generateBlobSASQueryParameters
 } from '@azure/storage-blob';
+import adminAuth from "../middleware/auth.js";
 
 const router = express.Router();
 const upload = multer({
@@ -202,7 +203,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.post('/', upload.fields([
+router.post('/', adminAuth, upload.fields([
   { name: 'files', maxCount: 20 },
   { name: 'pdfs', maxCount: 20 },
   { name: 'pdf', maxCount: 20 }

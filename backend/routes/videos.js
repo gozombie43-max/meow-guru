@@ -6,6 +6,7 @@ import {
   BlobSASPermissions,
   StorageSharedKeyCredential
 } from '@azure/storage-blob';
+import adminAuth from "../middleware/auth.js";
 
 const router = express.Router();
 const VIDEO_DB_NAME = process.env.VIDEO_COSMOS_DB || 'quizDB';
@@ -235,7 +236,7 @@ router.get('/stream/:id', async (req, res) => {
 });
 
 // POST /api/videos/metadata
-router.post('/metadata', async (req, res) => {
+router.post('/metadata', adminAuth, async (req, res) => {
   try {
     const { subject, topic, chapter, blobPath, duration, order, description } = req.body;
 
@@ -259,7 +260,7 @@ router.post('/metadata', async (req, res) => {
 });
 
 // DELETE /api/videos/:id
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', adminAuth, async (req, res) => {
   try {
     const { resources } = await dbContainer.items
       .query({

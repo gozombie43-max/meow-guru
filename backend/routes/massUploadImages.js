@@ -12,6 +12,7 @@ import { BlobServiceClient } from "@azure/storage-blob";
 import { v4 as uuidv4 } from "uuid";
 import sharp from "sharp";
 import { getQuestionsContainer } from "../containerStore.js"; // ✅ use shared container
+import adminAuth from "../middleware/auth.js";
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 200 * 1024 * 1024 } }); // 200MB
@@ -139,6 +140,7 @@ async function patchQuestionImage(questionId, questionImage) {
 
 router.post(
   "/mass-upload-images",
+  adminAuth,
   upload.single("zipFile"),
   async (req, res) => {
     // 1. Basic validation
@@ -252,6 +254,7 @@ router.post(
 
 router.post(
   "/mass-upload-question-images",
+  adminAuth,
   upload.single("zipFile"),
   async (req, res) => {
     if (!req.file) {

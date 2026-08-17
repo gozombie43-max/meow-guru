@@ -1,5 +1,6 @@
 // backend/middleware/protect.js
 import { verifyToken } from '../auth/jwt.js';
+import { isRevoked } from '../auth/jwt.js';
 
 export const protect = (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -12,6 +13,9 @@ export const protect = (req, res, next) => {
 
   try {
     const decoded = verifyToken(token);
+    if (decoded.jti && isRevoked(decoded.jti)) {
+      return res.status(401).json({ error: 'Token has been revoked' });
+    }
     req.user = decoded; // { id, email, name }
     next();
   } catch (err) {

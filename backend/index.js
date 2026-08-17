@@ -4,9 +4,10 @@ import { createServer } from 'http';
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import session from 'express-session';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { errorHandler } from './middleware/errorHandler.js';
+import { globalLimiter, authLimiter, aiLimiter, uploadLimiter } from './middleware/rateLimiter.js';
 import passport from './auth/passport.js';
 import { initPassport } from './auth/passport.js';
 import { initDB, initUsersDB, initNotesDB, initAccessCodesDB, initMockAttemptsDB, initMockSlotsDB } from './cosmos.js';
@@ -74,25 +75,16 @@ app.options(/(.*)/, cors(corsOptions)); // handle preflight for all routes
 app.use(express.json({ limit: '10mb' }));
 app.use(cookieParser());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-app.use(session({
-  secret:            process.env.SESSION_SECRET,
-  resave:            false,
-  saveUninitialized: false,
-  cookie: {
-    secure:   isProd,
-    sameSite: isProd ? 'none' : 'lax',
-    maxAge:   24 * 60 * 60 * 1000,
-  },
-}));
+app.use(globalLimiter);
 
 app.use(passport.initialize());
 
 // ── Health checks ──────────────────────────────────────
+let isReady = false;
 app.get('/', (req, res) => res.send('Server running 🚀'));
 const healthCheck = (req, res) => {
-  res.status(200).json({
-    ok: true,
+  res.status(isReady ? 200 : 503).json({
+    ok: isReady,
     service: 'backend',
     uptimeSeconds: Math.round(process.uptime()),
     timestamp: new Date().toISOString(),
@@ -102,11 +94,7 @@ const healthCheck = (req, res) => {
 app.get('/health', healthCheck);
 app.get('/api/health', healthCheck);
 
-// ── Start server ───────────────────────────────────────
 const PORT = process.env.PORT || 10000;
-httpServer.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on port ${PORT} 🚀`);
-});
 
 // ── Retry helper ───────────────────────────────────────
 async function connectWithRetry(fn, name, retries = 5, delay = 3000) {
@@ -123,7 +111,7 @@ async function connectWithRetry(fn, name, retries = 5, delay = 3000) {
   throw new Error(`${name} failed after ${retries} retries`);
 }
 
-// ── Init DB + Routes after server is up ───────────────
+// ── Init DB + Routes, then start listening ───────────
 async function initWithRetry() {
   try {
     const questionsContainer    = await connectWithRetry(initDB, 'Questions DB');
@@ -146,24 +134,33 @@ async function initWithRetry() {
 
     app.use('/api/questions', questionRoutes);
     app.use('/api/mocktest', mocktestRoutes);
-    app.use('/api/ai', aiRoutes);
+    app.use('/api/ai', aiLimiter, aiRoutes);
     app.use('/api/agent', cognitiveMapperRouter);
     app.use('/api/adaptive-quiz', adaptiveQuizRouter);
-    app.use('/api/upload', imageUploadRoutes);
+    app.use('/api/upload', uploadLimiter, imageUploadRoutes);
     app.use('/api', massUploadImages);
     app.use('/api', massUploadSolutions);
-    app.use('/api/upload-note-image', uploadNoteImageRoutes);
+    app.use('/api/upload-note-image', uploadLimiter, uploadNoteImageRoutes);
     app.use('/api/notes', notesRoutes);
-    app.use('/auth', initAuthRoutes(usersContainer));
+    app.use('/auth', authLimiter, initAuthRoutes(usersContainer));
     app.use('/users', initUserRoutes(usersContainer));
     app.use('/api/videos', videoRoutes);
     app.use('/api/pdfs', pdfRoutes);
     app.use('/api/access-code', accessCodeRoutes);
 
+    // Global error handler — must be registered AFTER all routes
+    app.use(errorHandler);
+
     console.log('All routes registered ✅');
+    isReady = true;
+
+    httpServer.listen(PORT, '0.0.0.0', () => {
+      console.log(`Server running on port ${PORT} 🚀`);
+    });
 
   } catch (err) {
     console.error('DB init failed ❌', err.message);
+    process.exit(1);
   }
 }
 

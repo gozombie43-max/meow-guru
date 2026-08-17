@@ -6,6 +6,7 @@ import {
   nextQuestion, getScores, getRoomBySocket,
 } from './roomManager.js';
 import { getQuestionsContainer } from '../containerStore.js';
+import { verifyToken } from '../auth/jwt.js';
 
 function normalizeSearchKey(value) {
   return String(value || '')
@@ -27,17 +28,38 @@ function matchesNormalizedTopic(question, normalizedTopic) {
 }
 
 const REVEAL_DELAY  = 2000; // ms to show results before next question
+const ROOM_CREATE_COOLDOWN_MS = 10_000; // per-socket room creation throttle
 
 export function initBattleSocket(httpServer, corsOrigin) {
   const io = new Server(httpServer, {
     cors: { origin: corsOrigin, credentials: true },
   });
 
+  // ── Socket authentication ─────────────────────────────
+  io.use((socket, next) => {
+    const token = socket.handshake.auth?.token;
+    if (!token) return next(new Error('Authentication required'));
+    try {
+      socket.user = verifyToken(token);
+      next();
+    } catch {
+      next(new Error('Invalid or expired token'));
+    }
+  });
+
   io.on('connection', (socket) => {
-    console.log(`Socket connected: ${socket.id}`);
+    console.log(`Socket connected: ${socket.id} (user: ${socket.user?.email || socket.user?.id})`);
+    let lastRoomCreateTime = 0;
 
     // ── Create room ──────────────────────────────────────
     socket.on('room:create', async ({ playerName, subject = 'mathematics', topic = 'all', questionCount = 10 }) => {
+      const now = Date.now();
+      if (now - lastRoomCreateTime < ROOM_CREATE_COOLDOWN_MS) {
+        socket.emit('room:error', { message: 'Please wait before creating another room.' });
+        return;
+      }
+      lastRoomCreateTime = now;
+
       const code = createRoom(socket.id, playerName, subject, topic, questionCount);
       socket.join(code);
       socket.emit('room:created', { code, playerName });
@@ -143,13 +165,24 @@ async function startGame(io, code) {
     }
 
     const normalizedTopic = room.topic && room.topic !== 'all' ? normalizeSearchKey(room.topic) : null;
+
+    // Push topic filter into Cosmos query when possible to avoid cross-partition fan-out.
+    // Since the questions container is partitioned on /topic, an exact topic match
+    // becomes a single-partition query — much cheaper in RUs.
+    if (normalizedTopic && room.topic) {
+      filters.push('LOWER(c.topic) = LOWER(@topic)');
+      parameters.push({ name: '@topic', value: room.topic });
+    }
+
     const whereClause = filters.length ? ` WHERE ${filters.join(' AND ')}` : '';
+    const needsCrossPartition = !normalizedTopic; // only fan out when no topic specified
 
     let { resources } = await container.items.query(
       { query: `SELECT * FROM c${whereClause}`, parameters },
-      { enableCrossPartition: true, maxItemCount: 1000 }
-    ).fetchAll({ enableCrossPartition: true, maxItemCount: 1000 });
+      needsCrossPartition ? { enableCrossPartition: true } : undefined
+    ).fetchAll();
 
+    // For cross-field fuzzy matching on non-topic fields, keep a JS filter as fallback
     if (normalizedTopic) {
       resources = resources.filter((q) => matchesNormalizedTopic(q, normalizedTopic));
     }

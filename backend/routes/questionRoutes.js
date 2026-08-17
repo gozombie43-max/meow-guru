@@ -6,6 +6,7 @@ import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 import questionController from '../controllers/questionController.js';
 import { getQuestionsContainer } from "../containerStore.js";
+import adminAuth from "../middleware/auth.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -61,7 +62,7 @@ function isStudyModeRecord(item) {
 // ── Specific named routes FIRST (before /:id) ──────────
 
 // Bulk insert — POST /api/questions/bulk
-router.post('/bulk', async (req, res) => {
+router.post('/bulk', adminAuth, async (req, res) => {
   try {
     const container = getQuestionsContainer();
     if (!container) return res.status(503).json({ error: 'DB not ready' });
@@ -140,9 +141,9 @@ router.post('/bulk', async (req, res) => {
 });
 
 router.get('/practice-test', questionController.generatePracticeTest);
-router.post('/analyze', questionController.runAnalysis);
+router.post('/analyze', adminAuth, questionController.runAnalysis);
 
-router.post('/check-duplicates', async (req, res) => {
+router.post('/check-duplicates', adminAuth, async (req, res) => {
   try {
     let container;
     try {
@@ -296,15 +297,15 @@ router.get("/image", async (req, res) => {
 
 // ── Generic routes ──────────────────────────────────────
 
-router.post('/', questionUpload, questionController.addQuestion);
+router.post('/', adminAuth, questionUpload, questionController.addQuestion);
 router.get('/', questionController.getQuestions);
 
 // ── Param routes LAST ───────────────────────────────────
 
 router.get('/:id', questionController.getQuestionById);
-router.put('/:id', questionController.updateQuestion);
-router.patch('/:id', questionController.updateQuestion);
-router.delete('/:id', questionController.deleteQuestion);
+router.put('/:id', adminAuth, questionController.updateQuestion);
+router.patch('/:id', adminAuth, questionController.updateQuestion);
+router.delete('/:id', adminAuth, questionController.deleteQuestion);
 
 // ── Error handler ───────────────────────────────────────
 
