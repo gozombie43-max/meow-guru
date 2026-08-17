@@ -1,14 +1,17 @@
-// QuizGuru — Azure OpenAI Pattern Analyzer
-// Analyzes user's attempt history to determine optimal question selection strategy
-
 import { AzureOpenAI } from "openai";
 
-const client = new AzureOpenAI({
-  endpoint: process.env.AZURE_OPENAI_ENDPOINT, // e.g. https://your-resource.openai.azure.com
-  apiKey: process.env.AZURE_OPENAI_KEY,
-  apiVersion: process.env.AZURE_OPENAI_API_VERSION || "2024-12-01-preview",
-  deployment: process.env.AZURE_OPENAI_DEPLOYMENT, // your gpt-oss-120B deployment name
-});
+let _client = null;
+function getClient() {
+  if (!_client) {
+    _client = new AzureOpenAI({
+      endpoint: process.env.AZURE_OPENAI_ENDPOINT || "https://dummy.openai.azure.com",
+      apiKey: process.env.AZURE_OPENAI_KEY || "dummy-key",
+      apiVersion: process.env.AZURE_OPENAI_API_VERSION || "2024-12-01-preview",
+      deployment: process.env.AZURE_OPENAI_DEPLOYMENT,
+    });
+  }
+  return _client;
+}
 
 // ─── Subject → topic mappings (SSC CGL Tier-2 syllabus) ──────────────────────
 
@@ -241,7 +244,7 @@ Rules:
 - Topics with CONCEPTUAL_GAP dominant failure → more easy questions first`;
 
   try {
-    const response = await client.chat.completions.create({
+    const response = await getClient().chat.completions.create({
       model: process.env.AZURE_OPENAI_DEPLOYMENT,
       messages: [
         { role: "system", content: systemPrompt },

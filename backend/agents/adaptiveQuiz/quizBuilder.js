@@ -5,10 +5,15 @@
 import { CosmosClient } from "@azure/cosmos";
 import { chatJSON } from "../../ai/azureClient.js";
 
-const cosmosClient = new CosmosClient({
-  endpoint: process.env.COSMOS_ENDPOINT,
-  key: process.env.COSMOS_KEY,
-});
+let _cosmosClient = null;
+function getCosmosClient() {
+  if (!_cosmosClient) {
+    const endpoint = process.env.COSMOS_ENDPOINT || "https://dummy.documents.azure.com:443/";
+    const key = process.env.COSMOS_KEY || "dummy-key==";
+    _cosmosClient = new CosmosClient({ endpoint, key });
+  }
+  return _cosmosClient;
+}
 
 const AOAI_MODEL = process.env.AZURE_OPENAI_MODEL || process.env.AZURE_OPENAI_DEPLOYMENT || "o4-mini";
 
@@ -29,7 +34,7 @@ const DB   = process.env.COSMOS_DB_NAME   || "quizDB";
 const CONT = process.env.COSMOS_CONTAINER || "questions";
 
 function getContainer() {
-  return cosmosClient.database(DB).container(CONT);
+  return getCosmosClient().database(DB).container(CONT);
 }
 
 // ─── Fetch questions for a single topic allocation ────────────────────────────
@@ -198,69 +203,136 @@ export async function buildAdaptiveQuiz(config, recentIds = []) {
  * Call this after the student completes the quiz.
  */
 export async function saveQuizAttempts(userId, attempts) {
-  const profileContainer = cosmosClient
-    .database(DB)
-    .container("userProfiles");
+  if (!userId || userId === "demo-user" || !Array.isArray(attempts) || attempts.length === 0) {
+    return { success: true, attemptsRecorded: 0 };
+  }
 
   try {
-    let profile;
+    // 1. Try updating the registered user in 'users' container
+    let userDoc = null;
+    let usersCont = null;
     try {
-      const { resource } = await profileContainer.item(userId, userId).read();
-      profile = resource;
-    } catch {
-      profile = {
-        id: userId, userId,
-        attemptHistory: [],
-        failureMap: {},
-        masteryMap: {},
-        recentAttemptIds: [],
-        createdAt: new Date().toISOString(),
-      };
+      usersCont = getCosmosClient().database(DB).container("users");
+      const { resources } = await usersCont.items
+        .query({
+          query: "SELECT * FROM c WHERE c.id = @id OR c.email = @id",
+          parameters: [{ name: "@id", value: userId }],
+        })
+        .fetchAll();
+      if (resources && resources[0]) userDoc = resources[0];
+    } catch (err) {
+      console.warn("[saveQuizAttempts] querying users container:", err.message);
     }
 
-    // Append new attempts, keep last 500
-    const updated = [
-      ...(profile.attemptHistory || []),
-      ...attempts,
-    ].slice(-500);
+    if (userDoc && usersCont) {
+      const updated = [
+        ...(userDoc.attemptHistory || []),
+        ...attempts,
+      ].slice(-500);
 
-    // Track recent IDs (last 48 hours) to avoid repeats
-    const cutoff = Date.now() - 48 * 60 * 60 * 1000;
-    const recentIds = [
-      ...(profile.recentAttemptIds || []).filter(r => r.ts > cutoff),
-      ...attempts.map(a => ({ id: a.questionId, ts: Date.now() })),
-    ].slice(-300);
+      const cutoff = Date.now() - 48 * 60 * 60 * 1000;
+      const recentIds = [
+        ...(userDoc.recentAttemptIds || []).filter(r => r.ts > cutoff),
+        ...attempts.map(a => ({ id: a.questionId, ts: Date.now() })),
+      ].slice(-300);
 
-    // Update mastery level per topic based on accuracy
-    const masteryMap = { ...(profile.masteryMap || {}) };
-    const topicResults = {};
-    for (const a of attempts) {
-      if (!topicResults[a.topic]) topicResults[a.topic] = { correct: 0, total: 0 };
-      topicResults[a.topic].total++;
-      if (a.isCorrect) topicResults[a.topic].correct++;
+      const masteryMap = { ...(userDoc.masteryMap || {}) };
+      const topicResults = {};
+      for (const a of attempts) {
+        if (!topicResults[a.topic]) topicResults[a.topic] = { correct: 0, total: 0 };
+        topicResults[a.topic].total++;
+        if (a.isCorrect) topicResults[a.topic].correct++;
+      }
+      for (const [topic, stats] of Object.entries(topicResults)) {
+        const acc = stats.correct / stats.total;
+        const currentLevel = masteryMap[topic]?.level || 0;
+        const newLevel = acc >= 0.95 ? 5
+          : acc >= 0.80 ? 4
+          : acc >= 0.60 ? 3
+          : acc >= 0.30 ? 2
+          : 1;
+        masteryMap[topic] = {
+          level:         Math.max(currentLevel, newLevel),
+          lastPracticed: Date.now(),
+          history:       [...(masteryMap[topic]?.history || []), newLevel].slice(-10),
+        };
+      }
+
+      await usersCont.items.upsert({
+        ...userDoc,
+        attemptHistory:   updated,
+        recentAttemptIds: recentIds,
+        masteryMap,
+        lastActiveDate:   new Date().toISOString(),
+      });
+
+      return { success: true, attemptsRecorded: attempts.length };
     }
-    for (const [topic, stats] of Object.entries(topicResults)) {
-      const acc = stats.correct / stats.total;
-      const currentLevel = masteryMap[topic]?.level || 0;
-      const newLevel = acc >= 0.95 ? 5
-        : acc >= 0.80 ? 4
-        : acc >= 0.60 ? 3
-        : acc >= 0.30 ? 2
-        : 1;
-      masteryMap[topic] = {
-        level:         Math.max(currentLevel, newLevel), // never downgrade immediately
-        lastPracticed: Date.now(),
-        history:       [...(masteryMap[topic]?.history || []), newLevel].slice(-10),
-      };
-    }
 
-    await profileContainer.items.upsert({
-      ...profile,
-      attemptHistory:   updated,
-      recentAttemptIds: recentIds,
-      masteryMap,
-      lastActiveDate:   Date.now(),
-    });
+    // 2. Secondary fallback: 'userProfiles' container
+    try {
+      const profileContainer = getCosmosClient()
+        .database(DB)
+        .container("userProfiles");
+
+      let profile;
+      try {
+        const { resource } = await profileContainer.item(userId, userId).read();
+        profile = resource;
+      } catch {
+        profile = {
+          id: userId, userId,
+          attemptHistory: [],
+          failureMap: {},
+          masteryMap: {},
+          recentAttemptIds: [],
+          createdAt: new Date().toISOString(),
+        };
+      }
+
+      const updated = [
+        ...(profile.attemptHistory || []),
+        ...attempts,
+      ].slice(-500);
+
+      const cutoff = Date.now() - 48 * 60 * 60 * 1000;
+      const recentIds = [
+        ...(profile.recentAttemptIds || []).filter(r => r.ts > cutoff),
+        ...attempts.map(a => ({ id: a.questionId, ts: Date.now() })),
+      ].slice(-300);
+
+      const masteryMap = { ...(profile.masteryMap || {}) };
+      const topicResults = {};
+      for (const a of attempts) {
+        if (!topicResults[a.topic]) topicResults[a.topic] = { correct: 0, total: 0 };
+        topicResults[a.topic].total++;
+        if (a.isCorrect) topicResults[a.topic].correct++;
+      }
+      for (const [topic, stats] of Object.entries(topicResults)) {
+        const acc = stats.correct / stats.total;
+        const currentLevel = masteryMap[topic]?.level || 0;
+        const newLevel = acc >= 0.95 ? 5
+          : acc >= 0.80 ? 4
+          : acc >= 0.60 ? 3
+          : acc >= 0.30 ? 2
+          : 1;
+        masteryMap[topic] = {
+          level:         Math.max(currentLevel, newLevel), // never downgrade immediately
+          lastPracticed: Date.now(),
+          history:       [...(masteryMap[topic]?.history || []), newLevel].slice(-10),
+        };
+      }
+
+      await profileContainer.items.upsert({
+        ...profile,
+        attemptHistory:   updated,
+        recentAttemptIds: recentIds,
+        masteryMap,
+        lastActiveDate:   Date.now(),
+      });
+    } catch (profErr) {
+      console.warn("[saveQuizAttempts] userProfiles upsert non-fatal error:", profErr.message);
+    }
 
     return { success: true, attemptsRecorded: attempts.length };
   } catch (err) {

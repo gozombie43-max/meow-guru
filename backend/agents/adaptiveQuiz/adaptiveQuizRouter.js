@@ -9,19 +9,137 @@ import { CosmosClient } from "@azure/cosmos";
 
 const router = express.Router();
 
-const cosmosClient = new CosmosClient({
-  endpoint: process.env.COSMOS_ENDPOINT,
-  key: process.env.COSMOS_KEY,
-});
+let _cosmosClient = null;
+function getCosmosClient() {
+  if (!_cosmosClient) {
+    const endpoint = process.env.COSMOS_ENDPOINT || "https://dummy.documents.azure.com:443/";
+    const key = process.env.COSMOS_KEY || "dummy-key==";
+    _cosmosClient = new CosmosClient({ endpoint, key });
+  }
+  return _cosmosClient;
+}
+
+// In-memory session store for active adaptive quiz sessions
+// Key: quizId -> { answerKey, userId, createdAt }
+export const quizSessionStore = new Map();
+const QUIZ_SESSION_TTL_MS = 3 * 60 * 60 * 1000; // 3 hours
+
+export function pruneQuizSessions(maxAgeMs = QUIZ_SESSION_TTL_MS) {
+  const now = Date.now();
+  for (const [quizId, data] of quizSessionStore.entries()) {
+    if (!data?.createdAt || now - data.createdAt > maxAgeMs) {
+      quizSessionStore.delete(quizId);
+    }
+  }
+}
+
+// Prune expired sessions every 30 minutes
+setInterval(() => pruneQuizSessions(), 30 * 60 * 1000).unref();
+
+export function checkIsCorrect(userAnswer, key) {
+  if (userAnswer === undefined || userAnswer === null || !key) return false;
+  const userStr = String(userAnswer).trim();
+  const correctStr = String(key.correctAnswer || "").trim();
+  const correctLetter = String(key.correctLetter || "").trim().toLowerCase();
+
+  if (!userStr) return false;
+
+  // 1. Direct case-insensitive match with correctAnswer
+  if (correctStr && userStr.toLowerCase() === correctStr.toLowerCase()) return true;
+
+  // 2. Direct match with correctLetter (e.g. "a", "b", "c", "d")
+  if (correctLetter && userStr.toLowerCase() === correctLetter) return true;
+
+  // 3. Match against options array
+  if (Array.isArray(key.options) && key.options.length > 0) {
+    const userIdx = key.options.findIndex(
+      (opt) => String(opt).trim().toLowerCase() === userStr.toLowerCase()
+    );
+
+    if (userIdx >= 0) {
+      // Check if userIdx matches correctLetter
+      if (correctLetter) {
+        const letterIdx = correctLetter.charCodeAt(0) - 97;
+        if (userIdx === letterIdx) return true;
+      }
+
+      // Check if correctAnswer is a single letter (a-d)
+      if (correctStr && /^[a-d]$/i.test(correctStr)) {
+        const letterIdx = correctStr.toLowerCase().charCodeAt(0) - 97;
+        if (userIdx === letterIdx) return true;
+      }
+
+      // Check if correctAnswer matches an option index
+      if (correctStr) {
+        const correctOptIdx = key.options.findIndex(
+          (opt) => String(opt).trim().toLowerCase() === correctStr.toLowerCase()
+        );
+        if (correctOptIdx >= 0 && correctOptIdx === userIdx) return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+async function fetchAnswerKeysFromDB(questionIds = []) {
+  const ids = Array.isArray(questionIds) ? questionIds.filter(Boolean) : [];
+  if (ids.length === 0) return {};
+
+  const DB = process.env.COSMOS_DB_NAME || "quizDB";
+  const CONT = process.env.COSMOS_CONTAINER || "questions";
+  try {
+    const container = getCosmosClient().database(DB).container(CONT);
+    const { resources } = await container.items.query({
+      query: `SELECT c.id, c.topic, c.subject, c.chapter, c.concept, c.difficulty, c.options, c.correctAnswer, c.correctLetter, c.solution FROM c WHERE ARRAY_CONTAINS(@ids, c.id)`,
+      parameters: [{ name: "@ids", value: ids }],
+    }).fetchAll();
+
+    const keyMap = {};
+    for (const q of (resources || [])) {
+      keyMap[q.id] = {
+        correctAnswer: q.correctAnswer,
+        correctLetter: q.correctLetter,
+        solution:      q.solution,
+        topic:         q.topic,
+        subject:       q.subject,
+        concept:       q.concept || q.chapter || "",
+        options:       q.options || [],
+      };
+    }
+    return keyMap;
+  } catch (err) {
+    console.error("[adaptiveQuiz] fetchAnswerKeysFromDB failed:", err.message);
+    return {};
+  }
+}
 
 async function getUserProfile(userId) {
+  if (!userId || userId === "demo-user") return null;
+
+  const DB = process.env.COSMOS_DB_NAME || "quizDB";
   try {
-    const { resource } = await cosmosClient
-      .database(process.env.COSMOS_DB_NAME || "quizDB")
+    // 1. Try querying users container
+    const usersCont = getCosmosClient().database(DB).container("users");
+    const { resources } = await usersCont.items
+      .query({
+        query: "SELECT * FROM c WHERE c.id = @id OR c.email = @id",
+        parameters: [{ name: "@id", value: userId }],
+      })
+      .fetchAll();
+    if (resources && resources[0]) return resources[0];
+  } catch {
+    // ignore
+  }
+
+  try {
+    // 2. Try userProfiles container if present
+    const { resource } = await getCosmosClient()
+      .database(DB)
       .container("userProfiles")
       .item(userId, userId)
       .read();
-    return resource;
+    return resource || null;
   } catch {
     return null;
   }
@@ -31,7 +149,7 @@ async function getUserQuestionIds(userId) {
   const DB = process.env.COSMOS_DB_NAME || "quizDB";
   const CONT = process.env.COSMOS_CONTAINER || "questions";
   try {
-    const { resources } = await cosmosClient
+    const { resources } = await getCosmosClient()
       .database(DB)
       .container(CONT)
       .items.query({
@@ -159,7 +277,7 @@ router.post("/generate", async (req, res) => {
       // correctAnswer and solution stripped here — sent via /submit
     }));
 
-    // 6. Store answer key in session/cache (keyed by quizId)
+    // 6. Store answer key in in-memory session cache (and session if present)
     const quizId = `quiz_${userId}_${Date.now()}`;
     const answerKey = {};
     for (const q of questions) {
@@ -170,10 +288,14 @@ router.post("/generate", async (req, res) => {
         topic:         q.topic,
         subject:       q.subject,
         concept:       q.concept,
+        options:       q.options || [],
       };
     }
 
-    // Store in Express session
+    // Always store in memory session store
+    quizSessionStore.set(quizId, { answerKey, userId, createdAt: Date.now() });
+
+    // Also store in Express session if middleware is present
     if (req.session) {
       req.session[quizId] = { answerKey, userId, createdAt: Date.now() };
     }
@@ -203,13 +325,20 @@ router.post("/submit", async (req, res) => {
       return res.status(400).json({ error: "quizId, userId, and answers[] required" });
     }
 
-    // Retrieve answer key from session
-    const session = req.session?.[quizId];
-    if (!session) {
-      return res.status(404).json({ error: "Quiz session expired or not found. Please generate a new quiz." });
+    // 1. Retrieve answer key from in-memory session store or express session
+    let session = quizSessionStore.get(quizId) || req.session?.[quizId];
+    let answerKey = session?.answerKey || {};
+
+    // 2. Fallback: if session not found in memory (e.g. server restart), query Cosmos questions
+    if (!session || Object.keys(answerKey).length === 0) {
+      console.warn(`[adaptive-quiz/submit] Quiz session ${quizId} not in memory cache. Falling back to DB lookup...`);
+      answerKey = await fetchAnswerKeysFromDB(answers.map(a => a.questionId));
     }
 
-    const { answerKey } = session;
+    if (!answerKey || Object.keys(answerKey).length === 0) {
+      return res.status(404).json({ error: "Quiz session expired or questions not found. Please generate a new quiz." });
+    }
+
     let correct = 0;
     const results = [];
     const attempts = [];
@@ -218,8 +347,7 @@ router.post("/submit", async (req, res) => {
       const key = answerKey[answer.questionId];
       if (!key) continue;
 
-      const isCorrect = answer.userAnswer === key.correctAnswer
-        || answer.userAnswer === key.correctLetter;
+      const isCorrect = checkIsCorrect(answer.userAnswer, key);
 
       if (isCorrect) correct++;
 
@@ -249,9 +377,14 @@ router.post("/submit", async (req, res) => {
     }
 
     // Save to user profile (updates mastery map)
-    await saveQuizAttempts(userId, attempts);
+    try {
+      await saveQuizAttempts(userId, attempts);
+    } catch (saveErr) {
+      console.warn("[adaptive-quiz/submit] saveQuizAttempts non-fatal error:", saveErr.message);
+    }
 
     // Clean up session
+    quizSessionStore.delete(quizId);
     if (req.session) {
       delete req.session[quizId];
     }

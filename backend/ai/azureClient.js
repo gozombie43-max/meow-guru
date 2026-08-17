@@ -13,7 +13,7 @@ const baseURL =
   "https://quizguru-ai.openai.azure.com/openai/v1";
 
 const client = new OpenAI({
-  apiKey,
+  apiKey: apiKey || "dummy-azure-key",
   baseURL,
 });
 

@@ -5,6 +5,7 @@ import axios from '@/lib/axios';
 import MathRenderer from '@/components/MathRenderer';
 import RouteLoadingState from '@/components/RouteLoadingState';
 import { useThemeMode } from '@/hooks/useTheme';
+import { useAuth } from '@/context/AuthContext';
 import { announceFeedback } from '@/lib/feedback';
 import { SUBJECT_TOPICS as FALLBACK_SUBJECT_TOPICS } from '@/lib/subjectTopics';
 
@@ -119,7 +120,9 @@ function quizReducer(state: QuizState, action: Action): QuizState {
         currentIdx: 0,
         answers: {},
         elapsed: 0,
-        loading: false
+        loading: false,
+        results: [],
+        error: '',
       };
     case 'SELECT_ANSWER':
       return { 
@@ -139,7 +142,7 @@ function quizReducer(state: QuizState, action: Action): QuizState {
       };
     }
     case 'TICK_TIMER': return { ...state, elapsed: state.elapsed + 1 };
-    case 'FINISH_QUIZ': return { ...state, phase: 'results', results: action.payload, loading: false };
+    case 'FINISH_QUIZ': return { ...state, phase: 'results', results: action.payload, loading: false, error: '' };
     case 'RESET': return { ...initialState, mode: state.mode, qCount: state.qCount, availableTopics: state.availableTopics };
     default: return state;
   }
@@ -147,10 +150,10 @@ function quizReducer(state: QuizState, action: Action): QuizState {
 
 // Data
 const SUBJECT_OPTIONS = [
-  { name: 'Reasoning', icon: '??', meta: 'Logic, patterns, and critical thinking', accent: 'linear-gradient(135deg, rgba(83, 74, 183, 0.20), rgba(83, 74, 183, 0.08))' },
-  { name: 'Mathematics', icon: '??', meta: 'Algebra, geometry, and calculations', accent: 'linear-gradient(135deg, rgba(24, 95, 165, 0.18), rgba(24, 95, 165, 0.08))' },
-  { name: 'English', icon: '??', meta: 'Grammar, vocabulary, and comprehension', accent: 'linear-gradient(135deg, rgba(15, 110, 86, 0.18), rgba(15, 110, 86, 0.08))' },
-  { name: 'General Awareness', icon: '??', meta: 'Current affairs, static GK, and facts', accent: 'linear-gradient(135deg, rgba(133, 79, 11, 0.18), rgba(133, 79, 11, 0.08))' },
+  { name: 'Reasoning', icon: '⚡', meta: 'Logic, patterns, and critical thinking', accent: 'linear-gradient(135deg, rgba(83, 74, 183, 0.20), rgba(83, 74, 183, 0.08))' },
+  { name: 'Mathematics', icon: '📐', meta: 'Algebra, geometry, and calculations', accent: 'linear-gradient(135deg, rgba(24, 95, 165, 0.18), rgba(24, 95, 165, 0.08))' },
+  { name: 'English', icon: '📖', meta: 'Grammar, vocabulary, and comprehension', accent: 'linear-gradient(135deg, rgba(15, 110, 86, 0.18), rgba(15, 110, 86, 0.08))' },
+  { name: 'General Awareness', icon: '🌍', meta: 'Current affairs, static GK, and facts', accent: 'linear-gradient(135deg, rgba(133, 79, 11, 0.18), rgba(133, 79, 11, 0.08))' },
 ];
 
 const QUESTION_COUNT_OPTIONS = [10, 15, 25];
@@ -171,9 +174,11 @@ const formatTime = (s: number) => {
 export default function AdaptiveQuizEngine() {
   const { theme } = useThemeMode();
   const isDark = theme === 'dark';
+  const { user } = useAuth();
   const [state, dispatch] = useReducer(quizReducer, initialState);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const userId = typeof window !== 'undefined' ? localStorage.getItem('userId') || 'demo-user' : 'demo-user';
+  const isSubmittingRef = useRef(false);
+  const userId = user?.id || (typeof window !== 'undefined' ? localStorage.getItem('userId') || 'demo-user' : 'demo-user');
 
   // Fetch Topics on Mount
   useEffect(() => {
@@ -227,23 +232,39 @@ export default function AdaptiveQuizEngine() {
   };
 
   const handleSubmit = useCallback(async () => {
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
     dispatch({ type: 'SET_LOADING', payload: true });
+    dispatch({ type: 'SET_ERROR', payload: '' });
+
     try {
+      const answersArray = Object.values(state.answers);
       const { data } = await axios.post('/api/adaptive-quiz/submit', {
-        quizId: state.quizId, userId, answers: Object.values(state.answers),
+        quizId: state.quizId,
+        userId,
+        answers: answersArray,
       });
-      dispatch({ type: 'FINISH_QUIZ', payload: data.results });
-    } catch (err) {
-      dispatch({ type: 'SET_ERROR', payload: 'Submission failed.' });
+      dispatch({ type: 'FINISH_QUIZ', payload: data.results || [] });
+    } catch (err: any) {
+      const errMsg = err.response?.data?.error || err.message || 'Submission failed. Please retry.';
+      dispatch({ type: 'SET_ERROR', payload: errMsg });
+    } finally {
+      isSubmittingRef.current = false;
     }
   }, [state.quizId, userId, state.answers]);
 
   // Check if we need to submit after the last question
   useEffect(() => {
-    if (state.phase === 'quiz' && Object.keys(state.answers).length === state.questions.length && state.questions.length > 0) {
+    if (
+      state.phase === 'quiz' &&
+      !state.loading &&
+      state.questions.length > 0 &&
+      Object.keys(state.answers).length === state.questions.length &&
+      state.results.length === 0
+    ) {
       handleSubmit();
     }
-  }, [state.answers, state.phase, state.questions.length, handleSubmit]);
+  }, [state.answers, state.phase, state.loading, state.questions.length, state.results.length, handleSubmit]);
 
   const sidebarTitles: Record<Phase, string> = {
     config: 'Adaptive Setup',
@@ -298,7 +319,9 @@ export default function AdaptiveQuizEngine() {
                 <div className="macos-list-item" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
                   <div style={{ fontSize: 12, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', fontWeight: 800 }}>Final Score</div>
                   <div style={{ fontSize: 28, fontWeight: 900, color: '#34c759' }}>
-                    {Math.round((state.results.filter(r => r.isCorrect).length / state.results.length) * 100)}%
+                    {state.results.length > 0
+                      ? Math.round((state.results.filter(r => r.isCorrect).length / state.results.length) * 100)
+                      : 0}%
                   </div>
                 </div>
               </div>
@@ -312,12 +335,22 @@ export default function AdaptiveQuizEngine() {
             
             {/* ERROR ALERT */}
             {state.error && (
-              <div className="macos-form-group" style={{ background: 'rgba(239, 68, 68, 0.1)', borderColor: 'rgba(239, 68, 68, 0.3)', marginBottom: 20 }}>
-                <div className="macos-list-item" style={{ color: '#ef4444' }}>{state.error}</div>
+              <div className="macos-form-group" style={{ background: 'rgba(239, 68, 68, 0.1)', borderColor: 'rgba(239, 68, 68, 0.3)', marginBottom: 20, flexDirection: 'column', alignItems: 'flex-start', gap: 10 }}>
+                <div style={{ color: '#ef4444', fontWeight: 600 }}>{state.error}</div>
+                {state.phase === 'quiz' && Object.keys(state.answers).length === state.questions.length && (
+                  <button
+                    onClick={() => handleSubmit()}
+                    disabled={state.loading}
+                    className="action-btn"
+                    style={{ padding: '8px 18px', background: '#0a84ff', color: '#fff', fontSize: 14, borderRadius: 8 }}
+                  >
+                    {state.loading ? 'Submitting...' : 'Retry Submission'}
+                  </button>
+                )}
               </div>
             )}
 
-            {/* CONFIG PHASE (COMPACT PC LAYOUT) */}
+            {/* CONFIG PHASE */}
             {state.phase === 'config' && (
               <div className="config-grid">
                 
@@ -427,73 +460,97 @@ export default function AdaptiveQuizEngine() {
                 </div>
                 <button onClick={() => dispatch({ type: 'SET_PHASE', payload: 'quiz' })} className="action-btn" style={{ width: '100%', padding: '14px', background: 'linear-gradient(135deg, #0a84ff 0%, #0056b3 100%)', color: '#fff', fontSize: 16 }}>
                   Begin
-                  </button>
-                </section>
-              )}
+                </button>
+              </section>
+            )}
 
             {/* QUIZ PHASE */}
-              {state.phase === 'quiz' && state.questions[state.currentIdx] && (
-                <>
-                  <div className="mobile-timer-bar" style={{ justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, background: 'var(--card-bg)', padding: '12px 16px', borderRadius: 16, border: '1px solid var(--card-border)', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--color-text-tertiary)', textTransform: 'uppercase' }}>Progress</span>
-                      <span style={{ fontSize: 16, fontWeight: 900 }}>{state.currentIdx + 1} <span style={{ color: 'var(--color-text-secondary)', fontSize: 14 }}>/ {state.questions.length}</span></span>
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                      <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--color-text-tertiary)', textTransform: 'uppercase' }}>Elapsed</span>
-                      <span style={{ fontSize: 16, fontWeight: 900, fontVariantNumeric: 'tabular-nums' }}>{formatTime(state.elapsed)}</span>
-                    </div>
+            {state.phase === 'quiz' && state.questions[state.currentIdx] && (
+              <>
+                <div className="mobile-timer-bar" style={{ justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, background: 'var(--card-bg)', padding: '12px 16px', borderRadius: 16, border: '1px solid var(--card-border)', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--color-text-tertiary)', textTransform: 'uppercase' }}>Progress</span>
+                    <span style={{ fontSize: 16, fontWeight: 900 }}>{state.currentIdx + 1} <span style={{ color: 'var(--color-text-secondary)', fontSize: 14 }}>/ {state.questions.length}</span></span>
                   </div>
-                  <section className="section-card">
-                <div style={{ fontSize: 18, lineHeight: 1.6, fontWeight: 500, marginBottom: 24 }}>
-                  <MathRenderer text={state.questions[state.currentIdx].question || ''} />
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                    <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--color-text-tertiary)', textTransform: 'uppercase' }}>Elapsed</span>
+                    <span style={{ fontSize: 16, fontWeight: 900, fontVariantNumeric: 'tabular-nums' }}>{formatTime(state.elapsed)}</span>
+                  </div>
                 </div>
-                <div className="macos-form-group" style={{ display: 'flex', flexDirection: 'column' }}>
-                  {state.questions[state.currentIdx].options?.map((opt, i) => {
-                    const active = state.selected === opt;
-                    return (
-                      <div key={i} className={`macos-list-item ${active ? 'active' : ''}`} onClick={() => dispatch({ type: 'SELECT_ANSWER', payload: opt })} style={{ background: active ? 'rgba(10, 132, 255, 0.1)' : undefined }}>
-                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-                          <div style={{ width: 24, height: 24, borderRadius: '50%', border: `2px solid ${active ? '#0a84ff' : 'var(--form-border)'}`, display: 'grid', placeItems: 'center' }}>
-                            {active && <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#0a84ff' }} />}
+                <section className="section-card">
+                  <div style={{ fontSize: 18, lineHeight: 1.6, fontWeight: 500, marginBottom: 24 }}>
+                    <MathRenderer text={state.questions[state.currentIdx].question || ''} />
+                  </div>
+                  <div className="macos-form-group" style={{ display: 'flex', flexDirection: 'column' }}>
+                    {state.questions[state.currentIdx].options?.map((opt, i) => {
+                      const active = state.selected === opt;
+                      return (
+                        <div key={i} className={`macos-list-item ${active ? 'active' : ''}`} onClick={() => dispatch({ type: 'SELECT_ANSWER', payload: opt })} style={{ background: active ? 'rgba(10, 132, 255, 0.1)' : undefined }}>
+                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                            <div style={{ width: 24, height: 24, borderRadius: '50%', border: `2px solid ${active ? '#0a84ff' : 'var(--form-border)'}`, display: 'grid', placeItems: 'center' }}>
+                              {active && <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#0a84ff' }} />}
+                            </div>
+                            <div style={{ paddingTop: 2 }}><MathRenderer text={opt} /></div>
                           </div>
-                          <div style={{ paddingTop: 2 }}><MathRenderer text={opt} /></div>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 24 }}>
-                  <button onClick={handleConfirm} disabled={!state.selected} className="action-btn" style={{ padding: '12px 24px', background: state.selected ? '#0a84ff' : 'var(--form-border)', color: '#fff' }}>
-                    Confirm & Next
-                  </button>
-                </div>
-              </section></>)}
+                      );
+                    })}
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 24 }}>
+                    <button onClick={handleConfirm} disabled={!state.selected} className="action-btn" style={{ padding: '12px 24px', background: state.selected ? '#0a84ff' : 'var(--form-border)', color: '#fff' }}>
+                      Confirm & Next
+                    </button>
+                  </div>
+                </section>
+              </>
+            )}
 
             {/* RESULTS PHASE */}
             {state.phase === 'results' && (
               <section className="section-card">
                 <h1 style={{ fontSize: 28, fontWeight: 900, marginBottom: 20 }}>Analysis Report</h1>
                 <div className="macos-form-group">
-                  {state.results.map((r, i) => (
-                    <div key={r.questionId} className="macos-list-item" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 8 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <span style={{ width: 24, height: 24, borderRadius: '50%', display: 'grid', placeItems: 'center', background: r.isCorrect ? 'rgba(52, 199, 89, 0.15)' : 'rgba(255, 59, 48, 0.15)', color: r.isCorrect ? '#34c759' : '#ff3b30' }}>
-                          {r.isCorrect ? '✓' : '✗'}
-                        </span>
-                        <span style={{ fontWeight: 600 }}>Q{i + 1} - {r.topic}</span>
+                  {state.results.map((r, i) => {
+                    const matchingQuestion = state.questions.find(q => q.id === r.questionId) || state.questions[i];
+                    return (
+                      <div key={r.questionId || i} className="macos-list-item" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 10, padding: '16px 20px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <span style={{ width: 24, height: 24, borderRadius: '50%', display: 'grid', placeItems: 'center', background: r.isCorrect ? 'rgba(52, 199, 89, 0.15)' : 'rgba(255, 59, 48, 0.15)', color: r.isCorrect ? '#34c759' : '#ff3b30', fontWeight: 700 }}>
+                              {r.isCorrect ? '✓' : '✗'}
+                            </span>
+                            <span style={{ fontWeight: 600 }}>Q{i + 1} - {r.topic || matchingQuestion?.topic || 'Topic'}</span>
+                          </div>
+                          <span style={{ fontSize: 12, padding: '2px 8px', borderRadius: 6, background: r.isCorrect ? 'rgba(52, 199, 89, 0.1)' : 'rgba(255, 59, 48, 0.1)', color: r.isCorrect ? '#34c759' : '#ff3b30', fontWeight: 700 }}>
+                            {r.isCorrect ? 'CORRECT' : 'INCORRECT'}
+                          </span>
+                        </div>
+                        
+                        <div style={{ fontSize: 15, color: 'var(--color-text-primary)', marginTop: 4 }}>
+                          <MathRenderer text={matchingQuestion?.question || ''} />
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, width: '100%', fontSize: 13, marginTop: 4, background: 'var(--subtle-bg, rgba(0,0,0,0.02))', padding: '10px 14px', borderRadius: 8 }}>
+                          <div><strong style={{ color: 'var(--color-text-secondary)' }}>Your Answer:</strong> <span style={{ color: r.isCorrect ? '#34c759' : '#ff3b30' }}>{r.userAnswer || 'Skipped'}</span></div>
+                          {!r.isCorrect && r.correctAnswer && (
+                            <div><strong style={{ color: 'var(--color-text-secondary)' }}>Correct Answer:</strong> <span style={{ color: '#34c759' }}>{r.correctAnswer}</span></div>
+                          )}
+                          {r.solution && (
+                            <div style={{ marginTop: 4, paddingTop: 6, borderTop: '1px solid var(--form-border)' }}>
+                              <strong style={{ color: 'var(--color-text-secondary)' }}>Solution:</strong>
+                              <div style={{ marginTop: 2 }}><MathRenderer text={r.solution} /></div>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <div style={{ fontSize: 14, color: 'var(--color-text-secondary)' }}>
-                        <MathRenderer text={state.questions[i]?.question || ''} />
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
                 <button onClick={() => dispatch({ type: 'RESET' })} className="action-btn" style={{ width: '100%', padding: '14px', marginTop: 24, background: 'var(--form-bg)', border: '1px solid var(--form-border)' }}>
                   Take Another Quiz
-                  </button>
-                </section>
-              )}
+                </button>
+              </section>
+            )}
           </div>
         </div>
       </div>
@@ -550,6 +607,3 @@ export default function AdaptiveQuizEngine() {
     </main>
   );
 }
-
-
-
