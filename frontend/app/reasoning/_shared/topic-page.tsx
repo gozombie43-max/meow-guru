@@ -62,8 +62,8 @@ const Chevron = ({ size = 7 }: { size?: number }) => (
 
 /* Back icon */
 const IconBack = () => (
-  <svg viewBox="0 0 12 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M10 2L2 10l8 8"/>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M19 12H5M12 19l-7-7 7-7" />
   </svg>
 );
 
@@ -125,9 +125,9 @@ export default function ReasoningTopicPage({
           --green: #30D158;
           --orange: #FF9F0A;
 
-          height: 100dvh;
-          overflow-y: auto;
+          min-height: 100dvh;
           overflow-x: hidden;
+          scrollbar-width: none;
           background: #050505;
           color: var(--label);
           font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", sans-serif;
@@ -135,6 +135,9 @@ export default function ReasoningTopicPage({
           padding-top: calc(56px + max(env(safe-area-inset-top, 0px), 0px));
           padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px));
           transition: background .25s ease, color .25s ease;
+        }
+        .sg-page::-webkit-scrollbar {
+          display: none;
         }
 
         /* Gradient backgrounds for badges */
@@ -163,11 +166,21 @@ export default function ReasoningTopicPage({
           border-bottom: 1px solid rgba(255,255,255,0.14);
         }
         .sg-back {
-          display: flex; align-items: center; color: var(--label);
-          position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
-          background: transparent; border: none; padding: 10px; cursor: pointer;
+          display: flex; align-items: center; justify-content: center; color: var(--label);
+          position: absolute; left: 16px; top: 0; bottom: 0; margin: auto 0;
+          width: 40px; height: 40px;
+          background: transparent; border: none; padding: 0; cursor: pointer;
+          border-radius: 50%;
+          -webkit-tap-highlight-color: transparent;
+          transform: none !important;
+          transition: opacity 0.15s ease, background-color 0.15s ease;
         }
-        .sg-back svg { width: 16px; height: 26px; }
+        .sg-back:active {
+          animation: none !important;
+          transform: none !important;
+          opacity: 0.5;
+        }
+        .sg-back svg { width: 22px; height: 22px; }
         .sg-nav-title {
           font-size: 17px; font-weight: 600; letter-spacing: -0.2px;
           margin: 0; color: var(--label);
@@ -340,8 +353,29 @@ export default function ReasoningTopicPage({
           }
           .sg-nav-inline {
             border-bottom: none; justify-content: flex-start; height: auto; margin: 0; padding: 0;
+            display: flex; align-items: center; gap: 14px;
           }
-          .sg-back { display: none; }
+          .sg-back {
+            display: flex;
+            position: static;
+            margin: 0;
+            width: 42px;
+            height: 42px;
+            background: var(--card);
+            border: 0.5px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: var(--label);
+            transform: none !important;
+            transition: background 0.15s ease, opacity 0.15s ease;
+          }
+          .sg-back:hover {
+            background: var(--card-2);
+          }
+          .sg-back:active {
+            animation: none !important;
+            transform: scale(0.95) !important;
+            opacity: 0.8;
+          }
           .sg-nav-title {
             font-size: 2.2rem; font-weight: 800; letter-spacing: -0.04em;
           }
@@ -403,6 +437,14 @@ export default function ReasoningTopicPage({
 
           /* Desktop Light Theme specific overrides */
           body.theme-light .sg-navbar { background: transparent; }
+          body.theme-light .sg-back {
+            background: #ffffff;
+            border-color: rgba(0,0,0,0.08);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+          }
+          body.theme-light .sg-back:hover {
+            background: #f2f2f7;
+          }
           body.theme-light .sg-card {
             border-color: rgba(0,0,0,0.06);
             box-shadow: 0 1px 8px rgba(0,0,0,0.06);
