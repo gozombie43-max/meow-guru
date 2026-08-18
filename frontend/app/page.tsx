@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import GradientWaves from '@/components/GradientWaves';
-import heroImage from '@/public/hero-image.webp';
 import Typewriter from '@/components/Typewriter';
 import MacTrafficLights from '@/components/MacTrafficLights';
 import QuizChartArt from '@/components/QuizChartArt';
@@ -570,11 +569,10 @@ export default function Home() {
                   <div className={styles.heroVisualWrapper}>
                     <div className={styles.heroArchFrame}>
                       <Image
-                        src={heroImage}
+                        src="/hero-image.webp"
                         alt="Student with graduation cap and notebook"
                         fill
                         priority
-                        placeholder="blur"
                         sizes="(max-width: 768px) 100vw, 40vw"
                         className={styles.heroStudentImage}
                       />
@@ -776,11 +774,10 @@ export default function Home() {
 
             <div className={styles.mobileHeroVisual}>
               <Image
-                src={heroImage}
+                src="/hero-image.webp"
                 alt="Graduate student"
                 fill
                 priority
-                placeholder="blur"
                 sizes="(max-width: 768px) 50vw, 50vw"
                 className={styles.mobileHeroImage}
               />
