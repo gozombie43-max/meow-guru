@@ -727,6 +727,12 @@ export default function AdminPanel() {
           >
             Upload Image Question
           </a>
+          <a
+            href="/admin/upload"
+            style={{ padding: "8px 14px", background: "transparent", color: "var(--color-text-secondary)", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, cursor: "pointer", fontSize: 13, textDecoration: "none", display: "inline-flex", alignItems: "center" }}
+          >
+            Upload Tools
+          </a>
           <button onClick={openNew} style={{ padding: "8px 16px", background: "#6d28d9", color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontSize: 14, fontWeight: 500 }}>
             + Add Question
           </button>

@@ -1,6 +1,7 @@
 "use client";
 import { useState, useRef } from "react";
 import { fetchWithRetry } from "@/lib/api/http";
+import styles from "./AdminTool.module.css";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -78,7 +79,7 @@ export default function MassSolutionUpload() {
       const message = e instanceof Error ? e.message : "Upload failed";
       setError(
         /abort|timed out|signal is aborted/i.test(message)
-          ? "Upload timed out before the server finished processing the ZIP. Try again or use a smaller batch."
+          ? "Upload timed out before the server finished processing the ZIP archive."
           : message
       );
     } finally {
@@ -87,202 +88,120 @@ export default function MassSolutionUpload() {
   };
 
   return (
-    <div style={{
-      border: "0.5px solid var(--color-border-tertiary)",
-      borderRadius: 12,
-      padding: "1rem",
-      background: "var(--color-background-secondary)",
-      marginTop: 12,
-    }}>
-      {/* Header */}
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 12 }}>
+    <section className={styles.macGroup}>
+      <div className={styles.macGroupHeader}>
         <div>
-          <h3 style={{ fontSize: 14, fontWeight: 500, margin: 0, color: "var(--color-text-primary)" }}>
-            Mass Solution Upload
-          </h3>
-          <p style={{ fontSize: 12, color: "var(--color-text-secondary)", margin: "4px 0 0", lineHeight: 1.5 }}>
-            Upload a ZIP of solution images. Each image patches the matching question ID and adds the image into its{" "}
-            <code style={{ fontSize: 11, background: "var(--color-background-primary)", padding: "1px 5px", borderRadius: 4 }}>solution</code>{" "}
-            content for quiz rendering.
-          </p>
+          <h2 className={styles.macGroupTitle}>💡 Solution Diagram ZIP Archive</h2>
+          <span style={{ fontSize: 12, color: "#6e6e73" }}>
+            Attaches detailed solution diagrams and visual proofs to matching question IDs
+          </span>
         </div>
         {zipFile && (
-          <button
-            onClick={handleClear}
-            style={{ padding: "4px 10px", borderRadius: 7, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: "pointer", fontSize: 12, color: "var(--color-text-secondary)", whiteSpace: "nowrap" }}
-          >
+          <button onClick={handleClear} className={styles.btnSecondary} style={{ padding: "3px 8px", fontSize: 11 }}>
             Clear
           </button>
         )}
       </div>
 
-      {/* Mode selector */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+      {/* Mode selection */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
         {[
-          { value: "auto", label: "Auto (filename = questionId)", desc: "e.g. abc123.png → patches question abc123" },
+          { value: "auto", label: "Auto (filename = questionId)", desc: "e.g. sol_123.png patches question ID sol_123" },
           { value: "metadata", label: "Metadata JSON", desc: "ZIP contains metadata.json with [{filename, questionId}]" },
         ].map((opt) => (
           <button
             key={opt.value}
+            type="button"
             onClick={() => setMode(opt.value as "auto" | "metadata")}
             title={opt.desc}
-            style={{
-              padding: "6px 12px",
-              borderRadius: 8,
-              border: mode === opt.value
-                ? "1px solid #6d28d9"
-                : "0.5px solid var(--color-border-secondary)",
-              background: mode === opt.value ? "#ede9fe" : "transparent",
-              color: mode === opt.value ? "#5b21b6" : "var(--color-text-secondary)",
-              cursor: "pointer",
-              fontSize: 12,
-              fontWeight: mode === opt.value ? 500 : 400,
-            }}
+            className={mode === opt.value ? styles.btnPrimary : styles.btnSecondary}
+            style={{ fontSize: 12, padding: "5px 12px" }}
           >
             {opt.label}
           </button>
         ))}
       </div>
 
-      {/* Mode hint */}
-      <div style={{ fontSize: 11, color: "var(--color-text-secondary)", marginBottom: 10, padding: "6px 10px", background: "var(--color-background-primary)", borderRadius: 7, border: "0.5px solid var(--color-border-tertiary)" }}>
+      <div style={{ fontSize: 11.5, color: "#6e6e73", marginBottom: 12, padding: "8px 12px", background: "#fbfbfd", borderRadius: 7, border: "1px solid rgba(0, 0, 0, 0.06)" }}>
         {mode === "auto"
-          ? "Name your images after question IDs: e.g. visual_1776252864088_9d03bca4.png — the filename stem is used as the questionId."
-          : "Include a metadata.json in the ZIP root: [{\"filename\": \"q1.png\", \"questionId\": \"visual_abc123\"}]"}
+          ? "💡 Name your solution images after question IDs: e.g. visual_1776252864088_9d03bca4.png (stem becomes target ID)."
+          : "💡 Include a metadata.json in the ZIP root: [{\"filename\": \"q1.png\", \"questionId\": \"visual_abc123\"}]"}
       </div>
 
-      {/* File picker + Upload button */}
-      <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+      {/* Dropzone & Upload Button */}
+      <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
         <input
           ref={fileRef}
           type="file"
           accept=".zip"
           onChange={handleFileChange}
-          style={{
-            flex: 1,
-            padding: "6px 10px",
-            border: "0.5px solid var(--color-border-secondary)",
-            borderRadius: 8,
-            fontSize: 12,
-            background: "var(--color-background-primary)",
-            color: "var(--color-text-primary)",
-          }}
+          className={styles.macInput}
+          style={{ flex: 1, minWidth: 200, padding: "6px 10px" }}
         />
         <button
           onClick={handleUpload}
           disabled={uploading || !zipFile}
-          style={{
-            padding: "8px 16px",
-            borderRadius: 8,
-            border: "none",
-            background: uploading ? "#a855f7" : "#6d28d9",
-            color: "#fff",
-            cursor: uploading || !zipFile ? "not-allowed" : "pointer",
-            fontSize: 13,
-            fontWeight: 500,
-            opacity: !zipFile ? 0.5 : 1,
-            whiteSpace: "nowrap",
-          }}
+          className={styles.btnPrimary}
         >
-          {uploading ? "Uploading..." : "Upload Solutions"}
+          {uploading ? "Extracting & Uploading…" : "Upload Solutions →"}
         </button>
       </div>
 
-      {/* Selected file info */}
       {zipFile && (
-        <div style={{ marginTop: 8, fontSize: 12, color: "var(--color-text-secondary)" }}>
-          Selected: <span style={{ color: "var(--color-text-primary)", fontWeight: 500 }}>{zipFile.name}</span>
+        <div style={{ marginTop: 8, fontSize: 11.5, color: "#6e6e73" }}>
+          Selected: <span style={{ color: "#1d1d1f", fontWeight: 600 }}>{zipFile.name}</span>
           {" · "}{(zipFile.size / 1024).toFixed(1)} KB
         </div>
       )}
 
-      {/* Error */}
       {error && (
-        <div style={{ marginTop: 10, padding: "8px 12px", borderRadius: 8, background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca", fontSize: 13 }}>
+        <div style={{ marginTop: 12, padding: "8px 12px", borderRadius: 8, background: "#fee2e2", color: "#dc2626", border: "1px solid #fecaca", fontSize: 12.5 }}>
           {error}
         </div>
       )}
 
-      {/* Response summary */}
+      {/* Response Results */}
       {response && (
-        <div style={{ marginTop: 12 }}>
-          {/* Summary bar */}
+        <div style={{ marginTop: 14 }}>
           <div style={{
             padding: "8px 12px",
             borderRadius: 8,
-            background: response.success ? "#f0fdf4" : "#fef2f2",
+            background: response.success ? "#dcfce7" : "#fee2e2",
             border: `1px solid ${response.success ? "#bbf7d0" : "#fecaca"}`,
-            color: response.success ? "#16a34a" : "#dc2626",
-            fontSize: 13,
-            fontWeight: 500,
+            color: response.success ? "#15803d" : "#dc2626",
+            fontSize: 12.5,
+            fontWeight: 600,
             marginBottom: 8,
           }}>
             {response.success
-              ? `✓ ${response.uploaded} solution${response.uploaded !== 1 ? "s" : ""} uploaded successfully`
-              : `Upload failed`}
+              ? `✓ ${response.uploaded} solution image${response.uploaded !== 1 ? "s" : ""} uploaded and linked`
+              : "Upload failed"}
             {response.failed > 0 && (
-              <span style={{ color: "#d97706", marginLeft: 10, fontWeight: 400 }}>
+              <span style={{ color: "#a16207", marginLeft: 10, fontWeight: 400 }}>
                 · {response.failed} failed
               </span>
             )}
           </div>
 
-          {/* Success results */}
           {response.results.length > 0 && (
-            <div style={{ marginBottom: 8 }}>
-              <div style={{ fontSize: 12, color: "var(--color-text-secondary)", marginBottom: 4 }}>Uploaded:</div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 4, maxHeight: 160, overflowY: "auto" }}>
-                {response.results.map((r, i) => (
-                  <div key={i} style={{
-                    display: "flex", alignItems: "center", gap: 8,
-                    padding: "5px 10px", borderRadius: 6,
-                    background: "var(--color-background-primary)",
-                    border: "0.5px solid var(--color-border-tertiary)",
-                    fontSize: 12,
-                  }}>
-                    <span style={{ color: "#16a34a", fontWeight: 600 }}>✓</span>
-                    <span style={{ color: "var(--color-text-secondary)", fontFamily: "monospace", fontSize: 11 }}>{r.questionId}</span>
-                    <span style={{ color: "var(--color-text-secondary)" }}>←</span>
-                    <span style={{ color: "var(--color-text-primary)" }}>{r.filename}</span>
-                    {r.solutionImage && (
-                      <a
-                        href={r.solutionImage}
-                        target="_blank"
-                        rel="noreferrer"
-                        style={{ marginLeft: "auto", color: "#6d28d9", fontSize: 11, textDecoration: "none" }}
-                      >
-                        View ↗
-                      </a>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Errors */}
-          {response.errors.length > 0 && (
-            <div>
-              <div style={{ fontSize: 12, color: "#dc2626", marginBottom: 4 }}>Failed:</div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 4, maxHeight: 120, overflowY: "auto" }}>
-                {response.errors.map((e, i) => (
-                  <div key={i} style={{
-                    display: "flex", alignItems: "flex-start", gap: 8,
-                    padding: "5px 10px", borderRadius: 6,
-                    background: "#fef2f2",
-                    border: "0.5px solid #fecaca",
-                    fontSize: 12,
-                  }}>
-                    <span style={{ color: "#dc2626", fontWeight: 600 }}>✗</span>
-                    <span style={{ color: "var(--color-text-primary)" }}>{e.filename}</span>
-                    <span style={{ color: "#dc2626", marginLeft: "auto" }}>{e.error}</span>
-                  </div>
-                ))}
-              </div>
+            <div style={{ maxHeight: 150, overflowY: "auto", background: "#fbfbfd", borderRadius: 8, border: "1px solid rgba(0, 0, 0, 0.06)", padding: 6 }}>
+              {response.results.map((r, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 8px", fontSize: 12, borderBottom: "1px solid #f2f2f7" }}>
+                  <span style={{ color: "#15803d", fontWeight: 600 }}>✓</span>
+                  <span style={{ color: "#0071e3", fontFamily: "SF Mono, monospace", fontSize: 11 }}>{r.questionId}</span>
+                  <span style={{ color: "#86868b" }}>←</span>
+                  <span style={{ color: "#1d1d1f" }}>{r.filename}</span>
+                  {r.solutionImage && (
+                    <a href={r.solutionImage} target="_blank" rel="noreferrer" style={{ marginLeft: "auto", color: "#0071e3", fontSize: 11, textDecoration: "none" }}>
+                      Preview ↗
+                    </a>
+                  )}
+                </div>
+              ))}
             </div>
           )}
         </div>
       )}
-    </div>
+    </section>
   );
 }

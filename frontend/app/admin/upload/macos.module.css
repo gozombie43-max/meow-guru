@@ -1,0 +1,291 @@
+/* ==========================================================================
+   macOS Sequoia / Sonoma Light Design System for SSC Admin Upload Studio
+   ========================================================================== */
+
+:root {
+  --mac-bg-desktop: #f2f4f8;
+  --mac-window-bg: rgba(255, 255, 255, 0.88);
+  --mac-window-border: rgba(0, 0, 0, 0.08);
+  --mac-window-shadow: 0 24px 60px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.06);
+  --mac-titlebar-bg: rgba(246, 246, 248, 0.95);
+  --mac-surface: #ffffff;
+  --mac-surface-hover: #f5f5f7;
+  --mac-surface-active: #e5e5ea;
+  --mac-border: rgba(0, 0, 0, 0.08);
+  --mac-border-focus: #0071e3;
+  --mac-blue: #0071e3;
+  --mac-blue-hover: #0077ed;
+  --mac-green: #34c759;
+  --mac-yellow: #ffcc00;
+  --mac-orange: #ff9500;
+  --mac-red: #ff3b30;
+  --mac-purple: #af52de;
+  --mac-indigo: #5856d6;
+  --mac-teal: #5ac8fa;
+  --mac-text-primary: #1d1d1f;
+  --mac-text-secondary: #6e6e73;
+  --mac-text-tertiary: #86868b;
+  --mac-font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
+  --mac-font-mono: "SF Mono", Menlo, Monaco, Consolas, monospace;
+}
+
+/* Ambient Desktop Backdrop - Light Sonoma Aurora */
+.desktop {
+  min-height: 100vh;
+  background-color: var(--mac-bg-desktop);
+  background-image: 
+    radial-gradient(at 10% 15%, rgba(0, 113, 227, 0.08) 0px, transparent 50%),
+    radial-gradient(at 90% 15%, rgba(175, 82, 222, 0.07) 0px, transparent 50%),
+    radial-gradient(at 50% 85%, rgba(90, 200, 250, 0.08) 0px, transparent 60%),
+    radial-gradient(at 80% 80%, rgba(52, 199, 89, 0.06) 0px, transparent 40%);
+  background-attachment: fixed;
+  padding: 24px 16px 48px;
+  font-family: var(--mac-font);
+  color: var(--mac-text-primary);
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* macOS Window Shell */
+.window {
+  width: 100%;
+  max-width: 1120px;
+  background: var(--mac-window-bg);
+  backdrop-filter: blur(40px) saturate(190%);
+  -webkit-backdrop-filter: blur(40px) saturate(190%);
+  border-radius: 18px;
+  border: 1px solid var(--mac-window-border);
+  box-shadow: var(--mac-window-shadow);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: macWindowPop 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes macWindowPop {
+  0% { transform: scale(0.985) translateY(6px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+/* Title Bar with Traffic Lights */
+.titlebar {
+  height: 48px;
+  background: var(--mac-titlebar-bg);
+  border-bottom: 1px solid var(--mac-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  user-select: none;
+  position: relative;
+}
+
+.trafficLights {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.trafficLight {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.2);
+  transition: filter 0.15s ease;
+}
+
+.trafficLightClose { background: #ff5f56; border: 0.5px solid #e0443e; }
+.trafficLightMin { background: #ffbd2e; border: 0.5px solid #dea123; }
+.trafficLightMax { background: #27c93f; border: 0.5px solid #1aab29; }
+
+.trafficLights:hover .trafficLightClose::before {
+  content: "×";
+  font-size: 10px;
+  color: #5c0000;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.trafficLights:hover .trafficLightMin::before {
+  content: "–";
+  font-size: 10px;
+  color: #5c3b00;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.trafficLights:hover .trafficLightMax::before {
+  content: "+";
+  font-size: 9px;
+  color: #004d00;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.windowTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--mac-text-primary);
+  letter-spacing: -0.01em;
+}
+
+.windowTitleBadge {
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(0, 113, 227, 0.1);
+  color: #0071e3;
+  padding: 2px 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 113, 227, 0.2);
+}
+
+.titlebarActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.adminLinkBtn {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--mac-text-secondary);
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 4px 10px;
+  border-radius: 6px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: all 0.15s ease;
+}
+
+.adminLinkBtn:hover {
+  background: #f5f5f7;
+  color: var(--mac-text-primary);
+  border-color: rgba(0, 0, 0, 0.16);
+}
+
+/* macOS Segmented Tab Navigation Bar */
+.navBar {
+  background: rgba(240, 240, 244, 0.95);
+  border-bottom: 1px solid var(--mac-border);
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  overflow-x: auto;
+  gap: 6px;
+  scrollbar-width: none;
+}
+
+.navBar::-webkit-scrollbar {
+  display: none;
+}
+
+.segmentedControl {
+  display: flex;
+  background: rgba(0, 0, 0, 0.06);
+  padding: 3px;
+  border-radius: 9px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  gap: 2px;
+  width: 100%;
+}
+
+.tabItem {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 6px 14px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--mac-text-secondary);
+  text-decoration: none;
+  border-radius: 7px;
+  white-space: nowrap;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+.tabItem:hover {
+  color: var(--mac-text-primary);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.tabItemActive {
+  background: #ffffff !important;
+  color: #1d1d1f !important;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 1px rgba(0, 0, 0, 0.15);
+}
+
+.tabIcon {
+  font-size: 14px;
+}
+
+/* Window Content Body */
+.windowContent {
+  padding: 28px;
+  min-height: calc(100vh - 160px);
+  box-sizing: border-box;
+  background: #fbfbfd;
+}
+
+/* macOS Status Footer Bar */
+.windowFooter {
+  height: 28px;
+  background: #f6f6f8;
+  border-top: 1px solid var(--mac-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  font-size: 11px;
+  color: var(--mac-text-tertiary);
+  user-select: none;
+}
+
+.statusIndicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--mac-green);
+  box-shadow: 0 0 4px rgba(52, 199, 89, 0.6);
+}
+
+@media (max-width: 768px) {
+  .desktop {
+    padding: 8px 4px 24px;
+  }
+  .window {
+    border-radius: 12px;
+  }
+  .windowContent {
+    padding: 16px;
+  }
+  .tabItem {
+    font-size: 11.5px;
+    padding: 5px 8px;
+    gap: 4px;
+  }
+}
