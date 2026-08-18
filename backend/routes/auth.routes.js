@@ -4,6 +4,8 @@ import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
 import passport from '../auth/passport.js';
 import { signToken, signRefreshToken, verifyRefreshToken } from '../auth/jwt.js';
+import { validateBody } from '../middleware/validation.js';
+import { registerSchema, loginSchema } from '../schemas/apiSchemas.js';
 
 const router = express.Router();
 let usersContainer;
@@ -51,14 +53,13 @@ const withRefreshToken = (payload, refreshToken) => (
 );
 
 // ── POST /auth/register ─────────────────────────────────
-router.post('/register', async (req, res) => {
+router.post('/register', validateBody(registerSchema), async (req, res) => {
   const { name, email, password } = req.body;
-  if (!name || !email || !password)
-    return res.status(400).json({ error: 'All fields required' });
+  const emailLockId = `email_${email.toLowerCase()}`;
+  let lockAcquired = false;
 
   try {
     // Attempt to create a lock document for the email to prevent race conditions
-    const emailLockId = `email_${email.toLowerCase()}`;
     try {
       await usersContainer.items.create({
         id: emailLockId,
@@ -66,6 +67,7 @@ router.post('/register', async (req, res) => {
         email: email.toLowerCase(),
         createdAt: new Date().toISOString()
       });
+      lockAcquired = true;
     } catch (err) {
       if (err.code === 409) {
         return res.status(409).json({ error: 'Email already registered' });
@@ -76,7 +78,9 @@ router.post('/register', async (req, res) => {
     const passwordHash = await bcrypt.hash(password, 12);
     const user = {
       id:           `user-${uuid()}`,
-      name, email,
+      name,
+      email:        email.toLowerCase(),
+      role:         'student',
       authProvider: 'local',
       passwordHash,
       progress:     {},
@@ -88,34 +92,39 @@ router.post('/register', async (req, res) => {
 
     await usersContainer.items.create(user);
 
-    const token        = signToken({ id: user.id, email: user.email, name: user.name });
-    const refreshToken = signRefreshToken({ id: user.id, email: user.email, name: user.name });
+    const token        = signToken({ id: user.id, email: user.email, name: user.name, role: user.role });
+    const refreshToken = signRefreshToken({ id: user.id, email: user.email, name: user.name, role: user.role });
 
     applyRefreshToken(res, refreshToken);
     res.status(201).json(withRefreshToken({
       message: 'Registered ✅',
       token,
-      user: { id: user.id, name: user.name, email: user.email },
+      user: { id: user.id, name: user.name, email: user.email, role: user.role },
     }, refreshToken));
   } catch (err) {
+    if (lockAcquired) {
+      try {
+        await usersContainer.item(emailLockId, email.toLowerCase()).delete();
+      } catch { /* ignore rollback failure */ }
+    }
     res.status(500).json({ error: err.message });
   }
 });
 
 // ── POST /auth/login ────────────────────────────────────
-router.post('/login', (req, res, next) => {
+router.post('/login', validateBody(loginSchema), (req, res, next) => {
   passport.authenticate('local', { session: false }, (err, user, info) => {
     if (err)   return next(err);
     if (!user) return res.status(401).json({ error: info?.message || 'Login failed' });
 
-    const token        = signToken({ id: user.id, email: user.email, name: user.name });
-    const refreshToken = signRefreshToken({ id: user.id, email: user.email, name: user.name });
+    const token        = signToken({ id: user.id, email: user.email, name: user.name, role: user.role || 'student' });
+    const refreshToken = signRefreshToken({ id: user.id, email: user.email, name: user.name, role: user.role || 'student' });
 
     applyRefreshToken(res, refreshToken);
     res.json(withRefreshToken({
       message: 'Logged in ✅',
       token,
-      user: { id: user.id, name: user.name, email: user.email },
+      user: { id: user.id, name: user.name, email: user.email, role: user.role || 'student' },
     }, refreshToken));
   })(req, res, next);
 });

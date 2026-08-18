@@ -103,3 +103,14 @@ export function getRoomBySocket(socketId) {
   }
   return null;
 }
+
+// Periodic cleanup of stale/inactive rooms (> 30 minutes old)
+const ROOM_MAX_AGE_MS = 30 * 60 * 1000;
+setInterval(() => {
+  const now = Date.now();
+  for (const [code, room] of rooms.entries()) {
+    if (now - (room.createdAt || 0) > ROOM_MAX_AGE_MS) {
+      rooms.delete(code);
+    }
+  }
+}, 5 * 60 * 1000).unref();

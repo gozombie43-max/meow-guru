@@ -2,12 +2,11 @@
 
 import React from "react";
 import katex from "katex";
-import "katex/dist/katex.min.css";
 
 interface MathRendererProps {
   text: string;
   className?: string;
-  inline?: boolean; // kept for backward compatibility
+  inline?: boolean;
 }
 
 type Part =
@@ -15,14 +14,21 @@ type Part =
   | { type: "inline"; content: string }
   | { type: "display"; content: string };
 
+// LRU/Map Caches for string parsing and KaTeX HTML rendering
+const MAX_CACHE_SIZE = 2500;
+const partsCache = new Map<string, Part[]>();
+const katexHtmlCache = new Map<string, string>();
+
 function parseParts(input: string): Part[] {
+  if (partsCache.has(input)) {
+    return partsCache.get(input)!;
+  }
+
   const parts: Part[] = [];
-    // Normalize repeated backslashes (e.g. "\\\\(" or "\\(") to a single backslash
-    // so delimiters like \( ... \) are detected reliably even when double-escaped in JSON.
-    const normalizedBackslashes = input.replace(/\\{2,}/g, "\\");
-    const safeInput = normalizedBackslashes.replace(/\\\$/g, "__DOLLAR__");
-    // Accept delimiters with one or more backslashes, e.g. \(...\), \\\(...\\\), $$...$$, and $...$
-    const regex = /\\+\[([\s\S]*?)\\+\]|\\+\(([\s\S]*?)\\+\)|\$\$([\s\S]*?)\$\$|\$([^\n$]+?)\$/g;
+  // Normalize repeated backslashes so delimiters like \( ... \) are detected reliably
+  const normalizedBackslashes = input.replace(/\\{2,}/g, "\\");
+  const safeInput = normalizedBackslashes.replace(/\\\$/g, "__DOLLAR__");
+  const regex = /\\+\[([\s\S]*?)\\+\]|\\+\(([\s\S]*?)\\+\)|\$\$([\s\S]*?)\$\$|\$([^\n$]+?)\$/g;
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
@@ -46,10 +52,39 @@ function parseParts(input: string): Part[] {
     parts.push({ type: "text", content: safeInput.slice(lastIndex) });
   }
 
-  return parts.map((part) => ({
+  const result = parts.map((part) => ({
     ...part,
     content: part.content.replace(/__DOLLAR__/g, "$"),
   }));
+
+  if (partsCache.size > MAX_CACHE_SIZE) {
+    partsCache.clear();
+  }
+  partsCache.set(input, result);
+
+  return result;
+}
+
+function renderKatexSafe(content: string, displayMode: boolean): string {
+  const cacheKey = `${displayMode ? "D" : "I"}:${content}`;
+  if (katexHtmlCache.has(cacheKey)) {
+    return katexHtmlCache.get(cacheKey)!;
+  }
+
+  try {
+    const html = katex.renderToString(content, {
+      throwOnError: false,
+      displayMode,
+      trust: false,
+    });
+    if (katexHtmlCache.size > MAX_CACHE_SIZE) {
+      katexHtmlCache.clear();
+    }
+    katexHtmlCache.set(cacheKey, html);
+    return html;
+  } catch {
+    return content;
+  }
 }
 
 const MathRenderer = React.memo(function MathRenderer({
@@ -63,7 +98,6 @@ const MathRenderer = React.memo(function MathRenderer({
 
   const rendered = parts.map((part, i) => {
     if (part.type === "text") {
-      // Render plain text but detect simple inline fractions like 3/4 or x/100
       const fracRegex = /\(?[^\s\/=()]+\)?\s*\/\s*\(?[^\s\/=()]+\)?/g;
       const nodes: React.ReactNode[] = [];
       let lastIndex = 0;
@@ -77,30 +111,19 @@ const MathRenderer = React.memo(function MathRenderer({
         let rawDen = partsFrac.slice(1).join('/').trim().replace(/^\(|\)$/g, '');
         const hasPercent = rawDen.endsWith('%');
         if (hasPercent) rawDen = rawDen.slice(0, -1).trim();
-        try {
-          const html = katex.renderToString(`\\tfrac{${rawNum}}{${rawDen}}`, { throwOnError: false, displayMode: false });
-          nodes.push(
-            <span key={`${i}-f-${idx}`} dangerouslySetInnerHTML={{ __html: html }} />
-          );
-          if (hasPercent) nodes.push(<span key={`${i}-f-pct-${idx}`}>%</span>);
-        } catch {
-          nodes.push(<span key={`${i}-f-fallback-${idx}`}>{frac}</span>);
-        }
+        const html = renderKatexSafe(`\\tfrac{${rawNum}}{${rawDen}}`, false);
+        nodes.push(
+          <span key={`${i}-f-${idx}`} dangerouslySetInnerHTML={{ __html: html }} />
+        );
+        if (hasPercent) nodes.push(<span key={`${i}-f-pct-${idx}`}>%</span>);
         lastIndex = fracRegex.lastIndex;
       }
       if (lastIndex < part.content.length) nodes.push(<span key={`${i}-t-last`}>{part.content.slice(lastIndex)}</span>);
       return <span key={i}>{nodes}</span>;
     }
 
-    // Fallback: convert simple ASCII numeric fractions (e.g. 3/4) into \tfrac{3}{4}
-    // so they render like a math-book fraction. Only apply inside math parts.
     const mathContent = part.content.replace(/(\d+)\s*\/\s*(\d+)/g, "\\tfrac{$1}{$2}");
-
-    const html = katex.renderToString(mathContent, {
-      throwOnError: false,
-      displayMode: part.type === "display",
-      trust: false,
-    });
+    const html = renderKatexSafe(mathContent, part.type === "display");
 
     return (
       <span
@@ -109,8 +132,7 @@ const MathRenderer = React.memo(function MathRenderer({
         style={
           part.type === "display"
             ? { display: "block", textAlign: "center", margin: "0.5em 0" }
-            : // add small horizontal spacing for inline math so it doesn't stick to text
-              { display: "inline-block", marginLeft: "0.22em", marginRight: "0.22em" }
+            : { display: "inline-block", marginLeft: "0.22em", marginRight: "0.22em" }
         }
       />
     );

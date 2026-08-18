@@ -25,7 +25,6 @@ import {
   Bell,
   BookOpen,
   ChevronRight,
-  Clock,
   Crown,
   FileCheck2,
   GraduationCap,
@@ -35,7 +34,6 @@ import {
   Moon,
   Play,
   Search,
-  Smartphone,
   Sun,
   Swords,
   Video,
@@ -313,7 +311,7 @@ export default function Home() {
   );
 
   return (
-    <main className={`${styles.pageWrapper} ${isDark ? styles.dark : styles.light}`}>
+    <main className={`${styles.pageWrapper} ${isDark ? styles.dark : ''}`}>
       {/* Ambient background waves */}
       <div
         aria-hidden="true"
@@ -502,7 +500,7 @@ export default function Home() {
                   aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
                   title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
                 >
-                  {isDark ? <Sun size={19} /> : <Sun size={19} />}
+                  {isDark ? <Sun size={19} /> : <Moon size={19} />}
                 </button>
 
                 {/* Notifications */}
@@ -566,24 +564,6 @@ export default function Home() {
                       Learn your way. <br />
                       Anywhere, anytime.
                     </p>
-
-                    {/* Highlights Row */}
-                    <div className={styles.heroHighlights}>
-                      <div className={styles.highlightItem}>
-                        <BookOpen size={14} className={styles.highlightIcon} />
-                        <span>Wide Range</span>
-                      </div>
-                      <span className={styles.highlightDivider} />
-                      <div className={styles.highlightItem}>
-                        <Clock size={14} className={styles.highlightIcon} />
-                        <span>Learn Anytime</span>
-                      </div>
-                      <span className={styles.highlightDivider} />
-                      <div className={styles.highlightItem}>
-                        <Smartphone size={14} className={styles.highlightIcon} />
-                        <span>Study Anywhere</span>
-                      </div>
-                    </div>
                   </div>
 
                   {/* Arched Student Visual */}
@@ -792,23 +772,6 @@ export default function Home() {
                 <br />
                 Anywhere, anytime.
               </p>
-
-              <div className={styles.mobileHeroFeatures}>
-                <div className={styles.heroFeature}>
-                  <BookOpen size={16} className={styles.featureIcon} />
-                  <span>Wide Range</span>
-                </div>
-                <div className={styles.featureDivider} />
-                <div className={styles.heroFeature}>
-                  <Clock size={16} className={styles.featureIcon} />
-                  <span>Learn Anytime</span>
-                </div>
-                <div className={styles.featureDivider} />
-                <div className={styles.heroFeature}>
-                  <Smartphone size={16} className={styles.featureIcon} />
-                  <span>Study Anywhere</span>
-                </div>
-              </div>
             </div>
 
             <div className={styles.mobileHeroVisual}>

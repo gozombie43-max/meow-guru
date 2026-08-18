@@ -5,12 +5,13 @@ import { useCallback, useEffect, useState } from 'react';
 export type ThemeMode = 'light' | 'dark';
 
 const THEME_STORAGE_KEY = 'ui-theme';
+const DEFAULT_THEME: ThemeMode = 'light';
 const listeners = new Set<(theme: ThemeMode) => void>();
-let currentTheme: ThemeMode = 'light';
+let currentTheme: ThemeMode = DEFAULT_THEME;
 let initialized = false;
 
 const getPreferredTheme = (): ThemeMode => {
-  if (typeof window === 'undefined') return 'light';
+  if (typeof window === 'undefined') return DEFAULT_THEME;
   const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
   if (stored === 'dark' || stored === 'light') return stored;
   const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
@@ -25,7 +26,9 @@ const applyThemeToDom = (theme: ThemeMode) => {
   body.classList.toggle('theme-light', theme === 'light');
   root.classList.toggle('theme-dark', theme === 'dark');
   root.classList.toggle('theme-light', theme === 'light');
-  window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+  try {
+    window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+  } catch {}
 };
 
 const setThemeInternal = (nextTheme: ThemeMode) => {
@@ -41,12 +44,11 @@ const initTheme = () => {
 };
 
 export function useThemeMode() {
-  const [theme, setTheme] = useState<ThemeMode>(currentTheme);
+  const [theme, setTheme] = useState<ThemeMode>(DEFAULT_THEME);
 
   useEffect(() => {
     initTheme();
     setTheme(currentTheme);
-
     const handleTheme = (nextTheme: ThemeMode) => setTheme(nextTheme);
     listeners.add(handleTheme);
     return () => {

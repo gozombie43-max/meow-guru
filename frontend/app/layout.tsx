@@ -31,21 +31,6 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  if (sessionStorage.getItem('app-initial-boot-complete') !== '1') {
-                    document.documentElement.classList.add('app-is-booting');
-                  }
-                } catch (e) {}
-              })();
-            `,
-          }}
-        />
-      </head>
       <body className={geist.className}>
         <AuthProvider>
           <InitialLoadingGate />

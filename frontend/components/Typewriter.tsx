@@ -11,7 +11,7 @@ const RenderTarget = {
     preview: "preview",
 }
 
-function __OriginkitBase_Typewriter(props: Props) {
+function OriginkitBase_Typewriter(props: Props) {
     props = { ...COMPONENT_DEFAULTS, ...props }
     const {
         texts,
@@ -255,5 +255,5 @@ const __originkitPresetProps = {
 };
 
 export default function Typewriter(props: Record<string, unknown>) {
-  return <__OriginkitBase_Typewriter {...(__originkitPresetProps as Record<string, unknown>)} {...props} />;
+  return <OriginkitBase_Typewriter {...(__originkitPresetProps as Record<string, unknown>)} {...props} />;
 }

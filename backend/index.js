@@ -27,6 +27,7 @@ import accessCodeRoutes from './routes/accessCodes.js';
 import cognitiveMapperRouter from './agents/cognitiveMapperRouter.js';
 import adaptiveQuizRouter from './agents/adaptiveQuiz/adaptiveQuizRouter.js';
 import { setQuestionsContainer, setUsersContainer, setNotesContainer, setAccessCodesContainer, setMockAttemptsContainer, setMockSlotsContainer } from './containerStore.js';
+import helmet from 'helmet';
 import { initBattleSocket } from './battle/battleSocket.js';
 
 const app = express();
@@ -41,8 +42,8 @@ const allowedOrigins = new Set([
   'http://localhost:5000',
   'http://127.0.0.1:5500',
   'http://localhost:5500',
-  'null',
   'https://brave-island-0a237e400.6.azurestaticapps.net',
+  ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
 ]);
 
 const allowedOriginPatterns = [
@@ -68,6 +69,12 @@ const corsOptions = {
 };
 
 // ── Middleware ──────────────────────────────────────────
+// Security headers via Helmet
+app.use(helmet({
+  contentSecurityPolicy: false, // keep false for API to prevent asset embedding blocks on client
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+}));
+
 // CORS must be first — before every other middleware
 app.use(cors(corsOptions));
 app.options(/(.*)/, cors(corsOptions)); // handle preflight for all routes
@@ -138,15 +145,15 @@ async function initWithRetry() {
     app.use('/api/agent', cognitiveMapperRouter);
     app.use('/api/adaptive-quiz', adaptiveQuizRouter);
     app.use('/api/upload', uploadLimiter, imageUploadRoutes);
-    app.use('/api', massUploadImages);
-    app.use('/api', massUploadSolutions);
+    app.use('/api', uploadLimiter, massUploadImages);
+    app.use('/api', uploadLimiter, massUploadSolutions);
     app.use('/api/upload-note-image', uploadLimiter, uploadNoteImageRoutes);
     app.use('/api/notes', notesRoutes);
     app.use('/auth', authLimiter, initAuthRoutes(usersContainer));
     app.use('/users', initUserRoutes(usersContainer));
     app.use('/api/videos', videoRoutes);
     app.use('/api/pdfs', pdfRoutes);
-    app.use('/api/access-code', accessCodeRoutes);
+    app.use('/api/access-code', authLimiter, accessCodeRoutes);
 
     // Global error handler — must be registered AFTER all routes
     app.use(errorHandler);

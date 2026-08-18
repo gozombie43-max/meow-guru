@@ -1,21 +1,18 @@
 // backend/ai/azureClient.js
 import OpenAI from "openai";
 
-const apiKey =
-  process.env.AZURE_OPENAI_KEY ||
-  process.env.NEXT_PUBLIC_AZURE_OPENAI_KEY ||
-  process.env.VITE_AZURE_OPENAI_KEY;
+const apiKey = process.env.AZURE_OPENAI_KEY || process.env.OPENAI_API_KEY;
+const baseURL = process.env.AZURE_OPENAI_BASE_URL || "https://quizguru-ai.openai.azure.com/openai/v1";
 
-const baseURL =
-  process.env.AZURE_OPENAI_BASE_URL ||
-  process.env.NEXT_PUBLIC_AZURE_OPENAI_BASE_URL ||
-  process.env.VITE_AZURE_OPENAI_BASE_URL ||
-  "https://quizguru-ai.openai.azure.com/openai/v1";
+if (!apiKey && process.env.NODE_ENV === "production") {
+  console.warn("WARNING: AZURE_OPENAI_KEY is not configured in environment variables.");
+}
 
 const client = new OpenAI({
   apiKey: apiKey || "dummy-azure-key",
   baseURL,
 });
+
 
 export async function chatComplete(userPrompt, model = "o4-mini", systemPrompt = null) {
   const messages = [];

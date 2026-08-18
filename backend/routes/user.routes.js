@@ -1,6 +1,13 @@
 // backend/routes/user.routes.js
 import express from 'express';
 import { protect } from '../middleware/protect.js';
+import { validateBody } from '../middleware/validation.js';
+import {
+  bookmarkPatchSchema,
+  progressPatchSchema,
+  recentQuizPatchSchema,
+  studyTimePatchSchema,
+} from '../schemas/apiSchemas.js';
 
 const router = express.Router();
 let usersContainer;
@@ -10,8 +17,18 @@ export const initUserRoutes = (container) => {
   return router;
 };
 
-// helper: fetch user by id (cross-partition query)
-const getUserById = async (id) => {
+// Optimized point read using email partition key with cross-partition fallback
+const getUser = async (id, email) => {
+  if (email && usersContainer) {
+    try {
+      const { resource } = await usersContainer.item(id, email.toLowerCase()).read();
+      if (resource) return resource;
+    } catch (e) {
+      if (e.code !== 404) console.warn('Point read warning:', e.message);
+    }
+  }
+
+  // Fallback to query if email is missing or point read failed
   const { resources } = await usersContainer.items
     .query({
       query: 'SELECT * FROM c WHERE c.id = @id',
@@ -24,7 +41,7 @@ const getUserById = async (id) => {
 // ── GET /users/me ───────────────────────────────────────
 router.get('/me', protect, async (req, res) => {
   try {
-    const user = await getUserById(req.user.id);
+    const user = await getUser(req.user.id, req.user.email);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const { passwordHash, ...safeUser } = user;
@@ -35,15 +52,11 @@ router.get('/me', protect, async (req, res) => {
 });
 
 // ── PATCH /users/me/bookmarks ───────────────────────────
-// body: { questionId: "cgl-t2-algebra-62", action: "add" | "remove" }
-router.patch('/me/bookmarks', protect, async (req, res) => {
+router.patch('/me/bookmarks', protect, validateBody(bookmarkPatchSchema), async (req, res) => {
   const { questionId, action, meta } = req.body;
 
-  if (!questionId || !action)
-    return res.status(400).json({ error: 'questionId and action required' });
-
   try {
-    const user = await getUserById(req.user.id);
+    const user = await getUser(req.user.id, req.user.email);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const now = new Date().toISOString();
@@ -86,8 +99,6 @@ router.patch('/me/bookmarks', protect, async (req, res) => {
     } else if (action === 'remove') {
       bookmarks = bookmarks.filter(id => id !== safeId);
       bookmarkEntries = bookmarkEntries.filter((b) => b.questionId !== safeId);
-    } else {
-      return res.status(400).json({ error: 'action must be "add" or "remove"' });
     }
 
     bookmarkEntries = bookmarkEntries
@@ -108,15 +119,11 @@ router.patch('/me/bookmarks', protect, async (req, res) => {
 });
 
 // ── PATCH /users/me/progress ────────────────────────────
-// body: { topic: "Algebra", attempted: 1, correct: 1 }
-router.patch('/me/progress', protect, async (req, res) => {
+router.patch('/me/progress', protect, validateBody(progressPatchSchema), async (req, res) => {
   const { topic, attempted, correct } = req.body;
 
-  if (!topic || attempted === undefined || correct === undefined)
-    return res.status(400).json({ error: 'topic, attempted, correct required' });
-
   try {
-    const user = await getUserById(req.user.id);
+    const user = await getUser(req.user.id, req.user.email);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const progress = user.progress || {};
@@ -136,8 +143,7 @@ router.patch('/me/progress', protect, async (req, res) => {
 });
 
 // ── PATCH /users/me/recent-quizzes ─────────────────────
-// body: { quizKey, title, subject, slug?, href, mode?, currentIndex?, totalQuestions?, selectedAnswers?, submittedQuestions?, results?, status? }
-router.patch('/me/recent-quizzes', protect, async (req, res) => {
+router.patch('/me/recent-quizzes', protect, validateBody(recentQuizPatchSchema), async (req, res) => {
   const {
     quizKey,
     title,
@@ -153,11 +159,8 @@ router.patch('/me/recent-quizzes', protect, async (req, res) => {
     status,
   } = req.body;
 
-  if (!quizKey || !title || !subject || !href)
-    return res.status(400).json({ error: 'quizKey, title, subject, href required' });
-
   try {
-    const user = await getUserById(req.user.id);
+    const user = await getUser(req.user.id, req.user.email);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const updatedAt = new Date().toISOString();
@@ -212,15 +215,11 @@ router.patch('/me/recent-quizzes', protect, async (req, res) => {
 });
 
 // ── PATCH /users/me/usage ──────────────────────────────
-// body: { activeSeconds: 30 }
-router.patch('/me/usage', protect, async (req, res) => {
+router.patch('/me/usage', protect, validateBody(studyTimePatchSchema), async (req, res) => {
   const { activeSeconds } = req.body;
-  if (!activeSeconds || typeof activeSeconds !== 'number') {
-    return res.status(400).json({ error: 'activeSeconds is required and must be a number' });
-  }
 
   try {
-    const user = await getUserById(req.user.id);
+    const user = await getUser(req.user.id, req.user.email);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const currentStudyTime = user.studyTime || 0;
@@ -237,7 +236,7 @@ router.patch('/me/usage', protect, async (req, res) => {
 // ── GET /users/me/ai-chats ─────────────────────────────
 router.get('/me/ai-chats', protect, async (req, res) => {
   try {
-    const user = await getUserById(req.user.id);
+    const user = await getUser(req.user.id, req.user.email);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const aiChats = Array.isArray(user.aiChats) ? user.aiChats : [];
@@ -283,7 +282,7 @@ router.put('/me/ai-chats/:chatId', protect, async (req, res) => {
   }
 
   try {
-    const user = await getUserById(req.user.id);
+    const user = await getUser(req.user.id, req.user.email);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const updatedAt = new Date().toISOString();
@@ -331,7 +330,7 @@ router.delete('/me/ai-chats/:chatId', protect, async (req, res) => {
   if (!chatId) return res.status(400).json({ error: 'chatId is required' });
 
   try {
-    const user = await getUserById(req.user.id);
+    const user = await getUser(req.user.id, req.user.email);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const aiChats = (Array.isArray(user.aiChats) ? user.aiChats : [])

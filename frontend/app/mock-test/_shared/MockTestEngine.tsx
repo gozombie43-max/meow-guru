@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useIsDesktop } from './useIsDesktop';
 import { startTest, getAttempt, autosaveAttempt, submitAttempt } from './api';
 import { useAuth } from '@/context/AuthContext';
+import MathRenderer from '@/components/MathRenderer';
 import styles from './MockTestEngine.module.css';
 // import { getExamConfig, getSlotById } from './exam-config';
 
@@ -218,9 +219,8 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
   };
 
   const renderMath = (text: string) => {
-    // Simplistic render math logic placeholder
-    // In real app, integrate Katex properly e.g. react-latex-next
-    return <span dangerouslySetInnerHTML={{ __html: text.replace(/\$(.*?)\$/g, '<i>$1</i>') }} />;
+    if (!text) return null;
+    return <MathRenderer text={text} inline />;
   };
 
   const getStatusClass = (status?: QuestionStatus) => {
