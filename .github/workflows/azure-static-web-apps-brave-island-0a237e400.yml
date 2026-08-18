@@ -18,14 +18,14 @@ jobs:
        id-token: write
        contents: read
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: true
           lfs: false
       - name: Install OIDC Client from Core Package
         run: npm install @actions/core@1.6.0 @actions/http-client
       - name: Get Id Token
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         id: idtoken
         with:
            script: |
@@ -43,13 +43,13 @@ jobs:
           app_location: "./frontend" # App source code path
           api_location: "" # Api source code path - optional
           output_location: "" # Hybrid Next.js deployment: do not expect a static export folder
-          github_id_token: ${{ steps.idtoken.outputs.result }}
           ###### End of Repository/Build Configurations ######
         env:
           NEXT_PUBLIC_API_URL: https://quizguru-backend-hsb0enbnhbbhh5ek.centralindia-01.azurewebsites.net
           AZURE_TRANSLATOR_KEY: ${{ secrets.AZURE_TRANSLATOR_KEY }}
           NEXT_PUBLIC_AZURE_TRANSLATOR_ENDPOINT: https://api.cognitive.microsofttranslator.com
           NEXT_PUBLIC_AZURE_TRANSLATOR_REGION: eastasia
+          ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
@@ -63,4 +63,3 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_BRAVE_ISLAND_0A237E400 }}
           app_location: "./frontend"
           action: "close"
-
