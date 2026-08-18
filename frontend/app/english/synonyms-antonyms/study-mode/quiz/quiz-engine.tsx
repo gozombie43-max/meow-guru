@@ -400,6 +400,47 @@ export default function StudyModeQuizEngine() {
     return () => window.removeEventListener("mousedown", close);
   }, [isLetterDropdownOpen]);
 
+  // Handle Real Device / Browser Back Button (popstate interception)
+  const isPaletteOpenRef = useRef(false);
+  const isExitConfirmRef = useRef(false);
+  isPaletteOpenRef.current = isMobilePaletteOpen;
+  isExitConfirmRef.current = showExitConfirm;
+
+  useEffect(() => {
+    // Push an initial history entry to trap real back navigation
+    window.history.pushState({ trapExit: true }, "", window.location.href);
+
+    const handlePopState = (e: PopStateEvent) => {
+      // 1. If Exit Confirmation is open, back button closes it
+      if (isExitConfirmRef.current) {
+        setShowExitConfirm(false);
+        window.history.pushState({ trapExit: true }, "", window.location.href);
+        return;
+      }
+
+      // 2. If Vocabulary Palette is open, back button closes the palette first
+      if (isPaletteOpenRef.current) {
+        setIsMobilePaletteOpen(false);
+        window.history.pushState({ trapExit: true }, "", window.location.href);
+        return;
+      }
+
+      // 3. Intercept real back button: show exit confirmation popup modal
+      setShowExitConfirm(true);
+      window.history.pushState({ trapExit: true }, "", window.location.href);
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, []);
+
+  const handleConfirmExit = () => {
+    setShowExitConfirm(false);
+    router.push("/english/synonyms-antonyms/study-mode");
+  };
+
   // Derive the set of letters that actually exist in the word list (memoized)
   // MUST be before any conditional return to obey Rules of Hooks
   const availableLetters = useMemo(
@@ -485,6 +526,45 @@ export default function StudyModeQuizEngine() {
 
   return (
     <main className="apple-dict-viewport" data-theme={theme}>
+      {/* Mini Middle Pop-up Exit Confirmation Modal */}
+      {showExitConfirm && (
+        <div
+          className="exit-modal-backdrop"
+          onClick={() => setShowExitConfirm(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="exit-modal-title"
+        >
+          <div className="exit-modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="exit-modal-icon-wrap">
+              <LogOut size={22} className="exit-modal-icon" />
+            </div>
+            <h3 id="exit-modal-title" className="exit-modal-title">
+              Want to exit?
+            </h3>
+            <p className="exit-modal-desc">
+              Are you sure you want to leave study mode? Your session progress is saved.
+            </p>
+            <div className="exit-modal-actions">
+              <button
+                type="button"
+                className="exit-btn-cancel"
+                onClick={() => setShowExitConfirm(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="exit-btn-confirm"
+                onClick={handleConfirmExit}
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Authentic macOS Apple Dictionary Window (Zero Scroll on PC) ── */}
       <div className="apple-app-window">
         
@@ -885,45 +965,6 @@ export default function StudyModeQuizEngine() {
                     );
                   })
                 )}
-              </div>
-            </div>
-          )}
-
-          {/* Mini Middle Pop-up Exit Confirmation Modal */}
-          {showExitConfirm && (
-            <div
-              className="exit-modal-backdrop"
-              onClick={() => setShowExitConfirm(false)}
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="exit-modal-title"
-            >
-              <div className="exit-modal-card" onClick={(e) => e.stopPropagation()}>
-                <div className="exit-modal-icon-wrap">
-                  <LogOut size={22} className="exit-modal-icon" />
-                </div>
-                <h3 id="exit-modal-title" className="exit-modal-title">
-                  Want to exit?
-                </h3>
-                <p className="exit-modal-desc">
-                  Are you sure you want to leave study mode? Your session progress is saved.
-                </p>
-                <div className="exit-modal-actions">
-                  <button
-                    type="button"
-                    className="exit-btn-cancel"
-                    onClick={() => setShowExitConfirm(false)}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    className="exit-btn-confirm"
-                    onClick={() => router.push("/english/synonyms-antonyms/study-mode")}
-                  >
-                    Confirm
-                  </button>
-                </div>
               </div>
             </div>
           )}
