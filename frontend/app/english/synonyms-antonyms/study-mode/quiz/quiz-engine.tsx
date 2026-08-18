@@ -335,6 +335,11 @@ export default function StudyModeQuizEngine() {
     }
   }, [cards.length, currentPage]);
 
+  // Default to Synonyms tab whenever navigating between words
+  useEffect(() => {
+    setMobileTab("synonyms");
+  }, [currentPage]);
+
   // Desktop Keyboard navigation & Cmd+F Search focus
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
