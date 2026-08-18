@@ -1280,14 +1280,18 @@ export default function StudyModeQuizEngine() {
           height: 30px;
           padding: 0 8px 0 6px;
           border-radius: 8px;
-          border: 0.5px solid var(--divider);
-          background: var(--item-hover);
+          border: 1px solid rgba(255, 255, 255, 0.18);
+          background: rgba(255, 255, 255, 0.07);
           color: var(--system-blue);
           font-size: 12.5px;
           font-weight: 600;
           cursor: pointer;
           transition: background 0.15s ease, transform 0.1s ease;
           -webkit-tap-highlight-color: transparent;
+        }
+        .apple-dict-viewport[data-theme="light"] .mobile-back-btn {
+          border: 1px solid rgba(0, 0, 0, 0.15);
+          background: rgba(0, 0, 0, 0.05);
         }
         .mobile-back-btn:active {
           transform: scale(0.95);
@@ -1330,7 +1334,7 @@ export default function StudyModeQuizEngine() {
           align-items: center;
           justify-content: center;
           gap: 2px;
-          background: var(--item-hover);
+          background: rgba(255, 255, 255, 0.07);
           color: var(--system-blue);
           font-size: 12px;
           font-weight: 700;
@@ -1338,11 +1342,15 @@ export default function StudyModeQuizEngine() {
           height: 28px;
           padding: 0 8px;
           border-radius: 7px;
-          border: 0.5px solid var(--divider);
+          border: 1px solid rgba(255, 255, 255, 0.18);
           letter-spacing: 0.01em;
           cursor: pointer;
           transition: background 0.15s ease, transform 0.1s ease;
           -webkit-tap-highlight-color: transparent;
+        }
+        .apple-dict-viewport[data-theme="light"] .mobile-counter-filter-btn {
+          border: 1px solid rgba(0, 0, 0, 0.15);
+          background: rgba(0, 0, 0, 0.05);
         }
         .mobile-counter-filter-btn:active {
           transform: scale(0.95);
@@ -1356,8 +1364,8 @@ export default function StudyModeQuizEngine() {
           width: 28px;
           height: 28px;
           border-radius: 7px;
-          background: var(--item-hover);
-          border: 0.5px solid var(--divider);
+          background: rgba(255, 255, 255, 0.07);
+          border: 1px solid rgba(255, 255, 255, 0.18);
           color: var(--text-primary);
           display: flex;
           align-items: center;
@@ -1365,6 +1373,10 @@ export default function StudyModeQuizEngine() {
           cursor: pointer;
           transition: background 0.15s ease, transform 0.1s ease;
           -webkit-tap-highlight-color: transparent;
+        }
+        .apple-dict-viewport[data-theme="light"] .appearance-toggle {
+          border: 1px solid rgba(0, 0, 0, 0.15);
+          background: rgba(0, 0, 0, 0.05);
         }
         .appearance-toggle:active {
           transform: scale(0.94);
@@ -1418,26 +1430,40 @@ export default function StudyModeQuizEngine() {
           justify-content: center;
           gap: 8px;
           cursor: pointer;
-          border: 0.5px solid var(--divider);
-          background: var(--item-hover);
+          border: 1px solid rgba(255, 255, 255, 0.22);
+          background: rgba(255, 255, 255, 0.08);
           color: var(--text-primary);
-          transition: transform 0.12s ease, opacity 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+          transition: transform 0.12s ease, opacity 0.15s ease, background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
           -webkit-tap-highlight-color: transparent;
           user-select: none;
         }
 
+        .apple-dict-viewport[data-theme="light"] .mobile-footer-btn {
+          border: 1px solid rgba(0, 0, 0, 0.18);
+          background: rgba(0, 0, 0, 0.05);
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+        }
+
         .mobile-footer-btn:active:not(:disabled) {
           transform: scale(0.97);
-          background: rgba(255, 255, 255, 0.14);
+          background: rgba(255, 255, 255, 0.16);
+          border-color: rgba(255, 255, 255, 0.38);
         }
 
         .apple-dict-viewport[data-theme="light"] .mobile-footer-btn:active:not(:disabled) {
-          background: rgba(0, 0, 0, 0.09);
+          background: rgba(0, 0, 0, 0.1);
+          border-color: rgba(0, 0, 0, 0.32);
         }
 
         .mobile-footer-btn:disabled {
-          opacity: 0.35;
+          opacity: 0.32;
+          border-color: rgba(255, 255, 255, 0.1);
           cursor: not-allowed;
+        }
+
+        .apple-dict-viewport[data-theme="light"] .mobile-footer-btn:disabled {
+          border-color: rgba(0, 0, 0, 0.08);
         }
 
         /* Dictionary Body Content Area */
