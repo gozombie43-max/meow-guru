@@ -1,14 +1,7 @@
 // controllers/questionController.js
-import { getQuestionsContainer } from '../containerStore.js';
-import { LRUCache } from 'lru-cache';
+import * as questionService from '../services/questionService.js';
 
-const QUESTIONS_QUERY_CACHE_TTL_MS = 60 * 1000;
-const questionsQueryCache = new LRUCache({
-  max: 500,
-  ttl: QUESTIONS_QUERY_CACHE_TTL_MS,
-});
-
-// ── Helpers (kept from your original) ─────────────────
+// ── Helpers (kept from your original for req parsing) ─
 function buildRichText(textValue, imagePath) {
   const text  = (textValue  || '').trim();
   const image = (imagePath || '').trim();
@@ -28,66 +21,9 @@ function uploadedPath(file) {
   return `/uploads/${file.filename}`;
 }
 
-function ciMatch(a, b) {
-  return (a || '').toLowerCase() === (b || '').toLowerCase();
-}
-
-function normalizeSearchKey(value) {
-  return String(value || '')
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '');
-}
-
-function matchesNormalizedTopic(question, normalizedTopic) {
-  const candidates = [
-    question.topic,
-    question.chapter,
-    question.subject,
-    question.quizTopic,
-    question.quizName,
-    question.source,
-  ];
-  return candidates.some((field) => normalizeSearchKey(field) === normalizedTopic);
-}
-
-function normalizeQuizKey(value) {
-  return String(value || '')
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '');
-}
-
-function buildQuestionsCacheKey(parameters, offset, limit) {
-  return JSON.stringify({
-    params: parameters.map((entry) => [entry.name, entry.value]),
-    offset,
-    limit,
-  });
-}
-
-async function fetchAllQueryResults(container, query, parameters, options = {}) {
-  const iterator = container.items.query(
-    { query, parameters },
-    {
-      maxItemCount: 1000,
-      enableCrossPartition: options.partitionKey ? undefined : true,
-      ...(options.partitionKey ? { partitionKey: options.partitionKey } : {}),
-    }
-  );
-  const { resources } = await iterator.fetchAll({
-    maxItemCount: 1000,
-    enableCrossPartition: options.partitionKey ? undefined : true,
-    ...(options.partitionKey ? { partitionKey: options.partitionKey } : {}),
-  });
-  return resources;
-}
-
 // ── POST /api/questions ────────────────────────────────
 const addQuestion = async (req, res) => {
   try {
-    const container = getQuestionsContainer();
-
     const {
       subject, tier, chapter, concept, difficulty,
       formula, trapType, question, questionText,
@@ -166,7 +102,7 @@ const addQuestion = async (req, res) => {
 
     const newQuestion = {
       id:          `q_${Date.now()}`,
-      topic:       normalizedTopic || normalizedChapter || normalizedSubject,   // ← partition key REQUIRED
+      topic:       normalizedTopic || normalizedChapter || normalizedSubject,
       subject:     normalizedSubject,
       tier:        tier        || '',
       chapter:     normalizedChapter,
@@ -184,8 +120,8 @@ const addQuestion = async (req, res) => {
       createdAt:   new Date().toISOString(),
     };
 
-    await container.items.create(newQuestion);
-    res.status(201).json({ message: 'Question added ✅', question: newQuestion });
+    const resource = await questionService.createQuestion(newQuestion);
+    res.status(201).json({ message: 'Question added ✅', question: resource });
 
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -195,104 +131,9 @@ const addQuestion = async (req, res) => {
 // ── GET /api/questions ─────────────────────────────────
 const getQuestions = async (req, res) => {
   try {
-    const container = getQuestionsContainer();
-    const {
-      topic,
-      subject,
-      chapter,
-      concept,
-      difficulty,
-      quizName,
-      questionType,
-      offset = 0,
-      limit,
-    } = req.query;
-    const normalizedTopic = topic ? normalizeSearchKey(topic) : null;
-    const normalizedQuizName = quizName ? normalizeQuizKey(quizName) : null;
-    const queryMode = topic ? 'topic' : subject ? 'subject' : 'global';
-
-    let query = 'SELECT * FROM c WHERE 1=1';
-    const parameters = [];
-    let partitionKey;
-
-    if (topic) {
-      query += ' AND c.topic = @topic';
-      parameters.push({ name: '@topic', value: topic });
-      partitionKey = topic;
-    } else if (subject) {
-      query += ' AND LOWER(c.subject) = LOWER(@subject)';
-      parameters.push({ name: '@subject', value: subject });
-    }
-    if (chapter) {
-      query += ' AND LOWER(c.chapter) = LOWER(@chapter)';
-      parameters.push({ name: '@chapter', value: chapter });
-    }
-    if (concept) {
-      query += ' AND LOWER(c.concept) = LOWER(@concept)';
-      parameters.push({ name: '@concept', value: concept });
-    }
-    if (difficulty) {
-      query += ' AND LOWER(c.difficulty) = LOWER(@difficulty)';
-      parameters.push({ name: '@difficulty', value: difficulty });
-    }
-    if (quizName) {
-      if (normalizedQuizName === 'pyq') {
-        // Backfill behavior for legacy questions created before quizName existed.
-        // Those older records should continue to appear in the PYQ quiz.
-        query += ` AND (
-          (IS_DEFINED(c.quizName) AND LOWER(REPLACE(REPLACE(c.quizName, '-', ''), ' ', '')) = @normalizedQuizName)
-          OR (IS_DEFINED(c.quizId) AND LOWER(REPLACE(REPLACE(c.quizId, '-', ''), ' ', '')) = @normalizedQuizName)
-          OR (IS_DEFINED(c.source) AND LOWER(REPLACE(REPLACE(c.source, '-', ''), ' ', '')) = @normalizedQuizName)
-          OR NOT IS_DEFINED(c.quizName)
-          OR c.quizName = null
-          OR c.quizName = ""
-        )`;
-      } else {
-        query += ` AND ((IS_DEFINED(c.quizName) AND LOWER(REPLACE(REPLACE(c.quizName, '-', ''), ' ', '')) = @normalizedQuizName) OR (IS_DEFINED(c.quizId) AND LOWER(REPLACE(REPLACE(c.quizId, '-', ''), ' ', '')) = @normalizedQuizName) OR (IS_DEFINED(c.source) AND LOWER(REPLACE(REPLACE(c.source, '-', ''), ' ', '')) = @normalizedQuizName))`;
-      }
-      parameters.push({ name: '@normalizedQuizName', value: normalizedQuizName });
-    }
-    if (questionType) {
-      query += ' AND LOWER(c.questionType) = LOWER(@questionType)';
-      parameters.push({ name: '@questionType', value: String(questionType) });
-    }
-
-    const parsedOffset = Number.isFinite(Number(offset)) ? parseInt(offset, 10) : 0;
-    const parsedLimit = Number.isFinite(Number(limit)) ? parseInt(limit, 10) : null;
-
-    if (parsedLimit !== null && parsedLimit > 0) {
-      query += ` OFFSET ${parsedOffset} LIMIT ${parsedLimit}`;
-    } else if (parsedOffset > 0) {
-      query += ` OFFSET ${parsedOffset} LIMIT 99999`;
-    }
-
-    const cacheable =
-      parsedOffset === 0 &&
-      (parsedLimit === null || parsedLimit > 0) &&
-      (queryMode === 'topic' || queryMode === 'subject');
-    const cacheKey = cacheable ? `${queryMode}:${buildQuestionsCacheKey(parameters, parsedOffset, parsedLimit)}` : null;
-
-    let resources = cacheKey ? questionsQueryCache.get(cacheKey) : null;
-
-    if (!resources) {
-      resources = await fetchAllQueryResults(container, query, parameters, { partitionKey });
-
-      if (topic && resources.length === 0) {
-        const fallbackQuery = query.replace(' AND c.topic = @topic', ' AND (LOWER(c.topic) = LOWER(@topic) OR LOWER(c.chapter) = LOWER(@topic) OR LOWER(c.subject) = LOWER(@topic) OR LOWER(c.quizTopic) = LOWER(@topic) OR LOWER(c.quizName) = LOWER(@topic) OR LOWER(c.source) = LOWER(@topic))');
-        resources = await fetchAllQueryResults(container, fallbackQuery, parameters);
-      }
-
-      if (normalizedTopic && queryMode === 'topic') {
-        resources = resources.filter((q) => matchesNormalizedTopic(q, normalizedTopic));
-      }
-
-      if (cacheKey) {
-        questionsQueryCache.set(cacheKey, resources);
-      }
-    }
-
+    const result = await questionService.fetchQuestions(req.query);
     res.set("Cache-Control", "no-store, max-age=0");
-    res.json({ count: resources.length, questions: resources });
+    res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -301,48 +142,14 @@ const getQuestions = async (req, res) => {
 // ── GET /api/questions/practice-test ──────────────────
 const generatePracticeTest = async (req, res) => {
   try {
-    const container = getQuestionsContainer();
-    const { subject, difficulty, count = 10 } = req.query;
-    const requestedCount = Number.isFinite(Number(count)) ? parseInt(count, 10) : 10;
-    const limit = Math.max(1, requestedCount);
-
-    let query = 'SELECT * FROM c WHERE 1=1';
-    const parameters = [];
-
-    if (subject) {
-      query += ' AND LOWER(c.subject) = LOWER(@subject)';
-      parameters.push({ name: '@subject', value: subject });
-    }
-    if (difficulty) {
-      query += ' AND LOWER(c.difficulty) = LOWER(@difficulty)';
-      parameters.push({ name: '@difficulty', value: difficulty });
-    }
-
-    // Fetch more than needed, then shuffle
-    query += ` OFFSET 0 LIMIT ${limit * 3}`;
-
-    const resources = await fetchAllQueryResults(container, query, parameters);
-
-    if (resources.length === 0)
+    const questions = await questionService.fetchPracticeTest(req.query);
+    if (!questions) {
       return res.status(404).json({ error: 'No questions found matching criteria' });
-
-    const shuffled = resources
-      .sort(() => Math.random() - 0.5)
-      .slice(0, Math.min(limit, resources.length))
-      .map(q => ({
-        id:         q.id,
-        subject:    q.subject,
-        chapter:    q.chapter,
-        concept:    q.concept,
-        question:   q.question,
-        options:    q.options,
-        difficulty: q.difficulty,
-      }));
-
+    }
     res.json({
-      testName:       `SSC Practice Test — ${subject || 'Mixed'}`,
-      totalQuestions: shuffled.length,
-      questions:      shuffled,
+      testName:       `SSC Practice Test — ${req.query.subject || 'Mixed'}`,
+      totalQuestions: questions.length,
+      questions:      questions,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -352,74 +159,12 @@ const generatePracticeTest = async (req, res) => {
 // ── POST /api/questions/analyze ───────────────────────
 const runAnalysis = async (req, res) => {
   try {
-    const container = getQuestionsContainer();
     const { answers } = req.body;
-
     if (!Array.isArray(answers) || answers.length === 0)
       return res.status(400).json({ error: 'answers must be a non-empty array' });
 
-    // Fetch all questions by id
-    const ids = answers.map(a => a.questionId);
-    
-    let questionDocs = [];
-    if (ids.length > 0) {
-      try {
-        const paramNames = ids.map((_, i) => `@id${i}`);
-        const paramValues = ids.map((id, i) => ({ name: `@id${i}`, value: id }));
-        const inClause = paramNames.join(', ');
-
-        const query = {
-          query: `SELECT * FROM c WHERE c.id IN (${inClause})`,
-          parameters: paramValues,
-        };
-        const { resources } = await container.items.query(query).fetchAll();
-        questionDocs = resources;
-      } catch (err) {
-        console.error('runAnalysis IN query failed:', err.message);
-      }
-    }
-
-    const questionMap = new Map(
-      questionDocs.filter(Boolean).map(q => [q.id, q])
-    );
-
-    let correct = 0, incorrect = 0, unattempted = 0;
-    const subjectBreakdown = {};
-    const details = [];
-
-    for (const ans of answers) {
-      const q = questionMap.get(ans.questionId);
-      if (!q) continue;
-
-      const subj = q.subject;
-      if (!subjectBreakdown[subj])
-        subjectBreakdown[subj] = { correct: 0, incorrect: 0, unattempted: 0, total: 0 };
-
-      subjectBreakdown[subj].total++;
-
-      if (ans.selectedAnswer === null || ans.selectedAnswer === undefined) {
-        unattempted++;
-        subjectBreakdown[subj].unattempted++;
-        details.push({ questionId: q.id, status: 'unattempted' });
-      } else if (ans.selectedAnswer === q.correctAnswer) {
-        correct++;
-        subjectBreakdown[subj].correct++;
-        details.push({ questionId: q.id, status: 'correct' });
-      } else {
-        incorrect++;
-        subjectBreakdown[subj].incorrect++;
-        details.push({ questionId: q.id, status: 'incorrect', correctAnswer: q.correctAnswer });
-      }
-    }
-
-    const total = correct + incorrect + unattempted;
-    const scorePercent = total > 0 ? ((correct / total) * 100).toFixed(2) : 0;
-
-    res.json({
-      summary: { totalQuestions: total, correct, incorrect, unattempted, scorePercent: parseFloat(scorePercent) },
-      subjectBreakdown,
-      details,
-    });
+    const analysis = await questionService.analyzeAnswers(answers);
+    res.json(analysis);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -428,14 +173,10 @@ const runAnalysis = async (req, res) => {
 // ── GET /api/questions/:id ─────────────────────────────
 const getQuestionById = async (req, res) => {
   try {
-    const container = getQuestionsContainer();
-    const { id } = req.params;
-    const { resources } = await container.items
-      .query({ query: 'SELECT * FROM c WHERE c.id = @id', parameters: [{ name: '@id', value: id }] })
-      .fetchAll();
-    if (!resources.length) return res.status(404).json({ error: 'Not found' });
+    const question = await questionService.fetchQuestionById(req.params.id);
+    if (!question) return res.status(404).json({ error: 'Not found' });
     res.set("Cache-Control", "no-store, max-age=0");
-    res.json(resources[0]);
+    res.json(question);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -444,16 +185,8 @@ const getQuestionById = async (req, res) => {
 // ── PUT /api/questions/:id ─────────────────────────────
 const updateQuestion = async (req, res) => {
   try {
-    const container = getQuestionsContainer();
-    const { id } = req.params;
-    // fetch existing to get partition key (topic)
-    const { resources } = await container.items
-      .query({ query: 'SELECT * FROM c WHERE c.id = @id', parameters: [{ name: '@id', value: id }] })
-      .fetchAll();
-    if (!resources.length) return res.status(404).json({ error: 'Not found' });
-    const existing = resources[0];
-    const updated = { ...existing, ...req.body, id, topic: req.body.topic || existing.topic };
-    await container.items.upsert(updated);
+    const updated = await questionService.modifyQuestion(req.params.id, req.body);
+    if (!updated) return res.status(404).json({ error: 'Not found' });
     res.json({ message: 'Updated ✅', question: updated });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -463,27 +196,68 @@ const updateQuestion = async (req, res) => {
 // ── DELETE /api/questions/:id ──────────────────────────
 const deleteQuestion = async (req, res) => {
   try {
-    const container = getQuestionsContainer();
-    const { id } = req.params;
-    const numericId = Number(id);
-    const query = {
-      query: `SELECT * FROM c WHERE c.id = @id${Number.isFinite(numericId) ? " OR c.id = @idNum" : ""}`,
-      parameters: [
-        { name: "@id", value: id },
-        ...(Number.isFinite(numericId) ? [{ name: "@idNum", value: numericId }] : []),
-      ],
-    };
-    // fetch to get partition key (topic) — required for delete
-    const { resources } = await container.items
-      .query(query)
-      .fetchAll();
-    if (!resources.length) return res.status(404).json({ error: 'Not found' });
-    const { topic } = resources[0];
-    await container.item(resources[0].id, topic ?? null).delete();
+    const success = await questionService.removeQuestion(req.params.id);
+    if (!success) return res.status(404).json({ error: 'Not found' });
     res.json({ message: 'Deleted ✅' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-export default { addQuestion, getQuestionById, updateQuestion, deleteQuestion, getQuestions, generatePracticeTest, runAnalysis };
+// ── BULK /api/questions/bulk ──────────────────────────
+const bulkCreateQuestions = async (req, res) => {
+  try {
+    const questions = req.body;
+    if (!Array.isArray(questions) || questions.length === 0) {
+      return res.status(400).json({ error: 'Body must be a non-empty array' });
+    }
+
+    const results = await questionService.createQuestionsBulk(questions);
+    
+    const inserted = results.filter((r) => r.status === 'fulfilled').length;
+    const failed = results.filter((r) => r.status === 'rejected').length;
+
+    return res.json({ inserted, failed, total: questions.length });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+// ── POST /api/questions/check-duplicates ──────────────
+const checkDuplicates = async (req, res) => {
+  try {
+    const { questions } = req.body;
+    if (!Array.isArray(questions) || questions.length === 0) {
+      return res.status(400).json({ error: 'questions must be a non-empty array' });
+    }
+
+    const duplicates = await questionService.checkDuplicates(questions);
+    return res.json({ results: duplicates });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+// ── GET /api/questions/image ──────────────────────────
+const getImageQuestions = async (req, res) => {
+  try {
+    const { topic, limit } = req.query;
+    const result = await questionService.fetchImageQuestions(topic, limit);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export default { 
+  addQuestion, 
+  getQuestionById, 
+  updateQuestion, 
+  deleteQuestion, 
+  getQuestions, 
+  generatePracticeTest, 
+  runAnalysis,
+  bulkCreateQuestions,
+  checkDuplicates,
+  getImageQuestions
+};
