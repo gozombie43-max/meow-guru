@@ -28,3 +28,59 @@ export interface SubjectConfig {
   /** Classify a concept string into one of the category IDs */
   getClassificationCategoryId: (concept: string) => string;
 }
+
+export type QuizMode =
+  | "concept"
+  | "formula"
+  | "mixed"
+  | "ai-challenge"
+  | "easy"
+  | "hard";
+
+export type Difficulty = "easy" | "medium" | "hard";
+
+export type QuizQuestionRecord = QuizQuestion & {
+  quizName?: string;
+  source?: string;
+  quizId?: string;
+};
+
+export type ConceptColour = { border: string; bg: string; text: string };
+
+export interface QuizQuestion {
+  id: number;
+  concept: string;
+  formula: string;
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  answer: string;
+  difficulty: Difficulty;
+  estimatedTime: number;
+  year: string;
+  exam: string;
+  solution: string;
+  questionType?: string;
+  questionImage?: string;
+  optionRegions?: Record<string, { x: number; y: number; w: number; h: number }>;
+  correctLetter?: string;
+  diagram?: any;
+  needs_diagram?: boolean;
+}
+
+export interface SessionResult {
+  questionId: number;
+  questionIndex: number;
+  selected: number | null;
+  correct: number;
+  isCorrect: boolean;
+  timeTaken: number;
+  concept: string;
+  difficulty: Difficulty;
+}
+
+export type QuizTheme = "light" | "dark";
+
+export type ClassificationGroup = ClassificationCategory & {
+  concepts: string[];
+};
