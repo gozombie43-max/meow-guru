@@ -169,3 +169,6 @@ export const TimerCircle = forwardRef<QuizTimerRef, { maxTime: number, mini?: bo
     </div>
   );
 });
+
+QuizTimer.displayName = 'QuizTimer';
+TimerCircle.displayName = 'TimerCircle';

@@ -8,7 +8,7 @@ const fetcher = async (url: string) => {
   const res = await fetchWithRetry(url, { cache: "no-store" });
   if (!res.ok) throw new Error('Failed to fetch questions');
   const data = await res.json();
-  let value = data.questions as Question[];
+  const value = data.questions as Question[];
   return value;
 };
 
