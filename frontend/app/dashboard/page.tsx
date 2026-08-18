@@ -104,7 +104,7 @@ function DashboardContent() {
         <h4>Unlock every mock test</h4>
         <p>Full Tier-2 papers &amp; unlimited battles.</p>
       </div>
-      <button>Upgrade</button>
+      <button type="button">Upgrade</button>
     </div>
   );
 
@@ -187,8 +187,11 @@ function DashboardContent() {
             <p>Good evening to prepare — <b>Tier-2 is 74 days away</b></p>
           </div>
 
-          <div className={styles.pills}>
+          <div className={styles.pills} role="tablist" aria-label="Dashboard subjects">
             <button 
+              type="button"
+              role="tab"
+              aria-selected={activeTab === 'All'}
               className={`${styles.pill} ${activeTab === 'All' ? styles.active : ''}`}
               onClick={() => setActiveTab('All')}
             >
@@ -196,6 +199,9 @@ function DashboardContent() {
               All
             </button>
             <button 
+              type="button"
+              role="tab"
+              aria-selected={activeTab === 'Mathematics'}
               className={`${styles.pill} ${activeTab === 'Mathematics' ? styles.active : ''}`}
               onClick={() => setActiveTab('Mathematics')}
             >
@@ -203,6 +209,9 @@ function DashboardContent() {
               Mathematics
             </button>
             <button 
+              type="button"
+              role="tab"
+              aria-selected={activeTab === 'Reasoning'}
               className={`${styles.pill} ${activeTab === 'Reasoning' ? styles.active : ''}`}
               onClick={() => setActiveTab('Reasoning')}
             >
@@ -210,6 +219,9 @@ function DashboardContent() {
               Reasoning
             </button>
             <button 
+              type="button"
+              role="tab"
+              aria-selected={activeTab === 'English'}
               className={`${styles.pill} ${activeTab === 'English' ? styles.active : ''}`}
               onClick={() => setActiveTab('English')}
             >
@@ -217,6 +229,9 @@ function DashboardContent() {
               English
             </button>
             <button 
+              type="button"
+              role="tab"
+              aria-selected={activeTab === 'General Awareness'}
               className={`${styles.pill} ${activeTab === 'General Awareness' ? styles.active : ''}`}
               onClick={() => setActiveTab('General Awareness')}
             >
@@ -321,8 +336,10 @@ function DashboardContent() {
             <h2>Statistics</h2>
           </div>
 
-          <div className={styles.segment}>
-            <button>Day</button><button className={styles.active}>Week</button><button>Month</button>
+          <div className={styles.segment} role="tablist" aria-label="Time period">
+            <button type="button" role="tab" aria-selected="false">Day</button>
+            <button type="button" role="tab" aria-selected="true" className={styles.active}>Week</button>
+            <button type="button" role="tab" aria-selected="false">Month</button>
           </div>
 
           <div className={styles.panel}>
