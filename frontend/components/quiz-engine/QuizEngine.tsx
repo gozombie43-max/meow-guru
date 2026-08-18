@@ -47,7 +47,9 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { useThemeMode } from "@/hooks/useTheme";
 import { saveRecentQuiz, updateProgress, toggleBookmark } from "@/lib/userApi";
-import { fetchQuestions, type Question as ApiQuestion } from "@/lib/api/questions";
+import { type Question as ApiQuestion } from "@/lib/api/questions";
+import { useQuestions } from "@/hooks/useQuestions";
+import { QuizTimer, TimerCircle, QuizTimerRef } from "./QuizTimer";
 import {
   buildQuizIndex,
   normalizeExamLabel,
@@ -810,7 +812,8 @@ function SeriesConceptStart({
     </div>
   );
 }
-function SeriesFormulaStart({
+
+function SeriesFormulaStart({
   subjectConfig,
   title,
   slug,
@@ -2110,62 +2113,7 @@ function QuestionQuickBar({
   );
 }
 
-function TimerCircle({
-  timeLeft,
-  maxTime,
-  mini,
-}: {
-  timeLeft: number;
-  maxTime: number;
-  mini?: boolean;
-}) {
-  const size = mini ? 48 : 64;
-  const stroke = mini ? 3 : 4;
-  const radius = (size - stroke * 2) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const progress = timeLeft / maxTime;
-  const offset = circumference * (1 - progress);
-  const isLow = timeLeft <= 5;
 
-  return (
-    <div
-      className="relative flex items-center justify-center"
-      style={{ width: size, height: size }}
-    >
-      <svg width={size} height={size} className="-rotate-90">
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          fill="none"
-          stroke="var(--quiz-ring-track)"
-          strokeWidth={stroke}
-        />
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          fill="none"
-          stroke={isLow ? "#ef4444" : "#7c3aed"}
-          strokeWidth={stroke}
-          strokeDasharray={circumference}
-          strokeDashoffset={offset}
-          strokeLinecap="round"
-          className={`transition-all duration-1000 linear ${
-            isLow ? "animate-pulse" : ""
-          }`}
-        />
-      </svg>
-      <span
-        className={`absolute text-sm font-bold ${
-          isLow ? "text-red-500" : "text-[var(--text-primary)]"
-        }`}
-      >
-        {timeLeft}
-      </span>
-    </div>
-  );
-}
 
 function ThemeToggle() {
   const theme = useQuizTheme();
@@ -2825,34 +2773,23 @@ export default function QuizEngine({
 
   const [started, setStarted] = useState(false);
   const [submitError, setSubmitError] = useState("");
-  const [timeLeft, setTimeLeft] = useState(60);
+  const timerRef = useRef<QuizTimerRef>(null);
   const [isSolutionOpen, setIsSolutionOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const [resumeData, setResumeData] = useState<any>(null);
   const storageKey = `${subjectConfig.subjectId}_quiz_resume_${slug}_${mode}`;
 
+  const { questions: apiQuestions, isLoading } = useQuestions({ subject: subjectConfig.subjectId, topic: slug });
+
   useEffect(() => {
-    let active = true;
+    if (!apiQuestions) return;
     const fallbackConcept = baseConcepts[0] ?? "General";
-
-    fetchQuestions({ subject: subjectConfig.subjectId, topic: slug })
-      .then((data) => {
-        if (!active) return;
-        setAllQuestions(
-          ensureUniqueQuestionIds(
-            data.map((item, index) => toQuizQuestion(item, index, fallbackConcept))
-          )
-        );
-      })
-      .catch((error) => {
-        console.error(error);
-        if (active) setAllQuestions([]);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [baseConcepts, slug]);
+    setAllQuestions(
+      ensureUniqueQuestionIds(
+        apiQuestions.map((item, index) => toQuizQuestion(item, index, fallbackConcept))
+      )
+    );
+  }, [apiQuestions, baseConcepts]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -2880,7 +2817,7 @@ export default function QuizEngine({
     setExamFilter("");
   }, [slug]);
 
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  
   const touchStartXRef = useRef<number | null>(null);
   const touchStartYRef = useRef<number | null>(null);
 
@@ -2966,30 +2903,11 @@ export default function QuizEngine({
     setSubmitError("");
   }, [allQuestions.length, filteredQuestions]);
 
-  const stopTimer = useCallback(() => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-  }, []);
+  const stopTimer = useCallback(() => { timerRef.current?.stop(); }, []);
 
-  const startTimer = useCallback(() => {
-    stopTimer();
-    setTimeLeft(maxTime);
-    timerRef.current = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          stopTimer();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  }, [maxTime, stopTimer]);
+  const startTimer = useCallback(() => { timerRef.current?.start(maxTime); }, [maxTime]);
 
-  useEffect(() => {
-    if (timeLeft === 0) stopTimer();
-  }, [stopTimer, timeLeft]);
+
 
   useEffect(() => {
     if (!resumeRequested || resumeAppliedRef.current) return;
@@ -3286,7 +3204,7 @@ export default function QuizEngine({
     }
 
     stopTimer();
-    const timeTaken = Math.max(1, maxTime - timeLeft);
+    const timeTaken = Math.max(1, maxTime - (timerRef.current?.getTimeLeft() ?? 0));
     const isCorrect = selected === currentQ.correctAnswer;
     adaptDifficulty(isCorrect);
 
@@ -3341,7 +3259,6 @@ export default function QuizEngine({
     selectedAnswers,
     stopTimer,
     submittedQuestions,
-    timeLeft,
     token,
   ]);
 
@@ -4829,12 +4746,7 @@ export default function QuizEngine({
               loading={isTranslating}
               onChange={setActiveLang}
             />
-            <div className="flex items-center gap-2 rounded-xl bg-red-50 px-4 py-2">
-              <Clock className="h-4 w-4 text-red-500" />
-              <span className="text-[15px] font-bold text-red-600 tabular-nums tracking-wide">
-                {formatClock(timeLeft)}
-              </span>
-            </div>
+            <QuizTimer ref={timerRef} maxTime={maxTime} />
             <ThemeToggle />
             <button className="flex h-10 items-center justify-center gap-1.5 px-3 rounded-lg transition-colors hover:bg-slate-100 text-slate-600">
               <Menu className="h-5 w-5" />
