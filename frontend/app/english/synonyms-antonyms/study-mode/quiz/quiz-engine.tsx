@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { fetchQuestions } from "@/lib/api/questions";
-import { Volume2, ListFilter, ArrowLeft } from "lucide-react";
+import { Volume2, ArrowLeft } from "lucide-react";
 
 type StudyModeMeaning = {
   pos?: string;
@@ -639,7 +639,7 @@ export default function StudyModeQuizEngine() {
             </div>
 
             <div className="toolbar-center">
-              {/* Apple Segmented View Switcher (PC) */}
+              {/* Apple Segmented View Switcher (PC only) */}
               <div className="apple-segmented-control" role="tablist">
                 <button
                   type="button"
@@ -664,7 +664,7 @@ export default function StudyModeQuizEngine() {
                 </button>
               </div>
 
-              {/* Mobile title */}
+              {/* Mobile title: just the given word */}
               <div className="mobile-toolbar-title">
                 <span className="mobile-toolbar-word">{activeCard.word}</span>
                 {posLabel && <span className="mobile-toolbar-pos">({posLabel})</span>}
@@ -672,20 +672,17 @@ export default function StudyModeQuizEngine() {
             </div>
 
             <div className="toolbar-right">
-              <span className="mobile-counter-top" title="Word Progress">
+              {/* Rectangular Counter Box acting as Filter button */}
+              <button
+                type="button"
+                className="mobile-counter-filter-btn"
+                onClick={() => setIsMobilePaletteOpen(true)}
+                aria-label="Filter vocabulary index"
+                title="Filter words"
+              >
                 <span className="counter-curr">{currentPage}</span>
                 <span className="counter-sep">/</span>
                 <span className="counter-tot">{totalCards}</span>
-              </span>
-
-              <button
-                type="button"
-                className="mobile-filter-top"
-                onClick={() => setIsMobilePaletteOpen(true)}
-                aria-label="Filter words"
-                title="Vocabulary Index"
-              >
-                <ListFilter size={15} />
               </button>
 
               <button
@@ -1140,68 +1137,60 @@ export default function StudyModeQuizEngine() {
           line-height: 1;
         }
 
+        .apple-segmented-control {
+          display: none;
+        }
+
         .mobile-toolbar-title {
           display: flex;
           align-items: baseline;
           justify-content: center;
           gap: 4px;
-          max-width: 130px;
+          max-width: 140px;
           overflow: hidden;
           white-space: nowrap;
           text-overflow: ellipsis;
         }
 
         .mobile-toolbar-word {
-          font-size: 14.5px;
+          font-size: 15px;
           font-weight: 700;
           color: var(--text-primary);
           letter-spacing: -0.01em;
         }
 
         .mobile-toolbar-pos {
-          font-size: 11px;
+          font-size: 11.5px;
           color: var(--text-secondary);
           font-style: italic;
         }
 
-        .mobile-counter-top {
+        .mobile-counter-filter-btn {
           display: flex;
           align-items: center;
           justify-content: center;
           gap: 2px;
-          background: rgba(0, 122, 255, 0.1);
+          background: var(--item-hover);
           color: var(--system-blue);
-          font-size: 11px;
+          font-size: 12px;
           font-weight: 700;
           font-variant-numeric: tabular-nums;
           height: 28px;
-          padding: 0 7px;
-          border-radius: 9999px;
-          border: 0.5px solid rgba(0, 122, 255, 0.25);
-          letter-spacing: 0.02em;
-        }
-        .counter-curr { font-weight: 700; }
-        .counter-sep { opacity: 0.5; font-weight: 400; }
-        .counter-tot { opacity: 0.85; font-weight: 600; }
-
-        .mobile-filter-top {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: var(--item-hover);
-          color: var(--text-primary);
-          height: 28px;
-          width: 28px;
+          padding: 0 8px;
           border-radius: 7px;
           border: 0.5px solid var(--divider);
+          letter-spacing: 0.01em;
           cursor: pointer;
           transition: background 0.15s ease, transform 0.1s ease;
           -webkit-tap-highlight-color: transparent;
         }
-        .mobile-filter-top:active {
-          transform: scale(0.94);
+        .mobile-counter-filter-btn:active {
+          transform: scale(0.95);
           background: rgba(0, 122, 255, 0.14);
         }
+        .counter-curr { font-weight: 700; }
+        .counter-sep { opacity: 0.45; font-weight: 400; }
+        .counter-tot { opacity: 0.85; font-weight: 600; }
 
         .appearance-toggle {
           width: 28px;
@@ -1886,8 +1875,7 @@ export default function StudyModeQuizEngine() {
           .mobile-toolbar-title { display: none; }
           .mobile-grid-btn { display: none; }
           .mobile-suite { display: none; }
-          .mobile-counter-top { display: none; }
-          .mobile-filter-top { display: none; }
+          .mobile-counter-filter-btn { display: none; }
           .mobile-nav-footer { display: none; }
           .nav-arrow-pc { display: flex; }
 
