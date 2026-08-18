@@ -625,7 +625,21 @@ export default function StudyModeQuizEngine() {
           {/* Top Unified Toolbar */}
           <header className="unified-toolbar">
             <div className="toolbar-left">
-              {/* Nav arrows hidden on mobile — shown in fixed footer instead */}
+              {/* Mobile Back button to return to study mode */}
+              <button
+                type="button"
+                className="mobile-back-btn"
+                onClick={() => router.push("/english/synonyms-antonyms/study-mode")}
+                aria-label="Back to Study Mode"
+                title="Back to Study Mode"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
+                  <path d="M15 18l-6-6 6-6" />
+                </svg>
+                <span className="mobile-back-text">Back</span>
+              </button>
+
+              {/* Nav arrows hidden on mobile — shown on PC toolbar */}
               <button
                 type="button"
                 className="nav-arrow nav-arrow-pc"
@@ -679,12 +693,17 @@ export default function StudyModeQuizEngine() {
               </div>
 
               {/* Mobile title */}
-              <div className="mobile-toolbar-title">{activeCard.word}</div>
+              <div className="mobile-toolbar-title">
+                <span className="mobile-toolbar-word">{activeCard.word}</span>
+                {posLabel && <span className="mobile-toolbar-pos">({posLabel})</span>}
+              </div>
             </div>
 
             <div className="toolbar-right">
-              <span className="mobile-counter-top">
-                {currentPage}/{totalCards}
+              <span className="mobile-counter-top" title="Word Progress">
+                <span className="counter-curr">{currentPage}</span>
+                <span className="counter-sep">/</span>
+                <span className="counter-tot">{totalCards}</span>
               </span>
 
               <button
@@ -692,8 +711,9 @@ export default function StudyModeQuizEngine() {
                 className="mobile-filter-top"
                 onClick={() => setIsMobilePaletteOpen(true)}
                 aria-label="Filter words"
+                title="Vocabulary Index"
               >
-                <ListFilter size={16} />
+                <ListFilter size={17} />
               </button>
 
               <button
@@ -701,6 +721,7 @@ export default function StudyModeQuizEngine() {
                 className="appearance-toggle"
                 onClick={() => setTheme((v) => (v === "dark" ? "light" : "dark"))}
                 aria-label="Toggle theme appearance"
+                title="Toggle Theme"
               >
                 {theme === "dark" ? (
                   <svg viewBox="0 0 24 24" fill="currentColor" className="icon-theme">
@@ -979,6 +1000,14 @@ export default function StudyModeQuizEngine() {
 
           {/* ── Mobile Fixed Bottom Navigation Footer ── */}
           <div className="mobile-nav-footer">
+            {/* Top progress line */}
+            <div className="footer-progress-bar" aria-hidden="true">
+              <div
+                className="footer-progress-fill"
+                style={{ width: `${Math.min(100, (currentPage / totalCards) * 100)}%` }}
+              />
+            </div>
+
             <button
               type="button"
               className="mobile-footer-btn prev"
@@ -986,7 +1015,7 @@ export default function StudyModeQuizEngine() {
               disabled={currentPage === 1}
               aria-label="Previous Word"
             >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="20" height="20">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="19" height="19">
                 <path d="M15 18l-6-6 6-6" />
               </svg>
               <span>Previous</span>
@@ -1000,7 +1029,7 @@ export default function StudyModeQuizEngine() {
               aria-label="Next Word"
             >
               <span>Next</span>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="20" height="20">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="19" height="19">
                 <path d="M9 18l6-6-6-6" />
               </svg>
             </button>
@@ -1093,21 +1122,49 @@ export default function StudyModeQuizEngine() {
 
         /* Top Unified Toolbar */
         .unified-toolbar {
-          height: 48px;
+          height: 54px;
           border-bottom: 0.5px solid var(--divider);
           background: var(--sidebar-bg);
-          backdrop-filter: blur(30px);
+          backdrop-filter: blur(25px);
+          -webkit-backdrop-filter: blur(25px);
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 0 16px;
+          padding: 0 12px;
           flex-shrink: 0;
+          position: sticky;
+          top: 0;
+          z-index: 40;
         }
 
         .toolbar-left, .toolbar-right {
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 6px;
+        }
+
+        .mobile-back-btn {
+          display: flex;
+          align-items: center;
+          gap: 3px;
+          height: 36px;
+          padding: 0 10px 0 6px;
+          border-radius: 10px;
+          border: 0.5px solid var(--divider);
+          background: var(--item-hover);
+          color: var(--system-blue);
+          font-size: 13.5px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: background 0.15s ease, transform 0.1s ease;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .mobile-back-btn:active {
+          transform: scale(0.95);
+          background: rgba(0, 122, 255, 0.14);
+        }
+        .mobile-back-text {
+          line-height: 1;
         }
 
         /* Hide PC-only nav arrows on mobile */
@@ -1122,37 +1179,79 @@ export default function StudyModeQuizEngine() {
           z-index: 50;
           display: flex;
           align-items: center;
-          gap: 10px;
-          padding: 10px 14px env(safe-area-inset-bottom, 14px);
+          gap: 12px;
+          padding: 10px 16px max(14px, env(safe-area-inset-bottom, 14px));
           background: var(--sidebar-bg);
           backdrop-filter: blur(30px);
           -webkit-backdrop-filter: blur(30px);
           border-top: 0.5px solid var(--divider);
+          box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.2);
           flex-shrink: 0;
+        }
+
+        .footer-progress-bar {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 2.5px;
+          background: var(--divider);
+          overflow: hidden;
+        }
+
+        .footer-progress-fill {
+          height: 100%;
+          background: linear-gradient(90deg, #007aff, #5856d6);
+          transition: width 0.22s ease-out;
         }
 
         .mobile-footer-btn {
           flex: 1;
-          height: 46px;
-          border-radius: 12px;
-          border: 0.5px solid var(--divider);
-          background: var(--item-hover);
-          color: var(--text-primary);
-          font-size: 15px;
+          height: 50px;
+          border-radius: 14px;
+          font-size: 15.5px;
           font-weight: 600;
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 6px;
+          gap: 8px;
           cursor: pointer;
-          transition: background 0.15s, opacity 0.15s;
+          transition: transform 0.12s ease, opacity 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
           -webkit-tap-highlight-color: transparent;
+          user-select: none;
         }
-        .mobile-footer-btn:active:not(:disabled) {
-          background: rgba(0,122,255,0.15);
+
+        .mobile-footer-btn.prev {
+          border: 0.5px solid var(--divider);
+          background: var(--item-hover);
+          color: var(--text-primary);
         }
-        .mobile-footer-btn:disabled {
-          opacity: 0.3;
+        .mobile-footer-btn.prev:active:not(:disabled) {
+          transform: scale(0.97);
+          background: rgba(255, 255, 255, 0.14);
+        }
+        .mobile-footer-btn.prev:disabled {
+          opacity: 0.35;
+          cursor: not-allowed;
+        }
+
+        .mobile-footer-btn.next {
+          border: none;
+          background: linear-gradient(135deg, #007aff 0%, #0056cc 100%);
+          color: #ffffff;
+          font-weight: 700;
+          box-shadow: 0 4px 14px rgba(0, 122, 255, 0.38);
+        }
+        .mobile-footer-btn.next:active:not(:disabled) {
+          transform: scale(0.97);
+          box-shadow: 0 2px 8px rgba(0, 122, 255, 0.25);
+          filter: brightness(1.08);
+        }
+        .mobile-footer-btn.next:disabled {
+          opacity: 0.35;
+          background: var(--item-hover);
+          color: var(--text-muted);
+          box-shadow: none;
           cursor: not-allowed;
         }
 
@@ -1191,31 +1290,53 @@ export default function StudyModeQuizEngine() {
 
         .nav-arrow svg { width: 16px; height: 16px; }
 
-
         .apple-segmented-control {
           display: none;
         }
 
         .mobile-toolbar-title {
-          font-size: 16px;
+          display: flex;
+          align-items: baseline;
+          justify-content: center;
+          gap: 5px;
+          max-width: 140px;
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+        }
+
+        .mobile-toolbar-word {
+          font-size: 15.5px;
           font-weight: 700;
           color: var(--text-primary);
+          letter-spacing: -0.01em;
+        }
+
+        .mobile-toolbar-pos {
+          font-size: 12px;
+          color: var(--text-secondary);
+          font-style: italic;
         }
 
         .mobile-counter-top {
           display: flex;
           align-items: center;
           justify-content: center;
-          background: var(--item-hover);
-          color: var(--text-secondary);
-          font-size: 13px;
-          font-weight: 600;
-          height: 28px;
+          gap: 2px;
+          background: rgba(0, 122, 255, 0.1);
+          color: var(--system-blue);
+          font-size: 12px;
+          font-weight: 700;
+          font-variant-numeric: tabular-nums;
+          height: 34px;
           padding: 0 10px;
-          border-radius: 6px;
-          margin-right: 8px;
-          border: 0.5px solid var(--divider);
+          border-radius: 9999px;
+          border: 0.5px solid rgba(0, 122, 255, 0.25);
+          letter-spacing: 0.02em;
         }
+        .counter-curr { font-weight: 700; }
+        .counter-sep { opacity: 0.5; font-weight: 400; }
+        .counter-tot { opacity: 0.85; font-weight: 600; }
 
         .mobile-filter-top {
           display: flex;
@@ -1223,18 +1344,23 @@ export default function StudyModeQuizEngine() {
           justify-content: center;
           background: var(--item-hover);
           color: var(--text-primary);
-          height: 28px;
-          width: 28px;
-          border-radius: 6px;
-          margin-right: 8px;
+          height: 34px;
+          width: 34px;
+          border-radius: 10px;
           border: 0.5px solid var(--divider);
           cursor: pointer;
+          transition: background 0.15s ease, transform 0.1s ease;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .mobile-filter-top:active {
+          transform: scale(0.94);
+          background: rgba(0, 122, 255, 0.14);
         }
 
         .appearance-toggle {
-          width: 28px;
-          height: 28px;
-          border-radius: 6px;
+          width: 34px;
+          height: 34px;
+          border-radius: 10px;
           background: var(--item-hover);
           border: 0.5px solid var(--divider);
           color: var(--text-primary);
@@ -1242,6 +1368,11 @@ export default function StudyModeQuizEngine() {
           align-items: center;
           justify-content: center;
           cursor: pointer;
+          transition: background 0.15s ease, transform 0.1s ease;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .appearance-toggle:active {
+          transform: scale(0.94);
         }
 
         .icon-theme { width: 16px; height: 16px; }
@@ -1250,7 +1381,7 @@ export default function StudyModeQuizEngine() {
         .dictionary-body-scroll {
           flex: 1;
           overflow-y: auto;
-          padding: 24px 16px;
+          padding: 20px 16px 88px;
           display: flex;
           flex-direction: column;
           gap: 24px;
@@ -1820,6 +1951,7 @@ export default function StudyModeQuizEngine() {
 
           /* ── Main Workspace ── */
 
+          .mobile-back-btn { display: none; }
           .mobile-toolbar-title { display: none; }
           .mobile-grid-btn { display: none; }
           .mobile-suite { display: none; }
