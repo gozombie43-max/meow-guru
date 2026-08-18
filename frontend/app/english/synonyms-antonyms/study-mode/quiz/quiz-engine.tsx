@@ -399,6 +399,24 @@ export default function StudyModeQuizEngine() {
     [cards]
   );
 
+  // Derived filtered cards for the mobile full-page filter modal
+  const filteredSheetCards = useMemo(() => {
+    const q = mobileSheetSearch.trim().toLowerCase();
+    return cards.filter((c) => {
+      const matchSearch =
+        !q ||
+        c.word.toLowerCase().includes(q) ||
+        c.meanings.some(
+          (m) =>
+            m.translation?.toLowerCase().includes(q) ||
+            m.definition?.toLowerCase().includes(q)
+        );
+      const matchLetter =
+        !mobileSheetLetter || c.word[0]?.toUpperCase() === mobileSheetLetter;
+      return matchSearch && matchLetter;
+    });
+  }, [cards, mobileSheetSearch, mobileSheetLetter]);
+
   // If filteredCards changes and currentPage is out of bounds, adjust it
   useEffect(() => {
     if (filteredCards.length > 0 && currentPage > filteredCards.length) {
@@ -706,105 +724,156 @@ export default function StudyModeQuizEngine() {
             </div>
           </header>
 
-          {/* Mobile Word Palette Sheet Modal */}
+          {/* Mobile Full-Page Filter Modal */}
           {isMobilePaletteOpen && (
-            <div className="mobile-modal-backdrop" onClick={() => { setIsMobilePaletteOpen(false); setMobileSheetSearch(""); setMobileSheetLetter(null); }}>
-              <div className="mobile-modal-sheet" onClick={(e) => e.stopPropagation()}>
+            <div className="mobile-full-modal" role="dialog" aria-modal="true" aria-label="Vocabulary Index Filter">
+              {/* Modal Top Header Bar */}
+              <div className="modal-top-bar">
+                <button
+                  type="button"
+                  className="modal-top-back-btn"
+                  onClick={() => setIsMobilePaletteOpen(false)}
+                  aria-label="Close Filter"
+                >
+                  <ArrowLeft size={16} />
+                  <span>Done</span>
+                </button>
 
-                {/* Sheet Handle */}
-                <div className="sheet-handle" />
-
-                {/* Header */}
-                <div className="sheet-header">
-                  <span className="sheet-title">
-                    Vocabulary Index ({cards.filter(c => {
-                      const ms = !mobileSheetSearch || c.word.toLowerCase().includes(mobileSheetSearch.toLowerCase());
-                      const ml = !mobileSheetLetter || c.word[0]?.toUpperCase() === mobileSheetLetter;
-                      return ms && ml;
-                    }).length})
-                  </span>
-                  <button type="button" className="btn-close" onClick={() => { setIsMobilePaletteOpen(false); setMobileSheetSearch(""); setMobileSheetLetter(null); }}>✕</button>
+                <div className="modal-top-title">
+                  <span>Vocabulary Index</span>
                 </div>
 
-                {/* Search */}
-                <div className="sheet-search-box">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="sheet-search-icon">
+                {mobileSheetSearch || mobileSheetLetter ? (
+                  <button
+                    type="button"
+                    className="modal-top-reset-btn"
+                    onClick={() => {
+                      setMobileSheetSearch("");
+                      setMobileSheetLetter(null);
+                    }}
+                  >
+                    Reset
+                  </button>
+                ) : (
+                  <span className="modal-top-counter">
+                    {cards.length} Words
+                  </span>
+                )}
+              </div>
+
+              {/* Search Bar (WITHOUT autoFocus so keyboard doesn't open immediately) */}
+              <div className="modal-search-wrapper">
+                <div className="modal-search-box">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="modal-search-ico">
                     <circle cx="11" cy="11" r="8" />
                     <path d="M21 21l-4.35-4.35" />
                   </svg>
                   <input
                     type="search"
-                    className="sheet-search-input"
-                    placeholder="Search words…"
+                    className="modal-search-input"
+                    placeholder="Search by word or meaning..."
                     value={mobileSheetSearch}
-                    onChange={(e) => { setMobileSheetSearch(e.target.value); setMobileSheetLetter(null); }}
-                    autoFocus
+                    onChange={(e) => setMobileSheetSearch(e.target.value)}
                   />
                   {mobileSheetSearch && (
-                    <button type="button" className="sheet-search-clear" onClick={() => setMobileSheetSearch("")}>✕</button>
+                    <button
+                      type="button"
+                      className="modal-search-clear"
+                      onClick={() => setMobileSheetSearch("")}
+                      aria-label="Clear Search"
+                    >
+                      ✕
+                    </button>
                   )}
                 </div>
+              </div>
 
-                {/* A-Z Letter Filter Row */}
-                <div className="sheet-letter-row">
-                  {availableLetters.map((letter) => (
+              {/* A-Z Letter Filter Scroll Bar */}
+              <div className="modal-letter-strip" role="tablist" aria-label="Filter by letter">
+                <button
+                  type="button"
+                  className={`modal-letter-chip ${!mobileSheetLetter ? "active" : ""}`}
+                  onClick={() => setMobileSheetLetter(null)}
+                >
+                  All
+                </button>
+                {availableLetters.map((letter) => {
+                  const isSelected = mobileSheetLetter === letter;
+                  return (
                     <button
                       key={letter}
                       type="button"
-                      className={`sheet-letter-btn ${mobileSheetLetter === letter ? "active" : ""}`}
-                      onClick={() => { setMobileSheetLetter(mobileSheetLetter === letter ? null : letter); setMobileSheetSearch(""); }}
+                      className={`modal-letter-chip ${isSelected ? "active" : ""}`}
+                      onClick={() => setMobileSheetLetter(isSelected ? null : letter)}
                     >
                       {letter}
                     </button>
-                  ))}
-                </div>
+                  );
+                })}
+              </div>
 
-                {/* Filter Actions */}
-                {mobileSheetLetter && (
-                  <div className="sheet-filter-actions" style={{ display: 'flex', gap: '10px', padding: '12px 16px', borderBottom: '0.5px solid var(--divider)' }}>
-                    <button type="button" style={{ flex: 1, padding: '10px', borderRadius: '8px', background: 'var(--item-hover)', fontWeight: 600, color: 'var(--text-primary)' }} onClick={() => { setMobileSheetLetter(null); setSelectedLetter(null); setCurrentPage(1); }}>Reset</button>
-                    <button type="button" style={{ flex: 2, padding: '10px', borderRadius: '8px', background: '#007aff', color: '#fff', fontWeight: 600 }} onClick={() => { setSelectedLetter(mobileSheetLetter); setIsMobilePaletteOpen(false); setCurrentPage(1); }}>
-                      Show {cards.filter(c => c.word[0]?.toUpperCase() === mobileSheetLetter).length} results
+              {/* Filter Status Summary Bar */}
+              <div className="modal-status-bar">
+                <span>
+                  Showing {filteredSheetCards.length} {filteredSheetCards.length === 1 ? "word" : "words"}
+                  {mobileSheetLetter && ` • Letter "${mobileSheetLetter}"`}
+                  {mobileSheetSearch && ` • "${mobileSheetSearch}"`}
+                </span>
+              </div>
+
+              {/* Scrollable Word List */}
+              <div className="modal-word-list">
+                {filteredSheetCards.length === 0 ? (
+                  <div className="modal-empty-state">
+                    <div className="empty-ico">🔍</div>
+                    <div className="empty-title">No vocabulary words found</div>
+                    <div className="empty-sub">Try searching with a different keyword or starting letter</div>
+                    <button
+                      type="button"
+                      className="btn-clear-all"
+                      onClick={() => {
+                        setMobileSheetSearch("");
+                        setMobileSheetLetter(null);
+                      }}
+                    >
+                      Show All Words
                     </button>
                   </div>
+                ) : (
+                  filteredSheetCards.map((card) => {
+                    const isActive = activeCard.id === card.id;
+                    const pos = card.meanings[0]?.pos || "v.";
+                    const trans = card.meanings[0]?.translation || "";
+                    const origIndex = cards.findIndex((c) => c.id === card.id);
+                    return (
+                      <button
+                        key={card.id}
+                        type="button"
+                        className={`modal-word-item ${isActive ? "active" : ""}`}
+                        onClick={() => {
+                          const targetIdx = cards.findIndex((c) => c.id === card.id);
+                          setCurrentPage(targetIdx !== -1 ? targetIdx + 1 : 1);
+                          setIsMobilePaletteOpen(false);
+                        }}
+                      >
+                        <div className="word-item-left">
+                          <span className="word-item-idx">#{origIndex !== -1 ? origIndex + 1 : 1}</span>
+                          <div className="word-item-text">
+                            <div className="word-name-row">
+                              <span className="word-term">{card.word}</span>
+                              <span className="word-pos-tag">{pos}</span>
+                            </div>
+                            {trans && <div className="word-trans-preview">{trans}</div>}
+                          </div>
+                        </div>
+
+                        {isActive && (
+                          <span className="word-active-badge">Active</span>
+                        )}
+                      </button>
+                    );
+                  })
                 )}
-
-                {/* Word List */}
-                <div className="sheet-word-list">
-                  {(() => {
-                    const sheetCards = cards.filter(c => {
-                      const ms = !mobileSheetSearch || c.word.toLowerCase().includes(mobileSheetSearch.toLowerCase());
-                      const ml = !mobileSheetLetter || c.word[0]?.toUpperCase() === mobileSheetLetter;
-                      return ms && ml;
-                    });
-                    if (sheetCards.length === 0) {
-                      return <div className="sheet-empty">No matching words</div>;
-                    }
-                    return sheetCards.map((card) => {
-                      const isActive = activeCard.id === card.id;
-                      return (
-                        <button
-                          key={card.id}
-                          type="button"
-                          className={`sheet-word-row ${isActive ? "active" : ""}`}
-                          onClick={() => {
-                            setSearchQuery(mobileSheetSearch);
-                            setSelectedLetter(mobileSheetLetter);
-                            const idx = sheetCards.findIndex((c) => c.id === card.id);
-                            setCurrentPage(idx !== -1 ? idx + 1 : 1);
-                            setIsMobilePaletteOpen(false);
-                            setMobileSheetSearch("");
-                            setMobileSheetLetter(null);
-                          }}
-                        >
-                          <span className="sheet-word-name">{card.word}</span>
-                          <span className="sheet-word-pos">{card.meanings[0]?.pos || "v."}</span>
-                        </button>
-                      );
-                    });
-                  })()}
-                </div>
-
               </div>
             </div>
           )}
@@ -1448,164 +1517,323 @@ export default function StudyModeQuizEngine() {
 
         .status-btn:disabled { opacity: 0.4; }
 
-        /* Mobile Palette Sheet */
-        .mobile-modal-backdrop {
+        /* ── Full Page Mobile Filter Modal ── */
+        .mobile-full-modal {
           position: fixed;
           inset: 0;
-          z-index: 100;
-          background: rgba(0, 0, 0, 0.55);
-          display: flex;
-          align-items: flex-end;
-        }
-
-        .mobile-modal-sheet {
+          z-index: 1000;
           background: var(--workspace-bg);
-          width: 100%;
-          height: 85vh;
-          border-radius: 20px 20px 0 0;
-          padding: 0 0 env(safe-area-inset-bottom, 20px);
           display: flex;
           flex-direction: column;
+          height: 100dvh;
+          max-height: 100dvh;
           overflow: hidden;
+          animation: modal-slide-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .sheet-handle {
-          width: 36px;
-          height: 4px;
-          background: var(--divider);
-          border-radius: 2px;
-          margin: 10px auto 0;
-          flex-shrink: 0;
+        @keyframes modal-slide-in {
+          from {
+            opacity: 0;
+            transform: translateY(16px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
 
-        .sheet-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 12px 18px 10px;
-          flex-shrink: 0;
+        .modal-top-bar {
+          height: 48px;
           border-bottom: 0.5px solid var(--divider);
+          background: var(--sidebar-bg);
+          backdrop-filter: blur(25px);
+          -webkit-backdrop-filter: blur(25px);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0 12px;
+          flex-shrink: 0;
         }
 
-        .sheet-title {
+        .modal-top-back-btn {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          height: 32px;
+          padding: 0 10px 0 6px;
+          border-radius: 8px;
+          border: 0.5px solid var(--divider);
+          background: var(--item-hover);
+          color: var(--system-blue);
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: background 0.15s ease, transform 0.1s ease;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .modal-top-back-btn:active {
+          transform: scale(0.95);
+          background: rgba(0, 122, 255, 0.14);
+        }
+
+        .modal-top-title {
           font-size: 15px;
           font-weight: 700;
           color: var(--text-primary);
+          letter-spacing: -0.01em;
         }
 
-        .btn-close {
+        .modal-top-reset-btn {
+          height: 28px;
+          padding: 0 10px;
+          border-radius: 7px;
           border: none;
-          background: none;
-          font-size: 17px;
-          color: var(--text-muted);
+          background: rgba(255, 59, 48, 0.12);
+          color: #ff3b30;
+          font-size: 12px;
+          font-weight: 600;
           cursor: pointer;
-          padding: 4px;
+          transition: background 0.15s ease;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .modal-top-reset-btn:active {
+          background: rgba(255, 59, 48, 0.22);
         }
 
-        /* Sheet Search */
-        .sheet-search-box {
+        .modal-top-counter {
+          font-size: 11.5px;
+          font-weight: 600;
+          color: var(--text-secondary);
+          background: var(--item-hover);
+          padding: 3px 8px;
+          border-radius: 6px;
+          border: 0.5px solid var(--divider);
+        }
+
+        .modal-search-wrapper {
+          padding: 8px 12px 6px;
+          flex-shrink: 0;
+        }
+
+        .modal-search-box {
           display: flex;
           align-items: center;
           gap: 8px;
-          margin: 10px 12px 8px;
           background: var(--item-hover);
           border: 0.5px solid var(--divider);
-          border-radius: 10px;
-          padding: 8px 12px;
+          border-radius: 9px;
+          padding: 7px 10px;
+        }
+
+        .modal-search-ico {
+          width: 14px;
+          height: 14px;
+          color: var(--text-muted);
           flex-shrink: 0;
         }
-        .sheet-search-icon { width: 15px; height: 15px; color: var(--text-muted); flex-shrink: 0; }
-        .sheet-search-input {
+
+        .modal-search-input {
           flex: 1;
           border: none;
           background: none;
-          font-size: 15px;
+          font-size: 14px;
           color: var(--text-primary);
           outline: none;
         }
-        .sheet-search-input::placeholder { color: var(--text-muted); }
-        .sheet-search-clear {
-          border: none; background: none;
-          color: var(--text-muted); font-size: 14px; cursor: pointer; padding: 0;
+        .modal-search-input::placeholder {
+          color: var(--text-muted);
         }
 
-        /* Sheet Letter Filter Row */
-        .sheet-letter-row {
+        .modal-search-clear {
+          border: none;
+          background: none;
+          color: var(--text-muted);
+          font-size: 13px;
+          cursor: pointer;
+          padding: 2px 4px;
+          border-radius: 4px;
+        }
+
+        .modal-letter-strip {
           display: flex;
           gap: 5px;
           overflow-x: auto;
-          padding: 0 12px 8px;
+          padding: 4px 12px 8px;
           flex-shrink: 0;
           scrollbar-width: none;
+          -webkit-overflow-scrolling: touch;
         }
-        .sheet-letter-row::-webkit-scrollbar { display: none; }
+        .modal-letter-strip::-webkit-scrollbar {
+          display: none;
+        }
 
-        .sheet-letter-btn {
+        .modal-letter-chip {
           flex-shrink: 0;
-          height: 30px;
+          height: 28px;
           min-width: 30px;
           padding: 0 8px;
           border-radius: 7px;
           border: 0.5px solid var(--divider);
           background: var(--item-hover);
           color: var(--text-secondary);
-          font-size: 13px;
+          font-size: 12px;
           font-weight: 700;
           cursor: pointer;
+          transition: all 0.12s ease;
+          -webkit-tap-highlight-color: transparent;
         }
-        .sheet-letter-btn.active {
+        .modal-letter-chip:active {
+          transform: scale(0.94);
+        }
+        .modal-letter-chip.active {
           background: var(--system-blue);
-          color: #fff;
+          color: #ffffff;
           border-color: var(--system-blue);
+          box-shadow: 0 2px 8px rgba(0, 122, 255, 0.35);
         }
 
-        /* Sheet Word List */
-        .sheet-word-list {
+        .modal-status-bar {
+          padding: 4px 12px 6px;
+          font-size: 11px;
+          color: var(--text-secondary);
+          font-weight: 500;
+          border-bottom: 0.5px solid var(--divider);
+          flex-shrink: 0;
+        }
+
+        .modal-word-list {
           flex: 1;
           overflow-y: auto;
+          padding: 8px 10px calc(24px + env(safe-area-inset-bottom, 16px));
           display: flex;
           flex-direction: column;
-          padding: 4px 8px 16px;
-          gap: 2px;
+          gap: 5px;
+          -webkit-overflow-scrolling: touch;
         }
-        .sheet-word-list::-webkit-scrollbar { width: 4px; }
-        .sheet-word-list::-webkit-scrollbar-thumb { background: rgba(150,150,150,0.3); border-radius: 10px; }
 
-        .sheet-word-row {
+        .modal-word-item {
           width: 100%;
-          height: 44px;
-          padding: 0 12px;
-          border-radius: 8px;
-          border: none;
-          background: transparent;
+          padding: 9px 11px;
+          border-radius: 9px;
+          border: 0.5px solid var(--divider);
+          background: var(--item-hover);
           display: flex;
           align-items: center;
           justify-content: space-between;
           cursor: pointer;
-          transition: background 0.1s;
-        }
-        .sheet-word-row:active { background: var(--item-hover); }
-        .sheet-word-row.active {
-          background: var(--system-blue);
-        }
-        .sheet-word-name {
-          font-size: 16px;
-          font-weight: 500;
-          color: var(--text-primary);
+          transition: background 0.12s ease, transform 0.1s ease;
+          -webkit-tap-highlight-color: transparent;
           text-align: left;
         }
-        .sheet-word-row.active .sheet-word-name { color: #fff; font-weight: 600; }
-        .sheet-word-pos {
-          font-size: 13px;
+        .modal-word-item:active {
+          transform: scale(0.985);
+          background: rgba(0, 122, 255, 0.1);
+        }
+        .modal-word-item.active {
+          background: rgba(0, 122, 255, 0.12);
+          border-color: rgba(0, 122, 255, 0.4);
+        }
+
+        .word-item-left {
+          display: flex;
+          align-items: flex-start;
+          gap: 8px;
+          flex: 1;
+          min-width: 0;
+        }
+
+        .word-item-idx {
+          font-size: 10.5px;
+          font-weight: 700;
+          color: var(--text-muted);
+          font-variant-numeric: tabular-nums;
+          padding-top: 2px;
+          flex-shrink: 0;
+          min-width: 24px;
+        }
+
+        .word-item-text {
+          display: flex;
+          flex-direction: column;
+          gap: 1px;
+          flex: 1;
+          min-width: 0;
+        }
+
+        .word-name-row {
+          display: flex;
+          align-items: baseline;
+          gap: 5px;
+          flex-wrap: wrap;
+        }
+
+        .word-term {
+          font-size: 14.5px;
+          font-weight: 700;
+          color: var(--text-primary);
+        }
+        .modal-word-item.active .word-term {
+          color: var(--system-blue);
+        }
+
+        .word-pos-tag {
+          font-size: 11px;
           color: var(--text-secondary);
           font-style: italic;
         }
-        .sheet-word-row.active .sheet-word-pos { color: rgba(255,255,255,0.8); }
-        .sheet-empty {
-          padding: 40px 20px;
+
+        .word-trans-preview {
+          font-size: 12px;
+          color: var(--text-secondary);
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .word-active-badge {
+          font-size: 10px;
+          font-weight: 700;
+          background: var(--system-blue);
+          color: #ffffff;
+          padding: 2.5px 7px;
+          border-radius: 9999px;
+          flex-shrink: 0;
+          margin-left: 6px;
+        }
+
+        .modal-empty-state {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 50px 20px;
           text-align: center;
-          color: var(--text-muted);
-          font-size: 14px;
+          gap: 6px;
+        }
+        .empty-ico {
+          font-size: 28px;
+          margin-bottom: 2px;
+        }
+        .empty-title {
+          font-size: 15px;
+          font-weight: 700;
+          color: var(--text-primary);
+        }
+        .empty-sub {
+          font-size: 12.5px;
+          color: var(--text-secondary);
+          max-width: 250px;
+        }
+        .btn-clear-all {
+          margin-top: 8px;
+          padding: 7px 14px;
+          border-radius: 7px;
+          border: none;
+          background: var(--system-blue);
+          color: #ffffff;
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
         }
 
         /* ════════════════════════════════════════════════════
@@ -1876,6 +2104,7 @@ export default function StudyModeQuizEngine() {
           .mobile-grid-btn { display: none; }
           .mobile-suite { display: none; }
           .mobile-counter-filter-btn { display: none; }
+          .mobile-full-modal { display: none; }
           .mobile-nav-footer { display: none; }
           .nav-arrow-pc { display: flex; }
 
