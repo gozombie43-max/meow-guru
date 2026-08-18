@@ -1039,17 +1039,19 @@ export default function StudyModeQuizEngine() {
               <div className="mobile-seg-control">
                 <button
                   type="button"
-                  className={`m-tab ${mobileTab === "synonyms" ? "active m-syn" : ""}`}
+                  className={`m-tab ${mobileTab === "synonyms" ? "active" : ""}`}
                   onClick={() => setMobileTab("synonyms")}
                 >
-                  Synonyms ({activeCard.synonyms.length})
+                  <span>Synonyms</span>
+                  <span className="m-tab-badge">{activeCard.synonyms.length}</span>
                 </button>
                 <button
                   type="button"
-                  className={`m-tab ${mobileTab === "antonyms" ? "active m-ant" : ""}`}
+                  className={`m-tab ${mobileTab === "antonyms" ? "active" : ""}`}
                   onClick={() => setMobileTab("antonyms")}
                 >
-                  Antonyms ({activeCard.antonyms.length})
+                  <span>Antonyms</span>
+                  <span className="m-tab-badge">{activeCard.antonyms.length}</span>
                 </button>
               </div>
 
@@ -1513,74 +1515,131 @@ export default function StudyModeQuizEngine() {
         .apple-tables-grid { display: none; }
 
         /* Mobile Touch Suite */
-        .mobile-suite { display: flex; flex-direction: column; gap: 14px; }
+        .mobile-suite {
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+        }
+
         .mobile-seg-control {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          background: var(--item-hover);
-          padding: 3px;
-          border-radius: 8px;
-          border: 0.5px solid var(--divider);
+          display: flex;
+          border-bottom: 1px solid var(--divider);
+          position: relative;
         }
 
         .m-tab {
-          position: relative;
-          padding: 9px 12px 10px;
+          flex: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          padding: 10px 12px 11px;
           border: none;
-          background: none;
-          border-radius: 7px;
-          font-size: 14px;
+          background: transparent;
+          font-size: 15px;
           font-weight: 600;
           color: var(--text-secondary);
           cursor: pointer;
-          transition: color 0.15s ease, background 0.15s ease;
+          position: relative;
+          transition: color 0.15s ease;
           -webkit-tap-highlight-color: transparent;
         }
 
         .m-tab.active {
-          background: var(--workspace-bg);
           color: var(--text-primary);
           font-weight: 700;
-          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
         }
 
         .m-tab.active::after {
           content: '';
           position: absolute;
-          bottom: 2px;
-          left: 15%;
-          right: 15%;
-          height: 2.5px;
+          bottom: -1px;
+          left: 12%;
+          right: 12%;
+          height: 3px;
           background: #007aff;
-          border-radius: 3px;
-          box-shadow: 0 1px 5px rgba(0, 122, 255, 0.5);
+          border-radius: 3px 3px 0 0;
+          box-shadow: 0 1px 6px rgba(0, 122, 255, 0.45);
         }
 
-        .apple-dict-viewport[data-theme="light"] .m-tab.active {
-          box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+        .m-tab-badge {
+          font-size: 11.5px;
+          font-weight: 700;
+          font-variant-numeric: tabular-nums;
+          background: var(--item-hover);
+          color: var(--text-secondary);
+          padding: 1px 7px;
+          border-radius: 9999px;
+          border: 0.5px solid var(--divider);
+          transition: all 0.15s ease;
+        }
+
+        .m-tab.active .m-tab-badge {
+          background: rgba(0, 122, 255, 0.14);
+          color: #007aff;
+          border-color: rgba(0, 122, 255, 0.3);
         }
 
         .ns-table-container {
-          border: 0.5px solid var(--divider);
-          border-radius: 10px;
+          border: 1px solid var(--divider);
+          border-radius: 14px;
+          background: var(--item-hover);
           overflow: hidden;
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
         }
 
-        .table-body { display: flex; flex-direction: column; }
+        .apple-dict-viewport[data-theme="light"] .ns-table-container {
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .table-body {
+          display: flex;
+          flex-direction: column;
+        }
+
         .table-row {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 11px 14px;
+          padding: 13px 16px;
           border-bottom: 0.5px solid var(--divider);
           font-size: 14.5px;
+          transition: background 0.12s ease;
+          -webkit-tap-highlight-color: transparent;
         }
 
-        .table-row:last-child { border-bottom: none; }
-        .alt-row { background: var(--table-alt); }
-        .cell-term { font-weight: 600; color: var(--text-primary); }
-        .cell-trans { color: var(--text-secondary); }
-        .table-empty { padding: 20px; text-align: center; color: var(--text-muted); font-size: 14px; }
+        .table-row:last-child {
+          border-bottom: none;
+        }
+
+        .table-row:active {
+          background: rgba(255, 255, 255, 0.08);
+        }
+
+        .apple-dict-viewport[data-theme="light"] .table-row:active {
+          background: rgba(0, 0, 0, 0.06);
+        }
+
+        .cell-term {
+          font-size: 15px;
+          font-weight: 600;
+          color: var(--text-primary);
+          letter-spacing: -0.01em;
+        }
+
+        .cell-trans {
+          font-size: 14px;
+          color: var(--text-secondary);
+          text-align: right;
+          max-width: 50%;
+        }
+
+        .table-empty {
+          padding: 32px 20px;
+          text-align: center;
+          color: var(--text-muted);
+          font-size: 14px;
+        }
 
         /* Bottom Status Bar */
         .macos-status-bar {
