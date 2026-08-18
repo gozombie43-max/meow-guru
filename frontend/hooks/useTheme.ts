@@ -1,21 +1,25 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useSyncExternalStore } from 'react';
 
 export type ThemeMode = 'light' | 'dark';
 
 const THEME_STORAGE_KEY = 'ui-theme';
 const DEFAULT_THEME: ThemeMode = 'light';
-const listeners = new Set<(theme: ThemeMode) => void>();
+const listeners = new Set<() => void>();
 let currentTheme: ThemeMode = DEFAULT_THEME;
 let initialized = false;
 
 const getPreferredTheme = (): ThemeMode => {
   if (typeof window === 'undefined') return DEFAULT_THEME;
-  const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
-  if (stored === 'dark' || stored === 'light') return stored;
-  const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
-  return prefersDark ? 'dark' : 'light';
+  try {
+    const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
+    if (stored === 'dark' || stored === 'light') return stored;
+    const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
+    return prefersDark ? 'dark' : 'light';
+  } catch {
+    return DEFAULT_THEME;
+  }
 };
 
 const applyThemeToDom = (theme: ThemeMode) => {
@@ -34,27 +38,36 @@ const applyThemeToDom = (theme: ThemeMode) => {
 const setThemeInternal = (nextTheme: ThemeMode) => {
   currentTheme = nextTheme;
   applyThemeToDom(nextTheme);
-  listeners.forEach((listener) => listener(nextTheme));
+  listeners.forEach((listener) => listener());
 };
 
 const initTheme = () => {
   if (initialized || typeof window === 'undefined') return;
   initialized = true;
-  setThemeInternal(getPreferredTheme());
+  currentTheme = getPreferredTheme();
+  applyThemeToDom(currentTheme);
+};
+
+const subscribe = (listener: () => void) => {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+};
+
+const getSnapshot = (): ThemeMode => {
+  if (typeof window !== 'undefined' && !initialized) {
+    initTheme();
+  }
+  return currentTheme;
+};
+
+const getServerSnapshot = (): ThemeMode => {
+  return DEFAULT_THEME;
 };
 
 export function useThemeMode() {
-  const [theme, setTheme] = useState<ThemeMode>(DEFAULT_THEME);
-
-  useEffect(() => {
-    initTheme();
-    setTheme(currentTheme);
-    const handleTheme = (nextTheme: ThemeMode) => setTheme(nextTheme);
-    listeners.add(handleTheme);
-    return () => {
-      listeners.delete(handleTheme);
-    };
-  }, []);
+  const theme = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   const setThemeMode = useCallback((nextTheme: ThemeMode) => {
     initTheme();
