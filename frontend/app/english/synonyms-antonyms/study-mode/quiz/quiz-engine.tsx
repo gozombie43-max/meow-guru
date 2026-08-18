@@ -1418,42 +1418,25 @@ export default function StudyModeQuizEngine() {
           justify-content: center;
           gap: 8px;
           cursor: pointer;
+          border: 0.5px solid var(--divider);
+          background: var(--item-hover);
+          color: var(--text-primary);
           transition: transform 0.12s ease, opacity 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
           -webkit-tap-highlight-color: transparent;
           user-select: none;
         }
 
-        .mobile-footer-btn.prev {
-          border: 0.5px solid var(--divider);
-          background: var(--item-hover);
-          color: var(--text-primary);
-        }
-        .mobile-footer-btn.prev:active:not(:disabled) {
+        .mobile-footer-btn:active:not(:disabled) {
           transform: scale(0.97);
           background: rgba(255, 255, 255, 0.14);
         }
-        .mobile-footer-btn.prev:disabled {
-          opacity: 0.35;
-          cursor: not-allowed;
+
+        .apple-dict-viewport[data-theme="light"] .mobile-footer-btn:active:not(:disabled) {
+          background: rgba(0, 0, 0, 0.09);
         }
 
-        .mobile-footer-btn.next {
-          border: none;
-          background: linear-gradient(135deg, #007aff 0%, #0056cc 100%);
-          color: #ffffff;
-          font-weight: 700;
-          box-shadow: 0 4px 14px rgba(0, 122, 255, 0.38);
-        }
-        .mobile-footer-btn.next:active:not(:disabled) {
-          transform: scale(0.97);
-          box-shadow: 0 2px 8px rgba(0, 122, 255, 0.25);
-          filter: brightness(1.08);
-        }
-        .mobile-footer-btn.next:disabled {
+        .mobile-footer-btn:disabled {
           opacity: 0.35;
-          background: var(--item-hover);
-          color: var(--text-muted);
-          box-shadow: none;
           cursor: not-allowed;
         }
 
