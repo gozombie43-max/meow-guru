@@ -57,15 +57,21 @@ router.post('/register', async (req, res) => {
     return res.status(400).json({ error: 'All fields required' });
 
   try {
-    const { resources } = await usersContainer.items
-      .query({
-        query: 'SELECT * FROM c WHERE c.email = @email',
-        parameters: [{ name: '@email', value: email }],
-      })
-      .fetchAll();
-
-    if (resources.length > 0)
-      return res.status(409).json({ error: 'Email already registered' });
+    // Attempt to create a lock document for the email to prevent race conditions
+    const emailLockId = `email_${email.toLowerCase()}`;
+    try {
+      await usersContainer.items.create({
+        id: emailLockId,
+        type: 'email_lock',
+        email: email.toLowerCase(),
+        createdAt: new Date().toISOString()
+      });
+    } catch (err) {
+      if (err.code === 409) {
+        return res.status(409).json({ error: 'Email already registered' });
+      }
+      throw err;
+    }
 
     const passwordHash = await bcrypt.hash(password, 12);
     const user = {

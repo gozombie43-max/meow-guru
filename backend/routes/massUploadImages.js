@@ -4,6 +4,12 @@
 //   - zipFile: the ZIP file
 //   - subjectId, topicId, quizId: target identifiers
 //   - subjectName, topicName, quizName: display names (optional, for Cosmos doc)
+// routes/massUploadImages.js
+// POST /api/mass-upload-images
+// Expects: multipart/form-data with fields:
+//   - zipFile: the ZIP file
+//   - subjectId, topicId, quizId: target identifiers
+//   - subjectName, topicName, quizName: display names (optional, for Cosmos doc)
 
 import express from "express";
 import multer from "multer";
@@ -11,6 +17,7 @@ import JSZip from "jszip";
 import { BlobServiceClient } from "@azure/storage-blob";
 import { v4 as uuidv4 } from "uuid";
 import sharp from "sharp";
+import pLimit from "p-limit";
 import { getQuestionsContainer } from "../containerStore.js"; // ✅ use shared container
 import adminAuth from "../middleware/auth.js";
 
@@ -187,9 +194,9 @@ router.post(
     // 5. Process each entry
     const results = [];
     const errors = [];
+    const limit = pLimit(5);
 
-    for (let i = 0; i < metadata.length; i++) {
-      const entry = metadata[i];
+    await Promise.all(metadata.map((entry, i) => limit(async () => {
       const { filename, correctAnswer, options, explanation = "" } = entry;
 
       try {
@@ -201,7 +208,7 @@ router.post(
 
         if (!imageFile) {
           errors.push({ filename, error: `Image file "${filename}" not found in ZIP.` });
-          continue;
+          return;
         }
 
         // Convert to WebP
@@ -239,7 +246,7 @@ router.post(
       } catch (err) {
         errors.push({ filename, error: err.message });
       }
-    }
+    })));
 
     // 6. Respond with summary
     return res.status(errors.length > 0 && results.length === 0 ? 500 : 200).json({
@@ -314,8 +321,9 @@ router.post(
 
     const results = [];
     const errors = [];
+    const limit = pLimit(5);
 
-    for (const [filename, questionId] of filenameToQuestionId) {
+    await Promise.all(Array.from(filenameToQuestionId.entries()).map(([filename, questionId]) => limit(async () => {
       try {
         const imageFile =
           zip.file(filename) ||
@@ -326,7 +334,7 @@ router.post(
 
         if (!imageFile) {
           errors.push({ filename, questionId, error: `Image "${filename}" not found in ZIP.` });
-          continue;
+          return;
         }
 
         const rawBuffer = await imageFile.async("nodebuffer");
@@ -339,7 +347,7 @@ router.post(
       } catch (err) {
         errors.push({ filename, questionId, error: err.message });
       }
-    }
+    })));
 
     return res.status(errors.length > 0 && results.length === 0 ? 500 : 200).json({
       success: results.length > 0,

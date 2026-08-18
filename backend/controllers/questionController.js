@@ -1,8 +1,12 @@
 // controllers/questionController.js
 import { getQuestionsContainer } from '../containerStore.js';
+import { LRUCache } from 'lru-cache';
 
 const QUESTIONS_QUERY_CACHE_TTL_MS = 60 * 1000;
-const questionsQueryCache = new Map();
+const questionsQueryCache = new LRUCache({
+  max: 500,
+  ttl: QUESTIONS_QUERY_CACHE_TTL_MS,
+});
 
 // ── Helpers (kept from your original) ─────────────────
 function buildRichText(textValue, imagePath) {
@@ -54,8 +58,12 @@ function normalizeQuizKey(value) {
     .replace(/[^a-z0-9]+/g, '');
 }
 
-function buildQuestionsCacheKey(parameters) {
-  return JSON.stringify(parameters.map((entry) => [entry.name, entry.value]));
+function buildQuestionsCacheKey(parameters, offset, limit) {
+  return JSON.stringify({
+    params: parameters.map((entry) => [entry.name, entry.value]),
+    offset,
+    limit,
+  });
 }
 
 async function fetchAllQueryResults(container, query, parameters, options = {}) {
@@ -262,10 +270,9 @@ const getQuestions = async (req, res) => {
       parsedOffset === 0 &&
       (parsedLimit === null || parsedLimit > 0) &&
       (queryMode === 'topic' || queryMode === 'subject');
-    const cacheKey = cacheable ? `${queryMode}:${buildQuestionsCacheKey(parameters)}` : null;
-    const cached = cacheKey ? questionsQueryCache.get(cacheKey) : null;
+    const cacheKey = cacheable ? `${queryMode}:${buildQuestionsCacheKey(parameters, parsedOffset, parsedLimit)}` : null;
 
-    let resources = cached && cached.expiresAt > Date.now() ? cached.value : null;
+    let resources = cacheKey ? questionsQueryCache.get(cacheKey) : null;
 
     if (!resources) {
       resources = await fetchAllQueryResults(container, query, parameters, { partitionKey });
@@ -280,10 +287,7 @@ const getQuestions = async (req, res) => {
       }
 
       if (cacheKey) {
-        questionsQueryCache.set(cacheKey, {
-          value: resources,
-          expiresAt: Date.now() + QUESTIONS_QUERY_CACHE_TTL_MS,
-        });
+        questionsQueryCache.set(cacheKey, resources);
       }
     }
 
@@ -356,20 +360,24 @@ const runAnalysis = async (req, res) => {
 
     // Fetch all questions by id
     const ids = answers.map(a => a.questionId);
+    
+    let questionDocs = [];
+    if (ids.length > 0) {
+      try {
+        const paramNames = ids.map((_, i) => `@id${i}`);
+        const paramValues = ids.map((id, i) => ({ name: `@id${i}`, value: id }));
+        const inClause = paramNames.join(', ');
 
-    // Cosmos doesn't support IN queries easily, so fetch in parallel
-    const questionDocs = await Promise.all(
-      ids.map(async (id) => {
-        try {
-          const query = {
-            query: 'SELECT * FROM c WHERE c.id = @id',
-            parameters: [{ name: '@id', value: id }],
-          };
-          const { resources } = await container.items.query(query).fetchAll();
-          return resources[0] || null;
-        } catch { return null; }
-      })
-    );
+        const query = {
+          query: `SELECT * FROM c WHERE c.id IN (${inClause})`,
+          parameters: paramValues,
+        };
+        const { resources } = await container.items.query(query).fetchAll();
+        questionDocs = resources;
+      } catch (err) {
+        console.error('runAnalysis IN query failed:', err.message);
+      }
+    }
 
     const questionMap = new Map(
       questionDocs.filter(Boolean).map(q => [q.id, q])

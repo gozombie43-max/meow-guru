@@ -1,4 +1,5 @@
 import sharp from "sharp";
+import pLimit from "p-limit";
 import { questionsContainer as blobContainer } from "../config/azure.js";
 import { getQuestionsContainer } from "../containerStore.js";
 
@@ -108,8 +109,9 @@ export const bulkUpload = async (req, res) => {
 
     const cosmosContainer = getQuestionsContainer();
     const results = [];
+    const limit = pLimit(5);
 
-    for (const file of files) {
+    await Promise.all(files.map(file => limit(async () => {
       const id = `bulk_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
 
       const compressed = await sharp(file.buffer)
@@ -142,7 +144,7 @@ export const bulkUpload = async (req, res) => {
       await cosmosContainer.items.create(doc);
 
       results.push({ id, imageUrl });
-    }
+    })));
 
     res.json({ success: true, count: results.length, results });
   } catch (err) {

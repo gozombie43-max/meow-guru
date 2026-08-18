@@ -189,18 +189,14 @@ router.patch('/attempt/:attemptId/autosave', protect, async (req, res) => {
     const { answers, sectionTimers, currentSection } = req.body;
     const container = getMockAttemptsContainer();
 
-    const { resources } = await container.items
-      .query({
-        query: 'SELECT * FROM c WHERE c.id = @id AND c.userId = @userId',
-        parameters: [
-          { name: '@id', value: attemptId },
-          { name: '@userId', value: req.user.id },
-        ],
-      })
-      .fetchAll();
-
-    if (!resources.length) return res.status(404).json({ error: 'Attempt not found' });
-    const doc = resources[0];
+    let doc;
+    try {
+      const { resource } = await container.item(attemptId, req.user.id).read();
+      doc = resource;
+    } catch (err) {
+      if (err.code === 404) return res.status(404).json({ error: 'Attempt not found' });
+      throw err;
+    }
     if (doc.status !== 'in_progress') return res.status(400).json({ error: 'Attempt is not in progress' });
 
     if (answers) doc.answers = { ...doc.answers, ...answers };
@@ -221,18 +217,14 @@ router.post('/attempt/:attemptId/submit', protect, async (req, res) => {
     const { attemptId } = req.params;
     const container = getMockAttemptsContainer();
 
-    const { resources } = await container.items
-      .query({
-        query: 'SELECT * FROM c WHERE c.id = @id AND c.userId = @userId',
-        parameters: [
-          { name: '@id', value: attemptId },
-          { name: '@userId', value: req.user.id },
-        ],
-      })
-      .fetchAll();
-
-    if (!resources.length) return res.status(404).json({ error: 'Attempt not found' });
-    const doc = resources[0];
+    let doc;
+    try {
+      const { resource } = await container.item(attemptId, req.user.id).read();
+      doc = resource;
+    } catch (err) {
+      if (err.code === 404) return res.status(404).json({ error: 'Attempt not found' });
+      throw err;
+    }
     if (doc.status === 'completed') return res.status(400).json({ error: 'Already submitted' });
 
     // Merge any final answers from body
@@ -264,18 +256,14 @@ router.get('/attempt/:attemptId', protect, async (req, res) => {
     const { attemptId } = req.params;
     const container = getMockAttemptsContainer();
 
-    const { resources } = await container.items
-      .query({
-        query: 'SELECT * FROM c WHERE c.id = @id AND c.userId = @userId',
-        parameters: [
-          { name: '@id', value: attemptId },
-          { name: '@userId', value: req.user.id },
-        ],
-      })
-      .fetchAll();
-
-    if (!resources.length) return res.status(404).json({ error: 'Attempt not found' });
-    const doc = resources[0];
+    let doc;
+    try {
+      const { resource } = await container.item(attemptId, req.user.id).read();
+      doc = resource;
+    } catch (err) {
+      if (err.code === 404) return res.status(404).json({ error: 'Attempt not found' });
+      throw err;
+    }
 
     // Only reveal answerKey after submission
     if (doc.status !== 'completed') {

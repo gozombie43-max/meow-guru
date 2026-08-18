@@ -387,20 +387,23 @@ export async function buildPaper({ examSlug, testId }) {
     const topicList = section.topics.map(t => t.toLowerCase());
 
     let allQuestions = [];
-    for (const topic of topicList) {
+    if (topicList.length > 0) {
       try {
+        const paramNames = topicList.map((_, i) => `@topic${i}`);
+        const paramValues = topicList.map((t, i) => ({ name: `@topic${i}`, value: t }));
+        
         const { resources } = await container.items
           .query({
-            query: `SELECT * FROM c WHERE LOWER(c.topic) = @topic OFFSET 0 LIMIT @limit`,
+            query: `SELECT * FROM c WHERE LOWER(c.topic) IN (${paramNames.join(', ')}) OFFSET 0 LIMIT @limit`,
             parameters: [
-              { name: '@topic', value: topic },
-              { name: '@limit', value: overfetchCount },
+              ...paramValues,
+              { name: '@limit', value: overfetchCount * topicList.length },
             ],
           })
           .fetchAll();
-        allQuestions.push(...resources);
+        allQuestions = resources;
       } catch (err) {
-        console.warn(`Query for topic "${topic}" failed:`, err.message);
+        console.warn(`Query for topics [${topicList.join(', ')}] failed:`, err.message);
       }
     }
 
@@ -484,7 +487,7 @@ export function gradeAttempt({ attemptDoc }) {
       const userAnswer = attemptDoc.answers?.[q.id];
       const correctAnswer = attemptDoc.answerKey?.[q.id];
 
-      if (!userAnswer || userAnswer === '') {
+      if (userAnswer === undefined || userAnswer === null || userAnswer === '') {
         skipped++;
       } else if (String(userAnswer) === String(correctAnswer)) {
         correct++;
