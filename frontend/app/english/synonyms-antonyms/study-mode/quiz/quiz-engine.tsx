@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { fetchQuestions } from "@/lib/api/questions";
-import { Volume2, ArrowLeft } from "lucide-react";
+import { Volume2, ArrowLeft, LogOut } from "lucide-react";
 
 type StudyModeMeaning = {
   pos?: string;
@@ -271,6 +271,7 @@ export default function StudyModeQuizEngine() {
   const [loading, setLoading] = useState(true);
   const [isHoveringLights, setIsHoveringLights] = useState(false);
   const [isMobilePaletteOpen, setIsMobilePaletteOpen] = useState(false);
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [mobileSheetSearch, setMobileSheetSearch] = useState("");
   const [mobileSheetLetter, setMobileSheetLetter] = useState<string | null>(null);
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
@@ -359,6 +360,16 @@ export default function StudyModeQuizEngine() {
         e.preventDefault();
         searchInputRef.current?.focus();
         return;
+      }
+      if (e.key === "Escape") {
+        if (showExitConfirm) {
+          setShowExitConfirm(false);
+          return;
+        }
+        if (isMobilePaletteOpen) {
+          setIsMobilePaletteOpen(false);
+          return;
+        }
       }
       if (document.activeElement === searchInputRef.current) {
         if (e.key === "Escape") {
@@ -488,7 +499,7 @@ export default function StudyModeQuizEngine() {
             <button
               type="button"
               className="light red"
-              onClick={() => router.push("/english/synonyms-antonyms/study-mode")}
+              onClick={() => setShowExitConfirm(true)}
               aria-label="Close and return"
               title="Close to welcome screen"
             >
@@ -497,7 +508,7 @@ export default function StudyModeQuizEngine() {
             <button
               type="button"
               className="light yellow"
-              onClick={() => router.push("/english/synonyms-antonyms/study-mode")}
+              onClick={() => setShowExitConfirm(true)}
               aria-label="Minimize"
               title="Minimize to topic"
             >
@@ -647,7 +658,7 @@ export default function StudyModeQuizEngine() {
               <button
                 type="button"
                 className="mobile-back-btn"
-                onClick={() => router.push("/english/synonyms-antonyms/study-mode")}
+                onClick={() => setShowExitConfirm(true)}
                 aria-label="Back to Study Mode"
                 title="Back to Study Mode"
               >
@@ -874,6 +885,45 @@ export default function StudyModeQuizEngine() {
                     );
                   })
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* Mini Middle Pop-up Exit Confirmation Modal */}
+          {showExitConfirm && (
+            <div
+              className="exit-modal-backdrop"
+              onClick={() => setShowExitConfirm(false)}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="exit-modal-title"
+            >
+              <div className="exit-modal-card" onClick={(e) => e.stopPropagation()}>
+                <div className="exit-modal-icon-wrap">
+                  <LogOut size={22} className="exit-modal-icon" />
+                </div>
+                <h3 id="exit-modal-title" className="exit-modal-title">
+                  Want to exit?
+                </h3>
+                <p className="exit-modal-desc">
+                  Are you sure you want to leave study mode? Your session progress is saved.
+                </p>
+                <div className="exit-modal-actions">
+                  <button
+                    type="button"
+                    className="exit-btn-cancel"
+                    onClick={() => setShowExitConfirm(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="exit-btn-confirm"
+                    onClick={() => router.push("/english/synonyms-antonyms/study-mode")}
+                  >
+                    Confirm
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -1834,6 +1884,124 @@ export default function StudyModeQuizEngine() {
           font-size: 13px;
           font-weight: 600;
           cursor: pointer;
+        }
+
+        /* ── Mini Middle Pop-Up Exit Modal ── */
+        .exit-modal-backdrop {
+          position: fixed;
+          inset: 0;
+          z-index: 2000;
+          background: rgba(0, 0, 0, 0.55);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 16px;
+          animation: exit-fade-in 0.18s ease-out;
+        }
+
+        @keyframes exit-fade-in {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+
+        .exit-modal-card {
+          width: 100%;
+          max-width: 300px;
+          background: var(--sidebar-bg);
+          backdrop-filter: blur(40px);
+          -webkit-backdrop-filter: blur(40px);
+          border: 0.5px solid var(--divider);
+          border-radius: 18px;
+          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+          padding: 22px 20px 18px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          animation: exit-scale-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes exit-scale-in {
+          from {
+            opacity: 0;
+            transform: scale(0.92);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+
+        .exit-modal-icon-wrap {
+          width: 44px;
+          height: 44px;
+          border-radius: 12px;
+          background: rgba(255, 59, 48, 0.12);
+          color: #ff3b30;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 12px;
+        }
+
+        .exit-modal-title {
+          font-size: 17px;
+          font-weight: 700;
+          color: var(--text-primary);
+          margin: 0 0 6px;
+          letter-spacing: -0.01em;
+        }
+
+        .exit-modal-desc {
+          font-size: 13px;
+          line-height: 1.45;
+          color: var(--text-secondary);
+          margin: 0 0 18px;
+        }
+
+        .exit-modal-actions {
+          display: flex;
+          gap: 10px;
+          width: 100%;
+        }
+
+        .exit-btn-cancel {
+          flex: 1;
+          height: 40px;
+          border-radius: 10px;
+          border: 0.5px solid var(--divider);
+          background: var(--item-hover);
+          color: var(--text-primary);
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: background 0.15s ease, transform 0.1s ease;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .exit-btn-cancel:active {
+          transform: scale(0.97);
+          background: rgba(255, 255, 255, 0.12);
+        }
+
+        .exit-btn-confirm {
+          flex: 1;
+          height: 40px;
+          border-radius: 10px;
+          border: none;
+          background: #ff3b30;
+          color: #ffffff;
+          font-size: 14px;
+          font-weight: 700;
+          cursor: pointer;
+          box-shadow: 0 3px 12px rgba(255, 59, 48, 0.35);
+          transition: background 0.15s ease, transform 0.1s ease, filter 0.15s ease;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .exit-btn-confirm:active {
+          transform: scale(0.97);
+          filter: brightness(0.92);
         }
 
         /* ════════════════════════════════════════════════════
