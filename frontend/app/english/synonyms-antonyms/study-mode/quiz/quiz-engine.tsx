@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { fetchQuestions } from "@/lib/api/questions";
 import { Volume2, ArrowLeft, LogOut } from "lucide-react";
+import { useThemeMode } from "@/hooks/useTheme";
 
 type StudyModeMeaning = {
   pos?: string;
@@ -262,7 +263,7 @@ export default function StudyModeQuizEngine() {
   };
 
   const router = useRouter();
-  const [theme, setTheme] = useState<"light" | "dark">("dark");
+  const { theme, toggleThemeMode } = useThemeMode();
   const [cards, setCards] = useState<StudyModeCard[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
@@ -333,25 +334,6 @@ export default function StudyModeQuizEngine() {
       setCurrentPage(cards.length);
     }
   }, [cards.length, currentPage]);
-
-  useEffect(() => {
-    try {
-      const savedTheme = window.localStorage.getItem("study-mode-theme");
-      if (savedTheme === "light" || savedTheme === "dark") {
-        setTheme(savedTheme);
-      }
-    } catch {
-      // Ignore storage access issues.
-    }
-  }, []);
-
-  useEffect(() => {
-    try {
-      window.localStorage.setItem("study-mode-theme", theme);
-    } catch {
-      // Ignore storage access issues.
-    }
-  }, [theme]);
 
   // Desktop Keyboard navigation & Cmd+F Search focus
   useEffect(() => {
@@ -797,7 +779,7 @@ export default function StudyModeQuizEngine() {
               <button
                 type="button"
                 className="appearance-toggle"
-                onClick={() => setTheme((v) => (v === "dark" ? "light" : "dark"))}
+                onClick={toggleThemeMode}
                 aria-label="Toggle theme appearance"
                 title="Toggle Theme"
               >
@@ -1395,12 +1377,18 @@ export default function StudyModeQuizEngine() {
           align-items: center;
           gap: 12px;
           padding: 10px 16px max(14px, env(safe-area-inset-bottom, 14px));
-          background: var(--sidebar-bg);
+          background: rgba(26, 26, 30, 0.92);
           backdrop-filter: blur(30px);
           -webkit-backdrop-filter: blur(30px);
-          border-top: 0.5px solid var(--divider);
-          box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.2);
+          border-top: 1px solid rgba(255, 255, 255, 0.12);
+          box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.35);
           flex-shrink: 0;
+        }
+
+        .apple-dict-viewport[data-theme="light"] .mobile-nav-footer {
+          background: rgba(246, 246, 248, 0.94);
+          border-top: 1px solid rgba(0, 0, 0, 0.1);
+          box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.07);
         }
 
         .footer-progress-bar {
@@ -1409,8 +1397,12 @@ export default function StudyModeQuizEngine() {
           left: 0;
           right: 0;
           height: 2.5px;
-          background: var(--divider);
+          background: rgba(255, 255, 255, 0.12);
           overflow: hidden;
+        }
+
+        .apple-dict-viewport[data-theme="light"] .footer-progress-bar {
+          background: rgba(0, 0, 0, 0.08);
         }
 
         .footer-progress-fill {
@@ -1432,7 +1424,7 @@ export default function StudyModeQuizEngine() {
           cursor: pointer;
           border: 1px solid rgba(255, 255, 255, 0.22);
           background: rgba(255, 255, 255, 0.08);
-          color: var(--text-primary);
+          color: #ffffff;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
           transition: transform 0.12s ease, opacity 0.15s ease, background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
           -webkit-tap-highlight-color: transparent;
@@ -1441,8 +1433,9 @@ export default function StudyModeQuizEngine() {
 
         .apple-dict-viewport[data-theme="light"] .mobile-footer-btn {
           border: 1px solid rgba(0, 0, 0, 0.18);
-          background: rgba(0, 0, 0, 0.05);
-          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+          background: rgba(0, 0, 0, 0.06);
+          color: #1d1d1f;
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
         }
 
         .mobile-footer-btn:active:not(:disabled) {
@@ -1452,18 +1445,21 @@ export default function StudyModeQuizEngine() {
         }
 
         .apple-dict-viewport[data-theme="light"] .mobile-footer-btn:active:not(:disabled) {
-          background: rgba(0, 0, 0, 0.1);
+          background: rgba(0, 0, 0, 0.12);
           border-color: rgba(0, 0, 0, 0.32);
         }
 
         .mobile-footer-btn:disabled {
           opacity: 0.32;
           border-color: rgba(255, 255, 255, 0.1);
+          color: rgba(255, 255, 255, 0.4);
           cursor: not-allowed;
         }
 
         .apple-dict-viewport[data-theme="light"] .mobile-footer-btn:disabled {
+          opacity: 0.32;
           border-color: rgba(0, 0, 0, 0.08);
+          color: rgba(0, 0, 0, 0.35);
         }
 
         /* Dictionary Body Content Area */
