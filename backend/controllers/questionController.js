@@ -478,4 +478,5 @@ const deleteQuestion = async (req, res) => {
   }
 };
 
+export { normalizeSearchKey };
 export default { addQuestion, getQuestionById, updateQuestion, deleteQuestion, getQuestions, generatePracticeTest, runAnalysis };
