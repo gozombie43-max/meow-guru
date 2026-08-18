@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { fetchQuestions } from "@/lib/api/questions";
-import { Volume2, ListFilter } from "lucide-react";
+import { Volume2, ListFilter, ArrowLeft } from "lucide-react";
 
 type StudyModeMeaning = {
   pos?: string;
@@ -633,36 +633,8 @@ export default function StudyModeQuizEngine() {
                 aria-label="Back to Study Mode"
                 title="Back to Study Mode"
               >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
-                  <path d="M15 18l-6-6 6-6" />
-                </svg>
+                <ArrowLeft size={15} />
                 <span className="mobile-back-text">Back</span>
-              </button>
-
-              {/* Nav arrows hidden on mobile — shown on PC toolbar */}
-              <button
-                type="button"
-                className="nav-arrow nav-arrow-pc"
-                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-                disabled={currentPage === 1}
-                aria-label="Previous Word"
-                title="Previous word (Left Arrow)"
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M15 18l-6-6 6-6" />
-                </svg>
-              </button>
-              <button
-                type="button"
-                className="nav-arrow nav-arrow-pc"
-                onClick={() => setCurrentPage((prev) => Math.min(totalCards, prev + 1))}
-                disabled={currentPage === totalCards}
-                aria-label="Next Word"
-                title="Next word (Right Arrow)"
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M9 18l6-6-6-6" />
-                </svg>
               </button>
             </div>
 
@@ -713,7 +685,7 @@ export default function StudyModeQuizEngine() {
                 aria-label="Filter words"
                 title="Vocabulary Index"
               >
-                <ListFilter size={17} />
+                <ListFilter size={15} />
               </button>
 
               <button
@@ -1122,7 +1094,7 @@ export default function StudyModeQuizEngine() {
 
         /* Top Unified Toolbar */
         .unified-toolbar {
-          height: 54px;
+          height: 44px;
           border-bottom: 0.5px solid var(--divider);
           background: var(--sidebar-bg);
           backdrop-filter: blur(25px);
@@ -1130,30 +1102,31 @@ export default function StudyModeQuizEngine() {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 0 12px;
+          padding: 0 10px;
           flex-shrink: 0;
           position: sticky;
           top: 0;
           z-index: 40;
+          gap: 6px;
         }
 
         .toolbar-left, .toolbar-right {
           display: flex;
           align-items: center;
-          gap: 6px;
+          gap: 5px;
         }
 
         .mobile-back-btn {
           display: flex;
           align-items: center;
           gap: 3px;
-          height: 36px;
-          padding: 0 10px 0 6px;
-          border-radius: 10px;
+          height: 30px;
+          padding: 0 8px 0 6px;
+          border-radius: 8px;
           border: 0.5px solid var(--divider);
           background: var(--item-hover);
           color: var(--system-blue);
-          font-size: 13.5px;
+          font-size: 12.5px;
           font-weight: 600;
           cursor: pointer;
           transition: background 0.15s ease, transform 0.1s ease;
@@ -1167,8 +1140,88 @@ export default function StudyModeQuizEngine() {
           line-height: 1;
         }
 
-        /* Hide PC-only nav arrows on mobile */
-        .nav-arrow-pc { display: none; }
+        .mobile-toolbar-title {
+          display: flex;
+          align-items: baseline;
+          justify-content: center;
+          gap: 4px;
+          max-width: 130px;
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+        }
+
+        .mobile-toolbar-word {
+          font-size: 14.5px;
+          font-weight: 700;
+          color: var(--text-primary);
+          letter-spacing: -0.01em;
+        }
+
+        .mobile-toolbar-pos {
+          font-size: 11px;
+          color: var(--text-secondary);
+          font-style: italic;
+        }
+
+        .mobile-counter-top {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 2px;
+          background: rgba(0, 122, 255, 0.1);
+          color: var(--system-blue);
+          font-size: 11px;
+          font-weight: 700;
+          font-variant-numeric: tabular-nums;
+          height: 28px;
+          padding: 0 7px;
+          border-radius: 9999px;
+          border: 0.5px solid rgba(0, 122, 255, 0.25);
+          letter-spacing: 0.02em;
+        }
+        .counter-curr { font-weight: 700; }
+        .counter-sep { opacity: 0.5; font-weight: 400; }
+        .counter-tot { opacity: 0.85; font-weight: 600; }
+
+        .mobile-filter-top {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: var(--item-hover);
+          color: var(--text-primary);
+          height: 28px;
+          width: 28px;
+          border-radius: 7px;
+          border: 0.5px solid var(--divider);
+          cursor: pointer;
+          transition: background 0.15s ease, transform 0.1s ease;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .mobile-filter-top:active {
+          transform: scale(0.94);
+          background: rgba(0, 122, 255, 0.14);
+        }
+
+        .appearance-toggle {
+          width: 28px;
+          height: 28px;
+          border-radius: 7px;
+          background: var(--item-hover);
+          border: 0.5px solid var(--divider);
+          color: var(--text-primary);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: background 0.15s ease, transform 0.1s ease;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .appearance-toggle:active {
+          transform: scale(0.94);
+        }
+
+        .icon-theme { width: 14px; height: 14px; }
 
         /* ── Mobile Fixed Bottom Navigation Footer ── */
         .mobile-nav-footer {
@@ -1254,128 +1307,6 @@ export default function StudyModeQuizEngine() {
           box-shadow: none;
           cursor: not-allowed;
         }
-
-        .mobile-footer-counter {
-          flex-shrink: 0;
-          min-width: 72px;
-          height: 36px;
-          border-radius: 8px;
-          border: 0.5px solid var(--divider);
-          background: var(--item-hover);
-          color: var(--text-secondary);
-          font-size: 13px;
-          font-weight: 600;
-          cursor: pointer;
-          -webkit-tap-highlight-color: transparent;
-        }
-
-        .nav-arrow {
-          width: 28px;
-          height: 28px;
-          border-radius: 6px;
-          border: none;
-          background: var(--item-hover);
-          color: var(--text-primary);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-        }
-
-        .nav-arrow:disabled {
-          color: var(--text-muted);
-          opacity: 0.4;
-          cursor: not-allowed;
-        }
-
-        .nav-arrow svg { width: 16px; height: 16px; }
-
-        .apple-segmented-control {
-          display: none;
-        }
-
-        .mobile-toolbar-title {
-          display: flex;
-          align-items: baseline;
-          justify-content: center;
-          gap: 5px;
-          max-width: 140px;
-          overflow: hidden;
-          white-space: nowrap;
-          text-overflow: ellipsis;
-        }
-
-        .mobile-toolbar-word {
-          font-size: 15.5px;
-          font-weight: 700;
-          color: var(--text-primary);
-          letter-spacing: -0.01em;
-        }
-
-        .mobile-toolbar-pos {
-          font-size: 12px;
-          color: var(--text-secondary);
-          font-style: italic;
-        }
-
-        .mobile-counter-top {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 2px;
-          background: rgba(0, 122, 255, 0.1);
-          color: var(--system-blue);
-          font-size: 12px;
-          font-weight: 700;
-          font-variant-numeric: tabular-nums;
-          height: 34px;
-          padding: 0 10px;
-          border-radius: 9999px;
-          border: 0.5px solid rgba(0, 122, 255, 0.25);
-          letter-spacing: 0.02em;
-        }
-        .counter-curr { font-weight: 700; }
-        .counter-sep { opacity: 0.5; font-weight: 400; }
-        .counter-tot { opacity: 0.85; font-weight: 600; }
-
-        .mobile-filter-top {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: var(--item-hover);
-          color: var(--text-primary);
-          height: 34px;
-          width: 34px;
-          border-radius: 10px;
-          border: 0.5px solid var(--divider);
-          cursor: pointer;
-          transition: background 0.15s ease, transform 0.1s ease;
-          -webkit-tap-highlight-color: transparent;
-        }
-        .mobile-filter-top:active {
-          transform: scale(0.94);
-          background: rgba(0, 122, 255, 0.14);
-        }
-
-        .appearance-toggle {
-          width: 34px;
-          height: 34px;
-          border-radius: 10px;
-          background: var(--item-hover);
-          border: 0.5px solid var(--divider);
-          color: var(--text-primary);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          transition: background 0.15s ease, transform 0.1s ease;
-          -webkit-tap-highlight-color: transparent;
-        }
-        .appearance-toggle:active {
-          transform: scale(0.94);
-        }
-
-        .icon-theme { width: 16px; height: 16px; }
 
         /* Dictionary Body Content Area */
         .dictionary-body-scroll {
