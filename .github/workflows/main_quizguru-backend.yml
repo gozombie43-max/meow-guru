@@ -63,4 +63,3 @@ jobs:
           app-name: 'quizguru-backend'
           slot-name: 'Production'
           package: .
-          

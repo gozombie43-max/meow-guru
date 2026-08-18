@@ -49,6 +49,7 @@ jobs:
           AZURE_TRANSLATOR_KEY: ${{ secrets.AZURE_TRANSLATOR_KEY }}
           NEXT_PUBLIC_AZURE_TRANSLATOR_ENDPOINT: https://api.cognitive.microsofttranslator.com
           NEXT_PUBLIC_AZURE_TRANSLATOR_REGION: eastasia
+          ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
@@ -62,4 +63,3 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_BRAVE_ISLAND_0A237E400 }}
           app_location: "./frontend"
           action: "close"
-
