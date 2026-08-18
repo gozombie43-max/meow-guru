@@ -1524,16 +1524,41 @@ export default function StudyModeQuizEngine() {
         }
 
         .m-tab {
-          padding: 8px;
+          position: relative;
+          padding: 9px 12px 10px;
           border: none;
           background: none;
-          border-radius: 6px;
+          border-radius: 7px;
           font-size: 14px;
           font-weight: 600;
           color: var(--text-secondary);
+          cursor: pointer;
+          transition: color 0.15s ease, background 0.15s ease;
+          -webkit-tap-highlight-color: transparent;
         }
 
-        .m-tab.active { background: var(--workspace-bg); color: var(--text-primary); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .m-tab.active {
+          background: var(--workspace-bg);
+          color: var(--text-primary);
+          font-weight: 700;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+        }
+
+        .m-tab.active::after {
+          content: '';
+          position: absolute;
+          bottom: 2px;
+          left: 15%;
+          right: 15%;
+          height: 2.5px;
+          background: #007aff;
+          border-radius: 3px;
+          box-shadow: 0 1px 5px rgba(0, 122, 255, 0.5);
+        }
+
+        .apple-dict-viewport[data-theme="light"] .m-tab.active {
+          box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+        }
 
         .ns-table-container {
           border: 0.5px solid var(--divider);
