@@ -1109,16 +1109,8 @@ export default function StudyModeQuizEngine() {
             </section>
           </div>
 
-          {/* ── Mobile Fixed Bottom Navigation Footer ── */}
+          {/* ── Mobile Floating Navigation Buttons ── */}
           <div className="mobile-nav-footer">
-            {/* Top progress line */}
-            <div className="footer-progress-bar" aria-hidden="true">
-              <div
-                className="footer-progress-fill"
-                style={{ width: `${Math.min(100, (currentPage / totalCards) * 100)}%` }}
-              />
-            </div>
-
             <button
               type="button"
               className="mobile-footer-btn prev"
@@ -1366,7 +1358,7 @@ export default function StudyModeQuizEngine() {
 
         .icon-theme { width: 14px; height: 14px; }
 
-        /* ── Mobile Fixed Bottom Navigation Footer ── */
+        /* ── Mobile Floating Navigation Buttons ── */
         .mobile-nav-footer {
           position: sticky;
           bottom: 0;
@@ -1376,44 +1368,17 @@ export default function StudyModeQuizEngine() {
           display: flex;
           align-items: center;
           gap: 12px;
-          padding: 10px 16px max(14px, env(safe-area-inset-bottom, 14px));
-          background: rgba(26, 26, 30, 0.92);
-          backdrop-filter: blur(30px);
-          -webkit-backdrop-filter: blur(30px);
-          border-top: 1px solid rgba(255, 255, 255, 0.12);
-          box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.35);
+          padding: 8px 16px max(14px, env(safe-area-inset-bottom, 14px));
+          background: transparent;
+          border: none;
+          box-shadow: none;
+          pointer-events: none;
           flex-shrink: 0;
-        }
-
-        .apple-dict-viewport[data-theme="light"] .mobile-nav-footer {
-          background: rgba(246, 246, 248, 0.94);
-          border-top: 1px solid rgba(0, 0, 0, 0.1);
-          box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.07);
-        }
-
-        .footer-progress-bar {
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          height: 2.5px;
-          background: rgba(255, 255, 255, 0.12);
-          overflow: hidden;
-        }
-
-        .apple-dict-viewport[data-theme="light"] .footer-progress-bar {
-          background: rgba(0, 0, 0, 0.08);
-        }
-
-        .footer-progress-fill {
-          height: 100%;
-          background: linear-gradient(90deg, #007aff, #5856d6);
-          transition: width 0.22s ease-out;
         }
 
         .mobile-footer-btn {
           flex: 1;
-          height: 50px;
+          height: 48px;
           border-radius: 14px;
           font-size: 15.5px;
           font-weight: 600;
@@ -1422,10 +1387,13 @@ export default function StudyModeQuizEngine() {
           justify-content: center;
           gap: 8px;
           cursor: pointer;
+          pointer-events: auto;
+          backdrop-filter: blur(25px);
+          -webkit-backdrop-filter: blur(25px);
           border: 1px solid rgba(255, 255, 255, 0.22);
-          background: rgba(255, 255, 255, 0.08);
+          background: rgba(30, 30, 34, 0.88);
           color: #ffffff;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
           transition: transform 0.12s ease, opacity 0.15s ease, background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
           -webkit-tap-highlight-color: transparent;
           user-select: none;
@@ -1433,33 +1401,35 @@ export default function StudyModeQuizEngine() {
 
         .apple-dict-viewport[data-theme="light"] .mobile-footer-btn {
           border: 1px solid rgba(0, 0, 0, 0.18);
-          background: rgba(0, 0, 0, 0.06);
+          background: rgba(240, 240, 245, 0.92);
           color: #1d1d1f;
-          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
         }
 
         .mobile-footer-btn:active:not(:disabled) {
           transform: scale(0.97);
-          background: rgba(255, 255, 255, 0.16);
+          background: rgba(45, 45, 52, 0.96);
           border-color: rgba(255, 255, 255, 0.38);
         }
 
         .apple-dict-viewport[data-theme="light"] .mobile-footer-btn:active:not(:disabled) {
-          background: rgba(0, 0, 0, 0.12);
+          background: rgba(225, 225, 232, 0.96);
           border-color: rgba(0, 0, 0, 0.32);
         }
 
         .mobile-footer-btn:disabled {
-          opacity: 0.32;
+          opacity: 0.35;
           border-color: rgba(255, 255, 255, 0.1);
           color: rgba(255, 255, 255, 0.4);
+          box-shadow: none;
           cursor: not-allowed;
         }
 
         .apple-dict-viewport[data-theme="light"] .mobile-footer-btn:disabled {
-          opacity: 0.32;
+          opacity: 0.35;
           border-color: rgba(0, 0, 0, 0.08);
           color: rgba(0, 0, 0, 0.35);
+          box-shadow: none;
         }
 
         /* Dictionary Body Content Area */
