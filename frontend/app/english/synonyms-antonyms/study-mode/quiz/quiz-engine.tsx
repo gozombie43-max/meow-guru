@@ -387,34 +387,34 @@ export default function StudyModeQuizEngine() {
     return () => window.removeEventListener("mousedown", close);
   }, [isLetterDropdownOpen]);
 
-  // Handle Real Device / Browser Back Button (popstate interception)
   const isPaletteOpenRef = useRef(false);
   const isExitConfirmRef = useRef(false);
   isPaletteOpenRef.current = isMobilePaletteOpen;
   isExitConfirmRef.current = showExitConfirm;
 
+  const allowExitRef = useRef(false);
+
   useEffect(() => {
     // Push an initial history entry to trap real back navigation
-    window.history.pushState({ trapExit: true }, "", window.location.href);
+    window.history.pushState(null, "", window.location.href);
 
     const handlePopState = (e: PopStateEvent) => {
-      // 1. If Exit Confirmation is open, back button closes it
+      if (allowExitRef.current) return;
+
       if (isExitConfirmRef.current) {
         setShowExitConfirm(false);
-        window.history.pushState({ trapExit: true }, "", window.location.href);
+        window.history.pushState(null, "", window.location.href);
         return;
       }
 
-      // 2. If Vocabulary Palette is open, back button closes the palette first
       if (isPaletteOpenRef.current) {
         setIsMobilePaletteOpen(false);
-        window.history.pushState({ trapExit: true }, "", window.location.href);
+        window.history.pushState(null, "", window.location.href);
         return;
       }
 
-      // 3. Intercept real back button: show exit confirmation popup modal
       setShowExitConfirm(true);
-      window.history.pushState({ trapExit: true }, "", window.location.href);
+      window.history.pushState(null, "", window.location.href);
     };
 
     window.addEventListener("popstate", handlePopState);
@@ -424,8 +424,16 @@ export default function StudyModeQuizEngine() {
   }, []);
 
   const handleConfirmExit = () => {
+    allowExitRef.current = true;
     setShowExitConfirm(false);
-    router.push("/english/synonyms-antonyms/study-mode");
+    
+    // Pop the trap state natively first
+    window.history.back();
+    
+    // Replace the original quiz state with the target page
+    setTimeout(() => {
+      router.replace("/english/synonyms-antonyms");
+    }, 10);
   };
 
   // Derive the set of letters that actually exist in the word list (memoized)
