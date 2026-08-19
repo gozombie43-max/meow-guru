@@ -474,6 +474,30 @@ export default function StudyModeQuizEngine() {
     }
   }, [filteredCards.length, currentPage]);
 
+  // Scroll to active card when mobile palette opens
+  useEffect(() => {
+    if (isMobilePaletteOpen) {
+      const activeCardFallback = filteredCards[Math.min(currentPage - 1, Math.max(0, filteredCards.length - 1))];
+      if (activeCardFallback) {
+        const activeIdx = filteredSheetCards.findIndex(c => c.id === activeCardFallback.id);
+        if (activeIdx !== -1) {
+          // Ensure visible count includes the active index + some buffer
+          if (activeIdx >= mobileSheetVisibleCount) {
+            setMobileSheetVisibleCount(activeIdx + 20);
+          }
+          
+          // Wait for DOM to render the new count, then scroll
+          setTimeout(() => {
+            const activeEl = document.querySelector('.modal-word-item.active');
+            if (activeEl) {
+              activeEl.scrollIntoView({ behavior: 'auto', block: 'center' });
+            }
+          }, 50);
+        }
+      }
+    }
+  }, [isMobilePaletteOpen]); // Only run when palette open state changes
+
   if (loading) {
     return (
       <main className="apple-dict-viewport" data-theme={theme}>
