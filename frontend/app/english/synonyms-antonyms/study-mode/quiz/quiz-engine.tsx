@@ -1383,7 +1383,7 @@ export default function StudyModeQuizEngine() {
           background: rgba(0, 122, 255, 0.14);
         }
         .counter-curr { font-weight: 700; }
-        .counter-sep { opacity: 0.45; font-weight: 400; }
+        .counter-sep { opacity: 0.7; font-weight: 800; }
         .counter-tot { opacity: 0.85; font-weight: 600; }
 
         .appearance-toggle {
