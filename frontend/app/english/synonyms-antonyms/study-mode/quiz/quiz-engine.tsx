@@ -1162,8 +1162,8 @@ export default function StudyModeQuizEngine() {
            ════════════════════════════════════════════════════ */
         .apple-dict-viewport {
           --desktop-bg: #000000;
-          --sidebar-bg: rgba(30, 30, 35, 0.88);
-          --workspace-bg: rgba(24, 24, 28, 0.96);
+          --sidebar-bg: #000000;
+          --workspace-bg: #000000;
           --window-border: rgba(255, 255, 255, 0.16);
           --divider: rgba(255, 255, 255, 0.09);
           --text-primary: #ffffff;
@@ -1406,7 +1406,7 @@ export default function StudyModeQuizEngine() {
           backdrop-filter: blur(25px);
           -webkit-backdrop-filter: blur(25px);
           border: 1px solid rgba(255, 255, 255, 0.22);
-          background: rgba(30, 30, 34, 0.88);
+          background: rgba(0, 0, 0, 0.88);
           color: #ffffff;
           box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
           transition: transform 0.12s ease, opacity 0.15s ease, background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
