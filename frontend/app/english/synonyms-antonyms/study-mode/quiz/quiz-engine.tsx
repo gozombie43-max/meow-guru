@@ -278,6 +278,9 @@ export default function StudyModeQuizEngine() {
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
   const [stagedLetter, setStagedLetter] = useState<string | null>(null);
   const [isLetterDropdownOpen, setIsLetterDropdownOpen] = useState(false);
+  
+  const [mobileSheetVisibleCount, setMobileSheetVisibleCount] = useState(50);
+  useEffect(() => { setMobileSheetVisibleCount(50); }, [mobileSheetSearch, mobileSheetLetter]);
 
   // Filter cards by search + selected letter (memoized)
   const filteredCards = useMemo(
@@ -908,7 +911,17 @@ export default function StudyModeQuizEngine() {
               </div>
 
               {/* Scrollable Word List */}
-              <div className="modal-word-list">
+              <div 
+                className="modal-word-list"
+                onScroll={(e) => {
+                  const target = e.target as HTMLDivElement;
+                  if (target.scrollHeight - target.scrollTop <= target.clientHeight + 200) {
+                    if (mobileSheetVisibleCount < filteredSheetCards.length) {
+                      setMobileSheetVisibleCount(c => c + 50);
+                    }
+                  }
+                }}
+              >
                 {filteredSheetCards.length === 0 ? (
                   <div className="modal-empty-state">
                     <div className="empty-ico">🔍</div>
@@ -926,7 +939,7 @@ export default function StudyModeQuizEngine() {
                     </button>
                   </div>
                 ) : (
-                  filteredSheetCards.map((card) => {
+                  filteredSheetCards.slice(0, mobileSheetVisibleCount).map((card) => {
                     const isActive = activeCard.id === card.id;
                     const pos = card.meanings[0]?.pos || "v.";
                     const trans = card.meanings[0]?.translation || "";
@@ -1162,7 +1175,7 @@ export default function StudyModeQuizEngine() {
            ════════════════════════════════════════════════════ */
         .apple-dict-viewport {
           --desktop-bg: #000000;
-          --sidebar-bg: #000000;
+          --sidebar-bg: rgba(0, 0, 0, 0.65);
           --workspace-bg: #000000;
           --window-border: rgba(255, 255, 255, 0.16);
           --divider: rgba(255, 255, 255, 0.09);
@@ -1406,7 +1419,7 @@ export default function StudyModeQuizEngine() {
           backdrop-filter: blur(25px);
           -webkit-backdrop-filter: blur(25px);
           border: 1px solid rgba(255, 255, 255, 0.22);
-          background: rgba(0, 0, 0, 0.88);
+          background: rgba(0, 0, 0, 0.55);
           color: #ffffff;
           box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
           transition: transform 0.12s ease, opacity 0.15s ease, background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
