@@ -1444,7 +1444,7 @@ export default function StudyModeQuizEngine() {
           -webkit-backdrop-filter: blur(25px);
           border: 1px solid rgba(255, 255, 255, 0.18);
           background: rgba(255, 255, 255, 0.07);
-          color: var(--system-blue);
+          color: #ffffff;
           transition: background 0.15s ease, transform 0.1s ease;
           -webkit-tap-highlight-color: transparent;
           user-select: none;
@@ -1453,24 +1453,24 @@ export default function StudyModeQuizEngine() {
         .apple-dict-viewport[data-theme="light"] .mobile-footer-btn {
           border: 1px solid rgba(0, 0, 0, 0.15);
           background: rgba(0, 0, 0, 0.05);
-          color: var(--system-blue);
+          color: #1d1d1f;
         }
 
         .mobile-footer-btn:active:not(:disabled) {
           transform: scale(0.95);
-          background: rgba(0, 122, 255, 0.14);
-          border-color: rgba(0, 122, 255, 0.3);
+          background: rgba(255, 255, 255, 0.15);
+          border-color: rgba(255, 255, 255, 0.3);
         }
 
         .apple-dict-viewport[data-theme="light"] .mobile-footer-btn:active:not(:disabled) {
-          background: rgba(0, 122, 255, 0.1);
-          border-color: rgba(0, 122, 255, 0.25);
+          background: rgba(0, 0, 0, 0.1);
+          border-color: rgba(0, 0, 0, 0.25);
         }
 
         .mobile-footer-btn:disabled {
           opacity: 0.4;
           border-color: rgba(255, 255, 255, 0.1);
-          color: rgba(0, 122, 255, 0.4);
+          color: rgba(255, 255, 255, 0.4);
           background: rgba(255, 255, 255, 0.03);
           box-shadow: none;
           cursor: not-allowed;
@@ -1478,7 +1478,7 @@ export default function StudyModeQuizEngine() {
 
         .apple-dict-viewport[data-theme="light"] .mobile-footer-btn:disabled {
           border-color: rgba(0, 0, 0, 0.08);
-          color: rgba(0, 122, 255, 0.35);
+          color: rgba(0, 0, 0, 0.35);
           background: rgba(0, 0, 0, 0.02);
         }
 
