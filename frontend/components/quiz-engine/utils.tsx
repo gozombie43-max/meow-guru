@@ -274,6 +274,20 @@ export function isTier2Question(question: {
   return matchesQuizTag(question, ["tier2"]);
 }
 
+export function isStudyModeQuestion(question: {
+  questionType?: string;
+  quizName?: string;
+  word?: string;
+  meanings?: any[];
+}): boolean {
+  if (!question || typeof question !== "object") return false;
+  const qType = String(question.questionType || "").trim().toLowerCase();
+  if (qType === "study-mode" || qType === "studymode") return true;
+  if (String(question.quizName || "").trim().toLowerCase() === "study mode") return true;
+  if (typeof question.word === "string" && question.word.trim() && Array.isArray(question.meanings)) return true;
+  return false;
+}
+
 export function isTaggedModeQuestion(question: {
   quizName?: string;
   source?: string;

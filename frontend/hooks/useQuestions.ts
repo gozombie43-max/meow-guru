@@ -1,6 +1,6 @@
 import useSWR from 'swr';
 import { fetchWithRetry } from '@/lib/api/http';
-import type { Question } from '@/lib/api/questions';
+import { isStudyModeQuestion, type Question } from '@/lib/api/questions';
 
 const API = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -8,7 +8,19 @@ const fetcher = async (url: string) => {
   const res = await fetchWithRetry(url, { cache: "no-store" });
   if (!res.ok) throw new Error('Failed to fetch questions');
   const data = await res.json();
-  const value = data.questions as Question[];
+  let value = (data.questions || []) as Question[];
+
+  const urlObj = new URL(url, "http://localhost");
+  const qType = urlObj.searchParams.get("questionType")?.toLowerCase();
+  const isStudyMode = qType === "study-mode" || qType === "studymode";
+  const isAll = qType === "all";
+
+  if (isStudyMode) {
+    value = value.filter(isStudyModeQuestion);
+  } else if (!isAll) {
+    value = value.filter((q) => !isStudyModeQuestion(q));
+  }
+
   return value;
 };
 

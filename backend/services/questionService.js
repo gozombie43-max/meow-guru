@@ -36,6 +36,15 @@ export function matchesNormalizedTopic(question, normalizedTopic) {
   return candidates.some((field) => normalizeSearchKey(field) === normalizedTopic);
 }
 
+export function isStudyModeRecord(q) {
+  if (!q || typeof q !== 'object') return false;
+  const qType = String(q.questionType || '').trim().toLowerCase();
+  if (qType === 'study-mode' || qType === 'studymode') return true;
+  if (String(q.quizName || '').trim().toLowerCase() === 'study mode') return true;
+  if (typeof q.word === 'string' && q.word.trim() && Array.isArray(q.meanings)) return true;
+  return false;
+}
+
 export function buildQuestionsCacheKey(parameters, offset, limit) {
   return JSON.stringify({
     params: parameters.map((entry) => [entry.name, entry.value]),
@@ -165,6 +174,9 @@ export async function fetchQuestions(params) {
 
   const normalizedTopic = topic ? normalizeSearchKey(topic) : null;
   const normalizedQuizName = quizName ? normalizeQuizKey(quizName) : null;
+  const normalizedQuestionType = questionType ? String(questionType).trim().toLowerCase() : null;
+  const isStudyModeRequested = normalizedQuestionType === 'study-mode' || normalizedQuestionType === 'studymode';
+  const isAllRequested = normalizedQuestionType === 'all';
   const queryMode = topic ? 'topic' : subject ? 'subject' : 'global';
 
   let query = 'SELECT * FROM c WHERE 1=1';
@@ -206,9 +218,16 @@ export async function fetchQuestions(params) {
     }
     parameters.push({ name: '@normalizedQuizName', value: normalizedQuizName });
   }
-  if (questionType) {
-    query += ' AND LOWER(c.questionType) = LOWER(@questionType)';
-    parameters.push({ name: '@questionType', value: String(questionType) });
+
+  if (isStudyModeRequested) {
+    query += ' AND (LOWER(c.questionType) = "study-mode" OR LOWER(c.questionType) = "studymode" OR (IS_DEFINED(c.word) AND IS_ARRAY(c.meanings)))';
+  } else if (!isAllRequested) {
+    if (normalizedQuestionType) {
+      query += ' AND LOWER(c.questionType) = @questionType';
+      parameters.push({ name: '@questionType', value: normalizedQuestionType });
+    } else {
+      query += ' AND (NOT IS_DEFINED(c.questionType) OR (LOWER(c.questionType) != "study-mode" AND LOWER(c.questionType) != "studymode")) AND (NOT IS_DEFINED(c.quizName) OR LOWER(c.quizName) != "study mode") AND (NOT IS_DEFINED(c.word) OR c.word = null OR c.word = "")';
+    }
   }
 
   const parsedOffset = Number.isFinite(Number(offset)) ? parseInt(offset, 10) : 0;
@@ -240,6 +259,12 @@ export async function fetchQuestions(params) {
       resources = resources.filter((q) => matchesNormalizedTopic(q, normalizedTopic));
     }
 
+    if (isStudyModeRequested) {
+      resources = resources.filter((q) => isStudyModeRecord(q));
+    } else if (!isAllRequested) {
+      resources = resources.filter((q) => !isStudyModeRecord(q));
+    }
+
     if (cacheKey) {
       questionsQueryCache.set(cacheKey, resources);
     }
@@ -267,14 +292,17 @@ export async function fetchPracticeTest(params) {
     parameters.push({ name: '@difficulty', value: difficulty });
   }
 
+  query += ' AND (NOT IS_DEFINED(c.questionType) OR (LOWER(c.questionType) != "study-mode" AND LOWER(c.questionType) != "studymode")) AND (NOT IS_DEFINED(c.quizName) OR LOWER(c.quizName) != "study mode") AND (NOT IS_DEFINED(c.word) OR c.word = null OR c.word = "")';
+
   query += ` OFFSET 0 LIMIT ${limit * 3}`;
   const resources = await fetchAllQueryResults(container, query, parameters);
 
-  if (resources.length === 0) return null;
+  const filteredResources = resources.filter((q) => !isStudyModeRecord(q));
+  if (filteredResources.length === 0) return null;
 
-  return resources
+  return filteredResources
     .sort(() => Math.random() - 0.5)
-    .slice(0, Math.min(limit, resources.length))
+    .slice(0, Math.min(limit, filteredResources.length))
     .map(q => ({
       id:         q.id,
       subject:    q.subject,

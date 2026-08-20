@@ -88,12 +88,12 @@ export default function ReasoningTopicPage({
   const router = useRouter();
 
   const modes = [
-    { title: "PYQ",          sub: "Previous year questions", href: `/reasoning/${slug}/quiz?mode=concept`,      Icon: IconPYQ    },
-    { title: "Pattern Bank", sub: "Core formulas",           href: `/reasoning/${slug}/quiz?mode=formula`,      Icon: IconPatternBank },
-    { title: "PW",           sub: "Mixed practice",          href: `/reasoning/${slug}/quiz?mode=mixed`,        Icon: IconPW   },
-    { title: "Selection",    sub: "AI challenge",            href: `/reasoning/${slug}/quiz?mode=ai-challenge`, Icon: IconSelection },
-    { title: "Topic Mix",    sub: "Easy questions",          href: `/reasoning/${slug}/quiz?mode=easy`,         Icon: IconTopicMix },
-    { title: "Tier 2",       sub: "Advanced level",          href: `/reasoning/${slug}/quiz?mode=hard`,         Icon: IconTier2   },
+    { title: "PYQ Practice", sub: "Previous year Qs",   href: `/reasoning/${slug}/quiz?mode=concept`,      Icon: IconPYQ         },
+    { title: "Pattern Bank", sub: "Core formulas",      href: `/reasoning/${slug}/quiz?mode=formula`,      Icon: IconPatternBank },
+    { title: "Mixed PW",     sub: "Mixed practice",     href: `/reasoning/${slug}/quiz?mode=mixed`,        Icon: IconPW          },
+    { title: "AI Challenge", sub: "Speed test",         href: `/reasoning/${slug}/quiz?mode=ai-challenge`, Icon: IconSelection   },
+    { title: "Topic Mix",    sub: "Foundation easy",    href: `/reasoning/${slug}/quiz?mode=easy`,         Icon: IconTopicMix    },
+    { title: "Tier 2 Hard",  sub: "Advanced level",     href: `/reasoning/${slug}/quiz?mode=hard`,         Icon: IconTier2       },
   ];
 
   const kickerText = bannerKicker ?? "Sprint 2026";

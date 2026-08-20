@@ -436,6 +436,14 @@ export const PRACTICE_MODES = [
   },
 ] as const;
 
+export const STUDY_MODE_TOPICS = new Set([
+  "synonyms-antonyms",
+  "one-word-substitution",
+  "idioms-phrases",
+  "spelling-misspelled-words",
+  "homonyms-homophones",
+]);
+
 export default function EnglishPage() {
   const router = useRouter();
   const { theme, toggleThemeMode } = useThemeMode();
@@ -884,6 +892,32 @@ export default function EnglishPage() {
                 </div>
               </div>
 
+              {/* ── Interactive Study Mode Banner (for vocabulary topics) ── */}
+              {STUDY_MODE_TOPICS.has(selectedTopic.slug) && (
+                <div className={styles.studyModeBannerWrap}>
+                  <Link
+                    href={`/english/${selectedTopic.slug}/study-mode`}
+                    className={styles.studyModeBanner}
+                    title="Launch Interactive Study Suite"
+                  >
+                    <div className={styles.studyModeBannerLeft}>
+                      <div className={styles.studyModeIconBox}>
+                        <BookOpenCheck size={16} strokeWidth={2.4} />
+                      </div>
+                      <div className={styles.studyModeInfo}>
+                        <span className={styles.studyModeKicker}>INTERACTIVE STUDY SUITE</span>
+                        <span className={styles.studyModeTitle}>Vocabulary &amp; Flashcards Deck</span>
+                        <span className={styles.studyModeSub}>Bilingual Bengali meanings &amp; audio</span>
+                      </div>
+                    </div>
+                    <div className={styles.studyModeLaunchBtn}>
+                      <span>Study</span>
+                      <ChevronRight size={12} strokeWidth={2.4} />
+                    </div>
+                  </Link>
+                </div>
+              )}
+
               {/* ── Practice Modes (Single Column) ── */}
               <div className={styles.deckSection}>
                 <div className={styles.deckSectionHeader}>
@@ -926,6 +960,27 @@ export default function EnglishPage() {
                 </div>
 
                 <div className={styles.resourceList}>
+                  {STUDY_MODE_TOPICS.has(selectedTopic.slug) && (
+                    <Link
+                      href={`/english/${selectedTopic.slug}/study-mode`}
+                      className={styles.resourceCard}
+                      title="Open Interactive Study Suite"
+                    >
+                      <div className={styles.resourceCardLeft}>
+                        <div className={styles.resourceCardIcon} style={{ background: "rgba(14, 165, 233, 0.15)", color: "#38bdf8" }}>
+                          <BookOpenCheck size={13} strokeWidth={2.2} />
+                        </div>
+                        <div className={styles.resourceCardInfo}>
+                          <span className={styles.resourceCardTitle} style={{ color: "#38bdf8", fontWeight: 650 }}>
+                            Interactive Study Mode
+                          </span>
+                          <span className={styles.resourceCardSub}>Vocabulary cards &amp; audio pronunciation</span>
+                        </div>
+                      </div>
+                      <ChevronRight size={13} className={styles.resourceArrow} style={{ color: "#38bdf8" }} />
+                    </Link>
+                  )}
+
                   <Link
                     href={`/english/${selectedTopic.slug}/vocabulary-notes`}
                     className={styles.resourceCard}

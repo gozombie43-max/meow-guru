@@ -98,12 +98,12 @@ export default function MathematicsTopicPage({
   const base = routeBase ?? `/mathematics/${slug}`;
 
   const modes = [
-    { title: "PYQ",          sub: "Previous year questions", href: `${base}/quiz?mode=concept`,      Icon: IconPYQ    },
-    { title: "Pattern Bank", sub: "Core formulas",           href: `${base}/quiz?mode=formula`,      Icon: IconPatternBank },
-    { title: "PW",           sub: "Mixed practice",          href: `${base}/quiz?mode=mixed`,        Icon: IconPW   },
-    { title: "Selection",    sub: "AI challenge",            href: `${base}/quiz?mode=ai-challenge`, Icon: IconSelection },
-    { title: "Topic Mix",    sub: "Easy questions",          href: `${base}/quiz?mode=easy`,         Icon: IconTopicMix },
-    { title: "Tier 2",       sub: "Advanced level",          href: `${base}/quiz?mode=hard`,         Icon: IconTier2   },
+    { title: "PYQ Practice", sub: "Previous year Qs",          href: `${base}/quiz?mode=concept`,      Icon: IconPYQ         },
+    { title: "Formula Bank", sub: "Core formulas & shortcuts", href: `${base}/quiz?mode=formula`,      Icon: IconPatternBank },
+    { title: "Mixed PW",     sub: "Mixed practice",            href: `${base}/quiz?mode=mixed`,        Icon: IconPW          },
+    { title: "AI Challenge", sub: "Speed test",                href: `${base}/quiz?mode=ai-challenge`, Icon: IconSelection   },
+    { title: "Topic Mix",    sub: "Foundation easy",           href: `${base}/quiz?mode=easy`,         Icon: IconTopicMix    },
+    { title: "Tier 2 Hard",  sub: "Advanced level",            href: `${base}/quiz?mode=hard`,         Icon: IconTier2       },
   ];
 
   const kickerText = bannerKicker ?? "Sprint 2026";

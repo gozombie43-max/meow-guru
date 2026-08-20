@@ -1433,3 +1433,117 @@
   color: var(--mac-text-tertiary);
   flex-shrink: 0;
 }
+
+/* ── Interactive Study Mode Banner ── */
+.studyModeBannerWrap {
+  margin-bottom: 2px;
+}
+
+.studyModeBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  border-radius: 11px;
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.12) 0%, rgba(99, 102, 241, 0.12) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  text-decoration: none;
+  color: var(--mac-text-primary);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.08);
+  cursor: pointer;
+}
+
+.studyModeBanner:hover {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.2) 0%, rgba(99, 102, 241, 0.2) 100%);
+  border-color: rgba(56, 189, 248, 0.6);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(14, 165, 233, 0.18);
+}
+
+:global(body.theme-dark) .studyModeBanner {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.16) 0%, rgba(99, 102, 241, 0.16) 100%);
+  border-color: rgba(56, 189, 248, 0.32);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+}
+
+:global(body.theme-dark) .studyModeBanner:hover {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.25) 0%, rgba(99, 102, 241, 0.25) 100%);
+  border-color: rgba(56, 189, 248, 0.65);
+  box-shadow: 0 4px 16px rgba(14, 165, 233, 0.28);
+}
+
+.studyModeBannerLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.studyModeIconBox {
+  width: 32px;
+  height: 32px;
+  border-radius: 8.5px;
+  background: linear-gradient(135deg, #0ea5e9, #6366f1);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(14, 165, 233, 0.35);
+}
+
+.studyModeInfo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 1px;
+}
+
+.studyModeKicker {
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #0284c7;
+}
+
+:global(body.theme-dark) .studyModeKicker {
+  color: #38bdf8;
+}
+
+.studyModeTitle {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--mac-text-primary);
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+
+.studyModeSub {
+  font-size: 10px;
+  color: var(--mac-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.studyModeLaunchBtn {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: #0071e3;
+  color: #ffffff;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  flex-shrink: 0;
+  transition: transform 0.15s ease, background 0.15s ease;
+  box-shadow: 0 1px 4px rgba(0, 113, 227, 0.3);
+}
+
+.studyModeBanner:hover .studyModeLaunchBtn {
+  background: #0077ed;
+  transform: scale(1.04);
+}

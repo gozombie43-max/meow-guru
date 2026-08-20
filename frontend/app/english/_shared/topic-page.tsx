@@ -38,11 +38,9 @@ const IconSelection = () => (
     <path d="M12 2l2.6 6.8L21 11l-6.4 2.2L12 20l-2.6-6.8L3 11l6.4-2.2z"/>
   </svg>
 );
-const IconStudyMode = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 5v14" />
-    <path d="M7 9l5-4 5 4" />
-    <path d="M7 15h10" />
+const IconTopicMix = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+    <circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/>
   </svg>
 );
 const IconTier2 = () => (
@@ -83,6 +81,14 @@ const badgeClasses = [
   "bg-orange",
 ];
 
+const STUDY_MODE_TOPICS = new Set([
+  "synonyms-antonyms",
+  "one-word-substitution",
+  "idioms-phrases",
+  "spelling-misspelled-words",
+  "homonyms-homophones",
+]);
+
 export default function EnglishTopicPage({
   title,
   slug,
@@ -100,18 +106,19 @@ export default function EnglishTopicPage({
   const base = routeBase ?? `/english/${slug}`;
 
   const modes = [
-    { title: "PYQ",          sub: "Previous year questions", href: `${base}/quiz?mode=concept`,      Icon: IconPYQ    },
-    { title: "Vocabulary Bank", sub: "Words & vocabulary",           href: `${base}/quiz?mode=formula`,      Icon: IconPatternBank },
-    { title: "PW",           sub: "Mixed practice",          href: `${base}/quiz?mode=mixed`,        Icon: IconPW   },
-    { title: "Selection",    sub: "AI challenge",            href: `${base}/quiz?mode=ai-challenge`, Icon: IconSelection },
-    { title: "Study Mode",   sub: "Deep learning & cards",   href: `${base}/study-mode`,             Icon: IconStudyMode },
-    { title: "Tier 2",       sub: "Advanced level",          href: `${base}/quiz?mode=hard`,         Icon: IconTier2   },
+    { title: "PYQ Practice",   sub: "Previous year Qs",    href: `${base}/quiz?mode=concept`,      Icon: IconPYQ         },
+    { title: "Vocabulary Bank", sub: "Words & vocabulary",  href: `${base}/quiz?mode=formula`,      Icon: IconPatternBank },
+    { title: "Mixed PW",        sub: "Mixed practice",     href: `${base}/quiz?mode=mixed`,        Icon: IconPW          },
+    { title: "AI Challenge",    sub: "Speed test",         href: `${base}/quiz?mode=ai-challenge`, Icon: IconSelection   },
+    { title: "Topic Mix",       sub: "Foundation easy",    href: `${base}/quiz?mode=easy`,         Icon: IconTopicMix    },
+    { title: "Tier 2 Hard",     sub: "Advanced level",     href: `${base}/quiz?mode=hard`,         Icon: IconTier2       },
   ];
 
-  const kickerText = bannerKicker ?? "Sprint 2026";
-  const headlineText = bannerTitle ?? "Vocabulary, Grammar & Rules";
-  const subtitleText = bannerSubtitle ?? `Curated shortcuts to crack ${title}`;
-  const notesHref = bannerHref ?? `${base}/vocabulary-notes`;
+  const hasStudyMode = STUDY_MODE_TOPICS.has(slug);
+  const kickerText = bannerKicker ?? (hasStudyMode ? "Study Suite 2026" : "Sprint 2026");
+  const headlineText = bannerTitle ?? (hasStudyMode ? "Interactive Study Deck" : "Vocabulary, Grammar & Rules");
+  const subtitleText = bannerSubtitle ?? (hasStudyMode ? `Bilingual Bengali translations & flashcards for ${title}` : `Curated shortcuts to crack ${title}`);
+  const notesHref = bannerHref ?? (hasStudyMode ? `${base}/study-mode` : `${base}/vocabulary-notes`);
 
   return (
     <>

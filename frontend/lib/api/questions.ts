@@ -39,6 +39,15 @@ export interface Question {
   antonyms?: Array<{ word?: string; translation?: string }>;
 }
 
+export function isStudyModeQuestion(q: Partial<Question> | null | undefined): boolean {
+  if (!q || typeof q !== "object") return false;
+  const qType = String(q.questionType || "").trim().toLowerCase();
+  if (qType === "study-mode" || qType === "studymode") return true;
+  if (String(q.quizName || "").trim().toLowerCase() === "study mode") return true;
+  if (typeof q.word === "string" && q.word.trim() && Array.isArray(q.meanings)) return true;
+  return false;
+}
+
 // Fetch questions with filters
 export async function fetchQuestions(params: {
   topic?: string;
@@ -75,10 +84,15 @@ export async function fetchQuestions(params: {
       const res = await fetchWithRetry(`${API}/api/questions?${query}`, { cache: "no-store" });
       if (!res.ok) throw new Error('Failed to fetch questions');
       const data = await res.json();
-      let value = data.questions as Question[];
+      let value = (data.questions || []) as Question[];
 
-      if (params.questionType !== "study-mode") {
-        value = value.filter(q => q.questionType !== "study-mode");
+      const isStudyMode = params.questionType === "study-mode" || params.questionType === "studymode";
+      const isAll = params.questionType === "all";
+
+      if (isStudyMode) {
+        value = value.filter(isStudyModeQuestion);
+      } else if (!isAll) {
+        value = value.filter((q) => !isStudyModeQuestion(q));
       }
 
       if (useCache) {

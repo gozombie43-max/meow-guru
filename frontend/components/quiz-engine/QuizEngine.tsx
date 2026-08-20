@@ -55,7 +55,7 @@ import {
   MODE_LABELS, setQuizTheme, initQuizTheme, useQuizTheme, toggleQuizTheme,
   normalizeMode, normalizeDifficulty, extractYear, resolveCorrectIndex, buildConceptColours,
   normalizeQuizTag, matchesQuizTag, isFormulaQuestion, isMixedQuestion, isAiChallengeQuestion,
-  isTopicMixQuestion, isTier2Question, isTaggedModeQuestion, toQuizQuestion, MathFraction,
+  isTopicMixQuestion, isTier2Question, isTaggedModeQuestion, isStudyModeQuestion, toQuizQuestion, MathFraction,
   getQuestionStatus, statusClasses, formatMathBookSolutionLines, prefetchQuestionImage, ensureUniqueQuestionIds, DEFAULT_CONCEPT_COLOUR
 } from "./utils";
 import { QuizThemeStyles } from "./ui/QuizStyles";
@@ -285,9 +285,10 @@ export default function QuizEngine({
   useEffect(() => {
     if (!apiQuestions) return;
     const fallbackConcept = baseConcepts[0] ?? "General";
+    const quizOnlyQuestions = apiQuestions.filter((item) => !isStudyModeQuestion(item));
     setAllQuestions(
       ensureUniqueQuestionIds(
-        apiQuestions.map((item, index) => toQuizQuestion(item, index, fallbackConcept))
+        quizOnlyQuestions.map((item, index) => toQuizQuestion(item, index, fallbackConcept))
       )
     );
   }, [apiQuestions, baseConcepts]);
