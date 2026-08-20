@@ -61,16 +61,18 @@ export interface Topic {
   priority: Priority;
   questions: string;
   icon: LucideIcon;
+  color: string;
   description: string;
   expectedMarks: string;
 }
 
-// ── 17 SSC Mathematics Topics with Solid Monochrome SVG Icons ────────────────
+// ── 17 SSC Mathematics Topics with Distinctly Colored SVG Icons ───────────────
 const TOPICS: Topic[] = [
   {
     id: 1,
     priority: "very-high",
     icon: Percent,
+    color: "#38bdf8",
     name: "Percentages",
     slug: "percentages",
     routeBase: "/mathematics/arithmetic/percentages",
@@ -83,6 +85,7 @@ const TOPICS: Topic[] = [
     id: 2,
     priority: "very-high",
     icon: Divide,
+    color: "#a855f7",
     name: "Ratio & Proportion",
     slug: "ratio-and-proportion",
     routeBase: "/mathematics/arithmetic/ratio-and-proportion",
@@ -95,6 +98,7 @@ const TOPICS: Topic[] = [
     id: 3,
     priority: "very-high",
     icon: TrendingUp,
+    color: "#10b981",
     name: "Profit & Loss",
     slug: "profit-and-loss",
     routeBase: "/mathematics/arithmetic/profit-and-loss",
@@ -107,6 +111,7 @@ const TOPICS: Topic[] = [
     id: 4,
     priority: "very-high",
     icon: Landmark,
+    color: "#f59e0b",
     name: "Simple & Compound Interest",
     slug: "interest",
     routeBase: "/mathematics/arithmetic/interest",
@@ -119,6 +124,7 @@ const TOPICS: Topic[] = [
     id: 5,
     priority: "very-high",
     icon: Clock,
+    color: "#06b6d4",
     name: "Time & Work",
     slug: "time-and-work",
     routeBase: "/mathematics/arithmetic/time-and-work",
@@ -131,6 +137,7 @@ const TOPICS: Topic[] = [
     id: 6,
     priority: "very-high",
     icon: Gauge,
+    color: "#f97316",
     name: "Time, Speed & Distance",
     slug: "time-and-distance",
     routeBase: "/mathematics/arithmetic/time-and-distance",
@@ -143,6 +150,7 @@ const TOPICS: Topic[] = [
     id: 7,
     priority: "very-high",
     icon: Variable,
+    color: "#ec4899",
     name: "Algebra",
     slug: "algebra",
     routeBase: "/mathematics/algebra",
@@ -155,6 +163,7 @@ const TOPICS: Topic[] = [
     id: 8,
     priority: "very-high",
     icon: Compass,
+    color: "#6366f1",
     name: "Geometry",
     slug: "geometry",
     routeBase: "/mathematics/geometry",
@@ -167,6 +176,7 @@ const TOPICS: Topic[] = [
     id: 9,
     priority: "very-high",
     icon: Box,
+    color: "#14b8a6",
     name: "Mensuration (2D & 3D)",
     slug: "mensuration",
     routeBase: "/mathematics/mensuration",
@@ -179,6 +189,7 @@ const TOPICS: Topic[] = [
     id: 10,
     priority: "very-high",
     icon: Orbit,
+    color: "#8b5cf6",
     name: "Trigonometry",
     slug: "trigonometry",
     routeBase: "/mathematics/trigonometry",
@@ -191,6 +202,7 @@ const TOPICS: Topic[] = [
     id: 11,
     priority: "high",
     icon: Hash,
+    color: "#3b82f6",
     name: "Number System",
     slug: "number-system",
     routeBase: "/mathematics/number-system",
@@ -203,6 +215,7 @@ const TOPICS: Topic[] = [
     id: 12,
     priority: "high",
     icon: BarChart3,
+    color: "#eab308",
     name: "Averages",
     slug: "averages",
     routeBase: "/mathematics/arithmetic/averages",
@@ -215,6 +228,7 @@ const TOPICS: Topic[] = [
     id: 13,
     priority: "high",
     icon: Tag,
+    color: "#f43f5e",
     name: "Discount & Marked Price",
     slug: "discount",
     routeBase: "/mathematics/arithmetic/discount",
@@ -227,6 +241,7 @@ const TOPICS: Topic[] = [
     id: 14,
     priority: "high",
     icon: FlaskConical,
+    color: "#84cc16",
     name: "Mixture & Alligation",
     slug: "mixture-and-alligation",
     routeBase: "/mathematics/arithmetic/mixture-and-alligation",
@@ -239,6 +254,7 @@ const TOPICS: Topic[] = [
     id: 15,
     priority: "medium",
     icon: Users2,
+    color: "#d946ef",
     name: "Partnership",
     slug: "partnership",
     routeBase: "/mathematics/arithmetic/partnership",
@@ -251,6 +267,7 @@ const TOPICS: Topic[] = [
     id: 16,
     priority: "medium",
     icon: Radical,
+    color: "#22d3ee",
     name: "Square Roots & Surds",
     slug: "square-roots",
     routeBase: "/mathematics/arithmetic/square-roots",
@@ -263,6 +280,7 @@ const TOPICS: Topic[] = [
     id: 17,
     priority: "medium",
     icon: PieChart,
+    color: "#fb7185",
     name: "Statistics & Probability",
     slug: "statistics-probability",
     routeBase: "/mathematics/statistics-probability",
@@ -669,7 +687,14 @@ export default function MathematicsPage() {
                           onClick={() => setSelectedTopicId(topic.id)}
                         >
                           <div className={styles.tileIconBox}>
-                            <IconComp size={22} strokeWidth={2} />
+                            <IconComp
+                              size={22}
+                              strokeWidth={2.4}
+                              color={topic.color}
+                              style={{
+                                filter: `drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 8px ${topic.color}80)`,
+                              }}
+                            />
                           </div>
                           <div className={styles.tileBody}>
                             <span className={styles.tileName} title={topic.name}>
@@ -708,7 +733,14 @@ export default function MathematicsPage() {
                             <td>
                               <div className={styles.tableTopicCell}>
                                 <div className={styles.tableTopicIcon}>
-                                  <IconComp size={13} strokeWidth={2.2} />
+                                  <IconComp
+                                    size={14}
+                                    strokeWidth={2.4}
+                                    color={topic.color}
+                                    style={{
+                                      filter: `drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 5px ${topic.color}80)`,
+                                    }}
+                                  />
                                 </div>
                                 <span className={styles.tableTopicName}>{topic.name}</span>
                               </div>
@@ -758,7 +790,14 @@ export default function MathematicsPage() {
               <div className={styles.heroCard}>
                 <div className={styles.heroCardHeader}>
                   <div className={styles.heroCardIconBox}>
-                    <SelectedIcon size={20} strokeWidth={2.2} />
+                    <SelectedIcon
+                      size={20}
+                      strokeWidth={2.4}
+                      color={selectedTopic.color}
+                      style={{
+                        filter: `drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 8px ${selectedTopic.color}80)`,
+                      }}
+                    />
                   </div>
                   <div className={styles.heroCardTitleGroup}>
                     <h2 className={styles.heroCardTitle}>{selectedTopic.name}</h2>
@@ -985,7 +1024,14 @@ export default function MathematicsPage() {
                   className={styles.mobileTopicCard}
                 >
                   <div className={styles.mobileTopicIconBox}>
-                    <TopicIcon size={16} strokeWidth={2.2} />
+                    <TopicIcon
+                      size={17}
+                      strokeWidth={2.4}
+                      color={topic.color}
+                      style={{
+                        filter: `drop-shadow(0 2px 3px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 6px ${topic.color}80)`,
+                      }}
+                    />
                   </div>
 
                   <div className={styles.mobileTopicInfo}>

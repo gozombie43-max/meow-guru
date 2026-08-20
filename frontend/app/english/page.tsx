@@ -64,16 +64,18 @@ export interface Topic {
   priority: Priority;
   questions: string;
   icon: LucideIcon;
+  color: string;
   description: string;
   expectedMarks: string;
 }
 
-// ── 23 SSC English Topics with Solid Monochrome SVG Icons ─────────────────────
+// ── 23 SSC English Topics with Distinctly Colored SVG Icons ───────────────────
 const TOPICS: Topic[] = [
   {
     id: 1,
     priority: "very-high",
     icon: ArrowLeftRight,
+    color: "#38bdf8",
     name: "Synonyms & Antonyms",
     slug: "synonyms-antonyms",
     questions: "3-4",
@@ -85,6 +87,7 @@ const TOPICS: Topic[] = [
     id: 2,
     priority: "very-high",
     icon: BookMarked,
+    color: "#a855f7",
     name: "One Word Substitution",
     slug: "one-word-substitution",
     questions: "2-3",
@@ -96,6 +99,7 @@ const TOPICS: Topic[] = [
     id: 3,
     priority: "very-high",
     icon: MessageSquare,
+    color: "#f59e0b",
     name: "Idioms & Phrases",
     slug: "idioms-phrases",
     questions: "2-3",
@@ -107,6 +111,7 @@ const TOPICS: Topic[] = [
     id: 4,
     priority: "very-high",
     icon: Search,
+    color: "#ef4444",
     name: "Spot the Error",
     slug: "spot-the-error-error-detection",
     questions: "4-5",
@@ -118,6 +123,7 @@ const TOPICS: Topic[] = [
     id: 5,
     priority: "very-high",
     icon: Edit3,
+    color: "#10b981",
     name: "Sentence Improvement",
     slug: "sentence-correction-improvement",
     questions: "3-4",
@@ -129,6 +135,7 @@ const TOPICS: Topic[] = [
     id: 6,
     priority: "very-high",
     icon: FileSpreadsheet,
+    color: "#6366f1",
     name: "Cloze Test",
     slug: "cloze-test",
     questions: "5",
@@ -140,6 +147,7 @@ const TOPICS: Topic[] = [
     id: 7,
     priority: "very-high",
     icon: Newspaper,
+    color: "#06b6d4",
     name: "Reading Comprehension",
     slug: "reading-comprehension",
     questions: "5-10",
@@ -151,6 +159,7 @@ const TOPICS: Topic[] = [
     id: 8,
     priority: "high",
     icon: RefreshCw,
+    color: "#f97316",
     name: "Active & Passive Voice",
     slug: "active-passive-voice",
     questions: "2-3",
@@ -162,6 +171,7 @@ const TOPICS: Topic[] = [
     id: 9,
     priority: "high",
     icon: MessageCircle,
+    color: "#8b5cf6",
     name: "Direct & Indirect Narration",
     slug: "direct-indirect-narration",
     questions: "2-3",
@@ -173,6 +183,7 @@ const TOPICS: Topic[] = [
     id: 10,
     priority: "high",
     icon: Clock,
+    color: "#ec4899",
     name: "Tenses",
     slug: "tenses",
     questions: "2-3",
@@ -184,6 +195,7 @@ const TOPICS: Topic[] = [
     id: 11,
     priority: "high",
     icon: Scale,
+    color: "#3b82f6",
     name: "Subject-Verb Agreement",
     slug: "subject-verb-agreement",
     questions: "1-2",
@@ -195,6 +207,7 @@ const TOPICS: Topic[] = [
     id: 12,
     priority: "high",
     icon: Shuffle,
+    color: "#eab308",
     name: "Para-Jumbles",
     slug: "para-jumbles",
     questions: "2-3",
@@ -206,6 +219,7 @@ const TOPICS: Topic[] = [
     id: 13,
     priority: "high",
     icon: Puzzle,
+    color: "#14b8a6",
     name: "Fill in the Blanks",
     slug: "fill-in-the-blanks",
     questions: "2-3",
@@ -217,6 +231,7 @@ const TOPICS: Topic[] = [
     id: 14,
     priority: "medium",
     icon: SpellCheck,
+    color: "#d946ef",
     name: "Spelling & Misspelled Words",
     slug: "spelling-misspelled-words",
     questions: "1-2",
@@ -228,6 +243,7 @@ const TOPICS: Topic[] = [
     id: 15,
     priority: "medium",
     icon: Navigation,
+    color: "#06b6d4",
     name: "Prepositions",
     slug: "prepositions",
     questions: "1-2",
@@ -239,6 +255,7 @@ const TOPICS: Topic[] = [
     id: 16,
     priority: "medium",
     icon: FileText,
+    color: "#84cc16",
     name: "Articles",
     slug: "articles",
     questions: "1-2",
@@ -250,6 +267,7 @@ const TOPICS: Topic[] = [
     id: 17,
     priority: "medium",
     icon: Link2,
+    color: "#f43f5e",
     name: "Conjunctions",
     slug: "conjunctions",
     questions: "1-2",
@@ -261,6 +279,7 @@ const TOPICS: Topic[] = [
     id: 18,
     priority: "medium",
     icon: Volume2,
+    color: "#22d3ee",
     name: "Homonyms & Homophones",
     slug: "homonyms-homophones",
     questions: "1-2",
@@ -272,6 +291,7 @@ const TOPICS: Topic[] = [
     id: 19,
     priority: "medium",
     icon: Layout,
+    color: "#a855f7",
     name: "Sentence Structure & Clauses",
     slug: "sentence-structure",
     questions: "1-2",
@@ -283,6 +303,7 @@ const TOPICS: Topic[] = [
     id: 20,
     priority: "low",
     icon: CheckSquare,
+    color: "#10b981",
     name: "Para / Sentence Completion",
     slug: "para-sentence-completion",
     questions: "1-2",
@@ -294,6 +315,7 @@ const TOPICS: Topic[] = [
     id: 21,
     priority: "low",
     icon: UserCheck,
+    color: "#38bdf8",
     name: "Pronouns",
     slug: "pronouns",
     questions: "1",
@@ -305,17 +327,19 @@ const TOPICS: Topic[] = [
     id: 22,
     priority: "low",
     icon: Target,
+    color: "#fb7185",
     name: "Modifiers",
     slug: "modifiers",
     questions: "1",
     expectedMarks: "2 Marks",
-    description: "Detecting and correcting misplaced modifiers, dangling participles, squinting modifiers, and adjective vs adverb usages.",
+    description: "Detecting and correcting misplaced modifiers, dangling participles, squinting modifiers, and adjective vs practical usages.",
     subtopics: ["Dangling Participles", "Misplaced Modifiers", "Adjective vs Adverb Choice", "Squinting Modifiers"],
   },
   {
     id: 23,
     priority: "low",
     icon: AlignLeft,
+    color: "#f59e0b",
     name: "Parallelism",
     slug: "parallelism",
     questions: "1",
@@ -721,7 +745,14 @@ export default function EnglishPage() {
                           onClick={() => setSelectedTopicId(topic.id)}
                         >
                           <div className={styles.tileIconBox}>
-                            <IconComp size={22} strokeWidth={2} />
+                            <IconComp
+                              size={22}
+                              strokeWidth={2.4}
+                              color={topic.color}
+                              style={{
+                                filter: `drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 8px ${topic.color}80)`,
+                              }}
+                            />
                           </div>
                           <div className={styles.tileBody}>
                             <span className={styles.tileName} title={topic.name}>
@@ -760,7 +791,14 @@ export default function EnglishPage() {
                             <td>
                               <div className={styles.tableTopicCell}>
                                 <div className={styles.tableTopicIcon}>
-                                  <IconComp size={13} strokeWidth={2.2} />
+                                  <IconComp
+                                    size={14}
+                                    strokeWidth={2.4}
+                                    color={topic.color}
+                                    style={{
+                                      filter: `drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 5px ${topic.color}80)`,
+                                    }}
+                                  />
                                 </div>
                                 <span className={styles.tableTopicName}>{topic.name}</span>
                               </div>
@@ -810,7 +848,14 @@ export default function EnglishPage() {
               <div className={styles.heroCard}>
                 <div className={styles.heroCardHeader}>
                   <div className={styles.heroCardIconBox}>
-                    <SelectedIcon size={20} strokeWidth={2.2} />
+                    <SelectedIcon
+                      size={20}
+                      strokeWidth={2.4}
+                      color={selectedTopic.color}
+                      style={{
+                        filter: `drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 8px ${selectedTopic.color}80)`,
+                      }}
+                    />
                   </div>
                   <div className={styles.heroCardTitleGroup}>
                     <h2 className={styles.heroCardTitle}>{selectedTopic.name}</h2>
@@ -1037,7 +1082,14 @@ export default function EnglishPage() {
                   className={styles.mobileTopicCard}
                 >
                   <div className={styles.mobileTopicIconBox}>
-                    <TopicIcon size={16} strokeWidth={2.2} />
+                    <TopicIcon
+                      size={17}
+                      strokeWidth={2.4}
+                      color={topic.color}
+                      style={{
+                        filter: `drop-shadow(0 2px 3px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 6px ${topic.color}80)`,
+                      }}
+                    />
                   </div>
 
                   <div className={styles.mobileTopicInfo}>

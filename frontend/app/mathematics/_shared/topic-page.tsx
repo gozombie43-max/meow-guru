@@ -141,7 +141,7 @@ export default function MathematicsTopicPage({
           min-height: calc(100dvh - 94px - env(safe-area-inset-bottom, 0px));
           overflow-x: hidden;
           scrollbar-width: none;
-          background: #050505;
+          background: #000000;
           color: var(--label);
           font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", sans-serif;
           -webkit-font-smoothing: antialiased;

@@ -49,7 +49,7 @@
 /* ── Dark Mode Overrides ─────────────────────────────────────────────────────── */
 :global(body.theme-dark) .pageRoot,
 :global(html.theme-dark) .pageRoot {
-  --mac-bg-desktop: #09090b;
+  --mac-bg-desktop: #000000;
   --mac-window-bg: rgba(26, 26, 28, 0.9);
   --mac-window-border: rgba(255, 255, 255, 0.12);
   --mac-window-shadow: 0 25px 70px -10px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08);
@@ -577,30 +577,43 @@
 }
 
 .tileIconBox {
-  width: 44px;
-  height: 44px;
-  border-radius: 11px;
-  background: var(--mac-surface-hover);
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: linear-gradient(150deg, #f8f9fa 0%, #e9ecef 100%);
   color: var(--mac-text-primary);
-  border: 1px solid var(--mac-border);
+  border: 1px solid rgba(0, 0, 0, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  box-shadow: 
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.9),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.06),
+    0 3px 8px rgba(0, 0, 0, 0.08),
+    0 1px 3px rgba(0, 0, 0, 0.04);
   transition: all 0.15s ease;
 }
 
 :global(body.theme-dark) .tileIconBox {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.08);
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.03) 100%);
+  border-color: rgba(255, 255, 255, 0.14);
   color: #ffffff;
+  box-shadow: 
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.3),
+    inset 0 -1.5px 2px rgba(0, 0, 0, 0.5),
+    0 4px 12px -2px rgba(0, 0, 0, 0.6),
+    0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 .compactTileSelected .tileIconBox {
-  background: var(--mac-blue);
+  background: linear-gradient(150deg, var(--mac-blue) 0%, #0056b3 100%);
   color: #ffffff;
   border-color: var(--mac-blue);
+  box-shadow: 
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.4),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.4),
+    0 4px 12px rgba(0, 113, 227, 0.35);
 }
 
 .tileBody {
@@ -671,23 +684,31 @@
 }
 
 .tableTopicIcon {
-  width: 26px;
-  height: 26px;
-  border-radius: 6px;
-  background: var(--mac-surface-hover);
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: linear-gradient(150deg, #f8f9fa 0%, #e9ecef 100%);
   color: var(--mac-text-primary);
-  border: 1px solid var(--mac-border);
+  border: 1px solid rgba(0, 0, 0, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 13px;
   flex-shrink: 0;
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 255, 255, 0.8),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.05),
+    0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 :global(body.theme-dark) .tableTopicIcon {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.08);
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.03) 100%);
+  border-color: rgba(255, 255, 255, 0.12);
   color: #ffffff;
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 255, 255, 0.25),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.4),
+    0 2px 5px rgba(0, 0, 0, 0.5);
 }
 
 .tableTopicName {
@@ -803,23 +824,30 @@
 }
 
 .heroCardIconBox {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  background: var(--mac-surface-hover);
-  border: 1px solid var(--mac-border);
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+  background: linear-gradient(150deg, #f8f9fa 0%, #e9ecef 100%);
+  border: 1px solid rgba(0, 0, 0, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--mac-text-primary);
   flex-shrink: 0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  box-shadow: 
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.9),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.06),
+    0 3px 8px rgba(0, 0, 0, 0.08);
 }
 
 :global(body.theme-dark) .heroCardIconBox {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.1);
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.03) 100%);
+  border-color: rgba(255, 255, 255, 0.14);
   color: #ffffff;
+  box-shadow: 
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.3),
+    inset 0 -1.5px 2px rgba(0, 0, 0, 0.5),
+    0 4px 12px -2px rgba(0, 0, 0, 0.6);
 }
 
 .heroCardTitleGroup {
@@ -1357,22 +1385,32 @@
 }
 
 .mobileTopicIconBox {
-  width: 36px;
-  height: 36px;
-  border-radius: 9px;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  background: var(--mac-surface-hover);
+  background: linear-gradient(150deg, #f8f9fa 0%, #e9ecef 100%);
   color: var(--mac-text-primary);
-  border: 1px solid var(--mac-border);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 255, 255, 0.9),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.05),
+    0 2px 5px rgba(0, 0, 0, 0.06),
+    0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 :global(body.theme-dark) .mobileTopicIconBox {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.1);
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.03) 100%);
+  border-color: rgba(255, 255, 255, 0.12);
   color: #ffffff;
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 255, 255, 0.28),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.5),
+    0 3px 8px -1px rgba(0, 0, 0, 0.6),
+    0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 .mobileTopicInfo {

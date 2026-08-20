@@ -46,16 +46,18 @@ export interface Topic {
   priority: Priority;
   questions: string;
   icon: LucideIcon;
+  color: string;
   description: string;
   expectedMarks: string;
 }
 
-// ── 7 Core SSC General Awareness Topics with Solid Monochrome SVG Icons ────────
+// ── 7 Core SSC General Awareness Topics with Distinctly Colored SVG Icons ─────
 const TOPICS: Topic[] = [
   {
     id: 1,
     priority: "very-high",
     icon: Landmark,
+    color: "#f59e0b",
     name: "History",
     slug: "history",
     questions: "4-5",
@@ -74,6 +76,7 @@ const TOPICS: Topic[] = [
     id: 2,
     priority: "very-high",
     icon: Scale,
+    color: "#3b82f6",
     name: "Polity & Constitution",
     slug: "polity",
     questions: "3-4",
@@ -92,6 +95,7 @@ const TOPICS: Topic[] = [
     id: 3,
     priority: "very-high",
     icon: Globe,
+    color: "#10b981",
     name: "Geography",
     slug: "geography",
     questions: "3-4",
@@ -110,6 +114,7 @@ const TOPICS: Topic[] = [
     id: 4,
     priority: "very-high",
     icon: Atom,
+    color: "#06b6d4",
     name: "General Science",
     slug: "general-science",
     questions: "4-6",
@@ -128,6 +133,7 @@ const TOPICS: Topic[] = [
     id: 5,
     priority: "high",
     icon: TrendingUp,
+    color: "#8b5cf6",
     name: "Economics",
     slug: "economics",
     questions: "2-3",
@@ -146,6 +152,7 @@ const TOPICS: Topic[] = [
     id: 6,
     priority: "high",
     icon: Flame,
+    color: "#f43f5e",
     name: "Current Affairs",
     slug: "current-affairs",
     questions: "4-5",
@@ -164,6 +171,7 @@ const TOPICS: Topic[] = [
     id: 7,
     priority: "high",
     icon: BookOpenCheck,
+    color: "#ec4899",
     name: "Static GK",
     slug: "static-gk",
     questions: "3-4",
@@ -574,7 +582,14 @@ export default function GeneralAwarenessPage() {
                           onClick={() => setSelectedTopicId(topic.id)}
                         >
                           <div className={styles.tileIconBox}>
-                            <IconComp size={22} strokeWidth={2} />
+                            <IconComp
+                              size={22}
+                              strokeWidth={2.4}
+                              color={topic.color}
+                              style={{
+                                filter: `drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 8px ${topic.color}80)`,
+                              }}
+                            />
                           </div>
                           <div className={styles.tileBody}>
                             <span className={styles.tileName} title={topic.name}>
@@ -613,7 +628,14 @@ export default function GeneralAwarenessPage() {
                             <td>
                               <div className={styles.tableTopicCell}>
                                 <div className={styles.tableTopicIcon}>
-                                  <IconComp size={13} strokeWidth={2.2} />
+                                  <IconComp
+                                    size={14}
+                                    strokeWidth={2.4}
+                                    color={topic.color}
+                                    style={{
+                                      filter: `drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 5px ${topic.color}80)`,
+                                    }}
+                                  />
                                 </div>
                                 <span className={styles.tableTopicName}>{topic.name}</span>
                               </div>
@@ -663,7 +685,14 @@ export default function GeneralAwarenessPage() {
               <div className={styles.heroCard}>
                 <div className={styles.heroCardHeader}>
                   <div className={styles.heroCardIconBox}>
-                    <SelectedIcon size={20} strokeWidth={2.2} />
+                    <SelectedIcon
+                      size={20}
+                      strokeWidth={2.4}
+                      color={selectedTopic.color}
+                      style={{
+                        filter: `drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 8px ${selectedTopic.color}80)`,
+                      }}
+                    />
                   </div>
                   <div className={styles.heroCardTitleGroup}>
                     <h2 className={styles.heroCardTitle}>{selectedTopic.name}</h2>
@@ -890,7 +919,14 @@ export default function GeneralAwarenessPage() {
                   className={styles.mobileTopicCard}
                 >
                   <div className={styles.mobileTopicIconBox}>
-                    <TopicIcon size={16} strokeWidth={2.2} />
+                    <TopicIcon
+                      size={17}
+                      strokeWidth={2.4}
+                      color={topic.color}
+                      style={{
+                        filter: `drop-shadow(0 2px 3px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 6px ${topic.color}80)`,
+                      }}
+                    />
                   </div>
 
                   <div className={styles.mobileTopicInfo}>

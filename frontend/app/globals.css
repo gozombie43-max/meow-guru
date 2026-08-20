@@ -1493,9 +1493,9 @@ body.has-bottom-nav {
   gap: 2px;
   align-items: center;
   border-radius: 999px;
-  background: linear-gradient(160deg, #0d0d0d 0%, #000000 60%, #050505 100%);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  background: #000000;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.07);
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
   transition: backdrop-filter 220ms ease, background 220ms ease, box-shadow 220ms ease, border 220ms ease;
@@ -1524,9 +1524,9 @@ body.has-bottom-nav {
 .bottom-pill-nav.is-scrolled {
   backdrop-filter: blur(32px) saturate(200%);
   -webkit-backdrop-filter: blur(32px) saturate(200%);
-  background: linear-gradient(160deg, #0d0d0d 0%, #000000 60%, #050505 100%);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: #000000;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .bottom-pill-nav.is-light.is-scrolled {
@@ -1657,14 +1657,14 @@ body.has-bottom-nav {
 }
 
 body.theme-dark .bottom-pill-nav {
-  background: linear-gradient(160deg, #0d0d0d 0%, #000000 60%, #050505 100%);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  background: #000000;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.07);
 }
 
 body.theme-dark .bottom-pill-nav.is-scrolled {
-  background: linear-gradient(160deg, #0a0a0a 0%, #000000 70%, #030303 100%);
-  box-shadow: 0 22px 48px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  background: #000000;
+  box-shadow: 0 22px 48px rgba(0, 0, 0, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.07);
 }
 
 body.theme-dark .bottom-nav-item {
@@ -1874,14 +1874,14 @@ body.theme-dark .theme-switch {
 .bottom-nav-center-btn svg { width: 24px; height: 24px; stroke: white; fill: none; }
 body.theme-dark .bottom-nav-center-btn { box-shadow: 0 4px 14px rgba(0, 122, 255, 0.4); }
 
-/* Overrides — iOS-style grey-dark frosted glass */
+/* Overrides — iOS-style dark glass */
 .bottom-pill-nav {
   padding: 6px 10px;
   width: min(88vw, 360px);
   gap: 0px;
-  background: linear-gradient(160deg, #0d0d0d 0%, #000000 60%, #050505 100%);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
+  background: #000000;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
   transition: transform 220ms ease, opacity 220ms ease, background 220ms ease, box-shadow 220ms ease;
 }
 .bottom-pill-nav::before { display: none; }
@@ -1900,16 +1900,16 @@ body.theme-dark .bottom-nav-center-btn { box-shadow: 0 4px 14px rgba(0, 122, 255
 .bottom-pill-nav.is-light::before { display: none; }
 
 body.theme-dark .bottom-pill-nav {
-  background: linear-gradient(160deg, #0d0d0d 0%, #000000 60%, #050505 100%);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+  background: #000000;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
 }
 
 body.theme-dark .bottom-pill-nav.is-scrolled {
-  background: linear-gradient(160deg, #0a0a0a 0%, #000000 70%, #030303 100%);
-  box-shadow: 0 12px 44px rgba(0, 0, 0, 0.9);
+  background: #000000;
+  box-shadow: 0 12px 44px rgba(0, 0, 0, 0.95);
 }
 
 /* Active Colours for Icons and Text */
@@ -1996,9 +1996,9 @@ body.theme-dark .bottom-pill-nav::after {
     overflow: visible;
     border-radius: 0;
     border: 0;
-    border-top: 1px solid rgba(60, 60, 67, 0.12);
-    background: linear-gradient(160deg, #0d0d0d 0%, #000000 60%, #050505 100%);
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.7);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    background: #000000;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.8);
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
   }
@@ -2014,9 +2014,9 @@ body.theme-dark .bottom-pill-nav::after {
   }
 
   body.theme-dark .bottom-pill-nav {
-    background: linear-gradient(160deg, #0d0d0d 0%, #000000 60%, #050505 100%);
-    border-top: 1px solid rgba(255, 255, 255, 0.07);
-    box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.8);
+    background: #000000;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.9);
     backdrop-filter: blur(24px) saturate(180%);
     -webkit-backdrop-filter: blur(24px) saturate(180%);
   }
@@ -2061,7 +2061,8 @@ body.theme-dark .bottom-pill-nav::after {
 /* Dark mode background */
 body.theme-dark,
 html.theme-dark {
-  background-color: #121214;
+  background-color: #000000;
+  background: #000000;
   color-scheme: dark;
   
   /* Shared color variables for dark mode */
@@ -2070,7 +2071,7 @@ html.theme-dark {
   --color-text-tertiary: #6b7c97;
   --color-border-secondary: rgba(148, 163, 184, 0.25);
   --color-border-tertiary: rgba(148, 163, 184, 0.18);
-  --color-background-primary: #121214;
+  --color-background-primary: #000000;
   --color-background-secondary: rgba(15, 23, 42, 0.78);
   --color-background-danger: rgba(127, 29, 29, 0.24);
   --color-text-danger: #fecaca;

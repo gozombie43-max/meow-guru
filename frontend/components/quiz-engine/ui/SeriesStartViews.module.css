@@ -76,7 +76,7 @@
 :global(body.theme-dark) .pageRoot,
 :global(html.theme-dark) .pageRoot,
 .pageRoot[data-theme="dark"] {
-  --mac-bg-desktop: #09090b;
+  --mac-bg-desktop: #000000;
   --mac-window-bg: rgba(26, 26, 28, 0.94);
   --mac-window-border: rgba(255, 255, 255, 0.12);
   --mac-window-shadow: 0 25px 70px -10px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.08);

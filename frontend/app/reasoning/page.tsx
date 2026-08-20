@@ -64,16 +64,18 @@ export interface Topic {
   priority: Priority;
   questions: string;
   icon: LucideIcon;
+  color: string;
   description: string;
   expectedMarks: string;
 }
 
-// ── 25 SSC Reasoning Topics with Solid Monochrome SVG Icons ───────────────────
+// ── 25 SSC Reasoning Topics with Distinctly Colored Icons ─────────────────────
 const TOPICS: Topic[] = [
   {
     id: 1,
     priority: "very-high",
     icon: Lock,
+    color: "#38bdf8",
     name: "Coding & Decoding",
     slug: "coding-decoding",
     questions: "3-4",
@@ -85,6 +87,7 @@ const TOPICS: Topic[] = [
     id: 2,
     priority: "very-high",
     icon: MessageSquareCode,
+    color: "#a855f7",
     name: "Syllogism & Inferences",
     slug: "syllogism-inferences",
     questions: "2-3",
@@ -96,6 +99,7 @@ const TOPICS: Topic[] = [
     id: 3,
     priority: "very-high",
     icon: Puzzle,
+    color: "#f59e0b",
     name: "Puzzle & Seating Arrangement",
     slug: "puzzle-seating-arrangement",
     questions: "3-4",
@@ -107,6 +111,7 @@ const TOPICS: Topic[] = [
     id: 4,
     priority: "very-high",
     icon: TrendingUp,
+    color: "#10b981",
     name: "Series",
     slug: "series",
     questions: "2-3",
@@ -118,6 +123,7 @@ const TOPICS: Topic[] = [
     id: 5,
     priority: "very-high",
     icon: ArrowLeftRight,
+    color: "#ec4899",
     name: "Analogy",
     slug: "analogy",
     questions: "2-3",
@@ -129,6 +135,7 @@ const TOPICS: Topic[] = [
     id: 6,
     priority: "very-high",
     icon: Filter,
+    color: "#6366f1",
     name: "Classification (Odd One Out)",
     slug: "classification-odd-one-out",
     questions: "2-3",
@@ -140,6 +147,7 @@ const TOPICS: Topic[] = [
     id: 7,
     priority: "high",
     icon: Users2,
+    color: "#f43f5e",
     name: "Blood Relations",
     slug: "blood-relations",
     questions: "1-2",
@@ -151,6 +159,7 @@ const TOPICS: Topic[] = [
     id: 8,
     priority: "high",
     icon: Compass,
+    color: "#06b6d4",
     name: "Direction & Distance",
     slug: "direction-distance",
     questions: "1-2",
@@ -162,6 +171,7 @@ const TOPICS: Topic[] = [
     id: 9,
     priority: "high",
     icon: CircleDot,
+    color: "#8b5cf6",
     name: "Venn Diagram",
     slug: "venn-diagram",
     questions: "1-2",
@@ -173,6 +183,7 @@ const TOPICS: Topic[] = [
     id: 10,
     priority: "high",
     icon: Scale,
+    color: "#f97316",
     name: "Inequalities",
     slug: "inequalities",
     questions: "1-2",
@@ -184,6 +195,7 @@ const TOPICS: Topic[] = [
     id: 11,
     priority: "high",
     icon: Calculator,
+    color: "#3b82f6",
     name: "Mathematical Operations",
     slug: "mathematical-symbolic-operations",
     questions: "1-2",
@@ -195,6 +207,7 @@ const TOPICS: Topic[] = [
     id: 12,
     priority: "high",
     icon: Trophy,
+    color: "#eab308",
     name: "Order & Ranking",
     slug: "order-ranking",
     questions: "1-2",
@@ -206,6 +219,7 @@ const TOPICS: Topic[] = [
     id: 13,
     priority: "medium",
     icon: FileCheck,
+    color: "#14b8a6",
     name: "Statement & Conclusion",
     slug: "statement-conclusion",
     questions: "1",
@@ -217,6 +231,7 @@ const TOPICS: Topic[] = [
     id: 14,
     priority: "medium",
     icon: HelpCircle,
+    color: "#d946ef",
     name: "Statement & Assumptions",
     slug: "statement-assumptions",
     questions: "1",
@@ -228,6 +243,7 @@ const TOPICS: Topic[] = [
     id: 15,
     priority: "medium",
     icon: Swords,
+    color: "#ef4444",
     name: "Statement & Arguments",
     slug: "statement-arguments",
     questions: "1",
@@ -239,6 +255,7 @@ const TOPICS: Topic[] = [
     id: 16,
     priority: "medium",
     icon: Brain,
+    color: "#84cc16",
     name: "Critical Thinking",
     slug: "problem-solving-critical-thinking",
     questions: "1",
@@ -250,6 +267,7 @@ const TOPICS: Topic[] = [
     id: 17,
     priority: "medium",
     icon: Shapes,
+    color: "#0284c7",
     name: "Non-Verbal Figures",
     slug: "non-verbal-figures",
     questions: "1-2",
@@ -261,6 +279,7 @@ const TOPICS: Topic[] = [
     id: 18,
     priority: "medium",
     icon: Scissors,
+    color: "#c026d3",
     name: "Paper Folding & Cutting",
     slug: "paper-folding-cutting",
     questions: "1",
@@ -272,6 +291,7 @@ const TOPICS: Topic[] = [
     id: 19,
     priority: "low",
     icon: FlipHorizontal,
+    color: "#22d3ee",
     name: "Mirror & Water Image",
     slug: "mirror-water-image",
     questions: "1",
@@ -283,6 +303,7 @@ const TOPICS: Topic[] = [
     id: 20,
     priority: "low",
     icon: Box,
+    color: "#f59e0b",
     name: "Cube & Dice",
     slug: "cube-dice",
     questions: "1",
@@ -294,6 +315,7 @@ const TOPICS: Topic[] = [
     id: 21,
     priority: "low",
     icon: Table2,
+    color: "#10b981",
     name: "Matrix",
     slug: "matrix",
     questions: "1",
@@ -305,6 +327,7 @@ const TOPICS: Topic[] = [
     id: 22,
     priority: "low",
     icon: SpellCheck,
+    color: "#6366f1",
     name: "Logical Sequence of Words",
     slug: "logical-sequence-of-words",
     questions: "1",
@@ -316,6 +339,7 @@ const TOPICS: Topic[] = [
     id: 23,
     priority: "least",
     icon: Heart,
+    color: "#fb7185",
     name: "Emotional Intelligence",
     slug: "emotional-intelligence",
     questions: "1",
@@ -327,6 +351,7 @@ const TOPICS: Topic[] = [
     id: 24,
     priority: "least",
     icon: Share2,
+    color: "#38bdf8",
     name: "Social Intelligence",
     slug: "social-intelligence",
     questions: "1",
@@ -338,6 +363,7 @@ const TOPICS: Topic[] = [
     id: 25,
     priority: "least",
     icon: Type,
+    color: "#a855f7",
     name: "Word Building",
     slug: "word-building",
     questions: "1",
@@ -745,7 +771,14 @@ export default function ReasoningPage() {
                           onClick={() => setSelectedTopicId(topic.id)}
                         >
                           <div className={styles.tileIconBox}>
-                            <IconComp size={22} strokeWidth={2} />
+                            <IconComp
+                              size={22}
+                              strokeWidth={2.4}
+                              color={topic.color}
+                              style={{
+                                filter: `drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 8px ${topic.color}80)`,
+                              }}
+                            />
                           </div>
                           <div className={styles.tileBody}>
                             <span className={styles.tileName} title={topic.name}>
@@ -784,7 +817,14 @@ export default function ReasoningPage() {
                             <td>
                               <div className={styles.tableTopicCell}>
                                 <div className={styles.tableTopicIcon}>
-                                  <IconComp size={13} strokeWidth={2.2} />
+                                  <IconComp
+                                    size={14}
+                                    strokeWidth={2.4}
+                                    color={topic.color}
+                                    style={{
+                                      filter: `drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 5px ${topic.color}80)`,
+                                    }}
+                                  />
                                 </div>
                                 <span className={styles.tableTopicName}>{topic.name}</span>
                               </div>
@@ -834,7 +874,14 @@ export default function ReasoningPage() {
               <div className={styles.heroCard}>
                 <div className={styles.heroCardHeader}>
                   <div className={styles.heroCardIconBox}>
-                    <SelectedIcon size={20} strokeWidth={2.2} />
+                    <SelectedIcon
+                      size={20}
+                      strokeWidth={2.4}
+                      color={selectedTopic.color}
+                      style={{
+                        filter: `drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 8px ${selectedTopic.color}80)`,
+                      }}
+                    />
                   </div>
                   <div className={styles.heroCardTitleGroup}>
                     <h2 className={styles.heroCardTitle}>{selectedTopic.name}</h2>
@@ -1061,7 +1108,14 @@ export default function ReasoningPage() {
                   className={styles.mobileTopicCard}
                 >
                   <div className={styles.mobileTopicIconBox}>
-                    <TopicIcon size={16} strokeWidth={2.2} />
+                    <TopicIcon
+                      size={17}
+                      strokeWidth={2.4}
+                      color={topic.color}
+                      style={{
+                        filter: `drop-shadow(0 2px 3px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 6px ${topic.color}80)`,
+                      }}
+                    />
                   </div>
 
                   <div className={styles.mobileTopicInfo}>
