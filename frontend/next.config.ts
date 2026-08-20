@@ -16,6 +16,10 @@ const nextConfig: NextConfig = {
     // The hardcoded Windows path broke Azure Linux builds.
     root: path.resolve(__dirname),
   },
+  experimental: {
+    cpus: 4,
+    workerThreads: false,
+  },
 };
 
 export default nextConfig;

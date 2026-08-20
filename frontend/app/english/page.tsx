@@ -1,774 +1,1056 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Search } from "lucide-react";
+import {
+  ArrowLeft,
+  Search,
+  LayoutGrid,
+  List as ListIcon,
+  Sun,
+  Moon,
+  ChevronRight,
+  BookOpen,
+  Zap,
+  Sparkles,
+  X,
+  Sidebar as SidebarIcon,
+  ArrowLeftRight,
+  BookMarked,
+  MessageSquare,
+  Edit3,
+  FileSpreadsheet,
+  Newspaper,
+  RefreshCw,
+  MessageCircle,
+  Clock,
+  Scale,
+  Shuffle,
+  Puzzle,
+  SpellCheck,
+  Navigation,
+  FileText,
+  Link2,
+  Volume2,
+  Layout,
+  CheckSquare,
+  UserCheck,
+  Target,
+  AlignLeft,
+  BookOpenCheck,
+  FileQuestion,
+  Flame,
+  Layers,
+  CircleDot,
+  Filter,
+  Play,
+  Languages,
+  TrendingUp,
+  type LucideIcon,
+} from "lucide-react";
+import MacTrafficLights from "@/components/MacTrafficLights";
+import { useThemeMode } from "@/hooks/useTheme";
+import styles from "./english.module.css";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-type Category = "vocabulary" | "grammar" | "sentence-skills" | "passage-based" | "arrangement";
+export type Priority = "very-high" | "high" | "medium" | "low" | "least";
 
-interface Topic {
+export interface Topic {
   id: number;
   name: string;
+  slug: string;
   subtopics: string[];
-  category: Category;
+  priority: Priority;
   questions: string;
-  icon: string;
+  icon: LucideIcon;
+  description: string;
+  expectedMarks: string;
 }
 
-function toSlug(value: string) {
-  return value
-    .toLowerCase()
-    .replace(/&/g, " ")
-    .replace(/[()]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
-// ── Data ──────────────────────────────────────────────────────────────────────
+// ── 23 SSC English Topics with Solid Monochrome SVG Icons ─────────────────────
 const TOPICS: Topic[] = [
-  // ── Vocabulary ──
   {
-    id: 1, category: "vocabulary", icon: "🔤",
+    id: 1,
+    priority: "very-high",
+    icon: ArrowLeftRight,
     name: "Synonyms & Antonyms",
+    slug: "synonyms-antonyms",
     questions: "3-4",
-    subtopics: ["Synonym Selection", "Antonym Selection", "Contextual Usage", "Degree of Meaning"],
+    expectedMarks: "6-8 Marks",
+    description: "Vocabulary mastery testing exact synonyms, opposite nuances, contextual meanings, and degrees of connotation.",
+    subtopics: ["Synonym Selection", "Antonym Selection", "Contextual Usage", "Degree of Meaning", "Root Word Etymology"],
   },
   {
-    id: 2, category: "vocabulary", icon: "🔊",
-    name: "Homonyms & Homophones",
-    questions: "1-2",
-    subtopics: ["Same Sound Different Meaning", "Same Spelling Different Meaning", "Contextual Disambiguation"],
-  },
-  {
-    id: 3, category: "vocabulary", icon: "💡",
+    id: 2,
+    priority: "very-high",
+    icon: BookMarked,
     name: "One Word Substitution",
+    slug: "one-word-substitution",
     questions: "2-3",
-    subtopics: ["People & Professions", "Places & Institutions", "Actions & Behaviors", "Science & Nature Terms"],
+    expectedMarks: "4-6 Marks",
+    description: "Concise vocabulary replacing phrases for professions, places, medical terms, philosophies, and behavior patterns.",
+    subtopics: ["People & Professions", "Places & Institutions", "Phobias & Manias", "Sciences & Disciplines", "Government Terms"],
   },
   {
-    id: 4, category: "vocabulary", icon: "🗣️",
+    id: 3,
+    priority: "very-high",
+    icon: MessageSquare,
     name: "Idioms & Phrases",
+    slug: "idioms-phrases",
     questions: "2-3",
-    subtopics: ["Meaning Identification", "Correct Usage", "Fill in the Blank with Idiom", "Origin & Context"],
+    expectedMarks: "4-6 Marks",
+    description: "Figurative expressions, historical idioms, phrasal verbs, and contextual sentence placement.",
+    subtopics: ["Meaning Identification", "Correct Usage in Sentences", "Fill with Idiom", "Origin & Context", "Color & Animal Idioms"],
   },
   {
-    id: 5, category: "vocabulary", icon: "✅",
-    name: "Spelling / Misspelled Words",
-    questions: "1-2",
-    subtopics: ["Detect the Misspelled Word", "Correct the Spelling", "Commonly Confused Words"],
-  },
-
-  // ── Grammar ──
-  {
-    id: 6, category: "grammar", icon: "🔄",
-    name: "Active & Passive Voice",
-    questions: "2-3",
-    subtopics: ["Simple Tense Conversions", "Modal Voice Change", "Interrogative & Negative", "Complex Sentences"],
-  },
-  {
-    id: 7, category: "grammar", icon: "💬",
-    name: "Direct & Indirect Narration",
-    questions: "2-3",
-    subtopics: ["Statements", "Questions", "Commands & Requests", "Exclamations", "Tense Backshift Rules"],
-  },
-  {
-    id: 8, category: "grammar", icon: "⚖️",
-    name: "Subject-Verb Agreement",
-    questions: "1-2",
-    subtopics: ["Collective Nouns", "Indefinite Pronouns", "Either/Neither", "Intervening Phrases", "Inversion"],
-  },
-  {
-    id: 9, category: "grammar", icon: "⏰",
-    name: "Tenses",
-    questions: "2-3",
-    subtopics: ["Simple Tenses", "Continuous Tenses", "Perfect Tenses", "Perfect Continuous", "Mixed Tense Errors"],
-  },
-  {
-    id: 10, category: "grammar", icon: "📌",
-    name: "Articles",
-    questions: "1-2",
-    subtopics: ["A / An Usage", "The Usage", "Zero Article", "Articles with Proper Nouns"],
-  },
-  {
-    id: 11, category: "grammar", icon: "🗺️",
-    name: "Prepositions",
-    questions: "1-2",
-    subtopics: ["Place & Position", "Time Prepositions", "Direction & Movement", "Phrasal Prepositions", "Idiomatic Use"],
-  },
-  {
-    id: 12, category: "grammar", icon: "🔗",
-    name: "Conjunctions",
-    questions: "1-2",
-    subtopics: ["Coordinating", "Subordinating", "Correlative Pairs", "Conjunctive Adverbs"],
-  },
-  {
-    id: 13, category: "grammar", icon: "🎯",
-    name: "Modifiers",
-    questions: "1",
-    subtopics: ["Dangling Modifiers", "Misplaced Modifiers", "Squinting Modifiers", "Adjective vs Adverb"],
-  },
-  {
-    id: 14, category: "grammar", icon: "👤",
-    name: "Pronouns",
-    questions: "1",
-    subtopics: ["Pronoun-Antecedent Agreement", "Case of Pronouns", "Reflexive Pronouns", "Relative Pronouns"],
-  },
-  {
-    id: 15, category: "grammar", icon: "🏗️",
-    name: "Sentence Structure",
-    questions: "1-2",
-    subtopics: ["Simple / Compound / Complex", "Clause Types", "Phrase Types", "Transformation of Sentences"],
-  },
-  {
-    id: 16, category: "grammar", icon: "⚡",
-    name: "Parallelism",
-    questions: "1",
-    subtopics: ["Parallel Verbs", "Parallel Nouns & Phrases", "Correlative Parallelism", "List Parallelism"],
-  },
-
-  // ── Sentence Skills ──
-  {
-    id: 17, category: "sentence-skills", icon: "🔍",
-    name: "Spot the Error / Error Detection",
+    id: 4,
+    priority: "very-high",
+    icon: Search,
+    name: "Spot the Error",
+    slug: "spot-the-error-error-detection",
     questions: "4-5",
-    subtopics: ["Grammar Errors", "Word Choice Errors", "Punctuation Errors", "Part-wise Error Spotting"],
+    expectedMarks: "8-10 Marks",
+    description: "Locating grammatical flaws, tense mismatches, subject-verb disagreements, and incorrect modifiers across sentence parts.",
+    subtopics: ["Subject-Verb Inversion", "Tense Inconsistency", "Preposition Errors", "Pronoun Reference Flaws", "Part-wise Detection"],
   },
   {
-    id: 18, category: "sentence-skills", icon: "✏️",
-    name: "Sentence Correction / Improvement",
+    id: 5,
+    priority: "very-high",
+    icon: Edit3,
+    name: "Sentence Improvement",
+    slug: "sentence-correction-improvement",
     questions: "3-4",
-    subtopics: ["Replace Underlined Part", "Rewrite Correctly", "Choose Best Alternative", "No Improvement Cases"],
+    expectedMarks: "6-8 Marks",
+    description: "Enhancing grammatical accuracy, conciseness, and stylistic flow by replacing underlined phrases.",
+    subtopics: ["Replace Underlined Part", "Verb Tense Correction", "No Improvement Cases", "Idiomatic Precision", "Redundancy Elimination"],
   },
   {
-    id: 19, category: "sentence-skills", icon: "🧩",
-    name: "Fill in the Blanks",
-    questions: "2-3",
-    subtopics: ["Grammar Based", "Vocabulary Based", "Double Blanks", "Contextual Inference"],
-  },
-
-  // ── Passage Based ──
-  {
-    id: 20, category: "passage-based", icon: "📖",
+    id: 6,
+    priority: "very-high",
+    icon: FileSpreadsheet,
     name: "Cloze Test",
+    slug: "cloze-test",
     questions: "5",
-    subtopics: ["Vocabulary Cloze", "Grammar Cloze", "Contextual Cloze", "Discourse Cloze"],
+    expectedMarks: "10 Marks",
+    description: "Contextual paragraph comprehension requiring grammar and vocabulary completions for missing blanks.",
+    subtopics: ["Grammar Cloze", "Vocabulary Cloze", "Collocation Blanks", "Discourse Transition", "Contextual Inference"],
   },
   {
-    id: 21, category: "passage-based", icon: "📰",
+    id: 7,
+    priority: "very-high",
+    icon: Newspaper,
     name: "Reading Comprehension",
-    questions: "10-15",
-    subtopics: ["Main Idea / Title", "Inference Questions", "Vocabulary in Context", "Author's Tone & Purpose", "Factual Detail", "Editorial / Current Affairs Passage", "Story-Based Passage"],
+    slug: "reading-comprehension",
+    questions: "5-10",
+    expectedMarks: "10-20 Marks",
+    description: "Extracting main themes, author's tone, factual details, inferential deductions, and contextual word definitions.",
+    subtopics: ["Central Theme / Title", "Inference & Deduction", "Author Tone & Attitude", "Direct Fact Retrieval", "Contextual Vocab"],
   },
-
-  // ── Arrangement ──
   {
-    id: 22, category: "arrangement", icon: "🔀",
-    name: "Para-Jumbles",
+    id: 8,
+    priority: "high",
+    icon: RefreshCw,
+    name: "Active & Passive Voice",
+    slug: "active-passive-voice",
     questions: "2-3",
-    subtopics: ["Identify Opening Sentence", "Logical Sequence", "Connector Words", "Pronoun Reference Links"],
+    expectedMarks: "4-6 Marks",
+    description: "Voice conversions across all 12 tenses, modal auxiliaries, interrogative structures, and imperative commands.",
+    subtopics: ["Simple & Perfect Tenses", "Modal Verbs (Can/Must/Should)", "Interrogatives & 'Wh-' Questions", "Imperative Commands", "Prepositional Passive"],
   },
   {
-    id: 23, category: "arrangement", icon: "🧲",
-    name: "Para / Sentence Completion",
+    id: 9,
+    priority: "high",
+    icon: MessageCircle,
+    name: "Direct & Indirect Narration",
+    slug: "direct-indirect-narration",
+    questions: "2-3",
+    expectedMarks: "4-6 Marks",
+    description: "Reported speech transformations including tense backshifts, pronoun shifts, time-place changes, and exclamatory sentences.",
+    subtopics: ["Assertive Statements", "Interrogative 'If/Whether'", "Imperative Orders & Requests", "Exclamations & Wishes", "Universal Truth Exceptions"],
+  },
+  {
+    id: 10,
+    priority: "high",
+    icon: Clock,
+    name: "Tenses",
+    slug: "tenses",
+    questions: "2-3",
+    expectedMarks: "4-6 Marks",
+    description: "Timeline consistency, present perfect vs simple past, conditional clauses (If/When), and future time expressions.",
+    subtopics: ["Present Perfect vs Simple Past", "Past Perfect Sequences", "Conditional Clauses (Type 1, 2, 3)", "Since/For Time Markers", "Continuous vs Stative Verbs"],
+  },
+  {
+    id: 11,
+    priority: "high",
+    icon: Scale,
+    name: "Subject-Verb Agreement",
+    slug: "subject-verb-agreement",
     questions: "1-2",
-    subtopics: ["Choose Best Concluding Sentence", "Opening Sentence Completion", "Contextual Fit", "Tone Matching"],
+    expectedMarks: "2-4 Marks",
+    description: "Syntactic agreement rules with collective nouns, correlative pairs (Either/Or), indefinite pronouns, and inverted sentences.",
+    subtopics: ["Either...Or / Neither...Nor", "Collective Nouns Plurality", "Intervening Prepositional Phrases", "Each / Every / None", "Inverted Verb Placement"],
+  },
+  {
+    id: 12,
+    priority: "high",
+    icon: Shuffle,
+    name: "Para-Jumbles",
+    slug: "para-jumbles",
+    questions: "2-3",
+    expectedMarks: "4-6 Marks",
+    description: "Logical reordering of shuffled sentences using opening identifiers, pronoun antecedents, and connecting transition words.",
+    subtopics: ["Identifying Opening Sentence", "Pronoun Reference Links", "Chronological Flow", "Cause & Effect Connectors", "Concluding Summary"],
+  },
+  {
+    id: 13,
+    priority: "high",
+    icon: Puzzle,
+    name: "Fill in the Blanks",
+    slug: "fill-in-the-blanks",
+    questions: "2-3",
+    expectedMarks: "4-6 Marks",
+    description: "Sentence completions evaluating grammatical prepositions, verb agreements, and precise vocabulary nuances.",
+    subtopics: ["Single Blank Grammar", "Double Blanks Logic", "Prepositional Collocations", "Vocabulary Precision", "Contextual Contrast"],
+  },
+  {
+    id: 14,
+    priority: "medium",
+    icon: SpellCheck,
+    name: "Spelling & Misspelled Words",
+    slug: "spelling-misspelled-words",
+    questions: "1-2",
+    expectedMarks: "2-4 Marks",
+    description: "Identifying correctly or incorrectly spelled words with tricky double consonants, silent letters, and suffix additions.",
+    subtopics: ["Double Consonant Words", "Silent Letter Words", "'-ible' vs '-able' Suffixes", "Commonly Confused Spellings", "Detect Incorrect Word"],
+  },
+  {
+    id: 15,
+    priority: "medium",
+    icon: Navigation,
+    name: "Prepositions",
+    slug: "prepositions",
+    questions: "1-2",
+    expectedMarks: "2-4 Marks",
+    description: "Fixed prepositions, directional movement, temporal indicators (In/On/At), and idiomatic phrasal preposition combinations.",
+    subtopics: ["Fixed Preposition Rules", "Prepositions of Time & Place", "Movement & Direction (Into/Onto)", "Phrasal Prepositions", "Verbs without Prepositions"],
+  },
+  {
+    id: 16,
+    priority: "medium",
+    icon: FileText,
+    name: "Articles",
+    slug: "articles",
+    questions: "1-2",
+    expectedMarks: "2-4 Marks",
+    description: "Indefinite articles (A/An) phonetic rules, definite article (The) usage with geographical/proper nouns, and zero article omissions.",
+    subtopics: ["Vowel Sound Rules (A/An)", "Definite Article 'The' Usage", "Zero Article Omissions", "Articles with Superlatives", "Generic vs Specific Reference"],
+  },
+  {
+    id: 17,
+    priority: "medium",
+    icon: Link2,
+    name: "Conjunctions",
+    slug: "conjunctions",
+    questions: "1-2",
+    expectedMarks: "2-4 Marks",
+    description: "Coordinating conjunctions (FANBOYS), subordinating clauses, correlative pairs (Not only...but also), and conjunctive adverbs.",
+    subtopics: ["Correlative Conjunction Pairs", "Lest...Should Rules", "No sooner...than / Hardly...when", "Although / Even Though Contrast", "Subordinating Clauses"],
+  },
+  {
+    id: 18,
+    priority: "medium",
+    icon: Volume2,
+    name: "Homonyms & Homophones",
+    slug: "homonyms-homophones",
+    questions: "1-2",
+    expectedMarks: "2-4 Marks",
+    description: "Differentiating words with identical pronunciation or spelling but divergent meanings, origins, and usages.",
+    subtopics: ["Same Sound Different Spelling", "Same Spelling Different Meaning", "Contextual Selection", "Easily Confused Pairs"],
+  },
+  {
+    id: 19,
+    priority: "medium",
+    icon: Layout,
+    name: "Sentence Structure & Clauses",
+    slug: "sentence-structure",
+    questions: "1-2",
+    expectedMarks: "2-4 Marks",
+    description: "Analyzing simple, compound, and complex sentences; identifying relative clauses; and transforming sentence clauses.",
+    subtopics: ["Simple, Compound, Complex", "Noun & Adverb Clauses", "Relative Pronoun Clauses", "Transformation of Sentences", "Run-on Sentences & Fragments"],
+  },
+  {
+    id: 20,
+    priority: "low",
+    icon: CheckSquare,
+    name: "Para / Sentence Completion",
+    slug: "para-sentence-completion",
+    questions: "1-2",
+    expectedMarks: "2-4 Marks",
+    description: "Selecting the most logical opening, middle, or concluding sentence that sustains the author's tone and paragraph premise.",
+    subtopics: ["Concluding Sentence Selection", "Opening Sentence Selection", "Tone & Flow Consistency", "Logical Deductions"],
+  },
+  {
+    id: 21,
+    priority: "low",
+    icon: UserCheck,
+    name: "Pronouns",
+    slug: "pronouns",
+    questions: "1",
+    expectedMarks: "2 Marks",
+    description: "Pronoun-antecedent agreement, subjective vs objective cases, reflexive vs emphatic pronouns, and relative pronouns.",
+    subtopics: ["Subjective vs Objective Cases", "Reflexive & Emphatic Pronouns", "Relative Pronouns (Who/Whom/Which/That)", "Order of Pronouns (231 & 123)"],
+  },
+  {
+    id: 22,
+    priority: "low",
+    icon: Target,
+    name: "Modifiers",
+    slug: "modifiers",
+    questions: "1",
+    expectedMarks: "2 Marks",
+    description: "Detecting and correcting misplaced modifiers, dangling participles, squinting modifiers, and adjective vs adverb usages.",
+    subtopics: ["Dangling Participles", "Misplaced Modifiers", "Adjective vs Adverb Choice", "Squinting Modifiers"],
+  },
+  {
+    id: 23,
+    priority: "low",
+    icon: AlignLeft,
+    name: "Parallelism",
+    slug: "parallelism",
+    questions: "1",
+    expectedMarks: "2 Marks",
+    description: "Ensuring parallel syntactic structures across series, comparisons with 'than'/'as', and correlative conjunction lists.",
+    subtopics: ["Parallel Verb Forms", "Parallel Series & Lists", "Comparisons with 'Than' / 'As'", "Correlative Parallel Structures"],
   },
 ];
 
-// ── Category config ───────────────────────────────────────────────────────────
-const CATEGORY_CONFIG: Record<Category, { label: string; iconAccent: string; badge: string }> = {
-  "vocabulary":      { label: "Vocabulary",      iconAccent: "#e8f0fe", badge: "#4f80f7" },
-  "grammar":         { label: "Grammar",          iconAccent: "#e8f5f0", badge: "#34a87a" },
-  "sentence-skills": { label: "Sentence Skills",  iconAccent: "#f0eefe", badge: "#7c5cbf" },
-  "passage-based":   { label: "Passage Based",    iconAccent: "#fff4e6", badge: "#d97706" },
-  "arrangement":     { label: "Arrangement",      iconAccent: "#fdf2f8", badge: "#c026a0" },
+// ── Priority Visual Config ───────────────────────────────────────────────────
+const PRIORITY_CONFIG: Record<
+  Priority,
+  { label: string; badgeBg: string; badgeColor: string }
+> = {
+  "very-high": {
+    label: "Core",
+    badgeBg: "rgba(0, 113, 227, 0.1)",
+    badgeColor: "var(--mac-blue)",
+  },
+  high: {
+    label: "High",
+    badgeBg: "var(--mac-surface-hover)",
+    badgeColor: "var(--mac-text-primary)",
+  },
+  medium: {
+    label: "Medium",
+    badgeBg: "var(--mac-surface-hover)",
+    badgeColor: "var(--mac-text-secondary)",
+  },
+  low: {
+    label: "Low",
+    badgeBg: "var(--mac-surface-hover)",
+    badgeColor: "var(--mac-text-secondary)",
+  },
+  least: {
+    label: "Least",
+    badgeBg: "var(--mac-surface-hover)",
+    badgeColor: "var(--mac-text-tertiary)",
+  },
 };
 
-// ── Tabs ──────────────────────────────────────────────────────────────────────
-const TABS = [
-  { id: "all",             label: "All"            },
-  { id: "vocabulary",      label: "Vocabulary"     },
-  { id: "grammar",         label: "Grammar"        },
-  { id: "sentence-skills", label: "Sentence Skills"},
-  { id: "passage-based",   label: "Passage Based"  },
-  { id: "arrangement",     label: "Arrangement"    },
+const CATEGORIES = [
+  { id: "all", label: "All Modules", icon: Layers },
+  { id: "very-high", label: "Core", icon: Zap },
+  { id: "high", label: "High", icon: TrendingUp },
+  { id: "medium", label: "Medium", icon: CircleDot },
+  { id: "low", label: "Low", icon: Filter },
 ] as const;
 
-type TabId = typeof TABS[number]["id"];
+type CategoryId = typeof CATEGORIES[number]["id"];
 
-// ── Topic Pill Card ───────────────────────────────────────────────────────────
-function TopicPill({ topic, index }: { topic: Topic; index: number }) {
-  const cfg = CATEGORY_CONFIG[topic.category];
-  const slug = toSlug(topic.name);
-  return (
-    <Link
-      href={`/english/${slug}`}
-      className="pill-card"
-      style={{ animationDelay: `${index * 45}ms` }}
-      aria-label={`Open ${topic.name}`}
-    >
-      <span className="pill-icon" style={{ background: cfg.iconAccent }}>
-        {topic.icon}
-      </span>
-      <div className="pill-middle">
-        <span className="pill-name">{topic.name}</span>
-      </div>
-      <span className="pill-badge" style={{ background: cfg.iconAccent, color: cfg.badge }}>
-        {cfg.label}
-      </span>
-    </Link>
-  );
-}
+export const PRACTICE_MODES = [
+  {
+    key: "concept",
+    title: "PYQ Practice",
+    sub: "Previous year Qs",
+    mode: "concept",
+    icon: FileQuestion,
+  },
+  {
+    key: "formula",
+    title: "Vocabulary Bank",
+    sub: "Words & grammar rules",
+    mode: "formula",
+    icon: BookOpenCheck,
+  },
+  {
+    key: "mixed",
+    title: "Mixed PW",
+    sub: "Comprehensive mixture",
+    mode: "mixed",
+    icon: Shuffle,
+  },
+  {
+    key: "ai-challenge",
+    title: "AI Challenge",
+    sub: "Speed test",
+    mode: "ai-challenge",
+    icon: Zap,
+  },
+  {
+    key: "easy",
+    title: "Topic Mix",
+    sub: "Foundation easy",
+    mode: "easy",
+    icon: Navigation,
+  },
+  {
+    key: "hard",
+    title: "Tier 2 Hard",
+    sub: "Advanced level",
+    mode: "hard",
+    icon: Flame,
+  },
+] as const;
 
-// ── Main Page ─────────────────────────────────────────────────────────────────
-export default function EnglishTopicsPage() {
+export default function EnglishPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<TabId>("all");
-  const [search, setSearch] = useState("");
+  const { theme, toggleThemeMode } = useThemeMode();
+  const isDark = theme === "dark";
 
-  const filtered = useMemo(() => {
+  // States
+  const [activeCategory, setActiveCategory] = useState<CategoryId>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [selectedTopicId, setSelectedTopicId] = useState<number>(1);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Filtered topics
+  const filteredTopics = useMemo(() => {
     return TOPICS.filter((t) => {
-      const matchTab = activeTab === "all" || t.category === activeTab;
-      const q = search.trim().toLowerCase();
+      const matchCat = activeCategory === "all" || t.priority === activeCategory;
+      const q = searchQuery.trim().toLowerCase();
       const matchSearch =
         q === "" ||
         t.name.toLowerCase().includes(q) ||
-        t.subtopics.some((s) => s.toLowerCase().includes(q));
-      return matchTab && matchSearch;
+        t.subtopics.some((s) => s.toLowerCase().includes(q)) ||
+        t.description.toLowerCase().includes(q);
+      return matchCat && matchSearch;
     });
-  }, [activeTab, search]);
+  }, [activeCategory, searchQuery]);
+
+  // Selected topic object
+  const selectedTopic = useMemo(() => {
+    return TOPICS.find((t) => t.id === selectedTopicId) || TOPICS[0];
+  }, [selectedTopicId]);
+
+  // Current index in filtered list
+  const currentIndex = useMemo(() => {
+    return filteredTopics.findIndex((t) => t.id === selectedTopicId);
+  }, [filteredTopics, selectedTopicId]);
+
+  // Category counts
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = { all: TOPICS.length };
+    TOPICS.forEach((t) => {
+      counts[t.priority] = (counts[t.priority] || 0) + 1;
+    });
+    return counts;
+  }, []);
+
+  // Keyboard navigation
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      const isInput = ["INPUT", "TEXTAREA"].includes(target?.tagName);
+
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+        return;
+      }
+
+      if (e.key === "Escape") {
+        if (searchQuery) setSearchQuery("");
+        else target.blur();
+        return;
+      }
+
+      if (!isInput && filteredTopics.length > 0) {
+        if (e.key === "ArrowDown" || e.key === "ArrowRight") {
+          e.preventDefault();
+          const nextIdx = (currentIndex + 1) % filteredTopics.length;
+          setSelectedTopicId(filteredTopics[nextIdx].id);
+        } else if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
+          e.preventDefault();
+          const prevIdx = (currentIndex - 1 + filteredTopics.length) % filteredTopics.length;
+          setSelectedTopicId(filteredTopics[prevIdx].id);
+        } else if (e.key === "Enter") {
+          e.preventDefault();
+          if (selectedTopic) {
+            router.push(`/english/${selectedTopic.slug}/quiz?mode=concept`);
+          }
+        }
+      }
+    },
+    [currentIndex, filteredTopics, selectedTopic, searchQuery, router]
+  );
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleKeyDown]);
+
+  // If filtered list changes and selected topic is no longer visible, auto-select first visible topic
+  useEffect(() => {
+    if (filteredTopics.length > 0 && !filteredTopics.some((t) => t.id === selectedTopicId)) {
+      setSelectedTopicId(filteredTopics[0].id);
+    }
+  }, [filteredTopics, selectedTopicId]);
+
+  const SelectedIcon = selectedTopic.icon;
 
   return (
-    <main className="page">
-      {/* ── Top bar ── */}
-      <header className="topbar">
-        <button
-          className="back-btn"
-          onClick={() => router.back()}
-          aria-label="Back"
-        >
-          <ArrowLeft size={19} strokeWidth={2.4} />
-        </button>
-        <span className="topbar-title">English Topics</span>
-        <span className="topbar-spacer" aria-hidden />
-      </header>
+    <div className={styles.pageRoot}>
+      {/* =========================================================================
+          DESKTOP PC VIEW (Zero-Scroll 100vh macOS Studio >= 768px)
+          ========================================================================= */}
+      <div className={styles.desktopContainer}>
+        <div className={styles.macWindow}>
+          {/* ── Titlebar & Toolbar (44px) ── */}
+          <header className={styles.titlebar}>
+            <div className={styles.titlebarLeft}>
+              {/* Traffic Lights */}
+              <MacTrafficLights
+                onClose={() => router.push("/")}
+                onMinimize={() => setSidebarOpen((prev) => !prev)}
+                onMaximize={() => router.push(`/english/${selectedTopic.slug}`)}
+              />
 
-      <div className="body">
-        {/* ── Search ── */}
-        <div className="search-row">
-          <Search className="search-ico" size={16} />
-          <input
-            type="text"
-            className="search-field"
-            placeholder="Search topics or subtopics…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            aria-label="Search topics"
-          />
-          {search && (
-            <button className="search-clear" onClick={() => setSearch("")} aria-label="Clear">
-              ×
-            </button>
-          )}
-        </div>
+              {/* Navigation Arrows */}
+              <button
+                type="button"
+                className={styles.navBtn}
+                onClick={() => router.back()}
+                aria-label="Back"
+                title="Back"
+              >
+                <ArrowLeft size={13} />
+              </button>
 
-        {/* ── Tabs ── */}
-        <div className="tabs-scroll">
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              className={`tab-btn${activeTab === tab.id ? " tab-active" : ""}`}
-              onClick={() => setActiveTab(tab.id)}
+              <button
+                type="button"
+                className={styles.navBtn}
+                onClick={() => setSidebarOpen((prev) => !prev)}
+                aria-label="Toggle Sidebar"
+                title="Toggle Sidebar"
+              >
+                <SidebarIcon size={13} />
+              </button>
+
+              {/* Window Title */}
+              <div className={styles.windowTitleGroup}>
+                <span className={styles.windowIcon} aria-hidden="true">
+                  <Languages size={14} />
+                </span>
+                <span className={styles.windowTitle}>English Studio</span>
+              </div>
+            </div>
+
+            {/* Titlebar Center: Spotlight Search */}
+            <div className={styles.titlebarCenter}>
+              <div className={styles.searchWrap}>
+                <Search size={13} className={styles.searchIcon} />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  placeholder="Search grammar rules, vocab, idioms... (⌘K)"
+                  className={styles.searchInput}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  aria-label="Search english topics"
+                />
+                {searchQuery ? (
+                  <button
+                    type="button"
+                    className={styles.searchClearBtn}
+                    onClick={() => setSearchQuery("")}
+                    aria-label="Clear Search"
+                  >
+                    <X size={9} />
+                  </button>
+                ) : (
+                  <kbd className={styles.searchShortcut}>⌘ K</kbd>
+                )}
+              </div>
+            </div>
+
+            {/* Titlebar Right: View Switchers & Controls */}
+            <div className={styles.titlebarRight}>
+              {/* Segmented View Mode Control */}
+              <div className={styles.segmentedControl} role="group" aria-label="View Mode">
+                <button
+                  type="button"
+                  className={`${styles.segmentedBtn} ${viewMode === "grid" ? styles.segmentedBtnActive : ""}`}
+                  onClick={() => setViewMode("grid")}
+                  aria-label="Grid Matrix View"
+                  title="Grid Matrix View"
+                >
+                  <LayoutGrid size={12} />
+                  <span>Grid</span>
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.segmentedBtn} ${viewMode === "list" ? styles.segmentedBtnActive : ""}`}
+                  onClick={() => setViewMode("list")}
+                  aria-label="List Table View"
+                  title="List Table View"
+                >
+                  <ListIcon size={12} />
+                  <span>List</span>
+                </button>
+              </div>
+
+              {/* Dark/Light Theme Toggle */}
+              <button
+                type="button"
+                className={styles.actionBtn}
+                onClick={toggleThemeMode}
+                aria-label={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                title={isDark ? "Light Mode" : "Dark Mode"}
+              >
+                {isDark ? <Sun size={13} /> : <Moon size={13} />}
+              </button>
+            </div>
+          </header>
+
+          {/* ── 3-Pane Body ── */}
+          <div className={styles.windowBody}>
+            {/* Left Sidebar (210px) */}
+            <aside
+              className={`${styles.sidebar} ${!sidebarOpen ? styles.sidebarHidden : ""}`}
+              aria-label="English Categories"
             >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+              <div className={styles.sidebarSection}>
+                <div className={styles.sidebarHeading}>Categories</div>
+                {CATEGORIES.map((cat) => {
+                  const active = activeCategory === cat.id;
+                  const count = categoryCounts[cat.id] || 0;
+                  const CatIcon = cat.icon;
+                  return (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      className={`${styles.sidebarItem} ${active ? styles.sidebarItemActive : ""}`}
+                      onClick={() => setActiveCategory(cat.id)}
+                    >
+                      <div className={styles.sidebarItemLeft}>
+                        <span className={styles.sidebarItemIcon}>
+                          <CatIcon size={12} />
+                        </span>
+                        <span>{cat.label}</span>
+                      </div>
+                      <span className={styles.sidebarItemCount}>{count}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </aside>
 
-        {/* ── Count row ── */}
-        <div className="count-row">
-          <span className="count-text">{filtered.length} topic{filtered.length !== 1 ? "s" : ""}</span>
-          {(search || activeTab !== "all") && (
-            <button className="clear-btn" onClick={() => { setSearch(""); setActiveTab("all"); }}>
-              Clear filters
-            </button>
-          )}
-        </div>
+            {/* Center Canvas: Dense Matrix / List */}
+            <main className={styles.mainCanvas} aria-label="English Topics Matrix">
+              {/* Canvas Header (30px) */}
+              <div className={styles.canvasHeader}>
+                <div className={styles.canvasHeaderTitle}>
+                  <span>{CATEGORIES.find((c) => c.id === activeCategory)?.label}</span>
+                  <span style={{ color: "var(--mac-text-tertiary)", fontWeight: 500 }}>
+                    ({filteredTopics.length})
+                  </span>
+                </div>
 
-        {/* ── List ── */}
-        {filtered.length === 0 ? (
-          <div className="empty">
-            <span className="empty-ico">🔍</span>
-            <p className="empty-title">No topics found</p>
-            <p className="empty-sub">Try a different search term</p>
+                <div className={styles.canvasMeta}>
+                  {(searchQuery || activeCategory !== "all") && (
+                    <button
+                      type="button"
+                      className={styles.clearFilterLink}
+                      onClick={() => {
+                        setSearchQuery("");
+                        setActiveCategory("all");
+                      }}
+                    >
+                      Reset Filter
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Matrix Viewport */}
+              <div className={styles.canvasViewport}>
+                {filteredTopics.length === 0 ? (
+                  <div className={styles.emptyState}>
+                    <div className={styles.emptyStateIcon}>🔍</div>
+                    <div className={styles.emptyStateTitle}>No english topics found</div>
+                    <p className={styles.emptyStateDesc}>
+                      No modules matched &ldquo;{searchQuery}&rdquo;.
+                    </p>
+                    <button
+                      type="button"
+                      className={styles.tableActionBtn}
+                      onClick={() => {
+                        setSearchQuery("");
+                        setActiveCategory("all");
+                      }}
+                      style={{ marginTop: "8px" }}
+                    >
+                      Show All Topics
+                    </button>
+                  </div>
+                ) : viewMode === "grid" ? (
+                  /* ── Square Monochrome Grid (Click to select) ── */
+                  <div className={styles.denseGrid}>
+                    {filteredTopics.map((topic) => {
+                      const isSelected = selectedTopicId === topic.id;
+                      const IconComp = topic.icon;
+                      return (
+                        <div
+                          key={topic.id}
+                          className={`${styles.compactTile} ${
+                            isSelected ? styles.compactTileSelected : ""
+                          }`}
+                          onClick={() => setSelectedTopicId(topic.id)}
+                        >
+                          <div className={styles.tileIconBox}>
+                            <IconComp size={22} strokeWidth={2} />
+                          </div>
+                          <div className={styles.tileBody}>
+                            <span className={styles.tileName} title={topic.name}>
+                              {topic.name}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  /* ── Dense List Table View (Click to select) ── */
+                  <table className={styles.denseTable}>
+                    <thead>
+                      <tr>
+                        <th>Topic Name</th>
+                        <th>Priority</th>
+                        <th>Exam Weight</th>
+                        <th>Subtopics</th>
+                        <th style={{ textAlign: "right" }}>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredTopics.map((topic) => {
+                        const cfg = PRIORITY_CONFIG[topic.priority];
+                        const isSelected = selectedTopicId === topic.id;
+                        const IconComp = topic.icon;
+                        return (
+                          <tr
+                            key={topic.id}
+                            className={`${styles.denseTableRow} ${
+                              isSelected ? styles.denseTableRowSelected : ""
+                            }`}
+                            onClick={() => setSelectedTopicId(topic.id)}
+                          >
+                            <td>
+                              <div className={styles.tableTopicCell}>
+                                <div className={styles.tableTopicIcon}>
+                                  <IconComp size={13} strokeWidth={2.2} />
+                                </div>
+                                <span className={styles.tableTopicName}>{topic.name}</span>
+                              </div>
+                            </td>
+                            <td>
+                              <span
+                                className={styles.tablePriorityBadge}
+                                style={{ background: cfg.badgeBg, color: cfg.badgeColor }}
+                              >
+                                {cfg.label}
+                              </span>
+                            </td>
+                            <td>
+                              <span className={styles.tableWeightBadge}>
+                                {topic.questions} Qs ({topic.expectedMarks})
+                              </span>
+                            </td>
+                            <td>
+                              <div
+                                className={styles.tableSubtopics}
+                                title={topic.subtopics.join(", ")}
+                              >
+                                {topic.subtopics.join(" • ")}
+                              </div>
+                            </td>
+                            <td style={{ textAlign: "right" }}>
+                              <Link
+                                href={`/english/${topic.slug}`}
+                                className={styles.tableActionBtn}
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                Open
+                              </Link>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </main>
+
+            {/* Right: Live Command Deck (320px) ── */}
+            <aside className={styles.commandDeck} aria-label="Topic Command Deck">
+              {/* ── Hero Topic Card ── */}
+              <div className={styles.heroCard}>
+                <div className={styles.heroCardHeader}>
+                  <div className={styles.heroCardIconBox}>
+                    <SelectedIcon size={20} strokeWidth={2.2} />
+                  </div>
+                  <div className={styles.heroCardTitleGroup}>
+                    <h2 className={styles.heroCardTitle}>{selectedTopic.name}</h2>
+                    <span
+                      className={styles.heroPriorityPill}
+                      style={{
+                        background: PRIORITY_CONFIG[selectedTopic.priority].badgeBg,
+                        color: PRIORITY_CONFIG[selectedTopic.priority].badgeColor,
+                      }}
+                    >
+                      {PRIORITY_CONFIG[selectedTopic.priority].label} Priority
+                    </span>
+                  </div>
+                </div>
+
+                {/* KPI Metrics */}
+                <div className={styles.heroStatsGrid}>
+                  <div className={styles.heroStatItem}>
+                    <span className={styles.heroStatLabel}>Exam Weight</span>
+                    <span className={styles.heroStatValue}>{selectedTopic.questions} Qs</span>
+                  </div>
+                  <div className={styles.heroStatItem}>
+                    <span className={styles.heroStatLabel}>Score Potential</span>
+                    <span className={styles.heroStatValue}>{selectedTopic.expectedMarks}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* ── Practice Modes (Single Column) ── */}
+              <div className={styles.deckSection}>
+                <div className={styles.deckSectionHeader}>
+                  <span className={styles.deckSectionTitle}>Practice Modes</span>
+                  <span className={styles.deckSectionBadge}>6 Modes</span>
+                </div>
+
+                <div className={styles.modesList}>
+                  {PRACTICE_MODES.map((pm) => {
+                    const ModeIcon = pm.icon;
+                    return (
+                      <Link
+                        key={pm.key}
+                        href={`/english/${selectedTopic.slug}/quiz?mode=${pm.mode}`}
+                        className={styles.modeCard}
+                        title={`Start ${pm.title}`}
+                      >
+                        <div className={styles.modeCardLeft}>
+                          <div className={styles.modeCardIcon}>
+                            <ModeIcon size={14} strokeWidth={2.2} />
+                          </div>
+                          <div className={styles.modeCardInfo}>
+                            <span className={styles.modeCardTitle}>{pm.title}</span>
+                            <span className={styles.modeCardSub}>{pm.sub}</span>
+                          </div>
+                        </div>
+                        <div className={styles.playBtnCircle} aria-hidden="true">
+                          <Play size={10} fill="#ffffff" color="#ffffff" style={{ marginLeft: "1.5px" }} />
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* ── Reference & Resources ── */}
+              <div className={styles.deckSection} style={{ marginTop: "auto" }}>
+                <div className={styles.deckSectionHeader}>
+                  <span className={styles.deckSectionTitle}>Resources</span>
+                </div>
+
+                <div className={styles.resourceList}>
+                  <Link
+                    href={`/english/${selectedTopic.slug}/vocabulary-notes`}
+                    className={styles.resourceCard}
+                    title="View Vocabulary & Rules Bank"
+                  >
+                    <div className={styles.resourceCardLeft}>
+                      <div className={styles.resourceCardIcon}>
+                        <Sparkles size={13} strokeWidth={2.2} />
+                      </div>
+                      <div className={styles.resourceCardInfo}>
+                        <span className={styles.resourceCardTitle}>Vocabulary & Rules Bank</span>
+                        <span className={styles.resourceCardSub}>Key shortcuts & cheat sheet</span>
+                      </div>
+                    </div>
+                    <ChevronRight size={13} className={styles.resourceArrow} />
+                  </Link>
+
+                  <Link
+                    href={`/english/${selectedTopic.slug}`}
+                    className={styles.resourceCard}
+                    title="Open Complete Module Hub"
+                  >
+                    <div className={styles.resourceCardLeft}>
+                      <div className={styles.resourceCardIcon}>
+                        <BookOpen size={13} strokeWidth={2.2} />
+                      </div>
+                      <div className={styles.resourceCardInfo}>
+                        <span className={styles.resourceCardTitle}>Complete Module Hub</span>
+                        <span className={styles.resourceCardSub}>Deep-dive lessons & notes</span>
+                      </div>
+                    </div>
+                    <ChevronRight size={13} className={styles.resourceArrow} />
+                  </Link>
+                </div>
+              </div>
+            </aside>
           </div>
-        ) : (
-          <div className="pill-list">
-            {filtered.map((topic, i) => (
-              <TopicPill key={topic.id} topic={topic} index={i} />
-            ))}
-          </div>
-        )}
+
+          {/* ── Bottom Status Dock (26px) ── */}
+          <footer className={styles.statusBar}>
+            <div className={styles.statusLeft} />
+
+            <div className={styles.statusRight}>
+              <div className={styles.shortcutHint}>
+                <kbd className={styles.shortcutKey}>↑↓←→</kbd>
+                <span>Navigate</span>
+              </div>
+              <div className={styles.shortcutHint}>
+                <kbd className={styles.shortcutKey}>Enter</kbd>
+                <span>Start</span>
+              </div>
+              <div className={styles.shortcutHint}>
+                <kbd className={styles.shortcutKey}>⌘K</kbd>
+                <span>Search</span>
+              </div>
+            </div>
+          </footer>
+        </div>
       </div>
 
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap');
+      {/* =========================================================================
+          MOBILE / TABLET VIEW (< 768px Handheld Devices)
+          ========================================================================= */}
+      <div className={styles.mobileContainer}>
+        {/* Mobile Topbar */}
+        <header className={styles.mobileTopbar}>
+          <button
+            type="button"
+            className={styles.mobileBackBtn}
+            onClick={() => router.back()}
+            aria-label="Back"
+          >
+            <ArrowLeft size={18} strokeWidth={2.4} />
+          </button>
+          <span className={styles.mobileTopbarTitle}>English Topics</span>
+          <button
+            type="button"
+            className={styles.mobileBackBtn}
+            onClick={toggleThemeMode}
+            aria-label={isDark ? "Light Mode" : "Dark Mode"}
+          >
+            {isDark ? <Sun size={17} /> : <Moon size={17} />}
+          </button>
+        </header>
 
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        <div className={styles.mobileBody}>
+          {/* Search */}
+          <div className={styles.mobileSearchRow}>
+            <Search className={styles.mobileSearchIcon} size={15} />
+            <input
+              type="text"
+              className={styles.mobileSearchInput}
+              placeholder="Search english topics…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              aria-label="Search topics"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                className={styles.searchClearBtn}
+                style={{ right: "12px", top: "50%", transform: "translateY(-50%)" }}
+                onClick={() => setSearchQuery("")}
+                aria-label="Clear Search"
+              >
+                <X size={11} />
+              </button>
+            )}
+          </div>
 
-        .page {
-          min-height: 100dvh;
-          background: #f4f6fb;
-          font-family: 'DM Sans', 'Segoe UI', sans-serif;
-          color: #0f172a;
-          position: relative;
-          overflow: clip;
-          isolation: isolate;
-        }
+          {/* Priority Tabs */}
+          <div className={styles.mobileTabsScroll}>
+            {CATEGORIES.map((cat) => (
+              <button
+                key={cat.id}
+                type="button"
+                className={`${styles.mobileTabBtn} ${
+                  activeCategory === cat.id ? styles.mobileTabActive : ""
+                }`}
+                onClick={() => setActiveCategory(cat.id)}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </div>
 
-        /* ── Topbar ── */
-        .topbar {
-          position: sticky;
-          top: 0;
-          z-index: 40;
-          background: rgba(244,246,251,0.93);
-          backdrop-filter: blur(16px);
-          -webkit-backdrop-filter: blur(16px);
-          border-bottom: 1px solid rgba(15,23,42,0.07);
-          display: grid;
-          grid-template-columns: 44px 1fr 44px;
-          align-items: center;
-          padding: 0 12px;
-          height: 56px;
-        }
+          {/* Count Row */}
+          <div className={styles.mobileCountRow}>
+            <span className={styles.mobileCountText}>
+              {filteredTopics.length} topic{filteredTopics.length !== 1 ? "s" : ""}
+            </span>
+            {(searchQuery || activeCategory !== "all") && (
+              <button
+                type="button"
+                className={styles.mobileResetLink}
+                onClick={() => {
+                  setSearchQuery("");
+                  setActiveCategory("all");
+                }}
+              >
+                Reset
+              </button>
+            )}
+          </div>
 
-        .back-btn {
-          width: 36px; height: 36px;
-          border-radius: 50%;
-          border: none;
-          background: transparent;
-          display: flex; align-items: center; justify-content: center;
-          color: #0f172a;
-          cursor: pointer;
-          transition: background 0.15s;
-        }
-        .back-btn:hover { background: #e8edf4; }
+          {/* Topic List */}
+          <div className={styles.mobileTopicList}>
+            {filteredTopics.map((topic) => {
+              const TopicIcon = topic.icon;
+              return (
+                <Link
+                  key={topic.id}
+                  href={`/english/${topic.slug}`}
+                  className={styles.mobileTopicCard}
+                >
+                  <div className={styles.mobileTopicIconBox}>
+                    <TopicIcon size={16} strokeWidth={2.2} />
+                  </div>
 
-        .topbar-title {
-          text-align: center;
-          font-size: 1.05rem;
-          font-weight: 700;
-          letter-spacing: -0.01em;
-          color: #0f172a;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
+                  <div className={styles.mobileTopicInfo}>
+                    <div className={styles.mobileTopicName}>{topic.name}</div>
+                  </div>
 
-        .topbar-spacer {
-          width: 36px;
-          height: 36px;
-        }
-
-        /* ── Body ── */
-        .body {
-          max-width: 520px;
-          margin: 0 auto;
-          padding: 16px 14px 0;
-          position: relative;
-          z-index: 1;
-        }
-
-        /* ── Search ── */
-        .search-row {
-          position: relative;
-          margin-bottom: 14px;
-        }
-
-        .search-ico {
-          position: absolute;
-          left: 14px; top: 50%;
-          transform: translateY(-50%);
-          color: #94a3b8;
-          pointer-events: none;
-        }
-
-        .search-field {
-          width: 100%;
-          height: 46px;
-          border: none;
-          outline: none;
-          border-radius: 999px;
-          background: #fff;
-          padding: 0 40px 0 40px;
-          font-family: 'DM Sans', sans-serif;
-          font-size: 0.93rem;
-          color: #0f172a;
-          box-shadow: 0 2px 12px rgba(15,23,42,0.08), 0 0 0 1px rgba(15,23,42,0.06);
-          transition: box-shadow 0.2s;
-        }
-        .search-field::placeholder { color: #94a3b8; }
-        .search-field:focus {
-          box-shadow: 0 4px 18px rgba(15,23,42,0.11), 0 0 0 2px rgba(79,128,247,0.22);
-        }
-
-        .search-clear {
-          position: absolute;
-          right: 13px; top: 50%;
-          transform: translateY(-50%);
-          background: #e2e8f0;
-          border: none; border-radius: 50%;
-          width: 22px; height: 22px;
-          font-size: 0.9rem; color: #64748b;
-          cursor: pointer;
-          display: flex; align-items: center; justify-content: center;
-          transition: background 0.15s;
-        }
-        .search-clear:hover { background: #cbd5e1; }
-
-        /* ── Tabs ── */
-        .tabs-scroll {
-          display: flex;
-          gap: 8px;
-          overflow-x: auto;
-          padding-bottom: 4px;
-          margin-bottom: 14px;
-          scrollbar-width: none;
-        }
-        .tabs-scroll::-webkit-scrollbar { display: none; }
-
-        .tab-btn {
-          flex-shrink: 0;
-          height: 36px;
-          padding: 0 16px;
-          border-radius: 999px;
-          border: 1.5px solid #e2e8f0;
-          background: #fff;
-          font-family: 'DM Sans', sans-serif;
-          font-size: 0.86rem;
-          font-weight: 600;
-          color: #475569;
-          cursor: pointer;
-          transition: all 0.18s;
-          white-space: nowrap;
-        }
-        .tab-btn:hover { background: #eef2ff; border-color: #c7d7fd; color: #4f80f7; }
-        .tab-active {
-          background: #4f80f7 !important;
-          border-color: #4f80f7 !important;
-          color: #fff !important;
-          box-shadow: 0 3px 10px rgba(79,128,247,0.28);
-        }
-
-        /* ── Count row ── */
-        .count-row {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          margin-bottom: 10px;
-        }
-        .count-text {
-          font-size: 0.8rem;
-          color: #94a3b8;
-          font-weight: 500;
-        }
-        .clear-btn {
-          font-size: 0.8rem;
-          color: #4f80f7;
-          background: none;
-          border: none;
-          cursor: pointer;
-          font-weight: 600;
-          padding: 0;
-        }
-
-        /* ── Pill list ── */
-        .pill-list {
-          display: flex;
-          flex-direction: column;
-          gap: 9px;
-        }
-
-        /* ── Pill card ── */
-        .pill-card {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          background: #fff;
-          border-radius: 18px;
-          padding: 11px 14px 11px 11px;
-          box-shadow: 0 2px 10px rgba(15,23,42,0.07), 0 0 0 1px rgba(15,23,42,0.045);
-          animation: fadeUp 0.32s ease both;
-          transition: transform 0.2s cubic-bezier(.34,1.56,.64,1), box-shadow 0.2s;
-          cursor: pointer;
-        }
-        .pill-card:hover {
-          transform: translateY(-2px) scale(1.01);
-          box-shadow: 0 6px 20px rgba(15,23,42,0.11), 0 0 0 1px rgba(15,23,42,0.045);
-        }
-        .pill-card:active { transform: scale(0.98); }
-
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(8px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-
-        /* ── Icon bubble ── */
-        .pill-icon {
-          flex-shrink: 0;
-          width: 44px; height: 44px;
-          border-radius: 14px;
-          display: flex; align-items: center; justify-content: center;
-          font-size: 1.3rem;
-        }
-
-        /* ── Middle (name + subtopics) ── */
-        .pill-middle {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-          min-width: 0;
-        }
-
-        /* ── Name ── */
-        .pill-name {
-          font-size: 0.95rem;
-          font-weight: 700;
-          color: #0f172a;
-          letter-spacing: -0.01em;
-          line-height: 1.3;
-        }
-
-        /* ── Subtopics preview ── */
-        .pill-subs {
-          font-size: 0.74rem;
-          color: #94a3b8;
-          font-weight: 500;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-
-        /* ── Badge ── */
-        .pill-badge {
-          flex-shrink: 0;
-          font-size: 0.7rem;
-          font-weight: 700;
-          padding: 4px 10px;
-          border-radius: 999px;
-          letter-spacing: 0.01em;
-          white-space: nowrap;
-        }
-
-        /* ── Empty state ── */
-        .empty {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          padding: 60px 20px;
-          gap: 6px;
-        }
-        .empty-ico { font-size: 2.8rem; }
-        .empty-title { font-size: 1rem; font-weight: 700; color: #334155; margin-top: 8px; }
-        .empty-sub { font-size: 0.88rem; color: #94a3b8; }
-
-        body.theme-dark {
-          background: #000000;
-        }
-
-        body.theme-dark .page {
-          --page-accent: #0a84ff;
-          --page-accent-strong: #0071e3;
-          --page-border: rgba(255, 255, 255, 0.1);
-          --page-surface: #1c1c1e;
-          --page-surface-2: #2c2c2e;
-          --page-ink: #ffffff;
-          --page-subink: rgba(235, 235, 245, 0.55);
-          --page-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-          background: transparent;
-          color: var(--page-ink);
-        }
-
-        body.theme-dark .page::before,
-        body.theme-dark .page::after {
-          display: none;
-        }
-
-        body.theme-dark .topbar {
-          background: rgba(0, 0, 0, 0.72);
-          backdrop-filter: saturate(180%) blur(20px);
-          -webkit-backdrop-filter: saturate(180%) blur(20px);
-          border-bottom: 0.5px solid rgba(255, 255, 255, 0.08);
-          box-shadow: none;
-        }
-
-        body.theme-dark .back-btn {
-          color: var(--page-ink);
-        }
-
-        body.theme-dark .back-btn:hover {
-          background: rgba(255, 255, 255, 0.1);
-        }
-
-        body.theme-dark .topbar-title {
-          color: var(--page-ink);
-        }
-
-        body.theme-dark .search-ico {
-          color: var(--page-accent);
-          opacity: 0.85;
-        }
-
-        body.theme-dark .search-field {
-          background: var(--page-surface);
-          color: var(--page-ink);
-          box-shadow: none;
-          border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        body.theme-dark .search-field::placeholder {
-          color: var(--page-subink);
-        }
-
-        body.theme-dark .search-field:focus {
-          box-shadow: none;
-          border-color: var(--page-accent);
-        }
-
-        body.theme-dark .search-clear {
-          background: rgba(255, 255, 255, 0.12);
-          color: #ffffff;
-        }
-
-        body.theme-dark .search-clear:hover {
-          background: rgba(255, 255, 255, 0.2);
-        }
-
-        body.theme-dark .tab-btn {
-          background: var(--page-surface-2);
-          border-color: var(--page-border);
-          color: var(--page-subink);
-        }
-
-        body.theme-dark .tab-btn:hover {
-          background: rgba(255, 255, 255, 0.1);
-          border-color: rgba(255, 255, 255, 0.2);
-          color: var(--page-ink);
-        }
-
-        body.theme-dark .tab-active {
-          background: var(--page-accent) !important;
-          border-color: var(--page-accent) !important;
-          color: #ffffff !important;
-          box-shadow: none;
-        }
-
-        body.theme-dark .count-text {
-          color: var(--page-subink);
-        }
-
-        body.theme-dark .clear-btn {
-          color: var(--page-accent);
-        }
-
-        body.theme-dark .pill-card {
-          background: var(--page-surface);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          box-shadow: none;
-        }
-
-        body.theme-dark .pill-card:hover {
-          background: var(--page-surface-2);
-        }
-
-        body.theme-dark .pill-icon {
-          box-shadow: none;
-        }
-
-        body.theme-dark .pill-name {
-          color: var(--page-ink);
-        }
-
-        body.theme-dark .empty-title {
-          color: var(--page-ink);
-        }
-
-        body.theme-dark .empty-sub {
-          color: var(--page-subink);
-        }
-
-        /* ── DESKTOP PC DESIGN (>= 768px) ── */
-        @media (min-width: 768px) {
-          .body {
-            max-width: 1240px; /* Wider max-width to fit more columns */
-            padding: 32px 40px 0;
-          }
-
-          /* Center search for a cleaner header look */
-          .search-row {
-            max-width: 500px;
-            margin: 0 auto 20px;
-          }
-
-          /* Make tabs wrap and center instead of scrolling */
-          .tabs-scroll {
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 24px;
-            overflow: visible;
-          }
-
-          .tab-btn {
-            height: 38px;
-            padding: 0 20px;
-          }
-
-          .count-row {
-            max-width: 100%;
-            margin-bottom: 16px;
-          }
-
-          /* Ultra dense grid to eliminate scrolling */
-          .pill-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 14px;
-          }
-          
-          /* Keep cards horizontal and compact like mobile, just in a grid */
-          .pill-card {
-            padding: 10px 14px 10px 10px;
-            border-radius: 16px;
-          }
-
-          .pill-icon {
-            width: 42px;
-            height: 42px;
-            font-size: 1.1rem;
-          }
-
-          .pill-name {
-            font-size: 0.95rem;
-          }
-
-          .topbar {
-            height: 64px;
-            padding: 0 40px;
-          }
-          
-          .topbar-title {
-            font-size: 1.1rem;
-          }
-        }
-      `}</style>
-
-    </main>
+                  <ChevronRight size={14} className={styles.mobileChevron} />
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

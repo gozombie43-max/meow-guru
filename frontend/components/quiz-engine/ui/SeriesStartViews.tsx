@@ -1,16 +1,256 @@
-import React, { useState, useLayoutEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { Target, Flame, CheckCircle2, RotateCcw, ChevronLeft, Check, Sparkles, ChevronDown } from 'lucide-react';
-import { QuizQuestionRecord, ConceptColour, SubjectConfig, ClassificationGroup, QuizMode } from '../types';
-import { useThemeMode } from '@/hooks/useTheme';
-import { MODE_LABELS } from '../utils';
+"use client";
 
-export function SeriesConceptStart({
+import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import {
+  Lock,
+  Brain,
+  Puzzle,
+  TrendingUp,
+  ArrowLeftRight,
+  Filter,
+  Users2,
+  Compass,
+  CircleDot,
+  Scale,
+  Calculator,
+  Trophy,
+  FileCheck,
+  HelpCircle,
+  Swords,
+  Shapes,
+  Scissors,
+  FlipHorizontal,
+  Box,
+  Table2,
+  SpellCheck,
+  Heart,
+  Share2,
+  Type,
+  FileQuestion,
+  Sparkles,
+  Zap,
+  Target,
+  ChevronLeft,
+  ChevronDown,
+  Check,
+  CheckCircle2,
+  X,
+  Search,
+  Flame,
+  Shuffle,
+  BookOpenCheck,
+  BookOpen,
+  Sun,
+  Moon,
+  Percent,
+  Divide,
+  Clock,
+  Gauge,
+  Variable,
+  Orbit,
+  Hash,
+  BarChart3,
+  Tag,
+  FlaskConical,
+  Radical,
+  PieChart,
+  Globe,
+  Atom,
+  Languages,
+  Landmark,
+  BookMarked,
+  MessageSquare,
+  Edit3,
+  FileSpreadsheet,
+  Newspaper,
+  RefreshCw,
+  MessageCircle,
+  Navigation,
+  FileText,
+  Link2,
+  Volume2,
+  Layout,
+  CheckSquare,
+  UserCheck,
+  AlignLeft,
+  type LucideIcon,
+} from "lucide-react";
+import MacTrafficLights from "@/components/MacTrafficLights";
+import { useThemeMode } from "@/hooks/useTheme";
+import { SubjectConfig, ClassificationGroup, QuizMode } from "../types";
+import { useQuizTheme, toggleQuizTheme } from "../utils";
+import styles from "./SeriesStartViews.module.css";
+
+// ── Complete Topic Icon Mapping Across All 4 Subjects ────────────────────────
+const TOPIC_ICONS: Record<string, LucideIcon> = {
+  // Reasoning topics
+  "coding-decoding": Lock,
+  "syllogism-inferences": Brain,
+  "puzzle-seating-arrangement": Puzzle,
+  series: TrendingUp,
+  analogy: ArrowLeftRight,
+  "classification-odd-one-out": Filter,
+  "blood-relations": Users2,
+  "direction-distance": Compass,
+  "venn-diagram": CircleDot,
+  inequalities: Scale,
+  "mathematical-symbolic-operations": Calculator,
+  "order-ranking": Trophy,
+  "statement-conclusion": FileCheck,
+  "statement-assumptions": HelpCircle,
+  "statement-arguments": Swords,
+  "problem-solving-critical-thinking": Brain,
+  "non-verbal-figures": Shapes,
+  "paper-folding-cutting": Scissors,
+  "mirror-water-image": FlipHorizontal,
+  "cube-dice": Box,
+  matrix: Table2,
+  "logical-sequence-of-words": SpellCheck,
+  "emotional-intelligence": Heart,
+  "social-intelligence": Share2,
+  "word-building": Type,
+
+  // Mathematics topics
+  percentages: Percent,
+  "ratio-and-proportion": Divide,
+  "profit-and-loss": TrendingUp,
+  interest: Landmark,
+  "time-and-work": Clock,
+  "time-and-distance": Gauge,
+  algebra: Variable,
+  geometry: Compass,
+  mensuration: Box,
+  trigonometry: Orbit,
+  "number-system": Hash,
+  averages: BarChart3,
+  discount: Tag,
+  "mixture-and-alligation": FlaskConical,
+  partnership: Users2,
+  "square-roots": Radical,
+  "statistics-probability": PieChart,
+
+  // English topics
+  "synonyms-antonyms": ArrowLeftRight,
+  "one-word-substitution": BookMarked,
+  "idioms-phrases": MessageSquare,
+  "spot-the-error-error-detection": Search,
+  "sentence-correction-improvement": Edit3,
+  "cloze-test": FileSpreadsheet,
+  "reading-comprehension": Newspaper,
+  "active-passive-voice": RefreshCw,
+  "direct-indirect-narration": MessageCircle,
+  tenses: Clock,
+  "subject-verb-agreement": Scale,
+  "para-jumbles": Shuffle,
+  "fill-in-the-blanks": Puzzle,
+  "spelling-misspelled-words": SpellCheck,
+  prepositions: Navigation,
+  articles: FileText,
+  conjunctions: Link2,
+  "homonyms-homophones": Volume2,
+  "sentence-structure": Layout,
+  "para-sentence-completion": CheckSquare,
+  pronouns: UserCheck,
+  modifiers: Target,
+  parallelism: AlignLeft,
+
+  // General Awareness topics
+  history: Landmark,
+  polity: Scale,
+  geography: Globe,
+  "general-science": Atom,
+  economics: TrendingUp,
+  "current-affairs": Flame,
+  "static-gk": BookOpenCheck,
+};
+
+// ── Subject Fallback Icons ───────────────────────────────────────────────────
+const SUBJECT_DEFAULT_ICONS: Record<string, LucideIcon> = {
+  mathematics: Calculator,
+  english: Languages,
+  "general-awareness": Globe,
+  reasoning: Brain,
+};
+
+// ── Mode Metadata ─────────────────────────────────────────────────────────────
+const MODE_DETAILS: Record<
+  string,
+  { label: string; sub: string; icon: LucideIcon; badge: string }
+> = {
+  concept: {
+    label: "PYQ Practice",
+    sub: "Previous year exam questions organized by concept",
+    icon: FileQuestion,
+    badge: "Core PYQ",
+  },
+  formula: {
+    label: "Pattern & Bank",
+    sub: "Core pattern, vocabulary, and formula shortcuts practice",
+    icon: BookOpenCheck,
+    badge: "Formulas / Bank",
+  },
+  mixed: {
+    label: "Mixed PW",
+    sub: "Comprehensive mixture of all topic patterns",
+    icon: Shuffle,
+    badge: "Mixed",
+  },
+  "ai-challenge": {
+    label: "AI Challenge",
+    sub: "Speed-focused adaptive assessment test",
+    icon: Zap,
+    badge: "Speed Test",
+  },
+  easy: {
+    label: "Topic Mix",
+    sub: "Foundation & standard difficulty patterns",
+    icon: Compass,
+    badge: "Easy",
+  },
+  "topic-mix": {
+    label: "Topic Mix",
+    sub: "Foundation & standard difficulty patterns",
+    icon: Compass,
+    badge: "Easy",
+  },
+  hard: {
+    label: "Tier 2 Hard",
+    sub: "Advanced multi-step problems & high-tier patterns",
+    icon: Flame,
+    badge: "Tier 2",
+  },
+};
+
+// ── macOS Unified Quiz Start Studio Component ─────────────────────────────────
+interface MacOsQuizStartStudioProps {
+  subjectConfig: SubjectConfig;
+  title: string;
+  slug: string;
+  routeBase?: string;
+  mode?: QuizMode;
+  groups: ClassificationGroup[];
+  category: string;
+  categoryCounts: Record<string, number>;
+  examFilter: string;
+  examOptions: string[];
+  selected: Set<string>;
+  conceptCount: number;
+  questionCount: number;
+  search?: string;
+  onCategoryChange: (category: string) => void;
+  onExamChange: (exam: string) => void;
+  onSearchChange?: (search: string) => void;
+  onToggleGroup: (concepts: string[]) => void;
+  onStart: () => void;
+}
+
+function MacOsQuizStartStudio({
   subjectConfig,
   title,
   slug,
   routeBase,
+  mode = "concept",
   groups,
   category,
   categoryCounts,
@@ -19,11 +259,633 @@ export function SeriesConceptStart({
   selected,
   conceptCount,
   questionCount,
+  search: externalSearch,
   onCategoryChange,
   onExamChange,
+  onSearchChange,
   onToggleGroup,
   onStart,
-}: {
+}: MacOsQuizStartStudioProps) {
+  const router = useRouter();
+  const { theme } = useThemeMode();
+  const quizTheme = useQuizTheme();
+  const [internalSearch, setInternalSearch] = useState("");
+  const activeSearch = externalSearch !== undefined ? externalSearch : internalSearch;
+
+  const handleSearchChange = (val: string) => {
+    if (onSearchChange) onSearchChange(val);
+    else setInternalSearch(val);
+  };
+
+  const fallbackSubjectIcon = SUBJECT_DEFAULT_ICONS[subjectConfig.subjectId] || Brain;
+  const TopicIcon = TOPIC_ICONS[slug] || fallbackSubjectIcon;
+  const modeInfo = MODE_DETAILS[mode] || MODE_DETAILS.concept;
+  const ModeIcon = modeInfo.icon;
+
+  const handleBack = useCallback(() => {
+    if (typeof window !== "undefined" && window.history.length > 2) {
+      router.back();
+    } else {
+      router.push(routeBase ?? `/${subjectConfig.subjectId}/${slug}`);
+    }
+  }, [router, routeBase, subjectConfig.subjectId, slug]);
+
+  // Global Keyboard Shortcuts (Enter = Start, Escape = Back)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Enter" && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
+        const target = e.target as HTMLElement;
+        if (target && (target.tagName === "INPUT" || target.tagName === "SELECT")) return;
+        e.preventDefault();
+        onStart();
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        handleBack();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onStart, handleBack]);
+
+  // Filter groups by search query and category
+  const filteredGroups = useMemo(() => {
+    return groups.filter((group) => {
+      if (activeSearch.trim()) {
+        const query = activeSearch.toLowerCase();
+        const matchLabel = group.label.toLowerCase().includes(query);
+        const matchConcepts = group.concepts.some((c) => c.toLowerCase().includes(query));
+        if (!matchLabel && !matchConcepts) return false;
+      }
+      return true;
+    });
+  }, [groups, activeSearch]);
+
+  // Concept coverage calculations
+  const selectedCount = selected.size;
+  const coveragePercent =
+    conceptCount > 0
+      ? selectedCount === 0
+        ? 100
+        : Math.round((selectedCount / conceptCount) * 100)
+      : 100;
+
+  // Select all / Clear all
+  const handleSelectAll = () => {
+    const allConcepts = groups.flatMap((g) => g.concepts);
+    if (selected.size < allConcepts.length) {
+      onToggleGroup(allConcepts.filter((c) => !selected.has(c)));
+    }
+  };
+
+  const handleClearAll = () => {
+    if (selected.size > 0) {
+      onToggleGroup(Array.from(selected));
+    }
+  };
+
+  const isAllSelected = selected.size === conceptCount || selected.size === 0;
+
+  return (
+    <div className={styles.macWindow}>
+        {/* ── macOS Titlebar ── */}
+        <div className={styles.titleBar}>
+          <div className={styles.titleBarLeft}>
+            <MacTrafficLights onClose={handleBack} />
+            <button
+              type="button"
+              onClick={handleBack}
+              className={styles.backBtn}
+              title={`Return to ${subjectConfig.subjectLabel} Studio (Esc)`}
+            >
+              <ChevronLeft size={13} strokeWidth={2.5} />
+              <span>Studio</span>
+            </button>
+          </div>
+
+          <div className={styles.titleBarCenter}>
+            <span className={styles.windowTitle}>
+              {title} • {modeInfo.label} Setup
+            </span>
+            <span className={styles.titleModePill}>{modeInfo.badge}</span>
+          </div>
+
+          <div className={styles.titleBarRight}>
+            <button
+              type="button"
+              onClick={toggleQuizTheme}
+              className={styles.themeBtn}
+              title={`Switch to ${quizTheme === "dark" ? "Light" : "Dark"} mode`}
+              aria-label="Toggle Theme"
+            >
+              {quizTheme === "dark" ? <Sun size={13} /> : <Moon size={13} />}
+            </button>
+          </div>
+        </div>
+
+        {/* ── 2-Pane Studio Body ── */}
+        <div className={styles.studioBody}>
+          {/* ── Left Inspector Pane ── */}
+          <aside className={styles.leftInspector}>
+            {/* Topic Hero Card */}
+            <div className={styles.heroCard}>
+              <div className={styles.heroHeader}>
+                <div className={styles.heroIconBox}>
+                  <TopicIcon size={18} strokeWidth={2.2} />
+                </div>
+                <div className={styles.heroTitleGroup}>
+                  <h2 className={styles.heroTitle}>{title}</h2>
+                  <span className={styles.heroSub}>{modeInfo.sub}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Exam Target Selector */}
+            <div className={styles.selectSection}>
+              <span className={styles.sectionLabel}>Target Exam</span>
+              <div className={styles.examSelectRow}>
+                <Target size={14} className={styles.examSelectIcon} />
+                <select
+                  value={examFilter || "all"}
+                  onChange={(e) => onExamChange(e.target.value === "all" ? "" : e.target.value)}
+                  className={styles.examSelect}
+                >
+                  <option value="all">All Exams Combined</option>
+                  {examOptions
+                    .filter((ex) => ex !== "all")
+                    .map((ex) => (
+                      <option key={ex} value={ex}>
+                        {ex}
+                      </option>
+                    ))}
+                </select>
+                <ChevronDown size={13} className={styles.examChevron} />
+              </div>
+            </div>
+
+            {/* Metrics Stats Grid */}
+            <div className={styles.statsGrid}>
+              <div className={styles.statItem}>
+                <span className={styles.statLabel}>Available Qs</span>
+                <span className={styles.statValue}>{questionCount} Questions</span>
+              </div>
+              <div className={styles.statItem}>
+                <span className={styles.statLabel}>Selected Concepts</span>
+                <span className={styles.statValue}>
+                  {selectedCount === 0 ? "All" : selectedCount} of {conceptCount}
+                </span>
+              </div>
+            </div>
+
+            {/* Coverage Progress Bar */}
+            <div className={styles.coverageSection}>
+              <div className={styles.coverageHeader}>
+                <span>Syllabus Coverage</span>
+                <span className={styles.coveragePct}>{coveragePercent}%</span>
+              </div>
+              <div className={styles.progressBar}>
+                <div className={styles.progressFill} style={{ width: `${coveragePercent}%` }} />
+              </div>
+            </div>
+
+            {/* Batch Action Buttons */}
+            <div className={styles.batchActions}>
+              <button
+                type="button"
+                onClick={handleSelectAll}
+                className={styles.batchBtn}
+                disabled={isAllSelected}
+              >
+                <CheckCircle2 size={12} />
+                <span>Select All</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleClearAll}
+                className={styles.batchBtn}
+                disabled={selectedCount === 0}
+              >
+                <X size={12} />
+                <span>Clear All</span>
+              </button>
+            </div>
+          </aside>
+
+          {/* ── Right Concept Canvas ── */}
+          <main className={styles.rightCanvas}>
+            {/* Top Filter & Search Toolbar */}
+            <div className={styles.canvasToolbar}>
+              <div className={styles.chipsScroll} role="tablist">
+                <button
+                  type="button"
+                  className={`${styles.chipBtn} ${category === "All" ? styles.chipBtnActive : ""}`}
+                  onClick={() => onCategoryChange("All")}
+                >
+                  <span className={styles.chipDot} />
+                  <span>All</span>
+                  <span className={styles.chipCount}>{conceptCount}</span>
+                </button>
+                {subjectConfig.classificationCategories
+                  .filter((item) => (categoryCounts[item.label] || 0) > 0)
+                  .map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      className={`${styles.chipBtn} ${
+                        category === item.label ? styles.chipBtnActive : ""
+                      }`}
+                      onClick={() => onCategoryChange(item.label)}
+                    >
+                      <span className={styles.chipDot} />
+                      <span>{item.label}</span>
+                      <span className={styles.chipCount}>{categoryCounts[item.label]}</span>
+                    </button>
+                  ))}
+              </div>
+
+              {/* Instant Search Bar */}
+              <div className={styles.searchBox}>
+                <Search size={12} className={styles.searchIcon} />
+                <input
+                  type="text"
+                  value={activeSearch}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  placeholder="Filter concepts..."
+                  className={styles.searchInput}
+                />
+                {activeSearch && (
+                  <button
+                    type="button"
+                    onClick={() => handleSearchChange("")}
+                    className={styles.clearSearchBtn}
+                    aria-label="Clear search"
+                  >
+                    <X size={11} />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Concept Groups Grid */}
+            <div className={styles.conceptGrid}>
+              {filteredGroups.map((group) => {
+                const selectedInGroup = group.concepts.filter((concept) =>
+                  selected.has(concept)
+                ).length;
+                const isSelected =
+                  selectedInGroup === group.concepts.length && group.concepts.length > 0;
+                const isPartial = selectedInGroup > 0 && !isSelected;
+
+                return (
+                  <div
+                    key={group.id}
+                    className={`${styles.conceptCard} ${
+                      isSelected || isPartial ? styles.conceptCardSelected : ""
+                    }`}
+                    onClick={() => onToggleGroup(group.concepts)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === " " || e.key === "Enter") {
+                        e.preventDefault();
+                        onToggleGroup(group.concepts);
+                      }
+                    }}
+                  >
+                    <div className={styles.conceptCardLeft}>
+                      <div className={styles.conceptIconBox}>
+                        <ModeIcon size={15} strokeWidth={2.2} />
+                      </div>
+                      <div className={styles.conceptTextGroup}>
+                        <span className={styles.conceptName}>{group.label}</span>
+                        <span className={styles.conceptMeta}>
+                          {group.concepts.length} concept
+                          {group.concepts.length === 1 ? "" : "s"}
+                          {selectedInGroup > 0 ? ` · ${selectedInGroup} selected` : ""}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div
+                      className={`${styles.conceptCheckbox} ${
+                        isSelected || isPartial ? styles.conceptCheckboxChecked : ""
+                      }`}
+                    >
+                      {(isSelected || isPartial) && <Check size={11} strokeWidth={3} />}
+                    </div>
+                  </div>
+                );
+              })}
+
+              {filteredGroups.length === 0 && (
+                <div className={styles.emptyState}>
+                  <p>No concept modules matched your filter.</p>
+                </div>
+              )}
+            </div>
+          </main>
+        </div>
+
+        {/* ── Bottom Dock / Sticky Launch Footer ── */}
+        <footer className={styles.studioFooter}>
+          <div className={styles.footerLeft}>
+            <div className={styles.statusIndicator} />
+            <span className={styles.statusText}>
+              <span className={styles.statusBold}>{questionCount} Questions</span> Ready •{" "}
+              {selectedCount === 0 ? "All Concepts" : `${selectedCount} Concepts`} Selected
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={onStart}
+            className={styles.startBtn}
+            title="Launch Quiz (Enter)"
+          >
+            <Sparkles size={14} fill="currentColor" />
+            <span>Start Quiz</span>
+            <kbd className={styles.returnKey}>↵</kbd>
+          </button>
+        </footer>
+      </div>
+  );
+}
+
+// ── iOS Mobile Quiz Start Component (< 768px) ─────────────────────────────────
+interface IosQuizStartMobileProps {
+  subjectConfig: SubjectConfig;
+  title: string;
+  slug: string;
+  routeBase?: string;
+  mode?: QuizMode;
+  groups: ClassificationGroup[];
+  category: string;
+  categoryCounts: Record<string, number>;
+  examFilter: string;
+  examOptions: string[];
+  selected: Set<string>;
+  conceptCount: number;
+  questionCount: number;
+  search?: string;
+  onCategoryChange: (category: string) => void;
+  onExamChange: (exam: string) => void;
+  onSearchChange?: (search: string) => void;
+  onToggleGroup: (concepts: string[]) => void;
+  onStart: () => void;
+}
+
+function IosQuizStartMobile({
+  subjectConfig,
+  title,
+  slug,
+  routeBase,
+  mode = "concept",
+  groups,
+  category,
+  categoryCounts,
+  examFilter,
+  examOptions,
+  selected,
+  conceptCount,
+  questionCount,
+  search: externalSearch,
+  onCategoryChange,
+  onExamChange,
+  onSearchChange,
+  onToggleGroup,
+  onStart,
+}: IosQuizStartMobileProps) {
+  const router = useRouter();
+  const { theme } = useThemeMode();
+  const [internalSearch, setInternalSearch] = useState("");
+  const activeSearch = externalSearch !== undefined ? externalSearch : internalSearch;
+
+  const handleSearchChange = (val: string) => {
+    if (onSearchChange) onSearchChange(val);
+    else setInternalSearch(val);
+  };
+
+  const modeInfo = MODE_DETAILS[mode] || MODE_DETAILS.concept;
+  const selectedCount = selected.size;
+  const selectedQuestionLabel =
+    selectedCount === 0
+      ? "all concepts"
+      : `${selectedCount} concept${selectedCount === 1 ? "" : "s"}`;
+
+  const handleBack = useCallback(() => {
+    if (typeof window !== "undefined" && window.history.length > 2) {
+      router.back();
+    } else {
+      router.push(routeBase ?? `/${subjectConfig.subjectId}/${slug}`);
+    }
+  }, [router, routeBase, subjectConfig.subjectId, slug]);
+
+  const filteredGroups = useMemo(() => {
+    return groups.filter((group) => {
+      if (activeSearch.trim()) {
+        const query = activeSearch.toLowerCase();
+        const matchLabel = group.label.toLowerCase().includes(query);
+        const matchConcepts = group.concepts.some((c) => c.toLowerCase().includes(query));
+        if (!matchLabel && !matchConcepts) return false;
+      }
+      return true;
+    });
+  }, [groups, activeSearch]);
+
+  const subjectAccent =
+    subjectConfig.subjectId === "mathematics"
+      ? "#0071e3"
+      : subjectConfig.subjectId === "english"
+      ? "#2e8f82"
+      : subjectConfig.subjectId === "general-awareness"
+      ? "#ff9f0a"
+      : "#7c6cf0";
+
+  return (
+    <div
+      className={styles.iosScreen}
+      data-theme={theme}
+      style={{ "--ios-accent": subjectAccent } as React.CSSProperties}
+    >
+      {/* ── Top Navigation Bar ── */}
+      <header className={styles.iosNav}>
+        <button
+          type="button"
+          onClick={handleBack}
+          className={styles.iosBackBtn}
+          aria-label="Back"
+        >
+          <ChevronLeft size={22} strokeWidth={2.4} />
+        </button>
+        <strong className={styles.iosNavTitle}>
+          {mode === "concept" ? title : `${title} - ${modeInfo.label}`}
+        </strong>
+        <span className={styles.iosNavSpacer} />
+      </header>
+
+      {/* ── Scrollable Body ── */}
+      <main className={styles.iosContent}>
+        {/* Select Exam Target */}
+        <p className={styles.iosHeading}>Select Exam Target</p>
+        <div className={styles.iosDropdownContainer}>
+          <div className={styles.iosDropdownRow}>
+            <span className={styles.iosTargetIconBox}>
+              <Target size={15} />
+            </span>
+            <span className={styles.iosDropdownLabel}>Exam Name</span>
+            <div className={styles.iosSelectWrapper}>
+              <select
+                value={examFilter || "all"}
+                onChange={(e) => onExamChange(e.target.value === "all" ? "" : e.target.value)}
+                className={styles.iosSelect}
+              >
+                {examOptions.map((ex) => (
+                  <option key={ex} value={ex === "all" ? "all" : ex}>
+                    {ex === "all" ? "All Exams" : ex}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown size={14} className={styles.iosSelectChevron} />
+            </div>
+          </div>
+        </div>
+
+        {/* Category Chips */}
+        <div className={styles.iosChipsScroll} aria-label="Concept category filters">
+          <button
+            type="button"
+            className={`${styles.iosChip} ${category === "All" ? styles.iosChipActive : ""}`}
+            onClick={() => onCategoryChange("All")}
+          >
+            <i className={styles.iosChipDot} style={{ background: subjectAccent }} />
+            <span>All</span>
+            <span className={styles.iosChipCount}>{conceptCount}</span>
+          </button>
+          {subjectConfig.classificationCategories
+            .filter((item) => (categoryCounts[item.label] ?? 0) > 0)
+            .map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className={`${styles.iosChip} ${
+                  category === item.label ? styles.iosChipActive : ""
+                }`}
+                onClick={() => onCategoryChange(item.label)}
+              >
+                <i className={styles.iosChipDot} style={{ background: item.accent }} />
+                <span>{item.label}</span>
+                <span className={styles.iosChipCount}>{categoryCounts[item.label]}</span>
+              </button>
+            ))}
+        </div>
+
+        {/* Optional Search */}
+        {(onSearchChange !== undefined || Boolean(activeSearch)) && (
+          <div className={styles.iosSearchRow}>
+            <Search size={14} className={styles.iosSearchIcon} />
+            <input
+              type="text"
+              value={activeSearch}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              placeholder="Search concept groups..."
+              className={styles.iosSearchInput}
+            />
+            {activeSearch && (
+              <button
+                type="button"
+                onClick={() => handleSearchChange("")}
+                className={styles.iosClearSearch}
+                aria-label="Clear search"
+              >
+                <X size={12} />
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Concept Groups */}
+        <p className={styles.iosHeading}>Concept Groups</p>
+        <section className={styles.iosConceptList} aria-label="Concept groups">
+          {filteredGroups.map((group) => {
+            const selectedInGroup = group.concepts.filter((c) => selected.has(c)).length;
+            const isSelected =
+              selectedInGroup === group.concepts.length && group.concepts.length > 0;
+            const isPartial = selectedInGroup > 0 && !isSelected;
+
+            return (
+              <button
+                key={group.id}
+                type="button"
+                className={styles.iosConceptRow}
+                onClick={() => onToggleGroup(group.concepts)}
+                aria-pressed={isSelected}
+              >
+                <span
+                  className={`${styles.iosCheckCircle} ${
+                    isSelected || isPartial ? styles.iosCheckCircleChecked : ""
+                  }`}
+                >
+                  {(isSelected || isPartial) && <Check size={12} strokeWidth={3} />}
+                </span>
+
+                <span
+                  className={styles.iosGroupTile}
+                  style={{ background: group.bg, color: group.accent }}
+                >
+                  {group.icon}
+                </span>
+
+                <span className={styles.iosRowCopy}>
+                  <strong className={styles.iosGroupTitle}>{group.label}</strong>
+                  <small className={styles.iosGroupMeta}>
+                    {group.concepts.length} concept{group.concepts.length === 1 ? "" : "s"}
+                    {selectedInGroup > 0 ? ` · ${selectedInGroup} selected` : ""}
+                  </small>
+                </span>
+              </button>
+            );
+          })}
+
+          {filteredGroups.length === 0 && (
+            <p className={styles.iosEmptyText}>No concept groups match your filter.</p>
+          )}
+        </section>
+      </main>
+
+      {/* ── Fixed Bottom Launch Toolbar ── */}
+      <footer className={styles.iosToolbar}>
+        <p className={styles.iosToolbarText}>
+          <b>{questionCount}</b> questions ready · <span>{selectedQuestionLabel}</span>
+        </p>
+        <button type="button" onClick={onStart} className={styles.iosStartBtn}>
+          <Sparkles size={16} fill="currentColor" />
+          <span>Start Quiz</span>
+        </button>
+      </footer>
+    </div>
+  );
+}
+
+// ── Responsive Unified Wrapper ────────────────────────────────────────────────
+function UnifiedQuizStartView(props: MacOsQuizStartStudioProps) {
+  const quizTheme = useQuizTheme();
+
+  return (
+    <div className={styles.pageRoot} data-theme={quizTheme}>
+      {/* Desktop PC View (macOS Studio Layout >= 768px) */}
+      <div className={styles.desktopContainer}>
+        <MacOsQuizStartStudio {...props} />
+      </div>
+
+      {/* Mobile Handheld View (iOS Style Layout < 768px) */}
+      <div className={styles.mobileContainer}>
+        <IosQuizStartMobile {...props} />
+      </div>
+    </div>
+  );
+}
+
+// ── Exported Wrapper Components for QuizEngine ─────────────────────────────────
+export function SeriesConceptStart(props: {
   subjectConfig: SubjectConfig;
   title: string;
   slug: string;
@@ -41,236 +903,10 @@ export function SeriesConceptStart({
   onToggleGroup: (concepts: string[]) => void;
   onStart: () => void;
 }) {
-  const { theme } = useThemeMode();
-  const [hasMounted, setHasMounted] = useState(false);
-  const selectedCount = selected.size;
-  const selectedQuestionLabel = selectedCount === 0 ? "all concepts" : `${selectedCount} concept${selectedCount === 1 ? "" : "s"}`;
-
-  useLayoutEffect(() => {
-    setHasMounted(true);
-  }, []);
-
-  const router = useRouter();
-  const handleBack = () => {
-    if (typeof window !== "undefined" && window.history.length > 2) {
-      router.back();
-    } else {
-      router.push(routeBase ?? `/${subjectConfig.subjectId}/${slug}`);
-    }
-  };
-
-  return (
-    <div className="series-concept-screen" data-theme={hasMounted ? theme : "light"}>
-      <header className="series-concept-nav">
-        <button type="button" onClick={handleBack} className="series-concept-back" aria-label="Back to Series">
-          <ChevronLeft aria-hidden="true" />
-        </button>
-        <strong>{title}</strong>
-        <span aria-hidden="true" />
-      </header>
-
-      <aside className="series-concept-aside" aria-label="Quiz overview">
-        <span>{subjectConfig.subjectLabel}</span>
-        <h1>{title}</h1>
-        <p>Concept Practice</p>
-        <dl>
-          <div>
-            <dt>Concepts</dt>
-            <dd>{conceptCount}</dd>
-          </div>
-          <div>
-            <dt>Questions</dt>
-            <dd>{questionCount}</dd>
-          </div>
-        </dl>
-      </aside>
-
-      <main className="series-concept-content">
-        <p className="series-concept-heading">Select Exam Target</p>
-        <div className="series-dropdown-container mb-6">
-          <div className="series-dropdown-row">
-            <span className="series-concept-tile" style={{ background: "rgba(124, 108, 240, 0.15)", color: "var(--series-accent)" }}>
-              <Target aria-hidden="true" className="w-4 h-4" />
-            </span>
-            <span className="series-dropdown-label">Exam Name</span>
-            <div className="series-select-wrapper">
-              <select
-                value={examFilter || "all"}
-                onChange={(e) => onExamChange(e.target.value === "all" ? "" : e.target.value)}
-                className="series-dropdown-select"
-              >
-                {examOptions.map((ex) => (
-                  <option key={ex} value={ex === "all" ? "all" : ex}>
-                    {ex === "all" ? "All Exams" : ex}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="series-select-chevron" />
-            </div>
-          </div>
-        </div>
-
-        <div className="series-concept-chips mb-4" aria-label="Concept category filters">
-          <button
-            type="button"
-            className={category === "All" ? "active" : ""}
-            onClick={() => onCategoryChange("All")}
-          >
-            <i className="chip-indigo" />All <span>{conceptCount}</span>
-          </button>
-          {subjectConfig.classificationCategories.filter((item) => categoryCounts[item.label] > 0).map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              className={category === item.label ? "active" : ""}
-              onClick={() => onCategoryChange(item.label)}
-            >
-              <i style={{ background: item.accent }} />{item.label} <span>{categoryCounts[item.label]}</span>
-            </button>
-          ))}
-        </div>
-
-        <p className="series-concept-heading">Concept Groups</p>
-        <section className="series-concept-list" aria-label="Concept groups">
-          {groups.map((group) => {
-            const selectedInGroup = group.concepts.filter((concept) => selected.has(concept)).length;
-            const groupIsSelected = selectedInGroup === group.concepts.length && group.concepts.length > 0;
-            const groupIsPartial = selectedInGroup > 0 && !groupIsSelected;
-            return (
-              <button
-                key={group.id}
-                type="button"
-                className="series-concept-row"
-                onClick={() => onToggleGroup(group.concepts)}
-                aria-pressed={groupIsSelected}
-              >
-                <span className={`series-concept-check${groupIsSelected || groupIsPartial ? " checked" : ""}`}>
-                  {(groupIsSelected || groupIsPartial) && <Check aria-hidden="true" />}
-                </span>
-                <span
-                  className="series-concept-tile"
-                  style={{ background: group.bg, color: group.accent }}
-                >
-                  {group.icon}
-                </span>
-                <span className="series-concept-row-copy">
-                  <strong>{group.label}</strong>
-                  <small>
-                    {group.concepts.length} concept{group.concepts.length === 1 ? "" : "s"}
-                    {selectedInGroup > 0 ? ` · ${selectedInGroup} selected` : ""}
-                  </small>
-                </span>
-              </button>
-            );
-          })}
-          {groups.length === 0 && (
-            <p className="series-concept-empty">No concept groups found.</p>
-          )}
-        </section>
-      </main>
-
-      <footer className="series-concept-toolbar">
-        <p><b>{questionCount}</b> questions ready - <span>{selectedQuestionLabel}</span></p>
-        <button type="button" onClick={onStart} className="series-concept-start">
-          <Sparkles aria-hidden="true" />
-          Start Quiz
-        </button>
-      </footer>
-
-      <style jsx>{`
-        .series-concept-screen { --series-bg: #f2f2f7; --series-card: #fff; --series-separator: rgba(60, 60, 67, .18); --series-ink: #1c1c1e; --series-muted: #6e6a85; --series-subtle: rgba(60, 60, 67, .6); --series-field: rgba(118, 118, 128, .12); --series-nav: rgba(242, 242, 247, .9); --series-accent: #6c5ce0; min-height: 100dvh; background: var(--series-bg); color: var(--series-ink); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif; padding-bottom: 132px; }
-        .series-concept-screen[data-theme="dark"] { color-scheme: dark; --series-bg: #000; --series-card: #1c1c1e; --series-separator: rgba(84, 84, 88, .65); --series-ink: #fff; --series-muted: #98989f; --series-subtle: rgba(235, 235, 245, .6); --series-field: rgba(118, 118, 128, .24); --series-nav: rgba(0, 0, 0, .78); --series-accent: #7c6cf0; }
-        .series-concept-nav { height: 44px; display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; border-bottom: 0.5px solid var(--series-separator); background: var(--series-nav); position: sticky; top: 0; z-index: 5; backdrop-filter: blur(20px); }
-        .series-concept-nav strong { justify-self: center; font-size: 17px; font-weight: 600; }
-        .series-concept-back { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; color: var(--series-accent); }
-        .series-concept-back :global(svg) { width: 23px; height: 23px; stroke-width: 2.3; }
-        .series-concept-content { width: min(100%, 430px); margin: 0 auto; padding: 12px 16px 24px; }
-        .series-dropdown-container { overflow: hidden; border-radius: 12px; background: var(--series-card); border: 1px solid var(--series-separator); }
-        .series-dropdown-row { position: relative; display: flex; align-items: center; gap: 12px; padding: 12px 16px; min-height: 56px; width: 100%; box-sizing: border-box; }
-        .series-dropdown-label { font-size: 15px; font-weight: 600; color: var(--series-ink); white-space: nowrap; flex-shrink: 0; }
-        .series-select-wrapper { position: relative; display: flex; align-items: center; margin-left: auto; min-width: 0; max-width: calc(100% - 140px); }
-        .series-dropdown-select { appearance: none; -webkit-appearance: none; background: var(--series-field); color: var(--series-accent); font-size: 14px; font-weight: 600; padding: 8px 30px 8px 12px; border-radius: 10px; border: 1px solid var(--series-separator); outline: none; cursor: pointer; transition: all 0.15s ease; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; max-width: 100%; box-sizing: border-box; }
-        .series-dropdown-select option { background: var(--series-card); color: var(--series-ink); }
-        .series-dropdown-select:focus { border-color: var(--series-accent); }
-        .series-select-chevron { position: absolute; right: 10px; width: 14px; height: 14px; color: var(--series-accent); pointer-events: none; }
-        .series-concept-chips { display: flex; gap: 10px; overflow-x: auto; padding: 12px 2px 16px; margin: 0 -2px; scrollbar-width: none; }
-        .series-concept-chips::-webkit-scrollbar { display: none; }
-        .series-concept-chips button { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 8px; border: 0; border-radius: 999px; background: var(--series-field); padding: 8px 16px; color: var(--series-ink); font-size: 15px; font-weight: 700; white-space: nowrap; transition: all 0.15s ease; cursor: pointer; }
-        .series-concept-chips button.active { background: var(--series-accent); color: #ffffff; box-shadow: 0 2px 8px rgba(108, 92, 224, 0.25); }
-        .series-concept-chips i { width: 7px; height: 7px; border-radius: 50%; background: var(--series-accent); flex-shrink: 0; }
-        .series-concept-chips button.active i { background: #ffffff !important; }
-        .series-concept-chips span { color: var(--series-muted); font-size: 14px; font-weight: 600; margin-left: 1px; }
-        .series-concept-chips button.active span { color: rgba(255, 255, 255, 0.85); }
-        .series-concept-heading { margin: 0 0 6px 16px; color: var(--series-subtle); font-size: 13px; font-weight: 600; text-transform: uppercase; }
-        .series-concept-list { overflow: hidden; border-radius: 12px; background: var(--series-card); }
-        .series-concept-row { position: relative; width: 100%; min-height: 64px; display: flex; align-items: center; gap: 12px; border: 0; background: var(--series-card); padding: 11px 16px; text-align: left; color: var(--series-ink); }
-        .series-concept-row:not(:last-child)::after { content: ""; position: absolute; right: 0; bottom: 0; left: 56px; height: 1px; background: var(--series-separator); opacity: 0.8; }
-        .series-concept-check { width: 22px; height: 22px; flex: 0 0 auto; display: grid; place-items: center; border: 1.6px solid #c7c7cc; border-radius: 50%; color: #fff; }
-        .series-concept-screen[data-theme="dark"] .series-concept-check { border-color: #545458; }
-        .series-concept-check.checked { border-color: var(--series-accent); background: var(--series-accent); }
-        .series-concept-check :global(svg) { width: 13px; height: 13px; stroke-width: 3; }
-        .series-concept-tile { width: 30px; height: 30px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 7px; font-size: 10px; font-weight: 800; }
-        .series-concept-row-copy { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-        .series-concept-row-copy strong { font-size: 16px; font-weight: 600; }
-        .series-concept-row-copy small { color: var(--series-muted); font-size: 13px; }
-        .series-concept-empty { padding: 28px 16px; margin: 0; color: var(--series-muted); text-align: center; font-size: 14px; }
-        .series-concept-toolbar { position: fixed; z-index: 10; right: 0; bottom: 0; left: 0; border-top: .5px solid var(--series-separator); background: var(--series-nav); padding: 10px max(16px, calc((100vw - 430px) / 2 + 16px)) calc(10px + env(safe-area-inset-bottom)); backdrop-filter: blur(20px); }
-        .series-concept-toolbar p { margin: 0 0 8px; color: var(--series-muted); text-align: center; font-size: 13px; }
-        .series-concept-toolbar b { color: var(--series-ink); font-weight: 700; }
-        .series-concept-start { width: 100%; min-height: 50px; display: flex; align-items: center; justify-content: center; gap: 7px; border: 0; border-radius: 12px; background: var(--series-accent); color: #fff; font-size: 17px; font-weight: 700; box-shadow: 0 2px 8px rgba(108, 92, 224, .22); }
-        .series-concept-start:active { opacity: .72; }
-        .series-concept-start :global(svg) { width: 16px; height: 16px; fill: currentColor; }
-        .series-concept-aside { display: none; }
-        @media (min-width: 1024px) {
-          .series-concept-screen { display: grid; grid-template-columns: minmax(210px, 1fr) minmax(520px, 760px) minmax(260px, 1fr); grid-template-rows: 68px minmax(calc(100dvh - 68px), auto); min-height: 100dvh; padding: 0; }
-          .series-concept-nav { grid-column: 1 / -1; height: 68px; grid-template-columns: minmax(210px, 1fr) minmax(520px, 760px) minmax(260px, 1fr); border-bottom: 1px solid var(--series-separator); padding: 0 38px; }
-          .series-concept-nav strong { grid-column: 2; font-size: 18px; letter-spacing: 0; }
-          .series-concept-back { position: absolute; left: 28px; width: 44px; height: 68px; }
-          .series-concept-aside { grid-column: 1; grid-row: 2; display: flex; flex-direction: column; align-items: flex-end; padding: 64px 44px; border-right: 1px solid var(--series-separator); text-align: right; }
-          .series-concept-aside > span { color: var(--series-accent); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
-          .series-concept-aside h1 { margin: 8px 0 2px; color: var(--series-ink); font-size: 28px; line-height: 1.12; letter-spacing: 0; }
-          .series-concept-aside > p { margin: 0; color: var(--series-muted); font-size: 15px; }
-          .series-concept-aside dl { display: grid; grid-template-columns: repeat(2, max-content); gap: 20px; margin: 52px 0 0; }
-          .series-concept-aside dl div { display: flex; flex-direction: column-reverse; gap: 3px; }
-          .series-concept-aside dt { color: var(--series-muted); font-size: 12px; }
-          .series-concept-aside dd { margin: 0; color: var(--series-ink); font-size: 22px; font-weight: 700; }
-          .series-concept-content { grid-column: 2; grid-row: 2; width: 100%; margin: 0; padding: 58px 44px 72px; }
-
-          .series-concept-chips { padding: 18px 2px 22px; }
-          .series-concept-heading { margin-left: 0; }
-          .series-concept-list { border: 1px solid var(--series-separator); border-radius: 8px; }
-          .series-concept-row { min-height: 76px; padding: 14px 18px; transition: background .15s ease; }
-          .series-concept-row:hover { background: var(--series-field); }
-          .series-concept-toolbar { position: sticky; grid-column: 3; grid-row: 2; align-self: start; width: auto; margin: 46px 38px; border: 1px solid var(--series-separator); border-radius: 8px; background: var(--series-card); padding: 20px; transform: none; backdrop-filter: none; }
-          .series-concept-toolbar p { margin-bottom: 16px; text-align: left; font-size: 14px; }
-          .series-concept-start { min-height: 48px; border-radius: 8px; font-size: 16px; }
-        }
-      `}</style>
-    </div>
-  );
+  return <UnifiedQuizStartView {...props} mode="concept" />;
 }
 
-export function SeriesFormulaStart({
-  subjectConfig,
-  title,
-  slug,
-  routeBase,
-  mode,
-  examFilter,
-  examOptions,
-  questionCount,
-  onExamChange,
-  groups,
-  category,
-  categoryCounts,
-  search,
-  selected,
-  conceptCount,
-  onCategoryChange,
-  onSearchChange,
-  onToggleGroup,
-  onStart,
-}: {
+export function SeriesFormulaStart(props: {
   subjectConfig: SubjectConfig;
   title: string;
   slug: string;
@@ -283,569 +919,13 @@ export function SeriesFormulaStart({
   groups: ClassificationGroup[];
   category: string;
   categoryCounts: Record<string, number>;
-  search: string;
+  search?: string;
   selected: Set<string>;
   conceptCount: number;
   onCategoryChange: (category: string) => void;
-  onSearchChange: (search: string) => void;
+  onSearchChange?: (search: string) => void;
   onToggleGroup: (concepts: string[]) => void;
   onStart: () => void;
 }) {
-  const { theme } = useThemeMode();
-  const [hasMounted, setHasMounted] = useState(false);
-
-  useLayoutEffect(() => {
-    setHasMounted(true);
-  }, []);
-
-  const activeTheme = hasMounted ? theme : "light";
-
-  const router = useRouter();
-  const handleBack = () => {
-    if (typeof window !== "undefined" && window.history.length > 2) {
-      router.back();
-    } else {
-      router.push(routeBase ?? `/${subjectConfig.subjectId}/${slug}`);
-    }
-  };
-
-  const selectedCount = selected.size;
-  const selectedQuestionLabel = selectedCount === 0 ? "all concepts" : `${selectedCount} concept${selectedCount === 1 ? "" : "s"}`;
-
-  return (
-    <div className="series-concept-screen" data-theme={activeTheme}>
-      <header className="series-concept-nav">
-        <button type="button" onClick={handleBack} className="series-concept-back" aria-label={`Back to ${title}`}>
-          <ChevronLeft aria-hidden="true" />
-        </button>
-        <strong>{title} - {MODE_LABELS[mode]}</strong>
-        <span aria-hidden="true" />
-      </header>
-
-      <aside className="series-concept-aside" aria-label="Quiz overview">
-        <span>{subjectConfig.subjectLabel}</span>
-        <h1>{title}</h1>
-        <p>{MODE_LABELS[mode]}</p>
-        <dl>
-          <div>
-            <dt>Concepts</dt>
-            <dd>{conceptCount}</dd>
-          </div>
-          <div>
-            <dt>Questions</dt>
-            <dd>{questionCount}</dd>
-          </div>
-        </dl>
-      </aside>
-
-      <main className="series-concept-content">
-        <p className="series-concept-heading">Select Exam Target</p>
-        <div className="series-dropdown-container mb-6">
-          <div className="series-dropdown-row">
-            <span className="series-concept-tile" style={{ background: "rgba(124, 108, 240, 0.15)", color: "var(--series-accent)" }}>
-              <Target aria-hidden="true" className="w-4 h-4" />
-            </span>
-            <span className="series-dropdown-label">Exam Name</span>
-            <div className="series-select-wrapper">
-              <select
-                value={examFilter || "all"}
-                onChange={(e) => onExamChange(e.target.value === "all" ? "" : e.target.value)}
-                className="series-dropdown-select"
-              >
-                {examOptions.map((ex) => (
-                  <option key={ex} value={ex === "all" ? "all" : ex}>
-                    {ex === "all" ? "All Exams" : ex}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="series-select-chevron" />
-            </div>
-          </div>
-        </div>
-
-        <div className="series-concept-chips mb-4" aria-label="Concept category filters">
-          <button
-            type="button"
-            className={category === "All" ? "active" : ""}
-            onClick={() => onCategoryChange("All")}
-          >
-            <i className="chip-indigo" />All <span>{conceptCount}</span>
-          </button>
-          {subjectConfig.classificationCategories.filter((item) => categoryCounts[item.label] > 0).map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              className={category === item.label ? "active" : ""}
-              onClick={() => onCategoryChange(item.label)}
-            >
-              <i style={{ background: item.accent }} />{item.label} <span>{categoryCounts[item.label]}</span>
-            </button>
-          ))}
-        </div>
-
-        <p className="series-concept-heading">Concept Groups</p>
-        <section className="series-concept-list mb-6" aria-label="Concept groups">
-          {groups.map((group) => {
-            const selectedInGroup = group.concepts.filter((concept) => selected.has(concept)).length;
-            const groupIsSelected = selectedInGroup === group.concepts.length && group.concepts.length > 0;
-            const groupIsPartial = selectedInGroup > 0 && !groupIsSelected;
-            return (
-              <button
-                key={group.id}
-                type="button"
-                className="series-concept-row"
-                onClick={() => onToggleGroup(group.concepts)}
-                aria-pressed={groupIsSelected}
-              >
-                <span className={`series-concept-check${groupIsSelected || groupIsPartial ? " checked" : ""}`}>
-                  {(groupIsSelected || groupIsPartial) && <Check aria-hidden="true" />}
-                </span>
-                <span
-                  className="series-concept-tile"
-                  style={{ background: group.bg, color: group.accent }}
-                >
-                  {group.icon}
-                </span>
-                <span className="series-concept-row-copy">
-                  <strong>{group.label}</strong>
-                  <small>
-                    {group.concepts.length} concept{group.concepts.length === 1 ? "" : "s"}
-                    {selectedInGroup > 0 ? ` · ${selectedInGroup} selected` : ""}
-                  </small>
-                </span>
-              </button>
-            );
-          })}
-          {groups.length === 0 && (
-            <p className="series-concept-empty">No concept groups match &quot;{search}&quot;.</p>
-          )}
-        </section>
-      </main>
-
-      <footer className="series-concept-toolbar">
-        <p>
-          <b>{questionCount}</b> questions ready - <span>{selectedQuestionLabel}</span>
-        </p>
-        <button type="button" onClick={onStart} className="series-concept-start">
-          <Sparkles aria-hidden="true" />
-          Start Quiz
-        </button>
-      </footer>
-
-      <style jsx>{`
-        .series-concept-screen {
-          --series-bg: #f2f2f7;
-          --series-card: #ffffff;
-          --series-separator: rgba(60, 60, 67, 0.18);
-          --series-ink: #1c1c1e;
-          --series-muted: #6e6a85;
-          --series-subtle: rgba(60, 60, 67, 0.6);
-          --series-field: rgba(118, 118, 128, 0.12);
-          --series-nav: rgba(242, 242, 247, 0.9);
-          --series-accent: #6c5ce0;
-          height: 100dvh;
-          max-height: 100dvh;
-          overflow: hidden;
-          display: flex;
-          flex-direction: column;
-          background: var(--series-bg);
-          color: var(--series-ink);
-          font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
-          padding-bottom: 0;
-        }
-        .series-concept-screen[data-theme="dark"] {
-          color-scheme: dark;
-          --series-bg: #000000;
-          --series-card: #1c1c1e;
-          --series-separator: rgba(84, 84, 88, 0.65);
-          --series-ink: #ffffff;
-          --series-muted: #98989f;
-          --series-subtle: rgba(235, 235, 245, 0.6);
-          --series-field: rgba(118, 118, 128, 0.24);
-          --series-nav: rgba(0, 0, 0, 0.78);
-          --series-accent: #7c6cf0;
-        }
-        .series-concept-nav {
-          height: 44px;
-          display: grid;
-          grid-template-columns: 44px 1fr auto;
-          align-items: center;
-          border-bottom: 0.5px solid var(--series-separator);
-          background: var(--series-nav);
-          position: sticky;
-          top: 0;
-          z-index: 5;
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-        }
-        .series-concept-nav strong {
-          justify-self: center;
-          font-size: 17px;
-          font-weight: 600;
-        }
-        .series-concept-back {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          width: 44px;
-          height: 44px;
-          color: var(--series-accent);
-        }
-        .series-concept-back :global(svg) {
-          width: 23px;
-          height: 23px;
-          stroke-width: 2.3;
-        }
-        .series-concept-content {
-          width: min(100%, 430px);
-          margin: 0 auto;
-          padding: 10px 16px 12px;
-          flex: 1 1 auto;
-          min-height: 0;
-          display: flex;
-          flex-direction: column;
-          overflow: hidden;
-        }
-        .series-concept-pill {
-          background: var(--series-field);
-          color: var(--series-accent);
-          padding: 4px 10px;
-          border-radius: 999px;
-          font-size: 12px;
-          font-weight: 600;
-        }
-        .series-concept-heading {
-          margin: 0 0 6px 16px;
-          color: var(--series-subtle);
-          font-size: 13px;
-          font-weight: 600;
-          text-transform: uppercase;
-        }
-        .series-concept-list {
-          overflow-y: auto;
-          flex: 1 1 auto;
-          min-height: 0;
-          border-radius: 12px;
-          background: var(--series-card);
-        }
-        .series-concept-row {
-          position: relative;
-          width: 100%;
-          min-height: 52px;
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          border: 0;
-          background: var(--series-card);
-          padding: 8px 14px;
-          text-align: left;
-          color: var(--series-ink);
-        }
-        .series-concept-row:not(:last-child)::after {
-          content: "";
-          position: absolute;
-          right: 0;
-          bottom: 0;
-          left: 56px;
-          height: 1px;
-          background: var(--series-separator);
-          opacity: 0.8;
-        }
-        .series-concept-check {
-          width: 22px;
-          height: 22px;
-          flex: 0 0 auto;
-          display: grid;
-          place-items: center;
-          border: 1.6px solid #c7c7cc;
-          border-radius: 50%;
-          color: #fff;
-        }
-        .series-concept-screen[data-theme="dark"] .series-concept-check {
-          border-color: #545458;
-        }
-        .series-concept-check.checked {
-          border-color: var(--series-accent);
-          background: var(--series-accent);
-        }
-        .series-concept-check :global(svg) {
-          width: 13px;
-          height: 13px;
-          stroke-width: 3;
-        }
-        .series-concept-tile {
-          width: 30px;
-          height: 30px;
-          flex: 0 0 auto;
-          display: grid;
-          place-items: center;
-          border-radius: 7px;
-        }
-        .series-concept-row-copy {
-          min-width: 0;
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-        }
-        .series-concept-row-copy strong {
-          font-size: 16px;
-          font-weight: 600;
-        }
-        .series-concept-row-copy small {
-          color: var(--series-muted);
-          font-size: 13px;
-        }
-        .series-concept-chips { display: flex; gap: 10px; overflow-x: auto; padding: 12px 2px 16px; margin: 0 -2px; scrollbar-width: none; }
-        .series-concept-chips::-webkit-scrollbar { display: none; }
-        .series-concept-chips button { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 8px; border: 0; border-radius: 999px; background: var(--series-field); padding: 8px 16px; color: var(--series-ink); font-size: 15px; font-weight: 700; white-space: nowrap; transition: all 0.15s ease; cursor: pointer; }
-        .series-concept-chips button.active { background: var(--series-accent); color: #ffffff; box-shadow: 0 2px 8px rgba(108, 92, 224, 0.25); }
-        .series-concept-chips i { width: 7px; height: 7px; border-radius: 50%; background: var(--series-accent); flex-shrink: 0; }
-        .series-concept-chips button.active i { background: #ffffff !important; }
-        .series-concept-chips span { color: var(--series-muted); font-size: 14px; font-weight: 600; margin-left: 1px; }
-        .series-concept-chips button.active span { color: rgba(255, 255, 255, 0.85); }
-        .chip-indigo { background: #6c5ce0 !important; }
-        .series-dropdown-container {
-          overflow: hidden;
-          border-radius: 12px;
-          background: var(--series-card);
-          border: 1px solid var(--series-separator);
-        }
-        .series-dropdown-row {
-          position: relative;
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          padding: 12px 16px;
-          min-height: 56px;
-          width: 100%;
-          box-sizing: border-box;
-        }
-        .series-dropdown-label {
-          font-size: 15px;
-          font-weight: 600;
-          color: var(--series-ink);
-          white-space: nowrap;
-          flex-shrink: 0;
-        }
-        .series-select-wrapper {
-          position: relative;
-          display: flex;
-          align-items: center;
-          margin-left: auto;
-          min-width: 0;
-          max-width: calc(100% - 140px);
-        }
-        .series-dropdown-select {
-          appearance: none;
-          -webkit-appearance: none;
-          background: var(--series-field);
-          color: var(--series-accent);
-          font-size: 14px;
-          font-weight: 600;
-          padding: 8px 30px 8px 12px;
-          border-radius: 10px;
-          border: 1px solid var(--series-separator);
-          outline: none;
-          cursor: pointer;
-          transition: all 0.15s ease;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-          overflow: hidden;
-          max-width: 100%;
-          box-sizing: border-box;
-        }
-        .series-dropdown-select option {
-          background: var(--series-card);
-          color: var(--series-ink);
-        }
-        .series-dropdown-select:focus {
-          border-color: var(--series-accent);
-        }
-        .series-select-chevron {
-          position: absolute;
-          right: 10px;
-          width: 14px;
-          height: 14px;
-          color: var(--series-accent);
-          pointer-events: none;
-        }
-        .series-formula-card {
-          overflow: hidden;
-          border-radius: 12px;
-          background: var(--series-card);
-          padding: 16px;
-        }
-        .series-formula-card-row {
-          display: flex;
-          align-items: flex-start;
-          gap: 12px;
-        }
-        .series-concept-toolbar {
-          position: relative;
-          z-index: 10;
-          flex: 0 0 auto;
-          border-top: 0.5px solid var(--series-separator);
-          background: var(--series-nav);
-          padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-        }
-        .series-concept-toolbar p {
-          margin: 0 0 8px;
-          color: var(--series-muted);
-          text-align: center;
-          font-size: 13px;
-        }
-        .series-concept-toolbar b {
-          color: var(--series-ink);
-          font-weight: 700;
-        }
-        .series-concept-start {
-          width: 100%;
-          min-height: 50px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 7px;
-          border: 0;
-          border-radius: 12px;
-          background: var(--series-accent);
-          color: #fff;
-          font-size: 17px;
-          font-weight: 700;
-          box-shadow: 0 2px 8px rgba(108, 92, 224, 0.22);
-        }
-        .series-concept-start:active {
-          opacity: 0.72;
-        }
-        .series-concept-aside {
-          display: none;
-        }
-        @media (min-width: 1024px) {
-          .series-concept-screen {
-            display: grid;
-            grid-template-columns: minmax(210px, 1fr) minmax(520px, 760px) minmax(260px, 1fr);
-            grid-template-rows: 68px minmax(calc(100dvh - 68px), auto);
-            min-height: 100dvh;
-            padding: 0;
-          }
-          .series-concept-nav {
-            grid-column: 1 / -1;
-            height: 68px;
-            grid-template-columns: minmax(210px, 1fr) minmax(520px, 760px) minmax(260px, 1fr);
-            border-bottom: 1px solid var(--series-separator);
-            padding: 0 38px;
-          }
-          .series-concept-nav strong {
-            grid-column: 2;
-            font-size: 18px;
-            letter-spacing: 0;
-          }
-          .series-concept-back {
-            position: absolute;
-            left: 28px;
-            width: 44px;
-            height: 68px;
-          }
-          .series-concept-aside {
-            grid-column: 1;
-            grid-row: 2;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            padding: 64px 44px;
-            border-right: 1px solid var(--series-separator);
-            text-align: right;
-          }
-          .series-concept-aside > span {
-            color: var(--series-accent);
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-          }
-          .series-concept-aside h1 {
-            margin: 8px 0 2px;
-            color: var(--series-ink);
-            font-size: 28px;
-            line-height: 1.12;
-            letter-spacing: 0;
-          }
-          .series-concept-aside > p {
-            margin: 0;
-            color: var(--series-muted);
-            font-size: 15px;
-          }
-          .series-concept-aside dl {
-            display: grid;
-            grid-template-columns: repeat(2, max-content);
-            gap: 20px;
-            margin: 52px 0 0;
-          }
-          .series-concept-aside dl div {
-            display: flex;
-            flex-direction: column-reverse;
-            gap: 3px;
-          }
-          .series-concept-aside dt {
-            color: var(--series-muted);
-            font-size: 12px;
-          }
-          .series-concept-aside dd {
-            margin: 0;
-            color: var(--series-ink);
-            font-size: 22px;
-            font-weight: 700;
-          }
-          .series-concept-content {
-            grid-column: 2;
-            grid-row: 2;
-            width: 100%;
-            margin: 0;
-            padding: 58px 44px 72px;
-          }
-          .series-concept-heading {
-            margin-left: 0;
-          }
-          .series-concept-list {
-            border: 1px solid var(--series-separator);
-            border-radius: 8px;
-          }
-          .series-concept-row {
-            min-height: 76px;
-            padding: 14px 18px;
-            transition: background 0.15s ease;
-          }
-          .series-concept-row:hover {
-            background: var(--series-field);
-          }
-          .series-concept-toolbar {
-            position: sticky;
-            grid-column: 3;
-            grid-row: 2;
-            align-self: start;
-            width: auto;
-            margin: 46px 38px;
-            border: 1px solid var(--series-separator);
-            border-radius: 8px;
-            background: var(--series-card);
-            padding: 20px;
-            transform: none;
-            backdrop-filter: none;
-          }
-          .series-concept-toolbar p {
-            margin-bottom: 16px;
-            text-align: left;
-            font-size: 14px;
-          }
-          .series-concept-start {
-            min-height: 48px;
-            border-radius: 8px;
-            font-size: 16px;
-          }
-        }
-      `}</style>
-    </div>
-  );
+  return <UnifiedQuizStartView {...props} />;
 }
-

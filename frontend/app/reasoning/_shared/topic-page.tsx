@@ -125,7 +125,9 @@ export default function ReasoningTopicPage({
           --green: #30D158;
           --orange: #FF9F0A;
 
-          min-height: 100dvh;
+          box-sizing: border-box;
+          min-height: calc(100vh - 94px - env(safe-area-inset-bottom, 0px));
+          min-height: calc(100dvh - 94px - env(safe-area-inset-bottom, 0px));
           overflow-x: hidden;
           scrollbar-width: none;
           background: #050505;
@@ -133,7 +135,7 @@ export default function ReasoningTopicPage({
           font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", sans-serif;
           -webkit-font-smoothing: antialiased;
           padding-top: calc(56px + max(env(safe-area-inset-top, 0px), 0px));
-          padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px));
+          padding-bottom: 0;
           transition: background .25s ease, color .25s ease;
         }
         .sg-page::-webkit-scrollbar {
@@ -196,7 +198,7 @@ export default function ReasoningTopicPage({
           border-radius: 20px;
           padding: 16px;
           display: flex; align-items: center; gap: 14px;
-          margin: 6px 0 28px;
+          margin: 6px 0 16px;
           border: 0.5px solid rgba(255,255,255,0.08);
           text-decoration: none;
           -webkit-tap-highlight-color: transparent;
@@ -238,7 +240,7 @@ export default function ReasoningTopicPage({
           background: var(--card);
           border-radius: 14px;
           overflow: hidden;
-          margin: 0 16px 28px;
+          margin: 0 16px 12px;
           display: flex; flex-direction: column;
           animation: sg-up .38s ease both .14s;
         }

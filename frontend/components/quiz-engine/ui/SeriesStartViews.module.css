@@ -1,0 +1,1234 @@
+/* ==========================================================================
+   macOS Studio Design System - Start Quiz View (Zero-Scroll Studio)
+   ========================================================================== */
+
+.pageRoot {
+  --mac-bg-desktop: #f2f4f8;
+  --mac-window-bg: rgba(255, 255, 255, 0.94);
+  --mac-window-border: rgba(0, 0, 0, 0.08);
+  --mac-window-shadow: 0 24px 64px -12px rgba(0, 0, 0, 0.16), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  --mac-titlebar-bg: rgba(246, 246, 248, 0.96);
+  --mac-sidebar-bg: rgba(244, 244, 247, 0.85);
+  --mac-sidebar-border: rgba(0, 0, 0, 0.07);
+  --mac-surface: #ffffff;
+  --mac-surface-hover: #f5f5f7;
+  --mac-surface-active: #e5e5ea;
+  --mac-border: rgba(0, 0, 0, 0.08);
+  --mac-border-hover: rgba(0, 113, 227, 0.35);
+  --mac-border-focus: #0071e3;
+  --mac-blue: #0071e3;
+  --mac-blue-hover: #0077ed;
+  --mac-blue-subtle: rgba(0, 113, 227, 0.09);
+  --mac-text-primary: #1d1d1f;
+  --mac-text-secondary: #6e6e73;
+  --mac-text-tertiary: #86868b;
+  --mac-font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+  --mac-font-mono: "SF Mono", Menlo, Monaco, Consolas, monospace;
+  --scrollbar-thumb: rgba(0, 0, 0, 0.18);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.32);
+  color-scheme: light;
+
+  min-height: 100vh;
+  min-height: 100dvh;
+  font-family: var(--mac-font);
+  color: var(--mac-text-primary);
+  background-color: var(--mac-bg-desktop);
+  position: relative;
+  -webkit-font-smoothing: antialiased;
+}
+
+.desktopContainer {
+  display: none;
+}
+
+.mobileContainer {
+  display: block;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .pageRoot {
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100vh;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 12px;
+    box-sizing: border-box;
+  }
+
+  .desktopContainer {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .mobileContainer {
+    display: none !important;
+  }
+}
+
+/* ── Dark Theme Overrides ─────────────────────────────────────────────────── */
+:global(body.theme-dark) .pageRoot,
+:global(html.theme-dark) .pageRoot,
+.pageRoot[data-theme="dark"] {
+  --mac-bg-desktop: #09090b;
+  --mac-window-bg: rgba(26, 26, 28, 0.94);
+  --mac-window-border: rgba(255, 255, 255, 0.12);
+  --mac-window-shadow: 0 25px 70px -10px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  --mac-titlebar-bg: rgba(34, 34, 36, 0.96);
+  --mac-sidebar-bg: rgba(28, 28, 30, 0.88);
+  --mac-sidebar-border: rgba(255, 255, 255, 0.08);
+  --mac-surface: #28282a;
+  --mac-surface-hover: #363638;
+  --mac-surface-active: #444446;
+  --mac-border: rgba(255, 255, 255, 0.09);
+  --mac-border-hover: rgba(10, 132, 255, 0.45);
+  --mac-border-focus: #0a84ff;
+  --mac-blue: #0a84ff;
+  --mac-blue-hover: #409cff;
+  --mac-blue-subtle: rgba(10, 132, 255, 0.16);
+  --mac-text-primary: #ffffff;
+  --mac-text-secondary: rgba(235, 235, 245, 0.65);
+  --mac-text-tertiary: rgba(235, 235, 245, 0.4);
+  --scrollbar-thumb: rgba(255, 255, 255, 0.2);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.35);
+  color-scheme: dark;
+}
+
+/* ── Custom Mac Scrollbars ── */
+.pageRoot ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.pageRoot ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.pageRoot ::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 999px;
+}
+
+.pageRoot ::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+.pageRoot * {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+/* ── macOS Window Frame ── */
+.macWindow {
+  width: 100%;
+  max-width: 1060px;
+  height: 86vh;
+  max-height: 740px;
+  min-height: 540px;
+  background: var(--mac-window-bg);
+  border: 1px solid var(--mac-window-border);
+  border-radius: 14px;
+  box-shadow: var(--mac-window-shadow);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+}
+
+/* ── macOS Titlebar ── */
+.titleBar {
+  height: 44px;
+  background: var(--mac-titlebar-bg);
+  border-bottom: 1px solid var(--mac-window-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  flex-shrink: 0;
+  user-select: none;
+  z-index: 10;
+}
+
+.titleBarLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 180px;
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  border-radius: 6px;
+  background: var(--mac-surface);
+  border: 1px solid var(--mac-border);
+  color: var(--mac-text-primary);
+  font-size: 11.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  text-decoration: none;
+}
+
+.backBtn:hover {
+  background: var(--mac-surface-hover);
+  border-color: var(--mac-border-hover);
+}
+
+.titleBarCenter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.windowTitle {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--mac-text-primary);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.titleModePill {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1.5px 7px;
+  border-radius: 999px;
+  background: var(--mac-blue-subtle);
+  color: var(--mac-blue);
+  border: 1px solid rgba(0, 113, 227, 0.2);
+}
+
+.titleBarRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 180px;
+  justify-content: flex-end;
+}
+
+.themeBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--mac-surface);
+  border: 1px solid var(--mac-border);
+  color: var(--mac-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.themeBtn:hover {
+  background: var(--mac-surface-hover);
+  color: var(--mac-text-primary);
+}
+
+/* ── 2-Pane Studio Body ── */
+.studioBody {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ── Left Inspector Pane (310px) ── */
+.leftInspector {
+  width: 310px;
+  background: var(--mac-sidebar-bg);
+  border-right: 1px solid var(--mac-sidebar-border);
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  gap: 10px;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.heroCard {
+  background: var(--mac-surface);
+  border: 1px solid var(--mac-border);
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.heroHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.heroIconBox {
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+  background: #f1f3f5;
+  color: #0f172a;
+  border: 1px solid var(--mac-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+:global(body.theme-dark) .heroIconBox {
+  background: #2c2c2e;
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.heroTitleGroup {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 2px;
+}
+
+.heroTitle {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--mac-text-primary);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.heroSub {
+  font-size: 10.5px;
+  color: var(--mac-text-secondary);
+}
+
+/* ── Exam Target Selector ── */
+.selectSection {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.sectionLabel {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--mac-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0 2px;
+}
+
+.examSelectRow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: var(--mac-surface);
+  border: 1px solid var(--mac-border);
+  border-radius: 8px;
+  padding: 0 10px;
+  height: 36px;
+  transition: all 0.12s ease;
+}
+
+.examSelectRow:focus-within {
+  border-color: var(--mac-blue);
+  box-shadow: 0 0 0 2px var(--mac-blue-subtle);
+}
+
+.examSelectIcon {
+  color: var(--mac-blue);
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.examSelect {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--mac-text-primary);
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 20px;
+}
+
+.examChevron {
+  position: absolute;
+  right: 10px;
+  color: var(--mac-text-secondary);
+  pointer-events: none;
+}
+
+/* ── Metrics Stats Grid ── */
+.statsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.statItem {
+  background: var(--mac-surface);
+  border: 1px solid var(--mac-border);
+  border-radius: 8px;
+  padding: 7px 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.statLabel {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--mac-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.statValue {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--mac-text-primary);
+}
+
+/* ── Coverage Progress Bar ── */
+.coverageSection {
+  background: var(--mac-surface);
+  border: 1px solid var(--mac-border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.coverageHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--mac-text-secondary);
+}
+
+.coveragePct {
+  font-weight: 700;
+  color: var(--mac-blue);
+}
+
+.progressBar {
+  width: 100%;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+:global(body.theme-dark) .progressBar {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--mac-blue);
+  transition: width 0.2s ease;
+}
+
+/* ── Selection Batch Action Buttons ── */
+.batchActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: auto;
+}
+
+.batchBtn {
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: var(--mac-surface);
+  border: 1px solid var(--mac-border);
+  color: var(--mac-text-secondary);
+  font-size: 10.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: all 0.12s ease;
+}
+
+.batchBtn:hover {
+  background: var(--mac-surface-hover);
+  color: var(--mac-text-primary);
+  border-color: var(--mac-border-hover);
+}
+
+/* ── Right Concept Canvas ── */
+.rightCanvas {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--mac-window-bg);
+  overflow: hidden;
+}
+
+/* ── Canvas Top Toolbar (Chips & Search) ── */
+.canvasToolbar {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--mac-border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--mac-titlebar-bg);
+  flex-shrink: 0;
+}
+
+.chipsScroll {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  flex: 1;
+  min-width: 0;
+  scrollbar-width: none;
+}
+
+.chipsScroll::-webkit-scrollbar {
+  display: none;
+}
+
+.chipBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--mac-surface);
+  border: 1px solid var(--mac-border);
+  color: var(--mac-text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.chipBtn:hover {
+  background: var(--mac-surface-hover);
+  color: var(--mac-text-primary);
+}
+
+.chipBtnActive {
+  background: var(--mac-blue) !important;
+  color: #ffffff !important;
+  border-color: var(--mac-blue) !important;
+  box-shadow: 0 1px 4px rgba(0, 113, 227, 0.3);
+}
+
+.chipDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--mac-blue);
+}
+
+.chipBtnActive .chipDot {
+  background: #ffffff;
+}
+
+.chipCount {
+  font-size: 9.5px;
+  opacity: 0.75;
+}
+
+.searchBox {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 180px;
+  flex-shrink: 0;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 8px;
+  color: var(--mac-text-tertiary);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  height: 28px;
+  padding: 0 24px 0 26px;
+  border-radius: 6px;
+  background: var(--mac-surface);
+  border: 1px solid var(--mac-border);
+  font-size: 11px;
+  color: var(--mac-text-primary);
+  outline: none;
+  transition: all 0.12s ease;
+}
+
+.searchInput:focus {
+  border-color: var(--mac-blue);
+  box-shadow: 0 0 0 2px var(--mac-blue-subtle);
+}
+
+.clearSearchBtn {
+  position: absolute;
+  right: 6px;
+  background: none;
+  border: none;
+  color: var(--mac-text-tertiary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+}
+
+/* ── Concept Groups Grid ── */
+.conceptGrid {
+  flex: 1;
+  padding: 12px 14px;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 8px;
+  align-content: start;
+}
+
+.conceptCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 9px;
+  background: var(--mac-surface);
+  border: 1px solid var(--mac-border);
+  cursor: pointer;
+  transition: all 0.14s ease;
+  text-align: left;
+  user-select: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+:global(body.theme-dark) .conceptCard {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.conceptCard:hover {
+  background: var(--mac-surface-hover);
+  border-color: var(--mac-border-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.04);
+}
+
+:global(body.theme-dark) .conceptCard:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+}
+
+.conceptCardSelected {
+  border-color: var(--mac-blue) !important;
+  background: var(--mac-blue-subtle) !important;
+}
+
+.conceptCardLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.conceptIconBox {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--mac-surface-hover);
+  color: var(--mac-text-primary);
+  border: 1px solid var(--mac-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+:global(body.theme-dark) .conceptIconBox {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.conceptTextGroup {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 1px;
+}
+
+.conceptName {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--mac-text-primary);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.conceptMeta {
+  font-size: 10px;
+  color: var(--mac-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.conceptCheckbox {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1.5px solid var(--mac-border);
+  background: var(--mac-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.14s ease;
+}
+
+.conceptCheckboxChecked {
+  border-color: var(--mac-blue) !important;
+  background: var(--mac-blue) !important;
+  color: #ffffff !important;
+  box-shadow: 0 1px 4px rgba(0, 113, 227, 0.35);
+}
+
+.emptyState {
+  grid-column: 1 / -1;
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--mac-text-secondary);
+  font-size: 12px;
+}
+
+/* ── Bottom Dock / Sticky Footer ── */
+.studioFooter {
+  height: 52px;
+  background: var(--mac-titlebar-bg);
+  border-top: 1px solid var(--mac-window-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  flex-shrink: 0;
+  user-select: none;
+  z-index: 10;
+}
+
+.footerLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.statusIndicator {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #34c759;
+  box-shadow: 0 0 8px rgba(52, 199, 89, 0.5);
+}
+
+.statusText {
+  font-size: 11.5px;
+  color: var(--mac-text-secondary);
+}
+
+.statusBold {
+  font-weight: 700;
+  color: var(--mac-text-primary);
+}
+
+.startBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 18px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #0071e3 0%, #0056b3 100%);
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(0, 113, 227, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.startBtn:hover {
+  background: linear-gradient(135deg, #0077ed 0%, #005ec4 100%) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 5px 14px rgba(0, 113, 227, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.startBtn:active {
+  transform: translateY(0);
+}
+
+.returnKey {
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 10px;
+  font-family: inherit;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+/* =============================================================================
+   iOS MOBILE START QUIZ STYLES (< 768px)
+   ============================================================================= */
+.iosScreen {
+  --ios-bg: #f2f2f7;
+  --ios-card: #ffffff;
+  --ios-separator: rgba(60, 60, 67, 0.18);
+  --ios-ink: #1c1c1e;
+  --ios-muted: #6e6a85;
+  --ios-subtle: rgba(60, 60, 67, 0.6);
+  --ios-field: rgba(118, 118, 128, 0.12);
+  --ios-nav: rgba(242, 242, 247, 0.92);
+  --ios-accent: #6c5ce0;
+
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--ios-bg);
+  color: var(--ios-ink);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+  padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px));
+  position: relative;
+  box-sizing: border-box;
+}
+
+:global(body.theme-dark) .iosScreen,
+:global(html.theme-dark) .iosScreen,
+.iosScreen[data-theme="dark"] {
+  --ios-bg: #000000;
+  --ios-card: #1c1c1e;
+  --ios-separator: rgba(84, 84, 88, 0.65);
+  --ios-ink: #ffffff;
+  --ios-muted: #98989f;
+  --ios-subtle: rgba(235, 235, 245, 0.6);
+  --ios-field: rgba(118, 118, 128, 0.24);
+  --ios-nav: rgba(0, 0, 0, 0.85);
+  --ios-accent: #7c6cf0;
+}
+
+.iosNav {
+  height: 48px;
+  display: grid;
+  grid-template-columns: 48px 1fr 48px;
+  align-items: center;
+  border-bottom: 0.5px solid var(--ios-separator);
+  background: var(--ios-nav);
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 0 4px;
+}
+
+.iosBackBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--ios-accent);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.iosNavTitle {
+  text-align: center;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 4px;
+  color: var(--ios-ink);
+}
+
+.iosNavSpacer {
+  width: 40px;
+}
+
+.iosContent {
+  width: min(100%, 460px);
+  margin: 0 auto;
+  padding: 14px 16px 20px;
+  box-sizing: border-box;
+}
+
+.iosHeading {
+  margin: 0 0 7px 12px;
+  color: var(--ios-subtle);
+  font-size: 12.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+}
+
+.iosDropdownContainer {
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--ios-card);
+  border: 1px solid var(--ios-separator);
+  margin-bottom: 14px;
+}
+
+.iosDropdownRow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  min-height: 52px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.iosTargetIconBox {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(124, 108, 240, 0.15);
+  color: var(--ios-accent);
+  flex-shrink: 0;
+}
+
+.iosDropdownLabel {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--ios-ink);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.iosSelectWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  min-width: 0;
+  max-width: calc(100% - 130px);
+}
+
+.iosSelect {
+  appearance: none;
+  -webkit-appearance: none;
+  background: var(--ios-field);
+  color: var(--ios-accent);
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 7px 28px 7px 12px;
+  border-radius: 9px;
+  border: 1px solid var(--ios-separator);
+  outline: none;
+  cursor: pointer;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.iosSelectChevron {
+  position: absolute;
+  right: 8px;
+  color: var(--ios-accent);
+  pointer-events: none;
+}
+
+.iosChipsScroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 0 2px 14px;
+  margin: 0 -2px;
+  scrollbar-width: none;
+}
+
+.iosChipsScroll::-webkit-scrollbar {
+  display: none;
+}
+
+.iosChip {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ios-field);
+  padding: 7px 14px;
+  color: var(--ios-ink);
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.iosChipActive {
+  background: var(--ios-accent) !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(108, 92, 224, 0.28);
+}
+
+.iosChipDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.iosChipActive .iosChipDot {
+  background: #ffffff !important;
+}
+
+.iosChipCount {
+  color: var(--ios-muted);
+  font-size: 13px;
+  font-weight: 600;
+  margin-left: 1px;
+}
+
+.iosChipActive .iosChipCount {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.iosSearchRow {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.iosSearchIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ios-muted);
+  pointer-events: none;
+}
+
+.iosSearchInput {
+  width: 100%;
+  height: 38px;
+  border: 1px solid var(--ios-separator);
+  outline: none;
+  border-radius: 10px;
+  background: var(--ios-card);
+  padding: 0 32px;
+  font-size: 13.5px;
+  color: var(--ios-ink);
+  box-sizing: border-box;
+}
+
+.iosClearSearch {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: var(--ios-muted);
+  cursor: pointer;
+}
+
+.iosConceptList {
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--ios-card);
+  border: 1px solid var(--ios-separator);
+}
+
+.iosConceptRow {
+  position: relative;
+  width: 100%;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 0;
+  background: var(--ios-card);
+  padding: 10px 14px;
+  text-align: left;
+  color: var(--ios-ink);
+  cursor: pointer;
+  transition: background 0.12s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.iosConceptRow:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 54px;
+  height: 0.5px;
+  background: var(--ios-separator);
+}
+
+.iosConceptRow:active {
+  background: var(--ios-field);
+}
+
+.iosCheckCircle {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border: 1.6px solid #c7c7cc;
+  border-radius: 50%;
+  color: #fff;
+  transition: all 0.15s ease;
+}
+
+:global(body.theme-dark) .iosCheckCircle {
+  border-color: #545458;
+}
+
+.iosCheckCircleChecked {
+  border-color: var(--ios-accent) !important;
+  background: var(--ios-accent) !important;
+}
+
+.iosGroupTile {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.iosGroupTile svg {
+  width: 16px;
+  height: 16px;
+}
+
+.iosRowCopy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.iosGroupTitle {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.15px;
+  color: var(--ios-ink);
+}
+
+.iosGroupMeta {
+  color: var(--ios-muted);
+  font-size: 12.5px;
+}
+
+.iosEmptyText {
+  padding: 24px 16px;
+  margin: 0;
+  color: var(--ios-muted);
+  text-align: center;
+  font-size: 13.5px;
+}
+
+.iosToolbar {
+  position: fixed;
+  z-index: 40;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border-top: 0.5px solid var(--ios-separator);
+  background: var(--ios-nav);
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-sizing: border-box;
+}
+
+.iosToolbarText {
+  margin: 0 0 8px;
+  color: var(--ios-muted);
+  text-align: center;
+  font-size: 13px;
+}
+
+.iosToolbarText b {
+  color: var(--ios-ink);
+  font-weight: 700;
+}
+
+.iosStartBtn {
+  width: 100%;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--ios-accent);
+  color: #ffffff !important;
+  font-size: 16px;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(108, 92, 224, 0.25);
+  cursor: pointer;
+  transition: opacity 0.15s ease, transform 0.1s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.iosStartBtn:active {
+  opacity: 0.75;
+  transform: scale(0.99);
+}

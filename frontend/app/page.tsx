@@ -311,37 +311,37 @@ export default function Home() {
 
   return (
     <main className={`${styles.pageWrapper} ${isDark ? styles.dark : ''}`}>
-      {/* Ambient background waves */}
+      {/* Ambient background waves (OGL WebGL2 Shader) */}
       <div
         aria-hidden="true"
         style={{
           position: 'fixed',
           inset: 0,
-          zIndex: -1,
+          zIndex: 0,
           pointerEvents: 'none',
         }}
       >
         <GradientWaves
-          horizonColor="#2563EB"
-          waveColor="#93c5fd"
+          horizonColor={isDark ? "#0062cc" : "#0071e3"}
+          waveColor={isDark ? "#38bdf8" : "#60a5fa"}
           crestColor="#ffffff"
-          speed={0.25}
-          amplitude={2.5}
-          waveScale={0.85}
+          speed={0.35}
+          amplitude={3.15}
+          waveScale={0.8}
           waveRatio={0.9}
-          swell={25}
-          turbulence={14}
-          tilt={1.1}
+          swell={30}
+          turbulence={18}
+          tilt={1.15}
           zoom={1.0}
-          height={5.0}
-          fogDepth={16}
+          height={5.5}
+          fogDepth={14}
           detail="medium"
           brightness={1.0}
-          opacity={0.85}
+          opacity={isDark ? 0.88 : 0.92}
           mouseInteraction={true}
-          parallaxStrength={0.4}
+          parallaxStrength={0.45}
           grain={true}
-          grainIntensity={0.03}
+          grainIntensity={0.04}
         />
       </div>
 

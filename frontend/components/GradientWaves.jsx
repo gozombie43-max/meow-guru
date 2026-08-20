@@ -198,33 +198,37 @@ const GradientWaves = ({
       container.appendChild(canvas);
 
       const geometry = new Triangle(gl);
+      const hInit = hexToRgb(horizonColor);
+      const wInit = hexToRgb(waveColor);
+      const cInit = hexToRgb(crestColor);
+
       const program = new Program(gl, {
         vertex,
         fragment,
         uniforms: {
           iTime: { value: 0 },
           iResolution: { value: new Float32Array([1, 1]) },
-          uSpeed: { value: 0.4 },
-          uAmplitude: { value: 2.5 },
-          uWaveScale: { value: 0.6 },
-          uWaveRatio: { value: 0.9 },
-          uSwell: { value: 35 },
-          uTurbulence: { value: 20 },
-          uTilt: { value: 1.11 },
-          uZoom: { value: 1.0 },
-          uHeight: { value: 5.5 },
-          uFogDepth: { value: 15 },
-          uSteps: { value: 70.0 },
-          uBrightness: { value: 1.0 },
-          uOpacity: { value: 1.0 },
-          uGrain: { value: 1.0 },
-          uGrainIntensity: { value: 0.05 },
+          uSpeed: { value: speed },
+          uAmplitude: { value: amplitude },
+          uWaveScale: { value: waveScale },
+          uWaveRatio: { value: waveRatio },
+          uSwell: { value: swell },
+          uTurbulence: { value: turbulence },
+          uTilt: { value: tilt },
+          uZoom: { value: zoom },
+          uHeight: { value: height },
+          uFogDepth: { value: fogDepth },
+          uSteps: { value: detailToSteps(detail) },
+          uBrightness: { value: brightness },
+          uOpacity: { value: opacity },
+          uGrain: { value: grain ? 1.0 : 0.0 },
+          uGrainIntensity: { value: grainIntensity },
           uMouse: { value: new Float32Array([0.5, 0.5]) },
-          uParallax: { value: 0.5 },
-          uEnableMouse: { value: true },
-          uHorizonColor: { value: new Float32Array([1, 1, 1]) },
-          uWaveColor: { value: new Float32Array([1, 1, 1]) },
-          uCrestColor: { value: new Float32Array([1, 1, 1]) }
+          uParallax: { value: parallaxStrength },
+          uEnableMouse: { value: mouseInteraction },
+          uHorizonColor: { value: new Float32Array(hInit) },
+          uWaveColor: { value: new Float32Array(wInit) },
+          uCrestColor: { value: new Float32Array(cInit) }
         }
       });
 
