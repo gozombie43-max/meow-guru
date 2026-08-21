@@ -5,6 +5,7 @@ import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
 import remarkGfm from "remark-gfm";
 import { Sun, Moon, X, Plus, Mic, Send, Zap, CheckCircle2, FileText, AlertTriangle, Sparkles } from "lucide-react";
+import api from '@/lib/axios';
 import { API, ChatMessage, QuizChatbotQuestion, QuizChatbotProps, resolveCorrectAnswer, buildQuestionContext, normalizeTutorMarkdown } from './utils';
 
 export default function QuizChatbot({
@@ -69,29 +70,32 @@ export default function QuizChatbot({
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API}/api/ai/tutor-chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      const response = await api.post(
+        '/api/ai/tutor-chat',
+        {
           context,
           message: text,
-        }),
-      });
+        },
+        {
+          timeout: 60000,
+        }
+      );
 
-      const data = await response.json();
       const reply =
-        data.reply ||
-        data.explanation ||
-        data.error ||
+        response.data?.reply ||
+        response.data?.explanation ||
         "I could not generate a response. Please try again.";
       setMessages((prev) => [...prev, { role: "bot", content: reply }]);
-    } catch {
+    } catch (err: any) {
+      const errorMessage =
+        err?.response?.data?.error ||
+        err?.message ||
+        "I could not reach the tutor service. Check the backend connection and try again.";
       setMessages((prev) => [
         ...prev,
         {
           role: "bot",
-          content:
-            "I could not reach the tutor service. Check the backend connection and try again.",
+          content: errorMessage,
         },
       ]);
     } finally {

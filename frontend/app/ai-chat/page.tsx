@@ -430,42 +430,53 @@ function AiChatPageContent() {
     setIsLoading(true);
 
     try {
-      const requestOptions: RequestInit = fileToSend
-        ? (() => {
-            const formData = new FormData();
-            formData.append('context', context);
-            formData.append('message', text || 'Please solve the attached question.');
-            formData.append('history', JSON.stringify(previousMessages.slice(-16)));
-            formData.append('attachment', fileToSend);
-            return {
-              method: 'POST',
-              body: formData,
-            };
-          })()
-        : {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              context,
-              message: text,
-              history: previousMessages.slice(-16),
-            }),
-          };
+      let reply = '';
+      if (fileToSend) {
+        const formData = new FormData();
+        formData.append('context', context);
+        formData.append('message', text || 'Please solve the attached question.');
+        formData.append('history', JSON.stringify(previousMessages.slice(-16)));
+        formData.append('attachment', fileToSend);
 
-      const response = await fetch(`${API}/api/ai/tutor-chat`, requestOptions);
+        const response = await api.post('/api/ai/tutor-chat', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+          timeout: 60000,
+        });
+        reply =
+          response.data?.reply ||
+          response.data?.explanation ||
+          'I could not generate a response. Please try again.';
+      } else {
+        const response = await api.post(
+          '/api/ai/tutor-chat',
+          {
+            context,
+            message: text,
+            history: previousMessages.slice(-16),
+          },
+          {
+            timeout: 60000,
+          }
+        );
+        reply =
+          response.data?.reply ||
+          response.data?.explanation ||
+          'I could not generate a response. Please try again.';
+      }
 
-      const data = await response.json();
-      const reply =
-        data.reply || data.explanation || data.error || 'I could not generate a response. Please try again.';
       const nextMessages = [...userMessages, { role: 'bot' as const, content: normalizeSimpleTables(reply) }];
       setMessages(nextMessages);
       saveSessionMessages(chatId, nextMessages, text || fileToSend?.name || 'Attached question');
-    } catch {
+    } catch (err: any) {
+      const errorMessage =
+        err?.response?.data?.error ||
+        err?.message ||
+        'I could not reach the tutor service. Check the backend connection and try again.';
       const nextMessages = [
         ...userMessages,
         {
           role: 'bot' as const,
-          content: 'I could not reach the tutor service. Check the backend connection and try again.',
+          content: errorMessage,
         },
       ];
       setMessages(nextMessages);
