@@ -1,6 +1,6 @@
 'use client';
 
-import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { type ChangeEvent, type MouseEvent as ReactMouseEvent, useEffect, useMemo, useRef, useState } from 'react';
 import NextImage from 'next/image';
 import {
   Copy,
@@ -394,7 +394,7 @@ function AiChatPageContent() {
     setMessages([]);
     setInput('');
     setCopiedIndex(null);
-    removeAttachment();
+    clearAttachment();
   };
 
   const openChat = (session: ChatSession) => {
@@ -493,6 +493,10 @@ function AiChatPageContent() {
     sendMessage();
   };
 
+  const handleStarterPrompt = (event: ReactMouseEvent<HTMLButtonElement>) => {
+    void sendMessage(event.currentTarget.dataset.prompt);
+  };
+
   const handleCopy = async (content: string, index: number) => {
     try {
       await navigator.clipboard.writeText(content);
@@ -504,13 +508,17 @@ function AiChatPageContent() {
     }
   };
 
-  const removeAttachment = () => {
+  const clearAttachment = () => {
     setAttachmentFile(null);
     setAttachmentError('');
     setAttachmentPreview((current) => {
       if (current) URL.revokeObjectURL(current);
       return null;
     });
+  };
+
+  const removeAttachment = () => {
+    clearAttachment();
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -608,7 +616,7 @@ function AiChatPageContent() {
                 </button>
               ))
             : starterPrompts.map((prompt) => (
-                <button className="history-item" type="button" key={prompt} onClick={() => sendMessage(prompt)}>
+                <button className="history-item" type="button" key={prompt} data-prompt={prompt} onClick={handleStarterPrompt}>
                   <span>{prompt}</span>
                 </button>
               ))}

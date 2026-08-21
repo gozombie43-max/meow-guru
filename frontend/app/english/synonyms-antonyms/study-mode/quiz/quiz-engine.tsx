@@ -392,10 +392,16 @@ export default function StudyModeQuizEngine() {
 
   const isPaletteOpenRef = useRef(false);
   const isExitConfirmRef = useRef(false);
-  isPaletteOpenRef.current = isMobilePaletteOpen;
-  isExitConfirmRef.current = showExitConfirm;
 
   const allowExitRef = useRef(false);
+
+  useEffect(() => {
+    isPaletteOpenRef.current = isMobilePaletteOpen;
+  }, [isMobilePaletteOpen]);
+
+  useEffect(() => {
+    isExitConfirmRef.current = showExitConfirm;
+  }, [showExitConfirm]);
 
   useEffect(() => {
     // Push an initial history entry to trap real back navigation

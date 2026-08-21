@@ -678,6 +678,8 @@
   justify-content: flex-end;
   pointer-events: none;
   overflow: hidden;
+  transform: translateZ(0);
+  contain: paint layout;
 }
 
 .heroArchFrame {
@@ -689,6 +691,11 @@
   border-left: 2px solid var(--mac-primary);
   overflow: hidden;
   background: rgba(255, 255, 255, 0.4);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  contain: paint;
+  isolation: isolate;
 }
 
 .dark .heroArchFrame {
@@ -698,6 +705,11 @@
 .heroStudentImage {
   object-fit: cover;
   object-position: center 18%;
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  image-rendering: -webkit-optimize-contrast;
 }
 
 /* Desktop Explore Subjects */
@@ -1352,6 +1364,11 @@
   background-color: var(--surface-soft);
   overflow: hidden;
   z-index: 2;
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  contain: paint;
+  isolation: isolate;
 }
 
 .mobileHeroImage {
@@ -1362,6 +1379,11 @@
   height: 100%;
   object-fit: cover;
   object-position: center 20%;
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  image-rendering: -webkit-optimize-contrast;
 }
 
 /* Mobile Content Grid */

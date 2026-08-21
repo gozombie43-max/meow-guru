@@ -1,5 +1,6 @@
 import ResultReport from "../../../../_shared/ResultReport";
 
-export default function Page({ params }: { params: { testId: string; attemptId: string } }) {
+export default async function Page(props: { params: Promise<{ testId: string; attemptId: string }> }) {
+  const params = await props.params;
   return <ResultReport examSlug="ssc-gd" testId={params.testId} attemptId={params.attemptId} />;
 }

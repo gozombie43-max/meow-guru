@@ -43,6 +43,9 @@ import { useThemeMode } from '@/hooks/useTheme';
 import styles from './page.module.css';
 import { AiChatIcon } from '@/components/AiChatIcon';
 
+const HERO_BLUR_DATA_URL =
+  'data:image/webp;base64,UklGRlIBAABXRUJQVlA4WAoAAAAQAAAADwAAFwAAQUxQSJ8AAAABgJpt27Ll/Q1LLs2jL+CJRnIaA2h1h+busoMmaOzg0N3tucL7Pi8yQURMgPmvCR0FAa+qa7gYT1LitwW4qTNqxsAOMGU8q0uA5ziPzjFE3rM81o8Ruc3VUpYFYDSsHOE+DDrivxXyHA3oHY5FjwPHsiUCPEesFfFMtxoFQICTgBVYtIDHcuOsUVqMu1jJUZrEXakMKx3KitKrzCrNxhgAVlA4IIwAAAAQBACdASoQABgAPzmEuVOvKKWisAgB4CcJbACxC8ADABGzs/BgoAfDdgD+4vReDlteFEu1w9rLyTMY6OJIRGfKH6FpF1WJyhVFRPlJXxtbtAKuqG/AHpZhXt18I/bIE3o/0H7sQIEJgc7ugZqvm66wQjtDjhTkV+TgfoQKNjqUbrTZKeyzSawe7AAAAA==';
+
 /* Desktop macOS Subjects */
 const desktopSubjects = [
   {
@@ -573,7 +576,10 @@ export default function Home() {
                         alt="Student with graduation cap and notebook"
                         fill
                         priority
-                        sizes="(max-width: 768px) 100vw, 40vw"
+                        placeholder="blur"
+                        blurDataURL={HERO_BLUR_DATA_URL}
+                        sizes="(max-width: 768px) 100vw, 420px"
+                        quality={85}
                         className={styles.heroStudentImage}
                       />
                     </div>
@@ -778,7 +784,10 @@ export default function Home() {
                 alt="Graduate student"
                 fill
                 priority
-                sizes="(max-width: 768px) 50vw, 50vw"
+                placeholder="blur"
+                blurDataURL={HERO_BLUR_DATA_URL}
+                sizes="(max-width: 768px) 50vw, 240px"
+                quality={85}
                 className={styles.mobileHeroImage}
               />
             </div>

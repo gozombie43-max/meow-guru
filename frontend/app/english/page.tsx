@@ -391,7 +391,7 @@ const CATEGORIES = [
 
 type CategoryId = typeof CATEGORIES[number]["id"];
 
-export const PRACTICE_MODES = [
+const PRACTICE_MODES = [
   {
     key: "concept",
     title: "PYQ Practice",
@@ -436,7 +436,7 @@ export const PRACTICE_MODES = [
   },
 ] as const;
 
-export const STUDY_MODE_TOPICS = new Set([
+const STUDY_MODE_TOPICS = new Set([
   "synonyms-antonyms",
   "one-word-substitution",
   "idioms-phrases",

@@ -228,7 +228,7 @@ const CATEGORIES = [
 
 type CategoryId = typeof CATEGORIES[number]["id"];
 
-export const PRACTICE_MODES = [
+const PRACTICE_MODES = [
   {
     key: "concept",
     title: "PYQ Practice",

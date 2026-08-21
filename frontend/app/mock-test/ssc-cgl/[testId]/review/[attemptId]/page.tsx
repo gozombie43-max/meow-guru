@@ -1,5 +1,6 @@
 import ReviewEngine from "../../../../_shared/ReviewEngine";
 
-export default function Page({ params }: { params: { testId: string; attemptId: string } }) {
+export default async function Page(props: { params: Promise<{ testId: string; attemptId: string }> }) {
+  const params = await props.params;
   return <ReviewEngine examSlug="ssc-cgl" testId={params.testId} attemptId={params.attemptId} />;
 }
