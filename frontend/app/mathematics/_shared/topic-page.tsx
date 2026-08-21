@@ -50,8 +50,12 @@ const IconTier2 = () => (
 );
 
 const IconBanner = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 2l1.8 5.6H20l-4.6 3.4 1.8 5.6L12 13.2 6.8 16.6l1.8-5.6L4 7.6h6.2z"/>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+    <polyline points="14 2 14 8 20 8" />
+    <line x1="16" y1="13" x2="8" y2="13" />
+    <line x1="16" y1="17" x2="8" y2="17" />
+    <line x1="10" y1="9" x2="8" y2="9" />
   </svg>
 );
 
@@ -107,8 +111,8 @@ export default function MathematicsTopicPage({
   ];
 
   const kickerText = bannerKicker ?? "Sprint 2026";
-  const headlineText = bannerTitle ?? "Notes, Formula & Tricks";
-  const subtitleText = bannerSubtitle ?? `Curated shortcuts to crack ${title}`;
+  const headlineText = bannerTitle ?? "Formula & Notes";
+  const subtitleText = bannerSubtitle ?? "Shortcuts & revision sheets";
   const notesHref = bannerHref ?? `${base}/formula-notes`;
 
   return (
@@ -199,42 +203,40 @@ export default function MathematicsTopicPage({
           margin: 0; color: var(--label);
         }
 
-        /* ── Banner (iOS feature card style) ── */
+        /* ── Banner (iOS Card Style) ── */
         .sg-banner-wrap {
-          padding: 16px 16px 8px;
+          padding: 16px 16px 18px;
           animation: sg-in .38s cubic-bezier(.22,1,.36,1) both .06s;
         }
         .sg-banner {
-          background: linear-gradient(160deg, #1d2b29, #17211f 60%, #14201d);
-          border-radius: 20px;
-          padding: 16px;
-          display: flex; align-items: center; gap: 14px;
-          margin: 6px 0 16px;
-          border: 0.5px solid rgba(255,255,255,0.08);
+          background: var(--card);
+          border-radius: 18px;
+          padding: 20px 18px;
+          min-height: 94px;
+          box-sizing: border-box;
+          display: flex; align-items: center; gap: 16px;
+          margin: 0;
           text-decoration: none;
           -webkit-tap-highlight-color: transparent;
-          transition: transform .1s, opacity .1s, background .25s, border-color .25s, box-shadow .25s;
+          transition: background .12s, transform .1s;
         }
-        .sg-banner:active { transform: scale(.977); opacity: .9; }
+        .sg-banner:active { background: rgba(255,255,255,0.06); }
         .sg-banner-icon {
-          width: 48px; height: 48px; border-radius: 13px; flex-shrink: 0;
-          background: linear-gradient(155deg, #38a294, #1f6d61);
+          width: 52px; height: 52px; border-radius: 14px; flex-shrink: 0;
+          background: linear-gradient(150deg, #38bdf8, #0284c7);
           display: flex; align-items: center; justify-content: center;
-          box-shadow: inset 0 1px 1px rgba(255,255,255,0.25);
+          box-shadow: inset 0 1px 0.5px rgba(255,255,255,0.3);
           color: white;
         }
-        .sg-banner-icon svg { width: 24px; height: 24px; }
-        .sg-banner-body { flex: 1; min-width: 0; }
-        .sg-banner-kicker {
-          font-size: 11px; font-weight: 700; color: var(--tint);
-          letter-spacing: 0.4px; text-transform: uppercase; margin-bottom: 2px;
-        }
+        .sg-banner-icon svg { width: 26px; height: 26px; }
+        .sg-banner-body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
         .sg-banner-title {
-          font-size: 16px; font-weight: 700; margin: 0 0 2px;
-          letter-spacing: -0.2px; color: var(--label);
+          font-size: 17.5px; font-weight: 650; margin: 0 0 3px;
+          letter-spacing: -0.3px; color: var(--label);
         }
         .sg-banner-sub {
-          font-size: 13px; color: var(--label-2); margin: 0;
+          font-size: 14px; color: var(--label-2); margin: 0;
+          line-height: 1.35; letter-spacing: -0.1px;
         }
         .sg-banner-arr { flex-shrink: 0; color: var(--label-3); display: flex; align-items: center; }
 
@@ -388,7 +390,18 @@ export default function MathematicsTopicPage({
           }
           
           .sg-banner-wrap { padding: 0; }
-          .sg-banner { margin: 0; }
+          .sg-banner {
+            border-radius: 18px;
+            border: 0.5px solid rgba(255,255,255,0.07);
+            padding: 16px;
+            margin: 0;
+          }
+          .sg-banner-icon {
+            width: 42px; height: 42px; border-radius: 12px;
+          }
+          .sg-banner-icon svg { width: 22px; height: 22px; }
+          .sg-banner-title { font-size: 1.05rem; font-weight: 700; }
+          .sg-banner-sub { font-size: 0.8rem; margin-top: 2px; }
           .sg-section { padding: 0; margin-bottom: 20px; }
           
           .sg-grid {
@@ -476,7 +489,6 @@ export default function MathematicsTopicPage({
               <Link href={notesHref} className="sg-banner" aria-label={bannerAriaLabel || bannerActionLabel || "Open formula notes"}>
                 <div className="sg-banner-icon"><IconBanner /></div>
                 <div className="sg-banner-body">
-                  <div className="sg-banner-kicker">{kickerText}</div>
                   <div className="sg-banner-title">{headlineText}</div>
                   <div className="sg-banner-sub">{subtitleText}</div>
                 </div>

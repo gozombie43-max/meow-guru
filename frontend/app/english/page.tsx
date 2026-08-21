@@ -982,7 +982,7 @@ export default function EnglishPage() {
                   )}
 
                   <Link
-                    href={`/english/${selectedTopic.slug}/vocabulary-notes`}
+                    href={`/english/${selectedTopic.slug}/formula-notes`}
                     className={styles.resourceCard}
                     title="View Vocabulary & Rules Bank"
                   >

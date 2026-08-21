@@ -764,7 +764,7 @@ export default function GeneralAwarenessPage() {
 
                 <div className={styles.resourceList}>
                   <Link
-                    href={`/general-awareness/${selectedTopic.slug}/fact-notes`}
+                    href={`/general-awareness/${selectedTopic.slug}/formula-notes`}
                     className={styles.resourceCard}
                     title="View Facts, Dates & Summary Bank"
                   >
