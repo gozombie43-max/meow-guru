@@ -303,22 +303,22 @@ export default function MathematicsTopicPage({
            Triggered by body.theme-light
            ════════════════════════════════════ */
         body.theme-light .sg-page {
-          --bg: #f2f2f7;
-          --card: #ffffff;
-          --card-2: #f2f2f7;
-          --sep: rgba(60,60,67,0.29);
-          --label: #000000;
-          --label-2: rgba(60,60,67,0.6);
-          --label-3: rgba(60,60,67,0.3);
+          --bg: #F6F8FA;
+          --card: #FFFFFF;
+          --card-2: #E6EAEF;
+          --sep: #E6EAEF;
+          --label: #1d1d1f;
+          --label-2: #57606a;
+          --label-3: #8c959f;
           background: var(--bg);
         }
-        body.theme-light .sg-navbar { background: #fff; }
-        body.theme-light .sg-nav-inline { border-bottom-color: rgba(0,0,0,0.1); }
-        body.theme-light .sg-card:active { background: rgba(0,0,0,0.05); }
+        body.theme-light .sg-navbar { background: #F6F8FA; }
+        body.theme-light .sg-nav-inline { border-bottom-color: #E6EAEF; }
+        body.theme-light .sg-card:active { background: #E6EAEF; }
         body.theme-light .sg-banner {
-          background: #ffffff;
-          border-color: rgba(0,0,0,0.06);
-          box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+          background: #FFFFFF;
+          border-color: #E6EAEF;
+          box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
         }
 
         /* ════════════════════════════════════

@@ -2,32 +2,34 @@
    SHARED VARIABLES & PAGE CONTAINER
    ========================================================================= */
 .pageWrapper {
+  /* Light Theme (Palette: #EAEFF5 Deeper Canvas / #DFE5ED Ice Blue Sidebar / #FFFFFF Pure White Cards) */
   --mac-bg-outer: transparent;
-  --mac-window-bg: rgba(248, 250, 252, 0.93);
-  --mac-sidebar-bg: rgba(241, 244, 250, 0.86);
-  --mac-card-bg: #ffffff;
-  --mac-card-subtle: #f8fafc;
-  --mac-text-primary: #1e293b;
-  --mac-text-secondary: #64748b;
-  --mac-text-muted: #94a3b8;
-  --mac-border: rgba(226, 232, 240, 0.85);
-  --mac-border-subtle: rgba(226, 232, 240, 0.5);
-  --mac-primary: #2563eb;
-  --mac-primary-hover: #1d4ed8;
-  --mac-primary-soft: rgba(37, 99, 235, 0.09);
-  --mac-shadow-window: 0 24px 70px -12px rgba(15, 23, 42, 0.15), 0 4px 16px -4px rgba(15, 23, 42, 0.06);
-  --mac-shadow-card: 0 4px 16px -2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.02);
-  --mac-shadow-hover: 0 12px 28px -6px rgba(37, 99, 235, 0.08), 0 2px 8px rgba(15, 23, 42, 0.04);
+  --mac-window-bg: #EAEFF5;
+  --mac-sidebar-bg: #DFE5ED;
+  --mac-canvas-bg: #EAEFF5;
+  --mac-card-bg: #FFFFFF;
+  --mac-card-subtle: #DFE5ED;
+  --mac-text-primary: #1d1d1f;
+  --mac-text-secondary: #57606a;
+  --mac-text-muted: #8c959f;
+  --mac-border: #D8DFE8;
+  --mac-border-subtle: rgba(216, 223, 232, 0.7);
+  --mac-primary: #0071e3;
+  --mac-primary-hover: #0077ed;
+  --mac-primary-soft: #DFE5ED;
+  --mac-shadow-window: 0 20px 60px -10px rgba(15, 23, 42, 0.08), 0 0 0 1px #D8DFE8;
+  --mac-shadow-card: 0 2px 10px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.03);
+  --mac-shadow-hover: 0 10px 28px -4px rgba(0, 113, 227, 0.18), 0 3px 8px rgba(15, 23, 42, 0.05);
 
   /* Mobile iOS Blue theme tokens */
-  --bg: transparent;
-  --surface: rgba(255, 255, 255, 0.92);
-  --surface-soft: rgba(255, 255, 255, 0.85);
-  --text: #000000;
-  --muted: #8e8e93;
-  --line: rgba(0, 0, 0, 0.08);
-  --purple: #007aff;
-  --purple-2: #0062cc;
+  --bg: #EAEFF5;
+  --surface: #FFFFFF;
+  --surface-soft: #DFE5ED;
+  --text: #1d1d1f;
+  --muted: #57606a;
+  --line: #D8DFE8;
+  --purple: #0071e3;
+  --purple-2: #0056b3;
   --orange: #ff9500;
   --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 
@@ -46,29 +48,30 @@
 
 .dark {
   --mac-bg-outer: transparent;
-  --mac-window-bg: rgba(18, 22, 32, 0.91);
-  --mac-sidebar-bg: rgba(22, 28, 40, 0.86);
-  --mac-card-bg: #1a2232;
-  --mac-card-subtle: #141a26;
-  --mac-text-primary: #f8fafc;
-  --mac-text-secondary: #94a3b8;
-  --mac-text-muted: #64748b;
+  --mac-window-bg: rgba(24, 24, 27, 0.95);
+  --mac-sidebar-bg: rgba(22, 22, 25, 0.88);
+  --mac-canvas-bg: #131315;
+  --mac-card-bg: #222226;
+  --mac-card-subtle: #19191c;
+  --mac-text-primary: #ffffff;
+  --mac-text-secondary: rgba(235, 235, 245, 0.7);
+  --mac-text-muted: rgba(235, 235, 245, 0.45);
   --mac-border: rgba(255, 255, 255, 0.09);
   --mac-border-subtle: rgba(255, 255, 255, 0.05);
   --mac-primary: #0a84ff;
   --mac-primary-hover: #409cff;
-  --mac-primary-soft: rgba(10, 132, 255, 0.16);
+  --mac-primary-soft: rgba(10, 132, 255, 0.18);
   --mac-shadow-window: 0 28px 80px -15px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08);
-  --mac-shadow-card: 0 4px 16px rgba(0, 0, 0, 0.2);
-  --mac-shadow-hover: 0 12px 30px rgba(0, 0, 0, 0.35);
+  --mac-shadow-card: 0 4px 16px rgba(0, 0, 0, 0.3);
+  --mac-shadow-hover: 0 12px 30px rgba(0, 0, 0, 0.45);
 
   /* Mobile dark overrides (iOS Blue) */
-  --bg: transparent;
-  --surface: rgba(28, 28, 30, 0.92);
-  --surface-soft: rgba(28, 28, 30, 0.85);
+  --bg: #000000;
+  --surface: #1c1c1e;
+  --surface-soft: #2c2c2e;
   --text: #ffffff;
-  --muted: #ebebf58c;
-  --line: rgba(255, 255, 255, 0.12);
+  --muted: rgba(235, 235, 245, 0.6);
+  --line: rgba(255, 255, 255, 0.1);
   --purple: #0a84ff;
   --purple-2: #409cff;
   --orange: #ff9f0a;
@@ -223,7 +226,7 @@
 }
 
 .railLink:hover {
-  background: rgba(0, 0, 0, 0.04);
+  background: var(--mac-card-subtle);
   color: var(--mac-text-primary);
 }
 
@@ -310,6 +313,7 @@
   flex-direction: column;
   gap: 12px;
   overflow: hidden;
+  background: var(--mac-canvas-bg);
 }
 
 /* Desktop Topbar */
@@ -369,7 +373,7 @@
   font-size: 11px;
   font-weight: 600;
   color: var(--mac-text-muted);
-  background: rgba(0, 0, 0, 0.04);
+  background: var(--mac-card-subtle);
   border: 1px solid var(--mac-border);
   border-radius: 6px;
   cursor: pointer;
@@ -524,9 +528,9 @@
 }
 
 .actionButton:hover {
-  background: rgba(0, 0, 0, 0.04);
+  background: var(--mac-card-subtle);
   color: var(--mac-text-primary);
-  border-color: var(--mac-text-muted);
+  border-color: var(--mac-border);
 }
 
 .dark .actionButton:hover {
@@ -559,7 +563,7 @@
 
 /* Desktop Hero Card */
 .heroCard {
-  background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
+  background: linear-gradient(135deg, #FFFFFF 0%, #F6F8FA 50%, #E6EAEF 100%);
   border: 1px solid var(--mac-border);
   border-radius: 20px;
   box-shadow: var(--mac-shadow-card);
@@ -744,21 +748,22 @@
   border: 1px solid var(--mac-border);
   border-radius: 18px;
   padding: 13px 16px;
-  box-shadow: var(--mac-shadow-card);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 2px 8px rgba(15, 23, 42, 0.02);
   display: flex;
   align-items: center;
   gap: 12px;
   text-decoration: none;
   color: var(--mac-text-primary);
-  transition: background 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  transition: background 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
   will-change: box-shadow, border-color;
   backface-visibility: hidden;
 }
 
 .subjectCard:hover {
   box-shadow: var(--mac-shadow-hover);
-  border-color: rgba(37, 99, 235, 0.35);
-  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 113, 227, 0.35);
+  background: var(--mac-card-bg);
+  transform: translateY(-2px);
 }
 
 .dark .subjectCard:hover {
@@ -880,22 +885,23 @@
   border: 1px solid var(--mac-border);
   border-radius: 18px;
   padding: 13px 16px;
-  box-shadow: var(--mac-shadow-card);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 2px 8px rgba(15, 23, 42, 0.02);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   text-decoration: none;
   color: var(--mac-text-primary);
-  transition: background 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  transition: background 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
   will-change: box-shadow, border-color;
   backface-visibility: hidden;
 }
 
 .recentQuizCard:hover {
   box-shadow: var(--mac-shadow-hover);
-  border-color: rgba(37, 99, 235, 0.35);
-  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 113, 227, 0.35);
+  background: var(--mac-card-bg);
+  transform: translateY(-2px);
 }
 
 .dark .recentQuizCard:hover {
@@ -927,43 +933,51 @@
 }
 
 .english {
-  background: #e0edff;
-  color: #2563eb;
+  background: #E6EAEF;
+  color: #0071e3;
+  border: 1px solid rgba(0, 113, 227, 0.15);
 }
 
 .dark .english {
-  background: rgba(37, 99, 235, 0.2);
+  background: rgba(10, 132, 255, 0.2);
   color: #60a5fa;
+  border: 1px solid rgba(10, 132, 255, 0.18);
 }
 
 .reasoning {
-  background: #e0edff;
-  color: #2563eb;
+  background: #E6EAEF;
+  color: #0071e3;
+  border: 1px solid rgba(0, 113, 227, 0.15);
 }
 
 .dark .reasoning {
-  background: rgba(37, 99, 235, 0.2);
+  background: rgba(10, 132, 255, 0.2);
   color: #60a5fa;
+  border: 1px solid rgba(10, 132, 255, 0.18);
 }
 
 .gk {
-  background: #e0edff;
-  color: #2563eb;
+  background: #E6EAEF;
+  color: #0071e3;
+  border: 1px solid rgba(0, 113, 227, 0.15);
 }
 
 .dark .gk {
-  background: rgba(37, 99, 235, 0.2);
+  background: rgba(10, 132, 255, 0.2);
   color: #60a5fa;
+  border: 1px solid rgba(10, 132, 255, 0.18);
 }
 
 .math {
-  background: #e0edff;
-  color: #2563eb;
+  background: #E6EAEF;
+  color: #0071e3;
+  border: 1px solid rgba(0, 113, 227, 0.15);
 }
 
 .dark .math {
-  background: rgba(37, 99, 235, 0.2);
+  background: rgba(10, 132, 255, 0.2);
   color: #60a5fa;
+  border: 1px solid rgba(10, 132, 255, 0.18);
 }
 
 .quizProgressRatio {
@@ -993,7 +1007,7 @@
   width: 100%;
   height: 5px;
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--mac-border);
   overflow: hidden;
   margin-top: 2px;
 }
@@ -1005,7 +1019,7 @@
 .quizProgressFill {
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
+  background: linear-gradient(90deg, #0071e3 0%, #0077ed 100%);
   transition: width 0.3s ease;
 }
 

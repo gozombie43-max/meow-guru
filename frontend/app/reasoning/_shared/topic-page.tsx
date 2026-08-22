@@ -292,26 +292,30 @@ export default function ReasoningTopicPage({
            Triggered by body.theme-light
            ════════════════════════════════════ */
         body.theme-light .sg-page {
-          --bg: #f2f2f7;
-          --card: #ffffff;
-          --card-2: #f2f2f7;
-          --sep: rgba(60,60,67,0.29);
-          --label: #000000;
-          --label-2: rgba(60,60,67,0.6);
-          --label-3: rgba(60,60,67,0.3);
+          --bg: #F6F8FA;
+          --card: #FFFFFF;
+          --card-2: #E6EAEF;
+          --sep: #E6EAEF;
+          --label: #0f172a;
+          --label-2: #475569;
+          --label-3: #94a3b8;
           background: var(--bg);
         }
-        body.theme-light .sg-navbar { background: #fff; }
-        body.theme-light .sg-nav-inline { border-bottom-color: rgba(0,0,0,0.1); }
-        body.theme-light .sg-card:active { background: rgba(0,0,0,0.05); }
+        body.theme-light .sg-navbar { background: #F6F8FA; }
+        body.theme-light .sg-nav-inline { border-bottom-color: #E6EAEF; }
+        body.theme-light .sg-card:active { background: #E6EAEF; }
         body.theme-light .sg-banner {
-          background: #ffffff;
-          border-color: rgba(0,0,0,0.06);
-          box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+          background: #FFFFFF;
+          border-color: #E6EAEF;
+          box-shadow: 0 2px 10px rgba(230, 234, 239, 0.6);
+        }
+        body.theme-light .sg-grid {
+          background: #FFFFFF;
+          border: 1px solid #E6EAEF;
         }
         body.theme-light .sg-notes-btn {
-          background: #ffffff;
-          border-color: rgba(0,0,0,0.1);
+          background: #FFFFFF;
+          border-color: #E6EAEF;
         }
 
         /* ════════════════════════════════════
