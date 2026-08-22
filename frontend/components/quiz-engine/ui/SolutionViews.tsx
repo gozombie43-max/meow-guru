@@ -228,26 +228,26 @@ export function SolutionBottomSheet({
                 margin-bottom: 24px;
               }
 
-              /* Light Theme Overrides */
+              /* Light Theme Overrides (Palette: #F6F8FA White / #E6EAEF Ice Blue / #FFFFFF Pure White) */
               .ios-solution-backdrop[data-theme="light"] {
-                background: rgba(0, 0, 0, 0.35);
+                background: rgba(15, 23, 42, 0.4);
               }
               .ios-solution-backdrop[data-theme="light"] .ios-solution-sheet {
-                background: #ffffff;
-                border-color: rgba(0, 0, 0, 0.1);
+                background: #FFFFFF;
+                border-color: #E6EAEF;
                 color: #1d1d1f;
               }
               .ios-solution-backdrop[data-theme="light"] .ios-sheet-handle {
-                background: rgba(0, 0, 0, 0.18);
+                background: #E6EAEF;
               }
               .ios-solution-backdrop[data-theme="light"] .ios-solution-header {
-                border-bottom-color: rgba(0, 0, 0, 0.08);
+                border-bottom-color: #E6EAEF;
               }
               .ios-solution-backdrop[data-theme="light"] .ios-solution-title {
                 color: #1d1d1f;
               }
               .ios-solution-backdrop[data-theme="light"] .ios-done-btn {
-                color: #007aff;
+                color: #0071e3;
               }
               .ios-solution-backdrop[data-theme="light"] .ios-solution-content-text {
                 color: #1d1d1f;

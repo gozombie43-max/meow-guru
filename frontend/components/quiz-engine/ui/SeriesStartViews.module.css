@@ -3,25 +3,26 @@
    ========================================================================== */
 
 .pageRoot {
-  --mac-bg-desktop: #f2f4f8;
-  --mac-window-bg: rgba(255, 255, 255, 0.94);
-  --mac-window-border: rgba(0, 0, 0, 0.08);
-  --mac-window-shadow: 0 24px 64px -12px rgba(0, 0, 0, 0.16), 0 0 0 1px rgba(0, 0, 0, 0.05);
-  --mac-titlebar-bg: rgba(246, 246, 248, 0.96);
-  --mac-sidebar-bg: rgba(244, 244, 247, 0.85);
-  --mac-sidebar-border: rgba(0, 0, 0, 0.07);
-  --mac-surface: #ffffff;
-  --mac-surface-hover: #f5f5f7;
-  --mac-surface-active: #e5e5ea;
-  --mac-border: rgba(0, 0, 0, 0.08);
+  /* Light Theme (Palette: #F6F8FA White / #E6EAEF Ice Blue / #FFFFFF Pure White) */
+  --mac-bg-desktop: #F6F8FA;
+  --mac-window-bg: #FFFFFF;
+  --mac-window-border: #E6EAEF;
+  --mac-window-shadow: 0 20px 60px -10px rgba(15, 23, 42, 0.08), 0 0 0 1px #E6EAEF;
+  --mac-titlebar-bg: #F6F8FA;
+  --mac-sidebar-bg: #E6EAEF;
+  --mac-sidebar-border: #E6EAEF;
+  --mac-surface: #FFFFFF;
+  --mac-surface-hover: #F6F8FA;
+  --mac-surface-active: #E6EAEF;
+  --mac-border: #E6EAEF;
   --mac-border-hover: rgba(0, 113, 227, 0.35);
   --mac-border-focus: #0071e3;
   --mac-blue: #0071e3;
   --mac-blue-hover: #0077ed;
-  --mac-blue-subtle: rgba(0, 113, 227, 0.09);
+  --mac-blue-subtle: #E6EAEF;
   --mac-text-primary: #1d1d1f;
-  --mac-text-secondary: #6e6e73;
-  --mac-text-tertiary: #86868b;
+  --mac-text-secondary: #57606a;
+  --mac-text-tertiary: #8c959f;
   --mac-font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
   --mac-font-mono: "SF Mono", Menlo, Monaco, Consolas, monospace;
   --scrollbar-thumb: rgba(0, 0, 0, 0.18);
