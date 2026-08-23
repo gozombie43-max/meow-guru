@@ -227,6 +227,62 @@ export default function QuizEngine({
   }, [classificationCategory, classificationSearch, conceptOptions]);
 
   const isClassificationConceptMode = mode === "concept";
+  const isEnglishSynonymsFormula =
+    subjectConfig.subjectId === "english" && slug === "synonyms-antonyms" && mode === "formula";
+
+  const initialLetterParam = searchParams.get("letter");
+  const [selectedLetters, setSelectedLetters] = useState<Set<string>>(() => {
+    if (initialLetterParam) {
+      const letters = initialLetterParam
+        .split(",")
+        .map((l) => l.trim().toUpperCase())
+        .filter((l) => /^[A-Z]$/.test(l));
+      if (letters.length > 0) return new Set(letters);
+    }
+    return new Set();
+  });
+
+  const { availableLetters, letterCounts } = useMemo(() => {
+    const counts: Record<string, number> = {};
+    const lettersSet = new Set<string>();
+
+    allQuestions.forEach((q) => {
+      if (isFormulaQuestion(q)) {
+        const letter = (
+          q.letter ||
+          (q.word ? q.word.trim().charAt(0) : "")
+        )
+          .trim()
+          .toUpperCase();
+        if (letter && /^[A-Z]$/.test(letter)) {
+          lettersSet.add(letter);
+          counts[letter] = (counts[letter] ?? 0) + 1;
+        }
+      }
+    });
+
+    return {
+      availableLetters: Array.from(lettersSet).sort(),
+      letterCounts: counts,
+    };
+  }, [allQuestions]);
+
+  const handleToggleLetter = useCallback((letter: string) => {
+    const upper = letter.trim().toUpperCase();
+    setSelectedLetters((prev) => {
+      const next = new Set(prev);
+      if (next.has(upper)) {
+        next.delete(upper);
+      } else {
+        next.add(upper);
+      }
+      return next;
+    });
+  }, []);
+
+  const handleSelectAllLetters = useCallback(() => {
+    setSelectedLetters(new Set());
+  }, []);
 
   const classificationCategoryCounts = useMemo(
     () =>
@@ -242,23 +298,42 @@ export default function QuizEngine({
   );
 
   const filteredQuestions = useMemo(() => {
+    let baseQuestions: QuizQuestionRecord[] = [];
     if (isClassificationConceptMode || slug === "series") {
       const selected = selectedClassificationConcepts;
-      const baseQuestions = resolveIndexedQuestions(questionIndex, {
+      const resolved = resolveIndexedQuestions(questionIndex, {
         bucket: mode,
         concept: "all",
         exam: examFilter,
       });
 
-      if (selected.size === 0) return baseQuestions;
-      return baseQuestions.filter((question) => selected.has(question.concept));
+      if (selected.size === 0) baseQuestions = resolved;
+      else baseQuestions = resolved.filter((question) => selected.has(question.concept));
+    } else {
+      const selected = selectedClassificationConcepts;
+      const resolved = resolveIndexedQuestions(questionIndex, {
+        bucket: mode,
+        concept: "all",
+        exam: examFilter,
+      });
+
+      if (selected.size === 0) baseQuestions = resolved;
+      else baseQuestions = resolved.filter((question) => selected.has(question.concept));
     }
 
-    return resolveIndexedQuestions(questionIndex, {
-      bucket: mode,
-      concept: "all",
-      exam: examFilter,
-    });
+    if (isEnglishSynonymsFormula && selectedLetters.size > 0) {
+      baseQuestions = baseQuestions.filter((question) => {
+        const qLetter = (
+          question.letter ||
+          (question.word ? question.word.trim().charAt(0) : "")
+        )
+          .trim()
+          .toUpperCase();
+        return selectedLetters.has(qLetter);
+      });
+    }
+
+    return baseQuestions;
   }, [
     questionIndex,
     mode,
@@ -266,6 +341,8 @@ export default function QuizEngine({
     examFilter,
     isClassificationConceptMode,
     selectedClassificationConcepts,
+    isEnglishSynonymsFormula,
+    selectedLetters,
   ]);
 
   const availableCount = filteredQuestions.length;
@@ -317,6 +394,7 @@ export default function QuizEngine({
     setConceptFilter("all");
     setSelectedClassificationConcepts(new Set());
     setExamFilter("");
+    setSelectedLetters(new Set());
   }, [slug]);
 
   
@@ -1234,6 +1312,11 @@ export default function QuizEngine({
           search={classificationSearch}
           selected={selectedClassificationConcepts}
           conceptCount={conceptOptions.length}
+          selectedLetters={selectedLetters}
+          onToggleLetter={handleToggleLetter}
+          onSelectAllLetters={handleSelectAllLetters}
+          letterCounts={letterCounts}
+          availableLetters={availableLetters}
           onCategoryChange={setClassificationCategory}
           onSearchChange={setClassificationSearch}
           onToggleGroup={(concepts) => {
@@ -1439,6 +1522,26 @@ export default function QuizEngine({
               <main className="mac-series-main">
                 <div className="mac-series-meta-row">
                   <ConceptBadge concept={currentQ.concept} colours={conceptColours} />
+                  {Boolean(currentQ.letter || currentQ.word) && (
+                    <span
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "4px",
+                        fontSize: "12px",
+                        fontWeight: 650,
+                        padding: "2px 8px",
+                        borderRadius: "6px",
+                        background: "rgba(0, 113, 227, 0.12)",
+                        color: "#0071e3",
+                        border: "1px solid rgba(0, 113, 227, 0.25)",
+                      }}
+                    >
+                      {currentQ.letter ? `Letter ${currentQ.letter}` : ""}
+                      {currentQ.letter && currentQ.word ? " · " : ""}
+                      {currentQ.word ? `"${currentQ.word}"` : ""}
+                    </span>
+                  )}
                   <span>{currentQ.exam || `${title} concept practice`}</span>
                   
                   <button
@@ -1966,6 +2069,26 @@ export default function QuizEngine({
           <main className="ios-series-content">
             <div className="ios-series-meta-row">
               <ConceptBadge concept={currentQ.concept} colours={conceptColours} />
+              {Boolean(currentQ.letter || currentQ.word) && (
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "4px",
+                    fontSize: "12px",
+                    fontWeight: 650,
+                    padding: "2px 8px",
+                    borderRadius: "6px",
+                    background: "rgba(0, 113, 227, 0.12)",
+                    color: "#0071e3",
+                    border: "1px solid rgba(0, 113, 227, 0.25)",
+                  }}
+                >
+                  {currentQ.letter ? `Letter ${currentQ.letter}` : ""}
+                  {currentQ.letter && currentQ.word ? " · " : ""}
+                  {currentQ.word ? `"${currentQ.word}"` : ""}
+                </span>
+              )}
               <span>{currentQ.exam || `${title} concept practice`}</span>
               <button
                 type="button"
@@ -2367,6 +2490,26 @@ export default function QuizEngine({
               >
                 <div className="mb-[14px] flex items-center flex-wrap gap-2">
                   <ConceptBadge concept={currentQ.concept} colours={conceptColours} />
+                  {Boolean(currentQ.letter || currentQ.word) && (
+                    <span
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "4px",
+                        fontSize: "12px",
+                        fontWeight: 650,
+                        padding: "2px 8px",
+                        borderRadius: "6px",
+                        background: "rgba(0, 113, 227, 0.12)",
+                        color: "#0071e3",
+                        border: "1px solid rgba(0, 113, 227, 0.25)",
+                      }}
+                    >
+                      {currentQ.letter ? `Letter ${currentQ.letter}` : ""}
+                      {currentQ.letter && currentQ.word ? " · " : ""}
+                      {currentQ.word ? `"${currentQ.word}"` : ""}
+                    </span>
+                  )}
                   <span
                     style={{
                       fontSize: "13px",

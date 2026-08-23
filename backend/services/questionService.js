@@ -33,6 +33,14 @@ export function matchesNormalizedTopic(question, normalizedTopic) {
     question.quizName,
     question.source,
   ];
+  if (normalizedTopic === 'synonymsantonyms' || normalizedTopic === 'antosynopyq') {
+    if (candidates.some((field) => {
+      const k = normalizeSearchKey(field);
+      return k === 'synonymsantonyms' || k === 'antosynopyq' || k === 'synonyms' || k === 'antonyms';
+    })) {
+      return true;
+    }
+  }
   return candidates.some((field) => normalizeSearchKey(field) === normalizedTopic);
 }
 
@@ -184,9 +192,14 @@ export async function fetchQuestions(params) {
   let partitionKey;
 
   if (topic) {
-    query += ' AND c.topic = @topic';
-    parameters.push({ name: '@topic', value: topic });
-    partitionKey = topic;
+    if (normalizedTopic === 'synonymsantonyms' || normalizedTopic === 'antosynopyq') {
+      query += ' AND (c.topic = @topic OR c.topic = "antosynopyq" OR c.topic = "synonyms-antonyms")';
+      parameters.push({ name: '@topic', value: topic });
+    } else {
+      query += ' AND c.topic = @topic';
+      parameters.push({ name: '@topic', value: topic });
+      partitionKey = topic;
+    }
   } else if (subject) {
     query += ' AND LOWER(c.subject) = LOWER(@subject)';
     parameters.push({ name: '@subject', value: subject });
@@ -226,7 +239,7 @@ export async function fetchQuestions(params) {
       query += ' AND LOWER(c.questionType) = @questionType';
       parameters.push({ name: '@questionType', value: normalizedQuestionType });
     } else {
-      query += ' AND (NOT IS_DEFINED(c.questionType) OR (LOWER(c.questionType) != "study-mode" AND LOWER(c.questionType) != "studymode")) AND (NOT IS_DEFINED(c.quizName) OR LOWER(c.quizName) != "study mode") AND (NOT IS_DEFINED(c.word) OR c.word = null OR c.word = "")';
+      query += ' AND (NOT IS_DEFINED(c.questionType) OR (LOWER(c.questionType) != "study-mode" AND LOWER(c.questionType) != "studymode")) AND (NOT IS_DEFINED(c.quizName) OR LOWER(c.quizName) != "study mode") AND (NOT IS_DEFINED(c.word) OR NOT IS_ARRAY(c.meanings))';
     }
   }
 

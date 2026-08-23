@@ -64,6 +64,10 @@ export interface QuizQuestion {
   questionImage?: string;
   optionRegions?: Record<string, { x: number; y: number; w: number; h: number }>;
   correctLetter?: string;
+  word?: string;
+  letter?: string;
+  chapter?: string;
+  rawId?: string;
   diagram?: any;
   needs_diagram?: boolean;
 }

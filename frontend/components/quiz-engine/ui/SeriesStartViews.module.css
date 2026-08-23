@@ -1233,3 +1233,166 @@
   opacity: 0.75;
   transform: scale(0.99);
 }
+
+/* ── Alphabet / Letter Filter Bar (English Synonyms Formula Mode) ── */
+.letterBarSection {
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--mac-border);
+  background: var(--mac-surface);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.letterBarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--mac-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.letterBarCount {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--mac-blue);
+}
+
+.letterBarScroll {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+}
+
+.letterBarScroll::-webkit-scrollbar {
+  display: none;
+}
+
+.letterBtn {
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  border-radius: 7px;
+  border: 1px solid var(--mac-border);
+  background: var(--mac-window-bg);
+  color: var(--mac-text-primary);
+  font-size: 11.5px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.letterBtn:hover:not(.letterBtnDisabled) {
+  background: var(--mac-surface-hover);
+  border-color: var(--mac-border-hover);
+  transform: translateY(-1px);
+}
+
+.letterBtnActive {
+  background: var(--mac-blue) !important;
+  color: #ffffff !important;
+  border-color: var(--mac-blue) !important;
+  box-shadow: 0 2px 6px rgba(0, 113, 227, 0.35);
+}
+
+.letterBtnDisabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  border-style: dashed;
+}
+
+.letterBtnAll {
+  min-width: 38px;
+  font-size: 11px;
+}
+
+/* ── iOS Mobile Letter Ribbon ── */
+.iosLetterSection {
+  margin: 10px 0 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.iosLetterHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2px;
+}
+
+.iosLetterHeading {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ios-meta, rgba(235, 235, 245, 0.6));
+  margin: 0;
+}
+
+.iosLetterActiveLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ios-accent, #007aff);
+}
+
+.iosLetterScroll {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 2px 0 6px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.iosLetterScroll::-webkit-scrollbar {
+  display: none;
+}
+
+.iosLetterPill {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 9px;
+  border: 1px solid var(--ios-card-border, rgba(255, 255, 255, 0.08));
+  background: var(--ios-card-bg, #1c1c1e);
+  color: var(--ios-label, #ffffff);
+  font-size: 13px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.iosLetterPill:active {
+  transform: scale(0.95);
+}
+
+.iosLetterPillActive {
+  background: var(--ios-accent, #007aff) !important;
+  color: #ffffff !important;
+  border-color: var(--ios-accent, #007aff) !important;
+  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.4);
+}
+
+.iosLetterPillDisabled {
+  opacity: 0.35;
+  cursor: default;
+}
+

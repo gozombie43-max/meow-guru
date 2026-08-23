@@ -238,8 +238,18 @@ export function isFormulaQuestion(question: {
   quizName?: string;
   source?: string;
   quizId?: string;
+  topic?: string;
+  letter?: string;
+  word?: string;
 }): boolean {
-  return matchesQuizTag(question, ["careerwill", "patternbank"]);
+  if (matchesQuizTag(question, ["careerwill", "patternbank", "formula", "vocabularybank", "antosynopyq"])) {
+    return true;
+  }
+  const normalizedTopic = normalizeQuizTag(question.topic);
+  if (normalizedTopic === "antosynopyq") return true;
+  if (typeof question.letter === "string" && question.letter.trim()) return true;
+  if (typeof question.word === "string" && question.word.trim()) return true;
+  return false;
 }
 
 export function isMixedQuestion(question: {
@@ -292,6 +302,9 @@ export function isTaggedModeQuestion(question: {
   quizName?: string;
   source?: string;
   quizId?: string;
+  topic?: string;
+  letter?: string;
+  word?: string;
 }): boolean {
   return (
     isFormulaQuestion(question) ||
@@ -324,12 +337,34 @@ export function toQuizQuestion(
   const difficulty = normalizeDifficulty(question.difficulty);
   const correctAnswer = resolveCorrectIndex(question, options);
   const exam = String(question.exam ?? "");
+  const word = question.word ? String(question.word).trim() : undefined;
+  const letter = (
+    question.letter ||
+    (word ? word.charAt(0) : "")
+  )
+    .trim()
+    .toUpperCase() || undefined;
+  const chapter = question.chapter ? String(question.chapter).trim() : undefined;
+  const rawConcept = String(question.concept ?? "").trim();
   const concept =
-    String(question.concept ?? question.chapter ?? question.topic ?? "").trim() ||
+    rawConcept ||
+    chapter ||
+    (letter ? `Letter ${letter}` : "") ||
+    String(question.topic ?? "").trim() ||
     fallbackConcept ||
     "General";
-  const numericId = Number.parseInt(question.id, 10);
-  const id = Number.isFinite(numericId) ? numericId : index + 1;
+
+  const rawId = String(question.id ?? "");
+  const numericId = Number.parseInt(rawId, 10);
+  let id = Number.isFinite(numericId) ? numericId : index + 1;
+  if (!Number.isFinite(numericId)) {
+    const digitMatch = rawId.match(/\d+/);
+    if (digitMatch) {
+      const parsedMatch = Number.parseInt(digitMatch[0], 10);
+      if (Number.isFinite(parsedMatch)) id = parsedMatch;
+    }
+  }
+
   const rawAnswer = String(question.correctAnswer ?? "").trim();
   const answer = /^[a-z]$/i.test(rawAnswer)
     ? options[correctAnswer] ?? ""
@@ -375,6 +410,10 @@ export function toQuizQuestion(
     quizId: (question as ApiQuestion & { quizId?: string }).quizId,
     diagram: (question as any).diagram,
     needs_diagram: (question as any).needs_diagram,
+    word,
+    letter,
+    chapter,
+    rawId,
   };
 }
 

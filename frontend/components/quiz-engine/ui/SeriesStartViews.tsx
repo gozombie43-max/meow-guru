@@ -222,6 +222,9 @@ const MODE_DETAILS: Record<
   },
 };
 
+// ── Alphabet definition for letter filtering ──────────────────────────────────
+const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+
 // ── macOS Unified Quiz Start Studio Component ─────────────────────────────────
 interface MacOsQuizStartStudioProps {
   subjectConfig: SubjectConfig;
@@ -238,6 +241,11 @@ interface MacOsQuizStartStudioProps {
   conceptCount: number;
   questionCount: number;
   search?: string;
+  selectedLetters?: Set<string>;
+  onToggleLetter?: (letter: string) => void;
+  onSelectAllLetters?: () => void;
+  letterCounts?: Record<string, number>;
+  availableLetters?: string[];
   onCategoryChange: (category: string) => void;
   onExamChange: (exam: string) => void;
   onSearchChange?: (search: string) => void;
@@ -260,6 +268,11 @@ function MacOsQuizStartStudio({
   conceptCount,
   questionCount,
   search: externalSearch,
+  selectedLetters,
+  onToggleLetter,
+  onSelectAllLetters,
+  letterCounts,
+  availableLetters,
   onCategoryChange,
   onExamChange,
   onSearchChange,
@@ -525,6 +538,50 @@ function MacOsQuizStartStudio({
               </div>
             </div>
 
+            {/* Alphabet / Letter Filter Bar for Synonyms & Antonyms in Formula / Vocabulary Mode */}
+            {subjectConfig.subjectId === "english" && slug === "synonyms-antonyms" && mode === "formula" && (
+              <div className={styles.letterBarSection}>
+                <div className={styles.letterBarHeader}>
+                  <span>Filter by Letter (A–Z)</span>
+                  <span className={styles.letterBarCount}>
+                    {selectedLetters && selectedLetters.size > 0
+                      ? `${selectedLetters.size} letter${selectedLetters.size > 1 ? "s" : ""} active (${Array.from(selectedLetters).sort().join(", ")})`
+                      : "All letters"}
+                  </span>
+                </div>
+                <div className={styles.letterBarScroll} role="toolbar" aria-label="Alphabet filter">
+                  <button
+                    type="button"
+                    className={`${styles.letterBtn} ${styles.letterBtnAll} ${
+                      !selectedLetters || selectedLetters.size === 0 ? styles.letterBtnActive : ""
+                    }`}
+                    onClick={onSelectAllLetters}
+                  >
+                    All
+                  </button>
+                  {ALPHABET.map((letter) => {
+                    const count = letterCounts?.[letter] ?? 0;
+                    const isSelected = selectedLetters?.has(letter);
+                    const hasQuestions = count > 0;
+                    return (
+                      <button
+                        key={letter}
+                        type="button"
+                        className={`${styles.letterBtn} ${isSelected ? styles.letterBtnActive : ""} ${
+                          !hasQuestions ? styles.letterBtnDisabled : ""
+                        }`}
+                        onClick={() => onToggleLetter && onToggleLetter(letter)}
+                        title={hasQuestions ? `Letter ${letter} (${count} Qs)` : `Letter ${letter} (0 Qs)`}
+                        disabled={!hasQuestions}
+                      >
+                        {letter}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Concept Groups Grid */}
             <div className={styles.conceptGrid}>
               {filteredGroups.map((group) => {
@@ -626,6 +683,11 @@ interface IosQuizStartMobileProps {
   conceptCount: number;
   questionCount: number;
   search?: string;
+  selectedLetters?: Set<string>;
+  onToggleLetter?: (letter: string) => void;
+  onSelectAllLetters?: () => void;
+  letterCounts?: Record<string, number>;
+  availableLetters?: string[];
   onCategoryChange: (category: string) => void;
   onExamChange: (exam: string) => void;
   onSearchChange?: (search: string) => void;
@@ -648,6 +710,11 @@ function IosQuizStartMobile({
   conceptCount,
   questionCount,
   search: externalSearch,
+  selectedLetters,
+  onToggleLetter,
+  onSelectAllLetters,
+  letterCounts,
+  availableLetters,
   onCategoryChange,
   onExamChange,
   onSearchChange,
@@ -777,6 +844,49 @@ function IosQuizStartMobile({
               </button>
             ))}
         </div>
+
+        {/* Alphabet / Letter Filter for English Synonyms Formula Mode */}
+        {subjectConfig.subjectId === "english" && slug === "synonyms-antonyms" && mode === "formula" && (
+          <div className={styles.iosLetterSection}>
+            <div className={styles.iosLetterHeader}>
+              <p className={styles.iosLetterHeading}>Filter by Letter</p>
+              <span className={styles.iosLetterActiveLabel}>
+                {selectedLetters && selectedLetters.size > 0
+                  ? Array.from(selectedLetters).sort().join(", ")
+                  : "All Letters"}
+              </span>
+            </div>
+            <div className={styles.iosLetterScroll} aria-label="Alphabet filters">
+              <button
+                type="button"
+                className={`${styles.iosLetterPill} ${
+                  !selectedLetters || selectedLetters.size === 0 ? styles.iosLetterPillActive : ""
+                }`}
+                onClick={onSelectAllLetters}
+              >
+                All
+              </button>
+              {ALPHABET.map((letter) => {
+                const count = letterCounts?.[letter] ?? 0;
+                const isSelected = selectedLetters?.has(letter);
+                const hasQuestions = count > 0;
+                return (
+                  <button
+                    key={letter}
+                    type="button"
+                    className={`${styles.iosLetterPill} ${isSelected ? styles.iosLetterPillActive : ""} ${
+                      !hasQuestions ? styles.iosLetterPillDisabled : ""
+                    }`}
+                    onClick={() => onToggleLetter && onToggleLetter(letter)}
+                    disabled={!hasQuestions}
+                  >
+                    {letter}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Optional Search */}
         {(onSearchChange !== undefined || Boolean(activeSearch)) && (
@@ -922,6 +1032,11 @@ export function SeriesFormulaStart(props: {
   search?: string;
   selected: Set<string>;
   conceptCount: number;
+  selectedLetters?: Set<string>;
+  onToggleLetter?: (letter: string) => void;
+  onSelectAllLetters?: () => void;
+  letterCounts?: Record<string, number>;
+  availableLetters?: string[];
   onCategoryChange: (category: string) => void;
   onSearchChange?: (search: string) => void;
   onToggleGroup: (concepts: string[]) => void;

@@ -31,6 +31,7 @@ const addQuestion = async (req, res) => {
       options: optionsBody, correctAnswer: correctAnswerBody,
       correctIndex, solution: solutionBody, solutionText,
       quizSubject, quizTopic, quizName,
+      word, letter, exam, correctLetter,
     } = req.body;
 
     const normalizedQuizSubject = String(quizSubject || "").trim();
@@ -113,6 +114,10 @@ const addQuestion = async (req, res) => {
       difficulty:  difficulty  || 'medium',
       formula:     formula     || '',
       trapType:    trapType    || '',
+      word:        word        || '',
+      letter:      letter      || '',
+      exam:        exam        || '',
+      correctLetter: correctLetter || '',
       question:    questionValue,
       options,
       correctAnswer,

@@ -34,6 +34,7 @@ export interface Question {
   diagram?: GeometryDiagram;
   needs_diagram?: boolean;
   word?: string;
+  letter?: string;
   meanings?: Array<{ pos?: string; definition?: string; translation?: string }>;
   synonyms?: Array<{ word?: string; translation?: string }>;
   antonyms?: Array<{ word?: string; translation?: string }>;
