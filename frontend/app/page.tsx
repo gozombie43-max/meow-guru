@@ -239,7 +239,26 @@ export default function Home() {
     };
   }, []);
 
-  // Keyboard shortcut ⌘K / Ctrl+K for search
+  // Prevent background scrolling when mobile sidebar is open
+  useEffect(() => {
+    if (!sidebarOpen) return;
+
+    const prevBodyOverflow = document.body.style.overflow;
+    const prevHtmlOverflow = document.documentElement.style.overflow;
+    const prevTouchAction = document.body.style.touchAction;
+
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.touchAction = 'none';
+
+    return () => {
+      document.body.style.overflow = prevBodyOverflow;
+      document.documentElement.style.overflow = prevHtmlOverflow;
+      document.body.style.touchAction = prevTouchAction;
+    };
+  }, [sidebarOpen]);
+
+  // Keyboard shortcut ⌘K / Ctrl+K for search & ESC to close
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
@@ -249,6 +268,7 @@ export default function Home() {
       }
       if (e.key === 'Escape') {
         setSearchOpen(false);
+        setSidebarOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -292,14 +312,6 @@ export default function Home() {
           Log in
         </Link>
       )}
-      <button
-        type="button"
-        className={styles.iconButton}
-        onClick={toggleThemeMode}
-        aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-      >
-        {isDark ? <Sun size={23} /> : <Moon size={23} />}
-      </button>
       <button
         type="button"
         className={styles.menuButton}
@@ -683,12 +695,24 @@ export default function Home() {
           type="button"
           className={`${styles.sidebarBackdrop} ${sidebarOpen ? styles.sidebarBackdropOpen : ''}`}
           onClick={() => setSidebarOpen(false)}
+          onTouchMove={(e) => e.preventDefault()}
           aria-label="Close menu"
         />
 
         {/* Mobile Slide-out Sidebar */}
         <aside className={`${styles.mobileSidebar} ${sidebarOpen ? styles.sidebarOpen : ''}`}>
-          <SkillLearnLogo />
+          <div className={styles.mobileSidebarHeader}>
+            <SkillLearnLogo />
+            <button
+              type="button"
+              className={styles.sidebarCloseButton}
+              onClick={() => setSidebarOpen(false)}
+              aria-label="Close sidebar"
+            >
+              <X size={22} />
+            </button>
+          </div>
+
           <button
             type="button"
             className={styles.sidebarThemeToggle}
@@ -723,9 +747,14 @@ export default function Home() {
           </nav>
 
           <section className={styles.premium}>
-            <h2>Go Premium</h2>
+            <div className={styles.premiumHeader}>
+              <div className={styles.crownIcon}>
+                <Crown size={16} strokeWidth={2.4} fill="currentColor" />
+              </div>
+              <h2>Go Premium</h2>
+            </div>
             <p>Unlock all features and learn without limits.</p>
-            <Link href="/resource">Upgrade Now</Link>
+            <Link href="/resource" onClick={() => setSidebarOpen(false)}>Upgrade Now</Link>
           </section>
         </aside>
 
