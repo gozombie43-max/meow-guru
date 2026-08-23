@@ -326,9 +326,9 @@ export default function ReasoningTopicPage({
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 7px 10px 7px 10px;
-          min-height: 48px;
-          border-radius: 12px;
+          padding: 10px 12px 10px 12px;
+          min-height: 62px;
+          border-radius: 14px;
           background: #1C1C1E;
           color: #f8fafc;
           text-decoration: none;
@@ -355,16 +355,16 @@ export default function ReasoningTopicPage({
         .sg-card-left {
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 12px;
           min-width: 0;
-          padding-right: 84px;
+          padding-right: 92px;
           z-index: 2;
         }
 
         .sg-badge {
-          width: 26px;
-          height: 26px;
-          border-radius: 7.5px;
+          width: 36px;
+          height: 36px;
+          border-radius: 10px;
           background: var(--card-accent, #007AFF) !important;
           color: #ffffff !important;
           border: 1px solid rgba(255, 255, 255, 0.18) !important;
@@ -376,8 +376,8 @@ export default function ReasoningTopicPage({
         }
 
         .sg-badge svg {
-          width: 14px;
-          height: 14px;
+          width: 18px;
+          height: 18px;
           color: #ffffff !important;
           stroke: #ffffff;
         }
@@ -386,14 +386,14 @@ export default function ReasoningTopicPage({
           display: flex;
           flex-direction: column;
           min-width: 0;
-          gap: 1px;
+          gap: 2px;
         }
 
         .sg-card-name {
-          font-size: 12px;
+          font-size: 15px;
           font-weight: 700;
           color: #f8fafc;
-          line-height: 1.2;
+          line-height: 1.25;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -401,12 +401,13 @@ export default function ReasoningTopicPage({
         }
 
         .sg-card-sub {
-          font-size: 9.5px;
+          font-size: 12px;
           font-weight: 500;
           color: rgba(235, 235, 245, 0.6);
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
+          line-height: 1.3;
         }
 
         /* ── Right White Cutout Tab with Curved Notch ── */
@@ -415,7 +416,7 @@ export default function ReasoningTopicPage({
           top: 0;
           right: 0;
           bottom: 0;
-          width: 88px;
+          width: 92px;
           height: 100%;
           pointer-events: none;
           z-index: 3;
@@ -439,14 +440,14 @@ export default function ReasoningTopicPage({
           top: 0;
           right: 0;
           bottom: 0;
-          width: 60px;
+          width: 64px;
           display: flex;
           align-items: center;
           justify-content: center;
         }
 
         .sg-card-qs-text {
-          font-size: 11.5px;
+          font-size: 13px;
           font-weight: 750;
           color: #007AFF !important;
           letter-spacing: -0.01em;
@@ -664,7 +665,7 @@ export default function ReasoningTopicPage({
                   >
                     <div className="sg-card-left">
                       <div className="sg-badge">
-                        <ModeIcon size={14} strokeWidth={2.2} />
+                        <ModeIcon size={18} strokeWidth={2.2} />
                       </div>
                       <div className="sg-card-info">
                         <div className="sg-card-name">{m.title}</div>

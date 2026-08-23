@@ -1242,8 +1242,8 @@ export default function EnglishPage() {
                       style={{ background: topic.color }}
                     >
                       <TopicIcon
-                        size={16}
-                        strokeWidth={2.3}
+                        size={20}
+                        strokeWidth={2.2}
                         color="#ffffff"
                       />
                     </div>
@@ -1251,7 +1251,7 @@ export default function EnglishPage() {
                     <span className={styles.mobileTopicName}>{topic.name}</span>
                   </div>
 
-                  <ChevronRight size={14} strokeWidth={2.4} className={styles.mobileChevron} />
+                  <ChevronRight size={16} strokeWidth={2.4} className={styles.mobileChevron} />
                 </Link>
               );
             })}
