@@ -179,46 +179,52 @@ const MODE_DETAILS: Record<
   { label: string; sub: string; icon: LucideIcon; badge: string }
 > = {
   concept: {
-    label: "PYQ Practice",
+    label: "PYQ",
     sub: "Previous year exam questions organized by concept",
     icon: FileQuestion,
-    badge: "Core PYQ",
+    badge: "PYQ",
   },
   formula: {
-    label: "Pattern & Bank",
+    label: "CareerWill",
     sub: "Core pattern, vocabulary, and formula shortcuts practice",
     icon: BookOpenCheck,
-    badge: "Formulas / Bank",
+    badge: "CareerWill",
   },
   mixed: {
-    label: "Mixed PW",
+    label: "PW",
     sub: "Comprehensive mixture of all topic patterns",
     icon: Shuffle,
-    badge: "Mixed",
+    badge: "PW",
   },
   "ai-challenge": {
-    label: "AI Challenge",
+    label: "Selection Way",
     sub: "Speed-focused adaptive assessment test",
     icon: Zap,
-    badge: "Speed Test",
+    badge: "Selection Way",
   },
   easy: {
     label: "Topic Mix",
     sub: "Foundation & standard difficulty patterns",
     icon: Compass,
-    badge: "Easy",
+    badge: "Topic Mix",
   },
   "topic-mix": {
     label: "Topic Mix",
     sub: "Foundation & standard difficulty patterns",
     icon: Compass,
-    badge: "Easy",
+    badge: "Topic Mix",
   },
   hard: {
-    label: "Tier 2 Hard",
+    label: "Tier 2",
     sub: "Advanced multi-step problems & high-tier patterns",
     icon: Flame,
     badge: "Tier 2",
+  },
+  "study-mode": {
+    label: "Study Mode",
+    sub: "Interactive study deck and vocabulary practice",
+    icon: Sparkles,
+    badge: "Study Mode",
   },
 };
 

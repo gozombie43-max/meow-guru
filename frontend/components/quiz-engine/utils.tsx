@@ -124,9 +124,9 @@ export function toggleQuizTheme() {
 // subjectConfig.topicConcepts: provided via subjectConfig.topicConcepts
 
 export const MODE_LABELS: Record<QuizMode, string> = {
-  concept: "Concept Practice",
-  formula: FORMULA_MODE_LABEL,
-  mixed: "Mixed Practice",
+  concept: "PYQ",
+  formula: "CareerWill",
+  mixed: "PW",
   "ai-challenge": "Selection Way",
   easy: "Topic Mix",
   hard: "Tier 2",
@@ -242,7 +242,7 @@ export function isFormulaQuestion(question: {
   letter?: string;
   word?: string;
 }): boolean {
-  if (matchesQuizTag(question, ["careerwill", "patternbank", "formula", "vocabularybank", "antosynopyq"])) {
+  if (matchesQuizTag(question, ["careerwill", "patternbank", "formula", "formulabank", "vocabularybank", "factbank", "antosynopyq"])) {
     return true;
   }
   const normalizedTopic = normalizeQuizTag(question.topic);
@@ -257,7 +257,7 @@ export function isMixedQuestion(question: {
   source?: string;
   quizId?: string;
 }): boolean {
-  return matchesQuizTag(question, ["pw", "mixedpractice"]);
+  return matchesQuizTag(question, ["pw", "mixedpractice", "mixedpw"]);
 }
 
 export function isAiChallengeQuestion(question: {
@@ -265,7 +265,7 @@ export function isAiChallengeQuestion(question: {
   source?: string;
   quizId?: string;
 }): boolean {
-  return matchesQuizTag(question, ["selectionway"]);
+  return matchesQuizTag(question, ["selectionway", "aichallenge"]);
 }
 
 export function isTopicMixQuestion(question: {
@@ -281,7 +281,7 @@ export function isTier2Question(question: {
   source?: string;
   quizId?: string;
 }): boolean {
-  return matchesQuizTag(question, ["tier2"]);
+  return matchesQuizTag(question, ["tier2", "tier2hard"]);
 }
 
 export function isStudyModeQuestion(question: {

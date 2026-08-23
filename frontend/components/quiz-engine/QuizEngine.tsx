@@ -1474,7 +1474,7 @@ export default function QuizEngine({
                 <div className="mac-dot mac-yellow"></div>
                 <div className="mac-dot mac-green"></div>
               </div>
-              <div className="mac-series-title">{title} - {mode === "concept" ? "Concept Practice" : "Quiz"}</div>
+              <div className="mac-series-title">{title} - {MODE_LABELS[mode] || "Quiz"}</div>
               <div className="mac-series-header-right">
                 <button
                   type="button"

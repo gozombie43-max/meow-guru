@@ -427,7 +427,7 @@ type CategoryId = typeof CATEGORIES[number]["id"];
 const PRACTICE_MODES = [
   {
     key: "concept",
-    title: "PYQ Practice",
+    title: "PYQ",
     sub: "Previous year Qs",
     mode: "concept",
     icon: FileQuestion,
@@ -441,7 +441,7 @@ const PRACTICE_MODES = [
   },
   {
     key: "formula",
-    title: "Pattern Bank",
+    title: "CareerWill",
     sub: "Core formulas",
     mode: "formula",
     icon: BookOpenCheck,
@@ -455,7 +455,7 @@ const PRACTICE_MODES = [
   },
   {
     key: "mixed",
-    title: "Mixed PW",
+    title: "PW",
     sub: "Mixed practice",
     mode: "mixed",
     icon: Shuffle,
@@ -469,7 +469,7 @@ const PRACTICE_MODES = [
   },
   {
     key: "ai-challenge",
-    title: "AI Challenge",
+    title: "Selection Way",
     sub: "Speed test",
     mode: "ai-challenge",
     icon: Zap,
@@ -497,7 +497,7 @@ const PRACTICE_MODES = [
   },
   {
     key: "hard",
-    title: "Tier 2 Hard",
+    title: "Tier 2",
     sub: "Advanced level",
     mode: "hard",
     icon: Flame,

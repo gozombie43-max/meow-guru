@@ -138,7 +138,7 @@ export default function EnglishTopicPage({
 
   const modes = [
     {
-      title: "PYQ Practice",
+      title: "PYQ",
       sub: "Previous year Qs",
       href: `${base}/quiz?mode=concept`,
       mode: "concept",
@@ -151,7 +151,7 @@ export default function EnglishTopicPage({
       shadow: "0 2px 8px rgba(13, 148, 136, 0.08)",
     },
     {
-      title: "Vocabulary Bank",
+      title: "CareerWill",
       sub: "Words & vocabulary",
       href: `${base}/quiz?mode=formula`,
       mode: "formula",
@@ -164,7 +164,7 @@ export default function EnglishTopicPage({
       shadow: "0 2px 8px rgba(37, 99, 235, 0.08)",
     },
     {
-      title: "Mixed PW",
+      title: "PW",
       sub: "Mixed practice",
       href: `${base}/quiz?mode=mixed`,
       mode: "mixed",
@@ -176,33 +176,19 @@ export default function EnglishTopicPage({
       borderDark: "rgba(79, 70, 229, 0.35)",
       shadow: "0 2px 8px rgba(79, 70, 229, 0.08)",
     },
-    hasStudyMode
-      ? {
-          title: "Study Mode",
-          sub: "Interactive study deck",
-          href: `${base}/study-mode`,
-          mode: "study-mode",
-          icon: Sparkles,
-          color: "#7c3aed",
-          gradient: "linear-gradient(135deg, #f7f2fe 0%, #ede9fe 100%)",
-          gradientDark: "linear-gradient(135deg, rgba(124, 58, 237, 0.2) 0%, rgba(124, 58, 237, 0.08) 100%)",
-          border: "rgba(124, 58, 237, 0.22)",
-          borderDark: "rgba(124, 58, 237, 0.35)",
-          shadow: "0 2px 8px rgba(124, 58, 237, 0.08)",
-        }
-      : {
-          title: "AI Challenge",
-          sub: "Speed test",
-          href: `${base}/quiz?mode=ai-challenge`,
-          mode: "ai-challenge",
-          icon: Zap,
-          color: "#7c3aed",
-          gradient: "linear-gradient(135deg, #f7f2fe 0%, #ede9fe 100%)",
-          gradientDark: "linear-gradient(135deg, rgba(124, 58, 237, 0.2) 0%, rgba(124, 58, 237, 0.08) 100%)",
-          border: "rgba(124, 58, 237, 0.22)",
-          borderDark: "rgba(124, 58, 237, 0.35)",
-          shadow: "0 2px 8px rgba(124, 58, 237, 0.08)",
-        },
+    {
+      title: "Selection Way",
+      sub: "Speed test",
+      href: `${base}/quiz?mode=ai-challenge`,
+      mode: "ai-challenge",
+      icon: Zap,
+      color: "#7c3aed",
+      gradient: "linear-gradient(135deg, #f7f2fe 0%, #ede9fe 100%)",
+      gradientDark: "linear-gradient(135deg, rgba(124, 58, 237, 0.2) 0%, rgba(124, 58, 237, 0.08) 100%)",
+      border: "rgba(124, 58, 237, 0.22)",
+      borderDark: "rgba(124, 58, 237, 0.35)",
+      shadow: "0 2px 8px rgba(124, 58, 237, 0.08)",
+    },
     {
       title: "Topic Mix",
       sub: "Foundation easy",
@@ -217,7 +203,7 @@ export default function EnglishTopicPage({
       shadow: "0 2px 8px rgba(2, 132, 199, 0.08)",
     },
     {
-      title: "Tier 2 Hard",
+      title: "Tier 2",
       sub: "Advanced level",
       href: `${base}/quiz?mode=hard`,
       mode: "hard",
@@ -229,6 +215,23 @@ export default function EnglishTopicPage({
       borderDark: "rgba(225, 29, 72, 0.35)",
       shadow: "0 2px 8px rgba(225, 29, 72, 0.08)",
     },
+    ...(hasStudyMode
+      ? [
+          {
+            title: "Study Mode",
+            sub: "Interactive study deck",
+            href: `${base}/study-mode`,
+            mode: "study-mode",
+            icon: Sparkles,
+            color: "#ec4899",
+            gradient: "linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%)",
+            gradientDark: "linear-gradient(135deg, rgba(236, 72, 153, 0.2) 0%, rgba(236, 72, 153, 0.08) 100%)",
+            border: "rgba(236, 72, 153, 0.22)",
+            borderDark: "rgba(236, 72, 153, 0.35)",
+            shadow: "0 2px 8px rgba(236, 72, 153, 0.08)",
+          },
+        ]
+      : []),
   ];
 
   const headlineText = bannerTitle ?? "Formula & Notes";

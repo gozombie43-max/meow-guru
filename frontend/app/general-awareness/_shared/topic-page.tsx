@@ -115,7 +115,7 @@ export default function GeneralAwarenessTopicPage({
 
   const modes = [
     {
-      title: "PYQ Practice",
+      title: "PYQ",
       sub: "Previous year Qs",
       href: `${base}/quiz?mode=concept`,
       mode: "concept",
@@ -128,7 +128,7 @@ export default function GeneralAwarenessTopicPage({
       shadow: "0 2px 8px rgba(13, 148, 136, 0.08)",
     },
     {
-      title: "Fact Bank",
+      title: "CareerWill",
       sub: "Important facts & dates",
       href: `${base}/quiz?mode=formula`,
       mode: "formula",
@@ -141,7 +141,7 @@ export default function GeneralAwarenessTopicPage({
       shadow: "0 2px 8px rgba(37, 99, 235, 0.08)",
     },
     {
-      title: "Mixed PW",
+      title: "PW",
       sub: "Comprehensive mixture",
       href: `${base}/quiz?mode=mixed`,
       mode: "mixed",
@@ -154,7 +154,7 @@ export default function GeneralAwarenessTopicPage({
       shadow: "0 2px 8px rgba(79, 70, 229, 0.08)",
     },
     {
-      title: "AI Challenge",
+      title: "Selection Way",
       sub: "Speed test",
       href: `${base}/quiz?mode=ai-challenge`,
       mode: "ai-challenge",
@@ -180,7 +180,7 @@ export default function GeneralAwarenessTopicPage({
       shadow: "0 2px 8px rgba(2, 132, 199, 0.08)",
     },
     {
-      title: "Tier 2 Hard",
+      title: "Tier 2",
       sub: "Advanced level",
       href: `${base}/quiz?mode=hard`,
       mode: "hard",
