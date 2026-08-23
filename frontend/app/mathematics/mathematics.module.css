@@ -1009,68 +1009,85 @@
 }
 
 .modeCard {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #0071e3 0%, #0056b3 100%);
-  color: #ffffff !important;
+  padding: 7px 10px 7px 10px;
+  min-height: 46px;
+  border-radius: 12px;
+  background: var(--card-gradient, linear-gradient(135deg, #e6f7f2 0%, #d4f3eb 100%));
+  color: var(--mac-text-primary, #0f172a);
   text-decoration: none;
-  box-shadow: 0 3px 10px rgba(0, 113, 227, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.25);
-  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid var(--card-border, rgba(0, 0, 0, 0.08));
+  box-shadow: var(--card-shadow, 0 2px 6px rgba(0, 0, 0, 0.04)), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.18s ease, filter 0.18s ease;
   cursor: pointer;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  overflow: hidden;
 }
 
 .modeCard:hover {
-  background: linear-gradient(135deg, #0077ed 0%, #005ec4 100%) !important;
-  color: #ffffff !important;
-  border-color: rgba(255, 255, 255, 0.3);
-  transform: translateY(-1px);
-  box-shadow: 0 5px 14px rgba(0, 113, 227, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  color: var(--mac-text-primary, #0f172a);
+  transform: translateY(-1.5px);
+  filter: brightness(0.99);
+  border-color: var(--card-accent, rgba(0, 113, 227, 0.4));
+  box-shadow: var(--card-shadow, 0 4px 12px rgba(0, 0, 0, 0.08)), inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .modeCard:active {
   transform: translateY(0);
+  filter: brightness(0.97);
 }
 
-:global(body.theme-dark) .modeCard {
-  background: linear-gradient(135deg, #0071e3 0%, #004ba0 100%);
-  border-color: rgba(255, 255, 255, 0.18);
-  box-shadow: 0 3px 12px rgba(0, 113, 227, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+:global(body.theme-dark) .modeCard,
+:global(html.theme-dark) .modeCard {
+  background: #1C1C1E !important;
+  border-color: rgba(255, 255, 255, 0.09) !important;
+  color: #f8fafc !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
 }
 
-:global(body.theme-dark) .modeCard:hover {
-  background: linear-gradient(135deg, #0077ed 0%, #0054b3 100%) !important;
-  border-color: rgba(255, 255, 255, 0.3);
-  box-shadow: 0 5px 16px rgba(0, 113, 227, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+:global(body.theme-dark) .modeCard:hover,
+:global(html.theme-dark) .modeCard:hover {
+  background: #242428 !important;
+  color: #f8fafc !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
 }
 
 .modeCardLeft {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 8px;
   min-width: 0;
+  padding-right: 84px;
+  z-index: 2;
 }
 
 .modeCardIcon {
-  width: 28px;
-  height: 28px;
-  border-radius: 7px;
-  background: rgba(255, 255, 255, 0.2);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  width: 26px;
+  height: 26px;
+  border-radius: 7.5px;
+  background: var(--card-accent, #007AFF) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.18);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
 }
 
-:global(body.theme-dark) .modeCardIcon {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.25);
-  color: #ffffff;
+.modeCardIcon svg {
+  color: #ffffff !important;
+  stroke: #ffffff;
+}
+
+:global(body.theme-dark) .modeCardIcon,
+:global(html.theme-dark) .modeCardIcon {
+  background: var(--card-accent, #007AFF) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  color: #ffffff !important;
 }
 
 .modeCardInfo {
@@ -1083,38 +1100,94 @@
 .modeCardTitle {
   font-size: 11.5px;
   font-weight: 700;
-  color: #ffffff;
+  color: #0f172a;
   line-height: 1.2;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  letter-spacing: -0.01em;
+}
+
+:global(body.theme-dark) .modeCardTitle,
+:global(html.theme-dark) .modeCardTitle {
+  color: #ffffff !important;
 }
 
 .modeCardSub {
   font-size: 9px;
-  color: rgba(255, 255, 255, 0.82);
+  font-weight: 500;
+  color: #64748b;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.playBtnCircle {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.22);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+:global(body.theme-dark) .modeCardSub,
+:global(html.theme-dark) .modeCardSub {
+  color: #94a3b8 !important;
+}
+
+/* ── Expanded Tab with Curved Notch ── */
+.modeCardTab {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 88px;
+  height: 100%;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.tabBgSvg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.tabBgSvg path {
+  fill: #ffffff;
+}
+
+:global(body.theme-dark) .tabBgSvg path,
+:global(html.theme-dark) .tabBgSvg path {
+  fill: #ffffff !important;
+}
+
+.tabActionIconWrap {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 60px;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
-  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), background 0.15s ease;
 }
 
-.modeCard:hover .playBtnCircle {
-  transform: scale(1.1);
-  background: rgba(255, 255, 255, 0.35);
+.modeCardQsText {
+  font-size: 11.5px;
+  font-weight: 750;
+  color: #007AFF !important;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  line-height: 1;
+  background: none;
+  border: none;
+  padding: 0;
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.18s ease;
+}
+
+.modeCard:hover .modeCardQsText {
+  transform: scale(1.06);
+}
+
+:global(body.theme-dark) .modeCardQsText,
+:global(html.theme-dark) .modeCardQsText {
+  color: #007AFF !important;
 }
 
 /* ── Resources List ── */
@@ -1245,21 +1318,25 @@
   min-height: calc(100vh - 94px - env(safe-area-inset-bottom, 0px));
   min-height: calc(100dvh - 94px - env(safe-area-inset-bottom, 0px));
   box-sizing: border-box;
-  background: var(--mac-bg-desktop);
+  background: #000000;
   color: var(--mac-text-primary);
   position: relative;
   overflow-x: hidden;
-  padding-bottom: 0;
+  padding-bottom: 24px;
+}
+
+:global(body.theme-light) .mobileContainer {
+  background: #f2f2f7 !important;
 }
 
 .mobileTopbar {
   position: sticky;
   top: 0;
   z-index: 40;
-  background: var(--mac-titlebar-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--mac-border);
+  background: #000000;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   display: grid;
   grid-template-columns: 40px 1fr 40px;
   align-items: center;
@@ -1267,10 +1344,9 @@
   height: 52px;
 }
 
-:global(body.theme-dark) .mobileTopbar,
-:global(html.theme-dark) .mobileTopbar {
-  background: #000000;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+:global(body.theme-light) .mobileTopbar {
+  background: rgba(255, 255, 255, 0.85) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
 }
 
 .mobileBackBtn {
@@ -1297,7 +1373,7 @@
 .mobileBody {
   max-width: 500px;
   margin: 0 auto;
-  padding: 14px 12px 0;
+  padding: 12px 14px 0;
 }
 
 .mobileSearchRow {
@@ -1310,22 +1386,32 @@
   left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--mac-text-tertiary);
+  color: rgba(235, 235, 245, 0.4);
   pointer-events: none;
+}
+
+:global(body.theme-light) .mobileSearchIcon {
+  color: #8e8e93 !important;
 }
 
 .mobileSearchInput {
   width: 100%;
-  height: 42px;
-  border: 1px solid var(--mac-border);
+  height: 38px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   outline: none;
-  border-radius: 999px;
-  background: var(--mac-card-bg);
+  border-radius: 10px;
+  background: #1C1C1E;
   padding: 0 36px 0 36px;
   font-size: 0.9rem;
-  color: var(--mac-text-primary);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  color: #ffffff;
+  box-shadow: none;
   box-sizing: border-box;
+}
+
+:global(body.theme-light) .mobileSearchInput {
+  background: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  color: #000000 !important;
 }
 
 .mobileTabsScroll {
@@ -1333,7 +1419,7 @@
   gap: 6px;
   overflow-x: auto;
   padding-bottom: 4px;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   scrollbar-width: none;
 }
 
@@ -1343,21 +1429,27 @@
 
 .mobileTabBtn {
   flex-shrink: 0;
-  height: 32px;
-  padding: 0 14px;
+  height: 28px;
+  padding: 0 12px;
   border-radius: 999px;
-  border: 1px solid var(--mac-border);
-  background: var(--mac-card-bg);
-  font-size: 0.82rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #1C1C1E;
+  font-size: 0.78rem;
   font-weight: 600;
-  color: var(--mac-text-secondary);
+  color: rgba(235, 235, 245, 0.6);
   cursor: pointer;
   white-space: nowrap;
 }
 
+:global(body.theme-light) .mobileTabBtn {
+  background: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  color: #6e6e73 !important;
+}
+
 .mobileTabActive {
-  background: var(--mac-blue) !important;
-  border-color: var(--mac-blue) !important;
+  background: #007AFF !important;
+  border-color: #007AFF !important;
   color: #ffffff !important;
 }
 
@@ -1365,17 +1457,41 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 8px;
+  padding: 4px 4px 6px;
+  margin-top: 6px;
+  margin-bottom: 2px;
+}
+
+.mobileSectionHeaderLabel {
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(235, 235, 245, 0.6);
+}
+
+:global(body.theme-light) .mobileSectionHeaderLabel {
+  color: #6e6e73 !important;
+}
+
+.mobileCountMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .mobileCountText {
-  font-size: 0.78rem;
-  color: var(--mac-text-tertiary);
+  font-size: 0.82rem;
+  color: rgba(235, 235, 245, 0.6);
   font-weight: 500;
 }
 
+:global(body.theme-light) .mobileCountText {
+  color: #8e8e93 !important;
+}
+
 .mobileResetLink {
-  color: var(--mac-blue);
+  color: #007AFF;
   font-size: 0.78rem;
   font-weight: 600;
   background: none;
@@ -1383,62 +1499,112 @@
   cursor: pointer;
 }
 
-.mobileTopicList {
+/* ── iOS Inset Grouped Card Container ── */
+.mobileTopicGroup {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  background: #1C1C1E;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+  margin-bottom: 24px;
 }
 
-.mobileTopicCard {
+:global(body.theme-light) .mobileTopicGroup {
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* ── iOS Inset Table Row ── */
+.mobileTopicRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  min-height: 48px;
+  text-decoration: none;
+  position: relative;
+  background: transparent;
+  transition: background 0.12s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobileTopicRow:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 54px;
+  right: 0;
+  bottom: 0;
+  height: 0.5px;
+  background: rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+}
+
+:global(body.theme-light) .mobileTopicRow:not(:last-child)::after {
+  background: rgba(0, 0, 0, 0.08) !important;
+}
+
+.mobileTopicRow:hover,
+.mobileTopicRow:active {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+:global(body.theme-light) .mobileTopicRow:hover,
+:global(body.theme-light) .mobileTopicRow:active {
+  background: #f2f2f7 !important;
+}
+
+.mobileTopicRowLeft {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: var(--mac-card-bg);
-  border: 1px solid var(--mac-card-border);
-  border-radius: 12px;
-  padding: 12px 14px;
-  text-decoration: none;
-  cursor: pointer;
-  transition: transform 0.12s ease, background 0.12s ease;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  min-width: 0;
+  flex: 1;
 }
 
-.mobileTopicCard:hover {
-  background: var(--mac-surface-hover);
-  transform: translateY(-1px);
-}
-
+/* ── Vibrant iOS Squircle Icon Badge ── */
 .mobileTopicIconBox {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
+  width: 30px;
+  height: 30px;
+  border-radius: 7.5px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  background: var(--mac-icon-box-bg);
-  color: var(--mac-text-primary);
-  border: 1px solid var(--mac-icon-box-border);
-  box-shadow: var(--mac-icon-box-shadow);
+  color: #ffffff !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
 }
 
-.mobileTopicInfo {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  align-items: center;
+.mobileTopicIconBox svg {
+  color: #ffffff !important;
+  stroke: #ffffff;
 }
 
+/* ── Topic Name ── */
 .mobileTopicName {
-  font-size: 0.92rem;
-  font-weight: 600;
-  color: var(--mac-text-primary);
+  font-size: 0.95rem;
+  font-weight: 550;
+  color: #ffffff;
+  line-height: 1.25;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  letter-spacing: -0.01em;
 }
 
+:global(body.theme-light) .mobileTopicName {
+  color: #000000 !important;
+}
+
+/* ── iOS Subtle Chevron ── */
 .mobileChevron {
-  color: var(--mac-text-tertiary);
+  color: rgba(235, 235, 245, 0.28);
   flex-shrink: 0;
+  margin-left: 8px;
+}
+
+:global(body.theme-light) .mobileChevron {
+  color: #c7c7cc !important;
 }

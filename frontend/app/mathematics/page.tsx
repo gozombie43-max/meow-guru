@@ -47,6 +47,14 @@ import {
 } from "lucide-react";
 import MacTrafficLights from "@/components/MacTrafficLights";
 import { useThemeMode } from "@/hooks/useTheme";
+import { useQuestions } from "@/hooks/useQuestions";
+import {
+  isFormulaQuestion,
+  isMixedQuestion,
+  isAiChallengeQuestion,
+  isTopicMixQuestion,
+  isTier2Question,
+} from "@/components/quiz-engine/utils";
 import styles from "./mathematics.module.css";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -340,6 +348,12 @@ const PRACTICE_MODES = [
     sub: "Previous year Qs",
     mode: "concept",
     icon: FileQuestion,
+    color: "#0d9488",
+    gradient: "linear-gradient(135deg, #e6f7f2 0%, #d4f3eb 100%)",
+    gradientDark: "linear-gradient(135deg, rgba(13, 148, 136, 0.2) 0%, rgba(13, 148, 136, 0.08) 100%)",
+    border: "rgba(13, 148, 136, 0.22)",
+    borderDark: "rgba(13, 148, 136, 0.35)",
+    shadow: "0 2px 8px rgba(13, 148, 136, 0.08)",
   },
   {
     key: "formula",
@@ -347,6 +361,12 @@ const PRACTICE_MODES = [
     sub: "Core formulas & shortcuts",
     mode: "formula",
     icon: BookOpenCheck,
+    color: "#2563eb",
+    gradient: "linear-gradient(135deg, #edf4fe 0%, #dbeafe 100%)",
+    gradientDark: "linear-gradient(135deg, rgba(37, 99, 235, 0.2) 0%, rgba(37, 99, 235, 0.08) 100%)",
+    border: "rgba(37, 99, 235, 0.22)",
+    borderDark: "rgba(37, 99, 235, 0.35)",
+    shadow: "0 2px 8px rgba(37, 99, 235, 0.08)",
   },
   {
     key: "mixed",
@@ -354,6 +374,12 @@ const PRACTICE_MODES = [
     sub: "Comprehensive mixture",
     mode: "mixed",
     icon: Shuffle,
+    color: "#4f46e5",
+    gradient: "linear-gradient(135deg, #f1f3fd 0%, #e0e7ff 100%)",
+    gradientDark: "linear-gradient(135deg, rgba(79, 70, 229, 0.2) 0%, rgba(79, 70, 229, 0.08) 100%)",
+    border: "rgba(79, 70, 229, 0.22)",
+    borderDark: "rgba(79, 70, 229, 0.35)",
+    shadow: "0 2px 8px rgba(79, 70, 229, 0.08)",
   },
   {
     key: "ai-challenge",
@@ -361,6 +387,12 @@ const PRACTICE_MODES = [
     sub: "Speed test",
     mode: "ai-challenge",
     icon: Zap,
+    color: "#7c3aed",
+    gradient: "linear-gradient(135deg, #f7f2fe 0%, #ede9fe 100%)",
+    gradientDark: "linear-gradient(135deg, rgba(124, 58, 237, 0.2) 0%, rgba(124, 58, 237, 0.08) 100%)",
+    border: "rgba(124, 58, 237, 0.22)",
+    borderDark: "rgba(124, 58, 237, 0.35)",
+    shadow: "0 2px 8px rgba(124, 58, 237, 0.08)",
   },
   {
     key: "easy",
@@ -368,6 +400,12 @@ const PRACTICE_MODES = [
     sub: "Foundation easy",
     mode: "easy",
     icon: Compass,
+    color: "#0284c7",
+    gradient: "linear-gradient(135deg, #edf9ff 0%, #e0f2fe 100%)",
+    gradientDark: "linear-gradient(135deg, rgba(2, 132, 199, 0.2) 0%, rgba(2, 132, 199, 0.08) 100%)",
+    border: "rgba(2, 132, 199, 0.22)",
+    borderDark: "rgba(2, 132, 199, 0.35)",
+    shadow: "0 2px 8px rgba(2, 132, 199, 0.08)",
   },
   {
     key: "hard",
@@ -375,6 +413,12 @@ const PRACTICE_MODES = [
     sub: "Advanced level",
     mode: "hard",
     icon: Flame,
+    color: "#e11d48",
+    gradient: "linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)",
+    gradientDark: "linear-gradient(135deg, rgba(225, 29, 72, 0.2) 0%, rgba(225, 29, 72, 0.08) 100%)",
+    border: "rgba(225, 29, 72, 0.22)",
+    borderDark: "rgba(225, 29, 72, 0.35)",
+    shadow: "0 2px 8px rgba(225, 29, 72, 0.08)",
   },
 ] as const;
 
@@ -410,6 +454,45 @@ export default function MathematicsPage() {
   const selectedTopic = useMemo(() => {
     return TOPICS.find((t) => t.id === selectedTopicId) || TOPICS[0];
   }, [selectedTopicId]);
+
+  // Real available questions for current topic
+  const { questions: topicQuestions } = useQuestions({
+    topic: selectedTopic.slug,
+    subject: "mathematics",
+  });
+
+  const modeQuestionCounts = useMemo(() => {
+    const counts: Record<string, number> = {
+      concept: 0,
+      formula: 0,
+      mixed: 0,
+      "ai-challenge": 0,
+      easy: 0,
+      hard: 0,
+    };
+
+    if (!topicQuestions || !Array.isArray(topicQuestions)) {
+      return counts;
+    }
+
+    topicQuestions.forEach((q) => {
+      if (isFormulaQuestion(q)) {
+        counts.formula += 1;
+      } else if (isAiChallengeQuestion(q)) {
+        counts["ai-challenge"] += 1;
+      } else if (isTier2Question(q)) {
+        counts.hard += 1;
+      } else if (isTopicMixQuestion(q)) {
+        counts.easy += 1;
+      } else if (isMixedQuestion(q)) {
+        counts.mixed += 1;
+      } else {
+        counts.concept += 1;
+      }
+    });
+
+    return counts;
+  }, [topicQuestions]);
 
   // Current index in filtered list
   const currentIndex = useMemo(() => {
@@ -626,31 +709,6 @@ export default function MathematicsPage() {
 
             {/* Center Canvas: Dense Matrix / List */}
             <main className={styles.mainCanvas} aria-label="Mathematics Topics Matrix">
-              {/* Canvas Header (30px) */}
-              <div className={styles.canvasHeader}>
-                <div className={styles.canvasHeaderTitle}>
-                  <span>{CATEGORIES.find((c) => c.id === activeCategory)?.label}</span>
-                  <span style={{ color: "var(--mac-text-tertiary)", fontWeight: 500 }}>
-                    ({filteredTopics.length})
-                  </span>
-                </div>
-
-                <div className={styles.canvasMeta}>
-                  {(searchQuery || activeCategory !== "all") && (
-                    <button
-                      type="button"
-                      className={styles.clearFilterLink}
-                      onClick={() => {
-                        setSearchQuery("");
-                        setActiveCategory("all");
-                      }}
-                    >
-                      Reset Filter
-                    </button>
-                  )}
-                </div>
-              </div>
-
               {/* Matrix Viewport */}
               <div className={styles.canvasViewport}>
                 {filteredTopics.length === 0 ? (
@@ -836,11 +894,23 @@ export default function MathematicsPage() {
                 <div className={styles.modesList}>
                   {PRACTICE_MODES.map((pm) => {
                     const ModeIcon = pm.icon;
+                    const qCount = modeQuestionCounts[pm.mode] ?? 0;
+                    const displayQs = `${qCount} Qs`;
                     return (
                       <Link
                         key={pm.key}
                         href={`${selectedTopic.routeBase}/quiz?mode=${pm.mode}`}
                         className={styles.modeCard}
+                        style={
+                          {
+                            "--card-gradient": pm.gradient,
+                            "--card-gradient-dark": pm.gradientDark,
+                            "--card-border": pm.border,
+                            "--card-border-dark": pm.borderDark,
+                            "--card-accent": pm.color,
+                            "--card-shadow": pm.shadow,
+                          } as React.CSSProperties
+                        }
                         title={`Start ${pm.title}`}
                       >
                         <div className={styles.modeCardLeft}>
@@ -852,8 +922,22 @@ export default function MathematicsPage() {
                             <span className={styles.modeCardSub}>{pm.sub}</span>
                           </div>
                         </div>
-                        <div className={styles.playBtnCircle} aria-hidden="true">
-                          <Play size={10} fill="#ffffff" color="#ffffff" style={{ marginLeft: "1.5px" }} />
+                        <div className={styles.modeCardTab} aria-hidden="true">
+                          <svg
+                            className={styles.tabBgSvg}
+                            viewBox="0 0 88 46"
+                            preserveAspectRatio="none"
+                          >
+                            <path
+                              d="M28 0 C28 10, 0 13, 0 23 C0 33, 28 36, 28 46 L88 46 L88 0 Z"
+                              fill="#ffffff"
+                            />
+                          </svg>
+                          <div className={styles.tabActionIconWrap}>
+                            <span className={styles.modeCardQsText}>
+                              {displayQs}
+                            </span>
+                          </div>
                         </div>
                       </Link>
                     );
@@ -905,26 +989,6 @@ export default function MathematicsPage() {
               </div>
             </aside>
           </div>
-
-          {/* ── Bottom Status Dock (26px) ── */}
-          <footer className={styles.statusBar}>
-            <div className={styles.statusLeft} />
-
-            <div className={styles.statusRight}>
-              <div className={styles.shortcutHint}>
-                <kbd className={styles.shortcutKey}>↑↓←→</kbd>
-                <span>Navigate</span>
-              </div>
-              <div className={styles.shortcutHint}>
-                <kbd className={styles.shortcutKey}>Enter</kbd>
-                <span>Start</span>
-              </div>
-              <div className={styles.shortcutHint}>
-                <kbd className={styles.shortcutKey}>⌘K</kbd>
-                <span>Search</span>
-              </div>
-            </div>
-          </footer>
         </div>
       </div>
 
@@ -943,14 +1007,7 @@ export default function MathematicsPage() {
             <ArrowLeft size={18} strokeWidth={2.4} />
           </button>
           <span className={styles.mobileTopbarTitle}>Mathematics Topics</span>
-          <button
-            type="button"
-            className={styles.mobileBackBtn}
-            onClick={toggleThemeMode}
-            aria-label={isDark ? "Light Mode" : "Dark Mode"}
-          >
-            {isDark ? <Sun size={17} /> : <Moon size={17} />}
-          </button>
+          <div style={{ width: 34 }} />
         </header>
 
         <div className={styles.mobileBody}>
@@ -994,51 +1051,54 @@ export default function MathematicsPage() {
             ))}
           </div>
 
-          {/* Count Row */}
+          {/* Section Header: TOPICS | total */}
           <div className={styles.mobileCountRow}>
-            <span className={styles.mobileCountText}>
-              {filteredTopics.length} topic{filteredTopics.length !== 1 ? "s" : ""}
-            </span>
-            {(searchQuery || activeCategory !== "all") && (
-              <button
-                type="button"
-                className={styles.mobileResetLink}
-                onClick={() => {
-                  setSearchQuery("");
-                  setActiveCategory("all");
-                }}
-              >
-                Reset
-              </button>
-            )}
+            <span className={styles.mobileSectionHeaderLabel}>TOPICS</span>
+            <div className={styles.mobileCountMeta}>
+              <span className={styles.mobileCountText}>
+                {filteredTopics.length} total
+              </span>
+              {(searchQuery || activeCategory !== "all") && (
+                <button
+                  type="button"
+                  className={styles.mobileResetLink}
+                  onClick={() => {
+                    setSearchQuery("");
+                    setActiveCategory("all");
+                  }}
+                >
+                  Reset
+                </button>
+              )}
+            </div>
           </div>
 
-          {/* Topic List */}
-          <div className={styles.mobileTopicList}>
+          {/* iOS Grouped Card Container */}
+          <div className={styles.mobileTopicGroup}>
             {filteredTopics.map((topic) => {
               const TopicIcon = topic.icon;
               return (
                 <Link
                   key={topic.id}
                   href={topic.routeBase}
-                  className={styles.mobileTopicCard}
+                  className={styles.mobileTopicRow}
                 >
-                  <div className={styles.mobileTopicIconBox}>
-                    <TopicIcon
-                      size={17}
-                      strokeWidth={2.4}
-                      color={topic.color}
-                      style={{
-                        filter: `drop-shadow(0 2px 3px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 6px ${topic.color}80)`,
-                      }}
-                    />
+                  <div className={styles.mobileTopicRowLeft}>
+                    <div
+                      className={styles.mobileTopicIconBox}
+                      style={{ background: topic.color }}
+                    >
+                      <TopicIcon
+                        size={16}
+                        strokeWidth={2.3}
+                        color="#ffffff"
+                      />
+                    </div>
+
+                    <span className={styles.mobileTopicName}>{topic.name}</span>
                   </div>
 
-                  <div className={styles.mobileTopicInfo}>
-                    <div className={styles.mobileTopicName}>{topic.name}</div>
-                  </div>
-
-                  <ChevronRight size={14} className={styles.mobileChevron} />
+                  <ChevronRight size={14} strokeWidth={2.4} className={styles.mobileChevron} />
                 </Link>
               );
             })}

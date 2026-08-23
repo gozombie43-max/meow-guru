@@ -2,7 +2,23 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React from "react";
+import React, { useMemo } from "react";
+import { useQuestions } from "@/hooks/useQuestions";
+import {
+  isFormulaQuestion,
+  isMixedQuestion,
+  isAiChallengeQuestion,
+  isTopicMixQuestion,
+  isTier2Question,
+} from "@/components/quiz-engine/utils";
+import {
+  FileQuestion,
+  BookOpenCheck,
+  Shuffle,
+  Zap,
+  Compass,
+  Flame,
+} from "lucide-react";
 
 interface GeneralAwarenessTopicPageProps {
   title: string;
@@ -18,37 +34,6 @@ interface GeneralAwarenessTopicPageProps {
 }
 
 /* ── SVG Icons ───────────────────────────────── */
-const IconPYQ = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M9 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-3"/><rect x="9" y="1" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/>
-  </svg>
-);
-const IconPatternBank = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>
-  </svg>
-);
-const IconPW = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor">
-    <path d="M13 2L4.5 14h5.5L11 22l8.5-12H14l-1-8z"/>
-  </svg>
-);
-const IconSelection = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor">
-    <path d="M12 2l2.6 6.8L21 11l-6.4 2.2L12 20l-2.6-6.8L3 11l6.4-2.2z"/>
-  </svg>
-);
-const IconTopicMix = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-    <circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/>
-  </svg>
-);
-const IconTier2 = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor">
-    <path d="M12 2C9 6 7 9.5 7 13a5 5 0 0 0 10 0c0-3.5-2-7-5-11z"/>
-  </svg>
-);
-
 const IconBanner = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -59,7 +44,6 @@ const IconBanner = () => (
   </svg>
 );
 
-/* Chevron — colour driven by CSS var so theme can override */
 const Chevron = ({ size = 7 }: { size?: number }) => (
   <svg width={size} height={size * 1.7} viewBox="0 0 7 12" fill="none" className="sg-chev">
     <path d="M1.5 1.5 6 6l-4.5 4.5"
@@ -68,22 +52,11 @@ const Chevron = ({ size = 7 }: { size?: number }) => (
   </svg>
 );
 
-/* Back icon */
 const IconBack = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
     <path d="M19 12H5M12 19l-7-7 7-7" />
   </svg>
 );
-
-/* iOS badge classes */
-const badgeClasses = [
-  "bg-blue",
-  "bg-purple",
-  "bg-mustard",
-  "bg-scarlet",
-  "bg-teal",
-  "bg-orange",
-];
 
 export default function GeneralAwarenessTopicPage({
   title,
@@ -101,16 +74,126 @@ export default function GeneralAwarenessTopicPage({
 
   const base = routeBase ?? `/general-awareness/${slug}`;
 
+  // Real available questions
+  const { questions: topicQuestions } = useQuestions({
+    topic: slug,
+    subject: "general-awareness",
+  });
+
+  const modeQuestionCounts = useMemo(() => {
+    const counts: Record<string, number> = {
+      concept: 0,
+      formula: 0,
+      mixed: 0,
+      "ai-challenge": 0,
+      easy: 0,
+      hard: 0,
+    };
+
+    if (!topicQuestions || !Array.isArray(topicQuestions)) {
+      return counts;
+    }
+
+    topicQuestions.forEach((q) => {
+      if (isFormulaQuestion(q)) {
+        counts.formula += 1;
+      } else if (isAiChallengeQuestion(q)) {
+        counts["ai-challenge"] += 1;
+      } else if (isTier2Question(q)) {
+        counts.hard += 1;
+      } else if (isTopicMixQuestion(q)) {
+        counts.easy += 1;
+      } else if (isMixedQuestion(q)) {
+        counts.mixed += 1;
+      } else {
+        counts.concept += 1;
+      }
+    });
+
+    return counts;
+  }, [topicQuestions]);
+
   const modes = [
-    { title: "PYQ Practice", sub: "Previous year Qs",       href: `${base}/quiz?mode=concept`,      Icon: IconPYQ         },
-    { title: "Fact Bank",    sub: "Important facts & dates", href: `${base}/quiz?mode=formula`,      Icon: IconPatternBank },
-    { title: "Mixed PW",     sub: "Mixed practice",          href: `${base}/quiz?mode=mixed`,        Icon: IconPW          },
-    { title: "AI Challenge", sub: "Speed test",              href: `${base}/quiz?mode=ai-challenge`, Icon: IconSelection   },
-    { title: "Topic Mix",    sub: "Foundation easy",         href: `${base}/quiz?mode=easy`,         Icon: IconTopicMix    },
-    { title: "Tier 2 Hard",  sub: "Advanced level",          href: `${base}/quiz?mode=hard`,         Icon: IconTier2       },
+    {
+      title: "PYQ Practice",
+      sub: "Previous year Qs",
+      href: `${base}/quiz?mode=concept`,
+      mode: "concept",
+      icon: FileQuestion,
+      color: "#0d9488",
+      gradient: "linear-gradient(135deg, #e6f7f2 0%, #d4f3eb 100%)",
+      gradientDark: "linear-gradient(135deg, rgba(13, 148, 136, 0.2) 0%, rgba(13, 148, 136, 0.08) 100%)",
+      border: "rgba(13, 148, 136, 0.22)",
+      borderDark: "rgba(13, 148, 136, 0.35)",
+      shadow: "0 2px 8px rgba(13, 148, 136, 0.08)",
+    },
+    {
+      title: "Fact Bank",
+      sub: "Important facts & dates",
+      href: `${base}/quiz?mode=formula`,
+      mode: "formula",
+      icon: BookOpenCheck,
+      color: "#2563eb",
+      gradient: "linear-gradient(135deg, #edf4fe 0%, #dbeafe 100%)",
+      gradientDark: "linear-gradient(135deg, rgba(37, 99, 235, 0.2) 0%, rgba(37, 99, 235, 0.08) 100%)",
+      border: "rgba(37, 99, 235, 0.22)",
+      borderDark: "rgba(37, 99, 235, 0.35)",
+      shadow: "0 2px 8px rgba(37, 99, 235, 0.08)",
+    },
+    {
+      title: "Mixed PW",
+      sub: "Comprehensive mixture",
+      href: `${base}/quiz?mode=mixed`,
+      mode: "mixed",
+      icon: Shuffle,
+      color: "#4f46e5",
+      gradient: "linear-gradient(135deg, #f1f3fd 0%, #e0e7ff 100%)",
+      gradientDark: "linear-gradient(135deg, rgba(79, 70, 229, 0.2) 0%, rgba(79, 70, 229, 0.08) 100%)",
+      border: "rgba(79, 70, 229, 0.22)",
+      borderDark: "rgba(79, 70, 229, 0.35)",
+      shadow: "0 2px 8px rgba(79, 70, 229, 0.08)",
+    },
+    {
+      title: "AI Challenge",
+      sub: "Speed test",
+      href: `${base}/quiz?mode=ai-challenge`,
+      mode: "ai-challenge",
+      icon: Zap,
+      color: "#7c3aed",
+      gradient: "linear-gradient(135deg, #f7f2fe 0%, #ede9fe 100%)",
+      gradientDark: "linear-gradient(135deg, rgba(124, 58, 237, 0.2) 0%, rgba(124, 58, 237, 0.08) 100%)",
+      border: "rgba(124, 58, 237, 0.22)",
+      borderDark: "rgba(124, 58, 237, 0.35)",
+      shadow: "0 2px 8px rgba(124, 58, 237, 0.08)",
+    },
+    {
+      title: "Topic Mix",
+      sub: "Foundation easy",
+      href: `${base}/quiz?mode=easy`,
+      mode: "easy",
+      icon: Compass,
+      color: "#0284c7",
+      gradient: "linear-gradient(135deg, #edf9ff 0%, #e0f2fe 100%)",
+      gradientDark: "linear-gradient(135deg, rgba(2, 132, 199, 0.2) 0%, rgba(2, 132, 199, 0.08) 100%)",
+      border: "rgba(2, 132, 199, 0.22)",
+      borderDark: "rgba(2, 132, 199, 0.35)",
+      shadow: "0 2px 8px rgba(2, 132, 199, 0.08)",
+    },
+    {
+      title: "Tier 2 Hard",
+      sub: "Advanced level",
+      href: `${base}/quiz?mode=hard`,
+      mode: "hard",
+      icon: Flame,
+      color: "#e11d48",
+      gradient: "linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)",
+      gradientDark: "linear-gradient(135deg, rgba(225, 29, 72, 0.2) 0%, rgba(225, 29, 72, 0.08) 100%)",
+      border: "rgba(225, 29, 72, 0.22)",
+      borderDark: "rgba(225, 29, 72, 0.35)",
+      shadow: "0 2px 8px rgba(225, 29, 72, 0.08)",
+    },
   ];
 
-  const kickerText = bannerKicker ?? "Sprint 2026";
   const headlineText = bannerTitle ?? "Facts & Summary Notes";
   const subtitleText = bannerSubtitle ?? "Quick revision & key points";
   const notesHref = bannerHref ?? `${base}/formula-notes`;
@@ -122,7 +205,7 @@ export default function GeneralAwarenessTopicPage({
         @keyframes sg-in { from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)} }
 
         /* ════════════════════════════════════
-           DARK THEME (Mobile & Desktop Defaults)
+           THEME DEFAULTS
            ════════════════════════════════════ */
         .sg-page {
           --bg: #000000;
@@ -132,13 +215,6 @@ export default function GeneralAwarenessTopicPage({
           --label: #FFFFFF;
           --label-2: rgba(235,235,245,0.6);
           --label-3: rgba(235,235,245,0.3);
-          --tint: #2E8F82;
-          --scarlet: #FF5B4D;
-          --mustard: #F0A82E;
-          --blue: #0A84FF;
-          --purple: #BF5AF2;
-          --green: #30D158;
-          --orange: #FF9F0A;
 
           box-sizing: border-box;
           min-height: calc(100vh - 94px - env(safe-area-inset-bottom, 0px));
@@ -150,22 +226,14 @@ export default function GeneralAwarenessTopicPage({
           font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", sans-serif;
           -webkit-font-smoothing: antialiased;
           padding-top: calc(56px + max(env(safe-area-inset-top, 0px), 0px));
-          padding-bottom: 0;
+          padding-bottom: 24px;
           transition: background .25s ease, color .25s ease;
         }
         .sg-page::-webkit-scrollbar {
           display: none;
         }
 
-        /* Gradient backgrounds for badges */
-        .bg-blue { background: linear-gradient(150deg,#3d9bff,var(--blue)); color: white; }
-        .bg-purple { background: linear-gradient(150deg,#d17dff,var(--purple)); color: white; }
-        .bg-mustard { background: linear-gradient(150deg,#ffc257,var(--mustard)); color: white; }
-        .bg-scarlet { background: linear-gradient(150deg,#ff7a6e,var(--scarlet)); color: white; }
-        .bg-teal { background: linear-gradient(150deg,#41ab9d,var(--tint)); color: white; }
-        .bg-orange { background: linear-gradient(150deg,#ffb84d,var(--orange)); color: white; }
-
-        /* ── Fixed NavBar (iOS Reference) ── */
+        /* ── Fixed NavBar ── */
         .sg-navbar {
           position: fixed;
           top: 0;
@@ -203,18 +271,18 @@ export default function GeneralAwarenessTopicPage({
           margin: 0; color: var(--label);
         }
 
-        /* ── Banner (iOS Card Style) ── */
+        /* ── Banner ── */
         .sg-banner-wrap {
-          padding: 16px 16px 18px;
+          padding: 16px 16px 16px;
           animation: sg-in .38s cubic-bezier(.22,1,.36,1) both .06s;
         }
         .sg-banner {
           background: var(--card);
-          border-radius: 18px;
-          padding: 20px 18px;
-          min-height: 94px;
+          border-radius: 16px;
+          padding: 16px 16px;
+          min-height: 80px;
           box-sizing: border-box;
-          display: flex; align-items: center; gap: 16px;
+          display: flex; align-items: center; gap: 14px;
           margin: 0;
           text-decoration: none;
           -webkit-tap-highlight-color: transparent;
@@ -222,20 +290,20 @@ export default function GeneralAwarenessTopicPage({
         }
         .sg-banner:active { background: rgba(255,255,255,0.06); }
         .sg-banner-icon {
-          width: 52px; height: 52px; border-radius: 14px; flex-shrink: 0;
+          width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
           background: linear-gradient(150deg, #38bdf8, #0284c7);
           display: flex; align-items: center; justify-content: center;
           box-shadow: inset 0 1px 0.5px rgba(255,255,255,0.3);
           color: white;
         }
-        .sg-banner-icon svg { width: 26px; height: 26px; }
+        .sg-banner-icon svg { width: 22px; height: 22px; }
         .sg-banner-body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
         .sg-banner-title {
-          font-size: 17.5px; font-weight: 650; margin: 0 0 3px;
+          font-size: 16px; font-weight: 650; margin: 0 0 2px;
           letter-spacing: -0.3px; color: var(--label);
         }
         .sg-banner-sub {
-          font-size: 14px; color: var(--label-2); margin: 0;
+          font-size: 13px; color: var(--label-2); margin: 0;
           line-height: 1.35; letter-spacing: -0.1px;
         }
         .sg-banner-arr { flex-shrink: 0; color: var(--label-3); display: flex; align-items: center; }
@@ -244,63 +312,165 @@ export default function GeneralAwarenessTopicPage({
         .sg-section {
           font-size: 13px; font-weight: 600; color: var(--label-2);
           text-transform: uppercase; letter-spacing: 0.3px;
-          padding: 0 20px 8px;
+          padding: 0 20px 10px;
           animation: sg-up .34s ease both .1s;
         }
 
-        /* ── MOBILE LIST (iOS Grouped Style) ── */
+        /* ── PRACTICE MODES LIST ── */
         .sg-grid {
-          background: var(--card);
-          border-radius: 14px;
-          overflow: hidden;
-          margin: 0 16px 12px;
-          display: flex; flex-direction: column;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          margin: 0 16px 16px;
+          background: transparent;
+          overflow: visible;
           animation: sg-up .38s ease both .14s;
         }
 
-        /* ── MOBILE LIST ROW ── */
+        /* ── CAPSULE PILL CARD ── */
         .sg-card {
-          display: flex; align-items: center; gap: 12px;
-          padding: 11px 14px;
           position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 7px 10px 7px 10px;
+          min-height: 48px;
+          border-radius: 12px;
+          background: #1C1C1E;
+          color: #f8fafc;
           text-decoration: none;
+          border: 1px solid rgba(255, 255, 255, 0.09);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+          transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.18s ease, background 0.18s ease;
+          cursor: pointer;
+          overflow: hidden;
           -webkit-tap-highlight-color: transparent;
-          transition: background .12s;
         }
-        .sg-card:not(:last-child)::after {
-          content: "";
-          position: absolute; left: 52px; right: 0; bottom: 0;
-          height: 0.5px; background: var(--sep);
+
+        .sg-card:hover {
+          color: #f8fafc;
+          transform: translateY(-1.5px);
+          background: #242428;
+          border-color: rgba(255, 255, 255, 0.2);
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
         }
-        .sg-card:active { background: rgba(255,255,255,0.06); }
-        
+
+        .sg-card:active {
+          transform: translateY(0);
+        }
+
+        .sg-card-left {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          min-width: 0;
+          padding-right: 84px;
+          z-index: 2;
+        }
+
         .sg-badge {
-          width: 29px; height: 29px; border-radius: 7.5px; flex-shrink: 0;
-          display: flex; align-items: center; justify-content: center;
-          box-shadow: inset 0 1px 0.5px rgba(255,255,255,0.3);
+          width: 26px;
+          height: 26px;
+          border-radius: 7.5px;
+          background: var(--card-accent, #007AFF) !important;
+          color: #ffffff !important;
+          border: 1px solid rgba(255, 255, 255, 0.18) !important;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
         }
-        .sg-badge svg { width: 16px; height: 16px; }
-        
-        .sg-card-bottom {
-          flex: 1; min-width: 0;
-          display: flex; flex-direction: column;
+
+        .sg-badge svg {
+          width: 14px;
+          height: 14px;
+          color: #ffffff !important;
+          stroke: #ffffff;
         }
+
+        .sg-card-info {
+          display: flex;
+          flex-direction: column;
+          min-width: 0;
+          gap: 1px;
+        }
+
         .sg-card-name {
-          font-size: 16px; font-weight: 590; letter-spacing: -0.2px; margin: 0;
-          color: var(--label);
+          font-size: 12px;
+          font-weight: 700;
+          color: #f8fafc;
+          line-height: 1.2;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          letter-spacing: -0.01em;
         }
+
         .sg-card-sub {
-          font-size: 13px; color: var(--label-2); margin: 1px 0 0;
+          font-size: 9.5px;
+          font-weight: 500;
+          color: rgba(235, 235, 245, 0.6);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
-        
-        .sg-card-chev {
-          color: var(--label-3); flex-shrink: 0;
-          display: flex; align-items: center;
+
+        /* ── Right White Cutout Tab with Curved Notch ── */
+        .sg-card-tab {
+          position: absolute;
+          top: 0;
+          right: 0;
+          bottom: 0;
+          width: 88px;
+          height: 100%;
+          pointer-events: none;
+          z-index: 3;
+        }
+
+        .sg-tab-bg-svg {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          display: block;
+        }
+
+        .sg-tab-bg-svg path {
+          fill: #ffffff;
+        }
+
+        .sg-tab-action-wrap {
+          position: absolute;
+          top: 0;
+          right: 0;
+          bottom: 0;
+          width: 60px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .sg-card-qs-text {
+          font-size: 11.5px;
+          font-weight: 750;
+          color: #007AFF !important;
+          letter-spacing: -0.01em;
+          white-space: nowrap;
+          line-height: 1;
+          background: none;
+          border: none;
+          padding: 0;
+          transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.18s ease;
+        }
+
+        .sg-card:hover .sg-card-qs-text {
+          transform: scale(1.06);
         }
 
         /* ════════════════════════════════════
-           iOS LIGHT THEME OVERRIDES
-           Triggered by body.theme-light
+           LIGHT THEME OVERRIDES
            ════════════════════════════════════ */
         body.theme-light .sg-page {
           --bg: #F6F8FA;
@@ -314,11 +484,43 @@ export default function GeneralAwarenessTopicPage({
         }
         body.theme-light .sg-navbar { background: #F6F8FA; }
         body.theme-light .sg-nav-inline { border-bottom-color: #E6EAEF; }
-        body.theme-light .sg-card:active { background: #E6EAEF; }
         body.theme-light .sg-banner {
           background: #FFFFFF;
           border-color: #E6EAEF;
           box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
+        }
+        body.theme-light .sg-card {
+          background: var(--card-gradient, linear-gradient(135deg, #e6f7f2 0%, #d4f3eb 100%));
+          border-color: var(--card-border, rgba(0, 0, 0, 0.08));
+          color: #0f172a;
+          box-shadow: var(--card-shadow, 0 2px 6px rgba(0, 0, 0, 0.04)), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        }
+        body.theme-light .sg-card:hover {
+          color: #0f172a;
+          border-color: var(--card-accent, rgba(0, 113, 227, 0.4));
+          box-shadow: var(--card-shadow, 0 4px 12px rgba(0, 0, 0, 0.08)), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        }
+        body.theme-light .sg-badge {
+          background: var(--card-accent, #007AFF) !important;
+          border-color: transparent !important;
+          color: #ffffff !important;
+          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+        }
+        body.theme-light .sg-badge svg {
+          color: #ffffff !important;
+          stroke: #ffffff;
+        }
+        body.theme-light .sg-card-name {
+          color: #0f172a;
+        }
+        body.theme-light .sg-card-sub {
+          color: #64748b;
+        }
+        body.theme-light .sg-tab-bg-svg path {
+          fill: #ffffff;
+        }
+        body.theme-light .sg-card-qs-text {
+          color: #007AFF !important;
         }
 
         /* ════════════════════════════════════
@@ -338,8 +540,8 @@ export default function GeneralAwarenessTopicPage({
             display: flex;
             flex-direction: row;
             align-items: stretch;
-            gap: 60px;
-            max-width: 1080px;
+            gap: 50px;
+            max-width: 960px;
             width: 100%;
             margin: 0 auto;
           }
@@ -350,14 +552,14 @@ export default function GeneralAwarenessTopicPage({
             justify-content: center;
           }
           .sg-right-pane {
-            flex: 1.4;
+            flex: 1.2;
             display: flex;
             flex-direction: column;
             justify-content: center;
           }
           
           .sg-navbar {
-            position: relative; padding: 0 0 32px 0; background: transparent;
+            position: relative; padding: 0 0 28px 0; background: transparent;
             z-index: 1;
           }
           .sg-nav-inline {
@@ -386,12 +588,12 @@ export default function GeneralAwarenessTopicPage({
             opacity: 0.8;
           }
           .sg-nav-title {
-            font-size: 2.2rem; font-weight: 800; letter-spacing: -0.04em;
+            font-size: 2rem; font-weight: 800; letter-spacing: -0.04em;
           }
           
           .sg-banner-wrap { padding: 0; }
           .sg-banner {
-            border-radius: 18px;
+            border-radius: 16px;
             border: 0.5px solid rgba(255,255,255,0.07);
             padding: 16px;
             margin: 0;
@@ -402,56 +604,13 @@ export default function GeneralAwarenessTopicPage({
           .sg-banner-icon svg { width: 22px; height: 22px; }
           .sg-banner-title { font-size: 1.05rem; font-weight: 700; }
           .sg-banner-sub { font-size: 0.8rem; margin-top: 2px; }
-          .sg-section { padding: 0; margin-bottom: 20px; }
+          .sg-section { padding: 0; margin-bottom: 14px; }
           
           .sg-grid {
-            background: transparent;
-            border-radius: 0;
             margin: 0;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
-            overflow: visible;
+            gap: 10px;
           }
           
-          .sg-card {
-            border-radius: 18px;
-            background: var(--card);
-            border: 0.5px solid rgba(255,255,255,0.07);
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: stretch;
-            padding: 13px;
-            height: 154px;
-            transition: transform 0.12s ease, background 0.15s, border-color 0.25s, box-shadow 0.25s;
-          }
-          .sg-card:not(:last-child)::after { display: none; }
-          .sg-card:active { transform: scale(0.93); background: var(--card-2); }
-          .sg-card::after {
-            content: '';
-            position: absolute; inset: 0; border-radius: inherit;
-            background: linear-gradient(175deg,rgba(255,255,255,0.04) 0%,transparent 50%);
-            pointer-events: none;
-            transition: background 0.25s;
-          }
-          
-          .sg-badge {
-            width: 42px; height: 42px; border-radius: 12px;
-          }
-          .sg-badge svg { width: 22px; height: 22px; }
-          
-          .sg-card-bottom {
-            flex: none; display: block;
-          }
-          .sg-card-name { font-size: 0.97rem; font-weight: 700; margin-bottom: 0px; }
-          .sg-card-sub { font-size: 0.7rem; margin-top: 3px; }
-          
-          .sg-card-chev {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-          }
-
           body.theme-light .sg-navbar { background: transparent; }
           body.theme-light .sg-back {
             background: #ffffff;
@@ -460,13 +619,6 @@ export default function GeneralAwarenessTopicPage({
           }
           body.theme-light .sg-back:hover {
             background: #f2f2f7;
-          }
-          body.theme-light .sg-card {
-            border-color: rgba(0,0,0,0.06);
-            box-shadow: 0 1px 8px rgba(0,0,0,0.06);
-          }
-          body.theme-light .sg-card::after {
-            background: linear-gradient(175deg,rgba(255,255,255,0.8) 0%,transparent 50%);
           }
         }
       `}</style>
@@ -486,7 +638,7 @@ export default function GeneralAwarenessTopicPage({
           <div className="sg-left-pane">
             {/* BANNER */}
             <div className="sg-banner-wrap">
-              <Link href={notesHref} className="sg-banner" aria-label={bannerAriaLabel || bannerActionLabel || "Open summary notes"}>
+              <Link href={notesHref} className="sg-banner" aria-label={bannerAriaLabel || bannerActionLabel || "Open formula notes"}>
                 <div className="sg-banner-icon"><IconBanner /></div>
                 <div className="sg-banner-body">
                   <div className="sg-banner-title">{headlineText}</div>
@@ -501,22 +653,55 @@ export default function GeneralAwarenessTopicPage({
             {/* SECTION LABEL */}
             <div className="sg-section">Practice Modes</div>
 
-            {/* CARD GRID / LIST */}
+            {/* CARD LIST */}
             <div className="sg-grid">
-              {modes.map((m, i) => (
-                <Link key={m.title} href={m.href} className="sg-card">
-                  <div className={`sg-badge ${badgeClasses[i]}`}>
-                    <m.Icon />
-                  </div>
-                  <div className="sg-card-bottom">
-                    <div className="sg-card-name">{m.title}</div>
-                    <div className="sg-card-sub">{m.sub}</div>
-                  </div>
-                  <div className="sg-card-chev">
-                    <Chevron size={8} />
-                  </div>
-                </Link>
-              ))}
+              {modes.map((m) => {
+                const ModeIcon = m.icon;
+                const qCount = modeQuestionCounts[m.mode] ?? 0;
+                const displayQs = `${qCount} Qs`;
+                return (
+                  <Link
+                    key={m.title}
+                    href={m.href}
+                    className="sg-card"
+                    style={
+                      {
+                        "--card-gradient": m.gradient,
+                        "--card-gradient-dark": m.gradientDark,
+                        "--card-border": m.border,
+                        "--card-border-dark": m.borderDark,
+                        "--card-accent": m.color,
+                        "--card-shadow": m.shadow,
+                      } as React.CSSProperties
+                    }
+                  >
+                    <div className="sg-card-left">
+                      <div className="sg-badge">
+                        <ModeIcon size={14} strokeWidth={2.2} />
+                      </div>
+                      <div className="sg-card-info">
+                        <div className="sg-card-name">{m.title}</div>
+                        <div className="sg-card-sub">{m.sub}</div>
+                      </div>
+                    </div>
+                    <div className="sg-card-tab" aria-hidden="true">
+                      <svg
+                        className="sg-tab-bg-svg"
+                        viewBox="0 0 88 46"
+                        preserveAspectRatio="none"
+                      >
+                        <path
+                          d="M28 0 C28 10, 0 13, 0 23 C0 33, 28 36, 28 46 L88 46 L88 0 Z"
+                          fill="#ffffff"
+                        />
+                      </svg>
+                      <div className="sg-tab-action-wrap">
+                        <span className="sg-card-qs-text">{displayQs}</span>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           </div>
           
