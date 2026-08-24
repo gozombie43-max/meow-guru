@@ -228,6 +228,21 @@ const bulkCreateQuestions = async (req, res) => {
   }
 };
 
+// ── BULK DELETE /api/questions/bulk-delete ───────────
+const bulkDeleteQuestions = async (req, res) => {
+  try {
+    const { ids } = req.body;
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ error: 'ids must be a non-empty array' });
+    }
+
+    const result = await questionService.removeQuestionsBulk(ids);
+    return res.json({ message: `Deleted ${result.deleted} questions`, ...result });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+};
+
 // ── POST /api/questions/check-duplicates ──────────────
 const checkDuplicates = async (req, res) => {
   try {
@@ -259,6 +274,7 @@ export default {
   getQuestionById, 
   updateQuestion, 
   deleteQuestion, 
+  bulkDeleteQuestions,
   getQuestions, 
   generatePracticeTest, 
   runAnalysis,

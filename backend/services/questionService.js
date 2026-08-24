@@ -84,6 +84,7 @@ export async function createQuestion(newQuestion) {
   const container = getQuestionsContainer();
   if (!container) throw new Error('DB not ready');
   const { resource } = await container.items.create(newQuestion);
+  questionsQueryCache.clear();
   return resource;
 }
 
@@ -139,9 +140,11 @@ export async function createQuestionsBulk(questionsData) {
     return await container.items.create({ ...current, id: buildNewId(idx, 99) });
   };
 
-  return await Promise.allSettled(
+  const results = await Promise.allSettled(
     normalizedQuestions.map((q, idx) => createWithRetry(q, idx))
   );
+  questionsQueryCache.clear();
+  return results;
 }
 
 export async function fetchImageQuestions(topic = "visual_reasoning", limit = 20) {
@@ -409,6 +412,7 @@ export async function modifyQuestion(id, updates) {
   if (!existing) return null;
   const updated = { ...existing, ...updates, id, topic: updates.topic || existing.topic };
   await container.items.upsert(updated);
+  questionsQueryCache.clear();
   return updated;
 }
 
@@ -419,16 +423,101 @@ export async function removeQuestion(id) {
   const query = {
     query: `SELECT * FROM c WHERE c.id = @id${Number.isFinite(numericId) ? " OR c.id = @idNum" : ""}`,
     parameters: [
-      { name: "@id", value: id },
+      { name: "@id", value: String(id) },
       ...(Number.isFinite(numericId) ? [{ name: "@idNum", value: numericId }] : []),
     ],
   };
   const { resources } = await container.items.query(query).fetchAll();
   if (!resources.length) return false;
   
-  const { topic } = resources[0];
-  await container.item(resources[0].id, topic ?? null).delete();
+  for (const doc of resources) {
+    const partitionKey = doc.topic !== undefined ? doc.topic : undefined;
+    try {
+      await container.item(doc.id, partitionKey).delete();
+    } catch (err) {
+      if (partitionKey !== undefined) {
+        try {
+          await container.item(doc.id, undefined).delete();
+        } catch {
+          throw err;
+        }
+      } else {
+        throw err;
+      }
+    }
+  }
+  questionsQueryCache.clear();
   return true;
+}
+
+export async function removeQuestionsBulk(ids) {
+  const container = getQuestionsContainer();
+  if (!container) throw new Error('DB not ready');
+  if (!Array.isArray(ids) || ids.length === 0) return { deleted: 0, failed: 0, total: 0 };
+
+  const uniqueIds = Array.from(new Set(ids.map((id) => String(id).trim()).filter(Boolean)));
+  if (uniqueIds.length === 0) return { deleted: 0, failed: 0, total: 0 };
+
+  const batchSize = 100;
+  let deleted = 0;
+  let failed = 0;
+
+  for (let i = 0; i < uniqueIds.length; i += batchSize) {
+    const batchIds = uniqueIds.slice(i, i + batchSize);
+    const paramNames = batchIds.map((_, idx) => `@id${idx}`);
+    const parameters = batchIds.map((id, idx) => ({ name: `@id${idx}`, value: id }));
+
+    let resources = [];
+    try {
+      const query = {
+        query: `SELECT c.id, c.topic FROM c WHERE c.id IN (${paramNames.join(', ')})`,
+        parameters,
+      };
+      const result = await container.items.query(query).fetchAll();
+      resources = result.resources || [];
+    } catch (err) {
+      console.error('removeQuestionsBulk query error:', err);
+    }
+
+    const foundIds = new Set(resources.map((r) => String(r.id)));
+    const notFoundIds = batchIds.filter((id) => !foundIds.has(id));
+
+    const deletePromises = resources.map(async (doc) => {
+      const partitionKey = doc.topic !== undefined ? doc.topic : undefined;
+      try {
+        await container.item(doc.id, partitionKey).delete();
+        return true;
+      } catch {
+        try {
+          await container.item(doc.id, undefined).delete();
+          return true;
+        } catch {
+          return false;
+        }
+      }
+    });
+
+    for (const notFoundId of notFoundIds) {
+      deletePromises.push(
+        (async () => {
+          try {
+            return await removeQuestion(notFoundId);
+          } catch {
+            return false;
+          }
+        })()
+      );
+    }
+
+    const results = await Promise.allSettled(deletePromises);
+    results.forEach((r) => {
+      if (r.status === 'fulfilled' && r.value) deleted++;
+      else failed++;
+    });
+  }
+
+  questionsQueryCache.clear();
+  return { deleted, failed, total: uniqueIds.length };
 }
 
 export async function checkDuplicates(questions) {

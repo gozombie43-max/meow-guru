@@ -49,6 +49,7 @@ const questionUpload = upload.fields([
 // ── Specific named routes FIRST (before /:id) ──────────
 
 router.post('/bulk', adminAuth, questionController.bulkCreateQuestions);
+router.post('/bulk-delete', adminAuth, questionController.bulkDeleteQuestions);
 router.post('/check-duplicates', adminAuth, questionController.checkDuplicates);
 router.get('/practice-test', questionController.generatePracticeTest);
 router.post('/analyze', adminAuth, questionController.runAnalysis);

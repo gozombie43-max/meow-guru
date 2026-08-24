@@ -7,6 +7,14 @@ import { fetchWithRetry } from "@/lib/api/http";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "";
 
+const getAdminSecret = () => {
+  if (typeof window !== "undefined") {
+    const saved = localStorage.getItem("adminSecret");
+    if (saved && saved.trim()) return saved.trim();
+  }
+  return process.env.NEXT_PUBLIC_ADMIN_SECRET || "quizguru_admin_987654";
+};
+
 type Question = {
   id: string;
   topic: string;
@@ -451,9 +459,13 @@ export default function AdminPanel() {
         quizName: muQuiz,
       }));
 
+      const secret = getAdminSecret();
       const res = await fetchWithRetry(muApiUrl, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-secret": secret,
+        },
         body: JSON.stringify(payload),
       });
 
@@ -526,12 +538,13 @@ export default function AdminPanel() {
     setBulkImageUploading(true);
     setBulkImageNotice("");
     try {
+      const secret = getAdminSecret();
       const formData = new FormData();
       bulkImages.forEach((item) => formData.append("images", item.file));
 
       const res = await fetchWithRetry(`${API}/api/upload/bulk-image`, {
         method: "POST",
-        headers: { "x-admin-secret": "quizguru_admin_987654" },
+        headers: { "x-admin-secret": secret },
         body: formData,
       });
 
@@ -558,13 +571,14 @@ export default function AdminPanel() {
   const handleSolutionImageUpload = async (questionId: string, file: File) => {
     setSolImgUploading(questionId);
     try {
+      const secret = getAdminSecret();
       const fd = new FormData();
       fd.append("image", file);
 
       // Step 1: upload image, get back URL
       const uploadRes = await fetchWithRetry(`${API}/api/upload/solution-image`, {
         method: "POST",
-        headers: { "x-admin-secret": "quizguru_admin_987654" },
+        headers: { "x-admin-secret": secret },
         body: fd,
       });
       if (!uploadRes.ok) throw new Error(`Upload failed ${uploadRes.status}`);
@@ -573,7 +587,10 @@ export default function AdminPanel() {
       // Step 2: patch the question's solution field with image markdown
       const patchRes = await fetchWithRetry(`${API}/api/questions/${encodeURIComponent(questionId)}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-secret": secret,
+        },
         body: JSON.stringify({ solution: `![solution](${url})` }),
       });
       if (!patchRes.ok) throw new Error(`Patch failed ${patchRes.status}`);
@@ -621,22 +638,53 @@ export default function AdminPanel() {
   // ── Bulk delete ───────────────────────────────────────
   const handleBulkDelete = async () => {
     setBulkDeleting(true);
+    const idsToDelete = Array.from(selected);
+    const secret = getAdminSecret();
     let deleted = 0;
     let failed = 0;
-    for (const id of selected) {
-      try {
-        const res = await fetchWithRetry(`${API}/api/questions/${encodeURIComponent(id)}`, { method: "DELETE" });
-        if (res.ok) deleted++;
-        else failed++;
-      } catch {
-        failed++;
+
+    try {
+      // 1. Try fast batch bulk delete endpoint first
+      const res = await fetchWithRetry(`${API}/api/questions/bulk-delete`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-secret": secret,
+        },
+        body: JSON.stringify({ ids: idsToDelete }),
+      });
+
+      if (res.ok) {
+        const data = await res.json().catch(() => ({}));
+        deleted = Number.isFinite(data?.deleted) ? data.deleted : idsToDelete.length;
+        failed = Number.isFinite(data?.failed) ? data.failed : 0;
+      } else {
+        // 2. Fallback to concurrent chunked single deletes if bulk-delete endpoint is unavailable
+        const results = await Promise.allSettled(
+          idsToDelete.map((id) =>
+            fetchWithRetry(`${API}/api/questions/${encodeURIComponent(id)}`, {
+              method: "DELETE",
+              headers: { "x-admin-secret": secret },
+            })
+          )
+        );
+        results.forEach((r) => {
+          if (r.status === "fulfilled" && r.value.ok) deleted++;
+          else failed++;
+        });
       }
+
+      // Optimistically remove deleted questions from local state
+      setQuestions((prev) => prev.filter((q) => !selected.has(q.id)));
+      setSelected(new Set());
+      setBulkDeleteConfirm(false);
+      showMsg(failed > 0 ? `Deleted ${deleted}, failed ${failed}` : `Deleted ${deleted} questions ✓`);
+      fetchQuestions();
+    } catch (e: unknown) {
+      showMsg(e instanceof Error ? e.message : "Bulk delete failed", true);
+    } finally {
+      setBulkDeleting(false);
     }
-    setBulkDeleting(false);
-    setBulkDeleteConfirm(false);
-    setSelected(new Set());
-    showMsg(failed > 0 ? `Deleted ${deleted}, failed ${failed}` : `Deleted ${deleted} questions ✓`);
-    fetchQuestions();
   };
 
   // ── Single CRUD ───────────────────────────────────────
@@ -646,19 +694,42 @@ export default function AdminPanel() {
 
   const handleSave = async () => {
     try {
+      const secret = getAdminSecret();
       if (isNew) {
         const res = await fetchWithRetry(`${API}/api/questions`, {
-          method: "POST", headers: { "Content-Type": "application/json" },
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-admin-secret": secret,
+          },
           body: JSON.stringify(formData),
         });
-        if (!res.ok) throw new Error(`Server error ${res.status}`);
+        if (!res.ok) {
+          let msg = `Server error ${res.status}`;
+          try {
+            const d = await res.json();
+            if (d?.error) msg = d.error;
+          } catch { /* ignore */ }
+          throw new Error(msg);
+        }
         showMsg("Question created ✓");
       } else {
         const res = await fetchWithRetry(`${API}/api/questions/${editing!.id}`, {
-          method: "PUT", headers: { "Content-Type": "application/json" },
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "x-admin-secret": secret,
+          },
           body: JSON.stringify(formData),
         });
-        if (!res.ok) throw new Error(`Server error ${res.status}`);
+        if (!res.ok) {
+          let msg = `Server error ${res.status}`;
+          try {
+            const d = await res.json();
+            if (d?.error) msg = d.error;
+          } catch { /* ignore */ }
+          throw new Error(msg);
+        }
         showMsg("Question updated ✓");
       }
       closeModal();
@@ -670,10 +741,29 @@ export default function AdminPanel() {
 
   const handleDelete = async (id: string) => {
     try {
-      const res = await fetchWithRetry(`${API}/api/questions/${encodeURIComponent(id)}`, { method: "DELETE" });
-      if (!res.ok) throw new Error(`Server error ${res.status}`);
+      const secret = getAdminSecret();
+      const res = await fetchWithRetry(`${API}/api/questions/${encodeURIComponent(id)}`, {
+        method: "DELETE",
+        headers: {
+          "x-admin-secret": secret,
+        },
+      });
+      if (!res.ok) {
+        let msg = `Server error ${res.status}`;
+        try {
+          const errData = await res.json();
+          if (errData?.error) msg = errData.error;
+        } catch { /* ignore */ }
+        throw new Error(msg);
+      }
       showMsg("Question deleted ✓");
       setDeleteConfirm(null);
+      setQuestions((prev) => prev.filter((q) => q.id !== id));
+      setSelected((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
       fetchQuestions();
     } catch (e: unknown) {
       showMsg(e instanceof Error ? e.message : "Delete failed", true);
@@ -762,8 +852,6 @@ export default function AdminPanel() {
             Clear
           </button>
         </div>
-
-
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 10, marginBottom: 10 }}>
           <select
             value={muSubject}
