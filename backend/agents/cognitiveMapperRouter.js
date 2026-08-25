@@ -2,6 +2,7 @@
 // QuizGuru — Cognitive Failure Mapper API Routes
 
 import express from "express";
+import { LRUCache } from "lru-cache";
 import {
   DIMENSIONS,
   tagFailure,
@@ -13,6 +14,10 @@ import { getUsersContainer } from "../containerStore.js";
 import { chatJSON } from "../ai/azureClient.js";
 
 const router = express.Router();
+
+// Cache brain-scan AI results for 5 min per user to prevent
+// every dashboard page-load from firing an LLM call.
+const brainScanCache = new LRUCache({ max: 500, ttl: 5 * 60 * 1000 });
 
 const getUserById = async (id) => {
   const { resources } = await getUsersContainer().items
@@ -391,7 +396,7 @@ Analytics:\n${JSON.stringify({ summary, confidenceProfile, trapRadar })}\n\nRetu
       return null;
     });
 
-  const timeout = wait(3500).then(() => null);
+  const timeout = wait(8000).then(() => null);
 
   const response = await Promise.race([aiResponse, timeout]);
   if (response) return response;
@@ -655,6 +660,13 @@ router.get("/brain-scan/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
 
+    // Return cached result if available (5-min TTL) to avoid an LLM call
+    // on every dashboard page load.
+    const cached = brainScanCache.get(userId);
+    if (cached) {
+      return res.json({ ...cached, cached: true });
+    }
+
     const profile = await getUserById(userId);
     if (!profile) {
       return res.json({
@@ -682,7 +694,7 @@ router.get("/brain-scan/:userId", async (req, res) => {
       totalFailures,
     });
 
-    res.json({
+    const result = {
       topWeakConcepts: topWeak,
       globalDistribution: globalDist,
       totalConceptsTracked: Object.keys(failureMap).length,
@@ -691,7 +703,12 @@ router.get("/brain-scan/:userId", async (req, res) => {
       source:
         storedFailureTotal > 0 ? "failureMap" : totalFailures > 0 ? "recentQuizzes" : "none",
       insights,
-    });
+    };
+
+    // Cache the result for 5 minutes
+    brainScanCache.set(userId, result);
+
+    res.json(result);
   } catch (err) {
     console.error("[brain-scan]", err);
     res.status(500).json({ error: err.message });
