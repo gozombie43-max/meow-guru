@@ -184,7 +184,8 @@ const s = {
     background:  "#0d1117",
     color:       "#e2e8f0",
     fontFamily:  "'Segoe UI', sans-serif",
-    padding:     "2rem",
+    padding:     "calc(16px + var(--safe-top)) 16px calc(24px + var(--safe-bottom)) 16px",
+    boxSizing:   "border-box",
   },
   header: {
     display:        "flex",

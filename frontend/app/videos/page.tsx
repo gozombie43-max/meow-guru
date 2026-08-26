@@ -309,7 +309,7 @@ export default function VideosPage() {
       <style>{`
 
         .header-top {
-          padding: 16px 20px 8px;
+          padding: 12px 16px 8px;
         }
 
         .header-title {
@@ -324,6 +324,7 @@ export default function VideosPage() {
           position: sticky;
           top: 0;
           z-index: 100;
+          padding-top: var(--safe-top);
           background: var(--video-header-bg, #ffffff);
           backdrop-filter: var(--video-filter-backdrop, saturate(180%) blur(20px));
           -webkit-backdrop-filter: var(--video-filter-backdrop, saturate(180%) blur(20px));

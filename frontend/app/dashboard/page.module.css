@@ -141,7 +141,7 @@
 /* ================= MOBILE NAVBAR ================= */
 .mobileNavbar {
   flex-shrink: 0;
-  padding: 6px 18px 10px;
+  padding: calc(6px + var(--safe-top)) 18px 10px;
   background: var(--mobile-navbar-bg);
   backdrop-filter: blur(28px) saturate(1.7);
   -webkit-backdrop-filter: blur(28px) saturate(1.7);
@@ -670,7 +670,7 @@
 @media (max-width: 900px) {
   .page {
     height: auto;
-    min-height: 100svh;
+    min-height: 100dvh;
     overflow: visible;
   }
 

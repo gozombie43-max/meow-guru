@@ -231,7 +231,7 @@ export default function ArithmeticTopicsPage() {
         .ios-nav {
           position: sticky; top: 0; z-index: 50;
           display: grid; grid-template-columns: 1fr auto 1fr;
-          align-items: center; height: 52px; padding: 0 8px;
+          align-items: center; height: calc(56px + var(--safe-top)); padding: var(--safe-top) 8px 0;
           background: rgba(249, 249, 251, 0.82);
           backdrop-filter: saturate(180%) blur(20px);
           -webkit-backdrop-filter: saturate(180%) blur(20px);

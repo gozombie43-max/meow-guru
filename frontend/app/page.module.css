@@ -106,7 +106,7 @@
   .pageWrapper {
     padding: 0;
     display: block;
-    min-height: 100svh;
+    min-height: 100dvh;
     overflow-x: hidden;
   }
   .desktopOnly {
@@ -1059,7 +1059,7 @@
    MOBILE PREVIOUS DESIGN STYLES (< 1024px)
    ========================================================================= */
 .mobileWorkspace {
-  padding: 0 16px 30px;
+  padding: 0 16px 24px;
   width: 100%;
   box-sizing: border-box;
 }
@@ -1068,8 +1068,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: max(16px, var(--safe-top));
-  margin-bottom: 12px;
+  padding: calc(12px + var(--safe-top)) 0 12px;
+  margin-bottom: 8px;
 }
 
 .headerActionsMobile {
