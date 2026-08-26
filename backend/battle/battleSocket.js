@@ -31,8 +31,21 @@ const REVEAL_DELAY  = 2000; // ms to show results before next question
 const ROOM_CREATE_COOLDOWN_MS = 10_000; // per-socket room creation throttle
 
 export function initBattleSocket(httpServer, corsOrigin) {
+  // Build an explicit origin allowlist for Socket.IO.
+  // Always includes the production Vercel frontend + localhost for dev.
+  // Falls back to the shared corsOrigin function if no FRONTEND_URL is set.
+  const socketCorsOrigins = [
+    'http://localhost:3000',
+    'http://localhost:5000',
+    ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
+  ];
+
   const io = new Server(httpServer, {
-    cors: { origin: corsOrigin, credentials: true },
+    cors: {
+      origin: socketCorsOrigins,
+      methods: ['GET', 'POST'],
+      credentials: true,
+    },
   });
 
   // ── Socket authentication ─────────────────────────────

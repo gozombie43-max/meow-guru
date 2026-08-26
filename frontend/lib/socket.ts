@@ -1,16 +1,29 @@
 // frontend/lib/socket.ts
+// Socket.IO connects DIRECTLY to the Azure backend — NOT through the Vercel /backend-api proxy.
+// Vercel rewrites are HTTP-only and do not support WebSocket upgrades.
+// REST APIs still use NEXT_PUBLIC_API_URL (/backend-api/*) as before.
 import { io, Socket } from 'socket.io-client';
 import { AUTH_TOKEN_STORAGE_KEY } from './axios';
 
 let socket: Socket | null = null;
 
-const defaultApiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000';
+// Direct Azure backend URL — bypasses the Vercel proxy for WebSocket support.
+// Must be set in Vercel Environment Variables as NEXT_PUBLIC_SOCKET_URL.
+// NOTE: NEXT_PUBLIC_API_URL is intentionally NOT in this fallback chain.
+//   In production it equals "/backend-api" (Vercel rewrite) which has no WebSocket support.
+//   A missing NEXT_PUBLIC_SOCKET_URL will fall back to localhost and fail loudly,
+//   rather than silently routing through the proxy.
+const SOCKET_URL =
+  process.env.NEXT_PUBLIC_SOCKET_URL ||
+  'http://localhost:10000';
 
 export function getSocket(customToken?: string): Socket {
   const token = customToken || (typeof window !== 'undefined' ? localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) : null);
 
   if (!socket) {
-    socket = io(defaultApiBase, {
+    socket = io(SOCKET_URL, {
+      path: '/socket.io',
+      transports: ['websocket', 'polling'],
       withCredentials: true,
       autoConnect: true,
       auth: (cb) => {
