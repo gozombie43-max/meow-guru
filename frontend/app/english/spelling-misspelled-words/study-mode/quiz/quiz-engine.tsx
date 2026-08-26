@@ -628,7 +628,7 @@ export default function StudyModeQuizEngine() {
         .mobile-view-container { display: block; }
         
         @media (min-width: 861px) {
-          .desktop-view-container { display: block; height: 100vh; overflow: hidden; }
+          .desktop-view-container { display: block; height: 100dvh; overflow: hidden; }
           .mobile-view-container { display: none; }
         }
 
@@ -733,7 +733,7 @@ export default function StudyModeQuizEngine() {
            ------------------------------------------- */
         .dt-app[data-theme="light"] { --dt-bg-app:#EDEDF0; --dt-bg-sidebar:#F5F5F7; --dt-bg-main:#FFFFFF; --dt-bg-row-alt:#F7F7F9; --dt-bg-head:#F5F5F7; --dt-ink:#1D1D1F; --dt-ink-soft:#6E6E73; --dt-ink-faint:#AEAEB2; --dt-border:#E3E3E7; --dt-blue:#0A84FF; --dt-blue-soft:#E8F2FF; --dt-radius:12px; }
         .dt-app[data-theme="dark"] { --dt-bg-app:#000000; --dt-bg-sidebar:#1C1C1E; --dt-bg-main:#232326; --dt-bg-row-alt:#2A2A2D; --dt-bg-head:#28282B; --dt-ink:#F2F2F5; --dt-ink-soft:#9A9AA0; --dt-ink-faint:#5C5C60; --dt-border:#38383B; --dt-blue:#3A9AFF; --dt-blue-soft:#0F2338; }
-        .dt-shell { display: flex; height: 100vh; padding: 14px; gap: 14px; background: var(--dt-bg-app); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif; color: var(--dt-ink); transition: background .3s ease, color .3s ease; }
+        .dt-shell { display: flex; height: 100dvh; padding: 14px; gap: 14px; background: var(--dt-bg-app); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif; color: var(--dt-ink); transition: background .3s ease, color .3s ease; }
         .dt-sidebar { width: 280px; flex-shrink: 0; background: var(--dt-bg-sidebar); border-radius: var(--dt-radius); display: flex; flex-direction: column; overflow: hidden; }
         .dt-traffic { display: flex; gap: 8px; padding: 16px 16px 14px; }
         .dt-traffic span { width: 12px; height: 12px; border-radius: 50%; display: block; }

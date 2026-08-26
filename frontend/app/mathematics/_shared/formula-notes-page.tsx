@@ -331,14 +331,13 @@ export default function FormulaNotesPage({
           --text-primary: rgba(0, 0, 0, 0.8);
           --text-secondary: rgba(0, 0, 0, 0.4);
           --glass-edge: rgba(255, 255, 255, 0.7);
-          min-height: 100vh;
+          min-height: 100dvh;
           background: linear-gradient(180deg, var(--bg-start) 0%, var(--bg-end) 100%);
           color: var(--text-primary);
           font-family: "General Sans", "SF Pro Display", "Segoe UI", sans-serif;
           padding: 28px 18px 92px;
           position: relative;
           overflow: hidden;
-          height: 100vh;
           height: 100dvh;
         }
 

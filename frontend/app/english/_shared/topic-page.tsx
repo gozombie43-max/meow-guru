@@ -257,15 +257,14 @@ export default function EnglishTopicPage({
           --label-3: rgba(235,235,245,0.3);
 
           box-sizing: border-box;
-          min-height: calc(100vh - 94px - env(safe-area-inset-bottom, 0px));
-          min-height: calc(100dvh - 94px - env(safe-area-inset-bottom, 0px));
+          min-height: calc(100dvh - var(--app-bottom-nav-height) - var(--safe-bottom));
           overflow-x: hidden;
           scrollbar-width: none;
           background: #000000;
           color: var(--label);
           font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", sans-serif;
           -webkit-font-smoothing: antialiased;
-          padding-top: calc(56px + max(env(safe-area-inset-top, 0px), 0px));
+          padding-top: calc(var(--app-header-height) + var(--safe-top));
           padding-bottom: 24px;
           transition: background .25s ease, color .25s ease;
         }
@@ -280,7 +279,7 @@ export default function EnglishTopicPage({
           left: 0;
           right: 0;
           z-index: 50;
-          padding: max(env(safe-area-inset-top, 0px), 0px) 16px 0;
+          padding: var(--safe-top) 16px 0;
           background: #000;
         }
         .sg-nav-inline {

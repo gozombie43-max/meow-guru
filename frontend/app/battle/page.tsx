@@ -692,7 +692,7 @@ export default function BattlePage() {
 
   // ── Waiting ──────────────────────────────────────────────────────────────────
   if (battleState === "waiting") return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 relative overflow-hidden battle-theme battle-lobby">
+    <div className="min-h-dvh flex flex-col items-center justify-center px-4 relative overflow-hidden battle-theme battle-lobby">
       <div className="battle-glow battle-glow-1" />
       <div className="battle-glow battle-glow-2" />
 
@@ -747,7 +747,7 @@ export default function BattlePage() {
 
   // ── Playing ──────────────────────────────────────────────────────────────────
   if (battleState === "playing" && currentQ) return (
-    <div className="min-h-screen flex flex-col" style={{
+    <div className="min-h-dvh flex flex-col" style={{
       background: "linear-gradient(165deg,#f5f0ff 0%,#eef2ff 38%,#f8faff 100%)",
       fontFamily: "Poppins, Inter, 'Segoe UI', sans-serif",
     }}>
@@ -893,7 +893,7 @@ export default function BattlePage() {
     const isDraw = myScore === oppScore;
 
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-4 relative overflow-hidden"
+      <div className="min-h-dvh flex flex-col items-center justify-center px-4 relative overflow-hidden"
         style={{ background: "linear-gradient(165deg,#f5f0ff 0%,#eef2ff 38%,#f8faff 100%)" }}>
         <div className="bg-blob-1" /><div className="bg-blob-2" />
 

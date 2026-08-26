@@ -10,7 +10,7 @@
   --border: rgba(0, 0, 0, 0.08);
 
   background: var(--bg);
-  height: 100vh;
+  height: 100dvh;
   height: 100dvh;
   overflow: hidden;
   color: var(--text-dark);
@@ -626,7 +626,7 @@
 @media (min-width: 768px) {
   .page {
     padding: 32px 24px;
-    height: 100vh;
+    height: 100dvh;
     background: radial-gradient(at 10% 10%, rgba(186, 230, 253, 0.7) 0px, transparent 50%),
                 radial-gradient(at 90% 15%, rgba(221, 214, 254, 0.6) 0px, transparent 50%),
                 radial-gradient(at 50% 85%, rgba(254, 215, 215, 0.45) 0px, transparent 50%),
@@ -650,7 +650,7 @@
   .macosWindow {
     width: 100%;
     max-width: 1120px;
-    height: min(800px, calc(100vh - 64px));
+    height: min(800px, calc(100dvh - 64px));
     display: flex;
     flex-direction: row;
     background: rgba(255, 255, 255, 0.78);

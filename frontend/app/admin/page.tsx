@@ -780,7 +780,7 @@ export default function AdminPanel() {
       padding: "1.5rem",
       maxWidth: 1280,
       margin: "0 auto",
-      minHeight: "100vh",
+      minHeight: "100dvh",
       background: "#ffffff",
       /* Force Light Theme Variables */
       "--color-text-primary": "#1c1c1e",

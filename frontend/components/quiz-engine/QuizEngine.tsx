@@ -1028,7 +1028,7 @@ export default function QuizEngine({
   if (showAnalytics) {
     return (
       <div
-        className={`${subjectConfig.cssClassName} min-h-screen relative overflow-hidden`}
+        className={`${subjectConfig.cssClassName} min-h-dvh relative overflow-hidden`}
         data-theme="light"
         style={{ background: "var(--quiz-bg)", color: "var(--quiz-text)" }}
       >
@@ -1443,7 +1443,7 @@ export default function QuizEngine({
   if (!currentQ) {
     return (
       <div
-        className={`${subjectConfig.cssClassName} min-h-screen relative flex items-center justify-center`}
+        className={`${subjectConfig.cssClassName} min-h-dvh relative flex items-center justify-center`}
         data-theme="light"
         style={{ background: "var(--quiz-bg)", color: "var(--quiz-text)" }}
       >
@@ -2354,7 +2354,7 @@ export default function QuizEngine({
 
   return (
     <div
-      className={`${subjectConfig.cssClassName} min-h-screen relative overflow-x-hidden`}
+      className={`${subjectConfig.cssClassName} min-h-dvh relative overflow-x-hidden`}
       data-theme={theme}
       style={{
         background: "var(--quiz-bg)",
@@ -2605,7 +2605,7 @@ export default function QuizEngine({
 
             <section className="mb-5" style={{ marginTop: 28, display: Boolean(currentQ.diagram || currentQ.needs_diagram) || currentQ.questionType === 'image_mcq' ? 'none' : 'block' }}>
               <div
-                className="max-h-[calc(100vh-360px)] overflow-y-auto pr-1 sm:max-h-none sm:overflow-visible"
+                className="max-h-[calc(100dvh-360px)] overflow-y-auto pr-1 sm:max-h-none sm:overflow-visible"
                 style={{ paddingBottom: 96, WebkitOverflowScrolling: "touch" }}
               >
                 <div className="grid gap-3 lg:grid-cols-2">

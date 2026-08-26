@@ -10,7 +10,7 @@
   --border: #e2e8f0;
   
   background: var(--bg);
-  min-height: 100vh;
+  min-height: 100dvh;
   padding: 32px 16px;
   color: var(--text-dark);
 }

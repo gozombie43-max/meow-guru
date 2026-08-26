@@ -30,7 +30,7 @@ body:has(.battle-container) {
   background: radial-gradient(120% 90% at 50% -10%, #1a1510 0%, var(--bg) 45%);
   color: var(--label);
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "Noto Sans Bengali", sans-serif;
-  min-height: 100vh;
+  min-height: 100dvh;
   display: block;
 }
 
@@ -41,7 +41,7 @@ body:has(.battle-container) {
 .device {
   width: 100%;
   max-width: 430px;
-  min-height: 100vh;
+  min-height: 100dvh;
   position: relative;
   padding-bottom: 40px;
   margin: 0 auto;

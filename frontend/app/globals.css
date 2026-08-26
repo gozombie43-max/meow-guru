@@ -49,11 +49,21 @@ html.app-is-booting #app-initial-boot-overlay {
 /* ========== iOS Safe Area & Mobile Optimization ========== */
 
 :root {
-  /* Safe Area Insets - iOS Notch & Home Indicator */
+  /* Safe Area Insets - iOS Notch, Android cutouts & Home Indicator */
   --safe-area-inset-top: env(safe-area-inset-top, 0px);
   --safe-area-inset-right: env(safe-area-inset-right, 0px);
   --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
   --safe-area-inset-left: env(safe-area-inset-left, 0px);
+
+  /* Shorthand aliases used by the shared app shell */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+
+  /* App Shell Dimensions — single source of truth */
+  --app-header-height: 56px;
+  --app-bottom-nav-height: 94px;
 }
 
 @supports (padding: max(0px)) {
@@ -428,6 +438,14 @@ body.math-topics-surface.theme-dark {
 
 .pr-safe {
   padding-right: max(1rem, env(safe-area-inset-right));
+}
+
+/* ========== Shared App Page Shell ========== */
+
+.app-page {
+  width: 100%;
+  min-height: 100dvh;
+  box-sizing: border-box;
 }
 
 /* iOS Haptic-like animations */
@@ -1467,8 +1485,8 @@ button:active:not(:disabled) {
 /* ========== Bottom Pill Navigation ========== */
 
 body.has-bottom-nav {
-  /* Desktop pill nav: 18px gap + ~60px nav + 30px content gap + safe area */
-  padding-bottom: calc(120px + env(safe-area-inset-bottom));
+  /* Bottom nav clearance: nav height + safe area */
+  padding-bottom: calc(var(--app-bottom-nav-height) + var(--safe-bottom));
 }
 
 @media (min-width: 1025px) {
@@ -1844,9 +1862,6 @@ body.theme-dark .theme-switch {
     padding: 8px 10px;
   }
 
-  body.has-bottom-nav {
-    padding-bottom: calc(112px + env(safe-area-inset-bottom));
-  }
 
   .bottom-nav-item {
     font-size: 0.62rem;
@@ -1979,11 +1994,6 @@ body.theme-dark .bottom-pill-nav::after {
 }
 
 @media (max-width: 1024px) {
-  body.has-bottom-nav {
-    /* Full-width mobile nav sits flush at bottom: ~56px tap area + 30px gap + safe area */
-    padding-bottom: calc(94px + env(safe-area-inset-bottom));
-  }
-
   .bottom-pill-nav {
     left: 0;
     right: auto;

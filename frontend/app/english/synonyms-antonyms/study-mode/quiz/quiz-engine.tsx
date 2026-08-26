@@ -513,7 +513,7 @@ export default function StudyModeQuizEngine() {
         </div>
         <style jsx>{`
           .apple-dict-viewport {
-            min-height: 100vh;
+            min-height: 100dvh;
             background: #000000;
             color: #ffffff;
             display: flex;
@@ -1219,9 +1219,9 @@ export default function StudyModeQuizEngine() {
           --quote-border: #007aff;
           --system-blue: #007aff;
 
-          min-height: 100vh;
-          height: 100vh;
-          max-height: 100vh;
+          min-height: 100dvh;
+          height: 100dvh;
+          max-height: 100dvh;
           overflow: hidden;
           background: var(--desktop-bg);
           color: var(--text-primary);
@@ -1252,8 +1252,8 @@ export default function StudyModeQuizEngine() {
         .apple-app-window {
           width: 100vw;
           max-width: 100vw;
-          height: 100vh;
-          max-height: 100vh;
+          height: 100dvh;
+          max-height: 100dvh;
           background: var(--workspace-bg);
           border: none;
           box-shadow: none;
@@ -2163,8 +2163,8 @@ export default function StudyModeQuizEngine() {
            ════════════════════════════════════════════════════ */
         @media (min-width: 900px) {
           .apple-dict-viewport {
-            height: 100vh;
-            max-height: 100vh;
+            height: 100dvh;
+            max-height: 100dvh;
             overflow: hidden; /* ABSOLUTELY ZERO PAGE SCROLLING! */
             padding: 0;
             display: flex;
@@ -2175,8 +2175,8 @@ export default function StudyModeQuizEngine() {
           .apple-app-window {
             width: 100vw;
             max-width: 100vw;
-            height: 100vh;
-            max-height: 100vh;
+            height: 100dvh;
+            max-height: 100dvh;
             border-radius: 0;
             border: none;
             box-shadow: none;

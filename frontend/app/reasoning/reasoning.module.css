@@ -75,8 +75,7 @@
   --scrollbar-track: transparent;
   color-scheme: light;
 
-  min-height: calc(100vh - 94px - env(safe-area-inset-bottom, 0px));
-  min-height: calc(100dvh - 94px - env(safe-area-inset-bottom, 0px));
+  min-height: calc(100dvh - var(--app-bottom-nav-height) - var(--safe-bottom));
   box-sizing: border-box;
   font-family: var(--mac-font);
   color: var(--mac-text-primary);
@@ -1324,8 +1323,7 @@
    MOBILE / TABLET VIEW (< 768px Handheld Devices)
    ============================================================================= */
 .mobileContainer {
-  min-height: calc(100vh - 94px - env(safe-area-inset-bottom, 0px));
-  min-height: calc(100dvh - 94px - env(safe-area-inset-bottom, 0px));
+  min-height: calc(100dvh - var(--app-bottom-nav-height) - var(--safe-bottom));
   box-sizing: border-box;
   background: #000000;
   color: var(--mac-text-primary);

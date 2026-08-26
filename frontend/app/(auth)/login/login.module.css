@@ -12,7 +12,7 @@
   --shadow-2xl: 0 24px 60px rgba(45, 52, 54, 0.18);
   --shadow-soft: 0 20px 40px rgba(45, 52, 54, 0.12);
 
-  min-height: 100vh;
+  min-height: 100dvh;
   background: linear-gradient(180deg, #f7f7f7 0%, #f1f3f8 100%);
   display: flex;
   align-items: stretch;
@@ -23,7 +23,7 @@
 
 .shell {
   width: 100%;
-  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   background: var(--panel);
 }

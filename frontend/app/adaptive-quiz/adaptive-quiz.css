@@ -1,6 +1,6 @@
 /* macOS Desktop Wallpaper */
 .adaptive-quiz-page {
-  min-height: 100vh;
+  min-height: 100dvh;
   padding: 0;
   background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
   color: var(--color-text-primary, #1c1c1e);
@@ -19,7 +19,7 @@ body.theme-dark .adaptive-quiz-page {
 .macos-window {
   display: flex;
   width: 100%;
-  height: 100vh;
+  height: 100dvh;
   background: transparent;
   flex-direction: column;
 }
@@ -79,7 +79,7 @@ body.theme-dark .adaptive-quiz-page {
   .macos-window {
     max-width: 1200px;
     width: 100%;
-    height: calc(100vh - 80px);
+    height: calc(100dvh - 80px);
     max-height: 800px;
     background: var(--macos-window-bg, rgba(255, 255, 255, 0.8));
     backdrop-filter: blur(40px) saturate(150%);

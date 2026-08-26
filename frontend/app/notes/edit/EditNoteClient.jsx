@@ -25,7 +25,7 @@ export default function EditNoteClient() {
       <div
         style={{
           background: "#0d1117",
-          height: "100vh",
+          height: "100dvh",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -44,7 +44,7 @@ export default function EditNoteClient() {
       <div
         style={{
           background: "#0d1117",
-          height: "100vh",
+          height: "100dvh",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",

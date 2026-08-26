@@ -593,7 +593,7 @@ export default function VideosPage() {
 
         @media (max-width: 540px) {
           .videos-page {
-            min-height: calc(100vh - 76px);
+            min-height: calc(100dvh - 76px);
           }
 
           .lesson-badge svg {
@@ -672,7 +672,7 @@ export default function VideosPage() {
 
         @media (max-width: 540px) {
           .videos-page {
-            min-height: calc(100vh - 76px);
+            min-height: calc(100dvh - 76px);
           }
 
           .lesson-badge svg {
@@ -786,7 +786,7 @@ export default function VideosPage() {
 
         /* --- macOS Window Styles --- */
         .videos-page {
-          min-height: 100vh;
+          min-height: 100dvh;
           background: var(--video-page-bg, #f5f5f7);
           display: flex;
           align-items: center;
@@ -800,7 +800,7 @@ export default function VideosPage() {
         .macos-window {
           display: flex;
           width: 100%;
-          height: 100vh;
+          height: 100dvh;
           background: transparent;
         }
 
@@ -861,7 +861,7 @@ export default function VideosPage() {
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
+            min-height: 100dvh;
           }
 
           body.theme-dark .videos-page {
@@ -871,7 +871,7 @@ export default function VideosPage() {
           .macos-window {
             max-width: 1200px;
             width: 100%;
-            height: calc(100vh - 80px);
+            height: calc(100dvh - 80px);
             max-height: 800px;
             background: var(--macos-window-bg, rgba(255, 255, 255, 0.8));
             backdrop-filter: blur(40px) saturate(150%);

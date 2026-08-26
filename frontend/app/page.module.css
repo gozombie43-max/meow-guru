@@ -33,7 +33,7 @@
   --orange: #ff9500;
   --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 
-  min-height: 100vh;
+  min-height: 100dvh;
   width: 100%;
   background: transparent;
   color: var(--mac-text-primary);
@@ -1068,7 +1068,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: max(16px, env(safe-area-inset-top));
+  padding-top: max(16px, var(--safe-top));
   margin-bottom: 12px;
 }
 

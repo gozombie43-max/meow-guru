@@ -3,7 +3,7 @@ import React from 'react';
 export default function LiquidGlassText() {
   return (
     <div 
-      className="relative flex items-center justify-center min-h-screen w-full overflow-hidden bg-cover bg-center" 
+      className="relative flex items-center justify-center min-h-dvh w-full overflow-hidden bg-cover bg-center" 
       style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1557682250-33bd709cbe85?q=80&w=2000&auto=format&fit=crop")' }}
     >
       <h1 

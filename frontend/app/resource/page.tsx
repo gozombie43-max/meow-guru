@@ -446,7 +446,7 @@ export default function ResourcePage() {
             radial-gradient(circle at 70% 92%, rgba(217, 119, 6, 0.16), transparent 30%);
           color: #111827;
           font-family: "General Sans", "Outfit", "Segoe UI", sans-serif;
-          padding: max(18px, env(safe-area-inset-top)) 14px max(28px, env(safe-area-inset-bottom));
+          padding: max(18px, var(--safe-top)) 14px max(28px, var(--safe-bottom));
         }
 
         .resource-shell {
@@ -812,8 +812,8 @@ export default function ResourcePage() {
 
         .fab {
           position: fixed;
-          right: max(18px, env(safe-area-inset-right));
-          bottom: max(18px, env(safe-area-inset-bottom));
+          right: max(18px, var(--safe-right));
+          bottom: max(18px, var(--safe-bottom));
           z-index: 10;
           width: 58px;
           height: 58px;
@@ -950,7 +950,7 @@ export default function ResourcePage() {
 
         @media (max-width: 560px) {
           .resource-page {
-            padding: max(14px, env(safe-area-inset-top)) 12px max(18px, env(safe-area-inset-bottom));
+            padding: max(14px, var(--safe-top)) 12px max(18px, var(--safe-bottom));
           }
 
           .resource-shell {

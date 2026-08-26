@@ -222,7 +222,7 @@ const styles = {
     fontSize: "0.9rem",
   },
   stateShell: {
-    minHeight: "100vh",
+    minHeight: "100dvh",
     background: "#0d1117",
     color: "#e2e8f0",
     display: "flex",

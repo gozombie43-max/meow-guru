@@ -1746,7 +1746,7 @@ function AiChatPageContent() {
           }
 
           .composer-wrap {
-            padding: 12px 0 calc(16px + env(safe-area-inset-bottom, 0px));
+            padding: 12px 0 calc(16px + var(--safe-bottom));
             background: linear-gradient(180deg, var(--surface-transparent), var(--surface) 28%);
           }
 

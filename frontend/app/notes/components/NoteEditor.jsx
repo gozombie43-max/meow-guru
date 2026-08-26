@@ -18,7 +18,7 @@ const STARTER_HTML = `<!DOCTYPE html>
     background: #0f0f1a;
     color: #e8e8f0;
     padding: 2rem;
-    min-height: 100vh;
+    min-height: 100dvh;
   }
 
   @keyframes fadeUp {
@@ -499,7 +499,7 @@ const s = {
   root: {
     display:        "flex",
     flexDirection:  "column",
-    height:         "100vh",
+    height:         "100dvh",
     background:     "#0d1117",
     color:          "#e2e8f0",
     fontFamily:     "'Segoe UI', sans-serif",

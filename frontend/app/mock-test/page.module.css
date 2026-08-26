@@ -10,7 +10,6 @@
   --border: rgba(0, 0, 0, 0.08);
   
   background: var(--bg);
-  min-height: 100vh;
   min-height: 100dvh;
   color: var(--text-dark);
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -63,7 +62,6 @@
   width: 100%;
   max-width: 430px;
   margin: 0 auto;
-  min-height: 100vh;
   min-height: 100dvh;
   background: var(--bg);
   position: relative;
@@ -419,7 +417,7 @@
 
 /* Detail View */
 .detailContainer {
-  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   background: var(--bg);
@@ -942,7 +940,7 @@
   .macosWindow {
     width: 100%;
     max-width: 1120px;
-    height: min(800px, calc(100vh - 64px));
+    height: min(800px, calc(100dvh - 64px));
     display: flex;
     flex-direction: row;
     background: rgba(255, 255, 255, 0.78);
@@ -1234,7 +1232,7 @@
   /* Detail View Overrides for Desktop */
   .detailContainer {
     max-width: 1040px;
-    min-height: calc(100vh - 150px);
+    min-height: calc(100dvh - 150px);
     margin: 0 auto;
     border-radius: 20px;
     background: transparent;

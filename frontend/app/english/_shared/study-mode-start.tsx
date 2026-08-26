@@ -289,7 +289,6 @@ export default function StudyModeStartView({
           --green-ios: #34c759;
 
           width: 100vw;
-          min-height: 100vh;
           min-height: 100dvh;
           margin: 0;
           padding: 0;
@@ -320,9 +319,8 @@ export default function StudyModeStartView({
           flex-direction: column;
           justify-content: space-between;
           align-items: center;
-          min-height: 100vh;
           min-height: 100dvh;
-          padding: max(16px, env(safe-area-inset-top, 16px)) 16px max(24px, env(safe-area-inset-bottom, 24px));
+          padding: max(16px, var(--safe-top)) 16px max(24px, var(--safe-bottom));
           box-sizing: border-box;
           background: var(--bg-root);
         }
@@ -340,7 +338,6 @@ export default function StudyModeStartView({
             align-items: center;
             justify-content: center;
             width: 100vw;
-            height: 100vh;
             height: 100dvh;
             background: var(--bg-desktop);
             padding: 24px;

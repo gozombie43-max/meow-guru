@@ -31,7 +31,7 @@
 
 /* Ambient Desktop Backdrop - Light Sonoma Aurora */
 .desktop {
-  min-height: 100vh;
+  min-height: 100dvh;
   background-color: var(--mac-bg-desktop);
   background-image: 
     radial-gradient(at 10% 15%, rgba(0, 113, 227, 0.08) 0px, transparent 50%),
@@ -240,7 +240,7 @@
 /* Window Content Body */
 .windowContent {
   padding: 28px;
-  min-height: calc(100vh - 160px);
+  min-height: calc(100dvh - 160px);
   box-sizing: border-box;
   background: #fbfbfd;
 }

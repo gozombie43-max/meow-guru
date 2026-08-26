@@ -180,7 +180,7 @@ export default function NotesPage() {
 
 const s = {
   root: {
-    minHeight:   "100vh",
+    minHeight:   "100dvh",
     background:  "#0d1117",
     color:       "#e2e8f0",
     fontFamily:  "'Segoe UI', sans-serif",
