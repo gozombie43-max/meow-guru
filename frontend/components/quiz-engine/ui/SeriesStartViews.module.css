@@ -824,7 +824,7 @@
   --ios-subtle: rgba(60, 60, 67, 0.6);
   --ios-field: rgba(118, 118, 128, 0.12);
   --ios-nav: rgba(242, 242, 247, 0.92);
-  --ios-accent: #6c5ce0;
+  --ios-accent: #0071e3;
 
   min-height: 100vh;
   min-height: 100dvh;
@@ -847,7 +847,7 @@
   --ios-subtle: rgba(235, 235, 245, 0.6);
   --ios-field: rgba(118, 118, 128, 0.24);
   --ios-nav: rgba(0, 0, 0, 0.85);
-  --ios-accent: #7c6cf0;
+  --ios-accent: #0a84ff;
 }
 
 .iosNav {
@@ -938,7 +938,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(124, 108, 240, 0.15);
+  background: rgba(0, 113, 227, 0.12);
   color: var(--ios-accent);
   flex-shrink: 0;
 }
@@ -1019,7 +1019,7 @@
 .iosChipActive {
   background: var(--ios-accent) !important;
   color: #ffffff !important;
-  box-shadow: 0 2px 8px rgba(108, 92, 224, 0.28);
+  box-shadow: 0 2px 8px rgba(0, 113, 227, 0.28);
 }
 
 .iosChipDot {
@@ -1224,7 +1224,7 @@
   color: #ffffff !important;
   font-size: 16px;
   font-weight: 700;
-  box-shadow: 0 2px 8px rgba(108, 92, 224, 0.25);
+  box-shadow: 0 2px 8px rgba(0, 113, 227, 0.25);
   cursor: pointer;
   transition: opacity 0.15s ease, transform 0.1s ease;
   -webkit-tap-highlight-color: transparent;

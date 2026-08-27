@@ -764,14 +764,7 @@ function IosQuizStartMobile({
     });
   }, [groups, activeSearch]);
 
-  const subjectAccent =
-    subjectConfig.subjectId === "mathematics"
-      ? "#0071e3"
-      : subjectConfig.subjectId === "english"
-      ? "#2e8f82"
-      : subjectConfig.subjectId === "general-awareness"
-      ? "#ff9f0a"
-      : "#7c6cf0";
+  const subjectAccent = theme === "dark" ? "#0a84ff" : "#0071e3";
 
   return (
     <div
