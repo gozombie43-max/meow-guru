@@ -320,7 +320,7 @@ export default function StudyModeStartView({
           justify-content: space-between;
           align-items: center;
           min-height: 100dvh;
-          padding: max(16px, var(--safe-top)) 16px max(24px, var(--safe-bottom));
+          padding: calc(16px + var(--safe-top)) 16px calc(24px + var(--safe-bottom));
           box-sizing: border-box;
           background: var(--bg-root);
         }

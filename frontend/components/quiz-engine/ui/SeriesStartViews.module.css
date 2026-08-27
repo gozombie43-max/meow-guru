@@ -831,7 +831,7 @@
   background: var(--ios-bg);
   color: var(--ios-ink);
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
-  padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(110px + var(--safe-bottom));
   position: relative;
   box-sizing: border-box;
 }
@@ -851,7 +851,7 @@
 }
 
 .iosNav {
-  height: 48px;
+  height: calc(48px + var(--safe-top));
   display: grid;
   grid-template-columns: 48px 1fr 48px;
   align-items: center;
@@ -862,7 +862,8 @@
   z-index: 30;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  padding: 0 4px;
+  padding: var(--safe-top) 4px 0;
+  box-sizing: border-box;
 }
 
 .iosBackBtn {
@@ -1192,7 +1193,7 @@
   left: 0;
   border-top: 0.5px solid var(--ios-separator);
   background: var(--ios-nav);
-  padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+  padding: 10px 16px calc(10px + var(--safe-bottom));
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   box-sizing: border-box;

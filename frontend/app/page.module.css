@@ -1166,7 +1166,8 @@
   transform: translateX(-100%);
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   z-index: 100;
-  padding: 20px 18px 24px;
+  padding: calc(16px + var(--safe-top)) 18px calc(24px + var(--safe-bottom));
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 16px;
