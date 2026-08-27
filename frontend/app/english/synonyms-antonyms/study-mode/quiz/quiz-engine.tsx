@@ -1283,7 +1283,7 @@ export default function StudyModeQuizEngine() {
 
         /* Top Unified Toolbar */
         .unified-toolbar {
-          height: 44px;
+          height: calc(48px + var(--safe-top));
           border-bottom: 0.5px solid var(--divider);
           background: var(--sidebar-bg);
           backdrop-filter: blur(25px);
@@ -1291,7 +1291,7 @@ export default function StudyModeQuizEngine() {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 0 10px;
+          padding: var(--safe-top) 10px 0;
           flex-shrink: 0;
           position: sticky;
           top: 0;

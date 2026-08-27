@@ -11,7 +11,8 @@
   
   background: var(--bg);
   min-height: 100dvh;
-  padding: 32px 16px;
+  padding: calc(16px + var(--safe-top)) 16px calc(24px + var(--safe-bottom));
+  box-sizing: border-box;
   color: var(--text-dark);
 }
 

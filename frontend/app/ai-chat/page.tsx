@@ -1676,6 +1676,7 @@ function AiChatPageContent() {
             position: fixed;
             inset: 0 auto 0 0;
             width: min(82vw, 320px);
+            padding-top: var(--safe-top);
             z-index: 40;
             transform: translateX(-100%);
             box-shadow: 18px 0 44px rgba(15, 23, 42, 0.18);
@@ -1696,8 +1697,8 @@ function AiChatPageContent() {
 
           .chat-topbar {
             height: auto;
-            min-height: 62px;
-            padding: 8px 12px;
+            min-height: calc(56px + var(--safe-top));
+            padding: calc(8px + var(--safe-top)) 12px 8px;
             align-items: center;
             gap: 10px;
           }

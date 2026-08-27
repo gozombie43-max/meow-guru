@@ -13,7 +13,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 1.5rem;
+  padding: calc(0.75rem + var(--safe-top)) 1.5rem 0.75rem;
   background-color: var(--card, #ffffff);
   border-bottom: 1px solid var(--border, #e2e8f0);
   z-index: 10;
@@ -282,7 +282,7 @@
   flex: 1;
   overflow-y: auto;
   padding: 1rem;
-  padding-bottom: 5rem; /* space for fixed bottom bar */
+  padding-bottom: calc(5rem + var(--safe-bottom)); /* space for fixed bottom bar */
 }
 
 .mobileBottomBar {
@@ -292,7 +292,7 @@
   right: 0;
   background: var(--card, #ffffff);
   border-top: 1px solid var(--border, #e2e8f0);
-  padding: 0.75rem 1rem;
+  padding: 0.75rem 1rem calc(0.75rem + var(--safe-bottom));
   display: flex;
   justify-content: space-between;
   z-index: 20;
@@ -323,7 +323,7 @@
   background: var(--card, #ffffff);
   border-top-left-radius: 1rem;
   border-top-right-radius: 1rem;
-  padding: 1.5rem 1rem;
+  padding: 1.5rem 1rem calc(1.5rem + var(--safe-bottom));
   z-index: 50;
   transform: translateY(100%);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);

@@ -43,7 +43,7 @@
 .header {
   background: var(--card);
   border-bottom: 1px solid var(--border);
-  padding: 16px 24px;
+  padding: calc(12px + var(--safe-top)) 16px 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -400,6 +400,7 @@
   justify-content: space-between;
   border-top: 1px solid var(--border);
   padding-top: 20px;
+  padding-bottom: calc(20px + var(--safe-bottom));
 }
 
 .navBtn {

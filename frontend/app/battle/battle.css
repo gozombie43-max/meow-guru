@@ -56,7 +56,7 @@ body:has(.battle-container) {
   -webkit-backdrop-filter: saturate(180%) blur(20px);
   background: rgba(11,11,13,0.72);
   border-bottom: 0.5px solid var(--hairline);
-  padding: 8px 8px 0 8px;
+  padding: calc(8px + var(--safe-top)) 8px 0 8px;
 }
 .navbar-row {
   display: flex;
