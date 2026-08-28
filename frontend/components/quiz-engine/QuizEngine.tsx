@@ -60,6 +60,7 @@ import { QuestionNavigator, QuestionQuickBar } from "./ui/QuizNavigators";
 import { ThemeToggle, ConceptBadge } from "./ui/SharedUI";
 import { SolutionBottomSheet, SolutionSidePanel } from "./ui/SolutionViews";
 import { QuizTimer, QuizTimerRef } from "./QuizTimer";
+import { QuizSettingsModal, SettingIcon, OptionTickIcon } from "./ui/QuizSettingsModal";
 import {
   buildQuizIndex,
   normalizeExamLabel,
@@ -184,6 +185,52 @@ function QuizEngineContent({
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [results, setResults] = useState<SessionResult[]>([]);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [hideQuestionNumbers, setHideQuestionNumbers] = useState(false);
+  const [hideViewSolution, setHideViewSolution] = useState(false);
+  const [hideAiTutor, setHideAiTutor] = useState(false);
+
+  useEffect(() => {
+    try {
+      const savedHideQ = localStorage.getItem("quiz_hide_question_numbers");
+      if (savedHideQ !== null) setHideQuestionNumbers(savedHideQ === "true");
+      const savedHideSol = localStorage.getItem("quiz_hide_view_solution");
+      if (savedHideSol !== null) setHideViewSolution(savedHideSol === "true");
+      const savedHideAi = localStorage.getItem("quiz_hide_ai_tutor");
+      if (savedHideAi !== null) setHideAiTutor(savedHideAi === "true");
+    } catch {}
+  }, []);
+
+  const handleToggleHideQuestionNumbers = useCallback((val: boolean) => {
+    setHideQuestionNumbers(val);
+    try {
+      localStorage.setItem("quiz_hide_question_numbers", String(val));
+    } catch {}
+  }, []);
+
+  const handleToggleHideViewSolution = useCallback((val: boolean) => {
+    setHideViewSolution(val);
+    try {
+      localStorage.setItem("quiz_hide_view_solution", String(val));
+    } catch {}
+  }, []);
+
+  const handleToggleHideAiTutor = useCallback((val: boolean) => {
+    setHideAiTutor(val);
+    try {
+      localStorage.setItem("quiz_hide_ai_tutor", String(val));
+    } catch {}
+  }, []);
+
+  const handleToggleHideBoth = useCallback((val: boolean) => {
+    setHideViewSolution(val);
+    setHideAiTutor(val);
+    try {
+      localStorage.setItem("quiz_hide_view_solution", String(val));
+      localStorage.setItem("quiz_hide_ai_tutor", String(val));
+    } catch {}
+  }, []);
+
   const [conceptFilter, setConceptFilter] = useState<string>("all");
   const [selectedClassificationConcepts, setSelectedClassificationConcepts] = useState<
     Set<string>
@@ -1463,28 +1510,32 @@ function QuizEngineContent({
             
             <div className="mac-series-body">
               <aside className="mac-series-sidebar">
-                <div className="mac-sidebar-title">Questions</div>
-                <div className="mac-series-palette-grid">
-                  {questions.map((question, index) => {
-                    const status = getQuestionStatus({
-                      index,
-                      currentIndex,
-                      selectedAnswers,
-                      questions,
-                      submittedQuestions
-                    });
-                    return (
-                      <button
-                        key={`mac-palette-${question.id}-${index}`}
-                        type="button"
-                        ref={index === currentIndex ? activeMacBtnRef : null}
-                        className={`mac-palette-btn ${status === "current" ? "is-current" : ""} ${status === "answered" || status === "correct" ? "is-answered" : ""} ${status === "wrong" ? "is-wrong" : ""}`}
-                        onClick={() => goToQuestion(index + 1)}
-                      >
-                        {index + 1}
-                      </button>
-                    );
-                  })}
+                <div className="mac-sidebar-title">
+                  <span>Questions</span>
+                </div>
+                <div className="mac-series-palette-grid-wrap">
+                  <div className="mac-series-palette-grid">
+                    {questions.map((question, index) => {
+                      const status = getQuestionStatus({
+                        index,
+                        currentIndex,
+                        selectedAnswers,
+                        questions,
+                        submittedQuestions
+                      });
+                      return (
+                        <button
+                          key={`mac-palette-${question.id}-${index}`}
+                          type="button"
+                          ref={index === currentIndex ? activeMacBtnRef : null}
+                          className={`mac-palette-btn ${status === "current" ? "is-current" : ""} ${status === "answered" || status === "correct" ? "is-answered" : ""} ${status === "wrong" ? "is-wrong" : ""}`}
+                          onClick={() => goToQuestion(index + 1)}
+                        >
+                          {index + 1}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </aside>
               
@@ -1544,7 +1595,7 @@ function QuizEngineContent({
                         <span className="mac-series-option-value">
                           <RichContent text={option} />
                         </span>
-                        {isCorrect && <CheckCircle2 className="mac-series-answer-icon" aria-label="Correct option" />}
+                        {isCorrect && <OptionTickIcon className="mac-series-answer-icon" aria-label="Correct option" />}
                         {isWrong && <XCircle className="mac-series-answer-icon" aria-label="Incorrect option" />}
                       </button>
                     );
@@ -1689,16 +1740,33 @@ function QuizEngineContent({
             width: 260px;
             background: rgba(0, 0, 0, 0.2);
             border-right: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 20px;
-            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding: 0;
           }
           .mac-sidebar-title {
-            font-size: 12px;
+            flex: none;
+            font-size: 15px;
             font-weight: 700;
-            color: rgba(255, 255, 255, 0.5);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 16px;
+            color: #ffffff;
+            text-align: center;
+            padding: 16px 16px 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(0, 0, 0, 0.14);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          .mac-sidebar-title span {
+            text-align: center;
+            font-size: 15px;
+            font-weight: 700;
+          }
+          .mac-series-palette-grid-wrap {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
           }
           .mac-series-palette-grid {
             display: grid;
@@ -1788,12 +1856,12 @@ function QuizEngineContent({
             border-color: #007aff;
           }
           .mac-series-option.is-correct {
-            background: rgba(40, 205, 65, 0.15);
-            border-color: #34c759;
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.1);
           }
           .mac-series-option.is-wrong {
-            background: rgba(255, 59, 48, 0.15);
-            border-color: #ff3b30;
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.1);
           }
           .mac-series-option-letter {
             width: 32px;
@@ -1880,10 +1948,14 @@ function QuizEngineContent({
           .mac-series-quiz[data-theme="light"] .mac-series-icon-button:hover { background: #E6EAEF; color: #1d1d1f; }
           
           .mac-series-quiz[data-theme="light"] .mac-series-sidebar {
-            background: #E6EAEF;
+            background: #F6F8FA;
             border-right: 1px solid #E6EAEF;
           }
-          .mac-series-quiz[data-theme="light"] .mac-sidebar-title { color: #57606a; font-weight: 700; letter-spacing: 0.5px; }
+          .mac-series-quiz[data-theme="light"] .mac-sidebar-title {
+            color: #1d1d1f;
+            border-bottom: 1px solid #E6EAEF;
+            background: #F6F8FA;
+          }
           .mac-series-quiz[data-theme="light"] .mac-palette-btn {
             background: #FFFFFF;
             color: #1d1d1f;
@@ -1914,8 +1986,8 @@ function QuizEngineContent({
             transform: translateY(-1px);
           }
           .mac-series-quiz[data-theme="light"] .mac-series-option.is-selected { background: #E6EAEF; border-color: #0071e3; color: #0071e3; box-shadow: 0 0 0 1.5px #0071e3, 0 4px 14px rgba(0, 113, 227, 0.14); }
-          .mac-series-quiz[data-theme="light"] .mac-series-option.is-correct { background: #f0fdf4; border-color: #16a34a; color: #15803d; box-shadow: 0 0 0 1.5px #16a34a; }
-          .mac-series-quiz[data-theme="light"] .mac-series-option.is-wrong { background: #fef2f2; border-color: #dc2626; color: #b91c1c; box-shadow: 0 0 0 1.5px #dc2626; }
+          .mac-series-quiz[data-theme="light"] .mac-series-option.is-correct { background: #FFFFFF; border-color: #E6EAEF; color: #1d1d1f; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04); }
+          .mac-series-quiz[data-theme="light"] .mac-series-option.is-wrong { background: #FFFFFF; border-color: #E6EAEF; color: #1d1d1f; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04); }
           .mac-series-quiz[data-theme="light"] .mac-series-option-letter {
             background: #E6EAEF;
             color: #1d1d1f;
@@ -1969,51 +2041,79 @@ function QuizEngineContent({
           <header className="ios-series-header">
             <button
               type="button"
-              className="ios-series-icon-button"
-              onClick={toggleTheme}
-              aria-label={theme === "dark" ? "Use light theme" : "Use dark theme"}
+              className={`ios-series-icon-button ${isSettingsOpen ? "is-active" : ""}`}
+              onClick={() => setIsSettingsOpen((prev) => !prev)}
+              aria-label="Open quiz settings"
+              aria-expanded={isSettingsOpen}
             >
-              {theme === "dark" ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
+              <SettingIcon />
             </button>
             <LangToggle
               active={activeLang}
               loading={isTranslating}
               onChange={setActiveLang}
             />
-            <button
-              type="button"
-              className="ios-series-icon-button"
-              onClick={openPalette}
-              aria-label="Open question navigator"
-            >
-              <Menu aria-hidden="true" />
-            </button>
-          </header>
-
-          <nav className="ios-series-rail" aria-label="Question navigation">
-            {questions.map((question, index) => {
-              const status = getQuestionStatus({
-                index,
-                currentIndex,
-                selectedAnswers,
-                questions,
-                submittedQuestions
-              });
+            {(() => {
+              const qNum = currentIndex + 1;
+              const digits = String(qNum).length;
+              const sizeClass = digits <= 2 ? "is-qnum-sm" : digits === 3 ? "is-qnum-md" : "is-qnum-lg";
               return (
                 <button
-                  key={`rail-${question.id}-${index}`}
                   type="button"
-                  ref={index === currentIndex ? activeRailBtnRef : null}
-                  onClick={() => goToQuestion(index + 1)}
-                  className={`ios-series-question ${status === "current" ? "is-current" : ""} ${status === "correct" ? "is-correct" : ""} ${status === "wrong" ? "is-wrong" : ""} ${status === "answered" ? "is-unsubmitted" : ""}`}
-                  aria-label={`Question ${index + 1}`}
-                  aria-current={index === currentIndex ? "step" : undefined}
+                  className={`ios-series-icon-button ${hideQuestionNumbers ? `is-qnum ${sizeClass}` : ""}`}
+                  onClick={openPalette}
+                  aria-label={hideQuestionNumbers ? `Question ${qNum} - Open question navigator` : "Open question navigator"}
                 >
-                  {index + 1}
+                  {hideQuestionNumbers ? (
+                    <span className="ios-series-palette-num">{qNum}</span>
+                  ) : (
+                    <Menu aria-hidden="true" />
+                  )}
                 </button>
               );
-            })}
-          </nav>
+            })()}
+          </header>
+
+          <QuizSettingsModal
+            isOpen={isSettingsOpen}
+            onClose={() => setIsSettingsOpen(false)}
+            theme={theme}
+            onToggleTheme={toggleTheme}
+            hideQuestionNumbers={hideQuestionNumbers}
+            onToggleHideQuestionNumbers={handleToggleHideQuestionNumbers}
+            hideViewSolution={hideViewSolution}
+            onToggleHideViewSolution={handleToggleHideViewSolution}
+            hideAiTutor={hideAiTutor}
+            onToggleHideAiTutor={handleToggleHideAiTutor}
+            onToggleHideBoth={handleToggleHideBoth}
+          />
+
+          {!hideQuestionNumbers && (
+            <nav className="ios-series-rail" aria-label="Question navigation">
+              {questions.map((question, index) => {
+                const status = getQuestionStatus({
+                  index,
+                  currentIndex,
+                  selectedAnswers,
+                  questions,
+                  submittedQuestions
+                });
+                return (
+                  <button
+                    key={`rail-${question.id}-${index}`}
+                    type="button"
+                    ref={index === currentIndex ? activeRailBtnRef : null}
+                    onClick={() => goToQuestion(index + 1)}
+                    className={`ios-series-question ${status === "current" ? "is-current" : ""} ${status === "correct" ? "is-correct" : ""} ${status === "wrong" ? "is-wrong" : ""} ${status === "answered" ? "is-unsubmitted" : ""}`}
+                    aria-label={`Question ${index + 1}`}
+                    aria-current={index === currentIndex ? "step" : undefined}
+                  >
+                    {index + 1}
+                  </button>
+                );
+              })}
+            </nav>
+          )}
 
           <main className="ios-series-content">
             <div className="ios-series-meta-row">
@@ -2070,31 +2170,35 @@ function QuizEngineContent({
                     <span className="ios-series-option-value">
                       <RichContent text={option} />
                     </span>
-                    {isCorrect && <CheckCircle2 className="ios-series-answer-icon" aria-label="Correct option" />}
+                    {isCorrect && <OptionTickIcon className="ios-series-answer-icon" aria-label="Correct option" />}
                     {isWrong && <XCircle className="ios-series-answer-icon" aria-label="Incorrect option" />}
                   </button>
                 );
               })}
             </section>
 
-            {canViewSolution && (
-              <div className="ios-series-actions">
-                <button type="button" className="ios-series-solution" onClick={openSolution}>
-                  View solution
-                </button>
-                <QuizChatbot
-                  key={`ios-chat-${currentQ.id}`}
-                  isVisible={isCurrentSubmitted}
-                  questionNumber={currentIndex + 1}
-                  topicTitle={title}
-                  question={currentQ}
-                  theme={theme}
-                  renderTrigger={(onOpen) => (
-                    <button type="button" className="ios-series-ai-btn" onClick={onOpen}>
-                      Ask AI Tutor
-                    </button>
-                  )}
-                />
+            {canViewSolution && (!hideViewSolution || !hideAiTutor) && (
+              <div className={`ios-series-actions ${hideViewSolution || hideAiTutor ? "is-single-action" : ""}`}>
+                {!hideViewSolution && (
+                  <button type="button" className="ios-series-solution" onClick={openSolution}>
+                    View solution
+                  </button>
+                )}
+                {!hideAiTutor && (
+                  <QuizChatbot
+                    key={`ios-chat-${currentQ.id}`}
+                    isVisible={isCurrentSubmitted}
+                    questionNumber={currentIndex + 1}
+                    topicTitle={title}
+                    question={currentQ}
+                    theme={theme}
+                    renderTrigger={(onOpen) => (
+                      <button type="button" className="ios-series-ai-btn" onClick={onOpen}>
+                        Ask AI Tutor
+                      </button>
+                    )}
+                  />
+                )}
               </div>
             )}
             {submitError && <p className="ios-series-error">{submitError}</p>}
@@ -2177,9 +2281,15 @@ function QuizEngineContent({
             margin: 0 auto;
             background: radial-gradient(120% 50% at 50% -10%, rgba(94, 92, 230, .17), transparent 58%), #000;
           }
-          .ios-series-header { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:calc(env(safe-area-inset-top) + 12px) 16px 14px; border-bottom:1px solid rgba(255,255,255,.09); }
-          .ios-series-icon-button { width:36px; height:36px; display:grid; place-items:center; padding:0; border:1px solid rgba(255,255,255,.09); border-radius:11px; color:#f2f2f7; background:#1c1c1e; cursor:pointer; }
-          .ios-series-icon-button svg { width:17px; height:17px; }
+          .ios-series-header { position:relative; display:flex; align-items:center; justify-content:space-between; gap:8px; padding:calc(env(safe-area-inset-top) + 12px) 16px 14px; border-bottom:1px solid rgba(255,255,255,.09); }
+          .ios-series-icon-button { min-width:36px; height:36px; display:inline-flex; align-items:center; justify-content:center; padding:0 6px; border:1px solid rgba(255,255,255,.09); border-radius:11px; color:#f2f2f7; background:#1c1c1e; cursor:pointer; transition:all 0.15s ease; font-size:15px; font-weight:700; white-space:nowrap; box-sizing:border-box; }
+          .ios-series-icon-button.is-active { border-color:#007aff; background:rgba(0,122,255,.22); color:#007aff; }
+          .ios-series-icon-button.is-qnum { font-variant-numeric:tabular-nums; font-feature-settings:"tnum"; }
+          .ios-series-icon-button.is-qnum-sm { min-width:36px; padding:0 6px; font-size:15px; letter-spacing:-0.01em; }
+          .ios-series-icon-button.is-qnum-md { min-width:42px; padding:0 7px; font-size:13px; letter-spacing:-0.02em; }
+          .ios-series-icon-button.is-qnum-lg { min-width:48px; padding:0 8px; font-size:11.5px; letter-spacing:-0.03em; }
+          .ios-series-palette-num { display:inline-block; line-height:1; font-weight:700; text-align:center; }
+          .ios-series-icon-button svg { width:18px; height:18px; }
           .ios-series-quiz .lang-toggle { flex:0 1 auto; }
           .ios-series-quiz .lang-toggle-option { min-width:0; padding-inline:9px; }
           .ios-series-rail { display:flex; gap:8px; overflow-x:auto; padding:16px; border-bottom:1px solid rgba(255,255,255,.09); scrollbar-width:none; }
@@ -2205,17 +2315,18 @@ function QuizEngineContent({
           .ios-series-option:not(:disabled):active { transform:scale(.99); }
           .ios-series-option:disabled { cursor:default; }
           .ios-series-option.is-selected { border-color:#007aff; background:rgba(0,122,255,.15); }
-          .ios-series-option.is-correct { border-color:#30d158; background:rgba(48,209,88,.14); }
-          .ios-series-option.is-wrong { border-color:#ff453a; background:rgba(255,69,58,.14); }
+          .ios-series-option.is-correct { border-color:rgba(255,255,255,.14); background:#1c1c1e; }
+          .ios-series-option.is-wrong { border-color:rgba(255,255,255,.14); background:#1c1c1e; }
           .ios-series-option-letter { width:36px; height:36px; flex:0 0 36px; display:grid; place-items:center; border:1px solid rgba(255,255,255,.14); border-radius:11px; background:#242426; color:rgba(235,235,245,.68); font-size:14px; font-weight:700; }
           .ios-series-option.is-selected .ios-series-option-letter { border-color:#007aff; background:#007aff; color:#fff; }
-          .ios-series-option.is-correct .ios-series-option-letter { border-color:#30d158; background:#30d158; color:#071b0d; }
-          .ios-series-option.is-wrong .ios-series-option-letter { border-color:#ff453a; background:#ff453a; color:#fff; }
+          .ios-series-option.is-correct .ios-series-option-letter { border-color:#30d158; background:#30d158; color:#ffffff; }
+          .ios-series-option.is-wrong .ios-series-option-letter { border-color:#ff453a; background:#ff453a; color:#ffffff; }
           .ios-series-option-value { min-width:0; font-size:17px; font-weight:600; line-height:1.4; }
           .ios-series-answer-icon { width:20px; height:20px; margin-left:auto; flex:none; }
           .ios-series-option.is-correct .ios-series-answer-icon { color:#30d158; }
-          .ios-series-option.is-wrong .ios-series-answer-icon { color:#ff6961; }
+          .ios-series-option.is-wrong .ios-series-answer-icon { color:#ff453a; }
           .ios-series-actions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:14px; }
+          .ios-series-actions.is-single-action { grid-template-columns: 1fr; }
           .ios-series-solution { width:100%; min-width:0; min-height:46px; border:1px solid rgba(191,90,242,.4); border-radius:14px; background:transparent; color:#e5c2ff; font:inherit; font-size:14px; font-weight:700; cursor:pointer; }
           .ios-series-ai-btn { width:100%; min-width:0; min-height:46px; border:1px solid #14b8a6; border-radius:14px; background:transparent; color:#5eead4; font:inherit; font-size:14px; font-weight:700; cursor:pointer; }
           .ios-series-ai-btn:active { opacity:0.8; }
@@ -2229,8 +2340,9 @@ function QuizEngineContent({
           .ios-series-palette { position:fixed; z-index:70; inset:0; display:flex; align-items:flex-end; justify-content:center; }
           .ios-series-palette-backdrop { position:absolute; inset:0; border:0; background:rgba(0,0,0,.64); }
           .ios-series-palette-panel { position:relative; width:min(430px,100%); max-height:75svh; display:flex; flex-direction:column; overflow:hidden; padding:0; border:1px solid rgba(255,255,255,.14); border-bottom:0; border-radius:24px 24px 0 0; background:#1c1c1e; box-shadow:0 -16px 44px rgba(0,0,0,.45); }
-          .ios-series-palette-title { flex:none; display:flex; align-items:center; justify-content:space-between; padding:18px 20px 16px; border-bottom:1px solid rgba(255,255,255,.1); color:#f2f2f7; font-size:18px; font-weight:700; background:#1c1c1e; z-index:10; }
-          .ios-series-palette-title button { display:grid; place-items:center; width:32px; height:32px; padding:0; border:1px solid rgba(255,255,255,.14); border-radius:50%; background:#242426; color:#f2f2f7; cursor:pointer; }
+          .ios-series-palette-title { position:relative; flex:none; display:flex; align-items:center; justify-content:center; padding:16px 20px; border-bottom:1px solid rgba(255,255,255,.1); color:#f2f2f7; font-size:17px; font-weight:700; background:#1c1c1e; z-index:10; }
+          .ios-series-palette-title span { text-align:center; font-size:17px; font-weight:700; }
+          .ios-series-palette-title button { position:absolute; right:16px; top:50%; transform:translateY(-50%); display:grid; place-items:center; width:32px; height:32px; padding:0; border:1px solid rgba(255,255,255,.14); border-radius:50%; background:#242426; color:#f2f2f7; cursor:pointer; }
           .ios-series-palette-title svg { width:16px; height:16px; }
           .ios-series-palette-grid { flex:1; overflow-y:auto; padding:18px 20px calc(env(safe-area-inset-bottom) + 24px); display:grid; grid-template-columns:repeat(5,1fr); align-content:flex-start; gap:12px; }
           .ios-series-palette-grid button { height:43px; border:1px solid rgba(255,255,255,.14); border-radius:12px; background:#242426; color:rgba(235,235,245,.7); font:inherit; font-weight:700; transition:all 0.15s ease; }
@@ -2245,6 +2357,10 @@ function QuizEngineContent({
           .ios-series-quiz[data-theme="light"] .ios-series-device { background: #F6F8FA; }
           .ios-series-quiz[data-theme="light"] .ios-series-header { border-color: #E6EAEF; background: #F6F8FA; }
           .ios-series-quiz[data-theme="light"] .ios-series-icon-button { border-color: #E6EAEF; color: #57606a; background: #FFFFFF; }
+          .ios-series-quiz[data-theme="light"] .ios-series-icon-button.is-active { border-color: #0071e3; color: #0071e3; background: #e8f2fe; }
+          .ios-series-quiz[data-theme="light"] .ios-series-palette-num { color: #1d1d1f; }
+          .ios-series-quiz[data-theme="light"] .ios-series-solution { border-color: rgba(147, 51, 234, 0.4); background: #faf5ff; color: #7e22ce; }
+          .ios-series-quiz[data-theme="light"] .ios-series-ai-btn { border-color: rgba(13, 148, 136, 0.4); background: #f0fdfa; color: #0f766e; }
           .ios-series-quiz[data-theme="light"] .ios-series-rail { border-color: #E6EAEF; background: #E6EAEF; }
           .ios-series-quiz[data-theme="light"] .ios-series-question { border-color: #E6EAEF; background: #FFFFFF; color: #1d1d1f; }
           .ios-series-quiz[data-theme="light"] .ios-series-question.is-current { color: #FFFFFF; background: #0071e3; border-color: #0071e3; box-shadow: 0 4px 14px -2px rgba(0,113,227,0.4); }
@@ -2260,9 +2376,9 @@ function QuizEngineContent({
           .ios-series-quiz[data-theme="light"] .ios-series-option-letter { border-color: #E6EAEF; background: #E6EAEF; color: #1d1d1f; }
           .ios-series-quiz[data-theme="light"] .ios-series-option.is-selected { border-color: #0071e3; background: #E6EAEF; }
           .ios-series-quiz[data-theme="light"] .ios-series-option.is-selected .ios-series-option-letter { color: #FFFFFF; background: #0071e3; border-color: #0071e3; }
-          .ios-series-quiz[data-theme="light"] .ios-series-option.is-correct { border-color: #16a34a; background: #f0fdf4; }
+          .ios-series-quiz[data-theme="light"] .ios-series-option.is-correct { border-color: #E6EAEF; background: #FFFFFF; }
           .ios-series-quiz[data-theme="light"] .ios-series-option.is-correct .ios-series-option-letter { color: #FFFFFF; background: #16a34a; border-color: #16a34a; }
-          .ios-series-quiz[data-theme="light"] .ios-series-option.is-wrong { border-color: #dc2626; background: #fef2f2; }
+          .ios-series-quiz[data-theme="light"] .ios-series-option.is-wrong { border-color: #E6EAEF; background: #FFFFFF; }
           .ios-series-quiz[data-theme="light"] .ios-series-option.is-wrong .ios-series-option-letter { color: #FFFFFF; background: #dc2626; border-color: #dc2626; }
           .ios-series-quiz[data-theme="light"] .ios-series-footer { background: linear-gradient(180deg, rgba(246,248,250,0), rgba(246,248,250,.96) 25%, #F6F8FA); }
           .ios-series-quiz[data-theme="light"] .ios-series-footer-secondary { border-color: #E6EAEF; background: #FFFFFF; color: #57606a; }
@@ -2354,29 +2470,42 @@ function QuizEngineContent({
                   loading={isTranslating}
                   onChange={setActiveLang}
                 />
-                <button
-                  onClick={openPalette}
-                  className="quiz-icon-button inline-flex h-11 w-11 items-center justify-center rounded-full transition-colors lg:hidden"
-                  aria-label="Open question palette"
-                >
-                  <Menu className="h-4 w-4" />
-                </button>
+                {(() => {
+                  const qNum = currentIndex + 1;
+                  const digits = String(qNum).length;
+                  const sizeClass = digits <= 2 ? "min-w-[40px] px-2 text-sm" : digits === 3 ? "min-w-[46px] px-2.5 text-xs" : "min-w-[52px] px-3 text-[11px] tracking-tight";
+                  return (
+                    <button
+                      onClick={openPalette}
+                      className={`quiz-icon-button inline-flex h-11 ${hideQuestionNumbers ? `${sizeClass} font-bold` : "w-11"} items-center justify-center rounded-full transition-colors lg:hidden`}
+                      aria-label={hideQuestionNumbers ? `Question ${qNum} - Open question palette` : "Open question palette"}
+                    >
+                      {hideQuestionNumbers ? (
+                        <span className="tabular-nums font-bold leading-none">{qNum}</span>
+                      ) : (
+                        <Menu className="h-4 w-4" />
+                      )}
+                    </button>
+                  );
+                })()}
               </div>
             </section>
 
-            <div className="mb-3 lg:hidden">
-              <QuestionNavigator
-                total={questions.length}
-                currentIndex={currentIndex}
-                selectedAnswers={selectedAnswers}
-                questions={questions}
-                submittedQuestions={submittedQuestions}
-                onGoToQuestion={goToQuestion}
-                onOpenPalette={openPalette}
-                onClosePalette={closePalette}
-                isPaletteOpen={isPaletteOpen}
-              />
-            </div>
+            {!hideQuestionNumbers && (
+              <div className="mb-3 lg:hidden">
+                <QuestionNavigator
+                  total={questions.length}
+                  currentIndex={currentIndex}
+                  selectedAnswers={selectedAnswers}
+                  questions={questions}
+                  submittedQuestions={submittedQuestions}
+                  onGoToQuestion={goToQuestion}
+                  onOpenPalette={openPalette}
+                  onClosePalette={closePalette}
+                  isPaletteOpen={isPaletteOpen}
+                />
+              </div>
+            )}
 
             <section
               className="mb-4"
@@ -2632,7 +2761,7 @@ function QuizEngineContent({
                         </div>
 
                         {isCurrentSubmitted && i === currentQ.correctAnswer && (
-                          <CheckCircle2
+                          <OptionTickIcon
                             className="ml-auto h-5 w-5 shrink-0 text-emerald-600"
                             aria-label="Correct option"
                           />

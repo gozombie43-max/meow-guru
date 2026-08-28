@@ -75,7 +75,7 @@ describe('QuestionPalette Component', () => {
       />
     );
 
-    expect(screen.getAllByText('Question Palette').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Questions').length).toBeGreaterThan(0);
     const closeBtn = screen.getByLabelText('Close question palette');
     fireEvent.click(closeBtn);
     expect(onClose).toHaveBeenCalled();
