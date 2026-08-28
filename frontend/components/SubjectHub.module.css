@@ -1387,15 +1387,18 @@
 .mobileSearchRow {
   position: relative;
   margin-bottom: 12px;
+  display: flex;
+  align-items: center;
 }
 
 .mobileSearchIcon {
   position: absolute;
-  left: 12px;
+  left: 14px;
   top: 50%;
   transform: translateY(-50%);
-  color: rgba(235, 235, 245, 0.4);
+  color: rgba(235, 235, 245, 0.45);
   pointer-events: none;
+  z-index: 2;
 }
 
 :global(body.theme-light) .mobileSearchIcon {
@@ -1404,61 +1407,229 @@
 
 .mobileSearchInput {
   width: 100%;
-  height: 38px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  height: 42px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   outline: none;
-  border-radius: 10px;
+  border-radius: 9999px;
   background: #1C1C1E;
-  padding: 0 36px 0 36px;
-  font-size: 0.9rem;
+  padding: 0 74px 0 40px;
+  font-size: 0.92rem;
   color: #ffffff;
-  box-shadow: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+.mobileSearchInput:focus {
+  border-color: #007aff;
+  box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.25), 0 2px 8px rgba(0, 0, 0, 0.25);
 }
 
 :global(body.theme-light) .mobileSearchInput {
   background: #ffffff !important;
-  border-color: rgba(0, 0, 0, 0.08) !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
   color: #000000 !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05) !important;
+}
+
+:global(body.theme-light) .mobileSearchInput:focus {
+  border-color: #007aff !important;
+  box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2), 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+}
+
+.mobileSearchRightActions {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 2;
+}
+
+.mobileSearchClearBtn {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.85);
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.mobileSearchClearBtn:active {
+  transform: scale(0.92);
+}
+
+:global(body.theme-light) .mobileSearchClearBtn {
+  background: rgba(0, 0, 0, 0.12) !important;
+  color: #3c3c43 !important;
+}
+
+.mobileSearchDivider {
+  width: 1px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.18);
+  flex-shrink: 0;
+}
+
+:global(body.theme-light) .mobileSearchDivider {
+  background: rgba(0, 0, 0, 0.14) !important;
+}
+
+.mobileMicBtn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(235, 235, 245, 0.7);
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+}
+
+.mobileMicBtn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.mobileMicBtn:active {
+  transform: scale(0.92);
+}
+
+:global(body.theme-light) .mobileMicBtn {
+  color: #636366 !important;
+}
+
+:global(body.theme-light) .mobileMicBtn:hover {
+  color: #000000 !important;
+  background: rgba(0, 0, 0, 0.06) !important;
+}
+
+.mobileMicBtnListening {
+  color: #ff3b30 !important;
+  background: rgba(255, 59, 48, 0.15) !important;
+  animation: micPulse 1.4s infinite ease-in-out;
+}
+
+@keyframes micPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.4);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(255, 59, 48, 0);
+    transform: scale(1.08);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 59, 48, 0);
+    transform: scale(1);
+  }
 }
 
 .mobileTabsScroll {
   display: flex;
+  justify-content: center;
+  align-items: center;
   gap: 6px;
   overflow-x: auto;
-  padding-bottom: 4px;
-  margin-bottom: 8px;
+  padding: 0 4px 6px;
+  margin-bottom: 14px;
   scrollbar-width: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+:global(body.theme-light) .mobileTabsScroll {
+  border-bottom-color: rgba(0, 0, 0, 0.08) !important;
 }
 
 .mobileTabsScroll::-webkit-scrollbar {
   display: none;
 }
 
-.mobileTabBtn {
+.mobileTabDivider {
   flex-shrink: 0;
-  height: 28px;
-  padding: 0 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: #1C1C1E;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: rgba(235, 235, 245, 0.6);
+  color: rgba(235, 235, 245, 0.45);
+  font-size: 0.88rem;
+  font-weight: 300;
+  user-select: none;
+  pointer-events: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  padding-bottom: 6px;
+}
+
+:global(body.theme-light) .mobileTabDivider {
+  color: rgba(60, 60, 67, 0.4) !important;
+}
+
+.mobileTabBtn {
+  position: relative;
+  flex-shrink: 0;
+  height: 32px;
+  padding: 0 4px 6px;
+  border: none;
+  background: transparent;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: rgba(235, 235, 245, 0.55);
   cursor: pointer;
   white-space: nowrap;
+  transition: color 0.15s ease, text-shadow 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 :global(body.theme-light) .mobileTabBtn {
-  background: #ffffff !important;
-  border-color: rgba(0, 0, 0, 0.08) !important;
-  color: #6e6e73 !important;
+  background: transparent !important;
+  border: none !important;
+  color: #8e8e93 !important;
+}
+
+.mobileTabBtn:hover {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+:global(body.theme-light) .mobileTabBtn:hover {
+  color: #000000 !important;
 }
 
 .mobileTabActive {
-  background: #007AFF !important;
-  border-color: #007AFF !important;
   color: #ffffff !important;
+  font-weight: 700;
+  background: transparent !important;
+  border: none !important;
+  text-shadow: 0 0 6px rgba(0, 122, 255, 0.5);
+}
+
+:global(body.theme-light) .mobileTabActive {
+  color: #000000 !important;
+  text-shadow: 0 0 6px rgba(0, 122, 255, 0.35);
+}
+
+.mobileTabActive::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: -3px;
+  right: -3px;
+  height: 2.5px;
+  background: #007AFF;
+  border-radius: 999px;
+  box-shadow: 0 -1px 5px rgba(0, 122, 255, 0.6), 0 0 3px rgba(0, 122, 255, 0.4);
 }
 
 .mobileCountRow {

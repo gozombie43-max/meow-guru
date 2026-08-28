@@ -60,6 +60,7 @@ import {
   isTier2Question,
 } from "@/components/quiz-engine/utils";
 import styles from "@/components/SubjectHub.module.css";
+import MicIcon from "@/components/MicIcon";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 export type Priority = "very-high" | "high" | "medium" | "low" | "least";
@@ -414,7 +415,6 @@ const PRIORITY_CONFIG: Record<
 };
 
 const CATEGORIES = [
-  { id: "all", label: "All Modules", icon: Layers },
   { id: "very-high", label: "Core", icon: Zap },
   { id: "high", label: "High", icon: TrendingUp },
   { id: "medium", label: "Medium", icon: CircleDot },
@@ -517,18 +517,78 @@ export default function ReasoningPage() {
   const isDark = theme === "dark";
 
   // States
-  const [activeCategory, setActiveCategory] = useState<CategoryId>("all");
+  const [activeCategory, setActiveCategory] = useState<CategoryId>("very-high");
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [selectedTopicId, setSelectedTopicId] = useState<number>(1);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
+
+  const toggleVoiceSearch = useCallback(() => {
+    if (typeof window === "undefined") return;
+    const SpeechRecognitionClass =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+    if (!SpeechRecognitionClass) {
+      alert("Voice search is not supported in this browser.");
+      return;
+    }
+
+    if (isListening) {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+      setIsListening(false);
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognitionClass();
+      recognition.lang = "en-US";
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = () => {
+        setIsListening(true);
+      };
+
+      recognition.onresult = (event: any) => {
+        const transcript = event.results?.[0]?.[0]?.transcript;
+        if (transcript) {
+          setSearchQuery(transcript);
+        }
+      };
+
+      recognition.onerror = () => {
+        setIsListening(false);
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current = recognition;
+      recognition.start();
+    } catch {
+      setIsListening(false);
+    }
+  }, [isListening]);
+
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    };
+  }, []);
 
   // Filtered topics
   const filteredTopics = useMemo(() => {
     return TOPICS.filter((t) => {
-      const matchCat = activeCategory === "all" || t.priority === activeCategory;
+      const matchCat = t.priority === activeCategory;
       const q = searchQuery.trim().toLowerCase();
       const matchSearch =
         q === "" ||
@@ -541,8 +601,8 @@ export default function ReasoningPage() {
 
   // Selected topic object
   const selectedTopic = useMemo(() => {
-    return TOPICS.find((t) => t.id === selectedTopicId) || TOPICS[0];
-  }, [selectedTopicId]);
+    return TOPICS.find((t) => t.id === selectedTopicId) || filteredTopics[0] || TOPICS[0];
+  }, [selectedTopicId, filteredTopics]);
 
   // Real available questions for current topic
   const { questions: topicQuestions } = useQuestions({
@@ -590,7 +650,7 @@ export default function ReasoningPage() {
 
   // Category counts
   const categoryCounts = useMemo(() => {
-    const counts: Record<string, number> = { all: TOPICS.length };
+    const counts: Record<string, number> = {};
     TOPICS.forEach((t) => {
       counts[t.priority] = (counts[t.priority] || 0) + 1;
     });
@@ -813,11 +873,11 @@ export default function ReasoningPage() {
                       className={styles.tableActionBtn}
                       onClick={() => {
                         setSearchQuery("");
-                        setActiveCategory("all");
+                        setActiveCategory("very-high");
                       }}
                       style={{ marginTop: "8px" }}
                     >
-                      Show All Topics
+                      Reset Filters
                     </button>
                   </div>
                 ) : viewMode === "grid" ? (
@@ -1103,64 +1163,59 @@ export default function ReasoningPage() {
         <div className={styles.mobileBody}>
           {/* Search */}
           <div className={styles.mobileSearchRow}>
-            <Search className={styles.mobileSearchIcon} size={15} />
+            <Search className={styles.mobileSearchIcon} size={16} />
             <input
               type="text"
               className={styles.mobileSearchInput}
-              placeholder="Search topics…"
+              placeholder={isListening ? "Listening... speak topic" : "Search topics…"}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               aria-label="Search topics"
             />
-            {searchQuery && (
+            <div className={styles.mobileSearchRightActions}>
+              {searchQuery && (
+                <button
+                  type="button"
+                  className={styles.mobileSearchClearBtn}
+                  onClick={() => setSearchQuery("")}
+                  aria-label="Clear Search"
+                >
+                  <X size={11} />
+                </button>
+              )}
+              <span className={styles.mobileSearchDivider} aria-hidden="true" />
               <button
                 type="button"
-                className={styles.searchClearBtn}
-                style={{ right: "12px", top: "50%", transform: "translateY(-50%)" }}
-                onClick={() => setSearchQuery("")}
-                aria-label="Clear Search"
+                className={`${styles.mobileMicBtn} ${isListening ? styles.mobileMicBtnListening : ""}`}
+                onClick={toggleVoiceSearch}
+                aria-label={isListening ? "Stop voice search" : "Voice search"}
+                title={isListening ? "Listening..." : "Voice search"}
               >
-                <X size={11} />
+                <MicIcon size={16} />
               </button>
-            )}
+            </div>
           </div>
 
           {/* Priority Tabs */}
           <div className={styles.mobileTabsScroll}>
-            {CATEGORIES.map((cat) => (
-              <button
-                key={cat.id}
-                type="button"
-                className={`${styles.mobileTabBtn} ${
-                  activeCategory === cat.id ? styles.mobileTabActive : ""
-                }`}
-                onClick={() => setActiveCategory(cat.id)}
-              >
-                {cat.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Section Header: TOPICS | total */}
-          <div className={styles.mobileCountRow}>
-            <span className={styles.mobileSectionHeaderLabel}>TOPICS</span>
-            <div className={styles.mobileCountMeta}>
-              <span className={styles.mobileCountText}>
-                {filteredTopics.length} total
-              </span>
-              {(searchQuery || activeCategory !== "all") && (
+            {CATEGORIES.map((cat, idx) => (
+              <React.Fragment key={cat.id}>
+                {idx > 0 && (
+                  <span className={styles.mobileTabDivider} aria-hidden="true">
+                    |
+                  </span>
+                )}
                 <button
                   type="button"
-                  className={styles.mobileResetLink}
-                  onClick={() => {
-                    setSearchQuery("");
-                    setActiveCategory("all");
-                  }}
+                  className={`${styles.mobileTabBtn} ${
+                    activeCategory === cat.id ? styles.mobileTabActive : ""
+                  }`}
+                  onClick={() => setActiveCategory(cat.id)}
                 >
-                  Reset
+                  {cat.label}
                 </button>
-              )}
-            </div>
+              </React.Fragment>
+            ))}
           </div>
 
           {/* iOS Grouped Card Container */}
