@@ -1,12 +1,12 @@
 // middleware/rateLimiter.js
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 
 /**
  * Key generator: prefer authenticated userId so limits are per-user,
  * not per-IP (which breaks behind Azure's shared proxy).
  */
 const userKeyGenerator = (req) =>
-  req.user?.id || req.user?._id || req.cookies?.userId || req.ip;
+  req.user?.id || req.user?._id || req.cookies?.userId || ipKeyGenerator(req.ip);
 
 /**
  * Global baseline limiter — generous enough for normal traffic,

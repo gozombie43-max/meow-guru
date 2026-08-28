@@ -17,9 +17,8 @@ const nextConfig: NextConfig = {
     ],
   },
   turbopack: {
-    // Use __dirname so this resolves correctly on any OS / CI environment.
-    // The hardcoded Windows path broke Azure Linux builds.
-    root: path.resolve(__dirname),
+    // Resolve to the monorepo root so Turbopack can compile hoisted dependencies on Vercel / CI.
+    root: path.resolve(__dirname, ".."),
   },
   experimental: {
     cpus: 4,
