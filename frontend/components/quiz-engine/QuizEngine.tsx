@@ -1491,26 +1491,6 @@ function QuizEngineContent({
               <main className="mac-series-main">
                 <div className="mac-series-meta-row">
                   <ConceptBadge concept={currentQ.concept} colours={conceptColours} />
-                  {Boolean(currentQ.letter || currentQ.word) && (
-                    <span
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "4px",
-                        fontSize: "12px",
-                        fontWeight: 650,
-                        padding: "2px 8px",
-                        borderRadius: "6px",
-                        background: "rgba(0, 113, 227, 0.12)",
-                        color: "#0071e3",
-                        border: "1px solid rgba(0, 113, 227, 0.25)",
-                      }}
-                    >
-                      {currentQ.letter ? `Letter ${currentQ.letter}` : ""}
-                      {currentQ.letter && currentQ.word ? " · " : ""}
-                      {currentQ.word ? `"${currentQ.word}"` : ""}
-                    </span>
-                  )}
                   <span>{currentQ.exam || `${title} concept practice`}</span>
                   
                   <button
@@ -2038,26 +2018,6 @@ function QuizEngineContent({
           <main className="ios-series-content">
             <div className="ios-series-meta-row">
               <ConceptBadge concept={currentQ.concept} colours={conceptColours} />
-              {Boolean(currentQ.letter || currentQ.word) && (
-                <span
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "4px",
-                    fontSize: "12px",
-                    fontWeight: 650,
-                    padding: "2px 8px",
-                    borderRadius: "6px",
-                    background: "rgba(0, 113, 227, 0.12)",
-                    color: "#0071e3",
-                    border: "1px solid rgba(0, 113, 227, 0.25)",
-                  }}
-                >
-                  {currentQ.letter ? `Letter ${currentQ.letter}` : ""}
-                  {currentQ.letter && currentQ.word ? " · " : ""}
-                  {currentQ.word ? `"${currentQ.word}"` : ""}
-                </span>
-              )}
               <span>{currentQ.exam || `${title} concept practice`}</span>
               <button
                 type="button"
@@ -2459,26 +2419,6 @@ function QuizEngineContent({
               >
                 <div className="mb-[14px] flex items-center flex-wrap gap-2">
                   <ConceptBadge concept={currentQ.concept} colours={conceptColours} />
-                  {Boolean(currentQ.letter || currentQ.word) && (
-                    <span
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "4px",
-                        fontSize: "12px",
-                        fontWeight: 650,
-                        padding: "2px 8px",
-                        borderRadius: "6px",
-                        background: "rgba(0, 113, 227, 0.12)",
-                        color: "#0071e3",
-                        border: "1px solid rgba(0, 113, 227, 0.25)",
-                      }}
-                    >
-                      {currentQ.letter ? `Letter ${currentQ.letter}` : ""}
-                      {currentQ.letter && currentQ.word ? " · " : ""}
-                      {currentQ.word ? `"${currentQ.word}"` : ""}
-                    </span>
-                  )}
                   <span
                     style={{
                       fontSize: "13px",
