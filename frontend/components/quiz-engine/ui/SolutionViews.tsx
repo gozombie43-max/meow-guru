@@ -2,10 +2,9 @@ import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import RichContent from '@/components/RichContent';
-import MathText from '@/components/MathText';
 import MathRenderer from '@/components/MathRenderer';
-import { QuizQuestionRecord } from '../types';
-import { formatMathBookSolutionLines, useQuizTheme } from '../utils';
+import { formatMathBookSolutionLines } from '../utils';
+import { useQuizTheme } from '../QuizThemeProvider';
 
 export function SolutionBottomSheet({
   isOpen,

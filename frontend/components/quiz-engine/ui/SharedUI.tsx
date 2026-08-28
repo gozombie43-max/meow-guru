@@ -1,15 +1,16 @@
 import React from 'react';
 import { Sun, Moon } from 'lucide-react';
 import { ConceptColour } from '../types';
-import { useQuizTheme, toggleQuizTheme } from '../utils';
+import { useQuizTheme, useQuizThemeControls } from '../QuizThemeProvider';
 
 export function ThemeToggle() {
   const theme = useQuizTheme();
+  const { toggleTheme } = useQuizThemeControls();
   const isDark = theme === "dark";
   return (
     <button
       type="button"
-      onClick={toggleQuizTheme}
+      onClick={toggleTheme}
       className={`theme-toggle ${isDark ? "theme-toggle--dark" : "theme-toggle--light"}`}
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
       aria-pressed={isDark}

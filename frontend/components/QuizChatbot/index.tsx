@@ -6,7 +6,7 @@ import remarkMath from "remark-math";
 import remarkGfm from "remark-gfm";
 import { Sun, Moon, X, Plus, Mic, Send, Zap, CheckCircle2, FileText, AlertTriangle, Sparkles } from "lucide-react";
 import api from '@/lib/axios';
-import { API, ChatMessage, QuizChatbotQuestion, QuizChatbotProps, resolveCorrectAnswer, buildQuestionContext, normalizeTutorMarkdown } from './utils';
+import { ChatMessage, QuizChatbotProps, buildQuestionContext, normalizeTutorMarkdown } from './utils';
 
 export default function QuizChatbot({
   isVisible,

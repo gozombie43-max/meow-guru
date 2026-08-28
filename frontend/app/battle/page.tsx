@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { Swords, Copy, Check, Zap, Target } from "lucide-react";
 import RichContent from "@/components/RichContent";
@@ -423,7 +424,7 @@ export default function BattlePage() {
 
   // ── Actions ─────────────────────────────────────────────────────────────────
   const createRoom = () => {
-    if (!token && !(typeof window !== 'undefined' && localStorage.getItem("token"))) {
+    if (!token) {
       setError("Please log in to create a battle room.");
       return;
     }
@@ -440,7 +441,7 @@ export default function BattlePage() {
   };
 
   const joinRoom = () => {
-    if (!token && !(typeof window !== 'undefined' && localStorage.getItem("token"))) {
+    if (!token) {
       setError("Please log in to join a battle room.");
       return;
     }
@@ -608,7 +609,7 @@ export default function BattlePage() {
                       value={joinCode[index] || ""}
                       onChange={(e) => {
                         const val = e.target.value.toUpperCase();
-                        let newCode = joinCode.split('');
+                        const newCode = joinCode.split('');
                         newCode[index] = val;
                         setJoinCode(newCode.join('').slice(0, 4));
                         setError("");
@@ -985,10 +986,10 @@ export default function BattlePage() {
               }}>
               <Swords className="w-4 h-4" /> Play Again
             </button>
-            <a href="/mathematics"
+            <Link href="/mathematics"
               className="h-12 rounded-2xl font-semibold text-slate-700 text-sm flex items-center justify-center gap-2 border border-slate-200 bg-white/70">
               Back to Practice
-            </a>
+            </Link>
           </div>
         </motion.div>
       </div>

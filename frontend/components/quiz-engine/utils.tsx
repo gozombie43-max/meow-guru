@@ -1,127 +1,6 @@
-import React, { useEffect, useSyncExternalStore } from 'react';
+import React from 'react';
 import { type Question as ApiQuestion } from '@/lib/api/questions';
-import { QuizMode, Difficulty, QuizQuestionRecord, ConceptColour, QuizQuestion, SessionResult, QuizTheme, ClassificationGroup } from './types';
-
-export let QUIZ_THEME_STORAGE_KEY = "quiz-theme"; // set dynamically by component
-export let QUIZ_CSS_CLASS = "quiz"; // set dynamically by component
-export let FORMULA_MODE_LABEL = "Pattern Practice"; // set dynamically by component
-export const QUIZ_THEME_SWITCH_MS = 180;
-export let quizTheme: QuizTheme = "light";
-export let quizThemeInitialized = false;
-export let quizThemeSwitchTimer: number | null = null;
-export const quizThemeListeners = new Set<() => void>();
-
-export function notifyQuizThemeListeners() {
-  quizThemeListeners.forEach((listener) => listener());
-}
-
-export function syncQuizThemeToDom(
-  nextTheme: QuizTheme,
-  options?: {
-    animate?: boolean;
-  }
-) {
-  if (typeof document === "undefined") return;
-
-  const applyTheme = () => {
-    const containers = document.querySelectorAll<HTMLElement>(`.${QUIZ_CSS_CLASS}`);
-    containers.forEach((container) => {
-      container.dataset.theme = nextTheme;
-    });
-  };
-
-  if (!options?.animate) {
-    applyTheme();
-    return;
-  }
-
-  const addSwitchingClass = () => {
-    const containers = document.querySelectorAll<HTMLElement>(`.${QUIZ_CSS_CLASS}`);
-    containers.forEach((container) => container.classList.add("theme-switching"));
-  };
-
-  const removeSwitchingClass = () => {
-    const containers = document.querySelectorAll<HTMLElement>(`.${QUIZ_CSS_CLASS}.theme-switching`);
-    containers.forEach((container) => container.classList.remove("theme-switching"));
-  };
-
-  addSwitchingClass();
-
-  if (typeof window !== "undefined" && typeof window.requestAnimationFrame === "function") {
-    window.requestAnimationFrame(() => {
-      applyTheme();
-    });
-  } else {
-    applyTheme();
-  }
-
-  if (typeof window !== "undefined") {
-    if (quizThemeSwitchTimer !== null) {
-      window.clearTimeout(quizThemeSwitchTimer);
-    }
-    quizThemeSwitchTimer = window.setTimeout(() => {
-      removeSwitchingClass();
-    }, QUIZ_THEME_SWITCH_MS);
-  } else {
-    removeSwitchingClass();
-  }
-}
-
-export function setQuizTheme(nextTheme: QuizTheme) {
-  if (quizTheme === nextTheme) {
-    syncQuizThemeToDom(nextTheme);
-    return;
-  }
-  quizTheme = nextTheme;
-  if (typeof window !== "undefined") {
-    try {
-      window.localStorage.setItem(QUIZ_THEME_STORAGE_KEY, nextTheme);
-    } catch {
-      // Ignore storage write errors.
-    }
-  }
-  syncQuizThemeToDom(nextTheme, { animate: true });
-  notifyQuizThemeListeners();
-}
-
-export function initQuizTheme() {
-  if (quizThemeInitialized) return;
-  quizThemeInitialized = true;
-  if (typeof window !== "undefined") {
-    try {
-      const stored = window.localStorage.getItem(QUIZ_THEME_STORAGE_KEY);
-      if (stored === "light" || stored === "dark") {
-        quizTheme = stored;
-      }
-    } catch {
-      // Ignore storage read errors.
-    }
-  }
-  syncQuizThemeToDom(quizTheme);
-  notifyQuizThemeListeners();
-}
-
-export function useQuizTheme() {
-  useEffect(() => {
-    initQuizTheme();
-    syncQuizThemeToDom(quizTheme);
-  }, []);
-
-  return useSyncExternalStore(
-    (listener) => {
-      quizThemeListeners.add(listener);
-      return () => quizThemeListeners.delete(listener);
-    },
-    () => quizTheme,
-    () => "light"
-  );
-}
-
-export function toggleQuizTheme() {
-  setQuizTheme(quizTheme === "dark" ? "light" : "dark");
-}
-
-// subjectConfig.topicConcepts: provided via subjectConfig.topicConcepts
+import { QuizMode, Difficulty, QuizQuestionRecord, ConceptColour, QuizQuestion } from './types';
 
 export const MODE_LABELS: Record<QuizMode, string> = {
   concept: "PYQ",
@@ -148,8 +27,6 @@ export const CONCEPT_PALETTE: ConceptColour[] = [
   { border: "#14B8A6", bg: "#F0FDFA", text: "#0F766E" },
   { border: "#6B7280", bg: "#F8FAFC", text: "#475569" },
 ];
-
-
 
 export function normalizeMode(value: string | null): QuizMode {
   if (
@@ -288,7 +165,7 @@ export function isStudyModeQuestion(question: {
   questionType?: string;
   quizName?: string;
   word?: string;
-  meanings?: any[];
+  meanings?: unknown[];
 }): boolean {
   if (!question || typeof question !== "object") return false;
   const qType = String(question.questionType || "").trim().toLowerCase();
@@ -408,15 +285,14 @@ export function toQuizQuestion(
     quizName: question.quizName,
     source: (question as ApiQuestion & { source?: string }).source,
     quizId: (question as ApiQuestion & { quizId?: string }).quizId,
-    diagram: (question as any).diagram,
-    needs_diagram: (question as any).needs_diagram,
+    diagram: (question as ApiQuestion & { diagram?: Record<string, unknown> }).diagram,
+    needs_diagram: (question as ApiQuestion & { needs_diagram?: boolean }).needs_diagram,
     word,
     letter,
     chapter,
     rawId,
   };
 }
-
 
 export function ensureUniqueQuestionIds(questions: QuizQuestionRecord[]): QuizQuestionRecord[] {
   const usedIds = new Set<number>();
@@ -438,6 +314,7 @@ export function ensureUniqueQuestionIds(questions: QuizQuestionRecord[]): QuizQu
     return { ...question, id };
   });
 }
+
 export function MathFraction({
   numerator,
   denominator,
@@ -506,54 +383,50 @@ export function statusClasses(status: QuestionStatus) {
   return `${base} qstatus--empty`;
 }
 
-
-
-export function setQuizThemeStorageKey(key: string) { QUIZ_THEME_STORAGE_KEY = key; }
-export function setQuizCssClass(cls: string) { QUIZ_CSS_CLASS = cls; }
-export function setFormulaModeLabel(lbl: string) { FORMULA_MODE_LABEL = lbl; MODE_LABELS.formula = lbl; }
-
 export const prefetchQuestionImage = (url?: string) => {
   if (!url || typeof window === "undefined") return;
   const img = new window.Image();
   img.src = url;
 };
 
+export const preloadNextQuestionAssets = (
+  questions: QuizQuestionRecord[],
+  currentIndex: number
+) => {
+  const nextQ = questions[currentIndex + 1];
+  if (!nextQ) return;
+  if (nextQ.questionImage) prefetchQuestionImage(nextQ.questionImage);
+  if (nextQ.solution) {
+    const match = nextQ.solution.match(/!\[.*?\]\((.*?)\)/);
+    if (match?.[1]) prefetchQuestionImage(match[1]);
+  }
+};
+
+export function safeArray<T>(val: unknown): T[] {
+  return Array.isArray(val) ? (val as T[]) : [];
+}
+
+export function clamp(val: number, min: number, max: number): number {
+  return Math.min(Math.max(val, min), max);
+}
+
+export function filterQuestionsByMode(
+  questions: QuizQuestionRecord[],
+  mode: QuizMode
+): QuizQuestionRecord[] {
+  if (mode === "formula") return questions.filter(isFormulaQuestion);
+  if (mode === "mixed") return questions.filter(isMixedQuestion);
+  if (mode === "ai-challenge") return questions.filter(isAiChallengeQuestion);
+  if (mode === "easy") return questions.filter(isTopicMixQuestion);
+  if (mode === "hard") return questions.filter(isTier2Question);
+  return questions.filter((q) => !isTaggedModeQuestion(q));
+}
 
 export function formatMathBookSolutionLines(solution: string): string[] {
-  const base = solution
-    .replace(/\r\n?/g, "\n")
-    .replace(/\u00a0/g, " ")
-    .replace(/\s*=>\s*/g, " \\Rightarrow ")
-    .trim();
-
-  if (!base) return [];
-
-  const expandedMath = base.replace(/\\\(([^]*?)\\\)/g, (_match, expr: string) => {
-    const cleanExpr = expr.trim();
-    if (!cleanExpr.includes("\\Rightarrow")) {
-      return `\\(${cleanExpr}\\)`;
-    }
-
-    const chunks = cleanExpr
-      .split(/\s*\\Rightarrow\s*/)
-      .map((part) => part.trim())
-      .filter(Boolean);
-
-    return chunks
-      .map((chunk, index) =>
-        index === 0 ? `\\[${chunk}\\]` : `\\[\\Rightarrow ${chunk}\\]`
-      )
-      .join("\n");
-  });
-
-  const withSentenceBreaks = expandedMath
-    .replace(/\.\s+(?=[A-Z\\])/g, ".\n")
-    .replace(/:\s+(?=[A-Z\\])/g, ":\n")
-    .replace(/\n{3,}/g, "\n\n");
-
-  return withSentenceBreaks
-    .split(/\n+/)
+  if (!solution) return [];
+  return solution
+    .split(/\r?\n/)
     .map((line) => line.trim())
-    .filter(Boolean);
+    .filter((line) => line.length > 0);
 }
 

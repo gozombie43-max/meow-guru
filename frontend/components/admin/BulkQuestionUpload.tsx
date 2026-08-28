@@ -41,7 +41,12 @@ function muGetDisplayText(q: any) {
 }
 
 export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode }) {
-  const [secret, setSecret] = useState("");
+  const [secret, setSecret] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("adminSecret") || "";
+    }
+    return "";
+  });
   const [fileName, setFileName] = useState("");
   const [quiz, setQuiz] = useState({ subject: "", topic: "", name: "" });
   const [rows, setRows] = useState<RowData[]>([]);
@@ -52,7 +57,6 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
   const [saving, setSaving] = useState(false);
   const logRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => setSecret(localStorage.getItem("adminSecret") || ""), []);
   useEffect(() => {
     if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight;
   }, [logs]);

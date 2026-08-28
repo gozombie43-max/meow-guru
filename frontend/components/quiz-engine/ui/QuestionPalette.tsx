@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Bookmark, CheckCircle2, XCircle } from 'lucide-react';
-import { QuizQuestionRecord, QuizQuestion } from '../types';
+import { X } from 'lucide-react';
+import { QuizQuestion } from '../types';
 import { getQuestionStatus, statusClasses } from '../utils';
 
 export function QuestionPaletteModal({

@@ -47,6 +47,8 @@ export type QuizQuestionRecord = QuizQuestion & {
 
 export type ConceptColour = { border: string; bg: string; text: string };
 
+import type { GeometryDiagram } from '../geometry/diagramSchema';
+
 export interface QuizQuestion {
   id: number;
   concept: string;
@@ -68,7 +70,7 @@ export interface QuizQuestion {
   letter?: string;
   chapter?: string;
   rawId?: string;
-  diagram?: any;
+  diagram?: GeometryDiagram;
   needs_diagram?: boolean;
 }
 

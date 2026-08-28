@@ -1,6 +1,4 @@
 import React, { useRef, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Menu } from 'lucide-react';
 import { QuizQuestion } from '../types';
 import { getQuestionStatus, statusClasses } from '../utils';
 import { QuestionPaletteModal } from './QuestionPalette';
@@ -22,7 +20,7 @@ export function QuestionNavigator({
   questions: QuizQuestion[];
   submittedQuestions: Set<number>;
   onGoToQuestion: (questionNumber: number) => void;
-  onOpenPalette: () => void;
+  onOpenPalette?: () => void;
   onClosePalette: () => void;
   isPaletteOpen: boolean;
 }) {

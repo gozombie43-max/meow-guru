@@ -59,7 +59,7 @@ import {
   isTopicMixQuestion,
   isTier2Question,
 } from "@/components/quiz-engine/utils";
-import styles from "./reasoning.module.css";
+import styles from "@/components/SubjectHub.module.css";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 export type Priority = "very-high" | "high" | "medium" | "low" | "least";

@@ -1,7 +1,0 @@
-"use client";
-
-import EnglishQuizEngine from "../../_shared/quiz-engine";
-
-export default function QuizEngine() {
-  return <EnglishQuizEngine title="Sentence Structure" slug="sentence-structure" routeBase="/english/sentence-structure" />;
-}

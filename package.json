@@ -1,29 +1,33 @@
 {
-  "name": "ai-ssc",
+  "name": "meow-guru-monorepo",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "private": true,
+  "description": "Meow Guru — Smart Quiz Platform (Monorepo)",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
   "scripts": {
-    "start": "node backend/index.js",
-    "test": "echo \"No tests\" && exit 0"
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev": "node -e \"const { spawn } = require('child_process'); const p1 = spawn('npm', ['--prefix', 'backend', 'run', 'dev'], { stdio: 'inherit', shell: true }); const p2 = spawn('npm', ['--prefix', 'frontend', 'run', 'dev'], { stdio: 'inherit', shell: true }); process.on('SIGINT', () => { p1.kill(); p2.kill(); process.exit(); });\"",
+    "build": "npm --prefix frontend run build",
+    "test": "npm --prefix frontend run test:run && npm --prefix backend test",
+    "test:frontend": "npm --prefix frontend run test:run",
+    "test:backend": "npm --prefix backend test",
+    "lint": "npm --prefix frontend run lint",
+    "typecheck": "npm --prefix frontend run typecheck",
+    "check": "npm run typecheck && npm run lint && npm run test",
+    "start": "npm --prefix backend start"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "dependencies": {
-    "axios": "^1.19.0",
-    "body-parser": "^2.3.0",
-    "cheerio": "^1.2.0",
-    "cors": "^2.8.6",
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1",
-    "react-transition-group": "^4.4.5",
-    "remark-gfm": "^4.0.1"
-  },
-  "devDependencies": {
-    "@tailwindcss/postcss": "^4.3.3",
-    "@types/react-transition-group": "^4.4.12",
-    "tailwindcss": "^4.3.3"
-  }
+  "keywords": [
+    "ssc",
+    "cgl",
+    "quiz",
+    "adaptive-learning",
+    "katex",
+    "nextjs"
+  ],
+  "author": "Meow Guru Team",
+  "license": "ISC"
 }

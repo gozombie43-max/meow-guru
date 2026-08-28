@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
-import { ClipboardList, Home as HomeIcon, Play, Video, Infinity } from 'lucide-react';
+import { useEffect } from 'react';
+import { ClipboardList, Home as HomeIcon, Play, Video } from 'lucide-react';
 import { useThemeMode } from '@/hooks/useTheme';
 import { AiChatIcon } from '@/components/AiChatIcon';
 

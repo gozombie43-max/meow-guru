@@ -390,59 +390,9 @@ export default function StudyModeQuizEngine() {
     return () => window.removeEventListener("mousedown", close);
   }, [isLetterDropdownOpen]);
 
-  const isPaletteOpenRef = useRef(false);
-  const isExitConfirmRef = useRef(false);
-
-  const allowExitRef = useRef(false);
-
-  useEffect(() => {
-    isPaletteOpenRef.current = isMobilePaletteOpen;
-  }, [isMobilePaletteOpen]);
-
-  useEffect(() => {
-    isExitConfirmRef.current = showExitConfirm;
-  }, [showExitConfirm]);
-
-  useEffect(() => {
-    // Push an initial history entry to trap real back navigation
-    window.history.pushState(null, "", window.location.href);
-
-    const handlePopState = (e: PopStateEvent) => {
-      if (allowExitRef.current) return;
-
-      if (isExitConfirmRef.current) {
-        setShowExitConfirm(false);
-        window.history.pushState(null, "", window.location.href);
-        return;
-      }
-
-      if (isPaletteOpenRef.current) {
-        setIsMobilePaletteOpen(false);
-        window.history.pushState(null, "", window.location.href);
-        return;
-      }
-
-      setShowExitConfirm(true);
-      window.history.pushState(null, "", window.location.href);
-    };
-
-    window.addEventListener("popstate", handlePopState);
-    return () => {
-      window.removeEventListener("popstate", handlePopState);
-    };
-  }, []);
-
   const handleConfirmExit = () => {
-    allowExitRef.current = true;
     setShowExitConfirm(false);
-    
-    // Pop the trap state natively first
-    window.history.back();
-    
-    // Replace the original quiz state with the target page
-    setTimeout(() => {
-      router.replace("/english/synonyms-antonyms");
-    }, 10);
+    router.replace("/english/synonyms-antonyms");
   };
 
   // Derive the set of letters that actually exist in the word list (memoized)

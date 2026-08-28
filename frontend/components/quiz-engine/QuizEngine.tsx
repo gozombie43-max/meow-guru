@@ -2,69 +2,64 @@
 
 import type { SubjectConfig } from "@/components/quiz-engine/types";
 
-import MathRenderer from "@/components/MathRenderer";
 import MathText from "@/components/MathText";
 import RichContent from "@/components/RichContent";
 import QuizChatbot from "@/components/QuizChatbot";
 import { LangToggle } from "@/components/LangToggle";
 import { useTranslatedQuestion } from "@/hooks/useTranslatedQuestion";
 import ImageMCQ from "@/components/ImageMCQ";
-import QuizCard, { type QuizQuestion as GeometryQuizQuestion } from "@/components/geometry/QuizCard";
+import QuizCard from "@/components/geometry/QuizCard";
 
 import React, {
   useState,
   useEffect,
-  useLayoutEffect,
   useCallback,
   useMemo,
   useRef,
-  useSyncExternalStore,
 } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
+import { useSearchParams } from "next/navigation";
+import { motion } from "framer-motion";
 import Link from "next/link";
 import {
   Bookmark,
   BookmarkCheck,
-  Check,
   CheckCircle2,
   XCircle,
   Menu,
-  Clock,
   ChevronLeft,
   ChevronRight,
   ChevronDown,
   Flame,
-  Search,
   Sun,
   Moon,
-  Sparkles,
   Target,
   RotateCcw,
   Send,
   X,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import { useThemeMode } from "@/hooks/useTheme";
 import { saveRecentQuiz, updateProgress, toggleBookmark } from "@/lib/userApi";
-import { type Question as ApiQuestion } from "@/lib/api/questions";
 import { useQuestions } from "@/hooks/useQuestions";
-import { QuizMode, Difficulty, QuizQuestionRecord, ConceptColour, QuizQuestion, SessionResult, QuizTheme, ClassificationGroup } from "./types";
+import { Difficulty, QuizQuestionRecord, QuizQuestion, SessionResult, ClassificationGroup } from "./types";
 import { 
-  setQuizThemeStorageKey, setQuizCssClass, setFormulaModeLabel,
-  MODE_LABELS, setQuizTheme, initQuizTheme, useQuizTheme, toggleQuizTheme,
-  normalizeMode, normalizeDifficulty, extractYear, resolveCorrectIndex, buildConceptColours,
-  normalizeQuizTag, matchesQuizTag, isFormulaQuestion, isMixedQuestion, isAiChallengeQuestion,
-  isTopicMixQuestion, isTier2Question, isTaggedModeQuestion, isStudyModeQuestion, toQuizQuestion, MathFraction,
-  getQuestionStatus, statusClasses, formatMathBookSolutionLines, prefetchQuestionImage, ensureUniqueQuestionIds, DEFAULT_CONCEPT_COLOUR
+  MODE_LABELS,
+  normalizeMode, buildConceptColours,
+  isFormulaQuestion, isMixedQuestion, isAiChallengeQuestion,
+  isTopicMixQuestion, isTier2Question, isStudyModeQuestion, toQuizQuestion, MathFraction,
+  getQuestionStatus, prefetchQuestionImage, ensureUniqueQuestionIds, DEFAULT_CONCEPT_COLOUR
 } from "./utils";
+import {
+  QuizThemeProvider,
+  useQuizTheme,
+  useQuizThemeControls,
+} from "./QuizThemeProvider";
 import { QuizThemeStyles } from "./ui/QuizStyles";
 import { SeriesConceptStart, SeriesFormulaStart } from "./ui/SeriesStartViews";
-import { QuestionPaletteModal, QuestionPalettePanel } from "./ui/QuestionPalette";
+import { QuestionPalettePanel } from "./ui/QuestionPalette";
 import { QuestionNavigator, QuestionQuickBar } from "./ui/QuizNavigators";
 import { ThemeToggle, ConceptBadge } from "./ui/SharedUI";
 import { SolutionBottomSheet, SolutionSidePanel } from "./ui/SolutionViews";
-import { QuizTimer, TimerCircle, QuizTimerRef } from "./QuizTimer";
+import { QuizTimer, QuizTimerRef } from "./QuizTimer";
 import {
   buildQuizIndex,
   normalizeExamLabel,
@@ -81,21 +76,61 @@ interface QuizEngineProps {
   presentation?: "default" | "ios-dark" | "ios-light" | "mac-dark" | "mac-light";
 }
 
+interface ResumeData {
+  selectedAnswers?: Record<number, number>;
+  submittedQuestions?: number[];
+  currentIndex?: number;
+  conceptFilter?: string;
+  examFilter?: string;
+  selectedClassificationConcepts?: string[];
+  difficulty?: Difficulty;
+}
+
+function isResumeData(value: unknown): value is ResumeData {
+  if (typeof value !== "object" || value === null) return false;
+  const record = value as Record<string, unknown>;
+  return (
+    (record.selectedAnswers === undefined ||
+      (typeof record.selectedAnswers === "object" && record.selectedAnswers !== null)) &&
+    (record.submittedQuestions === undefined || Array.isArray(record.submittedQuestions)) &&
+    (record.selectedClassificationConcepts === undefined ||
+      Array.isArray(record.selectedClassificationConcepts))
+  );
+}
 
 
 
-export default function QuizEngine({
+
+export default function QuizEngine(props: QuizEngineProps) {
+  const preferredTheme =
+    props.presentation === "ios-light" || props.presentation === "mac-light"
+      ? "light"
+      : props.presentation === "ios-dark" || props.presentation === "mac-dark"
+        ? "dark"
+        : undefined;
+  const storageKey = `${props.subjectConfig.subjectId}-quiz-theme`;
+
+  return (
+    <QuizThemeProvider
+      key={storageKey}
+      storageKey={storageKey}
+      preferredTheme={preferredTheme}
+    >
+      <QuizEngineContent
+        key={`${props.subjectConfig.subjectId}:${props.slug}`}
+        {...props}
+      />
+    </QuizThemeProvider>
+  );
+}
+
+function QuizEngineContent({
   subjectConfig,
   title,
   slug,
   routeBase,
   presentation = "default",
 }: QuizEngineProps) {
-
-  // Initialize module-level variables from subjectConfig
-  setQuizThemeStorageKey(`${subjectConfig.subjectId}-quiz-theme`);
-  setQuizCssClass(subjectConfig.cssClassName);
-  setFormulaModeLabel(subjectConfig.formulaModeLabel ?? "Pattern Practice");
   const searchParams = useSearchParams();
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
   const [submittedQuestions, setSubmittedQuestions] = useState<Set<number>>(new Set());
@@ -107,12 +142,12 @@ export default function QuizEngine({
     if (activeRailBtnRef.current) {
       try {
         activeRailBtnRef.current.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
-      } catch (e) {}
+      } catch {}
     }
     if (activeMacBtnRef.current) {
       try {
         activeMacBtnRef.current.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
-      } catch (e) {}
+      } catch {}
     }
   }, [currentIndex]);
 
@@ -127,14 +162,14 @@ export default function QuizEngine({
   const isIos = presentation !== "default" ? presentation.startsWith("ios") : !isLargeScreen;
   const isMac = presentation !== "default" ? presentation.startsWith("mac") : isLargeScreen;
   const theme = useQuizTheme();
-
-  useEffect(() => {
-    if (presentation === "ios-light" || presentation === "mac-light") {
-      setQuizTheme("light");
-    } else if (presentation === "ios-dark" || presentation === "mac-dark") {
-      setQuizTheme("dark");
-    }
-  }, [presentation]);
+  const { toggleTheme } = useQuizThemeControls();
+  const modeLabels = useMemo(
+    () => ({
+      ...MODE_LABELS,
+      formula: subjectConfig.formulaModeLabel ?? MODE_LABELS.formula,
+    }),
+    [subjectConfig.formulaModeLabel]
+  );
   const mode = normalizeMode(searchParams.get("mode"));
   const resumeRequested = searchParams.get("resume") === "1";
   const jumpIdRaw = searchParams.get("qid");
@@ -142,12 +177,9 @@ export default function QuizEngine({
 
   const themeStyles = <QuizThemeStyles cssClassName={subjectConfig.cssClassName} />;
 
-  const [allQuestions, setAllQuestions] = useState<QuizQuestionRecord[]>([]);
-  const [questions, setQuestions] = useState<QuizQuestionRecord[]>([]);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
-  const [miniMode, setMiniMode] = useState(false);
   const [difficulty, setDifficulty] = useState<Difficulty>("medium");
-  const [streak, setStreak] = useState(0);
+  const [, setStreak] = useState(0);
   const [bestStreak, setBestStreak] = useState(0);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [results, setResults] = useState<SessionResult[]>([]);
@@ -159,14 +191,22 @@ export default function QuizEngine({
   const [examFilter, setExamFilter] = useState<string>("");
   const [classificationSearch, setClassificationSearch] = useState("");
   const [classificationCategory, setClassificationCategory] = useState<"All" | string>("All");
-  const [openClassificationGroups, setOpenClassificationGroups] = useState<Set<string>>(
-    () => new Set()
+  const baseConcepts = useMemo(
+    () => subjectConfig.topicConcepts[slug] ?? [],
+    [slug, subjectConfig.topicConcepts]
   );
-  const [expandedClassificationGroups, setExpandedClassificationGroups] = useState<
-    Record<string, boolean>
-  >({});
-
-  const baseConcepts = useMemo(() => subjectConfig.topicConcepts[slug] ?? [], [slug]);
+  const { questions: apiQuestions } = useQuestions({
+    subject: subjectConfig.subjectId,
+    topic: slug,
+  });
+  const allQuestions = useMemo(() => {
+    if (!apiQuestions) return [];
+    const fallbackConcept = baseConcepts[0] ?? "General";
+    const quizOnlyQuestions = apiQuestions.filter((item) => !isStudyModeQuestion(item));
+    return ensureUniqueQuestionIds(
+      quizOnlyQuestions.map((item, index) => toQuizQuestion(item, index, fallbackConcept))
+    );
+  }, [apiQuestions, baseConcepts]);
 
   const conceptOptions = useMemo(() => {
     const set = new Set<string>();
@@ -224,7 +264,7 @@ export default function QuizEngine({
     })).filter((category) => category.concepts.length > 0);
 
     return grouped;
-  }, [classificationCategory, classificationSearch, conceptOptions]);
+  }, [classificationCategory, classificationSearch, conceptOptions, subjectConfig]);
 
   const isClassificationConceptMode = mode === "concept";
   const isEnglishSynonymsFormula =
@@ -294,7 +334,7 @@ export default function QuizEngine({
           ).length,
         ])
       ),
-    [conceptOptions]
+    [conceptOptions, subjectConfig]
   );
 
   const filteredQuestions = useMemo(() => {
@@ -337,38 +377,23 @@ export default function QuizEngine({
   }, [
     questionIndex,
     mode,
-    conceptFilter,
     examFilter,
     isClassificationConceptMode,
+    slug,
     selectedClassificationConcepts,
     isEnglishSynonymsFormula,
     selectedLetters,
   ]);
 
+  const questions = filteredQuestions;
   const availableCount = filteredQuestions.length;
-  const router = useRouter();
-  const [sessionResults, setSessionResults] = useState<SessionResult[]>([]);
-
   const [started, setStarted] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const timerRef = useRef<QuizTimerRef>(null);
   const [isSolutionOpen, setIsSolutionOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
-  const [resumeData, setResumeData] = useState<any>(null);
+  const [resumeData, setResumeData] = useState<ResumeData | null>(null);
   const storageKey = `${subjectConfig.subjectId}_quiz_resume_${slug}_${mode}`;
-
-  const { questions: apiQuestions, isLoading } = useQuestions({ subject: subjectConfig.subjectId, topic: slug });
-
-  useEffect(() => {
-    if (!apiQuestions) return;
-    const fallbackConcept = baseConcepts[0] ?? "General";
-    const quizOnlyQuestions = apiQuestions.filter((item) => !isStudyModeQuestion(item));
-    setAllQuestions(
-      ensureUniqueQuestionIds(
-        quizOnlyQuestions.map((item, index) => toQuizQuestion(item, index, fallbackConcept))
-      )
-    );
-  }, [apiQuestions, baseConcepts]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -390,14 +415,6 @@ export default function QuizEngine({
     };
   }, []);
 
-  useEffect(() => {
-    setConceptFilter("all");
-    setSelectedClassificationConcepts(new Set());
-    setExamFilter("");
-    setSelectedLetters(new Set());
-  }, [slug]);
-
-  
   const touchStartXRef = useRef<number | null>(null);
   const touchStartYRef = useRef<number | null>(null);
 
@@ -416,7 +433,7 @@ export default function QuizEngine({
   const resumeAppliedRef = useRef(false);
   const jumpAppliedRef = useRef(false);
 
-  const maxTime = miniMode ? 20 : 60;
+  const maxTime = 60;
   const currentQ = questions[currentIndex] as QuizQuestion | undefined;
   const isLongQuestion = (currentQ?.question?.length ?? 0) > 180;
   const isImageQuestion = currentQ?.questionType === "image_mcq";
@@ -451,43 +468,9 @@ export default function QuizEngine({
     }
   }, [currentIndex, questions]);
 
-  useEffect(() => {
-    if (allQuestions.length === 0) {
-      setQuestions([]);
-      setCurrentIndex(0);
-      setSelectedAnswer(null);
-      setResults([]);
-      setSelectedAnswers({});
-      setSubmittedQuestions(new Set());
-      setIsPaletteOpen(false);
-      setIsSolutionOpen(false);
-      setStreak(0);
-      setShowAnalytics(false);
-      setStarted(false);
-      setSubmitError("");
-      return;
-    }
-
-    const nextQuestions = [...filteredQuestions];
-    setQuestions(nextQuestions);
-    setCurrentIndex(0);
-    setSelectedAnswer(null);
-    setResults([]);
-    setSelectedAnswers({});
-    setSubmittedQuestions(new Set());
-    setIsPaletteOpen(false);
-    setIsSolutionOpen(false);
-    setStreak(0);
-    setShowAnalytics(false);
-    setStarted(false);
-    setSubmitError("");
-  }, [allQuestions.length, filteredQuestions]);
-
   const stopTimer = useCallback(() => { timerRef.current?.stop(); }, []);
 
   const startTimer = useCallback(() => { timerRef.current?.start(maxTime); }, [maxTime]);
-
-
 
   useEffect(() => {
     if (!resumeRequested || resumeAppliedRef.current) return;
@@ -503,6 +486,7 @@ export default function QuizEngine({
     const submittedSet = new Set<number>(savedSubmitted);
 
     stopTimer();
+    // Hydrate quiz progress from the explicit resume request in the URL.
     setSelectedAnswers(savedAnswers);
     setSubmittedQuestions(submittedSet);
     const savedResults = Array.isArray(resumeEntry.results)
@@ -533,6 +517,7 @@ export default function QuizEngine({
     if (targetIndex < 0) return;
 
     stopTimer();
+    // Apply the explicit question deep-link after API questions are available.
     setShowAnalytics(false);
     setStarted(true);
     setCurrentIndex(targetIndex);
@@ -557,7 +542,6 @@ export default function QuizEngine({
   ]);
 
   useEffect(() => () => stopTimer(), [stopTimer]);
-
   useEffect(() => {
     if (!token || !started || showAnalytics) return;
     if (questions.length === 0) return;
@@ -597,6 +581,7 @@ export default function QuizEngine({
     title,
     token,
     showAnalytics,
+    subjectConfig.subjectId,
   ]);
 
   useEffect(() => {
@@ -631,6 +616,7 @@ export default function QuizEngine({
     title,
     token,
     showAnalytics,
+    subjectConfig.subjectId,
   ]);
 
   useEffect(() => {
@@ -649,7 +635,7 @@ export default function QuizEngine({
     };
     try {
       window.localStorage.setItem(storageKey, JSON.stringify(stateToSave));
-    } catch (e) {}
+    } catch {}
   }, [
     started,
     questions.length,
@@ -669,13 +655,17 @@ export default function QuizEngine({
       try {
         const saved = window.localStorage.getItem(storageKey);
         if (saved) {
-          const parsed = JSON.parse(saved);
-          if (parsed && parsed.submittedQuestions && parsed.submittedQuestions.length > 0) {
+          const parsed: unknown = JSON.parse(saved);
+          if (
+            isResumeData(parsed) &&
+            parsed.submittedQuestions &&
+            parsed.submittedQuestions.length > 0
+          ) {
             setResumeData(parsed);
             return;
           }
         }
-      } catch (e) {}
+      } catch {}
     }
     setStarted(true);
     startTimer();
@@ -699,7 +689,7 @@ export default function QuizEngine({
   function handleRestartFromPopup() {
     try {
       window.localStorage.removeItem(storageKey);
-    } catch (e) {}
+    } catch {}
     setResumeData(null);
     setStarted(true);
     startTimer();
@@ -715,7 +705,6 @@ export default function QuizEngine({
       const safeIndex = Math.max(0, Math.min(index, questions.length - 1));
       stopTimer();
       setCurrentIndex(safeIndex);
-      const nextQuestion = questions[safeIndex];
       const existingSelection = selectedAnswers[safeIndex];
       setSelectedAnswer(existingSelection ?? null);
       setSubmitError("");
@@ -850,7 +839,8 @@ export default function QuizEngine({
 
     setBookmarked((prev) => {
       const next = new Set(prev);
-      isBookmarked ? next.delete(qId) : next.add(qId);
+      if (isBookmarked) next.delete(qId);
+      else next.add(qId);
       return next;
     });
 
@@ -867,7 +857,8 @@ export default function QuizEngine({
     } catch {
       setBookmarked((prev) => {
         const next = new Set(prev);
-        isBookmarked ? next.add(qId) : next.delete(qId);
+        if (isBookmarked) next.add(qId);
+        else next.delete(qId);
         return next;
       });
     }
@@ -881,6 +872,7 @@ export default function QuizEngine({
     slug,
     title,
     token,
+    subjectConfig.subjectId,
   ]);
 
   const handlePrev = useCallback(() => {
@@ -912,7 +904,6 @@ export default function QuizEngine({
   }
 
   function handleRestart() {
-    setQuestions([...questions].sort((a, b) => a.id - b.id));
     setCurrentIndex(0);
     setSelectedAnswer(null);
     setResults([]);
@@ -1016,20 +1007,11 @@ export default function QuizEngine({
       }));
   }, [results]);
 
-  function formatClock(totalSeconds: number) {
-    const safeSeconds = Math.max(0, totalSeconds);
-    const mins = Math.floor(safeSeconds / 60)
-      .toString()
-      .padStart(2, "0");
-    const secs = (safeSeconds % 60).toString().padStart(2, "0");
-    return `${mins}:${secs}`;
-  }
-
   if (showAnalytics) {
     return (
       <div
         className={`${subjectConfig.cssClassName} min-h-dvh relative overflow-hidden`}
-        data-theme="light"
+        data-theme={theme}
         style={{ background: "var(--quiz-bg)", color: "var(--quiz-text)" }}
       >
         {themeStyles}
@@ -1059,7 +1041,7 @@ export default function QuizEngine({
             className="animate-fade-in-up text-[color:var(--quiz-text-muted)] mb-10"
             style={{ animationDelay: "100ms" }}
           >
-            Here is how you performed in this {MODE_LABELS[mode]} session.
+            Here is how you performed in this {modeLabels[mode]} session.
           </p>
 
           <div
@@ -1246,19 +1228,6 @@ export default function QuizEngine({
     );
   }
 
-  const isClassificationConceptStart = isClassificationConceptMode;
-  const selectedConceptCount = selectedClassificationConcepts.size;
-  const visibleClassificationConceptCount = classificationGroups.reduce(
-    (total, category) => total + category.concepts.length,
-    0
-  );
-  const classificationCoverage =
-    selectedConceptCount === 0
-      ? 100
-      : Math.max(8, Math.min(100, Math.round((selectedConceptCount / conceptOptions.length) * 100)));
-  const allClassificationConceptsSelected =
-    selectedClassificationConcepts.size === conceptOptions.length && conceptOptions.length > 0;
-
   if (!started) {
     let startScreen;
     if (isClassificationConceptMode) {
@@ -1444,7 +1413,7 @@ export default function QuizEngine({
     return (
       <div
         className={`${subjectConfig.cssClassName} min-h-dvh relative flex items-center justify-center`}
-        data-theme="light"
+        data-theme={theme}
         style={{ background: "var(--quiz-bg)", color: "var(--quiz-text)" }}
       >
         {themeStyles}
@@ -1474,12 +1443,12 @@ export default function QuizEngine({
                 <div className="mac-dot mac-yellow"></div>
                 <div className="mac-dot mac-green"></div>
               </div>
-              <div className="mac-series-title">{title} - {MODE_LABELS[mode] || "Quiz"}</div>
+              <div className="mac-series-title">{title} - {modeLabels[mode] || "Quiz"}</div>
               <div className="mac-series-header-right">
                 <button
                   type="button"
                   className="mac-series-icon-button"
-                  onClick={toggleQuizTheme}
+                  onClick={toggleTheme}
                   aria-label={theme === "dark" ? "Use light theme" : "Use dark theme"}
                 >
                   {theme === "dark" ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
@@ -2021,7 +1990,7 @@ export default function QuizEngine({
             <button
               type="button"
               className="ios-series-icon-button"
-              onClick={toggleQuizTheme}
+              onClick={toggleTheme}
               aria-label={theme === "dark" ? "Use light theme" : "Use dark theme"}
             >
               {theme === "dark" ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
@@ -2569,7 +2538,7 @@ export default function QuizEngine({
                   <div className="flex flex-col gap-3 my-4">
                     <ImageMCQ
                       key={currentQ.id}
-                      data={currentQ as any}
+                      data={currentQ}
                       onAnswer={(idx: number) => {
                         if (!isCurrentSubmitted) {
                           handleSelectAnswer(idx);

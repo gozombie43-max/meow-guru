@@ -35,14 +35,25 @@ export async function fetchWithRetry(
 
   for (let attempt = 0; attempt <= resolvedRetries; attempt += 1) {
     const controller = new AbortController();
+    const abortFromExternalSignal = () => {
+      controller.abort(externalSignal?.reason);
+    };
+
+    if (externalSignal?.aborted) {
+      abortFromExternalSignal();
+    } else {
+      externalSignal?.addEventListener("abort", abortFromExternalSignal, { once: true });
+    }
+
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
       const res = await fetch(url, {
         ...options,
-        signal: externalSignal ?? controller.signal,
+        signal: controller.signal,
       });
       clearTimeout(timeoutId);
+      externalSignal?.removeEventListener("abort", abortFromExternalSignal);
 
       if (shouldRetryMethod && retryOnStatuses.includes(res.status) && attempt < resolvedRetries) {
         await sleep(retryDelayMs * (attempt + 1));
@@ -52,6 +63,7 @@ export async function fetchWithRetry(
       return res;
     } catch (err) {
       clearTimeout(timeoutId);
+      externalSignal?.removeEventListener("abort", abortFromExternalSignal);
       lastError = err;
 
       if (externalSignal?.aborted) throw err;

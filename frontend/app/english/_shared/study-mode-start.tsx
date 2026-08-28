@@ -64,7 +64,7 @@ export default function StudyModeStartView({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Enter" && e.target === document.body) {
-        router.push(targetQuizHref);
+        router.replace(targetQuizHref);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -128,7 +128,7 @@ export default function StudyModeStartView({
           <button
             type="button"
             className="study-mobile-cta-btn"
-            onClick={() => router.push(targetQuizHref)}
+            onClick={() => router.replace(targetQuizHref)}
           >
             Start Study Mode
           </button>
@@ -169,7 +169,7 @@ export default function StudyModeStartView({
               <button
                 type="button"
                 className="study-light green"
-                onClick={() => router.push(targetQuizHref)}
+                onClick={() => router.replace(targetQuizHref)}
                 title="Start Study Mode"
                 aria-label="Start"
               >
@@ -261,7 +261,7 @@ export default function StudyModeStartView({
               <button
                 type="button"
                 className="study-pc-start-btn"
-                onClick={() => router.push(targetQuizHref)}
+                onClick={() => router.replace(targetQuizHref)}
               >
                 Start Study Mode
               </button>

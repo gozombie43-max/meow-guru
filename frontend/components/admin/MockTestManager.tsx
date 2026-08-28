@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useEffect, useMemo, useState } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 import styles from "./AdminTool.module.css";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "";
@@ -41,7 +41,12 @@ function parse(text: string): Question[] {
 }
 
 export default function MockTestManager({ backLink }: { backLink?: ReactNode }) {
-  const [secret, setSecret] = useState(""); 
+  const [secret, setSecret] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("adminSecret") || "";
+    }
+    return "";
+  });
   const [apiUrl, setApiUrl] = useState(`${API}/api/mocktest`); 
   const [examSlug, setExamSlug] = useState("ssc-cgl"); 
   const [tierIndex, setTierIndex] = useState(0); 
@@ -58,7 +63,6 @@ export default function MockTestManager({ backLink }: { backLink?: ReactNode }) 
   const [status, setStatus] = useState(""); 
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => setSecret(localStorage.getItem("adminSecret") || ""), []);
   const exam = EXAMS[examSlug]; 
   const tier = exam.tiers[tierIndex] || exam.tiers[0]; 
   const questions = useMemo(() => parse(questionsText), [questionsText]);

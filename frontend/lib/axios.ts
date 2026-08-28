@@ -1,34 +1,21 @@
 import axios from 'axios';
 
-export const AUTH_TOKEN_STORAGE_KEY = 'token';
 export const AUTH_TOKEN_CHANGED_EVENT = 'auth-token-changed';
-export const REFRESH_TOKEN_STORAGE_KEY = 'refreshToken';
+const LEGACY_AUTH_STORAGE_KEYS = ['token', 'refreshToken'] as const;
+let accessToken: string | null = null;
 
-export const getStoredRefreshToken = () => {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem(REFRESH_TOKEN_STORAGE_KEY);
+export const getAccessToken = () => accessToken;
+
+export const clearLegacyAuthStorage = () => {
+  if (typeof window === 'undefined') return;
+  LEGACY_AUTH_STORAGE_KEYS.forEach((key) => window.localStorage.removeItem(key));
 };
 
-export const setStoredRefreshToken = (token: string | null) => {
-  if (typeof window === 'undefined') return;
-
-  if (token) {
-    localStorage.setItem(REFRESH_TOKEN_STORAGE_KEY, token);
-  } else {
-    localStorage.removeItem(REFRESH_TOKEN_STORAGE_KEY);
+export const updateAccessToken = (token: string | null) => {
+  accessToken = token;
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent(AUTH_TOKEN_CHANGED_EVENT, { detail: token }));
   }
-};
-
-export const updateStoredToken = (token: string | null) => {
-  if (typeof window === 'undefined') return;
-
-  if (token) {
-    localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, token);
-  } else {
-    localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
-  }
-
-  window.dispatchEvent(new CustomEvent(AUTH_TOKEN_CHANGED_EVENT, { detail: token }));
 };
 
 // Default to local backend in dev when NEXT_PUBLIC_API_URL isn't provided
@@ -61,26 +48,21 @@ export const requestTokenRefresh = async (): Promise<string | null> => {
 
   inFlightRefreshPromise = (async () => {
     try {
-      const refreshToken = getStoredRefreshToken();
       const { data } = await axios.post(
         `${defaultApiBase}/auth/refresh`,
-        refreshToken ? { refreshToken } : {},
+        {},
         { withCredentials: true }
       );
 
-      if (data.refreshToken) {
-        setStoredRefreshToken(data.refreshToken);
-      }
       if (data.token) {
-        updateStoredToken(data.token);
+        updateAccessToken(data.token);
         return data.token as string;
       }
       return null;
     } catch (refreshErr) {
       const refreshStatus = (refreshErr as { response?: { status?: number } })?.response?.status;
       if (refreshStatus === 401 || refreshStatus === 403) {
-        updateStoredToken(null);
-        setStoredRefreshToken(null);
+        updateAccessToken(null);
       }
       return null;
     } finally {
@@ -91,12 +73,10 @@ export const requestTokenRefresh = async (): Promise<string | null> => {
   return inFlightRefreshPromise;
 };
 
-// Attach token from localStorage to every request
+// Access tokens stay in memory. The HttpOnly refresh cookie restores sessions after reloads.
 api.interceptors.request.use((config) => {
-  if (typeof window !== 'undefined') {
-    const token = localStorage.getItem(AUTH_TOKEN_STORAGE_KEY);
-    if (token) config.headers.Authorization = `Bearer ${token}`;
-  }
+  const token = getAccessToken();
+  if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 

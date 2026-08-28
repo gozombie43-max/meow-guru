@@ -1,7 +1,7 @@
 "use client"
 import * as React from "react"
 import { useEffect, useState } from "react"
-import { motion, type AnimationOptions, type Variants } from "framer-motion"
+import { motion, type Variants } from "framer-motion"
 
 const RenderTarget = {
     current: () => "preview",

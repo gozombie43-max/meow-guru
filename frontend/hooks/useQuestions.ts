@@ -25,6 +25,7 @@ const fetcher = async (url: string) => {
 };
 
 export function useQuestions(params: {
+  enabled?: boolean;
   topic?: string;
   subject?: string;
   difficulty?: string;
@@ -42,7 +43,7 @@ export function useQuestions(params: {
   if (params.limit !== undefined) query.set('limit', String(params.limit));
   if (params.offset !== undefined) query.set('offset', String(params.offset));
 
-  const url = `${API}/api/questions?${query.toString()}`;
+  const url = params.enabled === false ? null : `${API}/api/questions?${query.toString()}`;
 
   const { data, error, isLoading, mutate } = useSWR<Question[]>(url, fetcher, {
     revalidateOnFocus: false, // Questions rarely change while focusing

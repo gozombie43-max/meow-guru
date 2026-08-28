@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useEffect, useState, Fragment } from "react";
+import { type ReactNode, useState, Fragment } from "react";
 import styles from "./AdminTool.module.css";
 import { QUIZ_TREE, SUBJECT_TOPICS } from "@/lib/quiz-constants";
 import "katex/dist/katex.min.css";
@@ -39,14 +39,18 @@ function renderMath(text: string) {
 }
 
 export default function QuestionUploadForm({ backLink }: { backLink?: ReactNode }) {
-  const [secret, setSecret] = useState("");
+  const [secret, setSecret] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("adminSecret") || "";
+    }
+    return "";
+  });
   const [form, setForm] = useState({ subject: "", tier: "", exam: "", chapter: "", concept: "", formula: "", trapType: "", tags: "", difficulty: "medium", question: "", options: ["", "", "", ""], correctIndex: "0", solution: "", quizSubject: "", quizTopic: "", quizName: "" });
   const [images, setImages] = useState<Images>({});
   const [imageUrls, setImageUrls] = useState<Partial<Record<ImageField, string>>>({});
   const [status, setStatus] = useState<{ text: string; error?: boolean } | null>(null);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => setSecret(localStorage.getItem("adminSecret") || ""), []);
   const change = (key: keyof typeof form, value: string) => setForm((old) => ({ ...old, [key]: value }));
   const updateOption = (index: number, value: string) => setForm((old) => ({ ...old, options: old.options.map((option, i) => i === index ? value : option) }));
 
@@ -93,6 +97,7 @@ export default function QuestionUploadForm({ backLink }: { backLink?: ReactNode 
   return (
     <div className={styles.shell}>
       <header className={styles.pageHeader}>
+        {backLink && <div style={{ marginBottom: 12 }}>{backLink}</div>}
         <div>
           <h1 className={styles.pageTitle}>Single Question Creator</h1>
           <p className={styles.pageSubtitle}>Author individual MCQs with real-time KaTeX math rendering, image attachments, and taxonomy.</p>

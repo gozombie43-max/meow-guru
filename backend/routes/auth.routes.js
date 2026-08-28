@@ -19,9 +19,7 @@ const isProd = process.env.NODE_ENV === 'production'
   || process.env.RENDER === 'true'
   || Boolean(process.env.RENDER_EXTERNAL_URL);
 
-const refreshTokenMode = process.env.REFRESH_TOKEN_MODE || 'cookie';
-const sendRefreshTokenInBody = refreshTokenMode === 'body' || refreshTokenMode === 'both';
-const setRefreshCookie = refreshTokenMode === 'cookie' || refreshTokenMode === 'both';
+const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
 
 const cookieOptions = {
   httpOnly: true,
@@ -32,25 +30,12 @@ const cookieOptions = {
 };
 
 const getRefreshTokenFromRequest = (req) => {
-  const headerToken = req.headers['x-refresh-token'];
-  const bodyToken = req.body?.refreshToken;
-
-  if (req.cookies?.refreshToken) return req.cookies.refreshToken;
-  if (Array.isArray(headerToken)) return headerToken[0];
-  if (typeof headerToken === 'string') return headerToken;
-  if (typeof bodyToken === 'string') return bodyToken;
-  return null;
+  return req.cookies?.refreshToken || null;
 };
 
 const applyRefreshToken = (res, refreshToken) => {
-  if (setRefreshCookie) {
-    res.cookie('refreshToken', refreshToken, cookieOptions);
-  }
+  res.cookie('refreshToken', refreshToken, cookieOptions);
 };
-
-const withRefreshToken = (payload, refreshToken) => (
-  sendRefreshTokenInBody ? { ...payload, refreshToken } : payload
-);
 
 // ── POST /auth/register ─────────────────────────────────
 router.post('/register', validateBody(registerSchema), async (req, res) => {
@@ -96,11 +81,11 @@ router.post('/register', validateBody(registerSchema), async (req, res) => {
     const refreshToken = signRefreshToken({ id: user.id, email: user.email, name: user.name, role: user.role });
 
     applyRefreshToken(res, refreshToken);
-    res.status(201).json(withRefreshToken({
+    res.status(201).json({
       message: 'Registered ✅',
       token,
       user: { id: user.id, name: user.name, email: user.email, role: user.role },
-    }, refreshToken));
+    });
   } catch (err) {
     if (lockAcquired) {
       try {
@@ -121,11 +106,11 @@ router.post('/login', validateBody(loginSchema), (req, res, next) => {
     const refreshToken = signRefreshToken({ id: user.id, email: user.email, name: user.name, role: user.role || 'student' });
 
     applyRefreshToken(res, refreshToken);
-    res.json(withRefreshToken({
+    res.json({
       message: 'Logged in ✅',
       token,
       user: { id: user.id, name: user.name, email: user.email, role: user.role || 'student' },
-    }, refreshToken));
+    });
   })(req, res, next);
 });
 
@@ -140,20 +125,16 @@ router.post('/refresh', (req, res) => {
     const newToken = signToken(payload);
     const newRefreshToken = signRefreshToken(payload);
     applyRefreshToken(res, newRefreshToken);
-    res.json(withRefreshToken({ token: newToken }, newRefreshToken));
+    res.json({ token: newToken });
   } catch {
-    if (setRefreshCookie) {
-      res.clearCookie('refreshToken', cookieOptions);
-    }
+    res.clearCookie('refreshToken', cookieOptions);
     res.status(403).json({ error: 'Session expired, please login again' });
   }
 });
 
 // ── POST /auth/logout ───────────────────────────────────
 router.post('/logout', (req, res) => {
-  if (setRefreshCookie) {
-    res.clearCookie('refreshToken', cookieOptions);
-  }
+  res.clearCookie('refreshToken', cookieOptions);
   res.json({ message: 'Logged out ✅' });
 });
 
@@ -164,18 +145,15 @@ router.get('/google',
 
 // ── GET /auth/google/callback ───────────────────────────
 router.get('/google/callback',
-  passport.authenticate('google', { session: false, failureRedirect: '/login' }),
+  passport.authenticate('google', {
+    session: false,
+    failureRedirect: `${frontendUrl}/login?error=oauth`,
+  }),
   (req, res) => {
-    const token        = signToken({ id: req.user.id, email: req.user.email, name: req.user.name });
     const refreshToken = signRefreshToken({ id: req.user.id, email: req.user.email, name: req.user.name });
 
     applyRefreshToken(res, refreshToken);
-    const encodedToken = encodeURIComponent(token);
-    const encodedRefresh = encodeURIComponent(refreshToken);
-    const redirectUrl = sendRefreshTokenInBody
-      ? `${process.env.FRONTEND_URL}/auth/callback?token=${encodedToken}&refreshToken=${encodedRefresh}`
-      : `${process.env.FRONTEND_URL}/auth/callback?token=${encodedToken}`;
-    res.redirect(redirectUrl);
+    res.redirect(`${frontendUrl}/auth/callback`);
   }
 );
 

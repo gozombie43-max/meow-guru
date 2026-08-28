@@ -1,30 +1,55 @@
 'use client';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Image from 'next/image';
 import { useIsDesktop } from './useIsDesktop';
-import { startTest, getAttempt, autosaveAttempt, submitAttempt } from './api';
+import {
+  startTest,
+  getAttempt,
+  autosaveAttempt,
+  submitAttempt,
+  type MockOption,
+  type MockAnswer,
+  type MockPaper,
+  type MockQuestion,
+  type MockSection,
+  type QuestionStatus,
+} from './api';
 import { useAuth } from '@/context/AuthContext';
 import MathRenderer from '@/components/MathRenderer';
 import styles from './MockTestEngine.module.css';
 // import { getExamConfig, getSlotById } from './exam-config';
 
-// Mock types until exam-config is provided
-export type QuestionStatus = 'not_visited' | 'not_answered' | 'answered' | 'marked' | 'answered_marked';
+const FALLBACK_PAPER: MockPaper = {
+  sections: [
+    {
+      id: 's1',
+      title: 'General Awareness',
+      questions: [
+        { id: 'q1', text: 'Sample Question 1?', options: [{ id: 'A', text: 'Opt A' }, { id: 'B', text: 'Opt B' }, { id: 'C', text: 'Opt C' }, { id: 'D', text: 'Opt D' }] },
+        { id: 'q2', text: 'Sample Math $x^2 + y^2 = r^2$?', options: [{ id: 'A', text: 'Opt A' }, { id: 'B', text: 'Opt B' }, { id: 'C', text: 'Opt C' }, { id: 'D', text: 'Opt D' }] },
+      ],
+    },
+  ],
+};
+
+function normalizeOption(option: string | MockOption, index: number): MockOption {
+  return typeof option === 'string' ? { id: String(index), text: option } : option;
+}
 
 export default function MockTestEngine({ examSlug, testId }: { examSlug: string; testId: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { token } = useAuth() as any;
+  const { token } = useAuth();
   const isDesktop = useIsDesktop(1024);
   const resumeAttemptId = searchParams?.get('resume');
 
-  const [paper, setPaper] = useState<any>(null);
+  const [paper, setPaper] = useState<MockPaper | null>(null);
   const [attemptId, setAttemptId] = useState<string>(resumeAttemptId || '');
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [answers, setAnswers] = useState<Record<string, MockAnswer>>({});
   const [currentSection, setCurrentSection] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [questionStatuses, setQuestionStatuses] = useState<Record<string, QuestionStatus>>({});
-  const [sectionTimers, setSectionTimers] = useState<Record<string, number>>({});
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
@@ -32,7 +57,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
   
   const [globalTimeLeft, setGlobalTimeLeft] = useState<number>(0);
   
-  const autosaveTimerRef = useRef<any>(null);
+  const autosaveTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     // Add Google Font for space mono dynamically
@@ -53,21 +78,9 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
         data = await startTest(examSlug, testId, token);
         setAttemptId(data.attemptId);
       }
-      // Assuming data returns paper structure and attempt state
-      // This part will need mapping to actual API structure
-      setPaper(data.paper || {
-        sections: [
-          {
-            id: 's1',
-            title: 'General Awareness',
-            questions: [
-              { id: 'q1', text: 'Sample Question 1?', options: [{id:'A', text:'Opt A'}, {id:'B', text:'Opt B'}, {id:'C', text:'Opt C'}, {id:'D', text:'Opt D'}] },
-              { id: 'q2', text: 'Sample Math $x^2 + y^2 = r^2$?', options: [{id:'A', text:'Opt A'}, {id:'B', text:'Opt B'}, {id:'C', text:'Opt C'}, {id:'D', text:'Opt D'}] }
-            ]
-          }
-        ]
-      });
-      setGlobalTimeLeft(data.timeLeft || 3600); // 1 hour default
+      const nextPaper = data.paper ?? FALLBACK_PAPER;
+      setPaper(nextPaper);
+      setGlobalTimeLeft(data.timeLeft ?? (nextPaper.totalDurationMin ?? 60) * 60);
       if (data.answers) setAnswers(data.answers);
       if (data.questionStatuses) setQuestionStatuses(data.questionStatuses);
     } catch (e) {
@@ -76,7 +89,9 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
   }, [examSlug, testId, token, resumeAttemptId]);
 
   useEffect(() => {
-    loadData();
+    // Fetching the attempt is the external synchronization boundary for this screen.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void loadData();
   }, [loadData]);
 
   // Autosave setup
@@ -86,7 +101,9 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
       autosaveAttempt(attemptId, { answers, questionStatuses, currentSection, currentQuestion }, token)
         .catch(console.error);
     }, 20000);
-    return () => clearInterval(autosaveTimerRef.current);
+    return () => {
+      if (autosaveTimerRef.current) clearInterval(autosaveTimerRef.current);
+    };
   }, [attemptId, answers, questionStatuses, currentSection, currentQuestion, token]);
 
   // visibilitychange
@@ -112,33 +129,45 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [globalTimeLeft, isSubmitting]);
 
-  // Main countdown timer
-  useEffect(() => {
-    if (globalTimeLeft <= 0 || !paper) {
-      if (paper && globalTimeLeft <= 0 && !isSubmitting && !showSubmitModal) {
-        handleFinalSubmit(); // auto submit at 0
-      }
-      return;
-    }
-    const timer = setInterval(() => {
-      setGlobalTimeLeft((prev) => prev - 1);
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [globalTimeLeft, paper, isSubmitting, showSubmitModal]);
-
-  const handleFinalSubmit = async () => {
+  const handleFinalSubmit = useCallback(async () => {
     if (isSubmitting || !attemptId || !token) return;
     setIsSubmitting(true);
     try {
       await autosaveAttempt(attemptId, { answers, questionStatuses, currentSection, currentQuestion }, token);
       await submitAttempt(attemptId, token);
-      router.push(`/mock-test/${examSlug}/${testId}/result?attempt=${attemptId}`);
-    } catch (e) {
-      console.error(e);
+      router.push(`/mock-test/${examSlug}/${testId}/result/${attemptId}`);
+    } catch (error) {
+      console.error(error);
       alert('Failed to submit. Please try again.');
       setIsSubmitting(false);
     }
-  };
+  }, [
+    answers,
+    attemptId,
+    currentQuestion,
+    currentSection,
+    examSlug,
+    isSubmitting,
+    questionStatuses,
+    router,
+    testId,
+    token,
+  ]);
+
+  useEffect(() => {
+    if (!paper) return;
+    const timer = window.setInterval(() => {
+      setGlobalTimeLeft((previous) => Math.max(0, previous - 1));
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [paper]);
+
+  useEffect(() => {
+    if (!paper || globalTimeLeft > 0 || isSubmitting || showSubmitModal) return;
+    // The exam timer reaching zero is an external event that must submit immediately.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void handleFinalSubmit();
+  }, [globalTimeLeft, handleFinalSubmit, isSubmitting, paper, showSubmitModal]);
 
   const formatTime = (seconds: number) => {
     const h = Math.floor(seconds / 3600);
@@ -238,8 +267,8 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
   const currentSec = paper.sections[currentSection];
   const currentQ = currentSec.questions[currentQuestion];
 
-  const totalQuestions = paper.sections.reduce((acc: number, sec: any) => acc + sec.questions.length, 0);
-  const currentQGlobalIndex = paper.sections.slice(0, currentSection).reduce((acc: number, sec: any) => acc + sec.questions.length, 0) + currentQuestion + 1;
+  const totalQuestions = paper.sections.reduce((acc: number, sec: MockSection) => acc + sec.questions.length, 0);
+  const currentQGlobalIndex = paper.sections.slice(0, currentSection).reduce((acc: number, sec: MockSection) => acc + sec.questions.length, 0) + currentQuestion + 1;
 
   const counts = { answered: 0, notAnswered: 0, marked: 0, answeredMarked: 0, notVisited: totalQuestions };
   Object.values(questionStatuses).forEach(s => {
@@ -275,14 +304,14 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
         {isDesktop && (
           <div className={styles.leftPanel}>
             <div className={styles.tabs}>
-              {paper.sections.map((sec: any, idx: number) => (
-                <div key={sec.id} className={`${styles.tab} ${currentSection === idx ? styles.active : ''}`} onClick={() => setCurrentSection(idx)}>
-                  {sec.title}
+              {paper.sections.map((sec: MockSection, idx: number) => (
+                <div key={sec.id ?? sec.key ?? idx} className={`${styles.tab} ${currentSection === idx ? styles.active : ''}`} onClick={() => setCurrentSection(idx)}>
+                  {sec.title ?? sec.label}
                 </div>
               ))}
             </div>
             <div className={styles.questionGrid}>
-              {paper.sections[currentSection].questions.map((q: any, idx: number) => {
+              {paper.sections[currentSection].questions.map((q: MockQuestion, idx: number) => {
                 const status = questionStatuses[q.id];
                 const isCurrent = currentQuestion === idx;
                 return (
@@ -311,9 +340,9 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
           
           {!isDesktop && (
             <div className={styles.mobileSectionControl}>
-              {paper.sections.map((sec: any, idx: number) => (
-                <div key={sec.id} className={`${styles.mobileTab} ${currentSection === idx ? styles.active : ''}`} onClick={() => setCurrentSection(idx)}>
-                  {sec.title}
+              {paper.sections.map((sec: MockSection, idx: number) => (
+                <div key={sec.id ?? sec.key ?? idx} className={`${styles.mobileTab} ${currentSection === idx ? styles.active : ''}`} onClick={() => setCurrentSection(idx)}>
+                  {sec.title ?? sec.label}
                 </div>
               ))}
             </div>
@@ -321,11 +350,21 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
 
           <div className={styles.questionContent}>
             <div className={styles.qNumber}>Question {currentQuestion + 1}</div>
-            <div className={styles.qText}>{renderMath(currentQ.text)}</div>
-            {currentQ.image && <img src={currentQ.image} alt="Question figure" className={styles.qImage} />}
+            <div className={styles.qText}>{renderMath(currentQ.text ?? currentQ.question ?? '')}</div>
+            {currentQ.image && (
+              <Image
+                src={currentQ.image}
+                alt="Question figure"
+                className={styles.qImage}
+                width={800}
+                height={450}
+                unoptimized
+              />
+            )}
             
             <div className={styles.options}>
-              {currentQ.options.map((opt: any) => {
+              {(currentQ.options ?? []).map((rawOption, optionIndex) => {
+                const opt = normalizeOption(rawOption, optionIndex);
                 const isSelected = answers[currentQ.id] === opt.id;
                 return (
                   <label key={opt.id} className={`${styles.optionLabel} ${isSelected ? styles.selected : ''}`}>
@@ -374,7 +413,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
               <button onClick={() => setShowPalette(false)} style={{background:'transparent', border:'none', fontSize:'1.25rem'}}>&times;</button>
             </div>
             <div className={styles.questionGrid}>
-              {paper.sections[currentSection].questions.map((q: any, idx: number) => {
+              {paper.sections[currentSection].questions.map((q: MockQuestion, idx: number) => {
                 const status = questionStatuses[q.id];
                 const isCurrent = currentQuestion === idx;
                 return (

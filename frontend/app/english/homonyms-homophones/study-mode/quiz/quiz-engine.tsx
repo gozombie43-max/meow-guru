@@ -369,7 +369,7 @@ export default function StudyModeQuizEngine() {
             <button
               type="button"
               className="light red"
-              onClick={() => router.push("/english/homonyms-homophones/study-mode")}
+              onClick={() => router.push("/english/homonyms-homophones")}
               aria-label="Close and return"
               title="Close to welcome screen"
             >
@@ -378,7 +378,7 @@ export default function StudyModeQuizEngine() {
             <button
               type="button"
               className="light yellow"
-              onClick={() => router.push("/english/homonyms-homophones/study-mode")}
+              onClick={() => router.push("/english/homonyms-homophones")}
               aria-label="Minimize"
               title="Minimize to topic"
             >

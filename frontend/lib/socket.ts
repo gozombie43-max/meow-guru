@@ -3,7 +3,7 @@
 // Vercel rewrites are HTTP-only and do not support WebSocket upgrades.
 // REST APIs still use NEXT_PUBLIC_API_URL (/backend-api/*) as before.
 import { io, Socket } from 'socket.io-client';
-import { AUTH_TOKEN_STORAGE_KEY } from './axios';
+import { getAccessToken } from './axios';
 
 let socket: Socket | null = null;
 
@@ -18,7 +18,7 @@ const SOCKET_URL =
   'http://localhost:10000';
 
 export function getSocket(customToken?: string): Socket {
-  const token = customToken || (typeof window !== 'undefined' ? localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) : null);
+  const token = customToken || getAccessToken();
 
   if (!socket) {
     socket = io(SOCKET_URL, {
@@ -27,7 +27,7 @@ export function getSocket(customToken?: string): Socket {
       withCredentials: true,
       autoConnect: true,
       auth: (cb) => {
-        const activeToken = typeof window !== 'undefined' ? localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) : null;
+        const activeToken = getAccessToken();
         cb({ token: activeToken });
       },
     });

@@ -2,10 +2,16 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { getAttempt } from './api';
+import Image from 'next/image';
+import {
+  getAttempt,
+  type MockAnswer,
+  type MockAttempt,
+  type MockQuestion,
+  type MockSection,
+} from './api';
 import { useAuth } from '@/context/AuthContext';
-import { useIsDesktop } from './useIsDesktop';
-import { ChevronLeft, ChevronRight, CheckCircle2, XCircle, ArrowLeft, Image as ImageIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CheckCircle2, XCircle, ArrowLeft } from 'lucide-react';
 import styles from './ReviewEngine.module.css';
 
 interface ReviewEngineProps {
@@ -15,13 +21,25 @@ interface ReviewEngineProps {
 }
 
 type FilterType = 'all' | 'correct' | 'incorrect' | 'skipped';
+type ReviewStatus = Exclude<FilterType, 'all'>;
+
+interface QuestionAnalysis {
+  question: MockQuestion;
+  index: number;
+  userAns: MockAnswer | undefined;
+  correctAns: MockAnswer | undefined;
+  status: ReviewStatus;
+}
+
+const EMPTY_SECTIONS: MockSection[] = [];
+const EMPTY_QUESTIONS: MockQuestion[] = [];
+const EMPTY_ANSWERS: Record<string, MockAnswer> = {};
 
 export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngineProps) {
   const router = useRouter();
   const { token } = useAuth();
-  const isDesktop = useIsDesktop(1024);
 
-  const [attempt, setAttempt] = useState<any>(null);
+  const [attempt, setAttempt] = useState<MockAttempt | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,15 +61,15 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
       });
   }, [attemptId, token]);
 
-  const sections = attempt?.paper?.sections || [];
+  const sections = attempt?.paper?.sections ?? EMPTY_SECTIONS;
   const currentSection = sections[currentSectionIndex];
-  const questions = currentSection?.questions || [];
-  const answers = attempt?.answers || {};
-  const answerKey = attempt?.answerKey || {};
+  const questions = currentSection?.questions ?? EMPTY_QUESTIONS;
+  const answers = attempt?.answers ?? EMPTY_ANSWERS;
+  const answerKey = attempt?.answerKey ?? EMPTY_ANSWERS;
 
   // Classify each question in the current section
   const questionAnalysis = useMemo(() => {
-    return questions.map((q: any, index: number) => {
+    return questions.map((q: MockQuestion, index: number): QuestionAnalysis => {
       const userAns = answers[q.id];
       const correctAns = answerKey[q.id];
       const isSkipped = !userAns || userAns === '';
@@ -71,13 +89,18 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
   // Filtered question indices
   const filteredAnalysis = useMemo(() => {
     if (filter === 'all') return questionAnalysis;
-    return questionAnalysis.filter((q: any) => q.status === filter);
+    return questionAnalysis.filter((question) => question.status === filter);
   }, [questionAnalysis, filter]);
 
-  // Keep question index in bounds when switching filters/sections
-  useEffect(() => {
+  const selectSection = (index: number) => {
+    setCurrentSectionIndex(index);
     setCurrentQuestionIndex(0);
-  }, [currentSectionIndex, filter]);
+  };
+
+  const selectFilter = (nextFilter: FilterType) => {
+    setFilter(nextFilter);
+    setCurrentQuestionIndex(0);
+  };
 
   if (loading) {
     return (
@@ -134,11 +157,11 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
 
         {/* Section Tabs in Header */}
         <div className={styles.sectionTabs}>
-          {sections.map((sec: any, idx: number) => (
+          {sections.map((sec: MockSection, idx: number) => (
             <button
               key={sec.key || idx}
               className={`${styles.sectionTab} ${currentSectionIndex === idx ? styles.activeSectionTab : ''}`}
-              onClick={() => setCurrentSectionIndex(idx)}
+              onClick={() => selectSection(idx)}
             >
               {sec.label || sec.key}
             </button>
@@ -155,27 +178,27 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
             <div className={styles.filterList}>
               <button
                 className={`${styles.filterBtn} ${filter === 'all' ? styles.activeFilter : ''}`}
-                onClick={() => setFilter('all')}
+                onClick={() => selectFilter('all')}
               >
                 All Questions ({questionAnalysis.length})
               </button>
               <button
                 className={`${styles.filterBtn} ${styles.filterCorrect} ${filter === 'correct' ? styles.activeFilter : ''}`}
-                onClick={() => setFilter('correct')}
+                onClick={() => selectFilter('correct')}
               >
-                <CheckCircle2 size={16} /> Correct ({questionAnalysis.filter((q: any) => q.status === 'correct').length})
+                <CheckCircle2 size={16} /> Correct ({questionAnalysis.filter((question) => question.status === 'correct').length})
               </button>
               <button
                 className={`${styles.filterBtn} ${styles.filterIncorrect} ${filter === 'incorrect' ? styles.activeFilter : ''}`}
-                onClick={() => setFilter('incorrect')}
+                onClick={() => selectFilter('incorrect')}
               >
-                <XCircle size={16} /> Incorrect ({questionAnalysis.filter((q: any) => q.status === 'incorrect').length})
+                <XCircle size={16} /> Incorrect ({questionAnalysis.filter((question) => question.status === 'incorrect').length})
               </button>
               <button
                 className={`${styles.filterBtn} ${styles.filterSkipped} ${filter === 'skipped' ? styles.activeFilter : ''}`}
-                onClick={() => setFilter('skipped')}
+                onClick={() => selectFilter('skipped')}
               >
-                Skipped ({questionAnalysis.filter((q: any) => q.status === 'skipped').length})
+                Skipped ({questionAnalysis.filter((question) => question.status === 'skipped').length})
               </button>
             </div>
           </div>
@@ -183,7 +206,7 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
           <div className={styles.paletteSection}>
             <span className={styles.sidebarHeading}>Question Palette</span>
             <div className={styles.paletteGrid}>
-              {filteredAnalysis.map((item: any, idx: number) => {
+              {filteredAnalysis.map((item: QuestionAnalysis, idx: number) => {
                 let statusClass = styles.itemSkipped;
                 if (item.status === 'correct') statusClass = styles.itemCorrect;
                 if (item.status === 'incorrect') statusClass = styles.itemIncorrect;
@@ -218,17 +241,24 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
 
               {/* Question Text */}
               <div className={styles.questionBody}>
-                <p className={styles.questionText}>{currentQ.question}</p>
+                <p className={styles.questionText}>{currentQ.question ?? currentQ.text}</p>
                 {currentQ.questionImage && (
                   <div className={styles.qImageWrap}>
-                    <img src={currentQ.questionImage} alt="Question diagram" />
+                    <Image
+                      src={currentQ.questionImage}
+                      alt="Question diagram"
+                      width={800}
+                      height={450}
+                      unoptimized
+                    />
                   </div>
                 )}
               </div>
 
               {/* Options */}
               <div className={styles.optionsList}>
-                {currentQ.options?.map((opt: string, oIdx: number) => {
+                {currentQ.options?.map((option, oIdx: number) => {
+                  const opt = typeof option === 'string' ? option : option.text;
                   const letter = String.fromCharCode(65 + oIdx); // 'A', 'B', 'C', 'D'
                   const isUserPick = String(currentItem.userAns) === String(letter) || String(currentItem.userAns) === String(oIdx) || currentItem.userAns === opt;
                   const isCorrect = String(currentItem.correctAns) === String(letter) || String(currentItem.correctAns) === String(oIdx) || currentItem.correctAns === opt;
@@ -255,7 +285,13 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
                   {currentQ.solution && <p className={styles.solutionText}>{currentQ.solution}</p>}
                   {currentQ.solutionImage && (
                     <div className={styles.solImageWrap}>
-                      <img src={currentQ.solutionImage} alt="Detailed solution" />
+                      <Image
+                        src={currentQ.solutionImage}
+                        alt="Detailed solution"
+                        width={800}
+                        height={450}
+                        unoptimized
+                      />
                     </div>
                   )}
                 </div>

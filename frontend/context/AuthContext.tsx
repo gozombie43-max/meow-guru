@@ -3,9 +3,10 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import api, {
   AUTH_TOKEN_CHANGED_EVENT,
-  AUTH_TOKEN_STORAGE_KEY,
+  clearLegacyAuthStorage,
+  getAccessToken,
   requestTokenRefresh,
-  setStoredRefreshToken,
+  updateAccessToken,
 } from '@/lib/axios';
 
 const isAuthError = (err: unknown) => {
@@ -78,10 +79,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const persistToken = useCallback((t: string | null) => {
     setToken(t);
-    if (typeof window !== 'undefined') {
-      if (t) localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, t);
-      else localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
-    }
+    updateAccessToken(t);
   }, []);
 
   const refreshAccessToken = useCallback(async () => {
@@ -103,10 +101,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const clearAuthState = useCallback(() => {
     setToken(null);
     setUser(null);
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
-    }
-    setStoredRefreshToken(null);
+    updateAccessToken(null);
   }, []);
 
   const logout = useCallback(async () => {
@@ -139,10 +134,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [clearAuthState, fetchUser, persistToken, refreshAccessToken]);
 
   const refreshUser = useCallback(async () => {
-    const stored = typeof window !== 'undefined' ? localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) : null;
-    if (!stored) return;
+    const activeToken = token ?? getAccessToken() ?? await requestTokenRefresh();
+    if (!activeToken) return;
     try {
-      await fetchUser(stored);
+      await fetchUser(activeToken);
     } catch (err) {
       if (isAuthError(err)) {
         try {
@@ -155,7 +150,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.error('Failed to refresh user:', err);
       }
     }
-  }, [clearAuthState, fetchUser, refreshAccessToken]);
+  }, [clearAuthState, fetchUser, refreshAccessToken, token]);
 
   const syncStudyTime = useCallback(async (seconds: number) => {
     if (seconds <= 0) return;
@@ -187,44 +182,35 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return;
       }
 
-      setToken(localStorage.getItem(AUTH_TOKEN_STORAGE_KEY));
+      setToken(getAccessToken());
     };
 
     window.addEventListener(AUTH_TOKEN_CHANGED_EVENT, syncToken as EventListener);
-    window.addEventListener('storage', syncToken);
-
     return () => {
       window.removeEventListener(AUTH_TOKEN_CHANGED_EVENT, syncToken as EventListener);
-      window.removeEventListener('storage', syncToken);
     };
   }, []);
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.location.pathname.startsWith('/auth/callback')) {
-      setLoading(false);
-      return;
-    }
     let cancelled = false;
     let retryTimer: ReturnType<typeof setTimeout> | null = null;
 
     const bootstrap = async (attempt = 0) => {
       if (cancelled) return;
-      const stored = typeof window !== 'undefined' ? localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) : null;
 
       try {
         setLoading(true);
-        if (stored) {
-          persistToken(stored);
-          await fetchUser(stored);
-        } else {
-          // Do not auto-refresh when there is no stored access token.
-          // This avoids unnecessary 401 responses for anonymous visitors.
+        clearLegacyAuthStorage();
+        const activeToken = getAccessToken() ?? await requestTokenRefresh();
+        if (!activeToken) {
           if (!cancelled) setLoading(false);
           return;
         }
+        persistToken(activeToken);
+        await fetchUser(activeToken);
         if (!cancelled) setLoading(false);
       } catch (err) {
-        if (isAuthError(err) && stored) {
+        if (isAuthError(err)) {
           try {
             const refreshedToken = await refreshAccessToken();
             await fetchUser(refreshedToken);

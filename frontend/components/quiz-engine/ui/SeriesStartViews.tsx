@@ -40,7 +40,6 @@ import {
   Flame,
   Shuffle,
   BookOpenCheck,
-  BookOpen,
   Sun,
   Moon,
   Percent,
@@ -77,9 +76,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import MacTrafficLights from "@/components/MacTrafficLights";
-import { useThemeMode } from "@/hooks/useTheme";
 import { SubjectConfig, ClassificationGroup, QuizMode } from "../types";
-import { useQuizTheme, toggleQuizTheme } from "../utils";
+import { useQuizTheme, useQuizThemeControls } from "../QuizThemeProvider";
 import styles from "./SeriesStartViews.module.css";
 
 // ── Complete Topic Icon Mapping Across All 4 Subjects ────────────────────────
@@ -278,7 +276,7 @@ function MacOsQuizStartStudio({
   onToggleLetter,
   onSelectAllLetters,
   letterCounts,
-  availableLetters,
+  availableLetters: _availableLetters,
   onCategoryChange,
   onExamChange,
   onSearchChange,
@@ -286,8 +284,8 @@ function MacOsQuizStartStudio({
   onStart,
 }: MacOsQuizStartStudioProps) {
   const router = useRouter();
-  const { theme } = useThemeMode();
   const quizTheme = useQuizTheme();
+  const { toggleTheme } = useQuizThemeControls();
   const [internalSearch, setInternalSearch] = useState("");
   const activeSearch = externalSearch !== undefined ? externalSearch : internalSearch;
 
@@ -391,7 +389,7 @@ function MacOsQuizStartStudio({
           <div className={styles.titleBarRight}>
             <button
               type="button"
-              onClick={toggleQuizTheme}
+              onClick={toggleTheme}
               className={styles.themeBtn}
               title={`Switch to ${quizTheme === "dark" ? "Light" : "Dark"} mode`}
               aria-label="Toggle Theme"
@@ -720,7 +718,7 @@ function IosQuizStartMobile({
   onToggleLetter,
   onSelectAllLetters,
   letterCounts,
-  availableLetters,
+  availableLetters: _availableLetters,
   onCategoryChange,
   onExamChange,
   onSearchChange,
@@ -728,7 +726,7 @@ function IosQuizStartMobile({
   onStart,
 }: IosQuizStartMobileProps) {
   const router = useRouter();
-  const { theme } = useThemeMode();
+  const quizTheme = useQuizTheme();
   const [internalSearch, setInternalSearch] = useState("");
   const activeSearch = externalSearch !== undefined ? externalSearch : internalSearch;
 
@@ -764,12 +762,12 @@ function IosQuizStartMobile({
     });
   }, [groups, activeSearch]);
 
-  const subjectAccent = theme === "dark" ? "#0a84ff" : "#0071e3";
+  const subjectAccent = quizTheme === "dark" ? "#0a84ff" : "#0071e3";
 
   return (
     <div
       className={styles.iosScreen}
-      data-theme={theme}
+      data-theme={quizTheme}
       style={{ "--ios-accent": subjectAccent } as React.CSSProperties}
     >
       {/* ── Top Navigation Bar ── */}

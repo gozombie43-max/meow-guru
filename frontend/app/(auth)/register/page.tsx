@@ -7,7 +7,7 @@ import { z } from 'zod';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import api, { setStoredRefreshToken } from '@/lib/axios';
+import api from '@/lib/axios';
 import { useState } from 'react';
 import styles from '../login/login.module.css';
 
@@ -38,7 +38,6 @@ export default function RegisterPage() {
     setError('');
     try {
       const res = await api.post('/auth/register', data);
-      if (res.data.refreshToken) setStoredRefreshToken(res.data.refreshToken);
       await login(res.data.token);
       router.push('/dashboard');
     } catch (err: unknown) {
