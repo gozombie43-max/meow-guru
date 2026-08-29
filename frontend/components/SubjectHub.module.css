@@ -1551,13 +1551,13 @@
 .mobileTabsScroll {
   display: flex;
   justify-content: flex-start;
-  align-items: flex-end;
-  gap: 4px;
+  align-items: center;
+  gap: 8px;
   overflow-x: auto;
-  padding: 8px 16px 0 16px;
+  padding: 0 16px;
   scrollbar-width: none;
   background: #1C1C1E;
-  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   box-sizing: border-box;
   position: relative;
   z-index: 1;
@@ -1565,6 +1565,7 @@
 
 :global(body.theme-light) .mobileTabsScroll {
   background: #E5E5EA !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
 }
 
 .mobileTabsScroll::-webkit-scrollbar {
@@ -1579,19 +1580,18 @@
   position: relative;
   flex: 1;
   min-width: max-content;
-  height: 35px;
-  padding: 0 16px;
-  border: 1px solid transparent;
-  border-bottom: none;
+  height: 40px;
+  padding: 0 12px;
+  border: none;
   background: transparent;
-  border-radius: 14px 14px 0 0;
+  border-radius: 0;
   font-size: 0.90rem;
   letter-spacing: -0.01em;
   font-weight: 500;
   color: #8E8E93;
   cursor: pointer;
   white-space: nowrap;
-  transition: all 0.15s ease;
+  transition: color 0.15s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1600,8 +1600,7 @@
 
 :global(body.theme-light) .mobileTabBtn {
   background: transparent !important;
-  border: 1px solid transparent !important;
-  border-bottom: none !important;
+  border: none !important;
   color: #636366 !important;
 }
 
@@ -1614,32 +1613,35 @@
 }
 
 .mobileTabActive {
-  position: relative;
-  z-index: 2;
-  margin-bottom: 0;
-  height: 36px;
   background: transparent !important;
   color: #ffffff !important;
   font-weight: 700 !important;
-  border-style: solid;
-  border-width: 1.5px 16px 0 16px;
-  border-image-source: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 36' width='48' height='36'%3E%3Cpath d='M0 36 C5 36 8 32 10.5 24 L13.5 10 C15 3 17 0.75 20 0.75 L28 0.75 C31 0.75 33 3 34.5 10 L37.5 24 C40 32 43 36 48 36 Z' fill='%230F0F0F'/%3E%3Cpath d='M0 36 C5 36 8 32 10.5 24 L13.5 10 C15 3 17 0.75 20 0.75 L28 0.75 C31 0.75 33 3 34.5 10 L37.5 24 C40 32 43 36 48 36' fill='none' stroke='rgba(255,255,255,0.22)' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  border-image-slice: 2 20 0 20 fill;
-  border-image-width: 1.5px 16px 0 16px;
-  border-image-outset: 0 10px 0 10px;
-  border-image-repeat: stretch;
+  border: none !important;
+  border-radius: 0 !important;
   box-shadow: none !important;
-  padding: 0 8px;
 }
 
-.mobileTabActive::before,
 .mobileTabActive::after {
-  display: none !important;
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 6px;
+  right: 6px;
+  height: 2.5px;
+  background: #0A84FF; /* iOS Blue */
+  border-radius: 3px 3px 0 0;
+  pointer-events: none;
 }
 
 :global(body.theme-light) .mobileTabActive {
-  color: #000000 !important;
-  border-image-source: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 36' width='48' height='36'%3E%3Cpath d='M0 36 C5 36 8 32 10.5 24 L13.5 10 C15 3 17 0.75 20 0.75 L28 0.75 C31 0.75 33 3 34.5 10 L37.5 24 C40 32 43 36 48 36 Z' fill='%23ffffff'/%3E%3Cpath d='M0 36 C5 36 8 32 10.5 24 L13.5 10 C15 3 17 0.75 20 0.75 L28 0.75 C31 0.75 33 3 34.5 10 L37.5 24 C40 32 43 36 48 36' fill='none' stroke='rgba(0,0,0,0.15)' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background: transparent !important;
+  color: #007AFF !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+:global(body.theme-light) .mobileTabActive::after {
+  background: #007AFF !important;
 }
 
 .mobileCountRow {
