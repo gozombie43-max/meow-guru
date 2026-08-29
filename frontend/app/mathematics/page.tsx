@@ -1106,6 +1106,9 @@ export default function MathematicsPage() {
             </div>
           </div>
 
+          {/* TOPICS Section Header */}
+          <div className={styles.mobileTopicsTitle}>TOPICS</div>
+
           {/* iOS Grouped Card Container with Filter Header */}
           <div className={styles.mobileTopicGroup}>
             {/* Priority Tabs in Card Header */}
@@ -1138,7 +1141,7 @@ export default function MathematicsPage() {
                       style={{ background: topic.color }}
                     >
                       <TopicIcon
-                        size={20}
+                        size={18}
                         strokeWidth={2.2}
                         color="#ffffff"
                       />
