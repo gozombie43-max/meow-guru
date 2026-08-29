@@ -1556,17 +1556,15 @@
   overflow-x: auto;
   padding: 8px 16px 0 16px;
   scrollbar-width: none;
-  background: rgba(255, 255, 255, 0.02);
+  background: #1C1C1E;
   border: none;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   box-sizing: border-box;
   position: relative;
   z-index: 1;
 }
 
 :global(body.theme-light) .mobileTabsScroll {
-  background: rgba(0, 0, 0, 0.02) !important;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+  background: #E5E5EA !important;
 }
 
 .mobileTabsScroll::-webkit-scrollbar {
@@ -1618,62 +1616,30 @@
 .mobileTabActive {
   position: relative;
   z-index: 2;
-  margin-bottom: -1px;
+  margin-bottom: 0;
   height: 36px;
-  background: #0F0F0F !important;
+  background: transparent !important;
   color: #ffffff !important;
   font-weight: 700 !important;
-  border: 1px solid rgba(255, 255, 255, 0.18) !important;
-  border-bottom: 1px solid #0F0F0F !important;
-  border-radius: 14px 14px 0 0 !important;
+  border-style: solid;
+  border-width: 1.5px 16px 0 16px;
+  border-image-source: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 36' width='48' height='36'%3E%3Cpath d='M0 36 C5 36 8 32 10.5 24 L13.5 10 C15 3 17 0.75 20 0.75 L28 0.75 C31 0.75 33 3 34.5 10 L37.5 24 C40 32 43 36 48 36 Z' fill='%230F0F0F'/%3E%3Cpath d='M0 36 C5 36 8 32 10.5 24 L13.5 10 C15 3 17 0.75 20 0.75 L28 0.75 C31 0.75 33 3 34.5 10 L37.5 24 C40 32 43 36 48 36' fill='none' stroke='rgba(255,255,255,0.22)' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  border-image-slice: 2 20 0 20 fill;
+  border-image-width: 1.5px 16px 0 16px;
+  border-image-outset: 0 10px 0 10px;
+  border-image-repeat: stretch;
   box-shadow: none !important;
+  padding: 0 8px;
 }
 
-.mobileTabActive::before {
-  content: "";
-  position: absolute;
-  bottom: -1px;
-  left: -14px;
-  width: 14px;
-  height: 14px;
-  border-bottom-right-radius: 14px;
-  border-right: 1px solid rgba(255, 255, 255, 0.18);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 6px 6px 0 0 #0F0F0F;
-  pointer-events: none;
-}
-
+.mobileTabActive::before,
 .mobileTabActive::after {
-  content: "";
-  position: absolute;
-  bottom: -1px;
-  right: -14px;
-  width: 14px;
-  height: 14px;
-  border-bottom-left-radius: 14px;
-  border-left: 1px solid rgba(255, 255, 255, 0.18);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: -6px 6px 0 0 #0F0F0F;
-  pointer-events: none;
+  display: none !important;
 }
 
 :global(body.theme-light) .mobileTabActive {
-  background: #ffffff !important;
   color: #000000 !important;
-  border: 1px solid rgba(0, 0, 0, 0.12) !important;
-  border-bottom: 1px solid #ffffff !important;
-}
-
-:global(body.theme-light) .mobileTabActive::before {
-  border-right: 1px solid rgba(0, 0, 0, 0.12) !important;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12) !important;
-  box-shadow: 6px 6px 0 0 #ffffff !important;
-}
-
-:global(body.theme-light) .mobileTabActive::after {
-  border-left: 1px solid rgba(0, 0, 0, 0.12) !important;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.12) !important;
-  box-shadow: -6px 6px 0 0 #ffffff !important;
+  border-image-source: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 36' width='48' height='36'%3E%3Cpath d='M0 36 C5 36 8 32 10.5 24 L13.5 10 C15 3 17 0.75 20 0.75 L28 0.75 C31 0.75 33 3 34.5 10 L37.5 24 C40 32 43 36 48 36 Z' fill='%23ffffff'/%3E%3Cpath d='M0 36 C5 36 8 32 10.5 24 L13.5 10 C15 3 17 0.75 20 0.75 L28 0.75 C31 0.75 33 3 34.5 10 L37.5 24 C40 32 43 36 48 36' fill='none' stroke='rgba(0,0,0,0.15)' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 
 .mobileCountRow {

@@ -573,7 +573,36 @@ export default function SubjectTopicPage({
           font-size: 13px; color: var(--label-2); margin: 0;
           line-height: 1.35; letter-spacing: -0.1px;
         }
-        .sg-banner-arr { flex-shrink: 0; color: var(--label-3); display: flex; align-items: center; }
+        .sg-banner-action {
+          flex-shrink: 0;
+          display: flex;
+          align-items: center;
+        }
+        .sg-banner-open-btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          background: #ffffff;
+          color: #000000;
+          font-size: 13px;
+          font-weight: 700;
+          letter-spacing: -0.01em;
+          padding: 7px 15px;
+          border-radius: 8px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+          transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.15s ease;
+        }
+        .sg-banner:hover .sg-banner-open-btn {
+          transform: scale(1.05);
+        }
+        .sg-banner:active .sg-banner-open-btn {
+          transform: scale(0.95);
+        }
+        body.theme-light .sg-banner-open-btn {
+          background: #000000;
+          color: #ffffff;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+        }
 
         /* ── Section label ── */
         .sg-section {
@@ -915,7 +944,9 @@ export default function SubjectTopicPage({
                   <div className="sg-banner-title">{headlineText}</div>
                   <div className="sg-banner-sub">{subtitleText}</div>
                 </div>
-                <div className="sg-banner-arr"><Chevron size={8} /></div>
+                <div className="sg-banner-action">
+                  <span className="sg-banner-open-btn">Open</span>
+                </div>
               </Link>
             </div>
           </div>
