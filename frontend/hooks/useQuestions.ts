@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import useSWR from 'swr';
 import { fetchWithRetry } from '@/lib/api/http';
 import { isStudyModeQuestion, type Question } from '@/lib/api/questions';
@@ -47,13 +48,18 @@ export function useQuestions(params: {
 
   const { data, error, isLoading, mutate } = useSWR<Question[]>(url, fetcher, {
     revalidateOnFocus: false, // Questions rarely change while focusing
+    revalidateIfStale: false,
+    shouldRetryOnError: false, // Prevent render storm on network/backend failure
     dedupingInterval: 60000, // Dedupe calls for 1 min
   });
 
-  return {
-    questions: data,
-    isLoading,
-    isError: error,
-    mutate
-  };
+  return useMemo(
+    () => ({
+      questions: data,
+      isLoading,
+      isError: error,
+      mutate,
+    }),
+    [data, isLoading, error, mutate]
+  );
 }

@@ -6,20 +6,22 @@ import { usePathname } from 'next/navigation';
 
 export default function StudyTimeTracker() {
   const { syncStudyTime, user } = useAuth();
+  const userId = user?.id;
   const pathname = usePathname();
   const lastTick = useRef<number>(Date.now());
   const pendingSeconds = useRef<number>(0);
-  
-  // Track on all pages or only study pages? The user asked to track "website usage time", 
-  // so we'll track everywhere by default.
-  // We can also refine it if they want.
+  const syncStudyTimeRef = useRef(syncStudyTime);
 
   useEffect(() => {
-    if (!user) return;
+    syncStudyTimeRef.current = syncStudyTime;
+  }, [syncStudyTime]);
+
+  useEffect(() => {
+    if (!userId) return;
 
     const TICK_INTERVAL_MS = 1000;
     const SYNC_INTERVAL_MS = 30000; // Sync every 30 seconds
-    
+
     lastTick.current = Date.now();
 
     const timer = setInterval(() => {
@@ -35,7 +37,7 @@ export default function StudyTimeTracker() {
       if (pendingSeconds.current >= (SYNC_INTERVAL_MS / 1000)) {
         const secsToSync = Math.floor(pendingSeconds.current);
         if (secsToSync > 0) {
-          syncStudyTime(secsToSync);
+          syncStudyTimeRef.current(secsToSync);
           pendingSeconds.current -= secsToSync;
         }
       }
@@ -47,7 +49,7 @@ export default function StudyTimeTracker() {
         // Sync immediately if hidden
         const secsToSync = Math.floor(pendingSeconds.current);
         if (secsToSync > 0) {
-          syncStudyTime(secsToSync);
+          syncStudyTimeRef.current(secsToSync);
           pendingSeconds.current -= secsToSync;
         }
       }
@@ -56,10 +58,7 @@ export default function StudyTimeTracker() {
     const handleBeforeUnload = () => {
       const secsToSync = Math.floor(pendingSeconds.current);
       if (secsToSync > 0) {
-        // We can't guarantee an async fetch finishes on unload, 
-        // but we can try (or use navigator.sendBeacon ideally, but syncStudyTime uses axios).
-        // Since we sync every 30s, the max lost time is 30s.
-        syncStudyTime(secsToSync);
+        syncStudyTimeRef.current(secsToSync);
         pendingSeconds.current = 0;
       }
     };
@@ -72,7 +71,7 @@ export default function StudyTimeTracker() {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [user, syncStudyTime, pathname]); // reset on route change to optionally flush
+  }, [userId, pathname]); // reset on route change or auth user change only
 
   return null; // This is a logic-only component
 }

@@ -98,6 +98,7 @@ export default function InitialLoadingGate() {
 
   // Smooth frame-by-frame interpolation loop for 60fps/120fps fluid progress
   useEffect(() => {
+    if (!showGate) return;
     let animationFrameId: number;
 
     const animateProgress = () => {
@@ -109,15 +110,18 @@ export default function InitialLoadingGate() {
         const step = Math.max(0.35, diff * 0.085);
         const next = Math.min(target, current + step);
         currentProgressRef.current = next;
-        setDisplayProgress(Math.round(next));
+        const rounded = Math.round(next);
+        setDisplayProgress((prev) => (prev !== rounded ? rounded : prev));
       }
 
-      animationFrameId = requestAnimationFrame(animateProgress);
+      if (currentProgressRef.current < 100) {
+        animationFrameId = requestAnimationFrame(animateProgress);
+      }
     };
 
     animationFrameId = requestAnimationFrame(animateProgress);
     return () => cancelAnimationFrame(animationFrameId);
-  }, []);
+  }, [showGate]);
 
   const updateStep = useCallback(
     (id: StepItem["id"], updates: Partial<StepItem>) => {

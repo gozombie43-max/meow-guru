@@ -512,7 +512,11 @@ export default function MathematicsPage() {
 
   // Selected topic object
   const selectedTopic = useMemo(() => {
-    return TOPICS.find((t) => t.id === selectedTopicId) || filteredTopics[0] || TOPICS[0];
+    return (
+      filteredTopics.find((t) => t.id === selectedTopicId) ||
+      filteredTopics[0] ||
+      TOPICS[0]
+    );
   }, [selectedTopicId, filteredTopics]);
 
   // Real available questions for current topic
@@ -556,8 +560,8 @@ export default function MathematicsPage() {
 
   // Current index in filtered list
   const currentIndex = useMemo(() => {
-    return filteredTopics.findIndex((t) => t.id === selectedTopicId);
-  }, [filteredTopics, selectedTopicId]);
+    return filteredTopics.findIndex((t) => t.id === selectedTopic.id);
+  }, [filteredTopics, selectedTopic.id]);
 
   // Category counts
   const categoryCounts = useMemo(() => {
@@ -568,9 +572,15 @@ export default function MathematicsPage() {
     return counts;
   }, []);
 
-  // Keyboard navigation
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
+  // Stable state ref for keyboard navigation
+  const stateRef = useRef({ currentIndex, filteredTopics, selectedTopic, searchQuery });
+  useEffect(() => {
+    stateRef.current = { currentIndex, filteredTopics, selectedTopic, searchQuery };
+  });
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const { currentIndex, filteredTopics, selectedTopic, searchQuery } = stateRef.current;
       const target = e.target as HTMLElement;
       const isInput = ["INPUT", "TEXTAREA"].includes(target?.tagName);
 
@@ -602,21 +612,11 @@ export default function MathematicsPage() {
           }
         }
       }
-    },
-    [currentIndex, filteredTopics, selectedTopic, searchQuery, router]
-  );
+    };
 
-  useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleKeyDown]);
-
-  // If filtered list changes and selected topic is no longer visible, auto-select first visible topic
-  useEffect(() => {
-    if (filteredTopics.length > 0 && !filteredTopics.some((t) => t.id === selectedTopicId)) {
-      setSelectedTopicId(filteredTopics[0].id);
-    }
-  }, [filteredTopics, selectedTopicId]);
+  }, [router]);
 
   const SelectedIcon = selectedTopic.icon;
 
@@ -1106,16 +1106,13 @@ export default function MathematicsPage() {
             </div>
           </div>
 
-          {/* Priority Tabs */}
-          <div className={styles.mobileTabsScroll}>
-            {CATEGORIES.map((cat, idx) => (
-              <React.Fragment key={cat.id}>
-                {idx > 0 && (
-                  <span className={styles.mobileTabDivider} aria-hidden="true">
-                    |
-                  </span>
-                )}
+          {/* iOS Grouped Card Container with Filter Header */}
+          <div className={styles.mobileTopicGroup}>
+            {/* Priority Tabs in Card Header */}
+            <div className={styles.mobileTabsScroll}>
+              {CATEGORIES.map((cat) => (
                 <button
+                  key={cat.id}
                   type="button"
                   className={`${styles.mobileTabBtn} ${
                     activeCategory === cat.id ? styles.mobileTabActive : ""
@@ -1124,12 +1121,9 @@ export default function MathematicsPage() {
                 >
                   {cat.label}
                 </button>
-              </React.Fragment>
-            ))}
-          </div>
+              ))}
+            </div>
 
-          {/* iOS Grouped Card Container */}
-          <div className={styles.mobileTopicGroup}>
             {filteredTopics.map((topic) => {
               const TopicIcon = topic.icon;
               return (

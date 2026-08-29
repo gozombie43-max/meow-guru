@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useSyncExternalStore } from 'react';
+import { useCallback, useMemo, useSyncExternalStore } from 'react';
 
 export type ThemeMode = 'light' | 'dark';
 
@@ -80,5 +80,8 @@ export function useThemeMode() {
     setThemeInternal(currentTheme === 'dark' ? 'light' : 'dark');
   }, []);
 
-  return { theme, setThemeMode, toggleThemeMode };
+  return useMemo(
+    () => ({ theme, setThemeMode, toggleThemeMode }),
+    [theme, setThemeMode, toggleThemeMode]
+  );
 }

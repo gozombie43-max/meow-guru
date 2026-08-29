@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
 import api, {
   AUTH_TOKEN_CHANGED_EVENT,
   clearLegacyAuthStorage,
@@ -240,18 +240,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, [clearAuthState, fetchUser, persistToken, refreshAccessToken]);
 
+  const contextValue = useMemo(
+    () => ({
+      user,
+      token,
+      login,
+      logout,
+      refreshUser,
+      syncStudyTime,
+      loading,
+    }),
+    [user, token, login, logout, refreshUser, syncStudyTime, loading]
+  );
+
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        token,
-        login,
-        logout,
-        refreshUser,
-        syncStudyTime,
-        loading,
-      }}
-    >
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );
