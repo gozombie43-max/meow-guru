@@ -26,13 +26,14 @@ jobs:
         with:
           node-version: '22.x'
           cache: 'npm'
-          cache-dependency-path: package-lock.json
+          cache-dependency-path: backend/package-lock.json
 
       - name: npm install, build, and test
+        working-directory: backend
         run: |
-          npm ci --workspace backend --include-workspace-root=false
-          npm run build --workspace backend --if-present
-          npm run test --workspace backend --if-present
+          npm ci --workspaces=false
+          npm run build --if-present
+          npm run test --if-present
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
