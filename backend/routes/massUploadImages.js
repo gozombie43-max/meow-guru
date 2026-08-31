@@ -1,361 +1,896 @@
 // routes/massUploadImages.js
-// POST /api/mass-upload-images
-// Expects: multipart/form-data with fields:
-//   - zipFile: the ZIP file
-//   - subjectId, topicId, quizId: target identifiers
-//   - subjectName, topicName, quizName: display names (optional, for Cosmos doc)
-// routes/massUploadImages.js
-// POST /api/mass-upload-images
-// Expects: multipart/form-data with fields:
-//   - zipFile: the ZIP file
-//   - subjectId, topicId, quizId: target identifiers
-//   - subjectName, topicName, quizName: display names (optional, for Cosmos doc)
 
 import express from "express";
 import multer from "multer";
 import JSZip from "jszip";
-import { BlobServiceClient } from "@azure/storage-blob";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { v4 as uuidv4 } from "uuid";
 import sharp from "sharp";
 import pLimit from "p-limit";
-import { getQuestionsContainer } from "../containerStore.js"; // ✅ use shared container
+
+import {
+  b2Client,
+  B2_BUCKET,
+} from "../config/b2.js";
+
+import {
+  getQuestionsCollection,
+} from "../config/mongodb.js";
+
 import adminAuth from "../middleware/auth.js";
 
 const router = express.Router();
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 200 * 1024 * 1024 } }); // 200MB
 
-// ── Azure Blob client (init once) ──────────────────────────────────────────
-const blobServiceClient = BlobServiceClient.fromConnectionString(
-  process.env.AZURE_STORAGE_CONNECTION_STRING
-);
-const containerClient = blobServiceClient.getContainerClient(
-  process.env.AZURE_STORAGE_CONTAINER_QUESTIONS // ✅ correct env var name
-);
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 200 * 1024 * 1024,
+  },
+});
 
-// ── Helpers ────────────────────────────────────────────────────────────────
+const QUESTION_PREFIX = "question-images";
 
-/**
- * Upload a Buffer to Azure Blob Storage and return the CDN URL.
- * Path: questions/{questionId}/question.webp
- */
-async function uploadToAzure(buffer, questionId) {
-  const blobName = `questions/${questionId}/question.webp`;
-  const blockBlobClient = containerClient.getBlockBlobClient(blobName);
-  await blockBlobClient.uploadData(buffer, {
-    blobHTTPHeaders: { blobContentType: "image/webp" },
-  });
-  const cdnBase = process.env.AZURE_CDN_URL.replace(/\/$/, "");
-  return `${cdnBase}/${blobName}`;
+const IMAGE_CACHE_CONTROL =
+  "public, max-age=31536000, immutable";
+
+
+// ───────────────────────────────────────────────────────
+// B2 helpers
+// ───────────────────────────────────────────────────────
+
+const imageIdFromKey = (key) =>
+  Buffer
+    .from(key, "utf8")
+    .toString("base64url");
+
+const buildImageUrl = (key) =>
+  `/api/upload/image/${imageIdFromKey(key)}`;
+
+async function uploadQuestionImageToB2(
+  buffer,
+  questionId
+) {
+  const key =
+    `${QUESTION_PREFIX}/${questionId}/question.webp`;
+
+  await b2Client.send(
+    new PutObjectCommand({
+      Bucket: B2_BUCKET,
+      Key: key,
+      Body: buffer,
+      ContentLength: buffer.length,
+      ContentType: "image/webp",
+      CacheControl: IMAGE_CACHE_CONTROL,
+    })
+  );
+
+  return {
+    key,
+    url: buildImageUrl(key),
+  };
 }
 
-async function uploadQuestionPatchToAzure(buffer, questionId) {
-  const blobName = `${questionId}/question.webp`;
-  const blockBlobClient = containerClient.getBlockBlobClient(blobName);
-  await blockBlobClient.uploadData(buffer, {
-    blobHTTPHeaders: { blobContentType: "image/webp" },
-  });
-  const cdnBase = process.env.AZURE_CDN_URL.replace(/\/$/, "");
-  return `${cdnBase}/${containerClient.containerName}/${blobName}`;
-}
 
-/**
- * Convert any image buffer → WebP buffer using sharp.
- */
+// ───────────────────────────────────────────────────────
+// Image helpers
+// ───────────────────────────────────────────────────────
+
 async function toWebP(buffer) {
-  return sharp(buffer).webp({ quality: 85 }).toBuffer();
+  return sharp(buffer)
+    .webp({
+      quality: 85,
+    })
+    .toBuffer();
 }
 
-function mergeQuestionContent(existingQuestion, questionImage) {
-  const imageMarkdown = `![question](${questionImage})`;
-  const textOnly = String(existingQuestion || "")
-    .replace(/\s*!\[[^\]]*\]\([^)]+\)\s*/g, "\n\n")
+function mergeQuestionContent(
+  existingQuestion,
+  questionImage
+) {
+  const imageMarkdown =
+    `![question](${questionImage})`;
+
+  const textOnly = String(
+    existingQuestion || ""
+  )
+    .replace(
+      /\s*!\[[^\]]*\]\([^)]+\)\s*/g,
+      "\n\n"
+    )
     .trim();
 
-  if (!textOnly) return imageMarkdown;
+  if (!textOnly) {
+    return imageMarkdown;
+  }
+
   return `${textOnly}\n\n${imageMarkdown}`;
 }
 
-/**
- * Save a question document to Cosmos DB using the shared container.
- */
-async function saveToCosmosDB(doc) {
-  const container = getQuestionsContainer(); // ✅ get at call time (already initialized)
-  const { resource } = await container.items.create(doc);
-  return resource;
+
+// ───────────────────────────────────────────────────────
+// MongoDB helpers
+// ───────────────────────────────────────────────────────
+
+async function saveQuestion(doc) {
+  const questions =
+    getQuestionsCollection();
+
+  await questions.insertOne(doc);
+
+  return doc;
 }
 
-/**
- * Validate a single metadata entry.
- * Returns an array of error strings (empty = valid).
- */
+async function patchQuestionImage(
+  questionId,
+  questionImage,
+  questionImageKey
+) {
+  const questions =
+    getQuestionsCollection();
+
+  const doc = await questions.findOne({
+    id: questionId,
+  });
+
+  if (!doc) {
+    throw new Error(
+      `Question "${questionId}" not found in MongoDB`
+    );
+  }
+
+  const question =
+    mergeQuestionContent(
+      doc.question,
+      questionImage
+    );
+
+  await questions.updateOne(
+    {
+      _id: doc._id,
+    },
+    {
+      $set: {
+        questionImage,
+        questionImageKey,
+        question,
+        updatedAt:
+          new Date().toISOString(),
+      },
+    }
+  );
+
+  return {
+    ...doc,
+    questionImage,
+    questionImageKey,
+    question,
+  };
+}
+
+
+// ───────────────────────────────────────────────────────
+// Metadata validation
+// ───────────────────────────────────────────────────────
+
 function validateEntry(entry, index) {
   const errors = [];
-  if (!entry.filename) errors.push(`[${index}] missing "filename"`);
-  if (!entry.correctAnswer || !["A", "B", "C", "D"].includes(entry.correctAnswer))
-    errors.push(`[${index}] "correctAnswer" must be A, B, C, or D`);
-  if (!entry.options || typeof entry.options !== "object")
-    errors.push(`[${index}] missing "options" object`);
-  else {
-    for (const opt of ["A", "B", "C", "D"]) {
-      const o = entry.options[opt];
-      if (!o) { errors.push(`[${index}] missing option "${opt}"`); continue; }
-      for (const field of ["x", "y", "w", "h"]) {
-        if (typeof o[field] !== "number" || o[field] < 0 || o[field] > 1)
-          errors.push(`[${index}] option "${opt}.${field}" must be a number 0–1`);
+
+  if (!entry.filename) {
+    errors.push(
+      `[${index}] missing "filename"`
+    );
+  }
+
+  if (
+    !entry.correctAnswer ||
+    !["A", "B", "C", "D"].includes(
+      entry.correctAnswer
+    )
+  ) {
+    errors.push(
+      `[${index}] "correctAnswer" must be A, B, C, or D`
+    );
+  }
+
+  if (
+    !entry.options ||
+    typeof entry.options !== "object"
+  ) {
+    errors.push(
+      `[${index}] missing "options" object`
+    );
+  } else {
+    for (
+      const opt of ["A", "B", "C", "D"]
+    ) {
+      const option =
+        entry.options[opt];
+
+      if (!option) {
+        errors.push(
+          `[${index}] missing option "${opt}"`
+        );
+        continue;
+      }
+
+      for (
+        const field of [
+          "x",
+          "y",
+          "w",
+          "h",
+        ]
+      ) {
+        if (
+          typeof option[field] !==
+            "number" ||
+          option[field] < 0 ||
+          option[field] > 1
+        ) {
+          errors.push(
+            `[${index}] option "${opt}.${field}" must be a number 0–1`
+          );
+        }
       }
     }
   }
+
   return errors;
 }
 
 function stemOf(filename) {
-  return filename.replace(/\.[^/.]+$/, "");
+  return filename.replace(
+    /\.[^/.]+$/,
+    ""
+  );
 }
 
-const IMAGE_EXTENSIONS = new Set([".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp"]);
+const IMAGE_EXTENSIONS =
+  new Set([
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".webp",
+    ".gif",
+    ".bmp",
+  ]);
 
 function isImage(filename) {
-  const dotIndex = filename.lastIndexOf(".");
-  if (dotIndex === -1) return false;
-  return IMAGE_EXTENSIONS.has(filename.slice(dotIndex).toLowerCase());
-}
+  const dotIndex =
+    filename.lastIndexOf(".");
 
-async function patchQuestionImage(questionId, questionImage) {
-  const container = getQuestionsContainer();
-  const querySpec = {
-    query: "SELECT * FROM c WHERE c.id = @id",
-    parameters: [{ name: "@id", value: questionId }],
-  };
-  const { resources } = await container.items.query(querySpec).fetchAll();
-
-  if (!resources || resources.length === 0) {
-    throw new Error(`Question "${questionId}" not found in Cosmos DB`);
+  if (dotIndex === -1) {
+    return false;
   }
 
-  const doc = resources[0];
-  const updatedDoc = {
-    ...doc,
-    questionImage,
-    question: mergeQuestionContent(doc.question, questionImage),
-  };
-
-  await container.items.upsert(updatedDoc);
-  return updatedDoc;
+  return IMAGE_EXTENSIONS.has(
+    filename
+      .slice(dotIndex)
+      .toLowerCase()
+  );
 }
 
-// ── Route ──────────────────────────────────────────────────────────────────
+function findImageInZip(
+  zip,
+  filename
+) {
+  return (
+    zip.file(filename) ||
+    zip.file(`images/${filename}`) ||
+    Object.values(
+      zip.files
+    ).find(
+      (file) =>
+        file.name.endsWith(
+          `/${filename}`
+        ) ||
+        file.name === filename
+    )
+  );
+}
+
+
+// ======================================================
+// POST /api/mass-upload-images
+//
+// Creates completely new image questions.
+// ======================================================
 
 router.post(
   "/mass-upload-images",
+
   adminAuth,
+
   upload.single("zipFile"),
+
   async (req, res) => {
-    // 1. Basic validation
     if (!req.file) {
-      return res.status(400).json({ success: false, error: "No ZIP file provided." });
-    }
-    const { subjectId, topicId, quizId, subjectName, topicName, quizName } = req.body;
-    if (!subjectId || !topicId || !quizId) {
       return res
         .status(400)
-        .json({ success: false, error: "subjectId, topicId, and quizId are required." });
+        .json({
+          success: false,
+          error:
+            "No ZIP file provided.",
+        });
     }
 
-    // 2. Parse ZIP
+    const {
+      subjectId,
+      topicId,
+      quizId,
+      subjectName,
+      topicName,
+      quizName,
+    } = req.body;
+
+    if (
+      !subjectId ||
+      !topicId ||
+      !quizId
+    ) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          error:
+            "subjectId, topicId, and quizId are required.",
+        });
+    }
+
+
+    // ── Parse ZIP ──────────────────────────────────────
+
     let zip;
+
     try {
-      zip = await JSZip.loadAsync(req.file.buffer);
+      zip = await JSZip.loadAsync(
+        req.file.buffer
+      );
     } catch {
-      return res.status(400).json({ success: false, error: "Could not parse ZIP file." });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          error:
+            "Could not parse ZIP file.",
+        });
     }
 
-    // 3. Read metadata.json
-    const metaFile = zip.file("metadata.json");
+
+    // ── metadata.json ─────────────────────────────────
+
+    const metaFile =
+      zip.file("metadata.json");
+
     if (!metaFile) {
       return res
         .status(400)
-        .json({ success: false, error: 'ZIP must contain a "metadata.json" at its root.' });
+        .json({
+          success: false,
+          error:
+            'ZIP must contain a "metadata.json" at its root.',
+        });
     }
+
     let metadata;
+
     try {
-      const raw = await metaFile.async("string");
-      metadata = JSON.parse(raw);
-      if (!Array.isArray(metadata)) throw new Error("metadata.json must be a JSON array.");
-    } catch (e) {
-      return res.status(400).json({ success: false, error: `metadata.json parse error: ${e.message}` });
+      const raw =
+        await metaFile.async(
+          "string"
+        );
+
+      metadata =
+        JSON.parse(raw);
+
+      if (
+        !Array.isArray(
+          metadata
+        )
+      ) {
+        throw new Error(
+          "metadata.json must be a JSON array."
+        );
+      }
+
+    } catch (error) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          error:
+            `metadata.json parse error: ${error.message}`,
+        });
     }
 
-    // 4. Validate all entries upfront → return all errors at once
-    const allErrors = metadata.flatMap((entry, i) => validateEntry(entry, i));
-    if (allErrors.length > 0) {
-      return res.status(400).json({ success: false, errors: allErrors });
+
+    // ── Validate metadata ──────────────────────────────
+
+    const allErrors =
+      metadata.flatMap(
+        (entry, index) =>
+          validateEntry(
+            entry,
+            index
+          )
+      );
+
+    if (
+      allErrors.length > 0
+    ) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          errors:
+            allErrors,
+        });
     }
 
-    // 5. Process each entry
+
+    // ── Upload ────────────────────────────────────────
+
     const results = [];
     const errors = [];
-    const limit = pLimit(5);
 
-    await Promise.all(metadata.map((entry, i) => limit(async () => {
-      const { filename, correctAnswer, options, explanation = "" } = entry;
+    const limit =
+      pLimit(5);
 
-      try {
-        // Find image in ZIP (search root and one level of subdirectories)
-        const imageFile =
-          zip.file(filename) ||
-          zip.file(`images/${filename}`) ||
-          Object.values(zip.files).find((f) => f.name.endsWith(`/${filename}`) || f.name === filename);
+    await Promise.all(
+      metadata.map(
+        (entry) =>
+          limit(async () => {
+            const {
+              filename,
+              correctAnswer,
+              options,
+              explanation = "",
+            } = entry;
 
-        if (!imageFile) {
-          errors.push({ filename, error: `Image file "${filename}" not found in ZIP.` });
-          return;
-        }
+            try {
+              const imageFile =
+                findImageInZip(
+                  zip,
+                  filename
+                );
 
-        // Convert to WebP
-        const rawBuffer = await imageFile.async("nodebuffer");
-        const webpBuffer = await toWebP(rawBuffer);
+              if (!imageFile) {
+                errors.push({
+                  filename,
+                  error:
+                    `Image file "${filename}" not found in ZIP.`,
+                });
 
-        // Generate unique questionId matching your existing pattern
-        const questionId = `visual_${Date.now()}_${uuidv4().slice(0, 8)}`;
+                return;
+              }
 
-        // Upload to Azure Blob
-        const questionImage = await uploadToAzure(webpBuffer, questionId);
+              const rawBuffer =
+                await imageFile.async(
+                  "nodebuffer"
+                );
 
-        // Build Cosmos DB document (matches your existing schema)
-        const doc = {
-          id: questionId,
-          questionId,
-          type: "visual",
-          subjectId,
-          topicId,
-          quizId,
-          subjectName: subjectName || subjectId,
-          topicName: topicName || topicId,
-          quizName: quizName || quizId,
-          questionImage,
-          correctAnswer,
-          options, // percentage-based bounding boxes
-          explanation,
-          createdAt: new Date().toISOString(),
-          source: "mass-upload",
-        };
+              const webpBuffer =
+                await toWebP(
+                  rawBuffer
+                );
 
-        await saveToCosmosDB(doc);
+              const questionId =
+                `visual_${Date.now()}_${uuidv4().slice(
+                  0,
+                  8
+                )}`;
 
-        results.push({ filename, questionId, questionImage });
-      } catch (err) {
-        errors.push({ filename, error: err.message });
-      }
-    })));
+              /*
+               * New storage path:
+               *
+               * question-images/<id>/question.webp
+               */
+              const {
+                key,
+                url,
+              } =
+                await uploadQuestionImageToB2(
+                  webpBuffer,
+                  questionId
+                );
 
-    // 6. Respond with summary
-    return res.status(errors.length > 0 && results.length === 0 ? 500 : 200).json({
-      success: results.length > 0,
-      uploaded: results.length,
-      failed: errors.length,
-      results,
-      errors,
-    });
+              /*
+               * MongoDB question document.
+               *
+               * Keep existing schema while adding
+               * questionImageKey.
+               */
+              const doc = {
+                id:
+                  questionId,
+
+                questionId,
+
+                type:
+                  "visual",
+
+                subjectId,
+
+                topicId,
+
+                quizId,
+
+                subjectName:
+                  subjectName ||
+                  subjectId,
+
+                topicName:
+                  topicName ||
+                  topicId,
+
+                quizName:
+                  quizName ||
+                  quizId,
+
+                questionImage:
+                  url,
+
+                questionImageKey:
+                  key,
+
+                correctAnswer,
+
+                options,
+
+                explanation,
+
+                createdAt:
+                  new Date()
+                    .toISOString(),
+
+                source:
+                  "mass-upload",
+              };
+
+              await saveQuestion(
+                doc
+              );
+
+              results.push({
+                filename,
+                questionId,
+                questionImage:
+                  url,
+                questionImageKey:
+                  key,
+              });
+
+            } catch (error) {
+              errors.push({
+                filename,
+                error:
+                  error.message,
+              });
+            }
+          })
+      )
+    );
+
+
+    // ── Response ──────────────────────────────────────
+
+    return res
+      .status(
+        errors.length > 0 &&
+        results.length === 0
+          ? 500
+          : 200
+      )
+      .json({
+        success:
+          results.length > 0,
+
+        uploaded:
+          results.length,
+
+        failed:
+          errors.length,
+
+        results,
+
+        errors,
+      });
   }
 );
 
+
+// ======================================================
+// POST /api/mass-upload-question-images
+//
+// Adds/replaces images for existing MongoDB questions.
+// ======================================================
+
 router.post(
   "/mass-upload-question-images",
+
   adminAuth,
+
   upload.single("zipFile"),
+
   async (req, res) => {
     if (!req.file) {
-      return res.status(400).json({ success: false, error: "No ZIP file provided." });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          error:
+            "No ZIP file provided.",
+        });
     }
+
+
+    // ── Parse ZIP ──────────────────────────────────────
 
     let zip;
+
     try {
-      zip = await JSZip.loadAsync(req.file.buffer);
+      zip =
+        await JSZip.loadAsync(
+          req.file.buffer
+        );
     } catch {
-      return res.status(400).json({ success: false, error: "Could not parse ZIP file." });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          error:
+            "Could not parse ZIP file.",
+        });
     }
 
-    const filenameToQuestionId = new Map();
-    const metaFile = zip.file("metadata.json");
+
+    // ── Build filename → questionId map ───────────────
+
+    const filenameToQuestionId =
+      new Map();
+
+    const metaFile =
+      zip.file(
+        "metadata.json"
+      );
 
     if (metaFile) {
       let metadata;
+
       try {
-        const raw = await metaFile.async("string");
-        metadata = JSON.parse(raw);
-        if (!Array.isArray(metadata)) throw new Error("metadata.json must be a JSON array.");
-      } catch (e) {
-        return res.status(400).json({
-          success: false,
-          error: `metadata.json parse error: ${e.message}`,
-        });
+        const raw =
+          await metaFile.async(
+            "string"
+          );
+
+        metadata =
+          JSON.parse(raw);
+
+        if (
+          !Array.isArray(
+            metadata
+          )
+        ) {
+          throw new Error(
+            "metadata.json must be a JSON array."
+          );
+        }
+
+      } catch (error) {
+        return res
+          .status(400)
+          .json({
+            success: false,
+            error:
+              `metadata.json parse error: ${error.message}`,
+          });
       }
 
       const metaErrors = [];
-      metadata.forEach((entry, i) => {
-        if (!entry.filename) metaErrors.push(`[${i}] missing "filename"`);
-        if (!entry.questionId) metaErrors.push(`[${i}] missing "questionId"`);
-      });
-      if (metaErrors.length > 0) {
-        return res.status(400).json({ success: false, errors: metaErrors });
+
+      metadata.forEach(
+        (entry, index) => {
+          if (
+            !entry.filename
+          ) {
+            metaErrors.push(
+              `[${index}] missing "filename"`
+            );
+          }
+
+          if (
+            !entry.questionId
+          ) {
+            metaErrors.push(
+              `[${index}] missing "questionId"`
+            );
+          }
+        }
+      );
+
+      if (
+        metaErrors.length > 0
+      ) {
+        return res
+          .status(400)
+          .json({
+            success: false,
+            errors:
+              metaErrors,
+          });
       }
 
-      for (const entry of metadata) {
-        filenameToQuestionId.set(entry.filename, entry.questionId);
+      for (
+        const entry
+        of metadata
+      ) {
+        filenameToQuestionId.set(
+          entry.filename,
+          entry.questionId
+        );
       }
+
     } else {
-      for (const [name, file] of Object.entries(zip.files)) {
-        if (file.dir) continue;
-        const basename = name.split("/").pop();
-        if (!basename || !isImage(basename)) continue;
-        filenameToQuestionId.set(basename, stemOf(basename));
+      for (
+        const [
+          name,
+          file,
+        ]
+        of Object.entries(
+          zip.files
+        )
+      ) {
+        if (file.dir) {
+          continue;
+        }
+
+        const basename =
+          name
+            .split("/")
+            .pop();
+
+        if (
+          !basename ||
+          !isImage(
+            basename
+          )
+        ) {
+          continue;
+        }
+
+        filenameToQuestionId.set(
+          basename,
+          stemOf(
+            basename
+          )
+        );
       }
     }
 
-    if (filenameToQuestionId.size === 0) {
-      return res.status(400).json({
-        success: false,
-        error: "No valid image entries found in ZIP.",
-      });
+
+    if (
+      filenameToQuestionId.size ===
+      0
+    ) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          error:
+            "No valid image entries found in ZIP.",
+        });
     }
+
+
+    // ── Process images ─────────────────────────────────
 
     const results = [];
     const errors = [];
-    const limit = pLimit(5);
 
-    await Promise.all(Array.from(filenameToQuestionId.entries()).map(([filename, questionId]) => limit(async () => {
-      try {
-        const imageFile =
-          zip.file(filename) ||
-          zip.file(`images/${filename}`) ||
-          Object.values(zip.files).find(
-            (f) => f.name.endsWith(`/${filename}`) || f.name === filename
-          );
+    const limit =
+      pLimit(5);
 
-        if (!imageFile) {
-          errors.push({ filename, questionId, error: `Image "${filename}" not found in ZIP.` });
-          return;
-        }
+    await Promise.all(
+      Array
+        .from(
+          filenameToQuestionId.entries()
+        )
+        .map(
+          ([
+            filename,
+            questionId,
+          ]) =>
+            limit(
+              async () => {
+                try {
+                  const imageFile =
+                    findImageInZip(
+                      zip,
+                      filename
+                    );
 
-        const rawBuffer = await imageFile.async("nodebuffer");
-        const webpBuffer = await toWebP(rawBuffer);
-        const questionImage = await uploadQuestionPatchToAzure(webpBuffer, questionId);
+                  if (!imageFile) {
+                    errors.push({
+                      filename,
+                      questionId,
+                      error:
+                        `Image "${filename}" not found in ZIP.`,
+                    });
 
-        await patchQuestionImage(questionId, questionImage);
+                    return;
+                  }
 
-        results.push({ filename, questionId, questionImage });
-      } catch (err) {
-        errors.push({ filename, questionId, error: err.message });
-      }
-    })));
+                  const rawBuffer =
+                    await imageFile.async(
+                      "nodebuffer"
+                    );
 
-    return res.status(errors.length > 0 && results.length === 0 ? 500 : 200).json({
-      success: results.length > 0,
-      uploaded: results.length,
-      failed: errors.length,
-      results,
-      errors,
-    });
+                  const webpBuffer =
+                    await toWebP(
+                      rawBuffer
+                    );
+
+                  const {
+                    key,
+                    url,
+                  } =
+                    await uploadQuestionImageToB2(
+                      webpBuffer,
+                      questionId
+                    );
+
+                  await patchQuestionImage(
+                    questionId,
+                    url,
+                    key
+                  );
+
+                  results.push({
+                    filename,
+                    questionId,
+                    questionImage:
+                      url,
+                    questionImageKey:
+                      key,
+                  });
+
+                } catch (
+                  error
+                ) {
+                  errors.push({
+                    filename,
+                    questionId,
+                    error:
+                      error.message,
+                  });
+                }
+              }
+            )
+        )
+    );
+
+
+    return res
+      .status(
+        errors.length > 0 &&
+        results.length === 0
+          ? 500
+          : 200
+      )
+      .json({
+        success:
+          results.length > 0,
+
+        uploaded:
+          results.length,
+
+        failed:
+          errors.length,
+
+        results,
+
+        errors,
+      });
   }
 );
 

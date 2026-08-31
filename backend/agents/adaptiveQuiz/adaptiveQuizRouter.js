@@ -5,18 +5,26 @@ import express from "express";
 import { analyzePatternAndConfigure, SUBJECT_TOPICS } from "./patternAnalyzer.js";
 import TOPIC_MAP from "./topicCategoryMap.js";
 import { buildAdaptiveQuiz, saveQuizAttempts } from "./quizBuilder.js";
-import { CosmosClient } from "@azure/cosmos";
+import {
+  getQuestionsCollection,
+  getUsersCollection,
+  getMongoDB,
+} from "../../config/mongodb.js";
 
 const router = express.Router();
 
-let _cosmosClient = null;
-function getCosmosClient() {
-  if (!_cosmosClient) {
-    const endpoint = process.env.COSMOS_ENDPOINT || "https://dummy.documents.azure.com:443/";
-    const key = process.env.COSMOS_KEY || "dummy-key==";
-    _cosmosClient = new CosmosClient({ endpoint, key });
-  }
-  return _cosmosClient;
+function escapeRegex(value = "") {
+  return String(value).replace(
+    /[.*+?^${}()|[\]\\]/g,
+    "\\$&"
+  );
+}
+
+function exactCI(value) {
+  return new RegExp(
+    `^${escapeRegex(value)}$`,
+    "i"
+  );
 }
 
 // In-memory session store for active adaptive quiz sessions
@@ -82,91 +90,181 @@ export function checkIsCorrect(userAnswer, key) {
   return false;
 }
 
-async function fetchAnswerKeysFromDB(questionIds = []) {
-  const ids = Array.isArray(questionIds) ? questionIds.filter(Boolean) : [];
-  if (ids.length === 0) return {};
+async function fetchAnswerKeysFromDB(
+  questionIds = []
+) {
+  const ids = Array.isArray(questionIds)
+    ? [...new Set(questionIds.filter(Boolean))]
+    : [];
 
-  const DB = process.env.COSMOS_DB_NAME || "quizDB";
-  const CONT = process.env.COSMOS_CONTAINER || "questions";
+  if (ids.length === 0) {
+    return {};
+  }
+
   try {
-    const container = getCosmosClient().database(DB).container(CONT);
-    const { resources } = await container.items.query({
-      query: `SELECT c.id, c.topic, c.subject, c.chapter, c.concept, c.difficulty, c.options, c.correctAnswer, c.correctLetter, c.solution FROM c WHERE ARRAY_CONTAINS(@ids, c.id)`,
-      parameters: [{ name: "@ids", value: ids }],
-    }).fetchAll();
+    const resources =
+      await getQuestionsCollection()
+        .find(
+          {
+            id: {
+              $in: ids,
+            },
+          },
+          {
+            projection: {
+              _id: 0,
+              id: 1,
+              topic: 1,
+              subject: 1,
+              chapter: 1,
+              concept: 1,
+              difficulty: 1,
+              options: 1,
+              correctAnswer: 1,
+              correctLetter: 1,
+              solution: 1,
+            },
+          }
+        )
+        .toArray();
 
     const keyMap = {};
-    for (const q of (resources || [])) {
+
+    for (const q of resources) {
       keyMap[q.id] = {
         correctAnswer: q.correctAnswer,
         correctLetter: q.correctLetter,
-        solution:      q.solution,
-        topic:         q.topic,
-        subject:       q.subject,
-        concept:       q.concept || q.chapter || "",
-        options:       q.options || [],
+        solution: q.solution,
+        topic: q.topic,
+        subject: q.subject,
+        concept: q.concept || q.chapter || "",
+        options: q.options || [],
       };
     }
+
     return keyMap;
   } catch (err) {
-    console.error("[adaptiveQuiz] fetchAnswerKeysFromDB failed:", err.message);
+    console.error(
+      "[adaptiveQuiz] fetchAnswerKeysFromDB failed:",
+      err.message
+    );
+
     return {};
   }
 }
 
-async function getUserProfile(userId) {
-  if (!userId || userId === "demo-user") return null;
+async function getUserProfile(
+  userId
+) {
+  if (
+    !userId ||
+    userId === "demo-user"
+  ) {
+    return null;
+  }
 
-  const DB = process.env.COSMOS_DB_NAME || "quizDB";
+  const identifier =
+    String(userId).trim();
+
   try {
-    // 1. Try querying users container
-    const usersCont = getCosmosClient().database(DB).container("users");
-    const { resources } = await usersCont.items
-      .query({
-        query: "SELECT * FROM c WHERE c.id = @id OR c.email = @id",
-        parameters: [{ name: "@id", value: userId }],
-      })
-      .fetchAll();
-    if (resources && resources[0]) return resources[0];
-  } catch {
-    // ignore
+    const user =
+      await getUsersCollection()
+        .findOne({
+          $and: [
+            {
+              $or: [
+                { id: identifier },
+                {
+                  email:
+                    exactCI(identifier),
+                },
+              ],
+            },
+            {
+              type: {
+                $ne: "email_lock",
+              },
+            },
+          ],
+        });
+
+    if (user) {
+      return user;
+    }
+  } catch (err) {
+    console.warn(
+      "[adaptiveQuiz] users lookup failed:",
+      err.message
+    );
   }
 
   try {
-    // 2. Try userProfiles container if present
-    const { resource } = await getCosmosClient()
-      .database(DB)
-      .container("userProfiles")
-      .item(userId, userId)
-      .read();
-    return resource || null;
-  } catch {
+    const profiles =
+      getMongoDB().collection(
+        "userProfiles"
+      );
+
+    return (
+      await profiles.findOne({
+        $or: [
+          { id: identifier },
+          { userId: identifier },
+        ],
+      })
+    ) || null;
+  } catch (err) {
+    console.warn(
+      "[adaptiveQuiz] userProfiles lookup failed:",
+      err.message
+    );
+
     return null;
   }
 }
 
-async function getUserQuestionIds(userId) {
-  const DB = process.env.COSMOS_DB_NAME || "quizDB";
-  const CONT = process.env.COSMOS_CONTAINER || "questions";
+async function getUserQuestionIds(
+  userId
+) {
+  if (!userId) {
+    return [];
+  }
+
   try {
-    const { resources } = await getCosmosClient()
-      .database(DB)
-      .container(CONT)
-      .items.query({
-        query: `SELECT c.id FROM c WHERE c.createdBy = @user OR c.uploader = @user OR c.author = @user`,
-        parameters: [{ name: "@user", value: userId }],
-      })
-      .fetchAll();
-    return (resources || []).map(r => r.id).filter(Boolean);
+    const resources =
+      await getQuestionsCollection()
+        .find(
+          {
+            $or: [
+              { createdBy: userId },
+              { uploader: userId },
+              { author: userId },
+            ],
+          },
+          {
+            projection: {
+              _id: 0,
+              id: 1,
+            },
+          }
+        )
+        .toArray();
+
+    return resources
+      .map((item) => item.id)
+      .filter(Boolean);
   } catch (err) {
-    console.warn("[adaptiveQuiz] failed to fetch user's question ids:", err.message);
+    console.warn(
+      "[adaptiveQuiz] failed to fetch user's question ids:",
+      err.message
+    );
+
     return [];
   }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /api/adaptive-quiz/generate
-// Main endpoint — analyzes pattern with Azure OpenAI, fetches questions from Cosmos
+// Main endpoint — analyzes pattern with Azure OpenAI, fetches questions from MongoDB
 // Body: { userId, subjects?, questionCount?, mode? }
 // ─────────────────────────────────────────────────────────────────────────────
 router.post("/generate", async (req, res) => {
@@ -182,7 +280,7 @@ router.post("/generate", async (req, res) => {
       return res.status(400).json({ error: "userId is required" });
     }
 
-    // 1. Load user profile from Cosmos
+    // 1. Load user profile from MongoDB
     const profile = await getUserProfile(userId);
 
     const attemptHistory   = profile?.attemptHistory   || [];
@@ -244,7 +342,7 @@ router.post("/generate", async (req, res) => {
       config.quizStrategy = 'developing';
     }
 
-    // 4. Build quiz from Cosmos DB
+    // 4. Build quiz from MongoDB Atlas
     const { questions, meta } = await buildAdaptiveQuiz(config, recentAttemptIds);
 
     if (questions.length === 0) {
@@ -329,7 +427,7 @@ router.post("/submit", async (req, res) => {
     let session = quizSessionStore.get(quizId) || req.session?.[quizId];
     let answerKey = session?.answerKey || {};
 
-    // 2. Fallback: if session not found in memory (e.g. server restart), query Cosmos questions
+    // 2. Fallback: if session not found in memory, query MongoDB questions
     if (!session || Object.keys(answerKey).length === 0) {
       console.warn(`[adaptive-quiz/submit] Quiz session ${quizId} not in memory cache. Falling back to DB lookup...`);
       answerKey = await fetchAnswerKeysFromDB(answers.map(a => a.questionId));

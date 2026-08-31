@@ -1,107 +1,362 @@
 // routes/notes.routes.js
+
 import express from "express";
 import { v4 as uuidv4 } from "uuid";
-import { getNotesContainer } from "../containerStore.js";
+
+import {
+  getNotesCollection,
+} from "../config/mongodb.js";
+
 import adminAuth from "../middleware/auth.js";
 
 const router = express.Router();
 
-// GET /api/notes  (optional ?topic=X  &type=Y)
+
+// ───────────────────────────────────────────────────────
+// Helpers
+// ───────────────────────────────────────────────────────
+
+function escapeRegex(value = "") {
+  return String(value).replace(
+    /[.*+?^${}()|[\]\\]/g,
+    "\\$&"
+  );
+}
+
+function exactCaseInsensitive(value) {
+  return new RegExp(
+    `^${escapeRegex(value)}$`,
+    "i"
+  );
+}
+
+function sanitizeNote(note) {
+  if (!note) return note;
+
+  const {
+    _id,
+    _cosmosRid,
+    ...clean
+  } = note;
+
+  return clean;
+}
+
+
+// ======================================================
+// GET /api/notes
+//
+// Optional:
+// ?topic=X
+// ?type=Y
+// ======================================================
+
 router.get("/", async (req, res) => {
   try {
-    const { topic, type } = req.query;
-    const normalizedTopic = typeof topic === "string" ? topic.toLowerCase() : topic;
-    const normalizedType  = typeof type === "string" ? type.toLowerCase() : type;
-    let query      = "SELECT * FROM c ORDER BY c._ts DESC";
-    const parameters = [];
+    const {
+      topic,
+      type,
+    } = req.query;
 
-    if (topic && type) {
-      query = "SELECT * FROM c WHERE LOWER(c.topic) = @topic AND LOWER(c.type) = @type ORDER BY c._ts DESC";
-      parameters.push({ name: "@topic", value: normalizedTopic });
-      parameters.push({ name: "@type",  value: normalizedType  });
-    } else if (topic) {
-      query = "SELECT * FROM c WHERE LOWER(c.topic) = @topic ORDER BY c._ts DESC";
-      parameters.push({ name: "@topic", value: normalizedTopic });
-    } else if (type) {
-      query = "SELECT * FROM c WHERE LOWER(c.type) = @type ORDER BY c._ts DESC";
-      parameters.push({ name: "@type", value: normalizedType });
+    const filter = {};
+
+    if (
+      typeof topic === "string" &&
+      topic.trim()
+    ) {
+      filter.topic =
+        exactCaseInsensitive(
+          topic.trim()
+        );
     }
 
-    const { resources } = await getNotesContainer().items
-      .query({ query, parameters })
-      .fetchAll();
+    if (
+      typeof type === "string" &&
+      type.trim()
+    ) {
+      filter.type =
+        exactCaseInsensitive(
+          type.trim()
+        );
+    }
 
-    res.json(resources);
+    const notes =
+      await getNotesCollection()
+        .find(
+          filter,
+          {
+            projection: {
+              _id: 0,
+              _cosmosRid: 0,
+            },
+          }
+        )
+        .sort({
+          updatedAt: -1,
+          createdAt: -1,
+          _ts: -1,
+        })
+        .toArray();
+
+    return res.json(notes);
+
   } catch (err) {
-    console.error("GET /api/notes error:", err);
-    res.status(500).json({ error: "Failed to fetch notes" });
+    console.error(
+      "GET /api/notes error:",
+      err
+    );
+
+    return res
+      .status(500)
+      .json({
+        error:
+          "Failed to fetch notes",
+      });
   }
 });
 
+
+// ======================================================
 // GET /api/notes/:id
+// ======================================================
+
 router.get("/:id", async (req, res) => {
   try {
-    const { resource } = await getNotesContainer()
-      .item(req.params.id, req.params.id)
-      .read();
-    res.json(resource);
+    const note =
+      await getNotesCollection()
+        .findOne(
+          {
+            id: String(
+              req.params.id
+            ),
+          },
+          {
+            projection: {
+              _id: 0,
+              _cosmosRid: 0,
+            },
+          }
+        );
+
+    if (!note) {
+      return res
+        .status(404)
+        .json({
+          error:
+            "Note not found",
+        });
+    }
+
+    return res.json(note);
+
   } catch (err) {
-    res.status(404).json({ error: "Note not found" });
+    console.error(
+      "GET /api/notes/:id error:",
+      err
+    );
+
+    return res
+      .status(500)
+      .json({
+        error:
+          "Failed to fetch note",
+      });
   }
 });
 
+
+// ======================================================
 // POST /api/notes
-router.post("/", adminAuth, async (req, res) => {
-  try {
-    const note = {
-      id:        uuidv4(),
-      ...req.body,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    const { resource } = await getNotesContainer().items.create(note);
-    res.status(201).json(resource);
-  } catch (err) {
-    console.error("POST /api/notes error:", err);
-    res.status(500).json({ error: "Failed to create note" });
-  }
-});
+// ======================================================
 
+router.post(
+  "/",
+  adminAuth,
+  async (req, res) => {
+    try {
+      const now =
+        new Date().toISOString();
+
+      /*
+       * req.body comes first so clients
+       * cannot override our generated id
+       * or timestamps.
+       */
+      const note = {
+        ...req.body,
+
+        id:
+          uuidv4(),
+
+        createdAt:
+          now,
+
+        updatedAt:
+          now,
+      };
+
+      await getNotesCollection()
+        .insertOne(note);
+
+      return res
+        .status(201)
+        .json(
+          sanitizeNote(note)
+        );
+
+    } catch (err) {
+      console.error(
+        "POST /api/notes error:",
+        err
+      );
+
+      return res
+        .status(500)
+        .json({
+          error:
+            "Failed to create note",
+        });
+    }
+  }
+);
+
+
+// ======================================================
 // PUT /api/notes/:id
-router.put("/:id", adminAuth, async (req, res) => {
-  try {
-    const { resource: existing } = await getNotesContainer()
-      .item(req.params.id, req.params.id)
-      .read();
+// ======================================================
 
-    const updated = {
-      ...existing,
-      ...req.body,
-      id:        req.params.id,
-      updatedAt: new Date().toISOString(),
-    };
+router.put(
+  "/:id",
+  adminAuth,
+  async (req, res) => {
+    try {
+      const id =
+        String(req.params.id);
 
-    const { resource } = await getNotesContainer()
-      .item(req.params.id, req.params.id)
-      .replace(updated);
+      const notes =
+        getNotesCollection();
 
-    res.json(resource);
-  } catch (err) {
-    console.error("PUT /api/notes error:", err);
-    res.status(500).json({ error: "Failed to update note" });
+      const existing =
+        await notes.findOne({
+          id,
+        });
+
+      if (!existing) {
+        return res
+          .status(404)
+          .json({
+            error:
+              "Note not found",
+          });
+      }
+
+      /*
+       * Never allow these internal/immutable
+       * properties to be overwritten.
+       */
+      const {
+        _id,
+        _cosmosRid,
+        id: _bodyId,
+        createdAt: _createdAt,
+        ...allowedUpdates
+      } = req.body || {};
+
+      const updatedAt =
+        new Date().toISOString();
+
+      await notes.updateOne(
+        {
+          _id:
+            existing._id,
+        },
+        {
+          $set: {
+            ...allowedUpdates,
+            updatedAt,
+          },
+        }
+      );
+
+      const updated = {
+        ...sanitizeNote(existing),
+        ...allowedUpdates,
+
+        id,
+
+        createdAt:
+          existing.createdAt,
+
+        updatedAt,
+      };
+
+      return res.json(
+        updated
+      );
+
+    } catch (err) {
+      console.error(
+        "PUT /api/notes error:",
+        err
+      );
+
+      return res
+        .status(500)
+        .json({
+          error:
+            "Failed to update note",
+        });
+    }
   }
-});
+);
 
+
+// ======================================================
 // DELETE /api/notes/:id
-router.delete("/:id", adminAuth, async (req, res) => {
-  try {
-    await getNotesContainer()
-      .item(req.params.id, req.params.id)
-      .delete();
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: "Failed to delete note" });
+// ======================================================
+
+router.delete(
+  "/:id",
+  adminAuth,
+  async (req, res) => {
+    try {
+      const result =
+        await getNotesCollection()
+          .deleteOne({
+            id: String(
+              req.params.id
+            ),
+          });
+
+      if (
+        result.deletedCount === 0
+      ) {
+        return res
+          .status(404)
+          .json({
+            error:
+              "Note not found",
+          });
+      }
+
+      return res.json({
+        success: true,
+      });
+
+    } catch (err) {
+      console.error(
+        "DELETE /api/notes error:",
+        err
+      );
+
+      return res
+        .status(500)
+        .json({
+          error:
+            "Failed to delete note",
+        });
+    }
   }
-});
+);
 
 export default router;

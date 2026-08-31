@@ -1,5 +1,5 @@
 // backend/services/questionService.js
-import { getQuestionsContainer } from '../containerStore.js';
+import { getQuestionsCollection } from '../config/mongodb.js';
 import { LRUCache } from 'lru-cache';
 import crypto from 'crypto';
 
@@ -53,6 +53,45 @@ export function isStudyModeRecord(q) {
   return false;
 }
 
+function escapeRegex(value) {
+  return String(value ?? '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function caseInsensitiveExact(value) {
+  return new RegExp(`^${escapeRegex(String(value ?? '').trim())}$`, 'i');
+}
+
+function combineMongoConditions(conditions) {
+  if (!conditions.length) return {};
+  if (conditions.length === 1) return conditions[0];
+  return { $and: conditions };
+}
+
+function matchesQuizNameFilter(question, normalizedQuizName) {
+  if (!normalizedQuizName) return true;
+
+  const candidates = [
+    question.quizName,
+    question.quizId,
+    question.source,
+  ];
+
+  const matched = candidates.some(
+    (value) => normalizeQuizKey(value) === normalizedQuizName
+  );
+
+  if (normalizedQuizName === 'pyq') {
+    return (
+      matched ||
+      question.quizName === undefined ||
+      question.quizName === null ||
+      question.quizName === ''
+    );
+  }
+
+  return matched;
+}
+
 export function buildQuestionsCacheKey(parameters, offset, limit) {
   return JSON.stringify({
     params: parameters.map((entry) => [entry.name, entry.value]),
@@ -81,16 +120,23 @@ export async function fetchAllQueryResults(container, query, parameters, options
 // ── Service Methods ────────────────────────────────────
 
 export async function createQuestion(newQuestion) {
-  const container = getQuestionsContainer();
-  if (!container) throw new Error('DB not ready');
-  const { resource } = await container.items.create(newQuestion);
+  const collection = getQuestionsCollection();
+  const item = { ...newQuestion };
+
+  if (!item.topic) {
+    item.topic = item.chapter || item.subject || item.category || 'misc';
+  }
+  item.topic = String(item.topic).trim() || 'misc';
+
+  await collection.insertOne(item);
   questionsQueryCache.clear();
+
+  const { _id, ...resource } = item;
   return resource;
 }
 
 export async function createQuestionsBulk(questionsData) {
-  const container = getQuestionsContainer();
-  if (!container) throw new Error('DB not ready');
+  const collection = getQuestionsCollection();
 
   const normalizedQuestions = questionsData.map((q, idx) => {
     const item = (q && typeof q === 'object') ? { ...q } : { value: q };
@@ -130,14 +176,17 @@ export async function createQuestionsBulk(questionsData) {
     let current = { ...item };
     for (let attempt = 0; attempt < 3; attempt += 1) {
       try {
-        return await container.items.create(current);
+        await collection.insertOne(current);
+        return current;
       } catch (err) {
-        const status = err?.code || err?.statusCode;
-        if (status !== 409) throw err;
+        if (err?.code !== 11000) throw err;
         current = { ...current, id: buildNewId(idx, attempt + 1) };
       }
     }
-    return await container.items.create({ ...current, id: buildNewId(idx, 99) });
+
+    current = { ...current, id: buildNewId(idx, 99) };
+    await collection.insertOne(current);
+    return current;
   };
 
   const results = await Promise.allSettled(
@@ -147,30 +196,27 @@ export async function createQuestionsBulk(questionsData) {
   return results;
 }
 
-export async function fetchImageQuestions(topic = "visual_reasoning", limit = 20) {
-  const container = getQuestionsContainer();
-  if (!container) throw new Error('DB not ready');
+export async function fetchImageQuestions(topic = 'visual_reasoning', limit = 20) {
+  const collection = getQuestionsCollection();
 
-  const query = {
-    query: `
-      SELECT * FROM c
-      WHERE c.questionType = "image_mcq"
-      AND c.topic = @topic
-      OFFSET 0 LIMIT @limit
-    `,
-    parameters: [
-      { name: "@topic", value: topic },
-      { name: "@limit", value: parseInt(limit) },
-    ],
-  };
+  const parsedLimit = Number.isFinite(Number(limit))
+    ? Math.max(1, parseInt(limit, 10))
+    : 20;
 
-  const { resources } = await container.items.query(query).fetchAll();
+  const resources = await collection
+    .find({
+      questionType: 'image_mcq',
+      topic,
+    })
+    .project({ _id: 0 })
+    .limit(parsedLimit)
+    .toArray();
+
   return { count: resources.length, questions: resources };
 }
 
 export async function fetchQuestions(params) {
-  const container = getQuestionsContainer();
-  if (!container) throw new Error('DB not ready');
+  const collection = getQuestionsCollection();
   const {
     topic,
     subject,
@@ -190,128 +236,142 @@ export async function fetchQuestions(params) {
   const isAllRequested = normalizedQuestionType === 'all';
   const queryMode = topic ? 'topic' : subject ? 'subject' : 'global';
 
-  let query = 'SELECT * FROM c WHERE 1=1';
-  const parameters = [];
-  let partitionKey;
-
-  if (topic) {
-    if (normalizedTopic === 'synonymsantonyms' || normalizedTopic === 'antosynopyq') {
-      query += ' AND (c.topic = @topic OR c.topic = "antosynopyq" OR c.topic = "synonyms-antonyms")';
-      parameters.push({ name: '@topic', value: topic });
-    } else {
-      query += ' AND c.topic = @topic';
-      parameters.push({ name: '@topic', value: topic });
-      partitionKey = topic;
-    }
-  } else if (subject) {
-    query += ' AND LOWER(c.subject) = LOWER(@subject)';
-    parameters.push({ name: '@subject', value: subject });
-  }
-  if (chapter) {
-    query += ' AND LOWER(c.chapter) = LOWER(@chapter)';
-    parameters.push({ name: '@chapter', value: chapter });
-  }
-  if (concept) {
-    query += ' AND LOWER(c.concept) = LOWER(@concept)';
-    parameters.push({ name: '@concept', value: concept });
-  }
-  if (difficulty) {
-    query += ' AND LOWER(c.difficulty) = LOWER(@difficulty)';
-    parameters.push({ name: '@difficulty', value: difficulty });
-  }
-  if (quizName) {
-    if (normalizedQuizName === 'pyq') {
-      query += ` AND (
-        (IS_DEFINED(c.quizName) AND LOWER(REPLACE(REPLACE(c.quizName, '-', ''), ' ', '')) = @normalizedQuizName)
-        OR (IS_DEFINED(c.quizId) AND LOWER(REPLACE(REPLACE(c.quizId, '-', ''), ' ', '')) = @normalizedQuizName)
-        OR (IS_DEFINED(c.source) AND LOWER(REPLACE(REPLACE(c.source, '-', ''), ' ', '')) = @normalizedQuizName)
-        OR NOT IS_DEFINED(c.quizName)
-        OR c.quizName = null
-        OR c.quizName = ""
-      )`;
-    } else {
-      query += ` AND ((IS_DEFINED(c.quizName) AND LOWER(REPLACE(REPLACE(c.quizName, '-', ''), ' ', '')) = @normalizedQuizName) OR (IS_DEFINED(c.quizId) AND LOWER(REPLACE(REPLACE(c.quizId, '-', ''), ' ', '')) = @normalizedQuizName) OR (IS_DEFINED(c.source) AND LOWER(REPLACE(REPLACE(c.source, '-', ''), ' ', '')) = @normalizedQuizName))`;
-    }
-    parameters.push({ name: '@normalizedQuizName', value: normalizedQuizName });
-  }
-
-  if (isStudyModeRequested) {
-    query += ' AND (LOWER(c.questionType) = "study-mode" OR LOWER(c.questionType) = "studymode" OR (IS_DEFINED(c.word) AND IS_ARRAY(c.meanings)))';
-  } else if (!isAllRequested) {
-    if (normalizedQuestionType) {
-      query += ' AND LOWER(c.questionType) = @questionType';
-      parameters.push({ name: '@questionType', value: normalizedQuestionType });
-    } else {
-      query += ' AND (NOT IS_DEFINED(c.questionType) OR (LOWER(c.questionType) != "study-mode" AND LOWER(c.questionType) != "studymode")) AND (NOT IS_DEFINED(c.quizName) OR LOWER(c.quizName) != "study mode") AND (NOT IS_DEFINED(c.word) OR NOT IS_ARRAY(c.meanings))';
-    }
-  }
-
-  const parsedOffset = Number.isFinite(Number(offset)) ? parseInt(offset, 10) : 0;
+  const parsedOffset = Number.isFinite(Number(offset)) ? Math.max(0, parseInt(offset, 10)) : 0;
   const parsedLimit = Number.isFinite(Number(limit)) ? parseInt(limit, 10) : null;
-
-  if (parsedLimit !== null && parsedLimit > 0) {
-    query += ` OFFSET ${parsedOffset} LIMIT ${parsedLimit}`;
-  } else if (parsedOffset > 0) {
-    query += ` OFFSET ${parsedOffset} LIMIT 99999`;
-  }
 
   const cacheable =
     parsedOffset === 0 &&
     (parsedLimit === null || parsedLimit > 0) &&
     (queryMode === 'topic' || queryMode === 'subject');
-  const cacheKey = cacheable ? `${queryMode}:${buildQuestionsCacheKey(parameters, parsedOffset, parsedLimit)}` : null;
+  const cacheKey = cacheable
+    ? `${queryMode}:${JSON.stringify({
+        topic,
+        subject,
+        chapter,
+        concept,
+        difficulty,
+        quizName,
+        questionType,
+        offset: parsedOffset,
+        limit: parsedLimit,
+      })}`
+    : null;
 
   let resources = cacheKey ? questionsQueryCache.get(cacheKey) : null;
 
-  if (!resources) {
-    resources = await fetchAllQueryResults(container, query, parameters, { partitionKey });
+  if (resources) {
+    return { count: resources.length, questions: resources };
+  }
 
-    if (topic && resources.length === 0) {
-      const fallbackQuery = query.replace(' AND c.topic = @topic', ' AND (LOWER(c.topic) = LOWER(@topic) OR LOWER(c.chapter) = LOWER(@topic) OR LOWER(c.subject) = LOWER(@topic) OR LOWER(c.quizTopic) = LOWER(@topic) OR LOWER(c.quizName) = LOWER(@topic) OR LOWER(c.source) = LOWER(@topic))');
-      resources = await fetchAllQueryResults(container, fallbackQuery, parameters);
+  const commonConditions = [];
+
+  if (!topic && subject) {
+    commonConditions.push({ subject: caseInsensitiveExact(subject) });
+  }
+  if (chapter) {
+    commonConditions.push({ chapter: caseInsensitiveExact(chapter) });
+  }
+  if (concept) {
+    commonConditions.push({ concept: caseInsensitiveExact(concept) });
+  }
+  if (difficulty) {
+    commonConditions.push({ difficulty: caseInsensitiveExact(difficulty) });
+  }
+
+  const directConditions = [...commonConditions];
+  const isSynonymAntonymTopic =
+    normalizedTopic === 'synonymsantonyms' || normalizedTopic === 'antosynopyq';
+
+  if (topic) {
+    if (isSynonymAntonymTopic) {
+      directConditions.push({
+        topic: { $in: [topic, 'antosynopyq', 'synonyms-antonyms'] },
+      });
+    } else {
+      directConditions.push({ topic });
     }
+  }
 
-    if (normalizedTopic && queryMode === 'topic') {
-      resources = resources.filter((q) => matchesNormalizedTopic(q, normalizedTopic));
-    }
+  resources = await collection
+    .find(combineMongoConditions(directConditions))
+    .project({ _id: 0 })
+    .toArray();
 
-    if (isStudyModeRequested) {
-      resources = resources.filter((q) => isStudyModeRecord(q));
-    } else if (!isAllRequested) {
+  if (topic && !isSynonymAntonymTopic && resources.length === 0) {
+    const topicRegex = caseInsensitiveExact(topic);
+    const fallbackConditions = [
+      ...commonConditions,
+      {
+        $or: [
+          { topic: topicRegex },
+          { chapter: topicRegex },
+          { subject: topicRegex },
+          { quizTopic: topicRegex },
+          { quizName: topicRegex },
+          { source: topicRegex },
+        ],
+      },
+    ];
+
+    resources = await collection
+      .find(combineMongoConditions(fallbackConditions))
+      .project({ _id: 0 })
+      .toArray();
+  }
+
+  if (normalizedTopic && queryMode === 'topic') {
+    resources = resources.filter((q) => matchesNormalizedTopic(q, normalizedTopic));
+  }
+
+  if (normalizedQuizName) {
+    resources = resources.filter((q) => matchesQuizNameFilter(q, normalizedQuizName));
+  }
+
+  if (isStudyModeRequested) {
+    resources = resources.filter((q) => isStudyModeRecord(q));
+  } else if (!isAllRequested) {
+    if (normalizedQuestionType) {
+      resources = resources.filter(
+        (q) => String(q.questionType ?? '').trim().toLowerCase() === normalizedQuestionType
+      );
+    } else {
       resources = resources.filter((q) => !isStudyModeRecord(q));
     }
+  }
 
-    if (cacheKey) {
-      questionsQueryCache.set(cacheKey, resources);
-    }
+  if (parsedLimit !== null && parsedLimit > 0) {
+    resources = resources.slice(parsedOffset, parsedOffset + parsedLimit);
+  } else if (parsedOffset > 0) {
+    resources = resources.slice(parsedOffset);
+  }
+
+  if (cacheKey) {
+    questionsQueryCache.set(cacheKey, resources);
   }
 
   return { count: resources.length, questions: resources };
 }
 
 export async function fetchPracticeTest(params) {
-  const container = getQuestionsContainer();
-  if (!container) throw new Error('DB not ready');
+  const collection = getQuestionsCollection();
   const { subject, difficulty, count = 10 } = params;
   const requestedCount = Number.isFinite(Number(count)) ? parseInt(count, 10) : 10;
   const limit = Math.max(1, requestedCount);
 
-  let query = 'SELECT * FROM c WHERE 1=1';
-  const parameters = [];
+  const conditions = [];
 
   if (subject) {
-    query += ' AND LOWER(c.subject) = LOWER(@subject)';
-    parameters.push({ name: '@subject', value: subject });
+    conditions.push({ subject: caseInsensitiveExact(subject) });
   }
   if (difficulty) {
-    query += ' AND LOWER(c.difficulty) = LOWER(@difficulty)';
-    parameters.push({ name: '@difficulty', value: difficulty });
+    conditions.push({ difficulty: caseInsensitiveExact(difficulty) });
   }
 
-  query += ' AND (NOT IS_DEFINED(c.questionType) OR (LOWER(c.questionType) != "study-mode" AND LOWER(c.questionType) != "studymode")) AND (NOT IS_DEFINED(c.quizName) OR LOWER(c.quizName) != "study mode") AND (NOT IS_DEFINED(c.word) OR c.word = null OR c.word = "")';
-
-  query += ` OFFSET 0 LIMIT ${limit * 3}`;
-  const resources = await fetchAllQueryResults(container, query, parameters);
+  const resources = await collection
+    .find(combineMongoConditions(conditions))
+    .project({ _id: 0 })
+    .limit(limit * 3)
+    .toArray();
 
   const filteredResources = resources.filter((q) => !isStudyModeRecord(q));
   if (filteredResources.length === 0) return null;
@@ -331,43 +391,51 @@ export async function fetchPracticeTest(params) {
 }
 
 export async function analyzeAnswers(answers) {
-  const container = getQuestionsContainer();
-  if (!container) throw new Error('DB not ready');
-  const ids = answers.map(a => a.questionId);
-  
-  let questionDocs = [];
-  if (ids.length > 0) {
-    try {
-      const paramNames = ids.map((_, i) => `@id${i}`);
-      const paramValues = ids.map((id, i) => ({ name: `@id${i}`, value: id }));
-      const inClause = paramNames.join(', ');
-
-      const query = {
-        query: `SELECT * FROM c WHERE c.id IN (${inClause})`,
-        parameters: paramValues,
-      };
-      const { resources } = await container.items.query(query).fetchAll();
-      questionDocs = resources;
-    } catch (err) {
-      console.error('runAnalysis IN query failed:', err.message);
-    }
-  }
-
-  const questionMap = new Map(
-    questionDocs.filter(Boolean).map(q => [q.id, q])
+  const collection = getQuestionsCollection();
+  const ids = Array.from(
+    new Set(
+      answers
+        .map((a) => String(a.questionId ?? '').trim())
+        .filter(Boolean)
+    )
   );
 
-  let correct = 0, incorrect = 0, unattempted = 0;
+  let questionDocs = [];
+  if (ids.length > 0) {
+    questionDocs = await collection
+      .find({ id: { $in: ids } })
+      .project({ _id: 0 })
+      .toArray();
+  }
+
+  const byId = new Map();
+  const byIdTopic = new Map();
+
+  for (const q of questionDocs) {
+    if (!byId.has(String(q.id))) {
+      byId.set(String(q.id), q);
+    }
+    byIdTopic.set(`${String(q.id)}::${String(q.topic ?? '')}`, q);
+  }
+
+  let correct = 0;
+  let incorrect = 0;
+  let unattempted = 0;
   const subjectBreakdown = {};
   const details = [];
 
   for (const ans of answers) {
-    const q = questionMap.get(ans.questionId);
+    const questionId = String(ans.questionId ?? '');
+    const q = ans.topic !== undefined
+      ? byIdTopic.get(`${questionId}::${String(ans.topic ?? '')}`) || byId.get(questionId)
+      : byId.get(questionId);
+
     if (!q) continue;
 
-    const subj = q.subject;
-    if (!subjectBreakdown[subj])
+    const subj = q.subject || 'Unknown';
+    if (!subjectBreakdown[subj]) {
       subjectBreakdown[subj] = { correct: 0, incorrect: 0, unattempted: 0, total: 0 };
+    }
 
     subjectBreakdown[subj].total++;
 
@@ -396,133 +464,108 @@ export async function analyzeAnswers(answers) {
   };
 }
 
-export async function fetchQuestionById(id) {
-  const container = getQuestionsContainer();
-  if (!container) throw new Error('DB not ready');
-  const { resources } = await container.items
-    .query({ query: 'SELECT * FROM c WHERE c.id = @id', parameters: [{ name: '@id', value: id }] })
-    .fetchAll();
-  return resources.length ? resources[0] : null;
+export async function fetchQuestionById(
+  id,
+  topic = undefined
+) {
+  const collection = getQuestionsCollection();
+
+  const filter = {
+    id: String(id),
+  };
+
+  if (topic !== undefined && topic !== '') {
+    filter.topic = String(topic);
+  }
+
+  const question = await collection.findOne(
+    filter,
+    {
+      projection: {
+        _id: 0,
+      },
+    }
+  );
+
+  return question;
 }
 
-export async function modifyQuestion(id, updates) {
-  const container = getQuestionsContainer();
-  if (!container) throw new Error('DB not ready');
-  const existing = await fetchQuestionById(id);
+export async function modifyQuestion(id, updates, topic = undefined) {
+  const collection = getQuestionsCollection();
+  const filter = { id: String(id) };
+
+  if (topic !== undefined && topic !== '') {
+    filter.topic = topic;
+  }
+
+  const existing = await collection.findOne(filter);
   if (!existing) return null;
-  const updated = { ...existing, ...updates, id, topic: updates.topic || existing.topic };
-  await container.items.upsert(updated);
+
+  const updated = { ...existing, ...updates, id: existing.id };
+  delete updated._id;
+
+  if (!updated.topic) {
+    updated.topic = existing.topic || updates.chapter || updates.subject || 'misc';
+  }
+
+  await collection.updateOne({ _id: existing._id }, { $set: updated });
   questionsQueryCache.clear();
   return updated;
 }
 
-export async function removeQuestion(id) {
-  const container = getQuestionsContainer();
-  if (!container) throw new Error('DB not ready');
-  const numericId = Number(id);
-  const query = {
-    query: `SELECT * FROM c WHERE c.id = @id${Number.isFinite(numericId) ? " OR c.id = @idNum" : ""}`,
-    parameters: [
-      { name: "@id", value: String(id) },
-      ...(Number.isFinite(numericId) ? [{ name: "@idNum", value: numericId }] : []),
-    ],
-  };
-  const { resources } = await container.items.query(query).fetchAll();
-  if (!resources.length) return false;
-  
-  for (const doc of resources) {
-    const partitionKey = doc.topic !== undefined ? doc.topic : undefined;
-    try {
-      await container.item(doc.id, partitionKey).delete();
-    } catch (err) {
-      if (partitionKey !== undefined) {
-        try {
-          await container.item(doc.id, undefined).delete();
-        } catch {
-          throw err;
-        }
-      } else {
-        throw err;
-      }
-    }
+export async function removeQuestion(id, topic = undefined) {
+  const collection = getQuestionsCollection();
+  const filter = { id: String(id) };
+
+  if (topic !== undefined && topic !== '') {
+    filter.topic = topic;
   }
+
+  const result = topic !== undefined && topic !== ''
+    ? await collection.deleteOne(filter)
+    : await collection.deleteMany(filter);
+
   questionsQueryCache.clear();
-  return true;
+  return result.deletedCount > 0;
 }
 
 export async function removeQuestionsBulk(ids) {
-  const container = getQuestionsContainer();
-  if (!container) throw new Error('DB not ready');
-  if (!Array.isArray(ids) || ids.length === 0) return { deleted: 0, failed: 0, total: 0 };
+  const collection = getQuestionsCollection();
 
-  const uniqueIds = Array.from(new Set(ids.map((id) => String(id).trim()).filter(Boolean)));
-  if (uniqueIds.length === 0) return { deleted: 0, failed: 0, total: 0 };
-
-  const batchSize = 100;
-  let deleted = 0;
-  let failed = 0;
-
-  for (let i = 0; i < uniqueIds.length; i += batchSize) {
-    const batchIds = uniqueIds.slice(i, i + batchSize);
-    const paramNames = batchIds.map((_, idx) => `@id${idx}`);
-    const parameters = batchIds.map((id, idx) => ({ name: `@id${idx}`, value: id }));
-
-    let resources = [];
-    try {
-      const query = {
-        query: `SELECT c.id, c.topic FROM c WHERE c.id IN (${paramNames.join(', ')})`,
-        parameters,
-      };
-      const result = await container.items.query(query).fetchAll();
-      resources = result.resources || [];
-    } catch (err) {
-      console.error('removeQuestionsBulk query error:', err);
-    }
-
-    const foundIds = new Set(resources.map((r) => String(r.id)));
-    const notFoundIds = batchIds.filter((id) => !foundIds.has(id));
-
-    const deletePromises = resources.map(async (doc) => {
-      const partitionKey = doc.topic !== undefined ? doc.topic : undefined;
-      try {
-        await container.item(doc.id, partitionKey).delete();
-        return true;
-      } catch {
-        try {
-          await container.item(doc.id, undefined).delete();
-          return true;
-        } catch {
-          return false;
-        }
-      }
-    });
-
-    for (const notFoundId of notFoundIds) {
-      deletePromises.push(
-        (async () => {
-          try {
-            return await removeQuestion(notFoundId);
-          } catch {
-            return false;
-          }
-        })()
-      );
-    }
-
-    const results = await Promise.allSettled(deletePromises);
-    results.forEach((r) => {
-      if (r.status === 'fulfilled' && r.value) deleted++;
-      else failed++;
-    });
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return { deleted: 0, failed: 0, total: 0 };
   }
 
-  questionsQueryCache.clear();
-  return { deleted, failed, total: uniqueIds.length };
+  const uniqueIds = Array.from(
+    new Set(ids.map((id) => String(id).trim()).filter(Boolean))
+  );
+
+  if (uniqueIds.length === 0) {
+    return { deleted: 0, failed: 0, total: 0 };
+  }
+
+  try {
+    const result = await collection.deleteMany({ id: { $in: uniqueIds } });
+    questionsQueryCache.clear();
+
+    return {
+      deleted: result.deletedCount,
+      failed: 0,
+      total: uniqueIds.length,
+    };
+  } catch (err) {
+    console.error('removeQuestionsBulk error:', err);
+
+    return {
+      deleted: 0,
+      failed: uniqueIds.length,
+      total: uniqueIds.length,
+    };
+  }
 }
 
 export async function checkDuplicates(questions) {
-  const container = getQuestionsContainer();
-  if (!container) throw new Error('DB not ready');
+  const collection = getQuestionsCollection();
 
   const ids = questions
     .map((q) => String(q.id || q._id || q.questionId || ''))
@@ -530,35 +573,31 @@ export async function checkDuplicates(questions) {
 
   const getQuestionText = (q) => String(q?.question ?? q?.questionText ?? q?.q ?? '').trim();
   const incomingTexts = questions
-    .map((q) => getQuestionText(q))
+    .map(getQuestionText)
     .filter(Boolean);
+  const uniqueIds = Array.from(new Set(ids));
   const uniqueTexts = Array.from(new Set(incomingTexts));
 
-  if (ids.length === 0 && uniqueTexts.length === 0) {
+  if (uniqueIds.length === 0 && uniqueTexts.length === 0) {
     return [];
   }
 
-  const batchSize = 100;
   const existingMap = new Map();
 
-  for (let i = 0; i < ids.length; i += batchSize) {
-    const batch = ids.slice(i, i + batchSize);
-    const paramList = batch.map((_, idx) => `@id${i + idx}`).join(', ');
-    const parameters = batch.map((id, idx) => ({
-      name: `@id${i + idx}`,
-      value: id,
-    }));
-
-    const { resources } = await container.items
-      .query({
-        query: `SELECT c.id, c.question, c.questionText FROM c WHERE c.id IN (${paramList})`,
-        parameters,
+  if (uniqueIds.length > 0) {
+    const existingById = await collection
+      .find({ id: { $in: uniqueIds } })
+      .project({
+        _id: 0,
+        id: 1,
+        question: 1,
+        questionText: 1,
       })
-      .fetchAll();
+      .toArray();
 
-    resources.forEach((r) => {
-      existingMap.set(r.id, r.question || r.questionText || '');
-    });
+    for (const r of existingById) {
+      existingMap.set(String(r.id), r.question || r.questionText || '');
+    }
   }
 
   const textBatchSize = 50;
@@ -566,22 +605,25 @@ export async function checkDuplicates(questions) {
 
   for (let i = 0; i < uniqueTexts.length; i += textBatchSize) {
     const batch = uniqueTexts.slice(i, i + textBatchSize);
-    const conditions = batch.map((_, idx) => `c.question = @txt${idx} OR c.questionText = @txt${idx}`).join(' OR ');
-    const parameters = batch.flatMap((txt, idx) => [
-      { name: `@txt${idx}`, value: txt },
-    ]);
-
-    const { resources } = await container.items
-      .query({
-        query: `SELECT c.id, c.question, c.questionText FROM c WHERE ${conditions}`,
-        parameters,
+    const existingByText = await collection
+      .find({
+        $or: [
+          { question: { $in: batch } },
+          { questionText: { $in: batch } },
+        ],
       })
-      .fetchAll();
+      .project({
+        _id: 0,
+        id: 1,
+        question: 1,
+        questionText: 1,
+      })
+      .toArray();
 
-    resources.forEach((r) => {
+    for (const r of existingByText) {
       const dbText = String(r.question || r.questionText || '').trim();
       if (dbText) existingTextMap.set(dbText, r.id);
-    });
+    }
   }
 
   const duplicates = [];

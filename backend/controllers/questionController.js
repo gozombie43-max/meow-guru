@@ -178,7 +178,11 @@ const runAnalysis = async (req, res) => {
 // ── GET /api/questions/:id ─────────────────────────────
 const getQuestionById = async (req, res) => {
   try {
-    const question = await questionService.fetchQuestionById(req.params.id);
+    const question =
+      await questionService.fetchQuestionById(
+        req.params.id,
+        req.query.topic
+      );
     if (!question) return res.status(404).json({ error: 'Not found' });
     res.set("Cache-Control", "no-store, max-age=0");
     res.json(question);
@@ -190,7 +194,7 @@ const getQuestionById = async (req, res) => {
 // ── PUT /api/questions/:id ─────────────────────────────
 const updateQuestion = async (req, res) => {
   try {
-    const updated = await questionService.modifyQuestion(req.params.id, req.body);
+    const updated = await questionService.modifyQuestion(req.params.id, req.body, req.query.topic);
     if (!updated) return res.status(404).json({ error: 'Not found' });
     res.json({ message: 'Updated ✅', question: updated });
   } catch (err) {
@@ -201,7 +205,7 @@ const updateQuestion = async (req, res) => {
 // ── DELETE /api/questions/:id ──────────────────────────
 const deleteQuestion = async (req, res) => {
   try {
-    const success = await questionService.removeQuestion(req.params.id);
+    const success = await questionService.removeQuestion(req.params.id, req.query.topic);
     if (!success) return res.status(404).json({ error: 'Not found' });
     res.json({ message: 'Deleted ✅' });
   } catch (err) {

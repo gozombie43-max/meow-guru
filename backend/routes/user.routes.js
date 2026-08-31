@@ -1,5 +1,6 @@
 // backend/routes/user.routes.js
 import express from 'express';
+import { getUsersCollection } from '../config/mongodb.js';
 import { protect } from '../middleware/protect.js';
 import { validateBody } from '../middleware/validation.js';
 import {
@@ -10,32 +11,32 @@ import {
 } from '../schemas/apiSchemas.js';
 
 const router = express.Router();
-let usersContainer;
 
-export const initUserRoutes = (container) => {
-  usersContainer = container;
-  return router;
+export const initUserRoutes = () => router;
+
+const getUser = async (id) => {
+  const users = getUsersCollection();
+
+  return users.findOne({
+    id: String(id),
+    type: { $ne: 'email_lock' },
+  });
 };
 
-// Optimized point read using email partition key with cross-partition fallback
-const getUser = async (id, email) => {
-  if (email && usersContainer) {
-    try {
-      const { resource } = await usersContainer.item(id, email.toLowerCase()).read();
-      if (resource) return resource;
-    } catch (e) {
-      if (e.code !== 404) console.warn('Point read warning:', e.message);
-    }
-  }
+const updateUser = async (id, fields) => {
+  const users = getUsersCollection();
 
-  // Fallback to query if email is missing or point read failed
-  const { resources } = await usersContainer.items
-    .query({
-      query: 'SELECT * FROM c WHERE c.id = @id',
-      parameters: [{ name: '@id', value: id }],
-    })
-    .fetchAll();
-  return resources[0];
+  const result = await users.updateOne(
+    {
+      id: String(id),
+      type: { $ne: 'email_lock' },
+    },
+    {
+      $set: fields,
+    }
+  );
+
+  return result.matchedCount > 0;
 };
 
 // ── GET /users/me ───────────────────────────────────────
@@ -44,7 +45,12 @@ router.get('/me', protect, async (req, res) => {
     const user = await getUser(req.user.id, req.user.email);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    const { passwordHash, ...safeUser } = user;
+    const {
+      passwordHash,
+      _id,
+      _cosmosRid,
+      ...safeUser
+    } = user;
     res.json(safeUser);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -110,7 +116,10 @@ router.patch('/me/bookmarks', protect, validateBody(bookmarkPatchSchema), async 
       })
       .slice(0, 60);
 
-    await usersContainer.items.upsert({ ...user, bookmarks, bookmarkEntries });
+    await updateUser(user.id, {
+      bookmarks,
+      bookmarkEntries,
+    });
 
     res.json({ message: 'Bookmarks updated ✅', bookmarks, bookmarkEntries });
   } catch (err) {
@@ -134,7 +143,9 @@ router.patch('/me/progress', protect, validateBody(progressPatchSchema), async (
       correct:   current.correct   + correct,
     };
 
-    await usersContainer.items.upsert({ ...user, progress });
+    await updateUser(user.id, {
+      progress,
+    });
 
     res.json({ message: 'Progress updated ✅', progress });
   } catch (err) {
@@ -206,7 +217,9 @@ router.patch('/me/recent-quizzes', protect, validateBody(recentQuizPatchSchema),
       })
       .slice(0, 12);
 
-    await usersContainer.items.upsert({ ...user, recentQuizzes });
+    await updateUser(user.id, {
+      recentQuizzes,
+    });
 
     res.json({ message: 'Recent quizzes updated ✅', recentQuizzes });
   } catch (err) {
@@ -225,7 +238,9 @@ router.patch('/me/usage', protect, validateBody(studyTimePatchSchema), async (re
     const currentStudyTime = user.studyTime || 0;
     const newStudyTime = currentStudyTime + activeSeconds;
 
-    await usersContainer.items.upsert({ ...user, studyTime: newStudyTime });
+    await updateUser(user.id, {
+      studyTime: newStudyTime,
+    });
 
     res.json({ message: 'Usage tracked ✅', studyTime: newStudyTime });
   } catch (err) {
@@ -315,7 +330,9 @@ router.put('/me/ai-chats/:chatId', protect, async (req, res) => {
       })
       .slice(0, 30);
 
-    await usersContainer.items.upsert({ ...user, aiChats });
+    await updateUser(user.id, {
+      aiChats,
+    });
 
     res.json({ message: 'AI chat saved ✅', aiChat: entry, aiChats });
   } catch (err) {
@@ -337,7 +354,9 @@ router.delete('/me/ai-chats/:chatId', protect, async (req, res) => {
       .filter((chat) => chat && chat.id !== chatId)
       .slice(0, 30);
 
-    await usersContainer.items.upsert({ ...user, aiChats });
+    await updateUser(user.id, {
+      aiChats,
+    });
 
     res.json({ message: 'AI chat deleted ✅', aiChats });
   } catch (err) {

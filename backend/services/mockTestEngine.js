@@ -1,5 +1,9 @@
 import { getExamConfig, getSlotById as getStaticSlotById, getSlotsForExam as getStaticSlotsForExam, MOCK_TEST_SLOTS } from '../config/exam-config.js';
-import { getQuestionsContainer, getMockAttemptsContainer, getMockSlotsContainer } from '../containerStore.js';
+import {
+  getQuestionsCollection,
+  getMockAttemptsCollection,
+  getMockSlotsCollection,
+} from '../config/mongodb.js';
 
 // ─── Helpers ──────────────────────────────────────────────
 
@@ -12,233 +16,507 @@ function shuffleArray(arr) {
   return a;
 }
 
+function escapeRegex(value = '') {
+  return String(value).replace(
+    /[.*+?^${}()|[\]\\]/g,
+    '\\$&'
+  );
+}
+
+function exactCI(value) {
+  return new RegExp(
+    `^${escapeRegex(value)}$`,
+    'i'
+  );
+}
+
+function cleanMongoDoc(doc) {
+  if (!doc) return doc;
+
+  const {
+    _id,
+    _cosmosRid,
+    ...clean
+  } = doc;
+
+  return clean;
+}
+
+function summarizeSlot(slot) {
+  const clean = cleanMongoDoc(slot);
+  const {
+    fixedQuestions,
+    ...summary
+  } = clean;
+
+  return {
+    ...summary,
+    hasFixedPaper: Boolean(
+      fixedQuestions &&
+      fixedQuestions.length > 0
+    ),
+    questionCount:
+      fixedQuestions?.length ||
+      clean.questionCount ||
+      0,
+  };
+}
+
 function stripAnswer(q) {
   const { correctAnswer, answer, ...rest } = q;
   return rest;
 }
 
-// ─── Slot Management with Cosmos DB ────────────────────────
+// ─── Slot Management with MongoDB ─────────────────────────
 
-export async function fetchSlotsForExam(examSlug) {
+export async function fetchSlotsForExam(
+  examSlug
+) {
   try {
-    const container = getMockSlotsContainer();
-    const { resources } = await container.items
-      .query({
-        query: 'SELECT * FROM c WHERE c.examSlug = @examSlug ORDER BY c.order ASC',
-        parameters: [{ name: '@examSlug', value: examSlug }],
-      })
-      .fetchAll();
+    const slots =
+      getMockSlotsCollection();
 
-    if (resources && resources.length > 0) {
-      // Don't send full question payloads on list view
-      return resources.map(s => {
-        const { fixedQuestions, ...summary } = s;
-        return {
-          ...summary,
-          hasFixedPaper: Boolean(fixedQuestions && fixedQuestions.length > 0),
-          questionCount: fixedQuestions?.length || s.questionCount,
-        };
-      });
+    let resources =
+      await slots
+        .find({
+          examSlug,
+        })
+        .sort({
+          order: 1,
+        })
+        .toArray();
+
+    if (resources.length > 0) {
+      return resources.map(
+        summarizeSlot
+      );
     }
 
-    // Auto-seed if none exist in DB for this exam
-    const staticSlots = getStaticSlotsForExam(examSlug);
-    if (staticSlots.length > 0) {
-      const seeded = [];
-      for (const slot of staticSlots) {
-        try {
-          const { resource } = await container.items.create({
-            ...slot,
-            type: slot.type || 'mock',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          });
-          seeded.push(resource);
-        } catch (e) {
-          seeded.push(slot);
-        }
+    const staticSlots =
+      getStaticSlotsForExam(
+        examSlug
+      );
+
+    if (staticSlots.length === 0) {
+      return [];
+    }
+
+    const now =
+      new Date().toISOString();
+
+    for (const slot of staticSlots) {
+      try {
+        await slots.updateOne(
+          {
+            id: slot.id,
+            examSlug: slot.examSlug,
+          },
+          {
+            $setOnInsert: {
+              ...slot,
+              type:
+                slot.type ||
+                'mock',
+              createdAt: now,
+              updatedAt: now,
+            },
+          },
+          {
+            upsert: true,
+          }
+        );
+      } catch (err) {
+        console.warn(
+          `Failed to seed slot ${slot.id}:`,
+          err.message
+        );
       }
-      return seeded;
     }
 
-    return [];
+    resources =
+      await slots
+        .find({
+          examSlug,
+        })
+        .sort({
+          order: 1,
+        })
+        .toArray();
+
+    return resources.length
+      ? resources.map(
+          summarizeSlot
+        )
+      : staticSlots.map(
+          (slot) =>
+            summarizeSlot(slot)
+        );
   } catch (err) {
-    console.warn(`fetchSlotsForExam failed for ${examSlug}, falling back to static config:`, err.message);
-    return getStaticSlotsForExam(examSlug);
+    console.warn(
+      `fetchSlotsForExam failed for ${examSlug}, falling back to static config:`,
+      err.message
+    );
+
+    return getStaticSlotsForExam(
+      examSlug
+    );
   }
 }
 
-export async function fetchAllAdminSlots(examFilter = null) {
+export async function fetchAllAdminSlots(
+  examFilter = null
+) {
   try {
-    const container = getMockSlotsContainer();
-    let query = 'SELECT * FROM c';
-    const parameters = [];
-    if (examFilter && examFilter !== 'all') {
-      query += ' WHERE c.examSlug = @examSlug';
-      parameters.push({ name: '@examSlug', value: examFilter });
-    }
-    query += ' ORDER BY c.examSlug ASC, c.order ASC';
+    const filter = {};
 
-    const { resources } = await container.items.query({ query, parameters }).fetchAll();
-    if (resources && resources.length > 0) {
-      return resources.map(s => ({
-        id: s.id,
-        examSlug: s.examSlug,
-        configKey: s.configKey,
-        title: s.title,
-        tier: s.tier,
-        type: s.type || (s.id.includes('pyq') ? 'pyq' : 'mock'),
-        year: s.year || null,
-        shift: s.shift || null,
-        isFree: Boolean(s.isFree),
-        order: s.order || 1,
-        questionCount: s.fixedQuestions?.length || 0,
-        createdAt: s.createdAt,
-        updatedAt: s.updatedAt,
-      }));
+    if (
+      examFilter &&
+      examFilter !== 'all'
+    ) {
+      filter.examSlug =
+        examFilter;
     }
 
-    // If container is empty or offline, fallback to static defaults
-    let filtered = MOCK_TEST_SLOTS;
-    if (examFilter && examFilter !== 'all') {
-      filtered = filtered.filter(s => s.examSlug === examFilter);
+    const resources =
+      await getMockSlotsCollection()
+        .find(filter)
+        .sort({
+          examSlug: 1,
+          order: 1,
+        })
+        .toArray();
+
+    if (resources.length > 0) {
+      return resources.map(
+        (raw) => {
+          const s =
+            cleanMongoDoc(raw);
+
+          return {
+            id: s.id,
+            examSlug: s.examSlug,
+            configKey: s.configKey,
+            title: s.title,
+            tier: s.tier,
+            type:
+              s.type ||
+              (
+                s.id?.includes('pyq')
+                  ? 'pyq'
+                  : 'mock'
+              ),
+            year: s.year || null,
+            shift: s.shift || null,
+            isFree: Boolean(s.isFree),
+            order: s.order || 1,
+            questionCount:
+              s.fixedQuestions?.length ||
+              s.questionCount ||
+              0,
+            createdAt: s.createdAt,
+            updatedAt: s.updatedAt,
+          };
+        }
+      );
     }
-    return filtered.map(s => ({
-      ...s,
-      type: s.type || (s.id.includes('pyq') ? 'pyq' : 'mock'),
-      questionCount: 0,
-    }));
+
+    let filtered =
+      MOCK_TEST_SLOTS;
+
+    if (
+      examFilter &&
+      examFilter !== 'all'
+    ) {
+      filtered =
+        filtered.filter(
+          (slot) =>
+            slot.examSlug ===
+            examFilter
+        );
+    }
+
+    return filtered.map(
+      (s) => ({
+        ...s,
+        type:
+          s.type ||
+          (
+            s.id.includes('pyq')
+              ? 'pyq'
+              : 'mock'
+          ),
+        questionCount: 0,
+      })
+    );
   } catch (err) {
-    console.warn('fetchAllAdminSlots fallback to defaults:', err.message);
-    let filtered = MOCK_TEST_SLOTS;
-    if (examFilter && examFilter !== 'all') {
-      filtered = filtered.filter(s => s.examSlug === examFilter);
+    console.warn(
+      'fetchAllAdminSlots fallback to defaults:',
+      err.message
+    );
+
+    let filtered =
+      MOCK_TEST_SLOTS;
+
+    if (
+      examFilter &&
+      examFilter !== 'all'
+    ) {
+      filtered =
+        filtered.filter(
+          (slot) =>
+            slot.examSlug ===
+            examFilter
+        );
     }
-    return filtered.map(s => ({
-      ...s,
-      type: s.type || (s.id.includes('pyq') ? 'pyq' : 'mock'),
-      questionCount: 0,
-    }));
+
+    return filtered.map(
+      (s) => ({
+        ...s,
+        type:
+          s.type ||
+          (
+            s.id.includes('pyq')
+              ? 'pyq'
+              : 'mock'
+          ),
+        questionCount: 0,
+      })
+    );
   }
 }
 
-export async function fetchSlotById(examSlug, slotId) {
+export async function fetchSlotById(
+  examSlug,
+  slotId
+) {
   try {
-    const container = getMockSlotsContainer();
-    
-    if (examSlug) {
-      const { resources } = await container.items
-        .query({
-          query: 'SELECT * FROM c WHERE c.id = @id AND c.examSlug = @examSlug',
-          parameters: [
-            { name: '@id', value: slotId },
-            { name: '@examSlug', value: examSlug },
-          ],
-        })
-        .fetchAll();
-      if (resources && resources.length > 0) return resources[0];
-    } else {
-      const { resources } = await container.items
-        .query({
-          query: 'SELECT * FROM c WHERE c.id = @id',
-          parameters: [{ name: '@id', value: slotId }],
-        })
-        .fetchAll();
-      if (resources && resources.length > 0) return resources[0];
+    const filter =
+      examSlug
+        ? {
+            id: slotId,
+            examSlug,
+          }
+        : {
+            id: slotId,
+          };
+
+    const slot =
+      await getMockSlotsCollection()
+        .findOne(
+          filter,
+          {
+            projection: {
+              _id: 0,
+              _cosmosRid: 0,
+            },
+          }
+        );
+
+    if (slot) {
+      return slot;
     }
 
-    return getStaticSlotById(slotId);
+    return getStaticSlotById(
+      slotId
+    );
   } catch (err) {
-    console.warn(`fetchSlotById error for ${slotId}:`, err.message);
-    return getStaticSlotById(slotId);
+    console.warn(
+      `fetchSlotById error for ${slotId}:`,
+      err.message
+    );
+
+    return getStaticSlotById(
+      slotId
+    );
   }
 }
 
 export async function seedDefaultSlots() {
-  const container = getMockSlotsContainer();
+  const slots =
+    getMockSlotsCollection();
   let createdCount = 0;
 
   for (const slot of MOCK_TEST_SLOTS) {
     try {
-      const { resources } = await container.items
-        .query({
-          query: 'SELECT * FROM c WHERE c.id = @id AND c.examSlug = @examSlug',
-          parameters: [
-            { name: '@id', value: slot.id },
-            { name: '@examSlug', value: slot.examSlug },
-          ],
-        })
-        .fetchAll();
+      const now =
+        new Date().toISOString();
 
-      if (!resources || resources.length === 0) {
-        await container.items.create({
-          ...slot,
-          type: slot.type || 'mock',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        });
+      const result =
+        await slots.updateOne(
+          {
+            id: slot.id,
+            examSlug: slot.examSlug,
+          },
+          {
+            $setOnInsert: {
+              ...slot,
+              type:
+                slot.type ||
+                'mock',
+              createdAt: now,
+              updatedAt: now,
+            },
+          },
+          {
+            upsert: true,
+          }
+        );
+
+      if (result.upsertedCount > 0) {
         createdCount++;
       }
-    } catch (e) {
-      console.warn(`Failed to seed slot ${slot.id}:`, e.message);
+    } catch (err) {
+      console.warn(
+        `Failed to seed slot ${slot.id}:`,
+        err.message
+      );
     }
   }
 
-  return { totalSeeded: createdCount };
+  return {
+    totalSeeded: createdCount,
+  };
 }
 
-export async function createMockSlot(slotData) {
-  const container = getMockSlotsContainer();
-  if (!slotData.id || !slotData.examSlug || !slotData.configKey || !slotData.title) {
-    throw new Error('Missing required slot fields: id, examSlug, configKey, title');
+export async function createMockSlot(
+  slotData
+) {
+  if (
+    !slotData.id ||
+    !slotData.examSlug ||
+    !slotData.configKey ||
+    !slotData.title
+  ) {
+    throw new Error(
+      'Missing required slot fields: id, examSlug, configKey, title'
+    );
   }
 
+  const slots =
+    getMockSlotsCollection();
+
+  const existing =
+    await slots.findOne({
+      id: slotData.id,
+      examSlug: slotData.examSlug,
+    });
+
+  if (existing) {
+    throw new Error(
+      `Mock slot already exists: ${slotData.id}`
+    );
+  }
+
+  const now =
+    new Date().toISOString();
   const doc = {
     id: slotData.id,
     examSlug: slotData.examSlug,
     configKey: slotData.configKey,
     title: slotData.title,
     tier: slotData.tier || null,
-    type: slotData.type || 'mock', // 'mock' or 'pyq'
+    type: slotData.type || 'mock',
     year: slotData.year || null,
     shift: slotData.shift || null,
     isFree: Boolean(slotData.isFree),
-    order: Number(slotData.order) || 1,
-    fixedQuestions: Array.isArray(slotData.questions) ? slotData.questions : null,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    order:
+      Number(slotData.order) || 1,
+    fixedQuestions:
+      Array.isArray(slotData.questions)
+        ? slotData.questions
+        : null,
+    createdAt: now,
+    updatedAt: now,
   };
 
-  const { resource } = await container.items.create(doc);
-  return resource;
+  await slots.insertOne(doc);
+
+  return cleanMongoDoc(doc);
 }
 
-export async function updateMockSlot(examSlug, slotId, updates) {
-  const container = getMockSlotsContainer();
-  const existing = await fetchSlotById(examSlug, slotId);
-  if (!existing) throw new Error(`Slot not found: ${slotId}`);
+export async function updateMockSlot(
+  examSlug,
+  slotId,
+  updates
+) {
+  const existing =
+    await fetchSlotById(
+      examSlug,
+      slotId
+    );
+
+  if (!existing) {
+    throw new Error(
+      `Slot not found: ${slotId}`
+    );
+  }
+
+  const {
+    _id,
+    _cosmosRid,
+    id: _updateId,
+    examSlug: _updateExam,
+    ...safeUpdates
+  } = updates || {};
 
   const updatedDoc = {
-    ...existing,
-    ...updates,
+    ...cleanMongoDoc(existing),
+    ...safeUpdates,
     id: existing.id,
-    examSlug: existing.examSlug, // partition key cannot change
-    updatedAt: new Date().toISOString(),
+    examSlug:
+      existing.examSlug ||
+      examSlug,
+    createdAt:
+      existing.createdAt ||
+      new Date().toISOString(),
+    updatedAt:
+      new Date().toISOString(),
   };
 
-  const { resource } = await container.item(existing.id, existing.examSlug).replace(updatedDoc);
-  return resource;
+  await getMockSlotsCollection()
+    .updateOne(
+      {
+        id: updatedDoc.id,
+        examSlug: updatedDoc.examSlug,
+      },
+      {
+        $set: updatedDoc,
+      },
+      {
+        upsert: true,
+      }
+    );
+
+  return updatedDoc;
 }
 
-export async function deleteMockSlot(examSlug, slotId) {
-  const container = getMockSlotsContainer();
-  const existing = await fetchSlotById(examSlug, slotId);
-  if (!existing) throw new Error(`Slot not found: ${slotId}`);
+export async function deleteMockSlot(
+  examSlug,
+  slotId
+) {
+  const existing =
+    await fetchSlotById(
+      examSlug,
+      slotId
+    );
 
-  await container.item(existing.id, existing.examSlug).delete();
-  return { success: true, id: slotId };
+  if (!existing) {
+    throw new Error(
+      `Slot not found: ${slotId}`
+    );
+  }
+
+  await getMockSlotsCollection()
+    .deleteOne({
+      id: slotId,
+      examSlug,
+    });
+
+  return {
+    success: true,
+    id: slotId,
+  };
 }
-
 // ─── Full Paper Upload (Mock & PYQ) ─────────────────────────
 
 export async function uploadFullPaper({ slotData, questions }) {
@@ -249,8 +527,10 @@ export async function uploadFullPaper({ slotData, questions }) {
     throw new Error('Questions array cannot be empty');
   }
 
-  const slotContainer = getMockSlotsContainer();
-  const questionsContainer = getQuestionsContainer();
+  const slotCollection =
+    getMockSlotsCollection();
+  const questionsCollection =
+    getQuestionsCollection();
 
   // Normalize questions
   const normalizedQuestions = questions.map((q, idx) => {
@@ -296,18 +576,35 @@ export async function uploadFullPaper({ slotData, questions }) {
     updatedAt: new Date().toISOString(),
   };
 
-  const existingSlot = await fetchSlotById(slotData.examSlug, slotData.id);
-  if (existingSlot) {
-    await slotContainer.item(slotDoc.id, slotDoc.examSlug).replace(slotDoc);
-  } else {
-    await slotContainer.items.create(slotDoc);
-  }
+  await slotCollection.updateOne(
+    {
+      id: slotDoc.id,
+      examSlug: slotDoc.examSlug,
+    },
+    {
+      $set: slotDoc,
+    },
+    {
+      upsert: true,
+    }
+  );
 
   // 2. Also optionally batch upsert questions into question bank
   let insertedToBank = 0;
   for (const q of normalizedQuestions) {
     try {
-      await questionsContainer.items.upsert(q);
+      await questionsCollection.updateOne(
+        {
+          id: q.id,
+          topic: q.topic,
+        },
+        {
+          $set: q,
+        },
+        {
+          upsert: true,
+        }
+      );
       insertedToBank++;
     } catch (err) {
       console.warn(`Upsert question ${q.id} warning:`, err.message);
@@ -332,7 +629,8 @@ export async function buildPaper({ examSlug, testId }) {
   const config = getExamConfig(slot.configKey);
   if (!config) throw new Error(`Config not found: ${slot.configKey}`);
 
-  const container = getQuestionsContainer();
+  const questionsCollection =
+    getQuestionsCollection();
   const sections = [];
   const answerKey = {};
 
@@ -389,19 +687,38 @@ export async function buildPaper({ examSlug, testId }) {
     let allQuestions = [];
     if (topicList.length > 0) {
       try {
-        const paramNames = topicList.map((_, i) => `@topic${i}`);
-        const paramValues = topicList.map((t, i) => ({ name: `@topic${i}`, value: t }));
-        
-        const { resources } = await container.items
-          .query({
-            query: `SELECT * FROM c WHERE LOWER(c.topic) IN (${paramNames.join(', ')}) OFFSET 0 LIMIT @limit`,
-            parameters: [
-              ...paramValues,
-              { name: '@limit', value: overfetchCount * topicList.length },
-            ],
-          })
-          .fetchAll();
-        allQuestions = resources;
+        const topicRegexes =
+          topicList.map(
+            (topic) =>
+              exactCI(topic)
+          );
+
+        const resources =
+          await questionsCollection
+            .find(
+              {
+                topic: {
+                  $in: topicRegexes,
+                },
+              },
+              {
+                projection: {
+                  _id: 0,
+                  _cosmosRid: 0,
+                },
+              }
+            )
+            .limit(
+              overfetchCount *
+              Math.max(
+                topicList.length,
+                1
+              )
+            )
+            .toArray();
+
+        allQuestions =
+          resources;
       } catch (err) {
         console.warn(`Query for topics [${topicList.join(', ')}] failed:`, err.message);
       }
@@ -525,37 +842,50 @@ export function gradeAttempt({ attemptDoc }) {
 
 // ─── computePercentile ───────────────────────────────────
 
-export async function computePercentile({ examSlug, testId, score }) {
+export async function computePercentile({
+  examSlug,
+  testId,
+  score,
+}) {
   try {
-    const container = getMockAttemptsContainer();
+    const attempts =
+      getMockAttemptsCollection();
 
-    const { resources: belowRes } = await container.items
-      .query({
-        query: 'SELECT VALUE COUNT(1) FROM c WHERE c.examSlug = @examSlug AND c.testId = @testId AND c.status = "completed" AND c.result.totalScore <= @score',
-        parameters: [
-          { name: '@examSlug', value: examSlug },
-          { name: '@testId', value: testId },
-          { name: '@score', value: score },
-        ],
-      })
-      .fetchAll();
+    const baseFilter = {
+      examSlug,
+      testId,
+      status: 'completed',
+    };
 
-    const { resources: totalRes } = await container.items
-      .query({
-        query: 'SELECT VALUE COUNT(1) FROM c WHERE c.examSlug = @examSlug AND c.testId = @testId AND c.status = "completed"',
-        parameters: [
-          { name: '@examSlug', value: examSlug },
-          { name: '@testId', value: testId },
-        ],
-      })
-      .fetchAll();
+    const [
+      countBelow,
+      total,
+    ] = await Promise.all([
+      attempts.countDocuments({
+        ...baseFilter,
+        'result.totalScore': {
+          $lte: Number(score),
+        },
+      }),
+      attempts.countDocuments(
+        baseFilter
+      ),
+    ]);
 
-    const countBelow = belowRes[0] || 0;
-    const total = totalRes[0] || 0;
-
-    return total > 0 ? Math.round((countBelow / total) * 10000) / 100 : 50;
+    return total > 0
+      ? Math.round(
+          (
+            countBelow /
+            total
+          ) * 10000
+        ) / 100
+      : 50;
   } catch (err) {
-    console.warn('Percentile computation failed:', err.message);
-    return 50; // default
+    console.warn(
+      'Percentile computation failed:',
+      err.message
+    );
+
+    return 50;
   }
 }

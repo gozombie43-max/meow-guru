@@ -10,7 +10,9 @@ import {
   updateFailureMap,
   getTopWeakConcepts,
 } from "./cognitiveMapper.js";
-import { getUsersContainer } from "../containerStore.js";
+import {
+  getUsersCollection,
+} from "../config/mongodb.js";
 import { chatJSON } from "../ai/azureClient.js";
 
 const router = express.Router();
@@ -20,13 +22,45 @@ const router = express.Router();
 const brainScanCache = new LRUCache({ max: 500, ttl: 5 * 60 * 1000 });
 
 const getUserById = async (id) => {
-  const { resources } = await getUsersContainer().items
-    .query({
-      query: "SELECT * FROM c WHERE c.id = @id",
-      parameters: [{ name: "@id", value: id }],
-    })
-    .fetchAll();
-  return resources[0];
+  if (!id) {
+    return null;
+  }
+
+  return getUsersCollection().findOne({
+    id: String(id),
+    type: {
+      $ne: "email_lock",
+    },
+  });
+};
+
+const updateUserCognitiveData = async (
+  profile,
+  fields
+) => {
+  if (!profile?._id) {
+    throw new Error(
+      "Cannot update user without MongoDB _id"
+    );
+  }
+
+  const result =
+    await getUsersCollection().updateOne(
+      {
+        _id: profile._id,
+      },
+      {
+        $set: fields,
+      }
+    );
+
+  if (result.matchedCount !== 1) {
+    throw new Error(
+      `User "${profile.id}" no longer exists`
+    );
+  }
+
+  return result;
 };
 
 const DIMENSION_KEYS = Object.values(DIMENSIONS);
@@ -546,7 +580,6 @@ router.post("/tag-failure", async (req, res) => {
     });
 
     // 2. Fetch user profile
-    const container = getUsersContainer();
     const profile = await getUserById(userId);
     if (!profile) {
       return res.status(404).json({ error: "User not found" });
@@ -562,14 +595,18 @@ router.post("/tag-failure", async (req, res) => {
       },
     ]);
 
-    // 4. Upsert profile back to Cosmos
-    await container.items.upsert({
-      ...profile,
-      failureMap: updatedMap,
-      masteryMap: profile.masteryMap || {},
-      timePerQuestion: profile.timePerQuestion || {},
-      lastActiveDate: new Date().toISOString(),
-    });
+    // 4. Update cognitive data in MongoDB
+    await updateUserCognitiveData(
+      profile,
+      {
+        failureMap: updatedMap,
+        masteryMap: profile.masteryMap || {},
+        timePerQuestion: profile.timePerQuestion || {},
+        lastActiveDate: new Date().toISOString(),
+      }
+    );
+
+    brainScanCache.delete(userId);
 
     res.json({
       success: true,
@@ -604,7 +641,6 @@ router.post("/tag-quiz-results", async (req, res) => {
     const tagged = await tagFailureBatch(wrongAnswers, 3);
 
     // 2. Fetch user profile
-    const container = getUsersContainer();
     const profile = await getUserById(userId);
     if (!profile) {
       return res.status(404).json({ error: "User not found" });
@@ -622,14 +658,18 @@ router.post("/tag-quiz-results", async (req, res) => {
       }
     }
 
-    // 5. Upsert back
-    await container.items.upsert({
-      ...profile,
-      failureMap: updatedMap,
-      timePerQuestion: timeMap,
-      masteryMap: profile.masteryMap || {},
-      lastActiveDate: new Date().toISOString(),
-    });
+    // 5. Update cognitive data in MongoDB
+    await updateUserCognitiveData(
+      profile,
+      {
+        failureMap: updatedMap,
+        timePerQuestion: timeMap,
+        masteryMap: profile.masteryMap || {},
+        lastActiveDate: new Date().toISOString(),
+      }
+    );
+
+    brainScanCache.delete(userId);
 
     // 6. Surface top weak concepts
     const topWeak = getTopWeakConcepts(updatedMap, 5);

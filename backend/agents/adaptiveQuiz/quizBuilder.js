@@ -1,19 +1,13 @@
 // backend/agents/adaptiveQuiz/quizBuilder.js
 // QuizGuru — Adaptive Quiz Builder
-// Fetches questions from Cosmos DB based on AI-generated topic allocations
+// Fetches questions from MongoDB Atlas based on AI-generated topic allocations
 
-import { CosmosClient } from "@azure/cosmos";
 import { chatJSON } from "../../ai/azureClient.js";
-
-let _cosmosClient = null;
-function getCosmosClient() {
-  if (!_cosmosClient) {
-    const endpoint = process.env.COSMOS_ENDPOINT || "https://dummy.documents.azure.com:443/";
-    const key = process.env.COSMOS_KEY || "dummy-key==";
-    _cosmosClient = new CosmosClient({ endpoint, key });
-  }
-  return _cosmosClient;
-}
+import {
+  getQuestionsCollection,
+  getUsersCollection,
+  getMongoDB,
+} from "../../config/mongodb.js";
 
 const AOAI_MODEL = process.env.AZURE_OPENAI_MODEL || process.env.AZURE_OPENAI_DEPLOYMENT || "o4-mini";
 
@@ -30,96 +24,132 @@ function normalizeTopicName(topic) {
   return topic;
 }
 
-const DB   = process.env.COSMOS_DB_NAME   || "quizDB";
-const CONT = process.env.COSMOS_CONTAINER || "questions";
-
-function getContainer() {
-  return getCosmosClient().database(DB).container(CONT);
+function escapeRegex(value = "") {
+  return String(value).replace(
+    /[.*+?^${}()|[\]\\]/g,
+    "\\$&"
+  );
 }
+
+function exactCI(value) {
+  return new RegExp(
+    `^${escapeRegex(value)}$`,
+    "i"
+  );
+}
+
+const QUESTION_PROJECTION = {
+  _id: 0,
+  id: 1,
+  topic: 1,
+  subject: 1,
+  chapter: 1,
+  concept: 1,
+  difficulty: 1,
+  question: 1,
+  options: 1,
+  correctAnswer: 1,
+  correctLetter: 1,
+  solution: 1,
+  exam: 1,
+  year: 1,
+};
 
 // ─── Fetch questions for a single topic allocation ────────────────────────────
 
-async function fetchForAllocation({ topic, subject, difficultyMix, excludeIds = [] }) {
-  const container = getContainer();
+async function fetchForAllocation({
+  topic,
+  subject,
+  difficultyMix,
+  excludeIds = [],
+}) {
+  const collection = getQuestionsCollection();
   const questions = [];
   const normalizedTopic = normalizeTopicName(topic);
-  const requiredTotal = Object.values(difficultyMix).reduce((a, b) => a + b, 0);
+  const requiredTotal = Object.values(difficultyMix)
+    .reduce((a, b) => a + b, 0);
 
-  // Fetch per difficulty level in parallel
-  const difficulties = Object.entries(difficultyMix).filter(([, count]) => count > 0);
+  const difficulties = Object.entries(difficultyMix)
+    .filter(([, count]) => count > 0);
 
-  const fetches = difficulties.map(async ([difficulty, count]) => {
-    // Extra buffer: fetch 3× needed, then pick randomly (avoids repetition)
-    const fetchCount = Math.min(count * 3, 50);
-    const excludeClause = excludeIds.length > 0
-      ? `AND NOT ARRAY_CONTAINS(@excluded, c.id)`
-      : "";
+  const topicFilter = {
+    $or: [
+      { topic: exactCI(normalizedTopic) },
+      { chapter: exactCI(normalizedTopic) },
+      { concept: exactCI(normalizedTopic) },
+    ],
+  };
 
-    // Be tolerant: some question sources use `topic`, others `chapter` or `concept`.
-    // Also compare `subject` case-insensitively (Maths vs Mathematics vs Maths).
-    const query = {
-      query: `SELECT TOP @count c.id, c.topic, c.subject, c.chapter, c.concept,
-             c.difficulty, c.question, c.options, c.correctAnswer,
-             c.correctLetter, c.solution, c.exam, c.year
-              FROM c
-              WHERE (c.topic = @topic OR c.chapter = @topic OR c.concept = @topic)
-              AND c.difficulty = @difficulty
-              AND LOWER(c.subject) = @subjectLower
-              ${excludeClause}
-              ORDER BY c._ts DESC`,
-      parameters: [
-        { name: "@count",      value: fetchCount },
-        { name: "@topic",      value: normalizedTopic },
-        { name: "@difficulty", value: difficulty },
-        { name: "@subjectLower", value: (subject || "").toLowerCase() },
-        ...(excludeIds.length > 0
-          ? [{ name: "@excluded", value: excludeIds.slice(-300) }]
-          : []),
-      ],
-    };
+  const fetches = difficulties.map(
+    async ([difficulty, count]) => {
+      const fetchCount = Math.min(count * 3, 50);
+      const filter = {
+        ...topicFilter,
+        difficulty: exactCI(difficulty),
+        subject: exactCI(subject || ""),
+      };
 
-    try {
-      // Do not force a partition key here — question documents across sources
-      // may have different partition schemes. Let the query engine route.
-      const { resources } = await container.items.query(query).fetchAll();
+      if (excludeIds.length > 0) {
+        filter.id = { $nin: excludeIds.slice(-300) };
+      }
 
-      // Randomly pick only what we need from the buffer
-      const shuffled = resources.sort(() => Math.random() - 0.5);
-      return shuffled.slice(0, count);
-    } catch (err) {
-      console.error(`[quizBuilder] Cosmos query failed for ${topic}/${difficulty}:`, err.message);
-      return [];
+      try {
+        const resources = await collection
+          .find(filter, { projection: QUESTION_PROJECTION })
+          .sort({ _ts: -1, createdAt: -1 })
+          .limit(fetchCount)
+          .toArray();
+
+        const shuffled = resources.sort(
+          () => Math.random() - 0.5
+        );
+
+        return shuffled.slice(0, count);
+      } catch (err) {
+        console.error(
+          `[quizBuilder] MongoDB query failed for ${topic}/${difficulty}:`,
+          err.message
+        );
+
+        return [];
+      }
     }
-  });
+  );
 
   const results = await Promise.all(fetches);
   questions.push(...results.flat());
 
-  // If not enough questions for this topic, top-up with any difficulty
+  // ── Top up from any difficulty ──────────────────────
   if (questions.length < requiredTotal) {
     const needed = requiredTotal - questions.length;
-    const existingIds = new Set(questions.map(q => q.id));
-    const topupQuery = {
-      query: `SELECT TOP @count c.id, c.topic, c.subject, c.chapter, c.concept,
-             c.difficulty, c.question, c.options, c.correctAnswer,
-             c.correctLetter, c.solution, c.exam, c.year
-              FROM c
-              WHERE (c.topic = @topic OR c.chapter = @topic OR c.concept = @topic)
-              AND NOT ARRAY_CONTAINS(@excluded, c.id)`,
-      parameters: [
-        { name: "@count",    value: needed + 5 },
-        { name: "@topic",    value: normalizedTopic },
-        { name: "@excluded", value: [...excludeIds.slice(-200), ...existingIds] },
-      ],
-    };
+    const existingIds = new Set(questions.map((q) => q.id));
+    const excluded = [
+      ...excludeIds.slice(-200),
+      ...existingIds,
+    ];
+    const topupFilter = { ...topicFilter };
+
+    if (excluded.length > 0) {
+      topupFilter.id = { $nin: excluded };
+    }
+
     try {
-      const { resources } = await container.items.query(topupQuery).fetchAll();
+      const resources = await collection
+        .find(topupFilter, { projection: QUESTION_PROJECTION })
+        .limit(needed + 5)
+        .toArray();
+
       questions.push(...resources.slice(0, needed));
-    } catch (_) {}
+    } catch (err) {
+      console.warn(
+        "[quizBuilder] MongoDB top-up failed:",
+        err.message
+      );
+    }
   }
 
   // If still short, try generating synthetic similar questions using Azure OpenAI.
-  // This is the main fallback path when Cosmos has no rows for a topic like
+  // This is the main fallback path when MongoDB has no rows for a topic like
   // Active & Passive Voice.
   if (questions.length < requiredTotal) {
     const stillNeeded = requiredTotal - questions.length;
@@ -127,7 +157,7 @@ async function fetchForAllocation({ topic, subject, difficultyMix, excludeIds = 
     questions.push(...generated.slice(0, stillNeeded));
   }
 
-  // Final safety net: if Cosmos returned nothing and OpenAI generation failed,
+  // Final safety net: if MongoDB returned nothing and OpenAI generation failed,
   // produce a minimal synthetic set so the UI never hard-stops on an empty topic.
   if (questions.length === 0 && requiredTotal > 0) {
     const fallbackGenerated = await generateSyntheticQuestions(normalizedTopic, subject, requiredTotal, difficultyMix, excludeIds, true);
@@ -140,7 +170,7 @@ async function fetchForAllocation({ topic, subject, difficultyMix, excludeIds = 
 // ─── Main: build full quiz from config ───────────────────────────────────────
 
 /**
- * Fetches and assembles a complete quiz from Cosmos DB
+ * Fetches and assembles a complete quiz from MongoDB Atlas
  * based on the pattern analyzer's configuration.
  *
  * @param {Object} config          - Output of analyzePatternAndConfigure()
@@ -196,155 +226,248 @@ export async function buildAdaptiveQuiz(config, recentIds = []) {
   };
 }
 
-// ─── Save attempt history to Cosmos userProfiles ─────────────────────────────
+// ─── Save attempt history to MongoDB userProfiles ────────────────────────────
 
 /**
  * Records quiz results for future pattern analysis.
  * Call this after the student completes the quiz.
  */
-export async function saveQuizAttempts(userId, attempts) {
-  if (!userId || userId === "demo-user" || !Array.isArray(attempts) || attempts.length === 0) {
-    return { success: true, attemptsRecorded: 0 };
+function buildAttemptState(
+  source,
+  attempts
+) {
+  const attemptHistory = [
+    ...(source.attemptHistory || []),
+    ...attempts,
+  ].slice(-500);
+
+  const cutoff =
+    Date.now() -
+    48 * 60 * 60 * 1000;
+
+  const recentAttemptIds = [
+    ...(source.recentAttemptIds || [])
+      .filter((record) => record.ts > cutoff),
+    ...attempts.map((attempt) => ({
+      id: attempt.questionId,
+      ts: Date.now(),
+    })),
+  ].slice(-300);
+
+  const masteryMap = {
+    ...(source.masteryMap || {}),
+  };
+  const topicResults = {};
+
+  for (const attempt of attempts) {
+    const topic =
+      attempt.topic || "unknown";
+
+    if (!topicResults[topic]) {
+      topicResults[topic] = {
+        correct: 0,
+        total: 0,
+      };
+    }
+
+    topicResults[topic].total++;
+
+    if (attempt.isCorrect) {
+      topicResults[topic].correct++;
+    }
+  }
+
+  for (const [topic, stats] of Object.entries(topicResults)) {
+    const accuracy =
+      stats.correct / stats.total;
+    const currentLevel =
+      masteryMap[topic]?.level || 0;
+    const newLevel =
+      accuracy >= 0.95
+        ? 5
+        : accuracy >= 0.80
+          ? 4
+          : accuracy >= 0.60
+            ? 3
+            : accuracy >= 0.30
+              ? 2
+              : 1;
+
+    masteryMap[topic] = {
+      level: Math.max(
+        currentLevel,
+        newLevel
+      ),
+      lastPracticed: Date.now(),
+      history: [
+        ...(masteryMap[topic]?.history || []),
+        newLevel,
+      ].slice(-10),
+    };
+  }
+
+  return {
+    attemptHistory,
+    recentAttemptIds,
+    masteryMap,
+  };
+}
+
+export async function saveQuizAttempts(
+  userId,
+  attempts
+) {
+  if (
+    !userId ||
+    userId === "demo-user" ||
+    !Array.isArray(attempts) ||
+    attempts.length === 0
+  ) {
+    return {
+      success: true,
+      attemptsRecorded: 0,
+    };
   }
 
   try {
-    // 1. Try updating the registered user in 'users' container
-    let userDoc = null;
-    let usersCont = null;
-    try {
-      usersCont = getCosmosClient().database(DB).container("users");
-      const { resources } = await usersCont.items
-        .query({
-          query: "SELECT * FROM c WHERE c.id = @id OR c.email = @id",
-          parameters: [{ name: "@id", value: userId }],
-        })
-        .fetchAll();
-      if (resources && resources[0]) userDoc = resources[0];
-    } catch (err) {
-      console.warn("[saveQuizAttempts] querying users container:", err.message);
-    }
+    const identifier =
+      String(userId).trim();
+    const users =
+      getUsersCollection();
 
-    if (userDoc && usersCont) {
-      const updated = [
-        ...(userDoc.attemptHistory || []),
-        ...attempts,
-      ].slice(-500);
-
-      const cutoff = Date.now() - 48 * 60 * 60 * 1000;
-      const recentIds = [
-        ...(userDoc.recentAttemptIds || []).filter(r => r.ts > cutoff),
-        ...attempts.map(a => ({ id: a.questionId, ts: Date.now() })),
-      ].slice(-300);
-
-      const masteryMap = { ...(userDoc.masteryMap || {}) };
-      const topicResults = {};
-      for (const a of attempts) {
-        if (!topicResults[a.topic]) topicResults[a.topic] = { correct: 0, total: 0 };
-        topicResults[a.topic].total++;
-        if (a.isCorrect) topicResults[a.topic].correct++;
-      }
-      for (const [topic, stats] of Object.entries(topicResults)) {
-        const acc = stats.correct / stats.total;
-        const currentLevel = masteryMap[topic]?.level || 0;
-        const newLevel = acc >= 0.95 ? 5
-          : acc >= 0.80 ? 4
-          : acc >= 0.60 ? 3
-          : acc >= 0.30 ? 2
-          : 1;
-        masteryMap[topic] = {
-          level:         Math.max(currentLevel, newLevel),
-          lastPracticed: Date.now(),
-          history:       [...(masteryMap[topic]?.history || []), newLevel].slice(-10),
-        };
-      }
-
-      await usersCont.items.upsert({
-        ...userDoc,
-        attemptHistory:   updated,
-        recentAttemptIds: recentIds,
-        masteryMap,
-        lastActiveDate:   new Date().toISOString(),
+    /*
+     * First preference:
+     * registered user document.
+     */
+    const userDoc =
+      await users.findOne({
+        $and: [
+          {
+            $or: [
+              { id: identifier },
+              {
+                email:
+                  exactCI(identifier),
+              },
+            ],
+          },
+          {
+            type: {
+              $ne: "email_lock",
+            },
+          },
+        ],
       });
 
-      return { success: true, attemptsRecorded: attempts.length };
+    if (userDoc) {
+      const state =
+        buildAttemptState(
+          userDoc,
+          attempts
+        );
+
+      await users.updateOne(
+        { _id: userDoc._id },
+        {
+          $set: {
+            ...state,
+            lastActiveDate:
+              new Date().toISOString(),
+          },
+        }
+      );
+
+      return {
+        success: true,
+        attemptsRecorded:
+          attempts.length,
+      };
     }
 
-    // 2. Secondary fallback: 'userProfiles' container
-    try {
-      const profileContainer = getCosmosClient()
-        .database(DB)
-        .container("userProfiles");
+    /*
+     * Secondary fallback:
+     * MongoDB userProfiles collection.
+     *
+     * This preserves the old Cosmos fallback
+     * without requiring Cosmos.
+     */
+    const profiles =
+      getMongoDB().collection(
+        "userProfiles"
+      );
 
-      let profile;
-      try {
-        const { resource } = await profileContainer.item(userId, userId).read();
-        profile = resource;
-      } catch {
-        profile = {
-          id: userId, userId,
-          attemptHistory: [],
-          failureMap: {},
-          masteryMap: {},
-          recentAttemptIds: [],
-          createdAt: new Date().toISOString(),
-        };
-      }
+    let profile =
+      await profiles.findOne({
+        $or: [
+          { id: identifier },
+          { userId: identifier },
+        ],
+      });
 
-      const updated = [
-        ...(profile.attemptHistory || []),
-        ...attempts,
-      ].slice(-500);
+    if (!profile) {
+      profile = {
+        id: identifier,
+        userId: identifier,
+        attemptHistory: [],
+        failureMap: {},
+        masteryMap: {},
+        recentAttemptIds: [],
+        createdAt:
+          new Date().toISOString(),
+      };
 
-      const cutoff = Date.now() - 48 * 60 * 60 * 1000;
-      const recentIds = [
-        ...(profile.recentAttemptIds || []).filter(r => r.ts > cutoff),
-        ...attempts.map(a => ({ id: a.questionId, ts: Date.now() })),
-      ].slice(-300);
+      const state =
+        buildAttemptState(
+          profile,
+          attempts
+        );
 
-      const masteryMap = { ...(profile.masteryMap || {}) };
-      const topicResults = {};
-      for (const a of attempts) {
-        if (!topicResults[a.topic]) topicResults[a.topic] = { correct: 0, total: 0 };
-        topicResults[a.topic].total++;
-        if (a.isCorrect) topicResults[a.topic].correct++;
-      }
-      for (const [topic, stats] of Object.entries(topicResults)) {
-        const acc = stats.correct / stats.total;
-        const currentLevel = masteryMap[topic]?.level || 0;
-        const newLevel = acc >= 0.95 ? 5
-          : acc >= 0.80 ? 4
-          : acc >= 0.60 ? 3
-          : acc >= 0.30 ? 2
-          : 1;
-        masteryMap[topic] = {
-          level:         Math.max(currentLevel, newLevel), // never downgrade immediately
-          lastPracticed: Date.now(),
-          history:       [...(masteryMap[topic]?.history || []), newLevel].slice(-10),
-        };
-      }
-
-      await profileContainer.items.upsert({
+      await profiles.insertOne({
         ...profile,
-        attemptHistory:   updated,
-        recentAttemptIds: recentIds,
-        masteryMap,
-        lastActiveDate:   Date.now(),
+        ...state,
+        lastActiveDate:
+          Date.now(),
       });
-    } catch (profErr) {
-      console.warn("[saveQuizAttempts] userProfiles upsert non-fatal error:", profErr.message);
+    } else {
+      const state =
+        buildAttemptState(
+          profile,
+          attempts
+        );
+
+      await profiles.updateOne(
+        { _id: profile._id },
+        {
+          $set: {
+            ...state,
+            lastActiveDate:
+              Date.now(),
+          },
+        }
+      );
     }
 
-    return { success: true, attemptsRecorded: attempts.length };
+    return {
+      success: true,
+      attemptsRecorded:
+        attempts.length,
+    };
   } catch (err) {
-    console.error("[saveQuizAttempts]", err.message);
-    return { success: false, error: err.message };
+    console.error(
+      "[saveQuizAttempts]",
+      err.message
+    );
+
+    return {
+      success: false,
+      error: err.message,
+    };
   }
 }
-
 // Generate synthetic question variations using Azure OpenAI (best-effort)
 async function generateSyntheticQuestions(topic, subject, count, difficultyMix, excludeIds = [], forceFallback = false) {
   const prompt = `Create ${count} unique multiple-choice questions for the topic "${topic}" (subject: ${subject}).
-${forceFallback ? "There are zero Cosmos DB questions for this topic, so generate the entire quiz from scratch." : "Use this as a backup to fill missing quiz slots."}
+${forceFallback ? "There are zero MongoDB questions for this topic, so generate the entire quiz from scratch." : "Use this as a backup to fill missing quiz slots."}
 Return JSON array of objects with keys: id, topic, subject, difficulty (easy|medium|hard), question, options (array of 4), correctAnswer, correctLetter, solution.
 Do not include any copyrighted passages. Keep each question concise.
 If the topic is Active & Passive Voice, generate transformation questions, not vocabulary questions.`;

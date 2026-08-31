@@ -4,7 +4,10 @@
 
 import 'dotenv/config';
 import { readFileSync } from 'fs';
-import { CosmosClient } from '@azure/cosmos';
+import {
+  connectMongoDB,
+  getQuestionsCollection,
+} from './config/mongodb.js';
 import { createQuestion } from './schema.js';
 
 // ── CONFIG ─────────────────────────────────────────────
@@ -55,33 +58,76 @@ function mapQuestions(rawList) {
   );
 }
 
-// 3. Upload to Cosmos DB
+// 3. Upload to MongoDB Atlas
+
 async function upload(questions) {
-  const client = new CosmosClient({
-    endpoint: process.env.COSMOS_ENDPOINT,
-    key:      process.env.COSMOS_KEY,
-  });
+  await connectMongoDB();
 
-  const { database } = await client.databases.createIfNotExists({ id: 'quizDB' });
-  const { container } = await database.containers.createIfNotExists({
-    id: 'questions',
-    partitionKey: { paths: ['/topic'] },
-  });
+  const collection =
+    getQuestionsCollection();
 
-  let success = 0, failed = 0;
+  let success = 0;
+  let failed = 0;
 
   for (const q of questions) {
     try {
-      await container.items.upsert(q);   // upsert = insert or update
+      /*
+       * Your Mongo questions collection uses
+       * id + topic as the safe logical identity.
+       *
+       * Fall back to gid if this older schema
+       * does not contain id.
+       */
+      let filter;
+
+      if (q.id) {
+        filter = {
+          id: q.id,
+          topic: q.topic,
+        };
+      } else if (q.gid) {
+        filter = {
+          gid: q.gid,
+          topic: q.topic,
+        };
+      } else {
+        throw new Error(
+          "Question has neither id nor gid"
+        );
+      }
+
+      await collection.updateOne(
+        filter,
+        {
+          $set: q,
+        },
+        {
+          upsert: true,
+        }
+      );
+
       success++;
-      if (success % 50 === 0) console.log(`  ✅ Uploaded ${success}/${questions.length}`);
+
+      if (
+        success % 50 === 0
+      ) {
+        console.log(
+          `  ✅ Uploaded ${success}/${questions.length}`
+        );
+      }
+
     } catch (err) {
       failed++;
-      console.error(`  ❌ Failed gid=${q.gid}: ${err.message}`);
+
+      console.error(
+        `  ❌ Failed gid=${q.gid ?? q.id}: ${err.message}`
+      );
     }
   }
 
-  console.log(`\nDone. ✅ ${success} uploaded, ❌ ${failed} failed.`);
+  console.log(
+    `\nDone. ✅ ${success} uploaded, ❌ ${failed} failed.`
+  );
 }
 
 // ── MAIN ───────────────────────────────────────────────
@@ -97,7 +143,7 @@ async function upload(questions) {
     const questions = mapQuestions(raw);
     console.log(`  Mapped to schema ✅`);
 
-    console.log('Uploading to Cosmos DB...');
+    console.log('Uploading to MongoDB Atlas...');
     await upload(questions);
 
   } catch (err) {

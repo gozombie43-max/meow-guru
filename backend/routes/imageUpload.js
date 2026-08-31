@@ -1,9 +1,19 @@
 import express from "express";
 import upload from "../middleware/upload.js";
 import auth from "../middleware/auth.js";
-import { bulkUpload, uploadImageQuestion, uploadSolutionImage } from "../controllers/imageQuestionController.js";
+import {
+  bulkUpload,
+  uploadImageQuestion,
+  uploadSolutionImage,
+  serveImage,
+} from "../controllers/imageQuestionController.js";
 
 const router = express.Router();
+
+router.get(
+  "/image/:id",
+  serveImage
+);
 
 router.post(
   "/image-question",

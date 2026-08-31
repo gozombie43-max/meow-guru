@@ -5,7 +5,7 @@ import {
   setQuestions, getCurrentQuestion, submitAnswer,
   nextQuestion, getScores, getRoomBySocket,
 } from './roomManager.js';
-import { getQuestionsContainer } from '../containerStore.js';
+import { getQuestionsCollection } from '../config/mongodb.js';
 import { verifyToken } from '../auth/jwt.js';
 
 function normalizeSearchKey(value) {
@@ -168,74 +168,103 @@ async function startGame(io, code) {
   if (!room) return;
 
   try {
-    const container = getQuestionsContainer();
-    const filters = [];
-    const parameters = [];
+    const questions = getQuestionsCollection();
 
+    const mongoFilter = {};
+
+    // Preserve previous case-insensitive exact subject match
     if (room.subject) {
-      filters.push('LOWER(c.subject) = LOWER(@subject)');
-      parameters.push({ name: '@subject', value: room.subject });
+      mongoFilter.subject = {
+        $regex: `^${String(room.subject)
+          .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`,
+        $options: 'i',
+      };
     }
 
-    const normalizedTopic = room.topic && room.topic !== 'all' ? normalizeSearchKey(room.topic) : null;
+    const normalizedTopic =
+      room.topic && room.topic !== 'all'
+        ? normalizeSearchKey(room.topic)
+        : null;
 
-    // Push topic filter into Cosmos query when possible to avoid cross-partition fan-out.
-    // Since the questions container is partitioned on /topic, an exact topic match
-    // becomes a single-partition query — much cheaper in RUs.
+    /*
+     * Preserve previous Cosmos behaviour:
+     * when topic is specified, first perform an exact
+     * case-insensitive topic match in the database.
+     */
     if (normalizedTopic && room.topic) {
-      filters.push('LOWER(c.topic) = LOWER(@topic)');
-      parameters.push({ name: '@topic', value: room.topic });
+      mongoFilter.topic = {
+        $regex: `^${String(room.topic)
+          .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`,
+        $options: 'i',
+      };
     }
 
-    const whereClause = filters.length ? ` WHERE ${filters.join(' AND ')}` : '';
-    const needsCrossPartition = !normalizedTopic; // only fan out when no topic specified
+    let resources = await questions
+      .find(mongoFilter)
+      .toArray();
 
-    let { resources } = await container.items.query(
-      { query: `SELECT * FROM c${whereClause}`, parameters },
-      needsCrossPartition ? { enableCrossPartition: true } : undefined
-    ).fetchAll();
-
-    // For cross-field fuzzy matching on non-topic fields, keep a JS filter as fallback
+    /*
+     * Keep your existing normalized cross-field validation.
+     */
     if (normalizedTopic) {
-      resources = resources.filter((q) => matchesNormalizedTopic(q, normalizedTopic));
+      resources = resources.filter((question) =>
+        matchesNormalizedTopic(
+          question,
+          normalizedTopic
+        )
+      );
     }
 
     if (resources.length === 0) {
-      const filterLabel = room.topic && room.topic !== 'all'
-        ? `topic: ${room.topic}`
-        : `subject: ${room.subject || 'all'}`;
-      io.to(code).emit('room:error', { message: `No questions found for ${filterLabel}` });
+      const filterLabel =
+        room.topic &&
+        room.topic !== 'all'
+          ? `topic: ${room.topic}`
+          : `subject: ${room.subject || 'all'}`;
+
+      io.to(code).emit('room:error', {
+        message:
+          `No questions found for ${filterLabel}`,
+      });
+
       return;
     }
 
-    // Shuffle and pick questionCount
+    // Shuffle and select requested count
     const shuffled = resources
       .sort(() => Math.random() - 0.5)
       .slice(0, room.questionCount);
 
     setQuestions(code, shuffled);
+
     room.status = 'active';
 
-    // Notify game starting
     io.to(code).emit('game:start', {
       message: 'Battle started!',
-      total:   shuffled.length,
-      topic:   room.topic,
+      total: shuffled.length,
+      topic: room.topic,
     });
 
-    // Send first question after 1 second
     setTimeout(() => {
       const first = shuffled[0];
+
       io.to(code).emit('game:question', {
-        question:      first.question,
-        options:       first.options,
+        question: first.question,
+        options: first.options,
         questionIndex: 0,
-        total:         shuffled.length,
+        total: shuffled.length,
       });
     }, 1200);
 
   } catch (err) {
-    console.error('startGame error:', err.message);
-    io.to(code).emit('room:error', { message: 'Failed to load questions. Try again.' });
+    console.error(
+      'startGame error:',
+      err.message
+    );
+
+    io.to(code).emit('room:error', {
+      message:
+        'Failed to load questions. Try again.',
+    });
   }
 }

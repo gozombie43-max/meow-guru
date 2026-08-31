@@ -1,0 +1,67 @@
+import { MongoClient } from "mongodb";
+
+let client = null;
+let db = null;
+
+export async function connectMongoDB() {
+  if (db) {
+    return db;
+  }
+
+  const uri = process.env.MONGODB_URI;
+  if (!uri) {
+    throw new Error("MONGODB_URI is not configured");
+  }
+
+  client ??= new MongoClient(uri);
+  await client.connect();
+
+  // Verify the connection
+  await client.db("admin").command({ ping: 1 });
+
+  db = client.db("quizDB");
+
+  console.log("✅ MongoDB Atlas connected");
+
+  return db;
+}
+
+export function getMongoDB() {
+  if (!db) {
+    throw new Error(
+      "MongoDB has not been initialized. Call connectMongoDB() first."
+    );
+  }
+
+  return db;
+}
+
+export function getQuestionsCollection() {
+  return getMongoDB().collection("questions");
+}
+
+export function getUsersCollection() {
+  return getMongoDB().collection("users");
+}
+
+export function getNotesCollection() {
+  return getMongoDB().collection("notes");
+}
+
+export function getAccessCodesCollection() {
+  return getMongoDB().collection(
+    'accessCodes'
+  );
+}
+
+export function getMockAttemptsCollection() {
+  return getMongoDB().collection("mockAttempts");
+}
+
+export function getMockSlotsCollection() {
+  return getMongoDB().collection("mockSlots");
+}
+
+export function getVideosCollection() {
+  return getMongoDB().collection("videos");
+}

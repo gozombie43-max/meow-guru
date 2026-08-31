@@ -2,7 +2,9 @@ import express from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { protect } from '../middleware/protect.js';
 import adminAuth from '../middleware/auth.js';
-import { getMockAttemptsContainer } from '../containerStore.js';
+import {
+  getMockAttemptsCollection,
+} from '../config/mongodb.js';
 import {
   buildPaper,
   gradeAttempt,
@@ -18,6 +20,29 @@ import {
 } from '../services/mockTestEngine.js';
 
 const router = express.Router();
+
+const cleanAttempt = (doc) => {
+  if (!doc) return doc;
+
+  const {
+    _id,
+    _cosmosRid,
+    ...clean
+  } = doc;
+
+  return clean;
+};
+
+async function getOwnedAttempt(
+  attemptId,
+  userId
+) {
+  return getMockAttemptsCollection()
+    .findOne({
+      id: String(attemptId),
+      userId: String(userId),
+    });
+}
 
 // ─── Public Slot Routes ───────────────────────────────────
 
@@ -153,7 +178,8 @@ router.post('/:examSlug/:testId/start', protect, async (req, res) => {
 
     const { clientPaper, answerKey } = await buildPaper({ examSlug, testId });
 
-    const container = getMockAttemptsContainer();
+    const attempts =
+      getMockAttemptsCollection();
     const doc = {
       id: uuidv4(),
       userId: req.user.id,
@@ -172,9 +198,12 @@ router.post('/:examSlug/:testId/start', protect, async (req, res) => {
       weakAreas: null,
     };
 
-    await container.items.create(doc);
+    await attempts.insertOne(doc);
     // Don't send answerKey to client
-    const { answerKey: _ak, ...clientDoc } = doc;
+    const {
+      answerKey: _ak,
+      ...clientDoc
+    } = cleanAttempt(doc);
     res.json({ attemptId: doc.id, ...clientDoc });
   } catch (err) {
     console.error('Start test error:', err);
@@ -183,145 +212,339 @@ router.post('/:examSlug/:testId/start', protect, async (req, res) => {
 });
 
 // PATCH /attempt/:attemptId/autosave — Autosave progress
-router.patch('/attempt/:attemptId/autosave', protect, async (req, res) => {
-  try {
-    const { attemptId } = req.params;
-    const { answers, sectionTimers, currentSection } = req.body;
-    const container = getMockAttemptsContainer();
-
-    let doc;
+router.patch(
+  '/attempt/:attemptId/autosave',
+  protect,
+  async (req, res) => {
     try {
-      const { resource } = await container.item(attemptId, req.user.id).read();
-      doc = resource;
+      const { attemptId } = req.params;
+      const {
+        answers,
+        sectionTimers,
+        currentSection,
+      } = req.body;
+
+      const doc =
+        await getOwnedAttempt(
+          attemptId,
+          req.user.id
+        );
+
+      if (!doc) {
+        return res
+          .status(404)
+          .json({
+            error: 'Attempt not found',
+          });
+      }
+
+      if (doc.status !== 'in_progress') {
+        return res
+          .status(400)
+          .json({
+            error: 'Attempt is not in progress',
+          });
+      }
+
+      const updates = {};
+
+      if (answers) {
+        updates.answers = {
+          ...(doc.answers || {}),
+          ...answers,
+        };
+      }
+
+      if (sectionTimers) {
+        updates.sectionTimers = {
+          ...(doc.sectionTimers || {}),
+          ...sectionTimers,
+        };
+      }
+
+      if (currentSection !== undefined) {
+        updates.currentSection =
+          currentSection;
+      }
+
+      updates.updatedAt =
+        new Date().toISOString();
+
+      await getMockAttemptsCollection()
+        .updateOne(
+          {
+            _id: doc._id,
+            status: 'in_progress',
+          },
+          {
+            $set: updates,
+          }
+        );
+
+      return res.json({
+        ok: true,
+      });
     } catch (err) {
-      if (err.code === 404) return res.status(404).json({ error: 'Attempt not found' });
-      throw err;
+      console.error(
+        'Autosave error:',
+        err
+      );
+
+      return res
+        .status(500)
+        .json({
+          error: 'Failed to autosave',
+        });
     }
-    if (doc.status !== 'in_progress') return res.status(400).json({ error: 'Attempt is not in progress' });
-
-    if (answers) doc.answers = { ...doc.answers, ...answers };
-    if (sectionTimers) doc.sectionTimers = { ...doc.sectionTimers, ...sectionTimers };
-    if (currentSection !== undefined) doc.currentSection = currentSection;
-
-    await container.item(doc.id, doc.userId).replace(doc);
-    res.json({ ok: true });
-  } catch (err) {
-    console.error('Autosave error:', err);
-    res.status(500).json({ error: 'Failed to autosave' });
   }
-});
+);
 
 // POST /attempt/:attemptId/submit — Submit and grade attempt
-router.post('/attempt/:attemptId/submit', protect, async (req, res) => {
-  try {
-    const { attemptId } = req.params;
-    const container = getMockAttemptsContainer();
-
-    let doc;
+router.post(
+  '/attempt/:attemptId/submit',
+  protect,
+  async (req, res) => {
     try {
-      const { resource } = await container.item(attemptId, req.user.id).read();
-      doc = resource;
+      const { attemptId } =
+        req.params;
+
+      const doc =
+        await getOwnedAttempt(
+          attemptId,
+          req.user.id
+        );
+
+      if (!doc) {
+        return res
+          .status(404)
+          .json({
+            error: 'Attempt not found',
+          });
+      }
+
+      if (doc.status === 'completed') {
+        return res
+          .status(400)
+          .json({
+            error: 'Already submitted',
+          });
+      }
+
+      if (req.body.answers) {
+        doc.answers = {
+          ...(doc.answers || {}),
+          ...req.body.answers,
+        };
+      }
+
+      const result =
+        gradeAttempt({
+          attemptDoc: doc,
+        });
+
+      const percentile =
+        await computePercentile({
+          examSlug: doc.examSlug,
+          testId: doc.testId,
+          score: result.totalScore,
+        });
+
+      const submittedAt =
+        new Date().toISOString();
+      const finalResult = {
+        ...result,
+        percentile,
+      };
+
+      await getMockAttemptsCollection()
+        .updateOne(
+          {
+            _id: doc._id,
+          },
+          {
+            $set: {
+              answers: doc.answers || {},
+              status: 'completed',
+              submittedAt,
+              result: finalResult,
+            },
+          }
+        );
+
+      return res.json({
+        result: finalResult,
+        attemptId: doc.id,
+      });
     } catch (err) {
-      if (err.code === 404) return res.status(404).json({ error: 'Attempt not found' });
-      throw err;
+      console.error(
+        'Submit error:',
+        err
+      );
+
+      return res
+        .status(500)
+        .json({
+          error: 'Failed to submit test',
+        });
     }
-    if (doc.status === 'completed') return res.status(400).json({ error: 'Already submitted' });
-
-    // Merge any final answers from body
-    if (req.body.answers) doc.answers = { ...doc.answers, ...req.body.answers };
-
-    const result = gradeAttempt({ attemptDoc: doc });
-    const percentile = await computePercentile({
-      examSlug: doc.examSlug,
-      testId: doc.testId,
-      score: result.totalScore,
-    });
-
-    doc.status = 'completed';
-    doc.submittedAt = new Date().toISOString();
-    doc.result = { ...result, percentile };
-
-    await container.item(doc.id, doc.userId).replace(doc);
-
-    res.json({ result: doc.result, attemptId: doc.id });
-  } catch (err) {
-    console.error('Submit error:', err);
-    res.status(500).json({ error: 'Failed to submit test' });
   }
-});
+);
 
 // GET /attempt/:attemptId — Get attempt details
-router.get('/attempt/:attemptId', protect, async (req, res) => {
-  try {
-    const { attemptId } = req.params;
-    const container = getMockAttemptsContainer();
-
-    let doc;
+router.get(
+  '/attempt/:attemptId',
+  protect,
+  async (req, res) => {
     try {
-      const { resource } = await container.item(attemptId, req.user.id).read();
-      doc = resource;
-    } catch (err) {
-      if (err.code === 404) return res.status(404).json({ error: 'Attempt not found' });
-      throw err;
-    }
+      const doc =
+        await getOwnedAttempt(
+          req.params.attemptId,
+          req.user.id
+        );
 
-    // Only reveal answerKey after submission
-    if (doc.status !== 'completed') {
-      const { answerKey, ...safe } = doc;
-      return res.json(safe);
+      if (!doc) {
+        return res
+          .status(404)
+          .json({
+            error: 'Attempt not found',
+          });
+      }
+
+      const clean =
+        cleanAttempt(doc);
+
+      if (clean.status !== 'completed') {
+        const {
+          answerKey,
+          ...safe
+        } = clean;
+
+        return res.json(safe);
+      }
+
+      return res.json(clean);
+    } catch (err) {
+      console.error(
+        'Get attempt error:',
+        err
+      );
+
+      return res
+        .status(500)
+        .json({
+          error: 'Failed to get attempt',
+        });
     }
-    res.json(doc);
-  } catch (err) {
-    console.error('Get attempt error:', err);
-    res.status(500).json({ error: 'Failed to get attempt' });
   }
-});
+);
 
 // GET /:examSlug/:testId/history — User's attempts for a specific test
-router.get('/:examSlug/:testId/history', protect, async (req, res) => {
-  try {
-    const { examSlug, testId } = req.params;
-    const container = getMockAttemptsContainer();
+router.get(
+  '/:examSlug/:testId/history',
+  protect,
+  async (req, res) => {
+    try {
+      const {
+        examSlug,
+        testId,
+      } = req.params;
 
-    const { resources } = await container.items
-      .query({
-        query: 'SELECT c.id, c.testId, c.examSlug, c.status, c.startedAt, c.submittedAt, c.result FROM c WHERE c.userId = @userId AND c.examSlug = @examSlug AND c.testId = @testId ORDER BY c.startedAt DESC',
-        parameters: [
-          { name: '@userId', value: req.user.id },
-          { name: '@examSlug', value: examSlug },
-          { name: '@testId', value: testId },
-        ],
-      })
-      .fetchAll();
+      const resources =
+        await getMockAttemptsCollection()
+          .find(
+            {
+              userId: String(req.user.id),
+              examSlug,
+              testId,
+            },
+            {
+              projection: {
+                _id: 0,
+                _cosmosRid: 0,
+                id: 1,
+                testId: 1,
+                examSlug: 1,
+                status: 1,
+                startedAt: 1,
+                submittedAt: 1,
+                result: 1,
+              },
+            }
+          )
+          .sort({
+            startedAt: -1,
+          })
+          .toArray();
 
-    res.json({ attempts: resources });
-  } catch (err) {
-    console.error('Test history error:', err);
-    res.status(500).json({ error: 'Failed to get history' });
+      return res.json({
+        attempts: resources,
+      });
+    } catch (err) {
+      console.error(
+        'Test history error:',
+        err
+      );
+
+      return res
+        .status(500)
+        .json({
+          error: 'Failed to get history',
+        });
+    }
   }
-});
+);
 
 // GET /:examSlug/history — User's attempts across all tests for an exam
-router.get('/:examSlug/history', protect, async (req, res) => {
-  try {
-    const { examSlug } = req.params;
-    const container = getMockAttemptsContainer();
+router.get(
+  '/:examSlug/history',
+  protect,
+  async (req, res) => {
+    try {
+      const { examSlug } =
+        req.params;
 
-    const { resources } = await container.items
-      .query({
-        query: 'SELECT c.id, c.testId, c.examSlug, c.configKey, c.status, c.startedAt, c.submittedAt, c.result FROM c WHERE c.userId = @userId AND c.examSlug = @examSlug ORDER BY c.startedAt DESC',
-        parameters: [
-          { name: '@userId', value: req.user.id },
-          { name: '@examSlug', value: examSlug },
-        ],
-      })
-      .fetchAll();
+      const resources =
+        await getMockAttemptsCollection()
+          .find(
+            {
+              userId: String(req.user.id),
+              examSlug,
+            },
+            {
+              projection: {
+                _id: 0,
+                _cosmosRid: 0,
+                id: 1,
+                testId: 1,
+                examSlug: 1,
+                configKey: 1,
+                status: 1,
+                startedAt: 1,
+                submittedAt: 1,
+                result: 1,
+              },
+            }
+          )
+          .sort({
+            startedAt: -1,
+          })
+          .toArray();
 
-    res.json({ attempts: resources });
-  } catch (err) {
-    console.error('Exam history error:', err);
-    res.status(500).json({ error: 'Failed to get history' });
+      return res.json({
+        attempts: resources,
+      });
+    } catch (err) {
+      console.error(
+        'Exam history error:',
+        err
+      );
+
+      return res
+        .status(500)
+        .json({
+          error: 'Failed to get history',
+        });
+    }
   }
-});
-
+);
 export default router;
