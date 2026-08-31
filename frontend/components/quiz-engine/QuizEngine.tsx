@@ -1673,6 +1673,7 @@ function QuizEngineContent({
           solution={currentQ.solution ?? ""}
           questionNumber={currentIndex + 1}
           correctOptionIndex={currentQ.correctAnswer}
+          correctOptionText={displayedOptions[currentQ.correctAnswer] ?? currentQ.answer ?? ""}
           onClose={closeSolution}
         />
         <style jsx global>{`
@@ -1933,7 +1934,7 @@ function QuizEngineContent({
           }
           .mac-series-footer-solution, .mac-series-footer-ai { display:inline-flex; align-items:center; justify-content:center; gap:7px; }
           .mac-series-footer-solution::before, .mac-series-footer-ai::before { content:""; display:block; width:18px; height:18px; flex:none; background-position:center; background-repeat:no-repeat; background-size:contain; }
-          .mac-series-footer-solution::before { background-image:url("/icons8-view-solution.svg"); }
+          .mac-series-footer-solution::before { background:linear-gradient(135deg,#ca5df5 0%,#806cea 32%,#4d77e3 58%,#0a85d9 100%); -webkit-mask:url("/icons8-view-solution.svg?v=3") center/contain no-repeat; mask:url("/icons8-view-solution.svg?v=3") center/contain no-repeat; }
           .mac-series-footer-ai::before { background-image:url("/icons8-gemini-ai.svg"); }
           .mac-series-footer-solution:not(:disabled):hover, .mac-series-footer-ai:not(:disabled):hover {
             background: rgba(255, 255, 255, 0.14);
@@ -2307,6 +2308,7 @@ function QuizEngineContent({
           solution={currentQ.solution ?? ""}
           questionNumber={currentIndex + 1}
           correctOptionIndex={currentQ.correctAnswer}
+          correctOptionText={displayedOptions[currentQ.correctAnswer] ?? currentQ.answer ?? ""}
           onClose={closeSolution}
         />
         <style jsx global>{`
@@ -2342,7 +2344,8 @@ function QuizEngineContent({
           .ios-series-question.is-correct, .ios-series-question.is-answered { border-color:rgba(48,209,88,.6); background:rgba(48,209,88,.18); color:#30d158; }
           .ios-series-question.is-wrong { border-color:rgba(255,69,58,.6); background:rgba(255,69,58,.18); color:#ff453a; }
           .ios-series-question.is-unsubmitted { border-color:rgba(255,159,10,.6); background:rgba(255,159,10,.18); color:#ff9f0a; }
-          .ios-series-content { flex: 1; overflow-y: auto; padding: 18px 16px 8px; }
+          .ios-series-content { flex:1; overflow-y:auto; padding:18px 16px 8px; scrollbar-width:none; -ms-overflow-style:none; -webkit-overflow-scrolling:touch; }
+          .ios-series-content::-webkit-scrollbar { display:none; width:0; height:0; }
           .ios-series-meta-row { display:flex; align-items:center; gap:8px; min-width:0; margin-bottom:16px; color:rgba(235,235,245,.58); font-size:12px; font-weight:600; }
           .ios-series-meta-items { display:flex; align-items:center; gap:7px; min-width:0; flex:1; }
           .ios-series-meta-separator { flex:none; color:rgba(235,235,245,.3); }
@@ -2381,11 +2384,11 @@ function QuizEngineContent({
           .ios-series-solution, .ios-series-ai-btn { width:100%; min-width:0; min-height:46px; border:1px solid rgba(255,255,255,.14); border-radius:14px; background:#1c1c1e; color:rgba(242,242,247,.82); font:inherit; font-size:14px; font-weight:700; cursor:pointer; transition:background .16s ease,border-color .16s ease,transform .16s ease; }
           .ios-series-solution, .ios-series-ai-btn { display:inline-flex; align-items:center; justify-content:center; gap:7px; }
           .ios-series-solution::before, .ios-series-ai-btn::before { content:""; display:block; width:18px; height:18px; flex:none; background-position:center; background-repeat:no-repeat; background-size:contain; }
-          .ios-series-solution::before { background-image:url("/icons8-view-solution.svg"); }
+          .ios-series-solution::before { background:linear-gradient(135deg,#ca5df5 0%,#806cea 32%,#4d77e3 58%,#0a85d9 100%); -webkit-mask:url("/icons8-view-solution.svg?v=3") center/contain no-repeat; mask:url("/icons8-view-solution.svg?v=3") center/contain no-repeat; }
           .ios-series-ai-btn::before { background-image:url("/icons8-gemini-ai.svg"); }
           .ios-series-solution:active, .ios-series-ai-btn:active { border-color:rgba(255,255,255,.22); background:#242426; transform:scale(.99); }
           .ios-series-error { margin:12px 2px 0; color:#ff9f9a; font-size:13px; font-weight:600; }
-          .ios-series-footer { z-index:30; display:grid; grid-template-columns:1fr 1fr; gap:10px; width:100%; max-width:430px; margin:0 auto; padding:14px 16px calc(env(safe-area-inset-bottom) + 14px); background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.94) 25%,#000); flex-shrink: 0; }
+          .ios-series-footer { z-index:30; display:grid; grid-template-columns:1fr 1fr; gap:10px; width:100%; max-width:430px; margin:0 auto; padding:14px 16px calc(env(safe-area-inset-bottom) + 14px); border-top:1px solid rgba(255,255,255,.12); background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.94) 25%,#000); flex-shrink:0; }
           .ios-series-footer button { min-width:0; height:52px; border-radius:16px; font:inherit; font-size:16px; font-weight:700; cursor:pointer; }
           .ios-series-footer button:disabled { opacity:.42; cursor:not-allowed; }
           .ios-series-footer-secondary { border:1px solid rgba(255,255,255,.14); background:#1c1c1e; color:#f2f2f7; }
@@ -2415,7 +2418,7 @@ function QuizEngineContent({
           .ios-series-quiz[data-theme="light"] .ios-series-palette-num { color: #1d1d1f; }
           .ios-series-quiz[data-theme="light"] .ios-series-solution, .ios-series-quiz[data-theme="light"] .ios-series-ai-btn { border-color:#D8DEE4; background:#FFFFFF; color:#424a53; }
           .ios-series-quiz[data-theme="light"] .ios-series-solution:active, .ios-series-quiz[data-theme="light"] .ios-series-ai-btn:active { border-color:#C8D0D9; background:#F1F4F7; }
-          .ios-series-quiz[data-theme="light"] .ios-series-rail { border-color: #E6EAEF; background: #E6EAEF; }
+          .ios-series-quiz[data-theme="light"] .ios-series-rail { border-color:#E6EAEF; background:#F6F8FA; }
           .ios-series-quiz[data-theme="light"] .ios-series-question { border-color: #E6EAEF; background: #FFFFFF; color: #1d1d1f; }
           .ios-series-quiz[data-theme="light"] .ios-series-question.is-current { color: #FFFFFF; background: #0071e3; border-color: #0071e3; box-shadow: 0 4px 14px -2px rgba(0,113,227,0.4); }
           .ios-series-quiz[data-theme="light"] .ios-series-question.is-correct, .ios-series-quiz[data-theme="light"] .ios-series-question.is-answered { border-color: #a5d6a7; background: #e8f5e9; color: #2e7d32; }
@@ -2438,7 +2441,7 @@ function QuizEngineContent({
           .ios-series-quiz[data-theme="light"] .ios-series-option.is-correct .ios-series-option-letter { color: #FFFFFF; background: #16a34a; border-color: #16a34a; }
           .ios-series-quiz[data-theme="light"] .ios-series-option.is-wrong { border-color: #E6EAEF; background: #FFFFFF; }
           .ios-series-quiz[data-theme="light"] .ios-series-option.is-wrong .ios-series-option-letter { color: #FFFFFF; background: #dc2626; border-color: #dc2626; }
-          .ios-series-quiz[data-theme="light"] .ios-series-footer { background: linear-gradient(180deg, rgba(246,248,250,0), rgba(246,248,250,.96) 25%, #F6F8FA); }
+          .ios-series-quiz[data-theme="light"] .ios-series-footer { border-top-color:#D8DEE4; background:linear-gradient(180deg,rgba(246,248,250,0),rgba(246,248,250,.96) 25%,#F6F8FA); }
           .ios-series-quiz[data-theme="light"] .ios-series-footer-secondary { border-color: #E6EAEF; background: #FFFFFF; color: #57606a; }
           .ios-series-quiz[data-theme="light"] .ios-series-footer-primary { background: #0071e3; color: #FFFFFF; border: none; box-shadow: 0 4px 16px -4px rgba(0,113,227,0.5); }
           .ios-series-quiz[data-theme="light"] .ios-series-palette-backdrop { background: rgba(0,0,0,.4); }
@@ -2928,6 +2931,7 @@ function QuizEngineContent({
           solution={currentQ.solution ?? ""}
           questionNumber={currentIndex + 1}
           correctOptionIndex={currentQ.correctAnswer}
+          correctOptionText={displayedOptions[currentQ.correctAnswer] ?? currentQ.answer ?? ""}
           onClose={closeSolution}
         />
       )}

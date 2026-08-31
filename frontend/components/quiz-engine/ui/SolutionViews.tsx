@@ -11,12 +11,14 @@ export function SolutionBottomSheet({
   solution,
   questionNumber,
   correctOptionIndex,
+  correctOptionText,
   onClose,
 }: {
   isOpen: boolean;
   solution: string;
   questionNumber: number;
   correctOptionIndex: number;
+  correctOptionText: string;
   onClose: () => void;
 }) {
   const solutionLines = useMemo(
@@ -78,11 +80,17 @@ export function SolutionBottomSheet({
             <div className="ios-solution-body">
               {solutionLines.length > 0 ? (
                 <div className="ios-solution-container">
-                  <div className="ios-solution-badge">
-                    <span className="ios-badge-qnum">Question {questionNumber}</span>
-                    <span className="ios-badge-divider">•</span>
-                    <span className="ios-badge-correct">Option ({optionLabel}) is Correct</span>
-                  </div>
+                  <p className="ios-solution-answer-summary">
+                    Question {questionNumber}
+                    <span aria-hidden="true"> · </span>
+                    Option ({optionLabel}) is correct
+                    {correctOptionText && (
+                      <>
+                        <span aria-hidden="true"> — </span>
+                        <span className="ios-solution-answer-value">{correctOptionText}</span>
+                      </>
+                    )}
+                  </p>
 
                   <div className="ios-solution-content-text">
                     {solutionHasImage ? (
@@ -189,23 +197,17 @@ export function SolutionBottomSheet({
                 display: flex;
                 flex-direction: column;
               }
-              .ios-solution-badge {
-                display: inline-flex;
-                align-items: center;
-                align-self: flex-start;
-                gap: 8px;
-                background: rgba(48, 209, 88, 0.16);
-                border: 1px solid rgba(48, 209, 88, 0.35);
-                color: #30d158;
+              .ios-solution-answer-summary {
+                margin: 0 0 18px;
+                color: rgba(235, 235, 245, 0.62);
                 font-size: 15px;
-                font-weight: 600;
-                padding: 7px 16px;
-                border-radius: 99px;
-                margin-bottom: 22px;
-                letter-spacing: 0.01em;
+                font-weight: 500;
+                line-height: 1.45;
+                letter-spacing: 0;
               }
-              .ios-badge-divider {
-                opacity: 0.6;
+              .ios-solution-answer-value {
+                color: rgba(245, 245, 247, 0.88);
+                font-weight: 600;
               }
               .ios-solution-content-text {
                 font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", "Segoe UI", Roboto, sans-serif;
@@ -251,10 +253,11 @@ export function SolutionBottomSheet({
               .ios-solution-backdrop[data-theme="light"] .ios-solution-content-text {
                 color: #1d1d1f;
               }
-              .ios-solution-backdrop[data-theme="light"] .ios-solution-badge {
-                background: rgba(52, 199, 89, 0.12);
-                border-color: rgba(52, 199, 89, 0.3);
-                color: #248a3d;
+              .ios-solution-backdrop[data-theme="light"] .ios-solution-answer-summary {
+                color: #57606a;
+              }
+              .ios-solution-backdrop[data-theme="light"] .ios-solution-answer-value {
+                color: #1d1d1f;
               }
 
               /* PC / Desktop optimization */
