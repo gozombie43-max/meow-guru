@@ -1,72 +1,222 @@
 // middleware/rateLimiter.js
-import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
+
+import rateLimit, {
+  ipKeyGenerator,
+} from 'express-rate-limit';
+
 
 /**
- * Key generator: prefer authenticated userId so limits are per-user,
- * not per-IP (which breaks behind Azure's shared proxy).
+ * Azure App Service can expose req.ip as:
+ *
+ *   42.108.149.216:8076
+ *
+ * express-rate-limit expects:
+ *
+ *   42.108.149.216
+ *
+ * Also safely handles IPv6 and IPv4-mapped IPv6.
+ */
+function normalizeClientIp(ip) {
+  let value =
+    String(ip || '').trim();
+
+  if (!value) {
+    return null;
+  }
+
+  // [IPv6]:port
+  const bracketedIpv6 =
+    value.match(
+      /^\[([^\]]+)\](?::\d+)?$/
+    );
+
+  if (bracketedIpv6) {
+    value =
+      bracketedIpv6[1];
+  }
+
+  // IPv4:port
+  const ipv4WithPort =
+    value.match(
+      /^(\d{1,3}(?:\.\d{1,3}){3}):\d+$/
+    );
+
+  if (ipv4WithPort) {
+    value =
+      ipv4WithPort[1];
+  }
+
+  // ::ffff:192.168.1.1
+  if (
+    value.startsWith(
+      '::ffff:'
+    ) &&
+    value.includes('.')
+  ) {
+    value =
+      value.slice(7);
+  }
+
+  return value;
+}
+
+
+/**
+ * Generate a safe IP-based limiter key.
+ *
+ * ipKeyGenerator is retained so IPv6 addresses
+ * are handled correctly by express-rate-limit.
+ */
+function requestIpKey(req) {
+  const normalizedIp =
+    normalizeClientIp(
+      req.ip ||
+      req.socket?.remoteAddress
+    );
+
+  if (!normalizedIp) {
+    return 'unknown-client';
+  }
+
+  return ipKeyGenerator(
+    normalizedIp
+  );
+}
+
+
+/**
+ * Prefer authenticated user identity where available.
+ * Otherwise fall back to normalized client IP.
  */
 const userKeyGenerator = (req) =>
-  req.user?.id || req.user?._id || req.cookies?.userId || ipKeyGenerator(req.ip);
+  req.user?.id ||
+  req.user?._id ||
+  req.cookies?.userId ||
+  requestIpKey(req);
 
-/**
- * Global baseline limiter — generous enough for normal traffic,
- * tight enough to stop runaway clients.
- */
-export const globalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 300,
-  standardHeaders: true,
-  legacyHeaders: false,
-  keyGenerator: userKeyGenerator,
-  message: { error: 'Too many requests, please try again later.' },
-});
 
-/**
- * Tighter limiter for authentication endpoints —
- * prevents brute-force on login/register.
- */
-export const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 20,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Too many authentication attempts, please try again later.' },
-});
+// Global
+export const globalLimiter =
+  rateLimit({
+    windowMs:
+      15 * 60 * 1000,
 
-/**
- * Strict limiter for AI tutor routes (vision + OCR + LLM per request).
- * Max 20 AI calls per user per 15 min to protect Azure OpenAI quota.
- */
-export const aiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 20,
-  standardHeaders: true,
-  legacyHeaders: false,
-  keyGenerator: userKeyGenerator,
-  message: { error: 'AI rate limit reached, please try again later.' },
-});
+    max:
+      300,
 
-/**
- * Limiter for agent routes (cognitive mapper, adaptive quiz) —
- * each request may fire multiple LLM calls, so keep tight.
- * Max 30 calls per user per 15 min.
- */
-export const agentLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 30,
-  standardHeaders: true,
-  legacyHeaders: false,
-  keyGenerator: userKeyGenerator,
-  message: { error: 'Agent rate limit reached, please try again later.' },
-});
+    standardHeaders:
+      true,
 
-/**
- * Moderate limiter for upload/bulk-insert routes.
- */
-export const uploadLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 30,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Upload rate limit reached, please try again later.' },
-});
+    legacyHeaders:
+      false,
+
+    keyGenerator:
+      userKeyGenerator,
+
+    message: {
+      error:
+        'Too many requests, please try again later.',
+    },
+  });
+
+
+// Authentication
+export const authLimiter =
+  rateLimit({
+    windowMs:
+      15 * 60 * 1000,
+
+    max:
+      20,
+
+    standardHeaders:
+      true,
+
+    legacyHeaders:
+      false,
+
+    // IMPORTANT on Azure
+    keyGenerator:
+      requestIpKey,
+
+    message: {
+      error:
+        'Too many authentication attempts, please try again later.',
+    },
+  });
+
+
+// AI
+export const aiLimiter =
+  rateLimit({
+    windowMs:
+      15 * 60 * 1000,
+
+    max:
+      20,
+
+    standardHeaders:
+      true,
+
+    legacyHeaders:
+      false,
+
+    keyGenerator:
+      userKeyGenerator,
+
+    message: {
+      error:
+        'AI rate limit reached, please try again later.',
+    },
+  });
+
+
+// Agents
+export const agentLimiter =
+  rateLimit({
+    windowMs:
+      15 * 60 * 1000,
+
+    max:
+      30,
+
+    standardHeaders:
+      true,
+
+    legacyHeaders:
+      false,
+
+    keyGenerator:
+      userKeyGenerator,
+
+    message: {
+      error:
+        'Agent rate limit reached, please try again later.',
+    },
+  });
+
+
+// Uploads
+export const uploadLimiter =
+  rateLimit({
+    windowMs:
+      15 * 60 * 1000,
+
+    max:
+      30,
+
+    standardHeaders:
+      true,
+
+    legacyHeaders:
+      false,
+
+    // Handles Azure IP:port
+    keyGenerator:
+      userKeyGenerator,
+
+    message: {
+      error:
+        'Upload rate limit reached, please try again later.',
+    },
+  });
