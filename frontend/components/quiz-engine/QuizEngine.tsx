@@ -840,6 +840,10 @@ function QuizEngineContent({
     const isCorrect = selected === currentQ.correctAnswer;
     adaptDifficulty(isCorrect);
 
+    try {
+      navigator.vibrate?.(isCorrect ? [12, 35, 18] : 20);
+    } catch {}
+
     if (isCorrect) {
       setStreak((s) => {
         const next = s + 1;
@@ -1603,13 +1607,15 @@ function QuizEngineContent({
                     const isWrong =
                       isCurrentSubmitted && selectedAnswer === index && index !== currentQ.correctAnswer;
                     const isSelected = selectedAnswer === index;
+                    const isUserAnswer = isCurrentSubmitted && isSelected;
+                    const isDimmed = isCurrentSubmitted && !isCorrect && !isWrong;
                     return (
                       <button
                         key={`${currentQ.id}-${index}`}
                         type="button"
                         disabled={isCurrentSubmitted}
                         onClick={() => handleSelectAnswer(index)}
-                        className={`mac-series-option ${isSelected ? "is-selected" : ""} ${isCorrect ? "is-correct" : ""} ${isWrong ? "is-wrong" : ""}`}
+                        className={`mac-series-option ${isSelected ? "is-selected" : ""} ${isCorrect ? "is-correct" : ""} ${isWrong ? "is-wrong" : ""} ${isUserAnswer ? "is-user-answer" : ""} ${isDimmed ? "is-dimmed" : ""}`}
                       >
                         <span className="mac-series-option-letter">
                           {String.fromCharCode(65 + index)}
@@ -1617,8 +1623,13 @@ function QuizEngineContent({
                         <span className="mac-series-option-value">
                           <RichContent text={option} />
                         </span>
-                        {isCorrect && <OptionTickIcon className="mac-series-answer-icon" aria-label="Correct option" />}
-                        {isWrong && <XCircle className="mac-series-answer-icon" aria-label="Incorrect option" />}
+                        {(isUserAnswer || isCorrect || isWrong) && (
+                          <span className="mac-series-option-status">
+                            {isUserAnswer && <span className="mac-series-your-answer">Your answer</span>}
+                            {isCorrect && <OptionTickIcon className="mac-series-answer-icon" aria-label="Correct option" />}
+                            {isWrong && <XCircle className="mac-series-answer-icon" aria-label="Incorrect option" />}
+                          </span>
+                        )}
                       </button>
                     );
                   })}
@@ -1834,12 +1845,20 @@ function QuizEngineContent({
           }
           .mac-series-bookmark {
             margin-left: auto;
-            background: transparent;
-            border: none;
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            display: grid;
+            place-items: center;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 9px;
             color: rgba(255, 255, 255, 0.5);
             cursor: pointer;
+            transition: background .16s ease, border-color .16s ease, color .16s ease, transform .16s ease;
           }
-          .mac-series-bookmark:hover { color: #fff; }
+          .mac-series-bookmark:hover { border-color:rgba(255,255,255,.2); background:rgba(255,255,255,.12); color:#fff; }
+          .mac-series-bookmark:active { transform:scale(.96); }
           .mac-series-bookmark svg { width: 18px; height: 18px; }
           
           .mac-series-prompt {
@@ -1861,8 +1880,9 @@ function QuizEngineContent({
             gap: 16px;
             padding: 16px 20px;
             border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            background: rgba(255, 255, 255, 0.07);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
             color: #fff;
             cursor: pointer;
             text-align: left;
@@ -1879,16 +1899,22 @@ function QuizEngineContent({
             border-color: #007aff;
           }
           .mac-series-option.is-correct {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.07);
+            border-color: rgba(255, 255, 255, 0.14);
           }
           .mac-series-option.is-wrong {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.07);
+            border-color: rgba(255, 255, 255, 0.14);
           }
+          .mac-series-option.is-user-answer.is-correct { border-color:rgba(52,199,89,.38); box-shadow:0 0 0 1px rgba(52,199,89,.12),0 2px 10px rgba(0,0,0,.18); }
+          .mac-series-option.is-user-answer.is-wrong { border-color:rgba(255,59,48,.42); box-shadow:0 0 0 1px rgba(255,59,48,.12),0 2px 10px rgba(0,0,0,.18); }
+          .mac-series-option.is-dimmed { opacity:.58; }
           .mac-series-option-letter {
             width: 32px;
             height: 32px;
+            flex: 0 0 32px;
+            box-sizing: border-box;
+            border: 1px solid transparent;
             border-radius: 8px;
             background: rgba(255, 255, 255, 0.1);
             display: grid;
@@ -1901,7 +1927,9 @@ function QuizEngineContent({
           .mac-series-option.is-correct .mac-series-option-letter { background: #34c759; color: #fff; }
           .mac-series-option.is-wrong .mac-series-option-letter { background: #ff3b30; color: #fff; }
           .mac-series-option-value { font-size: 16px; font-weight: 500; }
-          .mac-series-answer-icon { margin-left: auto; width: 20px; height: 20px; }
+          .mac-series-option-status { display:inline-flex; align-items:center; gap:8px; margin-left:auto; flex:none; }
+          .mac-series-your-answer { color:rgba(235,235,245,.55); font-size:10px; font-weight:700; letter-spacing:.06em; line-height:1; text-transform:uppercase; white-space:nowrap; }
+          .mac-series-answer-icon { width: 20px; height: 20px; }
           .mac-series-option.is-correct .mac-series-answer-icon { color: #34c759; }
           .mac-series-option.is-wrong .mac-series-answer-icon { color: #ff3b30; }
           
@@ -1994,15 +2022,15 @@ function QuizEngineContent({
 
           .mac-series-quiz[data-theme="light"] .mac-series-main { background: #F6F8FA; }
           .mac-series-quiz[data-theme="light"] .mac-series-meta-row { color: #57606a; }
-          .mac-series-quiz[data-theme="light"] .mac-series-bookmark { color: #57606a; }
-          .mac-series-quiz[data-theme="light"] .mac-series-bookmark:hover { color: #0071e3; }
+          .mac-series-quiz[data-theme="light"] .mac-series-bookmark { border-color:#E6EAEF; background:#FFFFFF; color:#57606a; box-shadow:0 1px 3px rgba(15,23,42,.04); }
+          .mac-series-quiz[data-theme="light"] .mac-series-bookmark:hover { border-color:#D8DEE4; background:#F1F4F7; color:#0071e3; }
           .mac-series-quiz[data-theme="light"] .mac-series-prompt { color: #1d1d1f; }
           
           .mac-series-quiz[data-theme="light"] .mac-series-option {
             background: #FFFFFF;
-            border: 1px solid #E6EAEF;
+            border: 1px solid #D8DEE4;
             color: #1d1d1f;
-            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+            box-shadow: 0 3px 12px rgba(15, 23, 42, 0.07);
           }
           .mac-series-quiz[data-theme="light"] .mac-series-option:not(:disabled):hover {
             background: #FFFFFF;
@@ -2011,17 +2039,20 @@ function QuizEngineContent({
             transform: translateY(-1px);
           }
           .mac-series-quiz[data-theme="light"] .mac-series-option.is-selected { background: #E6EAEF; border-color: #0071e3; color: #0071e3; box-shadow: 0 0 0 1.5px #0071e3, 0 4px 14px rgba(0, 113, 227, 0.14); }
-          .mac-series-quiz[data-theme="light"] .mac-series-option.is-correct { background: #FFFFFF; border-color: #E6EAEF; color: #1d1d1f; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04); }
-          .mac-series-quiz[data-theme="light"] .mac-series-option.is-wrong { background: #FFFFFF; border-color: #E6EAEF; color: #1d1d1f; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04); }
+          .mac-series-quiz[data-theme="light"] .mac-series-option.is-correct { background:#FFFFFF; border-color:#D8DEE4; color:#1d1d1f; box-shadow:0 3px 12px rgba(15,23,42,.07); }
+          .mac-series-quiz[data-theme="light"] .mac-series-option.is-wrong { background:#FFFFFF; border-color:#D8DEE4; color:#1d1d1f; box-shadow:0 3px 12px rgba(15,23,42,.07); }
+          .mac-series-quiz[data-theme="light"] .mac-series-option.is-user-answer.is-correct { border-color:rgba(22,163,74,.34); box-shadow:0 0 0 1px rgba(22,163,74,.08),0 3px 12px rgba(15,23,42,.07); }
+          .mac-series-quiz[data-theme="light"] .mac-series-option.is-user-answer.is-wrong { border-color:rgba(220,38,38,.36); box-shadow:0 0 0 1px rgba(220,38,38,.08),0 3px 12px rgba(15,23,42,.07); }
+          .mac-series-quiz[data-theme="light"] .mac-series-your-answer { color:#6e7781; }
           .mac-series-quiz[data-theme="light"] .mac-series-option-letter {
             background: #E6EAEF;
             color: #1d1d1f;
-            border: 1px solid #E6EAEF;
+            border-color: transparent;
             font-weight: 700;
           }
-          .mac-series-quiz[data-theme="light"] .mac-series-option.is-selected .mac-series-option-letter { background: #0071e3; color: #fff; border-color: #0071e3; }
-          .mac-series-quiz[data-theme="light"] .mac-series-option.is-correct .mac-series-option-letter { background: #16a34a; color: #fff; border-color: #16a34a; }
-          .mac-series-quiz[data-theme="light"] .mac-series-option.is-wrong .mac-series-option-letter { background: #dc2626; color: #fff; border-color: #dc2626; }
+          .mac-series-quiz[data-theme="light"] .mac-series-option.is-selected .mac-series-option-letter { background:#0071e3; color:#fff; border-color:transparent; }
+          .mac-series-quiz[data-theme="light"] .mac-series-option.is-correct .mac-series-option-letter { background:#16a34a; color:#fff; border-color:transparent; }
+          .mac-series-quiz[data-theme="light"] .mac-series-option.is-wrong .mac-series-option-letter { background:#dc2626; color:#fff; border-color:transparent; }
 
           .mac-series-quiz[data-theme="light"] .mac-series-footer-secondary {
             background: #FFFFFF;
@@ -2098,6 +2129,16 @@ function QuizEngineContent({
                 </button>
               );
             })()}
+            <div
+              className="ios-series-progress"
+              role="progressbar"
+              aria-label="Quiz progress"
+              aria-valuemin={1}
+              aria-valuemax={questions.length}
+              aria-valuenow={currentIndex + 1}
+            >
+              <span style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }} />
+            </div>
           </header>
 
           <QuizSettingsModal
@@ -2200,13 +2241,15 @@ function QuizEngineContent({
                 const isWrong =
                   isCurrentSubmitted && selectedAnswer === index && index !== currentQ.correctAnswer;
                 const isSelected = selectedAnswer === index;
+                const isUserAnswer = isCurrentSubmitted && isSelected;
+                const isDimmed = isCurrentSubmitted && !isCorrect && !isWrong;
                 return (
                   <button
                     key={`${currentQ.id}-${index}`}
                     type="button"
                     disabled={isCurrentSubmitted}
                     onClick={() => handleSelectAnswer(index)}
-                    className={`ios-series-option ${isSelected ? "is-selected" : ""} ${isCorrect ? "is-correct" : ""} ${isWrong ? "is-wrong" : ""}`}
+                    className={`ios-series-option ${isSelected ? "is-selected" : ""} ${isCorrect ? "is-correct" : ""} ${isWrong ? "is-wrong" : ""} ${isUserAnswer ? "is-user-answer" : ""} ${isDimmed ? "is-dimmed" : ""}`}
                   >
                     <span className="ios-series-option-letter">
                       {String.fromCharCode(65 + index)}
@@ -2214,8 +2257,13 @@ function QuizEngineContent({
                     <span className="ios-series-option-value">
                       <RichContent text={option} />
                     </span>
-                    {isCorrect && <OptionTickIcon className="ios-series-answer-icon" aria-label="Correct option" />}
-                    {isWrong && <XCircle className="ios-series-answer-icon" aria-label="Incorrect option" />}
+                    {(isUserAnswer || isCorrect || isWrong) && (
+                      <span className="ios-series-option-status">
+                        {isUserAnswer && <span className="ios-series-your-answer">Your answer</span>}
+                        {isCorrect && <OptionTickIcon className="ios-series-answer-icon" aria-label="Correct option" />}
+                        {isWrong && <XCircle className="ios-series-answer-icon" aria-label="Incorrect option" />}
+                      </span>
+                    )}
                   </button>
                 );
               })}
@@ -2313,10 +2361,15 @@ function QuizEngineContent({
         />
         <style jsx global>{`
           .ios-series-quiz {
+            --ios-accent: #007aff;
+            --ios-option-shadow: 0 2px 10px rgba(0,0,0,.2);
             min-height: 100svh;
             background: #000;
             color: #f2f2f7;
             font-family: "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+            font-kerning: normal;
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
           }
           .ios-series-device {
             height: 100svh;
@@ -2327,6 +2380,8 @@ function QuizEngineContent({
             background: radial-gradient(120% 50% at 50% -10%, rgba(94, 92, 230, .17), transparent 58%), #000;
           }
           .ios-series-header { position:relative; display:flex; align-items:center; justify-content:space-between; gap:8px; padding:calc(env(safe-area-inset-top) + 12px) 16px 14px; border-bottom:1px solid rgba(255,255,255,.09); }
+          .ios-series-progress { position:absolute; right:0; bottom:-1px; left:0; height:2px; overflow:hidden; background:rgba(255,255,255,.06); pointer-events:none; }
+          .ios-series-progress span { display:block; height:100%; border-radius:0 999px 999px 0; background:var(--ios-accent); transition:width .28s ease; }
           .ios-series-icon-button { min-width:36px; height:36px; display:inline-flex; align-items:center; justify-content:center; padding:0 6px; border:1px solid rgba(255,255,255,.09); border-radius:11px; color:#f2f2f7; background:#1c1c1e; cursor:pointer; transition:all 0.15s ease; font-size:15px; font-weight:700; white-space:nowrap; box-sizing:border-box; }
           .ios-series-icon-button.is-active { border-color:#007aff; background:rgba(0,122,255,.22); color:#007aff; }
           .ios-series-icon-button.is-qnum { font-variant-numeric:tabular-nums; font-feature-settings:"tnum"; }
@@ -2340,46 +2395,57 @@ function QuizEngineContent({
           .ios-series-rail { display:flex; gap:8px; overflow-x:auto; padding:14px 16px; border-bottom:1px solid rgba(255,255,255,.09); scrollbar-width:none; }
           .ios-series-rail::-webkit-scrollbar { display:none; }
           .ios-series-question { flex:0 0 38px; height:38px; border:1px solid rgba(255,255,255,.14); border-radius:11px; background:#1c1c1e; color:rgba(235,235,245,.6); font-size:14px; font-weight:700; cursor:pointer; }
-          .ios-series-question.is-current { border-color:transparent; color:#fff; background:#007aff; box-shadow:0 4px 14px -2px rgba(0,122,255,.55); }
+          .ios-series-question.is-current { border-color:transparent; color:#fff; background:var(--ios-accent); box-shadow:0 4px 14px -2px rgba(0,122,255,.55); }
           .ios-series-question.is-correct, .ios-series-question.is-answered { border-color:rgba(48,209,88,.6); background:rgba(48,209,88,.18); color:#30d158; }
           .ios-series-question.is-wrong { border-color:rgba(255,69,58,.6); background:rgba(255,69,58,.18); color:#ff453a; }
           .ios-series-question.is-unsubmitted { border-color:rgba(255,159,10,.6); background:rgba(255,159,10,.18); color:#ff9f0a; }
           .ios-series-content { flex:1; overflow-y:auto; padding:18px 16px 8px; scrollbar-width:none; -ms-overflow-style:none; -webkit-overflow-scrolling:touch; }
           .ios-series-content::-webkit-scrollbar { display:none; width:0; height:0; }
           .ios-series-meta-row { display:flex; align-items:center; gap:8px; min-width:0; margin-bottom:16px; color:rgba(235,235,245,.58); font-size:12px; font-weight:600; }
-          .ios-series-meta-items { display:flex; align-items:center; gap:7px; min-width:0; flex:1; }
+          .ios-series-meta-items { display:flex; align-items:center; gap:7px; min-width:0; max-width:calc(100% - 40px); padding:6px 10px; border:1px solid rgba(255,255,255,.1); border-radius:10px; background:rgba(255,255,255,.06); }
           .ios-series-meta-separator { flex:none; color:rgba(235,235,245,.3); }
           .ios-series-exam-label { min-width:0; line-height:1.35; }
           .ios-series-exam-details { position:relative; min-width:0; }
-          .ios-series-exam-details summary { min-width:0; padding:5px 7px; margin:-5px -7px; border-radius:7px; color:rgba(235,235,245,.72); line-height:1.35; list-style:none; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+          .ios-series-exam-details summary { min-width:0; padding:2px 4px; margin:-2px -4px; border-radius:6px; color:rgba(235,235,245,.72); line-height:1.35; list-style:none; cursor:pointer; -webkit-tap-highlight-color:transparent; }
           .ios-series-exam-details summary::-webkit-details-marker { display:none; }
           .ios-series-exam-details summary:focus-visible { outline:2px solid #007aff; outline-offset:2px; }
           .ios-series-exam-details[open] summary { color:#f2f2f7; background:rgba(255,255,255,.08); }
           .ios-series-exam-popover { position:absolute; z-index:40; top:calc(100% + 9px); left:50%; width:max-content; max-width:min(260px,calc(100vw - 40px)); padding:9px 11px; border:1px solid rgba(255,255,255,.14); border-radius:10px; color:rgba(255,255,255,.88); background:#2c2c2e; box-shadow:0 8px 24px rgba(0,0,0,.36); font-size:12px; font-weight:500; line-height:1.4; transform:translateX(-50%); }
           .ios-series-quiz .concept-badge { flex:none; letter-spacing:0; }
           .ios-series-question-card { position:relative; min-height:158px; padding:20px 20px 22px 20px; border:1px solid rgba(255,255,255,.14); border-radius:22px; background:linear-gradient(180deg,#242426,#1c1c1e); }
-          .ios-series-bookmark { display:grid; place-items:center; width:32px; height:32px; border:0; border-radius:9px; color:rgba(235,235,245,.48); background:transparent; cursor:pointer; flex-shrink: 0; margin-left: auto; }
+          .ios-series-bookmark { display:grid; place-items:center; width:32px; height:32px; padding:0; border:1px solid rgba(255,255,255,.12); border-radius:9px; color:rgba(235,235,245,.58); background:#1c1c1e; cursor:pointer; flex-shrink:0; margin-left:auto; transition:background .16s ease,border-color .16s ease,color .16s ease,transform .16s ease; }
+          .ios-series-bookmark:active { border-color:rgba(255,255,255,.2); background:#242426; transform:scale(.96); }
           .ios-series-bookmark svg { width:20px; height:20px; }
-          .ios-series-prompt { color:#f2f2f7; font-size:16px; font-weight:500; line-height:1.48; }
+          .ios-series-prompt { color:#f2f2f7; font-size:17px; font-weight:600; line-height:1.55; }
           .ios-series-prompt p { margin:0; }
           .ios-series-prompt p + p { margin-top:14px; font-family:Georgia,serif; font-size:22px; font-weight:400; letter-spacing:.02em; }
           .ios-series-options { display:grid; gap:12px; margin-top:16px; }
-          .ios-series-option { width:100%; min-height:64px; display:flex; align-items:center; gap:14px; padding:13px 16px; border:1px solid rgba(255,255,255,.14); border-radius:18px; background:#1c1c1e; color:#f2f2f7; text-align:left; cursor:pointer; transition:background .16s ease,border-color .16s ease,transform .16s ease; }
+          .ios-series-option { width:100%; min-height:64px; display:flex; align-items:center; gap:14px; padding:13px 16px; border:1px solid rgba(255,255,255,.16); border-radius:18px; background:#222224; color:#f2f2f7; box-shadow:var(--ios-option-shadow); text-align:left; cursor:pointer; transition:background .16s ease,border-color .16s ease,box-shadow .16s ease,opacity .16s ease,transform .16s ease; }
           .ios-series-option:not(:disabled):hover { border-color:rgba(0,122,255,.75); background:#242426; }
           .ios-series-option:not(:disabled):active { transform:scale(.99); }
           .ios-series-option:disabled { cursor:default; }
           .ios-series-option.is-selected { border-color:#007aff; background:rgba(0,122,255,.15); }
-          .ios-series-option.is-correct { border-color:rgba(255,255,255,.14); background:#1c1c1e; }
-          .ios-series-option.is-wrong { border-color:rgba(255,255,255,.14); background:#1c1c1e; }
-          .ios-series-option-letter { width:36px; height:36px; flex:0 0 36px; display:grid; place-items:center; border:1px solid rgba(255,255,255,.14); border-radius:11px; background:#242426; color:rgba(235,235,245,.68); font-size:14px; font-weight:700; }
-          .ios-series-option.is-selected .ios-series-option-letter { border-color:#007aff; background:#007aff; color:#fff; }
-          .ios-series-option.is-correct .ios-series-option-letter { border-color:#30d158; background:#30d158; color:#ffffff; }
-          .ios-series-option.is-wrong .ios-series-option-letter { border-color:#ff453a; background:#ff453a; color:#ffffff; }
-          .ios-series-option-value { min-width:0; font-size:17px; font-weight:600; line-height:1.4; }
-          .ios-series-answer-icon { width:20px; height:20px; margin-left:auto; flex:none; }
+          .ios-series-option.is-correct { border-color:rgba(255,255,255,.16); background:#222224; }
+          .ios-series-option.is-wrong { border-color:rgba(255,255,255,.16); background:#222224; }
+          .ios-series-option.is-user-answer.is-correct { border-color:rgba(48,209,88,.4); box-shadow:0 0 0 1px rgba(48,209,88,.12),var(--ios-option-shadow); }
+          .ios-series-option.is-user-answer.is-wrong { border-color:rgba(255,69,58,.44); box-shadow:0 0 0 1px rgba(255,69,58,.12),var(--ios-option-shadow); }
+          .ios-series-option.is-dimmed { opacity:.58; }
+          .ios-series-option.is-user-answer { animation:ios-answer-reveal .26s cubic-bezier(.2,.8,.3,1); }
+          .ios-series-option.is-correct { animation:ios-correct-glow .9s ease-out; }
+          .ios-series-option.is-user-answer.is-correct { animation:ios-answer-reveal .26s cubic-bezier(.2,.8,.3,1),ios-correct-glow .9s ease-out; }
+          @keyframes ios-answer-reveal { 0%,100% { transform:scale(1); } 48% { transform:scale(1.03); } }
+          @keyframes ios-correct-glow { 0% { box-shadow:var(--ios-option-shadow); } 45% { box-shadow:0 0 0 3px rgba(48,209,88,.2),0 0 18px rgba(48,209,88,.18),var(--ios-option-shadow); } 100% { box-shadow:0 0 0 1px rgba(48,209,88,.1),var(--ios-option-shadow); } }
+          .ios-series-option-letter { width:36px; height:36px; flex:0 0 36px; box-sizing:border-box; display:grid; place-items:center; border:1px solid transparent; border-radius:11px; background:#303033; color:rgba(235,235,245,.68); font-size:14px; font-weight:700; }
+          .ios-series-option.is-selected .ios-series-option-letter { border-color:transparent; background:#007aff; color:#fff; }
+          .ios-series-option.is-correct .ios-series-option-letter { border-color:transparent; background:#30d158; color:#ffffff; }
+          .ios-series-option.is-wrong .ios-series-option-letter { border-color:transparent; background:#ff453a; color:#ffffff; }
+          .ios-series-option-value { min-width:0; font-size:16px; font-weight:600; line-height:1.42; }
+          .ios-series-option-status { display:inline-flex; align-items:center; gap:8px; margin-left:auto; flex:none; }
+          .ios-series-your-answer { color:rgba(235,235,245,.55); font-size:10px; font-weight:700; letter-spacing:.06em; line-height:1; text-transform:uppercase; white-space:nowrap; }
+          .ios-series-answer-icon { width:20px; height:20px; flex:none; }
           .ios-series-option.is-correct .ios-series-answer-icon { color:#30d158; }
           .ios-series-option.is-wrong .ios-series-answer-icon { color:#ff453a; }
-          .ios-series-actions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:14px; }
+          .ios-series-actions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin:14px 0 18px; }
           .ios-series-actions.is-single-action { grid-template-columns: 1fr; }
           .ios-series-solution, .ios-series-ai-btn { width:100%; min-width:0; min-height:46px; border:1px solid rgba(255,255,255,.14); border-radius:14px; background:#1c1c1e; color:rgba(242,242,247,.82); font:inherit; font-size:14px; font-weight:700; cursor:pointer; transition:background .16s ease,border-color .16s ease,transform .16s ease; }
           .ios-series-solution, .ios-series-ai-btn { display:inline-flex; align-items:center; justify-content:center; gap:7px; }
@@ -2388,11 +2454,11 @@ function QuizEngineContent({
           .ios-series-ai-btn::before { background-image:url("/icons8-gemini-ai.svg"); }
           .ios-series-solution:active, .ios-series-ai-btn:active { border-color:rgba(255,255,255,.22); background:#242426; transform:scale(.99); }
           .ios-series-error { margin:12px 2px 0; color:#ff9f9a; font-size:13px; font-weight:600; }
-          .ios-series-footer { z-index:30; display:grid; grid-template-columns:1fr 1fr; gap:10px; width:100%; max-width:430px; margin:0 auto; padding:14px 16px calc(env(safe-area-inset-bottom) + 14px); border-top:1px solid rgba(255,255,255,.12); background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.94) 25%,#000); flex-shrink:0; }
+          .ios-series-footer { z-index:30; display:grid; grid-template-columns:1fr 1fr; gap:10px; width:100%; max-width:430px; margin:0 auto; padding:14px 16px calc(env(safe-area-inset-bottom, 0px) + 16px); border-top:1px solid rgba(255,255,255,.12); background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.94) 25%,#000); flex-shrink:0; }
           .ios-series-footer button { min-width:0; height:52px; border-radius:16px; font:inherit; font-size:16px; font-weight:700; cursor:pointer; }
           .ios-series-footer button:disabled { opacity:.42; cursor:not-allowed; }
           .ios-series-footer-secondary { border:1px solid rgba(255,255,255,.14); background:#1c1c1e; color:#f2f2f7; }
-          .ios-series-footer-primary { border:0; background:#007aff; color:#fff; box-shadow:0 4px 16px -4px rgba(0,122,255,0.5); }
+          .ios-series-footer-primary { border:0; background:var(--ios-accent); color:#fff; box-shadow:0 4px 16px -4px rgba(0,122,255,0.5); }
           .ios-series-footer-primary:not(:disabled):active { transform:scale(.98); }
           .ios-series-palette { position:fixed; z-index:70; inset:0; display:flex; align-items:flex-end; justify-content:center; }
           .ios-series-palette-backdrop { position:absolute; inset:0; border:0; background:rgba(0,0,0,.64); }
@@ -2408,9 +2474,10 @@ function QuizEngineContent({
           .ios-series-palette-grid button.is-wrong { border-color:rgba(255,69,58,.6); background:rgba(255,69,58,.18); color:#ff453a; }
           .ios-series-palette-grid button.is-unsubmitted { border-color:rgba(255,159,10,.6); background:rgba(255,159,10,.18); color:#ff9f0a; }
           @media (min-width:431px) { .ios-series-device { box-shadow:0 0 0 1px rgba(255,255,255,.08); } }
+          @media (prefers-reduced-motion:reduce) { .ios-series-progress span { transition:none; } .ios-series-option.is-user-answer, .ios-series-option.is-correct, .ios-series-option.is-user-answer.is-correct { animation:none; } }
 
           /* Light Theme Overrides (Palette: #F6F8FA White / #E6EAEF Ice Blue / #FFFFFF Pure White) */
-          .ios-series-quiz[data-theme="light"] { background: #F6F8FA; color: #1d1d1f; }
+          .ios-series-quiz[data-theme="light"] { --ios-accent:#0071e3; --ios-option-shadow:0 3px 12px rgba(15,23,42,.07); background:#F6F8FA; color:#1d1d1f; }
           .ios-series-quiz[data-theme="light"] .ios-series-device { background: #F6F8FA; }
           .ios-series-quiz[data-theme="light"] .ios-series-header { border-color: #E6EAEF; background: #F6F8FA; }
           .ios-series-quiz[data-theme="light"] .ios-series-icon-button { border-color: #E6EAEF; color: #57606a; background: #FFFFFF; }
@@ -2419,31 +2486,37 @@ function QuizEngineContent({
           .ios-series-quiz[data-theme="light"] .ios-series-solution, .ios-series-quiz[data-theme="light"] .ios-series-ai-btn { border-color:#D8DEE4; background:#FFFFFF; color:#424a53; }
           .ios-series-quiz[data-theme="light"] .ios-series-solution:active, .ios-series-quiz[data-theme="light"] .ios-series-ai-btn:active { border-color:#C8D0D9; background:#F1F4F7; }
           .ios-series-quiz[data-theme="light"] .ios-series-rail { border-color:#E6EAEF; background:#F6F8FA; }
+          .ios-series-quiz[data-theme="light"] .ios-series-progress { background:rgba(15,23,42,.07); }
           .ios-series-quiz[data-theme="light"] .ios-series-question { border-color: #E6EAEF; background: #FFFFFF; color: #1d1d1f; }
-          .ios-series-quiz[data-theme="light"] .ios-series-question.is-current { color: #FFFFFF; background: #0071e3; border-color: #0071e3; box-shadow: 0 4px 14px -2px rgba(0,113,227,0.4); }
+          .ios-series-quiz[data-theme="light"] .ios-series-question.is-current { color:#FFFFFF; background:var(--ios-accent); border-color:var(--ios-accent); box-shadow:0 4px 14px -2px rgba(0,113,227,.4); }
           .ios-series-quiz[data-theme="light"] .ios-series-question.is-correct, .ios-series-quiz[data-theme="light"] .ios-series-question.is-answered { border-color: #a5d6a7; background: #e8f5e9; color: #2e7d32; }
           .ios-series-quiz[data-theme="light"] .ios-series-question.is-wrong { border-color: #ef9a9a; background: #ffebee; color: #c62828; }
           .ios-series-quiz[data-theme="light"] .ios-series-question.is-unsubmitted { border-color: #ffe082; background: #fff8e1; color: #f57f17; }
           .ios-series-quiz[data-theme="light"] .ios-series-meta-row { color: #57606a; }
+          .ios-series-quiz[data-theme="light"] .ios-series-meta-items { border-color:#E1E5EA; background:#FFFFFF; box-shadow:0 1px 3px rgba(15,23,42,.04); }
           .ios-series-quiz[data-theme="light"] .ios-series-meta-separator { color:rgba(87,96,106,.42); }
           .ios-series-quiz[data-theme="light"] .ios-series-exam-details summary { color:#424a53; }
           .ios-series-quiz[data-theme="light"] .ios-series-exam-details[open] summary { color:#1d1d1f; background:#E6EAEF; }
           .ios-series-quiz[data-theme="light"] .ios-series-exam-popover { border-color:#D8DEE4; color:#1d1d1f; background:#FFFFFF; box-shadow:0 8px 24px rgba(15,23,42,.14); }
           .ios-series-quiz[data-theme="light"] .ios-series-question-card { border-color: #E6EAEF; background: #FFFFFF; box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04); }
-          .ios-series-quiz[data-theme="light"] .ios-series-bookmark { color: #57606a; }
+          .ios-series-quiz[data-theme="light"] .ios-series-bookmark { border-color:#E6EAEF; background:#FFFFFF; color:#57606a; box-shadow:0 1px 3px rgba(15,23,42,.04); }
+          .ios-series-quiz[data-theme="light"] .ios-series-bookmark:active { border-color:#D8DEE4; background:#F1F4F7; }
           .ios-series-quiz[data-theme="light"] .ios-series-prompt { color: #1d1d1f; }
-          .ios-series-quiz[data-theme="light"] .ios-series-option { border-color: #E6EAEF; background: #FFFFFF; color: #1d1d1f; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03); }
+          .ios-series-quiz[data-theme="light"] .ios-series-option { border-color:#D8DEE4; background:#FFFFFF; color:#1d1d1f; box-shadow:var(--ios-option-shadow); }
           .ios-series-quiz[data-theme="light"] .ios-series-option:not(:disabled):hover { border-color: rgba(0, 113, 227, 0.4); background: #FFFFFF; }
-          .ios-series-quiz[data-theme="light"] .ios-series-option-letter { border-color: #E6EAEF; background: #E6EAEF; color: #1d1d1f; }
+          .ios-series-quiz[data-theme="light"] .ios-series-option-letter { border-color:transparent; background:#E6EAEF; color:#1d1d1f; }
           .ios-series-quiz[data-theme="light"] .ios-series-option.is-selected { border-color: #0071e3; background: #E6EAEF; }
-          .ios-series-quiz[data-theme="light"] .ios-series-option.is-selected .ios-series-option-letter { color: #FFFFFF; background: #0071e3; border-color: #0071e3; }
+          .ios-series-quiz[data-theme="light"] .ios-series-option.is-selected .ios-series-option-letter { color:#FFFFFF; background:#0071e3; border-color:transparent; }
           .ios-series-quiz[data-theme="light"] .ios-series-option.is-correct { border-color: #E6EAEF; background: #FFFFFF; }
-          .ios-series-quiz[data-theme="light"] .ios-series-option.is-correct .ios-series-option-letter { color: #FFFFFF; background: #16a34a; border-color: #16a34a; }
+          .ios-series-quiz[data-theme="light"] .ios-series-option.is-correct .ios-series-option-letter { color:#FFFFFF; background:#16a34a; border-color:transparent; }
           .ios-series-quiz[data-theme="light"] .ios-series-option.is-wrong { border-color: #E6EAEF; background: #FFFFFF; }
-          .ios-series-quiz[data-theme="light"] .ios-series-option.is-wrong .ios-series-option-letter { color: #FFFFFF; background: #dc2626; border-color: #dc2626; }
+          .ios-series-quiz[data-theme="light"] .ios-series-option.is-user-answer.is-correct { border-color:rgba(22,163,74,.34); box-shadow:0 0 0 1px rgba(22,163,74,.08),0 3px 12px rgba(15,23,42,.07); }
+          .ios-series-quiz[data-theme="light"] .ios-series-option.is-user-answer.is-wrong { border-color:rgba(220,38,38,.36); box-shadow:0 0 0 1px rgba(220,38,38,.08),0 3px 12px rgba(15,23,42,.07); }
+          .ios-series-quiz[data-theme="light"] .ios-series-your-answer { color:#6e7781; }
+          .ios-series-quiz[data-theme="light"] .ios-series-option.is-wrong .ios-series-option-letter { color:#FFFFFF; background:#dc2626; border-color:transparent; }
           .ios-series-quiz[data-theme="light"] .ios-series-footer { border-top-color:#D8DEE4; background:linear-gradient(180deg,rgba(246,248,250,0),rgba(246,248,250,.96) 25%,#F6F8FA); }
           .ios-series-quiz[data-theme="light"] .ios-series-footer-secondary { border-color: #E6EAEF; background: #FFFFFF; color: #57606a; }
-          .ios-series-quiz[data-theme="light"] .ios-series-footer-primary { background: #0071e3; color: #FFFFFF; border: none; box-shadow: 0 4px 16px -4px rgba(0,113,227,0.5); }
+          .ios-series-quiz[data-theme="light"] .ios-series-footer-primary { background:var(--ios-accent); color:#FFFFFF; border:none; box-shadow:0 4px 16px -4px rgba(0,113,227,.5); }
           .ios-series-quiz[data-theme="light"] .ios-series-palette-backdrop { background: rgba(0,0,0,.4); }
           .ios-series-quiz[data-theme="light"] .ios-series-palette-panel { border-color: #E6EAEF; background: #F6F8FA; }
           .ios-series-quiz[data-theme="light"] .ios-series-palette-title { color: #1d1d1f; border-bottom-color: #E6EAEF; background: #F6F8FA; }
