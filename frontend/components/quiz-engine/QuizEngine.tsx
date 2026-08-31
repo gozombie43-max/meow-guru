@@ -138,6 +138,7 @@ function QuizEngineContent({
   const [currentIndex, setCurrentIndex] = useState(0);
   const activeRailBtnRef = useRef<HTMLButtonElement | null>(null);
   const activeMacBtnRef = useRef<HTMLButtonElement | null>(null);
+  const examDetailsRef = useRef<HTMLDetailsElement | null>(null);
 
   useEffect(() => {
     if (activeRailBtnRef.current) {
@@ -151,6 +152,21 @@ function QuizEngineContent({
       } catch {}
     }
   }, [currentIndex]);
+
+  useEffect(() => {
+    const dismissExamDetails = (event: PointerEvent) => {
+      const details = examDetailsRef.current;
+      if (!details?.open) return;
+
+      const summary = details.querySelector("summary");
+      if (event.target instanceof Node && summary?.contains(event.target)) return;
+
+      details.removeAttribute("open");
+    };
+
+    document.addEventListener("pointerdown", dismissExamDetails);
+    return () => document.removeEventListener("pointerdown", dismissExamDetails);
+  }, []);
 
   const [isLargeScreen, setIsLargeScreen] = useState(false);
   useEffect(() => {
@@ -1477,6 +1493,12 @@ function QuizEngineContent({
   const isCurrentSubmitted = submittedQuestions.has(currentIndex);
   const canSubmit = selectedAnswer !== null && !isCurrentSubmitted;
   const canViewSolution = isCurrentSubmitted;
+  const fullExamLabel = currentQ.exam.trim() || `${title} concept practice`;
+  const examFamily = normalizeExamLabel(currentQ.exam);
+  const compactExamLabel = [examFamily, currentQ.year]
+    .filter((part, index, parts) => Boolean(part) && parts.indexOf(part) === index)
+    .join(" ") || fullExamLabel;
+  const hasDetailedExamLabel = Boolean(currentQ.exam.trim()) && compactExamLabel !== fullExamLabel;
 
   if (isMac) {
     return (
@@ -1904,10 +1926,19 @@ function QuizEngineContent({
             color: #fff;
           }
           .mac-series-footer-secondary:not(:disabled):hover { background: rgba(255, 255, 255, 0.15); }
-          .mac-series-footer-solution {
-            background: rgba(142, 68, 173, 0.2);
-            border: 1px solid rgba(142, 68, 173, 0.5);
-            color: #d2b4de;
+          .mac-series-footer-solution, .mac-series-footer-ai {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: rgba(255, 255, 255, 0.78);
+          }
+          .mac-series-footer-solution, .mac-series-footer-ai { display:inline-flex; align-items:center; justify-content:center; gap:7px; }
+          .mac-series-footer-solution::before, .mac-series-footer-ai::before { content:""; display:block; width:18px; height:18px; flex:none; background-position:center; background-repeat:no-repeat; background-size:contain; }
+          .mac-series-footer-solution::before { background-image:url("/icons8-view-solution.svg"); }
+          .mac-series-footer-ai::before { background-image:url("/icons8-gemini-ai.svg"); }
+          .mac-series-footer-solution:not(:disabled):hover, .mac-series-footer-ai:not(:disabled):hover {
+            background: rgba(255, 255, 255, 0.14);
+            border-color: rgba(255, 255, 255, 0.2);
+            color: #fff;
           }
           .mac-series-footer-primary {
             background: #007aff;
@@ -1915,13 +1946,6 @@ function QuizEngineContent({
             color: #fff;
           }
           .mac-series-footer-primary:not(:disabled):hover { background: #0062cc; }
-          .mac-series-footer-ai {
-            background: linear-gradient(135deg, #7c6df0, #f07c6d);
-            border: none;
-            color: #fff;
-          }
-          .mac-series-footer-ai:not(:disabled):hover { opacity: 0.9; }
-
           /* Light Theme Overrides (Palette: #F6F8FA White / #E6EAEF Ice Blue / #FFFFFF Pure White) */
           .mac-series-quiz[data-theme="light"] {
             background: #F6F8FA;
@@ -2005,12 +2029,13 @@ function QuizEngineContent({
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
           }
           .mac-series-quiz[data-theme="light"] .mac-series-footer-secondary:not(:disabled):hover { background: #E6EAEF; color: #1d1d1f; }
-          .mac-series-quiz[data-theme="light"] .mac-series-footer-solution {
-            background: #E6EAEF;
+          .mac-series-quiz[data-theme="light"] .mac-series-footer-solution, .mac-series-quiz[data-theme="light"] .mac-series-footer-ai {
+            background: #FFFFFF;
             border: 1px solid #E6EAEF;
-            color: #0071e3;
+            color: #57606a;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
           }
-          .mac-series-quiz[data-theme="light"] .mac-series-footer-solution:not(:disabled):hover { background: #FFFFFF; border-color: #0071e3; }
+          .mac-series-quiz[data-theme="light"] .mac-series-footer-solution:not(:disabled):hover, .mac-series-quiz[data-theme="light"] .mac-series-footer-ai:not(:disabled):hover { background:#E6EAEF; border-color:#D8DEE4; color:#1d1d1f; }
           .mac-series-quiz[data-theme="light"] .mac-series-footer-primary {
             background: #0071e3;
             border: none;
@@ -2117,8 +2142,26 @@ function QuizEngineContent({
 
           <main className="ios-series-content">
             <div className="ios-series-meta-row">
-              <ConceptBadge concept={currentQ.concept} colours={conceptColours} />
-              <span>{currentQ.exam || `${title} concept practice`}</span>
+              <div className="ios-series-meta-items">
+                <ConceptBadge concept={currentQ.concept} colours={conceptColours} />
+                <span className="ios-series-meta-separator" aria-hidden="true">·</span>
+                {hasDetailedExamLabel ? (
+                  <details
+                    className="ios-series-exam-details"
+                    key={currentQ.id}
+                    ref={examDetailsRef}
+                  >
+                    <summary aria-label={`${compactExamLabel}. Tap for full exam details`}>
+                      {compactExamLabel}
+                    </summary>
+                    <div className="ios-series-exam-popover" role="note">
+                      {fullExamLabel}
+                    </div>
+                  </details>
+                ) : (
+                  <span className="ios-series-exam-label">{compactExamLabel}</span>
+                )}
+              </div>
               <button
                 type="button"
                 className="ios-series-bookmark"
@@ -2292,17 +2335,25 @@ function QuizEngineContent({
           .ios-series-icon-button svg { width:18px; height:18px; }
           .ios-series-quiz .lang-toggle { flex:0 1 auto; }
           .ios-series-quiz .lang-toggle-option { min-width:0; padding-inline:9px; }
-          .ios-series-rail { display:flex; gap:8px; overflow-x:auto; padding:16px; border-bottom:1px solid rgba(255,255,255,.09); scrollbar-width:none; }
+          .ios-series-rail { display:flex; gap:8px; overflow-x:auto; padding:14px 16px; border-bottom:1px solid rgba(255,255,255,.09); scrollbar-width:none; }
           .ios-series-rail::-webkit-scrollbar { display:none; }
-          .ios-series-question { flex:0 0 44px; height:44px; border:1px solid rgba(255,255,255,.14); border-radius:13px; background:#1c1c1e; color:rgba(235,235,245,.6); font-size:15px; font-weight:700; cursor:pointer; }
+          .ios-series-question { flex:0 0 38px; height:38px; border:1px solid rgba(255,255,255,.14); border-radius:11px; background:#1c1c1e; color:rgba(235,235,245,.6); font-size:14px; font-weight:700; cursor:pointer; }
           .ios-series-question.is-current { border-color:transparent; color:#fff; background:#007aff; box-shadow:0 4px 14px -2px rgba(0,122,255,.55); }
           .ios-series-question.is-correct, .ios-series-question.is-answered { border-color:rgba(48,209,88,.6); background:rgba(48,209,88,.18); color:#30d158; }
           .ios-series-question.is-wrong { border-color:rgba(255,69,58,.6); background:rgba(255,69,58,.18); color:#ff453a; }
           .ios-series-question.is-unsubmitted { border-color:rgba(255,159,10,.6); background:rgba(255,159,10,.18); color:#ff9f0a; }
           .ios-series-content { flex: 1; overflow-y: auto; padding: 18px 16px 8px; }
-          .ios-series-meta-row { display:flex; align-items:center; gap:9px; min-width:0; margin-bottom:16px; color:rgba(235,235,245,.42); font-size:12px; font-weight:600; }
-          .ios-series-meta-row > span { flex: 1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-          .ios-series-quiz .concept-badge { flex:none; border-radius:8px; padding:6px 10px; letter-spacing:0; }
+          .ios-series-meta-row { display:flex; align-items:center; gap:8px; min-width:0; margin-bottom:16px; color:rgba(235,235,245,.58); font-size:12px; font-weight:600; }
+          .ios-series-meta-items { display:flex; align-items:center; gap:7px; min-width:0; flex:1; }
+          .ios-series-meta-separator { flex:none; color:rgba(235,235,245,.3); }
+          .ios-series-exam-label { min-width:0; line-height:1.35; }
+          .ios-series-exam-details { position:relative; min-width:0; }
+          .ios-series-exam-details summary { min-width:0; padding:5px 7px; margin:-5px -7px; border-radius:7px; color:rgba(235,235,245,.72); line-height:1.35; list-style:none; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+          .ios-series-exam-details summary::-webkit-details-marker { display:none; }
+          .ios-series-exam-details summary:focus-visible { outline:2px solid #007aff; outline-offset:2px; }
+          .ios-series-exam-details[open] summary { color:#f2f2f7; background:rgba(255,255,255,.08); }
+          .ios-series-exam-popover { position:absolute; z-index:40; top:calc(100% + 9px); left:50%; width:max-content; max-width:min(260px,calc(100vw - 40px)); padding:9px 11px; border:1px solid rgba(255,255,255,.14); border-radius:10px; color:rgba(255,255,255,.88); background:#2c2c2e; box-shadow:0 8px 24px rgba(0,0,0,.36); font-size:12px; font-weight:500; line-height:1.4; transform:translateX(-50%); }
+          .ios-series-quiz .concept-badge { flex:none; letter-spacing:0; }
           .ios-series-question-card { position:relative; min-height:158px; padding:20px 20px 22px 20px; border:1px solid rgba(255,255,255,.14); border-radius:22px; background:linear-gradient(180deg,#242426,#1c1c1e); }
           .ios-series-bookmark { display:grid; place-items:center; width:32px; height:32px; border:0; border-radius:9px; color:rgba(235,235,245,.48); background:transparent; cursor:pointer; flex-shrink: 0; margin-left: auto; }
           .ios-series-bookmark svg { width:20px; height:20px; }
@@ -2327,9 +2378,12 @@ function QuizEngineContent({
           .ios-series-option.is-wrong .ios-series-answer-icon { color:#ff453a; }
           .ios-series-actions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:14px; }
           .ios-series-actions.is-single-action { grid-template-columns: 1fr; }
-          .ios-series-solution { width:100%; min-width:0; min-height:46px; border:1px solid rgba(191,90,242,.4); border-radius:14px; background:transparent; color:#e5c2ff; font:inherit; font-size:14px; font-weight:700; cursor:pointer; }
-          .ios-series-ai-btn { width:100%; min-width:0; min-height:46px; border:1px solid #14b8a6; border-radius:14px; background:transparent; color:#5eead4; font:inherit; font-size:14px; font-weight:700; cursor:pointer; }
-          .ios-series-ai-btn:active { opacity:0.8; }
+          .ios-series-solution, .ios-series-ai-btn { width:100%; min-width:0; min-height:46px; border:1px solid rgba(255,255,255,.14); border-radius:14px; background:#1c1c1e; color:rgba(242,242,247,.82); font:inherit; font-size:14px; font-weight:700; cursor:pointer; transition:background .16s ease,border-color .16s ease,transform .16s ease; }
+          .ios-series-solution, .ios-series-ai-btn { display:inline-flex; align-items:center; justify-content:center; gap:7px; }
+          .ios-series-solution::before, .ios-series-ai-btn::before { content:""; display:block; width:18px; height:18px; flex:none; background-position:center; background-repeat:no-repeat; background-size:contain; }
+          .ios-series-solution::before { background-image:url("/icons8-view-solution.svg"); }
+          .ios-series-ai-btn::before { background-image:url("/icons8-gemini-ai.svg"); }
+          .ios-series-solution:active, .ios-series-ai-btn:active { border-color:rgba(255,255,255,.22); background:#242426; transform:scale(.99); }
           .ios-series-error { margin:12px 2px 0; color:#ff9f9a; font-size:13px; font-weight:600; }
           .ios-series-footer { z-index:30; display:grid; grid-template-columns:1fr 1fr; gap:10px; width:100%; max-width:430px; margin:0 auto; padding:14px 16px calc(env(safe-area-inset-bottom) + 14px); background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.94) 25%,#000); flex-shrink: 0; }
           .ios-series-footer button { min-width:0; height:52px; border-radius:16px; font:inherit; font-size:16px; font-weight:700; cursor:pointer; }
@@ -2359,8 +2413,8 @@ function QuizEngineContent({
           .ios-series-quiz[data-theme="light"] .ios-series-icon-button { border-color: #E6EAEF; color: #57606a; background: #FFFFFF; }
           .ios-series-quiz[data-theme="light"] .ios-series-icon-button.is-active { border-color: #0071e3; color: #0071e3; background: #e8f2fe; }
           .ios-series-quiz[data-theme="light"] .ios-series-palette-num { color: #1d1d1f; }
-          .ios-series-quiz[data-theme="light"] .ios-series-solution { border-color: rgba(147, 51, 234, 0.4); background: #faf5ff; color: #7e22ce; }
-          .ios-series-quiz[data-theme="light"] .ios-series-ai-btn { border-color: rgba(13, 148, 136, 0.4); background: #f0fdfa; color: #0f766e; }
+          .ios-series-quiz[data-theme="light"] .ios-series-solution, .ios-series-quiz[data-theme="light"] .ios-series-ai-btn { border-color:#D8DEE4; background:#FFFFFF; color:#424a53; }
+          .ios-series-quiz[data-theme="light"] .ios-series-solution:active, .ios-series-quiz[data-theme="light"] .ios-series-ai-btn:active { border-color:#C8D0D9; background:#F1F4F7; }
           .ios-series-quiz[data-theme="light"] .ios-series-rail { border-color: #E6EAEF; background: #E6EAEF; }
           .ios-series-quiz[data-theme="light"] .ios-series-question { border-color: #E6EAEF; background: #FFFFFF; color: #1d1d1f; }
           .ios-series-quiz[data-theme="light"] .ios-series-question.is-current { color: #FFFFFF; background: #0071e3; border-color: #0071e3; box-shadow: 0 4px 14px -2px rgba(0,113,227,0.4); }
@@ -2368,6 +2422,10 @@ function QuizEngineContent({
           .ios-series-quiz[data-theme="light"] .ios-series-question.is-wrong { border-color: #ef9a9a; background: #ffebee; color: #c62828; }
           .ios-series-quiz[data-theme="light"] .ios-series-question.is-unsubmitted { border-color: #ffe082; background: #fff8e1; color: #f57f17; }
           .ios-series-quiz[data-theme="light"] .ios-series-meta-row { color: #57606a; }
+          .ios-series-quiz[data-theme="light"] .ios-series-meta-separator { color:rgba(87,96,106,.42); }
+          .ios-series-quiz[data-theme="light"] .ios-series-exam-details summary { color:#424a53; }
+          .ios-series-quiz[data-theme="light"] .ios-series-exam-details[open] summary { color:#1d1d1f; background:#E6EAEF; }
+          .ios-series-quiz[data-theme="light"] .ios-series-exam-popover { border-color:#D8DEE4; color:#1d1d1f; background:#FFFFFF; box-shadow:0 8px 24px rgba(15,23,42,.14); }
           .ios-series-quiz[data-theme="light"] .ios-series-question-card { border-color: #E6EAEF; background: #FFFFFF; box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04); }
           .ios-series-quiz[data-theme="light"] .ios-series-bookmark { color: #57606a; }
           .ios-series-quiz[data-theme="light"] .ios-series-prompt { color: #1d1d1f; }
