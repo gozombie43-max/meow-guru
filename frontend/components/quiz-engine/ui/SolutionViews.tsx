@@ -87,7 +87,9 @@ export function SolutionBottomSheet({
                     {correctOptionText && (
                       <>
                         <span aria-hidden="true"> — </span>
-                        <span className="ios-solution-answer-value">{correctOptionText}</span>
+                        <span className="ios-solution-answer-value">
+                          <RichContent text={correctOptionText} />
+                        </span>
                       </>
                     )}
                   </p>

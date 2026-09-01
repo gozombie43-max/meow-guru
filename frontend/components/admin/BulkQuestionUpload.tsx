@@ -99,10 +99,14 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
   async function checkDuplicates(initialRows: RowData[]) {
     const toCheck = initialRows.filter(q => q.id || q._id || q.questionId || q.question || q.questionText || q.q || q.word);
     if (!toCheck.length) return;
-    addLog(`Checking ${toCheck.length} questions against Cosmos DB...`, "info");
+    addLog(`Checking ${toCheck.length} questions against the database...`, "info");
     try {
       const res = await fetch(`${API}/api/questions/check-duplicates`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-secret": secret.trim(),
+        },
         body: JSON.stringify({ questions: toCheck })
       });
       if (res.ok) {
@@ -218,7 +222,24 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
           addLog(`Batch ${batchNum} → ${batch.length} items uploaded (HTTP 200)`, "ok");
         } else {
           failed += batch.length;
-          addLog(`Batch ${batchNum} → Failed with HTTP ${res.status} ${res.statusText}`, "err");
+          const responseText = await res.text();
+          let detail = responseText.trim();
+          try {
+            const parsed = JSON.parse(responseText);
+            detail = String(parsed?.error || parsed?.message || detail).trim();
+          } catch {
+            // Keep the plain-text response when the backend did not return JSON.
+          }
+          const suffix = detail ? `: ${detail}` : "";
+          addLog(`Batch ${batchNum} → Failed with HTTP ${res.status} ${res.statusText}${suffix}`, "err");
+
+          if (res.status === 401 || res.status === 403) {
+            const remaining = total - Math.min(i + BATCH, total);
+            failed += remaining;
+            setProgress({ current: total, total });
+            addLog("Deployment stopped because the admin secret was rejected.", "err");
+            break;
+          }
         }
       } catch (err) {
         failed += batch.length;

@@ -29,6 +29,7 @@ type Question = {
   correctLetter: string;
   concept: string;
   source: string;
+  quizName?: string;
   solution: string;
   solutionImage?: string;
   questionType?: string;
@@ -234,6 +235,7 @@ export default function AdminPanel() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const questionsRequestRef = useRef<AbortController | null>(null);
 
   // Filters
   const [search, setSearch] = useState("");
@@ -241,6 +243,7 @@ export default function AdminPanel() {
   const [filterSubject, setFilterSubject] = useState("");
   const [filterDifficulty, setFilterDifficulty] = useState("");
   const [filterExam, setFilterExam] = useState("");
+  const [filterQuizName, setFilterQuizName] = useState("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   // Mass upload
@@ -307,6 +310,9 @@ export default function AdminPanel() {
 
   const topics = [...new Set(questions.map((q) => q.topic).filter(Boolean))].sort();
   const exams = [...new Set(questions.map((q) => q.exam).filter(Boolean))].sort();
+  const quizNames = [...new Set(
+    questions.map((q) => q.quizName || q.source).filter((name): name is string => Boolean(name))
+  )].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
   const muTopicOptions = muSubject ? SUBJECT_TOPIC_OPTIONS[muSubject as SubjectKey] : [];
   const selectedSubjectId = muSubject;
   const selectedTopicId = muTopic;
@@ -317,6 +323,10 @@ export default function AdminPanel() {
   const quizOptions = QUIZ_OPTIONS_BY_TOPIC[muTopic] ?? DEFAULT_QUIZ_OPTIONS;
 
   const fetchQuestions = useCallback(async () => {
+    questionsRequestRef.current?.abort();
+    const controller = new AbortController();
+    questionsRequestRef.current = controller;
+
     setLoading(true);
     setError("");
     try {
@@ -325,20 +335,34 @@ export default function AdminPanel() {
       if (filterSubject) params.set("subject", filterSubject);
       if (filterDifficulty) params.set("difficulty", filterDifficulty);
       if (filterExam) params.set("exam", filterExam);
-      const res = await fetchWithRetry(`${API}/api/questions?${params}`);
+      if (filterQuizName) params.set("quizName", filterQuizName);
+      const res = await fetchWithRetry(
+        `${API}/api/questions?${params}`,
+        { signal: controller.signal },
+        { timeoutMs: 30000 }
+      );
       if (!res.ok) throw new Error(`Server error ${res.status}`);
       const data = await res.json();
+      if (questionsRequestRef.current !== controller) return;
       setQuestions(Array.isArray(data) ? data : data.questions || []);
       setSelected(new Set());
       setPage(1);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Failed to fetch");
+      if (!controller.signal.aborted && questionsRequestRef.current === controller) {
+        setError(e instanceof Error ? e.message : "Failed to fetch");
+      }
     } finally {
-      setLoading(false);
+      if (questionsRequestRef.current === controller) {
+        questionsRequestRef.current = null;
+        setLoading(false);
+      }
     }
-  }, [filterTopic, filterSubject, filterDifficulty, filterExam]);
+  }, [filterTopic, filterSubject, filterDifficulty, filterExam, filterQuizName]);
 
-  useEffect(() => { fetchQuestions(); }, [fetchQuestions]);
+  useEffect(() => {
+    void fetchQuestions();
+    return () => questionsRequestRef.current?.abort();
+  }, [fetchQuestions]);
 
   useEffect(() => {
     const q = search.toLowerCase();
@@ -1117,7 +1141,7 @@ export default function AdminPanel() {
       </div>
 
       {/* Filters */}
-      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr 1fr", gap: 10, marginBottom: "1rem" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "2fr repeat(6, minmax(0, 1fr))", gap: 10, marginBottom: "1rem" }}>
         <input placeholder="Search question, chapter, ID..." value={search} onChange={(e) => setSearch(e.target.value)}
           style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 14, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }} />
         <select value={filterSubject} onChange={(e) => setFilterSubject(e.target.value)}
@@ -1139,6 +1163,11 @@ export default function AdminPanel() {
           style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 14, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}>
           <option value="">All exams</option>
           {exams.map((e) => <option key={e} value={e}>{e}</option>)}
+        </select>
+        <select value={filterQuizName} onChange={(e) => setFilterQuizName(e.target.value)}
+          style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 14, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}>
+          <option value="">All quiz names</option>
+          {quizNames.map((name) => <option key={name} value={name}>{name}</option>)}
         </select>
         <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
           style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 14, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}>

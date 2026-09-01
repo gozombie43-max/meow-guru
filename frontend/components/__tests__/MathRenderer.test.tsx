@@ -26,6 +26,16 @@ describe('MathRenderer Component', () => {
     expect(katexEl).not.toBeNull();
   });
 
+  it('renders parenthesized option math containing a LaTeX fraction', () => {
+    const { container } = render(
+      <MathRenderer text="\\(a=3, b=-\\frac{3}{2}\\)" inline />
+    );
+
+    const visibleMath = container.querySelector('.katex-html');
+    expect(visibleMath).not.toBeNull();
+    expect(visibleMath?.textContent).not.toContain('\\frac');
+  });
+
   it('renders fractions with fraction regex parsing', () => {
     const { container } = render(<MathRenderer text="Probability is 3/4" />);
     const katexEl = container.querySelector('.katex');
@@ -33,7 +43,7 @@ describe('MathRenderer Component', () => {
   });
 
   it('handles percentage in fraction denominators', () => {
-    const { container } = render(<MathRenderer text="Growth rate is 1/5%" />);
+    render(<MathRenderer text="Growth rate is 1/5%" />);
     expect(screen.getByText('%')).toBeDefined();
   });
 });
