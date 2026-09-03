@@ -1161,6 +1161,15 @@ export default function GeneralAwarenessPage() {
           MOBILE / TABLET VIEW (< 768px Handheld Devices)
           ========================================================================= */}
       <div className={styles.mobileContainer}>
+        {/* Dark Theme: Background SVG placed in the middle of mobile screen */}
+        <div className={styles.mobileDarkBgSvgWrapper} aria-hidden="true">
+          <img
+            src="/general-knowledge-gk.svg"
+            alt=""
+            className={styles.mobileDarkBgSvg}
+          />
+        </div>
+
         {/* Mobile Topbar */}
         <header className={styles.mobileTopbar}>
           <Link
@@ -1270,6 +1279,7 @@ export default function GeneralAwarenessPage() {
           </div>
         </div>
       </div>
+
     </div>
   );
 }

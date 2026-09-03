@@ -1813,3 +1813,67 @@
 :global(body.theme-light) .mobileChevron {
   color: #c7c7cc !important;
 }
+
+/* ── Mobile Dark Theme: Background SVG in Middle of Mobile Screen ─────────── */
+.mobileDarkBgSvgWrapper {
+  display: none;
+}
+
+:global(body.theme-dark) .mobileDarkBgSvgWrapper,
+:global(html.theme-dark) .mobileDarkBgSvgWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  top: var(--safe-top);
+  bottom: calc(var(--app-bottom-nav-height) + var(--safe-bottom));
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  z-index: 0;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.mobileDarkBgSvg {
+  width: 100%;
+  max-width: min(88vw, 360px);
+  max-height: calc(100dvh - var(--app-bottom-nav-height) - var(--safe-bottom) - var(--safe-top) - 60px);
+  aspect-ratio: 1500 / 1600;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 16px 36px rgba(0, 0, 0, 0.7));
+  margin: auto;
+}
+
+/* Ensure mobile content sits above background SVG in dark theme */
+:global(body.theme-dark) .mobileTopbar,
+:global(html.theme-dark) .mobileTopbar {
+  background: rgba(0, 0, 0, 0.75) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  position: sticky;
+  z-index: 20;
+}
+
+:global(body.theme-dark) .mobileBody,
+:global(html.theme-dark) .mobileBody {
+  position: relative;
+  z-index: 10;
+}
+
+:global(body.theme-dark) .mobileTopicGroup,
+:global(html.theme-dark) .mobileTopicGroup {
+  background: rgba(15, 15, 15, 0.72) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+:global(body.theme-dark) .mobileSearchInput,
+:global(html.theme-dark) .mobileSearchInput {
+  background: rgba(28, 28, 30, 0.75) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
