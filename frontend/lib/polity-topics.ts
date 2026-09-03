@@ -10,9 +10,9 @@ function toTopicSlug(title: string) {
 }
 
 function getPriority(rank: number): RankedTopicPriority {
-  if (rank <= 10) return "High";
-  if (rank <= 18) return "Medium";
-  return "Lower";
+  if (rank <= 10) return "Core";
+  if (rank <= 18) return "High";
+  return "Medium";
 }
 
 const POLITY_TITLES = [

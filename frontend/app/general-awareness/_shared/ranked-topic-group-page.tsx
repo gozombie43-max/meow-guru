@@ -130,7 +130,7 @@ import MicIcon from "@/components/MicIcon";
 import hubStyles from "@/components/SubjectHub.module.css";
 import styles from "./RankedTopicGroupPage.module.css";
 
-type PriorityFilter = "All" | RankedTopicPriority;
+type PriorityFilter = RankedTopicPriority;
 
 const PRIORITY_CLASS: Record<RankedTopicPriority, string> = {
   "Very High": styles.veryHigh,
@@ -377,7 +377,11 @@ const GROUP_META: Record<string, TopicMeta> = {
 
 export default function RankedTopicGroupPage({ group }: { group: RankedTopicGroup }) {
   const [query, setQuery] = useState("");
-  const [priority, setPriority] = useState<PriorityFilter>("All");
+  const [priority, setPriority] = useState<PriorityFilter>(group.filters[0] || "Core");
+
+  useEffect(() => {
+    setPriority(group.filters[0] || "Core");
+  }, [group.slug, group.filters]);
 
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef<any>(null);
@@ -446,13 +450,13 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
       const matchesQuery =
         normalizedQuery === "" || topic.title.toLowerCase().includes(normalizedQuery);
       const matchesPriority =
-        priority === "All" || topic.priority === priority;
+        normalizedQuery !== "" || topic.priority === priority;
       return matchesQuery && matchesPriority;
     });
   }, [group.topics, priority, query]);
 
   const filters = useMemo<readonly PriorityFilter[]>(
-    () => ["All", ...group.filters],
+    () => group.filters,
     [group.filters]
   );
 

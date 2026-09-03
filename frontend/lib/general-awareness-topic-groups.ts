@@ -21,12 +21,12 @@ export const GENERAL_AWARENESS_TOPIC_GROUPS: Record<string, RankedTopicGroup> = 
     eyebrow: "SSC Geography",
     description: "Start with the highest-weightage chapters. Tap any chapter to open its study hub.",
     metricLabel: "Weightage",
-    filters: ["Very High", "High", "Medium"],
+    filters: ["Core", "High", "Medium"],
     topics: GEOGRAPHY_TOPICS.map(({ rank, title, slug, weightage }) => ({
       rank,
       title,
       slug,
-      priority: weightage,
+      priority: weightage === "Very High" ? "Core" : weightage,
     })),
   },
   polity: {
@@ -34,8 +34,8 @@ export const GENERAL_AWARENESS_TOPIC_GROUPS: Record<string, RankedTopicGroup> = 
     label: "Polity & Constitution",
     eyebrow: "SSC & Railway Polity",
     description: "Prioritize constitutional rights, institutions, Parliament, executive, judiciary, and governance.",
-    metricLabel: "Weightage",
-    filters: ["High", "Medium", "Lower"],
+    metricLabel: "Priority",
+    filters: ["Core", "High", "Medium"],
     topics: POLITY_TOPICS,
   },
   "ancient-history": {

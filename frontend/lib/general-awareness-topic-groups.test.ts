@@ -80,9 +80,9 @@ describe("general awareness ranked topic groups", () => {
     expect(topics.map(({ rank }) => rank)).toEqual(
       Array.from({ length: 28 }, (_, index) => index + 1)
     );
-    expect(topics.filter(({ priority }) => priority === "High")).toHaveLength(10);
-    expect(topics.filter(({ priority }) => priority === "Medium")).toHaveLength(8);
-    expect(topics.filter(({ priority }) => priority === "Lower")).toHaveLength(10);
+    expect(topics.filter(({ priority }) => priority === "Core")).toHaveLength(10);
+    expect(topics.filter(({ priority }) => priority === "High")).toHaveLength(8);
+    expect(topics.filter(({ priority }) => priority === "Medium")).toHaveLength(10);
     expect(getGeneralAwarenessChapter("polity", "fundamental-rights")?.rank).toBe(1);
   });
 });

@@ -403,6 +403,7 @@ export default function GeneralAwarenessPage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [selectedTopicId, setSelectedTopicId] = useState<number>(1);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobilePriority, setMobilePriority] = useState<"Core" | "High">("Core");
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [isListening, setIsListening] = useState(false);
@@ -478,6 +479,22 @@ export default function GeneralAwarenessPage() {
       );
     });
   }, [searchQuery]);
+
+  const mobileFilteredTopics = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    return TOPICS.filter((t) => {
+      const matchesQuery =
+        q === "" ||
+        t.name.toLowerCase().includes(q) ||
+        t.subtopics.some((s) => s.toLowerCase().includes(q)) ||
+        t.description.toLowerCase().includes(q);
+
+      const topicTier = t.priority === "very-high" ? "Core" : "High";
+      const matchesTier = q !== "" || topicTier === mobilePriority;
+
+      return matchesQuery && matchesTier;
+    });
+  }, [searchQuery, mobilePriority]);
 
   // Selected topic object
   const selectedTopic = useMemo(() => {
@@ -605,15 +622,14 @@ export default function GeneralAwarenessPage() {
               />
 
               {/* Navigation Arrows */}
-              <button
-                type="button"
+              <Link
+                href="/"
                 className={styles.navBtn}
-                onClick={() => router.back()}
-                aria-label="Back"
-                title="Back"
+                aria-label="Back to Home"
+                title="Back to Home"
               >
                 <ArrowLeft size={13} />
-              </button>
+              </Link>
 
               <button
                 type="button"
@@ -1025,14 +1041,13 @@ export default function GeneralAwarenessPage() {
       <div className={styles.mobileContainer}>
         {/* Mobile Topbar */}
         <header className={styles.mobileTopbar}>
-          <button
-            type="button"
+          <Link
+            href="/"
             className={styles.mobileBackBtn}
-            onClick={() => router.back()}
-            aria-label="Back"
+            aria-label="Back to Home"
           >
             <ArrowLeft size={18} strokeWidth={2.4} />
-          </button>
+          </Link>
           <span className={styles.mobileTopbarTitle}>General Awareness Topics</span>
           <div style={{ width: 34 }} />
         </header>
@@ -1078,23 +1093,31 @@ export default function GeneralAwarenessPage() {
 
           {/* iOS Grouped Card Container with Filter Header */}
           <div className={styles.mobileTopicGroup}>
-            {/* Priority Tab in Card Header - Only Core containing all topics */}
-            <div className={styles.mobileTabsScroll}>
-              <button
-                type="button"
-                className={`${styles.mobileTabBtn} ${styles.mobileTabActive}`}
-                style={{ flex: "0 0 auto", padding: "0 18px" }}
-              >
-                Core
-              </button>
+            {/* Priority Tabs in Card Header - Core and High */}
+            <div className={styles.mobileTabsScroll} role="tablist" aria-label="Filter by priority">
+              {(["Core", "High"] as const).map((tier) => {
+                const isActive = mobilePriority === tier;
+                return (
+                  <button
+                    key={tier}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    className={`${styles.mobileTabBtn} ${isActive ? styles.mobileTabActive : ""}`}
+                    onClick={() => setMobilePriority(tier)}
+                  >
+                    {tier}
+                  </button>
+                );
+              })}
             </div>
 
-            {filteredTopics.length === 0 ? (
+            {mobileFilteredTopics.length === 0 ? (
               <div style={{ padding: "28px 16px", textAlign: "center", color: "var(--mac-text-secondary, #8E8E93)", fontSize: "0.9rem" }}>
                 No general awareness topics found matching &ldquo;{searchQuery}&rdquo;
               </div>
             ) : (
-              filteredTopics.map((topic) => {
+              mobileFilteredTopics.map((topic) => {
                 const TopicIcon = topic.icon;
                 return (
                   <Link

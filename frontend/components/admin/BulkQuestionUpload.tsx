@@ -3,6 +3,7 @@
 import { type ReactNode, useEffect, useState, useMemo, useRef } from "react";
 import styles from "./AdminTool.module.css";
 import { QUIZ_TREE } from "@/lib/quiz-constants";
+import { getGeneralAwarenessTopicGroup } from "@/lib/general-awareness-topic-groups";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "";
 type RecordItem = Record<string, any>;
@@ -48,10 +49,10 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
     return "";
   });
   const [fileName, setFileName] = useState("");
-  const [quiz, setQuiz] = useState({ subject: "", topic: "", name: "" });
+  const [quiz, setQuiz] = useState({ subject: "", topic: "", chapter: "", name: "" });
   const [rows, setRows] = useState<RowData[]>([]);
   const [selected, setSelected] = useState<Set<number>>(new Set());
-  const [filters, setFilters] = useState({ subject: "", difficulty: "", status: "" });
+  const [filters, setFilters] = useState({ subject: "", difficulty: "", status: "", chapter: "" });
   const [logs, setLogs] = useState<{ text: string, type: "ok" | "err" | "info" }[]>([]);
   const [progress, setProgress] = useState<{ current: number, total: number } | null>(null);
   const [saving, setSaving] = useState(false);
@@ -154,6 +155,10 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
       if (filters.status === 'error' && q._status !== 'error' && q._status !== 'id-conflict') return false;
       if (filters.status === 'duplicate' && q._status !== 'db-duplicate') return false;
       if (filters.status && filters.status !== 'error' && filters.status !== 'duplicate' && q._status !== filters.status) return false;
+      if (filters.chapter) {
+        const qChap = (q.chapter || q.quizChapter || q.topic || '').toLowerCase();
+        if (!qChap.includes(filters.chapter.toLowerCase())) return false;
+      }
       return true;
     });
   }, [rows, filters]);
@@ -179,11 +184,27 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
     setSelected(old => new Set([...old].filter(idx => next.some(r => r._idx === idx))));
   };
 
+  const availableTopics = quiz.subject && QUIZ_TREE[quiz.subject] ? Object.keys(QUIZ_TREE[quiz.subject].topics) : [];
+  const availableNames = quiz.subject && quiz.topic && QUIZ_TREE[quiz.subject]?.topics[quiz.topic] ? QUIZ_TREE[quiz.subject].topics[quiz.topic].quizzes : [];
+
+  const isGeneralAwareness = quiz.subject === "general-awareness";
+  const gaGroup = isGeneralAwareness && quiz.topic ? getGeneralAwarenessTopicGroup(quiz.topic) : null;
+  const availableChapters = gaGroup ? gaGroup.topics : [];
+
   async function upload() {
     if (!secret.trim() || !quiz.subject || !quiz.topic || !quiz.name) return alert("Please provide the admin secret key and designate a target quiz.");
     
-    const isStudyModeTarget = /study\s*mode/i.test(quiz.name);
     const toUploadRaw = rows.filter(q => selected.has(q._idx));
+    if (!toUploadRaw.length) return alert("No valid rows selected for deployment.");
+
+    if (isGeneralAwareness && availableChapters.length > 0 && !quiz.chapter) {
+      const allHaveChapters = toUploadRaw.every(q => q.chapter || q.quizChapter || q.topic);
+      if (!allHaveChapters) {
+        return alert("Please choose a chapter for the selected General Awareness topic.");
+      }
+    }
+
+    const isStudyModeTarget = /study\s*mode/i.test(quiz.name);
     
     const hasStudyModeRows = toUploadRaw.some(muIsStudyModeRecord);
     const hasNonStudyRows = toUploadRaw.some(q => !muIsStudyModeRecord(q));
@@ -191,12 +212,23 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
     if (hasStudyModeRows && !isStudyModeTarget) return alert("Study-mode records can only be assigned to a Study Mode designated quiz.");
     if (isStudyModeTarget && hasNonStudyRows) return alert("Study Mode quiz targets only accept study-mode shaped JSON structures.");
 
+    const selectedChapter = availableChapters.find(c => c.slug === quiz.chapter || c.title === quiz.chapter);
+
     const toUpload = toUploadRaw.map(({ _idx, _status, _issue, _existingText, _incomingText, ...clean }) => {
+      const itemChapter = clean.chapter || clean.quizChapter;
+      const matchedChapter = selectedChapter || (isGeneralAwareness && itemChapter ? availableChapters.find(c => c.slug === itemChapter || c.title.toLowerCase() === String(itemChapter).toLowerCase()) : null);
+
       return {
         ...clean,
         quizSubject: quiz.subject,
-        quizTopic: quiz.topic,
+        quizTopic: matchedChapter ? matchedChapter.title : (clean.quizTopic || quiz.topic),
         quizName: quiz.name,
+        ...(matchedChapter ? {
+          chapter: matchedChapter.title,
+          chapterSlug: matchedChapter.slug,
+          topic: matchedChapter.title,
+          topicGroup: quiz.topic,
+        } : (isGeneralAwareness ? { topicGroup: quiz.topic } : {})),
       };
     });
 
@@ -261,9 +293,6 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
     return { background: "#f5f5f7", color: "#48484a", border: "0.5px solid rgba(0, 0, 0, 0.1)" };
   };
 
-  const availableTopics = quiz.subject && QUIZ_TREE[quiz.subject] ? Object.keys(QUIZ_TREE[quiz.subject].topics) : [];
-  const availableNames = quiz.subject && quiz.topic && QUIZ_TREE[quiz.subject]?.topics[quiz.topic] ? QUIZ_TREE[quiz.subject].topics[quiz.topic].quizzes : [];
-
   return (
     <div className={styles.shell}>
       <header className={styles.pageHeader}>
@@ -293,7 +322,7 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
             Quiz Subject
             <select 
               value={quiz.subject} 
-              onChange={(e) => setQuiz({ subject: e.target.value, topic: "", name: "" })} 
+              onChange={(e) => setQuiz({ subject: e.target.value, topic: "", chapter: "", name: "" })} 
               className={styles.macSelect}
             >
               <option value="">Select subject</option>
@@ -304,7 +333,7 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
             Quiz Topic
             <select 
               value={quiz.topic} 
-              onChange={(e) => setQuiz({ ...quiz, topic: e.target.value, name: "" })} 
+              onChange={(e) => setQuiz({ ...quiz, topic: e.target.value, chapter: "", name: "" })} 
               disabled={!quiz.subject} 
               className={styles.macSelect}
             >
@@ -312,6 +341,30 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
               {availableTopics.map(k => <option key={k} value={k}>{QUIZ_TREE[quiz.subject!].topics[k].label}</option>)}
             </select>
           </label>
+          {isGeneralAwareness && (
+            <label className={styles.fieldLabel}>
+              Choose Chapter
+              <select 
+                value={quiz.chapter} 
+                onChange={(e) => setQuiz({ ...quiz, chapter: e.target.value })} 
+                disabled={!quiz.topic || availableChapters.length === 0} 
+                className={styles.macSelect}
+              >
+                <option value="">
+                  {!quiz.topic
+                    ? "Select topic first"
+                    : availableChapters.length === 0
+                    ? "No sub-chapters"
+                    : "Select chapter"}
+                </option>
+                {availableChapters.map((ch) => (
+                  <option key={ch.slug} value={ch.slug}>
+                    {ch.rank}. {ch.title}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           <label className={styles.fieldLabel}>
             Quiz Name
             <select 
@@ -355,7 +408,23 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
               <option value="math">Mathematics</option>
               <option value="reasoning">Reasoning</option>
               <option value="english">English</option>
+              <option value="general-awareness">General Awareness</option>
             </select>
+            {isGeneralAwareness && availableChapters.length > 0 && (
+              <select
+                value={filters.chapter || ""}
+                onChange={(e) => setFilters((old) => ({ ...old, chapter: e.target.value }))}
+                className={styles.macSelect}
+                style={{ width: "auto" }}
+              >
+                <option value="">All Chapters</option>
+                {availableChapters.map((ch) => (
+                  <option key={ch.slug} value={ch.slug}>
+                    {ch.rank}. {ch.title}
+                  </option>
+                ))}
+              </select>
+            )}
             <select value={filters.difficulty} onChange={e => setFilters(old => ({ ...old, difficulty: e.target.value }))} className={styles.macSelect} style={{ width: "auto" }}>
               <option value="">All Difficulties</option>
               <option value="easy">Easy</option>
@@ -369,7 +438,7 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
               <option value="duplicate">In DB Dupes</option>
             </select>
             
-            <button onClick={() => { setFilters({ subject: "", difficulty: "", status: "" }); setSelected(new Set(rows.map(r => r._idx))); }} className={styles.btnSecondary}>
+            <button onClick={() => { setFilters({ subject: "", difficulty: "", status: "", chapter: "" }); setSelected(new Set(rows.map(r => r._idx))); }} className={styles.btnSecondary}>
               Reset &amp; Select All
             </button>
             <button onClick={removeDupes} className={styles.btnDanger}>
