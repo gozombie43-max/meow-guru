@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
-import { useIsDesktop } from './useIsDesktop';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import {
   startTest,
   getAttempt,
@@ -41,7 +41,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
   const router = useRouter();
   const searchParams = useSearchParams();
   const { token } = useAuth();
-  const isDesktop = useIsDesktop(1024);
+  const isDesktop = useMediaQuery('(min-width: 1024px)');
   const resumeAttemptId = searchParams?.get('resume');
 
   const [paper, setPaper] = useState<MockPaper | null>(null);
@@ -90,7 +90,6 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
 
   useEffect(() => {
     // Fetching the attempt is the external synchronization boundary for this screen.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     void loadData();
   }, [loadData]);
 
@@ -165,7 +164,6 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
   useEffect(() => {
     if (!paper || globalTimeLeft > 0 || isSubmitting || showSubmitModal) return;
     // The exam timer reaching zero is an external event that must submit immediately.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     void handleFinalSubmit();
   }, [globalTimeLeft, handleFinalSubmit, isSubmitting, paper, showSubmitModal]);
 

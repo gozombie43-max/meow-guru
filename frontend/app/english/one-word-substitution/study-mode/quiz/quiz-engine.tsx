@@ -1,29 +1,12 @@
 "use client";
 
 import React, { useEffect, useRef, useState, useMemo, useCallback } from "react";
-import { fetchQuestions, type Question as ApiQuestion } from "@/lib/api/questions";
+import {
+  useStudyModeTerms,
+  type StudyModeTermCard,
+} from "@/app/english/_shared/useStudyModeTerms";
 
-type StudyModeMeaning = {
-  definition?: string;
-  translation?: string;
-};
-
-type StudyModeEntry = ApiQuestion & {
-  word?: string;
-  meanings?: StudyModeMeaning[];
-  prompt?: string;
-  phrase?: string;
-  answer?: string;
-};
-
-export type SubstitutionCard = {
-  id: string;
-  prompt: string;
-  answer: string;
-  definitionTranslation?: string;
-  answerTranslation?: string;
-  label?: string;
-};
+export type SubstitutionCard = StudyModeTermCard;
 
 const DEMO_CARDS: SubstitutionCard[] = [
   {
@@ -45,47 +28,6 @@ const DEMO_CARDS: SubstitutionCard[] = [
     label: "People",
   },
 ];
-
-const promptFields = ["prompt", "phrase", "question", "definition", "meaning", "clue"];
-
-function getFirstString(entry: unknown, keys: string[]): string {
-  if (!entry || typeof entry !== "object") return "";
-  const record = entry as Record<string, unknown>;
-  for (const key of keys) {
-    const value = record[key];
-    if (typeof value === "string" && value.trim()) return value.trim();
-  }
-  return "";
-}
-
-function toSubstitutionCard(entry: StudyModeEntry, index: number): SubstitutionCard | null {
-  const promptFromMeaning = Array.isArray(entry.meanings)
-    ? entry.meanings.map((m) => String(m?.definition ?? "").trim()).filter(Boolean)[0] ?? ""
-    : "";
-
-  const prompt = getFirstString(entry, promptFields) || promptFromMeaning;
-  const answer = String(entry.word || entry.correctAnswer || entry.answer || entry.solution || "").trim();
-
-  if (!prompt || !answer) return null;
-
-  const translation = Array.isArray(entry.meanings)
-    ? entry.meanings.map((m) => String(m?.translation ?? "").trim()).filter(Boolean)[0]
-    : "";
-
-  const answerTranslation = getFirstString(entry, ["answerTranslation", "wordTranslation", "translation"]);
-  let label = entry.concept ? String(entry.concept).trim() : "General";
-  
-  if (label.toLowerCase() === "one-word substitution") label = "General";
-
-  return {
-    id: String(entry.id ?? index + 1),
-    prompt,
-    answer,
-    definitionTranslation: translation,
-    answerTranslation,
-    label,
-  };
-}
 
 // -------------------------------------------------------------
 // MOBILE VIEW COMPONENTS
@@ -172,7 +114,6 @@ function MobileQuizView({ cards, bookmarked, toggleBookmark, theme, setTheme, ca
   const [activeLetters, setActiveLetters] = useState<Set<string>>(new Set());
   const [bookmarkedOnly, setBookmarkedOnly] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const [catSectionCollapsed, setCatSectionCollapsed] = useState(false);
   const [lettersSectionCollapsed, setLettersSectionCollapsed] = useState(false);
   const [statusSectionCollapsed, setStatusSectionCollapsed] = useState(false);
@@ -183,12 +124,6 @@ function MobileQuizView({ cards, bookmarked, toggleBookmark, theme, setTheme, ca
       count: cards.filter((d: SubstitutionCard) => (d.label || "General") === cat).length
     })).sort((a: any, b: any) => b.count - a.count);
   }, [categories, cards]);
-
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 40);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   const filteredCards = useMemo(() => {
     let items = cards as SubstitutionCard[];
@@ -207,17 +142,6 @@ function MobileQuizView({ cards, bookmarked, toggleBookmark, theme, setTheme, ca
       return next;
     });
   };
-
-  const handleSegmentClick = (filter: string) => {
-    if (filter === "all") { setActiveCats(new Set()); setBookmarkedOnly(false); }
-    else if (filter === "bookmarked") { setActiveCats(new Set()); setBookmarkedOnly(true); }
-    else { setActiveCats(new Set([filter])); setBookmarkedOnly(false); }
-  };
-
-  let activeSegment = "all";
-  if (bookmarkedOnly && activeCats.size === 0) activeSegment = "bookmarked";
-  else if (!bookmarkedOnly && activeCats.size === 1) activeSegment = [...activeCats][0];
-  else if (activeCats.size > 0) activeSegment = "custom";
 
   const handleSearchChange = (val: string) => { setQuery(val); setMiniQuery(val); };
   const circ = 2 * Math.PI * 8;
@@ -679,8 +603,8 @@ function DesktopQuizView({ cards, bookmarked, toggleBookmark, theme, setTheme, c
 // -------------------------------------------------------------
 export default function StudyModeQuizEngine() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
-  const [cards, setCards] = useState<SubstitutionCard[]>([]);
   const [bookmarked, setBookmarked] = useState<Set<string>>(new Set());
+  const studyCards = useStudyModeTerms("one-word-substitution", DEMO_CARDS);
 
   useEffect(() => {
     try {
@@ -694,19 +618,6 @@ export default function StudyModeQuizEngine() {
   useEffect(() => { try { window.localStorage.setItem("ows-theme", theme); } catch {} }, [theme]);
   useEffect(() => { try { window.localStorage.setItem("ows-bookmarks", JSON.stringify([...bookmarked])); } catch {} }, [bookmarked]);
 
-  useEffect(() => {
-    let active = true;
-    fetchQuestions({ subject: "english", topic: "one-word-substitution", questionType: "study-mode" })
-      .then((data) => {
-        if (!active) return;
-        const mapped = data.map((entry, index) => toSubstitutionCard(entry as StudyModeEntry, index)).filter(Boolean) as SubstitutionCard[];
-        setCards(mapped.length ? mapped : DEMO_CARDS);
-      })
-      .catch(() => { if (active) setCards(DEMO_CARDS); });
-    return () => { active = false; };
-  }, []);
-
-  const studyCards = cards.length ? cards : DEMO_CARDS;
   const categories = Array.from(new Set(studyCards.map(c => c.label || "General")));
 
   const toggleBookmark = useCallback((id: string) => {

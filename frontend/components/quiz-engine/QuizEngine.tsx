@@ -23,7 +23,6 @@ import Link from "next/link";
 import {
   Bookmark,
   BookmarkCheck,
-  CheckCircle2,
   XCircle,
   Menu,
   ChevronLeft,
@@ -40,6 +39,7 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { saveRecentQuiz, updateProgress, toggleBookmark } from "@/lib/userApi";
 import { useQuestions } from "@/hooks/useQuestions";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { Difficulty, QuizQuestionRecord, QuizQuestion, SessionResult, ClassificationGroup } from "./types";
 import { 
   MODE_LABELS,
@@ -61,6 +61,8 @@ import { ThemeToggle, ConceptBadge } from "./ui/SharedUI";
 import { SolutionBottomSheet, SolutionSidePanel } from "./ui/SolutionViews";
 import { QuizTimer, QuizTimerRef } from "./QuizTimer";
 import { QuizSettingsModal, SettingIcon, OptionTickIcon } from "./ui/QuizSettingsModal";
+import { useQuizPreferences } from "./useQuizPreferences";
+import { buildSessionAnalytics } from "./sessionAnalytics";
 import {
   buildQuizIndex,
   normalizeExamLabel,
@@ -168,13 +170,7 @@ function QuizEngineContent({
     return () => document.removeEventListener("pointerdown", dismissExamDetails);
   }, []);
 
-  const [isLargeScreen, setIsLargeScreen] = useState(false);
-  useEffect(() => {
-    const handleResize = () => setIsLargeScreen(window.innerWidth > 768);
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  const isLargeScreen = useMediaQuery("(min-width: 769px)");
 
   const isIos = presentation !== "default" ? presentation.startsWith("ios") : !isLargeScreen;
   const isMac = presentation !== "default" ? presentation.startsWith("mac") : isLargeScreen;
@@ -202,50 +198,15 @@ function QuizEngineContent({
   const [results, setResults] = useState<SessionResult[]>([]);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [hideQuestionNumbers, setHideQuestionNumbers] = useState(false);
-  const [hideViewSolution, setHideViewSolution] = useState(false);
-  const [hideAiTutor, setHideAiTutor] = useState(false);
-
-  useEffect(() => {
-    try {
-      const savedHideQ = localStorage.getItem("quiz_hide_question_numbers");
-      if (savedHideQ !== null) setHideQuestionNumbers(savedHideQ === "true");
-      const savedHideSol = localStorage.getItem("quiz_hide_view_solution");
-      if (savedHideSol !== null) setHideViewSolution(savedHideSol === "true");
-      const savedHideAi = localStorage.getItem("quiz_hide_ai_tutor");
-      if (savedHideAi !== null) setHideAiTutor(savedHideAi === "true");
-    } catch {}
-  }, []);
-
-  const handleToggleHideQuestionNumbers = useCallback((val: boolean) => {
-    setHideQuestionNumbers(val);
-    try {
-      localStorage.setItem("quiz_hide_question_numbers", String(val));
-    } catch {}
-  }, []);
-
-  const handleToggleHideViewSolution = useCallback((val: boolean) => {
-    setHideViewSolution(val);
-    try {
-      localStorage.setItem("quiz_hide_view_solution", String(val));
-    } catch {}
-  }, []);
-
-  const handleToggleHideAiTutor = useCallback((val: boolean) => {
-    setHideAiTutor(val);
-    try {
-      localStorage.setItem("quiz_hide_ai_tutor", String(val));
-    } catch {}
-  }, []);
-
-  const handleToggleHideBoth = useCallback((val: boolean) => {
-    setHideViewSolution(val);
-    setHideAiTutor(val);
-    try {
-      localStorage.setItem("quiz_hide_view_solution", String(val));
-      localStorage.setItem("quiz_hide_ai_tutor", String(val));
-    } catch {}
-  }, []);
+  const {
+    hideQuestionNumbers,
+    hideViewSolution,
+    hideAiTutor,
+    toggleHideQuestionNumbers: handleToggleHideQuestionNumbers,
+    toggleHideViewSolution: handleToggleHideViewSolution,
+    toggleHideAiTutor: handleToggleHideAiTutor,
+    toggleHideBoth: handleToggleHideBoth,
+  } = useQuizPreferences();
 
   const [conceptFilter, setConceptFilter] = useState<string>("all");
   const [selectedClassificationConcepts, setSelectedClassificationConcepts] = useState<
@@ -401,28 +362,16 @@ function QuizEngineContent({
   );
 
   const filteredQuestions = useMemo(() => {
-    let baseQuestions: QuizQuestionRecord[] = [];
-    if (isClassificationConceptMode || slug === "series") {
-      const selected = selectedClassificationConcepts;
-      const resolved = resolveIndexedQuestions(questionIndex, {
-        bucket: mode,
-        concept: "all",
-        exam: examFilter,
-      });
-
-      if (selected.size === 0) baseQuestions = resolved;
-      else baseQuestions = resolved.filter((question) => selected.has(question.concept));
-    } else {
-      const selected = selectedClassificationConcepts;
-      const resolved = resolveIndexedQuestions(questionIndex, {
-        bucket: mode,
-        concept: "all",
-        exam: examFilter,
-      });
-
-      if (selected.size === 0) baseQuestions = resolved;
-      else baseQuestions = resolved.filter((question) => selected.has(question.concept));
-    }
+    const resolved = resolveIndexedQuestions(questionIndex, {
+      bucket: mode,
+      concept: "all",
+      exam: examFilter,
+    });
+    const selected = selectedClassificationConcepts;
+    let baseQuestions: QuizQuestionRecord[] =
+      selected.size === 0
+        ? resolved
+        : resolved.filter((question) => selected.has(question.concept));
 
     if (isEnglishSynonymsFormula && selectedLetters.size > 0) {
       baseQuestions = baseQuestions.filter((question) => {
@@ -441,8 +390,6 @@ function QuizEngineContent({
     questionIndex,
     mode,
     examFilter,
-    isClassificationConceptMode,
-    slug,
     selectedClassificationConcepts,
     isEnglishSynonymsFormula,
     selectedLetters,
@@ -454,29 +401,9 @@ function QuizEngineContent({
   const [submitError, setSubmitError] = useState("");
   const timerRef = useRef<QuizTimerRef>(null);
   const [isSolutionOpen, setIsSolutionOpen] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(false);
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
   const [resumeData, setResumeData] = useState<ResumeData | null>(null);
   const storageKey = `${subjectConfig.subjectId}_quiz_resume_${slug}_${mode}`;
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const mediaQuery = window.matchMedia("(min-width: 1024px)");
-    const update = () => setIsDesktop(mediaQuery.matches);
-    update();
-
-    const addListener =
-      mediaQuery.addEventListener?.bind(mediaQuery) ??
-      mediaQuery.addListener?.bind(mediaQuery);
-    const removeListener =
-      mediaQuery.removeEventListener?.bind(mediaQuery) ??
-      mediaQuery.removeListener?.bind(mediaQuery);
-
-    addListener?.("change", update);
-
-    return () => {
-      removeListener?.("change", update);
-    };
-  }, []);
 
   const touchStartXRef = useRef<number | null>(null);
   const touchStartYRef = useRef<number | null>(null);
@@ -1041,38 +968,10 @@ function QuizEngineContent({
     started,
   ]);
 
-  const stats = useMemo(() => {
-    const correct = results.filter((r) => r.isCorrect).length;
-    const wrong = results.filter(
-      (r) => !r.isCorrect && r.selected !== null
-    ).length;
-    const attempted = results.length;
-    const accuracy =
-      attempted > 0 ? Math.round((correct / attempted) * 100) : 0;
-    const avgTime =
-      results.length > 0
-        ? Math.round(
-            results.reduce((a, r) => a + r.timeTaken, 0) / results.length
-          )
-        : 0;
-    return { correct, wrong, accuracy, avgTime };
-  }, [results]);
-
-  const weakConcepts = useMemo(() => {
-    const conceptStats: Record<string, { correct: number; total: number }> = {};
-    for (const r of results) {
-      if (!conceptStats[r.concept])
-        conceptStats[r.concept] = { correct: 0, total: 0 };
-      conceptStats[r.concept].total++;
-      if (r.isCorrect) conceptStats[r.concept].correct++;
-    }
-    return Object.entries(conceptStats)
-      .filter(([, s]) => s.total >= 2 && s.correct / s.total < 0.5)
-      .map(([c, s]) => ({
-        concept: c,
-        accuracy: Math.round((s.correct / s.total) * 100),
-      }));
-  }, [results]);
+  const { stats, weakConcepts } = useMemo(
+    () => buildSessionAnalytics(results),
+    [results]
+  );
 
   if (showAnalytics) {
     return (
