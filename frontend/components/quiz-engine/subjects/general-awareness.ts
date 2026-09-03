@@ -29,14 +29,19 @@ export const generalAwarenessConfig: SubjectConfig = {
   cssClassName: "general-awareness-quiz",
   formulaModeLabel: "Fact Practice",
   topicConcepts: {
-    history: [
+    "ancient-history": [
       "Pre-historic period", "Indus Valley Civilization", "Vedic Age", "Religious movements: Buddhism, Jainism",
       "Mahajanapadas", "Magadha Empire & rise of Magadha", "Persian and Greek invasions", "Maurya Empire",
       "Post-Mauryan period", "Sangam Age", "Gupta Empire", "Post-Gupta period", "Ancient South Indian dynasties",
       "Art, architecture & literature of ancient India", "Ancient Indian science, mathematics, astronomy",
+    ],
+    "medieval-history": [
       "Early medieval North India", "Arab invasion of Sindh", "Delhi Sultanate", "Vijayanagara Empire",
       "Bahmani Kingdom", "Bhakti Movement", "Sufi Movement", "Mughal Empire", "Maratha Empire", "Sikh Empire",
-      "Regional kingdoms", "Arrival of Europeans", "Establishment of British rule",
+      "Regional kingdoms",
+    ],
+    "modern-history": [
+      "Arrival of Europeans", "Establishment of British rule",
       "British administrative & economic policies", "Social & religious reform movements", "Revolt of 1857",
       "Rise of Indian nationalism", "Indian National Congress - formation & early phase",
       "Partition of Bengal & Swadeshi Movement", "Extremist phase", "Revolutionary movements", "Home Rule Movement",
@@ -47,8 +52,10 @@ export const generalAwarenessConfig: SubjectConfig = {
     ],
     polity: ["Constitution", "Governance", "Parliament", "Judiciary", "Federal Structure"],
     geography: ["Physical Geography", "Indian Geography", "World Geography", "Climate and Weather", "Maps and Locations"],
-    economics: ["Indian Economy", "Budget and Taxation", "Banking", "Schemes and Policies", "Inflation and Growth"],
-    "general-science": ["Physics", "Chemistry", "Biology", "Everyday Science", "Scientific Discoveries"],
+    physics: ["Mechanics", "Heat", "Sound", "Light", "Electricity", "Modern Physics"],
+    chemistry: ["Matter", "Atomic Structure", "Periodic Table", "Chemical Reactions", "Carbon Compounds", "Everyday Chemistry"],
+    biology: ["Human Biology", "Health and Disease", "Cell and Genetics", "Plant Biology", "Animal Biology", "Ecology"],
+    economy: ["Indian Economy", "Budget and Taxation", "Banking", "Schemes and Policies", "Inflation and Growth"],
     "current-affairs": ["National Affairs", "International Affairs", "Awards and Honors", "Sports", "Reports and Indices"],
     "static-gk": ["National Symbols", "Culture and Heritage", "Organizations", "Books and Authors", "Important Days"],
   },
@@ -64,7 +71,7 @@ export const generalAwarenessConfig: SubjectConfig = {
     if (ANCIENT_CONCEPTS.has(norm) || norm.includes("ancient") || norm.includes("vedic") || norm.includes("maurya") || norm.includes("indus") || norm.includes("gupta") || norm.includes("buddhism")) return "ancient";
     if (MEDIEVAL_CONCEPTS.has(norm) || norm.includes("medieval") || norm.includes("mughal") || norm.includes("delhi sultanate") || norm.includes("bhakti") || norm.includes("sufi") || norm.includes("vijayanagara") || norm.includes("maratha")) return "medieval";
     if (MODERN_CONCEPTS.has(norm) || norm.includes("modern") || norm.includes("british") || norm.includes("gandhi") || norm.includes("revolt") || norm.includes("congress") || norm.includes("independence")) return "modern";
-    if (norm.includes("constitution") || norm.includes("geography") || norm.includes("economy") || norm.includes("physics") || norm.includes("science") || norm.includes("affairs") || norm.includes("polity") || norm.includes("budget") || norm.includes("banking") || norm.includes("schemes")) return "core";
+    if (norm.includes("constitution") || norm.includes("geography") || norm.includes("economy") || norm.includes("physics") || norm.includes("chemistry") || norm.includes("biology") || norm.includes("science") || norm.includes("affairs") || norm.includes("polity") || norm.includes("budget") || norm.includes("banking") || norm.includes("schemes")) return "core";
     return "other";
   },
 };

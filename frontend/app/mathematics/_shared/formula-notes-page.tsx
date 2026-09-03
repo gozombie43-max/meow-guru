@@ -56,15 +56,17 @@ function sortByName(files: TopicPdf[]) {
 
 export default function FormulaNotesPage({
   topic: topicProp,
+  topicLabel: topicLabelProp,
   subject = "Mathematics",
 }: {
   topic?: string;
+  topicLabel?: string;
   subject?: string;
 }) {
   const params = useParams();
   const routeTopic = Array.isArray(params.topic) ? params.topic[0] : params.topic;
   const topic = topicProp || String(routeTopic || "");
-  const topicLabel = getTopicLabel(topic);
+  const topicLabel = topicLabelProp || getTopicLabel(topic);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState("Notes");
   const [pdfs, setPdfs] = useState<TopicPdf[]>([]);

@@ -17,18 +17,18 @@ import {
   X,
   Sidebar as SidebarIcon,
   Landmark,
+  Castle,
+  Flag,
   Scale,
   Globe,
   Atom,
+  FlaskConical,
+  Dna,
   TrendingUp,
   Flame,
   BookOpenCheck,
   FileQuestion,
   Shuffle,
-  Layers,
-  CircleDot,
-  Filter,
-  Play,
   type LucideIcon,
 } from "lucide-react";
 import MacTrafficLights from "@/components/MacTrafficLights";
@@ -60,29 +60,67 @@ export interface Topic {
   expectedMarks: string;
 }
 
-// ── 7 Core SSC General Awareness Topics with Distinctly Colored SVG Icons ─────
+// ── Core SSC General Awareness Topics with Distinctly Colored SVG Icons ───────
 const TOPICS: Topic[] = [
   {
     id: 1,
     priority: "very-high",
     icon: Landmark,
     color: "#f59e0b",
-    name: "History",
-    slug: "history",
-    questions: "4-5",
-    expectedMarks: "8-10 Marks",
-    description: "Chronological coverage of ancient civilizations, medieval empires, Mughal administration, British colonialism, and the Indian freedom struggle.",
+    name: "Ancient History",
+    slug: "ancient-history",
+    questions: "1-2",
+    expectedMarks: "2-4 Marks",
+    description: "Ancient civilizations, religious movements, empires, literature, art, architecture, education, and science.",
     subtopics: [
-      "Indus Valley & Vedic Age",
-      "Buddhism, Jainism & Maurya Empire",
-      "Delhi Sultanate & Mughal Era",
-      "Maratha Empire & Bhakti Movement",
-      "Revolt of 1857 & Social Reforms",
-      "Freedom Struggle & Gandhian Movements",
+      "Jainism & Buddhism",
+      "Mauryan Empire",
+      "Indus Valley Civilization",
+      "Gupta Empire",
+      "Vedic Age",
+      "Ancient Indian Art & Science",
     ],
   },
   {
     id: 2,
+    priority: "very-high",
+    icon: Castle,
+    color: "#8b5cf6",
+    name: "Medieval History",
+    slug: "medieval-history",
+    questions: "1-2",
+    expectedMarks: "2-4 Marks",
+    description: "Delhi Sultanate, Mughal rule, regional kingdoms, religious movements, administration, art, and architecture.",
+    subtopics: [
+      "Mughal Empire",
+      "Delhi Sultanate",
+      "Bhakti & Sufi Movements",
+      "Marathas & Shivaji",
+      "Vijayanagara & Bahmani Kingdoms",
+      "Sikh Gurus & Khalsa",
+    ],
+  },
+  {
+    id: 3,
+    priority: "very-high",
+    icon: Flag,
+    color: "#2563eb",
+    name: "Modern History",
+    slug: "modern-history",
+    questions: "2-3",
+    expectedMarks: "4-6 Marks",
+    description: "British expansion, constitutional development, social reform, national movements, and the freedom struggle.",
+    subtopics: [
+      "Gandhian Era",
+      "Indian National Congress",
+      "British Conquest & Expansion",
+      "Governor-Generals & Viceroys",
+      "Revolt of 1857",
+      "Final Phase of Freedom Struggle",
+    ],
+  },
+  {
+    id: 4,
     priority: "very-high",
     icon: Scale,
     color: "#3b82f6",
@@ -101,7 +139,7 @@ const TOPICS: Topic[] = [
     ],
   },
   {
-    id: 3,
+    id: 5,
     priority: "very-high",
     icon: Globe,
     color: "#10b981",
@@ -120,31 +158,69 @@ const TOPICS: Topic[] = [
     ],
   },
   {
-    id: 4,
+    id: 6,
     priority: "very-high",
     icon: Atom,
-    color: "#06b6d4",
-    name: "General Science",
-    slug: "general-science",
-    questions: "4-6",
-    expectedMarks: "8-12 Marks",
-    description: "Everyday physics principles, chemical formulas and reactions, human biology, vitamins and diseases, botany, and scientific discoveries.",
+    color: "#0284c7",
+    name: "Physics",
+    slug: "physics",
+    questions: "1-2",
+    expectedMarks: "2-4 Marks",
+    description: "Measurements, mechanics, heat, sound, light, electricity, magnetism, fluids, machines, energy, electronics, and atomic physics.",
     subtopics: [
-      "Physics: Motion, Light, Heat & Electricity",
-      "Chemistry: Periodic Table, Acids, Bases & Metals",
-      "Biology: Human Organ Systems & Nutrients",
-      "Human Diseases, Pathogens & Vaccines",
-      "Plant Physiology & Genetics",
-      "Scientific Discoveries & Inventions",
+      "Units & Measurements",
+      "Motion & Force",
+      "Work, Energy & Power",
+      "Heat, Sound & Light",
+      "Electricity & Magnetism",
+      "Atomic & Nuclear Physics",
     ],
   },
   {
-    id: 5,
+    id: 7,
+    priority: "very-high",
+    icon: FlaskConical,
+    color: "#0891b2",
+    name: "Chemistry",
+    slug: "chemistry",
+    questions: "1-2",
+    expectedMarks: "2-4 Marks",
+    description: "Matter, atoms, periodic classification, reactions, bonding, acids, metals, carbon, electrochemistry, fuels, and everyday chemistry.",
+    subtopics: [
+      "Matter & Atomic Structure",
+      "Periodic Table",
+      "Acids, Bases & Salts",
+      "Metals & Non-Metals",
+      "Chemical Reactions",
+      "Carbon & Its Compounds",
+    ],
+  },
+  {
+    id: 8,
+    priority: "very-high",
+    icon: Dna,
+    color: "#059669",
+    name: "Biology",
+    slug: "biology",
+    questions: "2-3",
+    expectedMarks: "4-6 Marks",
+    description: "Human systems, diseases, nutrition, cells, genetics, plant and animal life, reproduction, ecology, evolution, and biotechnology.",
+    subtopics: [
+      "Human Body Systems",
+      "Diseases & Immunity",
+      "Nutrition & Vitamins",
+      "Cell & Genetics",
+      "Plant Physiology",
+      "Ecology & Evolution",
+    ],
+  },
+  {
+    id: 9,
     priority: "high",
     icon: TrendingUp,
     color: "#8b5cf6",
-    name: "Economics",
-    slug: "economics",
+    name: "Economy",
+    slug: "economy",
     questions: "2-3",
     expectedMarks: "4-6 Marks",
     description: "Indian economic framework, GDP/GNP concepts, Union Budget, RBI monetary policies, inflation indices, banking terms, and government schemes.",
@@ -158,7 +234,7 @@ const TOPICS: Topic[] = [
     ],
   },
   {
-    id: 6,
+    id: 10,
     priority: "high",
     icon: Flame,
     color: "#f43f5e",
@@ -177,7 +253,7 @@ const TOPICS: Topic[] = [
     ],
   },
   {
-    id: 7,
+    id: 11,
     priority: "high",
     icon: BookOpenCheck,
     color: "#ec4899",
@@ -230,8 +306,7 @@ const PRIORITY_CONFIG: Record<
 };
 
 const CATEGORIES = [
-  { id: "very-high", label: "Core", icon: Zap },
-  { id: "high", label: "High", icon: TrendingUp },
+  { id: "core", label: "Core", icon: Zap },
 ] as const;
 
 type CategoryId = typeof CATEGORIES[number]["id"];
@@ -323,7 +398,7 @@ export default function GeneralAwarenessPage() {
   const isDark = theme === "dark";
 
   // States
-  const [activeCategory, setActiveCategory] = useState<CategoryId>("very-high");
+  const [activeCategory, setActiveCategory] = useState<CategoryId>("core");
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [selectedTopicId, setSelectedTopicId] = useState<number>(1);
@@ -391,19 +466,18 @@ export default function GeneralAwarenessPage() {
     };
   }, []);
 
-  // Filtered topics
+  // Filtered topics (all 7 topics under Core, filtered by search query)
   const filteredTopics = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
     return TOPICS.filter((t) => {
-      const matchCat = t.priority === activeCategory;
-      const q = searchQuery.trim().toLowerCase();
-      const matchSearch =
+      return (
         q === "" ||
         t.name.toLowerCase().includes(q) ||
         t.subtopics.some((s) => s.toLowerCase().includes(q)) ||
-        t.description.toLowerCase().includes(q);
-      return matchCat && matchSearch;
+        t.description.toLowerCase().includes(q)
+      );
     });
-  }, [activeCategory, searchQuery]);
+  }, [searchQuery]);
 
   // Selected topic object
   const selectedTopic = useMemo(() => {
@@ -458,13 +532,11 @@ export default function GeneralAwarenessPage() {
     return filteredTopics.findIndex((t) => t.id === selectedTopic.id);
   }, [filteredTopics, selectedTopic.id]);
 
-  // Category counts
+  // Category counts (Core contains all 7 topics)
   const categoryCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    TOPICS.forEach((t) => {
-      counts[t.priority] = (counts[t.priority] || 0) + 1;
-    });
-    return counts;
+    return {
+      core: TOPICS.length,
+    };
   }, []);
 
   // Stable state ref for keyboard navigation
@@ -678,7 +750,7 @@ export default function GeneralAwarenessPage() {
                       className={styles.tableActionBtn}
                       onClick={() => {
                         setSearchQuery("");
-                        setActiveCategory("very-high");
+                        setActiveCategory("core");
                       }}
                       style={{ marginTop: "8px" }}
                     >
@@ -1006,49 +1078,50 @@ export default function GeneralAwarenessPage() {
 
           {/* iOS Grouped Card Container with Filter Header */}
           <div className={styles.mobileTopicGroup}>
-            {/* Priority Tabs in Card Header */}
+            {/* Priority Tab in Card Header - Only Core containing all topics */}
             <div className={styles.mobileTabsScroll}>
-              {CATEGORIES.map((cat) => (
-                <button
-                  key={cat.id}
-                  type="button"
-                  className={`${styles.mobileTabBtn} ${
-                    activeCategory === cat.id ? styles.mobileTabActive : ""
-                  }`}
-                  onClick={() => setActiveCategory(cat.id)}
-                >
-                  {cat.label}
-                </button>
-              ))}
+              <button
+                type="button"
+                className={`${styles.mobileTabBtn} ${styles.mobileTabActive}`}
+                style={{ flex: "0 0 auto", padding: "0 18px" }}
+              >
+                Core
+              </button>
             </div>
 
-            {filteredTopics.map((topic) => {
-              const TopicIcon = topic.icon;
-              return (
-                <Link
-                  key={topic.id}
-                  href={`/general-awareness/${topic.slug}`}
-                  className={styles.mobileTopicRow}
-                >
-                  <div className={styles.mobileTopicRowLeft}>
-                    <div
-                      className={styles.mobileTopicIconBox}
-                      style={{ background: topic.color }}
-                    >
-                      <TopicIcon
-                        size={18}
-                        strokeWidth={2.2}
-                        color="#ffffff"
-                      />
+            {filteredTopics.length === 0 ? (
+              <div style={{ padding: "28px 16px", textAlign: "center", color: "var(--mac-text-secondary, #8E8E93)", fontSize: "0.9rem" }}>
+                No general awareness topics found matching &ldquo;{searchQuery}&rdquo;
+              </div>
+            ) : (
+              filteredTopics.map((topic) => {
+                const TopicIcon = topic.icon;
+                return (
+                  <Link
+                    key={topic.id}
+                    href={`/general-awareness/${topic.slug}`}
+                    className={styles.mobileTopicRow}
+                  >
+                    <div className={styles.mobileTopicRowLeft}>
+                      <div
+                        className={styles.mobileTopicIconBox}
+                        style={{ background: topic.color }}
+                      >
+                        <TopicIcon
+                          size={18}
+                          strokeWidth={2.2}
+                          color="#ffffff"
+                        />
+                      </div>
+
+                      <span className={styles.mobileTopicName}>{topic.name}</span>
                     </div>
 
-                    <span className={styles.mobileTopicName}>{topic.name}</span>
-                  </div>
-
-                  <ChevronRight size={16} strokeWidth={2.4} className={styles.mobileChevron} />
-                </Link>
-              );
-            })}
+                    <ChevronRight size={16} strokeWidth={2.4} className={styles.mobileChevron} />
+                  </Link>
+                );
+              })
+            )}
           </div>
         </div>
       </div>

@@ -25,7 +25,9 @@ export interface SubjectTopicPageProps {
   subject: "mathematics" | "reasoning" | "english" | "general-awareness";
   title: string;
   slug: string;
+  questionTopic?: string;
   routeBase?: string;
+  backHref?: string;
   eyebrow?: string;
   bannerKicker?: string;
   bannerTitle?: string;
@@ -103,7 +105,9 @@ export default function SubjectTopicPage({
   subject,
   title,
   slug,
+  questionTopic,
   routeBase,
+  backHref,
   eyebrow,
   bannerKicker,
   bannerTitle,
@@ -117,10 +121,15 @@ export default function SubjectTopicPage({
   const hasStudyMode = subject === "english" && STUDY_MODE_TOPICS.has(slug);
 
   const base = routeBase ?? `/${subject}/${slug}`;
+  const resolvedBackHref =
+    backHref ??
+    (routeBase && routeBase.includes("/") && routeBase.lastIndexOf("/") > 0
+      ? routeBase.substring(0, routeBase.lastIndexOf("/"))
+      : `/${subject}`);
 
   // Real available questions
   const { questions: topicQuestions } = useQuestions({
-    topic: slug,
+    topic: questionTopic ?? slug,
     subject,
   });
   const { questions: studyModeQuestions } = useQuestions({
@@ -337,7 +346,11 @@ export default function SubjectTopicPage({
         .sg-back svg { width: 22px; height: 22px; }
         .sg-nav-title {
           font-size: 17px; font-weight: 600; letter-spacing: -0.2px;
+          max-width: calc(100% - 104px);
           margin: 0; color: var(--label);
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
 
         /* ── Banner ── */
@@ -885,7 +898,11 @@ export default function SubjectTopicPage({
             opacity: 0.8;
           }
           .sg-nav-title {
+            max-width: none;
             font-size: 2rem; font-weight: 800; letter-spacing: -0.04em;
+            overflow: visible;
+            text-overflow: clip;
+            white-space: normal;
           }
           
           .sg-banner-wrap { padding: 0; }
@@ -926,7 +943,7 @@ export default function SubjectTopicPage({
           aria-label={`${eyebrow ?? defaults.eyebrow}: ${title}`}
         >
           <div className="sg-nav-inline">
-            <Link href={`/${subject}`} className="sg-back" aria-label={`Back to ${eyebrow ?? defaults.eyebrow}`}>
+            <Link href={resolvedBackHref} className="sg-back" aria-label={`Back to ${eyebrow ?? defaults.eyebrow}`}>
               <IconBack />
             </Link>
             <h1 className="sg-nav-title">{title}</h1>

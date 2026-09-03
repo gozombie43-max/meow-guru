@@ -75,6 +75,7 @@ interface QuizEngineProps {
   subjectConfig: SubjectConfig;
   title: string;
   slug: string;
+  questionTopic?: string;
   routeBase?: string;
   presentation?: "default" | "ios-dark" | "ios-light" | "mac-dark" | "mac-light";
 }
@@ -131,6 +132,7 @@ function QuizEngineContent({
   subjectConfig,
   title,
   slug,
+  questionTopic,
   routeBase,
   presentation = "default",
 }: QuizEngineProps) {
@@ -221,7 +223,7 @@ function QuizEngineContent({
   );
   const { questions: apiQuestions } = useQuestions({
     subject: subjectConfig.subjectId,
-    topic: slug,
+    topic: questionTopic ?? slug,
   });
   const allQuestions = useMemo(() => {
     if (!apiQuestions) return [];

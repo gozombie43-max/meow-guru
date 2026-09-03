@@ -25,6 +25,20 @@ const nextConfig: NextConfig = {
     cpus: 4,
     workerThreads: false,
   },
+  async redirects() {
+    return [
+      { source: "/polity", destination: "/general-awareness/polity", permanent: false },
+      { source: "/economy", destination: "/general-awareness/economy", permanent: false },
+      { source: "/economics", destination: "/general-awareness/economy", permanent: false },
+      { source: "/science", destination: "/general-awareness/physics", permanent: false },
+      { source: "/static", destination: "/general-awareness/static-gk", permanent: false },
+      { source: "/static-gk", destination: "/general-awareness/static-gk", permanent: false },
+      { source: "/general-awareness/economics", destination: "/general-awareness/economy", permanent: false },
+      { source: "/general-awareness/static", destination: "/general-awareness/static-gk", permanent: false },
+      { source: "/general-awareness/science", destination: "/general-awareness/physics", permanent: false },
+      { source: "/general-awareness/general-science", destination: "/general-awareness/physics", permanent: false },
+    ];
+  },
   async rewrites() {
     return [
       {
@@ -38,4 +52,3 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
-
