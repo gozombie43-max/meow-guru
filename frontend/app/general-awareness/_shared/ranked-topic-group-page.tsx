@@ -140,12 +140,12 @@ const PRIORITY_CLASS: Record<RankedTopicPriority, string> = {
   Lower: styles.lower,
 };
 
-interface TopicMeta {
+export interface TopicMeta {
   icon: LucideIcon;
   color: string;
 }
 
-const TOPIC_META: Record<string, TopicMeta> = {
+export const TOPIC_META: Record<string, TopicMeta> = {
   // ── Geography Chapters (30) ────────────────────────────────────────────────
   "indian-rivers-drainage-system": { icon: Waves, color: "#0284c7" },
   "physiography-of-india": { icon: Mountain, color: "#059669" },

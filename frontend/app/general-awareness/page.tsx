@@ -43,6 +43,16 @@ import {
 } from "@/components/quiz-engine/utils";
 import styles from "@/components/SubjectHub.module.css";
 import MicIcon from "@/components/MicIcon";
+import { getGeneralAwarenessTopicGroup } from "@/lib/general-awareness-topic-groups";
+import { TOPIC_META } from "./_shared/ranked-topic-group-page";
+
+const PRIORITY_BADGE_STYLE: Record<string, { badgeBg: string; badgeColor: string }> = {
+  Core: { badgeBg: "rgba(0, 113, 227, 0.12)", badgeColor: "var(--mac-blue, #0071e3)" },
+  "Very High": { badgeBg: "rgba(0, 113, 227, 0.12)", badgeColor: "var(--mac-blue, #0071e3)" },
+  High: { badgeBg: "rgba(16, 185, 129, 0.12)", badgeColor: "#059669" },
+  Medium: { badgeBg: "rgba(245, 158, 11, 0.12)", badgeColor: "#d97706" },
+  Lower: { badgeBg: "rgba(100, 116, 139, 0.12)", badgeColor: "#64748b" },
+};
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 export type Priority = "very-high" | "high" | "medium" | "low" | "least";
@@ -402,6 +412,7 @@ export default function GeneralAwarenessPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [selectedTopicId, setSelectedTopicId] = useState<number>(1);
+  const [selectedChapterSlug, setSelectedChapterSlug] = useState<string>("");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobilePriority, setMobilePriority] = useState<"Core" | "High">("Core");
 
@@ -467,18 +478,10 @@ export default function GeneralAwarenessPage() {
     };
   }, []);
 
-  // Filtered topics (all 7 topics under Core, filtered by search query)
+  // Filtered topics (all topics under General Awareness)
   const filteredTopics = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
-    return TOPICS.filter((t) => {
-      return (
-        q === "" ||
-        t.name.toLowerCase().includes(q) ||
-        t.subtopics.some((s) => s.toLowerCase().includes(q)) ||
-        t.description.toLowerCase().includes(q)
-      );
-    });
-  }, [searchQuery]);
+    return TOPICS;
+  }, []);
 
   const mobileFilteredTopics = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -499,15 +502,48 @@ export default function GeneralAwarenessPage() {
   // Selected topic object
   const selectedTopic = useMemo(() => {
     return (
-      filteredTopics.find((t) => t.id === selectedTopicId) ||
-      filteredTopics[0] ||
+      TOPICS.find((t) => t.id === selectedTopicId) ||
       TOPICS[0]
     );
-  }, [selectedTopicId, filteredTopics]);
+  }, [selectedTopicId]);
 
-  // Real available questions for current topic
+  // Topic Group & Chapters
+  const currentGroup = useMemo(() => {
+    return getGeneralAwarenessTopicGroup(selectedTopic.slug);
+  }, [selectedTopic.slug]);
+
+  const rawChapters = useMemo(() => {
+    if (currentGroup) {
+      return currentGroup.topics;
+    }
+    return selectedTopic.subtopics.map((sub, idx) => ({
+      rank: idx + 1,
+      title: sub,
+      slug: sub.toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""),
+      priority: "Core" as const,
+    }));
+  }, [currentGroup, selectedTopic]);
+
+  const chapters = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return rawChapters;
+    return rawChapters.filter((ch) => ch.title.toLowerCase().includes(q));
+  }, [rawChapters, searchQuery]);
+
+  // Currently active/highlighted chapter in the middle pane
+  const selectedChapter = useMemo(() => {
+    if (!chapters.length) return null;
+    return (
+      chapters.find((c) => c.slug === selectedChapterSlug) ||
+      chapters[0] ||
+      null
+    );
+  }, [chapters, selectedChapterSlug]);
+
+  // Real available questions for current chapter or topic
+  const targetQuestionTopic = selectedChapter ? selectedChapter.title : selectedTopic.name;
   const { questions: topicQuestions } = useQuestions({
-    topic: selectedTopic.slug,
+    topic: targetQuestionTopic,
     subject: "general-awareness",
   });
 
@@ -544,27 +580,15 @@ export default function GeneralAwarenessPage() {
     return counts;
   }, [topicQuestions]);
 
-  // Current index in filtered list
-  const currentIndex = useMemo(() => {
-    return filteredTopics.findIndex((t) => t.id === selectedTopic.id);
-  }, [filteredTopics, selectedTopic.id]);
-
-  // Category counts (Core contains all 7 topics)
-  const categoryCounts = useMemo(() => {
-    return {
-      core: TOPICS.length,
-    };
-  }, []);
-
   // Stable state ref for keyboard navigation
-  const stateRef = useRef({ currentIndex, filteredTopics, selectedTopic, searchQuery });
+  const stateRef = useRef({ chapters, selectedChapter, selectedTopic, searchQuery, currentGroup });
   useEffect(() => {
-    stateRef.current = { currentIndex, filteredTopics, selectedTopic, searchQuery };
+    stateRef.current = { chapters, selectedChapter, selectedTopic, searchQuery, currentGroup };
   });
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      const { currentIndex, filteredTopics, selectedTopic, searchQuery } = stateRef.current;
+      const { chapters, selectedChapter, selectedTopic, searchQuery, currentGroup } = stateRef.current;
       const target = e.target as HTMLElement;
       const isInput = ["INPUT", "TEXTAREA"].includes(target?.tagName);
 
@@ -580,19 +604,24 @@ export default function GeneralAwarenessPage() {
         return;
       }
 
-      if (!isInput && filteredTopics.length > 0) {
+      if (!isInput && chapters.length > 0) {
         if (e.key === "ArrowDown" || e.key === "ArrowRight") {
           e.preventDefault();
-          const nextIdx = (currentIndex + 1) % filteredTopics.length;
-          setSelectedTopicId(filteredTopics[nextIdx].id);
+          const currentIdx = chapters.findIndex((c) => c.slug === selectedChapter?.slug);
+          const nextIdx = (currentIdx + 1) % chapters.length;
+          setSelectedChapterSlug(chapters[nextIdx].slug);
         } else if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
           e.preventDefault();
-          const prevIdx = (currentIndex - 1 + filteredTopics.length) % filteredTopics.length;
-          setSelectedTopicId(filteredTopics[prevIdx].id);
+          const currentIdx = chapters.findIndex((c) => c.slug === selectedChapter?.slug);
+          const prevIdx = (currentIdx - 1 + chapters.length) % chapters.length;
+          setSelectedChapterSlug(chapters[prevIdx].slug);
         } else if (e.key === "Enter") {
           e.preventDefault();
-          if (selectedTopic) {
-            router.push(`/general-awareness/${selectedTopic.slug}/quiz?mode=concept`);
+          if (selectedChapter) {
+            const href = currentGroup
+              ? `/general-awareness/${selectedTopic.slug}/${selectedChapter.slug}/quiz?mode=concept`
+              : `/general-awareness/${selectedTopic.slug}/quiz?mode=concept`;
+            router.push(href);
           }
         }
       }
@@ -603,6 +632,14 @@ export default function GeneralAwarenessPage() {
   }, [router]);
 
   const SelectedIcon = selectedTopic.icon;
+  const chapterMeta = selectedChapter ? TOPIC_META[selectedChapter.slug] : null;
+  const ActiveItemIcon = chapterMeta?.icon || selectedTopic.icon;
+  const activeItemColor = chapterMeta?.color || selectedTopic.color;
+  const activePriority = selectedChapter?.priority || (selectedTopic.priority === "very-high" ? "Core" : "High");
+  const activeBadgeStyle = PRIORITY_BADGE_STYLE[activePriority] || PRIORITY_BADGE_STYLE.Core;
+  const chapterBaseHref = selectedChapter && currentGroup
+    ? `/general-awareness/${selectedTopic.slug}/${selectedChapter.slug}`
+    : `/general-awareness/${selectedTopic.slug}`;
 
   return (
     <div className={styles.pageRoot}>
@@ -657,11 +694,11 @@ export default function GeneralAwarenessPage() {
                 <input
                   ref={searchInputRef}
                   type="text"
-                  placeholder="Search history, polity, science, GK... (⌘K)"
+                  placeholder={`Search ${selectedTopic.name} chapters... (⌘K)`}
                   className={styles.searchInput}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  aria-label="Search general awareness topics"
+                  aria-label="Search chapters"
                 />
                 {searchQuery ? (
                   <button
@@ -722,84 +759,131 @@ export default function GeneralAwarenessPage() {
             {/* Left Sidebar (210px) */}
             <aside
               className={`${styles.sidebar} ${!sidebarOpen ? styles.sidebarHidden : ""}`}
-              aria-label="General Awareness Categories"
+              aria-label="General Awareness Topics"
             >
               <div className={styles.sidebarSection}>
-                <div className={styles.sidebarHeading}>Categories</div>
-                {CATEGORIES.map((cat) => {
-                  const active = activeCategory === cat.id;
-                  const count = categoryCounts[cat.id] || 0;
-                  const CatIcon = cat.icon;
+                <div className={styles.sidebarHeading}>Topics ({TOPICS.length})</div>
+                {TOPICS.map((topic) => {
+                  const active = selectedTopic.id === topic.id;
+                  const TopicIcon = topic.icon;
+                  const group = getGeneralAwarenessTopicGroup(topic.slug);
+                  const chapterCount = group ? group.topics.length : topic.subtopics.length;
                   return (
                     <button
-                      key={cat.id}
+                      key={topic.id}
                       type="button"
                       className={`${styles.sidebarItem} ${active ? styles.sidebarItemActive : ""}`}
-                      onClick={() => setActiveCategory(cat.id)}
+                      onClick={() => {
+                        setSelectedTopicId(topic.id);
+                        setSelectedChapterSlug("");
+                      }}
+                      title={`${topic.name} (${chapterCount} chapters)`}
                     >
                       <div className={styles.sidebarItemLeft}>
-                        <span className={styles.sidebarItemIcon}>
-                          <CatIcon size={12} />
+                        <span className={styles.sidebarItemIcon} style={{ color: active ? "#ffffff" : topic.color }}>
+                          <TopicIcon size={13} strokeWidth={2.4} />
                         </span>
-                        <span>{cat.label}</span>
+                        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {topic.name}
+                        </span>
                       </div>
-                      <span className={styles.sidebarItemCount}>{count}</span>
+                      <span className={styles.sidebarItemCount}>{chapterCount}</span>
                     </button>
                   );
                 })}
               </div>
             </aside>
 
-            {/* Center Canvas: Dense Matrix / List */}
-            <main className={styles.mainCanvas} aria-label="General Awareness Topics Matrix">
+            {/* Center Canvas: Chapters Matrix / List */}
+            <main className={styles.mainCanvas} aria-label={`${selectedTopic.name} Chapters`}>
+              <div className={styles.canvasHeader}>
+                <div className={styles.canvasHeaderTitle}>
+                  <SelectedIcon size={13} style={{ color: selectedTopic.color }} />
+                  <span>{selectedTopic.name} &bull; Chapters</span>
+                </div>
+                <div className={styles.canvasMeta}>
+                  <span>{chapters.length} chapters</span>
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      className={styles.clearFilterLink}
+                      onClick={() => setSearchQuery("")}
+                    >
+                      Clear search
+                    </button>
+                  )}
+                </div>
+              </div>
+
               {/* Matrix Viewport */}
               <div className={styles.canvasViewport}>
-                {filteredTopics.length === 0 ? (
+                {chapters.length === 0 ? (
                   <div className={styles.emptyState}>
                     <div className={styles.emptyStateIcon}>🔍</div>
-                    <div className={styles.emptyStateTitle}>No general awareness topics found</div>
+                    <div className={styles.emptyStateTitle}>No chapters found</div>
                     <p className={styles.emptyStateDesc}>
-                      No modules matched &ldquo;{searchQuery}&rdquo;.
+                      No chapters in {selectedTopic.name} matched &ldquo;{searchQuery}&rdquo;.
                     </p>
                     <button
                       type="button"
                       className={styles.tableActionBtn}
-                      onClick={() => {
-                        setSearchQuery("");
-                        setActiveCategory("core");
-                      }}
+                      onClick={() => setSearchQuery("")}
                       style={{ marginTop: "8px" }}
                     >
-                      Reset Filters
+                      Reset Search
                     </button>
                   </div>
                 ) : viewMode === "grid" ? (
-                  /* ── Square Monochrome Grid (Click to select) ── */
+                  /* ── Square Launchpad Chapter Cards ── */
                   <div className={styles.denseGrid}>
-                    {filteredTopics.map((topic) => {
-                      const isSelected = selectedTopicId === topic.id;
-                      const IconComp = topic.icon;
+                    {chapters.map((chapter) => {
+                      const isSelected = selectedChapter?.slug === chapter.slug;
+                      const meta = TOPIC_META[chapter.slug];
+                      const ChapterIcon = meta?.icon || selectedTopic.icon;
+                      const iconColor = meta?.color || selectedTopic.color;
+                      const pBadge = PRIORITY_BADGE_STYLE[chapter.priority] || PRIORITY_BADGE_STYLE.Core;
+                      const chapterHref = currentGroup
+                        ? `/general-awareness/${selectedTopic.slug}/${chapter.slug}`
+                        : `/general-awareness/${selectedTopic.slug}`;
+
                       return (
                         <div
-                          key={topic.id}
+                          key={chapter.slug}
                           className={`${styles.compactTile} ${
                             isSelected ? styles.compactTileSelected : ""
                           }`}
-                          onClick={() => setSelectedTopicId(topic.id)}
+                          onClick={() => setSelectedChapterSlug(chapter.slug)}
+                          onDoubleClick={() => router.push(chapterHref)}
+                          title={`${chapter.title} (Double-click to open)`}
                         >
+                          <div
+                            style={{
+                              position: "absolute",
+                              top: 6,
+                              left: 8,
+                              fontSize: 10,
+                              fontWeight: 700,
+                              color: isSelected ? "var(--mac-blue)" : "var(--mac-text-tertiary)",
+                            }}
+                          >
+                            #{chapter.rank}
+                          </div>
+
                           <div className={styles.tileIconBox}>
-                            <IconComp
-                              size={22}
-                              strokeWidth={2.4}
-                              color={topic.color}
+                            <ChapterIcon
+                              size={20}
+                              strokeWidth={2.3}
+                              color={isSelected ? "#ffffff" : iconColor}
                               style={{
-                                filter: `drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 8px ${topic.color}80)`,
+                                filter: isSelected
+                                  ? undefined
+                                  : `drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 8px ${iconColor}80)`,
                               }}
                             />
                           </div>
                           <div className={styles.tileBody}>
-                            <span className={styles.tileName} title={topic.name}>
-                              {topic.name}
+                            <span className={styles.tileName} title={chapter.title}>
+                              {chapter.title}
                             </span>
                           </div>
                         </div>
@@ -807,74 +891,83 @@ export default function GeneralAwarenessPage() {
                     })}
                   </div>
                 ) : (
-                  /* ── Dense List Table View (Click to select) ── */
+                  /* ── Dense List Table View for Chapters ── */
                   <table className={styles.denseTable}>
                     <thead>
                       <tr>
-                        <th>Topic Name</th>
+                        <th style={{ width: 44 }}>#</th>
+                        <th>Chapter Name</th>
                         <th>Priority</th>
-                        <th>Exam Weight</th>
-                        <th>Subtopics</th>
-                        <th style={{ textAlign: "right" }}>Action</th>
+                        <th style={{ textAlign: "right" }}>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredTopics.map((topic) => {
-                        const cfg = PRIORITY_CONFIG[topic.priority];
-                        const isSelected = selectedTopicId === topic.id;
-                        const IconComp = topic.icon;
+                      {chapters.map((chapter) => {
+                        const isSelected = selectedChapter?.slug === chapter.slug;
+                        const meta = TOPIC_META[chapter.slug];
+                        const ChapterIcon = meta?.icon || selectedTopic.icon;
+                        const iconColor = meta?.color || selectedTopic.color;
+                        const pBadge = PRIORITY_BADGE_STYLE[chapter.priority] || PRIORITY_BADGE_STYLE.Core;
+                        const chapterHref = currentGroup
+                          ? `/general-awareness/${selectedTopic.slug}/${chapter.slug}`
+                          : `/general-awareness/${selectedTopic.slug}`;
+
                         return (
                           <tr
-                            key={topic.id}
+                            key={chapter.slug}
                             className={`${styles.denseTableRow} ${
                               isSelected ? styles.denseTableRowSelected : ""
                             }`}
-                            onClick={() => setSelectedTopicId(topic.id)}
+                            onClick={() => setSelectedChapterSlug(chapter.slug)}
                           >
+                            <td>
+                              <span style={{ fontWeight: 700, color: "var(--mac-text-tertiary)", fontSize: 11 }}>
+                                #{chapter.rank}
+                              </span>
+                            </td>
                             <td>
                               <div className={styles.tableTopicCell}>
                                 <div className={styles.tableTopicIcon}>
-                                  <IconComp
+                                  <ChapterIcon
                                     size={14}
                                     strokeWidth={2.4}
-                                    color={topic.color}
+                                    color={iconColor}
                                     style={{
-                                      filter: `drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 5px ${topic.color}80)`,
+                                      filter: `drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 5px ${iconColor}80)`,
                                     }}
                                   />
                                 </div>
-                                <span className={styles.tableTopicName}>{topic.name}</span>
+                                <span className={styles.tableTopicName}>{chapter.title}</span>
                               </div>
                             </td>
                             <td>
                               <span
                                 className={styles.tablePriorityBadge}
-                                style={{ background: cfg.badgeBg, color: cfg.badgeColor }}
+                                style={{ background: pBadge.badgeBg, color: pBadge.badgeColor }}
                               >
-                                {cfg.label}
+                                {chapter.priority}
                               </span>
-                            </td>
-                            <td>
-                              <span className={styles.tableWeightBadge}>
-                                {topic.questions} Qs ({topic.expectedMarks})
-                              </span>
-                            </td>
-                            <td>
-                              <div
-                                className={styles.tableSubtopics}
-                                title={topic.subtopics.join(", ")}
-                              >
-                                {topic.subtopics.join(" • ")}
-                              </div>
                             </td>
                             <td style={{ textAlign: "right" }}>
-                              <Link
-                                href={`/general-awareness/${topic.slug}`}
-                                className={styles.tableActionBtn}
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                Open
-                              </Link>
+                              <div style={{ display: "inline-flex", gap: 6 }}>
+                                <Link
+                                  href={`${chapterHref}/quiz?mode=concept`}
+                                  className={styles.tableActionBtn}
+                                  onClick={(e) => e.stopPropagation()}
+                                  title="Start Practice Quiz"
+                                >
+                                  Practice
+                                </Link>
+                                <Link
+                                  href={chapterHref}
+                                  className={styles.tableActionBtn}
+                                  onClick={(e) => e.stopPropagation()}
+                                  style={{ background: "transparent", border: "1px solid var(--mac-border)" }}
+                                  title="Open Chapter Hub"
+                                >
+                                  Hub
+                                </Link>
+                              </div>
                             </td>
                           </tr>
                         );
@@ -886,30 +979,32 @@ export default function GeneralAwarenessPage() {
             </main>
 
             {/* Right: Live Command Deck (320px) ── */}
-            <aside className={styles.commandDeck} aria-label="Topic Command Deck">
-              {/* ── Hero Topic Card ── */}
+            <aside className={styles.commandDeck} aria-label="Chapter Command Deck">
+              {/* ── Hero Chapter Card ── */}
               <div className={styles.heroCard}>
                 <div className={styles.heroCardHeader}>
                   <div className={styles.heroCardIconBox}>
-                    <SelectedIcon
+                    <ActiveItemIcon
                       size={20}
                       strokeWidth={2.4}
-                      color={selectedTopic.color}
+                      color={activeItemColor}
                       style={{
-                        filter: `drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 8px ${selectedTopic.color}80)`,
+                        filter: `drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 8px ${activeItemColor}80)`,
                       }}
                     />
                   </div>
                   <div className={styles.heroCardTitleGroup}>
-                    <h2 className={styles.heroCardTitle}>{selectedTopic.name}</h2>
+                    <h2 className={styles.heroCardTitle}>
+                      {selectedChapter ? selectedChapter.title : selectedTopic.name}
+                    </h2>
                     <span
                       className={styles.heroPriorityPill}
                       style={{
-                        background: PRIORITY_CONFIG[selectedTopic.priority].badgeBg,
-                        color: PRIORITY_CONFIG[selectedTopic.priority].badgeColor,
+                        background: activeBadgeStyle.badgeBg,
+                        color: activeBadgeStyle.badgeColor,
                       }}
                     >
-                      {PRIORITY_CONFIG[selectedTopic.priority].label} Priority
+                      {activePriority} Priority
                     </span>
                   </div>
                 </div>
@@ -917,12 +1012,14 @@ export default function GeneralAwarenessPage() {
                 {/* KPI Metrics */}
                 <div className={styles.heroStatsGrid}>
                   <div className={styles.heroStatItem}>
-                    <span className={styles.heroStatLabel}>Exam Weight</span>
-                    <span className={styles.heroStatValue}>{selectedTopic.questions} Qs</span>
+                    <span className={styles.heroStatLabel}>Chapter Rank</span>
+                    <span className={styles.heroStatValue}>
+                      {selectedChapter ? `#${selectedChapter.rank}` : "Core"}
+                    </span>
                   </div>
                   <div className={styles.heroStatItem}>
-                    <span className={styles.heroStatLabel}>Score Potential</span>
-                    <span className={styles.heroStatValue}>{selectedTopic.expectedMarks}</span>
+                    <span className={styles.heroStatLabel}>Topic Chapters</span>
+                    <span className={styles.heroStatValue}>{rawChapters.length} Total</span>
                   </div>
                 </div>
               </div>
@@ -942,7 +1039,7 @@ export default function GeneralAwarenessPage() {
                     return (
                       <Link
                         key={pm.key}
-                        href={`/general-awareness/${selectedTopic.slug}/quiz?mode=${pm.mode}`}
+                        href={`${chapterBaseHref}/quiz?mode=${pm.mode}`}
                         className={styles.modeCard}
                         style={
                           {
@@ -996,7 +1093,7 @@ export default function GeneralAwarenessPage() {
 
                 <div className={styles.resourceList}>
                   <Link
-                    href={`/general-awareness/${selectedTopic.slug}/formula-notes`}
+                    href={`${chapterBaseHref}/formula-notes`}
                     className={styles.resourceCard}
                     title="View Facts, Dates & Summary Bank"
                   >
@@ -1013,21 +1110,46 @@ export default function GeneralAwarenessPage() {
                   </Link>
 
                   <Link
-                    href={`/general-awareness/${selectedTopic.slug}`}
+                    href={chapterBaseHref}
                     className={styles.resourceCard}
-                    title="Open Complete Module Hub"
+                    title={selectedChapter ? "Open Chapter Hub" : "Open Complete Module Hub"}
                   >
                     <div className={styles.resourceCardLeft}>
                       <div className={styles.resourceCardIcon}>
                         <BookOpen size={13} strokeWidth={2.2} />
                       </div>
                       <div className={styles.resourceCardInfo}>
-                        <span className={styles.resourceCardTitle}>Complete Module Hub</span>
-                        <span className={styles.resourceCardSub}>Deep-dive lessons & notes</span>
+                        <span className={styles.resourceCardTitle}>
+                          {selectedChapter ? "Complete Chapter Hub" : "Complete Module Hub"}
+                        </span>
+                        <span className={styles.resourceCardSub}>Syllabus, weightage & deep-dive</span>
                       </div>
                     </div>
                     <ChevronRight size={13} className={styles.resourceArrow} />
                   </Link>
+
+                  {selectedChapter && currentGroup && (
+                    <Link
+                      href={`/general-awareness/${selectedTopic.slug}`}
+                      className={styles.resourceCard}
+                      title={`Open All ${selectedTopic.name} Chapters`}
+                    >
+                      <div className={styles.resourceCardLeft}>
+                        <div className={styles.resourceCardIcon}>
+                          <SelectedIcon size={13} strokeWidth={2.2} />
+                        </div>
+                        <div className={styles.resourceCardInfo}>
+                          <span className={styles.resourceCardTitle}>
+                            All {selectedTopic.name} Chapters
+                          </span>
+                          <span className={styles.resourceCardSub}>
+                            Full list of {rawChapters.length} chapters
+                          </span>
+                        </div>
+                      </div>
+                      <ChevronRight size={13} className={styles.resourceArrow} />
+                    </Link>
+                  )}
                 </div>
               </div>
             </aside>
