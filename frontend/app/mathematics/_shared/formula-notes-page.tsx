@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useParams } from "next/navigation";
-import { FileText, Plus, Search } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter, useParams } from "next/navigation";
+import { ChevronLeft, ChevronRight, FileText, Plus, Search, X } from "lucide-react";
 import { fetchWithRetry } from "@/lib/api/http";
 
 const tabs = ["Notes", "Formula", "Extra", "DPP"];
@@ -27,6 +27,7 @@ const TOPIC_LABELS: Record<string, string> = {
   "time-and-distance": "Time & Distance",
   "time-and-work": "Time & Work",
   trigonometry: "Trigonometry",
+  "coding-decoding": "Coding & Decoding",
 };
 
 type TopicPdf = {
@@ -42,10 +43,13 @@ type TopicPdf = {
 };
 
 function getTopicLabel(topic: string) {
-  return TOPIC_LABELS[topic] ?? topic
-    .split("-")
-    .map((word) => word[0]?.toUpperCase() + word.slice(1))
-    .join(" ");
+  return (
+    TOPIC_LABELS[topic] ??
+    topic
+      .split("-")
+      .map((word) => word[0]?.toUpperCase() + word.slice(1))
+      .join(" ")
+  );
 }
 
 function sortByName(files: TopicPdf[]) {
@@ -53,6 +57,62 @@ function sortByName(files: TopicPdf[]) {
     nameCollator.compare(a.title || a.fileName || "", b.title || b.fileName || "")
   );
 }
+
+const PdfIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 48 48"
+    width="28"
+    height="28"
+    style={{ filter: "drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))" }}
+  >
+    <path fill="#ffadc8" d="M39,16v25c0,1.105-0.895,2-2,2H11c-1.105,0-2-0.895-2-2V7c0-1.105,0.895-2,2-2h17L39,16z" />
+    <path fill="#e72636" d="M28,5v9c0,1.105,0.895,2,2,2h9L28,5z" />
+    <path fill="#e72636" d="M16.738,26.99v2.531h-1.655v-7.348h2.592c1.852,0,2.777,0.781,2.777,2.342 c0,0.738-0.265,1.335-0.797,1.791c-0.531,0.456-1.241,0.684-2.129,0.684H16.738z M16.738,23.445v2.29h0.651 c0.882,0,1.322-0.386,1.322-1.159c0-0.754-0.44-1.132-1.322-1.132L16.738,23.445L16.738,23.445z" />
+    <path fill="#e72636" d="M21.528,29.521v-7.348h2.603c2.61,0,3.914,1.194,3.914,3.581c0,1.145-0.356,2.058-1.068,2.741 c-0.712,0.684-1.661,1.025-2.846,1.025h-2.603V29.521z M23.183,23.521v4.657h0.82c0.717,0,1.279-0.215,1.688-0.645 c0.408-0.43,0.612-1.016,0.612-1.758c0-0.7-0.202-1.251-0.606-1.652c-0.405-0.402-0.973-0.602-1.704-0.602H23.183z" />
+    <path fill="#e72636" d="M33.514,23.521h-2.593v1.803h2.383v1.343h-2.383v2.854h-1.655v-7.348h4.248V23.521z" />
+  </svg>
+);
+
+const IosSpinner = ({ size = 34 }: { size?: number }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    className="ios-spinner"
+    role="status"
+    aria-label="Loading"
+    style={{
+      display: "block",
+      margin: "0 auto",
+      color: "var(--spinner-color, #8E8E93)",
+    }}
+  >
+    <style>{`
+      @keyframes ios-spinner-fade {
+        0% { opacity: 1; }
+        100% { opacity: 0.15; }
+      }
+    `}</style>
+    {Array.from({ length: 12 }).map((_, i) => (
+      <line
+        key={i}
+        x1="12"
+        y1="2.4"
+        x2="12"
+        y2="6.4"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        transform={`rotate(${i * 30} 12 12)`}
+        style={{
+          animation: "ios-spinner-fade 1.2s linear infinite",
+          animationDelay: `${-1.2 + i * 0.1}s`,
+        }}
+      />
+    ))}
+  </svg>
+);
 
 export default function FormulaNotesPage({
   topic: topicProp,
@@ -63,11 +123,14 @@ export default function FormulaNotesPage({
   topicLabel?: string;
   subject?: string;
 }) {
+  const router = useRouter();
   const params = useParams();
   const routeTopic = Array.isArray(params.topic) ? params.topic[0] : params.topic;
   const topic = topicProp || String(routeTopic || "");
   const topicLabel = topicLabelProp || getTopicLabel(topic);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cacheRef = useRef<Record<string, TopicPdf[]>>({});
   const [activeTab, setActiveTab] = useState("Notes");
   const [pdfs, setPdfs] = useState<TopicPdf[]>([]);
   const [loading, setLoading] = useState(true);
@@ -75,33 +138,59 @@ export default function FormulaNotesPage({
   const [notice, setNotice] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
   const [uploadCategory, setUploadCategory] = useState("notes");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const API = process.env.NEXT_PUBLIC_API_URL || "";
   const apiUrl = useCallback((path: string) => (API ? `${API}${path}` : path), [API]);
   const categoryFromTab = useCallback((tab: string) => tab.toLowerCase(), []);
 
-  useEffect(() => {
-    const fetchPdfs = async () => {
+  const fetchCategoryPdfs = useCallback(
+    async (tab: string, bypassCache = false) => {
       if (!topic) return;
+      const category = categoryFromTab(tab);
+
+      if (!bypassCache && cacheRef.current[category]) {
+        setPdfs(cacheRef.current[category]);
+        setLoading(false);
+        setNotice("");
+        return;
+      }
+
+      setPdfs([]);
       setLoading(true);
       setNotice("");
       try {
-        const category = categoryFromTab(activeTab);
         const res = await fetchWithRetry(
-          apiUrl(`/api/pdfs?topic=${encodeURIComponent(topic)}&category=${encodeURIComponent(category)}`)
+          apiUrl(`/api/pdfs?topic=${encodeURIComponent(topic)}&category=${encodeURIComponent(category)}`),
+          {},
+          { timeoutMs: 8000, retries: 1 }
         );
-        if (!res.ok) throw new Error(`PDF fetch failed: ${res.status}`);
+        if (!res.ok) {
+          if (res.status === 429) {
+            setNotice("Rate limit reached. Please wait a moment.");
+            setLoading(false);
+            return;
+          }
+          throw new Error(`PDF fetch failed: ${res.status}`);
+        }
         const data = (await res.json()) as { pdfs?: TopicPdf[] };
-        setPdfs(sortByName(data.pdfs || []));
+        const sorted = sortByName(data.pdfs || []);
+        cacheRef.current[category] = sorted;
+        setPdfs(sorted);
       } catch (err) {
-        console.error("Failed to load PDFs", err);
+        console.warn("Could not load PDFs:", err);
         setNotice("Unable to load PDFs.");
       } finally {
         setLoading(false);
       }
-    };
-    fetchPdfs();
-  }, [activeTab, apiUrl, categoryFromTab, topic]);
+    },
+    [apiUrl, categoryFromTab, topic]
+  );
+
+  useEffect(() => {
+    fetchCategoryPdfs(activeTab);
+  }, [activeTab, fetchCategoryPdfs]);
 
   const showSyncing = loading && pdfs.length === 0;
 
@@ -189,79 +278,195 @@ export default function FormulaNotesPage({
       const uploadedFiles = data.pdfs || (data.pdf ? [data.pdf] : []);
       const visibleUploads = uploadedFiles.filter((pdf) => pdf.category === categoryFromTab(activeTab));
       if (visibleUploads.length) {
-        setPdfs((current) => sortByName([...current, ...visibleUploads]));
+        setPdfs((current) => {
+          const updated = sortByName([...current, ...visibleUploads]);
+          cacheRef.current[uploadCategory] = updated;
+          return updated;
+        });
       }
       setNotice(`${uploadedFiles.length} file${uploadedFiles.length === 1 ? "" : "s"} uploaded to ${uploadCategory.toUpperCase()}.`);
     } catch (err) {
-      console.error("Failed to upload files", err);
+      console.warn("Failed to upload files", err);
       setNotice(err instanceof Error ? err.message : "File upload failed.");
     } finally {
       setUploading(false);
     }
   };
 
+  const filteredPdfs = useMemo(() => {
+    if (!searchQuery.trim()) return pdfs;
+    const q = searchQuery.toLowerCase().trim();
+    return pdfs.filter((pdf) =>
+      (pdf.title || pdf.fileName || "").toLowerCase().includes(q)
+    );
+  }, [pdfs, searchQuery]);
+
+  const subjectSlug = subject.toLowerCase().replace(/\s+/g, "-");
+  const fallbackBackHref = `/${subjectSlug}/${topic}`;
+
+  const handleBack = () => {
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      router.back();
+    } else {
+      router.push(fallbackBackHref);
+    }
+  };
+
   return (
     <main className="formula-notes-page">
-      <div className="background-orb orb-1" aria-hidden="true" />
-      <div className="background-orb orb-2" aria-hidden="true" />
-
-      <div className="page-shell">
-        <header className="top-bar">
-          <div className="title-block">
-            <p className="eyebrow">{subject}</p>
-            <p className="topic-name">{topicLabel}</p>
-            <h1>Notes Formula &amp; Tricks</h1>
-            <p className="subtitle">{topicLabel} insights wrapped in a liquid glass layout.</p>
+      {/* ── Fixed Position Top Area: Header + Filter Box ── */}
+      <div className="fn-top-pinned">
+        <header className="fn-header">
+          <div className="fn-header-inner">
+            <button
+              type="button"
+              className="fn-back-btn"
+              onClick={handleBack}
+              aria-label="Back"
+            >
+              <ChevronLeft size={22} />
+            </button>
+            <h1 className="fn-header-title">{topicLabel}</h1>
+            <button
+              type="button"
+              className={`fn-search-btn ${isSearchOpen ? "active" : ""}`}
+              onClick={() => {
+                setIsSearchOpen((prev) => !prev);
+                if (isSearchOpen) setSearchQuery("");
+              }}
+              aria-label="Search files"
+            >
+              {isSearchOpen ? <X size={19} /> : <Search size={19} />}
+            </button>
           </div>
-          <button className="search-button" type="button" aria-label="Search PDFs">
-            <Search className="icon" />
-          </button>
+
+          {isSearchOpen ? (
+            <div className="fn-search-bar">
+              <div className="fn-search-input-wrap">
+                <span className="fn-search-input-icon">
+                  <Search size={15} />
+                </span>
+                <input
+                  type="text"
+                  className="fn-search-input"
+                  placeholder={`Search in ${activeTab}...`}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  autoFocus
+                />
+                {searchQuery ? (
+                  <button
+                    type="button"
+                    className="fn-search-clear"
+                    onClick={() => setSearchQuery("")}
+                    aria-label="Clear search"
+                  >
+                    <X size={13} />
+                  </button>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
         </header>
 
-        <div className="tab-row" role="tablist" aria-label={`${topicLabel} PDF categories`}>
-          {tabs.map((tab) => (
-            <button
-              key={tab}
-              type="button"
-              className={`tab-pill${tab === activeTab ? " is-active" : ""}`}
-              onClick={() => setActiveTab(tab)}
-              role="tab"
-              aria-selected={tab === activeTab}
-            >
-              {tab.toUpperCase()}
-            </button>
-          ))}
+        {/* ── Fixed Position Filter Box (Category Tabs) ── */}
+        <div className="fn-filter-box">
+          <div className="fn-tabs-wrapper">
+            <div className="fn-tabs" role="tablist" aria-label="PDF categories">
+              {tabs.map((tab) => (
+                <button
+                  key={tab}
+                  type="button"
+                  className={`fn-tab-pill ${tab === activeTab ? "active" : ""}`}
+                  onClick={() => {
+                    setActiveTab(tab);
+                    setSearchQuery("");
+                  }}
+                  role="tab"
+                  aria-selected={tab === activeTab}
+                >
+                  {tab.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
-
-        <section className="glass-container">
-          {pdfs.length > 0 ? (
-            pdfs.map((pdf, index) => (
-              <button
-                key={pdf.id}
-                onClick={() => openPdf(pdf)}
-                type="button"
-                className="glass-card note-card"
-                style={{ animationDelay: `${index * 70}ms` }}
-              >
-                <span className="note-icon-bg" aria-hidden="true">
-                  <FileText className="note-icon" />
-                </span>
-                <span className="note-main">
-                  <span className="note-title">{pdf.title || pdf.fileName || `${topicLabel} PDF`}</span>
-                </span>
-                <span className="note-time">
-                  {formatDate(pdf.updatedAt || pdf.uploadedAt) || formatSize(pdf.size, pdf.fileName)}
-                </span>
-              </button>
-            ))
-          ) : (
-            <div className="empty-state">No files found.</div>
-          )}
-          {showSyncing ? <div className="inline-notice">Loading files...</div> : null}
-          {notice ? <div className="inline-notice">{notice}</div> : null}
-        </section>
       </div>
 
+      {/* ── Scrollable PDF Cards Area Only ── */}
+      <div className="fn-scroll-body">
+        <div className="fn-content">
+          {/* ── First-Time Documents Loading: iOS Spinner ── */}
+          {loading && pdfs.length === 0 ? (
+            <div className="fn-loading-state" role="status" aria-label="Loading documents">
+              <IosSpinner size={34} />
+              <p className="fn-loading-text">Loading documents...</p>
+            </div>
+          ) : notice ? (
+            <div className="fn-error-state">
+              <p className="fn-error-text">{notice}</p>
+              <button
+                type="button"
+                className="fn-retry-btn"
+                onClick={() => fetchCategoryPdfs(activeTab, true)}
+              >
+                Retry
+              </button>
+            </div>
+          ) : (
+            /* ── File Cards List ── */
+            <section className="fn-card-list">
+              {filteredPdfs.length > 0 ? (
+                filteredPdfs.map((pdf, index) => (
+                  <button
+                    key={pdf.id}
+                    onClick={() => openPdf(pdf)}
+                    type="button"
+                    className="fn-card"
+                    style={{ animationDelay: `${index * 40}ms` }}
+                  >
+                    <div className="fn-card-icon-wrap" aria-hidden="true">
+                      <PdfIcon />
+                    </div>
+                    <div className="fn-card-body">
+                      <span className="fn-card-title">
+                        {pdf.title || pdf.fileName || `${topicLabel} PDF`}
+                      </span>
+                      <div className="fn-card-meta">
+                        <span className="fn-card-tag">{formatSize(pdf.size, pdf.fileName)}</span>
+                        {pdf.updatedAt || pdf.uploadedAt ? (
+                          <span className="fn-card-date">
+                            {formatDate(pdf.updatedAt || pdf.uploadedAt)}
+                          </span>
+                        ) : null}
+                      </div>
+                    </div>
+                    <div className="fn-card-arrow" aria-hidden="true">
+                      <ChevronRight size={18} />
+                    </div>
+                  </button>
+                ))
+              ) : !loading && !notice ? (
+                <div className="fn-empty-state">
+                  <div className="fn-empty-icon" aria-hidden="true">
+                    <FileText size={32} strokeWidth={1.5} />
+                  </div>
+                  <p className="fn-empty-title">
+                    {searchQuery ? "No matching files" : "No files found"}
+                  </p>
+                  <p className="fn-empty-sub">
+                    {searchQuery
+                      ? `No files match "${searchQuery}" in ${activeTab}.`
+                      : `There are currently no files in the ${activeTab} category.`}
+                  </p>
+                </div>
+              ) : null}
+            </section>
+          )}
+        </div>
+      </div>
+
+      {/* ── Hidden File Upload Input ── */}
       <input
         ref={fileInputRef}
         type="file"
@@ -271,16 +476,18 @@ export default function FormulaNotesPage({
         onChange={handlePdfUpload}
       />
 
+      {/* ── Floating Action Button (FAB) ── */}
       <button
-        className="fab-button"
+        className="fn-fab"
         type="button"
-        aria-label={`Add ${topicLabel} files`}
+        aria-label={`Add files to ${topicLabel}`}
         disabled={uploading}
         onClick={() => setShowAddModal(true)}
       >
-        <Plus className="fab-icon" />
+        <Plus size={24} />
       </button>
 
+      {/* ── Category Choice Modal ── */}
       {showAddModal ? (
         <div className="modal-backdrop" role="presentation" onClick={() => setShowAddModal(false)}>
           <div
@@ -314,8 +521,6 @@ export default function FormulaNotesPage({
       ) : null}
 
       <style jsx global>{`
-        @import url("https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap");
-
         .bottom-pill-nav {
           display: none !important;
         }
@@ -323,346 +528,575 @@ export default function FormulaNotesPage({
         body.has-bottom-nav {
           padding-bottom: 0 !important;
         }
+
+        @keyframes ios-spinner-fade {
+          0% {
+            opacity: 1;
+          }
+          100% {
+            opacity: 0.15;
+          }
+        }
       `}</style>
 
       <style jsx>{`
+        /* ════════════════════════════════════════════
+           THEME TOKENS: DARK (DEFAULT)
+           ════════════════════════════════════════════ */
         .formula-notes-page {
-          --primary-blue: #007aff;
-          --bg-start: #f0f0f5;
-          --bg-end: #e8e8f0;
-          --text-primary: rgba(0, 0, 0, 0.8);
-          --text-secondary: rgba(0, 0, 0, 0.4);
-          --glass-edge: rgba(255, 255, 255, 0.7);
-          min-height: 100dvh;
-          background: linear-gradient(180deg, var(--bg-start) 0%, var(--bg-end) 100%);
-          color: var(--text-primary);
-          font-family: "General Sans", "SF Pro Display", "Segoe UI", sans-serif;
-          padding: 28px 18px 92px;
-          position: relative;
-          overflow: hidden;
+          --bg: #000000;
+          --card-bg: #1c1c1e;
+          --card-hover: #242428;
+          --border: rgba(255, 255, 255, 0.09);
+          --header-bg: rgba(0, 0, 0, 0.9);
+          --text-primary: #f8fafc;
+          --text-secondary: rgba(235, 235, 245, 0.6);
+          --text-tertiary: rgba(235, 235, 245, 0.35);
+          --tab-bg: rgba(255, 255, 255, 0.08);
+          --tab-color: rgba(235, 235, 245, 0.75);
+          --accent: #007aff;
+          --modal-bg: #1c1c1e;
+          --modal-option-bg: #28282c;
+          --notice-color: rgba(235, 235, 245, 0.5);
+          --spinner-color: rgba(235, 235, 245, 0.75);
+
           height: 100dvh;
-        }
-
-        .background-orb {
-          position: absolute;
-          border-radius: 999px;
-          filter: blur(40px);
-          opacity: 0.7;
-          pointer-events: none;
-        }
-
-        .orb-1 {
-          width: 220px;
-          height: 220px;
-          background: rgba(0, 122, 255, 0.22);
-          top: -70px;
-          right: -50px;
-        }
-
-        .orb-2 {
-          width: 280px;
-          height: 280px;
-          background: rgba(255, 255, 255, 0.7);
-          bottom: -140px;
-          left: -120px;
-        }
-
-        .page-shell {
-          max-width: 560px;
-          margin: 0 auto;
-          position: relative;
-          z-index: 1;
-          height: 100%;
+          width: 100%;
+          box-sizing: border-box;
           display: flex;
           flex-direction: column;
-          min-height: 0;
+          overflow: hidden;
+          background: var(--bg);
+          color: var(--text-primary);
+          font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", sans-serif;
+          -webkit-font-smoothing: antialiased;
+          position: relative;
         }
 
-        .top-bar {
+        /* ── Fixed Position Top Area: Header + Filter Box ── */
+        .fn-top-pinned {
+          flex-shrink: 0;
+          z-index: 30;
+          background: var(--header-bg);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border-bottom: 1px solid var(--border);
+          padding-top: var(--safe-top);
+        }
+
+        .fn-header {
+          border-bottom: none;
+        }
+
+        .fn-header-inner {
+          height: 56px;
           display: flex;
-          align-items: flex-start;
+          align-items: center;
           justify-content: space-between;
-          gap: 16px;
-          margin-bottom: 12px;
-          flex: 0 0 auto;
+          padding: 0 12px;
+          max-width: 680px;
+          margin: 0 auto;
         }
 
-        .title-block h1 {
-          margin: 6px 0 4px;
-          font-size: 1.25rem;
-          font-weight: 700;
-          letter-spacing: 0;
-        }
-
-        .eyebrow {
-          margin: 0;
-          font-size: 0.72rem;
-          letter-spacing: 0.05em;
-          text-transform: uppercase;
-          color: var(--text-secondary);
-          font-weight: 600;
-        }
-
-        .topic-name {
-          margin: 8px 0 0;
-          font-size: 0.82rem;
-          font-weight: 700;
-          color: rgba(0, 0, 0, 0.62);
-        }
-
-        .subtitle {
-          margin: 0;
-          font-size: 0.82rem;
-          color: var(--text-secondary);
-        }
-
-        .search-button {
-          border: none;
-          background: rgba(255, 255, 255, 0.9);
-          width: 42px;
-          height: 42px;
+        .fn-back-btn,
+        .fn-search-btn {
+          width: 40px;
+          height: 40px;
           border-radius: 50%;
-          display: inline-flex;
+          display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+          background: transparent;
+          border: none;
+          color: var(--text-primary);
+          cursor: pointer;
+          transition: background-color 0.15s ease, opacity 0.15s ease;
+          -webkit-tap-highlight-color: transparent;
+        }
+
+        .fn-back-btn:hover,
+        .fn-search-btn:hover {
+          background: var(--tab-bg);
+        }
+
+        .fn-back-btn:active,
+        .fn-search-btn:active {
+          opacity: 0.6;
+          transform: scale(0.95);
+        }
+
+        .fn-search-btn.active {
+          background: var(--accent);
+          color: #ffffff;
+        }
+
+        .fn-header-title {
+          font-size: 17px;
+          font-weight: 650;
+          letter-spacing: -0.02em;
+          color: var(--text-primary);
+          margin: 0;
+          text-align: center;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          flex: 1;
+          padding: 0 8px;
+        }
+
+        /* ── Search Bar Dropdown ── */
+        .fn-search-bar {
+          padding: 0 16px 10px;
+          max-width: 680px;
+          margin: 0 auto;
+          display: flex;
+          align-items: center;
+          animation: fn-slide-down 0.2s ease;
+        }
+
+        @keyframes fn-slide-down {
+          from {
+            opacity: 0;
+            transform: translateY(-6px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .fn-search-input-wrap {
+          position: relative;
+          width: 100%;
+          display: block;
+        }
+
+        .fn-search-input {
+          width: 100%;
+          height: 38px;
+          border-radius: 10px;
+          border: 1px solid var(--border);
+          background: var(--card-bg);
+          color: var(--text-primary);
+          font-size: 14px;
+          padding: 0 36px 0 36px;
+          outline: none;
+          box-sizing: border-box;
+          transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .fn-search-input:focus {
+          border-color: var(--accent);
+          box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.22);
+        }
+
+        .fn-search-input-icon {
+          position: absolute;
+          left: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: var(--text-tertiary);
+          pointer-events: none;
+          display: flex;
+          align-items: center;
+        }
+
+        .fn-search-clear {
+          position: absolute;
+          right: 9px;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 22px;
+          height: 22px;
+          border-radius: 50%;
+          background: var(--tab-bg);
+          border: none;
+          color: var(--text-secondary);
+          display: flex;
+          align-items: center;
+          justify-content: center;
           cursor: pointer;
         }
 
-        .search-button:active {
-          transform: scale(0.98);
+        /* ── Fixed Position Filter Box (Category Tabs) ── */
+        .fn-filter-box {
+          max-width: 680px;
+          margin: 0 auto;
+          padding: 4px 16px 12px;
         }
 
-        .search-button:focus-visible {
-          outline: 2px solid rgba(0, 122, 255, 0.5);
-          outline-offset: 3px;
-        }
-
-        .icon {
-          width: 18px;
-          height: 18px;
-          color: rgba(0, 0, 0, 0.5);
-        }
-
-        .tab-row {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          flex-wrap: nowrap;
+        .fn-tabs-wrapper {
           overflow-x: auto;
-          padding-bottom: 6px;
-          margin-bottom: 12px;
           scrollbar-width: none;
-          position: sticky;
-          top: 0;
-          z-index: 3;
-          flex: 0 0 auto;
+          -webkit-overflow-scrolling: touch;
         }
 
-        .tab-row::-webkit-scrollbar {
+        .fn-tabs-wrapper::-webkit-scrollbar {
           display: none;
         }
 
-        .tab-pill {
-          border: none;
-          background: rgba(255, 255, 255, 0.75);
-          color: rgba(0, 0, 0, 0.55);
-          font-size: 0.7rem;
-          font-weight: 600;
-          letter-spacing: 0.05em;
-          padding: 8px 14px;
+        .fn-tabs {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          min-width: 100%;
+        }
+
+        .fn-tab-pill {
+          padding: 7px 16px;
           border-radius: 999px;
+          border: 1px solid var(--border);
+          background: var(--card-bg);
+          color: var(--tab-color);
+          font-size: 12px;
+          font-weight: 600;
+          letter-spacing: 0.03em;
           cursor: pointer;
+          white-space: nowrap;
+          transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+          -webkit-tap-highlight-color: transparent;
         }
 
-        .tab-pill.is-active {
+        .fn-tab-pill:active {
+          transform: scale(0.96);
+        }
+
+        .fn-tab-pill.active {
+          background: var(--accent);
+          border-color: var(--accent);
           color: #ffffff;
-          background: linear-gradient(135deg, rgba(0, 122, 255, 0.9) 0%, rgba(0, 100, 220, 0.95) 100%);
-          box-shadow:
-            0 2px 8px rgba(0, 122, 255, 0.35),
-            0 1px 3px rgba(0, 122, 255, 0.2),
-            inset 0 1px 0 rgba(255, 255, 255, 0.25);
+          box-shadow: 0 2px 10px rgba(0, 122, 255, 0.35);
         }
 
-        .tab-pill:active {
-          transform: scale(0.98);
-        }
-
-        .glass-container {
-          background: linear-gradient(180deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.25) 100%);
-          backdrop-filter: blur(60px) saturate(2);
-          -webkit-backdrop-filter: blur(60px) saturate(2);
-          box-shadow:
-            0 2px 20px rgba(0, 0, 0, 0.06),
-            0 0 0 0.5px rgba(255, 255, 255, 0.5),
-            inset 0 1px 0 rgba(255, 255, 255, 0.6);
-          border: 0.5px solid rgba(255, 255, 255, 0.5);
-          border-radius: 26px;
-          padding: 16px;
+        /* ── Scrollable PDF Cards Area Only ── */
+        .fn-scroll-body {
+          flex: 1;
           display: flex;
           flex-direction: column;
-          gap: 12px;
-          flex: 1 1 auto;
-          min-height: 0;
           overflow-y: auto;
-          overscroll-behavior: contain;
+          -webkit-overflow-scrolling: touch;
+          overscroll-behavior-y: contain;
           scrollbar-width: thin;
         }
 
-        .glass-card {
-          background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.6) 40%, rgba(255, 255, 255, 0.75) 100%);
-          backdrop-filter: blur(40px) saturate(1.8);
-          -webkit-backdrop-filter: blur(40px) saturate(1.8);
-          box-shadow:
-            0 1px 3px rgba(0, 0, 0, 0.04),
-            0 4px 12px rgba(0, 0, 0, 0.06),
-            inset 0 1px 0 rgba(255, 255, 255, 0.9),
-            inset 0 -1px 0 rgba(255, 255, 255, 0.3);
-          border: 0.5px solid var(--glass-edge);
-        }
-
-        .note-card {
+        .fn-content {
+          flex: 1;
           display: flex;
-          align-items: center;
-          gap: 12px;
-          padding: 14px;
-          border-radius: 20px;
-          border: none;
-          text-align: left;
-          cursor: pointer;
-          animation: fade-up 0.5s ease both;
+          flex-direction: column;
+          width: 100%;
+          max-width: 680px;
+          margin: 0 auto;
+          padding: 16px 16px calc(92px + var(--safe-bottom));
+          box-sizing: border-box;
         }
 
-        .note-card:active {
-          transform: scale(0.98);
-        }
-
-        .note-card:focus-visible {
-          outline: 2px solid rgba(0, 122, 255, 0.35);
-          outline-offset: 3px;
-        }
-
-        .note-icon-bg {
-          width: 44px;
-          height: 44px;
-          border-radius: 14px;
-          display: inline-flex;
+        /* ── Notices & Error State ── */
+        :global(.fn-loading-state),
+        .fn-loading-state {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
           align-items: center;
           justify-content: center;
-          background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.82) 100%);
+          min-height: calc(75dvh - 120px);
+          gap: 14px;
+          animation: fn-fade-up 0.25s ease;
+          margin: auto 0;
+          transform: translateY(-30px);
+          text-align: center;
+          width: 100%;
+        }
+
+        :global(.ios-spinner),
+        .ios-spinner {
+          display: inline-block;
+          color: var(--spinner-color);
           flex-shrink: 0;
         }
 
-        .note-icon {
-          width: 18px;
-          height: 18px;
-          color: rgba(0, 0, 0, 0.35);
+        :global(.fn-loading-text),
+        .fn-loading-text {
+          font-size: 13.5px;
+          font-weight: 500;
+          color: var(--text-secondary);
+          letter-spacing: -0.01em;
+          margin: 0;
+          text-align: center;
         }
 
-        .note-main {
+        .fn-status-notice {
+          text-align: center;
+          font-size: 13px;
+          color: var(--notice-color);
+          padding: 6px 0 12px;
+        }
+
+        .fn-error-state {
+          text-align: center;
+          padding: 24px 20px;
           display: flex;
           flex-direction: column;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .fn-error-text {
+          font-size: 13.5px;
+          color: var(--notice-color);
+          margin: 0;
+        }
+
+        .fn-retry-btn {
+          padding: 6px 18px;
+          border-radius: 8px;
+          border: 1px solid var(--border);
+          background: var(--card-bg);
+          color: var(--accent);
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: background-color 0.15s ease;
+        }
+
+        .fn-retry-btn:hover {
+          background: var(--card-hover);
+        }
+
+        /* ── PDF Cards List ── */
+        .fn-card-list {
+          display: flex;
+          flex-direction: column;
+          gap: 9px;
+        }
+
+        .fn-card {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          padding: 12px 16px;
+          min-height: 62px;
+          border-radius: 14px;
+          border: 1px solid var(--border);
+          background: var(--card-bg);
+          color: var(--text-primary);
+          text-align: left;
+          cursor: pointer;
+          text-decoration: none;
+          transition: transform 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+          -webkit-tap-highlight-color: transparent;
+          animation: fn-fade-up 0.28s ease both;
+        }
+
+        @keyframes fn-fade-up {
+          from {
+            opacity: 0;
+            transform: translateY(8px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .fn-card:hover {
+          background: var(--card-hover);
+          border-color: rgba(255, 255, 255, 0.18);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+        }
+
+        .fn-card:active {
+          transform: scale(0.99);
+        }
+
+        .fn-card-icon-wrap {
+          width: 38px;
+          height: 38px;
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+
+        .fn-card-body {
           flex: 1;
           min-width: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
         }
 
-        .note-title {
-          font-size: 0.95rem;
-          font-weight: 560;
-          line-height: 1.18;
-          color: rgba(0, 0, 0, 0.74);
-          overflow-wrap: anywhere;
-        }
-
-        .note-time {
-          font-size: 0.72rem;
-          color: var(--text-secondary);
-          font-weight: 500;
+        .fn-card-title {
+          font-size: 14.5px;
+          font-weight: 600;
+          line-height: 1.3;
+          color: var(--text-primary);
           white-space: nowrap;
-          margin-left: auto;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
-        .empty-state,
-        .inline-notice {
+        .fn-card-meta {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 12px;
+          color: var(--text-secondary);
+        }
+
+        .fn-card-tag {
+          display: inline-block;
+          padding: 1px 6px;
+          border-radius: 4px;
+          background: var(--tab-bg);
+          font-size: 11px;
+          font-weight: 500;
+          letter-spacing: 0.02em;
+        }
+
+        .fn-card-date {
+          font-size: 11.5px;
+          color: var(--text-secondary);
+        }
+
+        .fn-card-arrow {
+          color: var(--text-tertiary);
+          flex-shrink: 0;
+          display: flex;
+          align-items: center;
+          transition: transform 0.15s ease, color 0.15s ease;
+        }
+
+        .fn-card:hover .fn-card-arrow {
+          color: var(--text-primary);
+          transform: translateX(2px);
+        }
+
+        /* ── Empty State ── */
+        .fn-empty-state {
           text-align: center;
-          color: rgba(0, 0, 0, 0.5);
+          padding: 56px 20px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
         }
 
-        .empty-state {
-          padding: 1rem;
+        .fn-empty-icon {
+          width: 60px;
+          height: 60px;
+          border-radius: 50%;
+          background: var(--tab-bg);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: var(--text-tertiary);
+          margin-bottom: 14px;
         }
 
-        .inline-notice {
-          padding: 0.4rem 0;
-          font-size: 0.75rem;
+        .fn-empty-title {
+          font-size: 16px;
+          font-weight: 650;
+          color: var(--text-primary);
+          margin: 0 0 6px;
         }
 
-        .fab-button {
+        .fn-empty-sub {
+          font-size: 13px;
+          color: var(--text-secondary);
+          margin: 0;
+          max-width: 290px;
+          line-height: 1.4;
+        }
+
+        /* ── Floating Action Button (FAB) ── */
+        .fn-fab {
           position: fixed;
-          right: 24px;
-          bottom: 24px;
-          width: 56px;
-          height: 56px;
+          right: 20px;
+          bottom: calc(24px + var(--safe-bottom));
+          width: 54px;
+          height: 54px;
           border-radius: 50%;
           border: none;
-          background: linear-gradient(135deg, rgba(0, 122, 255, 0.92) 0%, rgba(0, 100, 220, 0.98) 100%);
-          box-shadow:
-            0 4px 16px rgba(0, 122, 255, 0.4),
-            0 2px 6px rgba(0, 122, 255, 0.2),
-            inset 0 1px 0 rgba(255, 255, 255, 0.25);
+          background: var(--accent);
+          color: #ffffff;
+          box-shadow: 0 4px 18px rgba(0, 122, 255, 0.44), 0 2px 6px rgba(0, 122, 255, 0.25);
           display: flex;
           align-items: center;
           justify-content: center;
           cursor: pointer;
-          z-index: 5;
+          z-index: 35;
+          transition: transform 0.16s ease, box-shadow 0.16s ease;
+          -webkit-tap-highlight-color: transparent;
         }
 
-        .fab-button:disabled {
+        .fn-fab:hover {
+          transform: scale(1.05);
+          box-shadow: 0 6px 22px rgba(0, 122, 255, 0.55);
+        }
+
+        .fn-fab:active {
+          transform: scale(0.92);
+        }
+
+        .fn-fab:disabled {
+          opacity: 0.6;
           cursor: wait;
-          opacity: 0.72;
-        }
-
-        .fab-button:active {
-          transform: scale(0.98);
-        }
-
-        .fab-icon {
-          width: 24px;
-          height: 24px;
-          color: #ffffff;
         }
 
         .pdf-input {
           display: none;
         }
 
+        /* ── Add Modal ── */
         .modal-backdrop {
           position: fixed;
           inset: 0;
-          z-index: 20;
+          z-index: 50;
           display: flex;
           align-items: flex-end;
           justify-content: center;
-          padding: 18px;
-          background: rgba(15, 23, 42, 0.22);
-          backdrop-filter: blur(10px);
-          -webkit-backdrop-filter: blur(10px);
+          padding: 16px;
+          background: rgba(0, 0, 0, 0.65);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+          animation: fn-fade-in 0.18s ease;
+        }
+
+        @keyframes fn-fade-in {
+          from { opacity: 0; }
+          to { opacity: 1; }
         }
 
         .add-modal {
-          width: min(100%, 420px);
-          border-radius: 24px;
-          border: 0.5px solid rgba(255, 255, 255, 0.64);
-          background: rgba(255, 255, 255, 0.9);
-          box-shadow: 0 24px 60px rgba(15, 23, 42, 0.18);
-          padding: 18px;
+          width: min(100%, 400px);
+          border-radius: 20px;
+          border: 1px solid var(--border);
+          background: var(--modal-bg);
+          box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+          padding: 20px;
+          margin-bottom: var(--safe-bottom);
+          animation: fn-modal-up 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fn-modal-up {
+          from {
+            transform: translateY(20px);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
+          }
         }
 
         .add-modal h2 {
-          margin: 0 0 14px;
-          font-size: 1rem;
+          margin: 0 0 16px;
+          font-size: 16px;
           font-weight: 700;
-          color: rgba(0, 0, 0, 0.76);
+          color: var(--text-primary);
         }
 
         .modal-options {
@@ -671,97 +1105,68 @@ export default function FormulaNotesPage({
           gap: 10px;
         }
 
-        .modal-option,
-        .modal-cancel {
-          border: none;
-          cursor: pointer;
-          font: inherit;
-          font-weight: 700;
-        }
-
         .modal-option {
           min-height: 48px;
-          border-radius: 16px;
-          color: rgba(0, 0, 0, 0.68);
-          background: rgba(245, 247, 252, 0.96);
-          box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.06);
+          border-radius: 14px;
+          border: 1px solid var(--border);
+          color: var(--text-primary);
+          background: var(--modal-option-bg);
+          font-size: 13.5px;
+          font-weight: 650;
+          letter-spacing: 0.02em;
+          cursor: pointer;
+          transition: background 0.15s ease, transform 0.1s ease;
         }
 
-        .modal-option:active,
-        .modal-cancel:active {
-          transform: scale(0.98);
+        .modal-option:active {
+          transform: scale(0.97);
         }
 
         .modal-cancel {
           width: 100%;
-          min-height: 46px;
-          margin-top: 10px;
-          border-radius: 16px;
-          color: #ffffff;
-          background: linear-gradient(135deg, rgba(0, 122, 255, 0.92) 0%, rgba(0, 100, 220, 0.98) 100%);
+          min-height: 44px;
+          margin-top: 12px;
+          border-radius: 14px;
+          border: 1px solid var(--border);
+          color: var(--text-secondary);
+          background: transparent;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: background 0.15s ease;
         }
 
-        @keyframes fade-up {
-          from {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+        .modal-cancel:hover {
+          background: var(--tab-bg);
         }
 
-        @media (max-width: 520px) {
-          .formula-notes-page {
-            padding: 20px 18px 76px;
-          }
+        /* ════════════════════════════════════════════
+           LIGHT THEME OVERRIDES (body.theme-light)
+           ════════════════════════════════════════════ */
+        :global(body.theme-light) .formula-notes-page {
+          --bg: #f6f8fa;
+          --card-bg: #ffffff;
+          --card-hover: #f8fafc;
+          --border: rgba(0, 0, 0, 0.08);
+          --header-bg: rgba(246, 248, 250, 0.92);
+          --text-primary: #1d1d1f;
+          --text-secondary: #57606a;
+          --text-tertiary: #8c959f;
+          --tab-bg: rgba(0, 0, 0, 0.05);
+          --tab-color: #57606a;
+          --modal-bg: #ffffff;
+          --modal-option-bg: #f2f2f7;
+          --notice-color: #57606a;
+          --spinner-color: rgba(60, 60, 67, 0.6);
+        }
 
-          .top-bar {
-            position: relative;
-            display: block;
-            padding-right: 58px;
-            margin-bottom: 10px;
-          }
+        :global(body.theme-light) .fn-card {
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 2px 6px rgba(0, 0, 0, 0.02);
+        }
 
-          .search-button {
-            position: fixed;
-            top: 20px;
-            right: 18px;
-            z-index: 6;
-            background: rgba(255, 255, 255, 0.96);
-            box-shadow:
-              0 8px 22px rgba(15, 23, 42, 0.12),
-              inset 0 1px 0 rgba(255, 255, 255, 0.9);
-          }
-
-          .tab-row {
-            margin-bottom: 10px;
-            padding-bottom: 4px;
-          }
-
-          .note-card {
-            align-items: center;
-            gap: 12px;
-          }
-
-          .note-main {
-            width: 100%;
-            flex: 1 1 auto;
-          }
-
-          .note-title {
-            font-size: 0.9rem;
-            font-weight: 540;
-            line-height: 1.2;
-            color: rgba(0, 0, 0, 0.7);
-            overflow-wrap: normal;
-            word-break: normal;
-          }
-
-          .note-time {
-            display: none;
-          }
+        :global(body.theme-light) .fn-card:hover {
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+          border-color: rgba(0, 0, 0, 0.14);
         }
       `}</style>
     </main>

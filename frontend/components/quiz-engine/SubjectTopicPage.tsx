@@ -39,12 +39,18 @@ export interface SubjectTopicPageProps {
 
 /* ── SVG Icons ───────────────────────────────── */
 const IconBanner = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-    <polyline points="14 2 14 8 20 8" />
-    <line x1="16" y1="13" x2="8" y2="13" />
-    <line x1="16" y1="17" x2="8" y2="17" />
-    <line x1="10" y1="9" x2="8" y2="9" />
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 48 48"
+    width="42"
+    height="42"
+    style={{ filter: "drop-shadow(0 2px 5px rgba(0, 0, 0, 0.2))" }}
+  >
+    <path fill="#ffadc8" d="M39,16v25c0,1.105-0.895,2-2,2H11c-1.105,0-2-0.895-2-2V7c0-1.105,0.895-2,2-2h17L39,16z" />
+    <path fill="#e72636" d="M28,5v9c0,1.105,0.895,2,2,2h9L28,5z" />
+    <path fill="#e72636" d="M16.738,26.99v2.531h-1.655v-7.348h2.592c1.852,0,2.777,0.781,2.777,2.342 c0,0.738-0.265,1.335-0.797,1.791c-0.531,0.456-1.241,0.684-2.129,0.684H16.738z M16.738,23.445v2.29h0.651 c0.882,0,1.322-0.386,1.322-1.159c0-0.754-0.44-1.132-1.322-1.132L16.738,23.445L16.738,23.445z" />
+    <path fill="#e72636" d="M21.528,29.521v-7.348h2.603c2.61,0,3.914,1.194,3.914,3.581c0,1.145-0.356,2.058-1.068,2.741 c-0.712,0.684-1.661,1.025-2.846,1.025h-2.603V29.521z M23.183,23.521v4.657h0.82c0.717,0,1.279-0.215,1.688-0.645 c0.408-0.43,0.612-1.016,0.612-1.758c0-0.7-0.202-1.251-0.606-1.652c-0.405-0.402-0.973-0.602-1.704-0.602H23.183z" />
+    <path fill="#e72636" d="M33.514,23.521h-2.593v1.803h2.383v1.343h-2.383v2.854h-1.655v-7.348h4.248V23.521z" />
   </svg>
 );
 
@@ -373,12 +379,10 @@ export default function SubjectTopicPage({
         .sg-banner:active { background: rgba(255,255,255,0.06); }
         .sg-banner-icon {
           width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
-          background: linear-gradient(150deg, #38bdf8, #0284c7);
+          background: transparent;
           display: flex; align-items: center; justify-content: center;
-          box-shadow: inset 0 1px 0.5px rgba(255,255,255,0.3);
-          color: white;
         }
-        .sg-banner-icon svg { width: 22px; height: 22px; }
+        .sg-banner-icon svg { width: 42px; height: 42px; }
         .sg-banner-body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
         .sg-banner-kicker {
           margin-bottom: 2px;
@@ -915,7 +919,7 @@ export default function SubjectTopicPage({
           .sg-banner-icon {
             width: 42px; height: 42px; border-radius: 12px;
           }
-          .sg-banner-icon svg { width: 22px; height: 22px; }
+          .sg-banner-icon svg { width: 42px; height: 42px; }
           .sg-banner-title { font-size: 1.05rem; font-weight: 700; }
           .sg-banner-sub { font-size: 0.8rem; margin-top: 2px; }
           .sg-section { padding: 0; margin-bottom: 14px; }

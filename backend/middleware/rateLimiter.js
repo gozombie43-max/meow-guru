@@ -102,7 +102,7 @@ export const globalLimiter =
       15 * 60 * 1000,
 
     max:
-      300,
+      process.env.NODE_ENV !== 'production' ? 10000 : 300,
 
     standardHeaders:
       true,
