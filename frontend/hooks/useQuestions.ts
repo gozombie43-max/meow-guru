@@ -2,8 +2,7 @@ import { useMemo } from 'react';
 import useSWR from 'swr';
 import { fetchWithRetry } from '@/lib/api/http';
 import { isStudyModeQuestion, type Question } from '@/lib/api/questions';
-
-const API = process.env.NEXT_PUBLIC_API_URL || "";
+import { API_BASE } from '@/lib/api-base';
 
 const fetcher = async (url: string) => {
   const res = await fetchWithRetry(url, { cache: "no-store" });
@@ -44,7 +43,7 @@ export function useQuestions(params: {
   if (params.limit !== undefined) query.set('limit', String(params.limit));
   if (params.offset !== undefined) query.set('offset', String(params.offset));
 
-  const url = params.enabled === false ? null : `${API}/api/questions?${query.toString()}`;
+  const url = params.enabled === false ? null : `${API_BASE}/api/questions?${query.toString()}`;
 
   const { data, error, isLoading, mutate } = useSWR<Question[]>(url, fetcher, {
     revalidateOnFocus: false, // Questions rarely change while focusing

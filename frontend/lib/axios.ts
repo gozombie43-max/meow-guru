@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { API_BASE } from '@/lib/api-base';
 
 export const AUTH_TOKEN_CHANGED_EVENT = 'auth-token-changed';
 const LEGACY_AUTH_STORAGE_KEYS = ['token', 'refreshToken'] as const;
@@ -18,11 +19,8 @@ export const updateAccessToken = (token: string | null) => {
   }
 };
 
-// Default to local backend in dev when NEXT_PUBLIC_API_URL isn't provided
-const defaultApiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000';
-
 const api = axios.create({
-  baseURL:         defaultApiBase,
+  baseURL:         API_BASE,
   headers:         { 'Content-Type': 'application/json' },
   withCredentials: true, // sends cookies automatically
   timeout:         15000,
@@ -49,7 +47,7 @@ export const requestTokenRefresh = async (): Promise<string | null> => {
   inFlightRefreshPromise = (async () => {
     try {
       const { data } = await axios.post(
-        `${defaultApiBase}/auth/refresh`,
+        `${API_BASE}/auth/refresh`,
         {},
         { withCredentials: true }
       );

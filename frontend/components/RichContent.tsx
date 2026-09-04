@@ -1,5 +1,6 @@
 import React from "react";
 import MathText from "@/components/MathText";
+import { API_BASE } from "@/lib/api-base";
 
 type ContentPart =
   | { type: "text"; value: string }
@@ -27,9 +28,8 @@ function resolveImageSrc(src: string): string {
   }
   if (trimmed.startsWith("data:") || trimmed.startsWith("blob:")) return trimmed;
 
-  const base = process.env.NEXT_PUBLIC_API_URL || "";
-  if (trimmed.startsWith("/")) return `${base}${trimmed}`;
-  return `${base}/${trimmed}`;
+  if (trimmed.startsWith("/")) return `${API_BASE}${trimmed}`;
+  return `${API_BASE}/${trimmed}`;
 }
 
 function splitContent(text: string): ContentPart[] {

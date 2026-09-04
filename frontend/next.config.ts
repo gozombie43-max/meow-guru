@@ -18,12 +18,8 @@ const nextConfig: NextConfig = {
     ],
   },
   turbopack: {
-    // Resolve to the monorepo root so Turbopack can compile hoisted dependencies on Vercel / CI.
+    // Resolve to the monorepo root so Turbopack can compile hoisted dependencies in CI.
     root: path.resolve(__dirname, ".."),
-  },
-  experimental: {
-    cpus: 4,
-    workerThreads: false,
   },
   async redirects() {
     return [

@@ -7,7 +7,6 @@ import { Swords, Copy, Check, Zap, Target } from "lucide-react";
 import RichContent from "@/components/RichContent";
 import { getSocket } from "@/lib/socket";
 import { useAuth } from "@/context/AuthContext";
-import "./battle.css";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 type BattleState = "lobby" | "waiting" | "playing" | "finished";

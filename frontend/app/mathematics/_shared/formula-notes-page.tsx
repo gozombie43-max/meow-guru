@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { ChevronLeft, ChevronRight, FileText, Plus, Search, X } from "lucide-react";
 import { fetchWithRetry } from "@/lib/api/http";
+import { API_BASE } from "@/lib/api-base";
 
 const tabs = ["Notes", "Formula", "Extra", "DPP"];
 const nameCollator = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
@@ -147,7 +148,7 @@ export default function FormulaNotesPage({
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
-  const API = process.env.NEXT_PUBLIC_API_URL || "";
+  const API = API_BASE;
   const apiUrl = useCallback((path: string) => (API ? `${API}${path}` : path), [API]);
   const categoryFromTab = useCallback((tab: string) => tab.toLowerCase(), []);
 

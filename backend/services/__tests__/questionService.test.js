@@ -17,6 +17,7 @@ import {
   fetchPracticeTest,
   fetchQuestionById,
   fetchQuestions,
+  fetchQuestionCounts,
   normalizeSearchKey,
   normalizeQuizKey,
   matchesNormalizedTopic,
@@ -24,6 +25,7 @@ import {
   isStudyModeRecord,
   buildQuestionsCacheKey,
   questionsQueryCache,
+  questionCountsCache,
   removeQuestion,
   removeQuestionsBulk,
 } from '../questionService.js';
@@ -40,6 +42,7 @@ function createCursor(resources) {
 beforeEach(() => {
   vi.clearAllMocks();
   questionsQueryCache.clear();
+  questionCountsCache.clear();
 });
 
 describe('Question Service Helpers', () => {
@@ -96,6 +99,52 @@ describe('Question Service Helpers', () => {
 });
 
 describe('MongoDB-backed question reads', () => {
+  it('aggregates compact mode counts and caches the result', async () => {
+    const cursor = { toArray: vi.fn(async () => [
+      { _id: { quizName: 'pyq' }, count: 12 },
+      { _id: { quizName: 'career will' }, count: 4 },
+      { _id: { quizName: 'selection way' }, count: 2 },
+      {
+        _id: {
+          quizName: 'study mode',
+          questionType: 'study-mode',
+          hasWord: true,
+          hasMeanings: true,
+        },
+        count: 3,
+      },
+    ]) };
+    const collection = { aggregate: vi.fn(() => cursor) };
+    getQuestionsCollectionMock.mockReturnValue(collection);
+
+    const expected = {
+      concept: 12,
+      formula: 4,
+      mixed: 0,
+      aiChallenge: 2,
+      easy: 0,
+      hard: 0,
+      studyMode: 3,
+    };
+
+    await expect(fetchQuestionCounts({ topic: 'percentages', subject: 'mathematics' }))
+      .resolves.toEqual(expected);
+    await expect(fetchQuestionCounts({ topic: 'percentages', subject: 'mathematics' }))
+      .resolves.toEqual(expected);
+
+    expect(collection.aggregate).toHaveBeenCalledTimes(1);
+    expect(collection.aggregate.mock.calls[0][0][0]).toEqual({
+      $match: { topic: 'percentages' },
+    });
+  });
+
+  it('requires a topic or subject for count aggregation', async () => {
+    await expect(fetchQuestionCounts({})).rejects.toMatchObject({
+      message: 'topic or subject is required',
+      statusCode: 400,
+    });
+  });
+
   it('fetches image questions without exposing MongoDB _id values', async () => {
     const cursor = createCursor([{ id: 'image-1', topic: 'visual_reasoning' }]);
     const collection = { find: vi.fn(() => cursor) };

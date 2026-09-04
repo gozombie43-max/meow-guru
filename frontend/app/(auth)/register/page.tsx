@@ -10,6 +10,7 @@ import { useAuth } from '@/context/AuthContext';
 import api from '@/lib/axios';
 import { useState } from 'react';
 import styles from '../login/login.module.css';
+import { API_BASE } from '@/lib/api-base';
 
 const schema = z.object({
   name:     z.string().min(2, 'Name too short'),
@@ -27,7 +28,7 @@ export default function RegisterPage() {
 
   // Google login handler
   const handleGoogleLogin = () => {
-    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
+    window.location.href = `${API_BASE}/auth/google`;
   };
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({

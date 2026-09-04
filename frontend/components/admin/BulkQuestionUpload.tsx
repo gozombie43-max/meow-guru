@@ -4,8 +4,9 @@ import { type ReactNode, useEffect, useState, useMemo, useRef } from "react";
 import styles from "./AdminTool.module.css";
 import { QUIZ_TREE } from "@/lib/quiz-constants";
 import { getGeneralAwarenessTopicGroup } from "@/lib/general-awareness-topic-groups";
+import { API_BASE } from "@/lib/api-base";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "";
+const API = API_BASE;
 type RecordItem = Record<string, any>;
 
 interface RowData extends RecordItem {

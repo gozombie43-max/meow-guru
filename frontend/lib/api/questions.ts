@@ -1,7 +1,6 @@
 import type { GeometryDiagram } from "@/components/geometry/diagramSchema";
 import { fetchWithRetry } from "./http";
-
-const API = process.env.NEXT_PUBLIC_API_URL || "";
+import { API_BASE } from "@/lib/api-base";
 const QUESTION_CACHE_TTL_MS = 2 * 60 * 1000;
 
 type CachedQuestionsEntry = {
@@ -82,7 +81,7 @@ export async function fetchQuestions(params: {
   }
 
     const request = (async () => {
-      const res = await fetchWithRetry(`${API}/api/questions?${query}`, { cache: "no-store" });
+      const res = await fetchWithRetry(`${API_BASE}/api/questions?${query}`, { cache: "no-store" });
       if (!res.ok) throw new Error('Failed to fetch questions');
       const data = await res.json();
       let value = (data.questions || []) as Question[];
@@ -136,7 +135,7 @@ export async function fetchPracticeTest(params: {
   if (params.difficulty) query.set('difficulty', params.difficulty);
   query.set('count', String(params.count ?? 10));
 
-  const res = await fetchWithRetry(`${API}/api/questions/practice-test?${query}`, { cache: "no-store" });
+  const res = await fetchWithRetry(`${API_BASE}/api/questions/practice-test?${query}`, { cache: "no-store" });
   if (!res.ok) throw new Error('Failed to fetch practice test');
   const data = await res.json();
   return data.questions;

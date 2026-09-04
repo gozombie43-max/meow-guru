@@ -23,8 +23,6 @@ import api from '@/lib/axios';
 import { announceFeedback } from '@/lib/feedback';
 import { useThemeMode } from '@/hooks/useTheme';
 
-const API = process.env.NEXT_PUBLIC_API_URL || '';
-
 type ChatMessage = {
   role: 'bot' | 'user';
   content: string;

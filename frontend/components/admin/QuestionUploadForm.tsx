@@ -5,8 +5,9 @@ import styles from "./AdminTool.module.css";
 import { QUIZ_TREE, SUBJECT_TOPICS } from "@/lib/quiz-constants";
 import "katex/dist/katex.min.css";
 import { InlineMath, BlockMath } from "react-katex";
+import { API_BASE } from "@/lib/api-base";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "";
+const API = API_BASE;
 const fields = ["questionImage", "optionAImage", "optionBImage", "optionCImage", "optionDImage", "solutionImage"] as const;
 type ImageField = (typeof fields)[number];
 type Images = Partial<Record<ImageField, File>>;

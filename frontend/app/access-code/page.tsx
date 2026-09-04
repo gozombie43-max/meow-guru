@@ -4,6 +4,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import styles from './page.module.css';
+import { API_BASE } from '@/lib/api-base';
 
 const CODE_LENGTH = 4;
 
@@ -66,8 +67,7 @@ export default function AccessCodePage() {
     setError('');
 
     try {
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000';
-      const res = await fetch(`${apiBase}/api/access-code/verify`, {
+      const res = await fetch(`${API_BASE}/api/access-code/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

@@ -4,7 +4,7 @@ import type { SubjectConfig } from "@/components/quiz-engine/types";
 
 import MathText from "@/components/MathText";
 import RichContent from "@/components/RichContent";
-import QuizChatbot from "@/components/QuizChatbot";
+import dynamic from "next/dynamic";
 import { LangToggle } from "@/components/LangToggle";
 import { useTranslatedQuestion } from "@/hooks/useTranslatedQuestion";
 import ImageMCQ from "@/components/ImageMCQ";
@@ -36,6 +36,7 @@ import {
   Send,
   X,
 } from "lucide-react";
+
 import { useAuth } from "@/context/AuthContext";
 import { saveRecentQuiz, updateProgress, toggleBookmark } from "@/lib/userApi";
 import { useQuestions } from "@/hooks/useQuestions";
@@ -69,6 +70,9 @@ import {
   resolveIndexedQuestions,
 } from "@/lib/quiz-index";
 
+const QuizChatbot = dynamic(() => import("@/components/QuizChatbot"), {
+  ssr: false,
+});
 
 
 interface QuizEngineProps {

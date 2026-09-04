@@ -2,13 +2,13 @@
 
 import { useEffect } from "react";
 import { fetchWithRetry } from "@/lib/api/http";
+import { API_BASE } from "@/lib/api-base";
 
 const WARMUP_SESSION_KEY = "backend-warmup-complete";
 
 export function useWarmup() {
   useEffect(() => {
-    const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
-    if (!apiBase || typeof window === "undefined") return;
+    if (typeof window === "undefined") return;
     if (sessionStorage.getItem(WARMUP_SESSION_KEY) === "1") return;
 
     let cancelled = false;
@@ -16,7 +16,7 @@ export function useWarmup() {
     const warmup = async () => {
       try {
         const res = await fetchWithRetry(
-          `${apiBase.replace(/\/$/, "")}/health`,
+          `${API_BASE}/health`,
           {
             cache: "no-store",
             keepalive: true,

@@ -4,8 +4,9 @@ import RichContent from "@/components/RichContent";
 import MassImageUpload from "../../components/admin/MassImageUpload";
 import MassSolutionUpload from "@/components/admin/MassSolutionUpload";
 import { fetchWithRetry } from "@/lib/api/http";
+import { API_BASE } from "@/lib/api-base";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "";
+const API = API_BASE;
 
 const getAdminSecret = () => {
   if (typeof window !== "undefined") {

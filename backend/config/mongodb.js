@@ -21,6 +21,11 @@ export async function connectMongoDB() {
 
   db = client.db("quizDB");
 
+  await Promise.all([
+    db.collection("questions").createIndex({ topic: 1 }),
+    db.collection("questions").createIndex({ subject: 1 }),
+  ]);
+
   console.log("✅ MongoDB Atlas connected");
 
   return db;

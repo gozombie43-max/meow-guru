@@ -1,25 +1,5 @@
-"use client";
-
 import Link from "next/link";
-import React, { useMemo } from "react";
-import { useRouter } from "next/navigation";
-import { useQuestions } from "@/hooks/useQuestions";
-import {
-  isFormulaQuestion,
-  isMixedQuestion,
-  isAiChallengeQuestion,
-  isTopicMixQuestion,
-  isTier2Question,
-} from "@/components/quiz-engine/utils";
-import {
-  FileQuestion,
-  BookOpenCheck,
-  Shuffle,
-  Zap,
-  Compass,
-  Flame,
-  Sparkles,
-} from "lucide-react";
+import TopicPracticeModes from "@/components/quiz-engine/TopicPracticeModes.client";
 
 export interface SubjectTopicPageProps {
   subject: "mathematics" | "reasoning" | "english" | "general-awareness";
@@ -51,14 +31,6 @@ const IconBanner = () => (
     <path fill="#e72636" d="M16.738,26.99v2.531h-1.655v-7.348h2.592c1.852,0,2.777,0.781,2.777,2.342 c0,0.738-0.265,1.335-0.797,1.791c-0.531,0.456-1.241,0.684-2.129,0.684H16.738z M16.738,23.445v2.29h0.651 c0.882,0,1.322-0.386,1.322-1.159c0-0.754-0.44-1.132-1.322-1.132L16.738,23.445L16.738,23.445z" />
     <path fill="#e72636" d="M21.528,29.521v-7.348h2.603c2.61,0,3.914,1.194,3.914,3.581c0,1.145-0.356,2.058-1.068,2.741 c-0.712,0.684-1.661,1.025-2.846,1.025h-2.603V29.521z M23.183,23.521v4.657h0.82c0.717,0,1.279-0.215,1.688-0.645 c0.408-0.43,0.612-1.016,0.612-1.758c0-0.7-0.202-1.251-0.606-1.652c-0.405-0.402-0.973-0.602-1.704-0.602H23.183z" />
     <path fill="#e72636" d="M33.514,23.521h-2.593v1.803h2.383v1.343h-2.383v2.854h-1.655v-7.348h4.248V23.521z" />
-  </svg>
-);
-
-const Chevron = ({ size = 7 }: { size?: number }) => (
-  <svg width={size} height={size * 1.7} viewBox="0 0 7 12" fill="none" className="sg-chev">
-    <path d="M1.5 1.5 6 6l-4.5 4.5"
-      stroke="currentColor" strokeWidth="1.8"
-      strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
 );
 
@@ -122,7 +94,6 @@ export default function SubjectTopicPage({
   bannerActionLabel,
   bannerAriaLabel,
 }: SubjectTopicPageProps) {
-  const router = useRouter();
   const defaults = SUBJECT_DEFAULTS[subject];
   const hasStudyMode = subject === "english" && STUDY_MODE_TOPICS.has(slug);
 
@@ -132,152 +103,6 @@ export default function SubjectTopicPage({
     (routeBase && routeBase.includes("/") && routeBase.lastIndexOf("/") > 0
       ? routeBase.substring(0, routeBase.lastIndexOf("/"))
       : `/${subject}`);
-
-  // Real available questions
-  const { questions: topicQuestions } = useQuestions({
-    topic: questionTopic ?? slug,
-    subject,
-  });
-  const { questions: studyModeQuestions } = useQuestions({
-    enabled: hasStudyMode,
-    topic: slug,
-    subject,
-    questionType: "study-mode",
-  });
-
-  const modeQuestionCounts = useMemo(() => {
-    const counts: Record<string, number> = {
-      concept: 0,
-      formula: 0,
-      mixed: 0,
-      "ai-challenge": 0,
-      "study-mode": 0,
-      easy: 0,
-      hard: 0,
-    };
-
-    if (topicQuestions) {
-      topicQuestions.forEach((q) => {
-        if (isFormulaQuestion(q)) {
-          counts.formula += 1;
-        } else if (isAiChallengeQuestion(q)) {
-          counts["ai-challenge"] += 1;
-        } else if (isTier2Question(q)) {
-          counts.hard += 1;
-        } else if (isTopicMixQuestion(q)) {
-          counts.easy += 1;
-        } else if (isMixedQuestion(q)) {
-          counts.mixed += 1;
-        } else {
-          counts.concept += 1;
-        }
-      });
-    }
-
-    if (studyModeQuestions) {
-      counts["study-mode"] = studyModeQuestions.length;
-    }
-
-    return counts;
-  }, [studyModeQuestions, topicQuestions]);
-
-  const modes = [
-    {
-      title: "PYQ",
-      sub: "Previous year Qs",
-      href: `${base}/quiz?mode=concept`,
-      mode: "concept",
-      icon: FileQuestion,
-      color: "#0d9488",
-      gradient: "linear-gradient(135deg, #e6f7f2 0%, #d4f3eb 100%)",
-      gradientDark: "linear-gradient(135deg, rgba(13, 148, 136, 0.2) 0%, rgba(13, 148, 136, 0.08) 100%)",
-      border: "rgba(13, 148, 136, 0.22)",
-      borderDark: "rgba(13, 148, 136, 0.35)",
-      shadow: "0 2px 8px rgba(13, 148, 136, 0.08)",
-    },
-    {
-      title: "CareerWill",
-      sub: defaults.formulaSubtitle,
-      href: `${base}/quiz?mode=formula`,
-      mode: "formula",
-      icon: BookOpenCheck,
-      color: "#2563eb",
-      gradient: "linear-gradient(135deg, #edf4fe 0%, #dbeafe 100%)",
-      gradientDark: "linear-gradient(135deg, rgba(37, 99, 235, 0.2) 0%, rgba(37, 99, 235, 0.08) 100%)",
-      border: "rgba(37, 99, 235, 0.22)",
-      borderDark: "rgba(37, 99, 235, 0.35)",
-      shadow: "0 2px 8px rgba(37, 99, 235, 0.08)",
-    },
-    {
-      title: "PW",
-      sub: defaults.mixedSubtitle,
-      href: `${base}/quiz?mode=mixed`,
-      mode: "mixed",
-      icon: Shuffle,
-      color: "#4f46e5",
-      gradient: "linear-gradient(135deg, #f1f3fd 0%, #e0e7ff 100%)",
-      gradientDark: "linear-gradient(135deg, rgba(79, 70, 229, 0.2) 0%, rgba(79, 70, 229, 0.08) 100%)",
-      border: "rgba(79, 70, 229, 0.22)",
-      borderDark: "rgba(79, 70, 229, 0.35)",
-      shadow: "0 2px 8px rgba(79, 70, 229, 0.08)",
-    },
-    {
-      title: "Selection Way",
-      sub: "Speed test",
-      href: `${base}/quiz?mode=ai-challenge`,
-      mode: "ai-challenge",
-      icon: Zap,
-      color: "#7c3aed",
-      gradient: "linear-gradient(135deg, #f7f2fe 0%, #ede9fe 100%)",
-      gradientDark: "linear-gradient(135deg, rgba(124, 58, 237, 0.2) 0%, rgba(124, 58, 237, 0.08) 100%)",
-      border: "rgba(124, 58, 237, 0.22)",
-      borderDark: "rgba(124, 58, 237, 0.35)",
-      shadow: "0 2px 8px rgba(124, 58, 237, 0.08)",
-    },
-    {
-      title: "Topic Mix",
-      sub: "Foundation easy",
-      href: `${base}/quiz?mode=easy`,
-      mode: "easy",
-      icon: Compass,
-      color: "#0284c7",
-      gradient: "linear-gradient(135deg, #edf9ff 0%, #e0f2fe 100%)",
-      gradientDark: "linear-gradient(135deg, rgba(2, 132, 199, 0.2) 0%, rgba(2, 132, 199, 0.08) 100%)",
-      border: "rgba(2, 132, 199, 0.22)",
-      borderDark: "rgba(2, 132, 199, 0.35)",
-      shadow: "0 2px 8px rgba(2, 132, 199, 0.08)",
-    },
-    {
-      title: "Tier 2",
-      sub: "Advanced level",
-      href: `${base}/quiz?mode=hard`,
-      mode: "hard",
-      icon: Flame,
-      color: "#e11d48",
-      gradient: "linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)",
-      gradientDark: "linear-gradient(135deg, rgba(225, 29, 72, 0.2) 0%, rgba(225, 29, 72, 0.08) 100%)",
-      border: "rgba(225, 29, 72, 0.22)",
-      borderDark: "rgba(225, 29, 72, 0.35)",
-      shadow: "0 2px 8px rgba(225, 29, 72, 0.08)",
-    },
-    ...(hasStudyMode
-      ? [
-          {
-            title: "Study Mode",
-            sub: "Interactive study deck",
-            href: `${base}/study-mode`,
-            mode: "study-mode",
-            icon: Sparkles,
-            color: "#ec4899",
-            gradient: "linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%)",
-            gradientDark: "linear-gradient(135deg, rgba(236, 72, 153, 0.2) 0%, rgba(236, 72, 153, 0.08) 100%)",
-            border: "rgba(236, 72, 153, 0.22)",
-            borderDark: "rgba(236, 72, 153, 0.35)",
-            shadow: "0 2px 8px rgba(236, 72, 153, 0.08)",
-          },
-        ]
-      : []),
-  ];
 
   const headlineText = bannerTitle ?? defaults.headline;
   const subtitleText = bannerSubtitle ?? defaults.notesSubtitle;
@@ -976,56 +801,14 @@ export default function SubjectTopicPage({
             {/* SECTION LABEL */}
             <div className="sg-section">Practice Modes</div>
 
-            {/* CARD LIST */}
-            <div className="sg-grid">
-              {modes.map((m) => {
-                const ModeIcon = m.icon;
-                const qCount = modeQuestionCounts[m.mode] ?? 0;
-                const displayQs = `${qCount} Qs`;
-                return (
-                  <Link
-                    key={m.title}
-                    href={m.href}
-                    className="sg-card"
-                    style={
-                      {
-                        "--card-gradient": m.gradient,
-                        "--card-gradient-dark": m.gradientDark,
-                        "--card-border": m.border,
-                        "--card-border-dark": m.borderDark,
-                        "--card-accent": m.color,
-                        "--card-shadow": m.shadow,
-                      } as React.CSSProperties
-                    }
-                  >
-                    <div className="sg-card-left">
-                      <div className="sg-badge">
-                        <ModeIcon size={18} strokeWidth={2.2} />
-                      </div>
-                      <div className="sg-card-info">
-                        <div className="sg-card-name">{m.title}</div>
-                        <div className="sg-card-sub">{m.sub}</div>
-                      </div>
-                    </div>
-                    <div className="sg-card-tab" aria-hidden="true">
-                      <svg
-                        className="sg-tab-bg-svg"
-                        viewBox="0 0 88 46"
-                        preserveAspectRatio="none"
-                      >
-                        <path
-                          d="M28 0 C28 10, 0 13, 0 23 C0 33, 28 36, 28 46 L88 46 L88 0 Z"
-                          fill="#ffffff"
-                        />
-                      </svg>
-                      <div className="sg-tab-action-wrap">
-                        <span className="sg-card-qs-text">{displayQs}</span>
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
+            <TopicPracticeModes
+              subject={subject}
+              questionTopic={questionTopic ?? slug}
+              base={base}
+              formulaSubtitle={defaults.formulaSubtitle}
+              mixedSubtitle={defaults.mixedSubtitle}
+              hasStudyMode={hasStudyMode}
+            />
           </div>
           
         </div>

@@ -144,6 +144,17 @@ const getQuestions = async (req, res) => {
   }
 };
 
+// ── GET /api/questions/counts ─────────────────────────
+const getQuestionCounts = async (req, res) => {
+  try {
+    const counts = await questionService.fetchQuestionCounts(req.query);
+    res.set('Cache-Control', 'public, max-age=30, stale-while-revalidate=60');
+    res.json(counts);
+  } catch (err) {
+    res.status(err.statusCode || 500).json({ error: err.message });
+  }
+};
+
 // ── GET /api/questions/practice-test ──────────────────
 const generatePracticeTest = async (req, res) => {
   try {
@@ -280,6 +291,7 @@ export default {
   deleteQuestion, 
   bulkDeleteQuestions,
   getQuestions, 
+  getQuestionCounts,
   generatePracticeTest, 
   runAnalysis,
   bulkCreateQuestions,

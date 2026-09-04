@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { getSlotById, getExamConfig, getTotalQuestions, type MockTestSlot } from './exam-config';
 import { startTest, getSlotDetails } from './api';
 import { useAuth } from '@/context/AuthContext';
@@ -10,16 +10,15 @@ import styles from './TestInstructions.module.css';
 interface TestInstructionsProps {
   examSlug: string;
   testId: string;
+  resumeAttemptId?: string;
 }
 
-export default function TestInstructions({ examSlug, testId }: TestInstructionsProps) {
+export default function TestInstructions({ examSlug, testId, resumeAttemptId }: TestInstructionsProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { token } = useAuth();
   const [loading, setLoading] = useState(false);
   const [slot, setSlot] = useState<MockTestSlot | null>(() => getSlotById(testId) || null);
 
-  const resumeAttemptId = searchParams?.get('resume');
   const isResume = Boolean(resumeAttemptId);
 
   useEffect(() => {

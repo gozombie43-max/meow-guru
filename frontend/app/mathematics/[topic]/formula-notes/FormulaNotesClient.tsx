@@ -2,6 +2,7 @@
 
 import { useState, useEffect, type ComponentType } from "react";
 import { useRouter } from "next/navigation";
+import { API_BASE } from "@/lib/api-base";
 import {
   Activity,
   BookOpen,
@@ -194,7 +195,7 @@ export default function FormulaNotesClient({ topic }: FormulaNotesClientProps) {
   const [apiNotes, setApiNotes] = useState<ApiNote[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const API = process.env.NEXT_PUBLIC_API_URL || "";
+  const API = API_BASE;
   const topicLabel = getTopicLabel(topic);
 
   useEffect(() => {

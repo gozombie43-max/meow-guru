@@ -4,8 +4,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, BookmarkPlus, CheckCircle, Circle, PlayCircle, Search } from 'lucide-react';
 import { useThemeMode } from '@/hooks/useTheme';
+import { API_BASE } from '@/lib/api-base';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000';
+const API_URL = API_BASE;
 const HEADER_HEIGHT = 96;
 
 type Video = {

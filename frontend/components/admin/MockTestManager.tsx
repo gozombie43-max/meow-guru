@@ -2,8 +2,9 @@
 
 import { type ReactNode, useMemo, useState } from "react";
 import styles from "./AdminTool.module.css";
+import { API_BASE } from "@/lib/api-base";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "";
+const API = API_BASE;
 const EXAMS: Record<string, { name: string; tiers: { tier: string; configKey: string }[] }> = {
   "ssc-cgl": { name: "SSC CGL", tiers: [{ tier: "Tier I", configKey: "ssc-cgl-tier1" }, { tier: "Tier II", configKey: "ssc-cgl-tier2" }] },
   "ssc-chsl": { name: "SSC CHSL", tiers: [{ tier: "Tier I", configKey: "ssc-chsl-tier1" }, { tier: "Tier II", configKey: "ssc-chsl-tier2" }] },

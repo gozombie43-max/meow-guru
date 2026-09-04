@@ -8,6 +8,10 @@ export const questionsQueryCache = new LRUCache({
   max: 500,
   ttl: QUESTIONS_QUERY_CACHE_TTL_MS,
 });
+export const questionCountsCache = new LRUCache({
+  max: 500,
+  ttl: QUESTIONS_QUERY_CACHE_TTL_MS,
+});
 
 // ── Helpers ───────────────────────────────────────────
 export function normalizeSearchKey(value) {
@@ -65,6 +69,93 @@ function combineMongoConditions(conditions) {
   if (!conditions.length) return {};
   if (conditions.length === 1) return conditions[0];
   return { $and: conditions };
+}
+
+function mongoString(field) {
+  return {
+    $trim: {
+      input: {
+        $convert: {
+          input: field,
+          to: 'string',
+          onError: '',
+          onNull: '',
+        },
+      },
+    },
+  };
+}
+
+function questionModeAggregation(match) {
+  return [
+    { $match: match },
+    {
+      $project: {
+        quizName: { $toLower: mongoString('$quizName') },
+        quizId: { $toLower: mongoString('$quizId') },
+        source: { $toLower: mongoString('$source') },
+        questionType: { $toLower: mongoString('$questionType') },
+        topic: { $toLower: mongoString('$topic') },
+        hasLetter: { $ne: [mongoString('$letter'), ''] },
+        hasWord: { $ne: [mongoString('$word'), ''] },
+        hasMeanings: { $isArray: '$meanings' },
+      },
+    },
+    {
+      $group: {
+        _id: {
+          quizName: '$quizName',
+          quizId: '$quizId',
+          source: '$source',
+          questionType: '$questionType',
+          topic: '$topic',
+          hasLetter: '$hasLetter',
+          hasWord: '$hasWord',
+          hasMeanings: '$hasMeanings',
+        },
+        count: { $sum: 1 },
+      },
+    },
+  ];
+}
+
+function questionModeFromAggregateKey(key = {}) {
+  const quizTag = normalizeQuizKey(key.quizName || key.quizId || key.source);
+  const normalizedTopic = normalizeSearchKey(key.topic);
+  const questionType = String(key.questionType || '').trim().toLowerCase();
+  const quizName = String(key.quizName || '').trim().toLowerCase();
+
+  if (
+    questionType === 'study-mode' ||
+    questionType === 'studymode' ||
+    quizName === 'study mode' ||
+    (key.hasWord && key.hasMeanings)
+  ) {
+    return 'studyMode';
+  }
+
+  if (
+    [
+      'careerwill',
+      'patternbank',
+      'formula',
+      'formulabank',
+      'vocabularybank',
+      'factbank',
+      'antosynopyq',
+    ].includes(quizTag) ||
+    normalizedTopic === 'antosynopyq' ||
+    key.hasLetter ||
+    key.hasWord
+  ) {
+    return 'formula';
+  }
+
+  if (['selectionway', 'aichallenge'].includes(quizTag)) return 'aiChallenge';
+  if (['tier2', 'tier2hard'].includes(quizTag)) return 'hard';
+  if (quizTag === 'topicmix') return 'easy';
+  if (['pw', 'mixedpractice', 'mixedpw'].includes(quizTag)) return 'mixed';
+  return 'concept';
 }
 
 function matchesQuizNameFilter(question, normalizedQuizName) {
@@ -130,6 +221,7 @@ export async function createQuestion(newQuestion) {
 
   await collection.insertOne(item);
   questionsQueryCache.clear();
+  questionCountsCache.clear();
 
   const { _id, ...resource } = item;
   return resource;
@@ -193,7 +285,82 @@ export async function createQuestionsBulk(questionsData) {
     normalizedQuestions.map((q, idx) => createWithRetry(q, idx))
   );
   questionsQueryCache.clear();
+  questionCountsCache.clear();
   return results;
+}
+
+export async function fetchQuestionCounts(params) {
+  const { topic, subject } = params;
+  if (!topic && !subject) {
+    const error = new Error('topic or subject is required');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const cacheKey = JSON.stringify({ topic: topic || '', subject: subject || '' });
+  const cached = questionCountsCache.get(cacheKey);
+  if (cached) return cached;
+
+  const collection = getQuestionsCollection();
+  const commonConditions = [];
+  if (!topic && subject) {
+    commonConditions.push({ subject: caseInsensitiveExact(subject) });
+  }
+
+  const normalizedTopic = topic ? normalizeSearchKey(topic) : null;
+  const directConditions = [...commonConditions];
+  const isSynonymAntonymTopic =
+    normalizedTopic === 'synonymsantonyms' || normalizedTopic === 'antosynopyq';
+
+  if (topic) {
+    directConditions.push(
+      isSynonymAntonymTopic
+        ? { topic: { $in: [topic, 'antosynopyq', 'synonyms-antonyms'] } }
+        : { topic }
+    );
+  }
+
+  let grouped = await collection
+    .aggregate(questionModeAggregation(combineMongoConditions(directConditions)))
+    .toArray();
+
+  if (topic && !isSynonymAntonymTopic && grouped.length === 0) {
+    const topicRegex = caseInsensitiveExact(topic);
+    const fallbackConditions = [
+      ...commonConditions,
+      {
+        $or: [
+          { topic: topicRegex },
+          { chapter: topicRegex },
+          { subject: topicRegex },
+          { quizTopic: topicRegex },
+          { quizName: topicRegex },
+          { source: topicRegex },
+        ],
+      },
+    ];
+    grouped = await collection
+      .aggregate(questionModeAggregation(combineMongoConditions(fallbackConditions)))
+      .toArray();
+  }
+
+  const counts = {
+    concept: 0,
+    formula: 0,
+    mixed: 0,
+    aiChallenge: 0,
+    easy: 0,
+    hard: 0,
+    studyMode: 0,
+  };
+
+  for (const row of grouped) {
+    const mode = questionModeFromAggregateKey(row?._id);
+    counts[mode] += Number(row?.count) || 0;
+  }
+
+  questionCountsCache.set(cacheKey, counts);
+  return counts;
 }
 
 export async function fetchImageQuestions(topic = 'visual_reasoning', limit = 20) {
@@ -510,6 +677,7 @@ export async function modifyQuestion(id, updates, topic = undefined) {
 
   await collection.updateOne({ _id: existing._id }, { $set: updated });
   questionsQueryCache.clear();
+  questionCountsCache.clear();
   return updated;
 }
 
@@ -526,6 +694,7 @@ export async function removeQuestion(id, topic = undefined) {
     : await collection.deleteMany(filter);
 
   questionsQueryCache.clear();
+  questionCountsCache.clear();
   return result.deletedCount > 0;
 }
 
@@ -547,6 +716,7 @@ export async function removeQuestionsBulk(ids) {
   try {
     const result = await collection.deleteMany({ id: { $in: uniqueIds } });
     questionsQueryCache.clear();
+    questionCountsCache.clear();
 
     return {
       deleted: result.deletedCount,

@@ -2,8 +2,9 @@
 import { useState, useRef } from "react";
 import { fetchWithRetry } from "@/lib/api/http";
 import styles from "./AdminTool.module.css";
+import { API_BASE } from "@/lib/api-base";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "";
+const API = API_BASE;
 
 type UploadResult = {
   filename: string;

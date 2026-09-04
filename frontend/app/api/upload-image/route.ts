@@ -2,7 +2,10 @@ import { fetchWithRetry } from "@/lib/api/http";
 
 export async function POST(req: Request) {
   const formData = await req.formData();
-  const backendUrl = process.env.API_URL || "http://localhost:10000";
+  const backendUrl =
+    process.env.API_URL ||
+    process.env.AZURE_BACKEND_URL ||
+    "http://localhost:10000";
 
   const res = await fetchWithRetry(
     `${backendUrl}/api/upload/image-question`,

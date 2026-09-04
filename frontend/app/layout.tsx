@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from 'next';
 import { Geist } from 'next/font/google';
 import 'katex/dist/katex.min.css';
 import './globals.css';
-import './adaptive-quiz/adaptive-quiz.css';
 import { AuthProvider } from '@/context/AuthContext';
 import BottomNav from '@/components/BottomNav';
 import AppWarmup from '@/components/AppWarmup';
@@ -10,8 +9,6 @@ import AppRecovery from '@/components/AppRecovery';
 import FeedbackToast from '@/components/FeedbackToast';
 import PageTransitionShell from '@/components/PageTransitionShell';
 import StudyTimeTracker from '@/components/StudyTimeTracker';
-
-import InitialLoadingGate from '@/components/InitialLoadingGate';
 
 const geist = Geist({ subsets: ['latin'] });
 
@@ -33,7 +30,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning>
       <body className={geist.className}>
         <AuthProvider>
-          <InitialLoadingGate />
           <StudyTimeTracker />
           <AppRecovery />
           <AppWarmup />

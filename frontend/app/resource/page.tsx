@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { fetchWithRetry } from "@/lib/api/http";
 import { announceFeedback } from "@/lib/feedback";
+import { API_BASE } from "@/lib/api-base";
 
 const resourceTabs = ["Books", "Chapter Wise", "Extra", "DPP"] as const;
 
@@ -161,7 +162,7 @@ const IosSpinner = ({ size = 32 }: { size?: number }) => (
 );
 
 export default function ResourcePage() {
-  const API = process.env.NEXT_PUBLIC_API_URL || "";
+  const API = API_BASE;
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadTargetRef = useRef<{ subject: SubjectId; tab: ResourceTab } | null>(null);
 

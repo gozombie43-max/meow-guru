@@ -1,6 +1,7 @@
 import type { MockTestSlot } from './exam-config';
+import { API_BASE } from '@/lib/api-base';
 
-const BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const BASE = API_BASE;
 
 export type MockAnswer = string | number;
 export type QuestionStatus =
