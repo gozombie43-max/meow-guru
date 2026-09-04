@@ -20,6 +20,7 @@ import {
   EnglishSubjectIcon,
   GkSubjectIcon,
 } from '@/components/SubjectIconBadges';
+import GoogleAvatarRing from '@/components/GoogleAvatarRing';
 import {
   Bell,
   BookOpen,
@@ -295,17 +296,11 @@ export default function Home() {
           aria-label="User Profile"
           title="User Profile"
         >
-          {user.avatar ? (
-            <span
-              aria-hidden="true"
-              className={styles.profileImage}
-              style={{ backgroundImage: `url("${user.avatar}")` }}
-            />
-          ) : (
-            <span aria-hidden="true" className={styles.profileInitial}>
-              {user.name ? user.name.charAt(0).toUpperCase() : 'G'}
-            </span>
-          )}
+          <GoogleAvatarRing
+            initial={user.name ? user.name.charAt(0).toUpperCase() : 'G'}
+            avatarUrl={user.avatar || undefined}
+            size={34}
+          />
         </button>
       ) : (
         <Link href="/login" className={styles.loginButton}>
@@ -494,16 +489,11 @@ export default function Home() {
               <div className={styles.topActions}>
                 {/* User Avatar */}
                 <Link href="/dashboard" className={styles.profileAvatar} aria-label="User Profile">
-                  {user?.avatar ? (
-                    <span
-                      className={styles.avatarImage}
-                      style={{ backgroundImage: `url("${user.avatar}")` }}
-                    />
-                  ) : (
-                    <span className={styles.avatarInitial}>
-                      {user?.name && user.name !== 'Test User' ? user.name.charAt(0).toUpperCase() : 'G'}
-                    </span>
-                  )}
+                  <GoogleAvatarRing
+                    initial={user?.name && user.name !== 'Test User' ? user.name.charAt(0).toUpperCase() : 'G'}
+                    avatarUrl={user?.avatar || undefined}
+                    size={34}
+                  />
                 </Link>
 
                 {/* Theme Toggle */}
@@ -514,7 +504,7 @@ export default function Home() {
                   aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
                   title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
                 >
-                  {isDark ? <Sun size={19} /> : <Moon size={19} />}
+                  {isDark ? <Sun size={17} /> : <Moon size={17} />}
                 </button>
 
                 {/* Notifications */}
@@ -524,7 +514,7 @@ export default function Home() {
                   aria-label="Notifications"
                   title="Notifications"
                 >
-                  <Bell size={19} />
+                  <Bell size={17} />
                   <span className={styles.notificationDot} />
                 </button>
               </div>

@@ -481,24 +481,20 @@
 }
 
 .profileAvatar {
-  width: 38px;
-  height: 38px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #0071e3 0%, #0056b3 100%);
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
-  font-size: 15px;
-  font-weight: 700;
   text-decoration: none;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 113, 227, 0.25);
   transition: transform 0.15s ease;
+  flex-shrink: 0;
 }
 
 .profileAvatar:hover {
-  transform: scale(1.05);
+  transform: scale(1.06);
 }
 
 .avatarImage {
@@ -513,8 +509,8 @@
 }
 
 .actionButton {
-  width: 38px;
-  height: 38px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   background: var(--mac-card-bg);
   border: 1px solid var(--mac-border);
@@ -525,6 +521,7 @@
   cursor: pointer;
   position: relative;
   transition: all 0.18s ease;
+  flex-shrink: 0;
 }
 
 .actionButton:hover {
@@ -539,8 +536,8 @@
 
 .notificationDot {
   position: absolute;
-  top: 9px;
-  right: 10px;
+  top: 7px;
+  right: 8px;
   width: 6px;
   height: 6px;
   border-radius: 50%;
@@ -933,51 +930,51 @@
 }
 
 .english {
-  background: #E6EAEF;
-  color: #0071e3;
-  border: 1px solid rgba(0, 113, 227, 0.15);
+  background: rgba(245, 158, 11, 0.1);
+  color: #b45309;
+  border: 1px solid rgba(245, 158, 11, 0.22);
 }
 
 .dark .english {
-  background: rgba(10, 132, 255, 0.2);
-  color: #60a5fa;
-  border: 1px solid rgba(10, 132, 255, 0.18);
+  background: rgba(245, 158, 11, 0.18);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.28);
 }
 
 .reasoning {
-  background: #E6EAEF;
-  color: #0071e3;
-  border: 1px solid rgba(0, 113, 227, 0.15);
+  background: rgba(244, 63, 94, 0.1);
+  color: #e11d48;
+  border: 1px solid rgba(244, 63, 94, 0.22);
 }
 
 .dark .reasoning {
-  background: rgba(10, 132, 255, 0.2);
-  color: #60a5fa;
-  border: 1px solid rgba(10, 132, 255, 0.18);
+  background: rgba(244, 63, 94, 0.18);
+  color: #fb7185;
+  border: 1px solid rgba(244, 63, 94, 0.28);
 }
 
 .gk {
-  background: #E6EAEF;
-  color: #0071e3;
-  border: 1px solid rgba(0, 113, 227, 0.15);
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.22);
 }
 
 .dark .gk {
-  background: rgba(10, 132, 255, 0.2);
-  color: #60a5fa;
-  border: 1px solid rgba(10, 132, 255, 0.18);
+  background: rgba(16, 185, 129, 0.18);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.28);
 }
 
 .math {
-  background: #E6EAEF;
+  background: rgba(0, 113, 227, 0.1);
   color: #0071e3;
-  border: 1px solid rgba(0, 113, 227, 0.15);
+  border: 1px solid rgba(0, 113, 227, 0.22);
 }
 
 .dark .math {
-  background: rgba(10, 132, 255, 0.2);
+  background: rgba(10, 132, 255, 0.18);
   color: #60a5fa;
-  border: 1px solid rgba(10, 132, 255, 0.18);
+  border: 1px solid rgba(10, 132, 255, 0.28);
 }
 
 .quizProgressRatio {
@@ -1093,18 +1090,21 @@
 }
 
 .profileButton {
-  width: 40px;
-  height: 40px;
+  width: 34px;
+  height: 34px;
   padding: 0;
-  border: 2px solid rgba(111, 34, 231, 0.28);
-  border-radius: 999px;
-  background: var(--surface);
-  color: var(--purple);
+  border: none;
+  border-radius: 50%;
+  background: transparent;
   cursor: pointer;
-  overflow: hidden;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  transition: transform 0.15s ease;
+}
+
+.profileButton:hover {
+  transform: scale(1.06);
 }
 
 .profileImage {
@@ -1487,6 +1487,48 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+
+.subjectIcon.math {
+  background: linear-gradient(135deg, rgba(0, 122, 255, 0.12) 0%, rgba(20, 91, 199, 0.06) 100%);
+  border: 1px solid rgba(0, 122, 255, 0.18);
+}
+
+.subjectIcon.reasoning {
+  background: linear-gradient(135deg, rgba(255, 97, 129, 0.14) 0%, rgba(196, 31, 64, 0.06) 100%);
+  border: 1px solid rgba(255, 97, 129, 0.22);
+}
+
+.subjectIcon.english {
+  background: linear-gradient(135deg, rgba(255, 196, 0, 0.14) 0%, rgba(255, 18, 0, 0.06) 100%);
+  border: 1px solid rgba(255, 196, 0, 0.25);
+}
+
+.subjectIcon.gk {
+  background: linear-gradient(135deg, rgba(37, 61, 153, 0.12) 0%, rgba(137, 196, 33, 0.08) 100%);
+  border: 1px solid rgba(45, 91, 196, 0.2);
+}
+
+.dark .subjectIcon.math {
+  background: rgba(0, 122, 255, 0.18);
+  border-color: rgba(0, 122, 255, 0.3);
+}
+
+.dark .subjectIcon.reasoning {
+  background: rgba(244, 63, 94, 0.18);
+  border-color: rgba(244, 63, 94, 0.3);
+}
+
+.dark .subjectIcon.english {
+  background: rgba(245, 158, 11, 0.18);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.dark .subjectIcon.gk {
+  background: rgba(16, 185, 129, 0.18);
+  border-color: rgba(16, 185, 129, 0.3);
 }
 
 .resourceCard,
