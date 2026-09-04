@@ -1017,8 +1017,8 @@ export default function FormulaNotesPage({
           color: var(--text-primary);
           text-align: left;
           cursor: pointer;
-          text-decoration: none;
-          transition: transform 0.12s cubic-bezier(0.2, 0, 0, 1), opacity 0.12s ease, background-color 0.15s ease;
+          outline: none;
+          transition: background-color 0.12s ease, border-color 0.12s ease;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
           -webkit-tap-highlight-color: transparent;
           user-select: none;
@@ -1044,8 +1044,8 @@ export default function FormulaNotesPage({
         }
 
         .fn-card:active {
-          transform: scale(0.98);
-          opacity: 0.85;
+          background: var(--card-hover);
+          border-color: rgba(255, 255, 255, 0.2);
         }
 
         .fn-card-icon-wrap {
@@ -1334,12 +1334,14 @@ export default function FormulaNotesPage({
         @media (hover: hover) {
           :global(body.theme-light) .fn-card:hover {
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            background: #f8fafc;
             border-color: rgba(0, 0, 0, 0.14);
           }
         }
 
         :global(body.theme-light) .fn-card:active {
-          background: #f2f2f5;
+          background: #ebeef2;
+          border-color: rgba(0, 0, 0, 0.16);
         }
       `}</style>
     </main>
