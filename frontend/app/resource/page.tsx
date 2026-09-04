@@ -3,12 +3,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
-  ArrowLeft,
   BookOpen,
   Calculator,
-  Download,
+  ChevronLeft,
+  ChevronRight,
   FileText,
-  FolderOpen,
   Globe2,
   Plus,
   Search,
@@ -26,32 +25,28 @@ const subjects = [
     label: "Math",
     shortLabel: "Math",
     Icon: Calculator,
-    accent: "#2563eb",
-    tint: "#e8f0ff",
+    accent: "#007aff",
   },
   {
     id: "reasoning",
     label: "Reasoning",
     shortLabel: "Reasoning",
     Icon: Shapes,
-    accent: "#c026d3",
-    tint: "#fae8ff",
+    accent: "#af52de",
   },
   {
     id: "english",
     label: "English",
     shortLabel: "English",
     Icon: BookOpen,
-    accent: "#16a34a",
-    tint: "#e8f7ee",
+    accent: "#34c759",
   },
   {
     id: "gk",
     label: "GK",
     shortLabel: "GK",
     Icon: Globe2,
-    accent: "#d97706",
-    tint: "#fff4df",
+    accent: "#ff9500",
   },
 ] as const;
 
@@ -64,6 +59,9 @@ type ResourceFile = {
   fileName?: string;
   topic: string;
   category?: string;
+  size?: number;
+  updatedAt?: string;
+  uploadedAt?: string;
   streamUrl: string;
 };
 
@@ -84,20 +82,100 @@ function sortFiles(files: ResourceFile[]) {
   );
 }
 
+function formatDate(value?: string) {
+  if (!value) return "";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "" : date.toLocaleDateString();
+}
+
+function formatSize(size?: number, fileName?: string) {
+  const lowerName = fileName?.toLowerCase() || "";
+  const fallbackType = lowerName.endsWith(".html")
+    ? "HTML"
+    : lowerName.endsWith(".doc") || lowerName.endsWith(".docx")
+      ? "DOC"
+      : "PDF";
+  if (!size) return fallbackType;
+  if (size < 1024 * 1024) return `${(size / 1024).toFixed(0)} KB`;
+  return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+const PdfIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 48 48"
+    width="30"
+    height="30"
+    className="res-pdf-icon"
+    style={{ filter: "drop-shadow(0 2px 4px rgba(173, 11, 0, 0.25))" }}
+  >
+    <path
+      fill="#AD0B00"
+      d="M 12.5 4 C 10.019 4 8 6.019 8 8.5 L 8 39.5 C 8 41.981 10.019 44 12.5 44 L 35.5 44 C 37.981 44 40 41.981 40 39.5 L 40 20 L 28.5 20 C 26.019 20 24 17.981 24 15.5 L 24 4 L 12.5 4 z M 27 4.8789062 L 27 15.5 C 27 16.327 27.673 17 28.5 17 L 39.121094 17 L 27 4.8789062 z"
+    />
+    <path
+      fill="#ffffff"
+      d="M 22.5 21 C 23.878 21 25 22.121 25 23.5 C 25 25.306 24.701422 27.117172 24.232422 28.826172 C 24.656422 29.400172 25.126953 29.950125 25.626953 30.453125 C 27.148953 30.169125 28.785 30 30.5 30 C 31.878 30 33 31.121 33 32.5 C 33 33.879 31.878 35 30.5 35 C 28.574 35 26.664719 34.043094 25.011719 32.621094 C 24.134719 32.821094 23.310828 33.059359 22.548828 33.318359 C 21.359828 35.804359 20.013406 37.669891 19.191406 38.337891 C 18.650406 38.777891 18.082 39 17.5 39 C 16.833 39 16.205422 38.739578 15.732422 38.267578 C 15.259422 37.795578 15 37.168 15 36.5 C 15 35.81 15.276812 35.156031 15.757812 34.707031 C 16.714813 33.813031 18.580312 32.662656 21.070312 31.722656 C 21.421312 30.933656 21.755969 30.081547 22.042969 29.185547 C 20.779969 27.232547 20 25.137 20 23.5 C 20 22.121 21.122 21 22.5 21 z M 22.5 23 C 22.224 23 22 23.225 22 23.5 C 22 24.315 22.274047 25.306891 22.748047 26.337891 C 22.908047 25.407891 23 24.457 23 23.5 C 23 23.225 22.776 23 22.5 23 z M 30.5 32 C 29.557 32 28.643578 32.054344 27.767578 32.152344 C 28.665578 32.682344 29.596 33 30.5 33 C 30.776 33 31 32.775 31 32.5 C 31 32.225 30.776 32 30.5 32 z M 19.59375 34.558594 C 18.43575 35.151594 17.587094 35.735922 17.121094 36.169922 C 17.011094 36.273922 17 36.436 17 36.5 C 17 36.577 17.019484 36.725516 17.146484 36.853516 C 17.273484 36.981516 17.423 37 17.5 37 C 17.606 37 17.759687 36.924156 17.929688 36.785156 L 17.929688 36.783203 C 18.258688 36.515203 18.88875 35.721594 19.59375 34.558594 z"
+    />
+  </svg>
+);
+
+const IosSpinner = ({ size = 32 }: { size?: number }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    className="ios-spinner"
+    role="status"
+    aria-label="Loading"
+    style={{
+      display: "block",
+      margin: "0 auto",
+      color: "var(--spinner-color, #8E8E93)",
+    }}
+  >
+    <style>{`
+      @keyframes ios-spinner-fade {
+        0% { opacity: 1; }
+        100% { opacity: 0.15; }
+      }
+    `}</style>
+    {Array.from({ length: 12 }).map((_, i) => (
+      <line
+        key={i}
+        x1="12"
+        y1="2.4"
+        x2="12"
+        y2="6.2"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        transform={`rotate(${i * 30} 12 12)`}
+        style={{
+          animation: "ios-spinner-fade 0.9s linear infinite",
+          animationDelay: `${-0.9 + (i * 0.9) / 12}s`,
+        }}
+      />
+    ))}
+  </svg>
+);
+
 export default function ResourcePage() {
   const API = process.env.NEXT_PUBLIC_API_URL || "";
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadTargetRef = useRef<{ subject: SubjectId; tab: ResourceTab } | null>(null);
+
   const [activeSubject, setActiveSubject] = useState<SubjectId>("math");
   const [activeTab, setActiveTab] = useState<ResourceTab>("Books");
   const [files, setFiles] = useState<ResourceFile[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
   const [query, setQuery] = useState("");
   const [notice, setNotice] = useState("");
   const [showUploadModal, setShowUploadModal] = useState(false);
 
-  const selectedSubject = subjects.find((subject) => subject.id === activeSubject) || subjects[0];
+  const selectedSubject = subjects.find((s) => s.id === activeSubject) || subjects[0];
   const activeCategory = getCategory(activeTab);
   const apiUrl = useCallback((path: string) => (API ? `${API}${path}` : path), [API]);
 
@@ -163,6 +241,11 @@ export default function ResourcePage() {
       console.error("Failed to open resource", err);
       window.open(apiUrl(file.streamUrl), "_blank", "noopener,noreferrer");
     }
+  };
+
+  const triggerUploadCurrent = () => {
+    uploadTargetRef.current = { subject: activeSubject, tab: activeTab };
+    fileInputRef.current?.click();
   };
 
   const beginUpload = useCallback((subject: SubjectId, tab: ResourceTab) => {
@@ -239,774 +322,1022 @@ export default function ResourcePage() {
 
   return (
     <main className="resource-page">
-      <div className="resource-shell">
-        <header className="resource-header">
-          <Link href="/" className="back-link" aria-label="Back to home">
-            <ArrowLeft size={20} strokeWidth={2.4} />
-          </Link>
-          <div className="header-copy">
-            <p className="eyebrow">Resources</p>
-            <h1>All Books &amp; Notes</h1>
-          </div>
-          <div className="search-row header-search">
-            <span className="search-icon" aria-hidden="true">
-              <Search size={17} />
-            </span>
-            <input
-              type="text"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search files"
-              aria-label="Search files"
-              suppressHydrationWarning
-            />
-            {query ? (
-              <button type="button" className="clear-search" onClick={() => setQuery("")} aria-label="Clear search">
-                <X size={15} />
+      {/* ── Fixed Position Top Area ── */}
+      <div className="res-top-pinned">
+        <header className="res-header">
+          <div className="res-header-inner">
+            <Link href="/" className="res-back-btn" aria-label="Back to home">
+              <ChevronLeft size={22} strokeWidth={2.4} />
+            </Link>
+
+            <h1 className="res-header-title">Resources</h1>
+
+            <div className="res-header-actions">
+              <button
+                type="button"
+                className={`res-icon-btn ${showSearch ? "active" : ""}`}
+                onClick={() => {
+                  setShowSearch((prev) => !prev);
+                  if (showSearch) setQuery("");
+                }}
+                aria-label="Search files"
+              >
+                <Search size={18} strokeWidth={2.2} />
               </button>
-            ) : null}
+
+              {files.length === 0 && (
+                <button
+                  type="button"
+                  className="res-icon-btn res-add-btn"
+                  onClick={triggerUploadCurrent}
+                  disabled={uploading}
+                  aria-label="Add files"
+                >
+                  <Plus size={20} strokeWidth={2.4} />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* ── Search Bar Dropdown ── */}
+          {showSearch && (
+            <div className="res-search-bar">
+              <div className="res-search-input-wrap">
+                <Search size={16} className="res-search-field-icon" aria-hidden="true" />
+                <input
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder={`Search ${selectedSubject.label} ${activeTab}...`}
+                  autoFocus
+                  className="res-search-input"
+                />
+                {query && (
+                  <button
+                    type="button"
+                    onClick={() => setQuery("")}
+                    className="res-search-clear-btn"
+                    aria-label="Clear search"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ── Subject Segmented Bar ── */}
+          <div className="res-subject-strip" role="tablist" aria-label="Subjects">
+            {subjects.map((subject) => {
+              const Icon = subject.Icon;
+              const isActive = subject.id === activeSubject;
+
+              return (
+                <button
+                  key={subject.id}
+                  type="button"
+                  className={`res-subject-btn ${isActive ? "active" : ""}`}
+                  style={{
+                    "--subject-accent": subject.accent,
+                  } as React.CSSProperties}
+                  onClick={() => setActiveSubject(subject.id)}
+                  role="tab"
+                  aria-selected={isActive}
+                >
+                  <span className="res-subject-icon">
+                    <Icon size={16} strokeWidth={2.3} />
+                  </span>
+                  <span className="res-subject-label">{subject.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* ── Category Pill Tabs ── */}
+          <div className="res-tab-strip" role="tablist" aria-label="Resource Categories">
+            {resourceTabs.map((tab) => {
+              const isActive = tab === activeTab;
+              return (
+                <button
+                  key={tab}
+                  type="button"
+                  className={`res-tab-pill ${isActive ? "active" : ""}`}
+                  onClick={() => setActiveTab(tab)}
+                  role="tab"
+                  aria-selected={isActive}
+                >
+                  {tab}
+                </button>
+              );
+            })}
           </div>
         </header>
+      </div>
 
-        <section className="subject-strip" aria-label="Subjects">
-          {subjects.map((subject) => {
-            const Icon = subject.Icon;
-            const isActive = subject.id === activeSubject;
-
-            return (
+      {/* ── Scrollable Document List ── */}
+      <div className="res-scroll-body">
+        <div className="res-content">
+          {notice && (
+            <div className="res-notice-banner">
+              <span>{notice}</span>
               <button
-                key={subject.id}
                 type="button"
-                className={`subject-chip${isActive ? " is-active" : ""}`}
-                style={{
-                  "--subject-accent": subject.accent,
-                  "--subject-tint": subject.tint,
-                } as React.CSSProperties}
-                onClick={() => setActiveSubject(subject.id)}
-                aria-pressed={isActive}
+                onClick={() => setNotice("")}
+                className="res-notice-close"
+                aria-label="Dismiss notice"
               >
-                <span className="subject-icon">
-                  <Icon size={17} strokeWidth={2.35} />
-                </span>
-                <span>{subject.shortLabel}</span>
+                <X size={14} />
               </button>
-            );
-          })}
-        </section>
-
-        <section className="resource-panel">
-          <div className="panel-top">
-            <div>
-              <p className="panel-kicker">{selectedSubject.label}</p>
-              <h2>{activeTab}</h2>
             </div>
-            <span className="count-pill">{visibleFiles.length}</span>
-          </div>
+          )}
 
-          <div className="tab-row" role="tablist" aria-label="Resource categories">
-            {resourceTabs.map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                className={`tab-pill${tab === activeTab ? " is-active" : ""}`}
-                onClick={() => setActiveTab(tab)}
-                role="tab"
-                aria-selected={tab === activeTab}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-
-          <div className="file-list" aria-live="polite">
-            {loading ? (
-              <div className="resource-file-skeletons" aria-busy="true" aria-label="Loading resource files">
-                <span className="sr-only" role="status">Loading resource files</span>
-                <div aria-hidden="true" />
-                <div aria-hidden="true" />
-                <div aria-hidden="true" />
-              </div>
-            ) : visibleFiles.length > 0 ? (
-              visibleFiles.map((file, index) => (
+          {loading ? (
+            <div className="res-loading-state" role="status" aria-label="Loading resources">
+              <IosSpinner size={34} />
+              <span className="res-loading-text">Loading {selectedSubject.label} files...</span>
+            </div>
+          ) : visibleFiles.length > 0 ? (
+            <div className="res-card-list">
+              {visibleFiles.map((file, index) => (
                 <button
                   key={file.id}
                   type="button"
-                  className="file-card"
-                  style={{ animationDelay: `${Math.min(index, 12) * 45}ms` }}
+                  className="res-card"
+                  style={{ animationDelay: `${Math.min(index, 12) * 35}ms` }}
                   onClick={() => openFile(file)}
                 >
-                  <span className="file-icon">
-                    <FileText size={20} strokeWidth={2.2} />
-                  </span>
-                  <span className="file-copy">
-                    <span className="file-title">{file.title || file.fileName || "Untitled file"}</span>
-                  </span>
-                  <span className="file-action" aria-hidden="true">
-                    <Download size={18} strokeWidth={2.35} />
-                  </span>
-                </button>
-              ))
-            ) : (
-              <div className="state-box empty">
-                <FolderOpen size={28} strokeWidth={1.9} />
-                <span>No files found.</span>
-              </div>
-            )}
-          </div>
+                  <div className="res-card-icon-wrap" aria-hidden="true">
+                    <PdfIcon />
+                  </div>
 
-          {notice ? <p className="notice">{notice}</p> : null}
-        </section>
+                  <div className="res-card-body">
+                    <span className="res-card-title">
+                      {file.title || file.fileName || `${selectedSubject.label} Document`}
+                    </span>
+                    <div className="res-card-meta">
+                      <span className="res-card-tag">{formatSize(file.size, file.fileName)}</span>
+                      {file.updatedAt || file.uploadedAt ? (
+                        <span className="res-card-date">
+                          {formatDate(file.updatedAt || file.uploadedAt)}
+                        </span>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  <div className="res-card-arrow" aria-hidden="true">
+                    <ChevronRight size={18} />
+                  </div>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="res-empty-state">
+              <div className="res-empty-icon" aria-hidden="true">
+                <FileText size={34} strokeWidth={1.5} />
+              </div>
+              <p className="res-empty-title">
+                {query ? "No matching files" : "No files found"}
+              </p>
+              <p className="res-empty-sub">
+                {query
+                  ? `No files match "${query}" in ${selectedSubject.label} ${activeTab}.`
+                  : `No documents uploaded yet for ${selectedSubject.label} (${activeTab}).`}
+              </p>
+              {!query && (
+                <button
+                  type="button"
+                  className="res-empty-btn"
+                  onClick={triggerUploadCurrent}
+                  disabled={uploading}
+                >
+                  <Plus size={16} strokeWidth={2.4} />
+                  <span>Add {selectedSubject.label} {activeTab}</span>
+                </button>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
+      {/* ── Floating Action Button (Only when documents exist) ── */}
+      {files.length > 0 && (
+        <button
+          type="button"
+          className="res-fab"
+          onClick={() => setShowUploadModal(true)}
+          disabled={uploading}
+          aria-label="Add files"
+        >
+          <Plus size={24} strokeWidth={2.4} />
+        </button>
+      )}
+
+      {/* ── Upload File Input (Hidden) ── */}
       <input
         ref={fileInputRef}
         type="file"
         accept="application/pdf,text/html,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.pdf,.html,.htm,.doc,.docx"
         multiple
-        className="file-input"
+        className="res-file-input"
         onChange={handleUpload}
-        suppressHydrationWarning
       />
 
-      <button
-        type="button"
-        className="fab"
-        onClick={() => setShowUploadModal(true)}
-        disabled={uploading}
-        aria-label="Choose upload destination"
-      >
-        <Plus size={25} strokeWidth={2.4} />
-      </button>
-
-      {showUploadModal ? (
-        <div className="upload-modal-backdrop" role="presentation" onClick={() => setShowUploadModal(false)}>
-          <section
-            className="upload-modal"
+      {/* ── Upload Destination Modal ── */}
+      {showUploadModal && (
+        <div
+          className="res-modal-backdrop"
+          role="presentation"
+          onClick={() => setShowUploadModal(false)}
+        >
+          <div
+            className="res-modal"
             role="dialog"
             aria-modal="true"
-            aria-labelledby="upload-destination-title"
-            onClick={(event) => event.stopPropagation()}
+            aria-labelledby="res-upload-title"
+            onClick={(e) => e.stopPropagation()}
           >
-            <div className="upload-modal-header">
+            <div className="res-modal-header">
               <div>
-                <p className="eyebrow">Add files</p>
-                <h2 id="upload-destination-title">Where to add?</h2>
+                <p className="res-modal-eyebrow">Upload Document</p>
+                <h2 id="res-upload-title" className="res-modal-title">Where to add?</h2>
               </div>
               <button
                 type="button"
-                className="modal-close"
+                className="res-modal-close"
                 onClick={() => setShowUploadModal(false)}
-                aria-label="Close upload destination"
+                aria-label="Close modal"
               >
                 <X size={18} strokeWidth={2.4} />
               </button>
             </div>
 
-            <div className="upload-option-list">
+            <div className="res-modal-options">
               {subjects.flatMap((subject) =>
                 resourceTabs.map((tab) => {
                   const Icon = subject.Icon;
+                  const isCurrent = subject.id === activeSubject && tab === activeTab;
                   return (
                     <button
                       key={`${subject.id}-${tab}`}
                       type="button"
-                      className="upload-option"
+                      className={`res-modal-option ${isCurrent ? "current" : ""}`}
                       style={{
                         "--subject-accent": subject.accent,
-                        "--subject-tint": subject.tint,
                       } as React.CSSProperties}
                       onClick={() => beginUpload(subject.id, tab)}
                     >
-                      <span className="upload-option-icon">
-                        <Icon size={17} strokeWidth={2.35} />
+                      <span className="res-modal-option-icon">
+                        <Icon size={16} strokeWidth={2.3} />
                       </span>
-                      <span className="upload-option-text">
-                        <span>{subject.label} {tab}</span>
+                      <span className="res-modal-option-label">
+                        <strong>{subject.label}</strong> {tab}
                       </span>
                     </button>
                   );
                 })
               )}
             </div>
-          </section>
+
+            <button
+              type="button"
+              className="res-modal-cancel"
+              onClick={() => setShowUploadModal(false)}
+            >
+              Cancel
+            </button>
+          </div>
         </div>
-      ) : null}
+      )}
 
       <style jsx>{`
+        /* ════════════════════════════════════════════
+           THEME TOKENS: DARK (DEFAULT)
+           ════════════════════════════════════════════ */
         .resource-page {
+          --bg: #000000;
+          --card-bg: #1c1c1e;
+          --card-hover: #242428;
+          --border: rgba(255, 255, 255, 0.09);
+          --header-bg: rgba(0, 0, 0, 0.92);
+          --text-primary: #f8fafc;
+          --text-secondary: rgba(235, 235, 245, 0.6);
+          --text-tertiary: rgba(235, 235, 245, 0.35);
+          --tab-bg: rgba(255, 255, 255, 0.08);
+          --tab-color: rgba(235, 235, 245, 0.75);
+          --accent: #007aff;
+          --modal-bg: #1c1c1e;
+          --modal-option-bg: #28282c;
+          --notice-bg: rgba(255, 255, 255, 0.08);
+          --spinner-color: rgba(235, 235, 245, 0.75);
+
           height: 100dvh;
-          min-height: 100dvh;
+          width: 100%;
+          box-sizing: border-box;
           display: flex;
           flex-direction: column;
           overflow: hidden;
-          background:
-            linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(245, 248, 255, 0.92)),
-            radial-gradient(circle at 14% 12%, rgba(37, 99, 235, 0.16), transparent 28%),
-            radial-gradient(circle at 88% 18%, rgba(22, 163, 74, 0.14), transparent 26%),
-            radial-gradient(circle at 70% 92%, rgba(217, 119, 6, 0.16), transparent 30%);
-          color: #111827;
-          font-family: "General Sans", "Outfit", "Segoe UI", sans-serif;
-          padding: max(18px, var(--safe-top)) 14px max(28px, var(--safe-bottom));
-        }
-
-        .resource-shell {
-          width: min(760px, 100%);
-          margin: 0 auto;
-          flex: 1;
-          min-height: 0;
-          display: flex;
-          flex-direction: column;
-          gap: 14px;
-        }
-
-        .resource-header {
-          display: grid;
-          grid-template-columns: 42px minmax(0, 1fr) minmax(220px, 320px);
-          align-items: center;
-          gap: 12px;
-        }
-
-        .back-link,
-        .subject-chip,
-        .tab-pill,
-        .clear-search,
-        .file-card,
-        .fab {
-          border: 0;
-          cursor: pointer;
-          -webkit-tap-highlight-color: transparent;
-        }
-
-        .back-link {
-          width: 42px;
-          height: 42px;
-          border-radius: 50%;
-          background: rgba(255, 255, 255, 0.86);
-          color: #111827;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          text-decoration: none;
-          box-shadow: 0 10px 24px rgba(15, 23, 42, 0.1);
-        }
-
-        .header-copy {
-          min-width: 0;
-        }
-
-        .eyebrow,
-        .panel-kicker {
-          margin: 0;
-          color: #64748b;
-          font-size: 0.72rem;
-          font-weight: 800;
-          letter-spacing: 0.12em;
-          text-transform: uppercase;
-        }
-
-        .header-copy h1 {
-          margin: 2px 0 0;
-          font-size: clamp(1.26rem, 4vw, 1.75rem);
-          line-height: 1.05;
-          font-weight: 800;
-          letter-spacing: 0;
-          overflow-wrap: anywhere;
-        }
-
-        .fab:disabled {
-          opacity: 0.68;
-          cursor: wait;
-        }
-
-        .subject-strip {
-          display: grid;
-          grid-template-columns: repeat(4, minmax(0, 1fr));
-          gap: 8px;
-        }
-
-        .subject-chip {
-          min-width: 0;
-          height: 70px;
-          border-radius: 18px;
-          padding: 9px 8px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: 6px;
-          background: rgba(255, 255, 255, 0.74);
-          color: #475569;
-          font: inherit;
-          font-size: 0.78rem;
-          font-weight: 800;
-          box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.06), 0 10px 22px rgba(15, 23, 42, 0.08);
-        }
-
-        .subject-chip.is-active {
-          color: var(--subject-accent);
-          background: var(--subject-tint);
-          box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--subject-accent) 28%, transparent), 0 14px 28px rgba(15, 23, 42, 0.1);
-        }
-
-        .subject-icon {
-          width: 30px;
-          height: 30px;
-          border-radius: 12px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          background: #ffffff;
-          color: currentColor;
-        }
-
-        .resource-panel {
-          flex: 1;
-          min-height: 0;
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-          border-radius: 26px;
-          background: rgba(255, 255, 255, 0.78);
-          border: 1px solid rgba(255, 255, 255, 0.72);
-          box-shadow: 0 24px 54px rgba(15, 23, 42, 0.12);
-          padding: 16px;
-          backdrop-filter: blur(18px) saturate(150%);
-          -webkit-backdrop-filter: blur(18px) saturate(150%);
-        }
-
-        .panel-top {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 12px;
-        }
-
-        .panel-top h2 {
-          margin: 2px 0 0;
-          font-size: 1.2rem;
-          line-height: 1.1;
-          font-weight: 800;
-          letter-spacing: 0;
-        }
-
-        .count-pill {
-          min-width: 36px;
-          height: 30px;
-          border-radius: 999px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          padding: 0 10px;
-          background: #eef2ff;
-          color: #3730a3;
-          font-size: 0.82rem;
-          font-weight: 800;
-        }
-
-        .tab-row {
-          display: flex;
-          gap: 8px;
-          overflow-x: auto;
-          padding-bottom: 2px;
-          scrollbar-width: none;
-        }
-
-        .tab-row::-webkit-scrollbar {
-          display: none;
-        }
-
-        .tab-pill {
-          height: 36px;
-          flex: 0 0 auto;
-          border-radius: 999px;
-          padding: 0 15px;
-          background: #f1f5f9;
-          color: #64748b;
-          font: inherit;
-          font-size: 0.82rem;
-          font-weight: 800;
-        }
-
-        .tab-pill.is-active {
-          background: #111827;
-          color: #ffffff;
-          box-shadow: 0 10px 20px rgba(17, 24, 39, 0.16);
-        }
-
-        .search-row {
+          background: var(--bg);
+          color: var(--text-primary);
+          font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", sans-serif;
+          -webkit-font-smoothing: antialiased;
           position: relative;
         }
 
-        .header-search {
-          min-width: 0;
-          width: 100%;
+        /* ── Fixed Position Top Area ── */
+        .res-top-pinned {
+          flex-shrink: 0;
+          z-index: 30;
+          background: var(--header-bg);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border-bottom: 1px solid var(--border);
+          padding-top: var(--safe-top);
         }
 
-        .search-icon {
-          position: absolute;
-          top: 50%;
-          left: 14px;
-          transform: translateY(-50%);
-          color: #94a3b8;
-          pointer-events: none;
-          display: inline-flex;
+        .res-header-inner {
+          height: 52px;
+          display: flex;
           align-items: center;
-          justify-content: center;
+          justify-content: space-between;
+          padding: 0 12px;
+          max-width: 680px;
+          margin: 0 auto;
         }
 
-        .search-row input {
-          width: 100%;
-          height: 46px;
-          border: 0;
-          outline: 0;
-          border-radius: 16px;
-          background: #f8fafc;
-          color: #0f172a;
-          padding: 0 44px 0 40px;
-          font: inherit;
-          font-size: 0.9rem;
-          font-weight: 600;
-          box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.07);
-        }
-
-        .search-row input:focus {
-          box-shadow: inset 0 0 0 2px rgba(37, 99, 235, 0.22);
-        }
-
-        .clear-search {
-          position: absolute;
-          top: 50%;
-          right: 10px;
-          transform: translateY(-50%);
-          width: 28px;
-          height: 28px;
+        .res-back-btn,
+        .res-icon-btn {
+          width: 38px;
+          height: 38px;
           border-radius: 50%;
-          display: inline-flex;
+          display: flex;
           align-items: center;
           justify-content: center;
-          background: #e2e8f0;
-          color: #475569;
+          background: transparent;
+          border: none;
+          color: var(--text-primary);
+          cursor: pointer;
+          transition: background-color 0.15s ease, opacity 0.15s ease, transform 0.15s ease;
+          -webkit-tap-highlight-color: transparent;
+          text-decoration: none;
         }
 
-        .file-list {
+        .res-back-btn:hover,
+        .res-icon-btn:hover {
+          background: var(--tab-bg);
+        }
+
+        .res-back-btn:active,
+        .res-icon-btn:active {
+          opacity: 0.6;
+          transform: scale(0.95);
+        }
+
+        .res-icon-btn.active {
+          background: var(--accent);
+          color: #ffffff;
+        }
+
+        .res-header-title {
+          font-size: 17px;
+          font-weight: 650;
+          letter-spacing: -0.02em;
+          color: var(--text-primary);
+          margin: 0;
+          text-align: center;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
           flex: 1;
-          min-height: 220px;
-          max-height: 100%;
-          overflow-y: auto;
-          overscroll-behavior: contain;
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-          padding: 2px 2px 74px;
-          scrollbar-width: thin;
+          padding: 0 8px;
         }
 
-        .file-card {
-          width: 100%;
-          min-height: 68px;
-          border-radius: 18px;
-          padding: 12px;
+        .res-header-actions {
           display: flex;
           align-items: center;
-          gap: 12px;
-          text-align: left;
-          background: #ffffff;
-          color: #111827;
-          font: inherit;
-          box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08), inset 0 0 0 1px rgba(15, 23, 42, 0.05);
-          animation: fileIn 0.3s ease both;
-        }
-
-        .file-card:focus-visible,
-        .subject-chip:focus-visible,
-        .tab-pill:focus-visible,
-        .fab:focus-visible,
-        .back-link:focus-visible {
-          outline: 2px solid rgba(37, 99, 235, 0.45);
-          outline-offset: 3px;
-        }
-
-        .file-icon {
-          width: 44px;
-          height: 44px;
-          flex: 0 0 auto;
-          border-radius: 15px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          background: #eff6ff;
-          color: #2563eb;
-        }
-
-        .file-copy {
-          min-width: 0;
-          display: flex;
-          flex-direction: column;
           gap: 4px;
-          flex: 1;
         }
 
-        .file-title {
-          color: #111827;
-          font-size: 0.93rem;
-          line-height: 1.22;
-          font-weight: 800;
-          overflow-wrap: anywhere;
-        }
-
-        .file-action {
-          color: #94a3b8;
-          flex: 0 0 auto;
-          display: inline-flex;
+        /* ── Search Bar Dropdown ── */
+        .res-search-bar {
+          padding: 0 14px 10px;
+          max-width: 680px;
+          margin: 0 auto;
+          display: flex;
           align-items: center;
-          justify-content: center;
+          animation: res-slide-down 0.2s ease;
         }
 
-        .state-box {
-          min-height: 150px;
-          border-radius: 18px;
+        @keyframes res-slide-down {
+          from { opacity: 0; transform: translateY(-6px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        .res-search-input-wrap {
+          position: relative;
+          width: 100%;
+          display: block;
+        }
+
+        .res-search-input {
+          width: 100%;
+          height: 38px;
+          border-radius: 10px;
+          border: 1px solid var(--border);
+          background: var(--card-bg);
+          color: var(--text-primary);
+          font-size: 14px;
+          padding: 0 36px 0 36px;
+          box-sizing: border-box;
+          outline: none;
+          transition: border-color 0.15s ease;
+          font-family: inherit;
+        }
+
+        .res-search-input:focus {
+          border-color: var(--accent);
+        }
+
+        :global(.res-search-field-icon) {
+          position: absolute;
+          left: 11px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: var(--text-tertiary);
+          pointer-events: none;
+        }
+
+        .res-search-clear-btn {
+          position: absolute;
+          right: 10px;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          background: var(--tab-bg);
+          border: none;
+          color: var(--text-secondary);
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 8px;
-          background: #f8fafc;
-          color: #64748b;
-          font-size: 0.9rem;
-          font-weight: 700;
-          text-align: center;
-          box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.06);
+          cursor: pointer;
+          padding: 0;
         }
 
-        .resource-file-skeletons {
+        /* ── Subject Segmented Strip ── */
+        .res-subject-strip {
           display: grid;
-          gap: 10px;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 6px;
+          padding: 6px 14px 8px;
+          max-width: 680px;
+          margin: 0 auto;
         }
 
-        .resource-file-skeletons > div {
-          min-height: 68px;
-          border-radius: 18px;
-          background: linear-gradient(90deg, #edf2f7 25%, #f8fafc 38%, #edf2f7 63%);
-          background-size: 400% 100%;
-          animation: resourceSkeletonShimmer 1.35s ease infinite;
+        .res-subject-btn {
+          height: 36px;
+          border-radius: 10px;
+          border: 1px solid var(--border);
+          background: var(--card-bg);
+          color: var(--text-secondary);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          padding: 0 8px;
+          font-size: 12.5px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.16s ease;
+          -webkit-tap-highlight-color: transparent;
         }
 
-        @keyframes resourceSkeletonShimmer {
-          to { background-position: -100% 0; }
+        .res-subject-btn:hover {
+          background: var(--card-hover);
+          color: var(--text-primary);
         }
 
-        .state-box.empty {
-          flex-direction: column;
+        .res-subject-btn.active {
+          background: var(--tab-bg);
+          color: var(--text-primary);
+          border-color: var(--subject-accent, var(--accent));
+          box-shadow: inset 0 0 0 1px var(--subject-accent, var(--accent));
         }
 
-        .notice {
-          margin: -4px 0 0;
-          color: #475569;
-          font-size: 0.78rem;
-          font-weight: 700;
-          text-align: center;
+        .res-subject-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: currentColor;
         }
 
-        .file-input {
+        .res-subject-btn.active .res-subject-icon {
+          color: var(--subject-accent, var(--accent));
+        }
+
+        .res-subject-label {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        /* ── Category Pill Tabs ── */
+        .res-tab-strip {
+          display: flex;
+          gap: 8px;
+          overflow-x: auto;
+          scrollbar-width: none;
+          -webkit-overflow-scrolling: touch;
+          padding: 2px 14px 10px;
+          max-width: 680px;
+          margin: 0 auto;
+        }
+
+        .res-tab-strip::-webkit-scrollbar {
           display: none;
         }
 
-        .fab {
-          position: fixed;
-          right: max(18px, var(--safe-right));
-          bottom: max(18px, var(--safe-bottom));
-          z-index: 10;
-          width: 58px;
-          height: 58px;
-          border-radius: 50%;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          background: #111827;
+        .res-tab-pill {
+          padding: 6px 14px;
+          border-radius: 999px;
+          border: 1px solid var(--border);
+          background: var(--card-bg);
+          color: var(--tab-color);
+          font-size: 12px;
+          font-weight: 600;
+          letter-spacing: 0.02em;
+          cursor: pointer;
+          white-space: nowrap;
+          transition: all 0.16s ease;
+          -webkit-tap-highlight-color: transparent;
+          flex-shrink: 0;
+        }
+
+        .res-tab-pill:hover {
+          color: var(--text-primary);
+          background: var(--card-hover);
+        }
+
+        .res-tab-pill.active {
+          background: var(--accent);
+          border-color: var(--accent);
           color: #ffffff;
-          box-shadow: 0 18px 36px rgba(17, 24, 39, 0.28);
+          box-shadow: 0 2px 10px rgba(0, 122, 255, 0.35);
         }
 
-        .upload-modal-backdrop {
-          position: fixed;
-          inset: 0;
-          z-index: 30;
-          display: flex;
-          align-items: flex-end;
-          justify-content: center;
-          padding: 18px;
-          background: rgba(15, 23, 42, 0.28);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-        }
-
-        .upload-modal {
-          width: min(100%, 520px);
-          max-height: min(78dvh, 640px);
+        /* ── Scrollable Document List Area ── */
+        .res-scroll-body {
+          flex: 1;
           display: flex;
           flex-direction: column;
-          gap: 14px;
-          border-radius: 24px;
-          padding: 18px;
-          background: rgba(255, 255, 255, 0.96);
-          border: 1px solid rgba(255, 255, 255, 0.78);
-          box-shadow: 0 28px 70px rgba(15, 23, 42, 0.26);
-        }
-
-        .upload-modal-header {
-          display: flex;
-          align-items: flex-start;
-          justify-content: space-between;
-          gap: 16px;
-        }
-
-        .upload-modal-header h2 {
-          margin: 2px 0 0;
-          color: #111827;
-          font-size: 1.12rem;
-          line-height: 1.1;
-          font-weight: 900;
-          letter-spacing: 0;
-        }
-
-        .modal-close {
-          width: 36px;
-          height: 36px;
-          border: 0;
-          border-radius: 50%;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          background: #f1f5f9;
-          color: #475569;
-          cursor: pointer;
-        }
-
-        .upload-option-list {
-          min-height: 0;
           overflow-y: auto;
-          display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 10px;
-          padding: 1px 2px 2px;
+          -webkit-overflow-scrolling: touch;
+          overscroll-behavior-y: contain;
           scrollbar-width: thin;
         }
 
-        .upload-option {
-          min-width: 0;
-          min-height: 54px;
-          border: 0;
-          border-radius: 16px;
+        .res-content {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          width: 100%;
+          max-width: 680px;
+          margin: 0 auto;
+          padding: 14px 14px calc(92px + var(--safe-bottom));
+          box-sizing: border-box;
+        }
+
+        /* ── Notice Banner ── */
+        .res-notice-banner {
           display: flex;
           align-items: center;
-          gap: 10px;
-          padding: 10px;
-          background: var(--subject-tint);
-          color: var(--subject-accent);
-          cursor: pointer;
-          text-align: left;
-          font: inherit;
-          box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--subject-accent) 20%, transparent);
+          justify-content: space-between;
+          padding: 10px 14px;
+          border-radius: 12px;
+          background: var(--notice-bg);
+          border: 1px solid var(--border);
+          color: var(--text-secondary);
+          font-size: 13px;
+          margin-bottom: 12px;
+          animation: res-fade-up 0.2s ease;
         }
 
-        .upload-option-icon {
-          width: 34px;
-          height: 34px;
-          flex: 0 0 auto;
-          border-radius: 12px;
-          display: inline-flex;
+        .res-notice-close {
+          background: transparent;
+          border: none;
+          color: var(--text-secondary);
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          padding: 2px;
+        }
+
+        /* ── Loading State ── */
+        .res-loading-state {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
           align-items: center;
           justify-content: center;
-          background: rgba(255, 255, 255, 0.86);
+          min-height: calc(65dvh - 120px);
+          gap: 14px;
+          animation: res-fade-up 0.25s ease;
+          margin: auto 0;
+          text-align: center;
+          width: 100%;
         }
 
-        .upload-option-text {
+        :global(.ios-spinner) {
+          display: inline-block;
+          color: var(--spinner-color);
+          flex-shrink: 0;
+        }
+
+        .res-loading-text {
+          font-size: 13.5px;
+          font-weight: 500;
+          color: var(--text-secondary);
+        }
+
+        /* ── Cards List ── */
+        .res-card-list {
+          display: flex;
+          flex-direction: column;
+          gap: 9px;
+        }
+
+        .res-card {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          padding: 12px 16px;
+          min-height: 62px;
+          border-radius: 14px;
+          border: 1px solid var(--border);
+          background: var(--card-bg);
+          color: var(--text-primary);
+          text-align: left;
+          cursor: pointer;
+          text-decoration: none;
+          outline: none;
+          transition: background-color 0.12s ease, border-color 0.12s ease;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+          -webkit-tap-highlight-color: transparent;
+          user-select: none;
+          animation: res-fade-up 0.28s ease both;
+        }
+
+        @keyframes res-fade-up {
+          from { opacity: 0; transform: translateY(8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (hover: hover) {
+          .res-card:hover {
+            background: var(--card-hover);
+            border-color: rgba(255, 255, 255, 0.16);
+          }
+        }
+
+        .res-card:active {
+          background: var(--card-hover);
+          border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .res-card-icon-wrap {
+          width: 38px;
+          height: 38px;
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+
+        .res-card-body {
+          flex: 1;
           min-width: 0;
           display: flex;
           flex-direction: column;
           gap: 2px;
-          color: #0f172a;
-          font-size: 0.84rem;
-          line-height: 1.18;
-          font-weight: 850;
-          overflow-wrap: anywhere;
         }
 
-        .modal-close:focus-visible,
-        .upload-option:focus-visible {
-          outline: 2px solid rgba(37, 99, 235, 0.45);
-          outline-offset: 3px;
+        .res-card-title {
+          font-size: 14.5px;
+          font-weight: 600;
+          line-height: 1.3;
+          color: var(--text-primary);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
-        @keyframes fileIn {
-          from {
-            opacity: 0;
-            transform: translateY(8px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
+        .res-card-meta {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 12px;
+          color: var(--text-secondary);
+        }
+
+        .res-card-tag {
+          display: inline-block;
+          padding: 1px 6px;
+          border-radius: 4px;
+          background: var(--tab-bg);
+          font-size: 11px;
+          font-weight: 500;
+          letter-spacing: 0.02em;
+        }
+
+        .res-card-date {
+          font-size: 11.5px;
+          color: var(--text-secondary);
+        }
+
+        .res-card-arrow {
+          color: var(--text-tertiary);
+          flex-shrink: 0;
+          display: flex;
+          align-items: center;
+          transition: color 0.15s ease;
+        }
+
+        @media (hover: hover) {
+          .res-card:hover .res-card-arrow {
+            color: var(--text-primary);
           }
         }
 
-        @media (max-width: 560px) {
-          .resource-page {
-            padding: max(14px, var(--safe-top)) 12px max(18px, var(--safe-bottom));
-          }
+        /* ── Empty State ── */
+        .res-empty-state {
+          text-align: center;
+          padding: 56px 20px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 10px;
+          animation: res-fade-up 0.28s ease;
+        }
 
-          .resource-shell {
-            min-height: 0;
-          }
+        .res-empty-icon {
+          color: var(--text-tertiary);
+          margin-bottom: 2px;
+        }
 
-          .resource-header {
-            grid-template-columns: 40px minmax(0, 1fr);
-          }
+        .res-empty-title {
+          font-size: 15px;
+          font-weight: 600;
+          color: var(--text-primary);
+          margin: 0;
+        }
 
-          .header-search {
-            grid-column: 1 / -1;
-          }
+        .res-empty-sub {
+          font-size: 13px;
+          color: var(--text-secondary);
+          margin: 0;
+          max-width: 280px;
+          line-height: 1.4;
+        }
 
-          .header-search input {
-            height: 44px;
-          }
+        .res-empty-btn {
+          margin-top: 14px;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 8px 18px;
+          border-radius: 999px;
+          background: var(--accent);
+          color: #ffffff;
+          font-size: 13px;
+          font-weight: 600;
+          border: none;
+          cursor: pointer;
+          box-shadow: 0 4px 14px rgba(0, 122, 255, 0.35);
+          transition: transform 0.15s ease, opacity 0.15s ease;
+        }
 
-          .subject-strip {
-            gap: 7px;
-          }
+        .res-empty-btn:active {
+          transform: scale(0.96);
+          opacity: 0.85;
+        }
 
-          .subject-chip {
-            height: 66px;
-            border-radius: 16px;
-            font-size: 0.73rem;
-          }
+        /* ── Floating Action Button (FAB) ── */
+        .res-fab {
+          position: fixed;
+          bottom: calc(24px + var(--safe-bottom));
+          right: max(20px, env(safe-area-inset-right));
+          width: 52px;
+          height: 52px;
+          border-radius: 50%;
+          background: var(--accent);
+          border: none;
+          color: #ffffff;
+          box-shadow: 0 4px 18px rgba(0, 122, 255, 0.44), 0 2px 6px rgba(0, 122, 255, 0.25);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          z-index: 35;
+          transition: transform 0.16s ease, box-shadow 0.16s ease;
+          -webkit-tap-highlight-color: transparent;
+        }
 
-          .resource-panel {
-            border-radius: 22px;
-            padding: 14px;
-          }
+        .res-fab:hover {
+          transform: scale(1.05);
+          box-shadow: 0 6px 22px rgba(0, 122, 255, 0.55);
+        }
 
-          .file-title {
-            font-size: 0.88rem;
-            overflow-wrap: normal;
-            word-break: normal;
-          }
+        .res-fab:active {
+          transform: scale(0.92);
+        }
 
-          .file-action {
-            display: none;
-          }
+        .res-fab:disabled {
+          opacity: 0.6;
+          cursor: wait;
+        }
 
-          .upload-modal-backdrop {
-            padding: 12px;
-          }
+        .res-file-input {
+          display: none;
+        }
 
-          .upload-modal {
-            max-height: min(82dvh, 640px);
-            border-radius: 22px;
-            padding: 16px;
-          }
+        /* ── Upload Modal ── */
+        .res-modal-backdrop {
+          position: fixed;
+          inset: 0;
+          z-index: 50;
+          display: flex;
+          align-items: flex-end;
+          justify-content: center;
+          padding: 16px;
+          background: rgba(0, 0, 0, 0.65);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+          animation: res-fade-in 0.18s ease;
+        }
 
-          .upload-option-list {
-            grid-template-columns: 1fr;
+        @keyframes res-fade-in {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+
+        .res-modal {
+          width: min(100%, 420px);
+          border-radius: 20px;
+          border: 1px solid var(--border);
+          background: var(--modal-bg);
+          box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+          padding: 20px;
+          margin-bottom: var(--safe-bottom);
+          animation: res-modal-up 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes res-modal-up {
+          from { transform: translateY(20px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+
+        .res-modal-header {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 16px;
+          margin-bottom: 16px;
+        }
+
+        .res-modal-eyebrow {
+          margin: 0;
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--text-tertiary);
+        }
+
+        .res-modal-title {
+          margin: 2px 0 0;
+          font-size: 16px;
+          font-weight: 700;
+          color: var(--text-primary);
+        }
+
+        .res-modal-close {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          background: var(--tab-bg);
+          border: none;
+          color: var(--text-secondary);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+        }
+
+        .res-modal-options {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 8px;
+          max-height: 52dvh;
+          overflow-y: auto;
+          scrollbar-width: thin;
+          padding: 1px;
+        }
+
+        .res-modal-option {
+          min-height: 48px;
+          border-radius: 12px;
+          border: 1px solid var(--border);
+          color: var(--text-primary);
+          background: var(--modal-option-bg);
+          font-size: 12.5px;
+          font-weight: 500;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 10px;
+          text-align: left;
+          transition: background 0.15s ease, border-color 0.15s ease;
+          font-family: inherit;
+        }
+
+        .res-modal-option:hover {
+          background: var(--card-hover);
+        }
+
+        .res-modal-option.current {
+          border-color: var(--subject-accent, var(--accent));
+          box-shadow: inset 0 0 0 1px var(--subject-accent, var(--accent));
+        }
+
+        .res-modal-option-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: var(--subject-accent, var(--accent));
+          flex-shrink: 0;
+        }
+
+        .res-modal-option-label strong {
+          color: var(--text-primary);
+          font-weight: 650;
+        }
+
+        .res-modal-cancel {
+          width: 100%;
+          min-height: 44px;
+          margin-top: 12px;
+          border-radius: 12px;
+          border: 1px solid var(--border);
+          color: var(--text-secondary);
+          background: transparent;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: background 0.15s ease;
+        }
+
+        .res-modal-cancel:hover {
+          background: var(--tab-bg);
+        }
+
+        /* ════════════════════════════════════════════
+           LIGHT THEME OVERRIDES
+           ════════════════════════════════════════════ */
+        :global(body.theme-light) .resource-page,
+        :global(html.theme-light) .resource-page {
+          --bg: #f6f8fa;
+          --card-bg: #ffffff;
+          --card-hover: #f8fafc;
+          --border: rgba(0, 0, 0, 0.08);
+          --header-bg: rgba(246, 248, 250, 0.92);
+          --text-primary: #1d1d1f;
+          --text-secondary: #57606a;
+          --text-tertiary: #8c959f;
+          --tab-bg: rgba(0, 0, 0, 0.05);
+          --tab-color: #57606a;
+          --modal-bg: #ffffff;
+          --modal-option-bg: #f2f2f7;
+          --notice-bg: rgba(0, 0, 0, 0.04);
+          --spinner-color: rgba(60, 60, 67, 0.6);
+        }
+
+        :global(body.theme-light) .res-card {
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 2px 6px rgba(0, 0, 0, 0.02);
+        }
+
+        @media (hover: hover) {
+          :global(body.theme-light) .res-card:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            background: #f8fafc;
+            border-color: rgba(0, 0, 0, 0.14);
           }
+        }
+
+        :global(body.theme-light) .res-card:active {
+          background: #ebeef2;
+          border-color: rgba(0, 0, 0, 0.16);
         }
       `}</style>
     </main>
