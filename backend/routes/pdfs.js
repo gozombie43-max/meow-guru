@@ -302,6 +302,22 @@ async function listObjectsByPrefix(
 }
 
 
+const topicPdfsCache = new Map();
+const CACHE_TTL_MS = 10 * 60 * 1000;
+
+export const invalidatePdfCache = (topic) => {
+  if (!topic) {
+    topicPdfsCache.clear();
+    return;
+  }
+  const prefix = `${normalizeTopic(topic)}:`;
+  for (const key of topicPdfsCache.keys()) {
+    if (key.startsWith(prefix)) {
+      topicPdfsCache.delete(key);
+    }
+  }
+};
+
 // ───────────────────────────────────────────────────────
 // List topic PDFs
 // ───────────────────────────────────────────────────────
@@ -312,6 +328,12 @@ const listTopicPdfs = async (
 ) => {
   const normalizedCategory =
     normalizeCategory(category);
+
+  const cacheKey = `${topic}:${normalizedCategory}`;
+  const cached = topicPdfsCache.get(cacheKey);
+  if (cached && (Date.now() - cached.timestamp < CACHE_TTL_MS)) {
+    return cached.pdfs;
+  }
 
   /*
    * Preserve your existing Azure behaviour:
@@ -338,21 +360,16 @@ const listTopicPdfs = async (
   const pdfs = [];
   const seen = new Set();
 
-  for (
-    const logicalPrefix
-    of logicalPrefixes
-  ) {
-    const b2Prefix =
-      getB2Key(
-        logicalPrefix
-      );
+  const prefixResults = await Promise.all(
+    logicalPrefixes.map(async (logicalPrefix) => {
+      const b2Prefix = getB2Key(logicalPrefix);
+      return listObjectsByPrefix(b2Prefix);
+    })
+  );
 
-    const objects =
-      await listObjectsByPrefix(
-        b2Prefix
-      );
+  const objects = prefixResults.flat();
 
-    for (const object of objects) {
+  for (const object of objects) {
       if (!object.Key) continue;
 
       const blobPath =
@@ -449,9 +466,8 @@ const listTopicPdfs = async (
           )}`,
       });
     }
-  }
 
-  return pdfs.sort(
+  const sorted = pdfs.sort(
     (a, b) =>
       nameCollator.compare(
         a.title ||
@@ -462,6 +478,13 @@ const listTopicPdfs = async (
           ''
       )
   );
+
+  topicPdfsCache.set(cacheKey, {
+    timestamp: Date.now(),
+    pdfs: sorted,
+  });
+
+  return sorted;
 };
 
 
@@ -689,6 +712,8 @@ router.post(
             )}`,
         });
       }
+
+      invalidatePdfCache(topic);
 
       return res
         .status(201)

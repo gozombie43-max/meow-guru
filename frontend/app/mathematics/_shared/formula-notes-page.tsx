@@ -147,13 +147,15 @@ export default function FormulaNotesPage({
 
   const getCachedPdfs = useCallback(
     (cat: string): TopicPdf[] | null => {
-      if (cacheRef.current[cat]?.length) return cacheRef.current[cat];
+      if (cacheRef.current[cat] !== undefined) return cacheRef.current[cat];
       if (typeof window !== "undefined") {
         try {
-          const stored = sessionStorage.getItem(`fn_cache_${topic}_${cat}`);
+          const stored =
+            localStorage.getItem(`fn_cache_${topic}_${cat}`) ||
+            sessionStorage.getItem(`fn_cache_${topic}_${cat}`);
           if (stored) {
             const parsed = JSON.parse(stored) as TopicPdf[];
-            if (Array.isArray(parsed) && parsed.length > 0) {
+            if (Array.isArray(parsed)) {
               cacheRef.current[cat] = parsed;
               return parsed;
             }
@@ -172,7 +174,9 @@ export default function FormulaNotesPage({
       cacheRef.current[cat] = data;
       if (typeof window !== "undefined") {
         try {
-          sessionStorage.setItem(`fn_cache_${topic}_${cat}`, JSON.stringify(data));
+          const serialized = JSON.stringify(data);
+          localStorage.setItem(`fn_cache_${topic}_${cat}`, serialized);
+          sessionStorage.setItem(`fn_cache_${topic}_${cat}`, serialized);
         } catch {
           // ignore storage write issues
         }
@@ -186,14 +190,25 @@ export default function FormulaNotesPage({
       if (!topic) return;
       const category = categoryFromTab(tab);
 
-      if (!bypassCache) {
-        const cached = getCachedPdfs(category);
-        if (cached) {
-          setPdfs(cached);
-          setLoading(false);
-          setNotice("");
-          return;
-        }
+      const cached = getCachedPdfs(category);
+      if (cached !== null && !bypassCache) {
+        setPdfs(cached);
+        setLoading(false);
+        setNotice("");
+        // Quiet background revalidation (stale-while-revalidate)
+        fetch(
+          apiUrl(`/api/pdfs?topic=${encodeURIComponent(topic)}&category=${encodeURIComponent(category)}`)
+        )
+          .then((r) => (r.ok ? r.json() : null))
+          .then((d: { pdfs?: TopicPdf[] } | null) => {
+            if (d?.pdfs) {
+              const sorted = sortByName(d.pdfs);
+              setCachedPdfs(category, sorted);
+              setPdfs(sorted);
+            }
+          })
+          .catch(() => {});
+        return;
       }
 
       setPdfs([]);
@@ -207,9 +222,9 @@ export default function FormulaNotesPage({
         );
         if (!res.ok) {
           if (res.status === 429) {
-            const cached = getCachedPdfs(category);
-            if (cached && cached.length > 0) {
-              setPdfs(cached);
+            const fallbackCached = getCachedPdfs(category);
+            if (fallbackCached) {
+              setPdfs(fallbackCached);
               setLoading(false);
               return;
             }
@@ -225,9 +240,9 @@ export default function FormulaNotesPage({
         setPdfs(sorted);
       } catch (err) {
         console.warn("Could not load PDFs:", err);
-        const cached = getCachedPdfs(category);
-        if (cached && cached.length > 0) {
-          setPdfs(cached);
+        const fallbackCached = getCachedPdfs(category);
+        if (fallbackCached) {
+          setPdfs(fallbackCached);
         } else {
           setNotice("Unable to load PDFs.");
         }
@@ -241,6 +256,25 @@ export default function FormulaNotesPage({
   useEffect(() => {
     fetchCategoryPdfs(activeTab);
   }, [activeTab, fetchCategoryPdfs]);
+
+  // Prefetch other categories quietly in background on mount
+  useEffect(() => {
+    if (!topic) return;
+    const remainingTabs = tabs.filter((t) => t !== activeTab);
+    remainingTabs.forEach((t) => {
+      const cat = categoryFromTab(t);
+      if (getCachedPdfs(cat) === null) {
+        fetch(apiUrl(`/api/pdfs?topic=${encodeURIComponent(topic)}&category=${encodeURIComponent(cat)}`))
+          .then((r) => (r.ok ? r.json() : null))
+          .then((d: { pdfs?: TopicPdf[] } | null) => {
+            if (d?.pdfs) {
+              setCachedPdfs(cat, sortByName(d.pdfs));
+            }
+          })
+          .catch(() => {});
+      }
+    });
+  }, [activeTab, apiUrl, categoryFromTab, getCachedPdfs, setCachedPdfs, tabs, topic]);
 
   const showSyncing = loading && pdfs.length === 0;
 
@@ -382,17 +416,28 @@ export default function FormulaNotesPage({
               <ChevronLeft size={22} />
             </button>
             <h1 className="fn-header-title">{topicLabel}</h1>
-            <button
-              type="button"
-              className={`fn-search-btn ${isSearchOpen ? "active" : ""}`}
-              onClick={() => {
-                setIsSearchOpen((prev) => !prev);
-                if (isSearchOpen) setSearchQuery("");
-              }}
-              aria-label="Search files"
-            >
-              {isSearchOpen ? <X size={19} /> : <Search size={19} />}
-            </button>
+            <div className="fn-header-actions">
+              <button
+                type="button"
+                className={`fn-search-btn ${isSearchOpen ? "active" : ""}`}
+                onClick={() => {
+                  setIsSearchOpen((prev) => !prev);
+                  if (isSearchOpen) setSearchQuery("");
+                }}
+                aria-label="Search files"
+              >
+                {isSearchOpen ? <X size={19} /> : <Search size={19} />}
+              </button>
+              <button
+                type="button"
+                className="fn-add-btn"
+                onClick={() => setShowAddModal(true)}
+                aria-label={`Add files to ${topicLabel}`}
+                disabled={uploading}
+              >
+                <Plus size={21} />
+              </button>
+            </div>
           </div>
 
           {isSearchOpen ? (
@@ -514,6 +559,18 @@ export default function FormulaNotesPage({
                       ? `No files match "${searchQuery}" in ${activeTab}.`
                       : `There are currently no files in the ${activeTab} category.`}
                   </p>
+                  {!searchQuery ? (
+                    <button
+                      type="button"
+                      className="fn-empty-add-btn"
+                      onClick={() => chooseUploadCategory(categoryFromTab(activeTab))}
+                      disabled={uploading}
+                      aria-label={`Add files to ${activeTab}`}
+                    >
+                      <Plus size={16} strokeWidth={2.4} />
+                      <span>Add {activeTab}</span>
+                    </button>
+                  ) : null}
                 </div>
               ) : null}
             </section>
@@ -653,8 +710,15 @@ export default function FormulaNotesPage({
           margin: 0 auto;
         }
 
+        .fn-header-actions {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
+
         .fn-back-btn,
-        .fn-search-btn {
+        .fn-search-btn,
+        .fn-add-btn {
           width: 40px;
           height: 40px;
           border-radius: 50%;
@@ -665,17 +729,19 @@ export default function FormulaNotesPage({
           border: none;
           color: var(--text-primary);
           cursor: pointer;
-          transition: background-color 0.15s ease, opacity 0.15s ease;
+          transition: background-color 0.15s ease, opacity 0.15s ease, transform 0.15s ease;
           -webkit-tap-highlight-color: transparent;
         }
 
         .fn-back-btn:hover,
-        .fn-search-btn:hover {
+        .fn-search-btn:hover,
+        .fn-add-btn:hover {
           background: var(--tab-bg);
         }
 
         .fn-back-btn:active,
-        .fn-search-btn:active {
+        .fn-search-btn:active,
+        .fn-add-btn:active {
           opacity: 0.6;
           transform: scale(0.95);
         }
@@ -683,6 +749,11 @@ export default function FormulaNotesPage({
         .fn-search-btn.active {
           background: var(--accent);
           color: #ffffff;
+        }
+
+        .fn-add-btn:disabled {
+          opacity: 0.4;
+          cursor: wait;
         }
 
         .fn-header-title {
@@ -1066,13 +1137,40 @@ export default function FormulaNotesPage({
           line-height: 1.4;
         }
 
+        .fn-empty-add-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 7px;
+          margin-top: 18px;
+          padding: 10px 20px;
+          border-radius: 999px;
+          border: none;
+          background: var(--accent);
+          color: #ffffff;
+          font-size: 13.5px;
+          font-weight: 650;
+          cursor: pointer;
+          box-shadow: 0 4px 14px rgba(0, 122, 255, 0.35);
+          transition: transform 0.15s ease, box-shadow 0.15s ease;
+          -webkit-tap-highlight-color: transparent;
+        }
+
+        .fn-empty-add-btn:active {
+          transform: scale(0.96);
+        }
+
+        .fn-empty-add-btn:disabled {
+          opacity: 0.5;
+          cursor: wait;
+        }
+
         /* ── Floating Action Button (FAB) ── */
         .fn-fab {
           position: fixed;
-          right: 20px;
-          bottom: calc(24px + var(--safe-bottom));
-          width: 54px;
-          height: 54px;
+          right: max(20px, calc(16px + var(--safe-right)));
+          bottom: max(24px, calc(20px + var(--safe-bottom)));
+          width: 52px;
+          height: 52px;
           border-radius: 50%;
           border: none;
           background: var(--accent);
