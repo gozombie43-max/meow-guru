@@ -85,6 +85,23 @@ function requestIpKey(req) {
 
 
 /**
+ * Helper to detect local development traffic that must never be rate limited.
+ */
+const isDevOrLocal = (req) => {
+  if (process.env.NODE_ENV !== 'production') {
+    return true;
+  }
+  const ip = String(req.ip || req.socket?.remoteAddress || '');
+  return (
+    ip === '127.0.0.1' ||
+    ip === '::1' ||
+    ip.endsWith('127.0.0.1') ||
+    ip === 'localhost' ||
+    ip === '::ffff:127.0.0.1'
+  );
+};
+
+/**
  * Prefer authenticated user identity where available.
  * Otherwise fall back to normalized client IP.
  */
@@ -95,14 +112,14 @@ const userKeyGenerator = (req) =>
   requestIpKey(req);
 
 
-// Global
+// Global Limiter
 export const globalLimiter =
   rateLimit({
     windowMs:
       15 * 60 * 1000,
 
     max:
-      process.env.NODE_ENV !== 'production' ? 10000 : 300,
+      process.env.NODE_ENV !== 'production' ? 100000 : 5000,
 
     standardHeaders:
       true,
@@ -112,6 +129,28 @@ export const globalLimiter =
 
     keyGenerator:
       userKeyGenerator,
+
+    skip: (req) => {
+      // Always skip for non-production or local loopback
+      if (isDevOrLocal(req)) return true;
+
+      // Skip HTTP OPTIONS preflight requests
+      if (req.method === 'OPTIONS') return true;
+
+      const path = req.path || '';
+      const url = req.originalUrl || req.url || '';
+
+      // Skip health checks and root ping
+      if (path === '/' || path === '/health' || url === '/' || url === '/health') return true;
+
+      // Skip static uploads and image requests
+      if (path.startsWith('/uploads') || url.startsWith('/uploads')) return true;
+
+      // Skip reading PDFs, notes, and streaming content
+      if (path.startsWith('/api/pdfs') || url.startsWith('/api/pdfs')) return true;
+
+      return false;
+    },
 
     message: {
       error:
@@ -127,7 +166,7 @@ export const authLimiter =
       15 * 60 * 1000,
 
     max:
-      20,
+      process.env.NODE_ENV !== 'production' ? 10000 : 100,
 
     standardHeaders:
       true,
@@ -135,9 +174,11 @@ export const authLimiter =
     legacyHeaders:
       false,
 
-    // IMPORTANT on Azure
     keyGenerator:
       requestIpKey,
+
+    skip:
+      isDevOrLocal,
 
     message: {
       error:
@@ -153,7 +194,7 @@ export const aiLimiter =
       15 * 60 * 1000,
 
     max:
-      20,
+      process.env.NODE_ENV !== 'production' ? 10000 : 100,
 
     standardHeaders:
       true,
@@ -163,6 +204,9 @@ export const aiLimiter =
 
     keyGenerator:
       userKeyGenerator,
+
+    skip:
+      isDevOrLocal,
 
     message: {
       error:
@@ -178,7 +222,7 @@ export const agentLimiter =
       15 * 60 * 1000,
 
     max:
-      30,
+      process.env.NODE_ENV !== 'production' ? 10000 : 150,
 
     standardHeaders:
       true,
@@ -188,6 +232,9 @@ export const agentLimiter =
 
     keyGenerator:
       userKeyGenerator,
+
+    skip:
+      isDevOrLocal,
 
     message: {
       error:
@@ -203,7 +250,7 @@ export const uploadLimiter =
       15 * 60 * 1000,
 
     max:
-      30,
+      process.env.NODE_ENV !== 'production' ? 10000 : 200,
 
     standardHeaders:
       true,
@@ -211,9 +258,11 @@ export const uploadLimiter =
     legacyHeaders:
       false,
 
-    // Handles Azure IP:port
     keyGenerator:
       userKeyGenerator,
+
+    skip:
+      isDevOrLocal,
 
     message: {
       error:

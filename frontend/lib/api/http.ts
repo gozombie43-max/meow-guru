@@ -56,7 +56,17 @@ export async function fetchWithRetry(
       externalSignal?.removeEventListener("abort", abortFromExternalSignal);
 
       if (shouldRetryMethod && retryOnStatuses.includes(res.status) && attempt < resolvedRetries) {
-        await sleep(retryDelayMs * (attempt + 1));
+        let delay = retryDelayMs * (attempt + 1);
+        if (res.status === 429) {
+          const retryAfter = res.headers.get("retry-after");
+          if (retryAfter) {
+            const parsedSeconds = parseInt(retryAfter, 10);
+            if (!Number.isNaN(parsedSeconds) && parsedSeconds > 0) {
+              delay = Math.min(parsedSeconds * 1000, 5000);
+            }
+          }
+        }
+        await sleep(delay);
         continue;
       }
 

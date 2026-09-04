@@ -145,16 +145,55 @@ export default function FormulaNotesPage({
   const apiUrl = useCallback((path: string) => (API ? `${API}${path}` : path), [API]);
   const categoryFromTab = useCallback((tab: string) => tab.toLowerCase(), []);
 
+  const getCachedPdfs = useCallback(
+    (cat: string): TopicPdf[] | null => {
+      if (cacheRef.current[cat]?.length) return cacheRef.current[cat];
+      if (typeof window !== "undefined") {
+        try {
+          const stored = sessionStorage.getItem(`fn_cache_${topic}_${cat}`);
+          if (stored) {
+            const parsed = JSON.parse(stored) as TopicPdf[];
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              cacheRef.current[cat] = parsed;
+              return parsed;
+            }
+          }
+        } catch {
+          // ignore storage read issues
+        }
+      }
+      return null;
+    },
+    [topic]
+  );
+
+  const setCachedPdfs = useCallback(
+    (cat: string, data: TopicPdf[]) => {
+      cacheRef.current[cat] = data;
+      if (typeof window !== "undefined") {
+        try {
+          sessionStorage.setItem(`fn_cache_${topic}_${cat}`, JSON.stringify(data));
+        } catch {
+          // ignore storage write issues
+        }
+      }
+    },
+    [topic]
+  );
+
   const fetchCategoryPdfs = useCallback(
     async (tab: string, bypassCache = false) => {
       if (!topic) return;
       const category = categoryFromTab(tab);
 
-      if (!bypassCache && cacheRef.current[category]) {
-        setPdfs(cacheRef.current[category]);
-        setLoading(false);
-        setNotice("");
-        return;
+      if (!bypassCache) {
+        const cached = getCachedPdfs(category);
+        if (cached) {
+          setPdfs(cached);
+          setLoading(false);
+          setNotice("");
+          return;
+        }
       }
 
       setPdfs([]);
@@ -168,7 +207,13 @@ export default function FormulaNotesPage({
         );
         if (!res.ok) {
           if (res.status === 429) {
-            setNotice("Rate limit reached. Please wait a moment.");
+            const cached = getCachedPdfs(category);
+            if (cached && cached.length > 0) {
+              setPdfs(cached);
+              setLoading(false);
+              return;
+            }
+            setNotice("Server busy. Please wait a moment.");
             setLoading(false);
             return;
           }
@@ -176,16 +221,21 @@ export default function FormulaNotesPage({
         }
         const data = (await res.json()) as { pdfs?: TopicPdf[] };
         const sorted = sortByName(data.pdfs || []);
-        cacheRef.current[category] = sorted;
+        setCachedPdfs(category, sorted);
         setPdfs(sorted);
       } catch (err) {
         console.warn("Could not load PDFs:", err);
-        setNotice("Unable to load PDFs.");
+        const cached = getCachedPdfs(category);
+        if (cached && cached.length > 0) {
+          setPdfs(cached);
+        } else {
+          setNotice("Unable to load PDFs.");
+        }
       } finally {
         setLoading(false);
       }
     },
-    [apiUrl, categoryFromTab, topic]
+    [apiUrl, categoryFromTab, getCachedPdfs, setCachedPdfs, topic]
   );
 
   useEffect(() => {
@@ -280,9 +330,14 @@ export default function FormulaNotesPage({
       if (visibleUploads.length) {
         setPdfs((current) => {
           const updated = sortByName([...current, ...visibleUploads]);
-          cacheRef.current[uploadCategory] = updated;
+          setCachedPdfs(uploadCategory, updated);
           return updated;
         });
+      } else {
+        const cachedOther = getCachedPdfs(uploadCategory);
+        if (cachedOther) {
+          setCachedPdfs(uploadCategory, sortByName([...cachedOther, ...uploadedFiles]));
+        }
       }
       setNotice(`${uploadedFiles.length} file${uploadedFiles.length === 1 ? "" : "s"} uploaded to ${uploadCategory.toUpperCase()}.`);
     } catch (err) {
