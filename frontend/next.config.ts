@@ -33,6 +33,8 @@ const nextConfig: NextConfig = {
       { source: "/general-awareness/static", destination: "/general-awareness/static-gk", permanent: false },
       { source: "/general-awareness/science", destination: "/general-awareness/physics", permanent: false },
       { source: "/general-awareness/general-science", destination: "/general-awareness/physics", permanent: false },
+      { source: "/mathematics/arithmetic/time-speed-distance", destination: "/mathematics/arithmetic/time-and-distance", permanent: false },
+      { source: "/mathematics/arithmetic/time-speed-distance/quiz", destination: "/mathematics/arithmetic/time-and-distance/quiz", permanent: false },
     ];
   },
   async rewrites() {
