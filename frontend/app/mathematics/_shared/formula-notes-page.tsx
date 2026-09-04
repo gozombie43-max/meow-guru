@@ -1018,9 +1018,10 @@ export default function FormulaNotesPage({
           text-align: left;
           cursor: pointer;
           text-decoration: none;
-          transition: transform 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+          transition: transform 0.12s cubic-bezier(0.2, 0, 0, 1), opacity 0.12s ease, background-color 0.15s ease;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
           -webkit-tap-highlight-color: transparent;
+          user-select: none;
           animation: fn-fade-up 0.28s ease both;
         }
 
@@ -1035,15 +1036,16 @@ export default function FormulaNotesPage({
           }
         }
 
-        .fn-card:hover {
-          background: var(--card-hover);
-          border-color: rgba(255, 255, 255, 0.18);
-          transform: translateY(-1px);
-          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+        @media (hover: hover) {
+          .fn-card:hover {
+            background: var(--card-hover);
+            border-color: rgba(255, 255, 255, 0.16);
+          }
         }
 
         .fn-card:active {
-          transform: scale(0.99);
+          transform: scale(0.98);
+          opacity: 0.85;
         }
 
         .fn-card-icon-wrap {
@@ -1102,12 +1104,13 @@ export default function FormulaNotesPage({
           flex-shrink: 0;
           display: flex;
           align-items: center;
-          transition: transform 0.15s ease, color 0.15s ease;
+          transition: color 0.15s ease;
         }
 
-        .fn-card:hover .fn-card-arrow {
-          color: var(--text-primary);
-          transform: translateX(2px);
+        @media (hover: hover) {
+          .fn-card:hover .fn-card-arrow {
+            color: var(--text-primary);
+          }
         }
 
         /* ── Empty State ── */
@@ -1328,9 +1331,15 @@ export default function FormulaNotesPage({
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 2px 6px rgba(0, 0, 0, 0.02);
         }
 
-        :global(body.theme-light) .fn-card:hover {
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-          border-color: rgba(0, 0, 0, 0.14);
+        @media (hover: hover) {
+          :global(body.theme-light) .fn-card:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border-color: rgba(0, 0, 0, 0.14);
+          }
+        }
+
+        :global(body.theme-light) .fn-card:active {
+          background: #f2f2f5;
         }
       `}</style>
     </main>
