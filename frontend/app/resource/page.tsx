@@ -325,17 +325,18 @@ export default function ResourcePage() {
       {/* ── Fixed Position Top Area ── */}
       <div className="res-top-pinned">
         <header className="res-header">
-          <div className="res-header-inner">
-            <Link href="/" className="res-back-btn" aria-label="Back to home">
+          {/* ── Compact Navigation Bar (44px) ── */}
+          <div className="res-nav-bar">
+            <Link href="/" className="res-nav-btn res-back-btn" aria-label="Back to home">
               <ChevronLeft size={22} strokeWidth={2.4} />
             </Link>
 
-            <h1 className="res-header-title">Resources</h1>
+            <h1 className="res-nav-title">Resources</h1>
 
-            <div className="res-header-actions">
+            <div className="res-nav-actions">
               <button
                 type="button"
-                className={`res-icon-btn ${showSearch ? "active" : ""}`}
+                className={`res-nav-btn ${showSearch ? "active" : ""}`}
                 onClick={() => {
                   setShowSearch((prev) => !prev);
                   if (showSearch) setQuery("");
@@ -348,7 +349,7 @@ export default function ResourcePage() {
               {files.length === 0 && (
                 <button
                   type="button"
-                  className="res-icon-btn res-add-btn"
+                  className="res-nav-btn res-add-btn"
                   onClick={triggerUploadCurrent}
                   disabled={uploading}
                   aria-label="Add files"
@@ -359,11 +360,11 @@ export default function ResourcePage() {
             </div>
           </div>
 
-          {/* ── Search Bar Dropdown ── */}
+          {/* ── Compact Search Bar Dropdown ── */}
           {showSearch && (
-            <div className="res-search-bar">
+            <div className="res-search-container">
               <div className="res-search-input-wrap">
-                <Search size={16} className="res-search-field-icon" aria-hidden="true" />
+                <Search size={15} className="res-search-field-icon" aria-hidden="true" />
                 <input
                   type="text"
                   value={query}
@@ -386,50 +387,51 @@ export default function ResourcePage() {
             </div>
           )}
 
-          {/* ── Subject Segmented Bar ── */}
-          <div className="res-subject-strip" role="tablist" aria-label="Subjects">
-            {subjects.map((subject) => {
-              const Icon = subject.Icon;
-              const isActive = subject.id === activeSubject;
+          {/* ── Unified Filter Architecture ── */}
+          <div className="res-filter-container">
+            {/* Level 1: Primary Subject Segmented Control (iOS UISegmentedControl style) */}
+            <div className="res-subject-segment" role="tablist" aria-label="Subjects">
+              {subjects.map((subject) => {
+                const Icon = subject.Icon;
+                const isActive = subject.id === activeSubject;
 
-              return (
-                <button
-                  key={subject.id}
-                  type="button"
-                  className={`res-subject-btn ${isActive ? "active" : ""}`}
-                  style={{
-                    "--subject-accent": subject.accent,
-                  } as React.CSSProperties}
-                  onClick={() => setActiveSubject(subject.id)}
-                  role="tab"
-                  aria-selected={isActive}
-                >
-                  <span className="res-subject-icon">
-                    <Icon size={16} strokeWidth={2.3} />
-                  </span>
-                  <span className="res-subject-label">{subject.label}</span>
-                </button>
-              );
-            })}
-          </div>
+                return (
+                  <button
+                    key={subject.id}
+                    type="button"
+                    className={`res-segment-btn ${isActive ? "active" : ""}`}
+                    style={{
+                      "--subject-accent": subject.accent,
+                    } as React.CSSProperties}
+                    onClick={() => setActiveSubject(subject.id)}
+                    role="tab"
+                    aria-selected={isActive}
+                  >
+                    <Icon size={14} strokeWidth={2.2} className="res-segment-icon" />
+                    <span className="res-segment-label">{subject.label}</span>
+                  </button>
+                );
+              })}
+            </div>
 
-          {/* ── Category Pill Tabs ── */}
-          <div className="res-tab-strip" role="tablist" aria-label="Resource Categories">
-            {resourceTabs.map((tab) => {
-              const isActive = tab === activeTab;
-              return (
-                <button
-                  key={tab}
-                  type="button"
-                  className={`res-tab-pill ${isActive ? "active" : ""}`}
-                  onClick={() => setActiveTab(tab)}
-                  role="tab"
-                  aria-selected={isActive}
-                >
-                  {tab}
-                </button>
-              );
-            })}
+            {/* Level 2: Secondary Category Chip Bar */}
+            <div className="res-category-strip" role="tablist" aria-label="Resource Categories">
+              {resourceTabs.map((tab) => {
+                const isActive = tab === activeTab;
+                return (
+                  <button
+                    key={tab}
+                    type="button"
+                    className={`res-chip ${isActive ? "active" : ""}`}
+                    onClick={() => setActiveTab(tab)}
+                    role="tab"
+                    aria-selected={isActive}
+                  >
+                    {tab}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </header>
       </div>
@@ -654,20 +656,19 @@ export default function ResourcePage() {
           padding-top: var(--safe-top);
         }
 
-        .res-header-inner {
-          height: 52px;
+        .res-nav-bar {
+          height: 44px;
           display: flex;
           align-items: center;
           justify-content: space-between;
           padding: 0 12px;
-          max-width: 680px;
+          max-width: 600px;
           margin: 0 auto;
         }
 
-        .res-back-btn,
-        .res-icon-btn {
-          width: 38px;
-          height: 38px;
+        .res-nav-btn {
+          width: 36px;
+          height: 36px;
           border-radius: 50%;
           display: flex;
           align-items: center;
@@ -681,23 +682,21 @@ export default function ResourcePage() {
           text-decoration: none;
         }
 
-        .res-back-btn:hover,
-        .res-icon-btn:hover {
+        .res-nav-btn:hover {
           background: var(--tab-bg);
         }
 
-        .res-back-btn:active,
-        .res-icon-btn:active {
+        .res-nav-btn:active {
           opacity: 0.6;
           transform: scale(0.95);
         }
 
-        .res-icon-btn.active {
+        .res-nav-btn.active {
           background: var(--accent);
           color: #ffffff;
         }
 
-        .res-header-title {
+        .res-nav-title {
           font-size: 17px;
           font-weight: 650;
           letter-spacing: -0.02em;
@@ -711,16 +710,16 @@ export default function ResourcePage() {
           padding: 0 8px;
         }
 
-        .res-header-actions {
+        .res-nav-actions {
           display: flex;
           align-items: center;
           gap: 4px;
         }
 
         /* ── Search Bar Dropdown ── */
-        .res-search-bar {
-          padding: 0 14px 10px;
-          max-width: 680px;
+        .res-search-container {
+          padding: 0 12px 6px;
+          max-width: 600px;
           margin: 0 auto;
           display: flex;
           align-items: center;
@@ -728,7 +727,7 @@ export default function ResourcePage() {
         }
 
         @keyframes res-slide-down {
-          from { opacity: 0; transform: translateY(-6px); }
+          from { opacity: 0; transform: translateY(-4px); }
           to { opacity: 1; transform: translateY(0); }
         }
 
@@ -740,13 +739,13 @@ export default function ResourcePage() {
 
         .res-search-input {
           width: 100%;
-          height: 38px;
-          border-radius: 10px;
+          height: 34px;
+          border-radius: 9px;
           border: 1px solid var(--border);
           background: var(--card-bg);
           color: var(--text-primary);
-          font-size: 14px;
-          padding: 0 36px 0 36px;
+          font-size: 13.5px;
+          padding: 0 32px 0 32px;
           box-sizing: border-box;
           outline: none;
           transition: border-color 0.15s ease;
@@ -759,7 +758,7 @@ export default function ResourcePage() {
 
         :global(.res-search-field-icon) {
           position: absolute;
-          left: 11px;
+          left: 10px;
           top: 50%;
           transform: translateY(-50%);
           color: var(--text-tertiary);
@@ -768,11 +767,11 @@ export default function ResourcePage() {
 
         .res-search-clear-btn {
           position: absolute;
-          right: 10px;
+          right: 9px;
           top: 50%;
           transform: translateY(-50%);
-          width: 20px;
-          height: 20px;
+          width: 18px;
+          height: 18px;
           border-radius: 50%;
           background: var(--tab-bg);
           border: none;
@@ -784,105 +783,125 @@ export default function ResourcePage() {
           padding: 0;
         }
 
-        /* ── Subject Segmented Strip ── */
-        .res-subject-strip {
+        /* ── Unified Filter Architecture ── */
+        .res-filter-container {
+          max-width: 600px;
+          margin: 0 auto;
+          padding: 0 12px 8px;
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+
+        /* Level 1: Primary Subject Segmented Control (iOS UISegmentedControl) */
+        .res-subject-segment {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
-          gap: 6px;
-          padding: 6px 14px 8px;
-          max-width: 680px;
-          margin: 0 auto;
+          background: var(--segment-track, rgba(120, 120, 128, 0.18));
+          border-radius: 9px;
+          padding: 2.5px;
+          box-sizing: border-box;
+          height: 33px;
+          align-items: center;
         }
 
-        .res-subject-btn {
-          height: 36px;
-          border-radius: 10px;
-          border: 1px solid var(--border);
-          background: var(--card-bg);
+        .res-segment-btn {
+          height: 28px;
+          border: none;
+          border-radius: 7px;
+          background: transparent;
           color: var(--text-secondary);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 6px;
-          padding: 0 8px;
           font-size: 12.5px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.16s ease;
-          -webkit-tap-highlight-color: transparent;
-        }
-
-        .res-subject-btn:hover {
-          background: var(--card-hover);
-          color: var(--text-primary);
-        }
-
-        .res-subject-btn.active {
-          background: var(--tab-bg);
-          color: var(--text-primary);
-          border-color: var(--subject-accent, var(--accent));
-          box-shadow: inset 0 0 0 1px var(--subject-accent, var(--accent));
-        }
-
-        .res-subject-icon {
+          font-weight: 550;
           display: flex;
           align-items: center;
           justify-content: center;
-          color: currentColor;
+          gap: 5px;
+          cursor: pointer;
+          transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+          -webkit-tap-highlight-color: transparent;
+          white-space: nowrap;
+          padding: 0 4px;
+          font-family: inherit;
         }
 
-        .res-subject-btn.active .res-subject-icon {
+        .res-segment-btn:hover {
+          color: var(--text-primary);
+        }
+
+        .res-segment-btn.active {
+          background: var(--segment-active-bg, #3a3a3c);
+          color: #ffffff;
+          font-weight: 650;
+          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3), 0 0 0 0.5px rgba(0, 0, 0, 0.12);
+        }
+
+        :global(.res-segment-icon) {
+          color: currentColor;
+          flex-shrink: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .res-segment-btn.active :global(.res-segment-icon) {
           color: var(--subject-accent, var(--accent));
         }
 
-        .res-subject-label {
+        .res-segment-label {
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
         }
 
-        /* ── Category Pill Tabs ── */
-        .res-tab-strip {
+        /* Level 2: Secondary Category Chip Bar */
+        .res-category-strip {
           display: flex;
-          gap: 8px;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
           overflow-x: auto;
           scrollbar-width: none;
           -webkit-overflow-scrolling: touch;
-          padding: 2px 14px 10px;
-          max-width: 680px;
-          margin: 0 auto;
+          padding: 0 2px;
         }
 
-        .res-tab-strip::-webkit-scrollbar {
+        .res-category-strip::-webkit-scrollbar {
           display: none;
         }
 
-        .res-tab-pill {
-          padding: 6px 14px;
+        .res-chip {
+          height: 25px;
+          padding: 0 11px;
           border-radius: 999px;
           border: 1px solid var(--border);
           background: var(--card-bg);
           color: var(--tab-color);
-          font-size: 12px;
-          font-weight: 600;
-          letter-spacing: 0.02em;
+          font-size: 11.5px;
+          font-weight: 550;
+          letter-spacing: 0.01em;
           cursor: pointer;
           white-space: nowrap;
-          transition: all 0.16s ease;
+          transition: all 0.14s ease;
           -webkit-tap-highlight-color: transparent;
           flex-shrink: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-family: inherit;
         }
 
-        .res-tab-pill:hover {
+        .res-chip:hover {
           color: var(--text-primary);
           background: var(--card-hover);
         }
 
-        .res-tab-pill.active {
+        .res-chip.active {
           background: var(--accent);
           border-color: var(--accent);
           color: #ffffff;
-          box-shadow: 0 2px 10px rgba(0, 122, 255, 0.35);
+          font-weight: 600;
+          box-shadow: 0 1.5px 6px rgba(0, 122, 255, 0.35);
         }
 
         /* ── Scrollable Document List Area ── */
@@ -1321,6 +1340,14 @@ export default function ResourcePage() {
           --modal-option-bg: #f2f2f7;
           --notice-bg: rgba(0, 0, 0, 0.04);
           --spinner-color: rgba(60, 60, 67, 0.6);
+          --segment-track: rgba(118, 118, 128, 0.12);
+          --segment-active-bg: #ffffff;
+        }
+
+        :global(body.theme-light) .res-segment-btn.active,
+        :global(html.theme-light) .res-segment-btn.active {
+          color: #000000;
+          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.12), 0 0 0 0.5px rgba(0, 0, 0, 0.04);
         }
 
         :global(body.theme-light) .res-card {
