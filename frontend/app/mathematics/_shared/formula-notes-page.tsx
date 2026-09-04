@@ -428,15 +428,17 @@ export default function FormulaNotesPage({
               >
                 {isSearchOpen ? <X size={19} /> : <Search size={19} />}
               </button>
-              <button
-                type="button"
-                className="fn-add-btn"
-                onClick={() => setShowAddModal(true)}
-                aria-label={`Add files to ${topicLabel}`}
-                disabled={uploading}
-              >
-                <Plus size={21} />
-              </button>
+              {!loading && pdfs.length === 0 ? (
+                <button
+                  type="button"
+                  className="fn-add-btn"
+                  onClick={() => setShowAddModal(true)}
+                  aria-label={`Add files to ${topicLabel}`}
+                  disabled={uploading}
+                >
+                  <Plus size={21} />
+                </button>
+              ) : null}
             </div>
           </div>
 
@@ -589,15 +591,17 @@ export default function FormulaNotesPage({
       />
 
       {/* ── Floating Action Button (FAB) ── */}
-      <button
-        className="fn-fab"
-        type="button"
-        aria-label={`Add files to ${topicLabel}`}
-        disabled={uploading}
-        onClick={() => setShowAddModal(true)}
-      >
-        <Plus size={24} />
-      </button>
+      {pdfs.length > 0 ? (
+        <button
+          className="fn-fab"
+          type="button"
+          aria-label={`Add files to ${topicLabel}`}
+          disabled={uploading}
+          onClick={() => setShowAddModal(true)}
+        >
+          <Plus size={24} />
+        </button>
+      ) : null}
 
       {/* ── Category Choice Modal ── */}
       {showAddModal ? (
