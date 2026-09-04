@@ -46,7 +46,9 @@
   position: relative;
 }
 
-.dark {
+.dark,
+:global(html.theme-dark) .pageWrapper,
+:global(body.theme-dark) .pageWrapper {
   --mac-bg-outer: transparent;
   --mac-window-bg: rgba(24, 24, 27, 0.95);
   --mac-sidebar-bg: rgba(22, 22, 25, 0.88);

@@ -12,6 +12,12 @@ let initialized = false;
 
 const getPreferredTheme = (): ThemeMode => {
   if (typeof window === 'undefined') return DEFAULT_THEME;
+
+  const bootstrappedTheme = document.documentElement.dataset.theme;
+  if (bootstrappedTheme === 'dark' || bootstrappedTheme === 'light') {
+    return bootstrappedTheme;
+  }
+
   try {
     const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
     if (stored === 'dark' || stored === 'light') return stored;
@@ -30,6 +36,10 @@ const applyThemeToDom = (theme: ThemeMode) => {
   body.classList.toggle('theme-light', theme === 'light');
   root.classList.toggle('theme-dark', theme === 'dark');
   root.classList.toggle('theme-light', theme === 'light');
+  body.dataset.theme = theme;
+  root.dataset.theme = theme;
+  body.style.colorScheme = theme;
+  root.style.colorScheme = theme;
   try {
     window.localStorage.setItem(THEME_STORAGE_KEY, theme);
   } catch {}
