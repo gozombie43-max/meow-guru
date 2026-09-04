@@ -657,7 +657,7 @@ export async function fetchQuestionsSession(params) {
     letter,
   } = params;
 
-  const parsedLimit = Math.max(1, Math.min(200, Number(limit) || 50));
+  const parsedLimit = Math.max(1, Math.min(5000, Number(limit) || 50));
   const conditions = [];
 
   if (topic) {

@@ -231,7 +231,7 @@ function QuizEngineContent({
     subject: subjectConfig.subjectId,
     topic: questionTopic ?? slug,
     mode,
-    limit: 50,
+    limit: 5000,
   });
   const { meta } = useQuestionsMeta({
     subject: subjectConfig.subjectId,
