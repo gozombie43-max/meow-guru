@@ -1,5 +1,5 @@
 import React from "react";
-import MathRenderer from "@/components/MathRenderer";
+import MathRenderer, { containsMathSyntax } from "@/components/MathRenderer";
 
 type Props = { text: string; className?: string };
 
@@ -7,6 +7,11 @@ const fracRegex = /(\([^)]+\)|[^\s/()]+)\s*\/\s*(\([^)]+\)|[^\s/()]+)/g;
 
 const MathText = React.memo(function MathText({ text, className = "" }: Props) {
   if (!text) return <span className={className} />;
+
+  // Fast path: no fractions or math syntax — render as plain text
+  if (!text.includes('/') && !containsMathSyntax(text)) {
+    return <span className={className}>{text}</span>;
+  }
 
   const parts: Array<
     | { type: "text"; value: string }

@@ -55,6 +55,8 @@ router.get('/counts', questionController.getQuestionCounts);
 router.get('/practice-test', questionController.generatePracticeTest);
 router.post('/analyze', adminAuth, questionController.runAnalysis);
 router.get("/image", questionController.getImageQuestions);
+router.get('/session', questionController.getQuestionsSession);
+router.get('/meta', questionController.getQuestionsMeta);
 
 // ── Generic routes ──────────────────────────────────────
 

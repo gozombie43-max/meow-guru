@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 const NAVIGATION_TIMEOUT_MS = 12_000;
 
@@ -29,7 +29,6 @@ function isInternalNavigation(event: MouseEvent) {
 
 export default function PageTransitionShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const router = useRouter();
   const [isNavigating, setIsNavigating] = useState(false);
   const timeoutRef = useRef<number | null>(null);
 
@@ -61,23 +60,6 @@ export default function PageTransitionShell({ children }: { children: React.Reac
     document.addEventListener("click", startTransition, true);
     return () => document.removeEventListener("click", startTransition, true);
   }, []);
-
-  useEffect(() => {
-    const prefetchDestination = (event: Event) => {
-      const destination = getInternalDestination(event.target);
-      if (destination) router.prefetch(destination);
-    };
-
-    document.addEventListener("pointerover", prefetchDestination, true);
-    document.addEventListener("pointerdown", prefetchDestination, true);
-    document.addEventListener("focusin", prefetchDestination, true);
-
-    return () => {
-      document.removeEventListener("pointerover", prefetchDestination, true);
-      document.removeEventListener("pointerdown", prefetchDestination, true);
-      document.removeEventListener("focusin", prefetchDestination, true);
-    };
-  }, [router]);
 
   return (
     <div className="page-transition-shell">

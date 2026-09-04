@@ -40,6 +40,8 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { saveRecentQuiz, updateProgress, toggleBookmark } from "@/lib/userApi";
 import { useQuestions } from "@/hooks/useQuestions";
+import { useQuizSession } from "@/hooks/useQuizSession";
+import { useQuestionsMeta } from "@/hooks/useQuestionsMeta";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { Difficulty, QuizQuestionRecord, QuizQuestion, SessionResult, ClassificationGroup } from "./types";
 import { 
@@ -225,7 +227,13 @@ function QuizEngineContent({
     () => subjectConfig.topicConcepts[slug] ?? [],
     [slug, subjectConfig.topicConcepts]
   );
-  const { questions: apiQuestions } = useQuestions({
+  const { questions: apiQuestions, hasMore, isFetchingMore, fetchMore } = useQuizSession({
+    subject: subjectConfig.subjectId,
+    topic: questionTopic ?? slug,
+    mode,
+    limit: 50,
+  });
+  const { meta } = useQuestionsMeta({
     subject: subjectConfig.subjectId,
     topic: questionTopic ?? slug,
   });
@@ -241,12 +249,15 @@ function QuizEngineContent({
   const conceptOptions = useMemo(() => {
     const set = new Set<string>();
     baseConcepts.forEach((concept) => set.add(concept));
+    (meta?.concepts ?? []).forEach((concept) => {
+      if (concept) set.add(concept);
+    });
     allQuestions.forEach((question) => {
       if (question.concept) set.add(question.concept);
     });
     const list = Array.from(set);
     return list.length > 0 ? list : ["General"];
-  }, [allQuestions, baseConcepts]);
+  }, [allQuestions, baseConcepts, meta]);
 
   const conceptColours = useMemo(
     () => buildConceptColours(conceptOptions),
@@ -273,12 +284,16 @@ function QuizEngineContent({
 
   const examOptions = useMemo(() => {
     const set = new Set<string>();
+    (meta?.exams ?? []).forEach((e) => {
+      const exam = normalizeExamLabel((e ?? "").trim());
+      if (exam) set.add(exam);
+    });
     allQuestions.forEach((q) => {
       const exam = normalizeExamLabel((q.exam ?? "").trim());
       if (exam) set.add(exam);
     });
     return ["all", ...Array.from(set).sort((a, b) => a.localeCompare(b))];
-  }, [allQuestions]);
+  }, [allQuestions, meta]);
 
   const classificationGroups = useMemo<ClassificationGroup[]>(() => {
     const search = classificationSearch.trim().toLowerCase();
@@ -335,7 +350,7 @@ function QuizEngineContent({
       availableLetters: Array.from(lettersSet).sort(),
       letterCounts: counts,
     };
-  }, [allQuestions]);
+  }, [allQuestions, meta]);
 
   const handleToggleLetter = useCallback((letter: string) => {
     const upper = letter.trim().toUpperCase();
@@ -403,6 +418,12 @@ function QuizEngineContent({
 
   const questions = filteredQuestions;
   const availableCount = filteredQuestions.length;
+
+  useEffect(() => {
+    if (hasMore && !isFetchingMore && currentIndex >= questions.length - 5) {
+      fetchMore();
+    }
+  }, [currentIndex, questions.length, hasMore, isFetchingMore, fetchMore]);
   const [started, setStarted] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const timerRef = useRef<QuizTimerRef>(null);

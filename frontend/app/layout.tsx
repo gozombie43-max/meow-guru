@@ -3,6 +3,7 @@ import { Geist } from 'next/font/google';
 import 'katex/dist/katex.min.css';
 import './globals.css';
 import { AuthProvider } from '@/context/AuthContext';
+import { StudyTelemetryProvider } from "@/context/StudyTelemetryContext";
 import BottomNav from '@/components/BottomNav';
 import AppWarmup from '@/components/AppWarmup';
 import AppRecovery from '@/components/AppRecovery';
@@ -76,12 +77,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className={geist.className} suppressHydrationWarning>
         <AuthProvider>
-          <StudyTimeTracker />
-          <AppRecovery />
-          <AppWarmup />
-          <PageTransitionShell>{children}</PageTransitionShell>
-          <BottomNav />
-          <FeedbackToast />
+          <StudyTelemetryProvider>
+            <StudyTimeTracker />
+            <AppRecovery />
+            <AppWarmup />
+            <PageTransitionShell>{children}</PageTransitionShell>
+            <BottomNav />
+            <FeedbackToast />
+          </StudyTelemetryProvider>
         </AuthProvider>
       </body>
     </html>

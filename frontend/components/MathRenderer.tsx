@@ -14,6 +14,13 @@ type Part =
   | { type: "inline"; content: string }
   | { type: "display"; content: string };
 
+/** Cheap check for LaTeX/math delimiters — avoids KaTeX for pure text. */
+const MATH_INDICATOR_RE = /\\(?:\[|\(|frac|sqrt|sum|int|cdot|times|div|pm|infty|alpha|beta|gamma|theta|pi|sigma|delta|epsilon|lambda|mu|omega|text\{)|\$[^$]/;
+
+export function containsMathSyntax(text: string): boolean {
+  return MATH_INDICATOR_RE.test(text);
+}
+
 // LRU/Map Caches for string parsing and KaTeX HTML rendering
 const MAX_CACHE_SIZE = 2500;
 const partsCache = new Map<string, Part[]>();
@@ -94,10 +101,25 @@ const MathRenderer = React.memo(function MathRenderer({
 }: MathRendererProps) {
   if (!text) return null;
 
+  // Fast path: no math delimiters and no fraction patterns — render as plain text
+  if (!containsMathSyntax(text) && !text.includes("/")) {
+    return (
+      <span
+        className={`math-text inline leading-relaxed ${className}`}
+        style={{ wordBreak: "break-word" }}
+      >
+        {text}
+      </span>
+    );
+  }
+
   const parts = parseParts(text);
 
   const rendered = parts.map((part, i) => {
     if (part.type === "text") {
+      if (!part.content.includes('/')) {
+        return <span key={i}>{part.content}</span>;
+      }
       const fracRegex = /\(?[^\s\/=()]+\)?\s*\/\s*\(?[^\s\/=()]+\)?/g;
       const nodes: React.ReactNode[] = [];
       let lastIndex = 0;

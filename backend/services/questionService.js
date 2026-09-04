@@ -412,88 +412,126 @@ export async function fetchQuestions(params) {
     (queryMode === 'topic' || queryMode === 'subject');
   const cacheKey = cacheable
     ? `${queryMode}:${JSON.stringify({
-        topic,
-        subject,
-        chapter,
-        concept,
-        difficulty,
-        quizName,
-        questionType,
-        offset: parsedOffset,
-        limit: parsedLimit,
+        topic, subject, chapter, concept, difficulty,
+        quizName, questionType,
+        offset: parsedOffset, limit: parsedLimit,
       })}`
     : null;
 
   let resources = cacheKey ? questionsQueryCache.get(cacheKey) : null;
-
   if (resources) {
     return { count: resources.length, questions: resources };
   }
 
-  const commonConditions = [];
+  // ── Build MongoDB filter ─────────────────────────────
+  const conditions = [];
 
   if (!topic && subject) {
-    commonConditions.push({ subject: caseInsensitiveExact(subject) });
+    conditions.push({ subject: caseInsensitiveExact(subject) });
   }
   if (chapter) {
-    commonConditions.push({ chapter: caseInsensitiveExact(chapter) });
+    conditions.push({ chapter: caseInsensitiveExact(chapter) });
   }
   if (concept) {
-    commonConditions.push({ concept: caseInsensitiveExact(concept) });
+    conditions.push({ concept: caseInsensitiveExact(concept) });
   }
   if (difficulty) {
-    commonConditions.push({ difficulty: caseInsensitiveExact(difficulty) });
+    conditions.push({ difficulty: caseInsensitiveExact(difficulty) });
   }
 
-  const directConditions = [...commonConditions];
   const isSynonymAntonymTopic =
     normalizedTopic === 'synonymsantonyms' || normalizedTopic === 'antosynopyq';
 
   if (topic) {
     if (isSynonymAntonymTopic) {
-      directConditions.push({
+      conditions.push({
         topic: { $in: [topic, 'antosynopyq', 'synonyms-antonyms'] },
       });
     } else {
-      directConditions.push({ topic });
+      conditions.push({ topic });
     }
   }
 
-  resources = await collection
-    .find(combineMongoConditions(directConditions))
-    .project({ _id: 0 })
-    .toArray();
+  // Push quizName filter into MongoDB (was in-memory before)
+  if (normalizedQuizName) {
+    const quizNameRegex = caseInsensitiveExact(quizName);
+    if (normalizedQuizName === 'pyq') {
+      // PYQ matches quizName/quizId/source OR where quizName is absent
+      conditions.push({
+        $or: [
+          { quizName: quizNameRegex },
+          { quizId: quizNameRegex },
+          { source: quizNameRegex },
+          { quizName: { $in: [null, ''] } },
+          { quizName: { $exists: false } },
+        ],
+      });
+    } else {
+      conditions.push({
+        $or: [
+          { quizName: quizNameRegex },
+          { quizId: quizNameRegex },
+          { source: quizNameRegex },
+        ],
+      });
+    }
+  }
 
+  // Push questionType / study-mode filter into MongoDB (was in-memory before)
+  if (isStudyModeRequested) {
+    conditions.push(buildStudyModeMatchCondition());
+  } else if (!isAllRequested) {
+    if (normalizedQuestionType) {
+      conditions.push({ questionType: caseInsensitiveExact(questionType) });
+    } else {
+      // Default: exclude study-mode records
+      conditions.push(buildExcludeStudyModeCondition());
+    }
+  }
+
+  const mongoFilter = combineMongoConditions(conditions);
+
+  // ── Execute query with DB-side pagination ─────────────
+  let cursor = collection.find(mongoFilter).project({ _id: 0 });
+
+  if (parsedOffset > 0) cursor = cursor.skip(parsedOffset);
+  if (parsedLimit !== null && parsedLimit > 0) cursor = cursor.limit(parsedLimit);
+
+  resources = await cursor.toArray();
+
+  // Fallback: try multi-field search if no results for topic query
   if (topic && !isSynonymAntonymTopic && resources.length === 0) {
     const topicRegex = caseInsensitiveExact(topic);
-    const fallbackConditions = [
-      ...commonConditions,
-      {
-        $or: [
-          { topic: topicRegex },
-          { chapter: topicRegex },
-          { subject: topicRegex },
-          { quizTopic: topicRegex },
-          { quizName: topicRegex },
-          { source: topicRegex },
-        ],
-      },
-    ];
+    const fallbackConditions = conditions.filter(
+      (c) => !c.topic // remove the direct topic condition
+    );
+    fallbackConditions.push({
+      $or: [
+        { topic: topicRegex },
+        { chapter: topicRegex },
+        { subject: topicRegex },
+        { quizTopic: topicRegex },
+        { quizName: topicRegex },
+        { source: topicRegex },
+      ],
+    });
 
-    resources = await collection
+    let fallbackCursor = collection
       .find(combineMongoConditions(fallbackConditions))
-      .project({ _id: 0 })
-      .toArray();
+      .project({ _id: 0 });
+
+    if (parsedOffset > 0) fallbackCursor = fallbackCursor.skip(parsedOffset);
+    if (parsedLimit !== null && parsedLimit > 0) fallbackCursor = fallbackCursor.limit(parsedLimit);
+
+    resources = await fallbackCursor.toArray();
   }
 
   if (normalizedTopic && queryMode === 'topic') {
     resources = resources.filter((q) => matchesNormalizedTopic(q, normalizedTopic));
   }
-
   if (normalizedQuizName) {
     resources = resources.filter((q) => matchesQuizNameFilter(q, normalizedQuizName));
   }
-
   if (isStudyModeRequested) {
     resources = resources.filter((q) => isStudyModeRecord(q));
   } else if (!isAllRequested) {
@@ -506,17 +544,269 @@ export async function fetchQuestions(params) {
     }
   }
 
-  if (parsedLimit !== null && parsedLimit > 0) {
-    resources = resources.slice(parsedOffset, parsedOffset + parsedLimit);
-  } else if (parsedOffset > 0) {
-    resources = resources.slice(parsedOffset);
-  }
-
   if (cacheKey) {
     questionsQueryCache.set(cacheKey, resources);
   }
 
-  return { count: resources.length, questions: resources };
+  // Get total count when pagination is active
+  let total = resources.length;
+  if (parsedLimit !== null && parsedLimit > 0) {
+    total = resources.length < parsedLimit && parsedOffset === 0
+      ? resources.length
+      : await collection.countDocuments(mongoFilter);
+  }
+
+  return { count: total, questions: resources };
+}
+
+// ── Study-mode MongoDB conditions ───────────────────────
+function buildStudyModeMatchCondition() {
+  return {
+    $or: [
+      { questionType: { $regex: /^study-?mode$/i } },
+      { quizName: { $regex: /^study\s*mode$/i } },
+      {
+        $and: [
+          { word: { $exists: true, $ne: '' } },
+          { meanings: { $type: 'array' } },
+        ],
+      },
+    ],
+  };
+}
+
+function buildExcludeStudyModeCondition() {
+  return {
+    $nor: [
+      { questionType: { $regex: /^study-?mode$/i } },
+      { quizName: { $regex: /^study\s*mode$/i } },
+      {
+        $and: [
+          { word: { $exists: true, $ne: '' } },
+          { meanings: { $type: 'array' } },
+        ],
+      },
+    ],
+  };
+}
+
+// ── Mode tag → MongoDB filter mapping ───────────────────
+const MODE_QUIZ_TAGS = {
+  formula: ['careerwill', 'patternbank', 'formula', 'formulabank', 'vocabularybank', 'factbank', 'antosynopyq'],
+  'ai-challenge': ['selectionway', 'aichallenge'],
+  hard: ['tier2', 'tier2hard'],
+  easy: ['topicmix'],
+  mixed: ['pw', 'mixedpractice', 'mixedpw'],
+};
+
+function buildModeFilter(mode) {
+  const normalizedMode = String(mode || '').trim().toLowerCase();
+  const tags = MODE_QUIZ_TAGS[normalizedMode];
+  if (!tags) {
+    // "concept" mode = everything NOT matched by other modes
+    const allOtherTags = Object.values(MODE_QUIZ_TAGS).flat();
+    const tagRegexes = allOtherTags.map((t) => new RegExp(`^${escapeRegex(t)}$`, 'i'));
+    return {
+      $and: [
+        buildExcludeStudyModeCondition(),
+        {
+          $nor: [
+            { quizName: { $in: tagRegexes } },
+            { quizId: { $in: tagRegexes } },
+            { source: { $in: tagRegexes } },
+          ],
+        },
+      ],
+    };
+  }
+
+  const tagRegexes = tags.map((t) => new RegExp(`^${escapeRegex(t)}$`, 'i'));
+
+  if (normalizedMode === 'formula') {
+    // Formula mode also includes records with letter or word fields
+    return {
+      $or: [
+        { quizName: { $in: tagRegexes } },
+        { quizId: { $in: tagRegexes } },
+        { source: { $in: tagRegexes } },
+        { topic: { $regex: /^antosynopyq$/i } },
+        { letter: { $exists: true, $ne: '' } },
+        { word: { $exists: true, $ne: '' } },
+      ],
+    };
+  }
+
+  return {
+    $or: [
+      { quizName: { $in: tagRegexes } },
+      { quizId: { $in: tagRegexes } },
+      { source: { $in: tagRegexes } },
+    ],
+  };
+}
+
+// ── Session endpoint: mode-filtered + paginated ─────────
+export async function fetchQuestionsSession(params) {
+  const collection = getQuestionsCollection();
+  const {
+    topic,
+    subject,
+    mode,
+    limit = 50,
+    cursor: cursorId,
+    letter,
+  } = params;
+
+  const parsedLimit = Math.max(1, Math.min(200, Number(limit) || 50));
+  const conditions = [];
+
+  if (topic) {
+    const normalizedTopic = normalizeSearchKey(topic);
+    const isSynonymAntonymTopic =
+      normalizedTopic === 'synonymsantonyms' || normalizedTopic === 'antosynopyq';
+    if (isSynonymAntonymTopic) {
+      conditions.push({
+        topic: { $in: [topic, 'antosynopyq', 'synonyms-antonyms'] },
+      });
+    } else {
+      conditions.push({ topic });
+    }
+  } else if (subject) {
+    conditions.push({ subject: caseInsensitiveExact(subject) });
+  }
+
+  if (letter) {
+    conditions.push({ letter: caseInsensitiveExact(letter) });
+  }
+
+  // Apply mode filter
+  if (mode) {
+    const modeFilter = buildModeFilter(mode);
+    conditions.push(modeFilter);
+  } else {
+    // Default: exclude study-mode
+    conditions.push(buildExcludeStudyModeCondition());
+  }
+
+  // Cursor-based pagination using _id
+  if (cursorId) {
+    try {
+      const { ObjectId } = await import('mongodb');
+      conditions.push({ _id: { $gt: new ObjectId(cursorId) } });
+    } catch {
+      // Invalid cursor, ignore
+    }
+  }
+
+  const mongoFilter = combineMongoConditions(conditions);
+
+  // Fetch limit + 1 to know if there are more
+  const resources = await collection
+    .find(mongoFilter)
+    .project({ _id: 1 })  // first pass: get IDs to check hasMore
+    .sort({ _id: 1 })
+    .limit(parsedLimit + 1)
+    .toArray();
+
+  const hasMore = resources.length > parsedLimit;
+  const resultIds = resources.slice(0, parsedLimit).map((r) => r._id);
+
+  // Second pass: get full documents for the page
+  const questions = resultIds.length > 0
+    ? await collection
+        .find({ _id: { $in: resultIds } })
+        .project({ _id: 0 })
+        .sort({ _id: 1 })
+        .toArray()
+    : [];
+
+  const nextCursor = hasMore && resultIds.length > 0
+    ? resultIds[resultIds.length - 1].toString()
+    : null;
+
+  return {
+    questions,
+    nextCursor,
+    hasMore,
+  };
+}
+
+// ── Metadata endpoint: lightweight summary ──────────────
+export async function fetchQuestionsMeta(params) {
+  const collection = getQuestionsCollection();
+  const { topic, subject } = params;
+
+  if (!topic && !subject) {
+    const error = new Error('topic or subject is required');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const conditions = [];
+  if (topic) {
+    const normalizedTopic = normalizeSearchKey(topic);
+    const isSynonymAntonymTopic =
+      normalizedTopic === 'synonymsantonyms' || normalizedTopic === 'antosynopyq';
+    if (isSynonymAntonymTopic) {
+      conditions.push({
+        topic: { $in: [topic, 'antosynopyq', 'synonyms-antonyms'] },
+      });
+    } else {
+      conditions.push({ topic });
+    }
+  } else if (subject) {
+    conditions.push({ subject: caseInsensitiveExact(subject) });
+  }
+
+  // Exclude study-mode for meta
+  conditions.push(buildExcludeStudyModeCondition());
+
+  const mongoFilter = combineMongoConditions(conditions);
+
+  const [total, examAgg, conceptAgg, letterAgg] = await Promise.all([
+    collection.countDocuments(mongoFilter),
+    collection.aggregate([
+      { $match: mongoFilter },
+      { $group: { _id: { $toLower: mongoString('$exam') } } },
+      { $match: { _id: { $ne: '' } } },
+      { $sort: { _id: 1 } },
+    ]).toArray(),
+    collection.aggregate([
+      { $match: mongoFilter },
+      { $group: { _id: { $toLower: mongoString('$concept') } } },
+      { $match: { _id: { $ne: '' } } },
+      { $sort: { _id: 1 } },
+    ]).toArray(),
+    collection.aggregate([
+      { $match: mongoFilter },
+      {
+        $match: {
+          letter: { $exists: true, $ne: '' },
+        },
+      },
+      {
+        $group: {
+          _id: { $toUpper: { $substrCP: [mongoString('$letter'), 0, 1] } },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]).toArray(),
+  ]);
+
+  const letters = {};
+  for (const row of letterAgg) {
+    if (row._id && /^[A-Z]$/.test(row._id)) {
+      letters[row._id] = row.count;
+    }
+  }
+
+  return {
+    total,
+    exams: examAgg.map((r) => r._id).filter(Boolean),
+    concepts: conceptAgg.map((r) => r._id).filter(Boolean),
+    letters,
+  };
 }
 
 export async function fetchPracticeTest(params) {

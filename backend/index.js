@@ -9,6 +9,7 @@ import cookieParser from 'cookie-parser';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import helmet from 'helmet';
+import compression from 'compression';
 
 import { errorHandler } from './middleware/errorHandler.js';
 
@@ -168,6 +169,8 @@ app.options(
   /(.*)/,
   cors(corsOptions)
 );
+
+app.use(compression());
 
 app.use(
   express.json({

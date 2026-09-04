@@ -24,6 +24,10 @@ export async function connectMongoDB() {
   await Promise.all([
     db.collection("questions").createIndex({ topic: 1 }),
     db.collection("questions").createIndex({ subject: 1 }),
+    // Compound indexes for filtered + paginated queries
+    db.collection("questions").createIndex({ topic: 1, questionType: 1 }),
+    db.collection("questions").createIndex({ topic: 1, quizName: 1 }),
+    db.collection("questions").createIndex({ subject: 1, topic: 1, difficulty: 1 }),
   ]);
 
   console.log("✅ MongoDB Atlas connected");

@@ -284,6 +284,28 @@ const getImageQuestions = async (req, res) => {
   }
 };
 
+// ── GET /api/questions/session ────────────────────────
+const getQuestionsSession = async (req, res) => {
+  try {
+    const result = await questionService.fetchQuestionsSession(req.query);
+    res.set('Cache-Control', 'public, max-age=10, stale-while-revalidate=30');
+    res.json(result);
+  } catch (err) {
+    res.status(err.statusCode || 500).json({ error: err.message });
+  }
+};
+
+// ── GET /api/questions/meta ──────────────────────────
+const getQuestionsMeta = async (req, res) => {
+  try {
+    const result = await questionService.fetchQuestionsMeta(req.query);
+    res.set('Cache-Control', 'public, max-age=30, stale-while-revalidate=60');
+    res.json(result);
+  } catch (err) {
+    res.status(err.statusCode || 500).json({ error: err.message });
+  }
+};
+
 export default { 
   addQuestion, 
   getQuestionById, 
@@ -296,5 +318,7 @@ export default {
   runAnalysis,
   bulkCreateQuestions,
   checkDuplicates,
-  getImageQuestions
+  getImageQuestions,
+  getQuestionsSession,
+  getQuestionsMeta,
 };

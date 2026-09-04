@@ -35,7 +35,7 @@ const EMPTY_COUNTS: ModeQuestionCounts = {
 };
 
 async function fetchCounts(url: string): Promise<QuestionCountsResponse> {
-  const response = await fetchWithRetry(url, { cache: "no-store" });
+  const response = await fetchWithRetry(url);
   if (!response.ok) throw new Error("Failed to fetch question counts");
   return response.json();
 }

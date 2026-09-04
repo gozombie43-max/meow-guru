@@ -84,3 +84,27 @@ jobs:
         working-directory: ./frontend
         run: npm audit --audit-level=high
         continue-on-error: true
+
+  build-and-analyze:
+    name: Production Build & Bundle Report
+    runs-on: ubuntu-latest
+    needs: lint-and-typecheck
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.x"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install frontend dependencies
+        run: npm ci --workspace frontend --include-workspace-root=false
+      - name: Production Next.js build
+        working-directory: ./frontend
+        run: npm run build
+      - name: Upload build output size report
+        uses: actions/upload-artifact@v4
+        with:
+          name: nextjs-build-report
+          path: frontend/.next/diagnostics/
+          retention-days: 14
+          if-no-files-found: ignore

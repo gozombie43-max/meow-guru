@@ -22,8 +22,8 @@ export function useWarmup() {
             keepalive: true,
           },
           {
-            attempts: 3,
-            timeoutMs: 15000,
+            attempts: 1,
+            timeoutMs: 8000,
             retryDelayMs: 5000,
           }
         );

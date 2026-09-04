@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
-import GradientWaves from '@/components/GradientWaves';
+import GradientWavesLazy from '@/components/GradientWavesLazy';
 import MacTrafficLights from '@/components/MacTrafficLights';
 import QuizChartArt from '@/components/QuizChartArt';
 import GoogleAvatarRing from '@/components/GoogleAvatarRing';
@@ -165,7 +165,7 @@ export default function HomeClient({
           pointerEvents: 'none',
         }}
       >
-        <GradientWaves
+        <GradientWavesLazy
           horizonColor={isDark ? "#0062cc" : "#0071e3"}
           waveColor={isDark ? "#38bdf8" : "#60a5fa"}
           crestColor="#ffffff"

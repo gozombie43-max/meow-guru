@@ -3,9 +3,11 @@
 import { useEffect, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { usePathname } from 'next/navigation';
+import { useStudyTelemetry } from "@/context/StudyTelemetryContext";
 
 export default function StudyTimeTracker() {
-  const { syncStudyTime, user } = useAuth();
+  const { user } = useAuth();
+  const { syncStudyTime } = useStudyTelemetry();
   const userId = user?.id;
   const pathname = usePathname();
   const lastTick = useRef<number>(Date.now());
@@ -19,7 +21,7 @@ export default function StudyTimeTracker() {
   useEffect(() => {
     if (!userId) return;
 
-    const TICK_INTERVAL_MS = 1000;
+    const TICK_INTERVAL_MS = 5000;
     const SYNC_INTERVAL_MS = 30000; // Sync every 30 seconds
 
     lastTick.current = Date.now();
