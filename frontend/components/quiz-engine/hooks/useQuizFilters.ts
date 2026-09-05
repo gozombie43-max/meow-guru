@@ -174,9 +174,13 @@ export function useQuizFilters({
   const { availableLetters, letterCounts } = useMemo(() => {
     const counts: Record<string, number> = {};
     const lettersSet = new Set<string>();
+    const normalizedExam = normalizeExamLabel(examFilter);
 
     allQuestions.forEach((q) => {
       if (isFormulaQuestion(q)) {
+        if (normalizedExam && normalizeExamLabel(q.exam ?? "") !== normalizedExam) {
+          return;
+        }
         const letter = (q.letter || (q.word ? q.word.trim().charAt(0) : ""))
           .trim()
           .toUpperCase();
@@ -191,7 +195,7 @@ export function useQuizFilters({
       availableLetters: Array.from(lettersSet).sort(),
       letterCounts: counts,
     };
-  }, [allQuestions, meta]);
+  }, [allQuestions, examFilter]);
 
   const handleToggleLetter = useCallback((letter: string) => {
     const upper = letter.trim().toUpperCase();

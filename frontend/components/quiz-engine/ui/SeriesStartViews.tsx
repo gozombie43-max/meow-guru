@@ -422,29 +422,27 @@ function MacOsQuizStartStudio({
             </div>
 
             {/* Exam Target Selector */}
-            {!isEnglishSynonymsFormula && (
-              <div className={styles.selectSection}>
-                <span className={styles.sectionLabel}>Target Exam</span>
-                <div className={styles.examSelectRow}>
-                  <Target size={14} className={styles.examSelectIcon} />
-                  <select
-                    value={examFilter || "all"}
-                    onChange={(e) => onExamChange(e.target.value === "all" ? "" : e.target.value)}
-                    className={styles.examSelect}
-                  >
-                    <option value="all">All Exams Combined</option>
-                    {examOptions
-                      .filter((ex) => ex !== "all")
-                      .map((ex) => (
-                        <option key={ex} value={ex}>
-                          {ex}
-                        </option>
-                      ))}
-                  </select>
-                  <ChevronDown size={13} className={styles.examChevron} />
-                </div>
+            <div className={styles.selectSection}>
+              <span className={styles.sectionLabel}>Target Exam</span>
+              <div className={styles.examSelectRow}>
+                <Target size={14} className={styles.examSelectIcon} />
+                <select
+                  value={examFilter || "all"}
+                  onChange={(e) => onExamChange(e.target.value === "all" ? "" : e.target.value)}
+                  className={styles.examSelect}
+                >
+                  <option value="all">All Exams Combined</option>
+                  {examOptions
+                    .filter((ex) => ex !== "all")
+                    .map((ex) => (
+                      <option key={ex} value={ex}>
+                        {ex}
+                      </option>
+                    ))}
+                </select>
+                <ChevronDown size={13} className={styles.examChevron} />
               </div>
-            )}
+            </div>
 
             {/* Metrics Stats Grid */}
             <div className={styles.statsGrid}>
@@ -828,46 +826,73 @@ function IosQuizStartMobile({
       {/* ── Scrollable Body ── */}
       <main className={styles.iosContent}>
         {isEnglishSynonymsFormula ? (
-          <div className={styles.iosLetterSection}>
-            <div className={styles.iosLetterHeader}>
-              <p className={styles.iosLetterHeading}>Filter by Letter</p>
-              <span className={styles.iosLetterActiveLabel}>
-                {selectedLetters && selectedLetters.size > 0
-                  ? `Letter ${Array.from(selectedLetters).sort().join(", ")}`
-                  : "All Letters"}
-              </span>
-            </div>
-            <div className={styles.iosLetterGrid} aria-label="Alphabet filters">
-              <button
-                type="button"
-                className={`${styles.iosLetterPill} ${styles.iosLetterPillWide} ${
-                  !selectedLetters || selectedLetters.size === 0 ? styles.iosLetterPillActive : ""
-                }`}
-                onClick={onSelectAllLetters}
-              >
-                All
-              </button>
-              {ALPHABET.map((letter) => {
-                const count = letterCounts?.[letter] ?? 0;
-                const isSelected = selectedLetters?.has(letter);
-                const hasQuestions = count > 0;
-                return (
-                  <button
-                    key={letter}
-                    type="button"
-                    className={`${styles.iosLetterPill} ${isSelected ? styles.iosLetterPillActive : ""} ${
-                      !hasQuestions ? styles.iosLetterPillDisabled : ""
-                    }`}
-                    onClick={() => onToggleLetter && onToggleLetter(letter)}
-                    disabled={!hasQuestions}
-                    title={hasQuestions ? `Letter ${letter} (${count} questions)` : `Letter ${letter} (0 questions)`}
+          <>
+            {/* Select Exam Target */}
+            <p className={styles.iosHeading}>Select Exam Target</p>
+            <div className={styles.iosDropdownContainer}>
+              <div className={styles.iosDropdownRow}>
+                <span className={styles.iosTargetIconBox}>
+                  <Target size={15} />
+                </span>
+                <span className={styles.iosDropdownLabel}>Exam Name</span>
+                <div className={styles.iosSelectWrapper}>
+                  <select
+                    value={examFilter || "all"}
+                    onChange={(e) => onExamChange(e.target.value === "all" ? "" : e.target.value)}
+                    className={styles.iosSelect}
                   >
-                    {letter}
-                  </button>
-                );
-              })}
+                    {examOptions.map((ex) => (
+                      <option key={ex} value={ex === "all" ? "all" : ex}>
+                        {ex === "all" ? "All Exams" : ex}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown size={14} className={styles.iosSelectChevron} />
+                </div>
+              </div>
             </div>
-          </div>
+
+            <div className={styles.iosLetterSection}>
+              <div className={styles.iosLetterHeader}>
+                <p className={styles.iosLetterHeading}>Filter by Letter</p>
+                <span className={styles.iosLetterActiveLabel}>
+                  {selectedLetters && selectedLetters.size > 0
+                    ? `Letter ${Array.from(selectedLetters).sort().join(", ")}`
+                    : "All Letters"}
+                </span>
+              </div>
+              <div className={styles.iosLetterGrid} aria-label="Alphabet filters">
+                <button
+                  type="button"
+                  className={`${styles.iosLetterPill} ${styles.iosLetterPillWide} ${
+                    !selectedLetters || selectedLetters.size === 0 ? styles.iosLetterPillActive : ""
+                  }`}
+                  onClick={onSelectAllLetters}
+                >
+                  All
+                </button>
+                {ALPHABET.map((letter) => {
+                  const count = letterCounts?.[letter] ?? 0;
+                  const isSelected = selectedLetters?.has(letter);
+                  const hasQuestions = count > 0;
+                  return (
+                    <button
+                      key={letter}
+                      type="button"
+                      className={`${styles.iosLetterPill} ${isSelected ? styles.iosLetterPillActive : ""} ${
+                        !hasQuestions ? styles.iosLetterPillDisabled : ""
+                      }`}
+                      onClick={() => onToggleLetter && onToggleLetter(letter)}
+                      disabled={!hasQuestions}
+                      title={hasQuestions ? `Letter ${letter} (${count} questions)` : `Letter ${letter} (0 questions)`}
+                    >
+                      {letter}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </>
         ) : (
           <>
             {/* Select Exam Target */}
