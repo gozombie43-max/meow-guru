@@ -1,15 +1,7 @@
-import type { Metadata, Viewport } from 'next';
-import { Geist } from 'next/font/google';
 import 'katex/dist/katex.min.css';
+import type { Metadata,Viewport } from 'next';
+import { Geist } from 'next/font/google';
 import './globals.css';
-import { AuthProvider } from '@/context/AuthContext';
-import { StudyTelemetryProvider } from "@/context/StudyTelemetryContext";
-import BottomNav from '@/components/BottomNav';
-import AppWarmup from '@/components/AppWarmup';
-import AppRecovery from '@/components/AppRecovery';
-import FeedbackToast from '@/components/FeedbackToast';
-import PageTransitionShell from '@/components/PageTransitionShell';
-import StudyTimeTracker from '@/components/StudyTimeTracker';
 
 const geist = Geist({ subsets: ['latin'] });
 
@@ -76,16 +68,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className={geist.className} suppressHydrationWarning>
-        <AuthProvider>
-          <StudyTelemetryProvider>
-            <StudyTimeTracker />
-            <AppRecovery />
-            <AppWarmup />
-            <PageTransitionShell>{children}</PageTransitionShell>
-            <BottomNav />
-            <FeedbackToast />
-          </StudyTelemetryProvider>
-        </AuthProvider>
+        {children}
       </body>
     </html>
   );

@@ -95,13 +95,22 @@ jobs:
         with:
           node-version: "22.x"
           cache: npm
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: package-lock.json
       - name: Install frontend dependencies
         run: npm ci --workspace frontend --include-workspace-root=false
       - name: Production Next.js build
         working-directory: ./frontend
         run: npm run build
+      - name: Enforce entry JavaScript budgets
+        working-directory: ./frontend
+        run: npm run check:performance
+      - name: Lighthouse performance budgets
+        working-directory: ./frontend
+        run: |
+          npm exec --yes --package=@lhci/cli@0.15.1 -- lhci autorun
+          node scripts/check-lighthouse-routes.mjs
       - name: Upload build output size report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: nextjs-build-report

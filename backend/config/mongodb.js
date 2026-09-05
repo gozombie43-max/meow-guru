@@ -24,6 +24,10 @@ export async function connectMongoDB() {
   await Promise.all([
     db.collection("questions").createIndex({ topic: 1 }),
     db.collection("questions").createIndex({ subject: 1 }),
+    // Cursor order and normalized ingestion keys.
+    db.collection("questions").createIndex({ topic: 1, _id: 1 }),
+    db.collection("questions").createIndex({ topicKey: 1, _id: 1 }),
+    db.collection("questions").createIndex({ subjectKey: 1, topicKey: 1, quizKey: 1, _id: 1 }),
     // Compound indexes for filtered + paginated queries
     db.collection("questions").createIndex({ topic: 1, questionType: 1 }),
     db.collection("questions").createIndex({ topic: 1, quizName: 1 }),

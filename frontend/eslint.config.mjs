@@ -6,6 +6,7 @@ const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
   {
+    files: ["**/*.{js,jsx,ts,tsx,mjs,mts}"],
     rules: {
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],

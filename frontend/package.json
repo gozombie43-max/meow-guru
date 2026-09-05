@@ -11,7 +11,8 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "check": "npm run typecheck && npm run test:run && npm run lint"
+    "check": "npm run typecheck && npm run test:run && npm run lint",
+    "check:performance": "node scripts/check-performance-budget.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

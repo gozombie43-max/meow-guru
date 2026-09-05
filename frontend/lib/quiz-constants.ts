@@ -1,3 +1,4 @@
+import { MATHEMATICS_TOPICS } from "./mathematics-topics";
 export const QUIZ_MODES = ["PYQ", "CareerWill", "PW", "Selection Way", "Topic Mix", "Tier 2"];
 export const MENSURATION_QUIZ_MODES = ["PYQ", "CareerWill", "Selection Way", "Tier 2"];
 export const SYNONYMS_QUIZ_MODES = [...QUIZ_MODES, "Study Mode"];
@@ -5,25 +6,9 @@ export const SYNONYMS_QUIZ_MODES = [...QUIZ_MODES, "Study Mode"];
 export const QUIZ_TREE: Record<string, { label: string; topics: Record<string, { label: string; quizzes: string[] }> }> = {
   mathematics: {
     label: "Mathematics",
-    topics: {
-      algebra: { label: "Algebra", quizzes: QUIZ_MODES },
-      geometry: { label: "Geometry", quizzes: QUIZ_MODES },
-      mensuration: { label: "Mensuration", quizzes: MENSURATION_QUIZ_MODES },
-      trigonometry: { label: "Trigonometry", quizzes: QUIZ_MODES },
-      "number-system": { label: "Number System", quizzes: QUIZ_MODES },
-      "statistics-probability": { label: "Statistics & Probability", quizzes: QUIZ_MODES },
-      averages: { label: "Averages", quizzes: QUIZ_MODES },
-      discount: { label: "Discount", quizzes: QUIZ_MODES },
-      interest: { label: "Interest", quizzes: QUIZ_MODES },
-      "mixture-and-alligation": { label: "Mixture & Alligation", quizzes: QUIZ_MODES },
-      partnership: { label: "Partnership", quizzes: QUIZ_MODES },
-      percentages: { label: "Percentages", quizzes: QUIZ_MODES },
-      "profit-and-loss": { label: "Profit & Loss", quizzes: QUIZ_MODES },
-      "ratio-and-proportion": { label: "Ratio & Proportion", quizzes: QUIZ_MODES },
-      "square-roots": { label: "Square Roots", quizzes: QUIZ_MODES },
-      "time-and-distance": { label: "Time & Distance", quizzes: QUIZ_MODES },
-      "time-and-work": { label: "Time & Work", quizzes: QUIZ_MODES },
-    },
+    topics: Object.fromEntries(Object.values(MATHEMATICS_TOPICS).map((topic) => [topic.slug, {
+      label: topic.label, quizzes: topic.mensurationModes ? MENSURATION_QUIZ_MODES : QUIZ_MODES,
+    }])),
   },
   reasoning: {
     label: "Reasoning",

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach,describe,expect,it,vi } from 'vitest';
 
 const { getQuestionsCollectionMock } = vi.hoisted(() => ({
   getQuestionsCollectionMock: vi.fn(),
@@ -9,25 +9,25 @@ vi.mock('../../config/mongodb.js', () => ({
 }));
 
 import {
-  analyzeAnswers,
-  checkDuplicates,
-  createQuestion,
-  createQuestionsBulk,
-  fetchImageQuestions,
-  fetchPracticeTest,
-  fetchQuestionById,
-  fetchQuestions,
-  fetchQuestionCounts,
-  normalizeSearchKey,
-  normalizeQuizKey,
-  matchesNormalizedTopic,
-  modifyQuestion,
-  isStudyModeRecord,
-  buildQuestionsCacheKey,
-  questionsQueryCache,
-  questionCountsCache,
-  removeQuestion,
-  removeQuestionsBulk,
+analyzeAnswers,
+buildQuestionsCacheKey,
+checkDuplicates,
+createQuestion,
+createQuestionsBulk,
+fetchImageQuestions,
+fetchPracticeTest,
+fetchQuestionById,
+fetchQuestionCounts,
+fetchQuestions,
+isStudyModeRecord,
+matchesNormalizedTopic,
+modifyQuestion,
+normalizeQuizKey,
+normalizeSearchKey,
+questionCountsCache,
+questionsQueryCache,
+removeQuestion,
+removeQuestionsBulk,
 } from '../questionService.js';
 
 function createCursor(resources) {
@@ -356,7 +356,7 @@ describe('MongoDB-backed question writes', () => {
     expect(collection.insertOne).toHaveBeenCalledWith(
       expect.objectContaining({ id: 'new-id', topic: 'Algebra' })
     );
-    expect(result).toEqual({ id: 'new-id', chapter: ' Algebra ', topic: 'Algebra' });
+    expect(result).toEqual({ id: 'new-id', chapter: ' Algebra ', topic: 'Algebra', topicKey: 'algebra', subjectKey: '', quizKey: '', keyVersion: 1 });
     expect(questionsQueryCache.has('stale')).toBe(false);
   });
 
@@ -412,10 +412,11 @@ describe('MongoDB-backed question writes', () => {
           id: 'q457',
           topic: 'algebra',
           question: 'After',
+          topicKey: 'algebra', subjectKey: '', quizKey: '', keyVersion: 1,
         },
       }
     );
-    expect(result).toEqual({ id: 'q457', topic: 'algebra', question: 'After' });
+    expect(result).toEqual({ id: 'q457', topic: 'algebra', question: 'After', topicKey: 'algebra', subjectKey: '', quizKey: '', keyVersion: 1 });
   });
 
   it('uses deleteOne with a topic and deleteMany without one', async () => {
