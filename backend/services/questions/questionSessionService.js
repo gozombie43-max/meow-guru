@@ -9,7 +9,7 @@ import {
 
 export async function fetchQuestionsSession(params) {
   const collection = getQuestionsCollection();
-  const { topic, subject, mode, limit = 50, cursor: cursorId, letter } = params;
+  const { topic, subject, mode, limit = 50, cursor: cursorId, letter, exam, concept } = params;
 
   const parsedLimit = Math.max(
     1,
@@ -42,13 +42,34 @@ export async function fetchQuestionsSession(params) {
   }
 
   if (letter) {
-    conditions.push({ letter: caseInsensitiveExact(letter) });
+    const lettersArray = letter.split(',').map(l => l.trim()).filter(Boolean);
+    if (lettersArray.length > 0) {
+      conditions.push({ letter: { $in: lettersArray.map(l => caseInsensitiveExact(l)) } });
+    }
+  }
+
+  if (exam && exam !== "all") {
+    const examsArray = exam.split(',').map(e => e.trim()).filter(Boolean);
+    if (examsArray.length > 0) {
+      conditions.push({ exam: { $in: examsArray.map(e => caseInsensitiveExact(e)) } });
+    }
+  }
+
+  if (concept && concept !== "all") {
+    const conceptsArray = concept.split(',').map(c => c.trim()).filter(Boolean);
+    if (conceptsArray.length > 0) {
+      conditions.push({ concept: { $in: conceptsArray.map(c => caseInsensitiveExact(c)) } });
+    }
   }
 
   // Apply mode filter
   if (mode) {
-    const modeFilter = buildModeFilter(mode);
-    conditions.push(modeFilter);
+    if (process.env.QUESTIONS_NORMALIZED_KEYS === "true") {
+      conditions.push({ modeKey: mode });
+    } else {
+      const modeFilter = buildModeFilter(mode);
+      conditions.push(modeFilter);
+    }
   } else {
     // Default: exclude study-mode
     conditions.push(buildExcludeStudyModeCondition());
@@ -69,32 +90,33 @@ export async function fetchQuestionsSession(params) {
   // Fetch limit + 1 to know if there are more
   const resources = await collection
     .find(mongoFilter)
-    .project({ _id: 1 }) // first pass: get IDs to check hasMore
     .sort({ _id: 1 })
     .limit(parsedLimit + 1)
     .toArray();
 
-  const hasMore = resources.length > parsedLimit;
-  const resultIds = resources.slice(0, parsedLimit).map((r) => r._id);
+  const countFilter = combineMongoConditions(
+    conditions.filter((c) => !c._id || !c._id.$gt)
+  );
+  
+  const totalCount = await collection.countDocuments(countFilter);
 
-  // Second pass: get full documents for the page
-  const questions =
-    resultIds.length > 0
-      ? await collection
-          .find({ _id: { $in: resultIds } })
-          .project({ _id: 0 })
-          .sort({ _id: 1 })
-          .toArray()
-      : [];
+  const hasMore = resources.length > parsedLimit;
+  const pageItems = resources.slice(0, parsedLimit);
 
   const nextCursor =
-    hasMore && resultIds.length > 0
-      ? resultIds[resultIds.length - 1].toString()
+    hasMore && pageItems.length > 0
+      ? pageItems[pageItems.length - 1]._id.toString()
       : null;
+
+  const questions = pageItems.map(item => {
+    const { _id, ...rest } = item;
+    return rest;
+  });
 
   return {
     questions,
     nextCursor,
     hasMore,
+    totalCount,
   };
 }

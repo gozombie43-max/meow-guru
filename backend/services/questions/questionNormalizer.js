@@ -61,6 +61,49 @@ export function isStudyModeRecord(q) {
   return false;
 }
 
+export function deriveModeKey(question) {
+  const quizTag = normalizeQuizKey(question.quizName || question.quizId || question.source);
+  const normalizedTopic = normalizeSearchKey(question.topic);
+  const questionType = String(question.questionType || "").trim().toLowerCase();
+  const quizName = String(question.quizName || "").trim().toLowerCase();
+
+  const hasWord = !!(question.word && String(question.word).trim());
+  const hasLetter = !!(question.letter && String(question.letter).trim());
+  const hasMeanings = Array.isArray(question.meanings);
+
+  if (
+    questionType === "study-mode" ||
+    questionType === "studymode" ||
+    quizName === "study mode" ||
+    (hasWord && hasMeanings)
+  ) {
+    return "studyMode";
+  }
+
+  if (
+    [
+      "careerwill",
+      "patternbank",
+      "formula",
+      "formulabank",
+      "vocabularybank",
+      "factbank",
+      "antosynopyq",
+    ].includes(quizTag) ||
+    normalizedTopic === "antosynopyq" ||
+    hasLetter ||
+    hasWord
+  ) {
+    return "formula";
+  }
+
+  if (["selectionway", "aichallenge"].includes(quizTag)) return "aiChallenge";
+  if (["tier2", "tier2hard"].includes(quizTag)) return "hard";
+  if (quizTag === "topicmix") return "easy";
+  if (["pw", "mixedpractice", "mixedpw"].includes(quizTag)) return "mixed";
+  return "concept";
+}
+
 // Versioned ingestion keys. Keep display fields and legacy lookup semantics intact.
 export function normalizedQuestionKeys(question) {
   return {
@@ -69,6 +112,7 @@ export function normalizedQuestionKeys(question) {
     quizKey: normalizeQuizKey(
       question.quizName || question.quizId || question.source,
     ),
+    modeKey: deriveModeKey(question),
     keyVersion: 1,
   };
 }

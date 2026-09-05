@@ -1,25 +1,17 @@
 import type { SubjectConfig } from "@/components/quiz-engine/types";
 import {
   ClassificationGroup,
-  QuizQuestionRecord,
 } from "@/components/quiz-engine/types";
 import {
   buildConceptColours,
   ensureUniqueQuestionIds,
-  isAiChallengeQuestion,
-  isFormulaQuestion,
-  isMixedQuestion,
   isStudyModeQuestion,
-  isTier2Question,
-  isTopicMixQuestion,
   toQuizQuestion,
 } from "@/components/quiz-engine/utils";
 import { useQuestionsMeta } from "@/hooks/useQuestionsMeta";
 import { useQuizSession } from "@/hooks/useQuizSession";
 import {
-  buildQuizIndex,
   normalizeExamLabel,
-  resolveIndexedQuestions,
 } from "@/lib/quiz-index";
 import { useCallback, useMemo, useState } from "react";
 import type { QuizMode } from "../types";
@@ -44,37 +36,56 @@ export function useQuizFilters({
   const [classificationCategory, setClassificationCategory] = useState<
     "All" | string
   >("All");
-  const baseConcepts = useMemo(
-    () => subjectConfig.topicConcepts[slug] ?? [],
-    [slug, subjectConfig.topicConcepts],
-  );
+
+  const [selectedLetters, setSelectedLetters] = useState<Set<string>>(() => {
+    if (initialLetterParam) {
+      const letters = initialLetterParam
+        .split(",")
+        .map((l) => l.trim().toUpperCase())
+        .filter((l) => /^[A-Z]$/.test(l));
+      if (letters.length > 0) return new Set(letters);
+    }
+    return new Set();
+  });
+
+  const { meta } = useQuestionsMeta({
+    subject: subjectConfig.subjectId,
+    topic: questionTopic ?? slug,
+    mode,
+  });
+
+  const selectedRawExams = useMemo(() => {
+    if (!examFilter || examFilter === "all") return undefined;
+    const rawExams = meta?.exams ?? [];
+    const matches = rawExams.filter((e) => normalizeExamLabel((e ?? "").trim()) === examFilter);
+    if (matches.length === 0) return examFilter; // Fallback to raw filter if no matches
+    return matches.join(",");
+  }, [examFilter, meta?.exams]);
+
   const {
     questions: apiQuestions,
     hasMore,
     isFetchingMore,
     fetchMore,
+    totalCount: apiTotalCount,
+    isLoading,
   } = useQuizSession({
     subject: subjectConfig.subjectId,
     topic: questionTopic ?? slug,
     mode,
-    limit: 5000,
+    limit: 100,
+    exam: selectedRawExams,
+    concept:
+      selectedClassificationConcepts.size > 0
+        ? Array.from(selectedClassificationConcepts).join(",")
+        : undefined,
+    letter: selectedLetters.size > 0 ? Array.from(selectedLetters).join(",") : undefined,
   });
-  const { meta } = useQuestionsMeta({
-    subject: subjectConfig.subjectId,
-    topic: questionTopic ?? slug,
-  });
-  const allQuestions = useMemo(() => {
-    if (!apiQuestions) return [];
-    const fallbackConcept = baseConcepts[0] ?? "General";
-    const quizOnlyQuestions = apiQuestions.filter(
-      (item) => !isStudyModeQuestion(item),
-    );
-    return ensureUniqueQuestionIds(
-      quizOnlyQuestions.map((item, index) =>
-        toQuizQuestion(item, index, fallbackConcept),
-      ),
-    );
-  }, [apiQuestions, baseConcepts]);
+
+  const baseConcepts = useMemo(
+    () => subjectConfig.topicConcepts[slug] ?? [],
+    [slug, subjectConfig.topicConcepts],
+  );
 
   const conceptOptions = useMemo(() => {
     const set = new Set<string>();
@@ -82,34 +93,13 @@ export function useQuizFilters({
     (meta?.concepts ?? []).forEach((concept) => {
       if (concept) set.add(concept);
     });
-    allQuestions.forEach((question) => {
-      if (question.concept) set.add(question.concept);
-    });
     const list = Array.from(set);
     return list.length > 0 ? list : ["General"];
-  }, [allQuestions, baseConcepts, meta]);
+  }, [baseConcepts, meta]);
 
   const conceptColours = useMemo(
     () => buildConceptColours(conceptOptions),
     [conceptOptions],
-  );
-
-  const questionIndex = useMemo(
-    () =>
-      buildQuizIndex(allQuestions, {
-        getBucket: (question) => {
-          if (isFormulaQuestion(question)) return "formula";
-          if (isAiChallengeQuestion(question)) return "ai-challenge";
-          if (isTier2Question(question)) return "hard";
-          if (isTopicMixQuestion(question)) return "easy";
-          if (isMixedQuestion(question)) return "mixed";
-          return "concept";
-        },
-        getConcept: (question) => question.concept,
-        getExam: (question) => question.exam,
-        // Preserve cursor order so appending a page cannot move answered questions.
-      }),
-    [allQuestions],
   );
 
   const examOptions = useMemo(() => {
@@ -118,12 +108,8 @@ export function useQuizFilters({
       const exam = normalizeExamLabel((e ?? "").trim());
       if (exam) set.add(exam);
     });
-    allQuestions.forEach((q) => {
-      const exam = normalizeExamLabel((q.exam ?? "").trim());
-      if (exam) set.add(exam);
-    });
     return ["all", ...Array.from(set).sort((a, b) => a.localeCompare(b))];
-  }, [allQuestions, meta]);
+  }, [meta]);
 
   const classificationGroups = useMemo<ClassificationGroup[]>(() => {
     const search = classificationSearch.trim().toLowerCase();
@@ -155,47 +141,14 @@ export function useQuizFilters({
   ]);
 
   const isClassificationConceptMode = mode === "concept";
-  const isEnglishSynonymsFormula =
-    subjectConfig.subjectId === "english" &&
-    slug === "synonyms-antonyms" &&
-    mode === "formula";
 
-  const [selectedLetters, setSelectedLetters] = useState<Set<string>>(() => {
-    if (initialLetterParam) {
-      const letters = initialLetterParam
-        .split(",")
-        .map((l) => l.trim().toUpperCase())
-        .filter((l) => /^[A-Z]$/.test(l));
-      if (letters.length > 0) return new Set(letters);
-    }
-    return new Set();
-  });
+  const availableLetters = useMemo(() => {
+    return Object.keys(meta?.letters ?? {}).sort();
+  }, [meta]);
 
-  const { availableLetters, letterCounts } = useMemo(() => {
-    const counts: Record<string, number> = {};
-    const lettersSet = new Set<string>();
-    const normalizedExam = normalizeExamLabel(examFilter);
-
-    allQuestions.forEach((q) => {
-      if (isFormulaQuestion(q)) {
-        if (normalizedExam && normalizeExamLabel(q.exam ?? "") !== normalizedExam) {
-          return;
-        }
-        const letter = (q.letter || (q.word ? q.word.trim().charAt(0) : ""))
-          .trim()
-          .toUpperCase();
-        if (letter && /^[A-Z]$/.test(letter)) {
-          lettersSet.add(letter);
-          counts[letter] = (counts[letter] ?? 0) + 1;
-        }
-      }
-    });
-
-    return {
-      availableLetters: Array.from(lettersSet).sort(),
-      letterCounts: counts,
-    };
-  }, [allQuestions, examFilter]);
+  const letterCounts = useMemo(() => {
+    return meta?.letters ?? {};
+  }, [meta]);
 
   const handleToggleLetter = useCallback((letter: string) => {
     const upper = letter.trim().toUpperCase();
@@ -226,42 +179,25 @@ export function useQuizFilters({
     [conceptOptions, subjectConfig],
   );
 
-  const filteredQuestions = useMemo(() => {
-    const resolved = resolveIndexedQuestions(questionIndex, {
-      bucket: mode,
-      concept: "all",
-      exam: examFilter,
-    });
-    const selected = selectedClassificationConcepts;
-    let baseQuestions: QuizQuestionRecord[] =
-      selected.size === 0
-        ? resolved
-        : resolved.filter((question) => selected.has(question.concept));
+  const questions = useMemo(() => {
+    if (!apiQuestions) return [];
+    const fallbackConcept = baseConcepts[0] ?? "General";
+    const quizOnlyQuestions = apiQuestions.filter(
+      (item) => !isStudyModeQuestion(item),
+    );
+    return ensureUniqueQuestionIds(
+      quizOnlyQuestions.map((item, index) =>
+        toQuizQuestion(item, index, fallbackConcept),
+      ),
+    );
+  }, [apiQuestions, baseConcepts]);
 
-    if (isEnglishSynonymsFormula && selectedLetters.size > 0) {
-      baseQuestions = baseQuestions.filter((question) => {
-        const qLetter = (
-          question.letter ||
-          (question.word ? question.word.trim().charAt(0) : "")
-        )
-          .trim()
-          .toUpperCase();
-        return selectedLetters.has(qLetter);
-      });
-    }
+  const hasActiveFilters =
+    (examFilter && examFilter !== "all") ||
+    selectedClassificationConcepts.size > 0 ||
+    selectedLetters.size > 0;
 
-    return baseQuestions;
-  }, [
-    questionIndex,
-    mode,
-    examFilter,
-    selectedClassificationConcepts,
-    isEnglishSynonymsFormula,
-    selectedLetters,
-  ]);
-
-  const questions = filteredQuestions;
-  const availableCount = filteredQuestions.length;
+  const availableCount = hasActiveFilters ? (apiTotalCount ?? 0) : (apiTotalCount || (meta?.total ?? 0));
 
   return {
     conceptFilter,
@@ -279,7 +215,6 @@ export function useQuizFilters({
     fetchMore,
     conceptOptions,
     conceptColours,
-    questionIndex,
     examOptions,
     classificationGroups,
     isClassificationConceptMode,
@@ -291,5 +226,6 @@ export function useQuizFilters({
     classificationCategoryCounts,
     questions,
     availableCount,
+    isLoading,
   };
 }

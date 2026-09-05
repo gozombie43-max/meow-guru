@@ -26,11 +26,13 @@ const EMPTY_META: QuestionsMeta = {
 export function useQuestionsMeta(params: {
   topic?: string;
   subject?: string;
+  mode?: string;
   enabled?: boolean;
 }) {
   const query = new URLSearchParams();
   if (params.topic) query.set('topic', params.topic);
   if (params.subject) query.set('subject', params.subject);
+  if (params.mode) query.set('mode', params.mode);
 
   const hasFilter = Boolean(params.topic || params.subject);
   const url = params.enabled === false || !hasFilter

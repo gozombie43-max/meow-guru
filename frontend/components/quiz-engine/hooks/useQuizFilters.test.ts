@@ -3,45 +3,26 @@ import { describe, expect, it, vi } from "vitest";
 import { englishConfig } from "../subjects/english";
 import { useQuizFilters } from "./useQuizFilters";
 
+const mockUseQuizSession = vi.fn(() => ({
+  questions: [],
+  hasMore: false,
+  isFetchingMore: false,
+  fetchMore: vi.fn(),
+  totalCount: 3,
+}));
+
 vi.mock("@/hooks/useQuizSession", () => ({
-  useQuizSession: () => ({
-    questions: [
-      {
-        id: "anto_1",
-        letter: "A",
-        word: "Abolish",
-        options: ["Cancel", "Keep"],
-        quizName: "CareerWill",
-      },
-      {
-        id: "anto_2",
-        letter: "B",
-        word: "Benevolent",
-        options: ["Kind", "Cruel"],
-        quizName: "CareerWill",
-      },
-      {
-        id: "anto_3",
-        letter: "B",
-        word: "Bizarre",
-        options: ["Strange", "Normal"],
-        quizName: "CareerWill",
-      },
-    ],
-    hasMore: false,
-    isFetchingMore: false,
-    fetchMore: vi.fn(),
-  }),
+  useQuizSession: (...args: any[]) => (mockUseQuizSession as any)(...args),
 }));
 
 vi.mock("@/hooks/useQuestionsMeta", () => ({
   useQuestionsMeta: () => ({
-    meta: { concepts: [], exams: [] },
+    meta: { concepts: [], exams: [], letters: { A: 1, B: 2 } },
   }),
 }));
 
 describe("useQuizFilters letter filtering", () => {
-  it("computes letter counts and filters questions by letter exclusively", () => {
+  it("computes letter counts and delegates filtering to session api", () => {
     const { result } = renderHook(() =>
       useQuizFilters({
         subjectConfig: englishConfig,
@@ -53,7 +34,10 @@ describe("useQuizFilters letter filtering", () => {
 
     expect(result.current.letterCounts).toEqual({ A: 1, B: 2 });
     expect(result.current.availableLetters).toEqual(["A", "B"]);
-    expect(result.current.questions).toHaveLength(3);
+
+    expect(mockUseQuizSession).toHaveBeenLastCalledWith(
+      expect.objectContaining({ letter: undefined })
+    );
 
     // Toggle letter B
     act(() => {
@@ -62,24 +46,32 @@ describe("useQuizFilters letter filtering", () => {
 
     expect(result.current.selectedLetters.has("B")).toBe(true);
     expect(result.current.selectedLetters.size).toBe(1);
-    expect(result.current.questions).toHaveLength(2);
-    expect(result.current.questions.every((q) => q.letter === "B")).toBe(true);
 
-    // Toggle letter A (switches to A exclusively)
+    expect(mockUseQuizSession).toHaveBeenLastCalledWith(
+      expect.objectContaining({ letter: "B" })
+    );
+
+    // Toggle letter A
     act(() => {
       result.current.handleToggleLetter("A");
     });
 
     expect(result.current.selectedLetters.has("A")).toBe(true);
     expect(result.current.selectedLetters.size).toBe(1);
-    expect(result.current.questions).toHaveLength(1);
 
-    // Toggle letter A again (deselects back to All)
+    expect(mockUseQuizSession).toHaveBeenLastCalledWith(
+      expect.objectContaining({ letter: "A" })
+    );
+
+    // Toggle letter A again (deselects)
     act(() => {
       result.current.handleToggleLetter("A");
     });
 
     expect(result.current.selectedLetters.size).toBe(0);
-    expect(result.current.questions).toHaveLength(3);
+    expect(mockUseQuizSession).toHaveBeenLastCalledWith(
+      expect.objectContaining({ letter: undefined })
+    );
   });
 });
+

@@ -164,7 +164,6 @@ export function useQuizController({
     fetchMore,
     conceptOptions,
     conceptColours,
-    questionIndex,
     examOptions,
     classificationGroups,
     isClassificationConceptMode,
@@ -176,6 +175,7 @@ export function useQuizController({
     classificationCategoryCounts,
     questions,
     availableCount,
+    isLoading,
   } = useQuizFilters({
     subjectConfig,
     slug,
@@ -639,6 +639,7 @@ export function useQuizController({
     examOptions,
     selectedClassificationConcepts,
     availableCount,
+    isLoading,
     setClassificationCategory,
     setExamFilter,
     setSelectedClassificationConcepts,

@@ -357,7 +357,16 @@ describe('MongoDB-backed question writes', () => {
     expect(collection.insertOne).toHaveBeenCalledWith(
       expect.objectContaining({ id: 'new-id', topic: 'Algebra' })
     );
-    expect(result).toEqual({ id: 'new-id', chapter: ' Algebra ', topic: 'Algebra', topicKey: 'algebra', subjectKey: '', quizKey: '', keyVersion: 1 });
+    expect(result).toEqual({
+      id: 'new-id',
+      chapter: ' Algebra ',
+      topic: 'Algebra',
+      topicKey: 'algebra',
+      subjectKey: '',
+      quizKey: '',
+      modeKey: 'concept',
+      keyVersion: 1,
+    });
     expect(questionsQueryCache.has('stale')).toBe(false);
   });
 
@@ -413,11 +422,11 @@ describe('MongoDB-backed question writes', () => {
           id: 'q457',
           topic: 'algebra',
           question: 'After',
-          topicKey: 'algebra', subjectKey: '', quizKey: '', keyVersion: 1,
+          topicKey: 'algebra', subjectKey: '', quizKey: '', modeKey: 'concept', keyVersion: 1,
         },
       }
     );
-    expect(result).toEqual({ id: 'q457', topic: 'algebra', question: 'After', topicKey: 'algebra', subjectKey: '', quizKey: '', keyVersion: 1 });
+    expect(result).toEqual({ id: 'q457', topic: 'algebra', question: 'After', topicKey: 'algebra', subjectKey: '', quizKey: '', modeKey: 'concept', keyVersion: 1 });
   });
 
   it('uses deleteOne with a topic and deleteMany without one', async () => {
@@ -465,24 +474,19 @@ describe('MongoDB-backed question writes', () => {
   });
 
   it('queries session questions with formula mode excluding study mode and supports limits up to 5000', async () => {
-    const mockIds = [{ _id: 'id1' }, { _id: 'id2' }];
-    const mockDocs = [{ id: 'anto_syno_1', letter: 'A' }, { id: 'anto_syno_2', letter: 'B' }];
-    const firstCursor = {
-      project: vi.fn().mockReturnThis(),
+    const mockDocs = [{ _id: 'id1', id: 'anto_syno_1', letter: 'A' }, { _id: 'id2', id: 'anto_syno_2', letter: 'B' }];
+    
+    const cursor = {
       sort: vi.fn().mockReturnThis(),
       limit: vi.fn().mockReturnThis(),
-      toArray: vi.fn().mockResolvedValue(mockIds),
-    };
-    const secondCursor = {
-      project: vi.fn().mockReturnThis(),
-      sort: vi.fn().mockReturnThis(),
       toArray: vi.fn().mockResolvedValue(mockDocs),
     };
+    
     const collection = {
-      find: vi.fn()
-        .mockReturnValueOnce(firstCursor)
-        .mockReturnValueOnce(secondCursor),
+      find: vi.fn().mockReturnValue(cursor),
+      countDocuments: vi.fn().mockResolvedValue(5),
     };
+    
     getQuestionsCollectionMock.mockReturnValue(collection);
 
     const result = await fetchQuestionsSession({
@@ -492,8 +496,10 @@ describe('MongoDB-backed question writes', () => {
     });
 
     expect(result.questions).toHaveLength(2);
+    expect(result.questions[0]._id).toBeUndefined();
     expect(result.hasMore).toBe(false);
-    expect(firstCursor.limit).toHaveBeenCalledWith(5001);
+    expect(result.totalCount).toBe(5);
+    expect(cursor.limit).toHaveBeenCalledWith(5001);
 
     const firstFindFilter = collection.find.mock.calls[0][0];
     expect(firstFindFilter.$and).toBeDefined();

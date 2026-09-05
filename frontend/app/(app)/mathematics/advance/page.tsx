@@ -121,32 +121,34 @@ function TopicRow({ topic, index, isLast }: { topic: Topic; index: number; isLas
   return (
     <Link
       href={`/mathematics/advance/${topic.slug}`}
-      className="row-item"
+      className="group flex flex-col p-4 relative hover:bg-black/[0.02] dark:hover:bg-white/[0.03] active:bg-black/[0.05] dark:active:bg-white/[0.06] transition-colors"
       style={{ animationDelay: `${index * 38}ms` }}
     >
-      <span className="row-card-top">
-        <span className="row-icon" style={{ background: cfg.bg }}>
-          <span className="row-emoji">{topic.icon}</span>
-        </span>
-        <span className="row-body">
-          <span className="row-name">{topic.name}</span>
-          <span className="row-meta">
-            <span className="row-dot" style={{ background: cfg.dot }} />
-            <span className="row-label" style={{ color: cfg.color }}>{cfg.label}</span>
-            <span className="row-sep">·</span>
-            <span className="row-q">{topic.questions} Qs</span>
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0 font-medium" style={{ background: cfg.bg }}>
+          <span className="leading-none">{topic.icon}</span>
+        </div>
+        <div className="flex-1 min-w-0 flex flex-col gap-0.5">
+          <span className="text-[16px] font-semibold tracking-tight text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+            {topic.name}
           </span>
-        </span>
-        <ChevronRight className="row-chevron" size={17} strokeWidth={2.5} />
-      </span>
+          <div className="flex items-center gap-1.5 text-[13px]">
+            <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: cfg.dot }} />
+            <span className="font-medium" style={{ color: cfg.color }}>{cfg.label}</span>
+            <span className="text-[#8e8e93]">·</span>
+            <span className="text-[#8e8e93]">{topic.questions} Qs</span>
+          </div>
+        </div>
+        <ChevronRight className="text-[#c7c7cc] dark:text-[#48484a] group-hover:text-[#8e8e93] transition-colors" size={17} strokeWidth={2.5} />
+      </div>
 
-      <span className="pc-subtopics">
+      <div className="flex flex-wrap gap-1.5 mt-2.5 sm:pl-[52px]">
         {topic.subtopics.slice(0, 3).map((s) => (
-          <span key={s} className="pc-sub-tag">{s}</span>
+          <span key={s} className="text-[12px] bg-[#f2f2f7] dark:bg-white/[0.08] text-[#636366] dark:text-[#ebebf5]/70 px-2 py-0.5 rounded-md">
+            {s}
+          </span>
         ))}
-      </span>
-
-      {!isLast && <span className="row-line" />}
+      </div>
     </Link>
   );
 }
@@ -170,36 +172,44 @@ export default function AdvanceTopicsPage() {
   }, [activeTab, search]);
 
   return (
-    <main className="ios-page">
+    <main className="min-h-screen bg-[#f2f2f7] dark:bg-[#000000] text-black dark:text-white pb-24 font-sans antialiased">
       {/* ── Navigation Bar ── */}
-      <header className="ios-nav">
-        <button className="ios-back" onClick={() => router.push("/mathematics")} aria-label="Back">
+      <header className="sticky top-0 z-30 flex items-center justify-between px-4 py-3 bg-[#f2f2f7]/85 dark:bg-[#161618]/85 backdrop-blur-xl border-b border-black/10 dark:border-white/10">
+        <button
+          className="flex items-center gap-1 text-[#007aff] dark:text-[#0a84ff] text-[17px] font-normal hover:opacity-80 transition-opacity bg-transparent border-none p-0 cursor-pointer"
+          onClick={() => router.push("/mathematics")}
+          aria-label="Back"
+        >
           <ChevronLeft size={22} strokeWidth={2.3} />
-          <span className="ios-back-label">Mathematics</span>
+          <span className="tracking-tight">Mathematics</span>
         </button>
-        <span className="ios-nav-title">Advance Maths</span>
-        <span className="ios-nav-spacer" aria-hidden />
+        <span className="text-[17px] font-semibold tracking-tight">Advance Maths</span>
+        <span className="w-12" aria-hidden />
       </header>
 
       {/* ── Desktop & Mobile Header Title ── */}
-      <div className="ios-header-content">
-        <h1 className="ios-large-title">Advance Mathematics</h1>
-        <p className="ios-subtitle">SSC CGL / CHSL / CPO High-Yield Advance Modules</p>
+      <div className="max-w-[900px] mx-auto px-5 pt-4 pb-2">
+        <h1 className="text-[28px] font-bold tracking-tight m-0">Advance Mathematics</h1>
+        <p className="text-[14px] text-[#8e8e93] mt-1 mb-0">SSC CGL / CHSL / CPO High-Yield Advance Modules</p>
       </div>
 
       {/* ── Search Bar ── */}
-      <div className="ios-search-wrap">
-        <div className="ios-search-bar">
-          <Search size={15} strokeWidth={2.2} className="ios-search-icon" />
+      <div className="max-w-[900px] mx-auto px-5 py-2">
+        <div className="flex items-center gap-2 bg-black/[0.06] dark:bg-white/[0.08] rounded-xl px-3 py-2 text-[15px]">
+          <Search size={15} strokeWidth={2.2} className="text-[#8e8e93] shrink-0" />
           <input
             type="text"
-            className="ios-search-input"
+            className="flex-1 border-none bg-transparent outline-none text-[15px] text-inherit placeholder:text-[#8e8e93]"
             placeholder="Search topics or subtopics…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
           {search && (
-            <button className="ios-clear" onClick={() => setSearch("")} aria-label="Clear">
+            <button
+              className="bg-black/10 dark:bg-white/10 border-none rounded-full w-5 h-5 flex items-center justify-center cursor-pointer text-[#8e8e93] p-0"
+              onClick={() => setSearch("")}
+              aria-label="Clear"
+            >
               <X size={13} strokeWidth={2.5} />
             </button>
           )}
@@ -207,12 +217,16 @@ export default function AdvanceTopicsPage() {
       </div>
 
       {/* ── Tabs / Segments ── */}
-      <div className="ios-tabs-wrap">
-        <div className="ios-segment-track">
+      <div className="max-w-[900px] mx-auto px-5 pt-1.5 pb-3.5">
+        <div className="flex bg-black/[0.08] dark:bg-white/[0.08] p-0.5 rounded-lg gap-0.5">
           {TABS.map((tab) => (
             <button
               key={tab.id}
-              className={`ios-seg-btn ${activeTab === tab.id ? "ios-seg-active" : ""}`}
+              className={`flex-1 py-1.5 px-3 border-none text-[13px] font-medium rounded-md cursor-pointer transition-all ${
+                activeTab === tab.id
+                  ? "bg-white dark:bg-[#2c2c2e] text-black dark:text-white shadow-sm"
+                  : "bg-transparent text-[#3c3c43] dark:text-[#ebebf5]/60 hover:text-black dark:hover:text-white"
+              }`}
               onClick={() => setActiveTab(tab.id)}
             >
               {tab.label}
@@ -222,9 +236,9 @@ export default function AdvanceTopicsPage() {
       </div>
 
       {/* ── Topics List / Grid ── */}
-      <div className="ios-list-container">
+      <div className="max-w-[900px] mx-auto px-5">
         {filtered.length > 0 ? (
-          <div className="ios-group">
+          <div className="bg-white dark:bg-[#1c1c1e] rounded-2xl overflow-hidden shadow-sm border border-black/5 dark:border-white/10 divide-y divide-black/5 dark:divide-white/10">
             {filtered.map((topic, idx) => (
               <TopicRow
                 key={topic.id}
@@ -235,282 +249,12 @@ export default function AdvanceTopicsPage() {
             ))}
           </div>
         ) : (
-          <div className="ios-empty">
-            <p className="ios-empty-title">No topics found</p>
-            <p className="ios-empty-sub">Try searching with a different keyword</p>
+          <div className="text-center py-12 px-5">
+            <p className="text-[17px] font-semibold m-0 mb-1.5 text-gray-900 dark:text-white">No topics found</p>
+            <p className="text-[14px] text-[#8e8e93] m-0">Try searching with a different keyword</p>
           </div>
         )}
       </div>
-
-      <style jsx>{`
-        .ios-page {
-          min-height: 100vh;
-          background: #f2f2f7;
-          padding-bottom: 80px;
-          color: #000;
-          font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", sans-serif;
-        }
-        .ios-nav {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 12px 16px;
-          position: sticky;
-          top: 0;
-          z-index: 30;
-          background: rgba(242, 242, 247, 0.85);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-        }
-        .ios-back {
-          display: flex;
-          align-items: center;
-          gap: 4px;
-          background: transparent;
-          border: none;
-          color: #007aff;
-          font-size: 17px;
-          cursor: pointer;
-          padding: 0;
-        }
-        .ios-back-label {
-          font-size: 17px;
-          letter-spacing: -0.4px;
-        }
-        .ios-nav-title {
-          font-size: 17px;
-          font-weight: 600;
-          letter-spacing: -0.4px;
-        }
-        .ios-nav-spacer {
-          width: 50px;
-        }
-        .ios-header-content {
-          padding: 16px 20px 8px;
-          max-width: 900px;
-          margin: 0 auto;
-        }
-        .ios-large-title {
-          font-size: 28px;
-          font-weight: 700;
-          letter-spacing: -0.6px;
-          margin: 0;
-        }
-        .ios-subtitle {
-          font-size: 14px;
-          color: #8e8e93;
-          margin: 4px 0 0;
-        }
-        .ios-search-wrap {
-          padding: 8px 20px;
-          max-width: 900px;
-          margin: 0 auto;
-        }
-        .ios-search-bar {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          background: rgba(142, 142, 147, 0.12);
-          border-radius: 10px;
-          padding: 8px 12px;
-        }
-        .ios-search-icon {
-          color: #8e8e93;
-        }
-        .ios-search-input {
-          flex: 1;
-          border: none;
-          background: transparent;
-          outline: none;
-          font-size: 15px;
-          color: inherit;
-        }
-        .ios-clear {
-          background: rgba(0, 0, 0, 0.1);
-          border: none;
-          border-radius: 50%;
-          width: 20px;
-          height: 20px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          color: #8e8e93;
-        }
-        .ios-tabs-wrap {
-          padding: 6px 20px 14px;
-          max-width: 900px;
-          margin: 0 auto;
-        }
-        .ios-segment-track {
-          display: flex;
-          background: rgba(142, 142, 147, 0.15);
-          padding: 2px;
-          border-radius: 8px;
-          gap: 2px;
-        }
-        .ios-seg-btn {
-          flex: 1;
-          padding: 6px 12px;
-          border: none;
-          background: transparent;
-          font-size: 13px;
-          font-weight: 500;
-          border-radius: 6px;
-          cursor: pointer;
-          color: #3c3c43;
-          transition: all 0.2s ease;
-        }
-        .ios-seg-active {
-          background: #ffffff;
-          color: #000000;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
-        }
-        .ios-list-container {
-          padding: 0 20px;
-          max-width: 900px;
-          margin: 0 auto;
-        }
-        .ios-group {
-          background: #ffffff;
-          border-radius: 14px;
-          overflow: hidden;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-        }
-        .row-item {
-          display: flex;
-          flex-direction: column;
-          padding: 14px 16px;
-          text-decoration: none;
-          color: inherit;
-          position: relative;
-          transition: background 0.15s ease;
-        }
-        .row-item:active {
-          background: rgba(0, 0, 0, 0.04);
-        }
-        .row-card-top {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-        }
-        .row-icon {
-          width: 40px;
-          height: 40px;
-          border-radius: 10px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 18px;
-          flex-shrink: 0;
-        }
-        .row-body {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-        }
-        .row-name {
-          font-size: 16px;
-          font-weight: 600;
-          letter-spacing: -0.3px;
-        }
-        .row-meta {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          font-size: 13px;
-        }
-        .row-dot {
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-        }
-        .row-label {
-          font-weight: 500;
-        }
-        .row-sep {
-          color: #8e8e93;
-        }
-        .row-q {
-          color: #8e8e93;
-        }
-        .row-chevron {
-          color: #c7c7cc;
-        }
-        .pc-subtopics {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 6px;
-          margin-top: 10px;
-          padding-left: 52px;
-        }
-        .pc-sub-tag {
-          font-size: 12px;
-          background: #f2f2f7;
-          color: #636366;
-          padding: 3px 8px;
-          border-radius: 6px;
-        }
-        .row-line {
-          position: absolute;
-          bottom: 0;
-          left: 68px;
-          right: 0;
-          height: 1px;
-          background: rgba(0, 0, 0, 0.08);
-        }
-        .ios-empty {
-          text-align: center;
-          padding: 40px 20px;
-        }
-        .ios-empty-title {
-          font-size: 17px;
-          font-weight: 600;
-          margin: 0 0 6px;
-        }
-        .ios-empty-sub {
-          font-size: 14px;
-          color: #8e8e93;
-          margin: 0;
-        }
-
-        :global(body.theme-dark) .ios-page {
-          background: #000000;
-          color: #ffffff;
-        }
-        :global(body.theme-dark) .ios-nav {
-          background: rgba(22, 22, 24, 0.85);
-          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        :global(body.theme-dark) .ios-group {
-          background: #1c1c1e;
-        }
-        :global(body.theme-dark) .row-item:active {
-          background: rgba(255, 255, 255, 0.06);
-        }
-        :global(body.theme-dark) .pc-sub-tag {
-          background: rgba(255, 255, 255, 0.08);
-          color: rgba(235, 235, 245, 0.6);
-        }
-        :global(body.theme-dark) .row-line {
-          background: rgba(255, 255, 255, 0.1);
-        }
-        :global(body.theme-dark) .ios-segment-track {
-          background: rgba(255, 255, 255, 0.08);
-        }
-        :global(body.theme-dark) .ios-seg-active {
-          background: #2c2c2e;
-          color: #ffffff;
-        }
-        :global(body.theme-dark) .ios-seg-btn {
-          color: rgba(235, 235, 245, 0.6);
-        }
-        :global(body.theme-dark) .ios-search-bar {
-          background: rgba(255, 255, 255, 0.08);
-        }
-      `}</style>
     </main>
   );
 }

@@ -8,6 +8,7 @@ import {
   mongoString,
   questionModeAggregation,
   questionModeFromAggregateKey,
+  buildModeFilter,
 } from "./questionQueryBuilder.js";
 
 export async function fetchQuestionCounts(params) {
@@ -93,7 +94,7 @@ export async function fetchQuestionCounts(params) {
 
 export async function fetchQuestionsMeta(params) {
   const collection = getQuestionsCollection();
-  const { topic, subject } = params;
+  const { topic, subject, mode } = params;
 
   if (!topic && !subject) {
     const error = new Error("topic or subject is required");
@@ -118,8 +119,16 @@ export async function fetchQuestionsMeta(params) {
     conditions.push({ subject: caseInsensitiveExact(subject) });
   }
 
-  // Exclude study-mode for meta
-  conditions.push(buildExcludeStudyModeCondition());
+  if (mode) {
+    if (process.env.QUESTIONS_NORMALIZED_KEYS === "true") {
+      conditions.push({ modeKey: mode });
+    } else {
+      conditions.push(buildModeFilter(mode));
+    }
+  } else {
+    // Exclude study-mode for meta if no specific mode is requested
+    conditions.push(buildExcludeStudyModeCondition());
+  }
 
   const mongoFilter = combineMongoConditions(conditions);
 

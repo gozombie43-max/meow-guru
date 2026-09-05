@@ -255,6 +255,7 @@ interface MacOsQuizStartStudioProps {
   onSearchChange?: (search: string) => void;
   onToggleGroup: (concepts: string[]) => void;
   onStart: () => void;
+  isLoading?: boolean;
 }
 
 function MacOsQuizStartStudio({
@@ -282,6 +283,7 @@ function MacOsQuizStartStudio({
   onSearchChange,
   onToggleGroup,
   onStart,
+  isLoading,
 }: MacOsQuizStartStudioProps) {
   const router = useRouter();
   const quizTheme = useQuizTheme();
@@ -523,9 +525,16 @@ function MacOsQuizStartStudio({
                 <div className={styles.letterBarHeader}>
                   <span style={{ fontSize: "13px" }}>Filter by Letter (A–Z)</span>
                   <span className={styles.letterBarCount} style={{ fontSize: "12px" }}>
-                    {selectedLetters && selectedLetters.size > 0
-                      ? `Letter ${Array.from(selectedLetters).sort().join(", ")} (${questionCount} questions ready)`
-                      : `All letters (${questionCount} questions ready)`}
+                    {isLoading ? (
+                      <span className="inline-flex items-center gap-1.5 opacity-90 animate-pulse text-[color:var(--quiz-accent,#3b82f6)]">
+                        <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                        <span>Loading...</span>
+                      </span>
+                    ) : selectedLetters && selectedLetters.size > 0 ? (
+                      `Letter ${Array.from(selectedLetters).sort().join(", ")} (${questionCount} questions ready)`
+                    ) : (
+                      `All letters (${questionCount} questions ready)`
+                    )}
                   </span>
                 </div>
                 <div className={styles.letterBarGrid} role="toolbar" aria-label="Alphabet filter">
@@ -680,8 +689,17 @@ function MacOsQuizStartStudio({
           <div className={styles.footerLeft}>
             <div className={styles.statusIndicator} />
             <span className={styles.statusText}>
-              <span className={styles.statusBold}>{questionCount} Questions</span> Ready •{" "}
-              {selectedCount === 0 ? "All Concepts" : `${selectedCount} Concepts`} Selected
+              {isLoading ? (
+                <span className="inline-flex items-center gap-2 animate-pulse text-[color:var(--quiz-accent,#3b82f6)]">
+                  <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                  <span>Loading...</span>
+                </span>
+              ) : (
+                <>
+                  <span className={styles.statusBold}>{questionCount} Questions</span> Ready •{" "}
+                  {selectedCount === 0 ? "All Concepts" : `${selectedCount} Concepts`} Selected
+                </>
+              )}
             </span>
           </div>
 
@@ -690,9 +708,14 @@ function MacOsQuizStartStudio({
             onClick={onStart}
             className={styles.startBtn}
             title="Launch Quiz (Enter)"
+            disabled={isLoading || questionCount === 0}
           >
-            <Sparkles size={14} fill="currentColor" />
-            <span>Start Quiz</span>
+            {isLoading ? (
+              <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+            ) : (
+              <Sparkles size={14} fill="currentColor" />
+            )}
+            <span>{isLoading ? "Loading..." : "Start Quiz"}</span>
             <kbd className={styles.returnKey}>↵</kbd>
           </button>
         </footer>
@@ -726,6 +749,7 @@ interface IosQuizStartMobileProps {
   onSearchChange?: (search: string) => void;
   onToggleGroup: (concepts: string[]) => void;
   onStart: () => void;
+  isLoading?: boolean;
 }
 
 function IosQuizStartMobile({
@@ -753,6 +777,7 @@ function IosQuizStartMobile({
   onSearchChange,
   onToggleGroup,
   onStart,
+  isLoading,
 }: IosQuizStartMobileProps) {
   const router = useRouter();
   const quizTheme = useQuizTheme();
@@ -1027,11 +1052,29 @@ function IosQuizStartMobile({
       {/* ── Fixed Bottom Launch Toolbar ── */}
       <footer className={styles.iosToolbar}>
         <p className={styles.iosToolbarText}>
-          <b>{questionCount}</b> questions ready · <span>{selectedQuestionLabel}</span>
+          {isLoading ? (
+            <span className="inline-flex items-center gap-2 animate-pulse text-[color:var(--quiz-accent,#3b82f6)]">
+              <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              <span>Loading...</span>
+            </span>
+          ) : (
+            <>
+              <b>{questionCount}</b> questions ready · <span>{selectedQuestionLabel}</span>
+            </>
+          )}
         </p>
-        <button type="button" onClick={onStart} className={styles.iosStartBtn}>
-          <Sparkles size={16} fill="currentColor" />
-          <span>Start Quiz</span>
+        <button
+          type="button"
+          onClick={onStart}
+          className={styles.iosStartBtn}
+          disabled={isLoading || questionCount === 0}
+        >
+          {isLoading ? (
+            <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+          ) : (
+            <Sparkles size={16} fill="currentColor" />
+          )}
+          <span>{isLoading ? "Loading..." : "Start Quiz"}</span>
         </button>
       </footer>
     </div>
@@ -1057,7 +1100,6 @@ function UnifiedQuizStartView(props: MacOsQuizStartStudioProps) {
   );
 }
 
-// ── Exported Wrapper Components for QuizEngine ─────────────────────────────────
 export function SeriesConceptStart(props: {
   subjectConfig: SubjectConfig;
   title: string;
@@ -1075,6 +1117,7 @@ export function SeriesConceptStart(props: {
   onExamChange: (exam: string) => void;
   onToggleGroup: (concepts: string[]) => void;
   onStart: () => void;
+  isLoading?: boolean;
 }) {
   return <UnifiedQuizStartView {...props} mode="concept" />;
 }
@@ -1104,6 +1147,7 @@ export function SeriesFormulaStart(props: {
   onSearchChange?: (search: string) => void;
   onToggleGroup: (concepts: string[]) => void;
   onStart: () => void;
+  isLoading?: boolean;
 }) {
   return <UnifiedQuizStartView {...props} />;
 }

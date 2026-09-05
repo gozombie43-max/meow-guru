@@ -18,6 +18,7 @@ export function QuizStartView({
   selectedClassificationConcepts,
   conceptOptions,
   availableCount,
+  isLoading,
   setClassificationCategory,
   setExamFilter,
   setSelectedClassificationConcepts,
@@ -50,6 +51,7 @@ export function QuizStartView({
   | "selectedClassificationConcepts"
   | "conceptOptions"
   | "availableCount"
+  | "isLoading"
   | "setClassificationCategory"
   | "setExamFilter"
   | "setSelectedClassificationConcepts"
@@ -84,6 +86,7 @@ export function QuizStartView({
         selected={selectedClassificationConcepts}
         conceptCount={conceptOptions.length}
         questionCount={availableCount}
+        isLoading={isLoading}
         onCategoryChange={setClassificationCategory}
         onExamChange={setExamFilter}
         onToggleGroup={(concepts) => {
@@ -113,6 +116,7 @@ export function QuizStartView({
         examFilter={examFilter}
         examOptions={examOptions}
         questionCount={availableCount}
+        isLoading={isLoading}
         onExamChange={setExamFilter}
         groups={classificationGroups}
         category={classificationCategory}

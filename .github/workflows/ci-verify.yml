@@ -104,6 +104,10 @@ jobs:
       - name: Enforce entry JavaScript budgets
         working-directory: ./frontend
         run: npm run check:performance
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: stable
       - name: Lighthouse performance budgets
         working-directory: ./frontend
         run: |

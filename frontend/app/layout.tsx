@@ -1,6 +1,7 @@
 import 'katex/dist/katex.min.css';
 import type { Metadata,Viewport } from 'next';
 import { Geist } from 'next/font/google';
+import StyledJsxRegistry from '@/lib/styled-jsx-registry';
 import './globals.css';
 
 const geist = Geist({ subsets: ['latin'] });
@@ -68,7 +69,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className={geist.className} suppressHydrationWarning>
-        {children}
+        <StyledJsxRegistry>{children}</StyledJsxRegistry>
       </body>
     </html>
   );

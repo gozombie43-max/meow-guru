@@ -76,6 +76,7 @@ function QuizEngineContent(props: QuizEngineProps) {
     examOptions,
     selectedClassificationConcepts,
     availableCount,
+    isLoading,
     setClassificationCategory,
     setExamFilter,
     setSelectedClassificationConcepts,
@@ -178,6 +179,7 @@ function QuizEngineContent(props: QuizEngineProps) {
         selectedClassificationConcepts={selectedClassificationConcepts}
         conceptOptions={conceptOptions}
         availableCount={availableCount}
+        isLoading={isLoading}
         setClassificationCategory={setClassificationCategory}
         setExamFilter={setExamFilter}
         setSelectedClassificationConcepts={setSelectedClassificationConcepts}

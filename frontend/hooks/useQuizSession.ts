@@ -8,6 +8,7 @@ interface SessionResponse {
   questions: Question[];
   nextCursor: string | null;
   hasMore: boolean;
+  totalCount: number;
 }
 
 const fetcher = async (url: string): Promise<SessionResponse> => {
@@ -22,15 +23,19 @@ export function useQuizSession(params: {
   mode?: string;
   limit?: number;
   letter?: string;
+  exam?: string;
+  concept?: string;
   enabled?: boolean;
 }) {
-  const { subject, topic, mode, limit = 50, letter, enabled = true } = params;
+  const { subject, topic, mode, limit = 50, letter, exam, concept, enabled = true } = params;
 
   const query = new URLSearchParams();
   if (subject) query.set("subject", subject);
   if (topic) query.set("topic", topic);
   if (mode) query.set("mode", mode);
   if (letter) query.set("letter", letter);
+  if (exam) query.set("exam", exam);
+  if (concept) query.set("concept", concept);
   query.set("limit", String(limit));
 
   const url = enabled
@@ -78,14 +83,18 @@ export function useQuizSession(params: {
     [data],
   );
 
+  const totalCount = data?.[0]?.totalCount ?? 0;
+  const isInitialLoading = Boolean(isLoading || (!data?.[0] && isValidating));
+
   return {
     questions,
-    isLoading,
+    isLoading: isInitialLoading,
     isError: error,
     hasMore,
     nextCursor,
     isFetchingMore,
     fetchMore,
+    totalCount,
     mutate,
   };
 }
