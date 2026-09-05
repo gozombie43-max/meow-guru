@@ -19,6 +19,7 @@ fetchPracticeTest,
 fetchQuestionById,
 fetchQuestionCounts,
 fetchQuestions,
+fetchQuestionsSession,
 isStudyModeRecord,
 matchesNormalizedTopic,
 modifyQuestion,
@@ -461,5 +462,41 @@ describe('MongoDB-backed question writes', () => {
     });
 
     errorSpy.mockRestore();
+  });
+
+  it('queries session questions with formula mode excluding study mode and supports limits up to 5000', async () => {
+    const mockIds = [{ _id: 'id1' }, { _id: 'id2' }];
+    const mockDocs = [{ id: 'anto_syno_1', letter: 'A' }, { id: 'anto_syno_2', letter: 'B' }];
+    const firstCursor = {
+      project: vi.fn().mockReturnThis(),
+      sort: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockReturnThis(),
+      toArray: vi.fn().mockResolvedValue(mockIds),
+    };
+    const secondCursor = {
+      project: vi.fn().mockReturnThis(),
+      sort: vi.fn().mockReturnThis(),
+      toArray: vi.fn().mockResolvedValue(mockDocs),
+    };
+    const collection = {
+      find: vi.fn()
+        .mockReturnValueOnce(firstCursor)
+        .mockReturnValueOnce(secondCursor),
+    };
+    getQuestionsCollectionMock.mockReturnValue(collection);
+
+    const result = await fetchQuestionsSession({
+      topic: 'synonyms-antonyms',
+      mode: 'formula',
+      limit: 5000,
+    });
+
+    expect(result.questions).toHaveLength(2);
+    expect(result.hasMore).toBe(false);
+    expect(firstCursor.limit).toHaveBeenCalledWith(5001);
+
+    const firstFindFilter = collection.find.mock.calls[0][0];
+    expect(firstFindFilter.$and).toBeDefined();
+    expect(JSON.stringify(firstFindFilter)).toContain('$nor');
   });
 });

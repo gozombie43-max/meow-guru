@@ -346,6 +346,11 @@ function MacOsQuizStartStudio({
         : Math.round((selectedCount / conceptCount) * 100)
       : 100;
 
+  const isEnglishSynonymsFormula =
+    subjectConfig.subjectId === "english" &&
+    slug === "synonyms-antonyms" &&
+    mode === "formula";
+
   // Select all / Clear all
   const handleSelectAll = () => {
     const allConcepts = groups.flatMap((g) => g.concepts);
@@ -417,27 +422,29 @@ function MacOsQuizStartStudio({
             </div>
 
             {/* Exam Target Selector */}
-            <div className={styles.selectSection}>
-              <span className={styles.sectionLabel}>Target Exam</span>
-              <div className={styles.examSelectRow}>
-                <Target size={14} className={styles.examSelectIcon} />
-                <select
-                  value={examFilter || "all"}
-                  onChange={(e) => onExamChange(e.target.value === "all" ? "" : e.target.value)}
-                  className={styles.examSelect}
-                >
-                  <option value="all">All Exams Combined</option>
-                  {examOptions
-                    .filter((ex) => ex !== "all")
-                    .map((ex) => (
-                      <option key={ex} value={ex}>
-                        {ex}
-                      </option>
-                    ))}
-                </select>
-                <ChevronDown size={13} className={styles.examChevron} />
+            {!isEnglishSynonymsFormula && (
+              <div className={styles.selectSection}>
+                <span className={styles.sectionLabel}>Target Exam</span>
+                <div className={styles.examSelectRow}>
+                  <Target size={14} className={styles.examSelectIcon} />
+                  <select
+                    value={examFilter || "all"}
+                    onChange={(e) => onExamChange(e.target.value === "all" ? "" : e.target.value)}
+                    className={styles.examSelect}
+                  >
+                    <option value="all">All Exams Combined</option>
+                    {examOptions
+                      .filter((ex) => ex !== "all")
+                      .map((ex) => (
+                        <option key={ex} value={ex}>
+                          {ex}
+                        </option>
+                      ))}
+                  </select>
+                  <ChevronDown size={13} className={styles.examChevron} />
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Metrics Stats Grid */}
             <div className={styles.statsGrid}>
@@ -446,114 +453,84 @@ function MacOsQuizStartStudio({
                 <span className={styles.statValue}>{questionCount} Questions</span>
               </div>
               <div className={styles.statItem}>
-                <span className={styles.statLabel}>Selected Concepts</span>
+                <span className={styles.statLabel}>
+                  {isEnglishSynonymsFormula ? "Active Letter" : "Selected Concepts"}
+                </span>
                 <span className={styles.statValue}>
-                  {selectedCount === 0 ? "All" : selectedCount} of {conceptCount}
+                  {isEnglishSynonymsFormula
+                    ? selectedLetters && selectedLetters.size > 0
+                      ? `Letter ${Array.from(selectedLetters).sort().join(", ")}`
+                      : "All Letters"
+                    : selectedCount === 0
+                      ? "All"
+                      : `${selectedCount} of ${conceptCount}`}
                 </span>
               </div>
             </div>
 
             {/* Coverage Progress Bar */}
-            <div className={styles.coverageSection}>
-              <div className={styles.coverageHeader}>
-                <span>Syllabus Coverage</span>
-                <span className={styles.coveragePct}>{coveragePercent}%</span>
+            {!isEnglishSynonymsFormula && (
+              <div className={styles.coverageSection}>
+                <div className={styles.coverageHeader}>
+                  <span>Syllabus Coverage</span>
+                  <span className={styles.coveragePct}>{coveragePercent}%</span>
+                </div>
+                <div className={styles.progressBar}>
+                  <div className={styles.progressFill} style={{ width: `${coveragePercent}%` }} />
+                </div>
               </div>
-              <div className={styles.progressBar}>
-                <div className={styles.progressFill} style={{ width: `${coveragePercent}%` }} />
-              </div>
-            </div>
+            )}
 
             {/* Batch Action Buttons */}
             <div className={styles.batchActions}>
-              <button
-                type="button"
-                onClick={handleSelectAll}
-                className={styles.batchBtn}
-                disabled={isAllSelected}
-              >
-                <CheckCircle2 size={12} />
-                <span>Select All</span>
-              </button>
-              <button
-                type="button"
-                onClick={handleClearAll}
-                className={styles.batchBtn}
-                disabled={selectedCount === 0}
-              >
-                <X size={12} />
-                <span>Clear All</span>
-              </button>
+              {isEnglishSynonymsFormula ? (
+                <button
+                  type="button"
+                  onClick={onSelectAllLetters}
+                  className={styles.batchBtn}
+                  disabled={!selectedLetters || selectedLetters.size === 0}
+                >
+                  <CheckCircle2 size={12} />
+                  <span>Show All Letters</span>
+                </button>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={handleSelectAll}
+                    className={styles.batchBtn}
+                    disabled={isAllSelected}
+                  >
+                    <CheckCircle2 size={12} />
+                    <span>Select All</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleClearAll}
+                    className={styles.batchBtn}
+                    disabled={selectedCount === 0}
+                  >
+                    <X size={12} />
+                    <span>Clear All</span>
+                  </button>
+                </>
+              )}
             </div>
           </aside>
 
           {/* ── Right Concept Canvas ── */}
           <main className={styles.rightCanvas}>
-            {/* Top Filter & Search Toolbar */}
-            <div className={styles.canvasToolbar}>
-              <div className={styles.chipsScroll} role="tablist">
-                <button
-                  type="button"
-                  className={`${styles.chipBtn} ${category === "All" ? styles.chipBtnActive : ""}`}
-                  onClick={() => onCategoryChange("All")}
-                >
-                  <span className={styles.chipDot} />
-                  <span>All</span>
-                  <span className={styles.chipCount}>{conceptCount}</span>
-                </button>
-                {subjectConfig.classificationCategories
-                  .filter((item) => (categoryCounts[item.label] || 0) > 0)
-                  .map((item) => (
-                    <button
-                      key={item.id}
-                      type="button"
-                      className={`${styles.chipBtn} ${
-                        category === item.label ? styles.chipBtnActive : ""
-                      }`}
-                      onClick={() => onCategoryChange(item.label)}
-                    >
-                      <span className={styles.chipDot} />
-                      <span>{item.label}</span>
-                      <span className={styles.chipCount}>{categoryCounts[item.label]}</span>
-                    </button>
-                  ))}
-              </div>
-
-              {/* Instant Search Bar */}
-              <div className={styles.searchBox}>
-                <Search size={12} className={styles.searchIcon} />
-                <input
-                  type="text"
-                  value={activeSearch}
-                  onChange={(e) => handleSearchChange(e.target.value)}
-                  placeholder="Filter concepts..."
-                  className={styles.searchInput}
-                />
-                {activeSearch && (
-                  <button
-                    type="button"
-                    onClick={() => handleSearchChange("")}
-                    className={styles.clearSearchBtn}
-                    aria-label="Clear search"
-                  >
-                    <X size={11} />
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Alphabet / Letter Filter Bar for Synonyms & Antonyms in Formula / Vocabulary Mode */}
-            {subjectConfig.subjectId === "english" && slug === "synonyms-antonyms" && mode === "formula" && (
-              <div className={styles.letterBarSection}>
+            {isEnglishSynonymsFormula ? (
+              <div className={styles.letterBarSection} style={{ borderBottom: "none", padding: "20px 24px" }}>
                 <div className={styles.letterBarHeader}>
-                  <span>Filter by Letter (A–Z)</span>
-                  <span className={styles.letterBarCount}>
+                  <span style={{ fontSize: "13px" }}>Filter by Letter (A–Z)</span>
+                  <span className={styles.letterBarCount} style={{ fontSize: "12px" }}>
                     {selectedLetters && selectedLetters.size > 0
-                      ? `${selectedLetters.size} letter${selectedLetters.size > 1 ? "s" : ""} active (${Array.from(selectedLetters).sort().join(", ")})`
-                      : "All letters"}
+                      ? `Letter ${Array.from(selectedLetters).sort().join(", ")} (${questionCount} questions ready)`
+                      : `All letters (${questionCount} questions ready)`}
                   </span>
                 </div>
-                <div className={styles.letterBarScroll} role="toolbar" aria-label="Alphabet filter">
+                <div className={styles.letterBarGrid} role="toolbar" aria-label="Alphabet filter">
                   <button
                     type="button"
                     className={`${styles.letterBtn} ${styles.letterBtnAll} ${
@@ -584,65 +561,119 @@ function MacOsQuizStartStudio({
                   })}
                 </div>
               </div>
-            )}
-
-            {/* Concept Groups Grid */}
-            <div className={styles.conceptGrid}>
-              {filteredGroups.map((group) => {
-                const selectedInGroup = group.concepts.filter((concept) =>
-                  selected.has(concept)
-                ).length;
-                const isSelected =
-                  selectedInGroup === group.concepts.length && group.concepts.length > 0;
-                const isPartial = selectedInGroup > 0 && !isSelected;
-
-                return (
-                  <div
-                    key={group.id}
-                    className={`${styles.conceptCard} ${
-                      isSelected || isPartial ? styles.conceptCardSelected : ""
-                    }`}
-                    onClick={() => onToggleGroup(group.concepts)}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === " " || e.key === "Enter") {
-                        e.preventDefault();
-                        onToggleGroup(group.concepts);
-                      }
-                    }}
-                  >
-                    <div className={styles.conceptCardLeft}>
-                      <div className={styles.conceptIconBox}>
-                        <ModeIcon size={15} strokeWidth={2.2} />
-                      </div>
-                      <div className={styles.conceptTextGroup}>
-                        <span className={styles.conceptName}>{group.label}</span>
-                        <span className={styles.conceptMeta}>
-                          {group.concepts.length} concept
-                          {group.concepts.length === 1 ? "" : "s"}
-                          {selectedInGroup > 0 ? ` · ${selectedInGroup} selected` : ""}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div
-                      className={`${styles.conceptCheckbox} ${
-                        isSelected || isPartial ? styles.conceptCheckboxChecked : ""
-                      }`}
+            ) : (
+              <>
+                {/* Top Filter & Search Toolbar */}
+                <div className={styles.canvasToolbar}>
+                  <div className={styles.chipsScroll} role="tablist">
+                    <button
+                      type="button"
+                      className={`${styles.chipBtn} ${category === "All" ? styles.chipBtnActive : ""}`}
+                      onClick={() => onCategoryChange("All")}
                     >
-                      {(isSelected || isPartial) && <Check size={11} strokeWidth={3} />}
-                    </div>
+                      <span className={styles.chipDot} />
+                      <span>All</span>
+                      <span className={styles.chipCount}>{conceptCount}</span>
+                    </button>
+                    {subjectConfig.classificationCategories
+                      .filter((item) => (categoryCounts[item.label] || 0) > 0)
+                      .map((item) => (
+                        <button
+                          key={item.id}
+                          type="button"
+                          className={`${styles.chipBtn} ${
+                            category === item.label ? styles.chipBtnActive : ""
+                          }`}
+                          onClick={() => onCategoryChange(item.label)}
+                        >
+                          <span className={styles.chipDot} />
+                          <span>{item.label}</span>
+                          <span className={styles.chipCount}>{categoryCounts[item.label]}</span>
+                        </button>
+                      ))}
                   </div>
-                );
-              })}
 
-              {filteredGroups.length === 0 && (
-                <div className={styles.emptyState}>
-                  <p>No concept modules matched your filter.</p>
+                  {/* Instant Search Bar */}
+                  <div className={styles.searchBox}>
+                    <Search size={12} className={styles.searchIcon} />
+                    <input
+                      type="text"
+                      value={activeSearch}
+                      onChange={(e) => handleSearchChange(e.target.value)}
+                      placeholder="Filter concepts..."
+                      className={styles.searchInput}
+                    />
+                    {activeSearch && (
+                      <button
+                        type="button"
+                        onClick={() => handleSearchChange("")}
+                        className={styles.clearSearchBtn}
+                        aria-label="Clear search"
+                      >
+                        <X size={11} />
+                      </button>
+                    )}
+                  </div>
                 </div>
-              )}
-            </div>
+
+                {/* Concept Groups Grid */}
+                <div className={styles.conceptGrid}>
+                  {filteredGroups.map((group) => {
+                    const selectedInGroup = group.concepts.filter((concept) =>
+                      selected.has(concept)
+                    ).length;
+                    const isSelected =
+                      selectedInGroup === group.concepts.length && group.concepts.length > 0;
+                    const isPartial = selectedInGroup > 0 && !isSelected;
+
+                    return (
+                      <div
+                        key={group.id}
+                        className={`${styles.conceptCard} ${
+                          isSelected || isPartial ? styles.conceptCardSelected : ""
+                        }`}
+                        onClick={() => onToggleGroup(group.concepts)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === " " || e.key === "Enter") {
+                            e.preventDefault();
+                            onToggleGroup(group.concepts);
+                          }
+                        }}
+                      >
+                        <div className={styles.conceptCardLeft}>
+                          <div className={styles.conceptIconBox}>
+                            <ModeIcon size={15} strokeWidth={2.2} />
+                          </div>
+                          <div className={styles.conceptTextGroup}>
+                            <span className={styles.conceptName}>{group.label}</span>
+                            <span className={styles.conceptMeta}>
+                              {group.concepts.length} concept
+                              {group.concepts.length === 1 ? "" : "s"}
+                              {selectedInGroup > 0 ? ` · ${selectedInGroup} selected` : ""}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div
+                          className={`${styles.conceptCheckbox} ${
+                            isSelected || isPartial ? styles.conceptCheckboxChecked : ""
+                          }`}
+                        >
+                          {(isSelected || isPartial) && <Check size={11} strokeWidth={3} />}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {filteredGroups.length === 0 && (
+                    <div className={styles.emptyState}>
+                      <p>No concept modules matched your filter.</p>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
           </main>
         </div>
 
@@ -737,8 +768,16 @@ function IosQuizStartMobile({
 
   const modeInfo = MODE_DETAILS[mode] || MODE_DETAILS.concept;
   const selectedCount = selected.size;
-  const selectedQuestionLabel =
-    selectedCount === 0
+  const isEnglishSynonymsFormula =
+    subjectConfig.subjectId === "english" &&
+    slug === "synonyms-antonyms" &&
+    mode === "formula";
+
+  const selectedQuestionLabel = isEnglishSynonymsFormula
+    ? selectedLetters && selectedLetters.size > 0
+      ? `Letter ${Array.from(selectedLetters).sort().join(", ")}`
+      : "all letters"
+    : selectedCount === 0
       ? "all concepts"
       : `${selectedCount} concept${selectedCount === 1 ? "" : "s"}`;
 
@@ -788,75 +827,20 @@ function IosQuizStartMobile({
 
       {/* ── Scrollable Body ── */}
       <main className={styles.iosContent}>
-        {/* Select Exam Target */}
-        <p className={styles.iosHeading}>Select Exam Target</p>
-        <div className={styles.iosDropdownContainer}>
-          <div className={styles.iosDropdownRow}>
-            <span className={styles.iosTargetIconBox}>
-              <Target size={15} />
-            </span>
-            <span className={styles.iosDropdownLabel}>Exam Name</span>
-            <div className={styles.iosSelectWrapper}>
-              <select
-                value={examFilter || "all"}
-                onChange={(e) => onExamChange(e.target.value === "all" ? "" : e.target.value)}
-                className={styles.iosSelect}
-              >
-                {examOptions.map((ex) => (
-                  <option key={ex} value={ex === "all" ? "all" : ex}>
-                    {ex === "all" ? "All Exams" : ex}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown size={14} className={styles.iosSelectChevron} />
-            </div>
-          </div>
-        </div>
-
-        {/* Category Chips */}
-        <div className={styles.iosChipsScroll} aria-label="Concept category filters">
-          <button
-            type="button"
-            className={`${styles.iosChip} ${category === "All" ? styles.iosChipActive : ""}`}
-            onClick={() => onCategoryChange("All")}
-          >
-            <i className={styles.iosChipDot} style={{ background: subjectAccent }} />
-            <span>All</span>
-            <span className={styles.iosChipCount}>{conceptCount}</span>
-          </button>
-          {subjectConfig.classificationCategories
-            .filter((item) => (categoryCounts[item.label] ?? 0) > 0)
-            .map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                className={`${styles.iosChip} ${
-                  category === item.label ? styles.iosChipActive : ""
-                }`}
-                onClick={() => onCategoryChange(item.label)}
-              >
-                <i className={styles.iosChipDot} style={{ background: item.accent }} />
-                <span>{item.label}</span>
-                <span className={styles.iosChipCount}>{categoryCounts[item.label]}</span>
-              </button>
-            ))}
-        </div>
-
-        {/* Alphabet / Letter Filter for English Synonyms Formula Mode */}
-        {subjectConfig.subjectId === "english" && slug === "synonyms-antonyms" && mode === "formula" && (
+        {isEnglishSynonymsFormula ? (
           <div className={styles.iosLetterSection}>
             <div className={styles.iosLetterHeader}>
               <p className={styles.iosLetterHeading}>Filter by Letter</p>
               <span className={styles.iosLetterActiveLabel}>
                 {selectedLetters && selectedLetters.size > 0
-                  ? Array.from(selectedLetters).sort().join(", ")
+                  ? `Letter ${Array.from(selectedLetters).sort().join(", ")}`
                   : "All Letters"}
               </span>
             </div>
-            <div className={styles.iosLetterScroll} aria-label="Alphabet filters">
+            <div className={styles.iosLetterGrid} aria-label="Alphabet filters">
               <button
                 type="button"
-                className={`${styles.iosLetterPill} ${
+                className={`${styles.iosLetterPill} ${styles.iosLetterPillWide} ${
                   !selectedLetters || selectedLetters.size === 0 ? styles.iosLetterPillActive : ""
                 }`}
                 onClick={onSelectAllLetters}
@@ -876,6 +860,7 @@ function IosQuizStartMobile({
                     }`}
                     onClick={() => onToggleLetter && onToggleLetter(letter)}
                     disabled={!hasQuestions}
+                    title={hasQuestions ? `Letter ${letter} (${count} questions)` : `Letter ${letter} (0 questions)`}
                   >
                     {letter}
                   </button>
@@ -883,79 +868,135 @@ function IosQuizStartMobile({
               })}
             </div>
           </div>
-        )}
+        ) : (
+          <>
+            {/* Select Exam Target */}
+            <p className={styles.iosHeading}>Select Exam Target</p>
+            <div className={styles.iosDropdownContainer}>
+              <div className={styles.iosDropdownRow}>
+                <span className={styles.iosTargetIconBox}>
+                  <Target size={15} />
+                </span>
+                <span className={styles.iosDropdownLabel}>Exam Name</span>
+                <div className={styles.iosSelectWrapper}>
+                  <select
+                    value={examFilter || "all"}
+                    onChange={(e) => onExamChange(e.target.value === "all" ? "" : e.target.value)}
+                    className={styles.iosSelect}
+                  >
+                    {examOptions.map((ex) => (
+                      <option key={ex} value={ex === "all" ? "all" : ex}>
+                        {ex === "all" ? "All Exams" : ex}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown size={14} className={styles.iosSelectChevron} />
+                </div>
+              </div>
+            </div>
 
-        {/* Optional Search */}
-        {(onSearchChange !== undefined || Boolean(activeSearch)) && (
-          <div className={styles.iosSearchRow}>
-            <Search size={14} className={styles.iosSearchIcon} />
-            <input
-              type="text"
-              value={activeSearch}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              placeholder="Search concept groups..."
-              className={styles.iosSearchInput}
-            />
-            {activeSearch && (
+            {/* Category Chips */}
+            <div className={styles.iosChipsScroll} aria-label="Concept category filters">
               <button
                 type="button"
-                onClick={() => handleSearchChange("")}
-                className={styles.iosClearSearch}
-                aria-label="Clear search"
+                className={`${styles.iosChip} ${category === "All" ? styles.iosChipActive : ""}`}
+                onClick={() => onCategoryChange("All")}
               >
-                <X size={12} />
+                <i className={styles.iosChipDot} style={{ background: subjectAccent }} />
+                <span>All</span>
+                <span className={styles.iosChipCount}>{conceptCount}</span>
               </button>
+              {subjectConfig.classificationCategories
+                .filter((item) => (categoryCounts[item.label] ?? 0) > 0)
+                .map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className={`${styles.iosChip} ${
+                      category === item.label ? styles.iosChipActive : ""
+                    }`}
+                    onClick={() => onCategoryChange(item.label)}
+                  >
+                    <i className={styles.iosChipDot} style={{ background: item.accent }} />
+                    <span>{item.label}</span>
+                    <span className={styles.iosChipCount}>{categoryCounts[item.label]}</span>
+                  </button>
+                ))}
+            </div>
+
+            {/* Optional Search */}
+            {(onSearchChange !== undefined || Boolean(activeSearch)) && (
+              <div className={styles.iosSearchRow}>
+                <Search size={14} className={styles.iosSearchIcon} />
+                <input
+                  type="text"
+                  value={activeSearch}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  placeholder="Search concept groups..."
+                  className={styles.iosSearchInput}
+                />
+                {activeSearch && (
+                  <button
+                    type="button"
+                    onClick={() => handleSearchChange("")}
+                    className={styles.iosClearSearch}
+                    aria-label="Clear search"
+                  >
+                    <X size={12} />
+                  </button>
+                )}
+              </div>
             )}
-          </div>
+
+            {/* Concept Groups */}
+            <p className={styles.iosHeading}>Concept Groups</p>
+            <section className={styles.iosConceptList} aria-label="Concept groups">
+              {filteredGroups.map((group) => {
+                const selectedInGroup = group.concepts.filter((c) => selected.has(c)).length;
+                const isSelected =
+                  selectedInGroup === group.concepts.length && group.concepts.length > 0;
+                const isPartial = selectedInGroup > 0 && !isSelected;
+
+                return (
+                  <button
+                    key={group.id}
+                    type="button"
+                    className={styles.iosConceptRow}
+                    onClick={() => onToggleGroup(group.concepts)}
+                    aria-pressed={isSelected}
+                  >
+                    <span
+                      className={`${styles.iosCheckCircle} ${
+                        isSelected || isPartial ? styles.iosCheckCircleChecked : ""
+                      }`}
+                    >
+                      {(isSelected || isPartial) && <Check size={12} strokeWidth={3} />}
+                    </span>
+
+                    <span
+                      className={styles.iosGroupTile}
+                      style={{ background: group.bg, color: group.accent }}
+                    >
+                      {group.icon}
+                    </span>
+
+                    <span className={styles.iosRowCopy}>
+                      <strong className={styles.iosGroupTitle}>{group.label}</strong>
+                      <small className={styles.iosGroupMeta}>
+                        {group.concepts.length} concept{group.concepts.length === 1 ? "" : "s"}
+                        {selectedInGroup > 0 ? ` · ${selectedInGroup} selected` : ""}
+                      </small>
+                    </span>
+                  </button>
+                );
+              })}
+
+              {filteredGroups.length === 0 && (
+                <p className={styles.iosEmptyText}>No concept groups match your filter.</p>
+              )}
+            </section>
+          </>
         )}
-
-        {/* Concept Groups */}
-        <p className={styles.iosHeading}>Concept Groups</p>
-        <section className={styles.iosConceptList} aria-label="Concept groups">
-          {filteredGroups.map((group) => {
-            const selectedInGroup = group.concepts.filter((c) => selected.has(c)).length;
-            const isSelected =
-              selectedInGroup === group.concepts.length && group.concepts.length > 0;
-            const isPartial = selectedInGroup > 0 && !isSelected;
-
-            return (
-              <button
-                key={group.id}
-                type="button"
-                className={styles.iosConceptRow}
-                onClick={() => onToggleGroup(group.concepts)}
-                aria-pressed={isSelected}
-              >
-                <span
-                  className={`${styles.iosCheckCircle} ${
-                    isSelected || isPartial ? styles.iosCheckCircleChecked : ""
-                  }`}
-                >
-                  {(isSelected || isPartial) && <Check size={12} strokeWidth={3} />}
-                </span>
-
-                <span
-                  className={styles.iosGroupTile}
-                  style={{ background: group.bg, color: group.accent }}
-                >
-                  {group.icon}
-                </span>
-
-                <span className={styles.iosRowCopy}>
-                  <strong className={styles.iosGroupTitle}>{group.label}</strong>
-                  <small className={styles.iosGroupMeta}>
-                    {group.concepts.length} concept{group.concepts.length === 1 ? "" : "s"}
-                    {selectedInGroup > 0 ? ` · ${selectedInGroup} selected` : ""}
-                  </small>
-                </span>
-              </button>
-            );
-          })}
-
-          {filteredGroups.length === 0 && (
-            <p className={styles.iosEmptyText}>No concept groups match your filter.</p>
-          )}
-        </section>
       </main>
 
       {/* ── Fixed Bottom Launch Toolbar ── */}

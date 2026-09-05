@@ -57,7 +57,7 @@ export function useQuizFilters({
     subject: subjectConfig.subjectId,
     topic: questionTopic ?? slug,
     mode,
-    limit: 50,
+    limit: 5000,
   });
   const { meta } = useQuestionsMeta({
     subject: subjectConfig.subjectId,
@@ -196,13 +196,10 @@ export function useQuizFilters({
   const handleToggleLetter = useCallback((letter: string) => {
     const upper = letter.trim().toUpperCase();
     setSelectedLetters((prev) => {
-      const next = new Set(prev);
-      if (next.has(upper)) {
-        next.delete(upper);
-      } else {
-        next.add(upper);
+      if (prev.has(upper) && prev.size === 1) {
+        return new Set();
       }
-      return next;
+      return new Set([upper]);
     });
   }, []);
 

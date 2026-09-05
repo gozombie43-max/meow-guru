@@ -200,24 +200,33 @@ export function buildModeFilter(mode) {
   const tagRegexes = tags.map((t) => new RegExp(`^${escapeRegex(t)}$`, "i"));
 
   if (normalizedMode === "formula") {
-    // Formula mode also includes records with letter or word fields
+    // Formula mode also includes records with letter fields, but excludes study mode
     return {
-      $or: [
-        { quizName: { $in: tagRegexes } },
-        { quizId: { $in: tagRegexes } },
-        { source: { $in: tagRegexes } },
-        { topic: { $regex: /^antosynopyq$/i } },
-        { letter: { $exists: true, $ne: "" } },
-        { word: { $exists: true, $ne: "" } },
+      $and: [
+        buildExcludeStudyModeCondition(),
+        {
+          $or: [
+            { quizName: { $in: tagRegexes } },
+            { quizId: { $in: tagRegexes } },
+            { source: { $in: tagRegexes } },
+            { topic: { $regex: /^antosynopyq$/i } },
+            { letter: { $exists: true, $ne: "" } },
+          ],
+        },
       ],
     };
   }
 
   return {
-    $or: [
-      { quizName: { $in: tagRegexes } },
-      { quizId: { $in: tagRegexes } },
-      { source: { $in: tagRegexes } },
+    $and: [
+      buildExcludeStudyModeCondition(),
+      {
+        $or: [
+          { quizName: { $in: tagRegexes } },
+          { quizId: { $in: tagRegexes } },
+          { source: { $in: tagRegexes } },
+        ],
+      },
     ],
   };
 }

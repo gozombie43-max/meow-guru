@@ -1275,6 +1275,13 @@
   display: none;
 }
 
+.letterBarGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 0;
+}
+
 .letterBtn {
   min-width: 28px;
   height: 28px;
@@ -1362,9 +1369,16 @@
   display: none;
 }
 
+.iosLetterGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 0 16px;
+}
+
 .iosLetterPill {
-  min-width: 32px;
-  height: 32px;
+  min-width: 36px;
+  height: 36px;
   padding: 0 8px;
   border-radius: 9px;
   border: 1px solid var(--ios-card-border, rgba(255, 255, 255, 0.08));
@@ -1379,6 +1393,10 @@
   transition: all 0.12s ease;
   flex-shrink: 0;
   -webkit-tap-highlight-color: transparent;
+}
+
+.iosLetterPillWide {
+  min-width: 52px;
 }
 
 .iosLetterPill:active {

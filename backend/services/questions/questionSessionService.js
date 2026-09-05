@@ -13,7 +13,7 @@ export async function fetchQuestionsSession(params) {
 
   const parsedLimit = Math.max(
     1,
-    Math.min(100, Math.floor(Number(limit)) || 50),
+    Math.min(5000, Math.floor(Number(limit)) || 50),
   );
   const conditions = [];
 
