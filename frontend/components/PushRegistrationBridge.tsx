@@ -88,8 +88,30 @@ export default function PushRegistrationBridge() {
       handleRegistration
     );
 
+    const testPush = async () => {
+      try {
+        const response = await api.post(
+          '/api/notifications/test'
+        );
+
+        console.log(
+          'Test push result:',
+          response.data
+        );
+      } catch (error) {
+        console.error(
+          'Test push failed:',
+          error
+        );
+      }
+    };
+
+    (window as any).__MEOW_TEST_PUSH__ = testPush;
+
     return () => {
       cancelled = true;
+
+      delete (window as any).__MEOW_TEST_PUSH__;
 
       window.removeEventListener(
         'meow-fcm-registration',
