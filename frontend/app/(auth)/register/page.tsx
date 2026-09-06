@@ -57,7 +57,7 @@ function RegisterContent() {
     try {
       const res = await api.post('/auth/register', data);
       await login(res.data.token);
-      router.push('/dashboard');
+      router.push('/');
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error;
       setError(msg || 'Registration failed. Please check your details and try again.');

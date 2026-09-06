@@ -92,7 +92,8 @@ function LoginContent() {
       }
 
       await login(res.data.token);
-      router.push('/dashboard');
+      const redirectTarget = searchParams?.get('redirect') || searchParams?.get('next');
+      router.push(redirectTarget || '/');
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error;
       setError(msg || 'Invalid email or password. Please try again.');
