@@ -5,6 +5,7 @@ import { protect } from '../middleware/protect.js';
 import { validateBody } from '../middleware/validation.js';
 import {
   bookmarkPatchSchema,
+  profilePatchSchema,
   progressPatchSchema,
   recentQuizPatchSchema,
   studyTimePatchSchema,
@@ -52,6 +53,37 @@ router.get('/me', protect, async (req, res) => {
       ...safeUser
     } = user;
     res.json(safeUser);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── PATCH /users/me/profile ─────────────────────────────
+router.patch('/me/profile', protect, validateBody(profilePatchSchema), async (req, res) => {
+  const { name, avatar, phone } = req.body;
+
+  try {
+    const user = await getUser(req.user.id, req.user.email);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const fieldsToUpdate = {};
+    if (typeof name === 'string' && name.trim().length > 0) {
+      fieldsToUpdate.name = name.trim();
+    }
+    if (avatar !== undefined) {
+      fieldsToUpdate.avatar = avatar === '' ? null : avatar;
+    }
+    if (phone !== undefined) {
+      fieldsToUpdate.phone = phone === '' ? null : phone;
+    }
+
+    if (Object.keys(fieldsToUpdate).length > 0) {
+      await updateUser(user.id, fieldsToUpdate);
+    }
+
+    const updatedUser = await getUser(req.user.id, req.user.email);
+    const { passwordHash, _id, _cosmosRid, ...safeUser } = updatedUser;
+    res.json({ message: 'Profile updated ✅', user: safeUser });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

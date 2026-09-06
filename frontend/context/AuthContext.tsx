@@ -66,6 +66,7 @@ interface AuthContextType {
   login: (token: string) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
+  updateProfile: (data: { name?: string; avatar?: string | null; phone?: string | null }) => Promise<User | null>;
   loading: boolean;
 }
 
@@ -218,6 +219,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, [clearAuthState, fetchUser, persistToken, refreshAccessToken]);
 
+  const updateProfile = useCallback(
+    async (data: { name?: string; avatar?: string | null; phone?: string | null }) => {
+      try {
+        const res = await api.patch('/users/me/profile', data);
+        if (res.data?.user) {
+          setUser(res.data.user);
+          return res.data.user as User;
+        }
+        await refreshUser();
+        return null;
+      } catch (err) {
+        console.error('Failed to update profile:', err);
+        throw err;
+      }
+    },
+    [refreshUser]
+  );
+
   const contextValue = useMemo(
     () => ({
       user,
@@ -225,9 +244,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       login,
       logout,
       refreshUser,
+      updateProfile,
       loading,
     }),
-    [user, token, login, logout, refreshUser, loading]
+    [user, token, login, logout, refreshUser, updateProfile, loading]
   );
 
   return (

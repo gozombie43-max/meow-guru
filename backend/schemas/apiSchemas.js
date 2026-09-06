@@ -56,3 +56,10 @@ export const recentQuizPatchSchema = z.object({
 export const studyTimePatchSchema = z.object({
   activeSeconds: z.number().int().positive().max(86400),
 });
+
+export const profilePatchSchema = z.object({
+  name: z.string().trim().min(1, 'Name is required').max(80).optional(),
+  avatar: z.string().trim().max(2000).optional().nullable(),
+  phone: z.string().trim().max(20).optional().nullable(),
+});
+

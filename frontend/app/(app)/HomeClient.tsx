@@ -1,32 +1,32 @@
 'use client';
 
 import { AiChatIcon } from '@/components/AiChatIcon';
-import GoogleAvatarRing from '@/components/GoogleAvatarRing';
 import GradientWavesLazy from '@/components/GradientWavesLazy';
 import MacTrafficLights from '@/components/MacTrafficLights';
 import QuizChartArt from '@/components/QuizChartArt';
+import UserProfileMenu from '@/components/UserProfileMenu';
 import { useAuth } from '@/context/AuthContext';
 import { useThemeMode } from '@/hooks/useTheme';
 import {
-Bell,
-BookOpen,
-Crown,
-FileCheck2,
-Home as HomeIcon,
-LayoutDashboard,
-Menu,
-Moon,
-Play,
-Search,
-Sun,
-Swords,
-Video,
-X,
+  Bell,
+  BookOpen,
+  Crown,
+  FileCheck2,
+  Home as HomeIcon,
+  LayoutDashboard,
+  Menu,
+  Moon,
+  Play,
+  Search,
+  Sun,
+  Swords,
+  Video,
+  X,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { type ReactNode,useEffect,useRef,useState } from 'react';
-import { desktopSubjects,recentQuizzesData } from './home-data';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
+import { desktopSubjects, recentQuizzesData } from './home-data';
 import styles from './page.module.css';
 
 const railItems = [
@@ -123,24 +123,7 @@ export default function HomeClient({
 
   const renderMobileHeaderActions = () => (
     <div className={styles.headerActionsMobile}>
-      {user ? (
-        <button
-          type="button"
-          className={styles.profileButton}
-          aria-label="User Profile"
-          title="User Profile"
-        >
-          <GoogleAvatarRing
-            initial={user.name ? user.name.charAt(0).toUpperCase() : 'G'}
-            avatarUrl={user.avatar || undefined}
-            size={34}
-          />
-        </button>
-      ) : (
-        <Link href="/login" className={styles.loginButton}>
-          Log in
-        </Link>
-      )}
+      <UserProfileMenu size={34} align="right" />
       <button
         type="button"
         className={styles.menuButton}
@@ -166,8 +149,8 @@ export default function HomeClient({
         }}
       >
         <GradientWavesLazy
-          horizonColor={isDark ? "#0062cc" : "#0071e3"}
-          waveColor={isDark ? "#38bdf8" : "#60a5fa"}
+          horizonColor={isDark ? '#0062cc' : '#0071e3'}
+          waveColor={isDark ? '#38bdf8' : '#60a5fa'}
           crestColor="#ffffff"
           speed={0.35}
           amplitude={3.15}
@@ -321,14 +304,8 @@ export default function HomeClient({
 
               {/* Top Right User & System Controls */}
               <div className={styles.topActions}>
-                {/* User Avatar */}
-                <Link href="/dashboard" className={styles.profileAvatar} aria-label="User Profile">
-                  <GoogleAvatarRing
-                    initial={user?.name && user.name !== 'Test User' ? user.name.charAt(0).toUpperCase() : 'G'}
-                    avatarUrl={user?.avatar || undefined}
-                    size={34}
-                  />
-                </Link>
+                {/* User Avatar with Profile Dropdown Modal */}
+                <UserProfileMenu size={34} align="right" />
 
                 {/* Theme Toggle */}
                 <button
