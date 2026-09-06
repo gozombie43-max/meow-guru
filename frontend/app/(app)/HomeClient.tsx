@@ -123,7 +123,13 @@ export default function HomeClient({
 
   const renderMobileHeaderActions = () => (
     <div className={styles.headerActionsMobile}>
-      <UserProfileMenu size={34} align="right" />
+      {user ? (
+        <UserProfileMenu size={34} align="right" />
+      ) : (
+        <Link href="/login" className={styles.loginPillButton} aria-label="Log in">
+          LOGIN
+        </Link>
+      )}
       <button
         type="button"
         className={styles.menuButton}
@@ -304,8 +310,14 @@ export default function HomeClient({
 
               {/* Top Right User & System Controls */}
               <div className={styles.topActions}>
-                {/* User Avatar with Profile Dropdown Modal */}
-                <UserProfileMenu size={34} align="right" />
+                {/* User Avatar with Profile Dropdown Modal or LOGIN pill button */}
+                {user ? (
+                  <UserProfileMenu size={34} align="right" />
+                ) : (
+                  <Link href="/login" className={styles.loginPillButton} aria-label="Log in">
+                    LOGIN
+                  </Link>
+                )}
 
                 {/* Theme Toggle */}
                 <button

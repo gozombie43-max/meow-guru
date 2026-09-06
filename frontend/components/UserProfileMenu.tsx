@@ -106,6 +106,18 @@ export default function UserProfileMenu({
     ? { left: '50%', right: 'auto', transform: 'translateX(-50%)', transformOrigin: 'top center' }
     : { right: 0, left: 'auto', transformOrigin: 'top right' };
 
+  if (!user) {
+    return (
+      <Link
+        href="/login"
+        className={`${styles.loginPillBtn} ${className}`}
+        aria-label="Log in"
+      >
+        LOGIN
+      </Link>
+    );
+  }
+
   return (
     <div className={`${styles.container} ${className}`} ref={containerRef}>
       {/* Avatar Button Trigger */}

@@ -104,4 +104,27 @@ describe('UserProfileMenu Component', () => {
     fireEvent.keyDown(window, { key: 'Escape' });
     expect(screen.queryByText('john@test.com')).toBeNull();
   });
+
+  it('renders "LOGIN" pill button instead of avatar icon when no account is logged in', () => {
+    vi.spyOn(AuthContextModule, 'useAuth').mockReturnValue({
+      user: null,
+      token: null,
+      login: vi.fn(),
+      logout: mockLogout,
+      refreshUser: vi.fn(),
+      updateProfile: mockUpdateProfile,
+      loading: false,
+    });
+
+    render(<UserProfileMenu size={34} />);
+
+    // Avatar button must NOT be rendered
+    expect(screen.queryByRole('button', { name: /user profile menu/i })).toBeNull();
+
+    // "LOGIN" pill button link should be rendered
+    const loginLink = screen.getByRole('link', { name: /log in/i });
+    expect(loginLink).toBeDefined();
+    expect(loginLink.textContent).toBe('LOGIN');
+    expect(loginLink.getAttribute('href')).toBe('/login');
+  });
 });

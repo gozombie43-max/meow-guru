@@ -1077,18 +1077,67 @@
   gap: 10px;
 }
 
+.loginPillButton,
 .loginButton {
-  min-width: 80px;
-  height: 36px;
-  border: 1.8px solid var(--purple);
-  border-radius: 14px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: var(--purple);
-  font-size: 13.5px;
+  height: 34px;
+  padding: 0 16px;
+  min-width: 76px;
+  border-radius: 9999px;
+  background: transparent;
+  color: #0071e3;
+  font-size: 12.5px;
   font-weight: 700;
+  letter-spacing: 0.05em;
   text-decoration: none;
+  border: 1.6px solid #0071e3;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+  cursor: pointer;
+  flex-shrink: 0;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.loginPillButton:hover,
+.loginButton:hover {
+  background: rgba(0, 113, 227, 0.08);
+  border-color: #0077ed;
+  color: #0077ed;
+  transform: translateY(-1px);
+}
+
+.loginPillButton:active,
+.loginButton:active {
+  background: rgba(0, 113, 227, 0.14);
+  transform: translateY(0) scale(0.97);
+}
+
+.loginPillButton:focus-visible,
+.loginButton:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.3);
+}
+
+:global(.dark) .loginPillButton,
+:global(body.theme-dark) .loginPillButton,
+:global(.dark) .loginButton,
+:global(body.theme-dark) .loginButton {
+  background: transparent;
+  border-color: #0a84ff;
+  color: #0a84ff;
+}
+
+:global(.dark) .loginPillButton:hover,
+:global(body.theme-dark) .loginPillButton:hover,
+:global(.dark) .loginButton:hover,
+:global(body.theme-dark) .loginButton:hover {
+  background: rgba(10, 132, 255, 0.12);
+  border-color: #2b95ff;
+  color: #2b95ff;
+  box-shadow: 0 0 12px rgba(10, 132, 255, 0.2);
 }
 
 .profileButton {
