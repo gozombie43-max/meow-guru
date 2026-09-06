@@ -32,6 +32,20 @@ export async function connectMongoDB() {
     db.collection("questions").createIndex({ topic: 1, questionType: 1 }),
     db.collection("questions").createIndex({ topic: 1, quizName: 1 }),
     db.collection("questions").createIndex({ subject: 1, topic: 1, difficulty: 1 }),
+
+    // ── User indexes for admin search & filtering ──
+    db.collection("users").createIndex({ email: 1 }),
+    db.collection("users").createIndex({ role: 1, status: 1 }),
+    db.collection("users").createIndex({ createdAt: -1 }),
+    db.collection("users").createIndex(
+      { name: "text", email: "text" },
+      { name: "users_text_search" }
+    ),
+
+    // ── Audit log indexes ──
+    db.collection("auditLog").createIndex({ targetUserId: 1 }),
+    db.collection("auditLog").createIndex({ adminId: 1 }),
+    db.collection("auditLog").createIndex({ createdAt: -1 }),
   ]);
 
   console.log("✅ MongoDB Atlas connected");
@@ -77,4 +91,8 @@ export function getMockSlotsCollection() {
 
 export function getVideosCollection() {
   return getMongoDB().collection("videos");
+}
+
+export function getAuditLogCollection() {
+  return getMongoDB().collection("auditLog");
 }

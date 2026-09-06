@@ -47,6 +47,8 @@ import accessCodeRoutes from './routes/accessCodes.js';
 import cognitiveMapperRouter from './agents/cognitiveMapperRouter.js';
 import adaptiveQuizRouter from './agents/adaptiveQuiz/adaptiveQuizRouter.js';
 
+import adminUsersRoutes from './routes/adminUsers.routes.js';
+
 import {
   initBattleSocket,
 } from './battle/battleSocket.js';
@@ -423,6 +425,11 @@ async function initWithRetry() {
       '/api/access-code',
       authLimiter,
       accessCodeRoutes
+    );
+
+    app.use(
+      '/api/admin',
+      adminUsersRoutes
     );
 
 

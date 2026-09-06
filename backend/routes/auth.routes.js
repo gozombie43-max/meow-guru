@@ -384,6 +384,7 @@ router.post(
         id: decoded.id,
         email: decoded.email,
         name: decoded.name,
+        role: decoded.role || 'student',
       };
 
       const newToken =
