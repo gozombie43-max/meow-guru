@@ -451,6 +451,7 @@ router.get(
         'profile',
         'email',
       ],
+      session: false,
     }
   )
 );
