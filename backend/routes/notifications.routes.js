@@ -2,6 +2,7 @@ import express from "express";
 import { z } from "zod";
 import { protect } from "../middleware/protect.js";
 import { getPushDevicesCollection } from "../config/mongodb.js";
+import { firebaseMessaging } from "../config/firebase.js";
 
 const router = express.Router();
 
@@ -38,6 +39,57 @@ router.post("/register", protect, async (req, res, next) => {
     );
 
     return res.status(200).json({ ok: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post("/test", protect, async (req, res, next) => {
+  try {
+    const collection = getPushDevicesCollection();
+
+    const devices = await collection
+      .find({
+        userId: req.user.id,
+        enabled: true,
+        platform: "android",
+      })
+      .toArray();
+
+    if (devices.length === 0) {
+      return res.status(404).json({
+        error: "No registered Android devices",
+      });
+    }
+
+    const fids = devices.map((device) => device.fid);
+
+    const result =
+      await firebaseMessaging.sendEachForMulticast({
+        fids,
+
+        notification: {
+          title: "Meow 🐱",
+          body: "Your personal push notification is working!",
+        },
+
+        data: {
+          route: "/",
+        },
+
+        android: {
+          priority: "high",
+          notification: {
+            channelId: "default_channel_id",
+          },
+        },
+      });
+
+    return res.json({
+      ok: true,
+      successCount: result.successCount,
+      failureCount: result.failureCount,
+    });
   } catch (error) {
     next(error);
   }
