@@ -43,6 +43,7 @@ import massUploadSolutions from './routes/massUploadSolutions.js';
 import aiRoutes from './routes/aiRoutes.js';
 import pdfRoutes from './routes/pdfs.js';
 import accessCodeRoutes from './routes/accessCodes.js';
+import notificationRoutes from "./routes/notifications.routes.js";
 
 import cognitiveMapperRouter from './agents/cognitiveMapperRouter.js';
 import adaptiveQuizRouter from './agents/adaptiveQuiz/adaptiveQuizRouter.js';
@@ -430,6 +431,11 @@ async function initWithRetry() {
     app.use(
       '/api/admin',
       adminUsersRoutes
+    );
+
+    app.use(
+      "/api/notifications",
+      notificationRoutes
     );
 
 

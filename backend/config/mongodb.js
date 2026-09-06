@@ -1,4 +1,16 @@
+import dns from "node:dns";
 import { MongoClient } from "mongodb";
+
+const dnsServers = process.env.MONGODB_DNS_SERVERS;
+
+if (dnsServers) {
+  dns.setServers(
+    dnsServers
+      .split(",")
+      .map((server) => server.trim())
+      .filter(Boolean)
+  );
+}
 
 let client = null;
 let db = null;
@@ -46,6 +58,11 @@ export async function connectMongoDB() {
     db.collection("auditLog").createIndex({ targetUserId: 1 }),
     db.collection("auditLog").createIndex({ adminId: 1 }),
     db.collection("auditLog").createIndex({ createdAt: -1 }),
+
+    // ── Push notification device indexes ──
+    db.collection("pushDevices").createIndex({ fid: 1 }, { unique: true }),
+    db.collection("pushDevices").createIndex({ userId: 1, enabled: 1 }),
+    db.collection("pushDevices").createIndex({ updatedAt: -1 }),
   ]);
 
   console.log("✅ MongoDB Atlas connected");
@@ -95,4 +112,8 @@ export function getVideosCollection() {
 
 export function getAuditLogCollection() {
   return getMongoDB().collection("auditLog");
+}
+
+export function getPushDevicesCollection() {
+  return getMongoDB().collection("pushDevices");
 }
