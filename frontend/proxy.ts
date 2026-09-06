@@ -30,6 +30,8 @@ export function proxy(request: NextRequest) {
     pathname.startsWith('/access-code/') ||
     pathname.startsWith('/_next/') ||
     pathname.startsWith('/auth/') ||
+    pathname === '/login' ||
+    pathname === '/register' ||
     pathname === '/favicon.ico' ||
     // Static file extensions
     /\.(?:png|jpg|jpeg|gif|svg|ico|webp|css|js|woff2?|ttf|eot)$/i.test(pathname);

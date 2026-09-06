@@ -1,0 +1,952 @@
+/* =========================================================================
+   AUTHENTIC iOS AUTHENTICATION DESIGN SYSTEM
+   Optimized for both PC (Desktop) and Mobile devices.
+   ========================================================================= */
+
+.authContainer,
+.modalOverlay {
+  /* Light Theme (Default) */
+  --ios-bg: #f2f2f7;
+  --ios-card-bg: rgba(255, 255, 255, 0.82);
+  --ios-card-border: rgba(255, 255, 255, 0.95);
+  --ios-card-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  --ios-text: #1c1c1e;
+  --ios-secondary: #8e8e93;
+  --ios-blue: #007aff;
+  --ios-blue-hover: #0062cc;
+  --ios-input-bg: rgba(118, 118, 128, 0.08);
+  --ios-input-border: rgba(0, 0, 0, 0.06);
+  --ios-input-focus-border: #007aff;
+  --ios-input-focus-ring: rgba(0, 122, 255, 0.18);
+  --ios-segmented-bg: rgba(118, 118, 128, 0.12);
+  --ios-segmented-active: #ffffff;
+  --ios-segmented-active-text: #1c1c1e;
+  --ios-segmented-shadow: 0 3px 8px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --ios-google-bg: #ffffff;
+  --ios-google-border: rgba(0, 0, 0, 0.12);
+  --ios-google-hover: #f9f9fb;
+  --ios-google-text: #1c1c1e;
+  --ios-divider: rgba(0, 0, 0, 0.08);
+  --ios-divider-text: #8e8e93;
+  --ios-error-bg: rgba(255, 59, 48, 0.1);
+  --ios-error-text: #d70015;
+  --ios-error-border: rgba(255, 59, 48, 0.25);
+  --ios-modal-bg: #ffffff;
+  --ios-modal-border: rgba(0, 0, 0, 0.1);
+}
+
+.authContainer {
+  min-height: 100dvh;
+  width: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: calc(16px + var(--safe-top, 0px)) 16px calc(16px + var(--safe-bottom, 0px));
+  background-color: var(--ios-bg);
+  background-image: 
+    radial-gradient(ellipse at 50% 10%, rgba(0, 122, 255, 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 80%, rgba(88, 86, 214, 0.06) 0%, transparent 50%);
+  color: var(--ios-text);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Dark Theme Overrides */
+:global(html.theme-dark) .authContainer,
+:global(body.theme-dark) .authContainer,
+:global(.theme-dark) .authContainer,
+.authContainer:global(.theme-dark),
+:global(html.theme-dark) .modalOverlay,
+:global(body.theme-dark) .modalOverlay,
+:global(.theme-dark) .modalOverlay,
+.modalOverlay:global(.theme-dark) {
+  --ios-bg: #000000;
+  --ios-card-bg: rgba(28, 28, 30, 0.82);
+  --ios-card-border: rgba(255, 255, 255, 0.1);
+  --ios-card-shadow: 0 24px 60px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  --ios-text: #ffffff;
+  --ios-secondary: #98989d;
+  --ios-blue: #0a84ff;
+  --ios-blue-hover: #0071e3;
+  --ios-input-bg: rgba(118, 118, 128, 0.22);
+  --ios-input-border: rgba(255, 255, 255, 0.08);
+  --ios-input-focus-border: #0a84ff;
+  --ios-input-focus-ring: rgba(10, 132, 255, 0.25);
+  --ios-segmented-bg: rgba(118, 118, 128, 0.24);
+  --ios-segmented-active: #636366;
+  --ios-segmented-active-text: #ffffff;
+  --ios-segmented-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+  --ios-google-bg: rgba(44, 44, 46, 0.9);
+  --ios-google-border: rgba(255, 255, 255, 0.12);
+  --ios-google-hover: rgba(58, 58, 60, 0.95);
+  --ios-google-text: #ffffff;
+  --ios-divider: rgba(255, 255, 255, 0.1);
+  --ios-divider-text: #8e8e93;
+  --ios-error-bg: rgba(255, 69, 58, 0.16);
+  --ios-error-text: #ff6961;
+  --ios-error-border: rgba(255, 69, 58, 0.3);
+  --ios-modal-bg: #1c1c1e;
+  --ios-modal-border: rgba(255, 255, 255, 0.15);
+}
+
+/* =========================================================================
+   MAIN SHELL (DESKTOP DUAL PANE / MOBILE SINGLE CARD)
+   ========================================================================= */
+
+/* =========================================================================
+   MAIN SHELL (DESKTOP DUAL PANE / MOBILE SINGLE CARD)
+   ========================================================================= */
+
+.authShell {
+  position: relative;
+  width: 100%;
+  max-width: 780px;
+  background: var(--ios-card-bg);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid var(--ios-card-border);
+  border-radius: 22px;
+  box-shadow: var(--ios-card-shadow);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  overflow: hidden;
+  margin: auto 0;
+  animation: cardFadeUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes cardFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Left Showcase Pane (Desktop PC Only) */
+.pcShowcase {
+  background: linear-gradient(155deg, rgba(0, 122, 255, 0.06) 0%, rgba(88, 86, 214, 0.04) 100%);
+  border-right: 1px solid var(--ios-card-border);
+  padding: 24px 26px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+
+.showcaseBrand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  width: fit-content;
+  transition: transform 0.2s ease;
+}
+
+.showcaseBrand:hover {
+  transform: translateY(-1px);
+}
+
+.brandTextGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.brandTitleText {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: var(--ios-text);
+  line-height: 1.1;
+}
+
+.brandTaglineText {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--ios-secondary);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.showcaseHero {
+  margin: 14px 0 12px;
+}
+
+.showcaseHeading {
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--ios-text);
+  line-height: 1.22;
+  white-space: pre-line;
+  margin: 0;
+}
+
+.showcaseSubheading {
+  font-size: 12px;
+  color: var(--ios-secondary);
+  line-height: 1.4;
+  margin-top: 5px;
+}
+
+.showcasePills {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.showcasePill {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 11px;
+  border-radius: 10px;
+  background: rgba(118, 118, 128, 0.07);
+  border: 1px solid var(--ios-input-border);
+  color: var(--ios-text);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.pillIconWrap {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ios-blue);
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.showcaseFooter {
+  padding-top: 14px;
+  border-top: 1px solid var(--ios-divider);
+  font-size: 11px;
+  color: var(--ios-secondary);
+  display: flex;
+  align-items: center;
+}
+
+/* Right Form Card Pane */
+.authCard {
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+/* Header & Brand Icon */
+.mobileCardHeader {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.desktopCardHeader {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+}
+
+.brandSquircle {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  background: linear-gradient(145deg, #007aff 0%, #5856d6 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.25);
+  margin-bottom: 0;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+}
+
+.brandSquircle:hover {
+  transform: scale(1.05);
+}
+
+.brandTitle {
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  color: var(--ios-text);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.brandSubtitle {
+  font-size: 12.5px;
+  color: var(--ios-secondary);
+  margin-top: 2px;
+  line-height: 1.35;
+  font-weight: 400;
+}
+
+/* =========================================================================
+   iOS SEGMENTED CONTROL (SIGN IN | REGISTER)
+   ========================================================================= */
+
+.segmentedControl {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: var(--ios-segmented-bg);
+  padding: 2.5px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  position: relative;
+  user-select: none;
+}
+
+.segmentedTab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ios-secondary);
+  text-decoration: none;
+  border-radius: 8px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  text-align: center;
+}
+
+.segmentedTab:hover {
+  color: var(--ios-text);
+}
+
+.segmentedTabActive {
+  background: var(--ios-segmented-active);
+  color: var(--ios-segmented-active-text) !important;
+  box-shadow: var(--ios-segmented-shadow);
+}
+
+/* =========================================================================
+   GOOGLE SOCIAL AUTH BUTTON
+   ========================================================================= */
+
+.googleBtn {
+  width: 100%;
+  height: 40px;
+  border-radius: 11px;
+  background: var(--ios-google-bg);
+  border: 1px solid var(--ios-google-border);
+  color: var(--ios-google-text);
+  font-size: 13.5px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.googleBtn:hover {
+  background: var(--ios-google-hover);
+  border-color: rgba(0, 122, 255, 0.3);
+}
+
+.googleBtn:active {
+  transform: scale(0.985);
+}
+
+.googleIcon {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+}
+
+/* =========================================================================
+   MINIMALIST DIVIDER
+   ========================================================================= */
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.dividerLine {
+  flex: 1;
+  height: 1px;
+  background: var(--ios-divider);
+}
+
+.dividerText {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--ios-divider-text);
+  letter-spacing: 0.3px;
+  text-transform: lowercase;
+}
+
+/* =========================================================================
+   iOS ALERT BANNER
+   ========================================================================= */
+
+.alertBanner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--ios-error-bg);
+  border: 1px solid var(--ios-error-border);
+  border-radius: 11px;
+  color: var(--ios-error-text);
+  font-size: 12.5px;
+  line-height: 1.35;
+  margin-bottom: 12px;
+  animation: shake 0.35s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+.alertBanner svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+@keyframes shake {
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-2px, 0, 0); }
+  40%, 60% { transform: translate3d(2px, 0, 0); }
+}
+
+/* =========================================================================
+   FORM & FIELDS
+   ========================================================================= */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fieldLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ios-text);
+  letter-spacing: -0.1px;
+}
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inputLeadingIcon {
+  position: absolute;
+  left: 12px;
+  color: var(--ios-secondary);
+  pointer-events: none;
+  transition: color 0.18s ease;
+}
+
+.inputField {
+  width: 100%;
+  height: 40px;
+  padding: 0 38px 0 36px;
+  font-size: 14px;
+  border-radius: 11px;
+  border: 1px solid var(--ios-input-border);
+  background: var(--ios-input-bg);
+  color: var(--ios-text);
+  font-family: inherit;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+
+.inputField::placeholder {
+  color: var(--ios-secondary);
+  opacity: 0.75;
+}
+
+.inputField:focus {
+  outline: none;
+  border-color: var(--ios-input-focus-border);
+  box-shadow: 0 0 0 3px var(--ios-input-focus-ring);
+}
+
+.inputWrapper:focus-within .inputLeadingIcon {
+  color: var(--ios-blue);
+}
+
+.inputError {
+  border-color: var(--ios-error-text) !important;
+  box-shadow: 0 0 0 3px var(--ios-error-bg) !important;
+}
+
+.fieldErrorText {
+  font-size: 12px;
+  color: var(--ios-error-text);
+  margin-top: 2px;
+  font-weight: 500;
+}
+
+.passwordToggleBtn {
+  position: absolute;
+  right: 10px;
+  background: transparent;
+  border: none;
+  color: var(--ios-secondary);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.18s ease;
+}
+
+.passwordToggleBtn:hover {
+  color: var(--ios-text);
+}
+
+/* =========================================================================
+   OPTIONS ROW (REMEMBER ME & FORGOT PASSWORD)
+   ========================================================================= */
+
+.optionsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: -2px;
+  font-size: 13px;
+}
+
+.rememberCheckbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ios-secondary);
+  cursor: pointer;
+  user-select: none;
+  font-size: 13px;
+}
+
+.rememberCheckbox input {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--ios-blue);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.forgotBtn {
+  background: none;
+  border: none;
+  color: var(--ios-blue);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: none;
+  transition: opacity 0.18s ease;
+}
+
+.forgotBtn:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+/* Terms Checkbox for Register */
+.termsRow {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 9px;
+  color: var(--ios-secondary);
+  cursor: pointer;
+  user-select: none;
+  font-size: 12.5px;
+  line-height: 1.4;
+  margin-top: 2px;
+}
+
+.termsRow input {
+  margin-top: 2px;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--ios-blue);
+  border-radius: 4px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* =========================================================================
+   PASSWORD STRENGTH METER (CLEAN iOS PILLS)
+   ========================================================================= */
+
+.strengthContainer {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.strengthSegments {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 5px;
+}
+
+.strengthSegment {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--ios-input-bg);
+  transition: background-color 0.2s ease;
+}
+
+.strengthSegmentWeak {
+  background-color: #ff3b30;
+}
+
+.strengthSegmentMedium {
+  background-color: #ff9500;
+}
+
+.strengthSegmentStrong {
+  background-color: #34c759;
+}
+
+.strengthLabel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11.5px;
+  color: var(--ios-secondary);
+}
+
+.strengthStatusWeak {
+  color: #ff3b30;
+  font-weight: 600;
+}
+
+.strengthStatusMedium {
+  color: #ff9500;
+  font-weight: 600;
+}
+
+.strengthStatusStrong {
+  color: #34c759;
+  font-weight: 600;
+}
+
+/* =========================================================================
+   PRIMARY iOS SUBMIT BUTTON
+   ========================================================================= */
+
+.primaryBtn {
+  margin-top: 4px;
+  height: 40px;
+  width: 100%;
+  border-radius: 11px;
+  border: none;
+  background: var(--ios-blue);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 3px 12px rgba(0, 122, 255, 0.28);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.primaryBtn:hover:not(:disabled) {
+  background: var(--ios-blue-hover);
+  box-shadow: 0 4px 16px rgba(0, 122, 255, 0.36);
+}
+
+.primaryBtn:active:not(:disabled) {
+  transform: scale(0.985);
+  opacity: 0.95;
+}
+
+.primaryBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2.2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* =========================================================================
+   CARD FOOTER (CLEAN BOTTOM HINT)
+   ========================================================================= */
+
+.cardFooter {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 12.5px;
+  color: var(--ios-secondary);
+}
+
+.footerLink {
+  color: var(--ios-blue);
+  font-weight: 600;
+  text-decoration: none;
+  margin-left: 4px;
+  transition: opacity 0.18s ease;
+}
+
+.footerLink:hover {
+  text-decoration: underline;
+  opacity: 0.85;
+}
+
+/* =========================================================================
+   FORGOT PASSWORD MODAL (iOS ACTION SHEET / ALERT DIALOG)
+   ========================================================================= */
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+.modalSheet {
+  width: 100%;
+  max-width: 380px;
+  background-color: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 22px;
+  padding: 24px 22px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+  animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  color: #1c1c1e;
+  box-sizing: border-box;
+}
+
+:global(html.theme-dark) .modalSheet,
+:global(body.theme-dark) .modalSheet,
+:global(.theme-dark) .modalSheet {
+  background-color: #1c1c1e;
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.modalTitle {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--ios-text);
+}
+
+.modalCloseBtn {
+  background: transparent;
+  border: none;
+  color: var(--ios-secondary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.18s ease;
+}
+
+.modalCloseBtn:hover {
+  color: var(--ios-text);
+}
+
+.modalDescription {
+  font-size: 13.5px;
+  color: var(--ios-secondary);
+  line-height: 1.45;
+  margin-bottom: 18px;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.modalCancelBtn {
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--ios-input-border);
+  background: var(--ios-input-bg);
+  color: var(--ios-text);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.18s ease;
+}
+
+.modalCancelBtn:hover {
+  opacity: 0.8;
+}
+
+.modalSubmitBtn {
+  padding: 10px 18px;
+  border-radius: 12px;
+  border: none;
+  background: var(--ios-blue);
+  color: #ffffff;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.25);
+  transition: all 0.18s ease;
+}
+
+.modalSubmitBtn:hover {
+  background: var(--ios-blue-hover);
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalPop {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* =========================================================================
+   RESPONSIVENESS (TABLETS & MOBILE FINE TUNING)
+   ========================================================================= */
+
+@media (max-width: 860px) {
+  .authContainer {
+    padding: calc(14px + var(--safe-top, 0px)) 16px calc(20px + var(--safe-bottom, 0px));
+    justify-content: center;
+  }
+
+  .authShell {
+    max-width: 420px;
+    grid-template-columns: 1fr;
+    border-radius: 22px;
+  }
+
+  .pcShowcase {
+    display: none;
+  }
+
+  .authCard {
+    padding: 24px 20px;
+  }
+
+  .mobileCardHeader {
+    display: flex;
+  }
+
+  .desktopCardHeader {
+    display: none;
+  }
+
+  .inputField {
+    height: 46px;
+    font-size: 16px; /* strictly 16px to prevent iOS Safari auto-zoom */
+  }
+
+  .primaryBtn,
+  .googleBtn {
+    height: 46px;
+    font-size: 15px;
+    border-radius: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .authContainer {
+    padding: calc(12px + var(--safe-top, 0px)) 14px calc(20px + var(--safe-bottom, 0px));
+    justify-content: flex-start;
+  }
+
+  .authShell {
+    margin: 0 auto;
+    border-radius: 20px;
+  }
+
+  .authCard {
+    padding: 20px 16px;
+  }
+
+  .brandTitle {
+    font-size: 21px;
+  }
+
+  .brandSquircle {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    margin-bottom: 8px;
+  }
+
+  .inputField {
+    height: 46px;
+    font-size: 16px;
+  }
+
+  .primaryBtn,
+  .googleBtn {
+    height: 46px;
+    font-size: 15px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .authShell,
+  .alertBanner,
+  .modalOverlay,
+  .modalSheet {
+    animation: none !important;
+  }
+}
