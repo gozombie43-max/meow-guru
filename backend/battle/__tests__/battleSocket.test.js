@@ -82,6 +82,7 @@ describe('Battle Socket - room:invite', () => {
       id: 'socket_host',
       user: { id: 'host_id', email: 'host@test.com', name: 'HostGuru' },
       join: vi.fn(),
+      leave: vi.fn(),
       emit: vi.fn(),
       on: (evt, handler) => {
         socketHandlers[evt] = handler;
@@ -104,6 +105,27 @@ describe('Battle Socket - room:invite', () => {
       if (previous === undefined) delete process.env.BATTLE_NEW_MATCHES_ENABLED;
       else process.env.BATTLE_NEW_MATCHES_ENABLED = previous;
     }
+  });
+
+  it('returns complete waiting-room settings and supports explicit cancellation', async () => {
+    await socketHandlers['room:create']({
+      playerName: 'HostGuru',
+      subject: 'reasoning',
+      topic: 'all',
+      questionCount: 15,
+    });
+    const created = socket.emit.mock.calls.find(([event]) => event === 'room:created')?.[1];
+    expect(created).toMatchObject({
+      playerName: 'HostGuru',
+      subject: 'reasoning',
+      topic: 'all',
+      questionCount: 15,
+    });
+
+    await socketHandlers['room:leave']({ code: created.code });
+    expect(socket.leave).toHaveBeenCalledWith(created.code);
+    expect(socket.emit).toHaveBeenCalledWith('room:left');
+    expect(battleRooms.has(created.code)).toBe(false);
   });
 
   it('rejects invalid room code or email address', async () => {

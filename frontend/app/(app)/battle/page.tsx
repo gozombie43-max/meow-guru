@@ -2,1269 +2,195 @@
 
 import RichContent from "@/components/RichContent";
 import { useAuth } from "@/context/AuthContext";
-import { getSocket } from "@/lib/socket";
-import { AnimatePresence,motion } from "framer-motion";
-import { Check,Copy,Swords } from "lucide-react";
+import { useBattle } from "@/hooks/useBattle";
+import { battleOutcome, type PlayerScore } from "@/lib/battle-state";
+import { motion } from "framer-motion";
+import { ArrowLeft, Check, Copy, Crown, LoaderCircle, Mail, RotateCcw, Shield, Swords, Trophy, Users, Wifi, WifiOff, Zap } from "lucide-react";
 import Link from "next/link";
-import { useEffect,useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 
-// ── Types ────────────────────────────────────────────────────────────────────
-type BattleState = "lobby" | "waiting" | "playing" | "finished";
-
-interface Player {
-  name: string;
-  score: number;
-  answered: boolean;
-  lastCorrect?: boolean;
-}
-
-interface Scores {
-  [userId: string]: Player;
-}
-
-interface BattleQuestion {
-  question: string;
-  options: string[];
-  questionIndex: number;
-  total: number;
-  deadline: string;
-}
-
-type BattleRating = {
-  lifetime: { before: number; after: number; delta: number };
-  season: { before: number; after: number; delta: number; tierBefore: string; tierAfter: string } | null;
+const SUBJECTS = [
+  { value: "mathematics", label: "Mathematics" }, { value: "reasoning", label: "Reasoning" },
+  { value: "english", label: "English" }, { value: "general-awareness", label: "General Awareness" },
+] as const;
+const TOPICS: Record<string, { value: string; label: string }[]> = {
+  mathematics: [
+    { value: "all", label: "All topics" }, { value: "trigonometry", label: "Trigonometry" },
+    { value: "algebra", label: "Algebra" }, { value: "geometry", label: "Geometry" },
+    { value: "mensuration", label: "Mensuration" }, { value: "percentages", label: "Percentages" },
+  ],
+  reasoning: [{ value: "all", label: "All topics" }], english: [{ value: "all", label: "All topics" }],
+  "general-awareness": [{ value: "all", label: "All topics" }],
 };
-type MatchStats = { correct: number; total: number; accuracy: number; averageResponseMs: number | null; timedOut: number };
+const QUESTION_COUNTS = [10, 15, 25, 50] as const;
+const CONFETTI = Array.from({ length: 24 }, (_, index) => ({
+  id: index, left: (index * 37 + 11) % 100, delay: (index % 8) * 0.09,
+  duration: 2.25 + (index % 5) * 0.16,
+  color: ["#7c3aed", "#2563eb", "#10b981", "#f59e0b", "#ec4899"][index % 5],
+}));
 
-interface BattleResumeSnapshot {
-  code: string;
-  status: "waiting" | "active" | "finished";
-  subject: string;
-  topic: string;
-  questionCount: number;
-  currentIndex: number;
-  totalQuestions: number;
-  players: Array<{ userId: string; name: string; connected: boolean }>;
-  scores: Scores;
-  myAnswered: boolean;
-  currentQuestion: BattleQuestion | null;
-  finishedAt?: string | null;
-  rematchToken?: string | null;
-  opponentName?: string;
-  finishReason?: "completed" | "forfeit" | "abandoned";
-  winnerUserId?: string | null;
-  loserUserId?: string | null;
-  opponentPresence?: { connected: boolean; reconnectDeadline?: string | null };
+type Connection = "connecting" | "syncing" | "online" | "offline";
+
+function ConnectionStatus({ status }: { status: Connection }) {
+  const online = status === "online";
+  return <span className={`battle-connection ${online ? "is-online" : ""}`} aria-live="polite">
+    {online ? <Wifi aria-hidden="true" /> : <WifiOff aria-hidden="true" />}
+    {online ? "Live" : status === "offline" ? "Offline" : "Syncing"}
+  </span>;
 }
 
-const ACTIVE_BATTLE_KEY = "meow_active_battle_code";
-const saveActiveBattleCode = (code: string) => {
-  if (typeof window !== "undefined") localStorage.setItem(ACTIVE_BATTLE_KEY, code);
-};
-const getActiveBattleCode = () => (
-  typeof window === "undefined" ? null : localStorage.getItem(ACTIVE_BATTLE_KEY)
-);
-const clearActiveBattleCode = () => {
-  if (typeof window !== "undefined") localStorage.removeItem(ACTIVE_BATTLE_KEY);
-};
-
-interface SubjectOption {
-  value: string;
-  label: string;
+function BattleHeader({ title, status, backHref = "/", onBack }: { title: string; status: Connection; backHref?: string; onBack?: () => void }) {
+  return <header className="battle-header"><div className="battle-header-inner">
+    {onBack ? <button type="button" className="battle-icon-button" aria-label="Go back" onClick={onBack}><ArrowLeft /></button> : <Link href={backHref} className="battle-icon-button" aria-label="Go back"><ArrowLeft /></Link>}
+    <div className="battle-header-copy"><span className="battle-eyebrow">Battle arena</span><strong>{title}</strong></div>
+    <ConnectionStatus status={status} />
+  </div></header>;
 }
 
-interface TopicOption {
-  value: string;
-  label: string;
-  shortLabel?: string;
-  icon?: string;
+function ErrorNotice({ message, onRetry }: { message: string; onRetry?: () => void }) {
+  if (!message) return null;
+  return <div className="battle-notice is-error" role="alert"><span>{message}</span>{onRetry && <button type="button" onClick={onRetry}>Reconnect</button>}</div>;
 }
 
-// ── Constants ────────────────────────────────────────────────────────────────
-const SUBJECTS: SubjectOption[] = [
-  { value: "mathematics", label: "Mathematics" },
-  { value: "reasoning", label: "Reasoning" },
-  { value: "english", label: "English" },
-  { value: "general-awareness", label: "General Awareness" },
-];
-
-const MATH_TOPICS: TopicOption[] = [
-  { value: "trigonometry", label: "Trigonometry", shortLabel: "Trig", icon: "∫" },
-  { value: "algebra",      label: "Algebra",       shortLabel: "Algo", icon: "x²" },
-  { value: "geometry",     label: "Geometry",       shortLabel: "Geo", icon: "△" },
-  { value: "mensuration",  label: "Mensuration",    shortLabel: "Mens", icon: "⬡" },
-  { value: "percentages",  label: "Percentages",    shortLabel: "Perc", icon: "%" },
-];
-
-const TOPICS_BY_SUBJECT: Record<string, TopicOption[]> = {
-  mathematics: [{ value: "all", label: "All Topics", shortLabel: "All", icon: "ALL" }, ...MATH_TOPICS],
-  reasoning: [{ value: "all", label: "All Topics", shortLabel: "All", icon: "ALL" }],
-  english: [{ value: "all", label: "All Topics", shortLabel: "All", icon: "ALL" }],
-  "general-awareness": [{ value: "all", label: "All Topics", shortLabel: "All", icon: "ALL" }],
-};
-
-const QUESTION_COUNTS = [10, 15, 25, 50];
-
-// ── Score Bar ────────────────────────────────────────────────────────────────
-function ScoreBar({
-  scores, myPlayerId, myName, questionIndex, total,
-}: {
-  scores: Scores; myPlayerId: string; myName: string;
-  questionIndex: number; total: number;
-}) {
-  const players = Object.entries(scores);
-  const me = players.find(([id]) => id === myPlayerId);
-  const opp = players.find(([id]) => id !== myPlayerId);
-
-  const meScore = me?.[1]?.score ?? 0;
-  const oppScore = opp?.[1]?.score ?? 0;
-  const oppName = opp?.[1]?.name ?? "Opponent";
-  const meAnswered = me?.[1]?.answered ?? false;
-  const oppAnswered = opp?.[1]?.answered ?? false;
-  const totalScore = meScore + oppScore || 1;
-  const myWidth = Math.round((meScore / totalScore) * 100);
-
-  return (
-    <div className="relative overflow-hidden px-4 pt-4 pb-3 sm:px-6"
-      style={{
-        background: "linear-gradient(120deg,#2a0a4a 0%,#3b0f63 45%,#0f2a4a 55%,#0b3a57 100%)",
-      }}>
-      <div className="absolute inset-0" style={{
-        background: "linear-gradient(120deg, rgba(0,0,0,0) 44%, rgba(255,255,255,0.12) 49%, rgba(0,0,0,0) 55%)",
-      }} />
-      <div className="absolute inset-0" style={{
-        background: "radial-gradient(circle at 20% 10%, rgba(255,255,255,0.18), transparent 40%), radial-gradient(circle at 80% 10%, rgba(255,255,255,0.12), transparent 35%)",
-      }} />
-
-      {/* Header row */}
-      <div className="relative flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-fuchsia-200/90 border-2 border-fuchsia-300 flex items-center justify-center text-xs font-bold text-purple-800">
-            {myName[0]?.toUpperCase()}
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-white">{myName}</span>
-              {meAnswered && (
-                <span className="text-[10px] font-semibold text-emerald-200 bg-emerald-500/20 border border-emerald-300/40 rounded-full px-2 py-0.5">
-                  answered
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-col items-center gap-1">
-          <span className="text-[11px] font-bold text-white/70 tracking-[0.3em]">QUIZ BATTLE</span>
-          <span className="text-xs font-semibold text-white/80 tabular-nums">
-            Q {questionIndex + 1}/{total}
-          </span>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="text-right">
-            <div className="flex items-center gap-2 justify-end">
-              <span className="text-sm font-bold text-white">{oppName}</span>
-              {oppAnswered ? (
-                <span className="text-[10px] font-semibold text-emerald-200 bg-emerald-500/20 border border-emerald-300/40 rounded-full px-2 py-0.5">
-                  answered
-                </span>
-              ) : (
-                <span className="text-[10px] font-semibold text-amber-200 bg-amber-500/20 border border-amber-300/40 rounded-full px-2 py-0.5">
-                  thinking...
-                </span>
-              )}
-            </div>
-          </div>
-          <div className="w-10 h-10 rounded-full bg-cyan-300/90 border-2 border-cyan-200 flex items-center justify-center text-xs font-bold text-cyan-900">
-            {oppName[0]?.toUpperCase()}
-          </div>
-        </div>
-      </div>
-
-      {/* Score row */}
-      <div className="relative flex items-end justify-between mt-2">
-        <div className="flex flex-col">
-          <motion.span
-            key={`me-score-${meScore}`}
-            className="text-3xl font-black text-white tabular-nums"
-            initial={{ scale: 1.2 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 0.4 }}
-          >
-            {String(meScore).padStart(2, "0")}
-          </motion.span>
-          <span className="text-[11px] font-bold text-white/60 tracking-widest">YOUR SCORE</span>
-        </div>
-        <span className="text-[11px] font-bold text-white/40 tracking-[0.35em]">POINTS</span>
-        <div className="flex flex-col items-end">
-          <motion.span
-            key={`opp-score-${oppScore}`}
-            className="text-3xl font-black text-white tabular-nums"
-            initial={{ scale: 1.2 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 0.4 }}
-          >
-            {String(oppScore).padStart(2, "0")}
-          </motion.span>
-          <span className="text-[11px] font-bold text-white/60 tracking-widest">THEIR SCORE</span>
-        </div>
-      </div>
-
-      {/* Score progress bar */}
-      <div className="relative mt-3 h-2.5 w-full rounded-full bg-white/10 overflow-hidden flex">
-        <motion.div
-          key="my-bar"
-          className="h-full rounded-full"
-          style={{ background: "linear-gradient(90deg,#e879f9,#c026d3)" }}
-          animate={{ width: `${myWidth}%` }}
-          transition={{ type: "spring", stiffness: 120, damping: 20 }}
-        />
-        <motion.div
-          key="opp-bar"
-          className="h-full rounded-full"
-          style={{ background: "linear-gradient(90deg,#06b6d4,#0ea5e9)" }}
-          animate={{ width: `${100 - myWidth}%` }}
-          transition={{ type: "spring", stiffness: 120, damping: 20 }}
-        />
-      </div>
-    </div>
-  );
+function RoundTimer({ deadline, onExpire }: { deadline: string | null; onExpire: () => void }) {
+  const [now, setNow] = useState(() => Date.now());
+  const reportedDeadline = useRef<string | null>(null);
+  const onExpireRef = useRef(onExpire);
+  useEffect(() => { onExpireRef.current = onExpire; }, [onExpire]);
+  useEffect(() => { const timer = window.setInterval(() => setNow(Date.now()), 250); return () => window.clearInterval(timer); }, []);
+  const remaining = deadline ? Math.max(0, new Date(deadline).getTime() - now) : 0;
+  const seconds = Math.ceil(remaining / 1000);
+  const progress = Math.min(100, (remaining / 30_000) * 100);
+  useEffect(() => {
+    if (deadline && remaining === 0 && reportedDeadline.current !== deadline) {
+      reportedDeadline.current = deadline;
+      onExpireRef.current();
+    }
+  }, [deadline, remaining]);
+  return <div className={`battle-timer ${seconds <= 5 ? "is-urgent" : ""}`} aria-label={`${seconds} seconds remaining`}>
+    <span>{seconds}</span><svg viewBox="0 0 42 42" aria-hidden="true"><circle cx="21" cy="21" r="18" /><circle cx="21" cy="21" r="18" pathLength="100" style={{ strokeDasharray: `${progress} 100` }} /></svg>
+  </div>;
 }
 
-// ── Opponent Status ──────────────────────────────────────────────────────────
-function OpponentStatus({
-  scores, myPlayerId, revealedAnswer,
-}: {
-  scores: Scores; myPlayerId: string; revealedAnswer: string | null;
-}) {
-  const opp = Object.entries(scores).find(([id]) => id !== myPlayerId);
-  if (!opp) return null;
-  const oppData = opp[1];
-
-  return (
-    <div className="flex items-center gap-2 px-4 py-2 bg-orange-50/80 border-b border-orange-100">
-      <div className="w-5 h-5 rounded-full bg-orange-200 flex items-center justify-center text-[10px] font-bold text-orange-700">
-        {oppData.name[0]?.toUpperCase()}
-      </div>
-      <span className="text-xs font-semibold text-orange-700">{oppData.name}</span>
-      {oppData.answered ? (
-        revealedAnswer ? (
-          <span className="text-xs text-slate-600">
-            answered: <span className="font-semibold text-slate-800">{revealedAnswer}</span>
-          </span>
-        ) : (
-          <span className="flex items-center gap-1 text-xs text-emerald-600 font-semibold">
-            <Check className="w-3 h-3" /> Answered
-          </span>
-        )
-      ) : (
-        <span className="flex items-center gap-1.5 text-xs text-amber-600">
-          <span className="flex gap-0.5">
-            {[0,1,2].map(i => (
-              <span key={i} className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-bounce"
-                style={{ animationDelay: `${i * 0.15}s` }} />
-            ))}
-          </span>
-          thinking...
-        </span>
-      )}
-    </div>
-  );
+function PlayerBlock({ player, fallback, side }: { player?: PlayerScore; fallback: string; side: "me" | "opponent" }) {
+  const name = player?.name || fallback;
+  return <div className={`battle-player is-${side}`}>
+    <span className="battle-avatar">{name.charAt(0).toUpperCase() || "?"}</span>
+    <span className="battle-player-copy"><strong>{name}</strong><small>{player?.answered ? "Answer locked" : side === "me" ? "Choose your answer" : "Thinking…"}</small></span>
+    <b>{player?.score ?? 0}</b>
+  </div>;
 }
 
-// ── Result Flash ─────────────────────────────────────────────────────────────
-function ResultFlash({ isCorrect }: { isCorrect: boolean | null }) {
-  if (isCorrect === null) return null;
-  return (
-    <AnimatePresence>
-      <motion.div
-        className={`fixed inset-0 pointer-events-none z-40 flex items-center justify-center`}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.15 }}
-      >
-        <motion.div
-          className={`rounded-3xl px-8 py-5 text-white text-2xl font-black shadow-2xl ${
-            isCorrect
-              ? "bg-emerald-500"
-              : "bg-red-500"
-          }`}
-          initial={{ scale: 0.5, y: 30 }}
-          animate={{ scale: 1, y: 0 }}
-          exit={{ scale: 0.8, opacity: 0 }}
-          transition={{ type: "spring", stiffness: 300, damping: 20 }}
-        >
-          {isCorrect ? "✓ Correct! +10" : "✗ Wrong!"}
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
-  );
-}
-
-// ── Confetti ─────────────────────────────────────────────────────────────────
 function Confetti() {
-  const pieces = Array.from({ length: 28 }, (_, i) => ({
-    id: i,
-    x: Math.random() * 100,
-    delay: Math.random() * 0.8,
-    color: ["#7c3aed","#2563eb","#10b981","#f59e0b","#ef4444","#ec4899"][Math.floor(Math.random()*6)],
-    size: 6 + Math.random() * 8,
-  }));
-  return (
-    <div className="fixed inset-0 pointer-events-none z-30 overflow-hidden">
-      {pieces.map(p => (
-        <motion.div key={p.id}
-          className="absolute rounded-sm"
-          style={{ left: `${p.x}%`, top: -20, width: p.size, height: p.size, background: p.color }}
-          initial={{ y: -20, rotate: 0, opacity: 1 }}
-          animate={{ y: "110vh", rotate: 720, opacity: [1, 1, 0] }}
-          transition={{ duration: 2.5 + Math.random(), delay: p.delay, ease: "easeIn" }}
-        />
-      ))}
-    </div>
-  );
+  return <div className="battle-confetti" aria-hidden="true">{CONFETTI.map((piece) => <motion.i key={piece.id}
+    style={{ left: `${piece.left}%`, background: piece.color }} initial={{ y: -20, rotate: 0, opacity: 1 }}
+    animate={{ y: "110dvh", rotate: 640, opacity: [1, 1, 0] }} transition={{ duration: piece.duration, delay: piece.delay, ease: "easeIn" }} />)}</div>;
 }
 
-/* ════════════════════════════════════════════════════════════════════════════
-   MAIN BATTLE PAGE
-   ════════════════════════════════════════════════════════════════════════════ */
-export default function BattlePage() {
-  const { user, token } = useAuth();
-  const [battleState, setBattleState]   = useState<BattleState>("lobby");
-  const [playerName, setPlayerName]     = useState("");
-  const [roomCode, setRoomCode]         = useState("");
-  const [joinCode, setJoinCode]         = useState("");
-  const [subject, setSubject]           = useState("mathematics");
-  const [topic, setTopic]               = useState("all");
+function BattlePageContent() {
+  const { user, token, loading } = useAuth();
+  const searchParams = useSearchParams();
+  const battle = useBattle(token, user?.id || "");
+  const { state, connection, pending, inviteStatus } = battle;
+  const [playerName, setPlayerName] = useState<string | null>(null);
+  const [subject, setSubject] = useState("mathematics");
+  const [topic, setTopic] = useState("all");
   const [questionCount, setQuestionCount] = useState(10);
-  const [players, setPlayers]           = useState<string[]>([]);
-  const [currentQ, setCurrentQ]         = useState<BattleQuestion | null>(null);
-  const [scores, setScores]             = useState<Scores>({});
-  const [selected, setSelected]         = useState<string | null>(null);
-  const [isCorrect, setIsCorrect]       = useState<boolean | null>(null);
-  const [isSubmitted, setIsSubmitted]   = useState(false);
-  const [finalScores, setFinalScores]   = useState<Scores>({});
-  const [copied, setCopied]             = useState(false);
-  const [error, setError]               = useState("");
-  const [showResult, setShowResult]     = useState(false);
-  const [opponentAnswer, setOpponentAnswer] = useState<string | null>(null);
-  const [isWinner, setIsWinner]         = useState(false);
-  const [playTab, setPlayTab]           = useState<"create" | "join">("create");
-  const [pickerType, setPickerType]     = useState<"subject" | "topic" | null>(null);
-  const [inviteEmail, setInviteEmail]   = useState("");
-  const [inviteStatus, setInviteStatus] = useState<{ ok: boolean; message: string } | null>(null);
-  const [inviteSending, setInviteSending] = useState(false);
-  const [rematchToken, setRematchToken] = useState("");
-  const [opponentName, setOpponentName] = useState("");
-  const [rematchSending, setRematchSending] = useState(false);
-  const [opponentReconnectDeadline, setOpponentReconnectDeadline] = useState<string | null>(null);
-  const [reconnectSecondsLeft, setReconnectSecondsLeft] = useState(0);
-  const [finishReason, setFinishReason] = useState<"completed" | "forfeit" | "abandoned">("completed");
-  const [battleRating, setBattleRating] = useState<BattleRating | null>(null);
-  const [matchStats, setMatchStats] = useState<{ me: MatchStats; opponent: MatchStats } | null>(null);
-  const [showRankUp, setShowRankUp] = useState(false);
-  const activeCode = roomCode || joinCode;
-  const myPlayerId = user?.id || "";
+  const [modeOverride, setModeOverride] = useState<"create" | "join" | null>(null);
+  const [joinCode, setJoinCode] = useState<string | null>(null);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [copied, setCopied] = useState(false);
+  const [expiredQuestionIndex, setExpiredQuestionIndex] = useState<number | null>(null);
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      const code = params.get("join")?.replace(/\D/g, "").slice(0, 4);
-      if (code && code.length === 4) {
-        setJoinCode(code);
-        setPlayTab("join");
-      }
-    }
-  }, []);
+  const invitationCode = searchParams.get("join")?.replace(/\D/g, "").slice(0, 4) || "";
+  const mode = modeOverride || (invitationCode.length === 4 ? "join" : "create");
+  const effectiveJoinCode = joinCode ?? invitationCode;
+  const effectivePlayerName = playerName ?? user?.name ?? "";
+  const players = useMemo(() => Object.entries(state.scores), [state.scores]);
+  const me = players.find(([id]) => id === user?.id)?.[1];
+  const opponentEntry = players.find(([id]) => id !== user?.id);
+  const opponent = opponentEntry?.[1];
+  const canSend = connection === "online" && !pending;
+  const copyCode = async () => {
+    try { await navigator.clipboard.writeText(state.code); setCopied(true); window.setTimeout(() => setCopied(false), 1800); }
+    catch { /* The selectable code remains available when clipboard access is denied. */ }
+  };
 
-  useEffect(() => {
-    if (user?.name) {
-      setPlayerName(prev => prev || user.name);
-    }
-  }, [user]);
+  if (loading) return <main className="battle-centered"><LoaderCircle className="battle-spinner" /><p>Preparing the arena…</p></main>;
+  if (!user || !token) return <main className="battle-page"><BattleHeader title="1v1 Battle" status="offline" /><section className="battle-auth-card">
+    <span className="battle-hero-icon"><Shield /></span><p className="battle-kicker">Members only</p><h1>Sign in to enter the arena</h1>
+    <p>Your battle rating, results, and reconnect protection are linked to your account.</p><Link className="battle-primary-button" href="/login">Sign in to battle</Link>
+  </section></main>;
 
-  useEffect(() => {
-    if (!opponentReconnectDeadline) { setReconnectSecondsLeft(0); return; }
-    const calculate = () => setReconnectSecondsLeft(Math.max(0, Math.ceil((new Date(opponentReconnectDeadline).getTime() - Date.now()) / 1000)));
-    calculate();
-    const timer = window.setInterval(calculate, 500);
-    return () => window.clearInterval(timer);
-  }, [opponentReconnectDeadline]);
-
-  const normalizeJoinCode = (value: string) => value.replace(/\D/g, "").slice(0, 4);
-
-  // ── Socket setup ────────────────────────────────────────────────────────────
-  useEffect(() => {
-    const socket = getSocket(token || undefined);
-
-    const onConnect = () => {
-      setError("");
-      socket.emit("battle:resume", { code: getActiveBattleCode() });
+  if (state.phase === "lobby") {
+    const topicOptions = TOPICS[subject] || TOPICS.mathematics;
+    const submit = () => {
+      if (!effectivePlayerName.trim()) return;
+      if (mode === "create") battle.create({ playerName: effectivePlayerName.trim(), subject, topic, questionCount });
+      else if (/^\d{4}$/.test(effectiveJoinCode)) battle.join(effectiveJoinCode, effectivePlayerName.trim());
     };
-
-    const onConnectError = (err: Error) => {
-      if (err.message?.includes("Authentication") || err.message?.includes("token")) {
-        setError("Please log in to participate in 1v1 Battle Mode.");
-      } else {
-        setError(err.message || "Failed to connect to battle server");
-      }
-    };
-
-    socket.on("connect", onConnect);
-    socket.on("connect_error", onConnectError);
-
-    socket.on("room:created", ({ code }: { code: string }) => {
-      setRoomCode(code);
-      saveActiveBattleCode(code);
-      setBattleState("waiting");
-    });
-
-    socket.on("room:joined", ({ players }: { players: string[] }) => {
-      setPlayers(players);
-    });
-
-    socket.on("room:error", ({ message }: { message: string }) => {
-      setError(message);
-    });
-
-    socket.on("game:start", ({ total, topic: t }: { total: number; topic: string }) => {
-      setBattleState("playing");
-      setScores({});
-    });
-
-    socket.on("game:question", (q: BattleQuestion) => {
-      setCurrentQ(q);
-      setSelected(null);
-      setIsCorrect(null);
-      setShowResult(false);
-      setOpponentAnswer(null);
-      setIsSubmitted(false);
-    });
-
-    socket.on("game:answerResult", ({ isCorrect: correct, opponentAnswer: oppAns }: any) => {
-      setIsCorrect(correct);
-      setIsSubmitted(true);
-      setShowResult(true);
-      if (oppAns) setOpponentAnswer(oppAns);
-      setTimeout(() => setShowResult(false), 1500);
-    });
-
-    socket.on("game:scores", ({ scores: s }: { scores: Scores }) => {
-      setScores(s);
-    });
-
-    socket.on("game:opponentAnswer", ({ answer }: { answer: string }) => {
-      setOpponentAnswer(answer);
-    });
-
-    socket.on(
-      "game:end",
-      ({
-        scores: s,
-        rematchToken: token,
-        opponentName: oppName,
-        finishReason: resultFinishReason,
-        winnerUserId,
-        rating,
-        matchStats: stats,
-      }: {
-        scores: Scores;
-        rematchToken?: string;
-        opponentName?: string;
-        finishReason?: "completed" | "forfeit" | "abandoned";
-        winnerUserId?: string | null;
-        rating?: BattleRating | null;
-        matchStats?: { me: MatchStats; opponent: MatchStats };
-      }) => {
-        setFinalScores(s);
-        clearActiveBattleCode();
-        setRematchToken(token || "");
-        setOpponentName(oppName || "Opponent");
-        setOpponentReconnectDeadline(null);
-        setFinishReason(resultFinishReason || "completed");
-        setBattleRating(rating || null);
-        setMatchStats(stats || null);
-        setShowRankUp(Boolean(rating?.season && rating.season.tierBefore !== rating.season.tierAfter && rating.season.tierAfter !== "Unranked"));
-        const myScore = s[myPlayerId]?.score ?? 0;
-        const maxScore = Math.max(...Object.values(s).map((p: any) => p.score));
-        setIsWinner(winnerUserId ? winnerUserId === myPlayerId : myScore === maxScore);
-        setBattleState("finished");
-      }
-    );
-
-    socket.on("room:playerDisconnected", ({ reconnectDeadline }: { reconnectDeadline?: string }) => {
-      if (reconnectDeadline) setOpponentReconnectDeadline(reconnectDeadline);
-      setError("Opponent disconnected. Waiting for reconnection…");
-    });
-
-    const onBattleResumed = (snapshot: BattleResumeSnapshot) => {
-      setRoomCode(snapshot.code);
-      saveActiveBattleCode(snapshot.code);
-      setSubject(snapshot.subject);
-      setTopic(snapshot.topic);
-      setQuestionCount(snapshot.questionCount);
-      setPlayers(snapshot.players.map((player) => player.name));
-      setScores(snapshot.scores || {});
-      setCurrentQ(snapshot.currentQuestion);
-      setIsSubmitted(snapshot.myAnswered);
-      setRematchToken(snapshot.rematchToken || "");
-      setOpponentName(snapshot.opponentName || "Opponent");
-      setFinishReason(snapshot.finishReason || "completed");
-      if (snapshot.opponentPresence && !snapshot.opponentPresence.connected) setOpponentReconnectDeadline(snapshot.opponentPresence.reconnectDeadline || null);
-      else setOpponentReconnectDeadline(null);
-      if (snapshot.status === "waiting") setBattleState("waiting");
-      else if (snapshot.status === "active") setBattleState("playing");
-      else {
-        setFinalScores(snapshot.scores || {});
-        setBattleState("finished");
-      }
-    };
-    socket.on("battle:resumed", onBattleResumed);
-    socket.on("room:playerReconnected", () => setError(""));
-
-    if (socket.connected) onConnect();
-
-    socket.on("room:inviteResult", (result: { ok: boolean; message: string }) => {
-      setInviteSending(false);
-      setInviteStatus(result);
-    });
-
-    socket.on("battle:rematchResult", ({ ok, message }: { ok: boolean; message: string; code?: string }) => {
-      setRematchSending(false);
-      if (!ok) {
-        setError(message);
-      }
-    });
-
-    return () => {
-      socket.off("connect", onConnect);
-      socket.off("connect_error", onConnectError);
-      socket.off("room:created");
-      socket.off("room:joined");
-      socket.off("room:error");
-      socket.off("room:inviteResult");
-      socket.off("battle:rematchResult");
-      socket.off("game:start");
-      socket.off("game:question");
-      socket.off("game:answerResult");
-      socket.off("game:scores");
-      socket.off("game:opponentAnswer");
-      socket.off("game:end");
-      socket.off("room:playerDisconnected");
-      socket.off("room:playerReconnected");
-      socket.off("battle:resumed", onBattleResumed);
-    };
-  }, [myPlayerId, token]);
-
-  const topicOptions = TOPICS_BY_SUBJECT[subject] || TOPICS_BY_SUBJECT.mathematics;
-  const subjectLabel = SUBJECTS.find(s => s.value === subject)?.label || "Subject";
-
-  // ── Actions ─────────────────────────────────────────────────────────────────
-  const createRoom = () => {
-    if (!token) {
-      setError("Please log in to create a battle room.");
-      return;
-    }
-    if (!playerName.trim()) { setError("Enter your name first"); return; }
-    if (!subject) { setError("Select a subject"); return; }
-    if (!topic) { setError("Select a topic"); return; }
-    setError("");
-    getSocket(token || undefined).emit("room:create", {
-      playerName: playerName.trim(),
-      subject,
-      topic,
-      questionCount,
-    });
-  };
-
-  const joinRoom = () => {
-    if (!token) {
-      setError("Please log in to join a battle room.");
-      return;
-    }
-    if (!playerName.trim()) { setError("Enter your name first"); return; }
-    if (!/^\d{4}$/.test(joinCode)) { setError("Enter 4-digit room code"); return; }
-    setError("");
-    saveActiveBattleCode(joinCode);
-    getSocket(token || undefined).emit("room:join", { code: joinCode, playerName: playerName.trim() });
-  };
-
-  const submitAnswer = (selectedIndex: number) => {
-    if (isSubmitted || !currentQ) return;
-    setSelected(currentQ.options[selectedIndex]);
-    setIsSubmitted(true);
-    getSocket(token || undefined).emit("game:answer", {
-      code: activeCode,
-      questionIndex: currentQ.questionIndex,
-      selectedIndex,
-    });
-  };
-
-  const copyCode = () => {
-    navigator.clipboard.writeText(roomCode);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const inviteOpponent = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (!inviteEmail.trim()) return;
-    setInviteSending(true);
-    setInviteStatus(null);
-    getSocket(token || undefined).emit("room:invite", {
-      code: roomCode,
-      email: inviteEmail.trim(),
-    });
-  };
-
-  const requestRematch = () => {
-    if (!rematchToken) return;
-    setRematchSending(true);
-    setError("");
-    getSocket(token || undefined).emit("battle:rematch", {
-      rematchToken,
-      playerName: playerName.trim() || user?.name || "Player",
-    });
-  };
-
-  const resetToLobby = () => {
-    clearActiveBattleCode();
-    setBattleState("lobby");
-    setRoomCode("");
-    setJoinCode("");
-    setCurrentQ(null);
-    setScores({});
-    setSelected(null);
-    setIsCorrect(null);
-    setFinalScores({});
-    setError("");
-    setPlayers([]);
-    setInviteEmail("");
-    setInviteStatus(null);
-    setInviteSending(false);
-    setRematchToken("");
-    setOpponentName("");
-    setRematchSending(false);
-  };
-
-  /* ══════════════════════════════════════════════════════════════════════════
-     SCREENS
-     ══════════════════════════════════════════════════════════════════════════ */
-
-  // ── Lobby ───────────────────────────────────────────────────────────────────
-  if (battleState === "lobby") return (
-    <div className="battle-container">
-      {/* Desktop Topbar */}
-      <div className="desktop-topbar desktop-only">
-        <div className="desktop-topbar-inner">
-          <button className="desktop-back-link">
-            <svg viewBox="0 0 8 14" fill="none"><path d="M7 1L1 7L7 13" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
-            Battle
-          </button>
-          <span className="desktop-topbar-title">1v1 Setup</span>
-        </div>
-      </div>
-
-      <div className="device">
-        <div className="navbar mobile-only">
-          <div className="navbar-row">
-            <button className="nav-back">
-              <svg viewBox="0 0 11 19" fill="none"><path d="M9.5 1.5L1.5 9.5L9.5 17.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-            </button>
-            <div className="nav-title-inline">1v1 Setup</div>
-          </div>
-        </div>
-
-        <div className="content">
-          {/* Desktop Page Head */}
-          <div className="desktop-page-head desktop-only">
-            <h1 className="desktop-page-title">1v1 Battle Setup</h1>
-            <p className="desktop-page-sub">Configure your match, then create a room or join one with a code.</p>
-            <div className="mt-2 flex gap-3 text-sm font-semibold text-violet-700"><Link href="/battle/profile">Battle Profile</Link><Link href="/battle/leaderboard">Leaderboard</Link><Link href="/battle/missions">Missions</Link></div>
-            <div className="mt-2 text-sm font-semibold text-violet-700"><Link href="/battle/social">Friends &amp; Rivals</Link></div>
-          </div>
-
-          <div className="layout-grid">
-            {/* LEFT COLUMN: Match Settings */}
-            <div className="left-col">
-              <div className="section-header">Match Setup</div>
-          <div className="group">
-            <div className="row">
-              <div className="icon-chip" style={{ background: "var(--scarlet)" }}>
-                <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="white" strokeWidth="2"/><path d="M4 20c0-4 3.6-6 8-6s8 2 8 6" stroke="white" strokeWidth="2" strokeLinecap="round"/></svg>
-              </div>
-              <span className="row-label">Name</span>
-              <input className="row-input" type="text" placeholder="Enter name" value={playerName} onChange={e => { setPlayerName(e.target.value); setError(""); }} maxLength={20} />
-            </div>
-            <div className="row">
-              <div className="icon-chip" style={{ background: "var(--violet)" }}>
-                <svg viewBox="0 0 24 24" fill="none"><path d="M6 4h12M6 12h12M6 20h8" stroke="white" strokeWidth="2" strokeLinecap="round"/></svg>
-              </div>
-              <span className="row-label">Subject</span>
-              <button type="button" className="row-value-btn" onClick={() => setPickerType("subject")}>
-                {SUBJECTS.find(s => s.value === subject)?.label}
-                <svg className="chevron" viewBox="0 0 8 13" fill="none"><path d="M1.5 1.5l5 5-5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              </button>
-            </div>
-            <div className="row">
-              <div className="icon-chip" style={{ background: "var(--teal)" }}>
-                <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="7" height="7" rx="1.5" stroke="white" strokeWidth="2"/><rect x="13" y="4" width="7" height="7" rx="1.5" stroke="white" strokeWidth="2"/><rect x="4" y="13" width="7" height="7" rx="1.5" stroke="white" strokeWidth="2"/><rect x="13" y="13" width="7" height="7" rx="1.5" stroke="white" strokeWidth="2"/></svg>
-              </div>
-              <span className="row-label">Topic</span>
-              <button type="button" className="row-value-btn" onClick={() => setPickerType("topic")}>
-                {topicOptions.find(t => t.value === topic)?.label}
-                <svg className="chevron" viewBox="0 0 8 13" fill="none"><path d="M1.5 1.5l5 5-5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              </button>
-            </div>
-          </div>
-          <div className="picker-hint">Tap Subject or Topic to choose from a list</div>
-
-          <div className="section-header" style={{ marginTop: 24 }}>Questions</div>
-          <div className="segmented-wrap">
-            <div className="segmented">
-              {QUESTION_COUNTS.map(count => (
-                <button
-                  key={count}
-                  type="button"
-                  onClick={() => setQuestionCount(count)}
-                  className={`segment ${questionCount === count ? "active" : ""}`}
-                >
-                  {count}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* RIGHT COLUMN: Play Card */}
-        <div className="play-col">
-          <div className="section-header mobile-only" style={{ marginTop: 8 }}>Play</div>
-          
-          <div className="play-card">
-            <div className="play-tabs">
-              <button 
-                className={`play-tab ${playTab === "create" ? "active-create" : ""}`} 
-                onClick={() => setPlayTab("create")}
-              >
-                Create Room
-              </button>
-              <button 
-                className={`play-tab ${playTab === "join" ? "active-join" : ""}`} 
-                onClick={() => setPlayTab("join")}
-              >
-                Join Room
-              </button>
-            </div>
-
-            {playTab === "create" && (
-              <div className="panel panel-create">
-                <div className="panel-icon" style={{ background: "var(--ios-blue)" }}>
-                  <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="white" strokeWidth="2.4" strokeLinecap="round"/></svg>
-                </div>
-                <div className="panel-title">Host a new match</div>
-                <div className="panel-sub">Set the rules, share the code, and battle starts the moment they join.</div>
-                <button className="panel-btn create" onClick={createRoom}>Create Battle Room</button>
-              </div>
-            )}
-
-            {playTab === "join" && (
-              <div className="panel panel-join">
-                <div className="panel-title">Enter room code</div>
-                <div className="panel-sub">Ask your opponent for their 4-character code.</div>
-                <div className="otp-row">
-                  {[0, 1, 2, 3].map((index) => (
-                    <input
-                      key={index}
-                      id={`otp-${index}`}
-                      className="otp-cell"
-                      maxLength={1}
-                      inputMode="text"
-                      value={joinCode[index] || ""}
-                      onChange={(e) => {
-                        const val = e.target.value.toUpperCase();
-                        const newCode = joinCode.split('');
-                        newCode[index] = val;
-                        setJoinCode(newCode.join('').slice(0, 4));
-                        setError("");
-                        if (val && index < 3) {
-                          document.getElementById(`otp-${index + 1}`)?.focus();
-                        }
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Backspace' && !joinCode[index] && index > 0) {
-                          document.getElementById(`otp-${index - 1}`)?.focus();
-                        }
-                      }}
-                    />
-                  ))}
-                </div>
-                <button className="panel-btn join" onClick={joinRoom}>Join Room</button>
-              </div>
-            )}
-          </div>
-
-          <AnimatePresence>
-            {error && (
-              <motion.div className="mt-3 text-red-500 text-sm text-center font-medium"
-                initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-                {error}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </div>
-    </div>
-    
-    {/* iOS-Style Picker Modal */}
-        <AnimatePresence>
-          {pickerType && (
-            <>
-              <motion.div 
-                className="ios-modal-backdrop"
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                onClick={() => setPickerType(null)}
-              />
-              <motion.div 
-                className="ios-action-sheet"
-                initial={{ scale: 0.95, opacity: 0, x: "-50%", y: "-45%" }} 
-                animate={{ scale: 1, opacity: 1, x: "-50%", y: "-50%" }} 
-                exit={{ scale: 0.95, opacity: 0, x: "-50%", y: "-45%" }}
-                transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              >
-                <div className="ios-action-sheet-header">
-                  <h3>Select {pickerType === "subject" ? "Subject" : "Topic"}</h3>
-                  <button type="button" onClick={() => setPickerType(null)}>Done</button>
-                </div>
-                <div className="ios-action-sheet-content">
-                  {(pickerType === "subject" ? SUBJECTS : topicOptions).map(opt => {
-                    const isSelected = (pickerType === "subject" ? subject : topic) === opt.value;
-                    return (
-                      <button 
-                        key={opt.value}
-                        type="button"
-                        className={`ios-action-sheet-item ${isSelected ? "selected" : ""}`}
-                        onClick={() => {
-                          if (pickerType === "subject") { setSubject(opt.value); setTopic("all"); }
-                          else { setTopic(opt.value); }
-                          setPickerType(null);
-                        }}
-                      >
-                        {opt.label}
-                        {isSelected && <Check className="w-5 h-5 text-blue-500" />}
-                      </button>
-                    );
-                  })}
-                </div>
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
-
-      </div>
-    </div>
-  );
-
-  // ── Waiting ──────────────────────────────────────────────────────────────────
-  if (battleState === "waiting") return (
-    <div className="min-h-dvh flex flex-col items-center justify-center px-4 relative overflow-hidden battle-theme battle-lobby">
-      <div className="battle-glow battle-glow-1" />
-      <div className="battle-glow battle-glow-2" />
-
-      <motion.div className="relative z-10 battle-panel w-full max-w-sm text-center"
-        initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}>
-
-        <motion.div className="w-14 h-14 rounded-full mx-auto mb-5 flex items-center justify-center"
-          style={{ background: "rgba(18, 16, 14, 0.9)", border: "1.5px solid rgba(200, 161, 91, 0.45)" }}
-          animate={{ scale: [1, 1.08, 1] }} transition={{ repeat: Infinity, duration: 2 }}>
-          <Swords className="w-7 h-7 text-amber-300" />
-        </motion.div>
-
-        <h2 className="text-lg font-semibold text-amber-100 mb-1">Waiting for opponent...</h2>
-        <p className="text-sm text-amber-200/70 mb-6">Share this code with your friend</p>
-
-        <div className="relative mb-6">
-          <div className="battle-code">
-            <div className="battle-code-text select-all">
-              {roomCode}
-            </div>
-          </div>
-          <button onClick={copyCode}
-            className="absolute -top-2 -right-2 battle-copy">
-            {copied
-              ? <Check className="w-4 h-4" />
-              : <Copy className="w-4 h-4" />}
-          </button>
-        </div>
-
-        {/* Invite Opponent Form */}
-        <form onSubmit={inviteOpponent} className="mb-6 text-left">
-          <label className="block text-xs font-semibold text-amber-200/80 mb-1.5">
-            Or invite by email
-          </label>
-          <div className="flex gap-2">
-            <input
-              type="email"
-              placeholder="friend@example.com"
-              value={inviteEmail}
-              onChange={(e) => {
-                setInviteEmail(e.target.value);
-                setInviteStatus(null);
-              }}
-              className="battle-input text-sm py-2 px-3 flex-1 rounded-xl"
-              style={{ fontSize: "14px" }}
-              disabled={inviteSending}
-            />
-            <button
-              type="submit"
-              disabled={inviteSending || !inviteEmail.trim()}
-              className="px-4 py-2 text-sm font-semibold rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 disabled:opacity-50 disabled:cursor-not-allowed transition-all shrink-0"
-            >
-              {inviteSending ? "Sending..." : "Invite"}
-            </button>
-          </div>
-          {inviteStatus && (
-            <p className={`text-xs mt-2 font-medium ${inviteStatus.ok ? "text-emerald-400" : "text-rose-400"}`}>
-              {inviteStatus.message}
-            </p>
-          )}
-        </form>
-
-        <div className="flex items-center justify-center gap-3 mb-4">
-          {[playerName, players[1]].map((p, i) => (
-            <div key={i} className="flex flex-col items-center gap-1">
-              <div className={`battle-avatar ${p ? "" : "is-empty"}`}>
-                {p ? p[0].toUpperCase() : "?"}
-              </div>
-              <span className="text-[11px] font-semibold text-amber-200/70">{p || "waiting..."}</span>
-            </div>
-          ))}
-          <span className="battle-vs">VS</span>
-        </div>
-
-        <div className="flex gap-1.5 justify-center">
-          {[0, 1, 2].map(i => (
-            <motion.div key={i} className="w-2 h-2 rounded-full bg-amber-300"
-              animate={{ opacity: [0.3, 1, 0.3] }}
-              transition={{ repeat: Infinity, duration: 1.2, delay: i * 0.2 }} />
-          ))}
-        </div>
-
-        <button
-          type="button"
-          onClick={resetToLobby}
-          className="mt-6 text-xs text-amber-200/60 hover:text-amber-200 transition-colors"
-        >
-          Cancel and return to setup
-        </button>
-      </motion.div>
-    </div>
-  );
-
-  // ── Playing ──────────────────────────────────────────────────────────────────
-  if (battleState === "playing" && currentQ) return (
-    <div className="min-h-dvh flex flex-col" style={{
-      background: "linear-gradient(165deg,#f5f0ff 0%,#eef2ff 38%,#f8faff 100%)",
-      fontFamily: "Poppins, Inter, 'Segoe UI', sans-serif",
-    }}>
-
-      {/* Result flash overlay */}
-      <AnimatePresence>
-        {showResult && <ResultFlash isCorrect={isCorrect} />}
-      </AnimatePresence>
-
-      {/* ── Header: Score bar ─────────────────────────────── */}
-      <div className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-100 shadow-sm">
-        <ScoreBar
-          scores={scores} myPlayerId={myPlayerId}
-          myName={playerName}
-          questionIndex={currentQ.questionIndex}
-          total={currentQ.total}
-        />
-      </div>
-
-      {/* ── Opponent status strip ──────────────────────────── */}
-      <OpponentStatus scores={scores} myPlayerId={myPlayerId} revealedAnswer={opponentAnswer} />
-
-      {/* ── Main content ──────────────────────────────────── */}
-      <main className="flex-1 mx-auto w-full max-w-2xl px-3 pt-4 pb-36 overflow-y-auto">
-
-        {/* Question count */}
-        <div className="flex items-center justify-between mb-3 px-1">
-          <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-3 py-1.5">
-            <span className="text-xs font-bold text-slate-500">
-              Q {currentQ.questionIndex + 1} of {currentQ.total}
-            </span>
-          </div>
-        </div>
-
-        {opponentReconnectDeadline && (
-          <div className="mb-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <div className="text-sm font-bold text-amber-900">Opponent disconnected</div>
-                <div className="mt-0.5 text-xs text-amber-700">Waiting for them to reconnect…</div>
-              </div>
-              <div className="text-xl font-black tabular-nums text-amber-900">{reconnectSecondsLeft}s</div>
-            </div>
-            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-amber-100">
-              <div className="h-full bg-amber-500 transition-[width] duration-500" style={{ width: `${Math.max(0, Math.min(100, reconnectSecondsLeft / 60 * 100))}%` }} />
-            </div>
-          </div>
-        )}
-
-        {/* Question card */}
-        <AnimatePresence mode="wait">
-          <motion.div key={currentQ.questionIndex}
-            initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.22 }}
-            className="bg-white rounded-2xl shadow-[0_4px_20px_rgba(124,58,237,0.08)] px-5 py-5 sm:px-7 sm:py-6 mb-5"
-            style={{ minHeight: 140 }}>
-            <div className="text-[17px] font-normal text-slate-900 leading-relaxed"
-              style={{ paddingLeft: "0.2cm", paddingRight: "0.2cm" }}>
-              <RichContent text={currentQ.question} className="leading-relaxed" />
-            </div>
-          </motion.div>
-        </AnimatePresence>
-
-        {/* Options */}
-        <div className="space-y-3">
-          {currentQ.options.map((opt, i) => {
-            const letter = String.fromCharCode(65 + i);
-            const isSelected = selected === opt;
-            const hasSubmitted = selected !== null;
-
-            let borderColor = "#E5E7EB";
-            let bg = "#FFFFFF";
-            let letterBg = "transparent";
-            let letterBorder = "#7C3AED";
-            let letterText = "#5B21B6";
-
-            if (hasSubmitted && isSelected && isCorrect === true) {
-              borderColor = "#16A34A"; bg = "#F0FDF4";
-              letterBg = "#16A34A"; letterBorder = "#16A34A"; letterText = "#fff";
-            } else if (hasSubmitted && isSelected && isCorrect === false) {
-              borderColor = "#DC2626"; bg = "#FEF2F2";
-              letterBg = "#DC2626"; letterBorder = "#DC2626"; letterText = "#fff";
-            } else if (!hasSubmitted && isSelected) {
-              borderColor = "#7C3AED"; bg = "#F5F3FF";
-              letterBg = "#7C3AED"; letterBorder = "#7C3AED"; letterText = "#fff";
-            }
-
-            return (
-              <motion.button key={i}
-                onClick={() => submitAnswer(i)}
-                disabled={isSubmitted}
-                whileTap={!isSubmitted ? { scale: 0.97 } : undefined}
-                style={{
-                  width: "100%", minHeight: 58, background: bg,
-                  border: `1.5px solid ${borderColor}`, borderRadius: 16,
-                  padding: "0 16px", display: "flex", alignItems: "center",
-                  gap: 14, boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
-                  cursor: isSubmitted ? "default" : "pointer",
-                  transition: "all 0.15s ease", fontSize: 17, fontWeight: 400,
-                  color: "#111827", outline: "none",
-                }}>
-                {/* Letter bubble */}
-                <span style={{
-                  width: 34, height: 34, border: `1.5px solid ${letterBorder}`,
-                  borderRadius: "50%", background: letterBg, color: letterText,
-                  fontSize: 13, fontWeight: 600, display: "flex",
-                  alignItems: "center", justifyContent: "center",
-                  flexShrink: 0, transition: "all 0.15s ease",
-                }}>
-                  {letter}
-                </span>
-
-                {/* Option text with KaTeX */}
-                <div style={{ fontSize: 16, fontWeight: 400, color: "#111827", lineHeight: 1.5, flex: 1, textAlign: "left" }}>
-                  <RichContent text={opt} />
-                </div>
-
-                {/* Opponent answered this? */}
-                {opponentAnswer === opt && (
-                  <span className="text-[10px] font-semibold text-orange-600 bg-orange-50 border border-orange-200 rounded-full px-1.5 py-0.5 flex-shrink-0">
-                    opp
-                  </span>
-                )}
-              </motion.button>
-            );
-          })}
-        </div>
-
-        {/* Waiting message after answering */}
-        <AnimatePresence>
-          {selected && (
-            <motion.div className="mt-4 rounded-2xl border border-violet-100 bg-violet-50 px-4 py-3 flex items-center gap-3"
-              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-              <div className="flex gap-1">
-                {[0,1,2].map(i => (
-                  <motion.div key={`ans-dot-${i}`} className="w-1.5 h-1.5 rounded-full bg-violet-400"
-                    animate={{ opacity: [0.3,1,0.3] }}
-                    transition={{ repeat: Infinity, duration: 1, delay: i*0.2 }} />
-                ))}
-              </div>
-              <span className="text-sm font-medium text-violet-700">
-                Waiting for opponent...
-              </span>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </main>
-    </div>
-  );
-
-  // ── Finished ─────────────────────────────────────────────────────────────────
-  if (battleState === "finished") {
-    const sorted = Object.entries(finalScores).sort(([,a],[,b]) => b.score - a.score);
-    const me = finalScores[myPlayerId];
-    const opp = Object.entries(finalScores).find(([id]) => id !== myPlayerId);
-    const myScore = me?.score ?? 0;
-    const oppScore = opp?.[1]?.score ?? 0;
-    const isDraw = myScore === oppScore;
-
-    return (
-      <div className="min-h-dvh flex flex-col items-center justify-center px-4 relative overflow-hidden"
-        style={{ background: "linear-gradient(165deg,#f5f0ff 0%,#eef2ff 38%,#f8faff 100%)" }}>
-        <div className="bg-blob-1" /><div className="bg-blob-2" />
-
-        {isWinner && !isDraw && <Confetti />}
-
-        <AnimatePresence>{showRankUp && battleRating?.season && <motion.button type="button" onClick={() => setShowRankUp(false)} className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/70 text-center text-white" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><motion.div initial={{ scale: .65, y: 30 }} animate={{ scale: 1, y: 0 }}><div className="text-xs font-bold tracking-[.35em] opacity-60">RANK UP</div><div className="mt-3 text-4xl font-black">{battleRating.season.tierAfter}</div><div className="mt-2 text-sm opacity-70">{battleRating.season.after} ELO · Tap to continue</div></motion.div></motion.button>}</AnimatePresence>
-
-        <motion.div className="relative z-10 w-full max-w-sm"
-          initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}>
-
-          {/* Result banner */}
-          <div className="text-center mb-6">
-            <motion.div className="text-6xl mb-3"
-              initial={{ scale: 0 }} animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 200, delay: 0.2 }}>
-              {finishReason === "abandoned" ? "⚔️" : isDraw ? "🤝" : isWinner ? "🏆" : "💪"}
-            </motion.div>
-            <h2 className="text-3xl font-black text-slate-900 mb-1"
-              style={{ fontFamily: "'SF Pro Display','Helvetica Neue',sans-serif" }}>
-              {finishReason === "abandoned" ? "Battle Ended" : finishReason === "forfeit" ? isWinner ? "You Win by Forfeit 🏆" : "Battle Lost" : isDraw ? "It's a Draw!" : isWinner ? "You Win!" : "Good Fight!"}
-            </h2>
-            <p className="text-sm text-slate-500">
-              {finishReason === "abandoned" ? "Both players disconnected before the battle could continue." : finishReason === "forfeit" ? isWinner ? "Your opponent did not reconnect in time." : "The reconnect grace period expired." : isDraw ? "Both fought equally well" : isWinner ? "Outstanding performance!" : `${opp?.[1]?.name} wins this round`}
-            </p>
-          </div>
-
-          {/* Score cards */}
-          <div className="glass-panel mb-5">
-            <div className="space-y-3">
-              {sorted.map(([id, player], rank) => {
-                const isMe = id === myPlayerId;
-                return (
-                  <motion.div key={id}
-                    className="flex items-center gap-3 rounded-2xl p-3"
-                    style={{
-                      background: isMe ? "rgba(124,58,237,0.08)" : "rgba(249,115,22,0.06)",
-                      border: `1.5px solid ${isMe ? "rgba(124,58,237,0.2)" : "rgba(249,115,22,0.2)"}`,
-                    }}
-                    initial={{ opacity: 0, x: isMe ? -20 : 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.3 + rank * 0.1 }}>
-                    <span className="text-xl">{rank === 0 ? "🥇" : "🥈"}</span>
-                    <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold border-2"
-                      style={{
-                        background: isMe ? "rgba(124,58,237,0.12)" : "rgba(249,115,22,0.12)",
-                        borderColor: isMe ? "#7c3aed" : "#f97316",
-                        color: isMe ? "#6d28d9" : "#ea580c",
-                      }}>
-                      {player.name[0].toUpperCase()}
-                    </div>
-                    <div className="flex-1">
-                      <span className="text-sm font-bold text-slate-800">{player.name}</span>
-                      {isMe && <span className="ml-1.5 text-[10px] text-violet-600 font-semibold">(you)</span>}
-                    </div>
-                    <motion.div className="text-right"
-                      initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 + rank * 0.1 }}>
-                      <div className="text-xl font-black"
-                        style={{ color: isMe ? "#6d28d9" : "#ea580c" }}>
-                        {player.score}
-                      </div>
-                      <div className="text-[10px] text-slate-400 font-semibold">pts</div>
-                    </motion.div>
-                  </motion.div>
-                );
-              })}
-            </div>
-
-            {/* Score diff */}
-            {!isDraw && (
-              <motion.div className="mt-4 text-center rounded-xl py-2.5"
-                style={{ background: isWinner ? "rgba(16,185,129,0.08)" : "rgba(239,68,68,0.06)" }}
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }}>
-                <span className="text-sm font-bold"
-                  style={{ color: isWinner ? "#059669" : "#dc2626" }}>
-                  {isWinner
-                    ? `You won by ${myScore - oppScore} points! 🎉`
-                    : `Lost by ${oppScore - myScore} points. Keep grinding! 💪`}
-                </span>
-              </motion.div>
-            )}
-          </div>
-
-          {battleRating && (
-            <div className="glass-panel mb-5 text-center">
-              {battleRating.season ? (
-                <>
-                  <div className="text-[10px] font-bold tracking-[0.16em] text-violet-500">SEASON RATING</div>
-                  <div className="mt-1 text-lg font-black text-slate-900">{battleRating.season.tierAfter}</div>
-                  <div className="text-sm text-slate-600">{battleRating.season.before} → {battleRating.season.after} <span className={battleRating.season.delta >= 0 ? "text-emerald-600" : "text-rose-600"}>{battleRating.season.delta >= 0 ? "+" : ""}{battleRating.season.delta}</span></div>
-                </>
-              ) : null}
-              <div className="mt-2 text-xs text-slate-500">Lifetime {battleRating.lifetime.after} ELO</div>
-            </div>
-          )}
-
-          {matchStats && <div className="glass-panel mb-5 grid grid-cols-2 gap-3 text-center text-sm"><div><div className="font-black">You</div><div>{matchStats.me.accuracy}% accuracy</div><div className="text-xs text-slate-500">{matchStats.me.averageResponseMs ? `${(matchStats.me.averageResponseMs / 1000).toFixed(1)}s avg` : "—"} · {matchStats.me.timedOut} timeouts</div></div><div><div className="font-black">Opponent</div><div>{matchStats.opponent.accuracy}% accuracy</div><div className="text-xs text-slate-500">{matchStats.opponent.averageResponseMs ? `${(matchStats.opponent.averageResponseMs / 1000).toFixed(1)}s avg` : "—"} · {matchStats.opponent.timedOut} timeouts</div></div></div>}
-
-          {/* Actions */}
-          <div className="flex flex-col gap-3">
-            {rematchToken && (
-              <button
-                type="button"
-                disabled={rematchSending}
-                onClick={requestRematch}
-                className="h-14 rounded-2xl font-bold text-white text-base flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                style={{
-                  background: "linear-gradient(135deg, #d97706 0%, #b45309 100%)",
-                  boxShadow: "0 8px 24px rgba(217, 119, 6, 0.3)",
-                }}
-              >
-                <Swords className="w-4 h-4" />
-                {rematchSending ? "Inviting to rematch..." : `Rematch ${opponentName || "Opponent"} ⚔️`}
-              </button>
-            )}
-
-            <button onClick={resetToLobby}
-              className="h-14 rounded-2xl font-bold text-white text-base flex items-center justify-center gap-2"
-              style={{
-                background: "linear-gradient(135deg,#7c3aed 0%,#2563eb 100%)",
-                boxShadow: "0 8px 24px rgba(124,58,237,0.3)",
-              }}>
-              <Swords className="w-4 h-4" /> Play Again
-            </button>
-            <Link href="/mathematics"
-              className="h-12 rounded-2xl font-semibold text-slate-700 text-sm flex items-center justify-center gap-2 border border-slate-200 bg-white/70">
-              Back to Practice
-            </Link>
-          </div>
-
-          {error && (
-            <p className="text-xs text-rose-500 font-medium text-center mt-3">
-              {error}
-            </p>
-          )}
-        </motion.div>
-      </div>
-    );
+    return <main className="battle-page"><BattleHeader title="1v1 Battle" status={connection} /><div className="battle-lobby-shell">
+      <section className="battle-intro"><span className="battle-hero-icon"><Swords /></span><p className="battle-kicker">Real-time quiz duel</p>
+        <h1>Think fast.<br />Win the round.</h1><p>Create a private room or enter a four-digit invite code. Both players answer the same timed questions.</p>
+        <div className="battle-trust-row"><span><Zap /> 30 sec rounds</span><span><Shield /> Reconnect safe</span><span><Trophy /> Ranked results</span></div>
+      </section>
+      <section className="battle-setup-card" aria-labelledby="setup-title"><div className="battle-card-heading"><div><p className="battle-kicker">Match setup</p><h2 id="setup-title">Start a battle</h2></div><Users aria-hidden="true" /></div>
+        <div className="battle-tabs" role="tablist" aria-label="Battle mode"><button type="button" role="tab" aria-selected={mode === "create"} className={mode === "create" ? "is-active" : ""} onClick={() => setModeOverride("create")}>Create room</button><button type="button" role="tab" aria-selected={mode === "join"} className={mode === "join" ? "is-active" : ""} onClick={() => setModeOverride("join")}>Join room</button></div>
+        <label className="battle-field"><span>Display name</span><input value={effectivePlayerName} maxLength={40} onChange={(event) => setPlayerName(event.target.value)} placeholder="Your name" autoComplete="name" /></label>
+        {mode === "create" ? <><div className="battle-field-grid"><label className="battle-field"><span>Subject</span><select value={subject} onChange={(event) => { setSubject(event.target.value); setTopic("all"); }}>{SUBJECTS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label><label className="battle-field"><span>Topic</span><select value={topic} onChange={(event) => setTopic(event.target.value)}>{topicOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label></div>
+          <fieldset className="battle-count-field"><legend>Questions</legend><div>{QUESTION_COUNTS.map((count) => <button type="button" key={count} className={questionCount === count ? "is-active" : ""} onClick={() => setQuestionCount(count)}>{count}</button>)}</div></fieldset></>
+          : <label className="battle-field battle-code-field"><span>Room code</span><input value={effectiveJoinCode} onChange={(event) => setJoinCode(event.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="0000" inputMode="numeric" autoComplete="one-time-code" maxLength={4} /></label>}
+        <ErrorNotice message={state.error} onRetry={connection === "offline" ? battle.reconnect : undefined} />
+        <button type="button" className="battle-primary-button" disabled={!canSend || !effectivePlayerName.trim() || (mode === "join" && effectiveJoinCode.length !== 4)} onClick={submit}>{pending ? <LoaderCircle className="battle-spinner" /> : <Swords />}{pending === "create" ? "Creating room…" : pending === "join" ? "Joining room…" : mode === "create" ? "Create battle room" : "Join battle"}</button>
+        <p className="battle-helper">The match starts automatically when both players are ready.</p>
+      </section>
+      <nav className="battle-quick-links" aria-label="Battle features"><Link href="/battle/profile"><Crown /><span><b>Profile</b><small>Rating and record</small></span></Link><Link href="/battle/leaderboard"><Trophy /><span><b>Leaderboard</b><small>Top contenders</small></span></Link><Link href="/battle/missions"><Zap /><span><b>Missions</b><small>Earn battle XP</small></span></Link><Link href="/battle/social"><Users /><span><b>Social</b><small>Friends and rivals</small></span></Link></nav>
+    </div></main>;
   }
 
-  return null;
+  if (state.phase === "waiting") return <main className="battle-page battle-waiting-page"><BattleHeader title="Waiting room" status={connection} onBack={battle.leave} /><section className="battle-waiting-card">
+    <div className="battle-pulse"><Swords /></div><p className="battle-kicker">Room ready</p><h1>Invite your opponent</h1><p>The battle will begin as soon as a second player joins.</p>
+    <button type="button" className="battle-room-code" onClick={copyCode} aria-label="Copy room code"><small>Room code</small><strong>{state.code}</strong><span>{copied ? <><Check /> Copied</> : <><Copy /> Copy</>}</span></button>
+    <div className="battle-versus-row"><div><span>{state.players[0]?.charAt(0).toUpperCase() || "?"}</span><b>{state.players[0] || effectivePlayerName}</b><small>Ready</small></div><i>VS</i><div className="is-empty"><span>?</span><b>{state.players[1] || "Opponent"}</b><small>{state.players[1] ? "Joining…" : "Waiting…"}</small></div></div>
+    <form className="battle-invite" onSubmit={(event) => { event.preventDefault(); if (inviteEmail.trim()) battle.invite(inviteEmail.trim()); }}><label htmlFor="battle-email">Invite by email</label><div><Mail /><input id="battle-email" type="email" value={inviteEmail} onChange={(event) => setInviteEmail(event.target.value)} placeholder="friend@example.com" /><button disabled={!canSend || !inviteEmail.trim()}>{pending === "invite" ? "Sending…" : "Send"}</button></div>{inviteStatus && <p className={inviteStatus.ok ? "is-success" : "is-error"}>{inviteStatus.message}</p>}</form>
+    <ErrorNotice message={state.error} onRetry={connection === "offline" ? battle.reconnect : undefined} /><button type="button" className="battle-text-button" disabled={pending === "leave"} onClick={battle.leave}>{pending === "leave" ? "Cancelling…" : "Cancel room"}</button>
+  </section></main>;
+
+  if (state.phase === "playing") {
+    if (!state.question) return <main className="battle-centered"><LoaderCircle className="battle-spinner" /><p>Loading the first question…</p></main>;
+    const q = state.question;
+    const opponentSelection = state.reveal && opponentEntry ? state.reveal.selections[opponentEntry[0]] : null;
+    const deadlineExpired = expiredQuestionIndex === q.questionIndex;
+    return <main className="battle-game-shell"><header className="battle-score-header"><div className="battle-score-meta"><span>Question {q.questionIndex + 1} of {q.total}</span><ConnectionStatus status={connection} /></div><div className="battle-score-grid"><PlayerBlock player={me} fallback={effectivePlayerName} side="me" /><RoundTimer deadline={q.deadline} onExpire={() => setExpiredQuestionIndex(q.questionIndex)} /><PlayerBlock player={opponent} fallback="Opponent" side="opponent" /></div><div className="battle-round-progress"><i style={{ width: `${((q.questionIndex + 1) / q.total) * 100}%` }} /></div></header>
+      <div className="battle-game-scroll"><div className="battle-question-wrap">{state.opponentDeadline && <div className="battle-notice"><span>Opponent disconnected. Their reconnect window is still open.</span></div>}
+        <motion.section key={q.questionIndex} className="battle-question-card" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}><p className="battle-kicker">Choose one answer</p><RichContent text={q.question} className="battle-question-text" /></motion.section>
+        <div className="battle-options">{q.options.map((option, index) => {
+          const selected = state.selectedIndex === index, correct = state.reveal?.correctIndex === index;
+          const wrong = Boolean(state.reveal && selected && !correct), opponentPicked = opponentSelection === index;
+          return <motion.button type="button" key={`${q.questionIndex}-${index}`} whileTap={state.answerStatus === "idle" ? { scale: .985 } : undefined} className={`${selected ? "is-selected" : ""} ${correct ? "is-correct" : ""} ${wrong ? "is-wrong" : ""}`} disabled={state.answerStatus !== "idle" || Boolean(state.reveal) || connection !== "online" || deadlineExpired} onClick={() => battle.submitAnswer(index)}><span>{String.fromCharCode(65 + index)}</span><RichContent text={option} className="battle-option-text" />{opponentPicked && <small>Opponent</small>}{correct && <Check aria-label="Correct answer" />}</motion.button>;
+        })}</div>
+        <div className="battle-answer-status" aria-live="polite">{state.reveal ? <strong>{state.correct ? "Correct — point secured." : "Round complete. Next question incoming."}</strong> : state.answerStatus !== "idle" ? <><LoaderCircle className="battle-spinner" /><span>Your answer is locked. Waiting for your opponent…</span></> : deadlineExpired ? <span>Time is up. Waiting for the round result…</span> : connection !== "online" ? <><WifiOff /><span>Reconnecting before you can answer…</span></> : <span>Select an option before the timer ends.</span>}</div>
+        <ErrorNotice message={state.error} onRetry={connection === "offline" ? battle.reconnect : undefined} />
+      </div></div>
+    </main>;
+  }
+
+  const result = state.result;
+  if (!result) return null;
+  const outcome = battleOutcome(result, user.id);
+  const resultPlayers = Object.entries(result.scores).sort(([, left], [, right]) => right.score - left.score);
+  const rating = result.rating;
+  const title = outcome === "win" ? "Victory" : outcome === "loss" ? "Good battle" : outcome === "draw" ? "Draw match" : "Battle ended";
+  return <main className={`battle-page battle-result-page is-${outcome}`}>{outcome === "win" && <Confetti />}<BattleHeader title="Match result" status={connection} onBack={battle.reset} /><section className="battle-result-shell">
+    <div className="battle-result-hero"><span>{outcome === "win" ? <Trophy /> : outcome === "draw" ? <Swords /> : <Shield />}</span><p className="battle-kicker">{result.finishReason === "forfeit" ? "Finished by forfeit" : "Final result"}</p><h1>{title}</h1><p>{outcome === "win" ? "Sharp answers and steady timing." : outcome === "loss" ? "Review the result, then run it back." : outcome === "draw" ? "Nothing separated you this time." : "The match could not be completed."}</p></div>
+    <div className="battle-final-scores">{resultPlayers.map(([id, player], index) => <div key={id} className={id === user.id ? "is-me" : ""}><span>{index + 1}</span><i>{player.name.charAt(0).toUpperCase()}</i><p><b>{player.name}</b><small>{id === user.id ? "You" : "Opponent"}</small></p><strong>{player.score}<small> pts</small></strong></div>)}</div>
+    {rating && <section className="battle-result-panel"><div><p className="battle-kicker">Rating update</p><h2>{rating.season?.tierAfter || "Lifetime rating"}</h2></div><strong>{rating.season?.after ?? rating.lifetime.after}<small className={(rating.season?.delta ?? rating.lifetime.delta) >= 0 ? "is-positive" : "is-negative"}>{(rating.season?.delta ?? rating.lifetime.delta) >= 0 ? "+" : ""}{rating.season?.delta ?? rating.lifetime.delta}</small></strong></section>}
+    {result.matchStats && <section className="battle-stats-panel"><h2>Match breakdown</h2><div><article><span>You</span><strong>{result.matchStats.me.accuracy}%</strong><small>{result.matchStats.me.correct}/{result.matchStats.me.total} correct · {result.matchStats.me.timedOut} timed out</small></article><article><span>Opponent</span><strong>{result.matchStats.opponent.accuracy}%</strong><small>{result.matchStats.opponent.correct}/{result.matchStats.opponent.total} correct · {result.matchStats.opponent.timedOut} timed out</small></article></div></section>}
+    <ErrorNotice message={state.error} onRetry={connection === "offline" ? battle.reconnect : undefined} /><div className="battle-result-actions">{result.rematchToken && <button type="button" className="battle-primary-button" disabled={!canSend} onClick={() => battle.rematch(effectivePlayerName)}>{pending === "rematch" ? <LoaderCircle className="battle-spinner" /> : <RotateCcw />}{pending === "rematch" ? "Sending rematch…" : `Rematch ${result.opponentName || "opponent"}`}</button>}<button type="button" className="battle-secondary-button" onClick={battle.reset}><Swords /> New battle</button><Link href="/" className="battle-text-link">Return home</Link></div>
+  </section></main>;
+}
+
+export default function BattlePage() {
+  return <Suspense fallback={<main className="battle-centered"><LoaderCircle className="battle-spinner" /><p>Preparing the arena…</p></main>}><BattlePageContent /></Suspense>;
 }

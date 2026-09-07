@@ -268,6 +268,9 @@ describe('Battle Room Manager', () => {
       question: 'Safe question', options: ['A', 'B'], questionIndex: 0, total: 1,
       deadline: null,
     });
+    expect(snapshot.myAnswered).toBe(true);
+    expect(snapshot.mySelectedIndex).toBeNull();
+    expect(snapshot.reveal).toBeNull();
     expect(JSON.stringify(snapshot)).not.toContain('correctAnswer');
     expect(JSON.stringify(snapshot)).not.toContain('secret');
   });

@@ -3,7 +3,7 @@ import { Server } from 'socket.io';
 import { z } from 'zod';
 import { createAdapter } from '@socket.io/mongo-adapter';
 import {
-  createRoom, joinRoom, getRoom,
+  createRoom, joinRoom, getRoom, deleteRoom,
   setQuestions, submitAnswer,
   advanceQuestion, getScores, markSocketDisconnected,
   findResumableRoomForUser, resumePlayerConnection, buildBattleSnapshot,
@@ -191,8 +191,28 @@ export function initBattleSocket(httpServer, corsOrigin) {
 
       const code = await createRoom(socket.id, playerName, subject, topic, questionCount, socket.user?.id);
       socket.join(code);
-      socket.emit('room:created', { code, playerName });
+      socket.emit('room:created', { code, playerName, subject, topic, questionCount });
       console.log(`Room ${code} created by ${playerName}`);
+    });
+
+    // Waiting-room cancellation is explicit so a cancelled room is not
+    // immediately restored by battle:resume on the next connection.
+    socket.on('room:leave', async ({ code } = {}) => {
+      const normalizedCode = String(code ?? '').replace(/\D/g, '').slice(0, 4);
+      const room = normalizedCode.length === 4 ? await getRoom(normalizedCode) : null;
+      const userId = String(socket.user?.id || '');
+      if (!room || !room.players.some((player) => player.userId === userId)) {
+        socket.emit('room:left');
+        return;
+      }
+      if (room.status !== 'waiting') {
+        socket.emit('room:error', { message: 'An active battle cannot be cancelled. Reconnect to finish the match.' });
+        return;
+      }
+      await deleteRoom(normalizedCode);
+      socket.leave(normalizedCode);
+      io.to(normalizedCode).emit('room:closed', { message: 'The host cancelled this battle room.' });
+      socket.emit('room:left');
     });
 
     // ── Invite opponent ──────────────────────────────────
@@ -385,6 +405,10 @@ export function initBattleSocket(httpServer, corsOrigin) {
       // Notify both players of updated player list
       io.to(normalizedCode).emit('room:joined', {
         players: result.room.players.map((player) => player.name),
+        code: normalizedCode,
+        subject: result.room.subject,
+        topic: result.room.topic,
+        questionCount: result.room.questionCount,
       });
 
       // Both players present — start the game

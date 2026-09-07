@@ -527,6 +527,19 @@ export function buildBattleSnapshot(room, userId) {
     },
   ]));
   const opponent = room.players.find((player) => player.userId !== normalizedUserId);
+  const allAnswered = room.status === "active"
+    && room.players.length === 2
+    && room.players.every((player) => player.answered);
+  const reveal = allAnswered && question
+    ? {
+        questionIndex: room.currentIndex,
+        correctIndex: Number(question.correctAnswer),
+        selections: Object.fromEntries(room.players.map((player) => [
+          player.userId,
+          player.selectedIndex ?? null,
+        ])),
+      }
+    : null;
 
   return {
     code: room.code,
@@ -543,6 +556,7 @@ export function buildBattleSnapshot(room, userId) {
     })),
     scores,
     myAnswered: Boolean(me.answered),
+    mySelectedIndex: me.selectedIndex ?? null,
     currentQuestion: question ? {
       question: question.question,
       options: question.options,
@@ -551,6 +565,7 @@ export function buildBattleSnapshot(room, userId) {
       deadline: room.questionDeadline || null,
     } : null,
     finishedAt: room.finishedAt || null,
+    reveal,
     finishReason: room.finishReason || "completed",
     winnerUserId: room.winnerUserId || null,
     loserUserId: room.loserUserId || null,

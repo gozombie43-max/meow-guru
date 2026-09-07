@@ -32,6 +32,7 @@ export default function BottomNav() {
     normalizedPathname.endsWith('/formula-notes');
   const isAccessCodeRoute = pathname === '/access-code' || pathname.startsWith('/access-code/');
   const isDashboardRoute = pathname === '/dashboard' || pathname.startsWith('/dashboard/');
+  const isBattleArenaRoute = normalizedPathname === '/battle';
   const isMockExamRoute =
     normalizedPathname.startsWith('/mock-test/') && normalizedPathname !== '/mock-test';
   const shouldHideNav =
@@ -42,6 +43,7 @@ export default function BottomNav() {
     isStudyModeRoute ||
     isAccessCodeRoute ||
     isDashboardRoute ||
+    isBattleArenaRoute ||
     isMockExamRoute ||
     isAiChat;
   const { theme } = useThemeMode();
