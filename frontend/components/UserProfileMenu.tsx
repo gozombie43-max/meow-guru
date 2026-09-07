@@ -10,6 +10,7 @@ import {
   LogOut,
   CheckCircle2,
   Sparkles,
+  Shield,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import GoogleAvatarRing from './GoogleAvatarRing';
@@ -23,6 +24,38 @@ interface UserProfileMenuProps {
   align?: 'right' | 'left' | 'center';
 }
 
+function getRoleBadge(role?: string) {
+  const r = (role || 'user').toLowerCase();
+  switch (r) {
+    case 'superadmin':
+      return {
+        label: 'Super Admin',
+        className: styles.roleSuperadmin,
+      };
+    case 'admin':
+      return {
+        label: 'Admin',
+        className: styles.roleAdmin,
+      };
+    case 'moderator':
+      return {
+        label: 'Moderator',
+        className: styles.roleModerator,
+      };
+    case 'student':
+      return {
+        label: 'Student Member',
+        className: styles.roleStudent,
+      };
+    case 'user':
+    default:
+      return {
+        label: 'User',
+        className: styles.roleUser,
+      };
+  }
+}
+
 export default function UserProfileMenu({
   size = 34,
   className = '',
@@ -30,6 +63,9 @@ export default function UserProfileMenu({
 }: UserProfileMenuProps) {
   const { user, logout } = useAuth();
   const router = useRouter();
+
+  const roleInfo = getRoleBadge(user?.role);
+  const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';
 
   const [isOpen, setIsOpen] = useState(false);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
@@ -164,7 +200,9 @@ export default function UserProfileMenu({
                   <div className={styles.headerInfo}>
                     <span className={styles.userName}>{user.name}</span>
                     <span className={styles.userEmail}>{user.email}</span>
-                    <span className={styles.roleBadge}>Student Member</span>
+                    <span className={`${styles.roleBadge} ${roleInfo.className}`}>
+                      {roleInfo.label}
+                    </span>
                   </div>
                 </div>
 
@@ -172,6 +210,24 @@ export default function UserProfileMenu({
 
                 {/* Actions Menu */}
                 <div className={styles.menuList}>
+                  {/* Admin Panel (Admin / Superadmin only) */}
+                  {isAdmin && (
+                    <Link
+                      href="/admin"
+                      className={styles.menuItem}
+                      onClick={() => setIsOpen(false)}
+                      role="menuitem"
+                    >
+                      <div className={`${styles.menuItemIcon} ${styles.iconPurple}`}>
+                        <Shield size={17} />
+                      </div>
+                      <div className={styles.menuItemText}>
+                        <span className={styles.menuItemTitle}>Admin Panel</span>
+                        <span className={styles.menuItemSub}>Manage users, tests & broadcast</span>
+                      </div>
+                    </Link>
+                  )}
+
                   {/* Edit Profile */}
                   <button
                     type="button"

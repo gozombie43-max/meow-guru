@@ -53,6 +53,7 @@ interface User {
   name: string;
   email: string;
   avatar?: string;
+  role?: string;
   progress: Record<string, { attempted: number; correct: number }>;
   bookmarks: string[];
   bookmarkEntries?: BookmarkEntry[];

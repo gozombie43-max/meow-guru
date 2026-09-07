@@ -93,3 +93,71 @@ export async function sendUserNotification(
   });
   return data;
 }
+
+// ── Broadcast notification ───────────────────────────────
+
+export interface BroadcastNotificationPayload {
+  title: string;
+  body: string;
+  route?: string;
+}
+
+export interface BroadcastNotificationResult {
+  ok: boolean;
+  totalDevices: number;
+  successCount: number;
+  failureCount: number;
+  invalidDeviceCount?: number;
+}
+
+export async function sendBroadcastNotification(
+  payload: BroadcastNotificationPayload
+): Promise<BroadcastNotificationResult> {
+  const { data } = await api.post(
+    '/api/notifications/broadcast',
+    payload
+  );
+
+  return data;
+}
+
+// ── Notification history ──────────────────────────────────
+
+export interface NotificationHistoryItem {
+  _id: string;
+  type: "broadcast";
+
+  title: string;
+  body: string;
+  route: string;
+
+  totalDevices: number;
+  successCount: number;
+  failureCount: number;
+  invalidDeviceCount: number;
+
+  sentByUserId: string;
+  sentByEmail?: string;
+
+  createdAt: string;
+}
+
+export interface NotificationHistoryResponse {
+  items: NotificationHistoryItem[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export async function fetchNotificationHistory(
+  page = 1
+): Promise<NotificationHistoryResponse> {
+  const { data } = await api.get(
+    `/api/notifications/history?page=${page}&limit=20`
+  );
+
+  return data;
+}
+
+

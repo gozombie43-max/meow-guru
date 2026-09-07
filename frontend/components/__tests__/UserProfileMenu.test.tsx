@@ -127,4 +127,80 @@ describe('UserProfileMenu Component', () => {
     expect(loginLink.textContent).toBe('LOGIN');
     expect(loginLink.getAttribute('href')).toBe('/login');
   });
+
+  it('renders "Super Admin" badge and Admin Panel link for superadmin user', () => {
+    vi.spyOn(AuthContextModule, 'useAuth').mockReturnValue({
+      user: { ...mockUser, role: 'superadmin' },
+      token: 'valid-token',
+      login: vi.fn(),
+      logout: mockLogout,
+      refreshUser: vi.fn(),
+      updateProfile: mockUpdateProfile,
+      loading: false,
+    });
+
+    render(<UserProfileMenu size={34} />);
+    const trigger = screen.getByRole('button', { name: /user profile menu/i });
+    fireEvent.click(trigger);
+
+    expect(screen.getByText('Super Admin')).toBeDefined();
+    expect(screen.getByRole('menuitem', { name: /admin panel/i })).toBeDefined();
+  });
+
+  it('renders "Admin" badge and Admin Panel link for admin user', () => {
+    vi.spyOn(AuthContextModule, 'useAuth').mockReturnValue({
+      user: { ...mockUser, role: 'admin' },
+      token: 'valid-token',
+      login: vi.fn(),
+      logout: mockLogout,
+      refreshUser: vi.fn(),
+      updateProfile: mockUpdateProfile,
+      loading: false,
+    });
+
+    render(<UserProfileMenu size={34} />);
+    const trigger = screen.getByRole('button', { name: /user profile menu/i });
+    fireEvent.click(trigger);
+
+    expect(screen.getByText('Admin')).toBeDefined();
+    expect(screen.getByRole('menuitem', { name: /admin panel/i })).toBeDefined();
+  });
+
+  it('renders "User" badge and hides Admin Panel link for regular user', () => {
+    vi.spyOn(AuthContextModule, 'useAuth').mockReturnValue({
+      user: { ...mockUser, role: 'user' },
+      token: 'valid-token',
+      login: vi.fn(),
+      logout: mockLogout,
+      refreshUser: vi.fn(),
+      updateProfile: mockUpdateProfile,
+      loading: false,
+    });
+
+    render(<UserProfileMenu size={34} />);
+    const trigger = screen.getByRole('button', { name: /user profile menu/i });
+    fireEvent.click(trigger);
+
+    expect(screen.getByText('User')).toBeDefined();
+    expect(screen.queryByRole('menuitem', { name: /admin panel/i })).toBeNull();
+  });
+
+  it('renders "Student Member" badge for legacy student user', () => {
+    vi.spyOn(AuthContextModule, 'useAuth').mockReturnValue({
+      user: { ...mockUser, role: 'student' },
+      token: 'valid-token',
+      login: vi.fn(),
+      logout: mockLogout,
+      refreshUser: vi.fn(),
+      updateProfile: mockUpdateProfile,
+      loading: false,
+    });
+
+    render(<UserProfileMenu size={34} />);
+    const trigger = screen.getByRole('button', { name: /user profile menu/i });
+    fireEvent.click(trigger);
+
+    expect(screen.getByText('Student Member')).toBeDefined();
+    expect(screen.queryByRole('menuitem', { name: /admin panel/i })).toBeNull();
+  });
 });

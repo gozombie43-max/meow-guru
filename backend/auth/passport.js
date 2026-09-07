@@ -188,6 +188,9 @@ export const initPassport = () => {
 
               email,
 
+              role:
+                'user',
+
               authProvider:
                 'google',
 

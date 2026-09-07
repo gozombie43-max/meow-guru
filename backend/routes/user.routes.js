@@ -52,6 +52,7 @@ router.get('/me', protect, async (req, res) => {
       _cosmosRid,
       ...safeUser
     } = user;
+    safeUser.role = safeUser.role || req.user.role || 'user';
     res.json(safeUser);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -83,6 +84,7 @@ router.patch('/me/profile', protect, validateBody(profilePatchSchema), async (re
 
     const updatedUser = await getUser(req.user.id, req.user.email);
     const { passwordHash, _id, _cosmosRid, ...safeUser } = updatedUser;
+    safeUser.role = safeUser.role || req.user.role || 'user';
     res.json({ message: 'Profile updated ✅', user: safeUser });
   } catch (err) {
     res.status(500).json({ error: err.message });

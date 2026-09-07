@@ -63,6 +63,21 @@ export async function connectMongoDB() {
     db.collection("pushDevices").createIndex({ fid: 1 }, { unique: true }),
     db.collection("pushDevices").createIndex({ userId: 1, enabled: 1 }),
     db.collection("pushDevices").createIndex({ updatedAt: -1 }),
+
+    // ── Notification history indexes ──
+    db.collection("notificationHistory").createIndex({
+      createdAt: -1,
+    }),
+    db.collection("notificationHistory").createIndex({
+      sentByUserId: 1,
+      createdAt: -1,
+    }),
+
+    // ── Scheduled notifications indexes ──
+    db.collection("scheduledNotifications").createIndex({
+      status: 1,
+      sendAt: 1,
+    }),
   ]);
 
   console.log("✅ MongoDB Atlas connected");
@@ -116,4 +131,16 @@ export function getAuditLogCollection() {
 
 export function getPushDevicesCollection() {
   return getMongoDB().collection("pushDevices");
+}
+
+export function getNotificationHistoryCollection() {
+  return getMongoDB().collection(
+    "notificationHistory"
+  );
+}
+
+export function getScheduledNotificationsCollection() {
+  return getMongoDB().collection(
+    "scheduledNotifications"
+  );
 }

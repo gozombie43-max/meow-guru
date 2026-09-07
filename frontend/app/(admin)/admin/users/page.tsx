@@ -2,6 +2,7 @@
 
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import {
@@ -356,6 +357,12 @@ export default function AdminUsersPage() {
             <div className={s.headerTitle}>User Management</div>
             <div className={s.headerSubtitle}>Manage accounts, roles, access and activity</div>
           </div>
+        </div>
+        <div className={s.headerRight}>
+          <Link href="/admin/notifications" className={s.navLinkBtn}>
+            <Bell size={15} />
+            <span>Broadcast Push</span>
+          </Link>
         </div>
       </header>
 

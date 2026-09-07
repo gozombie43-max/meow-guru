@@ -356,7 +356,7 @@ router.post(
 
 router.post(
   '/refresh',
-  (req, res) => {
+  async (req, res) => {
     const token =
       getRefreshTokenFromRequest(
         req
@@ -378,13 +378,20 @@ router.post(
         );
 
       /*
-       * Preserve your existing refresh-token behaviour.
+       * Fetch fresh user data from database to pick up any role changes.
        */
+      const users = getUsersCollection();
+      const existingUser = await users.findOne(
+        { id: decoded.id, type: { $ne: 'email_lock' } },
+        { projection: { role: 1, name: 1, email: 1 } }
+      );
+      const userRole = existingUser?.role || decoded.role || 'user';
+
       const payload = {
         id: decoded.id,
-        email: decoded.email,
-        name: decoded.name,
-        role: decoded.role || 'student',
+        email: existingUser?.email || decoded.email,
+        name: existingUser?.name || decoded.name,
+        role: userRole,
       };
 
       const newToken =
@@ -478,6 +485,7 @@ router.get(
         id: req.user.id,
         email: req.user.email,
         name: req.user.name,
+        role: req.user.role || 'user',
       });
 
     applyRefreshToken(

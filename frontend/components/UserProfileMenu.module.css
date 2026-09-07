@@ -147,6 +147,61 @@
   border-color: rgba(10, 132, 255, 0.3);
 }
 
+.roleBadge.roleSuperadmin {
+  background: rgba(245, 158, 11, 0.14);
+  color: #b45309;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+:global(.dark) .roleBadge.roleSuperadmin,
+:global(body.theme-dark) .roleBadge.roleSuperadmin {
+  background: rgba(251, 191, 36, 0.16);
+  color: #fcd34d;
+  border-color: rgba(251, 191, 36, 0.35);
+}
+
+.roleBadge.roleAdmin {
+  background: rgba(147, 51, 234, 0.12);
+  color: #7e22ce;
+  border: 1px solid rgba(147, 51, 234, 0.3);
+}
+
+:global(.dark) .roleBadge.roleAdmin,
+:global(body.theme-dark) .roleBadge.roleAdmin {
+  background: rgba(168, 85, 247, 0.16);
+  color: #d8b4fe;
+  border-color: rgba(168, 85, 247, 0.32);
+}
+
+.roleBadge.roleModerator {
+  background: rgba(14, 165, 233, 0.12);
+  color: #0284c7;
+  border: 1px solid rgba(14, 165, 233, 0.3);
+}
+
+:global(.dark) .roleBadge.roleModerator,
+:global(body.theme-dark) .roleBadge.roleModerator {
+  background: rgba(56, 189, 248, 0.16);
+  color: #7dd3fc;
+  border-color: rgba(56, 189, 248, 0.32);
+}
+
+.roleBadge.roleUser,
+.roleBadge.roleStudent {
+  background: rgba(0, 113, 227, 0.1);
+  color: #0071e3;
+  border: 1px solid rgba(0, 113, 227, 0.2);
+}
+
+:global(.dark) .roleBadge.roleUser,
+:global(.dark) .roleBadge.roleStudent,
+:global(body.theme-dark) .roleBadge.roleUser,
+:global(body.theme-dark) .roleBadge.roleStudent {
+  background: rgba(10, 132, 255, 0.18);
+  color: #60a5fa;
+  border-color: rgba(10, 132, 255, 0.3);
+}
+
 .divider {
   height: 1px;
   background: rgba(0, 0, 0, 0.06);

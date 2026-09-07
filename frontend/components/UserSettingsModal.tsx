@@ -14,6 +14,23 @@ interface UserSettingsModalProps {
 const SOUND_EFFECTS_KEY = 'study-guru-sound-effects';
 const DAILY_GOAL_KEY = 'study-guru-daily-goal';
 
+function getRoleTitle(role?: string) {
+  const r = (role || 'user').toLowerCase();
+  switch (r) {
+    case 'superadmin':
+      return 'Super Admin';
+    case 'admin':
+      return 'Admin';
+    case 'moderator':
+      return 'Moderator';
+    case 'student':
+      return 'Student Member';
+    case 'user':
+    default:
+      return 'User';
+  }
+}
+
 export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModalProps) {
   const { theme, toggleThemeMode } = useThemeMode();
   const { user } = useAuth();
@@ -188,9 +205,9 @@ export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModal
                   <span className={styles.accountVal}>{user.email}</span>
                 </div>
                 <div className={styles.accountRow}>
-                  <span className={styles.accountKey}>Membership</span>
-                  <span className={styles.accountVal} style={{ textTransform: 'capitalize' }}>
-                    {user.id ? 'Student Member' : 'Guest'}
+                  <span className={styles.accountKey}>Role</span>
+                  <span className={styles.accountVal}>
+                    {user.id ? getRoleTitle(user.role) : 'Guest'}
                   </span>
                 </div>
                 {user.id && (
