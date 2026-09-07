@@ -94,6 +94,16 @@ import {
   stopBattleSeasonWorker,
   waitForBattleSeasonWorkerIdle,
 } from './services/battleSeasonWorker.js';
+import {
+  startBattleQuestionDeadlineWorker,
+  stopBattleQuestionDeadlineWorker,
+  waitForBattleQuestionDeadlineWorkerIdle,
+} from './services/battleQuestionDeadlineWorker.js';
+import {
+  startBattleResultWorker,
+  stopBattleResultWorker,
+  waitForBattleResultWorkerIdle,
+} from './services/battleResultWorker.js';
 
 import {
   setNotificationRealtimeServer,
@@ -355,6 +365,8 @@ async function gracefulShutdown(signal, exitCode = 0) {
     stopBattlePresenceWorker();
     stopBattleMatchmakingWorker();
     stopBattleSeasonWorker();
+    stopBattleQuestionDeadlineWorker();
+    stopBattleResultWorker();
     console.log('Notification worker timers stopped');
 
     if (socketServer) {
@@ -386,13 +398,15 @@ async function gracefulShutdown(signal, exitCode = 0) {
       console.log('HTTP server closed ✅');
     }
 
-    const [scheduledIdle, dailyIdle, streakIdle, battlePresenceIdle, battleMatchmakingIdle, battleSeasonIdle] = await Promise.all([
+    const [scheduledIdle, dailyIdle, streakIdle, battlePresenceIdle, battleMatchmakingIdle, battleSeasonIdle, battleQuestionDeadlineIdle, battleResultIdle] = await Promise.all([
       waitForScheduledNotificationWorkerIdle(12_000),
       waitForDailyPracticeReminderWorkerIdle(12_000),
       waitForStreakProtectionWorkerIdle(12_000),
       waitForBattlePresenceWorkerIdle(12_000),
       waitForBattleMatchmakingWorkerIdle(12_000),
       waitForBattleSeasonWorkerIdle(12_000),
+      waitForBattleQuestionDeadlineWorkerIdle(12_000),
+      waitForBattleResultWorkerIdle(12_000),
     ]);
 
     console.log('Worker drain:', {
@@ -402,9 +416,11 @@ async function gracefulShutdown(signal, exitCode = 0) {
       battlePresenceIdle,
       battleMatchmakingIdle,
       battleSeasonIdle,
+      battleQuestionDeadlineIdle,
+      battleResultIdle,
     });
 
-    if (!scheduledIdle || !dailyIdle || !streakIdle || !battlePresenceIdle || !battleMatchmakingIdle || !battleSeasonIdle) {
+    if (!scheduledIdle || !dailyIdle || !streakIdle || !battlePresenceIdle || !battleMatchmakingIdle || !battleSeasonIdle || !battleQuestionDeadlineIdle || !battleResultIdle) {
       console.warn('One or more workers did not drain before timeout');
     }
 
@@ -641,6 +657,18 @@ async function initWithRetry() {
     }
 
     await startBattlePresenceWorker();
+
+    if (isShuttingDown) {
+      return;
+    }
+
+    await startBattleQuestionDeadlineWorker();
+
+    if (isShuttingDown) {
+      return;
+    }
+
+    await startBattleResultWorker();
 
     if (isShuttingDown) {
       return;

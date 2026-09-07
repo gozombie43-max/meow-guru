@@ -181,6 +181,7 @@ export function initBattleSocket(httpServer, corsOrigin) {
 
     // ── Create room ──────────────────────────────────────
     socket.on('room:create', async ({ playerName, subject = 'mathematics', topic = 'all', questionCount = 10 }) => {
+      if (!canCreateBattle(socket.user.id)) return socket.emit('room:error', { message: 'New battles are temporarily unavailable.' });
       const now = Date.now();
       if (now - lastRoomCreateTime < ROOM_CREATE_COOLDOWN_MS) {
         socket.emit('room:error', { message: 'Please wait before creating another room.' });
@@ -299,6 +300,10 @@ export function initBattleSocket(httpServer, corsOrigin) {
     // ── Rematch ──────────────────────────────────────────
     socket.on('battle:rematch', async ({ rematchToken, playerName }) => {
       try {
+        if (!canCreateBattle(socket.user.id)) {
+          socket.emit('battle:rematchResult', { ok: false, message: 'New battles are temporarily unavailable.' });
+          return;
+        }
         if (Date.now() - lastRematchTime < 10_000) {
           socket.emit('battle:rematchResult', {
             ok: false,
@@ -479,13 +484,14 @@ async function advanceBattleAfterAnswers(io, code, expectedIndex) {
       options: question.options,
       questionIndex: room.currentIndex,
       total: room.questions.length,
+      deadline: room.questionDeadline,
     });
     return;
   }
   await finishBattle(io, transition.room);
 }
 
-async function finishBattle(io, finishedRoom) {
+export async function finishBattle(io, finishedRoom) {
   const finalScores = await getScores(finishedRoom.code);
   const settlement = await settleBattleResult(finishedRoom).catch((error) => {
     console.error('Battle settlement failed:', error);
@@ -497,7 +503,7 @@ async function finishBattle(io, finishedRoom) {
     const rematchToken = player.userId && opponent?.userId
       ? signBattleRematchToken({ requesterUserId: player.userId, opponentUserId: opponent.userId, opponentName: opponent.name, subject: finishedRoom.subject, topic: finishedRoom.topic, questionCount: finishedRoom.questionCount })
       : null;
-    if (player.socketId) {
+    if (io && player.socketId) {
       const matchPlayer = settlement?.match?.players?.find((entry) => entry.userId === player.userId);
       const stats = (entry) => { const answers = Array.isArray(entry?.answerLog) ? entry.answerLog : [], answered = answers.filter((answer) => !answer.timedOut), correct = answers.filter((answer) => answer.correct), times = answered.map((answer) => answer.responseTimeMs).filter(Number.isFinite); return { correct: correct.length, total: answers.length, accuracy: answers.length ? Math.round(correct.length / answers.length * 100) : 0, averageResponseMs: times.length ? Math.round(times.reduce((sum, value) => sum + value, 0) / times.length) : null, timedOut: answers.filter((answer) => answer.timedOut).length }; };
       const opponentMatchPlayer = settlement?.match?.players?.find((entry) => entry.userId === opponent?.userId);
@@ -598,6 +604,7 @@ async function startGame(io, code) {
         options: first.options,
         questionIndex: 0,
         total: shuffled.length,
+        deadline: activeRoom.questionDeadline,
       });
     }, 1200);
 

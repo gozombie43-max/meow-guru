@@ -21,7 +21,8 @@ async function pair(firstTicket, secondTicket) {
     try {
       const result = await withMongoTransaction(async ({ session }) => {
         const queue = getBattleMatchmakingQueueCollection(); const rooms = getBattleRoomsCollection();
-        const [first, second] = await Promise.all([queue.findOne({ _id: firstTicket._id, status: "waiting" }, { session }), queue.findOne({ _id: secondTicket._id, status: "waiting" }, { session })]);
+        const first = await queue.findOne({ _id: firstTicket._id, status: "waiting" }, { session });
+        const second = await queue.findOne({ _id: secondTicket._id, status: "waiting" }, { session });
         if (!first || !second || first.userId === second.userId || first.subject !== second.subject || first.topic !== second.topic || first.questionCount !== second.questionCount || Math.abs(first.rating - second.rating) > Math.max(getAllowedRatingRange(first.queuedAt), getAllowedRatingRange(second.queuedAt))) return null;
         const now = new Date(); const activeSeason = await getActiveBattleSeason(now); const claim = await queue.updateMany({ _id: { $in: [first._id, second._id] }, status: "waiting" }, { $set: { status: "matched", matchmakingId, roomCode, matchedAt: now, updatedAt: now } }, { session });
         if (claim.modifiedCount !== 2) throw new Error("MATCHMAKING_CLAIM_CONFLICT");

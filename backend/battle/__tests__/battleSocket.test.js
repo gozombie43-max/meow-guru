@@ -91,6 +91,21 @@ describe('Battle Socket - room:invite', () => {
     connectionHandler(socket);
   });
 
+  it('blocks direct room creation when the new-match kill switch is off', async () => {
+    const previous = process.env.BATTLE_NEW_MATCHES_ENABLED;
+    process.env.BATTLE_NEW_MATCHES_ENABLED = 'false';
+    try {
+      await socketHandlers['room:create']({ playerName: 'HostGuru' });
+      expect(socket.emit).toHaveBeenCalledWith('room:error', {
+        message: 'New battles are temporarily unavailable.',
+      });
+      expect(socket.join).not.toHaveBeenCalledWith(expect.stringMatching(/^\d{4}$/));
+    } finally {
+      if (previous === undefined) delete process.env.BATTLE_NEW_MATCHES_ENABLED;
+      else process.env.BATTLE_NEW_MATCHES_ENABLED = previous;
+    }
+  });
+
   it('rejects invalid room code or email address', async () => {
     await socketHandlers['room:invite']({ code: '12', email: 'invalid' });
     expect(socket.emit).toHaveBeenCalledWith('room:inviteResult', {
@@ -392,6 +407,22 @@ describe('Battle Socket - battle:rematch', () => {
       ok: false,
       message: 'Rematch request is invalid or expired.',
     });
+  });
+
+  it('blocks rematch room creation when the new-match kill switch is off', async () => {
+    const previous = process.env.BATTLE_NEW_MATCHES_ENABLED;
+    process.env.BATTLE_NEW_MATCHES_ENABLED = 'false';
+    try {
+      await socketHandlers['battle:rematch']({ rematchToken: 'unused', playerName: 'Player One' });
+      expect(socket.emit).toHaveBeenCalledWith('battle:rematchResult', {
+        ok: false,
+        message: 'New battles are temporarily unavailable.',
+      });
+      expect(socket.join).not.toHaveBeenCalledWith(expect.stringMatching(/^\d{4}$/));
+    } finally {
+      if (previous === undefined) delete process.env.BATTLE_NEW_MATCHES_ENABLED;
+      else process.env.BATTLE_NEW_MATCHES_ENABLED = previous;
+    }
   });
 
   it('rejects rematch if requester is not the token owner', async () => {

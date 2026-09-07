@@ -45,7 +45,7 @@
     "dev": "nodemon index.js",
     "test": "vitest run",
     "test:unit": "vitest run --exclude='**/*.integration.test.js'",
-    "test:integration": "vitest run '**/*.integration.test.js'",
+    "test:integration": "vitest run integration",
     "test:battle": "vitest run battle",
     "test:watch": "vitest"
   },
@@ -54,6 +54,7 @@
   "license": "ISC",
   "devDependencies": {
     "@types/multer": "^2.2.0",
+    "mongodb-memory-server": "^11.2.0",
     "nodemon": "^3.1.14",
     "vitest": "^4.1.11"
   }

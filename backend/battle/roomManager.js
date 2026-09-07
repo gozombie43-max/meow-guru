@@ -7,6 +7,7 @@ const ROOM_TTL_MS = 2 * 60 * 60 * 1000;
 const BATTLE_RECONNECT_GRACE_MS = Number(process.env.BATTLE_RECONNECT_GRACE_MS) || 60_000;
 const BATTLE_DEPLOYMENT_GRACE_MS = Number(process.env.BATTLE_DEPLOYMENT_GRACE_MS) || 180_000;
 const QUESTION_TIME_MS = Number(process.env.BATTLE_QUESTION_TIME_MS) || 30_000;
+const QUESTION_REVEAL_MS = Number(process.env.BATTLE_QUESTION_REVEAL_MS) || 2_000;
 
 function createQuestionWindow(now = new Date()) {
   return { questionStartedAt: now, questionDeadline: new Date(now.getTime() + QUESTION_TIME_MS) };
@@ -213,6 +214,7 @@ export async function submitAnswer({ code, userId, questionIndex, selectedIndex,
       code: normalizedCode,
       status: "active",
       currentIndex: questionIndex,
+      questionDeadline: { $gte: now },
       players: { $elemMatch: { userId: normalizedUserId, answered: false } },
     },
     {
@@ -249,6 +251,94 @@ export async function submitAnswer({ code, userId, questionIndex, selectedIndex,
     allAnswered,
     questionIndex, correctIndex: allAnswered ? correctIndex : null,
     scores: scoresFromRoom(updated),
+  };
+}
+
+export async function resolveExpiredQuestion(code, expectedIndex, now = new Date()) {
+  const rooms = getBattleRoomsCollection();
+  const normalizedCode = String(code);
+  const room = await rooms.findOne({
+    code: normalizedCode,
+    status: "active",
+    currentIndex: expectedIndex,
+    questionDeadline: { $lte: now },
+  });
+  if (!room) return { resolved: false, room: null };
+
+  const unanswered = room.players.filter((player) => !player.answered);
+  if (unanswered.length) {
+    const responseTimeMs = room.questionStartedAt
+      ? Math.max(0, now.getTime() - new Date(room.questionStartedAt).getTime())
+      : null;
+    await rooms.updateOne(
+      {
+        code: normalizedCode,
+        status: "active",
+        currentIndex: expectedIndex,
+        questionDeadline: { $lte: now },
+        players: { $elemMatch: { answered: false } },
+      },
+      {
+        $set: {
+          "players.$[player].answered": true,
+          "players.$[player].selectedIndex": null,
+          "players.$[player].lastCorrect": false,
+          "players.$[player].answeredAt": now,
+          "players.$[player].responseTimeMs": responseTimeMs,
+          questionResolvedAt: now,
+          questionResolutionIndex: expectedIndex,
+          questionAdvanceAt: new Date(now.getTime() + QUESTION_REVEAL_MS),
+          updatedAt: now,
+          expiresAt: expiryFromNow(),
+        },
+        $push: {
+          "players.$[player].answerLog": {
+            questionIndex: expectedIndex,
+            selectedIndex: null,
+            correct: false,
+            responseTimeMs,
+            timedOut: true,
+            answeredAt: now,
+          },
+        },
+      },
+      { arrayFilters: [{ "player.answered": false }] }
+    );
+  }
+
+  let latest = await getRoom(normalizedCode);
+  if (!latest || latest.status !== "active" || latest.currentIndex !== expectedIndex) {
+    return { resolved: false, room: latest };
+  }
+
+  if (latest.players.every((player) => player.answered) && !latest.questionAdvanceAt) {
+    const claimed = await rooms.findOneAndUpdate(
+      {
+        code: normalizedCode,
+        status: "active",
+        currentIndex: expectedIndex,
+        questionDeadline: { $lte: now },
+        questionAdvanceAt: { $exists: false },
+      },
+      {
+        $set: {
+          questionResolvedAt: now,
+          questionResolutionIndex: expectedIndex,
+          questionAdvanceAt: new Date(now.getTime() + QUESTION_REVEAL_MS),
+          updatedAt: now,
+        },
+      },
+      { returnDocument: "after" }
+    );
+    if (claimed) latest = cleanRoom(claimed);
+  }
+
+  return {
+    resolved: latest.players.every((player) => player.answered),
+    room: latest,
+    readyToAdvance: Boolean(
+      latest.questionAdvanceAt && new Date(latest.questionAdvanceAt) <= now
+    ),
   };
 }
 
@@ -299,6 +389,9 @@ export async function advanceQuestion(code, expectedIndex) {
         "players.$[].lastCorrect": "",
         "players.$[].answeredAt": "",
         "players.$[].responseTimeMs": "",
+        questionResolvedAt: "",
+        questionResolutionIndex: "",
+        questionAdvanceAt: "",
       },
     },
     { returnDocument: "after" }
@@ -455,6 +548,7 @@ export function buildBattleSnapshot(room, userId) {
       options: question.options,
       questionIndex: room.currentIndex,
       total: room.questions.length,
+      deadline: room.questionDeadline || null,
     } : null,
     finishedAt: room.finishedAt || null,
     finishReason: room.finishReason || "completed",

@@ -106,6 +106,15 @@ export async function connectMongoDB() {
       status: 1,
       "players.reconnectDeadline": 1,
     }),
+    db.collection("battleRooms").createIndex({
+      status: 1,
+      questionDeadline: 1,
+    }),
+    db.collection("battleRooms").createIndex({
+      status: 1,
+      resultRecordedAt: 1,
+      finishedAt: 1,
+    }),
     db.collection("battleRooms").createIndex(
       { expiresAt: 1 },
       { expireAfterSeconds: 0 }

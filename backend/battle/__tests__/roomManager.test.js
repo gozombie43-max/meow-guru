@@ -18,6 +18,7 @@ const {
   joinRoom,
   setQuestions,
   submitAnswer,
+  resolveExpiredQuestion,
   advanceQuestion,
   markSocketDisconnected,
   findResumableRoomForUser,
@@ -142,9 +143,58 @@ describe('Battle Room Manager', () => {
     expect(result.scores['user-host'].score).toBe(10);
     expect(result.scores['socket-host']).toBeUndefined();
     expect(collection.updateOne).toHaveBeenCalledWith(
-      expect.objectContaining({ currentIndex: 0 }),
+      expect.objectContaining({ currentIndex: 0, questionDeadline: { $gte: expect.any(Date) } }),
       expect.objectContaining({ $inc: { 'players.$[player].score': 10 } }),
       expect.any(Object)
+    );
+  });
+
+  it('atomically records one timeout log for each still-unanswered player', async () => {
+    const deadline = new Date('2026-09-08T00:00:00.000Z');
+    const now = new Date('2026-09-08T00:00:01.000Z');
+    const active = {
+      ...waitingRoom,
+      status: 'active',
+      currentIndex: 0,
+      questionStartedAt: new Date('2026-09-07T23:59:30.000Z'),
+      questionDeadline: deadline,
+      questions: [{ correctAnswer: 0, options: ['A', 'B'] }],
+      players: [
+        { ...waitingRoom.players[0], answered: true, answerLog: [{ questionIndex: 0 }] },
+        { userId: 'user-guest', name: 'Guest', score: 0, answered: false, answerLog: [] },
+      ],
+    };
+    const resolved = {
+      ...active,
+      questionResolvedAt: now,
+      questionResolutionIndex: 0,
+      questionAdvanceAt: new Date(now.getTime() + 2_000),
+      players: [active.players[0], { ...active.players[1], answered: true, timedOut: true }],
+    };
+    collection.findOne.mockResolvedValueOnce(active).mockResolvedValueOnce(resolved);
+    collection.updateOne.mockResolvedValueOnce({ modifiedCount: 1 });
+
+    const result = await resolveExpiredQuestion('4821', 0, now);
+
+    expect(result.resolved).toBe(true);
+    expect(result.readyToAdvance).toBe(false);
+    expect(collection.updateOne).toHaveBeenCalledWith(
+      expect.objectContaining({
+        currentIndex: 0,
+        questionDeadline: { $lte: now },
+        players: { $elemMatch: { answered: false } },
+      }),
+      expect.objectContaining({
+        $push: {
+          'players.$[player].answerLog': expect.objectContaining({
+            questionIndex: 0,
+            selectedIndex: null,
+            correct: false,
+            timedOut: true,
+          }),
+        },
+      }),
+      { arrayFilters: [{ 'player.answered': false }] }
     );
   });
 
@@ -216,6 +266,7 @@ describe('Battle Room Manager', () => {
     expect(resumed.previousSocketId).toBe('socket-host');
     expect(snapshot.currentQuestion).toEqual({
       question: 'Safe question', options: ['A', 'B'], questionIndex: 0, total: 1,
+      deadline: null,
     });
     expect(JSON.stringify(snapshot)).not.toContain('correctAnswer');
     expect(JSON.stringify(snapshot)).not.toContain('secret');
