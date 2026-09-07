@@ -31,19 +31,12 @@ function buildMatchStats(entry) {
   const answers = Array.isArray(entry?.answerLog) ? entry.answerLog : [];
   const answered = answers.filter((answer) => !answer.timedOut);
   const correct = answers.filter((answer) => answer.correct);
-  const times = answered
-    .map((answer) => answer.responseTimeMs)
-    .filter(Number.isFinite);
-
+  const times = answered.map((answer) => answer.responseTimeMs).filter(Number.isFinite);
   return {
     correct: correct.length,
     total: answers.length,
-    accuracy: answers.length
-      ? Math.round((correct.length / answers.length) * 100)
-      : 0,
-    averageResponseMs: times.length
-      ? Math.round(times.reduce((sum, value) => sum + value, 0) / times.length)
-      : null,
+    accuracy: answers.length ? Math.round((correct.length / answers.length) * 100) : 0,
+    averageResponseMs: times.length ? Math.round(times.reduce((sum, value) => sum + value, 0) / times.length) : null,
     timedOut: answers.filter((answer) => answer.timedOut).length,
   };
 }
@@ -53,9 +46,7 @@ async function notifyFinished(room, scores) {
     player,
     score: scores[player.userId]?.score ?? player.score ?? 0,
   }));
-
   if (scoredPlayers.length !== 2) return;
-
   const maxScore = Math.max(...scoredPlayers.map((entry) => entry.score));
   const winnerCount = scoredPlayers.filter((entry) => entry.score === maxScore).length;
 
@@ -63,11 +54,9 @@ async function notifyFinished(room, scores) {
     if (!player.userId) return;
     const opponent = scoredPlayers.find((entry) => entry.player.userId !== player.userId);
     if (!opponent) return;
-
     let title;
     let body;
     let result;
-
     if (winnerCount > 1) {
       title = "Battle Draw 🤝";
       body = `You and ${opponent.player.name} finished ${score}-${opponent.score}.`;
@@ -81,7 +70,6 @@ async function notifyFinished(room, scores) {
       body = `${opponent.player.name} won ${opponent.score}-${score}. Ready for a rematch?`;
       result = "loss";
     }
-
     await sendPushToUser(player.userId, {
       title,
       body,
@@ -106,7 +94,6 @@ async function finishExpiredBattle(room) {
     console.error("Battle deadline settlement failed:", error);
     return null;
   });
-
   const io = getBattleRealtimeServer();
   const scores = buildScores(room);
 
@@ -125,37 +112,24 @@ async function finishExpiredBattle(room) {
             questionCount: room.questionCount,
           })
         : null;
-
       if (!player.socketId) continue;
-
       io.to(player.socketId).emit("game:end", {
         scores,
         finishReason: room.finishReason || "completed",
         winnerUserId: room.winnerUserId || null,
         rematchToken,
         opponentName: opponent?.name || "Opponent",
-        matchStats: {
-          me: buildMatchStats(matchPlayer),
-          opponent: buildMatchStats(opponentMatchPlayer),
-        },
-        rating: matchPlayer
-          ? {
-              lifetime: {
-                before: matchPlayer.ratingBefore,
-                after: matchPlayer.ratingAfter,
-                delta: matchPlayer.ratingDelta,
-              },
-              season: matchPlayer.seasonRatingAfter !== null
-                ? {
-                    before: matchPlayer.seasonRatingBefore,
-                    after: matchPlayer.seasonRatingAfter,
-                    delta: matchPlayer.seasonRatingDelta,
-                    tierBefore: matchPlayer.seasonTierBefore,
-                    tierAfter: matchPlayer.seasonTierAfter,
-                  }
-                : null,
-            }
-          : null,
+        matchStats: { me: buildMatchStats(matchPlayer), opponent: buildMatchStats(opponentMatchPlayer) },
+        rating: matchPlayer ? {
+          lifetime: { before: matchPlayer.ratingBefore, after: matchPlayer.ratingAfter, delta: matchPlayer.ratingDelta },
+          season: matchPlayer.seasonRatingAfter !== null ? {
+            before: matchPlayer.seasonRatingBefore,
+            after: matchPlayer.seasonRatingAfter,
+            delta: matchPlayer.seasonRatingDelta,
+            tierBefore: matchPlayer.seasonTierBefore,
+            tierAfter: matchPlayer.seasonTierAfter,
+          } : null,
+        } : null,
       });
     }
   }
@@ -167,14 +141,9 @@ async function finishExpiredBattle(room) {
 
 export async function expireBattleQuestion(candidate, now = new Date()) {
   if (!candidate || candidate.status !== "active") return null;
-
   const expectedIndex = Number(candidate.currentIndex);
   if (!Number.isInteger(expectedIndex)) return null;
-
-  const deadline = candidate.questionDeadline
-    ? new Date(candidate.questionDeadline)
-    : null;
-
+  const deadline = candidate.questionDeadline ? new Date(candidate.questionDeadline) : null;
   if (!deadline || deadline > now) return null;
 
   const timeoutEntry = {
@@ -193,76 +162,61 @@ export async function expireBattleQuestion(candidate, now = new Date()) {
       currentIndex: expectedIndex,
       questionDeadline: { $lte: now },
     },
-    [
-      {
-        $set: {
-          players: {
-            $map: {
-              input: "$players",
-              as: "player",
-              in: {
-                $cond: [
-                  { $eq: ["$$player.answered", true] },
-                  "$$player",
-                  {
-                    $mergeObjects: [
-                      "$$player",
-                      {
-                        answered: true,
-                        selectedIndex: null,
-                        lastCorrect: false,
-                        answeredAt: now,
-                        responseTimeMs: null,
-                        answerLog: {
-                          $concatArrays: [
-                            { $ifNull: ["$$player.answerLog", []] },
-                            [timeoutEntry],
-                          ],
-                        },
+    [{
+      $set: {
+        players: {
+          $map: {
+            input: "$players",
+            as: "player",
+            in: {
+              $cond: [
+                { $eq: ["$$player.answered", true] },
+                "$$player",
+                {
+                  $mergeObjects: [
+                    "$$player",
+                    {
+                      answered: true,
+                      selectedIndex: null,
+                      lastCorrect: false,
+                      answeredAt: now,
+                      responseTimeMs: null,
+                      answerLog: {
+                        $concatArrays: [{ $ifNull: ["$$player.answerLog", []] }, [timeoutEntry]],
                       },
-                    ],
-                  },
-                ],
-              },
+                    },
+                  ],
+                },
+              ],
             },
           },
-          updatedAt: now,
-          expiresAt: new Date(now.getTime() + ROOM_TTL_MS),
         },
+        updatedAt: now,
+        expiresAt: new Date(now.getTime() + ROOM_TTL_MS),
       },
-    ],
+    }],
     { returnDocument: "after" }
   );
 
-  if (!room || room.status !== "active" || room.currentIndex !== expectedIndex) {
-    return null;
-  }
+  if (!room || room.status !== "active" || room.currentIndex !== expectedIndex) return null;
 
   const question = room.questions?.[expectedIndex];
   const correctIndex = Number(question?.correctAnswer);
   const io = getBattleRealtimeServer();
-
   if (io) {
     io.to(room.code).emit("game:scores", { scores: buildScores(room) });
     io.to(room.code).emit("game:reveal", {
       questionIndex: expectedIndex,
       correctIndex: Number.isInteger(correctIndex) ? correctIndex : null,
-      selections: Object.fromEntries(
-        room.players.map((player) => [player.userId, player.selectedIndex ?? null])
-      ),
+      selections: Object.fromEntries(room.players.map((player) => [player.userId, player.selectedIndex ?? null])),
       timedOut: true,
     });
   }
 
-  if (REVEAL_DELAY_MS > 0) {
-    await sleep(REVEAL_DELAY_MS);
-  }
+  if (REVEAL_DELAY_MS > 0) await sleep(REVEAL_DELAY_MS);
 
   const transition = await advanceQuestion(room.code, expectedIndex);
-  if (!transition?.advanced) {
-    return { expired: true, advanced: false, room };
-  }
-
+  if (!transition?.advanced) return { expired: true, advanced: false, room };
   if (transition.finished) {
     await finishExpiredBattle(transition.room);
     return { expired: true, advanced: true, finished: true, room: transition.room };
@@ -270,7 +224,6 @@ export async function expireBattleQuestion(candidate, now = new Date()) {
 
   const nextRoom = transition.room;
   const nextQuestion = nextRoom.questions?.[nextRoom.currentIndex];
-
   if (io && nextQuestion) {
     io.to(nextRoom.code).emit("game:question", {
       question: nextQuestion.question,
@@ -280,14 +233,12 @@ export async function expireBattleQuestion(candidate, now = new Date()) {
       deadline: nextRoom.questionDeadline,
     });
   }
-
   return { expired: true, advanced: true, finished: false, room: nextRoom };
 }
 
 export async function runBattleQuestionDeadlineWorkerOnce() {
   if (running) return false;
   running = true;
-
   try {
     const now = new Date();
     const candidates = await getBattleRoomsCollection()
@@ -295,17 +246,10 @@ export async function runBattleQuestionDeadlineWorkerOnce() {
       .sort({ questionDeadline: 1 })
       .limit(BATCH_SIZE)
       .toArray();
-
-    const results = await Promise.allSettled(
-      candidates.map((room) => expireBattleQuestion(room, now))
-    );
-
+    const results = await Promise.allSettled(candidates.map((room) => expireBattleQuestion(room, now)));
     for (const result of results) {
-      if (result.status === "rejected") {
-        console.error("Battle question deadline processing failed:", result.reason);
-      }
+      if (result.status === "rejected") console.error("Battle question deadline processing failed:", result.reason);
     }
-
     return true;
   } finally {
     running = false;
@@ -314,14 +258,13 @@ export async function runBattleQuestionDeadlineWorkerOnce() {
 
 export async function startBattleQuestionDeadlineWorker() {
   if (timer) return;
-
+  await getBattleRoomsCollection().createIndex({ status: 1, questionDeadline: 1 });
   await runBattleQuestionDeadlineWorkerOnce();
   timer = setInterval(() => {
     void runBattleQuestionDeadlineWorkerOnce().catch((error) => {
       console.error("Battle question deadline worker failed:", error);
     });
   }, POLL_MS);
-
   console.log(`Battle question deadline worker started (${POLL_MS}ms) ✅`);
 }
 
@@ -333,8 +276,6 @@ export function stopBattleQuestionDeadlineWorker() {
 
 export async function waitForBattleQuestionDeadlineWorkerIdle(timeoutMs = 10_000) {
   const deadline = Date.now() + timeoutMs;
-  while (running && Date.now() < deadline) {
-    await sleep(100);
-  }
+  while (running && Date.now() < deadline) await sleep(100);
   return !running;
 }
