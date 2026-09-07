@@ -1,0 +1,5 @@
+import { createHash } from "node:crypto";
+const bool = (name, fallback) => process.env[name] === undefined ? fallback : ["1","true","yes","on"].includes(String(process.env[name]).toLowerCase());
+const percent = (name, fallback) => { const value = Number(process.env[name]); return Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : fallback; };
+export function getBattleFeatures() { return { enabled: bool("BATTLE_ENABLED", true), newMatchesEnabled: bool("BATTLE_NEW_MATCHES_ENABLED", true), matchmakingEnabled: bool("BATTLE_MATCHMAKING_ENABLED", true), rankedEnabled: bool("BATTLE_RANKED_ENABLED", true), socialChallengesEnabled: bool("BATTLE_SOCIAL_CHALLENGES_ENABLED", true), missionsEnabled: bool("BATTLE_MISSIONS_ENABLED", true), rewardsEnabled: bool("BATTLE_REWARDS_ENABLED", true), rolloutPercent: percent("BATTLE_ROLLOUT_PERCENT", 100) }; }
+export function isUserInBattleRollout(userId) { const { enabled, rolloutPercent } = getBattleFeatures(); if (!enabled || rolloutPercent <= 0) return false; if (rolloutPercent >= 100) return true; return createHash("sha256").update(String(userId)).digest().readUInt32BE(0) % 10000 < rolloutPercent * 100; }

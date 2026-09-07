@@ -45,6 +45,7 @@ import pdfRoutes from './routes/pdfs.js';
 import accessCodeRoutes from './routes/accessCodes.js';
 import notificationRoutes from "./routes/notifications.routes.js";
 import examUpdatesRouter from "./routes/examUpdates.routes.js";
+import battleRoutes from "./routes/battle.routes.js";
 
 import cognitiveMapperRouter from './agents/cognitiveMapperRouter.js';
 import adaptiveQuizRouter from './agents/adaptiveQuiz/adaptiveQuizRouter.js';
@@ -57,25 +58,55 @@ import {
 
 import {
   connectMongoDB,
+  disconnectMongoDB,
 } from './config/mongodb.js';
 
 import {
   startScheduledNotificationWorker,
+  stopScheduledNotificationWorker,
+  waitForScheduledNotificationWorkerIdle,
 } from './services/scheduledNotificationWorker.js';
 
 import {
   startDailyPracticeReminderWorker,
+  stopDailyPracticeReminderWorker,
+  waitForDailyPracticeReminderWorkerIdle,
 } from './services/dailyPracticeReminderWorker.js';
 
 import {
   startStreakProtectionWorker,
+  stopStreakProtectionWorker,
+  waitForStreakProtectionWorkerIdle,
 } from './services/streakProtectionWorker.js';
+
+import {
+  startBattlePresenceWorker,
+  stopBattlePresenceWorker,
+  waitForBattlePresenceWorkerIdle,
+} from './services/battlePresenceWorker.js';
+import {
+  startBattleMatchmakingWorker,
+  stopBattleMatchmakingWorker,
+  waitForBattleMatchmakingWorkerIdle,
+} from './services/battleMatchmakingWorker.js';
+import {
+  startBattleSeasonWorker,
+  stopBattleSeasonWorker,
+  waitForBattleSeasonWorkerIdle,
+} from './services/battleSeasonWorker.js';
+
+import {
+  setNotificationRealtimeServer,
+} from './services/notificationRealtime.js';
 
 
 const app = express();
 
 const httpServer =
   createServer(app);
+
+let socketServer = null;
+let isShuttingDown = false;
 
 app.set('trust proxy', 1);
 
@@ -236,15 +267,26 @@ const healthCheck = (
   req,
   res
 ) => {
+  const healthy =
+    isReady &&
+    !isShuttingDown;
+
   return res
     .status(
-      isReady
+      healthy
         ? 200
         : 503
     )
     .json({
       ok:
-        isReady,
+        healthy,
+
+      state:
+        isShuttingDown
+          ? 'draining'
+          : isReady
+            ? 'ready'
+            : 'starting',
 
       service:
         'backend',
@@ -270,9 +312,113 @@ app.get(
   healthCheck
 );
 
+app.use((req, res, next) => {
+  if (!isShuttingDown) {
+    return next();
+  }
+
+  return res.status(503).json({
+    ok: false,
+    state: 'draining',
+  });
+});
+
 const PORT =
   process.env.PORT ||
   10000;
+
+const SHUTDOWN_TIMEOUT_MS =
+  Number(process.env.SHUTDOWN_TIMEOUT_MS) ||
+  20_000;
+
+async function gracefulShutdown(signal, exitCode = 0) {
+  if (isShuttingDown) {
+    return;
+  }
+
+  isShuttingDown = true;
+  isReady = false;
+
+  console.log(`${signal} received — starting graceful shutdown`);
+
+  const forceTimer = setTimeout(() => {
+    console.error('Graceful shutdown timed out ❌');
+    process.exit(exitCode || 1);
+  }, SHUTDOWN_TIMEOUT_MS);
+
+  forceTimer.unref();
+
+  try {
+    stopScheduledNotificationWorker();
+    stopDailyPracticeReminderWorker();
+    stopStreakProtectionWorker();
+    stopBattlePresenceWorker();
+    stopBattleMatchmakingWorker();
+    stopBattleSeasonWorker();
+    console.log('Notification worker timers stopped');
+
+    if (socketServer) {
+      try {
+        socketServer.emit('server:shutdown', {
+          message: 'Server is restarting.',
+          retryAfterMs: 3000,
+        });
+        await new Promise((resolve) => setTimeout(resolve, 250));
+      } catch (error) {
+        console.warn('Socket shutdown notice failed:', error);
+      }
+    }
+
+    if (socketServer) {
+      const closingIo = socketServer;
+      socketServer = null;
+
+      await new Promise((resolve) => {
+        closingIo.close(resolve);
+      });
+
+      setNotificationRealtimeServer(null);
+      console.log('HTTP + Socket.IO closed ✅');
+    } else if (httpServer.listening) {
+      await new Promise((resolve) => {
+        httpServer.close(resolve);
+      });
+      console.log('HTTP server closed ✅');
+    }
+
+    const [scheduledIdle, dailyIdle, streakIdle, battlePresenceIdle, battleMatchmakingIdle, battleSeasonIdle] = await Promise.all([
+      waitForScheduledNotificationWorkerIdle(12_000),
+      waitForDailyPracticeReminderWorkerIdle(12_000),
+      waitForStreakProtectionWorkerIdle(12_000),
+      waitForBattlePresenceWorkerIdle(12_000),
+      waitForBattleMatchmakingWorkerIdle(12_000),
+      waitForBattleSeasonWorkerIdle(12_000),
+    ]);
+
+    console.log('Worker drain:', {
+      scheduledIdle,
+      dailyIdle,
+      streakIdle,
+      battlePresenceIdle,
+      battleMatchmakingIdle,
+      battleSeasonIdle,
+    });
+
+    if (!scheduledIdle || !dailyIdle || !streakIdle || !battlePresenceIdle || !battleMatchmakingIdle || !battleSeasonIdle) {
+      console.warn('One or more workers did not drain before timeout');
+    }
+
+    await disconnectMongoDB();
+    console.log('Graceful shutdown complete ✅');
+
+    clearTimeout(forceTimer);
+    process.exit(exitCode);
+  } catch (error) {
+    console.error('Graceful shutdown failed:', error);
+    clearTimeout(forceTimer);
+    process.exit(1);
+  }
+}
 
 
 // ───────────────────────────────────────────────────────
@@ -346,6 +492,9 @@ async function initWithRetry() {
       'MongoDB Atlas'
     );
 
+    if (isShuttingDown) {
+      return;
+    }
 
     // ── Authentication ─────────────────────────────────
 
@@ -354,7 +503,7 @@ async function initWithRetry() {
 
     // ── Socket.IO ──────────────────────────────────────
 
-    initBattleSocket(
+    socketServer = initBattleSocket(
       httpServer,
       corsOrigin
     );
@@ -456,6 +605,8 @@ async function initWithRetry() {
       examUpdatesRouter
     );
 
+    app.use("/api/battle", battleRoutes);
+
 
     // Global error handler must remain last
     app.use(
@@ -472,8 +623,40 @@ async function initWithRetry() {
     isReady = true;
 
     await startScheduledNotificationWorker();
+
+    if (isShuttingDown) {
+      return;
+    }
+
     await startDailyPracticeReminderWorker();
+
+    if (isShuttingDown) {
+      return;
+    }
+
     await startStreakProtectionWorker();
+
+    if (isShuttingDown) {
+      return;
+    }
+
+    await startBattlePresenceWorker();
+
+    if (isShuttingDown) {
+      return;
+    }
+
+    await startBattleMatchmakingWorker();
+
+    if (isShuttingDown) {
+      return;
+    }
+
+    await startBattleSeasonWorker();
+
+    if (isShuttingDown) {
+      return;
+    }
 
     httpServer.listen(
       PORT,
@@ -488,6 +671,10 @@ async function initWithRetry() {
   } catch (err) {
     isReady = false;
 
+    if (isShuttingDown) {
+      return;
+    }
+
     console.error(
       'Server initialization failed ❌',
       err
@@ -496,5 +683,23 @@ async function initWithRetry() {
     process.exit(1);
   }
 }
+
+process.once('SIGTERM', () => {
+  void gracefulShutdown('SIGTERM', 0);
+});
+
+process.once('SIGINT', () => {
+  void gracefulShutdown('SIGINT', 0);
+});
+
+process.once('uncaughtException', (error) => {
+  console.error('Uncaught exception:', error);
+  void gracefulShutdown('uncaughtException', 1);
+});
+
+process.once('unhandledRejection', (reason) => {
+  console.error('Unhandled rejection:', reason);
+  void gracefulShutdown('unhandledRejection', 1);
+});
 
 initWithRetry();

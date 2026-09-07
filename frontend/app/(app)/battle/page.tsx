@@ -19,7 +19,7 @@ interface Player {
 }
 
 interface Scores {
-  [socketId: string]: Player;
+  [userId: string]: Player;
 }
 
 interface BattleQuestion {
@@ -27,7 +27,46 @@ interface BattleQuestion {
   options: string[];
   questionIndex: number;
   total: number;
+  deadline: string;
 }
+
+type BattleRating = {
+  lifetime: { before: number; after: number; delta: number };
+  season: { before: number; after: number; delta: number; tierBefore: string; tierAfter: string } | null;
+};
+type MatchStats = { correct: number; total: number; accuracy: number; averageResponseMs: number | null; timedOut: number };
+
+interface BattleResumeSnapshot {
+  code: string;
+  status: "waiting" | "active" | "finished";
+  subject: string;
+  topic: string;
+  questionCount: number;
+  currentIndex: number;
+  totalQuestions: number;
+  players: Array<{ userId: string; name: string; connected: boolean }>;
+  scores: Scores;
+  myAnswered: boolean;
+  currentQuestion: BattleQuestion | null;
+  finishedAt?: string | null;
+  rematchToken?: string | null;
+  opponentName?: string;
+  finishReason?: "completed" | "forfeit" | "abandoned";
+  winnerUserId?: string | null;
+  loserUserId?: string | null;
+  opponentPresence?: { connected: boolean; reconnectDeadline?: string | null };
+}
+
+const ACTIVE_BATTLE_KEY = "meow_active_battle_code";
+const saveActiveBattleCode = (code: string) => {
+  if (typeof window !== "undefined") localStorage.setItem(ACTIVE_BATTLE_KEY, code);
+};
+const getActiveBattleCode = () => (
+  typeof window === "undefined" ? null : localStorage.getItem(ACTIVE_BATTLE_KEY)
+);
+const clearActiveBattleCode = () => {
+  if (typeof window !== "undefined") localStorage.removeItem(ACTIVE_BATTLE_KEY);
+};
 
 interface SubjectOption {
   value: string;
@@ -68,14 +107,14 @@ const QUESTION_COUNTS = [10, 15, 25, 50];
 
 // ── Score Bar ────────────────────────────────────────────────────────────────
 function ScoreBar({
-  scores, mySocketId, myName, questionIndex, total,
+  scores, myPlayerId, myName, questionIndex, total,
 }: {
-  scores: Scores; mySocketId: string; myName: string;
+  scores: Scores; myPlayerId: string; myName: string;
   questionIndex: number; total: number;
 }) {
   const players = Object.entries(scores);
-  const me = players.find(([id]) => id === mySocketId);
-  const opp = players.find(([id]) => id !== mySocketId);
+  const me = players.find(([id]) => id === myPlayerId);
+  const opp = players.find(([id]) => id !== myPlayerId);
 
   const meScore = me?.[1]?.score ?? 0;
   const oppScore = opp?.[1]?.score ?? 0;
@@ -195,11 +234,11 @@ function ScoreBar({
 
 // ── Opponent Status ──────────────────────────────────────────────────────────
 function OpponentStatus({
-  scores, mySocketId, revealedAnswer,
+  scores, myPlayerId, revealedAnswer,
 }: {
-  scores: Scores; mySocketId: string; revealedAnswer: string | null;
+  scores: Scores; myPlayerId: string; revealedAnswer: string | null;
 }) {
-  const opp = Object.entries(scores).find(([id]) => id !== mySocketId);
+  const opp = Object.entries(scores).find(([id]) => id !== myPlayerId);
   if (!opp) return null;
   const oppData = opp[1];
 
@@ -311,7 +350,6 @@ export default function BattlePage() {
   const [error, setError]               = useState("");
   const [showResult, setShowResult]     = useState(false);
   const [opponentAnswer, setOpponentAnswer] = useState<string | null>(null);
-  const [mySocketId, setMySocketId]     = useState("");
   const [isWinner, setIsWinner]         = useState(false);
   const [playTab, setPlayTab]           = useState<"create" | "join">("create");
   const [pickerType, setPickerType]     = useState<"subject" | "topic" | null>(null);
@@ -321,7 +359,14 @@ export default function BattlePage() {
   const [rematchToken, setRematchToken] = useState("");
   const [opponentName, setOpponentName] = useState("");
   const [rematchSending, setRematchSending] = useState(false);
+  const [opponentReconnectDeadline, setOpponentReconnectDeadline] = useState<string | null>(null);
+  const [reconnectSecondsLeft, setReconnectSecondsLeft] = useState(0);
+  const [finishReason, setFinishReason] = useState<"completed" | "forfeit" | "abandoned">("completed");
+  const [battleRating, setBattleRating] = useState<BattleRating | null>(null);
+  const [matchStats, setMatchStats] = useState<{ me: MatchStats; opponent: MatchStats } | null>(null);
+  const [showRankUp, setShowRankUp] = useState(false);
   const activeCode = roomCode || joinCode;
+  const myPlayerId = user?.id || "";
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -340,16 +385,23 @@ export default function BattlePage() {
     }
   }, [user]);
 
+  useEffect(() => {
+    if (!opponentReconnectDeadline) { setReconnectSecondsLeft(0); return; }
+    const calculate = () => setReconnectSecondsLeft(Math.max(0, Math.ceil((new Date(opponentReconnectDeadline).getTime() - Date.now()) / 1000)));
+    calculate();
+    const timer = window.setInterval(calculate, 500);
+    return () => window.clearInterval(timer);
+  }, [opponentReconnectDeadline]);
+
   const normalizeJoinCode = (value: string) => value.replace(/\D/g, "").slice(0, 4);
 
   // ── Socket setup ────────────────────────────────────────────────────────────
   useEffect(() => {
     const socket = getSocket(token || undefined);
-    setMySocketId(socket.id ?? "");
 
     const onConnect = () => {
-      setMySocketId(socket.id ?? "");
       setError("");
+      socket.emit("battle:resume", { code: getActiveBattleCode() });
     };
 
     const onConnectError = (err: Error) => {
@@ -365,6 +417,7 @@ export default function BattlePage() {
 
     socket.on("room:created", ({ code }: { code: string }) => {
       setRoomCode(code);
+      saveActiveBattleCode(code);
       setBattleState("waiting");
     });
 
@@ -412,25 +465,66 @@ export default function BattlePage() {
         scores: s,
         rematchToken: token,
         opponentName: oppName,
+        finishReason: resultFinishReason,
+        winnerUserId,
+        rating,
+        matchStats: stats,
       }: {
         scores: Scores;
         rematchToken?: string;
         opponentName?: string;
+        finishReason?: "completed" | "forfeit" | "abandoned";
+        winnerUserId?: string | null;
+        rating?: BattleRating | null;
+        matchStats?: { me: MatchStats; opponent: MatchStats };
       }) => {
         setFinalScores(s);
+        clearActiveBattleCode();
         setRematchToken(token || "");
         setOpponentName(oppName || "Opponent");
-        const myScore = s[mySocketId]?.score ?? 0;
+        setOpponentReconnectDeadline(null);
+        setFinishReason(resultFinishReason || "completed");
+        setBattleRating(rating || null);
+        setMatchStats(stats || null);
+        setShowRankUp(Boolean(rating?.season && rating.season.tierBefore !== rating.season.tierAfter && rating.season.tierAfter !== "Unranked"));
+        const myScore = s[myPlayerId]?.score ?? 0;
         const maxScore = Math.max(...Object.values(s).map((p: any) => p.score));
-        setIsWinner(myScore === maxScore);
+        setIsWinner(winnerUserId ? winnerUserId === myPlayerId : myScore === maxScore);
         setBattleState("finished");
       }
     );
 
-    socket.on("room:playerLeft", ({ message }: { message: string }) => {
-      setError(message);
-      setBattleState("lobby");
+    socket.on("room:playerDisconnected", ({ reconnectDeadline }: { reconnectDeadline?: string }) => {
+      if (reconnectDeadline) setOpponentReconnectDeadline(reconnectDeadline);
+      setError("Opponent disconnected. Waiting for reconnection…");
     });
+
+    const onBattleResumed = (snapshot: BattleResumeSnapshot) => {
+      setRoomCode(snapshot.code);
+      saveActiveBattleCode(snapshot.code);
+      setSubject(snapshot.subject);
+      setTopic(snapshot.topic);
+      setQuestionCount(snapshot.questionCount);
+      setPlayers(snapshot.players.map((player) => player.name));
+      setScores(snapshot.scores || {});
+      setCurrentQ(snapshot.currentQuestion);
+      setIsSubmitted(snapshot.myAnswered);
+      setRematchToken(snapshot.rematchToken || "");
+      setOpponentName(snapshot.opponentName || "Opponent");
+      setFinishReason(snapshot.finishReason || "completed");
+      if (snapshot.opponentPresence && !snapshot.opponentPresence.connected) setOpponentReconnectDeadline(snapshot.opponentPresence.reconnectDeadline || null);
+      else setOpponentReconnectDeadline(null);
+      if (snapshot.status === "waiting") setBattleState("waiting");
+      else if (snapshot.status === "active") setBattleState("playing");
+      else {
+        setFinalScores(snapshot.scores || {});
+        setBattleState("finished");
+      }
+    };
+    socket.on("battle:resumed", onBattleResumed);
+    socket.on("room:playerReconnected", () => setError(""));
+
+    if (socket.connected) onConnect();
 
     socket.on("room:inviteResult", (result: { ok: boolean; message: string }) => {
       setInviteSending(false);
@@ -458,9 +552,11 @@ export default function BattlePage() {
       socket.off("game:scores");
       socket.off("game:opponentAnswer");
       socket.off("game:end");
-      socket.off("room:playerLeft");
+      socket.off("room:playerDisconnected");
+      socket.off("room:playerReconnected");
+      socket.off("battle:resumed", onBattleResumed);
     };
-  }, [mySocketId, token]);
+  }, [myPlayerId, token]);
 
   const topicOptions = TOPICS_BY_SUBJECT[subject] || TOPICS_BY_SUBJECT.mathematics;
   const subjectLabel = SUBJECTS.find(s => s.value === subject)?.label || "Subject";
@@ -491,13 +587,19 @@ export default function BattlePage() {
     if (!playerName.trim()) { setError("Enter your name first"); return; }
     if (!/^\d{4}$/.test(joinCode)) { setError("Enter 4-digit room code"); return; }
     setError("");
+    saveActiveBattleCode(joinCode);
     getSocket(token || undefined).emit("room:join", { code: joinCode, playerName: playerName.trim() });
   };
 
-  const submitAnswer = (answer: string) => {
-    if (isSubmitted) return;
-    setSelected(answer);
-    getSocket(token || undefined).emit("game:answer", { code: activeCode, answer });
+  const submitAnswer = (selectedIndex: number) => {
+    if (isSubmitted || !currentQ) return;
+    setSelected(currentQ.options[selectedIndex]);
+    setIsSubmitted(true);
+    getSocket(token || undefined).emit("game:answer", {
+      code: activeCode,
+      questionIndex: currentQ.questionIndex,
+      selectedIndex,
+    });
   };
 
   const copyCode = () => {
@@ -528,6 +630,7 @@ export default function BattlePage() {
   };
 
   const resetToLobby = () => {
+    clearActiveBattleCode();
     setBattleState("lobby");
     setRoomCode("");
     setJoinCode("");
@@ -579,6 +682,8 @@ export default function BattlePage() {
           <div className="desktop-page-head desktop-only">
             <h1 className="desktop-page-title">1v1 Battle Setup</h1>
             <p className="desktop-page-sub">Configure your match, then create a room or join one with a code.</p>
+            <div className="mt-2 flex gap-3 text-sm font-semibold text-violet-700"><Link href="/battle/profile">Battle Profile</Link><Link href="/battle/leaderboard">Leaderboard</Link><Link href="/battle/missions">Missions</Link></div>
+            <div className="mt-2 text-sm font-semibold text-violet-700"><Link href="/battle/social">Friends &amp; Rivals</Link></div>
           </div>
 
           <div className="layout-grid">
@@ -872,7 +977,7 @@ export default function BattlePage() {
       {/* ── Header: Score bar ─────────────────────────────── */}
       <div className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-100 shadow-sm">
         <ScoreBar
-          scores={scores} mySocketId={mySocketId}
+          scores={scores} myPlayerId={myPlayerId}
           myName={playerName}
           questionIndex={currentQ.questionIndex}
           total={currentQ.total}
@@ -880,7 +985,7 @@ export default function BattlePage() {
       </div>
 
       {/* ── Opponent status strip ──────────────────────────── */}
-      <OpponentStatus scores={scores} mySocketId={mySocketId} revealedAnswer={opponentAnswer} />
+      <OpponentStatus scores={scores} myPlayerId={myPlayerId} revealedAnswer={opponentAnswer} />
 
       {/* ── Main content ──────────────────────────────────── */}
       <main className="flex-1 mx-auto w-full max-w-2xl px-3 pt-4 pb-36 overflow-y-auto">
@@ -893,6 +998,21 @@ export default function BattlePage() {
             </span>
           </div>
         </div>
+
+        {opponentReconnectDeadline && (
+          <div className="mb-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <div className="text-sm font-bold text-amber-900">Opponent disconnected</div>
+                <div className="mt-0.5 text-xs text-amber-700">Waiting for them to reconnect…</div>
+              </div>
+              <div className="text-xl font-black tabular-nums text-amber-900">{reconnectSecondsLeft}s</div>
+            </div>
+            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-amber-100">
+              <div className="h-full bg-amber-500 transition-[width] duration-500" style={{ width: `${Math.max(0, Math.min(100, reconnectSecondsLeft / 60 * 100))}%` }} />
+            </div>
+          </div>
+        )}
 
         {/* Question card */}
         <AnimatePresence mode="wait">
@@ -934,7 +1054,7 @@ export default function BattlePage() {
 
             return (
               <motion.button key={i}
-                onClick={() => submitAnswer(opt)}
+                onClick={() => submitAnswer(i)}
                 disabled={isSubmitted}
                 whileTap={!isSubmitted ? { scale: 0.97 } : undefined}
                 style={{
@@ -998,8 +1118,8 @@ export default function BattlePage() {
   // ── Finished ─────────────────────────────────────────────────────────────────
   if (battleState === "finished") {
     const sorted = Object.entries(finalScores).sort(([,a],[,b]) => b.score - a.score);
-    const me = finalScores[mySocketId];
-    const opp = Object.entries(finalScores).find(([id]) => id !== mySocketId);
+    const me = finalScores[myPlayerId];
+    const opp = Object.entries(finalScores).find(([id]) => id !== myPlayerId);
     const myScore = me?.score ?? 0;
     const oppScore = opp?.[1]?.score ?? 0;
     const isDraw = myScore === oppScore;
@@ -1011,6 +1131,8 @@ export default function BattlePage() {
 
         {isWinner && !isDraw && <Confetti />}
 
+        <AnimatePresence>{showRankUp && battleRating?.season && <motion.button type="button" onClick={() => setShowRankUp(false)} className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/70 text-center text-white" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><motion.div initial={{ scale: .65, y: 30 }} animate={{ scale: 1, y: 0 }}><div className="text-xs font-bold tracking-[.35em] opacity-60">RANK UP</div><div className="mt-3 text-4xl font-black">{battleRating.season.tierAfter}</div><div className="mt-2 text-sm opacity-70">{battleRating.season.after} ELO · Tap to continue</div></motion.div></motion.button>}</AnimatePresence>
+
         <motion.div className="relative z-10 w-full max-w-sm"
           initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}>
@@ -1020,14 +1142,14 @@ export default function BattlePage() {
             <motion.div className="text-6xl mb-3"
               initial={{ scale: 0 }} animate={{ scale: 1 }}
               transition={{ type: "spring", stiffness: 200, delay: 0.2 }}>
-              {isDraw ? "🤝" : isWinner ? "🏆" : "💪"}
+              {finishReason === "abandoned" ? "⚔️" : isDraw ? "🤝" : isWinner ? "🏆" : "💪"}
             </motion.div>
             <h2 className="text-3xl font-black text-slate-900 mb-1"
               style={{ fontFamily: "'SF Pro Display','Helvetica Neue',sans-serif" }}>
-              {isDraw ? "It's a Draw!" : isWinner ? "You Win!" : "Good Fight!"}
+              {finishReason === "abandoned" ? "Battle Ended" : finishReason === "forfeit" ? isWinner ? "You Win by Forfeit 🏆" : "Battle Lost" : isDraw ? "It's a Draw!" : isWinner ? "You Win!" : "Good Fight!"}
             </h2>
             <p className="text-sm text-slate-500">
-              {isDraw ? "Both fought equally well" : isWinner ? "Outstanding performance!" : `${opp?.[1]?.name} wins this round`}
+              {finishReason === "abandoned" ? "Both players disconnected before the battle could continue." : finishReason === "forfeit" ? isWinner ? "Your opponent did not reconnect in time." : "The reconnect grace period expired." : isDraw ? "Both fought equally well" : isWinner ? "Outstanding performance!" : `${opp?.[1]?.name} wins this round`}
             </p>
           </div>
 
@@ -1035,7 +1157,7 @@ export default function BattlePage() {
           <div className="glass-panel mb-5">
             <div className="space-y-3">
               {sorted.map(([id, player], rank) => {
-                const isMe = id === mySocketId;
+                const isMe = id === myPlayerId;
                 return (
                   <motion.div key={id}
                     className="flex items-center gap-3 rounded-2xl p-3"
@@ -1086,6 +1208,21 @@ export default function BattlePage() {
               </motion.div>
             )}
           </div>
+
+          {battleRating && (
+            <div className="glass-panel mb-5 text-center">
+              {battleRating.season ? (
+                <>
+                  <div className="text-[10px] font-bold tracking-[0.16em] text-violet-500">SEASON RATING</div>
+                  <div className="mt-1 text-lg font-black text-slate-900">{battleRating.season.tierAfter}</div>
+                  <div className="text-sm text-slate-600">{battleRating.season.before} → {battleRating.season.after} <span className={battleRating.season.delta >= 0 ? "text-emerald-600" : "text-rose-600"}>{battleRating.season.delta >= 0 ? "+" : ""}{battleRating.season.delta}</span></div>
+                </>
+              ) : null}
+              <div className="mt-2 text-xs text-slate-500">Lifetime {battleRating.lifetime.after} ELO</div>
+            </div>
+          )}
+
+          {matchStats && <div className="glass-panel mb-5 grid grid-cols-2 gap-3 text-center text-sm"><div><div className="font-black">You</div><div>{matchStats.me.accuracy}% accuracy</div><div className="text-xs text-slate-500">{matchStats.me.averageResponseMs ? `${(matchStats.me.averageResponseMs / 1000).toFixed(1)}s avg` : "—"} · {matchStats.me.timedOut} timeouts</div></div><div><div className="font-black">Opponent</div><div>{matchStats.opponent.accuracy}% accuracy</div><div className="text-xs text-slate-500">{matchStats.opponent.averageResponseMs ? `${(matchStats.opponent.averageResponseMs / 1000).toFixed(1)}s avg` : "—"} · {matchStats.opponent.timedOut} timeouts</div></div></div>}
 
           {/* Actions */}
           <div className="flex flex-col gap-3">

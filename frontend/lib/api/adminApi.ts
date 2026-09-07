@@ -121,6 +121,38 @@ export async function sendBroadcastNotification(
   return data;
 }
 
+export interface NotificationHealth {
+  status: "healthy" | "warning" | "critical";
+  checkedAt: string;
+  workers: Array<{
+    workerName: string;
+    state: string;
+    instanceId?: string;
+    ageSeconds?: number;
+    intervalMs: number;
+    lastDurationMs?: number | null;
+    lastMetrics?: Record<string, unknown>;
+    lastError?: string | null;
+  }>;
+  scheduled: {
+    overduePending: number;
+    stuckProcessing: number;
+    failed24h: number;
+  };
+  push24h: {
+    targetDevices: number;
+    acceptedCount: number;
+    failureCount: number;
+    invalidDeviceCount: number;
+    failureRatePercent: number;
+  };
+}
+
+export async function fetchNotificationHealth(): Promise<NotificationHealth> {
+  const { data } = await api.get('/api/notifications/health');
+  return data;
+}
+
 // ── Notification history ──────────────────────────────────
 
 export interface NotificationHistoryItem {

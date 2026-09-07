@@ -9,9 +9,11 @@ import {
   sendBroadcastNotification,
   fetchNotificationHistory,
   fetchNotificationAnalytics,
+  fetchNotificationHealth,
   type BroadcastNotificationResult,
   type NotificationHistoryItem,
   type NotificationAnalytics,
+  type NotificationHealth,
 } from '@/lib/api/adminApi';
 import {
   ChevronLeft,
@@ -83,6 +85,9 @@ export default function AdminNotificationsPage() {
   const [analytics, setAnalytics] = useState<NotificationAnalytics | null>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
 
+  // Operations health state
+  const [health, setHealth] = useState<NotificationHealth | null>(null);
+
   // ── Auth guard ─────────────────────────────────────────
   useEffect(() => {
     if (!authLoading) {
@@ -129,12 +134,33 @@ export default function AdminNotificationsPage() {
     }
   }, []);
 
+  const loadHealth = useCallback(async () => {
+    try {
+      setHealth(await fetchNotificationHealth());
+    } catch {
+      // Health monitoring must not make the admin workflow unusable.
+    }
+  }, []);
+
   useEffect(() => {
     if (authUser && ['admin', 'superadmin'].includes(authUser.role || '')) {
       loadHistory(1);
       loadAnalytics(30);
     }
   }, [authUser, loadHistory, loadAnalytics]);
+
+  useEffect(() => {
+    if (!authUser || !['admin', 'superadmin'].includes(authUser.role || '')) {
+      return;
+    }
+
+    void loadHealth();
+    const timer = window.setInterval(() => {
+      void loadHealth();
+    }, 60_000);
+
+    return () => window.clearInterval(timer);
+  }, [authUser, loadHealth]);
 
   // ── Handlers ───────────────────────────────────────────
   const handleOpenConfirm = (e: React.FormEvent) => {
@@ -256,6 +282,60 @@ export default function AdminNotificationsPage() {
             <AlertCircle size={18} />
             <span>{error}</span>
           </div>
+        )}
+
+        {health && (
+          <section className={s.resultCard} aria-live="polite">
+            <div className={s.resultHeader}>
+              <div className={s.resultTitleRow}>
+                {health.status === 'healthy' ? (
+                  <CheckCircle className={s.resultSuccessIcon} size={22} />
+                ) : (
+                  <AlertTriangle className={s.resultWarningIcon} size={22} />
+                )}
+                <h2
+                  className={`${s.resultTitle} ${
+                    health.status === 'healthy' ? '' : s.resultWarningTitle
+                  }`}
+                >
+                  Notification Operations
+                </h2>
+              </div>
+            </div>
+
+            <div className={s.statsGrid}>
+              <div className={s.statBox}>
+                <div className={s.statBoxValue}>{health.status}</div>
+                <div className={s.statBoxLabel}>Overall</div>
+              </div>
+              <div className={s.statBox}>
+                <div className={s.statBoxValue}>
+                  {health.workers.filter((worker) => worker.state === 'healthy').length}/3
+                </div>
+                <div className={s.statBoxLabel}>Workers healthy</div>
+              </div>
+              <div className={s.statBox}>
+                <div className={s.statBoxValue}>{health.scheduled.overduePending}</div>
+                <div className={s.statBoxLabel}>Overdue jobs</div>
+              </div>
+              <div className={s.statBox}>
+                <div className={s.statBoxValue}>{health.push24h.failureRatePercent}%</div>
+                <div className={s.statBoxLabel}>FCM failures · 24h</div>
+              </div>
+            </div>
+
+            <div className={s.noticeBox} style={{ marginTop: 16 }}>
+              <div className={s.noticeText}>
+                {health.workers.map((worker) => (
+                  <div key={worker.workerName}>
+                    <strong>{worker.workerName}</strong>
+                    {' — '}{worker.state}
+                    {typeof worker.ageSeconds === 'number' && ` · ${worker.ageSeconds}s ago`}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
         )}
 
         {/* ── Result Card ────────────────────────────────── */}

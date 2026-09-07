@@ -504,10 +504,18 @@
   color: #10b981;
 }
 
+.resultWarningIcon {
+  color: #f59e0b;
+}
+
 .resultTitle {
   font-size: 18px;
   font-weight: 700;
   color: #10b981;
+}
+
+.resultWarningTitle {
+  color: #f59e0b;
 }
 
 .closeResultBtn {

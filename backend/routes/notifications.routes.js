@@ -7,6 +7,7 @@ import {
   getPushDevicesCollection,
   getNotificationHistoryCollection,
   getScheduledNotificationsCollection,
+  getNotificationWorkerHealthCollection,
   getNotificationFeedCollection,
   getNotificationReceiptsCollection,
   getNotificationEngagementCollection,
@@ -63,6 +64,188 @@ const scheduleSchema = z.object({
   // Frontend sends an ISO-8601 UTC timestamp
   sendAt: z.string().datetime(),
 });
+
+router.get(
+  "/health",
+  protect,
+  requireRole("admin", "superadmin"),
+  async (req, res, next) => {
+    try {
+      const now = new Date();
+      const since24h = new Date(
+        now.getTime() - 24 * 60 * 60 * 1000
+      );
+
+      const workerConfig = {
+        "scheduled-notifications":
+          Number(process.env.NOTIFICATION_WORKER_POLL_MS) || 30_000,
+        "daily-practice":
+          Number(process.env.DAILY_REMINDER_WORKER_POLL_MS) || 60_000,
+        "streak-protection":
+          Number(process.env.STREAK_PROTECTION_WORKER_POLL_MS) || 60_000,
+      };
+
+      const health = getNotificationWorkerHealthCollection();
+      const scheduled = getScheduledNotificationsCollection();
+      const feed = getNotificationFeedCollection();
+
+      const [
+        healthDocs,
+        overduePending,
+        stuckProcessing,
+        failed24h,
+        pushRows,
+      ] = await Promise.all([
+        health
+          .find({
+            workerName: {
+              $in: Object.keys(workerConfig),
+            },
+          })
+          .sort({ lastHeartbeatAt: -1 })
+          .toArray(),
+
+        scheduled.countDocuments({
+          status: "pending",
+          sendAt: {
+            $lt: new Date(now.getTime() - 2 * 60 * 1000),
+          },
+        }),
+
+        scheduled.countDocuments({
+          status: "processing",
+          processingAt: {
+            $lt: new Date(now.getTime() - 10 * 60 * 1000),
+          },
+        }),
+
+        scheduled.countDocuments({
+          status: "failed",
+          failedAt: {
+            $gte: since24h,
+          },
+        }),
+
+        feed.aggregate([
+          {
+            $match: {
+              createdAt: { $gte: since24h },
+              "pushMetrics.processedAt": { $exists: true },
+            },
+          },
+          {
+            $group: {
+              _id: null,
+              targetDevices: {
+                $sum: { $ifNull: ["$pushMetrics.targetDevices", 0] },
+              },
+              acceptedCount: {
+                $sum: { $ifNull: ["$pushMetrics.acceptedCount", 0] },
+              },
+              failureCount: {
+                $sum: { $ifNull: ["$pushMetrics.failureCount", 0] },
+              },
+              invalidDeviceCount: {
+                $sum: { $ifNull: ["$pushMetrics.invalidDeviceCount", 0] },
+              },
+            },
+          },
+        ]).toArray(),
+      ]);
+
+      // Only the newest record for a worker matters after an instance replacement.
+      const latestByWorker = new Map();
+      for (const doc of healthDocs) {
+        if (!latestByWorker.has(doc.workerName)) {
+          latestByWorker.set(doc.workerName, doc);
+        }
+      }
+
+      const workers = Object.entries(workerConfig).map(
+        ([workerName, intervalMs]) => {
+          const doc = latestByWorker.get(workerName);
+
+          if (!doc) {
+            return {
+              workerName,
+              state: "missing",
+              intervalMs,
+            };
+          }
+
+          const heartbeat = new Date(doc.lastHeartbeatAt);
+          const ageMs = now.getTime() - heartbeat.getTime();
+          const staleAfterMs = Math.max(intervalMs * 3, 120_000);
+
+          let state = "healthy";
+          if (doc.status === "error") {
+            state = "error";
+          } else if (!Number.isFinite(ageMs) || ageMs > staleAfterMs) {
+            state = "stale";
+          }
+
+          return {
+            workerName,
+            state,
+            instanceId: doc.instanceId,
+            intervalMs,
+            ageSeconds: Math.max(0, Math.round(ageMs / 1000)),
+            lastHeartbeatAt: doc.lastHeartbeatAt,
+            lastDurationMs: doc.lastDurationMs ?? null,
+            lastMetrics: doc.lastMetrics ?? {},
+            lastError: doc.lastError ?? null,
+          };
+        }
+      );
+
+      const push = pushRows[0] || {};
+      const accepted = push.acceptedCount || 0;
+      const failed = push.failureCount || 0;
+      const totalResponses = accepted + failed;
+      const failureRatePercent = totalResponses > 0
+        ? Number(((failed / totalResponses) * 100).toFixed(1))
+        : 0;
+      const warningThreshold =
+        Number(process.env.PUSH_FAILURE_WARNING_PERCENT) || 10;
+
+      const workerProblem = workers.some(
+        (worker) => worker.state !== "healthy"
+      );
+
+      let status = "healthy";
+      if (workerProblem || stuckProcessing > 0) {
+        status = "critical";
+      } else if (
+        overduePending > 0 ||
+        failed24h > 0 ||
+        failureRatePercent >= warningThreshold
+      ) {
+        status = "warning";
+      }
+
+      return res.json({
+        status,
+        checkedAt: now,
+        workers,
+        scheduled: {
+          overduePending,
+          stuckProcessing,
+          failed24h,
+        },
+        push24h: {
+          targetDevices: push.targetDevices || 0,
+          acceptedCount: accepted,
+          failureCount: failed,
+          invalidDeviceCount: push.invalidDeviceCount || 0,
+          failureRatePercent,
+          warningThresholdPercent: warningThreshold,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 router.post("/register", protect, async (req, res, next) => {
   try {

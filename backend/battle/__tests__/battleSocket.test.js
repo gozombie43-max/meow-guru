@@ -6,11 +6,39 @@ const mockUsersCollection = {
   findOne: vi.fn(),
 };
 
+const battleRooms = new Map();
+const mockBattleRoomsCollection = {
+  insertOne: vi.fn(async (room) => {
+    if (battleRooms.has(room.code)) {
+      const error = new Error('duplicate code');
+      error.code = 11000;
+      throw error;
+    }
+    battleRooms.set(room.code, structuredClone(room));
+  }),
+  findOne: vi.fn(async (filter) => {
+    for (const room of battleRooms.values()) {
+      if (filter.code && room.code !== filter.code) continue;
+      if (filter['players.userId'] && !room.players.some((player) => player.userId === filter['players.userId'])) continue;
+      return structuredClone(room);
+    }
+    return null;
+  }),
+  deleteOne: vi.fn(async ({ code }) => ({ deletedCount: battleRooms.delete(code) ? 1 : 0 })),
+};
+
 const mockSendPushToUser = vi.fn();
 
 vi.mock('../../config/mongodb.js', () => ({
   getQuestionsCollection: vi.fn(),
   getUsersCollection: () => mockUsersCollection,
+  getBattleRoomsCollection: () => mockBattleRoomsCollection,
+  getBattleSeasonsCollection: () => ({ findOne: vi.fn().mockResolvedValue(null) }),
+  getSocketIoAdapterCollection: () => ({}),
+}));
+
+vi.mock('@socket.io/mongo-adapter', () => ({
+  createAdapter: () => () => ({}),
 }));
 
 vi.mock('../../services/pushNotificationService.js', () => ({
@@ -30,6 +58,7 @@ vi.mock('socket.io', () => {
         };
         this.to = () => this;
         this.emit = vi.fn();
+        this.adapter = vi.fn();
       }
     },
   };
@@ -44,6 +73,7 @@ describe('Battle Socket - room:invite', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    battleRooms.clear();
     socketHandlers = {};
 
     initBattleSocket({}, 'http://localhost:3000');
@@ -70,7 +100,7 @@ describe('Battle Socket - room:invite', () => {
   });
 
   it('rejects self invite', async () => {
-    const code = createRoom(socket.id, 'HostGuru', 'mathematics', 'all', 10, 'host_id');
+    const code = await createRoom(socket.id, 'HostGuru', 'mathematics', 'all', 10, 'host_id');
     try {
       await socketHandlers['room:invite']({ code, email: 'host@test.com' });
       expect(socket.emit).toHaveBeenCalledWith('room:inviteResult', {
@@ -78,7 +108,7 @@ describe('Battle Socket - room:invite', () => {
         message: 'You cannot invite yourself.',
       });
     } finally {
-      deleteRoom(code);
+      await deleteRoom(code);
     }
   });
 
@@ -91,7 +121,7 @@ describe('Battle Socket - room:invite', () => {
   });
 
   it('rejects when caller is not the room host', async () => {
-    const code = createRoom('socket_other', 'Other Host', 'mathematics', 'all', 10, 'other_user_id');
+    const code = await createRoom('socket_other', 'Other Host', 'mathematics', 'all', 10, 'other_user_id');
     try {
       await socketHandlers['room:invite']({ code, email: 'friend@test.com' });
       expect(socket.emit).toHaveBeenCalledWith('room:inviteResult', {
@@ -99,12 +129,12 @@ describe('Battle Socket - room:invite', () => {
         message: 'Only the room host can invite opponents.',
       });
     } finally {
-      deleteRoom(code);
+      await deleteRoom(code);
     }
   });
 
   it('returns generic failure when recipient user does not exist', async () => {
-    const code = createRoom(socket.id, 'HostGuru', 'mathematics', 'all', 10, 'host_id');
+    const code = await createRoom(socket.id, 'HostGuru', 'mathematics', 'all', 10, 'host_id');
     try {
       mockUsersCollection.findOne.mockResolvedValueOnce(null);
       await socketHandlers['room:invite']({ code, email: 'unknown@test.com' });
@@ -113,12 +143,12 @@ describe('Battle Socket - room:invite', () => {
         message: 'Invite could not be delivered.',
       });
     } finally {
-      deleteRoom(code);
+      await deleteRoom(code);
     }
   });
 
   it('returns generic failure when recipient user is suspended or banned', async () => {
-    const code = createRoom(socket.id, 'HostGuru', 'mathematics', 'all', 10, 'host_id');
+    const code = await createRoom(socket.id, 'HostGuru', 'mathematics', 'all', 10, 'host_id');
     try {
       mockUsersCollection.findOne.mockResolvedValueOnce({ id: 'banned_id', status: 'banned' });
       await socketHandlers['room:invite']({ code, email: 'banned@test.com' });
@@ -127,12 +157,12 @@ describe('Battle Socket - room:invite', () => {
         message: 'Invite could not be delivered.',
       });
     } finally {
-      deleteRoom(code);
+      await deleteRoom(code);
     }
   });
 
   it('returns generic failure when recipient user has no push devices registered', async () => {
-    const code = createRoom(socket.id, 'HostGuru', 'mathematics', 'all', 10, 'host_id');
+    const code = await createRoom(socket.id, 'HostGuru', 'mathematics', 'all', 10, 'host_id');
     try {
       mockUsersCollection.findOne.mockResolvedValueOnce({ id: 'friend_id', status: 'active' });
       mockSendPushToUser.mockResolvedValueOnce({ noDevices: true, successCount: 0, failureCount: 0 });
@@ -143,12 +173,12 @@ describe('Battle Socket - room:invite', () => {
         message: 'Invite could not be delivered.',
       });
     } finally {
-      deleteRoom(code);
+      await deleteRoom(code);
     }
   });
 
   it('successfully delivers battle invite push and notifies caller', async () => {
-    const code = createRoom(socket.id, 'HostGuru', 'mathematics', 'all', 10, 'host_id');
+    const code = await createRoom(socket.id, 'HostGuru', 'mathematics', 'all', 10, 'host_id');
     try {
       mockUsersCollection.findOne.mockResolvedValueOnce({ id: 'friend_id', name: 'Friend', status: 'active' });
       mockSendPushToUser.mockResolvedValueOnce({ successCount: 1, failureCount: 0 });
@@ -171,12 +201,12 @@ describe('Battle Socket - room:invite', () => {
         message: 'Battle invite sent!',
       });
     } finally {
-      deleteRoom(code);
+      await deleteRoom(code);
     }
   });
 
   it('enforces 10-second anti-spam cooldown between invites', async () => {
-    const code = createRoom(socket.id, 'HostGuru', 'mathematics', 'all', 10, 'host_id');
+    const code = await createRoom(socket.id, 'HostGuru', 'mathematics', 'all', 10, 'host_id');
     try {
       mockUsersCollection.findOne.mockResolvedValue({ id: 'friend_id', status: 'active' });
       mockSendPushToUser.mockResolvedValue({ successCount: 1, failureCount: 0 });
@@ -194,7 +224,7 @@ describe('Battle Socket - room:invite', () => {
         message: 'Please wait before sending another invite.',
       });
     } finally {
-      deleteRoom(code);
+      await deleteRoom(code);
     }
   });
 });
@@ -211,14 +241,14 @@ describe('Battle Socket - Result Notifications', () => {
       code: 'TEST12',
       subject: 'mathematics',
       topic: 'percentages',
-      players: {
-        sock_a: { userId: 'user_a', name: 'Player A', score: 80 },
-        sock_b: { userId: 'user_b', name: 'Player B', score: 60 },
-      },
+      players: [
+        { userId: 'user_a', name: 'Player A', score: 80 },
+        { userId: 'user_b', name: 'Player B', score: 60 },
+      ],
     };
     const scores = {
-      sock_a: { score: 80 },
-      sock_b: { score: 60 },
+      user_a: { score: 80 },
+      user_b: { score: 60 },
     };
 
     await sendBattleResultNotifications(room, scores);
@@ -268,14 +298,14 @@ describe('Battle Socket - Result Notifications', () => {
     const room = {
       subject: 'reasoning',
       topic: 'all',
-      players: {
-        sock_a: { userId: 'user_a', name: 'Player A', score: 50 },
-        sock_b: { userId: 'user_b', name: 'Player B', score: 50 },
-      },
+      players: [
+        { userId: 'user_a', name: 'Player A', score: 50 },
+        { userId: 'user_b', name: 'Player B', score: 50 },
+      ],
     };
     const scores = {
-      sock_a: { score: 50 },
-      sock_b: { score: 50 },
+      user_a: { score: 50 },
+      user_b: { score: 50 },
     };
 
     await sendBattleResultNotifications(room, scores);
@@ -306,14 +336,14 @@ describe('Battle Socket - Result Notifications', () => {
 
     const room = {
       subject: 'mathematics',
-      players: {
-        sock_a: { userId: null, name: 'Guest A', score: 40 },
-        sock_b: { userId: 'user_b', name: 'Player B', score: 50 },
-      },
+      players: [
+        { userId: null, name: 'Guest A', score: 40 },
+        { userId: 'user_b', name: 'Player B', score: 50 },
+      ],
     };
     const scores = {
-      sock_a: { score: 40 },
-      sock_b: { score: 50 },
+      null: { score: 40 },
+      user_b: { score: 50 },
     };
 
     await sendBattleResultNotifications(room, scores);
@@ -324,7 +354,7 @@ describe('Battle Socket - Result Notifications', () => {
 
   it('safely handles empty room or invalid player count', async () => {
     await sendBattleResultNotifications(null, {});
-    await sendBattleResultNotifications({ players: {} }, {});
+    await sendBattleResultNotifications({ players: [] }, {});
     expect(mockSendPushToUser).not.toHaveBeenCalled();
   });
 });

@@ -9,6 +9,7 @@
     "@aws-sdk/s3-request-presigner": "^3.1121.0",
     "@azure/cosmos": "^4.10.0",
     "@azure/storage-blob": "^12.33.0",
+    "@socket.io/mongo-adapter": "^0.4.0",
     "bcryptjs": "^3.0.3",
     "compression": "^1.8.1",
     "cookie-parser": "^1.4.7",
@@ -42,7 +43,11 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:unit": "vitest run --exclude='**/*.integration.test.js'",
+    "test:integration": "vitest run '**/*.integration.test.js'",
+    "test:battle": "vitest run battle",
+    "test:watch": "vitest"
   },
   "keywords": [],
   "author": "",

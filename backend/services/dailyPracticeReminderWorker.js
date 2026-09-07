@@ -14,6 +14,12 @@ import {
   getStudyProgress,
 } from "./studyProgressService.js";
 
+import {
+  reportWorkerStarted,
+  reportWorkerSuccess,
+  reportWorkerFailure,
+} from "./notificationWorkerHealthService.js";
+
 export function buildDailyPracticeMessage({
   goalMinutes,
   progress,
@@ -288,6 +294,12 @@ export async function runDailyPracticeReminderWorkerOnce() {
 
   running = true;
 
+  const startedAt =
+    await reportWorkerStarted(
+      "daily-practice",
+      POLL_MS
+    );
+
   try {
     const now =
       new Date();
@@ -342,7 +354,7 @@ export async function runDailyPracticeReminderWorkerOnce() {
         )
         .toArray();
 
-    await Promise.allSettled(
+    const results = await Promise.allSettled(
       dueUsers.map(
         (user) =>
           processUser(
@@ -351,6 +363,28 @@ export async function runDailyPracticeReminderWorkerOnce() {
           )
       )
     );
+
+    const rejected = results.filter(
+      (result) => result.status === "rejected"
+    ).length;
+
+    await reportWorkerSuccess(
+      "daily-practice",
+      startedAt,
+      {
+        dueUsers: dueUsers.length,
+        rejected,
+      }
+    );
+
+  } catch (error) {
+    await reportWorkerFailure(
+      "daily-practice",
+      startedAt,
+      error
+    );
+
+    throw error;
 
   } finally {
     running = false;
@@ -390,4 +424,16 @@ export function stopDailyPracticeReminderWorker() {
     clearInterval(timer);
     timer = null;
   }
+}
+
+export async function waitForDailyPracticeReminderWorkerIdle(
+  timeoutMs = 15_000
+) {
+  const deadline = Date.now() + timeoutMs;
+
+  while (running && Date.now() < deadline) {
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+
+  return !running;
 }

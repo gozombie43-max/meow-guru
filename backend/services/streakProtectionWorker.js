@@ -14,6 +14,12 @@ import {
   getStudyProgress,
 } from "./studyProgressService.js";
 
+import {
+  reportWorkerStarted,
+  reportWorkerSuccess,
+  reportWorkerFailure,
+} from "./notificationWorkerHealthService.js";
+
 const POLL_MS =
   Number(
     process.env
@@ -339,6 +345,12 @@ export async function runStreakProtectionWorkerOnce() {
 
   running = true;
 
+  const startedAt =
+    await reportWorkerStarted(
+      "streak-protection",
+      POLL_MS
+    );
+
   try {
     const now =
       new Date();
@@ -390,7 +402,7 @@ export async function runStreakProtectionWorkerOnce() {
         )
         .toArray();
 
-    await Promise.allSettled(
+    const results = await Promise.allSettled(
       dueUsers.map(
         (user) =>
           processUser(
@@ -399,6 +411,28 @@ export async function runStreakProtectionWorkerOnce() {
           )
       )
     );
+
+    const rejected = results.filter(
+      (result) => result.status === "rejected"
+    ).length;
+
+    await reportWorkerSuccess(
+      "streak-protection",
+      startedAt,
+      {
+        dueUsers: dueUsers.length,
+        rejected,
+      }
+    );
+
+  } catch (error) {
+    await reportWorkerFailure(
+      "streak-protection",
+      startedAt,
+      error
+    );
+
+    throw error;
 
   } finally {
     running = false;
@@ -439,4 +473,16 @@ export function stopStreakProtectionWorker() {
     clearInterval(timer);
     timer = null;
   }
+}
+
+export async function waitForStreakProtectionWorkerIdle(
+  timeoutMs = 15_000
+) {
+  const deadline = Date.now() + timeoutMs;
+
+  while (running && Date.now() < deadline) {
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+
+  return !running;
 }

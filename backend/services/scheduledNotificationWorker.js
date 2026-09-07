@@ -9,6 +9,12 @@ import {
   sendPushToAllUsers,
 } from "./pushNotificationService.js";
 
+import {
+  reportWorkerStarted,
+  reportWorkerSuccess,
+  reportWorkerFailure,
+} from "./notificationWorkerHealthService.js";
+
 const POLL_MS =
   Number(process.env.NOTIFICATION_WORKER_POLL_MS) ||
   30_000;
@@ -238,9 +244,15 @@ export async function runScheduledNotificationWorkerOnce() {
 
   running = true;
 
-  try {
-    let processed = 0;
+  const startedAt =
+    await reportWorkerStarted(
+      "scheduled-notifications",
+      POLL_MS
+    );
 
+  let processed = 0;
+
+  try {
     while (
       processed <
       MAX_JOBS_PER_TICK
@@ -258,6 +270,21 @@ export async function runScheduledNotificationWorkerOnce() {
       await processJob(job);
       processed++;
     }
+
+    await reportWorkerSuccess(
+      "scheduled-notifications",
+      startedAt,
+      { processed }
+    );
+
+  } catch (error) {
+    await reportWorkerFailure(
+      "scheduled-notifications",
+      startedAt,
+      error
+    );
+
+    throw error;
 
   } finally {
     running = false;
@@ -297,4 +324,16 @@ export function stopScheduledNotificationWorker() {
 
   clearInterval(timer);
   timer = null;
+}
+
+export async function waitForScheduledNotificationWorkerIdle(
+  timeoutMs = 15_000
+) {
+  const deadline = Date.now() + timeoutMs;
+
+  while (running && Date.now() < deadline) {
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+
+  return !running;
 }

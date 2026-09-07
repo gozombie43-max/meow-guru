@@ -1,11 +1,18 @@
 // backend/battle/battleSocket.js
 import { Server } from 'socket.io';
+import { z } from 'zod';
+import { createAdapter } from '@socket.io/mongo-adapter';
 import {
-  createRoom, joinRoom, getRoom, deleteRoom,
-  setQuestions, getCurrentQuestion, submitAnswer,
-  nextQuestion, getScores, getRoomBySocket,
+  createRoom, joinRoom, getRoom,
+  setQuestions, submitAnswer,
+  advanceQuestion, getScores, markSocketDisconnected,
+  findResumableRoomForUser, resumePlayerConnection, buildBattleSnapshot,
 } from './roomManager.js';
-import { getQuestionsCollection, getUsersCollection } from '../config/mongodb.js';
+import {
+  getQuestionsCollection,
+  getUsersCollection,
+  getSocketIoAdapterCollection,
+} from '../config/mongodb.js';
 import { sendPushToUser } from '../services/pushNotificationService.js';
 import {
   verifyToken,
@@ -13,6 +20,11 @@ import {
   verifyBattleRematchToken,
 } from '../auth/jwt.js';
 import { setNotificationRealtimeServer } from '../services/notificationRealtime.js';
+import { setBattleRealtimeServer } from './battleRealtime.js';
+import { settleBattleResult } from './battleResultService.js';
+import { joinMatchmakingQueue, cancelMatchmakingQueue } from './matchmakingService.js';
+import { recordBattleIntegritySignal } from './battleIntegrityService.js';
+import { canCreateBattle, canUseMatchmaking } from './battleFeatureGuards.js';
 
 function normalizeSearchKey(value) {
   return String(value || '')
@@ -35,6 +47,13 @@ function matchesNormalizedTopic(question, normalizedTopic) {
 
 const REVEAL_DELAY  = 2000; // ms to show results before next question
 const ROOM_CREATE_COOLDOWN_MS = 10_000; // per-socket room creation throttle
+const answerPayloadSchema = z.object({
+  code: z.string().regex(/^\d{4}$/),
+  questionIndex: z.number().int().min(0).max(500),
+  selectedIndex: z.number().int().min(0).max(20),
+});
+const matchmakingSchema = z.object({ subject: z.enum(["mathematics", "reasoning", "english", "general-awareness"]), topic: z.string().min(1).max(80), questionCount: z.union([z.literal(10), z.literal(15), z.literal(25), z.literal(50)]) });
+const socialChallengeSchema = z.object({ targetUserId: z.string().min(1).max(200), subject: z.enum(["mathematics", "reasoning", "english", "general-awareness"]), topic: z.string().min(1).max(80), questionCount: z.union([z.literal(10), z.literal(15), z.literal(25), z.literal(50)]) });
 
 export function initBattleSocket(httpServer, corsOrigin) {
   // Build an explicit origin allowlist for Socket.IO.
@@ -52,7 +71,19 @@ export function initBattleSocket(httpServer, corsOrigin) {
       methods: ['GET', 'POST'],
       credentials: true,
     },
+    connectionStateRecovery: {
+      maxDisconnectionDuration: 2 * 60 * 1000,
+      skipMiddlewares: false,
+    },
   });
+
+  io.adapter(createAdapter(getSocketIoAdapterCollection(), {
+    addCreatedAtField: true,
+  }));
+
+  console.log('Socket.IO MongoDB adapter enabled ✅');
+
+  setBattleRealtimeServer(io);
 
   setNotificationRealtimeServer(io);
 
@@ -77,6 +108,76 @@ export function initBattleSocket(httpServer, corsOrigin) {
     let lastRoomCreateTime = 0;
     let lastInviteTime = 0;
     let lastRematchTime = 0;
+    let lastAnswerEventAt = 0;
+    socket.on('matchmaking:join', async (raw) => {
+      if (!canUseMatchmaking(socket.user.id)) return socket.emit('matchmaking:error', { code: 'MATCHMAKING_UNAVAILABLE', message: 'Matchmaking is temporarily unavailable.' });
+      const parsed = matchmakingSchema.safeParse(raw);
+      if (!parsed.success) return socket.emit('matchmaking:error', { message: 'Invalid matchmaking settings.' });
+      try { const ticket = await joinMatchmakingQueue({ userId: socket.user.id, displayName: socket.user.name || socket.user.email || 'Player', ...parsed.data }); socket.emit('matchmaking:queued', { queuedAt: ticket.queuedAt, rating: ticket.rating, subject: ticket.subject, topic: ticket.topic, questionCount: ticket.questionCount }); }
+      catch (error) { console.error('matchmaking:join:', error); socket.emit('matchmaking:error', { message: 'Could not enter matchmaking.' }); }
+    });
+    socket.on('matchmaking:cancel', async () => { await cancelMatchmakingQueue(socket.user.id).catch(console.error); socket.emit('matchmaking:cancelled'); });
+    socket.on('battle:challengeUser', async (raw) => {
+      if (!canCreateBattle(socket.user.id)) return socket.emit('room:error', { message: 'New battles are temporarily unavailable.' });
+      const parsed = socialChallengeSchema.safeParse(raw); if (!parsed.success || parsed.data.targetUserId === socket.user.id) return;
+      try { const { targetUserId, subject, topic, questionCount } = parsed.data, code = await createRoom(socket.id, socket.user.name || 'Player', subject, topic, questionCount, socket.user.id); socket.join(code); const payload = { roomCode: code, challenger: { userId: socket.user.id, name: socket.user.name || 'Player' }, subject, topic, questionCount }; io.to(`user:${targetUserId}`).emit('battle:challengeReceived', payload); void sendPushToUser(targetUserId, { title: `${payload.challenger.name} challenged you ⚔️`, body: `Join the ${subject} battle.`, route: `/battle?join=${code}`, category: 'battleInvites', data: { type: 'battle_invite', roomCode: code, challengerUserId: socket.user.id }, centerKey: `social-battle:${code}:${targetUserId}` }).catch(console.error); socket.emit('battle:challengeSent', { roomCode: code, targetUserId }); }
+      catch (error) { console.error('battle:challengeUser:', error); socket.emit('room:error', { message: 'Could not send challenge.' }); }
+    });
+
+    socket.on('battle:resume', async ({ code = null } = {}) => {
+      try {
+        const userId = String(socket.user?.id || '');
+        if (!userId) return;
+        const room = await findResumableRoomForUser(userId, code);
+        if (!room) {
+          socket.emit('battle:resumeResult', { ok: false, reason: 'no-room' });
+          return;
+        }
+        const resumed = await resumePlayerConnection({ code: room.code, userId, socketId: socket.id });
+        if (!resumed) {
+          socket.emit('battle:resumeResult', { ok: false, reason: 'resume-failed' });
+          return;
+        }
+        const latestRoom = resumed.room;
+        socket.join(latestRoom.code);
+        const oldSocketId = resumed.previousSocketId;
+        if (oldSocketId && oldSocketId !== socket.id) {
+          await io.in(oldSocketId).disconnectSockets(true);
+        }
+        const snapshot = buildBattleSnapshot(latestRoom, userId);
+        const opponent = latestRoom.players.find((player) => player.userId !== userId);
+        const rematchToken = latestRoom.status === 'finished' && opponent
+          ? signBattleRematchToken({
+              requesterUserId: userId,
+              opponentUserId: opponent.userId,
+              opponentName: opponent.name,
+              subject: latestRoom.subject,
+              topic: latestRoom.topic,
+              questionCount: latestRoom.questionCount,
+            })
+          : null;
+        socket.emit('battle:resumed', {
+          ...snapshot,
+          rematchToken,
+          opponentName: opponent?.name || 'Opponent',
+        });
+        socket.to(latestRoom.code).emit('room:playerReconnected', {
+          userId,
+          name: latestRoom.players.find((player) => player.userId === userId)?.name || 'Opponent',
+        });
+        if (latestRoom.status === 'waiting' && latestRoom.players.length === 2) {
+          void startGame(io, latestRoom.code).catch((error) => {
+            console.error('Resume startGame repair failed:', error);
+          });
+        }
+        if (latestRoom.status === 'active') {
+          void repairAnsweredBattle(io, latestRoom);
+        }
+      } catch (error) {
+        console.error('battle:resume failed:', error);
+        socket.emit('battle:resumeResult', { ok: false, reason: 'server-error' });
+      }
+    });
 
     // ── Create room ──────────────────────────────────────
     socket.on('room:create', async ({ playerName, subject = 'mathematics', topic = 'all', questionCount = 10 }) => {
@@ -87,7 +188,7 @@ export function initBattleSocket(httpServer, corsOrigin) {
       }
       lastRoomCreateTime = now;
 
-      const code = createRoom(socket.id, playerName, subject, topic, questionCount, socket.user?.id);
+      const code = await createRoom(socket.id, playerName, subject, topic, questionCount, socket.user?.id);
       socket.join(code);
       socket.emit('room:created', { code, playerName });
       console.log(`Room ${code} created by ${playerName}`);
@@ -116,7 +217,7 @@ export function initBattleSocket(httpServer, corsOrigin) {
         return;
       }
 
-      const room = getRoom(normalizedCode);
+      const room = await getRoom(normalizedCode);
       if (!room || room.status !== 'waiting') {
         socket.emit('room:inviteResult', {
           ok: false,
@@ -157,7 +258,7 @@ export function initBattleSocket(httpServer, corsOrigin) {
         }
 
         const hostName = String(
-          socket.user?.name || room.players?.[socket.id]?.name || 'A player'
+          socket.user?.name || room.players?.find((player) => player.userId === socket.user?.id)?.name || 'A player'
         ).slice(0, 40);
 
         const recipientUserId = recipient.id || String(recipient._id);
@@ -216,7 +317,7 @@ export function initBattleSocket(httpServer, corsOrigin) {
 
         const safePlayerName = String(playerName || socket.user?.name || 'A player').trim();
 
-        const code = createRoom(
+        const code = await createRoom(
           socket.id,
           safePlayerName,
           payload.subject,
@@ -267,7 +368,7 @@ export function initBattleSocket(httpServer, corsOrigin) {
         socket.emit('room:error', { message: 'Enter 4-digit room code' });
         return;
       }
-      const result = joinRoom(normalizedCode, socket.id, playerName, socket.user?.id);
+      const result = await joinRoom(normalizedCode, socket.id, playerName, socket.user?.id);
 
       if (result.error) {
         socket.emit('room:error', { message: result.error });
@@ -278,7 +379,7 @@ export function initBattleSocket(httpServer, corsOrigin) {
 
       // Notify both players of updated player list
       io.to(normalizedCode).emit('room:joined', {
-        players: Object.values(result.room.players).map(p => p.name),
+        players: result.room.players.map((player) => player.name),
       });
 
       // Both players present — start the game
@@ -286,19 +387,33 @@ export function initBattleSocket(httpServer, corsOrigin) {
     });
 
     // ── Submit answer ────────────────────────────────────
-    socket.on('game:answer', ({ code, answer }) => {
-      const result = submitAnswer(code, socket.id, answer);
-      if (!result) return;
+    socket.on('game:answer', async (rawPayload) => {
+      if (Date.now() - lastAnswerEventAt < 150) return;
+      lastAnswerEventAt = Date.now();
+      const parsed = answerPayloadSchema.safeParse(rawPayload);
+      if (!parsed.success) {
+        void recordBattleIntegritySignal({ dedupeKey: `invalid-answer-payload:${socket.user.id}:${new Date().toISOString().slice(0, 10)}`, userId: socket.user.id, signalType: 'invalid-answer-payload', severity: 'low', riskPoints: 5, details: { socketId: socket.id } }).catch(console.error);
+        socket.emit('game:answerRejected', { reason: 'invalid-payload' });
+        return;
+      }
+      const { code, questionIndex, selectedIndex } = parsed.data;
+      const result = await submitAnswer({ code, userId: socket.user.id, questionIndex, selectedIndex });
+      if (!result.ok) {
+        if (result.reason === 'invalid-option') void recordBattleIntegritySignal({ dedupeKey: `invalid-option:${socket.user.id}:${new Date().toISOString().slice(0, 10)}`, userId: socket.user.id, roomCode: code, signalType: 'invalid-option-attempt', severity: 'medium', riskPoints: 15 }).catch(console.error);
+        socket.emit('game:answerRejected', { reason: result.reason, questionIndex });
+        return;
+      }
 
       // Tell THIS player their result immediately
-      socket.emit('game:answerResult', { isCorrect: result.isCorrect });
+      socket.emit('game:answerResult', { questionIndex, isCorrect: result.isCorrect });
 
       // Tell OPPONENT what this player answered
-      const room = getRoom(code);
-      const opponentSocketId = Object.keys(room?.players ?? {})
-        .find(id => id !== socket.id);
-      if (opponentSocketId) {
-        io.to(opponentSocketId).emit('game:opponentAnswer', { answer });
+      const room = await getRoom(code);
+      const opponent = room?.players.find(
+        (player) => player.userId !== socket.user.id
+      );
+      if (opponent?.socketId) {
+        io.to(opponent.socketId).emit('game:opponentAnswer', { selectedIndex });
       }
 
       // Broadcast updated scores (includes answered flag)
@@ -306,72 +421,36 @@ export function initBattleSocket(httpServer, corsOrigin) {
 
       // Move to next question only when BOTH answered
       if (result.allAnswered) {
+        const revealRoom = await getRoom(code);
+        io.to(code).emit('game:reveal', {
+          questionIndex: revealRoom.currentIndex,
+          correctIndex: Number(revealRoom.questions[revealRoom.currentIndex].correctAnswer),
+          selections: Object.fromEntries(revealRoom.players.map((player) => [player.userId, player.selectedIndex ?? null])),
+        });
         setTimeout(() => {
-          const hasNext = nextQuestion(code);
-          const updatedRoom = getRoom(code);
-          if (!updatedRoom) return;
-
-          if (hasNext) {
-            const q = getCurrentQuestion(code);
-            io.to(code).emit('game:question', {
-              question:      q.question,
-              options:       q.options,
-              questionIndex: updatedRoom.currentIndex,
-              total:         updatedRoom.questions.length,
-            });
-          } else {
-            const finishedRoom = getRoom(code);
-            const finalScores = getScores(code);
-
-            const entries = Object.entries(finishedRoom?.players || {});
-
-            for (const [socketId, player] of entries) {
-              const opponent = entries.find(([id]) => id !== socketId)?.[1];
-
-              let rematchToken = null;
-              if (player?.userId && opponent?.userId) {
-                rematchToken = signBattleRematchToken({
-                  requesterUserId: player.userId,
-                  opponentUserId: opponent.userId,
-                  opponentName: opponent.name,
-                  subject: finishedRoom.subject,
-                  topic: finishedRoom.topic,
-                  questionCount: finishedRoom.questionCount,
-                });
-              }
-
-              io.to(socketId).emit('game:end', {
-                scores: finalScores,
-                rematchToken,
-                opponentName: opponent?.name || 'Opponent',
-              });
-            }
-
-            deleteRoom(code);
-
-            // Do not block game completion on FCM.
-            void sendBattleResultNotifications(
-              finishedRoom,
-              finalScores
-            ).catch((error) => {
-              console.error(
-                'Battle result notification error:',
-                error
-              );
-            });
-          }
+          void advanceBattleAfterAnswers(io, code, result.currentIndex)
+            .catch((error) => console.error('Battle advance failed:', error));
         }, REVEAL_DELAY);
       }
     });
 
     // ── Disconnect ───────────────────────────────────────
-    socket.on('disconnect', () => {
-      const found = getRoomBySocket(socket.id);
-      if (found) {
-        io.to(found.code).emit('room:playerLeft', {
-          message: 'Opponent disconnected from the battle.',
+    socket.on('disconnect', async (reason) => {
+      void cancelMatchmakingQueue(socket.user.id).catch((error) => console.error('Matchmaking disconnect cleanup:', error));
+      try {
+        const found = await markSocketDisconnected(socket.id, {
+          deployment: reason === 'server shutting down',
         });
-        deleteRoom(found.code);
+        if (found && found.status === 'active') {
+          socket.to(found.code).emit('room:playerDisconnected', {
+            userId: found.userId,
+            name: found.name,
+            reconnectDeadline: found.reconnectDeadline?.toISOString(),
+            graceMs: found.graceMs,
+          });
+        }
+      } catch (error) {
+        console.error('Battle disconnect persistence failed:', error);
       }
       console.log(`Socket disconnected: ${socket.id}`);
     });
@@ -380,9 +459,58 @@ export function initBattleSocket(httpServer, corsOrigin) {
   return io;
 }
 
+async function repairAnsweredBattle(io, room) {
+  if (room.status !== 'active' || room.players.length !== 2 || !room.players.every((player) => player.answered)) return;
+  const expectedIndex = room.currentIndex;
+  setTimeout(() => {
+    void advanceBattleAfterAnswers(io, room.code, expectedIndex)
+      .catch((error) => console.error('Battle recovery advance failed:', error));
+  }, REVEAL_DELAY);
+}
+
+async function advanceBattleAfterAnswers(io, code, expectedIndex) {
+  const transition = await advanceQuestion(code, expectedIndex);
+  if (!transition?.advanced) return;
+  if (!transition.finished) {
+    const room = transition.room;
+    const question = room.questions[room.currentIndex];
+    io.to(code).emit('game:question', {
+      question: question.question,
+      options: question.options,
+      questionIndex: room.currentIndex,
+      total: room.questions.length,
+    });
+    return;
+  }
+  await finishBattle(io, transition.room);
+}
+
+async function finishBattle(io, finishedRoom) {
+  const finalScores = await getScores(finishedRoom.code);
+  const settlement = await settleBattleResult(finishedRoom).catch((error) => {
+    console.error('Battle settlement failed:', error);
+    return null;
+  });
+  const players = finishedRoom.players;
+  for (const player of players) {
+    const opponent = players.find((candidate) => candidate.userId !== player.userId);
+    const rematchToken = player.userId && opponent?.userId
+      ? signBattleRematchToken({ requesterUserId: player.userId, opponentUserId: opponent.userId, opponentName: opponent.name, subject: finishedRoom.subject, topic: finishedRoom.topic, questionCount: finishedRoom.questionCount })
+      : null;
+    if (player.socketId) {
+      const matchPlayer = settlement?.match?.players?.find((entry) => entry.userId === player.userId);
+      const stats = (entry) => { const answers = Array.isArray(entry?.answerLog) ? entry.answerLog : [], answered = answers.filter((answer) => !answer.timedOut), correct = answers.filter((answer) => answer.correct), times = answered.map((answer) => answer.responseTimeMs).filter(Number.isFinite); return { correct: correct.length, total: answers.length, accuracy: answers.length ? Math.round(correct.length / answers.length * 100) : 0, averageResponseMs: times.length ? Math.round(times.reduce((sum, value) => sum + value, 0) / times.length) : null, timedOut: answers.filter((answer) => answer.timedOut).length }; };
+      const opponentMatchPlayer = settlement?.match?.players?.find((entry) => entry.userId === opponent?.userId);
+      io.to(player.socketId).emit('game:end', { scores: finalScores, finishReason: finishedRoom.finishReason, winnerUserId: finishedRoom.winnerUserId || null, rematchToken, opponentName: opponent?.name || 'Opponent', matchStats: { me: stats(matchPlayer), opponent: stats(opponentMatchPlayer) }, rating: matchPlayer ? { lifetime: { before: matchPlayer.ratingBefore, after: matchPlayer.ratingAfter, delta: matchPlayer.ratingDelta }, season: matchPlayer.seasonRatingAfter !== null ? { before: matchPlayer.seasonRatingBefore, after: matchPlayer.seasonRatingAfter, delta: matchPlayer.seasonRatingDelta, tierBefore: matchPlayer.seasonTierBefore, tierAfter: matchPlayer.seasonTierAfter } : null } : null });
+    }
+  }
+  void sendBattleResultNotifications(finishedRoom, finalScores)
+    .catch((error) => console.error('Battle result notification error:', error));
+}
+
 // ── Fetch questions and start game ───────────────────────
 async function startGame(io, code) {
-  const room = getRoom(code);
+  const room = await getRoom(code);
   if (!room) return;
 
   try {
@@ -453,14 +581,13 @@ async function startGame(io, code) {
       .sort(() => Math.random() - 0.5)
       .slice(0, room.questionCount);
 
-    setQuestions(code, shuffled);
-
-    room.status = 'active';
+    const activeRoom = await setQuestions(code, shuffled);
+    if (!activeRoom) return;
 
     io.to(code).emit('game:start', {
       message: 'Battle started!',
       total: shuffled.length,
-      topic: room.topic,
+      topic: activeRoom.topic,
     });
 
     setTimeout(() => {
@@ -495,8 +622,7 @@ export async function sendBattleResultNotifications(
     return;
   }
 
-  const players =
-    Object.entries(room.players);
+  const players = room.players || [];
 
   if (players.length !== 2) {
     return;
@@ -504,12 +630,10 @@ export async function sendBattleResultNotifications(
 
   const scoredPlayers =
     players.map(
-      ([socketId, player]) => ({
-        socketId,
+      (player) => ({
         player,
-
         score:
-          scores[socketId]?.score ??
+          scores[player.userId]?.score ??
           player.score ??
           0,
       })
@@ -532,7 +656,6 @@ export async function sendBattleResultNotifications(
     scoredPlayers.map(
       async (entry) => {
         const {
-          socketId,
           player,
           score,
         } = entry;
@@ -544,8 +667,8 @@ export async function sendBattleResultNotifications(
         const opponent =
           scoredPlayers.find(
             (other) =>
-              other.socketId !==
-              socketId
+              other.player.userId !==
+              player.userId
           );
 
         if (!opponent) {

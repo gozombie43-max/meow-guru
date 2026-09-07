@@ -1,90 +1,223 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import {
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+const collection = {
+  insertOne: vi.fn(),
+  findOne: vi.fn(),
+  findOneAndUpdate: vi.fn(),
+  updateOne: vi.fn(),
+  deleteOne: vi.fn(),
+};
+
+vi.mock('../../config/mongodb.js', () => ({
+  getBattleRoomsCollection: () => collection,
+  getBattleSeasonsCollection: () => ({ findOne: vi.fn().mockResolvedValue(null) }),
+}));
+
+const {
   createRoom,
   joinRoom,
-  getRoom,
-  deleteRoom,
   setQuestions,
-  getCurrentQuestion,
   submitAnswer,
-  nextQuestion,
-  getScores,
-  getRoomBySocket,
-} from '../roomManager.js';
+  advanceQuestion,
+  markSocketDisconnected,
+  findResumableRoomForUser,
+  resumePlayerConnection,
+  buildBattleSnapshot,
+} = await import('../roomManager.js');
+
+const waitingRoom = {
+  _id: 'mongo-id',
+  code: '4821',
+  ownerUserId: 'user-host',
+  subject: 'mathematics',
+  topic: 'percentages',
+  questionCount: 2,
+  questions: [],
+  currentIndex: 0,
+  players: [{
+    userId: 'user-host', socketId: 'socket-host', name: 'Host',
+    score: 0, answered: false, connected: true,
+  }],
+  status: 'waiting',
+};
 
 describe('Battle Room Manager', () => {
-  let roomCode;
-  const player1Socket = 'socket_p1';
-  const player2Socket = 'socket_p2';
-
   beforeEach(() => {
-    roomCode = createRoom(player1Socket, 'Player One', 'mathematics', 'percentages', 5, 'user_host_1');
+    vi.clearAllMocks();
   });
 
-  afterEach(() => {
-    if (roomCode) {
-      deleteRoom(roomCode);
-    }
+  it('persists a user-keyed waiting room with a two-hour expiry', async () => {
+    collection.insertOne.mockResolvedValueOnce({ insertedId: 'mongo-id' });
+
+    const code = await createRoom(
+      'socket-host', 'Host', 'mathematics', 'percentages', 2, 'user-host'
+    );
+
+    expect(code).toMatch(/^\d{4}$/);
+    expect(collection.insertOne).toHaveBeenCalledWith(expect.objectContaining({
+      code,
+      ownerUserId: 'user-host',
+      status: 'waiting',
+      players: [expect.objectContaining({
+        userId: 'user-host', socketId: 'socket-host', connected: true,
+      })],
+      expiresAt: expect.any(Date),
+    }));
   });
 
-  it('creates room with 4-digit code, ownerUserId and initial waiting state', () => {
-    expect(roomCode).toMatch(/^\d{4}$/);
-    const room = getRoom(roomCode);
-    expect(room).toBeDefined();
-    expect(room.ownerUserId).toBe('user_host_1');
-    expect(room.subject).toBe('mathematics');
-    expect(room.topic).toBe('percentages');
-    expect(room.status).toBe('waiting');
-    expect(room.players[player1Socket].name).toBe('Player One');
-    expect(room.players[player1Socket].userId).toBe('user_host_1');
+  it('atomically adds a second player and returns an array-backed room', async () => {
+    const joinedRoom = {
+      ...waitingRoom,
+      players: [...waitingRoom.players, {
+        userId: 'user-guest', socketId: 'socket-guest', name: 'Guest',
+        score: 0, answered: false, connected: true,
+      }],
+    };
+    collection.findOne.mockResolvedValueOnce(null);
+    collection.findOneAndUpdate.mockResolvedValueOnce(joinedRoom);
+
+    const result = await joinRoom('4821', 'socket-guest', 'Guest', 'user-guest');
+
+    expect(result.room.players).toHaveLength(2);
+    expect(result.room.players[1].userId).toBe('user-guest');
+    expect(collection.findOneAndUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ status: 'waiting' }),
+      expect.objectContaining({ $push: expect.any(Object) }),
+      expect.any(Object)
+    );
   });
 
-  it('allows second player to join and rejects third player', () => {
-    const joinResult = joinRoom(roomCode, player2Socket, 'Player Two', 'user_join_2');
-    expect(joinResult.error).toBeUndefined();
-    expect(joinResult.room.players[player2Socket].name).toBe('Player Two');
-    expect(joinResult.room.players[player2Socket].userId).toBe('user_join_2');
+  it('rebinds an existing player to a replacement socket', async () => {
+    collection.findOne.mockResolvedValueOnce(waitingRoom);
+    collection.findOneAndUpdate.mockResolvedValueOnce(waitingRoom);
 
-    const thirdJoin = joinRoom(roomCode, 'socket_p3', 'Player Three', 'user_join_3');
-    expect(thirdJoin.error).toBe('Room is full');
+    const result = await joinRoom('4821', 'socket-reconnected', 'Host', 'user-host');
+
+    expect(result.resumed).toBe(true);
+    expect(collection.findOneAndUpdate).toHaveBeenCalledWith(
+      { code: '4821' },
+      expect.objectContaining({
+        $set: expect.objectContaining({
+          'players.$[player].socketId': 'socket-reconnected',
+        }),
+      }),
+      expect.objectContaining({ arrayFilters: [{ 'player.userId': 'user-host' }] })
+    );
   });
 
-  it('handles question sets, answer submissions and score incrementing', () => {
-    joinRoom(roomCode, player2Socket, 'Player Two');
-    const mockQuestions = [
-      { id: 101, question: 'What is 10% of 50?', correctAnswer: 1 },
-      { id: 102, question: 'What is 20% of 100?', correctAnswer: 2 },
-    ];
-    setQuestions(roomCode, mockQuestions);
+  it('activates the room when questions are persisted', async () => {
+    const active = { ...waitingRoom, questions: [{ correctAnswer: 'A' }], status: 'active' };
+    collection.findOneAndUpdate.mockResolvedValueOnce(active);
 
-    const currentQ = getCurrentQuestion(roomCode);
-    expect(currentQ.id).toBe(101);
+    const room = await setQuestions('4821', active.questions);
 
-    // Player 1 submits correct answer
-    const p1Result = submitAnswer(roomCode, player1Socket, 1);
-    expect(p1Result.isCorrect).toBe(true);
-    expect(p1Result.allAnswered).toBe(false);
-
-    // Player 2 submits wrong answer
-    const p2Result = submitAnswer(roomCode, player2Socket, 3);
-    expect(p2Result.isCorrect).toBe(false);
-    expect(p2Result.allAnswered).toBe(true);
-
-    const scores = getScores(roomCode);
-    expect(scores[player1Socket].score).toBe(10);
-    expect(scores[player2Socket].score).toBe(0);
-
-    const hasNext = nextQuestion(roomCode);
-    expect(hasNext).toBe(true);
-    expect(getCurrentQuestion(roomCode).id).toBe(102);
+    expect(room.status).toBe('active');
+    expect(collection.findOneAndUpdate).toHaveBeenCalledWith(
+      { code: '4821', status: 'waiting' },
+      expect.objectContaining({ $set: expect.objectContaining({ status: 'active' }) }),
+      expect.any(Object)
+    );
   });
 
-  it('finds room by socket ID and deletes room on cleanup', () => {
-    const lookup = getRoomBySocket(player1Socket);
-    expect(lookup).not.toBeNull();
-    expect(lookup.code).toBe(roomCode);
+  it('submits an answer by user ID and exposes user-keyed scores', async () => {
+    const active = {
+      ...waitingRoom,
+      status: 'active',
+      questions: [{ correctAnswer: 0, options: ['A', 'B'] }],
+      players: [
+        { ...waitingRoom.players[0], answered: false },
+        { userId: 'user-guest', socketId: 'socket-guest', name: 'Guest', score: 0, answered: false },
+      ],
+    };
+    const updated = {
+      ...active,
+      players: [{ ...active.players[0], answered: true, score: 10, lastAnswer: 'A', lastCorrect: true }, active.players[1]],
+    };
+    collection.findOne.mockResolvedValueOnce(active).mockResolvedValueOnce(updated);
+    collection.updateOne.mockResolvedValueOnce({ modifiedCount: 1 });
 
-    deleteRoom(roomCode);
-    expect(getRoom(roomCode)).toBeUndefined();
+    const result = await submitAnswer({ code: '4821', userId: 'user-host', questionIndex: 0, selectedIndex: 0 });
+
+    expect(result.isCorrect).toBe(true);
+    expect(result.scores['user-host'].score).toBe(10);
+    expect(result.scores['socket-host']).toBeUndefined();
+    expect(collection.updateOne).toHaveBeenCalledWith(
+      expect.objectContaining({ currentIndex: 0 }),
+      expect.objectContaining({ $inc: { 'players.$[player].score': 10 } }),
+      expect.any(Object)
+    );
+  });
+
+  it('marks a disconnected socket without deleting its room', async () => {
+    collection.findOne.mockResolvedValueOnce(waitingRoom);
+    collection.updateOne.mockResolvedValueOnce({ modifiedCount: 1 });
+
+    const found = await markSocketDisconnected('socket-host');
+
+    expect(found.code).toBe('4821');
+    expect(collection.deleteOne).not.toHaveBeenCalled();
+    expect(collection.updateOne).toHaveBeenCalledWith(
+      { code: '4821', 'players.socketId': 'socket-host' },
+      expect.objectContaining({ $set: expect.objectContaining({ 'players.$[player].connected': false }) }),
+      expect.any(Object)
+    );
+  });
+
+  it('uses the expected index guard when advancing a completed question', async () => {
+    const active = {
+      ...waitingRoom,
+      status: 'active',
+      currentIndex: 0,
+      questions: [{ correctAnswer: 'A' }, { correctAnswer: 'B' }],
+      players: [{ ...waitingRoom.players[0], answered: true }, { userId: 'user-guest', answered: true }],
+    };
+    const advanced = { ...active, currentIndex: 1, players: active.players.map((player) => ({ ...player, answered: false })) };
+    collection.findOne.mockResolvedValueOnce(active);
+    collection.findOneAndUpdate.mockResolvedValueOnce(advanced);
+
+    const result = await advanceQuestion('4821', 0);
+
+    expect(result.advanced).toBe(true);
+    expect(result.finished).toBe(false);
+    expect(collection.findOneAndUpdate).toHaveBeenCalledWith(
+      { code: '4821', status: 'active', currentIndex: 0 },
+      expect.any(Object),
+      expect.any(Object)
+    );
+  });
+
+  it('finds a preferred resumable room only for its authenticated player', async () => {
+    collection.findOne.mockResolvedValueOnce(waitingRoom);
+
+    const room = await findResumableRoomForUser('user-host', '4821');
+
+    expect(room.code).toBe('4821');
+    expect(collection.findOne).toHaveBeenCalledWith(expect.objectContaining({
+      code: '4821',
+      'players.userId': 'user-host',
+    }));
+  });
+
+  it('rebinds a resumable player and never exposes answer data in its snapshot', async () => {
+    const active = {
+      ...waitingRoom,
+      status: 'active',
+      questions: [{ question: 'Safe question', options: ['A', 'B'], correctAnswer: 'A', solution: 'secret' }],
+      players: [{ ...waitingRoom.players[0], answered: true, lastCorrect: true }],
+    };
+    collection.findOne.mockResolvedValueOnce(active);
+    collection.findOneAndUpdate.mockResolvedValueOnce(active);
+
+    const resumed = await resumePlayerConnection({
+      code: '4821', userId: 'user-host', socketId: 'socket-new',
+    });
+    const snapshot = buildBattleSnapshot(resumed.room, 'user-host');
+
+    expect(resumed.previousSocketId).toBe('socket-host');
+    expect(snapshot.currentQuestion).toEqual({
+      question: 'Safe question', options: ['A', 'B'], questionIndex: 0, total: 1,
+    });
+    expect(JSON.stringify(snapshot)).not.toContain('correctAnswer');
+    expect(JSON.stringify(snapshot)).not.toContain('secret');
   });
 });
