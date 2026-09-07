@@ -3,6 +3,16 @@ import { getBattleRealtimeServer } from "../battle/battleRealtime.js";
 import { signBattleRematchToken } from "../auth/jwt.js";
 import { sendPushToUser } from "./pushNotificationService.js";
 import { settleBattleResult } from "../battle/battleResultService.js";
+import {
+  startBattleQuestionDeadlineWorker,
+  stopBattleQuestionDeadlineWorker,
+  waitForBattleQuestionDeadlineWorkerIdle,
+} from "./battleQuestionDeadlineWorker.js";
+import {
+  startBattleResultWorker,
+  stopBattleResultWorker,
+  waitForBattleResultWorkerIdle,
+} from "./battleResultWorker.js";
 
 const POLL_MS = Number(process.env.BATTLE_PRESENCE_WORKER_POLL_MS) || 2_000;
 const FINISHED_TTL_MS = 2 * 60 * 60 * 1000;
@@ -82,13 +92,39 @@ export async function runBattlePresenceWorkerOnce() {
 
 export async function startBattlePresenceWorker() {
   if (timer) return;
+
+  await startBattleQuestionDeadlineWorker();
+  await startBattleResultWorker();
   await runBattlePresenceWorkerOnce();
-  timer = setInterval(() => { void runBattlePresenceWorkerOnce().catch((error) => console.error("Battle presence worker failed:", error)); }, POLL_MS);
+
+  timer = setInterval(() => {
+    void runBattlePresenceWorkerOnce().catch((error) => console.error("Battle presence worker failed:", error));
+  }, POLL_MS);
+
   console.log(`Battle presence worker started (${POLL_MS}ms) ✅`);
 }
-export function stopBattlePresenceWorker() { if (timer) { clearInterval(timer); timer = null; } }
+
+export function stopBattlePresenceWorker() {
+  stopBattleQuestionDeadlineWorker();
+  stopBattleResultWorker();
+
+  if (timer) {
+    clearInterval(timer);
+    timer = null;
+  }
+}
+
 export async function waitForBattlePresenceWorkerIdle(timeoutMs = 10_000) {
   const deadline = Date.now() + timeoutMs;
-  while (running && Date.now() < deadline) await new Promise((resolve) => setTimeout(resolve, 100));
-  return !running;
+  while (running && Date.now() < deadline) {
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+
+  const remaining = Math.max(0, deadline - Date.now());
+  const [questionIdle, resultIdle] = await Promise.all([
+    waitForBattleQuestionDeadlineWorkerIdle(remaining),
+    waitForBattleResultWorkerIdle(remaining),
+  ]);
+
+  return !running && questionIdle && resultIdle;
 }
