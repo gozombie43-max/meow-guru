@@ -8,12 +8,6 @@ import {
 import api from '@/lib/axios';
 import { useAuth } from '@/context/AuthContext';
 
-declare global {
-  interface Window {
-    __MEOW_FID__?: string;
-  }
-}
-
 export default function PushRegistrationBridge() {
   const {
     user,
@@ -24,7 +18,12 @@ export default function PushRegistrationBridge() {
     useRef<string | null>(null);
 
   useEffect(() => {
-    if (loading || !user) {
+    if (loading) {
+      return;
+    }
+
+    if (!user) {
+      lastRegistered.current = null;
       return;
     }
 
@@ -35,8 +34,17 @@ export default function PushRegistrationBridge() {
     ) => {
       if (
         !fid ||
-        cancelled ||
-        lastRegistered.current === fid
+        cancelled
+      ) {
+        return;
+      }
+
+      const registrationKey =
+        `${user.id}:${fid}`;
+
+      if (
+        lastRegistered.current ===
+        registrationKey
       ) {
         return;
       }
@@ -51,7 +59,8 @@ export default function PushRegistrationBridge() {
         );
 
         if (!cancelled) {
-          lastRegistered.current = fid;
+          lastRegistered.current =
+            registrationKey;
         }
 
         console.log(

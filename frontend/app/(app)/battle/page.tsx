@@ -315,7 +315,24 @@ export default function BattlePage() {
   const [isWinner, setIsWinner]         = useState(false);
   const [playTab, setPlayTab]           = useState<"create" | "join">("create");
   const [pickerType, setPickerType]     = useState<"subject" | "topic" | null>(null);
+  const [inviteEmail, setInviteEmail]   = useState("");
+  const [inviteStatus, setInviteStatus] = useState<{ ok: boolean; message: string } | null>(null);
+  const [inviteSending, setInviteSending] = useState(false);
+  const [rematchToken, setRematchToken] = useState("");
+  const [opponentName, setOpponentName] = useState("");
+  const [rematchSending, setRematchSending] = useState(false);
   const activeCode = roomCode || joinCode;
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get("join")?.replace(/\D/g, "").slice(0, 4);
+      if (code && code.length === 4) {
+        setJoinCode(code);
+        setPlayTab("join");
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (user?.name) {
@@ -389,17 +406,42 @@ export default function BattlePage() {
       setOpponentAnswer(answer);
     });
 
-    socket.on("game:end", ({ scores: s }: { scores: Scores }) => {
-      setFinalScores(s);
-      const myScore = s[mySocketId]?.score ?? 0;
-      const maxScore = Math.max(...Object.values(s).map(p => p.score));
-      setIsWinner(myScore === maxScore);
-      setBattleState("finished");
-    });
+    socket.on(
+      "game:end",
+      ({
+        scores: s,
+        rematchToken: token,
+        opponentName: oppName,
+      }: {
+        scores: Scores;
+        rematchToken?: string;
+        opponentName?: string;
+      }) => {
+        setFinalScores(s);
+        setRematchToken(token || "");
+        setOpponentName(oppName || "Opponent");
+        const myScore = s[mySocketId]?.score ?? 0;
+        const maxScore = Math.max(...Object.values(s).map((p: any) => p.score));
+        setIsWinner(myScore === maxScore);
+        setBattleState("finished");
+      }
+    );
 
     socket.on("room:playerLeft", ({ message }: { message: string }) => {
       setError(message);
       setBattleState("lobby");
+    });
+
+    socket.on("room:inviteResult", (result: { ok: boolean; message: string }) => {
+      setInviteSending(false);
+      setInviteStatus(result);
+    });
+
+    socket.on("battle:rematchResult", ({ ok, message }: { ok: boolean; message: string; code?: string }) => {
+      setRematchSending(false);
+      if (!ok) {
+        setError(message);
+      }
     });
 
     return () => {
@@ -408,6 +450,8 @@ export default function BattlePage() {
       socket.off("room:created");
       socket.off("room:joined");
       socket.off("room:error");
+      socket.off("room:inviteResult");
+      socket.off("battle:rematchResult");
       socket.off("game:start");
       socket.off("game:question");
       socket.off("game:answerResult");
@@ -462,6 +506,27 @@ export default function BattlePage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const inviteOpponent = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!inviteEmail.trim()) return;
+    setInviteSending(true);
+    setInviteStatus(null);
+    getSocket(token || undefined).emit("room:invite", {
+      code: roomCode,
+      email: inviteEmail.trim(),
+    });
+  };
+
+  const requestRematch = () => {
+    if (!rematchToken) return;
+    setRematchSending(true);
+    setError("");
+    getSocket(token || undefined).emit("battle:rematch", {
+      rematchToken,
+      playerName: playerName.trim() || user?.name || "Player",
+    });
+  };
+
   const resetToLobby = () => {
     setBattleState("lobby");
     setRoomCode("");
@@ -473,6 +538,12 @@ export default function BattlePage() {
     setFinalScores({});
     setError("");
     setPlayers([]);
+    setInviteEmail("");
+    setInviteStatus(null);
+    setInviteSending(false);
+    setRematchToken("");
+    setOpponentName("");
+    setRematchSending(false);
   };
 
   /* ══════════════════════════════════════════════════════════════════════════
@@ -722,6 +793,39 @@ export default function BattlePage() {
           </button>
         </div>
 
+        {/* Invite Opponent Form */}
+        <form onSubmit={inviteOpponent} className="mb-6 text-left">
+          <label className="block text-xs font-semibold text-amber-200/80 mb-1.5">
+            Or invite by email
+          </label>
+          <div className="flex gap-2">
+            <input
+              type="email"
+              placeholder="friend@example.com"
+              value={inviteEmail}
+              onChange={(e) => {
+                setInviteEmail(e.target.value);
+                setInviteStatus(null);
+              }}
+              className="battle-input text-sm py-2 px-3 flex-1 rounded-xl"
+              style={{ fontSize: "14px" }}
+              disabled={inviteSending}
+            />
+            <button
+              type="submit"
+              disabled={inviteSending || !inviteEmail.trim()}
+              className="px-4 py-2 text-sm font-semibold rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 disabled:opacity-50 disabled:cursor-not-allowed transition-all shrink-0"
+            >
+              {inviteSending ? "Sending..." : "Invite"}
+            </button>
+          </div>
+          {inviteStatus && (
+            <p className={`text-xs mt-2 font-medium ${inviteStatus.ok ? "text-emerald-400" : "text-rose-400"}`}>
+              {inviteStatus.message}
+            </p>
+          )}
+        </form>
+
         <div className="flex items-center justify-center gap-3 mb-4">
           {[playerName, players[1]].map((p, i) => (
             <div key={i} className="flex flex-col items-center gap-1">
@@ -741,6 +845,14 @@ export default function BattlePage() {
               transition={{ repeat: Infinity, duration: 1.2, delay: i * 0.2 }} />
           ))}
         </div>
+
+        <button
+          type="button"
+          onClick={resetToLobby}
+          className="mt-6 text-xs text-amber-200/60 hover:text-amber-200 transition-colors"
+        >
+          Cancel and return to setup
+        </button>
       </motion.div>
     </div>
   );
@@ -977,6 +1089,22 @@ export default function BattlePage() {
 
           {/* Actions */}
           <div className="flex flex-col gap-3">
+            {rematchToken && (
+              <button
+                type="button"
+                disabled={rematchSending}
+                onClick={requestRematch}
+                className="h-14 rounded-2xl font-bold text-white text-base flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                style={{
+                  background: "linear-gradient(135deg, #d97706 0%, #b45309 100%)",
+                  boxShadow: "0 8px 24px rgba(217, 119, 6, 0.3)",
+                }}
+              >
+                <Swords className="w-4 h-4" />
+                {rematchSending ? "Inviting to rematch..." : `Rematch ${opponentName || "Opponent"} ⚔️`}
+              </button>
+            )}
+
             <button onClick={resetToLobby}
               className="h-14 rounded-2xl font-bold text-white text-base flex items-center justify-center gap-2"
               style={{
@@ -990,6 +1118,12 @@ export default function BattlePage() {
               Back to Practice
             </Link>
           </div>
+
+          {error && (
+            <p className="text-xs text-rose-500 font-medium text-center mt-3">
+              {error}
+            </p>
+          )}
         </motion.div>
       </div>
     );

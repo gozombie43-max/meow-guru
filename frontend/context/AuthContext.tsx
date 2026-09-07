@@ -8,6 +8,7 @@ import api, {
   requestTokenRefresh,
   updateAccessToken,
 } from '@/lib/axios';
+import { disconnectSocket } from '@/lib/socket';
 
 const isAuthError = (err: unknown) => {
   const status = (err as { response?: { status?: number } })?.response?.status;
@@ -100,15 +101,44 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const clearAuthState = useCallback(() => {
+    disconnectSocket();
     setToken(null);
     setUser(null);
     updateAccessToken(null);
   }, []);
 
   const logout = useCallback(async () => {
+    /*
+     * Disable push registration
+     * while our access token is
+     * still available.
+     */
     try {
-      await api.post('/auth/logout'); // clears refresh token cookie
-    } catch { /* ignore */ }
+      const fid =
+        typeof window !== 'undefined'
+          ? window.__MEOW_FID__
+          : undefined;
+
+      if (fid) {
+        await api.post('/api/notifications/unregister', {
+          fid,
+        });
+      }
+    } catch (error) {
+      /*
+       * Push cleanup is best-effort.
+       * Never prevent logout because
+       * Firebase/network is unavailable.
+       */
+      console.warn('Push unregister failed', error);
+    }
+
+    try {
+      await api.post('/auth/logout');
+    } catch {
+      // Still clear client auth.
+    }
+
     clearAuthState();
   }, [clearAuthState]);
 

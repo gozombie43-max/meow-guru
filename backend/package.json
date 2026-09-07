@@ -22,6 +22,7 @@
     "jsonwebtoken": "^9.0.3",
     "jszip": "^3.10.1",
     "lru-cache": "^11.5.2",
+    "luxon": "^3.7.2",
     "mongodb": "^7.6.0",
     "multer": "^2.2.0",
     "openai": "^7.5.0",

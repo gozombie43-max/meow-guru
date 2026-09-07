@@ -33,3 +33,26 @@ export const verifyRefreshToken = (token) =>
 export const revokeToken = (jti) => blacklist.set(jti, true);
 export const isRevoked  = (jti) => blacklist.has(jti);
 
+export const signBattleRematchToken = (payload) =>
+  jwt.sign(
+    {
+      ...payload,
+      type: "battle-rematch",
+    },
+    SECRET,
+    {
+      expiresIn: "10m",
+      jwtid: randomUUID(),
+    }
+  );
+
+export const verifyBattleRematchToken = (token) => {
+  const decoded = jwt.verify(token, SECRET);
+
+  if (decoded.type !== "battle-rematch") {
+    throw new Error("Invalid rematch token");
+  }
+
+  return decoded;
+};
+

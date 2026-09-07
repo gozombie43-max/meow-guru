@@ -10,17 +10,23 @@ function generateCode(existing) {
   return String(Date.now() % 10000).padStart(4, '0');
 }
 
-export function createRoom(socketId, playerName, subject, topic, questionCount) {
+export function createRoom(socketId, playerName, subject, topic, questionCount, ownerUserId) {
   const code = generateCode(rooms);
   rooms.set(code, {
     code,
+    ownerUserId,
     subject,
     topic,
     questionCount,
     questions:    [],
     currentIndex: 0,
     players: {
-      [socketId]: { name: playerName, score: 0, answered: false },
+      [socketId]: {
+        userId: ownerUserId,
+        name: playerName,
+        score: 0,
+        answered: false,
+      },
     },
     status: 'waiting',   // waiting | active | finished
     createdAt: Date.now(),
@@ -28,13 +34,18 @@ export function createRoom(socketId, playerName, subject, topic, questionCount) 
   return code;
 }
 
-export function joinRoom(code, socketId, playerName) {
+export function joinRoom(code, socketId, playerName, userId) {
   const room = rooms.get(code);
   if (!room)                          return { error: 'Room not found' };
   if (room.status !== 'waiting')      return { error: 'Game already started' };
   if (Object.keys(room.players).length >= 2) return { error: 'Room is full' };
 
-  room.players[socketId] = { name: playerName, score: 0, answered: false };
+  room.players[socketId] = {
+    userId,
+    name: playerName,
+    score: 0,
+    answered: false,
+  };
   return { room };
 }
 

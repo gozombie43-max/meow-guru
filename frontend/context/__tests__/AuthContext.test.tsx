@@ -3,6 +3,11 @@ import { describe, it, expect, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { AuthProvider, useAuth } from '../AuthContext';
 
+const mockDisconnectSocket = vi.fn();
+vi.mock('@/lib/socket', () => ({
+  disconnectSocket: () => mockDisconnectSocket(),
+}));
+
 vi.mock('@/lib/axios', () => ({
   default: {
     get: vi.fn().mockResolvedValue({ data: { user: { id: 'u1', name: 'Test', email: 'test@example.com' } } }),
@@ -31,17 +36,38 @@ describe('AuthContext Provider', () => {
     expect(result.current.token).toBeNull();
   });
 
-  it('logs out and clears user state', () => {
+  it('logs out and clears user state', async () => {
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <AuthProvider>{children}</AuthProvider>
     );
     const { result } = renderHook(() => useAuth(), { wrapper });
 
-    act(() => {
-      result.current.logout();
+    await act(async () => {
+      await result.current.logout();
     });
 
     expect(result.current.user).toBeNull();
     expect(result.current.token).toBeNull();
+    expect(mockDisconnectSocket).toHaveBeenCalled();
+  });
+
+  it('unregisters push device if window.__MEOW_FID__ is present on logout', async () => {
+    window.__MEOW_FID__ = 'fcm_installed_token_123';
+    const api = (await import('@/lib/axios')).default;
+
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <AuthProvider>{children}</AuthProvider>
+    );
+    const { result } = renderHook(() => useAuth(), { wrapper });
+
+    await act(async () => {
+      await result.current.logout();
+    });
+
+    expect(api.post).toHaveBeenCalledWith('/api/notifications/unregister', {
+      fid: 'fcm_installed_token_123',
+    });
+    expect(api.post).toHaveBeenCalledWith('/auth/logout');
+    delete window.__MEOW_FID__;
   });
 });

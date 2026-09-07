@@ -44,6 +44,7 @@ import aiRoutes from './routes/aiRoutes.js';
 import pdfRoutes from './routes/pdfs.js';
 import accessCodeRoutes from './routes/accessCodes.js';
 import notificationRoutes from "./routes/notifications.routes.js";
+import examUpdatesRouter from "./routes/examUpdates.routes.js";
 
 import cognitiveMapperRouter from './agents/cognitiveMapperRouter.js';
 import adaptiveQuizRouter from './agents/adaptiveQuiz/adaptiveQuizRouter.js';
@@ -57,6 +58,18 @@ import {
 import {
   connectMongoDB,
 } from './config/mongodb.js';
+
+import {
+  startScheduledNotificationWorker,
+} from './services/scheduledNotificationWorker.js';
+
+import {
+  startDailyPracticeReminderWorker,
+} from './services/dailyPracticeReminderWorker.js';
+
+import {
+  startStreakProtectionWorker,
+} from './services/streakProtectionWorker.js';
 
 
 const app = express();
@@ -438,6 +451,11 @@ async function initWithRetry() {
       notificationRoutes
     );
 
+    app.use(
+      "/api/exam-updates",
+      examUpdatesRouter
+    );
+
 
     // Global error handler must remain last
     app.use(
@@ -453,6 +471,9 @@ async function initWithRetry() {
     // have successfully initialized.
     isReady = true;
 
+    await startScheduledNotificationWorker();
+    await startDailyPracticeReminderWorker();
+    await startStreakProtectionWorker();
 
     httpServer.listen(
       PORT,

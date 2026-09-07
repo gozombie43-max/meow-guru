@@ -56,6 +56,34 @@ describe('AdminNotificationsPage', () => {
       limit: 20,
       totalPages: 1,
     });
+
+    vi.spyOn(AdminApiModule, 'fetchScheduledNotifications').mockResolvedValue({
+      items: [],
+      total: 0,
+      page: 1,
+      limit: 20,
+      totalPages: 1,
+      counts: {
+        pending: 0,
+        sent: 0,
+        failed: 0,
+        cancelled: 0,
+      },
+    });
+
+    vi.spyOn(AdminApiModule, 'fetchNotificationAnalytics').mockResolvedValue({
+      days: 30,
+      notifications: 5,
+      targetDevices: 50,
+      acceptedCount: 48,
+      failureCount: 2,
+      opened: 24,
+      pushOpened: 16,
+      inAppOpened: 12,
+      actionClicked: 18,
+      openRate: 50.0,
+      actionRate: 37.5,
+    });
   });
 
   afterEach(() => {
@@ -177,8 +205,8 @@ describe('AdminNotificationsPage', () => {
       expect(screen.getAllByText('42').length).toBeGreaterThanOrEqual(1);
       expect(screen.getByText('40')).toBeDefined();
       expect(screen.getByText('Registered devices')).toBeDefined();
-      expect(screen.getByText('Delivered')).toBeDefined();
-      expect(screen.getByText('Failed')).toBeDefined();
+      expect(screen.getAllByText('FCM Accepted').length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText('Failed').length).toBeGreaterThanOrEqual(1);
       expect(screen.getByText('Invalid devices')).toBeDefined();
     });
   });
@@ -254,6 +282,55 @@ describe('AdminNotificationsPage', () => {
 
     await waitFor(() => {
       expect(fetchSpy).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  it('renders automatic new-mock history items with badge and system attribution', async () => {
+    const mockItem: AdminApiModule.NotificationHistoryItem = {
+      _id: 'hist-mock-1',
+      type: 'new-mock',
+      title: 'New Mock Test 🎯',
+      body: 'SSC CGL Tier 1 Mock 15 is now available.',
+      route: '/mock-test/ssc-cgl/mock-15',
+      totalDevices: 50,
+      successCount: 48,
+      failureCount: 2,
+      invalidDeviceCount: 0,
+      createdAt: '2026-09-07T12:00:00.000Z',
+    };
+
+    vi.spyOn(AdminApiModule, 'fetchNotificationHistory').mockResolvedValueOnce({
+      items: [mockItem],
+      total: 1,
+      page: 1,
+      limit: 20,
+      totalPages: 1,
+    });
+
+    render(<AdminNotificationsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('🎯 Auto — New Mock')).toBeDefined();
+      expect(screen.getByText('System (Auto)')).toBeDefined();
+      expect(screen.getByText('/mock-test/ssc-cgl/mock-15')).toBeDefined();
+    });
+  });
+
+  it('renders notification performance with unique and source-specific opens', async () => {
+    render(<AdminNotificationsPage />);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText('Notification Performance · Last 30 days')
+      ).toBeDefined();
+      expect(screen.getByText('FCM Accepted')).toBeDefined();
+      expect(screen.getByText('Unique Opens')).toBeDefined();
+      expect(screen.getByText('Android Push Opens')).toBeDefined();
+      expect(screen.getByText('Notification Center Opens')).toBeDefined();
+      expect(screen.getByText('50%')).toBeDefined();
+      expect(screen.getByText('Action Clicks')).toBeDefined();
+      expect(screen.getByText('37.5%')).toBeDefined();
+      expect(screen.getByText('FCM Failed')).toBeDefined();
     });
   });
 });

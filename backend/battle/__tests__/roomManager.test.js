@@ -18,7 +18,7 @@ describe('Battle Room Manager', () => {
   const player2Socket = 'socket_p2';
 
   beforeEach(() => {
-    roomCode = createRoom(player1Socket, 'Player One', 'mathematics', 'percentages', 5);
+    roomCode = createRoom(player1Socket, 'Player One', 'mathematics', 'percentages', 5, 'user_host_1');
   });
 
   afterEach(() => {
@@ -27,22 +27,25 @@ describe('Battle Room Manager', () => {
     }
   });
 
-  it('creates room with 4-digit code and initial waiting state', () => {
+  it('creates room with 4-digit code, ownerUserId and initial waiting state', () => {
     expect(roomCode).toMatch(/^\d{4}$/);
     const room = getRoom(roomCode);
     expect(room).toBeDefined();
+    expect(room.ownerUserId).toBe('user_host_1');
     expect(room.subject).toBe('mathematics');
     expect(room.topic).toBe('percentages');
     expect(room.status).toBe('waiting');
     expect(room.players[player1Socket].name).toBe('Player One');
+    expect(room.players[player1Socket].userId).toBe('user_host_1');
   });
 
   it('allows second player to join and rejects third player', () => {
-    const joinResult = joinRoom(roomCode, player2Socket, 'Player Two');
+    const joinResult = joinRoom(roomCode, player2Socket, 'Player Two', 'user_join_2');
     expect(joinResult.error).toBeUndefined();
     expect(joinResult.room.players[player2Socket].name).toBe('Player Two');
+    expect(joinResult.room.players[player2Socket].userId).toBe('user_join_2');
 
-    const thirdJoin = joinRoom(roomCode, 'socket_p3', 'Player Three');
+    const thirdJoin = joinRoom(roomCode, 'socket_p3', 'Player Three', 'user_join_3');
     expect(thirdJoin.error).toBe('Room is full');
   });
 

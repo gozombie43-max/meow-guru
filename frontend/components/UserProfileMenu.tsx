@@ -11,8 +11,10 @@ import {
   CheckCircle2,
   Sparkles,
   Shield,
+  Bell,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { useNotificationCenter } from '@/context/NotificationCenterContext';
 import GoogleAvatarRing from './GoogleAvatarRing';
 import EditProfileModal from './EditProfileModal';
 import UserSettingsModal from './UserSettingsModal';
@@ -62,6 +64,7 @@ export default function UserProfileMenu({
   align = 'right',
 }: UserProfileMenuProps) {
   const { user, logout } = useAuth();
+  const { unreadCount } = useNotificationCenter();
   const router = useRouter();
 
   const roleInfo = getRoleBadge(user?.role);
@@ -171,6 +174,11 @@ export default function UserProfileMenu({
           avatarUrl={user?.avatar || undefined}
           size={size}
         />
+        {unreadCount > 0 && (
+          <span className={styles.triggerBadge} aria-label={`${unreadCount} unread notifications`}>
+            {unreadCount > 9 ? '9+' : unreadCount}
+          </span>
+        )}
       </button>
 
       {/* Mini Pop-up Modal / Dropdown */}
@@ -227,6 +235,29 @@ export default function UserProfileMenu({
                       </div>
                     </Link>
                   )}
+
+                  {/* Notifications */}
+                  <Link
+                    href="/notifications"
+                    className={styles.menuItem}
+                    onClick={() => setIsOpen(false)}
+                    role="menuitem"
+                  >
+                    <div
+                      className={`${styles.menuItemIcon} ${styles.iconBlue} ${styles.notificationIcon}`}
+                    >
+                      <Bell size={17} />
+                      {unreadCount > 0 && (
+                        <span className={styles.notificationBadge}>
+                          {unreadCount > 99 ? '99+' : unreadCount}
+                        </span>
+                      )}
+                    </div>
+                    <div className={styles.menuItemText}>
+                      <span className={styles.menuItemTitle}>Notifications</span>
+                      <span className={styles.menuItemSub}>Battles, reminders & updates</span>
+                    </div>
+                  </Link>
 
                   {/* Edit Profile */}
                   <button

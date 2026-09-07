@@ -532,6 +532,27 @@ export async function uploadFullPaper({ slotData, questions }) {
   const questionsCollection =
     getQuestionsCollection();
 
+  const existingSlot =
+    await slotCollection.findOne(
+      {
+        id:
+          String(slotData.id),
+
+        examSlug:
+          String(slotData.examSlug),
+      },
+
+      {
+        projection: {
+          _id: 1,
+          createdAt: 1,
+        },
+      }
+    );
+
+  const isNewSlot =
+    !existingSlot;
+
   // Normalize questions
   const normalizedQuestions = questions.map((q, idx) => {
     const qId = q.id ? String(q.id).trim() : `${slotData.id}_q${idx + 1}`;
@@ -558,6 +579,9 @@ export async function uploadFullPaper({ slotData, questions }) {
     };
   });
 
+  const now =
+    new Date().toISOString();
+
   // 1. Save or update slot
   const slotDoc = {
     id: slotData.id,
@@ -572,8 +596,11 @@ export async function uploadFullPaper({ slotData, questions }) {
     order: Number(slotData.order) || 1,
     questionCount: normalizedQuestions.length,
     fixedQuestions: normalizedQuestions,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    createdAt:
+      existingSlot?.createdAt ||
+      now,
+    updatedAt:
+      now,
   };
 
   await slotCollection.updateOne(
@@ -615,8 +642,12 @@ export async function uploadFullPaper({ slotData, questions }) {
     success: true,
     slotId: slotDoc.id,
     examSlug: slotDoc.examSlug,
+    title: slotDoc.title,
+    type: slotDoc.type,
+    tier: slotDoc.tier,
     totalQuestions: normalizedQuestions.length,
     insertedToBank,
+    isNewSlot,
   };
 }
 

@@ -4,11 +4,14 @@ import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import ScheduledNotificationsPanel from '@/components/admin/ScheduledNotificationsPanel';
 import {
   sendBroadcastNotification,
   fetchNotificationHistory,
+  fetchNotificationAnalytics,
   type BroadcastNotificationResult,
   type NotificationHistoryItem,
+  type NotificationAnalytics,
 } from '@/lib/api/adminApi';
 import {
   ChevronLeft,
@@ -76,6 +79,10 @@ export default function AdminNotificationsPage() {
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState('');
 
+  // Analytics states
+  const [analytics, setAnalytics] = useState<NotificationAnalytics | null>(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+
   // ── Auth guard ─────────────────────────────────────────
   useEffect(() => {
     if (!authLoading) {
@@ -109,11 +116,25 @@ export default function AdminNotificationsPage() {
     }
   }, []);
 
+  // ── Analytics fetcher ─────────────────────────────────
+  const loadAnalytics = useCallback(async (days = 30) => {
+    setAnalyticsLoading(true);
+    try {
+      const res = await fetchNotificationAnalytics(days);
+      setAnalytics(res);
+    } catch (err: unknown) {
+      console.error('Failed to load notification analytics:', err);
+    } finally {
+      setAnalyticsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (authUser && ['admin', 'superadmin'].includes(authUser.role || '')) {
       loadHistory(1);
+      loadAnalytics(30);
     }
-  }, [authUser, loadHistory]);
+  }, [authUser, loadHistory, loadAnalytics]);
 
   // ── Handlers ───────────────────────────────────────────
   const handleOpenConfirm = (e: React.FormEvent) => {
@@ -156,8 +177,9 @@ export default function AdminNotificationsPage() {
 
       setResult(res);
       setIsConfirmOpen(false);
-      // Refresh history to show the newly dispatched notification
+      // Refresh history and analytics to show the newly dispatched notification
       loadHistory(1);
+      loadAnalytics(30);
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { error?: string } } })?.response?.data
@@ -169,7 +191,7 @@ export default function AdminNotificationsPage() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [title, body, route, loadHistory]);
+  }, [title, body, route, loadHistory, loadAnalytics]);
 
   const handleResetForm = () => {
     setTitle('');
@@ -263,7 +285,7 @@ export default function AdminNotificationsPage() {
 
               <div className={`${s.statBox} ${s.statDelivered}`}>
                 <div className={s.statBoxValue}>{result.successCount}</div>
-                <div className={s.statBoxLabel}>Delivered</div>
+                <div className={s.statBoxLabel}>FCM Accepted</div>
               </div>
 
               <div className={`${s.statBox} ${s.statFailed}`}>
@@ -280,6 +302,78 @@ export default function AdminNotificationsPage() {
             </div>
           </section>
         )}
+
+        {/* ── Analytics Performance Section ──────────────── */}
+        <section className={s.analyticsSection} aria-label="Notification Performance">
+          <div className={s.analyticsHeader}>
+            <div className={s.analyticsTitleRow}>
+              <h2 className={s.analyticsTitle}>
+                Notification Performance · Last 30 days
+              </h2>
+            </div>
+            <button
+              type="button"
+              className={s.refreshBtn}
+              onClick={() => loadAnalytics(30)}
+              disabled={analyticsLoading}
+              title="Refresh analytics"
+              aria-label="Refresh analytics"
+            >
+              <RotateCw size={14} className={analyticsLoading ? s.spinIcon : ''} />
+              <span>Refresh</span>
+            </button>
+          </div>
+
+          <div className={s.statsGrid}>
+            <div className={s.statBox}>
+              <div className={`${s.statBoxValue} ${s.statAcceptedVal}`}>
+                {analytics ? analytics.acceptedCount.toLocaleString() : '0'}
+              </div>
+              <div className={s.statBoxLabel}>FCM Accepted</div>
+            </div>
+
+            <div className={s.statBox}>
+              <div className={s.statBoxValue}>
+                {analytics ? analytics.opened.toLocaleString() : '0'}
+              </div>
+              <div className={s.statBoxLabel}>Unique Opens</div>
+              <div className={s.statBoxRate}>
+                {analytics ? `${analytics.openRate}%` : '0%'}
+              </div>
+            </div>
+
+            <div className={s.statBox}>
+              <div className={s.statBoxValue}>
+                {analytics ? analytics.pushOpened.toLocaleString() : '0'}
+              </div>
+              <div className={s.statBoxLabel}>Android Push Opens</div>
+            </div>
+
+            <div className={s.statBox}>
+              <div className={s.statBoxValue}>
+                {analytics ? analytics.inAppOpened.toLocaleString() : '0'}
+              </div>
+              <div className={s.statBoxLabel}>Notification Center Opens</div>
+            </div>
+
+            <div className={s.statBox}>
+              <div className={s.statBoxValue}>
+                {analytics ? analytics.actionClicked.toLocaleString() : '0'}
+              </div>
+              <div className={s.statBoxLabel}>Action Clicks</div>
+              <div className={s.statBoxRate}>
+                {analytics ? `${analytics.actionRate}%` : '0%'}
+              </div>
+            </div>
+
+            <div className={s.statBox}>
+              <div className={`${s.statBoxValue} ${s.statFailedVal}`}>
+                {analytics ? analytics.failureCount.toLocaleString() : '0'}
+              </div>
+              <div className={s.statBoxLabel}>FCM Failed</div>
+            </div>
+          </div>
+        </section>
 
         <div className={s.grid}>
           {/* ── Left Column: Form ────────────────────────── */}
@@ -489,7 +583,16 @@ export default function AdminNotificationsPage() {
               {historyItems.map((item) => (
                 <article key={item._id} className={s.historyCard}>
                   <div className={s.historyCardTop}>
-                    <h3 className={s.historyCardTitle}>{item.title}</h3>
+                    <div className={s.historyTitleWrap}>
+                      <h3 className={s.historyCardTitle}>{item.title}</h3>
+                      {item.type === 'new-mock' ? (
+                        <span className={s.typeBadgeAuto}>🎯 Auto — New Mock</span>
+                      ) : item.type === 'scheduled-broadcast' ? (
+                        <span className={s.typeBadgeScheduled}>⏰ Scheduled</span>
+                      ) : (
+                        <span className={s.typeBadgeBroadcast}>📢 Broadcast</span>
+                      )}
+                    </div>
                     <time className={s.historyCardDate} dateTime={item.createdAt}>
                       {formatHistoryDate(item.createdAt)}
                     </time>
@@ -525,7 +628,7 @@ export default function AdminNotificationsPage() {
                     <div className={s.metaPill}>
                       <User size={13} />
                       <span>
-                        By: <strong>{item.sentByEmail || item.sentByUserId || 'Admin'}</strong>
+                        By: <strong>{item.type === 'new-mock' ? 'System (Auto)' : (item.sentByEmail || item.sentByUserId || 'Admin')}</strong>
                       </span>
                     </div>
 
@@ -570,6 +673,9 @@ export default function AdminNotificationsPage() {
             </div>
           )}
         </section>
+
+        {/* ── Scheduled Notifications Management ─────────── */}
+        <ScheduledNotificationsPanel />
       </main>
 
       {/* ── Confirmation Modal Dialog ────────────────────── */}

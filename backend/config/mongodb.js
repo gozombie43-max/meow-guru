@@ -53,6 +53,14 @@ export async function connectMongoDB() {
       { name: "text", email: "text" },
       { name: "users_text_search" }
     ),
+    db.collection("users").createIndex({
+      "dailyPracticeReminder.enabled": 1,
+      "dailyPracticeReminder.nextSendAt": 1,
+    }),
+    db.collection("users").createIndex({
+      "dailyPracticeReminder.streakProtectionEnabled": 1,
+      "dailyPracticeReminder.nextStreakProtectionAt": 1,
+    }),
 
     // ── Audit log indexes ──
     db.collection("auditLog").createIndex({ targetUserId: 1 }),
@@ -78,6 +86,91 @@ export async function connectMongoDB() {
       status: 1,
       sendAt: 1,
     }),
+
+    // ── Study activity daily indexes ──
+    db.collection("studyActivityDaily").createIndex(
+      {
+        userId: 1,
+        dateKey: 1,
+      },
+      {
+        unique: true,
+      }
+    ),
+    db.collection("studyActivityDaily").createIndex({
+      userId: 1,
+      dateKey: -1,
+    }),
+
+    // ── Exam updates indexes ──
+    db.collection("examUpdates").createIndex(
+      { updateKey: 1 },
+      { unique: true }
+    ),
+    db.collection("examUpdates").createIndex({
+      publishedAt: -1,
+    }),
+
+    // ── Notification feed indexes ──
+    db.collection("notificationFeed").createIndex({
+      audience: 1,
+      userId: 1,
+      createdAt: -1,
+    }),
+    db.collection("notificationFeed").createIndex({
+      audience: 1,
+      createdAt: -1,
+    }),
+    db.collection("notificationFeed").createIndex(
+      { dedupeKey: 1 },
+      {
+        unique: true,
+        sparse: true,
+      }
+    ),
+    db.collection("notificationFeed").createIndex(
+      { expiresAt: 1 },
+      { expireAfterSeconds: 0 }
+    ),
+
+    // ── Notification receipts indexes ──
+    db.collection("notificationReceipts").createIndex(
+      {
+        userId: 1,
+        notificationId: 1,
+      },
+      {
+        unique: true,
+      }
+    ),
+
+    // ── Notification engagement indexes ──
+    db.collection("notificationEngagement").createIndex(
+      {
+        userId: 1,
+        notificationId: 1,
+        event: 1,
+        source: 1,
+      },
+      {
+        unique: true,
+      }
+    ),
+    db.collection("notificationEngagement").createIndex({
+      notificationId: 1,
+      createdAt: -1,
+    }),
+    db.collection("notificationEngagement").createIndex({
+      createdAt: -1,
+    }),
+    db.collection("notificationEngagement").createIndex(
+      {
+        expiresAt: 1,
+      },
+      {
+        expireAfterSeconds: 0,
+      }
+    ),
   ]);
 
   console.log("✅ MongoDB Atlas connected");
@@ -142,5 +235,35 @@ export function getNotificationHistoryCollection() {
 export function getScheduledNotificationsCollection() {
   return getMongoDB().collection(
     "scheduledNotifications"
+  );
+}
+
+export function getStudyActivityDailyCollection() {
+  return getMongoDB().collection(
+    "studyActivityDaily"
+  );
+}
+
+export function getExamUpdatesCollection() {
+  return getMongoDB().collection(
+    "examUpdates"
+  );
+}
+
+export function getNotificationFeedCollection() {
+  return getMongoDB().collection(
+    "notificationFeed"
+  );
+}
+
+export function getNotificationReceiptsCollection() {
+  return getMongoDB().collection(
+    "notificationReceipts"
+  );
+}
+
+export function getNotificationEngagementCollection() {
+  return getMongoDB().collection(
+    "notificationEngagement"
   );
 }

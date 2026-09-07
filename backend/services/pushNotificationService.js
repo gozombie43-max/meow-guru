@@ -1,10 +1,83 @@
 import { firebaseMessaging } from "../config/firebase.js";
-import { getPushDevicesCollection } from "../config/mongodb.js";
+import {
+  getPushDevicesCollection,
+  getUsersCollection,
+  getNotificationFeedCollection,
+} from "../config/mongodb.js";
+import {
+  createUserNotification,
+  createGlobalNotification,
+} from "./notificationCenterService.js";
 
 const INVALID_REGISTRATION_ERRORS = new Set([
   "messaging/registration-token-not-registered",
   "messaging/invalid-registration-token",
 ]);
+
+const DEFAULT_NOTIFICATION_PREFERENCES = {
+  enabled: true,
+  battleInvites: true,
+  battleResults: true,
+  dailyPractice: true,
+  newMocks: true,
+  examUpdates: true,
+  announcements: true,
+};
+
+function getNotificationActionLabel(
+  type
+) {
+  switch (type) {
+    case "battle_invite":
+    case "battle_rematch":
+      return "Join Battle";
+
+    case "battle_result":
+      return "View Battle";
+
+    case "new_mock":
+    case "new-mock":
+      return "Open Mock";
+
+    case "exam_update":
+      return "View Update";
+
+    case "daily_practice":
+      return "Start Practice";
+
+    case "streak_protection":
+      return "Continue";
+
+    default:
+      return "Open";
+  }
+}
+
+function notificationAllowed(
+  user,
+  category
+) {
+  const preferences = {
+    ...DEFAULT_NOTIFICATION_PREFERENCES,
+
+    ...(user
+      ?.notificationPreferences ||
+      {}),
+  };
+
+  if (!preferences.enabled) {
+    return false;
+  }
+
+  if (!category) {
+    return true;
+  }
+
+  return (
+    preferences[category] !==
+    false
+  );
+}
 
 export async function sendPushToUser(
   userId,
@@ -13,8 +86,108 @@ export async function sendPushToUser(
     body,
     route = "/",
     data = {},
+    category = "announcements",
+    center = true,
+    centerKey = null,
   }
 ) {
+  const users =
+    getUsersCollection();
+
+  const user =
+    await users.findOne(
+      {
+        id: String(userId),
+        type: {
+          $ne: "email_lock",
+        },
+      },
+      {
+        projection: {
+          id: 1,
+          notificationPreferences: 1,
+        },
+      }
+    );
+
+  if (!user) {
+    return {
+      successCount: 0,
+      failureCount: 0,
+      suppressed: true,
+    };
+  }
+
+  let notificationId = null;
+
+  if (center) {
+    try {
+      notificationId =
+        await createUserNotification({
+          userId,
+          title,
+          body,
+          route,
+          category,
+          type:
+            String(
+              data.type ||
+              category
+            ),
+          data,
+          dedupeKey:
+            centerKey,
+        });
+    } catch (error) {
+      console.error(
+        "Notification Center persistence failed:",
+        error
+      );
+    }
+  }
+
+  if (
+    !notificationAllowed(
+      user,
+      category
+    )
+  ) {
+    if (notificationId) {
+      await getNotificationFeedCollection()
+        .updateOne(
+          {
+            _id:
+              notificationId,
+          },
+          {
+            $set: {
+              pushMetrics: {
+                suppressed: true,
+
+                targetDevices: 0,
+                acceptedCount: 0,
+                failureCount: 0,
+
+                processedAt:
+                  new Date(),
+              },
+            },
+          }
+        )
+        .catch(() => {});
+    }
+
+    return {
+      successCount: 0,
+      failureCount: 0,
+      suppressed: true,
+      notificationId:
+        notificationId
+          ? String(notificationId)
+          : null,
+    };
+  }
+
   const collection = getPushDevicesCollection();
 
   const devices = await collection
@@ -30,36 +203,69 @@ export async function sendPushToUser(
       successCount: 0,
       failureCount: 0,
       noDevices: true,
+      notificationId:
+        notificationId
+          ? String(notificationId)
+          : null,
     };
   }
 
   const fids = devices.map((device) => device.fid);
 
+  const notificationType =
+    String(
+      data.type ||
+      category ||
+      "notification"
+    );
+
+  const actionLabel =
+    getNotificationActionLabel(
+      notificationType
+    );
+
+  const messageData = {
+    ...Object.fromEntries(
+      Object.entries(
+        data
+      ).map(
+        ([key, value]) => [
+          key,
+          String(value),
+        ]
+      )
+    ),
+
+    route:
+      String(route),
+
+    type:
+      notificationType,
+
+    actionLabel,
+
+    ...(notificationId
+      ? {
+          notificationId:
+            String(
+              notificationId
+            ),
+        }
+      : {}),
+  };
+
   const result =
     await firebaseMessaging.sendEachForMulticast({
       fids,
 
-      notification: {
-        title,
-        body,
-      },
-
       data: {
-        ...Object.fromEntries(
-          Object.entries(data).map(([key, value]) => [
-            key,
-            String(value),
-          ])
-        ),
-        route,
+        ...messageData,
+        title: String(title),
+        body: String(body),
       },
 
       android: {
         priority: "high",
-
-        notification: {
-          channelId: "default_channel_id",
-        },
       },
     });
 
@@ -96,10 +302,51 @@ export async function sendPushToUser(
     );
   }
 
+  if (notificationId) {
+    try {
+      await getNotificationFeedCollection()
+        .updateOne(
+          {
+            _id:
+              notificationId,
+          },
+          {
+            $set: {
+              pushMetrics: {
+                targetDevices:
+                  fids.length,
+
+                acceptedCount:
+                  result.successCount,
+
+                failureCount:
+                  result.failureCount,
+
+                invalidDeviceCount:
+                  invalidFids.length,
+
+                processedAt:
+                  new Date(),
+              },
+            },
+          }
+        );
+    } catch (error) {
+      console.error(
+        "Failed to save notification push metrics:",
+        error
+      );
+    }
+  }
+
   return {
     successCount: result.successCount,
     failureCount: result.failureCount,
     invalidDeviceCount: invalidFids.length,
+    notificationId:
+      notificationId
+        ? String(notificationId)
+        : null,
   };
 }
 
@@ -108,7 +355,37 @@ export async function sendPushToAllUsers({
   body,
   route = "/",
   data = {},
+  category = "announcements",
+  center = true,
+  centerKey = null,
 }) {
+  let notificationId = null;
+
+  if (center) {
+    try {
+      notificationId =
+        await createGlobalNotification({
+          title,
+          body,
+          route,
+          category,
+          type:
+            String(
+              data.type ||
+              category
+            ),
+          data,
+          dedupeKey:
+            centerKey,
+        });
+    } catch (error) {
+      console.error(
+        "Global Notification Center persistence failed:",
+        error
+      );
+    }
+  }
+
   const collection = getPushDevicesCollection();
 
   const devices = await collection
@@ -118,13 +395,68 @@ export async function sendPushToAllUsers({
     })
     .project({
       fid: 1,
+      userId: 1,
     })
     .toArray();
+
+  const userIds = [
+    ...new Set(
+      devices
+        .map(
+          (device) =>
+            device.userId
+        )
+        .filter(Boolean)
+    ),
+  ];
+
+  const users =
+    await getUsersCollection()
+      .find(
+        {
+          id: {
+            $in:
+              userIds,
+          },
+        },
+        {
+          projection: {
+            id: 1,
+            notificationPreferences: 1,
+          },
+        }
+      )
+      .toArray();
+
+  const allowedUsers =
+    new Set(
+      users
+        .filter(
+          (user) =>
+            notificationAllowed(
+              user,
+              category
+            )
+        )
+        .map(
+          (user) =>
+            user.id
+        )
+    );
 
   const fids = [
     ...new Set(
       devices
-        .map((device) => device.fid)
+        .filter(
+          (device) =>
+            allowedUsers.has(
+              device.userId
+            )
+        )
+        .map(
+          (device) =>
+            device.fid
+        )
         .filter(Boolean)
     ),
   ];
@@ -134,6 +466,10 @@ export async function sendPushToAllUsers({
       totalDevices: 0,
       successCount: 0,
       failureCount: 0,
+      notificationId:
+        notificationId
+          ? String(notificationId)
+          : null,
     };
   }
 
@@ -141,6 +477,44 @@ export async function sendPushToAllUsers({
   let failureCount = 0;
 
   const invalidFids = [];
+
+  const notificationType =
+    String(
+      data.type ||
+      category ||
+      "notification"
+    );
+
+  const actionLabel =
+    getNotificationActionLabel(
+      notificationType
+    );
+
+  const messageData = {
+    ...Object.fromEntries(
+      Object.entries(data).map(
+        ([key, value]) => [
+          key,
+          String(value),
+        ]
+      )
+    ),
+    route:
+      String(route),
+
+    type:
+      notificationType,
+
+    actionLabel,
+    ...(notificationId
+      ? {
+          notificationId:
+            String(
+              notificationId
+            ),
+        }
+      : {}),
+  };
 
   // FCM supports maximum 500 targets per multicast request.
   for (let i = 0; i < fids.length; i += 500) {
@@ -150,29 +524,14 @@ export async function sendPushToAllUsers({
       await firebaseMessaging.sendEachForMulticast({
         fids: batch,
 
-        notification: {
-          title,
-          body,
-        },
-
         data: {
-          ...Object.fromEntries(
-            Object.entries(data).map(
-              ([key, value]) => [
-                key,
-                String(value),
-              ]
-            )
-          ),
-          route,
+          ...messageData,
+          title: String(title),
+          body: String(body),
         },
 
         android: {
           priority: "high",
-
-          notification: {
-            channelId: "default_channel_id",
-          },
         },
       });
 
@@ -218,11 +577,51 @@ export async function sendPushToAllUsers({
     );
   }
 
+  if (notificationId) {
+    await getNotificationFeedCollection()
+      .updateOne(
+        {
+          _id:
+            notificationId,
+        },
+        {
+          $set: {
+            pushMetrics: {
+              targetDevices:
+                fids.length,
+
+              acceptedCount:
+                successCount,
+
+              failureCount,
+
+              invalidDeviceCount:
+                invalidFids.length,
+
+              processedAt:
+                new Date(),
+            },
+          },
+        }
+      )
+      .catch(
+        (error) =>
+          console.error(
+            "Broadcast metric persistence failed:",
+            error
+          )
+      );
+  }
+
   return {
     totalDevices: fids.length,
     successCount,
     failureCount,
     invalidDeviceCount:
       invalidFids.length,
+    notificationId:
+      notificationId
+        ? String(notificationId)
+        : null,
   };
 }

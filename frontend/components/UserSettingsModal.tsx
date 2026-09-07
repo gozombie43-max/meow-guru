@@ -1,9 +1,38 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, Sun, Moon, Volume2, VolumeX, Target, ShieldCheck, Settings } from 'lucide-react';
+import {
+  X,
+  Sun,
+  Moon,
+  Volume2,
+  VolumeX,
+  Target,
+  ShieldCheck,
+  Settings,
+  Bell,
+  BellOff,
+  Swords,
+  Trophy,
+  Flame,
+  FileText,
+  CalendarDays,
+  Megaphone,
+  Clock,
+  Globe,
+} from 'lucide-react';
 import { useThemeMode } from '@/hooks/useTheme';
 import { useAuth } from '@/context/AuthContext';
+import {
+  NotificationPreferences,
+  getNotificationPreferences,
+  updateNotificationPreferences,
+  DailyPracticeReminder,
+  getDailyPracticeReminder,
+  updateDailyPracticeReminder,
+  getStudyGoal,
+  updateStudyGoal,
+} from '@/lib/userApi';
 import styles from './UserProfileMenu.module.css';
 
 interface UserSettingsModalProps {
@@ -13,6 +42,16 @@ interface UserSettingsModalProps {
 
 const SOUND_EFFECTS_KEY = 'study-guru-sound-effects';
 const DAILY_GOAL_KEY = 'study-guru-daily-goal';
+
+const DEFAULT_NOTIFICATION_PREFERENCES: NotificationPreferences = {
+  enabled: true,
+  battleInvites: true,
+  battleResults: true,
+  dailyPractice: true,
+  newMocks: true,
+  examUpdates: true,
+  announcements: true,
+};
 
 function getRoleTitle(role?: string) {
   const r = (role || 'user').toLowerCase();
@@ -38,6 +77,33 @@ export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModal
 
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [dailyGoal, setDailyGoal] = useState('30');
+  const [notificationPreferences, setNotificationPreferences] =
+    useState<NotificationPreferences | null>(null);
+  const [notificationLoading, setNotificationLoading] = useState(false);
+
+  const detectedTimezone =
+    typeof Intl !== 'undefined' && Intl.DateTimeFormat
+      ? Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata'
+      : 'Asia/Kolkata';
+
+  const [dailyReminder, setDailyReminder] = useState<{
+    enabled: boolean;
+    time: string;
+    timezone: string;
+    nextSendAt?: string | null;
+    lastSentAt?: string | null;
+    streakProtectionEnabled?: boolean;
+    streakProtectionTime?: string;
+    nextStreakProtectionAt?: string | null;
+    lastStreakProtectionSentAt?: string | null;
+  }>({
+    enabled: false,
+    time: '20:00',
+    timezone: detectedTimezone,
+    streakProtectionEnabled: false,
+    streakProtectionTime: '21:30',
+  });
+  const [reminderLoading, setReminderLoading] = useState(false);
 
   // Load user local preferences
   useEffect(() => {
@@ -61,6 +127,216 @@ export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModal
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
+  // Load notification preferences and daily reminder from server when modal is opened
+  useEffect(() => {
+    if (!isOpen || !user) {
+      return;
+    }
+
+    void getNotificationPreferences()
+      .then(setNotificationPreferences)
+      .catch(console.error);
+
+    void getDailyPracticeReminder()
+      .then((reminder) => {
+        if (reminder) {
+          setDailyReminder({
+            enabled: reminder.enabled === true,
+            time: reminder.time || '20:00',
+            timezone: reminder.timezone || detectedTimezone,
+            nextSendAt: reminder.nextSendAt,
+            lastSentAt: reminder.lastSentAt,
+            streakProtectionEnabled: reminder.streakProtectionEnabled === true,
+            streakProtectionTime: reminder.streakProtectionTime || '21:30',
+            nextStreakProtectionAt: reminder.nextStreakProtectionAt,
+            lastStreakProtectionSentAt: reminder.lastStreakProtectionSentAt,
+          });
+        }
+      })
+      .catch(console.error);
+
+    void getStudyGoal()
+      .then((data) => {
+        if (data?.dailyGoalMinutes) {
+          const minsStr = String(data.dailyGoalMinutes);
+          setDailyGoal(minsStr);
+          try {
+            localStorage.setItem(DAILY_GOAL_KEY, minsStr);
+          } catch {}
+        }
+      })
+      .catch(console.error);
+  }, [isOpen, user]);
+
+  const toggleNotificationPreference = async (
+    key: keyof NotificationPreferences
+  ) => {
+    if (!notificationPreferences || notificationLoading) {
+      return;
+    }
+
+    const next = !notificationPreferences[key];
+    const previous = notificationPreferences;
+
+    setNotificationPreferences({
+      ...previous,
+      [key]: next,
+    });
+
+    setNotificationLoading(true);
+
+    try {
+      const updated = await updateNotificationPreferences({
+        [key]: next,
+      });
+
+      setNotificationPreferences(updated);
+    } catch {
+      // Roll back optimistic UI
+      setNotificationPreferences(previous);
+    } finally {
+      setNotificationLoading(false);
+    }
+  };
+
+  const handleToggleDailyReminder = async () => {
+    if (reminderLoading) return;
+    const nextEnabled = !dailyReminder.enabled;
+    const prev = dailyReminder;
+    const updatedState = { ...prev, enabled: nextEnabled };
+    setDailyReminder(updatedState);
+    setReminderLoading(true);
+
+    try {
+      const saved = await updateDailyPracticeReminder({
+        enabled: nextEnabled,
+        time: updatedState.time,
+        timezone: updatedState.timezone || detectedTimezone,
+        streakProtectionEnabled: updatedState.streakProtectionEnabled,
+        streakProtectionTime: updatedState.streakProtectionTime || '21:30',
+      });
+
+      setDailyReminder({
+        enabled: saved.enabled === true,
+        time: saved.time || '20:00',
+        timezone: saved.timezone || detectedTimezone,
+        nextSendAt: saved.nextSendAt,
+        lastSentAt: saved.lastSentAt,
+        streakProtectionEnabled: saved.streakProtectionEnabled === true,
+        streakProtectionTime: saved.streakProtectionTime || '21:30',
+        nextStreakProtectionAt: saved.nextStreakProtectionAt,
+        lastStreakProtectionSentAt: saved.lastStreakProtectionSentAt,
+      });
+    } catch {
+      setDailyReminder(prev);
+    } finally {
+      setReminderLoading(false);
+    }
+  };
+
+  const handleReminderTimeChange = async (newTime: string) => {
+    const prev = dailyReminder;
+    const updatedState = { ...prev, time: newTime };
+    setDailyReminder(updatedState);
+    if (!updatedState.enabled) return;
+
+    setReminderLoading(true);
+    try {
+      const saved = await updateDailyPracticeReminder({
+        enabled: true,
+        time: newTime,
+        timezone: updatedState.timezone || detectedTimezone,
+        streakProtectionEnabled: updatedState.streakProtectionEnabled,
+        streakProtectionTime: updatedState.streakProtectionTime || '21:30',
+      });
+
+      setDailyReminder({
+        enabled: saved.enabled === true,
+        time: saved.time || '20:00',
+        timezone: saved.timezone || detectedTimezone,
+        nextSendAt: saved.nextSendAt,
+        lastSentAt: saved.lastSentAt,
+        streakProtectionEnabled: saved.streakProtectionEnabled === true,
+        streakProtectionTime: saved.streakProtectionTime || '21:30',
+        nextStreakProtectionAt: saved.nextStreakProtectionAt,
+        lastStreakProtectionSentAt: saved.lastStreakProtectionSentAt,
+      });
+    } catch {
+      setDailyReminder(prev);
+    } finally {
+      setReminderLoading(false);
+    }
+  };
+
+  const handleToggleStreakProtection = async () => {
+    if (reminderLoading) return;
+    const nextStreakEnabled = !dailyReminder.streakProtectionEnabled;
+    const prev = dailyReminder;
+    const updatedState = { ...prev, streakProtectionEnabled: nextStreakEnabled };
+    setDailyReminder(updatedState);
+    setReminderLoading(true);
+
+    try {
+      const saved = await updateDailyPracticeReminder({
+        enabled: updatedState.enabled,
+        time: updatedState.time,
+        timezone: updatedState.timezone || detectedTimezone,
+        streakProtectionEnabled: nextStreakEnabled,
+        streakProtectionTime: updatedState.streakProtectionTime || '21:30',
+      });
+
+      setDailyReminder({
+        enabled: saved.enabled === true,
+        time: saved.time || '20:00',
+        timezone: saved.timezone || detectedTimezone,
+        nextSendAt: saved.nextSendAt,
+        lastSentAt: saved.lastSentAt,
+        streakProtectionEnabled: saved.streakProtectionEnabled === true,
+        streakProtectionTime: saved.streakProtectionTime || '21:30',
+        nextStreakProtectionAt: saved.nextStreakProtectionAt,
+        lastStreakProtectionSentAt: saved.lastStreakProtectionSentAt,
+      });
+    } catch {
+      setDailyReminder(prev);
+    } finally {
+      setReminderLoading(false);
+    }
+  };
+
+  const handleStreakProtectionTimeChange = async (newTime: string) => {
+    const prev = dailyReminder;
+    const updatedState = { ...prev, streakProtectionTime: newTime };
+    setDailyReminder(updatedState);
+    if (!updatedState.streakProtectionEnabled) return;
+
+    setReminderLoading(true);
+    try {
+      const saved = await updateDailyPracticeReminder({
+        enabled: updatedState.enabled,
+        time: updatedState.time,
+        timezone: updatedState.timezone || detectedTimezone,
+        streakProtectionEnabled: true,
+        streakProtectionTime: newTime,
+      });
+
+      setDailyReminder({
+        enabled: saved.enabled === true,
+        time: saved.time || '20:00',
+        timezone: saved.timezone || detectedTimezone,
+        nextSendAt: saved.nextSendAt,
+        lastSentAt: saved.lastSentAt,
+        streakProtectionEnabled: saved.streakProtectionEnabled === true,
+        streakProtectionTime: saved.streakProtectionTime || '21:30',
+        nextStreakProtectionAt: saved.nextStreakProtectionAt,
+        lastStreakProtectionSentAt: saved.lastStreakProtectionSentAt,
+      });
+    } catch {
+      setDailyReminder(prev);
+    } finally {
+      setReminderLoading(false);
+    }
+  };
+
   if (!isOpen) return null;
 
   const handleToggleSound = () => {
@@ -76,6 +352,9 @@ export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModal
     try {
       localStorage.setItem(DAILY_GOAL_KEY, val);
     } catch {}
+    if (user) {
+      void updateStudyGoal(Number(val)).catch(console.error);
+    }
   };
 
   return (
@@ -192,6 +471,396 @@ export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModal
                 })}
               </div>
             </div>
+
+            {/* Notification Preferences Section */}
+            {user && (
+              <>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 700, color: '#0071e3', marginTop: '6px' }}>
+                  <Bell size={16} />
+                  <span>Notifications</span>
+                </div>
+
+                {(() => {
+                  const currentPrefs = notificationPreferences || DEFAULT_NOTIFICATION_PREFERENCES;
+                  const isMasterEnabled = currentPrefs.enabled;
+
+                  const categories: Array<{
+                    key: keyof Omit<NotificationPreferences, 'enabled'>;
+                    label: string;
+                    sublabel: string;
+                    icon: React.ReactNode;
+                    iconClass: string;
+                  }> = [
+                    {
+                      key: 'battleInvites',
+                      label: 'Battle Invites',
+                      sublabel: 'Challenges and rematches',
+                      icon: <Swords size={18} />,
+                      iconClass: styles.iconRed,
+                    },
+                    {
+                      key: 'battleResults',
+                      label: 'Battle Results',
+                      sublabel: 'Results when a battle finishes',
+                      icon: <Trophy size={18} />,
+                      iconClass: styles.iconAmber,
+                    },
+                    {
+                      key: 'dailyPractice',
+                      label: 'Daily Practice',
+                      sublabel: 'Daily study reminders',
+                      icon: <Flame size={18} />,
+                      iconClass: styles.iconOrange,
+                    },
+                    {
+                      key: 'newMocks',
+                      label: 'New Mock Tests',
+                      sublabel: 'New SSC/Railway mocks',
+                      icon: <FileText size={18} />,
+                      iconClass: styles.iconBlue,
+                    },
+                    {
+                      key: 'examUpdates',
+                      label: 'Exam Updates',
+                      sublabel: 'Dates, admit cards and results',
+                      icon: <CalendarDays size={18} />,
+                      iconClass: styles.iconTeal,
+                    },
+                    {
+                      key: 'announcements',
+                      label: 'Announcements',
+                      sublabel: 'Important Meow updates',
+                      icon: <Megaphone size={18} />,
+                      iconClass: styles.iconPurple,
+                    },
+                  ];
+
+                  return (
+                    <>
+                      {/* Master Push Notification Switch */}
+                      <div className={styles.settingItem}>
+                        <div className={styles.settingInfo}>
+                          <div className={`${styles.settingIconBox} ${isMasterEnabled ? styles.iconBlue : styles.iconPurple}`}>
+                            {isMasterEnabled ? <Bell size={18} /> : <BellOff size={18} />}
+                          </div>
+                          <div className={styles.settingLabelGroup}>
+                            <span className={styles.settingLabel}>Push Notifications</span>
+                            <span className={styles.settingSublabel}>
+                              {isMasterEnabled ? 'Notifications enabled' : 'All notifications paused'}
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={isMasterEnabled}
+                          onClick={() => toggleNotificationPreference('enabled')}
+                          className={`${styles.switchToggle} ${isMasterEnabled ? styles.switchActive : ''}`}
+                          aria-label="Toggle push notifications"
+                          disabled={notificationLoading}
+                        >
+                          <span className={styles.switchThumb} />
+                        </button>
+                      </div>
+
+                      {/* Category Switches */}
+                      <div
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '10px',
+                          opacity: isMasterEnabled ? 1 : 0.45,
+                          pointerEvents: isMasterEnabled ? 'auto' : 'none',
+                          transition: 'opacity 0.2s ease',
+                        }}
+                      >
+                        {categories.map((cat) => {
+                          const isCatActive = currentPrefs[cat.key];
+                          return (
+                            <div key={cat.key} className={styles.settingItem} style={{ padding: '10px 14px' }}>
+                              <div className={styles.settingInfo}>
+                                <div className={`${styles.settingIconBox} ${cat.iconClass}`}>
+                                  {cat.icon}
+                                </div>
+                                <div className={styles.settingLabelGroup}>
+                                  <span className={styles.settingLabel}>{cat.label}</span>
+                                  <span className={styles.settingSublabel}>{cat.sublabel}</span>
+                                </div>
+                              </div>
+                              <button
+                                type="button"
+                                role="switch"
+                                aria-checked={isCatActive}
+                                onClick={() => toggleNotificationPreference(cat.key)}
+                                className={`${styles.switchToggle} ${isCatActive ? styles.switchActive : ''}`}
+                                aria-label={`Toggle ${cat.label}`}
+                                disabled={!isMasterEnabled || notificationLoading}
+                              >
+                                <span className={styles.switchThumb} />
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Daily Practice Reminder Configuration */}
+                      <div
+                        className={styles.settingItem}
+                        style={{
+                          flexDirection: 'column',
+                          alignItems: 'stretch',
+                          gap: '12px',
+                          opacity: isMasterEnabled ? 1 : 0.45,
+                          pointerEvents: isMasterEnabled ? 'auto' : 'none',
+                          transition: 'opacity 0.2s ease',
+                          marginTop: '4px',
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <div className={styles.settingInfo}>
+                            <div className={`${styles.settingIconBox} ${styles.iconOrange}`}>
+                              <Flame size={18} />
+                            </div>
+                            <div className={styles.settingLabelGroup}>
+                              <span className={styles.settingLabel}>Daily Practice Reminder</span>
+                              <span className={styles.settingSublabel}>
+                                {dailyReminder.enabled
+                                  ? "You'll receive one practice reminder each day"
+                                  : 'Schedule a daily reminder at your preferred time'}
+                              </span>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            role="switch"
+                            aria-checked={dailyReminder.enabled}
+                            onClick={handleToggleDailyReminder}
+                            className={`${styles.switchToggle} ${dailyReminder.enabled ? styles.switchActive : ''}`}
+                            aria-label="Toggle daily practice reminder"
+                            disabled={!isMasterEnabled || reminderLoading}
+                          >
+                            <span className={styles.switchThumb} />
+                          </button>
+                        </div>
+
+                        {dailyReminder.enabled && (
+                          <div
+                            style={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '10px',
+                              padding: '12px 14px',
+                              borderRadius: '12px',
+                              background: 'rgba(0, 0, 0, 0.03)',
+                              border: '1px solid rgba(0, 0, 0, 0.06)',
+                            }}
+                          >
+                            <div
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                flexWrap: 'wrap',
+                                gap: '8px',
+                              }}
+                            >
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600 }}>
+                                <Clock size={15} style={{ color: '#ea580c' }} />
+                                <span>Reminder time</span>
+                              </div>
+                              <input
+                                type="time"
+                                value={dailyReminder.time}
+                                onChange={(e) => void handleReminderTimeChange(e.target.value)}
+                                disabled={!isMasterEnabled || reminderLoading}
+                                aria-label="Daily reminder time"
+                                style={{
+                                  padding: '6px 10px',
+                                  borderRadius: '8px',
+                                  border: '1px solid rgba(0, 0, 0, 0.15)',
+                                  background: 'transparent',
+                                  color: 'inherit',
+                                  fontSize: '13px',
+                                  fontWeight: 600,
+                                  cursor: 'pointer',
+                                  outline: 'none',
+                                }}
+                              />
+                            </div>
+
+                            <div
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                flexWrap: 'wrap',
+                                gap: '8px',
+                              }}
+                            >
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#6e6e73' }}>
+                                <Globe size={14} />
+                                <span>Timezone</span>
+                              </div>
+                              <span
+                                style={{
+                                  fontSize: '12px',
+                                  fontWeight: 600,
+                                  color: '#6e6e73',
+                                  fontFamily: 'monospace',
+                                }}
+                              >
+                                {dailyReminder.timezone || detectedTimezone}
+                              </span>
+                            </div>
+
+                            {dailyReminder.nextSendAt && (
+                              <div
+                                style={{
+                                  fontSize: '11px',
+                                  color: '#16a34a',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                }}
+                              >
+                                <span>Next reminder:</span>
+                                <span style={{ fontWeight: 600 }}>
+                                  {new Date(dailyReminder.nextSendAt).toLocaleString([], {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    hour: 'numeric',
+                                    minute: '2-digit',
+                                    hour12: true,
+                                  })}
+                                </span>
+                              </div>
+                            )}
+
+                            {/* Streak Protection Sub-section */}
+                            <div
+                              style={{
+                                marginTop: '4px',
+                                paddingTop: '10px',
+                                borderTop: '1px solid rgba(0, 0, 0, 0.06)',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '10px',
+                              }}
+                            >
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'space-between',
+                                  gap: '8px',
+                                }}
+                              >
+                                <div>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600 }}>
+                                    <Flame size={15} style={{ color: '#ea580c' }} />
+                                    <span>Streak Protection</span>
+                                  </div>
+                                  <div style={{ fontSize: '11px', color: '#6e6e73', marginTop: '2px' }}>
+                                    Extra reminder if a 2+ day streak is at risk
+                                  </div>
+                                </div>
+                                <button
+                                  type="button"
+                                  role="switch"
+                                  aria-checked={dailyReminder.streakProtectionEnabled === true}
+                                  aria-label="Toggle streak protection"
+                                  disabled={!isMasterEnabled || reminderLoading}
+                                  onClick={() => void handleToggleStreakProtection()}
+                                  className={`${styles.switchToggle} ${dailyReminder.streakProtectionEnabled ? styles.switchActive : ''}`}
+                                >
+                                  <span className={styles.switchThumb} />
+                                </button>
+                              </div>
+
+                              {dailyReminder.streakProtectionEnabled && (
+                                <>
+                                  <div
+                                    style={{
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'space-between',
+                                      flexWrap: 'wrap',
+                                      gap: '8px',
+                                    }}
+                                  >
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#6e6e73' }}>
+                                      <Clock size={13} />
+                                      <span>Protection time</span>
+                                    </div>
+                                    <input
+                                      type="time"
+                                      value={dailyReminder.streakProtectionTime || '21:30'}
+                                      onChange={(e) => void handleStreakProtectionTimeChange(e.target.value)}
+                                      disabled={!isMasterEnabled || reminderLoading}
+                                      aria-label="Streak protection time"
+                                      style={{
+                                        padding: '4px 8px',
+                                        borderRadius: '8px',
+                                        border: '1px solid rgba(0, 0, 0, 0.15)',
+                                        background: 'transparent',
+                                        color: 'inherit',
+                                        fontSize: '12px',
+                                        fontWeight: 600,
+                                        cursor: 'pointer',
+                                        outline: 'none',
+                                      }}
+                                    />
+                                  </div>
+
+                                  <div
+                                    style={{
+                                      fontSize: '11px',
+                                      color: '#6e6e73',
+                                      background: 'rgba(0, 0, 0, 0.02)',
+                                      padding: '8px 10px',
+                                      borderRadius: '8px',
+                                      lineHeight: '1.4',
+                                    }}
+                                  >
+                                    <div style={{ fontWeight: 600, marginBottom: '2px' }}>Only alerts you when:</div>
+                                    <div>• You have a 2+ day streak</div>
+                                    <div>• Today&apos;s goal isn&apos;t complete</div>
+                                    <div>• You haven&apos;t studied for 90 minutes</div>
+                                  </div>
+
+                                  {dailyReminder.nextStreakProtectionAt && (
+                                    <div
+                                      style={{
+                                        fontSize: '11px',
+                                        color: '#ea580c',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                      }}
+                                    >
+                                      <span>Next protection check:</span>
+                                      <span style={{ fontWeight: 600 }}>
+                                        {new Date(dailyReminder.nextStreakProtectionAt).toLocaleString([], {
+                                          month: 'short',
+                                          day: 'numeric',
+                                          hour: 'numeric',
+                                          minute: '2-digit',
+                                          hour12: true,
+                                        })}
+                                      </span>
+                                    </div>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  );
+                })()}
+              </>
+            )}
 
             {/* Account Info Box */}
             {user && (

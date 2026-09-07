@@ -32,6 +32,78 @@
   box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.4);
 }
 
+.triggerBadge {
+  position: absolute;
+  top: -2px;
+  right: -3px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 9999px;
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ffffff;
+  pointer-events: none;
+  line-height: 1;
+}
+
+:global(.dark) .triggerBadge,
+:global(body.theme-dark) .triggerBadge {
+  border-color: #1c1c1e;
+}
+
+.unreadBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 9999px;
+  margin-left: 8px;
+  line-height: 1.2;
+}
+
+.notificationIcon {
+  position: relative;
+}
+
+.notificationBadge {
+  position: absolute;
+  top: -7px;
+  right: -9px;
+
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 999px;
+
+  background: #ff3b30;
+  color: #fff;
+
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+
+  border: 2px solid
+    var(
+      --surface,
+      #fff
+    );
+}
+
 /* Backdrop for popover */
 .popoverBackdrop {
   position: fixed;
@@ -304,6 +376,36 @@
 :global(body.theme-dark) .iconRed {
   background: rgba(248, 113, 113, 0.2);
   color: #f87171;
+}
+
+.iconGreen {
+  background: rgba(34, 197, 94, 0.12);
+  color: #16a34a;
+}
+:global(.dark) .iconGreen,
+:global(body.theme-dark) .iconGreen {
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+}
+
+.iconOrange {
+  background: rgba(249, 115, 22, 0.12);
+  color: #ea580c;
+}
+:global(.dark) .iconOrange,
+:global(body.theme-dark) .iconOrange {
+  background: rgba(249, 115, 22, 0.2);
+  color: #fb923c;
+}
+
+.iconTeal {
+  background: rgba(20, 184, 166, 0.12);
+  color: #0d9488;
+}
+:global(.dark) .iconTeal,
+:global(body.theme-dark) .iconTeal {
+  background: rgba(20, 184, 166, 0.2);
+  color: #2dd4bf;
 }
 
 .menuItemText {

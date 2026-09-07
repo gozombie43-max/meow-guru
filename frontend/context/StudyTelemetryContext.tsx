@@ -32,11 +32,26 @@ export function StudyTelemetryProvider({
 
     // Fire-and-forget telemetry
     try {
+      const timezone =
+        Intl.DateTimeFormat()
+          .resolvedOptions()
+          .timeZone;
+
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), 5000);
-      await api.patch("/users/me/usage", { activeSeconds: seconds }, {
-        signal: controller.signal,
-      });
+      await api.patch(
+        "/users/me/usage",
+        {
+          activeSeconds:
+            seconds,
+
+          timezone,
+        },
+        {
+          signal:
+            controller.signal,
+        }
+      );
       clearTimeout(timer);
     } catch {
       // Best-effort telemetry — silent failure

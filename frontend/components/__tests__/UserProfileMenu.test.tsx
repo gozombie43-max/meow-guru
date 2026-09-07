@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import UserProfileMenu from '../UserProfileMenu';
 import * as AuthContextModule from '@/context/AuthContext';
+import * as NotificationCenterModule from '@/context/NotificationCenterContext';
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
@@ -202,5 +203,28 @@ describe('UserProfileMenu Component', () => {
 
     expect(screen.getByText('Student Member')).toBeDefined();
     expect(screen.queryByRole('menuitem', { name: /admin panel/i })).toBeNull();
+  });
+
+  it('renders live unread badge on avatar trigger and inside notifications menu item when unreadCount > 0', () => {
+    vi.spyOn(NotificationCenterModule, 'useNotificationCenter').mockReturnValue({
+      unreadCount: 5,
+      refreshUnreadCount: vi.fn(),
+      decrementUnread: vi.fn(),
+      clearUnread: vi.fn(),
+    });
+
+    render(<UserProfileMenu size={34} />);
+
+    // Check trigger badge
+    const triggerBadge = screen.getByLabelText('5 unread notifications');
+    expect(triggerBadge).toBeDefined();
+    expect(triggerBadge.textContent).toBe('5');
+
+    // Open menu and check menu item badge
+    const trigger = screen.getByRole('button', { name: /user profile menu/i });
+    fireEvent.click(trigger);
+
+    expect(screen.getByRole('menuitem', { name: /notifications/i })).toBeDefined();
+    expect(screen.getAllByText('5')).toHaveLength(2);
   });
 });

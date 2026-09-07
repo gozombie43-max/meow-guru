@@ -125,7 +125,7 @@ export async function sendBroadcastNotification(
 
 export interface NotificationHistoryItem {
   _id: string;
-  type: "broadcast";
+  type: "broadcast" | "scheduled-broadcast" | "new-mock";
 
   title: string;
   body: string;
@@ -136,8 +136,12 @@ export interface NotificationHistoryItem {
   failureCount: number;
   invalidDeviceCount: number;
 
-  sentByUserId: string;
+  sentByUserId?: string;
   sentByEmail?: string;
+
+  examSlug?: string;
+  testId?: string;
+  mockTitle?: string | null;
 
   createdAt: string;
 }
@@ -160,4 +164,116 @@ export async function fetchNotificationHistory(
   return data;
 }
 
+// ── Scheduled notifications ───────────────────────────────
 
+export type ScheduledNotificationStatus =
+  | "pending"
+  | "processing"
+  | "sent"
+  | "failed"
+  | "cancelled";
+
+export interface ScheduledNotificationItem {
+  _id: string;
+
+  title: string;
+  body: string;
+  route: string;
+
+  sendAt: string;
+  createdAt: string;
+
+  status: ScheduledNotificationStatus;
+
+  successCount?: number;
+  failureCount?: number;
+  totalDevices?: number;
+
+  error?: string;
+  attempts?: number;
+
+  sentAt?: string;
+  failedAt?: string;
+  cancelledAt?: string;
+  retriedAt?: string;
+  retryJobId?: string;
+}
+
+export interface ScheduledNotificationResponse {
+  items: ScheduledNotificationItem[];
+
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+
+  counts: {
+    pending: number;
+    sent: number;
+    failed: number;
+    cancelled: number;
+  };
+}
+
+export async function fetchScheduledNotifications(
+  status: ScheduledNotificationStatus | "all" = "all",
+  page = 1
+): Promise<ScheduledNotificationResponse> {
+  const { data } = await api.get(
+    `/api/notifications/scheduled?status=${status}&page=${page}&limit=20`
+  );
+
+  return data;
+}
+
+export async function cancelScheduledNotification(
+  id: string
+) {
+  const { data } = await api.post(
+    `/api/notifications/scheduled/${id}/cancel`
+  );
+
+  return data;
+}
+
+export async function retryScheduledNotification(
+  id: string,
+  sendAt?: string
+) {
+  const { data } = await api.post(
+    `/api/notifications/scheduled/${id}/retry`,
+    sendAt
+      ? { sendAt }
+      : {}
+  );
+
+  return data;
+}
+
+export interface NotificationAnalytics {
+  days: number;
+
+  notifications: number;
+
+  targetDevices: number;
+  acceptedCount: number;
+  failureCount: number;
+
+  opened: number;
+  pushOpened: number;
+  inAppOpened: number;
+  actionClicked: number;
+
+  openRate: number;
+  actionRate: number;
+}
+
+export async function fetchNotificationAnalytics(
+  days = 30
+): Promise<NotificationAnalytics> {
+  const { data } = await api.get(
+    `/api/notifications/analytics?days=${days}`
+  );
+
+  return data;
+}

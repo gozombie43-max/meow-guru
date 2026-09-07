@@ -55,6 +55,7 @@ export const recentQuizPatchSchema = z.object({
 
 export const studyTimePatchSchema = z.object({
   activeSeconds: z.number().int().positive().max(86400),
+  timezone: z.string().trim().min(1).max(100).optional(),
 });
 
 export const profilePatchSchema = z.object({

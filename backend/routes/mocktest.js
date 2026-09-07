@@ -18,6 +18,9 @@ import {
   deleteMockSlot,
   uploadFullPaper,
 } from '../services/mockTestEngine.js';
+import {
+  notifyNewMockPublished,
+} from '../services/mockPublicationNotificationService.js';
 
 const router = express.Router();
 
@@ -77,12 +80,43 @@ router.get('/slots/:slotId', async (req, res) => {
 // POST /admin/slots — Create a new mock test slot
 router.post('/admin/slots', adminAuth, async (req, res) => {
   try {
-    const { id, examSlug, configKey, title, tier, isFree, order } = req.body;
+    const {
+      id,
+      examSlug,
+      configKey,
+      title,
+      tier,
+      type = "mock",
+      isFree,
+      order,
+    } = req.body;
     if (!id || !examSlug || !configKey || !title) {
       return res.status(400).json({ error: 'id, examSlug, configKey, and title are required' });
     }
 
-    const createdSlot = await createMockSlot({ id, examSlug, configKey, title, tier, isFree, order });
+    const createdSlot = await createMockSlot({
+      id,
+      examSlug,
+      configKey,
+      title,
+      tier,
+      type,
+      isFree,
+      order,
+    });
+
+    if (createdSlot.type === "mock") {
+      void notifyNewMockPublished({
+        id: createdSlot.id,
+        examSlug: createdSlot.examSlug,
+        title: createdSlot.title,
+        tier: createdSlot.tier,
+        type: createdSlot.type,
+      }).catch((error) => {
+        console.error("Dynamic mock notification failed:", error);
+      });
+    }
+
     res.status(201).json({ success: true, slot: createdSlot });
   } catch (err) {
     console.error('Admin create slot error:', err);
@@ -148,6 +182,19 @@ router.post('/admin/upload-paper', adminAuth, async (req, res) => {
     }
 
     const result = await uploadFullPaper({ slotData: slot, questions });
+
+    if (result.isNewSlot && result.type === "mock") {
+      void notifyNewMockPublished({
+        id: result.slotId,
+        examSlug: result.examSlug,
+        title: result.title,
+        tier: result.tier,
+        type: result.type,
+      }).catch((error) => {
+        console.error("New mock notification trigger failed:", error);
+      });
+    }
+
     res.status(201).json(result);
   } catch (err) {
     console.error('Admin upload paper error:', err);

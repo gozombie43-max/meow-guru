@@ -1,6 +1,24 @@
 // services/__tests__/mockTestEngine.test.js
-import { describe, it, expect } from 'vitest';
-import { gradeAttempt } from '../mockTestEngine.js';
+import { describe, it, expect, vi } from 'vitest';
+
+const mockSlotFindOne = vi.fn();
+const mockSlotUpdateOne = vi.fn();
+const mockQuestionsBulkWrite = vi.fn();
+
+vi.mock('../../config/mongodb.js', () => ({
+  getMockSlotsCollection: () => ({
+    findOne: (...args) => mockSlotFindOne(...args),
+    updateOne: (...args) => mockSlotUpdateOne(...args),
+  }),
+  getQuestionsCollection: () => ({
+    bulkWrite: (...args) => mockQuestionsBulkWrite(...args),
+    updateOne: vi.fn().mockResolvedValue({ acknowledged: true }),
+  }),
+  getAttemptsCollection: () => ({}),
+  getLeaderboardsCollection: () => ({}),
+}));
+
+import { gradeAttempt, uploadFullPaper } from '../mockTestEngine.js';
 
 /**
  * gradeAttempt() expects an attemptDoc with:
@@ -139,5 +157,92 @@ describe('gradeAttempt', () => {
     const result = gradeAttempt({ attemptDoc: attempt });
     // String(2) === String('2') should match
     expect(result.sections[0].correct).toBe(1);
+  });
+});
+
+describe('uploadFullPaper', () => {
+  const sampleSlotData = {
+    id: 'cgl-mock-15',
+    examSlug: 'ssc-cgl',
+    configKey: 'ssc-cgl-tier1',
+    title: 'SSC CGL Full Mock 15',
+    tier: 'tier-1',
+    type: 'mock',
+    isFree: false,
+    order: 15,
+  };
+
+  const sampleQuestions = [
+    {
+      id: 'q1',
+      question: 'What is 2+2?',
+      options: ['2', '3', '4', '5'],
+      correctAnswer: 'C',
+      section: 'quant',
+    },
+  ];
+
+  it('marks isNewSlot: true and initializes createdAt when slot is uploaded for the first time', async () => {
+    mockSlotFindOne.mockResolvedValueOnce(null);
+    mockSlotUpdateOne.mockResolvedValueOnce({ acknowledged: true });
+    mockQuestionsBulkWrite.mockResolvedValueOnce({ upsertedCount: 1, modifiedCount: 0 });
+
+    const res = await uploadFullPaper({
+      slotData: sampleSlotData,
+      questions: sampleQuestions,
+    });
+
+    expect(res.success).toBe(true);
+    expect(res.isNewSlot).toBe(true);
+    expect(res.slotId).toBe('cgl-mock-15');
+    expect(res.examSlug).toBe('ssc-cgl');
+    expect(res.title).toBe('SSC CGL Full Mock 15');
+    expect(res.type).toBe('mock');
+    expect(res.tier).toBe('tier-1');
+
+    expect(mockSlotFindOne).toHaveBeenCalledWith(
+      { id: 'cgl-mock-15', examSlug: 'ssc-cgl' },
+      { projection: { _id: 1, createdAt: 1 } }
+    );
+
+    expect(mockSlotUpdateOne).toHaveBeenCalledWith(
+      { id: 'cgl-mock-15', examSlug: 'ssc-cgl' },
+      {
+        $set: expect.objectContaining({
+          id: 'cgl-mock-15',
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
+        }),
+      },
+      { upsert: true }
+    );
+  });
+
+  it('marks isNewSlot: false and preserves existing createdAt when re-uploading an existing slot', async () => {
+    const originalCreatedAt = '2026-08-01T10:00:00.000Z';
+    mockSlotFindOne.mockResolvedValueOnce({
+      _id: 'existing-mongo-id',
+      createdAt: originalCreatedAt,
+    });
+    mockSlotUpdateOne.mockResolvedValueOnce({ acknowledged: true });
+    mockQuestionsBulkWrite.mockResolvedValueOnce({ upsertedCount: 0, modifiedCount: 1 });
+
+    const res = await uploadFullPaper({
+      slotData: sampleSlotData,
+      questions: sampleQuestions,
+    });
+
+    expect(res.success).toBe(true);
+    expect(res.isNewSlot).toBe(false);
+
+    expect(mockSlotUpdateOne).toHaveBeenCalledWith(
+      { id: 'cgl-mock-15', examSlug: 'ssc-cgl' },
+      {
+        $set: expect.objectContaining({
+          createdAt: originalCreatedAt,
+        }),
+      },
+      { upsert: true }
+    );
   });
 });

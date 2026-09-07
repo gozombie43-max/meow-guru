@@ -1,6 +1,11 @@
 // backend/routes/user.routes.js
 import express from 'express';
-import { getUsersCollection } from '../config/mongodb.js';
+import { z } from 'zod';
+import { DateTime, IANAZone } from 'luxon';
+import {
+  getUsersCollection,
+  getStudyActivityDailyCollection,
+} from '../config/mongodb.js';
 import { protect } from '../middleware/protect.js';
 import { validateBody } from '../middleware/validation.js';
 import {
@@ -10,6 +15,65 @@ import {
   recentQuizPatchSchema,
   studyTimePatchSchema,
 } from '../schemas/apiSchemas.js';
+import {
+  computeNextDailyReminder,
+  isValidTimezone,
+  DEFAULT_DAILY_REMINDER_TIME,
+} from '../services/dailyPracticeReminderService.js';
+
+const DEFAULT_NOTIFICATION_PREFERENCES = {
+  enabled: true,
+
+  battleInvites: true,
+  battleResults: true,
+
+  dailyPractice: true,
+  newMocks: true,
+  examUpdates: true,
+
+  announcements: true,
+};
+
+const notificationPreferencesSchema = z
+  .object({
+    enabled: z.boolean().optional(),
+
+    battleInvites: z.boolean().optional(),
+    battleResults: z.boolean().optional(),
+
+    dailyPractice: z.boolean().optional(),
+    newMocks: z.boolean().optional(),
+    examUpdates: z.boolean().optional(),
+
+    announcements: z.boolean().optional(),
+  })
+  .strict()
+  .refine((value) => Object.keys(value).length > 0, {
+    message: 'At least one preference is required',
+  });
+
+const dailyReminderSchema = z.object({
+  enabled: z.boolean(),
+
+  time: z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/),
+
+  timezone: z.string().trim().min(1).max(100),
+
+  streakProtectionEnabled: z
+    .boolean()
+    .optional()
+    .default(false),
+
+  streakProtectionTime: z
+    .string()
+    .regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/)
+    .optional()
+    .default('21:30'),
+});
+
+const studyGoalSchema = z.object({
+  dailyGoalMinutes: z.number().int().min(5).max(240),
+});
 
 const router = express.Router();
 
@@ -262,25 +326,65 @@ router.patch('/me/recent-quizzes', protect, validateBody(recentQuizPatchSchema),
 });
 
 // ── PATCH /users/me/usage ──────────────────────────────
-router.patch('/me/usage', protect, validateBody(studyTimePatchSchema), async (req, res) => {
-  const { activeSeconds } = req.body;
+router.patch(
+  '/me/usage',
+  protect,
+  validateBody(studyTimePatchSchema),
+  async (req, res) => {
+    const { activeSeconds, timezone } = req.body;
 
-  try {
-    const user = await getUser(req.user.id, req.user.email);
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    try {
+      const user = await getUser(req.user.id);
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
 
-    const currentStudyTime = user.studyTime || 0;
-    const newStudyTime = currentStudyTime + activeSeconds;
+      const savedTimezone = user.dailyPracticeReminder?.timezone;
+      const requestedTimezone =
+        timezone && IANAZone.isValidZone(timezone) ? timezone : null;
+      const effectiveTimezone = requestedTimezone || savedTimezone || 'UTC';
 
-    await updateUser(user.id, {
-      studyTime: newStudyTime,
-    });
+      const dateKey = DateTime.now().setZone(effectiveTimezone).toISODate();
 
-    res.json({ message: 'Usage tracked ✅', studyTime: newStudyTime });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+      const users = getUsersCollection();
+      const daily = getStudyActivityDailyCollection();
+
+      await Promise.all([
+        users.updateOne(
+          { id: user.id },
+          {
+            $inc: { studyTime: activeSeconds },
+            $set: { timezone: effectiveTimezone },
+          }
+        ),
+        daily.updateOne(
+          {
+            userId: user.id,
+            dateKey,
+          },
+          {
+            $inc: { activeSeconds },
+            $set: {
+              timezone: effectiveTimezone,
+              updatedAt: new Date(),
+            },
+            $setOnInsert: {
+              createdAt: new Date(),
+            },
+          },
+          { upsert: true }
+        ),
+      ]);
+
+      return res.json({
+        message: 'Usage tracked ✅',
+        dateKey,
+      });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
   }
-});
+);
 
 // ── GET /users/me/ai-chats ─────────────────────────────
 router.get('/me/ai-chats', protect, async (req, res) => {
@@ -397,5 +501,369 @@ router.delete('/me/ai-chats/:chatId', protect, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// ── GET /users/me/notification-preferences ─────────────
+router.get(
+  "/me/notification-preferences",
+  protect,
+  async (req, res) => {
+    try {
+      const user = await getUser(req.user.id);
+
+      if (!user) {
+        return res.status(404).json({
+          error: "User not found",
+        });
+      }
+
+      const preferences = {
+        ...DEFAULT_NOTIFICATION_PREFERENCES,
+
+        ...(user.notificationPreferences || {}),
+      };
+
+      return res.json({
+        preferences,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        error: error.message,
+      });
+    }
+  }
+);
+
+// ── PATCH /users/me/notification-preferences ───────────
+router.patch(
+  "/me/notification-preferences",
+  protect,
+  async (req, res) => {
+    try {
+      const parsed = notificationPreferencesSchema.safeParse(req.body);
+
+      if (!parsed.success) {
+        return res.status(400).json({
+          error: "Invalid notification preferences",
+        });
+      }
+
+      const user = await getUser(req.user.id);
+
+      if (!user) {
+        return res.status(404).json({
+          error: "User not found",
+        });
+      }
+
+      const preferences = {
+        ...DEFAULT_NOTIFICATION_PREFERENCES,
+
+        ...(user.notificationPreferences || {}),
+
+        ...parsed.data,
+      };
+
+      await updateUser(user.id, {
+        notificationPreferences: preferences,
+
+        notificationPreferencesUpdatedAt: new Date(),
+      });
+
+      return res.json({
+        ok: true,
+        preferences,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        error: error.message,
+      });
+    }
+  }
+);
+
+// ── GET /users/me/daily-practice-reminder ──────────────
+router.get(
+  "/me/daily-practice-reminder",
+  protect,
+  async (req, res) => {
+    try {
+      const user =
+        await getUser(
+          req.user.id
+        );
+
+      if (!user) {
+        return res
+          .status(404)
+          .json({
+            error:
+              "User not found",
+          });
+      }
+
+      const reminder =
+        user.dailyPracticeReminder ||
+        {};
+
+      return res.json({
+        reminder: {
+          enabled:
+            reminder.enabled ===
+            true,
+
+          time:
+            reminder.time ||
+            DEFAULT_DAILY_REMINDER_TIME,
+
+          timezone:
+            reminder.timezone ||
+            null,
+
+          nextSendAt:
+            reminder.nextSendAt ||
+            null,
+
+          lastSentAt:
+            reminder.lastSentAt ||
+            null,
+
+          streakProtectionEnabled:
+            reminder.streakProtectionEnabled ===
+            true,
+
+          streakProtectionTime:
+            reminder.streakProtectionTime ||
+            "21:30",
+
+          nextStreakProtectionAt:
+            reminder.nextStreakProtectionAt ||
+            null,
+
+          lastStreakProtectionSentAt:
+            reminder.lastStreakProtectionSentAt ||
+            null,
+        },
+      });
+    } catch (error) {
+      return res
+        .status(500)
+        .json({
+          error:
+            error.message,
+        });
+    }
+  }
+);
+
+// ── PATCH /users/me/daily-practice-reminder ────────────
+router.patch(
+  "/me/daily-practice-reminder",
+  protect,
+  async (req, res) => {
+    try {
+      const parsed =
+        dailyReminderSchema
+          .safeParse(
+            req.body
+          );
+
+      if (!parsed.success) {
+        return res
+          .status(400)
+          .json({
+            error:
+              "Invalid reminder settings",
+          });
+      }
+
+      const {
+        enabled,
+        time,
+        timezone,
+        streakProtectionEnabled,
+        streakProtectionTime,
+      } =
+        parsed.data;
+
+      if (
+        !isValidTimezone(
+          timezone
+        )
+      ) {
+        return res
+          .status(400)
+          .json({
+            error:
+              "Invalid timezone",
+          });
+      }
+
+      const user =
+        await getUser(
+          req.user.id
+        );
+
+      if (!user) {
+        return res
+          .status(404)
+          .json({
+            error:
+              "User not found",
+          });
+      }
+
+      const nextSendAt =
+        enabled
+          ? computeNextDailyReminder({
+              time,
+              timezone,
+            })
+          : null;
+
+      const nextStreakProtectionAt =
+        streakProtectionEnabled
+          ? computeNextDailyReminder({
+              time:
+                streakProtectionTime,
+              timezone,
+            })
+          : null;
+
+      const reminder = {
+        enabled,
+        time,
+        timezone,
+
+        nextSendAt,
+
+        streakProtectionEnabled,
+
+        streakProtectionTime,
+
+        nextStreakProtectionAt,
+
+        updatedAt:
+          new Date(),
+      };
+
+      await updateUser(
+        user.id,
+        {
+          dailyPracticeReminder:
+            reminder,
+        }
+      );
+
+      return res.json({
+        ok: true,
+        reminder,
+      });
+    } catch (error) {
+      return res
+        .status(500)
+        .json({
+          error:
+            error.message,
+        });
+    }
+  }
+);
+
+router.get(
+  "/me/study-goal",
+  protect,
+  async (req, res) => {
+    try {
+      const user =
+        await getUser(
+          req.user.id
+        );
+
+      if (!user) {
+        return res
+          .status(404)
+          .json({
+            error:
+              "User not found",
+          });
+      }
+
+      return res.json({
+        dailyGoalMinutes:
+          user.dailyGoalMinutes ??
+          30,
+      });
+
+    } catch (error) {
+      return res
+        .status(500)
+        .json({
+          error:
+            error.message,
+        });
+    }
+  }
+);
+
+router.patch(
+  "/me/study-goal",
+  protect,
+  async (req, res) => {
+    try {
+      const parsed =
+        studyGoalSchema
+          .safeParse(
+            req.body
+          );
+
+      if (!parsed.success) {
+        return res
+          .status(400)
+          .json({
+            error:
+              "Invalid daily goal",
+          });
+      }
+
+      const matched =
+        await updateUser(
+          req.user.id,
+          {
+            dailyGoalMinutes:
+              parsed.data
+                .dailyGoalMinutes,
+
+            studyGoalUpdatedAt:
+              new Date(),
+          }
+        );
+
+      if (!matched) {
+        return res
+          .status(404)
+          .json({
+            error:
+              "User not found",
+          });
+      }
+
+      return res.json({
+        ok: true,
+
+        dailyGoalMinutes:
+          parsed.data
+            .dailyGoalMinutes,
+      });
+
+    } catch (error) {
+      return res
+        .status(500)
+        .json({
+          error:
+            error.message,
+        });
+    }
+  }
+);
 
 export default router;

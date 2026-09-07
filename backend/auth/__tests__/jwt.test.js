@@ -6,6 +6,8 @@ import {
   verifyRefreshToken,
   revokeToken,
   isRevoked,
+  signBattleRematchToken,
+  verifyBattleRematchToken,
 } from '../jwt.js';
 
 describe('Auth JWT Module', () => {
@@ -43,5 +45,29 @@ describe('Auth JWT Module', () => {
 
   it('throws error when verifying an invalid token string', () => {
     expect(() => verifyToken('invalid.token.payload')).toThrow();
+  });
+
+  it('signs and verifies a battle rematch token correctly', () => {
+    const payload = {
+      requesterUserId: 'user_1',
+      opponentUserId: 'user_2',
+      opponentName: 'Player 2',
+      subject: 'mathematics',
+      topic: 'percentages',
+      questionCount: 10,
+    };
+    const token = signBattleRematchToken(payload);
+    expect(typeof token).toBe('string');
+
+    const decoded = verifyBattleRematchToken(token);
+    expect(decoded.type).toBe('battle-rematch');
+    expect(decoded.requesterUserId).toBe('user_1');
+    expect(decoded.opponentUserId).toBe('user_2');
+    expect(decoded.opponentName).toBe('Player 2');
+    expect(decoded.subject).toBe('mathematics');
+
+    // Normal token should fail rematch verification
+    const normalToken = signToken({ id: 'user_1' });
+    expect(() => verifyBattleRematchToken(normalToken)).toThrow('Invalid rematch token');
   });
 });
