@@ -45,20 +45,26 @@ function matchesNormalizedTopic(question, normalizedTopic) {
   return candidates.some((field) => normalizeSearchKey(field) === normalizedTopic);
 }
 
-const REVEAL_DELAY  = 2000; // ms to show results before next question
-const ROOM_CREATE_COOLDOWN_MS = 10_000; // per-socket room creation throttle
+const REVEAL_DELAY = 2000;
+const ROOM_CREATE_COOLDOWN_MS = 10_000;
 const answerPayloadSchema = z.object({
   code: z.string().regex(/^\d{4}$/),
   questionIndex: z.number().int().min(0).max(500),
   selectedIndex: z.number().int().min(0).max(20),
 });
-const matchmakingSchema = z.object({ subject: z.enum(["mathematics", "reasoning", "english", "general-awareness"]), topic: z.string().min(1).max(80), questionCount: z.union([z.literal(10), z.literal(15), z.literal(25), z.literal(50)]) });
-const socialChallengeSchema = z.object({ targetUserId: z.string().min(1).max(200), subject: z.enum(["mathematics", "reasoning", "english", "general-awareness"]), topic: z.string().min(1).max(80), questionCount: z.union([z.literal(10), z.literal(15), z.literal(25), z.literal(50)]) });
+const matchmakingSchema = z.object({
+  subject: z.enum(['mathematics', 'reasoning', 'english', 'general-awareness']),
+  topic: z.string().min(1).max(80),
+  questionCount: z.union([z.literal(10), z.literal(15), z.literal(25), z.literal(50)]),
+});
+const socialChallengeSchema = z.object({
+  targetUserId: z.string().min(1).max(200),
+  subject: z.enum(['mathematics', 'reasoning', 'english', 'general-awareness']),
+  topic: z.string().min(1).max(80),
+  questionCount: z.union([z.literal(10), z.literal(15), z.literal(25), z.literal(50)]),
+});
 
 export function initBattleSocket(httpServer, corsOrigin) {
-  // Build an explicit origin allowlist for Socket.IO.
-  // Always includes the production Vercel frontend + localhost for dev.
-  // Falls back to the shared corsOrigin function if no FRONTEND_URL is set.
   const socketCorsOrigins = [
     'http://localhost:3000',
     'http://localhost:5000',
@@ -82,12 +88,9 @@ export function initBattleSocket(httpServer, corsOrigin) {
   }));
 
   console.log('Socket.IO MongoDB adapter enabled ✅');
-
   setBattleRealtimeServer(io);
-
   setNotificationRealtimeServer(io);
 
-  // ── Socket authentication ─────────────────────────────
   io.use((socket, next) => {
     const token = socket.handshake.auth?.token;
     if (!token) return next(new Error('Authentication required'));
@@ -109,19 +112,82 @@ export function initBattleSocket(httpServer, corsOrigin) {
     let lastInviteTime = 0;
     let lastRematchTime = 0;
     let lastAnswerEventAt = 0;
+
     socket.on('matchmaking:join', async (raw) => {
-      if (!canUseMatchmaking(socket.user.id)) return socket.emit('matchmaking:error', { code: 'MATCHMAKING_UNAVAILABLE', message: 'Matchmaking is temporarily unavailable.' });
+      if (!canUseMatchmaking(socket.user.id)) {
+        return socket.emit('matchmaking:error', {
+          code: 'MATCHMAKING_UNAVAILABLE',
+          message: 'Matchmaking is temporarily unavailable.',
+        });
+      }
       const parsed = matchmakingSchema.safeParse(raw);
       if (!parsed.success) return socket.emit('matchmaking:error', { message: 'Invalid matchmaking settings.' });
-      try { const ticket = await joinMatchmakingQueue({ userId: socket.user.id, displayName: socket.user.name || socket.user.email || 'Player', ...parsed.data }); socket.emit('matchmaking:queued', { queuedAt: ticket.queuedAt, rating: ticket.rating, subject: ticket.subject, topic: ticket.topic, questionCount: ticket.questionCount }); }
-      catch (error) { console.error('matchmaking:join:', error); socket.emit('matchmaking:error', { message: 'Could not enter matchmaking.' }); }
+      try {
+        const ticket = await joinMatchmakingQueue({
+          userId: socket.user.id,
+          displayName: socket.user.name || socket.user.email || 'Player',
+          ...parsed.data,
+        });
+        socket.emit('matchmaking:queued', {
+          queuedAt: ticket.queuedAt,
+          rating: ticket.rating,
+          subject: ticket.subject,
+          topic: ticket.topic,
+          questionCount: ticket.questionCount,
+        });
+      } catch (error) {
+        console.error('matchmaking:join:', error);
+        socket.emit('matchmaking:error', { message: 'Could not enter matchmaking.' });
+      }
     });
-    socket.on('matchmaking:cancel', async () => { await cancelMatchmakingQueue(socket.user.id).catch(console.error); socket.emit('matchmaking:cancelled'); });
+
+    socket.on('matchmaking:cancel', async () => {
+      await cancelMatchmakingQueue(socket.user.id).catch(console.error);
+      socket.emit('matchmaking:cancelled');
+    });
+
     socket.on('battle:challengeUser', async (raw) => {
-      if (!canCreateBattle(socket.user.id)) return socket.emit('room:error', { message: 'New battles are temporarily unavailable.' });
-      const parsed = socialChallengeSchema.safeParse(raw); if (!parsed.success || parsed.data.targetUserId === socket.user.id) return;
-      try { const { targetUserId, subject, topic, questionCount } = parsed.data, code = await createRoom(socket.id, socket.user.name || 'Player', subject, topic, questionCount, socket.user.id); socket.join(code); const payload = { roomCode: code, challenger: { userId: socket.user.id, name: socket.user.name || 'Player' }, subject, topic, questionCount }; io.to(`user:${targetUserId}`).emit('battle:challengeReceived', payload); void sendPushToUser(targetUserId, { title: `${payload.challenger.name} challenged you ⚔️`, body: `Join the ${subject} battle.`, route: `/battle?join=${code}`, category: 'battleInvites', data: { type: 'battle_invite', roomCode: code, challengerUserId: socket.user.id }, centerKey: `social-battle:${code}:${targetUserId}` }).catch(console.error); socket.emit('battle:challengeSent', { roomCode: code, targetUserId }); }
-      catch (error) { console.error('battle:challengeUser:', error); socket.emit('room:error', { message: 'Could not send challenge.' }); }
+      if (!canCreateBattle(socket.user.id)) {
+        return socket.emit('room:error', { message: 'New battles are temporarily unavailable.' });
+      }
+      const parsed = socialChallengeSchema.safeParse(raw);
+      if (!parsed.success || parsed.data.targetUserId === socket.user.id) return;
+      try {
+        const { targetUserId, subject, topic, questionCount } = parsed.data;
+        const code = await createRoom(
+          socket.id,
+          socket.user.name || 'Player',
+          subject,
+          topic,
+          questionCount,
+          socket.user.id
+        );
+        socket.join(code);
+        const payload = {
+          roomCode: code,
+          challenger: { userId: socket.user.id, name: socket.user.name || 'Player' },
+          subject,
+          topic,
+          questionCount,
+        };
+        io.to(`user:${targetUserId}`).emit('battle:challengeReceived', payload);
+        void sendPushToUser(targetUserId, {
+          title: `${payload.challenger.name} challenged you ⚔️`,
+          body: `Join the ${subject} battle.`,
+          route: `/battle?join=${code}`,
+          category: 'battleInvites',
+          data: {
+            type: 'battle_invite',
+            roomCode: code,
+            challengerUserId: socket.user.id,
+          },
+          centerKey: `social-battle:${code}:${targetUserId}`,
+        }).catch(console.error);
+        socket.emit('battle:challengeSent', { roomCode: code, targetUserId });
+      } catch (error) {
+        console.error('battle:challengeUser:', error);
+        socket.emit('room:error', { message: 'Could not send challenge.' });
+      }
     });
 
     socket.on('battle:resume', async ({ code = null } = {}) => {
@@ -179,8 +245,12 @@ export function initBattleSocket(httpServer, corsOrigin) {
       }
     });
 
-    // ── Create room ──────────────────────────────────────
     socket.on('room:create', async ({ playerName, subject = 'mathematics', topic = 'all', questionCount = 10 }) => {
+      if (!canCreateBattle(socket.user?.id)) {
+        socket.emit('room:error', { message: 'New battles are temporarily unavailable.' });
+        return;
+      }
+
       const now = Date.now();
       if (now - lastRoomCreateTime < ROOM_CREATE_COOLDOWN_MS) {
         socket.emit('room:error', { message: 'Please wait before creating another room.' });
@@ -188,13 +258,17 @@ export function initBattleSocket(httpServer, corsOrigin) {
       }
       lastRoomCreateTime = now;
 
-      const code = await createRoom(socket.id, playerName, subject, topic, questionCount, socket.user?.id);
-      socket.join(code);
-      socket.emit('room:created', { code, playerName });
-      console.log(`Room ${code} created by ${playerName}`);
+      try {
+        const code = await createRoom(socket.id, playerName, subject, topic, questionCount, socket.user?.id);
+        socket.join(code);
+        socket.emit('room:created', { code, playerName });
+        console.log(`Room ${code} created by ${playerName}`);
+      } catch (error) {
+        console.error('room:create failed:', error);
+        socket.emit('room:error', { message: 'Could not create battle room.' });
+      }
     });
 
-    // ── Invite opponent ──────────────────────────────────
     socket.on('room:invite', async ({ code, email }) => {
       const now = Date.now();
       if (now - lastInviteTime < 10000) {
@@ -258,7 +332,9 @@ export function initBattleSocket(httpServer, corsOrigin) {
         }
 
         const hostName = String(
-          socket.user?.name || room.players?.find((player) => player.userId === socket.user?.id)?.name || 'A player'
+          socket.user?.name ||
+          room.players?.find((player) => player.userId === socket.user?.id)?.name ||
+          'A player'
         ).slice(0, 40);
 
         const recipientUserId = recipient.id || String(recipient._id);
@@ -296,9 +372,16 @@ export function initBattleSocket(httpServer, corsOrigin) {
       }
     });
 
-    // ── Rematch ──────────────────────────────────────────
     socket.on('battle:rematch', async ({ rematchToken, playerName }) => {
       try {
+        if (!canCreateBattle(socket.user?.id)) {
+          socket.emit('battle:rematchResult', {
+            ok: false,
+            message: 'New battles are temporarily unavailable.',
+          });
+          return;
+        }
+
         if (Date.now() - lastRematchTime < 10_000) {
           socket.emit('battle:rematchResult', {
             ok: false,
@@ -308,15 +391,12 @@ export function initBattleSocket(httpServer, corsOrigin) {
         }
 
         const payload = verifyBattleRematchToken(rematchToken);
-
         if (payload.requesterUserId !== socket.user?.id) {
           throw new Error('Invalid rematch owner');
         }
 
         lastRematchTime = Date.now();
-
         const safePlayerName = String(playerName || socket.user?.name || 'A player').trim();
-
         const code = await createRoom(
           socket.id,
           safePlayerName,
@@ -327,11 +407,7 @@ export function initBattleSocket(httpServer, corsOrigin) {
         );
 
         socket.join(code);
-
-        socket.emit('room:created', {
-          code,
-          playerName: safePlayerName,
-        });
+        socket.emit('room:created', { code, playerName: safePlayerName });
 
         const pushResult = await sendPushToUser(payload.opponentUserId, {
           title: `${safePlayerName} wants a rematch ⚔️`,
@@ -361,7 +437,6 @@ export function initBattleSocket(httpServer, corsOrigin) {
       }
     });
 
-    // ── Join room ────────────────────────────────────────
     socket.on('room:join', async ({ code, playerName }) => {
       const normalizedCode = String(code ?? '').replace(/\D/g, '').slice(0, 4);
       if (normalizedCode.length !== 4) {
@@ -369,74 +444,88 @@ export function initBattleSocket(httpServer, corsOrigin) {
         return;
       }
       const result = await joinRoom(normalizedCode, socket.id, playerName, socket.user?.id);
-
       if (result.error) {
         socket.emit('room:error', { message: result.error });
         return;
       }
 
       socket.join(normalizedCode);
-
-      // Notify both players of updated player list
       io.to(normalizedCode).emit('room:joined', {
         players: result.room.players.map((player) => player.name),
       });
-
-      // Both players present — start the game
       await startGame(io, normalizedCode);
     });
 
-    // ── Submit answer ────────────────────────────────────
     socket.on('game:answer', async (rawPayload) => {
       if (Date.now() - lastAnswerEventAt < 150) return;
       lastAnswerEventAt = Date.now();
       const parsed = answerPayloadSchema.safeParse(rawPayload);
       if (!parsed.success) {
-        void recordBattleIntegritySignal({ dedupeKey: `invalid-answer-payload:${socket.user.id}:${new Date().toISOString().slice(0, 10)}`, userId: socket.user.id, signalType: 'invalid-answer-payload', severity: 'low', riskPoints: 5, details: { socketId: socket.id } }).catch(console.error);
+        void recordBattleIntegritySignal({
+          dedupeKey: `invalid-answer-payload:${socket.user.id}:${new Date().toISOString().slice(0, 10)}`,
+          userId: socket.user.id,
+          signalType: 'invalid-answer-payload',
+          severity: 'low',
+          riskPoints: 5,
+          details: { socketId: socket.id },
+        }).catch(console.error);
         socket.emit('game:answerRejected', { reason: 'invalid-payload' });
         return;
       }
+
       const { code, questionIndex, selectedIndex } = parsed.data;
-      const result = await submitAnswer({ code, userId: socket.user.id, questionIndex, selectedIndex });
+      const result = await submitAnswer({
+        code,
+        userId: socket.user.id,
+        questionIndex,
+        selectedIndex,
+      });
+
       if (!result.ok) {
-        if (result.reason === 'invalid-option') void recordBattleIntegritySignal({ dedupeKey: `invalid-option:${socket.user.id}:${new Date().toISOString().slice(0, 10)}`, userId: socket.user.id, roomCode: code, signalType: 'invalid-option-attempt', severity: 'medium', riskPoints: 15 }).catch(console.error);
+        if (result.reason === 'invalid-option') {
+          void recordBattleIntegritySignal({
+            dedupeKey: `invalid-option:${socket.user.id}:${new Date().toISOString().slice(0, 10)}`,
+            userId: socket.user.id,
+            roomCode: code,
+            signalType: 'invalid-option-attempt',
+            severity: 'medium',
+            riskPoints: 15,
+          }).catch(console.error);
+        }
         socket.emit('game:answerRejected', { reason: result.reason, questionIndex });
         return;
       }
 
-      // Tell THIS player their result immediately
       socket.emit('game:answerResult', { questionIndex, isCorrect: result.isCorrect });
 
-      // Tell OPPONENT what this player answered
       const room = await getRoom(code);
-      const opponent = room?.players.find(
-        (player) => player.userId !== socket.user.id
-      );
+      const opponent = room?.players.find((player) => player.userId !== socket.user.id);
       if (opponent?.socketId) {
         io.to(opponent.socketId).emit('game:opponentAnswer', { selectedIndex });
       }
 
-      // Broadcast updated scores (includes answered flag)
       io.to(code).emit('game:scores', { scores: result.scores });
 
-      // Move to next question only when BOTH answered
       if (result.allAnswered) {
         const revealRoom = await getRoom(code);
         io.to(code).emit('game:reveal', {
           questionIndex: revealRoom.currentIndex,
           correctIndex: Number(revealRoom.questions[revealRoom.currentIndex].correctAnswer),
-          selections: Object.fromEntries(revealRoom.players.map((player) => [player.userId, player.selectedIndex ?? null])),
+          selections: Object.fromEntries(
+            revealRoom.players.map((player) => [player.userId, player.selectedIndex ?? null])
+          ),
         });
         setTimeout(() => {
-          void advanceBattleAfterAnswers(io, code, result.currentIndex)
+          void advanceBattleAfterAnswers(io, code, result.questionIndex)
             .catch((error) => console.error('Battle advance failed:', error));
         }, REVEAL_DELAY);
       }
     });
 
-    // ── Disconnect ───────────────────────────────────────
     socket.on('disconnect', async (reason) => {
-      void cancelMatchmakingQueue(socket.user.id).catch((error) => console.error('Matchmaking disconnect cleanup:', error));
+      void cancelMatchmakingQueue(socket.user.id).catch((error) => {
+        console.error('Matchmaking disconnect cleanup:', error);
+      });
       try {
         const found = await markSocketDisconnected(socket.id, {
           deployment: reason === 'server shutting down',
@@ -460,7 +549,12 @@ export function initBattleSocket(httpServer, corsOrigin) {
 }
 
 async function repairAnsweredBattle(io, room) {
-  if (room.status !== 'active' || room.players.length !== 2 || !room.players.every((player) => player.answered)) return;
+  if (
+    room.status !== 'active' ||
+    room.players.length !== 2 ||
+    !room.players.every((player) => player.answered)
+  ) return;
+
   const expectedIndex = room.currentIndex;
   setTimeout(() => {
     void advanceBattleAfterAnswers(io, room.code, expectedIndex)
@@ -471,6 +565,7 @@ async function repairAnsweredBattle(io, room) {
 async function advanceBattleAfterAnswers(io, code, expectedIndex) {
   const transition = await advanceQuestion(code, expectedIndex);
   if (!transition?.advanced) return;
+
   if (!transition.finished) {
     const room = transition.room;
     const question = room.questions[room.currentIndex];
@@ -479,9 +574,11 @@ async function advanceBattleAfterAnswers(io, code, expectedIndex) {
       options: question.options,
       questionIndex: room.currentIndex,
       total: room.questions.length,
+      deadline: room.questionDeadline,
     });
     return;
   }
+
   await finishBattle(io, transition.room);
 }
 
@@ -491,92 +588,113 @@ async function finishBattle(io, finishedRoom) {
     console.error('Battle settlement failed:', error);
     return null;
   });
+
   const players = finishedRoom.players;
   for (const player of players) {
     const opponent = players.find((candidate) => candidate.userId !== player.userId);
     const rematchToken = player.userId && opponent?.userId
-      ? signBattleRematchToken({ requesterUserId: player.userId, opponentUserId: opponent.userId, opponentName: opponent.name, subject: finishedRoom.subject, topic: finishedRoom.topic, questionCount: finishedRoom.questionCount })
+      ? signBattleRematchToken({
+          requesterUserId: player.userId,
+          opponentUserId: opponent.userId,
+          opponentName: opponent.name,
+          subject: finishedRoom.subject,
+          topic: finishedRoom.topic,
+          questionCount: finishedRoom.questionCount,
+        })
       : null;
+
     if (player.socketId) {
       const matchPlayer = settlement?.match?.players?.find((entry) => entry.userId === player.userId);
-      const stats = (entry) => { const answers = Array.isArray(entry?.answerLog) ? entry.answerLog : [], answered = answers.filter((answer) => !answer.timedOut), correct = answers.filter((answer) => answer.correct), times = answered.map((answer) => answer.responseTimeMs).filter(Number.isFinite); return { correct: correct.length, total: answers.length, accuracy: answers.length ? Math.round(correct.length / answers.length * 100) : 0, averageResponseMs: times.length ? Math.round(times.reduce((sum, value) => sum + value, 0) / times.length) : null, timedOut: answers.filter((answer) => answer.timedOut).length }; };
+      const stats = (entry) => {
+        const answers = Array.isArray(entry?.answerLog) ? entry.answerLog : [];
+        const answered = answers.filter((answer) => !answer.timedOut);
+        const correct = answers.filter((answer) => answer.correct);
+        const times = answered.map((answer) => answer.responseTimeMs).filter(Number.isFinite);
+        return {
+          correct: correct.length,
+          total: answers.length,
+          accuracy: answers.length ? Math.round((correct.length / answers.length) * 100) : 0,
+          averageResponseMs: times.length
+            ? Math.round(times.reduce((sum, value) => sum + value, 0) / times.length)
+            : null,
+          timedOut: answers.filter((answer) => answer.timedOut).length,
+        };
+      };
       const opponentMatchPlayer = settlement?.match?.players?.find((entry) => entry.userId === opponent?.userId);
-      io.to(player.socketId).emit('game:end', { scores: finalScores, finishReason: finishedRoom.finishReason, winnerUserId: finishedRoom.winnerUserId || null, rematchToken, opponentName: opponent?.name || 'Opponent', matchStats: { me: stats(matchPlayer), opponent: stats(opponentMatchPlayer) }, rating: matchPlayer ? { lifetime: { before: matchPlayer.ratingBefore, after: matchPlayer.ratingAfter, delta: matchPlayer.ratingDelta }, season: matchPlayer.seasonRatingAfter !== null ? { before: matchPlayer.seasonRatingBefore, after: matchPlayer.seasonRatingAfter, delta: matchPlayer.seasonRatingDelta, tierBefore: matchPlayer.seasonTierBefore, tierAfter: matchPlayer.seasonTierAfter } : null } : null });
+      io.to(player.socketId).emit('game:end', {
+        scores: finalScores,
+        finishReason: finishedRoom.finishReason,
+        winnerUserId: finishedRoom.winnerUserId || null,
+        rematchToken,
+        opponentName: opponent?.name || 'Opponent',
+        matchStats: {
+          me: stats(matchPlayer),
+          opponent: stats(opponentMatchPlayer),
+        },
+        rating: matchPlayer ? {
+          lifetime: {
+            before: matchPlayer.ratingBefore,
+            after: matchPlayer.ratingAfter,
+            delta: matchPlayer.ratingDelta,
+          },
+          season: matchPlayer.seasonRatingAfter !== null ? {
+            before: matchPlayer.seasonRatingBefore,
+            after: matchPlayer.seasonRatingAfter,
+            delta: matchPlayer.seasonRatingDelta,
+            tierBefore: matchPlayer.seasonTierBefore,
+            tierAfter: matchPlayer.seasonTierAfter,
+          } : null,
+        } : null,
+      });
     }
   }
+
   void sendBattleResultNotifications(finishedRoom, finalScores)
     .catch((error) => console.error('Battle result notification error:', error));
 }
 
-// ── Fetch questions and start game ───────────────────────
 async function startGame(io, code) {
   const room = await getRoom(code);
   if (!room) return;
 
   try {
     const questions = getQuestionsCollection();
-
     const mongoFilter = {};
 
-    // Preserve previous case-insensitive exact subject match
     if (room.subject) {
       mongoFilter.subject = {
-        $regex: `^${String(room.subject)
-          .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`,
+        $regex: `^${String(room.subject).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`,
         $options: 'i',
       };
     }
 
-    const normalizedTopic =
-      room.topic && room.topic !== 'all'
-        ? normalizeSearchKey(room.topic)
-        : null;
+    const normalizedTopic = room.topic && room.topic !== 'all'
+      ? normalizeSearchKey(room.topic)
+      : null;
 
-    /*
-     * Preserve previous Cosmos behaviour:
-     * when topic is specified, first perform an exact
-     * case-insensitive topic match in the database.
-     */
     if (normalizedTopic && room.topic) {
       mongoFilter.topic = {
-        $regex: `^${String(room.topic)
-          .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`,
+        $regex: `^${String(room.topic).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`,
         $options: 'i',
       };
     }
 
-    let resources = await questions
-      .find(mongoFilter)
-      .toArray();
+    let resources = await questions.find(mongoFilter).toArray();
 
-    /*
-     * Keep your existing normalized cross-field validation.
-     */
     if (normalizedTopic) {
-      resources = resources.filter((question) =>
-        matchesNormalizedTopic(
-          question,
-          normalizedTopic
-        )
-      );
+      resources = resources.filter((question) => matchesNormalizedTopic(question, normalizedTopic));
     }
 
     if (resources.length === 0) {
-      const filterLabel =
-        room.topic &&
-        room.topic !== 'all'
-          ? `topic: ${room.topic}`
-          : `subject: ${room.subject || 'all'}`;
-
+      const filterLabel = room.topic && room.topic !== 'all'
+        ? `topic: ${room.topic}`
+        : `subject: ${room.subject || 'all'}`;
       io.to(code).emit('room:error', {
-        message:
-          `No questions found for ${filterLabel}`,
+        message: `No questions found for ${filterLabel}`,
       });
-
       return;
     }
 
-    // Shuffle and select requested count
     const shuffled = resources
       .sort(() => Math.random() - 0.5)
       .slice(0, room.questionCount);
@@ -592,181 +710,82 @@ async function startGame(io, code) {
 
     setTimeout(() => {
       const first = shuffled[0];
-
       io.to(code).emit('game:question', {
         question: first.question,
         options: first.options,
         questionIndex: 0,
         total: shuffled.length,
+        deadline: activeRoom.questionDeadline,
       });
     }, 1200);
-
   } catch (err) {
-    console.error(
-      'startGame error:',
-      err.message
-    );
-
+    console.error('startGame error:', err.message);
     io.to(code).emit('room:error', {
-      message:
-        'Failed to load questions. Try again.',
+      message: 'Failed to load questions. Try again.',
     });
   }
 }
 
-export async function sendBattleResultNotifications(
-  room,
-  scores
-) {
-  if (!room) {
-    return;
-  }
+export async function sendBattleResultNotifications(room, scores) {
+  if (!room) return;
 
   const players = room.players || [];
+  if (players.length !== 2) return;
 
-  if (players.length !== 2) {
-    return;
-  }
+  const scoredPlayers = players.map((player) => ({
+    player,
+    score: scores[player.userId]?.score ?? player.score ?? 0,
+  }));
+  const maxScore = Math.max(...scoredPlayers.map((entry) => entry.score));
+  const winnerCount = scoredPlayers.filter((entry) => entry.score === maxScore).length;
 
-  const scoredPlayers =
-    players.map(
-      (player) => ({
-        player,
-        score:
-          scores[player.userId]?.score ??
-          player.score ??
-          0,
-      })
-    );
+  const jobs = scoredPlayers.map(async (entry) => {
+    const { player, score } = entry;
+    if (!player.userId) return;
 
-  const maxScore =
-    Math.max(
-      ...scoredPlayers.map(
-        (entry) => entry.score
-      )
-    );
+    const opponent = scoredPlayers.find((other) => other.player.userId !== player.userId);
+    if (!opponent) return;
 
-  const winnerCount =
-    scoredPlayers.filter(
-      (entry) =>
-        entry.score === maxScore
-    ).length;
+    let title;
+    let body;
+    let result;
 
-  const jobs =
-    scoredPlayers.map(
-      async (entry) => {
-        const {
-          player,
-          score,
-        } = entry;
-
-        if (!player.userId) {
-          return;
-        }
-
-        const opponent =
-          scoredPlayers.find(
-            (other) =>
-              other.player.userId !==
-              player.userId
-          );
-
-        if (!opponent) {
-          return;
-        }
-
-        let title;
-        let body;
-        let result;
-
-        if (winnerCount > 1) {
-          title =
-            "Battle Draw 🤝";
-
-          body =
-            `You and ${opponent.player.name} finished ${score}-${opponent.score}.`;
-
-          result = "draw";
-
-        } else if (
-          score === maxScore
-        ) {
-          title =
-            "You Won! 🏆";
-
-          body =
-            `You defeated ${opponent.player.name} ${score}-${opponent.score}.`;
-
-          result = "win";
-
-        } else {
-          title =
-            "Battle Finished ⚔️";
-
-          body =
-            `${opponent.player.name} won ${opponent.score}-${score}. Ready for a rematch?`;
-
-          result = "loss";
-        }
-
-        return sendPushToUser(
-          player.userId,
-          {
-            title,
-            body,
-
-            route:
-              "/battle",
-
-            category:
-              "battleResults",
-
-            data: {
-              type:
-                "battle_result",
-
-              result,
-
-              score,
-
-              opponentScore:
-                opponent.score,
-
-              opponentName:
-                opponent.player.name,
-
-              subject:
-                room.subject || "",
-
-              topic:
-                room.topic || "",
-            },
-
-            centerKey:
-              room.code
-                ? `battle-result:${room.code}:${player.userId}`
-                : null,
-          }
-        );
-      }
-    );
-
-  const results =
-    await Promise.allSettled(
-      jobs
-    );
-
-  results.forEach(
-    (result) => {
-      if (
-        result.status ===
-        "rejected"
-      ) {
-        console.error(
-          "Battle result push failed:",
-          result.reason
-        );
-      }
+    if (winnerCount > 1) {
+      title = 'Battle Draw 🤝';
+      body = `You and ${opponent.player.name} finished ${score}-${opponent.score}.`;
+      result = 'draw';
+    } else if (score === maxScore) {
+      title = 'You Won! 🏆';
+      body = `You defeated ${opponent.player.name} ${score}-${opponent.score}.`;
+      result = 'win';
+    } else {
+      title = 'Battle Finished ⚔️';
+      body = `${opponent.player.name} won ${opponent.score}-${score}. Ready for a rematch?`;
+      result = 'loss';
     }
-  );
+
+    return sendPushToUser(player.userId, {
+      title,
+      body,
+      route: '/battle',
+      category: 'battleResults',
+      data: {
+        type: 'battle_result',
+        result,
+        score,
+        opponentScore: opponent.score,
+        opponentName: opponent.player.name,
+        subject: room.subject || '',
+        topic: room.topic || '',
+      },
+      centerKey: room.code ? `battle-result:${room.code}:${player.userId}` : null,
+    });
+  });
+
+  const results = await Promise.allSettled(jobs);
+  results.forEach((result) => {
+    if (result.status === 'rejected') {
+      console.error('Battle result push failed:', result.reason);
+    }
+  });
 }
