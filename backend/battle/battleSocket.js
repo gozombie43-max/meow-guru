@@ -478,14 +478,16 @@ export function initBattleSocket(httpServer, corsOrigin) {
       // Move to next question only when BOTH answered
       if (result.allAnswered) {
         const revealRoom = await getRoom(code);
+        if (!revealRoom) return;
+        const currentIdx = revealRoom.currentIndex ?? questionIndex;
         io.to(code).emit('game:reveal', {
-          questionIndex: revealRoom.currentIndex,
-          correctIndex: getCorrectAnswerIndex(revealRoom.questions[revealRoom.currentIndex]),
+          questionIndex: currentIdx,
+          correctIndex: getCorrectAnswerIndex(revealRoom.questions[currentIdx]),
           selections: Object.fromEntries(revealRoom.players.map((player) => [player.userId, player.selectedIndex ?? null])),
           revealEndsAt: new Date(Date.now() + REVEAL_DELAY).toISOString(),
         });
         setTimeout(() => {
-          void advanceBattleAfterAnswers(io, code, result.currentIndex)
+          void advanceBattleAfterAnswers(io, code, currentIdx)
             .catch((error) => console.error('Battle advance failed:', error));
         }, REVEAL_DELAY);
       }

@@ -71,7 +71,7 @@ function RoundCenterBadge({ reveal }: { reveal: Reveal | null }) {
     const updateTimer = () => {
       const now = Date.now();
       const remainingMs = Math.max(0, revealEndTime - now);
-      const secs = Math.max(1, Math.ceil(remainingMs / 1000));
+      const secs = Math.ceil(remainingMs / 1000);
       const prog = Math.min(100, Math.max(0, (remainingMs / 5000) * 100));
       setSecondsLeft(secs);
       setProgress(prog);
