@@ -70,6 +70,7 @@ export async function connectMongoDB() {
     // ── Push notification device indexes ──
     db.collection("pushDevices").createIndex({ fid: 1 }, { unique: true }),
     db.collection("pushDevices").createIndex({ userId: 1, enabled: 1 }),
+    db.collection("pushDevices").createIndex({ enabled: 1, platform: 1, userId: 1 }),
     db.collection("pushDevices").createIndex({ updatedAt: -1 }),
 
     // ── Notification history indexes ──

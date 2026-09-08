@@ -1,6 +1,10 @@
 // backend/controllers/adminUsers.controller.js
 
-import { getUsersCollection, getAuditLogCollection } from '../config/mongodb.js';
+import {
+  getUsersCollection,
+  getAuditLogCollection,
+  getPushDevicesCollection,
+} from '../config/mongodb.js';
 import { roleLevel } from '../middleware/requireRole.js';
 import { sendPushToUser } from '../services/pushNotificationService.js';
 
@@ -89,7 +93,7 @@ export async function getDashboardStats(req, res) {
 
 export async function getUsers(req, res) {
   try {
-    const { page, limit, search, status, role, sort } = req.query;
+    const { page, limit, search, status, role, push, sort } = req.query;
 
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
     const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 25));
@@ -128,6 +132,16 @@ export async function getUsers(req, res) {
       }
     }
 
+    if (push && ['android', 'none'].includes(push)) {
+      const registeredUserIds = await getPushDevicesCollection().distinct('userId', {
+        enabled: true,
+        platform: 'android',
+      });
+      filter.id = push === 'android'
+        ? { $in: registeredUserIds.map(String) }
+        : { $nin: registeredUserIds.map(String) };
+    }
+
     // Build sort
     let sortObj = { createdAt: -1 };
     if (sort) {
@@ -150,11 +164,41 @@ export async function getUsers(req, res) {
       users.countDocuments(filter),
     ]);
 
-    // Normalize status for users without the field
-    const normalizedDocs = docs.map((u) => ({
-      ...u,
-      status: u.status || 'active',
-    }));
+    const userIds = docs.map((user) => String(user.id));
+    const devices = userIds.length
+      ? await getPushDevicesCollection()
+        .find(
+          { userId: { $in: userIds }, enabled: true, platform: 'android' },
+          { projection: { _id: 0, userId: 1, lastSeenAt: 1, updatedAt: 1 } }
+        )
+        .toArray()
+      : [];
+
+    const pushByUserId = new Map();
+    for (const device of devices) {
+      const userId = String(device.userId);
+      const existing = pushByUserId.get(userId) || { activeDeviceCount: 0, lastSeenAt: null };
+      const lastSeenAt = device.lastSeenAt || device.updatedAt || null;
+      if (!existing.lastSeenAt || (lastSeenAt && new Date(lastSeenAt) > new Date(existing.lastSeenAt))) {
+        existing.lastSeenAt = lastSeenAt;
+      }
+      existing.activeDeviceCount += 1;
+      pushByUserId.set(userId, existing);
+    }
+
+    // Normalize status and attach only aggregate push metadata (never the FID).
+    const normalizedDocs = docs.map((u) => {
+      const deviceSummary = pushByUserId.get(String(u.id));
+      return {
+        ...u,
+        status: u.status || 'active',
+        push: {
+          androidRegistered: Boolean(deviceSummary),
+          activeDeviceCount: deviceSummary?.activeDeviceCount || 0,
+          lastSeenAt: deviceSummary?.lastSeenAt || null,
+        },
+      };
+    });
 
     res.json({
       users: normalizedDocs,
@@ -185,7 +229,26 @@ export async function getUserById(req, res) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    res.json({ ...user, status: user.status || 'active' });
+    const devices = await getPushDevicesCollection()
+      .find(
+        { userId: String(id), enabled: true, platform: 'android' },
+        { projection: { _id: 0, lastSeenAt: 1, updatedAt: 1 } }
+      )
+      .toArray();
+    const lastSeenAt = devices.reduce((latest, device) => {
+      const seen = device.lastSeenAt || device.updatedAt || null;
+      return !latest || (seen && new Date(seen) > new Date(latest)) ? seen : latest;
+    }, null);
+
+    res.json({
+      ...user,
+      status: user.status || 'active',
+      push: {
+        androidRegistered: devices.length > 0,
+        activeDeviceCount: devices.length,
+        lastSeenAt,
+      },
+    });
   } catch (err) {
     console.error('getUserById error:', err);
     res.status(500).json({ error: err.message });

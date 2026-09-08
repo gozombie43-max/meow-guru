@@ -27,6 +27,7 @@ export async function fetchAdminUsers(
   if (params.search) query.set('search', params.search);
   if (params.status) query.set('status', params.status);
   if (params.role) query.set('role', params.role);
+  if (params.push) query.set('push', params.push);
   if (params.sort) query.set('sort', params.sort);
 
   const { data } = await api.get(`/api/admin/users?${query.toString()}`);
@@ -86,7 +87,16 @@ export async function sendUserNotification(
   id: string,
   title: string,
   body: string
-): Promise<{ message: string; sent: boolean }> {
+): Promise<{
+  message: string;
+  sent: boolean;
+  successCount: number;
+  failureCount: number;
+  invalidDeviceCount: number;
+  noDevices: boolean;
+  suppressed: boolean;
+  notificationId: string | null;
+}> {
   const { data } = await api.post(`/api/admin/users/${id}/notification`, {
     title,
     body,

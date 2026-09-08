@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mockUserFindOne = vi.fn();
 const mockAuditInsertOne = vi.fn();
 const mockSendPushToUser = vi.fn();
+const mockPushDevicesFind = vi.fn();
 
 vi.mock('../../config/mongodb.js', () => ({
   getUsersCollection: () => ({
@@ -10,6 +11,9 @@ vi.mock('../../config/mongodb.js', () => ({
   }),
   getAuditLogCollection: () => ({
     insertOne: (...args) => mockAuditInsertOne(...args),
+  }),
+  getPushDevicesCollection: () => ({
+    find: (...args) => mockPushDevicesFind(...args),
   }),
 }));
 

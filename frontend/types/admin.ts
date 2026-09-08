@@ -19,9 +19,10 @@ export interface AdminUser {
     status: 'active' | 'expired' | 'cancelled';
   };
 
-  notifications?: {
-    enabled: boolean;
-    fcmTokens: string[];
+  push?: {
+    androidRegistered: boolean;
+    activeDeviceCount: number;
+    lastSeenAt: string | null;
   };
 
   lastLoginAt?: string;
@@ -61,5 +62,6 @@ export interface AdminUsersQueryParams {
   search?: string;
   status?: UserStatus | '';
   role?: UserRole | '';
+  push?: 'android' | 'none' | '';
   sort?: string;
 }

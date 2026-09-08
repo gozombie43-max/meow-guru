@@ -325,7 +325,7 @@
 
 .tableHeader {
   display: grid;
-  grid-template-columns: 2.5fr 1fr 1fr 1fr 1.2fr 48px;
+  grid-template-columns: 2.3fr 0.9fr 1.45fr 1fr 1fr 1.15fr 48px;
   padding: 12px 20px;
   font-size: 11px;
   font-weight: 700;
@@ -338,7 +338,7 @@
 
 .tableRow {
   display: grid;
-  grid-template-columns: 2.5fr 1fr 1fr 1fr 1.2fr 48px;
+  grid-template-columns: 2.3fr 0.9fr 1.45fr 1fr 1fr 1.15fr 48px;
   padding: 14px 20px;
   align-items: center;
   border-bottom: 1px solid var(--table-row-border);
@@ -476,6 +476,23 @@
   font-size: 13px;
   color: var(--color-text-secondary);
 }
+
+.pushCell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.pushEnabled { color: #15803d; }
+.pushUnavailable { color: var(--color-text-tertiary); }
+
+:global(.theme-dark) .pushEnabled,
+:global(body.theme-dark) .pushEnabled,
+:global(html.theme-dark) .pushEnabled,
+:global(.dark) .pushEnabled { color: #86efac; }
 
 .moreBtn {
   width: 32px;
@@ -851,6 +868,31 @@
   gap: 10px;
   margin-top: 8px;
 }
+
+.notifyCapability,
+.notifyResult {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 16px;
+  padding: 12px;
+  border: 1px solid var(--color-border-secondary);
+  border-radius: 12px;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+.notifyCapability > div,
+.notifyResult > div {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.notifyCapability svg,
+.notifyResult svg { color: #16a34a; }
+.notifyUnavailable, .notifyWarning { color: #b45309; }
+.notifyFailed { color: #dc2626; }
 
 .modalBtn {
   height: 40px;

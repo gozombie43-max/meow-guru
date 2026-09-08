@@ -4,7 +4,6 @@ import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useMediaQuery } from '@/hooks/useMediaQuery';
 import {
   fetchAdminDashboardStats,
   fetchAdminUsers,
@@ -40,6 +39,7 @@ import {
   Shield,
   AlertCircle,
   CheckCircle,
+  Smartphone,
 } from 'lucide-react';
 import s from './AdminUsersPage.module.css';
 
@@ -109,7 +109,6 @@ function statusLabel(status: string): string {
 export default function AdminUsersPage() {
   const { user: authUser, loading: authLoading } = useAuth();
   const router = useRouter();
-  const isMobile = useMediaQuery('(max-width: 768px)');
 
   // ── State ──────────────────────────────────────────────
   const [stats, setStats] = useState<AdminDashboardStats | null>(null);
@@ -121,6 +120,7 @@ export default function AdminUsersPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<UserStatus | ''>('');
   const [roleFilter, setRoleFilter] = useState<UserRole | ''>('');
+  const [pushFilter, setPushFilter] = useState<'android' | 'none' | ''>('');
   const [sort, setSort] = useState('-createdAt');
   const [page, setPage] = useState(1);
 
@@ -136,6 +136,7 @@ export default function AdminUsersPage() {
   const [actionLoading, setActionLoading] = useState(false);
   const [notifyTitle, setNotifyTitle] = useState('');
   const [notifyBody, setNotifyBody] = useState('');
+  const [notifyResult, setNotifyResult] = useState<Awaited<ReturnType<typeof sendUserNotification>> | null>(null);
   const [statusReason, setStatusReason] = useState('');
 
   // Debounce ref
@@ -180,6 +181,7 @@ export default function AdminUsersPage() {
         search: debouncedSearch || undefined,
         status: statusFilter || undefined,
         role: roleFilter || undefined,
+        push: pushFilter || undefined,
         sort,
       };
       const res = await fetchAdminUsers(params);
@@ -192,7 +194,7 @@ export default function AdminUsersPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, debouncedSearch, statusFilter, roleFilter, sort]);
+  }, [page, debouncedSearch, statusFilter, roleFilter, pushFilter, sort]);
 
   useEffect(() => {
     if (!authUser) return;
@@ -223,6 +225,7 @@ export default function AdminUsersPage() {
     setShowNotifyModal(false);
     setShowDeleteConfirm(false);
     setShowStatusConfirm(null);
+    setNotifyResult(null);
   }, []);
 
   // ── Role change ────────────────────────────────────────
@@ -296,10 +299,8 @@ export default function AdminUsersPage() {
     if (!selectedUser || !notifyTitle.trim() || !notifyBody.trim()) return;
     setActionLoading(true);
     try {
-      await sendUserNotification(selectedUser.id, notifyTitle, notifyBody);
-      setShowNotifyModal(false);
-      setNotifyTitle('');
-      setNotifyBody('');
+      const result = await sendUserNotification(selectedUser.id, notifyTitle, notifyBody);
+      setNotifyResult(result);
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { error?: string } } })?.response?.data
@@ -441,10 +442,22 @@ export default function AdminUsersPage() {
               setPage(1);
             }}
           >
-            <option value="">All Status</option>
+              <option value="">All Status</option>
             <option value="active">Active</option>
             <option value="suspended">Suspended</option>
             <option value="banned">Banned</option>
+          </select>
+          <select
+            className={s.filterSelect}
+            value={pushFilter}
+            onChange={(e) => {
+              setPushFilter(e.target.value as 'android' | 'none' | '');
+              setPage(1);
+            }}
+          >
+            <option value="">All Push States</option>
+            <option value="android">Android Push</option>
+            <option value="none">No Android Push</option>
           </select>
           <select
             className={s.filterSelect}
@@ -468,6 +481,7 @@ export default function AdminUsersPage() {
           <div className={s.tableHeader}>
             <span>User</span>
             <span>Role</span>
+            <span>Platform / Push</span>
             <span>Status</span>
             <span>Joined</span>
             <span>Last Active</span>
@@ -508,6 +522,14 @@ export default function AdminUsersPage() {
                   <div>
                     <span className={`${s.roleBadge} ${s[canonicalRole(u.role)]}`}>
                       {roleLabel(u.role)}
+                    </span>
+                  </div>
+                  <div className={s.pushCell}>
+                    <Smartphone size={15} aria-hidden="true" />
+                    <span className={u.push?.androidRegistered ? s.pushEnabled : s.pushUnavailable}>
+                      {u.push?.androidRegistered
+                        ? `Android Push · ${u.push.activeDeviceCount} device${u.push.activeDeviceCount === 1 ? '' : 's'}`
+                        : 'No Android Push'}
                     </span>
                   </div>
                   <div>
@@ -650,6 +672,30 @@ export default function AdminUsersPage() {
                   </div>
                 </div>
 
+                <div className={s.section}>
+                  <div className={s.sectionTitle}>Notification capability</div>
+                  <div className={s.detailRow}>
+                    <span className={s.detailLabel}>Platform</span>
+                    <span className={`${s.detailValue} ${selectedUser.push?.androidRegistered ? s.pushEnabled : s.pushUnavailable}`}>
+                      {selectedUser.push?.androidRegistered ? 'Android Push' : 'No Android Push'}
+                    </span>
+                  </div>
+                  <div className={s.detailRow}>
+                    <span className={s.detailLabel}>Registered devices</span>
+                    <span className={s.detailValue}>{selectedUser.push?.activeDeviceCount || 0}</span>
+                  </div>
+                  <div className={s.detailRow}>
+                    <span className={s.detailLabel}>Last device seen</span>
+                    <span className={s.detailValue}>{relativeTime(selectedUser.push?.lastSeenAt || undefined)}</span>
+                  </div>
+                  <div className={s.detailRow}>
+                    <span className={s.detailLabel}>Notification route</span>
+                    <span className={s.detailValue}>
+                      {selectedUser.push?.androidRegistered ? 'In-app + Android push' : 'In-app only'}
+                    </span>
+                  </div>
+                </div>
+
                 {/* Learning stats */}
                 {userStats && (
                   <div className={s.section}>
@@ -725,7 +771,7 @@ export default function AdminUsersPage() {
                   <div className={s.actions}>
                     <button
                       className={s.actionBtn}
-                      onClick={() => setShowNotifyModal(true)}
+                      onClick={() => { setNotifyResult(null); setShowNotifyModal(true); }}
                     >
                       <Bell size={16} />
                       Send Notification
@@ -780,38 +826,64 @@ export default function AdminUsersPage() {
 
       {/* ── Notification Modal ────────────────────────────── */}
       {showNotifyModal && selectedUser && (
-        <div className={s.modal} onClick={() => setShowNotifyModal(false)}>
+        <div className={s.modal} onClick={() => { setShowNotifyModal(false); setNotifyResult(null); }}>
           <div className={s.modalCard} onClick={(e) => e.stopPropagation()}>
             <div className={s.modalTitle}>
               Send Notification to {selectedUser.name}
             </div>
-            <input
-              className={s.modalInput}
-              placeholder="Title (e.g. Your SSC CGL mock is ready)"
-              value={notifyTitle}
-              onChange={(e) => setNotifyTitle(e.target.value)}
-            />
-            <textarea
-              className={s.modalInput}
-              style={{ minHeight: 80, resize: 'vertical' }}
-              placeholder="Body message..."
-              value={notifyBody}
-              onChange={(e) => setNotifyBody(e.target.value)}
-            />
+            {!notifyResult && <>
+              <div className={s.notifyCapability}>
+                <div><CheckCircle size={16} /><span>Notification Center</span></div>
+                {selectedUser.push?.androidRegistered ? (
+                  <div><CheckCircle size={16} /><span>Android FCM push</span></div>
+                ) : (
+                  <div className={s.notifyUnavailable}>— Android push unavailable</div>
+                )}
+              </div>
+              <input
+                className={s.modalInput}
+                placeholder="Title (e.g. Your SSC CGL mock is ready)"
+                value={notifyTitle}
+                onChange={(e) => setNotifyTitle(e.target.value)}
+              />
+              <textarea
+                className={s.modalInput}
+                style={{ minHeight: 80, resize: 'vertical' }}
+                placeholder="Body message..."
+                value={notifyBody}
+                onChange={(e) => setNotifyBody(e.target.value)}
+              />
+            </>}
+            {notifyResult && (
+              <div className={s.notifyResult}>
+                <div><CheckCircle size={16} /> Notification Center saved</div>
+                {notifyResult.sent ? (
+                  <div><CheckCircle size={16} /> FCM Accepted: {notifyResult.successCount} Android device{notifyResult.successCount === 1 ? '' : 's'}</div>
+                ) : notifyResult.noDevices ? (
+                  <div className={s.notifyWarning}>In-app only — no Android device</div>
+                ) : notifyResult.suppressed ? (
+                  <div className={s.notifyWarning}>Push disabled by user</div>
+                ) : (
+                  <div className={s.notifyFailed}>FCM Failed</div>
+                )}
+                {notifyResult.failureCount > 0 && <div className={s.notifyFailed}>Failed: {notifyResult.failureCount}</div>}
+                {notifyResult.invalidDeviceCount > 0 && <div className={s.notifyFailed}>Invalid devices: {notifyResult.invalidDeviceCount}</div>}
+              </div>
+            )}
             <div className={s.modalActions}>
               <button
                 className={s.modalBtnSecondary}
-                onClick={() => setShowNotifyModal(false)}
+                onClick={() => { setShowNotifyModal(false); setNotifyResult(null); }}
               >
-                Cancel
+                {notifyResult ? 'Close' : 'Cancel'}
               </button>
-              <button
+              {!notifyResult && <button
                 className={s.modalBtnPrimary}
                 onClick={handleNotify}
                 disabled={actionLoading || !notifyTitle.trim() || !notifyBody.trim()}
               >
                 {actionLoading ? 'Sending…' : 'Send'}
-              </button>
+              </button>}
             </div>
           </div>
         </div>
