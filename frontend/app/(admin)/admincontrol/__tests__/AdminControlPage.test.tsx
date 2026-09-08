@@ -73,6 +73,20 @@ describe("AdminControlPage", () => {
     expect(screen.queryByRole("link")).toBeNull();
   });
 
+  it("uses the workspace-shaped loading state during authentication", () => {
+    vi.spyOn(AuthContextModule, "useAuth").mockReturnValue({
+      ...authValue,
+      user: null,
+      token: null,
+      loading: true,
+    });
+
+    render(<AdminControlPage />);
+
+    expect(screen.getByLabelText("Loading admin control")).toBeDefined();
+    expect(screen.queryByText("Checking admin access…")).toBeNull();
+  });
+
   it("keeps only the requested category filters", () => {
     render(<AdminControlPage />);
     expect(screen.getByRole("link", { name: "Back to app" }).textContent).toBe(

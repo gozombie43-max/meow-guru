@@ -20,6 +20,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import AdminControlSkeleton from "./AdminControlSkeleton";
 import styles from "./AdminControlPage.module.css";
 
 type AdminRoute = {
@@ -135,17 +136,7 @@ export default function AdminControlPage() {
   }, [isAdmin, loading, router, user]);
 
   if (loading || !isAdmin) {
-    return (
-      <main
-        className={`${styles.page} ${styles.loadingShell}`}
-        aria-live="polite"
-      >
-        <div className={styles.loadingCard}>
-          <span className={styles.spinner} aria-hidden="true" />
-          <p>{loading ? "Checking admin access…" : "Redirecting…"}</p>
-        </div>
-      </main>
-    );
+    return <AdminControlSkeleton />;
   }
 
   return (

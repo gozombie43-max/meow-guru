@@ -371,24 +371,89 @@
     background: var(--selection);
   }
 }
-.loadingCard {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 32px;
-  color: var(--muted);
+.loadingWindow {
+  pointer-events: none;
 }
-.spinner {
-  width: 18px;
-  height: 18px;
-  border: 2px solid var(--line);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin 700ms linear infinite;
+.skeleton {
+  display: block;
+  border-radius: 8px;
+  background: linear-gradient(
+    90deg,
+    var(--field) 25%,
+    var(--card) 45%,
+    var(--field) 65%
+  );
+  background-size: 300% 100%;
+  animation: adminControlShimmer 1.25s ease-in-out infinite;
 }
-@keyframes spin {
+.skeletonBrand {
+  width: 150px;
+  height: 42px;
+  margin: 0 10px 40px;
+  border-radius: 12px;
+}
+.skeletonSidebarLabel {
+  width: 72px;
+  height: 10px;
+  margin: 0 12px 12px;
+}
+.skeletonSidebarItem {
+  width: calc(100% - 20px);
+  height: 44px;
+  margin: 0 10px 5px;
+}
+.skeletonProfile {
+  width: calc(100% - 20px);
+  height: 52px;
+  margin: auto 10px 0;
+  border-radius: 0;
+  border-top: 1px solid var(--line);
+}
+.skeletonBack {
+  width: 22px;
+  height: 22px;
+}
+.skeletonTitle {
+  width: 92px;
+  height: 13px;
+  grid-column: 2;
+}
+.skeletonDesktopHeading {
+  margin-bottom: 30px;
+}
+.skeletonEyebrow {
+  width: 146px;
+  height: 10px;
+  margin-bottom: 12px;
+}
+.skeletonHeading {
+  width: min(290px, 55%);
+  height: 44px;
+  margin-bottom: 12px;
+}
+.skeletonSubtitle {
+  width: min(260px, 46%);
+  height: 14px;
+}
+.skeletonMobileFilters {
+  display: none;
+}
+.skeletonSectionTitle {
+  width: 88px;
+  height: 15px;
+  margin-bottom: 12px;
+}
+.skeletonCards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.skeletonCard {
+  min-height: 104px;
+}
+@keyframes adminControlShimmer {
   to {
-    transform: rotate(360deg);
+    background-position: -300% 0;
   }
 }
 
@@ -556,8 +621,40 @@
   .footerHint {
     display: none;
   }
-  .loadingShell {
-    padding-top: var(--safe-top);
+  .skeletonDesktopHeading {
+    display: none;
+  }
+  .skeletonMobileFilters {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2px;
+    padding: 3px;
+    margin-bottom: 24px;
+    border-radius: 10px;
+    background: var(--field);
+  }
+  .skeletonFilter {
+    height: 44px;
+  }
+  .skeletonSection {
+    margin-top: 0;
+  }
+  .skeletonSectionTitle {
+    margin: 0 12px 8px;
+    height: 10px;
+  }
+  .skeletonCards {
+    display: block;
+    overflow: hidden;
+    border-radius: 13px;
+    background: var(--card);
+  }
+  .skeletonCard {
+    min-height: 80px;
+    border-radius: 0;
+  }
+  .skeletonCard + .skeletonCard {
+    border-top: 1px solid var(--line);
   }
 }
 
@@ -565,7 +662,7 @@
   .card {
     transition: none;
   }
-  .spinner {
+  .skeleton {
     animation: none;
   }
 }
