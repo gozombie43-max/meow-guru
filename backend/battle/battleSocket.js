@@ -7,6 +7,7 @@ import {
   setQuestions, submitAnswer,
   advanceQuestion, getScores, markSocketDisconnected, getCorrectAnswerIndex,
   findResumableRoomForUser, resumePlayerConnection, buildBattleSnapshot,
+  forfeitRoom, buildBattleReview,
 } from './roomManager.js';
 import {
   getQuestionsCollection,
@@ -45,7 +46,7 @@ function matchesNormalizedTopic(question, normalizedTopic) {
   return candidates.some((field) => normalizeSearchKey(field) === normalizedTopic);
 }
 
-const REVEAL_DELAY  = 2000; // ms to show results before next question
+const REVEAL_DELAY  = 5000; // ms to show results before next question (5 sec timer)
 const ROOM_CREATE_COOLDOWN_MS = 10_000; // per-socket room creation throttle
 const answerPayloadSchema = z.object({
   code: z.string().regex(/^\d{4}$/),
@@ -197,6 +198,7 @@ export function initBattleSocket(httpServer, corsOrigin) {
 
     // Waiting-room cancellation is explicit so a cancelled room is not
     // immediately restored by battle:resume on the next connection.
+    // In active rooms, leaving forfeits the match and grants the opponent an instant win.
     socket.on('room:leave', async ({ code } = {}) => {
       const normalizedCode = String(code ?? '').replace(/\D/g, '').slice(0, 4);
       const room = normalizedCode.length === 4 ? await getRoom(normalizedCode) : null;
@@ -204,6 +206,15 @@ export function initBattleSocket(httpServer, corsOrigin) {
       if (!room || !room.players.some((player) => player.userId === userId)) {
         socket.emit('room:left');
         return;
+      }
+      if (room.status === 'active') {
+        const finishedRoom = await forfeitRoom(normalizedCode, userId);
+        if (finishedRoom) {
+          socket.leave(normalizedCode);
+          socket.emit('room:left');
+          await finishBattle(io, finishedRoom);
+          return;
+        }
       }
       if (room.status !== 'waiting') {
         socket.emit('room:error', { message: 'An active battle cannot be cancelled. Reconnect to finish the match.' });
@@ -213,6 +224,15 @@ export function initBattleSocket(httpServer, corsOrigin) {
       socket.leave(normalizedCode);
       io.to(normalizedCode).emit('room:closed', { message: 'The host cancelled this battle room.' });
       socket.emit('room:left');
+    });
+
+    socket.on('game:forfeit', async ({ code } = {}) => {
+      const normalizedCode = String(code ?? '').replace(/\D/g, '').slice(0, 4);
+      const userId = String(socket.user?.id || '');
+      const finishedRoom = await forfeitRoom(normalizedCode, userId);
+      if (!finishedRoom) return;
+      socket.emit('room:left');
+      await finishBattle(io, finishedRoom);
     });
 
     // ── Invite opponent ──────────────────────────────────
@@ -462,6 +482,7 @@ export function initBattleSocket(httpServer, corsOrigin) {
           questionIndex: revealRoom.currentIndex,
           correctIndex: getCorrectAnswerIndex(revealRoom.questions[revealRoom.currentIndex]),
           selections: Object.fromEntries(revealRoom.players.map((player) => [player.userId, player.selectedIndex ?? null])),
+          revealEndsAt: new Date(Date.now() + REVEAL_DELAY).toISOString(),
         });
         setTimeout(() => {
           void advanceBattleAfterAnswers(io, code, result.currentIndex)
@@ -538,7 +559,18 @@ export async function finishBattle(io, finishedRoom) {
       const matchPlayer = settlement?.match?.players?.find((entry) => entry.userId === player.userId);
       const stats = (entry) => { const answers = Array.isArray(entry?.answerLog) ? entry.answerLog : [], answered = answers.filter((answer) => !answer.timedOut), correct = answers.filter((answer) => answer.correct), times = answered.map((answer) => answer.responseTimeMs).filter(Number.isFinite); return { correct: correct.length, total: answers.length, accuracy: answers.length ? Math.round(correct.length / answers.length * 100) : 0, averageResponseMs: times.length ? Math.round(times.reduce((sum, value) => sum + value, 0) / times.length) : null, timedOut: answers.filter((answer) => answer.timedOut).length }; };
       const opponentMatchPlayer = settlement?.match?.players?.find((entry) => entry.userId === opponent?.userId);
-      io.to(player.socketId).emit('game:end', { scores: finalScores, finishReason: finishedRoom.finishReason, winnerUserId: finishedRoom.winnerUserId || null, rematchToken, opponentName: opponent?.name || 'Opponent', matchStats: { me: stats(matchPlayer), opponent: stats(opponentMatchPlayer) }, rating: matchPlayer ? { lifetime: { before: matchPlayer.ratingBefore, after: matchPlayer.ratingAfter, delta: matchPlayer.ratingDelta }, season: matchPlayer.seasonRatingAfter !== null ? { before: matchPlayer.seasonRatingBefore, after: matchPlayer.seasonRatingAfter, delta: matchPlayer.seasonRatingDelta, tierBefore: matchPlayer.seasonTierBefore, tierAfter: matchPlayer.seasonTierAfter } : null } : null });
+      const review = buildBattleReview(finishedRoom, player.userId);
+      io.to(player.socketId).emit('game:end', {
+        scores: finalScores,
+        finishReason: finishedRoom.finishReason,
+        winnerUserId: finishedRoom.winnerUserId || null,
+        loserUserId: finishedRoom.loserUserId || null,
+        rematchToken,
+        opponentName: opponent?.name || 'Opponent',
+        matchStats: { me: stats(matchPlayer), opponent: stats(opponentMatchPlayer) },
+        rating: matchPlayer ? { lifetime: { before: matchPlayer.ratingBefore, after: matchPlayer.ratingAfter, delta: matchPlayer.ratingDelta }, season: matchPlayer.seasonRatingAfter !== null ? { before: matchPlayer.seasonRatingBefore, after: matchPlayer.seasonRatingAfter, delta: matchPlayer.seasonRatingDelta, tierBefore: matchPlayer.seasonTierBefore, tierAfter: matchPlayer.seasonTierAfter } : null } : null,
+        review,
+      });
     }
   }
   void sendBattleResultNotifications(finishedRoom, finalScores)

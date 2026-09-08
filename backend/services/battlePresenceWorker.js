@@ -3,6 +3,7 @@ import { getBattleRealtimeServer } from "../battle/battleRealtime.js";
 import { signBattleRematchToken } from "../auth/jwt.js";
 import { sendPushToUser } from "./pushNotificationService.js";
 import { settleBattleResult } from "../battle/battleResultService.js";
+import { buildBattleReview } from "../battle/roomManager.js";
 
 const POLL_MS = Number(process.env.BATTLE_PRESENCE_WORKER_POLL_MS) || 2_000;
 const FINISHED_TTL_MS = 2 * 60 * 60 * 1000;
@@ -22,9 +23,11 @@ async function emitFinished(room) {
   for (const player of room.players) {
     const opponent = room.players.find((candidate) => candidate.userId !== player.userId);
     const rematchToken = opponent ? signBattleRematchToken({ requesterUserId: player.userId, opponentUserId: opponent.userId, opponentName: opponent.name, subject: room.subject, topic: room.topic, questionCount: room.questionCount }) : null;
+    const review = buildBattleReview(room, player.userId);
     if (player.socketId) io.to(player.socketId).emit("game:end", {
       scores: finalScores, finishReason: room.finishReason, winnerUserId: room.winnerUserId || null,
       loserUserId: room.loserUserId || null, rematchToken, opponentName: opponent?.name || "Opponent",
+      review,
     });
   }
 }

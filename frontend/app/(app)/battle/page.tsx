@@ -3,9 +3,9 @@
 import RichContent from "@/components/RichContent";
 import { useAuth } from "@/context/AuthContext";
 import { useBattle } from "@/hooks/useBattle";
-import { battleOutcome, type PlayerScore } from "@/lib/battle-state";
+import { battleOutcome, type BattleReviewItem, type PlayerScore, type Reveal } from "@/lib/battle-state";
 import { motion } from "framer-motion";
-import { ArrowLeft, Check, Copy, Crown, LoaderCircle, Mail, RotateCcw, Shield, Swords, Trophy, Users, Wifi, WifiOff, Zap } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Check, Copy, Crown, FileText, LoaderCircle, LogOut, Mail, RotateCcw, Shield, Swords, Trophy, Users, Wifi, WifiOff, Zap } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
@@ -53,24 +53,175 @@ function ErrorNotice({ message, onRetry }: { message: string; onRetry?: () => vo
   return <div className="battle-notice is-error" role="alert"><span>{message}</span>{onRetry && <button type="button" onClick={onRetry}>Reconnect</button>}</div>;
 }
 
-function RoundTimer({ deadline, onExpire }: { deadline: string | null; onExpire: () => void }) {
-  const [now, setNow] = useState(() => Date.now());
-  const reportedDeadline = useRef<string | null>(null);
-  const onExpireRef = useRef(onExpire);
-  useEffect(() => { onExpireRef.current = onExpire; }, [onExpire]);
-  useEffect(() => { const timer = window.setInterval(() => setNow(Date.now()), 250); return () => window.clearInterval(timer); }, []);
-  const remaining = deadline ? Math.max(0, new Date(deadline).getTime() - now) : 0;
-  const seconds = Math.ceil(remaining / 1000);
-  const progress = Math.min(100, (remaining / 30_000) * 100);
+function RoundCenterBadge({ reveal }: { reveal: Reveal | null }) {
+  const [secondsLeft, setSecondsLeft] = useState(5);
+  const [progress, setProgress] = useState(100);
+
   useEffect(() => {
-    if (deadline && remaining === 0 && reportedDeadline.current !== deadline) {
-      reportedDeadline.current = deadline;
-      onExpireRef.current();
+    if (!reveal) {
+      setSecondsLeft(5);
+      setProgress(100);
+      return;
     }
-  }, [deadline, remaining]);
-  return <div className={`battle-timer ${seconds <= 5 ? "is-urgent" : ""}`} aria-label={`${seconds} seconds remaining`}>
-    <span>{seconds}</span><svg viewBox="0 0 42 42" aria-hidden="true"><circle cx="21" cy="21" r="18" /><circle cx="21" cy="21" r="18" pathLength="100" style={{ strokeDasharray: `${progress} 100` }} /></svg>
-  </div>;
+
+    const revealEndTime = reveal.revealEndsAt
+      ? new Date(reveal.revealEndsAt).getTime()
+      : Date.now() + 5000;
+
+    const updateTimer = () => {
+      const now = Date.now();
+      const remainingMs = Math.max(0, revealEndTime - now);
+      const secs = Math.max(1, Math.ceil(remainingMs / 1000));
+      const prog = Math.min(100, Math.max(0, (remainingMs / 5000) * 100));
+      setSecondsLeft(secs);
+      setProgress(prog);
+    };
+
+    updateTimer();
+    const interval = window.setInterval(updateTimer, 100);
+    return () => window.clearInterval(interval);
+  }, [reveal]);
+
+  if (!reveal) {
+    return <div className="battle-vs-badge" aria-label="Versus duel"><span>VS</span></div>;
+  }
+
+  return (
+    <div className="battle-timer is-reveal" aria-label={`Next question in ${secondsLeft} seconds`}>
+      <span>{secondsLeft}</span>
+      <svg viewBox="0 0 42 42" aria-hidden="true">
+        <circle cx="21" cy="21" r="18" />
+        <circle
+          cx="21"
+          cy="21"
+          r="18"
+          pathLength="100"
+          style={{ strokeDasharray: `${progress} 100` }}
+        />
+      </svg>
+    </div>
+  );
+}
+
+function BattleReviewSection({ review, opponentName }: { review?: BattleReviewItem[]; opponentName?: string }) {
+  const [filter, setFilter] = useState<"all" | "correct" | "wrong">("all");
+  if (!review || review.length === 0) {
+    return (
+      <div className="battle-review-empty">
+        <p>No questions were completed to review for this duel.</p>
+      </div>
+    );
+  }
+
+  const filtered = review.filter((item) => {
+    if (filter === "correct") return item.myAnswer?.correct === true;
+    if (filter === "wrong") return item.myAnswer?.correct === false || !item.myAnswer;
+    return true;
+  });
+
+  return (
+    <section className="battle-review-panel" aria-label="Question interactions review">
+      <div className="battle-review-header">
+        <div>
+          <p className="battle-kicker">Match review</p>
+          <h2>Question by question breakdown</h2>
+        </div>
+        <div className="battle-review-tabs" role="tablist" aria-label="Review filter">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={filter === "all"}
+            className={filter === "all" ? "is-active" : ""}
+            onClick={() => setFilter("all")}
+          >
+            All ({review.length})
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={filter === "correct"}
+            className={filter === "correct" ? "is-active" : ""}
+            onClick={() => setFilter("correct")}
+          >
+            Correct
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={filter === "wrong"}
+            className={filter === "wrong" ? "is-active" : ""}
+            onClick={() => setFilter("wrong")}
+          >
+            Mistakes
+          </button>
+        </div>
+      </div>
+
+      <div className="battle-review-list">
+        {filtered.map((item) => {
+          const mySelected = item.myAnswer?.selectedIndex ?? null;
+          const oppSelected = item.opponentAnswer?.selectedIndex ?? null;
+
+          return (
+            <div key={item.questionIndex} className="battle-review-card">
+              <div className="battle-review-card-meta">
+                <span className="battle-review-qnum">Question {item.questionIndex + 1}</span>
+                <span className={`battle-review-pill ${item.myAnswer?.correct ? "is-correct" : "is-wrong"}`}>
+                  {item.myAnswer?.correct ? "You scored (+10)" : item.myAnswer ? "You missed" : "Unanswered"}
+                </span>
+                {item.opponentAnswer?.correct && (
+                  <span className="battle-review-pill is-opp-correct">Opponent scored (+10)</span>
+                )}
+              </div>
+
+              <div className="battle-review-question">
+                <RichContent text={item.question} />
+              </div>
+
+              <div className="battle-review-options">
+                {item.options.map((option, optIdx) => {
+                  const isCorrectAnswer = item.correctIndex === optIdx;
+                  const isMyPick = mySelected === optIdx;
+                  const isOppPick = oppSelected === optIdx;
+
+                  let optClass = "battle-review-opt";
+                  if (isCorrectAnswer) optClass += " is-correct-answer";
+                  if (isMyPick && !isCorrectAnswer) optClass += " is-my-wrong";
+
+                  return (
+                    <div key={optIdx} className={optClass}>
+                      <span className="battle-review-opt-label">{String.fromCharCode(65 + optIdx)}</span>
+                      <div className="battle-review-opt-text"><RichContent text={option} /></div>
+                      <div className="battle-review-opt-badges">
+                        {isCorrectAnswer && <span className="battle-badge-correct"><Check /> Right Answer</span>}
+                        {isMyPick && (
+                          <span className={`battle-badge-user is-me ${item.myAnswer?.correct ? "is-win" : "is-loss"}`}>
+                            You chose {item.myAnswer?.correct ? "✓" : "✗"}
+                          </span>
+                        )}
+                        {isOppPick && (
+                          <span className={`battle-badge-user is-opp ${item.opponentAnswer?.correct ? "is-win" : "is-loss"}`}>
+                            {opponentName || "Opponent"} chose {item.opponentAnswer?.correct ? "✓" : "✗"}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {item.explanation && (
+                <div className="battle-review-explanation">
+                  <strong>Explanation:</strong>
+                  <RichContent text={item.explanation} />
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
 }
 
 function PlayerBlock({ player, fallback, side }: { player?: PlayerScore; fallback: string; side: "me" | "opponent" }) {
@@ -100,7 +251,8 @@ function BattlePageContent() {
   const [joinCode, setJoinCode] = useState<string | null>(null);
   const [inviteEmail, setInviteEmail] = useState("");
   const [copied, setCopied] = useState(false);
-  const [expiredQuestionIndex, setExpiredQuestionIndex] = useState<number | null>(null);
+  const [showExitModal, setShowExitModal] = useState(false);
+  const [showReview, setShowReview] = useState(false);
 
   const invitationCode = searchParams.get("join")?.replace(/\D/g, "").slice(0, 4) || "";
   const mode = modeOverride || (invitationCode.length === 4 ? "join" : "create");
@@ -131,8 +283,8 @@ function BattlePageContent() {
     };
     return <main className="battle-page"><BattleHeader title="1v1 Battle" status={connection} /><div className="battle-lobby-shell">
       <section className="battle-intro"><span className="battle-hero-icon"><Swords /></span><p className="battle-kicker">Real-time quiz duel</p>
-        <h1>Think fast.<br />Win the round.</h1><p>Create a private room or enter a four-digit invite code. Both players answer the same timed questions.</p>
-        <div className="battle-trust-row"><span><Zap /> 30 sec rounds</span><span><Shield /> Reconnect safe</span><span><Trophy /> Ranked results</span></div>
+        <h1>Think fast.<br />Win the round.</h1><p>Create a private room or enter a four-digit invite code. Both players answer the same questions in real time.</p>
+        <div className="battle-trust-row"><span><Zap /> Instant duel</span><span><Shield /> Reconnect safe</span><span><Trophy /> Ranked results</span></div>
       </section>
       <section className="battle-setup-card" aria-labelledby="setup-title"><div className="battle-card-heading"><div><p className="battle-kicker">Match setup</p><h2 id="setup-title">Start a battle</h2></div><Users aria-hidden="true" /></div>
         <div className="battle-tabs" role="tablist" aria-label="Battle mode"><button type="button" role="tab" aria-selected={mode === "create"} className={mode === "create" ? "is-active" : ""} onClick={() => setModeOverride("create")}>Create room</button><button type="button" role="tab" aria-selected={mode === "join"} className={mode === "join" ? "is-active" : ""} onClick={() => setModeOverride("join")}>Join room</button></div>
@@ -159,18 +311,119 @@ function BattlePageContent() {
     if (!state.question) return <main className="battle-centered"><LoaderCircle className="battle-spinner" /><p>Loading the first question…</p></main>;
     const q = state.question;
     const opponentSelection = state.reveal && opponentEntry ? state.reveal.selections[opponentEntry[0]] : null;
-    const deadlineExpired = expiredQuestionIndex === q.questionIndex;
-    return <main className="battle-game-shell"><header className="battle-score-header"><div className="battle-score-meta"><span>Question {q.questionIndex + 1} of {q.total}</span><ConnectionStatus status={connection} /></div><div className="battle-score-grid"><PlayerBlock player={me} fallback={effectivePlayerName} side="me" /><RoundTimer deadline={q.deadline} onExpire={() => setExpiredQuestionIndex(q.questionIndex)} /><PlayerBlock player={opponent} fallback="Opponent" side="opponent" /></div><div className="battle-round-progress"><i style={{ width: `${((q.questionIndex + 1) / q.total) * 100}%` }} /></div></header>
-      <div className="battle-game-scroll"><div className="battle-question-wrap">{state.opponentDeadline && <div className="battle-notice"><span>Opponent disconnected. Their reconnect window is still open.</span></div>}
-        <motion.section key={q.questionIndex} className="battle-question-card" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}><p className="battle-kicker">Choose one answer</p><RichContent text={q.question} className="battle-question-text" /></motion.section>
-        <div className="battle-options">{q.options.map((option, index) => {
-          const selected = state.selectedIndex === index, correct = state.reveal?.correctIndex === index;
-          const wrong = Boolean(state.reveal && selected && !correct), opponentPicked = opponentSelection === index;
-          return <motion.button type="button" key={`${q.questionIndex}-${index}`} whileTap={state.answerStatus === "idle" ? { scale: .985 } : undefined} className={`${selected ? "is-selected" : ""} ${correct ? "is-correct" : ""} ${wrong ? "is-wrong" : ""}`} disabled={state.answerStatus !== "idle" || Boolean(state.reveal) || connection !== "online" || deadlineExpired} onClick={() => battle.submitAnswer(index)}><span className="battle-option-label">{String.fromCharCode(65 + index)}</span><RichContent text={option} className="battle-option-text" />{opponentPicked && <small>Opponent</small>}{correct && <Check aria-label="Correct answer" />}</motion.button>;
-        })}</div>
-        <div className="battle-answer-status" aria-live="polite">{state.reveal ? <strong>{state.correct ? "Correct — point secured." : "Round complete. Next question incoming."}</strong> : state.answerStatus !== "idle" ? <><LoaderCircle className="battle-spinner" /><span>Your answer is locked. Waiting for your opponent…</span></> : deadlineExpired ? <span>Time is up. Waiting for the round result…</span> : connection !== "online" ? <><WifiOff /><span>Reconnecting before you can answer…</span></> : <span>Select an option before the timer ends.</span>}</div>
-        <ErrorNotice message={state.error} onRetry={connection === "offline" ? battle.reconnect : undefined} />
-      </div></div>
+    return <main className="battle-game-shell">
+      <header className="battle-score-header">
+        <div className="battle-score-meta">
+          <div className="battle-score-meta-left">
+            <button
+              type="button"
+              className="battle-exit-button"
+              onClick={() => setShowExitModal(true)}
+              aria-label="Exit quiz"
+            >
+              <LogOut aria-hidden="true" />
+              <span>Exit Quiz</span>
+            </button>
+            <span className="battle-meta-counter">Question {q.questionIndex + 1} of {q.total}</span>
+          </div>
+          <ConnectionStatus status={connection} />
+        </div>
+        <div className="battle-score-grid">
+          <PlayerBlock player={me} fallback={effectivePlayerName} side="me" />
+          <RoundCenterBadge reveal={state.reveal} />
+          <PlayerBlock player={opponent} fallback="Opponent" side="opponent" />
+        </div>
+        <div className="battle-round-progress">
+          <i style={{ width: `${((q.questionIndex + 1) / q.total) * 100}%` }} />
+        </div>
+      </header>
+
+      <div className="battle-game-scroll">
+        <div className="battle-question-wrap">
+          {state.opponentDeadline && (
+            <div className="battle-notice">
+              <span>Opponent disconnected. Their reconnect window is still open.</span>
+            </div>
+          )}
+          <motion.section key={q.questionIndex} className="battle-question-card" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+            <p className="battle-kicker">Choose one answer</p>
+            <RichContent text={q.question} className="battle-question-text" />
+          </motion.section>
+
+          <div className="battle-options">
+            {q.options.map((option, index) => {
+              const selected = state.selectedIndex === index;
+              const correct = state.reveal?.correctIndex === index;
+              const wrong = Boolean(state.reveal && selected && !correct);
+              const opponentPicked = opponentSelection === index;
+
+              return (
+                <motion.button
+                  type="button"
+                  key={`${q.questionIndex}-${index}`}
+                  whileTap={state.answerStatus === "idle" ? { scale: .985 } : undefined}
+                  className={`${selected ? "is-selected" : ""} ${correct ? "is-correct" : ""} ${wrong ? "is-wrong" : ""}`}
+                  disabled={state.answerStatus !== "idle" || Boolean(state.reveal) || connection !== "online"}
+                  onClick={() => battle.submitAnswer(index)}
+                >
+                  <span className="battle-option-label">{String.fromCharCode(65 + index)}</span>
+                  <RichContent text={option} className="battle-option-text" />
+                  {opponentPicked && <small>Opponent</small>}
+                  {correct && <Check aria-label="Correct answer" />}
+                </motion.button>
+              );
+            })}
+          </div>
+
+          <div className="battle-answer-status" aria-live="polite">
+            {state.reveal ? (
+              <strong>
+                {state.correct ? "Correct — point secured." : "Round complete."} Next question incoming…
+              </strong>
+            ) : state.answerStatus !== "idle" ? (
+              <>
+                <LoaderCircle className="battle-spinner" />
+                <span>Your answer is locked. Waiting for your opponent…</span>
+              </>
+            ) : connection !== "online" ? (
+              <>
+                <WifiOff />
+                <span>Reconnecting before you can answer…</span>
+              </>
+            ) : (
+              <span>Choose your answer.</span>
+            )}
+          </div>
+          <ErrorNotice message={state.error} onRetry={connection === "offline" ? battle.reconnect : undefined} />
+        </div>
+      </div>
+
+      {showExitModal && (
+        <div className="battle-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="exit-modal-title">
+          <div className="battle-modal-card">
+            <div className="battle-modal-icon is-danger"><AlertTriangle /></div>
+            <h2 id="exit-modal-title">Exit Battle?</h2>
+            <p>If you exit now, you will forfeit this duel and your opponent will <strong>automatically win immediately</strong>.</p>
+            <div className="battle-modal-actions">
+              <button type="button" className="battle-secondary-button" onClick={() => setShowExitModal(false)}>
+                Keep Playing
+              </button>
+              <button
+                type="button"
+                className="battle-danger-button"
+                disabled={pending === "forfeit"}
+                onClick={() => {
+                  setShowExitModal(false);
+                  battle.forfeit();
+                }}
+              >
+                {pending === "forfeit" ? <LoaderCircle className="battle-spinner" /> : <LogOut />}
+                {pending === "forfeit" ? "Exiting…" : "Forfeit & Exit"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>;
   }
 
@@ -180,13 +433,76 @@ function BattlePageContent() {
   const resultPlayers = Object.entries(result.scores).sort(([, left], [, right]) => right.score - left.score);
   const rating = result.rating;
   const title = outcome === "win" ? "Victory" : outcome === "loss" ? "Good battle" : outcome === "draw" ? "Draw match" : "Battle ended";
-  return <main className={`battle-page battle-result-page is-${outcome}`}>{outcome === "win" && <Confetti />}<BattleHeader title="Match result" status={connection} onBack={battle.reset} /><section className="battle-result-shell">
-    <div className="battle-result-hero"><span>{outcome === "win" ? <Trophy /> : outcome === "draw" ? <Swords /> : <Shield />}</span><p className="battle-kicker">{result.finishReason === "forfeit" ? "Finished by forfeit" : "Final result"}</p><h1>{title}</h1><p>{outcome === "win" ? "Sharp answers and steady timing." : outcome === "loss" ? "Review the result, then run it back." : outcome === "draw" ? "Nothing separated you this time." : "The match could not be completed."}</p></div>
-    <div className="battle-final-scores">{resultPlayers.map(([id, player], index) => <div key={id} className={id === user.id ? "is-me" : ""}><span>{index + 1}</span><i>{player.name.charAt(0).toUpperCase()}</i><p><b>{player.name}</b><small>{id === user.id ? "You" : "Opponent"}</small></p><strong>{player.score}<small> pts</small></strong></div>)}</div>
-    {rating && <section className="battle-result-panel"><div><p className="battle-kicker">Rating update</p><h2>{rating.season?.tierAfter || "Lifetime rating"}</h2></div><strong>{rating.season?.after ?? rating.lifetime.after}<small className={(rating.season?.delta ?? rating.lifetime.delta) >= 0 ? "is-positive" : "is-negative"}>{(rating.season?.delta ?? rating.lifetime.delta) >= 0 ? "+" : ""}{rating.season?.delta ?? rating.lifetime.delta}</small></strong></section>}
-    {result.matchStats && <section className="battle-stats-panel"><h2>Match breakdown</h2><div><article><span>You</span><strong>{result.matchStats.me.accuracy}%</strong><small>{result.matchStats.me.correct}/{result.matchStats.me.total} correct · {result.matchStats.me.timedOut} timed out</small></article><article><span>Opponent</span><strong>{result.matchStats.opponent.accuracy}%</strong><small>{result.matchStats.opponent.correct}/{result.matchStats.opponent.total} correct · {result.matchStats.opponent.timedOut} timed out</small></article></div></section>}
-    <ErrorNotice message={state.error} onRetry={connection === "offline" ? battle.reconnect : undefined} /><div className="battle-result-actions">{result.rematchToken && <button type="button" className="battle-primary-button" disabled={!canSend} onClick={() => battle.rematch(effectivePlayerName)}>{pending === "rematch" ? <LoaderCircle className="battle-spinner" /> : <RotateCcw />}{pending === "rematch" ? "Sending rematch…" : `Rematch ${result.opponentName || "opponent"}`}</button>}<button type="button" className="battle-secondary-button" onClick={battle.reset}><Swords /> New battle</button><Link href="/" className="battle-text-link">Return home</Link></div>
-  </section></main>;
+  return <main className={`battle-page battle-result-page is-${outcome}`}>
+    {outcome === "win" && <Confetti />}
+    <BattleHeader title="Match result" status={connection} onBack={battle.reset} />
+    <section className="battle-result-shell">
+      <div className="battle-result-hero">
+        <span>{outcome === "win" ? <Trophy /> : outcome === "draw" ? <Swords /> : <Shield />}</span>
+        <p className="battle-kicker">{result.finishReason === "forfeit" ? "Finished by forfeit" : "Final result"}</p>
+        <h1>{title}</h1>
+        <p>{outcome === "win" ? (result.finishReason === "forfeit" ? "Opponent forfeited the duel — instant victory!" : "Sharp answers and steady timing.") : outcome === "loss" ? (result.finishReason === "forfeit" ? "Duel ended by forfeit." : "Review the result, then run it back.") : outcome === "draw" ? "Nothing separated you this time." : "The match could not be completed."}</p>
+      </div>
+      <div className="battle-final-scores">
+        {resultPlayers.map(([id, player], index) => (
+          <div key={id} className={id === user.id ? "is-me" : ""}>
+            <span>{index + 1}</span>
+            <i>{player.name.charAt(0).toUpperCase()}</i>
+            <p><b>{player.name}</b><small>{id === user.id ? "You" : "Opponent"}</small></p>
+            <strong>{player.score}<small> pts</small></strong>
+          </div>
+        ))}
+      </div>
+      {rating && (
+        <section className="battle-result-panel">
+          <div><p className="battle-kicker">Rating update</p><h2>{rating.season?.tierAfter || "Lifetime rating"}</h2></div>
+          <strong>{rating.season?.after ?? rating.lifetime.after}<small className={(rating.season?.delta ?? rating.lifetime.delta) >= 0 ? "is-positive" : "is-negative"}>{(rating.season?.delta ?? rating.lifetime.delta) >= 0 ? "+" : ""}{rating.season?.delta ?? rating.lifetime.delta}</small></strong>
+        </section>
+      )}
+      {result.matchStats && (
+        <section className="battle-stats-panel">
+          <h2>Match breakdown</h2>
+          <div>
+            <article>
+              <span>You</span>
+              <strong>{result.matchStats.me.accuracy}%</strong>
+              <small>{result.matchStats.me.correct}/{result.matchStats.me.total} correct</small>
+            </article>
+            <article>
+              <span>Opponent</span>
+              <strong>{result.matchStats.opponent.accuracy}%</strong>
+              <small>{result.matchStats.opponent.correct}/{result.matchStats.opponent.total} correct</small>
+            </article>
+          </div>
+        </section>
+      )}
+
+      {showReview && (
+        <BattleReviewSection review={result.review} opponentName={result.opponentName} />
+      )}
+
+      <ErrorNotice message={state.error} onRetry={connection === "offline" ? battle.reconnect : undefined} />
+      <div className="battle-result-actions">
+        <button
+          type="button"
+          className="battle-secondary-button battle-review-toggle"
+          onClick={() => setShowReview((prev) => !prev)}
+        >
+          <FileText /> {showReview ? "Hide Question Review" : "Review All Question Interactions"}
+        </button>
+        {result.rematchToken && (
+          <button type="button" className="battle-primary-button" disabled={!canSend} onClick={() => battle.rematch(effectivePlayerName)}>
+            {pending === "rematch" ? <LoaderCircle className="battle-spinner" /> : <RotateCcw />}
+            {pending === "rematch" ? "Sending rematch…" : `Rematch ${result.opponentName || "opponent"}`}
+          </button>
+        )}
+        <button type="button" className="battle-secondary-button" onClick={battle.reset}>
+          <Swords /> New battle
+        </button>
+        <Link href="/" className="battle-text-link">Return home</Link>
+      </div>
+    </section>
+  </main>;
 }
 
 export default function BattlePage() {

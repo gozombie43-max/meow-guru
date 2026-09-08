@@ -67,4 +67,44 @@ describe("battleOutcome", () => {
     const result = { scores: { me: { name: "Me", score: 10, answered: true }, opponent: { name: "Rival", score: 10, answered: true } } };
     expect(battleOutcome(result, "me")).toBe("draw");
   });
+
+  it("awards instant win to the remaining player on forfeit", () => {
+    const result = {
+      scores: {
+        me: { name: "Me", score: 0, answered: false },
+        opponent: { name: "Rival", score: 20, answered: true },
+      },
+      finishReason: "forfeit" as const,
+      winnerUserId: "me",
+      loserUserId: "opponent",
+    };
+    expect(battleOutcome(result, "me")).toBe("win");
+    expect(battleOutcome(result, "opponent")).toBe("loss");
+  });
+
+  it("preserves review items on game end", () => {
+    const state = battleReducer(
+      { ...initialBattleState, phase: "playing" },
+      {
+        type: "end",
+        result: {
+          scores: { me: { name: "Me", score: 10, answered: true } },
+          finishReason: "completed",
+          review: [
+            {
+              questionIndex: 0,
+              question: "2 + 2?",
+              options: ["3", "4"],
+              correctIndex: 1,
+              myAnswer: { selectedIndex: 1, correct: true },
+              opponentAnswer: { selectedIndex: 0, correct: false },
+            },
+          ],
+        },
+      }
+    );
+    expect(state.phase).toBe("finished");
+    expect(state.result?.review).toHaveLength(1);
+    expect(state.result?.review?.[0].correctIndex).toBe(1);
+  });
 });

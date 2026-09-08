@@ -6,8 +6,8 @@ import { getActiveBattleSeason } from "./battleSeasonService.js";
 const ROOM_TTL_MS = 2 * 60 * 60 * 1000;
 const BATTLE_RECONNECT_GRACE_MS = Number(process.env.BATTLE_RECONNECT_GRACE_MS) || 60_000;
 const BATTLE_DEPLOYMENT_GRACE_MS = Number(process.env.BATTLE_DEPLOYMENT_GRACE_MS) || 180_000;
-const QUESTION_TIME_MS = Number(process.env.BATTLE_QUESTION_TIME_MS) || 30_000;
-const QUESTION_REVEAL_MS = Number(process.env.BATTLE_QUESTION_REVEAL_MS) || 2_000;
+const QUESTION_TIME_MS = Number(process.env.BATTLE_QUESTION_TIME_MS) || 86_400_000; // 24 hours - remove 30s limit
+const QUESTION_REVEAL_MS = Number(process.env.BATTLE_QUESTION_REVEAL_MS) || 5_000;
 
 function createQuestionWindow(now = new Date()) {
   return { questionStartedAt: now, questionDeadline: new Date(now.getTime() + QUESTION_TIME_MS) };
@@ -597,9 +597,79 @@ export function buildBattleSnapshot(room, userId) {
     finishReason: room.finishReason || "completed",
     winnerUserId: room.winnerUserId || null,
     loserUserId: room.loserUserId || null,
+    review: room.status === "finished" ? buildBattleReview(room, normalizedUserId) : undefined,
     opponentPresence: {
       connected: opponent?.connected !== false,
       reconnectDeadline: opponent?.reconnectDeadline || null,
     },
   };
 }
+
+export function buildBattleReview(room, userId) {
+  if (!room || !Array.isArray(room.questions)) return [];
+  const normalizedUserId = String(userId);
+  const me = room.players?.find((player) => player.userId === normalizedUserId);
+  const opponent = room.players?.find((player) => player.userId !== normalizedUserId);
+  const limit = room.currentIndex !== undefined ? Math.min(room.questions.length, room.currentIndex + 1) : room.questions.length;
+
+  return room.questions.slice(0, limit).map((q, idx) => {
+    const myLog = me?.answerLog?.find((entry) => entry.questionIndex === idx);
+    const oppLog = opponent?.answerLog?.find((entry) => entry.questionIndex === idx);
+    return {
+      questionIndex: idx,
+      question: q.question,
+      options: q.options,
+      correctIndex: getCorrectAnswerIndex(q),
+      explanation: q.explanation || null,
+      myAnswer: myLog ? {
+        selectedIndex: myLog.selectedIndex ?? null,
+        correct: Boolean(myLog.correct),
+        timedOut: Boolean(myLog.timedOut),
+      } : (me?.selectedIndex !== undefined && room.currentIndex === idx ? {
+        selectedIndex: me.selectedIndex ?? null,
+        correct: Boolean(me.lastCorrect),
+      } : null),
+      opponentAnswer: oppLog ? {
+        selectedIndex: oppLog.selectedIndex ?? null,
+        correct: Boolean(oppLog.correct),
+        timedOut: Boolean(oppLog.timedOut),
+      } : (opponent?.selectedIndex !== undefined && room.currentIndex === idx ? {
+        selectedIndex: opponent.selectedIndex ?? null,
+        correct: Boolean(opponent.lastCorrect),
+      } : null),
+    };
+  });
+}
+
+export async function forfeitRoom(code, forfeitingUserId) {
+  const rooms = getBattleRoomsCollection();
+  const normalizedCode = String(code);
+  const normalizedUserId = String(forfeitingUserId);
+  const room = await rooms.findOne({
+    code: normalizedCode,
+    status: "active",
+    "players.userId": normalizedUserId,
+  });
+  if (!room || room.players.length !== 2) return null;
+  const opponent = room.players.find((p) => p.userId !== normalizedUserId);
+  if (!opponent) return null;
+
+  const now = new Date();
+  const update = {
+    status: "finished",
+    finishReason: "forfeit",
+    winnerUserId: opponent.userId,
+    loserUserId: normalizedUserId,
+    finishedAt: now,
+    updatedAt: now,
+    expiresAt: expiryFromNow(),
+  };
+
+  const finished = await rooms.findOneAndUpdate(
+    { code: normalizedCode, status: "active" },
+    { $set: update },
+    { returnDocument: "after" }
+  );
+  return cleanRoom(finished);
+}
+

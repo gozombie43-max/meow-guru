@@ -5,7 +5,7 @@ import { getSocket } from "@/lib/socket";
 import { battleReducer, initialBattleState, type BattleQuestion, type BattleResult, type BattleSnapshot, type Reveal, type Scores } from "@/lib/battle-state";
 
 type Settings = { playerName: string; subject: string; topic: string; questionCount: number };
-type Command = "create" | "join" | "leave" | "rematch" | "invite";
+type Command = "create" | "join" | "leave" | "rematch" | "invite" | "forfeit";
 const storageKey = (id: string) => `meow_active_battle_code:${id}`;
 function remember(id: string, code: string | null) {
   try { if (code) localStorage.setItem(storageKey(id), code); else localStorage.removeItem(storageKey(id)); } catch { /* Storage is optional. Server recovery still works. */ }
@@ -148,6 +148,7 @@ export function useBattle(token: string | null, userId: string) {
     create: (settings: Settings) => send("create", "room:create", settings),
     join: (code: string, playerName: string) => send("join", "room:join", { code, playerName }),
     leave: () => send("leave", "room:leave", { code: state.code }),
+    forfeit: () => send("forfeit", "game:forfeit", { code: state.code }),
     rematch: (playerName: string) => send("rematch", "battle:rematch", { rematchToken: state.result?.rematchToken, playerName }),
     invite: (email: string) => { setInviteStatus(null); send("invite", "room:invite", { code: state.code, email }); },
     reset: () => { remember(userId, null); setInviteStatus(null); dispatch({ type: "reset" }); },

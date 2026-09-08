@@ -1,15 +1,34 @@
 export type BattleQuestion = {
   question: string; options: string[]; questionIndex: number; total: number; deadline: string | null;
 };
+export type BattleReviewItem = {
+  questionIndex: number;
+  question: string;
+  options: string[];
+  correctIndex: number;
+  explanation?: string | null;
+  myAnswer: {
+    selectedIndex: number | null;
+    correct: boolean;
+    timedOut?: boolean;
+  } | null;
+  opponentAnswer: {
+    selectedIndex: number | null;
+    correct: boolean;
+    timedOut?: boolean;
+  } | null;
+};
 export type PlayerScore = { name: string; score: number; answered: boolean; connected?: boolean; lastCorrect?: boolean | null };
 export type Scores = Record<string, PlayerScore>;
-export type Reveal = { questionIndex: number; correctIndex: number; selections: Record<string, number | null> };
+export type Reveal = { questionIndex: number; correctIndex: number; selections: Record<string, number | null>; revealEndsAt?: string | null };
 export type MatchStats = { correct: number; total: number; accuracy: number; averageResponseMs: number | null; timedOut: number };
 export type BattleResult = {
   scores: Scores; finishReason?: "completed" | "forfeit" | "abandoned"; winnerUserId?: string | null;
+  loserUserId?: string | null;
   rematchToken?: string | null; opponentName?: string;
   rating?: { lifetime: { before: number; after: number; delta: number }; season: { before: number; after: number; delta: number; tierBefore: string; tierAfter: string } | null } | null;
   matchStats?: { me: MatchStats; opponent: MatchStats };
+  review?: BattleReviewItem[];
 };
 export type BattleSnapshot = BattleResult & {
   code: string; status: "waiting" | "active" | "finished";
