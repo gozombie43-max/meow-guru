@@ -1,5 +1,37 @@
 "use client";
-import Link from "next/link";
-import { useEffect, useState } from "react";
+
+import { useRef, useState } from "react";
+import { Check, Zap } from "lucide-react";
 import { claimBattleMission, fetchBattleMissions } from "@/lib/api/battleMissionApi";
-export default function BattleMissionsPage() { const [data, setData] = useState<any>(null), [award, setAward] = useState<number | null>(null); const load = () => void fetchBattleMissions().then(setData); useEffect(load, []); if (!data) return <main className="p-6 text-slate-500">Loading missions…</main>; const group = (title: string, items: any[]) => <section className="mt-7"><h2 className="text-lg font-black">{title}</h2><div className="mt-3 space-y-3">{items.map((mission) => <div key={mission.code} className="rounded-2xl bg-white p-4 shadow-sm"><div className="flex justify-between gap-3"><div><div className="font-bold">{mission.title}</div><div className="text-sm text-slate-500">{mission.description}</div></div><b>+{mission.xpReward} XP</b></div><div className="mt-3 h-2 overflow-hidden rounded bg-slate-100"><div className="h-full bg-violet-600" style={{ width: `${Math.min(100, Math.round(mission.progress / mission.target * 100))}%` }} /></div><div className="mt-2 flex items-center justify-between text-sm"><span>{mission.progress} / {mission.target}</span>{mission.completed && !mission.claimed && mission.id ? <button onClick={() => void claimBattleMission(mission.id).then((result) => { setAward(result.xpAwarded); load(); })} className="rounded bg-violet-700 px-3 py-1 text-white">Claim</button> : mission.claimed ? <span className="font-bold text-emerald-600">✓ Claimed</span> : null}</div></div>)}</div></section>; return <main className="mx-auto min-h-dvh max-w-2xl bg-slate-50 p-4 text-slate-900"><Link href="/battle" className="text-sm font-semibold text-violet-700">← Back to Battle</Link><h1 className="mt-4 text-3xl font-black">Battle Missions</h1><section className="mt-5 rounded-2xl bg-slate-900 p-5 text-white"><div className="text-xs font-bold tracking-wider opacity-70">BATTLE LEVEL</div><div className="mt-1 text-3xl font-black">Level {data.lifetime.level}</div><div className="mt-2 text-sm">{data.lifetime.xpIntoLevel} / {data.lifetime.xpForNextLevel || "MAX"} XP</div>{data.season && <div className="mt-4 border-t border-white/20 pt-3 text-sm">{data.season.name} · Level {data.season.level} · {data.season.xp} XP</div>}</section>{award && <div className="fixed inset-x-0 top-8 z-50 text-center text-2xl font-black text-violet-700">+{award} XP</div>}{group("Daily Missions", data.daily)}{group("Weekly Missions", data.weekly)}</main>; }
+import { BattleSection, Empty, Panel, Progress, Stats, useBattleResource } from "../_shared/BattleSection";
+
+type Mission = { id: string | null; code: string; title: string; description: string; xpReward: number; progress: number; target: number; completed: boolean; claimed: boolean };
+type Missions = { lifetime: { level: number; xpIntoLevel: number; xpForNextLevel: number }; season: { name: string; level: number; xp: number } | null; daily: Mission[]; weekly: Mission[] };
+
+export default function BattleMissionsPage() {
+  const { data, error, mutate } = useBattleResource<Missions>("battle-missions", fetchBattleMissions);
+  const [pending, setPending] = useState<string | null>(null);
+  const busy = useRef(false);
+  const [notice, setNotice] = useState<{ text: string; error?: boolean } | null>(null);
+  const claim = async (id: string) => {
+    if (busy.current) return;
+    busy.current = true; setPending(id); setNotice(null);
+    try { const result = await claimBattleMission(id); setNotice({ text: `+${result.xpAwarded} XP added to your battle progress.` }); await mutate(); }
+    catch { setNotice({ text: "Could not confirm the claim. Refresh your missions before trying again.", error: true }); }
+    finally { busy.current = false; setPending(null); }
+  };
+  const group = (title: string, items: Mission[]) => <Panel title={title} aside={<span>{items.filter(m => m.claimed).length}/{items.length} claimed</span>}>
+    {items.length ? items.map(mission => <article key={mission.code} className="bs-mission"><div className="bs-mission-top"><h3>{mission.title}</h3><strong>+{mission.xpReward} XP</strong></div><p>{mission.description}</p>
+      <Progress value={mission.target > 0 ? mission.progress / mission.target * 100 : 0} label={mission.title} />
+      <div className="bs-mission-bottom"><span>{mission.progress} / {mission.target}</span>{mission.claimed ? <span className="bs-positive"><Check size={13} style={{ display: "inline" }} /> Claimed</span> : mission.completed && mission.id ? <button className="bs-button" disabled={Boolean(pending)} onClick={() => void claim(mission.id!)}>{pending === mission.id ? "Claiming…" : "Claim XP"}</button> : <span>In progress</span>}</div>
+    </article>) : <Empty title="No missions available" detail="Check back for your next challenges." />}
+  </Panel>;
+  const all = [...(data?.daily || []), ...(data?.weekly || [])];
+  return <BattleSection title="Missions" description="Small challenges. Steady progress." loading={!data} error={Boolean(error)} retry={() => void mutate()}>
+    {notice && <div className={`bs-notice ${notice.error ? "is-error" : ""}`} role={notice.error ? "alert" : "status"}>{notice.text}{notice.error && <button className="bs-button secondary" onClick={() => void mutate()}>Refresh</button>}</div>}
+    {data && <div className="bs-columns"><div className="bs-stack">
+      <section className="bs-hero"><span className="bs-hero-icon"><Zap size={23} /></span><p className="bs-eyebrow">BATTLE LEVEL</p><h2>Level {data.lifetime.level}</h2><p>{data.lifetime.xpForNextLevel ? `${data.lifetime.xpIntoLevel} / ${data.lifetime.xpForNextLevel} XP to the next level` : "Maximum level reached"}</p><Progress value={data.lifetime.xpForNextLevel ? data.lifetime.xpIntoLevel / data.lifetime.xpForNextLevel * 100 : 100} label="Battle level progress" />{data.season && <p>{data.season.name} · Level {data.season.level} · {data.season.xp} XP</p>}</section>
+      <Panel title="Your progress"><Stats items={[{ label: "Completed", value: all.filter(m => m.completed).length }, { label: "Ready to claim", value: all.filter(m => m.completed && !m.claimed).length }]} /></Panel>
+    </div><div className="bs-stack">{group("Daily missions", data.daily)}{group("Weekly missions", data.weekly)}</div></div>}
+  </BattleSection>;
+}

@@ -32,7 +32,7 @@ export default function BottomNav() {
     normalizedPathname.endsWith('/formula-notes');
   const isAccessCodeRoute = pathname === '/access-code' || pathname.startsWith('/access-code/');
   const isDashboardRoute = pathname === '/dashboard' || pathname.startsWith('/dashboard/');
-  const isBattleArenaRoute = normalizedPathname === '/battle';
+  const isBattleArenaRoute = ['/battle', '/battle/profile', '/battle/leaderboard', '/battle/missions', '/battle/social'].includes(normalizedPathname);
   const isMockExamRoute =
     normalizedPathname.startsWith('/mock-test/') && normalizedPathname !== '/mock-test';
   const shouldHideNav =

@@ -24,8 +24,8 @@ describe('BottomNav Component', () => {
     expect(activeLink).not.toBeNull();
   });
 
-  it('stays hidden in the fullscreen battle arena', () => {
-    mockPathname = '/battle';
+  it.each(['/battle', '/battle/profile', '/battle/leaderboard', '/battle/missions', '/battle/social', '/battle/profile/'])('stays hidden on %s', (path) => {
+    mockPathname = path;
     const { container } = render(<BottomNav />);
     expect(container.querySelector('nav')).toBeNull();
     expect(document.body.classList.contains('has-bottom-nav')).toBe(false);
