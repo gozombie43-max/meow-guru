@@ -35,6 +35,8 @@ export default function BottomNav() {
   const isBattleArenaRoute = ['/battle', '/battle/profile', '/battle/leaderboard', '/battle/missions', '/battle/social'].includes(normalizedPathname);
   const isMockExamRoute =
     normalizedPathname.startsWith('/mock-test/') && normalizedPathname !== '/mock-test';
+  const isNotificationsRoute =
+    normalizedPathname === '/notifications' || normalizedPathname.startsWith('/notifications/');
   const shouldHideNav =
     isQuizRoute ||
     isNotesViewRoute ||
@@ -45,6 +47,7 @@ export default function BottomNav() {
     isDashboardRoute ||
     isBattleArenaRoute ||
     isMockExamRoute ||
+    isNotificationsRoute ||
     isAiChat;
   const { theme } = useThemeMode();
   const lightSurfacePrefixes = [

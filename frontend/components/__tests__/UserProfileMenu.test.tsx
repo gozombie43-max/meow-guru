@@ -205,7 +205,7 @@ describe('UserProfileMenu Component', () => {
     expect(screen.queryByRole('menuitem', { name: /admin panel/i })).toBeNull();
   });
 
-  it('renders live unread badge on avatar trigger and inside notifications menu item when unreadCount > 0', () => {
+  it('does not render notification alert badge on avatar trigger, but renders badge inside notifications menu item when unreadCount > 0', () => {
     vi.spyOn(NotificationCenterModule, 'useNotificationCenter').mockReturnValue({
       unreadCount: 5,
       refreshUnreadCount: vi.fn(),
@@ -215,16 +215,14 @@ describe('UserProfileMenu Component', () => {
 
     render(<UserProfileMenu size={34} />);
 
-    // Check trigger badge
-    const triggerBadge = screen.getByLabelText('5 unread notifications');
-    expect(triggerBadge).toBeDefined();
-    expect(triggerBadge.textContent).toBe('5');
+    // Avatar trigger should NOT have notification badge
+    const trigger = screen.getByRole('button', { name: /user profile menu/i });
+    expect(screen.queryByLabelText('5 unread notifications')).toBeNull();
 
     // Open menu and check menu item badge
-    const trigger = screen.getByRole('button', { name: /user profile menu/i });
     fireEvent.click(trigger);
 
     expect(screen.getByRole('menuitem', { name: /notifications/i })).toBeDefined();
-    expect(screen.getAllByText('5')).toHaveLength(2);
+    expect(screen.getByText('5')).toBeDefined();
   });
 });

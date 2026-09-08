@@ -165,4 +165,26 @@ describe("NotificationsPage", () => {
     expect(await screen.findByText("No notifications yet")).toBeInTheDocument();
     expect(screen.getByText("You're all caught up")).toBeInTheDocument();
   });
+
+  it("removes notification alert from avatar icon upon visiting /notifications", async () => {
+    render(<NotificationsPage />);
+
+    await waitFor(() => {
+      expect(mockClearUnread).toHaveBeenCalled();
+      expect(NotificationApiModule.markAllNotificationsRead).toHaveBeenCalled();
+    });
+  });
+
+  it("filters notifications by category tab", async () => {
+    render(<NotificationsPage />);
+
+    expect(await screen.findByText("Rahul challenged you")).toBeInTheDocument();
+    expect(screen.getByText("New Mock Test 🎯")).toBeInTheDocument();
+
+    const mockTab = screen.getByRole("tab", { name: /mocks/i });
+    fireEvent.click(mockTab);
+
+    expect(screen.getByText("New Mock Test 🎯")).toBeInTheDocument();
+    expect(screen.queryByText("Rahul challenged you")).not.toBeInTheDocument();
+  });
 });

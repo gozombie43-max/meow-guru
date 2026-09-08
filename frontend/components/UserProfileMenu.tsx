@@ -174,11 +174,6 @@ export default function UserProfileMenu({
           avatarUrl={user?.avatar || undefined}
           size={size}
         />
-        {unreadCount > 0 && (
-          <span className={styles.triggerBadge} aria-label={`${unreadCount} unread notifications`}>
-            {unreadCount > 9 ? '9+' : unreadCount}
-          </span>
-        )}
       </button>
 
       {/* Mini Pop-up Modal / Dropdown */}

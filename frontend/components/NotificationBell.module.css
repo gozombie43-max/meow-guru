@@ -1,0 +1,87 @@
+.bellButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--mac-card-bg, rgba(255, 255, 255, 0.85));
+  border: 1px solid var(--mac-border, rgba(0, 0, 0, 0.08));
+  color: var(--mac-text-secondary, #64748b);
+  position: relative;
+  text-decoration: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+
+.bellButton:hover {
+  background: var(--mac-card-subtle, rgba(0, 0, 0, 0.04));
+  color: var(--mac-text-primary, #0f172a);
+  border-color: var(--mac-border, rgba(0, 0, 0, 0.12));
+  transform: translateY(-1px);
+}
+
+.bellButton:active {
+  transform: translateY(0) scale(0.96);
+}
+
+:global(.dark) .bellButton,
+:global(body.theme-dark) .bellButton {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+}
+
+:global(.dark) .bellButton:hover,
+:global(body.theme-dark) .bellButton:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.bellIcon {
+  flex-shrink: 0;
+  transition: transform 0.18s ease;
+}
+
+.bellButton:hover .bellIcon {
+  transform: rotate(8deg);
+}
+
+.badge {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4.5px;
+  border-radius: 9999px;
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ffffff;
+  pointer-events: none;
+  line-height: 1;
+  box-shadow: 0 2px 5px rgba(239, 68, 68, 0.35);
+  animation: badgePop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+:global(.dark) .badge,
+:global(body.theme-dark) .badge {
+  border-color: #0b0f17;
+}
+
+@keyframes badgePop {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

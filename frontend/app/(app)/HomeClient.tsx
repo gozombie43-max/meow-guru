@@ -4,11 +4,11 @@ import { AiChatIcon } from '@/components/AiChatIcon';
 import GradientWavesLazy from '@/components/GradientWavesLazy';
 import MacTrafficLights from '@/components/MacTrafficLights';
 import QuizChartArt from '@/components/QuizChartArt';
+import NotificationBell from '@/components/NotificationBell';
 import UserProfileMenu from '@/components/UserProfileMenu';
 import { useAuth } from '@/context/AuthContext';
 import { useThemeMode } from '@/hooks/useTheme';
 import {
-  Bell,
   BookOpen,
   Crown,
   FileCheck2,
@@ -123,6 +123,7 @@ export default function HomeClient({
 
   const renderMobileHeaderActions = () => (
     <div className={styles.headerActionsMobile}>
+      <NotificationBell />
       {user ? (
         <UserProfileMenu size={34} align="right" />
       ) : (
@@ -310,15 +311,6 @@ export default function HomeClient({
 
               {/* Top Right User & System Controls */}
               <div className={styles.topActions}>
-                {/* User Avatar with Profile Dropdown Modal or LOGIN pill button */}
-                {user ? (
-                  <UserProfileMenu size={34} align="right" />
-                ) : (
-                  <Link href="/login" className={styles.loginPillButton} aria-label="Log in">
-                    LOGIN
-                  </Link>
-                )}
-
                 {/* Theme Toggle */}
                 <button
                   type="button"
@@ -331,15 +323,16 @@ export default function HomeClient({
                 </button>
 
                 {/* Notifications */}
-                <button
-                  type="button"
-                  className={styles.actionButton}
-                  aria-label="Notifications"
-                  title="Notifications"
-                >
-                  <Bell size={17} />
-                  <span className={styles.notificationDot} />
-                </button>
+                <NotificationBell size={34} iconSize={17} />
+
+                {/* User Avatar with Profile Dropdown Modal or LOGIN pill button */}
+                {user ? (
+                  <UserProfileMenu size={34} align="right" />
+                ) : (
+                  <Link href="/login" className={styles.loginPillButton} aria-label="Log in">
+                    LOGIN
+                  </Link>
+                )}
               </div>
             </header>
 

@@ -28,10 +28,12 @@ export function BattleSection({ title, description, children, loading, error, re
       <Link href="/battle" className="bs-brand"><Swords size={19} />Battle arena</Link>
       <button className="bs-theme" onClick={toggleThemeMode} aria-label={theme === "dark" ? "Use light theme" : "Use dark theme"}>{theme === "dark" ? <Sun size={19} /> : <Moon size={19} />}</button>
     </div></header>
-    <main className="bs-content">
-      <div className="bs-heading"><div><p className="bs-eyebrow">YOUR ARENA</p><h1>{title}</h1><p>{description}</p></div><Link className="bs-play" href="/battle">Play a battle <ArrowUpRight size={17} /></Link></div>
-      <nav className="bs-nav" aria-label="Battle pages">{pages.map(page => <Link key={page} href={`/battle/${page.toLowerCase()}`} aria-current={pathname === `/battle/${page.toLowerCase()}` ? "page" : undefined}>{page}</Link>)}</nav>
-      {authLoading ? <Empty title="Preparing your arena…" loading /> : !user ? <Empty title="Sign in to see your battle activity" detail="Your rank, missions, and friends are linked to your account."><Link className="bs-button" href="/login">Sign in</Link></Empty> : error ? <Empty title="Could not load this page" detail="Please try again. Your battle progress is saved."><button className="bs-button" onClick={retry}>Try again</button></Empty> : loading ? <Empty title="Loading your battle activity…" loading /> : children}
+    <main className="bs-scroll-body">
+      <div className="bs-content">
+        <div className="bs-heading"><div><p className="bs-eyebrow">YOUR ARENA</p><h1>{title}</h1><p>{description}</p></div><Link className="bs-play" href="/battle">Play a battle <ArrowUpRight size={17} /></Link></div>
+        <nav className="bs-nav" aria-label="Battle pages">{pages.map(page => <Link key={page} href={`/battle/${page.toLowerCase()}`} aria-current={pathname === `/battle/${page.toLowerCase()}` ? "page" : undefined}>{page}</Link>)}</nav>
+        {authLoading ? <Empty title="Preparing your arena…" loading /> : !user ? <Empty title="Sign in to see your battle activity" detail="Your rank, missions, and friends are linked to your account."><Link className="bs-button" href="/login">Sign in</Link></Empty> : error ? <Empty title="Could not load this page" detail="Please try again. Your battle progress is saved."><button className="bs-button" onClick={retry}>Try again</button></Empty> : loading ? <Empty title="Loading your battle activity…" loading /> : children}
+      </div>
     </main>
   </div>;
 }

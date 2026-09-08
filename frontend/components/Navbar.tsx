@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import UserProfileMenu from '@/components/UserProfileMenu';
+import NotificationBell from '@/components/NotificationBell';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -37,6 +38,7 @@ export default function Navbar() {
               >
                 Dashboard
               </Link>
+              <NotificationBell size={34} iconSize={17} />
               <UserProfileMenu size={34} align="right" />
             </>
           ) : (

@@ -1,0 +1,707 @@
+/* ==========================================================================
+   Meow Guru — Notifications Design System (Compliant with design.md)
+   Fixed Header & Controls, Scrollable Notification Items List
+   ========================================================================== */
+
+:root {
+  --notif-bg: #f8f9fc;
+  --notif-card: #ffffff;
+  --notif-border: rgba(0, 0, 0, 0.08);
+  --notif-border-hover: #b9d5ff;
+  --notif-text: #111827;
+  --notif-muted: #6b7280;
+  --notif-soft: #f1f3f9;
+  --notif-accent: #0066cc;
+  --notif-accent-strong: #0052a3;
+  --notif-accent-soft: #e8f2ff;
+  --notif-unread-dot: #0066cc;
+  --notif-shadow: 0 4px 18px -2px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03);
+  --notif-shadow-hover: 0 10px 28px -4px rgba(0, 102, 204, 0.14), 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+html.theme-dark {
+  --notif-bg: #000000;
+  --notif-card: #1c1c1e;
+  --notif-border: rgba(255, 255, 255, 0.09);
+  --notif-border-hover: rgba(10, 132, 255, 0.45);
+  --notif-text: #f5f5f7;
+  --notif-muted: #98989d;
+  --notif-soft: #2c2c2e;
+  --notif-accent: #0a84ff;
+  --notif-accent-strong: #0070e0;
+  --notif-accent-soft: rgba(10, 132, 255, 0.16);
+  --notif-unread-dot: #0a84ff;
+  --notif-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.55);
+  --notif-shadow-hover: 0 10px 30px -4px rgba(10, 132, 255, 0.25);
+}
+
+/* ==========================================================================
+   Page Shell: Fixed Top Area & Scrollable Items Body (design.md Rule 3)
+   ========================================================================== */
+.notif-page {
+  height: 100dvh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+  background: var(--notif-bg);
+  color: var(--notif-text);
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ==========================================================================
+   Fixed Pinned Top Area (Header + Controls)
+   ========================================================================== */
+.notif-fixed-top {
+  flex-shrink: 0;
+  z-index: 40;
+  background: rgba(248, 249, 252, 0.94);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--notif-border);
+}
+
+html.theme-dark .notif-fixed-top {
+  background: rgba(0, 0, 0, 0.92);
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Header (design.md Rule 1) */
+.notif-header {
+  padding: var(--safe-top) max(16px, var(--safe-right)) 0 max(16px, var(--safe-left));
+}
+
+.notif-header-inner {
+  width: 100%;
+  max-width: 960px;
+  height: var(--app-header-height);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.notif-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.notif-back-btn {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: var(--notif-text);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.notif-back-btn:hover {
+  background: var(--notif-soft);
+  border-color: var(--notif-border);
+}
+
+.notif-header-title {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.notif-header-title h1 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.notif-header-subtitle {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--notif-muted);
+  font-weight: 500;
+}
+
+.notif-read-all-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 13px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  font-weight: 650;
+  color: var(--notif-accent);
+  background: var(--notif-accent-soft);
+  border: 1px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.notif-read-all-btn:hover {
+  filter: brightness(0.96);
+  transform: translateY(-0.5px);
+}
+
+/* Pinned Controls Bar (Categories + Search) */
+.notif-controls-bar {
+  width: 100%;
+  padding: 4px max(16px, var(--safe-right)) 10px max(16px, var(--safe-left));
+  box-sizing: border-box;
+}
+
+.notif-controls-inner {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Search Bar */
+.notif-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  height: 40px;
+  padding: 0 13px;
+  border-radius: 12px;
+  background: var(--notif-card);
+  border: 1px solid var(--notif-border);
+  color: var(--notif-muted);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.notif-search-bar:focus-within {
+  border-color: var(--notif-accent);
+  box-shadow: 0 0 0 3px var(--notif-accent-soft);
+  color: var(--notif-accent);
+}
+
+.notif-search-bar input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 13.5px;
+  color: var(--notif-text);
+}
+
+.notif-search-bar input::placeholder {
+  color: var(--notif-muted);
+  opacity: 0.8;
+}
+
+.notif-search-clear {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  color: var(--notif-muted);
+  background: var(--notif-soft);
+  cursor: pointer;
+}
+
+/* Category Pills Horizontal Scroll */
+.notif-categories {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+
+.notif-categories::-webkit-scrollbar {
+  display: none;
+}
+
+.notif-category-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 13px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 650;
+  color: var(--notif-muted);
+  background: var(--notif-card);
+  border: 1px solid var(--notif-border);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.notif-category-chip:hover {
+  border-color: var(--notif-border-hover);
+  color: var(--notif-text);
+}
+
+.notif-category-chip.is-active {
+  color: #ffffff;
+  background: var(--notif-accent);
+  border-color: var(--notif-accent);
+  box-shadow: 0 3px 12px rgba(0, 102, 204, 0.25);
+}
+
+.notif-category-count {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 700;
+  background: var(--notif-soft);
+  color: var(--notif-muted);
+}
+
+.notif-category-chip.is-active .notif-category-count {
+  background: rgba(255, 255, 255, 0.24);
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   Scrollable Body (Only Bottom Notification Items Scroll)
+   ========================================================================== */
+.notif-scroll-body {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px max(16px, var(--safe-right)) calc(28px + var(--safe-bottom)) max(16px, var(--safe-left));
+  box-sizing: border-box;
+}
+
+.notif-container {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* Desktop PC Hero Banner */
+.notif-desktop-hero {
+  display: none;
+  margin-bottom: 20px;
+}
+
+.notif-desktop-hero-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.notif-desktop-hero-copy h2 {
+  margin: 0 0 4px;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--notif-text);
+}
+
+.notif-desktop-hero-copy p {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--notif-muted);
+}
+
+.notif-stats-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.notif-stat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 13px;
+  border-radius: 12px;
+  background: var(--notif-card);
+  border: 1px solid var(--notif-border);
+  font-size: 12px;
+  color: var(--notif-muted);
+}
+
+.notif-stat-pill strong {
+  color: var(--notif-text);
+  font-weight: 750;
+}
+
+/* ==========================================================================
+   Notification Card List
+   ========================================================================== */
+.notif-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.notif-card {
+  position: relative;
+  display: flex;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 18px;
+  background: var(--notif-card);
+  border: 1px solid var(--notif-border);
+  box-shadow: var(--notif-shadow);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  cursor: pointer;
+}
+
+.notif-card:hover {
+  border-color: var(--notif-border-hover);
+  box-shadow: var(--notif-shadow-hover);
+  transform: translateY(-1.5px);
+}
+
+.notif-card.is-read {
+  opacity: 0.88;
+}
+
+.notif-card.is-unread {
+  border-left: 3.5px solid var(--notif-accent);
+}
+
+/* Avatar & Icon styling */
+.notif-icon-wrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--notif-accent), var(--notif-accent-strong));
+  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.2);
+}
+
+.notif-icon-wrap.type-battle {
+  background: linear-gradient(135deg, #007aff, #0052cc);
+}
+
+.notif-icon-wrap.type-mock {
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+}
+
+.notif-icon-wrap.type-streak {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.notif-icon-wrap.type-announcement {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.notif-icon-wrap.type-default {
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+}
+
+.notif-unread-dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--notif-unread-dot);
+  border: 2px solid var(--notif-card);
+  box-shadow: 0 0 6px var(--notif-unread-dot);
+}
+
+/* Card Body */
+.notif-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.notif-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.notif-tag {
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--notif-accent);
+}
+
+.notif-time {
+  font-size: 11px;
+  color: var(--notif-muted);
+  white-space: nowrap;
+}
+
+.notif-title {
+  margin: 0 0 4px;
+  font-size: 14.5px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.35;
+  color: var(--notif-text);
+  word-break: break-word;
+}
+
+.notif-desc {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--notif-muted);
+  word-break: break-word;
+}
+
+/* Contextual Action Button (for high-intent actions like Join Battle, Open Mock) */
+.notif-action-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.notif-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 11px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #ffffff;
+  background: var(--notif-accent);
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.notif-cta-btn:hover:not(:disabled) {
+  background: var(--notif-accent-strong);
+  transform: translateY(-0.5px);
+  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.25);
+}
+
+.notif-cta-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+/* ==========================================================================
+   Empty State & Skeletons
+   ========================================================================== */
+.notif-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 60px 20px;
+  border-radius: 24px;
+  background: var(--notif-card);
+  border: 1px dashed var(--notif-border);
+  margin-top: 10px;
+}
+
+.notif-empty-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 20px;
+  display: grid;
+  place-items: center;
+  color: var(--notif-accent);
+  background: var(--notif-accent-soft);
+  margin-bottom: 18px;
+}
+
+.notif-empty h3 {
+  margin: 0 0 6px;
+  font-size: 18px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  color: var(--notif-text);
+}
+
+.notif-empty p {
+  margin: 0 auto 20px;
+  max-width: 400px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--notif-muted);
+}
+
+.notif-empty-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.notif-empty-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 16px;
+  border-radius: 12px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--notif-text);
+  background: var(--notif-soft);
+  border: 1px solid var(--notif-border);
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.notif-empty-link:hover {
+  background: var(--notif-accent-soft);
+  border-color: var(--notif-accent);
+  color: var(--notif-accent);
+}
+
+/* Skeleton Loading */
+.notif-skeleton {
+  display: flex;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 18px;
+  background: var(--notif-card);
+  border: 1px solid var(--notif-border);
+}
+
+.notif-sk-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: var(--notif-soft);
+}
+
+.notif-sk-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.notif-sk-line {
+  height: 14px;
+  border-radius: 6px;
+  background: var(--notif-soft);
+}
+
+.notif-sk-line.short {
+  width: 35%;
+}
+
+.notif-sk-line.medium {
+  width: 65%;
+}
+
+.notif-sk-line.full {
+  width: 90%;
+}
+
+@keyframes notif-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 0.95; }
+}
+
+.notif-skeleton * {
+  animation: notif-pulse 1.4s ease-in-out infinite;
+}
+
+/* ==========================================================================
+   Responsive PC / Tablet Enhancements (min-width: 768px and min-width: 1024px)
+   ========================================================================== */
+@media (min-width: 768px) {
+  .notif-header {
+    height: 64px;
+    padding: 0 24px;
+  }
+
+  .notif-header-inner {
+    height: 64px;
+  }
+
+  .notif-controls-bar {
+    padding: 6px 24px 14px;
+  }
+
+  .notif-controls-inner {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .notif-search-bar {
+    width: 280px;
+  }
+
+  .notif-scroll-body {
+    padding: 24px 24px calc(36px + var(--safe-bottom));
+  }
+
+  .notif-desktop-hero {
+    display: block;
+  }
+
+  .notif-card {
+    padding: 18px 22px;
+    gap: 18px;
+  }
+
+  .notif-icon-wrap {
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+  }
+
+  .notif-title {
+    font-size: 15.5px;
+  }
+
+  .notif-desc {
+    font-size: 13.5px;
+  }
+
+  .notif-action-row {
+    margin-top: 14px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .notif-card {
+    display: grid;
+    grid-template-columns: 48px 1fr auto;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .notif-action-row {
+    margin-top: 0;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+  }
+}
