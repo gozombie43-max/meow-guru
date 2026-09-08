@@ -136,15 +136,15 @@
 .battle-options { display: grid; gap: 9px; margin-top: 13px; }
 .battle-options > button { width: 100%; min-height: 54px; display: grid; grid-template-columns: 31px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 9px 12px; border: 1px solid #ddd8e5; border-radius: 14px; color: var(--battle-ink); background: #fff; text-align: left; box-shadow: 0 3px 12px rgba(39, 27, 67, .035); transition: border-color .15s ease, background .15s ease; }
 .battle-options > button:not(:disabled):hover { border-color: #a68de9; }
-.battle-options > button > span { width: 29px; height: 29px; display: grid; place-items: center; border: 1px solid #d5c9f2; border-radius: 9px; color: var(--battle-purple); background: #f7f3ff; font-size: 10px; font-weight: 900; }
+.battle-options > button > .battle-option-label { width: 29px; height: 29px; display: grid; place-items: center; border: 1px solid #d5c9f2; border-radius: 9px; color: var(--battle-purple); background: #f7f3ff; font-size: 10px; font-weight: 900; }
 .battle-option-text { min-width: 0; font-size: 13px; line-height: 1.45; }
 .battle-options > button > small { padding: 3px 6px; border-radius: 6px; color: #995315; background: #fff0df; font-size: 8px; font-weight: 800; }
 .battle-options > button > svg { width: 17px; color: var(--battle-green); }
 .battle-options > button.is-selected { border-color: var(--battle-purple); background: #f5f1ff; }
 .battle-options > button.is-correct { border-color: #5eb28d; background: #ecf9f3; }
-.battle-options > button.is-correct > span { border-color: var(--battle-green); color: #fff; background: var(--battle-green); }
+.battle-options > button.is-correct > .battle-option-label { border-color: var(--battle-green); color: #fff; background: var(--battle-green); }
 .battle-options > button.is-wrong { border-color: #de7f89; background: #fff0f1; }
-.battle-options > button.is-wrong > span { border-color: var(--battle-red); color: #fff; background: var(--battle-red); }
+.battle-options > button.is-wrong > .battle-option-label { border-color: var(--battle-red); color: #fff; background: var(--battle-red); }
 .battle-answer-status { min-height: 38px; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 11px; color: var(--battle-muted); text-align: center; font-size: 10px; }
 .battle-answer-status svg { width: 14px; }
 .battle-answer-status strong { color: var(--battle-ink); }
