@@ -216,7 +216,7 @@ export default function UserProfileMenu({
                   {/* Admin Panel (Admin / Superadmin only) */}
                   {isAdmin && (
                     <Link
-                      href="/admin"
+                      href="/admincontrol"
                       className={styles.menuItem}
                       onClick={() => setIsOpen(false)}
                       role="menuitem"

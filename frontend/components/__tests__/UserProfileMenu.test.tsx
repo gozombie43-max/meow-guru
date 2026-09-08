@@ -145,7 +145,7 @@ describe('UserProfileMenu Component', () => {
     fireEvent.click(trigger);
 
     expect(screen.getByText('Super Admin')).toBeDefined();
-    expect(screen.getByRole('menuitem', { name: /admin panel/i })).toBeDefined();
+    expect(screen.getByRole('menuitem', { name: /admin panel/i }).getAttribute('href')).toBe('/admincontrol');
   });
 
   it('renders "Admin" badge and Admin Panel link for admin user', () => {
@@ -164,7 +164,7 @@ describe('UserProfileMenu Component', () => {
     fireEvent.click(trigger);
 
     expect(screen.getByText('Admin')).toBeDefined();
-    expect(screen.getByRole('menuitem', { name: /admin panel/i })).toBeDefined();
+    expect(screen.getByRole('menuitem', { name: /admin panel/i }).getAttribute('href')).toBe('/admincontrol');
   });
 
   it('renders "User" badge and hides Admin Panel link for regular user', () => {
