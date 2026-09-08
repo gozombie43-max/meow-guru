@@ -2,6 +2,7 @@
 
 import { getUsersCollection, getAuditLogCollection } from '../config/mongodb.js';
 import { roleLevel } from '../middleware/requireRole.js';
+import { sendPushToUser } from '../services/pushNotificationService.js';
 
 // ── Helpers ──────────────────────────────────────────────
 
@@ -444,31 +445,65 @@ export async function sendNotification(req, res) {
 
     const targetUser = await users.findOne(
       { id: String(id), type: { $ne: 'email_lock' } },
-      { projection: { id: 1, name: 1, email: 1, notifications: 1 } }
+      { projection: { id: 1, name: 1, email: 1 } }
     );
 
     if (!targetUser) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // TODO: Integrate FCM here when configured
-    // const tokens = targetUser.notifications?.fcmTokens || [];
-    // if (tokens.length === 0) {
-    //   return res.status(400).json({ error: 'User has no FCM tokens' });
-    // }
-    // await sendFCM(tokens, { title, body });
+    const result = await sendPushToUser(String(id), {
+      title,
+      body,
+      category: 'announcements',
+      data: {
+        type: 'admin_message',
+      },
+    });
+
+    const successCount = result.successCount ?? 0;
+    const failureCount = result.failureCount ?? 0;
+    const sent = successCount > 0;
+
+    let deliveryState = 'failed';
+    let message = 'Notification saved, but push delivery was not accepted.';
+
+    if (sent) {
+      deliveryState = 'sent';
+      message = 'Notification sent ✅';
+    } else if (result.noDevices) {
+      deliveryState = 'no_devices';
+      message = 'Notification added to the user inbox, but no active Android push device is registered.';
+    } else if (result.suppressed) {
+      deliveryState = 'suppressed';
+      message = 'Notification added to the user inbox; push is disabled by the user preferences.';
+    }
 
     await logAudit({
       adminId: adminUser.id,
       adminEmail: adminUser.email,
       action: 'NOTIFICATION_SENT',
       targetUserId: id,
-      details: { title, body },
+      details: {
+        title,
+        body,
+        deliveryState,
+        successCount,
+        failureCount,
+        invalidDeviceCount: result.invalidDeviceCount ?? 0,
+        notificationId: result.notificationId ?? null,
+      },
     });
 
     res.json({
-      message: 'Notification logged ✅ (FCM not yet configured)',
-      sent: false,
+      message,
+      sent,
+      successCount,
+      failureCount,
+      invalidDeviceCount: result.invalidDeviceCount ?? 0,
+      noDevices: Boolean(result.noDevices),
+      suppressed: Boolean(result.suppressed),
+      notificationId: result.notificationId ?? null,
     });
   } catch (err) {
     console.error('sendNotification error:', err);
