@@ -519,6 +519,7 @@ export default function AdminUsersPage() {
                       <div className={s.userEmail}>{u.email}</div>
                     </div>
                   </div>
+                  <div className={s.rowMetadata}>
                   <div>
                     <span className={`${s.roleBadge} ${s[canonicalRole(u.role)]}`}>
                       {roleLabel(u.role)}
@@ -537,15 +538,21 @@ export default function AdminUsersPage() {
                       {statusLabel(u.status || 'active')}
                     </span>
                   </div>
+                  </div>
+                  <div className={s.rowDates}>
                   <div className={s.dateCell}>
+                    <span className={s.mobileDateLabel}>Joined </span>
                     {formatDate(u.createdAt)}
                   </div>
                   <div className={s.dateCell}>
+                    <span className={s.mobileDateLabel}>Active </span>
                     {relativeTime(u.lastLoginAt || u.lastActiveDate)}
                   </div>
-                  <div>
+                  </div>
+                  <div className={s.rowActions}>
                     <button
                       className={s.moreBtn}
+                      aria-label={`View details for ${u.name}`}
                       onClick={(e) => {
                         e.stopPropagation();
                         openDrawer(u.id);
