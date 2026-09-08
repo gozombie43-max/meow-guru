@@ -71,7 +71,16 @@ export function battleReducer(state: BattleState, action: BattleAction): BattleS
     case "rejected": {
       if (action.questionIndex !== undefined && action.questionIndex !== state.question?.questionIndex) return state;
       const locked = ["already-answered", "deadline-expired", "stale-question"].includes(action.reason);
-      return { ...state, answerStatus: locked ? "accepted" : "idle", selectedIndex: locked ? state.selectedIndex : null, error: action.reason === "deadline-expired" ? "Time is up. Waiting for the round result." : action.reason === "already-answered" ? "Your answer is already recorded." : "Answer could not be recorded. Syncing the match…" };
+      const message = action.reason === "deadline-expired"
+        ? "Time is up. Waiting for the round result."
+        : action.reason === "already-answered"
+          ? "Your answer is already recorded."
+          : action.reason === "invalid-answer-key"
+            ? "This question could not be scored. Syncing the match…"
+            : action.reason === "server-error"
+              ? "The answer service is temporarily unavailable. Syncing the match…"
+              : "Answer could not be recorded. Syncing the match…";
+      return { ...state, answerStatus: locked ? "accepted" : "idle", selectedIndex: locked ? state.selectedIndex : null, error: message };
     }
     case "scores": return { ...state, scores: action.scores };
     case "reveal": return action.reveal.questionIndex !== state.question?.questionIndex ? state : { ...state, reveal: action.reveal, selectedIndex: action.reveal.selections[action.userId] ?? null, answerStatus: "accepted", correct: action.reveal.selections[action.userId] === action.reveal.correctIndex, error: "" };

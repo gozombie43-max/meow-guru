@@ -13,6 +13,34 @@ function createQuestionWindow(now = new Date()) {
   return { questionStartedAt: now, questionDeadline: new Date(now.getTime() + QUESTION_TIME_MS) };
 }
 
+// Question documents historically store the key in more than one form: an
+// option index, an A-D letter, or the option text itself.  Battles must use a
+// single index internally, otherwise a perfectly valid selected option is
+// rejected as an "invalid answer key".
+export function getCorrectAnswerIndex(question) {
+  const options = Array.isArray(question?.options) ? question.options : [];
+  const answer = question?.correctAnswer;
+
+  if (Number.isInteger(answer) && answer >= 0 && answer < options.length) return answer;
+
+  if (typeof answer !== "string") return null;
+  const value = answer.trim();
+  const optionIndex = options.findIndex((option) => String(option).trim() === value);
+  if (optionIndex >= 0) return optionIndex;
+
+  const letter = value.match(/^\(?\s*([a-z])\s*\)?[.):]?$/i)?.[1]?.toUpperCase();
+  if (letter) {
+    const letterIndex = letter.charCodeAt(0) - 65;
+    if (letterIndex >= 0 && letterIndex < options.length) return letterIndex;
+  }
+
+  if (/^\d+$/.test(value)) {
+    const numericIndex = Number(value);
+    if (numericIndex >= 0 && numericIndex < options.length) return numericIndex;
+  }
+  return null;
+}
+
 function expiryFromNow() {
   return new Date(Date.now() + ROOM_TTL_MS);
 }
@@ -205,8 +233,8 @@ export async function submitAnswer({ code, userId, questionIndex, selectedIndex,
   if (!Number.isInteger(selectedIndex) || selectedIndex < 0 || selectedIndex >= question.options.length) return { ok: false, reason: "invalid-option" };
   if (room.questionDeadline && now.getTime() > new Date(room.questionDeadline).getTime()) return { ok: false, reason: "deadline-expired" };
 
-  const correctIndex = Number(question.correctAnswer);
-  if (!Number.isInteger(correctIndex) || correctIndex < 0 || correctIndex >= question.options.length) return { ok: false, reason: "invalid-answer-key" };
+  const correctIndex = getCorrectAnswerIndex(question);
+  if (correctIndex === null) return { ok: false, reason: "invalid-answer-key" };
   const isCorrect = selectedIndex === correctIndex;
   const responseTimeMs = room.questionStartedAt ? Math.max(0, now.getTime() - new Date(room.questionStartedAt).getTime()) : null;
   const result = await rooms.updateOne(
@@ -533,7 +561,7 @@ export function buildBattleSnapshot(room, userId) {
   const reveal = allAnswered && question
     ? {
         questionIndex: room.currentIndex,
-        correctIndex: Number(question.correctAnswer),
+        correctIndex: getCorrectAnswerIndex(question),
         selections: Object.fromEntries(room.players.map((player) => [
           player.userId,
           player.selectedIndex ?? null,

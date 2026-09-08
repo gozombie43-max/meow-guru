@@ -149,6 +149,26 @@ describe('Battle Room Manager', () => {
     );
   });
 
+  it('accepts option-text answer keys used by uploaded question documents', async () => {
+    const active = {
+      ...waitingRoom,
+      status: 'active',
+      questions: [{ correctAnswer: 'New Delhi', options: ['Mumbai', 'New Delhi'] }],
+      players: [
+        { ...waitingRoom.players[0], answered: false },
+        { userId: 'user-guest', socketId: 'socket-guest', name: 'Guest', score: 0, answered: false },
+      ],
+    };
+    const updated = { ...active, players: [{ ...active.players[0], answered: true, score: 10, lastCorrect: true }, active.players[1]] };
+    collection.findOne.mockResolvedValueOnce(active).mockResolvedValueOnce(updated);
+    collection.updateOne.mockResolvedValueOnce({ modifiedCount: 1 });
+
+    const result = await submitAnswer({ code: '4821', userId: 'user-host', questionIndex: 0, selectedIndex: 1 });
+
+    expect(result.ok).toBe(true);
+    expect(result.isCorrect).toBe(true);
+  });
+
   it('atomically records one timeout log for each still-unanswered player', async () => {
     const deadline = new Date('2026-09-08T00:00:00.000Z');
     const now = new Date('2026-09-08T00:00:01.000Z');

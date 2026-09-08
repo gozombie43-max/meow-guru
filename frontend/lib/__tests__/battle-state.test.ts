@@ -50,6 +50,16 @@ describe("battleReducer", () => {
     expect(state.selectedIndex).toBe(1);
     expect(state.correct).toBe(true);
   });
+
+  it("keeps a recoverable rejected answer selectable while match state is restored", () => {
+    const state = battleReducer(
+      { ...initialBattleState, phase: "playing", question },
+      { type: "rejected", reason: "server-error", questionIndex: 0 },
+    );
+    expect(state.answerStatus).toBe("idle");
+    expect(state.selectedIndex).toBeNull();
+    expect(state.error).toMatch(/temporarily unavailable/i);
+  });
 });
 
 describe("battleOutcome", () => {

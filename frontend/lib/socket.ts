@@ -26,16 +26,16 @@ export function getSocket(customToken?: string): Socket {
       transports: ['websocket', 'polling'],
       withCredentials: true,
       autoConnect: true,
-      auth: (cb) => {
-        const activeToken = getAccessToken();
-        cb({ token: activeToken });
-      },
+      auth: { token },
     });
-  } else if (token) {
+  } else {
+    const previousToken = (socket.auth as { token?: string | null } | undefined)?.token;
     socket.auth = { token };
-    if (!socket.connected) {
-      socket.connect();
-    }
+    if (socket.connected && token && token !== previousToken) {
+      // A singleton socket can outlive an access-token refresh. Reconnect so
+      // the backend authenticates the new token and the battle resume runs.
+      socket.disconnect().connect();
+    } else if (!socket.connected) socket.connect();
   }
 
   return socket;

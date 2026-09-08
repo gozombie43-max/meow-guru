@@ -5,7 +5,7 @@ import { createAdapter } from '@socket.io/mongo-adapter';
 import {
   createRoom, joinRoom, getRoom, deleteRoom,
   setQuestions, submitAnswer,
-  advanceQuestion, getScores, markSocketDisconnected,
+  advanceQuestion, getScores, markSocketDisconnected, getCorrectAnswerIndex,
   findResumableRoomForUser, resumePlayerConnection, buildBattleSnapshot,
 } from './roomManager.js';
 import {
@@ -426,7 +426,14 @@ export function initBattleSocket(httpServer, corsOrigin) {
         return;
       }
       const { code, questionIndex, selectedIndex } = parsed.data;
-      const result = await submitAnswer({ code, userId: socket.user.id, questionIndex, selectedIndex });
+      let result;
+      try {
+        result = await submitAnswer({ code, userId: socket.user.id, questionIndex, selectedIndex });
+      } catch (error) {
+        console.error('Battle answer persistence failed:', error);
+        socket.emit('game:answerRejected', { reason: 'server-error', questionIndex });
+        return;
+      }
       if (!result.ok) {
         if (result.reason === 'invalid-option') void recordBattleIntegritySignal({ dedupeKey: `invalid-option:${socket.user.id}:${new Date().toISOString().slice(0, 10)}`, userId: socket.user.id, roomCode: code, signalType: 'invalid-option-attempt', severity: 'medium', riskPoints: 15 }).catch(console.error);
         socket.emit('game:answerRejected', { reason: result.reason, questionIndex });
@@ -453,7 +460,7 @@ export function initBattleSocket(httpServer, corsOrigin) {
         const revealRoom = await getRoom(code);
         io.to(code).emit('game:reveal', {
           questionIndex: revealRoom.currentIndex,
-          correctIndex: Number(revealRoom.questions[revealRoom.currentIndex].correctAnswer),
+          correctIndex: getCorrectAnswerIndex(revealRoom.questions[revealRoom.currentIndex]),
           selections: Object.fromEntries(revealRoom.players.map((player) => [player.userId, player.selectedIndex ?? null])),
         });
         setTimeout(() => {
@@ -607,7 +614,20 @@ async function startGame(io, code) {
     }
 
     // Shuffle and select requested count
-    const shuffled = resources
+    const playableResources = resources.filter((question) =>
+      Array.isArray(question.options)
+      && question.options.length >= 2
+      && getCorrectAnswerIndex(question) !== null
+    );
+
+    if (playableResources.length === 0) {
+      io.to(code).emit('room:error', {
+        message: 'No playable questions found for this battle. Try another topic.',
+      });
+      return;
+    }
+
+    const shuffled = playableResources
       .sort(() => Math.random() - 0.5)
       .slice(0, room.questionCount);
 
