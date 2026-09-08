@@ -4,7 +4,7 @@
 
 .shell {
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", sans-serif;
-  color: #1d1d1f;
+  color: var(--admin-text, #1d1d1f);
 }
 
 /* Page Header */
@@ -20,20 +20,20 @@
   margin: 0 0 4px;
   font-size: 22px;
   font-weight: 700;
-  color: #1d1d1f;
+  color: var(--admin-text, #1d1d1f);
   letter-spacing: -0.02em;
 }
 
 .pageSubtitle {
   margin: 0;
   font-size: 13px;
-  color: #6e6e73;
+  color: var(--admin-text-secondary, #6e6e73);
   line-height: 1.45;
 }
 
 /* macOS Grouped Inset Card (Light System Settings Style) */
 .macGroup {
-  background: #ffffff;
+  background: var(--admin-surface-solid, #ffffff);
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 14px;
   padding: 18px 20px;
@@ -61,7 +61,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #6e6e73;
+  color: var(--admin-text-secondary, #6e6e73);
   margin: 0;
   display: flex;
   align-items: center;
@@ -81,7 +81,7 @@
   gap: 6px;
   font-size: 12px;
   font-weight: 600;
-  color: #48484a;
+  color: var(--admin-text-secondary, #48484a);
 }
 
 .macInput,
@@ -89,9 +89,9 @@
 .macTextarea {
   width: 100%;
   box-sizing: border-box;
-  background: #ffffff !important;
-  color: #1d1d1f !important;
-  border: 1px solid #d2d2d7 !important;
+  background: var(--admin-surface-solid, #ffffff) !important;
+  color: var(--admin-text, #1d1d1f) !important;
+  border: 1px solid var(--admin-border, #d2d2d7) !important;
   border-radius: 8px;
   padding: 8px 11px;
   font-size: 13px;
@@ -110,25 +110,25 @@
 
 .macInput::placeholder,
 .macTextarea::placeholder {
-  color: #86868b !important;
+  color: var(--admin-text-tertiary, #86868b) !important;
 }
 
 .macSelect option {
-  background: #ffffff;
-  color: #1d1d1f;
+  background: var(--admin-surface-solid, #ffffff);
+  color: var(--admin-text, #1d1d1f);
 }
 
 .macSelect:disabled,
 .macInput:disabled {
-  background: #f5f5f7 !important;
-  color: #86868b !important;
+  background: var(--admin-surface-muted, #f5f5f7) !important;
+  color: var(--admin-text-tertiary, #86868b) !important;
   cursor: not-allowed;
 }
 
 /* macOS Buttons */
 .btnPrimary {
   background: linear-gradient(180deg, #0077ed 0%, #0062cc 100%);
-  color: #ffffff;
+  color: var(--admin-surface-solid, #ffffff);
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 8px;
   padding: 8px 18px;
@@ -159,8 +159,8 @@
 }
 
 .btnSecondary {
-  background: #f5f5f7;
-  color: #1d1d1f;
+  background: var(--admin-surface-muted, #f5f5f7);
+  color: var(--admin-text, #1d1d1f);
   border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 8px;
   padding: 7px 14px;
@@ -214,7 +214,7 @@
 
 /* QuickLook / KaTeX Live Preview Card */
 .previewBox {
-  background: #ffffff;
+  background: var(--admin-surface-solid, #ffffff);
   border: 1px solid rgba(0, 0, 0, 0.09);
   border-radius: 10px;
   display: flex;
@@ -228,10 +228,10 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  background: #f5f5f7;
+  background: var(--admin-surface-muted, #f5f5f7);
   padding: 6px 12px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.07);
-  color: #6e6e73;
+  color: var(--admin-text-secondary, #6e6e73);
   display: flex;
   align-items: center;
   gap: 6px;
@@ -240,7 +240,7 @@
 .previewBody {
   padding: 12px;
   font-size: 14px;
-  color: #1d1d1f;
+  color: var(--admin-text, #1d1d1f);
   flex: 1;
   word-break: break-word;
   line-height: 1.5;
@@ -248,8 +248,8 @@
 
 /* Option letter badge */
 .optionBadge {
-  background: #f5f5f7;
-  color: #48484a;
+  background: var(--admin-surface-muted, #f5f5f7);
+  color: var(--admin-text-secondary, #48484a);
   width: 32px;
   height: 36px;
   display: flex;
@@ -269,19 +269,19 @@
   padding: 24px 20px;
   text-align: center;
   cursor: pointer;
-  background: #fbfbfd;
+  background: var(--admin-surface-muted, #fbfbfd);
   transition: all 0.15s ease;
   user-select: none;
 }
 
 .dropzone:hover {
-  background: #f5f5f7;
+  background: var(--admin-surface-muted, #f5f5f7);
   border-color: #0071e3;
 }
 
 /* macOS Table Styles */
 .tableWrap {
-  background: #ffffff;
+  background: var(--admin-surface-solid, #ffffff);
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 12px;
   overflow: hidden;
@@ -289,7 +289,7 @@
 }
 
 .tableHead {
-  background: #f5f5f7;
+  background: var(--admin-surface-muted, #f5f5f7);
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   padding: 10px 14px;
   display: flex;
@@ -349,4 +349,40 @@
   border-radius: 5px;
   font-size: 11px;
   font-weight: 600;
+}
+
+.shell { min-width: 0; }
+.btnPrimary { color: #fff; }
+.optionRow { display: grid; grid-template-columns: 34px minmax(0, 1fr) minmax(0, 1fr); gap: 12px; align-items: start; margin-bottom: 14px; }
+@media (max-width: 640px) {
+  .optionRow { grid-template-columns: 34px minmax(0, 1fr); }
+  .optionRow > :last-child { grid-column: 2; }
+}
+.macInput, .macSelect, .macTextarea, .btnPrimary, .btnSecondary, .btnDanger, .btnWarning { min-height: 44px; }
+.tableWrap { overflow-x: auto; }
+@media (max-width: 640px) {
+  .pageHeader, .macGroupHeader { flex-wrap: wrap; gap: 10px; }
+  .macGroup { padding: 16px; border-color: var(--admin-border); box-shadow: none; }
+  .formGrid { grid-template-columns: minmax(0, 1fr); }
+  .macInput, .macSelect, .macTextarea { font-size: 16px; }
+  .pageTitle { font-size: 22px; }
+}
+
+/* Responsive form and import-list primitives shared by every upload tool. */
+.shell { overflow-wrap: anywhere; }
+.shell form { grid-template-columns: minmax(0, 1fr); }
+.shell form > *, .macGroup, .previewBox, .formGrid > * { min-width: 0; }
+.shell pre { max-width: 100%; overflow: auto; }
+.shell :is(input, select, textarea) { max-width: 100%; min-width: 0; }
+.shell :is(button, a) { touch-action: manipulation; }
+.macGroup, .previewBox, .tableWrap { border-color: var(--admin-border); box-shadow: none; }
+.batchRow { display: grid; grid-template-columns: 24px 36px minmax(0, 1fr) 110px 75px 95px; }
+.batchQuestion { color: var(--admin-text); overflow-wrap: anywhere; }
+@media (max-width: 767px) {
+  .batchRow { grid-template-columns: 24px minmax(0, 1fr) auto; padding: 12px !important; gap: 8px !important; }
+  .batchQuestion { grid-column: 1 / -1; grid-row: 2; }
+  .batchRow > :nth-child(4), .batchRow > :nth-child(5), .batchRow > :nth-child(6) { grid-row: 3; }
+  .pageHeader { margin-bottom: 16px; }
+  .macGroupTitle { font-size: 12px; letter-spacing: 0; text-transform: none; }
+  .shell .tableWrap { max-height: none !important; }
 }

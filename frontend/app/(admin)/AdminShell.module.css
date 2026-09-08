@@ -1,0 +1,247 @@
+.shell {
+  --color-text-primary: var(--admin-text);
+  --color-text-secondary: var(--admin-text-secondary);
+  --color-text-tertiary: var(--admin-text-tertiary);
+  --color-border-secondary: var(--admin-border);
+  --color-border-tertiary: var(--admin-border);
+  --color-background-primary: var(--admin-surface-solid);
+  --color-background-secondary: var(--admin-surface-muted);
+  --color-background-danger: var(--admin-danger-soft);
+  --color-text-danger: var(--admin-danger);
+  --app-header-height: 105px;
+  --admin-bg: #f2f2f7;
+  --admin-surface: rgba(255, 255, 255, 0.88);
+  --admin-surface-solid: #ffffff;
+  --admin-surface-muted: #f7f7fa;
+  --admin-text: #1c1c1e;
+  --admin-text-secondary: #636366;
+  --admin-text-tertiary: #8e8e93;
+  --admin-border: rgba(60, 60, 67, 0.16);
+  --admin-separator: rgba(60, 60, 67, 0.12);
+  --admin-blue: #007aff;
+  --admin-blue-soft: rgba(0, 122, 255, 0.12);
+  --admin-shadow: 0 8px 30px rgba(18, 18, 23, 0.07);
+  --admin-success: #18743b;
+  --admin-success-soft: #e8f6ed;
+  --admin-success-border: #b4dbc1;
+  --admin-danger: #c62828;
+  --admin-danger-soft: #fcebec;
+  --admin-danger-border: #efbfc3;
+  width: 100%;
+  min-height: 100dvh;
+  padding-top: calc(var(--app-header-height) + var(--safe-top));
+  display: block;
+  background: var(--admin-bg);
+  color: var(--admin-text);
+  color-scheme: light;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+:global(.theme-dark) .shell,
+:global(.dark) .shell {
+  --admin-bg: #000000;
+  --admin-surface: rgba(28, 28, 30, 0.9);
+  --admin-surface-solid: #1c1c1e;
+  --admin-surface-muted: #242426;
+  --admin-text: #f2f2f7;
+  --admin-text-secondary: #aeaeb2;
+  --admin-text-tertiary: #8e8e93;
+  --admin-border: rgba(235, 235, 245, 0.2);
+  --admin-separator: rgba(235, 235, 245, 0.13);
+  --admin-blue: #0a84ff;
+  --admin-blue-soft: rgba(10, 132, 255, 0.19);
+  --admin-shadow: 0 12px 36px rgba(0, 0, 0, 0.3);
+  --admin-success: #75d99a;
+  --admin-success-soft: #173424;
+  --admin-success-border: #305c40;
+  --admin-danger: #ff999f;
+  --admin-danger-soft: #3c2024;
+  --admin-danger-border: #683039;
+  color-scheme: dark;
+}
+
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  flex: 0 0 auto;
+  padding: var(--safe-top) max(12px, var(--safe-right)) 8px max(12px, var(--safe-left));
+  background: var(--admin-surface);
+  border-bottom: 1px solid var(--admin-separator);
+  backdrop-filter: saturate(180%) blur(24px);
+  -webkit-backdrop-filter: saturate(180%) blur(24px);
+}
+
+.titlebar {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(56px, 1fr) minmax(0, auto) minmax(56px, 1fr);
+  align-items: center;
+  height: 48px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.titlebar h1 {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  color: var(--admin-text);
+  font-size: 17px;
+  font-weight: 650;
+  letter-spacing: -0.35px;
+  line-height: 1.2;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  min-height: 44px;
+  margin-left: -7px;
+  color: var(--admin-blue);
+  font-size: 16px;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.back span {
+  margin-left: -2px;
+}
+
+.status {
+  display: grid;
+  place-items: center;
+  justify-self: end;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--admin-blue-soft);
+  color: var(--admin-blue);
+}
+
+.nav {
+  display: flex;
+  width: 100%;
+  max-width: 900px;
+  gap: 6px;
+  margin: 0 auto;
+  padding: 2px 1px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.nav::-webkit-scrollbar {
+  display: none;
+}
+
+.nav a {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 6px 12px;
+  border-radius: 9px;
+  color: var(--admin-text-secondary);
+  font-size: 12px;
+  font-weight: 550;
+  text-decoration: none;
+  transition: background 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.nav a.active {
+  background: var(--admin-blue-soft);
+  color: var(--admin-blue);
+  font-weight: 650;
+}
+
+.scroller {
+  min-width: 0;
+  overscroll-behavior-y: contain;
+  scroll-behavior: smooth;
+  scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
+}
+
+.content {
+  width: 100%;
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 16px max(16px, var(--safe-right)) calc(24px + var(--safe-bottom)) max(16px, var(--safe-left));
+}
+
+.content :is(input, select, textarea) { font: inherit; }
+.content :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) { min-height: 44px; font-size: 16px; max-width: 100%; }
+.content button { min-height: 44px; font-family: inherit; }
+.content :is(h1, h2, h3) { overflow-wrap: anywhere; }
+.content :is(p, label) { overflow-wrap: anywhere; }
+.content input[type="checkbox"], .content input[type="radio"] { accent-color: var(--admin-blue); }
+@media(max-width:767px) {
+  .content :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) { font-size: 16px !important; }
+}
+.shell, .shell * { box-sizing: border-box; }
+
+.content :global(.admin-question-bank) :is(input:not([type="checkbox"]), select, textarea) { min-width: 0; max-width: 100%; min-height: 44px; font-size: 16px; }
+.content :global(.admin-question-bank) button { min-height: 44px; }
+.content :global(.admin-question-bank) { overflow-wrap: anywhere; }
+
+.shell a:focus-visible,
+.shell button:focus-visible,
+.shell input:focus-visible,
+.shell select:focus-visible,
+.shell textarea:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--admin-blue) 45%, transparent);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .nav a:hover {
+    background: var(--admin-blue-soft);
+    color: var(--admin-blue);
+  }
+}
+
+@media (min-width: 768px) {
+  .shell { --app-header-height: 111px; }
+  .header {
+    padding-bottom: 10px;
+  }
+
+  .titlebar {
+    height: 52px;
+  }
+
+  .titlebar h1 {
+    font-size: 18px;
+  }
+
+  .nav {
+    justify-content: center;
+  }
+
+  .nav a {
+    min-width: 112px;
+  }
+
+  .scroller {
+    min-width: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav a,
+  .scroller {
+    scroll-behavior: auto;
+    transition: none;
+  }
+}

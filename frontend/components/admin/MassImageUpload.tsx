@@ -102,7 +102,7 @@ export default function MassImageUpload({}: Props) {
       <div className={styles.macGroupHeader}>
         <div>
           <h2 className={styles.macGroupTitle}>🖼️ Question Image ZIP Archive</h2>
-          <span style={{ fontSize: 12, color: "#6e6e73" }}>
+          <span style={{ fontSize: 12, color: "var(--admin-text-secondary, #6e6e73)" }}>
             Patches question illustration images directly into MCQ records by target ID
           </span>
         </div>
@@ -114,7 +114,7 @@ export default function MassImageUpload({}: Props) {
       </div>
 
       {/* Mode selection */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
         {[
           { value: "auto", label: "Auto (filename = questionId)", desc: "e.g. visual_123.png patches question ID visual_123" },
           { value: "metadata", label: "Metadata JSON", desc: "ZIP contains metadata.json with [{filename, questionId}]" },
@@ -132,7 +132,7 @@ export default function MassImageUpload({}: Props) {
         ))}
       </div>
 
-      <div style={{ fontSize: 11.5, color: "#6e6e73", marginBottom: 12, padding: "8px 12px", background: "#fbfbfd", borderRadius: 7, border: "1px solid rgba(0, 0, 0, 0.06)" }}>
+      <div style={{ fontSize: 11.5, color: "var(--admin-text-secondary, #6e6e73)", marginBottom: 12, padding: "8px 12px", background: "var(--admin-surface-muted, #fbfbfd)", borderRadius: 7, border: "1px solid rgba(0, 0, 0, 0.06)" }}>
         {mode === "auto"
           ? "💡 Name your images after question IDs: e.g. visual_1776252864088_9d03bca4.png (stem becomes target ID)."
           : "💡 Include a metadata.json in the ZIP root: [{\"filename\": \"q1.png\", \"questionId\": \"visual_abc123\"}]"}
@@ -146,7 +146,7 @@ export default function MassImageUpload({}: Props) {
           accept=".zip"
           onChange={handleFileChange}
           className={styles.macInput}
-          style={{ flex: 1, minWidth: 200, padding: "6px 10px" }}
+          style={{ flex: 1, minWidth: 0, padding: "6px 10px" }}
         />
         <button
           onClick={handleUpload}
@@ -158,14 +158,14 @@ export default function MassImageUpload({}: Props) {
       </div>
 
       {zipFile && (
-        <div style={{ marginTop: 8, fontSize: 11.5, color: "#6e6e73" }}>
-          Selected: <span style={{ color: "#1d1d1f", fontWeight: 600 }}>{zipFile.name}</span>
+        <div style={{ marginTop: 8, fontSize: 11.5, color: "var(--admin-text-secondary, #6e6e73)" }}>
+          Selected: <span style={{ color: "var(--admin-text, #1d1d1f)", fontWeight: 600 }}>{zipFile.name}</span>
           {" · "}{(zipFile.size / 1024).toFixed(1)} KB
         </div>
       )}
 
       {error && (
-        <div style={{ marginTop: 12, padding: "8px 12px", borderRadius: 8, background: "#fee2e2", color: "#dc2626", border: "1px solid #fecaca", fontSize: 12.5 }}>
+        <div style={{ marginTop: 12, padding: "8px 12px", borderRadius: 8, background: "var(--admin-danger-soft)", color: "var(--admin-danger)", border: "1px solid var(--admin-danger-border)", fontSize: 12.5 }}>
           {error}
         </div>
       )}
@@ -176,9 +176,9 @@ export default function MassImageUpload({}: Props) {
           <div style={{
             padding: "8px 12px",
             borderRadius: 8,
-            background: response.success ? "#dcfce7" : "#fee2e2",
-            border: `1px solid ${response.success ? "#bbf7d0" : "#fecaca"}`,
-            color: response.success ? "#15803d" : "#dc2626",
+            background: response.success ? "var(--admin-success-soft)" : "var(--admin-danger-soft)",
+            border: `1px solid ${response.success ? "var(--admin-success-border)" : "var(--admin-danger-border)"}`,
+            color: response.success ? "var(--admin-success)" : "var(--admin-danger)",
             fontSize: 12.5,
             fontWeight: 600,
             marginBottom: 8,
@@ -194,13 +194,13 @@ export default function MassImageUpload({}: Props) {
           </div>
 
           {response.results.length > 0 && (
-            <div style={{ maxHeight: 150, overflowY: "auto", background: "#fbfbfd", borderRadius: 8, border: "1px solid rgba(0, 0, 0, 0.06)", padding: 6 }}>
+            <div style={{ maxHeight: 150, overflowY: "auto", background: "var(--admin-surface-muted, #fbfbfd)", borderRadius: 8, border: "1px solid rgba(0, 0, 0, 0.06)", padding: 6 }}>
               {response.results.map((r, i) => (
                 <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 8px", fontSize: 12, borderBottom: "1px solid #f2f2f7" }}>
-                  <span style={{ color: "#15803d", fontWeight: 600 }}>✓</span>
+                  <span style={{ color: "var(--admin-success)", fontWeight: 600 }}>✓</span>
                   <span style={{ color: "#0071e3", fontFamily: "SF Mono, monospace", fontSize: 11 }}>{r.questionId}</span>
-                  <span style={{ color: "#86868b" }}>←</span>
-                  <span style={{ color: "#1d1d1f" }}>{r.filename}</span>
+                  <span style={{ color: "var(--admin-text-tertiary, #86868b)" }}>←</span>
+                  <span style={{ color: "var(--admin-text, #1d1d1f)" }}>{r.filename}</span>
                   {r.questionImage && (
                     <a href={r.questionImage} target="_blank" rel="noreferrer" style={{ marginLeft: "auto", color: "#0071e3", fontSize: 11, textDecoration: "none" }}>
                       Preview ↗

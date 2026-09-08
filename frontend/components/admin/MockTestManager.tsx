@@ -1,4 +1,5 @@
 "use client";
+import layout from "./AdminLayout.module.css";
 
 import { type ReactNode, useMemo, useState } from "react";
 import styles from "./AdminTool.module.css";
@@ -200,7 +201,7 @@ export default function MockTestManager({ backLink }: { backLink?: ReactNode }) 
         </div>
 
         {type === "pyq" && (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 12 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 220px), 1fr))", gap: 12, marginTop: 12 }}>
             <label className={styles.fieldLabel}>
               Exam Year
               <input placeholder="e.g. 2024" value={year} onChange={(e) => setYear(e.target.value)} className={styles.macInput} />
@@ -247,8 +248,8 @@ export default function MockTestManager({ backLink }: { backLink?: ReactNode }) 
 
           <label className={styles.dropzone} style={{ display: "block" }}>
             <div style={{ fontSize: 26, marginBottom: 4 }}>📦</div>
-            <div style={{ fontWeight: 600, color: "#1d1d1f", fontSize: 13.5 }}>Drop Paper File (.ndjson or .json)</div>
-            <div style={{ fontSize: 11.5, color: "#6e6e73", marginTop: 2 }}>{questions.length > 0 ? `${questions.length} questions parsed` : "Click to select local file"}</div>
+            <div style={{ fontWeight: 600, color: "var(--admin-text, #1d1d1f)", fontSize: 13.5 }}>Drop Paper File (.ndjson or .json)</div>
+            <div style={{ fontSize: 11.5, color: "var(--admin-text-secondary, #6e6e73)", marginTop: 2 }}>{questions.length > 0 ? `${questions.length} questions parsed` : "Click to select local file"}</div>
             <input type="file" accept=".json,.jsonl,.ndjson" onChange={async (e) => setQuestionsText(await e.target.files?.[0]?.text() || "")} style={{ display: "none" }} />
           </label>
 
@@ -263,28 +264,28 @@ export default function MockTestManager({ backLink }: { backLink?: ReactNode }) 
           {questions.length > 0 && (
             <div style={{ marginTop: 14 }}>
               {/* Stats Chips */}
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
-                <div style={{ padding: "6px 12px", background: "#e0f2fe", borderRadius: 8, border: "0.5px solid #bae6fd" }}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
+                <div style={{ padding: "6px 12px", background: "var(--admin-blue-soft)", borderRadius: 8, border: "0.5px solid #bae6fd" }}>
                   <div style={{ fontSize: 16, fontWeight: 700, color: "#0071e3" }}>{questions.length}</div>
                   <div style={{ fontSize: 10, color: "#0369a1", textTransform: "uppercase", fontWeight: 600 }}>Total Questions</div>
                 </div>
                 {Object.entries(sectionCounts).map(([key, count]) => (
-                  <div key={key} style={{ padding: "6px 12px", background: "#f5f5f7", borderRadius: 8, border: "0.5px solid rgba(0, 0, 0, 0.08)" }}>
-                    <div style={{ fontSize: 16, fontWeight: 700, color: "#1d1d1f" }}>{count}</div>
-                    <div style={{ fontSize: 10, color: "#6e6e73", textTransform: "uppercase" }}>{key}</div>
+                  <div key={key} style={{ padding: "6px 12px", background: "var(--admin-surface-muted, #f5f5f7)", borderRadius: 8, border: "0.5px solid rgba(0, 0, 0, 0.08)" }}>
+                    <div style={{ fontSize: 16, fontWeight: 700, color: "var(--admin-text, #1d1d1f)" }}>{count}</div>
+                    <div style={{ fontSize: 10, color: "var(--admin-text-secondary, #6e6e73)", textTransform: "uppercase" }}>{key}</div>
                   </div>
                 ))}
               </div>
 
               {/* Preview Table */}
               <div className={styles.tableWrap} style={{ maxHeight: 220, overflowY: "auto" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
-                  <thead style={{ position: "sticky", top: 0, background: "#f5f5f7", zIndex: 1 }}>
+                <table className={layout.table}>
+                  <thead style={{ position: "sticky", top: 0, background: "var(--admin-surface-muted, #f5f5f7)", zIndex: 1 }}>
                     <tr>
-                      <th style={{ padding: "8px 12px", textAlign: "left", color: "#6e6e73", borderBottom: "1px solid rgba(0, 0, 0, 0.08)", width: 40 }}>#</th>
-                      <th style={{ padding: "8px 12px", textAlign: "left", color: "#6e6e73", borderBottom: "1px solid rgba(0, 0, 0, 0.08)" }}>Question Statement</th>
-                      <th style={{ padding: "8px 12px", textAlign: "left", color: "#6e6e73", borderBottom: "1px solid rgba(0, 0, 0, 0.08)", width: 110 }}>Section</th>
-                      <th style={{ padding: "8px 12px", textAlign: "left", color: "#6e6e73", borderBottom: "1px solid rgba(0, 0, 0, 0.08)", width: 70 }}>Ans</th>
+                      <th style={{ padding: "8px 12px", textAlign: "left", color: "var(--admin-text-secondary, #6e6e73)", borderBottom: "1px solid rgba(0, 0, 0, 0.08)", width: 40 }}>#</th>
+                      <th style={{ padding: "8px 12px", textAlign: "left", color: "var(--admin-text-secondary, #6e6e73)", borderBottom: "1px solid rgba(0, 0, 0, 0.08)" }}>Question Statement</th>
+                      <th style={{ padding: "8px 12px", textAlign: "left", color: "var(--admin-text-secondary, #6e6e73)", borderBottom: "1px solid rgba(0, 0, 0, 0.08)", width: 110 }}>Section</th>
+                      <th style={{ padding: "8px 12px", textAlign: "left", color: "var(--admin-text-secondary, #6e6e73)", borderBottom: "1px solid rgba(0, 0, 0, 0.08)", width: 70 }}>Ans</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -294,14 +295,14 @@ export default function MockTestManager({ backLink }: { backLink?: ReactNode }) 
                       const ans = String(q.correctAnswer ?? q.answer ?? "A");
                       return (
                         <tr key={i} style={{ borderBottom: "1px solid #f2f2f7" }}>
-                          <td style={{ padding: "7px 12px", color: "#86868b", fontFamily: "SF Mono, monospace" }}>{i + 1}</td>
-                          <td style={{ padding: "7px 12px", maxWidth: 280, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", color: "#1d1d1f" }}>{text}</td>
-                          <td style={{ padding: "7px 12px" }}>
-                            <span style={{ padding: "2px 6px", background: "#e0f2fe", color: "#0369a1", borderRadius: 4, fontSize: 10.5, fontWeight: 600 }}>
+                          <td data-label="#" style={{ padding: "7px 12px", color: "var(--admin-text-tertiary, #86868b)", fontFamily: "SF Mono, monospace" }}>{i + 1}</td>
+                          <td data-label="Question" style={{ padding: "7px 12px", maxWidth: 280, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", color: "var(--admin-text, #1d1d1f)" }}>{text}</td>
+                          <td data-label="Section" style={{ padding: "7px 12px" }}>
+                            <span style={{ padding: "2px 6px", background: "var(--admin-blue-soft)", color: "#0369a1", borderRadius: 4, fontSize: 10.5, fontWeight: 600 }}>
                               {section}
                             </span>
                           </td>
-                          <td style={{ padding: "7px 12px", fontWeight: 700, color: "#15803d" }}>{ans}</td>
+                          <td data-label="Answer" style={{ padding: "7px 12px", fontWeight: 700, color: "var(--admin-success)" }}>{ans}</td>
                         </tr>
                       );
                     })}
@@ -319,9 +320,9 @@ export default function MockTestManager({ backLink }: { backLink?: ReactNode }) 
           borderRadius: 8,
           fontSize: 13,
           fontWeight: 500,
-          background: status.includes("failed") || status.includes("Provide") ? "#fee2e2" : "#dcfce7",
-          border: `1px solid ${status.includes("failed") || status.includes("Provide") ? "#fecaca" : "#bbf7d0"}`,
-          color: status.includes("failed") || status.includes("Provide") ? "#dc2626" : "#15803d",
+          background: status.includes("failed") || status.includes("Provide") ? "var(--admin-danger-soft)" : "var(--admin-success-soft)",
+          border: `1px solid ${status.includes("failed") || status.includes("Provide") ? "var(--admin-danger-border)" : "var(--admin-success-border)"}`,
+          color: status.includes("failed") || status.includes("Provide") ? "var(--admin-danger)" : "var(--admin-success)",
           marginBottom: 16
         }}>
           {status}
@@ -339,9 +340,9 @@ export default function MockTestManager({ backLink }: { backLink?: ReactNode }) 
         <div className={styles.macGroupHeader}>
           <div>
             <h2 className={styles.macGroupTitle}>🌐 Live Cosmos DB Slots</h2>
-            <span style={{ fontSize: 11.5, color: "#6e6e73" }}>Real-time test slots published to candidates</span>
+            <span style={{ fontSize: 11.5, color: "var(--admin-text-secondary, #6e6e73)" }}>Real-time test slots published to candidates</span>
           </div>
-          <div style={{ display: "flex", gap: 8 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             <button disabled={busy} onClick={loadSlots} className={styles.btnSecondary} style={{ fontSize: 12, padding: "5px 10px" }}>
               🔄 Fetch Live
             </button>
@@ -353,15 +354,15 @@ export default function MockTestManager({ backLink }: { backLink?: ReactNode }) 
 
         <div className={styles.tableWrap}>
           {slots.length === 0 ? (
-            <div style={{ padding: 24, textAlign: "center", color: "#86868b", fontSize: 13 }}>
+            <div style={{ padding: 24, textAlign: "center", color: "var(--admin-text-tertiary, #86868b)", fontSize: 13 }}>
               No slots loaded. Click <strong>"Fetch Live"</strong> to inspect database records.
             </div>
           ) : (
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5 }}>
+            <table className={layout.table}>
               <thead>
-                <tr style={{ background: "#f5f5f7", borderBottom: "1px solid rgba(0, 0, 0, 0.08)" }}>
+                <tr style={{ background: "var(--admin-surface-muted, #f5f5f7)", borderBottom: "1px solid rgba(0, 0, 0, 0.08)" }}>
                   {["Slot ID", "Exam", "Stage", "Type", "Title", "Count", "Access", "Actions"].map((x) => (
-                    <th key={x} style={{ textAlign: "left", padding: "8px 12px", color: "#6e6e73" }}>{x}</th>
+                    <th key={x} style={{ textAlign: "left", padding: "8px 12px", color: "var(--admin-text-secondary, #6e6e73)" }}>{x}</th>
                   ))}
                 </tr>
               </thead>
@@ -370,36 +371,36 @@ export default function MockTestManager({ backLink }: { backLink?: ReactNode }) 
                   const isPyq = slot.type === "pyq" || slot.id.includes("pyq");
                   return (
                     <tr key={`${slot.examSlug}-${slot.id}`} style={{ borderBottom: "1px solid #f2f2f7" }}>
-                      <td style={{ padding: "8px 12px", fontFamily: "SF Mono, monospace", color: "#0071e3" }}>{slot.id}</td>
-                      <td style={{ padding: "8px 12px", fontWeight: 600 }}>{slot.examSlug}</td>
-                      <td style={{ padding: "8px 12px", color: "#6e6e73" }}>{slot.tier || "—"}</td>
-                      <td style={{ padding: "8px 12px" }}>
+                      <td data-label="Slot ID" style={{ padding: "8px 12px", fontFamily: "SF Mono, monospace", color: "#0071e3" }}>{slot.id}</td>
+                      <td data-label="Exam" style={{ padding: "8px 12px", fontWeight: 600 }}>{slot.examSlug}</td>
+                      <td data-label="Stage" style={{ padding: "8px 12px", color: "var(--admin-text-secondary, #6e6e73)" }}>{slot.tier || "—"}</td>
+                      <td data-label="Type" style={{ padding: "8px 12px" }}>
                         <span style={{ 
                           padding: "2px 6px", 
                           borderRadius: 4, 
                           fontSize: 10.5, 
                           fontWeight: 600, 
-                          background: isPyq ? "#e0f2fe" : "#f3e8ff",
+                          background: isPyq ? "var(--admin-blue-soft)" : "#f3e8ff",
                           color: isPyq ? "#0369a1" : "#7e22ce" 
                         }}>
                           {isPyq ? "PYQ" : "MOCK"}
                         </span>
                       </td>
-                      <td style={{ padding: "8px 12px", color: "#1d1d1f" }}>{slot.title}</td>
-                      <td style={{ padding: "8px 12px", color: "#6e6e73" }}>{slot.questionCount ?? (slot.hasFixedPaper ? "Fixed" : "Dynamic")}</td>
-                      <td style={{ padding: "8px 12px" }}>
+                      <td data-label="Title" style={{ padding: "8px 12px", color: "var(--admin-text, #1d1d1f)" }}>{slot.title}</td>
+                      <td data-label="Count" style={{ padding: "8px 12px", color: "var(--admin-text-secondary, #6e6e73)" }}>{slot.questionCount ?? (slot.hasFixedPaper ? "Fixed" : "Dynamic")}</td>
+                      <td data-label="Access" style={{ padding: "8px 12px" }}>
                         <span style={{ 
                           padding: "2px 6px", 
                           borderRadius: 4, 
                           fontSize: 10.5, 
                           fontWeight: 600, 
-                          background: slot.isFree ? "#dcfce7" : "#fef9c3",
-                          color: slot.isFree ? "#15803d" : "#a16207" 
+                          background: slot.isFree ? "var(--admin-success-soft)" : "#fef9c3",
+                          color: slot.isFree ? "var(--admin-success)" : "#a16207"
                         }}>
                           {slot.isFree ? "FREE" : "PRO"}
                         </span>
                       </td>
-                      <td style={{ padding: "8px 12px" }}>
+                      <td data-label="Actions" style={{ padding: "8px 12px" }}>
                         <button disabled={busy} onClick={() => remove(slot)} className={styles.btnDanger} style={{ padding: "3px 8px", fontSize: 11 }}>
                           Delete
                         </button>

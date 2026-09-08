@@ -1,4 +1,5 @@
 "use client";
+import styles from "@/components/admin/AdminTool.module.css";
 import { fetchWithRetry } from "@/lib/api/http";
 import { useEffect,useState } from "react";
 
@@ -116,10 +117,10 @@ export default function UploadImage() {
   };
 
   return (
-    <div style={{ padding: 20, fontFamily: "sans-serif" }}>
-      <h2>Image Question Builder</h2>
+    <div className={styles.shell} style={{ padding: 0, maxWidth: "100%", margin: "0 auto" }}>
+      <h2 className={styles.pageTitle}>Image Question Builder</h2>
 
-      <input type="file" onChange={handleImage} />
+      <input className={styles.macInput} aria-label="Question image" type="file" accept="image/*" onChange={handleImage} />
 
       {/* Option selector */}
       <div style={{ marginTop: 15, display: "flex", gap: 10 }}>
@@ -129,8 +130,9 @@ export default function UploadImage() {
             onClick={() => setCurrent(k)}
             style={{
               padding: "8px 14px",
-              background: current === k ? "#007bff" : "#ddd",
-              color: current === k ? "#fff" : "#000",
+              minHeight: 44,
+              background: current === k ? "#007bff" : "var(--admin-surface-muted)",
+              color: current === k ? "#fff" : "var(--admin-text)",
               border: "none",
               borderRadius: 6,
               cursor: "pointer",
@@ -150,8 +152,9 @@ export default function UploadImage() {
             style={{
               marginRight: 10,
               padding: "6px 12px",
-              background: correct === k ? "green" : "#ddd",
-              color: correct === k ? "#fff" : "#000",
+              minHeight: 44,
+              background: correct === k ? "green" : "var(--admin-surface-muted)",
+              color: correct === k ? "#fff" : "var(--admin-text)",
               border: "none",
               borderRadius: 5,
             }}
@@ -161,7 +164,7 @@ export default function UploadImage() {
         ))}
       </div>
 
-      <button onClick={autoDetect}>
+      <button className={styles.btnSecondary} onClick={autoDetect}>
         Auto Detect Options
       </button>
 
@@ -176,7 +179,8 @@ export default function UploadImage() {
             style={{
               overflow: "hidden",
               border: "1px solid #ccc",
-              width: 600,
+              width: "100%",
+              maxWidth: 600,
               height: 400,
               position: "relative",
               cursor: "grab",
@@ -212,11 +216,13 @@ export default function UploadImage() {
                 transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})`,
                 transformOrigin: "top left",
                 position: "relative",
-                width: 500,
+                width: "100%",
+                maxWidth: 500,
               }}
             >
               <img
                 src={image}
+                alt="Question image with editable answer regions"
                 style={{ width: "100%", borderRadius: 8 }}
                 onClick={handleClick}
               />
@@ -325,7 +331,7 @@ export default function UploadImage() {
         </div>
       )}
 
-      <button onClick={() => setRegions({})}>
+      <button className={styles.btnSecondary} onClick={() => setRegions({})}>
         Reset Regions
       </button>
 

@@ -2,27 +2,27 @@
 
 .page {
   /* Light mode default */
-  --color-text-primary: #0f172a;
-  --color-text-secondary: #334155;
-  --color-text-tertiary: #64748b;
-  --color-border-secondary: #e2e8f0;
-  --color-background-primary: #ffffff;
-  --color-background-secondary: #f8fafc;
-  --bg-page: #f1f5f9;
-  --card-bg: #ffffff;
-  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
-  --header-bg: rgba(255, 255, 255, 0.92);
-  --input-bg: #ffffff;
-  --input-border: #cbd5e1;
-  --input-focus-border: #3b82f6;
-  --btn-bg: #ffffff;
-  --btn-hover: #f8fafc;
-  --btn-border: #cbd5e1;
-  --preview-bg: #f8fafc;
-  --preview-card: #ffffff;
-  --chip-bg: #e2e8f0;
-  --chip-text: #1e293b;
-  --chip-hover: #cbd5e1;
+  --color-text-primary: var(--admin-text);
+  --color-text-secondary: var(--admin-text-secondary);
+  --color-text-tertiary: var(--admin-text-tertiary);
+  --color-border-secondary: var(--admin-border);
+  --color-background-primary: var(--admin-surface-solid);
+  --color-background-secondary: var(--admin-surface-muted);
+  --bg-page: var(--admin-bg);
+  --card-bg: var(--admin-surface-solid);
+  --card-shadow: var(--admin-shadow);
+  --header-bg: var(--admin-surface-solid);
+  --input-bg: var(--admin-surface-solid);
+  --input-border: var(--admin-border);
+  --input-focus-border: var(--admin-border);
+  --btn-bg: var(--admin-surface-solid);
+  --btn-hover: var(--admin-blue-soft);
+  --btn-border: var(--admin-border);
+  --preview-bg: var(--admin-surface-muted);
+  --preview-card: var(--admin-surface-solid);
+  --chip-bg: var(--admin-surface-muted);
+  --chip-text: var(--admin-text);
+  --chip-hover: var(--admin-blue-soft);
 
   min-height: 100dvh;
   width: 100%;
@@ -32,33 +32,6 @@
   font-family: inherit;
 }
 
-/* Dark mode theme support */
-:global(.theme-dark) .page,
-:global(body.theme-dark) .page,
-:global(html.theme-dark) .page,
-:global(.dark) .page {
-  --color-text-primary: #f8fafc;
-  --color-text-secondary: #cbd5e1;
-  --color-text-tertiary: #94a3b8;
-  --color-border-secondary: #1f2937;
-  --color-background-primary: #111827;
-  --color-background-secondary: #1e293b;
-  --bg-page: #0b0f19;
-  --card-bg: #111827;
-  --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
-  --header-bg: rgba(17, 24, 39, 0.92);
-  --input-bg: #1e293b;
-  --input-border: #334155;
-  --input-focus-border: #60a5fa;
-  --btn-bg: #1e293b;
-  --btn-hover: #334155;
-  --btn-border: #334155;
-  --preview-bg: #0f172a;
-  --preview-card: #1e293b;
-  --chip-bg: #1e293b;
-  --chip-text: #e2e8f0;
-  --chip-hover: #334155;
-}
 
 /* ── Header ─────────────────────────────────────────────── */
 
@@ -1106,3 +1079,18 @@
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+/* Page navigation is provided by AdminShell. */
+.page { min-height: 0; padding-bottom: 24px; }
+.page > .header { display: none; }
+.page :is(input:not([type="checkbox"]), select, textarea) { min-height: 44px; font-size: 16px; }
+.page button { min-height: 44px; }
+.modalDialog { max-height: calc(100dvh - var(--safe-top) - var(--safe-bottom) - 32px); overflow-y: auto; }
+@media (max-width: 640px) { .content { padding: 16px; } .statsGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .historyCardTop, .analyticsHeader, .historyHeader { flex-wrap: wrap; } }
+
+/* Gutters and width belong to AdminShell. */
+.page { padding: 0; background: transparent; }
+.page .content { padding: 0; max-width: none; }
+.page :is(.card, .statCard, .tableCard, .historyCard, .analyticsSection, .resultCard) { border-radius: 14px; box-shadow: none; }
+.page :is(.grid, .statsGrid, .toolbar, .card, .historyCard, .noticeText) { min-width: 0; }
+.page :is(.historyCardTitle, .historyCardBody, .detailValue, .userEmail) { overflow-wrap: anywhere; }

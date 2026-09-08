@@ -13,7 +13,7 @@ type ImageField = (typeof fields)[number];
 type Images = Partial<Record<ImageField, File>>;
 
 function renderMath(text: string) {
-  if (!text) return <span style={{ color: "#86868b", fontSize: 13, fontStyle: "italic" }}>Awaiting input…</span>;
+  if (!text) return <span style={{ color: "var(--admin-text-tertiary, #86868b)", fontSize: 13, fontStyle: "italic" }}>Awaiting input…</span>;
   const safeInput = text.replace(/\\\$/g, '__DOLLAR__');
   const regex = /\\\[([\s\S]*?)\\\]|\\\(([\s\S]*?)\\\)|\$\$([\s\S]*?)\$\$|\$([^\n$]+?)\$/g;
   const parts = [];
@@ -34,8 +34,8 @@ function renderMath(text: string) {
       return <Fragment key={i}>{content.split('\n').map((line, j) => <Fragment key={j}>{line}{j < content.split('\n').length - 1 && <br/>}</Fragment>)}</Fragment>;
     }
     const mathContent = content.replace(/(\d+)\s*\/\s*(\d+)/g, '\\tfrac{$1}{$2}');
-    if (part.type === 'display') return <div key={i} style={{ margin: "10px 0", textAlign: "center" }}><BlockMath math={mathContent} errorColor="#dc2626" /></div>;
-    return <InlineMath key={i} math={mathContent} errorColor="#dc2626" />;
+    if (part.type === 'display') return <div key={i} style={{ margin: "10px 0", textAlign: "center" }}><BlockMath math={mathContent} errorColor="var(--admin-danger)" /></div>;
+    return <InlineMath key={i} math={mathContent} errorColor="var(--admin-danger)" />;
   });
 }
 
@@ -171,14 +171,14 @@ export default function QuestionUploadForm({ backLink }: { backLink?: ReactNode 
         </section>
 
         {/* Study Mode Blueprint Prototype Notice */}
-        <section className={styles.macGroup} style={{ background: "#f0fdf4", borderColor: "#bbf7d0" }}>
-          <div className={styles.macGroupHeader} style={{ borderColor: "#dcfce7" }}>
-            <h2 className={styles.macGroupTitle} style={{ color: "#15803d" }}>📖 Study Mode Schema Blueprint</h2>
+        <section className={styles.macGroup} style={{ background: "var(--admin-success-soft)", borderColor: "var(--admin-success-border)" }}>
+          <div className={styles.macGroupHeader} style={{ borderColor: "var(--admin-success-soft)" }}>
+            <h2 className={styles.macGroupTitle} style={{ color: "var(--admin-success)" }}>📖 Study Mode Schema Blueprint</h2>
           </div>
-          <p style={{ fontSize: 12.5, color: "#166534", margin: "0 0 10px", lineHeight: 1.4 }}>
+          <p style={{ fontSize: 12.5, color: "var(--admin-success)", margin: "0 0 10px", lineHeight: 1.4 }}>
             For vocabulary pairs (Synonyms &amp; Antonyms), ingest via <strong>Mass Upload</strong> with this schema:
           </p>
-          <pre style={{ margin: 0, padding: 12, background: "#ffffff", borderRadius: 8, fontSize: 11.5, color: "#14532d", overflowX: "auto", border: "1px solid #bbf7d0", fontFamily: "SF Mono, Menlo, monospace" }}>{`{
+          <pre style={{ margin: 0, padding: 12, background: "var(--admin-surface-solid, #ffffff)", borderRadius: 8, fontSize: 11.5, color: "var(--admin-success)", overflowX: "auto", border: "1px solid var(--admin-success-border)", fontFamily: "SF Mono, Menlo, monospace" }}>{`{
   "id": "vocab_0001",
   "topic": "anto-syno",
   "subject": "english",
@@ -196,7 +196,7 @@ export default function QuestionUploadForm({ backLink }: { backLink?: ReactNode 
           <div className={styles.macGroupHeader}>
             <h2 className={styles.macGroupTitle}>✍️ Question Statement</h2>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 16 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 300px), 1fr))", gap: 16 }}>
             <div>
               <textarea 
                 value={form.question} 
@@ -223,11 +223,11 @@ export default function QuestionUploadForm({ backLink }: { backLink?: ReactNode 
             <h2 className={styles.macGroupTitle}>🔠 Options &amp; Answer Key</h2>
           </div>
           {form.options.map((option, index) => 
-            <div key={index} style={{ display: "grid", gridTemplateColumns: "34px minmax(0, 1fr) minmax(0, 1fr)", gap: 12, alignItems: "start", marginBottom: 14 }}>
+            <div key={index} className={styles.optionRow}>
               <div className={styles.optionBadge} style={{ 
-                background: form.correctIndex === String(index) ? "#e0f2fe" : "#f5f5f7",
+                background: form.correctIndex === String(index) ? "var(--admin-blue-soft)" : "var(--admin-surface-muted, #f5f5f7)",
                 borderColor: form.correctIndex === String(index) ? "#0071e3" : "rgba(0, 0, 0, 0.1)",
-                color: form.correctIndex === String(index) ? "#0071e3" : "#48484a"
+                color: form.correctIndex === String(index) ? "#0071e3" : "var(--admin-text-secondary, #48484a)"
               }}>
                 {"ABCD"[index]}
               </div>
@@ -305,7 +305,7 @@ export default function QuestionUploadForm({ backLink }: { backLink?: ReactNode 
             </label>
           </div>
           
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 16, marginTop: 16 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 300px), 1fr))", gap: 16, marginTop: 16 }}>
             <div>
               <label className={styles.fieldLabel}>
                 Solution Explanation
@@ -335,9 +335,9 @@ export default function QuestionUploadForm({ backLink }: { backLink?: ReactNode 
             borderRadius: 8,
             fontSize: 13,
             fontWeight: 500,
-            background: status.error ? "#fee2e2" : "#dcfce7",
-            border: `1px solid ${status.error ? "#fecaca" : "#bbf7d0"}`,
-            color: status.error ? "#dc2626" : "#15803d",
+            background: status.error ? "var(--admin-danger-soft)" : "var(--admin-success-soft)",
+            border: `1px solid ${status.error ? "var(--admin-danger-border)" : "var(--admin-success-border)"}`,
+            color: status.error ? "var(--admin-danger)" : "var(--admin-success)",
             display: "flex",
             alignItems: "center",
             gap: 8
@@ -359,8 +359,8 @@ export default function QuestionUploadForm({ backLink }: { backLink?: ReactNode 
 
 function ImagePicker({ label, field, images, setImages, imageUrls, setImageUrls }: { label: string; field: ImageField; images: Images; setImages: React.Dispatch<React.SetStateAction<Images>>; imageUrls: Partial<Record<ImageField, string>>; setImageUrls: React.Dispatch<React.SetStateAction<Partial<Record<ImageField, string>>>> }) { 
   return (
-    <div style={{ marginTop: 8, background: "#fbfbfd", padding: 8, borderRadius: 7, border: "1px solid rgba(0,0,0,0.08)" }}>
-      <span style={{ fontSize: 11, color: "#6e6e73", display: "block", marginBottom: 4, fontWeight: 500 }}>{label}</span>
+    <div style={{ marginTop: 8, background: "var(--admin-surface-muted, #fbfbfd)", padding: 8, borderRadius: 7, border: "1px solid rgba(0,0,0,0.08)" }}>
+      <span style={{ fontSize: 11, color: "var(--admin-text-secondary, #6e6e73)", display: "block", marginBottom: 4, fontWeight: 500 }}>{label}</span>
       <input 
         value={imageUrls[field] || ""} 
         placeholder="Paste CDN image URL…" 
@@ -373,9 +373,9 @@ function ImagePicker({ label, field, images, setImages, imageUrls, setImageUrls 
           type="file" 
           accept="image/*" 
           onChange={(e) => setImages((old) => ({ ...old, [field]: e.target.files?.[0] }))} 
-          style={{ fontSize: 11, color: "#6e6e73" }} 
+          style={{ fontSize: 11, color: "var(--admin-text-secondary, #6e6e73)" }}
         />
-        {images[field] && <span style={{ fontSize: 11, color: "#15803d", fontWeight: 600 }}>✓ Attached: {images[field]?.name}</span>}
+        {images[field] && <span style={{ fontSize: 11, color: "var(--admin-success)", fontWeight: 600 }}>✓ Attached: {images[field]?.name}</span>}
       </div>
     </div>
   ); 

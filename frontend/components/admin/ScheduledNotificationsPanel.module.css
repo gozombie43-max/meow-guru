@@ -1,19 +1,19 @@
 /* ── ScheduledNotificationsPanel.module.css ──────── */
 
 .container {
-  --color-text-primary: #0f172a;
-  --color-text-secondary: #334155;
-  --color-text-tertiary: #64748b;
-  --color-border-secondary: #e2e8f0;
-  --color-background-primary: #ffffff;
-  --color-background-secondary: #f8fafc;
-  --card-bg: #ffffff;
-  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
-  --btn-bg: #ffffff;
-  --btn-hover: #f8fafc;
-  --tab-bg: #f1f5f9;
-  --tab-active-bg: #ffffff;
-  --tab-active-text: #1e293b;
+  --color-text-primary: var(--admin-text);
+  --color-text-secondary: var(--admin-text-secondary);
+  --color-text-tertiary: var(--admin-text-tertiary);
+  --color-border-secondary: var(--admin-border);
+  --color-background-primary: var(--admin-surface-solid);
+  --color-background-secondary: var(--admin-surface-muted);
+  --card-bg: var(--admin-surface-solid);
+  --card-shadow: var(--admin-shadow);
+  --btn-bg: var(--admin-surface-solid);
+  --btn-hover: var(--admin-blue-soft);
+  --tab-bg: var(--admin-surface-muted);
+  --tab-active-bg: var(--admin-surface-solid);
+  --tab-active-text: var(--admin-text);
 
   margin-top: 32px;
   background: var(--card-bg);
@@ -24,24 +24,6 @@
   color: var(--color-text-primary);
 }
 
-:global(.theme-dark) .container,
-:global(body.theme-dark) .container,
-:global(html.theme-dark) .container,
-:global(.dark) .container {
-  --color-text-primary: #f8fafc;
-  --color-text-secondary: #cbd5e1;
-  --color-text-tertiary: #94a3b8;
-  --color-border-secondary: #1f2937;
-  --color-background-primary: #111827;
-  --color-background-secondary: #1e293b;
-  --card-bg: #111827;
-  --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
-  --btn-bg: #1e293b;
-  --btn-hover: #334155;
-  --tab-bg: #1e293b;
-  --tab-active-bg: #334155;
-  --tab-active-text: #f8fafc;
-}
 
 .header {
   display: flex;
@@ -478,3 +460,9 @@
     transform: rotate(360deg);
   }
 }
+
+.container { padding: 16px; border-radius: 14px; margin-top: 16px; box-shadow: none; min-width: 0; }
+.header { flex-wrap: wrap; gap: 12px; }
+.tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; }
+.tabBtn { min-width: 0; justify-content: center; }
+@media(min-width:768px) { .tabs { grid-template-columns: repeat(4,minmax(0,1fr)); } }

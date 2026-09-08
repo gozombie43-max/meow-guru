@@ -20,7 +20,7 @@
   font-size: 24px;
   font-weight: 700;
   letter-spacing: -0.02em;
-  color: #1d1d1f;
+  color: var(--admin-text, #1d1d1f);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -28,7 +28,7 @@
 
 .heroContent p {
   margin: 0;
-  color: #6e6e73;
+  color: var(--admin-text-secondary, #6e6e73);
   font-size: 13.5px;
   line-height: 1.5;
 }
@@ -38,7 +38,7 @@
   align-items: center;
   gap: 6px;
   padding: 5px 12px;
-  background: #ffffff;
+  background: var(--admin-surface-solid, #ffffff);
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 12px;
   font-size: 12px;
@@ -55,7 +55,7 @@
 
 .card {
   position: relative;
-  background: #ffffff;
+  background: var(--admin-surface-solid, #ffffff);
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 14px;
   padding: 20px;
@@ -70,7 +70,7 @@
 }
 
 .card:hover {
-  background: #ffffff;
+  background: var(--admin-surface-solid, #ffffff);
   border-color: rgba(0, 113, 227, 0.4);
   transform: translateY(-2px);
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 113, 227, 0.2);
@@ -92,14 +92,14 @@
 .cardTitle {
   font-size: 16px;
   font-weight: 600;
-  color: #1d1d1f;
+  color: var(--admin-text, #1d1d1f);
   margin: 0 0 6px;
   letter-spacing: -0.01em;
 }
 
 .cardDesc {
   font-size: 12.5px;
-  color: #6e6e73;
+  color: var(--admin-text-secondary, #6e6e73);
   line-height: 1.5;
   margin: 0 0 16px;
   flex: 1;
@@ -124,7 +124,7 @@
 
 /* System Features Spec Panel */
 .specPanel {
-  background: #ffffff;
+  background: var(--admin-surface-solid, #ffffff);
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 14px;
   padding: 20px;
@@ -136,7 +136,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #86868b;
+  color: var(--admin-text-tertiary, #86868b);
   margin-bottom: 14px;
 }
 
@@ -150,7 +150,7 @@
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  background: #fbfbfd;
+  background: var(--admin-surface-muted, #fbfbfd);
   border: 1px solid rgba(0, 0, 0, 0.05);
   border-radius: 10px;
   padding: 12px;
@@ -163,13 +163,13 @@
 .specItemHeading {
   font-size: 13px;
   font-weight: 600;
-  color: #1d1d1f;
+  color: var(--admin-text, #1d1d1f);
   margin: 0 0 2px;
 }
 
 .specItemDesc {
   font-size: 11.5px;
-  color: #6e6e73;
+  color: var(--admin-text-secondary, #6e6e73);
   margin: 0;
   line-height: 1.4;
 }
@@ -180,3 +180,6 @@
     align-items: flex-start;
   }
 }
+
+.card, .specPanel, .specItem { border-color: var(--admin-border); }
+@media (max-width: 640px) { .grid, .specGrid { grid-template-columns: minmax(0, 1fr); } .card { padding: 16px; } .versionBadge { display: none; } }

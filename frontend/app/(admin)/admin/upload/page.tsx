@@ -49,7 +49,7 @@ export default function AdminUploadHome() {
       <header className={styles.heroHeader}>
         <div className={styles.heroContent}>
           <h1>Upload Studio</h1>
-          <p>Native macOS interface for managing questions, mock test papers, and multimedia assets.</p>
+          <p>Create questions, manage exam papers, and upload media.</p>
         </div>
         <div className={styles.versionBadge}>
           <span>●</span>
@@ -76,7 +76,7 @@ export default function AdminUploadHome() {
       </section>
 
       <section className={styles.specPanel}>
-        <div className={styles.specTitle}>System Capabilities & Engine Architecture</div>
+        <div className={styles.specTitle}>Upload capabilities</div>
         <div className={styles.specGrid}>
           {systemSpecs.map((spec, i) => (
             <div key={i} className={styles.specItem}>

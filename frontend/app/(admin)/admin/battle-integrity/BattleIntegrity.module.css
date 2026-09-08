@@ -1,0 +1,4 @@
+.page { max-width: 1120px; margin: 0 auto; padding: 0; color: var(--admin-text); overflow-wrap: anywhere; }
+.card { min-width: 0; padding: 16px; border: 1px solid var(--admin-border); border-radius: 14px; background: var(--admin-surface-solid); }
+.page button { min-height: 44px; border-radius: 10px; }
+.page pre { max-width: 100%; white-space: pre-wrap; overflow-wrap: anywhere; }

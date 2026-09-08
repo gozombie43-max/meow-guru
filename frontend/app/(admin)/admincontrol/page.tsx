@@ -8,13 +8,11 @@ import {
   FileJson,
   FileQuestion,
   ImageUp,
-  LayoutDashboard,
   ListChecks,
   PackageOpen,
   ShieldCheck,
   Upload,
   Users,
-  ArrowLeft,
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -141,62 +139,7 @@ export default function AdminControlPage() {
 
   return (
     <div className={styles.page}>
-      <div className={styles.window}>
-        <aside className={styles.sidebar} aria-label="Workspace">
-          <div className={styles.brand}>
-            <span className={styles.brandIcon}>
-              <LayoutDashboard size={22} aria-hidden="true" />
-            </span>
-            <div>
-              Meow Guru<small>Administration</small>
-            </div>
-          </div>
-          <span className={styles.sidebarLabel}>FILTER TOOLS</span>
-          <nav className={styles.sidebarNav} aria-label="Desktop tools filter">
-            {[
-              { title: "Manage", icon: ShieldCheck },
-              { title: "Create & upload", icon: Upload },
-            ].map(({ title, icon: Icon }) => (
-              <button
-                key={title}
-                aria-pressed={activeFilter === title}
-                onClick={() => toggleFilter(title as AdminRouteGroup["title"])}
-              >
-                <Icon size={18} aria-hidden="true" />
-                <span>{title}</span>
-              </button>
-            ))}
-          </nav>
-          <div className={styles.sidebarNote}>
-            <ShieldCheck size={20} aria-hidden="true" />
-            <p>
-              Your workspace.
-              <br />
-              <span>Everything you need to keep learning moving.</span>
-            </p>
-          </div>
-          <div className={styles.account}>
-            <span className={styles.avatar} aria-hidden="true">
-              {user?.name?.charAt(0).toUpperCase() || "A"}
-            </span>
-            <div>
-              <strong>{user?.name || "Administrator"}</strong>
-              <small>
-                {user?.role === "superadmin"
-                  ? "Super administrator"
-                  : "Administrator"}
-              </small>
-            </div>
-          </div>
-        </aside>
-        <div className={styles.workspace}>
-          <header className={styles.toolbar}>
-            <Link href="/" className={styles.backLink} aria-label="Back to app">
-              <ArrowLeft size={17} aria-hidden="true" />
-            </Link>
-            <span className={styles.toolbarTitle}>Admin Control</span>
-          </header>
-          <main className={styles.content}>
+      <main className={styles.content}>
             <header className={styles.header}>
               <span className={styles.eyebrow}>YOUR WORKSPACE, SIMPLIFIED</span>
               <h1>
@@ -262,9 +205,7 @@ export default function AdminControlPage() {
                 Choose a tool to get started
               </span>
             </footer>
-          </main>
-        </div>
-      </div>
+      </main>
     </div>
   );
 }

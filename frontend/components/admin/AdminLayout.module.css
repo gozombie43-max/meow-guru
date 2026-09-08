@@ -1,0 +1,26 @@
+/* Shared content primitives. AdminShell owns page gutters and theme tokens. */
+.page { width: 100%; min-width: 0; color: var(--admin-text); }
+.stack { display: grid; gap: 16px; min-width: 0; }
+.disclosure { margin-bottom: 12px; border: 1px solid var(--admin-border); border-radius: 14px; background: var(--admin-surface-solid); }
+.disclosure summary { padding: 14px 16px; min-height: 48px; color: var(--admin-text); font-size: 14px; font-weight: 600; cursor: pointer; }
+.disclosure[open] summary { border-bottom: 1px solid var(--admin-border); }
+.disclosureBody { padding: 12px; min-width: 0; }
+.disclosureBody > div { border: 0 !important; padding: 0 !important; margin-bottom: 0 !important; background: transparent !important; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.panel { padding: 16px; border: 1px solid var(--admin-border); border-radius: 14px; background: var(--admin-surface-solid); min-width: 0; }
+.table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.table td { overflow-wrap: anywhere; }
+.tableWrap { width: 100%; min-width: 0; overflow-x: auto; border: 1px solid var(--admin-border); border-radius: 14px; background: var(--admin-surface-solid); }
+.dialog { width: min(640px, calc(100vw - 32px)); max-height: calc(100dvh - var(--safe-top) - var(--safe-bottom) - 32px); overflow-y: auto; background: var(--admin-surface-solid); color: var(--admin-text); border: 1px solid var(--admin-border); padding: 16px; border-radius: 16px; }
+.backdrop { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; padding: calc(16px + var(--safe-top)) 16px calc(16px + var(--safe-bottom)); background: #0008; }
+@media (max-width: 767px) {
+  .table, .table tbody { display: block; min-width: 0; width: 100%; }
+  .table thead { display: none; }
+  .table tbody tr { display: grid; grid-template-columns: minmax(0, 1fr); padding: 12px; gap: 9px; border-bottom: 1px solid var(--admin-border); background: var(--admin-surface-solid); }
+  .table td { display: block; width: 100%; max-width: none !important; padding: 0 !important; white-space: normal !important; min-width: 0; }
+  .table td[data-label]::before { content: attr(data-label); display: block; margin-bottom: 3px; color: var(--admin-text-secondary); font-size: 11px; font-weight: 600; }
+  .table td[data-label="Actions"] { display: flex; flex-wrap: wrap; gap: 8px; }
+  .table td[data-label="Actions"]::before { flex-basis: 100%; }
+  .table td[data-label="Actions"] button { margin: 0 !important; }
+  .table td[colspan] { padding: 16px !important; text-align: center; }
+}

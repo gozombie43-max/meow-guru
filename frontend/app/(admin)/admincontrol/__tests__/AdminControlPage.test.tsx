@@ -89,9 +89,8 @@ describe("AdminControlPage", () => {
 
   it("keeps only the requested category filters", () => {
     render(<AdminControlPage />);
-    expect(screen.getByRole("link", { name: "Back to app" }).textContent).toBe(
-      "",
-    );
+    // Back navigation is owned by the route-group shell.
+    expect(screen.queryByRole("link", { name: "Back to app" })).toBeNull();
     expect(screen.queryByRole("searchbox")).toBeNull();
     expect(
       screen.queryByRole("button", {

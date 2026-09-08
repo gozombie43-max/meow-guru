@@ -1,4 +1,6 @@
 "use client";
+import AdminDisclosure from "@/components/admin/AdminDisclosure";
+import layout from "@/components/admin/AdminLayout.module.css";
 import MassSolutionUpload from "@/components/admin/MassSolutionUpload";
 import RichContent from "@/components/RichContent";
 import { API_BASE } from "@/lib/api-base";
@@ -800,35 +802,18 @@ export default function AdminPanel() {
     d === "easy" ? "#16a34a" : d === "hard" ? "#dc2626" : "#d97706";
 
   return (
-    <div style={{
-      fontFamily: "var(--font-sans, system-ui)",
-      padding: "1.5rem",
-      maxWidth: 1280,
-      margin: "0 auto",
-      minHeight: "100dvh",
-      background: "#ffffff",
-      /* Force Light Theme Variables */
-      "--color-text-primary": "#1c1c1e",
-      "--color-text-secondary": "#636366",
-      "--color-text-tertiary": "#8e8e93",
-      "--color-border-secondary": "#e5e7eb",
-      "--color-border-tertiary": "#d1d1d6",
-      "--color-background-primary": "#ffffff",
-      "--color-background-secondary": "#f8fafc",
-      "--color-background-danger": "#fee2e2",
-      "--color-text-danger": "#991b1b",
-    } as React.CSSProperties}>
+    <div className={layout.page}>
 
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.5rem" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16, marginBottom: "1.5rem" }}>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 500, margin: 0, color: "var(--color-text-primary)" }}>Question Bank Admin</h1>
           <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: "4px 0 0" }}>
             {filtered.length} of {questions.length} questions
-            {selected.size > 0 && <span style={{ marginLeft: 8, color: "#6d28d9", fontWeight: 500 }}>· {selected.size} selected</span>}
+            {selected.size > 0 && <span style={{ marginLeft: 8, color: "var(--admin-blue)", fontWeight: 500 }}>· {selected.size} selected</span>}
           </p>
         </div>
-        <div style={{ display: "flex", gap: 8 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {selected.size > 0 && (
             <>
               <button onClick={clearSelection} style={{ padding: "8px 14px", background: "transparent", color: "var(--color-text-secondary)", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, cursor: "pointer", fontSize: 13 }}>
@@ -851,7 +836,7 @@ export default function AdminPanel() {
           >
             Upload Tools
           </a>
-          <button onClick={openNew} style={{ padding: "8px 16px", background: "#6d28d9", color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontSize: 14, fontWeight: 500 }}>
+          <button onClick={openNew} style={{ padding: "8px 16px", background: "var(--admin-blue)", color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontSize: 14, fontWeight: 500 }}>
             + Add Question
           </button>
         </div>
@@ -865,6 +850,7 @@ export default function AdminPanel() {
       )}
 
       {/* ── Mass Upload ── */}
+      <AdminDisclosure title="Import questions and images">
       <div style={{ border: "0.5px solid var(--color-border-tertiary)", borderRadius: 12, padding: "1rem", marginBottom: "1rem", background: "var(--color-background-secondary)" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
           <div>
@@ -877,7 +863,7 @@ export default function AdminPanel() {
             Clear
           </button>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 10, marginBottom: 10 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 180px), 1fr))", gap: 10, marginBottom: 10 }}>
           <select
             value={muSubject}
             onChange={(e) => {
@@ -922,7 +908,7 @@ export default function AdminPanel() {
           </select>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1.3fr 1fr auto", gap: 10, alignItems: "center" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 200px), 1fr))", gap: 10, alignItems: "center" }}>
           <input
             ref={muFileRef}
             type="file"
@@ -939,7 +925,7 @@ export default function AdminPanel() {
           <button
             onClick={handleMuUpload}
             disabled={muUploading || !muApiUrl || !muSubject || !muTopic || !muQuiz || muQuestions.length === 0}
-            style={{ padding: "8px 14px", borderRadius: 8, border: "none", background: muUploading ? "#a855f7" : "#6d28d9", color: "#fff", cursor: muUploading ? "wait" : "pointer", fontSize: 13, fontWeight: 500, opacity: muUploading ? 0.8 : 1 }}
+            style={{ padding: "8px 14px", borderRadius: 8, border: "none", background: muUploading ? "#a855f7" : "var(--admin-blue)", color: "#fff", cursor: muUploading ? "wait" : "pointer", fontSize: 13, fontWeight: 500, opacity: muUploading ? 0.8 : 1 }}
           >
             {muUploading ? "Uploading..." : "Upload"}
           </button>
@@ -964,12 +950,18 @@ export default function AdminPanel() {
         </div>
       </div>
 
+      </AdminDisclosure>
+
       {/* ── Mass Solution Upload ── */}
+      <AdminDisclosure title="Upload solution images">
       <div style={{ border: "0.5px solid var(--color-border-tertiary)", borderRadius: 12, padding: "1rem", marginBottom: "1rem", background: "var(--color-background-secondary)" }}>
         <MassSolutionUpload />
       </div>
 
+      </AdminDisclosure>
+
       {/* ── Bulk Image Upload ── */}
+      <AdminDisclosure title="Bulk image questions">
       <div style={{ border: "0.5px solid var(--color-border-tertiary)", borderRadius: 12, padding: "1rem", marginBottom: "1rem", background: "var(--color-background-secondary)" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
           <div>
@@ -978,7 +970,7 @@ export default function AdminPanel() {
               Upload multiple image questions at once (max {MAX_BULK_IMAGES}). Preview before uploading.
             </p>
           </div>
-          <div style={{ display: "flex", gap: 8 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             <button
               onClick={clearBulkImages}
               disabled={bulkImageUploading || bulkImages.length === 0}
@@ -1002,7 +994,7 @@ export default function AdminPanel() {
                 padding: "6px 14px",
                 borderRadius: 8,
                 border: "none",
-                background: bulkImageUploading ? "#a855f7" : "#6d28d9",
+                background: bulkImageUploading ? "#a855f7" : "var(--admin-blue)",
                 color: "#fff",
                 cursor: bulkImageUploading || bulkImages.length === 0 ? "default" : "pointer",
                 fontSize: 12,
@@ -1141,8 +1133,10 @@ export default function AdminPanel() {
         )}
       </div>
 
+      </AdminDisclosure>
+
       {/* Filters */}
-      <div style={{ display: "grid", gridTemplateColumns: "2fr repeat(6, minmax(0, 1fr))", gap: 10, marginBottom: "1rem" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 160px), 1fr))", gap: 10, marginBottom: "1rem" }}>
         <input placeholder="Search question, chapter, ID..." value={search} onChange={(e) => setSearch(e.target.value)}
           style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 14, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }} />
         <select value={filterSubject} onChange={(e) => setFilterSubject(e.target.value)}
@@ -1179,22 +1173,22 @@ export default function AdminPanel() {
 
       {/* Select all banner */}
       {selected.size > 0 && (
-        <div style={{ padding: "8px 14px", background: "#ede9fe", borderRadius: 8, marginBottom: 10, fontSize: 13, color: "#5b21b6", display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ padding: "8px 14px", background: "var(--admin-blue-soft)", borderRadius: 8, marginBottom: 10, fontSize: 13, color: "var(--admin-blue)", display: "flex", alignItems: "center", gap: 12 }}>
           <span>{selected.size} question{selected.size > 1 ? "s" : ""} selected</span>
           {selected.size < filtered.length && (
-            <button onClick={selectAll} style={{ background: "none", border: "none", cursor: "pointer", color: "#6d28d9", fontWeight: 500, fontSize: 13, padding: 0 }}>
+            <button onClick={selectAll} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--admin-blue)", fontWeight: 500, fontSize: 13, padding: 0 }}>
               Select all {filtered.length}
             </button>
           )}
-          <button onClick={clearSelection} style={{ background: "none", border: "none", cursor: "pointer", color: "#6d28d9", fontSize: 13, padding: 0, marginLeft: "auto" }}>
+          <button onClick={clearSelection} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--admin-blue)", fontSize: 13, padding: 0, marginLeft: "auto" }}>
             Clear selection
           </button>
         </div>
       )}
 
       {/* Table */}
-      <div style={{ border: "0.5px solid var(--color-border-tertiary)", borderRadius: 12, overflow: "hidden" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+      <div className={layout.tableWrap}>
+        <table className={layout.table}>
           <thead>
             <tr style={{ background: "var(--color-background-secondary)" }}>
               <th style={{ padding: "10px 14px", borderBottom: "0.5px solid var(--color-border-tertiary)", width: 40 }}>
@@ -1214,22 +1208,22 @@ export default function AdminPanel() {
             ) : paginated.map((q, i) => (
               <tr key={q.id} style={{
                 borderBottom: "0.5px solid var(--color-border-tertiary)",
-                background: selected.has(q.id) ? "#ede9fe" : i % 2 === 0 ? "var(--color-background-primary)" : "var(--color-background-secondary)"
+                background: selected.has(q.id) ? "var(--admin-blue-soft)" : i % 2 === 0 ? "var(--color-background-primary)" : "var(--color-background-secondary)"
               }}>
-                <td style={{ padding: "10px 14px" }}>
+                <td data-label="Select" style={{ padding: "10px 14px" }}>
                   <input type="checkbox" checked={selected.has(q.id)} onChange={() => toggleOne(q.id)}
                     style={{ cursor: "pointer", width: 15, height: 15 }} />
                 </td>
-                <td style={{ padding: "10px 14px", color: "var(--color-text-secondary)", fontFamily: "monospace", fontSize: 11 }}>{q.id?.slice(0, 16)}...</td>
-                <td style={{ padding: "10px 14px" }}>
-                  <span style={{ background: "#ede9fe", color: "#5b21b6", padding: "2px 8px", borderRadius: 6, fontSize: 12 }}>{q.topic}</span>
+                <td data-label="ID" style={{ padding: "10px 14px", color: "var(--color-text-secondary)", fontFamily: "monospace", fontSize: 11 }}>{q.id?.slice(0, 16)}...</td>
+                <td data-label="Topic" style={{ padding: "10px 14px" }}>
+                  <span style={{ background: "var(--admin-blue-soft)", color: "var(--admin-blue)", padding: "2px 8px", borderRadius: 6, fontSize: 12 }}>{q.topic}</span>
                 </td>
-                <td style={{ padding: "10px 14px", color: "var(--color-text-secondary)", maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{q.chapter}</td>
-                <td style={{ padding: "10px 14px" }}>
+                <td data-label="Chapter" style={{ padding: "10px 14px", color: "var(--color-text-secondary)", maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{q.chapter}</td>
+                <td data-label="Difficulty" style={{ padding: "10px 14px" }}>
                   <span style={{ color: diffColor(q.difficulty), fontWeight: 500, fontSize: 12 }}>{q.difficulty}</span>
                 </td>
-                <td style={{ padding: "10px 14px", color: "var(--color-text-secondary)", maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 11 }}>{q.exam}</td>
-                <td style={{ padding: "10px 14px", maxWidth: 320 }}>
+                <td data-label="Exam" style={{ padding: "10px 14px", color: "var(--color-text-secondary)", maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 11 }}>{q.exam}</td>
+                <td data-label="Question" style={{ padding: "10px 14px", maxWidth: 320 }}>
                   <div style={{ maxHeight: 64, overflow: "hidden" }}>
                     {q.question ? (
                       <RichContent text={q.question} />
@@ -1240,7 +1234,7 @@ export default function AdminPanel() {
                     ) : null}
                   </div>
                 </td>
-                <td style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>
+                <td data-label="Actions" style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>
                   <button onClick={() => openEdit(q)} style={{ marginRight: 6, padding: "4px 10px", borderRadius: 6, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: "pointer", fontSize: 12, color: "var(--color-text-primary)" }}>Edit</button>
                   <button onClick={() => setDeleteConfirm(q.id)} style={{ padding: "4px 10px", borderRadius: 6, border: "0.5px solid #fecaca", background: "transparent", cursor: "pointer", fontSize: 12, color: "#dc2626" }}>Delete</button>
                   <>
@@ -1296,7 +1290,7 @@ export default function AdminPanel() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: "1rem", justifyContent: "center" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8, marginTop: "1rem", justifyContent: "center" }}>
           <button onClick={() => setPage(1)} disabled={page === 1} style={{ padding: "6px 10px", borderRadius: 6, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: page === 1 ? "default" : "pointer", opacity: page === 1 ? 0.4 : 1 }}>«</button>
           <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} style={{ padding: "6px 10px", borderRadius: 6, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: page === 1 ? "default" : "pointer", opacity: page === 1 ? 0.4 : 1 }}>‹</button>
           <span style={{ fontSize: 13, color: "var(--color-text-secondary)" }}>Page {page} of {totalPages}</span>
@@ -1308,13 +1302,13 @@ export default function AdminPanel() {
       {/* Edit / Create Modal */}
       {editing && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem" }}>
-          <div style={{ background: "var(--color-background-primary, #ffffff)", color: "var(--color-text-primary, #111827)", borderRadius: 16, padding: "1.5rem", width: "100%", maxWidth: 640, maxHeight: "90vh", overflowY: "auto", border: "0.5px solid var(--color-border-secondary, #e5e7eb)" }}>
+          <div style={{ background: "var(--color-background-primary, #ffffff)", color: "var(--color-text-primary, #111827)", borderRadius: 16, padding: "1.5rem", width: "100%", maxWidth: 640, maxHeight: "calc(100dvh - var(--safe-top) - var(--safe-bottom) - 32px)", overflowY: "auto", border: "0.5px solid var(--color-border-secondary, #e5e7eb)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem" }}>
               <h2 style={{ fontSize: 18, fontWeight: 500, margin: 0 }}>{isNew ? "Add Question" : "Edit Question"}</h2>
               <button onClick={closeModal} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "var(--color-text-secondary)" }}>×</button>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 220px), 1fr))", gap: 12 }}>
               {(["topic", "subject", "chapter", "subtopic", "exam", "concept", "source"] as const).map((field) => (
                 <div key={field}>
                   <label style={{ fontSize: 12, color: "var(--color-text-secondary)", display: "block", marginBottom: 4, textTransform: "capitalize" }}>{field}</label>
@@ -1336,7 +1330,7 @@ export default function AdminPanel() {
 
               <div style={{ gridColumn: "1 / -1" }}>
                 <label style={{ fontSize: 12, color: "var(--color-text-secondary)", display: "block", marginBottom: 6 }}>Options</label>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 220px), 1fr))", gap: 8 }}>
                   {[0, 1, 2, 3].map((i) => (
                     <div key={i} style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       <span style={{ fontSize: 12, color: "var(--color-text-secondary)", width: 16 }}>{LETTERS[i]})</span>
@@ -1380,7 +1374,7 @@ export default function AdminPanel() {
 
             <div style={{ display: "flex", gap: 10, marginTop: "1.25rem", justifyContent: "flex-end" }}>
               <button onClick={closeModal} style={{ padding: "8px 18px", borderRadius: 8, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: "pointer", fontSize: 14 }}>Cancel</button>
-              <button onClick={handleSave} style={{ padding: "8px 18px", borderRadius: 8, border: "none", background: "#6d28d9", color: "#fff", cursor: "pointer", fontSize: 14, fontWeight: 500 }}>
+              <button onClick={handleSave} style={{ padding: "8px 18px", borderRadius: 8, border: "none", background: "var(--admin-blue)", color: "#fff", cursor: "pointer", fontSize: 14, fontWeight: 500 }}>
                 {isNew ? "Create" : "Save Changes"}
               </button>
             </div>
@@ -1391,7 +1385,7 @@ export default function AdminPanel() {
       {/* Single Delete Confirm */}
       {deleteConfirm && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <div style={{ background: "var(--color-background-primary, #ffffff)", color: "var(--color-text-primary, #111827)", borderRadius: 16, padding: "1.5rem", width: 360, border: "0.5px solid var(--color-border-secondary, #e5e7eb)" }}>
+          <div style={{ background: "var(--color-background-primary, #ffffff)", color: "var(--color-text-primary, #111827)", borderRadius: 16, padding: "1.5rem", width: "min(360px, calc(100vw - 32px))", border: "0.5px solid var(--color-border-secondary, #e5e7eb)" }}>
             <h2 style={{ fontSize: 16, fontWeight: 500, margin: "0 0 8px" }}>Delete question?</h2>
             <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: "0 0 1.25rem" }}>This cannot be undone.</p>
             <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
@@ -1405,7 +1399,7 @@ export default function AdminPanel() {
       {/* Bulk Delete Confirm */}
       {bulkDeleteConfirm && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <div style={{ background: "var(--color-background-primary, #ffffff)", color: "var(--color-text-primary, #111827)", borderRadius: 16, padding: "1.5rem", width: 400, border: "0.5px solid var(--color-border-secondary, #e5e7eb)" }}>
+          <div style={{ background: "var(--color-background-primary, #ffffff)", color: "var(--color-text-primary, #111827)", borderRadius: 16, padding: "1.5rem", width: "min(400px, calc(100vw - 32px))", border: "0.5px solid var(--color-border-secondary, #e5e7eb)" }}>
             <h2 style={{ fontSize: 16, fontWeight: 500, margin: "0 0 8px" }}>Delete {selected.size} questions?</h2>
             <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: "0 0 1.25rem" }}>
               This will permanently delete all {selected.size} selected questions. This cannot be undone.
@@ -1463,7 +1457,7 @@ export default function AdminPanel() {
               style={{
                 borderRadius: 12,
                 border: "0.5px solid var(--color-border-secondary)",
-                background: "#f8fafc",
+                background: "var(--admin-surface-muted)",
                 padding: 10,
               }}
             >

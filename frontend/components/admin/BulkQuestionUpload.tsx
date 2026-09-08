@@ -288,10 +288,10 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
 
   const badgeColors = (subj: string) => {
     const s = subj.toLowerCase();
-    if (s.includes("geo")) return { background: "#e0f2fe", color: "#0369a1", border: "0.5px solid #bae6fd" };
-    if (s.includes("math") || s.includes("alg") || s.includes("numb")) return { background: "#dcfce7", color: "#15803d", border: "0.5px solid #bbf7d0" };
+    if (s.includes("geo")) return { background: "var(--admin-blue-soft)", color: "#0369a1", border: "0.5px solid #bae6fd" };
+    if (s.includes("math") || s.includes("alg") || s.includes("numb")) return { background: "var(--admin-success-soft)", color: "var(--admin-success)", border: "0.5px solid var(--admin-success-border)" };
     if (s.includes("trig")) return { background: "#f3e8ff", color: "#7e22ce", border: "0.5px solid #e9d5ff" };
-    return { background: "#f5f5f7", color: "#48484a", border: "0.5px solid rgba(0, 0, 0, 0.1)" };
+    return { background: "var(--admin-surface-muted, #f5f5f7)", color: "var(--admin-text-secondary, #48484a)", border: "0.5px solid rgba(0, 0, 0, 0.1)" };
   };
 
   return (
@@ -308,7 +308,7 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
         <div className={styles.macGroupHeader}>
           <h2 className={styles.macGroupTitle}>⚙️ Target Quiz &amp; Secret</h2>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 200px), 1fr))", gap: 12 }}>
           <label className={styles.fieldLabel}>
             Admin Secret
             <input 
@@ -383,10 +383,10 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
         {/* macOS File Dropzone */}
         <label className={styles.dropzone} style={{ display: "block", marginTop: 14 }}>
           <div style={{ fontSize: 28, marginBottom: 6 }}>📄</div>
-          <div style={{ fontWeight: 600, color: "#1d1d1f", fontSize: 14 }}>
+          <div style={{ fontWeight: 600, color: "var(--admin-text, #1d1d1f)", fontSize: 14 }}>
             {fileName ? `File Attached: ${fileName}` : "Drag & Drop .ndjson, .jsonl, or .json file here"}
           </div>
-          <div style={{ fontSize: 12, color: "#6e6e73", marginTop: 4 }}>
+          <div style={{ fontSize: 12, color: "var(--admin-text-secondary, #6e6e73)", marginTop: 4 }}>
             {rows.length > 0 ? `${rows.length} rows parsed and structured` : "Click anywhere to browse or drag file into this window"}
           </div>
           <input type="file" accept=".json,.jsonl,.ndjson" onChange={(e) => onFile(e.target.files?.[0])} style={{ display: "none" }} />
@@ -403,7 +403,7 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
             </div>
           </div>
 
-          <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 12 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center", marginBottom: 12 }}>
             <select value={filters.subject} onChange={e => setFilters(old => ({ ...old, subject: e.target.value }))} className={styles.macSelect} style={{ width: "auto" }}>
               <option value="">All Subjects</option>
               <option value="math">Mathematics</option>
@@ -453,7 +453,7 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
           <div className={styles.tableWrap}>
             <div style={{ maxHeight: 380, overflowY: "auto", fontSize: 12.5 }}>
               {filteredRows.length === 0 ? (
-                <div style={{ padding: 32, textAlign: "center", color: "#86868b" }}>No rows matching active filters.</div>
+                <div style={{ padding: 32, textAlign: "center", color: "var(--admin-text-tertiary, #86868b)" }}>No rows matching active filters.</div>
               ) : (
                 filteredRows.map(q => {
                   const text = muGetDisplayText(q) || "(no text)";
@@ -464,23 +464,22 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
                   
                   return (
                     <div 
-                      key={q._idx} 
+                      key={q._idx}
+                      className={styles.batchRow}
                       onClick={() => toggleRow(q._idx)} 
                       style={{ 
-                        display: "grid", 
-                        gridTemplateColumns: "24px 36px 1fr 110px 75px 95px", 
                         gap: 10, 
                         padding: "9px 12px", 
                         borderBottom: "1px solid #f2f2f7", 
                         alignItems: "center", 
                         cursor: "pointer", 
-                        background: isSel ? "#e0f2fe" : "transparent",
+                        background: isSel ? "var(--admin-blue-soft)" : "transparent",
                         transition: "background 0.1s ease"
                       }}
                     >
                       <input type="checkbox" checked={isSel} readOnly style={{ cursor: "pointer" }} />
-                      <div style={{ color: "#86868b", fontFamily: "SF Mono, monospace", fontSize: 11 }}>{q._idx + 1}</div>
-                      <div style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", color: "#1d1d1f" }} title={text}>
+                      <div style={{ color: "var(--admin-text-tertiary, #86868b)", fontFamily: "SF Mono, monospace", fontSize: 11 }}>{q._idx + 1}</div>
+                      <div className={styles.batchQuestion} title={text}>
                         {text}
                       </div>
                       <div>
@@ -489,7 +488,7 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
                         </span>
                       </div>
                       <div style={{ 
-                        color: diff === "easy" ? "#15803d" : diff === "hard" ? "#dc2626" : "#a16207", 
+                        color: diff === "easy" ? "var(--admin-success)" : diff === "hard" ? "var(--admin-danger)" : "#a16207",
                         fontWeight: 600, 
                         fontSize: 11.5 
                       }}>
@@ -522,7 +521,7 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
               <div style={{ height: 6, background: "rgba(0, 0, 0, 0.08)", borderRadius: 3, overflow: "hidden", marginBottom: 6 }}>
                 <div style={{ width: `${(progress.current / progress.total) * 100}%`, height: "100%", background: "#0071e3", transition: "width 0.2s" }} />
               </div>
-              <div style={{ color: "#6e6e73", fontSize: 11.5 }}>
+              <div style={{ color: "var(--admin-text-secondary, #6e6e73)", fontSize: 11.5 }}>
                 Progress: {progress.current} of {progress.total} questions ({Math.round((progress.current / progress.total) * 100)}%)
               </div>
             </div>
@@ -531,7 +530,7 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
           <div ref={logRef} className={styles.terminal} style={{ maxHeight: 160, overflowY: "auto" }}>
             {logs.map((log, i) => (
               <div key={i} style={{ color: log.type === "ok" ? "#34c759" : log.type === "err" ? "#ff453a" : "#e5e5ea", marginBottom: 3 }}>
-                <span style={{ color: "#86868b", marginRight: 6 }}>$</span>
+                <span style={{ color: "var(--admin-text-tertiary, #86868b)", marginRight: 6 }}>$</span>
                 {log.text}
               </div>
             ))}
