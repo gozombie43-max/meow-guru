@@ -93,7 +93,6 @@ function BattlePageContent() {
   const searchParams = useSearchParams();
   const battle = useBattle(token, user?.id || "");
   const { state, connection, pending, inviteStatus } = battle;
-  const [playerName, setPlayerName] = useState<string | null>(null);
   const [subject, setSubject] = useState("mathematics");
   const [topic, setTopic] = useState("all");
   const [questionCount, setQuestionCount] = useState(10);
@@ -106,7 +105,7 @@ function BattlePageContent() {
   const invitationCode = searchParams.get("join")?.replace(/\D/g, "").slice(0, 4) || "";
   const mode = modeOverride || (invitationCode.length === 4 ? "join" : "create");
   const effectiveJoinCode = joinCode ?? invitationCode;
-  const effectivePlayerName = playerName ?? user?.name ?? "";
+  const effectivePlayerName = user?.name || user?.email?.split("@")[0] || "Player";
   const players = useMemo(() => Object.entries(state.scores), [state.scores]);
   const me = players.find(([id]) => id === user?.id)?.[1];
   const opponentEntry = players.find(([id]) => id !== user?.id);
@@ -137,7 +136,6 @@ function BattlePageContent() {
       </section>
       <section className="battle-setup-card" aria-labelledby="setup-title"><div className="battle-card-heading"><div><p className="battle-kicker">Match setup</p><h2 id="setup-title">Start a battle</h2></div><Users aria-hidden="true" /></div>
         <div className="battle-tabs" role="tablist" aria-label="Battle mode"><button type="button" role="tab" aria-selected={mode === "create"} className={mode === "create" ? "is-active" : ""} onClick={() => setModeOverride("create")}>Create room</button><button type="button" role="tab" aria-selected={mode === "join"} className={mode === "join" ? "is-active" : ""} onClick={() => setModeOverride("join")}>Join room</button></div>
-        <label className="battle-field"><span>Display name</span><input value={effectivePlayerName} maxLength={40} onChange={(event) => setPlayerName(event.target.value)} placeholder="Your name" autoComplete="name" /></label>
         {mode === "create" ? <><div className="battle-field-grid"><label className="battle-field"><span>Subject</span><select value={subject} onChange={(event) => { setSubject(event.target.value); setTopic("all"); }}>{SUBJECTS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label><label className="battle-field"><span>Topic</span><select value={topic} onChange={(event) => setTopic(event.target.value)}>{topicOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label></div>
           <fieldset className="battle-count-field"><legend>Questions</legend><div>{QUESTION_COUNTS.map((count) => <button type="button" key={count} className={questionCount === count ? "is-active" : ""} onClick={() => setQuestionCount(count)}>{count}</button>)}</div></fieldset></>
           : <label className="battle-field battle-code-field"><span>Room code</span><input value={effectiveJoinCode} onChange={(event) => setJoinCode(event.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="0000" inputMode="numeric" autoComplete="one-time-code" maxLength={4} /></label>}
