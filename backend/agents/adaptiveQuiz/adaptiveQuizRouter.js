@@ -2,6 +2,7 @@
 // QuizGuru — Adaptive Quiz API Routes
 
 import express from "express";
+import { protect } from "../../middleware/protect.js";
 import { analyzePatternAndConfigure, SUBJECT_TOPICS } from "./patternAnalyzer.js";
 import TOPIC_MAP from "./topicCategoryMap.js";
 import { buildAdaptiveQuiz, saveQuizAttempts } from "./quizBuilder.js";
@@ -12,6 +13,7 @@ import {
 } from "../../config/mongodb.js";
 
 const router = express.Router();
+router.use(protect);
 
 function escapeRegex(value = "") {
   return String(value).replace(
@@ -270,15 +272,15 @@ async function getUserQuestionIds(
 router.post("/generate", async (req, res) => {
   try {
     const {
-      userId,
       subjects = ["Reasoning", "Mathematics", "English", "General Awareness"],
       questionCount = 20,
-      mode = "adaptive",          // "adaptive" | "weak-only" | "revision" | "explore"
+      mode = "adaptive",
     } = req.body;
-
-    if (!userId) {
-      return res.status(400).json({ error: "userId is required" });
+    const userId = String(req.user.id);
+    if (!Array.isArray(subjects) || subjects.length === 0 || subjects.length > 4) {
+      return res.status(400).json({ error: "subjects must contain 1 to 4 entries" });
     }
+    const safeQuestionCount = Math.max(1, Math.min(100, Number(questionCount) || 20));
 
     // 1. Load user profile from MongoDB
     const profile = await getUserProfile(userId);
@@ -392,6 +394,11 @@ router.post("/generate", async (req, res) => {
 
     // Always store in memory session store
     quizSessionStore.set(quizId, { answerKey, userId, createdAt: Date.now() });
+    await getMongoDB().collection("adaptiveQuizSessions").updateOne(
+      { _id: quizId, userId },
+      { $set: { answerKey, createdAt: new Date(), expiresAt: new Date(Date.now() + QUIZ_SESSION_TTL_MS) } },
+      { upsert: true },
+    );
 
     // Also store in Express session if middleware is present
     if (req.session) {
@@ -417,21 +424,22 @@ router.post("/generate", async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 router.post("/submit", async (req, res) => {
   try {
-    const { quizId, userId, answers } = req.body;
+    const { quizId, answers } = req.body;
+    const userId = String(req.user.id);
 
-    if (!quizId || !userId || !Array.isArray(answers)) {
-      return res.status(400).json({ error: "quizId, userId, and answers[] required" });
+    if (!quizId || !Array.isArray(answers) || answers.length > 100) {
+      return res.status(400).json({ error: "quizId and up to 100 answers are required" });
     }
 
     // 1. Retrieve answer key from in-memory session store or express session
     let session = quizSessionStore.get(quizId) || req.session?.[quizId];
-    let answerKey = session?.answerKey || {};
-
-    // 2. Fallback: if session not found in memory, query MongoDB questions
-    if (!session || Object.keys(answerKey).length === 0) {
-      console.warn(`[adaptive-quiz/submit] Quiz session ${quizId} not in memory cache. Falling back to DB lookup...`);
-      answerKey = await fetchAnswerKeysFromDB(answers.map(a => a.questionId));
+    if (!session) {
+      session = await getMongoDB().collection("adaptiveQuizSessions").findOne({ _id: String(quizId), userId, expiresAt: { $gt: new Date() } });
     }
+    if (!session || session.userId !== userId) {
+      return res.status(404).json({ error: "Quiz session expired or not found" });
+    }
+    const answerKey = session.answerKey || {};
 
     if (!answerKey || Object.keys(answerKey).length === 0) {
       return res.status(404).json({ error: "Quiz session expired or questions not found. Please generate a new quiz." });
@@ -477,6 +485,8 @@ router.post("/submit", async (req, res) => {
     // Save to user profile (updates mastery map)
     try {
       await saveQuizAttempts(userId, attempts);
+      quizSessionStore.delete(quizId);
+      await getMongoDB().collection("adaptiveQuizSessions").deleteOne({ _id: String(quizId), userId });
     } catch (saveErr) {
       console.warn("[adaptive-quiz/submit] saveQuizAttempts non-fatal error:", saveErr.message);
     }
@@ -522,7 +532,7 @@ router.post("/submit", async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 router.get("/preview/:userId", async (req, res) => {
   try {
-    const { userId } = req.params;
+    const userId = String(req.user.id);
     const subjects = req.query.subjects
       ? req.query.subjects.split(",")
       : ["Reasoning", "Mathematics", "English", "General Awareness"];
@@ -534,7 +544,7 @@ router.get("/preview/:userId", async (req, res) => {
       failureMap:     profile?.failureMap || {},
       masteryMap:     profile?.masteryMap || {},
       subjects,
-      questionCount,
+      questionCount: safeQuestionCount,
     });
 
     res.json({ config });
@@ -547,7 +557,7 @@ router.get("/preview/:userId", async (req, res) => {
 // Returns available topics grouped by subject for the frontend topic picker
 router.get('/topics', async (req, res) => {
   try {
-    const userId = req.query.userId;
+    const userId = String(req.user.id);
 
     // Default shape: subject -> [topicName]
     const subjectsOut = {};
