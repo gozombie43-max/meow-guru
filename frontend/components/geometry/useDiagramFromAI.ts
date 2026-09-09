@@ -10,13 +10,16 @@
 import { useState, useEffect, useRef } from "react";
 import type { GeometryDiagram } from "./diagramSchema";
 import { SYSTEM_PROMPT } from "./diagramPrompt";
+import { getAccessToken } from "@/lib/axios";
 
 // ── API call ──────────────────────────────────
 async function fetchDiagram(questionText: string): Promise<GeometryDiagram> {
   // Path A: Use your Next.js API route (recommended — keeps keys server-side)
+  const accessToken = getAccessToken();
+  if (!accessToken) throw new Error("Authentication required");
   const res = await fetch("/api/diagram", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
     body: JSON.stringify({ question: questionText }),
   });
 
