@@ -32,6 +32,7 @@ beforeAll(async () => {
   process.env.MONGODB_URI = replicaSet.getUri();
   mongo = await import("../../config/mongodb.js");
   await mongo.connectMongoDB();
+  await (await import("../../migrations/runner.js")).migrate(mongo.getMongoDB());
   roomManager = await import("../roomManager.js");
   resultService = await import("../battleResultService.js");
   matchmakingService = await import("../matchmakingService.js");

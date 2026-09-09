@@ -1,3 +1,4 @@
+import { normalizedQuestionKeys } from "./questions/questionNormalizer.js";
 import { getExamConfig, getSlotById as getStaticSlotById, getSlotsForExam as getStaticSlotsForExam, MOCK_TEST_SLOTS } from '../config/exam-config.js';
 import {
   getQuestionsCollection,
@@ -626,7 +627,7 @@ export async function uploadFullPaper({ slotData, questions }) {
           topic: q.topic,
         },
         {
-          $set: q,
+          $set: { ...q, ...normalizedQuestionKeys(q) },
         },
         {
           upsert: true,

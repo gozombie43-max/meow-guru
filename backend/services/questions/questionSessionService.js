@@ -81,7 +81,7 @@ export async function fetchQuestionsSession(params) {
       const { ObjectId } = await import("mongodb");
       conditions.push({ _id: { $gt: new ObjectId(cursorId) } });
     } catch {
-      // Invalid cursor, ignore
+      throw Object.assign(new Error("Invalid question cursor"), { statusCode: 400 });
     }
   }
 

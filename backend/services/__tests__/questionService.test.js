@@ -370,10 +370,10 @@ describe('MongoDB-backed question writes', () => {
     expect(questionsQueryCache.has('stale')).toBe(false);
   });
 
-  it('bulk creates with Promise.allSettled results and retries duplicate ids', async () => {
+  it('bulk creates with per-row results and retries duplicate ids', async () => {
     const collection = {
-      insertOne: vi.fn()
-        .mockRejectedValueOnce(Object.assign(new Error('duplicate'), { code: 11000 }))
+      bulkWrite: vi.fn()
+        .mockRejectedValueOnce(Object.assign(new Error('duplicate'), { code: 11000, result: {}, writeErrors: [{ index: 0, code: 11000 }] }))
         .mockResolvedValue({ acknowledged: true }),
     };
     getQuestionsCollectionMock.mockReturnValue(collection);
@@ -382,7 +382,7 @@ describe('MongoDB-backed question writes', () => {
       { id: 'duplicate-id', quizSubject: 'English', quizTopic: 'Vocabulary' },
     ]);
 
-    expect(collection.insertOne).toHaveBeenCalledTimes(2);
+    expect(collection.bulkWrite).toHaveBeenCalledTimes(2);
     expect(results).toHaveLength(1);
     expect(results[0].status).toBe('fulfilled');
     expect(results[0].value).toEqual(

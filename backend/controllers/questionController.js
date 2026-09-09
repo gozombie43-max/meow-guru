@@ -17,8 +17,7 @@ function pickFile(files, key) {
 }
 
 function uploadedPath(file) {
-  if (!file || !file.filename) return '';
-  return `/uploads/${file.filename}`;
+  return file?.storageUrl || '';
 }
 
 // ── POST /api/questions ────────────────────────────────
@@ -129,7 +128,7 @@ const addQuestion = async (req, res) => {
     res.status(201).json({ message: 'Question added ✅', question: resource });
 
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(err.statusCode || err.status || 500).json({ error: err.message });
   }
 };
 
@@ -140,7 +139,7 @@ const getQuestions = async (req, res) => {
     res.set("Cache-Control", "no-store, max-age=0");
     res.json(result);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(err.statusCode || err.status || 500).json({ error: err.message });
   }
 };
 
@@ -168,7 +167,7 @@ const generatePracticeTest = async (req, res) => {
       questions:      questions,
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(err.statusCode || err.status || 500).json({ error: err.message });
   }
 };
 
@@ -182,7 +181,7 @@ const runAnalysis = async (req, res) => {
     const analysis = await questionService.analyzeAnswers(answers);
     res.json(analysis);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(err.statusCode || err.status || 500).json({ error: err.message });
   }
 };
 
@@ -198,7 +197,7 @@ const getQuestionById = async (req, res) => {
     res.set("Cache-Control", "no-store, max-age=0");
     res.json(question);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(err.statusCode || err.status || 500).json({ error: err.message });
   }
 };
 
@@ -209,7 +208,7 @@ const updateQuestion = async (req, res) => {
     if (!updated) return res.status(404).json({ error: 'Not found' });
     res.json({ message: 'Updated ✅', question: updated });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(err.statusCode || err.status || 500).json({ error: err.message });
   }
 };
 
@@ -220,7 +219,7 @@ const deleteQuestion = async (req, res) => {
     if (!success) return res.status(404).json({ error: 'Not found' });
     res.json({ message: 'Deleted ✅' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(err.statusCode || err.status || 500).json({ error: err.message });
   }
 };
 
@@ -232,14 +231,16 @@ const bulkCreateQuestions = async (req, res) => {
       return res.status(400).json({ error: 'Body must be a non-empty array' });
     }
 
-    const results = await questionService.createQuestionsBulk(questions);
+    const importId = req.get('Idempotency-Key');
+    if (importId && !/^[a-zA-Z0-9_-]{8,100}$/.test(importId)) return res.status(400).json({ error: 'Invalid Idempotency-Key' });
+    const results = await questionService.createQuestionsBulk(questions, { importId });
     
     const inserted = results.filter((r) => r.status === 'fulfilled').length;
     const failed = results.filter((r) => r.status === 'rejected').length;
 
-    return res.json({ inserted, failed, total: questions.length });
+    return res.json({ inserted, failed, total: questions.length, results: results.map((result, index) => ({ index, status: result.status, ...(result.status === 'fulfilled' ? { id: result.value.id } : { error: result.reason }) })) });
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    return res.status(err.statusCode || err.status || 500).json({ error: err.message });
   }
 };
 
@@ -254,7 +255,7 @@ const bulkDeleteQuestions = async (req, res) => {
     const result = await questionService.removeQuestionsBulk(ids);
     return res.json({ message: `Deleted ${result.deleted} questions`, ...result });
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    return res.status(err.statusCode || err.status || 500).json({ error: err.message });
   }
 };
 
@@ -269,7 +270,7 @@ const checkDuplicates = async (req, res) => {
     const duplicates = await questionService.checkDuplicates(questions);
     return res.json({ results: duplicates });
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    return res.status(err.statusCode || err.status || 500).json({ error: err.message });
   }
 };
 
@@ -280,7 +281,7 @@ const getImageQuestions = async (req, res) => {
     const result = await questionService.fetchImageQuestions(topic, limit);
     res.json(result);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(err.statusCode || err.status || 500).json({ error: err.message });
   }
 };
 

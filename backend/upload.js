@@ -1,3 +1,4 @@
+import { normalizedQuestionKeys } from "./services/questions/questionNormalizer.js";
 // backend/upload.js
 // Run with: node upload.js
 // Make sure .env is in the same folder
@@ -99,7 +100,7 @@ async function upload(questions) {
       await collection.updateOne(
         filter,
         {
-          $set: q,
+          $set: { ...q, ...normalizedQuestionKeys(q) },
         },
         {
           upsert: true,

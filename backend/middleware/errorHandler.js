@@ -1,3 +1,4 @@
+import { logger } from "../infrastructure/logger.js";
 // middleware/errorHandler.js
 // Global catch-all error handler + async route wrapper
 
@@ -6,11 +7,11 @@
  * Register AFTER all routes so it catches anything that falls through.
  */
 export function errorHandler(err, req, res, _next) {
-  console.error("Unhandled error:", err);
+  logger.error({ err, requestId: req.id }, "Unhandled request error");
   const status = err.status || err.statusCode || 500;
   res.status(status).json({
     error:
-      process.env.NODE_ENV === "production"
+      process.env.NODE_ENV === "production" && status >= 500
         ? "Internal server error"
         : err.message,
   });

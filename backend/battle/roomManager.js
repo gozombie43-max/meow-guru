@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import {
   getBattleRoomsCollection,
 } from "../config/mongodb.js";
@@ -191,6 +192,7 @@ export async function setQuestions(code, questions) {
         questions,
         currentIndex: 0,
         status: "active",
+        realtimeVersion: randomUUID(),
         questionStartedAt: timing.questionStartedAt,
         questionDeadline: timing.questionDeadline,
         updatedAt: now,
@@ -314,6 +316,7 @@ export async function resolveExpiredQuestion(code, expectedIndex, now = new Date
           "players.$[player].answeredAt": now,
           "players.$[player].responseTimeMs": responseTimeMs,
           questionResolvedAt: now,
+          realtimeVersion: randomUUID(),
           questionResolutionIndex: expectedIndex,
           questionAdvanceAt: new Date(now.getTime() + QUESTION_REVEAL_MS),
           updatedAt: now,
@@ -351,6 +354,7 @@ export async function resolveExpiredQuestion(code, expectedIndex, now = new Date
       {
         $set: {
           questionResolvedAt: now,
+          realtimeVersion: randomUUID(),
           questionResolutionIndex: expectedIndex,
           questionAdvanceAt: new Date(now.getTime() + QUESTION_REVEAL_MS),
           updatedAt: now,
@@ -389,6 +393,7 @@ export async function advanceQuestion(code, expectedIndex) {
       {
         $set: {
           status: "finished",
+          realtimeVersion: randomUUID(),
           finishReason: "completed",
           finishedAt: now,
           updatedAt: now,
@@ -407,6 +412,7 @@ export async function advanceQuestion(code, expectedIndex) {
       $set: {
         currentIndex: expectedIndex + 1,
         "players.$[].answered": false,
+        realtimeVersion: randomUUID(),
         questionStartedAt: timing.questionStartedAt,
         questionDeadline: timing.questionDeadline,
         updatedAt: now,
@@ -657,6 +663,7 @@ export async function forfeitRoom(code, forfeitingUserId) {
   const now = new Date();
   const update = {
     status: "finished",
+    realtimeVersion: randomUUID(),
     finishReason: "forfeit",
     winnerUserId: opponent.userId,
     loserUserId: normalizedUserId,

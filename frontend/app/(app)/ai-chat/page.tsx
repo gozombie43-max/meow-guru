@@ -5,6 +5,8 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import VisualResponse from '@/components/ai/VisualResponse';
 import { useThemeMode } from '@/hooks/useTheme';
 import api from '@/lib/axios';
+import { useAuth } from '@/context/AuthContext';
+import { waitForTutorJob, TutorJobError } from '@/lib/tutor-jobs';
 import { announceFeedback } from '@/lib/feedback';
 import {
 ArrowUp,
@@ -292,6 +294,10 @@ function normalizeSimpleTables(content: string) {
 
 function AiChatPageContent() {
   const { theme } = useThemeMode();
+  const { user } = useAuth();
+  const pendingKey = user?.id ? `tutor-pending:${user.id}` : null;
+  const polling = useRef<AbortController | null>(null);
+  useEffect(() => () => polling.current?.abort(), []);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
@@ -329,6 +335,29 @@ function AiChatPageContent() {
 
         const backendChats = Array.isArray(data.aiChats) ? (data.aiChats as ChatSession[]) : [];
         setChatSessions(backendChats);
+        setIsHistoryLoading(false);
+        const pending = pendingKey ? sessionStorage.getItem(pendingKey) : null;
+        if (pending) {
+          const saved = JSON.parse(pending) as { jobId: string; chatId: string; title: string; messages: ChatMessage[] };
+          setActiveChatId(saved.chatId);
+          setMessages(saved.messages);
+          setIsLoading(true);
+          polling.current = new AbortController();
+          try {
+            const reply = await waitForTutorJob(saved.jobId, polling.current.signal);
+            if (cancelled) return;
+            const updated: ChatSession = { id: saved.chatId, title: saved.title, messages: [...saved.messages, { role: 'bot', content: reply }], updatedAt: new Date().toISOString() };
+            await api.put(`/users/me/ai-chats/${encodeURIComponent(saved.chatId)}`, { title: updated.title, messages: updated.messages });
+            if (cancelled) return;
+            setMessages(updated.messages);
+            setChatSessions(prev => [updated, ...prev.filter(chat => chat.id !== updated.id)]);
+            if (pendingKey) sessionStorage.removeItem(pendingKey);
+          } catch (error) {
+            if (cancelled) return;
+            if (error instanceof TutorJobError && error.terminal && pendingKey) sessionStorage.removeItem(pendingKey);
+            setMessages([...saved.messages, { role: 'bot', content: error instanceof Error ? error.message : 'Could not check the attachment. Refresh to retry.' }]);
+          } finally { if (!cancelled) setIsLoading(false); }
+        }
       } catch (err) {
         console.warn('Could not load AI chat history', err);
       } finally {
@@ -336,12 +365,13 @@ function AiChatPageContent() {
       }
     };
 
-    loadBackendChats();
+    if (pendingKey) void loadBackendChats();
 
     return () => {
       cancelled = true;
+      polling.current?.abort();
     };
-  }, []);
+  }, [pendingKey]);
 
   useEffect(() => {
     const node = scrollRef.current;
@@ -436,10 +466,15 @@ function AiChatPageContent() {
         formData.append('attachment', fileToSend);
 
         const response = await api.post('/api/ai/tutor-chat', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
+          headers: { 'Content-Type': 'multipart/form-data', 'Idempotency-Key': createChatId() },
           timeout: 60000,
         });
-        reply =
+        if (response.data?.jobId) {
+          if (pendingKey) sessionStorage.setItem(pendingKey, JSON.stringify({ jobId: response.data.jobId, chatId, title: text || fileToSend.name, messages: userMessages }));
+          polling.current = new AbortController();
+          reply = await waitForTutorJob(response.data.jobId, polling.current.signal);
+          if (pendingKey) sessionStorage.removeItem(pendingKey);
+        } else reply =
           response.data?.reply ||
           response.data?.explanation ||
           'I could not generate a response. Please try again.';
@@ -465,6 +500,8 @@ function AiChatPageContent() {
       setMessages(nextMessages);
       saveSessionMessages(chatId, nextMessages, text || fileToSend?.name || 'Attached question');
     } catch (err: any) {
+      if (err?.name === 'AbortError' || err?.code === 'ERR_CANCELED') return;
+      if (err instanceof TutorJobError && err.terminal && pendingKey) sessionStorage.removeItem(pendingKey);
       const errorMessage =
         err?.response?.data?.error ||
         err?.message ||

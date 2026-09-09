@@ -27,6 +27,15 @@ export async function fetchQuestionCounts(params) {
   if (cached) return cached;
 
   const collection = getQuestionsCollection();
+  if (process.env.QUESTIONS_NORMALIZED_KEYS === 'true') {
+    const topicKey = normalizeSearchKey(topic);
+    const filter = topic ? { topicKey: ['synonymsantonyms', 'antosynopyq'].includes(topicKey) ? { $in: ['synonymsantonyms', 'antosynopyq'] } : topicKey } : { subjectKey: normalizeSearchKey(subject) };
+    const grouped = await collection.aggregate([{ $match: filter }, { $group: { _id: '$modeKey', count: { $sum: 1 } } }]).toArray();
+    const counts = { concept: 0, formula: 0, mixed: 0, aiChallenge: 0, easy: 0, hard: 0, studyMode: 0 };
+    for (const row of grouped) if (Object.hasOwn(counts, row._id)) counts[row._id] += Number(row.count) || 0;
+    questionCountsCache.set(cacheKey, counts);
+    return counts;
+  }
   const commonConditions = [];
   if (!topic && subject) {
     commonConditions.push({ subject: caseInsensitiveExact(subject) });
@@ -113,10 +122,10 @@ export async function fetchQuestionsMeta(params) {
         topic: { $in: [topic, "antosynopyq", "synonyms-antonyms"] },
       });
     } else {
-      conditions.push({ topic });
+      conditions.push(process.env.QUESTIONS_NORMALIZED_KEYS === "true" ? { topicKey: normalizeSearchKey(topic) } : { topic });
     }
   } else if (subject) {
-    conditions.push({ subject: caseInsensitiveExact(subject) });
+    conditions.push(process.env.QUESTIONS_NORMALIZED_KEYS === "true" ? { subjectKey: normalizeSearchKey(subject) } : { subject: caseInsensitiveExact(subject) });
   }
 
   if (mode) {

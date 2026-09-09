@@ -5,7 +5,7 @@ import {
   getScores,
   resolveExpiredQuestion,
 } from "../battle/roomManager.js";
-import { finishBattle } from "../battle/battleSocket.js";
+import { finishBattle } from "../battle/battleCompletion.js";
 
 const POLL_MS = Number(process.env.BATTLE_QUESTION_DEADLINE_WORKER_POLL_MS) || 1_000;
 let timer = null;

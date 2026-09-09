@@ -1,3 +1,4 @@
+import { MongoRateLimitStore } from "./mongoRateLimitStore.js";
 // middleware/rateLimiter.js
 
 import rateLimit, {
@@ -108,13 +109,13 @@ const isDevOrLocal = (req) => {
 const userKeyGenerator = (req) =>
   req.user?.id ||
   req.user?._id ||
-  req.cookies?.userId ||
   requestIpKey(req);
 
 
 // Global Limiter
 export const globalLimiter =
   rateLimit({
+    ...(process.env.NODE_ENV === "production" ? { store: new MongoRateLimitStore('global') } : {}),
     windowMs:
       15 * 60 * 1000,
 
@@ -141,7 +142,7 @@ export const globalLimiter =
       const url = req.originalUrl || req.url || '';
 
       // Skip health checks and root ping
-      if (path === '/' || path === '/health' || url === '/' || url === '/health') return true;
+      if (['/', '/health', '/api/health', '/live'].includes(path)) return true;
 
       // Skip static uploads and image requests
       if (path.startsWith('/uploads') || url.startsWith('/uploads')) return true;
@@ -162,6 +163,7 @@ export const globalLimiter =
 // Authentication
 export const authLimiter =
   rateLimit({
+    ...(process.env.NODE_ENV === "production" ? { store: new MongoRateLimitStore('auth') } : {}),
     windowMs:
       15 * 60 * 1000,
 
@@ -190,6 +192,7 @@ export const authLimiter =
 // AI
 export const aiLimiter =
   rateLimit({
+    ...(process.env.NODE_ENV === "production" ? { store: new MongoRateLimitStore('ai') } : {}),
     windowMs:
       15 * 60 * 1000,
 
@@ -218,6 +221,7 @@ export const aiLimiter =
 // Agents
 export const agentLimiter =
   rateLimit({
+    ...(process.env.NODE_ENV === "production" ? { store: new MongoRateLimitStore('agent') } : {}),
     windowMs:
       15 * 60 * 1000,
 
@@ -246,6 +250,7 @@ export const agentLimiter =
 // Uploads
 export const uploadLimiter =
   rateLimit({
+    ...(process.env.NODE_ENV === "production" ? { store: new MongoRateLimitStore('upload') } : {}),
     windowMs:
       15 * 60 * 1000,
 

@@ -4,7 +4,7 @@ import { renderHook, act } from '@testing-library/react';
 import { AuthProvider, useAuth } from '../AuthContext';
 
 const mockDisconnectSocket = vi.fn();
-vi.mock('@/lib/socket', () => ({
+vi.mock('@/lib/socket-lifecycle', () => ({
   disconnectSocket: () => mockDisconnectSocket(),
 }));
 

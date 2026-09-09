@@ -8,7 +8,7 @@ import api, {
   requestTokenRefresh,
   updateAccessToken,
 } from '@/lib/axios';
-import { disconnectSocket } from '@/lib/socket';
+import { disconnectSocket } from '@/lib/socket-lifecycle';
 
 const isAuthError = (err: unknown) => {
   const status = (err as { response?: { status?: number } })?.response?.status;

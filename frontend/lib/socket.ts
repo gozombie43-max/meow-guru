@@ -4,6 +4,7 @@
 // REST APIs still use NEXT_PUBLIC_API_URL (/backend-api/*) as before.
 import { io, Socket } from 'socket.io-client';
 import { getAccessToken } from './axios';
+import { registerSocketDisconnect } from './socket-lifecycle';
 
 let socket: Socket | null = null;
 
@@ -47,3 +48,5 @@ export function disconnectSocket() {
     socket = null;
   }
 }
+
+registerSocketDisconnect(disconnectSocket);

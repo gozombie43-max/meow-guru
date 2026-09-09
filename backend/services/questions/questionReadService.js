@@ -1,3 +1,4 @@
+import { fetchQuestionCursorPage } from "./questionCursorService.js";
 import { getQuestionsCollection } from "../../config/mongodb.js";
 import { questionsQueryCache } from "./questionCache.js";
 import {
@@ -59,6 +60,7 @@ export async function fetchImageQuestions(
 }
 
 export async function fetchQuestions(params) {
+  if (params.pagination === "cursor") return fetchQuestionCursorPage(params);
   const collection = getQuestionsCollection();
   const {
     topic,

@@ -2,9 +2,10 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import NoteEditor from "../components/NoteEditor";
+import { API_BASE as API } from "@/lib/api-base";
 import { fetchWithRetry } from "@/lib/api/http";
 
-const API = process.env.NEXT_PUBLIC_API_URL;
+
 
 export default function EditNoteClient() {
   const router = useRouter();

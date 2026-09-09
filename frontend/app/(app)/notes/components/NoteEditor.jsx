@@ -1,9 +1,11 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import Editor from "@monaco-editor/react";
+import dynamic from "next/dynamic";
+const Editor = dynamic(() => import("@monaco-editor/react"), { ssr: false });
+import { API_BASE as API } from "@/lib/api-base";
 import { fetchWithRetry } from "@/lib/api/http";
 
-const API = process.env.NEXT_PUBLIC_API_URL;
+
 
 // ── Starter template ──────────────────────────────────────────────────────────
 const STARTER_HTML = `<!DOCTYPE html>

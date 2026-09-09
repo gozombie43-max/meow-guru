@@ -1,5 +1,4 @@
 import crypto from "crypto";
-import pLimit from "p-limit";
 import { getQuestionsCollection } from "../../config/mongodb.js";
 import { questionCountsCache, questionsQueryCache } from "./questionCache.js";
 import { normalizedQuestionKeys } from "./questionNormalizer.js";
@@ -22,10 +21,12 @@ export async function createQuestion(newQuestion) {
   return resource;
 }
 
-export async function createQuestionsBulk(questionsData) {
+export async function createQuestionsBulk(questionsData, { importId } = {}) {
   const collection = getQuestionsCollection();
+  const invalid = new Set();
 
   const normalizedQuestions = questionsData.map((q, idx) => {
+    if (!q || typeof q !== 'object' || Array.isArray(q)) { invalid.add(idx); return null; }
     const item = q && typeof q === "object" ? { ...q } : { value: q };
 
     if (item.id !== undefined && item.id !== null) {
@@ -54,42 +55,56 @@ export async function createQuestionsBulk(questionsData) {
       item.topic = item.chapter || item.subject || item.category || "misc";
     item.topic = String(item.topic).trim() || "misc";
 
+    delete item._id;
+    delete item.ingestionKey;
+    delete item.ingestionHash;
+    if (importId) {
+      const digest = value => crypto.createHash('sha256').update(value).digest('hex');
+      item.ingestionKey = digest(`${importId}:${idx}`);
+      item.ingestionHash = digest(JSON.stringify(q));
+      if (!q.id) item.id = `q_${item.ingestionKey}`;
+    }
     return Object.assign(item, normalizedQuestionKeys(item));
   });
 
-  const buildNewId = (idx, attempt = 0) => {
-    const suffix = crypto.randomUUID
-      ? crypto.randomUUID()
-      : crypto.randomBytes(8).toString("hex");
-    return `q_${Date.now()}_${idx}_${attempt}_${suffix}`;
-  };
-
-  const createWithRetry = async (item, idx) => {
-    let current = { ...item };
-    for (let attempt = 0; attempt < 3; attempt += 1) {
-      try {
-        await collection.insertOne(current);
-        return current;
-      } catch (err) {
-        if (err?.code !== 11000) throw err;
-        current = { ...current, id: buildNewId(idx, attempt + 1) };
+  const results = new Array(normalizedQuestions.length);
+  for (const index of invalid) results[index] = { status: 'rejected', reason: { code: 'INVALID_ROW', message: 'Question must be an object' } };
+  try {
+    for (let offset = 0; offset < normalizedQuestions.length; offset += 500) {
+      let pending = normalizedQuestions.slice(offset, offset + 500).map((value, index) => ({ value, index: offset + index })).filter(entry => entry.value);
+      for (let attempt = 0; pending.length && attempt < 4; attempt++) {
+        const operations = pending.map(({ value }) => importId
+          ? { updateOne: { filter: { ingestionKey: value.ingestionKey, ingestionHash: value.ingestionHash }, update: { $setOnInsert: value }, upsert: true } }
+          : { insertOne: { document: value } });
+        let errors = new Map();
+        let ambiguous;
+        try { await collection.bulkWrite(operations, { ordered: false }); }
+        catch (error) {
+          errors = new Map((error.writeErrors || []).map(entry => [entry.index, entry]));
+          if (!error.result || !errors.size || error.writeConcernErrors?.length || error.result.getWriteConcernError?.()) ambiguous = error;
+        }
+        const retry = [];
+        pending.forEach((entry, index) => {
+          const failure = errors.get(index) || ambiguous;
+          if (failure?.code === 11000 && !importId && attempt < 3) {
+            const value = { ...entry.value, id: `q_${crypto.randomUUID()}` };
+            delete value._id;
+            retry.push({ ...entry, value });
+          } else if (failure) {
+            results[entry.index] = { status: 'rejected', reason: { code: failure.code, message: ambiguous ? 'Write outcome unknown; retry with the same import ID' : failure.errmsg || failure.message || 'Bulk row failed' } };
+          } else {
+            const { _id, ...value } = entry.value;
+            results[entry.index] = { status: 'fulfilled', value };
+          }
+        });
+        pending = retry;
       }
     }
-
-    current = { ...current, id: buildNewId(idx, 99) };
-    await collection.insertOne(current);
-    return current;
-  };
-
-  const writeLimit = pLimit(10);
-  const results = await Promise.allSettled(
-    normalizedQuestions.map((q, idx) =>
-      writeLimit(() => createWithRetry(q, idx)),
-    ),
-  );
-  questionsQueryCache.clear();
-  questionCountsCache.clear();
-  return results;
+    return results;
+  } finally {
+    questionsQueryCache.clear();
+    questionCountsCache.clear();
+  }
 }
 
 export async function modifyQuestion(id, updates, topic = undefined) {

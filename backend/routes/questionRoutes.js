@@ -1,33 +1,12 @@
+import { storeQuestionImages } from "../middleware/questionImageStorage.js";
 import express from "express";
 import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
-import crypto from 'crypto';
-import { fileURLToPath } from 'url';
 import questionController from '../controllers/questionController.js';
 import adminAuth from "../middleware/auth.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 const router = express.Router();
-const uploadsDir = path.join(__dirname, '..', 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
-
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, uploadsDir),
-  filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname || '').toLowerCase();
-    const safeExt = ext && ext.length <= 8 ? ext : '';
-    const id = crypto.randomUUID ? crypto.randomUUID() : crypto.randomBytes(16).toString('hex');
-    cb(null, `${Date.now()}-${id}${safeExt}`);
-  },
-});
-
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     if (!file.mimetype || !file.mimetype.startsWith('image/')) {
@@ -60,7 +39,7 @@ router.get('/meta', questionController.getQuestionsMeta);
 
 // ── Generic routes ──────────────────────────────────────
 
-router.post('/', adminAuth, questionUpload, questionController.addQuestion);
+router.post('/', adminAuth, questionUpload, storeQuestionImages, questionController.addQuestion);
 router.get('/', questionController.getQuestions);
 
 // ── Param routes LAST ───────────────────────────────────

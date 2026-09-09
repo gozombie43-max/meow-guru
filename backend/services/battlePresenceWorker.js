@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { getBattleRoomsCollection } from "../config/mongodb.js";
 import { getBattleRealtimeServer } from "../battle/battleRealtime.js";
 import { signBattleRematchToken } from "../auth/jwt.js";
@@ -58,7 +59,7 @@ async function resolveRoom(candidate, now) {
   if (!finishReason) return;
   const nowDate = new Date(now);
   const update = {
-    status: "finished", finishReason, finishedAt: nowDate, updatedAt: nowDate,
+    status: "finished", realtimeVersion: randomUUID(), finishReason, finishedAt: nowDate, updatedAt: nowDate,
     expiresAt: new Date(now.getTime() + FINISHED_TTL_MS),
     ...(finishReason === "forfeit" ? { winnerUserId: connected[0].userId, loserUserId: overdue[0].userId } : {}),
   };
@@ -70,7 +71,7 @@ async function resolveRoom(candidate, now) {
   if (!finished) return;
   await settleBattleResult(finished).catch((error) => console.error("Battle settlement failed:", error));
   await emitFinished(finished);
-  void notifyFinished(finished);
+  await notifyFinished(finished);
 }
 
 export async function runBattlePresenceWorkerOnce() {

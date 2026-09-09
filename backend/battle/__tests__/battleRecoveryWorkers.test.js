@@ -18,7 +18,7 @@ vi.mock("../roomManager.js", () => ({
   getScores: (...args) => getScores(...args),
 }));
 vi.mock("../battleRealtime.js", () => ({ getBattleRealtimeServer: () => io }));
-vi.mock("../battleSocket.js", () => ({ finishBattle: (...args) => finishBattle(...args) }));
+vi.mock("../battleCompletion.js", () => ({ finishBattle: (...args) => finishBattle(...args) }));
 vi.mock("../battleResultService.js", () => ({ settleBattleResult: (...args) => settleBattleResult(...args) }));
 
 const { runBattleQuestionDeadlineWorkerOnce } = await import("../../services/battleQuestionDeadlineWorker.js");

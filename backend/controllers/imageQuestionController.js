@@ -1,3 +1,4 @@
+import { createQuestion } from "../services/questions/questionWriteService.js";
 import sharp from "sharp";
 import pLimit from "p-limit";
 import {
@@ -168,8 +169,7 @@ export const uploadImageQuestion = async (req, res) => {
       createdAt: new Date().toISOString(),
     };
 
-    const questions = getQuestionsCollection();
-    await questions.insertOne(doc);
+    await createQuestion(doc);
 
     return res.status(201).json({
       success: true,
@@ -192,7 +192,6 @@ export const bulkUpload = async (req, res) => {
       });
     }
 
-    const questions = getQuestionsCollection();
     const results = [];
     const limit = pLimit(5);
 
@@ -228,7 +227,7 @@ export const bulkUpload = async (req, res) => {
             createdAt: new Date().toISOString(),
           };
 
-          await questions.insertOne(doc);
+          await createQuestion(doc);
           results.push({ id, imageUrl });
         })
       )

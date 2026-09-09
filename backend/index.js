@@ -1,338 +1,15 @@
-// backend/index.js
-
 import 'dotenv/config';
-
-import { createServer } from 'http';
-import express from 'express';
-import cors from 'cors';
-import cookieParser from 'cookie-parser';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import helmet from 'helmet';
-import compression from 'compression';
-
-import { errorHandler } from './middleware/errorHandler.js';
-
-import {
-  globalLimiter,
-  authLimiter,
-  aiLimiter,
-  agentLimiter,
-  uploadLimiter,
-} from './middleware/rateLimiter.js';
-
-import passport, {
-  initPassport,
-} from './auth/passport.js';
-
-import {
-  initAuthRoutes,
-} from './routes/auth.routes.js';
-
-import {
-  initUserRoutes,
-} from './routes/user.routes.js';
-
-import questionRoutes from './routes/questionRoutes.js';
-import mocktestRoutes from './routes/mocktest.js';
-import notesRoutes from './routes/notes.routes.js';
-import imageUploadRoutes from './routes/imageUpload.js';
-import uploadNoteImageRoutes from './routes/uploadNoteImage.js';
-import massUploadImages from './routes/massUploadImages.js';
-import massUploadSolutions from './routes/massUploadSolutions.js';
-import aiRoutes from './routes/aiRoutes.js';
-import pdfRoutes from './routes/pdfs.js';
-import accessCodeRoutes from './routes/accessCodes.js';
-import notificationRoutes from "./routes/notifications.routes.js";
-import examUpdatesRouter from "./routes/examUpdates.routes.js";
-import battleRoutes from "./routes/battle.routes.js";
-
-import cognitiveMapperRouter from './agents/cognitiveMapperRouter.js';
-import adaptiveQuizRouter from './agents/adaptiveQuiz/adaptiveQuizRouter.js';
-
-import adminUsersRoutes from './routes/adminUsers.routes.js';
-
-import {
-  initBattleSocket,
-} from './battle/battleSocket.js';
-
-import {
-  connectMongoDB,
-  disconnectMongoDB,
-} from './config/mongodb.js';
-
-import {
-  startScheduledNotificationWorker,
-  stopScheduledNotificationWorker,
-  waitForScheduledNotificationWorkerIdle,
-} from './services/scheduledNotificationWorker.js';
-
-import {
-  startDailyPracticeReminderWorker,
-  stopDailyPracticeReminderWorker,
-  waitForDailyPracticeReminderWorkerIdle,
-} from './services/dailyPracticeReminderWorker.js';
-
-import {
-  startStreakProtectionWorker,
-  stopStreakProtectionWorker,
-  waitForStreakProtectionWorkerIdle,
-} from './services/streakProtectionWorker.js';
-
-import {
-  startBattlePresenceWorker,
-  stopBattlePresenceWorker,
-  waitForBattlePresenceWorkerIdle,
-} from './services/battlePresenceWorker.js';
-import {
-  startBattleMatchmakingWorker,
-  stopBattleMatchmakingWorker,
-  waitForBattleMatchmakingWorkerIdle,
-} from './services/battleMatchmakingWorker.js';
-import {
-  startBattleSeasonWorker,
-  stopBattleSeasonWorker,
-  waitForBattleSeasonWorkerIdle,
-} from './services/battleSeasonWorker.js';
-import {
-  startBattleQuestionDeadlineWorker,
-  stopBattleQuestionDeadlineWorker,
-  waitForBattleQuestionDeadlineWorkerIdle,
-} from './services/battleQuestionDeadlineWorker.js';
-import {
-  startBattleResultWorker,
-  stopBattleResultWorker,
-  waitForBattleResultWorkerIdle,
-} from './services/battleResultWorker.js';
-
-import {
-  setNotificationRealtimeServer,
-} from './services/notificationRealtime.js';
-
-
-const app = express();
-
-const httpServer =
-  createServer(app);
-
-let socketServer = null;
-let isShuttingDown = false;
-
-app.set('trust proxy', 1);
-
-const __dirname =
-  path.dirname(
-    fileURLToPath(
-      import.meta.url
-    )
-  );
-
-
-// ───────────────────────────────────────────────────────
-// CORS
-// ───────────────────────────────────────────────────────
-
-const allowedOrigins =
-  new Set([
-    'http://localhost:3000',
-    'http://localhost:5000',
-    'http://127.0.0.1:5500',
-    'http://localhost:5500',
-
-    ...(process.env.FRONTEND_URL
-      ? [
-          process.env.FRONTEND_URL,
-        ]
-      : []),
-  ]);
-
-const allowedOriginPatterns = [
-  /^http:\/\/localhost:\d+$/,
-  /^http:\/\/127\.0\.0\.1:\d+$/,
-  /^http:\/\/\[::1\]:\d+$/,
-];
-
-const isOriginAllowed = (
-  origin
-) => {
-  if (!origin) {
-    return true;
-  }
-
-  if (
-    allowedOrigins.has(
-      origin
-    )
-  ) {
-    return true;
-  }
-
-  return allowedOriginPatterns.some(
-    (pattern) =>
-      pattern.test(origin)
-  );
-};
-
-const corsOrigin = (
-  origin,
-  callback
-) => {
-  if (
-    isOriginAllowed(origin)
-  ) {
-    return callback(
-      null,
-      true
-    );
-  }
-
-  return callback(
-    new Error(
-      'Not allowed by CORS'
-    )
-  );
-};
-
-const corsOptions = {
-  origin:
-    corsOrigin,
-
-  credentials:
-    true,
-};
-
-
-// ───────────────────────────────────────────────────────
-// Middleware
-// ───────────────────────────────────────────────────────
-
-app.use(
-  helmet({
-    contentSecurityPolicy:
-      false,
-
-    crossOriginResourcePolicy: {
-      policy:
-        'cross-origin',
-    },
-  })
-);
-
-app.use(
-  cors(corsOptions)
-);
-
-app.options(
-  /(.*)/,
-  cors(corsOptions)
-);
-
-app.use(compression());
-
-app.use(
-  express.json({
-    limit:
-      '10mb',
-  })
-);
-
-app.use(
-  cookieParser()
-);
-
-app.use(
-  '/uploads',
-  express.static(
-    path.join(
-      __dirname,
-      'uploads'
-    )
-  )
-);
-
-app.use(
-  globalLimiter
-);
-
-app.use(
-  passport.initialize()
-);
-
-
-// ───────────────────────────────────────────────────────
-// Health checks
-// ───────────────────────────────────────────────────────
-
-let isReady = false;
-
-app.get(
-  '/',
-  (req, res) =>
-    res.send(
-      'Server running 🚀'
-    )
-);
-
-const healthCheck = (
-  req,
-  res
-) => {
-  const healthy =
-    isReady &&
-    !isShuttingDown;
-
-  return res
-    .status(
-      healthy
-        ? 200
-        : 503
-    )
-    .json({
-      ok:
-        healthy,
-
-      state:
-        isShuttingDown
-          ? 'draining'
-          : isReady
-            ? 'ready'
-            : 'starting',
-
-      service:
-        'backend',
-
-      uptimeSeconds:
-        Math.round(
-          process.uptime()
-        ),
-
-      timestamp:
-        new Date()
-          .toISOString(),
-    });
-};
-
-app.get(
-  '/health',
-  healthCheck
-);
-
-app.get(
-  '/api/health',
-  healthCheck
-);
-
-app.use((req, res, next) => {
-  if (!isShuttingDown) {
-    return next();
-  }
-
-  return res.status(503).json({
-    ok: false,
-    state: 'draining',
-  });
-});
-
+import { createServer } from 'node:http';
+import { createApp } from './app.js';
+import { initPassport } from './auth/passport.js';
+import { initBattleSocket } from './battle/battleSocket.js';
+import { connectMongoDB, disconnectMongoDB } from './config/mongodb.js';
+import { setNotificationRealtimeServer } from './services/notificationRealtime.js';
+import { checkReadiness } from './infrastructure/readiness.js';
+import { startRuntimeMetrics, logger } from './infrastructure/logger.js';
+let socketServer = null, httpServer;
+let isShuttingDown = false, isReady = false;
+const stopMetrics = startRuntimeMetrics();
 const PORT =
   process.env.PORT ||
   10000;
@@ -359,16 +36,6 @@ async function gracefulShutdown(signal, exitCode = 0) {
   forceTimer.unref();
 
   try {
-    stopScheduledNotificationWorker();
-    stopDailyPracticeReminderWorker();
-    stopStreakProtectionWorker();
-    stopBattlePresenceWorker();
-    stopBattleMatchmakingWorker();
-    stopBattleSeasonWorker();
-    stopBattleQuestionDeadlineWorker();
-    stopBattleResultWorker();
-    console.log('Notification worker timers stopped');
-
     if (socketServer) {
       try {
         socketServer.emit('server:shutdown', {
@@ -391,39 +58,14 @@ async function gracefulShutdown(signal, exitCode = 0) {
 
       setNotificationRealtimeServer(null);
       console.log('HTTP + Socket.IO closed ✅');
-    } else if (httpServer.listening) {
+    } else if (httpServer?.listening) {
       await new Promise((resolve) => {
         httpServer.close(resolve);
       });
       console.log('HTTP server closed ✅');
     }
 
-    const [scheduledIdle, dailyIdle, streakIdle, battlePresenceIdle, battleMatchmakingIdle, battleSeasonIdle, battleQuestionDeadlineIdle, battleResultIdle] = await Promise.all([
-      waitForScheduledNotificationWorkerIdle(12_000),
-      waitForDailyPracticeReminderWorkerIdle(12_000),
-      waitForStreakProtectionWorkerIdle(12_000),
-      waitForBattlePresenceWorkerIdle(12_000),
-      waitForBattleMatchmakingWorkerIdle(12_000),
-      waitForBattleSeasonWorkerIdle(12_000),
-      waitForBattleQuestionDeadlineWorkerIdle(12_000),
-      waitForBattleResultWorkerIdle(12_000),
-    ]);
-
-    console.log('Worker drain:', {
-      scheduledIdle,
-      dailyIdle,
-      streakIdle,
-      battlePresenceIdle,
-      battleMatchmakingIdle,
-      battleSeasonIdle,
-      battleQuestionDeadlineIdle,
-      battleResultIdle,
-    });
-
-    if (!scheduledIdle || !dailyIdle || !streakIdle || !battlePresenceIdle || !battleMatchmakingIdle || !battleSeasonIdle || !battleQuestionDeadlineIdle || !battleResultIdle) {
-      console.warn('One or more workers did not drain before timeout');
-    }
-
+    stopMetrics();
     await disconnectMongoDB();
     console.log('Graceful shutdown complete ✅');
 
@@ -512,9 +154,13 @@ async function initWithRetry() {
       return;
     }
 
+    await checkReadiness();
+
     // ── Authentication ─────────────────────────────────
 
     initPassport();
+    const { app, corsOrigin } = createApp({ isReady: () => isReady, isShuttingDown: () => isShuttingDown });
+    httpServer = createServer(app);
 
 
     // ── Socket.IO ──────────────────────────────────────
@@ -527,164 +173,9 @@ async function initWithRetry() {
 
     // ── Routes ─────────────────────────────────────────
 
-    app.use(
-      '/api/questions',
-      questionRoutes
-    );
-
-    app.use(
-      '/api/mocktest',
-      mocktestRoutes
-    );
-
-    app.use(
-      '/api/ai',
-      aiLimiter,
-      aiRoutes
-    );
-
-    app.use(
-      '/api/agent',
-      agentLimiter,
-      cognitiveMapperRouter
-    );
-
-    app.use(
-      '/api/adaptive-quiz',
-      agentLimiter,
-      adaptiveQuizRouter
-    );
-
-    app.use(
-      '/api/upload',
-      uploadLimiter,
-      imageUploadRoutes
-    );
-
-    app.use(
-      '/api',
-      uploadLimiter,
-      massUploadImages
-    );
-
-    app.use(
-      '/api',
-      uploadLimiter,
-      massUploadSolutions
-    );
-
-    app.use(
-      '/api/upload-note-image',
-      uploadLimiter,
-      uploadNoteImageRoutes
-    );
-
-    app.use(
-      '/api/notes',
-      notesRoutes
-    );
-
-    app.use(
-      '/auth',
-      authLimiter,
-      initAuthRoutes()
-    );
-
-    app.use(
-      '/users',
-      initUserRoutes()
-    );
-
-    app.use(
-      '/api/pdfs',
-      pdfRoutes
-    );
-
-    app.use(
-      '/api/access-code',
-      authLimiter,
-      accessCodeRoutes
-    );
-
-    app.use(
-      '/api/admin',
-      adminUsersRoutes
-    );
-
-    app.use(
-      "/api/notifications",
-      notificationRoutes
-    );
-
-    app.use(
-      "/api/exam-updates",
-      examUpdatesRouter
-    );
-
-    app.use("/api/battle", battleRoutes);
-
-
-    // Global error handler must remain last
-    app.use(
-      errorHandler
-    );
-
-    console.log(
-      'All routes registered ✅'
-    );
-
-
     // Only healthy after database + routes
     // have successfully initialized.
     isReady = true;
-
-    await startScheduledNotificationWorker();
-
-    if (isShuttingDown) {
-      return;
-    }
-
-    await startDailyPracticeReminderWorker();
-
-    if (isShuttingDown) {
-      return;
-    }
-
-    await startStreakProtectionWorker();
-
-    if (isShuttingDown) {
-      return;
-    }
-
-    await startBattlePresenceWorker();
-
-    if (isShuttingDown) {
-      return;
-    }
-
-    await startBattleQuestionDeadlineWorker();
-
-    if (isShuttingDown) {
-      return;
-    }
-
-    await startBattleResultWorker();
-
-    if (isShuttingDown) {
-      return;
-    }
-
-    await startBattleMatchmakingWorker();
-
-    if (isShuttingDown) {
-      return;
-    }
-
-    await startBattleSeasonWorker();
-
-    if (isShuttingDown) {
-      return;
-    }
 
     httpServer.listen(
       PORT,
@@ -703,12 +194,9 @@ async function initWithRetry() {
       return;
     }
 
-    console.error(
-      'Server initialization failed ❌',
-      err
-    );
+    logger.error({ err }, 'API startup failed');
 
-    process.exit(1);
+    await gracefulShutdown('startup failure', 1);
   }
 }
 

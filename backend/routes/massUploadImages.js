@@ -1,3 +1,4 @@
+import { createQuestion } from "../services/questions/questionWriteService.js";
 // routes/massUploadImages.js
 
 import express from "express";
@@ -112,10 +113,7 @@ function mergeQuestionContent(
 // ───────────────────────────────────────────────────────
 
 async function saveQuestion(doc) {
-  const questions =
-    getQuestionsCollection();
-
-  await questions.insertOne(doc);
+  await createQuestion(doc);
 
   return doc;
 }

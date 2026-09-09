@@ -41,9 +41,28 @@ jobs:
           name: node-app
           path: backend
 
+  security:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+      - name: Block exposed secrets
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Block high and critical backend vulnerabilities
+        working-directory: backend
+        run: npm audit --audit-level=high --workspaces=false
+
   deploy:
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build, security]
     permissions:
       id-token: write #This is required for requesting the JWT
       contents: read #This is required for actions/checkout
@@ -60,6 +79,23 @@ jobs:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_39C048B2FF59452F9613463239824624 }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_0994BCA96630443BB4B8D46319B867CD }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_115D8A1EAFB5485E96F15FA5CD4BB615 }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+
+      - name: Apply database migrations before release
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          MONGODB_DB: ${{ vars.MONGODB_DB || 'quizDB' }}
+        run: npm run db:migrate
+
+      - name: Require workers running this release
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          MONGODB_DB: ${{ vars.MONGODB_DB || 'quizDB' }}
+          RELEASE_ID: ${{ github.sha }}
+        run: node scripts/check-workers.js
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp

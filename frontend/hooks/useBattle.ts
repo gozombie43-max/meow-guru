@@ -79,6 +79,7 @@ export function useBattle(token: string | null, userId: string) {
     const onResume = (snapshot: BattleSnapshot) => {
       online(); remember(userId, snapshot.code); dispatch({ type: "resume", snapshot, userId });
     };
+    const onSyncRequired = ({ code }: { code: string }) => { if (remembered(userId) === code) sync(); };
     const onResumeResult = ({ reason }: { reason?: string }) => {
       clearTimeout(syncTimer);
       if (reason === "no-room") { online(); remember(userId, null); dispatch({ type: "reset" }); }
@@ -96,6 +97,7 @@ export function useBattle(token: string | null, userId: string) {
     socket.on("room:created", onCreated).on("room:joined", onJoined).on("room:error", onRoomError);
     socket.on("game:start", onStart).on("game:question", onQuestion).on("game:answerResult", onAnswer);
     socket.on("game:answerRejected", onRejected).on("game:scores", onScores).on("game:reveal", onReveal).on("game:end", onEnd);
+    socket.on("battle:syncRequired", onSyncRequired);
     socket.on("battle:resumed", onResume).on("battle:resumeResult", onResumeResult);
     socket.on("room:playerDisconnected", onPresence).on("room:playerReconnected", onReconnected);
     socket.on("room:left", onLeft).on("room:closed", onClosed).on("room:inviteResult", onInvite).on("battle:rematchResult", onRematch);
@@ -108,6 +110,7 @@ export function useBattle(token: string | null, userId: string) {
       socket.off("room:created", onCreated).off("room:joined", onJoined).off("room:error", onRoomError);
       socket.off("game:start", onStart).off("game:question", onQuestion).off("game:answerResult", onAnswer);
       socket.off("game:answerRejected", onRejected).off("game:scores", onScores).off("game:reveal", onReveal).off("game:end", onEnd);
+      socket.off("battle:syncRequired", onSyncRequired);
       socket.off("battle:resumed", onResume).off("battle:resumeResult", onResumeResult);
       socket.off("room:playerDisconnected", onPresence).off("room:playerReconnected", onReconnected);
       socket.off("room:left", onLeft).off("room:closed", onClosed).off("room:inviteResult", onInvite).off("battle:rematchResult", onRematch);

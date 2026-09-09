@@ -1,10 +1,12 @@
 import type { NextConfig } from "next";
 import path from "path";
 
-const BACKEND_URL =
-  process.env.API_URL ||
-  process.env.AZURE_BACKEND_URL ||
-  "https://quizguru-backend-hsb0enbnhbbhh5ek.centralindia-01.azurewebsites.net";
+const configuredBackend = process.env.API_URL || process.env.AZURE_BACKEND_URL;
+if (process.env.NODE_ENV === 'production' && !configuredBackend) {
+  throw new Error('API_URL or AZURE_BACKEND_URL is required for production builds');
+}
+const BACKEND_URL = (configuredBackend || 'http://localhost:10000').replace(/\/+$/, '');
+if (!['http:', 'https:'].includes(new URL(BACKEND_URL).protocol)) throw new Error('Backend URL must use HTTP or HTTPS');
 
 const nextConfig: NextConfig = {
   images: {

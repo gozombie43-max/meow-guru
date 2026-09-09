@@ -73,22 +73,20 @@ jobs:
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
 
       - name: Audit Backend Dependencies
         working-directory: ./backend
-        run: npm audit --audit-level=high
-        continue-on-error: true
+        run: npm audit --audit-level=high --workspaces=false
 
       - name: Audit Frontend Dependencies
-        working-directory: ./frontend
-        run: npm audit --audit-level=high
-        continue-on-error: true
+        run: npm audit --workspace frontend --audit-level=high
 
   build-and-analyze:
     name: Production Build & Bundle Report
     runs-on: ubuntu-latest
     needs: lint-and-typecheck
+    env:
+      API_URL: http://127.0.0.1:10000
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
