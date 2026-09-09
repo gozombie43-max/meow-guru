@@ -224,12 +224,12 @@ router.post('/:examSlug/:testId/start', protect, async (req, res) => {
     if (slot.examSlug !== examSlug) return res.status(400).json({ error: 'Exam slug mismatch' });
 
     const { clientPaper, answerKey } = await buildPaper({ examSlug, testId });
-
-    const attempts =
-      getMockAttemptsCollection();
+    const startedAt = new Date();
+    const durationSeconds = Math.max(60, Math.round((Number(clientPaper.totalDurationMin) || 60) * 60));
+    const deadlineAt = new Date(startedAt.getTime() + durationSeconds * 1000);
     const doc = {
       id: uuidv4(),
-      userId: req.user.id,
+      userId: String(req.user.id),
       examSlug,
       testId,
       configKey: slot.configKey,
@@ -237,205 +237,115 @@ router.post('/:examSlug/:testId/start', protect, async (req, res) => {
       paper: clientPaper,
       answerKey,
       answers: {},
+      questionStatuses: {},
       sectionTimers: {},
       currentSection: 0,
-      startedAt: new Date().toISOString(),
+      currentQuestion: 0,
+      revision: 0,
+      startedAt,
+      deadlineAt,
       submittedAt: null,
       result: null,
       weakAreas: null,
     };
 
-    await attempts.insertOne(doc);
-    // Don't send answerKey to client
-    const {
-      answerKey: _ak,
-      ...clientDoc
-    } = cleanAttempt(doc);
-    res.json({ attemptId: doc.id, ...clientDoc });
+    await getMockAttemptsCollection().insertOne(doc);
+    const { answerKey: _answerKey, ...clientDoc } = cleanAttempt(doc);
+    return res.status(201).json({ attemptId: doc.id, ...clientDoc, timeLeft: durationSeconds });
   } catch (err) {
     console.error('Start test error:', err);
-    res.status(500).json({ error: 'Failed to start test' });
+    return res.status(500).json({ error: 'Failed to start test' });
   }
 });
 
 // PATCH /attempt/:attemptId/autosave — Autosave progress
-router.patch(
-  '/attempt/:attemptId/autosave',
-  protect,
-  async (req, res) => {
-    try {
-      const { attemptId } = req.params;
-      const {
-        answers,
-        sectionTimers,
-        currentSection,
-      } = req.body;
+router.patch('/attempt/:attemptId/autosave', protect, async (req, res) => {
+  try {
+    const { attemptId } = req.params;
+    const doc = await getOwnedAttempt(attemptId, req.user.id);
+    if (!doc) return res.status(404).json({ error: 'Attempt not found' });
+    if (doc.status !== 'in_progress') return res.status(409).json({ error: 'Attempt is not in progress' });
 
-      const doc =
-        await getOwnedAttempt(
-          attemptId,
-          req.user.id
-        );
-
-      if (!doc) {
-        return res
-          .status(404)
-          .json({
-            error: 'Attempt not found',
-          });
-      }
-
-      if (doc.status !== 'in_progress') {
-        return res
-          .status(400)
-          .json({
-            error: 'Attempt is not in progress',
-          });
-      }
-
-      const updates = {};
-
-      if (answers) {
-        updates.answers = {
-          ...(doc.answers || {}),
-          ...answers,
-        };
-      }
-
-      if (sectionTimers) {
-        updates.sectionTimers = {
-          ...(doc.sectionTimers || {}),
-          ...sectionTimers,
-        };
-      }
-
-      if (currentSection !== undefined) {
-        updates.currentSection =
-          currentSection;
-      }
-
-      updates.updatedAt =
-        new Date().toISOString();
-
-      await getMockAttemptsCollection()
-        .updateOne(
-          {
-            _id: doc._id,
-            status: 'in_progress',
-          },
-          {
-            $set: updates,
-          }
-        );
-
-      return res.json({
-        ok: true,
-      });
-    } catch (err) {
-      console.error(
-        'Autosave error:',
-        err
-      );
-
-      return res
-        .status(500)
-        .json({
-          error: 'Failed to autosave',
-        });
+    const deadlineMs = Date.parse(doc.deadlineAt);
+    if (Number.isFinite(deadlineMs) && Date.now() > deadlineMs + 30_000) {
+      return res.status(409).json({ error: 'Attempt time has expired', expired: true });
     }
+
+    const revision = Number(req.body.revision);
+    if (!Number.isSafeInteger(revision) || revision < 1) {
+      return res.status(400).json({ error: 'A positive autosave revision is required' });
+    }
+    const questionIds = new Set((doc.paper?.sections || []).flatMap(section => section.questions || []).map(question => String(question.id)));
+    const sanitizeMap = (value) => Object.fromEntries(
+      Object.entries(value && typeof value === 'object' && !Array.isArray(value) ? value : {})
+        .filter(([key]) => questionIds.has(String(key)))
+    );
+    const sectionCount = doc.paper?.sections?.length || 1;
+    const currentSection = Math.max(0, Math.min(sectionCount - 1, Number(req.body.currentSection) || 0));
+    const questionCount = doc.paper?.sections?.[currentSection]?.questions?.length || 1;
+    const currentQuestion = Math.max(0, Math.min(questionCount - 1, Number(req.body.currentQuestion) || 0));
+
+    const result = await getMockAttemptsCollection().updateOne(
+      {
+        _id: doc._id,
+        status: 'in_progress',
+        $or: [{ revision: { $lt: revision } }, { revision: { $exists: false } }],
+      },
+      {
+        $set: {
+          answers: sanitizeMap(req.body.answers),
+          questionStatuses: sanitizeMap(req.body.questionStatuses),
+          sectionTimers: req.body.sectionTimers && typeof req.body.sectionTimers === 'object' ? req.body.sectionTimers : {},
+          currentSection,
+          currentQuestion,
+          revision,
+          updatedAt: new Date(),
+        },
+      },
+    );
+
+    return res.json({ ok: true, revision: Math.max(Number(doc.revision) || 0, result.modifiedCount ? revision : 0) });
+  } catch (err) {
+    console.error('Autosave error:', err);
+    return res.status(500).json({ error: 'Failed to autosave' });
   }
-);
+});
 
 // POST /attempt/:attemptId/submit — Submit and grade attempt
-router.post(
-  '/attempt/:attemptId/submit',
-  protect,
-  async (req, res) => {
-    try {
-      const { attemptId } =
-        req.params;
-
-      const doc =
-        await getOwnedAttempt(
-          attemptId,
-          req.user.id
-        );
-
-      if (!doc) {
-        return res
-          .status(404)
-          .json({
-            error: 'Attempt not found',
-          });
-      }
-
-      if (doc.status === 'completed') {
-        return res
-          .status(400)
-          .json({
-            error: 'Already submitted',
-          });
-      }
-
-      if (req.body.answers) {
-        doc.answers = {
-          ...(doc.answers || {}),
-          ...req.body.answers,
-        };
-      }
-
-      const result =
-        gradeAttempt({
-          attemptDoc: doc,
-        });
-
-      const percentile =
-        await computePercentile({
-          examSlug: doc.examSlug,
-          testId: doc.testId,
-          score: result.totalScore,
-        });
-
-      const submittedAt =
-        new Date().toISOString();
-      const finalResult = {
-        ...result,
-        percentile,
-      };
-
-      await getMockAttemptsCollection()
-        .updateOne(
-          {
-            _id: doc._id,
-          },
-          {
-            $set: {
-              answers: doc.answers || {},
-              status: 'completed',
-              submittedAt,
-              result: finalResult,
-            },
-          }
-        );
-
-      return res.json({
-        result: finalResult,
-        attemptId: doc.id,
-      });
-    } catch (err) {
-      console.error(
-        'Submit error:',
-        err
-      );
-
-      return res
-        .status(500)
-        .json({
-          error: 'Failed to submit test',
-        });
+router.post('/attempt/:attemptId/submit', protect, async (req, res) => {
+  try {
+    const attempts = getMockAttemptsCollection();
+    const claimed = await attempts.findOneAndUpdate(
+      { id: String(req.params.attemptId), userId: String(req.user.id), status: 'in_progress' },
+      { $set: { status: 'submitting', submitClaimedAt: new Date() } },
+      { returnDocument: 'after' },
+    );
+    if (!claimed) {
+      const existing = await getOwnedAttempt(req.params.attemptId, req.user.id);
+      if (!existing) return res.status(404).json({ error: 'Attempt not found' });
+      if (existing.status === 'completed') return res.json({ result: existing.result, attemptId: existing.id, idempotent: true });
+      return res.status(409).json({ error: 'Attempt submission is already processing' });
     }
+
+    const result = gradeAttempt({ attemptDoc: claimed });
+    const percentile = await computePercentile({
+      examSlug: claimed.examSlug,
+      testId: claimed.testId,
+      score: result.totalScore,
+    });
+    const finalResult = { ...result, percentile };
+    const submittedAt = new Date();
+
+    await attempts.updateOne(
+      { _id: claimed._id, status: 'submitting' },
+      { $set: { status: 'completed', submittedAt, result: finalResult }, $unset: { submitClaimedAt: '' } },
+    );
+    return res.json({ result: finalResult, attemptId: claimed.id });
+  } catch (err) {
+    console.error('Submit error:', err);
+    return res.status(500).json({ error: 'Failed to submit test' });
   }
-);
+});
 
 // GET /attempt/:attemptId — Get attempt details
 router.get(
