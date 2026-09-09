@@ -16,7 +16,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read #This is required for actions/checkout
+      contents: read
 
     steps:
       - uses: actions/checkout@v4
@@ -64,8 +64,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build, security]
     permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
+      id-token: write
+      contents: read
 
     steps:
       - name: Download artifact from build job
@@ -120,7 +120,7 @@ jobs:
       - name: Apply database migrations before release
         run: npm run db:migrate
 
-      - name: Configure single Web App runtime
+      - name: Configure Free F1 quiz-only runtime
         shell: bash
         env:
           RELEASE_ID: ${{ github.sha }}
@@ -131,12 +131,14 @@ jobs:
             --resource-group "$RESOURCE_GROUP" \
             --settings \
               "RELEASE_ID=$RELEASE_ID" \
-              "RUN_EMBEDDED_WORKERS=true" \
+              "QUIZ_ONLY_MODE=true" \
+              "RUN_EMBEDDED_WORKERS=false" \
+              "PROCESS_ROLE=api" \
             --output none
           az webapp config set \
             --name quizguru-backend \
             --resource-group "$RESOURCE_GROUP" \
-            --always-on true \
+            --always-on false \
             --output none
 
       - name: Deploy to Azure Web App
