@@ -1,7 +1,6 @@
 import { requestLogging } from './infrastructure/logger.js';
 import { checkReadiness } from './infrastructure/readiness.js';
 import { requestBodyLimits } from './middleware/requestBodyLimits.js';
-// Express construction is independent of process lifecycle.
 
 import 'dotenv/config';
 
@@ -14,7 +13,6 @@ import helmet from 'helmet';
 import compression from 'compression';
 
 import { errorHandler } from './middleware/errorHandler.js';
-
 import {
   globalLimiter,
   authLimiter,
@@ -24,67 +22,30 @@ import {
 } from './middleware/rateLimiter.js';
 
 import passport from './auth/passport.js';
-
-import {
-  initAuthRoutes,
-} from './routes/auth.routes.js';
-
-import {
-  initUserRoutes,
-} from './routes/user.routes.js';
+import { initAuthRoutes } from './routes/auth.routes.js';
+import { initUserRoutes } from './routes/user.routes.js';
 
 import questionRoutes from './routes/questionRoutes.js';
 import mocktestRoutes from './routes/mocktest.js';
-import notesRoutes from './routes/notes.routes.js';
 import imageUploadRoutes from './routes/imageUpload.js';
-import uploadNoteImageRoutes from './routes/uploadNoteImage.js';
 import massUploadImages from './routes/massUploadImages.js';
 import massUploadSolutions from './routes/massUploadSolutions.js';
-import aiRoutes from './routes/aiRoutes.js';
-import pdfRoutes from './routes/pdfs.js';
 import accessCodeRoutes from './routes/accessCodes.js';
-import notificationRoutes from "./routes/notifications.routes.js";
-import examUpdatesRouter from "./routes/examUpdates.routes.js";
-import battleRoutes from "./routes/battle.routes.js";
 
-import cognitiveMapperRouter from './agents/cognitiveMapperRouter.js';
-import adaptiveQuizRouter from './agents/adaptiveQuiz/adaptiveQuizRouter.js';
-
-import adminUsersRoutes from './routes/adminUsers.routes.js';
-
-
-export function createApp({ isReady, isShuttingDown }) {
+export async function createApp({ isReady, isShuttingDown, quizOnlyMode = process.env.QUIZ_ONLY_MODE === 'true' }) {
   const app = express();
   app.use(requestLogging);
-
-
   app.set('trust proxy', 1);
 
-  const __dirname =
-    path.dirname(
-      fileURLToPath(
-        import.meta.url
-      )
-    );
+  const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-
-  // ───────────────────────────────────────────────────────
-  // CORS
-  // ───────────────────────────────────────────────────────
-
-  const allowedOrigins =
-    new Set([
-      'http://localhost:3000',
-      'http://localhost:5000',
-      'http://127.0.0.1:5500',
-      'http://localhost:5500',
-
-      ...(process.env.FRONTEND_URL
-        ? [
-            process.env.FRONTEND_URL,
-          ]
-        : []),
-    ]);
+  const allowedOrigins = new Set([
+    'http://localhost:3000',
+    'http://localhost:5000',
+    'http://127.0.0.1:5500',
+    'http://localhost:5500',
+    ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
+  ]);
 
   const allowedOriginPatterns = [
     /^http:\/\/localhost:\d+$/,
@@ -92,286 +53,121 @@ export function createApp({ isReady, isShuttingDown }) {
     /^http:\/\/\[::1\]:\d+$/,
   ];
 
-  const isOriginAllowed = (
-    origin
-  ) => {
-    if (!origin) {
-      return true;
-    }
-
-    if (
-      allowedOrigins.has(
-        origin
-      )
-    ) {
-      return true;
-    }
-
-    return allowedOriginPatterns.some(
-      (pattern) =>
-        pattern.test(origin)
-    );
+  const isOriginAllowed = (origin) => {
+    if (!origin) return true;
+    if (allowedOrigins.has(origin)) return true;
+    return allowedOriginPatterns.some((pattern) => pattern.test(origin));
   };
 
-  const corsOrigin = (
-    origin,
-    callback
-  ) => {
-    if (
-      isOriginAllowed(origin)
-    ) {
-      return callback(
-        null,
-        true
-      );
-    }
-
-    return callback(
-      new Error(
-        'Not allowed by CORS'
-      )
-    );
+  const corsOrigin = (origin, callback) => {
+    if (isOriginAllowed(origin)) return callback(null, true);
+    return callback(new Error('Not allowed by CORS'));
   };
 
   const corsOptions = {
-    origin:
-      corsOrigin,
-
-    credentials:
-      true,
+    origin: corsOrigin,
+    credentials: true,
   };
-
-
-  // ───────────────────────────────────────────────────────
-  // Middleware
-  // ───────────────────────────────────────────────────────
 
   app.use(
     helmet({
-      contentSecurityPolicy:
-        false,
-
-      crossOriginResourcePolicy: {
-        policy:
-          'cross-origin',
-      },
-    })
+      contentSecurityPolicy: false,
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+    }),
   );
-
-  app.use(
-    cors(corsOptions)
-  );
-
-  app.options(
-    /(.*)/,
-    cors(corsOptions)
-  );
-
+  app.use(cors(corsOptions));
+  app.options(/(.*)/, cors(corsOptions));
   app.use(compression());
-
   app.use(requestBodyLimits);
+  app.use(cookieParser());
 
-  app.use(
-    cookieParser()
+  // Keep legacy question images readable while their stored references are migrated.
+  app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+  app.use(globalLimiter);
+  app.use(passport.initialize());
+
+  app.get('/', (_req, res) =>
+    res.send(quizOnlyMode ? 'Quiz API running' : 'Server running 🚀'),
   );
 
-  app.use(
-    '/uploads',
-    express.static(
-      path.join(
-        __dirname,
-        'uploads'
-      )
-    )
-  );
-
-  app.use(
-    globalLimiter
-  );
-
-  app.use(
-    passport.initialize()
-  );
-
-
-  // ───────────────────────────────────────────────────────
-  // Health checks
-  // ───────────────────────────────────────────────────────
-
-
-  app.get(
-    '/',
-    (req, res) =>
-      res.send(
-        'Server running 🚀'
-      )
-  );
-
-  const healthCheck = async (
-    req,
-    res
-  ) => {
+  const healthCheck = async (_req, res) => {
     let healthy = isReady() && !isShuttingDown();
     if (healthy) {
-      try { await checkReadiness(); } catch { healthy = false; }
+      try {
+        await checkReadiness();
+      } catch {
+        healthy = false;
+      }
     }
 
-    return res
-      .status(
-        healthy
-          ? 200
-          : 503
-      )
-      .json({
-        ok:
-          healthy,
-
-        state:
-          isShuttingDown()
-            ? 'draining'
-            : healthy
-              ? 'ready'
-              : 'starting',
-
-        service:
-          'backend',
-
-        uptimeSeconds:
-          Math.round(
-            process.uptime()
-          ),
-
-        timestamp:
-          new Date()
-            .toISOString(),
-      });
+    return res.status(healthy ? 200 : 503).json({
+      ok: healthy,
+      state: isShuttingDown() ? 'draining' : healthy ? 'ready' : 'starting',
+      service: 'backend',
+      mode: quizOnlyMode ? 'quiz-only' : 'full',
+      uptimeSeconds: Math.round(process.uptime()),
+      timestamp: new Date().toISOString(),
+    });
   };
 
-  app.get('/live', (_req, res) => res.json({ ok: true }));
-
-  app.get(
-    '/health',
-    healthCheck
-  );
-
-  app.get(
-    '/api/health',
-    healthCheck
-  );
+  app.get('/live', (_req, res) => res.json({ ok: true, mode: quizOnlyMode ? 'quiz-only' : 'full' }));
+  app.get('/health', healthCheck);
+  app.get('/api/health', healthCheck);
 
   app.use((req, res, next) => {
-    if (!isShuttingDown()) {
-      return next();
-    }
-
-    return res.status(503).json({
-      ok: false,
-      state: 'draining',
-    });
+    if (!isShuttingDown()) return next();
+    return res.status(503).json({ ok: false, state: 'draining' });
   });
 
-      app.use(
-        '/api/questions',
-        questionRoutes
-      );
+  // Quiz-essential routes. These remain available on the Azure Free F1 runtime.
+  app.use('/api/questions', questionRoutes);
+  app.use('/api/mocktest', mocktestRoutes);
+  app.use('/api/upload', uploadLimiter, imageUploadRoutes);
+  app.use('/api', uploadLimiter, massUploadImages);
+  app.use('/api', uploadLimiter, massUploadSolutions);
+  app.use('/auth', authLimiter, initAuthRoutes());
+  app.use('/users', initUserRoutes());
+  app.use('/api/access-code', authLimiter, accessCodeRoutes);
 
-      app.use(
-        '/api/mocktest',
-        mocktestRoutes
-      );
+  if (!quizOnlyMode) {
+    const [
+      { default: aiRoutes },
+      { default: cognitiveMapperRouter },
+      { default: adaptiveQuizRouter },
+      { default: uploadNoteImageRoutes },
+      { default: notesRoutes },
+      { default: pdfRoutes },
+      { default: adminUsersRoutes },
+      { default: notificationRoutes },
+      { default: examUpdatesRouter },
+      { default: battleRoutes },
+    ] = await Promise.all([
+      import('./routes/aiRoutes.js'),
+      import('./agents/cognitiveMapperRouter.js'),
+      import('./agents/adaptiveQuiz/adaptiveQuizRouter.js'),
+      import('./routes/uploadNoteImage.js'),
+      import('./routes/notes.routes.js'),
+      import('./routes/pdfs.js'),
+      import('./routes/adminUsers.routes.js'),
+      import('./routes/notifications.routes.js'),
+      import('./routes/examUpdates.routes.js'),
+      import('./routes/battle.routes.js'),
+    ]);
 
-      app.use(
-        '/api/ai',
-        aiLimiter,
-        aiRoutes
-      );
+    app.use('/api/ai', aiLimiter, aiRoutes);
+    app.use('/api/agent', agentLimiter, cognitiveMapperRouter);
+    app.use('/api/adaptive-quiz', agentLimiter, adaptiveQuizRouter);
+    app.use('/api/upload-note-image', uploadLimiter, uploadNoteImageRoutes);
+    app.use('/api/notes', notesRoutes);
+    app.use('/api/pdfs', pdfRoutes);
+    app.use('/api/admin', adminUsersRoutes);
+    app.use('/api/notifications', notificationRoutes);
+    app.use('/api/exam-updates', examUpdatesRouter);
+    app.use('/api/battle', battleRoutes);
+  }
 
-      app.use(
-        '/api/agent',
-        agentLimiter,
-        cognitiveMapperRouter
-      );
+  app.use(errorHandler);
 
-      app.use(
-        '/api/adaptive-quiz',
-        agentLimiter,
-        adaptiveQuizRouter
-      );
-
-      app.use(
-        '/api/upload',
-        uploadLimiter,
-        imageUploadRoutes
-      );
-
-      app.use(
-        '/api',
-        uploadLimiter,
-        massUploadImages
-      );
-
-      app.use(
-        '/api',
-        uploadLimiter,
-        massUploadSolutions
-      );
-
-      app.use(
-        '/api/upload-note-image',
-        uploadLimiter,
-        uploadNoteImageRoutes
-      );
-
-      app.use(
-        '/api/notes',
-        notesRoutes
-      );
-
-      app.use(
-        '/auth',
-        authLimiter,
-        initAuthRoutes()
-      );
-
-      app.use(
-        '/users',
-        initUserRoutes()
-      );
-
-      app.use(
-        '/api/pdfs',
-        pdfRoutes
-      );
-
-      app.use(
-        '/api/access-code',
-        authLimiter,
-        accessCodeRoutes
-      );
-
-      app.use(
-        '/api/admin',
-        adminUsersRoutes
-      );
-
-      app.use(
-        "/api/notifications",
-        notificationRoutes
-      );
-
-      app.use(
-        "/api/exam-updates",
-        examUpdatesRouter
-      );
-
-      app.use("/api/battle", battleRoutes);
-
-
-      // Global error handler must remain last
-      app.use(
-        errorHandler
-      );
-
-
-    return { app, corsOrigin };
+  return { app, corsOrigin };
 }

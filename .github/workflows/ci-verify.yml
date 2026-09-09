@@ -103,11 +103,14 @@ jobs:
         working-directory: ./frontend
         run: npm run check:performance
       - name: Setup Chrome
+        id: setup-chrome
         uses: browser-actions/setup-chrome@v1
         with:
           chrome-version: stable
       - name: Lighthouse performance budgets
         working-directory: ./frontend
+        env:
+          CHROME_PATH: ${{ steps.setup-chrome.outputs.chrome-path }}
         run: |
           npm exec --yes --package=@lhci/cli@0.15.1 -- lhci autorun
           node scripts/check-lighthouse-routes.mjs

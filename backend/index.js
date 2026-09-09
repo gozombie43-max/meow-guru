@@ -2,30 +2,24 @@ import 'dotenv/config';
 import { createServer } from 'node:http';
 import { createApp } from './app.js';
 import { initPassport } from './auth/passport.js';
-import { initBattleSocket } from './battle/battleSocket.js';
 import { connectMongoDB, disconnectMongoDB } from './config/mongodb.js';
-import { setNotificationRealtimeServer } from './services/notificationRealtime.js';
 import { checkReadiness } from './infrastructure/readiness.js';
 import { startRuntimeMetrics, logger } from './infrastructure/logger.js';
-import { startBattleOutbox } from './infrastructure/battleOutbox.js';
-import { startWorkers, stopWorkers } from './infrastructure/workerRegistry.js';
-import {
-  startAttachmentWorker,
-  stopAttachmentWorker,
-  waitForAttachmentWorkerIdle,
-} from './infrastructure/attachmentWorker.js';
+
 let socketServer = null, httpServer;
 let isShuttingDown = false, isReady = false;
 let stopBattleOutbox;
-const stopMetrics = startRuntimeMetrics();
-const runEmbeddedWorkers = process.env.RUN_EMBEDDED_WORKERS !== 'false';
-const PORT =
-  process.env.PORT ||
-  10000;
+let stopWorkers;
+let stopAttachmentWorker;
+let waitForAttachmentWorkerIdle;
+let setNotificationRealtimeServer;
 
-const SHUTDOWN_TIMEOUT_MS =
-  Number(process.env.SHUTDOWN_TIMEOUT_MS) ||
-  20_000;
+const quizOnlyMode = process.env.QUIZ_ONLY_MODE === 'true';
+const runEmbeddedWorkers = !quizOnlyMode && process.env.RUN_EMBEDDED_WORKERS !== 'false';
+const stopMetrics = quizOnlyMode ? () => {} : startRuntimeMetrics();
+const PORT = process.env.PORT || 10000;
+
+const SHUTDOWN_TIMEOUT_MS = Number(process.env.SHUTDOWN_TIMEOUT_MS) || 20_000;
 
 async function gracefulShutdown(signal, exitCode = 0) {
   if (isShuttingDown) {
@@ -35,17 +29,17 @@ async function gracefulShutdown(signal, exitCode = 0) {
   isShuttingDown = true;
   isReady = false;
 
-  console.log(`${signal} received — starting graceful shutdown`);
+  logger.info({ signal, quizOnlyMode }, 'starting graceful shutdown');
 
   const forceTimer = setTimeout(() => {
-    console.error('Graceful shutdown timed out ❌');
+    logger.error('Graceful shutdown timed out');
     process.exit(exitCode || 1);
   }, SHUTDOWN_TIMEOUT_MS);
 
   forceTimer.unref();
 
   try {
-    if (runEmbeddedWorkers) {
+    if (runEmbeddedWorkers && stopWorkers && stopAttachmentWorker && waitForAttachmentWorkerIdle) {
       stopAttachmentWorker();
       const [, , attachmentIdle] = await Promise.all([
         stopWorkers(),
@@ -65,11 +59,9 @@ async function gracefulShutdown(signal, exitCode = 0) {
         });
         await new Promise((resolve) => setTimeout(resolve, 250));
       } catch (error) {
-        console.warn('Socket shutdown notice failed:', error);
+        logger.warn({ err: error }, 'Socket shutdown notice failed');
       }
-    }
 
-    if (socketServer) {
       const closingIo = socketServer;
       socketServer = null;
 
@@ -77,99 +69,52 @@ async function gracefulShutdown(signal, exitCode = 0) {
         closingIo.close(resolve);
       });
 
-      setNotificationRealtimeServer(null);
-      console.log('HTTP + Socket.IO closed ✅');
+      setNotificationRealtimeServer?.(null);
+      logger.info('HTTP + Socket.IO closed');
     } else if (httpServer?.listening) {
       await new Promise((resolve) => {
         httpServer.close(resolve);
       });
-      console.log('HTTP server closed ✅');
+      logger.info('HTTP server closed');
     }
 
     stopMetrics();
     await disconnectMongoDB();
-    console.log('Graceful shutdown complete ✅');
+    logger.info('Graceful shutdown complete');
 
     clearTimeout(forceTimer);
     process.exit(exitCode);
   } catch (error) {
-    console.error('Graceful shutdown failed:', error);
+    logger.error({ err: error }, 'Graceful shutdown failed');
     clearTimeout(forceTimer);
     process.exit(1);
   }
 }
 
-
-// ───────────────────────────────────────────────────────
-// Retry helper
-// ───────────────────────────────────────────────────────
-
-async function connectWithRetry(
-  fn,
-  name,
-  retries = 5,
-  delay = 3000
-) {
+async function connectWithRetry(fn, name, retries = 5, delay = 3000) {
   let lastError;
 
-  for (
-    let attempt = 1;
-    attempt <= retries;
-    attempt++
-  ) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      const result =
-        await fn();
-
-      console.log(
-        `${name} Connected ✅`
-      );
-
+      const result = await fn();
+      logger.info({ dependency: name }, 'dependency connected');
       return result;
-
     } catch (err) {
       lastError = err;
+      logger.warn({ err, dependency: name, attempt, retries }, 'dependency connection attempt failed');
 
-      console.warn(
-        `${name} attempt ${attempt}/${retries} failed: ${err.message}`
-      );
-
-      if (
-        attempt < retries
-      ) {
-        await new Promise(
-          (resolve) =>
-            setTimeout(
-              resolve,
-              delay
-            )
-        );
+      if (attempt < retries) {
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
   }
 
-  throw (
-    lastError ||
-    new Error(
-      `${name} failed after ${retries} retries`
-    )
-  );
+  throw lastError || new Error(`${name} failed after ${retries} retries`);
 }
-
-
-// ───────────────────────────────────────────────────────
-// Application initialization
-// ───────────────────────────────────────────────────────
 
 async function initWithRetry() {
   try {
-
-    // MongoDB must be connected before
-    // Passport/routes begin using collections.
-    await connectWithRetry(
-      connectMongoDB,
-      'MongoDB Atlas'
-    );
+    await connectWithRetry(connectMongoDB, 'MongoDB Atlas');
 
     if (isShuttingDown) {
       return;
@@ -177,29 +122,42 @@ async function initWithRetry() {
 
     await checkReadiness();
 
-    // ── Authentication ─────────────────────────────────
-
     initPassport();
-    const { app, corsOrigin } = createApp({ isReady: () => isReady, isShuttingDown: () => isShuttingDown });
+    const { app, corsOrigin } = await createApp({
+      isReady: () => isReady,
+      isShuttingDown: () => isShuttingDown,
+      quizOnlyMode,
+    });
     httpServer = createServer(app);
 
-
-    // ── Socket.IO ──────────────────────────────────────
-
-    socketServer = initBattleSocket(
-      httpServer,
-      corsOrigin
-    );
+    if (!quizOnlyMode) {
+      const [battleSocketModule, notificationRealtimeModule] = await Promise.all([
+        import('./battle/battleSocket.js'),
+        import('./services/notificationRealtime.js'),
+      ]);
+      setNotificationRealtimeServer = notificationRealtimeModule.setNotificationRealtimeServer;
+      socketServer = battleSocketModule.initBattleSocket(httpServer, corsOrigin);
+    }
 
     if (runEmbeddedWorkers) {
-      await startWorkers();
+      const [workerRegistry, battleOutbox, attachmentWorker] = await Promise.all([
+        import('./infrastructure/workerRegistry.js'),
+        import('./infrastructure/battleOutbox.js'),
+        import('./infrastructure/attachmentWorker.js'),
+      ]);
+
+      stopWorkers = workerRegistry.stopWorkers;
+      stopAttachmentWorker = attachmentWorker.stopAttachmentWorker;
+      waitForAttachmentWorkerIdle = attachmentWorker.waitForAttachmentWorkerIdle;
+
+      await workerRegistry.startWorkers();
 
       if (isShuttingDown) {
         return;
       }
 
-      stopBattleOutbox = startBattleOutbox({ localApi: true });
-      await startAttachmentWorker();
+      stopBattleOutbox = battleOutbox.startBattleOutbox({ localApi: true });
+      await attachmentWorker.startAttachmentWorker();
 
       if (isShuttingDown) {
         return;
@@ -208,22 +166,11 @@ async function initWithRetry() {
       logger.info('Embedded maintenance and attachment workers ready');
     }
 
-    // ── Routes ─────────────────────────────────────────
-
-    // Only healthy after database + routes
-    // have successfully initialized.
     isReady = true;
 
-    httpServer.listen(
-      PORT,
-      '0.0.0.0',
-      () => {
-        console.log(
-          `Server running on port ${PORT} 🚀`
-        );
-      }
-    );
-
+    httpServer.listen(PORT, '0.0.0.0', () => {
+      logger.info({ port: PORT, quizOnlyMode, embeddedWorkers: runEmbeddedWorkers }, 'server ready');
+    });
   } catch (err) {
     isReady = false;
 
@@ -232,7 +179,6 @@ async function initWithRetry() {
     }
 
     logger.error({ err }, 'API startup failed');
-
     await gracefulShutdown('startup failure', 1);
   }
 }
@@ -246,12 +192,12 @@ process.once('SIGINT', () => {
 });
 
 process.once('uncaughtException', (error) => {
-  console.error('Uncaught exception:', error);
+  logger.fatal({ err: error }, 'Uncaught exception');
   void gracefulShutdown('uncaughtException', 1);
 });
 
 process.once('unhandledRejection', (reason) => {
-  console.error('Unhandled rejection:', reason);
+  logger.fatal({ err: reason }, 'Unhandled rejection');
   void gracefulShutdown('unhandledRejection', 1);
 });
 
