@@ -23,10 +23,6 @@ export async function up(db) {
     { name: 'mock_attempt_deadline' },
   );
   await db.collection('adaptiveQuizSessions').createIndex(
-    { id: 1 },
-    { unique: true, name: 'adaptive_session_identity' },
-  );
-  await db.collection('adaptiveQuizSessions').createIndex(
     { userId: 1, status: 1, createdAt: -1 },
     { name: 'adaptive_session_owner' },
   );
