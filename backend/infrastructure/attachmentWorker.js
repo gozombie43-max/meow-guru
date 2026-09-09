@@ -11,6 +11,9 @@ let ready = false;
 let activeChild;
 let loopPromise;
 let wakeDelay;
+let stopWhenIdle = false;
+let idleTimeoutMs = 10_000;
+let lastActivityAt = 0;
 
 function delay(ms) {
   return new Promise((resolve) => {
@@ -101,10 +104,15 @@ async function processJobs(db, jobs) {
       if (stopping) break;
       const job = await claimJob(jobs, 'tutor');
       if (!job) {
+        if (stopWhenIdle && Date.now() - lastActivityAt >= idleTimeoutMs) {
+          logger.info({ idleTimeoutMs }, 'attachment worker stopped after idle window');
+          break;
+        }
         await delay(1_000);
         continue;
       }
 
+      lastActivityAt = Date.now();
       const started = performance.now();
       const heartbeat = setInterval(() => {
         const renewingChild = activeChild;
@@ -125,6 +133,7 @@ async function processJobs(db, jobs) {
         logger.warn({ jobId: job._id, attempt: job.attempts }, 'attachment job failed');
       } finally {
         clearInterval(heartbeat);
+        lastActivityAt = Date.now();
       }
     } catch (error) {
       logger.error({ err: error }, 'attachment worker iteration failed');
@@ -137,15 +146,30 @@ export function isAttachmentWorkerReady() {
   return ready && !stopping;
 }
 
-export async function startAttachmentWorker() {
-  if (loopPromise) return;
+export async function startAttachmentWorker(options = {}) {
+  const requestedStopWhenIdle = options.stopWhenIdle === true;
+  const requestedIdleTimeoutMs = Number(options.idleTimeoutMs);
+
+  if (loopPromise) {
+    // A persistent/full-runtime start request takes precedence over F1 idle-stop mode.
+    if (!requestedStopWhenIdle) stopWhenIdle = false;
+    return;
+  }
+
   const db = getMongoDB();
   const jobs = db.collection('runtimeJobs');
   stopping = false;
+  stopWhenIdle = requestedStopWhenIdle;
+  idleTimeoutMs = Number.isFinite(requestedIdleTimeoutMs)
+    ? Math.max(1_000, requestedIdleTimeoutMs)
+    : 10_000;
+  lastActivityAt = Date.now();
+
   await reportHealth(db, jobs);
   ready = true;
   loopPromise = processJobs(db, jobs).finally(() => {
     ready = false;
+    stopping = true;
     loopPromise = undefined;
   });
 }
