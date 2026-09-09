@@ -1,38 +1,55 @@
 import { NextRequest, NextResponse } from "next/server";
+import { authorizeAiRequest } from "@/lib/server/ai-route-security";
+
+const VOICES = new Set(["en-IN-NeerjaNeural", "en-IN-PrabhatNeural"]);
+const escapeXml = (value: string) =>
+  value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 export async function POST(req: NextRequest) {
-  const { text, bengaliText, voice = "en-IN-NeerjaNeural", rate = "0%" } = await req.json();
+  const authError = await authorizeAiRequest(req, 30);
+  if (authError) return authError;
+
+  const body = await req.json().catch(() => null) as {
+    text?: unknown;
+    bengaliText?: unknown;
+    voice?: unknown;
+    rate?: unknown;
+  } | null;
+  const text = typeof body?.text === "string" ? body.text.trim() : "";
+  const bengaliText = typeof body?.bengaliText === "string" ? body.bengaliText.trim() : "";
+  const voice = typeof body?.voice === "string" && VOICES.has(body.voice)
+    ? body.voice
+    : "en-IN-NeerjaNeural";
+  const rate = typeof body?.rate === "string" && /^(?:-?(?:[0-9]|1[0-9]|20))%$/.test(body.rate)
+    ? body.rate
+    : "0%";
+
+  if (!text) {
+    return NextResponse.json({ error: "Missing text" }, { status: 400 });
+  }
+  if (text.length > 5_000 || bengaliText.length > 5_000) {
+    return NextResponse.json({ error: "Speech text is too long" }, { status: 413 });
+  }
 
   const key = process.env.AZURE_TTS_KEY;
   const region = process.env.AZURE_TTS_REGION || "centralindia";
-
   if (!key) {
-    return NextResponse.json({ error: "Azure TTS key not configured" }, { status: 500 });
-  }
-
-  if (!text || typeof text !== "string") {
-    return NextResponse.json({ error: "Missing text" }, { status: 400 });
+    return NextResponse.json({ error: "Text-to-speech is not configured" }, { status: 503 });
   }
 
   let ssml = `
 <speak version='1.0' xml:lang='en-IN'>
   <voice xml:lang='en-IN' name='${voice}'>
-    <prosody rate='${rate}'>
-      ${text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}
-    </prosody>
+    <prosody rate='${rate}'>${escapeXml(text)}</prosody>
   </voice>`;
 
-  if (bengaliText && typeof bengaliText === "string") {
+  if (bengaliText) {
     ssml += `
   <voice xml:lang='bn-IN' name='bn-IN-TanishaaNeural'>
-    <prosody rate='${rate}'>
-      ${bengaliText.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}
-    </prosody>
+    <prosody rate='${rate}'>${escapeXml(bengaliText)}</prosody>
   </voice>`;
   }
-
-  ssml += `
-</speak>`;
+  ssml += "\n</speak>";
 
   const ttsResponse = await fetch(
     `https://${region}.tts.speech.microsoft.com/cognitiveservices/v1`,
@@ -45,21 +62,19 @@ export async function POST(req: NextRequest) {
         "User-Agent": "QuizGuru",
       },
       body: ssml,
+      signal: AbortSignal.timeout(20_000),
     }
   );
 
   if (!ttsResponse.ok) {
-    const errText = await ttsResponse.text();
-    return NextResponse.json({ error: errText }, { status: ttsResponse.status });
+    return NextResponse.json({ error: "Text-to-speech failed" }, { status: 502 });
   }
 
-  const audioBuffer = await ttsResponse.arrayBuffer();
-
-  return new NextResponse(audioBuffer, {
+  return new NextResponse(await ttsResponse.arrayBuffer(), {
     status: 200,
     headers: {
       "Content-Type": "audio/mpeg",
-      "Cache-Control": "public, max-age=3600",
+      "Cache-Control": "private, max-age=300",
     },
   });
 }
