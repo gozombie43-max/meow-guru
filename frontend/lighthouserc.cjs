@@ -5,10 +5,12 @@ module.exports = {
       url: ['http://localhost:3100/login', 'http://localhost:3100/mathematics'],
       numberOfRuns: 3,
       puppeteerScript: "./scripts/lighthouse-setup.cjs",
+      puppeteerLaunchOptions: {
+        args: ['--no-sandbox', '--disable-dev-shm-usage', '--disable-crash-reporter', '--disable-breakpad'],
+      },
       settings: {
         preset: 'desktop',
         blockedUrlPatterns: ['*/backend-api/*'],
-        chromeFlags: '--headless=new --no-sandbox --disable-dev-shm-usage --disable-crash-reporter --disable-breakpad',
       },
     },
     assert: {
