@@ -423,17 +423,17 @@ router.post("/generate", async (req, res) => {
 // Body: { quizId, userId, answers: [{ questionId, userAnswer, timeSpent, changedAnswer }] }
 // ─────────────────────────────────────────────────────────────────────────────
 router.post("/submit", async (req, res) => {
+  let session = null;
+  let userId = String(req.user.id);
   try {
     const { quizId, answers } = req.body;
-    const userId = String(req.user.id);
-
     if (!quizId || !Array.isArray(answers) || answers.length > 100) {
       return res.status(400).json({ error: "quizId and up to 100 answers are required" });
     }
 
     // Atomically claim the session so concurrent or replayed submissions cannot
     // record the same quiz more than once.
-    const session = await getMongoDB().collection("adaptiveQuizSessions").findOneAndUpdate(
+    session = await getMongoDB().collection("adaptiveQuizSessions").findOneAndUpdate(
       { _id: String(quizId), userId, status: "active", expiresAt: { $gt: new Date() } },
       { $set: { status: "processing", consumedAt: new Date() } },
       { returnDocument: "after" },
@@ -447,11 +447,25 @@ router.post("/submit", async (req, res) => {
       return res.status(404).json({ error: "Quiz session expired or questions not found. Please generate a new quiz." });
     }
 
+    const uniqueAnswers = [];
+    const seenQuestionIds = new Set();
+    for (const value of answers) {
+      const questionId = String(value?.questionId || "");
+      if (!questionId || seenQuestionIds.has(questionId)) continue;
+      seenQuestionIds.add(questionId);
+      uniqueAnswers.push({
+        questionId,
+        userAnswer: value.userAnswer,
+        timeSpent: Math.max(0, Math.min(86_400, Number(value.timeSpent) || 0)),
+        changedAnswer: value.changedAnswer === true,
+      });
+    }
+
     let correct = 0;
     const results = [];
     const attempts = [];
 
-    for (const answer of answers) {
+    for (const answer of uniqueAnswers) {
       const key = answerKey[answer.questionId];
       if (!key) continue;
 
@@ -484,17 +498,13 @@ router.post("/submit", async (req, res) => {
       });
     }
 
-    // Save to user profile (updates mastery map)
-    try {
-      await saveQuizAttempts(userId, attempts);
-      quizSessionStore.delete(quizId);
-      await getMongoDB().collection("adaptiveQuizSessions").updateOne(
-        { _id: String(quizId), userId, status: "processing" },
-        { $set: { status: "completed", completedAt: new Date() }, $unset: { answerKey: "" } },
-      );
-    } catch (saveErr) {
-      console.warn("[adaptive-quiz/submit] saveQuizAttempts non-fatal error:", saveErr.message);
-    }
+    // Persist mastery before consuming the answer key. A failure releases the
+    // claim in the outer catch so the same client can retry safely.
+    await saveQuizAttempts(userId, attempts);
+    await getMongoDB().collection("adaptiveQuizSessions").updateOne(
+      { _id: String(quizId), userId, status: "processing" },
+      { $set: { status: "completed", completedAt: new Date() }, $unset: { answerKey: "", consumedAt: "" } },
+    );
 
     // Clean up session
     quizSessionStore.delete(quizId);
@@ -502,7 +512,7 @@ router.post("/submit", async (req, res) => {
       delete req.session[quizId];
     }
 
-    const score = answers.length > 0 ? Math.round((correct / answers.length) * 100) : 0;
+    const score = uniqueAnswers.length > 0 ? Math.round((correct / uniqueAnswers.length) * 100) : 0;
 
     // Topic-wise accuracy for frontend chart
     const topicAccuracy = {};
@@ -515,7 +525,7 @@ router.post("/submit", async (req, res) => {
     res.json({
       score,
       correct,
-      total:         answers.length,
+      total:         uniqueAnswers.length,
       results,
       topicAccuracy: Object.entries(topicAccuracy).map(([topic, s]) => ({
         topic,
@@ -526,8 +536,14 @@ router.post("/submit", async (req, res) => {
     });
 
   } catch (err) {
+    if (session?._id) {
+      await getMongoDB().collection("adaptiveQuizSessions").updateOne(
+        { _id: session._id, userId, status: "processing" },
+        { $set: { status: "active" }, $unset: { consumedAt: "" } },
+      ).catch((rollbackError) => console.error("[adaptive-quiz/submit rollback]", rollbackError));
+    }
     console.error("[adaptive-quiz/submit]", err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: "Failed to submit adaptive quiz" });
   }
 });
 
@@ -542,6 +558,10 @@ router.get("/preview/:userId", async (req, res) => {
       ? req.query.subjects.split(",")
       : ["Reasoning", "Mathematics", "English", "General Awareness"];
     const questionCount = parseInt(req.query.count) || 20;
+    const safeQuestionCount = Math.max(1, Math.min(100, questionCount));
+    if (!Array.isArray(subjects) || subjects.length === 0 || subjects.length > 4) {
+      return res.status(400).json({ error: "subjects must contain 1 to 4 entries" });
+    }
 
     const profile = await getUserProfile(userId);
     const config  = await analyzePatternAndConfigure({
