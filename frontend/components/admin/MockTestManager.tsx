@@ -1,5 +1,6 @@
 "use client";
 import layout from "./AdminLayout.module.css";
+import { getAccessToken } from "@/lib/axios";
 
 import { type ReactNode, useMemo, useState } from "react";
 import styles from "./AdminTool.module.css";
@@ -43,12 +44,7 @@ function parse(text: string): Question[] {
 }
 
 export default function MockTestManager({ backLink }: { backLink?: ReactNode }) {
-  const [secret, setSecret] = useState<string>(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("adminSecret") || "";
-    }
-    return "";
-  });
+  const adminToken = () => getAccessToken() || "";
   const [apiUrl, setApiUrl] = useState(`${API}/api/mocktest`); 
   const [examSlug, setExamSlug] = useState("ssc-cgl"); 
   const [tierIndex, setTierIndex] = useState(0); 
@@ -90,7 +86,7 @@ export default function MockTestManager({ backLink }: { backLink?: ReactNode }) 
   async function loadSlots() { 
     setBusy(true); 
     try { 
-      const response = await fetch(`${apiUrl}/admin/all-slots?exam=all`, { headers: secret ? { "x-admin-secret": secret } : {} }); 
+      const response = await fetch(`${apiUrl}/admin/all-slots?exam=all`, { headers: adminToken() ? { "x-admin-secret": adminToken() } : {} }); 
       let data: { slots?: Slot[] } = {}; 
       if (response.ok) data = await response.json(); 
       else { const fallback = await fetch(`${apiUrl}/${examSlug}/slots`); data = await fallback.json(); } 
@@ -101,15 +97,14 @@ export default function MockTestManager({ backLink }: { backLink?: ReactNode }) 
   }
 
   async function deploy() { 
-    if (!secret || !id || !title || (source === "upload" && !questions.length)) return setStatus("Provide secret key, generated paper ID/title, and valid questions."); 
+    if (!adminToken() || !id || !title || (source === "upload" && !questions.length)) return setStatus("Your admin session is required, generated paper ID/title, and valid questions."); 
     setBusy(true); 
     const slot = { id, examSlug, configKey: tier.configKey, title, tier: tier.tier, type, year: type === "pyq" && year ? Number(year) : null, shift: type === "pyq" ? shift || null : null, isFree, order }; 
     try { 
-      const response = await fetch(source === "upload" ? `${apiUrl}/admin/upload-paper` : `${apiUrl}/admin/slots`, { method: "POST", headers: { "Content-Type": "application/json", "x-admin-secret": secret }, body: JSON.stringify(source === "upload" ? { slot, questions } : slot) }); 
+      const response = await fetch(source === "upload" ? `${apiUrl}/admin/upload-paper` : `${apiUrl}/admin/slots`, { method: "POST", headers: { "Content-Type": "application/json", "x-admin-secret": adminToken() }, body: JSON.stringify(source === "upload" ? { slot, questions } : slot) }); 
       const data = await response.json().catch(() => ({})); 
-      if (!response.ok) throw new Error(data.error || "Deployment failed"); 
-      localStorage.setItem("adminSecret", secret); 
-      setStatus(source === "upload" ? `Successfully deployed ${data.totalQuestions ?? questions.length} questions to Cosmos DB.` : `Dynamic slot "${id}" created successfully.`); 
+      if (!response.ok) throw new Error(data.error || "Deployment failed");
+setStatus(source === "upload" ? `Successfully deployed ${data.totalQuestions ?? questions.length} questions to MongoDB.` : `Dynamic slot "${id}" created successfully.`); 
       await loadSlots(); 
     } catch (error) { 
       setStatus(error instanceof Error ? error.message : "Deployment failed."); 
@@ -120,7 +115,7 @@ export default function MockTestManager({ backLink }: { backLink?: ReactNode }) 
     if (!confirm(`Are you sure you want to delete slot "${slot.id}"?`)) return; 
     setBusy(true); 
     try { 
-      const response = await fetch(`${apiUrl}/admin/slots/${encodeURIComponent(slot.id)}?examSlug=${encodeURIComponent(slot.examSlug)}`, { method: "DELETE", headers: { "x-admin-secret": secret } }); 
+      const response = await fetch(`${apiUrl}/admin/slots/${encodeURIComponent(slot.id)}?examSlug=${encodeURIComponent(slot.examSlug)}`, { method: "DELETE", headers: { "x-admin-secret": adminToken() } }); 
       if (!response.ok) throw new Error("Could not delete slot."); 
       await loadSlots(); 
     } catch (error) { 
@@ -131,10 +126,10 @@ export default function MockTestManager({ backLink }: { backLink?: ReactNode }) 
   async function seed() { 
     setBusy(true); 
     try { 
-      const response = await fetch(`${apiUrl}/admin/slots/seed`, { method: "POST", headers: { "x-admin-secret": secret } }); 
+      const response = await fetch(`${apiUrl}/admin/slots/seed`, { method: "POST", headers: { "x-admin-secret": adminToken() } }); 
       const data = await response.json().catch(() => ({})); 
       if (!response.ok) throw new Error(data.error || "Could not seed slots."); 
-      setStatus(`Seeded ${data.totalSeeded || 0} default slots into Cosmos DB.`); 
+      setStatus(`Seeded ${data.totalSeeded || 0} default slots into MongoDB.`); 
       await loadSlots(); 
     } catch (error) { 
       setStatus(error instanceof Error ? error.message : "Seed failed."); 
@@ -146,7 +141,7 @@ export default function MockTestManager({ backLink }: { backLink?: ReactNode }) 
       <header className={styles.pageHeader}>
         <div>
           <h1 className={styles.pageTitle}>Mock Test &amp; PYQ Studio</h1>
-          <p className={styles.pageSubtitle}>Deploy complete previous year question papers or register dynamic question generator slots directly in Cosmos DB.</p>
+          <p className={styles.pageSubtitle}>Deploy complete previous year question papers or register dynamic question generator slots directly in MongoDB.</p>
         </div>
       </header>
 
@@ -157,10 +152,6 @@ export default function MockTestManager({ backLink }: { backLink?: ReactNode }) 
         </div>
         
         <div className={styles.formGrid}>
-          <label className={styles.fieldLabel}>
-            Admin Secret
-            <input type="password" value={secret} onChange={(e) => setSecret(e.target.value)} placeholder="Enter ADMIN_SECRET" className={styles.macInput} />
-          </label>
           <label className={styles.fieldLabel}>
             Mock Engine API
             <input value={apiUrl} onChange={(e) => setApiUrl(e.target.value)} className={styles.macInput} />
@@ -335,11 +326,11 @@ export default function MockTestManager({ backLink }: { backLink?: ReactNode }) 
         </button>
       </div>
 
-      {/* Live Cosmos DB Slots Management */}
+      {/* Live MongoDB Slots Management */}
       <section className={styles.macGroup}>
         <div className={styles.macGroupHeader}>
           <div>
-            <h2 className={styles.macGroupTitle}>🌐 Live Cosmos DB Slots</h2>
+            <h2 className={styles.macGroupTitle}>🌐 Live MongoDB Slots</h2>
             <span style={{ fontSize: 11.5, color: "var(--admin-text-secondary, #6e6e73)" }}>Real-time test slots published to candidates</span>
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
