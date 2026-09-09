@@ -14,6 +14,7 @@ module.exports = {
           '--disable-dev-shm-usage',
           '--disable-background-timer-throttling',
           '--disable-backgrounding-occluded-windows',
+          '--disable-features=CalculateNativeWinOcclusion',
           '--disable-renderer-backgrounding',
           '--disable-crash-reporter',
           '--disable-breakpad',
