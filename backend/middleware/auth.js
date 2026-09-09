@@ -1,8 +1,9 @@
 import { verifyToken, isRevoked } from "../auth/jwt.js";
+import { getUsersCollection } from "../config/mongodb.js";
 
 const ADMIN_ROLES = new Set(["admin", "superadmin"]);
 
-const adminAuth = (req, res, next) => {
+const adminAuth = async (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader?.startsWith("Bearer ")) {
     return res.status(401).json({ error: "Authentication required" });
@@ -13,10 +14,19 @@ const adminAuth = (req, res, next) => {
     if (decoded.jti && isRevoked(decoded.jti)) {
       return res.status(401).json({ error: "Token has been revoked" });
     }
-    if (!ADMIN_ROLES.has(decoded.role)) {
+
+    const user = await getUsersCollection().findOne(
+      { id: String(decoded.id), type: { $ne: "email_lock" } },
+      { projection: { id: 1, email: 1, name: 1, role: 1, status: 1 } },
+    );
+    if (!user || ["suspended", "banned"].includes(user.status)) {
+      return res.status(403).json({ error: "Account is not active" });
+    }
+    if (!ADMIN_ROLES.has(user.role)) {
       return res.status(403).json({ error: "Insufficient permissions" });
     }
-    req.user = decoded;
+
+    req.user = { ...decoded, ...user };
     return next();
   } catch {
     return res.status(401).json({ error: "Invalid or expired token" });
