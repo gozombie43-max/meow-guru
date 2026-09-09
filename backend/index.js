@@ -7,9 +7,18 @@ import { connectMongoDB, disconnectMongoDB } from './config/mongodb.js';
 import { setNotificationRealtimeServer } from './services/notificationRealtime.js';
 import { checkReadiness } from './infrastructure/readiness.js';
 import { startRuntimeMetrics, logger } from './infrastructure/logger.js';
+import { startBattleOutbox } from './infrastructure/battleOutbox.js';
+import { startWorkers, stopWorkers } from './infrastructure/workerRegistry.js';
+import {
+  startAttachmentWorker,
+  stopAttachmentWorker,
+  waitForAttachmentWorkerIdle,
+} from './infrastructure/attachmentWorker.js';
 let socketServer = null, httpServer;
 let isShuttingDown = false, isReady = false;
+let stopBattleOutbox;
 const stopMetrics = startRuntimeMetrics();
+const runEmbeddedWorkers = process.env.RUN_EMBEDDED_WORKERS !== 'false';
 const PORT =
   process.env.PORT ||
   10000;
@@ -36,6 +45,18 @@ async function gracefulShutdown(signal, exitCode = 0) {
   forceTimer.unref();
 
   try {
+    if (runEmbeddedWorkers) {
+      stopAttachmentWorker();
+      const [, , attachmentIdle] = await Promise.all([
+        stopWorkers(),
+        stopBattleOutbox?.(),
+        waitForAttachmentWorkerIdle(12_000),
+      ]);
+      if (!attachmentIdle) {
+        throw new Error('Attachment worker failed to drain');
+      }
+    }
+
     if (socketServer) {
       try {
         socketServer.emit('server:shutdown', {
@@ -170,6 +191,22 @@ async function initWithRetry() {
       corsOrigin
     );
 
+    if (runEmbeddedWorkers) {
+      await startWorkers();
+
+      if (isShuttingDown) {
+        return;
+      }
+
+      stopBattleOutbox = startBattleOutbox({ localApi: true });
+      await startAttachmentWorker();
+
+      if (isShuttingDown) {
+        return;
+      }
+
+      logger.info('Embedded maintenance and attachment workers ready');
+    }
 
     // ── Routes ─────────────────────────────────────────
 

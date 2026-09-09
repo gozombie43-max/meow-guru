@@ -1,6 +1,8 @@
 **Architecture review verification and implementation plan**
 
-Implementation follow-up: see [backend/RUNTIME_DEPLOYMENT.md](backend/RUNTIME_DEPLOYMENT.md) for the new process commands, migration scripts, release gates, and remaining environment validation. The assessment below records the pre-implementation checkout.
+Implementation follow-up: see [backend/RUNTIME_DEPLOYMENT.md](backend/RUNTIME_DEPLOYMENT.md) for the current single-App-Service runtime, optional future process commands, migration scripts, release gates, and remaining environment validation. The assessment below records the pre-implementation checkout.
+
+Current production decision: keep one B1 Azure Web App and run the maintenance and attachment queues from its API process. The extracted worker entry points remain an optional future scaling boundary; they are not additional production Web Apps today.
 
 Reviewed 2026-09-09 against local commit `05f098dc`. The worktree was clean before this report. Scope: source inspection and one isolated normalization reproduction; no application changes, deployment, production database inspection, dependency audit, load test, or full test run. Remote branch parity and branch protection settings were not checked.
 

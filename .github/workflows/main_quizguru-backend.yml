@@ -63,9 +63,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: [build, security]
-    env:
-      MAINTENANCE_WORKER_APP: quizguru-maint-ede848e3
-      ATTACHMENT_WORKER_APP: quizguru-attach-ede848e3
     permissions:
       id-token: write #This is required for requesting the JWT
       contents: read #This is required for actions/checkout
@@ -123,63 +120,24 @@ jobs:
       - name: Apply database migrations before release
         run: npm run db:migrate
 
-      - name: Prepare worker Web Apps
-        shell: bash
-        run: |
-          set -euo pipefail
-          source_settings="$(az webapp config appsettings list --name quizguru-backend --resource-group "$RESOURCE_GROUP" --output json)"
-          settings=()
-          while IFS= read -r encoded; do
-            setting="$(printf '%s' "$encoded" | base64 --decode)"
-            name="$(printf '%s' "$setting" | jq -r '.name')"
-            value="$(printf '%s' "$setting" | jq -r '.value')"
-            case "$name" in
-              RELEASE_ID|MONGODB_URI|MONGODB_DB|NODE_ENV|WORKER_HTTP_HEALTH) ;;
-              *) settings+=("$name=$value") ;;
-            esac
-          done < <(printf '%s' "$source_settings" | jq -r '.[] | @base64')
-          settings+=("MONGODB_URI=$MONGODB_URI" "MONGODB_DB=$MONGODB_DB" "NODE_ENV=production" "WORKER_HTTP_HEALTH=true")
-
-          for worker in "$MAINTENANCE_WORKER_APP|npm run start:worker" "$ATTACHMENT_WORKER_APP|npm run start:attachments"; do
-            app_name="${worker%%|*}"
-            startup_command="${worker#*|}"
-            if ! az webapp show --name "$app_name" --resource-group "$RESOURCE_GROUP" >/dev/null 2>&1; then
-              echo "::error::Worker Web App $app_name is not provisioned or the deployment identity cannot access it"
-              exit 1
-            fi
-            az webapp config appsettings set --name "$app_name" --resource-group "$RESOURCE_GROUP" --settings "${settings[@]}" --output none
-            az webapp config set --name "$app_name" --resource-group "$RESOURCE_GROUP" --startup-file "$startup_command" --always-on true --output none
-          done
-
-      - name: Deploy maintenance worker
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: ${{ env.MAINTENANCE_WORKER_APP }}
-          package: .
-
-      - name: Deploy attachment worker
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: ${{ env.ATTACHMENT_WORKER_APP }}
-          package: .
-
-      - name: Activate and verify worker release
+      - name: Configure single Web App runtime
         shell: bash
         env:
           RELEASE_ID: ${{ github.sha }}
         run: |
           set -euo pipefail
-          for app_name in "$MAINTENANCE_WORKER_APP" "$ATTACHMENT_WORKER_APP"; do
-            az webapp config appsettings set --name "$app_name" --resource-group "$RESOURCE_GROUP" --settings "RELEASE_ID=$RELEASE_ID" --output none
-          done
-          for attempt in $(seq 1 30); do
-            if node scripts/check-workers.js; then
-              exit 0
-            fi
-            sleep 10
-          done
-          echo "::error::Workers did not become healthy within five minutes"
-          exit 1
+          az webapp config appsettings set \
+            --name quizguru-backend \
+            --resource-group "$RESOURCE_GROUP" \
+            --settings \
+              "RELEASE_ID=$RELEASE_ID" \
+              "RUN_EMBEDDED_WORKERS=true" \
+            --output none
+          az webapp config set \
+            --name quizguru-backend \
+            --resource-group "$RESOURCE_GROUP" \
+            --always-on true \
+            --output none
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
