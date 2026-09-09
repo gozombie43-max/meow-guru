@@ -127,7 +127,7 @@ router.post(
         await registrationLocks.insertOne({
           _id: normalizedEmail,
           createdAt:
-            new Date().toISOString(),
+            new Date(),
         });
 
         lockAcquired = true;
@@ -383,15 +383,18 @@ router.post(
       const users = getUsersCollection();
       const existingUser = await users.findOne(
         { id: decoded.id, type: { $ne: 'email_lock' } },
-        { projection: { role: 1, name: 1, email: 1 } }
+        { projection: { role: 1, name: 1, email: 1, status: 1 } }
       );
-      const userRole = existingUser?.role || decoded.role || 'user';
+      if (!existingUser || ['suspended', 'banned'].includes(existingUser.status)) {
+        res.clearCookie('refreshToken', cookieOptions);
+        return res.status(403).json({ error: 'Account is no longer active' });
+      }
 
       const payload = {
         id: decoded.id,
-        email: existingUser?.email || decoded.email,
-        name: existingUser?.name || decoded.name,
-        role: userRole,
+        email: existingUser.email,
+        name: existingUser.name,
+        role: existingUser.role || 'student',
       };
 
       const newToken =
