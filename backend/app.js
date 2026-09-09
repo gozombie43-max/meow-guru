@@ -32,18 +32,7 @@ import massUploadImages from './routes/massUploadImages.js';
 import massUploadSolutions from './routes/massUploadSolutions.js';
 import accessCodeRoutes from './routes/accessCodes.js';
 
-import notesRoutes from './routes/notes.routes.js';
-import uploadNoteImageRoutes from './routes/uploadNoteImage.js';
-import aiRoutes from './routes/aiRoutes.js';
-import pdfRoutes from './routes/pdfs.js';
-import notificationRoutes from './routes/notifications.routes.js';
-import examUpdatesRouter from './routes/examUpdates.routes.js';
-import battleRoutes from './routes/battle.routes.js';
-import cognitiveMapperRouter from './agents/cognitiveMapperRouter.js';
-import adaptiveQuizRouter from './agents/adaptiveQuiz/adaptiveQuizRouter.js';
-import adminUsersRoutes from './routes/adminUsers.routes.js';
-
-export function createApp({ isReady, isShuttingDown, quizOnlyMode = process.env.QUIZ_ONLY_MODE === 'true' }) {
+export async function createApp({ isReady, isShuttingDown, quizOnlyMode = process.env.QUIZ_ONLY_MODE === 'true' }) {
   const app = express();
   app.use(requestLogging);
   app.set('trust proxy', 1);
@@ -142,6 +131,30 @@ export function createApp({ isReady, isShuttingDown, quizOnlyMode = process.env.
   app.use('/api/access-code', authLimiter, accessCodeRoutes);
 
   if (!quizOnlyMode) {
+    const [
+      { default: aiRoutes },
+      { default: cognitiveMapperRouter },
+      { default: adaptiveQuizRouter },
+      { default: uploadNoteImageRoutes },
+      { default: notesRoutes },
+      { default: pdfRoutes },
+      { default: adminUsersRoutes },
+      { default: notificationRoutes },
+      { default: examUpdatesRouter },
+      { default: battleRoutes },
+    ] = await Promise.all([
+      import('./routes/aiRoutes.js'),
+      import('./agents/cognitiveMapperRouter.js'),
+      import('./agents/adaptiveQuiz/adaptiveQuizRouter.js'),
+      import('./routes/uploadNoteImage.js'),
+      import('./routes/notes.routes.js'),
+      import('./routes/pdfs.js'),
+      import('./routes/adminUsers.routes.js'),
+      import('./routes/notifications.routes.js'),
+      import('./routes/examUpdates.routes.js'),
+      import('./routes/battle.routes.js'),
+    ]);
+
     app.use('/api/ai', aiLimiter, aiRoutes);
     app.use('/api/agent', agentLimiter, cognitiveMapperRouter);
     app.use('/api/adaptive-quiz', agentLimiter, adaptiveQuizRouter);
