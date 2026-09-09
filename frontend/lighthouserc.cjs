@@ -4,26 +4,11 @@ module.exports = {
       startServerCommand: 'npm run start -- --port 3100',
       url: ['http://localhost:3100/login', 'http://localhost:3100/mathematics'],
       numberOfRuns: 3,
-      puppeteerScript: "./scripts/lighthouse-setup.cjs",
-      puppeteerLaunchOptions: {
-        headless: true,
-        args: [
-          '--headless=new',
-          '--no-sandbox',
-          '--disable-gpu',
-          '--disable-dev-shm-usage',
-          '--disable-background-timer-throttling',
-          '--disable-backgrounding-occluded-windows',
-          '--disable-features=CalculateNativeWinOcclusion',
-          '--disable-renderer-backgrounding',
-          '--disable-crash-reporter',
-          '--disable-breakpad',
-          '--window-size=1350,940',
-        ],
-      },
       settings: {
         preset: 'desktop',
         blockedUrlPatterns: ['*/backend-api/*'],
+        extraHeaders: { Cookie: 'access_session=local-performance-fixture' },
+        chromeFlags: '--headless --no-sandbox --disable-dev-shm-usage --disable-features=CalculateNativeWinOcclusion --disable-backgrounding-occluded-windows --disable-renderer-backgrounding',
       },
     },
     assert: {
