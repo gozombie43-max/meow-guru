@@ -1,6 +1,12 @@
 module.exports = async (browser) => {
   // Local frontend benchmark only. This is not a valid backend access credential.
   const page = await browser.newPage();
+  const diagnostics = [];
+  page.on('pageerror', (error) => diagnostics.push(`pageerror: ${error.message}`));
+  page.on('console', (message) => {
+    if (message.type() === 'error') diagnostics.push(`console: ${message.text()}`);
+  });
+  page.on('requestfailed', (request) => diagnostics.push(`request: ${request.url()} ${request.failure()?.errorText || 'failed'}`));
   await page.setCookie({
     name: 'access_session',
     value: 'local-performance-fixture',
@@ -14,10 +20,14 @@ module.exports = async (browser) => {
   await page.waitForSelector('body', { timeout: 10_000 });
   // The auth route intentionally streams a text-free Suspense spinner first.
   // Wait for client hydration before deciding whether the page is paintable.
-  await page.waitForFunction(
-    () => document.body.innerText.trim().length >= 10,
-    { timeout: 30_000 },
-  );
+  try {
+    await page.waitForFunction(
+      () => document.body.innerText.trim().length >= 10,
+      { timeout: 30_000 },
+    );
+  } catch {
+    throw new Error(`Lighthouse hydration preflight timed out: ${diagnostics.slice(-8).join(' | ') || 'no browser errors'}`);
+  }
   const rendered = await page.evaluate(() => ({
     htmlLength: document.documentElement.outerHTML.length,
     textLength: document.body.innerText.trim().length,
