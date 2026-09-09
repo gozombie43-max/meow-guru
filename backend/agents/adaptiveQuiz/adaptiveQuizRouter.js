@@ -298,18 +298,18 @@ router.post("/generate", async (req, res) => {
 
     // 2. Apply mode overrides to subjects/count
     let effectiveSubjects = subjects;
-    let effectiveCount    = questionCount;
+    let effectiveCount    = safeQuestionCount;
 
     if (mode === "weak-only") {
       // Only topics with accuracy < 60%
       effectiveSubjects = subjects; // analyzer will auto-filter
-      effectiveCount    = Math.min(questionCount, 30);
+      effectiveCount    = Math.min(safeQuestionCount, 30);
     } else if (mode === "revision") {
       // Focus on topics not practiced in 7+ days
-      effectiveCount = Math.min(questionCount, 25);
+      effectiveCount = Math.min(safeQuestionCount, 25);
     } else if (mode === "explore") {
       // 50% never-attempted topics
-      effectiveCount = Math.min(questionCount, 20);
+      effectiveCount = Math.min(safeQuestionCount, 20);
     }
 
     // 3. Azure OpenAI pattern analysis → quiz configuration
@@ -396,7 +396,7 @@ router.post("/generate", async (req, res) => {
     quizSessionStore.set(quizId, { answerKey, userId, createdAt: Date.now() });
     await getMongoDB().collection("adaptiveQuizSessions").updateOne(
       { _id: quizId, userId },
-      { $set: { answerKey, createdAt: new Date(), expiresAt: new Date(Date.now() + QUIZ_SESSION_TTL_MS) } },
+      { $set: { answerKey, status: "active", createdAt: new Date(), expiresAt: new Date(Date.now() + QUIZ_SESSION_TTL_MS) } },
       { upsert: true },
     );
 
@@ -431,13 +431,15 @@ router.post("/submit", async (req, res) => {
       return res.status(400).json({ error: "quizId and up to 100 answers are required" });
     }
 
-    // 1. Retrieve answer key from in-memory session store or express session
-    let session = quizSessionStore.get(quizId) || req.session?.[quizId];
+    // Atomically claim the session so concurrent or replayed submissions cannot
+    // record the same quiz more than once.
+    const session = await getMongoDB().collection("adaptiveQuizSessions").findOneAndUpdate(
+      { _id: String(quizId), userId, status: "active", expiresAt: { $gt: new Date() } },
+      { $set: { status: "processing", consumedAt: new Date() } },
+      { returnDocument: "after" },
+    );
     if (!session) {
-      session = await getMongoDB().collection("adaptiveQuizSessions").findOne({ _id: String(quizId), userId, expiresAt: { $gt: new Date() } });
-    }
-    if (!session || session.userId !== userId) {
-      return res.status(404).json({ error: "Quiz session expired or not found" });
+      return res.status(409).json({ error: "Quiz session expired, not found, or already submitted" });
     }
     const answerKey = session.answerKey || {};
 
@@ -486,7 +488,10 @@ router.post("/submit", async (req, res) => {
     try {
       await saveQuizAttempts(userId, attempts);
       quizSessionStore.delete(quizId);
-      await getMongoDB().collection("adaptiveQuizSessions").deleteOne({ _id: String(quizId), userId });
+      await getMongoDB().collection("adaptiveQuizSessions").updateOne(
+        { _id: String(quizId), userId, status: "processing" },
+        { $set: { status: "completed", completedAt: new Date() }, $unset: { answerKey: "" } },
+      );
     } catch (saveErr) {
       console.warn("[adaptive-quiz/submit] saveQuizAttempts non-fatal error:", saveErr.message);
     }
