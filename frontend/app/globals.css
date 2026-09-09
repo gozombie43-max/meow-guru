@@ -163,11 +163,9 @@ body {
 
 @keyframes page-transition-enter {
   from {
-    opacity: 0;
     transform: translateX(1.25rem);
   }
   to {
-    opacity: 1;
     transform: none;
   }
 }

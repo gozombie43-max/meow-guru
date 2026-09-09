@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { getAccessToken } from "@/lib/axios";
 
 const TICKS = Array.from({ length: 12 });
 
@@ -22,9 +23,11 @@ export function SpeakerBtn({ text, bengaliText, size = 22 }: { text: string; ben
 
     setState("loading");
     try {
+      const accessToken = getAccessToken();
+      if (!accessToken) throw new Error("Authentication required");
       const res = await fetch("/api/tts", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
         body: JSON.stringify({ 
           text: text.trim(),
           bengaliText: bengaliText ? bengaliText.trim() : undefined

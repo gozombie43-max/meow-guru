@@ -10,8 +10,9 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, type ReactNode } from "react";
 import styles from "./AdminShell.module.css";
 
 const destinations = [
@@ -40,6 +41,18 @@ function getPageTitle(pathname: string) {
 
 export default function AdminShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, loading } = useAuth();
+  const isAdmin = user?.role === "admin" || user?.role === "superadmin";
+
+  useEffect(() => {
+    if (loading) return;
+    if (!user) router.replace("/login");
+    else if (!isAdmin) router.replace("/");
+  }, [isAdmin, loading, router, user]);
+
+  if (loading || !isAdmin) return null;
+
   const title = getPageTitle(pathname);
 
   return (

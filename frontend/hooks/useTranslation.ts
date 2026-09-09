@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from "react";
+import { getAccessToken } from "@/lib/axios";
 
 type Lang = "en" | "hi" | "bn";
 
@@ -30,12 +31,15 @@ export function useTranslation() {
 
     setIsTranslating(true);
     try {
+      const accessToken = getAccessToken();
+      if (!accessToken) throw new Error("Authentication required");
       const response = await fetch(`/api/translate/`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
         body: JSON.stringify({ texts: toFetch.map((item) => item.text), targetLang }),
       });
 
+      if (!response.ok) throw new Error(`Translation failed: ${response.status}`);
       const data = await response.json();
 
       toFetch.forEach((item, i) => {

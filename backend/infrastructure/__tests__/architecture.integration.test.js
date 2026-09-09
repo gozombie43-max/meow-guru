@@ -1,7 +1,7 @@
 import { beforeAll, afterAll, beforeEach, describe, it, expect, vi } from 'vitest';
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import { MongoClient } from 'mongodb';
-import { migrate, assertMigrations } from '../../migrations/runner.js';
+import { migrate, assertMigrations, migrations } from '../../migrations/runner.js';
 import { backfillQuestionKeys, normalizationUpdate } from '../../services/questions/questionBackfill.js';
 import { normalizedQuestionKeys } from '../../services/questions/questionNormalizer.js';
 import { claimJob, renewJob, completeJob, failJob } from '../durableQueue.js';
@@ -41,7 +41,7 @@ describe('versioned migrations', () => {
     await migrate(db);
     await expect(assertMigrations(db)).resolves.toBeUndefined();
     await expect(assertMigrations(client.db('empty'))).rejects.toThrow('migrations required');
-    expect(await db.collection('schemaMigrations').countDocuments()).toBe(2);
+    expect(await db.collection('schemaMigrations').countDocuments()).toBe(migrations.length);
   });
   it('serializes runners and never records a failed migration', async () => {
     let release, entered;

@@ -1,6 +1,7 @@
 "use client";
 
 import { type ReactNode, useEffect, useState, useMemo, useRef } from "react";
+import { getAccessToken } from "@/lib/axios";
 import styles from "./AdminTool.module.css";
 import { QUIZ_TREE } from "@/lib/quiz-constants";
 import { getGeneralAwarenessTopicGroup } from "@/lib/general-awareness-topic-groups";
@@ -43,12 +44,7 @@ function muGetDisplayText(q: any) {
 }
 
 export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode }) {
-  const [secret, setSecret] = useState<string>(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("adminSecret") || "";
-    }
-    return "";
-  });
+  const adminToken = () => getAccessToken() || "";
   const [fileName, setFileName] = useState("");
   const [quiz, setQuiz] = useState({ subject: "", topic: "", chapter: "", name: "" });
   const [rows, setRows] = useState<RowData[]>([]);
@@ -107,7 +103,7 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-admin-secret": secret.trim(),
+          Authorization: `Bearer ${adminToken()}`,
         },
         body: JSON.stringify({ questions: toCheck })
       });
@@ -193,7 +189,7 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
   const availableChapters = gaGroup ? gaGroup.topics : [];
 
   async function upload() {
-    if (!secret.trim() || !quiz.subject || !quiz.topic || !quiz.name) return alert("Please provide the admin secret key and designate a target quiz.");
+    if (!adminToken() || !quiz.subject || !quiz.topic || !quiz.name) return alert("Your admin session is required and you must designate a target quiz.");
     
     const toUploadRaw = rows.filter(q => selected.has(q._idx));
     if (!toUploadRaw.length) return alert("No valid rows selected for deployment.");
@@ -247,7 +243,7 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
       const batchNum = Math.floor(i / BATCH) + 1;
       try {
         const res = await fetch(`${API}/api/questions/bulk`, {
-          method: "POST", headers: { "Content-Type": "application/json", "x-admin-secret": secret.trim() },
+          method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${adminToken()}` },
           body: JSON.stringify(batch)
         });
         if (res.ok) {
@@ -282,7 +278,6 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
     }
 
     addLog(`Upload complete: ${uploaded} successfully stored, ${failed} failed`, failed === 0 ? "ok" : "err");
-    localStorage.setItem("adminSecret", secret.trim());
     setSaving(false);
   }
 
@@ -306,19 +301,9 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
       {/* Target & Config Section */}
       <section className={styles.macGroup}>
         <div className={styles.macGroupHeader}>
-          <h2 className={styles.macGroupTitle}>⚙️ Target Quiz &amp; Secret</h2>
+          <h2 className={styles.macGroupTitle}>⚙️ Target Quiz</h2>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 200px), 1fr))", gap: 12 }}>
-          <label className={styles.fieldLabel}>
-            Admin Secret
-            <input 
-              value={secret} 
-              onChange={(e) => setSecret(e.target.value)} 
-              type="password" 
-              placeholder="Enter ADMIN_SECRET"
-              className={styles.macInput} 
-            />
-          </label>
           <label className={styles.fieldLabel}>
             Quiz Subject
             <select 

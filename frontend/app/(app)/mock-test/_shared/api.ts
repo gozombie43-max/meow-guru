@@ -49,7 +49,10 @@ export interface MockAttempt {
   answerKey?: Record<string, MockAnswer>;
   questionStatuses?: Record<string, QuestionStatus>;
   timeLeft?: number;
-  status?: 'in_progress' | 'completed';
+  status?: 'in_progress' | 'submitting' | 'completed';
+  currentSection?: number;
+  currentQuestion?: number;
+  revision?: number;
 }
 
 export interface AttemptProgress {
@@ -57,6 +60,7 @@ export interface AttemptProgress {
   questionStatuses: Record<string, QuestionStatus>;
   currentSection: number;
   currentQuestion: number;
+  revision: number;
 }
 
 async function readJson<T>(response: Response): Promise<T> {
@@ -80,11 +84,8 @@ function getHeaders(token?: string) {
   return headers;
 }
 
-function getAdminHeaders(adminSecret: string) {
-  return {
-    'Content-Type': 'application/json',
-    'x-admin-secret': adminSecret,
-  };
+function getAdminHeaders(adminToken: string) {
+  return getHeaders(adminToken);
 }
 
 // ─── Slot Endpoints ───────────────────────────────────────
@@ -104,10 +105,10 @@ export async function getSlotDetails(slotId: string, examSlug?: string): Promise
 
 // ─── Admin Slot Management Endpoints ──────────────────────
 
-export async function adminCreateSlot(slotData: Record<string, unknown>, adminSecret: string) {
+export async function adminCreateSlot(slotData: Record<string, unknown>, adminToken: string) {
   const res = await fetch(`${BASE}/api/mocktest/admin/slots`, {
     method: 'POST',
-    headers: getAdminHeaders(adminSecret),
+    headers: getAdminHeaders(adminToken),
     body: JSON.stringify(slotData),
   });
   if (!res.ok) {
@@ -116,10 +117,10 @@ export async function adminCreateSlot(slotData: Record<string, unknown>, adminSe
   return res.json();
 }
 
-export async function adminUpdateSlot(slotId: string, examSlug: string, updates: Record<string, unknown>, adminSecret: string) {
+export async function adminUpdateSlot(slotId: string, examSlug: string, updates: Record<string, unknown>, adminToken: string) {
   const res = await fetch(`${BASE}/api/mocktest/admin/slots/${slotId}`, {
     method: 'PATCH',
-    headers: getAdminHeaders(adminSecret),
+    headers: getAdminHeaders(adminToken),
     body: JSON.stringify({ examSlug, ...updates }),
   });
   if (!res.ok) {
@@ -128,10 +129,10 @@ export async function adminUpdateSlot(slotId: string, examSlug: string, updates:
   return res.json();
 }
 
-export async function adminDeleteSlot(slotId: string, examSlug: string, adminSecret: string) {
+export async function adminDeleteSlot(slotId: string, examSlug: string, adminToken: string) {
   const res = await fetch(`${BASE}/api/mocktest/admin/slots/${slotId}?examSlug=${encodeURIComponent(examSlug)}`, {
     method: 'DELETE',
-    headers: getAdminHeaders(adminSecret),
+    headers: getAdminHeaders(adminToken),
   });
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
@@ -140,10 +141,10 @@ export async function adminDeleteSlot(slotId: string, examSlug: string, adminSec
   return res.json();
 }
 
-export async function adminSeedSlots(adminSecret: string) {
+export async function adminSeedSlots(adminToken: string) {
   const res = await fetch(`${BASE}/api/mocktest/admin/slots/seed`, {
     method: 'POST',
-    headers: getAdminHeaders(adminSecret),
+    headers: getAdminHeaders(adminToken),
   });
   if (!res.ok) throw new Error('Failed to seed default slots');
   return res.json();

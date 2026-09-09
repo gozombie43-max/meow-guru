@@ -2,6 +2,7 @@
 // QuizGuru — Adaptive Quiz API Routes
 
 import express from "express";
+import { protect } from "../../middleware/protect.js";
 import { analyzePatternAndConfigure, SUBJECT_TOPICS } from "./patternAnalyzer.js";
 import TOPIC_MAP from "./topicCategoryMap.js";
 import { buildAdaptiveQuiz, saveQuizAttempts } from "./quizBuilder.js";
@@ -12,6 +13,7 @@ import {
 } from "../../config/mongodb.js";
 
 const router = express.Router();
+router.use(protect);
 
 function escapeRegex(value = "") {
   return String(value).replace(
@@ -270,15 +272,15 @@ async function getUserQuestionIds(
 router.post("/generate", async (req, res) => {
   try {
     const {
-      userId,
       subjects = ["Reasoning", "Mathematics", "English", "General Awareness"],
       questionCount = 20,
-      mode = "adaptive",          // "adaptive" | "weak-only" | "revision" | "explore"
+      mode = "adaptive",
     } = req.body;
-
-    if (!userId) {
-      return res.status(400).json({ error: "userId is required" });
+    const userId = String(req.user.id);
+    if (!Array.isArray(subjects) || subjects.length === 0 || subjects.length > 4) {
+      return res.status(400).json({ error: "subjects must contain 1 to 4 entries" });
     }
+    const safeQuestionCount = Math.max(1, Math.min(100, Number(questionCount) || 20));
 
     // 1. Load user profile from MongoDB
     const profile = await getUserProfile(userId);
@@ -296,18 +298,18 @@ router.post("/generate", async (req, res) => {
 
     // 2. Apply mode overrides to subjects/count
     let effectiveSubjects = subjects;
-    let effectiveCount    = questionCount;
+    let effectiveCount    = safeQuestionCount;
 
     if (mode === "weak-only") {
       // Only topics with accuracy < 60%
       effectiveSubjects = subjects; // analyzer will auto-filter
-      effectiveCount    = Math.min(questionCount, 30);
+      effectiveCount    = Math.min(safeQuestionCount, 30);
     } else if (mode === "revision") {
       // Focus on topics not practiced in 7+ days
-      effectiveCount = Math.min(questionCount, 25);
+      effectiveCount = Math.min(safeQuestionCount, 25);
     } else if (mode === "explore") {
       // 50% never-attempted topics
-      effectiveCount = Math.min(questionCount, 20);
+      effectiveCount = Math.min(safeQuestionCount, 20);
     }
 
     // 3. Azure OpenAI pattern analysis → quiz configuration
@@ -392,6 +394,11 @@ router.post("/generate", async (req, res) => {
 
     // Always store in memory session store
     quizSessionStore.set(quizId, { answerKey, userId, createdAt: Date.now() });
+    await getMongoDB().collection("adaptiveQuizSessions").updateOne(
+      { _id: quizId, userId },
+      { $set: { answerKey, status: "active", createdAt: new Date(), expiresAt: new Date(Date.now() + QUIZ_SESSION_TTL_MS) } },
+      { upsert: true },
+    );
 
     // Also store in Express session if middleware is present
     if (req.session) {
@@ -416,32 +423,49 @@ router.post("/generate", async (req, res) => {
 // Body: { quizId, userId, answers: [{ questionId, userAnswer, timeSpent, changedAnswer }] }
 // ─────────────────────────────────────────────────────────────────────────────
 router.post("/submit", async (req, res) => {
+  let session = null;
+  let userId = String(req.user.id);
   try {
-    const { quizId, userId, answers } = req.body;
-
-    if (!quizId || !userId || !Array.isArray(answers)) {
-      return res.status(400).json({ error: "quizId, userId, and answers[] required" });
+    const { quizId, answers } = req.body;
+    if (!quizId || !Array.isArray(answers) || answers.length > 100) {
+      return res.status(400).json({ error: "quizId and up to 100 answers are required" });
     }
 
-    // 1. Retrieve answer key from in-memory session store or express session
-    let session = quizSessionStore.get(quizId) || req.session?.[quizId];
-    let answerKey = session?.answerKey || {};
-
-    // 2. Fallback: if session not found in memory, query MongoDB questions
-    if (!session || Object.keys(answerKey).length === 0) {
-      console.warn(`[adaptive-quiz/submit] Quiz session ${quizId} not in memory cache. Falling back to DB lookup...`);
-      answerKey = await fetchAnswerKeysFromDB(answers.map(a => a.questionId));
+    // Atomically claim the session so concurrent or replayed submissions cannot
+    // record the same quiz more than once.
+    session = await getMongoDB().collection("adaptiveQuizSessions").findOneAndUpdate(
+      { _id: String(quizId), userId, status: "active", expiresAt: { $gt: new Date() } },
+      { $set: { status: "processing", consumedAt: new Date() } },
+      { returnDocument: "after" },
+    );
+    if (!session) {
+      return res.status(409).json({ error: "Quiz session expired, not found, or already submitted" });
     }
+    const answerKey = session.answerKey || {};
 
     if (!answerKey || Object.keys(answerKey).length === 0) {
       return res.status(404).json({ error: "Quiz session expired or questions not found. Please generate a new quiz." });
+    }
+
+    const uniqueAnswers = [];
+    const seenQuestionIds = new Set();
+    for (const value of answers) {
+      const questionId = String(value?.questionId || "");
+      if (!questionId || seenQuestionIds.has(questionId)) continue;
+      seenQuestionIds.add(questionId);
+      uniqueAnswers.push({
+        questionId,
+        userAnswer: value.userAnswer,
+        timeSpent: Math.max(0, Math.min(86_400, Number(value.timeSpent) || 0)),
+        changedAnswer: value.changedAnswer === true,
+      });
     }
 
     let correct = 0;
     const results = [];
     const attempts = [];
 
-    for (const answer of answers) {
+    for (const answer of uniqueAnswers) {
       const key = answerKey[answer.questionId];
       if (!key) continue;
 
@@ -474,12 +498,13 @@ router.post("/submit", async (req, res) => {
       });
     }
 
-    // Save to user profile (updates mastery map)
-    try {
-      await saveQuizAttempts(userId, attempts);
-    } catch (saveErr) {
-      console.warn("[adaptive-quiz/submit] saveQuizAttempts non-fatal error:", saveErr.message);
-    }
+    // Persist mastery before consuming the answer key. A failure releases the
+    // claim in the outer catch so the same client can retry safely.
+    await saveQuizAttempts(userId, attempts);
+    await getMongoDB().collection("adaptiveQuizSessions").updateOne(
+      { _id: String(quizId), userId, status: "processing" },
+      { $set: { status: "completed", completedAt: new Date() }, $unset: { answerKey: "", consumedAt: "" } },
+    );
 
     // Clean up session
     quizSessionStore.delete(quizId);
@@ -487,7 +512,7 @@ router.post("/submit", async (req, res) => {
       delete req.session[quizId];
     }
 
-    const score = answers.length > 0 ? Math.round((correct / answers.length) * 100) : 0;
+    const score = uniqueAnswers.length > 0 ? Math.round((correct / uniqueAnswers.length) * 100) : 0;
 
     // Topic-wise accuracy for frontend chart
     const topicAccuracy = {};
@@ -500,7 +525,7 @@ router.post("/submit", async (req, res) => {
     res.json({
       score,
       correct,
-      total:         answers.length,
+      total:         uniqueAnswers.length,
       results,
       topicAccuracy: Object.entries(topicAccuracy).map(([topic, s]) => ({
         topic,
@@ -511,8 +536,14 @@ router.post("/submit", async (req, res) => {
     });
 
   } catch (err) {
+    if (session?._id) {
+      await getMongoDB().collection("adaptiveQuizSessions").updateOne(
+        { _id: session._id, userId, status: "processing" },
+        { $set: { status: "active" }, $unset: { consumedAt: "" } },
+      ).catch((rollbackError) => console.error("[adaptive-quiz/submit rollback]", rollbackError));
+    }
     console.error("[adaptive-quiz/submit]", err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: "Failed to submit adaptive quiz" });
   }
 });
 
@@ -522,11 +553,15 @@ router.post("/submit", async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 router.get("/preview/:userId", async (req, res) => {
   try {
-    const { userId } = req.params;
+    const userId = String(req.user.id);
     const subjects = req.query.subjects
       ? req.query.subjects.split(",")
       : ["Reasoning", "Mathematics", "English", "General Awareness"];
     const questionCount = parseInt(req.query.count) || 20;
+    const safeQuestionCount = Math.max(1, Math.min(100, questionCount));
+    if (!Array.isArray(subjects) || subjects.length === 0 || subjects.length > 4) {
+      return res.status(400).json({ error: "subjects must contain 1 to 4 entries" });
+    }
 
     const profile = await getUserProfile(userId);
     const config  = await analyzePatternAndConfigure({
@@ -534,7 +569,7 @@ router.get("/preview/:userId", async (req, res) => {
       failureMap:     profile?.failureMap || {},
       masteryMap:     profile?.masteryMap || {},
       subjects,
-      questionCount,
+      questionCount: safeQuestionCount,
     });
 
     res.json({ config });
@@ -547,7 +582,7 @@ router.get("/preview/:userId", async (req, res) => {
 // Returns available topics grouped by subject for the frontend topic picker
 router.get('/topics', async (req, res) => {
   try {
-    const userId = req.query.userId;
+    const userId = String(req.user.id);
 
     // Default shape: subject -> [topicName]
     const subjectsOut = {};

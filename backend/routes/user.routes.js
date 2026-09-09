@@ -230,22 +230,20 @@ router.patch('/me/progress', protect, validateBody(progressPatchSchema), async (
   const { topic, attempted, correct } = req.body;
 
   try {
-    const user = await getUser(req.user.id, req.user.email);
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    const users = getUsersCollection();
+    const updatedUser = await users.findOneAndUpdate(
+      { id: String(req.user.id), type: { $ne: 'email_lock' } },
+      {
+        $inc: {
+          [`progress.${topic}.attempted`]: attempted,
+          [`progress.${topic}.correct`]: correct,
+        },
+      },
+      { returnDocument: 'after', projection: { progress: 1 } },
+    );
+    if (!updatedUser) return res.status(404).json({ error: 'User not found' });
 
-    const progress = user.progress || {};
-    const current  = progress[topic] || { attempted: 0, correct: 0 };
-
-    progress[topic] = {
-      attempted: current.attempted + attempted,
-      correct:   current.correct   + correct,
-    };
-
-    await updateUser(user.id, {
-      progress,
-    });
-
-    res.json({ message: 'Progress updated ✅', progress });
+    res.json({ message: 'Progress updated ✅', progress: updatedUser.progress || {} });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

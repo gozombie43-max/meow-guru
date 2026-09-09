@@ -20,19 +20,6 @@ type QuestionStatus,
 import styles from './MockTestEngine.module.css';
 // import { getExamConfig, getSlotById } from './exam-config';
 
-const FALLBACK_PAPER: MockPaper = {
-  sections: [
-    {
-      id: 's1',
-      title: 'General Awareness',
-      questions: [
-        { id: 'q1', text: 'Sample Question 1?', options: [{ id: 'A', text: 'Opt A' }, { id: 'B', text: 'Opt B' }, { id: 'C', text: 'Opt C' }, { id: 'D', text: 'Opt D' }] },
-        { id: 'q2', text: 'Sample Math $x^2 + y^2 = r^2$?', options: [{ id: 'A', text: 'Opt A' }, { id: 'B', text: 'Opt B' }, { id: 'C', text: 'Opt C' }, { id: 'D', text: 'Opt D' }] },
-      ],
-    },
-  ],
-};
-
 function normalizeOption(option: string | MockOption, index: number): MockOption {
   return typeof option === 'string' ? { id: String(index), text: option } : option;
 }
@@ -58,6 +45,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
   const [globalTimeLeft, setGlobalTimeLeft] = useState<number>(0);
   
   const autosaveTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const saveRevisionRef = useRef(0);
 
   useEffect(() => {
     // Add Google Font for space mono dynamically
@@ -78,11 +66,15 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
         data = await startTest(examSlug, testId, token);
         setAttemptId(data.attemptId);
       }
-      const nextPaper = data.paper ?? FALLBACK_PAPER;
+      const nextPaper = data.paper;
+      if (!nextPaper?.sections?.length) throw new Error('Attempt did not include a valid paper');
       setPaper(nextPaper);
       setGlobalTimeLeft(data.timeLeft ?? (nextPaper.totalDurationMin ?? 60) * 60);
       if (data.answers) setAnswers(data.answers);
       if (data.questionStatuses) setQuestionStatuses(data.questionStatuses);
+      setCurrentSection(data.currentSection ?? 0);
+      setCurrentQuestion(data.currentQuestion ?? 0);
+      saveRevisionRef.current = data.revision ?? 0;
     } catch (e) {
       console.error('Failed to load test', e);
     }
@@ -97,7 +89,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
   useEffect(() => {
     if (!attemptId || !token) return;
     autosaveTimerRef.current = setInterval(() => {
-      autosaveAttempt(attemptId, { answers, questionStatuses, currentSection, currentQuestion }, token)
+      autosaveAttempt(attemptId, { answers, questionStatuses, currentSection, currentQuestion, revision: ++saveRevisionRef.current }, token)
         .catch(console.error);
     }, 20000);
     return () => {
@@ -109,7 +101,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden' && attemptId && token) {
-        autosaveAttempt(attemptId, { answers, questionStatuses, currentSection, currentQuestion }, token).catch(console.error);
+        autosaveAttempt(attemptId, { answers, questionStatuses, currentSection, currentQuestion, revision: ++saveRevisionRef.current }, token).catch(console.error);
       }
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
@@ -132,7 +124,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
     if (isSubmitting || !attemptId || !token) return;
     setIsSubmitting(true);
     try {
-      await autosaveAttempt(attemptId, { answers, questionStatuses, currentSection, currentQuestion }, token);
+      await autosaveAttempt(attemptId, { answers, questionStatuses, currentSection, currentQuestion, revision: ++saveRevisionRef.current }, token);
       await submitAttempt(attemptId, token);
       router.push(`/mock-test/${examSlug}/${testId}/result/${attemptId}`);
     } catch (error) {

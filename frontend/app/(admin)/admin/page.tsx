@@ -4,19 +4,14 @@ import layout from "@/components/admin/AdminLayout.module.css";
 import MassSolutionUpload from "@/components/admin/MassSolutionUpload";
 import RichContent from "@/components/RichContent";
 import { API_BASE } from "@/lib/api-base";
+import { getAccessToken } from "@/lib/axios";
 import { fetchWithRetry } from "@/lib/api/http";
 import { useCallback,useEffect,useRef,useState,type ChangeEvent } from "react";
 import MassImageUpload from "../../../components/admin/MassImageUpload";
 
 const API = API_BASE;
 
-const getAdminSecret = () => {
-  if (typeof window !== "undefined") {
-    const saved = localStorage.getItem("adminSecret");
-    if (saved && saved.trim()) return saved.trim();
-  }
-  return process.env.NEXT_PUBLIC_ADMIN_SECRET || "quizguru_admin_987654";
-};
+const getAdminToken = () => getAccessToken() || "";
 
 type Question = {
   id: string;
@@ -486,12 +481,12 @@ export default function AdminPanel() {
         quizName: muQuiz,
       }));
 
-      const secret = getAdminSecret();
+      const secret = getAdminToken();
       const res = await fetchWithRetry(muApiUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-admin-secret": secret,
+          Authorization: `Bearer ${secret}`,
         },
         body: JSON.stringify(payload),
       });
@@ -565,13 +560,13 @@ export default function AdminPanel() {
     setBulkImageUploading(true);
     setBulkImageNotice("");
     try {
-      const secret = getAdminSecret();
+      const secret = getAdminToken();
       const formData = new FormData();
       bulkImages.forEach((item) => formData.append("images", item.file));
 
       const res = await fetchWithRetry(`${API}/api/upload/bulk-image`, {
         method: "POST",
-        headers: { "x-admin-secret": secret },
+        headers: { Authorization: `Bearer ${secret}` },
         body: formData,
       });
 
@@ -598,14 +593,14 @@ export default function AdminPanel() {
   const handleSolutionImageUpload = async (questionId: string, file: File) => {
     setSolImgUploading(questionId);
     try {
-      const secret = getAdminSecret();
+      const secret = getAdminToken();
       const fd = new FormData();
       fd.append("image", file);
 
       // Step 1: upload image, get back URL
       const uploadRes = await fetchWithRetry(`${API}/api/upload/solution-image`, {
         method: "POST",
-        headers: { "x-admin-secret": secret },
+        headers: { Authorization: `Bearer ${secret}` },
         body: fd,
       });
       if (!uploadRes.ok) throw new Error(`Upload failed ${uploadRes.status}`);
@@ -616,7 +611,7 @@ export default function AdminPanel() {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          "x-admin-secret": secret,
+          Authorization: `Bearer ${secret}`,
         },
         body: JSON.stringify({ solution: `![solution](${url})` }),
       });
@@ -666,7 +661,7 @@ export default function AdminPanel() {
   const handleBulkDelete = async () => {
     setBulkDeleting(true);
     const idsToDelete = Array.from(selected);
-    const secret = getAdminSecret();
+    const secret = getAdminToken();
     let deleted = 0;
     let failed = 0;
 
@@ -676,7 +671,7 @@ export default function AdminPanel() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-admin-secret": secret,
+          Authorization: `Bearer ${secret}`,
         },
         body: JSON.stringify({ ids: idsToDelete }),
       });
@@ -691,7 +686,7 @@ export default function AdminPanel() {
           idsToDelete.map((id) =>
             fetchWithRetry(`${API}/api/questions/${encodeURIComponent(id)}`, {
               method: "DELETE",
-              headers: { "x-admin-secret": secret },
+              headers: { Authorization: `Bearer ${secret}` },
             })
           )
         );
@@ -721,13 +716,13 @@ export default function AdminPanel() {
 
   const handleSave = async () => {
     try {
-      const secret = getAdminSecret();
+      const secret = getAdminToken();
       if (isNew) {
         const res = await fetchWithRetry(`${API}/api/questions`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "x-admin-secret": secret,
+            Authorization: `Bearer ${secret}`,
           },
           body: JSON.stringify(formData),
         });
@@ -745,7 +740,7 @@ export default function AdminPanel() {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            "x-admin-secret": secret,
+            Authorization: `Bearer ${secret}`,
           },
           body: JSON.stringify(formData),
         });
@@ -768,11 +763,11 @@ export default function AdminPanel() {
 
   const handleDelete = async (id: string) => {
     try {
-      const secret = getAdminSecret();
+      const secret = getAdminToken();
       const res = await fetchWithRetry(`${API}/api/questions/${encodeURIComponent(id)}`, {
         method: "DELETE",
         headers: {
-          "x-admin-secret": secret,
+          Authorization: `Bearer ${secret}`,
         },
       });
       if (!res.ok) {

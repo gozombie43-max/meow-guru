@@ -150,27 +150,21 @@ export async function createApp({ isReady, isShuttingDown, quizOnlyMode = proces
   app.use('/api/upload-note-image', uploadLimiter, lazyRouter(() => import('./routes/uploadNoteImage.js')));
   app.use('/api/notes', lazyRouter(() => import('./routes/notes.routes.js')));
   app.use('/api/pdfs', lazyRouter(() => import('./routes/pdfs.js')));
+  app.use('/api/agent', agentLimiter, lazyRouter(() => import('./agents/cognitiveMapperRouter.js')));
+  app.use('/api/adaptive-quiz', agentLimiter, lazyRouter(() => import('./agents/adaptiveQuiz/adaptiveQuizRouter.js')));
+  app.use('/api/admin', lazyRouter(() => import('./routes/adminUsers.routes.js')));
 
   if (!quizOnlyMode) {
     const [
-      { default: cognitiveMapperRouter },
-      { default: adaptiveQuizRouter },
-      { default: adminUsersRoutes },
       { default: notificationRoutes },
       { default: examUpdatesRouter },
       { default: battleRoutes },
     ] = await Promise.all([
-      import('./agents/cognitiveMapperRouter.js'),
-      import('./agents/adaptiveQuiz/adaptiveQuizRouter.js'),
-      import('./routes/adminUsers.routes.js'),
       import('./routes/notifications.routes.js'),
       import('./routes/examUpdates.routes.js'),
       import('./routes/battle.routes.js'),
     ]);
 
-    app.use('/api/agent', agentLimiter, cognitiveMapperRouter);
-    app.use('/api/adaptive-quiz', agentLimiter, adaptiveQuizRouter);
-    app.use('/api/admin', adminUsersRoutes);
     app.use('/api/notifications', notificationRoutes);
     app.use('/api/exam-updates', examUpdatesRouter);
     app.use('/api/battle', battleRoutes);

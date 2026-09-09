@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SYSTEM_PROMPT } from "@/components/geometry/diagramPrompt";
+import { authorizeAiRequest } from "@/lib/server/ai-route-security";
 
 function parseDiagramJson(text: string) {
   const trimmed = text.trim();
@@ -11,10 +12,17 @@ function parseDiagramJson(text: string) {
 }
 
 export async function POST(req: NextRequest) {
-  const { question } = (await req.json()) as { question?: string };
+  const authError = await authorizeAiRequest(req, 20);
+  if (authError) return authError;
 
-  if (!question?.trim()) {
+  const body = await req.json().catch(() => null) as { question?: unknown } | null;
+  const question = typeof body?.question === "string" ? body.question.trim() : "";
+
+  if (!question) {
     return NextResponse.json({ error: "Question text is required" }, { status: 400 });
+  }
+  if (question.length > 4_000) {
+    return NextResponse.json({ error: "Question text is too long" }, { status: 413 });
   }
 
   const endpoint = process.env.AZURE_OPENAI_ENDPOINT;
@@ -44,13 +52,14 @@ export async function POST(req: NextRequest) {
         max_tokens: 1000,
         temperature: 0.2,
       }),
+      signal: AbortSignal.timeout(30_000),
     }
   );
 
   if (!azureRes.ok) {
     return NextResponse.json(
-      { error: "Azure OpenAI error" },
-      { status: azureRes.status }
+      { error: "Diagram generation failed" },
+      { status: 502 }
     );
   }
 

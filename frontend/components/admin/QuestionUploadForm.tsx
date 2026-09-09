@@ -6,6 +6,7 @@ import { QUIZ_TREE, SUBJECT_TOPICS } from "@/lib/quiz-constants";
 import "katex/dist/katex.min.css";
 import { InlineMath, BlockMath } from "react-katex";
 import { API_BASE } from "@/lib/api-base";
+import { getAccessToken } from "@/lib/axios";
 
 const API = API_BASE;
 const fields = ["questionImage", "optionAImage", "optionBImage", "optionCImage", "optionDImage", "solutionImage"] as const;
@@ -40,12 +41,6 @@ function renderMath(text: string) {
 }
 
 export default function QuestionUploadForm({ backLink }: { backLink?: ReactNode }) {
-  const [secret, setSecret] = useState<string>(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("adminSecret") || "";
-    }
-    return "";
-  });
   const [form, setForm] = useState({ subject: "", tier: "", exam: "", chapter: "", concept: "", formula: "", trapType: "", tags: "", difficulty: "medium", question: "", options: ["", "", "", ""], correctIndex: "0", solution: "", quizSubject: "", quizTopic: "", quizName: "" });
   const [images, setImages] = useState<Images>({});
   const [imageUrls, setImageUrls] = useState<Partial<Record<ImageField, string>>>({});
@@ -61,7 +56,8 @@ export default function QuestionUploadForm({ backLink }: { backLink?: ReactNode 
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
-    if (!secret.trim()) return setStatus({ text: "Enter the admin secret key first.", error: true });
+    const adminToken = getAccessToken();
+    if (!adminToken) return setStatus({ text: "Your admin session has expired. Please sign in again.", error: true });
     if (!form.quizSubject || !form.quizTopic || !form.quizName) return setStatus({ text: "Please select a target quiz category.", error: true });
     if (!form.question.trim() && !images.questionImage && !imageUrls.questionImage?.trim()) return setStatus({ text: "Add question text or attach a question image.", error: true });
     if (form.options.some((option, index) => !option.trim() && !images[fields[index + 1] as ImageField] && !imageUrls[fields[index + 1]]?.trim())) return setStatus({ text: "Provide all four options as text or images.", error: true });
@@ -84,10 +80,9 @@ export default function QuestionUploadForm({ backLink }: { backLink?: ReactNode 
       
       Object.entries(images).forEach(([key, file]) => file && body.append(key, file));
       
-      const response = await fetch(`${API}/api/questions`, { method: "POST", headers: { "x-admin-secret": secret.trim() }, body });
+      const response = await fetch(`${API}/api/questions`, { method: "POST", headers: { Authorization: `Bearer ${adminToken}` }, body });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error || `Upload failed (${response.status})`);
-      localStorage.setItem("adminSecret", secret.trim());
       setStatus({ text: `Question created successfully${data.question?.id ? `: #${data.question.id}` : ""}.` });
       setForm((old) => ({ ...old, question: "", options: ["", "", "", ""], solution: "" }));
       setImages({}); setImageUrls({});
@@ -106,26 +101,6 @@ export default function QuestionUploadForm({ backLink }: { backLink?: ReactNode 
       </header>
 
       <form onSubmit={submit} style={{ display: "grid", gap: 16 }}>
-        {/* Admin Secret Section */}
-        <section className={styles.macGroup}>
-          <div className={styles.macGroupHeader}>
-            <h2 className={styles.macGroupTitle}>🔒 Authentication</h2>
-          </div>
-          <div style={{ maxWidth: 360 }}>
-            <label className={styles.fieldLabel}>
-              Admin Secret Key
-              <input 
-                value={secret} 
-                onChange={(e) => setSecret(e.target.value)} 
-                type="password" 
-                autoComplete="off" 
-                placeholder="Enter ADMIN_SECRET" 
-                className={styles.macInput} 
-              />
-            </label>
-          </div>
-        </section>
-        
         {/* Quiz Target Section */}
         <section className={styles.macGroup}>
           <div className={styles.macGroupHeader}>

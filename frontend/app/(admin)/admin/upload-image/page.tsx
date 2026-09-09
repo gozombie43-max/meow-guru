@@ -1,5 +1,6 @@
 "use client";
 import styles from "@/components/admin/AdminTool.module.css";
+import { getAccessToken } from "@/lib/axios";
 import { fetchWithRetry } from "@/lib/api/http";
 import { useEffect,useState } from "react";
 
@@ -60,10 +61,13 @@ export default function UploadImage() {
     formData.append("correctLetter", correct);
     formData.append("optionRegions", JSON.stringify(regions));
 
+    const token = getAccessToken();
+    if (!token) throw new Error("Your admin session has expired");
     const res = await fetchWithRetry(
       "/api/upload-image",
       {
         method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       },
       {
