@@ -6,12 +6,13 @@ import { assertMigrations } from './migrations/runner.js';
 import { claimJob, renewJob, completeJob, failJob } from './infrastructure/durableQueue.js';
 import { deleteObject } from './infrastructure/objectStorage.js';
 import { logger, startRuntimeMetrics } from './infrastructure/logger.js';
+import { startWorkerHealthServer } from './infrastructure/workerHealthServer.js';
 
-let stopping = false, activeChild;
+let stopping = false, ready = false, activeChild, healthServer;
 const stopMetrics = startRuntimeMetrics();
 let lastHeartbeat = 0;
 const workerId = randomUUID();
-function stop() { stopping = true; activeChild?.kill(); }
+function stop() { stopping = true; ready = false; activeChild?.kill(); }
 process.once('SIGTERM', stop);
 process.once('SIGINT', stop);
 function runChild(job) {
@@ -32,9 +33,11 @@ function runChild(job) {
   });
 }
 try {
+  healthServer = await startWorkerHealthServer('attachments', () => ready && !stopping);
   const db = await connectMongoDB();
   await assertMigrations(db);
   const jobs = db.collection('runtimeJobs');
+  ready = true;
   while (!stopping) {
     if (Date.now() - lastHeartbeat > 15000) {
       await db.collection('runtimeHealth').updateOne({ _id: workerId }, { $set: { role: 'attachments', releaseId: process.env.RELEASE_ID || 'local', updatedAt: new Date(), expiresAt: new Date(Date.now() + 180000) } }, { upsert: true });
@@ -66,4 +69,4 @@ try {
     } finally { clearInterval(heartbeat); }
   }
 } catch (err) { logger.error({ err }, 'attachment worker failed'); process.exitCode = 1; }
-finally { stopMetrics(); activeChild?.kill(); await disconnectMongoDB(); }
+finally { ready = false; stopMetrics(); activeChild?.kill(); await disconnectMongoDB(); await healthServer?.close(); }
