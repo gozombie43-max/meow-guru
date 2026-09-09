@@ -106,7 +106,9 @@ jobs:
         id: setup-chrome
         uses: browser-actions/setup-chrome@v1
         with:
-          chrome-version: stable
+          # LHCI 0.15/Lighthouse 12 is trace-compatible with this Chrome major.
+          # Pin it so hosted-runner browser updates cannot silently break FCP collection.
+          chrome-version: 131
       - name: Lighthouse performance budgets
         working-directory: ./frontend
         env:
