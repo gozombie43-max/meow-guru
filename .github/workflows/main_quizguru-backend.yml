@@ -84,16 +84,44 @@ jobs:
         with:
           node-version: '22.x'
 
-      - name: Apply database migrations before release
+      - name: Resolve database configuration
+        shell: bash
         env:
-          MONGODB_URI: ${{ secrets.MONGODB_URI }}
-          MONGODB_DB: ${{ vars.MONGODB_DB || 'quizDB' }}
+          ACTIONS_MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          ACTIONS_MONGODB_DB: ${{ vars.MONGODB_DB }}
+        run: |
+          set -euo pipefail
+          resource_group="$(az webapp list --query "[?name=='quizguru-backend'].resourceGroup | [0]" --output tsv)"
+          if [ -z "$resource_group" ] || [ "$resource_group" = "null" ]; then
+            echo "::error::Azure Web App quizguru-backend was not found in the logged-in subscription"
+            exit 1
+          fi
+
+          mongodb_uri="$ACTIONS_MONGODB_URI"
+          mongodb_db="$ACTIONS_MONGODB_DB"
+          if [ -z "$mongodb_uri" ] || [ "$mongodb_uri" = "null" ]; then
+            mongodb_uri="$(az webapp config appsettings list --name quizguru-backend --resource-group "$resource_group" --query "[?name=='MONGODB_URI'].value | [0]" --output tsv)"
+          fi
+          if [ -z "$mongodb_db" ] || [ "$mongodb_db" = "null" ]; then
+            mongodb_db="$(az webapp config appsettings list --name quizguru-backend --resource-group "$resource_group" --query "[?name=='MONGODB_DB'].value | [0]" --output tsv)"
+          fi
+          if [ -z "$mongodb_db" ] || [ "$mongodb_db" = "null" ]; then
+            mongodb_db="quizDB"
+          fi
+
+          if [ -z "$mongodb_uri" ] || [ "$mongodb_uri" = "null" ]; then
+            echo "::error::MONGODB_URI is missing from both GitHub Actions secrets and Azure Web App settings"
+            exit 1
+          fi
+          echo "::add-mask::$mongodb_uri"
+          echo "MONGODB_URI=$mongodb_uri" >> "$GITHUB_ENV"
+          echo "MONGODB_DB=$mongodb_db" >> "$GITHUB_ENV"
+
+      - name: Apply database migrations before release
         run: npm run db:migrate
 
       - name: Require workers running this release
         env:
-          MONGODB_URI: ${{ secrets.MONGODB_URI }}
-          MONGODB_DB: ${{ vars.MONGODB_DB || 'quizDB' }}
           RELEASE_ID: ${{ github.sha }}
         run: node scripts/check-workers.js
 
