@@ -196,10 +196,21 @@ export function stopAttachmentWorker() {
 }
 
 export async function waitForAttachmentWorkerIdle(timeoutMs = 12_000) {
-  if (!loopPromise && !startPromise) return true;
-  const activeLoop = loopPromise || startPromise;
+  const deadline = Date.now() + timeoutMs;
+
+  if (startPromise) {
+    const startupFinished = await Promise.race([
+      startPromise.then(() => true),
+      new Promise((resolve) => setTimeout(() => resolve(false), timeoutMs)),
+    ]);
+    if (!startupFinished) return false;
+  }
+
+  if (!loopPromise) return true;
+
+  const remainingMs = Math.max(0, deadline - Date.now());
   return Promise.race([
-    activeLoop.then(() => true),
-    new Promise((resolve) => setTimeout(() => resolve(false), timeoutMs)),
+    loopPromise.then(() => true),
+    new Promise((resolve) => setTimeout(() => resolve(false), remainingMs)),
   ]);
 }
