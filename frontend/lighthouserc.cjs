@@ -6,7 +6,19 @@ module.exports = {
       numberOfRuns: 3,
       puppeteerScript: "./scripts/lighthouse-setup.cjs",
       puppeteerLaunchOptions: {
-        args: ['--no-sandbox', '--disable-dev-shm-usage', '--disable-crash-reporter', '--disable-breakpad'],
+        headless: true,
+        args: [
+          '--headless=new',
+          '--no-sandbox',
+          '--disable-gpu',
+          '--disable-dev-shm-usage',
+          '--disable-background-timer-throttling',
+          '--disable-backgrounding-occluded-windows',
+          '--disable-renderer-backgrounding',
+          '--disable-crash-reporter',
+          '--disable-breakpad',
+          '--window-size=1350,940',
+        ],
       },
       settings: {
         preset: 'desktop',
