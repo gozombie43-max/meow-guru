@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, LogOut, Volume2 } from "lucide-react";
 import { SpeakerBtn } from "./SpeakerBtn";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { getAccessToken } from "@/lib/axios";
 
 type StudyModeMeaning = {
   pos?: string;
@@ -104,9 +105,11 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
     }
     setActiveSpeech(word);
     try {
+      const accessToken = getAccessToken();
+      if (!accessToken) throw new Error("Authentication required");
       const res = await fetch("/api/tts", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
         body: JSON.stringify({ 
           text: word.trim(),
           bengaliText: translation ? translation.trim() : undefined
