@@ -83,6 +83,7 @@ describe('Battle Socket - room:invite', () => {
       user: { id: 'host_id', email: 'host@test.com', name: 'HostGuru' },
       join: vi.fn(),
       leave: vi.fn(),
+      use: vi.fn(),
       emit: vi.fn(),
       on: (evt, handler) => {
         socketHandlers[evt] = handler;
@@ -410,6 +411,7 @@ describe('Battle Socket - battle:rematch', () => {
       id: 'socket_rematch_user',
       user: { id: 'user_1', email: 'user1@test.com', name: 'Player One' },
       join: vi.fn(),
+      use: vi.fn(),
       emit: vi.fn(),
       on: (evt, handler) => {
         socketHandlers[evt] = handler;

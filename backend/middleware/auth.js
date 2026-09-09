@@ -1,5 +1,6 @@
 import { verifyToken, isRevoked } from "../auth/jwt.js";
 import { getUsersCollection } from "../config/mongodb.js";
+import { assertSession } from '../auth/sessions.js';
 
 const ADMIN_ROLES = new Set(["admin", "superadmin"]);
 
@@ -11,6 +12,7 @@ const adminAuth = async (req, res, next) => {
 
   try {
     const decoded = verifyToken(authHeader.slice(7));
+    await assertSession(decoded);
     if (decoded.jti && isRevoked(decoded.jti)) {
       return res.status(401).json({ error: "Token has been revoked" });
     }
@@ -28,7 +30,8 @@ const adminAuth = async (req, res, next) => {
 
     req.user = { ...decoded, ...user };
     return next();
-  } catch {
+  } catch (error) {
+    if (!error.statusCode && !['JsonWebTokenError', 'TokenExpiredError', 'NotBeforeError'].includes(error.name)) return next(error);
     return res.status(401).json({ error: "Invalid or expired token" });
   }
 };

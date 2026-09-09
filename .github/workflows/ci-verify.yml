@@ -94,14 +94,20 @@ jobs:
           node-version: "22.x"
           cache: npm
           cache-dependency-path: package-lock.json
-      - name: Install frontend dependencies
-        run: npm ci --workspace frontend --include-workspace-root=false
+      - name: Install application and browser fixture dependencies
+        run: npm ci
       - name: Production Next.js build
         working-directory: ./frontend
         run: npm run build
       - name: Enforce entry JavaScript budgets
         working-directory: ./frontend
         run: npm run check:performance
+      - name: Install browser for assessment regression
+        working-directory: ./frontend
+        run: npm exec playwright install --with-deps chromium
+      - name: Authenticated assessment browser regression
+        working-directory: ./frontend
+        run: npm run test:e2e
       - name: Setup Chrome
         id: setup-chrome
         uses: browser-actions/setup-chrome@v1

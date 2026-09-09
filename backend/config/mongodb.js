@@ -33,7 +33,11 @@ async function openMongoDB() {
     throw new Error("MONGODB_URI is not configured");
   }
 
-  const connectingClient = new MongoClient(uri, { serverSelectionTimeoutMS: 5000, monitorCommands: true });
+  const connectingClient = new MongoClient(uri, {
+    serverSelectionTimeoutMS: 5000, connectTimeoutMS: 10000,
+    maxPoolSize: 30, minPoolSize: 0, maxIdleTimeMS: 60000, waitQueueTimeoutMS: 5000,
+    monitorCommands: true,
+  });
   connectingClient.on('commandSucceeded', event => observeMongo(event));
   connectingClient.on('commandFailed', event => observeMongo(event, true));
   try {

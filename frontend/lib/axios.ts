@@ -46,11 +46,14 @@ export const requestTokenRefresh = async (): Promise<string | null> => {
 
   inFlightRefreshPromise = (async () => {
     try {
-      const { data } = await axios.post(
+      const refresh = () => axios.post(
         `${API_BASE}/auth/refresh`,
         {},
-        { withCredentials: true }
+        { withCredentials: true, timeout: 15_000 }
       );
+      const { data } = typeof navigator !== 'undefined' && navigator.locks
+        ? await navigator.locks.request('meow-session-refresh', refresh)
+        : await refresh();
 
       if (data.token) {
         updateAccessToken(data.token);

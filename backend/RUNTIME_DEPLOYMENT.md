@@ -1,5 +1,7 @@
 **Single App Service deployment**
 
+Live discovery on 2026-09-10 IST found a mismatch with the intended configuration below: the current deployment is F1 Free, Always On is false, `QUIZ_ONLY_MODE=true`, and `RUN_EMBEDDED_WORKERS=false`; migration 004 is not applied. Treat the following B1/full-runtime configuration as the intended baseline, not verified current state. See `../PRODUCTION_RELEASE_EVIDENCE.md` for actual checks and missing staging inputs.
+
 The production default is one Azure Web App running `npm start`. That process owns HTTP, Socket.IO, the maintenance timers, battle relay, and the durable tutor-attachment queue. OCR/PDF work still runs in a bounded child process for each claimed job, so it does not block the API event loop, but it does not require another Web App.
 
 | Process | Command | Purpose |
@@ -56,4 +58,10 @@ Frontend production builds now require `API_URL` or `AZURE_BACKEND_URL`; configu
 
 Local validation recorded on 2026-09-09: backend 36 test files / 255 tests passed; frontend 37 test files / 167 tests passed, followed by the affected authentication/tutor tests after the socket import change. Frontend typecheck, lint, production build (801 pages), and entry bundle budgets passed. A real local Sharp/Tesseract smoke check recognized a generated arithmetic image using the bundled English model. Backend audit passed the high/critical threshold with seven moderate findings remaining; frontend audit reported no vulnerabilities. Workflow YAML parsing and `git diff --check` passed. These checks do not establish staging capacity or production readiness. Docker build, live B2/model calls, production migrations, embedded-worker capacity, external alerts, and the actual Gitleaks workflow execution remain unverified.
 
-Rollback is additive: restore the previous API/reader release, retain indexes and data fields, and preserve old files until the migration is accepted. Do not drop runtime collections or permanent storage objects as an application rollback shortcut.
+Readiness continuation (2026-09-09): migration `004-readiness` is now required before starting the coordinated backend/frontend release. It adds durable authentication sessions, AI lease expiry, indexed user identity lookup, and unique idempotent/confidential attempt constraints. Existing stateless tokens require users to sign in again. Refresh rotation, replay revocation and fresh account-status checks depend on MongoDB; protected requests fail closed when authentication storage is unavailable.
+
+Confidential assessments require new unpublished fixed-paper content, exact section counts and total-time timing. They allow one attempt and no answer review. They are isolated from practice-bank publication; older publicly published content cannot be made confidential retroactively. Independent section timers and proctoring are not provided.
+
+Current local validation supersedes the historical counts above: backend 46 files / 290 tests, frontend 39 files / 174 tests, typecheck, lint (0 errors / 103 warnings), production build (801 pages), bundle budgets, and two authenticated desktop/mobile assessment browser checks passed. Both workspace and standalone backend production audits report zero vulnerabilities. See `../PRODUCTION_READINESS_AUDIT.md` for remaining staging load, integration, alert and restore gates. Set `RELEASE_CHECK_URL` and run `node scripts/verify-release.js` for read-only deployed health checks.
+
+Rollback is security-sensitive: an older API may ignore session revocation or disclose confidential paper data. Do not expose confidential data through an old reader. Prefer a forward fix or maintenance isolation and retain security-compatible readers when reverting unrelated changes. Preserve indexes, data and backups; do not drop runtime collections or permanent storage objects as an application rollback shortcut.

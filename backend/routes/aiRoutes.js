@@ -6,8 +6,22 @@ import multer from "multer";
 import { chatComplete, chatJSON } from "../ai/azureClient.js";
 import adminAuth from "../middleware/auth.js";
 import { protect } from "../middleware/protect.js";
+import { aiLimiter } from '../middleware/rateLimiter.js';
+import { aiAdmission, acquireAiLease, releaseAiLease } from '../middleware/aiAdmission.js';
 
 const router = express.Router();
+router.use(protect);
+// Polling and cancellation are inexpensive and do not consume generation quota.
+router.use((req, res, next) => req.method === 'POST' ? aiLimiter(req, res, next) : next());
+router.post('/quota', async (req, res) => {
+  const lease = await acquireAiLease(req.user.id);
+  res.json({ ok: true, leaseId: lease.leaseId });
+});
+router.delete('/quota/:leaseId', async (req, res) => {
+  await releaseAiLease(req.user.id, req.params.leaseId);
+  res.json({ ok: true });
+});
+router.use((req, res, next) => req.method === 'POST' ? aiAdmission(req, res, next) : next());
 
 const tutorUpload = multer({
   storage: multer.memoryStorage(),
@@ -69,7 +83,7 @@ Return a JSON array like this:
     const questions = await chatJSON(userPrompt, "o4-mini", systemPrompt);
     res.json({ success: true, questions });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    res.status(err.statusCode || 502).json({ success: false, error: 'AI request failed. Please retry shortly.' });
   }
 });
 
@@ -90,7 +104,7 @@ Give a clear step-by-step explanation. Keep it concise.`;
     const explanation = await chatComplete(userPrompt, "o4-mini");
     res.json({ success: true, explanation });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    res.status(err.statusCode || 502).json({ success: false, error: 'AI request failed. Please retry shortly.' });
   }
 });
 
@@ -141,7 +155,7 @@ Return JSON:
     const tags = await chatJSON(userPrompt, "o4-mini", systemPrompt);
     res.json({ success: true, tags });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    res.status(err.statusCode || 502).json({ success: false, error: 'AI request failed. Please retry shortly.' });
   }
 });
 

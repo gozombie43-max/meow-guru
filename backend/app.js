@@ -16,7 +16,6 @@ import { errorHandler } from './middleware/errorHandler.js';
 import {
   globalLimiter,
   authLimiter,
-  aiLimiter,
   agentLimiter,
   uploadLimiter,
 } from './middleware/rateLimiter.js';
@@ -119,6 +118,7 @@ export async function createApp({ isReady, isShuttingDown, quizOnlyMode = proces
       ok: healthy,
       state: isShuttingDown() ? 'draining' : healthy ? 'ready' : 'starting',
       service: 'backend',
+      releaseId: process.env.RELEASE_ID || 'local',
       mode: quizOnlyMode ? 'quiz-only' : 'full',
       uptimeSeconds: Math.round(process.uptime()),
       timestamp: new Date().toISOString(),
@@ -146,7 +146,7 @@ export async function createApp({ isReady, isShuttingDown, quizOnlyMode = proces
 
   // Keep user-invoked study tools on F1, but lazy-load them so they consume no
   // route/module startup cost until the user actually opens Tutor or Notes/PDF.
-  app.use('/api/ai', aiLimiter, lazyRouter(() => import('./routes/aiRoutes.js')));
+  app.use('/api/ai', lazyRouter(() => import('./routes/aiRoutes.js')));
   app.use('/api/upload-note-image', uploadLimiter, lazyRouter(() => import('./routes/uploadNoteImage.js')));
   app.use('/api/notes', lazyRouter(() => import('./routes/notes.routes.js')));
   app.use('/api/pdfs', lazyRouter(() => import('./routes/pdfs.js')));

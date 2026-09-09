@@ -1,3 +1,4 @@
+vi.mock('../../auth/sessions.js', () => ({ assertSession: async decoded => decoded }));
 import { describe, it, expect, vi, beforeAll, afterAll, beforeEach } from "vitest";
 import express from "express";
 import { signToken } from "../../auth/jwt.js";

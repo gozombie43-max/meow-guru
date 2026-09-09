@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { authorizeAiRequest } from "@/lib/server/ai-route-security";
+import { authorizeAiRequest, releaseAiRequest } from "@/lib/server/ai-route-security";
 
 const SUPPORTED_LANGUAGES = new Set(["hi", "bn"]);
 
-export async function POST(req: NextRequest) {
+async function handlePost(req: NextRequest) {
   const authError = await authorizeAiRequest(req, 40);
   if (authError) return authError;
 
@@ -50,4 +50,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Translation failed" }, { status: 502 });
   }
   return NextResponse.json(await response.json());
+}
+
+export async function POST(req: NextRequest) {
+  try { return await handlePost(req); }
+  catch { return NextResponse.json({ error: 'AI service unavailable. Please retry.' }, { status: 502 }); }
+  finally { await releaseAiRequest(req); }
 }

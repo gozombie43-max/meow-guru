@@ -42,6 +42,7 @@ export interface MockPaper {
 }
 
 export interface MockAttempt {
+  assessmentMode?: 'practice' | 'confidential';
   id?: string;
   attemptId?: string;
   paper?: MockPaper;
@@ -61,6 +62,7 @@ export interface AttemptProgress {
   currentSection: number;
   currentQuestion: number;
   revision: number;
+  baseRevision?: number;
 }
 
 async function readJson<T>(response: Response): Promise<T> {
@@ -152,12 +154,12 @@ export async function adminSeedSlots(adminToken: string) {
 
 // ─── Test Attempt Endpoints ───────────────────────────────
 
-export async function startTest(examSlug: string, testId: string, token: string): Promise<MockAttempt & { attemptId: string }> {
+export async function startTest(examSlug: string, testId: string, token: string, startKey?: string): Promise<MockAttempt & { attemptId: string }> {
   const res = await fetch(`${BASE}/api/mocktest/${examSlug}/${testId}/start`, {
     method: 'POST',
-    headers: getHeaders(token),
+    headers: { ...getHeaders(token), ...(startKey ? { 'Idempotency-Key': startKey } : {}) },
   });
-  if (!res.ok) throw new Error('Failed to start test');
+  if (!res.ok) throw new Error(await readError(res, 'Failed to start test'));
   return readJson<MockAttempt & { attemptId: string }>(res);
 }
 
@@ -167,7 +169,13 @@ export async function autosaveAttempt(attemptId: string, data: AttemptProgress, 
     headers: getHeaders(token),
     body: JSON.stringify(data),
   });
-  if (!res.ok) throw new Error('Failed to autosave');
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw Object.assign(new Error(body.error || 'Failed to autosave'), {
+      submissionAllowed: res.status === 409 && (body.expired === true || body.code === 'ATTEMPT_NOT_IN_PROGRESS'),
+      conflict: body.code === 'REVISION_CONFLICT',
+    });
+  }
   return res.json();
 }
 

@@ -1,8 +1,9 @@
 // backend/middleware/protect.js
 import { verifyToken } from '../auth/jwt.js';
 import { isRevoked } from '../auth/jwt.js';
+import { assertSession } from '../auth/sessions.js';
 
-export const protect = (req, res, next) => {
+export const protect = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -16,9 +17,10 @@ export const protect = (req, res, next) => {
     if (decoded.jti && isRevoked(decoded.jti)) {
       return res.status(401).json({ error: 'Token has been revoked' });
     }
-    req.user = decoded; // { id, email, name }
+    req.user = await assertSession(decoded);
     next();
   } catch (err) {
+    if (!err.statusCode && !['JsonWebTokenError', 'TokenExpiredError', 'NotBeforeError'].includes(err.name)) return next(err);
     return res.status(401).json({ error: 'Invalid or expired token' });
   }
 };

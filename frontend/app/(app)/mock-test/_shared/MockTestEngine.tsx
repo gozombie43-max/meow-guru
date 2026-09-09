@@ -4,7 +4,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import Image from 'next/image';
 import { useRouter,useSearchParams } from 'next/navigation';
-import { useCallback,useEffect,useRef,useState } from 'react';
+import { useCallback,useEffect,useEffectEvent,useRef,useState } from 'react';
 import {
 autosaveAttempt,
 getAttempt,
@@ -16,6 +16,7 @@ type MockPaper,
 type MockQuestion,
 type MockSection,
 type QuestionStatus,
+type AttemptProgress,
 } from './api';
 import styles from './MockTestEngine.module.css';
 // import { getExamConfig, getSlotById } from './exam-config';
@@ -46,6 +47,15 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
   
   const autosaveTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const saveRevisionRef = useRef(0);
+  const deadlineRef = useRef(0);
+  const saveChainRef = useRef<Promise<unknown>>(Promise.resolve());
+  const conflictRef = useRef(false);
+  const autoSubmitAttemptedRef = useRef(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [saveStatus, setSaveStatus] = useState('');
+  const [hasConflict, setHasConflict] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [confidential, setConfidential] = useState(false);
 
   useEffect(() => {
     // Add Google Font for space mono dynamically
@@ -59,54 +69,93 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
   const loadData = useCallback(async () => {
     if (!token) return;
     try {
+      setLoadError(null);
       let data;
       if (resumeAttemptId) {
         data = await getAttempt(resumeAttemptId, token);
       } else {
-        data = await startTest(examSlug, testId, token);
+        const storageKey = `mock-start:${examSlug}:${testId}`;
+        let startKey = sessionStorage.getItem(storageKey);
+        if (!startKey) { startKey = crypto.randomUUID(); sessionStorage.setItem(storageKey, startKey); }
+        data = await startTest(examSlug, testId, token, startKey);
         setAttemptId(data.attemptId);
       }
+      if (data.status === 'completed') {
+        sessionStorage.removeItem(`mock-start:${examSlug}:${testId}`);
+        router.push(`/mock-test/${examSlug}/${testId}/result/${data.id || data.attemptId}`);
+        return;
+      }
       const nextPaper = data.paper;
+      setConfidential(data.assessmentMode === 'confidential');
       if (!nextPaper?.sections?.length) throw new Error('Attempt did not include a valid paper');
       setPaper(nextPaper);
-      setGlobalTimeLeft(data.timeLeft ?? (nextPaper.totalDurationMin ?? 60) * 60);
+      const remaining = data.timeLeft ?? (nextPaper.totalDurationMin ?? 60) * 60;
+      deadlineRef.current = Date.now() + remaining * 1000;
+      setGlobalTimeLeft(remaining);
       if (data.answers) setAnswers(data.answers);
       if (data.questionStatuses) setQuestionStatuses(data.questionStatuses);
       setCurrentSection(data.currentSection ?? 0);
       setCurrentQuestion(data.currentQuestion ?? 0);
       saveRevisionRef.current = data.revision ?? 0;
+      conflictRef.current = false;
+      setHasConflict(false);
+      autoSubmitAttemptedRef.current = false;
     } catch (e) {
       console.error('Failed to load test', e);
+      setLoadError(e instanceof Error ? e.message : 'Failed to load test');
     }
   }, [examSlug, testId, token, resumeAttemptId]);
+
+  const saveProgress = useCallback((progress: Omit<AttemptProgress, 'revision'>) => {
+    const save = saveChainRef.current.catch(() => {}).then(async () => {
+      if (conflictRef.current) throw new Error('Reload this attempt to resolve the save conflict.');
+      const baseRevision = saveRevisionRef.current;
+      setSaveStatus('Saving…');
+      try {
+        const result = await autosaveAttempt(attemptId, { ...progress, baseRevision, revision: baseRevision + 1 }, token!);
+        saveRevisionRef.current = result.revision ?? baseRevision + 1;
+        setSaveStatus('Progress saved');
+      } catch (error) {
+        if (error instanceof Error && 'conflict' in error && error.conflict) { conflictRef.current = true; setHasConflict(true); }
+        setSaveStatus(error instanceof Error ? error.message : 'Progress could not be saved.');
+        throw error;
+      }
+    });
+    saveChainRef.current = save;
+    return save;
+  }, [attemptId, token]);
 
   useEffect(() => {
     // Fetching the attempt is the external synchronization boundary for this screen.
     void loadData();
   }, [loadData]);
 
-  // Autosave setup
+  const saveLatestProgress = useEffectEvent(() => {
+    if (!attemptId || !token || isSubmitting) return;
+    void saveProgress({ answers, questionStatuses, currentSection, currentQuestion }).catch(console.error);
+  });
+
+  // Keep a stable interval while reading the latest committed answers.
   useEffect(() => {
     if (!attemptId || !token) return;
     autosaveTimerRef.current = setInterval(() => {
-      autosaveAttempt(attemptId, { answers, questionStatuses, currentSection, currentQuestion, revision: ++saveRevisionRef.current }, token)
-        .catch(console.error);
+      saveLatestProgress();
     }, 20000);
     return () => {
       if (autosaveTimerRef.current) clearInterval(autosaveTimerRef.current);
     };
-  }, [attemptId, answers, questionStatuses, currentSection, currentQuestion, token]);
+  }, [attemptId, token]);
 
   // visibilitychange
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden' && attemptId && token) {
-        autosaveAttempt(attemptId, { answers, questionStatuses, currentSection, currentQuestion, revision: ++saveRevisionRef.current }, token).catch(console.error);
+      if (document.visibilityState === 'hidden') {
+        saveLatestProgress();
       }
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [attemptId, answers, questionStatuses, currentSection, currentQuestion, token]);
+  }, []);
 
   // beforeunload
   useEffect(() => {
@@ -123,13 +172,21 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
   const handleFinalSubmit = useCallback(async () => {
     if (isSubmitting || !attemptId || !token) return;
     setIsSubmitting(true);
+    setSubmitError(null);
     try {
-      await autosaveAttempt(attemptId, { answers, questionStatuses, currentSection, currentQuestion, revision: ++saveRevisionRef.current }, token);
+      try {
+        await saveProgress({ answers, questionStatuses, currentSection, currentQuestion });
+      } catch (error) {
+        // Expired attempts must still submit their last server-saved answers.
+        // A retry after a lost submit response must also reach the idempotent endpoint.
+        if (!(error instanceof Error && 'submissionAllowed' in error && error.submissionAllowed)) throw error;
+      }
       await submitAttempt(attemptId, token);
+      sessionStorage.removeItem(`mock-start:${examSlug}:${testId}`);
       router.push(`/mock-test/${examSlug}/${testId}/result/${attemptId}`);
     } catch (error) {
       console.error(error);
-      alert('Failed to submit. Please try again.');
+      setSubmitError('Submission failed. Your saved progress is retained. Please retry.');
       setIsSubmitting(false);
     }
   }, [
@@ -143,18 +200,20 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
     router,
     testId,
     token,
+    saveProgress,
   ]);
 
   useEffect(() => {
     if (!paper) return;
     const timer = window.setInterval(() => {
-      setGlobalTimeLeft((previous) => Math.max(0, previous - 1));
+      setGlobalTimeLeft(Math.max(0, Math.ceil((deadlineRef.current - Date.now()) / 1000)));
     }, 1000);
     return () => window.clearInterval(timer);
   }, [paper]);
 
   useEffect(() => {
-    if (!paper || globalTimeLeft > 0 || isSubmitting || showSubmitModal) return;
+    if (!paper || globalTimeLeft > 0 || isSubmitting || autoSubmitAttemptedRef.current) return;
+    autoSubmitAttemptedRef.current = true;
     // The exam timer reaching zero is an external event that must submit immediately.
     void handleFinalSubmit();
   }, [globalTimeLeft, handleFinalSubmit, isSubmitting, paper, showSubmitModal]);
@@ -252,6 +311,8 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
     }
   };
 
+  if (loadError) return <div className={styles.container}><p role="alert">{loadError}</p><button onClick={() => void loadData()}>Retry loading test</button></div>;
+
   if (!paper) return <div className={styles.container} style={{justifyContent: 'center', alignItems: 'center'}}>Loading...</div>;
 
   const currentSec = paper.sections[currentSection];
@@ -270,6 +331,9 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
 
   return (
     <div className={`${styles.container} theme-light`}>
+      {confidential && <div role="note" style={{ padding: '8px 16px', fontSize: 12 }}>Confidential assessment · One attempt · Total exam time applies · No answer review</div>}
+      {saveStatus && <div role="status">{saveStatus}{hasConflict && <button onClick={() => window.location.reload()}>Reload saved attempt</button>}</div>}
+      {submitError && <div role="alert">{submitError}<button disabled={isSubmitting} onClick={() => void handleFinalSubmit()}>Retry submission</button></div>}
       {/* Top Bar */}
       {isDesktop ? (
         <div className={styles.topBar}>

@@ -1,3 +1,4 @@
+import { createSession } from '../../auth/sessions.js';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { MongoMemoryReplSet } from "mongodb-memory-server";
 import { createServer } from "node:http";
@@ -208,6 +209,9 @@ describe("Battle Phase-15 replica-set races", () => {
   });
 
   it("delivers a user-room event across two Socket.IO instances", async () => {
+    await mongo.getUsersCollection().insertMany([{ id: 'user-a' }, { id: 'user-b' }]);
+    const tokenA = (await createSession({ id: 'user-a' })).token;
+    const tokenB = (await createSession({ id: 'user-b' })).token;
     const serverA = createServer();
     const serverB = createServer();
     const ioA = battleSocket.initBattleSocket(serverA);
@@ -217,10 +221,10 @@ describe("Battle Phase-15 replica-set races", () => {
       new Promise((resolve) => serverB.listen(0, "127.0.0.1", resolve)),
     ]);
     const clientA = createSocketClient(`http://127.0.0.1:${serverA.address().port}`, {
-      transports: ["websocket"], auth: { token: auth.signToken({ id: "user-a" }) },
+      transports: ["websocket"], auth: { token: tokenA },
     });
     const clientB = createSocketClient(`http://127.0.0.1:${serverB.address().port}`, {
-      transports: ["websocket"], auth: { token: auth.signToken({ id: "user-b" }) },
+      transports: ["websocket"], auth: { token: tokenB },
     });
     try {
       await Promise.all([

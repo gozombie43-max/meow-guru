@@ -51,7 +51,7 @@ export function useQuizSession(params: {
         )
           return null;
         if (pageIndex === 0) return url;
-        return `${url}&cursor=${encodeURIComponent(previousPage!.nextCursor!)}`;
+        return `${url}&cursor=${encodeURIComponent(previousPage!.nextCursor!)}&includeTotal=false`;
       },
       fetcher,
       {

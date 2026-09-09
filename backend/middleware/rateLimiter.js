@@ -86,20 +86,12 @@ function requestIpKey(req) {
 
 
 /**
- * Helper to detect local development traffic that must never be rate limited.
+ * Local development can bypass limits; production always enforces them.
  */
-const isDevOrLocal = (req) => {
-  if (process.env.NODE_ENV !== 'production') {
-    return true;
-  }
-  const ip = String(req.ip || req.socket?.remoteAddress || '');
-  return (
-    ip === '127.0.0.1' ||
-    ip === '::1' ||
-    ip.endsWith('127.0.0.1') ||
-    ip === 'localhost' ||
-    ip === '::ffff:127.0.0.1'
-  );
+const isDevOrLocal = () => {
+  // Production traffic can arrive through a local reverse proxy. Loopback is
+  // not an authorization signal and must never disable abuse protection.
+  return process.env.NODE_ENV !== 'production';
 };
 
 /**
@@ -132,7 +124,7 @@ export const globalLimiter =
       userKeyGenerator,
 
     skip: (req) => {
-      // Always skip for non-production or local loopback
+      // Skip only outside production.
       if (isDevOrLocal(req)) return true;
 
       // Skip HTTP OPTIONS preflight requests

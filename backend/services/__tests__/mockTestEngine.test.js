@@ -202,7 +202,7 @@ describe('uploadFullPaper', () => {
 
     expect(mockSlotFindOne).toHaveBeenCalledWith(
       { id: 'cgl-mock-15', examSlug: 'ssc-cgl' },
-      { projection: { _id: 1, createdAt: 1 } }
+      { projection: { _id: 1, createdAt: 1, assessmentMode: 1 } }
     );
 
     expect(mockSlotUpdateOne).toHaveBeenCalledWith(

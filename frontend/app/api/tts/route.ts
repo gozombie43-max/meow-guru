@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { authorizeAiRequest } from "@/lib/server/ai-route-security";
+import { authorizeAiRequest, releaseAiRequest } from "@/lib/server/ai-route-security";
 
 const VOICES = new Set(["en-IN-NeerjaNeural", "en-IN-PrabhatNeural"]);
 const escapeXml = (value: string) =>
   value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-export async function POST(req: NextRequest) {
+async function handlePost(req: NextRequest) {
   const authError = await authorizeAiRequest(req, 30);
   if (authError) return authError;
 
@@ -77,4 +77,10 @@ export async function POST(req: NextRequest) {
       "Cache-Control": "private, max-age=300",
     },
   });
+}
+
+export async function POST(req: NextRequest) {
+  try { return await handlePost(req); }
+  catch { return NextResponse.json({ error: 'AI service unavailable. Please retry.' }, { status: 502 }); }
+  finally { await releaseAiRequest(req); }
 }

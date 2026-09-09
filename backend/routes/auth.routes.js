@@ -7,10 +7,11 @@ import { v4 as uuid } from 'uuid';
 import passport from '../auth/passport.js';
 
 import {
-  signToken,
-  signRefreshToken,
+  verifyToken,
   verifyRefreshToken,
 } from '../auth/jwt.js';
+
+import { createSession, rotateSession, revokeSession } from '../auth/sessions.js';
 
 import { validateBody } from '../middleware/validation.js';
 import {
@@ -214,11 +215,7 @@ router.post(
         role: user.role,
       };
 
-      const token =
-        signToken(payload);
-
-      const refreshToken =
-        signRefreshToken(payload);
+      const { token, refreshToken } = await createSession(payload);
 
       applyRefreshToken(
         res,
@@ -250,7 +247,7 @@ router.post(
       return res
         .status(500)
         .json({
-          error: err.message,
+          error: 'Registration failed',
         });
 
     } finally {
@@ -290,7 +287,7 @@ router.post(
         session: false,
       },
 
-      (
+      async (
         err,
         user,
         info
@@ -318,13 +315,9 @@ router.post(
             'student',
         };
 
-        const token =
-          signToken(payload);
-
-        const refreshToken =
-          signRefreshToken(
-            payload
-          );
+        let token, refreshToken;
+        try { ({ token, refreshToken } = await createSession(payload)); }
+        catch (error) { return next(error); }
 
         applyRefreshToken(
           res,
@@ -372,38 +365,7 @@ router.post(
     }
 
     try {
-      const decoded =
-        verifyRefreshToken(
-          token
-        );
-
-      /*
-       * Fetch fresh user data from database to pick up any role changes.
-       */
-      const users = getUsersCollection();
-      const existingUser = await users.findOne(
-        { id: decoded.id, type: { $ne: 'email_lock' } },
-        { projection: { role: 1, name: 1, email: 1, status: 1 } }
-      );
-      if (!existingUser || ['suspended', 'banned'].includes(existingUser.status)) {
-        res.clearCookie('refreshToken', cookieOptions);
-        return res.status(403).json({ error: 'Account is no longer active' });
-      }
-
-      const payload = {
-        id: decoded.id,
-        email: existingUser.email,
-        name: existingUser.name,
-        role: existingUser.role || 'student',
-      };
-
-      const newToken =
-        signToken(payload);
-
-      const newRefreshToken =
-        signRefreshToken(
-          payload
-        );
+      const { token: newToken, refreshToken: newRefreshToken } = await rotateSession(token);
 
       applyRefreshToken(
         res,
@@ -414,7 +376,10 @@ router.post(
         token: newToken,
       });
 
-    } catch {
+    } catch (error) {
+      if (!error.statusCode && !['JsonWebTokenError', 'TokenExpiredError', 'NotBeforeError'].includes(error.name)) {
+        return res.status(503).json({ error: 'Authentication service unavailable' });
+      }
       res.clearCookie(
         'refreshToken',
         cookieOptions
@@ -435,7 +400,14 @@ router.post(
 
 router.post(
   '/logout',
-  (req, res) => {
+  async (req, res, next) => {
+    try {
+      const raw = getRefreshTokenFromRequest(req);
+      let decoded;
+      try { decoded = raw ? verifyRefreshToken(raw) : verifyToken(req.headers.authorization?.slice(7)); } catch {}
+      if (!decoded) { try { decoded = verifyToken(req.headers.authorization?.slice(7)); } catch {} }
+      await revokeSession(decoded);
+    } catch (error) { return next(error); }
     res.clearCookie(
       'refreshToken',
       cookieOptions
@@ -482,9 +454,8 @@ router.get(
     }
   ),
 
-  (req, res) => {
-    const refreshToken =
-      signRefreshToken({
+  async (req, res) => {
+    const { refreshToken } = await createSession({
         id: req.user.id,
         email: req.user.email,
         name: req.user.name,

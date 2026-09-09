@@ -1,4 +1,6 @@
 import { normalizedQuestionKeys } from "./questions/questionNormalizer.js";
+import { mockAnswerIndex } from './mockAnswer.js';
+import { validateQuestions, validateConfidentialUpload, invalidPaper } from './assessmentPolicy.js';
 import { getExamConfig, getSlotById as getStaticSlotById, getSlotsForExam as getStaticSlotsForExam, MOCK_TEST_SLOTS } from '../config/exam-config.js';
 import {
   getQuestionsCollection,
@@ -43,7 +45,7 @@ function cleanMongoDoc(doc) {
   return clean;
 }
 
-function summarizeSlot(slot) {
+export function summarizeSlot(slot) {
   const clean = cleanMongoDoc(slot);
   const {
     fixedQuestions,
@@ -382,6 +384,7 @@ export async function seedDefaultSlots() {
 export async function createMockSlot(
   slotData
 ) {
+  if (slotData.assessmentMode === 'confidential') throw invalidPaper('Upload a fixed paper to create a confidential assessment');
   if (
     !slotData.id ||
     !slotData.examSlug ||
@@ -440,6 +443,9 @@ export async function updateMockSlot(
   slotId,
   updates
 ) {
+  if (updates?.assessmentMode !== undefined || updates?.fixedQuestions !== undefined || updates?.questions !== undefined) {
+    throw invalidPaper('Use paper upload to change assessment mode or questions');
+  }
   const existing =
     await fetchSlotById(
       examSlug,
@@ -547,18 +553,22 @@ export async function uploadFullPaper({ slotData, questions }) {
         projection: {
           _id: 1,
           createdAt: 1,
+          assessmentMode: 1,
         },
       }
     );
 
   const isNewSlot =
     !existingSlot;
+  if (existingSlot?.assessmentMode === 'confidential' && slotData.assessmentMode !== 'confidential') {
+    throw invalidPaper('A confidential paper cannot be republished into the public practice bank');
+  }
 
   // Normalize questions
   const normalizedQuestions = questions.map((q, idx) => {
     const qId = q.id ? String(q.id).trim() : `${slotData.id}_q${idx + 1}`;
     const options = Array.isArray(q.options) ? q.options : (q.options ? Object.values(q.options) : []);
-    const correctAnswer = q.correctAnswer ?? q.answer ?? q.correctOption ?? 0;
+    const correctAnswer = q.correctAnswer ?? q.answer ?? q.correctOption;
 
     return {
       id: qId,
@@ -580,6 +590,12 @@ export async function uploadFullPaper({ slotData, questions }) {
     };
   });
 
+  validateQuestions(normalizedQuestions);
+  validateConfidentialUpload(slotData, normalizedQuestions);
+  if (slotData.assessmentMode === 'confidential') {
+    const publicCopy = await questionsCollection.findOne({ id: { $in: normalizedQuestions.map(question => question.id) } }, { projection: { id: 1 } });
+    if (publicCopy) throw invalidPaper('These question IDs already exist in the public practice bank. Use an unpublished paper.');
+  }
   const now =
     new Date().toISOString();
 
@@ -597,6 +613,8 @@ export async function uploadFullPaper({ slotData, questions }) {
     order: Number(slotData.order) || 1,
     questionCount: normalizedQuestions.length,
     fixedQuestions: normalizedQuestions,
+    assessmentMode: slotData.assessmentMode === 'confidential' ? 'confidential' : 'practice',
+    timingPolicy: slotData.timingPolicy || 'composite',
     createdAt:
       existingSlot?.createdAt ||
       now,
@@ -619,7 +637,7 @@ export async function uploadFullPaper({ slotData, questions }) {
 
   // 2. Also optionally batch upsert questions into question bank
   let insertedToBank = 0;
-  for (const q of normalizedQuestions) {
+  for (const q of slotDoc.assessmentMode === 'confidential' ? [] : normalizedQuestions) {
     try {
       await questionsCollection.updateOne(
         {
@@ -669,21 +687,22 @@ export async function buildPaper({ examSlug, testId }) {
   // Case A: Slot has a fixed paper (e.g. uploaded official PYQ or curated mock)
   if (slot.fixedQuestions && Array.isArray(slot.fixedQuestions) && slot.fixedQuestions.length > 0) {
     const allFixed = slot.fixedQuestions;
+    const assigned = new Map(config.sections.map(section => [section.key, []]));
+    const unassigned = [];
+    for (const question of allFixed) {
+      const section = config.sections.find(section => question.sectionKey
+        ? String(question.sectionKey).toLowerCase() === section.key.toLowerCase()
+        : String(question.subject || '').toLowerCase() === section.label.toLowerCase()
+          || section.topics.some(topic => topic.toLowerCase() === String(question.topic || '').toLowerCase()));
+      if (section) assigned.get(section.key).push(question);
+      else unassigned.push(question);
+    }
 
     for (const section of config.sections) {
-      // Find questions explicitly tagged with sectionKey or matching section topics/subject
-      let sectionQuestions = allFixed.filter(q => {
-        if (q.sectionKey && q.sectionKey.toLowerCase() === section.key.toLowerCase()) return true;
-        if (q.subject && q.subject.toLowerCase() === section.label.toLowerCase()) return true;
-        if (q.topic && section.topics.some(t => t.toLowerCase() === q.topic.toLowerCase())) return true;
-        return false;
-      });
-
-      // If no tag matching, take slice based on section questionCount
-      if (sectionQuestions.length === 0) {
-        const offset = sections.reduce((sum, s) => sum + s.questions.length, 0);
-        sectionQuestions = allFixed.slice(offset, offset + section.questionCount);
-      }
+      // Tagged questions belong to exactly one section. Positional fallback may
+      // consume only untagged questions, never reuse another section's questions.
+      const sectionQuestions = assigned.get(section.key);
+      if (sectionQuestions.length === 0) sectionQuestions.push(...unassigned.splice(0, section.questionCount));
 
       for (const q of sectionQuestions) {
         answerKey[q.id] = q.correctAnswer ?? q.answer ?? null;
@@ -692,7 +711,7 @@ export async function buildPaper({ examSlug, testId }) {
       sections.push({
         key: section.key,
         label: section.label,
-        questionCount: sectionQuestions.length || section.questionCount,
+        questionCount: sectionQuestions.length,
         timeLimitMin: section.timeLimitMin,
         marking: section.marking,
         questions: sectionQuestions.map(stripAnswer),
@@ -782,7 +801,7 @@ export async function buildPaper({ examSlug, testId }) {
 
     if (selected.length < section.questionCount) {
       const selectedIds = new Set(selected.map(q => q.id));
-      const remaining = [...allQuestions, ...rest].filter(q => !selectedIds.has(q.id));
+      const remaining = allQuestions.filter(q => !selectedIds.has(q.id));
       selected.push(...shuffleArray(remaining).slice(0, section.questionCount - selected.length));
     }
 
@@ -838,7 +857,9 @@ export function gradeAttempt({ attemptDoc }) {
 
       if (userAnswer === undefined || userAnswer === null || userAnswer === '') {
         skipped++;
-      } else if (String(userAnswer) === String(correctAnswer)) {
+      } else if (Array.isArray(q.options) && q.options.length > 0
+        ? mockAnswerIndex(correctAnswer, q.options) !== null && mockAnswerIndex(userAnswer, q.options, true) === mockAnswerIndex(correctAnswer, q.options)
+        : correctAnswer != null && String(userAnswer) === String(correctAnswer)) {
         correct++;
       } else {
         incorrect++;

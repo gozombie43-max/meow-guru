@@ -51,6 +51,7 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
     if (!token) return;
     getAttempt(attemptId, token)
       .then((res) => {
+        if (res.assessmentMode === 'confidential') { setError('Answer review is disabled for this confidential assessment.'); setLoading(false); return; }
         setAttempt(res);
         setLoading(false);
       })

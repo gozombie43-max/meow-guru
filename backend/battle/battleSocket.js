@@ -1,3 +1,4 @@
+import { assertSession } from '../auth/sessions.js';
 import { registerBattleRelay } from "../infrastructure/battleOutbox.js";
 import { finishBattle } from "./battleCompletion.js";
 export { finishBattle, sendBattleResultNotifications } from "./battleCompletion.js";
@@ -92,11 +93,11 @@ export function initBattleSocket(httpServer, corsOrigin) {
   setNotificationRealtimeServer(io);
 
   // ── Socket authentication ─────────────────────────────
-  io.use((socket, next) => {
+  io.use(async (socket, next) => {
     const token = socket.handshake.auth?.token;
     if (!token) return next(new Error('Authentication required'));
     try {
-      socket.user = verifyToken(token);
+      socket.user = await assertSession(verifyToken(token));
       next();
     } catch {
       next(new Error('Invalid or expired token'));
@@ -104,10 +105,20 @@ export function initBattleSocket(httpServer, corsOrigin) {
   });
 
   io.on('connection', (socket) => {
+    socket.use(async (_packet, next) => {
+      try {
+        socket.user = await assertSession(verifyToken(socket.handshake.auth.token));
+        next();
+      } catch {
+        next(new Error('Session expired'));
+        socket.disconnect(true);
+      }
+    });
     console.log(`Socket connected: ${socket.id} (user: ${socket.user?.email || socket.user?.id})`);
 
     const userRoom = `user:${String(socket.user.id)}`;
     socket.join(userRoom);
+    if (socket.user.sid) socket.join(`session:${socket.user.sid}`);
 
     let lastRoomCreateTime = 0;
     let lastInviteTime = 0;

@@ -44,7 +44,7 @@ export async function fetchImageQuestions(
   const collection = getQuestionsCollection();
 
   const parsedLimit = Number.isFinite(Number(limit))
-    ? Math.max(1, parseInt(limit, 10))
+    ? Math.min(100, Math.max(1, Math.floor(Number(limit)) || 20))
     : 20;
 
   const resources = await collection
@@ -89,8 +89,8 @@ export async function fetchQuestions(params) {
     ? Math.max(0, parseInt(offset, 10))
     : 0;
   const parsedLimit = Number.isFinite(Number(limit))
-    ? parseInt(limit, 10)
-    : null;
+    ? Math.min(5000, Math.max(1, Math.floor(Number(limit)) || 5000))
+    : 5000;
 
   const cacheable =
     parsedOffset === 0 &&
@@ -110,10 +110,9 @@ export async function fetchQuestions(params) {
       })}`
     : null;
 
-  let resources = cacheKey ? questionsQueryCache.get(cacheKey) : null;
-  if (resources) {
-    return { count: resources.length, questions: resources };
-  }
+  const cached = cacheKey ? questionsQueryCache.get(cacheKey) : null;
+  if (cached) return cached;
+  let resources;
 
   // ── Build MongoDB filter ─────────────────────────────
   const conditions = [];
@@ -182,6 +181,7 @@ export async function fetchQuestions(params) {
   }
 
   const mongoFilter = combineMongoConditions(conditions);
+  let effectiveFilter = mongoFilter;
 
   // ── Execute query with DB-side pagination ─────────────
   let cursor = collection.find(mongoFilter).project({ _id: 0 });
@@ -209,8 +209,9 @@ export async function fetchQuestions(params) {
       ],
     });
 
+    effectiveFilter = combineMongoConditions(fallbackConditions);
     let fallbackCursor = collection
-      .find(combineMongoConditions(fallbackConditions))
+      .find(effectiveFilter)
       .project({ _id: 0 });
 
     if (parsedOffset > 0) fallbackCursor = fallbackCursor.skip(parsedOffset);
@@ -245,20 +246,18 @@ export async function fetchQuestions(params) {
     }
   }
 
-  if (cacheKey) {
-    questionsQueryCache.set(cacheKey, resources);
-  }
-
   // Get total count when pagination is active
   let total = resources.length;
   if (parsedLimit !== null && parsedLimit > 0) {
     total =
       resources.length < parsedLimit && parsedOffset === 0
         ? resources.length
-        : await collection.countDocuments(mongoFilter);
+        : await collection.countDocuments(effectiveFilter);
   }
 
-  return { count: total, questions: resources };
+  const result = { count: total, questions: resources };
+  if (cacheKey) questionsQueryCache.set(cacheKey, result);
+  return result;
 }
 
 export async function fetchPracticeTest(params) {
@@ -267,7 +266,7 @@ export async function fetchPracticeTest(params) {
   const requestedCount = Number.isFinite(Number(count))
     ? parseInt(count, 10)
     : 10;
-  const limit = Math.max(1, requestedCount);
+  const limit = Math.min(100, Math.max(1, requestedCount || 10));
 
   const conditions = [];
 

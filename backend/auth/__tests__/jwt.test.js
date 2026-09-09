@@ -60,6 +60,7 @@ describe('Auth JWT Module', () => {
     expect(typeof token).toBe('string');
 
     const decoded = verifyBattleRematchToken(token);
+    expect(() => verifyToken(token)).toThrow('Invalid access token purpose');
     expect(decoded.type).toBe('battle-rematch');
     expect(decoded.requesterUserId).toBe('user_1');
     expect(decoded.opponentUserId).toBe('user_2');

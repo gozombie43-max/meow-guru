@@ -55,7 +55,8 @@ export default function MockTestManager({ backLink }: { backLink?: ReactNode }) 
   const [id, setId] = useState(""); 
   const [year, setYear] = useState(""); 
   const [shift, setShift] = useState(""); 
-  const [isFree, setIsFree] = useState(false); 
+  const [isFree, setIsFree] = useState(false);
+  const [confidential, setConfidential] = useState(false);
   const [order, setOrder] = useState(1); 
   const [slots, setSlots] = useState<Slot[]>([]); 
   const [status, setStatus] = useState(""); 
@@ -99,7 +100,7 @@ export default function MockTestManager({ backLink }: { backLink?: ReactNode }) 
   async function deploy() { 
     if (!adminToken() || !id || !title || (source === "upload" && !questions.length)) return setStatus("Your admin session is required, generated paper ID/title, and valid questions."); 
     setBusy(true); 
-    const slot = { id, examSlug, configKey: tier.configKey, title, tier: tier.tier, type, year: type === "pyq" && year ? Number(year) : null, shift: type === "pyq" ? shift || null : null, isFree, order }; 
+    const slot = { id, examSlug, configKey: tier.configKey, title, tier: tier.tier, type, year: type === "pyq" && year ? Number(year) : null, shift: type === "pyq" ? shift || null : null, isFree, order, assessmentMode: confidential ? 'confidential' : 'practice', timingPolicy: 'composite' };
     try { 
       const response = await fetch(source === "upload" ? `${apiUrl}/admin/upload-paper` : `${apiUrl}/admin/slots`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${adminToken()}` }, body: JSON.stringify(source === "upload" ? { slot, questions } : slot) }); 
       const data = await response.json().catch(() => ({})); 
@@ -231,6 +232,10 @@ setStatus(source === "upload" ? `Successfully deployed ${data.totalQuestions ?? 
       </section>
 
       {/* Paper Upload & Inspection */}
+      {source === 'upload' && <label className={styles.fieldLabel} style={{ minHeight: 44 }}>
+        <span><input type="checkbox" checked={confidential} onChange={event => setConfidential(event.target.checked)} /> Confidential assessment</span>
+        <small>Uses one total exam deadline. Requires all sections and valid answer keys. Questions stay private and answer review is disabled.</small>
+      </label>}
       {source === "upload" && (
         <section className={styles.macGroup}>
           <div className={styles.macGroupHeader}>

@@ -19,16 +19,29 @@ const blacklist = new LRUCache({
 });
 
 export const signToken = (payload) =>
-  jwt.sign({ ...payload, jti: randomUUID() }, SECRET, { expiresIn: ACCESS_TOKEN_TTL });
+  jwt.sign({ ...payload, type: 'access', jti: randomUUID() }, SECRET, { expiresIn: ACCESS_TOKEN_TTL });
 
 export const signRefreshToken = (payload) =>
-  jwt.sign({ ...payload, jti: randomUUID() }, REFRESH_SECRET, { expiresIn: REFRESH_TOKEN_TTL });
+  jwt.sign({ ...payload, type: 'refresh', jti: randomUUID() }, REFRESH_SECRET, { expiresIn: REFRESH_TOKEN_TTL });
 
-export const verifyToken = (token) =>
-  jwt.verify(token, SECRET);
+export const verifyToken = (token) => {
+  const decoded = jwt.verify(token, SECRET, { algorithms: ['HS256'] });
+  if (decoded.type && decoded.type !== 'access') throw Object.assign(new Error('Invalid access token purpose'), { statusCode: 401 });
+  return decoded;
+};
 
-export const verifyRefreshToken = (token) =>
-  jwt.verify(token, REFRESH_SECRET);
+export const verifyRefreshToken = (token) => {
+  const decoded = jwt.verify(token, REFRESH_SECRET, { algorithms: ['HS256'] });
+  if (decoded.type !== 'refresh') throw Object.assign(new Error('Invalid refresh token purpose'), { statusCode: 401 });
+  return decoded;
+};
+
+// Reconstruct the current refresh cookie for concurrent refresh retries without
+// storing bearer credentials in the database.
+export const signSessionRefreshToken = (session) => jwt.sign({
+  id: session.userId, sid: session._id, type: 'refresh', jti: session.refreshJti,
+  iat: session.refreshIssuedAt, exp: Math.floor(session.expiresAt.getTime() / 1000),
+}, REFRESH_SECRET, { algorithm: 'HS256' });
 
 export const revokeToken = (jti) => blacklist.set(jti, true);
 export const isRevoked  = (jti) => blacklist.has(jti);

@@ -47,6 +47,30 @@ beforeEach(() => {
 });
 
 describe('Question Service Helpers', () => {
+  it('preserves total counts on cached fallback pages', async () => {
+    const direct = createCursor([]);
+    const fallback = createCursor([{ id: 'a', chapter: 'Algebra' }, { id: 'b', chapter: 'Algebra' }]);
+    const collection = { find: vi.fn().mockReturnValueOnce(direct).mockReturnValueOnce(fallback), countDocuments: vi.fn().mockResolvedValue(9) };
+    getQuestionsCollectionMock.mockReturnValue(collection);
+    const first = await fetchQuestions({ topic: 'Algebra', limit: 2 });
+    const cached = await fetchQuestions({ topic: 'Algebra', limit: 2 });
+    expect(first.count).toBe(9);
+    expect(cached.count).toBe(9);
+    expect(collection.find).toHaveBeenCalledTimes(2);
+    expect(collection.countDocuments).toHaveBeenCalledWith(expect.objectContaining({ $and: expect.any(Array) }));
+  });
+  it('bounds public question reads even when the caller omits or inflates limits', async () => {
+    const cursor = createCursor([]);
+    getQuestionsCollectionMock.mockReturnValue({ find: vi.fn(() => cursor) });
+    await fetchQuestions({});
+    expect(cursor.limit).toHaveBeenLastCalledWith(5000);
+    await fetchQuestions({ limit: 100000000 });
+    expect(cursor.limit).toHaveBeenLastCalledWith(5000);
+    await fetchImageQuestions('visual_reasoning', 100000000);
+    expect(cursor.limit).toHaveBeenLastCalledWith(100);
+    await fetchPracticeTest({ count: 100000000 });
+    expect(cursor.limit).toHaveBeenLastCalledWith(300);
+  });
   it('normalizes search keys by trimming and removing punctuation', () => {
     expect(normalizeSearchKey('  Profit & Loss! ')).toBe('profitloss');
     expect(normalizeSearchKey('Time-and-Distance')).toBe('timeanddistance');

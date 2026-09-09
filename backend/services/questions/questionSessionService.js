@@ -98,7 +98,7 @@ export async function fetchQuestionsSession(params) {
     conditions.filter((c) => !c._id || !c._id.$gt)
   );
   
-  const totalCount = await collection.countDocuments(countFilter);
+  const totalCount = params.includeTotal === 'false' ? undefined : await collection.countDocuments(countFilter, { maxTimeMS: 5000 });
 
   const hasMore = resources.length > parsedLimit;
   const pageItems = resources.slice(0, parsedLimit);
