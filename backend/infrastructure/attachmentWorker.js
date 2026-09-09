@@ -10,6 +10,7 @@ let stopping = true;
 let ready = false;
 let activeChild;
 let loopPromise;
+let startPromise;
 let wakeDelay;
 let stopWhenIdle = false;
 let idleTimeoutMs = 10_000;
@@ -146,14 +147,19 @@ export function isAttachmentWorkerReady() {
   return ready && !stopping;
 }
 
-export async function startAttachmentWorker(options = {}) {
+export function startAttachmentWorker(options = {}) {
   const requestedStopWhenIdle = options.stopWhenIdle === true;
   const requestedIdleTimeoutMs = Number(options.idleTimeoutMs);
 
   if (loopPromise) {
     // A persistent/full-runtime start request takes precedence over F1 idle-stop mode.
     if (!requestedStopWhenIdle) stopWhenIdle = false;
-    return;
+    return Promise.resolve();
+  }
+
+  if (startPromise) {
+    if (!requestedStopWhenIdle) stopWhenIdle = false;
+    return startPromise;
   }
 
   const db = getMongoDB();
@@ -165,13 +171,21 @@ export async function startAttachmentWorker(options = {}) {
     : 10_000;
   lastActivityAt = Date.now();
 
-  await reportHealth(db, jobs);
-  ready = true;
-  loopPromise = processJobs(db, jobs).finally(() => {
-    ready = false;
-    stopping = true;
-    loopPromise = undefined;
+  startPromise = (async () => {
+    await reportHealth(db, jobs);
+    if (stopping) return;
+
+    ready = true;
+    loopPromise = processJobs(db, jobs).finally(() => {
+      ready = false;
+      stopping = true;
+      loopPromise = undefined;
+    });
+  })().finally(() => {
+    startPromise = undefined;
   });
+
+  return startPromise;
 }
 
 export function stopAttachmentWorker() {
@@ -182,8 +196,8 @@ export function stopAttachmentWorker() {
 }
 
 export async function waitForAttachmentWorkerIdle(timeoutMs = 12_000) {
-  if (!loopPromise) return true;
-  const activeLoop = loopPromise;
+  if (!loopPromise && !startPromise) return true;
+  const activeLoop = loopPromise || startPromise;
   return Promise.race([
     activeLoop.then(() => true),
     new Promise((resolve) => setTimeout(() => resolve(false), timeoutMs)),
