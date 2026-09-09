@@ -32,6 +32,20 @@ import massUploadImages from './routes/massUploadImages.js';
 import massUploadSolutions from './routes/massUploadSolutions.js';
 import accessCodeRoutes from './routes/accessCodes.js';
 
+function lazyRouter(loader) {
+  let routerPromise;
+
+  return async (req, res, next) => {
+    try {
+      routerPromise ??= loader().then((module) => module.default);
+      const router = await routerPromise;
+      return router(req, res, next);
+    } catch (error) {
+      return next(error);
+    }
+  };
+}
+
 export async function createApp({ isReady, isShuttingDown, quizOnlyMode = process.env.QUIZ_ONLY_MODE === 'true' }) {
   const app = express();
   app.use(requestLogging);
@@ -130,37 +144,32 @@ export async function createApp({ isReady, isShuttingDown, quizOnlyMode = proces
   app.use('/users', initUserRoutes());
   app.use('/api/access-code', authLimiter, accessCodeRoutes);
 
+  // Keep user-invoked study tools on F1, but lazy-load them so they consume no
+  // route/module startup cost until the user actually opens Tutor or Notes/PDF.
+  app.use('/api/ai', aiLimiter, lazyRouter(() => import('./routes/aiRoutes.js')));
+  app.use('/api/upload-note-image', uploadLimiter, lazyRouter(() => import('./routes/uploadNoteImage.js')));
+  app.use('/api/notes', lazyRouter(() => import('./routes/notes.routes.js')));
+  app.use('/api/pdfs', lazyRouter(() => import('./routes/pdfs.js')));
+
   if (!quizOnlyMode) {
     const [
-      { default: aiRoutes },
       { default: cognitiveMapperRouter },
       { default: adaptiveQuizRouter },
-      { default: uploadNoteImageRoutes },
-      { default: notesRoutes },
-      { default: pdfRoutes },
       { default: adminUsersRoutes },
       { default: notificationRoutes },
       { default: examUpdatesRouter },
       { default: battleRoutes },
     ] = await Promise.all([
-      import('./routes/aiRoutes.js'),
       import('./agents/cognitiveMapperRouter.js'),
       import('./agents/adaptiveQuiz/adaptiveQuizRouter.js'),
-      import('./routes/uploadNoteImage.js'),
-      import('./routes/notes.routes.js'),
-      import('./routes/pdfs.js'),
       import('./routes/adminUsers.routes.js'),
       import('./routes/notifications.routes.js'),
       import('./routes/examUpdates.routes.js'),
       import('./routes/battle.routes.js'),
     ]);
 
-    app.use('/api/ai', aiLimiter, aiRoutes);
     app.use('/api/agent', agentLimiter, cognitiveMapperRouter);
     app.use('/api/adaptive-quiz', agentLimiter, adaptiveQuizRouter);
-    app.use('/api/upload-note-image', uploadLimiter, uploadNoteImageRoutes);
-    app.use('/api/notes', notesRoutes);
-    app.use('/api/pdfs', pdfRoutes);
     app.use('/api/admin', adminUsersRoutes);
     app.use('/api/notifications', notificationRoutes);
     app.use('/api/exam-updates', examUpdatesRouter);

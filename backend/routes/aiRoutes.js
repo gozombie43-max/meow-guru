@@ -30,6 +30,19 @@ function parseMaybeJSON(value, fallback) {
   }
 }
 
+function wakeTutorAttachmentWorker() {
+  if (process.env.QUIZ_ONLY_MODE !== 'true') return;
+
+  void import('../infrastructure/attachmentWorker.js')
+    .then(({ startAttachmentWorker }) => startAttachmentWorker({
+      stopWhenIdle: true,
+      idleTimeoutMs: 10_000,
+    }))
+    .catch((error) => {
+      console.error('Failed to start on-demand tutor attachment worker:', error);
+    });
+}
+
 // ── 1. Generate Questions ─────────────────────────────
 router.post("/generate-questions", adminAuth, async (req, res) => {
   const { topic, difficulty = "medium", count = 5 } = req.body;
@@ -88,6 +101,7 @@ router.post('/tutor-chat', protect, tutorUpload.single('attachment'), async (req
   if (JSON.stringify(input).length > 200000) return res.status(413).json({ error: 'Chat context is too large' });
   if (req.file) {
     const job = await enqueueTutorJob(String(req.user.id), input, req.file, req.get('Idempotency-Key'));
+    wakeTutorAttachmentWorker();
     return res.status(202).json({ success: true, jobId: job._id, status: job.status });
   }
   res.json(await tutorChat(input));
@@ -95,6 +109,7 @@ router.post('/tutor-chat', protect, tutorUpload.single('attachment'), async (req
 router.get('/tutor-jobs/:id', protect, async (req, res) => {
   const job = await getTutorJob(String(req.user.id), req.params.id);
   if (!job) return res.status(404).json({ error: 'Job not found' });
+  if (job.status === 'queued' || job.status === 'running') wakeTutorAttachmentWorker();
   res.json({ jobId: job._id, status: job.status, ...(job.status === 'completed' ? job.result : {}), ...(job.status === 'failed' ? { error: job.error } : {}) });
 });
 router.delete('/tutor-jobs/:id', protect, async (req, res) => {
