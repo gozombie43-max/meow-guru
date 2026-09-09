@@ -180,14 +180,12 @@ describe('AdminNotificationsPage', () => {
     });
     fireEvent.click(submitBtn);
 
-    // Confirmation dialog should appear
     expect(
       screen.getByText('Send notification to all registered Android users?')
     ).toBeDefined();
     expect(screen.getByText('Recipients:')).toBeDefined();
     expect(screen.getByText('All registered devices')).toBeDefined();
 
-    // Confirm send
     const confirmBtn = screen.getByRole('button', { name: /^Send$/i });
     fireEvent.click(confirmBtn);
 
@@ -199,7 +197,6 @@ describe('AdminNotificationsPage', () => {
       });
     });
 
-    // Result card should appear with statistics
     await waitFor(() => {
       expect(screen.getByText('Sent successfully')).toBeDefined();
       expect(screen.getAllByText('42').length).toBeGreaterThanOrEqual(1);
@@ -245,7 +242,7 @@ describe('AdminNotificationsPage', () => {
       expect(screen.getByText('Recent Notifications')).toBeDefined();
       expect(screen.getAllByText('New Mock Test 🔥').length).toBeGreaterThanOrEqual(1);
       expect(screen.getAllByText('SSC CGL Mock Test 12 is now available.').length).toBeGreaterThanOrEqual(1);
-      expect(screen.getByText(/42/)).toBeDefined();
+      expect(screen.getByText('42', { selector: 'strong' })).toBeDefined();
       expect(screen.getByText(/admin@example\.com/)).toBeDefined();
       expect(screen.getAllByText('/mock-test').length).toBeGreaterThanOrEqual(1);
     });
@@ -271,7 +268,6 @@ describe('AdminNotificationsPage', () => {
     const fetchSpy = vi.spyOn(AdminApiModule, 'fetchNotificationHistory');
     render(<AdminNotificationsPage />);
 
-    // Wait for initial history fetch to settle
     await waitFor(() => {
       expect(fetchSpy).toHaveBeenCalledTimes(1);
     });
