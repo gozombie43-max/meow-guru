@@ -123,7 +123,7 @@ async function initWithRetry() {
     await checkReadiness();
 
     initPassport();
-    const { app, corsOrigin } = createApp({
+    const { app, corsOrigin } = await createApp({
       isReady: () => isReady,
       isShuttingDown: () => isShuttingDown,
       quizOnlyMode,
