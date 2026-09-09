@@ -9,7 +9,7 @@ const ACCESS_TOKEN_TTL  = process.env.ACCESS_TOKEN_TTL  || '1h';
 const REFRESH_TOKEN_TTL = process.env.REFRESH_TOKEN_TTL || '30d';
 
 if (process.env.NODE_ENV === 'production' && (!process.env.JWT_SECRET || !process.env.REFRESH_TOKEN_SECRET)) {
-  console.warn('WARNING: JWT_SECRET or REFRESH_TOKEN_SECRET not explicitly set in production.');
+  throw new Error('JWT_SECRET and REFRESH_TOKEN_SECRET are required in production');
 }
 
 // TTL-managed LRU cache for blacklisted tokens (prevents unbounded memory growth)
