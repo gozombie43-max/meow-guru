@@ -313,9 +313,10 @@ router.patch('/attempt/:attemptId/autosave', protect, async (req, res) => {
 
 // POST /attempt/:attemptId/submit — Submit and grade attempt
 router.post('/attempt/:attemptId/submit', protect, async (req, res) => {
+  const attempts = getMockAttemptsCollection();
+  let claimed = null;
   try {
-    const attempts = getMockAttemptsCollection();
-    const claimed = await attempts.findOneAndUpdate(
+    claimed = await attempts.findOneAndUpdate(
       { id: String(req.params.attemptId), userId: String(req.user.id), status: 'in_progress' },
       { $set: { status: 'submitting', submitClaimedAt: new Date() } },
       { returnDocument: 'after' },
@@ -342,6 +343,12 @@ router.post('/attempt/:attemptId/submit', protect, async (req, res) => {
     );
     return res.json({ result: finalResult, attemptId: claimed.id });
   } catch (err) {
+    if (claimed?._id) {
+      await attempts.updateOne(
+        { _id: claimed._id, status: 'submitting' },
+        { $set: { status: 'in_progress', updatedAt: new Date() }, $unset: { submitClaimedAt: '' } },
+      ).catch((rollbackError) => console.error('Submit rollback error:', rollbackError));
+    }
     console.error('Submit error:', err);
     return res.status(500).json({ error: 'Failed to submit test' });
   }
@@ -376,7 +383,11 @@ router.get(
           ...safe
         } = clean;
 
-        return res.json(safe);
+        const deadline = safe.deadlineAt ? new Date(safe.deadlineAt).getTime() : Date.now();
+        return res.json({
+          ...safe,
+          timeLeft: Math.max(0, Math.floor((deadline - Date.now()) / 1000)),
+        });
       }
 
       return res.json(clean);
@@ -431,6 +442,7 @@ router.get(
           .sort({
             startedAt: -1,
           })
+          .limit(100)
           .toArray();
 
       return res.json({
@@ -485,6 +497,7 @@ router.get(
           .sort({
             startedAt: -1,
           })
+          .limit(100)
           .toArray();
 
       return res.json({
