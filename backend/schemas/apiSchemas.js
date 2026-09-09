@@ -33,23 +33,26 @@ export const bookmarkPatchSchema = z.object({
 });
 
 export const progressPatchSchema = z.object({
-  topic: z.string().trim().min(1, 'Topic is required'),
-  attempted: z.number().int().min(0),
-  correct: z.number().int().min(0),
+  topic: z.string().trim().min(1, 'Topic is required').max(120).regex(/^[^.$]+$/, 'Invalid topic'),
+  attempted: z.number().int().min(0).max(1_000),
+  correct: z.number().int().min(0).max(1_000),
+}).refine(({ attempted, correct }) => correct <= attempted, {
+  message: 'Correct answers cannot exceed attempted answers',
+  path: ['correct'],
 });
 
 export const recentQuizPatchSchema = z.object({
-  quizKey: z.string().min(1),
-  title: z.string().min(1),
-  subject: z.string().min(1),
+  quizKey: z.string().min(1).max(160),
+  title: z.string().min(1).max(200),
+  subject: z.string().min(1).max(120),
   slug: z.string().optional().default(''),
   href: z.string().min(1),
   mode: z.string().optional().default('mixed'),
   currentIndex: z.number().int().min(0).optional().default(0),
   totalQuestions: z.number().int().min(0).optional().default(0),
-  selectedAnswers: z.record(z.string(), z.any()).optional().default({}),
-  submittedQuestions: z.array(z.number()).optional().default([]),
-  results: z.array(z.any()).optional().default([]),
+  selectedAnswers: z.record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.null()])).refine((value) => Object.keys(value).length <= 500).optional().default({}),
+  submittedQuestions: z.array(z.number().int().nonnegative()).max(500).optional().default([]),
+  results: z.array(z.any()).max(500).optional().default([]),
   status: z.enum(['in-progress', 'completed']).optional().default('in-progress'),
 });
 
