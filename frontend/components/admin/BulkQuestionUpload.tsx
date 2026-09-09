@@ -103,7 +103,7 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-admin-secret": adminToken(),
+          Authorization: `Bearer ${adminToken()}`,
         },
         body: JSON.stringify({ questions: toCheck })
       });
@@ -189,7 +189,7 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
   const availableChapters = gaGroup ? gaGroup.topics : [];
 
   async function upload() {
-    if (!adminToken() || !quiz.subject || !quiz.topic || !quiz.name) return alert("Please provide the admin secret key and designate a target quiz.");
+    if (!adminToken() || !quiz.subject || !quiz.topic || !quiz.name) return alert("Your admin session is required and you must designate a target quiz.");
     
     const toUploadRaw = rows.filter(q => selected.has(q._idx));
     if (!toUploadRaw.length) return alert("No valid rows selected for deployment.");
@@ -243,7 +243,7 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
       const batchNum = Math.floor(i / BATCH) + 1;
       try {
         const res = await fetch(`${API}/api/questions/bulk`, {
-          method: "POST", headers: { "Content-Type": "application/json", "x-admin-secret": adminToken() },
+          method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${adminToken()}` },
           body: JSON.stringify(batch)
         });
         if (res.ok) {
