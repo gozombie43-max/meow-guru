@@ -14,6 +14,8 @@ export const mathematicsConfig: SubjectConfig = {
     averages: ["Arithmetic Mean", "Weighted Average", "Median & Mode", "Grouped Data", "Consecutive Numbers"],
     discount: ["Single Discount", "Successive Discounts", "Net Price", "Marked Price vs CP", "Promotional Offers"],
     interest: ["Simple Interest Formula", "Compound Interest Formula", "CI Compounding Periods", "Rate & Time Changes", "SI vs CI Difference"],
+    "simple-interest": ["Simple Interest Formula", "Finding Principal & Amount", "Rate & Time Changes", "SI Installments", "Variable Rates"],
+    "compound-interest": ["Compound Interest Formula", "CI Compounding Periods", "Half-Yearly & Quarterly Compounding", "SI vs CI Difference", "CI Installments"],
     "mixture-and-alligation": ["Alligation Rule", "Mixture Ratio", "Cost Price Average", "Quantity Replacement", "Liquid & Solutions"],
     partnership: ["Capital Ratio", "Profit Sharing", "Time-Weighted Share", "Active vs Sleeping Partner", "New & Leaving Partner"],
     percentages: ["Percentage Increase", "Percentage Decrease", "Value Changes", "Fraction to Percentage Conversion", "Successive Changes"],

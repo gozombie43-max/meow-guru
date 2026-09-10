@@ -98,15 +98,7 @@ html {
   overscroll-behavior-x: none;
 }
 
-/* Home page: let the fixed GradientWaves canvas show through & prevent scrolling on desktop */
-html.home-redesign,
-body.home-redesign,
-html.home-redesign.theme-dark,
-body.home-redesign.theme-dark {
-  background: transparent !important;
-  background-color: transparent !important;
-}
-
+/* Home page: prevent outer scrolling on desktop */
 @media (min-width: 1024px) {
   html.home-redesign,
   body.home-redesign {

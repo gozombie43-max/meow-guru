@@ -103,6 +103,38 @@ describe('Question Service Helpers', () => {
     expect(matchesNormalizedTopic(question, 'synonymsantonyms')).toBe(true);
   });
 
+  it('handles simple and compound interest aliasing in matchesNormalizedTopic', () => {
+    const siQuestion = {
+      subject: 'Mathematics',
+      topic: 'interest',
+      question: 'Calculate the simple interest on Rs 5000',
+    };
+    const ciQuestion = {
+      subject: 'Mathematics',
+      topic: 'interest',
+      question: 'Calculate the compound interest on Rs 5000',
+    };
+    const explicitSi = {
+      subject: 'Mathematics',
+      topic: 'simple-interest',
+      question: 'Find the rate',
+    };
+    const explicitCi = {
+      subject: 'Mathematics',
+      topic: 'compound-interest',
+      question: 'Find the amount',
+    };
+
+    expect(matchesNormalizedTopic(siQuestion, 'simpleinterest')).toBe(true);
+    expect(matchesNormalizedTopic(siQuestion, 'compoundinterest')).toBe(false);
+    expect(matchesNormalizedTopic(ciQuestion, 'compoundinterest')).toBe(true);
+    expect(matchesNormalizedTopic(ciQuestion, 'simpleinterest')).toBe(false);
+    expect(matchesNormalizedTopic(explicitSi, 'simpleinterest')).toBe(true);
+    expect(matchesNormalizedTopic(explicitCi, 'compoundinterest')).toBe(true);
+    expect(matchesNormalizedTopic(explicitSi, 'interest')).toBe(true);
+    expect(matchesNormalizedTopic(explicitCi, 'interest')).toBe(true);
+  });
+
   it('identifies study mode vocabulary records', () => {
     expect(isStudyModeRecord({ questionType: 'study-mode' })).toBe(true);
     expect(isStudyModeRecord({ quizName: 'Study Mode' })).toBe(true);

@@ -39,6 +39,50 @@ export function matchesNormalizedTopic(question, normalizedTopic) {
       return true;
     }
   }
+  if (normalizedTopic === "interest") {
+    if (
+      candidates.some((field) => {
+        const k = normalizeSearchKey(field);
+        return (
+          k === "interest" ||
+          k === "simpleinterest" ||
+          k === "compoundinterest"
+        );
+      })
+    ) {
+      return true;
+    }
+  }
+  if (normalizedTopic === "simpleinterest") {
+    if (
+      candidates.some((field) => {
+        const k = normalizeSearchKey(field);
+        if (k === "simpleinterest") return true;
+        if (k === "interest") {
+          const text = String(question.question || question.text || "").toLowerCase();
+          return !text.includes("compound");
+        }
+        return false;
+      })
+    ) {
+      return true;
+    }
+  }
+  if (normalizedTopic === "compoundinterest") {
+    if (
+      candidates.some((field) => {
+        const k = normalizeSearchKey(field);
+        if (k === "compoundinterest") return true;
+        if (k === "interest") {
+          const text = String(question.question || question.text || "").toLowerCase();
+          return text.includes("compound");
+        }
+        return false;
+      })
+    ) {
+      return true;
+    }
+  }
   return candidates.some(
     (field) => normalizeSearchKey(field) === normalizedTopic,
   );

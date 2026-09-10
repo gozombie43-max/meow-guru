@@ -131,6 +131,8 @@ const MATH_TOPICS = [
   "averages",
   "discount",
   "interest",
+  "simple-interest",
+  "compound-interest",
   "mixture-and-alligation",
   "partnership",
   "percentages",

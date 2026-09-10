@@ -67,11 +67,19 @@ export const MATHEMATICS_TOPICS = {
     aliases: [],
     mensurationModes: false,
   },
-  interest: {
-    slug: "interest",
-    label: "Interest",
+  "simple-interest": {
+    slug: "simple-interest",
+    label: "Simple Interest",
     group: "arithmetic",
-    route: "/mathematics/arithmetic/interest",
+    route: "/mathematics/arithmetic/simple-interest",
+    aliases: [],
+    mensurationModes: false,
+  },
+  "compound-interest": {
+    slug: "compound-interest",
+    label: "Compound Interest",
+    group: "arithmetic",
+    route: "/mathematics/arithmetic/compound-interest",
     aliases: [],
     mensurationModes: false,
   },

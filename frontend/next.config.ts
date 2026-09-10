@@ -19,6 +19,7 @@ const nextConfig: NextConfig = {
         pathname: "/**",
       },
     ],
+
   },
   turbopack: {
     // Resolve to the monorepo root so Turbopack can compile hoisted dependencies in CI.
@@ -36,8 +37,13 @@ const nextConfig: NextConfig = {
       { source: "/general-awareness/static", destination: "/general-awareness/static-gk", permanent: false },
       { source: "/general-awareness/science", destination: "/general-awareness/physics", permanent: false },
       { source: "/general-awareness/general-science", destination: "/general-awareness/physics", permanent: false },
+      { source: "/mathematics/arithmetic", destination: "/mathematics", permanent: false },
+      { source: "/mathematics/advance", destination: "/mathematics", permanent: false },
       { source: "/mathematics/arithmetic/time-speed-distance", destination: "/mathematics/arithmetic/time-and-distance", permanent: false },
       { source: "/mathematics/arithmetic/time-speed-distance/quiz", destination: "/mathematics/arithmetic/time-and-distance/quiz", permanent: false },
+      { source: "/mathematics/arithmetic/interest", destination: "/mathematics/arithmetic/simple-interest", permanent: false },
+      { source: "/mathematics/arithmetic/interest/quiz", destination: "/mathematics/arithmetic/simple-interest/quiz", permanent: false },
+      { source: "/mathematics/arithmetic/interest/formula-notes", destination: "/mathematics/arithmetic/simple-interest/formula-notes", permanent: false },
     ];
   },
   async rewrites() {

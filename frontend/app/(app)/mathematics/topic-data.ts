@@ -1,30 +1,30 @@
 import { mathematicsTopicRoute } from "@/lib/mathematics-topics";
 import {
-BarChart3,
-BookOpenCheck,
-Box,
-CircleDot,
-Clock,
-Compass,
-Divide,
-FileQuestion,
-Filter,
-Flame,
-FlaskConical,
-Gauge,
-Hash,
-Landmark,
-Orbit,
-Percent,
-PieChart,
-Radical,
-Shuffle,
-Tag,
-TrendingUp,
-Users2,
-Variable,
-Zap,
-type LucideIcon,
+  BarChart3,
+  BookOpenCheck,
+  Box,
+  CircleDot,
+  Clock,
+  Coins,
+  Compass,
+  Divide,
+  FileQuestion,
+  Flame,
+  FlaskConical,
+  Gauge,
+  Hash,
+  Landmark,
+  Orbit,
+  Percent,
+  PieChart,
+  Radical,
+  Shuffle,
+  Tag,
+  TrendingUp,
+  Users2,
+  Variable,
+  Zap,
+  type LucideIcon,
 } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -44,7 +44,7 @@ export interface Topic {
   expectedMarks: string;
 }
 
-// ── 17 SSC Mathematics Topics with Distinctly Colored SVG Icons ───────────────
+// ── 18 SSC Mathematics Topics with Distinctly Colored SVG Icons ───────────────
 export const TOPICS: Topic[] = [
   {
     id: 1,
@@ -90,13 +90,26 @@ export const TOPICS: Topic[] = [
     priority: "very-high",
     icon: Landmark,
     color: "#f59e0b",
-    name: "Simple & Compound Interest",
-    slug: "interest",
-    routeBase: mathematicsTopicRoute("interest"),
+    name: "Simple Interest",
+    slug: "simple-interest",
+    routeBase: mathematicsTopicRoute("simple-interest"),
     questions: "2-3",
     expectedMarks: "4-6 Marks",
-    description: "Simple interest formulas, compounding periods (half-yearly/quarterly), effective rate of interest, and CI-SI difference tricks.",
-    subtopics: ["SI Basic Formulas", "CI Half-Yearly & Quarterly", "Difference between CI & SI (2 & 3 Yrs)", "Installments Logic"],
+    description: "Simple interest formulas, rate and time variations, finding principal and amount, installment calculations, and interest rate equivalence.",
+    subtopics: ["SI Basic Formulas", "Rate & Time Calculations", "Finding Principal & Amount", "SI Installments Logic", "Variable Rates"],
+  },
+  {
+    id: 18,
+    priority: "very-high",
+    icon: Coins,
+    color: "#d97706",
+    name: "Compound Interest",
+    slug: "compound-interest",
+    routeBase: mathematicsTopicRoute("compound-interest"),
+    questions: "2-3",
+    expectedMarks: "4-6 Marks",
+    description: "Compounding periods (annually, half-yearly, quarterly), effective interest rates, CI-SI differences for 2 & 3 years, and CI installments.",
+    subtopics: ["CI Compounding Periods", "Effective Interest Rates", "Difference between CI & SI", "CI Installments & Loans", "Successive Interest Growth"],
   },
   {
     id: 5,
@@ -281,22 +294,22 @@ export const PRIORITY_CONFIG: Record<
   },
   high: {
     label: "High",
-    badgeBg: "var(--mac-surface-hover)",
-    badgeColor: "var(--mac-text-primary)",
+    badgeBg: "rgba(52, 199, 89, 0.12)",
+    badgeColor: "var(--mac-green)",
   },
   medium: {
     label: "Medium",
-    badgeBg: "var(--mac-surface-hover)",
-    badgeColor: "var(--mac-text-secondary)",
+    badgeBg: "rgba(175, 82, 222, 0.12)",
+    badgeColor: "var(--mac-purple)",
   },
   low: {
     label: "Low",
-    badgeBg: "var(--mac-surface-hover)",
-    badgeColor: "var(--mac-text-secondary)",
+    badgeBg: "rgba(0, 162, 199, 0.12)",
+    badgeColor: "#00a2c7",
   },
   least: {
     label: "Least",
-    badgeBg: "var(--mac-surface-hover)",
+    badgeBg: "var(--mac-sidebar-active)",
     badgeColor: "var(--mac-text-tertiary)",
   },
 };
@@ -305,7 +318,6 @@ export const CATEGORIES = [
   { id: "very-high", label: "Core", icon: Zap },
   { id: "high", label: "High", icon: TrendingUp },
   { id: "medium", label: "Medium", icon: CircleDot },
-  { id: "low", label: "Low", icon: Filter },
 ] as const;
 
 export type CategoryId = typeof CATEGORIES[number]["id"];
