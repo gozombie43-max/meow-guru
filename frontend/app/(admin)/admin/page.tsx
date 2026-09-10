@@ -1,6 +1,8 @@
 "use client";
 import AdminDisclosure from "@/components/admin/AdminDisclosure";
+import BulkImageQuestionUpload from "./BulkImageQuestionUpload";
 import layout from "@/components/admin/AdminLayout.module.css";
+import { ConfirmDialog, ImagePreviewDialog, QuestionEditorDialog } from "./AdminQuestionDialogs";
 import MassSolutionUpload from "@/components/admin/MassSolutionUpload";
 import RichContent from "@/components/RichContent";
 import { API_BASE } from "@/lib/api-base";
@@ -8,224 +10,24 @@ import { getAccessToken } from "@/lib/axios";
 import { fetchWithRetry } from "@/lib/api/http";
 import { useCallback,useEffect,useMemo,useRef,useState,type ChangeEvent } from "react";
 import MassImageUpload from "../../../components/admin/MassImageUpload";
+import {
+  DEFAULT_QUIZ_OPTIONS,
+  DIFFICULTIES,
+  EMPTY_Q,
+  MAX_BULK_IMAGES,
+  QUIZ_OPTIONS_BY_TOPIC,
+  SUBJECT_OPTIONS,
+  SUBJECT_TOPIC_OPTIONS,
+  SUBJECTS,
+  type BulkImageItem,
+  type BulkStats,
+  type Question,
+  type SubjectKey,
+} from "./admin-question-bank-model";
 
 const API = API_BASE;
 
 const getAdminToken = () => getAccessToken() || "";
-
-type Question = {
-  id: string;
-  topic: string;
-  subject: string;
-  chapter: string;
-  subtopic: string;
-  difficulty: string;
-  exam: string;
-  question: string;
-  options: string[];
-  correctAnswer: string;
-  correctLetter: string;
-  concept: string;
-  source: string;
-  quizName?: string;
-  solution: string;
-  solutionImage?: string;
-  questionType?: string;
-  questionImage?: string;
-};
-
-const EMPTY_Q: Omit<Question, "id"> = {
-  topic: "", subject: "", chapter: "", subtopic: "",
-  difficulty: "medium", exam: "", question: "",
-  options: ["", "", "", ""], correctAnswer: "",
-  correctLetter: "", concept: "", source: "", solution: "",
-};
-
-const DIFFICULTIES = ["easy", "medium", "hard"];
-const LETTERS = ["a", "b", "c", "d"];
-const SUBJECTS = ["mathematics", "reasoning", "english", "general awareness"];
-
-type SubjectKey = "mathematics" | "reasoning" | "english" | "general-awareness";
-type TopicOption = { value: string; label: string };
-type BulkStats = { total: number; ready: number; errors: number };
-type BulkImageItem = {
-  id: string;
-  file: File;
-  previewUrl: string;
-};
-
-const MAX_BULK_IMAGES = 20;
-
-const formatBytes = (bytes: number) => {
-  if (!Number.isFinite(bytes) || bytes <= 0) return "0 B";
-  const units = ["B", "KB", "MB", "GB"];
-  let value = bytes;
-  let index = 0;
-  while (value >= 1024 && index < units.length - 1) {
-    value /= 1024;
-    index += 1;
-  }
-  const precision = value >= 10 || index === 0 ? 0 : 1;
-  return `${value.toFixed(precision)} ${units[index]}`;
-};
-
-const SUBJECT_OPTIONS: { value: SubjectKey; label: string }[] = [
-  { value: "mathematics", label: "Mathematics" },
-  { value: "reasoning", label: "Reasoning" },
-  { value: "english", label: "English" },
-  { value: "general-awareness", label: "General Awareness" },
-];
-
-const DEFAULT_QUIZ_OPTIONS = [
-  "PYQ",
-  "CareerWill",
-  "PW",
-  "Selection Way",
-  "Topic Mix",
-  "Tier 2",
-];
-
-const QUIZ_OPTIONS_BY_TOPIC: Record<string, string[]> = {
-  mensuration: ["PYQ", "CareerWill", "Selection Way", "Tier 2"],
-  "synonyms-antonyms": [...DEFAULT_QUIZ_OPTIONS, "Study Mode"],
-  "one-word-substitution": [...DEFAULT_QUIZ_OPTIONS, "Study Mode"],
-  "idioms-phrases": [...DEFAULT_QUIZ_OPTIONS, "Study Mode"],
-  "spelling-misspelled-words": [...DEFAULT_QUIZ_OPTIONS, "Study Mode"],
-  "homonyms-homophones": [...DEFAULT_QUIZ_OPTIONS, "Study Mode"],
-};
-
-const TOPIC_LABEL_OVERRIDES: Record<string, string> = {
-  "active-passive-voice": "Active & Passive Voice",
-  "direct-indirect-narration": "Direct & Indirect Narration",
-  "subject-verb-agreement": "Subject-Verb Agreement",
-  "homonyms-homophones": "Homonyms & Homophones",
-  "idioms-phrases": "Idioms & Phrases",
-  "synonyms-antonyms": "Synonyms & Antonyms",
-  "sentence-correction-improvement": "Sentence Correction / Improvement",
-  "spot-the-error-error-detection": "Spot the Error / Error Detection",
-  "para-sentence-completion": "Para / Sentence Completion",
-  "statement-conclusion": "Statement & Conclusion",
-  "statement-assumptions": "Statement & Assumptions",
-  "statement-arguments": "Statement & Arguments",
-  "problem-solving-critical-thinking": "Problem Solving & Critical Thinking",
-  "classification-odd-one-out": "Classification (Odd One Out)",
-  "logical-sequence-of-words": "Logical Sequence of Words",
-  "mathematical-symbolic-operations": "Mathematical & Symbolic Operations",
-  "direction-distance": "Direction & Distance",
-  "cube-dice": "Cube & Dice",
-  "mirror-water-image": "Mirror & Water Image",
-  "paper-folding-cutting": "Paper Folding & Cutting",
-  "mixture-and-alligation": "Mixture & Alligation",
-  "ratio-and-proportion": "Ratio & Proportion",
-  "time-and-distance": "Time & Distance",
-  "time-and-work": "Time & Work",
-  "profit-and-loss": "Profit & Loss",
-  "statistics-probability": "Statistics & Probability",
-  "number-system": "Number System",
-  "general-science": "General Science",
-  "current-affairs": "Current Affairs",
-  "static-gk": "Static GK",
-};
-
-const toTopicLabel = (slug: string) => {
-  const override = TOPIC_LABEL_OVERRIDES[slug];
-  if (override) return override;
-  return slug
-    .split("-")
-    .map((part) => (part ? part[0].toUpperCase() + part.slice(1) : part))
-    .join(" ");
-};
-
-const MATH_TOPICS = [
-  "algebra",
-  "geometry",
-  "mensuration",
-  "trigonometry",
-  "number-system",
-  "statistics-probability",
-  "averages",
-  "discount",
-  "interest",
-  "mixture-and-alligation",
-  "partnership",
-  "percentages",
-  "profit-and-loss",
-  "ratio-and-proportion",
-  "square-roots",
-  "time-and-distance",
-  "time-and-work",
-];
-
-const REASONING_TOPICS = [
-  "analogy",
-  "blood-relations",
-  "classification-odd-one-out",
-  "coding-decoding",
-  "cube-dice",
-  "direction-distance",
-  "emotional-intelligence",
-  "inequalities",
-  "logical-sequence-of-words",
-  "mathematical-symbolic-operations",
-  "matrix",
-  "mirror-water-image",
-  "non-verbal-figures",
-  "order-ranking",
-  "paper-folding-cutting",
-  "problem-solving-critical-thinking",
-  "puzzle-seating-arrangement",
-  "series",
-  "social-intelligence",
-  "statement-arguments",
-  "statement-assumptions",
-  "statement-conclusion",
-  "syllogism-inferences",
-  "venn-diagram",
-  "word-building",
-];
-
-const ENGLISH_TOPICS = [
-  "active-passive-voice",
-  "articles",
-  "cloze-test",
-  "conjunctions",
-  "direct-indirect-narration",
-  "fill-in-the-blanks",
-  "homonyms-homophones",
-  "idioms-phrases",
-  "modifiers",
-  "one-word-substitution",
-  "para-jumbles",
-  "para-sentence-completion",
-  "parallelism",
-  "prepositions",
-  "pronouns",
-  "reading-comprehension",
-  "sentence-correction-improvement",
-  "sentence-structure",
-  "spelling-misspelled-words",
-  "spot-the-error-error-detection",
-  "subject-verb-agreement",
-  "synonyms-antonyms",
-  "tenses",
-];
-
-const GA_TOPICS = [
-  "current-affairs",
-  "economics",
-  "general-science",
-  "geography",
-  "history",
-  "polity",
-  "static-gk",
-];
-
-const SUBJECT_TOPIC_OPTIONS: Record<SubjectKey, TopicOption[]> = {
-  mathematics: MATH_TOPICS.map((slug) => ({ value: slug, label: toTopicLabel(slug) })),
-  reasoning: REASONING_TOPICS.map((slug) => ({ value: slug, label: toTopicLabel(slug) })),
-  english: ENGLISH_TOPICS.map((slug) => ({ value: slug, label: toTopicLabel(slug) })),
-  "general-awareness": GA_TOPICS.map((slug) => ({ value: slug, label: toTopicLabel(slug) })),
-};
 
 export default function AdminPanel() {
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -631,7 +433,8 @@ export default function AdminPanel() {
   const toggleOne = (id: string) => {
     setSelected((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   };
@@ -956,180 +759,16 @@ export default function AdminPanel() {
 
       </AdminDisclosure>
 
-      {/* ── Bulk Image Upload ── */}
-      <AdminDisclosure title="Bulk image questions">
-      <div style={{ border: "0.5px solid var(--color-border-tertiary)", borderRadius: 12, padding: "1rem", marginBottom: "1rem", background: "var(--color-background-secondary)" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
-          <div>
-            <h2 style={{ fontSize: 15, fontWeight: 600, margin: 0, color: "var(--color-text-primary)" }}>Bulk Image Upload</h2>
-            <p style={{ fontSize: 12, color: "var(--color-text-secondary)", margin: "4px 0 0" }}>
-              Upload multiple image questions at once (max {MAX_BULK_IMAGES}). Preview before uploading.
-            </p>
-          </div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            <button
-              onClick={clearBulkImages}
-              disabled={bulkImageUploading || bulkImages.length === 0}
-              style={{
-                padding: "6px 12px",
-                borderRadius: 8,
-                border: "0.5px solid var(--color-border-secondary)",
-                background: "transparent",
-                cursor: bulkImageUploading || bulkImages.length === 0 ? "default" : "pointer",
-                fontSize: 12,
-                color: "var(--color-text-secondary)",
-                opacity: bulkImageUploading || bulkImages.length === 0 ? 0.6 : 1,
-              }}
-            >
-              Clear
-            </button>
-            <button
-              onClick={handleBulkImageUpload}
-              disabled={bulkImageUploading || bulkImages.length === 0}
-              style={{
-                padding: "6px 14px",
-                borderRadius: 8,
-                border: "none",
-                background: bulkImageUploading ? "#a855f7" : "var(--admin-blue)",
-                color: "#fff",
-                cursor: bulkImageUploading || bulkImages.length === 0 ? "default" : "pointer",
-                fontSize: 12,
-                fontWeight: 500,
-                opacity: bulkImageUploading || bulkImages.length === 0 ? 0.7 : 1,
-              }}
-            >
-              {bulkImageUploading
-                ? "Uploading..."
-                : `Upload ${bulkImages.length} image${bulkImages.length === 1 ? "" : "s"}`}
-            </button>
-          </div>
-        </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10, alignItems: "center" }}>
-          <label
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: 8,
-              border: "1.5px dashed var(--color-border-secondary)",
-              borderRadius: 10,
-              padding: "12px 14px",
-              cursor: "pointer",
-              color: "var(--color-text-secondary)",
-              fontSize: 12,
-              background: "var(--color-background-primary)",
-            }}
-          >
-            <span style={{ fontWeight: 600, color: "var(--color-text-primary)" }}>Choose images</span>
-            <span style={{ fontSize: 11, opacity: 0.75 }}>PNG, JPG, WEBP</span>
-            <input
-              ref={bulkImageRef}
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={handleBulkImageFiles}
-              style={{ display: "none" }}
-             aria-label="Choose file"/>
-          </label>
-          <div style={{ fontSize: 12, color: "var(--color-text-secondary)" }}>
-            {bulkImages.length}/{MAX_BULK_IMAGES} selected
-          </div>
-        </div>
-
-        {bulkImageNotice && (
-          <div style={{ marginTop: 10, fontSize: 12, color: "#b45309" }}>
-            {bulkImageNotice}
-          </div>
-        )}
-
-        {bulkImages.length === 0 ? (
-          <div style={{ marginTop: 12, fontSize: 12, color: "var(--color-text-secondary)" }}>
-            No images selected yet.
-          </div>
-        ) : (
-          <div
-            style={{
-              marginTop: 12,
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
-              gap: 10,
-            }}
-          >
-            {bulkImages.map((item) => (
-              <div
-                key={item.id}
-                style={{
-                  border: "0.5px solid var(--color-border-secondary)",
-                  borderRadius: 10,
-                  padding: 8,
-                  background: "var(--color-background-primary)",
-                }}
-              >
-                <div
-                  style={{
-                    width: "100%",
-                    height: 96,
-                    borderRadius: 8,
-                    overflow: "hidden",
-                    background: "#f1f5f9",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <img
-                    src={item.previewUrl}
-                    alt={item.file.name}
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                  />
-                </div>
-                <div style={{ marginTop: 6 }}>
-                  <div
-                    style={{
-                      fontSize: 11,
-                      color: "var(--color-text-primary)",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                    title={item.file.name}
-                  >
-                    {item.file.name}
-                  </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      marginTop: 4,
-                      fontSize: 10,
-                      color: "var(--color-text-secondary)",
-                    }}
-                  >
-                    <span>{formatBytes(item.file.size)}</span>
-                    <button
-                      onClick={() => removeBulkImage(item.id)}
-                      style={{
-                        border: "none",
-                        background: "transparent",
-                        cursor: "pointer",
-                        color: "#dc2626",
-                        fontSize: 10,
-                        padding: 0,
-                      }}
-                    >
-                      Remove
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      </AdminDisclosure>
+      <BulkImageQuestionUpload
+        busy={bulkImageUploading}
+        fileInputRef={bulkImageRef}
+        items={bulkImages}
+        notice={bulkImageNotice}
+        onClear={clearBulkImages}
+        onFilesChange={handleBulkImageFiles}
+        onRemove={removeBulkImage}
+        onUpload={handleBulkImageUpload}
+      />
 
       {/* Filters */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 160px), 1fr))", gap: 10, marginBottom: "1rem" }}>
@@ -1295,178 +934,39 @@ export default function AdminPanel() {
         </div>
       )}
 
-      {/* Edit / Create Modal */}
       {editing && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem" }}>
-          <div style={{ background: "var(--color-background-primary, #ffffff)", color: "var(--color-text-primary, #111827)", borderRadius: 16, padding: "1.5rem", width: "100%", maxWidth: 640, maxHeight: "calc(100dvh - var(--safe-top) - var(--safe-bottom) - 32px)", overflowY: "auto", border: "0.5px solid var(--color-border-secondary, #e5e7eb)" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem" }}>
-              <h2 style={{ fontSize: 18, fontWeight: 500, margin: 0 }}>{isNew ? "Add Question" : "Edit Question"}</h2>
-              <button onClick={closeModal} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "var(--color-text-secondary)" }}>×</button>
-            </div>
-
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 220px), 1fr))", gap: 12 }}>
-              {(["topic", "subject", "chapter", "subtopic", "exam", "concept", "source"] as const).map((field) => (
-                <div key={field}>
-                  <label htmlFor={`question-${field}`} style={{ fontSize: 12, color: "var(--color-text-secondary)", display: "block", marginBottom: 4, textTransform: "capitalize" }}>{field}</label>
-                  <input id={`question-${field}`} value={(formData as Record<string, unknown>)[field] as string || ""} onChange={(e) => setFormData({ ...formData, [field]: e.target.value })}
-                    style={{ width: "100%", padding: "7px 10px", border: "0.5px solid var(--color-border-secondary, #e5e7eb)", borderRadius: 7, fontSize: 13, background: "var(--color-background-primary, #ffffff)", color: "var(--color-text-primary, #111827)", boxSizing: "border-box" }} aria-label={field} />
-                </div>
-              ))}
-
-              <div style={{ gridColumn: "1 / -1" }}>
-                <label htmlFor="question-text" style={{ fontSize: 12, color: "var(--color-text-secondary)", display: "block", marginBottom: 4 }}>Question</label>
-                <textarea id="question-text" value={formData.question} onChange={(e) => setFormData({ ...formData, question: e.target.value })} rows={3}
-                  style={{ width: "100%", padding: "7px 10px", border: "0.5px solid var(--color-border-secondary, #e5e7eb)", borderRadius: 7, fontSize: 13, background: "var(--color-background-primary, #ffffff)", color: "var(--color-text-primary, #111827)", resize: "vertical", boxSizing: "border-box" }} aria-label="Question" />
-              </div>
-
-              <div style={{ gridColumn: "1 / -1", border: "0.5px dashed var(--color-border-secondary, #e5e7eb)", borderRadius: 10, padding: "10px 12px", background: "var(--color-background-secondary, #f8fafc)" }}>
-                <div style={{ fontSize: 12, color: "var(--color-text-secondary)", marginBottom: 6 }}>Preview</div>
-                <RichContent text={formData.question || ""} />
-              </div>
-
-              <div style={{ gridColumn: "1 / -1" }}>
-                <div style={{ fontSize: 12, color: "var(--color-text-secondary)", display: "block", marginBottom: 6 }}>Options</div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 220px), 1fr))", gap: 8 }}>
-                  {[0, 1, 2, 3].map((i) => (
-                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <span style={{ fontSize: 12, color: "var(--color-text-secondary)", width: 16 }}>{LETTERS[i]})</span>
-                      <input value={formData.options[i] || ""} onChange={(e) => { const opts = [...formData.options]; opts[i] = e.target.value; setFormData({ ...formData, options: opts }); }}
-                        style={{ flex: 1, padding: "6px 10px", border: "0.5px solid var(--color-border-secondary, #e5e7eb)", borderRadius: 7, fontSize: 13, background: "var(--color-background-primary, #ffffff)", color: "var(--color-text-primary, #111827)" }} aria-label={`Option ${LETTERS[i]}`} />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="question-correct-answer" style={{ fontSize: 12, color: "var(--color-text-secondary)", display: "block", marginBottom: 4 }}>Correct Answer</label>
-                <input id="question-correct-answer" value={formData.correctAnswer} onChange={(e) => setFormData({ ...formData, correctAnswer: e.target.value })}
-                  style={{ width: "100%", padding: "7px 10px", border: "0.5px solid var(--color-border-secondary, #e5e7eb)", borderRadius: 7, fontSize: 13, background: "var(--color-background-primary, #ffffff)", color: "var(--color-text-primary, #111827)", boxSizing: "border-box" }} aria-label="Correct answer" />
-              </div>
-
-              <div>
-                <label htmlFor="question-correct-letter" style={{ fontSize: 12, color: "var(--color-text-secondary)", display: "block", marginBottom: 4 }}>Correct Letter</label>
-                <select id="question-correct-letter" value={formData.correctLetter} onChange={(e) => setFormData({ ...formData, correctLetter: e.target.value })}
-                  style={{ width: "100%", padding: "7px 10px", border: "0.5px solid var(--color-border-secondary, #e5e7eb)", borderRadius: 7, fontSize: 13, background: "var(--color-background-primary, #ffffff)", color: "var(--color-text-primary, #111827)" }}>
-                  <option value="">Select</option>
-                  {LETTERS.map((l) => <option key={l} value={l}>{l}</option>)}
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor="question-difficulty" style={{ fontSize: 12, color: "var(--color-text-secondary)", display: "block", marginBottom: 4 }}>Difficulty</label>
-                <select id="question-difficulty" value={formData.difficulty} onChange={(e) => setFormData({ ...formData, difficulty: e.target.value })}
-                  style={{ width: "100%", padding: "7px 10px", border: "0.5px solid var(--color-border-secondary, #e5e7eb)", borderRadius: 7, fontSize: 13, background: "var(--color-background-primary, #ffffff)", color: "var(--color-text-primary, #111827)" }}>
-                  {DIFFICULTIES.map((d) => <option key={d} value={d}>{d}</option>)}
-                </select>
-              </div>
-
-              <div style={{ gridColumn: "1 / -1" }}>
-                <label htmlFor="question-solution" style={{ fontSize: 12, color: "var(--color-text-secondary)", display: "block", marginBottom: 4 }}>Solution / Explanation</label>
-                <textarea id="question-solution" value={formData.solution || ""} onChange={(e) => setFormData({ ...formData, solution: e.target.value })} rows={4}
-                  placeholder="Step-by-step solution..."
-                  style={{ width: "100%", padding: "7px 10px", border: "0.5px solid var(--color-border-secondary, #e5e7eb)", borderRadius: 7, fontSize: 13, background: "var(--color-background-primary, #ffffff)", color: "var(--color-text-primary, #111827)", resize: "vertical", boxSizing: "border-box" }}  aria-label="Step-by-step solution..."/>
-              </div>
-            </div>
-
-            <div style={{ display: "flex", gap: 10, marginTop: "1.25rem", justifyContent: "flex-end" }}>
-              <button onClick={closeModal} style={{ padding: "8px 18px", borderRadius: 8, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: "pointer", fontSize: 14 }}>Cancel</button>
-              <button onClick={handleSave} style={{ padding: "8px 18px", borderRadius: 8, border: "none", background: "var(--admin-blue)", color: "#fff", cursor: "pointer", fontSize: 14, fontWeight: 500 }}>
-                {isNew ? "Create" : "Save Changes"}
-              </button>
-            </div>
-          </div>
-        </div>
+        <QuestionEditorDialog
+          formData={formData}
+          isNew={isNew}
+          onClose={closeModal}
+          onSave={handleSave}
+          setFormData={setFormData}
+        />
       )}
 
-      {/* Single Delete Confirm */}
       {deleteConfirm && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <div style={{ background: "var(--color-background-primary, #ffffff)", color: "var(--color-text-primary, #111827)", borderRadius: 16, padding: "1.5rem", width: "min(360px, calc(100vw - 32px))", border: "0.5px solid var(--color-border-secondary, #e5e7eb)" }}>
-            <h2 style={{ fontSize: 16, fontWeight: 500, margin: "0 0 8px" }}>Delete question?</h2>
-            <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: "0 0 1.25rem" }}>This cannot be undone.</p>
-            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-              <button onClick={() => setDeleteConfirm(null)} style={{ padding: "7px 16px", borderRadius: 7, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: "pointer", fontSize: 13 }}>Cancel</button>
-              <button onClick={() => handleDelete(deleteConfirm)} style={{ padding: "7px 16px", borderRadius: 7, border: "none", background: "#dc2626", color: "#fff", cursor: "pointer", fontSize: 13, fontWeight: 500 }}>Delete</button>
-            </div>
-          </div>
-        </div>
+        <ConfirmDialog
+          title="Delete question?"
+          description="This cannot be undone."
+          confirmLabel="Delete"
+          onCancel={() => setDeleteConfirm(null)}
+          onConfirm={() => handleDelete(deleteConfirm)}
+        />
       )}
 
-      {/* Bulk Delete Confirm */}
       {bulkDeleteConfirm && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <div style={{ background: "var(--color-background-primary, #ffffff)", color: "var(--color-text-primary, #111827)", borderRadius: 16, padding: "1.5rem", width: "min(400px, calc(100vw - 32px))", border: "0.5px solid var(--color-border-secondary, #e5e7eb)" }}>
-            <h2 style={{ fontSize: 16, fontWeight: 500, margin: "0 0 8px" }}>Delete {selected.size} questions?</h2>
-            <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: "0 0 1.25rem" }}>
-              This will permanently delete all {selected.size} selected questions. This cannot be undone.
-            </p>
-            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-              <button onClick={() => setBulkDeleteConfirm(false)} disabled={bulkDeleting}
-                style={{ padding: "7px 16px", borderRadius: 7, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: "pointer", fontSize: 13 }}>Cancel</button>
-              <button onClick={handleBulkDelete} disabled={bulkDeleting}
-                style={{ padding: "7px 16px", borderRadius: 7, border: "none", background: "#dc2626", color: "#fff", cursor: bulkDeleting ? "wait" : "pointer", fontSize: 13, fontWeight: 500, opacity: bulkDeleting ? 0.7 : 1 }}>
-                {bulkDeleting ? "Deleting..." : `Delete ${selected.size} questions`}
-              </button>
-            </div>
-          </div>
-        </div>
+        <ConfirmDialog
+          title={`Delete ${selected.size} questions?`}
+          description={`This will permanently delete all ${selected.size} selected questions. This cannot be undone.`}
+          confirmLabel={`Delete ${selected.size} questions`}
+          busy={bulkDeleting}
+          onCancel={() => setBulkDeleteConfirm(false)}
+          onConfirm={handleBulkDelete}
+        />
       )}
 
-      {/* Image Preview Modal */}
       {imagePreview && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.6)",
-            zIndex: 1100,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "1.5rem",
-          }}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Question image preview"
-        >
-          <div
-            style={{
-              background: "var(--color-background-primary, #ffffff)",
-              borderRadius: 16,
-              padding: "1rem",
-              width: "100%",
-              maxWidth: 860,
-              border: "0.5px solid var(--color-border-secondary, #e5e7eb)",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: "var(--color-text-primary)" }}>
-                {imagePreview.title}
-              </div>
-              <button
-                onClick={() => setImagePreview(null)}
-                aria-label="Close image preview"
-                style={{ background: "none", border: "none", cursor: "pointer", fontSize: 18, color: "var(--color-text-secondary)" }}
-              >
-                ×
-              </button>
-            </div>
-            <div
-              style={{
-                borderRadius: 12,
-                border: "0.5px solid var(--color-border-secondary)",
-                background: "var(--admin-surface-muted)",
-                padding: 10,
-              }}
-            >
-              <img
-                src={imagePreview.src}
-                alt={imagePreview.title}
-                style={{ width: "100%", height: "auto", display: "block", borderRadius: 8 }}
-              />
-            </div>
-          </div>
-        </div>
+        <ImagePreviewDialog preview={imagePreview} onClose={() => setImagePreview(null)} />
       )}
     </div>
   );
