@@ -133,7 +133,7 @@ export default function TestInstructions({ examSlug, testId, resumeAttemptId }: 
         </div>
 
         <div className={styles.footer}>
-          <button 
+          <button data-ui-button="primary"
             className={styles.startBtn} 
             onClick={handleStart}
             disabled={loading}

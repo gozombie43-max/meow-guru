@@ -58,7 +58,7 @@ function NoteViewContent() {
     return (
       <div style={styles.stateShell}>
         <p style={styles.stateText}>{error || "Note not found."}</p>
-        <button type="button" style={styles.backButton} onClick={() => router.back()}>
+        <button data-ui-button="secondary" type="button" style={styles.backButton} onClick={() => router.back()}>
           Back
         </button>
       </div>
@@ -69,6 +69,7 @@ function NoteViewContent() {
     <>
       <main className="note-view-page" style={styles.page}>
         <button
+          data-ui-button="secondary"
           type="button"
           className="note-view-back"
           style={styles.backButton}
@@ -76,8 +77,8 @@ function NoteViewContent() {
         >
           Back
         </button>
-        <header className="note-view-header" style={styles.header}>
-          <button type="button" style={styles.backButton} onClick={() => router.back()}>
+        <header data-ui-chrome="header" className="note-view-header" style={styles.header}>
+          <button data-ui-button="secondary" type="button" style={styles.backButton} onClick={() => router.back()}>
             Back
           </button>
           <div style={styles.headerText}>

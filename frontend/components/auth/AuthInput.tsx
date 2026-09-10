@@ -41,7 +41,7 @@ export default function AuthInput({
           {...props}
         />
         {isPassword && (
-          <button
+          <button data-ui-button="state"
             type="button"
             className={styles.passwordToggleBtn}
             onClick={() => setShowPassword((prev) => !prev)}

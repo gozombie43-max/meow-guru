@@ -27,10 +27,10 @@ export default function BulkImageQuestionUpload({ busy, fileInputRef, items, not
             </p>
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            <button onClick={onClear} disabled={disabled} style={{ padding: "6px 12px", borderRadius: 8, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: disabled ? "default" : "pointer", fontSize: 12, color: "var(--color-text-secondary)", opacity: disabled ? 0.6 : 1 }}>
+            <button data-ui-button="state" onClick={onClear} disabled={disabled} style={{ padding: "6px 12px", borderRadius: 8, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: disabled ? "default" : "pointer", fontSize: 12, color: "var(--color-text-secondary)", opacity: disabled ? 0.6 : 1 }}>
               Clear
             </button>
-            <button onClick={onUpload} disabled={disabled} style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: busy ? "#a855f7" : "var(--admin-blue)", color: "#fff", cursor: disabled ? "default" : "pointer", fontSize: 12, fontWeight: 500, opacity: disabled ? 0.7 : 1 }}>
+            <button data-ui-button="state" onClick={onUpload} disabled={disabled} style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: busy ? "#a855f7" : "var(--admin-blue)", color: "#fff", cursor: disabled ? "default" : "pointer", fontSize: 12, fontWeight: 500, opacity: disabled ? 0.7 : 1 }}>
               {busy ? "Uploading..." : `Upload ${items.length} image${items.length === 1 ? "" : "s"}`}
             </button>
           </div>
@@ -59,7 +59,7 @@ export default function BulkImageQuestionUpload({ busy, fileInputRef, items, not
                   <div style={{ fontSize: 11, color: "var(--color-text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={item.file.name}>{item.file.name}</div>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 4, fontSize: 10, color: "var(--color-text-secondary)" }}>
                     <span>{formatBytes(item.file.size)}</span>
-                    <button onClick={() => onRemove(item.id)} style={{ border: "none", background: "transparent", cursor: "pointer", color: "#dc2626", fontSize: 10, padding: 0 }}>Remove</button>
+                    <button data-ui-button="state" onClick={() => onRemove(item.id)} style={{ border: "none", background: "transparent", cursor: "pointer", color: "#dc2626", fontSize: 10, padding: 0 }}>Remove</button>
                   </div>
                 </div>
               </div>

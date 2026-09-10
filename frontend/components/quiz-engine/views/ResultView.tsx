@@ -232,7 +232,7 @@ export function ResultView({
           className="animate-fade-in-up flex flex-col sm:flex-row gap-4"
           style={{ animationDelay: "450ms" }}
         >
-          <button
+          <button data-ui-button="state"
             onClick={handleRestart}
             className="btn-glow px-6 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 cursor-pointer"
             style={{
@@ -243,13 +243,13 @@ export function ResultView({
           >
             <RotateCcw className="w-4 h-4" /> Practice Again
           </button>
-          <Link
+          <Link data-ui-button="secondary"
             href={routeBase ?? `/${subjectConfig.subjectId}/${slug}`}
             className="btn-outline px-6 py-3 rounded-xl font-medium text-center cursor-pointer"
           >
             Change Mode
           </Link>
-          <Link
+          <Link data-ui-button="secondary"
             href={`/${subjectConfig.subjectId}`}
             className="btn-outline px-6 py-3 rounded-xl font-medium text-center cursor-pointer"
           >

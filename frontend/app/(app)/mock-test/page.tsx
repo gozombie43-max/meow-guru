@@ -218,7 +218,7 @@ export default function MockTestPage() {
           <h2 className={styles.sidebarTitle}>Categories</h2>
           <div className={styles.sidebarNav}>
             {categories.map((cat) => (
-              <button
+              <button data-ui-button="state"
                 key={cat.id}
                 className={`${styles.sidebarTab} ${activeCategory === cat.id ? styles.activeSidebarTab : ''}`}
                 onClick={() => setActiveCategory(cat.id)}
@@ -234,7 +234,7 @@ export default function MockTestPage() {
           <div className={styles.app}>
             <div className={styles.homeContainer}>
               {/* Header Area */}
-              <header className={styles.header}>
+              <header data-ui-chrome="header" className={styles.header}>
                 <div className={styles.headerLeft}>
                   <h1 className={styles.greeting}>Hi, Aspirant 👋</h1>
                   <p className={styles.subtitle}>Choose your target exam to begin mock test series</p>
@@ -250,10 +250,10 @@ export default function MockTestPage() {
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                      aria-label="Search exams, test series..."/>
-                    <button className={styles.filterBtn} aria-label="Filter"><Filter size={14} /></button>
+                    <button data-ui-button="state" className={styles.filterBtn} aria-label="Filter"><Filter size={14} /></button>
                   </div>
                   <div className={styles.headerActions}>
-                    <button className={styles.iconBtn} aria-label="Notifications"><Bell size={15} /></button>
+                    <button data-ui-button="icon" className={styles.iconBtn} aria-label="Notifications"><Bell size={15} /></button>
                     <div className={styles.avatar}>ST</div>
                   </div>
                 </div>
@@ -261,7 +261,7 @@ export default function MockTestPage() {
                 {/* Categories Scroll for Mobile */}
                 <div className={styles.categoryScroll}>
                   {categories.map((cat) => (
-                    <button
+                    <button data-ui-button="state"
                       key={cat.id}
                       className={`${styles.catChip} ${activeCategory === cat.id ? styles.activeChip : ''}`}
                       onClick={() => setActiveCategory(cat.id)}
@@ -278,7 +278,7 @@ export default function MockTestPage() {
                 <section className={styles.section}>
                   <div className={styles.examGrid}>
                     {filteredExams.map((card) => (
-                      <button type="button" key={card.id} className={styles.examCard} onClick={() => openDetail(card)} style={{ width: '100%', color: 'inherit', font: 'inherit', textAlign: 'left' }}>
+                      <button data-ui-button="state" type="button" key={card.id} className={styles.examCard} onClick={() => openDetail(card)} style={{ width: '100%', color: 'inherit', font: 'inherit', textAlign: 'left' }}>
                         <div className={styles.examTop}>
                           <div className={styles.examLogoBox}>
                             {card.logoUrl && !logoErrors[card.id] ? (

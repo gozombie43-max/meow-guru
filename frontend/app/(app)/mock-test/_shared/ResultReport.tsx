@@ -46,7 +46,7 @@ export default function ResultReport({ examSlug, testId, attemptId }: ResultRepo
     return (
       <div className={styles.loadingContainer}>
         <p>{error || 'No result data found.'}</p>
-        <button className={styles.btnPrimary} onClick={() => router.push(`/mock-test/${examSlug}`)}>
+        <button data-ui-button="primary" className={styles.btnPrimary} onClick={() => router.push(`/mock-test/${examSlug}`)}>
           Back to Tests
         </button>
       </div>
@@ -146,10 +146,10 @@ export default function ResultReport({ examSlug, testId, attemptId }: ResultRepo
 
         {/* Actions */}
         <div className={styles.actions}>
-          {data.assessmentMode !== 'confidential' && <button className={styles.btnPrimary} onClick={handleReview}>Review Questions & Solutions</button>}
-          {data.assessmentMode !== 'confidential' && <button className={styles.btnOutline} onClick={handleRetake}>Retake Test</button>}
+          {data.assessmentMode !== 'confidential' && <button data-ui-button="primary" className={styles.btnPrimary} onClick={handleReview}>Review Questions & Solutions</button>}
+          {data.assessmentMode !== 'confidential' && <button data-ui-button="secondary" className={styles.btnOutline} onClick={handleRetake}>Retake Test</button>}
           {data.assessmentMode === 'confidential' && <p>Confidential assessment: one attempt per candidate. Answer review is disabled.</p>}
-          <button className={styles.btnOutline} onClick={handleBack}>All Tests</button>
+          <button data-ui-button="secondary" className={styles.btnOutline} onClick={handleBack}>All Tests</button>
         </div>
 
       </div>

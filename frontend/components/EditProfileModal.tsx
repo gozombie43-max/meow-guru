@@ -110,14 +110,14 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
     <div className={styles.modalBackdrop} role="dialog" aria-modal="true" aria-labelledby="edit-profile-title">
       <div className={styles.modalCard}>
         {/* Header */}
-        <div className={styles.modalHeader}>
+        <div data-ui-chrome="header" className={styles.modalHeader}>
           <div className={styles.modalTitleGroup}>
             <div className={styles.modalTitleIcon}>
               <UserIcon size={18} />
             </div>
             <h2 id="edit-profile-title" className={styles.modalTitle}>Edit Profile</h2>
           </div>
-          <button
+          <button data-ui-button="icon"
             type="button"
             className={styles.modalCloseBtn}
             onClick={onClose}
@@ -145,7 +145,7 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
               />
             </div>
             <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
-              <button
+              <button data-ui-button="secondary"
                 type="button"
                 className={styles.cancelBtn}
                 style={{ padding: '4px 10px', fontSize: '11.5px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
@@ -192,7 +192,7 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
               {PRESET_AVATARS.map((preset) => {
                 const isSelected = avatar === preset.url;
                 return (
-                  <button
+                  <button data-ui-button="state"
                     key={preset.id}
                     type="button"
                     className={`${styles.avatarPresetBtn} ${isSelected ? styles.presetSelected : ''}`}
@@ -225,8 +225,8 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
         </form>
 
         {/* Footer */}
-        <div className={styles.modalFooter}>
-          <button
+        <div data-ui-chrome="footer" className={styles.modalFooter}>
+          <button data-ui-button="secondary"
             type="button"
             className={styles.cancelBtn}
             onClick={onClose}
@@ -234,7 +234,7 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
           >
             Cancel
           </button>
-          <button
+          <button data-ui-button="primary"
             type="button"
             onClick={handleSave}
             className={styles.saveBtn}

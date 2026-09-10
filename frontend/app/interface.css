@@ -1,0 +1,151 @@
+/* Shared visual contract for native controls and existing route chrome.
+   Layout/positioning stays with the route shell so fixed offsets remain valid. */
+:root {
+  --ui-control-height: 44px;
+  --ui-control-radius: 12px;
+  --ui-chrome-gutter: 16px;
+  --ui-surface: var(--light-surface);
+  --ui-muted-surface: var(--light-surface-muted);
+  --ui-border: var(--light-border);
+  --ui-text: var(--light-text);
+  --ui-secondary: var(--light-text-secondary);
+  --ui-accent: var(--light-accent);
+  --ui-action: var(--light-accent);
+  --ui-danger: #b42332;
+}
+
+.theme-dark, [data-theme="dark"] {
+  --ui-surface: var(--dark-surface);
+  --ui-muted-surface: var(--dark-surface-muted);
+  --ui-border: var(--dark-border);
+  --ui-text: var(--dark-text);
+  --ui-secondary: var(--dark-text-secondary);
+  --ui-accent: var(--dark-accent);
+  --ui-action: var(--dark-action);
+  --ui-danger: #bd3045;
+}
+
+.theme-light, [data-theme="light"] {
+  --ui-surface: var(--light-surface);
+  --ui-muted-surface: var(--light-surface-muted);
+  --ui-border: var(--light-border);
+  --ui-text: var(--light-text);
+  --ui-secondary: var(--light-text-secondary);
+  --ui-accent: var(--light-accent);
+  --ui-action: var(--light-accent);
+  --ui-danger: #b42332;
+}
+
+/* Explicit attributes let these shared rules replace legacy visual overrides
+   without recoloring answer states, tabs, switches, or clickable content cards. */
+[data-ui-button] {
+  font-family: inherit !important;
+  font-weight: 600 !important;
+  letter-spacing: normal !important;
+  min-height: var(--ui-control-height) !important;
+  border-radius: var(--ui-control-radius) !important;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+[data-ui-button="primary"],
+[data-ui-button="secondary"],
+[data-ui-button="danger"],
+[data-ui-button="icon"] {
+  border: 1px solid var(--ui-border) !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  background-image: none !important;
+  transition: background-color 150ms ease, border-color 150ms ease, opacity 150ms ease;
+}
+
+[data-ui-button="primary"],
+[data-ui-button="secondary"],
+[data-ui-button="danger"] {
+  padding: 10px 16px !important;
+  font-size: 14px !important;
+  line-height: 1.35 !important;
+}
+
+[data-ui-button="primary"] {
+  background-color: var(--ui-action) !important;
+  border-color: var(--ui-action) !important;
+  color: #fff !important;
+}
+
+[data-ui-button="secondary"],
+[data-ui-button="icon"] {
+  background-color: var(--ui-surface) !important;
+  color: var(--ui-text) !important;
+}
+
+[data-ui-button="danger"] {
+  background-color: var(--ui-danger) !important;
+  border-color: var(--ui-danger) !important;
+  color: #fff !important;
+}
+
+[data-ui-button="icon"] {
+  min-width: var(--ui-control-height) !important;
+  padding: 8px !important;
+  flex-shrink: 0;
+}
+
+[data-ui-button]:disabled,
+[data-ui-button][aria-disabled="true"] {
+  opacity: .48 !important;
+  cursor: not-allowed;
+  box-shadow: none !important;
+}
+
+[data-ui-button]:focus-visible {
+  outline: 3px solid var(--ui-accent);
+  outline-offset: 3px;
+}
+
+@media (hover: hover) {
+  [data-ui-button="secondary"]:not(:disabled):hover,
+  [data-ui-button="icon"]:not(:disabled):hover {
+    background-color: var(--ui-muted-surface) !important;
+    border-color: var(--ui-accent) !important;
+  }
+  [data-ui-button="primary"]:not(:disabled):hover,
+  [data-ui-button="danger"]:not(:disabled):hover {
+    filter: brightness(1.08);
+  }
+}
+
+[data-ui-chrome="header"],
+[data-ui-chrome="footer"] {
+  background: var(--ui-surface) !important;
+  color: var(--ui-text);
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-color: var(--ui-border) !important;
+}
+
+[data-ui-chrome="header"] {
+  border-bottom: 1px solid var(--ui-border) !important;
+}
+
+[data-ui-chrome="header"] > :is(h1, h2) {
+  font-size: 18px;
+  line-height: 1.3;
+  font-weight: 650;
+  color: var(--ui-text);
+}
+
+[data-ui-chrome="footer"] {
+  border-top: 1px solid var(--ui-border) !important;
+}
+
+/* The segmented track contains the full touch target instead of clipping it. */
+.lang-toggle { height: 48px !important; }
+.lang-toggle > div { height: 44px !important; }
+
+[data-ui-chrome="footer"]:not(nav) { padding-top: 12px; }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-ui-button] { transition: none !important; }
+}

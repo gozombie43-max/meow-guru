@@ -56,7 +56,7 @@ interface SwitchToggleProps {
 
 function SwitchToggle({ checked, onChange, label, ariaLabel }: SwitchToggleProps) {
   return (
-    <button
+    <button data-ui-button="state"
       type="button"
       role="switch"
       aria-checked={checked}
@@ -127,11 +127,11 @@ export function QuizSettingsModal({
         aria-label="Quiz settings"
         data-theme={theme}
       >
-        <div className="ios-settings-header">
+        <div data-ui-chrome="header" className="ios-settings-header">
           <div className="ios-settings-title-group">
             <span className="ios-settings-title">Quiz Settings</span>
           </div>
-          <button
+          <button data-ui-button="icon"
             type="button"
             className="ios-settings-close-btn"
             onClick={onClose}
@@ -292,9 +292,9 @@ export function QuizSettingsModal({
         /* Dark Theme Popover */
         .ios-series-quiz[data-theme="dark"] .ios-settings-popover,
         .ios-settings-popover[data-theme="dark"] {
-          background: #1c1c1e;
+          background: var(--dark-surface);
           border: 1px solid rgba(255, 255, 255, 0.14);
-          color: #f2f2f7;
+          color: var(--light-canvas);
           box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.05);
         }
 
@@ -302,8 +302,8 @@ export function QuizSettingsModal({
         .ios-series-quiz[data-theme="light"] .ios-settings-popover,
         .ios-settings-popover[data-theme="light"] {
           background: #ffffff;
-          border: 1px solid #E6EAEF;
-          color: #1d1d1f;
+          border: 1px solid var(--light-border);
+          color: var(--light-text);
           box-shadow: 0 16px 40px rgba(15, 23, 42, 0.16), 0 0 0 1px rgba(0, 0, 0, 0.04);
         }
 
@@ -317,7 +317,7 @@ export function QuizSettingsModal({
         }
 
         .ios-settings-popover[data-theme="light"] .ios-settings-header {
-          border-bottom-color: #E6EAEF;
+          border-bottom-color: var(--light-border);
         }
 
         .ios-settings-title {
@@ -341,8 +341,8 @@ export function QuizSettingsModal({
         }
 
         .ios-settings-popover[data-theme="light"] .ios-settings-close-btn {
-          background: #F6F8FA;
-          color: #57606a;
+          background: var(--light-canvas);
+          color: var(--light-text-secondary);
         }
 
         .ios-settings-list {

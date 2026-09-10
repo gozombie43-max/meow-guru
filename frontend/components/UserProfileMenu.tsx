@@ -160,7 +160,7 @@ export default function UserProfileMenu({
   return (
     <div className={`${styles.container} ${className}`} ref={containerRef}>
       {/* Avatar Button Trigger */}
-      <button
+      <button data-ui-button="state"
         type="button"
         className={styles.avatarTrigger}
         onClick={() => setIsOpen((prev) => !prev)}
@@ -255,7 +255,7 @@ export default function UserProfileMenu({
                   </Link>
 
                   {/* Edit Profile */}
-                  <button
+                  <button data-ui-button="state"
                     type="button"
                     className={styles.menuItem}
                     onClick={handleOpenEditProfile}
@@ -271,7 +271,7 @@ export default function UserProfileMenu({
                   </button>
 
                   {/* Settings */}
-                  <button
+                  <button data-ui-button="state"
                     type="button"
                     className={styles.menuItem}
                     onClick={handleOpenSettings}
@@ -305,7 +305,7 @@ export default function UserProfileMenu({
                   <div className={styles.divider} />
 
                   {/* Log Out */}
-                  <button
+                  <button data-ui-button="state"
                     type="button"
                     className={`${styles.menuItem} ${styles.menuItemDanger}`}
                     onClick={handleLogout}
@@ -332,14 +332,14 @@ export default function UserProfileMenu({
                   Sign in to save your progress, customize your avatar, and track study milestones.
                 </p>
                 <div className={styles.guestActions}>
-                  <Link
+                  <Link data-ui-button="secondary"
                     href="/login"
                     className={styles.loginBtn}
                     onClick={() => setIsOpen(false)}
                   >
                     Log in
                   </Link>
-                  <Link
+                  <Link data-ui-button="secondary"
                     href="/register"
                     className={styles.registerBtn}
                     onClick={() => setIsOpen(false)}
@@ -348,7 +348,7 @@ export default function UserProfileMenu({
                   </Link>
                 </div>
                 <div className={styles.divider} />
-                <button
+                <button data-ui-button="state"
                   type="button"
                   className={styles.menuItem}
                   onClick={handleOpenSettings}

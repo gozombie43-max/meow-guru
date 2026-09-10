@@ -89,7 +89,7 @@ export default function AuthCard({
         {/* Right Form Card Pane (Desktop & Mobile) */}
         <section className={styles.authCard}>
           {/* Mobile Header (Shown only on mobile when showcase is hidden) */}
-          <div className={styles.mobileCardHeader}>
+          <div data-ui-chrome="header" className={styles.mobileCardHeader}>
             <Link href="/" className={styles.brandSquircle} aria-label="Return to home">
               <WolfIcon size={34} fillColor="#ffffff" />
             </Link>
@@ -98,7 +98,7 @@ export default function AuthCard({
           </div>
 
           {/* Desktop Header (Shown on desktop) */}
-          <div className={styles.desktopCardHeader}>
+          <div data-ui-chrome="header" className={styles.desktopCardHeader}>
             <h1 className={styles.brandTitle}>{title}</h1>
             <p className={styles.brandSubtitle}>{subtitle}</p>
           </div>
@@ -136,7 +136,7 @@ export default function AuthCard({
 
           {/* Card Footer Link */}
           {footerText && footerLinkText && footerLinkHref && (
-            <div className={styles.cardFooter}>
+            <div data-ui-chrome="footer" className={styles.cardFooter}>
               <span>{footerText}</span>
               <Link href={footerLinkHref} className={styles.footerLink}>
                 {footerLinkText}

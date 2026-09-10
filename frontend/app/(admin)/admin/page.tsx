@@ -83,29 +83,7 @@ export default function AdminPanel() {
   const [solImgUploading, setSolImgUploading] = useState<string | null>(null); // holds question id being uploaded
   const solImgRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
-  useEffect(() => {
-    const root = document.documentElement;
-    const body = document.body;
-    const previousRootThemeDark = root.classList.contains("theme-dark");
-    const previousRootThemeLight = root.classList.contains("theme-light");
-    const previousBodyThemeDark = body.classList.contains("theme-dark");
-    const previousBodyThemeLight = body.classList.contains("theme-light");
-    const previousColorScheme = root.style.colorScheme;
 
-    root.classList.remove("theme-dark");
-    root.classList.add("theme-light");
-    body.classList.remove("theme-dark");
-    body.classList.add("theme-light");
-    root.style.colorScheme = "light";
-
-    return () => {
-      root.classList.toggle("theme-dark", previousRootThemeDark);
-      root.classList.toggle("theme-light", previousRootThemeLight);
-      body.classList.toggle("theme-dark", previousBodyThemeDark);
-      body.classList.toggle("theme-light", previousBodyThemeLight);
-      root.style.colorScheme = previousColorScheme;
-    };
-  }, []);
 
   const topics = [...new Set(questions.map((q) => q.topic).filter(Boolean))].sort();
   const exams = [...new Set(questions.map((q) => q.exam).filter(Boolean))].sort();
@@ -615,10 +593,10 @@ export default function AdminPanel() {
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {selected.size > 0 && (
             <>
-              <button onClick={clearSelection} style={{ padding: "8px 14px", background: "transparent", color: "var(--color-text-secondary)", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, cursor: "pointer", fontSize: 13 }}>
+              <button data-ui-button="state" onClick={clearSelection} style={{ padding: "8px 14px", background: "transparent", color: "var(--color-text-secondary)", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, cursor: "pointer", fontSize: 13 }}>
                 Clear
               </button>
-              <button onClick={() => setBulkDeleteConfirm(true)} style={{ padding: "8px 14px", background: "#dc2626", color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontSize: 13, fontWeight: 500 }}>
+              <button data-ui-button="state" onClick={() => setBulkDeleteConfirm(true)} style={{ padding: "8px 14px", background: "#dc2626", color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontSize: 13, fontWeight: 500 }}>
                 Delete {selected.size} selected
               </button>
             </>
@@ -635,7 +613,7 @@ export default function AdminPanel() {
           >
             Upload Tools
           </a>
-          <button onClick={openNew} style={{ padding: "8px 16px", background: "var(--admin-blue)", color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontSize: 14, fontWeight: 500 }}>
+          <button data-ui-button="state" onClick={openNew} style={{ padding: "8px 16px", background: "var(--admin-blue)", color: "#fff", border: "none", borderRadius: 8, cursor: "pointer", fontSize: 14, fontWeight: 500 }}>
             + Add Question
           </button>
         </div>
@@ -658,7 +636,7 @@ export default function AdminPanel() {
               Upload NDJSON/JSONL or a JSON array. Select subject, topic, and quiz.
             </p>
           </div>
-          <button onClick={handleMuClear} style={{ padding: "6px 12px", borderRadius: 8, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: "pointer", fontSize: 12, color: "var(--color-text-secondary)" }}>
+          <button data-ui-button="state" onClick={handleMuClear} style={{ padding: "6px 12px", borderRadius: 8, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: "pointer", fontSize: 12, color: "var(--color-text-secondary)" }}>
             Clear
           </button>
         </div>
@@ -721,7 +699,7 @@ export default function AdminPanel() {
             placeholder="Bulk API URL"
             style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 13, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}
            aria-label="Bulk API URL"/>
-          <button
+          <button data-ui-button="state"
             onClick={handleMuUpload}
             disabled={muUploading || !muApiUrl || !muSubject || !muTopic || !muQuiz || muQuestions.length === 0}
             style={{ padding: "8px 14px", borderRadius: 8, border: "none", background: muUploading ? "#a855f7" : "var(--admin-blue)", color: "#fff", cursor: muUploading ? "wait" : "pointer", fontSize: 13, fontWeight: 500, opacity: muUploading ? 0.8 : 1 }}
@@ -811,11 +789,11 @@ export default function AdminPanel() {
         <div style={{ padding: "8px 14px", background: "var(--admin-blue-soft)", borderRadius: 8, marginBottom: 10, fontSize: 13, color: "var(--admin-blue)", display: "flex", alignItems: "center", gap: 12 }}>
           <span>{selected.size} question{selected.size > 1 ? "s" : ""} selected</span>
           {selected.size < filtered.length && (
-            <button onClick={selectAll} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--admin-blue)", fontWeight: 500, fontSize: 13, padding: 0 }}>
+            <button data-ui-button="state" onClick={selectAll} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--admin-blue)", fontWeight: 500, fontSize: 13, padding: 0 }}>
               Select all {filtered.length}
             </button>
           )}
-          <button onClick={clearSelection} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--admin-blue)", fontSize: 13, padding: 0, marginLeft: "auto" }}>
+          <button data-ui-button="state" onClick={clearSelection} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--admin-blue)", fontSize: 13, padding: 0, marginLeft: "auto" }}>
             Clear selection
           </button>
         </div>
@@ -870,8 +848,8 @@ export default function AdminPanel() {
                   </div>
                 </td>
                 <td data-label="Actions" style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>
-                  <button onClick={() => openEdit(q)} style={{ marginRight: 6, padding: "4px 10px", borderRadius: 6, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: "pointer", fontSize: 12, color: "var(--color-text-primary)" }}>Edit</button>
-                  <button onClick={() => setDeleteConfirm(q.id)} style={{ padding: "4px 10px", borderRadius: 6, border: "0.5px solid #fecaca", background: "transparent", cursor: "pointer", fontSize: 12, color: "#dc2626" }}>Delete</button>
+                  <button data-ui-button="state" onClick={() => openEdit(q)} style={{ marginRight: 6, padding: "4px 10px", borderRadius: 6, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: "pointer", fontSize: 12, color: "var(--color-text-primary)" }}>Edit</button>
+                  <button data-ui-button="state" onClick={() => setDeleteConfirm(q.id)} style={{ padding: "4px 10px", borderRadius: 6, border: "0.5px solid #fecaca", background: "transparent", cursor: "pointer", fontSize: 12, color: "#dc2626" }}>Delete</button>
                   <>
                     <input
                       type="file"
@@ -884,7 +862,7 @@ export default function AdminPanel() {
                         e.target.value = "";
                       }}
                      aria-label="Choose file"/>
-                    <button
+                    <button data-ui-button="state"
                       onClick={() => solImgRefs.current[q.id]?.click()}
                       disabled={solImgUploading === q.id}
                       style={{
@@ -904,7 +882,7 @@ export default function AdminPanel() {
                     </button>
                   </>
                   {(q.subject === "reasoning" || q.topic === "visual_reasoning") && q.questionImage && (
-                    <button
+                    <button data-ui-button="state"
                       onClick={() =>
                         setImagePreview({
                           src: q.questionImage || "",
@@ -926,11 +904,11 @@ export default function AdminPanel() {
       {/* Pagination */}
       {totalPages > 1 && (
         <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8, marginTop: "1rem", justifyContent: "center" }}>
-          <button onClick={() => setPage(1)} disabled={page === 1} style={{ padding: "6px 10px", borderRadius: 6, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: page === 1 ? "default" : "pointer", opacity: page === 1 ? 0.4 : 1 }}>«</button>
-          <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} style={{ padding: "6px 10px", borderRadius: 6, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: page === 1 ? "default" : "pointer", opacity: page === 1 ? 0.4 : 1 }}>‹</button>
+          <button data-ui-button="state" onClick={() => setPage(1)} disabled={page === 1} style={{ padding: "6px 10px", borderRadius: 6, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: page === 1 ? "default" : "pointer", opacity: page === 1 ? 0.4 : 1 }}>«</button>
+          <button data-ui-button="state" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} style={{ padding: "6px 10px", borderRadius: 6, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: page === 1 ? "default" : "pointer", opacity: page === 1 ? 0.4 : 1 }}>‹</button>
           <span style={{ fontSize: 13, color: "var(--color-text-secondary)" }}>Page {page} of {totalPages}</span>
-          <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} style={{ padding: "6px 10px", borderRadius: 6, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: page === totalPages ? "default" : "pointer", opacity: page === totalPages ? 0.4 : 1 }}>›</button>
-          <button onClick={() => setPage(totalPages)} disabled={page === totalPages} style={{ padding: "6px 10px", borderRadius: 6, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: page === totalPages ? "default" : "pointer", opacity: page === totalPages ? 0.4 : 1 }}>»</button>
+          <button data-ui-button="state" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} style={{ padding: "6px 10px", borderRadius: 6, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: page === totalPages ? "default" : "pointer", opacity: page === totalPages ? 0.4 : 1 }}>›</button>
+          <button data-ui-button="state" onClick={() => setPage(totalPages)} disabled={page === totalPages} style={{ padding: "6px 10px", borderRadius: 6, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: page === totalPages ? "default" : "pointer", opacity: page === totalPages ? 0.4 : 1 }}>»</button>
         </div>
       )}
 

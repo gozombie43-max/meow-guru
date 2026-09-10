@@ -6,23 +6,23 @@
   /* Light Theme (Palette: #F6F8FA White / #E6EAEF Ice Blue / #FFFFFF Pure White) */
   --mac-bg-desktop: #F6F8FA;
   --mac-window-bg: #FFFFFF;
-  --mac-window-border: #E6EAEF;
-  --mac-window-shadow: 0 20px 60px -10px rgba(15, 23, 42, 0.08), 0 0 0 1px #E6EAEF;
-  --mac-titlebar-bg: #F6F8FA;
-  --mac-sidebar-bg: #E6EAEF;
-  --mac-sidebar-border: #E6EAEF;
+  --mac-window-border: var(--light-border);
+  --mac-window-shadow: 0 20px 60px -10px rgba(15, 23, 42, 0.08), 0 0 0 1px var(--light-border);
+  --mac-titlebar-bg: var(--light-canvas);
+  --mac-sidebar-bg: var(--light-border);
+  --mac-sidebar-border: var(--light-border);
   --mac-surface: #FFFFFF;
-  --mac-surface-hover: #F6F8FA;
-  --mac-surface-active: #E6EAEF;
-  --mac-border: #E6EAEF;
+  --mac-surface-hover: var(--light-canvas);
+  --mac-surface-active: var(--light-border);
+  --mac-border: var(--light-border);
   --mac-border-hover: rgba(0, 113, 227, 0.35);
-  --mac-border-focus: #0071e3;
-  --mac-blue: #0071e3;
+  --mac-border-focus: var(--light-accent);
+  --mac-blue: var(--light-accent);
   --mac-blue-hover: #0077ed;
-  --mac-blue-subtle: #E6EAEF;
-  --mac-text-primary: #1d1d1f;
-  --mac-text-secondary: #57606a;
-  --mac-text-tertiary: #8c959f;
+  --mac-blue-subtle: var(--light-border);
+  --mac-text-primary: var(--light-text);
+  --mac-text-secondary: var(--light-text-secondary);
+  --mac-text-tertiary: var(--light-text-muted);
   --mac-font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
   --mac-font-mono: "SF Mono", Menlo, Monaco, Consolas, monospace;
   --scrollbar-thumb: rgba(0, 0, 0, 0.18);
@@ -77,25 +77,25 @@
 :global(body.theme-dark) .pageRoot,
 :global(html.theme-dark) .pageRoot,
 .pageRoot[data-theme="dark"] {
-  --mac-bg-desktop: #000000;
-  --mac-window-bg: rgba(26, 26, 28, 0.94);
-  --mac-window-border: rgba(255, 255, 255, 0.12);
+  --mac-bg-desktop: var(--dark-canvas);
+  --mac-window-bg: var(--dark-canvas);
+  --mac-window-border: var(--dark-border);
   --mac-window-shadow: 0 25px 70px -10px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.08);
-  --mac-titlebar-bg: rgba(34, 34, 36, 0.96);
-  --mac-sidebar-bg: rgba(28, 28, 30, 0.88);
-  --mac-sidebar-border: rgba(255, 255, 255, 0.08);
-  --mac-surface: #28282a;
-  --mac-surface-hover: #363638;
-  --mac-surface-active: #444446;
-  --mac-border: rgba(255, 255, 255, 0.09);
+  --mac-titlebar-bg: var(--dark-surface);
+  --mac-sidebar-bg: var(--dark-canvas);
+  --mac-sidebar-border: var(--dark-border);
+  --mac-surface: var(--dark-surface);
+  --mac-surface-hover: var(--dark-surface-muted);
+  --mac-surface-active: var(--dark-surface-muted);
+  --mac-border: var(--dark-border);
   --mac-border-hover: rgba(10, 132, 255, 0.45);
-  --mac-border-focus: #0a84ff;
-  --mac-blue: #0a84ff;
-  --mac-blue-hover: #409cff;
-  --mac-blue-subtle: rgba(10, 132, 255, 0.16);
-  --mac-text-primary: #ffffff;
-  --mac-text-secondary: rgba(235, 235, 245, 0.65);
-  --mac-text-tertiary: rgba(235, 235, 245, 0.4);
+  --mac-border-focus: var(--dark-accent);
+  --mac-blue: var(--dark-accent);
+  --mac-blue-hover: var(--dark-accent-hover);
+  --mac-blue-subtle: var(--dark-accent-soft);
+  --mac-text-primary: var(--dark-text);
+  --mac-text-secondary: var(--dark-text-secondary);
+  --mac-text-tertiary: var(--dark-text-muted);
   --scrollbar-thumb: rgba(255, 255, 255, 0.2);
   --scrollbar-thumb-hover: rgba(255, 255, 255, 0.35);
   color-scheme: dark;
@@ -293,7 +293,7 @@
 }
 
 :global(body.theme-dark) .heroIconBox {
-  background: #2c2c2e;
+  background: var(--dark-surface-muted);
   color: #ffffff;
   border-color: rgba(255, 255, 255, 0.1);
 }
@@ -782,7 +782,7 @@
   gap: 7px;
   padding: 7px 18px;
   border-radius: 8px;
-  background: linear-gradient(135deg, #0071e3 0%, #0056b3 100%);
+  background: linear-gradient(135deg, var(--light-accent) 0%, var(--light-accent-hover) 100%);
   color: #ffffff !important;
   border: 1px solid rgba(255, 255, 255, 0.15);
   font-size: 12.5px;
@@ -816,7 +816,7 @@
    iOS MOBILE START QUIZ STYLES (< 768px)
    ============================================================================= */
 .iosScreen {
-  --ios-bg: #f2f2f7;
+  --ios-bg: var(--light-canvas);
   --ios-card: #ffffff;
   --ios-separator: rgba(60, 60, 67, 0.18);
   --ios-ink: #1c1c1e;
@@ -824,7 +824,7 @@
   --ios-subtle: rgba(60, 60, 67, 0.6);
   --ios-field: rgba(118, 118, 128, 0.12);
   --ios-nav: rgba(242, 242, 247, 0.92);
-  --ios-accent: #0071e3;
+  --ios-accent: var(--light-accent);
 
   min-height: 100vh;
   min-height: 100dvh;
@@ -839,15 +839,15 @@
 :global(body.theme-dark) .iosScreen,
 :global(html.theme-dark) .iosScreen,
 .iosScreen[data-theme="dark"] {
-  --ios-bg: #000000;
-  --ios-card: #1c1c1e;
-  --ios-separator: rgba(84, 84, 88, 0.65);
-  --ios-ink: #ffffff;
-  --ios-muted: #98989f;
+  --ios-bg: var(--dark-canvas);
+  --ios-card: var(--dark-surface);
+  --ios-separator: var(--dark-border);
+  --ios-ink: var(--dark-text);
+  --ios-muted: var(--dark-text-muted);
   --ios-subtle: rgba(235, 235, 245, 0.6);
   --ios-field: rgba(118, 118, 128, 0.24);
   --ios-nav: rgba(0, 0, 0, 0.85);
-  --ios-accent: #0a84ff;
+  --ios-accent: var(--dark-accent);
 }
 
 .iosNav {
@@ -1382,7 +1382,7 @@
   padding: 0 8px;
   border-radius: 9px;
   border: 1px solid var(--ios-card-border, rgba(255, 255, 255, 0.08));
-  background: var(--ios-card-bg, #1c1c1e);
+  background: var(--ios-card-bg, var(--dark-surface));
   color: var(--ios-label, #ffffff);
   font-size: 13px;
   font-weight: 700;

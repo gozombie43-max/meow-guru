@@ -139,7 +139,7 @@ setStatus(source === "upload" ? `Successfully deployed ${data.totalQuestions ?? 
 
   return (
     <div className={styles.shell}>
-      <header className={styles.pageHeader}>
+      <header data-ui-chrome="header" className={styles.pageHeader}>
         <div>
           <h1 className={styles.pageTitle}>Mock Test &amp; PYQ Studio</h1>
           <p className={styles.pageSubtitle}>Deploy complete previous year question papers or register dynamic question generator slots directly in MongoDB.</p>
@@ -174,19 +174,19 @@ setStatus(source === "upload" ? `Successfully deployed ${data.totalQuestions ?? 
         {/* Mode Selectors */}
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 14 }}>
           <div style={{ display: "flex", background: "rgba(0, 0, 0, 0.05)", padding: 3, borderRadius: 8, border: "1px solid rgba(0, 0, 0, 0.08)" }}>
-            <button type="button" onClick={() => setType("mock")} className={type === "mock" ? styles.btnPrimary : styles.btnSecondary} style={{ borderRadius: 6, padding: "5px 12px", fontSize: 12 }}>
+            <button data-ui-button="state" type="button" onClick={() => setType("mock")} className={type === "mock" ? styles.btnPrimary : styles.btnSecondary} style={{ borderRadius: 6, padding: "5px 12px", fontSize: 12 }}>
               🎯 Full Mock Test
             </button>
-            <button type="button" onClick={() => setType("pyq")} className={type === "pyq" ? styles.btnPrimary : styles.btnSecondary} style={{ borderRadius: 6, padding: "5px 12px", fontSize: 12 }}>
+            <button data-ui-button="state" type="button" onClick={() => setType("pyq")} className={type === "pyq" ? styles.btnPrimary : styles.btnSecondary} style={{ borderRadius: 6, padding: "5px 12px", fontSize: 12 }}>
               🏛️ Previous Year (PYQ)
             </button>
           </div>
 
           <div style={{ display: "flex", background: "rgba(0, 0, 0, 0.05)", padding: 3, borderRadius: 8, border: "1px solid rgba(0, 0, 0, 0.08)" }}>
-            <button type="button" onClick={() => setSource("upload")} className={source === "upload" ? styles.btnPrimary : styles.btnSecondary} style={{ borderRadius: 6, padding: "5px 12px", fontSize: 12 }}>
+            <button data-ui-button="state" type="button" onClick={() => setSource("upload")} className={source === "upload" ? styles.btnPrimary : styles.btnSecondary} style={{ borderRadius: 6, padding: "5px 12px", fontSize: 12 }}>
               📄 Upload Full Paper
             </button>
-            <button type="button" onClick={() => setSource("dynamic")} className={source === "dynamic" ? styles.btnPrimary : styles.btnSecondary} style={{ borderRadius: 6, padding: "5px 12px", fontSize: 12 }}>
+            <button data-ui-button="state" type="button" onClick={() => setSource("dynamic")} className={source === "dynamic" ? styles.btnPrimary : styles.btnSecondary} style={{ borderRadius: 6, padding: "5px 12px", fontSize: 12 }}>
               ⚡ Dynamic Slot
             </button>
           </div>
@@ -214,7 +214,7 @@ setStatus(source === "upload" ? `Successfully deployed ${data.totalQuestions ?? 
             Paper Title
             <input placeholder="e.g. SSC CGL 2024 Tier I Official Paper" value={title} onChange={(e) => setTitle(e.target.value)} className={styles.macInput}  aria-label="e.g. SSC CGL 2024 Tier I Official Paper"/>
           </label>
-          <button type="button" onClick={generate} className={styles.btnSecondary} style={{ height: 35 }}>
+          <button data-ui-button="secondary" type="button" onClick={generate} className={styles.btnSecondary} style={{ height: 35 }}>
             ⚡ Auto-Generate
           </button>
         </div>
@@ -326,7 +326,7 @@ setStatus(source === "upload" ? `Successfully deployed ${data.totalQuestions ?? 
       )}
 
       <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
-        <button disabled={busy} onClick={deploy} className={styles.btnPrimary}>
+        <button data-ui-button="primary" disabled={busy} onClick={deploy} className={styles.btnPrimary}>
           {busy ? "Working…" : "🚀 Deploy Paper / Create Slot →"}
         </button>
       </div>
@@ -339,10 +339,10 @@ setStatus(source === "upload" ? `Successfully deployed ${data.totalQuestions ?? 
             <span style={{ fontSize: 11.5, color: "var(--admin-text-secondary, #6e6e73)" }}>Real-time test slots published to candidates</span>
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            <button disabled={busy} onClick={loadSlots} className={styles.btnSecondary} style={{ fontSize: 12, padding: "5px 10px" }}>
+            <button data-ui-button="secondary" disabled={busy} onClick={loadSlots} className={styles.btnSecondary} style={{ fontSize: 12, padding: "5px 10px" }}>
               🔄 Fetch Live
             </button>
-            <button disabled={busy} onClick={seed} className={styles.btnWarning} style={{ fontSize: 12, padding: "5px 10px" }}>
+            <button data-ui-button="state" disabled={busy} onClick={seed} className={styles.btnWarning} style={{ fontSize: 12, padding: "5px 10px" }}>
               ⚡ Seed Defaults
             </button>
           </div>
@@ -397,7 +397,7 @@ setStatus(source === "upload" ? `Successfully deployed ${data.totalQuestions ?? 
                         </span>
                       </td>
                       <td data-label="Actions" style={{ padding: "8px 12px" }}>
-                        <button disabled={busy} onClick={() => remove(slot)} className={styles.btnDanger} style={{ padding: "3px 8px", fontSize: 11 }}>
+                        <button data-ui-button="danger" disabled={busy} onClick={() => remove(slot)} className={styles.btnDanger} style={{ padding: "3px 8px", fontSize: 11 }}>
                           Delete
                         </button>
                       </td>

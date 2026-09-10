@@ -54,7 +54,7 @@
 
 :global(.dark) .triggerBadge,
 :global(body.theme-dark) .triggerBadge {
-  border-color: #1c1c1e;
+  border-color: var(--dark-surface);
 }
 
 .unreadBadge {
@@ -130,15 +130,15 @@
   padding: 14px;
   animation: popoverScale 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   transform-origin: top right;
-  color: #1d1d1f;
+  color: var(--light-text);
   box-sizing: border-box;
 }
 
 :global(.dark) .popover,
 :global(body.theme-dark) .popover {
-  background: #1c1c1e;
+  background: var(--dark-surface);
   border-color: rgba(255, 255, 255, 0.12);
-  color: #f5f5f7;
+  color: var(--light-canvas);
   box-shadow: 0 24px 50px -10px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
@@ -208,7 +208,7 @@
   letter-spacing: 0.3px;
   text-transform: uppercase;
   background: rgba(0, 113, 227, 0.1);
-  color: #0071e3;
+  color: var(--light-accent);
   border: 1px solid rgba(0, 113, 227, 0.2);
 }
 
@@ -261,7 +261,7 @@
 .roleBadge.roleUser,
 .roleBadge.roleStudent {
   background: rgba(0, 113, 227, 0.1);
-  color: #0071e3;
+  color: var(--light-accent);
   border: 1px solid rgba(0, 113, 227, 0.2);
 }
 
@@ -340,7 +340,7 @@
 
 .iconBlue {
   background: rgba(0, 113, 227, 0.12);
-  color: #0071e3;
+  color: var(--light-accent);
 }
 :global(.dark) .iconBlue,
 :global(body.theme-dark) .iconBlue {
@@ -488,7 +488,7 @@
   justify-content: center;
   padding: 9px 16px;
   border-radius: 12px;
-  background: #0071e3;
+  background: var(--light-accent);
   color: #ffffff;
   font-size: 13px;
   font-weight: 700;
@@ -547,7 +547,7 @@
   box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05);
   overflow: hidden;
   animation: modalPop 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-  color: #1d1d1f;
+  color: var(--light-text);
   display: flex;
   flex-direction: column;
   max-height: 90vh;
@@ -555,9 +555,9 @@
 
 :global(.dark) .modalCard,
 :global(body.theme-dark) .modalCard {
-  background: #1c1c1e;
+  background: var(--dark-surface);
   border-color: rgba(255, 255, 255, 0.14);
-  color: #f5f5f7;
+  color: var(--light-canvas);
   box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
@@ -599,7 +599,7 @@
   align-items: center;
   justify-content: center;
   background: rgba(0, 113, 227, 0.12);
-  color: #0071e3;
+  color: var(--light-accent);
 }
 
 :global(.dark) .modalTitleIcon,
@@ -695,7 +695,7 @@
 }
 
 .avatarPresetBtn.presetSelected {
-  border-color: #0071e3;
+  border-color: var(--light-accent);
   box-shadow: 0 0 0 2px rgba(0, 113, 227, 0.3);
   transform: scale(1.08);
 }
@@ -722,12 +722,12 @@
 .formLabel {
   font-size: 13px;
   font-weight: 600;
-  color: #1d1d1f;
+  color: var(--light-text);
 }
 
 :global(.dark) .formLabel,
 :global(body.theme-dark) .formLabel {
-  color: #f5f5f7;
+  color: var(--light-canvas);
 }
 
 .formInput {
@@ -750,15 +750,15 @@
 }
 
 .formInput:focus {
-  border-color: #0071e3;
+  border-color: var(--light-accent);
   background: #ffffff;
   box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.15);
 }
 
 :global(.dark) .formInput:focus,
 :global(body.theme-dark) .formInput:focus {
-  background: #2c2c2e;
-  border-color: #0a84ff;
+  background: var(--dark-surface-muted);
+  border-color: var(--dark-accent);
   box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.25);
 }
 
@@ -819,7 +819,7 @@
   padding: 10px 20px;
   border-radius: 12px;
   border: none;
-  background: #0071e3;
+  background: var(--light-accent);
   color: #ffffff;
   font-size: 13.5px;
   font-weight: 700;
@@ -1015,12 +1015,12 @@
   min-width: 76px;
   border-radius: 9999px;
   background: transparent;
-  color: #0071e3;
+  color: var(--light-accent);
   font-size: 12.5px;
   font-weight: 700;
   letter-spacing: 0.05em;
   text-decoration: none;
-  border: 1.6px solid #0071e3;
+  border: 1.6px solid var(--light-accent);
   transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap;
   cursor: pointer;
@@ -1049,8 +1049,8 @@
 :global(.dark) .loginPillBtn,
 :global(body.theme-dark) .loginPillBtn {
   background: transparent;
-  border-color: #0a84ff;
-  color: #0a84ff;
+  border-color: var(--dark-accent);
+  color: var(--dark-accent);
 }
 
 :global(.dark) .loginPillBtn:hover,

@@ -1,7 +1,7 @@
 /* --- Base Variables & Reset --- */
 .study-modes-wrapper {
-  --bg-mobile: #f2f2f7;
-  --bg-desktop: #f5f5f7;
+  --bg-mobile: var(--light-canvas);
+  --bg-desktop: var(--light-canvas);
   --text-main: #000000;
   --text-dim: #8e8e93;
   --accent: #007aff;
@@ -20,21 +20,21 @@
 }
 
 .study-modes-wrapper.dark {
-  --bg-mobile: #000000;
-  --bg-desktop: #1c1c1e;
+  --bg-mobile: var(--dark-canvas);
+  --bg-desktop: var(--dark-surface);
   --text-main: #ffffff;
   --text-dim: #8e8e93;
-  --accent: #0a84ff;
-  --cell-bg: #1c1c1e;
-  --separator: #38383a;
+  --accent: var(--dark-accent);
+  --cell-bg: var(--dark-surface);
+  --separator: var(--dark-border);
 }
 
 body:has(.study-modes-wrapper) {
-  background-color: #f2f2f7;
+  background-color: var(--light-canvas);
 }
 
 body.theme-dark:has(.study-modes-wrapper) {
-  background-color: #000000;
+  background-color: var(--dark-canvas);
 }
 
 /* --- iOS Mobile Layout (Default) --- */
@@ -193,7 +193,7 @@ body.theme-dark:has(.study-modes-wrapper) {
   }
   
   body:has(.study-modes-wrapper) {
-    background: #000; /* Behind wallpaper */
+    background: var(--dark-canvas); /* Behind wallpaper */
   }
 
   .macos-window {
@@ -228,7 +228,7 @@ body.theme-dark:has(.study-modes-wrapper) {
 
   .study-modes-wrapper.dark .macos-sidebar {
     --macos-sidebar: rgba(40, 40, 40, 0.4);
-    --macos-border: rgba(255,255,255,0.1);
+    --macos-border: var(--dark-border);
   }
 
   .macos-traffic-lights {

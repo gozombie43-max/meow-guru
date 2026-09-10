@@ -302,7 +302,7 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
 
   return (
     <div className={styles.shell}>
-      <header className={styles.pageHeader}>
+      <header data-ui-chrome="header" className={styles.pageHeader}>
         <div>
           <h1 className={styles.pageTitle}>Mass NDJSON / JSON Uploader</h1>
           <p className={styles.pageSubtitle}>Batch ingest large question sets with automated schema validation, pre-flight DB duplicate checking, and progressive chunking.</p>
@@ -435,13 +435,13 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
               <option value="duplicate">In DB Dupes</option>
             </select>
             
-            <button onClick={() => { setFilters({ subject: "", difficulty: "", status: "", chapter: "" }); setSelected(new Set(rows.map(r => r._idx))); }} className={styles.btnSecondary}>
+            <button data-ui-button="secondary" onClick={() => { setFilters({ subject: "", difficulty: "", status: "", chapter: "" }); setSelected(new Set(rows.map(r => r._idx))); }} className={styles.btnSecondary}>
               Reset &amp; Select All
             </button>
-            <button onClick={removeDupes} className={styles.btnDanger}>
+            <button data-ui-button="danger" onClick={removeDupes} className={styles.btnDanger}>
               Remove DB Dupes
             </button>
-            <button onClick={removeConflicts} className={styles.btnWarning}>
+            <button data-ui-button="state" onClick={removeConflicts} className={styles.btnWarning}>
               Remove Conflicts
             </button>
           </div>
@@ -536,7 +536,7 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
 
       {rows.length > 0 && (
         <div style={{ marginTop: 8 }}>
-          <button 
+          <button data-ui-button="primary"
             onClick={upload} 
             disabled={saving || selected.size === 0} 
             className={styles.btnPrimary}

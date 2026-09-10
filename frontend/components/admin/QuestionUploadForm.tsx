@@ -92,7 +92,7 @@ export default function QuestionUploadForm({ backLink }: { backLink?: ReactNode 
 
   return (
     <div className={styles.shell}>
-      <header className={styles.pageHeader}>
+      <header data-ui-chrome="header" className={styles.pageHeader}>
         {backLink && <div style={{ marginBottom: 12 }}>{backLink}</div>}
         <div>
           <h1 className={styles.pageTitle}>Single Question Creator</h1>
@@ -323,7 +323,7 @@ export default function QuestionUploadForm({ backLink }: { backLink?: ReactNode 
         )}
 
         <div style={{ display: "flex", gap: 12, marginTop: 4 }}>
-          <button disabled={saving} type="submit" className={styles.btnPrimary}>
+          <button data-ui-button="primary" disabled={saving} type="submit" className={styles.btnPrimary}>
             {saving ? "Deploying Question…" : "Deploy Question →"}
           </button>
         </div>

@@ -3,7 +3,7 @@ import css from "styled-jsx/css";
 export const studyModeLoadingStyles = css`
           .apple-dict-viewport {
             min-height: 100dvh;
-            background: #000000;
+            background: var(--dark-canvas);
             color: #ffffff;
             display: flex;
             align-items: center;
@@ -11,8 +11,8 @@ export const studyModeLoadingStyles = css`
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
           }
           .apple-dict-viewport[data-theme="light"] {
-            background: #e5e5eb;
-            color: #1d1d1f;
+            background: var(--light-canvas);
+            color: var(--light-text);
           }
           .loading-state {
             display: flex;
@@ -38,9 +38,9 @@ export const studyModeComparisonStyles = css`
            AUTHENTIC APPLE DICTIONARY MATERIALS & SYSTEM COLOR TOKENS
            ════════════════════════════════════════════════════ */
         .apple-dict-viewport {
-          --desktop-bg: #000000;
+          --desktop-bg: var(--dark-canvas);
           --sidebar-bg: rgba(30, 30, 35, 0.85);
-          --workspace-bg: #000000;
+          --workspace-bg: var(--dark-canvas);
           --window-border: rgba(255, 255, 255, 0.16);
           --divider: rgba(255, 255, 255, 0.09);
           --text-primary: #ffffff;
@@ -66,12 +66,12 @@ export const studyModeComparisonStyles = css`
         }
 
         .apple-dict-viewport[data-theme="light"] {
-          --desktop-bg: #e5e5eb;
+          --desktop-bg: var(--light-canvas);
           --sidebar-bg: rgba(235, 235, 240, 0.92);
           --workspace-bg: #ffffff;
           --window-border: rgba(0, 0, 0, 0.15);
           --divider: rgba(0, 0, 0, 0.08);
-          --text-primary: #1d1d1f;
+          --text-primary: var(--light-text);
           --text-secondary: #6e6e73;
           --text-muted: #86868b;
           --item-hover: rgba(0, 0, 0, 0.04);
@@ -300,7 +300,7 @@ export const studyModeComparisonStyles = css`
         .apple-dict-viewport[data-theme="light"] .mobile-footer-btn {
           border: 1px solid rgba(0, 0, 0, 0.16);
           background: rgba(0, 0, 0, 0.07);
-          color: #1d1d1f;
+          color: var(--light-text);
           box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
         }
 

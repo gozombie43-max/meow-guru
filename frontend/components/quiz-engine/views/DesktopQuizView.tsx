@@ -99,7 +99,7 @@ export function DesktopQuizView({
       {themeStyles}
       <div className="mac-series-desktop">
         <div className="mac-series-window">
-          <header className="mac-series-header">
+          <header data-ui-chrome="header" className="mac-series-header">
             <div className="mac-series-traffic-lights">
               <div className="mac-dot mac-red"></div>
               <div className="mac-dot mac-yellow"></div>
@@ -109,7 +109,7 @@ export function DesktopQuizView({
               {title} - {modeLabels[mode] || "Quiz"}
             </div>
             <div className="mac-series-header-right">
-              <button
+              <button data-ui-button="icon"
                 type="button"
                 className="mac-series-icon-button"
                 onClick={toggleTheme}
@@ -147,7 +147,7 @@ export function DesktopQuizView({
                       submittedQuestions,
                     });
                     return (
-                      <button
+                      <button data-ui-button="state"
                         key={`mac-palette-${question.id}-${index}`}
                         type="button"
                         ref={index === currentIndex ? activeMacBtnRef : null}
@@ -170,7 +170,7 @@ export function DesktopQuizView({
                 />
                 <span>{currentQ.exam || `${title} concept practice`}</span>
 
-                <button
+                <button data-ui-button="state"
                   type="button"
                   className="mac-series-bookmark"
                   onClick={handleBookmark}
@@ -220,7 +220,7 @@ export function DesktopQuizView({
                   const isUserAnswer = isCurrentSubmitted && isSelected;
                   const isDimmed = isCurrentSubmitted && !isCorrect && !isWrong;
                   return (
-                    <button
+                    <button data-ui-button="state"
                       key={`${currentQ.id}-${index}`}
                       type="button"
                       disabled={isCurrentSubmitted}
@@ -264,8 +264,8 @@ export function DesktopQuizView({
                   <p className="mac-series-error">{submitError}</p>
                 )}
 
-                <div className="mac-series-footer-buttons">
-                  <button
+                <div data-ui-chrome="footer" className="mac-series-footer-buttons">
+                  <button data-ui-button="secondary"
                     type="button"
                     onClick={handlePrev}
                     disabled={currentIndex === 0}
@@ -274,7 +274,7 @@ export function DesktopQuizView({
                     Previous
                   </button>
                   {canViewSolution && (
-                    <button
+                    <button data-ui-button="state"
                       type="button"
                       className="mac-series-footer-solution"
                       onClick={openSolution}
@@ -290,7 +290,7 @@ export function DesktopQuizView({
                     question={currentQ}
                     theme={theme}
                     renderTrigger={(onOpen) => (
-                      <button
+                      <button data-ui-button="state"
                         type="button"
                         className="mac-series-footer-ai"
                         onClick={onOpen}
@@ -299,7 +299,7 @@ export function DesktopQuizView({
                       </button>
                     )}
                   />
-                  <button
+                  <button data-ui-button="primary"
                     type="button"
                     onClick={() =>
                       isCurrentSubmitted ? handleNext() : handleSubmitCurrent()
@@ -332,8 +332,8 @@ export function DesktopQuizView({
       <style jsx global>{`
         .mac-series-quiz {
           min-height: 100svh;
-          background: #000;
-          color: #f2f2f7;
+          background: var(--dark-canvas);
+          color: var(--light-canvas);
           font-family:
             -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
             Arial, sans-serif;
@@ -342,7 +342,7 @@ export function DesktopQuizView({
           height: 100svh;
           width: 100%;
           padding: 0;
-          background: linear-gradient(135deg, #13151a, #000);
+          background: linear-gradient(135deg, #13151a, var(--dark-canvas));
           display: flex;
           align-items: center;
           justify-content: center;
@@ -753,61 +753,61 @@ export function DesktopQuizView({
         }
         /* Light Theme Overrides (Palette: #F6F8FA White / #E6EAEF Ice Blue / #FFFFFF Pure White) */
         .mac-series-quiz[data-theme="light"] {
-          background: #f6f8fa;
-          color: #1d1d1f;
+          background: var(--light-canvas);
+          color: var(--light-text);
         }
         .mac-series-quiz[data-theme="light"] .mac-series-desktop {
-          background: #f6f8fa;
+          background: var(--light-canvas);
         }
         .mac-series-quiz[data-theme="light"] .mac-series-window {
           background: #ffffff;
-          border: 1px solid #e6eaef;
+          border: 1px solid var(--light-border);
           box-shadow:
             0 20px 60px -10px rgba(15, 23, 42, 0.08),
-            0 0 0 1px #e6eaef;
+            0 0 0 1px var(--light-border);
         }
         .mac-series-quiz[data-theme="light"] .mac-series-header {
-          background: #f6f8fa;
-          border-bottom: 1px solid #e6eaef;
+          background: var(--light-canvas);
+          border-bottom: 1px solid var(--light-border);
         }
         .mac-series-quiz[data-theme="light"] .mac-series-title {
-          color: #1d1d1f;
+          color: var(--light-text);
           font-weight: 700;
         }
         .mac-series-quiz[data-theme="light"] .mac-series-icon-button {
-          color: #57606a;
+          color: var(--light-text-secondary);
           background: #ffffff;
-          border: 1px solid #e6eaef;
+          border: 1px solid var(--light-border);
         }
         .mac-series-quiz[data-theme="light"] .mac-series-icon-button:hover {
-          background: #e6eaef;
-          color: #1d1d1f;
+          background: var(--light-accent-soft);
+          color: var(--light-text);
         }
 
         .mac-series-quiz[data-theme="light"] .mac-series-sidebar {
-          background: #f6f8fa;
-          border-right: 1px solid #e6eaef;
+          background: var(--light-canvas);
+          border-right: 1px solid var(--light-border);
         }
         .mac-series-quiz[data-theme="light"] .mac-sidebar-title {
-          color: #1d1d1f;
-          border-bottom: 1px solid #e6eaef;
-          background: #f6f8fa;
+          color: var(--light-text);
+          border-bottom: 1px solid var(--light-border);
+          background: var(--light-canvas);
         }
         .mac-series-quiz[data-theme="light"] .mac-palette-btn {
           background: #ffffff;
-          color: #1d1d1f;
-          border: 1px solid #e6eaef;
+          color: var(--light-text);
+          border: 1px solid var(--light-border);
           box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
         }
         .mac-series-quiz[data-theme="light"] .mac-palette-btn:hover {
-          background: #f6f8fa;
-          border-color: #0071e3;
-          color: #0071e3;
+          background: var(--light-canvas);
+          border-color: var(--light-accent);
+          color: var(--light-accent);
         }
         .mac-series-quiz[data-theme="light"] .mac-palette-btn.is-current {
-          background: #0071e3;
+          background: var(--light-accent);
           color: #fff;
-          border-color: #0071e3;
+          border-color: var(--light-accent);
           box-shadow: 0 3px 10px rgba(0, 122, 255, 0.35);
           font-weight: 700;
         }
@@ -825,58 +825,58 @@ export function DesktopQuizView({
         }
 
         .mac-series-quiz[data-theme="light"] .mac-series-main {
-          background: #f6f8fa;
+          background: var(--light-canvas);
         }
         .mac-series-quiz[data-theme="light"] .mac-series-meta-row {
-          color: #57606a;
+          color: var(--light-text-secondary);
         }
         .mac-series-quiz[data-theme="light"] .mac-series-bookmark {
-          border-color: #e6eaef;
+          border-color: var(--light-border);
           background: #ffffff;
-          color: #57606a;
+          color: var(--light-text-secondary);
           box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
         }
         .mac-series-quiz[data-theme="light"] .mac-series-bookmark:hover {
           border-color: #d8dee4;
           background: #f1f4f7;
-          color: #0071e3;
+          color: var(--light-accent);
         }
         .mac-series-quiz[data-theme="light"] .mac-series-prompt {
-          color: #1d1d1f;
+          color: var(--light-text);
         }
 
         .mac-series-quiz[data-theme="light"] .mac-series-option {
           background: #ffffff;
           border: 1px solid #d8dee4;
-          color: #1d1d1f;
-          box-shadow: 0 3px 12px rgba(15, 23, 42, 0.07);
+          color: var(--light-text);
+          box-shadow: none;
         }
         .mac-series-quiz[data-theme="light"]
           .mac-series-option:not(:disabled):hover {
           background: #ffffff;
           border-color: rgba(0, 113, 227, 0.4);
           box-shadow: 0 4px 14px rgba(0, 113, 227, 0.1);
-          transform: translateY(-1px);
+          transform: none;
         }
         .mac-series-quiz[data-theme="light"] .mac-series-option.is-selected {
-          background: #e6eaef;
-          border-color: #0071e3;
-          color: #0071e3;
+          background: var(--light-accent-soft);
+          border-color: var(--light-accent);
+          color: var(--light-accent);
           box-shadow:
-            0 0 0 1.5px #0071e3,
+            0 0 0 1.5px var(--light-accent),
             0 4px 14px rgba(0, 113, 227, 0.14);
         }
         .mac-series-quiz[data-theme="light"] .mac-series-option.is-correct {
           background: #ffffff;
           border-color: #d8dee4;
-          color: #1d1d1f;
-          box-shadow: 0 3px 12px rgba(15, 23, 42, 0.07);
+          color: var(--light-text);
+          box-shadow: none;
         }
         .mac-series-quiz[data-theme="light"] .mac-series-option.is-wrong {
           background: #ffffff;
           border-color: #d8dee4;
-          color: #1d1d1f;
-          box-shadow: 0 3px 12px rgba(15, 23, 42, 0.07);
+          color: var(--light-text);
+          box-shadow: none;
         }
         .mac-series-quiz[data-theme="light"]
           .mac-series-option.is-user-answer.is-correct {
@@ -896,15 +896,15 @@ export function DesktopQuizView({
           color: #6e7781;
         }
         .mac-series-quiz[data-theme="light"] .mac-series-option-letter {
-          background: #e6eaef;
-          color: #1d1d1f;
+          background: var(--light-accent-soft);
+          color: var(--light-text);
           border-color: transparent;
           font-weight: 700;
         }
         .mac-series-quiz[data-theme="light"]
           .mac-series-option.is-selected
           .mac-series-option-letter {
-          background: #0071e3;
+          background: var(--light-accent);
           color: #fff;
           border-color: transparent;
         }
@@ -925,32 +925,32 @@ export function DesktopQuizView({
 
         .mac-series-quiz[data-theme="light"] .mac-series-footer-secondary {
           background: #ffffff;
-          border: 1px solid #e6eaef;
-          color: #57606a;
+          border: 1px solid var(--light-border);
+          color: var(--light-text-secondary);
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
         }
         .mac-series-quiz[data-theme="light"]
           .mac-series-footer-secondary:not(:disabled):hover {
-          background: #e6eaef;
-          color: #1d1d1f;
+          background: var(--light-accent-soft);
+          color: var(--light-text);
         }
         .mac-series-quiz[data-theme="light"] .mac-series-footer-solution,
         .mac-series-quiz[data-theme="light"] .mac-series-footer-ai {
           background: #ffffff;
-          border: 1px solid #e6eaef;
-          color: #57606a;
+          border: 1px solid var(--light-border);
+          color: var(--light-text-secondary);
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
         }
         .mac-series-quiz[data-theme="light"]
           .mac-series-footer-solution:not(:disabled):hover,
         .mac-series-quiz[data-theme="light"]
           .mac-series-footer-ai:not(:disabled):hover {
-          background: #e6eaef;
+          background: var(--light-accent-soft);
           border-color: #d8dee4;
-          color: #1d1d1f;
+          color: var(--light-text);
         }
         .mac-series-quiz[data-theme="light"] .mac-series-footer-primary {
-          background: #0071e3;
+          background: var(--light-accent);
           border: none;
           color: #ffffff;
           box-shadow: 0 4px 12px rgba(0, 113, 227, 0.3);

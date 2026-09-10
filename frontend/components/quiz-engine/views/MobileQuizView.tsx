@@ -198,7 +198,7 @@ export function MobileQuizView({
                 </span>
               )}
             </div>
-            <button
+            <button data-ui-button="state"
               type="button"
               className="ios-series-bookmark"
               onClick={handleBookmark}
@@ -245,7 +245,7 @@ export function MobileQuizView({
               const isUserAnswer = isCurrentSubmitted && isSelected;
               const isDimmed = isCurrentSubmitted && !isCorrect && !isWrong;
               return (
-                <button
+                <button data-ui-button="state"
                   key={`${currentQ.id}-${index}`}
                   type="button"
                   disabled={isCurrentSubmitted}
@@ -289,7 +289,7 @@ export function MobileQuizView({
               className={`ios-series-actions ${hideViewSolution || hideAiTutor ? "is-single-action" : ""}`}
             >
               {!hideViewSolution && (
-                <button
+                <button data-ui-button="state"
                   type="button"
                   className="ios-series-solution"
                   onClick={openSolution}
@@ -306,7 +306,7 @@ export function MobileQuizView({
                   question={currentQ}
                   theme={theme}
                   renderTrigger={(onOpen) => (
-                    <button
+                    <button data-ui-button="state"
                       type="button"
                       className="ios-series-ai-btn"
                       onClick={onOpen}

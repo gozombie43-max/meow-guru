@@ -64,12 +64,12 @@ export default function NotesPage() {
     <div style={s.root}>
 
       {/* Header */}
-      <div style={s.header}>
+      <div data-ui-chrome="header" style={s.header}>
         <div>
           <h1 style={s.heading}>📚 My Notes</h1>
           <p style={s.sub}>{notes.length} note{notes.length !== 1 ? "s" : ""} saved</p>
         </div>
-        <button style={s.newBtn} onClick={() => router.push("/notes/new")}>
+        <button data-ui-button="primary" style={s.newBtn} onClick={() => router.push("/notes/new")}>
           + New Note
         </button>
       </div>
@@ -100,6 +100,7 @@ export default function NotesPage() {
         </select>
         {(filterTopic || filterType || search) && (
           <button
+            data-ui-button="secondary"
             style={s.clearBtn}
             onClick={() => { setFilterTopic(""); setFilterType(""); setSearch(""); }}
           >
@@ -159,12 +160,14 @@ export default function NotesPage() {
                 {/* Actions */}
                 <div style={s.cardActions}>
                   <button
+                    data-ui-button="secondary"
                     style={s.editBtn}
                     onClick={() => router.push(`/notes/edit?id=${note.id}`)}
                   >
                     ✏️ Edit
                   </button>
                   <button
+                    data-ui-button="danger"
                     style={s.deleteBtn}
                     onClick={() => handleDelete(note.id)}
                     disabled={deleting === note.id}

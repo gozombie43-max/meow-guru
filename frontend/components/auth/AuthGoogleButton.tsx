@@ -15,7 +15,7 @@ export default function AuthGoogleButton({
   disabled = false,
 }: AuthGoogleButtonProps) {
   return (
-    <button
+    <button data-ui-button="state"
       type="button"
       onClick={onClick}
       disabled={disabled}

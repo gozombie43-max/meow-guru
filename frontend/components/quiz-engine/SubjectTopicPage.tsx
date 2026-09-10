@@ -118,8 +118,8 @@ export default function SubjectTopicPage({
            THEME DEFAULTS
            ════════════════════════════════════ */
         .sg-page {
-          --bg: #000000;
-          --card: #1C1C1E;
+          --bg: var(--dark-canvas);
+          --card: var(--dark-surface);
           --card-2: #232326;
           --sep: rgba(255,255,255,0.11);
           --label: #FFFFFF;
@@ -130,7 +130,7 @@ export default function SubjectTopicPage({
           min-height: calc(100dvh - var(--app-bottom-nav-height) - var(--safe-bottom));
           overflow-x: hidden;
           scrollbar-width: none;
-          background: #000000;
+          background: var(--dark-canvas);
           color: var(--label);
           font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", sans-serif;
           -webkit-font-smoothing: antialiased;
@@ -150,7 +150,7 @@ export default function SubjectTopicPage({
           right: 0;
           z-index: 50;
           padding: var(--safe-top) 16px 0;
-          background: #000;
+          background: var(--dark-canvas);
         }
         .sg-nav-inline {
           height: 56px;
@@ -255,7 +255,7 @@ export default function SubjectTopicPage({
           padding: 10px 12px 10px 12px;
           min-height: 62px;
           border-radius: 14px;
-          background: #1C1C1E;
+          background: var(--dark-surface);
           color: #f8fafc;
           text-decoration: none;
           border: 1px solid rgba(255, 255, 255, 0.09);
@@ -393,20 +393,20 @@ export default function SubjectTopicPage({
            LIGHT THEME OVERRIDES
            ════════════════════════════════════ */
         body.theme-light .sg-page {
-          --bg: #F6F8FA;
+          --bg: var(--light-canvas);
           --card: #FFFFFF;
-          --card-2: #E6EAEF;
-          --sep: #E6EAEF;
-          --label: #1d1d1f;
-          --label-2: #57606a;
-          --label-3: #8c959f;
+          --card-2: var(--light-border);
+          --sep: var(--light-border);
+          --label: var(--light-text);
+          --label-2: var(--light-text-secondary);
+          --label-3: var(--light-text-muted);
           background: var(--bg);
         }
-        body.theme-light .sg-navbar { background: #F6F8FA; }
-        body.theme-light .sg-nav-inline { border-bottom-color: #E6EAEF; }
+        body.theme-light .sg-navbar { background: var(--light-canvas); }
+        body.theme-light .sg-nav-inline { border-bottom-color: var(--light-border); }
         body.theme-light .sg-banner {
           background: #FFFFFF;
-          border-color: #E6EAEF;
+          border-color: var(--light-border);
           box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
           font-size: 16px; font-weight: 650; margin: 0 0 2px;
           letter-spacing: -0.3px; color: var(--label);
@@ -441,7 +441,7 @@ export default function SubjectTopicPage({
           transform: scale(0.95);
         }
         body.theme-light .sg-banner-open-btn {
-          background: #000000;
+          background: var(--dark-canvas);
           color: #ffffff;
           box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
         }
@@ -474,7 +474,7 @@ export default function SubjectTopicPage({
           padding: 10px 12px 10px 12px;
           min-height: 62px;
           border-radius: 14px;
-          background: #1C1C1E;
+          background: var(--dark-surface);
           color: #f8fafc;
           text-decoration: none;
           border: 1px solid rgba(255, 255, 255, 0.09);
@@ -612,20 +612,20 @@ export default function SubjectTopicPage({
            LIGHT THEME OVERRIDES
            ════════════════════════════════════ */
         body.theme-light .sg-page {
-          --bg: #F6F8FA;
+          --bg: var(--light-canvas);
           --card: #FFFFFF;
-          --card-2: #E6EAEF;
-          --sep: #E6EAEF;
-          --label: #1d1d1f;
-          --label-2: #57606a;
-          --label-3: #8c959f;
+          --card-2: var(--light-border);
+          --sep: var(--light-border);
+          --label: var(--light-text);
+          --label-2: var(--light-text-secondary);
+          --label-3: var(--light-text-muted);
           background: var(--bg);
         }
-        body.theme-light .sg-navbar { background: #F6F8FA; }
-        body.theme-light .sg-nav-inline { border-bottom-color: #E6EAEF; }
+        body.theme-light .sg-navbar { background: var(--light-canvas); }
+        body.theme-light .sg-nav-inline { border-bottom-color: var(--light-border); }
         body.theme-light .sg-banner {
           background: #FFFFFF;
-          border-color: #E6EAEF;
+          border-color: var(--light-border);
           box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
         }
         body.theme-light .sg-card {
@@ -761,13 +761,13 @@ export default function SubjectTopicPage({
             box-shadow: 0 1px 4px rgba(0,0,0,0.04);
           }
           body.theme-light .sg-back:hover {
-            background: #f2f2f7;
+            background: var(--light-canvas);
           }
         }
       `}</style>
 
       <div className="sg-page page">
-        <header
+        <header data-ui-chrome="header"
           className="sg-navbar"
           aria-label={`${eyebrow ?? defaults.eyebrow}: ${title}`}
         >

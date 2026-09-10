@@ -98,7 +98,7 @@ export default function MassSolutionUpload() {
           </span>
         </div>
         {zipFile && (
-          <button onClick={handleClear} className={styles.btnSecondary} style={{ padding: "3px 8px", fontSize: 11 }}>
+          <button data-ui-button="secondary" onClick={handleClear} className={styles.btnSecondary} style={{ padding: "3px 8px", fontSize: 11 }}>
             Clear
           </button>
         )}
@@ -110,7 +110,7 @@ export default function MassSolutionUpload() {
           { value: "auto", label: "Auto (filename = questionId)", desc: "e.g. sol_123.png patches question ID sol_123" },
           { value: "metadata", label: "Metadata JSON", desc: "ZIP contains metadata.json with [{filename, questionId}]" },
         ].map((opt) => (
-          <button
+          <button data-ui-button="state"
             key={opt.value}
             type="button"
             onClick={() => setMode(opt.value as "auto" | "metadata")}
@@ -139,7 +139,7 @@ export default function MassSolutionUpload() {
           className={styles.macInput}
           style={{ flex: 1, minWidth: 0, padding: "6px 10px" }}
          aria-label="Choose file"/>
-        <button
+        <button data-ui-button="primary"
           onClick={handleUpload}
           disabled={uploading || !zipFile}
           className={styles.btnPrimary}

@@ -48,7 +48,7 @@ export default function RouteLoadingState({ label }: RouteLoadingStateProps) {
           <h1>This is taking longer than expected</h1>
           <p>Refresh this page section or return home and try again.</p>
           <div className="route-boundary__actions">
-            <button className="route-boundary__retry" type="button" onClick={retry} disabled={isRetrying}>
+            <button data-ui-button="state" className="route-boundary__retry" type="button" onClick={retry} disabled={isRetrying}>
               <RefreshCw size={16} aria-hidden="true" className={isRetrying ? "route-boundary__spin" : undefined} />
               {isRetrying ? "Retrying" : "Try again"}
             </button>

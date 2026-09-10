@@ -490,8 +490,8 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
           DESKTOP VIEW (>= 768px)
           ========================================================================= */}
       <div className={styles.desktopContainer}>
-        <header className={styles.header}>
-          <Link
+        <header data-ui-chrome="header" className={styles.header}>
+          <Link data-ui-button="secondary"
             href="/general-awareness"
             className={styles.backButton}
             aria-label="Back to General Awareness"
@@ -524,7 +524,7 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
               aria-label={`Search ${group.label} chapters`}
             />
             {query ? (
-              <button
+              <button data-ui-button="secondary"
                 type="button"
                 className={styles.clearButton}
                 onClick={() => setQuery("")}
@@ -537,7 +537,7 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
 
           <nav className={styles.filters} aria-label={`Filter by ${group.metricLabel.toLowerCase()}`}>
             {filters.map((filter) => (
-              <button
+              <button data-ui-button="state"
                 key={filter}
                 type="button"
                 className={`${styles.filterButton} ${
@@ -591,7 +591,7 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
           ========================================================================= */}
       <div className={hubStyles.mobileContainer}>
         {/* Mobile Topbar */}
-        <header className={hubStyles.mobileTopbar}>
+        <header data-ui-chrome="header" className={hubStyles.mobileTopbar}>
           <Link
             href="/general-awareness"
             className={`${hubStyles.mobileBackBtn} ${styles.mobileBackBtn}`}
@@ -619,7 +619,7 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
             />
             <div className={hubStyles.mobileSearchRightActions}>
               {query && (
-                <button
+                <button data-ui-button="secondary"
                   type="button"
                   className={hubStyles.mobileSearchClearBtn}
                   onClick={() => setQuery("")}
@@ -629,7 +629,7 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
                 </button>
               )}
               <span className={hubStyles.mobileSearchDivider} aria-hidden="true" />
-              <button
+              <button data-ui-button="state"
                 type="button"
                 className={`${hubStyles.mobileMicBtn} ${isListening ? hubStyles.mobileMicBtnListening : ""}`}
                 onClick={toggleVoiceSearch}
@@ -651,7 +651,7 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
               {filters.map((filter) => {
                 const isActive = priority === filter;
                 return (
-                  <button
+                  <button data-ui-button="state"
                     key={filter}
                     type="button"
                     role="tab"

@@ -20,17 +20,17 @@
 }
 
 html.theme-dark {
-  --notif-bg: #000000;
-  --notif-card: #1c1c1e;
-  --notif-border: rgba(255, 255, 255, 0.09);
+  --notif-bg: var(--dark-canvas);
+  --notif-card: var(--dark-surface);
+  --notif-border: var(--dark-border);
   --notif-border-hover: rgba(10, 132, 255, 0.45);
-  --notif-text: #f5f5f7;
-  --notif-muted: #98989d;
-  --notif-soft: #2c2c2e;
-  --notif-accent: #0a84ff;
+  --notif-text: var(--dark-text);
+  --notif-muted: var(--dark-text-muted);
+  --notif-soft: var(--dark-surface-muted);
+  --notif-accent: var(--dark-accent);
   --notif-accent-strong: #0070e0;
-  --notif-accent-soft: rgba(10, 132, 255, 0.16);
-  --notif-unread-dot: #0a84ff;
+  --notif-accent-soft: var(--dark-accent-soft);
+  --notif-unread-dot: var(--dark-accent);
   --notif-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.55);
   --notif-shadow-hover: 0 10px 30px -4px rgba(10, 132, 255, 0.25);
 }

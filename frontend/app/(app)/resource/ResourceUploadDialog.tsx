@@ -18,7 +18,7 @@ export default function ResourceUploadDialog({ activeSubject, activeTab, onBegin
             <p className="res-modal-eyebrow">Upload Document</p>
             <h2 id="res-upload-title" className="res-modal-title">Where to add?</h2>
           </div>
-          <button type="button" className="res-modal-close" onClick={onClose} aria-label="Close modal">
+          <button data-ui-button="state" type="button" className="res-modal-close" onClick={onClose} aria-label="Close modal">
             <X size={18} strokeWidth={2.4} />
           </button>
         </div>
@@ -28,7 +28,7 @@ export default function ResourceUploadDialog({ activeSubject, activeTab, onBegin
             const Icon = subject.Icon;
             const isCurrent = subject.id === activeSubject && tab === activeTab;
             return (
-              <button key={`${subject.id}-${tab}`} type="button" className={`res-modal-option ${isCurrent ? "current" : ""}`} style={{ "--subject-accent": subject.accent } as CSSProperties} onClick={() => onBeginUpload(subject.id, tab)}>
+              <button data-ui-button="state" key={`${subject.id}-${tab}`} type="button" className={`res-modal-option ${isCurrent ? "current" : ""}`} style={{ "--subject-accent": subject.accent } as CSSProperties} onClick={() => onBeginUpload(subject.id, tab)}>
                 <span className="res-modal-option-icon"><Icon size={16} strokeWidth={2.3} /></span>
                 <span className="res-modal-option-label"><strong>{subject.label}</strong> {tab}</span>
               </button>
@@ -36,7 +36,7 @@ export default function ResourceUploadDialog({ activeSubject, activeTab, onBegin
           }))}
         </div>
 
-        <button type="button" className="res-modal-cancel" onClick={onClose}>Cancel</button>
+        <button data-ui-button="secondary" type="button" className="res-modal-cancel" onClick={onClose}>Cancel</button>
       </div>
     </div>
   );

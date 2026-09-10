@@ -30,9 +30,9 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
   return (
     <div className={styles.modalOverlay} role="dialog" aria-modal="true" aria-labelledby="password-recovery-title">
       <div className={styles.modalSheet}>
-        <div className={styles.modalHeader}>
+        <div data-ui-chrome="header" className={styles.modalHeader}>
           <h3 id="password-recovery-title" className={styles.modalTitle}>Password Recovery</h3>
-          <button
+          <button data-ui-button="icon"
             type="button"
             onClick={handleClose}
             className={styles.modalCloseBtn}
@@ -52,7 +52,7 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
               If an account is associated with <strong>{email}</strong>, we've sent instructions to reset your password.
             </p>
             <div className={styles.modalActions}>
-              <button
+              <button data-ui-button="primary"
                 type="button"
                 onClick={handleClose}
                 className={styles.modalSubmitBtn}
@@ -87,14 +87,14 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
               </div>
             </div>
             <div className={styles.modalActions}>
-              <button
+              <button data-ui-button="secondary"
                 type="button"
                 onClick={handleClose}
                 className={styles.modalCancelBtn}
               >
                 Cancel
               </button>
-              <button
+              <button data-ui-button="primary"
                 type="submit"
                 className={styles.modalSubmitBtn}
               >

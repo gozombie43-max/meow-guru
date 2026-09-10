@@ -184,7 +184,7 @@ export default function QuizChatbot({
       {renderTrigger ? (
         renderTrigger(() => setIsOpen(true))
       ) : (
-        <button
+        <button data-ui-button="state"
           type="button"
           className="quiz-chatbot-fab"
           onClick={() => setIsOpen(true)}
@@ -216,15 +216,15 @@ export default function QuizChatbot({
           >
             <div className={`quiz-chatbot-shell${isDark ? " dark" : ""}`}>
               <div className="mobile-sheet-handle" aria-hidden="true" />
-              <div className="topbar">
-                <button type="button" className="hbtn" aria-label="Open menu">
+              <div data-ui-chrome="header" className="topbar">
+                <button data-ui-button="state" type="button" className="hbtn" aria-label="Open menu">
                   <span />
                   <span />
                   <span />
                 </button>
                 <div id="quiz-chatbot-title" className="logo">AI Tutor</div>
                 <div className="top-actions">
-                  <button
+                  <button data-ui-button="state"
                     type="button"
                     className="dmbtn"
                     onClick={() => setIsDark((prev) => !prev)}
@@ -237,7 +237,7 @@ export default function QuizChatbot({
                       <Moon className="w-4 h-4 text-sky-500 shrink-0" />
                     )}
                   </button>
-                  <button
+                  <button data-ui-button="icon"
                     type="button"
                     className="closebtn"
                     onClick={() => setIsOpen(false)}
@@ -271,7 +271,7 @@ export default function QuizChatbot({
                     <div className="ltitle">What can I help with?</div>
                     <div className="opts">
                       {landingOptions.map((option) => (
-                        <button
+                        <button data-ui-button="state"
                           key={option.title}
                           type="button"
                           className="opt"
@@ -309,7 +309,7 @@ export default function QuizChatbot({
                           <div className="sb">
                             <div className="sh2">
                               <span className="slbl2">Solution</span>
-                              <button
+                              <button data-ui-button="state"
                                 type="button"
                                 className="cpb"
                                 onClick={() => handleCopy(message.content, index)}
@@ -349,7 +349,7 @@ export default function QuizChatbot({
                             <div className="swlbl">Continue exploring</div>
                             <div className="swlist">
                               {followUps.map((followUp) => (
-                                <button
+                                <button data-ui-button="state"
                                   key={followUp.label}
                                   type="button"
                                   className="chip"
@@ -379,7 +379,7 @@ export default function QuizChatbot({
 
                   <div className="bbar">
                     <div className="irow">
-                      <button type="button" className="addb" aria-label="Attach context">
+                      <button data-ui-button="state" type="button" className="addb" aria-label="Attach context">
                         <Plus className="w-4 h-4 text-zinc-500 dark:text-zinc-400 shrink-0" />
                       </button>
                       <input
@@ -396,7 +396,7 @@ export default function QuizChatbot({
                         autoComplete="off"
                         disabled={isLoading}
                        aria-label="Ask AI Tutor"/>
-                      <button
+                      <button data-ui-button="state"
                         type="button"
                         className="mic"
                         aria-label="Voice input"
@@ -404,7 +404,7 @@ export default function QuizChatbot({
                       >
                         <Mic className="w-4.5 h-4.5 text-white shrink-0" />
                       </button>
-                      <button
+                      <button data-ui-button="state"
                         type="button"
                         className={`snd${hasInput ? " on" : ""}`}
                         onClick={handleSend}
@@ -421,7 +421,7 @@ export default function QuizChatbot({
               {!isChatView && (
                 <div className="bbar lbar">
                   <div className="irow">
-                    <button type="button" className="addb" aria-label="Attach context">
+                    <button data-ui-button="state" type="button" className="addb" aria-label="Attach context">
                       <Plus className="w-4 h-4 text-zinc-500 dark:text-zinc-400 shrink-0" />
                     </button>
                     <input
@@ -438,7 +438,7 @@ export default function QuizChatbot({
                       autoComplete="off"
                       disabled={isLoading}
                      aria-label="Ask AI Tutor"/>
-                    <button
+                    <button data-ui-button="state"
                       type="button"
                       className="mic"
                       aria-label="Voice input"
@@ -446,7 +446,7 @@ export default function QuizChatbot({
                     >
                       <Mic className="w-4.5 h-4.5 text-white shrink-0" />
                     </button>
-                    <button
+                    <button data-ui-button="state"
                       type="button"
                       className={`snd${hasInput ? " on" : ""}`}
                       onClick={handleSend}
@@ -541,16 +541,16 @@ export default function QuizChatbot({
           --orm: rgba(0, 122, 255, 0.22);
           --pu: #007aff;
           --pul: rgba(0, 122, 255, 0.08);
-          --dk: #1d1d1f;
+          --dk: var(--light-text);
           --gr: rgba(60, 60, 67, 0.6);
-          --grl: #f2f2f7;
+          --grl: var(--light-canvas);
           --bd: rgba(0, 0, 0, 0.08);
           --wh: #ffffff;
           --bg: #ffffff;
           --sh: 0 4px 24px rgba(0, 0, 0, 0.06);
-          --sbody-c: #1d1d1f;
+          --sbody-c: var(--light-text);
           --ares-bg: rgba(0, 122, 255, 0.06);
-          --irow-bg: #f2f2f7;
+          --irow-bg: var(--light-canvas);
           background: var(--bg);
           color: var(--dk);
           display: flex;
@@ -560,17 +560,17 @@ export default function QuizChatbot({
           transition: background 0.35s, color 0.35s;
         }
         .quiz-chatbot-shell.dark {
-          --or: #0a84ff;
+          --or: var(--dark-accent);
           --orl: rgba(10, 132, 255, 0.15);
           --orm: rgba(10, 132, 255, 0.35);
-          --pu: #0a84ff;
+          --pu: var(--dark-accent);
           --pul: rgba(10, 132, 255, 0.15);
           --dk: #ffffff;
           --gr: rgba(235, 235, 245, 0.6);
-          --grl: #2c2c2e;
+          --grl: var(--dark-surface-muted);
           --bd: rgba(255, 255, 255, 0.14);
           --wh: #242426;
-          --bg: #1c1c1e;
+          --bg: var(--dark-surface);
           --sh: 0 4px 30px rgba(0, 0, 0, 0.4);
           --sbody-c: #ebebf5;
           --ares-bg: rgba(10, 132, 255, 0.12);
@@ -798,7 +798,7 @@ export default function QuizChatbot({
         }
         .dark .b {
           background: rgba(10, 132, 255, 0.18);
-          color: #0a84ff;
+          color: var(--dark-accent);
         }
         .dark .y {
           background: rgba(255, 214, 10, 0.18);

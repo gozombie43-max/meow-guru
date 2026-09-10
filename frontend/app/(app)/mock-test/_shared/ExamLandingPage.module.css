@@ -1,13 +1,13 @@
 .page {
-  --primary: #0071e3;
-  --primary-light: #47a1ff;
-  --primary-bg: #edf5ff;
-  --bg: #f5f5f7;
+  --primary: var(--light-accent);
+  --primary-light: var(--light-accent);
+  --primary-bg: var(--light-accent-soft);
+  --bg: var(--light-canvas);
   --card: #ffffff;
-  --text-dark: #1d1d1f;
-  --text-muted: #86868b;
-  --text-light: #a1a1a6;
-  --border: rgba(0, 0, 0, 0.08);
+  --text-dark: var(--light-text);
+  --text-muted: var(--light-text-secondary);
+  --text-light: var(--light-text-muted);
+  --border: var(--light-border);
 
   background: var(--bg);
   height: 100dvh;
@@ -21,14 +21,14 @@
 
 :global(html.mock-test-surface),
 :global(body.mock-test-surface) {
-  background: #f5f5f7;
+  background: var(--light-canvas);
   overflow: hidden;
 }
 
 @media (prefers-color-scheme: dark) {
   :global(html.mock-test-surface:not(.theme-light)),
   :global(body.mock-test-surface:not(.theme-light)) {
-    background: #000000;
+    background: var(--dark-canvas);
   }
 
   :global(body:not(.theme-light)) .page,
@@ -36,12 +36,12 @@
     --primary: #2997ff;
     --primary-light: #70baff;
     --primary-bg: #002244;
-    --bg: #000000;
-    --card: #1c1c1e;
-    --text-dark: #f5f5f7;
-    --text-muted: #86868b;
-    --text-light: #636366;
-    --border: rgba(255, 255, 255, 0.1);
+    --bg: var(--dark-canvas);
+    --card: var(--dark-surface);
+    --text-dark: var(--dark-text);
+    --text-muted: var(--dark-text-muted);
+    --text-light: var(--dark-text-muted);
+    --border: var(--dark-border);
   }
 }
 
@@ -50,17 +50,17 @@
   --primary: #2997ff;
   --primary-light: #70baff;
   --primary-bg: #002244;
-  --bg: #000000;
-  --card: #1c1c1e;
-  --text-dark: #f5f5f7;
-  --text-muted: #86868b;
-  --text-light: #636366;
-  --border: rgba(255, 255, 255, 0.1);
+  --bg: var(--dark-canvas);
+  --card: var(--dark-surface);
+  --text-dark: var(--dark-text);
+  --text-muted: var(--dark-text-muted);
+  --text-light: var(--dark-text-muted);
+  --border: var(--dark-border);
 }
 
 :global(html.mock-test-surface.theme-dark),
 :global(body.mock-test-surface.theme-dark) {
-  background: #000000;
+  background: var(--dark-canvas);
 }
 
 /* Base Mobile Layout - Fixed Screen with Scrollable Cards */
@@ -297,7 +297,7 @@
   left: 12%;
   right: 12%;
   height: 2.5px;
-  background: var(--primary);
+  background: var(--theme-action, var(--primary));
   border-radius: 2px 2px 0 0;
 }
 
@@ -608,7 +608,7 @@
 }
 
 .btnPrimary {
-  background: var(--primary);
+  background: var(--theme-action, var(--primary));
   color: #fff;
   border: none;
   padding: 6px 14px;
@@ -684,7 +684,7 @@
 
   :global(body.theme-dark) .macosSidebar {
     background: rgba(38, 38, 42, 0.6);
-    --border: rgba(255, 255, 255, 0.08);
+    --border: var(--dark-border);
   }
 
   .macosTrafficLights {
@@ -815,7 +815,7 @@
 
   .sidebarTab.activeSidebarTab {
     background: rgba(0, 113, 227, 0.12);
-    color: #0071e3;
+    color: var(--light-accent);
     font-weight: 600;
   }
 
@@ -853,7 +853,7 @@
 
   .sidebarTierTab.activeSidebarTierTab {
     background: rgba(0, 113, 227, 0.12);
-    color: #0071e3;
+    color: var(--light-accent);
     font-weight: 600;
   }
 

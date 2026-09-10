@@ -18,7 +18,7 @@ export default function MacTrafficLights({
 }: MacTrafficLightsProps) {
   return (
     <div className={`${styles.trafficLights} ${className}`} aria-label="Window controls">
-      <button
+      <button data-ui-button="state"
         type="button"
         className={`${styles.dot} ${styles.close}`}
         onClick={onClose}
@@ -29,7 +29,7 @@ export default function MacTrafficLights({
           <path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
         </svg>
       </button>
-      <button
+      <button data-ui-button="state"
         type="button"
         className={`${styles.dot} ${styles.minimize}`}
         onClick={onMinimize}
@@ -40,7 +40,7 @@ export default function MacTrafficLights({
           <path d="M2.5 6h7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
         </svg>
       </button>
-      <button
+      <button data-ui-button="state"
         type="button"
         className={`${styles.dot} ${styles.maximize}`}
         onClick={onMaximize}

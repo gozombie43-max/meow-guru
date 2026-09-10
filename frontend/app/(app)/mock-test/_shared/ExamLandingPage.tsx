@@ -193,7 +193,7 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
             <div className={`${styles.trafficLight} ${styles.maximize}`}></div>
           </div>
 
-          <button onClick={() => router.push('/mock-test')} className={styles.sidebarBackBtn}>
+          <button data-ui-button="icon" onClick={() => router.push('/mock-test')} className={styles.sidebarBackBtn}>
             <ChevronLeft size={15} />
             <span>All Exams</span>
           </button>
@@ -208,21 +208,21 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
 
           <h2 className={styles.sidebarTitle}>Navigation</h2>
           <div className={styles.sidebarNav}>
-            <button
+            <button data-ui-button="state"
               className={`${styles.sidebarTab} ${activeTab === 'mock' ? styles.activeSidebarTab : ''}`}
               onClick={() => setActiveTab('mock')}
             >
               <Layers size={14} />
               <span>Mock Tests ({allSlots.length})</span>
             </button>
-            <button
+            <button data-ui-button="state"
               className={`${styles.sidebarTab} ${activeTab === 'overview' ? styles.activeSidebarTab : ''}`}
               onClick={() => setActiveTab('overview')}
             >
               <CheckCircle size={14} />
               <span>Overview</span>
             </button>
-            <button
+            <button data-ui-button="state"
               className={`${styles.sidebarTab} ${activeTab === 'prev' ? styles.activeSidebarTab : ''}`}
               onClick={() => setActiveTab('prev')}
             >
@@ -237,7 +237,7 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
               <h2 className={styles.sidebarTitle}>{tierInfo.singular || 'Stage'}</h2>
               <div className={styles.sidebarNav}>
                 {tiers.map((t) => (
-                  <button
+                  <button data-ui-button="state"
                     key={t}
                     className={`${styles.sidebarTierTab} ${selectedTier === t ? styles.activeSidebarTierTab : ''}`}
                     onClick={() => setSelectedTier(t)}
@@ -258,7 +258,7 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
               <header className={styles.headerCard}>
                 <div className={styles.headerTopRow}>
                   <div className={styles.headerTitleGroup}>
-                    <button onClick={() => router.push('/mock-test')} className={styles.mobileBackBtn} aria-label="Back to all exams">
+                    <button data-ui-button="icon" onClick={() => router.push('/mock-test')} className={styles.mobileBackBtn} aria-label="Back to all exams">
                       <ChevronLeft size={16} />
                     </button>
                     <div className={styles.headerIconBox}>{meta.icon}</div>
@@ -290,7 +290,7 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
                       </div>
                     )}
 
-                    <button onClick={() => router.push('/mock-test')} className={styles.allExamsTopBtn}>
+                    <button data-ui-button="state" onClick={() => router.push('/mock-test')} className={styles.allExamsTopBtn}>
                       All Exams
                     </button>
                   </div>
@@ -298,19 +298,19 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
 
                 {/* Mobile Navigation Tabs integrated inside the Card */}
                 <div className={styles.mobileTabsNav}>
-                  <button
+                  <button data-ui-button="state"
                     className={`${styles.mobileTabBtn} ${activeTab === 'mock' ? styles.activeMobileTabBtn : ''}`}
                     onClick={() => setActiveTab('mock')}
                   >
                     Mocks ({allSlots.length})
                   </button>
-                  <button
+                  <button data-ui-button="state"
                     className={`${styles.mobileTabBtn} ${activeTab === 'overview' ? styles.activeMobileTabBtn : ''}`}
                     onClick={() => setActiveTab('overview')}
                   >
                     Overview
                   </button>
-                  <button
+                  <button data-ui-button="state"
                     className={`${styles.mobileTabBtn} ${activeTab === 'prev' ? styles.activeMobileTabBtn : ''}`}
                     onClick={() => setActiveTab('prev')}
                   >
@@ -357,7 +357,7 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
                                   <Award size={14} />
                                   <span>Score: <strong>{state.score}</strong>/{state.maxScore}</span>
                                 </div>
-                                <button
+                                <button data-ui-button="state"
                                   className={styles.analysisBtn}
                                   onClick={() => handleViewAnalysis(slot.id, state.attemptId!)}
                                 >
@@ -367,7 +367,7 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
                             )}
 
                             {state.status === 'in_progress' && (
-                              <button
+                              <button data-ui-button="state"
                                 className={styles.statusPaused}
                                 onClick={() => handleResume(slot.id, state.attemptId!)}
                               >
@@ -376,7 +376,7 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
                             )}
 
                             {state.status === 'not_started' && (
-                              <button
+                              <button data-ui-button="primary"
                                 className={styles.statusNotStarted}
                                 onClick={() => handleStart(slot.id)}
                               >
@@ -385,7 +385,7 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
                             )}
 
                             {state.status === 'locked' && (
-                              <button className={styles.statusLocked} onClick={handleUnlock}>
+                              <button data-ui-button="state" className={styles.statusLocked} onClick={handleUnlock}>
                                 <Lock size={14} /> Unlock Pro
                               </button>
                             )}
@@ -480,7 +480,7 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
                                     <Award size={14} />
                                     <span>Score: <strong>{state.score}</strong>/{state.maxScore}</span>
                                   </div>
-                                  <button
+                                  <button data-ui-button="state"
                                     className={styles.analysisBtn}
                                     onClick={() => handleViewAnalysis(slot.id, state.attemptId!)}
                                   >
@@ -490,7 +490,7 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
                               )}
 
                               {state.status === 'in_progress' && (
-                                <button
+                                <button data-ui-button="state"
                                   className={styles.statusPaused}
                                   onClick={() => handleResume(slot.id, state.attemptId!)}
                                 >
@@ -499,7 +499,7 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
                               )}
 
                               {state.status === 'not_started' && (
-                                <button
+                                <button data-ui-button="primary"
                                   className={styles.statusNotStarted}
                                   onClick={() => handleStart(slot.id)}
                                 >
@@ -508,7 +508,7 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
                               )}
 
                               {state.status === 'locked' && (
-                                <button className={styles.statusLocked} onClick={handleUnlock}>
+                                <button data-ui-button="state" className={styles.statusLocked} onClick={handleUnlock}>
                                   <Lock size={14} /> Unlock Pro
                                 </button>
                               )}

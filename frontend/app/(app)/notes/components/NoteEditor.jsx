@@ -356,7 +356,7 @@ export default function NoteEditor({ initialNote = null, onSaved }) {
     <div style={s.root}>
 
       {/* ── Top bar ── */}
-      <div style={s.topBar}>
+      <div data-ui-chrome="header" style={s.topBar}>
         <div style={s.metaRow}>
           <input
             style={s.titleInput}
@@ -388,6 +388,7 @@ export default function NoteEditor({ initialNote = null, onSaved }) {
           <div style={s.tabGroup}>
             {["editor", "split", "preview"].map((t) => (
               <button
+                data-ui-button="state"
                 key={t}
                 style={{ ...s.tabBtn, ...(activeTab === t ? s.tabBtnActive : {}) }}
                 onClick={() => setActiveTab(t)}
@@ -399,6 +400,8 @@ export default function NoteEditor({ initialNote = null, onSaved }) {
 
           {/* Theme toggle */}
           <button
+            data-ui-button="icon"
+            aria-label="Toggle editor theme"
             style={s.iconBtn}
             onClick={() => setTheme((t) => (t === "vs-dark" ? "light" : "vs-dark"))}
             title="Toggle editor theme"
@@ -408,6 +411,8 @@ export default function NoteEditor({ initialNote = null, onSaved }) {
 
           {/* Image upload */}
           <button
+            data-ui-button="secondary"
+            aria-label="Upload image"
             style={s.iconBtn}
             onClick={() => fileRef.current.click()}
             title="Upload image to Azure Blob Storage"
@@ -424,6 +429,7 @@ export default function NoteEditor({ initialNote = null, onSaved }) {
 
           {/* Save */}
           <button
+            data-ui-button="primary"
             style={{ ...s.saveBtn, ...(saved ? s.saveBtnSuccess : {}) }}
             onClick={handleSave}
           >
@@ -437,6 +443,7 @@ export default function NoteEditor({ initialNote = null, onSaved }) {
         <span style={s.snippetLabel}>Insert:</span>
         {SNIPPETS.map((sn) => (
           <button
+            data-ui-button="secondary"
             key={sn.label}
             style={s.snippetBtn}
             onClick={() => insertSnippet(sn.code)}

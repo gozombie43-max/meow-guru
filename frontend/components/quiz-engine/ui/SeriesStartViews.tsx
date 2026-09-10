@@ -378,7 +378,7 @@ function MacOsQuizStartStudio({
         <div className={styles.titleBar}>
           <div className={styles.titleBarLeft}>
             <MacTrafficLights onClose={handleBack} />
-            <button
+            <button data-ui-button="icon"
               type="button"
               onClick={handleBack}
               className={styles.backBtn}
@@ -397,7 +397,7 @@ function MacOsQuizStartStudio({
           </div>
 
           <div className={styles.titleBarRight}>
-            <button
+            <button data-ui-button="icon"
               type="button"
               onClick={toggleTheme}
               className={styles.themeBtn}
@@ -487,7 +487,7 @@ function MacOsQuizStartStudio({
             {/* Batch Action Buttons */}
             <div className={styles.batchActions}>
               {isEnglishSynonymsFormula ? (
-                <button
+                <button data-ui-button="state"
                   type="button"
                   onClick={onSelectAllLetters}
                   className={styles.batchBtn}
@@ -498,7 +498,7 @@ function MacOsQuizStartStudio({
                 </button>
               ) : (
                 <>
-                  <button
+                  <button data-ui-button="state"
                     type="button"
                     onClick={handleSelectAll}
                     className={styles.batchBtn}
@@ -507,7 +507,7 @@ function MacOsQuizStartStudio({
                     <CheckCircle2 size={12} />
                     <span>Select All</span>
                   </button>
-                  <button
+                  <button data-ui-button="state"
                     type="button"
                     onClick={handleClearAll}
                     className={styles.batchBtn}
@@ -541,7 +541,7 @@ function MacOsQuizStartStudio({
                   </span>
                 </div>
                 <div className={styles.letterBarGrid} role="toolbar" aria-label="Alphabet filter">
-                  <button
+                  <button data-ui-button="state"
                     type="button"
                     className={`${styles.letterBtn} ${styles.letterBtnAll} ${
                       !selectedLetters || selectedLetters.size === 0 ? styles.letterBtnActive : ""
@@ -555,7 +555,7 @@ function MacOsQuizStartStudio({
                     const isSelected = selectedLetters?.has(letter);
                     const hasQuestions = count > 0;
                     return (
-                      <button
+                      <button data-ui-button="state"
                         key={letter}
                         type="button"
                         className={`${styles.letterBtn} ${isSelected ? styles.letterBtnActive : ""} ${
@@ -576,7 +576,7 @@ function MacOsQuizStartStudio({
                 {/* Top Filter & Search Toolbar */}
                 <div className={styles.canvasToolbar}>
                   <div className={styles.chipsScroll} role="tablist">
-                    <button
+                    <button data-ui-button="state"
                       type="button"
                       className={`${styles.chipBtn} ${category === "All" ? styles.chipBtnActive : ""}`}
                       onClick={() => onCategoryChange("All")}
@@ -588,7 +588,7 @@ function MacOsQuizStartStudio({
                     {subjectConfig.classificationCategories
                       .filter((item) => (categoryCounts[item.label] || 0) > 0)
                       .map((item) => (
-                        <button
+                        <button data-ui-button="state"
                           key={item.id}
                           type="button"
                           className={`${styles.chipBtn} ${
@@ -614,7 +614,7 @@ function MacOsQuizStartStudio({
                       className={styles.searchInput}
                      aria-label="Filter concepts..."/>
                     {activeSearch && (
-                      <button
+                      <button data-ui-button="secondary"
                         type="button"
                         onClick={() => handleSearchChange("")}
                         className={styles.clearSearchBtn}
@@ -688,7 +688,7 @@ function MacOsQuizStartStudio({
         </div>
 
         {/* ── Bottom Dock / Sticky Launch Footer ── */}
-        <footer className={styles.studioFooter}>
+        <footer data-ui-chrome="footer" className={styles.studioFooter}>
           <div className={styles.footerLeft}>
             <div className={styles.statusIndicator} />
             <span className={styles.statusText}>
@@ -706,7 +706,7 @@ function MacOsQuizStartStudio({
             </span>
           </div>
 
-          <button
+          <button data-ui-button="primary"
             type="button"
             onClick={onStart}
             className={styles.startBtn}
@@ -836,8 +836,8 @@ function IosQuizStartMobile({
       style={{ "--ios-accent": subjectAccent } as React.CSSProperties}
     >
       {/* ── Top Navigation Bar ── */}
-      <header className={styles.iosNav}>
-        <button
+      <header data-ui-chrome="header" className={styles.iosNav}>
+        <button data-ui-button="icon"
           type="button"
           onClick={handleBack}
           className={styles.iosBackBtn}
@@ -890,7 +890,7 @@ function IosQuizStartMobile({
                 </span>
               </div>
               <div className={styles.iosLetterGrid} aria-label="Alphabet filters">
-                <button
+                <button data-ui-button="state"
                   type="button"
                   className={`${styles.iosLetterPill} ${styles.iosLetterPillWide} ${
                     !selectedLetters || selectedLetters.size === 0 ? styles.iosLetterPillActive : ""
@@ -904,7 +904,7 @@ function IosQuizStartMobile({
                   const isSelected = selectedLetters?.has(letter);
                   const hasQuestions = count > 0;
                   return (
-                    <button
+                    <button data-ui-button="state"
                       key={letter}
                       type="button"
                       className={`${styles.iosLetterPill} ${isSelected ? styles.iosLetterPillActive : ""} ${
@@ -950,7 +950,7 @@ function IosQuizStartMobile({
 
             {/* Category Chips */}
             <div className={styles.iosChipsScroll} aria-label="Concept category filters">
-              <button
+              <button data-ui-button="state"
                 type="button"
                 className={`${styles.iosChip} ${category === "All" ? styles.iosChipActive : ""}`}
                 onClick={() => onCategoryChange("All")}
@@ -962,7 +962,7 @@ function IosQuizStartMobile({
               {subjectConfig.classificationCategories
                 .filter((item) => (categoryCounts[item.label] ?? 0) > 0)
                 .map((item) => (
-                  <button
+                  <button data-ui-button="state"
                     key={item.id}
                     type="button"
                     className={`${styles.iosChip} ${
@@ -989,7 +989,7 @@ function IosQuizStartMobile({
                   className={styles.iosSearchInput}
                  aria-label="Search concept groups..."/>
                 {activeSearch && (
-                  <button
+                  <button data-ui-button="secondary"
                     type="button"
                     onClick={() => handleSearchChange("")}
                     className={styles.iosClearSearch}
@@ -1011,7 +1011,7 @@ function IosQuizStartMobile({
                 const isPartial = selectedInGroup > 0 && !isSelected;
 
                 return (
-                  <button
+                  <button data-ui-button="state"
                     key={group.id}
                     type="button"
                     className={styles.iosConceptRow}
@@ -1053,7 +1053,7 @@ function IosQuizStartMobile({
       </main>
 
       {/* ── Fixed Bottom Launch Toolbar ── */}
-      <footer className={styles.iosToolbar}>
+      <footer data-ui-chrome="footer" className={styles.iosToolbar}>
         <p className={styles.iosToolbarText}>
           {isLoading ? (
             <span className="inline-flex items-center gap-2 animate-pulse text-[color:var(--quiz-accent,#3b82f6)]">
@@ -1066,7 +1066,7 @@ function IosQuizStartMobile({
             </>
           )}
         </p>
-        <button
+        <button data-ui-button="primary"
           type="button"
           onClick={onStart}
           className={styles.iosStartBtn}

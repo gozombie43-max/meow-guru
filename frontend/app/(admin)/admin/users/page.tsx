@@ -350,9 +350,9 @@ export default function AdminUsersPage() {
   return (
     <div className={s.page}>
       {/* ── Header ──────────────────────────────────────── */}
-      <header className={s.header}>
+      <header data-ui-chrome="header" className={s.header}>
         <div className={s.headerLeft}>
-          <button className={s.backBtn} onClick={() => router.push('/admin')}>
+          <button data-ui-button="icon" className={s.backBtn} onClick={() => router.push('/admin')}>
             <ChevronLeft size={20} />
           </button>
           <div>
@@ -551,7 +551,7 @@ export default function AdminUsersPage() {
                   </div>
                   </div>
                   <div className={s.rowActions}>
-                    <button
+                    <button data-ui-button="icon"
                       className={s.moreBtn}
                       aria-label={`View details for ${u.name}`}
                       onClick={(e) => {
@@ -572,7 +572,7 @@ export default function AdminUsersPage() {
                   {data.total.toLocaleString('en-IN')}
                 </div>
                 <div className={s.pageButtons}>
-                  <button
+                  <button data-ui-button="state"
                     className={s.pageBtn}
                     disabled={page <= 1}
                     onClick={() => setPage((p) => p - 1)}
@@ -585,7 +585,7 @@ export default function AdminUsersPage() {
                         …
                       </span>
                     ) : (
-                      <button
+                      <button data-ui-button="state"
                         key={p}
                         className={`${s.pageBtn} ${p === page ? s.active : ''}`}
                         onClick={() => setPage(p)}
@@ -594,7 +594,7 @@ export default function AdminUsersPage() {
                       </button>
                     )
                   )}
-                  <button
+                  <button data-ui-button="state"
                     className={s.pageBtn}
                     disabled={page >= totalPages}
                     onClick={() => setPage((p) => p + 1)}
@@ -613,9 +613,9 @@ export default function AdminUsersPage() {
         <>
           <div className={s.drawerOverlay} aria-hidden="true" />
           <div className={s.drawer}>
-            <div className={s.drawerHeader}>
+            <div data-ui-chrome="header" className={s.drawerHeader}>
               <div className={s.drawerTitle}>User Details</div>
-              <button className={s.closeBtn} onClick={closeDrawer}>
+              <button data-ui-button="icon" className={s.closeBtn} onClick={closeDrawer}>
                 <X size={18} />
               </button>
             </div>
@@ -777,7 +777,7 @@ export default function AdminUsersPage() {
                 <div className={s.section}>
                   <div className={s.sectionTitle}>Actions</div>
                   <div className={s.actions}>
-                    <button
+                    <button data-ui-button="secondary"
                       className={s.actionBtn}
                       onClick={() => { setNotifyResult(null); setShowNotifyModal(true); }}
                     >
@@ -786,7 +786,7 @@ export default function AdminUsersPage() {
                     </button>
 
                     {(selectedUser.status || 'active') === 'active' ? (
-                      <button
+                      <button data-ui-button="state"
                         className={`${s.actionBtn} ${s.danger}`}
                         onClick={() => setShowStatusConfirm('suspended')}
                         disabled={actionLoading}
@@ -795,7 +795,7 @@ export default function AdminUsersPage() {
                         Suspend Account
                       </button>
                     ) : (
-                      <button
+                      <button data-ui-button="secondary"
                         className={s.actionBtn}
                         onClick={() => setShowStatusConfirm('active')}
                         disabled={actionLoading}
@@ -806,7 +806,7 @@ export default function AdminUsersPage() {
                     )}
 
                     {(selectedUser.status || 'active') !== 'banned' && (
-                      <button
+                      <button data-ui-button="state"
                         className={`${s.actionBtn} ${s.danger}`}
                         onClick={() => setShowStatusConfirm('banned')}
                         disabled={actionLoading}
@@ -816,7 +816,7 @@ export default function AdminUsersPage() {
                       </button>
                     )}
 
-                    <button
+                    <button data-ui-button="state"
                       className={`${s.actionBtn} ${s.danger}`}
                       onClick={() => setShowDeleteConfirm(true)}
                       disabled={actionLoading}
@@ -879,13 +879,13 @@ export default function AdminUsersPage() {
               </div>
             )}
             <div className={s.modalActions}>
-              <button
+              <button data-ui-button="secondary"
                 className={s.modalBtnSecondary}
                 onClick={() => { setShowNotifyModal(false); setNotifyResult(null); }}
               >
                 {notifyResult ? 'Close' : 'Cancel'}
               </button>
-              {!notifyResult && <button
+              {!notifyResult && <button data-ui-button="primary"
                 className={s.modalBtnPrimary}
                 onClick={handleNotify}
                 disabled={actionLoading || !notifyTitle.trim() || !notifyBody.trim()}
@@ -917,13 +917,13 @@ export default function AdminUsersPage() {
                aria-label="Reason (optional)"/>
             )}
             <div className={s.modalActions}>
-              <button
+              <button data-ui-button="secondary"
                 className={s.modalBtnSecondary}
                 onClick={() => setShowStatusConfirm(null)}
               >
                 Cancel
               </button>
-              <button
+              <button data-ui-button="state"
                 className={
                   showStatusConfirm === 'active'
                     ? s.modalBtnPrimary
@@ -957,13 +957,13 @@ export default function AdminUsersPage() {
               This action cannot be undone.
             </p>
             <div className={s.modalActions}>
-              <button
+              <button data-ui-button="secondary"
                 className={s.modalBtnSecondary}
                 onClick={() => setShowDeleteConfirm(false)}
               >
                 Cancel
               </button>
-              <button
+              <button data-ui-button="danger"
                 className={s.modalBtnDanger}
                 onClick={handleDelete}
                 disabled={actionLoading}

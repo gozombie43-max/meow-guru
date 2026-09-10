@@ -175,7 +175,7 @@ function VideoFilters({
   return (
     <div className="video-filters" role="tablist" aria-label="Video filters">
       {filters.map((filter) => (
-        <button
+        <button data-ui-button="state"
           key={filter.key}
           type="button"
           className={`video-chip${active === filter.key ? " is-active" : ""}`}
@@ -245,7 +245,7 @@ function PlaylistCard({ playlist }: { playlist: Playlist }) {
           <h2 title={playlist.title}>{playlist.title}</h2>
           <p title={playlist.channel} className="meta-channel">{playlist.channel}</p>
         </div>
-        <button
+        <button data-ui-button="state"
           type="button"
           className="more-btn"
           aria-label={`More options for ${playlist.title}`}
@@ -332,8 +332,8 @@ export default function VideosPage() {
 
         body.theme-dark .videos-header,
         body.theme-dark .macos-sidebar {
-          --video-header-bg: rgba(0, 0, 0, 0.72);
-          --video-header-border: rgba(255, 255, 255, 0.08);
+          --video-header-bg: var(--dark-surface);
+          --video-header-border: var(--dark-border);
         }
 
         .video-filters {
@@ -749,11 +749,11 @@ export default function VideosPage() {
         }
 
         body.theme-dark {
-          background: #000000;
+          background: var(--dark-canvas);
         }
 
         body.theme-dark .videos-page {
-          --video-page-bg: #000000;
+          --video-page-bg: var(--dark-canvas);
           --video-page-fg: #ffffff;
           --video-title-fg: #ffffff;
           --video-muted-fg: rgba(235, 235, 245, 0.6);
@@ -764,10 +764,10 @@ export default function VideosPage() {
           --video-filter-backdrop: blur(20px) saturate(180%);
           --video-chip-bg: rgba(255, 255, 255, 0.08);
           --video-chip-fg: rgba(235, 235, 245, 0.6);
-          --video-chip-border: rgba(255, 255, 255, 0.08);
+          --video-chip-border: var(--dark-border);
           --video-chip-active-bg: #ffffff;
-          --video-chip-active-fg: #000000;
-          --video-chip-active-border: #ffffff;
+          --video-chip-active-fg: var(--dark-canvas);
+          --video-chip-active-border: var(--dark-border);
           --video-chip-press-bg: rgba(255, 255, 255, 0.12);
           --video-chip-active-press-bg: #e5e5ea;
         }
@@ -778,7 +778,7 @@ export default function VideosPage() {
         }
 
         body.theme-dark .channel-logo {
-          background: #2c2c2e;
+          background: var(--dark-surface-muted);
           color: #fff;
         }
 
@@ -787,7 +787,7 @@ export default function VideosPage() {
         /* --- macOS Window Styles --- */
         .videos-page {
           min-height: 100dvh;
-          background: var(--video-page-bg, #f5f5f7);
+          background: var(--video-page-bg, var(--light-canvas));
           display: flex;
           align-items: center;
           justify-content: center;
@@ -816,7 +816,7 @@ export default function VideosPage() {
         .macos-content {
           flex: 1;
           overflow-y: auto;
-          background: var(--video-page-bg, #f5f5f7);
+          background: var(--video-page-bg, var(--light-canvas));
         }
 
         .sidebar-title {
@@ -884,7 +884,7 @@ export default function VideosPage() {
           }
 
           body.theme-dark .macos-window {
-            --macos-window-bg: rgba(30, 30, 30, 0.75);
+            --macos-window-bg: var(--dark-canvas);
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255,255,255,0.1) inset;
           }
 
@@ -898,8 +898,8 @@ export default function VideosPage() {
           }
 
           body.theme-dark .macos-sidebar {
-            --macos-sidebar-bg: rgba(40, 40, 40, 0.5);
-            --macos-border: rgba(255,255,255,0.1);
+            --macos-sidebar-bg: var(--dark-canvas);
+            --macos-border: var(--dark-border);
           }
 
           .macos-traffic-lights {

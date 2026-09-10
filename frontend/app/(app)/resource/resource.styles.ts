@@ -5,8 +5,8 @@ export const resourcePageStyles = css.global`
            THEME TOKENS: DARK (DEFAULT)
            ════════════════════════════════════════════ */
         .resource-page {
-          --bg: #000000;
-          --card-bg: #1c1c1e;
+          --bg: var(--dark-canvas);
+          --card-bg: var(--dark-surface);
           --card-hover: #242428;
           --border: rgba(255, 255, 255, 0.09);
           --header-bg: rgba(0, 0, 0, 0.92);
@@ -16,7 +16,7 @@ export const resourcePageStyles = css.global`
           --tab-bg: rgba(255, 255, 255, 0.08);
           --tab-color: rgba(235, 235, 245, 0.75);
           --accent: #007aff;
-          --modal-bg: #1c1c1e;
+          --modal-bg: var(--dark-surface);
           --modal-option-bg: #28282c;
           --notice-bg: rgba(255, 255, 255, 0.08);
           --spinner-color: rgba(235, 235, 245, 0.75);
@@ -219,7 +219,7 @@ export const resourcePageStyles = css.global`
         }
 
         .res-segment-btn.active {
-          background: var(--segment-active-bg, #3a3a3c);
+          background: var(--segment-active-bg, var(--dark-surface-muted));
           color: #ffffff;
           font-weight: 650;
           box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3), 0 0 0 0.5px rgba(0, 0, 0, 0.12);
@@ -715,18 +715,18 @@ export const resourcePageStyles = css.global`
            ════════════════════════════════════════════ */
         :global(body.theme-light) .resource-page,
         :global(html.theme-light) .resource-page {
-          --bg: #f6f8fa;
+          --bg: var(--light-canvas);
           --card-bg: #ffffff;
           --card-hover: #f8fafc;
           --border: rgba(0, 0, 0, 0.08);
           --header-bg: rgba(246, 248, 250, 0.92);
-          --text-primary: #1d1d1f;
-          --text-secondary: #57606a;
-          --text-tertiary: #8c959f;
+          --text-primary: var(--light-text);
+          --text-secondary: var(--light-text-secondary);
+          --text-tertiary: var(--light-text-muted);
           --tab-bg: rgba(0, 0, 0, 0.05);
-          --tab-color: #57606a;
+          --tab-color: var(--light-text-secondary);
           --modal-bg: #ffffff;
-          --modal-option-bg: #f2f2f7;
+          --modal-option-bg: var(--light-canvas);
           --notice-bg: rgba(0, 0, 0, 0.04);
           --spinner-color: rgba(60, 60, 67, 0.6);
           --segment-track: rgba(118, 118, 128, 0.12);

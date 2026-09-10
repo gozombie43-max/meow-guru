@@ -104,7 +104,7 @@ function DashboardContent() {
         <h4>Unlock every mock test</h4>
         <p>Full Tier-2 papers &amp; unlimited battles.</p>
       </div>
-      <button>Upgrade</button>
+      <button data-ui-button="state">Upgrade</button>
     </div>
   );
 
@@ -118,7 +118,7 @@ function DashboardContent() {
           Search
         </div>
         <div className={styles.navbarAvatar}>{initial}</div>
-        <button onClick={handleClose} className={styles.navbarClose} aria-label="Close dashboard">
+        <button data-ui-button="icon" onClick={handleClose} className={styles.navbarClose} aria-label="Close dashboard">
           <X size={16} strokeWidth={2.4} />
         </button>
       </div>
@@ -188,35 +188,35 @@ function DashboardContent() {
           </div>
 
           <div className={styles.pills}>
-            <button 
+            <button data-ui-button="state"
               className={`${styles.pill} ${activeTab === 'All' ? styles.active : ''}`}
               onClick={() => setActiveTab('All')}
             >
               <span className={styles.dot} style={{ background: activeTab === 'All' ? '#fff' : 'var(--text-dim)' }}></span>
               All
             </button>
-            <button 
+            <button data-ui-button="state"
               className={`${styles.pill} ${activeTab === 'Mathematics' ? styles.active : ''}`}
               onClick={() => setActiveTab('Mathematics')}
             >
               <span className={styles.dot} style={{ background: activeTab === 'Mathematics' ? '#fff' : 'var(--ios-blue)' }}></span>
               Mathematics
             </button>
-            <button 
+            <button data-ui-button="state"
               className={`${styles.pill} ${activeTab === 'Reasoning' ? styles.active : ''}`}
               onClick={() => setActiveTab('Reasoning')}
             >
               <span className={styles.dot} style={{ background: activeTab === 'Reasoning' ? '#fff' : 'var(--ios-teal)' }}></span>
               Reasoning
             </button>
-            <button 
+            <button data-ui-button="state"
               className={`${styles.pill} ${activeTab === 'English' ? styles.active : ''}`}
               onClick={() => setActiveTab('English')}
             >
               <span className={styles.dot} style={{ background: activeTab === 'English' ? '#fff' : 'var(--ios-orange)' }}></span>
               English
             </button>
-            <button 
+            <button data-ui-button="state"
               className={`${styles.pill} ${activeTab === 'General Awareness' ? styles.active : ''}`}
               onClick={() => setActiveTab('General Awareness')}
             >
@@ -322,7 +322,7 @@ function DashboardContent() {
           </div>
 
           <div className={styles.segment}>
-            <button>Day</button><button className={styles.active}>Week</button><button>Month</button>
+            <button data-ui-button="state">Day</button><button data-ui-button="state" className={styles.active}>Week</button><button data-ui-button="state">Month</button>
           </div>
 
           <div className={styles.panel}>

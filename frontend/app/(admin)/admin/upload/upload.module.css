@@ -20,7 +20,7 @@
   font-size: 24px;
   font-weight: 700;
   letter-spacing: -0.02em;
-  color: var(--admin-text, #1d1d1f);
+  color: var(--admin-text, var(--light-text));
   display: flex;
   align-items: center;
   gap: 10px;
@@ -92,7 +92,7 @@
 .cardTitle {
   font-size: 16px;
   font-weight: 600;
-  color: var(--admin-text, #1d1d1f);
+  color: var(--admin-text, var(--light-text));
   margin: 0 0 6px;
   letter-spacing: -0.01em;
 }
@@ -111,7 +111,7 @@
   justify-content: space-between;
   font-size: 12px;
   font-weight: 600;
-  color: #0071e3;
+  color: var(--light-accent);
 }
 
 .cardArrow {
@@ -163,7 +163,7 @@
 .specItemHeading {
   font-size: 13px;
   font-weight: 600;
-  color: var(--admin-text, #1d1d1f);
+  color: var(--admin-text, var(--light-text));
   margin: 0 0 2px;
 }
 

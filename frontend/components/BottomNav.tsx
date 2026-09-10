@@ -50,27 +50,7 @@ export default function BottomNav() {
     isNotificationsRoute ||
     isAiChat;
   const { theme } = useThemeMode();
-  const lightSurfacePrefixes = [
-    '/',
-    '/mathematics',
-    '/reasoning',
-    '/english',
-    '/adaptive-quiz',
-    '/general-awareness',
-    '/ai-chat',
-    '/dashboard',
-    '/admin',
-    '/login',
-    '/register',
-    '/videos',
-    '/mock-test',
-    '/play',
-  ];
-  const isLightSurface =
-    theme === 'light' &&
-    lightSurfacePrefixes.some(
-    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
-    );
+  const isLightSurface = theme === 'light';
 
   useEffect(() => {
     const body = document.body;
@@ -91,6 +71,7 @@ export default function BottomNav() {
 
   return (
     <nav
+      data-ui-chrome="footer"
       className={`bottom-pill-nav${isLightSurface ? ' is-light' : ''}`}
       aria-label="Primary"
     >
@@ -117,7 +98,8 @@ export default function BottomNav() {
         aria-label="AI Assistant"
         aria-current={isAiChat ? 'page' : undefined}
       >
-        <AiChatIcon className="bottom-nav-icon" style={{ width: '38px', height: '38px', color: 'currentColor' }} />
+        <AiChatIcon className="bottom-nav-icon" />
+        <span className="bottom-nav-label">Assistant</span>
       </Link>
 
       <Link

@@ -44,7 +44,7 @@ export default class RiskyWidgetBoundary extends Component<Props, State> {
         <p style={{ margin: "0 0 10px", fontSize: "14px" }}>
           This {this.props.label} could not be displayed.
         </p>
-        <button
+        <button data-ui-button="state"
           type="button"
           onClick={() => this.setState({ failed: false })}
           style={{ minHeight: "44px", padding: "8px 16px", borderRadius: "10px", cursor: "pointer" }}

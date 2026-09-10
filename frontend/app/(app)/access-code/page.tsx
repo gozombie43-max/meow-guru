@@ -23,22 +23,6 @@ export default function AccessCodePage() {
   const [attempts, setAttempts] = useState(0);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  // Override html/body background for this page (globals.css sets a light gradient)
-  useEffect(() => {
-    const html = document.documentElement;
-    const body = document.body;
-    const origHtmlBg = html.style.background;
-    const origBodyBg = body.style.background;
-
-    html.style.background = '#0a0a0f';
-    body.style.background = '#0a0a0f';
-
-    return () => {
-      html.style.background = origHtmlBg;
-      body.style.background = origBodyBg;
-    };
-  }, []);
-
   // Focus first input on mount
   useEffect(() => {
     if (mounted) {
@@ -278,7 +262,7 @@ export default function AccessCodePage() {
         )}
 
         {/* Continue button */}
-        <button
+        <button data-ui-button="primary"
           className={styles.continueBtn}
           disabled={!allFilled || loading || success || attempts >= 3}
           onClick={handleSubmit}

@@ -3,14 +3,14 @@
   --mono: 'Space Mono', monospace;
 
   /* iOS dark-mode system surfaces */
-  --bg: #000000;
-  --bg-elevated: #1c1c1e;
-  --bg-grouped: #131315;
+  --bg: var(--dark-canvas);
+  --bg-elevated: var(--dark-surface);
+  --bg-grouped: var(--dark-canvas);
   --sidebar: rgba(28,28,30,0.78);
   --card: rgba(255,255,255,0.055);
   --hairline: rgba(255,255,255,0.10);
   --hairline-soft: rgba(255,255,255,0.06);
-  --text: #f5f5f7;
+  --text: var(--light-canvas);
   --text-dim: #98989d;
   --text-dimmer: #636366;
 
@@ -254,7 +254,7 @@
   margin-top: auto;
 }
 
-.icBlue { background: var(--ios-blue); }
+.icBlue { background: var(--theme-action, var(--ios-blue)); }
 .icGreen { background: var(--ios-green); }
 .icIndigo { background: var(--ios-indigo); }
 .icOrange { background: var(--ios-orange); }
@@ -355,7 +355,7 @@
 }
 
 .pill.active { 
-  background: var(--ios-blue); 
+  background: var(--theme-action, var(--ios-blue));
   color: #fff; 
 }
 
@@ -500,7 +500,7 @@
 }
 
 .segment button.active { 
-  background: var(--ios-blue); 
+  background: var(--theme-action, var(--ios-blue));
   color: #fff; 
 }
 
@@ -712,9 +712,9 @@
 
 
 :global(.theme-light) .page {
-  --bg: #f2f2f7;
+  --bg: var(--light-canvas);
   --bg-elevated: #ffffff;
-  --bg-grouped: #f2f2f7;
+  --bg-grouped: var(--light-canvas);
   --sidebar: rgba(255,255,255,0.78);
   --card: #ffffff;
   --hairline: rgba(0,0,0,0.15);

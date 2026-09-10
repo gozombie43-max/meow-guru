@@ -312,7 +312,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
     }
   };
 
-  if (loadError) return <div className={styles.container}><p role="alert">{loadError}</p><button onClick={() => void loadData()}>Retry loading test</button></div>;
+  if (loadError) return <div className={styles.container}><p role="alert">{loadError}</p><button data-ui-button="state" onClick={() => void loadData()}>Retry loading test</button></div>;
 
   if (!paper) return <div className={styles.container} style={{justifyContent: 'center', alignItems: 'center'}}>Loading...</div>;
 
@@ -333,21 +333,21 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
   return (
     <div className={`${styles.container} theme-light`}>
       {confidential && <div role="note" style={{ padding: '8px 16px', fontSize: 12 }}>Confidential assessment · One attempt · Total exam time applies · No answer review</div>}
-      {saveStatus && <div role="status">{saveStatus}{hasConflict && <button onClick={() => window.location.reload()}>Reload saved attempt</button>}</div>}
-      {submitError && <div role="alert">{submitError}<button disabled={isSubmitting} onClick={() => void handleFinalSubmit()}>Retry submission</button></div>}
+      {saveStatus && <div role="status">{saveStatus}{hasConflict && <button data-ui-button="state" onClick={() => window.location.reload()}>Reload saved attempt</button>}</div>}
+      {submitError && <div role="alert">{submitError}<button data-ui-button="state" disabled={isSubmitting} onClick={() => void handleFinalSubmit()}>Retry submission</button></div>}
       {/* Top Bar */}
       {isDesktop ? (
-        <div className={styles.topBar}>
+        <div data-ui-chrome="header" className={styles.topBar}>
           <div className={styles.examName}>{examSlug.toUpperCase()}</div>
           <div className={styles.timer}>{formatTime(globalTimeLeft)}</div>
-          <button className={styles.submitBtn} onClick={() => setShowSubmitModal(true)}>Submit Test</button>
+          <button data-ui-button="primary" className={styles.submitBtn} onClick={() => setShowSubmitModal(true)}>Submit Test</button>
         </div>
       ) : (
-        <div className={styles.mobileHeader}>
+        <div data-ui-chrome="header" className={styles.mobileHeader}>
           <div className={styles.examName} style={{fontSize: '1rem'}}>{examSlug.toUpperCase()}</div>
           <div style={{display: 'flex', gap: '1rem', alignItems: 'center'}}>
             <div className={styles.timer} style={{fontSize: '1rem'}}>{formatTime(globalTimeLeft)}</div>
-            <button className={styles.mobilePill} onClick={() => setShowPalette(true)}>Q {currentQGlobalIndex}/{totalQuestions}</button>
+            <button data-ui-button="state" className={styles.mobilePill} onClick={() => setShowPalette(true)}>Q {currentQGlobalIndex}/{totalQuestions}</button>
           </div>
         </div>
       )}
@@ -439,12 +439,12 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
 
           {/* Desktop Actions */}
           {isDesktop && (
-            <div className={styles.actionsBar}>
+            <div data-ui-chrome="footer" className={styles.actionsBar}>
               <div className={styles.btnGroup}>
-                <button className={styles.btnOutline} onClick={() => clearResponse(currentQ.id)}>Clear Response</button>
-                <button className={styles.btnOutline} onClick={handleMarkForReview}>Mark for Review</button>
+                <button data-ui-button="secondary" className={styles.btnOutline} onClick={() => clearResponse(currentQ.id)}>Clear Response</button>
+                <button data-ui-button="secondary" className={styles.btnOutline} onClick={handleMarkForReview}>Mark for Review</button>
               </div>
-              <button className={styles.btnPrimary} onClick={handleSaveAndNext}>Save & Next</button>
+              <button data-ui-button="primary" className={styles.btnPrimary} onClick={handleSaveAndNext}>Save & Next</button>
             </div>
           )}
         </div>
@@ -452,10 +452,10 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
 
       {/* Mobile Bottom Actions */}
       {!isDesktop && (
-        <div className={styles.mobileBottomBar}>
-          <button className={styles.btnOutline} onClick={goToPreviousQuestion} disabled={currentQuestion === 0 && currentSection === 0}>Previous</button>
-          <button className={styles.btnOutline} onClick={handleMarkForReview}>Mark</button>
-          <button className={styles.btnPrimary} onClick={handleSaveAndNext}>Save & Next</button>
+        <div data-ui-chrome="footer" className={styles.mobileBottomBar}>
+          <button data-ui-button="secondary" className={styles.btnOutline} onClick={goToPreviousQuestion} disabled={currentQuestion === 0 && currentSection === 0}>Previous</button>
+          <button data-ui-button="secondary" className={styles.btnOutline} onClick={handleMarkForReview}>Mark</button>
+          <button data-ui-button="primary" className={styles.btnPrimary} onClick={handleSaveAndNext}>Save & Next</button>
         </div>
       )}
 
@@ -466,7 +466,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
           <div className={`${styles.bottomSheet} ${showPalette ? styles.show : ''}`}>
             <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '1rem'}}>
               <h3 style={{margin: 0}}>Questions Palette</h3>
-              <button onClick={() => setShowPalette(false)} style={{background:'transparent', border:'none', fontSize:'1.25rem'}}>&times;</button>
+              <button data-ui-button="state" onClick={() => setShowPalette(false)} style={{background:'transparent', border:'none', fontSize:'1.25rem'}}>&times;</button>
             </div>
             <div className={styles.questionGrid}>
               {paper.sections[currentSection].questions.map((q: MockQuestion, idx: number) => {
@@ -484,7 +484,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
               })}
             </div>
             <div style={{marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid var(--border)'}}>
-               <button className={styles.submitBtn} style={{width: '100%'}} onClick={() => {setShowPalette(false); setShowSubmitModal(true);}}>Submit Test</button>
+               <button data-ui-button="primary" className={styles.submitBtn} style={{width: '100%'}} onClick={() => {setShowPalette(false); setShowSubmitModal(true);}}>Submit Test</button>
             </div>
           </div>
         </>
@@ -500,8 +500,8 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
             <p><span>Not Answered:</span> <strong>{counts.notAnswered}</strong></p>
             <p><span>Not Visited:</span> <strong>{counts.notVisited}</strong></p>
             <div className={styles.modalActions}>
-              <button className={styles.btnOutline} onClick={() => setShowSubmitModal(false)}>Cancel</button>
-              <button className={styles.btnPrimary} onClick={handleFinalSubmit} disabled={isSubmitting}>
+              <button data-ui-button="secondary" className={styles.btnOutline} onClick={() => setShowSubmitModal(false)}>Cancel</button>
+              <button data-ui-button="primary" className={styles.btnPrimary} onClick={handleFinalSubmit} disabled={isSubmitting}>
                 {isSubmitting ? 'Submitting...' : 'Submit Test'}
               </button>
             </div>

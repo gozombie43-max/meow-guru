@@ -66,7 +66,7 @@ export function LangToggle({ active, loading, onChange }: LangToggleProps) {
             {index > 0 && (
               <div className="lang-toggle-divider h-5 w-px shrink-0 bg-[var(--lang-toggle-divider)]" aria-hidden="true" />
             )}
-            <button
+            <button data-ui-button="state"
               ref={(node) => {
                 buttonRefs.current[code] = node;
               }}
@@ -85,28 +85,28 @@ export function LangToggle({ active, loading, onChange }: LangToggleProps) {
       </div>
       <style>{`
         .lang-toggle {
-          --lang-toggle-bg: #E6EAEF;
+          --lang-toggle-bg: var(--light-border);
           --lang-toggle-border: rgba(0, 0, 0, 0.08);
           --lang-toggle-highlight: rgba(255, 255, 255, 0.85);
           --lang-toggle-active-bg: #ffffff;
           --lang-toggle-active-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.06);
           --lang-toggle-divider: rgba(0, 0, 0, 0.08);
-          --lang-toggle-text: #57606a;
-          --lang-toggle-text-hover: #1d1d1f;
-          --lang-toggle-text-active: #1d1d1f;
+          --lang-toggle-text: var(--light-text-secondary);
+          --lang-toggle-text-hover: var(--light-text);
+          --lang-toggle-text-active: var(--light-text);
         }
 
         body.theme-dark .lang-toggle,
         .theme-dark .lang-toggle,
         [data-theme="dark"] .lang-toggle,
         .dark .lang-toggle {
-          --lang-toggle-bg: #1c1c1e;
-          --lang-toggle-border: rgba(255, 255, 255, 0.09);
+          --lang-toggle-bg: var(--dark-surface);
+          --lang-toggle-border: var(--dark-border);
           --lang-toggle-highlight: rgba(255, 255, 255, 0.04);
-          --lang-toggle-active-bg: #2c2c2e;
+          --lang-toggle-active-bg: var(--dark-surface-muted);
           --lang-toggle-active-shadow: 0 2px 6px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.12);
           --lang-toggle-divider: rgba(255, 255, 255, 0.08);
-          --lang-toggle-text: rgba(235, 235, 245, 0.6);
+          --lang-toggle-text: var(--dark-text);
           --lang-toggle-text-hover: rgba(235, 235, 245, 0.85);
           --lang-toggle-text-active: #ffffff;
         }
@@ -114,15 +114,15 @@ export function LangToggle({ active, loading, onChange }: LangToggleProps) {
         body.theme-dark [data-theme="light"] .lang-toggle,
         .theme-dark [data-theme="light"] .lang-toggle,
         [data-theme="light"] .lang-toggle.lang-toggle {
-          --lang-toggle-bg: #E6EAEF;
-          --lang-toggle-border: rgba(0, 0, 0, 0.08);
+          --lang-toggle-bg: var(--light-border);
+          --lang-toggle-border: var(--light-border);
           --lang-toggle-highlight: rgba(255, 255, 255, 0.85);
           --lang-toggle-active-bg: #ffffff;
           --lang-toggle-active-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.06);
           --lang-toggle-divider: rgba(0, 0, 0, 0.08);
-          --lang-toggle-text: #57606a;
-          --lang-toggle-text-hover: #1d1d1f;
-          --lang-toggle-text-active: #1d1d1f;
+          --lang-toggle-text: var(--light-text-secondary);
+          --lang-toggle-text-hover: var(--light-text);
+          --lang-toggle-text-active: var(--light-text);
         }
 
         .lang-toggle-option {

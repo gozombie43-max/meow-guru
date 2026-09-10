@@ -25,7 +25,7 @@ export default function BattleProfilePage() {
           <h2>{season ? season.profile.tier : "Your battle rating"}</h2>
           <p>{unranked ? "Complete your placements to reveal your season rank." : <><strong>{season?.profile.rating ?? life.rating}</strong> rating · Keep challenging yourself.</>}</p>
           {unranked && <><Progress value={season.profile.gamesPlayed / 5 * 100} label="Placement matches" /><p>{Math.min(5, season.profile.gamesPlayed)} of 5 placements completed</p></>}
-          <Link className="bs-button" href="/battle">Enter the arena</Link>
+          <Link data-ui-button="secondary" className="bs-button" href="/battle">Enter the arena</Link>
         </section>
         <Panel title="At a glance"><Stats items={[{ label: "Lifetime rating", value: life.rating }, { label: "Peak rating", value: life.peakRating }, { label: "Battles played", value: life.gamesPlayed }, { label: "Win rate", value: life.gamesPlayed ? `${Math.round(life.wins / life.gamesPlayed * 100)}%` : "—" }, { label: "Wins / Losses / Draws", value: `${life.wins} / ${life.losses} / ${life.draws}` }, { label: "Best win streak", value: life.bestWinStreak }]} /></Panel>
         <Panel title="Season badges" aside={<Link href="/battle/rewards">Reward track →</Link>}>{data.rewards.length ? <div className="bs-awards">{data.rewards.map(reward => <div className="bs-award" key={reward._id}><Award size={22} /><strong>{reward.badge?.label || "Season reward"}</strong></div>)}</div> : <Empty title="Your collection starts here" detail="Finish a season to earn your first badge." />}</Panel>

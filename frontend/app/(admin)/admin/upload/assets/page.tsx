@@ -9,7 +9,7 @@ const MassSolutionUpload = dynamic(() => import("@/components/admin/MassSolution
 export default function AssetUploadPage() {
   return (
     <div className={styles.shell}>
-      <header className={styles.pageHeader}>
+      <header data-ui-chrome="header" className={styles.pageHeader}>
         <div>
           <h1 className={styles.pageTitle}>ZIP Asset Pipeline</h1>
           <p className={styles.pageSubtitle}>Batch ingest question diagrams and solution illustrations packed into ZIP archives with automatic database patching.</p>

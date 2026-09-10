@@ -3,19 +3,19 @@ import css from "styled-jsx/css";
 export const aiChatStyles = css`
         .ai-chat-page {
           --surface: #ffffff;
-          --surface-soft: #f2f2f7;
-          --surface-muted: #e5e5ea;
-          --ink: #000000;
-          --muted: #8e8e93;
-          --line: #c6c6c8;
-          --accent: #007aff;
-          --accent-dark: #0056b3;
+          --surface-soft: var(--light-canvas);
+          --surface-muted: var(--light-surface-muted);
+          --ink: var(--light-text);
+          --muted: var(--light-text-muted);
+          --line: var(--light-border);
+          --accent: var(--light-accent);
+          --accent-dark: var(--light-accent-hover);
           --topbar-bg: rgba(255, 255, 255, 0.75);
           --input-bg: #ffffff;
-          --bubble-ai: #e5e5ea;
-          --bubble-user: #007aff;
+          --bubble-ai: var(--light-surface-muted);
+          --bubble-user: var(--light-accent);
           --bubble-user-text: #ffffff;
-          --bubble-ai-text: #000000;
+          --bubble-ai-text: var(--light-text);
           --surface-transparent: rgba(255, 255, 255, 0);
 
           height: 100dvh;
@@ -28,20 +28,20 @@ export const aiChatStyles = css`
         }
 
         .ai-chat-page.ios-theme-dark {
-          --surface: #000000;
-          --surface-soft: #1c1c1e;
-          --surface-muted: #2c2c2e;
-          --ink: #ffffff;
-          --muted: #8e8e93;
-          --line: #38383a;
-          --accent: #0a84ff;
+          --surface: var(--dark-surface);
+          --surface-soft: var(--dark-surface);
+          --surface-muted: var(--dark-surface-muted);
+          --ink: var(--dark-text);
+          --muted: var(--dark-text-muted);
+          --line: var(--dark-border);
+          --accent: var(--dark-accent);
           --accent-dark: #0060cc;
           --topbar-bg: rgba(0, 0, 0, 0.75);
-          --input-bg: #1c1c1e;
-          --bubble-ai: #2c2c2e;
-          --bubble-user: #0a84ff;
-          --bubble-user-text: #ffffff;
-          --bubble-ai-text: #ffffff;
+          --input-bg: var(--dark-surface);
+          --bubble-ai: var(--dark-surface-muted);
+          --bubble-user: var(--dark-accent);
+          --bubble-user-text: var(--dark-text);
+          --bubble-ai-text: var(--dark-text);
           --surface-transparent: rgba(0, 0, 0, 0);
         }
 
@@ -751,7 +751,7 @@ export const aiChatStyles = css`
         }
 
         .send-btn:hover:not(:disabled) {
-          background: #000000;
+          background: var(--dark-canvas);
         }
 
         .send-btn:disabled {
@@ -793,7 +793,7 @@ export const aiChatStyles = css`
           max-height: 90vh;
           border-radius: 12px;
           overflow: hidden;
-          background: #000;
+          background: var(--dark-canvas);
           display: flex;
           align-items: center;
           justify-content: center;

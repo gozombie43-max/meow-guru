@@ -279,7 +279,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
       <div className={styles.desktopContainer}>
         <div className={styles.macWindow}>
           {/* ── Titlebar & Toolbar (44px) ── */}
-          <header className={styles.titlebar}>
+          <header data-ui-chrome="header" className={styles.titlebar}>
             <div className={styles.titlebarLeft}>
               {/* Traffic Lights */}
               <MacTrafficLights
@@ -289,7 +289,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
               />
 
               {/* Navigation Arrows */}
-              <button
+              <button data-ui-button="state"
                 type="button"
                 className={styles.navBtn}
                 onClick={() => router.back()}
@@ -299,7 +299,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
                 <ArrowLeft size={13} />
               </button>
 
-              <button
+              <button data-ui-button="state"
                 type="button"
                 className={styles.navBtn}
                 onClick={() => setSidebarOpen((prev) => !prev)}
@@ -334,7 +334,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
                   aria-label={`Search ${config.subjectId} topics`}
                 />
                 {searchQuery ? (
-                  <button
+                  <button data-ui-button="secondary"
                     type="button"
                     className={styles.searchClearBtn}
                     onClick={() => setSearchQuery("")}
@@ -356,7 +356,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
                 role="group"
                 aria-label="View Mode"
               >
-                <button
+                <button data-ui-button="state"
                   type="button"
                   className={`${styles.segmentedBtn} ${viewMode === "grid" ? styles.segmentedBtnActive : ""}`}
                   onClick={() => setViewMode("grid")}
@@ -366,7 +366,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
                   <LayoutGrid size={12} />
                   <span>Grid</span>
                 </button>
-                <button
+                <button data-ui-button="state"
                   type="button"
                   className={`${styles.segmentedBtn} ${viewMode === "list" ? styles.segmentedBtnActive : ""}`}
                   onClick={() => setViewMode("list")}
@@ -379,7 +379,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
               </div>
 
               {/* Dark/Light Theme Toggle */}
-              <button
+              <button data-ui-button="secondary"
                 type="button"
                 className={styles.actionBtn}
                 onClick={toggleThemeMode}
@@ -410,7 +410,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
                       const group = config.getChapterGroup ? config.getChapterGroup(topic.slug) : null;
                       const chapterCount = group ? group.topics.length : topic.subtopics.length;
                       return (
-                        <button
+                        <button data-ui-button="state"
                           key={topic.id}
                           type="button"
                           className={`${styles.sidebarItem} ${active ? styles.sidebarItemActive : ""}`}
@@ -441,7 +441,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
                       const count = categoryCounts[cat.id] || 0;
                       const CatIcon = cat.icon;
                       return (
-                        <button
+                        <button data-ui-button="state"
                           key={cat.id}
                           type="button"
                           className={`${styles.sidebarItem} ${active ? styles.sidebarItemActive : ""}`}
@@ -476,7 +476,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
                   <div className={styles.canvasMeta}>
                     <span>{chapters.length} chapters</span>
                     {searchQuery && (
-                      <button
+                      <button data-ui-button="state"
                         type="button"
                         className={styles.clearFilterLink}
                         onClick={() => setSearchQuery("")}
@@ -498,7 +498,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
                       <p className={styles.emptyStateDesc}>
                         No chapters in {selectedTopic.name} matched &ldquo;{searchQuery}&rdquo;.
                       </p>
-                      <button
+                      <button data-ui-button="state"
                         type="button"
                         className={styles.tableActionBtn}
                         onClick={() => setSearchQuery("")}
@@ -594,7 +594,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
                                 </span>
                               </td>
                               <td>
-                                <button
+                                <button data-ui-button="state"
                                   type="button"
                                   className={styles.tableTopicCell}
                                   onClick={() => setSelectedChapterSlug(chapter.slug)}
@@ -625,7 +625,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
                               </td>
                               <td style={{ textAlign: "right" }}>
                                 <div style={{ display: "inline-flex", gap: 6 }}>
-                                  <Link
+                                  <Link data-ui-button="secondary"
                                     href={`${chapterHref}/quiz?mode=concept`}
                                     className={styles.tableActionBtn}
                                     onClick={(e) => e.stopPropagation()}
@@ -634,7 +634,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
                                   >
                                     Practice
                                   </Link>
-                                  <Link
+                                  <Link data-ui-button="secondary"
                                     href={chapterHref}
                                     className={styles.tableActionBtn}
                                     onClick={(e) => e.stopPropagation()}
@@ -661,7 +661,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
                     <p className={styles.emptyStateDesc}>
                       No modules matched &ldquo;{searchQuery}&rdquo;.
                     </p>
-                    <button
+                    <button data-ui-button="state"
                       type="button"
                       className={styles.tableActionBtn}
                       onClick={() => {
@@ -734,7 +734,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
                             }`}
                           >
                             <td>
-                              <button
+                              <button data-ui-button="state"
                                 type="button"
                                 className={styles.tableTopicCell}
                                 onClick={() => setSelectedTopicId(topic.id)}
@@ -782,7 +782,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
                               </div>
                             </td>
                             <td style={{ textAlign: "right" }}>
-                              <Link
+                              <Link data-ui-button="secondary"
                                 href={`${topic.routeBase}`}
                                 className={styles.tableActionBtn}
                                 onClick={(e) => e.stopPropagation()}
@@ -1075,8 +1075,8 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
           ========================================================================= */}
       <div className={styles.mobileContainer}>
         {/* Mobile Topbar */}
-        <header className={styles.mobileTopbar}>
-          <button
+        <header data-ui-chrome="header" className={styles.mobileTopbar}>
+          <button data-ui-button="icon"
             type="button"
             className={styles.mobileBackBtn}
             onClick={() => router.back()}
@@ -1108,7 +1108,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
             />
             <div className={styles.mobileSearchRightActions}>
               {searchQuery && (
-                <button
+                <button data-ui-button="secondary"
                   type="button"
                   className={styles.mobileSearchClearBtn}
                   onClick={() => setSearchQuery("")}
@@ -1118,7 +1118,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
                 </button>
               )}
               <span className={styles.mobileSearchDivider} aria-hidden="true" />
-              <button
+              <button data-ui-button="state"
                 type="button"
                 className={`${styles.mobileMicBtn} ${isListening ? styles.mobileMicBtnListening : ""}`}
                 onClick={toggleVoiceSearch}
@@ -1139,7 +1139,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
             {!isChapterMode && (
               <div className={styles.mobileTabsScroll}>
                 {CATEGORIES.map((cat) => (
-                  <button
+                  <button data-ui-button="state"
                     key={cat.id}
                     type="button"
                     className={`${styles.mobileTabBtn} ${

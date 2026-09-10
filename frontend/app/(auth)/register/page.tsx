@@ -140,7 +140,7 @@ function RegisterContent() {
         </label>
 
         {/* Primary iOS Action Button */}
-        <button
+        <button data-ui-button="primary"
           type="submit"
           disabled={isSubmitting || !agreedToTerms}
           className={styles.primaryBtn}

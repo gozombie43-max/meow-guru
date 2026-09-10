@@ -79,7 +79,7 @@ export default function StudyModeStartView({
           ======================================================================= */}
       <div className="study-mobile-container">
         {/* Top Header Position */}
-        <header className="study-mobile-header">
+        <header data-ui-chrome="header" className="study-mobile-header">
           <h1 className="study-mobile-title">{title}</h1>
         </header>
 
@@ -123,8 +123,8 @@ export default function StudyModeStartView({
         </main>
 
         {/* Bottom Button Position */}
-        <footer className="study-mobile-footer">
-          <button
+        <footer data-ui-chrome="footer" className="study-mobile-footer">
+          <button data-ui-button="primary"
             type="button"
             className="study-mobile-cta-btn"
             onClick={() => router.replace(targetQuizHref)}
@@ -257,7 +257,7 @@ export default function StudyModeStartView({
               </div>
 
               {/* PC CTA Button */}
-              <button
+              <button data-ui-button="primary"
                 type="button"
                 className="study-pc-start-btn"
                 onClick={() => router.replace(targetQuizHref)}
@@ -274,11 +274,11 @@ export default function StudyModeStartView({
            ROOT THEME & LAYOUT VARIABLES
            ════════════════════════════════════════════════════ */
         .study-start-root {
-          --bg-root: #000000;
+          --bg-root: var(--dark-canvas);
           --bg-desktop: #0a0a0c;
           --bg-window: #161618;
           --bg-sidebar: #111113;
-          --bg-card: #1c1c1e;
+          --bg-card: var(--dark-surface);
           --border-window: rgba(255, 255, 255, 0.08);
           --border-subtle: rgba(255, 255, 255, 0.08);
           --text-primary: #ffffff;
@@ -298,7 +298,7 @@ export default function StudyModeStartView({
         }
 
         .study-start-root[data-theme="light"] {
-          --bg-root: #f2f2f7;
+          --bg-root: var(--light-canvas);
           --bg-desktop: #e5e5ea;
           --bg-window: #ffffff;
           --bg-sidebar: #f8f8fa;

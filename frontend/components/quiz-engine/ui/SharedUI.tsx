@@ -8,7 +8,7 @@ export function ThemeToggle() {
   const { toggleTheme } = useQuizThemeControls();
   const isDark = theme === "dark";
   return (
-    <button
+    <button data-ui-button="state"
       type="button"
       onClick={toggleTheme}
       className={`theme-toggle ${isDark ? "theme-toggle--dark" : "theme-toggle--light"}`}

@@ -194,7 +194,7 @@ export default function ResourcePage() {
     <main className="resource-page">
       {/* ── Fixed Position Top Area ── */}
       <div className="res-top-pinned">
-        <header className="res-header">
+        <header data-ui-chrome="header" className="res-header">
           {/* ── Compact Navigation Bar (44px) ── */}
           <div className="res-nav-bar">
             <Link href="/" className="res-nav-btn res-back-btn" aria-label="Back to home">
@@ -204,7 +204,7 @@ export default function ResourcePage() {
             <h1 className="res-nav-title">Resources</h1>
 
             <div className="res-nav-actions">
-              <button
+              <button data-ui-button="state"
                 type="button"
                 className={`res-nav-btn ${showSearch ? "active" : ""}`}
                 onClick={() => {
@@ -217,7 +217,7 @@ export default function ResourcePage() {
               </button>
 
               {files.length === 0 && (
-                <button
+                <button data-ui-button="state"
                   type="button"
                   className="res-nav-btn res-add-btn"
                   onClick={triggerUploadCurrent}
@@ -243,7 +243,7 @@ export default function ResourcePage() {
                   className="res-search-input"
                  aria-label={`Search ${selectedSubject.label} ${activeTab}...`}/>
                 {query && (
-                  <button
+                  <button data-ui-button="secondary"
                     type="button"
                     onClick={() => setQuery("")}
                     className="res-search-clear-btn"
@@ -265,7 +265,7 @@ export default function ResourcePage() {
                 const isActive = subject.id === activeSubject;
 
                 return (
-                  <button
+                  <button data-ui-button="state"
                     key={subject.id}
                     type="button"
                     className={`res-segment-btn ${isActive ? "active" : ""}`}
@@ -288,7 +288,7 @@ export default function ResourcePage() {
               {resourceTabs.map((tab) => {
                 const isActive = tab === activeTab;
                 return (
-                  <button
+                  <button data-ui-button="state"
                     key={tab}
                     type="button"
                     className={`res-chip ${isActive ? "active" : ""}`}
@@ -311,7 +311,7 @@ export default function ResourcePage() {
           {notice && (
             <div className="res-notice-banner">
               <span>{notice}</span>
-              <button
+              <button data-ui-button="state"
                 type="button"
                 onClick={() => setNotice("")}
                 className="res-notice-close"
@@ -330,7 +330,7 @@ export default function ResourcePage() {
           ) : visibleFiles.length > 0 ? (
             <div className="res-card-list">
               {visibleFiles.map((file, index) => (
-                <button
+                <button data-ui-button="state"
                   key={file.id}
                   type="button"
                   className="res-card"
@@ -375,7 +375,7 @@ export default function ResourcePage() {
                   : `No documents uploaded yet for ${selectedSubject.label} (${activeTab}).`}
               </p>
               {!query && (
-                <button
+                <button data-ui-button="state"
                   type="button"
                   className="res-empty-btn"
                   onClick={triggerUploadCurrent}
@@ -392,7 +392,7 @@ export default function ResourcePage() {
 
       {/* ── Floating Action Button (Only when documents exist) ── */}
       {files.length > 0 && (
-        <button
+        <button data-ui-button="state"
           type="button"
           className="res-fab"
           onClick={() => setShowUploadModal(true)}

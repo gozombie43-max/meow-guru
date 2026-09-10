@@ -16,7 +16,7 @@ export default function RouteErrorState({ label, reset }: RouteErrorStateProps) 
           <h1>Unable to load {label}</h1>
           <p>Check your connection and try again.</p>
         </div>
-        <button className="route-boundary__retry" type="button" onClick={reset}>
+        <button data-ui-button="state" className="route-boundary__retry" type="button" onClick={reset}>
           <RefreshCw size={16} aria-hidden="true" />
           Try again
         </button>

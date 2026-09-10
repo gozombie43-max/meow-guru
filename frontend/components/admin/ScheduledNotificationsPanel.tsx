@@ -147,7 +147,7 @@ export default function ScheduledNotificationsPanel() {
             <span>Scheduled Notifications</span>
           </h2>
         </div>
-        <button
+        <button data-ui-button="secondary"
           type="button"
           className={s.refreshBtn}
           onClick={() => loadScheduled(activeTab)}
@@ -162,7 +162,7 @@ export default function ScheduledNotificationsPanel() {
 
       {/* Tabs */}
       <div className={s.tabs} role="tablist" aria-label="Notification status">
-        <button
+        <button data-ui-button="state"
           type="button"
           role="tab"
           aria-selected={activeTab === 'pending'}
@@ -173,7 +173,7 @@ export default function ScheduledNotificationsPanel() {
           <span className={s.tabCount}>{counts.pending}</span>
         </button>
 
-        <button
+        <button data-ui-button="state"
           type="button"
           role="tab"
           aria-selected={activeTab === 'sent'}
@@ -184,7 +184,7 @@ export default function ScheduledNotificationsPanel() {
           <span className={s.tabCount}>{counts.sent}</span>
         </button>
 
-        <button
+        <button data-ui-button="state"
           type="button"
           role="tab"
           aria-selected={activeTab === 'failed'}
@@ -195,7 +195,7 @@ export default function ScheduledNotificationsPanel() {
           <span className={s.tabCount}>{counts.failed}</span>
         </button>
 
-        <button
+        <button data-ui-button="state"
           type="button"
           role="tab"
           aria-selected={activeTab === 'cancelled'}
@@ -301,7 +301,7 @@ export default function ScheduledNotificationsPanel() {
               {/* Actions */}
               {item.status === 'pending' && (
                 <div className={s.cardActions}>
-                  <button
+                  <button data-ui-button="secondary"
                     type="button"
                     className={s.cancelActionBtn}
                     onClick={() => handleCancel(item)}
@@ -317,7 +317,7 @@ export default function ScheduledNotificationsPanel() {
 
               {item.status === 'failed' && (
                 <div className={s.cardActions}>
-                  <button
+                  <button data-ui-button="secondary"
                     type="button"
                     className={s.retryActionBtn}
                     onClick={() => setRetryTargetItem(item)}
@@ -344,7 +344,7 @@ export default function ScheduledNotificationsPanel() {
           <div
             className={s.modalDialog}
           >
-            <div className={s.modalHeader}>
+            <div data-ui-chrome="header" className={s.modalHeader}>
               <div className={s.modalIconWrap}>
                 <AlertTriangle size={22} />
               </div>
@@ -365,7 +365,7 @@ export default function ScheduledNotificationsPanel() {
             </div>
 
             <div className={s.modalActions}>
-              <button
+              <button data-ui-button="secondary"
                 type="button"
                 className={s.modalCancelBtn}
                 onClick={() => setRetryTargetItem(null)}
@@ -373,7 +373,7 @@ export default function ScheduledNotificationsPanel() {
               >
                 Cancel
               </button>
-              <button
+              <button data-ui-button="primary"
                 type="button"
                 className={s.modalConfirmRetryBtn}
                 onClick={handleConfirmRetry}

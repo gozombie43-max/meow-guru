@@ -29,59 +29,59 @@ const SUBJECT_MAP: Record<string, string> = {
 };
 
 const lightVideoTheme = {
-  pageBg: '#ffffff',
-  pageFg: '#0f0f0f',
-  headerBg: '#ffffff',
-  headerBorder: '#f0f0f0',
+  pageBg: 'var(--light-surface)',
+  pageFg: 'var(--light-text)',
+  headerBg: 'var(--light-surface)',
+  headerBorder: 'var(--light-border)',
   headerShadow: '0 1px 0 rgba(0,0,0,0.06)',
-  title: '#0f0f0f',
-  muted: '#606060',
-  faint: '#888888',
-  divider: '#f0f0f0',
-  progressTrack: '#f0f0f0',
-  progressFill: '#050505',
-  buttonBg: '#ffffff',
-  buttonBorder: '#e5e7eb',
-  buttonFg: '#0f0f0f',
-  activeButtonBg: '#050505',
-  activeButtonFg: '#ffffff',
-  nextBg: '#fafafa',
-  chapterBg: '#ffffff',
-  chapterSelectedBg: '#f9f9f9',
-  selectedBorder: '#0f0f0f',
-  indexBg: '#f3f4f6',
-  indexFg: '#606060',
-  playingBar: '#0f0f0f',
-  topicHeader: '#aaaaaa',
-  loadingText: '#cccccc',
+  title: 'var(--light-text)',
+  muted: 'var(--light-text-secondary)',
+  faint: 'var(--light-text-muted)',
+  divider: 'var(--light-border)',
+  progressTrack: 'var(--light-border)',
+  progressFill: 'var(--light-accent)',
+  buttonBg: 'var(--light-surface)',
+  buttonBorder: 'var(--light-border)',
+  buttonFg: 'var(--light-text)',
+  activeButtonBg: 'var(--light-accent)',
+  activeButtonFg: 'var(--light-surface)',
+  nextBg: 'var(--light-canvas)',
+  chapterBg: 'var(--light-surface)',
+  chapterSelectedBg: 'var(--light-accent-soft)',
+  selectedBorder: 'var(--light-text)',
+  indexBg: 'var(--light-surface-muted)',
+  indexFg: 'var(--light-text-secondary)',
+  playingBar: 'var(--light-text)',
+  topicHeader: 'var(--light-text-muted)',
+  loadingText: 'var(--light-text-muted)',
 };
 
 const darkVideoTheme = {
-  pageBg: '#0d1117',
-  pageFg: '#e6e8eb',
-  headerBg: 'rgba(15, 20, 28, 0.94)',
-  headerBorder: '#262d37',
+  pageBg: 'var(--dark-canvas)',
+  pageFg: 'var(--dark-text)',
+  headerBg: 'var(--dark-surface)',
+  headerBorder: 'var(--dark-border)',
   headerShadow: '0 1px 0 rgba(255,255,255,0.06)',
-  title: '#f3f4f6',
-  muted: '#b6bdc8',
-  faint: '#959ead',
-  divider: '#262d37',
-  progressTrack: '#2c3440',
-  progressFill: '#e6e8eb',
-  buttonBg: '#1a212b',
-  buttonBorder: '#313b48',
-  buttonFg: '#e6e8eb',
-  activeButtonBg: '#e6e8eb',
-  activeButtonFg: '#0d1117',
-  nextBg: '#121923',
-  chapterBg: '#0d1117',
-  chapterSelectedBg: '#1a212b',
-  selectedBorder: '#e6e8eb',
-  indexBg: '#242d39',
-  indexFg: '#c2c8d2',
-  playingBar: '#e6e8eb',
-  topicHeader: '#8d96a6',
-  loadingText: '#a5aebb',
+  title: 'var(--dark-text)',
+  muted: 'var(--dark-text-secondary)',
+  faint: 'var(--dark-text-muted)',
+  divider: 'var(--dark-border)',
+  progressTrack: 'var(--dark-surface-muted)',
+  progressFill: 'var(--dark-accent)',
+  buttonBg: 'var(--dark-surface)',
+  buttonBorder: 'var(--dark-border)',
+  buttonFg: 'var(--dark-text)',
+  activeButtonBg: 'var(--dark-text)',
+  activeButtonFg: 'var(--dark-canvas)',
+  nextBg: 'var(--dark-surface)',
+  chapterBg: 'var(--dark-canvas)',
+  chapterSelectedBg: 'var(--dark-accent-soft)',
+  selectedBorder: 'var(--dark-text)',
+  indexBg: 'var(--dark-surface-muted)',
+  indexFg: 'var(--dark-text-secondary)',
+  playingBar: 'var(--dark-accent)',
+  topicHeader: 'var(--dark-text-muted)',
+  loadingText: 'var(--dark-text-muted)',
 };
 
 async function readApiJson(response: Response) {
@@ -204,7 +204,7 @@ export default function VideoPlayerPage() {
         WebkitBackdropFilter: theme === 'dark' ? 'blur(16px)' : 'none',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%' }}>
-          <button
+          <button data-ui-button="state"
             onClick={() => router.back()}
             style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 6, borderRadius: 8, display: 'flex', alignItems: 'center', color: videoTheme.title }}
           >
@@ -314,7 +314,7 @@ export default function VideoPlayerPage() {
             </div>
           )}
           <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-            <button
+            <button data-ui-button="state"
               onClick={() => toggleWatched(selected.id)}
               style={{
                 display: 'flex', alignItems: 'center', gap: 6,
@@ -329,7 +329,7 @@ export default function VideoPlayerPage() {
                 ? <><CheckCircle size={15} /> Done</>
                 : <><Circle size={15} /> Mark done</>}
             </button>
-            <button style={{
+            <button data-ui-button="state" style={{
               display: 'flex', alignItems: 'center', gap: 6,
               padding: '7px 14px', borderRadius: 20,
               border: `1px solid ${videoTheme.buttonBorder}`, background: videoTheme.buttonBg,

@@ -85,14 +85,14 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
               Are you sure you want to leave study mode? Your session progress is saved.
             </p>
             <div className="exit-modal-actions">
-              <button
+              <button data-ui-button="secondary"
                 type="button"
                 className="exit-btn-cancel"
                 onClick={() => setShowExitConfirm(false)}
               >
                 Cancel
               </button>
-              <button
+              <button data-ui-button="primary"
                 type="button"
                 className="exit-btn-confirm"
                 onClick={handleConfirmExit}
@@ -149,7 +149,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
               onMouseDown={(e) => e.stopPropagation()}
               role="presentation"
             >
-              <button
+              <button data-ui-button="state"
                 type="button"
                 className={`letter-filter-btn ${selectedLetter ? "active" : ""} ${isLetterDropdownOpen ? "open" : ""}`}
                 onMouseDown={(e) => {
@@ -177,7 +177,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
                   <div className="letter-dropdown-header">
                     <span>Filter by letter</span>
                     {selectedLetter && (
-                      <button
+                      <button data-ui-button="secondary"
                         type="button"
                         className="letter-clear-btn"
                         onMouseDown={(e) => e.stopPropagation()}
@@ -189,7 +189,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
                   </div>
                   <div className="letter-grid">
                     {availableLetters.map((letter) => (
-                      <button
+                      <button data-ui-button="state"
                         key={letter}
                         type="button"
                         className={`letter-tile ${stagedLetter === letter ? "active" : ""}`}
@@ -203,8 +203,8 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
                   </div>
                   {stagedLetter && (
                     <div className="dropdown-actions" style={{ display: 'flex', gap: '8px', padding: '10px 14px', borderTop: '0.5px solid var(--divider)' }}>
-                      <button type="button" style={{ flex: 1, padding: '8px', borderRadius: '6px', background: 'var(--item-hover)', fontWeight: 600, color: 'var(--text-primary)' }} onClick={() => { setStagedLetter(null); setSelectedLetter(null); setIsLetterDropdownOpen(false); setCurrentPage(1); }}>Reset</button>
-                      <button type="button" style={{ flex: 2, padding: '8px', borderRadius: '6px', background: '#007aff', color: '#fff', fontWeight: 600 }} onClick={() => { setSelectedLetter(stagedLetter); setIsLetterDropdownOpen(false); setCurrentPage(1); }}>
+                      <button data-ui-button="state" type="button" style={{ flex: 1, padding: '8px', borderRadius: '6px', background: 'var(--item-hover)', fontWeight: 600, color: 'var(--text-primary)' }} onClick={() => { setStagedLetter(null); setSelectedLetter(null); setIsLetterDropdownOpen(false); setCurrentPage(1); }}>Reset</button>
+                      <button data-ui-button="state" type="button" style={{ flex: 2, padding: '8px', borderRadius: '6px', background: '#007aff', color: '#fff', fontWeight: 600 }} onClick={() => { setSelectedLetter(stagedLetter); setIsLetterDropdownOpen(false); setCurrentPage(1); }}>
                         Show {cards.filter(c => c.word[0]?.toUpperCase() === stagedLetter).length} results
                       </button>
                     </div>
@@ -230,7 +230,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
                 onChange={(e) => setSearchQuery(e.target.value)}
                aria-label="Search vocab (⌘F)"/>
               {searchQuery && (
-                <button
+                <button data-ui-button="secondary"
                   type="button"
                   className="clear-search"
                   onClick={() => setSearchQuery("")}
@@ -253,7 +253,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
                 const pageNum = idx + 1;
                 const isSelected = currentPage === pageNum;
                 return (
-                  <button
+                  <button data-ui-button="state"
                     key={card.id}
                     type="button"
                     className={`word-row ${isSelected ? "selected" : ""}`}
@@ -274,10 +274,10 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
         <div className="macos-workspace">
           
           {/* Top Unified Toolbar */}
-          <header className="unified-toolbar">
+          <header data-ui-chrome="header" className="unified-toolbar">
             <div className="toolbar-left">
               {/* Mobile Back button to return to study mode */}
-              <button
+              <button data-ui-button="icon"
                 type="button"
                 className="mobile-back-btn"
                 onClick={() => setShowExitConfirm(true)}
@@ -292,21 +292,21 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
             <div className="toolbar-center">
               {/* Apple Segmented View Switcher (PC only) */}
               <div className="apple-segmented-control" role="tablist">
-                <button
+                <button data-ui-button="state"
                   type="button"
                   className={`segment-item ${viewMode === "all" ? "active" : ""}`}
                   onClick={() => setViewMode("all")}
                 >
                   All Tables
                 </button>
-                <button
+                <button data-ui-button="state"
                   type="button"
                   className={`segment-item ${viewMode === "primary" ? "active" : ""}`}
                   onClick={() => setViewMode("primary")}
                 >
                   {config.primaryLabel}
                 </button>
-                <button
+                <button data-ui-button="state"
                   type="button"
                   className={`segment-item ${viewMode === "secondary" ? "active" : ""}`}
                   onClick={() => setViewMode("secondary")}
@@ -324,7 +324,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
 
             <div className="toolbar-right">
               {/* Rectangular Counter Box acting as Filter button */}
-              <button
+              <button data-ui-button="state"
                 type="button"
                 className="mobile-counter-filter-btn"
                 onClick={() => setIsMobilePaletteOpen(true)}
@@ -336,7 +336,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
                 <span className="counter-tot">{totalCards}</span>
               </button>
 
-              <button
+              <button data-ui-button="state"
                 type="button"
                 className="appearance-toggle"
                 onClick={() => setTheme((v) => (v === "dark" ? "light" : "dark"))}
@@ -362,7 +362,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
             <div className="mobile-full-modal" role="dialog" aria-modal="true" aria-label="Vocabulary Index Filter">
               {/* Modal Top Header Bar */}
               <div className="modal-top-bar">
-                <button
+                <button data-ui-button="icon"
                   type="button"
                   className="modal-top-back-btn"
                   onClick={() => setIsMobilePaletteOpen(false)}
@@ -377,7 +377,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
                 </div>
 
                 {mobileSheetSearch || mobileSheetLetter ? (
-                  <button
+                  <button data-ui-button="secondary"
                     type="button"
                     className="modal-top-reset-btn"
                     onClick={() => {
@@ -409,7 +409,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
                     onChange={(e) => setMobileSheetSearch(e.target.value)}
                    aria-label="Search by word or meaning..."/>
                   {mobileSheetSearch && (
-                    <button
+                    <button data-ui-button="secondary"
                       type="button"
                       className="modal-search-clear"
                       onClick={() => setMobileSheetSearch("")}
@@ -423,7 +423,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
 
               {/* A-Z Letter Filter Scroll Bar */}
               <div className="modal-letter-strip" role="tablist" aria-label="Filter by letter">
-                <button
+                <button data-ui-button="state"
                   type="button"
                   className={`modal-letter-chip ${!mobileSheetLetter ? "active" : ""}`}
                   onClick={() => setMobileSheetLetter(null)}
@@ -433,7 +433,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
                 {availableLetters.map((letter) => {
                   const isSelected = mobileSheetLetter === letter;
                   return (
-                    <button
+                    <button data-ui-button="state"
                       key={letter}
                       type="button"
                       className={`modal-letter-chip ${isSelected ? "active" : ""}`}
@@ -471,7 +471,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
                     <div className="empty-ico">🔍</div>
                     <div className="empty-title">No vocabulary words found</div>
                     <div className="empty-sub">Try searching with a different keyword or starting letter</div>
-                    <button
+                    <button data-ui-button="secondary"
                       type="button"
                       className="btn-clear-all"
                       onClick={() => {
@@ -489,7 +489,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
                     const trans = card.meanings[0]?.translation || "";
                     const origIndex = cards.findIndex((c) => c.id === card.id);
                     return (
-                      <button
+                      <button data-ui-button="state"
                         key={card.id}
                         type="button"
                         className={`modal-word-item ${isActive ? "active" : ""}`}
@@ -607,7 +607,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
             {/* Mobile Swipe Segmented Suite (<900px) */}
             <section className="mobile-suite">
               <div className="mobile-seg-control">
-                <button
+                <button data-ui-button="state"
                   type="button"
                   className={`m-tab ${mobileTab === "primary" ? "active" : ""}`}
                   onClick={() => setMobileTab("primary")}
@@ -615,7 +615,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
                   <span>{config.primaryLabel}</span>
                   <span className="m-tab-badge">{activeCard.primaryItems.length}</span>
                 </button>
-                <button
+                <button data-ui-button="state"
                   type="button"
                   className={`m-tab ${mobileTab === "secondary" ? "active" : ""}`}
                   onClick={() => setMobileTab("secondary")}
@@ -683,7 +683,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
 
           {/* ── Mobile Floating Navigation Buttons ── */}
           <div className="mobile-nav-footer">
-            <button
+            <button data-ui-button="secondary"
               type="button"
               className="mobile-footer-btn prev"
               onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
@@ -696,7 +696,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
               <span>Previous</span>
             </button>
 
-            <button
+            <button data-ui-button="state"
               type="button"
               className="mobile-footer-btn next"
               onClick={() => setCurrentPage((prev) => Math.min(totalCards, prev + 1))}

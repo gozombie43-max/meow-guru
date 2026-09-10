@@ -13,10 +13,10 @@
 
 :global(body.theme-dark) .page {
   --geo-bg: #101010;
-  --geo-surface: #1c1c1e;
-  --geo-surface-muted: #27272a;
-  --geo-border: rgba(255, 255, 255, 0.11);
-  --geo-text: #f5f5f7;
+  --geo-surface: var(--dark-surface);
+  --geo-surface-muted: var(--dark-surface-muted);
+  --geo-border: var(--dark-border);
+  --geo-text: var(--dark-text);
   --geo-secondary: rgba(235, 235, 245, 0.64);
   --geo-tertiary: rgba(235, 235, 245, 0.38);
 }

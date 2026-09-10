@@ -49,7 +49,7 @@ export function QuestionPaletteModal({
               <h3 className="text-base font-bold text-center text-[color:var(--quiz-text)]">
                 Questions
               </h3>
-              <button
+              <button data-ui-button="icon"
                 onClick={onClose}
                 className="quiz-icon-button absolute right-4 top-1/2 -translate-y-1/2 h-10 w-10 rounded-xl shadow-sm transition-colors flex items-center justify-center"
                 aria-label="Close question palette"
@@ -99,7 +99,7 @@ export function QuestionPaletteModal({
                       submittedQuestions,
                     });
                     return (
-                      <button
+                      <button data-ui-button="state"
                         key={index}
                         onClick={() => {
                           onGoToQuestion(index + 1);
@@ -191,7 +191,7 @@ export function QuestionPalettePanel({
               submittedQuestions,
             });
             return (
-              <button
+              <button data-ui-button="state"
                 key={index}
                 onClick={() => onGoToQuestion(index + 1)}
                 className={`question-button min-h-12 rounded-xl text-sm font-semibold ${statusClasses(status)}`}

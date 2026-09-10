@@ -2,7 +2,7 @@
 .adaptive-quiz-page {
   min-height: 100dvh;
   padding: 0;
-  background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+  background: var(--light-canvas);
   color: var(--color-text-primary, #1c1c1e);
   font-family: 'Satoshi', 'General Sans', 'Outfit', sans-serif;
   display: flex;
@@ -12,7 +12,7 @@
 
 body.theme-dark .adaptive-quiz-page {
   background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-  --color-text-primary: #ecf3ff;
+  --color-text-primary: var(--dark-text);
 }
 
 /* Default Mobile Window */
@@ -59,7 +59,7 @@ body.theme-dark .adaptive-quiz-page {
     padding: 16px 20px 12px;
   }
   body.theme-dark .macos-sidebar {
-    --header-bg: rgba(20,20,20,0.85);
+    --header-bg: var(--dark-surface);
     --border-color: rgba(255,255,255,0.1);
   }
   .macos-sidebar-title {
@@ -92,7 +92,7 @@ body.theme-dark .adaptive-quiz-page {
   }
   
   body.theme-dark .macos-window {
-    --macos-window-bg: rgba(30, 30, 30, 0.75);
+    --macos-window-bg: var(--dark-canvas);
   }
 
   .macos-sidebar {
@@ -106,8 +106,8 @@ body.theme-dark .adaptive-quiz-page {
   }
 
   body.theme-dark .macos-sidebar {
-    --macos-sidebar-bg: rgba(40, 40, 40, 0.5);
-    --macos-border: rgba(255,255,255,0.1);
+    --macos-sidebar-bg: var(--dark-canvas);
+    --macos-border: var(--dark-border);
   }
 
   .macos-traffic-lights {
@@ -135,7 +135,7 @@ body.theme-dark .adaptive-quiz-page {
   }
   
   body.theme-dark .macos-sidebar-title {
-    --sidebar-title-color: #98989d;
+    --sidebar-title-color: var(--dark-text-muted);
   }
   
   .macos-content {
@@ -162,8 +162,8 @@ body.theme-dark .adaptive-quiz-page {
 }
 
 body.theme-dark .section-card {
-  --card-bg: rgba(30, 41, 59, 0.6);
-  --card-border: rgba(255,255,255,0.08);
+  --card-bg: var(--dark-surface);
+  --card-border: var(--dark-border);
 }
 
 .heading-title {
@@ -209,7 +209,7 @@ body.theme-dark .section-card {
 
 body.theme-dark .macos-form-group {
   --form-bg: rgba(255, 255, 255, 0.08);
-  --form-border: rgba(255, 255, 255, 0.1);
+  --form-border: var(--dark-border);
 }
 
 .macos-list-item {
@@ -291,7 +291,7 @@ body.theme-dark .macos-segmented-control {
   color: var(--seg-active-text, #000);
 }
 body.theme-dark .macos-segmented-option.active {
-  --seg-active-text: #fff;
+  --seg-active-text: var(--dark-text);
 }
 .macos-segmented-highlight {
     position: absolute;

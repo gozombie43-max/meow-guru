@@ -175,21 +175,21 @@ export function QuizStartView({
               </div>
             </div>
             <div className="ios-resume-actions">
-              <button
+              <button data-ui-button="state"
                 type="button"
                 className="ios-resume-btn blue action-resume"
                 onClick={handleResume}
               >
                 Resume
               </button>
-              <button
+              <button data-ui-button="primary"
                 type="button"
                 className="ios-resume-btn red action-restart"
                 onClick={handleRestartFromPopup}
               >
                 Restart
               </button>
-              <button
+              <button data-ui-button="secondary"
                 type="button"
                 className="ios-resume-btn blue action-cancel"
                 onClick={handleCancelResume}
@@ -217,7 +217,7 @@ export function QuizStartView({
             .ios-resume-modal {
               width: 100%;
               max-width: 320px;
-              background: #2c2c2e;
+              background: var(--dark-surface-muted);
               border-radius: 14px;
               overflow: hidden;
               box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);

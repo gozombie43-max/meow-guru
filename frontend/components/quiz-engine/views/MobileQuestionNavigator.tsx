@@ -37,7 +37,7 @@ export function MobileQuestionNavigator({ activeRailBtnRef, closePalette, curren
             const status = getStatus(index);
             const statusLabel = status === "wrong" ? "incorrect" : status === "not-answered" ? "unvisited" : status;
             return (
-              <button
+              <button data-ui-button="state"
                 key={`rail-${question.id}-${index}`}
                 type="button"
                 ref={index === currentIndex ? activeRailBtnRef : null}
@@ -59,11 +59,11 @@ export function MobileQuestionNavigator({ activeRailBtnRef, closePalette, curren
           <div className="ios-series-palette-panel">
             <div className="ios-series-palette-title">
               <span>Questions</span>
-              <button type="button" onClick={closePalette} aria-label="Close question navigator"><X /></button>
+              <button data-ui-button="state" type="button" onClick={closePalette} aria-label="Close question navigator"><X /></button>
             </div>
             <div className="ios-series-palette-grid">
               {questions.map((question, index) => (
-                <button
+                <button data-ui-button="state"
                   key={`palette-${question.id}-${index}`}
                   type="button"
                   className={statusClass(getStatus(index))}

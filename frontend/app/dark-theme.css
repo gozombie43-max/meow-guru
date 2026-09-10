@@ -1,0 +1,127 @@
+/* Shared dark constants stay separate from the light exam palette. */
+:root {
+  --dark-canvas: #10141c;
+  --dark-surface: #191f2b;
+  --dark-surface-muted: #242d3c;
+  --dark-border: #354157;
+  --dark-text: #edf2fa;
+  --dark-text-secondary: #b8c4d6;
+  --dark-text-muted: #95a5bc;
+  --dark-accent: #82b1ff;
+  --dark-accent-hover: #a3c6ff;
+  --dark-action: #285ecc;
+  --dark-accent-soft: #233959;
+  --dark-shadow: 0 8px 28px rgb(0 0 0 / 18%);
+}
+
+html.theme-dark,
+body.theme-dark {
+  --theme-action: var(--dark-action);
+  --background: var(--dark-canvas);
+  --foreground: var(--dark-text);
+  --bg-gradient: var(--dark-canvas);
+  --bg: var(--dark-canvas);
+  --surface: var(--dark-surface);
+  --card: var(--dark-surface);
+  --border: var(--dark-border);
+  --text-primary: var(--dark-text);
+  --text-secondary: var(--dark-text-secondary);
+  --text-muted: var(--dark-text-muted);
+  --primary: var(--dark-accent);
+  --color-text-primary: var(--dark-text);
+  --color-text-secondary: var(--dark-text-secondary);
+  --color-text-tertiary: var(--dark-text-muted);
+  --color-border-secondary: var(--dark-border);
+  --color-border-tertiary: var(--dark-border);
+  --color-background-primary: var(--dark-surface);
+  --color-background-secondary: var(--dark-canvas);
+  --color-background-danger: #3d222c;
+  --color-text-danger: #ffb4b9;
+  background: var(--dark-canvas);
+  color: var(--dark-text);
+  color-scheme: dark;
+}
+
+/* Embedded light exams must not inherit dark action/focus colors. */
+html.theme-dark :is(.theme-light, [data-theme="light"]) {
+  --theme-action: var(--light-accent);
+  color-scheme: light;
+}
+
+html.theme-dark :is(.theme-light, [data-theme="light"]) :is(button, a, input, select, textarea):focus-visible {
+  outline-color: var(--light-accent);
+}
+
+html.theme-dark :is(button, a, input, select, textarea):focus-visible {
+  outline: 3px solid var(--dark-accent);
+  outline-offset: 3px;
+}
+
+html.theme-dark ::selection {
+  background: var(--dark-accent-soft);
+  color: var(--dark-text);
+}
+
+html.theme-dark body.theme-dark .bottom-pill-nav {
+  background: var(--dark-surface);
+  border: 1px solid var(--dark-border);
+  box-shadow: var(--dark-shadow);
+  padding: 7px;
+  gap: 4px;
+  border-radius: 24px;
+}
+
+html.theme-dark .bottom-pill-nav::after,
+html.theme-dark .bottom-pill-nav::before {
+  display: none;
+}
+
+html.theme-dark .bottom-pill-nav .bottom-nav-item {
+  min-height: 56px;
+  padding: 7px 2px;
+  border-radius: 16px;
+  color: var(--dark-text-secondary);
+  gap: 4px;
+}
+
+html.theme-dark .bottom-pill-nav .bottom-nav-icon {
+  width: 23px;
+  height: 23px;
+  stroke-width: 1.8;
+  stroke: currentColor;
+}
+
+html.theme-dark .bottom-pill-nav .bottom-nav-item.is-active {
+  background: var(--dark-accent-soft);
+  color: var(--dark-accent) !important;
+}
+
+html.theme-dark .bottom-pill-nav .bottom-nav-item.is-active .bottom-nav-icon {
+  stroke: var(--dark-accent) !important;
+}
+
+html.theme-dark .bottom-pill-nav .bottom-nav-item.is-active::after {
+  display: none;
+}
+
+html.theme-dark .bottom-pill-nav .bottom-nav-item:not(.is-active):hover {
+  background: var(--dark-surface-muted);
+  color: var(--dark-text);
+}
+
+html.theme-dark .bottom-nav-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+@media (max-width: 1024px) {
+  html.theme-dark body.theme-dark .bottom-pill-nav {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 20px 20px 0 0;
+    border-bottom: 0;
+    padding: 8px max(8px, var(--safe-right)) calc(8px + var(--safe-bottom)) max(8px, var(--safe-left));
+    box-shadow: 0 -4px 24px rgb(0 0 0 / 16%);
+  }
+}

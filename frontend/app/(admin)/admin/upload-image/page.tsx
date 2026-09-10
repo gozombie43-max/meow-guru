@@ -129,7 +129,7 @@ export default function UploadImage() {
       {/* Option selector */}
       <div style={{ marginTop: 15, display: "flex", gap: 10 }}>
         {["a", "b", "c", "d"].map((k) => (
-          <button
+          <button data-ui-button="state"
             key={k}
             onClick={() => setCurrent(k)}
             style={{
@@ -150,7 +150,7 @@ export default function UploadImage() {
       <div style={{ marginTop: 15 }}>
         <p>Select Correct Answer:</p>
         {["a", "b", "c", "d"].map((k) => (
-          <button
+          <button data-ui-button="state"
             key={k}
             onClick={() => setCorrect(k)}
             style={{
@@ -168,7 +168,7 @@ export default function UploadImage() {
         ))}
       </div>
 
-      <button className={styles.btnSecondary} onClick={autoDetect}>
+      <button data-ui-button="secondary" className={styles.btnSecondary} onClick={autoDetect}>
         Auto Detect Options
       </button>
 
@@ -226,7 +226,7 @@ export default function UploadImage() {
                 maxWidth: 500,
               }}
             >
-              <button
+              <button data-ui-button="state"
                 type="button"
                 onClick={handleClick}
                 onKeyDown={(event) => {
@@ -289,7 +289,7 @@ export default function UploadImage() {
                   {k.toUpperCase()}
 
                   {/* Resize handle */}
-                  <button
+                  <button data-ui-button="state"
                     type="button"
                     onMouseDown={(e) => {
                       e.stopPropagation();
@@ -372,11 +372,11 @@ export default function UploadImage() {
         </div>
       )}
 
-      <button className={styles.btnSecondary} onClick={() => setRegions({})}>
+      <button data-ui-button="secondary" className={styles.btnSecondary} onClick={() => setRegions({})}>
         Reset Regions
       </button>
 
-      <button
+      <button data-ui-button="state"
         onClick={async () => {
           try {
             await handleUpload();

@@ -4,32 +4,32 @@
 .pageWrapper {
   /* Light Theme (Palette: #EAEFF5 Deeper Canvas / #DFE5ED Ice Blue Sidebar / #FFFFFF Pure White Cards) */
   --mac-bg-outer: transparent;
-  --mac-window-bg: #EAEFF5;
-  --mac-sidebar-bg: #DFE5ED;
-  --mac-canvas-bg: #EAEFF5;
+  --mac-window-bg: var(--light-canvas);
+  --mac-sidebar-bg: var(--light-surface-muted);
+  --mac-canvas-bg: var(--light-canvas);
   --mac-card-bg: #FFFFFF;
-  --mac-card-subtle: #DFE5ED;
-  --mac-text-primary: #1d1d1f;
-  --mac-text-secondary: #57606a;
-  --mac-text-muted: #8c959f;
-  --mac-border: #D8DFE8;
+  --mac-card-subtle: var(--light-surface-muted);
+  --mac-text-primary: var(--light-text);
+  --mac-text-secondary: var(--light-text-secondary);
+  --mac-text-muted: var(--light-text-muted);
+  --mac-border: var(--light-border);
   --mac-border-subtle: rgba(216, 223, 232, 0.7);
-  --mac-primary: #0071e3;
+  --mac-primary: var(--light-accent);
   --mac-primary-hover: #0077ed;
-  --mac-primary-soft: #DFE5ED;
-  --mac-shadow-window: 0 20px 60px -10px rgba(15, 23, 42, 0.08), 0 0 0 1px #D8DFE8;
+  --mac-primary-soft: var(--light-surface-muted);
+  --mac-shadow-window: 0 20px 60px -10px rgba(15, 23, 42, 0.08), 0 0 0 1px var(--light-border);
   --mac-shadow-card: 0 2px 10px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.03);
   --mac-shadow-hover: 0 10px 28px -4px rgba(0, 113, 227, 0.18), 0 3px 8px rgba(15, 23, 42, 0.05);
 
   /* Mobile iOS Blue theme tokens */
   --bg: #EAEFF5;
   --surface: #FFFFFF;
-  --surface-soft: #DFE5ED;
-  --text: #1d1d1f;
-  --muted: #57606a;
-  --line: #D8DFE8;
-  --purple: #0071e3;
-  --purple-2: #0056b3;
+  --surface-soft: var(--light-surface-muted);
+  --text: var(--light-text);
+  --muted: var(--light-text-secondary);
+  --line: var(--light-border);
+  --purple: var(--light-accent);
+  --purple-2: var(--light-accent-hover);
   --orange: #ff9500;
   --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 
@@ -50,32 +50,32 @@
 :global(html.theme-dark) .pageWrapper,
 :global(body.theme-dark) .pageWrapper {
   --mac-bg-outer: transparent;
-  --mac-window-bg: rgba(24, 24, 27, 0.95);
-  --mac-sidebar-bg: rgba(22, 22, 25, 0.88);
-  --mac-canvas-bg: #131315;
-  --mac-card-bg: #222226;
-  --mac-card-subtle: #19191c;
-  --mac-text-primary: #ffffff;
-  --mac-text-secondary: rgba(235, 235, 245, 0.7);
-  --mac-text-muted: rgba(235, 235, 245, 0.45);
-  --mac-border: rgba(255, 255, 255, 0.09);
+  --mac-window-bg: var(--dark-canvas);
+  --mac-sidebar-bg: var(--dark-canvas);
+  --mac-canvas-bg: var(--dark-canvas);
+  --mac-card-bg: var(--dark-surface);
+  --mac-card-subtle: var(--dark-surface-muted);
+  --mac-text-primary: var(--dark-text);
+  --mac-text-secondary: var(--dark-text-secondary);
+  --mac-text-muted: var(--dark-text-muted);
+  --mac-border: var(--dark-border);
   --mac-border-subtle: rgba(255, 255, 255, 0.05);
-  --mac-primary: #0a84ff;
-  --mac-primary-hover: #409cff;
-  --mac-primary-soft: rgba(10, 132, 255, 0.18);
+  --mac-primary: var(--dark-accent);
+  --mac-primary-hover: var(--dark-accent-hover);
+  --mac-primary-soft: var(--dark-accent-soft);
   --mac-shadow-window: 0 28px 80px -15px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08);
   --mac-shadow-card: 0 4px 16px rgba(0, 0, 0, 0.3);
   --mac-shadow-hover: 0 12px 30px rgba(0, 0, 0, 0.45);
 
   /* Mobile dark overrides (iOS Blue) */
-  --bg: #000000;
-  --surface: #1c1c1e;
-  --surface-soft: #2c2c2e;
-  --text: #ffffff;
-  --muted: rgba(235, 235, 245, 0.6);
-  --line: rgba(255, 255, 255, 0.1);
-  --purple: #0a84ff;
-  --purple-2: #409cff;
+  --bg: var(--dark-canvas);
+  --surface: var(--dark-surface);
+  --surface-soft: var(--dark-surface-muted);
+  --text: var(--dark-text);
+  --muted: var(--dark-text-muted);
+  --line: var(--dark-border);
+  --purple: var(--dark-accent);
+  --purple-2: var(--dark-accent-hover);
   --orange: #ff9f0a;
   --shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
 }
@@ -293,7 +293,7 @@
   justify-content: center;
   height: 34px;
   border-radius: 9px;
-  background: var(--mac-primary);
+  background: var(--theme-action, var(--mac-primary));
   color: #ffffff;
   font-size: 12.5px;
   font-weight: 600;
@@ -303,7 +303,7 @@
 }
 
 .premiumButton:hover {
-  background: var(--mac-primary-hover);
+  background: var(--theme-action, var(--mac-primary-hover));
   box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
 }
 
@@ -562,7 +562,7 @@
 
 /* Desktop Hero Card */
 .heroCard {
-  background: linear-gradient(135deg, #FFFFFF 0%, #F6F8FA 50%, #E6EAEF 100%);
+  background: linear-gradient(135deg, #FFFFFF 0%, var(--light-canvas) 50%, var(--light-border) 100%);
   border: 1px solid var(--mac-border);
   border-radius: 20px;
   box-shadow: var(--mac-shadow-card);
@@ -601,7 +601,7 @@
   width: 17px;
   height: 17px;
   border-radius: 50%;
-  background: var(--mac-primary);
+  background: var(--theme-action, var(--mac-primary));
   color: #ffffff;
   display: flex;
   align-items: center;
@@ -620,7 +620,7 @@
 .heroUnderline {
   width: 32px;
   height: 2.5px;
-  background: var(--mac-primary);
+  background: var(--theme-action, var(--mac-primary));
   border-radius: 2px;
   margin-top: 5px;
   margin-bottom: 5px;
@@ -969,7 +969,7 @@
 
 .math {
   background: rgba(0, 113, 227, 0.1);
-  color: #0071e3;
+  color: var(--light-accent);
   border: 1px solid rgba(0, 113, 227, 0.22);
 }
 
@@ -1018,7 +1018,7 @@
 .quizProgressFill {
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, #0071e3 0%, #0077ed 100%);
+  background: linear-gradient(90deg, var(--light-accent) 0%, #0077ed 100%);
   transition: width 0.3s ease;
 }
 
@@ -1087,12 +1087,12 @@
   min-width: 76px;
   border-radius: 9999px;
   background: transparent;
-  color: #0071e3;
+  color: var(--light-accent);
   font-size: 12.5px;
   font-weight: 700;
   letter-spacing: 0.05em;
   text-decoration: none;
-  border: 1.6px solid #0071e3;
+  border: 1.6px solid var(--light-accent);
   transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap;
   cursor: pointer;
@@ -1126,8 +1126,8 @@
 :global(.dark) .loginButton,
 :global(body.theme-dark) .loginButton {
   background: transparent;
-  border-color: #0a84ff;
-  color: #0a84ff;
+  border-color: var(--dark-accent);
+  color: var(--dark-accent);
 }
 
 :global(.dark) .loginPillButton:hover,
@@ -1789,4 +1789,14 @@
   .mobileHeroFeatures {
     display: none;
   }
+}
+
+@media (max-width: 360px) {
+  .mobileSubjectCard {
+    grid-template-columns: 32px minmax(0, 1fr);
+    gap: 6px;
+    padding-inline: 10px;
+    font-size: 12px;
+  }
+  .mobileSubjectCard .subjectIcon { width: 32px; height: 36px; }
 }

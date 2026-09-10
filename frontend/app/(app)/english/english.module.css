@@ -5,58 +5,58 @@
 .pageRoot {
   /* Light Theme (Palette: #EAEFF5 Deeper Canvas / #DFE5ED Ice Blue / #FFFFFF Pure White Cards) */
   --mac-bg-desktop: #EAEFF5;
-  --mac-desktop-gradient: radial-gradient(at 10% 12%, #DFE5ED 0px, transparent 45%),
+  --mac-desktop-gradient: radial-gradient(at 10% 12%, var(--light-surface-muted) 0px, transparent 45%),
                           radial-gradient(at 90% 10%, rgba(223, 229, 237, 0.8) 0px, transparent 45%),
-                          radial-gradient(at 50% 90%, #DFE5ED 0px, transparent 55%),
+                          radial-gradient(at 50% 90%, var(--light-surface-muted) 0px, transparent 55%),
                           radial-gradient(at 80% 80%, rgba(223, 229, 237, 0.6) 0px, transparent 40%);
-  --mac-window-bg: #EAEFF5;
-  --mac-window-border: #D8DFE8;
-  --mac-window-shadow: 0 20px 60px -10px rgba(15, 23, 42, 0.08), 0 0 0 1px #D8DFE8;
-  --mac-titlebar-bg: #EAEFF5;
-  --mac-sidebar-bg: #DFE5ED;
-  --mac-sidebar-border: #D8DFE8;
+  --mac-window-bg: var(--light-canvas);
+  --mac-window-border: var(--light-border);
+  --mac-window-shadow: 0 20px 60px -10px rgba(15, 23, 42, 0.08), 0 0 0 1px var(--light-border);
+  --mac-titlebar-bg: var(--light-canvas);
+  --mac-sidebar-bg: var(--light-surface-muted);
+  --mac-sidebar-border: var(--light-border);
   --mac-surface: #FFFFFF;
-  --mac-surface-hover: #DFE5ED;
+  --mac-surface-hover: var(--light-surface-muted);
   --mac-surface-active: #D0D9E4;
-  --mac-border: #D8DFE8;
+  --mac-border: var(--light-border);
   --mac-border-hover: rgba(0, 113, 227, 0.35);
-  --mac-border-focus: #0071e3;
-  --mac-blue: #0071e3;
+  --mac-border-focus: var(--light-accent);
+  --mac-blue: var(--light-accent);
   --mac-blue-hover: #0077ed;
-  --mac-blue-subtle: #DFE5ED;
-  --mac-ice-blue: #DFE5ED;
+  --mac-blue-subtle: var(--light-surface-muted);
+  --mac-ice-blue: var(--light-surface-muted);
   
-  --mac-canvas-bg: #EAEFF5;
+  --mac-canvas-bg: var(--light-canvas);
   --mac-canvas-header-bg: #F4F7FB;
   
   --mac-card-bg: #FFFFFF;
-  --mac-card-border: #D8DFE8;
+  --mac-card-border: var(--light-border);
   --mac-card-hover-bg: #FFFFFF;
   --mac-card-hover-border: rgba(0, 113, 227, 0.4);
   --mac-card-hover-shadow: 0 4px 16px rgba(15, 23, 42, 0.09), 0 2px 6px rgba(0, 0, 0, 0.04);
-  --mac-card-selected-bg: #DFE5ED;
-  --mac-card-selected-border: #0071e3;
-  --mac-card-selected-shadow: 0 0 0 1.5px #0071e3, 0 4px 12px rgba(0, 113, 227, 0.14);
+  --mac-card-selected-bg: var(--light-surface-muted);
+  --mac-card-selected-border: var(--light-accent);
+  --mac-card-selected-shadow: 0 0 0 1.5px var(--light-accent), 0 4px 12px rgba(0, 113, 227, 0.14);
   
-  --mac-icon-box-bg: linear-gradient(150deg, #FFFFFF 0%, #DFE5ED 100%);
-  --mac-icon-box-border: #D8DFE8;
+  --mac-icon-box-bg: linear-gradient(150deg, #FFFFFF 0%, var(--light-surface-muted) 100%);
+  --mac-icon-box-border: var(--light-border);
   --mac-icon-box-shadow: inset 0 1.5px 1px #FFFFFF, inset 0 -1px 1px rgba(223, 229, 237, 0.5), 0 3px 8px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
   
-  --mac-segmented-bg: #DFE5ED;
-  --mac-segmented-border: #D8DFE8;
+  --mac-segmented-bg: var(--light-surface-muted);
+  --mac-segmented-border: var(--light-border);
   --mac-segmented-active-bg: #FFFFFF;
   --mac-segmented-active-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 1px rgba(0, 0, 0, 0.05);
   
-  --mac-stat-bg: #EAEFF5;
-  --mac-stat-border: #D8DFE8;
+  --mac-stat-bg: var(--light-canvas);
+  --mac-stat-border: var(--light-border);
   
   --mac-badge-bg: #FFFFFF;
   --mac-badge-border: 1px solid rgba(216, 223, 232, 0.8);
   
-  --mac-status-bg: #EAEFF5;
-  --mac-status-border: #D8DFE8;
+  --mac-status-bg: var(--light-canvas);
+  --mac-status-border: var(--light-border);
   --mac-shortcut-bg: #FFFFFF;
-  --mac-shortcut-border: #D8DFE8;
+  --mac-shortcut-border: var(--light-border);
   
   --mac-green: #34c759;
   --mac-yellow: #ffcc00;
@@ -65,9 +65,9 @@
   --mac-purple: #af52de;
   --mac-indigo: #5856d6;
   --mac-teal: #5ac8fa;
-  --mac-text-primary: #1d1d1f;
-  --mac-text-secondary: #57606a;
-  --mac-text-tertiary: #8c959f;
+  --mac-text-primary: var(--light-text);
+  --mac-text-secondary: var(--light-text-secondary);
+  --mac-text-tertiary: var(--light-text-muted);
   --mac-font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
   --mac-font-mono: "SF Mono", Menlo, Monaco, Consolas, monospace;
   --scrollbar-thumb: rgba(0, 0, 0, 0.15);
@@ -87,63 +87,60 @@
 /* ── Dark Mode Overrides ─────────────────────────────────────────────────────── */
 :global(body.theme-dark) .pageRoot,
 :global(html.theme-dark) .pageRoot {
-  --mac-bg-desktop: #000000;
-  --mac-desktop-gradient: radial-gradient(at 10% 12%, rgba(10, 132, 255, 0.12) 0px, transparent 45%),
-                          radial-gradient(at 90% 10%, rgba(175, 82, 222, 0.1) 0px, transparent 45%),
-                          radial-gradient(at 50% 90%, rgba(10, 132, 255, 0.08) 0px, transparent 55%),
-                          radial-gradient(at 80% 80%, rgba(48, 209, 88, 0.08) 0px, transparent 40%);
-  --mac-window-bg: rgba(24, 24, 27, 0.95);
-  --mac-window-border: rgba(255, 255, 255, 0.12);
+  --mac-bg-desktop: var(--dark-canvas);
+  --mac-desktop-gradient: var(--dark-canvas);
+  --mac-window-bg: var(--dark-canvas);
+  --mac-window-border: var(--dark-border);
   --mac-window-shadow: 0 25px 70px -10px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08);
-  --mac-titlebar-bg: rgba(30, 30, 34, 0.96);
-  --mac-sidebar-bg: rgba(22, 22, 25, 0.88);
-  --mac-sidebar-border: rgba(255, 255, 255, 0.08);
-  --mac-surface: #26262a;
-  --mac-surface-hover: #333338;
-  --mac-surface-active: #404046;
-  --mac-border: rgba(255, 255, 255, 0.09);
+  --mac-titlebar-bg: var(--dark-surface);
+  --mac-sidebar-bg: var(--dark-canvas);
+  --mac-sidebar-border: var(--dark-border);
+  --mac-surface: var(--dark-surface);
+  --mac-surface-hover: var(--dark-surface-muted);
+  --mac-surface-active: var(--dark-surface-muted);
+  --mac-border: var(--dark-border);
   --mac-border-hover: rgba(10, 132, 255, 0.35);
-  --mac-border-focus: #0a84ff;
-  --mac-blue: #0a84ff;
-  --mac-blue-hover: #409cff;
-  --mac-blue-subtle: rgba(10, 132, 255, 0.18);
-  --mac-ice-blue: rgba(10, 132, 255, 0.18);
+  --mac-border-focus: var(--dark-accent);
+  --mac-blue: var(--dark-accent);
+  --mac-blue-hover: var(--dark-accent-hover);
+  --mac-blue-subtle: var(--dark-accent-soft);
+  --mac-ice-blue: var(--dark-accent-soft);
 
-  --mac-canvas-bg: #131315;
-  --mac-canvas-header-bg: rgba(24, 24, 27, 0.95);
+  --mac-canvas-bg: var(--dark-canvas);
+  --mac-canvas-header-bg: var(--dark-surface);
 
-  --mac-card-bg: #222226;
-  --mac-card-border: rgba(255, 255, 255, 0.09);
-  --mac-card-hover-bg: #2c2c32;
-  --mac-card-hover-border: rgba(10, 132, 255, 0.45);
+  --mac-card-bg: var(--dark-surface);
+  --mac-card-border: var(--dark-border);
+  --mac-card-hover-bg: var(--dark-surface-muted);
+  --mac-card-hover-border: var(--dark-border);
   --mac-card-hover-shadow: 0 4px 16px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(10, 132, 255, 0.2);
   --mac-card-selected-bg: rgba(10, 132, 255, 0.18);
-  --mac-card-selected-border: #0a84ff;
-  --mac-card-selected-shadow: 0 0 0 1.5px #0a84ff, 0 4px 16px rgba(10, 132, 255, 0.3);
+  --mac-card-selected-border: var(--dark-border);
+  --mac-card-selected-shadow: 0 0 0 1.5px var(--dark-accent), 0 4px 16px rgba(10, 132, 255, 0.3);
 
   --mac-icon-box-bg: linear-gradient(150deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.03) 100%);
   --mac-icon-box-border: rgba(255, 255, 255, 0.14);
   --mac-icon-box-shadow: inset 0 1.5px 1px rgba(255, 255, 255, 0.3), inset 0 -1.5px 2px rgba(0, 0, 0, 0.5), 0 4px 12px -2px rgba(0, 0, 0, 0.6), 0 1px 3px rgba(0, 0, 0, 0.4);
 
-  --mac-segmented-bg: rgba(255, 255, 255, 0.08);
-  --mac-segmented-border: rgba(255, 255, 255, 0.1);
-  --mac-segmented-active-bg: #2e2e34;
+  --mac-segmented-bg: var(--dark-surface-muted);
+  --mac-segmented-border: var(--dark-border);
+  --mac-segmented-active-bg: var(--dark-surface-muted);
   --mac-segmented-active-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 
   --mac-stat-bg: rgba(255, 255, 255, 0.04);
-  --mac-stat-border: rgba(255, 255, 255, 0.06);
+  --mac-stat-border: var(--dark-border);
 
   --mac-badge-bg: rgba(255, 255, 255, 0.12);
   --mac-badge-border: 1px solid rgba(255, 255, 255, 0.08);
 
-  --mac-status-bg: rgba(30, 30, 34, 0.96);
-  --mac-status-border: rgba(255, 255, 255, 0.08);
+  --mac-status-bg: var(--dark-surface);
+  --mac-status-border: var(--dark-border);
   --mac-shortcut-bg: rgba(255, 255, 255, 0.08);
-  --mac-shortcut-border: rgba(255, 255, 255, 0.12);
+  --mac-shortcut-border: var(--dark-border);
 
-  --mac-text-primary: #ffffff;
-  --mac-text-secondary: rgba(235, 235, 245, 0.7);
-  --mac-text-tertiary: rgba(235, 235, 245, 0.45);
+  --mac-text-primary: var(--dark-text);
+  --mac-text-secondary: var(--dark-text-secondary);
+  --mac-text-tertiary: var(--dark-text-muted);
   --scrollbar-thumb: rgba(255, 255, 255, 0.2);
   --scrollbar-thumb-hover: rgba(255, 255, 255, 0.35);
   --scrollbar-track: transparent;
@@ -659,7 +656,7 @@
 }
 
 .compactTileSelected .tileIconBox {
-  background: linear-gradient(150deg, var(--mac-blue) 0%, #0056b3 100%);
+  background: linear-gradient(150deg, var(--mac-blue) 0%, var(--light-accent-hover) 100%);
   color: #ffffff;
   border-color: var(--mac-blue);
   box-shadow: 
@@ -937,7 +934,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: linear-gradient(135deg, #0071e3 0%, #0056b3 100%);
+  background: linear-gradient(135deg, var(--light-accent) 0%, var(--light-accent-hover) 100%);
   color: #ffffff !important;
   border-radius: 9px;
   padding: 8px 12px;
@@ -1045,7 +1042,7 @@
 
 :global(body.theme-dark) .modeCard,
 :global(html.theme-dark) .modeCard {
-  background: #1C1C1E !important;
+  background: var(--dark-surface) !important;
   border-color: rgba(255, 255, 255, 0.09) !important;
   color: #f8fafc !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
@@ -1321,7 +1318,7 @@
 .mobileContainer {
   min-height: calc(100dvh - var(--app-bottom-nav-height) - var(--safe-bottom));
   box-sizing: border-box;
-  background: #000000;
+  background: var(--dark-canvas);
   color: var(--mac-text-primary);
   position: relative;
   overflow-x: hidden;
@@ -1329,14 +1326,14 @@
 }
 
 :global(body.theme-light) .mobileContainer {
-  background: #f2f2f7 !important;
+  background: var(--light-canvas) !important;
 }
 
 .mobileTopbar {
   position: sticky;
   top: 0;
   z-index: 40;
-  background: #000000;
+  background: var(--dark-canvas);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -1406,7 +1403,7 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   outline: none;
   border-radius: 9999px;
-  background: #1C1C1E;
+  background: var(--dark-surface);
   padding: 0 74px 0 40px;
   font-size: 0.92rem;
   color: #ffffff;
@@ -1546,7 +1543,7 @@
   overflow-x: auto;
   padding: 0 16px;
   scrollbar-width: none;
-  background: #1C1C1E;
+  background: var(--dark-surface);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   box-sizing: border-box;
   position: relative;
@@ -1748,7 +1745,7 @@
 
 :global(body.theme-light) .mobileTopicRow:hover,
 :global(body.theme-light) .mobileTopicRow:active {
-  background: #f2f2f7 !important;
+  background: var(--light-canvas) !important;
 }
 
 .mobileTopicRowLeft {
@@ -1902,7 +1899,7 @@
   display: flex;
   align-items: center;
   gap: 2px;
-  background: #0071e3;
+  background: var(--light-accent);
   color: #ffffff;
   padding: 4px 10px;
   border-radius: 999px;
@@ -1917,3 +1914,12 @@
   background: #0077ed;
   transform: scale(1.04);
 }
+
+/* Shared dark grouped-list surface. */
+:global(html.theme-dark) .mobileTopicGroup {
+  background: var(--dark-surface);
+  border-color: var(--dark-border);
+  box-shadow: var(--dark-shadow);
+}
+:global(html.theme-dark) .mobileTopicName { color: var(--dark-text); }
+:global(html.theme-dark) .mobileCountText { color: var(--dark-text-muted); }

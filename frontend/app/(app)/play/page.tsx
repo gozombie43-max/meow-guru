@@ -72,7 +72,7 @@ export default function PlayPage() {
           <h2 className="sidebar-title">Categories</h2>
           <div className="sidebar-nav">
             {categories.map((cat) => (
-              <button
+              <button data-ui-button="state"
                 key={cat}
                 className={`sidebar-tab ${category === cat ? 'active' : ''}`}
                 onClick={() => setCategory(cat)}
@@ -87,12 +87,12 @@ export default function PlayPage() {
         <div className="macos-content">
           <main className="container">
             {/* iOS Mobile Header */}
-            <div className="ios-header">
+            <div data-ui-chrome="header" className="ios-header">
               <h1 className="ios-large-title">Play</h1>
               
               <div className="ios-segmented-control">
                 {categories.map((cat) => (
-                  <button
+                  <button data-ui-button="state"
                     key={cat}
                     className={`segment ${category === cat ? 'active' : ''}`}
                     onClick={() => setCategory(cat)}

@@ -1,4 +1,11 @@
 .container {
+  --bg: var(--light-canvas);
+  --card: var(--light-surface);
+  --text-dark: var(--light-text);
+  --text-muted: var(--light-text-secondary);
+  --border: var(--light-border);
+  --primary: var(--light-accent);
+  color-scheme: light;
   display: flex;
   flex-direction: column;
   height: 100dvh;
@@ -147,6 +154,9 @@
 .questionContent {
   padding: 2rem;
   flex: 1;
+  width: 100%;
+  max-width: 960px;
+  margin-inline: auto;
 }
 
 .qNumber {
@@ -191,7 +201,7 @@
 
 .optionLabel.selected {
   border-color: var(--primary, #3b82f6);
-  background-color: #eff6ff;
+  background-color: var(--light-accent-soft);
 }
 
 .optionLabel input {
@@ -204,7 +214,7 @@
 .actionsBar {
   display: flex;
   justify-content: space-between;
-  padding: 1rem 2rem;
+  padding: 1rem 2rem calc(1rem + var(--safe-bottom));
   background: var(--card, #ffffff);
   border-top: 1px solid var(--border, #e2e8f0);
 }
@@ -329,7 +339,7 @@
   z-index: 50;
   transform: translateY(100%);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  max-height: 80vh;
+  max-height: 80dvh;
   display: flex;
   flex-direction: column;
 }
@@ -364,4 +374,23 @@
   justify-content: flex-end;
   gap: 1rem;
   margin-top: 2rem;
+}
+
+/* Exam controls remain easy to hit without adding visual weight. */
+.container :is(button, .mobileTab, .tab) { min-height: 44px; }
+.container button:focus-visible,
+.optionLabel:has(input:focus-visible) {
+  outline: 3px solid var(--light-accent);
+  outline-offset: 3px;
+}
+.timer { font-variant-numeric: tabular-nums; }
+.qBubble { border-radius: 8px; width: 100%; }
+.mobileMain { min-height: 0; }
+.optionLabel { min-height: 56px; }
+@media (max-width: 767px) {
+  .questionContent { padding: 16px 0; }
+  .mobileHeader { gap: 8px; flex-wrap: wrap; }
+  .mobileBottomBar { gap: 8px; }
+  .btnGroup { gap: 8px; }
+  .btnOutline, .btnPrimary { padding-inline: 12px; }
 }

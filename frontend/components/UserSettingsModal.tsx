@@ -364,14 +364,14 @@ export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModal
     <div className={styles.modalBackdrop} role="dialog" aria-modal="true" aria-labelledby="settings-title">
       <div className={styles.modalCard}>
         {/* Header */}
-        <div className={styles.modalHeader}>
+        <div data-ui-chrome="header" className={styles.modalHeader}>
           <div className={styles.modalTitleGroup}>
             <div className={styles.modalTitleIcon}>
               <Settings size={18} />
             </div>
             <h2 id="settings-title" className={styles.modalTitle}>Preferences & Settings</h2>
           </div>
-          <button
+          <button data-ui-button="icon"
             type="button"
             className={styles.modalCloseBtn}
             onClick={onClose}
@@ -397,7 +397,7 @@ export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModal
                   </span>
                 </div>
               </div>
-              <button
+              <button data-ui-button="state"
                 type="button"
                 role="switch"
                 aria-checked={isDark}
@@ -422,7 +422,7 @@ export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModal
                   </span>
                 </div>
               </div>
-              <button
+              <button data-ui-button="state"
                 type="button"
                 role="switch"
                 aria-checked={soundEnabled}
@@ -452,7 +452,7 @@ export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModal
                 {['15', '30', '45', '60'].map((mins) => {
                   const active = dailyGoal === mins;
                   return (
-                    <button
+                    <button data-ui-button="state"
                       key={mins}
                       type="button"
                       onClick={() => handleGoalChange(mins)}
@@ -553,7 +553,7 @@ export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModal
                             </span>
                           </div>
                         </div>
-                        <button
+                        <button data-ui-button="state"
                           type="button"
                           role="switch"
                           aria-checked={isMasterEnabled}
@@ -590,7 +590,7 @@ export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModal
                                   <span className={styles.settingSublabel}>{cat.sublabel}</span>
                                 </div>
                               </div>
-                              <button
+                              <button data-ui-button="state"
                                 type="button"
                                 role="switch"
                                 aria-checked={isCatActive}
@@ -633,7 +633,7 @@ export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModal
                               </span>
                             </div>
                           </div>
-                          <button
+                          <button data-ui-button="state"
                             type="button"
                             role="switch"
                             aria-checked={dailyReminder.enabled}
@@ -767,7 +767,7 @@ export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModal
                                     Extra reminder if a 2+ day streak is at risk
                                   </div>
                                 </div>
-                                <button
+                                <button data-ui-button="state"
                                   type="button"
                                   role="switch"
                                   aria-checked={dailyReminder.streakProtectionEnabled === true}
@@ -896,8 +896,8 @@ export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModal
         </div>
 
         {/* Footer */}
-        <div className={styles.modalFooter}>
-          <button
+        <div data-ui-chrome="footer" className={styles.modalFooter}>
+          <button data-ui-button="primary"
             type="button"
             className={styles.saveBtn}
             onClick={onClose}

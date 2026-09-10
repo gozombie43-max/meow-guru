@@ -59,7 +59,7 @@ export function QuestionNavigator({
                 submittedQuestions,
               });
               return (
-                <button
+                <button data-ui-button="state"
                   key={index}
                   ref={(el) => {
                     quickButtonRefs.current[index] = el;
@@ -129,7 +129,7 @@ export function QuestionQuickBar({
             submittedQuestions,
           });
           return (
-            <button
+            <button data-ui-button="state"
               key={index}
               ref={(el) => {
                 quickButtonRefs.current[index] = el;

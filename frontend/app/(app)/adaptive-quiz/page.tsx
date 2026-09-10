@@ -294,7 +294,7 @@ export default function AdaptiveQuizEngine() {
           
           <div className="sidebar-header-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
             {(state.phase === 'config' || state.phase === 'results') && (
-              <button type="button" onClick={() => window.history.back()} className="action-btn back-btn" style={{ background: 'transparent', padding: '0 8px 0 0', color: '#0a84ff', fontWeight: 600 }}>
+              <button data-ui-button="icon" type="button" onClick={() => window.history.back()} className="action-btn back-btn" style={{ background: 'transparent', padding: '0 8px 0 0', color: '#0a84ff', fontWeight: 600 }}>
                 <span style={{ fontSize: 22, marginRight: 4, position: 'relative', top: 1 }}>&larr;</span> <span className="back-text">Back</span>
               </button>
             )}
@@ -346,7 +346,7 @@ export default function AdaptiveQuizEngine() {
               <div className="macos-form-group" style={{ background: 'rgba(239, 68, 68, 0.1)', borderColor: 'rgba(239, 68, 68, 0.3)', marginBottom: 20, flexDirection: 'column', alignItems: 'flex-start', gap: 10 }}>
                 <div style={{ color: '#ef4444', fontWeight: 600 }}>{state.error}</div>
                 {state.phase === 'quiz' && Object.keys(state.answers).length === state.questions.length && (
-                  <button
+                  <button data-ui-button="secondary"
                     onClick={() => handleSubmit()}
                     disabled={state.loading}
                     className="action-btn"
@@ -442,7 +442,7 @@ export default function AdaptiveQuizEngine() {
                   
                   {/* COMPACT ACTION BUTTON */}
                   <div style={{ marginTop: 'auto' }}>
-                    <button onClick={handleGenerate} disabled={state.loading || state.subjects.length === 0} className="action-btn" style={{ width: '100%', padding: '16px', borderRadius: 12, background: 'linear-gradient(135deg, #0a84ff 0%, #0056b3 100%)', color: '#fff', fontSize: 16, fontWeight: 700, boxShadow: '0 8px 24px rgba(10,132,255,0.2)' }}>
+                    <button data-ui-button="secondary" onClick={handleGenerate} disabled={state.loading || state.subjects.length === 0} className="action-btn" style={{ width: '100%', padding: '16px', borderRadius: 12, background: 'linear-gradient(135deg, #0a84ff 0%, #0056b3 100%)', color: '#fff', fontSize: 16, fontWeight: 700, boxShadow: '0 8px 24px rgba(10,132,255,0.2)' }}>
                       {state.loading ? 'Generating Assessment...' : 'Start Assessment'}
                     </button>
                   </div>
@@ -466,7 +466,7 @@ export default function AdaptiveQuizEngine() {
                     <span style={{ color: 'var(--color-text-secondary)' }}>{state.questions.length}</span>
                   </div>
                 </div>
-                <button onClick={() => dispatch({ type: 'SET_PHASE', payload: 'quiz' })} className="action-btn" style={{ width: '100%', padding: '14px', background: 'linear-gradient(135deg, #0a84ff 0%, #0056b3 100%)', color: '#fff', fontSize: 16 }}>
+                <button data-ui-button="secondary" onClick={() => dispatch({ type: 'SET_PHASE', payload: 'quiz' })} className="action-btn" style={{ width: '100%', padding: '14px', background: 'linear-gradient(135deg, #0a84ff 0%, #0056b3 100%)', color: '#fff', fontSize: 16 }}>
                   Begin
                 </button>
               </section>
@@ -505,7 +505,7 @@ export default function AdaptiveQuizEngine() {
                     })}
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 24 }}>
-                    <button onClick={handleConfirm} disabled={!state.selected} className="action-btn" style={{ padding: '12px 24px', background: state.selected ? '#0a84ff' : 'var(--form-border)', color: '#fff' }}>
+                    <button data-ui-button="secondary" onClick={handleConfirm} disabled={!state.selected} className="action-btn" style={{ padding: '12px 24px', background: state.selected ? '#0a84ff' : 'var(--form-border)', color: '#fff' }}>
                       Confirm & Next
                     </button>
                   </div>
@@ -554,7 +554,7 @@ export default function AdaptiveQuizEngine() {
                     );
                   })}
                 </div>
-                <button onClick={() => dispatch({ type: 'RESET' })} className="action-btn" style={{ width: '100%', padding: '14px', marginTop: 24, background: 'var(--form-bg)', border: '1px solid var(--form-border)' }}>
+                <button data-ui-button="secondary" onClick={() => dispatch({ type: 'RESET' })} className="action-btn" style={{ width: '100%', padding: '14px', marginTop: 24, background: 'var(--form-bg)', border: '1px solid var(--form-border)' }}>
                   Take Another Quiz
                 </button>
               </section>
@@ -576,7 +576,7 @@ export default function AdaptiveQuizEngine() {
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <h2 id="topics-modal-title" style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>{state.modalSubject} Topics</h2>
-              <button aria-label="Close topics" onClick={() => dispatch({ type: 'SET_MODAL_SUBJECT', payload: null })} style={{ background: 'transparent', border: 'none', fontSize: 24, cursor: 'pointer', color: 'var(--color-text-secondary)' }}>&times;</button>
+              <button data-ui-button="state" aria-label="Close topics" onClick={() => dispatch({ type: 'SET_MODAL_SUBJECT', payload: null })} style={{ background: 'transparent', border: 'none', fontSize: 24, cursor: 'pointer', color: 'var(--color-text-secondary)' }}>&times;</button>
             </div>
             
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, maxHeight: '60vh', overflowY: 'auto' }}>
@@ -605,7 +605,7 @@ export default function AdaptiveQuizEngine() {
             </div>
             
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 10 }}>
-              <button onClick={() => dispatch({ type: 'SET_MODAL_SUBJECT', payload: null })} className="action-btn" style={{ padding: '10px 24px', background: '#0a84ff', color: '#fff', borderRadius: 8 }}>
+              <button data-ui-button="secondary" onClick={() => dispatch({ type: 'SET_MODAL_SUBJECT', payload: null })} className="action-btn" style={{ padding: '10px 24px', background: '#0a84ff', color: '#fff', borderRadius: 8 }}>
                 Done
               </button>
             </div>

@@ -140,7 +140,7 @@ export default function AdminControlPage() {
   return (
     <div className={styles.page}>
       <main className={styles.content}>
-            <header className={styles.header}>
+            <header data-ui-chrome="header" className={styles.header}>
               <span className={styles.eyebrow}>YOUR WORKSPACE, SIMPLIFIED</span>
               <h1>
                 Admin Control<span>.</span>
@@ -149,7 +149,7 @@ export default function AdminControlPage() {
             </header>
             <nav className={styles.segments} aria-label="Filter tools">
               {["Manage", "Create & upload"].map((filter) => (
-                <button
+                <button data-ui-button="state"
                   key={filter}
                   aria-pressed={activeFilter === filter}
                   onClick={() =>
@@ -198,7 +198,7 @@ export default function AdminControlPage() {
                 </section>
               ))}
             </div>
-            <footer className={styles.footer}>
+            <footer data-ui-chrome="footer" className={styles.footer}>
               <ShieldCheck size={14} aria-hidden="true" />
               <span>Meow Guru · Admin workspace</span>
               <span className={styles.footerHint}>

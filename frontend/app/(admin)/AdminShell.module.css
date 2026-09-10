@@ -9,16 +9,16 @@
   --color-background-danger: var(--admin-danger-soft);
   --color-text-danger: var(--admin-danger);
   --app-header-height: 105px;
-  --admin-bg: #f2f2f7;
+  --admin-bg: var(--light-canvas);
   --admin-surface: rgba(255, 255, 255, 0.88);
   --admin-surface-solid: #ffffff;
-  --admin-surface-muted: #f7f7fa;
-  --admin-text: #1c1c1e;
-  --admin-text-secondary: #636366;
-  --admin-text-tertiary: #8e8e93;
-  --admin-border: rgba(60, 60, 67, 0.16);
+  --admin-surface-muted: var(--light-surface-muted);
+  --admin-text: var(--light-text);
+  --admin-text-secondary: var(--light-text-secondary);
+  --admin-text-tertiary: var(--light-text-muted);
+  --admin-border: var(--light-border);
   --admin-separator: rgba(60, 60, 67, 0.12);
-  --admin-blue: #007aff;
+  --admin-blue: var(--light-accent);
   --admin-blue-soft: rgba(0, 122, 255, 0.12);
   --admin-shadow: 0 8px 30px rgba(18, 18, 23, 0.07);
   --admin-success: #18743b;
@@ -40,17 +40,17 @@
 
 :global(.theme-dark) .shell,
 :global(.dark) .shell {
-  --admin-bg: #000000;
-  --admin-surface: rgba(28, 28, 30, 0.9);
-  --admin-surface-solid: #1c1c1e;
-  --admin-surface-muted: #242426;
-  --admin-text: #f2f2f7;
-  --admin-text-secondary: #aeaeb2;
-  --admin-text-tertiary: #8e8e93;
-  --admin-border: rgba(235, 235, 245, 0.2);
-  --admin-separator: rgba(235, 235, 245, 0.13);
-  --admin-blue: #0a84ff;
-  --admin-blue-soft: rgba(10, 132, 255, 0.19);
+  --admin-bg: var(--dark-canvas);
+  --admin-surface: var(--dark-surface);
+  --admin-surface-solid: var(--dark-surface);
+  --admin-surface-muted: var(--dark-surface-muted);
+  --admin-text: var(--dark-text);
+  --admin-text-secondary: var(--dark-text-secondary);
+  --admin-text-tertiary: var(--dark-text-muted);
+  --admin-border: var(--dark-border);
+  --admin-separator: var(--dark-border);
+  --admin-blue: var(--dark-accent);
+  --admin-blue-soft: var(--dark-accent-soft);
   --admin-shadow: 0 12px 36px rgba(0, 0, 0, 0.3);
   --admin-success: #75d99a;
   --admin-success-soft: #173424;

@@ -167,7 +167,7 @@ function MobileQuizView({ config, cards, bookmarked, toggleBookmark, theme, setT
               <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
               <input type="text" placeholder="Search terms" value={miniQuery} onChange={e => handleSearchChange(e.target.value)}  aria-label="Search terms"/>
             </div>
-            <button className={`mini-filter-btn ${filterBadgeCount > 0 ? 'has-active' : ''}`} onClick={() => setIsSheetOpen(true)}>
+            <button data-ui-button="state" className={`mini-filter-btn ${filterBadgeCount > 0 ? 'has-active' : ''}`} onClick={() => setIsSheetOpen(true)}>
               <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
               {filterBadgeCount > 0 && <span className="filter-badge mini-filter-badge">{filterBadgeCount}</span>}
             </button>
@@ -180,7 +180,7 @@ function MobileQuizView({ config, cards, bookmarked, toggleBookmark, theme, setT
               </svg>
               <span style={{ fontStyle: 'normal', fontWeight: 600 }}>{bookmarked.size}/{cards.length}</span>
             </div>
-            <button className="theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+            <button data-ui-button="state" className="theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
               {theme === 'dark' ? <svg viewBox="0 0 24 24" fill="none"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
               : <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/><circle cx="12" cy="12" r="4.5" stroke="currentColor" strokeWidth="1.8"/></svg>}
             </button>
@@ -193,7 +193,7 @@ function MobileQuizView({ config, cards, bookmarked, toggleBookmark, theme, setT
           <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
           <input type="text" placeholder="Search terms" value={query} onChange={e => handleSearchChange(e.target.value)}  aria-label="Search terms"/>
         </div>
-        <button className={`filter-btn ${filterBadgeCount > 0 ? 'has-active' : ''}`} onClick={() => setIsSheetOpen(true)}>
+        <button data-ui-button="state" className={`filter-btn ${filterBadgeCount > 0 ? 'has-active' : ''}`} onClick={() => setIsSheetOpen(true)}>
           <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
           {filterBadgeCount > 0 && <span className="filter-badge">{filterBadgeCount}</span>}
         </button>
@@ -211,10 +211,10 @@ function MobileQuizView({ config, cards, bookmarked, toggleBookmark, theme, setT
       <button type="button" className={`sheet-overlay ${isSheetOpen ? 'open' : ''}`} onClick={() => setIsSheetOpen(false)} aria-label="Close filters" />
       <div className={`filter-sheet ${isSheetOpen ? 'open' : ''}`}>
         <div className="sheet-handle" />
-        <div className="sheet-header"><h2>Filters</h2><button className="sheet-close" onClick={() => setIsSheetOpen(false)} aria-label="Close filters"><svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg></button></div>
+        <div className="sheet-header"><h2>Filters</h2><button data-ui-button="state" className="sheet-close" onClick={() => setIsSheetOpen(false)} aria-label="Close filters"><svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg></button></div>
         <div className="sheet-body">
           <div className={`sheet-section ${catSectionCollapsed ? 'collapsed' : ''}`}>
-            <div className="sheet-section-head"><span>Category</span><button className="section-toggle" onClick={() => setCatSectionCollapsed(!catSectionCollapsed)}>{catSectionCollapsed ? '+' : '—'}</button></div>
+            <div className="sheet-section-head"><span>Category</span><button data-ui-button="state" className="section-toggle" onClick={() => setCatSectionCollapsed(!catSectionCollapsed)}>{catSectionCollapsed ? '+' : '—'}</button></div>
             <div className="chip-grid">
               {categoryCounts.map(({cat, count}) => {
                 return <div key={cat} className={`ows-chip ${activeCats.has(cat) ? 'active' : ''}`} onClick={() => toggleCat(cat)} role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>{cat} · {count}</div>;
@@ -222,7 +222,7 @@ function MobileQuizView({ config, cards, bookmarked, toggleBookmark, theme, setT
             </div>
           </div>
           <div className={`sheet-section ${lettersSectionCollapsed ? 'collapsed' : ''}`}>
-            <div className="sheet-section-head"><span>First Letter</span><button className="section-toggle" onClick={() => setLettersSectionCollapsed(!lettersSectionCollapsed)}>{lettersSectionCollapsed ? '+' : '—'}</button></div>
+            <div className="sheet-section-head"><span>First Letter</span><button data-ui-button="state" className="section-toggle" onClick={() => setLettersSectionCollapsed(!lettersSectionCollapsed)}>{lettersSectionCollapsed ? '+' : '—'}</button></div>
             <div className="chip-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(36px, 1fr))', gap: '8px' }}>
               {Array.from("ABCDEFGHIJKLMNOPQRSTUVWXYZ").map(letter => {
                 return (
@@ -242,7 +242,7 @@ function MobileQuizView({ config, cards, bookmarked, toggleBookmark, theme, setT
             </div>
           </div>
           <div className={`sheet-section ${statusSectionCollapsed ? 'collapsed' : ''}`}>
-            <div className="sheet-section-head"><span>Status</span><button className="section-toggle" onClick={() => setStatusSectionCollapsed(!statusSectionCollapsed)}>{statusSectionCollapsed ? '+' : '—'}</button></div>
+            <div className="sheet-section-head"><span>Status</span><button data-ui-button="state" className="section-toggle" onClick={() => setStatusSectionCollapsed(!statusSectionCollapsed)}>{statusSectionCollapsed ? '+' : '—'}</button></div>
             <div className="check-list">
               <div className={`check-row ${bookmarkedOnly ? 'checked' : ''}`} onClick={() => setBookmarkedOnly(!bookmarkedOnly)} role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
                 <span className="check-box"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg></span>
@@ -252,8 +252,8 @@ function MobileQuizView({ config, cards, bookmarked, toggleBookmark, theme, setT
           </div>
         </div>
         <div className="sheet-footer">
-          <button className="reset-btn" onClick={() => { setActiveCats(new Set()); setActiveLetters(new Set()); setBookmarkedOnly(false); }}>Reset</button>
-          <button className="done-btn" onClick={() => setIsSheetOpen(false)}>Show {filteredCards.length} results</button>
+          <button data-ui-button="secondary" className="reset-btn" onClick={() => { setActiveCats(new Set()); setActiveLetters(new Set()); setBookmarkedOnly(false); }}>Reset</button>
+          <button data-ui-button="state" className="done-btn" onClick={() => setIsSheetOpen(false)}>Show {filteredCards.length} results</button>
         </div>
       </div>
     </div>
@@ -315,8 +315,8 @@ export default function StudyModeTermsQuizEngine({ config }: { config: StudyMode
         .bn { font-family: "Noto Sans Bengali", -apple-system, sans-serif !important; line-height: 1.6 !important; }
 
         /* MOBILE STYLES */
-        .ows-app[data-theme="light"] { --bg: #F2F1F7; --card: #FFFFFF; --ink: #1C1C29; --ink-soft: #6B6B78; --ink-faint: #A6A6B2; --line: rgba(28,28,41,0.07); --divider: rgba(28,28,41,0.14); --accent: #4A55E1; --accent-soft: #EEEFFC; --mint: #2FB876; --mint-soft: #E4F6EC; --amber: #E0982E; --amber-soft: #FBF0DD; --radius-card: 20px; --safe-top: env(safe-area-inset-top, 0px); --safe-bottom: env(safe-area-inset-bottom, 0px); }
-        .ows-app[data-theme="dark"] { --bg: #0B0B10; --card: #17171F; --ink: #F2F2F5; --ink-soft: #9797A3; --ink-faint: #5C5C66; --line: rgba(255,255,255,0.08); --divider: rgba(255,255,255,0.16); --accent: #7C86FF; --accent-soft: #1D1F3B; --mint: #3FD98E; --mint-soft: #12291F; --amber: #F0AC4A; --amber-soft: #2E2413; --radius-card: 20px; --safe-top: env(safe-area-inset-top, 0px); --safe-bottom: env(safe-area-inset-bottom, 0px); }
+        .ows-app[data-theme="light"] { --bg: var(--light-canvas); --card: #FFFFFF; --ink: #1C1C29; --ink-soft: #6B6B78; --ink-faint: #A6A6B2; --line: rgba(28,28,41,0.07); --divider: rgba(28,28,41,0.14); --accent: #4A55E1; --accent-soft: #EEEFFC; --mint: #2FB876; --mint-soft: #E4F6EC; --amber: #E0982E; --amber-soft: #FBF0DD; --radius-card: 20px; --safe-top: env(safe-area-inset-top, 0px); --safe-bottom: env(safe-area-inset-bottom, 0px); }
+        .ows-app[data-theme="dark"] { --bg: var(--dark-canvas); --card: var(--dark-surface); --ink: var(--dark-text); --ink-soft: var(--dark-text-secondary); --ink-faint: var(--dark-text-muted); --line: var(--dark-border); --divider: rgba(255,255,255,0.16); --accent: #7C86FF; --accent-soft: var(--dark-accent-soft); --mint: #3FD98E; --mint-soft: #12291F; --amber: #F0AC4A; --amber-soft: #2E2413; --radius-card: 20px; --safe-top: env(safe-area-inset-top, 0px); --safe-bottom: env(safe-area-inset-bottom, 0px); }
         .ows-app { max-width: 520px; margin: 0 auto; min-height: 100dvh; position: relative; background: var(--bg); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif; color: var(--ink); transition: background .35s ease, color .35s ease; overflow-x: hidden; -webkit-font-smoothing: antialiased; overscroll-behavior-y: none; }
         .navbar { position: sticky; top: 0; z-index: 30; padding-top: calc(var(--safe-top) + 10px); background: color-mix(in srgb, var(--bg) 82%, transparent); -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px); border-bottom: 0.5px solid transparent; transition: border-color .2s ease; }
         .navbar.scrolled { border-bottom-color: var(--line); }

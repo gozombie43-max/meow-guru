@@ -242,20 +242,20 @@ export default function FormulaNotesClient({ topic }: FormulaNotesClientProps) {
       <div className="background-orb orb-2" aria-hidden="true" />
 
       <div className="page-shell">
-        <header className="top-bar">
+        <header data-ui-chrome="header" className="top-bar">
           <div className="title-block">
             <p className="eyebrow">Mathematics</p>
             <h1>Notes Formula &amp; Tricks</h1>
             <p className="subtitle">{topicLabel} insights wrapped in a liquid glass layout.</p>
           </div>
-          <button className="search-button" type="button" aria-label="Search notes">
+          <button data-ui-button="state" className="search-button" type="button" aria-label="Search notes">
             <Search className="icon" />
           </button>
         </header>
 
         <div className="tab-row" role="tablist" aria-label={`${topicLabel} note categories`}>
           {tabs.map((tab) => (
-            <button
+            <button data-ui-button="state"
               key={tab}
               type="button"
               className={`tab-pill${tab === activeTab ? " is-active" : ""}`}
@@ -273,7 +273,7 @@ export default function FormulaNotesClient({ topic }: FormulaNotesClientProps) {
             mergedNotes.map((note, index) => {
               const Icon = note.icon ?? FileText;
               return (
-                <button
+                <button data-ui-button="state"
                   key={note.id || note.title}
                   onClick={() => {
                     if ("isApiRecord" in note && note.isApiRecord) {
@@ -306,7 +306,7 @@ export default function FormulaNotesClient({ topic }: FormulaNotesClientProps) {
         </section>
       </div>
 
-      <button
+      <button data-ui-button="state"
         className="fab-button"
         type="button"
         aria-label="Create new note"

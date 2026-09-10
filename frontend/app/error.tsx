@@ -80,7 +80,7 @@ export default function RootError({
         </p>
 
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-          <button
+          <button data-ui-button="state"
             onClick={() => reset()}
             style={{
               display: 'inline-flex',

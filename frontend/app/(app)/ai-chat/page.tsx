@@ -287,10 +287,10 @@ function AiChatPageContent() {
       )}
       <aside className={`ai-sidebar${sidebarOpen ? '' : ' is-collapsed'}`} aria-label="AI chat sidebar">
         <div className="sidebar-head">
-          <button className="icon-btn" type="button" onClick={() => setSidebarOpen((value) => !value)} aria-label="Toggle sidebar">
+          <button data-ui-button="icon" className="icon-btn" type="button" onClick={() => setSidebarOpen((value) => !value)} aria-label="Toggle sidebar">
             <PanelLeft size={18} />
           </button>
-          <button className="new-chat" type="button" onClick={startNewChat}>
+          <button data-ui-button="state" className="new-chat" type="button" onClick={startNewChat}>
             <Plus size={17} />
             <span>New chat</span>
           </button>
@@ -317,7 +317,7 @@ function AiChatPageContent() {
             </div>
           ) : visibleSessions.length > 0
             ? visibleSessions.map((session) => (
-                <button
+                <button data-ui-button="state"
                   className={`history-item${session.id === activeChatId ? ' is-active' : ''}`}
                   type="button"
                   key={session.id}
@@ -328,7 +328,7 @@ function AiChatPageContent() {
                 </button>
               ))
             : starterPrompts.map((prompt) => (
-                <button className="history-item" type="button" key={prompt} data-prompt={prompt} onClick={handleStarterPrompt}>
+                <button data-ui-button="state" className="history-item" type="button" key={prompt} data-prompt={prompt} onClick={handleStarterPrompt}>
                   <span>{prompt}</span>
                 </button>
               ))}
@@ -344,9 +344,9 @@ function AiChatPageContent() {
       </aside>
 
       <section className={`chat-workspace ${!hasMessages ? 'is-empty' : ''}`} aria-label="AI Tutor chat">
-        <header className="chat-topbar">
+        <header data-ui-chrome="header" className="chat-topbar">
           <div className="topbar-left">
-            <button className="mobile-menu icon-btn" type="button" onClick={() => setSidebarOpen((value) => !value)} aria-label="Open sidebar">
+            <button data-ui-button="icon" className="mobile-menu icon-btn" type="button" onClick={() => setSidebarOpen((value) => !value)} aria-label="Open sidebar">
               <Menu size={19} />
             </button>
             <div>
@@ -357,7 +357,7 @@ function AiChatPageContent() {
               </div>
             </div>
           </div>
-          <button className="clear-btn" type="button" onClick={handleClear} disabled={!hasMessages && !input}>
+          <button data-ui-button="secondary" className="clear-btn" type="button" onClick={handleClear} disabled={!hasMessages && !input}>
             <Trash2 size={16} />
             Clear
           </button>
@@ -387,7 +387,7 @@ function AiChatPageContent() {
                       <div className="answer-card">
                         <div className="answer-head">
                           <span>AI Response</span>
-                          <button type="button" onClick={() => handleCopy(message.content, index)} title="Copy entire AI response">
+                          <button data-ui-button="state" type="button" onClick={() => handleCopy(message.content, index)} title="Copy entire AI response">
                             <Copy size={15} />
                             {copiedIndex === index ? 'Copied' : 'Copy'}
                           </button>
@@ -442,7 +442,7 @@ function AiChatPageContent() {
                           height={60}
                           unoptimized
                         />
-                        <button type="button" className="remove-image-btn" onClick={(e) => { e.stopPropagation(); removeAttachment(); }} aria-label="Remove attachment">
+                        <button data-ui-button="state" type="button" className="remove-image-btn" onClick={(e) => { e.stopPropagation(); removeAttachment(); }} aria-label="Remove attachment">
                           <X size={12} strokeWidth={3} />
                         </button>
                       </div>
@@ -455,7 +455,7 @@ function AiChatPageContent() {
                           <strong>{attachmentFile.name}</strong>
                           <span>{attachmentFile.type === 'application/pdf' ? 'PDF document' : 'Question image'}</span>
                         </div>
-                        <button type="button" className="remove-file-btn" onClick={removeAttachment} aria-label="Remove attachment">
+                        <button data-ui-button="state" type="button" className="remove-file-btn" onClick={removeAttachment} aria-label="Remove attachment">
                           <X size={16} />
                         </button>
                       </div>
@@ -474,7 +474,7 @@ function AiChatPageContent() {
                 accept="image/*,application/pdf"
                 onChange={handleAttachmentChange}
                aria-label="Choose file"/>
-              <button
+              <button data-ui-button="state"
                 className="composer-tool clip-btn"
                 type="button"
                 aria-label="Attach question image or PDF"
@@ -497,10 +497,10 @@ function AiChatPageContent() {
                 rows={1}
                 disabled={isLoading}
                aria-label="Ask ChatGPT"/>
-              <button className="composer-tool mic-btn" type="button" aria-label="Voice input">
+              <button data-ui-button="state" className="composer-tool mic-btn" type="button" aria-label="Voice input">
                 <Mic size={20} />
               </button>
-              <button className="send-btn" type="submit" disabled={!hasInput || isLoading} aria-label="Send message">
+              <button data-ui-button="primary" className="send-btn" type="submit" disabled={!hasInput || isLoading} aria-label="Send message">
                 <ArrowUp size={20} className="send-icon" strokeWidth={2.5} />
               </button>
             </div>
@@ -511,7 +511,7 @@ function AiChatPageContent() {
       {isPreviewModalOpen && attachmentPreview && (
         <div className="image-modal-overlay" role="dialog" aria-modal="true" aria-label="Image preview">
           <div className="image-modal-content">
-            <button className="image-modal-close" onClick={() => setIsPreviewModalOpen(false)} aria-label="Close image preview">
+            <button data-ui-button="state" className="image-modal-close" onClick={() => setIsPreviewModalOpen(false)} aria-label="Close image preview">
               <X size={24} />
             </button>
             <img src={attachmentPreview} alt="Preview" className="image-modal-img" />

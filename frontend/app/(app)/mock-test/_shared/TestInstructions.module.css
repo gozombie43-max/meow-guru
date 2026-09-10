@@ -1,13 +1,13 @@
 .container {
-  --primary: #6a34e5;
-  --primary-light: #a676ff;
-  --primary-bg: #f3edff;
-  --bg: #f8f9fa;
+  --primary: var(--light-accent);
+  --primary-light: var(--light-accent);
+  --primary-bg: var(--light-accent-soft);
+  --bg: var(--light-canvas);
   --card: #ffffff;
-  --text-dark: #1e293b;
-  --text-muted: #64748b;
-  --text-light: #94a3b8;
-  --border: #e2e8f0;
+  --text-dark: var(--light-text);
+  --text-muted: var(--light-text-secondary);
+  --text-light: var(--light-text-muted);
+  --border: var(--light-border);
   
   min-height: 100dvh;
   padding: calc(16px + var(--safe-top)) 16px calc(24px + var(--safe-bottom));
@@ -19,15 +19,15 @@
 
 :global(body:not(.theme-light)) .container,
 :global(html:not(.theme-light)) .container {
-  --primary: #0a84ff;
+  --primary: var(--dark-accent);
   --primary-light: #47a1ff;
   --primary-bg: #11284d;
-  --bg: #000000;
-  --card: #1c1c1e;
-  --text-dark: #ffffff;
-  --text-muted: rgba(235, 235, 245, 0.55);
-  --text-light: rgba(235, 235, 245, 0.3);
-  --border: rgba(255, 255, 255, 0.08);
+  --bg: var(--dark-canvas);
+  --card: var(--dark-surface);
+  --text-dark: var(--dark-text);
+  --text-muted: var(--dark-text-muted);
+  --text-light: var(--dark-text-muted);
+  --border: var(--dark-border);
 }
 
 .card {
@@ -176,7 +176,7 @@
 }
 
 .startBtn {
-  background: var(--primary);
+  background: var(--theme-action, var(--primary));
   color: #fff;
   border: none;
   padding: 14px 32px;

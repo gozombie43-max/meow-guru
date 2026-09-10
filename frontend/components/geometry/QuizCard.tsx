@@ -140,7 +140,7 @@ export default function QuizCard({
         {question.options.map((opt, i) => {
           const state = optionState(opt);
           return (
-            <button
+            <button data-ui-button="state"
               key={i}
               onClick={() => handleSelect(opt)}
               disabled={answered}

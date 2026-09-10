@@ -46,7 +46,7 @@ export default function GlobalError({
           <p style={{ fontSize: '0.9rem', color: '#64748b', margin: '0 0 20px', lineHeight: 1.5 }}>
             A critical error occurred. Please reload the application.
           </p>
-          <button
+          <button data-ui-button="state"
             onClick={() => reset()}
             style={{
               padding: '10px 20px',

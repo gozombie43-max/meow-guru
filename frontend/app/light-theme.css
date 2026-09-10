@@ -1,0 +1,119 @@
+/* Shared light palette. These constants also support isolated exam surfaces. */
+:root {
+  --light-canvas: #f5f7fa;
+  --light-surface: #ffffff;
+  --light-surface-muted: #edf1f6;
+  --light-border: #dce3ec;
+  --light-text: #182438;
+  --light-text-secondary: #526176;
+  --light-text-muted: #66758a;
+  --light-accent: #245dcc;
+  --light-accent-hover: #194aa8;
+  --light-accent-soft: #eaf1ff;
+  --light-shadow: 0 4px 20px rgb(24 36 56 / 5%);
+}
+
+html.theme-light,
+body.theme-light {
+  --background: var(--light-canvas);
+  --foreground: var(--light-text);
+  --bg-gradient: var(--light-canvas);
+  --bg: var(--light-canvas);
+  --surface: var(--light-surface);
+  --card: var(--light-surface);
+  --border: var(--light-border);
+  --text-primary: var(--light-text);
+  --text-secondary: var(--light-text-secondary);
+  --text-muted: var(--light-text-muted);
+  --primary: var(--light-accent);
+  --color-text-primary: var(--light-text);
+  --color-text-secondary: var(--light-text-secondary);
+  --color-text-tertiary: var(--light-text-muted);
+  --color-border-secondary: var(--light-border);
+  --color-border-tertiary: var(--light-border);
+  --color-background-primary: var(--light-surface);
+  --color-background-secondary: var(--light-canvas);
+  background: var(--light-canvas);
+  color: var(--light-text);
+  color-scheme: light;
+}
+
+html.theme-light :is(button, a, input, select, textarea):focus-visible {
+  outline: 3px solid var(--light-accent);
+  outline-offset: 3px;
+}
+
+html.theme-light ::selection {
+  background: #dce8ff;
+  color: var(--light-text);
+}
+
+/* A consistent dock on every route, including routes without a local theme. */
+html.theme-light .bottom-pill-nav.is-light {
+  background: rgb(255 255 255 / 96%);
+  border: 1px solid var(--light-border);
+  box-shadow: 0 8px 32px rgb(24 36 56 / 9%);
+  padding: 7px;
+  gap: 4px;
+  border-radius: 24px;
+}
+
+html.theme-light .bottom-pill-nav.is-light::after {
+  display: none;
+}
+
+html.theme-light .bottom-pill-nav.is-light .bottom-nav-item {
+  min-height: 56px;
+  padding: 7px 2px;
+  border-radius: 16px;
+  color: var(--light-text-secondary);
+  gap: 4px;
+}
+
+html.theme-light .bottom-pill-nav.is-light .bottom-nav-icon {
+  width: 23px;
+  height: 23px;
+  stroke-width: 1.8;
+}
+
+html.theme-light .bottom-pill-nav.is-light .bottom-nav-item.is-active {
+  background: var(--light-accent-soft);
+  color: var(--light-accent) !important;
+}
+
+html.theme-light .bottom-pill-nav.is-light .bottom-nav-item.is-active .bottom-nav-icon {
+  stroke: var(--light-accent) !important;
+}
+
+html.theme-light .bottom-pill-nav.is-light .bottom-nav-item.is-active::after {
+  display: none;
+}
+
+html.theme-light .bottom-pill-nav.is-light .bottom-nav-item:not(.is-active):hover {
+  background: var(--light-surface-muted);
+  color: var(--light-text);
+}
+
+html.theme-light .bottom-nav-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+@media (max-width: 1024px) {
+  html.theme-light .bottom-pill-nav.is-light {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 20px 20px 0 0;
+    border-bottom: 0;
+    padding: 8px max(8px, var(--safe-right)) calc(8px + var(--safe-bottom)) max(8px, var(--safe-left));
+    box-shadow: 0 -4px 24px rgb(24 36 56 / 5%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bottom-pill-nav,
+  .bottom-nav-item {
+    transition: none;
+  }
+}

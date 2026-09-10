@@ -116,7 +116,7 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
     return (
       <div className={styles.loadingContainer}>
         <p>{error || 'Attempt not found.'}</p>
-        <button className={styles.btnPrimary} onClick={() => router.push(`/mock-test/${examSlug}`)}>
+        <button data-ui-button="primary" className={styles.btnPrimary} onClick={() => router.push(`/mock-test/${examSlug}`)}>
           Back to Tests
         </button>
       </div>
@@ -141,9 +141,9 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
   return (
     <div className={styles.page}>
       {/* Top Navigation */}
-      <header className={styles.header}>
+      <header data-ui-chrome="header" className={styles.header}>
         <div className={styles.headerLeft}>
-          <button
+          <button data-ui-button="icon"
             className={styles.backBtn}
             onClick={() => router.push(`/mock-test/${examSlug}/${testId}/result/${attemptId}`)}
           >
@@ -159,7 +159,7 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
         {/* Section Tabs in Header */}
         <div className={styles.sectionTabs}>
           {sections.map((sec: MockSection, idx: number) => (
-            <button
+            <button data-ui-button="state"
               key={sec.key || idx}
               className={`${styles.sectionTab} ${currentSectionIndex === idx ? styles.activeSectionTab : ''}`}
               onClick={() => selectSection(idx)}
@@ -177,25 +177,25 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
           <div className={styles.filterSection}>
             <span className={styles.sidebarHeading}>Filter by Status</span>
             <div className={styles.filterList}>
-              <button
+              <button data-ui-button="state"
                 className={`${styles.filterBtn} ${filter === 'all' ? styles.activeFilter : ''}`}
                 onClick={() => selectFilter('all')}
               >
                 All Questions ({questionAnalysis.length})
               </button>
-              <button
+              <button data-ui-button="state"
                 className={`${styles.filterBtn} ${styles.filterCorrect} ${filter === 'correct' ? styles.activeFilter : ''}`}
                 onClick={() => selectFilter('correct')}
               >
                 <CheckCircle2 size={16} /> Correct ({questionAnalysis.filter((question) => question.status === 'correct').length})
               </button>
-              <button
+              <button data-ui-button="state"
                 className={`${styles.filterBtn} ${styles.filterIncorrect} ${filter === 'incorrect' ? styles.activeFilter : ''}`}
                 onClick={() => selectFilter('incorrect')}
               >
                 <XCircle size={16} /> Incorrect ({questionAnalysis.filter((question) => question.status === 'incorrect').length})
               </button>
-              <button
+              <button data-ui-button="state"
                 className={`${styles.filterBtn} ${styles.filterSkipped} ${filter === 'skipped' ? styles.activeFilter : ''}`}
                 onClick={() => selectFilter('skipped')}
               >
@@ -214,7 +214,7 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
                 const isSelected = idx === currentQuestionIndex;
 
                 return (
-                  <button
+                  <button data-ui-button="state"
                     key={item.question.id || idx}
                     className={`${styles.paletteBtn} ${statusClass} ${isSelected ? styles.selectedPaletteBtn : ''}`}
                     onClick={() => setCurrentQuestionIndex(idx)}
@@ -300,14 +300,14 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
 
               {/* Bottom Navigation */}
               <div className={styles.bottomNav}>
-                <button
+                <button data-ui-button="state"
                   className={styles.navBtn}
                   onClick={handlePrev}
                   disabled={currentQuestionIndex === 0}
                 >
                   <ChevronLeft size={18} /> Previous
                 </button>
-                <button
+                <button data-ui-button="state"
                   className={styles.navBtn}
                   onClick={handleNext}
                   disabled={currentQuestionIndex >= filteredAnalysis.length - 1}

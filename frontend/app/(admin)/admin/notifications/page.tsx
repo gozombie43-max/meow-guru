@@ -253,9 +253,9 @@ export default function AdminNotificationsPage() {
   return (
     <div className={s.page}>
       {/* ── Header ──────────────────────────────────────── */}
-      <header className={s.header}>
+      <header data-ui-chrome="header" className={s.header}>
         <div className={s.headerLeft}>
-          <button
+          <button data-ui-button="icon"
             type="button"
             className={s.backBtn}
             onClick={() => router.push('/admin')}
@@ -352,7 +352,7 @@ export default function AdminNotificationsPage() {
                 <CheckCircle className={s.resultSuccessIcon} size={22} />
                 <h2 className={s.resultTitle}>Sent successfully</h2>
               </div>
-              <button
+              <button data-ui-button="state"
                 type="button"
                 className={s.closeResultBtn}
                 onClick={() => setResult(null)}
@@ -397,7 +397,7 @@ export default function AdminNotificationsPage() {
                 Notification Performance · Last 30 days
               </h2>
             </div>
-            <button
+            <button data-ui-button="secondary"
               type="button"
               className={s.refreshBtn}
               onClick={() => loadAnalytics(30)}
@@ -559,7 +559,7 @@ export default function AdminNotificationsPage() {
                 <div className={s.presetsWrap}>
                   <span className={s.presetLabel}>Quick Presets:</span>
                   {ROUTE_PRESETS.map((preset) => (
-                    <button
+                    <button data-ui-button="state"
                       key={preset.value}
                       type="button"
                       className={`${s.presetChip} ${
@@ -577,7 +577,7 @@ export default function AdminNotificationsPage() {
               </div>
 
               {/* Action Buttons */}
-              <button
+              <button data-ui-button="primary"
                 type="submit"
                 className={s.submitBtn}
                 disabled={!isFormValid || isSubmitting}
@@ -634,7 +634,7 @@ export default function AdminNotificationsPage() {
                 </span>
               )}
             </div>
-            <button
+            <button data-ui-button="secondary"
               type="button"
               className={s.refreshBtn}
               onClick={() => loadHistory(historyPage)}
@@ -740,7 +740,7 @@ export default function AdminNotificationsPage() {
                 Page {historyPage} of {historyTotalPages} ({historyTotal} total)
               </span>
               <div className={s.paginationControls}>
-                <button
+                <button data-ui-button="secondary"
                   type="button"
                   className={s.paginationBtn}
                   onClick={() => loadHistory(historyPage - 1)}
@@ -749,7 +749,7 @@ export default function AdminNotificationsPage() {
                   <ChevronLeft size={14} />
                   <span>Previous</span>
                 </button>
-                <button
+                <button data-ui-button="secondary"
                   type="button"
                   className={s.paginationBtn}
                   onClick={() => loadHistory(historyPage + 1)}
@@ -778,7 +778,7 @@ export default function AdminNotificationsPage() {
           <div
             className={s.modalDialog}
           >
-            <div className={s.modalHeader}>
+            <div data-ui-chrome="header" className={s.modalHeader}>
               <div className={s.modalIconWrap}>
                 <AlertTriangle size={22} />
               </div>
@@ -814,7 +814,7 @@ export default function AdminNotificationsPage() {
             </div>
 
             <div className={s.modalActions}>
-              <button
+              <button data-ui-button="secondary"
                 type="button"
                 className={s.cancelBtn}
                 onClick={() => setIsConfirmOpen(false)}
@@ -822,7 +822,7 @@ export default function AdminNotificationsPage() {
               >
                 Cancel
               </button>
-              <button
+              <button data-ui-button="primary"
                 type="button"
                 className={s.confirmSendBtn}
                 onClick={handleSendBroadcast}

@@ -204,11 +204,11 @@ export default function NotificationsPage() {
   return (
     <div className="notif-page">
       {/* Pinned Fixed Top: Header, Category Filter Pills, and Search Bar */}
-      <header className="notif-fixed-top">
+      <header data-ui-chrome="header" className="notif-fixed-top">
         <div className="notif-header">
           <div className="notif-header-inner">
             <div className="notif-header-left">
-              <button
+              <button data-ui-button="icon"
                 type="button"
                 onClick={handleBack}
                 className="notif-back-btn"
@@ -225,7 +225,7 @@ export default function NotificationsPage() {
             </div>
 
             {unreadCount > 0 && (
-              <button
+              <button data-ui-button="state"
                 type="button"
                 onClick={markAll}
                 className="notif-read-all-btn"
@@ -243,7 +243,7 @@ export default function NotificationsPage() {
           <div className="notif-controls-bar">
             <div className="notif-controls-inner">
               <div className="notif-categories" role="tablist" aria-label="Notification categories">
-                <button
+                <button data-ui-button="state"
                   type="button"
                   role="tab"
                   aria-selected={activeCategory === "all"}
@@ -255,7 +255,7 @@ export default function NotificationsPage() {
                 </button>
 
                 {counts.battles > 0 && (
-                  <button
+                  <button data-ui-button="state"
                     type="button"
                     role="tab"
                     aria-selected={activeCategory === "battles"}
@@ -269,7 +269,7 @@ export default function NotificationsPage() {
                 )}
 
                 {counts.mocks > 0 && (
-                  <button
+                  <button data-ui-button="state"
                     type="button"
                     role="tab"
                     aria-selected={activeCategory === "mocks"}
@@ -283,7 +283,7 @@ export default function NotificationsPage() {
                 )}
 
                 {counts.practice > 0 && (
-                  <button
+                  <button data-ui-button="state"
                     type="button"
                     role="tab"
                     aria-selected={activeCategory === "practice"}
@@ -297,7 +297,7 @@ export default function NotificationsPage() {
                 )}
 
                 {counts.announcements > 0 && (
-                  <button
+                  <button data-ui-button="state"
                     type="button"
                     role="tab"
                     aria-selected={activeCategory === "announcements"}
@@ -321,7 +321,7 @@ export default function NotificationsPage() {
                   aria-label="Search notifications"
                 />
                 {searchQuery && (
-                  <button
+                  <button data-ui-button="secondary"
                     type="button"
                     onClick={() => setSearchQuery("")}
                     className="notif-search-clear"
@@ -407,7 +407,7 @@ export default function NotificationsPage() {
             <h3>No matching notifications</h3>
             <p>No notifications match your current filter or search criteria.</p>
             <div className="notif-empty-actions">
-              <button
+              <button data-ui-button="state"
                 type="button"
                 onClick={() => {
                   setActiveCategory("all");
@@ -466,7 +466,7 @@ export default function NotificationsPage() {
 
                   {safeRoute && label !== "View Battle" && label !== "Open" && label !== "View" && (
                     <div className="notif-action-row">
-                      <button
+                      <button data-ui-button="primary"
                         type="button"
                         disabled={isOpening}
                         onClick={(e) => {

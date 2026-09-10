@@ -6,28 +6,28 @@
 .authContainer,
 .modalOverlay {
   /* Light Theme (Default) */
-  --ios-bg: #f2f2f7;
+  --ios-bg: var(--light-canvas);
   --ios-card-bg: rgba(255, 255, 255, 0.82);
   --ios-card-border: rgba(255, 255, 255, 0.95);
   --ios-card-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04);
-  --ios-text: #1c1c1e;
-  --ios-secondary: #8e8e93;
-  --ios-blue: #007aff;
-  --ios-blue-hover: #0062cc;
-  --ios-input-bg: rgba(118, 118, 128, 0.08);
-  --ios-input-border: rgba(0, 0, 0, 0.06);
-  --ios-input-focus-border: #007aff;
+  --ios-text: var(--light-text);
+  --ios-secondary: var(--light-text-secondary);
+  --ios-blue: var(--light-accent);
+  --ios-blue-hover: var(--light-accent-hover);
+  --ios-input-bg: var(--light-canvas);
+  --ios-input-border: var(--light-border);
+  --ios-input-focus-border: var(--light-accent);
   --ios-input-focus-ring: rgba(0, 122, 255, 0.18);
-  --ios-segmented-bg: rgba(118, 118, 128, 0.12);
+  --ios-segmented-bg: var(--light-surface-muted);
   --ios-segmented-active: #ffffff;
-  --ios-segmented-active-text: #1c1c1e;
+  --ios-segmented-active-text: var(--light-text);
   --ios-segmented-shadow: 0 3px 8px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.06);
   --ios-google-bg: #ffffff;
-  --ios-google-border: rgba(0, 0, 0, 0.12);
+  --ios-google-border: var(--light-border);
   --ios-google-hover: #f9f9fb;
-  --ios-google-text: #1c1c1e;
-  --ios-divider: rgba(0, 0, 0, 0.08);
-  --ios-divider-text: #8e8e93;
+  --ios-google-text: var(--light-text);
+  --ios-divider: var(--light-border);
+  --ios-divider-text: var(--light-text-muted);
   --ios-error-bg: rgba(255, 59, 48, 0.1);
   --ios-error-text: #d70015;
   --ios-error-border: rgba(255, 59, 48, 0.25);
@@ -64,33 +64,33 @@
 :global(body.theme-dark) .modalOverlay,
 :global(.theme-dark) .modalOverlay,
 .modalOverlay:global(.theme-dark) {
-  --ios-bg: #000000;
-  --ios-card-bg: rgba(28, 28, 30, 0.82);
-  --ios-card-border: rgba(255, 255, 255, 0.1);
-  --ios-card-shadow: 0 24px 60px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08);
-  --ios-text: #ffffff;
-  --ios-secondary: #98989d;
-  --ios-blue: #0a84ff;
-  --ios-blue-hover: #0071e3;
-  --ios-input-bg: rgba(118, 118, 128, 0.22);
-  --ios-input-border: rgba(255, 255, 255, 0.08);
-  --ios-input-focus-border: #0a84ff;
+  --ios-bg: var(--dark-canvas);
+  --ios-card-bg: var(--dark-surface);
+  --ios-card-border: var(--dark-border);
+  --ios-card-shadow: var(--dark-shadow);
+  --ios-text: var(--dark-text);
+  --ios-secondary: var(--dark-text-muted);
+  --ios-blue: var(--dark-accent);
+  --ios-blue-hover: var(--light-accent);
+  --ios-input-bg: var(--dark-surface-muted);
+  --ios-input-border: var(--dark-border);
+  --ios-input-focus-border: var(--dark-border);
   --ios-input-focus-ring: rgba(10, 132, 255, 0.25);
-  --ios-segmented-bg: rgba(118, 118, 128, 0.24);
-  --ios-segmented-active: #636366;
-  --ios-segmented-active-text: #ffffff;
+  --ios-segmented-bg: var(--dark-surface-muted);
+  --ios-segmented-active: var(--dark-accent-soft);
+  --ios-segmented-active-text: var(--dark-text);
   --ios-segmented-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
-  --ios-google-bg: rgba(44, 44, 46, 0.9);
-  --ios-google-border: rgba(255, 255, 255, 0.12);
-  --ios-google-hover: rgba(58, 58, 60, 0.95);
-  --ios-google-text: #ffffff;
+  --ios-google-bg: var(--dark-surface-muted);
+  --ios-google-border: var(--dark-border);
+  --ios-google-hover: var(--dark-accent-soft);
+  --ios-google-text: var(--dark-text);
   --ios-divider: rgba(255, 255, 255, 0.1);
-  --ios-divider-text: #8e8e93;
+  --ios-divider-text: var(--dark-text);
   --ios-error-bg: rgba(255, 69, 58, 0.16);
   --ios-error-text: #ff6961;
   --ios-error-border: rgba(255, 69, 58, 0.3);
-  --ios-modal-bg: #1c1c1e;
-  --ios-modal-border: rgba(255, 255, 255, 0.15);
+  --ios-modal-bg: var(--dark-surface);
+  --ios-modal-border: var(--dark-border);
 }
 
 /* =========================================================================
@@ -219,7 +219,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--ios-blue);
+  background: var(--theme-action, var(--ios-blue));
   color: #ffffff;
   flex-shrink: 0;
 }
@@ -663,7 +663,7 @@
   width: 100%;
   border-radius: 11px;
   border: none;
-  background: var(--ios-blue);
+  background: var(--theme-action, var(--ios-blue));
   color: #ffffff;
   font-size: 14px;
   font-weight: 600;
@@ -678,7 +678,7 @@
 }
 
 .primaryBtn:hover:not(:disabled) {
-  background: var(--ios-blue-hover);
+  background: var(--theme-action, var(--ios-blue-hover));
   box-shadow: 0 4px 16px rgba(0, 122, 255, 0.36);
 }
 
@@ -764,7 +764,7 @@
 :global(html.theme-dark) .modalSheet,
 :global(body.theme-dark) .modalSheet,
 :global(.theme-dark) .modalSheet {
-  background-color: #1c1c1e;
+  background-color: var(--dark-surface);
   border-color: rgba(255, 255, 255, 0.15);
   color: #ffffff;
 }
@@ -834,7 +834,7 @@
   padding: 10px 18px;
   border-radius: 12px;
   border: none;
-  background: var(--ios-blue);
+  background: var(--theme-action, var(--ios-blue));
   color: #ffffff;
   font-size: 13.5px;
   font-weight: 600;
@@ -844,7 +844,7 @@
 }
 
 .modalSubmitBtn:hover {
-  background: var(--ios-blue-hover);
+  background: var(--theme-action, var(--ios-blue-hover));
 }
 
 @keyframes modalFadeIn {

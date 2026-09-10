@@ -21,12 +21,12 @@ export function MobileQuizHeader({ activeLang, currentIndex, hideQuestionNumbers
   const sizeClass = digits <= 2 ? "is-qnum-sm" : digits === 3 ? "is-qnum-md" : "is-qnum-lg";
 
   return (
-    <header className="ios-series-header">
-      <button type="button" className={`ios-series-icon-button ${isSettingsOpen ? "is-active" : ""}`} onClick={() => setIsSettingsOpen((previous) => !previous)} aria-label="Open quiz settings" aria-expanded={isSettingsOpen}>
+    <header data-ui-chrome="header" className="ios-series-header">
+      <button data-ui-button="state" type="button" className={`ios-series-icon-button ${isSettingsOpen ? "is-active" : ""}`} onClick={() => setIsSettingsOpen((previous) => !previous)} aria-label="Open quiz settings" aria-expanded={isSettingsOpen}>
         <SettingIcon />
       </button>
       <LangToggle active={activeLang} loading={isTranslating} onChange={setActiveLang} />
-      <button type="button" className={`ios-series-icon-button ${hideQuestionNumbers ? `is-qnum ${sizeClass}` : ""}`} onClick={openPalette} aria-label={hideQuestionNumbers ? `Question ${questionNumber} - Open question navigator` : "Open question navigator"}>
+      <button data-ui-button="state" type="button" className={`ios-series-icon-button ${hideQuestionNumbers ? `is-qnum ${sizeClass}` : ""}`} onClick={openPalette} aria-label={hideQuestionNumbers ? `Question ${questionNumber} - Open question navigator` : "Open question navigator"}>
         {hideQuestionNumbers ? <span className="ios-series-palette-num">{questionNumber}</span> : <Menu aria-hidden="true" />}
       </button>
     </header>
@@ -43,9 +43,9 @@ type FooterProps = Pick<
 
 export function MobileQuizFooter({ canSubmit, currentIndex, handleNext, handlePrev, handleSubmitCurrent, isCurrentSubmitted, questions }: FooterProps) {
   return (
-    <footer className="ios-series-footer">
-      <button type="button" onClick={handlePrev} disabled={currentIndex === 0} className="ios-series-footer-secondary">Previous</button>
-      <button type="button" onClick={() => isCurrentSubmitted ? handleNext() : handleSubmitCurrent()} disabled={!canSubmit && !isCurrentSubmitted} className="ios-series-footer-primary">
+    <footer data-ui-chrome="footer" className="ios-series-footer">
+      <button data-ui-button="secondary" type="button" onClick={handlePrev} disabled={currentIndex === 0} className="ios-series-footer-secondary">Previous</button>
+      <button data-ui-button="primary" type="button" onClick={() => isCurrentSubmitted ? handleNext() : handleSubmitCurrent()} disabled={!canSubmit && !isCurrentSubmitted} className="ios-series-footer-primary">
         {!isCurrentSubmitted ? "Submit" : currentIndex < questions.length - 1 ? "Next" : "Finish"}
       </button>
     </footer>

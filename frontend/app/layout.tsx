@@ -3,6 +3,9 @@ import type { Metadata,Viewport } from 'next';
 import { Geist } from 'next/font/google';
 import StyledJsxRegistry from '@/lib/styled-jsx-registry';
 import './globals.css';
+import './light-theme.css';
+import './dark-theme.css';
+import './interface.css';
 
 const geist = Geist({ subsets: ['latin'] });
 

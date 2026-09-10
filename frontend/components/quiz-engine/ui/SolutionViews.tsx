@@ -64,10 +64,10 @@ export function SolutionBottomSheet({
               <div className="ios-sheet-handle" />
             </div>
 
-            <div className="ios-solution-header">
+            <div data-ui-chrome="header" className="ios-solution-header">
               <span className="ios-header-placeholder"></span>
               <h3 className="ios-solution-title">Worked Solution</h3>
-              <button
+              <button data-ui-button="state"
                 type="button"
                 onClick={onClose}
                 className="ios-done-btn"
@@ -138,7 +138,7 @@ export function SolutionBottomSheet({
                 max-height: 86svh;
                 display: flex;
                 flex-direction: column;
-                background: #1c1c1e;
+                background: var(--dark-surface);
                 border-radius: 28px 28px 0 0;
                 overflow: hidden;
                 box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
@@ -215,7 +215,7 @@ export function SolutionBottomSheet({
                 font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", "Segoe UI", Roboto, sans-serif;
                 font-size: 18px;
                 line-height: 1.85;
-                color: #f5f5f7;
+                color: var(--light-canvas);
                 letter-spacing: 0.012em;
               }
               .ios-solution-step {
@@ -237,29 +237,29 @@ export function SolutionBottomSheet({
               }
               .ios-solution-backdrop[data-theme="light"] .ios-solution-sheet {
                 background: #FFFFFF;
-                border-color: #E6EAEF;
-                color: #1d1d1f;
+                border-color: var(--light-border);
+                color: var(--light-text);
               }
               .ios-solution-backdrop[data-theme="light"] .ios-sheet-handle {
-                background: #E6EAEF;
+                background: var(--light-border);
               }
               .ios-solution-backdrop[data-theme="light"] .ios-solution-header {
-                border-bottom-color: #E6EAEF;
+                border-bottom-color: var(--light-border);
               }
               .ios-solution-backdrop[data-theme="light"] .ios-solution-title {
-                color: #1d1d1f;
+                color: var(--light-text);
               }
               .ios-solution-backdrop[data-theme="light"] .ios-done-btn {
-                color: #0071e3;
+                color: var(--light-accent);
               }
               .ios-solution-backdrop[data-theme="light"] .ios-solution-content-text {
-                color: #1d1d1f;
+                color: var(--light-text);
               }
               .ios-solution-backdrop[data-theme="light"] .ios-solution-answer-summary {
-                color: #57606a;
+                color: var(--light-text-secondary);
               }
               .ios-solution-backdrop[data-theme="light"] .ios-solution-answer-value {
-                color: #1d1d1f;
+                color: var(--light-text);
               }
 
               /* PC / Desktop optimization */
@@ -342,7 +342,7 @@ export function SolutionSidePanel({
             Sol.{questionNumber}.({optionLabel})
           </p>
         </div>
-        <button
+        <button data-ui-button="icon"
           onClick={onClose}
           className="quiz-icon-button inline-flex h-9 w-9 items-center justify-center rounded-full transition-colors"
           aria-label="Close solution"

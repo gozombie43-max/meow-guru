@@ -4,7 +4,48 @@ This document defines the mandatory layout architecture and CSS design rules for
 
 ---
 
+## Shared Light Theme
+
+### Shared controls and page chrome
+
+`app/interface.css` owns the visual contract for all native buttons and action
+links. Use `data-ui-button="primary|secondary|danger|icon|state"`. Primary is the
+main action; secondary is outlined; icon controls need an accessible label.
+Use `state` for answer choices, palette cells, tabs, filters, and toggles so their
+selection, scoring, and review colors remain under the owning component.
+All variants share 44px minimum touch height, typography, and corner radius.
+Backdrop dismiss targets and decorative window controls are excluded.
+
+Apply `data-ui-chrome="header|footer"` to existing page/toolbars and action bars.
+Their surface and separator styles are shared; positioning, safe-area padding,
+and matching content offsets remain owned by the route shell. Do not add a
+second header or footer to fullscreen engines. Explicit light exam containers
+inherit light control colors even when the surrounding app is dark.
+
+`app/light-theme.css`, imported by the root layout, owns the `--light-*` palette.
+Use `--light-canvas` for page backgrounds, `--light-surface` for white cards,
+`--light-surface-muted` for grouped controls, `--light-border` for separators,
+and `--light-text`, `--light-text-secondary`, and `--light-text-muted` for text.
+Primary actions use `--light-accent`; selected controls use `--light-accent-soft`.
+Keep semantic success, error, warning, and subject colors distinct.
+
+Light navigation follows the shared theme on every route where navigation is
+visible. Preserve route-specific fullscreen exclusions and safe-area clearance.
+Quiz and mock-test screens use plain surfaces, restrained shadows, readable
+question spacing, and clear selection/review states. Honor the selected app
+theme before device color preferences on result and review pages.
+
 ## 1. Single Source of Truth: Global CSS Variables
+
+### Dark appearance
+
+`app/dark-theme.css` owns the matching `--dark-*` palette. Use charcoal canvas,
+raised surfaces, muted controls, and shared border/text tokens in dark selectors.
+Use `--dark-accent` for links and focus indicators; use `--dark-action` for
+filled controls with white labels. `--theme-action` provides that filled-control
+color on dark pages and resets inside explicitly light exam surfaces.
+Respect the shared theme selection on admin routes as well as student routes.
+Keep light quiz and mock-test surfaces independent of the surrounding dark app.
 
 All layout dimensions and safe-area insets are centralized in `frontend/app/globals.css` on `:root`:
 

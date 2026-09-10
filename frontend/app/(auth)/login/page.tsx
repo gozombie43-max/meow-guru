@@ -165,7 +165,7 @@ function LoginContent() {
               <span>Remember me</span>
             </label>
 
-            <button
+            <button data-ui-button="state"
               type="button"
               className={styles.forgotBtn}
               onClick={() => setForgotOpen(true)}
@@ -175,7 +175,7 @@ function LoginContent() {
           </div>
 
           {/* iOS Action Button */}
-          <button
+          <button data-ui-button="primary"
             type="submit"
             disabled={isSubmitting}
             className={styles.primaryBtn}

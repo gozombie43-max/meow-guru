@@ -57,8 +57,8 @@ export default function AdminShell({ children }: { children: ReactNode }) {
 
   return (
     <div className={styles.shell}>
-      <header className={styles.header}>
-        <div className={styles.titlebar}>
+      <header data-ui-chrome="header" className={styles.header}>
+        <div data-ui-chrome="header" className={styles.titlebar}>
           <Link
             href={pathname === "/admincontrol" ? "/" : "/admincontrol"}
             className={styles.back}

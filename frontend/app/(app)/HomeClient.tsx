@@ -126,11 +126,11 @@ export default function HomeClient({
       {user ? (
         <UserProfileMenu size={34} align="right" />
       ) : (
-        <Link href="/login" className={styles.loginPillButton} aria-label="Log in">
+        <Link data-ui-button="secondary" href="/login" className={styles.loginPillButton} aria-label="Log in">
           LOGIN
         </Link>
       )}
-      <button
+      <button data-ui-button="state"
         type="button"
         className={styles.menuButton}
         onClick={() => setSidebarOpen(true)}
@@ -189,7 +189,7 @@ export default function HomeClient({
                 <h3>Go Premium</h3>
               </div>
               <p>Unlock all features and learn without limits.</p>
-              <Link href="/resource" className={styles.premiumButton}>
+              <Link data-ui-button="primary" href="/resource" className={styles.premiumButton}>
                 Upgrade Now
               </Link>
             </div>
@@ -198,7 +198,7 @@ export default function HomeClient({
           {/* Main Desktop Workspace */}
           <div className={styles.desktopWorkspace}>
             {/* Top Bar across Center and Right */}
-            <header className={styles.topbar}>
+            <header data-ui-chrome="header" className={styles.topbar}>
               {/* macOS Search Pill */}
               <div className={styles.searchContainer}>
                 <Search size={18} className={styles.searchIcon} />
@@ -221,7 +221,7 @@ export default function HomeClient({
                   <div className={styles.searchDropdown}>
                     <div className={styles.searchDropdownHeader}>
                       <span>Quick Search Results</span>
-                      <button
+                      <button data-ui-button="icon"
                         type="button"
                         className={styles.searchCloseBtn}
                         onClick={() => {
@@ -277,7 +277,7 @@ export default function HomeClient({
               {/* Top Right User & System Controls */}
               <div className={styles.topActions}>
                 {/* Theme Toggle */}
-                <button
+                <button data-ui-button="state"
                   type="button"
                   className={styles.actionButton}
                   onClick={toggleThemeMode}
@@ -294,7 +294,7 @@ export default function HomeClient({
                 {user ? (
                   <UserProfileMenu size={34} align="right" />
                 ) : (
-                  <Link href="/login" className={styles.loginPillButton} aria-label="Log in">
+                  <Link data-ui-button="secondary" href="/login" className={styles.loginPillButton} aria-label="Log in">
                     LOGIN
                   </Link>
                 )}
@@ -323,7 +323,7 @@ export default function HomeClient({
         <aside className={`${styles.mobileSidebar} ${sidebarOpen ? styles.sidebarOpen : ''}`}>
           <div className={styles.mobileSidebarHeader}>
             <SkillLearnLogo />
-            <button
+            <button data-ui-button="state"
               type="button"
               className={styles.sidebarCloseButton}
               onClick={() => setSidebarOpen(false)}
@@ -333,7 +333,7 @@ export default function HomeClient({
             </button>
           </div>
 
-          <button
+          <button data-ui-button="state"
             type="button"
             className={styles.sidebarThemeToggle}
             onClick={toggleThemeMode}
@@ -380,7 +380,7 @@ export default function HomeClient({
 
         {/* Mobile Page Content */}
         <div className={styles.mobileWorkspace}>
-          <header className={styles.mobileTopbar}>
+          <header data-ui-chrome="header" className={styles.mobileTopbar}>
             <SkillLearnLogo />
             {renderMobileHeaderActions()}
           </header>
