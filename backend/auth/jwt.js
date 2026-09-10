@@ -36,6 +36,17 @@ export const verifyRefreshToken = (token) => {
   return decoded;
 };
 
+// Temporary compatibility verifier for refresh tokens issued before session
+// records and explicit token-purpose claims were introduced. Keep this out of
+// ordinary authentication paths; rotateSession is the only caller.
+export const verifyLegacyRefreshToken = (token) => {
+  const decoded = jwt.verify(token, REFRESH_SECRET, { algorithms: ['HS256'] });
+  if (decoded.type !== undefined || decoded.sid !== undefined || !decoded.id || !decoded.jti) {
+    throw Object.assign(new Error('Invalid legacy refresh token'), { statusCode: 401 });
+  }
+  return decoded;
+};
+
 // Reconstruct the current refresh cookie for concurrent refresh retries without
 // storing bearer credentials in the database.
 export const signSessionRefreshToken = (session) => jwt.sign({

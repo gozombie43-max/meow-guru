@@ -1,8 +1,18 @@
 import { randomUUID } from 'node:crypto';
 import { getMongoDB, getUsersCollection } from '../config/mongodb.js';
-import { signToken, signRefreshToken, signSessionRefreshToken, verifyRefreshToken } from './jwt.js';
+import {
+  signToken,
+  signRefreshToken,
+  signSessionRefreshToken,
+  verifyRefreshToken,
+  verifyLegacyRefreshToken,
+} from './jwt.js';
 import { getBattleRealtimeServer } from '../battle/battleRealtime.js';
 const disconnectSession = sid => getBattleRealtimeServer()?.in(`session:${sid}`).disconnectSockets(true);
+
+// Stateless refresh tokens issued by the final legacy release live for at most
+// 30 days. After this deadline, the compatibility path closes automatically.
+const LEGACY_REFRESH_UPGRADE_DEADLINE = new Date('2026-10-11T00:00:00.000Z');
 
 const sessions = () => getMongoDB().collection('authSessions');
 const unauthorized = () => Object.assign(new Error('Session expired, please login again'), { statusCode: 401 });
@@ -41,7 +51,14 @@ export async function assertSession(decoded) {
 }
 
 export async function rotateSession(refreshToken, now = new Date()) {
-  const decoded = verifyRefreshToken(refreshToken);
+  let decoded;
+  try {
+    decoded = verifyRefreshToken(refreshToken);
+  } catch (error) {
+    if (error.message !== 'Invalid refresh token purpose' || now > LEGACY_REFRESH_UPGRADE_DEADLINE) throw error;
+    const legacy = verifyLegacyRefreshToken(refreshToken);
+    return createSession({ id: legacy.id });
+  }
   if (!decoded.sid || !decoded.id) throw unauthorized();
   const user = await activeUser(decoded.id);
   const filter = { _id: decoded.sid, userId: String(decoded.id), ...active(now) };
