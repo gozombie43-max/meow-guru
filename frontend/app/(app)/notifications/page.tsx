@@ -428,11 +428,11 @@ export default function NotificationsPage() {
               const isOpening = openingId === item._id;
 
               return (
-                <article
+                <div
                   key={item._id}
                   onClick={() => handleCardClick(item)}
                   className={`notif-card ${item.read ? "is-read" : "is-unread"}`}
-                >
+                 role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
                   <div className={`notif-icon-wrap type-${category === "other" ? "default" : category === "battles" ? "battle" : category === "mocks" ? "mock" : category === "practice" ? "streak" : "announcement"}`}>
                     <Icon size={22} />
                     {!item.read && <span className="notif-unread-dot" aria-label="Unread" />}
@@ -479,7 +479,7 @@ export default function NotificationsPage() {
                       </button>
                     </div>
                   )}
-                </article>
+                </div>
               );
             })}
           </div>

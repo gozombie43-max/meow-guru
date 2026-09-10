@@ -16,9 +16,11 @@ function NoteViewContent() {
 
   useEffect(() => {
     if (!noteId) {
-      setError("Missing note id.");
-      setLoading(false);
-      return;
+      const timer = window.setTimeout(() => {
+        setError("Missing note id.");
+        setLoading(false);
+      }, 0);
+      return () => window.clearTimeout(timer);
     }
 
     const loadNote = async () => {
@@ -40,7 +42,8 @@ function NoteViewContent() {
       }
     };
 
-    loadNote();
+    const timer = window.setTimeout(() => void loadNote(), 0);
+    return () => window.clearTimeout(timer);
   }, [noteId]);
 
   if (loading) {

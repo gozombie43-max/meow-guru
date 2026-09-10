@@ -34,7 +34,6 @@ export default function StudyModeStartView({
   const router = useRouter();
   const { theme } = useThemeMode();
   const [questionCount, setQuestionCount] = useState<number | null>(null);
-  const [isHoveringLights, setIsHoveringLights] = useState(false);
 
   const targetQuizHref = quizHref ?? `/english/${slug}/study-mode/quiz`;
   const targetBackHref = backHref ?? `/english/${slug}`;
@@ -145,8 +144,8 @@ export default function StudyModeStartView({
             {/* Traffic Lights at Top-Left of Sidebar */}
             <div
               className="study-traffic-lights"
-              onMouseEnter={() => setIsHoveringLights(true)}
-              onMouseLeave={() => setIsHoveringLights(false)}
+              role="group"
+              aria-label="Window controls"
             >
               <button
                 type="button"
@@ -155,7 +154,7 @@ export default function StudyModeStartView({
                 title="Close / Back"
                 aria-label="Close"
               >
-                {isHoveringLights && <span className="study-light-symbol">×</span>}
+                <span className="study-light-symbol">×</span>
               </button>
               <button
                 type="button"
@@ -164,7 +163,7 @@ export default function StudyModeStartView({
                 title="Minimize"
                 aria-label="Minimize"
               >
-                {isHoveringLights && <span className="study-light-symbol">-</span>}
+                <span className="study-light-symbol">-</span>
               </button>
               <button
                 type="button"
@@ -173,7 +172,7 @@ export default function StudyModeStartView({
                 title="Start Study Mode"
                 aria-label="Start"
               >
-                {isHoveringLights && <span className="study-light-symbol">+</span>}
+                <span className="study-light-symbol">+</span>
               </button>
             </div>
 
@@ -572,6 +571,13 @@ export default function StudyModeStartView({
           font-weight: 800;
           color: rgba(0, 0, 0, 0.7);
           line-height: 1;
+          opacity: 0;
+          transition: opacity 0.15s ease;
+        }
+
+        .study-traffic-lights:hover .study-light-symbol,
+        .study-light:focus-visible .study-light-symbol {
+          opacity: 1;
         }
 
         .study-sidebar-section-title {

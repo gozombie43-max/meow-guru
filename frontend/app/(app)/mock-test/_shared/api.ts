@@ -54,6 +54,38 @@ export interface MockAttempt {
   currentSection?: number;
   currentQuestion?: number;
   revision?: number;
+  totalScore?: number;
+  maxScore?: number;
+  sections?: MockResultSection[];
+  result?: MockAttemptResult;
+  weakAreas?: string[];
+}
+
+export interface MockResultSection {
+  key?: string;
+  label?: string;
+  total?: number;
+  correct?: number;
+  incorrect?: number;
+  skipped?: number;
+  score?: number;
+  maxScore?: number;
+  accuracy?: number;
+}
+
+export interface MockAttemptResult {
+  totalScore?: number;
+  maxScore?: number;
+  percentage?: number;
+  percentile?: number;
+  sections?: MockResultSection[];
+}
+
+export interface MockAttemptHistory {
+  id: string;
+  testId: string;
+  status: 'in_progress' | 'submitting' | 'completed';
+  result?: MockAttemptResult;
 }
 
 export interface AttemptProgress {
@@ -204,10 +236,10 @@ export async function getTestHistory(examSlug: string, testId: string, token: st
   return res.json();
 }
 
-export async function getExamHistory(examSlug: string, token: string) {
+export async function getExamHistory(examSlug: string, token: string): Promise<{ attempts: MockAttemptHistory[] }> {
   const res = await fetch(`${BASE}/api/mocktest/${examSlug}/history`, {
     headers: getHeaders(token),
   });
   if (!res.ok) throw new Error('Failed to fetch exam history');
-  return res.json();
+  return readJson<{ attempts: MockAttemptHistory[] }>(res);
 }

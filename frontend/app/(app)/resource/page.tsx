@@ -233,7 +233,7 @@ export default function ResourcePage() {
       if (!data.url) throw new Error("Missing file URL.");
 
       if (navigator.userAgent.includes("MeowApp")) {
-        window.location.href = data.url;
+        window.location.assign(data.url);
         return;
       }
 
@@ -371,9 +371,8 @@ export default function ResourcePage() {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder={`Search ${selectedSubject.label} ${activeTab}...`}
-                  autoFocus
                   className="res-search-input"
-                />
+                 aria-label={`Search ${selectedSubject.label} ${activeTab}...`}/>
                 {query && (
                   <button
                     type="button"
@@ -543,21 +542,18 @@ export default function ResourcePage() {
         multiple
         className="res-file-input"
         onChange={handleUpload}
-      />
+       aria-label="Choose file"/>
 
       {/* ── Upload Destination Modal ── */}
       {showUploadModal && (
         <div
           className="res-modal-backdrop"
-          role="presentation"
-          onClick={() => setShowUploadModal(false)}
         >
           <div
             className="res-modal"
             role="dialog"
             aria-modal="true"
             aria-labelledby="res-upload-title"
-            onClick={(e) => e.stopPropagation()}
           >
             <div className="res-modal-header">
               <div>

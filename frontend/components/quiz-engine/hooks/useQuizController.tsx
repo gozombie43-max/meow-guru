@@ -265,6 +265,7 @@ export function useQuizController({
 
     stopTimer();
     // Hydrate quiz progress from the explicit resume request in the URL.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- URL-requested session hydration is an external synchronization boundary.
     setSelectedAnswers(savedAnswers);
     setSubmittedQuestions(submittedSet);
     const savedResults = Array.isArray(resumeEntry.results)
@@ -307,6 +308,7 @@ export function useQuizController({
 
     stopTimer();
     // Apply the explicit question deep-link after API questions are available.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- URL navigation is an external synchronization boundary.
     setShowAnalytics(false);
     setStarted(true);
     setCurrentIndex(targetIndex);

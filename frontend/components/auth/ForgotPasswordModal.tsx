@@ -28,10 +28,10 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
   };
 
   return (
-    <div className={styles.modalOverlay} onClick={handleClose} role="dialog" aria-modal="true">
-      <div className={styles.modalSheet} onClick={(e) => e.stopPropagation()}>
+    <div className={styles.modalOverlay} role="dialog" aria-modal="true" aria-labelledby="password-recovery-title">
+      <div className={styles.modalSheet}>
         <div className={styles.modalHeader}>
-          <h3 className={styles.modalTitle}>Password Recovery</h3>
+          <h3 id="password-recovery-title" className={styles.modalTitle}>Password Recovery</h3>
           <button
             type="button"
             onClick={handleClose}
@@ -79,12 +79,11 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
                   id="recovery-email"
                   type="email"
                   required
-                  autoFocus
                   placeholder="name@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className={styles.inputField}
-                />
+                 aria-label="name@example.com"/>
               </div>
             </div>
             <div className={styles.modalActions}>

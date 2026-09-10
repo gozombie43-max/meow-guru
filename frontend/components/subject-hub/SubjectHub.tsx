@@ -526,7 +526,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
                             onClick={() => setSelectedChapterSlug(chapter.slug)}
                             onDoubleClick={() => router.push(chapterHref)}
                             title={`${chapter.title} (Double-click to open)`}
-                          >
+                           role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
                             <div
                               style={{
                                 position: "absolute",
@@ -587,7 +587,6 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
                               className={`${styles.denseTableRow} ${
                                 isSelected ? styles.denseTableRowSelected : ""
                               }`}
-                              onClick={() => setSelectedChapterSlug(chapter.slug)}
                             >
                               <td>
                                 <span style={{ fontWeight: 700, color: "var(--mac-text-tertiary)", fontSize: 11 }}>
@@ -595,7 +594,14 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
                                 </span>
                               </td>
                               <td>
-                                <div className={styles.tableTopicCell}>
+                                <button
+                                  type="button"
+                                  className={styles.tableTopicCell}
+                                  onClick={() => setSelectedChapterSlug(chapter.slug)}
+                                  aria-pressed={isSelected}
+                                  aria-label={`Select ${chapter.title}`}
+                                  style={{ width: "100%", padding: 0, border: 0, background: "transparent", color: "inherit", textAlign: "left" }}
+                                >
                                   <div className={styles.tableTopicIcon}>
                                     <ChapterIcon
                                       size={14}
@@ -607,7 +613,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
                                     />
                                   </div>
                                   <span className={styles.tableTopicName}>{chapter.title}</span>
-                                </div>
+                                </button>
                               </td>
                               <td>
                                 <span
@@ -624,6 +630,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
                                     className={styles.tableActionBtn}
                                     onClick={(e) => e.stopPropagation()}
                                     title="Start Practice Quiz"
+                                    aria-label={`Practice ${chapter.title}`}
                                   >
                                     Practice
                                   </Link>
@@ -633,6 +640,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
                                     onClick={(e) => e.stopPropagation()}
                                     style={{ background: "transparent", border: "1px solid var(--mac-border)" }}
                                     title="Open Chapter Hub"
+                                    aria-label={`Open ${chapter.title} hub`}
                                   >
                                     Hub
                                   </Link>
@@ -678,7 +686,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
                             isSelected ? styles.compactTileSelected : ""
                           }`}
                           onClick={() => setSelectedTopicId(topic.id)}
-                        >
+                         role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
                           <div className={styles.tileIconBox}>
                             <IconComp
                               size={22}
@@ -724,10 +732,16 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
                             className={`${styles.denseTableRow} ${
                               isSelected ? styles.denseTableRowSelected : ""
                             }`}
-                            onClick={() => setSelectedTopicId(topic.id)}
                           >
                             <td>
-                              <div className={styles.tableTopicCell}>
+                              <button
+                                type="button"
+                                className={styles.tableTopicCell}
+                                onClick={() => setSelectedTopicId(topic.id)}
+                                aria-pressed={isSelected}
+                                aria-label={`Select ${topic.name}`}
+                                style={{ width: "100%", padding: 0, border: 0, background: "transparent", color: "inherit", textAlign: "left" }}
+                              >
                                 <div className={styles.tableTopicIcon}>
                                   <IconComp
                                     size={14}
@@ -741,7 +755,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
                                 <span className={styles.tableTopicName}>
                                   {topic.name}
                                 </span>
-                              </div>
+                              </button>
                             </td>
                             <td>
                               <span
@@ -772,6 +786,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
                                 href={`${topic.routeBase}`}
                                 className={styles.tableActionBtn}
                                 onClick={(e) => e.stopPropagation()}
+                                aria-label={`Open ${topic.name}`}
                               >
                                 Open
                               </Link>

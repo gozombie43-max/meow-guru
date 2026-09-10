@@ -179,7 +179,7 @@ export default function QuestionUploadForm({ backLink }: { backLink?: ReactNode 
                 className={styles.macTextarea} 
                 style={{ minHeight: 120 }} 
                 placeholder="Type question statement… LaTeX syntax \( ... \) for inline and \[ ... \] for display math is supported." 
-              />
+               aria-label="Type question statement… LaTeX syntax \( ... \) for inline and \[ ... \] for display math is supported."/>
               <ImagePicker label="Attach Question Illustration" field="questionImage" images={images} setImages={setImages} imageUrls={imageUrls} setImageUrls={setImageUrls} />
             </div>
             <div className={styles.previewBox}>
@@ -212,7 +212,7 @@ export default function QuestionUploadForm({ backLink }: { backLink?: ReactNode 
                   onChange={(e) => updateOption(index, e.target.value)} 
                   className={styles.macInput} 
                   placeholder={`Option ${"ABCD"[index]} content (LaTeX ok)`} 
-                />
+                 aria-label={`Option ${"ABCD"[index]} content (LaTeX ok)`}/>
                 <ImagePicker label={`Option ${"ABCD"[index]} Image`} field={fields[index + 1]} images={images} setImages={setImages} imageUrls={imageUrls} setImageUrls={setImageUrls} />
               </div>
               <div className={styles.previewBox} style={{ height: "100%" }}>
@@ -256,27 +256,27 @@ export default function QuestionUploadForm({ backLink }: { backLink?: ReactNode 
             </label>
             <label className={styles.fieldLabel}>
               Tier
-              <input value={form.tier} onChange={(e) => change("tier", e.target.value)} placeholder="e.g. Tier 1" className={styles.macInput} />
+              <input value={form.tier} onChange={(e) => change("tier", e.target.value)} placeholder="e.g. Tier 1" className={styles.macInput}  aria-label="e.g. Tier 1"/>
             </label>
             <label className={styles.fieldLabel}>
               Exam
-              <input value={form.exam} onChange={(e) => change("exam", e.target.value)} placeholder="e.g. SSC CGL" className={styles.macInput} />
+              <input value={form.exam} onChange={(e) => change("exam", e.target.value)} placeholder="e.g. SSC CGL" className={styles.macInput}  aria-label="e.g. SSC CGL"/>
             </label>
             <label className={styles.fieldLabel}>
               Concept
-              <input value={form.concept} onChange={(e) => change("concept", e.target.value)} placeholder="e.g. Quadratic Equations" className={styles.macInput} />
+              <input value={form.concept} onChange={(e) => change("concept", e.target.value)} placeholder="e.g. Quadratic Equations" className={styles.macInput}  aria-label="e.g. Quadratic Equations"/>
             </label>
             <label className={styles.fieldLabel}>
               Formula
-              <input value={form.formula} onChange={(e) => change("formula", e.target.value)} placeholder="e.g. a² - b² = (a+b)(a-b)" className={styles.macInput} />
+              <input value={form.formula} onChange={(e) => change("formula", e.target.value)} placeholder="e.g. a² - b² = (a+b)(a-b)" className={styles.macInput}  aria-label="e.g. a² - b² = (a+b)(a-b)"/>
             </label>
             <label className={styles.fieldLabel}>
               Trap Type
-              <input value={form.trapType} onChange={(e) => change("trapType", e.target.value)} placeholder="e.g. Sign Error" className={styles.macInput} />
+              <input value={form.trapType} onChange={(e) => change("trapType", e.target.value)} placeholder="e.g. Sign Error" className={styles.macInput}  aria-label="e.g. Sign Error"/>
             </label>
             <label className={styles.fieldLabel}>
               Tags
-              <input value={form.tags} onChange={(e) => change("tags", e.target.value)} placeholder="Comma-separated" className={styles.macInput} />
+              <input value={form.tags} onChange={(e) => change("tags", e.target.value)} placeholder="Comma-separated" className={styles.macInput}  aria-label="Comma-separated"/>
             </label>
           </div>
           
@@ -290,7 +290,7 @@ export default function QuestionUploadForm({ backLink }: { backLink?: ReactNode 
                   className={styles.macTextarea} 
                   style={{ minHeight: 110 }} 
                   placeholder="Explain step-by-step logic, theorems or shortcuts…"
-                />
+                 aria-label="Explain step-by-step logic, theorems or shortcuts…"/>
               </label>
               <ImagePicker label="Attach Solution Image" field="solutionImage" images={images} setImages={setImages} imageUrls={imageUrls} setImageUrls={setImageUrls} />
             </div>
@@ -342,14 +342,14 @@ function ImagePicker({ label, field, images, setImages, imageUrls, setImageUrls 
         onChange={(e) => setImageUrls((old) => ({ ...old, [field]: e.target.value }))} 
         className={styles.macInput} 
         style={{ fontSize: 12, padding: "5px 8px" }} 
-      />
+       aria-label="Paste CDN image URL…"/>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6 }}>
         <input 
           type="file" 
           accept="image/*" 
           onChange={(e) => setImages((old) => ({ ...old, [field]: e.target.files?.[0] }))} 
           style={{ fontSize: 11, color: "var(--admin-text-secondary, #6e6e73)" }}
-        />
+         aria-label="Choose file"/>
         {images[field] && <span style={{ fontSize: 11, color: "var(--admin-success)", fontWeight: 600 }}>✓ Attached: {images[field]?.name}</span>}
       </div>
     </div>

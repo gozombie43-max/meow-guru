@@ -4,6 +4,7 @@ import MathRenderer from '@/components/MathRenderer';
 import { useAuth } from '@/context/AuthContext';
 import { useThemeMode } from '@/hooks/useTheme';
 import axios from '@/lib/axios';
+import { isAxiosError } from 'axios';
 import { SUBJECT_TOPICS as FALLBACK_SUBJECT_TOPICS } from '@/lib/subjectTopics';
 import { useCallback,useEffect,useReducer,useRef } from 'react';
 
@@ -37,6 +38,13 @@ interface Result {
   solution?: string;
 }
 
+interface QuizMeta {
+  overallInsight?: string;
+  focusArea?: string;
+}
+
+type AvailableTopic = string | { name?: string; topic?: string };
+
 interface QuizState {
   phase: Phase;
   loading: boolean;
@@ -47,12 +55,12 @@ interface QuizState {
   mode: QuizMode;
   excludeOwn: boolean;
   topicsSelected: string[];
-  availableTopics: Record<string, any[]>;
+  availableTopics: Record<string, AvailableTopic[]>;
   modalSubject: string | null;
   // Quiz state
   quizId: string;
   questions: Question[];
-  meta: any;
+  meta: QuizMeta | null;
   currentIdx: number;
   answers: Record<string, Answer>;
   selected: string | null;
@@ -72,7 +80,7 @@ const initialState: QuizState = {
   mode: 'adaptive',
   excludeOwn: false,
   topicsSelected: [],
-  availableTopics: FALLBACK_SUBJECT_TOPICS as any,
+  availableTopics: FALLBACK_SUBJECT_TOPICS,
   modalSubject: null,
   quizId: '',
   questions: [],
@@ -91,9 +99,9 @@ type Action =
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_ERROR'; payload: string }
   | { type: 'UPDATE_CONFIG'; payload: Partial<QuizState> }
-  | { type: 'SET_AVAILABLE_TOPICS'; payload: Record<string, any[]> }
+  | { type: 'SET_AVAILABLE_TOPICS'; payload: Record<string, AvailableTopic[]> }
   | { type: 'SET_MODAL_SUBJECT'; payload: string | null }
-  | { type: 'START_QUIZ'; payload: { quizId: string, questions: Question[], meta: any } }
+  | { type: 'START_QUIZ'; payload: { quizId: string, questions: Question[], meta: QuizMeta | null } }
   | { type: 'SELECT_ANSWER'; payload: string }
   | { type: 'CONFIRM_ANSWER'; payload: { answer: Answer } }
   | { type: 'TICK_TIMER' }
@@ -188,7 +196,7 @@ export default function AdaptiveQuizEngine() {
         dispatch({ type: 'SET_AVAILABLE_TOPICS', payload: data.subjects || {} });
       } catch (err: unknown) {
         console.warn('Failed to fetch topics, using fallback');
-        if (!canceled) dispatch({ type: 'SET_AVAILABLE_TOPICS', payload: FALLBACK_SUBJECT_TOPICS as any });
+        if (!canceled) dispatch({ type: 'SET_AVAILABLE_TOPICS', payload: FALLBACK_SUBJECT_TOPICS });
       }
     })();
     return () => { canceled = true; };
@@ -214,8 +222,9 @@ export default function AdaptiveQuizEngine() {
         mode: state.mode, excludeOwn: state.excludeOwn, topics: state.topicsSelected
       });
       dispatch({ type: 'START_QUIZ', payload: { quizId: data.quizId, questions: data.questions, meta: data.meta } });
-    } catch (err: any) {
-      dispatch({ type: 'SET_ERROR', payload: err.response?.data?.error || 'Failed to generate quiz.' });
+    } catch (err: unknown) {
+      const message = isAxiosError<{ error?: string }>(err) ? err.response?.data?.error : undefined;
+      dispatch({ type: 'SET_ERROR', payload: message || 'Failed to generate quiz.' });
     }
   };
 
@@ -243,8 +252,9 @@ export default function AdaptiveQuizEngine() {
         answers: answersArray,
       });
       dispatch({ type: 'FINISH_QUIZ', payload: data.results || [] });
-    } catch (err: any) {
-      const errMsg = err.response?.data?.error || err.message || 'Submission failed. Please retry.';
+    } catch (err: unknown) {
+      const responseMessage = isAxiosError<{ error?: string }>(err) ? err.response?.data?.error : undefined;
+      const errMsg = responseMessage || (err instanceof Error ? err.message : '') || 'Submission failed. Please retry.';
       dispatch({ type: 'SET_ERROR', payload: errMsg });
     } finally {
       isSubmittingRef.current = false;
@@ -368,7 +378,7 @@ export default function AdaptiveQuizEngine() {
                             if ((e.target as HTMLElement).closest('.topics-badge')) return;
                             const newSubjects = active ? state.subjects.filter(s => s !== subject.name) : [...state.subjects, subject.name];
                             dispatch({ type: 'UPDATE_CONFIG', payload: { subjects: newSubjects } });
-                          }}>
+                          }} role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                               <div style={{ width: 32, height: 32, borderRadius: 8, display: 'grid', placeItems: 'center', fontSize: 16, background: subject.accent }}>{subject.icon}</div>
                               <div>
@@ -380,7 +390,7 @@ export default function AdaptiveQuizEngine() {
                                 <div className="topics-badge" onClick={(e) => {
                                   e.stopPropagation();
                                   dispatch({ type: 'SET_MODAL_SUBJECT', payload: subject.name });
-                                }} style={{ padding: '4px 10px', background: 'rgba(10, 132, 255, 0.1)', color: '#0a84ff', borderRadius: 999, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+                                }} style={{ padding: '4px 10px', background: 'rgba(10, 132, 255, 0.1)', color: '#0a84ff', borderRadius: 999, fontSize: 12, fontWeight: 700, cursor: 'pointer' }} role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
                                   Topics &rsaquo;
                                 </div>
                               )}
@@ -403,7 +413,7 @@ export default function AdaptiveQuizEngine() {
                       {QUESTION_COUNT_OPTIONS.map((count) => {
                         const active = state.qCount === count;
                         return (
-                          <div key={count} className={`macos-segmented-option ${active ? 'active' : ''}`} onClick={() => dispatch({ type: 'UPDATE_CONFIG', payload: { qCount: count } })}>
+                          <div key={count} className={`macos-segmented-option ${active ? 'active' : ''}`} onClick={() => dispatch({ type: 'UPDATE_CONFIG', payload: { qCount: count } })} role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
                             {active && <div className="macos-segmented-highlight" />}
                             <span style={{ position: 'relative', zIndex: 2 }}>{count}</span>
                           </div>
@@ -418,7 +428,7 @@ export default function AdaptiveQuizEngine() {
                       {MODE_OPTIONS.map((item) => {
                         const active = state.mode === item.value;
                         return (
-                          <div key={item.value} className={`macos-segmented-option ${active ? 'active' : ''}`} onClick={() => dispatch({ type: 'UPDATE_CONFIG', payload: { mode: item.value } })} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                          <div key={item.value} className={`macos-segmented-option ${active ? 'active' : ''}`} onClick={() => dispatch({ type: 'UPDATE_CONFIG', payload: { mode: item.value } })} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }} role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
                             {active && <div className="macos-segmented-highlight" />}
                             <span style={{ position: 'relative', zIndex: 2, display: 'flex', alignItems: 'center', gap: 8 }}>
                               <div style={{ width: 8, height: 8, borderRadius: 999, background: item.accent }} />
@@ -483,7 +493,7 @@ export default function AdaptiveQuizEngine() {
                     {state.questions[state.currentIdx].options?.map((opt, i) => {
                       const active = state.selected === opt;
                       return (
-                        <div key={i} className={`macos-list-item ${active ? 'active' : ''}`} onClick={() => dispatch({ type: 'SELECT_ANSWER', payload: opt })} style={{ background: active ? 'rgba(10, 132, 255, 0.1)' : undefined }}>
+                        <div key={i} className={`macos-list-item ${active ? 'active' : ''}`} onClick={() => dispatch({ type: 'SELECT_ANSWER', payload: opt })} style={{ background: active ? 'rgba(10, 132, 255, 0.1)' : undefined }} role="button" tabIndex={0} aria-label={`Select answer ${i + 1}: ${opt}`} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
                           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
                             <div style={{ width: 24, height: 24, borderRadius: '50%', border: `2px solid ${active ? '#0a84ff' : 'var(--form-border)'}`, display: 'grid', placeItems: 'center' }}>
                               {active && <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#0a84ff' }} />}
@@ -558,15 +568,15 @@ export default function AdaptiveQuizEngine() {
         <div style={{
           position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: 9999,
           background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)', display: 'grid', placeItems: 'center', padding: 20
-        }} onClick={() => dispatch({ type: 'SET_MODAL_SUBJECT', payload: null })}>
+        }} role="dialog" aria-modal="true" aria-labelledby="topics-modal-title">
           <div className="section-card" style={{
             backdropFilter: 'blur(40px) saturate(150%)',
             borderRadius: 16, width: '100%', maxWidth: 500, padding: 24, boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
             display: 'flex', flexDirection: 'column', gap: 20, margin: 0
-          }} onClick={e => e.stopPropagation()}>
+          }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <h2 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>{state.modalSubject} Topics</h2>
-              <button onClick={() => dispatch({ type: 'SET_MODAL_SUBJECT', payload: null })} style={{ background: 'transparent', border: 'none', fontSize: 24, cursor: 'pointer', color: 'var(--color-text-secondary)' }}>&times;</button>
+              <h2 id="topics-modal-title" style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>{state.modalSubject} Topics</h2>
+              <button aria-label="Close topics" onClick={() => dispatch({ type: 'SET_MODAL_SUBJECT', payload: null })} style={{ background: 'transparent', border: 'none', fontSize: 24, cursor: 'pointer', color: 'var(--color-text-secondary)' }}>&times;</button>
             </div>
             
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, maxHeight: '60vh', overflowY: 'auto' }}>
@@ -587,7 +597,7 @@ export default function AdaptiveQuizEngine() {
                       border: `1px solid ${tActive ? '#0a84ff' : 'var(--form-border)'}`,
                       transition: 'all 0.15s ease'
                     }}
-                  >
+                   role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
                     {tName}
                   </div>
                 )

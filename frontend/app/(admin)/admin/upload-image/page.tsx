@@ -97,7 +97,7 @@ export default function UploadImage() {
     alert("Uploaded");
   };
 
-  const handleClick = (e: React.MouseEvent<HTMLImageElement>) => {
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
 
     const x = (e.clientX - rect.left - offset.x) / (rect.width * scale);
@@ -214,6 +214,8 @@ export default function UploadImage() {
               window.addEventListener("mousemove", onMove);
               window.addEventListener("mouseup", onUp);
             }}
+            role="application"
+            aria-label="Answer-region image editor. Drag to pan and use the mouse wheel to zoom."
           >
             <div
               style={{
@@ -224,12 +226,27 @@ export default function UploadImage() {
                 maxWidth: 500,
               }}
             >
-              <img
-                src={image}
-                alt="Question image with editable answer regions"
-                style={{ width: "100%", borderRadius: 8 }}
+              <button
+                type="button"
                 onClick={handleClick}
-              />
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    setRegions((prev) => ({
+                      ...prev,
+                      [current]: { x: 0.35, y: 0.4, w: 0.3, h: 0.15 },
+                    }));
+                  }
+                }}
+                aria-label={`Place answer region ${current.toUpperCase()} in the center`}
+                style={{ display: "block", width: "100%", padding: 0, border: 0, background: "transparent" }}
+              >
+                <img
+                  src={image}
+                  alt="Question with editable answer regions"
+                  style={{ width: "100%", borderRadius: 8 }}
+                />
+              </button>
 
               {Object.entries(regions).map(([k, r]) => (
                 <div
@@ -251,6 +268,8 @@ export default function UploadImage() {
                       [k]: { ...prev[k], x, y },
                     }));
                   }}
+                  role="group"
+                  aria-label={`Answer region ${k.toUpperCase()}; double-click to remove`}
                   style={{
                     position: "absolute",
                     left: `${r.x * 100}%`,
@@ -270,7 +289,8 @@ export default function UploadImage() {
                   {k.toUpperCase()}
 
                   {/* Resize handle */}
-                  <div
+                  <button
+                    type="button"
                     onMouseDown={(e) => {
                       e.stopPropagation();
 
@@ -304,6 +324,20 @@ export default function UploadImage() {
                       window.addEventListener("mousemove", onMove);
                       window.addEventListener("mouseup", onUp);
                     }}
+                    onKeyDown={(event) => {
+                      const step = event.shiftKey ? 0.05 : 0.01;
+                      if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)) return;
+                      event.preventDefault();
+                      setRegions((prev) => ({
+                        ...prev,
+                        [k]: {
+                          ...prev[k],
+                          w: Math.max(0.05, prev[k].w + (event.key === "ArrowRight" ? step : event.key === "ArrowLeft" ? -step : 0)),
+                          h: Math.max(0.05, prev[k].h + (event.key === "ArrowDown" ? step : event.key === "ArrowUp" ? -step : 0)),
+                        },
+                      }));
+                    }}
+                    aria-label={`Resize answer region ${k.toUpperCase()}`}
                     style={{
                       position: "absolute",
                       bottom: 0,
@@ -311,6 +345,8 @@ export default function UploadImage() {
                       width: 10,
                       height: 10,
                       background: "red",
+                      border: 0,
+                      padding: 0,
                       cursor: "nwse-resize",
                     }}
                   />
@@ -331,6 +367,7 @@ export default function UploadImage() {
             value={JSON.stringify(regions, null, 2)}
             readOnly
             style={{ width: "100%", height: 150 }}
+            aria-label="Generated answer-region JSON"
           />
         </div>
       )}

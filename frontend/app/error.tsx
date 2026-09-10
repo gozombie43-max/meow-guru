@@ -3,6 +3,7 @@
 import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { AlertCircle, RotateCcw, Home } from 'lucide-react';
+import * as Sentry from '@sentry/nextjs';
 
 export default function RootError({
   error,
@@ -12,6 +13,7 @@ export default function RootError({
   reset: () => void;
 }) {
   useEffect(() => {
+    Sentry.captureException(error);
     console.error('Unhandled root error:', error);
   }, [error]);
 

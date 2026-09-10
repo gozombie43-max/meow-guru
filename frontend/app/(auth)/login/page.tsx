@@ -36,7 +36,11 @@ function LoginContent() {
   // Detect OAuth redirect error
   useEffect(() => {
     if (searchParams?.get('error') === 'oauth') {
-      setError('Google authentication was cancelled or failed. Please try again or use your email.');
+      const timer = window.setTimeout(
+        () => setError('Google authentication was cancelled or failed. Please try again or use your email.'),
+        0,
+      );
+      return () => window.clearTimeout(timer);
     }
   }, [searchParams]);
 
@@ -156,6 +160,7 @@ function LoginContent() {
                 type="checkbox"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
+                aria-label="Remember me"
               />
               <span>Remember me</span>
             </label>

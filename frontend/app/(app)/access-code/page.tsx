@@ -2,7 +2,7 @@
 
 import { API_BASE } from '@/lib/api-base';
 import { useRouter } from 'next/navigation';
-import { useCallback,useEffect,useRef,useState } from 'react';
+import { useCallback,useEffect,useRef,useState,useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 import styles from './page.module.css';
 
@@ -15,12 +15,13 @@ export default function AccessCodePage() {
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const [shaking, setShaking] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false,
+  );
   const [attempts, setAttempts] = useState(0);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-
-  // Must wait for mount before using portal (SSR safety)
-  useEffect(() => { setMounted(true); }, []);
 
   // Override html/body background for this page (globals.css sets a light gradient)
   useEffect(() => {
@@ -41,18 +42,20 @@ export default function AccessCodePage() {
   // Focus first input on mount
   useEffect(() => {
     if (mounted) {
-      const blockUntil = localStorage.getItem('accessCodeBlockUntil');
-      if (blockUntil) {
-        const blockTime = parseInt(blockUntil, 10);
-        if (blockTime > Date.now()) {
-          setAttempts(3);
-          setError('Maximum attempts reached. Try again in 24 hours.');
-          return;
-        } else {
+      const timer = window.setTimeout(() => {
+        const blockUntil = localStorage.getItem('accessCodeBlockUntil');
+        if (blockUntil) {
+          const blockTime = parseInt(blockUntil, 10);
+          if (blockTime > Date.now()) {
+            setAttempts(3);
+            setError('Maximum attempts reached. Try again in 24 hours.');
+            return;
+          }
           localStorage.removeItem('accessCodeBlockUntil');
         }
-      }
-      inputRefs.current[0]?.focus();
+        inputRefs.current[0]?.focus();
+      }, 0);
+      return () => window.clearTimeout(timer);
     }
   }, [mounted]);
 

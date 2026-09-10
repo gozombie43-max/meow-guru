@@ -155,7 +155,7 @@ setStatus(source === "upload" ? `Successfully deployed ${data.totalQuestions ?? 
         <div className={styles.formGrid}>
           <label className={styles.fieldLabel}>
             Mock Engine API
-            <input value={apiUrl} onChange={(e) => setApiUrl(e.target.value)} className={styles.macInput} />
+            <input value={apiUrl} onChange={(e) => setApiUrl(e.target.value)} className={styles.macInput} aria-label="Mock Engine API target" />
           </label>
           <label className={styles.fieldLabel}>
             Target Exam
@@ -196,11 +196,11 @@ setStatus(source === "upload" ? `Successfully deployed ${data.totalQuestions ?? 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 220px), 1fr))", gap: 12, marginTop: 12 }}>
             <label className={styles.fieldLabel}>
               Exam Year
-              <input placeholder="e.g. 2024" value={year} onChange={(e) => setYear(e.target.value)} className={styles.macInput} />
+              <input placeholder="e.g. 2024" value={year} onChange={(e) => setYear(e.target.value)} className={styles.macInput}  aria-label="e.g. 2024"/>
             </label>
             <label className={styles.fieldLabel}>
               Shift / Shift Timing
-              <input placeholder="e.g. Shift 1 (s1)" value={shift} onChange={(e) => setShift(e.target.value)} className={styles.macInput} />
+              <input placeholder="e.g. Shift 1 (s1)" value={shift} onChange={(e) => setShift(e.target.value)} className={styles.macInput}  aria-label="e.g. Shift 1 (s1)"/>
             </label>
           </div>
         )}
@@ -208,11 +208,11 @@ setStatus(source === "upload" ? `Successfully deployed ${data.totalQuestions ?? 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginTop: 14, alignItems: "flex-end" }}>
           <label className={styles.fieldLabel} style={{ flex: "1 1 220px" }}>
             Slot ID
-            <input placeholder="e.g. cgl-pyq-2024-s1" value={id} onChange={(e) => setId(e.target.value)} className={styles.macInput} />
+            <input placeholder="e.g. cgl-pyq-2024-s1" value={id} onChange={(e) => setId(e.target.value)} className={styles.macInput}  aria-label="e.g. cgl-pyq-2024-s1"/>
           </label>
           <label className={styles.fieldLabel} style={{ flex: "2 1 300px" }}>
             Paper Title
-            <input placeholder="e.g. SSC CGL 2024 Tier I Official Paper" value={title} onChange={(e) => setTitle(e.target.value)} className={styles.macInput} />
+            <input placeholder="e.g. SSC CGL 2024 Tier I Official Paper" value={title} onChange={(e) => setTitle(e.target.value)} className={styles.macInput}  aria-label="e.g. SSC CGL 2024 Tier I Official Paper"/>
           </label>
           <button type="button" onClick={generate} className={styles.btnSecondary} style={{ height: 35 }}>
             ⚡ Auto-Generate
@@ -222,10 +222,10 @@ setStatus(source === "upload" ? `Successfully deployed ${data.totalQuestions ?? 
         <div style={{ display: "flex", gap: 16, alignItems: "center", marginTop: 14 }}>
           <label className={styles.fieldLabel} style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
             <span>Order Index:</span>
-            <input type="number" value={order} onChange={(e) => setOrder(Number(e.target.value))} className={styles.macInput} style={{ width: 80 }} />
+            <input type="number" value={order} onChange={(e) => setOrder(Number(e.target.value))} className={styles.macInput} style={{ width: 80 }} aria-label="Order index" />
           </label>
           <label className={styles.fieldLabel} style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-            <input type="checkbox" checked={isFree} onChange={(e) => setIsFree(e.target.checked)} />
+            <input type="checkbox" checked={isFree} onChange={(e) => setIsFree(e.target.checked)} aria-label="Free access for all candidates" />
             <span>Free Access for All Candidates</span>
           </label>
         </div>
@@ -233,7 +233,7 @@ setStatus(source === "upload" ? `Successfully deployed ${data.totalQuestions ?? 
 
       {/* Paper Upload & Inspection */}
       {source === 'upload' && <label className={styles.fieldLabel} style={{ minHeight: 44 }}>
-        <span><input type="checkbox" checked={confidential} onChange={event => setConfidential(event.target.checked)} /> Confidential assessment</span>
+        <span><input type="checkbox" checked={confidential} onChange={event => setConfidential(event.target.checked)} aria-label="Confidential assessment" /> Confidential assessment</span>
         <small>Uses one total exam deadline. Requires all sections and valid answer keys. Questions stay private and answer review is disabled.</small>
       </label>}
       {source === "upload" && (
@@ -246,7 +246,7 @@ setStatus(source === "upload" ? `Successfully deployed ${data.totalQuestions ?? 
             <div style={{ fontSize: 26, marginBottom: 4 }}>📦</div>
             <div style={{ fontWeight: 600, color: "var(--admin-text, #1d1d1f)", fontSize: 13.5 }}>Drop Paper File (.ndjson or .json)</div>
             <div style={{ fontSize: 11.5, color: "var(--admin-text-secondary, #6e6e73)", marginTop: 2 }}>{questions.length > 0 ? `${questions.length} questions parsed` : "Click to select local file"}</div>
-            <input type="file" accept=".json,.jsonl,.ndjson" onChange={async (e) => setQuestionsText(await e.target.files?.[0]?.text() || "")} style={{ display: "none" }} />
+            <input type="file" accept=".json,.jsonl,.ndjson" onChange={async (e) => setQuestionsText(await e.target.files?.[0]?.text() || "")} style={{ display: "none" }}  aria-label="Choose file"/>
           </label>
 
           <textarea 
@@ -255,7 +255,7 @@ setStatus(source === "upload" ? `Successfully deployed ${data.totalQuestions ?? 
             placeholder="Or paste NDJSON lines or JSON array here…" 
             className={styles.macTextarea} 
             style={{ marginTop: 10, minHeight: 110, fontFamily: "SF Mono, Menlo, monospace", fontSize: 12 }} 
-          />
+           aria-label="Or paste NDJSON lines or JSON array here…"/>
 
           {questions.length > 0 && (
             <div style={{ marginTop: 14 }}>

@@ -10,7 +10,7 @@ export default function StudyTimeTracker() {
   const { syncStudyTime } = useStudyTelemetry();
   const userId = user?.id;
   const pathname = usePathname();
-  const lastTick = useRef<number>(Date.now());
+  const lastTick = useRef<number>(0);
   const pendingSeconds = useRef<number>(0);
   const syncStudyTimeRef = useRef(syncStudyTime);
 

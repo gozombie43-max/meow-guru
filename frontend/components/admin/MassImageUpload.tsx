@@ -147,7 +147,7 @@ export default function MassImageUpload({}: Props) {
           onChange={handleFileChange}
           className={styles.macInput}
           style={{ flex: 1, minWidth: 0, padding: "6px 10px" }}
-        />
+         aria-label="Choose file"/>
         <button
           onClick={handleUpload}
           disabled={uploading || !zipFile}

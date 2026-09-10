@@ -6,6 +6,7 @@ import remarkMath from "remark-math";
 import remarkGfm from "remark-gfm";
 import { Sun, Moon, X, Plus, Mic, Send, Zap, CheckCircle2, FileText, AlertTriangle, Sparkles } from "lucide-react";
 import api from '@/lib/axios';
+import { isAxiosError } from 'axios';
 import { ChatMessage, QuizChatbotProps, buildQuestionContext, normalizeTutorMarkdown } from './utils';
 
 export default function QuizChatbot({
@@ -21,7 +22,8 @@ export default function QuizChatbot({
 
   useEffect(() => {
     if (theme) {
-      setIsDark(theme === "dark");
+      const timer = window.setTimeout(() => setIsDark(theme === "dark"), 0);
+      return () => window.clearTimeout(timer);
     }
   }, [theme]);
 
@@ -86,10 +88,10 @@ export default function QuizChatbot({
         response.data?.explanation ||
         "I could not generate a response. Please try again.";
       setMessages((prev) => [...prev, { role: "bot", content: reply }]);
-    } catch (err: any) {
+    } catch (err: unknown) {
       const errorMessage =
-        err?.response?.data?.error ||
-        err?.message ||
+        (isAxiosError<{ error?: string }>(err) ? err.response?.data?.error : undefined) ||
+        (err instanceof Error ? err.message : '') ||
         "I could not reach the tutor service. Check the backend connection and try again.";
       setMessages((prev) => [
         ...prev,
@@ -205,9 +207,6 @@ export default function QuizChatbot({
       {isOpen && (
         <div
           className="quiz-chatbot-overlay"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) setIsOpen(false);
-          }}
         >
           <section
             className="quiz-chatbot-modal"
@@ -396,7 +395,7 @@ export default function QuizChatbot({
                         placeholder="Ask AI Tutor"
                         autoComplete="off"
                         disabled={isLoading}
-                      />
+                       aria-label="Ask AI Tutor"/>
                       <button
                         type="button"
                         className="mic"
@@ -438,7 +437,7 @@ export default function QuizChatbot({
                       placeholder="Ask AI Tutor"
                       autoComplete="off"
                       disabled={isLoading}
-                    />
+                     aria-label="Ask AI Tutor"/>
                     <button
                       type="button"
                       className="mic"

@@ -9,7 +9,10 @@ export default function BattleIntegrityPage() {
   const [events, setEvents] = useState<BattleIntegrityEvent[]>([]);
   const [error, setError] = useState("");
   const load = async () => { try { const [nextSummary, nextEvents] = await Promise.all([fetchBattleIntegritySummary(), fetchBattleIntegrityEvents()]); setSummary(nextSummary); setEvents(nextEvents.items); } catch { setError("Could not load integrity signals."); } };
-  useEffect(() => { void load(); }, []);
+  useEffect(() => {
+    const timer = window.setTimeout(() => void load(), 0);
+    return () => window.clearTimeout(timer);
+  }, []);
   const review = async (id: string, status: "reviewed" | "dismissed" | "escalated") => { try { await reviewBattleIntegrityEvent(id, status); await load(); } catch { setError("Could not save the review decision."); } };
   return <main className={styles.page}><h1 className="text-2xl font-black">Battle Integrity</h1><p className="mt-1 text-sm text-[var(--admin-text-secondary)]">Signals require human review. They do not automatically affect accounts or ratings.</p>
     <section className="mt-6 grid gap-3 sm:grid-cols-3">{[["Open signals", summary?.openSignals], ["High severity", summary?.highSeverity], ["Flagged players", summary?.flaggedPlayers]].map(([label, value]) => <div key={String(label)} className={styles.card}><div className="text-xs font-bold uppercase tracking-wide text-[var(--admin-text-secondary)]">{label}</div><div className="mt-1 text-2xl font-black">{value ?? "—"}</div></div>)}</section>

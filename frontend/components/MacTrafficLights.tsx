@@ -17,34 +17,40 @@ export default function MacTrafficLights({
   onMaximize,
 }: MacTrafficLightsProps) {
   return (
-    <div className={`${styles.trafficLights} ${className}`} aria-hidden="true">
-      <span
+    <div className={`${styles.trafficLights} ${className}`} aria-label="Window controls">
+      <button
+        type="button"
         className={`${styles.dot} ${styles.close}`}
         onClick={onClose}
         title="Close"
+        aria-label="Close"
       >
         <svg viewBox="0 0 12 12" className={styles.icon}>
           <path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
         </svg>
-      </span>
-      <span
+      </button>
+      <button
+        type="button"
         className={`${styles.dot} ${styles.minimize}`}
         onClick={onMinimize}
         title="Minimize"
+        aria-label="Minimize"
       >
         <svg viewBox="0 0 12 12" className={styles.icon}>
           <path d="M2.5 6h7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
         </svg>
-      </span>
-      <span
+      </button>
+      <button
+        type="button"
         className={`${styles.dot} ${styles.maximize}`}
         onClick={onMaximize}
         title="Maximize"
+        aria-label="Maximize"
       >
         <svg viewBox="0 0 12 12" className={styles.icon}>
           <path d="M3 8.5l5.5-5.5M8.5 7V3H4.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
-      </span>
+      </button>
     </div>
   );
 }

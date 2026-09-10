@@ -126,6 +126,28 @@ X,
 Zap,
 type LucideIcon,
 } from "lucide-react";
+
+interface SpeechRecognitionResultEvent {
+  results?: { [index: number]: { [index: number]: { transcript?: string } } };
+}
+
+interface SpeechRecognitionInstance {
+  lang: string;
+  interimResults: boolean;
+  maxAlternatives: number;
+  onstart: (() => void) | null;
+  onresult: ((event: SpeechRecognitionResultEvent) => void) | null;
+  onerror: (() => void) | null;
+  onend: (() => void) | null;
+  start(): void;
+  stop(): void;
+}
+
+type SpeechRecognitionConstructor = new () => SpeechRecognitionInstance;
+type SpeechRecognitionWindow = Window & {
+  SpeechRecognition?: SpeechRecognitionConstructor;
+  webkitSpeechRecognition?: SpeechRecognitionConstructor;
+};
 import Link from "next/link";
 import { useCallback,useEffect,useMemo,useRef,useState } from "react";
 import styles from "./RankedTopicGroupPage.module.css";
@@ -380,16 +402,18 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
   const [priority, setPriority] = useState<PriorityFilter>(group.filters[0] || "Core");
 
   useEffect(() => {
-    setPriority(group.filters[0] || "Core");
+    const timer = window.setTimeout(() => setPriority(group.filters[0] || "Core"), 0);
+    return () => window.clearTimeout(timer);
   }, [group.slug, group.filters]);
 
   const [isListening, setIsListening] = useState(false);
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
 
   const toggleVoiceSearch = useCallback(() => {
     if (typeof window === "undefined") return;
+    const speechWindow = window as SpeechRecognitionWindow;
     const SpeechRecognitionClass =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      speechWindow.SpeechRecognition || speechWindow.webkitSpeechRecognition;
 
     if (!SpeechRecognitionClass) {
       alert("Voice search is not supported in this browser.");
@@ -414,7 +438,7 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
         setIsListening(true);
       };
 
-      recognition.onresult = (event: any) => {
+      recognition.onresult = (event: SpeechRecognitionResultEvent) => {
         const transcript = event.results?.[0]?.[0]?.transcript;
         if (transcript) {
           setQuery(transcript);

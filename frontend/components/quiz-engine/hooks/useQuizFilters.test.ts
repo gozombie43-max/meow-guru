@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { englishConfig } from "../subjects/english";
 import { useQuizFilters } from "./useQuizFilters";
 
-const mockUseQuizSession = vi.fn(() => ({
+const mockUseQuizSession = vi.fn((..._args: unknown[]) => ({
   questions: [],
   hasMore: false,
   isFetchingMore: false,
@@ -12,7 +12,7 @@ const mockUseQuizSession = vi.fn(() => ({
 }));
 
 vi.mock("@/hooks/useQuizSession", () => ({
-  useQuizSession: (...args: any[]) => (mockUseQuizSession as any)(...args),
+  useQuizSession: (...args: unknown[]) => mockUseQuizSession(...args),
 }));
 
 vi.mock("@/hooks/useQuestionsMeta", () => ({

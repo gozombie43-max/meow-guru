@@ -249,7 +249,7 @@ export default function MockTestPage() {
                       className={styles.searchInput}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                    />
+                     aria-label="Search exams, test series..."/>
                     <button className={styles.filterBtn} aria-label="Filter"><Filter size={14} /></button>
                   </div>
                   <div className={styles.headerActions}>
@@ -278,7 +278,7 @@ export default function MockTestPage() {
                 <section className={styles.section}>
                   <div className={styles.examGrid}>
                     {filteredExams.map((card) => (
-                      <div key={card.id} className={styles.examCard} onClick={() => openDetail(card)}>
+                      <button type="button" key={card.id} className={styles.examCard} onClick={() => openDetail(card)} style={{ width: '100%', color: 'inherit', font: 'inherit', textAlign: 'left' }}>
                         <div className={styles.examTop}>
                           <div className={styles.examLogoBox}>
                             {card.logoUrl && !logoErrors[card.id] ? (
@@ -290,7 +290,7 @@ export default function MockTestPage() {
                         </div>
                         <h3 className={styles.examName}>{card.name}</h3>
                         <p className={styles.examCount}>{card.count} included</p>
-                      </div>
+                      </button>
                     ))}
                   </div>
                   {filteredExams.length === 0 && (

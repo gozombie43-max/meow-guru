@@ -609,7 +609,7 @@ function MacOsQuizStartStudio({
                       onChange={(e) => handleSearchChange(e.target.value)}
                       placeholder="Filter concepts..."
                       className={styles.searchInput}
-                    />
+                     aria-label="Filter concepts..."/>
                     {activeSearch && (
                       <button
                         type="button"
@@ -984,7 +984,7 @@ function IosQuizStartMobile({
                   onChange={(e) => handleSearchChange(e.target.value)}
                   placeholder="Search concept groups..."
                   className={styles.iosSearchInput}
-                />
+                 aria-label="Search concept groups..."/>
                 {activeSearch && (
                   <button
                     type="button"

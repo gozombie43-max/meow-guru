@@ -261,7 +261,8 @@ export default function FormulaNotesPage({
   );
 
   useEffect(() => {
-    fetchCategoryPdfs(activeTab);
+    const timer = window.setTimeout(() => void fetchCategoryPdfs(activeTab), 0);
+    return () => window.clearTimeout(timer);
   }, [activeTab, fetchCategoryPdfs]);
 
   // Prefetch other categories quietly in background on mount
@@ -309,7 +310,7 @@ export default function FormulaNotesPage({
       const data = await res.json();
       const isMeowApp = navigator.userAgent.includes("MeowApp");
       if (isMeowApp) {
-        window.location.href = data.url;
+        window.location.assign(data.url);
       } else {
         window.open(data.url, "_blank", "noopener,noreferrer");
       }
@@ -461,8 +462,7 @@ export default function FormulaNotesPage({
                   placeholder={`Search in ${activeTab}...`}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  autoFocus
-                />
+                 aria-label={`Search in ${activeTab}...`}/>
                 {searchQuery ? (
                   <button
                     type="button"
@@ -595,7 +595,7 @@ export default function FormulaNotesPage({
         multiple
         className="pdf-input"
         onChange={handlePdfUpload}
-      />
+       aria-label="Choose file"/>
 
       {/* ── Floating Action Button (FAB) ── */}
       {pdfs.length > 0 ? (
@@ -612,13 +612,12 @@ export default function FormulaNotesPage({
 
       {/* ── Category Choice Modal ── */}
       {showAddModal ? (
-        <div className="modal-backdrop" role="presentation" onClick={() => setShowAddModal(false)}>
+        <div className="modal-backdrop">
           <div
             className="add-modal"
             role="dialog"
             aria-modal="true"
             aria-labelledby="add-pdf-title"
-            onClick={(event) => event.stopPropagation()}
           >
             <h2 id="add-pdf-title">Add files to</h2>
             <div className="modal-options">

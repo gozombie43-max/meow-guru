@@ -16,7 +16,7 @@ type Playlist = {
   type: "Course" | "Playlist";
   lessons: number;
   status: "unwatched" | "watched";
-  href?: string;
+  href: string;
   accent: string;
   theme: "yellow" | "green" | "blue" | "purple";
   primary: string;
@@ -229,13 +229,13 @@ function PlaylistCard({ playlist }: { playlist: Playlist }) {
   };
 
   return (
-    <article
+    <div
       className={`playlist-card${playlist.href ? " is-clickable" : ""}`}
       onClick={openPlaylist}
       onKeyDown={handleKeyDown}
-      tabIndex={playlist.href ? 0 : undefined}
-      role={playlist.href ? "link" : undefined}
-      aria-label={playlist.href ? `Open ${playlist.title}` : undefined}
+      tabIndex={0}
+      role="link"
+      aria-label={`Open ${playlist.title}`}
     >
       <PlaylistThumbnail playlist={playlist} />
 
@@ -254,7 +254,7 @@ function PlaylistCard({ playlist }: { playlist: Playlist }) {
           <MoreVertical size={20} strokeWidth={2.8} />
         </button>
       </div>
-    </article>
+    </div>
   );
 }
 

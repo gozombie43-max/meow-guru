@@ -37,9 +37,12 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
   // Initialize form state from user
   useEffect(() => {
     if (user) {
-      setName(user.name || '');
-      setAvatar(user.avatar || null);
-      setCustomUrl(user.avatar || '');
+      const timer = window.setTimeout(() => {
+        setName(user.name || '');
+        setAvatar(user.avatar || null);
+        setCustomUrl(user.avatar || '');
+      }, 0);
+      return () => window.clearTimeout(timer);
     }
   }, [user, isOpen]);
 
@@ -104,8 +107,8 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
   const currentInitial = name.trim() ? name.trim().charAt(0).toUpperCase() : 'U';
 
   return (
-    <div className={styles.modalBackdrop} onClick={onClose} role="dialog" aria-modal="true" aria-labelledby="edit-profile-title">
-      <div className={styles.modalCard} onClick={(e) => e.stopPropagation()}>
+    <div className={styles.modalBackdrop} role="dialog" aria-modal="true" aria-labelledby="edit-profile-title">
+      <div className={styles.modalCard}>
         {/* Header */}
         <div className={styles.modalHeader}>
           <div className={styles.modalTitleGroup}>
@@ -172,15 +175,15 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
               maxLength={60}
               className={styles.formInput}
               required
-            />
+             aria-label="Enter your name"/>
           </div>
 
           {/* Preset Avatars Grid */}
           <div className={styles.formGroup}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <label className={styles.formLabel}>
+              <div className={styles.formLabel}>
                 Choose Avatar
-              </label>
+              </div>
               <span className={styles.formHelp} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <Sparkles size={12} /> Quick Presets
               </span>
@@ -216,7 +219,7 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
               onChange={handleCustomUrlChange}
               placeholder="https://example.com/my-photo.jpg"
               className={styles.formInput}
-            />
+             aria-label="https://example.com/my-photo.jpg"/>
             <span className={styles.formHelp}>Paste any direct image link or choose a preset above.</span>
           </div>
         </form>

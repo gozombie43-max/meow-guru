@@ -228,7 +228,7 @@ function DashboardContent() {
           <div>
             <div className={styles.sectionHead}>
               <h2>Continue practice</h2>
-              <a href="#">See all</a>
+              <Link href="/play">See all</Link>
             </div>
 
             <div className={styles.cardsBox}>

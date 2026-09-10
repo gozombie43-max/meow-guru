@@ -142,7 +142,7 @@ export default function ArithmeticTopicsPage() {
             placeholder="Search topics or subtopics…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-          />
+           aria-label="Search topics or subtopics…"/>
           {search && (
             <button
               className="bg-black/10 dark:bg-white/10 border-none rounded-full w-5 h-5 flex items-center justify-center cursor-pointer text-[#8e8e93] p-0"

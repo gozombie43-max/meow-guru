@@ -24,11 +24,14 @@ export function useQuizPreferences() {
   const [hideAiTutor, setHideAiTutor] = useState(false);
 
   useEffect(() => {
-    try {
-      setHideQuestionNumbers(readPreference(STORAGE_KEYS.hideQuestionNumbers));
-      setHideViewSolution(readPreference(STORAGE_KEYS.hideViewSolution));
-      setHideAiTutor(readPreference(STORAGE_KEYS.hideAiTutor));
-    } catch {}
+    const timer = window.setTimeout(() => {
+      try {
+        setHideQuestionNumbers(readPreference(STORAGE_KEYS.hideQuestionNumbers));
+        setHideViewSolution(readPreference(STORAGE_KEYS.hideViewSolution));
+        setHideAiTutor(readPreference(STORAGE_KEYS.hideAiTutor));
+      } catch {}
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   const toggleHideQuestionNumbers = useCallback((value: boolean) => {

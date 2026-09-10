@@ -106,7 +106,7 @@ export default function PlayPage() {
             {/* Grouped List */}
             <div className="ios-list-group">
               {filteredModes.map((mode, index) => (
-                <div key={mode.id} className="ios-list-cell" onClick={() => handleStart(mode.href)}>
+                <div key={mode.id} className="ios-list-cell" onClick={() => handleStart(mode.href)} role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
                   <div className={`cell-icon theme-${mode.category.toLowerCase()}`}>
                     {mode.icon}
                   </div>

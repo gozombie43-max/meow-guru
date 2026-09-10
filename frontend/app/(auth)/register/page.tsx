@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, Suspense } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
@@ -35,7 +35,7 @@ function RegisterContent() {
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -46,7 +46,7 @@ function RegisterContent() {
     },
   });
 
-  const passwordValue = watch('password') || '';
+  const passwordValue = useWatch({ control, name: 'password' }) || '';
 
   const handleGoogleSignup = () => {
     window.location.href = `${API_BASE}/auth/google`;
@@ -132,6 +132,7 @@ function RegisterContent() {
             type="checkbox"
             checked={agreedToTerms}
             onChange={(e) => setAgreedToTerms(e.target.checked)}
+            aria-label="Agree to the Terms of Service and Privacy Policy"
           />
           <span>
             I agree to the Terms of Service and Privacy Policy.

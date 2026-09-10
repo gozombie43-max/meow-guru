@@ -144,8 +144,11 @@ export default function AdminNotificationsPage() {
 
   useEffect(() => {
     if (authUser && ['admin', 'superadmin'].includes(authUser.role || '')) {
-      loadHistory(1);
-      loadAnalytics(30);
+      const timer = window.setTimeout(() => {
+        void loadHistory(1);
+        void loadAnalytics(30);
+      }, 0);
+      return () => window.clearTimeout(timer);
     }
   }, [authUser, loadHistory, loadAnalytics]);
 
@@ -154,12 +157,15 @@ export default function AdminNotificationsPage() {
       return;
     }
 
-    void loadHealth();
+    const initialTimer = window.setTimeout(() => void loadHealth(), 0);
     const timer = window.setInterval(() => {
       void loadHealth();
     }, 60_000);
 
-    return () => window.clearInterval(timer);
+    return () => {
+      window.clearTimeout(initialTimer);
+      window.clearInterval(timer);
+    };
   }, [authUser, loadHealth]);
 
   // ── Handlers ───────────────────────────────────────────
@@ -497,6 +503,7 @@ export default function AdminNotificationsPage() {
                   maxLength={100}
                   onChange={(e) => setTitle(e.target.value)}
                   required
+                  aria-label="Notification title"
                 />
                 <div className={s.inputHelp}>
                   Catchy headline visible in Android status bar & notification shade.
@@ -526,6 +533,7 @@ export default function AdminNotificationsPage() {
                   rows={4}
                   onChange={(e) => setBody(e.target.value)}
                   required
+                  aria-label="Notification message"
                 />
                 <div className={s.inputHelp}>
                   Detailed message describing the announcement or release.
@@ -546,6 +554,7 @@ export default function AdminNotificationsPage() {
                   placeholder="/mock-test"
                   value={route}
                   onChange={(e) => setRoute(e.target.value)}
+                  aria-label="Notification target route"
                 />
                 <div className={s.presetsWrap}>
                   <span className={s.presetLabel}>Quick Presets:</span>
@@ -765,11 +774,9 @@ export default function AdminNotificationsPage() {
           role="dialog"
           aria-modal="true"
           aria-labelledby="confirm-modal-title"
-          onClick={() => !isSubmitting && setIsConfirmOpen(false)}
         >
           <div
             className={s.modalDialog}
-            onClick={(e) => e.stopPropagation()}
           >
             <div className={s.modalHeader}>
               <div className={s.modalIconWrap}>

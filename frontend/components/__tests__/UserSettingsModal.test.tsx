@@ -17,6 +17,8 @@ describe('UserSettingsModal - Notification Preferences & Daily Reminder', () => 
     id: 'user-123',
     name: 'John Doe',
     email: 'john@test.com',
+    progress: {},
+    bookmarks: [],
   };
 
   const initialPreferences: UserApiModule.NotificationPreferences = {
@@ -40,7 +42,7 @@ describe('UserSettingsModal - Notification Preferences & Daily Reminder', () => 
   beforeEach(() => {
     vi.clearAllMocks();
     vi.spyOn(AuthContextModule, 'useAuth').mockReturnValue({
-      user: mockUser as any,
+      user: mockUser,
       token: 'valid-token',
       login: vi.fn(),
       logout: vi.fn(),

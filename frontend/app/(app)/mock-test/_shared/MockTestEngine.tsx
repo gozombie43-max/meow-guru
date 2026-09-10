@@ -127,6 +127,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
 
   useEffect(() => {
     // Fetching the attempt is the external synchronization boundary for this screen.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- the route-bound attempt must load immediately for timer and recovery correctness.
     void loadData();
   }, [loadData]);
 
@@ -359,7 +360,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
           <div className={styles.leftPanel}>
             <div className={styles.tabs}>
               {paper.sections.map((sec: MockSection, idx: number) => (
-                <div key={sec.id ?? sec.key ?? idx} className={`${styles.tab} ${currentSection === idx ? styles.active : ''}`} onClick={() => setCurrentSection(idx)}>
+                <div key={sec.id ?? sec.key ?? idx} className={`${styles.tab} ${currentSection === idx ? styles.active : ''}`} onClick={() => setCurrentSection(idx)} role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
                   {sec.title ?? sec.label}
                 </div>
               ))}
@@ -373,7 +374,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
                     key={q.id} 
                     className={`${styles.qBubble} ${getStatusClass(status)} ${isCurrent ? styles.current : ''}`}
                     onClick={() => jumpToQuestion(currentSection, idx)}
-                  >
+                   role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
                     {idx + 1}
                   </div>
                 );
@@ -395,7 +396,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
           {!isDesktop && (
             <div className={styles.mobileSectionControl}>
               {paper.sections.map((sec: MockSection, idx: number) => (
-                <div key={sec.id ?? sec.key ?? idx} className={`${styles.mobileTab} ${currentSection === idx ? styles.active : ''}`} onClick={() => setCurrentSection(idx)}>
+                <div key={sec.id ?? sec.key ?? idx} className={`${styles.mobileTab} ${currentSection === idx ? styles.active : ''}`} onClick={() => setCurrentSection(idx)} role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
                   {sec.title ?? sec.label}
                 </div>
               ))}
@@ -427,6 +428,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
                       name={`q-${currentQ.id}`} 
                       checked={isSelected}
                       onChange={() => handleSelectOption(currentQ.id, opt.id)}
+                      aria-label={`Answer ${opt.text}`}
                     />
                     <span>{renderMath(opt.text)}</span>
                   </label>
@@ -460,7 +462,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
       {/* Mobile Bottom Sheet Palette */}
       {!isDesktop && (
         <>
-          <div className={`${styles.backdrop} ${showPalette ? styles.show : ''}`} onClick={() => setShowPalette(false)}></div>
+          <button type="button" className={`${styles.backdrop} ${showPalette ? styles.show : ''}`} onClick={() => setShowPalette(false)} aria-label="Close question palette" />
           <div className={`${styles.bottomSheet} ${showPalette ? styles.show : ''}`}>
             <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '1rem'}}>
               <h3 style={{margin: 0}}>Questions Palette</h3>
@@ -475,7 +477,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
                     key={q.id} 
                     className={`${styles.qBubble} ${getStatusClass(status)} ${isCurrent ? styles.current : ''}`}
                     onClick={() => jumpToQuestion(currentSection, idx)}
-                  >
+                   role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
                     {idx + 1}
                   </div>
                 );

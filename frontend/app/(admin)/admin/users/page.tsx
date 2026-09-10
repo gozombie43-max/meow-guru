@@ -198,7 +198,8 @@ export default function AdminUsersPage() {
 
   useEffect(() => {
     if (!authUser) return;
-    loadUsers();
+    const timer = window.setTimeout(() => void loadUsers(), 0);
+    return () => window.clearTimeout(timer);
   }, [authUser, loadUsers]);
 
   // ── Open drawer ────────────────────────────────────────
@@ -418,7 +419,7 @@ export default function AdminUsersPage() {
               placeholder="Search users by name, email or ID..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-            />
+             aria-label="Search users by name, email or ID..."/>
           </div>
           <select
             className={s.filterSelect}
@@ -505,7 +506,7 @@ export default function AdminUsersPage() {
                   key={u.id}
                   className={s.tableRow}
                   onClick={() => openDrawer(u.id)}
-                >
+                 role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
                   <div className={s.userCell}>
                     <div className={s.avatar}>
                       {u.avatar ? (
@@ -610,7 +611,7 @@ export default function AdminUsersPage() {
       {/* ── User Detail Drawer ────────────────────────────── */}
       {(selectedUser || drawerLoading) && (
         <>
-          <div className={s.drawerOverlay} onClick={closeDrawer} />
+          <div className={s.drawerOverlay} aria-hidden="true" />
           <div className={s.drawer}>
             <div className={s.drawerHeader}>
               <div className={s.drawerTitle}>User Details</div>
@@ -833,9 +834,9 @@ export default function AdminUsersPage() {
 
       {/* ── Notification Modal ────────────────────────────── */}
       {showNotifyModal && selectedUser && (
-        <div className={s.modal} onClick={() => { setShowNotifyModal(false); setNotifyResult(null); }}>
-          <div className={s.modalCard} onClick={(e) => e.stopPropagation()}>
-            <div className={s.modalTitle}>
+        <div className={s.modal} role="dialog" aria-modal="true" aria-labelledby="notify-user-title">
+          <div className={s.modalCard}>
+            <div id="notify-user-title" className={s.modalTitle}>
               Send Notification to {selectedUser.name}
             </div>
             {!notifyResult && <>
@@ -852,14 +853,14 @@ export default function AdminUsersPage() {
                 placeholder="Title (e.g. Your SSC CGL mock is ready)"
                 value={notifyTitle}
                 onChange={(e) => setNotifyTitle(e.target.value)}
-              />
+               aria-label="Title (e.g. Your SSC CGL mock is ready)"/>
               <textarea
                 className={s.modalInput}
                 style={{ minHeight: 80, resize: 'vertical' }}
                 placeholder="Body message..."
                 value={notifyBody}
                 onChange={(e) => setNotifyBody(e.target.value)}
-              />
+               aria-label="Body message..."/>
             </>}
             {notifyResult && (
               <div className={s.notifyResult}>
@@ -898,9 +899,9 @@ export default function AdminUsersPage() {
 
       {/* ── Status Confirm Modal ──────────────────────────── */}
       {showStatusConfirm && selectedUser && (
-        <div className={s.modal} onClick={() => setShowStatusConfirm(null)}>
-          <div className={s.modalCard} onClick={(e) => e.stopPropagation()}>
-            <div className={s.modalTitle}>
+        <div className={s.modal} role="dialog" aria-modal="true" aria-labelledby="status-user-title">
+          <div className={s.modalCard}>
+            <div id="status-user-title" className={s.modalTitle}>
               {showStatusConfirm === 'active'
                 ? `Reactivate ${selectedUser.name}?`
                 : showStatusConfirm === 'banned'
@@ -913,7 +914,7 @@ export default function AdminUsersPage() {
                 placeholder="Reason (optional)"
                 value={statusReason}
                 onChange={(e) => setStatusReason(e.target.value)}
-              />
+               aria-label="Reason (optional)"/>
             )}
             <div className={s.modalActions}>
               <button
@@ -946,9 +947,9 @@ export default function AdminUsersPage() {
 
       {/* ── Delete Confirm Modal ──────────────────────────── */}
       {showDeleteConfirm && selectedUser && (
-        <div className={s.modal} onClick={() => setShowDeleteConfirm(false)}>
-          <div className={s.modalCard} onClick={(e) => e.stopPropagation()}>
-            <div className={s.modalTitle}>
+        <div className={s.modal} role="alertdialog" aria-modal="true" aria-labelledby="delete-user-title">
+          <div className={s.modalCard}>
+            <div id="delete-user-title" className={s.modalTitle}>
               Delete {selectedUser.name}?
             </div>
             <p style={{ fontSize: 14, color: '#636366', marginBottom: 16 }}>

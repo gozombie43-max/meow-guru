@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
 import { AlertTriangle, ArrowLeft, Check, Copy, Crown, FileText, LoaderCircle, LogOut, Mail, RotateCcw, Shield, Swords, Trophy, Users, Wifi, WifiOff, Zap } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 
 const SUBJECTS = [
   { value: "mathematics", label: "Mathematics" }, { value: "reasoning", label: "Reasoning" },
@@ -58,11 +58,7 @@ function RoundCenterBadge({ reveal }: { reveal: Reveal | null }) {
   const [progress, setProgress] = useState(100);
 
   useEffect(() => {
-    if (!reveal) {
-      setSecondsLeft(5);
-      setProgress(100);
-      return;
-    }
+    if (!reveal) return;
 
     const revealEndTime = reveal.revealEndsAt
       ? new Date(reveal.revealEndsAt).getTime()
@@ -77,9 +73,12 @@ function RoundCenterBadge({ reveal }: { reveal: Reveal | null }) {
       setProgress(prog);
     };
 
-    updateTimer();
+    const initialTimer = window.setTimeout(updateTimer, 0);
     const interval = window.setInterval(updateTimer, 100);
-    return () => window.clearInterval(interval);
+    return () => {
+      window.clearTimeout(initialTimer);
+      window.clearInterval(interval);
+    };
   }, [reveal]);
 
   if (!reveal) {
@@ -290,7 +289,7 @@ function BattlePageContent() {
         <div className="battle-tabs" role="tablist" aria-label="Battle mode"><button type="button" role="tab" aria-selected={mode === "create"} className={mode === "create" ? "is-active" : ""} onClick={() => setModeOverride("create")}>Create room</button><button type="button" role="tab" aria-selected={mode === "join"} className={mode === "join" ? "is-active" : ""} onClick={() => setModeOverride("join")}>Join room</button></div>
         {mode === "create" ? <><div className="battle-field-grid"><label className="battle-field"><span>Subject</span><select value={subject} onChange={(event) => { setSubject(event.target.value); setTopic("all"); }}>{SUBJECTS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label><label className="battle-field"><span>Topic</span><select value={topic} onChange={(event) => setTopic(event.target.value)}>{topicOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label></div>
           <fieldset className="battle-count-field"><legend>Questions</legend><div>{QUESTION_COUNTS.map((count) => <button type="button" key={count} className={questionCount === count ? "is-active" : ""} onClick={() => setQuestionCount(count)}>{count}</button>)}</div></fieldset></>
-          : <label className="battle-field battle-code-field"><span>Room code</span><input value={effectiveJoinCode} onChange={(event) => setJoinCode(event.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="0000" inputMode="numeric" autoComplete="one-time-code" maxLength={4} /></label>}
+          : <label className="battle-field battle-code-field"><span>Room code</span><input value={effectiveJoinCode} onChange={(event) => setJoinCode(event.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="0000" inputMode="numeric" autoComplete="one-time-code" maxLength={4}  aria-label="0000"/></label>}
         <ErrorNotice message={state.error} onRetry={connection === "offline" ? battle.reconnect : undefined} />
         <button type="button" className="battle-primary-button" disabled={!canSend || !effectivePlayerName.trim() || (mode === "join" && effectiveJoinCode.length !== 4)} onClick={submit}>{pending ? <LoaderCircle className="battle-spinner" /> : <Swords />}{pending === "create" ? "Creating room…" : pending === "join" ? "Joining room…" : mode === "create" ? "Create battle room" : "Join battle"}</button>
         <p className="battle-helper">The match starts automatically when both players are ready.</p>
@@ -303,7 +302,7 @@ function BattlePageContent() {
     <div className="battle-pulse"><Swords /></div><p className="battle-kicker">Room ready</p><h1>Invite your opponent</h1><p>The battle will begin as soon as a second player joins.</p>
     <button type="button" className="battle-room-code" onClick={copyCode} aria-label="Copy room code"><small>Room code</small><strong>{state.code}</strong><span>{copied ? <><Check /> Copied</> : <><Copy /> Copy</>}</span></button>
     <div className="battle-versus-row"><div><span>{state.players[0]?.charAt(0).toUpperCase() || "?"}</span><b>{state.players[0] || effectivePlayerName}</b><small>Ready</small></div><i>VS</i><div className="is-empty"><span>?</span><b>{state.players[1] || "Opponent"}</b><small>{state.players[1] ? "Joining…" : "Waiting…"}</small></div></div>
-    <form className="battle-invite" onSubmit={(event) => { event.preventDefault(); if (inviteEmail.trim()) battle.invite(inviteEmail.trim()); }}><label htmlFor="battle-email">Invite by email</label><div><Mail /><input id="battle-email" type="email" value={inviteEmail} onChange={(event) => setInviteEmail(event.target.value)} placeholder="friend@example.com" /><button disabled={!canSend || !inviteEmail.trim()}>{pending === "invite" ? "Sending…" : "Send"}</button></div>{inviteStatus && <p className={inviteStatus.ok ? "is-success" : "is-error"}>{inviteStatus.message}</p>}</form>
+    <form className="battle-invite" onSubmit={(event) => { event.preventDefault(); if (inviteEmail.trim()) battle.invite(inviteEmail.trim()); }}><label htmlFor="battle-email">Invite by email</label><div><Mail /><input id="battle-email" type="email" value={inviteEmail} onChange={(event) => setInviteEmail(event.target.value)} placeholder="friend@example.com"  aria-label="friend@example.com"/><button disabled={!canSend || !inviteEmail.trim()}>{pending === "invite" ? "Sending…" : "Send"}</button></div>{inviteStatus && <p className={inviteStatus.ok ? "is-success" : "is-error"}>{inviteStatus.message}</p>}</form>
     <ErrorNotice message={state.error} onRetry={connection === "offline" ? battle.reconnect : undefined} /><button type="button" className="battle-text-button" disabled={pending === "leave"} onClick={battle.leave}>{pending === "leave" ? "Cancelling…" : "Cancel room"}</button>
   </section></main>;
 

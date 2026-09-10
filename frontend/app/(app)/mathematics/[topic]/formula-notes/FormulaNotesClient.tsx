@@ -143,7 +143,7 @@ type ApiNote = {
   title?: string;
   subtitle?: string;
   time?: string;
-  icon?: ComponentType<any>;
+  icon?: ComponentType<{ size?: number | string; className?: string }>;
   topic?: string;
   type?: string;
   updatedAt?: string;

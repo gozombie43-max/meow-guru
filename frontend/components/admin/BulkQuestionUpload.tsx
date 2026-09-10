@@ -8,7 +8,16 @@ import { getGeneralAwarenessTopicGroup } from "@/lib/general-awareness-topic-gro
 import { API_BASE } from "@/lib/api-base";
 
 const API = API_BASE;
-type RecordItem = Record<string, any>;
+type RecordItem = Record<string, unknown>;
+
+interface DuplicateResult {
+  id?: string | number;
+  textKey?: string;
+  status?: "exact-duplicate" | "text-duplicate" | "id-conflict";
+  existingId?: string | number;
+  existingText?: string;
+  incomingText?: string;
+}
 
 interface RowData extends RecordItem {
   _idx: number;
@@ -18,11 +27,11 @@ interface RowData extends RecordItem {
   _incomingText?: string;
 }
 
-function muIsStudyModeRecord(q: any) {
+function muIsStudyModeRecord(q: RecordItem) {
   return Boolean(q && typeof q === 'object' && !Array.isArray(q) && (q.questionType === 'study-mode' || (typeof q.word === 'string' && q.word.trim() && Array.isArray(q.meanings))));
 }
 
-function muValidateRecordShape(q: any): string[] {
+function muValidateRecordShape(q: RecordItem): string[] {
   if (muIsStudyModeRecord(q)) {
     const issues = [];
     if (!String(q.id || '').trim()) issues.push('missing id');
@@ -38,7 +47,7 @@ function muValidateRecordShape(q: any): string[] {
   return issues;
 }
 
-function muGetDisplayText(q: any) {
+function muGetDisplayText(q: RecordItem) {
   if (muIsStudyModeRecord(q)) return String(q.word || '').trim();
   return String(q.question || q.questionText || q.q || q.word || '').trim();
 }
@@ -70,7 +79,7 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
     const trimmed = text.trim();
     if (!trimmed) { setRows([]); return; }
     
-    let parsedArray: any[] = [];
+    let parsedArray: unknown[] = [];
     try {
       if (trimmed.startsWith("[")) {
         const parsed = JSON.parse(trimmed);
@@ -85,8 +94,9 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
 
     const initialRows: RowData[] = parsedArray.map((q, i) => {
       if (!q || typeof q !== "object" || Array.isArray(q)) return { _idx: i, _status: "error", _issue: "Invalid JSON object" };
-      const issues = muValidateRecordShape(q);
-      return { ...q, _idx: i, _status: issues.length ? "error" : "valid", _issue: issues.join(", ") };
+      const record = q as RecordItem;
+      const issues = muValidateRecordShape(record);
+      return { ...record, _idx: i, _status: issues.length ? "error" : "valid", _issue: issues.join(", ") };
     });
 
     setRows(initialRows);
@@ -108,15 +118,16 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
         body: JSON.stringify({ questions: toCheck })
       });
       if (res.ok) {
-        const data = await res.json();
-        const byId = new Map(data.results.filter((r: any) => r.id).map((r: any) => [String(r.id), r]));
-        const byText = new Map(data.results.filter((r: any) => r.textKey).map((r: any) => [String(r.textKey), r]));
+        const data = await res.json() as { results?: DuplicateResult[] };
+        const results = Array.isArray(data.results) ? data.results : [];
+        const byId = new Map(results.filter((r) => r.id != null).map((r) => [String(r.id), r]));
+        const byText = new Map(results.filter((r) => r.textKey).map((r) => [String(r.textKey), r]));
         
         let exactDupes = 0, textDupes = 0, idConflicts = 0;
         const newRows = initialRows.map(q => {
           const id = String(q.id || q._id || q.questionId || '');
           const textKey = String(q.question || q.questionText || q.q || q.word || '').trim();
-          const result: any = (id && byId.get(id)) || (textKey && byText.get(textKey));
+          const result = (id && byId.get(id)) || (textKey && byText.get(textKey));
           if (!result) return q;
           if (result.status === 'exact-duplicate') { exactDupes++; return { ...q, _status: "db-duplicate", _issue: 'Exact duplicate — identical ID and text' } as RowData; }
           if (result.status === 'text-duplicate') { textDupes++; return { ...q, _status: "db-duplicate", _issue: `Text match in DB (ID: ${result.existingId})` } as RowData; }
@@ -145,15 +156,15 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
 
   const filteredRows = useMemo(() => {
     return rows.filter(q => {
-      const qSubj = (q.subject || q.topic || q.category || '').toLowerCase();
-      const qDiff = (q.difficulty || q.level || '').toLowerCase();
+      const qSubj = String(q.subject || q.topic || q.category || '').toLowerCase();
+      const qDiff = String(q.difficulty || q.level || '').toLowerCase();
       if (filters.subject && !qSubj.includes(filters.subject.toLowerCase())) return false;
       if (filters.difficulty && qDiff !== filters.difficulty.toLowerCase()) return false;
       if (filters.status === 'error' && q._status !== 'error' && q._status !== 'id-conflict') return false;
       if (filters.status === 'duplicate' && q._status !== 'db-duplicate') return false;
       if (filters.status && filters.status !== 'error' && filters.status !== 'duplicate' && q._status !== filters.status) return false;
       if (filters.chapter) {
-        const qChap = (q.chapter || q.quizChapter || q.topic || '').toLowerCase();
+        const qChap = String(q.chapter || q.quizChapter || q.topic || '').toLowerCase();
         if (!qChap.includes(filters.chapter.toLowerCase())) return false;
       }
       return true;
@@ -374,7 +385,7 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
           <div style={{ fontSize: 12, color: "var(--admin-text-secondary, #6e6e73)", marginTop: 4 }}>
             {rows.length > 0 ? `${rows.length} rows parsed and structured` : "Click anywhere to browse or drag file into this window"}
           </div>
-          <input type="file" accept=".json,.jsonl,.ndjson" onChange={(e) => onFile(e.target.files?.[0])} style={{ display: "none" }} />
+          <input type="file" accept=".json,.jsonl,.ndjson" onChange={(e) => onFile(e.target.files?.[0])} style={{ display: "none" }}  aria-label="Choose file"/>
         </label>
       </section>
 
@@ -442,8 +453,8 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
               ) : (
                 filteredRows.map(q => {
                   const text = muGetDisplayText(q) || "(no text)";
-                  const subj = q.subject || q.topic || q.category || "—";
-                  const diff = q.difficulty || q.level || "—";
+                  const subj = String(q.subject || q.topic || q.category || "—");
+                  const diff = String(q.difficulty || q.level || "—");
                   const isSel = selected.has(q._idx);
                   const colors = badgeColors(subj);
                   
@@ -461,8 +472,8 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
                         background: isSel ? "var(--admin-blue-soft)" : "transparent",
                         transition: "background 0.1s ease"
                       }}
-                    >
-                      <input type="checkbox" checked={isSel} readOnly style={{ cursor: "pointer" }} />
+                     role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
+                      <input type="checkbox" checked={isSel} readOnly style={{ cursor: "pointer" }} aria-label={`Select question ${q.id ?? q._idx + 1}`} />
                       <div style={{ color: "var(--admin-text-tertiary, #86868b)", fontFamily: "SF Mono, monospace", fontSize: 11 }}>{q._idx + 1}</div>
                       <div className={styles.batchQuestion} title={text}>
                         {text}

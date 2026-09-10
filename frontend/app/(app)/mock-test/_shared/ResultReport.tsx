@@ -3,7 +3,7 @@
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect,useState } from 'react';
-import { getAttempt } from './api';
+import { getAttempt, type MockAttempt, type MockResultSection } from './api';
 import styles from './ResultReport.module.css';
 
 interface ResultReportProps {
@@ -15,7 +15,7 @@ interface ResultReportProps {
 export default function ResultReport({ examSlug, testId, attemptId }: ResultReportProps) {
   const router = useRouter();
   const { token } = useAuth();
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<MockAttempt | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -100,8 +100,8 @@ export default function ResultReport({ examSlug, testId, attemptId }: ResultRepo
         <div className={styles.sectionBreakdown}>
           <h2 className={styles.sectionTitle}>Section-wise Breakdown</h2>
           <div className={styles.barsWrap}>
-            {sections.map((sec: any, idx: number) => {
-              const total = sec.total || (sec.correct + sec.incorrect + sec.skipped) || 1;
+            {sections.map((sec: MockResultSection, idx: number) => {
+              const total = sec.total || ((sec.correct ?? 0) + (sec.incorrect ?? 0) + (sec.skipped ?? 0)) || 1;
               const pCorrect = ((sec.correct || 0) / total) * 100;
               const pIncorrect = ((sec.incorrect || 0) / total) * 100;
               const pSkipped = ((sec.skipped || 0) / total) * 100;

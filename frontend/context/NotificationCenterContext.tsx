@@ -129,15 +129,14 @@ export function NotificationCenterProvider({
       !user
     ) {
       if (!loading) {
-        setUnreadCount(
-          0
-        );
+        const timer = window.setTimeout(() => setUnreadCount(0), 0);
+        return () => window.clearTimeout(timer);
       }
 
       return;
     }
 
-    void refreshUnreadCount();
+    const initialTimer = window.setTimeout(() => void refreshUnreadCount(), 0);
 
     const socket =
       getSocket(
@@ -203,6 +202,7 @@ export function NotificationCenterProvider({
     );
 
     return () => {
+      window.clearTimeout(initialTimer);
       socket.off(
         "notification:new",
         handleNewNotification

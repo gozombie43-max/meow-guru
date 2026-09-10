@@ -37,7 +37,10 @@ export default function NotesPage() {
     }
   };
 
-  useEffect(() => { fetchNotes(); }, [filterTopic, filterType]);
+  useEffect(() => {
+    const timer = window.setTimeout(() => void fetchNotes(), 0);
+    return () => window.clearTimeout(timer);
+  }, [filterTopic, filterType]);
 
   const handleDelete = async (id) => {
     if (!confirm("Delete this note?")) return;
@@ -78,13 +81,13 @@ export default function NotesPage() {
           placeholder="🔍 Search title, topic, tags…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-        />
+         aria-label="🔍 Search title, topic, tags…"/>
         <input
           style={s.filterInput}
           placeholder="Filter by topic"
           value={filterTopic}
           onChange={(e) => setFilterTopic(e.target.value)}
-        />
+         aria-label="Filter by topic"/>
         <select
           style={s.select}
           value={filterType}
@@ -114,7 +117,7 @@ export default function NotesPage() {
           <span
             style={{ color: "#63b3ed", cursor: "pointer" }}
             onClick={() => router.push("/notes/new")}
-          >
+           role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
             Create one →
           </span>
         </div>

@@ -35,8 +35,8 @@ function OriginkitBase_Typewriter(props: Props) {
         renderTarget === RenderTarget.thumbnail
     const isCanvas = renderTarget === RenderTarget.canvas
 
-    const typeDelayMs = Math.max(0, ((ease as any)?.duration ?? 0.07) * 1000)
-    const holdMs = Math.max(0, ((ease as any)?.delay ?? 1.5) * 1000)
+    const typeDelayMs = Math.max(0, (ease?.duration ?? 0.07) * 1000)
+    const holdMs = Math.max(0, (ease?.delay ?? 1.5) * 1000)
     const deleteDelayMs = Math.max(0, (deleteSpeed ?? 0) * 1000)
 
     const list: string[] = (texts ?? []).filter(
@@ -103,10 +103,13 @@ function OriginkitBase_Typewriter(props: Props) {
 
     const textsKey = list.join("")
     useEffect(() => {
-        setDisplayText("")
-        setCurrentIndex(0)
-        setIsDeleting(false)
-        setCurrentTextIndex(0)
+        const timer = window.setTimeout(() => {
+            setDisplayText("")
+            setCurrentIndex(0)
+            setIsDeleting(false)
+            setCurrentTextIndex(0)
+        }, 0)
+        return () => window.clearTimeout(timer)
     }, [textsKey])
 
     const cursorAnimationVariants: Variants = cursorAnimationVariantsProp ?? {
@@ -133,10 +136,7 @@ function OriginkitBase_Typewriter(props: Props) {
     const cursorResolvedColor =
         cursorColor && cursorColor !== "" ? cursorColor : typedColor
 
-    const typeface = (font ?? {}) as Record<string, any>
-    const fontCss = Object.fromEntries(
-        Object.entries(typeface).filter(([k]) => k !== "textAlign")
-    )
+    const { variant: _variant, ...fontCss } = font ?? {}
 
     return (
         <div
@@ -193,20 +193,20 @@ function OriginkitBase_Typewriter(props: Props) {
 type Props = {
     texts?: string[]
     prefix?: string
-    ease?: any
+    ease?: { duration?: number; delay?: number; type?: string; [key: string]: unknown }
     deleteSpeed?: number
     showCursor?: boolean
     hideCursorOnType?: boolean
     cursorChar?: string
     cursorAnimationVariants?: Variants
-    font?: Record<string, any>
+    font?: React.CSSProperties & { variant?: string }
     color?: string
     typedColor?: string
     cursorColor?: string
     style?: React.CSSProperties
 }
 
-const COMPONENT_DEFAULTS = {
+const COMPONENT_DEFAULTS: Props = {
     prefix: "",
     color: "#FFFFFF",
     texts: ["Interfaces", "Experiences", "Interactions", "Products"],
@@ -216,7 +216,7 @@ const COMPONENT_DEFAULTS = {
         duration: 0.07,
         delay: 1.5,
         ease: "easeInOut",
-    } as any,
+    },
     deleteSpeed: 0.1,
     showCursor: true,
     hideCursorOnType: false,
@@ -228,10 +228,10 @@ const COMPONENT_DEFAULTS = {
         fontSize: 80,
         lineHeight: "1.4em",
         letterSpacing: "-0.025em",
-    } as any,
+    },
 }
 
-const __originkitPresetProps = {
+const __originkitPresetProps: Props = {
   "ease": {
     "type": "tween",
     "stiffness": 800,
@@ -254,6 +254,6 @@ const __originkitPresetProps = {
   }
 };
 
-export default function Typewriter(props: Record<string, unknown>) {
-  return <OriginkitBase_Typewriter {...(__originkitPresetProps as Record<string, unknown>)} {...props} />;
+export default function Typewriter(props: Props) {
+  return <OriginkitBase_Typewriter {...__originkitPresetProps} {...props} />;
 }

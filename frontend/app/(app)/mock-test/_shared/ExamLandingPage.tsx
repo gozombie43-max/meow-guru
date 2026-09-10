@@ -13,7 +13,7 @@ Play
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect,useMemo,useState } from 'react';
-import { getExamHistory,getExamSlots } from './api';
+import { getExamHistory,getExamSlots,type MockAttemptHistory } from './api';
 import {
 getExamConfig,
 getMaxMarks,
@@ -62,7 +62,7 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
   };
 
   const [activeTab, setActiveTab] = useState<'mock' | 'overview' | 'prev'>('mock');
-  const [history, setHistory] = useState<any[]>([]);
+  const [history, setHistory] = useState<MockAttemptHistory[]>([]);
   const [allSlots, setAllSlots] = useState<MockTestSlot[]>(() => getSlotsForExam(examSlug));
   const [pyqSlots, setPyqSlots] = useState<MockTestSlot[]>(() => getPyqSlotsForExam(examSlug));
   const [loadingSlots, setLoadingSlots] = useState(true);
@@ -81,7 +81,6 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
   // Fetch slots from API (with fallback to static config)
   useEffect(() => {
     let isMounted = true;
-    setLoadingSlots(true);
     getExamSlots(examSlug)
       .then((res) => {
         if (isMounted && res.slots && res.slots.length > 0) {
@@ -113,7 +112,8 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
   // Update selected tier when tiers list is populated or changes
   useEffect(() => {
     if (tiers.length > 0 && (!selectedTier || !tiers.includes(selectedTier))) {
-      setSelectedTier(tiers[0]);
+      const timer = window.setTimeout(() => setSelectedTier(tiers[0]), 0);
+      return () => window.clearTimeout(timer);
     }
   }, [tiers, selectedTier]);
 

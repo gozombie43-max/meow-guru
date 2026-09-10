@@ -6,6 +6,7 @@ import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
 import remarkGfm from "remark-gfm";
 import type { GeometryDiagram } from "@/components/geometry/diagramSchema";
+import RiskyWidgetBoundary from "@/components/RiskyWidgetBoundary";
 
 const GeometryRenderer = dynamic(() => import("@/components/geometry/GeometryRenderer"), {
   ssr: false,
@@ -430,7 +431,9 @@ function DiagramVisual({ block }: { block: VisualDiagram }) {
       {block.title && <div className="visual-title">{block.title}</div>}
       <div style={{ display: "flex", justifyContent: "center", overflowX: "auto", padding: "10px", width: "100%", boxSizing: "border-box" }}>
         <div style={{ minWidth: "fit-content" }}>
-          <GeometryRenderer diagram={block.diagram} />
+          <RiskyWidgetBoundary label="interactive diagram">
+            <GeometryRenderer diagram={block.diagram} />
+          </RiskyWidgetBoundary>
         </div>
       </div>
     </div>

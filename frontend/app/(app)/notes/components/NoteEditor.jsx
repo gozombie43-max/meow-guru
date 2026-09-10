@@ -363,7 +363,7 @@ export default function NoteEditor({ initialNote = null, onSaved }) {
             placeholder="Note title…"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-          />
+           aria-label="Note title…"/>
           <select style={s.select} value={type} onChange={(e) => setType(e.target.value)}>
             <option value="note">📝 Note</option>
             <option value="formula">📐 Formula</option>
@@ -374,13 +374,13 @@ export default function NoteEditor({ initialNote = null, onSaved }) {
             placeholder="Topic (e.g. Trigonometry)"
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
-          />
+           aria-label="Topic (e.g. Trigonometry)"/>
           <input
             style={{ ...s.input, width: 220 }}
             placeholder="Tags (comma separated)"
             value={tags}
             onChange={(e) => setTags(e.target.value)}
-          />
+           aria-label="Tags (comma separated)"/>
         </div>
 
         <div style={s.actionRow}>
@@ -420,7 +420,7 @@ export default function NoteEditor({ initialNote = null, onSaved }) {
             accept="image/*"
             style={{ display: "none" }}
             onChange={handleImageUpload}
-          />
+           aria-label="Choose file"/>
 
           {/* Save */}
           <button

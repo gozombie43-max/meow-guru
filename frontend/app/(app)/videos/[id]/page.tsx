@@ -18,6 +18,7 @@ type Video = {
   duration: string;
   order: number;
   description: string;
+  captionsUrl?: string;
 };
 
 const SUBJECT_MAP: Record<string, string> = {
@@ -161,7 +162,8 @@ export default function VideoPlayerPage() {
   }, [subject]);
 
   useEffect(() => {
-    fetchVideos();
+    const timer = window.setTimeout(() => void fetchVideos(), 0);
+    return () => window.clearTimeout(timer);
   }, [fetchVideos]);
 
   function toggleWatched(id: string) {
@@ -242,7 +244,7 @@ export default function VideoPlayerPage() {
               fontSize: 13,
               fontWeight: 500,
             }}
-          />
+           aria-label="Search videos by name"/>
         </div>
       </div>
 
@@ -286,7 +288,10 @@ export default function VideoPlayerPage() {
             autoPlay
             style={{ width: '100%', height: '100%', display: 'block' }}
             onEnded={() => selected && toggleWatched(selected.id)}
-          />
+            aria-label={selected ? `Video: ${selected.chapter}` : "Course video"}
+          >
+            <track kind="captions" src={selected?.captionsUrl ?? ""} srcLang="en" label="English" default />
+          </video>
         )}
       </div>
 
@@ -346,7 +351,7 @@ export default function VideoPlayerPage() {
             borderBottom: `1px solid ${videoTheme.divider}`,
             background: videoTheme.nextBg,
           }}
-        >
+         role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
           <div style={{ fontSize: 11, color: videoTheme.muted, whiteSpace: 'nowrap' }}>Up next</div>
           <div style={{ width: 36, height: 36, borderRadius: 8, background: videoTheme.progressFill, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <PlayCircle size={18} color={theme === 'dark' ? '#000' : '#fff'} strokeWidth={2} />
@@ -392,7 +397,7 @@ export default function VideoPlayerPage() {
                     background: selected?.id === v.id ? videoTheme.chapterSelectedBg : videoTheme.chapterBg,
                     transition: 'all 0.1s',
                   }}
-                >
+                 role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
                   {/* Number or check */}
                   <div style={{
                     width: 28, height: 28, borderRadius: '50%', flexShrink: 0,

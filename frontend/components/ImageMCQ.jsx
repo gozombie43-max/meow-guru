@@ -1,13 +1,10 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 
 export default function ImageMCQ({ data, onAnswer }) {
   const [selected, setSelected] = useState(null);
-  const [loaded, setLoaded] = useState(false);
-
-  useEffect(() => {
-    setLoaded(false);
-  }, [data?.questionImage]);
+  const [loadedImage, setLoadedImage] = useState(null);
+  const loaded = loadedImage === data?.questionImage;
 
   const handleClick = (key) => {
     setSelected(key);
@@ -46,8 +43,8 @@ export default function ImageMCQ({ data, onAnswer }) {
         fetchPriority="high"
         decoding="async"
         unoptimized
-        onLoadingComplete={() => setLoaded(true)}
-        onError={() => setLoaded(true)}
+        onLoadingComplete={() => setLoadedImage(data?.questionImage)}
+        onError={() => setLoadedImage(data?.questionImage)}
       />
 
       {/* Clickable regions */}
@@ -65,6 +62,10 @@ export default function ImageMCQ({ data, onAnswer }) {
               cursor: "pointer",
               border: "2px solid red",
             }}
+            role="button"
+            tabIndex={0}
+            aria-label={`Select answer ${key.toUpperCase()}`}
+            onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}
           />
         ))}
     </div>

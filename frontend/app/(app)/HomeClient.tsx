@@ -247,7 +247,7 @@ export default function HomeClient({
                   className={styles.searchInput}
                   aria-label="Search anything"
                 />
-                <kbd className={styles.searchShortcut} onClick={() => searchInputRef.current?.focus()}>
+                <kbd className={styles.searchShortcut} onClick={() => searchInputRef.current?.focus()} role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
                   ⌘ K
                 </kbd>
 

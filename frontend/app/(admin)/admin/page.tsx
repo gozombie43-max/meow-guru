@@ -6,7 +6,7 @@ import RichContent from "@/components/RichContent";
 import { API_BASE } from "@/lib/api-base";
 import { getAccessToken } from "@/lib/axios";
 import { fetchWithRetry } from "@/lib/api/http";
-import { useCallback,useEffect,useRef,useState,type ChangeEvent } from "react";
+import { useCallback,useEffect,useMemo,useRef,useState,type ChangeEvent } from "react";
 import MassImageUpload from "../../../components/admin/MassImageUpload";
 
 const API = API_BASE;
@@ -229,7 +229,6 @@ const SUBJECT_TOPIC_OPTIONS: Record<SubjectKey, TopicOption[]> = {
 
 export default function AdminPanel() {
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [filtered, setFiltered] = useState<Question[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -358,11 +357,14 @@ export default function AdminPanel() {
   }, [filterTopic, filterSubject, filterDifficulty, filterExam, filterQuizName]);
 
   useEffect(() => {
-    void fetchQuestions();
-    return () => questionsRequestRef.current?.abort();
+    const timer = window.setTimeout(() => void fetchQuestions(), 0);
+    return () => {
+      window.clearTimeout(timer);
+      questionsRequestRef.current?.abort();
+    };
   }, [fetchQuestions]);
 
-  useEffect(() => {
+  const filtered = useMemo(() => {
     const q = search.toLowerCase();
     const filteredQuestions = questions.filter(
       (x) =>
@@ -377,8 +379,7 @@ export default function AdminPanel() {
       return sortOrder === "asc" ? cmp : -cmp;
     });
 
-    setFiltered(sortedQuestions);
-    setPage(1);
+    return sortedQuestions;
   }, [search, questions, sortOrder]);
 
   const showMsg = (msg: string, isErr = false) => {
@@ -910,13 +911,13 @@ export default function AdminPanel() {
             accept=".ndjson,.jsonl,.json"
             onChange={handleMuFileChange}
             style={{ padding: "6px 10px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 12, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}
-          />
+           aria-label="Choose file"/>
           <input
             value={muApiUrl}
             onChange={(e) => setMuApiUrl(e.target.value)}
             placeholder="Bulk API URL"
             style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 13, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}
-          />
+           aria-label="Bulk API URL"/>
           <button
             onClick={handleMuUpload}
             disabled={muUploading || !muApiUrl || !muSubject || !muTopic || !muQuiz || muQuestions.length === 0}
@@ -1029,7 +1030,7 @@ export default function AdminPanel() {
               accept="image/*"
               onChange={handleBulkImageFiles}
               style={{ display: "none" }}
-            />
+             aria-label="Choose file"/>
           </label>
           <div style={{ fontSize: 12, color: "var(--color-text-secondary)" }}>
             {bulkImages.length}/{MAX_BULK_IMAGES} selected
@@ -1133,7 +1134,7 @@ export default function AdminPanel() {
       {/* Filters */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 160px), 1fr))", gap: 10, marginBottom: "1rem" }}>
         <input placeholder="Search question, chapter, ID..." value={search} onChange={(e) => setSearch(e.target.value)}
-          style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 14, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }} />
+          style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 14, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}  aria-label="Search question, chapter, ID..."/>
         <select value={filterSubject} onChange={(e) => setFilterSubject(e.target.value)}
           style={{ padding: "8px 12px", border: "0.5px solid var(--color-border-secondary)", borderRadius: 8, fontSize: 14, background: "var(--color-background-primary)", color: "var(--color-text-primary)" }}>
           <option value="">All subjects</option>
@@ -1188,7 +1189,7 @@ export default function AdminPanel() {
             <tr style={{ background: "var(--color-background-secondary)" }}>
               <th style={{ padding: "10px 14px", borderBottom: "0.5px solid var(--color-border-tertiary)", width: 40 }}>
                 <input type="checkbox" checked={allPageSelected} onChange={togglePage}
-                  style={{ cursor: "pointer", width: 15, height: 15 }} title="Select all on this page" />
+                  style={{ cursor: "pointer", width: 15, height: 15 }} title="Select all on this page"  aria-label="Select all on this page"/>
               </th>
               {["ID", "Topic", "Chapter", "Difficulty", "Exam", "Question", "Actions"].map((h) => (
                 <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontWeight: 500, color: "var(--color-text-secondary)", borderBottom: "0.5px solid var(--color-border-tertiary)", whiteSpace: "nowrap" }}>{h}</th>
@@ -1207,7 +1208,7 @@ export default function AdminPanel() {
               }}>
                 <td data-label="Select" style={{ padding: "10px 14px" }}>
                   <input type="checkbox" checked={selected.has(q.id)} onChange={() => toggleOne(q.id)}
-                    style={{ cursor: "pointer", width: 15, height: 15 }} />
+                    style={{ cursor: "pointer", width: 15, height: 15 }} aria-label={`Select question ${q.id}`} />
                 </td>
                 <td data-label="ID" style={{ padding: "10px 14px", color: "var(--color-text-secondary)", fontFamily: "monospace", fontSize: 11 }}>{q.id?.slice(0, 16)}...</td>
                 <td data-label="Topic" style={{ padding: "10px 14px" }}>
@@ -1243,7 +1244,7 @@ export default function AdminPanel() {
                         if (file) handleSolutionImageUpload(q.id, file);
                         e.target.value = "";
                       }}
-                    />
+                     aria-label="Choose file"/>
                     <button
                       onClick={() => solImgRefs.current[q.id]?.click()}
                       disabled={solImgUploading === q.id}
@@ -1306,16 +1307,16 @@ export default function AdminPanel() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 220px), 1fr))", gap: 12 }}>
               {(["topic", "subject", "chapter", "subtopic", "exam", "concept", "source"] as const).map((field) => (
                 <div key={field}>
-                  <label style={{ fontSize: 12, color: "var(--color-text-secondary)", display: "block", marginBottom: 4, textTransform: "capitalize" }}>{field}</label>
-                  <input value={(formData as Record<string, unknown>)[field] as string || ""} onChange={(e) => setFormData({ ...formData, [field]: e.target.value })}
-                    style={{ width: "100%", padding: "7px 10px", border: "0.5px solid var(--color-border-secondary, #e5e7eb)", borderRadius: 7, fontSize: 13, background: "var(--color-background-primary, #ffffff)", color: "var(--color-text-primary, #111827)", boxSizing: "border-box" }} />
+                  <label htmlFor={`question-${field}`} style={{ fontSize: 12, color: "var(--color-text-secondary)", display: "block", marginBottom: 4, textTransform: "capitalize" }}>{field}</label>
+                  <input id={`question-${field}`} value={(formData as Record<string, unknown>)[field] as string || ""} onChange={(e) => setFormData({ ...formData, [field]: e.target.value })}
+                    style={{ width: "100%", padding: "7px 10px", border: "0.5px solid var(--color-border-secondary, #e5e7eb)", borderRadius: 7, fontSize: 13, background: "var(--color-background-primary, #ffffff)", color: "var(--color-text-primary, #111827)", boxSizing: "border-box" }} aria-label={field} />
                 </div>
               ))}
 
               <div style={{ gridColumn: "1 / -1" }}>
-                <label style={{ fontSize: 12, color: "var(--color-text-secondary)", display: "block", marginBottom: 4 }}>Question</label>
-                <textarea value={formData.question} onChange={(e) => setFormData({ ...formData, question: e.target.value })} rows={3}
-                  style={{ width: "100%", padding: "7px 10px", border: "0.5px solid var(--color-border-secondary, #e5e7eb)", borderRadius: 7, fontSize: 13, background: "var(--color-background-primary, #ffffff)", color: "var(--color-text-primary, #111827)", resize: "vertical", boxSizing: "border-box" }} />
+                <label htmlFor="question-text" style={{ fontSize: 12, color: "var(--color-text-secondary)", display: "block", marginBottom: 4 }}>Question</label>
+                <textarea id="question-text" value={formData.question} onChange={(e) => setFormData({ ...formData, question: e.target.value })} rows={3}
+                  style={{ width: "100%", padding: "7px 10px", border: "0.5px solid var(--color-border-secondary, #e5e7eb)", borderRadius: 7, fontSize: 13, background: "var(--color-background-primary, #ffffff)", color: "var(--color-text-primary, #111827)", resize: "vertical", boxSizing: "border-box" }} aria-label="Question" />
               </div>
 
               <div style={{ gridColumn: "1 / -1", border: "0.5px dashed var(--color-border-secondary, #e5e7eb)", borderRadius: 10, padding: "10px 12px", background: "var(--color-background-secondary, #f8fafc)" }}>
@@ -1324,27 +1325,27 @@ export default function AdminPanel() {
               </div>
 
               <div style={{ gridColumn: "1 / -1" }}>
-                <label style={{ fontSize: 12, color: "var(--color-text-secondary)", display: "block", marginBottom: 6 }}>Options</label>
+                <div style={{ fontSize: 12, color: "var(--color-text-secondary)", display: "block", marginBottom: 6 }}>Options</div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 220px), 1fr))", gap: 8 }}>
                   {[0, 1, 2, 3].map((i) => (
                     <div key={i} style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       <span style={{ fontSize: 12, color: "var(--color-text-secondary)", width: 16 }}>{LETTERS[i]})</span>
                       <input value={formData.options[i] || ""} onChange={(e) => { const opts = [...formData.options]; opts[i] = e.target.value; setFormData({ ...formData, options: opts }); }}
-                        style={{ flex: 1, padding: "6px 10px", border: "0.5px solid var(--color-border-secondary, #e5e7eb)", borderRadius: 7, fontSize: 13, background: "var(--color-background-primary, #ffffff)", color: "var(--color-text-primary, #111827)" }} />
+                        style={{ flex: 1, padding: "6px 10px", border: "0.5px solid var(--color-border-secondary, #e5e7eb)", borderRadius: 7, fontSize: 13, background: "var(--color-background-primary, #ffffff)", color: "var(--color-text-primary, #111827)" }} aria-label={`Option ${LETTERS[i]}`} />
                     </div>
                   ))}
                 </div>
               </div>
 
               <div>
-                <label style={{ fontSize: 12, color: "var(--color-text-secondary)", display: "block", marginBottom: 4 }}>Correct Answer</label>
-                <input value={formData.correctAnswer} onChange={(e) => setFormData({ ...formData, correctAnswer: e.target.value })}
-                  style={{ width: "100%", padding: "7px 10px", border: "0.5px solid var(--color-border-secondary, #e5e7eb)", borderRadius: 7, fontSize: 13, background: "var(--color-background-primary, #ffffff)", color: "var(--color-text-primary, #111827)", boxSizing: "border-box" }} />
+                <label htmlFor="question-correct-answer" style={{ fontSize: 12, color: "var(--color-text-secondary)", display: "block", marginBottom: 4 }}>Correct Answer</label>
+                <input id="question-correct-answer" value={formData.correctAnswer} onChange={(e) => setFormData({ ...formData, correctAnswer: e.target.value })}
+                  style={{ width: "100%", padding: "7px 10px", border: "0.5px solid var(--color-border-secondary, #e5e7eb)", borderRadius: 7, fontSize: 13, background: "var(--color-background-primary, #ffffff)", color: "var(--color-text-primary, #111827)", boxSizing: "border-box" }} aria-label="Correct answer" />
               </div>
 
               <div>
-                <label style={{ fontSize: 12, color: "var(--color-text-secondary)", display: "block", marginBottom: 4 }}>Correct Letter</label>
-                <select value={formData.correctLetter} onChange={(e) => setFormData({ ...formData, correctLetter: e.target.value })}
+                <label htmlFor="question-correct-letter" style={{ fontSize: 12, color: "var(--color-text-secondary)", display: "block", marginBottom: 4 }}>Correct Letter</label>
+                <select id="question-correct-letter" value={formData.correctLetter} onChange={(e) => setFormData({ ...formData, correctLetter: e.target.value })}
                   style={{ width: "100%", padding: "7px 10px", border: "0.5px solid var(--color-border-secondary, #e5e7eb)", borderRadius: 7, fontSize: 13, background: "var(--color-background-primary, #ffffff)", color: "var(--color-text-primary, #111827)" }}>
                   <option value="">Select</option>
                   {LETTERS.map((l) => <option key={l} value={l}>{l}</option>)}
@@ -1352,18 +1353,18 @@ export default function AdminPanel() {
               </div>
 
               <div>
-                <label style={{ fontSize: 12, color: "var(--color-text-secondary)", display: "block", marginBottom: 4 }}>Difficulty</label>
-                <select value={formData.difficulty} onChange={(e) => setFormData({ ...formData, difficulty: e.target.value })}
+                <label htmlFor="question-difficulty" style={{ fontSize: 12, color: "var(--color-text-secondary)", display: "block", marginBottom: 4 }}>Difficulty</label>
+                <select id="question-difficulty" value={formData.difficulty} onChange={(e) => setFormData({ ...formData, difficulty: e.target.value })}
                   style={{ width: "100%", padding: "7px 10px", border: "0.5px solid var(--color-border-secondary, #e5e7eb)", borderRadius: 7, fontSize: 13, background: "var(--color-background-primary, #ffffff)", color: "var(--color-text-primary, #111827)" }}>
                   {DIFFICULTIES.map((d) => <option key={d} value={d}>{d}</option>)}
                 </select>
               </div>
 
               <div style={{ gridColumn: "1 / -1" }}>
-                <label style={{ fontSize: 12, color: "var(--color-text-secondary)", display: "block", marginBottom: 4 }}>Solution / Explanation</label>
-                <textarea value={formData.solution || ""} onChange={(e) => setFormData({ ...formData, solution: e.target.value })} rows={4}
+                <label htmlFor="question-solution" style={{ fontSize: 12, color: "var(--color-text-secondary)", display: "block", marginBottom: 4 }}>Solution / Explanation</label>
+                <textarea id="question-solution" value={formData.solution || ""} onChange={(e) => setFormData({ ...formData, solution: e.target.value })} rows={4}
                   placeholder="Step-by-step solution..."
-                  style={{ width: "100%", padding: "7px 10px", border: "0.5px solid var(--color-border-secondary, #e5e7eb)", borderRadius: 7, fontSize: 13, background: "var(--color-background-primary, #ffffff)", color: "var(--color-text-primary, #111827)", resize: "vertical", boxSizing: "border-box" }} />
+                  style={{ width: "100%", padding: "7px 10px", border: "0.5px solid var(--color-border-secondary, #e5e7eb)", borderRadius: 7, fontSize: 13, background: "var(--color-background-primary, #ffffff)", color: "var(--color-text-primary, #111827)", resize: "vertical", boxSizing: "border-box" }}  aria-label="Step-by-step solution..."/>
               </div>
             </div>
 
@@ -1424,7 +1425,9 @@ export default function AdminPanel() {
             justifyContent: "center",
             padding: "1.5rem",
           }}
-          onClick={() => setImagePreview(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Question image preview"
         >
           <div
             style={{
@@ -1435,7 +1438,6 @@ export default function AdminPanel() {
               maxWidth: 860,
               border: "0.5px solid var(--color-border-secondary, #e5e7eb)",
             }}
-            onClick={(e) => e.stopPropagation()}
           >
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: "var(--color-text-primary)" }}>
@@ -1443,6 +1445,7 @@ export default function AdminPanel() {
               </div>
               <button
                 onClick={() => setImagePreview(null)}
+                aria-label="Close image preview"
                 style={{ background: "none", border: "none", cursor: "pointer", fontSize: 18, color: "var(--color-text-secondary)" }}
               >
                 ×

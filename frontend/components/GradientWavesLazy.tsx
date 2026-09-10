@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
+import RiskyWidgetBoundary from "./RiskyWidgetBoundary";
 
 const GradientWaves = dynamic(() => import("./GradientWaves"), { ssr: false });
 
@@ -14,17 +15,24 @@ export default function GradientWavesLazy(props: GradientWavesProps) {
 
   useEffect(() => {
     const mql = window.matchMedia("(max-width: 768px)");
-    setIsMobile(mql.matches);
     const motionMql = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setPrefersReducedMotion(motionMql.matches);
+    const mediaTimer = window.setTimeout(() => {
+      setIsMobile(mql.matches);
+      setPrefersReducedMotion(motionMql.matches);
+    }, 0);
 
-    if (mql.matches || motionMql.matches) return;
+    if (mql.matches || motionMql.matches) {
+      return () => window.clearTimeout(mediaTimer);
+    }
 
     // Defer WebGL init until after critical UI paints
     const schedule = typeof requestIdleCallback === "function" ? requestIdleCallback : (cb: () => void) => setTimeout(cb, 200);
     const cancel = typeof cancelIdleCallback === "function" ? cancelIdleCallback : clearTimeout;
     const handle = schedule(() => setShouldRender(true));
-    return () => cancel(handle as number);
+    return () => {
+      window.clearTimeout(mediaTimer);
+      cancel(handle as number);
+    };
   }, []);
 
   if (prefersReducedMotion || isMobile) {
@@ -33,5 +41,9 @@ export default function GradientWavesLazy(props: GradientWavesProps) {
 
   if (!shouldRender) return null;
 
-  return <GradientWaves {...props} />;
+  return (
+    <RiskyWidgetBoundary label="animated background">
+      <GradientWaves {...props} />
+    </RiskyWidgetBoundary>
+  );
 }

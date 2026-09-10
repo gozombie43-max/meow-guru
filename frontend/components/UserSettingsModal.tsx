@@ -108,13 +108,16 @@ export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModal
   // Load user local preferences
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    try {
-      const storedSound = localStorage.getItem(SOUND_EFFECTS_KEY);
-      if (storedSound !== null) setSoundEnabled(storedSound === 'true');
+    const timer = window.setTimeout(() => {
+      try {
+        const storedSound = localStorage.getItem(SOUND_EFFECTS_KEY);
+        if (storedSound !== null) setSoundEnabled(storedSound === 'true');
 
-      const storedGoal = localStorage.getItem(DAILY_GOAL_KEY);
-      if (storedGoal) setDailyGoal(storedGoal);
-    } catch {}
+        const storedGoal = localStorage.getItem(DAILY_GOAL_KEY);
+        if (storedGoal) setDailyGoal(storedGoal);
+      } catch {}
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [isOpen]);
 
   // ESC key listener
@@ -358,8 +361,8 @@ export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModal
   };
 
   return (
-    <div className={styles.modalBackdrop} onClick={onClose} role="dialog" aria-modal="true" aria-labelledby="settings-title">
-      <div className={styles.modalCard} onClick={(e) => e.stopPropagation()}>
+    <div className={styles.modalBackdrop} role="dialog" aria-modal="true" aria-labelledby="settings-title">
+      <div className={styles.modalCard}>
         {/* Header */}
         <div className={styles.modalHeader}>
           <div className={styles.modalTitleGroup}>

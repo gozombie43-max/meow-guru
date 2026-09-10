@@ -83,7 +83,8 @@ export default function ScheduledNotificationsPanel() {
   }, []);
 
   useEffect(() => {
-    loadScheduled(activeTab);
+    const timer = window.setTimeout(() => void loadScheduled(activeTab), 0);
+    return () => window.clearTimeout(timer);
   }, [activeTab, loadScheduled]);
 
   const handleCancel = async (item: ScheduledNotificationItem) => {
@@ -160,7 +161,7 @@ export default function ScheduledNotificationsPanel() {
       </div>
 
       {/* Tabs */}
-      <div className={s.tabs} role="tablist">
+      <div className={s.tabs} role="tablist" aria-label="Notification status">
         <button
           type="button"
           role="tab"
@@ -339,11 +340,9 @@ export default function ScheduledNotificationsPanel() {
           role="dialog"
           aria-modal="true"
           aria-labelledby="retry-modal-title"
-          onClick={() => !actionLoadingId && setRetryTargetItem(null)}
         >
           <div
             className={s.modalDialog}
-            onClick={(e) => e.stopPropagation()}
           >
             <div className={s.modalHeader}>
               <div className={s.modalIconWrap}>
