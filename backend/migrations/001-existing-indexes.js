@@ -1,5 +1,21 @@
 export const id = "001-existing-indexes";
-export async function up(db) {
+export async function up(sourceDb) {
+  // Index builds can take longer than the driver's waitQueueTimeoutMS. Starting
+  // every build at once exhausts the connection pool on small Atlas tiers, so
+  // queue them while retaining the all-settled error report below.
+  let previousBuild = Promise.resolve();
+  const db = {
+    collection(name) {
+      const collection = sourceDb.collection(name);
+      return {
+        createIndex(...args) {
+          const build = previousBuild.then(() => collection.createIndex(...args));
+          previousBuild = build.catch(() => undefined);
+          return build;
+        },
+      };
+    },
+  };
   const results = await Promise.allSettled([
     db.collection("questions").createIndex({ topic: 1 }),
     db.collection("questions").createIndex({ subject: 1 }),
