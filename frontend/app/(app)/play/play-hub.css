@@ -1,0 +1,792 @@
+/* Hub-only composition. Session engine styles remain in play.css. */
+.play-hub {
+  --play-accent-soft: color-mix(
+    in srgb,
+    var(--tr-accent) 10%,
+    var(--tr-surface)
+  );
+}
+.play-hub .training-header {
+  position: sticky;
+  top: 0;
+  z-index: 35;
+  padding-inline: max(28px, var(--safe-left)) max(28px, var(--safe-right));
+}
+.play-hub .training-brand {
+  gap: 12px;
+  font-size: 23px;
+  letter-spacing: -0.8px;
+}
+.play-hub .training-brand > span:last-child {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.play-hub .training-brand-icon {
+  background: var(--play-accent-soft);
+  color: var(--tr-accent);
+  width: 42px;
+  height: 42px;
+  border: 1px solid color-mix(in srgb, var(--tr-accent) 18%, transparent);
+}
+.play-hub .training-brand-caption {
+  margin: 0;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+}
+.play-hub .training-exam select {
+  background: var(--tr-muted);
+  font-weight: 650;
+  padding-inline: 14px;
+}
+.play-hub .training-layout {
+  max-width: 1560px;
+  grid-template-columns: 238px minmax(0, 1fr);
+}
+.play-hub .training-sidebar {
+  padding: 34px 18px;
+  background: var(--tr-surface);
+}
+.play-hub .training-sidebar > .training-kicker {
+  padding-inline: 14px;
+}
+.play-hub .play-navigation {
+  gap: 8px;
+  margin-top: 18px;
+}
+.play-hub .play-navigation button {
+  padding: 14px 12px;
+  gap: 12px;
+  border-radius: 14px;
+  justify-content: flex-start;
+}
+.play-hub .play-navigation button > span {
+  flex: 1;
+}
+.play-hub .play-navigation small {
+  display: block;
+  font-size: 10px;
+  font-weight: 400;
+  margin-top: 4px;
+  color: var(--tr-secondary);
+}
+.play-hub .play-navigation button[aria-current] {
+  background: var(--play-accent-soft);
+  color: var(--tr-accent);
+}
+.play-hub .training-side-note {
+  margin: 64px 6px 0;
+  padding: 20px 16px;
+  border: 1px solid var(--tr-border);
+  border-radius: 18px;
+  background: var(--tr-bg);
+}
+.play-hub .training-side-note > svg {
+  color: var(--tr-accent);
+}
+.play-hub .training-main {
+  padding: 36px clamp(24px, 3vw, 48px);
+}
+.play-hub .training-heading {
+  margin-bottom: 26px;
+}
+.play-hub .training-heading h1 {
+  font-size: clamp(28px, 2.6vw, 40px);
+  letter-spacing: -1.5px;
+  margin-top: 9px;
+}
+.play-hub .training-heading p {
+  font-size: 13px;
+}
+.play-hub .training-heading .training-kicker {
+  color: var(--tr-accent);
+  font-size: 10px;
+}
+.play-hub .training-outline-label {
+  border: 0;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  letter-spacing: 0;
+  font-size: 11px;
+}
+.play-hub .training-mission {
+  position: relative;
+  grid-template-columns: minmax(0, 1fr) 240px;
+  border-radius: 24px;
+  border-color: color-mix(in srgb, var(--tr-accent) 22%, var(--tr-border));
+  background: linear-gradient(
+    115deg,
+    var(--tr-surface),
+    var(--play-accent-soft)
+  );
+  margin-bottom: 16px;
+}
+.play-hub .training-mission-copy {
+  padding: 30px;
+  border: 0;
+}
+.play-hub .training-mission-copy .training-kicker {
+  color: var(--tr-accent);
+  font-size: 10px;
+  letter-spacing: 1.3px;
+}
+.play-hub .training-mission-copy h2 {
+  font-size: 28px;
+  max-width: 380px;
+  letter-spacing: -0.9px;
+  margin-top: 16px;
+}
+.play-hub .training-mission-copy p {
+  max-width: 420px;
+}
+.play-hub .training-mission-copy button {
+  margin-top: 22px;
+}
+.play-hub .training-readiness {
+  position: relative;
+  border: 0;
+  background: transparent;
+  padding: 26px;
+  align-content: center;
+}
+.play-hub .training-readiness > strong {
+  font-size: 40px;
+}
+.play-hub .training-readiness > p {
+  max-width: 190px;
+}
+.play-orbit {
+  position: absolute;
+  top: 22px;
+  right: 24px;
+  color: var(--tr-accent);
+  opacity: 0.15;
+  transform: rotate(-15deg);
+}
+.play-hub .training-meter {
+  height: 6px;
+  background: color-mix(in srgb, var(--tr-accent) 12%, var(--tr-muted));
+}
+.play-pulse {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: 34px;
+  border: 1px solid var(--tr-border);
+  border-radius: 18px;
+  background: var(--tr-surface);
+  overflow: hidden;
+}
+.play-pulse button[data-ui-button] {
+  display: flex;
+  padding: 18px 22px;
+  gap: 13px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  color: var(--tr-secondary);
+  text-align: left;
+  justify-content: flex-start;
+}
+.play-pulse button + button {
+  border-left: 1px solid var(--tr-border);
+}
+.play-pulse button > span {
+  flex: 1;
+}
+.play-pulse strong {
+  display: block;
+  color: var(--tr-text);
+  font-size: 22px;
+  letter-spacing: -0.7px;
+  line-height: 1.2;
+}
+.play-pulse small {
+  display: block;
+  font-size: 11px;
+  font-weight: 400;
+  margin-top: 4px;
+}
+.play-hub .training-mode-bar {
+  margin: 0 0 16px;
+  align-items: end;
+}
+.play-hub .training-mode-bar h2 {
+  font-weight: 700;
+  font-size: 23px;
+  margin-top: 6px;
+}
+.play-hub .training-mode-bar h2 span {
+  display: inline-block;
+  vertical-align: middle;
+  border: 1px solid var(--tr-border);
+  border-radius: 7px;
+  margin-left: 10px;
+  padding: 3px 6px;
+  font-size: 11px;
+  color: var(--tr-secondary);
+  letter-spacing: 0;
+}
+.play-hub .training-mode-bar > p {
+  font-size: 12px;
+}
+.play-hub .training-filters {
+  margin: 0 0 20px;
+  gap: 7px;
+  padding: 3px;
+}
+.play-hub .training-filters button {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 17px;
+  background: var(--tr-surface);
+  border: 1px solid var(--tr-border);
+  border-radius: 12px;
+}
+.play-hub .training-filters button[aria-pressed="true"] {
+  color: var(--tr-accent);
+  border-color: color-mix(in srgb, var(--tr-accent) 45%, var(--tr-border));
+  background: var(--play-accent-soft);
+}
+.play-hub .training-mode-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+.play-hub .training-mode-card[data-ui-button] {
+  --mode-color: var(--tr-accent);
+  position: relative;
+  border-radius: 20px;
+  padding: 20px 18px 0;
+  gap: 0;
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+.play-hub .training-category-speed {
+  --mode-color: #a46b05 !important;
+}
+.play-hub .training-category-sectional {
+  --mode-color: #12816e !important;
+}
+.play-hub .training-category-extreme {
+  --mode-color: #c14b61 !important;
+}
+.play-hub.training-dark .training-category-speed {
+  --mode-color: #edbd66 !important;
+}
+.play-hub.training-dark .training-category-sectional {
+  --mode-color: #68d5b8 !important;
+}
+.play-hub.training-dark .training-category-extreme {
+  --mode-color: #f79aaa !important;
+}
+.play-hub .training-mode-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 15px;
+  color: var(--mode-color);
+  background: color-mix(in srgb, var(--mode-color) 11%, var(--tr-surface));
+  border: 1px solid color-mix(in srgb, var(--mode-color) 16%, transparent);
+}
+.play-category {
+  font-size: 10px;
+  color: var(--mode-color);
+}
+.play-card-arrow {
+  margin-left: auto;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: 0.18s ease;
+  color: var(--mode-color);
+}
+.play-card-title {
+  margin-top: 20px;
+  font-size: 21px;
+  color: var(--tr-text);
+  font-weight: 750;
+  letter-spacing: -0.6px;
+}
+.play-hub .training-mode-eyebrow {
+  font-size: 11px;
+  line-height: 1.5;
+  margin-top: 6px;
+  color: var(--mode-color);
+  font-weight: 550;
+}
+.play-hub .training-mode-description {
+  color: var(--tr-secondary);
+  font-size: 12px;
+  line-height: 1.65;
+  margin: 9px 0 18px !important;
+}
+.play-hub .training-card-bottom {
+  font-size: 10px;
+  padding: 13px 0;
+  min-height: 45px;
+}
+.play-hub .training-card-bottom > span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.play-hub .training-card-bottom svg {
+  color: inherit;
+}
+.play-hub .play-configure {
+  color: var(--mode-color);
+}
+.play-hub .training-footnote {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 7px;
+  line-height: 1.5;
+}
+.play-hub .training-footnote svg {
+  flex-shrink: 0;
+}
+.play-hub .training-resume {
+  border-left: 3px solid var(--tr-accent);
+}
+.play-setup {
+  padding: 28px;
+  border-radius: 24px;
+}
+.play-setup .training-form {
+  padding-block: 4px;
+}
+.play-setup .training-form select {
+  min-height: 48px;
+  background: var(--tr-surface);
+}
+.play-setup .training-start {
+  min-height: 48px;
+}
+.play-setup .training-panel-heading {
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
+.play-mobile-filter {
+  display: none;
+}
+.play-hub .play-mission-shortcut {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 20px;
+  margin-bottom: 28px;
+  border: 1px solid color-mix(in srgb, var(--tr-accent) 25%, var(--tr-border));
+  border-radius: 18px;
+  background: var(--play-accent-soft);
+  color: var(--tr-text);
+  text-align: left;
+  white-space: normal;
+}
+.play-mission-symbol {
+  display: grid;
+  place-items: center;
+  color: var(--tr-accent);
+  flex-shrink: 0;
+}
+.play-mission-shortcut > span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+}
+.play-mission-shortcut strong {
+  display: block;
+  font-size: 16px;
+}
+.play-mission-shortcut small {
+  display: block;
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--tr-secondary);
+  font-weight: 400;
+}
+.play-mission-shortcut > svg {
+  flex-shrink: 0;
+  color: var(--tr-accent);
+}
+.play-library + .play-pulse {
+  margin-top: 28px;
+}
+@media (hover: hover) {
+  .play-hub .training-mode-card:hover {
+    border-color: var(--mode-color);
+    transform: translateY(-4px);
+    box-shadow: 0 10px 28px
+      color-mix(in srgb, var(--mode-color) 8%, transparent);
+  }
+  .play-hub .training-mode-card:hover .play-card-arrow {
+    opacity: 1;
+    transform: none;
+  }
+  .play-pulse button:hover {
+    background: var(--tr-muted);
+  }
+}
+@media (max-width: 1300px) {
+  .play-hub .training-layout {
+    grid-template-columns: 210px minmax(0, 1fr);
+  }
+  .play-hub .training-mode-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .play-hub .training-outline-label {
+    display: none;
+  }
+  .play-hub .training-mission {
+    grid-template-columns: minmax(0, 1fr) 200px;
+  }
+  .play-pulse button[data-ui-button] {
+    padding: 16px;
+  }
+}
+@media (max-width: 900px) {
+  .play-hub .training-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .play-hub .training-header .training-mobile-tabs {
+    grid-column: 1 / -1;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .play-hub .training-layout {
+    display: block;
+  }
+  .play-hub .training-sidebar {
+    display: none;
+  }
+  .play-hub .training-main {
+    padding: 0 max(24px, var(--safe-right)) 16px max(24px, var(--safe-left));
+  }
+  .play-hub .training-mobile-tabs {
+    display: flex;
+    margin: 0 0 24px;
+    gap: 4px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--tr-border);
+    overflow-x: auto;
+  }
+  .play-hub .training-mobile-tabs button {
+    display: flex;
+    gap: 7px;
+    flex: 1;
+    padding: 10px 12px;
+    border: 0;
+    background: transparent;
+    color: var(--tr-secondary);
+    white-space: nowrap;
+    font-size: 12px;
+  }
+  .play-hub .training-mobile-tabs button[aria-current] {
+    color: var(--tr-accent);
+    background: var(--play-accent-soft);
+  }
+}
+@media (max-width: 600px) {
+  .play-hub .training-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px 12px;
+    padding: calc(8px + var(--safe-top)) max(16px, var(--safe-right)) 8px
+      max(16px, var(--safe-left));
+  }
+  .play-hub .training-brand-caption {
+    display: none;
+  }
+  .play-hub .training-brand {
+    font-size: 21px;
+  }
+  .play-hub .training-brand-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 11px;
+  }
+  .play-hub .training-main {
+    padding: 18px max(16px, var(--safe-right)) 0 max(16px, var(--safe-left));
+  }
+  .play-hub .training-mobile-tabs {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-column: 1 / -1;
+    width: 100%;
+    gap: 3px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    overflow: visible;
+  }
+  .play-hub .training-mobile-tabs button {
+    flex-direction: column;
+    min-width: 0;
+    min-height: 52px;
+    padding: 6px 2px;
+    gap: 4px;
+    font-size: 11px;
+    line-height: 1.3;
+    border-radius: 10px;
+  }
+  .play-hub .training-mobile-tabs button svg {
+    width: 18px;
+    height: 18px;
+  }
+  .play-hub .training-heading {
+    margin-bottom: 16px;
+  }
+  .play-hub .training-heading .training-kicker {
+    display: none;
+  }
+  .play-hub .training-heading h1 {
+    font-size: 25px;
+    line-height: 1.2;
+    letter-spacing: -0.8px;
+    margin: 0;
+  }
+  .play-hub .training-heading p {
+    font-size: 13px;
+    line-height: 1.5;
+    margin-top: 5px;
+  }
+  .play-hub .training-resume {
+    padding: 12px;
+    gap: 8px;
+    margin-bottom: 12px;
+    border-radius: 14px;
+  }
+  .play-hub .training-resume > div {
+    min-width: 0;
+  }
+  .play-hub .training-resume strong {
+    font-size: 13px;
+  }
+  .play-hub .training-resume p {
+    font-size: 11px;
+    line-height: 1.4;
+    margin-top: 4px;
+  }
+  .play-hub .training-resume a {
+    flex-shrink: 0;
+    padding-inline: 10px;
+    font-size: 12px;
+  }
+  .play-hub .play-mission-shortcut {
+    padding: 14px;
+    margin-bottom: 24px;
+    gap: 12px;
+    border-radius: 15px;
+  }
+  .play-hub .play-mission-shortcut strong {
+    font-size: 14px;
+  }
+  .play-hub .play-mission-shortcut small {
+    font-size: 12px;
+    line-height: 1.4;
+  }
+  .play-hub .training-mode-bar {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .play-hub .training-mode-bar .training-kicker {
+    display: none;
+  }
+  .play-hub .training-mode-bar h2 {
+    font-size: 18px;
+    margin: 0;
+  }
+  .play-hub .training-mode-bar h2 span {
+    font-size: 11px;
+    margin-left: 6px;
+    border: 0;
+    padding: 0;
+  }
+  .play-mobile-filter {
+    display: block;
+    flex-shrink: 0;
+  }
+  .play-mobile-filter select {
+    max-width: 130px;
+    min-height: 44px;
+    padding: 10px;
+    border: 1px solid var(--tr-border);
+    border-radius: 11px;
+    color: var(--tr-text);
+    background: var(--tr-surface);
+    font: inherit;
+    font-size: 12px;
+  }
+  .play-hub .training-filters {
+    display: none;
+  }
+  .play-hub .training-mode-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+  .play-hub .training-mode-card[data-ui-button] {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) 16px;
+    grid-template-rows: auto auto auto;
+    align-items: center;
+    column-gap: 12px;
+    row-gap: 4px;
+    padding: 15px 14px;
+    border-radius: 16px;
+    text-align: left;
+  }
+  .play-hub .training-card-top {
+    grid-column: 1;
+    grid-row: 1 / 4;
+    align-self: start;
+    display: block;
+  }
+  .play-hub .training-mode-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 13px;
+  }
+  .play-hub .training-mode-icon svg {
+    width: 24px;
+    height: 24px;
+  }
+  .play-hub .play-category,
+  .play-hub .play-card-arrow {
+    display: none;
+  }
+  .play-hub .play-card-title {
+    grid-column: 2;
+    grid-row: 1;
+    font-size: 17px;
+    line-height: 1.3;
+    margin: 0;
+    letter-spacing: -0.3px;
+  }
+  .play-hub .training-mode-eyebrow {
+    grid-column: 2;
+    grid-row: 2;
+    font-size: 12px;
+    line-height: 1.45;
+    margin: 0;
+    color: var(--tr-secondary);
+    font-weight: 400;
+  }
+  .play-hub .training-mode-description {
+    display: none;
+  }
+  .play-hub .training-card-bottom {
+    grid-column: 2;
+    grid-row: 3;
+    padding: 3px 0 0;
+    border: 0;
+    min-height: 0;
+    font-size: 11px;
+    line-height: 1.4;
+    color: var(--mode-color);
+  }
+  .play-hub .training-card-bottom .play-configure {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    font-size: 0;
+    gap: 0;
+    color: var(--tr-secondary);
+  }
+  .play-hub .training-card-bottom .play-configure svg {
+    width: 17px;
+    height: 17px;
+  }
+  .play-hub .training-footnote {
+    font-size: 11px;
+    text-align: left;
+    align-items: flex-start;
+    justify-content: flex-start;
+    margin-top: 16px !important;
+  }
+  .play-pulse {
+    margin: 24px 0 0;
+    border-radius: 15px;
+  }
+  .play-pulse button[data-ui-button] {
+    padding: 12px 8px;
+    justify-content: center;
+    gap: 0;
+  }
+  .play-pulse button > svg {
+    display: none;
+  }
+  .play-pulse button > span {
+    text-align: center;
+  }
+  .play-pulse strong {
+    font-size: 20px;
+  }
+  .play-pulse small {
+    font-size: 11px;
+    line-height: 1.4;
+    white-space: normal;
+  }
+  .play-hub .training-mission {
+    grid-template-columns: 1fr;
+    border-radius: 18px;
+  }
+  .play-hub .training-mission-copy {
+    padding: 20px;
+  }
+  .play-hub .training-mission-copy h2 {
+    font-size: 23px;
+    margin-top: 12px;
+  }
+  .play-hub .training-mission-copy button {
+    width: 100%;
+    margin-top: 16px;
+  }
+  .play-hub .training-readiness {
+    padding: 16px 20px;
+  }
+  .play-orbit {
+    display: none;
+  }
+  .play-setup {
+    width: 100%;
+    max-width: none;
+    margin: auto 0 0;
+    max-height: calc(100dvh - var(--safe-top) - 16px);
+    border-radius: 24px 24px 0 0;
+    padding: 20px max(20px, var(--safe-right)) calc(24px + var(--safe-bottom))
+      max(20px, var(--safe-left));
+  }
+  .play-setup h2 {
+    font-size: 27px;
+  }
+}
+@media (max-width: 359px) {
+  .play-setup .training-form {
+    grid-template-columns: 1fr;
+  }
+  .play-hub .training-mode-bar h2 {
+    font-size: 17px;
+  }
+  .play-mobile-filter select {
+    max-width: 118px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .play-hub .training-mode-card[data-ui-button],
+  .play-card-arrow {
+    transition: none;
+  }
+  .play-hub .training-mode-card:hover {
+    transform: none;
+  }
+}

@@ -3,20 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  ArrowRight,
-  Brain,
-  ChevronRight,
-  Flame,
-  Layers,
-  Route,
-  Shield,
-  Sparkles,
-  Target,
-  Timer,
-  X,
-  Zap,
-} from "lucide-react";
+import { ArrowRight, Sparkles, Target, X } from "lucide-react";
 import { useThemeMode } from "@/hooks/useTheme";
 import api from "@/lib/axios";
 import { isAxiosError } from "axios";
@@ -26,25 +13,19 @@ import {
   type TrainingDashboard,
 } from "@/components/training/training-types";
 import { TrainingInsights } from "@/components/training/TrainingInsights";
+import {
+  PlayNavigation,
+  PlayModeLibrary,
+  PlayPulse,
+  PlayMissionShortcut,
+} from "@/components/training/PlayHub";
 import "./play.css";
+import "./play-hub.css";
 
-const icons = {
-  brain: Brain,
-  target: Target,
-  zap: Zap,
-  timer: Timer,
-  layers: Layers,
-  route: Route,
-  flame: Flame,
-  shield: Shield,
-};
-const categories = ["All modes", "AI", "Speed", "Sectional", "Extreme"];
-const tabs = ["Train Me", "Play", "Mock", "Review", "Analytics"];
 export default function PlayPage() {
   const { theme } = useThemeMode();
   const router = useRouter();
   const [tab, setTab] = useState("Play"),
-    [category, setCategory] = useState("All modes"),
     [exam, setExam] = useState("ssc-cgl");
   const [dashboard, setDashboard] = useState<TrainingDashboard | null>(null),
     [error, setError] = useState(""),
@@ -85,9 +66,20 @@ export default function PlayPage() {
     const dialog = document.getElementById(
       "training-setup",
     ) as HTMLDialogElement | null;
+    const trigger = document.activeElement as HTMLElement | null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     dialog?.showModal();
-    return () => dialog?.close();
+    return () => {
+      dialog?.close();
+      document.body.style.overflow = previousOverflow;
+      trigger?.focus({ preventScroll: true });
+    };
   }, [selected]);
+  function navigate(tab: string) {
+    setTab(tab);
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }
   function choose(mode: ModeId) {
     setSelected(mode);
     setCount(mode === "section" ? 25 : 20);
@@ -95,7 +87,7 @@ export default function PlayPage() {
   }
   async function start(override?: ModeId) {
     const mode = override || selected;
-    if (!mode) return;
+    if (!mode || busy) return;
     setBusy(true);
     setError("");
     try {
@@ -120,13 +112,20 @@ export default function PlayPage() {
     }
   }
   return (
-    <div className={`training-page ${theme === "dark" ? "training-dark" : ""}`}>
+    <div
+      className={`training-page play-hub ${theme === "dark" ? "training-dark" : ""}`}
+    >
       <header className="training-header" data-ui-chrome="header">
         <Link href="/play" className="training-brand">
           <span className="training-brand-icon">
             <Target size={22} />
           </span>
-          meow<span className="training-brand-caption">TRAINING LAB</span>
+          <span>
+            Play
+            <span className="training-brand-caption">
+              MEOW GURU / TRAINING STUDIO
+            </span>
+          </span>
         </Link>
         <label className="training-exam">
           <span className="sr-only">Target exam</span>
@@ -146,23 +145,12 @@ export default function PlayPage() {
             <option value="cat">CAT</option>
           </select>
         </label>
+        <PlayNavigation mobile tab={tab} onChange={navigate} />
       </header>
       <div className="training-layout">
         <aside className="training-sidebar">
           <p className="training-kicker">YOUR TRAINING</p>
-          <nav aria-label="Training areas">
-            {tabs.map((t) => (
-              <button
-                key={t}
-                data-ui-button="state"
-                aria-current={tab === t ? "page" : undefined}
-                onClick={() => setTab(t)}
-              >
-                {t}
-                <ChevronRight size={16} />
-              </button>
-            ))}
-          </nav>
+          <PlayNavigation tab={tab} onChange={navigate} />
           <div className="training-side-note">
             <Target size={24} />
             <strong>Train with intent.</strong>
@@ -170,18 +158,6 @@ export default function PlayPage() {
           </div>
         </aside>
         <main className="training-main">
-          <nav className="training-mobile-tabs" aria-label="Training areas">
-            {tabs.map((t) => (
-              <button
-                key={t}
-                data-ui-button="state"
-                aria-current={tab === t ? "page" : undefined}
-                onClick={() => setTab(t)}
-              >
-                {t}
-              </button>
-            ))}
-          </nav>
           <div className="training-heading">
             <div>
               <p className="training-kicker">
@@ -189,7 +165,7 @@ export default function PlayPage() {
               </p>
               <h1>
                 {tab === "Play"
-                  ? "Practice with a purpose."
+                  ? "Choose your training."
                   : tab === "Train Me"
                     ? "Your daily mission."
                     : tab === "Mock"
@@ -200,7 +176,7 @@ export default function PlayPage() {
               </h1>
               <p>
                 {tab === "Play"
-                  ? "Eight ways to train. One stronger exam strategy."
+                  ? "Build accuracy, speed and exam confidence."
                   : tab === "Train Me"
                     ? "A practical next step, shaped by your recent work."
                     : tab === "Mock"
@@ -211,7 +187,8 @@ export default function PlayPage() {
               </p>
             </div>
             <span className="training-outline-label">
-              {tab === "Play" ? "08 MODES" : "TRAINING INTELLIGENCE"}
+              <Sparkles size={14} aria-hidden="true" /> Your personal training
+              space
             </span>
           </div>
           {error && !selected && (
@@ -228,8 +205,8 @@ export default function PlayPage() {
           {dashboard?.active.length ? (
             <div className="training-resume">
               <div>
-                <strong>Pick up where you left off</strong>
-                <p>Your session and clock are saved.</p>
+                <strong>Continue your session</strong>
+                <p>Progress saved · clock still running</p>
               </div>
               <Link
                 data-ui-button="secondary"
@@ -239,17 +216,13 @@ export default function PlayPage() {
               </Link>
             </div>
           ) : null}
-          {(tab === "Play" || tab === "Train Me") && (
-            <section className="training-mission">
+          {tab === "Train Me" && (
+            <section className="training-mission" aria-label="Daily mission">
               <div className="training-mission-copy">
                 <span className="training-kicker">
-                  <Sparkles size={15} /> LESS PLANNING. MORE PROGRESS.
+                  <Sparkles size={15} /> YOUR DAILY MISSION
                 </span>
-                <h2>
-                  {tab === "Train Me"
-                    ? "A plan built around your next step."
-                    : "Not sure where to begin?"}
-                </h2>
+                <h2>A plan built around your next step.</h2>
                 <p>
                   {dashboard?.topics[0]
                     ? `Start with ${dashboard.topics[0].topic}, then build pace and review what is due.`
@@ -257,19 +230,17 @@ export default function PlayPage() {
                 </p>
                 <button
                   data-ui-button="primary"
-                  onClick={() =>
-                    tab === "Play" ? setTab("Train Me") : start("mission")
-                  }
+                  disabled={busy || loading || !dashboard}
+                  onClick={() => start("mission")}
                 >
-                  {tab === "Play"
-                    ? "Train Me"
-                    : busy
-                      ? "Building mission…"
-                      : "Start today’s mission"}{" "}
+                  {busy ? "Building mission…" : "Start today’s mission"}{" "}
                   <ArrowRight size={17} />
                 </button>
               </div>
               <div className="training-readiness">
+                <div className="play-orbit" aria-hidden="true">
+                  <Target size={46} strokeWidth={1.3} />
+                </div>
                 <span>PRACTICE READINESS</span>
                 <strong>
                   {dashboard?.readiness ?? "—"}
@@ -290,61 +261,17 @@ export default function PlayPage() {
           )}
           {tab === "Play" && (
             <>
-              <div className="training-mode-bar">
-                <h2>Choose your mode</h2>
-                <div className="training-filters" aria-label="Mode categories">
-                  {categories.map((c) => (
-                    <button
-                      key={c}
-                      data-ui-button="state"
-                      aria-pressed={category === c}
-                      onClick={() => setCategory(c)}
-                    >
-                      {c}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="training-mode-grid">
-                {modes
-                  .filter(
-                    (m) => category === "All modes" || m.category === category,
-                  )
-                  .map((m) => {
-                    const Icon = icons[m.icon];
-                    return (
-                      <button
-                        key={m.id}
-                        className={`training-mode-card training-category-${m.category.toLowerCase()}`}
-                        data-ui-button="state"
-                        onClick={() => choose(m.id)}
-                      >
-                        <div className="training-card-top">
-                          <span className="training-mode-icon">
-                            <Icon size={23} />
-                          </span>
-                          <span>{m.category}</span>
-                          <span className="training-mode-number">
-                            0{modes.indexOf(m) + 1}
-                          </span>
-                        </div>
-                        <h3>{m.title}</h3>
-                        <p className="training-mode-eyebrow">{m.eyebrow}</p>
-                        <p className="training-mode-description">
-                          {m.description}
-                        </p>
-                        <div className="training-card-bottom">
-                          <span>{m.time}</span>
-                          <ArrowRight size={18} />
-                        </div>
-                      </button>
-                    );
-                  })}
-              </div>
-              <p className="training-footnote">
-                Confidence, timing and mistakes feed the same training profile
-                across every mode.
-              </p>
+              <PlayMissionShortcut
+                loading={loading}
+                available={!!dashboard}
+                onOpen={() => navigate("Train Me")}
+              />
+              <PlayModeLibrary onChoose={choose} />
+              <PlayPulse
+                dashboard={dashboard}
+                loading={loading}
+                onChange={navigate}
+              />
             </>
           )}
           {tab !== "Play" && (
@@ -361,7 +288,9 @@ export default function PlayPage() {
       {selected && (
         <dialog
           id="training-setup"
-          className={`training-setup ${theme === "dark" ? "training-dark" : ""}`}
+          aria-labelledby="training-setup-title"
+          aria-describedby="training-setup-description"
+          className={`training-setup play-setup ${theme === "dark" ? "training-dark" : ""}`}
           onCancel={(e) => {
             if (busy) e.preventDefault();
             else setSelected(null);
@@ -378,8 +307,10 @@ export default function PlayPage() {
               <X size={20} />
             </button>
           </div>
-          <h2>{selectedMode?.title || "Smart review"}</h2>
-          <p>
+          <h2 id="training-setup-title">
+            {selectedMode?.title || "Smart review"}
+          </h2>
+          <p id="training-setup-description">
             {selectedMode?.detail ||
               "Work through questions that are due for spaced review."}
           </p>
