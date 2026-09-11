@@ -185,24 +185,38 @@ export default function VideoPlayerPage() {
   const progress = videos.length ? Math.round((watched.size / videos.length) * 100) : 0;
 
   return (
-    <main style={{
-      minHeight: '100vh',
-      background: videoTheme.pageBg,
-      color: videoTheme.pageFg,
-      colorScheme: theme === 'dark' ? 'dark' : 'light',
-      fontFamily: '"Outfit", "Roboto", "Helvetica Neue", Arial, sans-serif',
-    }}>
+    <main
+      className="video-player-page"
+      style={{
+        minHeight: '100dvh',
+        background: videoTheme.pageBg,
+        color: videoTheme.pageFg,
+        colorScheme: theme === 'dark' ? 'dark' : 'light',
+        fontFamily: '"Outfit", "Roboto", "Helvetica Neue", Arial, sans-serif',
+      }}
+    >
       {/* Header */}
-      <div style={{
-        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50,
-        display: 'flex', flexDirection: 'column', justifyContent: 'center',
-        gap: 8, padding: '10px 16px 12px', height: HEADER_HEIGHT,
-        background: videoTheme.headerBg,
-        borderBottom: `1px solid ${videoTheme.headerBorder}`,
-        boxShadow: videoTheme.headerShadow,
-        backdropFilter: theme === 'dark' ? 'blur(16px)' : 'none',
-        WebkitBackdropFilter: theme === 'dark' ? 'blur(16px)' : 'none',
-      }}>
+      <div
+        className="video-player-header"
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 50,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          gap: 8,
+          padding: 'calc(10px + var(--safe-top)) 16px 12px',
+          height: `calc(${HEADER_HEIGHT}px + var(--safe-top))`,
+          background: videoTheme.headerBg,
+          borderBottom: `1px solid ${videoTheme.headerBorder}`,
+          boxShadow: videoTheme.headerShadow,
+          backdropFilter: theme === 'dark' ? 'blur(16px)' : 'none',
+          WebkitBackdropFilter: theme === 'dark' ? 'blur(16px)' : 'none',
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%' }}>
           <button data-ui-button="state" data-ui-shape="icon"
             onClick={() => router.back()}
@@ -248,7 +262,7 @@ export default function VideoPlayerPage() {
         </div>
       </div>
 
-        <div aria-hidden style={{ height: HEADER_HEIGHT }} />
+      <div aria-hidden style={{ height: `calc(${HEADER_HEIGHT}px + var(--safe-top))` }} />
 
       {/* Video player */}
       {fixedPlayerEnabled && <div aria-hidden className="yt-player-spacer" style={{ aspectRatio: '16/9', maxHeight: '56vw' }} />}
@@ -256,7 +270,7 @@ export default function VideoPlayerPage() {
         className={fixedPlayerEnabled ? 'yt-player-shell yt-player-shell-fixed' : 'yt-player-shell'}
         style={{
           position: fixedPlayerEnabled ? 'fixed' : 'relative',
-          top: fixedPlayerEnabled ? HEADER_HEIGHT : undefined,
+          top: fixedPlayerEnabled ? `calc(${HEADER_HEIGHT}px + var(--safe-top))` : undefined,
           left: fixedPlayerEnabled ? 0 : undefined,
           right: fixedPlayerEnabled ? 0 : undefined,
           zIndex: fixedPlayerEnabled ? 40 : undefined,
@@ -366,7 +380,7 @@ export default function VideoPlayerPage() {
       )}
 
       {/* Chapter list */}
-      <div style={{ paddingBottom: 90 }}>
+      <div style={{ paddingBottom: 'calc(32px + var(--safe-bottom))' }}>
         {error && (
           <div style={{ margin: 16, padding: '10px 14px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, fontSize: 13, color: '#ef4444' }}>
             {error}

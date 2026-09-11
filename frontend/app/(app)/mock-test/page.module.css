@@ -10,7 +10,12 @@
   --border: var(--dark-border, rgba(255, 255, 255, 0.12));
   
   background: var(--bg);
+  height: 100dvh;
+  max-height: 100dvh;
   min-height: 100dvh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   color: var(--text-dark);
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
@@ -75,28 +80,40 @@
   width: 100%;
   max-width: 430px;
   margin: 0 auto;
-  min-height: 100dvh;
+  height: 100%;
+  max-height: 100%;
   background: var(--bg);
   position: relative;
   box-shadow: 0 0 20px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 /* Home Layout */
 .homeContainer {
+  height: 100%;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   padding-bottom: 0;
 }
 
 .header {
+  flex-shrink: 0;
   background: var(--card);
   padding: calc(12px + var(--safe-top)) 16px 0;
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 40;
   display: flex;
   flex-direction: column;
   gap: 12px;
   touch-action: pan-y;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
 }
 
 .headerLeft {
@@ -195,7 +212,14 @@
 }
 
 .contentBody {
-  padding: 16px 16px 20px;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  padding: 16px 16px calc(var(--app-bottom-nav-height, 94px) + var(--safe-bottom) + 16px);
+  box-sizing: border-box;
 }
 
 .section {
@@ -904,7 +928,11 @@
 /* --- Desktop & macOS Window Design System --- */
 
 .macosWindow {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
 }
 
 .macosSidebar {
@@ -924,11 +952,21 @@
 }
 
 .macosContent {
+  flex: 1;
+  min-height: 0;
   width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 @media (min-width: 768px) {
   .page {
+    height: auto;
+    max-height: none;
+    min-height: 100dvh;
+    overflow: visible;
     padding: 32px 24px;
     background: radial-gradient(at 10% 10%, rgba(186, 230, 253, 0.7) 0px, transparent 50%),
                 radial-gradient(at 90% 15%, rgba(221, 214, 254, 0.6) 0px, transparent 50%),
@@ -1060,6 +1098,8 @@
     flex: 1;
     overflow-y: auto;
     background: transparent;
+    display: block;
+    height: 100%;
   }
 
   .categoryScroll {
@@ -1070,13 +1110,21 @@
     width: 100%;
     max-width: 100%;
     min-height: 100%;
+    height: auto;
+    max-height: none;
     margin: 0;
     background: transparent;
     box-shadow: none;
+    display: block;
+    overflow: visible;
   }
 
   .homeContainer {
     padding: 16px 20px 24px;
+    height: auto;
+    max-height: none;
+    display: block;
+    overflow: visible;
   }
 
   /* Compact Header */
@@ -1158,6 +1206,12 @@
 
   .contentBody {
     padding: 14px 0 0;
+    flex: none;
+    min-height: auto;
+    width: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: auto;
+    overscroll-behavior-y: auto;
   }
 
   .section {

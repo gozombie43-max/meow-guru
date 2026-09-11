@@ -385,7 +385,9 @@ export default function HomeClient({
             {renderMobileHeaderActions()}
           </header>
 
-          {mobileContent}
+          <div className={styles.mobileScrollContent}>
+            {mobileContent}
+          </div>
         </div>
       </div>
     </main>
