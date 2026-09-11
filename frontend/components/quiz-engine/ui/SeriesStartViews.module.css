@@ -3,31 +3,31 @@
    ========================================================================== */
 
 .pageRoot {
-  /* Light Theme (Palette: #F6F8FA White / #E6EAEF Ice Blue / #FFFFFF Pure White) */
-  --mac-bg-desktop: #F6F8FA;
-  --mac-window-bg: #FFFFFF;
-  --mac-window-border: var(--light-border);
-  --mac-window-shadow: 0 20px 60px -10px rgba(15, 23, 42, 0.08), 0 0 0 1px var(--light-border);
-  --mac-titlebar-bg: var(--light-canvas);
-  --mac-sidebar-bg: var(--light-border);
-  --mac-sidebar-border: var(--light-border);
-  --mac-surface: #FFFFFF;
-  --mac-surface-hover: var(--light-canvas);
-  --mac-surface-active: var(--light-border);
-  --mac-border: var(--light-border);
-  --mac-border-hover: rgba(0, 113, 227, 0.35);
-  --mac-border-focus: var(--light-accent);
-  --mac-blue: var(--light-accent);
-  --mac-blue-hover: #0077ed;
-  --mac-blue-subtle: var(--light-border);
-  --mac-text-primary: var(--light-text);
-  --mac-text-secondary: var(--light-text-secondary);
-  --mac-text-tertiary: var(--light-text-muted);
+  /* Default: Dark Theme (Apple HIG Dark Mode) */
+  --mac-bg-desktop: var(--dark-canvas);
+  --mac-window-bg: var(--dark-canvas);
+  --mac-window-border: var(--dark-border);
+  --mac-window-shadow: 0 25px 70px -10px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  --mac-titlebar-bg: var(--dark-surface);
+  --mac-sidebar-bg: var(--dark-canvas);
+  --mac-sidebar-border: var(--dark-border);
+  --mac-surface: var(--dark-surface);
+  --mac-surface-hover: var(--dark-surface-muted);
+  --mac-surface-active: var(--dark-surface-muted);
+  --mac-border: var(--dark-border);
+  --mac-border-hover: rgba(10, 132, 255, 0.45);
+  --mac-border-focus: var(--dark-accent);
+  --mac-blue: var(--dark-accent);
+  --mac-blue-hover: var(--dark-accent-hover);
+  --mac-blue-subtle: var(--dark-accent-soft);
+  --mac-text-primary: var(--dark-text);
+  --mac-text-secondary: var(--dark-text-secondary);
+  --mac-text-tertiary: var(--dark-text-muted);
   --mac-font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
   --mac-font-mono: "SF Mono", Menlo, Monaco, Consolas, monospace;
-  --scrollbar-thumb: rgba(0, 0, 0, 0.18);
-  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.32);
-  color-scheme: light;
+  --scrollbar-thumb: rgba(255, 255, 255, 0.2);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.35);
+  color-scheme: dark;
 
   min-height: 100vh;
   min-height: 100dvh;
@@ -73,32 +73,32 @@
   }
 }
 
-/* ── Dark Theme Overrides ─────────────────────────────────────────────────── */
-:global(body.theme-dark) .pageRoot,
-:global(html.theme-dark) .pageRoot,
-.pageRoot[data-theme="dark"] {
-  --mac-bg-desktop: var(--dark-canvas);
-  --mac-window-bg: var(--dark-canvas);
-  --mac-window-border: var(--dark-border);
-  --mac-window-shadow: 0 25px 70px -10px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.08);
-  --mac-titlebar-bg: var(--dark-surface);
-  --mac-sidebar-bg: var(--dark-canvas);
-  --mac-sidebar-border: var(--dark-border);
-  --mac-surface: var(--dark-surface);
-  --mac-surface-hover: var(--dark-surface-muted);
-  --mac-surface-active: var(--dark-surface-muted);
-  --mac-border: var(--dark-border);
-  --mac-border-hover: rgba(10, 132, 255, 0.45);
-  --mac-border-focus: var(--dark-accent);
-  --mac-blue: var(--dark-accent);
-  --mac-blue-hover: var(--dark-accent-hover);
-  --mac-blue-subtle: var(--dark-accent-soft);
-  --mac-text-primary: var(--dark-text);
-  --mac-text-secondary: var(--dark-text-secondary);
-  --mac-text-tertiary: var(--dark-text-muted);
-  --scrollbar-thumb: rgba(255, 255, 255, 0.2);
-  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.35);
-  color-scheme: dark;
+/* ── Light Theme Overrides ─────────────────────────────────────────────────── */
+:global(body.theme-light) .pageRoot,
+:global(html.theme-light) .pageRoot,
+.pageRoot[data-theme="light"] {
+  --mac-bg-desktop: #F6F8FA;
+  --mac-window-bg: #FFFFFF;
+  --mac-window-border: var(--light-border);
+  --mac-window-shadow: 0 20px 60px -10px rgba(15, 23, 42, 0.08), 0 0 0 1px var(--light-border);
+  --mac-titlebar-bg: var(--light-canvas);
+  --mac-sidebar-bg: var(--light-border);
+  --mac-sidebar-border: var(--light-border);
+  --mac-surface: #FFFFFF;
+  --mac-surface-hover: var(--light-canvas);
+  --mac-surface-active: var(--light-border);
+  --mac-border: var(--light-border);
+  --mac-border-hover: rgba(0, 113, 227, 0.35);
+  --mac-border-focus: var(--light-accent);
+  --mac-blue: var(--light-accent);
+  --mac-blue-hover: #0077ed;
+  --mac-blue-subtle: var(--light-border);
+  --mac-text-primary: var(--light-text);
+  --mac-text-secondary: var(--light-text-secondary);
+  --mac-text-tertiary: var(--light-text-muted);
+  --scrollbar-thumb: rgba(0, 0, 0, 0.18);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.32);
+  color-scheme: light;
 }
 
 /* ── Custom Mac Scrollbars ── */
@@ -816,15 +816,17 @@
    iOS MOBILE START QUIZ STYLES (< 768px)
    ============================================================================= */
 .iosScreen {
-  --ios-bg: var(--light-canvas);
-  --ios-card: #ffffff;
-  --ios-separator: rgba(60, 60, 67, 0.18);
-  --ios-ink: #1c1c1e;
-  --ios-muted: #6e6a85;
-  --ios-subtle: rgba(60, 60, 67, 0.6);
-  --ios-field: rgba(118, 118, 128, 0.12);
-  --ios-nav: rgba(242, 242, 247, 0.92);
-  --ios-accent: var(--light-accent);
+  /* Default: Dark Theme (Apple HIG Dark Mode) */
+  --ios-bg: var(--dark-canvas);
+  --ios-card: var(--dark-surface);
+  --ios-separator: var(--dark-border);
+  --ios-ink: var(--dark-text);
+  --ios-muted: var(--dark-text-muted);
+  --ios-subtle: rgba(235, 235, 245, 0.65);
+  --ios-field: var(--dark-surface-muted);
+  --ios-nav: rgba(0, 0, 0, 0.85);
+  --ios-accent: var(--dark-accent);
+  color-scheme: dark;
 
   min-height: 100vh;
   min-height: 100dvh;
@@ -836,18 +838,19 @@
   box-sizing: border-box;
 }
 
-:global(body.theme-dark) .iosScreen,
-:global(html.theme-dark) .iosScreen,
-.iosScreen[data-theme="dark"] {
-  --ios-bg: var(--dark-canvas);
-  --ios-card: var(--dark-surface);
-  --ios-separator: var(--dark-border);
-  --ios-ink: var(--dark-text);
-  --ios-muted: var(--dark-text-muted);
-  --ios-subtle: rgba(235, 235, 245, 0.6);
-  --ios-field: rgba(118, 118, 128, 0.24);
-  --ios-nav: rgba(0, 0, 0, 0.85);
-  --ios-accent: var(--dark-accent);
+:global(body.theme-light) .iosScreen,
+:global(html.theme-light) .iosScreen,
+.iosScreen[data-theme="light"] {
+  --ios-bg: var(--light-canvas);
+  --ios-card: #ffffff;
+  --ios-separator: rgba(60, 60, 67, 0.18);
+  --ios-ink: #1c1c1e;
+  --ios-muted: #6e6a85;
+  --ios-subtle: rgba(60, 60, 67, 0.6);
+  --ios-field: rgba(118, 118, 128, 0.12);
+  --ios-nav: rgba(242, 242, 247, 0.92);
+  --ios-accent: var(--light-accent);
+  color-scheme: light;
 }
 
 .iosNav {
@@ -873,11 +876,17 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  border: none;
-  background: transparent;
-  color: var(--ios-accent);
+  border: none !important;
+  background: transparent !important;
+  color: var(--ios-accent) !important;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.15s ease, transform 0.1s ease;
+}
+
+.iosBackBtn:active {
+  opacity: 0.6;
+  transform: scale(0.95);
 }
 
 .iosNavTitle {
@@ -904,17 +913,17 @@
 }
 
 .iosHeading {
-  margin: 0 0 7px 12px;
+  margin: 16px 0 8px 12px;
   color: var(--ios-subtle);
   font-size: 12.5px;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.2px;
+  letter-spacing: 0.04em;
 }
 
 .iosDropdownContainer {
   overflow: hidden;
-  border-radius: 12px;
+  border-radius: 14px;
   background: var(--ios-card);
   border: 1px solid var(--ios-separator);
   margin-bottom: 14px;
@@ -938,13 +947,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 113, 227, 0.12);
+  background: rgba(10, 132, 255, 0.15);
   color: var(--ios-accent);
   flex-shrink: 0;
 }
 
 .iosDropdownLabel {
-  font-size: 14.5px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--ios-ink);
   white-space: nowrap;
@@ -965,7 +974,7 @@
   -webkit-appearance: none;
   background: var(--ios-field);
   color: var(--ios-accent);
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 600;
   padding: 7px 28px 7px 12px;
   border-radius: 9px;
@@ -1004,12 +1013,12 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  border: 0;
+  border: 1px solid var(--ios-separator);
   border-radius: 999px;
-  background: var(--ios-field);
+  background: var(--ios-card);
   padding: 7px 14px;
   color: var(--ios-ink);
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 600;
   white-space: nowrap;
   transition: all 0.15s ease;
@@ -1019,7 +1028,8 @@
 .iosChipActive {
   background: var(--ios-accent) !important;
   color: #ffffff !important;
-  box-shadow: 0 2px 8px rgba(0, 113, 227, 0.28);
+  border-color: var(--ios-accent) !important;
+  box-shadow: 0 2px 8px rgba(10, 132, 255, 0.35);
 }
 
 .iosChipDot {
@@ -1035,13 +1045,13 @@
 
 .iosChipCount {
   color: var(--ios-muted);
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 600;
   margin-left: 1px;
 }
 
 .iosChipActive .iosChipCount {
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .iosSearchRow {
@@ -1084,7 +1094,7 @@
 
 .iosConceptList {
   overflow: hidden;
-  border-radius: 12px;
+  border-radius: 16px;
   background: var(--ios-card);
   border: 1px solid var(--ios-separator);
 }
@@ -1098,7 +1108,7 @@
   gap: 12px;
   border: 0;
   background: var(--ios-card);
-  padding: 10px 14px;
+  padding: 12px 16px;
   text-align: left;
   color: var(--ios-ink);
   cursor: pointer;
@@ -1111,7 +1121,7 @@
   position: absolute;
   right: 0;
   bottom: 0;
-  left: 54px;
+  left: 56px;
   height: 0.5px;
   background: var(--ios-separator);
 }
@@ -1126,14 +1136,16 @@
   flex: 0 0 auto;
   display: grid;
   place-items: center;
-  border: 1.6px solid #c7c7cc;
+  border: 1.8px solid rgba(255, 255, 255, 0.28);
   border-radius: 50%;
   color: #fff;
   transition: all 0.15s ease;
 }
 
-:global(body.theme-dark) .iosCheckCircle {
-  border-color: #545458;
+:global(body.theme-light) .iosCheckCircle,
+:global(html.theme-light) .iosCheckCircle,
+.iosScreen[data-theme="light"] .iosCheckCircle {
+  border-color: #c7c7cc;
 }
 
 .iosCheckCircleChecked {
@@ -1142,13 +1154,13 @@
 }
 
 .iosGroupTile {
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   flex: 0 0 auto;
   display: grid;
   place-items: center;
-  border-radius: 8px;
-  font-size: 11px;
+  border-radius: 9px;
+  font-size: 12px;
   font-weight: 700;
 }
 
@@ -1166,7 +1178,7 @@
 }
 
 .iosGroupTitle {
-  font-size: 15px;
+  font-size: 15.5px;
   font-weight: 600;
   letter-spacing: -0.15px;
   color: var(--ios-ink);
@@ -1174,7 +1186,8 @@
 
 .iosGroupMeta {
   color: var(--ios-muted);
-  font-size: 12.5px;
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .iosEmptyText {
@@ -1193,17 +1206,18 @@
   left: 0;
   border-top: 0.5px solid var(--ios-separator);
   background: var(--ios-nav);
-  padding: 10px 16px calc(10px + var(--safe-bottom));
+  padding: 12px 16px calc(12px + var(--safe-bottom));
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   box-sizing: border-box;
 }
 
 .iosToolbarText {
-  margin: 0 0 8px;
+  margin: 0 0 10px;
   color: var(--ios-muted);
   text-align: center;
-  font-size: 13px;
+  font-size: 13.5px;
+  font-weight: 500;
 }
 
 .iosToolbarText b {
@@ -1211,27 +1225,32 @@
   font-weight: 700;
 }
 
+.iosToolbarText span {
+  color: var(--ios-ink);
+  font-weight: 500;
+}
+
 .iosStartBtn {
   width: 100%;
-  min-height: 48px;
+  min-height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
+  gap: 8px;
   border: 0;
-  border-radius: 12px;
+  border-radius: 14px;
   background: var(--ios-accent);
   color: #ffffff !important;
   font-size: 16px;
   font-weight: 700;
-  box-shadow: 0 2px 8px rgba(0, 113, 227, 0.25);
+  box-shadow: 0 4px 14px rgba(10, 132, 255, 0.35);
   cursor: pointer;
   transition: opacity 0.15s ease, transform 0.1s ease;
   -webkit-tap-highlight-color: transparent;
 }
 
 .iosStartBtn:active {
-  opacity: 0.75;
+  opacity: 0.8;
   transform: scale(0.99);
 }
 

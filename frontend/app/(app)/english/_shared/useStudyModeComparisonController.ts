@@ -55,22 +55,6 @@ export function useStudyModeComparisonController(config: StudyModeComparisonConf
 
   const router = useRouter();
   const [theme, setTheme] = useState("dark");
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      try {
-        const savedTheme = window.localStorage.getItem("study-mode-theme");
-        if (savedTheme === "light" || savedTheme === "dark") {
-          setTheme(savedTheme);
-        }
-      } catch {}
-    }, 0);
-    return () => window.clearTimeout(timer);
-  }, []);
-  useEffect(() => {
-    try {
-      window.localStorage.setItem("study-mode-theme", theme);
-    } catch {}
-  }, [theme]);
 
 
   const [currentPage, setCurrentPage] = useState(1);

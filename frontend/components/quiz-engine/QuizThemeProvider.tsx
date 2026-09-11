@@ -24,19 +24,32 @@ type QuizThemeProviderProps = {
   children: ReactNode;
 };
 
-function createQuizThemeStore(storageKey: string, preferredTheme?: QuizTheme) {
-  let currentTheme: QuizTheme = preferredTheme ?? "light";
-  let initialized = preferredTheme !== undefined;
+function detectDefaultQuizTheme(preferredTheme?: QuizTheme): QuizTheme {
+  if (preferredTheme) return preferredTheme;
+  if (typeof document !== "undefined") {
+    const isDark =
+      document.documentElement.classList.contains("theme-dark") ||
+      document.body?.classList.contains("theme-dark") ||
+      document.documentElement.dataset.theme === "dark";
+    if (isDark) return "dark";
+    const isLight =
+      document.documentElement.classList.contains("theme-light") ||
+      document.body?.classList.contains("theme-light") ||
+      document.documentElement.dataset.theme === "light";
+    if (isLight) return "light";
+  }
+  return "dark";
+}
+
+function createQuizThemeStore(storageKey?: string, preferredTheme?: QuizTheme) {
+  let currentTheme: QuizTheme = preferredTheme ?? "dark";
+  let initialized = false;
   const listeners = new Set<() => void>();
 
   const getSnapshot = () => {
     if (!initialized && typeof window !== "undefined") {
       initialized = true;
-      try {
-        currentTheme = window.localStorage.getItem(storageKey) === "dark" ? "dark" : "light";
-      } catch {
-        currentTheme = "light";
-      }
+      currentTheme = detectDefaultQuizTheme(preferredTheme);
     }
     return currentTheme;
   };
@@ -45,17 +58,12 @@ function createQuizThemeStore(storageKey: string, preferredTheme?: QuizTheme) {
     if (currentTheme === nextTheme && initialized) return;
     currentTheme = nextTheme;
     initialized = true;
-    try {
-      window.localStorage.setItem(storageKey, nextTheme);
-    } catch {
-      // Storage can be unavailable in private or embedded browser contexts.
-    }
     listeners.forEach((listener) => listener());
   };
 
   return {
     getSnapshot,
-    getServerSnapshot: () => preferredTheme ?? "light" as QuizTheme,
+    getServerSnapshot: () => preferredTheme ?? ("dark" as QuizTheme),
     subscribe: (listener: () => void) => {
       listeners.add(listener);
       return () => listeners.delete(listener);

@@ -378,7 +378,7 @@ function MacOsQuizStartStudio({
         <div className={styles.titleBar}>
           <div className={styles.titleBarLeft}>
             <MacTrafficLights onClose={handleBack} />
-            <button data-ui-button="icon"
+            <button
               type="button"
               onClick={handleBack}
               className={styles.backBtn}
@@ -397,7 +397,7 @@ function MacOsQuizStartStudio({
           </div>
 
           <div className={styles.titleBarRight}>
-            <button data-ui-button="icon"
+            <button
               type="button"
               onClick={toggleTheme}
               className={styles.themeBtn}
@@ -837,7 +837,7 @@ function IosQuizStartMobile({
     >
       {/* ── Top Navigation Bar ── */}
       <header data-ui-chrome="header" className={styles.iosNav}>
-        <button data-ui-button="icon"
+        <button
           type="button"
           onClick={handleBack}
           className={styles.iosBackBtn}

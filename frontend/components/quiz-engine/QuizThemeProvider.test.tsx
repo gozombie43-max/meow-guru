@@ -21,11 +21,10 @@ describe("QuizThemeProvider", () => {
 
   beforeEach(() => {
     window.localStorage.clear();
+    document.documentElement.className = "";
   });
 
-  it("loads and updates the theme for its own subject key", async () => {
-    window.localStorage.setItem("mathematics-quiz-theme", "dark");
-
+  it("defaults to dark theme and toggles in memory without saving to localStorage", async () => {
     render(
       <QuizThemeProvider storageKey="mathematics-quiz-theme">
         <ThemeProbe />
@@ -36,27 +35,21 @@ describe("QuizThemeProvider", () => {
     fireEvent.click(screen.getByRole("button"));
 
     expect(screen.getByRole("button")).toHaveTextContent("light");
-    expect(window.localStorage.getItem("mathematics-quiz-theme")).toBe("light");
+    // Does NOT write to localStorage
+    expect(window.localStorage.getItem("mathematics-quiz-theme")).toBeNull();
   });
 
-  it("keeps subject themes isolated when the provider changes", async () => {
-    window.localStorage.setItem("mathematics-quiz-theme", "dark");
-
-    const { rerender } = render(
-      <QuizThemeProvider key="math" storageKey="mathematics-quiz-theme">
+  it("respects preferredTheme when provided without touching localStorage", async () => {
+    render(
+      <QuizThemeProvider preferredTheme="light" storageKey="english-quiz-theme">
         <ThemeProbe />
       </QuizThemeProvider>
     );
-    await waitFor(() => expect(screen.getByRole("button")).toHaveTextContent("dark"));
 
-    rerender(
-      <QuizThemeProvider key="english" storageKey="english-quiz-theme">
-        <ThemeProbe />
-      </QuizThemeProvider>
-    );
     await waitFor(() => expect(screen.getByRole("button")).toHaveTextContent("light"));
+    fireEvent.click(screen.getByRole("button"));
 
-    expect(window.localStorage.getItem("mathematics-quiz-theme")).toBe("dark");
+    expect(screen.getByRole("button")).toHaveTextContent("dark");
     expect(window.localStorage.getItem("english-quiz-theme")).toBeNull();
   });
 });

@@ -261,15 +261,13 @@ function MobileQuizView({ config, cards, bookmarked, toggleBookmark, theme, setT
 }
 
 export default function StudyModeTermsQuizEngine({ config }: { config: StudyModeTermsConfig }) {
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [bookmarked, setBookmarked] = useState<Set<string>>(new Set());
   const studyCards = useStudyModeTerms(config.topic, config.demoCards);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
       try {
-        const savedTheme = window.localStorage.getItem(`${config.storagePrefix}-theme`);
-        if (savedTheme === "light" || savedTheme === "dark") setTheme(savedTheme);
         const savedBms = window.localStorage.getItem(`${config.storagePrefix}-bookmarks`);
         if (savedBms) setBookmarked(new Set(JSON.parse(savedBms)));
       } catch {}
@@ -277,7 +275,6 @@ export default function StudyModeTermsQuizEngine({ config }: { config: StudyMode
     return () => window.clearTimeout(timer);
   }, [config.storagePrefix]);
 
-  useEffect(() => { try { window.localStorage.setItem(`${config.storagePrefix}-theme`, theme); } catch {} }, [theme, config.storagePrefix]);
   useEffect(() => { try { window.localStorage.setItem(`${config.storagePrefix}-bookmarks`, JSON.stringify([...bookmarked])); } catch {} }, [bookmarked, config.storagePrefix]);
 
   const categories = Array.from(new Set(studyCards.map(c => c.label || "General")));
