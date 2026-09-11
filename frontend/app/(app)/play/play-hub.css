@@ -1,4 +1,19 @@
 /* Hub-only composition. Session engine styles remain in play.css. */
+.training-page.play-hub {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100dvh;
+  min-height: 0;
+  padding-bottom: 0;
+  overflow: hidden;
+}
+@media (max-width: 1024px) {
+  body.has-bottom-nav .training-page.play-hub {
+    padding-bottom: calc(var(--app-bottom-nav-height) + var(--safe-bottom));
+  }
+}
 .play-hub {
   --play-accent-soft: color-mix(
     in srgb,
@@ -7,43 +22,113 @@
   );
 }
 .play-hub .training-header {
-  position: sticky;
-  top: 0;
+  position: relative;
   z-index: 35;
-  padding-inline: max(28px, var(--safe-left)) max(28px, var(--safe-right));
+  padding: calc(12px + var(--safe-top)) max(28px, var(--safe-right)) 12px
+    max(28px, var(--safe-left));
+  background: color-mix(in srgb, var(--tr-surface) 95%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--tr-border);
 }
-.play-hub .training-brand {
-  gap: 12px;
-  font-size: 23px;
-  letter-spacing: -0.8px;
-}
-.play-hub .training-brand > span:last-child {
+.play-hub .training-header-top {
   display: flex;
   align-items: center;
-  gap: 18px;
+  justify-content: space-between;
+  width: 100%;
+}
+.play-hub .training-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+  color: var(--tr-text);
+  text-decoration: none;
 }
 .play-hub .training-brand-icon {
-  background: var(--play-accent-soft);
+  background: color-mix(in srgb, var(--tr-accent) 12%, var(--tr-surface));
   color: var(--tr-accent);
-  width: 42px;
-  height: 42px;
-  border: 1px solid color-mix(in srgb, var(--tr-accent) 18%, transparent);
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--tr-accent) 20%, transparent);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.play-hub.training-dark .training-brand-icon {
+  background: rgba(96, 165, 250, 0.15);
+  color: #93c5fd;
+  border-color: rgba(96, 165, 250, 0.25);
+}
+.play-hub .training-brand-name {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--tr-text);
+  letter-spacing: -0.6px;
 }
 .play-hub .training-brand-caption {
-  margin: 0;
   font-size: 9px;
-  letter-spacing: 1.5px;
+  letter-spacing: 1.4px;
+  font-weight: 650;
+  color: var(--tr-secondary);
+  margin-left: 12px;
+}
+.play-hub .training-exam-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.play-hub .training-exam {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
 }
 .play-hub .training-exam select {
+  appearance: none;
+  -webkit-appearance: none;
   background: var(--tr-muted);
+  color: var(--tr-text);
+  border: 1px solid var(--tr-border);
+  border-radius: 9999px;
+  padding: 6px 30px 6px 14px;
+  font-size: 12px;
   font-weight: 650;
-  padding-inline: 14px;
+  letter-spacing: 0.2px;
+  min-height: 34px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.play-hub.training-dark .training-exam select {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+.play-hub .training-exam select:hover {
+  border-color: var(--tr-accent);
+  background: color-mix(in srgb, var(--tr-accent) 8%, var(--tr-muted));
+}
+.play-hub .training-exam-chevron {
+  position: absolute;
+  right: 10px;
+  pointer-events: none;
+  color: var(--tr-secondary);
+}
+.play-hub .training-header .training-mobile-tabs {
+  display: none;
 }
 .play-hub .training-layout {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
   max-width: 1560px;
   grid-template-columns: 238px minmax(0, 1fr);
 }
 .play-hub .training-sidebar {
+  min-height: 0;
+  overflow-y: auto;
   padding: 34px 18px;
   background: var(--tr-surface);
 }
@@ -55,24 +140,37 @@
   margin-top: 18px;
 }
 .play-hub .play-navigation button {
-  padding: 14px 12px;
+  padding: 12px;
   gap: 12px;
   border-radius: 14px;
   justify-content: flex-start;
+  transition: all 0.15s ease;
 }
-.play-hub .play-navigation button > span {
+.play-hub .play-nav-icon-wrap {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+.play-hub .play-navigation button > span:nth-child(2) {
   flex: 1;
 }
 .play-hub .play-navigation small {
   display: block;
   font-size: 10px;
   font-weight: 400;
-  margin-top: 4px;
+  margin-top: 3px;
   color: var(--tr-secondary);
 }
 .play-hub .play-navigation button[aria-current] {
-  background: var(--play-accent-soft);
-  color: var(--tr-accent);
+  background: color-mix(in srgb, var(--tr-accent) 12%, transparent) !important;
+  color: #1d4ed8 !important;
+  font-weight: 650;
+}
+.play-hub.training-dark .play-navigation button[aria-current] {
+  background: rgba(96, 165, 250, 0.16) !important;
+  color: #93c5fd !important;
 }
 .play-hub .training-side-note {
   margin: 64px 6px 0;
@@ -85,7 +183,16 @@
   color: var(--tr-accent);
 }
 .play-hub .training-main {
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scroll-padding-block: 16px;
   padding: 36px clamp(24px, 3vw, 48px);
+}
+.play-hub .training-main:focus-visible {
+  outline: 2px solid var(--tr-accent);
+  outline-offset: -2px;
 }
 .play-hub .training-heading {
   margin-bottom: 26px;
@@ -171,50 +278,71 @@
 .play-pulse {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin-bottom: 34px;
+  margin-bottom: 28px;
   border: 1px solid var(--tr-border);
-  border-radius: 18px;
+  border-radius: 16px;
   background: var(--tr-surface);
   overflow: hidden;
 }
 .play-pulse button[data-ui-button] {
   display: flex;
-  padding: 18px 22px;
-  gap: 13px;
+  align-items: center;
+  padding: 14px 18px;
+  gap: 12px;
   background: transparent;
   border: 0;
   border-radius: 0;
   color: var(--tr-secondary);
   text-align: left;
   justify-content: flex-start;
+  transition: background 0.15s ease;
 }
 .play-pulse button + button {
   border-left: 1px solid var(--tr-border);
 }
-.play-pulse button > span {
+.play-pulse .play-pulse-icon-badge {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--tr-accent) 12%, var(--tr-surface));
+  color: var(--tr-accent);
+  flex-shrink: 0;
+}
+.play-pulse .play-pulse-info {
   flex: 1;
+  min-width: 0;
 }
 .play-pulse strong {
   display: block;
   color: var(--tr-text);
-  font-size: 22px;
-  letter-spacing: -0.7px;
+  font-size: 20px;
+  letter-spacing: -0.6px;
   line-height: 1.2;
 }
 .play-pulse small {
   display: block;
   font-size: 11px;
   font-weight: 400;
-  margin-top: 4px;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.play-pulse .play-pulse-arrow {
+  color: var(--tr-secondary);
+  flex-shrink: 0;
+  opacity: 0.6;
 }
 .play-hub .training-mode-bar {
-  margin: 0 0 16px;
+  margin: 0 0 14px;
   align-items: end;
 }
 .play-hub .training-mode-bar h2 {
   font-weight: 700;
-  font-size: 23px;
-  margin-top: 6px;
+  font-size: 22px;
+  margin-top: 4px;
 }
 .play-hub .training-mode-bar h2 span {
   display: inline-block;
@@ -222,7 +350,7 @@
   border: 1px solid var(--tr-border);
   border-radius: 7px;
   margin-left: 10px;
-  padding: 3px 6px;
+  padding: 2px 7px;
   font-size: 11px;
   color: var(--tr-secondary);
   letter-spacing: 0;
@@ -231,34 +359,65 @@
   font-size: 12px;
 }
 .play-hub .training-filters {
-  margin: 0 0 20px;
-  gap: 7px;
-  padding: 3px;
+  display: flex;
+  gap: 8px;
+  margin: 0 0 18px;
+  padding: 2px 2px 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.play-hub .training-filters::-webkit-scrollbar {
+  display: none;
 }
 .play-hub .training-filters button {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 9px 17px;
+  gap: 6px;
+  padding: 8px 14px;
+  min-height: 36px;
   background: var(--tr-surface);
   border: 1px solid var(--tr-border);
-  border-radius: 12px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--tr-secondary);
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+.play-hub .training-filters button:hover {
+  color: var(--tr-text);
+  border-color: var(--tr-accent);
+  background: var(--tr-muted);
 }
 .play-hub .training-filters button[aria-pressed="true"] {
-  color: var(--tr-accent);
-  border-color: color-mix(in srgb, var(--tr-accent) 45%, var(--tr-border));
-  background: var(--play-accent-soft);
+  color: #fff !important;
+  border-color: var(--tr-accent);
+  background: var(--tr-accent);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--tr-accent) 25%, transparent);
+}
+.play-hub.training-dark .training-filters button[aria-pressed="true"] {
+  background: #2563eb !important;
+  border-color: #3b82f6 !important;
+  color: #ffffff !important;
 }
 .play-hub .training-mode-grid {
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
+  gap: 12px;
 }
 .play-hub .training-mode-card[data-ui-button] {
   --mode-color: var(--tr-accent);
   position: relative;
-  border-radius: 20px;
-  padding: 20px 18px 0;
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  background: var(--tr-surface);
+  border: 1px solid var(--tr-border);
   gap: 0;
+  text-align: left;
   transition:
     transform 0.18s ease,
     border-color 0.18s ease,
@@ -282,60 +441,79 @@
 .play-hub.training-dark .training-category-extreme {
   --mode-color: #f79aaa !important;
 }
+.play-hub .training-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
 .play-hub .training-mode-icon {
-  width: 46px;
-  height: 46px;
-  border-radius: 15px;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
   color: var(--mode-color);
-  background: color-mix(in srgb, var(--mode-color) 11%, var(--tr-surface));
-  border: 1px solid color-mix(in srgb, var(--mode-color) 16%, transparent);
+  background: color-mix(in srgb, var(--mode-color) 12%, var(--tr-surface));
+  border: 1px solid color-mix(in srgb, var(--mode-color) 18%, transparent);
 }
-.play-category {
+.play-hub .play-category {
   font-size: 10px;
+  font-weight: 650;
   color: var(--mode-color);
+  background: color-mix(in srgb, var(--mode-color) 10%, var(--tr-surface));
+  padding: 3px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.2px;
 }
-.play-card-arrow {
-  margin-left: auto;
-  opacity: 0;
-  transform: translateX(-4px);
-  transition: 0.18s ease;
-  color: var(--mode-color);
-}
-.play-card-title {
-  margin-top: 20px;
-  font-size: 21px;
+.play-hub .play-card-title {
+  margin-top: 12px;
+  font-size: 17px;
   color: var(--tr-text);
-  font-weight: 750;
-  letter-spacing: -0.6px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  line-height: 1.25;
 }
 .play-hub .training-mode-eyebrow {
   font-size: 11px;
-  line-height: 1.5;
-  margin-top: 6px;
+  line-height: 1.4;
+  margin-top: 4px;
   color: var(--mode-color);
   font-weight: 550;
 }
 .play-hub .training-mode-description {
   color: var(--tr-secondary);
   font-size: 12px;
-  line-height: 1.65;
-  margin: 9px 0 18px !important;
+  line-height: 1.5;
+  margin: 6px 0 12px !important;
+  flex: 1;
 }
 .play-hub .training-card-bottom {
-  font-size: 10px;
-  padding: 13px 0;
-  min-height: 45px;
-}
-.play-hub .training-card-bottom > span {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  padding-top: 10px;
+  border-top: 1px solid var(--tr-border);
+  min-height: auto;
+}
+.play-hub .training-card-bottom .play-card-time {
+  display: inline-flex;
+  align-items: center;
   gap: 5px;
+  color: var(--tr-secondary);
+  font-weight: 500;
 }
 .play-hub .training-card-bottom svg {
   color: inherit;
 }
 .play-hub .play-configure {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
   color: var(--mode-color);
+  font-weight: 600;
+  font-size: 11px;
 }
 .play-hub .training-footnote {
   display: flex;
@@ -348,7 +526,51 @@
   flex-shrink: 0;
 }
 .play-hub .training-resume {
-  border-left: 3px solid var(--tr-accent);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 18px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--tr-accent) 7%, var(--tr-surface));
+  border: 1px solid color-mix(in srgb, var(--tr-accent) 26%, var(--tr-border));
+  margin-bottom: 18px;
+}
+.play-hub .training-resume-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.play-hub .training-resume-indicator {
+  position: relative;
+  display: inline-flex;
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+}
+.play-hub .training-resume-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #10b981 25%, transparent);
+}
+.play-hub .training-resume strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 650;
+  color: var(--tr-text);
+  line-height: 1.25;
+}
+.play-hub .training-resume p {
+  font-size: 12px;
+  color: var(--tr-secondary);
+  margin: 2px 0 0;
+  line-height: 1.35;
+}
+.play-hub .training-resume-btn {
+  flex-shrink: 0;
 }
 .play-setup {
   padding: 28px;
@@ -448,14 +670,100 @@
 }
 @media (max-width: 900px) {
   .play-hub .training-header {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    display: flex;
+    flex-direction: column;
+    padding: calc(10px + var(--safe-top)) max(16px, var(--safe-right)) 10px
+      max(16px, var(--safe-left));
+    gap: 8px;
+  }
+  .play-hub .training-header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+  .play-hub .training-brand-caption {
+    display: none;
+  }
+  .play-hub .training-brand-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+  }
+  .play-hub .training-brand-name {
+    font-size: 19px;
   }
   .play-hub .training-header .training-mobile-tabs {
-    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    width: 100%;
+    background: color-mix(in srgb, var(--tr-text) 5%, var(--tr-surface));
+    border: 1px solid var(--tr-border);
+    border-radius: 14px;
+    padding: 3px;
+    gap: 2px;
     margin: 0;
-    padding: 0;
+  }
+  .play-hub.training-dark .training-header .training-mobile-tabs {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+  .play-hub .training-mobile-tabs button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding: 5px 2px 4px;
+    border-radius: 11px;
     border: 0;
+    background: transparent;
+    color: var(--tr-secondary);
+    gap: 3px;
+    font-size: 10.5px;
+    font-weight: 550;
+    line-height: 1.2;
+    cursor: pointer;
+    transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .play-hub .training-mobile-tabs button .play-nav-icon-wrap {
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    color: inherit;
+    transition: transform 0.15s ease, color 0.15s ease;
+  }
+  .play-hub .training-mobile-tabs button svg {
+    width: 17px;
+    height: 17px;
+  }
+  .play-hub .training-mobile-tabs button .play-nav-label {
+    font-size: 10.5px;
+    font-weight: 550;
+    letter-spacing: -0.1px;
+    color: inherit;
+    white-space: nowrap;
+    text-align: center;
+  }
+  .play-hub .training-mobile-tabs button:not([aria-current]):hover {
+    color: var(--tr-text);
+  }
+  .play-hub .training-mobile-tabs button[aria-current] {
+    background: var(--tr-surface) !important;
+    color: var(--tr-accent) !important;
+    font-weight: 650;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08), 0 0 0 1px var(--tr-border) !important;
+  }
+  .play-hub.training-dark .training-mobile-tabs button[aria-current] {
+    background: #252830 !important;
+    color: #93c5fd !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+  }
+  .play-hub .training-mobile-tabs button[aria-current] .play-nav-icon-wrap {
+    transform: scale(1.08);
   }
 
   .play-hub .training-layout {
@@ -467,76 +775,35 @@
   .play-hub .training-main {
     padding: 0 max(24px, var(--safe-right)) 16px max(24px, var(--safe-left));
   }
-  .play-hub .training-mobile-tabs {
-    display: flex;
-    margin: 0 0 24px;
-    gap: 4px;
-    padding: 12px 0;
-    border-bottom: 1px solid var(--tr-border);
-    overflow-x: auto;
-  }
-  .play-hub .training-mobile-tabs button {
-    display: flex;
-    gap: 7px;
-    flex: 1;
-    padding: 10px 12px;
-    border: 0;
-    background: transparent;
-    color: var(--tr-secondary);
-    white-space: nowrap;
-    font-size: 12px;
-  }
-  .play-hub .training-mobile-tabs button[aria-current] {
-    color: var(--tr-accent);
-    background: var(--play-accent-soft);
-  }
 }
 @media (max-width: 600px) {
   .play-hub .training-header {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 8px 12px;
-    padding: calc(8px + var(--safe-top)) max(16px, var(--safe-right)) 8px
-      max(16px, var(--safe-left));
-  }
-  .play-hub .training-brand-caption {
-    display: none;
-  }
-  .play-hub .training-brand {
-    font-size: 21px;
+    padding: calc(8px + var(--safe-top)) max(14px, var(--safe-right)) 8px
+      max(14px, var(--safe-left));
+    gap: 7px;
   }
   .play-hub .training-brand-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 11px;
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+  }
+  .play-hub .training-brand-name {
+    font-size: 18px;
   }
   .play-hub .training-main {
-    padding: 18px max(16px, var(--safe-right)) 0 max(16px, var(--safe-left));
-  }
-  .play-hub .training-mobile-tabs {
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    grid-column: 1 / -1;
-    width: 100%;
-    gap: 3px;
-    margin: 0;
-    padding: 0;
-    border: 0;
-    overflow: visible;
+    padding: 16px max(14px, var(--safe-right)) 24px max(14px, var(--safe-left));
   }
   .play-hub .training-mobile-tabs button {
-    flex-direction: column;
-    min-width: 0;
-    min-height: 52px;
-    padding: 6px 2px;
-    gap: 4px;
-    font-size: 11px;
-    line-height: 1.3;
-    border-radius: 10px;
+    min-height: 46px;
+    padding: 4px 1px 3px;
+    gap: 2px;
   }
   .play-hub .training-mobile-tabs button svg {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
+  }
+  .play-hub .training-mobile-tabs button .play-nav-label {
+    font-size: 10px;
   }
   .play-hub .training-heading {
     margin-bottom: 16px;
@@ -556,9 +823,9 @@
     margin-top: 5px;
   }
   .play-hub .training-resume {
-    padding: 12px;
-    gap: 8px;
-    margin-bottom: 12px;
+    padding: 10px 14px;
+    gap: 10px;
+    margin-bottom: 14px;
     border-radius: 14px;
   }
   .play-hub .training-resume > div {
@@ -570,16 +837,16 @@
   .play-hub .training-resume p {
     font-size: 11px;
     line-height: 1.4;
-    margin-top: 4px;
+    margin-top: 2px;
   }
   .play-hub .training-resume a {
     flex-shrink: 0;
-    padding-inline: 10px;
-    font-size: 12px;
+    padding: 8px 12px !important;
+    font-size: 12px !important;
   }
   .play-hub .play-mission-shortcut {
     padding: 14px;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
     gap: 12px;
     border-radius: 15px;
   }
@@ -595,7 +862,7 @@
     align-items: center;
     flex-wrap: nowrap;
     gap: 10px;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
   }
   .play-hub .training-mode-bar .training-kicker {
     display: none;
@@ -611,148 +878,167 @@
     padding: 0;
   }
   .play-mobile-filter {
-    display: block;
-    flex-shrink: 0;
-  }
-  .play-mobile-filter select {
-    max-width: 130px;
-    min-height: 44px;
-    padding: 10px;
-    border: 1px solid var(--tr-border);
-    border-radius: 11px;
-    color: var(--tr-text);
-    background: var(--tr-surface);
-    font: inherit;
-    font-size: 12px;
+    display: none !important;
   }
   .play-hub .training-filters {
-    display: none;
+    display: flex !important;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    padding: 2px 2px 6px;
+    margin: 0 0 14px;
+    gap: 6px;
+  }
+  .play-hub .training-filters button {
+    padding: 7px 12px;
+    min-height: 34px;
+    font-size: 11px;
+    gap: 5px;
   }
   .play-hub .training-mode-grid {
     grid-template-columns: minmax(0, 1fr);
-    gap: 10px;
+    gap: 8px;
   }
   .play-hub .training-mode-card[data-ui-button] {
     display: grid;
-    grid-template-columns: 44px minmax(0, 1fr) 16px;
-    grid-template-rows: auto auto auto;
+    grid-template-columns: 40px minmax(0, 1fr) auto;
     align-items: center;
     column-gap: 12px;
-    row-gap: 4px;
-    padding: 15px 14px;
-    border-radius: 16px;
-    text-align: left;
+    padding: 12px 14px;
+    border-radius: 14px;
   }
   .play-hub .training-card-top {
     grid-column: 1;
-    grid-row: 1 / 4;
-    align-self: start;
+    grid-row: 1 / 3;
     display: block;
+    width: auto;
   }
   .play-hub .training-mode-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 13px;
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
   }
   .play-hub .training-mode-icon svg {
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
   }
-  .play-hub .play-category,
-  .play-hub .play-card-arrow {
+  .play-hub .play-category {
     display: none;
   }
   .play-hub .play-card-title {
     grid-column: 2;
     grid-row: 1;
-    font-size: 17px;
-    line-height: 1.3;
+    font-size: 15px;
+    line-height: 1.25;
     margin: 0;
     letter-spacing: -0.3px;
   }
   .play-hub .training-mode-eyebrow {
     grid-column: 2;
     grid-row: 2;
-    font-size: 12px;
-    line-height: 1.45;
-    margin: 0;
+    font-size: 11px;
+    line-height: 1.35;
+    margin: 2px 0 0;
     color: var(--tr-secondary);
     font-weight: 400;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .play-hub .training-mode-description {
     display: none;
   }
   .play-hub .training-card-bottom {
-    grid-column: 2;
-    grid-row: 3;
-    padding: 3px 0 0;
+    grid-column: 3;
+    grid-row: 1 / 3;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0;
     border: 0;
-    min-height: 0;
-    font-size: 11px;
-    line-height: 1.4;
-    color: var(--mode-color);
+    min-height: auto;
+  }
+  .play-hub .training-card-bottom .play-card-time {
+    font-size: 10px;
+    padding: 3px 6px;
+    border-radius: 6px;
+    background: var(--tr-muted);
+    color: var(--tr-secondary);
+    white-space: nowrap;
   }
   .play-hub .training-card-bottom .play-configure {
-    position: absolute;
-    right: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    display: flex;
-    font-size: 0;
-    gap: 0;
     color: var(--tr-secondary);
+    display: inline-flex;
+    font-size: 0;
   }
   .play-hub .training-card-bottom .play-configure svg {
-    width: 17px;
-    height: 17px;
+    width: 16px;
+    height: 16px;
   }
   .play-hub .training-footnote {
     font-size: 11px;
     text-align: left;
     align-items: flex-start;
     justify-content: flex-start;
-    margin-top: 16px !important;
+    margin-top: 14px !important;
   }
   .play-pulse {
-    margin: 24px 0 0;
-    border-radius: 15px;
+    margin: 20px 0 0;
+    border-radius: 14px;
   }
   .play-pulse button[data-ui-button] {
-    padding: 12px 8px;
+    padding: 10px 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
-    gap: 0;
+    gap: 6px;
+    text-align: center;
   }
-  .play-pulse button > svg {
+  .play-pulse .play-pulse-icon-badge {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--tr-accent) 12%, var(--tr-surface));
+    color: var(--tr-accent);
+  }
+  .play-pulse .play-pulse-icon-badge svg {
+    width: 16px;
+    height: 16px;
+  }
+  .play-pulse .play-pulse-arrow {
     display: none;
   }
-  .play-pulse button > span {
+  .play-pulse .play-pulse-info {
     text-align: center;
   }
   .play-pulse strong {
-    font-size: 20px;
+    font-size: 18px;
   }
   .play-pulse small {
-    font-size: 11px;
-    line-height: 1.4;
+    font-size: 10px;
+    line-height: 1.25;
     white-space: normal;
   }
   .play-hub .training-mission {
     grid-template-columns: 1fr;
-    border-radius: 18px;
+    border-radius: 16px;
   }
   .play-hub .training-mission-copy {
-    padding: 20px;
+    padding: 18px;
   }
   .play-hub .training-mission-copy h2 {
-    font-size: 23px;
-    margin-top: 12px;
+    font-size: 21px;
+    margin-top: 10px;
   }
   .play-hub .training-mission-copy button {
     width: 100%;
-    margin-top: 16px;
+    margin-top: 14px;
   }
   .play-hub .training-readiness {
-    padding: 16px 20px;
+    padding: 14px 18px;
   }
   .play-orbit {
     display: none;
@@ -767,7 +1053,7 @@
       max(20px, var(--safe-left));
   }
   .play-setup h2 {
-    font-size: 27px;
+    font-size: 25px;
   }
 }
 @media (max-width: 359px) {
@@ -789,4 +1075,139 @@
   .play-hub .training-mode-card:hover {
     transform: none;
   }
+}
+
+/* Review queue panel & empty state */
+.play-hub .training-review-panel {
+  border-radius: 18px;
+}
+.play-hub .training-review-empty {
+  text-align: center;
+  padding: 28px 16px 20px;
+}
+.play-hub .training-review-empty-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
+  background: color-mix(in srgb, #10b981 12%, var(--tr-surface));
+  color: #10b981;
+  margin: 0 auto 14px;
+  border: 1px solid color-mix(in srgb, #10b981 22%, transparent);
+}
+.play-hub .training-review-empty h3 {
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--tr-text);
+  margin: 0;
+  letter-spacing: -0.4px;
+}
+.play-hub .training-review-empty-desc {
+  font-size: 13px;
+  color: var(--tr-secondary);
+  max-width: 440px;
+  margin: 8px auto 18px;
+  line-height: 1.55;
+}
+.play-hub .training-interval-stepper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: var(--tr-muted);
+  border: 1px solid var(--tr-border);
+  margin: 0 auto 20px;
+}
+.play-hub .training-interval-stepper .interval-step {
+  font-size: 11px;
+  font-weight: 650;
+  color: var(--tr-text);
+}
+.play-hub .training-interval-stepper .interval-arrow {
+  font-size: 11px;
+  color: var(--tr-secondary);
+}
+.play-hub .training-review-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 6px;
+}
+.play-hub .training-upcoming-reviews {
+  margin-top: 28px;
+  border-top: 1px solid var(--tr-border);
+  padding-top: 18px;
+  text-align: left;
+}
+.play-hub .training-upcoming-reviews h4 {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  color: var(--tr-secondary);
+  margin: 0 0 12px;
+}
+
+/* Primary & Secondary Buttons across Training */
+.play-hub [data-ui-button="primary"],
+.training-page [data-ui-button="primary"],
+.training-setup [data-ui-button="primary"] {
+  background-color: var(--tr-accent) !important;
+  border-color: var(--tr-accent) !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  border-radius: 12px !important;
+  padding: 10px 18px !important;
+  font-size: 13px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+.play-hub [data-ui-button="primary"]:not(:disabled):hover,
+.training-page [data-ui-button="primary"]:not(:disabled):hover,
+.training-setup [data-ui-button="primary"]:not(:disabled):hover {
+  filter: brightness(1.12);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--tr-accent) 28%, transparent) !important;
+}
+.play-hub [data-ui-button="primary"]:disabled,
+.training-page [data-ui-button="primary"]:disabled,
+.training-setup [data-ui-button="primary"]:disabled {
+  background-color: var(--tr-muted) !important;
+  border-color: var(--tr-border) !important;
+  color: var(--tr-secondary) !important;
+  opacity: 0.6 !important;
+  cursor: not-allowed;
+  box-shadow: none !important;
+}
+.play-hub [data-ui-button="secondary"],
+.training-page [data-ui-button="secondary"],
+.training-setup [data-ui-button="secondary"] {
+  background-color: var(--tr-surface) !important;
+  border: 1px solid var(--tr-border) !important;
+  color: var(--tr-text) !important;
+  font-weight: 600 !important;
+  border-radius: 12px !important;
+  padding: 9px 16px !important;
+  font-size: 13px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  transition: all 0.15s ease !important;
+}
+.play-hub [data-ui-button="secondary"]:not(:disabled):hover,
+.training-page [data-ui-button="secondary"]:not(:disabled):hover,
+.training-setup [data-ui-button="secondary"]:not(:disabled):hover {
+  background-color: var(--tr-muted) !important;
+  border-color: var(--tr-accent) !important;
+  color: var(--tr-accent) !important;
+}
+.play-hub .training-mock-footer {
+  margin-top: 20px;
+  display: flex;
 }

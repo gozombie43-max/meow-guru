@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
-  ArrowRight,
   BarChart3,
+  BookOpen,
   BookOpenCheck,
   Brain,
   ChevronRight,
@@ -36,7 +36,13 @@ const icons = {
   flame: Flame,
   shield: Shield,
 };
-const categories = ["All modes", "AI", "Speed", "Sectional", "Extreme"];
+const categoryConfigs = [
+  { name: "All modes", icon: Layers },
+  { name: "AI", icon: Sparkles },
+  { name: "Speed", icon: Zap },
+  { name: "Sectional", icon: BookOpen },
+  { name: "Extreme", icon: Flame },
+];
 
 export function PlayNavigation({
   tab,
@@ -55,12 +61,15 @@ export function PlayNavigation({
       {areas.map(({ label, icon: Icon, caption }) => (
         <button
           key={label}
+          type="button"
           data-ui-button="state"
           aria-current={tab === label ? "page" : undefined}
           onClick={() => onChange(label)}
         >
-          <Icon size={19} aria-hidden="true" />
-          <span>
+          <span className="play-nav-icon-wrap">
+            <Icon size={17} strokeWidth={1.9} aria-hidden="true" />
+          </span>
+          <span className="play-nav-label">
             {label}
             {!mobile && <small>{caption}</small>}
           </span>
@@ -112,12 +121,14 @@ export function PlayPulse({
           data-ui-button="state"
           onClick={() => onChange(tab)}
         >
-          <Icon size={20} aria-hidden="true" />
-          <span>
+          <span className="play-pulse-icon-badge">
+            <Icon size={17} strokeWidth={1.8} aria-hidden="true" />
+          </span>
+          <span className="play-pulse-info">
             <strong>{loading || value == null ? "—" : value}</strong>
             <small>{label}</small>
           </span>
-          <ChevronRight size={15} aria-hidden="true" />
+          <ChevronRight className="play-pulse-arrow" size={15} aria-hidden="true" />
         </button>
       ))}
     </section>
@@ -143,32 +154,21 @@ export function PlayModeLibrary({
             <span>{visible.length.toString().padStart(2, "0")}</span>
           </h2>
         </div>
-        <label className="play-mobile-filter">
-          <span className="sr-only">Mode category</span>
-          <select
-            value={category}
-            onChange={(event) => setCategory(event.target.value)}
-          >
-            {categories.map((name) => (
-              <option key={name}>{name}</option>
-            ))}
-          </select>
-        </label>
       </div>
       <div
         className="training-filters"
         role="group"
         aria-label="Mode categories"
       >
-        {categories.map((name) => (
+        {categoryConfigs.map(({ name, icon: CatIcon }) => (
           <button
             key={name}
             data-ui-button="state"
             aria-pressed={category === name}
             onClick={() => setCategory(name)}
           >
-            {name === "All modes" && <Layers size={15} aria-hidden="true" />}
-            {name}
+            <CatIcon size={14} aria-hidden="true" />
+            <span>{name}</span>
           </button>
         ))}
       </div>
@@ -183,24 +183,19 @@ export function PlayModeLibrary({
               aria-label={`Set up ${mode.title}`}
               onClick={() => onChoose(mode.id)}
             >
-              <span className="training-card-top">
+              <div className="training-card-top">
                 <span className="training-mode-icon">
-                  <Icon size={25} strokeWidth={1.7} aria-hidden="true" />
+                  <Icon size={22} strokeWidth={1.75} aria-hidden="true" />
                 </span>
                 <span className="play-category">{mode.category}</span>
-                <ArrowRight
-                  className="play-card-arrow"
-                  size={18}
-                  aria-hidden="true"
-                />
-              </span>
+              </div>
               <span className="play-card-title">{mode.title}</span>
               <span className="training-mode-eyebrow">{mode.eyebrow}</span>
               <span className="training-mode-description">
                 {mode.description}
               </span>
-              <span className="training-card-bottom">
-                <span>
+              <div className="training-card-bottom">
+                <span className="play-card-time">
                   <Clock3 size={13} aria-hidden="true" />
                   {mode.time}
                 </span>
@@ -208,7 +203,7 @@ export function PlayModeLibrary({
                   Set up
                   <ChevronRight size={14} aria-hidden="true" />
                 </span>
-              </span>
+              </div>
             </button>
           );
         })}

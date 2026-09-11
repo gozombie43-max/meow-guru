@@ -148,9 +148,11 @@ export default function TrainingMockCatalog({ exam }: { exam: string }) {
           )}
         </>
       )}
-      <Link data-ui-button="primary" href={`/mock-test/${exam}`}>
-        All mocks & papers <ArrowRight size={16} />
-      </Link>
+      <div className="training-mock-footer">
+        <Link data-ui-button="primary" href={`/mock-test/${exam}`}>
+          All mocks & papers <ArrowRight size={16} aria-hidden="true" />
+        </Link>
+      </div>
     </section>
   );
 }

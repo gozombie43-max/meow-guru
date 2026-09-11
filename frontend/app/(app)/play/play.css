@@ -434,12 +434,25 @@
   flex-shrink: 0;
 }
 .training-empty {
-  padding: 40px 15px;
+  padding: 36px 16px;
   text-align: center;
   color: var(--tr-secondary);
 }
+.training-empty h3 {
+  color: var(--tr-text);
+  font-size: 18px;
+  font-weight: 700;
+  margin: 10px 0 6px;
+}
+.training-empty p {
+  color: var(--tr-secondary);
+  font-size: 13px;
+  max-width: 420px;
+  margin: 0 auto;
+}
 .training-empty svg {
   margin: 0 auto 12px;
+  color: var(--tr-accent);
 }
 .training-stat-grid {
   display: grid;

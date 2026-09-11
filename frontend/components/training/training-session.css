@@ -1,3 +1,7 @@
+/* ==========================================================================
+   TRAINING SESSION & QUIZ SURFACE STYLES
+   ========================================================================== */
+
 .training-session-header {
   display: flex;
   align-items: center;
@@ -6,37 +10,147 @@
     max(24px, var(--safe-left));
   background: var(--tr-surface);
   border-bottom: 1px solid var(--tr-border);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
-.training-session-header > div:nth-child(2) {
+
+.training-header-back {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 1px solid var(--tr-border);
+  background: var(--tr-muted);
+  color: var(--tr-text);
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.training-header-back:hover {
+  background: var(--tr-border);
+  transform: translateX(-1px);
+}
+
+.training-session-title-wrap {
   flex: 1;
   min-width: 0;
 }
+
+.training-session-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.training-session-mode-badge {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--tr-accent);
+  flex-shrink: 0;
+}
+
+.training-dark .training-session-mode-badge {
+  background: rgba(133, 170, 255, 0.15);
+  color: var(--tr-accent);
+}
+
 .training-session-header strong {
   display: block;
   font-size: 16px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  color: var(--tr-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+
 .training-session-header span {
   display: block;
   color: var(--tr-secondary);
   font-size: 11px;
-  margin-top: 3px;
+  font-weight: 500;
+  margin-top: 2px;
 }
+
 .training-clock {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-size: 20px;
+  gap: 7px;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  background: var(--tr-muted);
+  border: 1px solid var(--tr-border);
+  font-size: 15px;
+  font-weight: 750;
   font-variant-numeric: tabular-nums;
+  color: var(--tr-text);
   white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
 }
+
 .training-clock-urgent {
-  color: #c45656;
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #ef4444;
+  animation: pulse-urgent 1.5s infinite;
 }
+
+@keyframes pulse-urgent {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15);
+  }
+}
+
 .training-session-main {
-  max-width: 1140px;
+  max-width: 1160px;
   margin: auto;
-  padding: 26px 24px calc(24px + var(--safe-bottom));
+  padding: 24px 24px calc(32px + var(--safe-bottom));
 }
+
+.training-session-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  gap: 16px;
+  color: var(--tr-secondary);
+  font-size: 14px;
+}
+
+.training-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--tr-border);
+  border-top-color: var(--tr-accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ==========================================================================
+   QUESTION METADATA & PROGRESS
+   ========================================================================== */
+
 .training-question-meta {
   display: flex;
   align-items: center;
@@ -44,331 +158,1187 @@
   gap: 12px;
   color: var(--tr-secondary);
   font-size: 11px;
-  font-weight: 650;
+  font-weight: 700;
   letter-spacing: 0.6px;
 }
-.training-question-meta span {
+
+.training-question-counter {
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.8px;
+  color: var(--tr-secondary);
+}
+
+.training-survival-lives {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  padding: 4px 10px;
+  border-radius: 9999px;
 }
+
+.training-lives-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #ef4444;
+}
+
+.training-lives-hearts {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.training-heart-icon.is-alive {
+  color: #ef4444;
+  filter: drop-shadow(0 0 3px rgba(239, 68, 68, 0.35));
+}
+
+.training-heart-icon.is-lost {
+  color: var(--tr-secondary);
+  opacity: 0.4;
+}
+
+.training-answered-pill {
+  background: var(--tr-muted);
+  border: 1px solid var(--tr-border);
+  border-radius: 9999px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--tr-secondary);
+}
+
+.training-progress-track {
+  margin: 12px 0 24px;
+}
+
 .training-progress {
   width: 100%;
-  height: 5px;
+  height: 6px;
   display: block;
   appearance: none;
-  margin: 15px 0 24px;
   border: 0;
-  border-radius: 9px;
+  border-radius: 9999px;
   background: var(--tr-border);
+  overflow: hidden;
 }
+
 .training-progress::-webkit-progress-bar {
   background: var(--tr-border);
-  border-radius: 9px;
+  border-radius: 9999px;
 }
+
 .training-progress::-webkit-progress-value {
   background: var(--tr-accent);
-  border-radius: 9px;
+  border-radius: 9999px;
+  transition: width 0.25s ease;
 }
+
 .training-progress::-moz-progress-bar {
   background: var(--tr-accent);
+  border-radius: 9999px;
 }
+
+/* ==========================================================================
+   MAIN QUIZ COLUMNS
+   ========================================================================== */
+
 .training-session-columns {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 270px;
+  grid-template-columns: minmax(0, 1fr) 280px;
   gap: 24px;
   align-items: start;
 }
+
 .training-question-panel {
   background: var(--tr-surface);
   border: 1px solid var(--tr-border);
   border-radius: 16px;
-  padding: 26px;
+  padding: 28px;
   min-width: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
+
 .training-question-tags {
   display: flex;
-  gap: 7px;
+  gap: 8px;
   flex-wrap: wrap;
+  align-items: center;
 }
-.training-question-tags span {
-  background: var(--tr-muted);
+
+.training-tag-block,
+.training-tag-topic,
+.training-tag-difficulty,
+.training-tag-source {
   border-radius: 6px;
-  padding: 5px 8px;
-  font-size: 10px;
-  color: var(--tr-secondary);
+  padding: 4px 9px;
+  font-size: 11px;
+  font-weight: 600;
 }
+
+.training-tag-topic {
+  background: rgba(37, 99, 235, 0.08);
+  color: var(--tr-accent);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+.training-dark .training-tag-topic {
+  background: rgba(133, 170, 255, 0.12);
+  border-color: rgba(133, 170, 255, 0.25);
+}
+
+.training-tag-difficulty {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--tr-muted);
+  color: var(--tr-text);
+  border: 1px solid var(--tr-border);
+}
+
+.diff-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #3b82f6;
+}
+
+.diff-dot.diff-1 { background: #10b981; }
+.diff-dot.diff-2 { background: #3b82f6; }
+.diff-dot.diff-3 { background: #f59e0b; }
+.diff-dot.diff-4 { background: #f97316; }
+.diff-dot.diff-5 { background: #ef4444; }
+
+.training-tag-source,
+.training-tag-block {
+  background: var(--tr-muted);
+  color: var(--tr-secondary);
+  border: 1px solid var(--tr-border);
+}
+
 .training-question-text {
-  font-size: 18px;
-  line-height: 1.8;
-  margin: 24px 0;
+  font-size: 17px;
+  line-height: 1.75;
+  color: var(--tr-text);
+  font-weight: 450;
+  margin: 20px 0 24px;
   overflow-wrap: anywhere;
 }
+
+.training-question-image-wrap {
+  margin: 16px 0;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--tr-border);
+  max-width: 100%;
+}
+
 .training-question-panel img,
 .training-answer-review img {
   max-width: 100%;
   height: auto;
+  display: block;
 }
+
+/* ==========================================================================
+   ANSWER CHOICES
+   ========================================================================== */
+
 .training-answers {
   display: grid;
   gap: 12px;
 }
-.training-answers button[data-ui-button] {
+
+.training-option-btn {
   display: flex;
-  gap: 14px;
   align-items: flex-start;
-  padding: 16px;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1.5px solid var(--tr-border);
+  background: var(--tr-surface);
+  color: var(--tr-text);
   text-align: left;
   white-space: normal;
-  line-height: 1.6;
-  background: var(--tr-surface);
-  border: 1px solid var(--tr-border);
-  color: var(--tr-text);
+  line-height: 1.55;
   font-size: 15px;
   font-weight: 400;
   overflow-wrap: anywhere;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  width: 100%;
 }
-.training-answers button.selected[data-ui-button] {
+
+.training-option-btn:hover:not(:disabled) {
   border-color: var(--tr-accent);
   background: var(--tr-muted);
+  transform: translateY(-1px);
 }
+
+.training-option-btn.selected {
+  border-color: var(--tr-accent);
+  background: rgba(37, 99, 235, 0.08);
+  box-shadow: 0 0 0 1px var(--tr-accent);
+}
+
+.training-dark .training-option-btn.selected {
+  background: rgba(133, 170, 255, 0.12);
+  border-color: var(--tr-accent);
+}
+
 .training-option-letter {
-  width: 27px;
-  height: 27px;
+  width: 28px;
+  height: 28px;
   flex-shrink: 0;
   display: grid;
   place-items: center;
   border: 1px solid var(--tr-border);
-  border-radius: 7px;
+  border-radius: 8px;
   font-size: 12px;
+  font-weight: 750;
+  background: var(--tr-muted);
+  color: var(--tr-secondary);
+  transition: all 0.15s ease;
 }
-.training-answers .selected .training-option-letter {
+
+.training-option-btn.selected .training-option-letter {
   background: var(--tr-accent);
-  color: var(--tr-surface);
+  color: #fff;
   border-color: transparent;
 }
+
+.training-option-content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ==========================================================================
+   PACE INDICATOR
+   ========================================================================== */
+
 .training-pace {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  flex-wrap: wrap;
-  margin-top: 20px;
-  font-size: 12px;
-  color: var(--tr-secondary);
-}
-.training-pace small {
-  margin-left: auto;
-  font-size: 10px;
-}
-.training-confidence {
-  margin: 24px 0 0;
-  padding: 0;
-  border: 0;
-  display: flex;
-  gap: 7px;
-}
-.training-confidence legend {
-  font-size: 12px;
-  margin-bottom: 10px;
-}
-.training-confidence legend span {
-  font-size: 10px;
-  color: var(--tr-secondary);
-  margin-left: 8px;
-}
-.training-confidence button {
-  background: var(--tr-surface);
-  border: 1px solid var(--tr-border);
-  color: var(--tr-secondary);
-  padding: 8px 16px;
-  font-size: 12px;
-}
-.training-confidence button[aria-pressed="true"] {
-  background: var(--tr-muted);
-  border-color: var(--tr-accent);
-  color: var(--tr-accent);
-}
-.training-session-actions {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 25px;
-  border-top: 1px solid var(--tr-border);
-  padding-top: 20px;
-}
-.training-session-actions button {
-  font-size: 13px;
-}
-.training-session-aside .training-panel {
-  padding: 20px;
-}
-.training-session-aside h2 {
-  font-size: 17px;
-}
-.training-session-aside p {
-  font-size: 12px;
-}
-.training-session-aside > button {
-  width: 100%;
-}
-.training-session-aside .training-panel > button {
-  margin-top: 12px;
-  width: 100%;
-  font-size: 12px;
-}
-.training-palette {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 7px;
-  margin-top: 18px;
-}
-.training-palette button {
-  background: var(--tr-muted);
-  border: 1px solid var(--tr-border);
-  color: var(--tr-text);
-  font-size: 12px;
-  padding: 8px;
-}
-.training-palette button.answered {
-  color: var(--tr-accent);
-  font-weight: 750;
-}
-.training-palette button[aria-current] {
-  outline: 2px solid var(--tr-accent);
-  outline-offset: 1px;
-}
-.training-result-heading {
-  padding: 15px 0 30px;
-}
-.training-result-heading > svg {
-  color: var(--tr-accent);
-  margin-bottom: 15px;
-}
-.training-result-heading h1 {
-  font-size: 32px;
-}
-.training-result-heading > a {
-  margin-top: 20px;
-}
-.training-result-heading .training-kicker {
-  margin-bottom: 8px;
-}
-.training-stat-grid small {
-  font-size: 17px;
-  font-weight: 400;
-  color: var(--tr-secondary);
-}
-.training-answer-review {
-  border-bottom: 1px solid var(--tr-border);
-  padding: 15px 0;
-  font-size: 14px;
-  line-height: 1.7;
-}
-.training-answer-review summary {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  cursor: pointer;
-  min-height: 44px;
+  flex-wrap: wrap;
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--tr-border);
+}
+
+.training-pace-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font-size: 12px;
-}
-.training-answer-review summary span:last-child {
   color: var(--tr-secondary);
+  background: var(--tr-muted);
+  padding: 5px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--tr-border);
+}
+
+.training-pace-times strong {
+  color: var(--tr-text);
+}
+
+.training-pace-delta {
+  font-weight: 750;
   font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
 }
-.training-answer-review[open] > summary {
-  margin-bottom: 20px;
+
+.training-pace-delta.delta-fast {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
 }
-.training-correct {
-  color: #21816a;
+
+.training-pace-delta.delta-slow {
+  background: rgba(245, 158, 11, 0.12);
+  color: #d97706;
 }
-.training-incorrect {
-  color: #c55c62;
+
+.training-pace-source {
+  font-size: 11px;
+  color: var(--tr-secondary);
 }
-.training-mistake-label {
+
+/* ==========================================================================
+   CONFIDENCE CHIPS
+   ========================================================================== */
+
+.training-confidence {
+  margin: 22px 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.training-confidence legend {
+  font-size: 12px;
+  font-weight: 650;
+  color: var(--tr-text);
+  margin-bottom: 8px;
+}
+
+.training-confidence-hint {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--tr-secondary);
+  margin-left: 6px;
+}
+
+.training-confidence-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.training-conf-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--tr-surface);
+  border: 1px solid var(--tr-border);
+  color: var(--tr-secondary);
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.training-conf-chip:hover:not(:disabled) {
+  border-color: var(--tr-text);
+  color: var(--tr-text);
+}
+
+.training-conf-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.training-conf-chip.conf-sure.active {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: #10b981;
+  color: #059669;
+}
+
+.training-conf-chip.conf-unsure.active {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: #f59e0b;
+  color: #d97706;
+}
+
+.training-conf-chip.conf-guess.active {
+  background: rgba(139, 92, 246, 0.12);
+  border-color: #8b5cf6;
+  color: #7c3aed;
+}
+
+/* ==========================================================================
+   ACTION BUTTONS
+   ========================================================================== */
+
+.training-session-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+  border-top: 1px solid var(--tr-border);
+  padding-top: 20px;
+}
+
+.training-session-actions button {
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 650;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ==========================================================================
+   SIDEBAR / NAVIGATOR PALETTE
+   ========================================================================== */
+
+.training-session-aside .training-sidebar-panel {
+  background: var(--tr-surface);
+  border: 1px solid var(--tr-border);
+  border-radius: 16px;
+  padding: 22px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.training-sidebar-panel h2 {
+  font-size: 16px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+
+.training-sidebar-desc {
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--tr-secondary);
+  margin-bottom: 16px;
+}
+
+.training-palette {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 7px;
+  margin: 16px 0;
+}
+
+.training-palette-btn {
+  aspect-ratio: 1;
+  background: var(--tr-muted);
+  border: 1px solid var(--tr-border);
+  color: var(--tr-text);
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+}
+
+.training-palette-btn:hover:not(:disabled) {
+  border-color: var(--tr-accent);
+}
+
+.training-palette-btn.current {
+  outline: 2px solid var(--tr-accent);
+  outline-offset: 1px;
+  background: var(--tr-surface);
+}
+
+.training-palette-btn.answered {
+  background: var(--tr-accent);
+  color: #fff;
+  border-color: var(--tr-accent);
+}
+
+.training-palette-btn.answered.current {
+  background: var(--tr-accent);
+  color: #fff;
+  outline: 2px solid var(--tr-text);
+  outline-offset: 1px;
+}
+
+.training-marking-badge {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0 10px;
+  flex-wrap: wrap;
+}
+
+.marking-pos {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.marking-neg {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.training-footnote {
+  font-size: 11px;
+  color: var(--tr-secondary);
+  line-height: 1.5;
+  margin-top: 10px;
+}
+
+.training-finish-trigger {
+  width: 100%;
+  margin-top: 14px;
+  min-height: 42px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.training-finish-panel {
+  margin-top: 14px;
+  background: rgba(239, 68, 68, 0.04);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 14px;
+  padding: 18px;
+}
+
+.training-finish-panel h2 {
+  font-size: 15px;
+  font-weight: 750;
+}
+
+.training-finish-panel p {
+  font-size: 12px;
+  margin: 6px 0 12px;
+}
+
+.training-finish-actions {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-top: 15px;
+}
+
+.training-finish-actions button {
+  width: 100%;
+  min-height: 40px;
+  font-size: 12px;
+  font-weight: 650;
+  border-radius: 8px;
+}
+
+/* ==========================================================================
+   RESULTS SCREEN
+   ========================================================================== */
+
+.training-results-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.training-result-heading {
+  text-align: center;
+  padding: 24px 0 32px;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.training-result-icon-badge {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 16px;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.training-result-heading .training-kicker {
+  justify-content: center;
+  margin-bottom: 6px;
+}
+
+.training-result-heading h1 {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  margin: 4px 0 8px;
+}
+
+.training-result-subtext {
+  font-size: 14px;
+  color: var(--tr-secondary);
+  margin-bottom: 22px;
+}
+
+.training-result-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 14px;
+  min-height: 44px;
+}
+
+.training-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.training-stat-panel {
+  background: var(--tr-surface);
+  border: 1px solid var(--tr-border);
+  border-radius: 14px;
+  padding: 20px;
+}
+
+.training-stat-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--tr-secondary);
+  display: block;
+}
+
+.training-stat-value {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--tr-text);
+  margin: 6px 0;
+  letter-spacing: -0.03em;
+}
+
+.training-stat-value small {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--tr-secondary);
+}
+
+.training-stat-note {
+  font-size: 12px;
+  color: var(--tr-secondary);
+  margin: 0;
+}
+
+.training-panel-header {
+  margin-bottom: 16px;
+}
+
+.training-panel-header h2 {
+  font-size: 18px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+}
+
+.training-panel-subtitle {
+  font-size: 12px;
+  color: var(--tr-secondary);
+  margin-top: 4px;
+}
+
+.training-mode-points-banner {
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: var(--tr-text);
+  margin-bottom: 14px;
+}
+
+.training-findings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.training-finding-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--tr-text);
+  line-height: 1.55;
+}
+
+.finding-bullet {
+  color: var(--tr-accent);
+  font-weight: 800;
+}
+
+.training-empty-note {
+  font-size: 13px;
+  color: var(--tr-secondary);
+}
+
+.training-mastery-deltas {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.training-mastery-delta-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--tr-muted);
+  border: 1px solid var(--tr-border);
+  padding: 5px 10px;
+  border-radius: 6px;
   font-size: 12px;
 }
-.training-mistake-label select {
-  max-width: 340px;
-  min-height: 44px;
-  background: var(--tr-muted);
-  color: var(--tr-text);
-  border: 1px solid var(--tr-border);
-  border-radius: 8px;
-  padding: 10px;
-  font: inherit;
+
+.training-mastery-delta-pill .pos { color: #059669; font-weight: 700; }
+.training-mastery-delta-pill .neg { color: #dc2626; font-weight: 700; }
+
+.training-topic-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
+
+.training-topic-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 16px;
+  background: var(--tr-muted);
+  border-radius: 10px;
+  border: 1px solid var(--tr-border);
+}
+
+.training-topic-info strong {
+  display: block;
+  font-size: 13px;
+}
+
+.training-topic-time {
+  font-size: 11px;
+  color: var(--tr-secondary);
+}
+
+.training-topic-score {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.training-topic-bar-bg {
+  width: 80px;
+  height: 6px;
+  background: var(--tr-border);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.training-topic-bar-fill {
+  height: 100%;
+  background: var(--tr-accent);
+  border-radius: 9999px;
+}
+
 .training-failure-map {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  margin-top: 12px;
+  margin: 12px 0 16px;
 }
-.training-failure-map span {
+
+.training-failure-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--tr-muted);
+  border: 1px solid var(--tr-border);
+  padding: 5px 12px;
+  border-radius: 8px;
   font-size: 12px;
-  padding: 7px 10px;
+}
+
+.failure-count {
+  background: var(--tr-surface);
+  border: 1px solid var(--tr-border);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.training-ai-diagnosis-action {
+  margin-top: 14px;
+}
+
+.training-ai-suggest-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.training-ai-diagnosis-box {
+  margin-top: 14px;
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  background: rgba(139, 92, 246, 0.04);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.diagnosis-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--tr-text);
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.diagnosis-note svg {
+  color: #8b5cf6;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.diagnosis-suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.training-diagnosis-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--tr-surface);
+  border: 1px solid var(--tr-border);
+  border-radius: 8px;
+}
+
+.diagnosis-item-content strong {
+  font-size: 13px;
+}
+
+.diagnosis-item-content .cat-label {
+  color: var(--tr-accent);
+}
+
+.diagnosis-item-content p {
+  font-size: 12px;
+  color: var(--tr-secondary);
+  margin: 2px 0 0;
+}
+
+.training-diagnosis-item button {
+  min-height: 36px;
+  padding: 0 12px;
   border-radius: 7px;
+  font-size: 12px;
+  font-weight: 650;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   ANSWER REVIEW ACCORDION
+   ========================================================================== */
+
+.training-reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.training-answer-review {
+  background: var(--tr-surface);
+  border: 1px solid var(--tr-border);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.15s ease;
+}
+
+.training-answer-review summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  cursor: pointer;
+  user-select: none;
+  gap: 12px;
+  background: var(--tr-surface);
+  list-style: none;
+}
+
+.training-answer-review summary::-webkit-details-marker {
+  display: none;
+}
+
+.training-review-summary-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.training-review-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.training-review-status-badge.status-correct {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.training-review-status-badge.status-incorrect {
+  background: rgba(239, 68, 68, 0.12);
+  color: #dc2626;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.training-review-status-badge.status-unanswered {
+  background: var(--tr-muted);
+  color: var(--tr-secondary);
+  border: 1px solid var(--tr-border);
+}
+
+.training-review-topic {
+  font-size: 12px;
+  color: var(--tr-secondary);
+}
+
+.training-review-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--tr-secondary);
+  background: var(--tr-muted);
+  border: 1px solid var(--tr-border);
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.training-review-body {
+  padding: 18px;
+  border-top: 1px solid var(--tr-border);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.training-review-question-text {
+  font-size: 15px;
+  margin-bottom: 16px;
+}
+
+.training-review-answers-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.training-review-choice-box {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--tr-border);
   background: var(--tr-muted);
 }
+
+.training-review-choice-box .box-title {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+  color: var(--tr-secondary);
+}
+
+.training-review-choice-box.is-correct {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.training-review-choice-box.is-correct .box-title {
+  color: #059669;
+}
+
+.training-review-choice-box.is-wrong {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.training-review-choice-box.is-wrong .box-title {
+  color: #dc2626;
+}
+
+.training-review-choice-box.is-solution {
+  background: rgba(37, 99, 235, 0.08);
+  border-color: rgba(37, 99, 235, 0.3);
+}
+
+.training-review-choice-box.is-solution .box-title {
+  color: var(--tr-accent);
+}
+
+.training-review-solution-box {
+  margin: 16px 0;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: rgba(37, 99, 235, 0.05);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+.training-review-solution-box .solution-title {
+  display: block;
+  font-size: 12px;
+  font-weight: 750;
+  color: var(--tr-accent);
+  margin-bottom: 6px;
+}
+
+.training-review-meta-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--tr-border);
+  font-size: 12px;
+}
+
+.confidence-tag {
+  color: var(--tr-secondary);
+}
+
+.confidence-tag strong {
+  color: var(--tr-text);
+}
+
+.training-mistake-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--tr-text);
+}
+
+.training-mistake-label select {
+  min-height: 36px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--tr-border);
+  background: var(--tr-muted);
+  color: var(--tr-text);
+  font: inherit;
+  font-size: 12px;
+}
+
+/* ==========================================================================
+   RESPONSIVE (MOBILE) STYLES
+   ========================================================================== */
+
 @media (max-width: 767px) {
   .training-session-header {
     padding: calc(10px + var(--safe-top)) max(16px, var(--safe-right)) 10px
       max(16px, var(--safe-left));
     gap: 10px;
   }
+
+  .training-session-header strong {
+    font-size: 15px;
+  }
+
   .training-session-main {
-    padding: 20px max(16px, var(--safe-right)) calc(24px + var(--safe-bottom))
+    padding: 16px max(16px, var(--safe-right)) calc(24px + var(--safe-bottom))
       max(16px, var(--safe-left));
   }
+
   .training-session-columns {
     display: block;
   }
+
   .training-question-panel {
     padding: 18px;
-    border-radius: 13px;
+    border-radius: 14px;
   }
+
   .training-question-text {
     font-size: 16px;
-    margin: 20px 0;
+    margin: 16px 0 20px;
   }
-  .training-answers button[data-ui-button] {
-    padding: 13px;
+
+  .training-option-btn {
+    padding: 12px 14px;
     font-size: 14px;
     gap: 10px;
   }
+
+  .training-option-letter {
+    width: 26px;
+    height: 26px;
+    font-size: 11px;
+  }
+
   .training-session-actions {
     gap: 8px;
+    padding-top: 16px;
   }
+
   .training-session-actions button {
     font-size: 12px;
-    padding: 10px 12px;
+    padding: 0 14px;
   }
+
   .training-session-aside {
-    margin-top: 18px;
+    margin-top: 20px;
   }
+
   .training-palette {
     grid-template-columns: repeat(6, minmax(0, 1fr));
   }
-  .training-result-heading h1 {
-    font-size: 27px;
-  }
-  .training-clock {
-    font-size: 18px;
-  }
-  .training-session .training-stat-grid {
+
+  .training-stat-grid {
     grid-template-columns: 1fr;
   }
-  .training-pace small {
-    margin-left: 0;
+
+  .training-result-heading h1 {
+    font-size: 26px;
+  }
+
+  .training-clock {
+    font-size: 13px;
+    padding: 5px 10px;
+  }
+
+  .training-review-answers-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .training-review-meta-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .training-mistake-label {
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .training-mistake-label select {
     width: 100%;
   }
-  .training-answer-review summary {
-    align-items: flex-start;
-    flex-direction: column;
-  }
 }
+

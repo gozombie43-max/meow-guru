@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Shield } from "lucide-react";
+import { ArrowRight, CheckCircle2, Sparkles } from "lucide-react";
 import TrainingMockCatalog from "./TrainingMockCatalog";
 import { modes, type ModeId, type TrainingDashboard } from "./training-types";
 
@@ -46,37 +46,100 @@ export function TrainingInsights({
       </section>
     );
   if (tab === "Mock") return <TrainingMockCatalog key={exam} exam={exam} />;
-  if (tab === "Review")
+  if (tab === "Review") {
+    const dueCount = dashboard?.due.length || 0;
+    const hasReviews = !!dashboard?.reviews.length;
+
     return (
-      <section className="training-panel">
+      <section className="training-panel training-review-panel">
         <div className="training-panel-heading">
           <div>
-            <h2>{dashboard?.due.length || 0} questions due</h2>
+            <p className="training-kicker">SPACED REPETITION QUEUE</p>
+            <h2>{dueCount > 0 ? `${dueCount} questions due today` : "Spaced Review"}</h2>
             <p>
-              Wrong → 1 day → 3 days → 7 days → 21 days. Successful reviews
-              extend the interval.
+              Wrong → 1 day → 3 days → 7 days → 21 days. Successful reviews extend the interval.
             </p>
           </div>
-          <button
-            data-ui-button="primary"
-            disabled={!dashboard?.due.length}
-            onClick={() => choose("review")}
-          >
-            Start review
-          </button>
+          {dueCount > 0 && (
+            <button
+              data-ui-button="primary"
+              onClick={() => choose("review")}
+            >
+              Start review ({dueCount})
+              <ArrowRight size={16} aria-hidden="true" />
+            </button>
+          )}
         </div>
         {loading ? (
-          <p role="status">Loading review queue…</p>
-        ) : !dashboard?.reviews.length ? (
-          <div className="training-empty">
-            <Shield size={30} />
-            <h3>A fresh start.</h3>
-            <p>
-              Wrong, uncertain and slow answers will appear here after training.
+          <p role="status" className="training-loading-note">Loading review queue…</p>
+        ) : dueCount === 0 && !hasReviews ? (
+          <div className="training-review-empty">
+            <div className="training-review-empty-icon">
+              <CheckCircle2 size={30} strokeWidth={1.8} aria-hidden="true" />
+            </div>
+            <h3>Review queue is clear · All caught up!</h3>
+            <p className="training-review-empty-desc">
+              You have no questions waiting for review. Practice questions you find challenging or mark unsure to schedule them for spaced repetition.
             </p>
+            <div className="training-interval-stepper" aria-label="Spaced repetition interval schedule">
+              <span className="interval-step">Wrong</span>
+              <span className="interval-arrow">→</span>
+              <span className="interval-step">1 day</span>
+              <span className="interval-arrow">→</span>
+              <span className="interval-step">3 days</span>
+              <span className="interval-arrow">→</span>
+              <span className="interval-step">7 days</span>
+              <span className="interval-arrow">→</span>
+              <span className="interval-step">21 days</span>
+            </div>
+            <div className="training-review-actions">
+              <button
+                data-ui-button="secondary"
+                onClick={() => choose("adaptive")}
+              >
+                <Sparkles size={15} aria-hidden="true" />
+                Practice adaptive session
+              </button>
+            </div>
+          </div>
+        ) : dueCount === 0 && hasReviews ? (
+          <div className="training-review-empty">
+            <div className="training-review-empty-icon">
+              <CheckCircle2 size={30} strokeWidth={1.8} aria-hidden="true" />
+            </div>
+            <h3>No reviews due right now</h3>
+            <p className="training-review-empty-desc">
+              All scheduled questions are up to date. You can practice adaptive sessions or inspect upcoming review dates below.
+            </p>
+            <div className="training-review-actions">
+              <button
+                data-ui-button="secondary"
+                onClick={() => choose("adaptive")}
+              >
+                <Sparkles size={15} aria-hidden="true" />
+                Start practice session
+              </button>
+            </div>
+            <div className="training-upcoming-reviews">
+              <h4>Upcoming review items ({dashboard?.reviews.length})</h4>
+              {dashboard?.reviews.slice(0, 5).map((r) => (
+                <div className="training-list-row" key={r.questionId}>
+                  <div>
+                    <strong>{r.topic}</strong>
+                    <p>
+                      {r.reason}
+                      {r.mistake ? ` · ${r.mistake}` : ""}
+                    </p>
+                  </div>
+                  <time dateTime={r.dueAt}>
+                    Due {new Date(r.dueAt).toLocaleDateString()}
+                  </time>
+                </div>
+              ))}
+            </div>
           </div>
         ) : (
-          dashboard.reviews.map((r) => (
+          dashboard?.reviews.map((r) => (
             <div className="training-list-row" key={r.questionId}>
               <div>
                 <strong>{r.topic}</strong>
@@ -93,6 +156,7 @@ export function TrainingInsights({
         )}
       </section>
     );
+  }
   return (
     <>
       <div className="training-stat-grid">

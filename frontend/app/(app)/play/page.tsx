@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Sparkles, Target, X } from "lucide-react";
+import { ArrowRight, ChevronDown, Sparkles, Target, X } from "lucide-react";
 import { useThemeMode } from "@/hooks/useTheme";
 import api from "@/lib/axios";
 import { isAxiosError } from "axios";
@@ -25,6 +25,7 @@ import "./play-hub.css";
 export default function PlayPage() {
   const { theme } = useThemeMode();
   const router = useRouter();
+  const contentRef = useRef<HTMLElement>(null);
   const [tab, setTab] = useState("Play"),
     [exam, setExam] = useState("ssc-cgl");
   const [dashboard, setDashboard] = useState<TrainingDashboard | null>(null),
@@ -68,17 +69,21 @@ export default function PlayPage() {
     ) as HTMLDialogElement | null;
     const trigger = document.activeElement as HTMLElement | null;
     const previousOverflow = document.body.style.overflow;
+    const content = contentRef.current;
+    const previousContentOverflow = content?.style.overflowY || "";
+    if (content) content.style.overflowY = "hidden";
     document.body.style.overflow = "hidden";
     dialog?.showModal();
     return () => {
       dialog?.close();
       document.body.style.overflow = previousOverflow;
+      if (content) content.style.overflowY = previousContentOverflow;
       trigger?.focus({ preventScroll: true });
     };
   }, [selected]);
   function navigate(tab: string) {
     setTab(tab);
-    window.scrollTo({ top: 0, behavior: "instant" });
+    contentRef.current?.scrollTo({ top: 0, behavior: "instant" });
   }
   function choose(mode: ModeId) {
     setSelected(mode);
@@ -116,35 +121,42 @@ export default function PlayPage() {
       className={`training-page play-hub ${theme === "dark" ? "training-dark" : ""}`}
     >
       <header className="training-header" data-ui-chrome="header">
-        <Link href="/play" className="training-brand">
-          <span className="training-brand-icon">
-            <Target size={22} />
-          </span>
-          <span>
-            Play
+        <div className="training-header-top">
+          <Link href="/play" className="training-brand">
+            <span className="training-brand-icon">
+              <Target size={18} strokeWidth={2.2} />
+            </span>
+            <span className="training-brand-name">Play</span>
             <span className="training-brand-caption">
               MEOW GURU / TRAINING STUDIO
             </span>
-          </span>
-        </Link>
-        <label className="training-exam">
-          <span className="sr-only">Target exam</span>
-          <select
-            value={exam}
-            onChange={(e) => {
-              setExam(e.target.value);
-              setDashboard(null);
-              setLoading(true);
-              setError("");
-              setSubject("");
-              setTopic("");
-            }}
-          >
-            <option value="ssc-cgl">SSC CGL</option>
-            <option value="ssc-chsl">SSC CHSL</option>
-            <option value="cat">CAT</option>
-          </select>
-        </label>
+          </Link>
+          <div className="training-exam-wrapper">
+            <label className="training-exam">
+              <span className="sr-only">Target exam</span>
+              <select
+                value={exam}
+                onChange={(e) => {
+                  setExam(e.target.value);
+                  setDashboard(null);
+                  setLoading(true);
+                  setError("");
+                  setSubject("");
+                  setTopic("");
+                }}
+              >
+                <option value="ssc-cgl">SSC CGL</option>
+                <option value="ssc-chsl">SSC CHSL</option>
+                <option value="cat">CAT</option>
+              </select>
+              <ChevronDown
+                size={13}
+                className="training-exam-chevron"
+                aria-hidden="true"
+              />
+            </label>
+          </div>
+        </div>
         <PlayNavigation mobile tab={tab} onChange={navigate} />
       </header>
       <div className="training-layout">
@@ -157,7 +169,11 @@ export default function PlayPage() {
             <p>Choose an objective. Measure the work. Come back stronger.</p>
           </div>
         </aside>
-        <main className="training-main">
+        <main
+          ref={contentRef}
+          className="training-main"
+          aria-label="Training content"
+        >
           <div className="training-heading">
             <div>
               <p className="training-kicker">
@@ -203,16 +219,22 @@ export default function PlayPage() {
             </div>
           )}
           {dashboard?.active.length ? (
-            <div className="training-resume">
-              <div>
-                <strong>Continue your session</strong>
-                <p>Progress saved · clock still running</p>
+            <div className="training-resume" role="status">
+              <div className="training-resume-content">
+                <span className="training-resume-indicator" aria-hidden="true">
+                  <span className="training-resume-dot" />
+                </span>
+                <div>
+                  <strong>Continue your session</strong>
+                  <p>Progress saved · Clock still running</p>
+                </div>
               </div>
               <Link
                 data-ui-button="secondary"
+                className="training-resume-btn"
                 href={`/play/session/${dashboard.active[0].id}`}
               >
-                Resume <ArrowRight size={16} />
+                Resume <ArrowRight size={15} aria-hidden="true" />
               </Link>
             </div>
           ) : null}
