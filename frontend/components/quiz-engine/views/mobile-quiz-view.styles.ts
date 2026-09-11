@@ -140,12 +140,32 @@ export const mobileQuizViewStyles = css.global`
         .ios-series-quiz .lang-toggle {
           flex: 0 1 auto;
           min-width: 0;
-          height: 48px;
+          height: 44px !important;
+          padding: 0;
+          border-radius: 12px;
+          box-shadow: none;
+        }
+        .ios-series-quiz .lang-toggle > div {
+          height: 44px !important;
+        }
+        /* The quiz selection takes precedence over a surrounding light page. */
+        .ios-series-quiz[data-theme="dark"] .lang-toggle.lang-toggle {
+          --lang-toggle-bg: #000000;
+          --lang-toggle-border: var(--dark-border);
+          --lang-toggle-active-bg: #182637;
+          --lang-toggle-active-shadow: none;
+          --lang-toggle-divider: #292929;
+          --lang-toggle-text: var(--dark-text-secondary);
+          --lang-toggle-text-active: var(--dark-text);
+          --lang-toggle-text-hover: var(--dark-text);
+          background: var(--lang-toggle-bg);
+          border-color: var(--lang-toggle-border);
         }
         .ios-series-quiz .lang-toggle-option {
           min-width: 0;
           height: 44px;
-          padding-inline: 9px;
+          padding-inline: 8px;
+          font-size: 11px;
         }
         .ios-series-rail {
           display: flex;
@@ -499,23 +519,21 @@ export const mobileQuizViewStyles = css.global`
         .ios-series-option-status {
           display: inline-flex;
           align-items: center;
-          gap: 8px;
           margin-left: auto;
           flex: none;
-          max-width: 72px;
-          flex-wrap: wrap;
+          width: 20px;
           justify-content: flex-end;
         }
         .ios-series-your-answer {
-          color: rgba(235, 235, 245, 0.55);
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: 0.06em;
-          line-height: 1;
-          text-transform: uppercase;
-          white-space: normal;
-          line-height: 1.3;
-          text-align: right;
+          /* Keep the selected-answer announcement without enlarging the row. */
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          padding: 0;
+          margin: -1px;
+          overflow: hidden;
+          clip-path: inset(50%);
+          white-space: nowrap;
         }
         .ios-series-answer-icon {
           width: 20px;
@@ -619,8 +637,9 @@ export const mobileQuizViewStyles = css.global`
           flex-shrink: 0;
         }
         .ios-series-footer button {
+          --ui-control-height: 56px;
           min-width: 0;
-          height: 44px;
+          height: 56px;
           border-radius: 16px;
           font: inherit;
           font-size: 16px;
