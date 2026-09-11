@@ -10,8 +10,11 @@ import {
   ListOrdered,
   FileText,
   Layers,
+  Type,
+  AlignJustify,
 } from "lucide-react";
 import type { QuizTheme } from "../types";
+import type { QuizTextSize, QuizSpacing } from "../useQuizPreferences";
 
 export function SettingIcon({ className = "w-4.5 h-4.5" }: { className?: string }) {
   return <Settings className={className} aria-hidden="true" />;
@@ -72,6 +75,10 @@ export interface QuizSettingsModalProps {
   hideAiTutor: boolean;
   onToggleHideAiTutor: (val: boolean) => void;
   onToggleHideBoth: (val: boolean) => void;
+  textSize?: QuizTextSize;
+  onTextSizeChange?: (val: QuizTextSize) => void;
+  spacing?: QuizSpacing;
+  onSpacingChange?: (val: QuizSpacing) => void;
 }
 
 export function QuizSettingsModal({
@@ -86,6 +93,10 @@ export function QuizSettingsModal({
   hideAiTutor,
   onToggleHideAiTutor,
   onToggleHideBoth,
+  textSize = "md",
+  onTextSizeChange,
+  spacing = "comfortable",
+  onSpacingChange,
 }: QuizSettingsModalProps) {
   useEffect(() => {
     if (!isOpen) return;
@@ -133,6 +144,86 @@ export function QuizSettingsModal({
         </div>
 
         <div className="ios-settings-list">
+          {/* Section: Reading Comfort */}
+          <div className="ios-settings-section-title">Reading Comfort</div>
+
+          {/* Text Size Row */}
+          <div className="ios-settings-item">
+            <div className="ios-settings-item-left">
+              <div className="ios-settings-icon-box text-size-icon">
+                <Type size={15} />
+              </div>
+              <div className="ios-settings-label-wrap">
+                <span className="ios-settings-label">Text Size</span>
+                <span className="ios-settings-sublabel">Question & options scale</span>
+              </div>
+            </div>
+            <div className="ios-settings-segmented" role="group" aria-label="Text size options">
+              <button
+                type="button"
+                className={`ios-segment-btn ${textSize === "sm" ? "is-active" : ""}`}
+                onClick={() => onTextSizeChange?.("sm")}
+                aria-pressed={textSize === "sm"}
+              >
+                S
+              </button>
+              <button
+                type="button"
+                className={`ios-segment-btn ${textSize === "md" ? "is-active" : ""}`}
+                onClick={() => onTextSizeChange?.("md")}
+                aria-pressed={textSize === "md"}
+              >
+                M
+              </button>
+              <button
+                type="button"
+                className={`ios-segment-btn ${textSize === "lg" ? "is-active" : ""}`}
+                onClick={() => onTextSizeChange?.("lg")}
+                aria-pressed={textSize === "lg"}
+              >
+                L
+              </button>
+            </div>
+          </div>
+
+          <div className="ios-settings-divider" />
+
+          {/* Spacing Row */}
+          <div className="ios-settings-item">
+            <div className="ios-settings-item-left">
+              <div className="ios-settings-icon-box spacing-icon">
+                <AlignJustify size={15} />
+              </div>
+              <div className="ios-settings-label-wrap">
+                <span className="ios-settings-label">Spacing</span>
+                <span className="ios-settings-sublabel">Option cards density</span>
+              </div>
+            </div>
+            <div className="ios-settings-segmented" role="group" aria-label="Layout spacing options">
+              <button
+                type="button"
+                className={`ios-segment-btn ios-segment-btn-wide ${spacing === "comfortable" ? "is-active" : ""}`}
+                onClick={() => onSpacingChange?.("comfortable")}
+                aria-pressed={spacing === "comfortable"}
+              >
+                Comfort
+              </button>
+              <button
+                type="button"
+                className={`ios-segment-btn ios-segment-btn-wide ${spacing === "compact" ? "is-active" : ""}`}
+                onClick={() => onSpacingChange?.("compact")}
+                aria-pressed={spacing === "compact"}
+              >
+                Compact
+              </button>
+            </div>
+          </div>
+
+          <div className="ios-settings-divider" />
+
+          {/* Section: Display & Features */}
+          <div className="ios-settings-section-title">Display & Features</div>
+
           {/* Theme Row */}
           <div className="ios-settings-item">
             <div className="ios-settings-item-left">
@@ -142,7 +233,7 @@ export function QuizSettingsModal({
               <div className="ios-settings-label-wrap">
                 <span className="ios-settings-label">Dark Theme</span>
                 <span className="ios-settings-sublabel">
-                  {isDark ? "Dark mode active" : "Light mode active"}
+                  {isDark ? "Soft dark active" : "Light mode active"}
                 </span>
               </div>
             </div>
@@ -256,7 +347,7 @@ export function QuizSettingsModal({
           top: calc(env(safe-area-inset-top) + 56px);
           left: 12px;
           width: calc(100% - 24px);
-          max-width: 320px;
+          max-width: 340px;
           z-index: 999;
           border-radius: 18px;
           padding: 14px 16px 16px;
@@ -282,15 +373,17 @@ export function QuizSettingsModal({
 
         /* Dark Theme Popover */
         .ios-series-quiz[data-theme="dark"] .ios-settings-popover,
+        .mac-series-quiz[data-theme="dark"] .ios-settings-popover,
         .ios-settings-popover[data-theme="dark"] {
-          background: var(--dark-surface);
-          border: 1px solid rgba(255, 255, 255, 0.14);
-          color: var(--light-canvas);
-          box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.05);
+          background: #13161A;
+          border: 1px solid #292E35;
+          color: #E7E9EC;
+          box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.04);
         }
 
         /* Light Theme Popover */
         .ios-series-quiz[data-theme="light"] .ios-settings-popover,
+        .mac-series-quiz[data-theme="light"] .ios-settings-popover,
         .ios-settings-popover[data-theme="light"] {
           background: #ffffff;
           border: 1px solid var(--light-border);
@@ -315,6 +408,20 @@ export function QuizSettingsModal({
           font-size: 15px;
           font-weight: 700;
           letter-spacing: -0.2px;
+        }
+
+        .ios-settings-section-title {
+          font-size: 11px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          color: #747B85;
+          margin-top: 8px;
+          margin-bottom: 4px;
+        }
+
+        .ios-settings-popover[data-theme="light"] .ios-settings-section-title {
+          color: #6e7781;
         }
 
         .ios-settings-close-btn {
@@ -345,7 +452,7 @@ export function QuizSettingsModal({
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 9px 0;
+          padding: 8px 0;
           gap: 12px;
         }
 
@@ -366,6 +473,14 @@ export function QuizSettingsModal({
           flex-shrink: 0;
         }
 
+        .ios-settings-icon-box.text-size-icon {
+          background: rgba(114, 150, 196, 0.18);
+          color: #7296C4;
+        }
+        .ios-settings-icon-box.spacing-icon {
+          background: rgba(56, 189, 248, 0.15);
+          color: #38bdf8;
+        }
         .ios-settings-icon-box.theme-icon {
           background: rgba(255, 214, 10, 0.15);
           color: #ffd60a;
@@ -405,7 +520,7 @@ export function QuizSettingsModal({
         .ios-settings-sublabel {
           font-size: 11px;
           line-height: 1.25;
-          opacity: 0.6;
+          opacity: 0.65;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -421,6 +536,56 @@ export function QuizSettingsModal({
           background: #F0F2F5;
         }
 
+        /* iOS Segmented Controls */
+        .ios-settings-segmented {
+          display: inline-flex;
+          align-items: center;
+          background: rgba(255, 255, 255, 0.06);
+          padding: 2px;
+          border-radius: 9px;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          flex-shrink: 0;
+        }
+
+        .ios-settings-popover[data-theme="light"] .ios-settings-segmented {
+          background: #EEF2F6;
+          border-color: #E2E8F0;
+        }
+
+        .ios-segment-btn {
+          border: none;
+          background: transparent;
+          color: #989EA7;
+          font-size: 12px;
+          font-weight: 600;
+          padding: 4px 9px;
+          border-radius: 7px;
+          cursor: pointer;
+          transition: all 0.15s ease;
+          line-height: 1.2;
+        }
+
+        .ios-segment-btn-wide {
+          padding: 4px 8px;
+          font-size: 11.5px;
+        }
+
+        .ios-settings-popover[data-theme="light"] .ios-segment-btn {
+          color: #64748B;
+        }
+
+        .ios-segment-btn.is-active {
+          background: #3D6A9E;
+          color: #ffffff;
+          box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .ios-settings-popover[data-theme="light"] .ios-segment-btn.is-active {
+          background: #0071E3;
+          color: #ffffff;
+          box-shadow: 0 1px 3px rgba(0, 113, 227, 0.25);
+        }
+
         /* iOS Switch */
         .ios-settings-switch {
           position: relative;
@@ -429,7 +594,7 @@ export function QuizSettingsModal({
           border-radius: 12px;
           border: none;
           padding: 2px;
-          background: #39393d;
+          background: #292E35;
           cursor: pointer;
           transition: background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
           flex-shrink: 0;

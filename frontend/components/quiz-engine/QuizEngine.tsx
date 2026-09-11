@@ -129,6 +129,10 @@ function QuizEngineContent(props: QuizEngineProps) {
     hideAiTutor,
     handleToggleHideAiTutor,
     handleToggleHideBoth,
+    textSize,
+    handleSetTextSize,
+    spacing,
+    handleSetSpacing,
     activeRailBtnRef,
     examDetailsRef,
     isPaletteOpen,
@@ -271,6 +275,19 @@ function QuizEngineContent(props: QuizEngineProps) {
         canSubmit={canSubmit}
         isSolutionOpen={isSolutionOpen}
         closeSolution={closeSolution}
+        isSettingsOpen={isSettingsOpen}
+        setIsSettingsOpen={setIsSettingsOpen}
+        hideQuestionNumbers={hideQuestionNumbers}
+        handleToggleHideQuestionNumbers={handleToggleHideQuestionNumbers}
+        hideViewSolution={hideViewSolution}
+        handleToggleHideViewSolution={handleToggleHideViewSolution}
+        hideAiTutor={hideAiTutor}
+        handleToggleHideAiTutor={handleToggleHideAiTutor}
+        handleToggleHideBoth={handleToggleHideBoth}
+        textSize={textSize}
+        handleSetTextSize={handleSetTextSize}
+        spacing={spacing}
+        handleSetSpacing={handleSetSpacing}
       />
     );
 
@@ -295,6 +312,10 @@ function QuizEngineContent(props: QuizEngineProps) {
         hideAiTutor={hideAiTutor}
         handleToggleHideAiTutor={handleToggleHideAiTutor}
         handleToggleHideBoth={handleToggleHideBoth}
+        textSize={textSize}
+        handleSetTextSize={handleSetTextSize}
+        spacing={spacing}
+        handleSetSpacing={handleSetSpacing}
         questions={questions}
         selectedAnswers={selectedAnswers}
         submittedQuestions={submittedQuestions}

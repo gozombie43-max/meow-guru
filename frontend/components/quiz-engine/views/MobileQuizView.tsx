@@ -35,6 +35,10 @@ export function MobileQuizView({
   hideAiTutor,
   handleToggleHideAiTutor,
   handleToggleHideBoth,
+  textSize,
+  handleSetTextSize,
+  spacing,
+  handleSetSpacing,
   questions,
   selectedAnswers,
   submittedQuestions,
@@ -87,6 +91,10 @@ export function MobileQuizView({
   | "hideAiTutor"
   | "handleToggleHideAiTutor"
   | "handleToggleHideBoth"
+  | "textSize"
+  | "handleSetTextSize"
+  | "spacing"
+  | "handleSetSpacing"
   | "questions"
   | "selectedAnswers"
   | "submittedQuestions"
@@ -127,6 +135,8 @@ export function MobileQuizView({
     <div
       className={`ios-series-quiz ${subjectConfig.cssClassName}`}
       data-theme={theme}
+      data-text-size={textSize}
+      data-spacing={spacing}
     >
       {themeStyles}
       <div className="ios-series-device">
@@ -153,6 +163,10 @@ export function MobileQuizView({
           hideAiTutor={hideAiTutor}
           onToggleHideAiTutor={handleToggleHideAiTutor}
           onToggleHideBoth={handleToggleHideBoth}
+          textSize={textSize}
+          onTextSizeChange={handleSetTextSize}
+          spacing={spacing}
+          onSpacingChange={handleSetSpacing}
         />
 
         <MobileQuestionNavigator

@@ -1,18 +1,18 @@
 import css from "styled-jsx/css";
 
 export const mobileQuizViewStyles = css.global`
-        /* Pure black exam surfaces with a restrained iOS blue accent. */
+        /* Softened Dark Exam Palette for Long Practice Sessions */
         .ios-series-quiz[data-theme="dark"] {
-          --dark-canvas: #000000;
-          --dark-surface: #000000;
-          --dark-surface-muted: #141414;
-          --dark-border: #292929;
-          --dark-text: #e6e6e6;
-          --dark-text-secondary: #c2c2c2;
-          --dark-text-muted: #a3a3a3;
-          --dark-accent: #719cce;
-          --dark-accent-soft: #101d2d;
-          --dark-action: #356da8;
+          --dark-canvas: #0D0F12;
+          --dark-surface: #13161A;
+          --dark-surface-muted: #181C21;
+          --dark-border: #292E35;
+          --dark-text: #E7E9EC;
+          --dark-text-secondary: #989EA7;
+          --dark-text-muted: #747B85;
+          --dark-accent: #7296C4;
+          --dark-accent-soft: #17263A;
+          --dark-action: #3D6A9E;
           color: var(--dark-text);
           color-scheme: dark;
         }
@@ -23,7 +23,7 @@ export const mobileQuizViewStyles = css.global`
         .ios-series-quiz[data-theme="dark"] .ios-series-meta-row,
         .ios-series-quiz[data-theme="dark"] .ios-series-bookmark,
         .ios-series-quiz[data-theme="dark"] .ios-series-your-answer {
-          color: var(--dark-text-muted);
+          color: var(--dark-text-secondary);
         }
         .ios-series-quiz[data-theme="dark"] .ios-series-icon-button.is-active {
           border-color: var(--dark-accent);
@@ -31,20 +31,26 @@ export const mobileQuizViewStyles = css.global`
           color: var(--dark-text);
         }
         .ios-series-quiz[data-theme="dark"] .ios-series-option:not(:disabled):hover {
-          border-color: var(--dark-accent);
+          border-color: rgba(114, 150, 196, 0.4);
           background: var(--dark-surface-muted);
+        }
+        .ios-series-quiz[data-theme="dark"] .ios-series-option.is-selected {
+          border-color: var(--dark-accent);
+          background: var(--dark-accent-soft);
         }
         .ios-series-quiz[data-theme="dark"] .ios-series-option.is-selected .ios-series-option-letter,
         .ios-series-quiz[data-theme="dark"] .ios-series-palette-grid button.is-current {
           background: var(--dark-action);
-          color: var(--dark-text);
+          color: #ffffff;
           box-shadow: none;
         }
         .ios-series-quiz[data-theme="dark"] .ios-series-option.is-correct .ios-series-option-letter {
           background: #287542;
+          color: #ffffff;
         }
         .ios-series-quiz[data-theme="dark"] .ios-series-option.is-wrong .ios-series-option-letter {
           background: #a33b36;
+          color: #ffffff;
         }
         .ios-series-quiz[data-theme="dark"] .ios-series-exam-details summary:focus-visible {
           outline-color: var(--dark-accent);
@@ -54,9 +60,9 @@ export const mobileQuizViewStyles = css.global`
           --ios-option-shadow: none;
           min-height: 100dvh;
           background: var(--dark-canvas);
-          color: var(--light-canvas);
+          color: var(--dark-text);
           font-family:
-            -apple-system, BlinkMacSystemFont, "SF Pro Text", "Roboto",
+            "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
             "Noto Sans", "Helvetica Neue", Arial, sans-serif;
           font-kerning: normal;
           text-rendering: optimizeLegibility;
@@ -80,7 +86,7 @@ export const mobileQuizViewStyles = css.global`
           gap: 8px;
           padding: calc(var(--safe-top) + 4px) max(12px, var(--safe-right)) 4px max(12px, var(--safe-left));
           flex: none;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+          border-bottom: 1px solid var(--dark-border);
         }
         .ios-series-icon-button {
           min-width: 44px;
@@ -89,21 +95,21 @@ export const mobileQuizViewStyles = css.global`
           align-items: center;
           justify-content: center;
           padding: 0 5px;
-          border: 1px solid rgba(255, 255, 255, 0.09);
+          border: 1px solid var(--dark-border);
           border-radius: 10px;
-          color: var(--light-canvas);
+          color: var(--dark-text);
           background: var(--dark-surface);
           cursor: pointer;
           transition: all 0.15s ease;
           font-size: 14px;
-          font-weight: 700;
+          font-weight: 600;
           white-space: nowrap;
           box-sizing: border-box;
         }
         .ios-series-icon-button.is-active {
-          border-color: #007aff;
-          background: rgba(0, 122, 255, 0.22);
-          color: #007aff;
+          border-color: var(--dark-accent);
+          background: var(--dark-accent-soft);
+          color: var(--dark-accent);
         }
         .ios-series-icon-button.is-qnum {
           font-variant-numeric: tabular-nums;
@@ -148,13 +154,12 @@ export const mobileQuizViewStyles = css.global`
         .ios-series-quiz .lang-toggle > div {
           height: 44px !important;
         }
-        /* The quiz selection takes precedence over a surrounding light page. */
         .ios-series-quiz[data-theme="dark"] .lang-toggle.lang-toggle {
-          --lang-toggle-bg: #000000;
-          --lang-toggle-border: var(--dark-border);
-          --lang-toggle-active-bg: #182637;
+          --lang-toggle-bg: #13161A;
+          --lang-toggle-border: #292E35;
+          --lang-toggle-active-bg: #17263A;
           --lang-toggle-active-shadow: none;
-          --lang-toggle-divider: #292929;
+          --lang-toggle-divider: #292E35;
           --lang-toggle-text: var(--dark-text-secondary);
           --lang-toggle-text-active: var(--dark-text);
           --lang-toggle-text-hover: var(--dark-text);
@@ -175,7 +180,7 @@ export const mobileQuizViewStyles = css.global`
           overflow-x: auto;
           overscroll-behavior-x: contain;
           padding: 6px max(12px, var(--safe-right)) 6px max(12px, var(--safe-left));
-          border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+          border-bottom: 1px solid var(--dark-border);
           scrollbar-width: none;
         }
         .ios-series-rail::-webkit-scrollbar {
@@ -192,7 +197,7 @@ export const mobileQuizViewStyles = css.global`
           background: var(--dark-surface);
           color: var(--dark-text-muted);
           font-size: 13.5px;
-          font-weight: 650;
+          font-weight: 600;
           cursor: pointer;
           transition:
             background 140ms ease,
@@ -203,39 +208,39 @@ export const mobileQuizViewStyles = css.global`
           position: absolute;
           top: 2px;
           right: 4px;
-          color: #8e8e93;
+          color: var(--dark-text-muted);
           font-size: 8px;
           font-weight: 800;
           line-height: 1;
         }
         .ios-series-question.is-current {
-          border-color: var(--ios-accent);
+          border-color: var(--dark-accent);
           background: var(--dark-accent-soft);
-          color: var(--light-canvas);
+          color: var(--dark-text);
           box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
         }
         .ios-series-question.is-correct,
         .ios-series-question.is-answered {
-          border-color: #303034;
+          border-color: #292E35;
           background: var(--dark-surface-muted);
-          color: var(--light-canvas);
+          color: var(--dark-text);
         }
         .ios-series-question.is-correct::after,
         .ios-series-question.is-answered::after {
           content: "✓";
         }
         .ios-series-question.is-wrong {
-          border-color: #303034;
+          border-color: #292E35;
           background: var(--dark-surface-muted);
-          color: var(--light-canvas);
+          color: var(--dark-text);
         }
         .ios-series-question.is-wrong::after {
           content: "×";
         }
         .ios-series-question.is-unsubmitted {
-          border-color: #35353a;
+          border-color: #292E35;
           background: var(--dark-surface-muted);
-          color: #e5e5ea;
+          color: var(--dark-text);
         }
         .ios-series-content {
           flex: 1;
@@ -259,10 +264,10 @@ export const mobileQuizViewStyles = css.global`
           min-width: 0;
           min-height: 24px;
           margin-bottom: 6px;
-          color: rgba(235, 235, 245, 0.58);
-          font-size: 12px;
-          font-weight: 600;
-          line-height: 1.2;
+          color: var(--dark-text-secondary);
+          font-size: 13px;
+          font-weight: 500;
+          line-height: 1.35;
         }
         .ios-series-meta-items {
           display: flex;
@@ -273,7 +278,7 @@ export const mobileQuizViewStyles = css.global`
         }
         .ios-series-meta-separator {
           flex: none;
-          color: rgba(235, 235, 245, 0.3);
+          color: var(--dark-text-muted);
         }
         .ios-series-exam-label {
           min-width: 0;
@@ -288,7 +293,7 @@ export const mobileQuizViewStyles = css.global`
           padding: 2px 4px;
           margin: -2px -4px;
           border-radius: 6px;
-          color: rgba(235, 235, 245, 0.72);
+          color: var(--dark-text-secondary);
           line-height: 1.35;
           list-style: none;
           cursor: pointer;
@@ -298,11 +303,11 @@ export const mobileQuizViewStyles = css.global`
           display: none;
         }
         .ios-series-exam-details summary:focus-visible {
-          outline: 2px solid #007aff;
+          outline: 2px solid var(--dark-accent);
           outline-offset: 2px;
         }
         .ios-series-exam-details[open] summary {
-          color: var(--light-canvas);
+          color: var(--dark-text);
           background: rgba(255, 255, 255, 0.08);
         }
         .ios-series-exam-popover {
@@ -313,11 +318,11 @@ export const mobileQuizViewStyles = css.global`
           width: max-content;
           max-width: min(260px, calc(100vw - 40px));
           padding: 9px 11px;
-          border: 1px solid rgba(255, 255, 255, 0.14);
+          border: 1px solid var(--dark-border);
           border-radius: 10px;
-          color: rgba(255, 255, 255, 0.88);
+          color: var(--dark-text);
           background: var(--dark-surface-muted);
-          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.36);
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
           font-size: 12px;
           font-weight: 500;
           line-height: 1.4;
@@ -329,9 +334,9 @@ export const mobileQuizViewStyles = css.global`
         }
         .ios-series-question-card {
           position: relative;
-          padding: 16px;
-          border: 1px solid rgba(255, 255, 255, 0.14);
-          border-radius: 12px;
+          padding: 14px 16px;
+          border: 1px solid var(--dark-border);
+          border-radius: 14px;
           background: var(--dark-surface);
         }
         .ios-series-bookmark {
@@ -342,7 +347,7 @@ export const mobileQuizViewStyles = css.global`
           padding: 0;
           border: 0;
           border-radius: 0;
-          color: rgba(235, 235, 245, 0.58);
+          color: var(--dark-text-secondary);
           background: transparent;
           cursor: pointer;
           flex-shrink: 0;
@@ -352,7 +357,7 @@ export const mobileQuizViewStyles = css.global`
             transform 0.16s ease;
         }
         .ios-series-bookmark:active {
-          color: rgba(242, 242, 247, 0.9);
+          color: var(--dark-text);
           transform: scale(0.92);
         }
         .ios-series-bookmark svg {
@@ -360,21 +365,22 @@ export const mobileQuizViewStyles = css.global`
           height: 20px;
         }
         .ios-series-prompt {
-          color: rgba(242, 242, 247, 0.94);
-          font-size: 17px;
+          color: var(--dark-text);
+          font-size: 19px;
           font-weight: 500;
-          line-height: 1.62;
-          letter-spacing: 0.002em;
+          line-height: 1.58;
+          letter-spacing: -0.005em;
         }
         .ios-series-prompt p {
           margin: 0;
         }
         .ios-series-prompt p + p {
-          margin-top: 14px;
-          font-family: Georgia, serif;
-          font-size: 22px;
-          font-weight: 400;
-          letter-spacing: 0.02em;
+          margin-top: 12px;
+          font-family: inherit;
+          font-size: 19px;
+          font-weight: 500;
+          line-height: 1.58;
+          letter-spacing: normal;
         }
         .ios-series-quiz .ios-series-prompt .quote-highlight {
           font-weight: 500;
@@ -385,17 +391,17 @@ export const mobileQuizViewStyles = css.global`
           margin-top: 12px;
         }
         .ios-series-option {
-          --ui-control-height: 64px;
+          --ui-control-height: 52px;
           width: 100%;
-          min-height: 64px;
+          min-height: 52px;
           display: flex;
           align-items: center;
           gap: 12px;
-          padding: 14px;
-          border: 1px solid rgba(255, 255, 255, 0.16);
-          border-radius: 18px;
+          padding: 10px 14px;
+          border: 1px solid var(--dark-border);
+          border-radius: 14px;
           background: var(--dark-surface);
-          color: var(--light-canvas);
+          color: var(--dark-text);
           box-shadow: var(--ios-option-shadow);
           text-align: left;
           cursor: pointer;
@@ -407,41 +413,44 @@ export const mobileQuizViewStyles = css.global`
             transform 0.16s ease;
         }
         .ios-series-option:not(:disabled):hover {
-          border-color: rgba(0, 122, 255, 0.75);
+          border-color: rgba(114, 150, 196, 0.4);
           background: var(--dark-surface-muted);
         }
         .ios-series-option:not(:disabled):active {
           transform: scale(0.99);
         }
+        .ios-series-quiz .ios-series-option:disabled,
         .ios-series-option:disabled {
           cursor: default;
+          opacity: 1 !important;
         }
         .ios-series-option.is-selected {
-          border-color: #007aff;
-          background: rgba(0, 122, 255, 0.15);
+          border-color: var(--dark-accent);
+          background: var(--dark-accent-soft);
         }
         .ios-series-option.is-correct {
-          border-color: rgba(255, 255, 255, 0.16);
+          border-color: var(--dark-border);
           background: var(--dark-surface);
         }
         .ios-series-option.is-wrong {
-          border-color: rgba(255, 255, 255, 0.16);
+          border-color: var(--dark-border);
           background: var(--dark-surface);
         }
         .ios-series-option.is-user-answer.is-correct {
-          border-color: rgba(48, 209, 88, 0.4);
+          border-color: rgba(40, 117, 66, 0.5);
           box-shadow:
-            0 0 0 1px rgba(48, 209, 88, 0.12),
+            0 0 0 1px rgba(40, 117, 66, 0.2),
             var(--ios-option-shadow);
         }
         .ios-series-option.is-user-answer.is-wrong {
-          border-color: rgba(255, 69, 58, 0.44);
+          border-color: rgba(163, 59, 54, 0.5);
           box-shadow:
-            0 0 0 1px rgba(255, 69, 58, 0.12),
+            0 0 0 1px rgba(163, 59, 54, 0.2),
             var(--ios-option-shadow);
         }
+        .ios-series-quiz .ios-series-option.is-dimmed,
         .ios-series-option.is-dimmed {
-          opacity: 0.58;
+          opacity: 0.6 !important;
         }
         .ios-series-option.is-user-answer {
           animation: ios-answer-reveal 0.26s cubic-bezier(0.2, 0.8, 0.3, 1);
@@ -460,7 +469,7 @@ export const mobileQuizViewStyles = css.global`
             transform: scale(1);
           }
           48% {
-            transform: scale(1.03);
+            transform: scale(1.02);
           }
         }
         @keyframes ios-correct-glow {
@@ -469,52 +478,53 @@ export const mobileQuizViewStyles = css.global`
           }
           45% {
             box-shadow:
-              0 0 0 3px rgba(48, 209, 88, 0.2),
-              0 0 18px rgba(48, 209, 88, 0.18),
+              0 0 0 3px rgba(40, 117, 66, 0.25),
+              0 0 16px rgba(40, 117, 66, 0.2),
               var(--ios-option-shadow);
           }
           100% {
             box-shadow:
-              0 0 0 1px rgba(48, 209, 88, 0.1),
+              0 0 0 1px rgba(40, 117, 66, 0.15),
               var(--ios-option-shadow);
           }
         }
         .ios-series-option-letter {
-          width: 30px;
-          height: 30px;
-          flex: 0 0 30px;
+          width: 28px;
+          height: 28px;
+          flex: 0 0 28px;
           box-sizing: border-box;
           display: grid;
           place-items: center;
           border: 1px solid transparent;
-          border-radius: 11px;
+          border-radius: 8px;
           background: var(--dark-surface-muted);
-          color: rgba(235, 235, 245, 0.68);
-          font-size: 14px;
-          font-weight: 700;
+          color: var(--dark-text-muted);
+          font-size: 15px;
+          font-weight: 600;
+          line-height: 1;
         }
         .ios-series-option.is-selected .ios-series-option-letter {
           border-color: transparent;
-          background: #007aff;
+          background: var(--dark-action);
           color: #fff;
         }
         .ios-series-option.is-correct .ios-series-option-letter {
           border-color: transparent;
-          background: #30d158;
+          background: #287542;
           color: #ffffff;
         }
         .ios-series-option.is-wrong .ios-series-option-letter {
           border-color: transparent;
-          background: #ff453a;
+          background: #a33b36;
           color: #ffffff;
         }
         .ios-series-option-value {
           min-width: 0;
-          color: rgba(242, 242, 247, 0.92);
-          font-size: 16px;
-          font-weight: 500;
-          line-height: 1.52;
-          letter-spacing: 0.002em;
+          color: #DDE0E4;
+          font-size: 18px;
+          font-weight: 400;
+          line-height: 1.45;
+          letter-spacing: -0.003em;
         }
         .ios-series-option-status {
           display: inline-flex;
@@ -525,7 +535,6 @@ export const mobileQuizViewStyles = css.global`
           justify-content: flex-end;
         }
         .ios-series-your-answer {
-          /* Keep the selected-answer announcement without enlarging the row. */
           position: absolute;
           width: 1px;
           height: 1px;
@@ -541,16 +550,16 @@ export const mobileQuizViewStyles = css.global`
           flex: none;
         }
         .ios-series-option.is-correct .ios-series-answer-icon {
-          color: #30d158;
+          color: #287542;
         }
         .ios-series-option.is-wrong .ios-series-answer-icon {
-          color: #ff453a;
+          color: #a33b36;
         }
         .ios-series-actions {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 10px;
-          margin: 14px 0 18px;
+          margin: 12px 0 16px;
         }
         .ios-series-actions.is-single-action {
           grid-template-columns: 1fr;
@@ -559,14 +568,14 @@ export const mobileQuizViewStyles = css.global`
         .ios-series-ai-btn {
           width: 100%;
           min-width: 0;
-          min-height: 46px;
-          border: 1px solid rgba(255, 255, 255, 0.14);
-          border-radius: 14px;
+          min-height: 44px;
+          border: 1px solid var(--dark-border);
+          border-radius: 12px;
           background: var(--dark-surface);
-          color: rgba(242, 242, 247, 0.82);
+          color: var(--dark-text-secondary);
           font: inherit;
           font-size: 14px;
-          font-weight: 700;
+          font-weight: 600;
           cursor: pointer;
           transition:
             background 0.16s ease,
@@ -608,15 +617,15 @@ export const mobileQuizViewStyles = css.global`
         }
         .ios-series-solution:active,
         .ios-series-ai-btn:active {
-          border-color: rgba(255, 255, 255, 0.22);
+          border-color: var(--dark-accent);
           background: var(--dark-surface-muted);
           transform: scale(0.99);
         }
         .ios-series-error {
-          margin: 12px 2px 0;
+          margin: 10px 2px 0;
           color: #ff9f9a;
           font-size: 13px;
-          font-weight: 600;
+          font-weight: 500;
         }
         .ios-series-footer {
           z-index: 30;
@@ -626,40 +635,40 @@ export const mobileQuizViewStyles = css.global`
           width: 100%;
           max-width: 768px;
           margin: 0 auto;
-          padding: 12px max(16px, var(--safe-right)) calc(var(--safe-bottom) + 12px) max(16px, var(--safe-left));
-          border-top: 1px solid rgba(255, 255, 255, 0.12);
+          padding: 10px max(16px, var(--safe-right)) calc(var(--safe-bottom) + 10px) max(16px, var(--safe-left));
+          border-top: 1px solid var(--dark-border);
           background: linear-gradient(
             180deg,
-            rgba(0, 0, 0, 0),
-            rgba(0, 0, 0, 0.94) 25%,
+            rgba(13, 15, 18, 0),
+            rgba(13, 15, 18, 0.96) 25%,
             var(--dark-canvas)
           );
           flex-shrink: 0;
         }
         .ios-series-footer button {
-          --ui-control-height: 56px;
+          --ui-control-height: 52px;
           min-width: 0;
-          height: 56px;
-          border-radius: 16px;
+          height: 52px;
+          border-radius: 14px;
           font: inherit;
           font-size: 16px;
-          font-weight: 700;
+          font-weight: 600;
           cursor: pointer;
         }
         .ios-series-footer button:disabled {
-          opacity: 0.42;
+          opacity: 0.38;
           cursor: not-allowed;
         }
         .ios-series-footer-secondary {
-          border: 1px solid rgba(255, 255, 255, 0.14);
+          border: 1px solid var(--dark-border);
           background: var(--dark-surface);
-          color: var(--light-canvas);
+          color: var(--dark-text);
         }
         .ios-series-footer-primary {
           border: 0;
-          background: var(--ios-accent);
-          color: #fff;
-          box-shadow: 0 4px 16px -4px rgba(0, 122, 255, 0.5);
+          background: var(--dark-action);
+          color: #ffffff;
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
         }
         .ios-series-footer-primary:not(:disabled):active {
           transform: scale(0.98);
@@ -686,7 +695,7 @@ export const mobileQuizViewStyles = css.global`
           flex-direction: column;
           overflow: hidden;
           padding: 0;
-          border: 1px solid rgba(255, 255, 255, 0.14);
+          border: 1px solid var(--dark-border);
           border-bottom: 0;
           border-radius: 24px 24px 0 0;
           background: var(--dark-surface);
@@ -699,16 +708,16 @@ export const mobileQuizViewStyles = css.global`
           align-items: center;
           justify-content: center;
           padding: 16px 20px;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-          color: var(--light-canvas);
-          font-size: 17px;
+          border-bottom: 1px solid var(--dark-border);
+          color: var(--dark-text);
+          font-size: 16px;
           font-weight: 700;
           background: var(--dark-surface);
           z-index: 10;
         }
         .ios-series-palette-title span {
           text-align: center;
-          font-size: 17px;
+          font-size: 16px;
           font-weight: 700;
         }
         .ios-series-palette-title button {
@@ -721,10 +730,10 @@ export const mobileQuizViewStyles = css.global`
           width: 32px;
           height: 32px;
           padding: 0;
-          border: 1px solid rgba(255, 255, 255, 0.14);
+          border: 1px solid var(--dark-border);
           border-radius: 50%;
           background: var(--dark-surface-muted);
-          color: var(--light-canvas);
+          color: var(--dark-text);
           cursor: pointer;
         }
         .ios-series-palette-title svg {
@@ -738,43 +747,43 @@ export const mobileQuizViewStyles = css.global`
           display: grid;
           grid-template-columns: repeat(5, 1fr);
           align-content: flex-start;
-          gap: 12px;
+          gap: 10px;
         }
         .ios-series-palette-grid button {
-          height: 43px;
-          border: 1px solid rgba(255, 255, 255, 0.14);
-          border-radius: 12px;
+          height: 42px;
+          border: 1px solid var(--dark-border);
+          border-radius: 10px;
           background: var(--dark-surface-muted);
-          color: rgba(235, 235, 245, 0.7);
+          color: var(--dark-text-secondary);
           font: inherit;
-          font-weight: 700;
+          font-weight: 600;
           transition: all 0.15s ease;
         }
         .ios-series-palette-grid button.is-current {
           border-color: transparent;
-          background: #007aff;
+          background: var(--dark-action);
           color: #fff;
-          box-shadow: 0 2px 8px rgba(0, 122, 255, 0.4);
+          box-shadow: 0 2px 8px rgba(61, 106, 158, 0.4);
         }
         .ios-series-palette-grid button.is-correct,
         .ios-series-palette-grid button.is-answered {
-          border-color: rgba(48, 209, 88, 0.6);
-          background: rgba(48, 209, 88, 0.18);
-          color: #30d158;
+          border-color: rgba(40, 117, 66, 0.6);
+          background: rgba(40, 117, 66, 0.18);
+          color: #4ade80;
         }
         .ios-series-palette-grid button.is-wrong {
-          border-color: rgba(255, 69, 58, 0.6);
-          background: rgba(255, 69, 58, 0.18);
-          color: #ff453a;
+          border-color: rgba(163, 59, 54, 0.6);
+          background: rgba(163, 59, 54, 0.18);
+          color: #f87171;
         }
         .ios-series-palette-grid button.is-unsubmitted {
-          border-color: rgba(255, 159, 10, 0.6);
-          background: rgba(255, 159, 10, 0.18);
-          color: #ff9f0a;
+          border-color: rgba(255, 159, 10, 0.5);
+          background: rgba(255, 159, 10, 0.15);
+          color: #fbbf24;
         }
         @media (min-width: 431px) {
           .ios-series-device {
-            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 1px var(--dark-border);
           }
         }
         @media (prefers-reduced-motion: reduce) {
@@ -796,28 +805,15 @@ export const mobileQuizViewStyles = css.global`
           overflow-wrap: anywhere;
         }
         .ios-series-quiz .ios-series-option:disabled {
-          /* Submitted answers remain readable despite the shared disabled rule. */
           opacity: 1 !important;
         }
         .ios-series-quiz .ios-series-option.is-dimmed {
-          opacity: 0.65 !important;
+          opacity: 0.6 !important;
         }
         .ios-series-quiz[data-theme="dark"] .ios-series-question-card,
         .ios-series-quiz[data-theme="dark"] .ios-series-option {
           border-color: var(--dark-border);
           color: var(--dark-text);
-        }
-        .ios-series-quiz[data-theme="dark"] .ios-series-option.is-selected {
-          border-color: var(--dark-accent);
-          background: var(--dark-accent-soft);
-        }
-        .ios-series-quiz[data-theme="dark"] .ios-series-option.is-correct {
-          border-color: #30d158;
-          background: var(--dark-surface);
-        }
-        .ios-series-quiz[data-theme="dark"] .ios-series-option.is-wrong {
-          border-color: #ff453a;
-          background: var(--dark-surface);
         }
         .ios-series-quiz .ios-series-icon-button {
           flex-shrink: 0;
@@ -826,6 +822,76 @@ export const mobileQuizViewStyles = css.global`
           left: auto;
           right: 0;
           transform: none;
+        }
+
+        /* Reading Comfort: Text Size Variations */
+        .ios-series-quiz[data-text-size="sm"] .ios-series-prompt {
+          font-size: 17px;
+          line-height: 1.52;
+        }
+        .ios-series-quiz[data-text-size="sm"] .ios-series-prompt p + p {
+          font-size: 17px;
+          line-height: 1.52;
+        }
+        .ios-series-quiz[data-text-size="sm"] .ios-series-option-value {
+          font-size: 16px;
+          line-height: 1.42;
+        }
+        .ios-series-quiz[data-text-size="md"] .ios-series-prompt {
+          font-size: 19px;
+          line-height: 1.58;
+        }
+        .ios-series-quiz[data-text-size="md"] .ios-series-prompt p + p {
+          font-size: 19px;
+          line-height: 1.58;
+        }
+        .ios-series-quiz[data-text-size="md"] .ios-series-option-value {
+          font-size: 18px;
+          line-height: 1.45;
+        }
+        .ios-series-quiz[data-text-size="lg"] .ios-series-prompt {
+          font-size: 21px;
+          line-height: 1.62;
+        }
+        .ios-series-quiz[data-text-size="lg"] .ios-series-prompt p + p {
+          font-size: 21px;
+          line-height: 1.62;
+        }
+        .ios-series-quiz[data-text-size="lg"] .ios-series-option-value {
+          font-size: 20px;
+          line-height: 1.48;
+        }
+
+        /* Reading Comfort: Spacing Variations */
+        .ios-series-quiz[data-spacing="compact"] .ios-series-options {
+          gap: 8px;
+          margin-top: 10px;
+        }
+        .ios-series-quiz[data-spacing="compact"] .ios-series-option {
+          --ui-control-height: 46px;
+          min-height: 46px;
+          padding: 8px 12px;
+          border-radius: 12px;
+        }
+        .ios-series-quiz[data-spacing="compact"] .ios-series-question-card {
+          padding: 12px 14px;
+        }
+        .ios-series-quiz[data-spacing="compact"] .ios-series-actions {
+          margin: 10px 0 14px;
+          gap: 8px;
+        }
+        .ios-series-quiz[data-spacing="comfortable"] .ios-series-options {
+          gap: 10px;
+          margin-top: 12px;
+        }
+        .ios-series-quiz[data-spacing="comfortable"] .ios-series-option {
+          --ui-control-height: 52px;
+          min-height: 52px;
+          padding: 10px 14px;
+          border-radius: 14px;
+        }
+        .ios-series-quiz[data-spacing="comfortable"] .ios-series-question-card {
+          padding: 14px 16px;
         }
 
         /* Light Theme Overrides (Palette: #F6F8FA White / #E6EAEF Ice Blue / #FFFFFF Pure White) */
@@ -937,6 +1003,13 @@ export const mobileQuizViewStyles = css.global`
         }
         .ios-series-quiz[data-theme="light"] .ios-series-prompt {
           color: var(--light-text);
+        }
+        .ios-series-quiz[data-theme="light"] .ios-series-option:disabled {
+          opacity: 1 !important;
+          cursor: default;
+        }
+        .ios-series-quiz[data-theme="light"] .ios-series-option.is-dimmed {
+          opacity: 0.6 !important;
         }
         .ios-series-quiz[data-theme="light"] .ios-series-option {
           border-color: #d8dee4;
@@ -1081,10 +1154,10 @@ export const mobileQuizViewStyles = css.global`
         }
         .ios-series-quiz[data-theme="light"] .ios-series-question-card {
           box-shadow: none;
-          border-radius: 12px;
+          border-radius: 14px;
         }
         .ios-series-quiz[data-theme="light"] .ios-series-option {
-          border-radius: 10px;
-          min-height: 44px;
+          border-radius: 14px;
+          min-height: 52px;
         }
       `;

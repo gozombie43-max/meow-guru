@@ -20,11 +20,18 @@ describe("QuizSettingsModal", () => {
     hideAiTutor: false,
     onToggleHideAiTutor: vi.fn(),
     onToggleHideBoth: vi.fn(),
+    textSize: "md" as const,
+    onTextSizeChange: vi.fn(),
+    spacing: "comfortable" as const,
+    onSpacingChange: vi.fn(),
   };
 
   it("renders when isOpen is true", () => {
     render(<QuizSettingsModal {...defaultProps} />);
     expect(screen.getByText("Quiz Settings")).toBeInTheDocument();
+    expect(screen.getByText("Reading Comfort")).toBeInTheDocument();
+    expect(screen.getByText("Text Size")).toBeInTheDocument();
+    expect(screen.getByText("Spacing")).toBeInTheDocument();
     expect(screen.getByText("Dark Theme")).toBeInTheDocument();
     expect(screen.getByText("Hide Question Strip")).toBeInTheDocument();
     expect(screen.getByText("Hide View Solution")).toBeInTheDocument();
@@ -51,6 +58,30 @@ describe("QuizSettingsModal", () => {
     const backdrop = screen.getByTestId("settings-backdrop");
     fireEvent.click(backdrop);
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("calls onTextSizeChange when size buttons are clicked", () => {
+    const onTextSizeChange = vi.fn();
+    render(<QuizSettingsModal {...defaultProps} onTextSizeChange={onTextSizeChange} />);
+    const smallBtn = screen.getByRole("button", { name: "S" });
+    fireEvent.click(smallBtn);
+    expect(onTextSizeChange).toHaveBeenCalledWith("sm");
+
+    const largeBtn = screen.getByRole("button", { name: "L" });
+    fireEvent.click(largeBtn);
+    expect(onTextSizeChange).toHaveBeenCalledWith("lg");
+  });
+
+  it("calls onSpacingChange when spacing buttons are clicked", () => {
+    const onSpacingChange = vi.fn();
+    render(<QuizSettingsModal {...defaultProps} onSpacingChange={onSpacingChange} />);
+    const compactBtn = screen.getByRole("button", { name: "Compact" });
+    fireEvent.click(compactBtn);
+    expect(onSpacingChange).toHaveBeenCalledWith("compact");
+
+    const comfortBtn = screen.getByRole("button", { name: "Comfort" });
+    fireEvent.click(comfortBtn);
+    expect(onSpacingChange).toHaveBeenCalledWith("comfortable");
   });
 
   it("calls onToggleTheme when theme switch is clicked", () => {

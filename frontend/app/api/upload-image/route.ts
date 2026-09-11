@@ -11,24 +11,31 @@ export async function POST(req: Request) {
     process.env.AZURE_BACKEND_URL ||
     "http://localhost:10000";
 
-  const res = await fetchWithRetry(
-    `${backendUrl}/api/upload/image-question`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: authorization,
+  try {
+    const res = await fetchWithRetry(
+      `${backendUrl}/api/upload/image-question`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: authorization,
+        },
+        body: formData,
       },
-      body: formData,
-    },
-    {
-      attempts: 3,
-      timeoutMs: 20000,
-      retryDelayMs: 5000,
-      retryMethods: ["POST"],
-      retryOnStatuses: [502, 503, 504],
-    }
-  );
+      {
+        attempts: 3,
+        timeoutMs: 20000,
+        retryDelayMs: 5000,
+        retryMethods: ["POST"],
+        retryOnStatuses: [502, 503, 504],
+      }
+    );
 
-  const data = await res.json();
-  return Response.json(data, { status: res.status });
+    const data = await res.json();
+    return Response.json(data, { status: res.status });
+  } catch (error) {
+    return Response.json(
+      { error: "Upload service currently unavailable" },
+      { status: 503 }
+    );
+  }
 }
