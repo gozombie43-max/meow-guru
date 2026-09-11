@@ -18,9 +18,7 @@ const themeBootstrapScript = `
       const savedTheme = window.localStorage.getItem(themeKey);
       const theme = savedTheme === 'light' || savedTheme === 'dark'
         ? savedTheme
-        : window.matchMedia?.('(prefers-color-scheme: dark)').matches
-          ? 'dark'
-          : 'light';
+        : 'dark';
 
       const applyTheme = (element) => {
         element.classList.remove(...themeClasses);
@@ -42,9 +40,9 @@ const themeBootstrapScript = `
         observer.observe(document.documentElement, { childList: true });
       }
     } catch {
-      document.documentElement.classList.add('theme-light');
-      document.documentElement.dataset.theme = 'light';
-      document.documentElement.style.colorScheme = 'light';
+      document.documentElement.classList.add('theme-dark');
+      document.documentElement.dataset.theme = 'dark';
+      document.documentElement.style.colorScheme = 'dark';
     }
   })();
 `;

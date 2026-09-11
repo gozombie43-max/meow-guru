@@ -16,25 +16,25 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="fixed top-0 w-full z-50 bg-white/40 backdrop-blur-xl border-b border-white/50 shadow-[0_4px_30px_rgba(0,0,0,0.05)]">
+    <nav className="fixed top-0 w-full z-50 bg-black/60 dark:bg-black/75 backdrop-blur-xl border-b border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.35)]">
       <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-        <Link href="/" className="font-bold text-xl text-indigo-600 tracking-tight">
+        <Link href="/" className="font-bold text-xl text-blue-500 tracking-tight">
           Meow 🐱
         </Link>
 
         <div className="flex items-center gap-4">
           {user ? (
             <>
-              <span className="text-sm text-gray-600">Hi, {user.name.split(' ')[0]}</span>
+              <span className="text-sm text-neutral-300">Hi, {user.name.split(' ')[0]}</span>
               <Link
                 href="/adaptive-quiz"
-                className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition"
+                className="text-sm font-medium text-neutral-300 hover:text-blue-400 transition"
               >
                 Adaptive Quiz
               </Link>
               <Link
                 href="/dashboard"
-                className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition"
+                className="text-sm font-medium text-neutral-300 hover:text-blue-400 transition"
               >
                 Dashboard
               </Link>
@@ -45,19 +45,19 @@ export default function Navbar() {
             <>
               <Link
                 href="/adaptive-quiz"
-                className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition"
+                className="text-sm font-medium text-neutral-300 hover:text-blue-400 transition"
               >
                 Adaptive Quiz
               </Link>
               <Link
                 href="/login"
-                className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition"
+                className="text-sm font-medium text-neutral-300 hover:text-blue-400 transition"
               >
                 Login
               </Link>
               <Link
                 href="/register"
-                className="text-sm font-medium bg-indigo-600 text-white px-4 py-1.5 rounded-full hover:bg-indigo-700 transition"
+                className="text-sm font-medium bg-blue-600 text-white px-4 py-1.5 rounded-full hover:bg-blue-500 transition"
               >
                 Get Started
               </Link>

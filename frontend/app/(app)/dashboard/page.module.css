@@ -10,9 +10,9 @@
   --card: rgba(255,255,255,0.055);
   --hairline: rgba(255,255,255,0.10);
   --hairline-soft: rgba(255,255,255,0.06);
-  --text: var(--light-canvas);
-  --text-dim: #98989d;
-  --text-dimmer: #636366;
+  --text: var(--dark-text, #ffffff);
+  --text-dim: rgba(235, 235, 245, 0.65);
+  --text-dimmer: rgba(235, 235, 245, 0.40);
 
   /* iOS system colors (dark mode values) */
   --ios-blue: #0a84ff;

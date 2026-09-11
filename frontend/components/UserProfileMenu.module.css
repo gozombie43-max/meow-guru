@@ -135,10 +135,11 @@
 }
 
 :global(.dark) .popover,
-:global(body.theme-dark) .popover {
-  background: var(--dark-surface);
+:global(body.theme-dark) .popover,
+:global(html.theme-dark) .popover {
+  background: var(--dark-surface, #1c1c1e);
   border-color: rgba(255, 255, 255, 0.12);
-  color: var(--light-canvas);
+  color: var(--dark-text, #ffffff);
   box-shadow: 0 24px 50px -10px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
@@ -554,10 +555,11 @@
 }
 
 :global(.dark) .modalCard,
-:global(body.theme-dark) .modalCard {
-  background: var(--dark-surface);
+:global(body.theme-dark) .modalCard,
+:global(html.theme-dark) .modalCard {
+  background: var(--dark-surface, #1c1c1e);
   border-color: rgba(255, 255, 255, 0.14);
-  color: var(--light-canvas);
+  color: var(--dark-text, #ffffff);
   box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 

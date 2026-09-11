@@ -27,21 +27,23 @@ export const aiChatStyles = css`
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
-        .ai-chat-page.ios-theme-dark {
-          --surface: var(--dark-surface);
-          --surface-soft: var(--dark-surface);
-          --surface-muted: var(--dark-surface-muted);
-          --ink: var(--dark-text);
-          --muted: var(--dark-text-muted);
-          --line: var(--dark-border);
-          --accent: var(--dark-accent);
+        .ai-chat-page.ios-theme-dark,
+        :global(body.theme-dark) .ai-chat-page,
+        :global(html.theme-dark) .ai-chat-page {
+          --surface: var(--dark-canvas, #000000);
+          --surface-soft: var(--dark-surface, #1c1c1e);
+          --surface-muted: var(--dark-surface-muted, #2c2c2e);
+          --ink: var(--dark-text, #ffffff);
+          --muted: var(--dark-text-muted, rgba(235, 235, 245, 0.65));
+          --line: var(--dark-border, rgba(255, 255, 255, 0.12));
+          --accent: var(--dark-accent, #0a84ff);
           --accent-dark: #0060cc;
           --topbar-bg: rgba(0, 0, 0, 0.75);
-          --input-bg: var(--dark-surface);
-          --bubble-ai: var(--dark-surface-muted);
-          --bubble-user: var(--dark-accent);
-          --bubble-user-text: var(--dark-text);
-          --bubble-ai-text: var(--dark-text);
+          --input-bg: var(--dark-surface, #1c1c1e);
+          --bubble-ai: var(--dark-surface, #1c1c1e);
+          --bubble-user: var(--dark-accent, #0a84ff);
+          --bubble-user-text: #ffffff;
+          --bubble-ai-text: var(--dark-text, #ffffff);
           --surface-transparent: rgba(0, 0, 0, 0);
         }
 

@@ -39,6 +39,8 @@
 }
 
 :global(.theme-dark) .shell,
+:global(body.theme-dark) .shell,
+:global(html.theme-dark) .shell,
 :global(.dark) .shell {
   --admin-bg: var(--dark-canvas);
   --admin-surface: var(--dark-surface);

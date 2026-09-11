@@ -1,4 +1,22 @@
 .page {
+  --primary: var(--dark-accent, #0a84ff);
+  --primary-light: #70baff;
+  --primary-bg: rgba(10, 132, 255, 0.16);
+  --bg: var(--dark-canvas, #000000);
+  --card: var(--dark-surface, #1c1c1e);
+  --text-dark: var(--dark-text, #ffffff);
+  --text-muted: var(--dark-text-muted, rgba(235, 235, 245, 0.65));
+  --text-light: var(--dark-text-muted, rgba(235, 235, 245, 0.40));
+  --border: var(--dark-border, rgba(255, 255, 255, 0.12));
+  
+  background: var(--bg);
+  min-height: 100dvh;
+  color: var(--text-dark);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+:global(body.theme-light) .page,
+:global(html.theme-light) .page {
   --primary: var(--light-accent);
   --primary-light: #47a1ff;
   --primary-bg: var(--light-accent-soft);
@@ -8,16 +26,11 @@
   --text-muted: var(--light-text-secondary);
   --text-light: var(--light-text-muted);
   --border: var(--light-border);
-  
-  background: var(--bg);
-  min-height: 100dvh;
-  color: var(--text-dark);
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 :global(html.mock-test-surface),
 :global(body.mock-test-surface) {
-  background: var(--light-canvas);
+  background: var(--dark-canvas, #000000);
 }
 
 @media (prefers-color-scheme: dark) {

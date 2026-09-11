@@ -1,17 +1,17 @@
 /* Shared dark constants stay separate from the light exam palette. */
 :root {
-  --dark-canvas: #10141c;
-  --dark-surface: #191f2b;
-  --dark-surface-muted: #242d3c;
-  --dark-border: #354157;
-  --dark-text: #edf2fa;
-  --dark-text-secondary: #b8c4d6;
-  --dark-text-muted: #95a5bc;
-  --dark-accent: #82b1ff;
-  --dark-accent-hover: #a3c6ff;
-  --dark-action: #285ecc;
-  --dark-accent-soft: #233959;
-  --dark-shadow: 0 8px 28px rgb(0 0 0 / 18%);
+  --dark-canvas: #000000;
+  --dark-surface: #1c1c1e;
+  --dark-surface-muted: #2c2c2e;
+  --dark-border: rgba(255, 255, 255, 0.12);
+  --dark-text: #ffffff;
+  --dark-text-secondary: rgba(235, 235, 245, 0.65);
+  --dark-text-muted: rgba(235, 235, 245, 0.40);
+  --dark-accent: #0a84ff;
+  --dark-accent-hover: #409cff;
+  --dark-action: #0a84ff;
+  --dark-accent-soft: rgba(10, 132, 255, 0.16);
+  --dark-shadow: 0 8px 32px rgba(0, 0, 0, 0.60);
 }
 
 html.theme-dark,
@@ -63,9 +63,11 @@ html.theme-dark ::selection {
 }
 
 html.theme-dark body.theme-dark .bottom-pill-nav {
-  background: var(--dark-surface);
-  border: 1px solid var(--dark-border);
-  box-shadow: var(--dark-shadow);
+  background: rgba(28, 28, 30, 0.85);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.60);
   padding: 7px;
   gap: 4px;
   border-radius: 24px;
@@ -121,7 +123,11 @@ html.theme-dark .bottom-nav-label {
     max-width: 100%;
     border-radius: 20px 20px 0 0;
     border-bottom: 0;
+    background: rgba(20, 20, 22, 0.88);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
     padding: 8px max(8px, var(--safe-right)) calc(8px + var(--safe-bottom)) max(8px, var(--safe-left));
-    box-shadow: 0 -4px 24px rgb(0 0 0 / 16%);
+    box-shadow: 0 -4px 28px rgba(0, 0, 0, 0.55);
   }
 }

@@ -399,9 +399,26 @@ html.theme-dark .battle-aux-page .text-emerald-700,
 html.theme-dark .battle-aux-page .text-emerald-600 { color: #6ce98d; }
 html.theme-dark .battle-aux-page .shadow-sm { box-shadow: 0 1px 1px rgba(0, 0, 0, .45); }
 
+html.theme-dark,
+body.theme-dark {
+  --battle-ink: #ffffff;
+  --battle-muted: rgba(235, 235, 245, 0.65);
+  --battle-accent: #0a84ff;
+  --battle-accent-strong: #0070e0;
+  --battle-surface: #1c1c1e;
+  --battle-line: rgba(255, 255, 255, 0.12);
+  --battle-soft: #2c2c2e;
+  --battle-green: #30d158;
+  --battle-red: #ff453a;
+}
+
 html.theme-dark .battle-page,
 html.theme-dark .battle-game-shell,
-html.theme-dark .battle-centered { font-family: inherit; }
+html.theme-dark .battle-centered {
+  font-family: inherit;
+  background: var(--dark-canvas, #000000);
+  color: var(--dark-text, #ffffff);
+}
 html.theme-dark .battle-quick-links a { background: var(--battle-surface); }
 html.theme-dark .battle-trust-row,
 html.theme-dark .battle-field > span,

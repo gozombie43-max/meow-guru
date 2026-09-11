@@ -5,7 +5,7 @@ import { useCallback, useMemo, useSyncExternalStore } from 'react';
 export type ThemeMode = 'light' | 'dark';
 
 const THEME_STORAGE_KEY = 'ui-theme';
-const DEFAULT_THEME: ThemeMode = 'light';
+const DEFAULT_THEME: ThemeMode = 'dark';
 const listeners = new Set<() => void>();
 let currentTheme: ThemeMode = DEFAULT_THEME;
 let initialized = false;
@@ -21,8 +21,7 @@ const getPreferredTheme = (): ThemeMode => {
   try {
     const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
     if (stored === 'dark' || stored === 'light') return stored;
-    const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
-    return prefersDark ? 'dark' : 'light';
+    return DEFAULT_THEME;
   } catch {
     return DEFAULT_THEME;
   }
@@ -38,8 +37,6 @@ const applyThemeToDom = (theme: ThemeMode) => {
   root.classList.toggle('theme-light', theme === 'light');
   body.dataset.theme = theme;
   root.dataset.theme = theme;
-  body.style.colorScheme = theme;
-  root.style.colorScheme = theme;
   try {
     window.localStorage.setItem(THEME_STORAGE_KEY, theme);
   } catch {}
