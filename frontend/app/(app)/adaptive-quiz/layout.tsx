@@ -1,5 +1,3 @@
-import "./adaptive-quiz.css";
-
-export default function AdaptiveQuizLayout({ children }: { children: React.ReactNode }) {
+export default function LegacyAdaptiveLayout({children}:{children:React.ReactNode}) {
   return children;
 }

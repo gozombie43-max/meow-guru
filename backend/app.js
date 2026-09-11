@@ -151,7 +151,9 @@ export async function createApp({ isReady, isShuttingDown, quizOnlyMode = proces
   app.use('/api/notes', lazyRouter(() => import('./routes/notes.routes.js')));
   app.use('/api/pdfs', lazyRouter(() => import('./routes/pdfs.js')));
   app.use('/api/agent', agentLimiter, lazyRouter(() => import('./agents/cognitiveMapperRouter.js')));
-  app.use('/api/adaptive-quiz', agentLimiter, lazyRouter(() => import('./agents/adaptiveQuiz/adaptiveQuizRouter.js')));
+  app.use('/api/training', agentLimiter, lazyRouter(() => import('./routes/training.js')));
+  app.use('/api/training-curation', agentLimiter, lazyRouter(() => import('./routes/trainingCuration.js')));
+  app.use('/api/adaptive-quiz', (_req, res) => res.status(410).json({ error: 'Legacy adaptive quizzes have been retired. Use /api/training.' }));
   app.use('/api/admin', lazyRouter(() => import('./routes/adminUsers.routes.js')));
 
   if (!quizOnlyMode) {

@@ -38,6 +38,7 @@ export default function BottomNav() {
   const isNotificationsRoute =
     normalizedPathname === '/notifications' || normalizedPathname.startsWith('/notifications/');
   const shouldHideNav =
+    pathname.startsWith('/play/session/') ||
     isQuizRoute ||
     isNotesViewRoute ||
     isFormulaNotesRoute ||
