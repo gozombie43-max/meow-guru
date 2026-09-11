@@ -36,12 +36,12 @@ export default function AuthInput({
         <input
           id={id}
           type={inputType}
-          className={`${styles.inputField} ${error ? styles.inputError : ''} ${className || ''}`}
+          className={`${styles.inputField} ${isPassword ? styles.passwordInput : ''} ${error ? styles.inputError : ''} ${className || ''}`}
           style={!icon ? { paddingLeft: '14px' } : undefined}
           {...props}
         />
         {isPassword && (
-          <button data-ui-button="state"
+          <button data-ui-button="state" data-ui-shape="icon"
             type="button"
             className={styles.passwordToggleBtn}
             onClick={() => setShowPassword((prev) => !prev)}

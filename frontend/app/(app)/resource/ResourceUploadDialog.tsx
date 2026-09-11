@@ -18,7 +18,7 @@ export default function ResourceUploadDialog({ activeSubject, activeTab, onBegin
             <p className="res-modal-eyebrow">Upload Document</p>
             <h2 id="res-upload-title" className="res-modal-title">Where to add?</h2>
           </div>
-          <button data-ui-button="state" type="button" className="res-modal-close" onClick={onClose} aria-label="Close modal">
+          <button data-ui-button="state" data-ui-shape="icon" type="button" className="res-modal-close" onClick={onClose} aria-label="Close modal">
             <X size={18} strokeWidth={2.4} />
           </button>
         </div>

@@ -289,7 +289,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
               />
 
               {/* Navigation Arrows */}
-              <button data-ui-button="state"
+              <button data-ui-button="state" data-ui-shape="icon"
                 type="button"
                 className={styles.navBtn}
                 onClick={() => router.back()}
@@ -299,7 +299,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
                 <ArrowLeft size={13} />
               </button>
 
-              <button data-ui-button="state"
+              <button data-ui-button="state" data-ui-shape="icon"
                 type="button"
                 className={styles.navBtn}
                 onClick={() => setSidebarOpen((prev) => !prev)}
@@ -1118,7 +1118,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
                 </button>
               )}
               <span className={styles.mobileSearchDivider} aria-hidden="true" />
-              <button data-ui-button="state"
+              <button data-ui-button="state" data-ui-shape="icon"
                 type="button"
                 className={`${styles.mobileMicBtn} ${isListening ? styles.mobileMicBtnListening : ""}`}
                 onClick={toggleVoiceSearch}

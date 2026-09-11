@@ -1,3 +1,4 @@
+import { X } from "lucide-react";
 import RichContent from "@/components/RichContent";
 import type { Dispatch, SetStateAction } from "react";
 import { DIFFICULTIES, LETTERS, type Question } from "./admin-question-bank-model";
@@ -34,7 +35,7 @@ export function QuestionEditorDialog({ formData, isNew, onClose, onSave, setForm
       <div style={{ background: "var(--color-background-primary, #ffffff)", color: "var(--color-text-primary, #111827)", borderRadius: 16, padding: "1.5rem", width: "100%", maxWidth: 640, maxHeight: "calc(100dvh - var(--safe-top) - var(--safe-bottom) - 32px)", overflowY: "auto", border: "0.5px solid var(--color-border-secondary, #e5e7eb)" }} role="dialog" aria-modal="true" aria-labelledby="question-editor-title">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem" }}>
           <h2 id="question-editor-title" style={{ fontSize: 18, fontWeight: 500, margin: 0 }}>{isNew ? "Add Question" : "Edit Question"}</h2>
-          <button data-ui-button="state" onClick={onClose} aria-label="Close question editor" style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "var(--color-text-secondary)" }}>×</button>
+          <button data-ui-button="state" data-ui-shape="icon" onClick={onClose} aria-label="Close question editor" style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "var(--color-text-secondary)" }}><X aria-hidden="true" /></button>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 220px), 1fr))", gap: 12 }}>
@@ -133,7 +134,7 @@ export function ImagePreviewDialog({ preview, onClose }: { preview: { src: strin
       <div style={{ background: "var(--color-background-primary, #ffffff)", borderRadius: 16, padding: "1rem", width: "100%", maxWidth: 860, border: "0.5px solid var(--color-border-secondary, #e5e7eb)" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
           <div style={{ fontSize: 13, fontWeight: 600, color: "var(--color-text-primary)" }}>{preview.title}</div>
-          <button data-ui-button="state" onClick={onClose} aria-label="Close image preview" style={{ background: "none", border: "none", cursor: "pointer", fontSize: 18, color: "var(--color-text-secondary)" }}>×</button>
+          <button data-ui-button="state" data-ui-shape="icon" onClick={onClose} aria-label="Close image preview" style={{ background: "none", border: "none", cursor: "pointer", fontSize: 18, color: "var(--color-text-secondary)" }}><X aria-hidden="true" /></button>
         </div>
         <div style={{ borderRadius: 12, border: "0.5px solid var(--color-border-secondary)", background: "var(--admin-surface-muted)", padding: 10 }}>
           <img src={preview.src} alt={preview.title} style={{ width: "100%", height: "auto", display: "block", borderRadius: 8 }} />

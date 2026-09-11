@@ -250,7 +250,7 @@ export default function MockTestPage() {
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                      aria-label="Search exams, test series..."/>
-                    <button data-ui-button="state" className={styles.filterBtn} aria-label="Filter"><Filter size={14} /></button>
+                    <button data-ui-button="state" data-ui-shape="icon" className={styles.filterBtn} aria-label="Filter"><Filter size={14} /></button>
                   </div>
                   <div className={styles.headerActions}>
                     <button data-ui-button="icon" className={styles.iconBtn} aria-label="Notifications"><Bell size={15} /></button>

@@ -425,7 +425,7 @@ export default function FormulaNotesPage({
             </button>
             <h1 className="fn-header-title">{topicLabel}</h1>
             <div className="fn-header-actions">
-              <button data-ui-button="state"
+              <button data-ui-button="state" data-ui-shape="icon"
                 type="button"
                 className={`fn-search-btn ${isSearchOpen ? "active" : ""}`}
                 onClick={() => {
@@ -437,7 +437,7 @@ export default function FormulaNotesPage({
                 {isSearchOpen ? <X size={19} /> : <Search size={19} />}
               </button>
               {!loading && pdfs.length === 0 ? (
-                <button data-ui-button="state"
+                <button data-ui-button="state" data-ui-shape="icon"
                   type="button"
                   className="fn-add-btn"
                   onClick={() => setShowAddModal(true)}
@@ -599,7 +599,7 @@ export default function FormulaNotesPage({
 
       {/* ── Floating Action Button (FAB) ── */}
       {pdfs.length > 0 ? (
-        <button data-ui-button="state"
+        <button data-ui-button="state" data-ui-shape="icon"
           className="fn-fab"
           type="button"
           aria-label={`Add files to ${topicLabel}`}

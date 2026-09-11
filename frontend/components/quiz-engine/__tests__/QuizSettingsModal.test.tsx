@@ -138,7 +138,8 @@ describe("QuizSettingsModal", () => {
     const { container } = render(<SettingIcon />);
     const svg = container.querySelector("svg");
     expect(svg).toBeInTheDocument();
-    expect(svg).toHaveAttribute("viewBox", "0 0 30 30");
+    expect(svg).toHaveAttribute("viewBox", "0 0 24 24");
+    expect(svg).toHaveAttribute("aria-hidden", "true");
   });
 
   it("renders OptionTickIcon SVG correctly", () => {

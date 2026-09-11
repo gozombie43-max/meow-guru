@@ -629,7 +629,7 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
                 </button>
               )}
               <span className={hubStyles.mobileSearchDivider} aria-hidden="true" />
-              <button data-ui-button="state"
+              <button data-ui-button="state" data-ui-shape="icon"
                 type="button"
                 className={`${hubStyles.mobileMicBtn} ${isListening ? hubStyles.mobileMicBtnListening : ""}`}
                 onClick={toggleVoiceSearch}

@@ -204,7 +204,7 @@ export default function ResourcePage() {
             <h1 className="res-nav-title">Resources</h1>
 
             <div className="res-nav-actions">
-              <button data-ui-button="state"
+              <button data-ui-button="state" data-ui-shape="icon"
                 type="button"
                 className={`res-nav-btn ${showSearch ? "active" : ""}`}
                 onClick={() => {
@@ -217,7 +217,7 @@ export default function ResourcePage() {
               </button>
 
               {files.length === 0 && (
-                <button data-ui-button="state"
+                <button data-ui-button="state" data-ui-shape="icon"
                   type="button"
                   className="res-nav-btn res-add-btn"
                   onClick={triggerUploadCurrent}
@@ -311,7 +311,7 @@ export default function ResourcePage() {
           {notice && (
             <div className="res-notice-banner">
               <span>{notice}</span>
-              <button data-ui-button="state"
+              <button data-ui-button="state" data-ui-shape="icon"
                 type="button"
                 onClick={() => setNotice("")}
                 className="res-notice-close"
@@ -392,7 +392,7 @@ export default function ResourcePage() {
 
       {/* ── Floating Action Button (Only when documents exist) ── */}
       {files.length > 0 && (
-        <button data-ui-button="state"
+        <button data-ui-button="state" data-ui-shape="icon"
           type="button"
           className="res-fab"
           onClick={() => setShowUploadModal(true)}

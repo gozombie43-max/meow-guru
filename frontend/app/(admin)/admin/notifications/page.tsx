@@ -352,7 +352,7 @@ export default function AdminNotificationsPage() {
                 <CheckCircle className={s.resultSuccessIcon} size={22} />
                 <h2 className={s.resultTitle}>Sent successfully</h2>
               </div>
-              <button data-ui-button="state"
+              <button data-ui-button="state" data-ui-shape="icon"
                 type="button"
                 className={s.closeResultBtn}
                 onClick={() => setResult(null)}

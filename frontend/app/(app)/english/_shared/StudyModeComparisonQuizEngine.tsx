@@ -336,7 +336,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
                 <span className="counter-tot">{totalCards}</span>
               </button>
 
-              <button data-ui-button="state"
+              <button data-ui-button="state" data-ui-shape="icon"
                 type="button"
                 className="appearance-toggle"
                 onClick={() => setTheme((v) => (v === "dark" ? "light" : "dark"))}

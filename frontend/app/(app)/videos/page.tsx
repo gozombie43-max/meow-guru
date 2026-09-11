@@ -245,7 +245,7 @@ function PlaylistCard({ playlist }: { playlist: Playlist }) {
           <h2 title={playlist.title}>{playlist.title}</h2>
           <p title={playlist.channel} className="meta-channel">{playlist.channel}</p>
         </div>
-        <button data-ui-button="state"
+        <button data-ui-button="state" data-ui-shape="icon"
           type="button"
           className="more-btn"
           aria-label={`More options for ${playlist.title}`}

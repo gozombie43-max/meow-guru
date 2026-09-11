@@ -4,7 +4,7 @@ import ReactMarkdown from "react-markdown";
 import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
 import remarkGfm from "remark-gfm";
-import { Sun, Moon, X, Plus, Mic, Send, Zap, CheckCircle2, FileText, AlertTriangle, Sparkles } from "lucide-react";
+import { Menu, Sun, Moon, X, Plus, Mic, Send, Zap, CheckCircle2, FileText, AlertTriangle, Sparkles } from "lucide-react";
 import api from '@/lib/axios';
 import { isAxiosError } from 'axios';
 import { ChatMessage, QuizChatbotProps, buildQuestionContext, normalizeTutorMarkdown } from './utils';
@@ -184,7 +184,7 @@ export default function QuizChatbot({
       {renderTrigger ? (
         renderTrigger(() => setIsOpen(true))
       ) : (
-        <button data-ui-button="state"
+        <button data-ui-button="state" data-ui-shape="icon"
           type="button"
           className="quiz-chatbot-fab"
           onClick={() => setIsOpen(true)}
@@ -217,14 +217,12 @@ export default function QuizChatbot({
             <div className={`quiz-chatbot-shell${isDark ? " dark" : ""}`}>
               <div className="mobile-sheet-handle" aria-hidden="true" />
               <div data-ui-chrome="header" className="topbar">
-                <button data-ui-button="state" type="button" className="hbtn" aria-label="Open menu">
-                  <span />
-                  <span />
-                  <span />
+                <button data-ui-button="state" data-ui-shape="icon" type="button" className="hbtn" aria-label="Open menu">
+                  <Menu aria-hidden="true" />
                 </button>
                 <div id="quiz-chatbot-title" className="logo">AI Tutor</div>
                 <div className="top-actions">
-                  <button data-ui-button="state"
+                  <button data-ui-button="state" data-ui-shape="icon"
                     type="button"
                     className="dmbtn"
                     onClick={() => setIsDark((prev) => !prev)}
@@ -379,7 +377,7 @@ export default function QuizChatbot({
 
                   <div className="bbar">
                     <div className="irow">
-                      <button data-ui-button="state" type="button" className="addb" aria-label="Attach context">
+                      <button data-ui-button="state" data-ui-shape="icon" type="button" className="addb" aria-label="Attach context">
                         <Plus className="w-4 h-4 text-zinc-500 dark:text-zinc-400 shrink-0" />
                       </button>
                       <input
@@ -396,7 +394,7 @@ export default function QuizChatbot({
                         autoComplete="off"
                         disabled={isLoading}
                        aria-label="Ask AI Tutor"/>
-                      <button data-ui-button="state"
+                      <button data-ui-button="state" data-ui-shape="icon"
                         type="button"
                         className="mic"
                         aria-label="Voice input"
@@ -404,7 +402,7 @@ export default function QuizChatbot({
                       >
                         <Mic className="w-4.5 h-4.5 text-white shrink-0" />
                       </button>
-                      <button data-ui-button="state"
+                      <button data-ui-button="state" data-ui-shape="icon"
                         type="button"
                         className={`snd${hasInput ? " on" : ""}`}
                         onClick={handleSend}
@@ -421,7 +419,7 @@ export default function QuizChatbot({
               {!isChatView && (
                 <div className="bbar lbar">
                   <div className="irow">
-                    <button data-ui-button="state" type="button" className="addb" aria-label="Attach context">
+                    <button data-ui-button="state" data-ui-shape="icon" type="button" className="addb" aria-label="Attach context">
                       <Plus className="w-4 h-4 text-zinc-500 dark:text-zinc-400 shrink-0" />
                     </button>
                     <input
@@ -438,7 +436,7 @@ export default function QuizChatbot({
                       autoComplete="off"
                       disabled={isLoading}
                      aria-label="Ask AI Tutor"/>
-                    <button data-ui-button="state"
+                    <button data-ui-button="state" data-ui-shape="icon"
                       type="button"
                       className="mic"
                       aria-label="Voice input"
@@ -446,7 +444,7 @@ export default function QuizChatbot({
                     >
                       <Mic className="w-4.5 h-4.5 text-white shrink-0" />
                     </button>
-                    <button data-ui-button="state"
+                    <button data-ui-button="state" data-ui-shape="icon"
                       type="button"
                       className={`snd${hasInput ? " on" : ""}`}
                       onClick={handleSend}

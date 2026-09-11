@@ -26,7 +26,7 @@ export function BattleSection({ title, description, children, loading, error, re
     <header data-ui-chrome="header" className="bs-header"><div className="bs-header-inner">
       <Link href="/battle" className="bs-back" aria-label="Back to battle"><ArrowLeft size={20} /></Link>
       <Link href="/battle" className="bs-brand"><Swords size={19} />Battle arena</Link>
-      <button data-ui-button="state" className="bs-theme" onClick={toggleThemeMode} aria-label={theme === "dark" ? "Use light theme" : "Use dark theme"}>{theme === "dark" ? <Sun size={19} /> : <Moon size={19} />}</button>
+      <button data-ui-button="state" data-ui-shape="icon" className="bs-theme" onClick={toggleThemeMode} aria-label={theme === "dark" ? "Use light theme" : "Use dark theme"}>{theme === "dark" ? <Sun size={19} /> : <Moon size={19} />}</button>
     </div></header>
     <main className="bs-scroll-body">
       <div className="bs-content">

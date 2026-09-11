@@ -1,4 +1,5 @@
 'use client';
+import { X } from "lucide-react";
 import MathRenderer from '@/components/MathRenderer';
 import { useAuth } from '@/context/AuthContext';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
@@ -466,7 +467,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
           <div className={`${styles.bottomSheet} ${showPalette ? styles.show : ''}`}>
             <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '1rem'}}>
               <h3 style={{margin: 0}}>Questions Palette</h3>
-              <button data-ui-button="state" onClick={() => setShowPalette(false)} style={{background:'transparent', border:'none', fontSize:'1.25rem'}}>&times;</button>
+              <button data-ui-button="state" data-ui-shape="icon" aria-label="Close" onClick={() => setShowPalette(false)} style={{background:'transparent', border:'none', fontSize:'1.25rem'}}><X aria-hidden="true" /></button>
             </div>
             <div className={styles.questionGrid}>
               {paper.sections[currentSection].questions.map((q: MockQuestion, idx: number) => {

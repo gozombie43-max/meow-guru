@@ -135,7 +135,7 @@ export function QuestionQuickBar({
                 quickButtonRefs.current[index] = el;
               }}
               onClick={() => onGoToQuestion(index + 1)}
-              className={`h-8 w-8 min-h-8 min-w-8 rounded-lg text-xs font-semibold ${statusClasses(status)}`}
+              className={`h-11 w-11 min-h-11 min-w-11 shrink-0 rounded-lg text-xs font-semibold ${statusClasses(status)}`}
               aria-label={`Question ${index + 1}`}
             >
               {index + 1}

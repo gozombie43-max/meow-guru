@@ -180,7 +180,7 @@ function MobileQuizView({ config, cards, bookmarked, toggleBookmark, theme, setT
               </svg>
               <span style={{ fontStyle: 'normal', fontWeight: 600 }}>{bookmarked.size}/{cards.length}</span>
             </div>
-            <button data-ui-button="state" className="theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+            <button data-ui-button="state" data-ui-shape="icon" aria-label="Toggle theme" className="theme-toggle" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
               {theme === 'dark' ? <svg viewBox="0 0 24 24" fill="none"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
               : <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/><circle cx="12" cy="12" r="4.5" stroke="currentColor" strokeWidth="1.8"/></svg>}
             </button>
@@ -211,7 +211,7 @@ function MobileQuizView({ config, cards, bookmarked, toggleBookmark, theme, setT
       <button type="button" className={`sheet-overlay ${isSheetOpen ? 'open' : ''}`} onClick={() => setIsSheetOpen(false)} aria-label="Close filters" />
       <div className={`filter-sheet ${isSheetOpen ? 'open' : ''}`}>
         <div className="sheet-handle" />
-        <div className="sheet-header"><h2>Filters</h2><button data-ui-button="state" className="sheet-close" onClick={() => setIsSheetOpen(false)} aria-label="Close filters"><svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg></button></div>
+        <div className="sheet-header"><h2>Filters</h2><button data-ui-button="state" data-ui-shape="icon" className="sheet-close" onClick={() => setIsSheetOpen(false)} aria-label="Close filters"><svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg></button></div>
         <div className="sheet-body">
           <div className={`sheet-section ${catSectionCollapsed ? 'collapsed' : ''}`}>
             <div className="sheet-section-head"><span>Category</span><button data-ui-button="state" className="section-toggle" onClick={() => setCatSectionCollapsed(!catSectionCollapsed)}>{catSectionCollapsed ? '+' : '—'}</button></div>

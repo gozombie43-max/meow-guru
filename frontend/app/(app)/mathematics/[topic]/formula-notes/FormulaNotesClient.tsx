@@ -248,7 +248,7 @@ export default function FormulaNotesClient({ topic }: FormulaNotesClientProps) {
             <h1>Notes Formula &amp; Tricks</h1>
             <p className="subtitle">{topicLabel} insights wrapped in a liquid glass layout.</p>
           </div>
-          <button data-ui-button="state" className="search-button" type="button" aria-label="Search notes">
+          <button data-ui-button="state" data-ui-shape="icon" className="search-button" type="button" aria-label="Search notes">
             <Search className="icon" />
           </button>
         </header>
@@ -306,7 +306,7 @@ export default function FormulaNotesClient({ topic }: FormulaNotesClientProps) {
         </section>
       </div>
 
-      <button data-ui-button="state"
+      <button data-ui-button="state" data-ui-shape="icon"
         className="fab-button"
         type="button"
         aria-label="Create new note"

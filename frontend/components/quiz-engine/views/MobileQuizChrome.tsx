@@ -1,6 +1,5 @@
 import { LangToggle } from "@/components/LangToggle";
-import { SettingIcon } from "@/components/quiz-engine/ui/QuizSettingsModal";
-import { Menu } from "lucide-react";
+import { Menu, Settings } from "lucide-react";
 import type { QuizController } from "../hooks/useQuizController";
 
 type HeaderProps = Pick<
@@ -22,11 +21,11 @@ export function MobileQuizHeader({ activeLang, currentIndex, hideQuestionNumbers
 
   return (
     <header data-ui-chrome="header" className="ios-series-header">
-      <button data-ui-button="state" type="button" className={`ios-series-icon-button ${isSettingsOpen ? "is-active" : ""}`} onClick={() => setIsSettingsOpen((previous) => !previous)} aria-label="Open quiz settings" aria-expanded={isSettingsOpen}>
-        <SettingIcon />
+      <button data-ui-button="state" data-ui-shape="icon" type="button" className={`ios-series-icon-button ${isSettingsOpen ? "is-active" : ""}`} onClick={() => setIsSettingsOpen((previous) => !previous)} aria-label="Open quiz settings" aria-expanded={isSettingsOpen}>
+        <Settings aria-hidden="true" />
       </button>
       <LangToggle active={activeLang} loading={isTranslating} onChange={setActiveLang} />
-      <button data-ui-button="state" type="button" className={`ios-series-icon-button ${hideQuestionNumbers ? `is-qnum ${sizeClass}` : ""}`} onClick={openPalette} aria-label={hideQuestionNumbers ? `Question ${questionNumber} - Open question navigator` : "Open question navigator"}>
+      <button data-ui-button="state" data-ui-shape="icon" type="button" className={`ios-series-icon-button ${hideQuestionNumbers ? `is-qnum ${sizeClass}` : ""}`} onClick={openPalette} aria-label={hideQuestionNumbers ? `Question ${questionNumber} - Open question navigator` : "Open question navigator"}>
         {hideQuestionNumbers ? <span className="ios-series-palette-num">{questionNumber}</span> : <Menu aria-hidden="true" />}
       </button>
     </header>

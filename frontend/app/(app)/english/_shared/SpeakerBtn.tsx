@@ -52,7 +52,7 @@ export function SpeakerBtn({ text, bengaliText, size = 22 }: { text: string; ben
   const loading  = state === "loading";
 
   return (
-    <button data-ui-button="state"
+    <button data-ui-button="state" data-ui-shape="icon"
       className={`dt-speaker-btn ${speaking ? "speaking" : ""} ${loading ? "loading" : ""}`}
       onClick={handleClick}
       aria-label="Speak"

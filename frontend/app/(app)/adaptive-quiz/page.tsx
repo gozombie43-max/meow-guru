@@ -1,5 +1,6 @@
 'use client';
 
+import { X } from "lucide-react";
 import MathRenderer from '@/components/MathRenderer';
 import { useAuth } from '@/context/AuthContext';
 import { useThemeMode } from '@/hooks/useTheme';
@@ -576,7 +577,7 @@ export default function AdaptiveQuizEngine() {
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <h2 id="topics-modal-title" style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>{state.modalSubject} Topics</h2>
-              <button data-ui-button="state" aria-label="Close topics" onClick={() => dispatch({ type: 'SET_MODAL_SUBJECT', payload: null })} style={{ background: 'transparent', border: 'none', fontSize: 24, cursor: 'pointer', color: 'var(--color-text-secondary)' }}>&times;</button>
+              <button data-ui-button="state" data-ui-shape="icon" aria-label="Close topics" onClick={() => dispatch({ type: 'SET_MODAL_SUBJECT', payload: null })} style={{ background: 'transparent', border: 'none', fontSize: 24, cursor: 'pointer', color: 'var(--color-text-secondary)' }}><X aria-hidden="true" /></button>
             </div>
             
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, maxHeight: '60vh', overflowY: 'auto' }}>

@@ -442,7 +442,7 @@ function AiChatPageContent() {
                           height={60}
                           unoptimized
                         />
-                        <button data-ui-button="state" type="button" className="remove-image-btn" onClick={(e) => { e.stopPropagation(); removeAttachment(); }} aria-label="Remove attachment">
+                        <button data-ui-button="state" data-ui-shape="icon" type="button" className="remove-image-btn" onClick={(e) => { e.stopPropagation(); removeAttachment(); }} aria-label="Remove attachment">
                           <X size={12} strokeWidth={3} />
                         </button>
                       </div>
@@ -455,7 +455,7 @@ function AiChatPageContent() {
                           <strong>{attachmentFile.name}</strong>
                           <span>{attachmentFile.type === 'application/pdf' ? 'PDF document' : 'Question image'}</span>
                         </div>
-                        <button data-ui-button="state" type="button" className="remove-file-btn" onClick={removeAttachment} aria-label="Remove attachment">
+                        <button data-ui-button="state" data-ui-shape="icon" type="button" className="remove-file-btn" onClick={removeAttachment} aria-label="Remove attachment">
                           <X size={16} />
                         </button>
                       </div>
@@ -474,7 +474,7 @@ function AiChatPageContent() {
                 accept="image/*,application/pdf"
                 onChange={handleAttachmentChange}
                aria-label="Choose file"/>
-              <button data-ui-button="state"
+              <button data-ui-button="state" data-ui-shape="icon"
                 className="composer-tool clip-btn"
                 type="button"
                 aria-label="Attach question image or PDF"
@@ -497,7 +497,7 @@ function AiChatPageContent() {
                 rows={1}
                 disabled={isLoading}
                aria-label="Ask ChatGPT"/>
-              <button data-ui-button="state" className="composer-tool mic-btn" type="button" aria-label="Voice input">
+              <button data-ui-button="state" data-ui-shape="icon" className="composer-tool mic-btn" type="button" aria-label="Voice input">
                 <Mic size={20} />
               </button>
               <button data-ui-button="primary" className="send-btn" type="submit" disabled={!hasInput || isLoading} aria-label="Send message">
@@ -511,7 +511,7 @@ function AiChatPageContent() {
       {isPreviewModalOpen && attachmentPreview && (
         <div className="image-modal-overlay" role="dialog" aria-modal="true" aria-label="Image preview">
           <div className="image-modal-content">
-            <button data-ui-button="state" className="image-modal-close" onClick={() => setIsPreviewModalOpen(false)} aria-label="Close image preview">
+            <button data-ui-button="state" data-ui-shape="icon" className="image-modal-close" onClick={() => setIsPreviewModalOpen(false)} aria-label="Close image preview">
               <X size={24} />
             </button>
             <img src={attachmentPreview} alt="Preview" className="image-modal-img" />

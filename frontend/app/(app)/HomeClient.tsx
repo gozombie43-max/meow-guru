@@ -130,7 +130,7 @@ export default function HomeClient({
           LOGIN
         </Link>
       )}
-      <button data-ui-button="state"
+      <button data-ui-button="state" data-ui-shape="icon"
         type="button"
         className={styles.menuButton}
         onClick={() => setSidebarOpen(true)}
@@ -277,7 +277,7 @@ export default function HomeClient({
               {/* Top Right User & System Controls */}
               <div className={styles.topActions}>
                 {/* Theme Toggle */}
-                <button data-ui-button="state"
+                <button data-ui-button="state" data-ui-shape="icon"
                   type="button"
                   className={styles.actionButton}
                   onClick={toggleThemeMode}
@@ -323,7 +323,7 @@ export default function HomeClient({
         <aside className={`${styles.mobileSidebar} ${sidebarOpen ? styles.sidebarOpen : ''}`}>
           <div className={styles.mobileSidebarHeader}>
             <SkillLearnLogo />
-            <button data-ui-button="state"
+            <button data-ui-button="state" data-ui-shape="icon"
               type="button"
               className={styles.sidebarCloseButton}
               onClick={() => setSidebarOpen(false)}

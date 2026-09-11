@@ -572,7 +572,7 @@ export default function AdminUsersPage() {
                   {data.total.toLocaleString('en-IN')}
                 </div>
                 <div className={s.pageButtons}>
-                  <button data-ui-button="state"
+                  <button data-ui-button="state" data-ui-shape="icon"
                     className={s.pageBtn}
                     disabled={page <= 1}
                     onClick={() => setPage((p) => p - 1)}
@@ -594,7 +594,7 @@ export default function AdminUsersPage() {
                       </button>
                     )
                   )}
-                  <button data-ui-button="state"
+                  <button data-ui-button="state" data-ui-shape="icon"
                     className={s.pageBtn}
                     disabled={page >= totalPages}
                     onClick={() => setPage((p) => p + 1)}

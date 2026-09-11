@@ -198,7 +198,7 @@ export function MobileQuizView({
                 </span>
               )}
             </div>
-            <button data-ui-button="state"
+            <button data-ui-button="state" data-ui-shape="icon"
               type="button"
               className="ios-series-bookmark"
               onClick={handleBookmark}
@@ -249,6 +249,7 @@ export function MobileQuizView({
                   key={`${currentQ.id}-${index}`}
                   type="button"
                   disabled={isCurrentSubmitted}
+                  aria-pressed={isSelected}
                   onClick={() => handleSelectAnswer(index)}
                   className={`ios-series-option ${isSelected ? "is-selected" : ""} ${isCorrect ? "is-correct" : ""} ${isWrong ? "is-wrong" : ""} ${isUserAnswer ? "is-user-answer" : ""} ${isDimmed ? "is-dimmed" : ""}`}
                 >

@@ -3,6 +3,7 @@
 :root {
   --ui-control-height: 44px;
   --ui-control-radius: 12px;
+  --ui-icon-size: 20px;
   --ui-chrome-gutter: 16px;
   --ui-surface: var(--light-surface);
   --ui-muted-surface: var(--light-surface-muted);
@@ -39,6 +40,7 @@
 /* Explicit attributes let these shared rules replace legacy visual overrides
    without recoloring answer states, tabs, switches, or clickable content cards. */
 [data-ui-button] {
+  box-sizing: border-box !important;
   font-family: inherit !important;
   font-weight: 600 !important;
   letter-spacing: normal !important;
@@ -62,6 +64,12 @@
 [data-ui-button="primary"],
 [data-ui-button="secondary"],
 [data-ui-button="danger"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 44px;
+  height: auto;
   padding: 10px 16px !important;
   font-size: 14px !important;
   line-height: 1.35 !important;
@@ -85,10 +93,62 @@
   color: #fff !important;
 }
 
-[data-ui-button="icon"] {
-  min-width: var(--ui-control-height) !important;
-  padding: 8px !important;
-  flex-shrink: 0;
+[data-ui-button="icon"],
+[data-ui-button][data-ui-shape="icon"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px !important;
+  min-width: 44px !important;
+  max-width: 44px !important;
+  height: 44px !important;
+  min-height: 44px !important;
+  max-height: 44px !important;
+  padding: 0 !important;
+  flex: 0 0 44px !important;
+  line-height: 1 !important;
+}
+
+/* Normalize glyphs, not illustrations, answer content, or brand artwork. */
+:is([data-ui-button="primary"], [data-ui-button="secondary"], [data-ui-button="danger"], [data-ui-button="icon"], [data-ui-shape="icon"]) > svg,
+[data-ui-button] > svg.lucide {
+  width: var(--ui-icon-size) !important;
+  height: var(--ui-icon-size) !important;
+  flex: none !important;
+  vertical-align: middle;
+}
+
+[data-ui-button] > svg.lucide {
+  stroke-width: 1.8;
+}
+
+/* The switch track sits inside a full-height touch target. */
+[data-ui-button][role="switch"] {
+  box-sizing: border-box !important;
+  width: 52px !important;
+  min-width: 52px !important;
+  height: 44px !important;
+  padding: 8px 2px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background-clip: content-box !important;
+  flex: 0 0 52px;
+}
+
+[data-ui-button][role="switch"] > span {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  display: block;
+  width: 24px !important;
+  height: 24px !important;
+  margin: 2px !important;
+  border-radius: 50% !important;
+  transform: translateX(0) !important;
+}
+
+[data-ui-button][role="switch"][aria-checked="true"] > span {
+  transform: translateX(20px) !important;
 }
 
 [data-ui-button]:disabled,

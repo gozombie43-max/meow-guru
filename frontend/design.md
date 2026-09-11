@@ -16,6 +16,16 @@ selection, scoring, and review colors remain under the owning component.
 All variants share 44px minimum touch height, typography, and corner radius.
 Backdrop dismiss targets and decorative window controls are excluded.
 
+Icon-only actions use `data-ui-button="icon"` for the shared surface, or add
+`data-ui-shape="icon"` to `state` when they own active/recording/bookmark colors.
+Both use a fixed 44px square, 12px corners, and centered 20px icons on mobile
+and desktop. Use Lucide icons for standard actions; give each an accessible
+label. Avoid text glyphs for close, menu, and pagination actions. Keep brand
+artwork, avatars, and subject illustrations separate from action icons.
+Text actions use the shared primary/secondary/danger alignment and spacing;
+do not set fixed heights that clip wrapped labels. Switches use `role="switch"`
+and `aria-checked`, with a pill track inside a 44px touch target.
+
 Apply `data-ui-chrome="header|footer"` to existing page/toolbars and action bars.
 Their surface and separator styles are shared; positioning, safe-area padding,
 and matching content offsets remain owned by the route shell. Do not add a

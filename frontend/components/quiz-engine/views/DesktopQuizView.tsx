@@ -170,7 +170,7 @@ export function DesktopQuizView({
                 />
                 <span>{currentQ.exam || `${title} concept practice`}</span>
 
-                <button data-ui-button="state"
+                <button data-ui-button="state" data-ui-shape="icon"
                   type="button"
                   className="mac-series-bookmark"
                   onClick={handleBookmark}

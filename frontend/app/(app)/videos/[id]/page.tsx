@@ -204,7 +204,7 @@ export default function VideoPlayerPage() {
         WebkitBackdropFilter: theme === 'dark' ? 'blur(16px)' : 'none',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%' }}>
-          <button data-ui-button="state"
+          <button data-ui-button="state" data-ui-shape="icon"
             onClick={() => router.back()}
             style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 6, borderRadius: 8, display: 'flex', alignItems: 'center', color: videoTheme.title }}
           >
