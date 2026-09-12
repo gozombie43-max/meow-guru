@@ -1,0 +1,111 @@
+.shinyWrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  user-select: none;
+  line-height: 1.2;
+}
+
+.baseText {
+  color: var(--text-dark, #0f172a);
+  font-weight: inherit;
+  letter-spacing: inherit;
+  transition: color 0.2s ease;
+}
+
+:global(body.theme-dark) .baseText,
+:global(html.theme-dark) .baseText {
+  color: var(--text-dark, #f8fafc);
+}
+
+@media (prefers-color-scheme: dark) {
+  :global(body:not(.theme-light)) .baseText,
+  :global(html:not(.theme-light)) .baseText {
+    color: var(--text-dark, #f8fafc);
+  }
+}
+
+.shineLayer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  pointer-events: none;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    transparent 25%,
+    #0284c7 40%,
+    #38bdf8 48%,
+    #ffffff 52%,
+    #6366f1 60%,
+    transparent 75%,
+    transparent 100%
+  );
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  filter: drop-shadow(0 0 6px rgba(2, 132, 199, 0.45));
+  animation: shinySweep var(--shiny-speed, 2.6s) cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+:global(body.theme-dark) .shineLayer,
+:global(html.theme-dark) .shineLayer {
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    transparent 25%,
+    #38bdf8 38%,
+    #7dd3fc 46%,
+    #ffffff 50%,
+    #a78bfa 58%,
+    transparent 75%,
+    transparent 100%
+  );
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.75));
+}
+
+@media (prefers-color-scheme: dark) {
+  :global(body:not(.theme-light)) .shineLayer,
+  :global(html:not(.theme-light)) .shineLayer {
+    background: linear-gradient(
+      115deg,
+      transparent 0%,
+      transparent 25%,
+      #38bdf8 38%,
+      #7dd3fc 46%,
+      #ffffff 50%,
+      #a78bfa 58%,
+      transparent 75%,
+      transparent 100%
+    );
+    background-size: 250% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.75));
+  }
+}
+
+@keyframes shinySweep {
+  0% {
+    background-position: 140% 0;
+  }
+  100% {
+    background-position: -140% 0;
+  }
+}
