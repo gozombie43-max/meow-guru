@@ -1688,3 +1688,83 @@
   cursor: default;
 }
 
+
+.examSheet {
+  width: min(440px, calc(100% - 24px));
+  max-height: min(60dvh, 480px, calc(100dvh - var(--safe-top, 0px) - var(--safe-bottom, 0px) - 32px));
+  margin: auto;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--ios-separator);
+  border-radius: 28px;
+  background: var(--ios-bg);
+  color: var(--ios-ink);
+  box-shadow: 0 24px 80px rgb(0 0 0 / 30%);
+}
+.examSheet[open] { display: flex; flex-direction: column; }
+/* Blur the content itself: some WebViews do not render dialog backdrop filters.
+   A modal dialog renders in the top layer, outside these ancestor effects. */
+.iosScreen:has(.examSheet[open]) > .iosNav,
+.iosScreen:has(.examSheet[open]) > .iosContent,
+.iosScreen:has(.examSheet[open]) > .iosToolbar {
+  filter: blur(14px);
+  pointer-events: none;
+  user-select: none;
+}
+.examSheet[open] { pointer-events: auto; user-select: auto; }
+.examSheet::backdrop {
+  background: rgb(0 0 0 / 28%);
+  backdrop-filter: blur(32px) saturate(150%);
+  -webkit-backdrop-filter: blur(32px) saturate(150%);
+}
+.examSheetHandle {
+  width: 36px;
+  height: 5px;
+  flex-shrink: 0;
+  margin: 10px auto 0;
+  border-radius: 999px;
+  background: var(--ios-separator);
+}
+.examSheetHeader {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px;
+}
+.examSheetHeader h2 { margin: 0; font-size: 21px; font-weight: 700; letter-spacing: -0.5px; }
+.examSheetHeader p { margin: 5px 0 0; font-size: 13px; color: var(--ios-muted); }
+.examSheetOptions {
+  min-height: 0;
+  flex: 0 1 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  margin: 0 12px 12px;
+  border-radius: 16px;
+  background: var(--ios-card);
+}
+.examSheet .examSheetOption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  min-height: 54px;
+  padding: 14px 16px;
+  border: 0;
+  border-radius: 0;
+  border-bottom: 1px solid var(--ios-separator);
+  background: transparent;
+  color: var(--ios-ink);
+  text-align: left;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.examSheetOption:last-child { border-bottom: 0; }
+.examSheetOption span { overflow-wrap: anywhere; }
+.examSheetOption svg { flex-shrink: 0; }
+.examSheet .examSheetOption[aria-pressed="true"] { color: var(--ios-accent); }
+.examSheetOption:focus-visible { outline: 2px solid var(--ios-accent); outline-offset: -3px; }
+.examSheetOption:active { background: var(--ios-field); }

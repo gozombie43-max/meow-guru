@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef, useId } from "react";
 import { useRouter } from "next/navigation";
 import {
   Lock,
@@ -83,6 +83,65 @@ import { useQuizTheme, useQuizThemeControls } from "../QuizThemeProvider";
 import styles from "./SeriesStartViews.module.css";
 
 // ── Complete Topic Icon Mapping Across All 4 Subjects ────────────────────────
+function IosExamPicker({ value, options, onChange }: {
+  value: string;
+  options: string[];
+  onChange: (value: string) => void;
+}) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (!open) return;
+    const dialog = dialogRef.current;
+    const dismissBackdrop = (event: MouseEvent) => {
+      if (!dialog || event.target !== dialog) return;
+      const rect = dialog.getBoundingClientRect();
+      if (event.clientX < rect.left || event.clientX > rect.right ||
+          event.clientY < rect.top || event.clientY > rect.bottom) dialog.close();
+    };
+    dialog?.addEventListener("click", dismissBackdrop);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      dialog?.removeEventListener("click", dismissBackdrop);
+    };
+  }, [open]);
+  const close = () => dialogRef.current?.close();
+  return (
+    <div className={styles.iosSelectWrapper}>
+      <button type="button" data-ui-button="state" className={styles.iosSelect}
+        aria-label={`Select exam: ${value || "All Exams"}`}
+        aria-haspopup="dialog" aria-expanded={open}
+        onClick={() => { dialogRef.current?.showModal(); setOpen(true); }}>
+        {value || "All Exams"}
+      </button>
+      <ChevronDown size={14} className={styles.iosSelectChevron} />
+      <dialog ref={dialogRef} className={styles.examSheet} aria-labelledby={titleId}
+        onClose={() => setOpen(false)}>
+        <div className={styles.examSheetHandle} aria-hidden="true" />
+        <header className={styles.examSheetHeader}>
+          <div><h2 id={titleId}>Select Exam</h2><p>Choose which exam to practice</p></div>
+          <button type="button" data-ui-button="icon" aria-label="Close exam picker" onClick={close}>
+            <X size={20} />
+          </button>
+        </header>
+        <div className={styles.examSheetOptions} role="group" aria-label="Exams">
+          {options.map((exam) => (
+            <button key={exam} type="button" data-ui-button="state"
+              className={styles.examSheetOption} aria-pressed={(value || "all") === exam}
+              onClick={() => { onChange(exam === "all" ? "" : exam); close(); }}>
+              <span>{exam === "all" ? "All Exams" : exam}</span>
+              {(value || "all") === exam && <Check size={21} strokeWidth={2.7} aria-hidden="true" />}
+            </button>
+          ))}
+        </div>
+      </dialog>
+    </div>
+  );
+}
+
 const TOPIC_ICONS: Record<string, LucideIcon> = {
   // Reasoning topics
   "coding-decoding": Lock,
@@ -965,23 +1024,7 @@ function IosQuizStartMobile({
                   <Target size={15} />
                 </span>
                 <span className={styles.iosDropdownLabel}>Select Exam</span>
-                <div className={styles.iosSelectWrapper}>
-                  <select
-                    value={examFilter || "all"}
-                    onChange={(e) => {
-                      onExamChange(e.target.value === "all" ? "" : e.target.value);
-                      e.currentTarget.blur();
-                    }}
-                    className={styles.iosSelect}
-                  >
-                    {examOptions.map((ex) => (
-                      <option key={ex} value={ex === "all" ? "all" : ex}>
-                        {ex === "all" ? "All Exams" : ex}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown size={14} className={styles.iosSelectChevron} />
-                </div>
+                <IosExamPicker value={examFilter} options={examOptions} onChange={onExamChange} />
               </div>
             </div>
 
@@ -1034,23 +1077,7 @@ function IosQuizStartMobile({
                   <Target size={15} />
                 </span>
                 <span className={styles.iosDropdownLabel}>Select Exam</span>
-                <div className={styles.iosSelectWrapper}>
-                  <select
-                    value={examFilter || "all"}
-                    onChange={(e) => {
-                      onExamChange(e.target.value === "all" ? "" : e.target.value);
-                      e.currentTarget.blur();
-                    }}
-                    className={styles.iosSelect}
-                  >
-                    {examOptions.map((ex) => (
-                      <option key={ex} value={ex === "all" ? "all" : ex}>
-                        {ex === "all" ? "All Exams" : ex}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown size={14} className={styles.iosSelectChevron} />
-                </div>
+                <IosExamPicker value={examFilter} options={examOptions} onChange={onExamChange} />
               </div>
             </div>
 
