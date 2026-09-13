@@ -4,7 +4,7 @@ import { createProviderGate } from './providerGate.js';
 const providerGate = createProviderGate();
 
 const apiKey = process.env.AZURE_OPENAI_KEY || process.env.OPENAI_API_KEY;
-const baseURL = process.env.AZURE_OPENAI_BASE_URL || "https://quizguru-ai.openai.azure.com/openai/v1";
+const baseURL = process.env.AZURE_OPENAI_BASE_URL || process.env.AZURE_OPENAI_ENDPOINT || "https://quizguru-ai.openai.azure.com/openai/v1";
 
 if (!apiKey && process.env.NODE_ENV === "production") {
   console.warn("WARNING: AZURE_OPENAI_KEY is not configured in environment variables.");

@@ -123,7 +123,12 @@ router.post('/tutor-chat', optionalAuth, tutorUpload.single('attachment'), async
     wakeTutorAttachmentWorker();
     return res.status(202).json({ success: true, jobId: job._id, status: job.status });
   }
-  res.json(await tutorChat(input));
+  try {
+    res.json(await tutorChat(input));
+  } catch (err) {
+    console.error('tutor-chat error:', err?.message || err);
+    res.status(err.statusCode || 502).json({ success: false, error: err.message || 'AI request failed. Please retry shortly.' });
+  }
 });
 router.get('/tutor-jobs/:id', optionalAuth, async (req, res) => {
   const userId = req.user?.id ? String(req.user.id) : (req.ip || 'anonymous');
