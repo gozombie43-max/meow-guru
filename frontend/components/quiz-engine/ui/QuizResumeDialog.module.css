@@ -1,71 +1,156 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.42);
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  animation: backdropFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+
+.backdrop[data-theme="light"] {
+  background: rgba(0, 0, 0, 0.22);
+}
+
+@keyframes backdropFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 .dialog {
   box-sizing: border-box;
   width: calc(100% - 48px - var(--safe-left, 0px) - var(--safe-right, 0px));
-  max-width: 360px;
+  max-width: 350px;
   max-height: calc(100dvh - 48px - var(--safe-top, 0px) - var(--safe-bottom, 0px));
   margin: auto;
-  padding: 24px 20px 12px;
+  padding: 24px 20px 14px;
   overflow-y: auto;
   overscroll-behavior: contain;
-  border: 1px solid var(--ui-border);
-  border-radius: 28px;
-  background: var(--ui-surface);
-  color: var(--ui-text);
-  box-shadow: 0 24px 80px rgb(0 0 0 / 24%);
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+  border-radius: 24px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
+  animation: dialogPopIn 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+  background: rgba(30, 32, 38, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #F5F5F7;
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  box-shadow: 0 28px 64px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
-.dialog::backdrop {
-  background: rgb(0 0 0 / 65%);
-  backdrop-filter: blur(40px);
-  -webkit-backdrop-filter: blur(40px);
+.dialog[data-theme="light"] {
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  color: #1d1d1f;
+  box-shadow: 0 28px 64px rgba(0, 0, 0, 0.16), 0 0 0 1px rgba(0, 0, 0, 0.04);
+}
+
+@keyframes dialogPopIn {
+  from {
+    opacity: 0;
+    transform: scale(0.93) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 .content { text-align: center; }
 .icon {
   display: grid;
   place-items: center;
-  width: 60px;
-  height: 60px;
-  margin: 0 auto 16px;
-  border-radius: 18px;
-  background: color-mix(in srgb, var(--ui-accent) 12%, var(--ui-surface));
-  color: var(--ui-accent);
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 14px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--ui-accent, #0a84ff) 15%, transparent);
+  color: var(--ui-accent, #0a84ff);
 }
-.content h2 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -.5px; }
-.content p { margin: 8px 0 20px; color: var(--ui-secondary); font-size: 14px; line-height: 1.5; }
-.progressCard { padding: 14px; border-radius: 16px; background: var(--ui-muted-surface); }
-.progressLabel { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 12px; text-align: left; font-size: 12px; line-height: 1.5; }
+.content h2 {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+}
+.content p {
+  margin: 6px 0 18px;
+  color: var(--ui-secondary, rgba(235, 235, 245, 0.6));
+  font-size: 14px;
+  line-height: 1.45;
+}
+.progressCard {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.dialog[data-theme="light"] .progressCard {
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+.progressLabel {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px 12px;
+  text-align: left;
+  font-size: 12px;
+  line-height: 1.5;
+}
 .progressLabel strong { font-weight: 600; font-size: 13px; }
-.progressLabel span { color: var(--ui-secondary); font-variant-numeric: tabular-nums; }
-.progress { display: block; appearance: none; width: 100%; height: 5px; margin-top: 12px; border: 0; border-radius: 8px; overflow: hidden; background: var(--ui-border); }
-.progress::-webkit-progress-bar { background: var(--ui-border); border-radius: 8px; }
-.progress::-webkit-progress-value { background: var(--ui-accent); border-radius: 8px; }
-.progress::-moz-progress-bar { background: var(--ui-accent); border-radius: 8px; }
-.actions { display: grid; gap: 10px; margin-top: 20px; }
-.actions button { width: 100%; cursor: pointer; min-height: 48px; }
-.actions button:active { opacity: .72; }
-.hint { margin: 0; text-align: center; color: var(--ui-secondary); font-size: 11px; line-height: 1.5; }
-.cancel { padding: 10px 16px; border: 0; background: transparent; color: var(--ui-secondary); font-size: 14px; }
-.cancel:hover { background: var(--ui-muted-surface); }
+.progressLabel span { color: var(--ui-secondary, rgba(235, 235, 245, 0.6)); font-variant-numeric: tabular-nums; }
+.progress {
+  display: block;
+  appearance: none;
+  width: 100%;
+  height: 5px;
+  margin-top: 10px;
+  border: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.12);
+}
+.dialog[data-theme="light"] .progress {
+  background: rgba(0, 0, 0, 0.1);
+}
+.progress::-webkit-progress-bar { background: transparent; border-radius: 8px; }
+.progress::-webkit-progress-value { background: var(--ui-accent, #0a84ff); border-radius: 8px; }
+.progress::-moz-progress-bar { background: var(--ui-accent, #0a84ff); border-radius: 8px; }
+
+.actions { display: grid; gap: 8px; margin-top: 18px; }
+.actions button { width: 100%; cursor: pointer; min-height: 46px; border-radius: 12px; font-weight: 600; font-size: 14px; }
+.actions button:active { opacity: .75; transform: scale(0.99); }
+.hint { margin: 0; text-align: center; color: var(--ui-secondary, rgba(235, 235, 245, 0.6)); font-size: 11px; line-height: 1.4; }
+.cancel { padding: 10px 16px; border: 0; background: transparent; color: var(--ui-secondary, rgba(235, 235, 245, 0.7)); font-size: 14px; cursor: pointer; border-radius: 10px; }
+.cancel:hover { background: rgba(255, 255, 255, 0.06); }
+.dialog[data-theme="light"] .cancel:hover { background: rgba(0, 0, 0, 0.05); }
 
 @media (max-width: 639px) {
   .dialog {
-    max-width: 304px;
-    padding: 18px 16px 8px;
-    border-radius: 24px;
+    max-width: 308px;
+    padding: 20px 16px 10px;
+    border-radius: 22px;
   }
   .icon {
-    width: 44px;
-    height: 44px;
+    width: 46px;
+    height: 46px;
     margin-bottom: 10px;
-    border-radius: 14px;
+    border-radius: 13px;
   }
-  .icon svg { width: 24px; height: 24px; }
-  .content h2 { font-size: 20px; }
-  .content p { margin: 6px 0 14px; font-size: 13px; }
+  .icon svg { width: 22px; height: 22px; }
+  .content h2 { font-size: 19px; }
+  .content p { margin: 5px 0 14px; font-size: 13px; }
   .progressCard { padding: 10px 12px; border-radius: 12px; }
   .progress { margin-top: 8px; }
   .actions { gap: 6px; margin-top: 14px; }
-  .actions button { min-height: 44px; }
+  .actions button { min-height: 42px; }
 }

@@ -1,0 +1,21 @@
+.wrapper {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.content {
+  width: 100%;
+  min-height: 100%;
+  transition: filter 0.28s cubic-bezier(0.16, 1, 0.3, 1), transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: filter, transform;
+}
+
+.isBlurred {
+  filter: blur(3.5px) brightness(0.9);
+  -webkit-filter: blur(3.5px) brightness(0.9);
+  transform: scale(0.988);
+  pointer-events: none;
+  user-select: none;
+}

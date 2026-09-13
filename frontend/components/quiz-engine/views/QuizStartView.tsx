@@ -5,6 +5,7 @@ import {
 } from "@/components/quiz-engine/ui/SeriesStartViews";
 import { QuizResumeDialog } from "../ui/QuizResumeDialog";
 import type { QuizController } from "../hooks/useQuizController";
+import styles from "./QuizStartView.module.css";
 export function QuizStartView({
   isClassificationConceptMode,
   subjectConfig,
@@ -151,8 +152,13 @@ export function QuizStartView({
   }
 
   return (
-    <>
-      {startScreen}
+    <div className={styles.wrapper}>
+      <div
+        className={`${styles.content} ${resumeData ? styles.isBlurred : ""}`}
+        aria-hidden={Boolean(resumeData)}
+      >
+        {startScreen}
+      </div>
       {resumeData && (
         <QuizResumeDialog
           theme={theme}
@@ -164,6 +170,6 @@ export function QuizStartView({
           onCancel={handleCancelResume}
         />
       )}
-    </>
+    </div>
   );
 }
