@@ -1,24 +1,9 @@
-import { mathematicsTopicsForRoute } from "@/lib/mathematics-topics";
-import { QUIZ_TREE } from "@/lib/quiz-constants";
-import { notFound } from "next/navigation";
-import MathematicsTopicPage from "../../_shared/topic-page";
-
-const ADVANCE_TOPICS = mathematicsTopicsForRoute("advance");
+import { mathematicsStaticParams, renderMathematicsPage, type MathematicsPageProps } from "@/app/(app)/mathematics/_shared/route-page";
 
 export function generateStaticParams() {
-  return ADVANCE_TOPICS.map((topic) => ({ topic }));
+  return mathematicsStaticParams("advance");
 }
 
-export default async function Page({ params }: { params: Promise<{ topic: string }> }) {
-  const { topic } = await params;
-  if (!ADVANCE_TOPICS.includes(topic as (typeof ADVANCE_TOPICS)[number])) notFound();
-  const config = QUIZ_TREE.mathematics.topics[topic];
-  if (!config) notFound();
-  return (
-    <MathematicsTopicPage
-      title={config.label}
-      slug={topic}
-      routeBase={`/mathematics/advance/${topic}`}
-    />
-  );
+export default function Page(props: MathematicsPageProps) {
+  return renderMathematicsPage(props, "advance", "topic");
 }

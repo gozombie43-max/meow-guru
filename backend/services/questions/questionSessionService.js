@@ -65,7 +65,7 @@ export async function fetchQuestionsSession(params) {
   // Apply mode filter
   if (mode) {
     if (process.env.QUESTIONS_NORMALIZED_KEYS === "true") {
-      conditions.push({ modeKey: mode });
+      conditions.push({ modeKey: mode === "ai-challenge" ? "aiChallenge" : mode });
     } else {
       const modeFilter = buildModeFilter(mode);
       conditions.push(modeFilter);

@@ -258,8 +258,12 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
           body: JSON.stringify(batch)
         });
         if (res.ok) {
-          uploaded += batch.length;
-          addLog(`Batch ${batchNum} → ${batch.length} items uploaded (HTTP 200)`, "ok");
+          const result = await res.json();
+          const saved = Number(result.inserted) || 0;
+          const rejected = Number(result.failed) || 0;
+          uploaded += saved;
+          failed += rejected;
+          addLog(`Batch ${batchNum} → ${saved} stored, ${rejected} failed. Related concept groups will be organized automatically.`, rejected ? "err" : "ok");
         } else {
           failed += batch.length;
           const responseText = await res.text();

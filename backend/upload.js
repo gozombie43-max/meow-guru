@@ -1,3 +1,5 @@
+import { invalidateQuestionMetadata } from "./services/questions/questionMetadataCache.js";
+import { refreshUploadedQuestionMetadata } from "./services/questions/questionMetadataService.js";
 import { normalizedQuestionKeys } from "./services/questions/questionNormalizer.js";
 // backend/upload.js
 // Run with: node upload.js
@@ -125,6 +127,9 @@ async function upload(questions) {
       );
     }
   }
+
+  await invalidateQuestionMetadata();
+  await refreshUploadedQuestionMetadata(questions);
 
   console.log(
     `\nDone. ✅ ${success} uploaded, ❌ ${failed} failed.`

@@ -43,7 +43,10 @@ import {
 } from '../services/battleResultWorker.js';
 
 
+import { startConceptGroupingWorker, stopConceptGroupingWorker, waitForConceptGroupingWorkerIdle } from '../services/conceptGroupingWorker.js';
+
 const workers = [
+  { name: "ConceptGrouping", start: startConceptGroupingWorker, stop: stopConceptGroupingWorker, idle: waitForConceptGroupingWorkerIdle },
   { name: "ScheduledNotification", start: startScheduledNotificationWorker, stop: stopScheduledNotificationWorker, idle: waitForScheduledNotificationWorkerIdle },
   { name: "DailyPracticeReminder", start: startDailyPracticeReminderWorker, stop: stopDailyPracticeReminderWorker, idle: waitForDailyPracticeReminderWorkerIdle },
   { name: "StreakProtection", start: startStreakProtectionWorker, stop: stopStreakProtectionWorker, idle: waitForStreakProtectionWorkerIdle },

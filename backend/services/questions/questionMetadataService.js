@@ -1,6 +1,8 @@
-import { getQuestionsCollection } from "../../config/mongodb.js";
+import { getMongoDB, getQuestionsCollection } from "../../config/mongodb.js";
 import { questionCountsCache } from "./questionCache.js";
-import { normalizeSearchKey } from "./questionNormalizer.js";
+import { readQuestionMetadata } from "./questionMetadataCache.js";
+import { canonicalMode, ensureConceptGroups } from "./conceptGroupService.js";
+import { deriveModeKey, normalizeSearchKey } from "./questionNormalizer.js";
 import {
   buildExcludeStudyModeCondition,
   caseInsensitiveExact,
@@ -102,6 +104,16 @@ export async function fetchQuestionCounts(params) {
 }
 
 export async function fetchQuestionsMeta(params) {
+  if (!params.topic && !params.subject) {
+    const error = new Error("topic or subject is required");
+    error.statusCode = 400;
+    throw error;
+  }
+  const meta = await readQuestionMetadata(params, () => buildQuestionsMeta(params));
+  return { ...meta, ...await ensureConceptGroups(params, meta.concepts) };
+}
+
+async function buildQuestionsMeta(params) {
   const collection = getQuestionsCollection();
   const { topic, subject, mode } = params;
 
@@ -124,15 +136,18 @@ export async function fetchQuestionsMeta(params) {
     } else {
       conditions.push(process.env.QUESTIONS_NORMALIZED_KEYS === "true" ? { topicKey: normalizeSearchKey(topic) } : { topic });
     }
-  } else if (subject) {
+  }
+  if (subject) {
     conditions.push(process.env.QUESTIONS_NORMALIZED_KEYS === "true" ? { subjectKey: normalizeSearchKey(subject) } : { subject: caseInsensitiveExact(subject) });
   }
 
   if (mode) {
     if (process.env.QUESTIONS_NORMALIZED_KEYS === "true") {
-      conditions.push({ modeKey: mode });
+      conditions.push({ modeKey: canonicalMode(mode) });
+    } else if (mode === "studyMode") {
+      conditions.push({ $nor: [buildExcludeStudyModeCondition()] });
     } else {
-      conditions.push(buildModeFilter(mode));
+      conditions.push(buildModeFilter(canonicalMode(mode) === "aiChallenge" ? "ai-challenge" : mode));
     }
   } else {
     // Exclude study-mode for meta if no specific mode is requested
@@ -191,4 +206,33 @@ export async function fetchQuestionsMeta(params) {
     concepts: conceptAgg.map((r) => r._id).filter(Boolean),
     letters,
   };
+}
+
+// Warm metadata already used by students after an upload. Never load question
+// bodies here; the builder aggregates just the stored filter fields.
+export async function refreshUploadedQuestionMetadata(questions) {
+  const topics = new Set(questions.map(q => normalizeSearchKey(q.topic)));
+  const subjects = new Set(questions.map(q => normalizeSearchKey(q.subject)));
+  try {
+    const entries = await getMongoDB().collection("questionMetadata")
+      .find({ params: { $exists: true } }, { projection: { params: 1 } }).toArray();
+    const affected = entries.filter(({ params }) => params.topic
+      ? topics.has(normalizeSearchKey(params.topic))
+      : subjects.has(normalizeSearchKey(params.subject)));
+    // Also prepare brand-new quiz scopes that nobody has opened yet.
+    const scopes = new Map(affected.map(({ params }) => [JSON.stringify(params), params]));
+    for (const question of questions) {
+      if (!question.topic || !question.subject) continue;
+      const params = { subject: question.subject, topic: question.topic, mode: deriveModeKey(question) };
+      scopes.set(JSON.stringify(params), params);
+    }
+    const pending = [...scopes.values()];
+    for (let offset = 0; offset < pending.length; offset += 4) {
+      await Promise.all(pending.slice(offset, offset + 4).map(params => fetchQuestionsMeta(params)));
+    }
+  } catch (error) {
+    // The revision was already advanced. A failed warmup is retried on the next
+    // metadata read and must not report an already saved upload as failed.
+    console.error("Question metadata warmup failed:", error.message);
+  }
 }

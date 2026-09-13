@@ -70,6 +70,7 @@ function QuizEngineContent(props: QuizEngineProps) {
     isClassificationConceptMode,
     title,
     classificationGroups,
+    groupingStatus,
     classificationCategory,
     classificationCategoryCounts,
     examFilter,
@@ -176,6 +177,7 @@ function QuizEngineContent(props: QuizEngineProps) {
         slug={slug}
         routeBase={routeBase}
         classificationGroups={classificationGroups}
+        groupingStatus={groupingStatus}
         classificationCategory={classificationCategory}
         classificationCategoryCounts={classificationCategoryCounts}
         examFilter={examFilter}

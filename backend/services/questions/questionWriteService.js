@@ -1,4 +1,6 @@
 import crypto from "crypto";
+import { invalidateQuestionMetadata } from "./questionMetadataCache.js";
+import { refreshUploadedQuestionMetadata } from "./questionMetadataService.js";
 import { getQuestionsCollection } from "../../config/mongodb.js";
 import { questionCountsCache, questionsQueryCache } from "./questionCache.js";
 import { normalizedQuestionKeys } from "./questionNormalizer.js";
@@ -16,6 +18,9 @@ export async function createQuestion(newQuestion) {
   await collection.insertOne(item);
   questionsQueryCache.clear();
   questionCountsCache.clear();
+  await invalidateQuestionMetadata();
+
+  await refreshUploadedQuestionMetadata([item]);
 
   const { _id, ...resource } = item;
   return resource;
@@ -104,6 +109,8 @@ export async function createQuestionsBulk(questionsData, { importId } = {}) {
   } finally {
     questionsQueryCache.clear();
     questionCountsCache.clear();
+    await invalidateQuestionMetadata();
+    await refreshUploadedQuestionMetadata(normalizedQuestions.filter(Boolean));
   }
 }
 
@@ -130,6 +137,8 @@ export async function modifyQuestion(id, updates, topic = undefined) {
   await collection.updateOne({ _id: existing._id }, { $set: updated });
   questionsQueryCache.clear();
   questionCountsCache.clear();
+  await invalidateQuestionMetadata();
+  await refreshUploadedQuestionMetadata([existing, updated]);
   return updated;
 }
 
@@ -148,6 +157,7 @@ export async function removeQuestion(id, topic = undefined) {
 
   questionsQueryCache.clear();
   questionCountsCache.clear();
+  await invalidateQuestionMetadata();
   return result.deletedCount > 0;
 }
 
@@ -170,6 +180,7 @@ export async function removeQuestionsBulk(ids) {
     const result = await collection.deleteMany({ id: { $in: uniqueIds } });
     questionsQueryCache.clear();
     questionCountsCache.clear();
+    await invalidateQuestionMetadata();
 
     return {
       deleted: result.deletedCount,

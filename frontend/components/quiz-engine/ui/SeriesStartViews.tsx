@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   Lock,
+  Layers,
   Brain,
   Puzzle,
   TrendingUp,
@@ -259,6 +260,7 @@ interface MacOsQuizStartStudioProps {
   onToggleGroup: (concepts: string[]) => void;
   onStart: () => void;
   isLoading?: boolean;
+  groupingStatus?: "ready" | "processing" | "failed" | "empty";
 }
 
 function MacOsQuizStartStudio({
@@ -287,6 +289,7 @@ function MacOsQuizStartStudio({
   onToggleGroup,
   onStart,
   isLoading,
+  groupingStatus,
 }: MacOsQuizStartStudioProps) {
   const router = useRouter();
   const quizTheme = useQuizTheme();
@@ -585,7 +588,7 @@ function MacOsQuizStartStudio({
                       <span>All</span>
                       <span className={styles.chipCount}>{conceptCount}</span>
                     </button>
-                    {subjectConfig.classificationCategories
+                    {groups
                       .filter((item) => (categoryCounts[item.label] || 0) > 0)
                       .map((item) => (
                         <button data-ui-button="state"
@@ -678,7 +681,7 @@ function MacOsQuizStartStudio({
                   })}
                   {filteredGroups.length === 0 && (
                     <div className={styles.emptyState}>
-                      <p>No concept modules matched your filter.</p>
+                      <p role="status">{groupingStatus === "processing" ? "Organizing concepts into related groups… You can still start the quiz." : groupingStatus === "failed" ? "Concept groups are temporarily unavailable. You can still start the quiz." : "No concept groups match your filter."}</p>
                     </div>
                   )}
                 </div>
@@ -753,6 +756,7 @@ interface IosQuizStartMobileProps {
   onToggleGroup: (concepts: string[]) => void;
   onStart: () => void;
   isLoading?: boolean;
+  groupingStatus?: "ready" | "processing" | "failed" | "empty";
 }
 
 function IosQuizStartMobile({
@@ -781,6 +785,7 @@ function IosQuizStartMobile({
   onToggleGroup,
   onStart,
   isLoading,
+  groupingStatus,
 }: IosQuizStartMobileProps) {
   const router = useRouter();
   const quizTheme = useQuizTheme();
@@ -959,7 +964,7 @@ function IosQuizStartMobile({
                 <span>All</span>
                 <span className={styles.iosChipCount}>{conceptCount}</span>
               </button>
-              {subjectConfig.classificationCategories
+              {groups
                 .filter((item) => (categoryCounts[item.label] ?? 0) > 0)
                 .map((item) => (
                   <button data-ui-button="state"
@@ -1030,7 +1035,7 @@ function IosQuizStartMobile({
                       className={styles.iosGroupTile}
                       style={{ background: group.bg, color: group.accent }}
                     >
-                      {group.icon}
+                      <Layers size={16} aria-hidden="true" />
                     </span>
 
                     <span className={styles.iosRowCopy}>
@@ -1045,7 +1050,7 @@ function IosQuizStartMobile({
               })}
 
               {filteredGroups.length === 0 && (
-                <p className={styles.iosEmptyText}>No concept groups match your filter.</p>
+                <p className={styles.iosEmptyText} role="status">{groupingStatus === "processing" ? "Organizing concepts into related groups… You can still start the quiz." : groupingStatus === "failed" ? "Concept groups are temporarily unavailable. You can still start the quiz." : "No concept groups match your filter."}</p>
               )}
             </section>
           </>
@@ -1121,6 +1126,7 @@ export function SeriesConceptStart(props: {
   onToggleGroup: (concepts: string[]) => void;
   onStart: () => void;
   isLoading?: boolean;
+  groupingStatus?: "ready" | "processing" | "failed" | "empty";
 }) {
   return <UnifiedQuizStartView {...props} mode="concept" />;
 }
@@ -1151,6 +1157,7 @@ export function SeriesFormulaStart(props: {
   onToggleGroup: (concepts: string[]) => void;
   onStart: () => void;
   isLoading?: boolean;
+  groupingStatus?: "ready" | "processing" | "failed" | "empty";
 }) {
   return <UnifiedQuizStartView {...props} />;
 }

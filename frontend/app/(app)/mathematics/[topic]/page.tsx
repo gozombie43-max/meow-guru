@@ -1,18 +1,9 @@
-import { mathematicsTopicsForRoute } from "@/lib/mathematics-topics";
-import { QUIZ_TREE } from "@/lib/quiz-constants";
-import { notFound } from "next/navigation";
-import MathematicsTopicPage from "../_shared/topic-page";
-
-const TOP_LEVEL_TOPICS = mathematicsTopicsForRoute("top-level");
+import { mathematicsStaticParams, renderMathematicsPage, type MathematicsPageProps } from "@/app/(app)/mathematics/_shared/route-page";
 
 export function generateStaticParams() {
-  return TOP_LEVEL_TOPICS.map((topic) => ({ topic }));
+  return mathematicsStaticParams("top-level");
 }
 
-export default async function Page({ params }: { params: Promise<{ topic: string }> }) {
-  const { topic } = await params;
-  if (!TOP_LEVEL_TOPICS.includes(topic as (typeof TOP_LEVEL_TOPICS)[number])) notFound();
-  const config = QUIZ_TREE.mathematics.topics[topic];
-  if (!config) notFound();
-  return <MathematicsTopicPage title={config.label} slug={topic} />;
+export default function Page(props: MathematicsPageProps) {
+  return renderMathematicsPage(props, "top-level", "topic");
 }

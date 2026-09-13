@@ -1,5 +1,8 @@
 import { beforeEach,describe,expect,it,vi } from 'vitest';
 
+vi.mock('../questions/questionMetadataCache.js', () => ({ invalidateQuestionMetadata: vi.fn(), readQuestionMetadata: (_params, build) => build() }));
+vi.mock('../questions/questionMetadataService.js', async (importOriginal) => ({ ...(await importOriginal()), refreshUploadedQuestionMetadata: vi.fn() }));
+
 const { getQuestionsCollectionMock } = vi.hoisted(() => ({
   getQuestionsCollectionMock: vi.fn(),
 }));
@@ -559,6 +562,6 @@ describe('MongoDB-backed question writes', () => {
 
     const firstFindFilter = collection.find.mock.calls[0][0];
     expect(firstFindFilter.$and).toBeDefined();
-    expect(JSON.stringify(firstFindFilter)).toContain('$nor');
+    expect(JSON.stringify(firstFindFilter)).toContain('$expr');
   });
 });

@@ -1,5 +1,5 @@
 import { act, renderHook } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { englishConfig } from "../subjects/english";
 import { useQuizFilters } from "./useQuizFilters";
 
@@ -15,11 +15,11 @@ vi.mock("@/hooks/useQuizSession", () => ({
   useQuizSession: (...args: unknown[]) => mockUseQuizSession(...args),
 }));
 
+const mockMeta = vi.hoisted(() => ({ concepts: [] as string[], exams: [], letters: { A: 1, B: 2 } }));
 vi.mock("@/hooks/useQuestionsMeta", () => ({
-  useQuestionsMeta: () => ({
-    meta: { concepts: [], exams: [], letters: { A: 1, B: 2 } },
-  }),
+  useQuestionsMeta: () => ({ meta: mockMeta }),
 }));
+beforeEach(() => { mockMeta.concepts = []; });
 
 describe("useQuizFilters letter filtering", () => {
   it("computes letter counts and delegates filtering to session api", () => {
@@ -75,3 +75,19 @@ describe("useQuizFilters letter filtering", () => {
   });
 });
 
+
+describe("question-derived concepts", () => {
+  it("does not invent concepts when metadata is empty", () => {
+    const { result } = renderHook(() => useQuizFilters({ subjectConfig: englishConfig, slug: "synonyms-antonyms", mode: "concept", initialLetterParam: null }));
+    expect(result.current.conceptOptions).toEqual([]);
+    expect(result.current.classificationGroups).toEqual([]);
+  });
+  it("uses only stored concepts and updates when metadata changes", () => {
+    mockMeta.concepts = ["Stored concept", "Stored concept"];
+    const { result, rerender } = renderHook(() => useQuizFilters({ subjectConfig: englishConfig, slug: "synonyms-antonyms", mode: "concept", initialLetterParam: null }));
+    expect(result.current.conceptOptions).toEqual(["Stored concept"]);
+    mockMeta.concepts = ["Stored concept", "Newly uploaded concept"];
+    rerender();
+    expect(result.current.conceptOptions).toEqual(mockMeta.concepts);
+  });
+});

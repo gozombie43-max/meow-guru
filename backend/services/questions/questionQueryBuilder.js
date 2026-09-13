@@ -173,60 +173,31 @@ export const MODE_QUIZ_TAGS = {
 };
 
 export function buildModeFilter(mode) {
-  const normalizedMode = String(mode || "")
-    .trim()
-    .toLowerCase();
-  const tags = MODE_QUIZ_TAGS[normalizedMode];
-  if (!tags) {
-    // "concept" mode = everything NOT matched by other modes
-    const allOtherTags = Object.values(MODE_QUIZ_TAGS).flat();
-    const tagRegexes = allOtherTags.map(
-      (t) => new RegExp(`^${escapeRegex(t)}$`, "i"),
-    );
-    return {
-      $and: [
-        buildExcludeStudyModeCondition(),
-        {
-          $nor: [
-            { quizName: { $in: tagRegexes } },
-            { quizId: { $in: tagRegexes } },
-            { source: { $in: tagRegexes } },
-          ],
-        },
-      ],
-    };
-  }
-
-  const tagRegexes = tags.map((t) => new RegExp(`^${escapeRegex(t)}$`, "i"));
-
-  if (normalizedMode === "formula") {
-    // Formula mode also includes records with letter fields, but excludes study mode
-    return {
-      $and: [
-        buildExcludeStudyModeCondition(),
-        {
-          $or: [
-            { quizName: { $in: tagRegexes } },
-            { quizId: { $in: tagRegexes } },
-            { source: { $in: tagRegexes } },
-            { topic: { $regex: /^antosynopyq$/i } },
-            { letter: { $exists: true, $ne: "" } },
-          ],
-        },
-      ],
-    };
-  }
-
-  return {
-    $and: [
-      buildExcludeStudyModeCondition(),
-      {
-        $or: [
-          { quizName: { $in: tagRegexes } },
-          { quizId: { $in: tagRegexes } },
-          { source: { $in: tagRegexes } },
-        ],
-      },
-    ],
-  };
+  const requested = String(mode || "concept");
+  const canonical = requested === "ai-challenge" || requested === "aiChallenge" ? "aiChallenge" : requested;
+  // Match the same normalized quiz tags used during ingestion without requiring
+  // a database backfill or MongoDB's unsupported $regexReplace operator.
+  const tagPattern = tags => `^[^a-z0-9]*(?:${tags.map(tag => tag.split("").join("[^a-z0-9]*")).join("|")})[^a-z0-9]*$`;
+  const firstTag = { $cond: [
+    { $ne: [mongoString("$quizName"), ""] }, mongoString("$quizName"),
+    { $cond: [{ $ne: [mongoString("$quizId"), ""] }, mongoString("$quizId"), mongoString("$source")] },
+  ] };
+  const tagMatches = tags => ({ $regexMatch: { input: firstTag, regex: tagPattern(tags), options: "i" } });
+  const hasWord = { $ne: [mongoString("$word"), ""] };
+  const hasLetter = { $ne: [mongoString("$letter"), ""] };
+  const modeExpression = { $switch: { branches: [
+    { case: { $or: [
+      { $regexMatch: { input: mongoString("$questionType"), regex: "^study-?mode$", options: "i" } },
+      { $regexMatch: { input: mongoString("$quizName"), regex: "^study mode$", options: "i" } },
+      { $and: [hasWord, { $isArray: "$meanings" }] },
+    ] }, then: "studyMode" },
+    { case: { $or: [tagMatches(MODE_QUIZ_TAGS.formula), hasWord, hasLetter,
+      { $regexMatch: { input: mongoString("$topic"), regex: tagPattern(["antosynopyq"]), options: "i" } },
+    ] }, then: "formula" },
+    { case: tagMatches(MODE_QUIZ_TAGS["ai-challenge"]), then: "aiChallenge" },
+    { case: tagMatches(MODE_QUIZ_TAGS.hard), then: "hard" },
+    { case: tagMatches(MODE_QUIZ_TAGS.easy), then: "easy" },
+    { case: tagMatches(MODE_QUIZ_TAGS.mixed), then: "mixed" },
+  ], default: "concept" } };
+  return { $expr: { $eq: [modeExpression, canonical] } };
 }

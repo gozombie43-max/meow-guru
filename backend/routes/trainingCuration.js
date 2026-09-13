@@ -1,3 +1,4 @@
+import { invalidateQuestionMetadata } from "../services/questions/questionMetadataCache.js";
 import express from "express";
 import { z } from "zod";
 import adminAuth from "../middleware/auth.js";
@@ -142,6 +143,7 @@ router.post("/variants/:id/review", async (req, res, next) => {
       );
       output = { id: draft.id, status };
     });
+    if (output.status === "validated") await invalidateQuestionMetadata();
     res.json(output);
   } catch (e) {
     next(e);

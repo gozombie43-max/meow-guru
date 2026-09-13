@@ -8,6 +8,8 @@ interface QuestionsMeta {
   exams: string[];
   concepts: string[];
   letters: Record<string, number>;
+  conceptGroups?: { id: string; label: string; description: string; concepts: string[] }[];
+  groupingStatus?: 'ready' | 'processing' | 'failed' | 'empty';
 }
 
 const fetcher = async (url: string): Promise<QuestionsMeta> => {
@@ -41,11 +43,12 @@ export function useQuestionsMeta(params: {
 
   const { data, error, isLoading, mutate } = useSWR<QuestionsMeta>(url, fetcher, {
     revalidateOnFocus: false,
-    revalidateIfStale: false,
+    revalidateIfStale: true,
+    refreshInterval: (data) => data?.groupingStatus === 'processing' ? 10000 : 0,
     shouldRetryOnError: true,
     errorRetryCount: 2,
     errorRetryInterval: 1500,
-    dedupingInterval: 120000, // 2 minutes — meta data changes infrequently
+    dedupingInterval: 10000, // Reuse cached UI; check saved metadata on later visits.
   });
 
   return useMemo(() => ({

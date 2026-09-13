@@ -1,27 +1,9 @@
-import QuizRouteShell from "@/components/quiz-engine/QuizRouteShell";
-import { mathematicsTopicsForRoute } from "@/lib/mathematics-topics";
-import { QUIZ_TREE } from "@/lib/quiz-constants";
-import { notFound } from "next/navigation";
-import MathematicsQuizEngine from "../../../_shared/quiz-engine";
-
-const ADVANCE_TOPICS = mathematicsTopicsForRoute("advance");
+import { mathematicsStaticParams, renderMathematicsPage, type MathematicsPageProps } from "@/app/(app)/mathematics/_shared/route-page";
 
 export function generateStaticParams() {
-  return ADVANCE_TOPICS.map((topic) => ({ topic }));
+  return mathematicsStaticParams("advance");
 }
 
-export default async function Page({ params }: { params: Promise<{ topic: string }> }) {
-  const { topic } = await params;
-  if (!ADVANCE_TOPICS.includes(topic as (typeof ADVANCE_TOPICS)[number])) notFound();
-  const config = QUIZ_TREE.mathematics.topics[topic];
-  if (!config) notFound();
-  return (
-    <QuizRouteShell>
-      <MathematicsQuizEngine
-        title={config.label}
-        slug={topic}
-        routeBase={`/mathematics/advance/${topic}`}
-      />
-    </QuizRouteShell>
-  );
+export default function Page(props: MathematicsPageProps) {
+  return renderMathematicsPage(props, "advance", "quiz");
 }

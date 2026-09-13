@@ -82,20 +82,11 @@ export function useQuizFilters({
     letter: selectedLetters.size > 0 ? Array.from(selectedLetters).join(",") : undefined,
   });
 
-  const baseConcepts = useMemo(
-    () => subjectConfig.topicConcepts[slug] ?? [],
-    [slug, subjectConfig.topicConcepts],
+  // Only concepts present in this topic/mode's stored questions are selectable.
+  const conceptOptions = useMemo(
+    () => Array.from(new Set((meta?.concepts ?? []).filter(Boolean))),
+    [meta?.concepts],
   );
-
-  const conceptOptions = useMemo(() => {
-    const set = new Set<string>();
-    baseConcepts.forEach((concept) => set.add(concept));
-    (meta?.concepts ?? []).forEach((concept) => {
-      if (concept) set.add(concept);
-    });
-    const list = Array.from(set);
-    return list.length > 0 ? list : ["General"];
-  }, [baseConcepts, meta]);
 
   const conceptColours = useMemo(
     () => buildConceptColours(conceptOptions),
@@ -111,34 +102,14 @@ export function useQuizFilters({
     return ["all", ...Array.from(set).sort((a, b) => a.localeCompare(b))];
   }, [meta]);
 
-  const classificationGroups = useMemo<ClassificationGroup[]>(() => {
-    const search = classificationSearch.trim().toLowerCase();
-    const grouped = subjectConfig.classificationCategories
-      .map((category) => ({
-        ...category,
-        concepts: conceptOptions.filter((concept) => {
-          if (
-            subjectConfig.getClassificationCategoryId(concept) !== category.id
-          )
-            return false;
-          if (
-            classificationCategory !== "All" &&
-            classificationCategory !== category.label
-          ) {
-            return false;
-          }
-          return !search || concept.toLowerCase().includes(search);
-        }),
-      }))
-      .filter((category) => category.concepts.length > 0);
-
-    return grouped;
-  }, [
-    classificationCategory,
-    classificationSearch,
-    conceptOptions,
-    subjectConfig,
-  ]);
+  const classificationGroups = useMemo<ClassificationGroup[]>(() =>
+    (meta?.conceptGroups ?? []).map((group) => ({
+      ...group,
+      icon: "",
+      accent: "var(--ui-accent)",
+      bg: "var(--ui-muted-surface)",
+      border: "var(--ui-border)",
+    })), [meta?.conceptGroups]);
 
   const isClassificationConceptMode = mode === "concept";
 
@@ -165,23 +136,13 @@ export function useQuizFilters({
   }, []);
 
   const classificationCategoryCounts = useMemo(
-    () =>
-      Object.fromEntries(
-        subjectConfig.classificationCategories.map((category) => [
-          category.label,
-          conceptOptions.filter(
-            (concept) =>
-              subjectConfig.getClassificationCategoryId(concept) ===
-              category.id,
-          ).length,
-        ]),
-      ),
-    [conceptOptions, subjectConfig],
+    () => Object.fromEntries(classificationGroups.map(group => [group.label, group.concepts.length])),
+    [classificationGroups],
   );
 
   const questions = useMemo(() => {
     if (!apiQuestions) return [];
-    const fallbackConcept = baseConcepts[0] ?? "General";
+    const fallbackConcept = "General";
     const quizOnlyQuestions = apiQuestions.filter(
       (item) => !isStudyModeQuestion(item),
     );
@@ -190,7 +151,7 @@ export function useQuizFilters({
         toQuizQuestion(item, index, fallbackConcept),
       ),
     );
-  }, [apiQuestions, baseConcepts]);
+  }, [apiQuestions]);
 
   const hasActiveFilters =
     (examFilter && examFilter !== "all") ||
@@ -217,6 +178,7 @@ export function useQuizFilters({
     conceptColours,
     examOptions,
     classificationGroups,
+    groupingStatus: meta?.groupingStatus,
     isClassificationConceptMode,
     selectedLetters,
     availableLetters,

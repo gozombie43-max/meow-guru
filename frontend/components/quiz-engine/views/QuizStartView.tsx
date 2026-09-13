@@ -13,6 +13,7 @@ export function QuizStartView({
   slug,
   routeBase,
   classificationGroups,
+  groupingStatus,
   classificationCategory,
   classificationCategoryCounts,
   examFilter,
@@ -46,6 +47,7 @@ export function QuizStartView({
   | "slug"
   | "routeBase"
   | "classificationGroups"
+  | "groupingStatus"
   | "classificationCategory"
   | "classificationCategoryCounts"
   | "examFilter"
@@ -81,6 +83,7 @@ export function QuizStartView({
         slug={slug}
         routeBase={routeBase}
         groups={classificationGroups}
+        groupingStatus={groupingStatus}
         category={classificationCategory}
         categoryCounts={classificationCategoryCounts}
         examFilter={examFilter}
@@ -121,6 +124,7 @@ export function QuizStartView({
         isLoading={isLoading}
         onExamChange={setExamFilter}
         groups={classificationGroups}
+        groupingStatus={groupingStatus}
         category={classificationCategory}
         categoryCounts={classificationCategoryCounts}
         search={classificationSearch}

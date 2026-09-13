@@ -1,24 +1,9 @@
-import { mathematicsTopicsForRoute } from "@/lib/mathematics-topics";
-import { QUIZ_TREE } from "@/lib/quiz-constants";
-import { notFound } from "next/navigation";
-import MathematicsTopicPage from "../../_shared/topic-page";
-
-const ARITHMETIC_TOPICS = mathematicsTopicsForRoute("arithmetic");
+import { mathematicsStaticParams, renderMathematicsPage, type MathematicsPageProps } from "@/app/(app)/mathematics/_shared/route-page";
 
 export function generateStaticParams() {
-  return ARITHMETIC_TOPICS.map((topic) => ({ topic }));
+  return mathematicsStaticParams("arithmetic");
 }
 
-export default async function Page({ params }: { params: Promise<{ topic: string }> }) {
-  const { topic } = await params;
-  if (!ARITHMETIC_TOPICS.includes(topic as (typeof ARITHMETIC_TOPICS)[number])) notFound();
-  const config = QUIZ_TREE.mathematics.topics[topic];
-  if (!config) notFound();
-  return (
-    <MathematicsTopicPage
-      title={config.label}
-      slug={topic}
-      routeBase={`/mathematics/arithmetic/${topic}`}
-    />
-  );
+export default function Page(props: MathematicsPageProps) {
+  return renderMathematicsPage(props, "arithmetic", "topic");
 }

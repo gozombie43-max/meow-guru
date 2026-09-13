@@ -148,18 +148,21 @@ export const MATHEMATICS_TOPICS = {
     mensurationModes: false,
   },
 } as const;
+export type MathematicsRouteGroup = "advance" | "arithmetic" | "top-level";
+
+export function resolveMathematicsTopic(group: MathematicsRouteGroup, slug: string) {
+  if (!Object.hasOwn(MATHEMATICS_TOPICS, slug)) return null;
+  const topic = MATHEMATICS_TOPICS[slug as keyof typeof MATHEMATICS_TOPICS];
+  const path = `/mathematics/${group === "top-level" ? "" : `${group}/`}${slug}`;
+  const routes: readonly string[] = [topic.route, ...topic.aliases];
+  return routes.includes(path) ? topic : null;
+}
+
 export function mathematicsTopicsForRoute(
-  group: "advance" | "arithmetic" | "top-level",
+  group: MathematicsRouteGroup,
 ) {
-  const prefix =
-    group === "top-level" ? "/mathematics/" : `/mathematics/${group}/`;
   return Object.values(MATHEMATICS_TOPICS)
-    .filter((topic) =>
-      [topic.route, ...topic.aliases].some(
-        (route) =>
-          route.startsWith(prefix) && !route.slice(prefix.length).includes("/"),
-      ),
-    )
+    .filter((topic) => resolveMathematicsTopic(group, topic.slug))
     .map((topic) => topic.slug);
 }
 export function mathematicsTopicRoute(slug: string) {
