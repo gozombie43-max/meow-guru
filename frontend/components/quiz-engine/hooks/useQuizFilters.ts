@@ -103,13 +103,21 @@ export function useQuizFilters({
   }, [meta]);
 
   const classificationGroups = useMemo<ClassificationGroup[]>(() =>
-    (meta?.conceptGroups ?? []).map((group) => ({
-      ...group,
-      icon: "",
-      accent: "var(--ui-accent)",
-      bg: "var(--ui-muted-surface)",
-      border: "var(--ui-border)",
-    })), [meta?.conceptGroups]);
+    (meta?.conceptGroups ?? [])
+      .map((group) => ({
+        ...group,
+        icon: "",
+        accent: "var(--ui-accent)",
+        bg: "var(--ui-muted-surface)",
+        border: "var(--ui-border)",
+      }))
+      .sort(
+        (a, b) =>
+          (b.concepts?.length ?? 0) - (a.concepts?.length ?? 0) ||
+          a.label.localeCompare(b.label),
+      ),
+    [meta?.conceptGroups],
+  );
 
   const isClassificationConceptMode = mode === "concept";
 

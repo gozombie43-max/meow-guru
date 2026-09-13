@@ -15,11 +15,11 @@ vi.mock("@/hooks/useQuizSession", () => ({
   useQuizSession: (...args: unknown[]) => mockUseQuizSession(...args),
 }));
 
-const mockMeta = vi.hoisted(() => ({ concepts: [] as string[], exams: [], letters: { A: 1, B: 2 } }));
+const mockMeta = vi.hoisted(() => ({ concepts: [] as string[], exams: [] as string[], letters: { A: 1, B: 2 }, conceptGroups: [] as Array<{ id: string; label: string; description: string; concepts: string[] }> }));
 vi.mock("@/hooks/useQuestionsMeta", () => ({
   useQuestionsMeta: () => ({ meta: mockMeta }),
 }));
-beforeEach(() => { mockMeta.concepts = []; });
+beforeEach(() => { mockMeta.concepts = []; mockMeta.conceptGroups = []; });
 
 describe("useQuizFilters letter filtering", () => {
   it("computes letter counts and delegates filtering to session api", () => {
@@ -89,5 +89,29 @@ describe("question-derived concepts", () => {
     mockMeta.concepts = ["Stored concept", "Newly uploaded concept"];
     rerender();
     expect(result.current.conceptOptions).toEqual(mockMeta.concepts);
+  });
+  it("sorts classification groups with more concepts number first (descending)", () => {
+    mockMeta.conceptGroups = [
+      { id: "1", label: "Transposition Ciphers", description: "desc", concepts: ["c1", "c2"] },
+      { id: "2", label: "Substitution Ciphers", description: "desc", concepts: ["c1", "c2", "c3", "c4", "c5", "c6"] },
+      { id: "3", label: "Positional Alphabetic Codes", description: "desc", concepts: ["c1", "c2", "c3"] },
+      { id: "4", label: "Mathematical Operation Codes", description: "desc", concepts: ["c1", "c2", "c3", "c4", "c5"] },
+      { id: "5", label: "Pattern-Based Codes", description: "desc", concepts: ["c1", "c2", "c3", "c4"] },
+    ];
+    const { result } = renderHook(() =>
+      useQuizFilters({
+        subjectConfig: englishConfig,
+        slug: "synonyms-antonyms",
+        mode: "concept",
+        initialLetterParam: null,
+      })
+    );
+    expect(result.current.classificationGroups.map((g) => g.label)).toEqual([
+      "Substitution Ciphers",
+      "Mathematical Operation Codes",
+      "Pattern-Based Codes",
+      "Positional Alphabetic Codes",
+      "Transposition Ciphers",
+    ]);
   });
 });

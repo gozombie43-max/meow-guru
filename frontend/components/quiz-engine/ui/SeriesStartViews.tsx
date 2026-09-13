@@ -296,6 +296,16 @@ function MacOsQuizStartStudio({
   const { toggleTheme } = useQuizThemeControls();
   const [internalSearch, setInternalSearch] = useState("");
   const activeSearch = externalSearch !== undefined ? externalSearch : internalSearch;
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+
+  const toggleExpandGroup = (groupId: string) => {
+    setExpandedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(groupId)) next.delete(groupId);
+      else next.add(groupId);
+      return next;
+    });
+  };
 
   const handleSearchChange = (val: string) => {
     if (onSearchChange) onSearchChange(val);
@@ -334,15 +344,21 @@ function MacOsQuizStartStudio({
 
   // Filter groups by search query and category
   const filteredGroups = useMemo(() => {
-    return groups.filter((group) => {
-      if (activeSearch.trim()) {
-        const query = activeSearch.toLowerCase();
-        const matchLabel = group.label.toLowerCase().includes(query);
-        const matchConcepts = group.concepts.some((c) => c.toLowerCase().includes(query));
-        if (!matchLabel && !matchConcepts) return false;
-      }
-      return true;
-    });
+    return groups
+      .filter((group) => {
+        if (activeSearch.trim()) {
+          const query = activeSearch.toLowerCase();
+          const matchLabel = group.label.toLowerCase().includes(query);
+          const matchConcepts = group.concepts.some((c) => c.toLowerCase().includes(query));
+          if (!matchLabel && !matchConcepts) return false;
+        }
+        return true;
+      })
+      .sort(
+        (a, b) =>
+          (b.concepts?.length ?? 0) - (a.concepts?.length ?? 0) ||
+          a.label.localeCompare(b.label),
+      );
   }, [groups, activeSearch]);
 
   // Concept coverage calculations
@@ -638,6 +654,7 @@ function MacOsQuizStartStudio({
                     const isSelected =
                       selectedInGroup === group.concepts.length && group.concepts.length > 0;
                     const isPartial = selectedInGroup > 0 && !isSelected;
+                    const isExpanded = expandedGroups.has(group.id);
 
                     return (
                       <div
@@ -645,37 +662,107 @@ function MacOsQuizStartStudio({
                         className={`${styles.conceptCard} ${
                           isSelected || isPartial ? styles.conceptCardSelected : ""
                         }`}
-                        onClick={() => onToggleGroup(group.concepts)}
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={(e) => {
-                          if (e.key === " " || e.key === "Enter") {
-                            e.preventDefault();
-                            onToggleGroup(group.concepts);
-                          }
-                        }}
                       >
-                        <div className={styles.conceptCardLeft}>
-                          <div className={styles.conceptIconBox}>
-                            <ModeIcon size={15} strokeWidth={2.2} />
+                        <div className={styles.conceptCardHeader}>
+                          <div
+                            className={styles.conceptCardLeft}
+                            onClick={() => onToggleGroup(group.concepts)}
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                              if (e.key === " " || e.key === "Enter") {
+                                e.preventDefault();
+                                onToggleGroup(group.concepts);
+                              }
+                            }}
+                          >
+                            <div className={styles.conceptIconBox}>
+                              <ModeIcon size={15} strokeWidth={2.2} />
+                            </div>
+                            <div className={styles.conceptTextGroup}>
+                              <span className={styles.conceptName}>{group.label}</span>
+                              <span className={styles.conceptMeta}>
+                                {group.concepts.length} concept
+                                {group.concepts.length === 1 ? "" : "s"}
+                                {selectedInGroup > 0 ? ` · ${selectedInGroup} selected` : ""}
+                              </span>
+                            </div>
                           </div>
-                          <div className={styles.conceptTextGroup}>
-                            <span className={styles.conceptName}>{group.label}</span>
-                            <span className={styles.conceptMeta}>
-                              {group.concepts.length} concept
-                              {group.concepts.length === 1 ? "" : "s"}
-                              {selectedInGroup > 0 ? ` · ${selectedInGroup} selected` : ""}
-                            </span>
+
+                          <div className={styles.conceptCardRight}>
+                            <button
+                              type="button"
+                              className={`${styles.conceptExpandBtn} ${
+                                isExpanded ? styles.conceptExpandBtnOpen : ""
+                              }`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleExpandGroup(group.id);
+                              }}
+                              aria-label={
+                                isExpanded
+                                  ? `Hide concepts for ${group.label}`
+                                  : `Show concepts for ${group.label}`
+                              }
+                              aria-expanded={isExpanded}
+                              title={isExpanded ? "Collapse concepts" : "View concepts"}
+                            >
+                              <ChevronDown size={14} strokeWidth={2} />
+                            </button>
+
+                            <div
+                              className={`${styles.conceptCheckbox} ${
+                                isSelected || isPartial ? styles.conceptCheckboxChecked : ""
+                              }`}
+                              onClick={() => onToggleGroup(group.concepts)}
+                              role="button"
+                              tabIndex={0}
+                              aria-label={`Toggle all concepts in ${group.label}`}
+                            >
+                              {(isSelected || isPartial) && <Check size={11} strokeWidth={3} />}
+                            </div>
                           </div>
                         </div>
 
-                        <div
-                          className={`${styles.conceptCheckbox} ${
-                            isSelected || isPartial ? styles.conceptCheckboxChecked : ""
-                          }`}
-                        >
-                          {(isSelected || isPartial) && <Check size={11} strokeWidth={3} />}
-                        </div>
+                        {/* Concept Dropdown */}
+                        {isExpanded && (
+                          <div className={styles.conceptDropdownGrid}>
+                            {group.concepts.map((concept) => {
+                              const isConceptSelected = selected.has(concept);
+                              return (
+                                <div
+                                  key={concept}
+                                  className={`${styles.conceptSubItem} ${
+                                    isConceptSelected ? styles.conceptSubItemSelected : ""
+                                  }`}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onToggleGroup([concept]);
+                                  }}
+                                  role="button"
+                                  tabIndex={0}
+                                  aria-pressed={isConceptSelected}
+                                  onKeyDown={(e) => {
+                                    if (e.key === " " || e.key === "Enter") {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      onToggleGroup([concept]);
+                                    }
+                                  }}
+                                >
+                                  <span
+                                    className={`${styles.conceptSubCheckbox} ${
+                                      isConceptSelected ? styles.conceptCheckboxChecked : ""
+                                    }`}
+                                  >
+                                    {isConceptSelected && <Check size={9} strokeWidth={3} />}
+                                  </span>
+                                  <span className={styles.conceptSubName}>{concept}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -787,6 +874,16 @@ function IosQuizStartMobile({
   const quizTheme = useQuizTheme();
   const [internalSearch, setInternalSearch] = useState("");
   const activeSearch = externalSearch !== undefined ? externalSearch : internalSearch;
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+
+  const toggleExpandGroup = (groupId: string) => {
+    setExpandedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(groupId)) next.delete(groupId);
+      else next.add(groupId);
+      return next;
+    });
+  };
 
   const handleSearchChange = (val: string) => {
     if (onSearchChange) onSearchChange(val);
@@ -817,15 +914,21 @@ function IosQuizStartMobile({
   }, [router, routeBase, subjectConfig.subjectId, slug]);
 
   const filteredGroups = useMemo(() => {
-    return groups.filter((group) => {
-      if (activeSearch.trim()) {
-        const query = activeSearch.toLowerCase();
-        const matchLabel = group.label.toLowerCase().includes(query);
-        const matchConcepts = group.concepts.some((c) => c.toLowerCase().includes(query));
-        if (!matchLabel && !matchConcepts) return false;
-      }
-      return true;
-    });
+    return groups
+      .filter((group) => {
+        if (activeSearch.trim()) {
+          const query = activeSearch.toLowerCase();
+          const matchLabel = group.label.toLowerCase().includes(query);
+          const matchConcepts = group.concepts.some((c) => c.toLowerCase().includes(query));
+          if (!matchLabel && !matchConcepts) return false;
+        }
+        return true;
+      })
+      .sort(
+        (a, b) =>
+          (b.concepts?.length ?? 0) - (a.concepts?.length ?? 0) ||
+          a.label.localeCompare(b.label),
+      );
   }, [groups, activeSearch]);
 
   const subjectAccent = quizTheme === "dark" ? "#0a84ff" : "#0071e3";
@@ -989,38 +1092,106 @@ function IosQuizStartMobile({
                 const isSelected =
                   selectedInGroup === group.concepts.length && group.concepts.length > 0;
                 const isPartial = selectedInGroup > 0 && !isSelected;
+                const isExpanded = expandedGroups.has(group.id);
 
                 return (
-                  <button data-ui-button="state"
-                    key={group.id}
-                    type="button"
-                    className={styles.iosConceptRow}
-                    onClick={() => onToggleGroup(group.concepts)}
-                    aria-pressed={isSelected}
-                  >
-                    <span
-                      className={`${styles.iosCheckCircle} ${
-                        isSelected || isPartial ? styles.iosCheckCircleChecked : ""
-                      }`}
-                    >
-                      {(isSelected || isPartial) && <Check size={12} strokeWidth={3} />}
-                    </span>
+                  <div key={group.id} className={styles.iosConceptGroupContainer}>
+                    <div className={styles.iosConceptRow}>
+                      <div
+                        className={styles.iosConceptRowContent}
+                        onClick={() => toggleExpandGroup(group.id)}
+                        role="button"
+                        tabIndex={0}
+                        aria-expanded={isExpanded}
+                        aria-label={`${group.label}, ${isExpanded ? "collapse concepts" : "expand concepts"}`}
+                        onKeyDown={(e) => {
+                          if (e.key === " " || e.key === "Enter") {
+                            e.preventDefault();
+                            toggleExpandGroup(group.id);
+                          }
+                        }}
+                      >
+                        <span
+                          className={styles.iosGroupTile}
+                          style={{ background: group.bg, color: group.accent }}
+                        >
+                          <Layers size={16} aria-hidden="true" />
+                        </span>
 
-                    <span
-                      className={styles.iosGroupTile}
-                      style={{ background: group.bg, color: group.accent }}
-                    >
-                      <Layers size={16} aria-hidden="true" />
-                    </span>
+                        <span className={styles.iosRowCopy}>
+                          <strong className={styles.iosGroupTitle}>{group.label}</strong>
+                          <small className={styles.iosGroupMeta}>
+                            {group.concepts.length} concept{group.concepts.length === 1 ? "" : "s"}
+                            {selectedInGroup > 0 ? ` · ${selectedInGroup} selected` : ""}
+                          </small>
+                        </span>
+                      </div>
 
-                    <span className={styles.iosRowCopy}>
-                      <strong className={styles.iosGroupTitle}>{group.label}</strong>
-                      <small className={styles.iosGroupMeta}>
-                        {group.concepts.length} concept{group.concepts.length === 1 ? "" : "s"}
-                        {selectedInGroup > 0 ? ` · ${selectedInGroup} selected` : ""}
-                      </small>
-                    </span>
-                  </button>
+                      <div className={styles.iosConceptRowActions}>
+                        <button
+                          type="button"
+                          className={`${styles.iosExpandBtn} ${
+                            isExpanded ? styles.iosExpandBtnOpen : ""
+                          }`}
+                          onClick={() => toggleExpandGroup(group.id)}
+                          aria-label={
+                            isExpanded
+                              ? `Hide concepts for ${group.label}`
+                              : `Show concepts for ${group.label}`
+                          }
+                          aria-expanded={isExpanded}
+                        >
+                          <ChevronDown size={17} strokeWidth={2.2} />
+                        </button>
+
+                        <button
+                          type="button"
+                          className={`${styles.iosCheckCircle} ${
+                            isSelected || isPartial ? styles.iosCheckCircleChecked : ""
+                          }`}
+                          onClick={() => onToggleGroup(group.concepts)}
+                          aria-label={`Toggle all concepts in ${group.label}`}
+                        >
+                          {(isSelected || isPartial) && <Check size={12} strokeWidth={3} />}
+                        </button>
+                      </div>
+                    </div>
+
+                    {isExpanded && (
+                      <div className={styles.iosConceptDropdown}>
+                        {group.concepts.map((concept) => {
+                          const isConceptSelected = selected.has(concept);
+                          return (
+                            <div
+                              key={concept}
+                              className={`${styles.iosSubConceptRow} ${
+                                isConceptSelected ? styles.iosSubConceptRowSelected : ""
+                              }`}
+                              onClick={() => onToggleGroup([concept])}
+                              role="button"
+                              tabIndex={0}
+                              aria-pressed={isConceptSelected}
+                              onKeyDown={(e) => {
+                                if (e.key === " " || e.key === "Enter") {
+                                  e.preventDefault();
+                                  onToggleGroup([concept]);
+                                }
+                              }}
+                            >
+                              <span className={styles.iosSubConceptName}>{concept}</span>
+                              <span
+                                className={`${styles.iosSubCheckCircle} ${
+                                  isConceptSelected ? styles.iosCheckCircleChecked : ""
+                                }`}
+                              >
+                                {isConceptSelected && <Check size={11} strokeWidth={3} />}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
                 );
               })}
 
