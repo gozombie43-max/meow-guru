@@ -1121,6 +1121,41 @@
   border: 1px solid var(--ios-separator);
 }
 
+.iosConceptLoading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 32px 16px;
+  color: var(--ios-muted);
+  font-size: 13px;
+}
+
+.iosConceptLoading:only-child {
+  min-height: 100%;
+  box-sizing: border-box;
+}
+
+.iosConceptSpinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--ios-separator);
+  border-top-color: var(--ios-accent);
+  border-radius: 50%;
+  animation: iosConceptSpin 0.8s linear infinite;
+}
+
+@keyframes iosConceptSpin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .iosConceptSpinner {
+    animation: none;
+  }
+}
+
 .iosConceptRow {
   position: relative;
   width: 100%;

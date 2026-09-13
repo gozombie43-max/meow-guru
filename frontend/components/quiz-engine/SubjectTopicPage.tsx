@@ -684,30 +684,6 @@ export default function SubjectTopicPage({
           color: var(--label) !important;
         }
 
-        .sg-tab-bg-svg {
-          overflow: visible;
-        }
-
-        .sg-snakes-overlay {
-          position: absolute;
-          inset: 0;
-          width: 100%;
-          height: 100%;
-          overflow: hidden;
-          pointer-events: none;
-          z-index: 4;
-        }
-
-        .sg-curve-snake {
-          filter: drop-shadow(0 0 1px rgba(10, 132, 255, 0.45));
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          .sg-curve-snake {
-            display: none;
-          }
-        }
-
         /* ════════════════════════════════════
            DESKTOP (PC) LAYOUT
            ════════════════════════════════════ */

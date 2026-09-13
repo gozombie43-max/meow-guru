@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import PracticeCurveSnakes from "./PracticeCurveSnakes";
 import type { CSSProperties } from "react";
 import {
   BookOpenCheck,
@@ -115,7 +114,6 @@ export default function TopicPracticeModes({
           </Link>
         );
       })}
-      <PracticeCurveSnakes />
     </div>
   );
 }
