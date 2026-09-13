@@ -21,6 +21,122 @@ export function SolutionBottomSheet({
   correctOptionText: string;
   onClose: () => void;
 }) {
+  const [dragOffset, setDragOffset] = React.useState(0);
+  const [isDragging, setIsDragging] = React.useState(false);
+  const [isHolding, setIsHolding] = React.useState(false);
+  const holdTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const dragStartRef = React.useRef<{ startY: number; startTime: number; currentY: number } | null>(null);
+
+  React.useEffect(() => {
+    if (!isOpen) {
+      setDragOffset(0);
+      setIsDragging(false);
+      setIsHolding(false);
+      if (holdTimerRef.current) {
+        clearTimeout(holdTimerRef.current);
+        holdTimerRef.current = null;
+      }
+    }
+  }, [isOpen]);
+
+  React.useEffect(() => {
+    return () => {
+      if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
+    };
+  }, []);
+
+  const handleHeaderPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLElement;
+    if (
+      target.closest("button") ||
+      target.closest("a") ||
+      target.closest("input") ||
+      target.closest("textarea")
+    ) {
+      return;
+    }
+
+    if (e.button !== 0) return;
+
+    const startY = e.clientY;
+    const startTime = Date.now();
+    dragStartRef.current = { startY, startTime, currentY: startY };
+    setIsDragging(true);
+    setIsHolding(true);
+
+    if (e.currentTarget.setPointerCapture) {
+      try {
+        e.currentTarget.setPointerCapture(e.pointerId);
+      } catch {
+        // pointer capture fallback
+      }
+    }
+
+    if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
+    holdTimerRef.current = setTimeout(() => {
+      setIsHolding(false);
+      onClose();
+    }, 450);
+  };
+
+  const handleHeaderPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!dragStartRef.current) return;
+    const { startY } = dragStartRef.current;
+    const currentY = e.clientY;
+    dragStartRef.current.currentY = currentY;
+    const deltaY = currentY - startY;
+
+    if (Math.abs(deltaY) > 8 && holdTimerRef.current) {
+      clearTimeout(holdTimerRef.current);
+      holdTimerRef.current = null;
+      setIsHolding(false);
+    }
+
+    if (deltaY > 0) {
+      setDragOffset(deltaY);
+    } else {
+      setDragOffset(deltaY * 0.15);
+    }
+  };
+
+  const handleHeaderPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (holdTimerRef.current) {
+      clearTimeout(holdTimerRef.current);
+      holdTimerRef.current = null;
+    }
+    setIsHolding(false);
+
+    if (!dragStartRef.current) {
+      setIsDragging(false);
+      return;
+    }
+
+    const { startY, startTime } = dragStartRef.current;
+    const deltaY = e.clientY - startY;
+    const elapsed = Math.max(Date.now() - startTime, 1);
+    const velocity = deltaY / elapsed;
+
+    dragStartRef.current = null;
+    setIsDragging(false);
+
+    if (deltaY > 70 || (deltaY > 20 && velocity > 0.4)) {
+      onClose();
+    } else {
+      setDragOffset(0);
+    }
+  };
+
+  const handleHeaderPointerCancel = () => {
+    if (holdTimerRef.current) {
+      clearTimeout(holdTimerRef.current);
+      holdTimerRef.current = null;
+    }
+    dragStartRef.current = null;
+    setIsHolding(false);
+    setIsDragging(false);
+    setDragOffset(0);
+  };
+
   const solutionLines = useMemo(
     () => formatMathBookSolutionLines(solution),
     [solution]
@@ -39,7 +155,7 @@ export function SolutionBottomSheet({
           className="ios-solution-backdrop"
           data-theme={theme}
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          animate={{ opacity: dragOffset > 0 ? Math.max(1 - dragOffset / 400, 0.2) : 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.25, ease: "easeOut" }}
           onClick={onClose}
@@ -48,11 +164,11 @@ export function SolutionBottomSheet({
             role="dialog"
             aria-modal="true"
             aria-label="Question solution"
-            className="ios-solution-sheet"
+            className={`ios-solution-sheet ${isDragging ? "is-dragging" : ""} ${isHolding ? "is-holding" : ""}`}
             initial={{ y: "100%", opacity: 0.95 }}
-            animate={{ y: 0, opacity: 1 }}
+            animate={{ y: dragOffset, opacity: dragOffset > 0 ? Math.max(1 - dragOffset / 500, 0.4) : 1 }}
             exit={{ y: "100%", opacity: 0.95 }}
-            transition={{
+            transition={isDragging ? { duration: 0 } : {
               type: "spring",
               stiffness: 240,
               damping: 28,
@@ -60,21 +176,32 @@ export function SolutionBottomSheet({
             }}
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="ios-sheet-handle-container">
-              <div className="ios-sheet-handle" />
-            </div>
+            <div
+              className={`ios-solution-drag-zone ${isHolding ? "is-holding" : ""} ${isDragging ? "is-dragging" : ""}`}
+              onPointerDown={handleHeaderPointerDown}
+              onPointerMove={handleHeaderPointerMove}
+              onPointerUp={handleHeaderPointerUp}
+              onPointerCancel={handleHeaderPointerCancel}
+              title="Hold or drag down to close"
+            >
+              <div className="ios-sheet-handle-container">
+                <div className="ios-sheet-handle">
+                  <div className={`ios-hold-indicator ${isHolding ? "active" : ""}`} />
+                </div>
+              </div>
 
-            <div data-ui-chrome="header" className="ios-solution-header">
-              <span className="ios-header-placeholder"></span>
-              <h3 className="ios-solution-title">Worked Solution</h3>
-              <button data-ui-button="state"
-                type="button"
-                onClick={onClose}
-                className="ios-done-btn"
-                aria-label="Close solution"
-              >
-                Done
-              </button>
+              <div data-ui-chrome="header" className="ios-solution-header">
+                <span className="ios-header-placeholder"></span>
+                <h3 className="ios-solution-title">Worked Solution</h3>
+                <button data-ui-button="state"
+                  type="button"
+                  onClick={onClose}
+                  className="ios-done-btn"
+                  aria-label="Close solution"
+                >
+                  Done
+                </button>
+              </div>
             </div>
 
             <div className="ios-solution-body">
@@ -145,6 +272,20 @@ export function SolutionBottomSheet({
                 border: 1px solid rgba(255, 255, 255, 0.12);
                 border-bottom: none;
                 padding-bottom: calc(env(safe-area-inset-bottom) + 16px);
+                touch-action: pan-y;
+              }
+              .ios-solution-drag-zone {
+                display: flex;
+                flex-direction: column;
+                flex-shrink: 0;
+                cursor: grab;
+                touch-action: none;
+                user-select: none;
+                -webkit-user-select: none;
+              }
+              .ios-solution-drag-zone.is-dragging,
+              .ios-solution-drag-zone.is-holding {
+                cursor: grabbing;
               }
               .ios-sheet-handle-container {
                 width: 100%;
@@ -159,6 +300,29 @@ export function SolutionBottomSheet({
                 height: 5px;
                 border-radius: 99px;
                 background: rgba(255, 255, 255, 0.22);
+                position: relative;
+                overflow: hidden;
+                transition: transform 0.2s ease, background 0.2s ease;
+              }
+              .ios-solution-drag-zone:hover .ios-sheet-handle {
+                background: rgba(10, 132, 255, 0.4);
+              }
+              .ios-solution-drag-zone.is-holding .ios-sheet-handle {
+                transform: scaleY(1.3);
+              }
+              .ios-hold-indicator {
+                position: absolute;
+                inset: 0;
+                background: #0a84ff;
+                border-radius: 99px;
+                transform: scaleX(0);
+                transform-origin: center;
+                opacity: 0;
+                transition: transform 0.45s cubic-bezier(0.1, 0.8, 0.2, 1), opacity 0.15s ease;
+              }
+              .ios-hold-indicator.active {
+                transform: scaleX(1);
+                opacity: 1;
               }
               .ios-solution-header {
                 display: grid;
@@ -243,6 +407,12 @@ export function SolutionBottomSheet({
               .ios-solution-backdrop[data-theme="light"] .ios-sheet-handle {
                 background: var(--light-border);
               }
+              .ios-solution-backdrop[data-theme="light"] .ios-solution-drag-zone:hover .ios-sheet-handle {
+                background: rgba(0, 122, 255, 0.35);
+              }
+              .ios-solution-backdrop[data-theme="light"] .ios-hold-indicator {
+                background: #007aff;
+              }
               .ios-solution-backdrop[data-theme="light"] .ios-solution-header {
                 border-bottom-color: var(--light-border);
               }
@@ -275,10 +445,12 @@ export function SolutionBottomSheet({
                   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
                 }
                 .ios-sheet-handle-container {
-                  display: none;
+                  display: flex;
+                  padding-top: 10px;
+                  padding-bottom: 2px;
                 }
                 .ios-solution-header {
-                  padding: 16px 28px;
+                  padding: 12px 28px 16px;
                 }
                 .ios-solution-body {
                   padding: 28px 32px 52px 32px;

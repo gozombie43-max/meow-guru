@@ -78,13 +78,19 @@ function numberPracticeQuestionPrompts(content) {
   return output.join("\n");
 }
 
-export async function tutorChat({ context, message, history = [] }, attachmentContext = { text: '', imageParts: [], source: '' }) {
+export async function tutorChat({ context, message, history = [], lang = 'en' }, attachmentContext = { text: '', imageParts: [], source: '' }) {
+  const languageDirective = lang === 'bn'
+    ? '\n- Primary Language: Bengali (বাংলা). Write the full explanation, reasoning, steps, tips, headings, and final answer in fluent Bengali (বাংলা). Mathematical formulas, numbers, equations, and algebraic variables ($x, y$, etc.) must remain in standard notation.'
+    : lang === 'hi'
+    ? '\n- Primary Language: Hindi (हिंदी). Write the full explanation, reasoning, steps, tips, headings, and final answer in clear Hindi (हिंदी). Mathematical formulas, numbers, equations, and algebraic variables ($x, y$, etc.) must remain in standard notation.'
+    : '\n- Primary Language: English.';
+
   const systemPrompt = `You are a friendly, expert SSC exam tutor.
-Your answer must be structured, easy to scan, and easy for a student to understand.
+Your answer must be structured, easy to scan, and easy for a student to understand.${languageDirective}
 
 Formatting rules:
 - Use markdown only.
-- Start with a short heading: **Approach**, **Steps**, **Shortcut**, or **Practice Question**.
+- Start with a short heading: **Approach**, **Steps**, **Shortcut**, or **Practice Question** (or their natural translation in the selected language).
 - For explanations, use numbered steps with one idea per step.
 - For separate step paragraphs, use either numbered items like \`1.\`, \`2.\`, \`3.\` or bullet dots like \`•\`.
 - For practice questions, list each question as its own numbered item so they are easy to scan.
@@ -146,8 +152,14 @@ For mensuration, you may also use:
         }))
     : [];
 
+  const langSuffix = lang === 'bn'
+    ? '\n[Language instruction: Provide your response in Bengali (বাংলা)]'
+    : lang === 'hi'
+    ? '\n[Language instruction: Provide your response in Hindi (हिंदी)]'
+    : '';
+
   const userText = `Student question:
-${String(message || "Please solve the attached question.").trim().slice(0, 4000)}
+${String(message || "Please solve the attached question.").trim().slice(0, 4000)}${langSuffix}
 
 ${attachmentContext.text}
 

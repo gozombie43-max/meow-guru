@@ -348,6 +348,7 @@ export function DesktopQuizView({
                       topicTitle={title}
                       question={currentQ}
                       theme={theme}
+                      activeLang={activeLang}
                       renderTrigger={(onOpen) => (
                         <button data-ui-button="state"
                           type="button"

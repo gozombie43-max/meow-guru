@@ -110,7 +110,12 @@ Give a clear step-by-step explanation. Keep it concise.`;
 // ── 2b. Tutor chat for submitted quiz questions ───────
 router.post('/tutor-chat', optionalAuth, tutorUpload.single('attachment'), async (req, res) => {
   const userId = req.user?.id ? String(req.user.id) : (req.ip || 'anonymous');
-  const input = { context: req.body.context, message: req.body.message, history: parseMaybeJSON(req.body.history, []) };
+  const input = {
+    context: req.body.context,
+    message: req.body.message,
+    history: parseMaybeJSON(req.body.history, []),
+    lang: req.body.lang || 'en',
+  };
   if (!input.context || (!input.message && !req.file)) return res.status(400).json({ error: 'context and message or attachment are required' });
   if (JSON.stringify(input).length > 200000) return res.status(413).json({ error: 'Chat context is too large' });
   if (req.file) {

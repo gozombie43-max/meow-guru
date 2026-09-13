@@ -1,13 +1,202 @@
 "use client";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
 import remarkGfm from "remark-gfm";
-import { Menu, Sun, Moon, X, Plus, Mic, Send, Zap, CheckCircle2, FileText, AlertTriangle, Sparkles } from "lucide-react";
+import {
+  Sun,
+  Moon,
+  X,
+  Plus,
+  Zap,
+  CheckCircle2,
+  FileText,
+  AlertTriangle,
+  Sparkles,
+  ArrowUp,
+  Check,
+} from "lucide-react";
 import api from '@/lib/axios';
 import { isAxiosError } from 'axios';
 import { ChatMessage, QuizChatbotProps, buildQuestionContext, normalizeTutorMarkdown } from './utils';
+import './quiz-chatbot.css';
+
+type SupportedLang = "en" | "hi" | "bn";
+
+const LANG_OPTIONS: { code: SupportedLang; label: string }[] = [
+  { code: "en", label: "English" },
+  { code: "hi", label: "हिंदी" },
+  { code: "bn", label: "বাংলা" },
+];
+
+const LOCALIZED_CONTENT: Record<
+  SupportedLang,
+  {
+    placeholder: string;
+    contextLoaded: string;
+    contextSubtitle: string;
+    landingTitle: string;
+    quickPrompts: string;
+    landingOptions: Array<{
+      title: string;
+      subtitle: string;
+      prompt: string;
+      tone: string;
+    }>;
+    followUps: Array<{
+      label: string;
+      prompt: string;
+    }>;
+  }
+> = {
+  en: {
+    placeholder: "Ask anything",
+    contextLoaded: "Context loaded:",
+    contextSubtitle: "Ask anything about this submitted question.",
+    landingTitle: "What can I help with?",
+    quickPrompts: "Quick Prompts",
+    landingOptions: [
+      {
+        title: "Explain the step-by-step solution",
+        subtitle: "Get a clear, detailed solution in steps.",
+        prompt: "Explain the step-by-step solution",
+        tone: "g",
+      },
+      {
+        title: "Why is the correct option right?",
+        subtitle: "Understand the logic and reasoning.",
+        prompt: "Why is the correct option right?",
+        tone: "o",
+      },
+      {
+        title: "Give me a similar practice question",
+        subtitle: "Practice with a similar type of question.",
+        prompt: "Give me a similar practice question",
+        tone: "p",
+      },
+      {
+        title: "What trap should I avoid?",
+        subtitle: "Learn common mistakes and how to avoid them.",
+        prompt: "What trap should I avoid?",
+        tone: "b",
+      },
+      {
+        title: "What is the fastest shortcut?",
+        subtitle: "Get quick tricks to solve faster.",
+        prompt: "What is the fastest shortcut?",
+        tone: "y",
+      },
+    ],
+    followUps: [
+      { label: "What is the fastest shortcut?", prompt: "What is the fastest shortcut?" },
+      { label: "Give me a similar practice question", prompt: "Give me a similar practice question" },
+      { label: "What trap should I avoid?", prompt: "What trap should I avoid?" },
+    ],
+  },
+  hi: {
+    placeholder: "कुछ भी पूछें",
+    contextLoaded: "संदर्भ लोड हुआ:",
+    contextSubtitle: "इस प्रश्न के बारे में कुछ भी पूछें।",
+    landingTitle: "मैं आपकी क्या मदद कर सकता हूँ?",
+    quickPrompts: "त्वरित प्रश्न (Quick Prompts)",
+    landingOptions: [
+      {
+        title: "चरण-दर-चरण समाधान समझाएं",
+        subtitle: "सरल चरणों में स्पष्ट समाधान प्राप्त करें।",
+        prompt: "इस प्रश्न का चरण-दर-चरण समाधान समझाएं",
+        tone: "g",
+      },
+      {
+        title: "सही विकल्प क्यों सही है?",
+        subtitle: "तर्क और कारण को गहराई से समझें।",
+        prompt: "यह सही विकल्प क्यों सही है? कारण बताएं",
+        tone: "o",
+      },
+      {
+        title: "अभ्यास के लिए समान प्रश्न दें",
+        subtitle: "इसी तरह के नए प्रश्न के साथ अभ्यास करें।",
+        prompt: "अभ्यास के लिए इसी तरह का एक समान प्रश्न दें",
+        tone: "p",
+      },
+      {
+        title: "मुझे किस गलती से बचना चाहिए?",
+        subtitle: "सामान्य गलतियों और ट्रैप्स को समझें।",
+        prompt: "इस प्रश्न में किन सामान्य गलतियों से बचना चाहिए?",
+        tone: "b",
+      },
+      {
+        title: "सबसे तेज़ शॉर्टकट क्या है?",
+        subtitle: "तेज़ी से हल करने के शॉर्टकट ट्रिक्स सीखें।",
+        prompt: "इस प्रश्न को हल करने का सबसे तेज़ शॉर्टकट ट्रिक क्या है?",
+        tone: "y",
+      },
+    ],
+    followUps: [
+      { label: "सबसे तेज़ शॉर्टकट क्या है?", prompt: "इस प्रश्न का सबसे तेज़ शॉर्टकट क्या है?" },
+      { label: "अभ्यास के लिए समान प्रश्न दें", prompt: "अभ्यास के लिए एक समान प्रश्न दें" },
+      { label: "मुझे किस गलती से बचना चाहिए?", prompt: "इस प्रश्न में किन गलतियों से बचना चाहिए?" },
+    ],
+  },
+  bn: {
+    placeholder: "যেকোনো প্রশ্ন জিজ্ঞাসা করুন",
+    contextLoaded: "প্রশ্ন লোড হয়েছে:",
+    contextSubtitle: "এই প্রশ্নটি সম্পর্কে যেকোনো কিছু জিজ্ঞাসা করুন।",
+    landingTitle: "আমি কীভাবে সাহায্য করতে পারি?",
+    quickPrompts: "দ্রুত প্রম্পট (Quick Prompts)",
+    landingOptions: [
+      {
+        title: "ধাপে ধাপে সমাধানটি ব্যাখ্যা করুন",
+        subtitle: "সহজ ধাপে স্পষ্ট ও বিস্তারিত সমাধান পান।",
+        prompt: "এই প্রশ্নটির ধাপে ধাপে সমাধানটি বিস্তারিত ব্যাখ্যা করুন",
+        tone: "g",
+      },
+      {
+        title: "সঠিক বিকল্পটি কেন সঠিক?",
+        subtitle: "যুক্তি ও কারণটি পরিষ্কারভাবে বুঝুন।",
+        prompt: "সঠিক উত্তরটি কেন সঠিক? এর পেছনের যুক্তি ব্যাখ্যা করুন",
+        tone: "o",
+      },
+      {
+        title: "অনুশীলনের জন্য অনুরূপ প্রশ্ন দিন",
+        subtitle: "একই ধরণের নতুন প্রশ্ন দিয়ে প্র্যাকটিস করুন।",
+        prompt: "অনুশীলনের জন্য এই ধরণের একটি অনুরূপ প্রশ্ন দিন",
+        tone: "p",
+      },
+      {
+        title: "কোন ভুল বা ফাঁদ এড়ানো উচিত?",
+        subtitle: "সাধারণ ভুল এবং ট্র্যাপ সম্পর্কে জানুন।",
+        prompt: "এই প্রশ্নে সাধারণত কী ধরণের ভুল হতে পারে এবং কীভাবে তা এড়ানো যায়?",
+        tone: "b",
+      },
+      {
+        title: "সবচেয়ে দ্রুত শর্টকাট কী?",
+        subtitle: "কম সময়ে সমাধান করার সহজ ট্রিক জানুন।",
+        prompt: "এই প্রশ্নটি দ্রুত সমাধান করার শর্টকাট পদ্ধতি কী?",
+        tone: "y",
+      },
+    ],
+    followUps: [
+      { label: "সবচেয়ে দ্রুত শর্টকাট কী?", prompt: "সবচেয়ে দ্রুত শর্টকাট কী?" },
+      { label: "অনুশীলনের জন্য অনুরূপ প্রশ্ন দিন", prompt: "অনুশীলনের জন্য অনুরূপ প্রশ্ন দিন" },
+      { label: "কোন ভুল বা ফাঁদ এড়ানো উচিত?", prompt: "কোন ভুল বা ফাঁদ এড়ানো উচিত?" },
+    ],
+  },
+};
+
+const ICONS_BY_TONE: Record<string, React.ReactNode> = {
+  g: <Zap className="w-5 h-5 shrink-0" />,
+  o: <CheckCircle2 className="w-5 h-5 shrink-0" />,
+  p: <FileText className="w-5 h-5 shrink-0" />,
+  b: <AlertTriangle className="w-5 h-5 shrink-0" />,
+  y: <Sparkles className="w-5 h-5 shrink-0" />,
+};
+
+const FOLLOWUP_ICONS = [
+  <Sparkles key="f1" className="w-4 h-4 shrink-0" />,
+  <FileText key="f2" className="w-4 h-4 shrink-0" />,
+  <AlertTriangle key="f3" className="w-4 h-4 shrink-0" />,
+];
 
 export default function QuizChatbot({
   isVisible,
@@ -15,10 +204,22 @@ export default function QuizChatbot({
   topicTitle,
   question,
   theme,
+  activeLang = "en",
   renderTrigger,
 }: QuizChatbotProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isDark, setIsDark] = useState(theme === "dark");
+
+  const [selectedLang, setSelectedLang] = useState<SupportedLang>(() => {
+    if (activeLang === "bn" || activeLang === "hi") return activeLang;
+    return "en";
+  });
+
+  useEffect(() => {
+    if (activeLang === "bn" || activeLang === "hi" || activeLang === "en") {
+      setSelectedLang(activeLang);
+    }
+  }, [activeLang]);
 
   useEffect(() => {
     if (theme) {
@@ -32,7 +233,159 @@ export default function QuizChatbot({
   const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [mode, setMode] = useState<"chat" | "cowork">("chat");
+  const [selectedModel, setSelectedModel] = useState("o4-mini");
+  const [isModelMenuOpen, setIsModelMenuOpen] = useState(false);
+  const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
+
   const scrollRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const modelMenuRef = useRef<HTMLDivElement>(null);
+  const addMenuRef = useRef<HTMLDivElement>(null);
+
+  const [isClosing, setIsClosing] = useState(false);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isHolding, setIsHolding] = useState(false);
+  const holdTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const closeTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const dragStartRef = useRef<{ startY: number; startTime: number; currentY: number } | null>(null);
+
+  const handleClose = useCallback(() => {
+    setIsClosing(true);
+    if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+    closeTimerRef.current = setTimeout(() => {
+      setIsOpen(false);
+      setIsClosing(false);
+      setDragOffset(0);
+      setIsDragging(false);
+      setIsHolding(false);
+    }, 220);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
+      if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+    };
+  }, []);
+
+  const handleHeaderPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLElement;
+    if (
+      target.closest("button") ||
+      target.closest("a") ||
+      target.closest("input") ||
+      target.closest("textarea") ||
+      target.closest(".tutor-lang-toggle") ||
+      target.closest(".top-actions")
+    ) {
+      return;
+    }
+
+    if (e.button !== 0) return;
+
+    const startY = e.clientY;
+    const startTime = Date.now();
+    dragStartRef.current = { startY, startTime, currentY: startY };
+    setIsDragging(true);
+    setIsHolding(true);
+
+    if (e.currentTarget.setPointerCapture) {
+      try {
+        e.currentTarget.setPointerCapture(e.pointerId);
+      } catch {
+        // ignore capture errors
+      }
+    }
+
+    if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
+    holdTimerRef.current = setTimeout(() => {
+      setIsHolding(false);
+      handleClose();
+    }, 450);
+  };
+
+  const handleHeaderPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!dragStartRef.current) return;
+    const { startY } = dragStartRef.current;
+    const currentY = e.clientY;
+    dragStartRef.current.currentY = currentY;
+    const deltaY = currentY - startY;
+
+    if (Math.abs(deltaY) > 8 && holdTimerRef.current) {
+      clearTimeout(holdTimerRef.current);
+      holdTimerRef.current = null;
+      setIsHolding(false);
+    }
+
+    if (deltaY > 0) {
+      setDragOffset(deltaY);
+    } else {
+      setDragOffset(deltaY * 0.15);
+    }
+  };
+
+  const handleHeaderPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (holdTimerRef.current) {
+      clearTimeout(holdTimerRef.current);
+      holdTimerRef.current = null;
+    }
+    setIsHolding(false);
+
+    if (!dragStartRef.current) {
+      setIsDragging(false);
+      return;
+    }
+
+    const { startY, startTime } = dragStartRef.current;
+    const deltaY = e.clientY - startY;
+    const elapsed = Math.max(Date.now() - startTime, 1);
+    const velocity = deltaY / elapsed;
+
+    dragStartRef.current = null;
+    setIsDragging(false);
+
+    if (deltaY > 70 || (deltaY > 20 && velocity > 0.4)) {
+      handleClose();
+    } else {
+      setDragOffset(0);
+    }
+  };
+
+  const handleHeaderPointerCancel = () => {
+    if (holdTimerRef.current) {
+      clearTimeout(holdTimerRef.current);
+      holdTimerRef.current = null;
+    }
+    dragStartRef.current = null;
+    setIsHolding(false);
+    setIsDragging(false);
+    setDragOffset(0);
+  };
+
+  const currentContent = LOCALIZED_CONTENT[selectedLang] || LOCALIZED_CONTENT.en;
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${Math.min(Math.max(textareaRef.current.scrollHeight, 26), 120)}px`;
+    }
+  }, [input]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (modelMenuRef.current && !modelMenuRef.current.contains(target)) {
+        setIsModelMenuOpen(false);
+      }
+      if (addMenuRef.current && !addMenuRef.current.contains(target)) {
+        setIsAddMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -68,6 +421,8 @@ export default function QuizChatbot({
     if (!text || isLoading) return;
 
     setInput("");
+    setIsAddMenuOpen(false);
+    setIsModelMenuOpen(false);
     setMessages((prev) => [...prev, { role: "user", content: text }]);
     setIsLoading(true);
 
@@ -77,6 +432,9 @@ export default function QuizChatbot({
         {
           context,
           message: text,
+          mode,
+          model: selectedModel,
+          lang: selectedLang,
         },
         {
           timeout: 60000,
@@ -105,59 +463,12 @@ export default function QuizChatbot({
     }
   }
 
-  const landingOptions = [
+  const modelOptions = [
     {
-      title: "Explain the step-by-step solution",
-      subtitle: "Get a clear, detailed solution in steps.",
-      prompt: "Explain the step-by-step solution",
-      tone: "g",
-      icon: <Zap className="w-5 h-5 shrink-0" />,
-    },
-    {
-      title: "Why is the correct option right?",
-      subtitle: "Understand the logic and reasoning.",
-      prompt: "Why is the correct option right?",
-      tone: "o",
-      icon: <CheckCircle2 className="w-5 h-5 shrink-0" />,
-    },
-    {
-      title: "Give me a similar practice question",
-      subtitle: "Practice with a similar type of question.",
-      prompt: "Give me a similar practice question",
-      tone: "p",
-      icon: <FileText className="w-5 h-5 shrink-0" />,
-    },
-    {
-      title: "What trap should I avoid?",
-      subtitle: "Learn common mistakes and how to avoid them.",
-      prompt: "What trap should I avoid?",
-      tone: "b",
-      icon: <AlertTriangle className="w-5 h-5 shrink-0" />,
-    },
-    {
-      title: "What is the fastest shortcut?",
-      subtitle: "Get quick tricks to solve faster.",
-      prompt: "What is the fastest shortcut?",
-      tone: "y",
-      icon: <Sparkles className="w-5 h-5 shrink-0" />,
-    },
-  ];
-
-  const followUps = [
-    {
-      label: "What is the fastest shortcut?",
-      prompt: "What is the fastest shortcut?",
-      icon: <Sparkles className="w-4 h-4 shrink-0" />,
-    },
-    {
-      label: "Give me a similar practice question",
-      prompt: "Give me a similar practice question",
-      icon: <FileText className="w-4 h-4 shrink-0" />,
-    },
-    {
-      label: "What trap should I avoid?",
-      prompt: "What trap should I avoid?",
-      icon: <AlertTriangle className="w-4 h-4 shrink-0" />,
+      name: "o4-mini",
+      tier: "Azure AI",
+      id: "o4-mini",
+      description: "Active reasoning engine for SSC & CAT solutions",
     },
   ];
 
@@ -179,12 +490,135 @@ export default function QuizChatbot({
     }
   };
 
+  const renderInputCard = () => (
+    <div className="tutor-composer-card">
+      {isAddMenuOpen && (
+        <div className="tutor-quick-menu" ref={addMenuRef}>
+          <div className="tutor-menu-header">{currentContent.quickPrompts}</div>
+          {currentContent.landingOptions.map((option) => (
+            <button
+              key={option.title}
+              type="button"
+              className="tutor-menu-item"
+              onClick={() => {
+                setIsAddMenuOpen(false);
+                if (!isChatView) setIsChatView(true);
+                sendMessage(option.prompt);
+              }}
+              disabled={isLoading}
+            >
+              <span className="tutor-menu-icon">{ICONS_BY_TONE[option.tone] || <Sparkles className="w-5 h-5 shrink-0" />}</span>
+              <span className="tutor-menu-text">{option.title}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {isModelMenuOpen && (
+        <div className="tutor-model-menu" ref={modelMenuRef}>
+          <div className="tutor-menu-header">Active AI Model</div>
+          {modelOptions.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className={`tutor-menu-item${selectedModel === item.id ? " active" : ""}`}
+              onClick={() => {
+                setSelectedModel(item.id);
+                setIsModelMenuOpen(false);
+              }}
+            >
+              <div className="tutor-model-item-text">
+                <div className="model-title-row">
+                  <span className="model-name">{item.name}</span>
+                  <span className="model-badge">{item.tier}</span>
+                </div>
+                <span className="model-desc">{item.description}</span>
+              </div>
+              {selectedModel === item.id && <Check className="w-4 h-4 text-blue-500 shrink-0" />}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <textarea
+        ref={textareaRef}
+        className="tutor-textarea"
+        value={input}
+        onChange={(event) => setInput(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault();
+            handleSend();
+          }
+        }}
+        placeholder={currentContent.placeholder}
+        rows={1}
+        disabled={isLoading}
+        aria-label={currentContent.placeholder}
+      />
+
+      <div className="tutor-toolbar-row">
+        <div className="tutor-toolbar-left">
+          <button
+            type="button"
+            className={`tutor-plus-btn${isAddMenuOpen ? " active" : ""}`}
+            onClick={() => setIsAddMenuOpen((prev) => !prev)}
+            aria-label="Quick prompts"
+            title="Quick prompts"
+          >
+            <Plus className="w-4.5 h-4.5" />
+          </button>
+
+          <div className="tutor-mode-toggle" role="group" aria-label="Tutor Mode">
+            <button
+              type="button"
+              className={`tutor-mode-btn${mode === "chat" ? " active" : ""}`}
+              onClick={() => setMode("chat")}
+            >
+              Chat
+            </button>
+            <button
+              type="button"
+              className={`tutor-mode-btn${mode === "cowork" ? " active" : ""}`}
+              onClick={() => setMode("cowork")}
+            >
+              Cowork
+            </button>
+          </div>
+        </div>
+
+        <div className="tutor-toolbar-right">
+          <button
+            type="button"
+            className="tutor-model-pill"
+            onClick={() => setIsModelMenuOpen((prev) => !prev)}
+            aria-label={`Selected model: ${selectedModel}`}
+            title="Active Model: o4-mini (Azure AI)"
+          >
+            <span className="model-name">o4-mini</span>
+            <span className="model-tier">Azure AI</span>
+          </button>
+
+          <button
+            type="button"
+            className={`tutor-send-btn${hasInput && !isLoading ? " ready" : ""}`}
+            onClick={handleSend}
+            aria-label="Send message"
+            disabled={isLoading || !hasInput}
+          >
+            <ArrowUp className="w-4.5 h-4.5 text-white" strokeWidth={2.5} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <>
       {renderTrigger ? (
         renderTrigger(() => setIsOpen(true))
       ) : (
-        <button data-ui-button="state" data-ui-shape="icon"
+        <button
           type="button"
           className="quiz-chatbot-fab"
           onClick={() => setIsOpen(true)}
@@ -206,44 +640,84 @@ export default function QuizChatbot({
 
       {isOpen && (
         <div
-          className="quiz-chatbot-overlay"
+          className={`quiz-chatbot-overlay${isClosing ? " closing" : ""}`}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) handleClose();
+          }}
+          style={{
+            opacity: isClosing ? 0 : dragOffset > 0 ? Math.max(1 - dragOffset / 400, 0.2) : undefined,
+          }}
         >
           <section
-            className="quiz-chatbot-modal"
+            className={`quiz-chatbot-modal${isClosing ? " closing" : ""}${isDragging ? " is-dragging" : ""}${isHolding ? " is-holding" : ""}`}
             role="dialog"
             aria-modal="true"
             aria-labelledby="quiz-chatbot-title"
+            style={{
+              transform: isClosing
+                ? `translateY(${Math.max(dragOffset, 100) + 350}px)`
+                : dragOffset !== 0
+                ? `translateY(${dragOffset}px)`
+                : undefined,
+              opacity: isClosing ? 0 : dragOffset > 0 ? Math.max(1 - dragOffset / 500, 0.4) : 1,
+              transition: isDragging ? "none" : undefined,
+            }}
           >
             <div className={`quiz-chatbot-shell${isDark ? " dark" : ""}`}>
-              <div className="mobile-sheet-handle" aria-hidden="true" />
-              <div data-ui-chrome="header" className="topbar">
-                <button data-ui-button="state" data-ui-shape="icon" type="button" className="hbtn" aria-label="Open menu">
-                  <Menu aria-hidden="true" />
-                </button>
-                <div id="quiz-chatbot-title" className="logo">AI Tutor</div>
-                <div className="top-actions">
-                  <button data-ui-button="state" data-ui-shape="icon"
-                    type="button"
-                    className="dmbtn"
-                    onClick={() => setIsDark((prev) => !prev)}
-                    title="Toggle dark mode"
-                    aria-label="Toggle dark mode"
-                  >
-                    {isDark ? (
-                      <Sun className="w-4 h-4 text-amber-400 shrink-0" />
-                    ) : (
-                      <Moon className="w-4 h-4 text-sky-500 shrink-0" />
-                    )}
-                  </button>
-                  <button data-ui-button="icon"
-                    type="button"
-                    className="closebtn"
-                    onClick={() => setIsOpen(false)}
-                    title="Close"
-                    aria-label="Close"
-                  >
-                    <X className="w-4.5 h-4.5 text-zinc-500 dark:text-zinc-300 shrink-0" />
-                  </button>
+              <div
+                className={`tutor-header-drag-zone${isHolding ? " is-holding" : ""}${isDragging ? " is-dragging" : ""}`}
+                onPointerDown={handleHeaderPointerDown}
+                onPointerMove={handleHeaderPointerMove}
+                onPointerUp={handleHeaderPointerUp}
+                onPointerCancel={handleHeaderPointerCancel}
+                title="Hold or drag down to close"
+              >
+                <div className="mobile-sheet-handle" aria-hidden="true">
+                  <div className={`tutor-hold-indicator${isHolding ? " active" : ""}`} />
+                </div>
+                <div className="topbar">
+                  <div className="topbar-left">
+                    <div className="tutor-lang-toggle" role="group" aria-label="Response language">
+                      {LANG_OPTIONS.map((item) => (
+                        <button
+                          key={item.code}
+                          type="button"
+                          className={`tutor-lang-btn${selectedLang === item.code ? " active" : ""}`}
+                          onClick={() => setSelectedLang(item.code)}
+                          aria-label={item.label}
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div id="quiz-chatbot-title" className="logo">AI Tutor</div>
+
+                  <div className="top-actions">
+                    <button
+                      type="button"
+                      className="dmbtn"
+                      onClick={() => setIsDark((prev) => !prev)}
+                      title="Toggle dark mode"
+                      aria-label="Toggle dark mode"
+                    >
+                      {isDark ? (
+                        <Sun className="w-4 h-4 text-amber-400 shrink-0" />
+                      ) : (
+                        <Moon className="w-4 h-4 text-sky-500 shrink-0" />
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      className="closebtn"
+                      onClick={handleClose}
+                      title="Close"
+                      aria-label="Close"
+                    >
+                      <X className="w-4.5 h-4.5 shrink-0" />
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -254,22 +728,22 @@ export default function QuizChatbot({
                       <div className="ctxi">Q</div>
                       <div>
                         <div className="ctxl">
-                          Context loaded:{" "}
+                          {currentContent.contextLoaded}{" "}
                           <span>
                             Q{questionNumber} · {question.concept || topicTitle}
                             {question.exam ? ` · ${question.exam}` : ""}
                           </span>
                         </div>
                         <div className="ctxs">
-                          Ask anything about this submitted question.
+                          {currentContent.contextSubtitle}
                         </div>
                       </div>
                     </div>
 
-                    <div className="ltitle">What can I help with?</div>
+                    <div className="ltitle">{currentContent.landingTitle}</div>
                     <div className="opts">
-                      {landingOptions.map((option) => (
-                        <button data-ui-button="state"
+                      {currentContent.landingOptions.map((option) => (
+                        <button
                           key={option.title}
                           type="button"
                           className="opt"
@@ -279,7 +753,7 @@ export default function QuizChatbot({
                           }}
                           disabled={isLoading}
                         >
-                          <div className={`oi ${option.tone}`}>{option.icon}</div>
+                          <div className={`oi ${option.tone}`}>{ICONS_BY_TONE[option.tone] || <Sparkles className="w-5 h-5 shrink-0" />}</div>
                           <div>
                             <span className="ot">{option.title}</span>
                             <span className="os">{option.subtitle}</span>
@@ -307,7 +781,7 @@ export default function QuizChatbot({
                           <div className="sb">
                             <div className="sh2">
                               <span className="slbl2">Solution</span>
-                              <button data-ui-button="state"
+                              <button
                                 type="button"
                                 className="cpb"
                                 onClick={() => handleCopy(message.content, index)}
@@ -315,7 +789,6 @@ export default function QuizChatbot({
                                 {copiedIndex === index ? "Copied!" : "Copy"}
                               </button>
                             </div>
-                            <div className="sdiv" />
                             <div className="sbody">
                               <ReactMarkdown
                                 remarkPlugins={[remarkMath, remarkGfm]}
@@ -344,10 +817,12 @@ export default function QuizChatbot({
                             </div>
                           </div>
                           <div className="swrap">
-                            <div className="swlbl">Continue exploring</div>
+                            <div className="swlbl">
+                              {selectedLang === "bn" ? "আরও জানুন" : selectedLang === "hi" ? "आगे जानें" : "Continue exploring"}
+                            </div>
                             <div className="swlist">
-                              {followUps.map((followUp) => (
-                                <button data-ui-button="state"
+                              {currentContent.followUps.map((followUp, fIndex) => (
+                                <button
                                   key={followUp.label}
                                   type="button"
                                   className="chip"
@@ -355,7 +830,7 @@ export default function QuizChatbot({
                                   disabled={isLoading}
                                 >
                                   <div className="chipl">
-                                    <span>{followUp.icon}</span>
+                                    <span>{FOLLOWUP_ICONS[fIndex % FOLLOWUP_ICONS.length]}</span>
                                     {followUp.label}
                                   </div>
                                   <span className="chipa">›</span>
@@ -374,915 +849,16 @@ export default function QuizChatbot({
                     </div>
                     <div style={{ height: 12 }} />
                   </div>
-
-                  <div className="bbar">
-                    <div className="irow">
-                      <button data-ui-button="state" data-ui-shape="icon" type="button" className="addb" aria-label="Attach context">
-                        <Plus className="w-4 h-4 text-zinc-500 dark:text-zinc-400 shrink-0" />
-                      </button>
-                      <input
-                        className="ci"
-                        value={input}
-                        onChange={(event) => setInput(event.target.value)}
-                        onKeyDown={(event) => {
-                          if (event.key === "Enter") {
-                            event.preventDefault();
-                            handleSend();
-                          }
-                        }}
-                        placeholder="Ask AI Tutor"
-                        autoComplete="off"
-                        disabled={isLoading}
-                       aria-label="Ask AI Tutor"/>
-                      <button data-ui-button="state" data-ui-shape="icon"
-                        type="button"
-                        className="mic"
-                        aria-label="Voice input"
-                        style={{ display: hasInput ? "none" : "flex" }}
-                      >
-                        <Mic className="w-4.5 h-4.5 text-white shrink-0" />
-                      </button>
-                      <button data-ui-button="state" data-ui-shape="icon"
-                        type="button"
-                        className={`snd${hasInput ? " on" : ""}`}
-                        onClick={handleSend}
-                        aria-label="Send message"
-                        disabled={isLoading || !hasInput}
-                      >
-                        <Send className="w-4 h-4 text-white shrink-0" />
-                      </button>
-                    </div>
-                  </div>
                 </div>
               </div>
 
-              {!isChatView && (
-                <div className="bbar lbar">
-                  <div className="irow">
-                    <button data-ui-button="state" data-ui-shape="icon" type="button" className="addb" aria-label="Attach context">
-                      <Plus className="w-4 h-4 text-zinc-500 dark:text-zinc-400 shrink-0" />
-                    </button>
-                    <input
-                      className="ci"
-                      value={input}
-                      onChange={(event) => setInput(event.target.value)}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter") {
-                          event.preventDefault();
-                          handleSend();
-                        }
-                      }}
-                      placeholder="Ask AI Tutor"
-                      autoComplete="off"
-                      disabled={isLoading}
-                     aria-label="Ask AI Tutor"/>
-                    <button data-ui-button="state" data-ui-shape="icon"
-                      type="button"
-                      className="mic"
-                      aria-label="Voice input"
-                      style={{ display: hasInput ? "none" : "flex" }}
-                    >
-                      <Mic className="w-4.5 h-4.5 text-white shrink-0" />
-                    </button>
-                    <button data-ui-button="state" data-ui-shape="icon"
-                      type="button"
-                      className={`snd${hasInput ? " on" : ""}`}
-                      onClick={handleSend}
-                      aria-label="Send message"
-                      disabled={isLoading || !hasInput}
-                    >
-                      <Send className="w-4 h-4 text-white shrink-0" />
-                    </button>
-                  </div>
-                </div>
-              )}
+              <div className="bbar">
+                {renderInputCard()}
+              </div>
             </div>
           </section>
         </div>
       )}
-
-      <style jsx>{`
-        .quiz-chatbot-fab {
-          position: fixed;
-          bottom: 92px;
-          right: 24px;
-          width: 64px;
-          height: 64px;
-          border-radius: 50%;
-          border: none;
-          cursor: pointer;
-          background: linear-gradient(135deg, #7c6df0 0%, #f07c6d 100%);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          box-shadow: 0 8px 32px rgba(124, 109, 240, 0.45);
-          position: fixed;
-          z-index: 500;
-          animation: fabPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-          transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .quiz-chatbot-fab:hover { transform: scale(1.08); }
-
-        .quiz-chatbot-fab::before {
-          content: '';
-          position: absolute;
-          width: 100%;
-          height: 100%;
-          border-radius: 50%;
-          background: linear-gradient(135deg, #7c6df0 0%, #f07c6d 100%);
-          opacity: 0.36;
-          animation: pulse 2s ease-out infinite;
-        }
-        .quiz-chatbot-fab::after {
-          content: '';
-          position: absolute;
-          width: 10px;
-          height: 10px;
-          border-radius: 50%;
-          background: #fff;
-          top: 6px;
-          right: 8px;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-          animation: orbit 3s linear infinite;
-        }
-
-        .fab-icon { width: 32px; height: 32px; position: relative; z-index: 1; }
-
-        @keyframes fabPop { from { transform: scale(0) rotate(-20deg); opacity: 0; } to { transform: scale(1) rotate(0deg); opacity: 1; } }
-        @keyframes pulse { 0% { transform: scale(1); opacity: 0.36; } 80% { transform: scale(1.9); opacity: 0; } 100% { opacity: 0; } }
-        @keyframes orbit { 0% { transform: rotate(0deg) translateX(26px); } 100% { transform: rotate(360deg) translateX(26px); } }
-        .quiz-chatbot-overlay {
-          position: fixed;
-          inset: 0;
-          background: rgba(15, 23, 42, 0.38);
-          backdrop-filter: blur(6px);
-          z-index: 600;
-          display: flex;
-          align-items: flex-end;
-          justify-content: center;
-        }
-        .quiz-chatbot-modal {
-          width: min(100vw, 480px);
-          max-width: 100vw;
-          height: min(100vh, 760px);
-          height: min(100svh, 760px);
-          height: min(100dvh, 760px);
-          max-height: 100dvh;
-          border-radius: 20px 20px 0 0;
-          overflow: hidden;
-          box-shadow: 0 -18px 48px rgba(15, 23, 42, 0.28);
-        }
-        .mobile-sheet-handle { display: none; }
-        .quiz-chatbot-shell {
-          --or: #007aff;
-          --orl: rgba(0, 122, 255, 0.08);
-          --orm: rgba(0, 122, 255, 0.22);
-          --pu: #007aff;
-          --pul: rgba(0, 122, 255, 0.08);
-          --dk: var(--light-text);
-          --gr: rgba(60, 60, 67, 0.6);
-          --grl: var(--light-canvas);
-          --bd: rgba(0, 0, 0, 0.08);
-          --wh: #ffffff;
-          --bg: #ffffff;
-          --sh: 0 4px 24px rgba(0, 0, 0, 0.06);
-          --sbody-c: var(--light-text);
-          --ares-bg: rgba(0, 122, 255, 0.06);
-          --irow-bg: var(--light-canvas);
-          background: var(--bg);
-          color: var(--dk);
-          display: flex;
-          flex-direction: column;
-          height: 100%;
-          font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", "Segoe UI", Roboto, sans-serif;
-          transition: background 0.35s, color 0.35s;
-        }
-        .quiz-chatbot-shell.dark {
-          --or: var(--dark-accent);
-          --orl: rgba(10, 132, 255, 0.15);
-          --orm: rgba(10, 132, 255, 0.35);
-          --pu: var(--dark-accent);
-          --pul: rgba(10, 132, 255, 0.15);
-          --dk: #ffffff;
-          --gr: rgba(235, 235, 245, 0.6);
-          --grl: var(--dark-surface-muted);
-          --bd: rgba(255, 255, 255, 0.14);
-          --wh: #242426;
-          --bg: var(--dark-surface);
-          --sh: 0 4px 30px rgba(0, 0, 0, 0.4);
-          --sbody-c: #ebebf5;
-          --ares-bg: rgba(10, 132, 255, 0.12);
-          --irow-bg: #242426;
-        }
-        .topbar {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: calc(10px + env(safe-area-inset-top)) 18px 12px;
-          background: var(--bg);
-          border-bottom: 0.5px solid var(--bd);
-          flex-shrink: 0;
-          transition: background 0.35s, border-color 0.35s;
-        }
-        .top-actions {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-        }
-        .closebtn {
-          width: 34px !important;
-          height: 34px !important;
-          aspect-ratio: 1;
-          border-radius: 50% !important;
-          border: 1px solid var(--bd);
-          background: var(--grl);
-          cursor: pointer;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          padding: 0 !important;
-          transition: all 0.15s ease;
-          flex-shrink: 0 !important;
-        }
-        .closebtn:hover {
-          background: var(--or);
-          color: #ffffff;
-          border-color: transparent;
-        }
-        .logo {
-          font-size: 18px;
-          font-weight: 700;
-          letter-spacing: -0.3px;
-          color: var(--dk);
-          transition: color 0.35s;
-        }
-        .hbtn {
-          display: none;
-        }
-        .dmbtn {
-          width: 34px !important;
-          height: 34px !important;
-          aspect-ratio: 1;
-          border-radius: 50% !important;
-          border: 1px solid var(--bd);
-          background: var(--grl);
-          cursor: pointer;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          padding: 0 !important;
-          transition: all 0.15s ease;
-          flex-shrink: 0 !important;
-        }
-        .dmbtn:hover {
-          background: var(--orm);
-        }
-        .views {
-          flex: 1;
-          min-height: 0;
-          position: relative;
-          background: var(--wh);
-        }
-        .land,
-        .chat {
-          position: absolute;
-          inset: 0;
-          display: flex;
-          flex-direction: column;
-          background: var(--wh);
-          transition: opacity 0.3s, transform 0.3s, background 0.35s;
-          min-height: 0;
-        }
-        .land.out {
-          opacity: 0;
-          transform: translateY(-14px);
-          pointer-events: none;
-        }
-        .lscroll {
-          flex: 1;
-          overflow-y: auto;
-          padding-bottom: 8px;
-        }
-        .lscroll::-webkit-scrollbar {
-          width: 4px;
-        }
-        .lscroll::-webkit-scrollbar-thumb {
-          background: var(--bd);
-          border-radius: 4px;
-        }
-        .ctx {
-          margin: 16px 16px 0;
-          background: var(--wh);
-          border: 1px solid var(--bd);
-          border-radius: 16px;
-          padding: 14px 16px;
-          display: flex;
-          align-items: flex-start;
-          gap: 12px;
-          box-shadow: var(--sh);
-          transition: background 0.35s, border-color 0.35s;
-        }
-        .ctxi {
-          width: 38px;
-          height: 38px;
-          background: var(--pu);
-          border-radius: 10px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 17px;
-          font-weight: 700;
-          color: #fff;
-          flex-shrink: 0;
-          transition: background 0.35s;
-        }
-        .ctxl {
-          font-size: 13px;
-          font-weight: 600;
-          color: var(--pu);
-          margin-bottom: 2px;
-          transition: color 0.35s;
-        }
-        .ctxl span {
-          color: var(--dk);
-          font-weight: 400;
-          transition: color 0.35s;
-        }
-        .ctxs {
-          font-size: 12px;
-          color: var(--gr);
-          margin-top: 2px;
-        }
-        .ltitle {
-          text-align: center;
-          font-size: 26px;
-          font-weight: 700;
-          letter-spacing: -0.5px;
-          padding: 28px 20px 20px;
-          color: var(--dk);
-          transition: color 0.35s;
-        }
-        .opts {
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-          padding: 0 16px 20px;
-        }
-        .opt {
-          background: var(--wh);
-          border: 1px solid var(--bd);
-          border-radius: 16px;
-          padding: 15px 18px;
-          display: flex;
-          align-items: center;
-          gap: 14px;
-          cursor: pointer;
-          transition: background 0.15s, transform 0.12s, box-shadow 0.15s,
-            border-color 0.35s;
-          box-shadow: var(--sh);
-          text-align: left;
-          width: 100%;
-        }
-        .opt:hover {
-          background: var(--grl);
-          transform: translateY(-1px);
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-        }
-        .opt:active {
-          transform: scale(0.98);
-        }
-        .oi {
-          width: 42px;
-          height: 42px;
-          border-radius: 12px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 20px;
-          flex-shrink: 0;
-          transition: background 0.35s;
-        }
-        .g {
-          background: rgba(52, 199, 89, 0.14);
-          color: #248a3d;
-        }
-        .o {
-          background: rgba(255, 149, 0, 0.14);
-          color: #b45309;
-        }
-        .p {
-          background: rgba(175, 82, 222, 0.14);
-          color: #8028a0;
-        }
-        .b {
-          background: rgba(0, 122, 255, 0.14);
-          color: #0060df;
-        }
-        .y {
-          background: rgba(255, 204, 0, 0.18);
-          color: #a16207;
-        }
-        .dark .g {
-          background: rgba(48, 209, 88, 0.18);
-          color: #30d158;
-        }
-        .dark .o {
-          background: rgba(255, 159, 10, 0.18);
-          color: #ff9f0a;
-        }
-        .dark .p {
-          background: rgba(191, 90, 242, 0.18);
-          color: #bf5af2;
-        }
-        .dark .b {
-          background: rgba(10, 132, 255, 0.18);
-          color: var(--dark-accent);
-        }
-        .dark .y {
-          background: rgba(255, 214, 10, 0.18);
-          color: #ffd60a;
-        }
-        .ot {
-          font-size: 14.5px;
-          font-weight: 700;
-          color: var(--dk);
-          margin-bottom: 2px;
-          display: block;
-          transition: color 0.35s;
-        }
-        .os {
-          font-size: 12px;
-          color: var(--gr);
-        }
-        .bbar {
-          flex-shrink: 0;
-          background: var(--wh);
-          padding: 10px 14px calc(18px + env(safe-area-inset-bottom));
-          border-top: 1px solid var(--bd);
-          transition: opacity 0.3s, background 0.35s, border-color 0.35s;
-        }
-        .bbar.out {
-          opacity: 0;
-          pointer-events: none;
-        }
-        .irow {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          background: var(--irow-bg);
-          border-radius: 50px;
-          padding: 6px 8px 6px 12px;
-          transition: background 0.35s;
-        }
-        .addb {
-          width: 32px !important;
-          height: 32px !important;
-          aspect-ratio: 1;
-          background: var(--wh);
-          border: 1px solid var(--bd);
-          border-radius: 50% !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          padding: 0 !important;
-          cursor: pointer;
-          flex-shrink: 0 !important;
-          transition: background 0.35s, border-color 0.35s, color 0.35s;
-        }
-        .ci {
-          flex: 1;
-          border: none;
-          background: transparent;
-          font-size: 15px;
-          color: var(--dk);
-          outline: none;
-          min-width: 0;
-          transition: color 0.35s;
-        }
-        .ci::placeholder {
-          color: var(--gr);
-        }
-        .mic,
-        .snd {
-          width: 34px !important;
-          height: 34px !important;
-          aspect-ratio: 1;
-          background: var(--or);
-          border-radius: 50% !important;
-          border: none !important;
-          padding: 0 !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          cursor: pointer;
-          flex-shrink: 0 !important;
-          box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
-          transition: transform 0.15s, background 0.35s;
-        }
-        .mic:hover,
-        .snd:hover {
-          transform: scale(1.05);
-        }
-        .snd {
-          display: none !important;
-        }
-        .snd.on {
-          display: flex !important;
-        }
-        .chat {
-          opacity: 0;
-          transform: translateY(14px);
-          pointer-events: none;
-        }
-        .chat.show {
-          opacity: 1;
-          pointer-events: auto;
-        }
-        .chat.in {
-          transform: translateY(0);
-        }
-        .ca {
-          flex: 1;
-          min-height: 0;
-          overflow-y: auto;
-          padding: 0 0 8px;
-          scroll-behavior: smooth;
-        }
-        .ca::-webkit-scrollbar {
-          width: 4px;
-        }
-        .ca::-webkit-scrollbar-thumb {
-          background: var(--bd);
-          border-radius: 4px;
-        }
-        .mu {
-          margin: 16px 16px 0 auto;
-          max-width: 80%;
-          background: #007aff;
-          border-radius: 20px 20px 4px 20px;
-          padding: 14px 18px;
-          border: none;
-          font-size: 16px;
-          font-weight: 600;
-          color: #ffffff;
-          box-shadow: 0 4px 14px rgba(0, 122, 255, 0.3);
-          animation: fu 0.3s ease;
-          line-height: 1.5;
-          transition: background 0.35s, color 0.35s;
-        }
-        .ma {
-          margin: 14px 16px 0;
-          animation: fu 0.3s ease;
-        }
-        .ahead {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          margin-bottom: 8px;
-        }
-        .albl {
-          font-size: 16px;
-          font-weight: 700;
-          color: var(--dk);
-          transition: color 0.35s;
-        }
-        .ares {
-          background: var(--orl);
-          border-radius: 14px;
-          padding: 14px 18px;
-          border: 1px solid var(--orm);
-          font-size: 16px;
-          font-weight: 600;
-          color: var(--or);
-          margin-bottom: 16px;
-          line-height: 1.6;
-          font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", "Segoe UI", Roboto, sans-serif;
-          transition: all 0.35s ease;
-        }
-        .sb {
-          background: transparent;
-          border-radius: 0;
-          border: none;
-          overflow: visible;
-          box-shadow: none;
-          padding: 4px 0 12px;
-          transition: all 0.35s ease;
-        }
-        .sh2 {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 0 0 10px;
-          margin-bottom: 6px;
-          border-bottom: 1px solid var(--bd);
-        }
-        .slbl2 {
-          font-size: 16px;
-          font-weight: 700;
-          color: var(--dk);
-          transition: color 0.35s;
-        }
-        .cpb {
-          font-size: 12px;
-          font-weight: 500;
-          color: var(--gr);
-          background: none;
-          border: none;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          gap: 5px;
-          padding: 4px 8px;
-          border-radius: 8px;
-          transition: background 0.15s;
-        }
-        .cpb:hover {
-          background: var(--grl);
-        }
-        .sdiv {
-          display: none;
-        }
-        .sbody {
-          padding: 12px 0 16px;
-          font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", "Segoe UI", Roboto, sans-serif;
-          font-size: 17px;
-          line-height: 1.8;
-          color: var(--sbody-c);
-          letter-spacing: 0.01em;
-          transition: color 0.35s;
-        }
-        .sbody :global(p) {
-          margin-bottom: 10px;
-        }
-        .sbody :global(p:last-child) {
-          margin-bottom: 0;
-        }
-        .sbody :global(strong) {
-          color: var(--dk);
-          font-weight: 700;
-        }
-        .sbody :global(ol),
-        .sbody :global(ul) {
-          margin: 8px 0 10px;
-          padding-left: 0;
-          list-style: none;
-          display: grid;
-          gap: 6px;
-        }
-        .sbody :global(li) {
-          padding-left: 20px;
-          position: relative;
-        }
-        .sbody :global(li::before) {
-          content: "•";
-          color: var(--or);
-          font-weight: 700;
-          position: absolute;
-          left: 0;
-          top: 0;
-        }
-        .sbody :global(code),
-        .sbody :global(pre) {
-          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-        }
-        .sbody :global(code) {
-          background: var(--irow-bg);
-          border-radius: 6px;
-          padding: 2px 5px;
-          font-size: 13.5px;
-        }
-        .sbody :global(pre) {
-          background: var(--irow-bg);
-          border-radius: 10px;
-          margin: 8px 0;
-          padding: 12px 14px;
-          overflow-x: auto;
-        }
-        .sbody :global(.katex-display) {
-          text-align: left;
-          margin: 0.6em 0;
-          padding-bottom: 0.25em;
-          overflow: auto hidden;
-        }
-        .typing {
-          display: flex;
-          gap: 5px;
-          align-items: center;
-          padding: 6px 2px;
-          margin: 12px 16px 0;
-        }
-        .typing span {
-          width: 7px;
-          height: 7px;
-          border-radius: 50%;
-          background: var(--or);
-          animation: bo 0.9s infinite;
-          transition: background 0.35s;
-        }
-        .typing span:nth-child(2) {
-          animation-delay: 0.15s;
-        }
-        .typing span:nth-child(3) {
-          animation-delay: 0.3s;
-        }
-        .hidden {
-          display: none !important;
-        }
-        .swrap {
-          margin: 14px 0 4px;
-        }
-        .swlbl {
-          font-size: 11px;
-          font-weight: 600;
-          color: var(--gr);
-          text-transform: uppercase;
-          letter-spacing: 0.6px;
-          margin-bottom: 8px;
-        }
-        .swlist {
-          display: flex;
-          flex-direction: column;
-          gap: 7px;
-        }
-        .chip {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 10px;
-          background: var(--wh);
-          border: 1px solid var(--bd);
-          border-radius: 12px;
-          padding: 11px 14px;
-          cursor: pointer;
-          font-size: 13px;
-          font-weight: 500;
-          color: var(--dk);
-          text-align: left;
-          width: 100%;
-          box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-          transition: background 0.15s, border-color 0.15s, transform 0.1s,
-            color 0.35s;
-        }
-        .chip:hover {
-          background: var(--orl);
-          border-color: var(--orm);
-          transform: translateX(2px);
-        }
-        .chip:active {
-          transform: scale(0.98);
-        }
-        .chipl {
-          display: flex;
-          align-items: center;
-          gap: 9px;
-        }
-        .chipa {
-          color: var(--or);
-          font-size: 16px;
-          transition: color 0.35s;
-        }
-        .chat-divider {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          font-size: 10px;
-          color: var(--gr);
-          font-weight: 600;
-          letter-spacing: 0.5px;
-          text-transform: uppercase;
-          margin: 14px 16px 0;
-        }
-        .chat-divider::before,
-        .chat-divider::after {
-          content: "";
-          flex: 1;
-          height: 1px;
-          background: var(--bd);
-        }
-        @keyframes fu {
-          from {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        @keyframes bo {
-          0%,
-          100% {
-            transform: translateY(0);
-            opacity: 0.5;
-          }
-          50% {
-            transform: translateY(-5px);
-            opacity: 1;
-          }
-        }
-        @media (min-width: 640px) {
-          .quiz-chatbot-fab {
-            bottom: 32px;
-          }
-          .quiz-chatbot-overlay {
-            align-items: center;
-            justify-content: center;
-            padding: 32px;
-          }
-          .quiz-chatbot-modal {
-            width: 100%;
-            max-width: 820px;
-            height: min(82vh, 680px);
-            max-height: 82vh;
-            border-radius: 26px !important;
-            border: 1px solid var(--bd);
-            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.45);
-          }
-          .topbar {
-            padding: 16px 28px;
-          }
-          .ctx {
-            margin: 24px 28px 0;
-            padding: 16px 20px;
-          }
-          .ltitle {
-            font-size: 26px;
-            padding: 24px 28px 20px;
-          }
-          .opts {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 14px;
-            padding: 0 28px 28px;
-          }
-          .mu {
-            margin: 22px 28px 0 auto;
-            max-width: 72%;
-            font-size: 17px;
-          }
-          .ma {
-            margin: 18px 28px 0;
-          }
-          .sbody {
-            font-size: 18px;
-            line-height: 1.85;
-          }
-          .bbar {
-            padding: 16px 28px;
-          }
-        }
-        @media (max-width: 639px) {
-          .quiz-chatbot-overlay {
-            align-items: flex-end;
-            padding-top: max(12px, env(safe-area-inset-top));
-          }
-          .quiz-chatbot-modal {
-            height: min(92dvh, 760px);
-            max-height: 92dvh;
-            border-radius: 24px 24px 0 0;
-          }
-          .mobile-sheet-handle {
-            display: block;
-            width: 40px;
-            height: 4px;
-            flex: 0 0 auto;
-            margin: 10px auto 0;
-            border-radius: 999px;
-            background: var(--bd);
-          }
-          .topbar {
-            padding-top: 8px;
-          }
-          .ctx {
-            margin: 12px 12px 0;
-            padding: 12px;
-          }
-          .ltitle {
-            font-size: 22px;
-            padding: 20px 16px 16px;
-          }
-          .opts {
-            gap: 8px;
-            padding: 0 12px 16px;
-          }
-          .opt {
-            padding: 12px 14px;
-          }
-          .oi {
-            width: 38px;
-            height: 38px;
-            font-size: 18px;
-          }
-          .bbar {
-            padding: 8px 12px calc(12px + env(safe-area-inset-bottom));
-          }
-          .ma,
-          .mu {
-            margin-left: 12px;
-            margin-right: 12px;
-          }
-        }
-      `}</style>
     </>
   );
 }

@@ -26,6 +26,7 @@ export interface QuizChatbotProps {
   topicTitle: string;
   question?: QuizChatbotQuestion;
   theme?: string;
+  activeLang?: "en" | "hi" | "bn" | string;
   renderTrigger?: (onClick: () => void) => React.ReactNode;
 }
 
