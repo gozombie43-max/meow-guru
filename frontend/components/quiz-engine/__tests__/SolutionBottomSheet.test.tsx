@@ -5,7 +5,11 @@ import { SolutionBottomSheet } from '../ui/SolutionViews';
 import { QuizThemeProvider } from '../QuizThemeProvider';
 
 function renderWithTheme(ui: React.ReactElement) {
-  return render(<QuizThemeProvider>{ui}</QuizThemeProvider>);
+  return render(
+    <QuizThemeProvider storageKey="solution-bottom-sheet-test-theme">
+      {ui}
+    </QuizThemeProvider>
+  );
 }
 
 describe('SolutionBottomSheet Component', () => {
