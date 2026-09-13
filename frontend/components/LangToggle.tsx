@@ -99,7 +99,8 @@ export function LangToggle({ active, loading, onChange }: LangToggleProps) {
         body.theme-dark .lang-toggle,
         .theme-dark .lang-toggle,
         [data-theme="dark"] .lang-toggle,
-        .dark .lang-toggle {
+        .dark .lang-toggle,
+        .mac-series-quiz[data-theme="dark"] .lang-toggle.lang-toggle {
           --lang-toggle-bg: var(--dark-surface);
           --lang-toggle-border: var(--dark-border);
           --lang-toggle-highlight: rgba(255, 255, 255, 0.04);

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor, cleanup, act } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import QuizChatbot from '../index';
 import api from '@/lib/axios';
 import type { QuizChatbotQuestion } from '../utils';
@@ -22,7 +22,7 @@ const mockQuestion: QuizChatbotQuestion = {
 
 describe('QuizChatbot Component', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
   });
 
   afterEach(() => {
@@ -67,20 +67,6 @@ describe('QuizChatbot Component', () => {
     // Verify Plus button
     const plusBtn = screen.getByRole('button', { name: /Quick prompts/i });
     expect(plusBtn).toBeInTheDocument();
-
-    // Verify Chat and Cowork mode toggle
-    const chatBtn = screen.getByRole('button', { name: /^Chat$/i });
-    const coworkBtn = screen.getByRole('button', { name: /^Cowork$/i });
-    expect(chatBtn).toBeInTheDocument();
-    expect(coworkBtn).toBeInTheDocument();
-
-    // Verify default active mode is Chat
-    expect(chatBtn.className).toContain('active');
-    expect(coworkBtn.className).not.toContain('active');
-
-    // Toggle to Cowork mode
-    fireEvent.click(coworkBtn);
-    expect(coworkBtn.className).toContain('active');
 
     // Verify Model pill button "o4-mini"
     const modelPill = screen.getByRole('button', { name: /Selected model: o4-mini/i });
@@ -292,74 +278,30 @@ describe('QuizChatbot Component', () => {
     });
   });
 
-  it('closes modal when holding down on header drag zone', async () => {
-    vi.useFakeTimers();
-
-    render(
-      <QuizChatbot
-        isVisible={true}
-        questionNumber={1}
-        topicTitle="General Awareness"
-        question={mockQuestion}
-      />
-    );
-
-    // Open modal
-    fireEvent.click(screen.getByRole('button', { name: /Ask AI Tutor/i }));
-    expect(screen.getByRole('dialog', { name: /AI Tutor/i })).toBeInTheDocument();
-
-    const dragZone = screen.getByTitle('Hold or drag down to close');
-    expect(dragZone).toBeInTheDocument();
-
-    // Trigger pointer down (hold)
-    fireEvent.pointerDown(dragZone, { clientY: 100, button: 0 });
-
-    // Fast-forward hold timer (450ms) + close animation (220ms)
-    act(() => {
-      vi.advanceTimersByTime(750);
-    });
-
-    // Verify modal closes
-    expect(screen.queryByRole('dialog', { name: /AI Tutor/i })).not.toBeInTheDocument();
-
-    vi.useRealTimers();
+  it('closes with Escape and restores focus and page scrolling', () => {
+    render(<QuizChatbot isVisible questionNumber={1} topicTitle="General Awareness" question={mockQuestion} />);
+    const trigger = screen.getByRole('button', { name: /Ask AI Tutor/i });
+    trigger.focus();
+    fireEvent.click(trigger);
+    expect(document.body.style.overflow).toBe('hidden');
+    expect(screen.getByRole('dialog')).toHaveFocus();
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(document.body.style.overflow).not.toBe('hidden');
+    expect(trigger).toHaveFocus();
   });
 
-  it('closes modal when dragging down on header past threshold', async () => {
-    vi.useFakeTimers();
-
-    render(
-      <QuizChatbot
-        isVisible={true}
-        questionNumber={1}
-        topicTitle="General Awareness"
-        question={mockQuestion}
-      />
-    );
-
-    // Open modal
+  it('renders numbered solution steps and only the latest follow-up group', async () => {
+    vi.mocked(api.post).mockResolvedValue({ data: { reply: '## Method\n\n1. Read the question.\n2. Choose New Delhi.' } });
+    render(<QuizChatbot isVisible questionNumber={1} topicTitle="General Awareness" question={mockQuestion} />);
     fireEvent.click(screen.getByRole('button', { name: /Ask AI Tutor/i }));
-    const dialog = screen.getByRole('dialog', { name: /AI Tutor/i });
-    expect(dialog).toBeInTheDocument();
-
-    const dragZone = screen.getByTitle('Hold or drag down to close');
-
-    // Pointer down at y=100
-    fireEvent.pointerDown(dragZone, { clientY: 100, button: 0 });
-
-    // Drag down to y=220 (deltaY = 120 > 70 threshold)
-    fireEvent.pointerMove(dragZone, { clientY: 220 });
-
-    // Pointer up
-    fireEvent.pointerUp(dragZone, { clientY: 220 });
-
-    // Fast-forward closing animation timer (220ms)
-    act(() => {
-      vi.advanceTimersByTime(300);
-    });
-
-    expect(screen.queryByRole('dialog', { name: /AI Tutor/i })).not.toBeInTheDocument();
-
-    vi.useRealTimers();
+    fireEvent.click(screen.getByRole('button', { name: /Explain the step-by-step solution/i }));
+    await screen.findByRole('heading', { name: 'Method' });
+    expect(screen.getByText('Read the question.').closest('ol')).toBeInTheDocument();
+    fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Explain again' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Send message' }));
+    await waitFor(() => expect(screen.getAllByRole('heading', { name: 'Method' })).toHaveLength(2));
+    expect(screen.getAllByText('Continue exploring')).toHaveLength(1);
+    expect(screen.getByText('Q1 · General Awareness')).toBeInTheDocument();
   });
 });

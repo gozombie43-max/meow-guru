@@ -1,9 +1,7 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import ReactMarkdown from "react-markdown";
-import rehypeKatex from "rehype-katex";
-import remarkMath from "remark-math";
-import remarkGfm from "remark-gfm";
+import { createPortal } from "react-dom";
+import TutorMarkdown from "./TutorMarkdown";
 import {
   Sun,
   Moon,
@@ -19,7 +17,7 @@ import {
 } from "lucide-react";
 import api from '@/lib/axios';
 import { isAxiosError } from 'axios';
-import { ChatMessage, QuizChatbotProps, buildQuestionContext, normalizeTutorMarkdown } from './utils';
+import { ChatMessage, QuizChatbotProps, buildQuestionContext } from './utils';
 import './quiz-chatbot.css';
 
 type SupportedLang = "en" | "hi" | "bn";
@@ -210,16 +208,10 @@ export default function QuizChatbot({
   const [isOpen, setIsOpen] = useState(false);
   const [isDark, setIsDark] = useState(theme === "dark");
 
-  const [selectedLang, setSelectedLang] = useState<SupportedLang>(() => {
-    if (activeLang === "bn" || activeLang === "hi") return activeLang;
-    return "en";
-  });
-
-  useEffect(() => {
-    if (activeLang === "bn" || activeLang === "hi" || activeLang === "en") {
-      setSelectedLang(activeLang);
-    }
-  }, [activeLang]);
+  const initialLang: SupportedLang = activeLang === "hi" || activeLang === "bn" ? activeLang : "en";
+  const [languageChoice, setLanguageChoice] = useState({ source: activeLang, value: initialLang });
+  const selectedLang = languageChoice.source === activeLang ? languageChoice.value : initialLang;
+  const setSelectedLang = (value: SupportedLang) => setLanguageChoice({ source: activeLang, value });
 
   useEffect(() => {
     if (theme) {
@@ -233,136 +225,36 @@ export default function QuizChatbot({
   const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
-  const [mode, setMode] = useState<"chat" | "cowork">("chat");
   const [selectedModel, setSelectedModel] = useState("o4-mini");
   const [isModelMenuOpen, setIsModelMenuOpen] = useState(false);
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
 
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const modalRef = useRef<HTMLElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const modelMenuRef = useRef<HTMLDivElement>(null);
   const addMenuRef = useRef<HTMLDivElement>(null);
 
-  const [isClosing, setIsClosing] = useState(false);
-  const [dragOffset, setDragOffset] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const [isHolding, setIsHolding] = useState(false);
-  const holdTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const closeTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const dragStartRef = useRef<{ startY: number; startTime: number; currentY: number } | null>(null);
+  const handleClose = useCallback(() => setIsOpen(false), []);
 
-  const handleClose = useCallback(() => {
-    setIsClosing(true);
-    if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
-    closeTimerRef.current = setTimeout(() => {
-      setIsOpen(false);
-      setIsClosing(false);
-      setDragOffset(0);
-      setIsDragging(false);
-      setIsHolding(false);
-    }, 220);
-  }, []);
-
+  // Follow the visible viewport when the mobile keyboard reduces available space.
   useEffect(() => {
-    return () => {
-      if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
-      if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+    if (!isOpen) return;
+    const viewport = window.visualViewport;
+    const updateViewport = () => {
+      if (!overlayRef.current || !viewport) return;
+      overlayRef.current.style.height = `${viewport.height}px`;
+      overlayRef.current.style.top = `${viewport.offsetTop}px`;
     };
-  }, []);
-
-  const handleHeaderPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    const target = e.target as HTMLElement;
-    if (
-      target.closest("button") ||
-      target.closest("a") ||
-      target.closest("input") ||
-      target.closest("textarea") ||
-      target.closest(".tutor-lang-toggle") ||
-      target.closest(".top-actions")
-    ) {
-      return;
-    }
-
-    if (e.button !== 0) return;
-
-    const startY = e.clientY;
-    const startTime = Date.now();
-    dragStartRef.current = { startY, startTime, currentY: startY };
-    setIsDragging(true);
-    setIsHolding(true);
-
-    if (e.currentTarget.setPointerCapture) {
-      try {
-        e.currentTarget.setPointerCapture(e.pointerId);
-      } catch {
-        // ignore capture errors
-      }
-    }
-
-    if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
-    holdTimerRef.current = setTimeout(() => {
-      setIsHolding(false);
-      handleClose();
-    }, 450);
-  };
-
-  const handleHeaderPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!dragStartRef.current) return;
-    const { startY } = dragStartRef.current;
-    const currentY = e.clientY;
-    dragStartRef.current.currentY = currentY;
-    const deltaY = currentY - startY;
-
-    if (Math.abs(deltaY) > 8 && holdTimerRef.current) {
-      clearTimeout(holdTimerRef.current);
-      holdTimerRef.current = null;
-      setIsHolding(false);
-    }
-
-    if (deltaY > 0) {
-      setDragOffset(deltaY);
-    } else {
-      setDragOffset(deltaY * 0.15);
-    }
-  };
-
-  const handleHeaderPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (holdTimerRef.current) {
-      clearTimeout(holdTimerRef.current);
-      holdTimerRef.current = null;
-    }
-    setIsHolding(false);
-
-    if (!dragStartRef.current) {
-      setIsDragging(false);
-      return;
-    }
-
-    const { startY, startTime } = dragStartRef.current;
-    const deltaY = e.clientY - startY;
-    const elapsed = Math.max(Date.now() - startTime, 1);
-    const velocity = deltaY / elapsed;
-
-    dragStartRef.current = null;
-    setIsDragging(false);
-
-    if (deltaY > 70 || (deltaY > 20 && velocity > 0.4)) {
-      handleClose();
-    } else {
-      setDragOffset(0);
-    }
-  };
-
-  const handleHeaderPointerCancel = () => {
-    if (holdTimerRef.current) {
-      clearTimeout(holdTimerRef.current);
-      holdTimerRef.current = null;
-    }
-    dragStartRef.current = null;
-    setIsHolding(false);
-    setIsDragging(false);
-    setDragOffset(0);
-  };
+    updateViewport();
+    viewport?.addEventListener("resize", updateViewport);
+    viewport?.addEventListener("scroll", updateViewport);
+    return () => {
+      viewport?.removeEventListener("resize", updateViewport);
+      viewport?.removeEventListener("scroll", updateViewport);
+    };
+  }, [isOpen]);
 
   const currentContent = LOCALIZED_CONTENT[selectedLang] || LOCALIZED_CONTENT.en;
 
@@ -391,15 +283,40 @@ export default function QuizChatbot({
     if (!isOpen) return;
 
     const originalOverflow = document.body.style.overflow;
+    const previousFocus = document.activeElement as HTMLElement | null;
+    const modal = modalRef.current;
+    const focusable = () => Array.from(modal?.querySelectorAll<HTMLElement>(
+      'button:not(:disabled), textarea:not(:disabled), select:not(:disabled), a[href], summary, [tabindex="0"]'
+    ) ?? []).filter((element) => element.getClientRects().length > 0);
+    const background = Array.from(document.body.children)
+      .filter((element): element is HTMLElement => element instanceof HTMLElement && element !== overlayRef.current)
+      .map((element) => ({ element, inert: element.inert }));
+    background.forEach(({ element }) => { element.inert = true; });
+    modal?.focus();
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setIsOpen(false);
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setIsOpen(false);
+      }
+      if (event.key === "Tab") {
+        const elements = focusable();
+        const first = elements[0];
+        const last = elements[elements.length - 1];
+        if (!first) { event.preventDefault(); return; }
+        if (event.shiftKey && (document.activeElement === first || document.activeElement === modal)) {
+          event.preventDefault(); last.focus();
+        } else if (!event.shiftKey && (document.activeElement === last || document.activeElement === modal)) {
+          event.preventDefault(); first.focus();
+        }
+      }
     };
-
     document.body.style.overflow = "hidden";
     window.addEventListener("keydown", closeOnEscape);
     return () => {
       document.body.style.overflow = originalOverflow;
       window.removeEventListener("keydown", closeOnEscape);
+      background.forEach(({ element, inert }) => { element.inert = inert; });
+      previousFocus?.focus();
     };
   }, [isOpen]);
 
@@ -411,7 +328,11 @@ export default function QuizChatbot({
   useEffect(() => {
     if (!isChatView) return;
     const node = scrollRef.current;
-    if (node) node.scrollTop = node.scrollHeight;
+    if (node) {
+      const latest = node.querySelector<HTMLElement>('[data-latest-response="true"]');
+      if (!isLoading && latest) node.scrollTop = latest.offsetTop - node.offsetTop;
+      else node.scrollTop = node.scrollHeight;
+    }
   }, [messages, isLoading, isChatView]);
 
   if (!isVisible || !question) return null;
@@ -432,7 +353,7 @@ export default function QuizChatbot({
         {
           context,
           message: text,
-          mode,
+          mode: "chat",
           model: selectedModel,
           lang: selectedLang,
         },
@@ -496,7 +417,7 @@ export default function QuizChatbot({
         <div className="tutor-quick-menu" ref={addMenuRef}>
           <div className="tutor-menu-header">{currentContent.quickPrompts}</div>
           {currentContent.landingOptions.map((option) => (
-            <button
+            <button data-ui-button="state"
               key={option.title}
               type="button"
               className="tutor-menu-item"
@@ -516,9 +437,20 @@ export default function QuizChatbot({
 
       {isModelMenuOpen && (
         <div className="tutor-model-menu" ref={modelMenuRef}>
-          <div className="tutor-menu-header">Active AI Model</div>
-          {modelOptions.map((item) => (
+          <div className="tutor-menu-heading">
+            <div className="tutor-menu-header">Active AI Model</div>
             <button
+              type="button"
+              data-ui-button="state"
+              className="closebtn"
+              aria-label="Close model menu"
+              onClick={() => setIsModelMenuOpen(false)}
+            >
+              <X size={20} aria-hidden="true" />
+            </button>
+          </div>
+          {modelOptions.map((item) => (
+            <button data-ui-button="state"
               key={item.id}
               type="button"
               className={`tutor-menu-item${selectedModel === item.id ? " active" : ""}`}
@@ -546,7 +478,7 @@ export default function QuizChatbot({
         value={input}
         onChange={(event) => setInput(event.target.value)}
         onKeyDown={(event) => {
-          if (event.key === "Enter" && !event.shiftKey) {
+          if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
             event.preventDefault();
             handleSend();
           }
@@ -559,7 +491,7 @@ export default function QuizChatbot({
 
       <div className="tutor-toolbar-row">
         <div className="tutor-toolbar-left">
-          <button
+          <button data-ui-button="state"
             type="button"
             className={`tutor-plus-btn${isAddMenuOpen ? " active" : ""}`}
             onClick={() => setIsAddMenuOpen((prev) => !prev)}
@@ -568,27 +500,7 @@ export default function QuizChatbot({
           >
             <Plus className="w-4.5 h-4.5" />
           </button>
-
-          <div className="tutor-mode-toggle" role="group" aria-label="Tutor Mode">
-            <button
-              type="button"
-              className={`tutor-mode-btn${mode === "chat" ? " active" : ""}`}
-              onClick={() => setMode("chat")}
-            >
-              Chat
-            </button>
-            <button
-              type="button"
-              className={`tutor-mode-btn${mode === "cowork" ? " active" : ""}`}
-              onClick={() => setMode("cowork")}
-            >
-              Cowork
-            </button>
-          </div>
-        </div>
-
-        <div className="tutor-toolbar-right">
-          <button
+          <button data-ui-button="state"
             type="button"
             className="tutor-model-pill"
             onClick={() => setIsModelMenuOpen((prev) => !prev)}
@@ -598,8 +510,10 @@ export default function QuizChatbot({
             <span className="model-name">o4-mini</span>
             <span className="model-tier">Azure AI</span>
           </button>
+        </div>
 
-          <button
+        <div className="tutor-toolbar-right">
+          <button data-ui-button="state"
             type="button"
             className={`tutor-send-btn${hasInput && !isLoading ? " ready" : ""}`}
             onClick={handleSend}
@@ -618,7 +532,7 @@ export default function QuizChatbot({
       {renderTrigger ? (
         renderTrigger(() => setIsOpen(true))
       ) : (
-        <button
+        <button data-ui-button="state"
           type="button"
           className="quiz-chatbot-fab"
           onClick={() => setIsOpen(true)}
@@ -638,53 +552,35 @@ export default function QuizChatbot({
         </button>
       )}
 
-      {isOpen && (
-        <div
-          className={`quiz-chatbot-overlay${isClosing ? " closing" : ""}`}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) handleClose();
-          }}
-          style={{
-            opacity: isClosing ? 0 : dragOffset > 0 ? Math.max(1 - dragOffset / 400, 0.2) : undefined,
-          }}
-        >
-          <section
-            className={`quiz-chatbot-modal${isClosing ? " closing" : ""}${isDragging ? " is-dragging" : ""}${isHolding ? " is-holding" : ""}`}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="quiz-chatbot-title"
-            style={{
-              transform: isClosing
-                ? `translateY(${Math.max(dragOffset, 100) + 350}px)`
-                : dragOffset !== 0
-                ? `translateY(${dragOffset}px)`
-                : undefined,
-              opacity: isClosing ? 0 : dragOffset > 0 ? Math.max(1 - dragOffset / 500, 0.4) : 1,
-              transition: isDragging ? "none" : undefined,
-            }}
-          >
-            <div className={`quiz-chatbot-shell${isDark ? " dark" : ""}`}>
-              <div
-                className={`tutor-header-drag-zone${isHolding ? " is-holding" : ""}${isDragging ? " is-dragging" : ""}`}
-                onPointerDown={handleHeaderPointerDown}
-                onPointerMove={handleHeaderPointerMove}
-                onPointerUp={handleHeaderPointerUp}
-                onPointerCancel={handleHeaderPointerCancel}
-                title="Hold or drag down to close"
-              >
-                <div className="mobile-sheet-handle" aria-hidden="true">
-                  <div className={`tutor-hold-indicator${isHolding ? " active" : ""}`} />
-                </div>
+      {isOpen && createPortal(
+        <div ref={overlayRef} className="quiz-chatbot-overlay">
+          <button data-ui-decoration="true" className="tutor-backdrop" type="button" aria-label="Dismiss AI tutor" onClick={handleClose} />
+          <section ref={modalRef} className="quiz-chatbot-modal" role="dialog"
+            aria-modal="true" aria-labelledby="quiz-chatbot-title" tabIndex={-1}>
+            <div className={`quiz-chatbot-shell${isDark ? " dark" : ""}`} data-theme={isDark ? "dark" : "light"}>
+              <header className="tutor-header">
                 <div className="topbar">
+                  <div id="quiz-chatbot-title" className="logo">AI Tutor</div>
                   <div className="topbar-left">
+                    <select
+                      className="tutor-language-select"
+                      aria-label="Response language"
+                      value={selectedLang}
+                      onChange={(event) => setSelectedLang(event.target.value as SupportedLang)}
+                    >
+                      {LANG_OPTIONS.map((item) => (
+                        <option key={item.code} value={item.code}>{item.label}</option>
+                      ))}
+                    </select>
                     <div className="tutor-lang-toggle" role="group" aria-label="Response language">
                       {LANG_OPTIONS.map((item) => (
-                        <button
+                        <button data-ui-button="state"
                           key={item.code}
                           type="button"
                           className={`tutor-lang-btn${selectedLang === item.code ? " active" : ""}`}
                           onClick={() => setSelectedLang(item.code)}
                           aria-label={item.label}
+                          aria-pressed={selectedLang === item.code}
                         >
                           {item.label}
                         </button>
@@ -692,10 +588,8 @@ export default function QuizChatbot({
                     </div>
                   </div>
 
-                  <div id="quiz-chatbot-title" className="logo">AI Tutor</div>
-
                   <div className="top-actions">
-                    <button
+                    <button data-ui-button="state"
                       type="button"
                       className="dmbtn"
                       onClick={() => setIsDark((prev) => !prev)}
@@ -708,7 +602,7 @@ export default function QuizChatbot({
                         <Moon className="w-4 h-4 text-sky-500 shrink-0" />
                       )}
                     </button>
-                    <button
+                    <button data-ui-button="state"
                       type="button"
                       className="closebtn"
                       onClick={handleClose}
@@ -719,10 +613,10 @@ export default function QuizChatbot({
                     </button>
                   </div>
                 </div>
-              </div>
+              </header>
 
               <div className="views">
-                <div className={`land${isChatView ? " out" : ""}`}>
+                {!isChatView ? <div className="land">
                   <div className="lscroll">
                     <div className="ctx">
                       <div className="ctxi">Q</div>
@@ -743,7 +637,7 @@ export default function QuizChatbot({
                     <div className="ltitle">{currentContent.landingTitle}</div>
                     <div className="opts">
                       {currentContent.landingOptions.map((option) => (
-                        <button
+                        <button data-ui-button="state"
                           key={option.title}
                           type="button"
                           className="opt"
@@ -764,8 +658,12 @@ export default function QuizChatbot({
                   </div>
                 </div>
 
-                <div className={`chat${isChatView ? " show in" : ""}`}>
+                : <div className="chat">
                   <div className="ca" ref={scrollRef}>
+                    <details className="tutor-question">
+                      <summary>Q{questionNumber} · {question.concept || topicTitle}</summary>
+                      <div className="sbody"><TutorMarkdown content={question.question} /></div>
+                    </details>
                     {messages.length > 0 && <div className="chat-divider">Start of conversation</div>}
                     {messages.map((message, index) => {
                       if (message.role === "user") {
@@ -777,11 +675,11 @@ export default function QuizChatbot({
                       }
 
                       return (
-                        <div className="ma" key={`${message.role}-${index}`}>
+                        <div className="ma" data-latest-response={index === messages.length - 1} key={`${message.role}-${index}`}>
                           <div className="sb">
                             <div className="sh2">
                               <span className="slbl2">Solution</span>
-                              <button
+                              <button data-ui-button="state"
                                 type="button"
                                 className="cpb"
                                 onClick={() => handleCopy(message.content, index)}
@@ -790,39 +688,16 @@ export default function QuizChatbot({
                               </button>
                             </div>
                             <div className="sbody">
-                              <ReactMarkdown
-                                remarkPlugins={[remarkMath, remarkGfm]}
-                                rehypePlugins={[
-                                  [
-                                    rehypeKatex,
-                                    {
-                                      throwOnError: false,
-                                      strict: "ignore",
-                                      trust: false,
-                                    },
-                                  ],
-                                ]}
-                                components={{
-                                  table: ({ node, ...props }) => (
-                                    <div className="table-wrapper">
-                                      <table {...props} />
-                                    </div>
-                                  ),
-                                  th: ({ node, ...props }) => <th {...props} />,
-                                  td: ({ node, ...props }) => <td {...props} />,
-                                }}
-                              >
-                                {normalizeTutorMarkdown(message.content)}
-                              </ReactMarkdown>
+                              <TutorMarkdown content={message.content} />
                             </div>
                           </div>
-                          <div className="swrap">
+                          {index === messages.length - 1 && <div className="swrap">
                             <div className="swlbl">
                               {selectedLang === "bn" ? "আরও জানুন" : selectedLang === "hi" ? "आगे जानें" : "Continue exploring"}
                             </div>
                             <div className="swlist">
                               {currentContent.followUps.map((followUp, fIndex) => (
-                                <button
+                                <button data-ui-button="state"
                                   key={followUp.label}
                                   type="button"
                                   className="chip"
@@ -837,27 +712,27 @@ export default function QuizChatbot({
                                 </button>
                               ))}
                             </div>
-                          </div>
+                          </div>}
                         </div>
                       );
                     })}
 
-                    <div className={`typing${isLoading ? "" : " hidden"}`}>
+                    <div className={`typing${isLoading ? "" : " hidden"}`} role="status" aria-label="Tutor is thinking">
                       <span />
                       <span />
                       <span />
                     </div>
                     <div style={{ height: 12 }} />
                   </div>
-                </div>
+                </div>}
               </div>
 
-              <div className="bbar">
+              <footer className="bbar">
                 {renderInputCard()}
-              </div>
+              </footer>
             </div>
           </section>
-        </div>
+        </div>, document.body
       )}
     </>
   );
