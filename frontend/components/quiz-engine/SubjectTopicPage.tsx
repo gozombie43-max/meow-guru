@@ -237,6 +237,7 @@ export default function SubjectTopicPage({
 
         /* ── PRACTICE MODES LIST ── */
         .sg-grid {
+          position: relative;
           display: flex;
           flex-direction: column;
           gap: 8px;
@@ -357,8 +358,8 @@ export default function SubjectTopicPage({
           display: block;
         }
 
-        .sg-tab-bg-svg path {
-          fill: #ffffff;
+        .sg-tab-bg-svg > path:first-child {
+          fill: var(--card-2);
         }
 
         .sg-tab-action-wrap {
@@ -373,9 +374,13 @@ export default function SubjectTopicPage({
         }
 
         .sg-card-qs-text {
-          font-size: 13px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 4px;
+          font-size: 14px;
           font-weight: 750;
-          color: #007AFF !important;
+          color: var(--label) !important;
           letter-spacing: -0.01em;
           white-space: nowrap;
           line-height: 1;
@@ -383,6 +388,12 @@ export default function SubjectTopicPage({
           border: none;
           padding: 0;
           transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.18s ease;
+        }
+
+        .sg-card-qs-label {
+          color: var(--label-2);
+          font-size: 12px;
+          font-weight: 600;
         }
 
         .sg-card:hover .sg-card-qs-text {
@@ -456,6 +467,7 @@ export default function SubjectTopicPage({
 
         /* ── PRACTICE MODES LIST ── */
         .sg-grid {
+          position: relative;
           display: flex;
           flex-direction: column;
           gap: 8px;
@@ -576,8 +588,8 @@ export default function SubjectTopicPage({
           display: block;
         }
 
-        .sg-tab-bg-svg path {
-          fill: #ffffff;
+        .sg-tab-bg-svg > path:first-child {
+          fill: var(--card-2);
         }
 
         .sg-tab-action-wrap {
@@ -592,9 +604,13 @@ export default function SubjectTopicPage({
         }
 
         .sg-card-qs-text {
-          font-size: 13px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 4px;
+          font-size: 14px;
           font-weight: 750;
-          color: #007AFF !important;
+          color: var(--label) !important;
           letter-spacing: -0.01em;
           white-space: nowrap;
           line-height: 1;
@@ -602,6 +618,12 @@ export default function SubjectTopicPage({
           border: none;
           padding: 0;
           transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.18s ease;
+        }
+
+        .sg-card-qs-label {
+          color: var(--label-2);
+          font-size: 12px;
+          font-weight: 600;
         }
 
         .sg-card:hover .sg-card-qs-text {
@@ -655,11 +677,35 @@ export default function SubjectTopicPage({
         body.theme-light .sg-card-sub {
           color: #64748b;
         }
-        body.theme-light .sg-tab-bg-svg path {
-          fill: #ffffff;
+        body.theme-light .sg-tab-bg-svg > path:first-child {
+          fill: var(--card-2);
         }
         body.theme-light .sg-card-qs-text {
-          color: #007AFF !important;
+          color: var(--label) !important;
+        }
+
+        .sg-tab-bg-svg {
+          overflow: visible;
+        }
+
+        .sg-snakes-overlay {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+          pointer-events: none;
+          z-index: 4;
+        }
+
+        .sg-curve-snake {
+          filter: drop-shadow(0 0 1px rgba(10, 132, 255, 0.45));
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .sg-curve-snake {
+            display: none;
+          }
         }
 
         /* ════════════════════════════════════

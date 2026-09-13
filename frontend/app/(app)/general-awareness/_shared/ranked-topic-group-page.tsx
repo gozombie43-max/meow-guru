@@ -589,9 +589,9 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
       {/* =========================================================================
           MOBILE / TABLET VIEW (< 768px Handheld Devices)
           ========================================================================= */}
-      <div className={hubStyles.mobileContainer}>
+      <div className={`${hubStyles.mobileContainer} ${hubStyles.fixedTopicsMobile}`}>
         {/* Mobile Topbar */}
-        <header data-ui-chrome="header" className={hubStyles.mobileTopbar}>
+        <header data-ui-chrome="header" data-hub-part="mobileTopbar" className={hubStyles.mobileTopbar}>
           <Link
             href="/general-awareness"
             className={`${hubStyles.mobileBackBtn} ${styles.mobileBackBtn}`}
@@ -605,9 +605,9 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
           <div style={{ width: 34 }} />
         </header>
 
-        <div className={hubStyles.mobileBody}>
+        <div data-hub-part="mobileBody" className={hubStyles.mobileBody}>
           {/* Mobile Search Row */}
-          <div className={hubStyles.mobileSearchRow}>
+          <div data-hub-part="mobileSearchRow" className={hubStyles.mobileSearchRow}>
             <Search className={hubStyles.mobileSearchIcon} size={16} />
             <input
               type="text"
@@ -642,12 +642,12 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
           </div>
 
           {/* Section Title Header */}
-          <div className={hubStyles.mobileTopicsTitle}>CHAPTERS</div>
+          <div data-hub-part="mobileTopicsTitle" className={hubStyles.mobileTopicsTitle}>CHAPTERS</div>
 
           {/* iOS Grouped Card Container with Filter Header */}
-          <div className={hubStyles.mobileTopicGroup}>
+          <div data-hub-part="mobileTopicGroup" className={hubStyles.mobileTopicGroup}>
             {/* Weightage Tabs in Card Header */}
-            <div className={hubStyles.mobileTabsScroll} role="tablist" aria-label={`Filter by ${group.metricLabel.toLowerCase()}`}>
+            <div data-hub-part="mobileTabsScroll" className={hubStyles.mobileTabsScroll} role="tablist" aria-label={`Filter by ${group.metricLabel.toLowerCase()}`}>
               {filters.map((filter) => {
                 const isActive = priority === filter;
                 return (
@@ -677,7 +677,7 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
                   <Link
                     key={topic.slug}
                     href={`/general-awareness/${group.slug}/${topic.slug}`}
-                    className={hubStyles.mobileTopicRow}
+                    data-hub-part="mobileTopicRow" className={hubStyles.mobileTopicRow}
                     aria-label={`${topic.rank}. ${topic.title}`}
                   >
                     <div className={hubStyles.mobileTopicRowLeft}>

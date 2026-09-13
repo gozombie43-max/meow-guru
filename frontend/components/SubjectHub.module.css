@@ -1335,6 +1335,49 @@
   padding-bottom: 24px;
 }
 
+@media (max-width: 767px) {
+  .fixedTopicsMobile.fixedTopicsMobile {
+    position: fixed;
+    inset: 0 0 auto;
+    height: calc(100dvh - var(--app-bottom-nav-height) - var(--safe-bottom));
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding-bottom: 0;
+  }
+
+  .fixedTopicsMobile [data-hub-part="mobileTopbar"] {
+    flex-shrink: 0;
+    box-sizing: border-box;
+  }
+
+  .fixedTopicsMobile [data-hub-part="mobileBody"] {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .fixedTopicsMobile [data-hub-part="mobileTabsScroll"],
+  .fixedTopicsMobile [data-hub-part="mobileSearchRow"],
+  .fixedTopicsMobile [data-hub-part="mobileTopicsTitle"],
+  .fixedTopicsMobile [data-hub-part="mobileTopicRow"] {
+    flex-shrink: 0;
+  }
+
+  .fixedTopicsMobile [data-hub-part="mobileTopicGroup"] {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 12px;
+  }
+}
+
 :global(body.theme-light) .mobileContainer {
   background: var(--light-canvas) !important;
 }

@@ -828,13 +828,15 @@
   --ios-accent: var(--dark-accent);
   color-scheme: dark;
 
-  min-height: 100vh;
-  min-height: 100dvh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   background: var(--ios-bg);
   color: var(--ios-ink);
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
-  padding-bottom: calc(110px + var(--safe-bottom));
-  position: relative;
+  position: fixed;
+  inset: 0;
   box-sizing: border-box;
 }
 
@@ -854,6 +856,7 @@
 }
 
 .iosNav {
+  flex-shrink: 0;
   height: calc(48px + var(--safe-top));
   display: grid;
   grid-template-columns: 48px 1fr 48px;
@@ -906,10 +909,19 @@
 }
 
 .iosContent {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
   width: min(100%, 460px);
   margin: 0 auto;
   padding: 14px 16px 20px;
   box-sizing: border-box;
+}
+
+.iosContent > * {
+  flex-shrink: 0;
 }
 
 .iosHeading {
@@ -986,6 +998,11 @@
   overflow: hidden;
   max-width: 100%;
   box-sizing: border-box;
+}
+
+.iosScreen[data-theme] .iosSelect:focus-visible {
+  outline: 1px solid var(--ios-accent);
+  outline-offset: 1px;
 }
 
 .iosSelectChevron {
@@ -1093,7 +1110,12 @@
 }
 
 .iosConceptList {
-  overflow: hidden;
+  flex: 1;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
   border-radius: 16px;
   background: var(--ios-card);
   border: 1px solid var(--ios-separator);
@@ -1131,6 +1153,7 @@
 }
 
 .iosCheckCircle {
+  order: 1;
   width: 22px;
   height: 22px;
   flex: 0 0 auto;
@@ -1199,7 +1222,8 @@
 }
 
 .iosToolbar {
-  position: fixed;
+  position: relative;
+  flex-shrink: 0;
   z-index: 40;
   right: 0;
   bottom: 0;
@@ -1346,6 +1370,10 @@
 
 /* ── iOS Mobile Letter Ribbon ── */
 .iosLetterSection {
+  flex-shrink: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
   margin: 10px 0 6px;
   display: flex;
   flex-direction: column;

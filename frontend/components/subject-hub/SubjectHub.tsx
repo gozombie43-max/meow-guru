@@ -1073,9 +1073,9 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
       {/* =========================================================================
           MOBILE / TABLET VIEW (< 768px Handheld Devices)
           ========================================================================= */}
-      <div className={styles.mobileContainer}>
+      <div className={`${styles.mobileContainer} ${defaultStyles.fixedTopicsMobile}`}>
         {/* Mobile Topbar */}
-        <header data-ui-chrome="header" className={styles.mobileTopbar}>
+        <header data-ui-chrome="header" data-hub-part="mobileTopbar" className={styles.mobileTopbar}>
           <button data-ui-button="icon"
             type="button"
             className={styles.mobileBackBtn}
@@ -1090,9 +1090,9 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
           <div style={{ width: 34 }} />
         </header>
 
-        <div className={styles.mobileBody}>
+        <div data-hub-part="mobileBody" className={styles.mobileBody}>
           {/* Search */}
-          <div className={styles.mobileSearchRow}>
+          <div data-hub-part="mobileSearchRow" className={styles.mobileSearchRow}>
             <Search className={styles.mobileSearchIcon} size={16} />
             <input
               type="text"
@@ -1131,13 +1131,13 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
           </div>
 
           {/* TOPICS Section Header */}
-          <div className={styles.mobileTopicsTitle}>TOPICS</div>
+          <div data-hub-part="mobileTopicsTitle" className={styles.mobileTopicsTitle}>TOPICS</div>
 
           {/* iOS Grouped Card Container with Filter Header */}
-          <div className={styles.mobileTopicGroup}>
+          <div data-hub-part="mobileTopicGroup" className={styles.mobileTopicGroup}>
             {/* Priority Tabs in Card Header */}
             {!isChapterMode && (
-              <div className={styles.mobileTabsScroll}>
+              <div data-hub-part="mobileTabsScroll" className={styles.mobileTabsScroll}>
                 {CATEGORIES.map((cat) => (
                   <button data-ui-button="state"
                     key={cat.id}
@@ -1159,7 +1159,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
                 <Link
                   key={topic.id}
                   href={isChapterMode ? `${config.chapterBasePrefix}/${topic.slug}` : `${topic.routeBase}`}
-                  className={styles.mobileTopicRow}
+                  data-hub-part="mobileTopicRow" className={styles.mobileTopicRow}
                 >
                   <div className={styles.mobileTopicRowLeft}>
                     <div

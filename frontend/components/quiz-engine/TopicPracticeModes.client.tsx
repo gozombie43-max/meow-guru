@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import PracticeCurveSnakes from "./PracticeCurveSnakes";
 import type { CSSProperties } from "react";
 import {
   BookOpenCheck,
@@ -78,7 +79,7 @@ export default function TopicPracticeModes({
     <div className="sg-grid">
       {modes.map((mode) => {
         const ModeIcon = mode.icon;
-        const countLabel = isLoading ? "… Qs" : isError ? "— Qs" : `${counts[mode.mode] ?? 0} Qs`;
+        const countLabel = isLoading ? "…" : isError ? "—" : `${counts[mode.mode] ?? 0}`;
         return (
           <Link
             key={mode.title}
@@ -102,15 +103,19 @@ export default function TopicPracticeModes({
             </div>
             <div className="sg-card-tab" aria-hidden="true">
               <svg className="sg-tab-bg-svg" viewBox="0 0 88 46" preserveAspectRatio="none">
-                <path d="M28 0 C28 10, 0 13, 0 23 C0 33, 28 36, 28 46 L88 46 L88 0 Z" fill="#ffffff" />
+                <path d="M28 0 C28 10, 0 13, 0 23 C0 33, 28 36, 28 46 L88 46 L88 0 Z" fill="var(--card-2)" />
               </svg>
               <div className="sg-tab-action-wrap">
-                <span className="sg-card-qs-text">{countLabel}</span>
+                <span className="sg-card-qs-text">
+                  <span>{countLabel}</span>
+                  <span className="sg-card-qs-label">Questions</span>
+                </span>
               </div>
             </div>
           </Link>
         );
       })}
+      <PracticeCurveSnakes />
     </div>
   );
 }

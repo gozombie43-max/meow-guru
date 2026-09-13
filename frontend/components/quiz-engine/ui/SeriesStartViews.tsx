@@ -766,12 +766,9 @@ function IosQuizStartMobile({
   routeBase,
   mode = "concept",
   groups,
-  category,
-  categoryCounts,
   examFilter,
   examOptions,
   selected,
-  conceptCount,
   questionCount,
   search: externalSearch,
   selectedLetters,
@@ -779,7 +776,6 @@ function IosQuizStartMobile({
   onSelectAllLetters,
   letterCounts,
   availableLetters: _availableLetters,
-  onCategoryChange,
   onExamChange,
   onSearchChange,
   onToggleGroup,
@@ -871,7 +867,10 @@ function IosQuizStartMobile({
                 <div className={styles.iosSelectWrapper}>
                   <select
                     value={examFilter || "all"}
-                    onChange={(e) => onExamChange(e.target.value === "all" ? "" : e.target.value)}
+                    onChange={(e) => {
+                      onExamChange(e.target.value === "all" ? "" : e.target.value);
+                      e.currentTarget.blur();
+                    }}
                     className={styles.iosSelect}
                   >
                     {examOptions.map((ex) => (
@@ -939,7 +938,10 @@ function IosQuizStartMobile({
                 <div className={styles.iosSelectWrapper}>
                   <select
                     value={examFilter || "all"}
-                    onChange={(e) => onExamChange(e.target.value === "all" ? "" : e.target.value)}
+                    onChange={(e) => {
+                      onExamChange(e.target.value === "all" ? "" : e.target.value);
+                      e.currentTarget.blur();
+                    }}
                     className={styles.iosSelect}
                   >
                     {examOptions.map((ex) => (
@@ -951,35 +953,6 @@ function IosQuizStartMobile({
                   <ChevronDown size={14} className={styles.iosSelectChevron} />
                 </div>
               </div>
-            </div>
-
-            {/* Category Chips */}
-            <div className={styles.iosChipsScroll} aria-label="Concept category filters">
-              <button data-ui-button="state"
-                type="button"
-                className={`${styles.iosChip} ${category === "All" ? styles.iosChipActive : ""}`}
-                onClick={() => onCategoryChange("All")}
-              >
-                <i className={styles.iosChipDot} style={{ background: subjectAccent }} />
-                <span>All</span>
-                <span className={styles.iosChipCount}>{conceptCount}</span>
-              </button>
-              {groups
-                .filter((item) => (categoryCounts[item.label] ?? 0) > 0)
-                .map((item) => (
-                  <button data-ui-button="state"
-                    key={item.id}
-                    type="button"
-                    className={`${styles.iosChip} ${
-                      category === item.label ? styles.iosChipActive : ""
-                    }`}
-                    onClick={() => onCategoryChange(item.label)}
-                  >
-                    <i className={styles.iosChipDot} style={{ background: item.accent }} />
-                    <span>{item.label}</span>
-                    <span className={styles.iosChipCount}>{categoryCounts[item.label]}</span>
-                  </button>
-                ))}
             </div>
 
             {/* Optional Search */}
