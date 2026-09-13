@@ -1080,13 +1080,7 @@ function IosQuizStartMobile({
 
             {/* Concept Groups */}
             <p className={styles.iosHeading}>Concept Groups</p>
-            <section className={styles.iosConceptList} aria-label="Concept groups" aria-busy={isLoading || groupingStatus === "processing"}>
-              {(isLoading || groupingStatus === "processing") && (
-                <div className={styles.iosConceptLoading} role="status">
-                  <span className={styles.iosConceptSpinner} aria-hidden="true" />
-                  <span>{groupingStatus === "processing" ? "Organizing concepts…" : "Loading concepts…"}</span>
-                </div>
-              )}
+            <section className={styles.iosConceptList} aria-label="Concept groups">
               {filteredGroups.map((group) => {
                 const selectedInGroup = group.concepts.filter((c) => selected.has(c)).length;
                 const isSelected =
@@ -1195,8 +1189,8 @@ function IosQuizStartMobile({
                 );
               })}
 
-              {filteredGroups.length === 0 && !isLoading && groupingStatus !== "processing" && (
-                <p className={styles.iosEmptyText} role="status">{groupingStatus === "failed" ? "Concept groups are temporarily unavailable. You can still start the quiz." : "No concept groups match your filter."}</p>
+              {filteredGroups.length === 0 && (
+                <p className={styles.iosEmptyText} role="status">{groupingStatus === "processing" ? "Organizing concepts into related groups… You can still start the quiz." : groupingStatus === "failed" ? "Concept groups are temporarily unavailable. You can still start the quiz." : "No concept groups match your filter."}</p>
               )}
             </section>
           </>
