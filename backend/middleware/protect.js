@@ -24,3 +24,23 @@ export const protect = async (req, res, next) => {
     return res.status(401).json({ error: 'Invalid or expired token' });
   }
 };
+
+export const optionalAuth = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return next();
+  }
+
+  const token = authHeader.split(' ')[1];
+
+  try {
+    const decoded = verifyToken(token);
+    if (!(decoded.jti && isRevoked(decoded.jti))) {
+      req.user = await assertSession(decoded);
+    }
+  } catch (err) {
+    // Ignore error, proceed as anonymous
+  }
+  next();
+};

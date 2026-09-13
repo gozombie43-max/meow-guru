@@ -8,7 +8,7 @@ import { getChatTitle, type ChatMessage, type ChatSession } from './formatting';
 
 export function useAiChatHistory() {
   const { user } = useAuth();
-  const pendingKey = user?.id ? `tutor-pending:${user.id}` : null;
+  const pendingKey = user?.id ? `tutor-pending:${user.id}` : 'tutor-pending:anonymous';
   const pollingRef = useRef<AbortController | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
@@ -17,14 +17,15 @@ export function useAiChatHistory() {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (!pendingKey) return;
     let cancelled = false;
     const loadBackendChats = async () => {
       try {
-        const { data } = await api.get('/users/me/ai-chats');
-        if (cancelled) return;
-        const backendChats = Array.isArray(data.aiChats) ? (data.aiChats as ChatSession[]) : [];
-        setChatSessions(backendChats);
+        if (user?.id) {
+          const { data } = await api.get('/users/me/ai-chats');
+          if (cancelled) return;
+          const backendChats = Array.isArray(data.aiChats) ? (data.aiChats as ChatSession[]) : [];
+          setChatSessions(backendChats);
+        }
         setIsHistoryLoading(false);
         const pending = sessionStorage.getItem(pendingKey);
         if (!pending) return;
@@ -48,10 +49,12 @@ export function useAiChatHistory() {
             messages: [...saved.messages, { role: 'bot', content: reply }],
             updatedAt: new Date().toISOString(),
           };
-          await api.put(`/users/me/ai-chats/${encodeURIComponent(saved.chatId)}`, {
-            title: updated.title,
-            messages: updated.messages,
-          });
+          if (user?.id) {
+            await api.put(`/users/me/ai-chats/${encodeURIComponent(saved.chatId)}`, {
+              title: updated.title,
+              messages: updated.messages,
+            });
+          }
           if (cancelled) return;
           setMessages(updated.messages);
           setChatSessions((previous) => [updated, ...previous.filter((chat) => chat.id !== updated.id)]);
@@ -86,6 +89,7 @@ export function useAiChatHistory() {
   }, [pendingKey]);
 
   const persistSession = async (session: ChatSession) => {
+    if (!user?.id) return;
     try {
       await api.put(`/users/me/ai-chats/${encodeURIComponent(session.id)}`, {
         title: session.title,

@@ -525,9 +525,5 @@ function AiChatPageContent() {
 }
 
 export default function AiChatPage() {
-  return (
-    <ProtectedRoute>
-      <AiChatPageContent />
-    </ProtectedRoute>
-  );
+  return <AiChatPageContent />;
 }

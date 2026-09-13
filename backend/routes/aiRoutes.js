@@ -5,19 +5,18 @@ import express from "express";
 import multer from "multer";
 import { chatComplete, chatJSON } from "../ai/azureClient.js";
 import adminAuth from "../middleware/auth.js";
-import { protect } from "../middleware/protect.js";
+import { protect, optionalAuth } from "../middleware/protect.js";
 import { aiLimiter } from '../middleware/rateLimiter.js';
 import { aiAdmission, acquireAiLease, releaseAiLease } from '../middleware/aiAdmission.js';
 
 const router = express.Router();
-router.use(protect);
 // Polling and cancellation are inexpensive and do not consume generation quota.
 router.use((req, res, next) => req.method === 'POST' ? aiLimiter(req, res, next) : next());
-router.post('/quota', async (req, res) => {
+router.post('/quota', protect, async (req, res) => {
   const lease = await acquireAiLease(req.user.id);
   res.json({ ok: true, leaseId: lease.leaseId });
 });
-router.delete('/quota/:leaseId', async (req, res) => {
+router.delete('/quota/:leaseId', protect, async (req, res) => {
   await releaseAiLease(req.user.id, req.params.leaseId);
   res.json({ ok: true });
 });
@@ -109,25 +108,28 @@ Give a clear step-by-step explanation. Keep it concise.`;
 });
 
 // ── 2b. Tutor chat for submitted quiz questions ───────
-router.post('/tutor-chat', protect, tutorUpload.single('attachment'), async (req, res) => {
+router.post('/tutor-chat', optionalAuth, tutorUpload.single('attachment'), async (req, res) => {
+  const userId = req.user?.id ? String(req.user.id) : (req.ip || 'anonymous');
   const input = { context: req.body.context, message: req.body.message, history: parseMaybeJSON(req.body.history, []) };
   if (!input.context || (!input.message && !req.file)) return res.status(400).json({ error: 'context and message or attachment are required' });
   if (JSON.stringify(input).length > 200000) return res.status(413).json({ error: 'Chat context is too large' });
   if (req.file) {
-    const job = await enqueueTutorJob(String(req.user.id), input, req.file, req.get('Idempotency-Key'));
+    const job = await enqueueTutorJob(userId, input, req.file, req.get('Idempotency-Key'));
     wakeTutorAttachmentWorker();
     return res.status(202).json({ success: true, jobId: job._id, status: job.status });
   }
   res.json(await tutorChat(input));
 });
-router.get('/tutor-jobs/:id', protect, async (req, res) => {
-  const job = await getTutorJob(String(req.user.id), req.params.id);
+router.get('/tutor-jobs/:id', optionalAuth, async (req, res) => {
+  const userId = req.user?.id ? String(req.user.id) : (req.ip || 'anonymous');
+  const job = await getTutorJob(userId, req.params.id);
   if (!job) return res.status(404).json({ error: 'Job not found' });
   if (job.status === 'queued' || job.status === 'running') wakeTutorAttachmentWorker();
   res.json({ jobId: job._id, status: job.status, ...(job.status === 'completed' ? job.result : {}), ...(job.status === 'failed' ? { error: job.error } : {}) });
 });
-router.delete('/tutor-jobs/:id', protect, async (req, res) => {
-  const cancelled = await cancelTutorJob(String(req.user.id), req.params.id);
+router.delete('/tutor-jobs/:id', optionalAuth, async (req, res) => {
+  const userId = req.user?.id ? String(req.user.id) : (req.ip || 'anonymous');
+  const cancelled = await cancelTutorJob(userId, req.params.id);
   res.status(cancelled ? 200 : 404).json({ cancelled });
 });
 

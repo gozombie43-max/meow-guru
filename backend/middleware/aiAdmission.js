@@ -24,7 +24,8 @@ export function releaseAiLease(userId, leaseId) {
 
 export async function aiAdmission(req, res, next) {
   try {
-    const release = await acquireAiLease(String(req.user.id));
+    const userId = req.user?.id ? String(req.user.id) : (req.ip || 'anonymous');
+    const release = await acquireAiLease(userId);
     let released = false;
     const done = () => { if (!released) { released = true; void release().catch(() => {}); } };
     res.once('finish', done); res.once('close', done);
