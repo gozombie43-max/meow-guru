@@ -56,9 +56,7 @@ export function useQuestionCounts(params: {
   const { data, error, isLoading, mutate } = useSWR<QuestionCountsResponse>(url, fetchCounts, {
     revalidateOnFocus: false,
     revalidateIfStale: false,
-    shouldRetryOnError: true,
-    errorRetryCount: 2,
-    errorRetryInterval: 1500,
+    shouldRetryOnError: false,
     dedupingInterval: 60000,
   });
 

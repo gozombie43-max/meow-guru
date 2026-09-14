@@ -2,6 +2,7 @@ import 'katex/dist/katex.min.css';
 import type { Metadata,Viewport } from 'next';
 import { Geist } from 'next/font/google';
 import StyledJsxRegistry from '@/lib/styled-jsx-registry';
+import ApplicationProviders from './providers';
 import './globals.css';
 import './light-theme.css';
 import './dark-theme.css';
@@ -55,8 +56,6 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
   viewportFit: 'cover',
 };
 
@@ -70,7 +69,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className={geist.className} suppressHydrationWarning>
-        <StyledJsxRegistry>{children}</StyledJsxRegistry>
+        <StyledJsxRegistry><ApplicationProviders>{children}</ApplicationProviders></StyledJsxRegistry>
       </body>
     </html>
   );

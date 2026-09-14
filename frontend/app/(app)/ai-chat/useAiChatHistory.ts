@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@/context/AuthContext';
-import api from '@/lib/axios';
+import api from '@/shared/api/client';
 import { TutorJobError, waitForTutorJob } from '@/lib/tutor-jobs';
 import { useEffect, useRef, useState } from 'react';
 import { getChatTitle, type ChatMessage, type ChatSession } from './formatting';
@@ -86,7 +86,7 @@ export function useAiChatHistory() {
       cancelled = true;
       pollingRef.current?.abort();
     };
-  }, [pendingKey]);
+  }, [pendingKey, user?.id]);
 
   const persistSession = async (session: ChatSession) => {
     if (!user?.id) return;

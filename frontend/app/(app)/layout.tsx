@@ -3,16 +3,15 @@ import BottomNav from '@/components/BottomNav';
 import FeedbackToast from '@/components/FeedbackToast';
 import QuizExitDialog from '@/components/QuizExitDialog';
 import PageTransitionShell from '@/components/PageTransitionShell';
-import { AuthProvider } from '@/context/AuthContext';
 
 export default function StudyLayout({ children }: { children: React.ReactNode }) {
   return (
-    <AuthProvider>
+    <>
       <AppRecovery />
       <PageTransitionShell>{children}</PageTransitionShell>
       <BottomNav />
       <FeedbackToast />
       <QuizExitDialog />
-    </AuthProvider>
+    </>
   );
 }

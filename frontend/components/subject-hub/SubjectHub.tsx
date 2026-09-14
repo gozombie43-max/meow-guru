@@ -6,22 +6,22 @@ import MicIcon from "@/components/MicIcon";
 import defaultStyles from "@/components/SubjectHub.module.css";
 import { useQuestionCounts } from "@/hooks/useQuestionCounts";
 import {
-  ArrowLeft,
-  BookOpen,
-  BookOpenCheck,
-  ChevronRight,
-  LayoutGrid,
-  List as ListIcon,
-  Moon,
-  Search,
-  Sidebar as SidebarIcon,
-  Sparkles,
-  Sun,
-  X,
+ArrowLeft,
+BookOpen,
+BookOpenCheck,
+ChevronRight,
+LayoutGrid,
+List as ListIcon,
+Moon,
+Search,
+Sidebar as SidebarIcon,
+Sparkles,
+Sun,
+X,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React,{ useEffect,useMemo,useRef,useState } from "react";
 import type { SubjectHubConfig } from "./types";
 
 const EMPTY_STUDY_TOPICS = new Set<string>();
@@ -38,7 +38,6 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
   const styles = config.styles ?? defaultStyles;
   const router = useRouter();
   const {
-    theme,
     toggleThemeMode,
     isDark,
     searchQuery,
@@ -99,7 +98,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
   const currentGroup = useMemo(() => {
     if (!config.getChapterGroup) return null;
     return config.getChapterGroup(selectedTopic.slug);
-  }, [config.getChapterGroup, selectedTopic.slug]);
+  }, [config, selectedTopic.slug]);
 
   const rawChapters = useMemo(() => {
     if (!isChapterMode) return [];
@@ -267,7 +266,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [router, config.chapterBasePrefix]);
+  }, [router, config.chapterBasePrefix, searchInputRef, setSearchQuery, setSelectedTopicId]);
 
   const SelectedIcon = selectedTopic.icon;
 

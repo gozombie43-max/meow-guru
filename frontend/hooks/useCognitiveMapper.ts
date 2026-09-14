@@ -2,7 +2,7 @@
 // QuizGuru — React hook for Cognitive Failure Mapper
 
 import { useState, useCallback } from "react";
-import axios from "@/lib/axios"; // your existing configured axios instance
+import axios from "@/shared/api/client"; // your existing configured axios instance
 
 export interface FailureTag {
   dimension: "CONCEPTUAL_GAP" | "APPLICATION_ERROR" | "TRAP_CAUGHT" | "SPEED_PANIC" | "BLIND_SPOT";

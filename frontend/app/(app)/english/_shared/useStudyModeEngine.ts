@@ -1,7 +1,7 @@
 "use client";
-import { fetchQuestions,type Question } from '@/lib/api/questions';
+import { useQuestions } from '@/hooks/useQuestions';
+import type { Question } from '@/lib/api/questions';
 import { useMemo } from 'react';
-import useSWR from 'swr';
 
 // One loading/cache/error boundary for all study-mode presentations.
 export function useStudyModeEngine<Card>(config: {
@@ -10,11 +10,7 @@ export function useStudyModeEngine<Card>(config: {
   fallback: Card[];
   compare?: (a: Card, b: Card) => number;
 }) {
-  const { data, isLoading, error } = useSWR(
-    ['study-mode', config.topic],
-    ([, topic]) => fetchQuestions({ subject: 'english', topic, questionType: 'study-mode' }),
-    { revalidateOnFocus: false, shouldRetryOnError: false },
-  );
+  const { questions: data, isLoading, isError: error } = useQuestions({ subject: 'english', topic: config.topic, questionType: 'study-mode' });
   const { normalize, compare, fallback } = config;
   const cards = useMemo(() => {
     const result = (data ?? []).map(normalize).filter((card): card is Card => card !== null);

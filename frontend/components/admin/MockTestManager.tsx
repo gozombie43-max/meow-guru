@@ -1,10 +1,12 @@
 "use client";
-import layout from "./AdminLayout.module.css";
-import { getAccessToken } from "@/lib/axios";
+import { requestResponse as fetch } from "@/shared/api/request";
 
-import { type ReactNode, useMemo, useState } from "react";
-import styles from "./AdminTool.module.css";
+import { getAccessToken } from "@/shared/api/client";
+import layout from "./AdminLayout.module.css";
+
 import { API_BASE } from "@/lib/api-base";
+import { type ReactNode,useMemo,useState } from "react";
+import styles from "./AdminTool.module.css";
 
 const API = API_BASE;
 const EXAMS: Record<string, { name: string; tiers: { tier: string; configKey: string }[] }> = {
@@ -43,7 +45,7 @@ function parse(text: string): Question[] {
   } 
 }
 
-export default function MockTestManager({ backLink }: { backLink?: ReactNode }) {
+export default function MockTestManager({}: { backLink?: ReactNode }) {
   const adminToken = () => getAccessToken() || "";
   const [apiUrl, setApiUrl] = useState(`${API}/api/mocktest`); 
   const [examSlug, setExamSlug] = useState("ssc-cgl"); 

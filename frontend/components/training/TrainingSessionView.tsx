@@ -19,7 +19,7 @@ import {
   Zap,
 } from "lucide-react";
 import { isAxiosError } from "axios";
-import api from "@/lib/axios";
+import api from "@/shared/api/client";
 import RichContent from "@/components/RichContent";
 import { useThemeMode } from "@/hooks/useTheme";
 import { modes, type Confidence, type ModeId, type TrainingSession } from "./training-types";

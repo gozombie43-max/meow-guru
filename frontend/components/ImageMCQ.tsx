@@ -1,13 +1,12 @@
+"use client";
 import { useState } from "react";
 import Image from "next/image";
 
-export default function ImageMCQ({ data, onAnswer }) {
-  const [selected, setSelected] = useState(null);
-  const [loadedImage, setLoadedImage] = useState(null);
+export default function ImageMCQ({ data, onAnswer }: { data: { questionImage: string; optionRegions?: Record<string, { x: number; y: number; w: number; h: number }> }; onAnswer: (key: string) => void }) {
+  const [loadedImage, setLoadedImage] = useState<string | null>(null);
   const loaded = loadedImage === data?.questionImage;
 
-  const handleClick = (key) => {
-    setSelected(key);
+  const handleClick = (key: string) => {
     onAnswer(key);
   };
 
@@ -43,7 +42,7 @@ export default function ImageMCQ({ data, onAnswer }) {
         fetchPriority="high"
         decoding="async"
         unoptimized
-        onLoadingComplete={() => setLoadedImage(data?.questionImage)}
+        onLoad={() => setLoadedImage(data?.questionImage)}
         onError={() => setLoadedImage(data?.questionImage)}
       />
 

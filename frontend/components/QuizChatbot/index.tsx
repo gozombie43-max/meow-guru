@@ -18,7 +18,7 @@ import {
   Check,
   ChevronDown,
 } from "lucide-react";
-import api from '@/lib/axios';
+import api from '@/shared/api/client';
 import { isAxiosError } from 'axios';
 import { ChatMessage, QuizChatbotProps, buildQuestionContext } from './utils';
 import './quiz-chatbot.css';

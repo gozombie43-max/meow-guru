@@ -1,15 +1,16 @@
 "use client";
+import type { Note } from "@/features/notes/types";
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { fetchWithRetry } from "@/lib/api/http";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "";
+import { API_BASE as API } from "@/lib/api-base";
 
 function NoteViewContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [note, setNote] = useState(null);
+  const [note, setNote] = useState<Note | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const noteId = searchParams.get("id");
@@ -178,7 +179,7 @@ export default function NoteViewPage() {
   );
 }
 
-const styles = {
+const styles: Record<string, React.CSSProperties> = {
   page: {
     background: "#0d1117",
     color: "#e2e8f0",

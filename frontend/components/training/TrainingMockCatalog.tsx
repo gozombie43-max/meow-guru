@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import api from "@/lib/axios";
+import api from "@/shared/api/client";
 
 type Paper = {
   id: string;

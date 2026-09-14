@@ -5,7 +5,7 @@ import {
   useRef,
 } from 'react';
 
-import api from '@/lib/axios';
+import api from '@/shared/api/client';
 import { useAuth } from '@/context/AuthContext';
 
 export default function PushRegistrationBridge() {

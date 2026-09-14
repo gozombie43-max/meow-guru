@@ -1,6 +1,6 @@
-import React, { useRef, useEffect } from 'react';
+import { useEffect,useRef } from 'react';
 import { QuizQuestion } from '../types';
-import { getQuestionStatus, statusClasses } from '../utils';
+import { getQuestionStatus,statusClasses } from '../utils';
 import { QuestionPaletteModal } from './QuestionPalette';
 
 export function QuestionNavigator({
@@ -10,7 +10,6 @@ export function QuestionNavigator({
   questions,
   submittedQuestions,
   onGoToQuestion,
-  onOpenPalette,
   onClosePalette,
   isPaletteOpen,
 }: {

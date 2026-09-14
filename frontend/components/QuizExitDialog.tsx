@@ -19,9 +19,18 @@ function ExitModal({ confirmation }: { confirmation: ExitConfirmation }) {
     const previousFocus = document.activeElement;
     const overflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    const dismissBackdrop = (event: MouseEvent) => {
+      if (!dialog || event.target !== dialog) return;
+      const bounds = dialog.getBoundingClientRect();
+      if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) {
+        navigationController().resolveConfirmation(false);
+      }
+    };
+    dialog?.addEventListener("click", dismissBackdrop);
     dialog?.showModal();
     cancelRef.current?.focus();
     return () => {
+      dialog?.removeEventListener("click", dismissBackdrop);
       dialog?.close();
       document.body.style.overflow = overflow;
       if (previousFocus instanceof HTMLElement && previousFocus.isConnected) previousFocus.focus();
@@ -37,11 +46,7 @@ function ExitModal({ confirmation }: { confirmation: ExitConfirmation }) {
       aria-labelledby="quiz-exit-title"
       aria-describedby="quiz-exit-description"
       onCancel={event => { event.preventDefault(); cancel(); }}
-      onClick={event => {
-        if (event.target !== event.currentTarget) return;
-        const bounds = event.currentTarget.getBoundingClientRect();
-        if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) cancel();
-      }}
+
     >
       <div className={styles.icon}><LogOut size={23} aria-hidden="true" /></div>
       <h2 id="quiz-exit-title">Exit quiz?</h2>

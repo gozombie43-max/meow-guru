@@ -3,7 +3,7 @@
 // Vercel rewrites are HTTP-only and do not support WebSocket upgrades.
 // REST APIs still use NEXT_PUBLIC_API_URL (/backend-api/*) as before.
 import { io, Socket } from 'socket.io-client';
-import { getAccessToken } from './axios';
+import { getAccessToken } from '@/shared/api/client';
 import { registerSocketDisconnect } from './socket-lifecycle';
 
 let socket: Socket | null = null;

@@ -1,4 +1,4 @@
-import api from './axios';
+import api from '@/shared/api/client';
 import { announceFeedback } from './feedback';
 
 export interface RecentQuizPayload {

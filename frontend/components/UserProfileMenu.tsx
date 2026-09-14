@@ -1,24 +1,22 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import {
-  UserPen,
-  Settings,
-  LayoutDashboard,
-  LogOut,
-  CheckCircle2,
-  Sparkles,
-  Shield,
-  Bell,
-} from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useNotificationCenter } from '@/context/NotificationCenterContext';
-import GoogleAvatarRing from './GoogleAvatarRing';
+import {
+Bell,
+CheckCircle2,
+LayoutDashboard,
+LogOut,
+Settings,
+Shield,
+UserPen
+} from 'lucide-react';
+import Link from 'next/link';
+import { useEffect,useRef,useState } from 'react';
 import EditProfileModal from './EditProfileModal';
-import UserSettingsModal from './UserSettingsModal';
+import GoogleAvatarRing from './GoogleAvatarRing';
 import styles from './UserProfileMenu.module.css';
+import UserSettingsModal from './UserSettingsModal';
 
 interface UserProfileMenuProps {
   size?: number;
@@ -65,7 +63,6 @@ export default function UserProfileMenu({
 }: UserProfileMenuProps) {
   const { user, logout } = useAuth();
   const { unreadCount } = useNotificationCenter();
-  const router = useRouter();
 
   const roleInfo = getRoleBadge(user?.role);
   const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';

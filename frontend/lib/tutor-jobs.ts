@@ -1,4 +1,4 @@
-import api from '@/lib/axios';
+import api from '@/shared/api/client';
 
 export class TutorJobError extends Error {
   constructor(message: string, public terminal = true) { super(message); }

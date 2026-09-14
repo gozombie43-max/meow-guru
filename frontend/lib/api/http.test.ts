@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { fetchWithRetry } from "./http";
+import { fetchResponse as fetchWithRetry } from "@/shared/api/fetch-adapter";
 
 const response = (status: number) => new Response(null, { status });
 
@@ -53,7 +53,7 @@ describe("fetchWithRetry", () => {
       { signal: externalController.signal },
       { retries: 0, timeoutMs: 50 }
     );
-    const rejection = expect(request).rejects.toMatchObject({ name: "AbortError" });
+    const rejection = expect(request).rejects.toMatchObject({ kind: "timeout" });
 
     await vi.advanceTimersByTimeAsync(50);
     await rejection;

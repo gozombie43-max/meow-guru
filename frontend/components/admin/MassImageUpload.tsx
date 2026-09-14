@@ -1,6 +1,6 @@
 "use client";
 import { useRef, useState } from "react";
-import { fetchWithRetry } from "@/lib/api/http";
+import { questionWriteResponse as fetchWithRetry } from "@/features/quiz/api/questionWrites";
 import styles from "./AdminTool.module.css";
 import { API_BASE } from "@/lib/api-base";
 

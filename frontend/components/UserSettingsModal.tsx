@@ -1,38 +1,37 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import {
-  X,
-  Sun,
-  Moon,
-  Volume2,
-  VolumeX,
-  Target,
-  ShieldCheck,
-  Settings,
-  Bell,
-  BellOff,
-  Swords,
-  Trophy,
-  Flame,
-  FileText,
-  CalendarDays,
-  Megaphone,
-  Clock,
-  Globe,
-} from 'lucide-react';
-import { useThemeMode } from '@/hooks/useTheme';
 import { useAuth } from '@/context/AuthContext';
+import { useThemeMode } from '@/hooks/useTheme';
 import {
-  NotificationPreferences,
-  getNotificationPreferences,
-  updateNotificationPreferences,
-  DailyPracticeReminder,
-  getDailyPracticeReminder,
-  updateDailyPracticeReminder,
-  getStudyGoal,
-  updateStudyGoal,
+NotificationPreferences,
+getDailyPracticeReminder,
+getNotificationPreferences,
+getStudyGoal,
+updateDailyPracticeReminder,
+updateNotificationPreferences,
+updateStudyGoal
 } from '@/lib/userApi';
+import {
+Bell,
+BellOff,
+CalendarDays,
+Clock,
+FileText,
+Flame,
+Globe,
+Megaphone,
+Moon,
+Settings,
+ShieldCheck,
+Sun,
+Swords,
+Target,
+Trophy,
+Volume2,
+VolumeX,
+X,
+} from 'lucide-react';
+import React,{ useEffect,useState } from 'react';
 import styles from './UserProfileMenu.module.css';
 
 interface UserSettingsModalProps {
@@ -169,7 +168,7 @@ export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModal
         }
       })
       .catch(console.error);
-  }, [isOpen, user]);
+  }, [isOpen, user, detectedTimezone]);
 
   const toggleNotificationPreference = async (
     key: keyof NotificationPreferences

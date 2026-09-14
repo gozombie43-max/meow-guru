@@ -1,4 +1,6 @@
 "use client";
+import { requestResponse as fetch } from "@/shared/api/request";
+
 
 import { API_BASE } from "@/lib/api-base";
 import { fetchWithRetry } from "@/lib/api/http";
@@ -282,9 +284,8 @@ export default function FormulaNotesPage({
           .catch(() => {});
       }
     });
-  }, [activeTab, apiUrl, categoryFromTab, getCachedPdfs, setCachedPdfs, tabs, topic]);
+  }, [activeTab, apiUrl, categoryFromTab, getCachedPdfs, setCachedPdfs, topic]);
 
-  const showSyncing = loading && pdfs.length === 0;
 
   const formatDate = (value?: string) => {
     if (!value) return "";

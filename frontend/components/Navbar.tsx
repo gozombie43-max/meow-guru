@@ -1,19 +1,12 @@
 'use client';
 
-import Link from 'next/link';
-import { useAuth } from '@/context/AuthContext';
-import { useRouter } from 'next/navigation';
-import UserProfileMenu from '@/components/UserProfileMenu';
 import NotificationBell from '@/components/NotificationBell';
+import UserProfileMenu from '@/components/UserProfileMenu';
+import { useAuth } from '@/context/AuthContext';
+import Link from 'next/link';
 
 export default function Navbar() {
-  const { user, logout } = useAuth();
-  const router = useRouter();
-
-  const handleLogout = () => {
-    logout();
-    router.push('/');
-  };
+  const { user } = useAuth();
 
   return (
     <nav className="fixed top-0 w-full z-50 bg-black/60 dark:bg-black/75 backdrop-blur-xl border-b border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.35)]">

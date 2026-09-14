@@ -1,4 +1,6 @@
 "use client";
+import { questionWriteResponse as fetch } from "@/features/quiz/api/questionWrites";
+
 
 import { type ReactNode, useState, Fragment } from "react";
 import styles from "./AdminTool.module.css";
@@ -6,7 +8,7 @@ import { QUIZ_TREE, SUBJECT_TOPICS } from "@/lib/quiz-constants";
 import "katex/dist/katex.min.css";
 import { InlineMath, BlockMath } from "react-katex";
 import { API_BASE } from "@/lib/api-base";
-import { getAccessToken } from "@/lib/axios";
+import { getAccessToken } from "@/shared/api/client";
 
 const API = API_BASE;
 const fields = ["questionImage", "optionAImage", "optionBImage", "optionCImage", "optionDImage", "solutionImage"] as const;

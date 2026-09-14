@@ -1,11 +1,13 @@
 "use client";
+import { questionWriteResponse as fetch } from "@/features/quiz/api/questionWrites";
 
-import { type ReactNode, useEffect, useState, useMemo, useRef } from "react";
-import { getAccessToken } from "@/lib/axios";
-import styles from "./AdminTool.module.css";
-import { QUIZ_TREE } from "@/lib/quiz-constants";
-import { getGeneralAwarenessTopicGroup } from "@/lib/general-awareness-topic-groups";
+
 import { API_BASE } from "@/lib/api-base";
+import { getAccessToken } from "@/shared/api/client";
+import { getGeneralAwarenessTopicGroup } from "@/lib/general-awareness-topic-groups";
+import { QUIZ_TREE } from "@/lib/quiz-constants";
+import { type ReactNode,useEffect,useMemo,useRef,useState } from "react";
+import styles from "./AdminTool.module.css";
 
 const API = API_BASE;
 type RecordItem = Record<string, unknown>;
@@ -52,7 +54,7 @@ function muGetDisplayText(q: RecordItem) {
   return String(q.question || q.questionText || q.q || q.word || '').trim();
 }
 
-export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode }) {
+export default function BulkQuestionUpload({}: { backLink?: ReactNode }) {
   const adminToken = () => getAccessToken() || "";
   const [fileName, setFileName] = useState("");
   const [quiz, setQuiz] = useState({ subject: "", topic: "", chapter: "", name: "" });
@@ -87,7 +89,7 @@ export default function BulkQuestionUpload({ backLink }: { backLink?: ReactNode 
       } else {
         parsedArray = trimmed.split(/\r?\n/).filter(Boolean).map(line => JSON.parse(line));
       }
-    } catch (e) {
+    } catch {
       addLog("Failed to parse file as JSON or NDJSON. Ensure proper syntax.", "err");
       return;
     }

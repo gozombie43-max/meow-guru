@@ -45,9 +45,7 @@ export function useQuestionsMeta(params: {
     revalidateOnFocus: false,
     revalidateIfStale: true,
     refreshInterval: (data) => data?.groupingStatus === 'processing' ? 10000 : 0,
-    shouldRetryOnError: true,
-    errorRetryCount: 2,
-    errorRetryInterval: 1500,
+    shouldRetryOnError: false,
     dedupingInterval: 10000, // Reuse cached UI; check saved metadata on later visits.
   });
 

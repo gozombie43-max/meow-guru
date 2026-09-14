@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { useRouter } from 'next/navigation';
 import { User, Mail, Lock, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import api from '@/lib/axios';
+import api from '@/shared/api/client';
 import { API_BASE } from '@/lib/api-base';
 import {
   AuthCard,
@@ -49,7 +49,8 @@ function RegisterContent() {
   const passwordValue = useWatch({ control, name: 'password' }) || '';
 
   const handleGoogleSignup = () => {
-    window.location.href = `${API_BASE}/auth/google`;
+    // OAuth must leave the Next.js router and follow backend redirects.
+    window.location.assign(new URL(`${API_BASE}/auth/google`, window.location.origin).href);
   };
 
   const onSubmit = async (data: RegisterFormData) => {

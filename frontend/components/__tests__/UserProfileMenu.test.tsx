@@ -1,9 +1,8 @@
-import React from 'react';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
-import UserProfileMenu from '../UserProfileMenu';
 import * as AuthContextModule from '@/context/AuthContext';
 import * as NotificationCenterModule from '@/context/NotificationCenterContext';
+import { cleanup,fireEvent,render,screen } from '@testing-library/react';
+import { afterEach,beforeEach,describe,expect,it,vi } from 'vitest';
+import UserProfileMenu from '../UserProfileMenu';
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({

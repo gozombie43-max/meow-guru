@@ -39,9 +39,9 @@ function OriginkitBase_Typewriter(props: Props) {
     const holdMs = Math.max(0, (ease?.delay ?? 1.5) * 1000)
     const deleteDelayMs = Math.max(0, (deleteSpeed ?? 0) * 1000)
 
-    const list: string[] = (texts ?? []).filter(
+    const list = React.useMemo(() => (texts ?? []).filter(
         (t): t is string => typeof t === "string"
-    )
+    ), [texts])
     const hasTexts = list.length > 0
 
     const [displayText, setDisplayText] = useState("")
@@ -99,6 +99,7 @@ function OriginkitBase_Typewriter(props: Props) {
         currentTextIndex,
         isStatic,
         hasTexts,
+        list,
     ])
 
     const textsKey = list.join("")

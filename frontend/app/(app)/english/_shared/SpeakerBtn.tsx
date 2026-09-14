@@ -1,7 +1,9 @@
 "use client";
+import { requestResponse as fetch } from "@/shared/api/request";
+
 
 import { useRef, useState } from "react";
-import { getAccessToken } from "@/lib/axios";
+import { getAccessToken } from "@/shared/api/client";
 
 const TICKS = Array.from({ length: 12 });
 

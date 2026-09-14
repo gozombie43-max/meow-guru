@@ -78,6 +78,7 @@ export function useQuizSync({
     quizHref,
     quizKey,
     resumeRequested,
+    resumeAppliedRef,
     results,
     selectedAnswers,
     slug,

@@ -13,42 +13,6 @@ export interface QuizIndex<T> {
   byBucket: Map<string, IndexedPool<T>>;
 }
 
-type BuildQuizIndexOptions<T> = {
-  getBucket: (item: T) => string;
-  getConcept: (item: T) => string;
-  getExam: (item: T) => string;
-  compare?: (a: T, b: T) => number;
-};
-
-const createPool = <T>(): IndexedPool<T> => ({
-  all: [],
-  byConcept: new Map<string, T[]>(),
-  byExam: new Map<string, T[]>(),
-});
-
-const pushToMapArray = <T>(map: Map<string, T[]>, key: string, item: T) => {
-  if (!key) return;
-
-  const existing = map.get(key);
-  if (existing) {
-    existing.push(item);
-    return;
-  }
-
-  map.set(key, [item]);
-};
-
-const indexItem = <T>(
-  pool: IndexedPool<T>,
-  item: T,
-  conceptKey: string,
-  examKey: string
-) => {
-  pool.all.push(item);
-  pushToMapArray(pool.byConcept, conceptKey, item);
-  pushToMapArray(pool.byExam, examKey, item);
-};
-
 export function normalizeExamLabel(exam: string): string {
   const normalized = (exam ?? "").trim();
   const upper = normalized.toUpperCase();

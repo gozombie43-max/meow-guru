@@ -1,18 +1,16 @@
 'use client';
 
+import VisualResponse from '@/components/ai/VisualResponse';
+import { AiChatIcon } from '@/components/AiChatIcon';
 import BackButton from "@/components/BackButton";
+import RiskyWidgetBoundary from '@/components/RiskyWidgetBoundary';
 import { useBackLayer } from "@/hooks/useAppNavigation";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
-import { AiChatIcon } from '@/components/AiChatIcon';
-import { aiChatStyles } from './ai-chat.styles';
-import { useAiChatHistory } from './useAiChatHistory';
-import ProtectedRoute from '@/components/ProtectedRoute';
-import VisualResponse from '@/components/ai/VisualResponse';
-import RiskyWidgetBoundary from '@/components/RiskyWidgetBoundary';
 import { useThemeMode } from '@/hooks/useTheme';
-import api from '@/lib/axios';
-import { waitForTutorJob, TutorJobError } from '@/lib/tutor-jobs';
+import api from '@/shared/api/client';
 import { announceFeedback } from '@/lib/feedback';
+import { TutorJobError,waitForTutorJob } from '@/lib/tutor-jobs';
+import { isAxiosError } from 'axios';
 import {
 ArrowUp,
 Copy,
@@ -27,15 +25,16 @@ Trash2,
 X
 } from 'lucide-react';
 import NextImage from 'next/image';
-import { isAxiosError } from 'axios';
-import { type ChangeEvent,type MouseEvent as ReactMouseEvent,useEffect,useMemo,useRef,useState } from 'react';
+import { useEffect,useMemo,useRef,useState,type ChangeEvent,type MouseEvent as ReactMouseEvent } from 'react';
+import { aiChatStyles } from './ai-chat.styles';
+import { useAiChatHistory } from './useAiChatHistory';
 
 import {
-  ASSISTANT_CONTEXT,
-  createChatId,
-  normalizeSimpleTables,
-  normalizeTutorMarkdown,
-  type ChatSession,
+ASSISTANT_CONTEXT,
+createChatId,
+normalizeSimpleTables,
+normalizeTutorMarkdown,
+type ChatSession,
 } from './formatting';
 function AiChatPageContent() {
   const { theme } = useThemeMode();

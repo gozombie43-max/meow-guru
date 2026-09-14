@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Trophy } from "lucide-react";
-import api from "@/lib/axios";
+import api from "@/shared/api/client";
 import { useAuth } from "@/context/AuthContext";
 import { Avatar, BattleSection, Empty, Panel, Progress, Stats, useBattleResource } from "../_shared/BattleSection";
 

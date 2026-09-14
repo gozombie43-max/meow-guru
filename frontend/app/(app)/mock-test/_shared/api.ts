@@ -1,3 +1,4 @@
+import { requestResponse as fetch } from "@/shared/api/request";
 import { API_BASE } from '@/lib/api-base';
 import type { MockTestSlot } from './exam-config';
 

@@ -1,4 +1,4 @@
-import api from "@/lib/axios";
+import api from "@/shared/api/client";
 
 export type BattleIntegritySummary = { days: number; openSignals: number; highSeverity: number; flaggedPlayers: number; byType: Array<{ signalType: string; count: number }> };
 export type BattleIntegrityEvent = { _id: string; severity: "low" | "medium" | "high"; signalType: string; userId: string; opponentUserId?: string | null; roomCode?: string | null; status: string; details: Record<string, unknown>; count: number; lastSeenAt: string };

@@ -29,11 +29,16 @@ export function SolutionBottomSheet({
   const holdTimerRef = React.useRef<NodeJS.Timeout | null>(null);
   const dragStartRef = React.useRef<{ startY: number; startTime: number; currentY: number } | null>(null);
 
+  const [wasOpen, setWasOpen] = React.useState(isOpen);
+  if (wasOpen !== isOpen) {
+    setWasOpen(isOpen);
+    if (!isOpen) {
+      setDragOffset(0); setIsDragging(false); setIsHolding(false);
+    }
+  }
   React.useEffect(() => {
     if (!isOpen) {
-      setDragOffset(0);
-      setIsDragging(false);
-      setIsHolding(false);
+      dragStartRef.current = null;
       if (holdTimerRef.current) {
         clearTimeout(holdTimerRef.current);
         holdTimerRef.current = null;

@@ -9,7 +9,7 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
-import api from "@/lib/axios";
+import api from "@/shared/api/client";
 import RichContent from "@/components/RichContent";
 import { mistakeTypes, type TrainingSession } from "./training-types";
 

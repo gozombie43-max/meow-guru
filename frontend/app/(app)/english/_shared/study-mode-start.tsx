@@ -1,7 +1,7 @@
 "use client";
 
 import { useThemeMode } from "@/hooks/useTheme";
-import { fetchQuestions } from "@/lib/api/questions";
+import { useQuestions } from "@/hooks/useQuestions";
 import {
 AlignLeft,
 BookOpen,
@@ -14,7 +14,7 @@ LayoutGrid,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect,useState } from "react";
+import { useEffect } from "react";
 
 export interface StudyModeStartProps {
   title: string;
@@ -33,31 +33,10 @@ export default function StudyModeStartView({
 }: StudyModeStartProps) {
   const router = useRouter();
   const { theme } = useThemeMode();
-  const [questionCount, setQuestionCount] = useState<number | null>(null);
+  const { questions, isLoading, isError } = useQuestions({ subject: "english", topic: slug, questionType: "study-mode" });
 
   const targetQuizHref = quizHref ?? `/english/${slug}/study-mode/quiz`;
   const targetBackHref = backHref ?? `/english/${slug}`;
-
-  useEffect(() => {
-    let active = true;
-    fetchQuestions({
-      subject: "english",
-      topic: slug,
-      questionType: "study-mode",
-      useCache: false,
-    })
-      .then((data) => {
-        if (!active) return;
-        setQuestionCount(data.length);
-      })
-      .catch(() => {
-        if (active) setQuestionCount(0);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [slug]);
 
   // Keyboard shortcut: Press Enter to open suite immediately
   useEffect(() => {
@@ -70,7 +49,7 @@ export default function StudyModeStartView({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [router, targetQuizHref]);
 
-  const formattedCount = (questionCount ?? 5612).toLocaleString();
+  const formattedCount = isLoading ? "…" : isError ? "—" : (questions?.length ?? 0).toLocaleString();
 
   return (
     <div className="study-start-root" data-theme={theme}>

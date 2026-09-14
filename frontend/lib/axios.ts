@@ -1,4 +1,7 @@
 import axios from 'axios';
+import { canRetry, isFirstPartyApi, retryCount, retryDelay, waitForRetry } from '@/shared/api/policy';
+import { normalizeError } from '@/shared/api/error';
+import type {} from '@/shared/api/request';
 import { API_BASE } from '@/lib/api-base';
 
 export const AUTH_TOKEN_CHANGED_EVENT = 'auth-token-changed';
@@ -20,23 +23,12 @@ export const updateAccessToken = (token: string | null) => {
 };
 
 const api = axios.create({
+  adapter: 'fetch',
   baseURL:         API_BASE,
   headers:         { 'Content-Type': 'application/json' },
   withCredentials: true, // sends cookies automatically
   timeout:         15000,
 });
-
-const RETRYABLE_STATUS = new Set([408, 425, 429, 500, 502, 503, 504]);
-const RETRYABLE_METHODS = new Set(['get', 'head', 'options']);
-const MAX_NETWORK_RETRIES = 2;
-
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-const shouldRetryNetwork = (status: number | undefined, method: string) => {
-  if (!RETRYABLE_METHODS.has(method)) return false;
-  if (status === undefined) return true;
-  return RETRYABLE_STATUS.has(status);
-};
 
 // Single in-flight refresh promise to cleanly handle concurrent 401s
 let inFlightRefreshPromise: Promise<string | null> | null = null;
@@ -76,8 +68,13 @@ export const requestTokenRefresh = async (): Promise<string | null> => {
 
 // Access tokens stay in memory. The HttpOnly refresh cookie restores sessions after reloads.
 api.interceptors.request.use((config) => {
-  const token = getAccessToken();
+  const trusted = isFirstPartyApi(api.getUri(config));
+  const session = trusted && config.apiPolicy?.auth !== 'none';
+  if (!session) config.withCredentials = false;
+  const token = session ? getAccessToken() : null;
+  if (!session && config.headers.Authorization === `Bearer ${getAccessToken()}`) config.headers.delete('Authorization');
   if (token) config.headers.Authorization = `Bearer ${token}`;
+  if (typeof FormData !== 'undefined' && config.data instanceof FormData) config.headers.delete('Content-Type');
   return config;
 });
 
@@ -90,7 +87,9 @@ api.interceptors.response.use(
     const method = (original.method || 'get').toLowerCase();
     const isRefreshCall = typeof original.url === 'string' && original.url.includes('/auth/refresh');
 
-    if (status === 401 && !original._retry && !isRefreshCall) {
+    if (axios.isCancel(error) || original.signal?.aborted) return Promise.reject(normalizeError(error, original.signal));
+    const session = isFirstPartyApi(api.getUri(original)) && original.apiPolicy?.auth !== 'none';
+    if (status === 401 && session && !original._retry && !isRefreshCall) {
       original._retry = true;
       try {
         const newToken = await requestTokenRefresh();
@@ -104,16 +103,21 @@ api.interceptors.response.use(
       }
     }
 
-    if (shouldRetryNetwork(status, method)) {
-      const retryCount = original._networkRetryCount || 0;
-      if (retryCount < MAX_NETWORK_RETRIES) {
-        original._networkRetryCount = retryCount + 1;
-        await sleep(1200 * (retryCount + 1));
+    const policy = original.apiPolicy ?? {};
+    if (canRetry(method, status, policy)) {
+      const count = original._networkRetryCount ?? 0;
+      if (count < retryCount(policy)) {
+        original._networkRetryCount = count + 1;
+        try {
+          await waitForRetry(retryDelay(count, policy, error.response?.headers?.['retry-after']), original.signal);
+        } catch (cancelled) {
+          throw normalizeError(cancelled, original.signal);
+        }
         return api(original);
       }
     }
 
-    return Promise.reject(error);
+    return Promise.reject(normalizeError(error, original.signal));
   }
 );
 

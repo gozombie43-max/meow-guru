@@ -1,4 +1,6 @@
 "use client";
+import type { Note, NoteImageResponse } from "@/features/notes/types";
+import type { editor } from "monaco-editor";
 import { useState, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 const Editor = dynamic(() => import("@monaco-editor/react"), { ssr: false });
@@ -251,7 +253,7 @@ const SNIPPETS = [
 ];
 
 // ── Component ─────────────────────────────────────────────────────────────────
-export default function NoteEditor({ initialNote = null, onSaved }) {
+export default function NoteEditor({ initialNote = null, onSaved }: { initialNote?: Note | null; onSaved?: () => void }) {
   const [title,     setTitle]     = useState(initialNote?.title            || "");
   const [topic,     setTopic]     = useState(initialNote?.topic            || "");
   const [type,      setType]      = useState(initialNote?.type             || "note");
@@ -263,9 +265,9 @@ export default function NoteEditor({ initialNote = null, onSaved }) {
   const [activeTab, setActiveTab] = useState("split");
   const [theme,     setTheme]     = useState("vs-dark");
 
-  const editorRef  = useRef(null);
-  const fileRef    = useRef(null);
-  const previewRef = useRef(null);
+  const editorRef  = useRef<editor.IStandaloneCodeEditor | null>(null);
+  const fileRef    = useRef<HTMLInputElement | null>(null);
+  const previewRef = useRef<HTMLIFrameElement | null>(null);
 
   // sync live preview
   useEffect(() => {
@@ -274,15 +276,16 @@ export default function NoteEditor({ initialNote = null, onSaved }) {
     }
   }, [code, activeTab]);
 
-  const handleEditorMount = (editor) => {
+  const handleEditorMount = (editor: editor.IStandaloneCodeEditor) => {
     editorRef.current = editor;
   };
 
   // insert snippet at cursor position
-  const insertSnippet = (snippet) => {
+  const insertSnippet = (snippet: string) => {
     const editor = editorRef.current;
     if (!editor) return;
     const position = editor.getPosition();
+    if (!position) return;
     editor.executeEdits("", [{
       range: {
         startLineNumber: position.lineNumber,
@@ -296,8 +299,8 @@ export default function NoteEditor({ initialNote = null, onSaved }) {
   };
 
   // upload image → Azure Blob → auto-insert <img> tag
-  const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
     try {
@@ -307,7 +310,8 @@ export default function NoteEditor({ initialNote = null, onSaved }) {
         method: "POST",
         body:   formData,
       });
-      const { url } = await res.json();
+      if (!res.ok) throw new Error("Upload failed");
+      const { url } = await res.json() as NoteImageResponse;
       insertSnippet(`<img class="note-img" src="${url}" alt="${file.name}" />`);
     } catch {
       alert("Image upload failed. Check your backend console.");
@@ -345,7 +349,7 @@ export default function NoteEditor({ initialNote = null, onSaved }) {
       setTimeout(() => setSaved(false), 2500);
       onSaved?.();
     } catch (err) {
-      alert("Save failed: " + err.message);
+      alert("Save failed: " + (err instanceof Error ? err.message : "Unable to save note"));
     } finally {
       setSaving(false);
     }
@@ -364,7 +368,7 @@ export default function NoteEditor({ initialNote = null, onSaved }) {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
            aria-label="Note title…"/>
-          <select style={s.select} value={type} onChange={(e) => setType(e.target.value)}>
+          <select style={s.select} value={type} onChange={(e) => setType(e.target.value as Note["type"])}>
             <option value="note">📝 Note</option>
             <option value="formula">📐 Formula</option>
             <option value="tip">💡 Tip & Trick</option>
@@ -414,7 +418,7 @@ export default function NoteEditor({ initialNote = null, onSaved }) {
             data-ui-button="secondary"
             aria-label="Upload image"
             style={s.iconBtn}
-            onClick={() => fileRef.current.click()}
+            onClick={() => fileRef.current?.click()}
             title="Upload image to Azure Blob Storage"
           >
             {uploading ? "⏳ Uploading…" : "🖼 Image"}
@@ -504,7 +508,7 @@ export default function NoteEditor({ initialNote = null, onSaved }) {
 }
 
 // ── Styles ────────────────────────────────────────────────────────────────────
-const s = {
+const s: Record<string, React.CSSProperties> = {
   root: {
     display:        "flex",
     flexDirection:  "column",

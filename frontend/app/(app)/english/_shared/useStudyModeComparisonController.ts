@@ -1,15 +1,17 @@
 'use client';
+import { requestResponse as fetch } from "@/shared/api/request";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+
+import { getAccessToken } from "@/shared/api/client";
 import { useRouter } from "next/navigation";
-import { getAccessToken } from "@/lib/axios";
-import { useStudyModeEngine } from "./useStudyModeEngine";
+import { useEffect,useMemo,useRef,useState } from "react";
 import {
-  toStudyModeCard,
-  type StudyModeCard,
-  type StudyModeComparisonConfig,
-  type StudyModeEntry,
+toStudyModeCard,
+type StudyModeCard,
+type StudyModeComparisonConfig,
+type StudyModeEntry,
 } from "./study-mode-comparison-model";
+import { useStudyModeEngine } from "./useStudyModeEngine";
 
 export function useStudyModeComparisonController(config: StudyModeComparisonConfig) {
 
@@ -139,12 +141,12 @@ export function useStudyModeComparisonController(config: StudyModeComparisonConf
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [currentPage, filteredCards.length]);
+  }, [currentPage, filteredCards.length, isMobilePaletteOpen, showExitConfirm]);
 
   // Close letter dropdown when clicking outside
   useEffect(() => {
     if (!isLetterDropdownOpen) return;
-    const close = (e: MouseEvent) => {
+    const close = () => {
       // ignore clicks inside the wrapper (handled by stopPropagation on the wrapper div)
       setIsLetterDropdownOpen(false);
     };
@@ -224,7 +226,7 @@ export function useStudyModeComparisonController(config: StudyModeComparisonConf
         }
       }
     }
-  }, [isMobilePaletteOpen]); // Only run when palette open state changes
+  }, [isMobilePaletteOpen, currentPage, filteredCards, filteredSheetCards, mobileSheetVisibleCount]);
 
 
   return {

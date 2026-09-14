@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight, ChevronDown, Sparkles, Target, X } from "lucide-react";
 import { useThemeMode } from "@/hooks/useTheme";
-import api from "@/lib/axios";
+import api from "@/shared/api/client";
 import { isAxiosError } from "axios";
 import {
   modes,

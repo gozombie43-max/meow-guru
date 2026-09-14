@@ -1,4 +1,6 @@
 'use client';
+import { requestResponse as fetch } from "@/shared/api/request";
+
 
 import { useThemeMode } from '@/hooks/useTheme';
 import { API_BASE } from '@/lib/api-base';

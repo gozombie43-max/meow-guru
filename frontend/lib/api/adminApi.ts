@@ -1,4 +1,4 @@
-import api from '@/lib/axios';
+import api from '@/shared/api/client';
 import type {
   AdminUser,
   AdminUserStats,

@@ -65,7 +65,7 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
   const [history, setHistory] = useState<MockAttemptHistory[]>([]);
   const [allSlots, setAllSlots] = useState<MockTestSlot[]>(() => getSlotsForExam(examSlug));
   const [pyqSlots, setPyqSlots] = useState<MockTestSlot[]>(() => getPyqSlotsForExam(examSlug));
-  const [loadingSlots, setLoadingSlots] = useState(true);
+  const [, setLoadingSlots] = useState(true);
 
   useEffect(() => {
     const body = document.body;

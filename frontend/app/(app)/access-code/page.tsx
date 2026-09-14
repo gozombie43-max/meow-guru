@@ -1,4 +1,6 @@
 'use client';
+import { requestResponse as fetch } from "@/shared/api/request";
+
 
 import { API_BASE } from '@/lib/api-base';
 import { useRouter } from 'next/navigation';
@@ -70,7 +72,7 @@ export default function AccessCodePage() {
         setLoading(false);
         // Brief success animation, then redirect
         setTimeout(() => {
-          window.location.href = '/';
+          router.replace('/');
         }, 600);
       } else {
         const newAttempts = attempts + 1;
@@ -174,7 +176,7 @@ export default function AccessCodePage() {
         setTimeout(() => verifyCode(pasted), 100);
       }
     },
-    [verifyCode]
+    [verifyCode, attempts]
   );
 
   const handleSubmit = useCallback(() => {

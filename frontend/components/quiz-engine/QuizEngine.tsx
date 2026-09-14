@@ -138,14 +138,6 @@ function QuizEngineContent(props: QuizEngineProps) {
     examDetailsRef,
     isPaletteOpen,
     closePalette,
-    timerRef,
-    maxTime,
-    touchStartXRef,
-    touchStartYRef,
-    showQuestion,
-    isLongQuestion,
-    handleClearResponse,
-    isDesktop,
   } = useQuizController(props);
   if (showAnalytics)
     return (

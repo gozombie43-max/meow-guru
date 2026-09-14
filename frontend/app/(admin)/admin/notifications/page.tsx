@@ -1,37 +1,21 @@
 'use client';
+import { NotificationAnalyticsPanel } from '@/features/notifications/admin/NotificationAnalyticsPanel';
+import { NotificationHistory } from '@/features/notifications/admin/NotificationHistory';
 
-import { useAuth } from '@/context/AuthContext';
-import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
-import Link from 'next/link';
 import ScheduledNotificationsPanel from '@/components/admin/ScheduledNotificationsPanel';
+import { useAdminNotifications } from '@/features/notifications/admin/useAdminNotifications';
 import {
-  sendBroadcastNotification,
-  fetchNotificationHistory,
-  fetchNotificationAnalytics,
-  fetchNotificationHealth,
-  type BroadcastNotificationResult,
-  type NotificationHistoryItem,
-  type NotificationAnalytics,
-  type NotificationHealth,
-} from '@/lib/api/adminApi';
-import {
-  ChevronLeft,
-  Send,
-  Smartphone,
-  CheckCircle,
   AlertCircle,
   AlertTriangle,
-  Users,
-  X,
+  CheckCircle,
+  ChevronLeft,
   Radio,
-  RotateCw,
-  Clock,
-  User,
-  Navigation,
-  Inbox,
-  ChevronRight,
+  Send,
+  Smartphone,
+  Users,
+  X
 } from 'lucide-react';
+import Link from 'next/link';
 import s from './AdminNotificationsPage.module.css';
 
 const ROUTE_PRESETS = [
@@ -41,214 +25,12 @@ const ROUTE_PRESETS = [
   { label: 'Dashboard', value: '/dashboard' },
 ];
 
-function formatHistoryDate(dateStr?: string): string {
-  if (!dateStr) return '—';
-  const d = new Date(dateStr);
-  if (isNaN(d.getTime())) return '—';
-  const datePart = d.toLocaleDateString('en-GB', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
-  const timePart = d.toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  });
-  return `${datePart}, ${timePart}`;
-}
-
 export default function AdminNotificationsPage() {
-  const { user: authUser, loading: authLoading } = useAuth();
-  const router = useRouter();
-
-  // Form inputs
-  const [title, setTitle] = useState('');
-  const [body, setBody] = useState('');
-  const [route, setRoute] = useState('/');
-
-  // Broadcast states
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
-  const [result, setResult] = useState<BroadcastNotificationResult | null>(null);
-
-  // History states
-  const [historyItems, setHistoryItems] = useState<NotificationHistoryItem[]>([]);
-  const [historyTotal, setHistoryTotal] = useState(0);
-  const [historyPage, setHistoryPage] = useState(1);
-  const [historyTotalPages, setHistoryTotalPages] = useState(1);
-  const [historyLoading, setHistoryLoading] = useState(false);
-  const [historyError, setHistoryError] = useState('');
-
-  // Analytics states
-  const [analytics, setAnalytics] = useState<NotificationAnalytics | null>(null);
-  const [analyticsLoading, setAnalyticsLoading] = useState(false);
-
-  // Operations health state
-  const [health, setHealth] = useState<NotificationHealth | null>(null);
-
-  // ── Auth guard ─────────────────────────────────────────
-  useEffect(() => {
-    if (!authLoading) {
-      if (!authUser) {
-        router.replace('/login');
-      } else if (!['admin', 'superadmin'].includes(authUser.role || '')) {
-        router.replace('/');
-      }
-    }
-  }, [authUser, authLoading, router]);
-
-  // ── History fetcher ───────────────────────────────────
-  const loadHistory = useCallback(async (pageNumber = 1) => {
-    setHistoryLoading(true);
-    setHistoryError('');
-    try {
-      const res = await fetchNotificationHistory(pageNumber);
-      setHistoryItems(res.items || []);
-      setHistoryTotal(res.total || 0);
-      setHistoryPage(res.page || pageNumber);
-      setHistoryTotalPages(res.totalPages || 1);
-    } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { error?: string } } })?.response?.data
-          ?.error ||
-        (err as Error)?.message ||
-        'Failed to load notification history.';
-      setHistoryError(msg);
-    } finally {
-      setHistoryLoading(false);
-    }
-  }, []);
-
-  // ── Analytics fetcher ─────────────────────────────────
-  const loadAnalytics = useCallback(async (days = 30) => {
-    setAnalyticsLoading(true);
-    try {
-      const res = await fetchNotificationAnalytics(days);
-      setAnalytics(res);
-    } catch (err: unknown) {
-      console.error('Failed to load notification analytics:', err);
-    } finally {
-      setAnalyticsLoading(false);
-    }
-  }, []);
-
-  const loadHealth = useCallback(async () => {
-    try {
-      setHealth(await fetchNotificationHealth());
-    } catch {
-      // Health monitoring must not make the admin workflow unusable.
-    }
-  }, []);
-
-  useEffect(() => {
-    if (authUser && ['admin', 'superadmin'].includes(authUser.role || '')) {
-      const timer = window.setTimeout(() => {
-        void loadHistory(1);
-        void loadAnalytics(30);
-      }, 0);
-      return () => window.clearTimeout(timer);
-    }
-  }, [authUser, loadHistory, loadAnalytics]);
-
-  useEffect(() => {
-    if (!authUser || !['admin', 'superadmin'].includes(authUser.role || '')) {
-      return;
-    }
-
-    const initialTimer = window.setTimeout(() => void loadHealth(), 0);
-    const timer = window.setInterval(() => {
-      void loadHealth();
-    }, 60_000);
-
-    return () => {
-      window.clearTimeout(initialTimer);
-      window.clearInterval(timer);
-    };
-  }, [authUser, loadHealth]);
-
-  // ── Handlers ───────────────────────────────────────────
-  const handleOpenConfirm = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    const trimmedTitle = title.trim();
-    const trimmedBody = body.trim();
-
-    if (!trimmedTitle) {
-      setError('Please provide a notification title.');
-      return;
-    }
-    if (trimmedTitle.length > 100) {
-      setError('Title cannot exceed 100 characters.');
-      return;
-    }
-    if (!trimmedBody) {
-      setError('Please provide a notification body message.');
-      return;
-    }
-    if (trimmedBody.length > 500) {
-      setError('Body cannot exceed 500 characters.');
-      return;
-    }
-
-    setIsConfirmOpen(true);
-  };
-
-  const handleSendBroadcast = useCallback(async () => {
-    setIsSubmitting(true);
-    setError('');
-
-    try {
-      const res = await sendBroadcastNotification({
-        title: title.trim(),
-        body: body.trim(),
-        route: route.trim() || '/',
-      });
-
-      setResult(res);
-      setIsConfirmOpen(false);
-      // Refresh history and analytics to show the newly dispatched notification
-      loadHistory(1);
-      loadAnalytics(30);
-    } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { error?: string } } })?.response?.data
-          ?.error ||
-        (err as Error)?.message ||
-        'Failed to dispatch broadcast notification.';
-      setError(msg);
-      setIsConfirmOpen(false);
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [title, body, route, loadHistory, loadAnalytics]);
-
-  const handleResetForm = () => {
-    setTitle('');
-    setBody('');
-    setRoute('/');
-    setResult(null);
-    setError('');
-  };
-
-  // ── Auth loading state ─────────────────────────────────
-  if (authLoading) {
-    return (
-      <div className={s.page}>
-        <div className={s.loadingWrap}>
-          <div className={s.spinnerPage} />
-        </div>
-      </div>
-    );
-  }
-
-  if (!authUser || !['admin', 'superadmin'].includes(authUser.role || '')) {
-    return null;
-  }
-
+  const { authUser, authLoading, router, title, setTitle, body, setBody, route, setRoute, isConfirmOpen, setIsConfirmOpen, isSubmitting, error, result, setResult, historyItems, historyTotal, historyPage, historyTotalPages, historyLoading, historyError, analytics, analyticsLoading, health, loadHistory, loadAnalytics, handleOpenConfirm, handleSendBroadcast } = useAdminNotifications();
+  if (authLoading) return <div className={s.page}><div className={s.loadingWrap}><div className={s.spinnerPage} /></div></div>;
+  if (!authUser || !['admin', 'superadmin'].includes(authUser.role || '')) return null;
   const isFormValid = title.trim().length > 0 && body.trim().length > 0;
+
 
   return (
     <div className={s.page}>
@@ -389,78 +171,7 @@ export default function AdminNotificationsPage() {
           </section>
         )}
 
-        {/* ── Analytics Performance Section ──────────────── */}
-        <section className={s.analyticsSection} aria-label="Notification Performance">
-          <div className={s.analyticsHeader}>
-            <div className={s.analyticsTitleRow}>
-              <h2 className={s.analyticsTitle}>
-                Notification Performance · Last 30 days
-              </h2>
-            </div>
-            <button data-ui-button="secondary"
-              type="button"
-              className={s.refreshBtn}
-              onClick={() => loadAnalytics(30)}
-              disabled={analyticsLoading}
-              title="Refresh analytics"
-              aria-label="Refresh analytics"
-            >
-              <RotateCw size={14} className={analyticsLoading ? s.spinIcon : ''} />
-              <span>Refresh</span>
-            </button>
-          </div>
-
-          <div className={s.statsGrid}>
-            <div className={s.statBox}>
-              <div className={`${s.statBoxValue} ${s.statAcceptedVal}`}>
-                {analytics ? analytics.acceptedCount.toLocaleString() : '0'}
-              </div>
-              <div className={s.statBoxLabel}>FCM Accepted</div>
-            </div>
-
-            <div className={s.statBox}>
-              <div className={s.statBoxValue}>
-                {analytics ? analytics.opened.toLocaleString() : '0'}
-              </div>
-              <div className={s.statBoxLabel}>Unique Opens</div>
-              <div className={s.statBoxRate}>
-                {analytics ? `${analytics.openRate}%` : '0%'}
-              </div>
-            </div>
-
-            <div className={s.statBox}>
-              <div className={s.statBoxValue}>
-                {analytics ? analytics.pushOpened.toLocaleString() : '0'}
-              </div>
-              <div className={s.statBoxLabel}>Android Push Opens</div>
-            </div>
-
-            <div className={s.statBox}>
-              <div className={s.statBoxValue}>
-                {analytics ? analytics.inAppOpened.toLocaleString() : '0'}
-              </div>
-              <div className={s.statBoxLabel}>Notification Center Opens</div>
-            </div>
-
-            <div className={s.statBox}>
-              <div className={s.statBoxValue}>
-                {analytics ? analytics.actionClicked.toLocaleString() : '0'}
-              </div>
-              <div className={s.statBoxLabel}>Action Clicks</div>
-              <div className={s.statBoxRate}>
-                {analytics ? `${analytics.actionRate}%` : '0%'}
-              </div>
-            </div>
-
-            <div className={s.statBox}>
-              <div className={`${s.statBoxValue} ${s.statFailedVal}`}>
-                {analytics ? analytics.failureCount.toLocaleString() : '0'}
-              </div>
-              <div className={s.statBoxLabel}>FCM Failed</div>
-            </div>
-          </div>
-        </section>
-
+        <NotificationAnalyticsPanel analytics={analytics} analyticsLoading={analyticsLoading} loadAnalytics={loadAnalytics} />
         <div className={s.grid}>
           {/* ── Left Column: Form ────────────────────────── */}
           <div className={s.card}>
@@ -620,149 +331,7 @@ export default function AdminNotificationsPage() {
           </div>
         </div>
 
-        {/* ── Recent Notifications History Section ────────── */}
-        <section className={s.historySection} aria-label="Notification History">
-          <div className={s.historyHeader}>
-            <div className={s.historyTitleGroup}>
-              <h2 className={s.historyTitle}>
-                <Clock size={19} color="#3b82f6" />
-                <span>Recent Notifications</span>
-              </h2>
-              {historyTotal > 0 && (
-                <span className={s.historyCountBadge}>
-                  {historyTotal} {historyTotal === 1 ? 'broadcast' : 'broadcasts'}
-                </span>
-              )}
-            </div>
-            <button data-ui-button="secondary"
-              type="button"
-              className={s.refreshBtn}
-              onClick={() => loadHistory(historyPage)}
-              disabled={historyLoading}
-              title="Refresh history"
-              aria-label="Refresh history"
-            >
-              <RotateCw size={13} className={historyLoading ? s.spinner : ''} />
-              <span>Refresh</span>
-            </button>
-          </div>
-
-          {historyError && (
-            <div className={s.errorBanner} role="alert">
-              <AlertCircle size={16} />
-              <span>{historyError}</span>
-            </div>
-          )}
-
-          {historyLoading && historyItems.length === 0 ? (
-            <div className={s.historyEmptyState}>
-              <div className={s.spinnerPage} style={{ margin: '0 auto 12px' }} />
-              <div className={s.emptyStateText}>Loading broadcast history...</div>
-            </div>
-          ) : historyItems.length === 0 ? (
-            <div className={s.historyEmptyState}>
-              <Inbox className={s.emptyStateIcon} size={40} />
-              <div className={s.emptyStateTitle}>No notifications sent yet</div>
-              <div className={s.emptyStateText}>
-                Broadcast messages sent to registered Android devices will appear here.
-              </div>
-            </div>
-          ) : (
-            <div className={s.historyList}>
-              {historyItems.map((item) => (
-                <article key={item._id} className={s.historyCard}>
-                  <div className={s.historyCardTop}>
-                    <div className={s.historyTitleWrap}>
-                      <h3 className={s.historyCardTitle}>{item.title}</h3>
-                      {item.type === 'new-mock' ? (
-                        <span className={s.typeBadgeAuto}>🎯 Auto — New Mock</span>
-                      ) : item.type === 'scheduled-broadcast' ? (
-                        <span className={s.typeBadgeScheduled}>⏰ Scheduled</span>
-                      ) : (
-                        <span className={s.typeBadgeBroadcast}>📢 Broadcast</span>
-                      )}
-                    </div>
-                    <time className={s.historyCardDate} dateTime={item.createdAt}>
-                      {formatHistoryDate(item.createdAt)}
-                    </time>
-                  </div>
-
-                  <p className={s.historyCardBody}>{item.body}</p>
-
-                  <div className={s.historyMetaRow}>
-                    <div className={s.metaPill}>
-                      <span className={s.metaSuccess}>
-                        <CheckCircle size={14} />
-                      </span>
-                      <span>
-                        Sent: <strong>{item.successCount}</strong> / {item.totalDevices}
-                      </span>
-                    </div>
-
-                    <div className={s.metaPill}>
-                      <span className={item.failureCount > 0 ? s.metaFailure : ''}>
-                        {item.failureCount > 0 && <AlertCircle size={14} />}
-                        Failed: <strong>{item.failureCount}</strong>
-                      </span>
-                    </div>
-
-                    {item.invalidDeviceCount > 0 && (
-                      <div className={s.metaPill}>
-                        <span>
-                          Invalid: <strong>{item.invalidDeviceCount}</strong>
-                        </span>
-                      </div>
-                    )}
-
-                    <div className={s.metaPill}>
-                      <User size={13} />
-                      <span>
-                        By: <strong>{item.type === 'new-mock' ? 'System (Auto)' : (item.sentByEmail || item.sentByUserId || 'Admin')}</strong>
-                      </span>
-                    </div>
-
-                    <div className={s.metaPill}>
-                      <Navigation size={13} />
-                      <span className={s.metaRouteBadge}>
-                        {item.route || '/'}
-                      </span>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
-
-          {/* Pagination Controls */}
-          {historyTotalPages > 1 && (
-            <div className={s.historyPagination}>
-              <span className={s.pageInfo}>
-                Page {historyPage} of {historyTotalPages} ({historyTotal} total)
-              </span>
-              <div className={s.paginationControls}>
-                <button data-ui-button="secondary"
-                  type="button"
-                  className={s.paginationBtn}
-                  onClick={() => loadHistory(historyPage - 1)}
-                  disabled={historyPage <= 1 || historyLoading}
-                >
-                  <ChevronLeft size={14} />
-                  <span>Previous</span>
-                </button>
-                <button data-ui-button="secondary"
-                  type="button"
-                  className={s.paginationBtn}
-                  onClick={() => loadHistory(historyPage + 1)}
-                  disabled={historyPage >= historyTotalPages || historyLoading}
-                >
-                  <span>Next</span>
-                  <ChevronRight size={14} />
-                </button>
-              </div>
-            </div>
-          )}
-        </section>
-
+        <NotificationHistory historyItems={historyItems} historyTotal={historyTotal} historyPage={historyPage} historyTotalPages={historyTotalPages} historyLoading={historyLoading} historyError={historyError} loadHistory={loadHistory} />
         {/* ── Scheduled Notifications Management ─────────── */}
         <ScheduledNotificationsPanel />
       </main>
@@ -846,4 +415,5 @@ export default function AdminNotificationsPage() {
       )}
     </div>
   );
+
 }

@@ -107,7 +107,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
       console.error('Failed to load test', e);
       setLoadError(e instanceof Error ? e.message : 'Failed to load test');
     }
-  }, [examSlug, testId, token, resumeAttemptId]);
+  }, [examSlug, testId, token, resumeAttemptId, router]);
 
   const saveProgress = useCallback((progress: Omit<AttemptProgress, 'revision'>) => {
     const save = saveChainRef.current.catch(() => {}).then(async () => {

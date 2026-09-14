@@ -1,7 +1,8 @@
+import { getQuestionSessionRevision } from "@/features/quiz/api/questionWrites";
 import { API_BASE } from "@/lib/api-base";
 import { fetchWithRetry } from "@/lib/api/http";
 import type { Question } from "@/lib/api/questions";
-import { useCallback, useMemo, useRef } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import useSWRInfinite from "swr/infinite";
 
 interface SessionResponse {
@@ -29,7 +30,9 @@ export function useQuizSession(params: {
 }) {
   const { subject, topic, mode, limit = 50, letter, exam, concept, enabled = true } = params;
 
+  const [revision] = useState(getQuestionSessionRevision);
   const query = new URLSearchParams();
+  if (revision) query.set("revision", String(revision));
   if (subject) query.set("subject", subject);
   if (topic) query.set("topic", topic);
   if (mode) query.set("mode", mode);

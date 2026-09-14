@@ -22,17 +22,16 @@ export async function POST(req: Request) {
         body: formData,
       },
       {
-        attempts: 3,
+        attempts: 1,
         timeoutMs: 20000,
         retryDelayMs: 5000,
-        retryMethods: ["POST"],
         retryOnStatuses: [502, 503, 504],
       }
     );
 
     const data = await res.json();
     return Response.json(data, { status: res.status });
-  } catch (error) {
+  } catch {
     return Response.json(
       { error: "Upload service currently unavailable" },
       { status: 503 }

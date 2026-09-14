@@ -1,4 +1,5 @@
 "use client";
+import type { Note } from "@/features/notes/types";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import NoteEditor from "../components/NoteEditor";
@@ -11,7 +12,7 @@ export default function EditNoteClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const noteId = searchParams.get("id");
-  const [note, setNote] = useState(null);
+  const [note, setNote] = useState<Note | null>(null);
 
   useEffect(() => {
     if (!noteId) return;

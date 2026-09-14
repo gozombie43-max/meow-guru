@@ -1,10 +1,11 @@
 // app/notes/page.jsx
 "use client";
-import { useState, useEffect } from "react";
+import type { Note } from "@/features/notes/types";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { fetchWithRetry } from "@/lib/api/http";
 
-const API = process.env.NEXT_PUBLIC_API_URL;
+import { API_BASE as API } from "@/lib/api-base";
 
 const TYPE_COLORS = {
   formula: { bg: "#12122a", border: "#63b3ed", label: "📐 Formula" },
@@ -14,14 +15,14 @@ const TYPE_COLORS = {
 
 export default function NotesPage() {
   const router = useRouter();
-  const [notes,        setNotes]        = useState([]);
+  const [notes,        setNotes]        = useState<Note[]>([]);
   const [loading,      setLoading]      = useState(true);
   const [filterTopic,  setFilterTopic]  = useState("");
   const [filterType,   setFilterType]   = useState("");
-  const [deleting,     setDeleting]     = useState(null);
+  const [deleting,     setDeleting]     = useState<string | null>(null);
   const [search,       setSearch]       = useState("");
 
-  const fetchNotes = async () => {
+  const fetchNotes = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
@@ -35,14 +36,14 @@ export default function NotesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filterTopic, filterType]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => void fetchNotes(), 0);
     return () => window.clearTimeout(timer);
-  }, [filterTopic, filterType]);
+  }, [fetchNotes]);
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id: string) => {
     if (!confirm("Delete this note?")) return;
     setDeleting(id);
     try {
@@ -142,9 +143,9 @@ export default function NotesPage() {
                 )}
 
                 {/* Tags */}
-                {note.tags?.length > 0 && (
+                {(note.tags?.length ?? 0) > 0 && (
                   <div style={s.tagRow}>
-                    {note.tags.map((t) => (
+                    {(note.tags ?? []).map((t) => (
                       <span key={t} style={s.tag}>{t}</span>
                     ))}
                   </div>
@@ -153,8 +154,8 @@ export default function NotesPage() {
                 {/* Date */}
                 <p style={s.cardDate}>
                   {note.updatedAt
-                    ? `Updated ${new Date(note.updatedAt).toLocaleDateString()}`
-                    : `Created ${new Date(note.createdAt).toLocaleDateString()}`}
+                    ? `Updated ${new Date(note.updatedAt ?? note.createdAt ?? 0).toLocaleDateString()}`
+                    : (note.createdAt ? `Created ${new Date(note.createdAt).toLocaleDateString()}` : "")}
                 </p>
 
                 {/* Actions */}
@@ -184,7 +185,7 @@ export default function NotesPage() {
   );
 }
 
-const s = {
+const s: Record<string, React.CSSProperties> = {
   root: {
     minHeight:   "100dvh",
     background:  "#0d1117",

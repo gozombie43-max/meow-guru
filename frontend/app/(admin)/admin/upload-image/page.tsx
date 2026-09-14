@@ -1,7 +1,7 @@
 "use client";
 import styles from "@/components/admin/AdminTool.module.css";
-import { getAccessToken } from "@/lib/axios";
-import { fetchWithRetry } from "@/lib/api/http";
+import { getAccessToken } from "@/shared/api/client";
+import { questionWriteResponse as fetchWithRetry } from "@/features/quiz/api/questionWrites";
 import { useEffect,useState } from "react";
 
 type Region = { x: number; y: number; w: number; h: number };

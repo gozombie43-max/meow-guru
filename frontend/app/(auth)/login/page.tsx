@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Mail, Lock, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import api from '@/lib/axios';
+import api from '@/shared/api/client';
 import { API_BASE } from '@/lib/api-base';
 import {
   AuthCard,
@@ -70,7 +70,8 @@ function LoginContent() {
   }, [setValue]);
 
   const handleGoogleLogin = () => {
-    window.location.href = `${API_BASE}/auth/google`;
+    // OAuth must leave the Next.js router and follow backend redirects.
+    window.location.assign(new URL(`${API_BASE}/auth/google`, window.location.origin).href);
   };
 
   const onSubmit = async (data: LoginFormData) => {

@@ -4,7 +4,8 @@ import MockTestEngine from './MockTestEngine';
 import { autosaveAttempt, startTest, submitAttempt } from './api';
 
 const { replace } = vi.hoisted(() => ({ replace: vi.fn() }));
-vi.mock('next/navigation', () => ({ useRouter: () => ({ replace }), useSearchParams: () => null }));
+const router = { replace };
+vi.mock('next/navigation', () => ({ useRouter: () => router, useSearchParams: () => null }));
 vi.mock('@/context/AuthContext', () => ({ useAuth: () => ({ token: 'test-token' }) }));
 vi.mock('@/hooks/useMediaQuery', () => ({ useMediaQuery: () => true }));
 vi.mock('@/components/MathRenderer', () => ({ default: ({ text }: { text: string }) => <span>{text}</span> }));

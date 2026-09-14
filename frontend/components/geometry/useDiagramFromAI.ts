@@ -1,3 +1,4 @@
+import { requestResponse as fetch } from "@/shared/api/request";
 // ─────────────────────────────────────────────
 //  useDiagramFromAI.ts
 //  Hook: question text → GeometryDiagram JSON
@@ -10,7 +11,7 @@
 import { useState, useEffect, useRef } from "react";
 import type { GeometryDiagram } from "./diagramSchema";
 import { SYSTEM_PROMPT } from "./diagramPrompt";
-import { getAccessToken } from "@/lib/axios";
+import { getAccessToken } from "@/shared/api/client";
 
 // ── API call ──────────────────────────────────
 async function fetchDiagram(questionText: string): Promise<GeometryDiagram> {

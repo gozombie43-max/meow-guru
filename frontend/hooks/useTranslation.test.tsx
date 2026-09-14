@@ -1,63 +1,43 @@
 import { act, renderHook } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import axios, { AxiosError } from "axios";
+import api, { updateAccessToken } from "@/lib/axios";
 import { useTranslation } from "./useTranslation";
 
-const { getAccessTokenMock, requestTokenRefreshMock } = vi.hoisted(() => ({
-  getAccessTokenMock: vi.fn(),
-  requestTokenRefreshMock: vi.fn(),
-}));
+const originalAdapter = api.defaults.adapter;
+beforeEach(() => updateAccessToken("expired-token"));
+afterEach(() => { api.defaults.adapter = originalAdapter; updateAccessToken(null); });
 
-vi.mock("@/lib/axios", () => ({
-  getAccessToken: getAccessTokenMock,
-  requestTokenRefresh: requestTokenRefreshMock,
-}));
-
-describe("useTranslation", () => {
-  beforeEach(() => {
-    vi.restoreAllMocks();
-    getAccessTokenMock.mockReset();
-    requestTokenRefreshMock.mockReset();
-  });
-
+describe("useTranslation through the shared transport", () => {
   it("refreshes an expired token and retries translation once", async () => {
-    getAccessTokenMock.mockReturnValue("expired-token");
-    requestTokenRefreshMock.mockResolvedValue("fresh-token");
-    const fetchMock = vi.spyOn(globalThis, "fetch")
-      .mockResolvedValueOnce(new Response(null, { status: 401 }))
-      .mockResolvedValueOnce(new Response(
-        JSON.stringify([{ translations: [{ text: "नमस्ते" }] }]),
-        { status: 200, headers: { "Content-Type": "application/json" } },
-      ));
+    const refresh = vi.spyOn(axios, "post").mockResolvedValue({ data: { token: "fresh-token" } });
+    const adapter = vi.fn(async config => {
+      const status = config.headers.Authorization === "Bearer fresh-token" ? 200 : 401;
+      const response = { config, status, statusText: String(status), headers: {}, data: new TextEncoder().encode(JSON.stringify([{ translations: [{ text: "नमस्ते" }] }])).buffer };
+      if (status === 401) throw new AxiosError("expired", "ERR_BAD_REQUEST", config, undefined, response);
+      return response;
+    });
+    api.defaults.adapter = adapter;
     const { result } = renderHook(() => useTranslation());
-
     let translated: string[] = [];
-    await act(async () => {
-      translated = await result.current.translate(["Hello"], "hi");
-    });
-
+    await act(async () => { translated = await result.current.translate(["Hello"], "hi"); });
     expect(translated).toEqual(["नमस्ते"]);
-    expect(requestTokenRefreshMock).toHaveBeenCalledTimes(1);
-    expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(fetchMock.mock.calls[1][1]).toMatchObject({
-      headers: expect.objectContaining({ Authorization: "Bearer fresh-token" }),
-    });
+    expect(refresh).toHaveBeenCalledTimes(1);
+    expect(adapter).toHaveBeenCalledTimes(2);
   });
 
-  it("falls back to the source text when the session cannot be refreshed", async () => {
-    getAccessTokenMock.mockReturnValue("expired-token");
-    requestTokenRefreshMock.mockResolvedValue(null);
-    const fetchMock = vi.spyOn(globalThis, "fetch")
-      .mockResolvedValue(new Response(null, { status: 401 }));
+  it("falls back to source text when the session cannot be refreshed", async () => {
+    const refresh = vi.spyOn(axios, "post").mockRejectedValue({ response: { status: 401 } });
+    const adapter = vi.fn(async config => {
+      throw new AxiosError("expired", "ERR_BAD_REQUEST", config, undefined, { config, status: 401, statusText: "Unauthorized", headers: {}, data: new ArrayBuffer(0) });
+    });
+    api.defaults.adapter = adapter;
     vi.spyOn(console, "error").mockImplementation(() => undefined);
     const { result } = renderHook(() => useTranslation());
-
     let translated: string[] = [];
-    await act(async () => {
-      translated = await result.current.translate(["Hello"], "bn");
-    });
-
+    await act(async () => { translated = await result.current.translate(["Hello"], "bn"); });
     expect(translated).toEqual(["Hello"]);
-    expect(requestTokenRefreshMock).toHaveBeenCalledTimes(1);
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(refresh).toHaveBeenCalledTimes(1);
+    expect(adapter).toHaveBeenCalledTimes(1);
   });
 });

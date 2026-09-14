@@ -770,6 +770,13 @@ function MacOsQuizStartStudio({
                                 isSelected || isPartial ? styles.conceptCheckboxChecked : ""
                               }`}
                               onClick={() => onToggleGroup(group.concepts)}
+                              onKeyDown={event => {
+                                if (event.key === "Enter" || event.key === " ") {
+                                  event.preventDefault();
+                                  event.stopPropagation();
+                                  onToggleGroup(group.concepts);
+                                }
+                              }}
                               role="button"
                               tabIndex={0}
                               aria-label={`Toggle all concepts in ${group.label}`}

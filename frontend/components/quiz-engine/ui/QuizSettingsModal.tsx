@@ -1,21 +1,20 @@
 "use client";
 
 import { useBackLayer } from "@/hooks/useAppNavigation";
-import React from "react";
 import {
-  Settings,
-  Sun,
-  Moon,
-  X,
-  Bot,
-  ListOrdered,
-  FileText,
-  Layers,
-  Type,
-  AlignJustify,
+AlignJustify,
+Bot,
+FileText,
+Layers,
+ListOrdered,
+Moon,
+Settings,
+Sun,
+Type,
+X,
 } from "lucide-react";
 import type { QuizTheme } from "../types";
-import type { QuizTextSize, QuizSpacing } from "../useQuizPreferences";
+import type { QuizSpacing,QuizTextSize } from "../useQuizPreferences";
 
 export function SettingIcon({ className = "w-4.5 h-4.5" }: { className?: string }) {
   return <Settings className={className} aria-hidden="true" />;
@@ -49,7 +48,7 @@ interface SwitchToggleProps {
   ariaLabel: string;
 }
 
-function SwitchToggle({ checked, onChange, label, ariaLabel }: SwitchToggleProps) {
+function SwitchToggle({ checked, onChange, ariaLabel }: SwitchToggleProps) {
   return (
     <button data-ui-button="state"
       type="button"
