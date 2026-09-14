@@ -1,6 +1,7 @@
 /** One temporary history entry for all open panels and the active quiz guard. */
 type Layer = { close: () => void };
 type Guard = { message: string; fallback: string };
+export type ExitConfirmation = { message: string; theme: "light" | "dark" };
 const marker = "__meowNavigation";
 
 export function createNavigationController(win: Window) {
@@ -9,6 +10,18 @@ export function createNavigationController(win: Window) {
   let sentinelUrl: string | null = null;
   let pending: (() => void) | null = null;
   let released = false;
+  let confirmation: ExitConfirmation | null = null;
+  let confirmedAction: (() => void) | null = null;
+  const listeners = new Set<() => void>();
+  const emit = () => listeners.forEach(listener => listener());
+
+  function resolveConfirmation(leave: boolean) {
+    const action = confirmedAction;
+    confirmedAction = null;
+    confirmation = null;
+    emit();
+    if (leave) action?.();
+  }
   const currentGuard = () => [...guards.values()].at(-1);
   const hasWork = () => layers.size > 0 || (!released && guards.size > 0);
   const isSentinel = () => sentinelUrl === win.location.href && win.history.state?.[marker];
@@ -40,18 +53,26 @@ export function createNavigationController(win: Window) {
     return true;
   }
 
-  function approve() {
+  function requestApproval(action: () => void) {
     const guard = currentGuard();
-    return released || !guard || win.confirm(guard.message);
+    if (released || !guard) { action(); return; }
+    if (confirmation) return;
+    const surface = win.document.querySelector(".ios-series-quiz, .mac-series-quiz, .training-session");
+    const theme = surface?.getAttribute("data-theme") || win.document.documentElement.dataset.theme;
+    confirmation = { message: guard.message.replace(/^Leave[^?]*\?\s*/, ""), theme: theme === "light" ? "light" : "dark" };
+    confirmedAction = action;
+    emit();
   }
 
   function navigate(action: () => void) {
-    if (pending || !approve()) return;
-    released = true;
-    if (isSentinel()) {
-      pending = action;
-      win.history.back();
-    } else action();
+    if (pending) return;
+    requestApproval(() => {
+      released = true;
+      if (isSentinel()) {
+        pending = action;
+        win.history.back();
+      } else action();
+    });
   }
 
   function onPop(event: PopStateEvent) {
@@ -66,15 +87,23 @@ export function createNavigationController(win: Window) {
       return;
     }
     sentinelUrl = null;
+    if (confirmation) {
+      resolveConfirmation(false);
+      arm();
+      return;
+    }
     if (closeTop()) {
       arm();
       return;
     }
-    if (!approve()) { arm(); return; }
     const fallback = currentGuard()?.fallback;
-    released = true;
-    if (win.history.length <= 2 && fallback) win.location.replace(fallback);
-    else win.history.back();
+    // Restore the temporary entry while the custom modal awaits a decision.
+    // Cancelling (including another Back press) therefore stays in the quiz.
+    arm();
+    navigate(() => {
+      if (win.history.length <= 2 && fallback) win.location.replace(fallback);
+      else win.history.back();
+    });
   }
 
   function onClick(event: MouseEvent) {
@@ -86,21 +115,25 @@ export function createNavigationController(win: Window) {
     if (url.pathname === win.location.pathname && url.search === win.location.search && url.origin === win.location.origin) return;
     if (!hasWork()) return;
     if (pending) { event.preventDefault(); event.stopImmediatePropagation(); return; }
-    if (!approve()) { event.preventDefault(); event.stopImmediatePropagation(); return; }
     // Replay the original link after removing the temporary entry, preserving Next Link behavior.
     event.preventDefault();
     event.stopImmediatePropagation();
-    released = true;
     const replay = () => {
       layers.clear();
       link.click();
     };
-    if (isSentinel()) { pending = replay; win.history.back(); }
-    else replay();
+    navigate(replay);
   }
 
   function onKey(event: KeyboardEvent) {
-    if (event.key !== "Escape" || !layers.size) return;
+    if (event.key !== "Escape") return;
+    if (confirmation) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      resolveConfirmation(false);
+      return;
+    }
+    if (!layers.size) return;
     event.preventDefault();
     event.stopImmediatePropagation();
     closeTop();
@@ -118,6 +151,12 @@ export function createNavigationController(win: Window) {
   win.document.addEventListener("click", onClick, true);
 
   return {
+    getConfirmation: () => confirmation,
+    subscribe(listener: () => void) {
+      listeners.add(listener);
+      return () => { listeners.delete(listener); };
+    },
+    resolveConfirmation,
     addLayer(close: () => void) {
       const id = Symbol();
       layers.set(id, { close });
@@ -129,9 +168,16 @@ export function createNavigationController(win: Window) {
       released = false;
       guards.set(id, { message, fallback });
       arm();
-      return () => { guards.delete(id); queueMicrotask(reconcile); };
+      return () => {
+        guards.delete(id);
+        if (!guards.size && confirmation) resolveConfirmation(false);
+        queueMicrotask(reconcile);
+      };
     },
-    back(action: () => void) { if (!closeTop()) navigate(action); },
+    back(action: () => void) {
+      if (confirmation) resolveConfirmation(false);
+      else if (!closeTop()) navigate(action);
+    },
     navigate,
     dispose() {
       win.removeEventListener("popstate", onPop, true);
