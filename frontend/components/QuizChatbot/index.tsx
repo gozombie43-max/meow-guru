@@ -597,7 +597,7 @@ export default function QuizChatbot({
                       aria-label="Toggle dark mode"
                     >
                       {isDark ? (
-                        <Sun className="w-4 h-4 text-amber-400 shrink-0" />
+                        <Sun className="w-4 h-4 text-sky-500 shrink-0" />
                       ) : (
                         <Moon className="w-4 h-4 text-sky-500 shrink-0" />
                       )}
