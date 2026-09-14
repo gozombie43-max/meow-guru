@@ -3,8 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import MockTestEngine from './MockTestEngine';
 import { autosaveAttempt, startTest, submitAttempt } from './api';
 
-const { push } = vi.hoisted(() => ({ push: vi.fn() }));
-vi.mock('next/navigation', () => ({ useRouter: () => ({ push }), useSearchParams: () => null }));
+const { replace } = vi.hoisted(() => ({ replace: vi.fn() }));
+vi.mock('next/navigation', () => ({ useRouter: () => ({ replace }), useSearchParams: () => null }));
 vi.mock('@/context/AuthContext', () => ({ useAuth: () => ({ token: 'test-token' }) }));
 vi.mock('@/hooks/useMediaQuery', () => ({ useMediaQuery: () => true }));
 vi.mock('@/components/MathRenderer', () => ({ default: ({ text }: { text: string }) => <span>{text}</span> }));
@@ -72,6 +72,6 @@ describe('test attempt persistence and expiry', () => {
     vi.setSystemTime(new Date('2026-09-09T00:02:00Z'));
     await act(async () => { vi.advanceTimersByTime(1000); });
     expect(submitAttempt).toHaveBeenCalledWith('attempt', 'test-token');
-    expect(push).toHaveBeenCalledWith('/mock-test/ssc-cgl/test/result/attempt');
+    expect(replace).toHaveBeenCalledWith('/mock-test/ssc-cgl/test/result/attempt');
   });
 });

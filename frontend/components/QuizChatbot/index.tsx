@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useBackLayer } from "@/hooks/useAppNavigation";
 import TutorMarkdown from "./TutorMarkdown";
 import {
   Sun,
@@ -13,7 +14,9 @@ import {
   AlertTriangle,
   Sparkles,
   ArrowUp,
+  ArrowLeft,
   Check,
+  ChevronDown,
 } from "lucide-react";
 import api from '@/lib/axios';
 import { isAxiosError } from 'axios';
@@ -237,6 +240,7 @@ export default function QuizChatbot({
   const addMenuRef = useRef<HTMLDivElement>(null);
 
   const handleClose = useCallback(() => setIsOpen(false), []);
+  useBackLayer(isOpen, handleClose);
 
   // Follow the visible viewport when the mobile keyboard reduces available space.
   useEffect(() => {
@@ -472,6 +476,17 @@ export default function QuizChatbot({
         </div>
       )}
 
+      <button data-ui-button="state"
+        type="button"
+        className={`tutor-plus-btn${isAddMenuOpen ? " active" : ""}`}
+        onClick={() => setIsAddMenuOpen((prev) => !prev)}
+        aria-expanded={isAddMenuOpen}
+        aria-label="Quick prompts"
+        title="Quick prompts"
+      >
+        <Plus className="w-4.5 h-4.5" />
+      </button>
+      <span className="tutor-input-divider" aria-hidden="true" />
       <textarea
         ref={textareaRef}
         className="tutor-textarea"
@@ -489,41 +504,26 @@ export default function QuizChatbot({
         aria-label={currentContent.placeholder}
       />
 
-      <div className="tutor-toolbar-row">
-        <div className="tutor-toolbar-left">
-          <button data-ui-button="state"
-            type="button"
-            className={`tutor-plus-btn${isAddMenuOpen ? " active" : ""}`}
-            onClick={() => setIsAddMenuOpen((prev) => !prev)}
-            aria-label="Quick prompts"
-            title="Quick prompts"
-          >
-            <Plus className="w-4.5 h-4.5" />
-          </button>
-          <button data-ui-button="state"
-            type="button"
-            className="tutor-model-pill"
-            onClick={() => setIsModelMenuOpen((prev) => !prev)}
-            aria-label={`Selected model: ${selectedModel}`}
-            title="Active Model: o4-mini (Azure AI)"
-          >
-            <span className="model-name">o4-mini</span>
-            <span className="model-tier">Azure AI</span>
-          </button>
-        </div>
-
-        <div className="tutor-toolbar-right">
-          <button data-ui-button="state"
-            type="button"
-            className={`tutor-send-btn${hasInput && !isLoading ? " ready" : ""}`}
-            onClick={handleSend}
-            aria-label="Send message"
-            disabled={isLoading || !hasInput}
-          >
-            <ArrowUp className="w-4.5 h-4.5 text-white" strokeWidth={2.5} />
-          </button>
-        </div>
-      </div>
+      <button data-ui-button="state"
+        type="button"
+        className="tutor-model-pill"
+        onClick={() => setIsModelMenuOpen((prev) => !prev)}
+        aria-expanded={isModelMenuOpen}
+        aria-label={`Selected model: ${selectedModel}`}
+        title="Active Model: o4-mini (Azure AI)"
+      >
+        <span className="model-name">o4-mini</span>
+        <ChevronDown aria-hidden="true" />
+      </button>
+      <button data-ui-button="state"
+        type="button"
+        className={`tutor-send-btn${hasInput && !isLoading ? " ready" : ""}`}
+        onClick={handleSend}
+        aria-label="Send message"
+        disabled={isLoading || !hasInput}
+      >
+        <ArrowUp className="w-4.5 h-4.5 text-white" strokeWidth={2.5} />
+      </button>
     </div>
   );
 
@@ -606,10 +606,10 @@ export default function QuizChatbot({
                       type="button"
                       className="closebtn"
                       onClick={handleClose}
-                      title="Close"
-                      aria-label="Close"
+                      title="Back to quiz"
+                      aria-label="Back to quiz"
                     >
-                      <X className="w-4.5 h-4.5 shrink-0" />
+                      <ArrowLeft className="w-4.5 h-4.5 shrink-0" />
                     </button>
                   </div>
                 </div>

@@ -42,7 +42,7 @@ function ConnectionStatus({ status }: { status: Connection }) {
 
 function BattleHeader({ title, status, backHref = "/", onBack }: { title: string; status: Connection; backHref?: string; onBack?: () => void }) {
   return <header data-ui-chrome="header" className="battle-header"><div className="battle-header-inner">
-    {onBack ? <button data-ui-button="icon" type="button" className="battle-icon-button" aria-label="Go back" onClick={onBack}><ArrowLeft /></button> : <Link data-ui-button="secondary" href={backHref} className="battle-icon-button" aria-label="Go back"><ArrowLeft /></Link>}
+    {onBack ? <button data-ui-button="icon" type="button" className="battle-icon-button" aria-label="Go back" onClick={onBack}><ArrowLeft /></button> : <Link replace data-ui-button="secondary" href={backHref} className="battle-icon-button" aria-label="Go back"><ArrowLeft /></Link>}
     <div className="battle-header-copy"><span className="battle-eyebrow">Battle arena</span><strong>{title}</strong></div>
     <ConnectionStatus status={status} />
   </div></header>;

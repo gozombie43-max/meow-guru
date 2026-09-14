@@ -76,7 +76,7 @@ export default function BottomNav() {
       className={`bottom-pill-nav${isLightSurface ? ' is-light' : ''}`}
       aria-label="Primary"
     >
-      <Link
+      <Link replace
         href="/"
         className={`bottom-nav-item${isHome ? ' is-active' : ''}`}
         aria-current={isHome ? 'page' : undefined}
@@ -84,7 +84,7 @@ export default function BottomNav() {
         <HomeIcon className="bottom-nav-icon" />
         <span className="bottom-nav-label">Home</span>
       </Link>
-      <Link
+      <Link replace
         href="/mock-test"
         className={`bottom-nav-item${isMock ? ' is-active' : ''}`}
         aria-current={isMock ? 'page' : undefined}
@@ -93,7 +93,7 @@ export default function BottomNav() {
         <span className="bottom-nav-label">Mock</span>
       </Link>
 
-      <Link
+      <Link replace
         href="/ai-chat"
         className={`bottom-nav-item${isAiChat ? ' is-active' : ''}`}
         aria-label="AI Assistant"
@@ -103,7 +103,7 @@ export default function BottomNav() {
         <span className="bottom-nav-label">Assistant</span>
       </Link>
 
-      <Link
+      <Link replace
         href="/play"
         className={`bottom-nav-item${isPlay ? ' is-active' : ''}`}
         aria-current={isPlay ? 'page' : undefined}
@@ -111,7 +111,7 @@ export default function BottomNav() {
         <Play className="bottom-nav-icon" />
         <span className="bottom-nav-label">Play</span>
       </Link>
-      <Link
+      <Link replace
         href="/videos"
         className={`bottom-nav-item${isVideos ? ' is-active' : ''}`}
         aria-current={isVideos ? 'page' : undefined}

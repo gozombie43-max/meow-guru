@@ -37,10 +37,10 @@ describe('SolutionBottomSheet Component', () => {
 
     expect(screen.getByText('Worked Solution')).toBeInTheDocument();
     expect(screen.getByText(/Option \(C\) is correct/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Close solution/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Back to quiz/i })).toBeInTheDocument();
   });
 
-  it('calls onClose when Done button is clicked', () => {
+  it('calls onClose when Back button is clicked', () => {
     renderWithTheme(
       <SolutionBottomSheet
         isOpen={true}
@@ -52,7 +52,7 @@ describe('SolutionBottomSheet Component', () => {
       />
     );
 
-    const doneBtn = screen.getByRole('button', { name: /Close solution/i });
+    const doneBtn = screen.getByRole('button', { name: /Back to quiz/i });
     fireEvent.click(doneBtn);
     expect(mockOnClose).toHaveBeenCalledTimes(1);
   });

@@ -1,4 +1,5 @@
 "use client";
+import { useBackLayer, useQuizLeaveGuard } from "@/hooks/useAppNavigation";
 import { useQuizResume } from "./useQuizResume";
 import MathText from "@/components/MathText";
 import {
@@ -195,6 +196,7 @@ export function useQuizController({
     }
   }, [currentIndex, questions.length, hasMore, isFetchingMore, fetchMore]);
   const [started, setStarted] = useState(false);
+  useQuizLeaveGuard(started && !showAnalytics, routeBase ?? `/${subjectConfig.subjectId}/${slug}`);
   const [submitError, setSubmitError] = useState("");
   const { timerRef, maxTime, startTimer, stopTimer } = useQuizTimer();
   const [isSolutionOpen, setIsSolutionOpen] = useState(false);
@@ -435,6 +437,7 @@ export function useQuizController({
 
   const openPalette = useCallback(() => setIsPaletteOpen(true), []);
   const closePalette = useCallback(() => setIsPaletteOpen(false), []);
+  useBackLayer(isPaletteOpen, closePalette);
   const openSolution = useCallback(() => setIsSolutionOpen(true), []);
   const closeSolution = useCallback(() => setIsSolutionOpen(false), []);
 

@@ -193,7 +193,7 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
             <div className={`${styles.trafficLight} ${styles.maximize}`}></div>
           </div>
 
-          <button data-ui-button="icon" onClick={() => router.push('/mock-test')} className={styles.sidebarBackBtn}>
+          <button data-ui-button="icon" onClick={() => router.replace('/mock-test')} className={styles.sidebarBackBtn}>
             <ChevronLeft size={15} />
             <span>All Exams</span>
           </button>
@@ -258,7 +258,7 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
               <header className={styles.headerCard}>
                 <div className={styles.headerTopRow}>
                   <div className={styles.headerTitleGroup}>
-                    <button data-ui-button="icon" onClick={() => router.push('/mock-test')} className={styles.mobileBackBtn} aria-label="Back to all exams">
+                    <button data-ui-button="icon" onClick={() => router.replace('/mock-test')} className={styles.mobileBackBtn} aria-label="Back to all exams">
                       <ChevronLeft size={16} />
                     </button>
                     <div className={styles.headerIconBox}>{meta.icon}</div>
@@ -290,7 +290,7 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
                       </div>
                     )}
 
-                    <button data-ui-button="state" onClick={() => router.push('/mock-test')} className={styles.allExamsTopBtn}>
+                    <button data-ui-button="state" onClick={() => router.replace('/mock-test')} className={styles.allExamsTopBtn}>
                       All Exams
                     </button>
                   </div>

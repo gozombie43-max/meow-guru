@@ -116,7 +116,7 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
     return (
       <div className={styles.loadingContainer}>
         <p>{error || 'Attempt not found.'}</p>
-        <button data-ui-button="primary" className={styles.btnPrimary} onClick={() => router.push(`/mock-test/${examSlug}`)}>
+        <button data-ui-button="primary" className={styles.btnPrimary} onClick={() => router.replace(`/mock-test/${examSlug}`)}>
           Back to Tests
         </button>
       </div>
@@ -145,7 +145,7 @@ export default function ReviewEngine({ examSlug, testId, attemptId }: ReviewEngi
         <div className={styles.headerLeft}>
           <button data-ui-button="icon"
             className={styles.backBtn}
-            onClick={() => router.push(`/mock-test/${examSlug}/${testId}/result/${attemptId}`)}
+            onClick={() => router.replace(`/mock-test/${examSlug}/${testId}/result/${attemptId}`)}
           >
             <ArrowLeft size={18} />
             <span>Results</span>

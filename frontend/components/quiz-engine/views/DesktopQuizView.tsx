@@ -1,4 +1,5 @@
 "use client";
+import BackButton from "@/components/BackButton";
 import { LangToggle } from "@/components/LangToggle";
 import RichContent from "@/components/RichContent";
 import { OptionTickIcon, QuizSettingsModal } from "@/components/quiz-engine/ui/QuizSettingsModal";
@@ -13,6 +14,8 @@ const QuizChatbot = dynamic(() => import("@/components/QuizChatbot"), {
   ssr: false,
 });
 export function DesktopQuizView({
+  routeBase,
+  slug,
   subjectConfig,
   theme,
   themeStyles,
@@ -64,6 +67,8 @@ export function DesktopQuizView({
   handleSetSpacing,
 }: Pick<
   QuizController,
+  | "routeBase"
+  | "slug"
   | "subjectConfig"
   | "theme"
   | "themeStyles"
@@ -128,11 +133,7 @@ export function DesktopQuizView({
       <div className="mac-series-desktop">
         <div className="mac-series-window">
           <header data-ui-chrome="header" className="mac-series-header">
-            <div className="mac-series-traffic-lights">
-              <div className="mac-dot mac-red"></div>
-              <div className="mac-dot mac-yellow"></div>
-              <div className="mac-dot mac-green"></div>
-            </div>
+            <BackButton href={routeBase ?? `/${subjectConfig.subjectId}/${slug}`} label="Leave quiz" />
             <div className="mac-series-title">
               {title} - {modeLabels[mode] || "Quiz"}
             </div>

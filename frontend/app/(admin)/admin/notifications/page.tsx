@@ -92,9 +92,9 @@ export default function AdminNotificationsPage() {
   useEffect(() => {
     if (!authLoading) {
       if (!authUser) {
-        router.push('/login');
+        router.replace('/login');
       } else if (!['admin', 'superadmin'].includes(authUser.role || '')) {
-        router.push('/');
+        router.replace('/');
       }
     }
   }, [authUser, authLoading, router]);
@@ -258,7 +258,7 @@ export default function AdminNotificationsPage() {
           <button data-ui-button="icon"
             type="button"
             className={s.backBtn}
-            onClick={() => router.push('/admin')}
+            onClick={() => router.replace('/admin')}
             title="Back to Admin"
             aria-label="Back to Admin"
           >

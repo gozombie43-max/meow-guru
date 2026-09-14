@@ -146,7 +146,7 @@ export default function AdminUsersPage() {
   // ── Auth guard ─────────────────────────────────────────
   useEffect(() => {
     if (!authLoading && !authUser) {
-      router.push('/login');
+      router.replace('/login');
     }
   }, [authUser, authLoading, router]);
 
@@ -352,7 +352,7 @@ export default function AdminUsersPage() {
       {/* ── Header ──────────────────────────────────────── */}
       <header data-ui-chrome="header" className={s.header}>
         <div className={s.headerLeft}>
-          <button data-ui-button="icon" className={s.backBtn} onClick={() => router.push('/admin')}>
+          <button data-ui-button="icon" className={s.backBtn} onClick={() => router.replace('/admin')}>
             <ChevronLeft size={20} />
           </button>
           <div>

@@ -72,9 +72,9 @@ describe('QuizChatbot Component', () => {
     const modelPill = screen.getByRole('button', { name: /Selected model: o4-mini/i });
     expect(modelPill).toBeInTheDocument();
     expect(screen.getByText('o4-mini')).toBeInTheDocument();
-    expect(screen.getByText('Azure AI')).toBeInTheDocument();
+    expect(modelPill).toHaveAttribute('aria-expanded', 'false');
 
-    // Verify Send button (terracotta up-arrow)
+    // Verify Send button (blue up-arrow)
     const sendBtn = screen.getByRole('button', { name: /Send message/i });
     expect(sendBtn).toBeInTheDocument();
   });

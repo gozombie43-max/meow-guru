@@ -1,6 +1,7 @@
+import { useBackLayer } from "@/hooks/useAppNavigation";
 import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
+import { ArrowLeft, X } from 'lucide-react';
 import RichContent from '@/components/RichContent';
 import MathRenderer from '@/components/MathRenderer';
 import { formatMathBookSolutionLines } from '../utils';
@@ -21,6 +22,7 @@ export function SolutionBottomSheet({
   correctOptionText: string;
   onClose: () => void;
 }) {
+  useBackLayer(isOpen, onClose);
   const [dragOffset, setDragOffset] = React.useState(0);
   const [isDragging, setIsDragging] = React.useState(false);
   const [isHolding, setIsHolding] = React.useState(false);
@@ -191,16 +193,11 @@ export function SolutionBottomSheet({
               </div>
 
               <div data-ui-chrome="header" className="ios-solution-header">
-                <span className="ios-header-placeholder"></span>
-                <h3 className="ios-solution-title">Worked Solution</h3>
-                <button data-ui-button="state"
-                  type="button"
-                  onClick={onClose}
-                  className="ios-done-btn"
-                  aria-label="Close solution"
-                >
-                  Done
+                <button data-ui-button="icon" type="button" onClick={onClose} aria-label="Back to quiz" className="ios-done-btn">
+                  <ArrowLeft aria-hidden="true" />
                 </button>
+                <h3 className="ios-solution-title">Worked Solution</h3>
+                <span className="ios-header-placeholder" aria-hidden="true" />
               </div>
             </div>
 

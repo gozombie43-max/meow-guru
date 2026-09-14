@@ -1,9 +1,13 @@
+import BackButton from "@/components/BackButton";
 import { LangToggle } from "@/components/LangToggle";
 import { Menu, Settings } from "lucide-react";
 import type { QuizController } from "../hooks/useQuizController";
 
 type HeaderProps = Pick<
   QuizController,
+  | "routeBase"
+  | "subjectConfig"
+  | "slug"
   | "activeLang"
   | "currentIndex"
   | "hideQuestionNumbers"
@@ -14,17 +18,18 @@ type HeaderProps = Pick<
   | "setIsSettingsOpen"
 >;
 
-export function MobileQuizHeader({ activeLang, currentIndex, hideQuestionNumbers, isSettingsOpen, isTranslating, openPalette, setActiveLang, setIsSettingsOpen }: HeaderProps) {
+export function MobileQuizHeader({ routeBase, subjectConfig, slug, activeLang, currentIndex, hideQuestionNumbers, isSettingsOpen, isTranslating, openPalette, setActiveLang, setIsSettingsOpen }: HeaderProps) {
   const questionNumber = currentIndex + 1;
   const digits = String(questionNumber).length;
   const sizeClass = digits <= 2 ? "is-qnum-sm" : digits === 3 ? "is-qnum-md" : "is-qnum-lg";
 
   return (
     <header data-ui-chrome="header" className="ios-series-header">
+      <BackButton href={routeBase ?? `/${subjectConfig.subjectId}/${slug}`} label="Leave quiz" className="ios-series-icon-button" />
+      <LangToggle active={activeLang} loading={isTranslating} onChange={setActiveLang} />
       <button data-ui-button="state" data-ui-shape="icon" type="button" className={`ios-series-icon-button ${isSettingsOpen ? "is-active" : ""}`} onClick={() => setIsSettingsOpen((previous) => !previous)} aria-label="Open quiz settings" aria-expanded={isSettingsOpen}>
         <Settings aria-hidden="true" />
       </button>
-      <LangToggle active={activeLang} loading={isTranslating} onChange={setActiveLang} />
       <button data-ui-button="state" data-ui-shape="icon" type="button" className={`ios-series-icon-button ${hideQuestionNumbers ? `is-qnum ${sizeClass}` : ""}`} onClick={openPalette} aria-label={hideQuestionNumbers ? `Question ${questionNumber} - Open question navigator` : "Open question navigator"}>
         {hideQuestionNumbers ? <span className="ios-series-palette-num">{questionNumber}</span> : <Menu aria-hidden="true" />}
       </button>

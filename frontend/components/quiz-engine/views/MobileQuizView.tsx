@@ -17,6 +17,8 @@ const QuizChatbot = dynamic(() => import("@/components/QuizChatbot"), {
   ssr: false,
 });
 export function MobileQuizView({
+  routeBase,
+  slug,
   subjectConfig,
   theme,
   themeStyles,
@@ -73,6 +75,8 @@ export function MobileQuizView({
   closeSolution,
 }: Pick<
   QuizController,
+  | "routeBase"
+  | "slug"
   | "subjectConfig"
   | "theme"
   | "themeStyles"
@@ -141,6 +145,9 @@ export function MobileQuizView({
       {themeStyles}
       <div className="ios-series-device">
         <MobileQuizHeader
+          routeBase={routeBase}
+          slug={slug}
+          subjectConfig={subjectConfig}
           activeLang={activeLang}
           currentIndex={currentIndex}
           hideQuestionNumbers={hideQuestionNumbers}

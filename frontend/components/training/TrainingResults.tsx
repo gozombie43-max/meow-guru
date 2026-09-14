@@ -77,7 +77,7 @@ export function TrainingResults({
           {result.attempted} attempted · {result.correct} correct ·{" "}
           {result.averageSeconds}s per answer
         </p>
-        <Link data-ui-button="primary" href="/play" className="training-result-cta">
+        <Link replace data-ui-button="primary" href="/play" className="training-result-cta">
           <span>Back to training</span>
           <ArrowRight size={16} />
         </Link>

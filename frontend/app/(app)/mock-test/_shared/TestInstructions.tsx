@@ -50,7 +50,7 @@ export default function TestInstructions({ examSlug, testId, resumeAttemptId }: 
 
   const handleStart = async () => {
     if (!token) {
-      router.push('/login');
+      router.replace('/login');
       return;
     }
     setLoading(true);

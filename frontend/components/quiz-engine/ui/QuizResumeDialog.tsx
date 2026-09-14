@@ -1,5 +1,6 @@
 "use client";
 
+import { useBackLayer } from "@/hooks/useAppNavigation";
 import { useEffect, useRef } from "react";
 import { History, Play, RotateCcw } from "lucide-react";
 import styles from "./QuizResumeDialog.module.css";
@@ -15,6 +16,7 @@ type Props = {
 };
 
 export function QuizResumeDialog({ theme, currentIndex, answered, total, onResume, onRestart, onCancel }: Props) {
+  useBackLayer(true, onCancel);
   const resumeRef = useRef<HTMLButtonElement>(null);
   const progress = total > 0 ? Math.min(100, Math.max(0, answered / total * 100)) : 0;
 

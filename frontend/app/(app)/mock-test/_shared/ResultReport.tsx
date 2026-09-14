@@ -46,7 +46,7 @@ export default function ResultReport({ examSlug, testId, attemptId }: ResultRepo
     return (
       <div className={styles.loadingContainer}>
         <p>{error || 'No result data found.'}</p>
-        <button data-ui-button="primary" className={styles.btnPrimary} onClick={() => router.push(`/mock-test/${examSlug}`)}>
+        <button data-ui-button="primary" className={styles.btnPrimary} onClick={() => router.replace(`/mock-test/${examSlug}`)}>
           Back to Tests
         </button>
       </div>
@@ -73,7 +73,7 @@ export default function ResultReport({ examSlug, testId, attemptId }: ResultRepo
   };
 
   const handleBack = () => {
-    router.push(`/mock-test/${examSlug}`);
+    router.replace(`/mock-test/${examSlug}`);
   };
 
   return (

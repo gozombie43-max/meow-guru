@@ -103,11 +103,7 @@ export default function NotificationsPage() {
   }, [clearUnread]);
 
   const handleBack = useCallback(() => {
-    if (typeof window !== "undefined" && window.history.length > 1) {
-      router.back();
-      return;
-    }
-    router.push("/");
+    router.replace("/");
   }, [router]);
 
   const openNotification = async (item: UserNotification) => {

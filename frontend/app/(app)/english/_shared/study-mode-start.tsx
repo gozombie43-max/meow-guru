@@ -150,7 +150,7 @@ export default function StudyModeStartView({
               <button
                 type="button"
                 className="study-light red"
-                onClick={() => router.push(targetBackHref)}
+                onClick={() => router.replace(targetBackHref)}
                 title="Close / Back"
                 aria-label="Close"
               >
@@ -159,7 +159,7 @@ export default function StudyModeStartView({
               <button
                 type="button"
                 className="study-light yellow"
-                onClick={() => router.push(targetBackHref)}
+                onClick={() => router.replace(targetBackHref)}
                 title="Minimize"
                 aria-label="Minimize"
               >

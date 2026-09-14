@@ -219,7 +219,7 @@ export default function VideoPlayerPage() {
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%' }}>
           <button data-ui-button="state" data-ui-shape="icon"
-            onClick={() => router.back()}
+            onClick={() => router.replace("/videos")}
             style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 6, borderRadius: 8, display: 'flex', alignItems: 'center', color: videoTheme.title }}
           >
             <ArrowLeft size={22} strokeWidth={2.4} />

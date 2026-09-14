@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect } from "react";
+import { useBackLayer } from "@/hooks/useAppNavigation";
+import React from "react";
 import {
   Settings,
   Sun,
@@ -98,17 +99,7 @@ export function QuizSettingsModal({
   spacing = "comfortable",
   onSpacingChange,
 }: QuizSettingsModalProps) {
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        onClose();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
-
+  useBackLayer(isOpen, onClose);
   if (!isOpen) return null;
 
   const isDark = theme === "dark";

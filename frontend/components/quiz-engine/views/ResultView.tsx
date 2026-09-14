@@ -243,13 +243,13 @@ export function ResultView({
           >
             <RotateCcw className="w-4 h-4" /> Practice Again
           </button>
-          <Link data-ui-button="secondary"
+          <Link replace data-ui-button="secondary"
             href={routeBase ?? `/${subjectConfig.subjectId}/${slug}`}
             className="btn-outline px-6 py-3 rounded-xl font-medium text-center cursor-pointer"
           >
             Change Mode
           </Link>
-          <Link data-ui-button="secondary"
+          <Link replace data-ui-button="secondary"
             href={`/${subjectConfig.subjectId}`}
             className="btn-outline px-6 py-3 rounded-xl font-medium text-center cursor-pointer"
           >

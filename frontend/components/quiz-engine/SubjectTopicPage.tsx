@@ -794,7 +794,7 @@ export default function SubjectTopicPage({
           aria-label={`${eyebrow ?? defaults.eyebrow}: ${title}`}
         >
           <div className="sg-nav-inline">
-            <Link href={resolvedBackHref} className="sg-back" aria-label={`Back to ${eyebrow ?? defaults.eyebrow}`}>
+            <Link replace href={resolvedBackHref} className="sg-back" aria-label={`Back to ${eyebrow ?? defaults.eyebrow}`}>
               <IconBack />
             </Link>
             <h1 className="sg-nav-title">{title}</h1>

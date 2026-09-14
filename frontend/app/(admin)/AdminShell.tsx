@@ -59,7 +59,7 @@ export default function AdminShell({ children }: { children: ReactNode }) {
     <div className={styles.shell}>
       <header data-ui-chrome="header" className={styles.header}>
         <div data-ui-chrome="header" className={styles.titlebar}>
-          <Link
+          <Link replace
             href={pathname === "/admincontrol" ? "/" : "/admincontrol"}
             className={styles.back}
             aria-label={pathname === "/admincontrol" ? "Back to app" : "Back to Admin Control"}

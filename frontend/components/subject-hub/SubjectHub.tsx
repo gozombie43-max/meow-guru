@@ -283,7 +283,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
             <div className={styles.titlebarLeft}>
               {/* Traffic Lights */}
               <MacTrafficLights
-                onClose={() => router.push("/")}
+                onClose={() => router.replace("/")}
                 onMinimize={() => setSidebarOpen((prev) => !prev)}
                 onMaximize={() => router.push(`${selectedTopic.routeBase}`)}
               />
@@ -292,7 +292,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
               <button data-ui-button="state" data-ui-shape="icon"
                 type="button"
                 className={styles.navBtn}
-                onClick={() => router.back()}
+                onClick={() => router.replace("/")}
                 aria-label="Back"
                 title="Back"
               >
@@ -1079,7 +1079,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
           <button data-ui-button="icon"
             type="button"
             className={styles.mobileBackBtn}
-            onClick={() => router.back()}
+            onClick={() => router.replace("/")}
             aria-label="Back"
           >
             <ArrowLeft size={18} strokeWidth={2.4} />

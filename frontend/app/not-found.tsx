@@ -77,7 +77,7 @@ export default function NotFound() {
           The page or quiz you are looking for does not exist, has been moved, or is temporarily unavailable.
         </p>
 
-        <Link
+        <Link replace
           href="/"
           style={{
             display: 'inline-flex',

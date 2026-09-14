@@ -1,4 +1,5 @@
 "use client";
+import { useQuizLeaveGuard } from "@/hooks/useAppNavigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
@@ -65,6 +66,7 @@ export default function TrainingSessionView({ id }: { id: string }) {
   const [choice, setChoice] = useState<number | null>(null),
     [confidence, setConfidence] = useState<Confidence | null>(null),
     [confirmFinish, setConfirmFinish] = useState(false);
+  useQuizLeaveGuard(session?.status === "active", "/play", "Leave this training quiz? Saved answers will remain, but the session timer may continue.");
   const offset = useRef(0),
     sending = useRef(false);
   const accept = useCallback((s: TrainingSession) => {
@@ -164,7 +166,7 @@ export default function TrainingSessionView({ id }: { id: string }) {
       className={`training-page training-session ${theme === "dark" ? "training-dark" : ""}`}
     >
       <header className="training-session-header" data-ui-chrome="header">
-        <Link
+        <Link replace
           href="/play"
           data-ui-button="icon"
           className="training-header-back"

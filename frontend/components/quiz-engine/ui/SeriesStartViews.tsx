@@ -377,11 +377,7 @@ function MacOsQuizStartStudio({
   const ModeIcon = modeInfo.icon;
 
   const handleBack = useCallback(() => {
-    if (typeof window !== "undefined" && window.history.length > 2) {
-      router.back();
-    } else {
-      router.push(routeBase ?? `/${subjectConfig.subjectId}/${slug}`);
-    }
+    router.replace(routeBase ?? `/${subjectConfig.subjectId}/${slug}`);
   }, [router, routeBase, subjectConfig.subjectId, slug]);
 
   // Global Keyboard Shortcuts (Enter = Start, Escape = Back)
@@ -965,11 +961,7 @@ function IosQuizStartMobile({
       : `${selectedCount} concept${selectedCount === 1 ? "" : "s"}`;
 
   const handleBack = useCallback(() => {
-    if (typeof window !== "undefined" && window.history.length > 2) {
-      router.back();
-    } else {
-      router.push(routeBase ?? `/${subjectConfig.subjectId}/${slug}`);
-    }
+    router.replace(routeBase ?? `/${subjectConfig.subjectId}/${slug}`);
   }, [router, routeBase, subjectConfig.subjectId, slug]);
 
   const filteredGroups = useMemo(() => {

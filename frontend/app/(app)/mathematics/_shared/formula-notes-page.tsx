@@ -402,11 +402,8 @@ export default function FormulaNotesPage({
   const fallbackBackHref = `/${subjectSlug}/${topic}`;
 
   const handleBack = () => {
-    if (typeof window !== "undefined" && window.history.length > 1) {
-      router.back();
-    } else {
-      router.push(fallbackBackHref);
-    }
+    const parent = window.location.pathname.replace(/\/formula-notes\/?$/, "");
+    router.replace(parent !== window.location.pathname ? parent : fallbackBackHref);
   };
 
   return (

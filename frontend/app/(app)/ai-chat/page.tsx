@@ -1,5 +1,8 @@
 'use client';
 
+import BackButton from "@/components/BackButton";
+import { useBackLayer } from "@/hooks/useAppNavigation";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { AiChatIcon } from '@/components/AiChatIcon';
 import { aiChatStyles } from './ai-chat.styles';
 import { useAiChatHistory } from './useAiChatHistory';
@@ -47,6 +50,9 @@ function AiChatPageContent() {
   const [attachmentPreview, setAttachmentPreview] = useState<string | null>(null);
   const [attachmentError, setAttachmentError] = useState('');
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+  const isMobileSidebar = useMediaQuery("(max-width: 900px)");
+  useBackLayer(sidebarOpen && isMobileSidebar, () => setSidebarOpen(false));
+  useBackLayer(isPreviewModalOpen, () => setIsPreviewModalOpen(false));
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const {
@@ -346,6 +352,7 @@ function AiChatPageContent() {
       <section className={`chat-workspace ${!hasMessages ? 'is-empty' : ''}`} aria-label="AI Tutor chat">
         <header data-ui-chrome="header" className="chat-topbar">
           <div className="topbar-left">
+            <BackButton href="/" label="Back to home" className="icon-btn" />
             <button data-ui-button="icon" className="mobile-menu icon-btn" type="button" onClick={() => setSidebarOpen((value) => !value)} aria-label="Open sidebar">
               <Menu size={19} />
             </button>

@@ -88,6 +88,12 @@ export const mobileQuizViewStyles = css.global`
           flex: none;
           border-bottom: 1px solid var(--dark-border);
         }
+        .ios-series-header .lang-toggle { min-width: 0; }
+        .ios-series-header .lang-toggle-option { min-width: 0; padding-left: 6px; padding-right: 6px; }
+        @media (max-width: 360px) {
+          .ios-series-header { gap: 4px; padding-left: max(8px, var(--safe-left)); padding-right: max(8px, var(--safe-right)); }
+          .ios-series-header .lang-toggle-option { padding-left: 4px; padding-right: 4px; font-size: 11px; }
+        }
         .ios-series-icon-button {
           min-width: 44px;
           height: 44px;

@@ -197,7 +197,7 @@ export default function ResourcePage() {
         <header data-ui-chrome="header" className="res-header">
           {/* ── Compact Navigation Bar (44px) ── */}
           <div className="res-nav-bar">
-            <Link href="/" className="res-nav-btn res-back-btn" aria-label="Back to home">
+            <Link replace href="/" className="res-nav-btn res-back-btn" aria-label="Back to home">
               <ChevronLeft size={22} strokeWidth={2.4} />
             </Link>
 

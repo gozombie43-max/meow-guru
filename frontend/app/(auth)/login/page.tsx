@@ -97,7 +97,7 @@ function LoginContent() {
 
       await login(res.data.token);
       const redirectTarget = searchParams?.get('redirect') || searchParams?.get('next');
-      router.push(redirectTarget || '/');
+      router.replace(redirectTarget || '/');
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error;
       setError(msg || 'Invalid email or password. Please try again.');

@@ -241,6 +241,8 @@ function QuizEngineContent(props: QuizEngineProps) {
   if (isMac)
     return (
       <DesktopQuizView
+        routeBase={routeBase}
+        slug={slug}
         subjectConfig={subjectConfig}
         theme={theme}
         themeStyles={themeStyles}
@@ -296,6 +298,8 @@ function QuizEngineContent(props: QuizEngineProps) {
   if (isIos)
     return (
       <MobileQuizView
+        routeBase={routeBase}
+        slug={slug}
         subjectConfig={subjectConfig}
         theme={theme}
         themeStyles={themeStyles}

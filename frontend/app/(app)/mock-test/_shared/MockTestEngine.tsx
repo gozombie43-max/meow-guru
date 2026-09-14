@@ -4,6 +4,8 @@ import MathRenderer from '@/components/MathRenderer';
 import { useAuth } from '@/context/AuthContext';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import Image from 'next/image';
+import BackButton from "@/components/BackButton";
+import { useQuizLeaveGuard } from "@/hooks/useAppNavigation";
 import { useRouter,useSearchParams } from 'next/navigation';
 import { useCallback,useEffect,useEffectEvent,useRef,useState } from 'react';
 import {
@@ -83,7 +85,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
       }
       if (data.status === 'completed') {
         sessionStorage.removeItem(`mock-start:${examSlug}:${testId}`);
-        router.push(`/mock-test/${examSlug}/${testId}/result/${data.id || data.attemptId}`);
+        router.replace(`/mock-test/${examSlug}/${testId}/result/${data.id || data.attemptId}`);
         return;
       }
       const nextPaper = data.paper;
@@ -159,17 +161,9 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
 
-  // beforeunload
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (globalTimeLeft > 0 && !isSubmitting) {
-        e.preventDefault();
-        e.returnValue = '';
-      }
-    };
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [globalTimeLeft, isSubmitting]);
+  useQuizLeaveGuard(Boolean(paper) && globalTimeLeft > 0 && !isSubmitting,
+    `/mock-test/${examSlug}`,
+    "Leave this mock test? Saved progress is retained, but the exam timer will continue.");
 
   const handleFinalSubmit = useCallback(async () => {
     if (isSubmitting || !attemptId || !token) return;
@@ -185,7 +179,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
       }
       await submitAttempt(attemptId, token);
       sessionStorage.removeItem(`mock-start:${examSlug}:${testId}`);
-      router.push(`/mock-test/${examSlug}/${testId}/result/${attemptId}`);
+      router.replace(`/mock-test/${examSlug}/${testId}/result/${attemptId}`);
     } catch (error) {
       console.error(error);
       setSubmitError('Submission failed. Your saved progress is retained. Please retry.');
@@ -339,12 +333,14 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
       {/* Top Bar */}
       {isDesktop ? (
         <div data-ui-chrome="header" className={styles.topBar}>
+          <BackButton href={`/mock-test/${examSlug}`} label="Leave mock test" />
           <div className={styles.examName}>{examSlug.toUpperCase()}</div>
           <div className={styles.timer}>{formatTime(globalTimeLeft)}</div>
           <button data-ui-button="primary" className={styles.submitBtn} onClick={() => setShowSubmitModal(true)}>Submit Test</button>
         </div>
       ) : (
         <div data-ui-chrome="header" className={styles.mobileHeader}>
+          <BackButton href={`/mock-test/${examSlug}`} label="Leave mock test" />
           <div className={styles.examName} style={{fontSize: '1rem'}}>{examSlug.toUpperCase()}</div>
           <div style={{display: 'flex', gap: '1rem', alignItems: 'center'}}>
             <div className={styles.timer} style={{fontSize: '1rem'}}>{formatTime(globalTimeLeft)}</div>

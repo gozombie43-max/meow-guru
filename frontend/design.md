@@ -232,3 +232,23 @@ export default function InteractiveAppShell() {
 | Nested wrappers with duplicate padding (`18px + 16px = 34px`) | Standard clean 16px content margin on a single container level |
 | `display: flex; align-items: center; min-height: 100vh;` on scrollable page root | `display: block; min-height: 100dvh;` with natural vertical flow |
 | Hardcoded bottom offsets (e.g. `padding-bottom: 120px;`) | `calc(var(--app-bottom-nav-height) + var(--safe-bottom))` |
+
+## Navigation and quiz exits
+
+- Use `BackButton` with an explicit parent `href` for page Back actions. Use
+  `replace` on parent links, top-level tabs, and authentication redirects so
+  returning to a parent does not add a child-parent navigation loop.
+- Do not infer a Back destination from `history.length` or use `router.back()`
+  for page-level parent buttons. Keep forward topic/session links as pushes.
+- Register transient panels with `useBackLayer(open, onClose)`. Browser Back
+  and Escape close the most recently opened panel before leaving its page.
+- Register active quizzes with `useQuizLeaveGuard(active, parentHref)`. The shared
+  controller warns on browser Back, page Back, links, and reload/tab close.
+  Programmatic exits during a guarded session must use `useAppNavigation()`.
+  Completed/submitting sessions must release the guard before result navigation.
+- Tutor and solution panels have one visible Back control returning to the quiz.
+  Browser panel entries are temporary; do not add separate history listeners or
+  push another entry for each render, question, or answer.
+- Run `npx playwright test --config playwright.navigation.config.ts` for isolated
+  browser history regressions. Set `NAVIGATION_APP_URL` to a running local frontend
+  to also check representative subject quiz routes with mocked API responses.

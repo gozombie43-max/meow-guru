@@ -491,7 +491,7 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
           ========================================================================= */}
       <div className={styles.desktopContainer}>
         <header data-ui-chrome="header" className={styles.header}>
-          <Link data-ui-button="secondary"
+          <Link replace data-ui-button="secondary"
             href="/general-awareness"
             className={styles.backButton}
             aria-label="Back to General Awareness"
@@ -592,7 +592,7 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
       <div className={`${hubStyles.mobileContainer} ${hubStyles.fixedTopicsMobile}`}>
         {/* Mobile Topbar */}
         <header data-ui-chrome="header" data-hub-part="mobileTopbar" className={hubStyles.mobileTopbar}>
-          <Link
+          <Link replace
             href="/general-awareness"
             className={`${hubStyles.mobileBackBtn} ${styles.mobileBackBtn}`}
             aria-label="Back to General Awareness"
