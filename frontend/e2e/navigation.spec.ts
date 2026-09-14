@@ -36,6 +36,18 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
+/** Wait for the custom exit-confirmation modal state to appear. */
+const awaitConfirmation = (page: import("@playwright/test").Page) =>
+  expect.poll(() => page.evaluate(() => window.nav.getConfirmation() !== null)).toBe(true);
+
+/** Dismiss the custom confirmation (equivalent to old dialog.dismiss). */
+const dismissConfirmation = (page: import("@playwright/test").Page) =>
+  page.evaluate(() => window.nav.resolveConfirmation(false));
+
+/** Accept the custom confirmation (equivalent to old dialog.accept). */
+const acceptConfirmation = (page: import("@playwright/test").Page) =>
+  page.evaluate(() => window.nav.resolveConfirmation(true));
+
 test("Back closes the top panel before warning; cancelling does not grow history", async ({ page }) => {
   const length = await page.evaluate(() => {
     window.nav.addLayer(() => window.closedPanels.push("solution"));
@@ -48,14 +60,15 @@ test("Back closes the top panel before warning; cancelling does not grow history
   await page.evaluate(() => history.back());
   await expect.poll(() => page.evaluate(() => window.closedPanels)).toEqual(["tutor", "solution"]);
   for (let i = 0; i < 3; i++) {
-    const dialog = page.waitForEvent("dialog");
     await page.evaluate(() => history.back());
-    await (await dialog).dismiss();
+    await awaitConfirmation(page);
+    await dismissConfirmation(page);
     await expect.poll(() => page.evaluate(() => Boolean(history.state?.__meowNavigation))).toBe(true);
     expect(await page.evaluate(() => history.length)).toBe(length);
   }
-  page.once("dialog", dialog => dialog.accept());
   await page.evaluate(() => history.back());
+  await awaitConfirmation(page);
+  await acceptConfirmation(page);
   await expect(page).toHaveURL(/\/home$/);
 });
 
@@ -67,22 +80,22 @@ test("repeated open/close preserves router state and one temporary entry", async
     expect(await page.evaluate(() => history.length)).toBe(length);
   }
   expect(await page.evaluate(() => history.state.nextState)).toBe("preserved");
-  page.once("dialog", dialog => dialog.accept());
   await page.evaluate(() => window.nav.back(() => history.replaceState({}, "", "/topics")));
+  await awaitConfirmation(page);
+  await acceptConfirmation(page);
   await expect(page).toHaveURL(/\/topics$/);
   await page.evaluate(() => history.back());
   await expect(page).toHaveURL(/\/home$/);
 });
 
 test("parent links warn once and remove temporary history on acceptance", async ({ page }) => {
-  let prompts = 0;
-  page.on("dialog", dialog => { prompts++; void dialog.dismiss(); });
   await page.locator("#parent").click();
+  await awaitConfirmation(page);
+  await dismissConfirmation(page);
   await expect(page).toHaveURL(/\/quiz$/);
-  expect(prompts).toBe(1);
-  page.removeAllListeners("dialog");
-  page.once("dialog", dialog => dialog.accept());
   await page.locator("#parent").click();
+  await awaitConfirmation(page);
+  await acceptConfirmation(page);
   await expect(page).toHaveURL(/\/topics$/);
   await page.evaluate(() => history.back());
   await expect(page).toHaveURL(/\/home$/);
@@ -124,8 +137,9 @@ test("effect cleanup and immediate remount do not duplicate history", async ({ p
     window.removeGuard = window.nav.addGuard("Leave this quiz?", "/topics");
   });
   expect(await page.evaluate(() => history.length)).toBe(length);
-  page.once("dialog", dialog => dialog.accept());
   await page.evaluate(() => history.back());
+  await awaitConfirmation(page);
+  await acceptConfirmation(page);
   await expect(page).toHaveURL(/\/home$/);
 });
 
@@ -148,7 +162,8 @@ test("restoring a controller after reload reuses the existing history marker", a
     window.removeGuard = window.nav.addGuard("Leave this quiz?", "/topics");
   });
   expect(await page.evaluate(() => history.length)).toBe(length);
-  page.once("dialog", dialog => dialog.accept());
   await page.evaluate(() => history.back());
+  await awaitConfirmation(page);
+  await acceptConfirmation(page);
   await expect(page).toHaveURL(/\/home$/);
 });

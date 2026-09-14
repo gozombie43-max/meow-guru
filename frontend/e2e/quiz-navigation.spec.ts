@@ -39,11 +39,13 @@ for (const [parent, width] of [
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.evaluate(() => history.back());
     await expect(page.getByRole("dialog", { name: "AI Tutor", exact: true })).toHaveCount(0);
-    page.once("dialog", dialog => dialog.dismiss());
     await page.getByRole("button", { name: "Leave quiz", exact: true }).click();
+    await expect(page.getByRole("dialog", { name: /exit quiz/i })).toBeVisible();
+    await page.getByRole("button", { name: "Cancel", exact: true }).click();
     await expect(page.getByText("Your answer", { exact: true })).toBeVisible();
-    page.once("dialog", dialog => dialog.accept());
     await page.getByRole("button", { name: "Leave quiz", exact: true }).click();
+    await expect(page.getByRole("dialog", { name: /exit quiz/i })).toBeVisible();
+    await page.getByRole("button", { name: "Exit quiz", exact: true }).click();
     await expect(page).toHaveURL(`${appUrl}${parent}`);
   });
 }
