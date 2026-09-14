@@ -597,9 +597,9 @@ export default function QuizChatbot({
                       aria-label="Toggle dark mode"
                     >
                       {isDark ? (
-                        <Sun className="w-4 h-4 text-sky-500 shrink-0" />
+                        <Sun className="w-4 h-4 text-[var(--gr)] shrink-0" />
                       ) : (
-                        <Moon className="w-4 h-4 text-sky-500 shrink-0" />
+                        <Moon className="w-4 h-4 text-[var(--gr)] shrink-0" />
                       )}
                     </button>
                     <button data-ui-button="state"

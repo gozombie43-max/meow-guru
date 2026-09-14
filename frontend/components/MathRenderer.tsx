@@ -16,9 +16,13 @@ type Part =
 
 /** Cheap check for LaTeX/math delimiters — avoids KaTeX for pure text. */
 const MATH_INDICATOR_RE = /\\(?:\[|\(|frac|sqrt|sum|int|cdot|times|div|pm|infty|alpha|beta|gamma|theta|pi|sigma|delta|epsilon|lambda|mu|omega|text\{)|\$[^$]/;
+// Bare uploaded answers often omit math delimiters. Recognize explicit powers
+// and fraction commands without treating ordinary words as equations.
+const GROUP = String.raw`\{(?:[^{}]|\{[^{}]*\})*\}`;
+const BARE_MATH = String.raw`(?:\b\d+(?:\.\d+)?|\b[A-Za-z]|\([^()\n]+\))(?:\^|_)(?:${GROUP}|[+-]?\d+|[A-Za-z])|\\(?:dfrac|tfrac|frac)\s*${GROUP}\s*${GROUP}`;
 
 export function containsMathSyntax(text: string): boolean {
-  return MATH_INDICATOR_RE.test(text);
+  return MATH_INDICATOR_RE.test(text) || new RegExp(BARE_MATH).test(text);
 }
 
 // LRU/Map Caches for string parsing and KaTeX HTML rendering
@@ -59,7 +63,20 @@ function parseParts(input: string): Part[] {
     parts.push({ type: "text", content: safeInput.slice(lastIndex) });
   }
 
-  const result = parts.map((part) => ({
+  const expanded = parts.flatMap((part): Part[] => {
+    if (part.type !== "text") return [part];
+    const pieces: Part[] = [];
+    let cursor = 0;
+    for (const match of part.content.matchAll(new RegExp(BARE_MATH, "g"))) {
+      const index = match.index!;
+      if (index > cursor) pieces.push({ type: "text", content: part.content.slice(cursor, index) });
+      pieces.push({ type: "inline", content: match[0] });
+      cursor = index + match[0].length;
+    }
+    if (cursor < part.content.length) pieces.push({ type: "text", content: part.content.slice(cursor) });
+    return pieces;
+  });
+  const result = expanded.map((part) => ({
     ...part,
     content: part.content.replace(/__DOLLAR__/g, "$"),
   }));

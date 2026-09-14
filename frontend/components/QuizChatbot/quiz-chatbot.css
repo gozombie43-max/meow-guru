@@ -54,8 +54,9 @@
 }
 
 .quiz-chatbot-shell {
-  --or: var(--light-accent, #0071e3);
-  --orl: var(--light-accent-soft, #eaf3ff);
+  --or: color-mix(in srgb, var(--light-accent, #0071e3) 65%, var(--light-text-secondary, #586474));
+  --orl: color-mix(in srgb, var(--or) 8%, var(--light-surface, #fff));
+  --tutor-action: #416b9b;
   --dk: var(--light-text, #182230);
   --gr: var(--light-text-secondary, #586474);
   --bd: var(--light-border, #e2e5eb);
@@ -75,8 +76,8 @@
 }
 
 .quiz-chatbot-shell.dark {
-  --or: var(--dark-accent, #409cff);
-  --orl: #153451;
+  --or: color-mix(in srgb, var(--dark-accent, #409cff) 45%, var(--dark-text-muted, #a8aeb8));
+  --orl: color-mix(in srgb, var(--or) 10%, var(--dark-surface, #1c1c1e));
   --dk: var(--dark-text, #f1f2f4);
   --gr: var(--dark-text-muted, #a8aeb8);
   --bd: var(--dark-border, #303238);
@@ -409,7 +410,7 @@
   height: 44px;
   border: 0;
   border-radius: 12px;
-  background: #007aff;
+  background: var(--tutor-action);
   color: white;
   display: grid;
   place-items: center;
@@ -519,7 +520,7 @@
 }
 
 .quiz-chatbot-shell .slbl2 {
-  color: var(--or);
+  color: var(--gr);
   font-size: 13px;
   font-weight: 700;
 }
@@ -583,7 +584,7 @@
 }
 
 .quiz-chatbot-shell .sbody li::marker {
-  color: var(--or);
+  color: var(--gr);
   font-weight: 650;
 }
 

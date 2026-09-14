@@ -8,6 +8,12 @@ const fracRegex = /(\([^)]+\)|[^\s/()]+)\s*\/\s*(\([^)]+\)|[^\s/()]+)/g;
 const MathText = React.memo(function MathText({ text, className = "" }: Props) {
   if (!text) return <span className={className} />;
 
+  // Parse complete math expressions before the legacy slash-fraction layout;
+  // otherwise a slash inside an exponent or LaTeX group splits the expression.
+  if (containsMathSyntax(text)) {
+    return <MathRenderer text={text} className={className} />;
+  }
+
   // Fast path: no fractions or math syntax — render as plain text
   if (!text.includes('/') && !containsMathSyntax(text)) {
     return <span className={className}>{text}</span>;
