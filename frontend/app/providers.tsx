@@ -22,6 +22,21 @@ function AccountQueries({ children }: { children: ReactNode }) {
   );
 }
 
+function FirebaseClientBootstrap() {
+  useEffect(() => {
+    void import('@/lib/firebase/client');
+  }, []);
+
+  return null;
+}
+
 export default function ApplicationProviders({ children }: { children: ReactNode }) {
-  return <AuthProvider><AccountQueries>{children}</AccountQueries></AuthProvider>;
+  return (
+    <>
+      <FirebaseClientBootstrap />
+      <AuthProvider>
+        <AccountQueries>{children}</AccountQueries>
+      </AuthProvider>
+    </>
+  );
 }
