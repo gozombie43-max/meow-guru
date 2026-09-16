@@ -21,6 +21,7 @@ import {
 import api from '@/shared/api/client';
 import { isAxiosError } from 'axios';
 import { ChatMessage, QuizChatbotProps, buildQuestionContext } from './utils';
+import { GEMINI_TUTOR_MODEL, GEMINI_FALLBACK_MODEL, requestGeminiTutor, geminiErrorMessage } from './gemini';
 import './quiz-chatbot.css';
 
 type SupportedLang = "en" | "hi" | "bn";
@@ -231,6 +232,7 @@ export default function QuizChatbot({
   const [selectedModel, setSelectedModel] = useState("o4-mini");
   const [isModelMenuOpen, setIsModelMenuOpen] = useState(false);
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
+  const conversationRef = useRef<{ context: string; history: ChatMessage[] }>({ context: '', history: [] });
 
   const overlayRef = useRef<HTMLDivElement>(null);
   const modalRef = useRef<HTMLElement>(null);
@@ -352,27 +354,39 @@ export default function QuizChatbot({
     setIsLoading(true);
 
     try {
-      const response = await api.post(
-        '/api/ai/tutor-chat',
-        {
-          context,
-          message: text,
-          mode: "chat",
-          model: selectedModel,
-          lang: selectedLang,
-        },
-        {
-          timeout: 60000,
-        }
-      );
+      const history = conversationRef.current.context === context ? conversationRef.current.history : [];
+      let reply: string;
+      if (selectedModel === GEMINI_TUTOR_MODEL || selectedModel === GEMINI_FALLBACK_MODEL) {
+        reply = await requestGeminiTutor({ context, message: text, lang: selectedLang, history, model: selectedModel, onModelUsed: setSelectedModel });
+      } else {
+        const response = await api.post(
+          '/api/ai/tutor-chat',
+          {
+            context,
+            message: text,
+            mode: "chat",
+            model: selectedModel,
+            lang: selectedLang,
+            history,
+          },
+          {
+            timeout: 60000,
+          }
+        );
 
-      const reply =
-        response.data?.reply ||
-        response.data?.explanation ||
-        "I could not generate a response. Please try again.";
+        reply =
+          response.data?.reply ||
+          response.data?.explanation ||
+          "I could not generate a response. Please try again.";
+      }
+      conversationRef.current = {
+        context,
+        history: [...history, { role: 'user' as const, content: text }, { role: 'bot' as const, content: reply }].slice(-16),
+      };
       setMessages((prev) => [...prev, { role: "bot", content: reply }]);
     } catch (err: unknown) {
       const errorMessage =
+        (selectedModel === GEMINI_TUTOR_MODEL || selectedModel === GEMINI_FALLBACK_MODEL) ? geminiErrorMessage(err) :
         (isAxiosError<{ error?: string }>(err) ? err.response?.data?.error : undefined) ||
         (err instanceof Error ? err.message : '') ||
         "I could not reach the tutor service. Check the backend connection and try again.";
@@ -381,6 +395,8 @@ export default function QuizChatbot({
         {
           role: "bot",
           content: errorMessage,
+          isError: true,
+          retryText: text,
         },
       ]);
     } finally {
@@ -389,6 +405,18 @@ export default function QuizChatbot({
   }
 
   const modelOptions = [
+    {
+      name: GEMINI_FALLBACK_MODEL,
+      tier: "Firebase AI",
+      id: GEMINI_FALLBACK_MODEL,
+      description: "Alternative Gemini Flash model",
+    },
+    {
+      name: GEMINI_TUTOR_MODEL,
+      tier: "Firebase AI",
+      id: GEMINI_TUTOR_MODEL,
+      description: "Gemini Flash for quiz explanations and follow-up questions",
+    },
     {
       name: "o4-mini",
       tier: "Azure AI",
@@ -510,9 +538,10 @@ export default function QuizChatbot({
         onClick={() => setIsModelMenuOpen((prev) => !prev)}
         aria-expanded={isModelMenuOpen}
         aria-label={`Selected model: ${selectedModel}`}
-        title="Active Model: o4-mini (Azure AI)"
+        title={`Active Model: ${selectedModel}`}
+        disabled={isLoading}
       >
-        <span className="model-name">o4-mini</span>
+        <span className="model-name">{selectedModel}</span>
         <ChevronDown aria-hidden="true" />
       </button>
       <button data-ui-button="state"
@@ -678,7 +707,7 @@ export default function QuizChatbot({
                         <div className="ma" data-latest-response={index === messages.length - 1} key={`${message.role}-${index}`}>
                           <div className="sb">
                             <div className="sh2">
-                              <span className="slbl2">Solution</span>
+                              <span className="slbl2">{message.isError ? 'Unable to respond' : 'Solution'}</span>
                               <button data-ui-button="state"
                                 type="button"
                                 className="cpb"
@@ -687,8 +716,14 @@ export default function QuizChatbot({
                                 {copiedIndex === index ? "Copied!" : "Copy"}
                               </button>
                             </div>
-                            <div className="sbody">
+                            <div className="sbody" role={message.isError ? 'alert' : undefined}>
                               <TutorMarkdown content={message.content} />
+                              {message.isError && message.retryText && (
+                                <button type="button" data-ui-button="secondary" disabled={isLoading}
+                                  onClick={() => sendMessage(message.retryText)}>
+                                  Try again
+                                </button>
+                              )}
                             </div>
                           </div>
                           {index === messages.length - 1 && <div className="swrap">

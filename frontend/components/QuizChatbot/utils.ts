@@ -7,6 +7,8 @@ export const API = API_BASE;
 export type ChatMessage = {
   role: "bot" | "user";
   content: string;
+  isError?: boolean;
+  retryText?: string;
 };
 
 export interface QuizChatbotQuestion {
@@ -209,4 +211,3 @@ export function normalizeTutorMarkdown(content: string) {
       { lines: [], inPractice: false, inPracticeItem: false }
     ).lines.join("\n");
 }
-

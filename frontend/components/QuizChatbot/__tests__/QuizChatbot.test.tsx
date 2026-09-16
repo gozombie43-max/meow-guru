@@ -3,6 +3,12 @@ import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/re
 import QuizChatbot from '../index';
 import api from '@/lib/axios';
 import type { QuizChatbotQuestion } from '../utils';
+import { meowAIModel } from '@/lib/firebase/ai';
+
+vi.mock('@/lib/firebase/ai', () => ({
+  meowAIModel: { generateContent: vi.fn() },
+  fallbackAIModel: { generateContent: vi.fn() },
+}));
 
 vi.mock('@/lib/axios', () => ({
   default: {
@@ -21,6 +27,61 @@ const mockQuestion: QuizChatbotQuestion = {
 };
 
 describe('QuizChatbot Component', () => {
+  it('routes Gemini through Firebase with quiz context, language and successful follow-up history', async () => {
+    vi.mocked(meowAIModel.generateContent).mockResolvedValue({
+      response: { text: () => 'Gemini tutor reply' },
+    } as Awaited<ReturnType<typeof meowAIModel.generateContent>>);
+    render(<QuizChatbot isVisible questionNumber={1} topicTitle="General Awareness" question={mockQuestion} />);
+    fireEvent.click(screen.getByRole('button', { name: /Ask AI Tutor/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Selected model: o4-mini/i }));
+    fireEvent.click(screen.getByRole('button', { name: /gemini-3.8-flash/i }));
+    expect(screen.getByRole('button', { name: 'Selected model: gemini-3.8-flash' })).toHaveTextContent('gemini-3.8-flash');
+    fireEvent.click(screen.getByRole('button', { name: 'हिंदी' }));
+    fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Explain this' } });
+    fireEvent.click(screen.getByRole('button', { name: /Send message/i }));
+    await screen.findByText('Gemini tutor reply');
+    expect(api.post).not.toHaveBeenCalled();
+    expect(meowAIModel.generateContent).toHaveBeenLastCalledWith(expect.objectContaining({
+      systemInstruction: expect.stringContaining('Respond in Hindi'),
+      contents: expect.arrayContaining([
+        { role: 'user', parts: [{ text: expect.stringContaining('Correct answer: New Delhi') }] },
+        { role: 'user', parts: [{ text: 'Explain this' }] },
+      ]),
+    }));
+    fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Why?' } });
+    fireEvent.click(screen.getByRole('button', { name: /Send message/i }));
+    await waitFor(() => expect(meowAIModel.generateContent).toHaveBeenCalledTimes(2));
+    expect(meowAIModel.generateContent).toHaveBeenLastCalledWith(expect.objectContaining({
+      contents: expect.arrayContaining([
+        { role: 'user', parts: [{ text: 'Explain this' }] },
+        { role: 'model', parts: [{ text: 'Gemini tutor reply' }] },
+        { role: 'user', parts: [{ text: 'Why?' }] },
+      ]),
+    }));
+    await waitFor(() => expect(screen.getByRole('textbox')).not.toBeDisabled());
+  });
+
+  it('shows Firebase failures without silently switching to Azure', async () => {
+    vi.mocked(meowAIModel.generateContent).mockRejectedValue(new Error('Gemini unavailable'));
+    render(<QuizChatbot isVisible questionNumber={1} topicTitle="General Awareness" question={mockQuestion} />);
+    fireEvent.click(screen.getByRole('button', { name: /Ask AI Tutor/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Selected model: o4-mini/i }));
+    fireEvent.click(screen.getByRole('button', { name: /gemini-3.8-flash/i }));
+    fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Explain this' } });
+    fireEvent.click(screen.getByRole('button', { name: /Send message/i }));
+    await screen.findByText('Gemini could not complete this request. Please try again, or select o4-mini to continue.');
+    expect(screen.getByRole('alert')).toHaveTextContent('Gemini could not complete');
+    expect(screen.getByText('Unable to respond')).toBeInTheDocument();
+    expect(api.post).not.toHaveBeenCalled();
+    expect(screen.getByRole('textbox')).not.toBeDisabled();
+    vi.mocked(meowAIModel.generateContent).mockResolvedValue({ response: { text: () => 'Recovered reply' } } as Awaited<ReturnType<typeof meowAIModel.generateContent>>);
+    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    await screen.findByText('Recovered reply');
+    const payload = vi.mocked(meowAIModel.generateContent).mock.calls[1][0];
+    expect(JSON.stringify(payload)).toContain('Explain this');
+    expect(JSON.stringify(payload)).not.toContain('Gemini could not complete');
+  });
+
   beforeEach(() => {
     vi.resetAllMocks();
   });

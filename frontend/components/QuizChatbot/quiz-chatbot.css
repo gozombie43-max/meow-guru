@@ -405,6 +405,12 @@
   display: none;
 }
 
+.quiz-chatbot-shell .tutor-model-pill .model-name {
+  max-width: clamp(72px, 22vw, 180px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .quiz-chatbot-shell .tutor-send-btn {
   width: 44px;
   height: 44px;
