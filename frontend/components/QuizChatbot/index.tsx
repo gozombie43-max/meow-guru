@@ -231,6 +231,7 @@ export default function QuizChatbot({
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [selectedModel, setSelectedModel] = useState(GEMINI_TUTOR_MODEL);
   const [isModelMenuOpen, setIsModelMenuOpen] = useState(false);
+  const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
   const conversationRef = useRef<{ context: string; history: ChatMessage[] }>({ context: '', history: [] });
 
@@ -239,7 +240,11 @@ export default function QuizChatbot({
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const modelMenuRef = useRef<HTMLDivElement>(null);
+  const modelButtonRef = useRef<HTMLButtonElement>(null);
+  const langMenuRef = useRef<HTMLDivElement>(null);
+  const langButtonRef = useRef<HTMLButtonElement>(null);
   const addMenuRef = useRef<HTMLDivElement>(null);
+  const addButtonRef = useRef<HTMLButtonElement>(null);
 
   const handleClose = useCallback(() => setIsOpen(false), []);
   useBackLayer(isOpen, handleClose);
@@ -256,9 +261,11 @@ export default function QuizChatbot({
     updateViewport();
     viewport?.addEventListener("resize", updateViewport);
     viewport?.addEventListener("scroll", updateViewport);
+    document.body.classList.add("tutor-modal-open");
     return () => {
       viewport?.removeEventListener("resize", updateViewport);
       viewport?.removeEventListener("scroll", updateViewport);
+      document.body.classList.remove("tutor-modal-open");
     };
   }, [isOpen]);
 
@@ -274,10 +281,25 @@ export default function QuizChatbot({
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
-      if (modelMenuRef.current && !modelMenuRef.current.contains(target)) {
+      if (
+        modelMenuRef.current &&
+        !modelMenuRef.current.contains(target) &&
+        !modelButtonRef.current?.contains(target)
+      ) {
         setIsModelMenuOpen(false);
       }
-      if (addMenuRef.current && !addMenuRef.current.contains(target)) {
+      if (
+        langMenuRef.current &&
+        !langMenuRef.current.contains(target) &&
+        !langButtonRef.current?.contains(target)
+      ) {
+        setIsLangMenuOpen(false);
+      }
+      if (
+        addMenuRef.current &&
+        !addMenuRef.current.contains(target) &&
+        !addButtonRef.current?.contains(target)
+      ) {
         setIsAddMenuOpen(false);
       }
     };
@@ -467,92 +489,47 @@ export default function QuizChatbot({
         </div>
       )}
 
-      {isModelMenuOpen && (
-        <div className="tutor-model-menu" ref={modelMenuRef}>
-          <div className="tutor-menu-heading">
-            <div className="tutor-menu-header">Active AI Model</div>
-            <button
-              type="button"
-              data-ui-button="state"
-              className="closebtn"
-              aria-label="Close model menu"
-              onClick={() => setIsModelMenuOpen(false)}
-            >
-              <X size={20} aria-hidden="true" />
-            </button>
-          </div>
-          {modelOptions.map((item) => (
-            <button data-ui-button="state"
-              key={item.id}
-              type="button"
-              className={`tutor-menu-item${selectedModel === item.id ? " active" : ""}`}
-              onClick={() => {
-                setSelectedModel(item.id);
-                setIsModelMenuOpen(false);
-              }}
-            >
-              <div className="tutor-model-item-text">
-                <div className="model-title-row">
-                  <span className="model-name">{item.name}</span>
-                  <span className="model-badge">{item.tier}</span>
-                </div>
-                <span className="model-desc">{item.description}</span>
-              </div>
-              {selectedModel === item.id && <Check className="w-4 h-4 text-blue-500 shrink-0" />}
-            </button>
-          ))}
+      <div className="tutor-input-bar">
+        <button data-ui-button="state"
+          ref={addButtonRef}
+          type="button"
+          className={`tutor-plus-btn${isAddMenuOpen ? " active" : ""}`}
+          onClick={() => setIsAddMenuOpen((prev) => !prev)}
+          aria-expanded={isAddMenuOpen}
+          aria-label="Quick prompts"
+          title="Quick prompts"
+        >
+          <Plus className="w-4 h-4" strokeWidth={2.2} />
+        </button>
+
+        <div className="tutor-input-capsule">
+          <textarea
+            ref={textareaRef}
+            className="tutor-textarea"
+            value={input}
+            onChange={(event) => setInput(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
+                event.preventDefault();
+                handleSend();
+              }
+            }}
+            placeholder={currentContent.placeholder}
+            rows={1}
+            disabled={isLoading}
+            aria-label={currentContent.placeholder}
+          />
+          <button data-ui-button="state"
+            type="button"
+            className={`tutor-send-btn${hasInput && !isLoading ? " ready" : ""}`}
+            onClick={handleSend}
+            aria-label="Send message"
+            disabled={isLoading || !hasInput}
+          >
+            <ArrowUp className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+          </button>
         </div>
-      )}
-
-      <button data-ui-button="state"
-        type="button"
-        className={`tutor-plus-btn${isAddMenuOpen ? " active" : ""}`}
-        onClick={() => setIsAddMenuOpen((prev) => !prev)}
-        aria-expanded={isAddMenuOpen}
-        aria-label="Quick prompts"
-        title="Quick prompts"
-      >
-        <Plus className="w-4.5 h-4.5" />
-      </button>
-      <span className="tutor-input-divider" aria-hidden="true" />
-      <textarea
-        ref={textareaRef}
-        className="tutor-textarea"
-        value={input}
-        onChange={(event) => setInput(event.target.value)}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
-            event.preventDefault();
-            handleSend();
-          }
-        }}
-        placeholder={currentContent.placeholder}
-        rows={1}
-        disabled={isLoading}
-        aria-label={currentContent.placeholder}
-      />
-
-      <button data-ui-button="state"
-        type="button"
-        className="tutor-model-pill"
-        onClick={() => setIsModelMenuOpen((prev) => !prev)}
-        aria-expanded={isModelMenuOpen}
-        aria-label={`Selected model: ${selectedModel}`}
-        title={`Active Model: ${selectedModel}`}
-        disabled={isLoading}
-      >
-        <span className="model-name">{selectedModel}</span>
-        <ChevronDown aria-hidden="true" />
-      </button>
-      <button data-ui-button="state"
-        type="button"
-        className={`tutor-send-btn${hasInput && !isLoading ? " ready" : ""}`}
-        onClick={handleSend}
-        aria-label="Send message"
-        disabled={isLoading || !hasInput}
-      >
-        <ArrowUp className="w-4.5 h-4.5 text-white" strokeWidth={2.5} />
-      </button>
+      </div>
     </div>
   );
 
@@ -589,57 +566,114 @@ export default function QuizChatbot({
             <div className={`quiz-chatbot-shell${isDark ? " dark" : ""}`} data-theme={isDark ? "dark" : "light"}>
               <header className="tutor-header">
                 <div className="topbar">
-                  <div id="quiz-chatbot-title" className="logo">AI Tutor</div>
-                  <div className="topbar-left">
-                    <select
-                      className="tutor-language-select"
-                      aria-label="Response language"
-                      value={selectedLang}
-                      onChange={(event) => setSelectedLang(event.target.value as SupportedLang)}
-                    >
-                      {LANG_OPTIONS.map((item) => (
-                        <option key={item.code} value={item.code}>{item.label}</option>
-                      ))}
-                    </select>
-                    <div className="tutor-lang-toggle" role="group" aria-label="Response language">
-                      {LANG_OPTIONS.map((item) => (
-                        <button data-ui-button="state"
-                          key={item.code}
-                          type="button"
-                          className={`tutor-lang-btn${selectedLang === item.code ? " active" : ""}`}
-                          onClick={() => setSelectedLang(item.code)}
-                          aria-label={item.label}
-                          aria-pressed={selectedLang === item.code}
-                        >
-                          {item.label}
-                        </button>
-                      ))}
+                  <div className="topbar-brand">
+                    <div id="quiz-chatbot-title" className="logo">AI Tutor</div>
+                    <div className="tutor-header-dropdown-wrap">
+                      <button data-ui-button="state"
+                        ref={modelButtonRef}
+                        type="button"
+                        className="tutor-header-pill tutor-model-pill"
+                        onClick={() => {
+                          setIsModelMenuOpen((prev) => !prev);
+                          setIsLangMenuOpen(false);
+                        }}
+                        aria-expanded={isModelMenuOpen}
+                        aria-label={`Selected model: ${selectedModel}`}
+                        title={`Active Model: ${selectedModel}`}
+                        disabled={isLoading}
+                      >
+                        <span className="model-name">{selectedModel}</span>
+                        <ChevronDown className="w-2.5 h-2.5 opacity-60 shrink-0" aria-hidden="true" />
+                      </button>
+
+                      {isModelMenuOpen && (
+                        <div className="tutor-dropdown-modal tutor-model-menu" ref={modelMenuRef}>
+                          <div className="tutor-dropdown-title">Active AI Model</div>
+                          <div className="tutor-dropdown-list">
+                            {modelOptions.map((item) => (
+                              <button data-ui-button="state"
+                                key={item.id}
+                                type="button"
+                                className={`tutor-dropdown-item tutor-menu-item${selectedModel === item.id ? " active" : ""}`}
+                                onClick={() => {
+                                  setSelectedModel(item.id);
+                                  setIsModelMenuOpen(false);
+                                }}
+                              >
+                                <div className="tutor-dropdown-item-main">
+                                  <div className="model-title-row">
+                                    <span className="model-name">{item.name}</span>
+                                    <span className="model-badge">{item.tier}</span>
+                                  </div>
+                                  <span className="model-desc">{item.description}</span>
+                                </div>
+                                {selectedModel === item.id && <Check className="w-4 h-4 text-blue-500 shrink-0" />}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
 
-                  <div className="top-actions">
-                    <button data-ui-button="state"
-                      type="button"
-                      className="dmbtn"
-                      onClick={() => setIsDark((prev) => !prev)}
-                      title="Toggle dark mode"
-                      aria-label="Toggle dark mode"
-                    >
-                      {isDark ? (
-                        <Sun className="w-4 h-4 text-[var(--gr)] shrink-0" />
-                      ) : (
-                        <Moon className="w-4 h-4 text-[var(--gr)] shrink-0" />
-                      )}
-                    </button>
-                    <button data-ui-button="state"
-                      type="button"
-                      className="closebtn"
-                      onClick={handleClose}
-                      title="Back to quiz"
-                      aria-label="Back to quiz"
-                    >
-                      <ArrowLeft className="w-4.5 h-4.5 shrink-0" />
-                    </button>
+                  <div className="topbar-right">
+                    <div className="tutor-header-dropdown-wrap">
+                      <button data-ui-button="state"
+                        ref={langButtonRef}
+                        type="button"
+                        className="tutor-header-pill tutor-lang-pill"
+                        onClick={() => {
+                          setIsLangMenuOpen((prev) => !prev);
+                          setIsModelMenuOpen(false);
+                        }}
+                        aria-expanded={isLangMenuOpen}
+                        aria-label="Response language"
+                        title="Change Language"
+                      >
+                        <span className="lang-name">
+                          {LANG_OPTIONS.find(l => l.code === selectedLang)?.label || "English"}
+                        </span>
+                        <ChevronDown className="w-2.5 h-2.5 opacity-60 shrink-0" aria-hidden="true" />
+                      </button>
+
+                      <div className={`tutor-dropdown-modal tutor-lang-menu${isLangMenuOpen ? " open" : ""}`} ref={langMenuRef}>
+                        <div className="tutor-dropdown-title">Language</div>
+                        <div className="tutor-dropdown-list tutor-lang-toggle" role="group" aria-label="Response language">
+                          {LANG_OPTIONS.map((item) => (
+                            <button data-ui-button="state"
+                              key={item.code}
+                              type="button"
+                              className={`tutor-dropdown-item tutor-lang-btn${selectedLang === item.code ? " active" : ""}`}
+                              onClick={() => {
+                                setSelectedLang(item.code);
+                                setIsLangMenuOpen(false);
+                              }}
+                              aria-label={item.label}
+                              aria-pressed={selectedLang === item.code}
+                            >
+                              <span className="lang-label">{item.label}</span>
+                              {selectedLang === item.code && <Check className="w-4 h-4 text-blue-500 shrink-0" />}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="top-actions">
+                      <button data-ui-button="state"
+                        type="button"
+                        className="dmbtn"
+                        onClick={() => setIsDark((prev) => !prev)}
+                        title="Toggle dark mode"
+                        aria-label="Toggle dark mode"
+                      >
+                        {isDark ? (
+                          <Sun className="w-4 h-4 text-[var(--gr)] shrink-0" />
+                        ) : (
+                          <Moon className="w-4 h-4 text-[var(--gr)] shrink-0" />
+                        )}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </header>
