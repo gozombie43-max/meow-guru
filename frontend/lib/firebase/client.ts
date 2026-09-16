@@ -41,19 +41,17 @@ if (typeof window !== "undefined") {
   const siteKey =
     process.env.NEXT_PUBLIC_FIREBASE_APPCHECK_SITE_KEY;
 
-  if (!siteKey) {
-    throw new Error(
-      "Missing NEXT_PUBLIC_FIREBASE_APPCHECK_SITE_KEY"
-    );
-  }
-
-  if (!appCheckGlobal.__meowAppCheck) {
+  if (siteKey && !appCheckGlobal.__meowAppCheck) {
     appCheckGlobal.__meowAppCheck = initializeAppCheck(
       firebaseApp,
       {
         provider: new ReCaptchaEnterpriseProvider(siteKey),
         isTokenAutoRefreshEnabled: true,
       }
+    );
+  } else if (!siteKey && process.env.NODE_ENV === "production") {
+    throw new Error(
+      "Missing NEXT_PUBLIC_FIREBASE_APPCHECK_SITE_KEY"
     );
   }
 

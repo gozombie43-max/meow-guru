@@ -33,6 +33,7 @@ export function proxy(request: NextRequest) {
     pathname === '/login' ||
     pathname === '/register' ||
     pathname === '/favicon.ico' ||
+    pathname === '/ai-test' ||
     // Static file extensions
     /\.(?:png|jpg|jpeg|gif|svg|ico|webp|css|js|woff2?|ttf|eot)$/i.test(pathname);
 

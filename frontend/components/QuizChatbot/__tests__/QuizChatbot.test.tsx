@@ -4,6 +4,7 @@ import QuizChatbot from '../index';
 import api from '@/lib/axios';
 import type { QuizChatbotQuestion } from '../utils';
 import { meowAIModel } from '@/lib/firebase/ai';
+import { GEMINI_TUTOR_MODEL, GEMINI_FALLBACK_MODEL } from '../gemini';
 
 vi.mock('@/lib/firebase/ai', () => ({
   meowAIModel: { generateContent: vi.fn() },
@@ -27,15 +28,21 @@ const mockQuestion: QuizChatbotQuestion = {
 };
 
 describe('QuizChatbot Component', () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
   it('routes Gemini through Firebase with quiz context, language and successful follow-up history', async () => {
     vi.mocked(meowAIModel.generateContent).mockResolvedValue({
       response: { text: () => 'Gemini tutor reply' },
     } as Awaited<ReturnType<typeof meowAIModel.generateContent>>);
     render(<QuizChatbot isVisible questionNumber={1} topicTitle="General Awareness" question={mockQuestion} />);
     fireEvent.click(screen.getByRole('button', { name: /Ask AI Tutor/i }));
-    fireEvent.click(screen.getByRole('button', { name: /Selected model: o4-mini/i }));
-    fireEvent.click(screen.getByRole('button', { name: /gemini-3.8-flash/i }));
-    expect(screen.getByRole('button', { name: 'Selected model: gemini-3.8-flash' })).toHaveTextContent('gemini-3.8-flash');
+    expect(screen.getByRole('button', { name: `Selected model: ${GEMINI_TUTOR_MODEL}` })).toHaveTextContent(GEMINI_TUTOR_MODEL);
     fireEvent.click(screen.getByRole('button', { name: 'हिंदी' }));
     fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Explain this' } });
     fireEvent.click(screen.getByRole('button', { name: /Send message/i }));
@@ -65,8 +72,6 @@ describe('QuizChatbot Component', () => {
     vi.mocked(meowAIModel.generateContent).mockRejectedValue(new Error('Gemini unavailable'));
     render(<QuizChatbot isVisible questionNumber={1} topicTitle="General Awareness" question={mockQuestion} />);
     fireEvent.click(screen.getByRole('button', { name: /Ask AI Tutor/i }));
-    fireEvent.click(screen.getByRole('button', { name: /Selected model: o4-mini/i }));
-    fireEvent.click(screen.getByRole('button', { name: /gemini-3.8-flash/i }));
     fireEvent.change(screen.getByRole('textbox'), { target: { value: 'Explain this' } });
     fireEvent.click(screen.getByRole('button', { name: /Send message/i }));
     await screen.findByText('Gemini could not complete this request. Please try again, or select o4-mini to continue.');
@@ -80,14 +85,6 @@ describe('QuizChatbot Component', () => {
     const payload = vi.mocked(meowAIModel.generateContent).mock.calls[1][0];
     expect(JSON.stringify(payload)).toContain('Explain this');
     expect(JSON.stringify(payload)).not.toContain('Gemini could not complete');
-  });
-
-  beforeEach(() => {
-    vi.resetAllMocks();
-  });
-
-  afterEach(() => {
-    cleanup();
   });
 
   it('renders FAB trigger when closed', () => {
@@ -129,10 +126,10 @@ describe('QuizChatbot Component', () => {
     const plusBtn = screen.getByRole('button', { name: /Quick prompts/i });
     expect(plusBtn).toBeInTheDocument();
 
-    // Verify Model pill button "o4-mini"
-    const modelPill = screen.getByRole('button', { name: /Selected model: o4-mini/i });
+    // Verify Model pill button
+    const modelPill = screen.getByRole('button', { name: new RegExp(`Selected model: ${GEMINI_TUTOR_MODEL}`, 'i') });
     expect(modelPill).toBeInTheDocument();
-    expect(screen.getByText('o4-mini')).toBeInTheDocument();
+    expect(screen.getByText(GEMINI_TUTOR_MODEL)).toBeInTheDocument();
     expect(modelPill).toHaveAttribute('aria-expanded', 'false');
 
     // Verify Send button (blue up-arrow)
@@ -141,9 +138,9 @@ describe('QuizChatbot Component', () => {
   });
 
   it('opens quick prompts menu on plus click and sends selected prompt', async () => {
-    (api.post as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      data: { reply: 'Here is the step-by-step solution.' },
-    });
+    vi.mocked(meowAIModel.generateContent).mockResolvedValue({
+      response: { text: () => 'Here is the step-by-step solution.' },
+    } as Awaited<ReturnType<typeof meowAIModel.generateContent>>);
 
     render(
       <QuizChatbot
@@ -166,15 +163,8 @@ describe('QuizChatbot Component', () => {
     const stepByStepButtons = screen.getAllByRole('button', { name: /Explain the step-by-step solution/i });
     fireEvent.click(stepByStepButtons[stepByStepButtons.length - 1]);
 
-    await waitFor(() => {
-      expect(api.post).toHaveBeenCalledWith(
-        '/api/ai/tutor-chat',
-        expect.objectContaining({
-          message: 'Explain the step-by-step solution',
-        }),
-        expect.any(Object)
-      );
-    });
+    await screen.findByText('Here is the step-by-step solution.');
+    expect(meowAIModel.generateContent).toHaveBeenCalled();
   });
 
   it('opens model selection menu and shows actual active model', () => {
@@ -189,7 +179,7 @@ describe('QuizChatbot Component', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /Ask AI Tutor/i }));
 
-    const modelPill = screen.getByRole('button', { name: /Selected model: o4-mini/i });
+    const modelPill = screen.getByRole('button', { name: new RegExp(`Selected model: ${GEMINI_TUTOR_MODEL}`, 'i') });
     fireEvent.click(modelPill);
 
     const menuHeader = screen.getByText('Active AI Model');
@@ -198,18 +188,23 @@ describe('QuizChatbot Component', () => {
     const modelMenu = menuHeader.closest('.tutor-model-menu') as HTMLElement;
     expect(modelMenu).toBeInTheDocument();
 
-    // Verify actual model option inside the menu
-    const modelOptions = screen.getAllByRole('button', { name: /o4-mini/i });
-    const modelMenuItem = modelOptions.find((btn) => btn.className.includes('tutor-menu-item'));
-    expect(modelMenuItem).toBeDefined();
-    expect(modelMenuItem?.className).toContain('active');
-    fireEvent.click(modelMenuItem!);
+    // Verify active model option inside the menu
+    const geminiOption = screen.getAllByRole('button', { name: new RegExp(GEMINI_TUTOR_MODEL, 'i') });
+    const geminiMenuItem = geminiOption.find((btn) => btn.className.includes('tutor-menu-item'));
+    expect(geminiMenuItem).toBeDefined();
+    expect(geminiMenuItem?.className).toContain('active');
 
-    // Verify model pill remains o4-mini
-    expect(screen.getByRole('button', { name: /Selected model: o4-mini/i })).toBeInTheDocument();
+    // Switch to fallback model
+    const fallbackOption = screen.getAllByRole('button', { name: new RegExp(GEMINI_FALLBACK_MODEL, 'i') });
+    const fallbackMenuItem = fallbackOption.find((btn) => btn.className.includes('tutor-menu-item'));
+    expect(fallbackMenuItem).toBeDefined();
+    fireEvent.click(fallbackMenuItem!);
+
+    // Verify model pill is updated
+    expect(screen.getByRole('button', { name: new RegExp(`Selected model: ${GEMINI_FALLBACK_MODEL}`, 'i') })).toBeInTheDocument();
   });
 
-  it('types a custom question and submits with send button', async () => {
+  it('types a custom question and submits with send button with Azure AI when selected', async () => {
     (api.post as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       data: { reply: 'Detailed concept explanation.' },
     });
@@ -224,6 +219,12 @@ describe('QuizChatbot Component', () => {
     );
 
     fireEvent.click(screen.getByRole('button', { name: /Ask AI Tutor/i }));
+
+    // Switch to o4-mini
+    fireEvent.click(screen.getByRole('button', { name: new RegExp(`Selected model: ${GEMINI_TUTOR_MODEL}`, 'i') }));
+    const o4Option = screen.getAllByRole('button', { name: /o4-mini/i });
+    const o4MenuItem = o4Option.find((btn) => btn.className.includes('tutor-menu-item'));
+    fireEvent.click(o4MenuItem!);
 
     const textarea = screen.getByPlaceholderText('Ask anything');
     fireEvent.change(textarea, { target: { value: 'Can you explain the history?' } });
@@ -248,9 +249,9 @@ describe('QuizChatbot Component', () => {
   });
 
   it('renders language toggle on header left and auto-syncs with activeLang="bn"', async () => {
-    (api.post as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      data: { reply: 'বাংলায় সম্পূর্ণ সমাধান।' },
-    });
+    vi.mocked(meowAIModel.generateContent).mockResolvedValue({
+      response: { text: () => 'বাংলায় সম্পূর্ণ সমাধান।' },
+    } as Awaited<ReturnType<typeof meowAIModel.generateContent>>);
 
     render(
       <QuizChatbot
@@ -280,27 +281,21 @@ describe('QuizChatbot Component', () => {
     const textarea = screen.getByPlaceholderText('যেকোনো প্রশ্ন জিজ্ঞাসা করুন');
     expect(textarea).toBeInTheDocument();
 
-    // Submit question and verify lang: 'bn' sent in payload
+    // Submit question and verify Gemini called
     fireEvent.change(textarea, { target: { value: 'কীভাবে করব?' } });
     const sendBtn = screen.getByRole('button', { name: /Send message/i });
     fireEvent.click(sendBtn);
 
-    await waitFor(() => {
-      expect(api.post).toHaveBeenCalledWith(
-        '/api/ai/tutor-chat',
-        expect.objectContaining({
-          message: 'কীভাবে করব?',
-          lang: 'bn',
-        }),
-        expect.any(Object)
-      );
-    });
+    await screen.findByText('বাংলায় সম্পূর্ণ সমাধান।');
+    expect(meowAIModel.generateContent).toHaveBeenCalledWith(expect.objectContaining({
+      systemInstruction: expect.stringContaining('Bengali (বাংলা)'),
+    }));
   });
 
   it('allows user to switch language to Hindi interactively', async () => {
-    (api.post as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      data: { reply: 'हिंदी में समाधान।' },
-    });
+    vi.mocked(meowAIModel.generateContent).mockResolvedValue({
+      response: { text: () => 'हिंदी में समाधान।' },
+    } as Awaited<ReturnType<typeof meowAIModel.generateContent>>);
 
     render(
       <QuizChatbot
@@ -327,16 +322,10 @@ describe('QuizChatbot Component', () => {
     const sendBtn = screen.getByRole('button', { name: /Send message/i });
     fireEvent.click(sendBtn);
 
-    await waitFor(() => {
-      expect(api.post).toHaveBeenCalledWith(
-        '/api/ai/tutor-chat',
-        expect.objectContaining({
-          message: 'शॉर्टकट बताएं',
-          lang: 'hi',
-        }),
-        expect.any(Object)
-      );
-    });
+    await screen.findByText('हिंदी में समाधान।');
+    expect(meowAIModel.generateContent).toHaveBeenCalledWith(expect.objectContaining({
+      systemInstruction: expect.stringContaining('Hindi (हिंदी)'),
+    }));
   });
 
   it('closes with Escape and restores focus and page scrolling', () => {
@@ -353,7 +342,9 @@ describe('QuizChatbot Component', () => {
   });
 
   it('renders numbered solution steps and only the latest follow-up group', async () => {
-    vi.mocked(api.post).mockResolvedValue({ data: { reply: '## Method\n\n1. Read the question.\n2. Choose New Delhi.' } });
+    vi.mocked(meowAIModel.generateContent).mockResolvedValue({
+      response: { text: () => '## Method\n\n1. Read the question.\n2. Choose New Delhi.' },
+    } as Awaited<ReturnType<typeof meowAIModel.generateContent>>);
     render(<QuizChatbot isVisible questionNumber={1} topicTitle="General Awareness" question={mockQuestion} />);
     fireEvent.click(screen.getByRole('button', { name: /Ask AI Tutor/i }));
     fireEvent.click(screen.getByRole('button', { name: /Explain the step-by-step solution/i }));

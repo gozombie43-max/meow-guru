@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { requestGeminiTutor, geminiErrorMessage, getGeminiFailure } from '../gemini';
+import { requestGeminiTutor, geminiErrorMessage, getGeminiFailure, GEMINI_FALLBACK_MODEL } from '../gemini';
 import { meowAIModel, fallbackAIModel } from '@/lib/firebase/ai';
 
 vi.mock('@/lib/firebase/ai', () => ({
@@ -44,7 +44,7 @@ describe('Gemini capacity recovery', () => {
     expect(meowAIModel.generateContent).toHaveBeenCalledTimes(2);
     expect(fallbackAIModel.generateContent).toHaveBeenCalledTimes(1);
     expect(fallbackAIModel.generateContent).toHaveBeenCalledWith(vi.mocked(meowAIModel.generateContent).mock.calls[0][0]);
-    expect(onModelUsed).toHaveBeenCalledWith('gemini-3.7-flash');
+    expect(onModelUsed).toHaveBeenCalledWith(GEMINI_FALLBACK_MODEL);
   });
 
   it('stops after the bounded attempts when both models are busy', async () => {
@@ -69,7 +69,7 @@ describe('Gemini capacity recovery', () => {
 
   it('retries a selected fallback without switching back to primary', async () => {
     vi.mocked(fallbackAIModel.generateContent).mockRejectedValueOnce(busy).mockResolvedValueOnce(success);
-    const pending = requestGeminiTutor({ ...request, model: 'gemini-3.7-flash' });
+    const pending = requestGeminiTutor({ ...request, model: GEMINI_FALLBACK_MODEL });
     await vi.runAllTimersAsync();
     await expect(pending).resolves.toBe('Use this shortcut.');
     expect(meowAIModel.generateContent).not.toHaveBeenCalled();

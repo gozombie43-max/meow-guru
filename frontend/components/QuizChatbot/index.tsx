@@ -229,7 +229,7 @@ export default function QuizChatbot({
   const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
-  const [selectedModel, setSelectedModel] = useState("o4-mini");
+  const [selectedModel, setSelectedModel] = useState(GEMINI_TUTOR_MODEL);
   const [isModelMenuOpen, setIsModelMenuOpen] = useState(false);
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
   const conversationRef = useRef<{ context: string; history: ChatMessage[] }>({ context: '', history: [] });
@@ -406,16 +406,16 @@ export default function QuizChatbot({
 
   const modelOptions = [
     {
-      name: GEMINI_FALLBACK_MODEL,
-      tier: "Firebase AI",
-      id: GEMINI_FALLBACK_MODEL,
-      description: "Alternative Gemini Flash model",
-    },
-    {
       name: GEMINI_TUTOR_MODEL,
       tier: "Firebase AI",
       id: GEMINI_TUTOR_MODEL,
-      description: "Gemini Flash for quiz explanations and follow-up questions",
+      description: "Gemini 3.6 Flash for step-by-step quiz explanations and follow-ups",
+    },
+    {
+      name: GEMINI_FALLBACK_MODEL,
+      tier: "Firebase AI",
+      id: GEMINI_FALLBACK_MODEL,
+      description: "Gemini 3.5 Flash Lite for fast, lightweight responses",
     },
     {
       name: "o4-mini",
