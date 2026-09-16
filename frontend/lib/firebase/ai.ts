@@ -7,15 +7,19 @@ import {
 } from "firebase/ai";
 
 import { firebaseApp } from "./client";
+import {
+  GEMINI_TUTOR_MODEL,
+  GEMINI_FALLBACK_MODEL,
+} from "./models";
 
 const ai = getAI(firebaseApp, {
   backend: new GoogleAIBackend(),
 });
 
 export const meowAIModel = getGenerativeModel(ai, {
-  model: "gemini-3.8-flash",
+  model: GEMINI_TUTOR_MODEL,
 });
 
 export const fallbackAIModel = getGenerativeModel(ai, {
-  model: "gemini-3.7-flash",
+  model: GEMINI_FALLBACK_MODEL,
 });
