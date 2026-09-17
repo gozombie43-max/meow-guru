@@ -12,11 +12,7 @@ import { SolutionBottomSheet } from "@/components/quiz-engine/ui/SolutionViews";
 import { UptimeTimer } from "../QuizTimer";
 import { motion } from "framer-motion";
 import { XCircle } from "lucide-react";
-import dynamic from "next/dynamic";
 import type { QuizController } from "../hooks/useQuizController";
-const QuizChatbot = dynamic(() => import("@/components/QuizChatbot"), {
-  ssr: false,
-});
 export function MobileQuizView({
   routeBase,
   slug,
@@ -301,41 +297,6 @@ export function MobileQuizView({
             })}
           </section>
 
-          {canViewSolution && (!hideViewSolution || !hideAiTutor) && (
-            <div
-              className={`ios-series-actions ${hideViewSolution || hideAiTutor ? "is-single-action" : ""}`}
-            >
-              {!hideViewSolution && (
-                <button data-ui-button="state"
-                  type="button"
-                  className="ios-series-solution"
-                  onClick={openSolution}
-                >
-                  View solution
-                </button>
-              )}
-              {!hideAiTutor && (
-                <QuizChatbot
-                  key={`ios-chat-${currentQ.id}`}
-                  isVisible={isCurrentSubmitted}
-                  questionNumber={currentIndex + 1}
-                  topicTitle={title}
-                  question={currentQ}
-                  theme={theme}
-                  activeLang={activeLang}
-                  renderTrigger={(onOpen) => (
-                    <button data-ui-button="state"
-                      type="button"
-                      className="ios-series-ai-btn"
-                      onClick={onOpen}
-                    >
-                      Ask AI Tutor
-                    </button>
-                  )}
-                />
-              )}
-            </div>
-          )}
           {submitError && <p className="ios-series-error">{submitError}</p>}
         </main>
 
@@ -347,6 +308,13 @@ export function MobileQuizView({
           handleSubmitCurrent={handleSubmitCurrent}
           isCurrentSubmitted={isCurrentSubmitted}
           questions={questions}
+          currentQ={currentQ}
+          openSolution={openSolution}
+          title={title}
+          theme={theme}
+          activeLang={activeLang}
+          hideViewSolution={hideViewSolution}
+          hideAiTutor={hideAiTutor}
         />
 
       </div>

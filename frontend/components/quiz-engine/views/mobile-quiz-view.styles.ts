@@ -743,50 +743,154 @@ export const mobileQuizViewStyles = css.global`
           font-weight: 500;
         }
         .ios-series-footer {
+          position: relative;
           z-index: 30;
           display: grid;
-          grid-template-columns: 1fr 1fr;
+          grid-template-columns: 1fr 1fr 1fr;
           gap: 10px;
           width: 100%;
           max-width: 768px;
           margin: 0 auto;
-          padding: 10px max(16px, var(--safe-right)) calc(var(--safe-bottom) + 10px) max(16px, var(--safe-left));
+          padding: 10px max(16px, var(--safe-right)) calc(var(--safe-bottom) + 12px) max(16px, var(--safe-left));
           border-top: 1px solid var(--dark-border);
-          background: linear-gradient(
-            180deg,
-            rgba(13, 15, 18, 0),
-            rgba(13, 15, 18, 0.96) 25%,
-            var(--dark-canvas)
-          );
+          background: var(--dark-canvas);
           flex-shrink: 0;
         }
         .ios-series-footer button {
           --ui-control-height: 52px;
+          position: relative;
+          z-index: 30;
           min-width: 0;
           height: 52px;
-          border-radius: 14px;
+          border-radius: 16px;
           font: inherit;
           font-size: 16px;
-          font-weight: 600;
+          font-weight: 700;
           cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+          user-select: none;
+        }
+        .ios-series-footer button:active:not(:disabled) {
+          transform: scale(0.97);
         }
         .ios-series-footer button:disabled {
           opacity: 0.38;
           cursor: not-allowed;
         }
+        .ios-series-footer-prev,
         .ios-series-footer-secondary {
           border: 1px solid var(--dark-border);
           background: var(--dark-surface);
           color: var(--dark-text);
         }
+        .ios-series-footer-review {
+          border: 1px solid rgba(56, 139, 253, 0.28);
+          background: rgba(56, 139, 253, 0.14);
+          color: #58a6ff;
+        }
+        .ios-series-footer-review.is-active {
+          background: rgba(56, 139, 253, 0.26);
+          border-color: #58a6ff;
+          color: #79b8ff;
+        }
+        .ios-series-footer-next,
         .ios-series-footer-primary {
           border: 0;
           background: var(--dark-action);
           color: #ffffff;
           box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
         }
+        .ios-series-footer-next:not(:disabled):active,
         .ios-series-footer-primary:not(:disabled):active {
-          transform: scale(0.98);
+          transform: scale(0.97);
+        }
+
+        /* Modern Review Popover */
+        .ios-series-review-backdrop {
+          position: fixed;
+          inset: 0;
+          z-index: 20;
+          background: rgba(0, 0, 0, 0.28);
+          -webkit-tap-highlight-color: transparent;
+        }
+        .ios-series-review-panel {
+          position: absolute;
+          bottom: calc(100% + 12px);
+          left: max(16px, var(--safe-left));
+          right: max(16px, var(--safe-right));
+          z-index: 35;
+          background: #1c2128;
+          border: 1px solid #30363d;
+          border-radius: 20px;
+          padding: 12px 14px 14px;
+          box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.45), 0 4px 14px rgba(0, 0, 0, 0.3);
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+        .ios-series-review-handle {
+          width: 38px;
+          height: 4px;
+          border-radius: 9999px;
+          background: #3d444d;
+          margin: 0 auto 10px;
+        }
+        .ios-series-review-item {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          width: 100%;
+          padding: 10px 12px;
+          border-radius: 14px;
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          text-align: left;
+          transition: background 0.15s ease, transform 0.1s ease;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .ios-series-review-item:hover {
+          background: rgba(255, 255, 255, 0.05);
+        }
+        .ios-series-review-item:active {
+          background: rgba(255, 255, 255, 0.08);
+          transform: scale(0.99);
+        }
+        .ios-series-review-icon {
+          width: 44px;
+          height: 44px;
+          border-radius: 12px;
+          background: rgba(56, 139, 253, 0.15);
+          color: #58a6ff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+        .ios-series-review-svg {
+          width: 22px;
+          height: 22px;
+        }
+        .ios-series-review-text {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          min-width: 0;
+        }
+        .ios-series-review-title {
+          font-size: 15.5px;
+          font-weight: 700;
+          color: #f0f6fc;
+          line-height: 1.25;
+        }
+        .ios-series-review-desc {
+          font-size: 12.5px;
+          font-weight: 400;
+          color: #8b949e;
+          line-height: 1.2;
         }
         .ios-series-palette {
           position: fixed;
@@ -1214,19 +1318,59 @@ export const mobileQuizViewStyles = css.global`
           border-color: transparent;
         }
         .ios-series-quiz[data-theme="light"] .ios-series-footer {
-          border-top-color: #d8dee4;
-          background: var(--light-surface);
-        }
-        .ios-series-quiz[data-theme="light"] .ios-series-footer-secondary {
-          border-color: var(--light-border);
+          border-top-color: #e2e8f0;
           background: #ffffff;
-          color: var(--light-text-secondary);
         }
+        .ios-series-quiz[data-theme="light"] .ios-series-footer-prev,
+        .ios-series-quiz[data-theme="light"] .ios-series-footer-secondary {
+          border-color: #e2e8f0;
+          background: #ffffff;
+          color: #0f172a;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+        .ios-series-quiz[data-theme="light"] .ios-series-footer-review {
+          border-color: rgba(37, 99, 235, 0.14);
+          background: #eef4ff;
+          color: #2563eb;
+        }
+        .ios-series-quiz[data-theme="light"] .ios-series-footer-review.is-active {
+          background: #dbeafe;
+          border-color: #93c5fd;
+          color: #1d4ed8;
+        }
+        .ios-series-quiz[data-theme="light"] .ios-series-footer-next,
         .ios-series-quiz[data-theme="light"] .ios-series-footer-primary {
-          background: var(--ios-accent);
+          background: #2563eb;
           color: #ffffff;
           border: none;
-          box-shadow: 0 4px 16px -4px rgba(0, 113, 227, 0.5);
+          box-shadow: 0 4px 16px -4px rgba(37, 99, 235, 0.5);
+        }
+        .ios-series-quiz[data-theme="light"] .ios-series-review-backdrop {
+          background: rgba(0, 0, 0, 0.22);
+        }
+        .ios-series-quiz[data-theme="light"] .ios-series-review-panel {
+          background: #ffffff;
+          border: 1px solid rgba(0, 0, 0, 0.08);
+          box-shadow: 0 -6px 30px rgba(0, 0, 0, 0.12), 0 4px 14px rgba(0, 0, 0, 0.06);
+        }
+        .ios-series-quiz[data-theme="light"] .ios-series-review-handle {
+          background: #cbd5e1;
+        }
+        .ios-series-quiz[data-theme="light"] .ios-series-review-item:hover {
+          background: #f8fafc;
+        }
+        .ios-series-quiz[data-theme="light"] .ios-series-review-item:active {
+          background: #f1f5f9;
+        }
+        .ios-series-quiz[data-theme="light"] .ios-series-review-icon {
+          background: #eff6ff;
+          color: #2563eb;
+        }
+        .ios-series-quiz[data-theme="light"] .ios-series-review-title {
+          color: #0f172a;
+        }
+        .ios-series-quiz[data-theme="light"] .ios-series-review-desc {
+          color: #64748b;
         }
         .ios-series-quiz[data-theme="light"] .ios-series-palette-backdrop {
           background: rgba(0, 0, 0, 0.4);

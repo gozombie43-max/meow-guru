@@ -26,13 +26,23 @@ for (const [parent, width] of [
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.getByText("New Delhi", { exact: true }).click();
     await page.getByRole("button", { name: "Submit", exact: true }).click();
+    const reviewBtn = page.getByRole("button", { name: "Review", exact: true });
+    if (await reviewBtn.isVisible()) {
+      await reviewBtn.click();
+    }
     await page.getByRole("button", { name: /view solution/i }).click();
     await expect(page.getByRole("dialog", { name: "Question solution" })).toBeVisible();
     await page.getByRole("button", { name: "Back to quiz", exact: true }).click();
     await expect(page.getByRole("dialog", { name: "Question solution" })).toHaveCount(0);
+    if (await reviewBtn.isVisible()) {
+      await reviewBtn.click();
+    }
     await page.getByRole("button", { name: /view solution/i }).click();
     await page.evaluate(() => history.back());
     await expect(page.getByRole("dialog", { name: "Question solution" })).toHaveCount(0);
+    if (await reviewBtn.isVisible()) {
+      await reviewBtn.click();
+    }
     await page.getByRole("button", { name: /ask ai tutor/i }).click();
     await expect(page.getByRole("dialog", { name: "AI Tutor", exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "Back to quiz", exact: true })).toHaveCount(1);
