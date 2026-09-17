@@ -47,7 +47,9 @@ export function useQuizAnswerLifecycle({ currentIndex, currentQ, token, timer }:
     stopTimer();
     const timeTaken = Math.max(
       1,
-      maxTime - (timerRef.current?.getTimeLeft() ?? 0),
+      timerRef.current?.getElapsed
+        ? timerRef.current.getElapsed()
+        : maxTime - (timerRef.current?.getTimeLeft() ?? 0),
     );
     const isCorrect = selected === currentQ.correctAnswer;
     setDifficulty(nextDifficulty(results, difficulty, isCorrect));

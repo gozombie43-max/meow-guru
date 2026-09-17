@@ -138,6 +138,7 @@ function QuizEngineContent(props: QuizEngineProps) {
     examDetailsRef,
     isPaletteOpen,
     closePalette,
+    timerRef,
   } = useQuizController(props);
   if (showAnalytics)
     return (
@@ -346,6 +347,8 @@ function QuizEngineContent(props: QuizEngineProps) {
         closePalette={closePalette}
         isSolutionOpen={isSolutionOpen}
         closeSolution={closeSolution}
+        timerRef={timerRef}
+        results={results}
       />
     );
 

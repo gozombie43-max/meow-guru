@@ -39,10 +39,14 @@ export function LangToggle({ active, loading, onChange }: LangToggleProps) {
     };
 
     updateSlider();
+    const rafId = requestAnimationFrame(updateSlider);
     window.addEventListener("resize", updateSlider);
     document.fonts?.ready.then(updateSlider);
 
-    return () => window.removeEventListener("resize", updateSlider);
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener("resize", updateSlider);
+    };
   }, [active]);
 
   return (
@@ -61,12 +65,22 @@ export function LangToggle({ active, loading, onChange }: LangToggleProps) {
             transform: `translateX(${sliderStyle.left}px)`,
           }}
         />
-        {LANGS.map(({ code, label }, index) => (
-          <div key={code} className="contents">
-            {index > 0 && (
-              <div className="lang-toggle-divider h-5 w-px shrink-0 bg-[var(--lang-toggle-divider)]" aria-hidden="true" />
-            )}
-            <button data-ui-button="state"
+        {LANGS.map(({ code, label }, index) => {
+          const activeIndex = LANGS.findIndex((l) => l.code === active);
+          const isAdjacentToActive = index === activeIndex || index === activeIndex + 1;
+
+          return (
+            <div key={code} className="contents">
+              {index > 0 && (
+                <div
+                  className={cn(
+                    "lang-toggle-divider h-5 w-px shrink-0 bg-[var(--lang-toggle-divider)] transition-opacity duration-200",
+                    isAdjacentToActive && "opacity-0"
+                  )}
+                  aria-hidden="true"
+                />
+              )}
+              <button data-ui-button="state"
               ref={(node) => {
                 buttonRefs.current[code] = node;
               }}
@@ -81,7 +95,8 @@ export function LangToggle({ active, loading, onChange }: LangToggleProps) {
               {label}
             </button>
           </div>
-        ))}
+          );
+        })}
       </div>
       <style>{`
         .lang-toggle {

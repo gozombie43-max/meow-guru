@@ -9,8 +9,9 @@ import {
 } from "@/components/quiz-engine/ui/QuizSettingsModal";
 import { ConceptBadge } from "@/components/quiz-engine/ui/SharedUI";
 import { SolutionBottomSheet } from "@/components/quiz-engine/ui/SolutionViews";
+import { UptimeTimer } from "../QuizTimer";
 import { motion } from "framer-motion";
-import { Bookmark, BookmarkCheck, XCircle } from "lucide-react";
+import { XCircle } from "lucide-react";
 import dynamic from "next/dynamic";
 import type { QuizController } from "../hooks/useQuizController";
 const QuizChatbot = dynamic(() => import("@/components/QuizChatbot"), {
@@ -73,6 +74,8 @@ export function MobileQuizView({
   closePalette,
   isSolutionOpen,
   closeSolution,
+  timerRef,
+  results,
 }: Pick<
   QuizController,
   | "routeBase"
@@ -107,8 +110,6 @@ export function MobileQuizView({
   | "currentQ"
   | "conceptColours"
   | "examDetailsRef"
-  | "handleBookmark"
-  | "bookmarked"
   | "hasQuestionText"
   | "displayedQuestion"
   | "renderQuestionLine"
@@ -125,6 +126,8 @@ export function MobileQuizView({
   | "closePalette"
   | "isSolutionOpen"
   | "closeSolution"
+  | "timerRef"
+  | "results"
 > & {
   hasDetailedExamLabel: boolean;
   compactExamLabel: string;
@@ -132,6 +135,8 @@ export function MobileQuizView({
   isCurrentSubmitted: boolean;
   canViewSolution: boolean;
   canSubmit: boolean;
+  handleBookmark?: () => void;
+  bookmarked?: Set<string>;
 }) {
   if (!currentQ) return null;
 
@@ -219,22 +224,12 @@ export function MobileQuizView({
                 </span>
               )}
             </div>
-            <button data-ui-button="state" data-ui-shape="icon"
-              type="button"
-              className="ios-series-bookmark"
-              onClick={handleBookmark}
-              aria-label={
-                bookmarked.has(String(currentQ.id))
-                  ? "Remove bookmark"
-                  : "Add bookmark"
-              }
-            >
-              {bookmarked.has(String(currentQ.id)) ? (
-                <BookmarkCheck aria-hidden="true" />
-              ) : (
-                <Bookmark aria-hidden="true" />
-              )}
-            </button>
+            <UptimeTimer
+              ref={timerRef}
+              currentIndex={currentIndex}
+              isSubmitted={isCurrentSubmitted}
+              submittedTime={results?.find((r) => r.questionIndex === currentIndex)?.timeTaken}
+            />
           </div>
 
           <motion.section
