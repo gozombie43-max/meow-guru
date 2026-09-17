@@ -1,6 +1,6 @@
 import BackButton from "@/components/BackButton";
 import { LangToggle } from "@/components/LangToggle";
-import { Menu, Settings, FileText } from "lucide-react";
+import { Menu, Settings, FileText, ArrowLeft, ArrowRight, Bookmark } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
@@ -230,7 +230,8 @@ export function MobileQuizFooter({
         disabled={currentIndex === 0}
         className="ios-series-footer-btn ios-series-footer-prev"
       >
-        Previous
+        <ArrowLeft className="ios-series-btn-arrow" aria-hidden="true" />
+        <span>Previous</span>
       </button>
 
       <button
@@ -241,7 +242,8 @@ export function MobileQuizFooter({
         aria-haspopup="dialog"
         disabled={!isCurrentSubmitted || (hideViewSolution && hideAiTutor)}
       >
-        Review
+        <Bookmark className="ios-series-btn-icon" aria-hidden="true" />
+        <span>Review</span>
       </button>
 
       <button
@@ -252,7 +254,8 @@ export function MobileQuizFooter({
         className="ios-series-footer-btn ios-series-footer-next"
         aria-label={!isCurrentSubmitted ? "Submit" : currentIndex < questions.length - 1 ? "Next" : "Finish"}
       >
-        {!isCurrentSubmitted ? "Submit" : currentIndex < questions.length - 1 ? "Next" : "Finish"}
+        <span>{!isCurrentSubmitted ? "Submit" : currentIndex < questions.length - 1 ? "Next" : "Finish"}</span>
+        {isCurrentSubmitted && <ArrowRight className="ios-series-btn-arrow" aria-hidden="true" />}
       </button>
     </footer>
   );
