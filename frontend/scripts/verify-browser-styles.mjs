@@ -113,8 +113,117 @@ async function run() {
               </button>
             </section>
           </main>
+
+          <footer data-ui-chrome="footer" class="ios-series-footer">
+            <button class="ios-series-footer-btn ios-series-footer-prev">
+              <span>Previous</span>
+            </button>
+
+            <div class="ios-series-picker-wrap" id="pickerWrap">
+              <div class="ios-series-picker-feedback" id="feedback">Swipe left or right</div>
+
+              <div class="ios-series-picker-rail">
+                <div class="ios-series-rail-grid">
+                  <div class="ios-series-picker-choice is-left">
+                    <div class="ios-series-picker-choice-icon">
+                      <svg class="ios-series-review-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7z"/><path d="M14 2v5h5"/><path d="M9 13h6M9 17h4"/></svg>
+                    </div>
+                    <div>
+                      <div class="ios-series-picker-choice-title">View Solution</div>
+                      <div class="ios-series-picker-choice-sub">Answer + explanation</div>
+                    </div>
+                  </div>
+
+                  <div class="ios-series-picker-choice is-right">
+                    <div class="ios-series-picker-choice-icon">
+                      <svg class="ios-series-review-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3 13.8 8.2 19 10 13.8 11.8 12 17 10.2 11.8 5 10l5.2-1.8L12 3Z"/><path d="m18.5 14 .8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8.8-2.2Z"/></svg>
+                    </div>
+                    <div>
+                      <div class="ios-series-picker-choice-title">Ask AI Tutor</div>
+                      <div class="ios-series-picker-choice-sub">Discuss question</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="ios-series-hold-ring"></div>
+
+              <button type="button" id="solutionBtn" class="ios-series-footer-btn ios-series-footer-solution">
+                <span>Solution</span>
+              </button>
+            </div>
+
+            <button class="ios-series-footer-btn ios-series-footer-next">
+              <span>Next</span>
+            </button>
+          </footer>
         </div>
       </div>
+
+      <script>
+        (function(){
+          const wrap = document.getElementById('pickerWrap');
+          const btn = document.getElementById('solutionBtn');
+          const feedback = document.getElementById('feedback');
+          let active = false;
+          let opened = false;
+          let startX = 0;
+          let holdTimer = null;
+          let activeId = null;
+
+          function openRail(){
+            opened = true;
+            wrap.classList.remove('is-pressing');
+            wrap.classList.add('is-open');
+            feedback.textContent = 'Swipe left or right';
+          }
+
+          function clearState(){
+            clearTimeout(holdTimer);
+            wrap.classList.remove('is-pressing', 'is-open', 'choice-left', 'choice-right');
+            active = false;
+            opened = false;
+            activeId = null;
+          }
+
+          btn.addEventListener('pointerdown', (e) => {
+            active = true;
+            opened = false;
+            startX = e.clientX;
+            activeId = e.pointerId;
+            wrap.classList.add('is-pressing');
+            feedback.textContent = 'Keep holding...';
+            try { btn.setPointerCapture(e.pointerId); } catch(err){}
+            holdTimer = setTimeout(openRail, 200);
+          });
+
+          window.addEventListener('pointermove', (e) => {
+            if (!active || e.pointerId !== activeId) return;
+            const dx = e.clientX - startX;
+            if (!opened) {
+              if (Math.abs(dx) > 25) clearState();
+              return;
+            }
+            if (dx <= -40) {
+              wrap.classList.add('choice-left');
+              wrap.classList.remove('choice-right');
+              feedback.textContent = 'Release for View Solution';
+            } else if (dx >= 40) {
+              wrap.classList.add('choice-right');
+              wrap.classList.remove('choice-left');
+              feedback.textContent = 'Release for Ask AI';
+            } else {
+              wrap.classList.remove('choice-left', 'choice-right');
+              feedback.textContent = 'Swipe left or right';
+            }
+          });
+
+          window.addEventListener('pointerup', (e) => {
+            if (!active || e.pointerId !== activeId) return;
+            clearState();
+          });
+        })();
+      </script>
     </body>
     </html>
   `;
@@ -206,9 +315,71 @@ async function run() {
 
   const screenshotDir = path.join(process.cwd(), 'test-results');
   if (!fs.existsSync(screenshotDir)) fs.mkdirSync(screenshotDir, { recursive: true });
-  const screenshotPath = path.join(screenshotDir, 'mobile-quiz-engine-verified.png');
-  await page.screenshot({ path: screenshotPath, fullPage: false });
-  console.log(`\nScreenshot captured: ${screenshotPath}`);
+
+  // 4. Test Hold & Swipe Gesture Interaction
+  console.log('\n[TEST 4] Testing Hold & Swipe Gesture on Solution Button:');
+
+  // Simulate press & hold on solution button
+  const solutionBtn = await page.$('.ios-series-footer-solution');
+  if (solutionBtn) {
+    const box = await solutionBtn.boundingBox();
+      if (box) {
+        const startX = box.x + box.width / 2;
+        const startY = box.y + box.height / 2;
+
+        console.log(`- Pointer down at (${startX}, ${startY})`);
+        await page.mouse.move(startX, startY);
+        await page.mouse.down();
+
+        // Hold for 250ms (> 200ms threshold)
+        await page.waitForTimeout(250);
+
+        // Verify rail is open
+        const isRailOpen = await page.evaluate(() => {
+          const wrap = document.querySelector('.ios-series-picker-wrap');
+          return wrap ? wrap.classList.contains('is-open') : false;
+        });
+        console.log(`- Rail opened after 200ms hold: ${isRailOpen}`);
+
+        // Swipe Left (dx = -60px)
+        await page.mouse.move(startX - 60, startY);
+        await page.waitForTimeout(50);
+        const isLeftChoice = await page.evaluate(() => {
+          const wrap = document.querySelector('.ios-series-picker-wrap');
+          return wrap ? wrap.classList.contains('choice-left') : false;
+        });
+        console.log(`- Swiped left (-60px), choice-left active: ${isLeftChoice}`);
+
+        // Capture screenshot of hold & swipe left active
+        const swipeLeftScreenshot = path.join(screenshotDir, 'mobile-quiz-hold-swipe-left.png');
+        await page.screenshot({ path: swipeLeftScreenshot });
+        console.log(`- Captured left choice screenshot: ${swipeLeftScreenshot}`);
+
+        // Swipe Right (dx = +60px)
+        await page.mouse.move(startX + 60, startY);
+        await page.waitForTimeout(50);
+        const isRightChoice = await page.evaluate(() => {
+          const wrap = document.querySelector('.ios-series-picker-wrap');
+          return wrap ? wrap.classList.contains('choice-right') : false;
+        });
+        console.log(`- Swiped right (+60px), choice-right active: ${isRightChoice}`);
+
+        // Capture screenshot of hold & swipe right active
+        const swipeRightScreenshot = path.join(screenshotDir, 'mobile-quiz-hold-swipe-right.png');
+        await page.screenshot({ path: swipeRightScreenshot });
+        console.log(`- Captured right choice screenshot: ${swipeRightScreenshot}`);
+
+        // Release pointer
+        await page.mouse.up();
+        await page.waitForTimeout(50);
+
+        const isClosedAfterRelease = await page.evaluate(() => {
+          const wrap = document.querySelector('.ios-series-picker-wrap');
+          return wrap ? !wrap.classList.contains('is-open') : true;
+        });
+        console.log(`- Rail closed after release: ${isClosedAfterRelease}`);
+      }
+    }
 
   // Light theme test
   await page.evaluate(() => {

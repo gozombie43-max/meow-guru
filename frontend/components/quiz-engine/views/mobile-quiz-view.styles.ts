@@ -885,111 +885,193 @@ export const mobileQuizViewStyles = css.global`
           background: var(--dark-surface);
           color: var(--dark-text);
         }
-        .ios-series-footer-review {
-          border: 1px solid rgba(56, 139, 253, 0.28);
-          background: rgba(56, 139, 253, 0.14);
-          color: #58a6ff;
+        .ios-series-footer-prev:not(:disabled):hover,
+        .ios-series-footer-secondary:not(:disabled):hover {
+          background: var(--dark-surface-muted);
+          border-color: rgba(255, 255, 255, 0.15);
         }
-        .ios-series-footer-review.is-active {
-          background: rgba(56, 139, 253, 0.26);
-          border-color: #58a6ff;
-          color: #79b8ff;
+        .ios-series-footer-solution {
+          width: 100%;
+          border: 1px solid rgba(59, 130, 246, 0.32);
+          background: rgba(59, 130, 246, 0.14);
+          color: #60a5fa;
+        }
+        .ios-series-footer-solution:not(:disabled):hover {
+          background: rgba(59, 130, 246, 0.22);
+          border-color: rgba(59, 130, 246, 0.5);
+          color: #93c5fd;
         }
         .ios-series-footer-next,
         .ios-series-footer-primary {
-          border: 0;
+          border: none;
           background: #2563eb;
           color: #ffffff;
-          box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+          box-shadow: 0 4px 16px -4px rgba(37, 99, 235, 0.5);
         }
-        .ios-series-footer-next:not(:disabled):active,
-        .ios-series-footer-primary:not(:disabled):active {
-          transform: scale(0.97);
+        .ios-series-footer-next:not(:disabled):hover,
+        .ios-series-footer-primary:not(:disabled):hover {
+          background: #1d4ed8;
         }
-
-        /* Modern Review Popover */
-        .ios-series-review-backdrop {
-          position: fixed;
-          inset: 0;
-          z-index: 20;
-          background: rgba(0, 0, 0, 0.28);
-          -webkit-tap-highlight-color: transparent;
+        .ios-series-picker-wrap {
+          position: relative;
+          width: 100%;
+          touch-action: none;
+          user-select: none;
         }
-        .ios-series-review-panel {
+        .ios-series-hold-ring {
           position: absolute;
-          bottom: calc(100% + 12px);
-          left: max(16px, var(--safe-left));
-          right: max(16px, var(--safe-right));
-          z-index: 35;
-          background: #1c2128;
-          border: 1px solid #30363d;
+          inset: -3px;
+          border-radius: 19px;
+          border: 2px solid transparent;
+          pointer-events: none;
+          opacity: 0;
+          transform: scale(0.96);
+          transition:
+            transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1),
+            opacity 0.18s cubic-bezier(0.2, 0.8, 0.2, 1),
+            border-color 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .ios-series-picker-wrap.is-pressing .ios-series-hold-ring {
+          opacity: 1;
+          transform: scale(1);
+          border-color: rgba(59, 130, 246, 0.5);
+          box-shadow: 0 0 16px rgba(59, 130, 246, 0.25);
+          animation: iosSeriesPulseRing 1s ease-in-out infinite alternate;
+        }
+        @keyframes iosSeriesPulseRing {
+          0% {
+            transform: scale(1);
+            opacity: 0.8;
+          }
+          100% {
+            transform: scale(1.03);
+            opacity: 1;
+          }
+        }
+        .ios-series-picker-feedback {
+          position: absolute;
+          left: 50%;
+          bottom: calc(100% + 8px);
+          transform: translateX(-50%) translateY(4px);
+          background: rgba(17, 23, 34, 0.96);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          color: var(--dark-text);
+          padding: 6px 12px;
+          border-radius: 999px;
+          font-size: 12px;
+          font-weight: 600;
+          pointer-events: none;
+          opacity: 0;
+          white-space: nowrap;
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+          transition:
+            opacity 0.15s ease,
+            transform 0.15s ease;
+          z-index: 60;
+        }
+        .ios-series-picker-wrap.is-pressing .ios-series-picker-feedback,
+        .ios-series-picker-wrap.is-open .ios-series-picker-feedback {
+          opacity: 1;
+          transform: translateX(-50%) translateY(0);
+        }
+        .ios-series-picker-rail {
+          position: absolute;
+          left: 50%;
+          bottom: calc(100% + 8px);
+          transform: translateX(-50%) scale(0.96);
+          width: calc(100vw - 32px);
+          max-width: 390px;
+          background: rgba(17, 23, 34, 0.95);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.12);
           border-radius: 20px;
-          padding: 12px 14px 14px;
-          box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.45), 0 4px 14px rgba(0, 0, 0, 0.3);
-          display: flex;
-          flex-direction: column;
+          padding: 6px;
+          box-shadow:
+            0 20px 48px rgba(0, 0, 0, 0.6),
+            0 0 0 1px rgba(255, 255, 255, 0.05);
+          pointer-events: none;
+          opacity: 0;
+          z-index: 50;
+          transition:
+            opacity 0.2s cubic-bezier(0.2, 0.8, 0.2, 1),
+            transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .ios-series-picker-wrap.is-open .ios-series-picker-rail {
+          opacity: 1;
+          transform: translateX(-50%) scale(1);
+          pointer-events: auto;
+        }
+        .ios-series-rail-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
           gap: 6px;
         }
-        .ios-series-review-handle {
-          width: 38px;
-          height: 4px;
-          border-radius: 9999px;
-          background: #3d444d;
-          margin: 0 auto 10px;
-        }
-        .ios-series-review-item {
+        .ios-series-picker-choice {
+          position: relative;
           display: flex;
           align-items: center;
-          gap: 14px;
-          width: 100%;
+          gap: 10px;
           padding: 10px 12px;
           border-radius: 14px;
-          background: transparent;
-          border: none;
-          cursor: pointer;
-          text-align: left;
-          transition: background 0.15s ease, transform 0.1s ease;
-          -webkit-tap-highlight-color: transparent;
+          border: 1px solid transparent;
+          background: rgba(255, 255, 255, 0.03);
+          transition: all 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
-        .ios-series-review-item:hover {
-          background: rgba(255, 255, 255, 0.05);
+        .ios-series-picker-choice.is-hidden {
+          display: none;
         }
-        .ios-series-review-item:active {
-          background: rgba(255, 255, 255, 0.08);
-          transform: scale(0.99);
-        }
-        .ios-series-review-icon {
-          width: 44px;
-          height: 44px;
-          border-radius: 12px;
-          background: rgba(56, 139, 253, 0.15);
-          color: #58a6ff;
+        .ios-series-picker-choice-icon {
+          width: 36px;
+          height: 36px;
+          border-radius: 10px;
           display: flex;
           align-items: center;
           justify-content: center;
+          background: rgba(255, 255, 255, 0.06);
           flex-shrink: 0;
+          color: #93c5fd;
+          transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
-        .ios-series-review-svg {
-          width: 22px;
-          height: 22px;
+        .ios-series-picker-choice-icon svg {
+          width: 18px;
+          height: 18px;
         }
-        .ios-series-review-text {
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-          min-width: 0;
-        }
-        .ios-series-review-title {
-          font-size: 15.5px;
+        .ios-series-picker-choice-title {
+          font-size: 13px;
           font-weight: 700;
-          color: #f0f6fc;
-          line-height: 1.25;
-        }
-        .ios-series-review-desc {
-          font-size: 12.5px;
-          font-weight: 400;
-          color: #8b949e;
           line-height: 1.2;
+          color: var(--dark-text);
+        }
+        .ios-series-picker-choice-sub {
+          font-size: 10.5px;
+          color: var(--dark-text-secondary);
+          font-weight: 500;
+          margin-top: 2px;
+        }
+        .ios-series-picker-wrap.choice-left .ios-series-picker-choice.is-left {
+          background: rgba(59, 130, 246, 0.18);
+          border-color: rgba(59, 130, 246, 0.5);
+          box-shadow: 0 0 20px rgba(59, 130, 246, 0.25);
+          transform: scale(1.02);
+        }
+        .ios-series-picker-wrap.choice-left .ios-series-picker-choice.is-left .ios-series-picker-choice-icon {
+          background: #3b82f6;
+          color: #ffffff;
+          transform: scale(1.08);
+        }
+        .ios-series-picker-wrap.choice-right .ios-series-picker-choice.is-right {
+          background: rgba(139, 92, 246, 0.18);
+          border-color: rgba(139, 92, 246, 0.5);
+          box-shadow: 0 0 20px rgba(139, 92, 246, 0.25);
+          transform: scale(1.02);
+        }
+        .ios-series-picker-wrap.choice-right .ios-series-picker-choice.is-right .ios-series-picker-choice-icon {
+          background: #8b5cf6;
+          color: #ffffff;
+          transform: scale(1.08);
         }
         .ios-series-palette {
           position: fixed;
@@ -1452,12 +1534,12 @@ export const mobileQuizViewStyles = css.global`
           color: #0f172a;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
         }
-        .ios-series-quiz[data-theme="light"] .ios-series-footer-review {
-          border-color: rgba(37, 99, 235, 0.14);
-          background: #eef4ff;
+        .ios-series-quiz[data-theme="light"] .ios-series-footer-solution {
+          border-color: rgba(37, 99, 235, 0.2);
+          background: #eff6ff;
           color: #2563eb;
         }
-        .ios-series-quiz[data-theme="light"] .ios-series-footer-review.is-active {
+        .ios-series-quiz[data-theme="light"] .ios-series-footer-solution:not(:disabled):hover {
           background: #dbeafe;
           border-color: #93c5fd;
           color: #1d4ed8;
@@ -1480,32 +1562,38 @@ export const mobileQuizViewStyles = css.global`
         .ios-series-quiz[data-theme="light"] .ios-series-footer button:disabled svg {
           color: #94a3b8 !important;
         }
-        .ios-series-quiz[data-theme="light"] .ios-series-review-backdrop {
-          background: rgba(0, 0, 0, 0.22);
+        .ios-series-quiz[data-theme="light"] .ios-series-picker-feedback {
+          border-color: #e2e8f0;
+          background: rgba(255, 255, 255, 0.96);
+          color: #1e293b;
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
         }
-        .ios-series-quiz[data-theme="light"] .ios-series-review-panel {
+        .ios-series-quiz[data-theme="light"] .ios-series-picker-rail {
+          border-color: #e2e8f0;
           background: #ffffff;
-          border: 1px solid rgba(0, 0, 0, 0.08);
-          box-shadow: 0 -6px 30px rgba(0, 0, 0, 0.12), 0 4px 14px rgba(0, 0, 0, 0.06);
+          box-shadow: 0 18px 42px rgba(15, 23, 42, 0.15);
         }
-        .ios-series-quiz[data-theme="light"] .ios-series-review-handle {
-          background: #cbd5e1;
+        .ios-series-quiz[data-theme="light"] .ios-series-picker-choice + .ios-series-picker-choice {
+          border-left-color: #f1f5f9;
         }
-        .ios-series-quiz[data-theme="light"] .ios-series-review-item:hover {
-          background: #f8fafc;
-        }
-        .ios-series-quiz[data-theme="light"] .ios-series-review-item:active {
-          background: #f1f5f9;
-        }
-        .ios-series-quiz[data-theme="light"] .ios-series-review-icon {
+        .ios-series-quiz[data-theme="light"] .ios-series-picker-choice-icon {
           background: #eff6ff;
+          border-color: #bfdbfe;
           color: #2563eb;
         }
-        .ios-series-quiz[data-theme="light"] .ios-series-review-title {
-          color: #0f172a;
+        .ios-series-quiz[data-theme="light"] .ios-series-picker-choice.is-right .ios-series-picker-choice-icon {
+          background: #f5f3ff;
+          border-color: #ddd6fe;
+          color: #7c3aed;
         }
-        .ios-series-quiz[data-theme="light"] .ios-series-review-desc {
+        .ios-series-quiz[data-theme="light"] .ios-series-picker-choice-title {
+          color: #1e293b;
+        }
+        .ios-series-quiz[data-theme="light"] .ios-series-picker-choice-sub {
           color: #64748b;
+        }
+        .ios-series-quiz[data-theme="light"] .ios-series-hold-ring {
+          border-color: rgba(37, 99, 235, 0.4);
         }
         .ios-series-quiz[data-theme="light"] .ios-series-palette-backdrop {
           background: rgba(0, 0, 0, 0.4);

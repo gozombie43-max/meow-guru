@@ -1,12 +1,11 @@
 import BackButton from "@/components/BackButton";
 import { LangToggle } from "@/components/LangToggle";
-import { Menu, Settings, FileText, ArrowLeft, ArrowRight, Bookmark } from "lucide-react";
+import { Menu, Settings, FileText, ArrowLeft, ArrowRight } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { motion, AnimatePresence } from "framer-motion";
 import type { QuizController } from "../hooks/useQuizController";
 
-function GeminiIcon({ className = "ios-series-review-svg" }: { className?: string }) {
+function GeminiIcon({ className = "ios-series-picker-svg" }: { className?: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -117,15 +116,63 @@ export function MobileQuizFooter({
   hideViewSolution = false,
   hideAiTutor = false,
 }: FooterProps) {
-  const [isReviewOpen, setIsReviewOpen] = useState(false);
+  const [isPressing, setIsPressing] = useState(false);
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const [choice, setChoice] = useState<"left" | "right" | null>(null);
+  const [feedback, setFeedback] = useState("Swipe left or right");
+
+  const startCoords = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const activePointerId = useRef<number | null>(null);
+  const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const choiceRef = useRef<"left" | "right" | null>(null);
+  const isPickerOpenRef = useRef(false);
+  const didHoldGestureRef = useRef(false);
+  const pointerDownFiredRef = useRef(false);
+
+  const HOLD_MS = 200;
+  const SELECT_X = 40;
+
+  const vibrate = (ms = 8) => {
+    if (typeof window !== "undefined" && navigator.vibrate) {
+      try {
+        navigator.vibrate(ms);
+      } catch {
+        // Ignore haptic errors
+      }
+    }
+  };
+
+  const updateChoice = (next: "left" | "right" | null) => {
+    if (choiceRef.current === next) return;
+    choiceRef.current = next;
+    setChoice(next);
+
+    if (next === "left") {
+      setFeedback("Release for View Solution");
+      vibrate(8);
+    } else if (next === "right") {
+      setFeedback("Release for Ask AI");
+      vibrate(8);
+    } else {
+      setFeedback("Swipe left or right");
+    }
+  };
+
+  const clearHoldState = () => {
+    if (holdTimer.current) clearTimeout(holdTimer.current);
+    setIsPressing(false);
+    setIsPickerOpen(false);
+    isPickerOpenRef.current = false;
+    updateChoice(null);
+    activePointerId.current = null;
+  };
 
   // Close when navigating to another question
   useEffect(() => {
-    setIsReviewOpen(false);
+    clearHoldState();
   }, [currentIndex]);
 
   const handleNextOrSubmit = () => {
-    setIsReviewOpen(false);
     if (isCurrentSubmitted) {
       handleNext();
     } else {
@@ -134,74 +181,93 @@ export function MobileQuizFooter({
   };
 
   const handleOpenSolution = () => {
-    setIsReviewOpen(false);
     openSolution();
+  };
+
+  const handleOpenAiTutor = () => {
+    document.getElementById("mobile-quiz-chatbot-trigger")?.click();
+  };
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
+    if (!isCurrentSubmitted || (hideViewSolution && hideAiTutor) || e.button !== 0) return;
+    pointerDownFiredRef.current = true;
+    didHoldGestureRef.current = false;
+    activePointerId.current = e.pointerId;
+    startCoords.current = { x: e.clientX, y: e.clientY };
+    setIsPressing(true);
+    setFeedback("Keep holding...");
+
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      // Ignore if pointer capture is not supported
+    }
+
+    holdTimer.current = setTimeout(() => {
+      setIsPickerOpen(true);
+      isPickerOpenRef.current = true;
+      setIsPressing(false);
+      didHoldGestureRef.current = true;
+      setFeedback("Swipe left or right");
+      vibrate(12);
+    }, HOLD_MS);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (activePointerId.current !== e.pointerId) return;
+
+    const dx = e.clientX - startCoords.current.x;
+    const dy = e.clientY - startCoords.current.y;
+
+    if (!isPickerOpenRef.current) {
+      if (Math.hypot(dx, dy) > 25) {
+        clearHoldState();
+      }
+      return;
+    }
+
+    if (dx <= -SELECT_X && !hideViewSolution) {
+      updateChoice("left");
+    } else if (dx >= SELECT_X && !hideAiTutor) {
+      updateChoice("right");
+    } else {
+      updateChoice(null);
+    }
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (activePointerId.current !== e.pointerId) return;
+
+    const finalChoice = choiceRef.current;
+    const wasPickerOpen = isPickerOpenRef.current;
+    const wasHold = didHoldGestureRef.current;
+
+    clearHoldState();
+
+    if (wasPickerOpen && finalChoice === "left") {
+      handleOpenSolution();
+    } else if (wasPickerOpen && finalChoice === "right") {
+      handleOpenAiTutor();
+    } else if (!wasHold) {
+      // Direct tap without holding: open solution
+      handleOpenSolution();
+    }
+  };
+
+  const handlePointerCancel = () => {
+    clearHoldState();
+  };
+
+  const handleClick = () => {
+    if (!pointerDownFiredRef.current) {
+      handleOpenSolution();
+    }
+    pointerDownFiredRef.current = false;
   };
 
   return (
     <footer data-ui-chrome="footer" className="ios-series-footer">
-      <AnimatePresence>
-        {isReviewOpen && (
-          <>
-            <div
-              className="ios-series-review-backdrop"
-              onClick={() => setIsReviewOpen(false)}
-              aria-hidden="true"
-            />
-            <motion.div
-              className="ios-series-review-panel"
-              role="dialog"
-              aria-label="Review options"
-              initial={{ opacity: 0, y: 14, scale: 0.96 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 10, scale: 0.96 }}
-              transition={{ duration: 0.18, ease: "easeOut" }}
-            >
-              <div className="ios-series-review-handle" aria-hidden="true" />
-
-              {!hideViewSolution && (
-                <button
-                  type="button"
-                  className="ios-series-review-item"
-                  onClick={handleOpenSolution}
-                  aria-label="View solution - Detailed explanation"
-                >
-                  <div className="ios-series-review-icon" aria-hidden="true">
-                    <FileText className="ios-series-review-svg" />
-                  </div>
-                  <div className="ios-series-review-text">
-                    <span className="ios-series-review-title">View solution</span>
-                    <span className="ios-series-review-desc">Detailed explanation</span>
-                  </div>
-                </button>
-              )}
-
-              {!hideAiTutor && currentQ && (
-                <button
-                  type="button"
-                  className="ios-series-review-item"
-                  onClick={() => {
-                    setIsReviewOpen(false);
-                    // We need a way to trigger the chatbot from outside
-                    document.getElementById('mobile-quiz-chatbot-trigger')?.click();
-                  }}
-                  aria-label="Ask AI Tutor - Discuss this question"
-                >
-                  <div className="ios-series-review-icon" aria-hidden="true">
-                    <GeminiIcon className="ios-series-review-svg" />
-                  </div>
-                  <div className="ios-series-review-text">
-                    <span className="ios-series-review-title">Ask AI Tutor</span>
-                    <span className="ios-series-review-desc">Discuss this question</span>
-                  </div>
-                </button>
-              )}
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-
-      {/* Render the actual QuizChatbot outside the panel so it doesn't unmount when the panel closes */}
+      {/* Render the actual QuizChatbot outside so it can be triggered programmatically */}
       {!hideAiTutor && currentQ && (
         <QuizChatbot
           key={`ios-chat-${currentQ.id}`}
@@ -234,17 +300,87 @@ export function MobileQuizFooter({
         <span>Previous</span>
       </button>
 
-      <button
-        type="button"
-        onClick={() => setIsReviewOpen((prev) => !prev)}
-        className={`ios-series-footer-btn ios-series-footer-review ${isReviewOpen ? "is-active" : ""}`}
-        aria-expanded={isReviewOpen}
-        aria-haspopup="dialog"
-        disabled={!isCurrentSubmitted || (hideViewSolution && hideAiTutor)}
+      <div
+        className={`ios-series-picker-wrap ${isPickerOpen ? "is-open" : ""} ${
+          isPressing ? "is-pressing" : ""
+        } ${choice === "left" ? "choice-left" : ""} ${
+          choice === "right" ? "choice-right" : ""
+        }`}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerCancel}
       >
-        <Bookmark className="ios-series-btn-icon" aria-hidden="true" />
-        <span>Review</span>
-      </button>
+        {/* Dynamic Feedback Tooltip */}
+        <div className="ios-series-picker-feedback" aria-live="polite">
+          {feedback}
+        </div>
+
+        {/* Floating Action Rail */}
+        <div
+          className="ios-series-picker-rail"
+          role="region"
+          aria-label="Hold and swipe solution picker"
+        >
+          <div className="ios-series-rail-grid">
+            <div
+              className={`ios-series-picker-choice is-left ${
+                hideViewSolution ? "is-hidden" : ""
+              }`}
+            >
+              <div className="ios-series-picker-choice-icon">
+                <FileText className="ios-series-picker-svg" aria-hidden="true" />
+              </div>
+              <div>
+                <div className="ios-series-picker-choice-title">View Solution</div>
+                <div className="ios-series-picker-choice-sub">Answer + explanation</div>
+              </div>
+            </div>
+
+            <div
+              className={`ios-series-picker-choice is-right ${
+                hideAiTutor ? "is-hidden" : ""
+              }`}
+            >
+              <div className="ios-series-picker-choice-icon">
+                <GeminiIcon className="ios-series-picker-svg" />
+              </div>
+              <div>
+                <div className="ios-series-picker-choice-title">Ask AI Tutor</div>
+                <div className="ios-series-picker-choice-sub">Discuss question</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Hold Ring */}
+        <div className="ios-series-hold-ring" aria-hidden="true" />
+
+        <button
+          type="button"
+          onPointerDown={handlePointerDown}
+          onClick={handleClick}
+          onContextMenu={(e) => e.preventDefault()}
+          className="ios-series-footer-btn ios-series-footer-solution"
+          aria-expanded={isPickerOpen}
+          aria-label="Solution - Hold and swipe for options"
+          disabled={!isCurrentSubmitted || (hideViewSolution && hideAiTutor)}
+        >
+          <svg
+            className="ios-series-btn-icon"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M9 18h6M10 22h4" />
+            <path d="M8.2 14.6A7 7 0 1 1 15.8 14.6c-.9.8-1.3 1.5-1.5 2.4H9.7c-.2-.9-.6-1.6-1.5-2.4Z" />
+          </svg>
+          <span>Solution</span>
+        </button>
+      </div>
 
       <button
         data-ui-button="primary"
