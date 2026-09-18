@@ -120,8 +120,6 @@ async function run() {
             </button>
 
             <div class="ios-series-picker-wrap" id="pickerWrap">
-              <div class="ios-series-picker-feedback" id="feedback">Swipe left or right</div>
-
               <div class="ios-series-picker-rail">
                 <div class="ios-series-rail-grid">
                   <div class="ios-series-picker-choice is-left">
@@ -164,7 +162,6 @@ async function run() {
         (function(){
           const wrap = document.getElementById('pickerWrap');
           const btn = document.getElementById('solutionBtn');
-          const feedback = document.getElementById('feedback');
           let active = false;
           let opened = false;
           let startX = 0;
@@ -175,7 +172,6 @@ async function run() {
             opened = true;
             wrap.classList.remove('is-pressing');
             wrap.classList.add('is-open');
-            feedback.textContent = 'Swipe left or right';
           }
 
           function clearState(){
@@ -192,7 +188,6 @@ async function run() {
             startX = e.clientX;
             activeId = e.pointerId;
             wrap.classList.add('is-pressing');
-            feedback.textContent = 'Keep holding...';
             try { btn.setPointerCapture(e.pointerId); } catch(err){}
             holdTimer = setTimeout(openRail, 200);
           });
@@ -207,14 +202,11 @@ async function run() {
             if (dx <= -40) {
               wrap.classList.add('choice-left');
               wrap.classList.remove('choice-right');
-              feedback.textContent = 'Release for View Solution';
             } else if (dx >= 40) {
               wrap.classList.add('choice-right');
               wrap.classList.remove('choice-left');
-              feedback.textContent = 'Release for Ask AI';
             } else {
               wrap.classList.remove('choice-left', 'choice-right');
-              feedback.textContent = 'Swipe left or right';
             }
           });
 
@@ -316,8 +308,21 @@ async function run() {
   const screenshotDir = path.join(process.cwd(), 'test-results');
   if (!fs.existsSync(screenshotDir)) fs.mkdirSync(screenshotDir, { recursive: true });
 
-  // 4. Test Hold & Swipe Gesture Interaction
-  console.log('\n[TEST 4] Testing Hold & Swipe Gesture on Solution Button:');
+  // 4a. Verify single click does NOT trigger action or open rail
+  console.log('\n[TEST 4a] Testing Single Click (No Hold) on Solution Button:');
+  const solutionBtnForClick = await page.$('.ios-series-footer-solution');
+  if (solutionBtnForClick) {
+    await solutionBtnForClick.click();
+    await page.waitForTimeout(50);
+    const isOpenAfterClick = await page.evaluate(() => {
+      const wrap = document.querySelector('.ios-series-picker-wrap');
+      return wrap ? wrap.classList.contains('is-open') : false;
+    });
+    console.log(`- Rail remains closed on single click: ${!isOpenAfterClick}`);
+  }
+
+  // 4b. Test Hold & Swipe Gesture Interaction
+  console.log('\n[TEST 4b] Testing Hold & Swipe Gesture on Solution Button:');
 
   // Simulate press & hold on solution button
   const solutionBtn = await page.$('.ios-series-footer-solution');

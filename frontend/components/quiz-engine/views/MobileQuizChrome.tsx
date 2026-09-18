@@ -119,15 +119,12 @@ export function MobileQuizFooter({
   const [isPressing, setIsPressing] = useState(false);
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [choice, setChoice] = useState<"left" | "right" | null>(null);
-  const [feedback, setFeedback] = useState("Swipe left or right");
 
   const startCoords = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const activePointerId = useRef<number | null>(null);
   const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const choiceRef = useRef<"left" | "right" | null>(null);
   const isPickerOpenRef = useRef(false);
-  const didHoldGestureRef = useRef(false);
-  const pointerDownFiredRef = useRef(false);
 
   const HOLD_MS = 200;
   const SELECT_X = 40;
@@ -147,14 +144,8 @@ export function MobileQuizFooter({
     choiceRef.current = next;
     setChoice(next);
 
-    if (next === "left") {
-      setFeedback("Release for View Solution");
+    if (next === "left" || next === "right") {
       vibrate(8);
-    } else if (next === "right") {
-      setFeedback("Release for Ask AI");
-      vibrate(8);
-    } else {
-      setFeedback("Swipe left or right");
     }
   };
 
@@ -190,12 +181,9 @@ export function MobileQuizFooter({
 
   const handlePointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
     if (!isCurrentSubmitted || (hideViewSolution && hideAiTutor) || e.button !== 0) return;
-    pointerDownFiredRef.current = true;
-    didHoldGestureRef.current = false;
     activePointerId.current = e.pointerId;
     startCoords.current = { x: e.clientX, y: e.clientY };
     setIsPressing(true);
-    setFeedback("Keep holding...");
 
     try {
       e.currentTarget.setPointerCapture(e.pointerId);
@@ -207,8 +195,6 @@ export function MobileQuizFooter({
       setIsPickerOpen(true);
       isPickerOpenRef.current = true;
       setIsPressing(false);
-      didHoldGestureRef.current = true;
-      setFeedback("Swipe left or right");
       vibrate(12);
     }, HOLD_MS);
   };
@@ -240,7 +226,6 @@ export function MobileQuizFooter({
 
     const finalChoice = choiceRef.current;
     const wasPickerOpen = isPickerOpenRef.current;
-    const wasHold = didHoldGestureRef.current;
 
     clearHoldState();
 
@@ -248,9 +233,6 @@ export function MobileQuizFooter({
       handleOpenSolution();
     } else if (wasPickerOpen && finalChoice === "right") {
       handleOpenAiTutor();
-    } else if (!wasHold) {
-      // Direct tap without holding: open solution
-      handleOpenSolution();
     }
   };
 
@@ -258,11 +240,8 @@ export function MobileQuizFooter({
     clearHoldState();
   };
 
-  const handleClick = () => {
-    if (!pointerDownFiredRef.current) {
-      handleOpenSolution();
-    }
-    pointerDownFiredRef.current = false;
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
   };
 
   return (
@@ -310,11 +289,6 @@ export function MobileQuizFooter({
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerCancel}
       >
-        {/* Dynamic Feedback Tooltip */}
-        <div className="ios-series-picker-feedback" aria-live="polite">
-          {feedback}
-        </div>
-
         {/* Floating Action Rail */}
         <div
           className="ios-series-picker-rail"
