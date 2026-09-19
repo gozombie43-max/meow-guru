@@ -11,12 +11,16 @@ const mockUsersCursor = {
   toArray: (...args) => mockFindToArray(...args),
 };
 
-vi.mock('../../config/mongodb.js', () => ({
-  getUsersCollection: () => ({
-    find: vi.fn(() => mockUsersCursor),
-    updateOne: (...args) => mockUpdateOne(...args),
-  }),
-}));
+vi.mock('../../config/mongodb.js', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    getUsersCollection: () => ({
+      find: vi.fn(() => mockUsersCursor),
+      updateOne: (...args) => mockUpdateOne(...args),
+    }),
+  };
+});
 
 vi.mock('../pushNotificationService.js', () => ({
   sendPushToUser: (...args) => mockSendPushToUser(...args),

@@ -9,7 +9,7 @@ import { useBackLayer } from "@/hooks/useAppNavigation";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useCallback,useEffect,useMemo,useRef,useState } from "react";
 
-export function useQuizPresentation(subjectConfig: SubjectConfig, presentation: string) {
+export function useQuizPresentation(subjectConfig: SubjectConfig, presentation: string = "default") {
   const activeRailBtnRef = useRef<HTMLButtonElement | null>(null);
   const activeMacBtnRef = useRef<HTMLButtonElement | null>(null);
   const examDetailsRef = useRef<HTMLDetailsElement | null>(null);

@@ -5,7 +5,7 @@ const originalConsoleError = console.error;
 const originalConsoleWarn = console.warn;
 
 beforeAll(() => {
-  console.error = (...args: any[]) => {
+  console.error = (...args: unknown[]) => {
     const msg = args.join(' ');
     // Ignore known warnings that are unavoidable
     if (
@@ -30,7 +30,7 @@ beforeAll(() => {
     throw new Error(`Unexpected console.error: ${msg}`);
   };
 
-  console.warn = (...args: any[]) => {
+  console.warn = (...args: unknown[]) => {
     const msg = args.join(' ');
     if (
       msg.includes('styled-jsx') ||
