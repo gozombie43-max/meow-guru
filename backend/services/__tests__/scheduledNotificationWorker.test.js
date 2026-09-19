@@ -11,6 +11,12 @@ const mockFindOneAndUpdate = vi.fn().mockResolvedValue(null);
 const mockUpdateOne = vi.fn().mockResolvedValue({ modifiedCount: 1 });
 const mockHistoryInsertOne = vi.fn().mockResolvedValue({ acknowledged: true });
 
+vi.mock("../notificationWorkerHealthService.js", () => ({
+  reportWorkerStarted: vi.fn().mockResolvedValue(new Date()),
+  reportWorkerSuccess: vi.fn().mockResolvedValue(),
+  reportWorkerFailure: vi.fn().mockResolvedValue(),
+}));
+
 vi.mock("../../config/mongodb.js", () => ({
   getScheduledNotificationsCollection: () => ({
     updateMany: mockUpdateMany,

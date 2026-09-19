@@ -1,6 +1,8 @@
 // backend/auth/passport.js
 
 import passport from 'passport';
+import { oauthStateStore } from './oauthState.js';
+const dummyPasswordHash = bcrypt.hash('invalid-account-password', 12);
 import { Strategy as LocalStrategy } from 'passport-local';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import bcrypt from 'bcryptjs';
@@ -77,43 +79,9 @@ export const initPassport = () => {
           const user =
             await findUserByEmail(email);
 
-          if (!user) {
-            return done(
-              null,
-              false,
-              {
-                message: 'User not found',
-              }
-            );
-          }
-
-          if (
-            user.authProvider === 'google'
-          ) {
-            return done(
-              null,
-              false,
-              {
-                message:
-                  'Please sign in with Google',
-              }
-            );
-          }
-
-          const valid =
-            await bcrypt.compare(
-              password,
-              user.passwordHash
-            );
-
-          if (!valid) {
-            return done(
-              null,
-              false,
-              {
-                message: 'Wrong password',
-              }
-            );
+          const valid = await bcrypt.compare(password, user?.passwordHash || await dummyPasswordHash);
+          if (!user || user.authProvider === 'google' || !valid) {
+            return done(null, false, { message: 'Invalid email or password' });
           }
 
           return done(
@@ -134,6 +102,8 @@ export const initPassport = () => {
   passport.use(
     new GoogleStrategy(
       {
+        state: true,
+        store: oauthStateStore,
         clientID:
           process.env.GOOGLE_CLIENT_ID,
 

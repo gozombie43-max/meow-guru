@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest",
     "test:run": "vitest run --maxWorkers=2",
-    "test:coverage": "vitest run --coverage",
+    "test:coverage": "vitest run --maxWorkers=2 --coverage",
     "check": "npm run typecheck && npm run test:run && npm run lint",
     "check:performance": "node scripts/check-performance-budget.mjs",
     "test:e2e": "playwright test"
@@ -40,7 +40,8 @@
     "socket.io-client": "^4.8.3",
     "swr": "^2.5.1",
     "tailwind-merge": "^3.6.0",
-    "zod": "^4.4.3"
+    "zod": "^4.4.3",
+    "@meow/contracts": "1.0.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",

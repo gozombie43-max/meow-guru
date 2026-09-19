@@ -1,3 +1,4 @@
+import { mistakeCoachSchema } from "@meow/contracts/ai";
 // backend/agents/cognitiveMapperRouter.js
 // QuizGuru — Cognitive Failure Mapper API Routes
 
@@ -418,7 +419,7 @@ const buildMistakeCoach = async ({ topWeakConcepts = [], confidenceProfile, trap
   const prompt = `Create a concise JSON coaching response for an SSC exam dashboard.
 Analytics:\n${JSON.stringify({ summary, confidenceProfile, trapRadar })}\n\nReturn JSON with this exact shape:\n{\n  "mistakeCoach": [\n    {"concept":"","dimension":"","why":"","fix":""}\n  ]\n}\n\nRules:\n- include 3 to 4 items\n- keep each why/fix under 18 words\n- use the dominantDimension where possible\n- if there is no strong signal, explain in plain exam language`;
 
-  const aiResponse = chatJSON(prompt, undefined, "You are a concise SSC exam coach.")
+  const aiResponse = chatJSON(prompt, undefined, "You are a concise SSC exam coach.", mistakeCoachSchema)
     .then((response) => {
       if (Array.isArray(response?.mistakeCoach) && response.mistakeCoach.length > 0) {
         return response.mistakeCoach.slice(0, 4);

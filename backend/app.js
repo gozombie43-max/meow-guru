@@ -1,3 +1,4 @@
+import { isTrustedOrigin } from './auth/requestOrigin.js';
 import { requestLogging } from './infrastructure/logger.js';
 import { checkReadiness } from './infrastructure/readiness.js';
 import { requestBodyLimits } from './middleware/requestBodyLimits.js';
@@ -52,29 +53,9 @@ export async function createApp({ isReady, isShuttingDown, quizOnlyMode = proces
 
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-  const allowedOrigins = new Set([
-    'http://localhost:3000',
-    'http://localhost:5000',
-    'http://127.0.0.1:5500',
-    'http://localhost:5500',
-    ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
-  ]);
-
-  const allowedOriginPatterns = [
-    /^http:\/\/localhost:\d+$/,
-    /^http:\/\/127\.0\.0\.1:\d+$/,
-    /^http:\/\/\[::1\]:\d+$/,
-  ];
-
-  const isOriginAllowed = (origin) => {
-    if (!origin) return true;
-    if (allowedOrigins.has(origin)) return true;
-    return allowedOriginPatterns.some((pattern) => pattern.test(origin));
-  };
-
   const corsOrigin = (origin, callback) => {
-    if (isOriginAllowed(origin)) return callback(null, true);
-    return callback(new Error('Not allowed by CORS'));
+    if (!origin || isTrustedOrigin(origin)) return callback(null, true);
+    return callback(Object.assign(new Error('Not allowed by CORS'), { statusCode: 403 }));
   };
 
   const corsOptions = {

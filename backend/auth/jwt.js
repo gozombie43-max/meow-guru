@@ -71,7 +71,7 @@ export const signBattleRematchToken = (payload) =>
   );
 
 export const verifyBattleRematchToken = (token) => {
-  const decoded = jwt.verify(token, SECRET);
+  const decoded = jwt.verify(token, SECRET, { algorithms: ['HS256'] });
 
   if (decoded.type !== "battle-rematch") {
     throw new Error("Invalid rematch token");

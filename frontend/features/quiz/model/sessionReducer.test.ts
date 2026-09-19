@@ -1,0 +1,47 @@
+import { expect, it } from 'vitest';
+import { initialQuizSession, quizSessionReducer as reduce } from './sessionReducer';
+import type { QuizQuestion } from '@/features/quiz/model/types';
+
+const question = { id: 1, options: ['A', 'B'], correctAnswer: 1, concept: 'math', difficulty: 'medium' } as QuizQuestion;
+it('atomically restores a session once, preserving submitted answers', () => {
+  const restored = reduce(initialQuizSession(), { type: 'RESTORE', snapshot: { currentIndex: 2, selectedAnswers: { 2: 1 }, submittedQuestions: [2], difficulty: 'hard' } });
+  expect(restored.phase).toBe('answered');
+  expect(restored.selectedAnswers[2]).toBe(1);
+  expect(reduce(restored, { type: 'RESTORE', snapshot: {} })).toBe(restored);
+  expect(reduce(restored, { type: 'SELECT', answer: 0, optionCount: 2 })).toBe(restored);
+  expect(reduce(restored, { type: 'CLEAR' })).toBe(restored);
+  expect(reduce(restored, { type: 'SUBMIT', question, timeTaken: 10 })).toBe(restored);
+  expect(reduce(restored, { type: 'START' }).phase).toBe('answered');
+  expect(reduce(initialQuizSession(), { type: 'RESTORE', snapshot: {} }).phase).toBe('running');
+});
+it('handles selection, scoring, solution, navigation and completion without conflicting phases', () => {
+  let state = initialQuizSession();
+  expect(reduce(state, { type: 'SOLUTION', open: true })).toBe(state);
+  expect(reduce(state, { type: 'NAVIGATE', index: 0, count: 0 })).toBe(state);
+  expect(reduce(state, { type: 'NAVIGATE', index: 0, count: 2 }).phase).toBe('idle');
+  state = reduce(state, { type: 'START' });
+  for (const answer of [-1, 2, 0.5]) expect(reduce(state, { type: 'SELECT', answer, optionCount: 2 })).toBe(state);
+  state = reduce(state, { type: 'SUBMIT', question, timeTaken: 10 });
+  expect(state.submitError).toContain('choose');
+  state = reduce(state, { type: 'SELECT', answer: 0, optionCount: 2 });
+  state = reduce(state, { type: 'CLEAR' });
+  expect(state.selectedAnswers).toEqual({});
+  state = reduce(state, { type: 'SELECT', answer: 1, optionCount: 2 });
+  state = reduce(state, { type: 'SUBMIT', question, timeTaken: 10 });
+  expect(state.results[0].isCorrect).toBe(true); expect(state.bestStreak).toBe(1);
+  state = reduce(state, { type: 'SOLUTION', open: true }); expect(state.phase).toBe('solution');
+  state = reduce(state, { type: 'SOLUTION', open: false }); expect(state.phase).toBe('answered');
+  state = reduce(state, { type: 'NAVIGATE', index: 10, count: 2 }); expect(state.currentIndex).toBe(1);
+  state = reduce(state, { type: 'SOLUTION', open: false }); expect(state.phase).toBe('running');
+  state = reduce(state, { type: 'SELECT', answer: 0, optionCount: 2 });
+  state = reduce(state, { type: 'SUBMIT', question: { ...question, id: 2 }, timeTaken: 20 });
+  expect(state.streak).toBe(0); expect(state.bestStreak).toBe(1);
+  state = reduce(state, { type: 'NAVIGATE', index: 0, count: 2 }); expect(state.phase).toBe('answered');
+  state = reduce(state, { type: 'ERROR', message: 'Loading' }); expect(state.submitError).toBe('Loading');
+  state = reduce(state, { type: 'FINISH' }); expect(state.phase).toBe('completed');
+  expect(reduce(state, { type: 'SELECT', answer: 1, optionCount: 2 })).toBe(state);
+  expect(reduce(state, { type: 'SUBMIT', question, timeTaken: 10 })).toBe(state);
+  expect(reduce(state, { type: 'SOLUTION', open: true })).toBe(state);
+  state = reduce(state, { type: 'RESTART' });
+  expect(state.phase).toBe('idle'); expect(state.results).toEqual([]); expect(state.restored).toBe(true);
+});

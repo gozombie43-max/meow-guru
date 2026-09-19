@@ -1,7 +1,7 @@
 "use client";
 
-import QuizEngine from "@/components/quiz-engine/QuizEngine";
-import { reasoningConfig } from "@/components/quiz-engine/subjects/reasoning";
+import QuizEngine from "@/features/quiz/components/QuizEngine";
+import { reasoningConfig } from "@/features/quiz/components/subjects/reasoning";
 
 export default function ReasoningQuizEngine(props: {
   title: string;

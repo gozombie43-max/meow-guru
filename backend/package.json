@@ -9,6 +9,7 @@
     "@aws-sdk/s3-request-presigner": "^3.1121.0",
     "@azure/cosmos": "^4.10.0",
     "@azure/storage-blob": "^12.33.0",
+    "@meow/contracts": "1.0.0",
     "@socket.io/mongo-adapter": "^0.4.0",
     "bcryptjs": "^3.0.3",
     "compression": "^1.8.1",
@@ -54,13 +55,18 @@
     "db:migrate": "node scripts/migrate.js",
     "db:normalize": "node scripts/normalize-question-keys.js",
     "db:migrate-images": "node scripts/migrate-local-question-images.js",
-    "test:load": "node scripts/load-api.js"
+    "test:load": "node scripts/load-api.js",
+    "lint": "eslint . --max-warnings 0",
+    "test:coverage": "vitest run --maxWorkers=2 --coverage"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@types/multer": "^2.2.0",
+    "@vitest/coverage-v8": "^4.1.11",
+    "eslint": "^9.39.5",
+    "globals": "^14.0.0",
     "mongodb-memory-server": "^11.2.0",
     "nodemon": "^3.1.14",
     "socket.io-client": "^4.8.3",

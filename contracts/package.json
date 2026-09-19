@@ -1,0 +1,17 @@
+{
+  "name": "@meow/contracts",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./ai": "./ai.js",
+    "./geometry": "./geometry.js",
+    "./diagramPrompt": "./diagramPrompt.js"
+  },
+  "scripts": {
+    "build": "tsc --allowJs --declaration --emitDeclarationOnly --skipLibCheck --module nodenext --target es2022 ai.js geometry.js diagramPrompt.js"
+  },
+  "dependencies": {
+    "zod": "^4.4.3"
+  }
+}

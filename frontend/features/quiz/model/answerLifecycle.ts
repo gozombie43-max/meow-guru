@@ -1,4 +1,4 @@
-import type { Difficulty,QuizQuestion,SessionResult } from "@/components/quiz-engine/types";
+import type { Difficulty,QuizQuestion,SessionResult } from "@/features/quiz/model/types";
 
 export function nextDifficulty(results: SessionResult[], difficulty: Difficulty, correct: boolean): Difficulty {
   const recentCorrect = [...results.slice(-4), { isCorrect: correct }].filter(result => result.isCorrect).length;

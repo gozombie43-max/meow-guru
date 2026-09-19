@@ -1,4 +1,4 @@
-import QuizRouteShell from "@/components/quiz-engine/QuizRouteShell";
+import QuizRouteShell from "@/features/quiz/components/QuizRouteShell";
 import { QUIZ_TREE } from "@/lib/quiz-constants";
 import { notFound } from "next/navigation";
 import GeneralAwarenessQuizEngine from "../../_shared/quiz-engine";

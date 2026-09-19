@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import QuizRouteShell from "@/components/quiz-engine/QuizRouteShell";
+import QuizRouteShell from "@/features/quiz/components/QuizRouteShell";
 import { mathematicsTopicsForRoute, resolveMathematicsTopic, type MathematicsRouteGroup } from "@/lib/mathematics-topics";
 import MathematicsQuizEngine from "./quiz-engine";
 import MathematicsTopicPage from "./topic-page";

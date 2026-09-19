@@ -1,0 +1,117 @@
+import { act, renderHook } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { englishConfig } from "@/features/quiz/components/subjects/english";
+import { useQuizFilters } from "@/features/quiz/hooks/useQuizFilters";
+
+const mockUseQuizSession = vi.fn((..._args: unknown[]) => ({
+  questions: [],
+  hasMore: false,
+  isFetchingMore: false,
+  fetchMore: vi.fn(),
+  totalCount: 3,
+}));
+
+vi.mock("@/hooks/useQuizSession", () => ({
+  useQuizSession: (...args: unknown[]) => mockUseQuizSession(...args),
+}));
+
+const mockMeta = vi.hoisted(() => ({ concepts: [] as string[], exams: [] as string[], letters: { A: 1, B: 2 }, conceptGroups: [] as Array<{ id: string; label: string; description: string; concepts: string[] }> }));
+vi.mock("@/hooks/useQuestionsMeta", () => ({
+  useQuestionsMeta: () => ({ meta: mockMeta }),
+}));
+beforeEach(() => { mockMeta.concepts = []; mockMeta.conceptGroups = []; });
+
+describe("useQuizFilters letter filtering", () => {
+  it("computes letter counts and delegates filtering to session api", () => {
+    const { result } = renderHook(() =>
+      useQuizFilters({
+        subjectConfig: englishConfig,
+        slug: "synonyms-antonyms",
+        mode: "formula",
+        initialLetterParam: null,
+      })
+    );
+
+    expect(result.current.letterCounts).toEqual({ A: 1, B: 2 });
+    expect(result.current.availableLetters).toEqual(["A", "B"]);
+
+    expect(mockUseQuizSession).toHaveBeenLastCalledWith(
+      expect.objectContaining({ letter: undefined })
+    );
+
+    // Toggle letter B
+    act(() => {
+      result.current.handleToggleLetter("B");
+    });
+
+    expect(result.current.selectedLetters.has("B")).toBe(true);
+    expect(result.current.selectedLetters.size).toBe(1);
+
+    expect(mockUseQuizSession).toHaveBeenLastCalledWith(
+      expect.objectContaining({ letter: "B" })
+    );
+
+    // Toggle letter A
+    act(() => {
+      result.current.handleToggleLetter("A");
+    });
+
+    expect(result.current.selectedLetters.has("A")).toBe(true);
+    expect(result.current.selectedLetters.size).toBe(1);
+
+    expect(mockUseQuizSession).toHaveBeenLastCalledWith(
+      expect.objectContaining({ letter: "A" })
+    );
+
+    // Toggle letter A again (deselects)
+    act(() => {
+      result.current.handleToggleLetter("A");
+    });
+
+    expect(result.current.selectedLetters.size).toBe(0);
+    expect(mockUseQuizSession).toHaveBeenLastCalledWith(
+      expect.objectContaining({ letter: undefined })
+    );
+  });
+});
+
+
+describe("question-derived concepts", () => {
+  it("does not invent concepts when metadata is empty", () => {
+    const { result } = renderHook(() => useQuizFilters({ subjectConfig: englishConfig, slug: "synonyms-antonyms", mode: "concept", initialLetterParam: null }));
+    expect(result.current.conceptOptions).toEqual([]);
+    expect(result.current.classificationGroups).toEqual([]);
+  });
+  it("uses only stored concepts and updates when metadata changes", () => {
+    mockMeta.concepts = ["Stored concept", "Stored concept"];
+    const { result, rerender } = renderHook(() => useQuizFilters({ subjectConfig: englishConfig, slug: "synonyms-antonyms", mode: "concept", initialLetterParam: null }));
+    expect(result.current.conceptOptions).toEqual(["Stored concept"]);
+    mockMeta.concepts = ["Stored concept", "Newly uploaded concept"];
+    rerender();
+    expect(result.current.conceptOptions).toEqual(mockMeta.concepts);
+  });
+  it("sorts classification groups with more concepts number first (descending)", () => {
+    mockMeta.conceptGroups = [
+      { id: "1", label: "Transposition Ciphers", description: "desc", concepts: ["c1", "c2"] },
+      { id: "2", label: "Substitution Ciphers", description: "desc", concepts: ["c1", "c2", "c3", "c4", "c5", "c6"] },
+      { id: "3", label: "Positional Alphabetic Codes", description: "desc", concepts: ["c1", "c2", "c3"] },
+      { id: "4", label: "Mathematical Operation Codes", description: "desc", concepts: ["c1", "c2", "c3", "c4", "c5"] },
+      { id: "5", label: "Pattern-Based Codes", description: "desc", concepts: ["c1", "c2", "c3", "c4"] },
+    ];
+    const { result } = renderHook(() =>
+      useQuizFilters({
+        subjectConfig: englishConfig,
+        slug: "synonyms-antonyms",
+        mode: "concept",
+        initialLetterParam: null,
+      })
+    );
+    expect(result.current.classificationGroups.map((g) => g.label)).toEqual([
+      "Substitution Ciphers",
+      "Mathematical Operation Codes",
+      "Pattern-Based Codes",
+      "Positional Alphabetic Codes",
+      "Transposition Ciphers",
+    ]);
+  });
+});

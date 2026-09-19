@@ -1,3 +1,4 @@
+import { questionDraftsSchema } from "@meow/contracts/ai";
 // backend/scripts/bulkGenerate.js
 import 'dotenv/config';
 import fs from 'fs';
@@ -40,7 +41,7 @@ Return a JSON array:
 ]`;
 
   console.log(`Generating batch ${batchNum}/${TOTAL_QUESTIONS / BATCH_SIZE}...`);
-  const questions = await chatJSON(userPrompt, "o4-mini", systemPrompt);
+  const questions = await chatJSON(userPrompt, "o4-mini", systemPrompt, questionDraftsSchema);
   return questions;
 }
 

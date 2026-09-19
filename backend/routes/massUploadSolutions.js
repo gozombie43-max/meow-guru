@@ -3,7 +3,7 @@
 
 import express from "express";
 import multer from "multer";
-import JSZip from "jszip";
+import { loadSafeZip, ZIP_LIMITS, IMAGE_INPUT_OPTIONS } from "../services/uploads/safeZip.js";
 import sharp from "sharp";
 
 import {
@@ -26,7 +26,7 @@ const router = express.Router();
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 200 * 1024 * 1024,
+    fileSize: ZIP_LIMITS.compressedBytes,
   },
 });
 
@@ -54,7 +54,7 @@ const buildImageUrl = (key) =>
 // ───────────────────────────────────────────────────────
 
 async function toWebP(buffer) {
-  return sharp(buffer)
+  return sharp(buffer, IMAGE_INPUT_OPTIONS)
     .webp({
       quality: 85,
     })
@@ -271,7 +271,7 @@ router.post(
 
     try {
       zip =
-        await JSZip.loadAsync(
+        await loadSafeZip(
           req.file.buffer
         );
 

@@ -1,7 +1,7 @@
 "use client";
 
-import QuizEngine from "@/components/quiz-engine/QuizEngine";
-import { generalAwarenessConfig } from "@/components/quiz-engine/subjects/general-awareness";
+import QuizEngine from "@/features/quiz/components/QuizEngine";
+import { generalAwarenessConfig } from "@/features/quiz/components/subjects/general-awareness";
 
 export default function GeneralAwarenessQuizEngine(props: {
   title: string;

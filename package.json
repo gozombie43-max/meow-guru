@@ -2,10 +2,11 @@
   "name": "meow-guru-monorepo",
   "version": "1.0.0",
   "private": true,
-  "description": "Meow Guru — Smart Quiz Platform (Monorepo)",
+  "description": "Meow Guru \u2014 Smart Quiz Platform (Monorepo)",
   "workspaces": [
     "frontend",
-    "backend"
+    "backend",
+    "contracts"
   ],
   "scripts": {
     "dev:frontend": "npm --prefix frontend run dev",
@@ -15,10 +16,11 @@
     "test": "npm --prefix frontend run test:run && npm --prefix backend test",
     "test:frontend": "npm --prefix frontend run test:run",
     "test:backend": "npm --prefix backend test",
-    "lint": "npm --prefix frontend run lint",
+    "lint": "npm --prefix frontend run lint && npm --prefix backend run lint",
     "typecheck": "npm --prefix frontend run typecheck",
     "check": "npm run typecheck && npm run lint && npm run test",
-    "start": "npm --prefix backend start"
+    "start": "npm --prefix backend start",
+    "build:contracts": "npm run build --workspace @meow/contracts"
   },
   "overrides": {
     "dompurify": "3.4.14",

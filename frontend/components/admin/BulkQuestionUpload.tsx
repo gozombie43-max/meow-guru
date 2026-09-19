@@ -1,5 +1,5 @@
 "use client";
-import { questionWriteResponse as fetch } from "@/features/quiz/api/questionWrites";
+import { questionWriteResponse } from "@/features/quiz/api/questionWrites";
 
 
 import { API_BASE } from "@/lib/api-base";
@@ -111,7 +111,7 @@ export default function BulkQuestionUpload({}: { backLink?: ReactNode }) {
     if (!toCheck.length) return;
     addLog(`Checking ${toCheck.length} questions against the database...`, "info");
     try {
-      const res = await fetch(`${API}/api/questions/check-duplicates`, {
+      const res = await questionWriteResponse(`${API}/api/questions/check-duplicates`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -255,7 +255,7 @@ export default function BulkQuestionUpload({}: { backLink?: ReactNode }) {
       const batch = toUpload.slice(i, i + BATCH);
       const batchNum = Math.floor(i / BATCH) + 1;
       try {
-        const res = await fetch(`${API}/api/questions/bulk`, {
+        const res = await questionWriteResponse(`${API}/api/questions/bulk`, {
           method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${adminToken()}` },
           body: JSON.stringify(batch)
         });

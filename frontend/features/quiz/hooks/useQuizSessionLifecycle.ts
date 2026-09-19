@@ -1,13 +1,13 @@
 "use client";
-import type { useQuizFilters } from "@/components/quiz-engine/hooks/useQuizFilters";
-import { useQuizResume } from "@/components/quiz-engine/hooks/useQuizResume";
-import { useQuizSync } from "@/components/quiz-engine/hooks/useQuizSync";
-import { useQuizTimer } from "@/components/quiz-engine/hooks/useQuizTimer";
-import type { SessionResult,SubjectConfig } from "@/components/quiz-engine/types";
+import type { useQuizFilters } from "@/features/quiz/hooks/useQuizFilters";
+import { useQuizResume } from "@/features/quiz/hooks/useQuizResume";
+import { useQuizSync } from "@/features/quiz/hooks/useQuizSync";
+import { useQuizTimer } from "@/features/quiz/hooks/useQuizTimer";
+import type { SessionResult,SubjectConfig } from "@/features/quiz/model/types";
 import { useAuth } from "@/context/AuthContext";
-import { useEffect,useMemo,useRef,useState } from "react";
+import { useCallback,useEffect,useMemo,useRef,useReducer } from "react";
 import { useQuizAnswerLifecycle } from "./useQuizAnswerLifecycle";
-import { useQuizNavigation } from "./useQuizNavigation";
+import { initialQuizSession, quizSessionReducer } from "../model/sessionReducer";
 
 export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, routeBase, resumeRequested,
   jumpIdRaw, filters, closePalette }: {
@@ -18,10 +18,12 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
   const jumpId = Number.parseInt(jumpIdRaw ?? "", 10);
   const { questions, hasMore, fetchMore, conceptFilter, setConceptFilter, examFilter, setExamFilter,
     selectedClassificationConcepts, setSelectedClassificationConcepts } = filters;
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [started, setStarted] = useState(false);
-  const [showAnalytics, setShowAnalytics] = useState(false);
-  const [isSolutionOpen, setIsSolutionOpen] = useState(false);
+  const [state, dispatch] = useReducer(quizSessionReducer, undefined, initialQuizSession);
+  const { currentIndex, selectedAnswers, submittedQuestions, difficulty, results } = state;
+  const started = state.phase !== 'idle';
+  const showAnalytics = state.phase === 'completed';
+  const isSolutionOpen = state.phase === 'solution';
+  const setIsSolutionOpen = useCallback((open: boolean) => dispatch({ type: 'SOLUTION', open }), [dispatch]);
   const timer = useQuizTimer();
   const { startTimer, stopTimer } = timer;
   const storageKey = `${subjectConfig.subjectId}_quiz_resume_${slug}_${mode}`;
@@ -39,35 +41,27 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
   const resumeAppliedRef = useRef(false);
 
   const currentQ = questions[currentIndex];
-  const answers = useQuizAnswerLifecycle({ currentIndex, currentQ, token, timer });
-  const { selectedAnswers, setSelectedAnswers, submittedQuestions, setSubmittedQuestions,
-    difficulty, setDifficulty, results, setResults, setSubmitError } = answers;
-  // Restore incoming session state before children render the active question.
-  // Timers and page requests remain effects; state restoration is a guarded transition.
-  const [initialization, setInitialization] = useState<{ kind: "resume" | "jump"; index: number; submitted: boolean } | null>(null);
+  const answers = useQuizAnswerLifecycle({ currentQ, token, timer, state, dispatch });
+  const initialization = state.restored;
   const savedIndex = resumeEntry?.currentIndex ?? 0;
   const readyResume = resumeRequested && resumeEntry && resumeEntry.status !== "completed"
     && questions.length > 0 && (savedIndex < questions.length || !hasMore);
   const targetIndex = jumpIdRaw && Number.isFinite(jumpId)
     ? questions.findIndex(question => question.id === jumpId) : -1;
-  if (!initialization && (readyResume || (!resumeRequested && targetIndex >= 0))) {
-    const index = readyResume ? Math.max(0, Math.min(savedIndex, questions.length - 1)) : targetIndex;
-    const savedAnswers = readyResume ? resumeEntry.selectedAnswers ?? {} : selectedAnswers;
-    const savedSubmitted = readyResume ? new Set(resumeEntry.submittedQuestions ?? []) : submittedQuestions;
-    setInitialization({ kind: readyResume ? "resume" : "jump", index, submitted: savedSubmitted.has(index) });
-    if (readyResume) {
-      setSelectedAnswers(savedAnswers); setSubmittedQuestions(savedSubmitted);
-      setResults(Array.isArray(resumeEntry.results) ? resumeEntry.results as SessionResult[] : []);
-    }
-    setShowAnalytics(false); setStarted(true); setCurrentIndex(index);
-    setSubmitError(""); setIsSolutionOpen(false);
-  }
   useEffect(() => {
-    if (!initialization) return;
-    resumeAppliedRef.current = initialization.kind === "resume";
+    if (initialization || !(readyResume || (!resumeRequested && targetIndex >= 0))) return;
+    const index = readyResume ? Math.max(0, Math.min(savedIndex, questions.length - 1)) : targetIndex;
+    const savedSubmitted = readyResume ? resumeEntry.submittedQuestions ?? [] : [];
+    // One atomic transition synchronizes asynchronously loaded server session data.
+    dispatch({ type: 'RESTORE', snapshot: { currentIndex: index,
+      selectedAnswers: readyResume ? resumeEntry.selectedAnswers ?? {} : {},
+      submittedQuestions: savedSubmitted,
+      results: readyResume && Array.isArray(resumeEntry.results) ? resumeEntry.results as SessionResult[] : [],
+    } });
+    resumeAppliedRef.current = Boolean(readyResume);
     stopTimer();
-    if (!initialization.submitted) startTimer();
-  }, [initialization, startTimer, stopTimer]);
+    if (!savedSubmitted.includes(index)) startTimer();
+  }, [initialization, readyResume, resumeRequested, targetIndex, savedIndex, questions.length, resumeEntry, startTimer, stopTimer]);
   useEffect(() => {
     if (initialization || !hasMore || questions.length === 0) return;
     if ((resumeRequested && resumeEntry?.status !== "completed" && savedIndex >= questions.length)
@@ -100,34 +94,28 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
 
   function handleStart() {
     if (loadResume()) return;
-    setStarted(true);
+    dispatch({ type: 'START' });
     startTimer();
   }
 
   function handleResume() {
     if (resumeData) {
-      if (resumeData.selectedAnswers)
-        setSelectedAnswers(resumeData.selectedAnswers);
-      if (resumeData.submittedQuestions)
-        setSubmittedQuestions(new Set(resumeData.submittedQuestions));
-      if (resumeData.currentIndex !== undefined)
-        setCurrentIndex(resumeData.currentIndex);
+      dispatch({ type: 'RESTORE', snapshot: resumeData });
       if (resumeData.conceptFilter) setConceptFilter(resumeData.conceptFilter);
       if (resumeData.examFilter) setExamFilter(resumeData.examFilter);
       if (resumeData.selectedClassificationConcepts)
         setSelectedClassificationConcepts(
           new Set(resumeData.selectedClassificationConcepts),
         );
-      if (resumeData.difficulty) setDifficulty(resumeData.difficulty);
     }
     setResumeData(null);
-    setStarted(true);
-    startTimer();
+    dispatch({ type: 'START' });
+    if (!resumeData?.submittedQuestions?.includes(resumeData.currentIndex ?? 0)) startTimer();
   }
 
   function handleRestartFromPopup() {
     clearResume();
-    setStarted(true);
+    dispatch({ type: 'START' });
     startTimer();
   }
 
@@ -136,12 +124,28 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
   }
 
 
-  const navigation = useQuizNavigation({ questions, currentIndex, setCurrentIndex, started, showAnalytics,
-    setShowAnalytics, setIsSolutionOpen, hasMore, fetchMore, refreshUser, answers, timer });
-  function handleRestart() {
-    stopTimer(); setCurrentIndex(0); answers.resetAnswers(); closePalette();
-    setIsSolutionOpen(false); setShowAnalytics(false); setStarted(false);
+  const showQuestion = useCallback((index: number) => {
+    if (!questions.length) return;
+    const safeIndex = Math.max(0, Math.min(index, questions.length - 1));
+    stopTimer();
+    dispatch({ type: 'NAVIGATE', index: safeIndex, count: questions.length });
+    if (started && !showAnalytics && !submittedQuestions.has(safeIndex)) startTimer();
+  }, [questions.length, stopTimer, started, showAnalytics, submittedQuestions, startTimer, dispatch]);
+  const goToQuestion = useCallback((number: number) => showQuestion(number - 1), [showQuestion]);
+  const handlePrev = useCallback(() => { if (currentIndex > 0) showQuestion(currentIndex - 1); }, [currentIndex, showQuestion]);
+  function handleNext() {
+    if (currentIndex < questions.length - 1) showQuestion(currentIndex + 1);
+    else if (hasMore) {
+      void fetchMore();
+      dispatch({ type: 'ERROR', message: 'Loading the next questions. Please try Next again shortly.' });
+    } else {
+      stopTimer(); refreshUser(); dispatch({ type: 'FINISH' });
+    }
   }
+  function handleRestart() {
+    stopTimer(); answers.resetAnswers(); closePalette();
+  }
+  const navigation = { showQuestion, goToQuestion, handlePrev, handleNext };
   return { ...answers, ...navigation, ...timer, currentIndex, started, showAnalytics,
     isSolutionOpen, setIsSolutionOpen, currentQ, user, token, quizHref,
     resumeData, handleStart, handleResume, handleRestartFromPopup, handleCancelResume, handleRestart };

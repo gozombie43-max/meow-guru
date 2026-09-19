@@ -3,7 +3,7 @@ import { createQuestion } from "../services/questions/questionWriteService.js";
 
 import express from "express";
 import multer from "multer";
-import JSZip from "jszip";
+import { loadSafeZip, ZIP_LIMITS, IMAGE_INPUT_OPTIONS } from "../services/uploads/safeZip.js";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { v4 as uuidv4 } from "uuid";
 import sharp from "sharp";
@@ -25,7 +25,7 @@ const router = express.Router();
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 200 * 1024 * 1024,
+    fileSize: ZIP_LIMITS.compressedBytes,
   },
 });
 
@@ -77,7 +77,7 @@ async function uploadQuestionImageToB2(
 // ───────────────────────────────────────────────────────
 
 async function toWebP(buffer) {
-  return sharp(buffer)
+  return sharp(buffer, IMAGE_INPUT_OPTIONS)
     .webp({
       quality: 85,
     })
@@ -341,7 +341,7 @@ router.post(
     let zip;
 
     try {
-      zip = await JSZip.loadAsync(
+      zip = await loadSafeZip(
         req.file.buffer
       );
     } catch {
@@ -628,7 +628,7 @@ router.post(
 
     try {
       zip =
-        await JSZip.loadAsync(
+        await loadSafeZip(
           req.file.buffer
         );
     } catch {

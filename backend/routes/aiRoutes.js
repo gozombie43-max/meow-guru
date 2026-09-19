@@ -1,9 +1,11 @@
+import { SYSTEM_PROMPT as diagramPrompt } from "@meow/contracts/diagramPrompt";
+import { generateQuestionDrafts, classifyQuestion, generateDiagram } from "../ai/gateway.js";
 import { tutorChat } from '../services/tutorChatService.js';
 import { enqueueTutorJob, getTutorJob, cancelTutorJob } from '../services/tutorJobs.js';
 // backend/routes/aiRoutes.js
 import express from "express";
 import multer from "multer";
-import { chatComplete, chatJSON } from "../ai/azureClient.js";
+import { chatComplete } from "../ai/azureClient.js";
 import adminAuth from "../middleware/auth.js";
 import { protect, optionalAuth } from "../middleware/protect.js";
 import { aiLimiter } from '../middleware/rateLimiter.js';
@@ -56,6 +58,14 @@ function wakeTutorAttachmentWorker() {
     });
 }
 
+router.post('/diagram', protect, async (req, res, next) => {
+  const question = typeof req.body?.question === 'string' ? req.body.question.trim() : '';
+  if (!question) return res.status(400).json({ error: 'Question text is required' });
+  if (question.length > 4000) return res.status(413).json({ error: 'Question text is too long' });
+  try { res.json(await generateDiagram(question, diagramPrompt)); }
+  catch (error) { next(error); }
+});
+
 // ── 1. Generate Questions ─────────────────────────────
 router.post("/generate-questions", adminAuth, async (req, res) => {
   const { topic, difficulty = "medium", count = 5 } = req.body;
@@ -79,7 +89,7 @@ Return a JSON array like this:
 ]`;
 
   try {
-    const questions = await chatJSON(userPrompt, "o4-mini", systemPrompt);
+    const questions = await generateQuestionDrafts(userPrompt, systemPrompt);
     res.json({ success: true, questions });
   } catch (err) {
     res.status(err.statusCode || 502).json({ success: false, error: 'AI request failed. Please retry shortly.' });
@@ -164,7 +174,7 @@ Return JSON:
 }`;
 
   try {
-    const tags = await chatJSON(userPrompt, "o4-mini", systemPrompt);
+    const tags = await classifyQuestion(userPrompt, systemPrompt);
     res.json({ success: true, tags });
   } catch (err) {
     res.status(err.statusCode || 502).json({ success: false, error: 'AI request failed. Please retry shortly.' });

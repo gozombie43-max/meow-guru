@@ -1,7 +1,7 @@
 "use client";
 
-import QuizEngine from "@/components/quiz-engine/QuizEngine";
-import { englishConfig } from "@/components/quiz-engine/subjects/english";
+import QuizEngine from "@/features/quiz/components/QuizEngine";
+import { englishConfig } from "@/features/quiz/components/subjects/english";
 
 export default function EnglishQuizEngine(props: {
   title: string;

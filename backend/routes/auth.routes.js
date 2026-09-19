@@ -1,6 +1,7 @@
 // backend/routes/auth.routes.js
 
 import express from 'express';
+import { requireTrustedOrigin } from '../auth/requestOrigin.js';
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
 
@@ -46,12 +47,7 @@ const cookieOptions = {
   secure: isProd,
   sameSite: isProd ? 'none' : 'lax',
   path: '/',
-  maxAge:
-    365 *
-    24 *
-    60 *
-    60 *
-    1000,
+
 };
 
 const getRefreshTokenFromRequest = (req) =>
@@ -64,7 +60,7 @@ const applyRefreshToken = (
   res.cookie(
     'refreshToken',
     refreshToken,
-    cookieOptions
+    { ...cookieOptions, maxAge: Math.max(0, verifyRefreshToken(refreshToken).exp * 1000 - Date.now()) }
   );
 };
 
@@ -290,7 +286,7 @@ router.post(
       async (
         err,
         user,
-        info
+        _info
       ) => {
         if (err) {
           return next(err);
@@ -301,8 +297,7 @@ router.post(
             .status(401)
             .json({
               error:
-                info?.message ||
-                'Login failed',
+                'Invalid email or password',
             });
         }
 
@@ -349,6 +344,7 @@ router.post(
 
 router.post(
   '/refresh',
+  requireTrustedOrigin,
   async (req, res) => {
     const token =
       getRefreshTokenFromRequest(
@@ -400,6 +396,7 @@ router.post(
 
 router.post(
   '/logout',
+  requireTrustedOrigin,
   async (req, res, next) => {
     try {
       const raw = getRefreshTokenFromRequest(req);

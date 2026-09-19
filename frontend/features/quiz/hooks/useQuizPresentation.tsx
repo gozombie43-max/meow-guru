@@ -1,10 +1,10 @@
 "use client";
 import MathText from "@/components/MathText";
-import { useQuizTheme,useQuizThemeControls } from "@/components/quiz-engine/QuizThemeProvider";
-import type { SubjectConfig } from "@/components/quiz-engine/types";
-import { QuizThemeStyles } from "@/components/quiz-engine/ui/QuizStyles";
-import { useQuizPreferences } from "@/components/quiz-engine/useQuizPreferences";
-import { MODE_LABELS } from "@/components/quiz-engine/utils";
+import { useQuizTheme,useQuizThemeControls } from "@/features/quiz/components/QuizThemeProvider";
+import type { SubjectConfig } from "@/features/quiz/model/types";
+import { QuizThemeStyles } from "@/features/quiz/components/ui/QuizStyles";
+import { useQuizPreferences } from "@/features/quiz/components/useQuizPreferences";
+import { MODE_LABELS } from "@/features/quiz/model/utils";
 import { useBackLayer } from "@/hooks/useAppNavigation";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useCallback,useEffect,useMemo,useRef,useState } from "react";

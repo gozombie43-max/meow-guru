@@ -6,7 +6,6 @@ import TutorMarkdown from "./TutorMarkdown";
 import {
   Sun,
   Moon,
-  X,
   Plus,
   Zap,
   CheckCircle2,
@@ -14,14 +13,13 @@ import {
   AlertTriangle,
   Sparkles,
   ArrowUp,
-  ArrowLeft,
   Check,
   ChevronDown,
 } from "lucide-react";
-import api from '@/shared/api/client';
 import { isAxiosError } from 'axios';
 import { ChatMessage, QuizChatbotProps, buildQuestionContext } from './utils';
-import { GEMINI_TUTOR_MODEL, GEMINI_FALLBACK_MODEL, requestGeminiTutor, geminiErrorMessage } from './gemini';
+import { generateTutorReply } from "@/features/tutor/api/tutorGateway";
+import { GEMINI_TUTOR_MODEL, GEMINI_FALLBACK_MODEL, geminiErrorMessage } from './gemini';
 import './quiz-chatbot.css';
 
 type SupportedLang = "en" | "hi" | "bn";
@@ -377,30 +375,7 @@ export default function QuizChatbot({
 
     try {
       const history = conversationRef.current.context === context ? conversationRef.current.history : [];
-      let reply: string;
-      if (selectedModel === GEMINI_TUTOR_MODEL || selectedModel === GEMINI_FALLBACK_MODEL) {
-        reply = await requestGeminiTutor({ context, message: text, lang: selectedLang, history, model: selectedModel, onModelUsed: setSelectedModel });
-      } else {
-        const response = await api.post(
-          '/api/ai/tutor-chat',
-          {
-            context,
-            message: text,
-            mode: "chat",
-            model: selectedModel,
-            lang: selectedLang,
-            history,
-          },
-          {
-            timeout: 60000,
-          }
-        );
-
-        reply =
-          response.data?.reply ||
-          response.data?.explanation ||
-          "I could not generate a response. Please try again.";
-      }
+      const reply = await generateTutorReply({ context, message: text, lang: selectedLang, history, model: selectedModel, onModelUsed: setSelectedModel });
       conversationRef.current = {
         context,
         history: [...history, { role: 'user' as const, content: text }, { role: 'bot' as const, content: reply }].slice(-16),

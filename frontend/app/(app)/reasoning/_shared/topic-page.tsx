@@ -1,6 +1,6 @@
 import SubjectTopicPage,{
 type SubjectTopicPageProps,
-} from "@/components/quiz-engine/SubjectTopicPage";
+} from "@/features/quiz/components/SubjectTopicPage";
 
 type ReasoningTopicPageProps = Omit<SubjectTopicPageProps, "subject">;
 

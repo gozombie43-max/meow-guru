@@ -1,5 +1,5 @@
 "use client";
-import { requestResponse as fetch } from "@/shared/api/request";
+import { requestResponse } from "@/shared/api/request";
 
 import { getAccessToken } from "@/shared/api/client";
 import layout from "./AdminLayout.module.css";
@@ -89,10 +89,10 @@ export default function MockTestManager({}: { backLink?: ReactNode }) {
   async function loadSlots() { 
     setBusy(true); 
     try { 
-      const response = await fetch(`${apiUrl}/admin/all-slots?exam=all`, { headers: adminToken() ? { Authorization: `Bearer ${adminToken()}` } : {} }); 
+      const response = await requestResponse(`${apiUrl}/admin/all-slots?exam=all`, { headers: adminToken() ? { Authorization: `Bearer ${adminToken()}` } : {} }); 
       let data: { slots?: Slot[] } = {}; 
       if (response.ok) data = await response.json(); 
-      else { const fallback = await fetch(`${apiUrl}/${examSlug}/slots`); data = await fallback.json(); } 
+      else { const fallback = await requestResponse(`${apiUrl}/${examSlug}/slots`); data = await fallback.json(); } 
       setSlots(data.slots || []); 
     } catch (error) { 
       setStatus(error instanceof Error ? error.message : "Could not fetch slots from database."); 
@@ -104,7 +104,7 @@ export default function MockTestManager({}: { backLink?: ReactNode }) {
     setBusy(true); 
     const slot = { id, examSlug, configKey: tier.configKey, title, tier: tier.tier, type, year: type === "pyq" && year ? Number(year) : null, shift: type === "pyq" ? shift || null : null, isFree, order, assessmentMode: confidential ? 'confidential' : 'practice', timingPolicy: 'composite' };
     try { 
-      const response = await fetch(source === "upload" ? `${apiUrl}/admin/upload-paper` : `${apiUrl}/admin/slots`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${adminToken()}` }, body: JSON.stringify(source === "upload" ? { slot, questions } : slot) }); 
+      const response = await requestResponse(source === "upload" ? `${apiUrl}/admin/upload-paper` : `${apiUrl}/admin/slots`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${adminToken()}` }, body: JSON.stringify(source === "upload" ? { slot, questions } : slot) }); 
       const data = await response.json().catch(() => ({})); 
       if (!response.ok) throw new Error(data.error || "Deployment failed");
 setStatus(source === "upload" ? `Successfully deployed ${data.totalQuestions ?? questions.length} questions to MongoDB.` : `Dynamic slot "${id}" created successfully.`); 
@@ -118,7 +118,7 @@ setStatus(source === "upload" ? `Successfully deployed ${data.totalQuestions ?? 
     if (!confirm(`Are you sure you want to delete slot "${slot.id}"?`)) return; 
     setBusy(true); 
     try { 
-      const response = await fetch(`${apiUrl}/admin/slots/${encodeURIComponent(slot.id)}?examSlug=${encodeURIComponent(slot.examSlug)}`, { method: "DELETE", headers: { Authorization: `Bearer ${adminToken()}` } }); 
+      const response = await requestResponse(`${apiUrl}/admin/slots/${encodeURIComponent(slot.id)}?examSlug=${encodeURIComponent(slot.examSlug)}`, { method: "DELETE", headers: { Authorization: `Bearer ${adminToken()}` } }); 
       if (!response.ok) throw new Error("Could not delete slot."); 
       await loadSlots(); 
     } catch (error) { 
@@ -129,7 +129,7 @@ setStatus(source === "upload" ? `Successfully deployed ${data.totalQuestions ?? 
   async function seed() { 
     setBusy(true); 
     try { 
-      const response = await fetch(`${apiUrl}/admin/slots/seed`, { method: "POST", headers: { Authorization: `Bearer ${adminToken()}` } }); 
+      const response = await requestResponse(`${apiUrl}/admin/slots/seed`, { method: "POST", headers: { Authorization: `Bearer ${adminToken()}` } }); 
       const data = await response.json().catch(() => ({})); 
       if (!response.ok) throw new Error(data.error || "Could not seed slots."); 
       setStatus(`Seeded ${data.totalSeeded || 0} default slots into MongoDB.`); 

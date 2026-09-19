@@ -1,5 +1,5 @@
 "use client";
-import { questionWriteResponse as fetch } from "@/features/quiz/api/questionWrites";
+import { questionWriteResponse } from "@/features/quiz/api/questionWrites";
 
 
 import { type ReactNode, useState, Fragment } from "react";
@@ -82,7 +82,7 @@ export default function QuestionUploadForm({ backLink }: { backLink?: ReactNode 
       
       Object.entries(images).forEach(([key, file]) => file && body.append(key, file));
       
-      const response = await fetch(`${API}/api/questions`, { method: "POST", headers: { Authorization: `Bearer ${adminToken}` }, body });
+      const response = await questionWriteResponse(`${API}/api/questions`, { method: "POST", headers: { Authorization: `Bearer ${adminToken}` }, body });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error || `Upload failed (${response.status})`);
       setStatus({ text: `Question created successfully${data.question?.id ? `: #${data.question.id}` : ""}.` });

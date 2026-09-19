@@ -45,9 +45,10 @@ export async function chatCompleteMessages(messages, model = "o4-mini", maxToken
   return content;
 }
 
-export async function chatJSON(userPrompt, model = "o4-mini", systemPrompt = null) {
+export async function chatJSON(userPrompt, model = "o4-mini", systemPrompt = null, schema, maxTokens = JSON_MAX_TOKENS) {
+  if (!schema?.parse) throw new Error("Structured AI output requires a schema");
   const sys = (systemPrompt || "") + "\nRespond with valid JSON only. No markdown, no explanation, no code fences.";
-  const raw = await chatComplete(userPrompt, model, sys, JSON_MAX_TOKENS);
+  const raw = await chatComplete(userPrompt, model, sys, maxTokens);
 
   // Clean the response
   let clean = raw.replace(/```json|```/g, "").trim();
@@ -59,5 +60,6 @@ export async function chatJSON(userPrompt, model = "o4-mini", systemPrompt = nul
   if (start === -1 || end === -1) throw new Error("No JSON found in response");
 
   clean = clean.slice(start, end + 1);
-  return JSON.parse(clean);
+  try { return schema.parse(JSON.parse(clean)); }
+  catch (cause) { throw Object.assign(new Error("Invalid structured AI response", { cause }), { statusCode: 502 }); }
 }

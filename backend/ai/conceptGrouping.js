@@ -1,3 +1,4 @@
+import { conceptGroupsSchema } from "@meow/contracts/ai";
 import OpenAI from "openai";
 import { createProviderGate } from "./providerGate.js";
 
@@ -34,7 +35,7 @@ async function callGroupingAPI(client, model, maxTokens, maxGroups, scope, index
   if (choice?.finish_reason !== "stop" || choice.message?.refusal || !choice.message?.content) {
     throw new Error("AI grouping response was incomplete or refused");
   }
-  return { parsed: JSON.parse(choice.message.content), usage: response.usage };
+  return { parsed: conceptGroupsSchema.parse(JSON.parse(choice.message.content)), usage: response.usage };
 }
 
 export async function generateConceptGroups(scope, concepts) {

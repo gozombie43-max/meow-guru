@@ -1,4 +1,4 @@
-import QuizRouteShell from "@/components/quiz-engine/QuizRouteShell";
+import QuizRouteShell from "@/features/quiz/components/QuizRouteShell";
 import {
 getGeneralAwarenessChapter,
 getGeneralAwarenessChapterParams,

@@ -1,3 +1,4 @@
+import { failureClassificationSchema } from "@meow/contracts/ai";
 // backend/agents/cognitiveMapper.js
 // QuizGuru — Cognitive Failure Mapper Agent
 // Classifies every wrong answer across 5 failure dimensions using Azure OpenAI
@@ -59,7 +60,7 @@ Official solution: ${solution}
 Reply with ONLY valid JSON. No extra text, no markdown, no explanation outside the JSON.
 Format: {"dimension":"<ONE_OF_THREE>","reason":"<one sentence why>","confidence":<0.0_to_1.0>}`;
 
-  const parsed = await chatJSON(prompt, DEFAULT_MODEL, "You are a precise JSON-only response bot.");
+  const parsed = await chatJSON(prompt, DEFAULT_MODEL, "You are a precise JSON-only response bot.", failureClassificationSchema);
   return { ...parsed, source: "llm" };
 }
 

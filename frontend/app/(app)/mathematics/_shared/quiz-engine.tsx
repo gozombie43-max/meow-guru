@@ -1,7 +1,7 @@
 "use client";
 
-import QuizEngine from "@/components/quiz-engine/QuizEngine";
-import { mathematicsConfig } from "@/components/quiz-engine/subjects/mathematics";
+import QuizEngine from "@/features/quiz/components/QuizEngine";
+import { mathematicsConfig } from "@/features/quiz/components/subjects/mathematics";
 
 export default function MathematicsQuizEngine(props: {
   title: string;
