@@ -53,7 +53,8 @@ test("mobile quiz engine renders with reduced question boldness (400) and reduce
     waitUntil: "domcontentloaded",
   });
 
-  const startButton = page.getByRole("button", { name: /Start Quiz/i });
+  const startButton = page.locator('button:visible', { hasText: /Start Quiz/i }).first();
+  await startButton.waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
   if (await startButton.isVisible()) {
     await startButton.click();
   }
