@@ -93,7 +93,6 @@ function QuizEngineContent(props: QuizEngineProps) {
       .join(" ") || fullExamLabel;
   const hasDetailedExamLabel =
     Boolean(currentQ.exam.trim()) && compactExamLabel !== fullExamLabel;
-
   if (isMac)
     return (
       <DesktopQuizView {...desktopQuizViewModel({ ...controller, isCurrentSubmitted, canSubmit, canViewSolution })} />
@@ -101,7 +100,7 @@ function QuizEngineContent(props: QuizEngineProps) {
 
   if (isIos)
     return (
-      <MobileQuizView {...mobileQuizViewModel({ ...controller, isCurrentSubmitted, canSubmit, hasDetailedExamLabel, compactExamLabel, fullExamLabel })} />
+      <MobileQuizView {...mobileQuizViewModel({ ...controller, isCurrentSubmitted, canSubmit, canViewSolution, hasDetailedExamLabel, compactExamLabel, fullExamLabel })} />
     );
 
   return null;
