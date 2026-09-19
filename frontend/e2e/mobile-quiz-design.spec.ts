@@ -53,11 +53,9 @@ test("mobile quiz engine renders with reduced question boldness (400) and reduce
     waitUntil: "domcontentloaded",
   });
 
-  const startButton = page.locator('button:visible', { hasText: /Start Quiz/i }).first();
-  await startButton.waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
-  if (await startButton.isVisible()) {
-    await startButton.click();
-  }
+  const startButton = page.getByRole("button", { name: /Start Quiz/i }).first();
+  await expect(startButton).toBeEnabled({ timeout: 15000 });
+  await startButton.click({ force: true });
 
   // Wait for the quiz screen to appear
   await page.waitForSelector(".ios-series-prompt", { timeout: 15000 });
