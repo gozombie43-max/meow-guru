@@ -46,7 +46,10 @@ export function MobileQuestionNavigator({ activeRailBtnRef, closePalette, curren
                 aria-label={`Question ${index + 1}, ${statusLabel}`}
                 aria-current={index === currentIndex ? "step" : undefined}
               >
-                {index + 1}
+                <span className="ios-series-question-num">{index + 1}</span>
+                {index === currentIndex && (
+                  <span className="ios-series-question-bar" aria-hidden="true" />
+                )}
               </button>
             );
           })}

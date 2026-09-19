@@ -365,9 +365,9 @@ export function QuizSettingsModal({
         .ios-series-quiz[data-theme="dark"] .ios-settings-popover,
         .mac-series-quiz[data-theme="dark"] .ios-settings-popover,
         .ios-settings-popover[data-theme="dark"] {
-          background: #13161A;
-          border: 1px solid #292E35;
-          color: #E7E9EC;
+          background: #121722;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          color: #f0f4f8;
           box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.04);
         }
 
@@ -565,9 +565,10 @@ export function QuizSettingsModal({
         }
 
         .ios-segment-btn.is-active {
-          background: #3D6A9E;
+          background: #20344d;
+          border: 1px solid #344e73;
           color: #ffffff;
-          box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+          box-shadow: none;
         }
 
         .ios-settings-popover[data-theme="light"] .ios-segment-btn.is-active {
@@ -584,7 +585,7 @@ export function QuizSettingsModal({
           border-radius: 12px;
           border: none;
           padding: 2px;
-          background: #292E35;
+          background: #222d3d;
           cursor: pointer;
           transition: background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
           flex-shrink: 0;

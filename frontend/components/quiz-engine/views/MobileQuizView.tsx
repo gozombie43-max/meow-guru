@@ -11,7 +11,7 @@ import { ConceptBadge } from "@/components/quiz-engine/ui/SharedUI";
 import { SolutionBottomSheet } from "@/components/quiz-engine/ui/SolutionViews";
 import { UptimeTimer } from "../QuizTimer";
 import { motion } from "framer-motion";
-import { XCircle, BarChart2 } from "lucide-react";
+import { XCircle } from "lucide-react";
 import type { QuizController } from "../hooks/useQuizController";
 export function MobileQuizView({
   routeBase,
@@ -192,7 +192,6 @@ export function MobileQuizView({
         <main className="ios-series-content">
           <div className="ios-series-meta-row">
             <div className="ios-series-meta-items">
-              <BarChart2 className="ios-series-meta-icon" aria-hidden="true" />
               <ConceptBadge
                 concept={currentQ.concept}
                 colours={conceptColours}
