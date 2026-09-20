@@ -110,6 +110,10 @@ export default function PlayPage() {
     contentRef.current?.scrollTo({ top: 0, behavior: "instant" });
   }
   function choose(mode: ModeId) {
+    if (!capabilities) {
+      setError("Training setup is still loading. Please retry in a moment.");
+      return;
+    }
     setSelected(mode);
     setCount(mode === "section" ? 25 : 20);
     setError("");
@@ -303,7 +307,7 @@ export default function PlayPage() {
                     ? "Loading your evidence…"
                     : dashboard?.readiness == null
                       ? "Complete 30 answers to establish a baseline."
-                      : "Practice estimate · explore the factors in Analytics"}
+                      : `Practice estimate · ${dashboard.evidenceConfidence || "low"} evidence confidence`}
                 </p>
                 <div className="training-meter">
                   <i style={{ width: `${dashboard?.readiness || 0}%` }} />
@@ -465,7 +469,7 @@ export default function PlayPage() {
             disabled={
               busy ||
               loading ||
-              (["section", "gauntlet"].includes(selected) && !subject)
+              (!!selectedPolicy?.requiresSubject && !subject)
             }
             onClick={() => start()}
           >
