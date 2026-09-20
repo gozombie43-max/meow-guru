@@ -9,6 +9,25 @@ beforeEach(() => updateAccessToken("expired-token"));
 afterEach(() => { api.defaults.adapter = originalAdapter; updateAccessToken(null); });
 
 describe("useTranslation through the shared transport", () => {
+  it("restores a session with no in-memory token before translating Bengali", async () => {
+    updateAccessToken(null);
+    const refresh = vi.spyOn(axios, "post").mockResolvedValue({ data: { token: "restored-token" } });
+    const adapter = vi.fn(async config => {
+      const status = config.headers.Authorization === "Bearer restored-token" ? 200 : 401;
+      const response = { config, status, statusText: String(status), headers: {}, data: new TextEncoder().encode(JSON.stringify([{ translations: [{ text: "অর্থের পরিমাণ নির্ণয় করুন।" }] }])).buffer };
+      if (status === 401) throw new AxiosError("missing token", "ERR_BAD_REQUEST", config, undefined, response);
+      return response;
+    });
+    api.defaults.adapter = adapter;
+    const { result } = renderHook(() => useTranslation());
+    let translated: string[] = [];
+    await act(async () => { translated = await result.current.translate(["Find the sum of money."], "bn"); });
+    expect(translated).toEqual(["অর্থের পরিমাণ নির্ণয় করুন।"]);
+    expect(refresh).toHaveBeenCalledTimes(1);
+    expect(adapter).toHaveBeenCalledTimes(2);
+    expect(result.current.isTranslating).toBe(false);
+  });
+
   it("refreshes an expired token and retries translation once", async () => {
     const refresh = vi.spyOn(axios, "post").mockResolvedValue({ data: { token: "fresh-token" } });
     const adapter = vi.fn(async config => {

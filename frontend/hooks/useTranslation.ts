@@ -1,5 +1,4 @@
 import { useState, useCallback, useRef } from "react";
-import { getAccessToken } from "@/shared/api/client";
 import { requestResponse } from "@/shared/api/request";
 
 type Lang = "en" | "hi" | "bn";
@@ -56,8 +55,8 @@ export function useTranslation() {
         await Promise.all(waiting);
         return results;
       }
-      const accessToken = getAccessToken();
-      if (!accessToken) throw new Error("Authentication required");
+      // Let the shared transport restore a cookie-backed session on 401,
+      // including after a reload when the in-memory token is still empty.
       const response = await requestResponse('/api/translate/', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ texts: toFetch.map(item => item.text), targetLang }),
