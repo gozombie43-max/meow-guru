@@ -5,7 +5,7 @@ import { once } from "node:events";
 import { connectMongoDB, disconnectMongoDB } from "../../config/mongodb.js";
 import { createSession } from "../../auth/sessions.js";
 import { up } from "../../migrations/005-training.js";
-import { up as upHardening } from "../../migrations/006-training-hardening.js";
+import { up as upHardening } from "../../migrations/007-training-hardening.js";
 import router from "../training.js";
 import curationRouter from "../trainingCuration.js";
 
