@@ -210,6 +210,37 @@ export const aiLimiter =
   });
 
 
+// Training actions are frequent, authenticated, low-cost state mutations.
+// Keep them separate from AI/agent quotas so normal 25–50 question sessions
+// cannot exhaust an AI-style bucket.
+export const trainingLimiter =
+  rateLimit({
+    ...(process.env.NODE_ENV === "production" ? { store: new MongoRateLimitStore('training') } : {}),
+    windowMs:
+      15 * 60 * 1000,
+
+    max:
+      process.env.NODE_ENV !== 'production' ? 100000 : 1500,
+
+    standardHeaders:
+      true,
+
+    legacyHeaders:
+      false,
+
+    keyGenerator:
+      userKeyGenerator,
+
+    skip:
+      isDevOrLocal,
+
+    message: {
+      error:
+        'Training request limit reached, please try again shortly.',
+    },
+  });
+
+
 // Agents
 export const agentLimiter =
   rateLimit({
