@@ -6,7 +6,7 @@ async function run() {
   console.log('--- Automated Browser Verification of Mobile Quiz Engine Design ---');
 
   // Read the mobile quiz view styles file to extract CSS
-  const stylesFilePath = path.join(process.cwd(), 'components/quiz-engine/views/mobile-quiz-view.styles.ts');
+  const stylesFilePath = path.join(process.cwd(), 'features/quiz/components/views/mobile-quiz-view.styles.ts');
   const stylesFileContent = fs.readFileSync(stylesFilePath, 'utf8');
 
   // Extract raw CSS template literal from mobileQuizViewStyles
@@ -119,35 +119,26 @@ async function run() {
               <span>Previous</span>
             </button>
 
-            <div class="ios-series-picker-wrap" id="pickerWrap">
-              <div class="ios-series-picker-rail">
-                <div class="ios-series-rail-grid">
-                  <div class="ios-series-picker-choice is-left">
-                    <div class="ios-series-picker-choice-icon">
-                      <svg class="ios-series-review-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7z"/><path d="M14 2v5h5"/><path d="M9 13h6M9 17h4"/></svg>
-                    </div>
-                    <div>
-                      <div class="ios-series-picker-choice-title">View Solution</div>
-                      <div class="ios-series-picker-choice-sub">Answer + explanation</div>
-                    </div>
-                  </div>
-
-                  <div class="ios-series-picker-choice is-right">
-                    <div class="ios-series-picker-choice-icon">
-                      <svg class="ios-series-review-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3 13.8 8.2 19 10 13.8 11.8 12 17 10.2 11.8 5 10l5.2-1.8L12 3Z"/><path d="m18.5 14 .8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8.8-2.2Z"/></svg>
-                    </div>
-                    <div>
-                      <div class="ios-series-picker-choice-title">Ask AI Tutor</div>
-                      <div class="ios-series-picker-choice-sub">Discuss question</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="ios-series-hold-ring"></div>
-
-              <button type="button" id="solutionBtn" class="ios-series-footer-btn ios-series-footer-solution">
-                <span>Solution</span>
+            <div class="ios-series-footer-pill" role="group" aria-label="Solution and AI Tutor actions">
+              <button type="button" class="ios-series-pill-item ios-series-pill-solution" aria-label="View solution">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ios-series-pill-icon solution-icon"><rect x="4" y="3.5" width="16" height="17" rx="3"/><path d="M8 2.5v3M12 2.5v3M16 2.5v3M8 10h8M8 14h8M8 18h5"/></svg>
+                <span class="ios-series-pill-label">Solution</span>
+              </button>
+              <div class="ios-series-pill-divider" aria-hidden="true"></div>
+              <button type="button" class="ios-series-pill-item ios-series-pill-ai" aria-label="Ask AI tutor">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" class="ios-series-pill-icon ai-icon" aria-hidden="true">
+                  <linearGradient id="ios-gemini-gradient" x1="3.906" x2="45.428" y1="3.906" y2="45.428" gradientUnits="userSpaceOnUse">
+                    <stop offset="0" stop-color="#ca5df5" />
+                    <stop offset=".036" stop-color="#c05ff4" />
+                    <stop offset=".293" stop-color="#806cea" />
+                    <stop offset=".528" stop-color="#4d77e3" />
+                    <stop offset=".731" stop-color="#297fdd" />
+                    <stop offset=".895" stop-color="#1283da" />
+                    <stop offset="1" stop-color="#0a85d9" />
+                  </linearGradient>
+                  <path fill="url(#ios-gemini-gradient)" d="M46.117 23.081l-.995-.04h-.002C34.243 22.613 25.387 13.757 24.959 2.88l-.04-.996C24.9 1.39 24.494 1 24 1s-.9.39-.919.883l-.04.996C22.612 13.756 13.756 22.612 2.878 23.041l-.995.04C1.39 23.1 1 23.506 1 24s.39.9.884.919l.995.039c10.877.43 19.733 9.286 20.162 20.163l.04.996C23.1 46.61 23.506 47 24 47s.9-.39.919-.883l.04-.996c.429-10.877 9.285-19.733 20.162-20.163l.995-.039C46.61 24.9 47 24.494 47 24s-.39-.9-.883-.919z"/>
+                </svg>
+                <span class="ios-series-pill-label">Ask AI</span>
               </button>
             </div>
 
@@ -157,65 +148,6 @@ async function run() {
           </footer>
         </div>
       </div>
-
-      <script>
-        (function(){
-          const wrap = document.getElementById('pickerWrap');
-          const btn = document.getElementById('solutionBtn');
-          let active = false;
-          let opened = false;
-          let startX = 0;
-          let holdTimer = null;
-          let activeId = null;
-
-          function openRail(){
-            opened = true;
-            wrap.classList.remove('is-pressing');
-            wrap.classList.add('is-open');
-          }
-
-          function clearState(){
-            clearTimeout(holdTimer);
-            wrap.classList.remove('is-pressing', 'is-open', 'choice-left', 'choice-right');
-            active = false;
-            opened = false;
-            activeId = null;
-          }
-
-          btn.addEventListener('pointerdown', (e) => {
-            active = true;
-            opened = false;
-            startX = e.clientX;
-            activeId = e.pointerId;
-            wrap.classList.add('is-pressing');
-            try { btn.setPointerCapture(e.pointerId); } catch(err){}
-            holdTimer = setTimeout(openRail, 200);
-          });
-
-          window.addEventListener('pointermove', (e) => {
-            if (!active || e.pointerId !== activeId) return;
-            const dx = e.clientX - startX;
-            if (!opened) {
-              if (Math.abs(dx) > 25) clearState();
-              return;
-            }
-            if (dx <= -40) {
-              wrap.classList.add('choice-left');
-              wrap.classList.remove('choice-right');
-            } else if (dx >= 40) {
-              wrap.classList.add('choice-right');
-              wrap.classList.remove('choice-left');
-            } else {
-              wrap.classList.remove('choice-left', 'choice-right');
-            }
-          });
-
-          window.addEventListener('pointerup', (e) => {
-            if (!active || e.pointerId !== activeId) return;
-            clearState();
-          });
-        })();
-      </script>
     </body>
     </html>
   `;
@@ -308,83 +240,24 @@ async function run() {
   const screenshotDir = path.join(process.cwd(), 'test-results');
   if (!fs.existsSync(screenshotDir)) fs.mkdirSync(screenshotDir, { recursive: true });
 
-  // 4a. Verify single click does NOT trigger action or open rail
-  console.log('\n[TEST 4a] Testing Single Click (No Hold) on Solution Button:');
-  const solutionBtnForClick = await page.$('.ios-series-footer-solution');
-  if (solutionBtnForClick) {
-    await solutionBtnForClick.click();
-    await page.waitForTimeout(50);
-    const isOpenAfterClick = await page.evaluate(() => {
-      const wrap = document.querySelector('.ios-series-picker-wrap');
-      return wrap ? wrap.classList.contains('is-open') : false;
-    });
-    console.log(`- Rail remains closed on single click: ${!isOpenAfterClick}`);
-  }
+  // 4. Test split capsule footer controls
+  console.log('\n[TEST 4] Testing Dual Action Split Capsule Footer:');
+  const solutionPill = await page.$('.ios-series-pill-solution');
+  const aiPill = await page.$('.ios-series-pill-ai');
+  const pillDivider = await page.$('.ios-series-pill-divider');
+  const prevBtn = await page.$('.ios-series-footer-prev');
+  const nextBtn = await page.$('.ios-series-footer-next');
 
-  // 4b. Test Hold & Swipe Gesture Interaction
-  console.log('\n[TEST 4b] Testing Hold & Swipe Gesture on Solution Button:');
+  console.log(`- Solution Pill Button exists: ${Boolean(solutionPill)}`);
+  console.log(`- Ask AI Pill Button exists: ${Boolean(aiPill)}`);
+  console.log(`- Pill Divider exists: ${Boolean(pillDivider)}`);
+  console.log(`- Previous Button exists: ${Boolean(prevBtn)}`);
+  console.log(`- Next Button exists: ${Boolean(nextBtn)}`);
 
-  // Simulate press & hold on solution button
-  const solutionBtn = await page.$('.ios-series-footer-solution');
-  if (solutionBtn) {
-    const box = await solutionBtn.boundingBox();
-      if (box) {
-        const startX = box.x + box.width / 2;
-        const startY = box.y + box.height / 2;
-
-        console.log(`- Pointer down at (${startX}, ${startY})`);
-        await page.mouse.move(startX, startY);
-        await page.mouse.down();
-
-        // Hold for 250ms (> 200ms threshold)
-        await page.waitForTimeout(250);
-
-        // Verify rail is open
-        const isRailOpen = await page.evaluate(() => {
-          const wrap = document.querySelector('.ios-series-picker-wrap');
-          return wrap ? wrap.classList.contains('is-open') : false;
-        });
-        console.log(`- Rail opened after 200ms hold: ${isRailOpen}`);
-
-        // Swipe Left (dx = -60px)
-        await page.mouse.move(startX - 60, startY);
-        await page.waitForTimeout(50);
-        const isLeftChoice = await page.evaluate(() => {
-          const wrap = document.querySelector('.ios-series-picker-wrap');
-          return wrap ? wrap.classList.contains('choice-left') : false;
-        });
-        console.log(`- Swiped left (-60px), choice-left active: ${isLeftChoice}`);
-
-        // Capture screenshot of hold & swipe left active
-        const swipeLeftScreenshot = path.join(screenshotDir, 'mobile-quiz-hold-swipe-left.png');
-        await page.screenshot({ path: swipeLeftScreenshot });
-        console.log(`- Captured left choice screenshot: ${swipeLeftScreenshot}`);
-
-        // Swipe Right (dx = +60px)
-        await page.mouse.move(startX + 60, startY);
-        await page.waitForTimeout(50);
-        const isRightChoice = await page.evaluate(() => {
-          const wrap = document.querySelector('.ios-series-picker-wrap');
-          return wrap ? wrap.classList.contains('choice-right') : false;
-        });
-        console.log(`- Swiped right (+60px), choice-right active: ${isRightChoice}`);
-
-        // Capture screenshot of hold & swipe right active
-        const swipeRightScreenshot = path.join(screenshotDir, 'mobile-quiz-hold-swipe-right.png');
-        await page.screenshot({ path: swipeRightScreenshot });
-        console.log(`- Captured right choice screenshot: ${swipeRightScreenshot}`);
-
-        // Release pointer
-        await page.mouse.up();
-        await page.waitForTimeout(50);
-
-        const isClosedAfterRelease = await page.evaluate(() => {
-          const wrap = document.querySelector('.ios-series-picker-wrap');
-          return wrap ? !wrap.classList.contains('is-open') : true;
-        });
-        console.log(`- Rail closed after release: ${isClosedAfterRelease}`);
-      }
-    }
+  // Capture screenshot of dark theme mobile footer
+  const darkScreenshotPath = path.join(screenshotDir, 'mobile-quiz-engine-dark-verified.png');
+  await page.screenshot({ path: darkScreenshotPath, fullPage: false });
+  console.log(`- Dark theme screenshot captured: ${darkScreenshotPath}`);
 
   // Light theme test
   await page.evaluate(() => {
@@ -393,7 +266,7 @@ async function run() {
   });
   const lightScreenshotPath = path.join(screenshotDir, 'mobile-quiz-engine-light-verified.png');
   await page.screenshot({ path: lightScreenshotPath, fullPage: false });
-  console.log(`Light theme screenshot captured: ${lightScreenshotPath}`);
+  console.log(`- Light theme screenshot captured: ${lightScreenshotPath}`);
 
   await browser.close();
 
@@ -409,6 +282,11 @@ async function run() {
     { name: 'Timer Font Size is 12px (reduced from 13px)', pass: defaultStyles.timer.fontSize === '12px' },
     { name: 'Timer SVG Icon Width is 12px', pass: defaultStyles.timerSvg.width === '12px' },
     { name: 'Meta SVG Icon Width is 13px', pass: defaultStyles.metaIcon.width === '13px' },
+    { name: 'Solution Pill Button exists', pass: Boolean(solutionPill) },
+    { name: 'Ask AI Pill Button exists', pass: Boolean(aiPill) },
+    { name: 'Pill Divider exists', pass: Boolean(pillDivider) },
+    { name: 'Previous Button exists', pass: Boolean(prevBtn) },
+    { name: 'Next Button exists', pass: Boolean(nextBtn) },
   ];
 
   console.log('\n--- VERIFICATION RESULTS ---');

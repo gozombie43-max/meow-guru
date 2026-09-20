@@ -1,11 +1,29 @@
 import BackButton from "@/components/BackButton";
 import { LangToggle } from "@/components/LangToggle";
-import { Menu, Settings, FileText, ArrowLeft, ArrowRight } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { Menu, Settings, ArrowLeft, ArrowRight } from "lucide-react";
 import dynamic from "next/dynamic";
 import type { QuizController } from "@/features/quiz/hooks/useQuizController";
 
-function GeminiIcon({ className = "ios-series-picker-svg" }: { className?: string }) {
+function SolutionIcon({ className = "ios-series-pill-icon solution-icon" }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <rect x="4" y="3.5" width="16" height="17" rx="3" />
+      <path d="M8 2.5v3M12 2.5v3M16 2.5v3M8 10h8M8 14h8M8 18h5" />
+    </svg>
+  );
+}
+
+function GeminiIcon({ className = "ios-series-pill-icon ai-icon" }: { className?: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -120,53 +138,6 @@ function MobileQuizFooterControls({
   hideViewSolution = false,
   hideAiTutor = false,
 }: FooterProps) {
-  const [isPressing, setIsPressing] = useState(false);
-  const [isPickerOpen, setIsPickerOpen] = useState(false);
-  const [choice, setChoice] = useState<"left" | "right" | null>(null);
-
-  const startCoords = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-  const activePointerId = useRef<number | null>(null);
-  const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const choiceRef = useRef<"left" | "right" | null>(null);
-  const isPickerOpenRef = useRef(false);
-
-  const HOLD_MS = 200;
-  const SELECT_X = 40;
-
-  const vibrate = (ms = 8) => {
-    if (typeof window !== "undefined" && navigator.vibrate) {
-      try {
-        navigator.vibrate(ms);
-      } catch {
-        // Ignore haptic errors
-      }
-    }
-  };
-
-  const updateChoice = (next: "left" | "right" | null) => {
-    if (choiceRef.current === next) return;
-    choiceRef.current = next;
-    setChoice(next);
-
-    if (next === "left" || next === "right") {
-      vibrate(8);
-    }
-  };
-
-  const clearHoldState = () => {
-    if (holdTimer.current) clearTimeout(holdTimer.current);
-    setIsPressing(false);
-    setIsPickerOpen(false);
-    isPickerOpenRef.current = false;
-    updateChoice(null);
-    activePointerId.current = null;
-  };
-
-  // Question changes remount the controls; only the external timer needs cleanup.
-  useEffect(() => () => {
-    if (holdTimer.current) clearTimeout(holdTimer.current);
-  }, []);
-
   const handleNextOrSubmit = () => {
     if (isCurrentSubmitted) {
       handleNext();
@@ -176,77 +147,16 @@ function MobileQuizFooterControls({
   };
 
   const handleOpenSolution = () => {
+    if (!isCurrentSubmitted || hideViewSolution) return;
     openSolution();
   };
 
   const handleOpenAiTutor = () => {
+    if (!isCurrentSubmitted || hideAiTutor) return;
     document.getElementById("mobile-quiz-chatbot-trigger")?.click();
   };
 
-  const handlePointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
-    if (!isCurrentSubmitted || (hideViewSolution && hideAiTutor) || e.button !== 0) return;
-    activePointerId.current = e.pointerId;
-    startCoords.current = { x: e.clientX, y: e.clientY };
-    setIsPressing(true);
-
-    try {
-      e.currentTarget.setPointerCapture(e.pointerId);
-    } catch {
-      // Ignore if pointer capture is not supported
-    }
-
-    holdTimer.current = setTimeout(() => {
-      setIsPickerOpen(true);
-      isPickerOpenRef.current = true;
-      setIsPressing(false);
-      vibrate(12);
-    }, HOLD_MS);
-  };
-
-  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (activePointerId.current !== e.pointerId) return;
-
-    const dx = e.clientX - startCoords.current.x;
-    const dy = e.clientY - startCoords.current.y;
-
-    if (!isPickerOpenRef.current) {
-      if (Math.hypot(dx, dy) > 25) {
-        clearHoldState();
-      }
-      return;
-    }
-
-    if (dx <= -SELECT_X && !hideViewSolution) {
-      updateChoice("left");
-    } else if (dx >= SELECT_X && !hideAiTutor) {
-      updateChoice("right");
-    } else {
-      updateChoice(null);
-    }
-  };
-
-  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (activePointerId.current !== e.pointerId) return;
-
-    const finalChoice = choiceRef.current;
-    const wasPickerOpen = isPickerOpenRef.current;
-
-    clearHoldState();
-
-    if (wasPickerOpen && finalChoice === "left") {
-      handleOpenSolution();
-    } else if (wasPickerOpen && finalChoice === "right") {
-      handleOpenAiTutor();
-    }
-  };
-
-  const handlePointerCancel = () => {
-    clearHoldState();
-  };
-
-  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-  };
+  const showPill = !(hideViewSolution && hideAiTutor);
 
   return (
     <footer data-ui-chrome="footer" className="ios-series-footer">
@@ -272,94 +182,61 @@ function MobileQuizFooterControls({
         />
       )}
 
+      {/* 1. Left: Previous Button */}
       <button
         data-ui-button="secondary"
         type="button"
         onClick={handlePrev}
         disabled={currentIndex === 0}
         className="ios-series-footer-btn ios-series-footer-prev"
+        aria-label="Previous question"
       >
         <ArrowLeft className="ios-series-btn-arrow" aria-hidden="true" />
         <span>Previous</span>
       </button>
 
-      <div
-        className={`ios-series-picker-wrap ${isPickerOpen ? "is-open" : ""} ${
-          isPressing ? "is-pressing" : ""
-        } ${choice === "left" ? "choice-left" : ""} ${
-          choice === "right" ? "choice-right" : ""
-        }`}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerCancel}
-      >
-        {/* Floating Action Rail */}
+      {/* 2. Middle: Dual Action Capsule [ Solution | Ask AI ] */}
+      {showPill && (
         <div
-          className="ios-series-picker-rail"
-          role="region"
-          aria-label="Hold and swipe solution picker"
+          className={`ios-series-footer-pill ${!isCurrentSubmitted ? "is-unsubmitted" : ""}`}
+          role="group"
+          aria-label="Solution and AI Tutor actions"
         >
-          <div className="ios-series-rail-grid">
-            <div
-              className={`ios-series-picker-choice is-left ${
-                hideViewSolution ? "is-hidden" : ""
-              }`}
+          {!hideViewSolution && (
+            <button
+              data-ui-button="state"
+              type="button"
+              onClick={handleOpenSolution}
+              disabled={!isCurrentSubmitted}
+              className={`ios-series-pill-item ios-series-pill-solution ${!isCurrentSubmitted ? "is-disabled" : ""}`}
+              aria-label="View solution"
             >
-              <div className="ios-series-picker-choice-icon">
-                <FileText className="ios-series-picker-svg" aria-hidden="true" />
-              </div>
-              <div>
-                <div className="ios-series-picker-choice-title">View Solution</div>
-                <div className="ios-series-picker-choice-sub">Answer + explanation</div>
-              </div>
-            </div>
+              <SolutionIcon className="ios-series-pill-icon solution-icon" />
+              <span className="ios-series-pill-label">Solution</span>
+            </button>
+          )}
 
-            <div
-              className={`ios-series-picker-choice is-right ${
-                hideAiTutor ? "is-hidden" : ""
-              }`}
+          {!hideViewSolution && !hideAiTutor && (
+            <div className="ios-series-pill-divider" aria-hidden="true" />
+          )}
+
+          {!hideAiTutor && (
+            <button
+              data-ui-button="state"
+              type="button"
+              onClick={handleOpenAiTutor}
+              disabled={!isCurrentSubmitted}
+              className={`ios-series-pill-item ios-series-pill-ai ${!isCurrentSubmitted ? "is-disabled" : ""}`}
+              aria-label="Ask AI tutor"
             >
-              <div className="ios-series-picker-choice-icon">
-                <GeminiIcon className="ios-series-picker-svg" />
-              </div>
-              <div>
-                <div className="ios-series-picker-choice-title">Ask AI Tutor</div>
-                <div className="ios-series-picker-choice-sub">Discuss question</div>
-              </div>
-            </div>
-          </div>
+              <GeminiIcon className="ios-series-pill-icon ai-icon" />
+              <span className="ios-series-pill-label">Ask AI</span>
+            </button>
+          )}
         </div>
+      )}
 
-        {/* Hold Ring */}
-        <div className="ios-series-hold-ring" aria-hidden="true" />
-
-        <button
-          type="button"
-          onPointerDown={handlePointerDown}
-          onClick={handleClick}
-          onContextMenu={(e) => e.preventDefault()}
-          className="ios-series-footer-btn ios-series-footer-solution"
-          aria-expanded={isPickerOpen}
-          aria-label="Solution - Hold and swipe for options"
-          disabled={!isCurrentSubmitted || (hideViewSolution && hideAiTutor)}
-        >
-          <svg
-            className="ios-series-btn-icon"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M9 18h6M10 22h4" />
-            <path d="M8.2 14.6A7 7 0 1 1 15.8 14.6c-.9.8-1.3 1.5-1.5 2.4H9.7c-.2-.9-.6-1.6-1.5-2.4Z" />
-          </svg>
-          <span>Solution</span>
-        </button>
-      </div>
-
+      {/* 3. Right: Next / Submit Button */}
       <button
         data-ui-button="primary"
         type="button"

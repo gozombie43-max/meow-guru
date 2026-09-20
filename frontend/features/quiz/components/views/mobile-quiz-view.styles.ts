@@ -791,44 +791,47 @@ export const mobileQuizViewStyles = css.global`
           position: relative;
           z-index: 30;
           display: grid;
-          grid-template-columns: 1fr 1fr 1fr;
-          gap: 10px;
+          grid-template-columns: 1fr 1.35fr 1fr;
+          gap: 9px;
+          align-items: center;
           width: 100%;
           max-width: 768px;
           margin: 0 auto;
-          padding: 10px max(16px, var(--safe-right)) calc(var(--safe-bottom) + 12px) max(16px, var(--safe-left));
+          padding: 10px max(14px, var(--safe-right)) calc(var(--safe-bottom) + 12px) max(14px, var(--safe-left));
           border-top: 1px solid var(--dark-border);
           background: var(--dark-canvas);
           flex-shrink: 0;
+          box-sizing: border-box;
         }
-        .ios-series-footer button {
-          --ui-control-height: 48px;
+        @media (max-width: 360px) {
+          .ios-series-footer {
+            gap: 6px;
+            padding: 8px max(10px, var(--safe-right)) calc(var(--safe-bottom) + 10px) max(10px, var(--safe-left));
+          }
+        }
+        .ios-series-footer-btn {
+          --ui-control-height: 50px;
           position: relative;
           z-index: 30;
           min-width: 0;
-          height: 48px;
+          height: 50px;
           border-radius: 14px;
           font: inherit;
-          font-size: 14.5px;
+          font-size: 14px;
           font-weight: 600;
           cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 8px;
+          gap: 6px;
           transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
           user-select: none;
+          box-sizing: border-box;
         }
-        .ios-series-btn-arrow,
-        .ios-series-btn-icon {
-          width: 16px;
-          height: 16px;
-          flex-shrink: 0;
-        }
-        .ios-series-footer button:active:not(:disabled) {
+        .ios-series-footer-btn:active:not(:disabled) {
           transform: scale(0.97);
         }
-        .ios-series-footer button:disabled {
+        .ios-series-footer-btn:disabled {
           background: rgba(255, 255, 255, 0.035) !important;
           border: 1px solid rgba(255, 255, 255, 0.05) !important;
           color: rgba(255, 255, 255, 0.28) !important;
@@ -836,156 +839,103 @@ export const mobileQuizViewStyles = css.global`
           cursor: not-allowed !important;
           opacity: 1 !important;
         }
-        .ios-series-footer button:disabled svg {
+        .ios-series-footer-btn:disabled svg {
           color: rgba(255, 255, 255, 0.22) !important;
         }
-        .ios-series-footer-prev,
-        .ios-series-footer-secondary {
-          border: 1px solid #222c3c;
-          background: #141a24;
-          color: #cbd5e1;
+        .ios-series-btn-arrow {
+          width: 16px;
+          height: 16px;
+          flex-shrink: 0;
         }
-        .ios-series-footer-prev:not(:disabled):hover,
-        .ios-series-footer-secondary:not(:disabled):hover {
-          background: var(--dark-surface-muted);
+        .ios-series-footer-prev {
+          border: 1px solid #222d3d;
+          background: #121722;
+          color: #f0f4f8;
+        }
+        .ios-series-footer-prev:not(:disabled):hover {
+          background: #17202d;
           border-color: rgba(255, 255, 255, 0.15);
         }
-        .ios-series-footer-solution {
-          width: 100%;
-          border: 1px solid #2a4466;
-          background: #162538;
-          color: #94b8e3;
-        }
-        .ios-series-footer-solution:not(:disabled):hover {
-          background: #1e334f;
-          border-color: #385c88;
-          color: #b5d1f5;
-        }
-        .ios-series-footer-next,
-        .ios-series-footer-primary {
-          border: 1px solid #365e91;
-          background: #233e61;
-          color: #ffffff;
-          box-shadow: none;
-        }
-        .ios-series-footer-next:not(:disabled):hover,
-        .ios-series-footer-primary:not(:disabled):hover {
-          background: #2b4b75;
-          border-color: #426fa6;
-        }
-        .ios-series-picker-wrap {
+        .ios-series-footer-pill {
           position: relative;
-          width: 100%;
-          touch-action: none;
-          user-select: none;
-        }
-        .ios-series-hold-ring {
-          position: absolute;
-          inset: -3px;
-          border-radius: 17px;
-          border: 2px solid transparent;
-          pointer-events: none;
-          opacity: 0;
-          transform: scale(0.96);
-          transition:
-            transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1),
-            opacity 0.18s cubic-bezier(0.2, 0.8, 0.2, 1),
-            border-color 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
-        }
-        .ios-series-picker-wrap.is-pressing .ios-series-hold-ring {
-          opacity: 1;
-          transform: scale(1);
-          border-color: #344e73;
-          box-shadow: none;
-        }
-        .ios-series-picker-rail {
-          position: absolute;
-          left: 50%;
-          bottom: calc(100% + 8px);
-          transform: translateX(-50%) scale(0.96);
-          width: calc(100vw - 32px);
-          max-width: 390px;
-          background: #121722;
+          min-width: 0;
+          height: 50px;
+          border-radius: 18px;
           border: 1px solid #222d3d;
-          border-radius: 16px;
-          padding: 6px;
-          box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5);
-          pointer-events: none;
-          opacity: 0;
-          z-index: 50;
-          transition:
-            opacity 0.2s cubic-bezier(0.2, 0.8, 0.2, 1),
-            transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
-        }
-        .ios-series-picker-wrap.is-open .ios-series-picker-rail {
-          opacity: 1;
-          transform: translateX(-50%) scale(1);
-          pointer-events: auto;
-        }
-        .ios-series-rail-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 6px;
-        }
-        .ios-series-picker-choice {
-          position: relative;
+          background: #121722;
           display: flex;
           align-items: center;
-          gap: 10px;
-          padding: 10px 12px;
-          border-radius: 12px;
-          border: 1px solid transparent;
-          background: rgba(255, 255, 255, 0.03);
-          transition: all 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+          justify-content: space-between;
+          overflow: hidden;
+          box-sizing: border-box;
+          user-select: none;
+          transition: all 0.15s ease;
         }
-        .ios-series-picker-choice.is-hidden {
-          display: none;
-        }
-        .ios-series-picker-choice-icon {
-          width: 34px;
-          height: 34px;
-          border-radius: 8px;
+        .ios-series-pill-item {
+          flex: 1;
+          min-width: 0;
+          height: 100%;
           display: flex;
+          flex-direction: column;
           align-items: center;
           justify-content: center;
-          background: rgba(255, 255, 255, 0.06);
-          flex-shrink: 0;
-          color: #8cb0de;
-          transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+          gap: 2.5px;
+          padding: 4px 4px;
+          border: none;
+          background: transparent;
+          cursor: pointer;
+          transition: background 0.15s ease, transform 0.1s ease, opacity 0.15s ease;
+          box-sizing: border-box;
+          -webkit-tap-highlight-color: transparent;
         }
-        .ios-series-picker-choice-icon svg {
+        .ios-series-pill-item:not(:disabled):hover {
+          background: rgba(255, 255, 255, 0.05);
+        }
+        .ios-series-pill-item:not(:disabled):active {
+          transform: scale(0.95);
+        }
+        .ios-series-pill-item.is-disabled,
+        .ios-series-pill-item:disabled {
+          opacity: 0.35 !important;
+          cursor: not-allowed !important;
+        }
+        .ios-series-pill-icon {
           width: 17px;
           height: 17px;
+          flex-shrink: 0;
+          stroke-width: 2.2;
+          transition: transform 0.15s ease;
         }
-        .ios-series-picker-choice-title {
-          font-size: 13px;
+        .ios-series-pill-solution .solution-icon {
+          color: #38bdf8;
+        }
+        .ios-series-pill-ai .ai-icon {
+          color: #c084fc;
+        }
+        .ios-series-pill-label {
+          font-size: 11.5px;
           font-weight: 600;
-          line-height: 1.2;
-          color: var(--dark-text);
+          line-height: 1;
+          color: #f0f4f8;
+          letter-spacing: -0.01em;
+          white-space: nowrap;
         }
-        .ios-series-picker-choice-sub {
-          font-size: 10.5px;
-          color: var(--dark-text-secondary);
-          font-weight: 500;
-          margin-top: 2px;
+        .ios-series-pill-divider {
+          width: 1px;
+          height: 24px;
+          background: rgba(255, 255, 255, 0.1);
+          flex-shrink: 0;
+          margin: auto 0;
         }
-        .ios-series-picker-wrap.choice-left .ios-series-picker-choice.is-left {
-          background: rgba(32, 52, 77, 0.4);
-          border-color: #344e73;
-          transform: scale(1.01);
-        }
-        .ios-series-picker-wrap.choice-left .ios-series-picker-choice.is-left .ios-series-picker-choice-icon {
-          background: #20344d;
+        .ios-series-footer-next {
+          border: 1px solid #1a68d8;
+          background: #1d72f2;
           color: #ffffff;
+          box-shadow: 0 3px 12px rgba(29, 114, 242, 0.35);
         }
-        .ios-series-picker-wrap.choice-right .ios-series-picker-choice.is-right {
-          background: rgba(32, 52, 77, 0.4);
-          border-color: #344e73;
-          transform: scale(1.01);
-        }
-        .ios-series-picker-wrap.choice-right .ios-series-picker-choice.is-right .ios-series-picker-choice-icon {
-          background: #20344d;
-          color: #ffffff;
+        .ios-series-footer-next:not(:disabled):hover {
+          background: #1660d4;
+          border-color: #1455bd;
         }
         .ios-series-palette {
           position: fixed;
@@ -1441,31 +1391,45 @@ export const mobileQuizViewStyles = css.global`
           border-top-color: #e2e8f0;
           background: #ffffff;
         }
-        .ios-series-quiz[data-theme="light"] .ios-series-footer-prev,
-        .ios-series-quiz[data-theme="light"] .ios-series-footer-secondary {
+        .ios-series-quiz[data-theme="light"] .ios-series-footer-prev {
           border-color: #e2e8f0;
           background: #ffffff;
           color: #0f172a;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
         }
-        .ios-series-quiz[data-theme="light"] .ios-series-footer-solution {
-          border-color: rgba(37, 99, 235, 0.2);
-          background: #eff6ff;
+        .ios-series-quiz[data-theme="light"] .ios-series-footer-prev:not(:disabled):hover {
+          background: #f8fafc;
+        }
+        .ios-series-quiz[data-theme="light"] .ios-series-footer-pill {
+          border-color: #e2e8f0;
+          background: #ffffff;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+        .ios-series-quiz[data-theme="light"] .ios-series-pill-item:not(:disabled):hover {
+          background: rgba(0, 0, 0, 0.035);
+        }
+        .ios-series-quiz[data-theme="light"] .ios-series-pill-solution .solution-icon {
           color: #2563eb;
         }
-        .ios-series-quiz[data-theme="light"] .ios-series-footer-solution:not(:disabled):hover {
-          background: #dbeafe;
-          border-color: #93c5fd;
-          color: #1d4ed8;
+        .ios-series-quiz[data-theme="light"] .ios-series-pill-ai .ai-icon {
+          color: #9333ea;
         }
-        .ios-series-quiz[data-theme="light"] .ios-series-footer-next,
-        .ios-series-quiz[data-theme="light"] .ios-series-footer-primary {
+        .ios-series-quiz[data-theme="light"] .ios-series-pill-label {
+          color: #1e293b;
+        }
+        .ios-series-quiz[data-theme="light"] .ios-series-pill-divider {
+          background: #e2e8f0;
+        }
+        .ios-series-quiz[data-theme="light"] .ios-series-footer-next {
           background: #2563eb;
+          border: 1px solid #1d4ed8;
           color: #ffffff;
-          border: none;
-          box-shadow: 0 4px 16px -4px rgba(37, 99, 235, 0.5);
+          box-shadow: 0 3px 12px rgba(37, 99, 235, 0.35);
         }
-        .ios-series-quiz[data-theme="light"] .ios-series-footer button:disabled {
+        .ios-series-quiz[data-theme="light"] .ios-series-footer-next:not(:disabled):hover {
+          background: #1d4ed8;
+        }
+        .ios-series-quiz[data-theme="light"] .ios-series-footer-btn:disabled {
           background: #f1f5f9 !important;
           border: 1px solid #e2e8f0 !important;
           color: #94a3b8 !important;
@@ -1473,35 +1437,8 @@ export const mobileQuizViewStyles = css.global`
           cursor: not-allowed !important;
           opacity: 1 !important;
         }
-        .ios-series-quiz[data-theme="light"] .ios-series-footer button:disabled svg {
+        .ios-series-quiz[data-theme="light"] .ios-series-footer-btn:disabled svg {
           color: #94a3b8 !important;
-        }
-        .ios-series-quiz[data-theme="light"] .ios-series-picker-rail {
-          border-color: #e2e8f0;
-          background: #ffffff;
-          box-shadow: 0 18px 42px rgba(15, 23, 42, 0.15);
-        }
-        .ios-series-quiz[data-theme="light"] .ios-series-picker-choice + .ios-series-picker-choice {
-          border-left-color: #f1f5f9;
-        }
-        .ios-series-quiz[data-theme="light"] .ios-series-picker-choice-icon {
-          background: #eff6ff;
-          border-color: #bfdbfe;
-          color: #2563eb;
-        }
-        .ios-series-quiz[data-theme="light"] .ios-series-picker-choice.is-right .ios-series-picker-choice-icon {
-          background: #f5f3ff;
-          border-color: #ddd6fe;
-          color: #7c3aed;
-        }
-        .ios-series-quiz[data-theme="light"] .ios-series-picker-choice-title {
-          color: #1e293b;
-        }
-        .ios-series-quiz[data-theme="light"] .ios-series-picker-choice-sub {
-          color: #64748b;
-        }
-        .ios-series-quiz[data-theme="light"] .ios-series-hold-ring {
-          border-color: rgba(37, 99, 235, 0.4);
         }
         .ios-series-quiz[data-theme="light"] .ios-series-palette-backdrop {
           background: rgba(0, 0, 0, 0.4);
