@@ -166,6 +166,13 @@ export function TrainingInsights({
           <p>
             {dashboard?.evidence || "Complete training to build your baseline."}
           </p>
+          <p>
+            Evidence confidence:{" "}
+            <strong>{dashboard?.evidenceConfidence?.toUpperCase() || "LOW"}</strong>
+            {dashboard?.confidenceScore != null
+              ? ` · ${dashboard.confidenceScore}/100 evidence depth`
+              : ""}
+          </p>
         </div>
         <div className="training-panel">
           <span>Answers recorded</span>
@@ -216,6 +223,28 @@ export function TrainingInsights({
           ))
         ) : (
           <p>No topic evidence yet.</p>
+        )}
+      </section>
+      <section className="training-panel">
+        <h2>Concepts to strengthen</h2>
+        {dashboard?.details?.length ? (
+          dashboard.details
+            .slice()
+            .sort((a, b) => a.mastery - b.mastery)
+            .slice(0, 8)
+            .map((item) => (
+              <div className="training-list-row" key={item.key}>
+                <div>
+                  <strong>{item.label}</strong>
+                  <p>
+                    {item.topic} · {item.level} · {item.attempts} answers
+                  </p>
+                </div>
+                <strong>{Math.round(item.mastery * 100)}%</strong>
+              </div>
+            ))
+        ) : (
+          <p>Concept-level evidence appears as tagged questions are completed.</p>
         )}
       </section>
       <section className="training-panel">
