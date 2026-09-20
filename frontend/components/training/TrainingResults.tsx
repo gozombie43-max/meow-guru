@@ -140,6 +140,29 @@ export function TrainingResults({
         </div>
       </section>
 
+      {session.mode === "mission" && result.blockBreakdown?.length ? (
+        <section className="training-panel">
+          <div className="training-panel-header">
+            <h2>Mission Block Breakdown</h2>
+            <p className="training-panel-subtitle">
+              Each block keeps its own training objective and behavior.
+            </p>
+          </div>
+          {result.blockBreakdown.map((block) => (
+            <div className="training-list-row" key={block.id}>
+              <div>
+                <strong>{block.label}</strong>
+                <p>
+                  {block.mode} · {block.attempted}/{block.questions} attempted ·{" "}
+                  {block.averageSeconds}s average
+                </p>
+              </div>
+              <strong>{block.accuracy}%</strong>
+            </div>
+          ))}
+        </section>
+      ) : null}
+
       <section className="training-panel">
         <div className="training-panel-header">
           <h2>Topic Breakdown</h2>
