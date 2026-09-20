@@ -388,6 +388,48 @@ export function readinessWithEvidence(
   };
 }
 
+export function adaptiveTargetDifficulty({
+  question,
+  answer,
+  mastery = 0.5,
+  mode = "adaptive",
+}) {
+  const floor = mode === "nightmare" ? 3 : 1;
+  const abilityTarget = 1 + clamp(Number(mastery) || 0.5, 0, 1) * 4;
+  const correct = answer.choice === question.correctIndex;
+  const confidenceAdjustment = correct
+    ? answer.confidence === "guess"
+      ? 0
+      : answer.confidence === "unsure"
+        ? 0.25
+        : 0.65
+    : answer.confidence === "sure"
+      ? -1
+      : -0.65;
+  const paceRatio = answer.seconds / Math.max(1, question.expectedTime);
+  const paceAdjustment = correct
+    ? paceRatio <= 1
+      ? 0.25
+      : paceRatio > 1.5
+        ? -0.2
+        : 0
+    : paceRatio > 1.5
+      ? -0.25
+      : 0;
+  const challengeAdjustment = mode === "challenge" ? 0.35 : 0;
+  return clamp(
+    Math.round(
+      question.difficulty * 0.45 +
+        abilityTarget * 0.55 +
+        confidenceAdjustment +
+        paceAdjustment +
+        challengeAdjustment,
+    ),
+    floor,
+    5,
+  );
+}
+
 export function selectQuestions(
   pool,
   mode,
@@ -474,9 +516,17 @@ export function selectQuestions(
   if (["challenge", "nightmare", "survival"].includes(mode))
     selected.sort((a, b) => a.difficulty - b.difficulty);
   if (mode === "gauntlet")
-    selected.sort(
-      (a, b) => a.topic.localeCompare(b.topic) || a.difficulty - b.difficulty,
-    );
+    selected.sort((a, b) => {
+      const aMastery =
+        skills.get(`${a.subject} / ${a.topic}`)?.mastery ?? 0.5;
+      const bMastery =
+        skills.get(`${b.subject} / ${b.topic}`)?.mastery ?? 0.5;
+      return (
+        aMastery - bMastery ||
+        a.topic.localeCompare(b.topic) ||
+        a.difficulty - b.difficulty
+      );
+    });
   return selected;
 }
 
@@ -798,15 +848,13 @@ export function transition(session, action, now = Date.now()) {
         s.current++;
         // Adapt within the already validated pool; scoring and question identities never change.
         if (["adaptive", "challenge", "nightmare"].includes(mode)) {
-          const ceiling = mode === "nightmare" ? 3 : 1;
-          const target = clamp(
-            q.difficulty +
-              (a.choice === q.correctIndex && a.confidence !== "guess"
-                ? 1
-                : -1),
-            ceiling,
-            5,
-          );
+          const topicKey = `${q.subject} / ${q.topic}`;
+          const target = adaptiveTargetDifficulty({
+            question: q,
+            answer: a,
+            mastery: s.baseline?.[topicKey] ?? 0.5,
+            mode,
+          });
           const blockEnd =
             s.mode === "mission" && q.trainingBlockId
               ? s.questions.findIndex(
