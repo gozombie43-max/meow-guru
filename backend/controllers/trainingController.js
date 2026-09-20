@@ -17,6 +17,7 @@ import {
   saveTrainingMistakes,
   expiredActiveSessions,
   trainingExposureData,
+  trainingLearningState,
 } from "../repositories/trainingRepository.js";
 
 import {
@@ -29,6 +30,7 @@ import {
   publicSession,
   transition,
   readinessWithEvidence,
+  mergeDurableIntelligence,
 } from "../services/trainingEngine.js";
 
 import { diagnoseTraining } from "../services/trainingDiagnosis.js";
@@ -78,59 +80,11 @@ export const getTrainingDashboard = async (req, res, next) => {
     const subjects = [...new Set(catalogPairs.map((item) => item.subject))];
     const topics = [...new Set(catalogPairs.map((item) => item.topic))];
 
-    if (skillRows.length) {
-      const durableTopics = skillRows
-        .filter((item) => item.level === "topic")
-        .map((item) => ({
-          key: item.key,
-          subject: item.subject,
-          topic: item.topic,
-          attempts: item.attempts,
-          correct: item.correct,
-          mastery: item.mastery,
-          seconds: item.seconds,
-          lastAt: item.lastAt,
-        }))
-        .sort((a, b) => a.mastery - b.mastery);
-      const durableDetails = skillRows
-        .filter((item) => item.level !== "topic")
-        .map((item) => ({
-          key: item.key,
-          level: item.level,
-          label: item.label,
-          subject: item.subject,
-          topic: item.topic,
-          attempts: item.attempts,
-          correct: item.correct,
-          mastery: item.mastery,
-          seconds: item.seconds,
-          lastAt: item.lastAt,
-        }));
-      const durableAttempts = durableTopics.reduce((n, item) => n + item.attempts, 0);
-      const durableMastery = durableTopics.length
-        ? durableTopics.reduce((n, item) => n + item.mastery, 0) / durableTopics.length
-        : 0;
-      intelligence = {
-        ...intelligence,
-        topics: durableTopics,
-        details: durableDetails,
-        attempts: durableAttempts,
-        factors: {
-          ...intelligence.factors,
-          mastery: Math.round(durableMastery * 100),
-        },
-      };
-    }
-
-    if (reviewRows.length) {
-      intelligence = {
-        ...intelligence,
-        reviews: reviewRows.map(({ _id, userId: _userId, exam: _exam, ...row }) => row),
-        due: reviewRows
-          .filter((row) => new Date(row.dueAt).getTime() <= Date.now())
-          .map(({ _id, userId: _userId, exam: _exam, ...row }) => row),
-      };
-    }
+    intelligence = mergeDurableIntelligence(
+      intelligence,
+      skillRows,
+      reviewRows,
+    );
 
     intelligence = readinessWithEvidence(intelligence, previous, topics, mocks);
     const trainedTopics = new Set(intelligence.topics.map((item) => item.topic));
@@ -238,9 +192,14 @@ export const startTrainingSession = async (req, res, next) => {
       const existing = await findMission(userId, config.exam, missionDate);
       if (existing) return res.json(publicSession(existing));
     }
-    const previous = await history(userId, config.exam),
-      intelligence = buildIntelligence(previous),
-      policy = getTrainingModePolicy(config.mode);
+    const previous = await history(userId, config.exam);
+    const durable = await trainingLearningState(userId, config.exam);
+    let intelligence = mergeDurableIntelligence(
+      buildIntelligence(previous),
+      durable.skillRows,
+      durable.reviewRows,
+    );
+    const policy = getTrainingModePolicy(config.mode);
     const sectional = policy.sectional;
     if (sectional && !config.subject)
       return fail(res, "Choose a subject for sectional training.");
