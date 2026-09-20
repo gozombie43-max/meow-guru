@@ -395,7 +395,11 @@ export function adaptiveTargetDifficulty({
   mode = "adaptive",
 }) {
   const floor = mode === "nightmare" ? 3 : 1;
-  const abilityTarget = 1 + clamp(Number(mastery) || 0.5, 0, 1) * 4;
+  const masteryValue = Number(mastery);
+  const normalizedMastery = Number.isFinite(masteryValue)
+    ? clamp(masteryValue, 0, 1)
+    : 0.5;
+  const abilityTarget = 1 + normalizedMastery * 4;
   const correct = answer.choice === question.correctIndex;
   const confidenceAdjustment = correct
     ? answer.confidence === "guess"
