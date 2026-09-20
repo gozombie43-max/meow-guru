@@ -467,6 +467,36 @@ export function resultFor(s) {
       new Date(s.startedAt).getTime()) /
       60000,
   );
+  const blockMap = new Map();
+  for (const row of rows) {
+    const question = s.questions[row.number - 1];
+    if (!question.trainingBlock) continue;
+    const key = question.trainingBlockId || question.trainingBlock;
+    const block = blockMap.get(key) || {
+      id: key,
+      label: question.trainingBlock,
+      mode: question.trainingMode || s.mode,
+      attempted: 0,
+      correct: 0,
+      seconds: 0,
+      questions: 0,
+    };
+    block.questions++;
+    block.attempted += Number(row.attempted);
+    block.correct += Number(row.correct);
+    block.seconds += row.seconds;
+    blockMap.set(key, block);
+  }
+  const blockBreakdown = [...blockMap.values()].map((block) => ({
+    ...block,
+    accuracy: block.attempted
+      ? Math.round((block.correct / block.attempted) * 100)
+      : 0,
+    averageSeconds: block.attempted
+      ? Math.round(block.seconds / block.attempted)
+      : 0,
+  }));
+
   const mastery = new Map();
   for (const row of rows.filter((r) => r.attempted)) {
     const q = s.questions[row.number - 1],
@@ -492,6 +522,7 @@ export function resultFor(s) {
   }
   return {
     rows,
+    blockBreakdown,
     masteryDelta: [...mastery.values()].map((p) => ({
       ...p,
       before: Math.round(p.before * 100),
