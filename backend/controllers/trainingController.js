@@ -455,10 +455,13 @@ export const applyTrainingAction = async (req, res, next) => {
     if (!parsed.success) return fail(res, "Invalid session action");
     const s = await findOwnedSession(req.params.id, String(req.user.id));
     if (!s) return fail(res, "Session not found", 404);
-    if (s.status === "completed") return res.json(publicSession(s));
+    if (s.status !== "active") return res.json(publicSession(s));
     if (s.revision !== parsed.data.revision)
       return fail(res, "Session changed. Reload before continuing.", 409);
-    if (s.events.length >= 2000 && parsed.data.type !== "finish")
+    if (
+      s.events.length >= 2000 &&
+      !["finish", "abandon"].includes(parsed.data.type)
+    )
       return fail(
         res,
         "Session action limit reached. Finish this session.",
