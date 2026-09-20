@@ -565,7 +565,7 @@ export function publicSession(s, now = Date.now()) {
 
 export function transition(session, action, now = Date.now()) {
   const s = structuredClone(session);
-  if (s.status === "completed") return s;
+  if (s.status !== "active") return s;
   const expired = now >= new Date(s.deadline).getTime();
   const q = s.questions[s.current];
   const mode = effectiveTrainingMode(s, q);
@@ -605,6 +605,31 @@ export function transition(session, action, now = Date.now()) {
       if (s.slowStreak >= 2) {
         s.lives--;
         s.slowStreak = 0;
+      }
+    }
+    if (
+      canNavigateMode(mode) &&
+      s.mode === "mission" &&
+      a.choice !== null
+    ) {
+      const blockId = q.trainingBlockId;
+      const nextInBlock = s.questions.findIndex(
+        (item, index) =>
+          index > s.current &&
+          (!blockId || item.trainingBlockId === blockId) &&
+          s.answers[item.id]?.choice == null,
+      );
+      if (nextInBlock !== -1) {
+        s.current = nextInBlock;
+      } else if (s.current < s.questions.length - 1) {
+        const nextBlock = s.questions.findIndex(
+          (item, index) =>
+            index > s.current &&
+            (!blockId || item.trainingBlockId !== blockId),
+        );
+        if (nextBlock !== -1) s.current = nextBlock;
+      } else {
+        action = { type: "finish" };
       }
     }
     if (!canNavigateMode(mode)) {
@@ -657,13 +682,25 @@ export function transition(session, action, now = Date.now()) {
             ceiling,
             5,
           );
-          const remaining = s.questions.slice(s.current);
+          const blockEnd =
+            s.mode === "mission" && q.trainingBlockId
+              ? s.questions.findIndex(
+                  (item, index) =>
+                    index >= s.current &&
+                    item.trainingBlockId !== q.trainingBlockId,
+                )
+              : -1;
+          const endExclusive = blockEnd === -1 ? s.questions.length : blockEnd;
+          const remaining = s.questions.slice(s.current, endExclusive);
           remaining.sort(
             (x, y) =>
               Math.abs(x.difficulty - target) - Math.abs(y.difficulty - target),
           );
           // Every fifth challenger question is an easier reasoning check.
-          if (mode === "challenge" && s.current % (policy.challengeCheckInterval || 5) === 4)
+          if (
+            mode === "challenge" &&
+            s.current % (policy.challengeCheckInterval || 5) === 4
+          )
             remaining.sort((x, y) => x.difficulty - y.difficulty);
           s.questions.splice(s.current, remaining.length, ...remaining);
         }
