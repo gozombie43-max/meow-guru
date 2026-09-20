@@ -1432,4 +1432,59 @@ export const studyModeComparisonStyles = css`
           85%  { stroke-dashoffset: 0;   opacity: 0; }
           100% { stroke-dashoffset: 100; opacity: 0; }
         }
-      `;
+
+        /* Compact, stable chrome and one content scroller per workspace. */
+        .macos-workspace { min-width: 0; min-height: 0; }
+        .unified-toolbar { height: auto; min-height: calc(60px + var(--safe-top)); padding: calc(8px + var(--safe-top)) max(12px, var(--safe-right)) 8px max(12px, var(--safe-left)); backdrop-filter: none; }
+        .toolbar-center { min-width: 0; }
+        .mobile-toolbar-word { max-width: none; overflow: hidden; text-overflow: ellipsis; }
+        .mobile-toolbar-title { min-width: 0; }
+        .mobile-toolbar-pos { display: none; }
+        .mobile-back-text { display: none; }
+        .dictionary-body-scroll { min-height: 0; overscroll-behavior-y: contain; padding-bottom: 20px; }
+        .mobile-nav-footer { position: static; flex-shrink: 0; padding: 10px 16px calc(10px + var(--safe-bottom)); background: var(--workspace-bg); border-top: 1px solid var(--divider); }
+        .mobile-footer-btn { height: 44px; min-height: 44px; box-shadow: none; }
+        .dict-main-word { overflow-wrap: anywhere; }
+        .word-heading-line { min-width: 0; }
+        .table-row { min-height: 48px; touch-action: manipulation; }
+        .cell-term, .cell-trans { min-width: 0; overflow-wrap: anywhere; }
+        .mobile-swipe-viewport { touch-action: pan-y; }
+        .study-empty { padding: 32px 16px; text-align: center; color: var(--text-secondary); }
+        .study-empty h2 { color: var(--text-primary); margin-bottom: 12px; }
+        .study-empty button { margin-top: 16px; }
+        dialog.mobile-full-modal, dialog.exit-modal-backdrop { color: var(--text-primary); margin: 0; border: 0; width: 100%; max-width: none; height: 100dvh; max-height: none; box-sizing: border-box; }
+        dialog.mobile-full-modal { padding: 0; }
+        .modal-top-bar { height: auto; min-height: 60px; padding-top: var(--safe-top); }
+        .modal-top-back-btn span { display: none; }
+        .modal-search-input, .search-input { font-size: 16px; }
+        .modal-letter-chip { min-width: 44px; }
+        .mobile-full-modal::backdrop, .exit-modal-backdrop::backdrop { background: #0008; }
+        button:active, .table-row:active { opacity: .75; }
+        @media (min-width: 900px) {
+          .dictionary-body-scroll { padding: 24px; }
+          .dict-word-profile { gap: 24px; }
+          .apple-tables-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 16px; }
+          .mobile-nav-footer { display: flex; justify-content: flex-end; gap: 12px; }
+          .mobile-footer-btn { flex: 0 1 160px; }
+          .traffic-lights { min-height: 64px; }
+        }
+        @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
+
+        /* Vocabulary picker: fullscreen shell with one safe-area header. */
+        .mobile-full-modal { --picker-action: var(--dark-action); --workspace-bg: var(--dark-canvas); --sidebar-bg: var(--dark-surface); --text-primary: var(--dark-text); --text-secondary: var(--dark-text-secondary); --text-muted: var(--dark-text-muted); --divider: var(--dark-border); --item-hover: var(--dark-surface); --system-blue: var(--dark-accent); animation: none; }
+        .apple-dict-viewport[data-theme="light"] .mobile-full-modal { --picker-action: var(--dark-action); --workspace-bg: var(--light-canvas); --sidebar-bg: var(--light-surface); --text-primary: var(--light-text); --text-secondary: var(--light-text-secondary); --text-muted: var(--light-text-muted); --divider: var(--light-border); --item-hover: var(--light-surface); --system-blue: var(--light-accent); }
+        .modal-top-bar { padding: calc(8px + var(--safe-top)) max(16px, var(--safe-right)) 8px max(16px, var(--safe-left)); gap: 12px; min-height: calc(60px + var(--safe-top)); backdrop-filter: none; }
+        .modal-top-title { display: grid; gap: 2px; flex: 1; min-width: 0; text-align: center; font-size: 15px; }
+        .modal-top-title small { font-size: 11px; font-weight: 400; color: var(--text-secondary); }
+        .modal-header-spacer { width: 44px; flex-shrink: 0; }
+        .modal-search-wrapper { padding: 12px max(16px, var(--safe-right)) 8px max(16px, var(--safe-left)); }
+        .modal-search-box { padding: 0 12px; min-height: 48px; border-radius: 12px; }
+        .modal-search-box:focus-within { outline: 2px solid var(--system-blue); outline-offset: 2px; }
+        .modal-search-input { width: 100%; min-width: 0; min-height: 44px; font-size: 16px; }
+        .modal-search-input:focus { outline: none !important; box-shadow: none !important; border: none !important; }
+        .modal-search-ico { width: 20px; height: 20px; }
+        .modal-letter-strip { gap: 8px; padding: 4px max(16px, var(--safe-right)) 8px max(16px, var(--safe-left)); }
+        .modal-letter-chip { height: 44px; min-width: 44px; padding: 0 12px; transition: none; }
+        .modal-letter-chip.active { background: var(--picker-action); border-color: var(--picker-action); box-shadow: none; }
+        .modal-status-bar { padding: 4px max(16px, var(--safe-right)) 10px max(16px, var(--safe-left)); font-size: 12px; line-height: 1.5; }
+`;

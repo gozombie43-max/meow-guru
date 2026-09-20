@@ -1,8 +1,12 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import StudyModeStartView from "@/app/(app)/english/_shared/study-mode-start";
 
 export default function SynonymsAntonymsStudyModePage() {
+  const router = useRouter();
+  useEffect(() => { router.prefetch("/english/synonyms-antonyms/study-mode/quiz"); }, [router]);
   return (
     <StudyModeStartView
       title="Synonyms & Antonyms"

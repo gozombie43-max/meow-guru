@@ -2,7 +2,7 @@
 import { requestResponse as fetch } from "@/shared/api/request";
 
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getAccessToken } from "@/shared/api/client";
 
 const TICKS = Array.from({ length: 12 });
@@ -11,24 +11,41 @@ export function SpeakerBtn({ text, bengaliText, size = 22 }: { text: string; ben
   const [state, setState] = useState<"idle" | "loading" | "speaking">("idle");
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  const requestRef = useRef<AbortController | null>(null);
+  const urlRef = useRef<string | null>(null);
+  const releaseAudio = () => {
+    const audio = audioRef.current;
+    if (audio) { audio.onplay = null; audio.onended = null; audio.onerror = null; audio.pause(); }
+    audioRef.current = null;
+    if (urlRef.current) URL.revokeObjectURL(urlRef.current);
+    urlRef.current = null;
+  };
+  useEffect(() => () => {
+    requestRef.current?.abort();
+    releaseAudio();
+  }, []);
+
   const handleClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
 
+    if (requestRef.current) return;
+
     // Tap again to stop
     if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      audioRef.current = null;
+      releaseAudio();
       setState("idle");
       return;
     }
 
+    const controller = new AbortController();
+    requestRef.current = controller;
     setState("loading");
     try {
       const accessToken = getAccessToken();
       if (!accessToken) throw new Error("Authentication required");
       const res = await fetch("/api/tts", {
         method: "POST",
+        signal: controller.signal,
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
         body: JSON.stringify({ 
           text: text.trim(),
@@ -38,15 +55,20 @@ export function SpeakerBtn({ text, bengaliText, size = 22 }: { text: string; ben
       if (!res.ok) throw new Error("TTS failed");
 
       const blob = await res.blob();
+      if (controller.signal.aborted) return;
       const url = URL.createObjectURL(blob);
+      urlRef.current = url;
       const audio = new Audio(url);
       audioRef.current = audio;
       audio.onplay   = () => setState("speaking");
-      audio.onended  = () => { setState("idle"); URL.revokeObjectURL(url); audioRef.current = null; };
-      audio.onerror  = () => { setState("idle"); URL.revokeObjectURL(url); audioRef.current = null; };
+      audio.onended  = () => { releaseAudio(); setState("idle"); };
+      audio.onerror  = () => { releaseAudio(); setState("idle"); };
       await audio.play();
     } catch {
-      setState("idle");
+      releaseAudio();
+      if (!controller.signal.aborted) setState("idle");
+    } finally {
+      if (requestRef.current === controller) requestRef.current = null;
     }
   };
 
@@ -57,7 +79,9 @@ export function SpeakerBtn({ text, bengaliText, size = 22 }: { text: string; ben
     <button data-ui-button="state" data-ui-shape="icon"
       className={`dt-speaker-btn ${speaking ? "speaking" : ""} ${loading ? "loading" : ""}`}
       onClick={handleClick}
-      aria-label="Speak"
+      aria-label={loading ? "Loading pronunciation" : speaking ? "Stop pronunciation" : "Speak"}
+      aria-busy={loading}
+      disabled={loading}
       style={{ width: size, height: size }}
     >
       <svg viewBox="0 0 48 48" width={size * 0.55} height={size * 0.55} fill="none">

@@ -1,6 +1,9 @@
 'use client';
-import { ArrowLeft, LogOut, Volume2 } from "lucide-react";
+import { useEffect, useMemo, useRef } from 'react';
+import { ArrowLeft, LogOut, Volume2, X } from "lucide-react";
 import { studyModeComparisonStyles, studyModeLoadingStyles } from "./study-mode-comparison.styles";
+import BackButton from "@/components/BackButton";
+import { ComparisonWordIndex } from "./ComparisonWordIndex";
 import { SpeakerBtn } from "./SpeakerBtn";
 
 import type { StudyModeComparisonConfig } from './study-mode-comparison-model';
@@ -11,6 +14,9 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
   const {
     cards,
     loading,
+    error,
+    retry,
+    selectCard,
     activeSpeech,
     handleRowClick,
     theme,
@@ -37,8 +43,6 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
     setStagedLetter,
     isLetterDropdownOpen,
     setIsLetterDropdownOpen,
-    mobileSheetVisibleCount,
-    setMobileSheetVisibleCount,
     filteredCards,
     searchInputRef,
     touchStartXRef,
@@ -47,12 +51,18 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
     availableLetters,
     filteredSheetCards,
   } = useStudyModeComparisonController(config);
+  const wordNumbers = useMemo(() => new Map(cards.map((card, index) => [card.id, index + 1])), [cards]);
+  const paletteRef = useRef<HTMLDialogElement>(null);
+  const exitRef = useRef<HTMLDialogElement>(null);
+  useEffect(() => { if (isMobilePaletteOpen) paletteRef.current?.showModal(); }, [isMobilePaletteOpen]);
+  useEffect(() => { if (showExitConfirm) exitRef.current?.showModal(); }, [showExitConfirm]);
   if (loading) {
     return (
       <main className="apple-dict-viewport" data-theme={theme}>
         <div className="loading-state">
           <div className="spinner" />
-          <p>Indexing Apple Dictionary...</p>
+          <p role="status">Loading your vocabulary…</p>
+          <BackButton href={`/english/${config.topic}/study-mode`} label="Back to study setup" />
         </div>
         <style jsx>{studyModeLoadingStyles}</style>
       </main>
@@ -60,17 +70,17 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
   }
 
 
-  const totalCards = filteredCards.length || 1;
-  const activeCard = filteredCards[Math.min(currentPage - 1, totalCards - 1)] || config.demoCard;
+  const totalCards = filteredCards.length;
+  const activeCard = filteredCards[currentPage - 1] || { id: 'empty', word: 'No matching words', meanings: [], primaryItems: [], secondaryItems: [] };
   const posLabel = activeCard.meanings.map((m) => m.pos).filter(Boolean).join(" · ");
 
   return (
     <main className="apple-dict-viewport" data-theme={theme}>
       {/* Mini Middle Pop-up Exit Confirmation Modal */}
       {showExitConfirm && (
-        <div
+        <dialog ref={exitRef} onCancel={() => setShowExitConfirm(false)}
           className="exit-modal-backdrop"
-          role="dialog"
+
           aria-modal="true"
           aria-labelledby="exit-modal-title"
         >
@@ -82,7 +92,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
               Want to exit?
             </h3>
             <p className="exit-modal-desc">
-              Are you sure you want to leave study mode? Your session progress is saved.
+              Are you sure you want to leave study mode? You can return to the word library at any time.
             </p>
             <div className="exit-modal-actions">
               <button data-ui-button="secondary"
@@ -101,12 +111,12 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
               </button>
             </div>
           </div>
-        </div>
+        </dialog>
       )}
 
       {/* ── Authentic macOS Apple Dictionary Window (Zero Scroll on PC) ── */}
       <div className="apple-app-window">
-        
+
         {/* ── Left Master-Detail Navigation Sidebar (PC Exclusive) ── */}
         <aside className="macos-sidebar">
           {/* Traffic Lights + Letter Filter Button inside Sidebar */}
@@ -117,32 +127,13 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
           >
             <button
               type="button"
-              className="light red"
+              data-ui-button="icon" className="sidebar-back"
               onClick={() => setShowExitConfirm(true)}
               aria-label="Close and return"
               title="Close to welcome screen"
             >
-              <span className="symbol">×</span>
+              <ArrowLeft size={20} />
             </button>
-            <button
-              type="button"
-              className="light yellow"
-              onClick={() => setShowExitConfirm(true)}
-              aria-label="Minimize"
-              title="Minimize to topic"
-            >
-              <span className="symbol">-</span>
-            </button>
-            <button
-              type="button"
-              className="light green"
-              onClick={() => {}}
-              aria-label="Zoom window"
-              title="Full screen view"
-            >
-              <span className="symbol">+</span>
-            </button>
-
             {/* A-Z Letter Filter Button — upper right */}
             <div
               className="letter-filter-wrapper"
@@ -236,7 +227,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
                   onClick={() => setSearchQuery("")}
                   aria-label="Clear search"
                 >
-                  ✕
+                  <X size={18} />
                 </button>
               )}
             </div>
@@ -245,34 +236,13 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
           <div className="sidebar-section-title">VOCABULARY INDEX ({filteredCards.length})</div>
 
           {/* Scrollable Wordlist */}
-          <div className="sidebar-word-list">
-            {filteredCards.length === 0 ? (
-              <div className="sidebar-empty">No matching terms</div>
-            ) : (
-              filteredCards.map((card, idx) => {
-                const pageNum = idx + 1;
-                const isSelected = currentPage === pageNum;
-                return (
-                  <button data-ui-button="state"
-                    key={card.id}
-                    type="button"
-                    className={`word-row ${isSelected ? "selected" : ""}`}
-                    onClick={() => {
-                      setCurrentPage(pageNum);
-                    }}
-                  >
-                    <span className="row-word">{card.word}</span>
-                    <span className="row-badge">{card.meanings[0]?.pos || "v."}</span>
-                  </button>
-                );
-              })
-            )}
-          </div>
+          <ComparisonWordIndex numbers={wordNumbers} cards={filteredCards} activeId={activeCard.id} compact onSelect={id => setCurrentPage(filteredCards.findIndex(card => card.id === id) + 1)} />
+
         </aside>
 
         {/* ── Main Dictionary Content Workspace ── */}
         <div className="macos-workspace">
-          
+
           {/* Top Unified Toolbar */}
           <header data-ui-chrome="header" className="unified-toolbar">
             <div className="toolbar-left">
@@ -291,7 +261,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
 
             <div className="toolbar-center">
               {/* Apple Segmented View Switcher (PC only) */}
-              <div className="apple-segmented-control" role="tablist">
+              <div className="apple-segmented-control" role="group">
                 <button data-ui-button="state"
                   type="button"
                   className={`segment-item ${viewMode === "all" ? "active" : ""}`}
@@ -331,7 +301,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
                 aria-label="Filter vocabulary index"
                 title="Filter words"
               >
-                <span className="counter-curr">{currentPage}</span>
+                <span className="counter-curr">{totalCards ? currentPage : 0}</span>
                 <span className="counter-sep">/</span>
                 <span className="counter-tot">{totalCards}</span>
               </button>
@@ -359,21 +329,22 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
 
           {/* Mobile Full-Page Filter Modal */}
           {isMobilePaletteOpen && (
-            <div className="mobile-full-modal" role="dialog" aria-modal="true" aria-label="Vocabulary Index Filter">
+            <dialog ref={paletteRef} onCancel={() => setIsMobilePaletteOpen(false)} className="mobile-full-modal" aria-modal="true" aria-label="Vocabulary Index Filter">
               {/* Modal Top Header Bar */}
-              <div className="modal-top-bar">
+              <div className="modal-top-bar" data-ui-chrome="header">
                 <button data-ui-button="icon"
                   type="button"
                   className="modal-top-back-btn"
                   onClick={() => setIsMobilePaletteOpen(false)}
                   aria-label="Close Filter"
                 >
-                  <ArrowLeft size={16} />
+                  <ArrowLeft size={20} />
                   <span>Done</span>
                 </button>
 
                 <div className="modal-top-title">
                   <span>Vocabulary Index</span>
+                  <small>{cards.length.toLocaleString()} words</small>
                 </div>
 
                 {mobileSheetSearch || mobileSheetLetter ? (
@@ -388,9 +359,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
                     Reset
                   </button>
                 ) : (
-                  <span className="modal-top-counter">
-                    {cards.length} Words
-                  </span>
+                  <span className="modal-header-spacer" aria-hidden="true" />
                 )}
               </div>
 
@@ -415,17 +384,17 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
                       onClick={() => setMobileSheetSearch("")}
                       aria-label="Clear Search"
                     >
-                      ✕
+                      <X size={18} />
                     </button>
                   )}
                 </div>
               </div>
 
               {/* A-Z Letter Filter Scroll Bar */}
-              <div className="modal-letter-strip" role="tablist" aria-label="Filter by letter">
+              <div className="modal-letter-strip" role="group" aria-label="Filter by letter">
                 <button data-ui-button="state"
                   type="button"
-                  className={`modal-letter-chip ${!mobileSheetLetter ? "active" : ""}`}
+                  aria-pressed={!mobileSheetLetter} className={`modal-letter-chip ${!mobileSheetLetter ? "active" : ""}`}
                   onClick={() => setMobileSheetLetter(null)}
                 >
                   All
@@ -436,7 +405,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
                     <button data-ui-button="state"
                       key={letter}
                       type="button"
-                      className={`modal-letter-chip ${isSelected ? "active" : ""}`}
+                      aria-pressed={isSelected} className={`modal-letter-chip ${isSelected ? "active" : ""}`}
                       onClick={() => setMobileSheetLetter(isSelected ? null : letter)}
                     >
                       {letter}
@@ -454,76 +423,15 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
                 </span>
               </div>
 
-              {/* Scrollable Word List */}
-              <div 
-                className="modal-word-list"
-                onScroll={(e) => {
-                  const target = e.target as HTMLDivElement;
-                  if (target.scrollHeight - target.scrollTop <= target.clientHeight + 200) {
-                    if (mobileSheetVisibleCount < filteredSheetCards.length) {
-                      setMobileSheetVisibleCount(c => c + 50);
-                    }
-                  }
-                }}
-              >
-                {filteredSheetCards.length === 0 ? (
-                  <div className="modal-empty-state">
-                    <div className="empty-ico">🔍</div>
-                    <div className="empty-title">No vocabulary words found</div>
-                    <div className="empty-sub">Try searching with a different keyword or starting letter</div>
-                    <button data-ui-button="secondary"
-                      type="button"
-                      className="btn-clear-all"
-                      onClick={() => {
-                        setMobileSheetSearch("");
-                        setMobileSheetLetter(null);
-                      }}
-                    >
-                      Show All Words
-                    </button>
-                  </div>
-                ) : (
-                  filteredSheetCards.slice(0, mobileSheetVisibleCount).map((card) => {
-                    const isActive = activeCard.id === card.id;
-                    const pos = card.meanings[0]?.pos || "v.";
-                    const trans = card.meanings[0]?.translation || "";
-                    const origIndex = cards.findIndex((c) => c.id === card.id);
-                    return (
-                      <button data-ui-button="state"
-                        key={card.id}
-                        type="button"
-                        className={`modal-word-item ${isActive ? "active" : ""}`}
-                        onClick={() => {
-                          const targetIdx = cards.findIndex((c) => c.id === card.id);
-                          setCurrentPage(targetIdx !== -1 ? targetIdx + 1 : 1);
-                          setIsMobilePaletteOpen(false);
-                        }}
-                      >
-                        <div className="word-item-left">
-                          <span className="word-item-idx">#{origIndex !== -1 ? origIndex + 1 : 1}</span>
-                          <div className="word-item-text">
-                            <div className="word-name-row">
-                              <span className="word-term">{card.word}</span>
-                              <span className="word-pos-tag">{pos}</span>
-                            </div>
-                            {trans && <div className="word-trans-preview">{trans}</div>}
-                          </div>
-                        </div>
+              <ComparisonWordIndex numbers={wordNumbers} cards={filteredSheetCards} activeId={activeCard.id} onSelect={selectCard} />
 
-                        {isActive && (
-                          <span className="word-active-badge">Active</span>
-                        )}
-                      </button>
-                    );
-                  })
-                )}
-              </div>
-            </div>
+            </dialog>
           )}
 
           {/* Main Dictionary Workspace Body */}
-          <div className="dictionary-body-scroll">
-            
+          <div className="dictionary-body-scroll" key={activeCard.id}>
+            {error ? <div className="study-empty" role="alert"><h2>Couldn’t load your vocabulary</h2><p>Please try again.</p><button data-ui-button="primary" onClick={() => void retry()}>Try again</button></div> : totalCards === 0 ? <div className="study-empty" role="status"><h2>No matching words</h2><p>Try a different search or clear your filters.</p><button data-ui-button="secondary" onClick={() => { setSearchQuery(''); setSelectedLetter(null); }}>Clear filters</button></div> : <>
+
             {/* Centerpiece Word Profile */}
             <section className="dict-word-profile">
               <div className="word-heading-line">
@@ -563,7 +471,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
                   </div>
                   <div className="table-body">
                     {activeCard.primaryItems.length === 0 ? (
-                      <div className="table-empty">No documented primaryItems</div>
+                      <div className="table-empty">{config.primaryEmptyLabel}</div>
                     ) : (
                       activeCard.primaryItems.map((s, i) => (
                         <div key={i} className={`table-row ${i % 2 === 1 ? "alt-row" : ""}`} onClick={() => handleRowClick(s.word, s.translation)} style={{ cursor: "pointer" }} role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
@@ -587,7 +495,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
                   </div>
                   <div className="table-body">
                     {activeCard.secondaryItems.length === 0 ? (
-                      <div className="table-empty">No documented secondaryItems</div>
+                      <div className="table-empty">{config.secondaryEmptyLabel}</div>
                     ) : (
                       activeCard.secondaryItems.map((a, i) => (
                         <div key={i} className={`table-row ${i % 2 === 1 ? "alt-row" : ""}`} onClick={() => handleRowClick(a.word, a.translation)} style={{ cursor: "pointer" }} role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
@@ -609,7 +517,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
               <div className="mobile-seg-control">
                 <button data-ui-button="state"
                   type="button"
-                  className={`m-tab ${mobileTab === "primary" ? "active" : ""}`}
+                  aria-pressed={mobileTab === "primary"} className={`m-tab ${mobileTab === "primary" ? "active" : ""}`}
                   onClick={() => setMobileTab("primary")}
                 >
                   <span>{config.primaryLabel}</span>
@@ -617,7 +525,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
                 </button>
                 <button data-ui-button="state"
                   type="button"
-                  className={`m-tab ${mobileTab === "secondary" ? "active" : ""}`}
+                  aria-pressed={mobileTab === "secondary"} className={`m-tab ${mobileTab === "secondary" ? "active" : ""}`}
                   onClick={() => setMobileTab("secondary")}
                 >
                   <span>{config.secondaryLabel}</span>
@@ -648,7 +556,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
                   <div className="table-body">
                     {mobileTab === "primary" ? (
                       activeCard.primaryItems.length === 0 ? (
-                        <div className="table-empty">No documented primaryItems</div>
+                        <div className="table-empty">{config.primaryEmptyLabel}</div>
                       ) : (
                         activeCard.primaryItems.map((s, i) => (
                           <div key={i} className="table-row" onClick={() => handleRowClick(s.word, s.translation)} style={{ cursor: "pointer" }} role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
@@ -662,7 +570,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
                       )
                     ) : (
                       activeCard.secondaryItems.length === 0 ? (
-                        <div className="table-empty">No documented secondaryItems</div>
+                        <div className="table-empty">{config.secondaryEmptyLabel}</div>
                       ) : (
                         activeCard.secondaryItems.map((a, i) => (
                           <div key={i} className="table-row" onClick={() => handleRowClick(a.word, a.translation)} style={{ cursor: "pointer" }} role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.currentTarget.click(); } }}>
@@ -679,6 +587,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
                 </div>
               </div>
             </section>
+            </>}
           </div>
 
           {/* ── Mobile Floating Navigation Buttons ── */}
@@ -687,7 +596,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
               type="button"
               className="mobile-footer-btn prev"
               onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-              disabled={currentPage === 1}
+              disabled={!totalCards || currentPage === 1}
               aria-label="Previous Word"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="22" height="22">
@@ -700,7 +609,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
               type="button"
               className="mobile-footer-btn next"
               onClick={() => setCurrentPage((prev) => Math.min(totalCards, prev + 1))}
-              disabled={currentPage === totalCards}
+              disabled={!totalCards || currentPage >= totalCards}
               aria-label="Next Word"
             >
               <span>Next</span>

@@ -3,64 +3,80 @@ import { requestResponse as fetch } from "@/shared/api/request";
 
 
 import { getAccessToken } from "@/shared/api/client";
-import { useRouter } from "next/navigation";
-import { useEffect,useMemo,useRef,useState } from "react";
+import { useAppNavigation, useBackLayer } from "@/hooks/useAppNavigation";
+import { useThemeMode } from "@/hooks/useTheme";
+import { useQuestions } from "@/hooks/useQuestions";
+import { useCallback,useDeferredValue,useEffect,useMemo,useRef,useState } from "react";
 import {
 toStudyModeCard,
 type StudyModeCard,
 type StudyModeComparisonConfig,
 type StudyModeEntry,
 } from "./study-mode-comparison-model";
-import { useStudyModeEngine } from "./useStudyModeEngine";
+
 
 export function useStudyModeComparisonController(config: StudyModeComparisonConfig) {
 
-  const { cards, loading } = useStudyModeEngine<StudyModeCard>({ topic: config.topic, normalize: (entry, index) => toStudyModeCard(entry as unknown as StudyModeEntry, index, config), fallback: [config.demoCard], compare: (a, b) => a.word.localeCompare(b.word, 'en', { sensitivity: 'base' }) });
+  const { questions, isLoading: loading, isError: error, mutate: retry } = useQuestions({ subject: 'english', topic: config.topic, questionType: 'study-mode' });
+  const cards = useMemo(() => (questions ?? []).map((entry, index) => toStudyModeCard(entry as unknown as StudyModeEntry, index, config)).filter((card): card is StudyModeCard => card !== null).sort((a, b) => a.word.localeCompare(b.word, 'en', { sensitivity: 'base' })), [questions, config]);
   const [activeSpeech, setActiveSpeech] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  const requestRef = useRef<AbortController | null>(null);
+  const urlRef = useRef<string | null>(null);
+  const speechWordRef = useRef<string | null>(null);
+  const stopSpeech = useCallback(() => {
+    requestRef.current?.abort(); requestRef.current = null;
+    const audio = audioRef.current;
+    if (audio) { audio.onended = null; audio.onerror = null; audio.pause(); }
+    audioRef.current = null;
+    if (urlRef.current) URL.revokeObjectURL(urlRef.current);
+    urlRef.current = null; speechWordRef.current = null;
+  }, []);
+  useEffect(() => stopSpeech, [stopSpeech]);
   const handleRowClick = async (word: string, translation?: string) => {
-    if (activeSpeech === word && audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current = null;
-      setActiveSpeech(null);
-      return;
-    }
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current = null;
-    }
+    const sameWord = speechWordRef.current === word;
+    stopSpeech();
+    if (sameWord) { setActiveSpeech(null); return; }
+    const controller = new AbortController();
+    requestRef.current = controller;
+    speechWordRef.current = word;
     setActiveSpeech(word);
     try {
       const accessToken = getAccessToken();
-      if (!accessToken) throw new Error("Authentication required");
-      const res = await fetch("/api/tts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
-        body: JSON.stringify({
-          text: word.trim(),
-          bengaliText: translation ? translation.trim() : undefined
-        }),
+      if (!accessToken) throw new Error('Authentication required');
+      const res = await fetch('/api/tts', {
+        method: 'POST', signal: controller.signal,
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+        body: JSON.stringify({ text: word.trim(), bengaliText: translation?.trim() }),
       });
-      if (!res.ok) throw new Error("TTS failed");
+      if (!res.ok) throw new Error('TTS failed');
       const blob = await res.blob();
+      if (controller.signal.aborted) return;
       const url = URL.createObjectURL(blob);
+      urlRef.current = url;
       const audio = new Audio(url);
       audioRef.current = audio;
-      audio.onended = () => { setActiveSpeech(null); URL.revokeObjectURL(url); audioRef.current = null; };
-      audio.onerror = () => { setActiveSpeech(null); URL.revokeObjectURL(url); audioRef.current = null; };
+      const finish = () => { if (!controller.signal.aborted) { stopSpeech(); setActiveSpeech(null); } };
+      audio.onended = finish; audio.onerror = finish;
       await audio.play();
     } catch {
-      setActiveSpeech(null);
+      if (!controller.signal.aborted) { stopSpeech(); setActiveSpeech(null); }
     }
   };
 
-  const router = useRouter();
-  const [theme, setTheme] = useState("dark");
+  const navigation = useAppNavigation();
+  const { theme, setThemeMode } = useThemeMode();
+  const setTheme = (value: string | ((current: string) => string)) => setThemeMode((typeof value === 'function' ? value(theme) : value) === 'light' ? 'light' : 'dark');
 
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const setCurrentPage = useCallback((value: number | ((current: number) => number)) => {
+    stopSpeech(); setActiveSpeech(null); setPage(value);
+  }, [stopSpeech]);
+  const [searchQuery, updateSearchQuery] = useState("");
+  const setSearchQuery = (value: string) => { updateSearchQuery(value); setCurrentPage(1); };
+  const deferredQuery = useDeferredValue(searchQuery.trim().toLowerCase());
+  const deferredSearch = searchQuery.trim() ? deferredQuery : '';
   const [viewMode, setViewMode] = useState<"all" | "primary" | "secondary">("all");
   const [mobileTab, setMobileTab] = useState<"primary" | "secondary">("primary");
 
@@ -68,96 +84,64 @@ export function useStudyModeComparisonController(config: StudyModeComparisonConf
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [mobileSheetSearch, setMobileSheetSearch] = useState("");
   const [mobileSheetLetter, setMobileSheetLetter] = useState<string | null>(null);
-  const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
+  const [selectedLetter, updateSelectedLetter] = useState<string | null>(null);
+  const setSelectedLetter = (value: string | null) => { updateSelectedLetter(value); setCurrentPage(1); };
   const [stagedLetter, setStagedLetter] = useState<string | null>(null);
   const [isLetterDropdownOpen, setIsLetterDropdownOpen] = useState(false);
 
-  const [mobileSheetVisibleCount, setMobileSheetVisibleCount] = useState(50);
-  useEffect(() => {
-    const timer = window.setTimeout(() => setMobileSheetVisibleCount(50), 0);
-    return () => window.clearTimeout(timer);
-  }, [mobileSheetSearch, mobileSheetLetter]);
-
-  // Filter cards by search + selected letter (memoized)
-  const filteredCards = useMemo(
-    () =>
-      cards.filter((c) => {
-        const matchSearch = c.word.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchLetter = !selectedLetter || c.word[0]?.toUpperCase() === selectedLetter;
-        return matchSearch && matchLetter;
-      }),
-    [cards, searchQuery, selectedLetter]
-  );
-
+  const indexedCards = useMemo(() => cards.map(card => ({ card, search: [card.word, ...card.meanings.flatMap(meaning => [meaning.definition, meaning.translation]), ...card.primaryItems.map(item => item.word), ...card.secondaryItems.map(item => item.word)].filter(Boolean).join(' ').toLowerCase() })), [cards]);
+  const filteredCards = useMemo(() => indexedCards.filter(({ card, search }) => (!deferredSearch || search.includes(deferredSearch)) && (!selectedLetter || card.word[0]?.toUpperCase() === selectedLetter)).map(({ card }) => card), [indexedCards, deferredSearch, selectedLetter]);
+  const currentPage = Math.min(Math.max(page, 1), Math.max(filteredCards.length, 1));
+  const selectCard = (id: string) => {
+    const index = cards.findIndex(card => card.id === id);
+    updateSearchQuery(''); updateSelectedLetter(null);
+    setCurrentPage(index < 0 ? 1 : index + 1);
+    setIsMobilePaletteOpen(false);
+  };
+  useBackLayer(isLetterDropdownOpen, () => setIsLetterDropdownOpen(false));
+  useBackLayer(isMobilePaletteOpen, () => setIsMobilePaletteOpen(false));
+  useBackLayer(showExitConfirm, () => setShowExitConfirm(false));
   const searchInputRef = useRef<HTMLInputElement>(null);
   const touchStartXRef = useRef<number | null>(null);
   const touchStartYRef = useRef<number | null>(null);
 
 
 
-  useEffect(() => {
-    if (cards.length > 0 && currentPage > cards.length) {
-      const timer = window.setTimeout(() => setCurrentPage(cards.length), 0);
-      return () => window.clearTimeout(timer);
-    }
-  }, [cards.length, currentPage]);
-
-  // Default to Synonyms tab whenever navigating between words
-  useEffect(() => {
-    const timer = window.setTimeout(() => setMobileTab("primary"), 0);
-    return () => window.clearTimeout(timer);
-  }, [currentPage]);
-
   // Desktop Keyboard navigation & Cmd+F Search focus
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "f") {
-        e.preventDefault();
-        searchInputRef.current?.focus();
+        const input = isMobilePaletteOpen ? document.querySelector<HTMLInputElement>('.modal-search-input') : searchInputRef.current;
+        if (input?.offsetParent) { e.preventDefault(); input.focus(); }
         return;
       }
-      if (e.key === "Escape") {
-        if (showExitConfirm) {
-          setShowExitConfirm(false);
-          return;
-        }
-        if (isMobilePaletteOpen) {
-          setIsMobilePaletteOpen(false);
-          return;
-        }
-      }
-      if (document.activeElement === searchInputRef.current) {
-        if (e.key === "Escape") {
-          setSearchQuery("");
-          searchInputRef.current?.blur();
-        }
-        return;
-      }
+      if (isMobilePaletteOpen || showExitConfirm || isLetterDropdownOpen) return;
+      const target = e.target as HTMLElement;
+      if (target.closest('input, textarea, select, [contenteditable="true"]')) return;
       if (e.key === "ArrowLeft" && currentPage > 1) {
-        setCurrentPage((prev) => prev - 1);
+        e.preventDefault(); setCurrentPage(currentPage - 1);
       } else if (e.key === "ArrowRight" && currentPage < filteredCards.length) {
-        setCurrentPage((prev) => prev + 1);
+        e.preventDefault(); setCurrentPage(currentPage + 1);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [currentPage, filteredCards.length, isMobilePaletteOpen, showExitConfirm]);
+  }, [currentPage, filteredCards.length, isMobilePaletteOpen, showExitConfirm, isLetterDropdownOpen, setCurrentPage]);
 
   // Close letter dropdown when clicking outside
   useEffect(() => {
     if (!isLetterDropdownOpen) return;
-    const close = () => {
-      // ignore clicks inside the wrapper (handled by stopPropagation on the wrapper div)
-      setIsLetterDropdownOpen(false);
+    const close = (event: PointerEvent) => {
+      if (!(event.target as HTMLElement).closest('.letter-filter-wrapper')) setIsLetterDropdownOpen(false);
     };
-    // Use mousedown so it fires before the button's onClick can re-open
-    window.addEventListener("mousedown", close);
-    return () => window.removeEventListener("mousedown", close);
+    // Pointer events cover touch, pen, and mouse dismissal.
+    window.addEventListener("pointerdown", close);
+    return () => window.removeEventListener("pointerdown", close);
   }, [isLetterDropdownOpen]);
 
   const handleConfirmExit = () => {
     setShowExitConfirm(false);
-    router.replace(`/english/${config.topic}`);
+    navigation.replace(`/english/${config.topic}/study-mode`);
   };
 
   // Derive the set of letters that actually exist in the word list (memoized)
@@ -170,68 +154,16 @@ export function useStudyModeComparisonController(config: StudyModeComparisonConf
     [cards]
   );
 
-  // Derived filtered cards for the mobile full-page filter modal
-  const filteredSheetCards = useMemo(() => {
-    const q = mobileSheetSearch.trim().toLowerCase();
-    return cards.filter((c) => {
-      const matchSearch =
-        !q ||
-        c.word.toLowerCase().includes(q) ||
-        c.meanings.some(
-          (m) =>
-            m.translation?.toLowerCase().includes(q) ||
-            m.definition?.toLowerCase().includes(q)
-        );
-      const matchLetter =
-        !mobileSheetLetter || c.word[0]?.toUpperCase() === mobileSheetLetter;
-      return matchSearch && matchLetter;
-    });
-  }, [cards, mobileSheetSearch, mobileSheetLetter]);
-
-  // If filteredCards changes and currentPage is out of bounds, adjust it
-  useEffect(() => {
-    if (filteredCards.length > 0 && currentPage > filteredCards.length) {
-      const timer = window.setTimeout(() => setCurrentPage(1), 0);
-      return () => window.clearTimeout(timer);
-    }
-  }, [filteredCards.length, currentPage]);
-
-  // Scroll to active card when mobile palette opens
-  useEffect(() => {
-    if (isMobilePaletteOpen) {
-      const activeCardFallback = filteredCards[Math.min(currentPage - 1, Math.max(0, filteredCards.length - 1))];
-      if (activeCardFallback) {
-        const activeIdx = filteredSheetCards.findIndex(c => c.id === activeCardFallback.id);
-        if (activeIdx !== -1) {
-          let visibleCountTimer: number | undefined;
-          // Ensure visible count includes the active index + some buffer
-          if (activeIdx >= mobileSheetVisibleCount) {
-            visibleCountTimer = window.setTimeout(
-              () => setMobileSheetVisibleCount(activeIdx + 20),
-              0,
-            );
-          }
-
-          // Wait for DOM to render the new count, then scroll
-          const scrollTimer = window.setTimeout(() => {
-            const activeEl = document.querySelector('.modal-word-item.active');
-            if (activeEl) {
-              activeEl.scrollIntoView({ behavior: 'auto', block: 'center' });
-            }
-          }, 50);
-          return () => {
-            if (visibleCountTimer !== undefined) window.clearTimeout(visibleCountTimer);
-            window.clearTimeout(scrollTimer);
-          };
-        }
-      }
-    }
-  }, [isMobilePaletteOpen, currentPage, filteredCards, filteredSheetCards, mobileSheetVisibleCount]);
+  const sheetSearch = useDeferredValue(mobileSheetSearch.trim().toLowerCase());
+  const filteredSheetCards = useMemo(() => indexedCards.filter(({ card, search }) => (!sheetSearch || search.includes(sheetSearch)) && (!mobileSheetLetter || card.word[0]?.toUpperCase() === mobileSheetLetter)).map(({ card }) => card), [indexedCards, sheetSearch, mobileSheetLetter]);
 
 
   return {
     cards,
     loading,
+    error,
+    retry,
+    selectCard,
     activeSpeech,
     handleRowClick,
     theme,
@@ -258,8 +190,6 @@ export function useStudyModeComparisonController(config: StudyModeComparisonConf
     setStagedLetter,
     isLetterDropdownOpen,
     setIsLetterDropdownOpen,
-    mobileSheetVisibleCount,
-    setMobileSheetVisibleCount,
     filteredCards,
     searchInputRef,
     touchStartXRef,
