@@ -17,6 +17,14 @@ export async function up(db) {
     { userId: 1, exam: 1, questionId: 1 },
     { unique: true, name: "training_exposure_unique" },
   );
+  await db.collection("trainingSkillState").createIndex(
+    { userId: 1, exam: 1, level: 1, mastery: 1 },
+    { name: "training_skill_mastery" },
+  );
+  await db.collection("trainingSkillState").createIndex(
+    { userId: 1, exam: 1, key: 1 },
+    { unique: true, name: "training_skill_unique" },
+  );
   await db.collection("questions").createIndex(
     { exam: 1, subject: 1, difficulty: -1, discrimination: -1, updatedAt: -1 },
     { name: "training_quality_candidates" },
