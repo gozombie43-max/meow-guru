@@ -45,6 +45,7 @@ jobs:
         run: |
           node backend/scripts/materialize-runtime-workspaces.js
           node backend/scripts/verify-runtime-dependencies.js --deployment
+          printf '%s' "${{ github.sha }}" > backend/RELEASE_ID
           tar --exclude='backend/.env*' --exclude='backend/coverage' --exclude='backend/uploads' \
             -czf release.tar.gz backend contracts node_modules package.json package-lock.json
 
@@ -129,15 +130,12 @@ jobs:
 
       - name: Configure quiz-only runtime
         shell: bash
-        env:
-          RELEASE_ID: ${{ github.sha }}
         run: |
           set -euo pipefail
           az webapp config appsettings set \
             --name quizguru-backend \
             --resource-group "$RESOURCE_GROUP" \
             --settings \
-              "RELEASE_ID=$RELEASE_ID" \
               "QUIZ_ONLY_MODE=true" \
               "RUN_EMBEDDED_WORKERS=false" \
               "PROCESS_ROLE=api" \
@@ -170,15 +168,18 @@ jobs:
             if [ "$status" = "200" ] && jq -e --arg release "$EXPECTED_RELEASE" '.ok == true and .releaseId == $release' health.json; then
               # Exercise the lazy-loaded AI router used by translation admission.
               # No credentials: a healthy route must reject with 401, never 500.
+              : > quota.json
               quota_status="$(curl --silent --show-error --max-time 20 --request POST --output quota.json --write-out '%{http_code}' "https://$APP_HOST/api/ai/quota")" || quota_status="transport-error"
-              if [ "$quota_status" != "401" ]; then
-                echo "::error::AI authorization smoke check failed (HTTP $quota_status)."
-                exit 1
+              if [ "$quota_status" = "401" ]; then
+                echo "AI authorization smoke check passed (HTTP 401)."
+                exit 0
               fi
-              exit 0
+              echo "AI authorization smoke check returned HTTP $quota_status; waiting for release to stabilize..."
+              if [ -f quota.json ]; then head -c 4096 quota.json; echo; fi
+            else
+              echo "Health HTTP status: $status"
+              if [ -f health.json ]; then head -c 4096 health.json; echo; fi
             fi
-            echo "Health HTTP status: $status"
-            if [ -f health.json ]; then head -c 4096 health.json; echo; fi
             sleep 10
           done
           curl --silent --show-error --max-time 20 --include "https://$APP_HOST/live" || true

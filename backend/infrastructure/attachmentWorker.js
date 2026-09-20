@@ -4,6 +4,7 @@ import { getMongoDB } from '../config/mongodb.js';
 import { claimJob, renewJob, completeJob, failJob } from './durableQueue.js';
 import { deleteObject } from './objectStorage.js';
 import { logger } from './logger.js';
+import { getReleaseId } from './releaseInfo.js';
 
 const workerId = randomUUID();
 let stopping = true;
@@ -61,7 +62,7 @@ async function reportHealth(db, jobs) {
     {
       $set: {
         role: 'attachments',
-        releaseId: process.env.RELEASE_ID || 'local',
+        releaseId: getReleaseId(),
         updatedAt: now,
         expiresAt: new Date(+now + 180_000),
       },

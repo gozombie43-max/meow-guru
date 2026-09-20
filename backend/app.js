@@ -2,6 +2,7 @@ import { isTrustedOrigin } from './auth/requestOrigin.js';
 import { requestLogging } from './infrastructure/logger.js';
 import { checkReadiness } from './infrastructure/readiness.js';
 import { requestBodyLimits } from './middleware/requestBodyLimits.js';
+import { getReleaseId } from './infrastructure/releaseInfo.js';
 
 import 'dotenv/config';
 
@@ -99,7 +100,7 @@ export async function createApp({ isReady, isShuttingDown, quizOnlyMode = proces
       ok: healthy,
       state: isShuttingDown() ? 'draining' : healthy ? 'ready' : 'starting',
       service: 'backend',
-      releaseId: process.env.RELEASE_ID || 'local',
+      releaseId: getReleaseId(),
       mode: quizOnlyMode ? 'quiz-only' : 'full',
       uptimeSeconds: Math.round(process.uptime()),
       timestamp: new Date().toISOString(),

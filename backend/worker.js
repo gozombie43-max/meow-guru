@@ -6,6 +6,7 @@ import { logger, startRuntimeMetrics } from './infrastructure/logger.js';
 import { startWorkerRealtime } from './infrastructure/workerRealtime.js';
 import { startWorkers, stopWorkers } from './infrastructure/workerRegistry.js';
 import { startWorkerHealthServer } from './infrastructure/workerHealthServer.js';
+import { getReleaseId } from './infrastructure/releaseInfo.js';
 import { randomUUID } from 'node:crypto';
 
 const workerId = randomUUID();
@@ -40,7 +41,7 @@ try {
   stopMetrics = startRuntimeMetrics();
   await startWorkers();
   stopOutbox = startBattleOutbox();
-  const beat = () => getMongoDB().collection('runtimeHealth').updateOne({ _id: workerId }, { $set: { role: 'maintenance', releaseId: process.env.RELEASE_ID || 'local', updatedAt: new Date(), expiresAt: new Date(Date.now() + 60000) } }, { upsert: true });
+  const beat = () => getMongoDB().collection('runtimeHealth').updateOne({ _id: workerId }, { $set: { role: 'maintenance', releaseId: getReleaseId(), updatedAt: new Date(), expiresAt: new Date(Date.now() + 60000) } }, { upsert: true });
   await beat();
   if (!stopping) heartbeat = setInterval(() => void beat().catch(err => logger.error({ err }, 'worker heartbeat failed')), 15000);
   ready = true;
