@@ -103,8 +103,11 @@ async function applyCompletedSessionLearning(db, completed, mongoSession) {
     });
 
     const existingReview = reviewByQuestion.get(String(q.id));
-    if (risky || existingReview) {
-      const stage = risky ? 0 : Math.min((existingReview?.stage || 0) + 1, 4);
+    const priorReviewStage =
+      existingReview?.stage ??
+      (Number.isInteger(q.priorReviewStage) ? q.priorReviewStage : null);
+    if (risky || existingReview || priorReviewStage !== null) {
+      const stage = risky ? 0 : Math.min((priorReviewStage || 0) + 1, 4);
       const reason = !risky
         ? 'Scheduled recall'
         : !correct
