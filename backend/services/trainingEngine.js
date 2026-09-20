@@ -548,7 +548,11 @@ export function resultFor(s) {
       );
     } else {
       streak = 0;
-      if (s.mode === "sprint" && !row.attempted) modePoints -= 5;
+      if (
+        effectiveTrainingMode(s, s.questions[row.number - 1]) === "sprint" &&
+        !row.attempted
+      )
+        modePoints -= 5;
     }
   }
   const elapsed = Math.max(
