@@ -295,6 +295,16 @@ export const startTrainingSession = async (req, res, next) => {
       );
       add(pool, "adaptive", 9, "Mixed consolidation");
     }
+    const reviewState = new Map(
+      intelligence.reviews.map((item) => [String(item.questionId), item]),
+    );
+    questions = questions.map((question) => {
+      const review = reviewState.get(String(question.id));
+      return review
+        ? { ...question, priorReviewStage: review.stage }
+        : question;
+    });
+
     if (!questions.length)
       return fail(
         res,
