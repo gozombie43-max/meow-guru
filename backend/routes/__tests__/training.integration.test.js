@@ -5,6 +5,7 @@ import { once } from "node:events";
 import { connectMongoDB, disconnectMongoDB } from "../../config/mongodb.js";
 import { createSession } from "../../auth/sessions.js";
 import { up } from "../../migrations/005-training.js";
+import { up as upHardening } from "../../migrations/007-training-hardening.js";
 import router from "../training.js";
 import curationRouter from "../trainingCuration.js";
 
@@ -25,6 +26,7 @@ beforeAll(async () => {
   process.env.MONGODB_DB = "training_test";
   db = await connectMongoDB();
   await up(db);
+  await upHardening(db);
   const app = express();
   app.use(express.json());
   app.use("/curation", curationRouter);
@@ -45,6 +47,10 @@ beforeEach(async () => {
   token = (await createSession({ id: "student" })).token;
   await db.collection("trainingSessions").deleteMany({});
   await db.collection("trainingQuestionVariants").deleteMany({});
+  await db.collection("trainingReviewState").deleteMany({});
+  await db.collection("trainingQuestionExposure").deleteMany({});
+  await db.collection("trainingSkillState").deleteMany({});
+  await db.collection("userSkillProfile").deleteMany({});
   await db.collection("questions").deleteMany({});
   await db.collection("questions").insertMany(
     Array.from({ length: 25 }, (_, i) => ({
@@ -76,6 +82,15 @@ async function start(mode = "section") {
   return r.json();
 }
 describe("persistent training API", () => {
+  it("exposes the authoritative training capability contract", async () => {
+    const response = await request("/capabilities");
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.exams.map((exam) => exam.id)).toContain("ssc-cgl");
+    expect(body.modes.pressure.navigation).toBe("free");
+    expect(body.modes.survival.lives).toBe(3);
+  });
+
   it("requires an admin and publishes verified variants transactionally", async () => {
     expect((await request("/curation/variants")).status).toBe(403);
     await db
@@ -236,6 +251,33 @@ describe("persistent training API", () => {
       ).status,
     ).toBe(400);
   });
+  it("finalizes expired sessions before returning dashboard resume state", async () => {
+    const s = await start();
+    const deadline = new Date(Date.now() - 1000).toISOString();
+    await db.collection("trainingSessions").updateOne(
+      { id: s.id },
+      { $set: { deadline } },
+    );
+    const dashboard = await (await request("/dashboard?exam=ssc-cgl")).json();
+    expect(dashboard.active.find((item) => item.id === s.id)).toBeUndefined();
+    const stored = await db.collection("trainingSessions").findOne({ id: s.id });
+    expect(stored.status).toBe("completed");
+    expect(stored.completionReason).toBe("timeout");
+    expect(stored.completedAt).toBe(deadline);
+  });
+
+  it("abandons without contributing durable learning state", async () => {
+    const s = await start();
+    const response = await request(`/sessions/${s.id}/actions`, "POST", {
+      type: "abandon",
+      revision: 0,
+    });
+    expect(response.status).toBe(200);
+    expect((await response.json()).status).toBe("abandoned");
+    expect(await db.collection("trainingQuestionExposure").countDocuments({ userId: "student" })).toBe(0);
+    expect(await db.collection("trainingSkillState").countDocuments({ userId: "student" })).toBe(0);
+  });
+
   it("persists corrected taxonomy and populates review evidence", async () => {
     const s = await start();
     const correct = (
@@ -260,5 +302,8 @@ describe("persistent training API", () => {
     expect(dashboard.reviews[0].mistake).toBe("Misread");
     expect(dashboard.reviews[0].reason).toContain("Wrong + Sure");
     expect(dashboard.readiness).toBeNull();
+    expect(await db.collection("trainingQuestionExposure").countDocuments({ userId: "student" })).toBe(1);
+    expect(await db.collection("trainingSkillState").countDocuments({ userId: "student", level: "topic" })).toBe(1);
+    expect(await db.collection("trainingReviewState").countDocuments({ userId: "student" })).toBe(1);
   });
 });

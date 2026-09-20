@@ -2,7 +2,23 @@ import { randomUUID } from "node:crypto";
 
 import { z } from "zod";
 
-import { trainingHistory as history, findMission, findOwnedSession, createTrainingSession, reloadTrainingSession, trainingDashboardData, saveSkillProfile, trainingQuestionPool, dueTrainingQuestions, commitTrainingTransition, saveTrainingDiagnosis, saveTrainingMistakes } from "../repositories/trainingRepository.js";
+import {
+  trainingHistory as history,
+  findMission,
+  findOwnedSession,
+  createTrainingSession,
+  reloadTrainingSession,
+  trainingDashboardData,
+  saveSkillProfile,
+  trainingQuestionPool,
+  dueTrainingQuestions,
+  commitTrainingTransition,
+  saveTrainingDiagnosis,
+  saveTrainingMistakes,
+  expiredActiveSessions,
+  trainingExposureData,
+  trainingLearningState,
+} from "../repositories/trainingRepository.js";
 
 import {
   MODES,
@@ -14,25 +30,86 @@ import {
   publicSession,
   transition,
   readinessWithEvidence,
+  mergeDurableIntelligence,
 } from "../services/trainingEngine.js";
 
 import { diagnoseTraining } from "../services/trainingDiagnosis.js";
 
 import { getExamConfig } from "../config/exam-config.js";
+import {
+  TRAINING_EXAMS,
+  TRAINING_MODE_POLICIES,
+  getTrainingModePolicy,
+  publicModePolicy,
+} from "../services/trainingModePolicy.js";
 
 const fail = (res, message, status = 400) =>
   res.status(status).json({ error: message });
+
+export const getTrainingCapabilities = async (_req, res) => {
+  res.json({
+    exams: TRAINING_EXAMS,
+    modes: Object.fromEntries(
+      Object.keys(TRAINING_MODE_POLICIES).map((mode) => [
+        mode,
+        publicModePolicy(mode),
+      ]),
+    ),
+  });
+};
 
 export const getTrainingDashboard = async (req, res, next) => {
   try {
     const exam = EXAMS.includes(req.query.exam) ? req.query.exam : EXAMS[0];
     const userId = String(req.user.id);
+    const expired = await expiredActiveSessions(userId, exam);
+    for (const stale of expired) {
+      const finalized = transition(stale, { type: "finish" });
+      await commitTrainingTransition(stale, finalized);
+    }
+
     const previous = await history(userId, exam);
     let intelligence = buildIntelligence(previous);
-    const [active, subjects, topics, mocks] = await trainingDashboardData(userId, exam);
+    const {
+      active,
+      catalogPairs,
+      mocks,
+      reviewRows,
+      skillRows,
+    } = await trainingDashboardData(userId, exam);
+    const subjects = [...new Set(catalogPairs.map((item) => item.subject))];
+    const topics = [...new Set(catalogPairs.map((item) => item.topic))];
+
+    intelligence = mergeDurableIntelligence(
+      intelligence,
+      skillRows,
+      reviewRows,
+    );
+
     intelligence = readinessWithEvidence(intelligence, previous, topics, mocks);
-    // A rebuildable materialized profile; immutable completed sessions remain authoritative.
-    await saveSkillProfile(userId, exam, intelligence);
+    const trainedTopics = new Set(intelligence.topics.map((item) => item.topic));
+    const coverageRatio = topics.length
+      ? topics.filter((topic) => trainedTopics.has(topic)).length / topics.length
+      : 0;
+    const recentDays = new Set(
+      previous
+        .filter((session) => Date.now() - new Date(session.completedAt).getTime() <= 7 * 86400000)
+        .map((session) => String(session.completedAt).slice(0, 10)),
+    ).size;
+    const confidenceScore =
+      Math.min(1, intelligence.attempts / 200) * 0.45 +
+      coverageRatio * 0.25 +
+      Math.min(1, mocks.length / 5) * 0.2 +
+      Math.min(1, recentDays / 7) * 0.1;
+    const evidenceConfidence =
+      confidenceScore >= 0.72 ? "high" : confidenceScore >= 0.4 ? "medium" : "low";
+
+    await saveSkillProfile(userId, exam, {
+      ...intelligence,
+      evidenceConfidence,
+      confidenceScore,
+    });
+
     const weak = intelligence.topics[0];
     const mission = [
       {
@@ -42,22 +119,24 @@ export const getTrainingDashboard = async (req, res, next) => {
       },
       { mode: "sprint", count: 8, label: "Train execution speed" },
       ...(intelligence.due.length
-        ? [
-            {
-              mode: "review",
-              count: Math.min(5, intelligence.due.length),
-              label: "Review due mistakes",
-            },
-          ]
+        ? [{
+            mode: "review",
+            count: Math.min(5, intelligence.due.length),
+            label: "Review due mistakes",
+          }]
         : []),
-      { mode: "section", count: 10, label: "English previous-year practice" },
+      { mode: "section", count: 10, label: "Previous-year practice" },
       { mode: "adaptive", count: 9, label: "Consolidate with a mixed block" },
     ];
+
     res.json({
       ...intelligence,
+      evidenceConfidence,
+      confidenceScore: Math.round(confidenceScore * 100),
       active,
-      subjects: subjects.filter((v) => typeof v === "string"),
-      catalogTopics: topics.filter((v) => typeof v === "string"),
+      subjects,
+      catalogTopics: topics,
+      catalog: catalogPairs,
       mission,
       history: previous.slice(0, 20).map((s) => ({
         id: s.id,
@@ -66,6 +145,7 @@ export const getTrainingDashboard = async (req, res, next) => {
         score: s.result.score,
         maxScore: s.result.maxScore,
         accuracy: s.result.accuracy,
+        completionReason: s.completionReason || "submitted",
       })),
       personalBest: Math.max(
         0,
@@ -112,9 +192,15 @@ export const startTrainingSession = async (req, res, next) => {
       const existing = await findMission(userId, config.exam, missionDate);
       if (existing) return res.json(publicSession(existing));
     }
-    const previous = await history(userId, config.exam),
-      intelligence = buildIntelligence(previous);
-    const sectional = ["section", "gauntlet"].includes(config.mode);
+    const previous = await history(userId, config.exam);
+    const durable = await trainingLearningState(userId, config.exam);
+    let intelligence = mergeDurableIntelligence(
+      buildIntelligence(previous),
+      durable.skillRows,
+      durable.reviewRows,
+    );
+    const policy = getTrainingModePolicy(config.mode);
+    const sectional = policy.sectional;
     if (sectional && !config.subject)
       return fail(res, "Choose a subject for sectional training.");
     const examConfig = getExamConfig(
@@ -140,8 +226,14 @@ export const startTrainingSession = async (req, res, next) => {
       );
     const requestedCount =
       config.count === "full" ? sectionConfig.questionCount : config.count;
-    const recentIds = previous.slice(0, 3).flatMap(s => s.questions.map(q => q.id));
-    const docs = await trainingQuestionPool(config, intelligence.due.map(r => r.questionId), recentIds);
+    const recentIds = previous.slice(0, 3).flatMap((s) => s.questions.map((q) => q.id));
+    const exposureRows = await trainingExposureData(userId, config.exam);
+    const docs = await trainingQuestionPool(
+      config,
+      intelligence.due.map((r) => r.questionId),
+      recentIds,
+      intelligence.topics.slice(0, 6).map((item) => item.topic),
+    );
     const pool = [
       ...new Map(
         docs
@@ -150,31 +242,39 @@ export const startTrainingSession = async (req, res, next) => {
           .map((q) => [q.id, q]),
       ).values(),
     ];
-    const eligible =
-      config.mode === "nightmare"
-        ? pool.filter((q) => q.difficulty >= 3)
-        : pool;
+    const eligible = pool.filter(
+      (q) => q.difficulty >= (policy.minDifficulty || 1),
+    );
     let questions = selectQuestions(
       eligible,
       config.mode,
       requestedCount,
       intelligence,
       now,
+      exposureRows,
     );
     if (config.mode === "mission") {
       const used = new Set();
       questions = [];
+      let blockNumber = 0;
       const add = (source, mode, count, label) => {
+        const blockId = `mission-${++blockNumber}-${mode}`;
         const block = selectQuestions(
           source.filter((q) => !used.has(q.id)),
           mode,
           count,
           intelligence,
           now,
+          exposureRows,
         );
         for (const q of block) {
           used.add(q.id);
-          questions.push({ ...q, trainingBlock: label });
+          questions.push({
+            ...q,
+            trainingBlock: label,
+            trainingBlockId: blockId,
+            trainingMode: mode,
+          });
         }
       };
       add(pool, "adaptive", 10, "Weak-area practice");
@@ -188,15 +288,23 @@ export const startTrainingSession = async (req, res, next) => {
         "Due reviews",
       );
       add(
-        pool.filter(
-          (q) => /english/i.test(q.subject) && q.sourceType === "pyq",
-        ),
+        pool.filter((q) => q.sourceType === "pyq"),
         "section",
         10,
-        "English PYQs",
+        "Previous-year practice",
       );
       add(pool, "adaptive", 9, "Mixed consolidation");
     }
+    const reviewState = new Map(
+      intelligence.reviews.map((item) => [String(item.questionId), item]),
+    );
+    questions = questions.map((question) => {
+      const review = reviewState.get(String(question.id));
+      return review
+        ? { ...question, priorReviewStage: review.stage }
+        : question;
+    });
+
     if (!questions.length)
       return fail(
         res,
@@ -213,18 +321,11 @@ export const startTrainingSession = async (req, res, next) => {
       );
     const expected = questions.reduce((n, q) => n + q.expectedTime, 0);
     const duration =
-      config.mode === "sprint"
+      policy.clock === "fixed"
         ? config.minutes * 60
         : Math.max(
             60,
-            Math.round(
-              expected *
-                (config.mode === "pressure"
-                  ? 0.7
-                  : config.mode === "nightmare"
-                    ? 0.85
-                    : 1.2),
-            ),
+            Math.round(expected * (policy.clockMultiplier || 1.2)),
           );
     const s = {
       id: randomUUID(),
@@ -259,7 +360,7 @@ export const startTrainingSession = async (req, res, next) => {
       lastEventAt: now,
       current: 0,
       revision: 0,
-      lives: config.mode === "survival" ? 3 : 999,
+      lives: policy.lives || 999,
       status: "active",
     };
     try {
@@ -311,6 +412,10 @@ const actionSchema = z.discriminatedUnion("type", [
     type: z.literal("finish"),
     revision: z.number().int().nonnegative(),
   }),
+  z.object({
+    type: z.literal("abandon"),
+    revision: z.number().int().nonnegative(),
+  }),
 ]);
 
 export const applyTrainingAction = async (req, res, next) => {
@@ -319,10 +424,13 @@ export const applyTrainingAction = async (req, res, next) => {
     if (!parsed.success) return fail(res, "Invalid session action");
     const s = await findOwnedSession(req.params.id, String(req.user.id));
     if (!s) return fail(res, "Session not found", 404);
-    if (s.status === "completed") return res.json(publicSession(s));
+    if (s.status !== "active") return res.json(publicSession(s));
     if (s.revision !== parsed.data.revision)
       return fail(res, "Session changed. Reload before continuing.", 409);
-    if (s.events.length >= 2000 && parsed.data.type !== "finish")
+    if (
+      s.events.length >= 2000 &&
+      !["finish", "abandon"].includes(parsed.data.type)
+    )
       return fail(
         res,
         "Session action limit reached. Finish this session.",

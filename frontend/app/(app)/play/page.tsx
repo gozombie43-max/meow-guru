@@ -10,6 +10,7 @@ import { isAxiosError } from "axios";
 import {
   modes,
   type ModeId,
+  type TrainingCapabilities,
   type TrainingDashboard,
 } from "@/components/training/training-types";
 import { TrainingInsights } from "@/components/training/TrainingInsights";
@@ -29,6 +30,7 @@ export default function PlayPage() {
   const [tab, setTab] = useState("Play"),
     [exam, setExam] = useState("ssc-cgl");
   const [dashboard, setDashboard] = useState<TrainingDashboard | null>(null),
+    [capabilities, setCapabilities] = useState<TrainingCapabilities | null>(null),
     [error, setError] = useState(""),
     [loading, setLoading] = useState(true),
     [busy, setBusy] = useState(false);
@@ -39,6 +41,28 @@ export default function PlayPage() {
     [tier, setTier] = useState("1"),
     [minutes, setMinutes] = useState(10);
   const selectedMode = modes.find((m) => m.id === selected);
+  const selectedPolicy = selected ? capabilities?.modes[selected] : undefined;
+  const topicOptions = subject
+    ? dashboard?.catalog
+        .filter((item) => item.subject === subject)
+        .map((item) => item.topic) || []
+    : dashboard?.catalogTopics || [];
+
+  useEffect(() => {
+    let live = true;
+    api
+      .get<TrainingCapabilities>("/api/training/capabilities")
+      .then(({ data }) => {
+        if (live) setCapabilities(data);
+      })
+      .catch(() => {
+        if (live) setError("Could not load training capabilities.");
+      });
+    return () => {
+      live = false;
+    };
+  }, []);
+
   useEffect(() => {
     let live = true;
     api
@@ -86,6 +110,10 @@ export default function PlayPage() {
     contentRef.current?.scrollTo({ top: 0, behavior: "instant" });
   }
   function choose(mode: ModeId) {
+    if (!capabilities) {
+      setError("Training setup is still loading. Please retry in a moment.");
+      return;
+    }
     setSelected(mode);
     setCount(mode === "section" ? 25 : 20);
     setError("");
@@ -145,9 +173,15 @@ export default function PlayPage() {
                   setTopic("");
                 }}
               >
-                <option value="ssc-cgl">SSC CGL</option>
-                <option value="ssc-chsl">SSC CHSL</option>
-                <option value="cat">CAT</option>
+                {(capabilities?.exams || [
+                  { id: "ssc-cgl", label: "SSC CGL" },
+                  { id: "ssc-chsl", label: "SSC CHSL" },
+                  { id: "cat", label: "CAT" },
+                ]).map((item) => (
+                  <option value={item.id} key={item.id}>
+                    {item.label}
+                  </option>
+                ))}
               </select>
               <ChevronDown
                 size={13}
@@ -273,7 +307,7 @@ export default function PlayPage() {
                     ? "Loading your evidence…"
                     : dashboard?.readiness == null
                       ? "Complete 30 answers to establish a baseline."
-                      : "Practice estimate · explore the factors in Analytics"}
+                      : `Practice estimate · ${dashboard.evidenceConfidence || "low"} evidence confidence`}
                 </p>
                 <div className="training-meter">
                   <i style={{ width: `${dashboard?.readiness || 0}%` }} />
@@ -337,7 +371,7 @@ export default function PlayPage() {
               "Work through questions that are due for spaced review."}
           </p>
           <div className="training-form">
-            {["section", "gauntlet"].includes(selected) && exam !== "cat" && (
+            {selectedPolicy?.supportsTier && exam !== "cat" && (
               <label>
                 Tier
                 <select value={tier} onChange={(e) => setTier(e.target.value)}>
@@ -356,7 +390,7 @@ export default function PlayPage() {
                 }}
               >
                 <option value="">
-                  {["section", "gauntlet"].includes(selected)
+                  {selectedPolicy?.requiresSubject
                     ? "Choose a section subject"
                     : "All available subjects"}
                 </option>
@@ -369,7 +403,7 @@ export default function PlayPage() {
               Topic
               <select value={topic} onChange={(e) => setTopic(e.target.value)}>
                 <option value="">Balanced topic mix</option>
-                {dashboard?.catalogTopics.map((t) => (
+                {topicOptions.map((t) => (
                   <option key={t}>{t}</option>
                 ))}
               </select>
@@ -389,19 +423,22 @@ export default function PlayPage() {
                     {n} questions
                   </option>
                 ))}
-                {["section", "gauntlet"].includes(selected) && (
+                {selectedPolicy?.supportsFullSection && (
                   <option value="full">Full configured section</option>
                 )}
               </select>
             </label>
-            {selected === "sprint" && (
+            {selectedPolicy?.clock === "fixed" && (
               <label>
                 Clock
                 <select
                   value={minutes}
                   onChange={(e) => setMinutes(Number(e.target.value))}
                 >
-                  {[5, 10, 15].map((n) => (
+                  {(selectedPolicy.minuteOptions.length
+                    ? selectedPolicy.minuteOptions
+                    : [5, 10, 15]
+                  ).map((n) => (
                     <option key={n} value={n}>
                       {n} minutes
                     </option>
@@ -412,9 +449,9 @@ export default function PlayPage() {
           </div>
           <div className="training-brief-note">
             <strong>
-              {["section", "gauntlet"].includes(selected)
-                ? `Configured section scoring: +${exam === "cat" || tier === "2" ? 3 : 2} correct · −${exam === "cat" || tier === "2" ? 1 : 0.5} wrong · 0 left blank`
-                : "Practice scoring: +1 correct · −0.25 wrong · 0 left blank"}
+              {selectedPolicy?.sectional
+                ? "Officially configured section marking is applied by the server."
+                : "Practice scoring is applied by the server for this mode."}
             </strong>
             <p>
               The clock continues if you leave. Bank availability may shorten
@@ -432,7 +469,7 @@ export default function PlayPage() {
             disabled={
               busy ||
               loading ||
-              (["section", "gauntlet"].includes(selected) && !subject)
+              (!!selectedPolicy?.requiresSubject && !subject)
             }
             onClick={() => start()}
           >

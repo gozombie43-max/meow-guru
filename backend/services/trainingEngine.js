@@ -1,15 +1,14 @@
 import { mockAnswerIndex } from "./mockAnswer.js";
+import {
+  TRAINING_EXAMS,
+  TRAINING_MODES,
+  canNavigateMode,
+  effectiveTrainingMode,
+  getTrainingModePolicy,
+  publicModePolicy,
+} from "./trainingModePolicy.js";
 
-export const MODES = [
-  "adaptive",
-  "challenge",
-  "sprint",
-  "pressure",
-  "section",
-  "gauntlet",
-  "nightmare",
-  "survival",
-];
+export const MODES = TRAINING_MODES;
 export const MISTAKES = [
   "Concept Gap",
   "Calculation Error",
@@ -19,7 +18,7 @@ export const MISTAKES = [
   "Time Management",
   "Guessing",
 ];
-export const EXAMS = ["ssc-cgl", "ssc-chsl", "cat"];
+export const EXAMS = TRAINING_EXAMS.map((exam) => exam.id);
 const DAY = 86400000;
 const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
 export function normalizeQuestion(q) {
@@ -38,7 +37,9 @@ export function normalizeQuestion(q) {
     !q.id ||
     !text ||
     options.length < 2 ||
+    options.length > 6 ||
     options.some((o) => typeof o !== "string" || !o.trim()) ||
+    new Set(options.map((o) => o.trim().toLocaleLowerCase())).size !== options.length ||
     correctIndex === null
   )
     return null;
@@ -229,6 +230,96 @@ export function buildIntelligence(sessions, now = Date.now()) {
   };
 }
 
+export function mergeDurableIntelligence(
+  intelligence,
+  skillRows = [],
+  reviewRows = [],
+  now = Date.now(),
+) {
+  if (!skillRows.length && !reviewRows.length) return intelligence;
+
+  const historicalTopics = new Map(
+    intelligence.topics.map((item) => [item.key, item]),
+  );
+  const historicalDetails = new Map(
+    (intelligence.details || []).map((item) => [item.key, item]),
+  );
+
+  const durableTopics = skillRows
+    .filter((item) => item.level === "topic")
+    .map((item) => {
+      const historical = historicalTopics.get(item.key);
+      return {
+        key: item.key,
+        subject: item.subject,
+        topic: item.topic,
+        attempts: Math.max(item.attempts || 0, historical?.attempts || 0),
+        correct: Math.max(item.correct || 0, historical?.correct || 0),
+        mastery: item.mastery,
+        seconds: item.seconds,
+        lastAt: item.lastAt,
+      };
+    });
+  const durableTopicKeys = new Set(durableTopics.map((item) => item.key));
+  const topics = [
+    ...durableTopics,
+    ...intelligence.topics.filter((item) => !durableTopicKeys.has(item.key)),
+  ].sort((a, b) => a.mastery - b.mastery);
+
+  const durableDetails = skillRows
+    .filter((item) => item.level !== "topic")
+    .map((item) => {
+      const historical = historicalDetails.get(item.key);
+      return {
+        key: item.key,
+        level: item.level,
+        label: item.label,
+        subject: item.subject,
+        topic: item.topic,
+        attempts: Math.max(item.attempts || 0, historical?.attempts || 0),
+        correct: Math.max(item.correct || 0, historical?.correct || 0),
+        mastery: item.mastery,
+        seconds: item.seconds,
+        lastAt: item.lastAt,
+      };
+    });
+  const durableDetailKeys = new Set(durableDetails.map((item) => item.key));
+  const details = [
+    ...durableDetails,
+    ...(intelligence.details || []).filter(
+      (item) => !durableDetailKeys.has(item.key),
+    ),
+  ];
+
+  const reviewMap = new Map(
+    intelligence.reviews.map((item) => [String(item.questionId), item]),
+  );
+  for (const row of reviewRows) {
+    const { _id, userId: _userId, exam: _exam, ...review } = row;
+    reviewMap.set(String(review.questionId), review);
+  }
+  const reviews = [...reviewMap.values()].sort((a, b) =>
+    a.dueAt.localeCompare(b.dueAt),
+  );
+  const attempts = topics.reduce((n, item) => n + item.attempts, 0);
+  const mastery = topics.length
+    ? topics.reduce((n, item) => n + item.mastery, 0) / topics.length
+    : 0;
+
+  return {
+    ...intelligence,
+    topics,
+    details,
+    reviews,
+    due: reviews.filter((item) => new Date(item.dueAt).getTime() <= now),
+    attempts,
+    factors: {
+      ...intelligence.factors,
+      mastery: Math.round(mastery * 100),
+    },
+  };
+}
+
 export function readinessWithEvidence(
   intelligence,
   sessions,
@@ -297,17 +388,67 @@ export function readinessWithEvidence(
   };
 }
 
+export function adaptiveTargetDifficulty({
+  question,
+  answer,
+  mastery = 0.5,
+  mode = "adaptive",
+}) {
+  const floor = mode === "nightmare" ? 3 : 1;
+  const masteryValue = Number(mastery);
+  const normalizedMastery = Number.isFinite(masteryValue)
+    ? clamp(masteryValue, 0, 1)
+    : 0.5;
+  const abilityTarget = 1 + normalizedMastery * 4;
+  const correct = answer.choice === question.correctIndex;
+  const confidenceAdjustment = correct
+    ? answer.confidence === "guess"
+      ? 0
+      : answer.confidence === "unsure"
+        ? 0.25
+        : 0.65
+    : answer.confidence === "sure"
+      ? -1
+      : -0.65;
+  const paceRatio = answer.seconds / Math.max(1, question.expectedTime);
+  const paceAdjustment = correct
+    ? paceRatio <= 1
+      ? 0.25
+      : paceRatio > 1.5
+        ? -0.2
+        : 0
+    : paceRatio > 1.5
+      ? -0.25
+      : 0;
+  const challengeAdjustment = mode === "challenge" ? 0.35 : 0;
+  return clamp(
+    Math.round(
+      question.difficulty * 0.45 +
+        abilityTarget * 0.55 +
+        confidenceAdjustment +
+        paceAdjustment +
+        challengeAdjustment,
+    ),
+    floor,
+    5,
+  );
+}
+
 export function selectQuestions(
   pool,
   mode,
   count,
   intelligence,
   now = Date.now(),
+  exposureRows = [],
 ) {
   const skills = new Map(
     intelligence.topics.map((p) => [`${p.subject} / ${p.topic}`, p]),
   );
   const due = new Set(intelligence.due.map((r) => r.questionId));
+  const exposure = new Map(
+    exposureRows.map((row) => [String(row.questionId), row]),
+  );
   const ranked = pool
     .map((q) => {
       const p = skills.get(`${q.subject} / ${q.topic}`);
@@ -331,6 +472,18 @@ export function selectQuestions(
       if (["challenge", "nightmare", "survival"].includes(mode))
         rank += q.difficulty * 2 + q.discrimination * 2;
       if (mode === "review") rank = due.has(q.id) ? 100 : -100;
+      if (mode !== "review") {
+        const seen = exposure.get(String(q.id));
+        if (seen) {
+          const ageDays = Math.max(
+            0,
+            (now - new Date(seen.lastSeenAt || 0).getTime()) / DAY,
+          );
+          rank -= Math.log1p(Number(seen.timesSeen) || 1) * 1.5;
+          if (ageDays < 1) rank -= 6;
+          else if (ageDays < 7) rank -= 3 * (1 - ageDays / 7);
+        }
+      }
       return { q, rank };
     })
     .filter((r) => mode !== "review" || due.has(r.q.id))
@@ -367,9 +520,17 @@ export function selectQuestions(
   if (["challenge", "nightmare", "survival"].includes(mode))
     selected.sort((a, b) => a.difficulty - b.difficulty);
   if (mode === "gauntlet")
-    selected.sort(
-      (a, b) => a.topic.localeCompare(b.topic) || a.difficulty - b.difficulty,
-    );
+    selected.sort((a, b) => {
+      const aMastery =
+        skills.get(`${a.subject} / ${a.topic}`)?.mastery ?? 0.5;
+      const bMastery =
+        skills.get(`${b.subject} / ${b.topic}`)?.mastery ?? 0.5;
+      return (
+        aMastery - bMastery ||
+        a.topic.localeCompare(b.topic) ||
+        a.difficulty - b.difficulty
+      );
+    });
   return selected;
 }
 
@@ -441,7 +602,11 @@ export function resultFor(s) {
       );
     } else {
       streak = 0;
-      if (s.mode === "sprint" && !row.attempted) modePoints -= 5;
+      if (
+        effectiveTrainingMode(s, s.questions[row.number - 1]) === "sprint" &&
+        !row.attempted
+      )
+        modePoints -= 5;
     }
   }
   const elapsed = Math.max(
@@ -450,6 +615,36 @@ export function resultFor(s) {
       new Date(s.startedAt).getTime()) /
       60000,
   );
+  const blockMap = new Map();
+  for (const row of rows) {
+    const question = s.questions[row.number - 1];
+    if (!question.trainingBlock) continue;
+    const key = question.trainingBlockId || question.trainingBlock;
+    const block = blockMap.get(key) || {
+      id: key,
+      label: question.trainingBlock,
+      mode: question.trainingMode || s.mode,
+      attempted: 0,
+      correct: 0,
+      seconds: 0,
+      questions: 0,
+    };
+    block.questions++;
+    block.attempted += Number(row.attempted);
+    block.correct += Number(row.correct);
+    block.seconds += row.seconds;
+    blockMap.set(key, block);
+  }
+  const blockBreakdown = [...blockMap.values()].map((block) => ({
+    ...block,
+    accuracy: block.attempted
+      ? Math.round((block.correct / block.attempted) * 100)
+      : 0,
+    averageSeconds: block.attempted
+      ? Math.round(block.seconds / block.attempted)
+      : 0,
+  }));
+
   const mastery = new Map();
   for (const row of rows.filter((r) => r.attempted)) {
     const q = s.questions[row.number - 1],
@@ -475,6 +670,7 @@ export function resultFor(s) {
   }
   return {
     rows,
+    blockBreakdown,
     masteryDelta: [...mastery.values()].map((p) => ({
       ...p,
       before: Math.round(p.before * 100),
@@ -508,12 +704,29 @@ export function resultFor(s) {
 }
 
 export function publicSession(s, now = Date.now()) {
+  const currentQuestion = s.questions[s.current] || s.questions.at(-1);
+  const effectiveMode = effectiveTrainingMode(s, currentQuestion);
+  const currentBlock = currentQuestion?.trainingBlockId || null;
+  const allowedVisitIndices = canNavigateMode(effectiveMode)
+    ? s.questions
+        .map((question, index) => ({ question, index }))
+        .filter(({ question }) =>
+          s.mode !== "mission" ||
+          !currentBlock ||
+          question.trainingBlockId === currentBlock,
+        )
+        .map(({ index }) => index)
+    : [];
   return {
     id: s.id,
     mode: s.mode,
+    effectiveMode,
+    policy: publicModePolicy(effectiveMode),
+    allowedVisitIndices,
     exam: s.exam,
     revision: s.revision,
     status: s.status,
+    completionReason: s.completionReason || null,
     current: s.current,
     duration: s.duration,
     deadline: s.deadline,
@@ -531,9 +744,11 @@ export function publicSession(s, now = Date.now()) {
 
 export function transition(session, action, now = Date.now()) {
   const s = structuredClone(session);
-  if (s.status === "completed") return s;
+  if (s.status !== "active") return s;
   const expired = now >= new Date(s.deadline).getTime();
   const q = s.questions[s.current];
+  const mode = effectiveTrainingMode(s, q);
+  const policy = getTrainingModePolicy(mode);
   const elapsed = Math.max(
     0,
     (Math.min(now, new Date(s.deadline).getTime()) - s.lastEventAt) / 1000,
@@ -559,18 +774,46 @@ export function transition(session, action, now = Date.now()) {
     a.confidence = action.confidence || null;
     a.at = now;
     s.events.push({ type: "answer", questionId: q.id, at: now });
-    if (s.mode === "survival") {
+    if (mode === "survival") {
       if (a.choice !== q.correctIndex) s.lives--;
       s.slowStreak =
-        a.seconds > q.expectedTime * 1.5 ? (s.slowStreak || 0) + 1 : 0;
+        a.choice !== null &&
+        a.seconds > q.expectedTime * (policy.slowPenaltyThreshold || 1.5)
+          ? (s.slowStreak || 0) + 1
+          : 0;
       if (s.slowStreak >= 2) {
         s.lives--;
         s.slowStreak = 0;
       }
     }
-    if (!["pressure", "section"].includes(s.mode)) {
+    if (
+      canNavigateMode(mode) &&
+      s.mode === "mission" &&
+      a.choice !== null
+    ) {
+      const blockId = q.trainingBlockId;
+      const nextInBlock = s.questions.findIndex(
+        (item, index) =>
+          index > s.current &&
+          (!blockId || item.trainingBlockId === blockId) &&
+          s.answers[item.id]?.choice == null,
+      );
+      if (nextInBlock !== -1) {
+        s.current = nextInBlock;
+      } else if (s.current < s.questions.length - 1) {
+        const nextBlock = s.questions.findIndex(
+          (item, index) =>
+            index > s.current &&
+            (!blockId || item.trainingBlockId !== blockId),
+        );
+        if (nextBlock !== -1) s.current = nextBlock;
+      } else {
+        action = { type: "finish" };
+      }
+    }
+    if (!canNavigateMode(mode)) {
       if (
-        s.mode === "gauntlet" &&
+        mode === "gauntlet" &&
         !q.recoveryFor &&
         s.questions[s.current + 1]?.topic !== q.topic &&
         (s.recoveredTopics || []).length < 3 &&
@@ -608,23 +851,33 @@ export function transition(session, action, now = Date.now()) {
       else {
         s.current++;
         // Adapt within the already validated pool; scoring and question identities never change.
-        if (["adaptive", "challenge", "nightmare"].includes(s.mode)) {
-          const ceiling = s.mode === "nightmare" ? 3 : 1;
-          const target = clamp(
-            q.difficulty +
-              (a.choice === q.correctIndex && a.confidence !== "guess"
-                ? 1
-                : -1),
-            ceiling,
-            5,
-          );
-          const remaining = s.questions.slice(s.current);
+        if (["adaptive", "challenge", "nightmare"].includes(mode)) {
+          const topicKey = `${q.subject} / ${q.topic}`;
+          const target = adaptiveTargetDifficulty({
+            question: q,
+            answer: a,
+            mastery: s.baseline?.[topicKey] ?? 0.5,
+            mode,
+          });
+          const blockEnd =
+            s.mode === "mission" && q.trainingBlockId
+              ? s.questions.findIndex(
+                  (item, index) =>
+                    index >= s.current &&
+                    item.trainingBlockId !== q.trainingBlockId,
+                )
+              : -1;
+          const endExclusive = blockEnd === -1 ? s.questions.length : blockEnd;
+          const remaining = s.questions.slice(s.current, endExclusive);
           remaining.sort(
             (x, y) =>
               Math.abs(x.difficulty - target) - Math.abs(y.difficulty - target),
           );
           // Every fifth challenger question is an easier reasoning check.
-          if (s.mode === "challenge" && s.current % 5 === 4)
+          if (
+            mode === "challenge" &&
+            s.current % (policy.challengeCheckInterval || 5) === 4
+          )
             remaining.sort((x, y) => x.difficulty - y.difficulty);
           s.questions.splice(s.current, remaining.length, ...remaining);
         }
@@ -632,7 +885,7 @@ export function transition(session, action, now = Date.now()) {
     }
   }
   if (!expired && action.type === "visit") {
-    if (!["pressure", "section"].includes(s.mode))
+    if (!canNavigateMode(mode))
       throw new Error("This mode moves forward only");
     if (
       !Number.isInteger(action.index) ||
@@ -640,6 +893,12 @@ export function transition(session, action, now = Date.now()) {
       action.index >= s.questions.length
     )
       throw new Error("Invalid question");
+    if (
+      s.mode === "mission" &&
+      q.trainingBlockId &&
+      s.questions[action.index]?.trainingBlockId !== q.trainingBlockId
+    )
+      throw new Error("Mission navigation stays inside the current block");
     s.current = action.index;
     s.events.push({
       type: "visit",
@@ -647,9 +906,19 @@ export function transition(session, action, now = Date.now()) {
       at: now,
     });
   }
-  if (expired || action.type === "finish" || s.lives <= 0) {
-    s.status = "completed";
+  if (!expired && action.type === "abandon") {
+    s.status = "abandoned";
     s.completedAt = new Date(now).toISOString();
+    s.completionReason = "abandoned";
+    s.result = null;
+  } else if (expired || action.type === "finish" || s.lives <= 0) {
+    s.status = "completed";
+    s.completedAt = expired ? s.deadline : new Date(now).toISOString();
+    s.completionReason = expired
+      ? "timeout"
+      : s.lives <= 0
+        ? "survival_lives"
+        : "submitted";
     s.result = resultFor(s);
   }
   s.revision++;

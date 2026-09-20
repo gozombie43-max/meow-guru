@@ -2,6 +2,7 @@
 import { useQuizLeaveGuard } from "@/hooks/useAppNavigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   ArrowRight,
@@ -59,6 +60,7 @@ function ModeIcon({ mode }: { mode?: ModeId | string }) {
 
 export default function TrainingSessionView({ id }: { id: string }) {
   const { theme } = useThemeMode();
+  const router = useRouter();
   const [session, setSession] = useState<TrainingSession | null>(null),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
@@ -123,6 +125,10 @@ export default function TrainingSessionView({ id }: { id: string }) {
           `/api/training/sessions/${id}/actions`,
           { ...action, revision: session.revision },
         );
+        if (data.status === "abandoned") {
+          router.replace("/play");
+          return;
+        }
         accept(data);
         setConfirmFinish(false);
       } catch (e) {
@@ -137,7 +143,7 @@ export default function TrainingSessionView({ id }: { id: string }) {
         setBusy(false);
       }
     },
-    [id, session, accept],
+    [id, session, accept, router],
   );
   const remaining = session
     ? Math.max(
@@ -153,7 +159,7 @@ export default function TrainingSessionView({ id }: { id: string }) {
   }, [session, remaining, busy, error, act]);
 
   const q = session?.questions[session.current];
-  const canNavigate = session && ["pressure", "section"].includes(session.mode);
+  const canNavigate = session?.policy.navigation === "free";
   const seconds = q
     ? Math.round(
         (session?.answers[q.id]?.seconds || 0) +
@@ -231,7 +237,7 @@ export default function TrainingSessionView({ id }: { id: string }) {
                   QUESTION {session.current + 1} OF {session.questions.length}
                 </span>
               </div>
-              {session.mode === "survival" ? (
+              {session.effectiveMode === "survival" ? (
                 <div
                   className="training-survival-lives"
                   aria-label={`${session.lives} lives remaining`}
@@ -357,7 +363,7 @@ export default function TrainingSessionView({ id }: { id: string }) {
                   </small>
                 </div>
 
-                {!["nightmare", "survival"].includes(session.mode) && (
+                {session.policy.confidence && (
                   <fieldset className="training-confidence">
                     <legend>
                       Confidence rating{" "}
@@ -432,7 +438,10 @@ export default function TrainingSessionView({ id }: { id: string }) {
                         question at any time.
                       </p>
                       <div className="training-palette">
-                        {session.questions.map((item, i) => {
+                        {session.questions
+                          .map((item, i) => ({ item, i }))
+                          .filter(({ i }) => session.allowedVisitIndices.includes(i))
+                          .map(({ item, i }) => {
                           const isAnswered =
                             session.answers[item.id]?.choice != null;
                           const isCurrent = i === session.current;
@@ -454,7 +463,7 @@ export default function TrainingSessionView({ id }: { id: string }) {
                     </>
                   ) : (
                     <p className="training-sidebar-desc">
-                      {modes.find((m) => m.id === session.mode)?.detail ||
+                      {modes.find((m) => m.id === session.effectiveMode)?.detail ||
                         "Review due questions. Successful recall extends the next interval."}
                     </p>
                   )}
@@ -488,6 +497,13 @@ export default function TrainingSessionView({ id }: { id: string }) {
                         onClick={() => setConfirmFinish(false)}
                       >
                         Keep training
+                      </button>
+                      <button
+                        data-ui-button="danger"
+                        disabled={busy}
+                        onClick={() => act({ type: "abandon" })}
+                      >
+                        Abandon session
                       </button>
                     </div>
                   </section>

@@ -1,43 +1,422 @@
-import { getMongoDB, getQuestionsCollection } from '../config/mongodb.js';
+import { getMongoDB, getQuestionsCollection, withMongoTransaction } from '../config/mongodb.js';
 
 const sessions = () => getMongoDB().collection('trainingSessions');
+const reviews = () => getMongoDB().collection('trainingReviewState');
+const exposures = () => getMongoDB().collection('trainingQuestionExposure');
+const skills = () => getMongoDB().collection('trainingSkillState');
+
 const examFilter = exam => {
   const pattern = new RegExp(`^${exam.split('-').join('[ -]?')}$`, 'i');
   return { $or: [{ exam: pattern }, { examName: pattern }, { exams: pattern }] };
 };
-export const trainingHistory = (userId, exam) => sessions().find({ userId, exam, status: 'completed' }).sort({ completedAt: -1 }).limit(200).toArray();
-export const findMission = (userId, exam, missionDate) => sessions().findOne({ userId, exam, missionDate });
-export const findOwnedSession = (id, userId, completed = false) => sessions().findOne({ id, userId, ...(completed ? { status: 'completed' } : {}) });
+
+const answerSignal = (correct, confidence) =>
+  correct
+    ? confidence === 'guess'
+      ? 0.25
+      : confidence === 'unsure'
+        ? 0.6
+        : 1
+    : 0;
+
+const skillKeysFor = q => [
+  {
+    key: `${q.subject} / ${q.topic}`,
+    level: 'topic',
+    label: q.topic,
+    subject: q.subject,
+    topic: q.topic,
+  },
+  ...(q.subtopic
+    ? [{
+        key: `${q.subject} / ${q.topic} / subtopic / ${q.subtopic}`,
+        level: 'subtopic',
+        label: q.subtopic,
+        subject: q.subject,
+        topic: q.topic,
+      }]
+    : []),
+  ...(q.concepts || [])
+    .filter(c => typeof c === 'string' && c.trim())
+    .map(label => ({
+      key: `${q.subject} / ${q.topic} / concept / ${label}`,
+      level: 'concept',
+      label,
+      subject: q.subject,
+      topic: q.topic,
+    })),
+];
+
+async function applyCompletedSessionLearning(db, completed, mongoSession) {
+  if (!completed?.result || completed.status !== 'completed') return;
+
+  const userId = completed.userId;
+  const exam = completed.exam;
+  const completedAt = completed.completedAt;
+  const attempted = completed.questions
+    .map(q => ({ q, answer: completed.answers[q.id] }))
+    .filter(({ answer }) => answer && answer.choice !== null);
+  if (!attempted.length) return;
+
+  const questionIds = attempted.map(({ q }) => q.id);
+  const existingReviews = await db.collection('trainingReviewState')
+    .find(
+      { userId, exam, questionId: { $in: questionIds } },
+      { session: mongoSession },
+    )
+    .toArray();
+  const reviewByQuestion = new Map(
+    existingReviews.map(item => [String(item.questionId), item]),
+  );
+
+  const exposureOps = [];
+  const reviewOps = [];
+  const skillInputs = new Map();
+
+  for (const { q, answer } of attempted) {
+    const correct = answer.choice === q.correctIndex;
+    const risky =
+      !correct ||
+      answer.confidence === 'guess' ||
+      answer.confidence === 'unsure' ||
+      answer.seconds > q.expectedTime * 1.5;
+
+    exposureOps.push({
+      updateOne: {
+        filter: { userId, exam, questionId: q.id },
+        update: {
+          $set: {
+            userId,
+            exam,
+            questionId: q.id,
+            lastSeenAt: completedAt,
+            lastCorrect: correct,
+            lastSeconds: answer.seconds,
+            lastConfidence: answer.confidence || null,
+            updatedAt: new Date(),
+          },
+          $inc: { timesSeen: 1, timesCorrect: Number(correct) },
+          $setOnInsert: { createdAt: new Date() },
+        },
+        upsert: true,
+      },
+    });
+
+    const existingReview = reviewByQuestion.get(String(q.id));
+    const priorReviewStage =
+      existingReview?.stage ??
+      (Number.isInteger(q.priorReviewStage) ? q.priorReviewStage : null);
+    if (risky || existingReview || priorReviewStage !== null) {
+      const stage = risky ? 0 : Math.min((priorReviewStage || 0) + 1, 4);
+      const reason = !risky
+        ? 'Scheduled recall'
+        : !correct
+          ? answer.confidence === 'sure'
+            ? 'Wrong + Sure: possible misconception'
+            : 'Wrong answer'
+          : answer.seconds > q.expectedTime * 1.5
+            ? 'Above target time'
+            : 'Low confidence';
+      const intervals = [1, 3, 7, 21, 60];
+      reviewOps.push({
+        updateOne: {
+          filter: { _id: `${userId}:${exam}:${q.id}` },
+          update: {
+            $set: {
+              userId,
+              exam,
+              questionId: q.id,
+              topic: q.topic,
+              stage,
+              dueAt: new Date(
+                new Date(completedAt).getTime() + intervals[stage] * 86400000,
+              ).toISOString(),
+              reason,
+              mistake: answer.mistake || existingReview?.mistake || null,
+              lastSessionId: completed.id,
+              updatedAt: new Date(),
+            },
+            $setOnInsert: { createdAt: new Date() },
+          },
+          upsert: true,
+        },
+      });
+    }
+
+    for (const meta of skillKeysFor(q)) {
+      const item = skillInputs.get(meta.key) || {
+        ...meta,
+        attempts: 0,
+        correct: 0,
+        seconds: [],
+        signals: [],
+      };
+      item.attempts++;
+      item.correct += Number(correct);
+      item.seconds.push(answer.seconds);
+      item.signals.push(answerSignal(correct, answer.confidence));
+      skillInputs.set(meta.key, item);
+    }
+  }
+
+  if (exposureOps.length) {
+    await db.collection('trainingQuestionExposure').bulkWrite(
+      exposureOps,
+      { ordered: false, session: mongoSession },
+    );
+  }
+  if (reviewOps.length) {
+    await db.collection('trainingReviewState').bulkWrite(
+      reviewOps,
+      { ordered: false, session: mongoSession },
+    );
+  }
+
+  if (!skillInputs.size) return;
+  const ids = [...skillInputs.keys()].map(key => `${userId}:${exam}:${key}`);
+  const existing = await db.collection('trainingSkillState')
+    .find({ _id: { $in: ids } }, { session: mongoSession })
+    .toArray();
+  const byId = new Map(existing.map(item => [item._id, item]));
+  const skillOps = [];
+
+  for (const item of skillInputs.values()) {
+    const _id = `${userId}:${exam}:${item.key}`;
+    const old = byId.get(_id);
+    let mastery =
+      old?.mastery ??
+      (item.level === 'topic' ? completed.baseline?.[item.key] : undefined) ??
+      0.5;
+    let seconds = old?.seconds ?? 60;
+    for (let i = 0; i < item.signals.length; i++) {
+      mastery = 0.8 * mastery + 0.2 * item.signals[i];
+      seconds = 0.8 * seconds + 0.2 * item.seconds[i];
+    }
+    skillOps.push({
+      updateOne: {
+        filter: { _id },
+        update: {
+          $set: {
+            userId,
+            exam,
+            key: item.key,
+            level: item.level,
+            label: item.label,
+            subject: item.subject,
+            topic: item.topic,
+            mastery,
+            seconds,
+            lastAt: completedAt,
+            updatedAt: new Date(),
+          },
+          $inc: { attempts: item.attempts, correct: item.correct },
+          $setOnInsert: { createdAt: new Date() },
+        },
+        upsert: true,
+      },
+    });
+  }
+
+  if (skillOps.length) {
+    await db.collection('trainingSkillState').bulkWrite(
+      skillOps,
+      { ordered: false, session: mongoSession },
+    );
+  }
+}
+
+export const trainingHistory = (userId, exam) =>
+  sessions()
+    .find({ userId, exam, status: 'completed' })
+    .sort({ completedAt: -1 })
+    .limit(500)
+    .toArray();
+
+export const findMission = (userId, exam, missionDate) =>
+  sessions().findOne({ userId, exam, missionDate });
+
+export const findOwnedSession = (id, userId, completed = false) =>
+  sessions().findOne({ id, userId, ...(completed ? { status: 'completed' } : {}) });
+
 export const createTrainingSession = session => sessions().insertOne(session);
 export const reloadTrainingSession = id => sessions().findOne({ _id: id });
-export async function trainingDashboardData(userId, exam) {
-  return Promise.all([
-    sessions().find({ userId, exam, status: 'active' }).sort({ startedAt: -1 }).limit(5).project({ id: 1, mode: 1, deadline: 1 }).toArray(),
-    getQuestionsCollection().distinct('subject', examFilter(exam)),
-    getQuestionsCollection().distinct('topic', examFilter(exam)),
-    getMongoDB().collection('mockAttempts').find({ userId, examSlug: exam, status: 'completed' }).sort({ submittedAt: -1 }).limit(20).project({ result: 1 }).toArray(),
+
+export const expiredActiveSessions = (userId, exam, now = Date.now()) =>
+  sessions()
+    .find({
+      userId,
+      exam,
+      status: 'active',
+      deadline: { $lte: new Date(now).toISOString() },
+    })
+    .limit(20)
+    .toArray();
+
+export async function trainingLearningState(userId, exam) {
+  const [reviewRows, skillRows] = await Promise.all([
+    reviews()
+      .find({ userId, exam })
+      .sort({ dueAt: 1 })
+      .limit(2000)
+      .toArray(),
+    skills()
+      .find({ userId, exam })
+      .sort({ mastery: 1 })
+      .limit(5000)
+      .toArray(),
   ]);
+  return { reviewRows, skillRows };
 }
-export const saveSkillProfile = (userId, exam, intelligence) => getMongoDB().collection('userSkillProfile').updateOne(
-  { _id: `${userId}:${exam}` }, { $set: { userId, exam, ...intelligence, updatedAt: new Date() } }, { upsert: true },
-);
-export function trainingQuestionPool(config, dueIds, recentIds) {
-  const filter = { $and: [examFilter(config.exam)] };
-  if (config.subject) filter.$and.push({ subject: config.subject });
-  if (config.topic) filter.$and.push({ $or: [{ topic: config.topic }, { questionTopic: config.topic }] });
-  if (config.mode === 'review') filter.$and.push({ id: { $in: dueIds } });
-  else if (recentIds.length) filter.$and.push({ id: { $nin: recentIds } });
-  return getQuestionsCollection().find(filter).sort({ updatedAt: -1, _id: 1 }).limit(2000).toArray();
+
+export async function trainingDashboardData(userId, exam) {
+  const nowIso = new Date().toISOString();
+  const [active, catalog, mocks, reviewRows, skillRows] = await Promise.all([
+    sessions()
+      .find({ userId, exam, status: 'active', deadline: { $gt: nowIso } })
+      .sort({ startedAt: -1 })
+      .limit(5)
+      .project({ id: 1, mode: 1, deadline: 1 })
+      .toArray(),
+    getQuestionsCollection()
+      .aggregate([
+        { $match: examFilter(exam) },
+        {
+          $project: {
+            subject: { $ifNull: ['$subject', 'Unclassified'] },
+            topic: { $ifNull: ['$topic', '$questionTopic'] },
+          },
+        },
+        { $match: { topic: { $type: 'string' } } },
+        { $group: { _id: { subject: '$subject', topic: '$topic' } } },
+        { $sort: { '_id.subject': 1, '_id.topic': 1 } },
+        { $limit: 2000 },
+      ])
+      .toArray(),
+    getMongoDB()
+      .collection('mockAttempts')
+      .find({ userId, examSlug: exam, status: 'completed' })
+      .sort({ submittedAt: -1 })
+      .limit(20)
+      .project({ result: 1 })
+      .toArray(),
+    reviews()
+      .find({ userId, exam })
+      .sort({ dueAt: 1 })
+      .limit(2000)
+      .toArray(),
+    skills()
+      .find({ userId, exam })
+      .sort({ mastery: 1 })
+      .limit(5000)
+      .toArray(),
+  ]);
+
+  const catalogPairs = catalog.map(item => ({
+    subject: item._id.subject,
+    topic: item._id.topic,
+  }));
+  return { active, catalogPairs, mocks, reviewRows, skillRows };
 }
-export const dueTrainingQuestions = (exam, ids) => getQuestionsCollection().find({ $and: [examFilter(exam), { id: { $in: ids } }] }).limit(100).toArray();
-// Every session mutation retains the optimistic revision guard.
-export function commitTrainingTransition(session, updated) {
+
+export const saveSkillProfile = (userId, exam, intelligence) =>
+  getMongoDB().collection('userSkillProfile').updateOne(
+    { _id: `${userId}:${exam}` },
+    { $set: { userId, exam, ...intelligence, updatedAt: new Date() } },
+    { upsert: true },
+  );
+
+export async function trainingQuestionPool(config, dueIds, recentIds, weakTopics = []) {
+  const and = [examFilter(config.exam)];
+  if (config.subject) and.push({ subject: config.subject });
+  if (config.topic)
+    and.push({ $or: [{ topic: config.topic }, { questionTopic: config.topic }] });
+  if (config.mode === 'review') {
+    and.push({ id: { $in: dueIds } });
+    return getQuestionsCollection()
+      .find({ $and: and })
+      .sort({ updatedAt: -1, _id: 1 })
+      .limit(500)
+      .toArray();
+  }
+  if (recentIds.length) and.push({ id: { $nin: recentIds } });
+  const base = { $and: and };
+  const weakFilter = weakTopics.length
+    ? { $and: [...and, { $or: [{ topic: { $in: weakTopics } }, { questionTopic: { $in: weakTopics } }] }] }
+    : null;
+
+  const [latest, oldest, quality, weak] = await Promise.all([
+    getQuestionsCollection().find(base).sort({ updatedAt: -1, _id: 1 }).limit(900).toArray(),
+    getQuestionsCollection().find(base).sort({ updatedAt: 1, _id: 1 }).limit(450).toArray(),
+    getQuestionsCollection().find(base).sort({ difficulty: -1, discrimination: -1, updatedAt: -1 }).limit(900).toArray(),
+    weakFilter
+      ? getQuestionsCollection().find(weakFilter).sort({ discrimination: -1, updatedAt: -1 }).limit(1200).toArray()
+      : [],
+  ]);
+  return [...new Map([...weak, ...quality, ...latest, ...oldest].map(q => [String(q.id), q])).values()];
+}
+
+export const dueTrainingQuestions = (exam, ids) =>
+  getQuestionsCollection()
+    .find({ $and: [examFilter(exam), { id: { $in: ids } }] })
+    .limit(500)
+    .toArray();
+
+export const trainingExposureData = (userId, exam) =>
+  exposures()
+    .find({ userId, exam })
+    .sort({ lastSeenAt: -1 })
+    .limit(5000)
+    .project({ questionId: 1, timesSeen: 1, timesCorrect: 1, lastSeenAt: 1 })
+    .toArray();
+
+// Every session mutation retains the optimistic revision guard. Completion is
+// committed atomically with durable skill/review/exposure updates.
+export async function commitTrainingTransition(session, updated) {
   const { _id, ...fields } = updated;
-  return sessions().updateOne({ _id: session._id, revision: session.revision }, { $set: fields });
+  const isCompletion =
+    session.status === 'active' && ['completed', 'abandoned'].includes(updated.status);
+  if (!isCompletion) {
+    return sessions().updateOne(
+      { _id: session._id, revision: session.revision },
+      { $set: fields },
+    );
+  }
+
+  let write = { modifiedCount: 0 };
+  await withMongoTransaction(async ({ session: mongoSession, db }) => {
+    write = await db.collection('trainingSessions').updateOne(
+      { _id: session._id, revision: session.revision },
+      { $set: fields },
+      { session: mongoSession },
+    );
+    if (write.modifiedCount && updated.status === 'completed') {
+      await applyCompletedSessionLearning(db, updated, mongoSession);
+    }
+  });
+  return write;
 }
-export const saveTrainingDiagnosis = (session, diagnosis) => sessions().updateOne(
-  { _id: session._id, revision: session.revision }, { $set: { 'result.diagnosis': diagnosis }, $inc: { revision: 1 } },
-);
-export const saveTrainingMistakes = session => sessions().updateOne(
-  { _id: session._id, revision: session.revision }, { $set: { answers: session.answers, result: session.result }, $inc: { revision: 1 } },
-);
+
+export const saveTrainingDiagnosis = (session, diagnosis) =>
+  sessions().updateOne(
+    { _id: session._id, revision: session.revision },
+    { $set: { 'result.diagnosis': diagnosis }, $inc: { revision: 1 } },
+  );
+
+export async function saveTrainingMistakes(session) {
+  const write = await sessions().updateOne(
+    { _id: session._id, revision: session.revision },
+    { $set: { answers: session.answers, result: session.result }, $inc: { revision: 1 } },
+  );
+  if (write.modifiedCount) {
+    const changed = session.result.rows.filter(row => row.mistake);
+    if (changed.length) {
+      await Promise.all(changed.map(row =>
+        reviews().updateOne(
+          { userId: session.userId, exam: session.exam, questionId: row.questionId },
+          { $set: { mistake: row.mistake, updatedAt: new Date() } },
+        ),
+      ));
+    }
+  }
+  return write;
+}

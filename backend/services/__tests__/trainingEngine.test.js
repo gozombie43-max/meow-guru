@@ -3,6 +3,7 @@ import {
   normalizeQuestion,
   buildIntelligence,
   selectQuestions,
+  adaptiveTargetDifficulty,
   transition,
   publicSession,
 } from "../trainingEngine.js";
@@ -72,6 +73,36 @@ describe("training question validation", () => {
     ).not.toBeNull();
   });
 });
+describe("adaptive difficulty policy", () => {
+  it("uses mastery, confidence and pace rather than a fixed plus/minus step", () => {
+    const q = question("q1", { difficulty: "medium", expectedTime: 60 });
+    expect(
+      adaptiveTargetDifficulty({
+        question: q,
+        answer: { choice: 1, confidence: "sure", seconds: 30 },
+        mastery: 0.8,
+        mode: "adaptive",
+      }),
+    ).toBeGreaterThanOrEqual(4);
+    expect(
+      adaptiveTargetDifficulty({
+        question: q,
+        answer: { choice: 0, confidence: "sure", seconds: 100 },
+        mastery: 0.2,
+        mode: "adaptive",
+      }),
+    ).toBe(1);
+    expect(
+      adaptiveTargetDifficulty({
+        question: q,
+        answer: { choice: 0, confidence: "sure", seconds: 100 },
+        mastery: 0.2,
+        mode: "nightmare",
+      }),
+    ).toBeGreaterThanOrEqual(3);
+  });
+});
+
 describe("authoritative session transitions", () => {
   it("inserts a bounded easier recovery block after a weak gauntlet block", () => {
     let s = {
@@ -169,6 +200,64 @@ describe("authoritative session transitions", () => {
     expect(s.result.findings.join(" ")).toContain("Q1: 60s");
   });
 });
+  it("records deadline as completion time for expired sessions", () => {
+    const base = session();
+    const s = transition(
+      base,
+      { type: "finish" },
+      now + 700000,
+    );
+    expect(s.status).toBe("completed");
+    expect(s.completionReason).toBe("timeout");
+    expect(s.completedAt).toBe(base.deadline);
+  });
+
+  it("does not count a slow survival skip as a slow solve", () => {
+    let s = session("survival", [question(), question("q2"), question("q3")]);
+    s = transition(s, { type: "answer", choice: null }, now + 70000);
+    expect(s.lives).toBe(2);
+    expect(s.slowStreak || 0).toBe(0);
+    s = transition(s, { type: "answer", choice: 1 }, now + 140000);
+    expect(s.lives).toBe(2);
+  });
+
+  it("keeps mission adaptive ordering inside its block", () => {
+    const s = transition(
+      session("mission", [
+        { ...question("q1", { difficulty: "easy" }), trainingBlock: "A", trainingBlockId: "a", trainingMode: "adaptive" },
+        { ...question("q2", { difficulty: "hard" }), trainingBlock: "A", trainingBlockId: "a", trainingMode: "adaptive" },
+        { ...question("q3", { difficulty: "easy" }), trainingBlock: "B", trainingBlockId: "b", trainingMode: "sprint" },
+      ]),
+      { type: "answer", choice: 1, confidence: "sure" },
+      now + 10000,
+    );
+    expect(s.questions[1].id).toBe("q2");
+    expect(s.questions[2].trainingBlockId).toBe("b");
+    expect(publicSession(s).effectiveMode).toBe("adaptive");
+  });
+
+  it("advances a navigable mission block without escaping its policy boundary", () => {
+    let s = session("mission", [
+      { ...question("q1"), trainingBlock: "Section", trainingBlockId: "a", trainingMode: "section" },
+      { ...question("q2"), trainingBlock: "Section", trainingBlockId: "a", trainingMode: "section" },
+      { ...question("q3"), trainingBlock: "Next", trainingBlockId: "b", trainingMode: "adaptive" },
+    ]);
+    s = transition(s, { type: "answer", choice: 1 }, now + 10000);
+    expect(s.current).toBe(1);
+    expect(publicSession(s).allowedVisitIndices).toEqual([0, 1]);
+    s = transition(s, { type: "answer", choice: 1 }, now + 20000);
+    expect(s.current).toBe(2);
+    expect(publicSession(s).effectiveMode).toBe("adaptive");
+  });
+
+  it("abandons without scoring or adding learning evidence", () => {
+    const abandoned = transition(session(), { type: "abandon" }, now + 10000);
+    expect(abandoned.status).toBe("abandoned");
+    expect(abandoned.completionReason).toBe("abandoned");
+    expect(abandoned.result).toBeNull();
+    expect(transition(abandoned, { type: "answer", choice: 1 }, now + 20000)).toEqual(abandoned);
+  });
+
 describe("shared intelligence", () => {
   it("correct guesses are not mastery and enter the review queue", () => {
     const s = transition(
@@ -214,6 +303,42 @@ describe("shared intelligence", () => {
     expect(
       selectQuestions(pool, "adaptive", 2, profile).map((q) => q.topic),
     ).toEqual(["Arithmetic", "Algebra"]);
+    const exposure = [{ questionId: "q1", timesSeen: 20, lastSeenAt: new Date().toISOString() }];
+    expect(selectQuestions(pool, "adaptive", 1, profile, Date.now(), exposure)[0].id).not.toBe("q1");
+    const gauntletProfile = buildIntelligence([]);
+    gauntletProfile.topics = [
+      {
+        key: "Mathematics / Algebra",
+        subject: "Mathematics",
+        topic: "Algebra",
+        attempts: 10,
+        correct: 9,
+        mastery: 0.9,
+        seconds: 30,
+      },
+      {
+        key: "Mathematics / Arithmetic",
+        subject: "Mathematics",
+        topic: "Arithmetic",
+        attempts: 10,
+        correct: 3,
+        mastery: 0.3,
+        seconds: 60,
+      },
+    ];
+    const gauntlet = selectQuestions(
+      [
+        question("a1", { topic: "Algebra", difficulty: "easy" }),
+        question("a2", { topic: "Algebra", difficulty: "hard" }),
+        question("r1", { topic: "Arithmetic", difficulty: "easy" }),
+        question("r2", { topic: "Arithmetic", difficulty: "hard" }),
+      ],
+      "gauntlet",
+      4,
+      gauntletProfile,
+    );
+    expect(gauntlet[0].topic).toBe("Arithmetic");
+    expect(gauntlet[1].topic).toBe("Arithmetic");
     profile.due = [{ questionId: "q2" }];
     expect(
       selectQuestions(pool, "review", 20, profile).map((q) => q.id),
