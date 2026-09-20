@@ -162,6 +162,17 @@ export interface TrainingSession {
   >;
   result: null | {
     rows: ResultRow[];
+    blockBreakdown?: Array<{
+      id: string;
+      label: string;
+      mode: ModeId;
+      attempted: number;
+      correct: number;
+      questions: number;
+      seconds: number;
+      accuracy: number;
+      averageSeconds: number;
+    }>;
     attempted: number;
     correct: number;
     accuracy: number;
