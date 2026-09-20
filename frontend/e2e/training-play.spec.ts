@@ -45,7 +45,7 @@ test("play exposes all modes and persists an adaptive session across reload", as
 }, testInfo) => {
   const login = await request.post("http://127.0.0.1:3111/auth/login", {
     data: {
-      email: `training-${testInfo.project.name}@example.test`,
+      email: `browser-${testInfo.project.name}@example.test`,
       password: "Browser-fixture-123!",
     },
   });
