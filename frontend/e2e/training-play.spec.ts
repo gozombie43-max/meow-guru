@@ -1,5 +1,27 @@
 import { test, expect } from "@playwright/test";
 
+type BrowserQuestion = {
+  id: string;
+  text: string;
+  options: string[];
+  image: string;
+  subject: string;
+  topic: string;
+  subtopic: string;
+  difficulty: number;
+  expectedTime: number;
+  targetSource: string;
+  sourceType: string;
+  correctIndex?: number;
+  solution?: string;
+};
+
+type BrowserAnswer = {
+  choice: number | null;
+  confidence: string | null;
+  seconds: number;
+};
+
 const policy = (id: string, overrides: Record<string, unknown> = {}) => ({
   id,
   navigation: "forward",
@@ -75,7 +97,27 @@ test("play exposes all modes and persists an adaptive session across reload", as
       sourceType: "bank",
     },
   ];
-  let session: any = {
+  let session: {
+    id: string;
+    mode: string;
+    effectiveMode: string;
+    policy: ReturnType<typeof policy>;
+    allowedVisitIndices: number[];
+    exam: string;
+    status: string;
+    completionReason: string | null;
+    revision: number;
+    current: number;
+    duration: number;
+    deadline: string;
+    serverNow: number;
+    lastEventAt: number;
+    lives: number;
+    marking: { correct: number; wrong: number };
+    questions: BrowserQuestion[];
+    answers: Record<string, BrowserAnswer>;
+    result: unknown;
+  } = {
     id: "browser-training",
     mode: "adaptive",
     effectiveMode: "adaptive",
