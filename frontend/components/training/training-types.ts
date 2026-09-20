@@ -107,6 +107,8 @@ export const mistakeTypes = [
 ];
 export interface TrainingQuestion {
   trainingBlock?: string;
+  trainingBlockId?: string;
+  trainingMode?: ModeId;
   id: string;
   text: string;
   options: string[];
@@ -139,8 +141,12 @@ export interface ResultRow {
 export interface TrainingSession {
   id: string;
   mode: ModeId;
+  effectiveMode: ModeId;
+  policy: TrainingModePolicy;
+  allowedVisitIndices: number[];
   exam: string;
-  status: "active" | "completed";
+  status: "active" | "completed" | "abandoned";
+  completionReason: "submitted" | "timeout" | "survival_lives" | "abandoned" | null;
   revision: number;
   current: number;
   duration: number;
@@ -186,8 +192,30 @@ export interface TrainingSession {
     };
   };
 }
+export interface TrainingModePolicy {
+  id: ModeId;
+  navigation: "forward" | "free";
+  confidence: boolean;
+  sectional: boolean;
+  requiresSubject: boolean;
+  supportsFullSection: boolean;
+  supportsTier: boolean;
+  clock: "fixed" | "target";
+  clockMultiplier: number;
+  minuteOptions: number[];
+  minDifficulty: number;
+  lives: number | null;
+}
+
+export interface TrainingCapabilities {
+  exams: Array<{ id: string; label: string }>;
+  modes: Record<string, TrainingModePolicy>;
+}
+
 export interface TrainingDashboard {
   readiness: number | null;
+  evidenceConfidence?: "low" | "medium" | "high";
+  confidenceScore?: number;
   attempts: number;
   evidence: string;
   factors: Record<string, number>;
@@ -210,6 +238,7 @@ export interface TrainingDashboard {
   due: Array<{ questionId: string }>;
   subjects: string[];
   catalogTopics: string[];
+  catalog: Array<{ subject: string; topic: string }>;
   active: Array<{ id: string; mode: string; deadline: string }>;
   history: Array<{
     id: string;
@@ -218,6 +247,7 @@ export interface TrainingDashboard {
     score: number;
     maxScore: number;
     accuracy: number;
+    completionReason?: string;
   }>;
   mission: Array<{ mode: ModeId; count: number; label: string }>;
   personalBest: number;
