@@ -239,6 +239,16 @@ export interface TrainingDashboard {
     attempts: number;
     seconds: number;
   }>;
+  details?: Array<{
+    key: string;
+    level: "subtopic" | "concept";
+    label: string;
+    subject: string;
+    topic: string;
+    mastery: number;
+    attempts: number;
+    seconds: number;
+  }>;
   reviews: Array<{
     questionId: string;
     topic: string;
