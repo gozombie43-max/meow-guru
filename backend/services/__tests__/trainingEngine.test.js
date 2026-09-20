@@ -3,6 +3,7 @@ import {
   normalizeQuestion,
   buildIntelligence,
   selectQuestions,
+  adaptiveTargetDifficulty,
   transition,
   publicSession,
 } from "../trainingEngine.js";
@@ -72,6 +73,36 @@ describe("training question validation", () => {
     ).not.toBeNull();
   });
 });
+describe("adaptive difficulty policy", () => {
+  it("uses mastery, confidence and pace rather than a fixed plus/minus step", () => {
+    const q = question("q1", { difficulty: "medium", expectedTime: 60 });
+    expect(
+      adaptiveTargetDifficulty({
+        question: q,
+        answer: { choice: 1, confidence: "sure", seconds: 30 },
+        mastery: 0.8,
+        mode: "adaptive",
+      }),
+    ).toBeGreaterThanOrEqual(4);
+    expect(
+      adaptiveTargetDifficulty({
+        question: q,
+        answer: { choice: 0, confidence: "sure", seconds: 100 },
+        mastery: 0.2,
+        mode: "adaptive",
+      }),
+    ).toBe(1);
+    expect(
+      adaptiveTargetDifficulty({
+        question: q,
+        answer: { choice: 0, confidence: "sure", seconds: 100 },
+        mastery: 0.2,
+        mode: "nightmare",
+      }),
+    ).toBeGreaterThanOrEqual(3);
+  });
+});
+
 describe("authoritative session transitions", () => {
   it("inserts a bounded easier recovery block after a weak gauntlet block", () => {
     let s = {
@@ -274,6 +305,40 @@ describe("shared intelligence", () => {
     ).toEqual(["Arithmetic", "Algebra"]);
     const exposure = [{ questionId: "q1", timesSeen: 20, lastSeenAt: new Date().toISOString() }];
     expect(selectQuestions(pool, "adaptive", 1, profile, Date.now(), exposure)[0].id).not.toBe("q1");
+    const gauntletProfile = buildIntelligence([]);
+    gauntletProfile.topics = [
+      {
+        key: "Mathematics / Algebra",
+        subject: "Mathematics",
+        topic: "Algebra",
+        attempts: 10,
+        correct: 9,
+        mastery: 0.9,
+        seconds: 30,
+      },
+      {
+        key: "Mathematics / Arithmetic",
+        subject: "Mathematics",
+        topic: "Arithmetic",
+        attempts: 10,
+        correct: 3,
+        mastery: 0.3,
+        seconds: 60,
+      },
+    ];
+    const gauntlet = selectQuestions(
+      [
+        question("a1", { topic: "Algebra", difficulty: "easy" }),
+        question("a2", { topic: "Algebra", difficulty: "hard" }),
+        question("r1", { topic: "Arithmetic", difficulty: "easy" }),
+        question("r2", { topic: "Arithmetic", difficulty: "hard" }),
+      ],
+      "gauntlet",
+      4,
+      gauntletProfile,
+    );
+    expect(gauntlet[0].topic).toBe("Arithmetic");
+    expect(gauntlet[1].topic).toBe("Arithmetic");
     profile.due = [{ questionId: "q2" }];
     expect(
       selectQuestions(pool, "review", 20, profile).map((q) => q.id),
