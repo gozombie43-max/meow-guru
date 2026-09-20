@@ -180,7 +180,10 @@ async function applyCompletedSessionLearning(db, completed, mongoSession) {
   for (const item of skillInputs.values()) {
     const _id = `${userId}:${exam}:${item.key}`;
     const old = byId.get(_id);
-    let mastery = old?.mastery ?? 0.5;
+    let mastery =
+      old?.mastery ??
+      (item.level === 'topic' ? completed.baseline?.[item.key] : undefined) ??
+      0.5;
     let seconds = old?.seconds ?? 60;
     for (let i = 0; i < item.signals.length; i++) {
       mastery = 0.8 * mastery + 0.2 * item.signals[i];
@@ -245,6 +248,22 @@ export const expiredActiveSessions = (userId, exam, now = Date.now()) =>
     })
     .limit(20)
     .toArray();
+
+export async function trainingLearningState(userId, exam) {
+  const [reviewRows, skillRows] = await Promise.all([
+    reviews()
+      .find({ userId, exam })
+      .sort({ dueAt: 1 })
+      .limit(2000)
+      .toArray(),
+    skills()
+      .find({ userId, exam })
+      .sort({ mastery: 1 })
+      .limit(5000)
+      .toArray(),
+  ]);
+  return { reviewRows, skillRows };
+}
 
 export async function trainingDashboardData(userId, exam) {
   const nowIso = new Date().toISOString();
