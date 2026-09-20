@@ -53,11 +53,27 @@ async function applyCompletedSessionLearning(db, completed, mongoSession) {
   const userId = completed.userId;
   const exam = completed.exam;
   const completedAt = completed.completedAt;
+  const attempted = completed.questions
+    .map(q => ({ q, answer: completed.answers[q.id] }))
+    .filter(({ answer }) => answer && answer.choice !== null);
+  if (!attempted.length) return;
+
+  const questionIds = attempted.map(({ q }) => q.id);
+  const existingReviews = await db.collection('trainingReviewState')
+    .find(
+      { userId, exam, questionId: { $in: questionIds } },
+      { session: mongoSession },
+    )
+    .toArray();
+  const reviewByQuestion = new Map(
+    existingReviews.map(item => [String(item.questionId), item]),
+  );
+
+  const exposureOps = [];
+  const reviewOps = [];
   const skillInputs = new Map();
 
-  for (const q of completed.questions) {
-    const answer = completed.answers[q.id];
-    if (!answer || answer.choice === null) continue;
+  for (const { q, answer } of attempted) {
     const correct = answer.choice === q.correctIndex;
     const risky =
       !correct ||
@@ -65,30 +81,28 @@ async function applyCompletedSessionLearning(db, completed, mongoSession) {
       answer.confidence === 'unsure' ||
       answer.seconds > q.expectedTime * 1.5;
 
-    await db.collection('trainingQuestionExposure').updateOne(
-      { userId, exam, questionId: q.id },
-      {
-        $set: {
-          userId,
-          exam,
-          questionId: q.id,
-          lastSeenAt: completedAt,
-          lastCorrect: correct,
-          lastSeconds: answer.seconds,
-          lastConfidence: answer.confidence || null,
-          updatedAt: new Date(),
+    exposureOps.push({
+      updateOne: {
+        filter: { userId, exam, questionId: q.id },
+        update: {
+          $set: {
+            userId,
+            exam,
+            questionId: q.id,
+            lastSeenAt: completedAt,
+            lastCorrect: correct,
+            lastSeconds: answer.seconds,
+            lastConfidence: answer.confidence || null,
+            updatedAt: new Date(),
+          },
+          $inc: { timesSeen: 1, timesCorrect: Number(correct) },
+          $setOnInsert: { createdAt: new Date() },
         },
-        $inc: { timesSeen: 1, timesCorrect: Number(correct) },
-        $setOnInsert: { createdAt: new Date() },
+        upsert: true,
       },
-      { upsert: true, session: mongoSession },
-    );
+    });
 
-    const reviewId = `${userId}:${exam}:${q.id}`;
-    const existingReview = await db.collection('trainingReviewState').findOne(
-      { _id: reviewId },
-      { session: mongoSession },
-    );
+    const existingReview = reviewByQuestion.get(String(q.id));
     if (risky || existingReview) {
       const stage = risky ? 0 : Math.min((existingReview?.stage || 0) + 1, 4);
       const reason = !risky
@@ -101,25 +115,29 @@ async function applyCompletedSessionLearning(db, completed, mongoSession) {
             ? 'Above target time'
             : 'Low confidence';
       const intervals = [1, 3, 7, 21, 60];
-      await db.collection('trainingReviewState').updateOne(
-        { _id: reviewId },
-        {
-          $set: {
-            userId,
-            exam,
-            questionId: q.id,
-            topic: q.topic,
-            stage,
-            dueAt: new Date(new Date(completedAt).getTime() + intervals[stage] * 86400000).toISOString(),
-            reason,
-            mistake: answer.mistake || existingReview?.mistake || null,
-            lastSessionId: completed.id,
-            updatedAt: new Date(),
+      reviewOps.push({
+        updateOne: {
+          filter: { _id: `${userId}:${exam}:${q.id}` },
+          update: {
+            $set: {
+              userId,
+              exam,
+              questionId: q.id,
+              topic: q.topic,
+              stage,
+              dueAt: new Date(
+                new Date(completedAt).getTime() + intervals[stage] * 86400000,
+              ).toISOString(),
+              reason,
+              mistake: answer.mistake || existingReview?.mistake || null,
+              lastSessionId: completed.id,
+              updatedAt: new Date(),
+            },
+            $setOnInsert: { createdAt: new Date() },
           },
-          $setOnInsert: { createdAt: new Date() },
+          upsert: true,
         },
-        { upsert: true, session: mongoSession },
-      );
+      });
     }
 
     for (const meta of skillKeysFor(q)) {
@@ -138,12 +156,26 @@ async function applyCompletedSessionLearning(db, completed, mongoSession) {
     }
   }
 
+  if (exposureOps.length) {
+    await db.collection('trainingQuestionExposure').bulkWrite(
+      exposureOps,
+      { ordered: false, session: mongoSession },
+    );
+  }
+  if (reviewOps.length) {
+    await db.collection('trainingReviewState').bulkWrite(
+      reviewOps,
+      { ordered: false, session: mongoSession },
+    );
+  }
+
   if (!skillInputs.size) return;
   const ids = [...skillInputs.keys()].map(key => `${userId}:${exam}:${key}`);
   const existing = await db.collection('trainingSkillState')
     .find({ _id: { $in: ids } }, { session: mongoSession })
     .toArray();
   const byId = new Map(existing.map(item => [item._id, item]));
+  const skillOps = [];
 
   for (const item of skillInputs.values()) {
     const _id = `${userId}:${exam}:${item.key}`;
@@ -154,26 +186,35 @@ async function applyCompletedSessionLearning(db, completed, mongoSession) {
       mastery = 0.8 * mastery + 0.2 * item.signals[i];
       seconds = 0.8 * seconds + 0.2 * item.seconds[i];
     }
-    await db.collection('trainingSkillState').updateOne(
-      { _id },
-      {
-        $set: {
-          userId,
-          exam,
-          key: item.key,
-          level: item.level,
-          label: item.label,
-          subject: item.subject,
-          topic: item.topic,
-          mastery,
-          seconds,
-          lastAt: completedAt,
-          updatedAt: new Date(),
+    skillOps.push({
+      updateOne: {
+        filter: { _id },
+        update: {
+          $set: {
+            userId,
+            exam,
+            key: item.key,
+            level: item.level,
+            label: item.label,
+            subject: item.subject,
+            topic: item.topic,
+            mastery,
+            seconds,
+            lastAt: completedAt,
+            updatedAt: new Date(),
+          },
+          $inc: { attempts: item.attempts, correct: item.correct },
+          $setOnInsert: { createdAt: new Date() },
         },
-        $inc: { attempts: item.attempts, correct: item.correct },
-        $setOnInsert: { createdAt: new Date() },
+        upsert: true,
       },
-      { upsert: true, session: mongoSession },
+    });
+  }
+
+  if (skillOps.length) {
+    await db.collection('trainingSkillState').bulkWrite(
+      skillOps,
+      { ordered: false, session: mongoSession },
     );
   }
 }
