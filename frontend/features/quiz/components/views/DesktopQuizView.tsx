@@ -646,10 +646,6 @@ export function DesktopQuizView({ configuration, question, navigation, answer, s
           border-color: rgba(163, 59, 54, 0.7);
           box-shadow: 0 0 0 1px rgba(163, 59, 54, 0.3);
         }
-        .mac-series-quiz .mac-series-option.is-dimmed,
-        .mac-series-option.is-dimmed {
-          opacity: 0.6 !important;
-        }
         .mac-series-option-letter {
           width: 28px;
           height: 28px;
@@ -936,9 +932,6 @@ export function DesktopQuizView({ configuration, question, navigation, answer, s
         .mac-series-quiz[data-theme="light"] .mac-series-option:disabled {
           opacity: 1 !important;
           cursor: default;
-        }
-        .mac-series-quiz[data-theme="light"] .mac-series-option.is-dimmed {
-          opacity: 0.6 !important;
         }
         .mac-series-quiz[data-theme="light"] .mac-series-option {
           background: #ffffff;

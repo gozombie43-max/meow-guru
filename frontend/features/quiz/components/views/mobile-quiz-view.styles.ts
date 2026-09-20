@@ -638,10 +638,6 @@ export const mobileQuizViewStyles = css.global`
           background: rgba(32, 52, 77, 0.3);
           box-shadow: none;
         }
-        .ios-series-quiz .ios-series-option.is-dimmed,
-        .ios-series-option.is-dimmed {
-          opacity: 0.55 !important;
-        }
         .ios-series-option-letter {
           width: 28px;
           height: 28px;
@@ -705,9 +701,6 @@ export const mobileQuizViewStyles = css.global`
           border-color: #344e73;
           background: #20344d;
           box-shadow: inset 0 0 0 3px var(--dark-surface);
-        }
-        .ios-series-option-radio.is-dimmed {
-          opacity: 0.25;
         }
         .ios-series-your-answer {
           position: absolute;
@@ -1071,9 +1064,6 @@ export const mobileQuizViewStyles = css.global`
         .ios-series-quiz .ios-series-option:disabled {
           opacity: 1 !important;
         }
-        .ios-series-quiz .ios-series-option.is-dimmed {
-          opacity: 0.6 !important;
-        }
         .ios-series-quiz[data-theme="dark"] .ios-series-question-card,
         .ios-series-quiz[data-theme="dark"] .ios-series-option {
           border-color: var(--dark-border);
@@ -1305,9 +1295,6 @@ export const mobileQuizViewStyles = css.global`
         .ios-series-quiz[data-theme="light"] .ios-series-option:disabled {
           opacity: 1 !important;
           cursor: default;
-        }
-        .ios-series-quiz[data-theme="light"] .ios-series-option.is-dimmed {
-          opacity: 0.6 !important;
         }
         .ios-series-quiz[data-theme="light"] .ios-series-option {
           border-color: rgba(0, 0, 0, 0.055);
