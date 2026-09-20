@@ -47,6 +47,10 @@ beforeEach(async () => {
   token = (await createSession({ id: "student" })).token;
   await db.collection("trainingSessions").deleteMany({});
   await db.collection("trainingQuestionVariants").deleteMany({});
+  await db.collection("trainingReviewState").deleteMany({});
+  await db.collection("trainingQuestionExposure").deleteMany({});
+  await db.collection("trainingSkillState").deleteMany({});
+  await db.collection("userSkillProfile").deleteMany({});
   await db.collection("questions").deleteMany({});
   await db.collection("questions").insertMany(
     Array.from({ length: 25 }, (_, i) => ({
