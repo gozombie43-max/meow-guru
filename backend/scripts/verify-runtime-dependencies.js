@@ -1,10 +1,20 @@
-import { readFileSync } from 'node:fs';
+import { lstatSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 
 // Run this from the extracted artifact, so the checkout cannot hide omissions.
 // Resolve from each workspace: npm can install dependencies locally or hoist them.
 const workspaces = ['backend', 'contracts'];
 let failures = 0;
+if (process.argv.includes('--deployment')) {
+  const contracts = new URL('../../node_modules/@meow/contracts', import.meta.url);
+  try {
+    const entry = lstatSync(contracts);
+    if (entry.isSymbolicLink() || !entry.isDirectory()) throw new Error('not a real directory');
+  } catch {
+    failures++;
+    console.error('Deployment requires @meow/contracts as real files, not a workspace symlink.');
+  }
+}
 for (const workspace of workspaces) {
   const actualUrl = new URL(`../../${workspace}/package.json`, import.meta.url);
   const manifest = JSON.parse(readFileSync(actualUrl, 'utf8'));
