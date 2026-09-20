@@ -230,6 +230,96 @@ export function buildIntelligence(sessions, now = Date.now()) {
   };
 }
 
+export function mergeDurableIntelligence(
+  intelligence,
+  skillRows = [],
+  reviewRows = [],
+  now = Date.now(),
+) {
+  if (!skillRows.length && !reviewRows.length) return intelligence;
+
+  const historicalTopics = new Map(
+    intelligence.topics.map((item) => [item.key, item]),
+  );
+  const historicalDetails = new Map(
+    (intelligence.details || []).map((item) => [item.key, item]),
+  );
+
+  const durableTopics = skillRows
+    .filter((item) => item.level === "topic")
+    .map((item) => {
+      const historical = historicalTopics.get(item.key);
+      return {
+        key: item.key,
+        subject: item.subject,
+        topic: item.topic,
+        attempts: Math.max(item.attempts || 0, historical?.attempts || 0),
+        correct: Math.max(item.correct || 0, historical?.correct || 0),
+        mastery: item.mastery,
+        seconds: item.seconds,
+        lastAt: item.lastAt,
+      };
+    });
+  const durableTopicKeys = new Set(durableTopics.map((item) => item.key));
+  const topics = [
+    ...durableTopics,
+    ...intelligence.topics.filter((item) => !durableTopicKeys.has(item.key)),
+  ].sort((a, b) => a.mastery - b.mastery);
+
+  const durableDetails = skillRows
+    .filter((item) => item.level !== "topic")
+    .map((item) => {
+      const historical = historicalDetails.get(item.key);
+      return {
+        key: item.key,
+        level: item.level,
+        label: item.label,
+        subject: item.subject,
+        topic: item.topic,
+        attempts: Math.max(item.attempts || 0, historical?.attempts || 0),
+        correct: Math.max(item.correct || 0, historical?.correct || 0),
+        mastery: item.mastery,
+        seconds: item.seconds,
+        lastAt: item.lastAt,
+      };
+    });
+  const durableDetailKeys = new Set(durableDetails.map((item) => item.key));
+  const details = [
+    ...durableDetails,
+    ...(intelligence.details || []).filter(
+      (item) => !durableDetailKeys.has(item.key),
+    ),
+  ];
+
+  const reviewMap = new Map(
+    intelligence.reviews.map((item) => [String(item.questionId), item]),
+  );
+  for (const row of reviewRows) {
+    const { _id, userId: _userId, exam: _exam, ...review } = row;
+    reviewMap.set(String(review.questionId), review);
+  }
+  const reviews = [...reviewMap.values()].sort((a, b) =>
+    a.dueAt.localeCompare(b.dueAt),
+  );
+  const attempts = topics.reduce((n, item) => n + item.attempts, 0);
+  const mastery = topics.length
+    ? topics.reduce((n, item) => n + item.mastery, 0) / topics.length
+    : 0;
+
+  return {
+    ...intelligence,
+    topics,
+    details,
+    reviews,
+    due: reviews.filter((item) => new Date(item.dueAt).getTime() <= now),
+    attempts,
+    factors: {
+      ...intelligence.factors,
+      mastery: Math.round(mastery * 100),
+    },
+  };
+}
+
 export function readinessWithEvidence(
   intelligence,
   sessions,
