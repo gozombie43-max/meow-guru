@@ -319,7 +319,7 @@ test("play exposes all modes and persists an adaptive session across reload", as
   await expect(page).toHaveURL(/\/play\/session\/browser-training$/);
   await expect(page.getByText("2 + 2 = ?", { exact: true })).toBeVisible();
   await page.getByRole("radio", { name: /4/ }).click();
-  await page.getByRole("button", { name: "Sure" }).click();
+  await page.getByRole("button", { name: "Sure", exact: true }).click();
   await page.getByRole("button", { name: /Answer & continue/ }).click();
   await expect(page.getByText("3 + 3 = ?", { exact: true })).toBeVisible();
 
