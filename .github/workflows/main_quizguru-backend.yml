@@ -41,22 +41,19 @@ jobs:
           npm ci --workspace backend --workspace @meow/contracts --include-workspace-root=false --omit=dev
 
 
+      - name: Package production runtime
+        run: |
+          node backend/scripts/verify-runtime-dependencies.js
+          tar --exclude='backend/.env*' --exclude='backend/coverage' --exclude='backend/uploads' \
+            -czf release.tar.gz backend contracts node_modules package.json package-lock.json
+
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: node-app
-          include-hidden-files: true
-          path: |
-            backend
-            contracts
-            node_modules
-            package.json
-            package-lock.json
-            !node_modules/backend
-            !backend/.env*
-            !backend/node_modules
-            !backend/coverage
-            !backend/uploads
+          path: release.tar.gz
+          compression-level: 0
+          if-no-files-found: error
 
 
   deploy:
@@ -72,16 +69,23 @@ jobs:
         with:
           name: node-app
 
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22.x'
+
+      - name: Extract and verify deployment artifact
+        run: |
+          mkdir release
+          tar -xzf release.tar.gz -C release
+          cd release
+          node backend/scripts/verify-runtime-dependencies.js
+
       - name: Login to Azure
         uses: azure/login@8216e11d8cd9b42fe925c852af8e76311ff067ac # v2
         with:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_39C048B2FF59452F9613463239824624 }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_0994BCA96630443BB4B8D46319B867CD }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_115D8A1EAFB5485E96F15FA5CD4BB615 }}
-
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: '22.x'
 
       - name: Resolve database configuration
         shell: bash
@@ -115,11 +119,14 @@ jobs:
           echo "MONGODB_URI=$mongodb_uri" >> "$GITHUB_ENV"
           echo "MONGODB_DB=$mongodb_db" >> "$GITHUB_ENV"
           echo "RESOURCE_GROUP=$resource_group" >> "$GITHUB_ENV"
+          host="$(az webapp show --name quizguru-backend --resource-group "$resource_group" --query defaultHostName --output tsv)"
+          echo "APP_HOST=$host" >> "$GITHUB_ENV"
 
       - name: Apply database migrations before release
+        working-directory: release
         run: npm run db:migrate --workspace backend
 
-      - name: Configure Free F1 quiz-only runtime
+      - name: Configure quiz-only runtime
         shell: bash
         env:
           RELEASE_ID: ${{ github.sha }}
@@ -147,7 +154,7 @@ jobs:
         with:
           app-name: 'quizguru-backend'
           slot-name: 'Production'
-          package: .
+          package: release
 
       - name: Verify deployed release readiness
         env:
@@ -155,15 +162,33 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          host="$(az webapp show --name quizguru-backend --resource-group "$RESOURCE_GROUP" --query defaultHostName --output tsv)"
           for attempt in $(seq 1 24); do
-            if curl --fail --silent --show-error --max-time 20 "https://$host/health" > health.json && jq -e --arg release "$EXPECTED_RELEASE" '.ok == true and .releaseId == $release' health.json; then
+            echo "Readiness attempt $attempt/24"
+            : > health.json
+            status="$(curl --silent --show-error --max-time 20 --output health.json --write-out '%{http_code}' "https://$APP_HOST/health")" || status="transport-error"
+            if [ "$status" = "200" ] && jq -e --arg release "$EXPECTED_RELEASE" '.ok == true and .releaseId == $release' health.json; then
               exit 0
             fi
+            echo "Health HTTP status: $status"
+            if [ -f health.json ]; then head -c 4096 health.json; echo; fi
             sleep 10
           done
+          curl --silent --show-error --max-time 20 --include "https://$APP_HOST/live" || true
           echo "::error::Deployed release failed readiness checks; inspect Azure logs before retrying."
           exit 1
+
+      - name: Refresh Azure login for failure diagnostics
+        if: failure() && env.RESOURCE_GROUP != ''
+        uses: azure/login@8216e11d8cd9b42fe925c852af8e76311ff067ac # v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_39C048B2FF59452F9613463239824624 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_0994BCA96630443BB4B8D46319B867CD }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_115D8A1EAFB5485E96F15FA5CD4BB615 }}
+
       - name: Capture deployment diagnostics on failure
-        if: failure()
-        run: az webapp log deployment list --name quizguru-backend --resource-group "$RESOURCE_GROUP" --output json
+        if: failure() && env.RESOURCE_GROUP != ''
+        timeout-minutes: 3
+        shell: bash
+        run: |
+          az webapp log startup show --name quizguru-backend --resource-group "$RESOURCE_GROUP" --query content --output tsv || true
+          az webapp log deployment list --name quizguru-backend --resource-group "$RESOURCE_GROUP" --output json || true
