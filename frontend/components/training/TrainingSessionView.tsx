@@ -237,7 +237,7 @@ export default function TrainingSessionView({ id }: { id: string }) {
                   QUESTION {session.current + 1} OF {session.questions.length}
                 </span>
               </div>
-              {session.mode === "survival" ? (
+              {session.effectiveMode === "survival" ? (
                 <div
                   className="training-survival-lives"
                   aria-label={`${session.lives} lives remaining`}
