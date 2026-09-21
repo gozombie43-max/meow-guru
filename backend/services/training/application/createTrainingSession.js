@@ -58,8 +58,9 @@ export async function createTrainingSessionCommand(userId, config, now) {
   const recentIds = previous.slice(0, 3).flatMap((s) => s.questions.map((q) => q.id));
   const exposureRows = await trainingExposureData(userId, config.exam);
   
-  const selectionStart = performance.now();
+  const preparationStart = performance.now();
   
+  const poolStart = performance.now();
   const docs = await trainingQuestionPool(
     config,
     intelligence.due.map((r) => r.questionId),
@@ -84,8 +85,19 @@ export async function createTrainingSessionCommand(userId, config, now) {
   if (config.mode === "mission") {
     const dueDocs = await dueTrainingQuestions(config.exam, intelligence.due.map((r) => r.questionId));
     const duePool = dueDocs.map(normalizeQuestion).filter(Boolean);
+    
+    const poolDuration = Math.round(performance.now() - poolStart);
+    logger.info({ event: "training.question_pool.duration_ms", durationMs: poolDuration, poolSize: pool.length, mode: config.mode });
+    
+    const selectStart = performance.now();
     questions = planDailyMission({ intelligence, pool, duePool, now, exposureRows });
+    const selectDuration = Math.round(performance.now() - selectStart);
+    logger.info({ event: "training.selection.duration_ms", durationMs: selectDuration, mode: config.mode });
   } else {
+    const poolDuration = Math.round(performance.now() - poolStart);
+    logger.info({ event: "training.question_pool.duration_ms", durationMs: poolDuration, poolSize: pool.length, mode: config.mode });
+    
+    const selectStart = performance.now();
     questions = selectQuestions(
       eligible,
       config.mode,
@@ -94,6 +106,8 @@ export async function createTrainingSessionCommand(userId, config, now) {
       now,
       exposureRows,
     );
+    const selectDuration = Math.round(performance.now() - selectStart);
+    logger.info({ event: "training.selection.duration_ms", durationMs: selectDuration, mode: config.mode });
   }
   
   const reviewState = new Map(
@@ -107,12 +121,12 @@ export async function createTrainingSessionCommand(userId, config, now) {
       : question;
   });
 
-  const selectionDuration = Math.round(performance.now() - selectionStart);
+  const preparationDuration = Math.round(performance.now() - preparationStart);
 
   if (!questions.length) {
     logger.info({
       event: "training.selection.empty_pool",
-      durationMs: selectionDuration,
+      durationMs: preparationDuration,
       poolSize: pool.length,
       mode: config.mode,
     }, "Empty question pool for selection");
@@ -121,12 +135,12 @@ export async function createTrainingSessionCommand(userId, config, now) {
   }
 
   logger.info({
-    event: "training.selection.duration_ms",
-    durationMs: selectionDuration,
+    event: "training.session.prepare.duration_ms",
+    durationMs: preparationDuration,
     poolSize: pool.length,
     selectedSize: questions.length,
     mode: config.mode,
-  }, "Questions selected for training");
+  }, "Questions prepared for training");
 
   if (config.count === "full" && questions.length < requestedCount)
     throw new Error(`This section needs ${requestedCount} eligible questions; only ${questions.length} are available. Choose a shorter session.`);
