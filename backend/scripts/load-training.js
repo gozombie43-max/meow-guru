@@ -34,19 +34,17 @@ try {
     return { ...q, ...trainingQuestionMetadata(q) };
   }));
   const { createSession } = await import('../auth/sessions.js');
-  const { globalLimiter, trainingIngressLimiter } = await import('../middleware/rateLimiter.js');
+  const { globalLimiter } = await import('../middleware/rateLimiter.js');
   const { startRuntimeMetrics } = await import('../infrastructure/logger.js');
   stopMetrics = startRuntimeMetrics();
   const app = express();
-  app.use(express.json(), trainingIngressLimiter, globalLimiter);
+  app.use(express.json(), globalLimiter);
   app.use('/api/training', (await import('../routes/training.js')).default);
   app.use((error, _req, res, _next) => res.status(error.statusCode || 500).json({ error: error.message }));
   server = app.listen(0, '127.0.0.1');
   await once(server, 'listening');
   const base = `http://127.0.0.1:${server.address().port}/api/training`;
   for (const concurrency of stages) {
-    // Separate quota windows for stages, without bypassing quota middleware.
-    await trainingIngressLimiter.resetKey('127.0.0.1');
     const samples = {};
     const measure = async (operation, token, path, body) => {
       const start = performance.now();
@@ -57,7 +55,7 @@ try {
         const text = await response.text();
         sample.bytes = Buffer.byteLength(text);
         sample.status = response.status;
-        if (!response.ok) throw new Error(`${operation} HTTP ${response.status}`);
+        if (!response.ok) throw new Error(`${operation} HTTP ${response.status} - ${text}`);
         sample.ok = true;
         return JSON.parse(text);
       } finally { sample.ms = performance.now() - start; }
