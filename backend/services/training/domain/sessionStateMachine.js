@@ -4,7 +4,9 @@ import { adaptiveTargetDifficulty } from "../selection/difficultyTarget.js";
 import { resultFor } from "./scoring.js";
 
 export function transition(session, action, now = Date.now()) {
-  const s = structuredClone(session);
+  // Only containers changed by transitions are copied; question content and
+  // prior answers remain immutable and can be shared with the input session.
+  const s = { ...session, questions: [...session.questions], answers: { ...session.answers }, events: [...session.events] };
   if (s.status !== "active") return s;
   const expired = now >= new Date(s.deadline).getTime();
   const q = s.questions[s.current];
@@ -16,7 +18,7 @@ export function transition(session, action, now = Date.now()) {
     0,
     (Math.min(now, new Date(s.deadline).getTime()) - s.lastEventAt) / 1000,
   );
-  const a = s.answers[q.id] || { choice: null, seconds: 0, confidence: null };
+  const a = { ...(s.answers[q.id] || { choice: null, seconds: 0, confidence: null }) };
   a.seconds += elapsed;
   s.answers[q.id] = a;
   s.lastEventAt = now;

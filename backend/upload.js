@@ -1,6 +1,7 @@
 import { invalidateQuestionMetadata } from "./services/questions/questionMetadataCache.js";
 import { refreshUploadedQuestionMetadata } from "./services/questions/questionMetadataService.js";
 import { normalizedQuestionKeys } from "./services/questions/questionNormalizer.js";
+import { trainingQuestionMetadata } from './services/training/domain/questionMetadata.js';
 // backend/upload.js
 // Run with: node upload.js
 // Make sure .env is in the same folder
@@ -102,7 +103,7 @@ async function upload(questions) {
       await collection.updateOne(
         filter,
         {
-          $set: { ...q, ...normalizedQuestionKeys(q) },
+          $set: { ...q, ...normalizedQuestionKeys(q), ...trainingQuestionMetadata(q) },
         },
         {
           upsert: true,

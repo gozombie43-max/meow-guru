@@ -401,6 +401,8 @@ describe('MongoDB-backed question reads', () => {
 });
 
 describe('MongoDB-backed question writes', () => {
+  const ineligibleAlgebra = { trainingMetadataVersion: 1, trainingCandidate: null, trainingEligible: false,
+    trainingExamSlugs: [], trainingSubjectSlug: 'unclassified', trainingTopicSlug: 'algebra' };
   it('creates a normalized question, clears cache, and hides _id', async () => {
     const collection = {
       insertOne: vi.fn(async (item) => {
@@ -417,6 +419,7 @@ describe('MongoDB-backed question writes', () => {
       expect.objectContaining({ id: 'new-id', topic: 'Algebra' })
     );
     expect(result).toEqual({
+      ...ineligibleAlgebra,
       id: 'new-id',
       chapter: ' Algebra ',
       topic: 'Algebra',
@@ -478,6 +481,7 @@ describe('MongoDB-backed question writes', () => {
       { _id: 'mongo-id' },
       {
         $set: {
+          ...ineligibleAlgebra,
           id: 'q457',
           topic: 'algebra',
           question: 'After',
@@ -485,7 +489,7 @@ describe('MongoDB-backed question writes', () => {
         },
       }
     );
-    expect(result).toEqual({ id: 'q457', topic: 'algebra', question: 'After', topicKey: 'algebra', subjectKey: '', quizKey: '', modeKey: 'concept', keyVersion: 1 });
+    expect(result).toEqual({ ...ineligibleAlgebra, id: 'q457', topic: 'algebra', question: 'After', topicKey: 'algebra', subjectKey: '', quizKey: '', modeKey: 'concept', keyVersion: 1 });
   });
 
   it('uses deleteOne with a topic and deleteMany without one', async () => {

@@ -21,14 +21,24 @@ function ModeIcon({ mode }: { mode?: ModeId | string }) {
 const clock = (n: number) =>
   `${Math.floor(Math.max(0, n) / 60)}:${String(Math.max(0, n) % 60).padStart(2, "0")}`;
 
+import { useTrainingNow, type TrainingTimeSync } from './hooks/useTrainingClock';
+
+function TrainingClock({ deadline, timeSync }: { deadline: string; timeSync: TrainingTimeSync }) {
+  const now = useTrainingNow(timeSync);
+  const remaining = Math.max(0, Math.ceil((new Date(deadline).getTime() - now) / 1000));
+  return <div className={`training-clock ${remaining < 60 ? "training-clock-urgent" : ""}`} role="timer" aria-label={`Time remaining: ${clock(remaining)}`}>
+    <Clock size={16} /><span>{clock(remaining)}</span>
+  </div>;
+}
+
 interface TrainingSessionHeaderProps {
   session: TrainingSession | null;
-  remaining: number;
+  timeSync: TrainingTimeSync;
   busy: boolean;
   setConfirmFinish: (v: boolean) => void;
 }
 
-export function TrainingSessionHeader({ session, remaining, busy, setConfirmFinish }: TrainingSessionHeaderProps) {
+export function TrainingSessionHeader({ session, timeSync, busy, setConfirmFinish }: TrainingSessionHeaderProps) {
   return (
     <header className="training-session-header" data-ui-chrome="header">
       <Link replace
@@ -56,14 +66,7 @@ export function TrainingSessionHeader({ session, remaining, busy, setConfirmFini
         </span>
       </div>
       {session?.status === "active" && (
-        <div
-          className={`training-clock ${remaining < 60 ? "training-clock-urgent" : ""}`}
-          role="timer"
-          aria-label={`Time remaining: ${clock(remaining)}`}
-        >
-          <Clock size={16} />
-          <span>{clock(remaining)}</span>
-        </div>
+        <TrainingClock deadline={session.deadline} timeSync={timeSync} />
       )}
       {session?.status === "active" && (
         <button data-ui-button="secondary" className="training-header-finish" aria-label="Finish session" disabled={busy} onClick={() => setConfirmFinish(true)}>

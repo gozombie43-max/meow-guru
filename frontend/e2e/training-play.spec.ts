@@ -311,10 +311,15 @@ test("play exposes all modes and persists an adaptive session across reload", as
           },
         };
       }
+      expect(url.searchParams.get('response')).toBe('delta');
+      const { questions: _questions, ...state } = session;
+      const response = session.status === 'active'
+        ? { ...state, kind: 'delta', baseRevision: session.revision - 1 }
+        : session;
       return route.fulfill({
         status: 200,
         contentType: "application/json",
-        body: JSON.stringify(session),
+        body: JSON.stringify(response),
       });
     }
 

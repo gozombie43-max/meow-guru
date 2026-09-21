@@ -10,19 +10,17 @@ export function useTrainingSession(id: string) {
   const [session, setSession] = useState<TrainingSession | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const [now, setNow] = useState(0);
+  const [timeSync, setTimeSync] = useState({ serverNow: 0, receivedAt: 0 });
   const [choice, setChoice] = useState<number | null>(null);
   const [confidence, setConfidence] = useState<Confidence | null>(null);
   const [pendingAction, setPendingAction] = useState("");
   const [confirmFinish, setConfirmFinish] = useState(false);
   
-  const offset = useRef(0);
   const sendingRef = useRef(false);
 
   const accept = useCallback((s: TrainingSession) => {
-    offset.current = s.serverNow - Date.now();
+    setTimeSync({ serverNow: s.serverNow, receivedAt: Date.now() });
     setSession(s);
-    setNow(s.serverNow);
     setChoice(s.answers[s.questions[s.current].id]?.choice ?? null);
     setConfidence(s.answers[s.questions[s.current].id]?.confidence ?? null);
   }, []);
@@ -79,11 +77,9 @@ export function useTrainingSession(id: string) {
     setConfirmFinish
   });
 
-  const { remaining } = useTrainingClock(
+  const { expired } = useTrainingClock(
     session,
-    offset,
-    now,
-    setNow,
+    timeSync,
     act,
     busy,
     error
@@ -93,8 +89,8 @@ export function useTrainingSession(id: string) {
     session,
     error,
     busy,
-    now,
-    remaining,
+    timeSync,
+    expired,
     choice,
     setChoice,
     confidence,

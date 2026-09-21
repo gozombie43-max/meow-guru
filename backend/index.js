@@ -16,7 +16,7 @@ let setNotificationRealtimeServer;
 
 const quizOnlyMode = process.env.QUIZ_ONLY_MODE === 'true';
 const runEmbeddedWorkers = !quizOnlyMode && process.env.RUN_EMBEDDED_WORKERS !== 'false';
-const stopMetrics = quizOnlyMode ? () => {} : startRuntimeMetrics();
+const stopMetrics = startRuntimeMetrics();
 const PORT = process.env.PORT || 10000;
 
 const SHUTDOWN_TIMEOUT_MS = Number(process.env.SHUTDOWN_TIMEOUT_MS) || 20_000;

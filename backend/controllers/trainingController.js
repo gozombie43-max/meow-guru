@@ -78,6 +78,7 @@ export const startTrainingSession = async (req, res, next) => {
     const { session, isNew } = await createTrainingSessionCommand(userId, config, now);
     res.status(isNew ? 201 : 200).json(publicSession(session));
   } catch (e) {
+    if (e.message === 'Question catalog changed. Start a new session.') return fail(res, e.message, 409);
     if (e.message.includes("section needs") || e.message.includes("No eligible questions") || e.message.includes("Choose a subject") || e.message.includes("mapped to a section")) {
       return fail(res, e.message, 422);
     }
@@ -138,8 +139,9 @@ export const applyTrainingAction = async (req, res, next) => {
     const parsed = actionSchema.safeParse(req.body);
     if (!parsed.success) return fail(res, "Invalid session action");
     
-    const updated = await applyTrainingActionCommand(String(req.user.id), req.params.id, parsed.data);
-    res.json(publicSession(updated));
+    const delta = req.query.response === 'delta';
+    const updated = await applyTrainingActionCommand(String(req.user.id), req.params.id, parsed.data, delta);
+    res.json(delta ? updated : publicSession(updated));
   } catch (e) {
     if (e.message === "Session not found") return fail(res, e.message, 404);
     if (e.message.includes("Session changed")) return fail(res, e.message, 409);

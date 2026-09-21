@@ -3,6 +3,7 @@ import { isAxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import api from "@/shared/api/client";
 import { type TrainingSession, type TrainingAction } from "../../training-types";
+import { mergeTrainingResponse, type TrainingDelta } from '../sessionDelta';
 
 interface UseTrainingActionsProps {
   id: string;
@@ -34,15 +35,15 @@ export function useTrainingActions({
       setPendingAction(String(action.type));
       setError("");
       try {
-        const { data } = await api.post<TrainingSession>(
-          `/api/training/sessions/${id}/actions`,
+        const { data } = await api.post<TrainingSession | TrainingDelta>(
+          `/api/training/sessions/${id}/actions?response=delta`,
           { ...action, revision: session.revision },
         );
         if (data.status === "abandoned") {
           router.replace("/play");
           return;
         }
-        accept(data);
+        accept(mergeTrainingResponse(session, data));
         setConfirmFinish(false);
       } catch (e) {
         setError(

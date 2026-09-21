@@ -7,6 +7,7 @@ import {
   trainingExposureData,
   trainingLearningState,
   dueTrainingQuestions,
+  hydrateTrainingQuestions,
 } from "../../../repositories/trainingRepository.js";
 import {
   normalizeQuestion,
@@ -27,10 +28,10 @@ export async function createTrainingSessionCommand(userId, config, now) {
     const existing = await findMission(userId, config.exam, missionDate);
     if (existing) return { session: existing, isNew: false };
   }
-  const previous = await history(userId, config.exam);
-  const durable = await trainingLearningState(userId, config.exam);
+  const creationStart = performance.now();
+  const [previous, durable] = await Promise.all([history(userId, config.exam), trainingLearningState(userId, config.exam)]);
   let intelligence = mergeDurableIntelligence(
-    buildIntelligence(previous),
+    buildIntelligence(previous, now, previous.length > 0 && previous.every(s => s.learningApplied) && durable.skillRows.length > 0),
     durable.skillRows,
     durable.reviewRows,
   );
@@ -56,7 +57,7 @@ export async function createTrainingSessionCommand(userId, config, now) {
   
   const requestedCount = config.count === "full" ? sectionConfig.questionCount : config.count;
   const recentIds = previous.slice(0, 3).flatMap((s) => s.questions.map((q) => q.id));
-  const exposureRows = await trainingExposureData(userId, config.exam);
+
   
   const preparationStart = performance.now();
   
@@ -68,23 +69,27 @@ export async function createTrainingSessionCommand(userId, config, now) {
     intelligence.topics.slice(0, 6).map((item) => item.topic),
   );
   
+  const asCandidate = doc => doc.trainingCandidate ? { ...doc.trainingCandidate, _trainingDocumentId: doc._id, _trainingFingerprint: JSON.stringify(doc.trainingCandidate) } : normalizeQuestion(doc);
   const pool = [
     ...new Map(
       docs
-        .map(normalizeQuestion)
+        .map(asCandidate)
         .filter(Boolean)
         .map((q) => [q.id, q]),
     ).values(),
   ];
   
+  const dueDocs = config.mode === 'mission'
+    ? await dueTrainingQuestions(config.exam, intelligence.due.map(r => r.questionId)) : [];
+  const duePool = dueDocs.map(asCandidate).filter(Boolean);
+  const exposureRows = await trainingExposureData(userId, config.exam, [...new Set([...pool, ...duePool].map(q => q.id))]);
+
   const eligible = pool.filter(
     (q) => q.difficulty >= (policy.minDifficulty || 1),
   );
   
   let questions = [];
   if (config.mode === "mission") {
-    const dueDocs = await dueTrainingQuestions(config.exam, intelligence.due.map((r) => r.questionId));
-    const duePool = dueDocs.map(normalizeQuestion).filter(Boolean);
     
     const poolDuration = Math.round(performance.now() - poolStart);
     logger.info({ event: "training.question_pool.duration_ms", durationMs: poolDuration, poolSize: pool.length, mode: config.mode });
@@ -154,24 +159,22 @@ export async function createTrainingSessionCommand(userId, config, now) {
           Math.round(expected * (policy.clockMultiplier || 1.2)),
         );
         
+  const reserve = config.mode === 'gauntlet'
+    ? pool.filter(q => !questions.some(selected => selected.id === q.id))
+      .sort((a, b) => a.difficulty - b.difficulty).slice(0, 100) : [];
+  const hydrated = await hydrateTrainingQuestions([...questions, ...reserve]);
+  const hydratedQuestions = hydrated.slice(0, questions.length);
+  const hydratedReserve = hydrated.slice(questions.length);
   const s = {
     id: randomUUID(),
     userId,
     ...config,
     ...(config.mode === "mission" ? { missionDate } : {}),
-    questions,
+    questions: hydratedQuestions,
     baseline: Object.fromEntries(
       intelligence.topics.map((p) => [p.key, p.mastery]),
     ),
-    reserve:
-      config.mode === "gauntlet"
-        ? pool
-            .filter(
-              (q) => !questions.some((selected) => selected.id === q.id),
-            )
-            .sort((a, b) => a.difficulty - b.difficulty)
-            .slice(0, 100)
-        : [],
+    reserve: hydratedReserve,
     answers: {},
     events: [{ type: "visit", questionId: questions[0].id, at: now }],
     marking:
@@ -202,10 +205,12 @@ export async function createTrainingSessionCommand(userId, config, now) {
   
   logger.info({
     event: "training.session.created",
+    durationMs: Math.round(performance.now() - creationStart),
     sessionId: s.id,
     userId: hashId(userId),
     mode: config.mode,
   }, "Training session created");
   
+  logger.info({ event: 'training.session.create.duration_ms', durationMs: Math.round(performance.now() - creationStart), mode: config.mode });
   return { session: s, isNew: true };
 }

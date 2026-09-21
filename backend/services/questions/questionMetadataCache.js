@@ -1,4 +1,5 @@
 import { getMongoDB } from "../../config/mongodb.js";
+import { invalidateTrainingCatalog } from '../training/catalogCache.js';
 
 const COLLECTION = "questionMetadata";
 const REVISION_ID = "revision";
@@ -7,6 +8,7 @@ const MAX_AGE_MS = 60 * 60 * 1000;
 const pending = new Map();
 
 export async function invalidateQuestionMetadata() {
+  invalidateTrainingCatalog();
   await getMongoDB().collection(COLLECTION).updateOne(
     { _id: REVISION_ID },
     { $inc: { revision: 1 } },

@@ -22,8 +22,8 @@ export default function TrainingSessionView({ id }: { id: string }) {
     session,
     error,
     busy,
-    now,
-    remaining,
+    timeSync,
+    expired,
     choice,
     setChoice,
     confidence,
@@ -52,13 +52,6 @@ export default function TrainingSessionView({ id }: { id: string }) {
 
   const q = session?.questions[session.current];
   const canNavigate = session?.policy.navigation === "free";
-  const seconds = q
-    ? Math.round(
-        (session?.answers[q.id]?.seconds || 0) +
-          Math.max(0, now - (session?.lastEventAt || now)) / 1000,
-      )
-    : 0;
-
   const answered = session ? Object.values(session.answers).filter(a => a.choice != null).length : 0;
   const unsaved = !!q && (choice !== (session?.answers[q.id]?.choice ?? null) || confidence !== (session?.answers[q.id]?.confidence ?? null));
 
@@ -66,7 +59,7 @@ export default function TrainingSessionView({ id }: { id: string }) {
     <div className={`training-page training-session ${confirmFinish ? "has-finish-dialog" : ""} ${theme === "dark" ? "training-dark" : ""}`}>
       <TrainingSessionHeader 
         session={session} 
-        remaining={remaining} 
+        timeSync={timeSync}
         busy={busy} 
         setConfirmFinish={setConfirmFinish} 
       />
@@ -159,10 +152,10 @@ export default function TrainingSessionView({ id }: { id: string }) {
                   choice={choice} 
                   setChoice={setChoice} 
                   busy={busy} 
-                  remaining={remaining} 
+                  expired={expired}
                 />
 
-                <TrainingPace q={q} seconds={seconds} />
+                <TrainingPace q={q} session={session} timeSync={timeSync} />
 
                 {session.policy.confidence && (
                   <TrainingConfidence 
@@ -184,7 +177,7 @@ export default function TrainingSessionView({ id }: { id: string }) {
           busy={busy} 
           unsaved={unsaved} 
           canNavigate={canNavigate || false} 
-          remaining={remaining} 
+          expired={expired}
           choice={choice} 
           confidence={confidence} 
           act={act} 

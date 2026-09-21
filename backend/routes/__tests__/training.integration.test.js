@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { MongoMemoryReplSet } from "mongodb-memory-server";
 import express from "express";
 import { once } from "node:events";
@@ -8,8 +8,14 @@ import { up } from "../../migrations/005-training.js";
 import { up as upHardening } from "../../migrations/007-training-hardening.js";
 import router from "../training.js";
 import curationRouter from "../trainingCuration.js";
+import { invalidateTrainingCatalog } from '../../services/training/catalogCache.js';
+
+import { up as upPerformance } from '../../migrations/008-training-performance.js';
+import { backfillTrainingMetadata } from '../../services/training/questionMetadataBackfill.js';
+import { trainingQuestionPool, trainingExposureData, trainingHistory } from '../../repositories/trainingRepository.js';
 
 let mongo, db, server, base, token;
+afterEach(() => vi.unstubAllEnvs());
 async function request(path, method = "GET", body, auth = token) {
   return fetch(`${base}${path}`, {
     method,
@@ -27,6 +33,7 @@ beforeAll(async () => {
   db = await connectMongoDB();
   await up(db);
   await upHardening(db);
+  await upPerformance(db);
   const app = express();
   app.use(express.json());
   app.use("/curation", curationRouter);
@@ -37,6 +44,7 @@ beforeAll(async () => {
   base = `http://127.0.0.1:${server.address().port}`;
 }, 60000);
 beforeEach(async () => {
+  invalidateTrainingCatalog();
   await db
     .collection("users")
     .updateOne(
@@ -372,5 +380,123 @@ describe("persistent training API", () => {
     expect(secondResponse.status).toBe(200);
     const secondBody = await secondResponse.json();
     expect(secondBody.id).toBe(firstBody.id);
+  });
+});
+
+
+describe('training performance contracts', () => {
+  it('persists recovery content once and restores logical order on reads', async () => {
+    const initial = await start('gauntlet');
+    const stored = await db.collection('trainingSessions').findOne({ id: initial.id });
+    const questions = stored.questions.slice(0, 5).map((q, i) => ({ ...q, topic: i < 3 ? 'Block A' : 'Block B', difficulty: 3 }));
+    const reserve = [1, 2].map(i => ({ ...questions[0], id: `recovery-${i}`, difficulty: 1 }));
+    const answers = Object.fromEntries(questions.slice(0, 2).map(q => [q.id, { choice: 1 - q.correctIndex, seconds: 5, confidence: 'sure' }]));
+    await db.collection('trainingSessions').updateOne({ id: initial.id }, { $set: { questions, reserve, answers, current: 2 } });
+    const response = await request(`/sessions/${initial.id}/actions?response=delta`, 'POST', { type: 'answer', choice: 1 - questions[2].correctIndex, revision: 0 });
+    expect(response.status).toBe(200);
+    const delta = await response.json();
+    expect(delta.questionUpdates.map(q => q.id)).toEqual(['recovery-1', 'recovery-2']);
+    const physical = await db.collection('trainingSessions').findOne({ id: initial.id });
+    expect(physical.questions.slice(-2).map(q => q.id)).toEqual(['recovery-1', 'recovery-2']);
+    const logical = await (await request(`/sessions/${initial.id}`)).json();
+    expect(logical.questions[logical.current].id).toBe('recovery-1');
+    expect(logical.questions.map(q => q.id)).toEqual(delta.questionOrder);
+    const finish = await request(`/sessions/${initial.id}/actions?response=delta`, 'POST', { type: 'finish', revision: delta.revision });
+    const completed = await finish.json();
+    expect(completed.result.rows[3].questionId).toBe('recovery-1');
+  });
+
+  it.each(['adaptive', 'challenge', 'sprint', 'pressure', 'section', 'gauntlet', 'nightmare', 'survival', 'mission'])('creates valid indexed sessions in %s', async mode => {
+    await backfillTrainingMetadata(db.collection('questions'), { apply: true });
+    vi.stubEnv('TRAINING_INDEXED_QUESTIONS', 'true');
+    const created = await start(mode);
+    expect(created.questions.length).toBeGreaterThan(0);
+    for (const q of created.questions) {
+      expect(q.text).toMatch(/^Question /);
+      expect(q.options).toHaveLength(2);
+      expect(q).not.toHaveProperty('_trainingDocumentId');
+      expect(q).not.toHaveProperty('correctIndex');
+    }
+  });
+
+  it('does not overwrite concurrent edits during metadata backfill', async () => {
+    const collection = db.collection('questions');
+    const bulkWrite = collection.bulkWrite.bind(collection);
+    vi.spyOn(collection, 'bulkWrite').mockImplementationOnce(async (ops, options) => {
+      await collection.updateOne({ id: 'q1' }, { $set: { correctAnswer: 0 } });
+      return bulkWrite(ops, options);
+    });
+    const stats = await backfillTrainingMetadata(collection, { apply: true });
+    expect(stats.conflicts).toBe(1);
+    const edited = await collection.findOne({ id: 'q1' });
+    expect(edited.correctAnswer).toBe(0);
+    expect(edited.trainingMetadataVersion).toBeUndefined();
+    expect((await backfillTrainingMetadata(collection, { apply: true })).modified).toBe(1);
+  });
+
+  it.each(['adaptive', 'challenge', 'sprint', 'pressure', 'section', 'gauntlet', 'nightmare', 'survival', 'mission'])('merges deltas identically to a saved snapshot for %s', async mode => {
+    let session = await start(mode);
+    for (let i = 0; i < 3 && session.status === 'active'; i++) {
+      const response = await request(`/sessions/${session.id}/actions?response=delta`, 'POST', { type: 'answer', choice: 0, confidence: 'sure', revision: session.revision });
+      expect(response.status).toBe(200);
+      const delta = await response.json();
+      if (delta.kind === 'delta') {
+        expect(delta.baseRevision).toBe(session.revision);
+        expect(delta).not.toHaveProperty('questions');
+        const byId = new Map(session.questions.map(q => [q.id, q]));
+        for (const q of delta.questionUpdates || []) byId.set(q.id, q);
+        const { kind, baseRevision, questionOrder, questionUpdates, ...state } = delta;
+        session = { ...session, ...state, answers: { ...session.answers, ...state.answers }, questions: questionOrder ? questionOrder.map(id => byId.get(id)) : session.questions };
+      } else session = delta;
+      const saved = await (await request(`/sessions/${session.id}`)).json();
+      expect({ ...session, serverNow: 0 }).toEqual({ ...saved, serverNow: 0 });
+    }
+    const response = await request(`/sessions/${session.id}/actions?response=delta`, 'POST', { type: 'finish', revision: session.revision });
+    expect(response.status).toBe(200);
+    const finished = await response.json();
+    expect(finished.status).toBe('completed');
+    expect(finished.questions[0]).toHaveProperty('correctIndex');
+    const history = await trainingHistory('student', 'ssc-cgl');
+    expect(history[0].learningApplied).toBe(true);
+    expect(history[0].questions[0]).not.toHaveProperty('text');
+    expect(history[0].questions[0]).not.toHaveProperty('options');
+    expect(history[0].result.rows[0]).not.toHaveProperty('solution');
+    await request('/dashboard?exam=ssc-cgl');
+    expect(await db.collection('userSkillProfile').countDocuments({})).toBe(0);
+  });
+
+  it('backfills idempotently and hydrates only selected indexed candidates', async () => {
+    const questions = db.collection('questions');
+    await questions.updateOne({ id: 'q0' }, { $set: { exam: 'SSC CGL / CHSL', subject: 'Logical-Reasoning' } });
+    const dry = await backfillTrainingMetadata(questions);
+    expect(dry.modified).toBe(0);
+    expect(dry.candidates).toBe(25);
+    expect((await backfillTrainingMetadata(questions, { apply: true })).modified).toBe(25);
+    expect((await backfillTrainingMetadata(questions, { apply: true })).candidates).toBe(0);
+    vi.stubEnv('TRAINING_INDEXED_QUESTIONS', 'true');
+    const pool = await trainingQuestionPool({ exam: 'ssc-chsl', subject: 'reasoning' }, [], []);
+    expect(pool.map(q => q.id)).toEqual(['q0']);
+    expect(pool[0]).not.toHaveProperty('question');
+    expect(pool[0]).not.toHaveProperty('options');
+    const response = await request('/sessions', 'POST', { mode: 'adaptive', exam: 'ssc-chsl', subject: 'reasoning', count: 10 });
+    expect(response.status).toBe(201);
+    const session = await response.json();
+    expect(session.questions[0].text).toBe('Question 0');
+    expect(session.questions[0]).not.toHaveProperty('_trainingDocumentId');
+    expect(session.questions[0]).not.toHaveProperty('_trainingFingerprint');
+    expect(session.questions[0]).not.toHaveProperty('correctIndex');
+  });
+
+  it('limits exposure reads to the candidate IDs', async () => {
+    await db.collection('trainingQuestionExposure').insertMany(['q1','q2','unrelated'].map(questionId => ({ userId: 'student', exam: 'ssc-cgl', questionId, timesSeen: 1 })));
+    expect((await trainingExposureData('student', 'ssc-cgl', ['q2'])).map(row => row.questionId)).toEqual(['q2']);
+  });
+
+  it('uses the dashboard mock index without scanning unrelated attempts', async () => {
+    await db.collection('mockAttempts').insertMany(Array.from({ length: 200 }, (_, i) => ({ userId: i < 40 ? 'student' : 'other', examSlug: 'ssc-cgl', status: 'completed', submittedAt: new Date(1700000000000 + i) })));
+    const explain = await db.collection('mockAttempts').find({ userId: 'student', examSlug: 'ssc-cgl', status: 'completed' }).sort({ submittedAt: -1 }).limit(20).explain('executionStats');
+    expect(explain.executionStats.nReturned).toBe(20);
+    expect(explain.executionStats.totalDocsExamined).toBe(20);
+    expect(JSON.stringify(explain.queryPlanner.winningPlan)).toContain('training_mock_history');
   });
 });

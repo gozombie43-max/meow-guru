@@ -7,13 +7,13 @@ interface TrainingFooterProps {
   busy: boolean;
   unsaved: boolean;
   canNavigate: boolean;
-  remaining: number;
+  expired: boolean;
   choice: number | null;
   confidence: Confidence | null;
   act: (action: TrainingAction) => Promise<void>;
 }
 
-export function TrainingFooter({ session, q, busy, unsaved, canNavigate, remaining, choice, confidence, act }: TrainingFooterProps) {
+export function TrainingFooter({ session, q, busy, unsaved, canNavigate, expired, choice, confidence, act }: TrainingFooterProps) {
   if (!q) return null;
 
   return (
@@ -30,7 +30,7 @@ export function TrainingFooter({ session, q, busy, unsaved, canNavigate, remaini
               <button
                 data-ui-button="secondary"
                 type="button"
-                disabled={busy || remaining === 0}
+                disabled={busy || expired}
                 onClick={() =>
                   act({ type: "answer", choice: null, confidence: null })
                 }
@@ -40,7 +40,7 @@ export function TrainingFooter({ session, q, busy, unsaved, canNavigate, remaini
               <button
                 data-ui-button="primary"
                 type="button"
-                disabled={choice === null || busy || remaining === 0}
+                disabled={choice === null || busy || expired}
                 onClick={() => act({ type: "answer", choice, confidence })}
               >
                 <span>

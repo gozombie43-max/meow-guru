@@ -40,14 +40,29 @@ export async function createSession(user) {
   return { token: signToken({ ...payload(currentUser), sid }), refreshToken };
 }
 
+import { LRUCache } from 'lru-cache';
+
+const sessionCache = new LRUCache({ max: 5000, ttl: 60 * 1000 * 5 }); // 5 minutes
+
 export async function assertSession(decoded) {
   if (!decoded?.sid || !decoded?.id) throw unauthorized();
+  const cacheKey = `${decoded.sid}:${decoded.id}`;
+  const cached = sessionCache.get(cacheKey);
+  if (cached) return { ...decoded, ...cached };
+  
   const session = await sessions().findOne(
     { _id: decoded.sid, userId: String(decoded.id), ...active(new Date()) },
     { projection: { _id: 1 }, timeoutMS: 5000 },
   );
   if (!session) throw unauthorized();
-  return { ...decoded, ...payload(await activeUser(decoded.id)) };
+  
+  const userPayload = payload(await activeUser(decoded.id));
+  sessionCache.set(cacheKey, userPayload);
+  return { ...decoded, ...userPayload };
+}
+
+export function evictSessionCache(sid, userId) {
+  sessionCache.delete(`${sid}:${userId}`);
 }
 
 export async function rotateSession(refreshToken, now = new Date()) {
@@ -74,6 +89,7 @@ export async function rotateSession(refreshToken, now = new Date()) {
     if (!session || session.previousJti !== decoded.jti || session.previousValidUntil <= now) {
       if (session) {
         await sessions().updateOne(filter, { $set: { revokedAt: now, revokeReason: 'refresh-reuse' } });
+        evictSessionCache(decoded.sid, decoded.id);
         disconnectSession(decoded.sid);
       }
       throw unauthorized();
@@ -85,5 +101,6 @@ export async function rotateSession(refreshToken, now = new Date()) {
 export async function revokeSession(decoded) {
   if (!decoded?.sid || !decoded?.id) return;
   await sessions().updateOne({ _id: decoded.sid, userId: String(decoded.id) }, { $set: { revokedAt: new Date(), revokeReason: 'logout' } });
+  evictSessionCache(decoded.sid, decoded.id);
   disconnectSession(decoded.sid);
 }

@@ -8,6 +8,7 @@ vi.mock("../../../../repositories/trainingRepository.js", () => ({
   trainingQuestionPool: vi.fn().mockResolvedValue([{ id: "q1", difficulty: 2, tags: [], expectedTime: 60 }, { id: "q2", difficulty: 2, tags: [], expectedTime: 60 }]),
   trainingExposureData: vi.fn().mockResolvedValue([]),
   trainingLearningState: vi.fn().mockResolvedValue({ skillRows: [], reviewRows: [] }),
+  hydrateTrainingQuestions: vi.fn(q => q),
   dueTrainingQuestions: vi.fn().mockResolvedValue([]),
 }));
 

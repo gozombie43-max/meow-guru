@@ -4,6 +4,7 @@ import { refreshUploadedQuestionMetadata } from "./questionMetadataService.js";
 import { getQuestionsCollection } from "../../config/mongodb.js";
 import { questionCountsCache, questionsQueryCache } from "./questionCache.js";
 import { normalizedQuestionKeys } from "./questionNormalizer.js";
+import { trainingQuestionMetadata } from '../training/domain/questionMetadata.js';
 
 export async function createQuestion(newQuestion) {
   const collection = getQuestionsCollection();
@@ -14,7 +15,7 @@ export async function createQuestion(newQuestion) {
   }
   item.topic = String(item.topic).trim() || "misc";
 
-  Object.assign(item, normalizedQuestionKeys(item));
+  Object.assign(item, normalizedQuestionKeys(item), trainingQuestionMetadata(item));
   await collection.insertOne(item);
   questionsQueryCache.clear();
   questionCountsCache.clear();
@@ -69,7 +70,7 @@ export async function createQuestionsBulk(questionsData, { importId } = {}) {
       item.ingestionHash = digest(JSON.stringify(q));
       if (!q.id) item.id = `q_${item.ingestionKey}`;
     }
-    return Object.assign(item, normalizedQuestionKeys(item));
+    return Object.assign(item, normalizedQuestionKeys(item), trainingQuestionMetadata(item));
   });
 
   const results = new Array(normalizedQuestions.length);
@@ -94,6 +95,7 @@ export async function createQuestionsBulk(questionsData, { importId } = {}) {
           if (failure?.code === 11000 && !importId && attempt < 3) {
             const value = { ...entry.value, id: `q_${crypto.randomUUID()}` };
             delete value._id;
+            Object.assign(value, trainingQuestionMetadata(value));
             retry.push({ ...entry, value });
           } else if (failure) {
             results[entry.index] = { status: 'rejected', reason: { code: failure.code, message: ambiguous ? 'Write outcome unknown; retry with the same import ID' : failure.errmsg || failure.message || 'Bulk row failed' } };
@@ -133,7 +135,7 @@ export async function modifyQuestion(id, updates, topic = undefined) {
       existing.topic || updates.chapter || updates.subject || "misc";
   }
 
-  Object.assign(updated, normalizedQuestionKeys(updated));
+  Object.assign(updated, normalizedQuestionKeys(updated), trainingQuestionMetadata(updated));
   await collection.updateOne({ _id: existing._id }, { $set: updated });
   questionsQueryCache.clear();
   questionCountsCache.clear();

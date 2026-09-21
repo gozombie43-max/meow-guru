@@ -1,3 +1,5 @@
+import { invalidateTrainingCatalog } from './training/catalogCache.js';
+import { trainingQuestionMetadata } from './training/domain/questionMetadata.js';
 import { normalizedQuestionKeys } from "./questions/questionNormalizer.js";
 import { mockAnswerIndex } from './mockAnswer.js';
 import { validateQuestions, validateConfidentialUpload, invalidPaper } from './assessmentPolicy.js';
@@ -645,13 +647,14 @@ export async function uploadFullPaper({ slotData, questions }) {
           topic: q.topic,
         },
         {
-          $set: { ...q, ...normalizedQuestionKeys(q) },
+          $set: { ...q, ...normalizedQuestionKeys(q), ...trainingQuestionMetadata(q) },
         },
         {
           upsert: true,
         }
       );
       insertedToBank++;
+      invalidateTrainingCatalog();
     } catch (err) {
       console.warn(`Upsert question ${q.id} warning:`, err.message);
     }

@@ -4,11 +4,12 @@ import {
 } from "../../../repositories/trainingRepository.js";
 import { transition } from "../../trainingEngine.js";
 import { logger, hashId } from "../../../infrastructure/logger.js";
+import { publicActionDelta, publicSession } from '../serializers/publicSession.js';
 
-export async function applyTrainingActionCommand(userId, sessionId, action) {
+export async function applyTrainingActionCommand(userId, sessionId, action, delta = false) {
   const s = await findOwnedSession(sessionId, userId);
   if (!s) throw new Error("Session not found");
-  if (s.status !== "active") return s;
+  if (s.status !== "active") return delta ? publicSession(s) : s;
   if (s.revision !== action.revision) {
     logger.warn({ event: "training.action.revision_conflict", sessionId, userId: hashId(userId), actionType: action.type });
     throw new Error("Session changed. Reload before continuing.");
@@ -48,5 +49,5 @@ export async function applyTrainingActionCommand(userId, sessionId, action) {
     sessionId,
   }, "Committed training state");
   
-  return updated;
+  return delta ? publicActionDelta(s, updated) : updated;
 }

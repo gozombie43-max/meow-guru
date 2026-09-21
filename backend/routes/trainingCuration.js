@@ -9,6 +9,7 @@ import {
 } from "../config/mongodb.js";
 import { EXAMS, normalizeQuestion } from "../services/trainingEngine.js";
 import { draftTrainingVariant } from "../services/trainingVariants.js";
+import { trainingQuestionMetadata } from '../services/training/domain/questionMetadata.js';
 
 const router = express.Router();
 router.use(adminAuth);
@@ -117,6 +118,7 @@ router.post("/variants/:id/review", async (req, res, next) => {
           .insertOne(
             {
               ...question,
+              ...trainingQuestionMetadata({ ...question, correctAnswer: parsed.data.verifiedAnswer, validationStatus: 'validated' }),
               correctAnswer: parsed.data.verifiedAnswer,
               validationStatus: "validated",
               validatedBy: String(req.user.id),

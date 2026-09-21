@@ -17,6 +17,7 @@ import compression from 'compression';
 import { errorHandler } from './middleware/errorHandler.js';
 import {
   globalLimiter,
+  trainingIngressLimiter,
   authLimiter,
   agentLimiter,
   uploadLimiter,
@@ -79,7 +80,7 @@ export async function createApp({ isReady, isShuttingDown, quizOnlyMode = proces
   // Keep legacy question images readable while their stored references are migrated.
   app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-  app.use(globalLimiter);
+  app.use(trainingIngressLimiter, globalLimiter);
   app.use(passport.initialize());
 
   app.get('/', (_req, res) =>

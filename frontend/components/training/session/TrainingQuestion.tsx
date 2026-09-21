@@ -6,10 +6,10 @@ interface TrainingQuestionProps {
   choice: number | null;
   setChoice: (choice: number) => void;
   busy: boolean;
-  remaining: number;
+  expired: boolean;
 }
 
-export function TrainingQuestion({ q, choice, setChoice, busy, remaining }: TrainingQuestionProps) {
+export function TrainingQuestion({ q, choice, setChoice, busy, expired }: TrainingQuestionProps) {
   if (!q) return null;
 
   return (
@@ -73,7 +73,7 @@ export function TrainingQuestion({ q, choice, setChoice, busy, remaining }: Trai
               data-ui-button="state"
               className={`training-option-btn ${isSelected ? "selected" : ""}`}
               aria-checked={isSelected}
-              disabled={busy || remaining === 0}
+              disabled={busy || expired}
               onClick={() => setChoice(index)}
             >
               <span className="training-option-letter">

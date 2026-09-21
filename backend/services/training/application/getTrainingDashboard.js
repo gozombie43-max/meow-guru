@@ -2,7 +2,6 @@ import {
   trainingHistory as history,
   expiredActiveSessions,
   trainingDashboardData,
-  saveSkillProfile,
   commitTrainingTransition,
 } from "../../../repositories/trainingRepository.js";
 import {
@@ -22,20 +21,19 @@ export async function getTrainingDashboardData(userId, exam) {
     await commitTrainingTransition(stale, finalized);
   }
 
-  const previous = await history(userId, exam);
-  let intelligence = buildIntelligence(previous);
+  const [previous, dashboard] = await Promise.all([history(userId, exam), trainingDashboardData(userId, exam)]);
   const {
     active,
     catalogPairs,
     mocks,
     reviewRows,
     skillRows,
-  } = await trainingDashboardData(userId, exam);
+  } = dashboard;
   const subjects = [...new Set(catalogPairs.map((item) => item.subject))];
   const topics = [...new Set(catalogPairs.map((item) => item.topic))];
 
-  intelligence = mergeDurableIntelligence(
-    intelligence,
+  let intelligence = mergeDurableIntelligence(
+    buildIntelligence(previous, Date.now(), previous.length > 0 && previous.every(s => s.learningApplied) && skillRows.length > 0),
     skillRows,
     reviewRows,
   );
@@ -57,12 +55,6 @@ export async function getTrainingDashboardData(userId, exam) {
     Math.min(1, recentDays / 7) * 0.1;
   const evidenceConfidence =
     confidenceScore >= 0.72 ? "high" : confidenceScore >= 0.4 ? "medium" : "low";
-
-  await saveSkillProfile(userId, exam, {
-    ...intelligence,
-    evidenceConfidence,
-    confidenceScore,
-  });
 
   const blocks = getDailyMissionBlocks(intelligence);
   const mission = blocks.map(({ mode, count, label }) => ({ mode, count, label }));

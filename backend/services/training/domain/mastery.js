@@ -1,10 +1,10 @@
 const DAY = 86400000;
 
-export function buildIntelligence(sessions, now = Date.now()) {
+export function buildIntelligence(sessions, now = Date.now(), durablePrimary = false) {
   const skills = new Map(),
     reviews = new Map(),
     details = new Map();
-  for (const s of [...sessions].sort(
+  for (const s of (durablePrimary ? [] : [...sessions]).sort(
     (a, b) => new Date(a.completedAt) - new Date(b.completedAt),
   )) {
     for (const q of s.questions) {
@@ -243,6 +243,7 @@ export function mergeDurableIntelligence(
     factors: {
       ...intelligence.factors,
       mastery: Math.round(mastery * 100),
+      accuracy: attempts ? Math.round(topics.reduce((sum, item) => sum + item.correct, 0) / attempts * 100) : 0,
     },
   };
 }

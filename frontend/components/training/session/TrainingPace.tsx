@@ -1,12 +1,17 @@
 import { Clock } from "lucide-react";
 
+import type { TrainingSession } from '../training-types';
+import { useTrainingNow, type TrainingTimeSync } from './hooks/useTrainingClock';
+
 interface TrainingPaceProps {
   q: import("../training-types").TrainingQuestion;
-  seconds: number;
+  session: TrainingSession;
+  timeSync: TrainingTimeSync;
 }
 
-export function TrainingPace({ q, seconds }: TrainingPaceProps) {
-  if (!q) return null;
+export function TrainingPace({ q, session, timeSync }: TrainingPaceProps) {
+  const now = Math.min(useTrainingNow(timeSync), new Date(session.deadline).getTime());
+  const seconds = Math.round((session.answers[q.id]?.seconds || 0) + Math.max(0, now - session.lastEventAt) / 1000);
 
   return (
     <div
