@@ -17,7 +17,7 @@ import {
 import { getExamConfig } from "../../../config/exam-config.js";
 import { getTrainingModePolicy } from "../../trainingModePolicy.js";
 import { planDailyMission } from "../mission/missionPlanner.js";
-import { logger } from "../../../infrastructure/logger.js";
+import { logger, hashId } from "../../../infrastructure/logger.js";
 
 export async function createTrainingSessionCommand(userId, config, now) {
   const missionDate = new Date(now).toLocaleDateString("en-CA", {
@@ -187,7 +187,7 @@ export async function createTrainingSessionCommand(userId, config, now) {
   logger.info({
     event: "training.session.created",
     sessionId: s.id,
-    userId,
+    userId: hashId(userId),
     mode: config.mode,
   }, "Training session created");
   

@@ -3,14 +3,14 @@ import {
   commitTrainingTransition,
 } from "../../../repositories/trainingRepository.js";
 import { transition } from "../../trainingEngine.js";
-import { logger } from "../../../infrastructure/logger.js";
+import { logger, hashId } from "../../../infrastructure/logger.js";
 
 export async function applyTrainingActionCommand(userId, sessionId, action) {
   const s = await findOwnedSession(sessionId, userId);
   if (!s) throw new Error("Session not found");
   if (s.status !== "active") return s;
   if (s.revision !== action.revision) {
-    logger.warn({ event: "training.action.revision_conflict", sessionId, userId, actionType: action.type });
+    logger.warn({ event: "training.action.revision_conflict", sessionId, userId: hashId(userId), actionType: action.type });
     throw new Error("Session changed. Reload before continuing.");
   }
   if (s.events.length >= 2000 && !["finish", "abandon"].includes(action.type))
@@ -23,13 +23,13 @@ export async function applyTrainingActionCommand(userId, sessionId, action) {
   try {
     write = await commitTrainingTransition(s, updated);
   } catch (error) {
-    logger.error({ event: "training.learning.commit.failure", sessionId, userId, error: error.message });
+    logger.error({ event: "training.learning.commit.failure", sessionId, userId: hashId(userId), error: error.message });
     throw error;
   }
   const commitDuration = Math.round(performance.now() - start);
   
   if (!write.modifiedCount) {
-    logger.warn({ event: "training.action.revision_conflict", sessionId, userId, actionType: action.type });
+    logger.warn({ event: "training.action.revision_conflict", sessionId, userId: hashId(userId), actionType: action.type });
     throw new Error("Session changed. Reload before continuing.");
   }
   
@@ -37,7 +37,7 @@ export async function applyTrainingActionCommand(userId, sessionId, action) {
     logger.info({
       event: updated.status === "abandoned" ? "training.session.abandoned" : "training.session.completed",
       sessionId,
-      userId,
+      userId: hashId(userId),
       mode: updated.mode,
     });
   }

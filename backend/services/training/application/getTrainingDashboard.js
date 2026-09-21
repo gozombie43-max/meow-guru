@@ -12,7 +12,7 @@ import {
   mergeDurableIntelligence,
 } from "../../trainingEngine.js";
 import { getDailyMissionBlocks } from "../mission/missionBlocks.js";
-import { logger } from "../../../infrastructure/logger.js";
+import { logger, hashId } from "../../../infrastructure/logger.js";
 
 export async function getTrainingDashboardData(userId, exam) {
   const start = performance.now();
@@ -70,7 +70,7 @@ export async function getTrainingDashboardData(userId, exam) {
   logger.info({
     event: "training.dashboard.duration_ms",
     durationMs: Math.round(performance.now() - start),
-    userId,
+    userId: hashId(userId),
     exam,
   }, "Dashboard generated");
 

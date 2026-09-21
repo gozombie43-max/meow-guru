@@ -1,6 +1,10 @@
 import pino from 'pino';
-import { randomUUID } from 'node:crypto';
+import { randomUUID, createHash } from 'node:crypto';
 import { monitorEventLoopDelay, createHistogram } from 'node:perf_hooks';
+
+export function hashId(id) {
+  return id ? createHash('sha256').update(String(id)).digest('hex').substring(0, 16) : undefined;
+}
 
 const role = process.env.PROCESS_ROLE || (process.argv[1]?.endsWith('attachment-worker.js') ? 'attachments' : process.argv[1]?.endsWith('worker.js') ? 'maintenance' : 'api');
 export const logger = pino({ level: process.env.LOG_LEVEL || 'info', base: { service: 'backend', role }, redact: ['password', 'token', 'authorization', 'cookie', 'secret', 'req.headers', 'req.body'] });

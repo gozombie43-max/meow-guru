@@ -6,7 +6,7 @@ import {
   saveTrainingDiagnosis,
   saveTrainingMistakes,
 } from "../repositories/trainingRepository.js";
-import { logger } from "../infrastructure/logger.js";
+import { logger, hashId } from "../infrastructure/logger.js";
 import {
   MODES,
   EXAMS,
@@ -96,7 +96,7 @@ export const getTrainingSession = async (req, res, next) => {
         logger.info({
           event: "training.session.completed",
           sessionId: updated.id,
-          userId: s.userId,
+          userId: hashId(s.userId),
           mode: updated.mode,
           reason: "timeout",
         });
