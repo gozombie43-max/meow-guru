@@ -1689,36 +1689,61 @@
 }
 
 
+
+/* ── iOS Exam Picker — Bottom Sheet ─────────────────────────────────────── */
+.iosSheetBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0);
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+  transition:
+    background 0.34s cubic-bezier(0.32, 0.72, 0, 1),
+    backdrop-filter 0.34s cubic-bezier(0.32, 0.72, 0, 1),
+    -webkit-backdrop-filter 0.34s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.iosSheetBackdropIn {
+  background: rgba(0, 0, 0, 0.42);
+  backdrop-filter: blur(10px) saturate(150%);
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
+}
+
 .examSheet {
-  width: min(440px, calc(100% - 24px));
-  max-height: min(60dvh, 480px, calc(100dvh - var(--safe-top, 0px) - var(--safe-bottom, 0px) - 32px));
-  margin: auto;
+  width: min(480px, 100%);
+  max-height: min(65dvh, calc(100dvh - var(--safe-top, 0px) - 32px));
   padding: 0;
   overflow: hidden;
   border: 1px solid var(--ios-separator);
-  border-radius: 28px;
+  border-radius: 24px 24px 0 0;
   background: var(--ios-bg);
   color: var(--ios-ink);
-  box-shadow: 0 24px 80px rgb(0 0 0 / 30%);
+  box-shadow: 0 -8px 40px rgb(0 0 0 / 28%), 0 -1px 0 rgba(255,255,255,0.05);
+  display: flex;
+  flex-direction: column;
+
+  /* Slide-up animation */
+  transform: translateY(110%);
+  transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1);
+  will-change: transform;
 }
-.examSheet[open] { display: flex; flex-direction: column; }
-/* Blur the content itself: some WebViews do not render dialog backdrop filters.
-   A modal dialog renders in the top layer, outside these ancestor effects. */
-.iosScreen:has(.examSheet[open]) > .iosNav,
-.iosScreen:has(.examSheet[open]) > .iosContent,
-.iosScreen:has(.examSheet[open]) > .iosToolbar {
-  filter: blur(14px);
-  pointer-events: none;
-  user-select: none;
+
+/* Light theme override */
+:global(body.theme-light) .examSheet,
+:global(html.theme-light) .examSheet,
+.iosScreen[data-theme="light"] .examSheet {
+  box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.14), 0 -1px 0 rgba(0,0,0,0.06);
 }
-.examSheet[open] { pointer-events: auto; user-select: auto; }
-.examSheet::backdrop {
-  background: rgb(0 0 0 / 28%);
-  backdrop-filter: blur(32px) saturate(150%);
-  -webkit-backdrop-filter: blur(32px) saturate(150%);
+
+.examSheetIn {
+  transform: translateY(0%);
 }
+
 .examSheetHandle {
-  width: 36px;
+  width: 38px;
   height: 5px;
   flex-shrink: 0;
   margin: 10px auto 0;
@@ -1731,18 +1756,18 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 18px 20px;
+  padding: 16px 20px;
+  border-bottom: 0.5px solid var(--ios-separator);
 }
-.examSheetHeader h2 { margin: 0; font-size: 21px; font-weight: 700; letter-spacing: -0.5px; }
+.examSheetHeader h2 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.4px; }
 .examSheetHeader p { margin: 5px 0 0; font-size: 13px; color: var(--ios-muted); }
 .examSheetOptions {
   min-height: 0;
-  flex: 0 1 auto;
+  flex: 1;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
-  margin: 0 12px 12px;
-  border-radius: 16px;
-  background: var(--ios-card);
+  padding-bottom: var(--safe-bottom, 12px);
 }
 .examSheet .examSheetOption {
   display: flex;
@@ -1751,20 +1776,28 @@
   gap: 16px;
   width: 100%;
   min-height: 54px;
-  padding: 14px 16px;
+  padding: 14px 20px;
   border: 0;
   border-radius: 0;
-  border-bottom: 1px solid var(--ios-separator);
+  border-bottom: 0.5px solid var(--ios-separator);
   background: transparent;
   color: var(--ios-ink);
   text-align: left;
   font-size: 16px;
   font-weight: 500;
   cursor: pointer;
+  transition: background 0.12s;
+  -webkit-tap-highlight-color: transparent;
 }
 .examSheetOption:last-child { border-bottom: 0; }
-.examSheetOption span { overflow-wrap: anywhere; }
-.examSheetOption svg { flex-shrink: 0; }
-.examSheet .examSheetOption[aria-pressed="true"] { color: var(--ios-accent); }
+.examSheetOption span { overflow-wrap: anywhere; flex: 1; }
+.examSheetOption svg { flex-shrink: 0; color: var(--ios-accent); }
+.examSheet .examSheetOption[aria-pressed="true"] { color: var(--ios-accent); font-weight: 600; }
 .examSheetOption:focus-visible { outline: 2px solid var(--ios-accent); outline-offset: -3px; }
 .examSheetOption:active { background: var(--ios-field); }
+
+@media (prefers-reduced-motion: reduce) {
+  .examSheet,
+  .iosSheetBackdrop { transition: none; }
+}
+

@@ -556,7 +556,7 @@
 }
 .training-page button:focus-visible,
 .training-page a:focus-visible,
-.training-setup :focus-visible {
+.training-setup :focus-visible:not(.tfp-search-input) {
   outline: 3px solid var(--tr-accent);
   outline-offset: 3px;
 }

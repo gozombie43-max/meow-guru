@@ -13,6 +13,8 @@ import {
   List,
   X,
   Check,
+  LoaderCircle,
+  Info,
   Layers,
   RotateCcw,
   Route,
@@ -28,6 +30,7 @@ import RichContent from "@/components/RichContent";
 import { useThemeMode } from "@/hooks/useTheme";
 import { modes, type Confidence, type ModeId, type TrainingSession } from "./training-types";
 import { TrainingResults } from "./TrainingResults";
+import { TrainingLoading } from "./TrainingLoading";
 import "@/app/(app)/play/play.css";
 import "./training-session.css";
 
@@ -72,6 +75,7 @@ export default function TrainingSessionView({ id }: { id: string }) {
     [confidence, setConfidence] = useState<Confidence | null>(null),
     [confirmFinish, setConfirmFinish] = useState(false);
   const [showOverview, setShowOverview] = useState(false);
+  const [pendingAction, setPendingAction] = useState("");
   const mainRef = useRef<HTMLElement>(null);
   const finishRef = useRef<HTMLDialogElement>(null);
   useQuizLeaveGuard(session?.status === "active", "/play", "Leave this training quiz? Saved answers will remain, but the session timer may continue.");
@@ -87,6 +91,11 @@ export default function TrainingSessionView({ id }: { id: string }) {
     setConfidence(s.answers[s.questions[s.current].id]?.confidence ?? null);
   }, []);
   const reload = useCallback(async () => {
+    if (sending.current) return;
+    sending.current = true;
+    setBusy(true);
+    setPendingAction("reload");
+    setError("");
     try {
       const { data } = await api.get<TrainingSession>(
         `/api/training/sessions/${id}`,
@@ -99,6 +108,10 @@ export default function TrainingSessionView({ id }: { id: string }) {
           ? e.response?.data?.error || "Could not load the session."
           : "Could not load the session.",
       );
+    } finally {
+      sending.current = false;
+      setBusy(false);
+      setPendingAction("");
     }
   }, [id, accept]);
   useEffect(() => {
@@ -127,6 +140,7 @@ export default function TrainingSessionView({ id }: { id: string }) {
       if (!session || sending.current) return;
       sending.current = true;
       setBusy(true);
+      setPendingAction(String(action.type));
       setError("");
       try {
         const { data } = await api.post<TrainingSession>(
@@ -149,6 +163,7 @@ export default function TrainingSessionView({ id }: { id: string }) {
       } finally {
         sending.current = false;
         setBusy(false);
+        setPendingAction("");
       }
     },
     [id, session, accept, router],
@@ -219,7 +234,7 @@ export default function TrainingSessionView({ id }: { id: string }) {
             {session?.exam.replaceAll("-", " ").toUpperCase()} ·{" "}
             {session?.status === "completed"
               ? "Session complete"
-              : `Question ${session ? session.current + 1 : 0} of ${session?.questions.length || 0}`}
+              : session ? `Question ${session.current + 1} of ${session.questions.length}` : "Preparing your session"}
           </span>
         </div>
         {session?.status === "active" && (
@@ -240,6 +255,12 @@ export default function TrainingSessionView({ id }: { id: string }) {
       </header>
 
       <main ref={mainRef} className="training-session-main">
+        {session && busy && (
+          <div className="training-request-status" role="status">
+            <LoaderCircle className="training-loading-icon" size={18} aria-hidden="true" />
+            {pendingAction === "visit" ? "Loading question…" : pendingAction === "reload" ? "Reloading saved questions…" : pendingAction === "finish" ? "Preparing your results…" : pendingAction === "abandon" ? "Leaving session…" : "Saving your answer…"}
+          </div>
+        )}
         {error && (
           <div role="alert" className="training-error">
             <span>{error}</span>
@@ -250,10 +271,7 @@ export default function TrainingSessionView({ id }: { id: string }) {
         )}
 
         {!session && !error && (
-          <div className="training-session-loading" role="status">
-            <div className="training-loading-spinner" />
-            <p>Loading your training session…</p>
-          </div>
+          <TrainingLoading />
         )}
 
         {session?.status === "completed" && (
@@ -381,6 +399,23 @@ export default function TrainingSessionView({ id }: { id: string }) {
                   <span className="training-tag-source">
                     {q.sourceType === "pyq" ? "PYQ" : "Question bank"}
                   </span>
+                  <details key={q.id} className="training-question-info">
+                    <summary aria-label="Question exam details" title="Question exam details" onKeyDown={event => {
+                      if (event.key === "Escape") {
+                        event.currentTarget.parentElement?.removeAttribute("open");
+                        event.currentTarget.focus();
+                      }
+                    }}>
+                      <Info size={18} aria-hidden="true" />
+                    </summary>
+                    <div className="training-question-info-content">
+                      <strong>Question source</strong>
+                      <dl>
+                        <div><dt>Exam</dt><dd>{q.examName || "Not recorded"}</dd></div>
+                        <div><dt>Year</dt><dd>{q.year || "Not recorded"}</dd></div>
+                      </dl>
+                    </div>
+                  </details>
                 </div>
 
                 <div className="training-question-text" key={q.id} tabIndex={-1}>
@@ -498,6 +533,9 @@ export default function TrainingSessionView({ id }: { id: string }) {
               <strong>{busy ? "Saving your answer..." : unsaved ? "Answer not saved yet" : session.answers[q.id]?.choice != null ? "Answer saved" : "Choose your answer"}</strong>
               <span>{canNavigate ? "Save before changing questions" : "Save to continue to the next question"}</span>
             </div>
+            <span className="training-footer-position" aria-label={`Question ${session.current + 1} of ${session.questions.length}`}>
+              {session.current + 1}<span> / {session.questions.length}</span>
+            </span>
                 <div className="training-session-actions">
                   <button
                     data-ui-button="secondary"

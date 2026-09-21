@@ -38,7 +38,7 @@ body.theme-light {
   color-scheme: light;
 }
 
-html.theme-light :is(button, a, input, select, textarea):focus-visible {
+html.theme-light :is(button, a, input, select, textarea):focus-visible:not(.tfp-search-input, [data-custom-focus]) {
   outline: 3px solid var(--light-accent);
   outline-offset: 3px;
 }

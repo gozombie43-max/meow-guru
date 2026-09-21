@@ -106,6 +106,8 @@ export const mistakeTypes = [
   "Guessing",
 ];
 export interface TrainingQuestion {
+  examName?: string | null;
+  year?: string | number | null;
   trainingBlock?: string;
   trainingBlockId?: string;
   trainingMode?: ModeId;

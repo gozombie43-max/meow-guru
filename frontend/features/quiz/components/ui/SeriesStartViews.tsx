@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback, useRef, useId } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
+
 import {
   Lock,
   Layers,
@@ -88,56 +90,94 @@ function IosExamPicker({ value, options, onChange }: {
   options: string[];
   onChange: (value: string) => void;
 }) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const [open, setOpen] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const backdropRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const prevOverflowRef = useRef("");
+
+  const handleOpen = useCallback(() => {
+    prevOverflowRef.current = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    setOpen(true);
+    requestAnimationFrame(() => setVisible(true));
+  }, []);
+
+  const handleClose = useCallback(() => {
+    setVisible(false);
+    setTimeout(() => {
+      setOpen(false);
+      document.body.style.overflow = prevOverflowRef.current;
+      triggerRef.current?.focus({ preventScroll: true });
+    }, 340);
+  }, []);
+
+  const handleBackdropClick = useCallback((e: React.MouseEvent) => {
+    if (e.target === backdropRef.current) handleClose();
+  }, [handleClose]);
+
   useEffect(() => {
     if (!open) return;
-    const dialog = dialogRef.current;
-    const dismissBackdrop = (event: MouseEvent) => {
-      if (!dialog || event.target !== dialog) return;
-      const rect = dialog.getBoundingClientRect();
-      if (event.clientX < rect.left || event.clientX > rect.right ||
-          event.clientY < rect.top || event.clientY > rect.bottom) dialog.close();
-    };
-    dialog?.addEventListener("click", dismissBackdrop);
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      dialog?.removeEventListener("click", dismissBackdrop);
-    };
-  }, [open]);
-  const close = () => dialogRef.current?.close();
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") { e.preventDefault(); handleClose(); } };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, handleClose]);
+
+
   return (
     <div className={styles.iosSelectWrapper}>
-      <button type="button" data-ui-button="state" className={styles.iosSelect}
+      <button
+        ref={triggerRef}
+        type="button"
+        data-ui-button="state"
+        className={styles.iosSelect}
         aria-label={`Select exam: ${value || "All Exams"}`}
-        aria-haspopup="dialog" aria-expanded={open}
-        onClick={() => { dialogRef.current?.showModal(); setOpen(true); }}>
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        onClick={handleOpen}
+      >
         {value || "All Exams"}
       </button>
       <ChevronDown size={14} className={styles.iosSelectChevron} />
-      <dialog ref={dialogRef} className={styles.examSheet} aria-labelledby={titleId}
-        onClose={() => setOpen(false)}>
-        <div className={styles.examSheetHandle} aria-hidden="true" />
-        <header className={styles.examSheetHeader}>
-          <div><h2 id={titleId}>Select Exam</h2><p>Choose which exam to practice</p></div>
-          <button type="button" data-ui-button="icon" aria-label="Close exam picker" onClick={close}>
-            <X size={20} />
-          </button>
-        </header>
-        <div className={styles.examSheetOptions} role="group" aria-label="Exams">
-          {options.map((exam) => (
-            <button key={exam} type="button" data-ui-button="state"
-              className={styles.examSheetOption} aria-pressed={(value || "all") === exam}
-              onClick={() => { onChange(exam === "all" ? "" : exam); close(); }}>
-              <span>{exam === "all" ? "All Exams" : exam}</span>
-              {(value || "all") === exam && <Check size={21} strokeWidth={2.7} aria-hidden="true" />}
-            </button>
-          ))}
-        </div>
-      </dialog>
+
+      {open && createPortal(
+        <div
+          ref={backdropRef}
+          className={`${styles.iosSheetBackdrop} ${visible ? styles.iosSheetBackdropIn : ""}`}
+          role="presentation"
+          onClick={handleBackdropClick}
+        >
+          <div
+            className={`${styles.examSheet} ${visible ? styles.examSheetIn : ""}`}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={titleId}
+          >
+            <div className={styles.examSheetHandle} aria-hidden="true" />
+            <header className={styles.examSheetHeader}>
+              <div>
+                <h2 id={titleId}>Select Exam</h2>
+                <p>Choose which exam to practice</p>
+              </div>
+              <button type="button" data-ui-button="icon" aria-label="Close exam picker" onClick={handleClose}>
+                <X size={20} />
+              </button>
+            </header>
+            <div className={styles.examSheetOptions} role="group" aria-label="Exams">
+              {options.map((exam) => (
+                <button key={exam} type="button" data-ui-button="state"
+                  className={styles.examSheetOption} aria-pressed={(value || "all") === exam}
+                  onClick={() => { onChange(exam === "all" ? "" : exam); handleClose(); }}>
+                  <span>{exam === "all" ? "All Exams" : exam}</span>
+                  {(value || "all") === exam && <Check size={21} strokeWidth={2.7} aria-hidden="true" />}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>,
+        document.body,
+      )}
     </div>
   );
 }

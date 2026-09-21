@@ -52,6 +52,9 @@ export function normalizeQuestion(q) {
       : { easy: 1, medium: 2, hard: 3, extreme: 4, nightmare: 5 }[
           String(q.difficulty).toLowerCase()
         ] || 2;
+  const examName = [q.examName, q.exam, ...(Array.isArray(q.exams) ? q.exams : [q.exams])]
+    .find(value => typeof value === "string" && value.trim())?.trim() || null;
+  const examYears = [...new Set(examName?.match(/\b(?:19|20)\d{2}\b/g) || [])];
   return {
     id: String(q.id),
     text: String(text),
@@ -67,7 +70,8 @@ export function normalizeQuestion(q) {
     expectedTime: clamp(Number(q.expectedTime) || 60, 10, 600),
     targetSource: q.expectedTime ? "catalog" : "baseline",
     sourceType: q.sourceType || (q.year ? "pyq" : "bank"),
-    year: q.year || null,
+    examName,
+    year: q.year || (examYears.length === 1 ? examYears[0] : null),
     shift: q.shift || null,
     discrimination: clamp(Number(q.discrimination) || 0, 0, 1),
   };

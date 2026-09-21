@@ -2,6 +2,8 @@ import { test, expect } from "@playwright/test";
 import { modes } from "../components/training/training-types";
 
 type BrowserQuestion = {
+  examName?: string;
+  year?: number;
   id: string;
   text: string;
   options: string[];
@@ -71,9 +73,15 @@ test("play exposes all modes and persists an adaptive session across reload", as
   ]);
 
   const now = Date.now();
+  let releaseCreation!: () => void;
+  let releaseQuestions!: () => void;
+  const creationGate = new Promise<void>(resolve => { releaseCreation = resolve; });
+  const questionsGate = new Promise<void>(resolve => { releaseQuestions = resolve; });
   const questions = [
     {
       id: "q1",
+      examName: "SSC CHSL Tier I 2023",
+      year: 2023,
       text: "2 + 2 = ?",
       options: ["3", "4", "5", "6"],
       image: "",
@@ -197,6 +205,7 @@ test("play exposes all modes and persists an adaptive session across reload", as
     }
 
     if (path === "/api/training/sessions" && route.request().method() === "POST") {
+      await creationGate;
       session = { ...session, serverNow: Date.now(), lastEventAt: Date.now() };
       return route.fulfill({
         status: 201,
@@ -206,6 +215,7 @@ test("play exposes all modes and persists an adaptive session across reload", as
     }
 
     if (path === "/api/training/sessions/browser-training" && route.request().method() === "GET") {
+      await questionsGate;
       session = { ...session, serverNow: Date.now() };
       return route.fulfill({
         status: 200,
@@ -328,10 +338,49 @@ test("play exposes all modes and persists an adaptive session across reload", as
   await page.setViewportSize(setupViewport);
   await page.getByRole("button", { name: "Set up Adaptive" }).click();
   await expect(page.getByRole("heading", { name: "Adaptive" })).toBeVisible();
+  await page.getByRole("button", { name: /^Subject / }).click();
+  const subjectPicker = page.getByRole("dialog", { name: "Choose subject", exact: true });
+  await expect(subjectPicker).toBeVisible();
+  await subjectPicker.getByRole("searchbox").fill("engl");
+  await subjectPicker.getByRole("radio", { name: "English", exact: true }).check();
+  await page.screenshot({ path: testInfo.outputPath("subject-picker.png") });
+  await subjectPicker.getByRole("button", { name: "Done", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Subject English", exact: true })).toBeFocused();
+  await page.getByRole("button", { name: /^Topic / }).click();
+  const topicPicker = page.getByRole("dialog", { name: "Choose topic", exact: true });
+  await expect(topicPicker.getByRole("radio", { name: "Grammar", exact: true })).toBeVisible();
+  await expect(topicPicker.getByRole("radio", { name: "Arithmetic", exact: true })).toHaveCount(0);
+  await topicPicker.getByRole("radio", { name: "Grammar", exact: true }).check();
+  await topicPicker.getByRole("button", { name: "Cancel", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Topic Balanced topic mix", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: /^Topic / }).click();
+  await topicPicker.getByRole("searchbox").fill("no-such-topic");
+  await expect(topicPicker.getByRole("status")).toContainText("No matching topics");
+  await page.keyboard.press("Escape");
+  await expect(topicPicker).toHaveCount(0);
+  await page.getByRole("button", { name: /^Subject / }).click();
+  await page.evaluate(() => history.back());
+  await expect(subjectPicker).toHaveCount(0);
+  await expect(page.getByRole("dialog", { name: "Adaptive", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Begin training" }).click();
+  await expect(page.getByText("Preparing your questions", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Building your session…" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: /^Subject / })).toBeDisabled();
+  releaseCreation();
 
   await expect(page).toHaveURL(/\/play\/session\/browser-training$/);
+  await expect(page.getByText("Loading your questions", { exact: true })).toBeVisible();
+  await expect(page.locator(".training-skeleton-option")).toHaveCount(4);
+  await page.screenshot({ path: testInfo.outputPath("question-loading.png") });
+  releaseQuestions();
   await expect(page.getByText("2 + 2 = ?", { exact: true })).toBeVisible();
+  await expect(page.locator(".training-loading-skeleton")).toHaveCount(0);
+  await page.locator("summary[aria-label='Question exam details']").click();
+  await expect(page.locator(".training-question-info-content")).toContainText("SSC CHSL Tier I 2023");
+  await expect(page.locator(".training-question-info-content dd").last()).toHaveText("2023");
+  await page.screenshot({ path: testInfo.outputPath("question-metadata.png") });
+  await page.keyboard.press("Escape");
+  await expect(page.locator(".training-question-info-content")).toBeHidden();
   for (const theme of ["light", "dark"]) {
     await page.evaluate(value => localStorage.setItem("ui-theme", value), theme);
     for (const mode of modes) {
@@ -363,6 +412,21 @@ test("play exposes all modes and persists an adaptive session across reload", as
   }
   session = { ...session, mode: "adaptive", effectiveMode: "adaptive", policy: policy("adaptive"), allowedVisitIndices: [], lives: 999 };
   const originalViewport = page.viewportSize()!;
+  if (testInfo.project.name === "desktop") {
+    for (const viewport of [{ width: 1366, height: 600 }, { width: 1280, height: 720 }]) {
+      await page.setViewportSize(viewport);
+      session.questions = [{
+        ...questions[0],
+        text: String.raw`The value of $\left(\frac{\cosec A}{\cosec A-1}+\frac{\cosec A}{\cosec A+1}\right)\left(\frac{\sec A}{\sec A-1}+\frac{\sec A}{\sec A+1}\right)^{-1}$, when $A=60^{\circ}$ is:`,
+      }, questions[1]];
+      await page.reload();
+      await expect(page.getByRole("radio")).toHaveCount(4);
+      for (const answer of await page.getByRole("radio").all()) await expect(answer).toBeInViewport({ ratio: 1 });
+      await expect(page.getByRole("button", { name: "Sure", exact: true })).toBeInViewport({ ratio: 1 });
+      expect(await page.locator(".training-session-main").evaluate(element => element.scrollHeight <= element.clientHeight + 1)).toBe(true);
+      await page.screenshot({ path: testInfo.outputPath(`desktop-fit-${viewport.width}.png`) });
+    }
+  }
   for (const viewport of [{ width: 320, height: 568 }, { width: 768, height: 540 }]) {
     await page.setViewportSize(viewport);
     session.questions = [{ ...questions[0], text: Array(12).fill("Read the statement carefully before selecting the correct answer.").join("\n\n") }, questions[1]];

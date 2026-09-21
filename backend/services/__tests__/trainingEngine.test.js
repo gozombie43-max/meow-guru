@@ -43,6 +43,18 @@ const session = (
 });
 
 describe("training question validation", () => {
+  it("preserves actual question exam metadata independently of the session exam", () => {
+    const q = question("metadata", { examName: "SSC CHSL Tier I 2023", exam: "ssc-cgl" });
+    expect(q.examName).toBe("SSC CHSL Tier I 2023");
+    expect(q.year).toBe("2023");
+    const safe = publicSession(session("adaptive", [q]), now).questions[0];
+    expect(safe.examName).toBe(q.examName);
+    expect(safe.year).toBe("2023");
+    expect(safe).not.toHaveProperty("correctIndex");
+    expect(question("array", { exams: ["SSC CGL 2022"], year: 2021 }).year).toBe(2021);
+    expect(question("missing").examName).toBeNull();
+    expect(question("ambiguous", { exam: "SSC CGL 2022 / 2023" }).year).toBeNull();
+  });
   it("normalizes letter, index, text and object IDs without revealing keys", () => {
     for (const correctAnswer of [1, "B", "4"])
       expect(question("q1", { correctAnswer }).correctIndex).toBe(1);

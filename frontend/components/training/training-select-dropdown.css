@@ -1,0 +1,221 @@
+/* ── TrainingSelectDropdown — Custom styled popover dropdown ──────────────── */
+
+/* ── Field wrapper ───────────────────────────────────────────────────────── */
+.tsd-field {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  font-size: 13px;
+  position: relative;
+  z-index: 1;
+}
+.tsd-field--open {
+  z-index: 60;
+}
+
+.tsd-label {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--tr-secondary, #647084);
+  letter-spacing: 0.01em;
+  line-height: 1;
+}
+.tsd-dark .tsd-label { color: var(--tr-secondary, #a5aebc); }
+
+/* ── Trigger button ──────────────────────────────────────────────────────── */
+.tsd-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  min-height: 50px;
+  padding: 0 16px;
+  border-radius: 14px;
+  border: 1.5px solid var(--tr-border, #e3e6eb);
+  background: var(--tr-surface, #fff);
+  color: var(--tr-text, #1c2533);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background 0.15s,
+    box-shadow 0.15s,
+    transform 0.08s;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.tsd-dark .tsd-trigger {
+  border-color: var(--tr-border, #363b44);
+  background: var(--tr-surface, #22252b);
+  color: var(--tr-text, #f0f2f5);
+}
+.tsd-trigger:hover:not(:disabled) {
+  border-color: var(--tr-accent, #2563eb);
+  background: var(--tr-muted, #f0f2f5);
+}
+.tsd-dark .tsd-trigger:hover:not(:disabled) {
+  border-color: var(--tr-accent, #85aaff);
+  background: var(--tr-muted, #2a2e35);
+}
+.tsd-trigger--open {
+  border-color: var(--tr-accent, #2563eb) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tr-accent, #2563eb) 16%, transparent);
+}
+.training-dark .tsd-trigger--open,
+.tsd-dark .tsd-trigger--open {
+  border-color: var(--tr-accent, #85aaff) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tr-accent, #85aaff) 18%, transparent);
+}
+.tsd-trigger:active:not(:disabled) { transform: scale(0.985); }
+.tsd-trigger:disabled { opacity: 0.45; cursor: not-allowed; }
+.tsd-trigger:focus-visible {
+  outline: none;
+  border-color: var(--tr-accent, #2563eb);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tr-accent, #2563eb) 20%, transparent);
+}
+
+/* ── Trigger value text ──────────────────────────────────────────────────── */
+.tsd-trigger-value {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tsd-trigger-placeholder { color: var(--tr-secondary, #647084); font-weight: 400; }
+.tsd-dark .tsd-trigger-placeholder { color: var(--tr-secondary, #a5aebc); }
+
+/* ── Animated chevron ────────────────────────────────────────────────────── */
+.tsd-chevron {
+  flex-shrink: 0;
+  color: var(--tr-secondary, #647084);
+  transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1), color 0.15s;
+}
+.tsd-dark .tsd-chevron { color: var(--tr-secondary, #a5aebc); }
+.tsd-chevron--open { transform: rotate(180deg); color: var(--tr-accent, #2563eb); }
+.tsd-dark .tsd-chevron--open { color: var(--tr-accent, #85aaff); }
+
+/* ── Dropdown Popover (anchored absolutely to .tsd-field) ────────────────── */
+.tsd-dropdown {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  border-radius: 14px;
+  border: 1.5px solid var(--tr-border, #e3e6eb);
+  background: var(--tr-surface, #fff);
+  box-shadow:
+    0 12px 38px rgba(0, 0, 0, 0.18),
+    0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+.training-dark .tsd-dropdown,
+.tsd-dark .tsd-dropdown {
+  border-color: var(--tr-border, #363b44);
+  background: var(--tr-surface, #22252b);
+  box-shadow:
+    0 14px 44px rgba(0, 0, 0, 0.6),
+    0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Dropdown opening downwards */
+.tsd-dropdown--bottom {
+  top: calc(100% + 6px);
+  bottom: auto;
+  transform-origin: top center;
+  animation: tsd-pop-bottom 0.18s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Dropdown opening upwards (e.g. Questions / Clock when near bottom) */
+.tsd-dropdown--top {
+  bottom: calc(100% + 6px);
+  top: auto;
+  transform-origin: bottom center;
+  animation: tsd-pop-top 0.18s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes tsd-pop-bottom {
+  from { opacity: 0; transform: scaleY(0.92) translateY(-4px); }
+  to   { opacity: 1; transform: scaleY(1) translateY(0); }
+}
+
+@keyframes tsd-pop-top {
+  from { opacity: 0; transform: scaleY(0.92) translateY(4px); }
+  to   { opacity: 1; transform: scaleY(1) translateY(0); }
+}
+
+/* ── Scrollable list ─────────────────────────────────────────────────────── */
+.tsd-list {
+  max-height: 220px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--tr-border, #e3e6eb) transparent;
+}
+.tsd-dark .tsd-list { scrollbar-color: var(--tr-border, #363b44) transparent; }
+
+/* ── Option row ──────────────────────────────────────────────────────────── */
+.tsd-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 11px 13px;
+  border-radius: 9px;
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--tr-text, #1c2533);
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.training-dark .tsd-option,
+.tsd-dark .tsd-option { color: var(--tr-text, #f0f2f5); }
+
+.tsd-option--focused { background: var(--tr-muted, #f0f2f5); }
+.training-dark .tsd-option--focused,
+.tsd-dark .tsd-option--focused { background: var(--tr-muted, #2a2e35); }
+
+.tsd-option--selected {
+  color: var(--tr-accent, #2563eb);
+  font-weight: 600;
+  background: color-mix(in srgb, var(--tr-accent, #2563eb) 8%, transparent);
+}
+.training-dark .tsd-option--selected,
+.tsd-dark .tsd-option--selected {
+  color: var(--tr-accent, #85aaff);
+  background: color-mix(in srgb, var(--tr-accent, #85aaff) 10%, transparent);
+}
+.tsd-option--selected.tsd-option--focused {
+  background: color-mix(in srgb, var(--tr-accent, #2563eb) 14%, transparent);
+}
+.training-dark .tsd-option--selected.tsd-option--focused,
+.tsd-dark .tsd-option--selected.tsd-option--focused {
+  background: color-mix(in srgb, var(--tr-accent, #85aaff) 16%, transparent);
+}
+
+.tsd-option-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tsd-check { flex-shrink: 0; color: var(--tr-accent, #2563eb); }
+.training-dark .tsd-check,
+.tsd-dark .tsd-check { color: var(--tr-accent, #85aaff); }
+
+/* ── Reduced motion ──────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .tsd-chevron { transition: none; }
+  .tsd-dropdown { animation: none; }
+}

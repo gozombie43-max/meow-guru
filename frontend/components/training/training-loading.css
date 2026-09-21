@@ -1,0 +1,26 @@
+.training-loading-state { width: 100%; padding: 16px 0; }
+.training-setup-fields { padding: 0; border: 0; min-width: 0; }
+.training-setup-fields:disabled { opacity: 0.6; }
+[data-ui-button="primary"] .training-loading-icon { color: inherit; }
+.training-loading-message { display: flex; align-items: center; gap: 14px; color: var(--tr-text); }
+.training-loading-message strong { font-size: 16px; }
+.training-loading-message p { margin: 6px 0 0; font-size: 13px; line-height: 1.6; color: var(--tr-secondary); }
+.training-loading-icon { flex-shrink: 0; color: var(--tr-accent); animation: training-loading-turn 1s linear infinite; }
+.training-loading-skeleton { margin-top: 24px; padding: 28px; border: 1px solid var(--tr-border); border-radius: 16px; background: var(--tr-surface); max-width: 910px; }
+.training-skeleton-line, .training-skeleton-circle { display: block; background: var(--tr-muted); animation: training-loading-pulse 1.6s ease-in-out infinite; }
+.training-skeleton-line { height: 16px; width: 100%; border-radius: 6px; margin: 14px 0; }
+.training-skeleton-line.is-short { width: 28%; height: 24px; margin-bottom: 32px; }
+.training-skeleton-line.is-medium { width: 70%; }
+.training-skeleton-options { display: grid; gap: 12px; margin-top: 32px; }
+.training-skeleton-option { display: flex; align-items: center; gap: 16px; padding: 14px; min-height: 60px; border: 1px solid var(--tr-border); border-radius: 12px; }
+.training-skeleton-option .training-skeleton-line { width: 60%; margin: 0; }
+.training-skeleton-circle { width: 30px; height: 30px; flex-shrink: 0; border-radius: 50%; }
+.training-request-status { display: flex; align-items: center; gap: 8px; color: var(--tr-secondary); font-size: 13px; margin-bottom: 12px; }
+@keyframes training-loading-turn { to { transform: rotate(360deg); } }
+@keyframes training-loading-pulse { 50% { opacity: 0.4; } }
+@media (max-width: 767px) {
+  .training-loading-skeleton { padding: 20px 0; border: 0; background: transparent; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .training-loading-icon, .training-skeleton-line, .training-skeleton-circle { animation: none; }
+}

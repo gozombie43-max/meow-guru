@@ -3,7 +3,27 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, ChevronDown, Sparkles, Target, X } from "lucide-react";
+import {
+  ArrowRight,
+  Brain,
+  ChevronDown,
+  Flame,
+  Info,
+  Layers,
+  LoaderCircle,
+  Route,
+  Shield,
+  Sparkles,
+  Target,
+  Timer,
+  X,
+  Zap,
+} from "lucide-react";
+import { TrainingFilterPicker } from "@/components/training/TrainingFilterPicker";
+import { TrainingSelectDropdown } from "@/components/training/TrainingSelectDropdown";
+import { TrainingLoading } from "@/components/training/TrainingLoading";
+
+
 import { useThemeMode } from "@/hooks/useTheme";
 import api from "@/shared/api/client";
 import { isAxiosError } from "axios";
@@ -23,8 +43,27 @@ import {
 import "./play.css";
 import "./play-hub.css";
 
+const modeIcons: Record<string, React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }>> = {
+  brain: Brain,
+  target: Target,
+  zap: Zap,
+  timer: Timer,
+  layers: Layers,
+  route: Route,
+  flame: Flame,
+  shield: Shield,
+};
+
+const categoryIcons: Record<string, React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }>> = {
+  ai: Sparkles,
+  speed: Zap,
+  sectional: Layers,
+  extreme: Flame,
+};
+
 export default function PlayPage() {
   const { theme } = useThemeMode();
+
   const router = useRouter();
   const contentRef = useRef<HTMLElement>(null);
   const [tab, setTab] = useState("Play"),
@@ -352,133 +391,183 @@ export default function PlayPage() {
             else setSelected(null);
           }}
         >
-          <div className="training-panel-heading">
-            <span className="training-kicker">SESSION BRIEF</span>
+          {/* iOS Sheet Handle */}
+          <div className="setup-sheet-handle" aria-hidden="true" />
+
+          {/* Modal Header */}
+          <div className="setup-sheet-header">
+            <div className="setup-badge-group">
+              <span className={`setup-cat-badge setup-cat--${selectedMode?.category?.toLowerCase() || "ai"}`}>
+                {(() => {
+                  const CatIcon = categoryIcons[selectedMode?.category?.toLowerCase() || "ai"] || Sparkles;
+                  return <CatIcon size={12} strokeWidth={2.4} aria-hidden="true" />;
+                })()}
+                {selectedMode?.category || "Training"}
+              </span>
+              <span className="setup-kicker">SESSION BRIEF</span>
+            </div>
             <button
-              data-ui-button="icon"
+              type="button"
+              className="setup-close-btn"
               aria-label="Close setup"
               disabled={busy}
               onClick={() => setSelected(null)}
             >
-              <X size={20} />
+              <X size={16} strokeWidth={2.4} />
             </button>
           </div>
+
           <div className="training-setup-scroll">
-          <h2 id="training-setup-title">
-            {selectedMode?.title || "Smart review"}
-          </h2>
-          <p id="training-setup-description">
-            {selectedMode?.detail ||
-              "Work through questions that are due for spaced review."}
-          </p>
-          <div className="training-form">
-            {selectedPolicy?.supportsTier && exam !== "cat" && (
-              <label>
-                Tier
-                <select value={tier} onChange={(e) => setTier(e.target.value)}>
-                  <option value="1">Tier I</option>
-                  <option value="2">Tier II</option>
-                </select>
-              </label>
+            {/* Mode Hero */}
+            <div className="setup-hero">
+              <div className={`setup-hero-icon-box setup-icon--${selectedMode?.category?.toLowerCase() || "ai"}`}>
+                {(() => {
+                  const ModeIcon = (selectedMode?.icon && modeIcons[selectedMode.icon as keyof typeof modeIcons]) || Sparkles;
+                  return <ModeIcon size={24} strokeWidth={2.2} />;
+                })()}
+              </div>
+              <div className="setup-hero-info">
+                <h2 id="training-setup-title">
+                  {selectedMode?.title || "Smart review"}
+                </h2>
+                <p id="training-setup-description">
+                  {selectedMode?.detail ||
+                    "Work through questions that are due for spaced review."}
+                </p>
+              </div>
+            </div>
+
+            {busy && (
+              <TrainingLoading
+                title="Preparing your questions"
+                description="Choosing questions for your mode and selected topics. Your session will open when ready."
+                skeleton={false}
+              />
             )}
-            <label>
-              Subject
-              <select
+
+            {/* Form Fields Grid */}
+            <fieldset
+              className="setup-form-grid"
+              disabled={busy || loading}
+              aria-busy={busy || loading}
+            >
+              {selectedPolicy?.supportsTier && exam !== "cat" && (
+                <TrainingSelectDropdown
+                  label="Tier"
+                  value={tier}
+                  placeholder="Select tier"
+                  options={[
+                    { value: "1", label: "Tier I" },
+                    { value: "2", label: "Tier II" },
+                  ]}
+                  disabled={busy || loading}
+                  onChange={setTier}
+                />
+              )}
+
+              {/* Subject — custom dropdown */}
+              <TrainingSelectDropdown
+                label="Subject"
                 value={subject}
-                onChange={(e) => {
-                  setSubject(e.target.value);
-                  setTopic("");
+                placeholder={selectedPolicy?.requiresSubject ? "Choose a subject" : "All subjects"}
+                options={[
+                  { value: "", label: selectedPolicy?.requiresSubject ? "Choose a subject" : "All subjects" },
+                  ...[...new Set(dashboard?.subjects || [])].map((s) => ({ value: s, label: s })),
+                ]}
+                disabled={busy || loading}
+                onChange={(val) => {
+                  if (val !== subject) {
+                    setSubject(val);
+                    setTopic("");
+                  }
                 }}
-              >
-                <option value="">
-                  {selectedPolicy?.requiresSubject
-                    ? "Choose a section subject"
-                    : "All available subjects"}
-                </option>
-                {dashboard?.subjects.map((s) => (
-                  <option key={s}>{s}</option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Topic
-              <select value={topic} onChange={(e) => setTopic(e.target.value)}>
-                <option value="">Balanced topic mix</option>
-                {topicOptions.map((t) => (
-                  <option key={t}>{t}</option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Questions
-              <select
-                value={count}
-                onChange={(e) =>
-                  setCount(
-                    e.target.value === "full" ? "full" : Number(e.target.value),
-                  )
-                }
-              >
-                {[10, 20, 25, 50].map((n) => (
-                  <option key={n} value={n}>
-                    {n} questions
-                  </option>
-                ))}
-                {selectedPolicy?.supportsFullSection && (
-                  <option value="full">Full configured section</option>
-                )}
-              </select>
-            </label>
-            {selectedPolicy?.clock === "fixed" && (
-              <label>
-                Clock
-                <select
-                  value={minutes}
-                  onChange={(e) => setMinutes(Number(e.target.value))}
-                >
-                  {(selectedPolicy.minuteOptions.length
+              />
+
+              {/* Topic — iOS bottom-sheet modal */}
+              <TrainingFilterPicker
+                label="Topic"
+                value={topic}
+                options={topicOptions}
+                emptyLabel="Balanced topic mix"
+                onChange={setTopic}
+              />
+
+              {/* Questions — custom dropdown */}
+              <TrainingSelectDropdown
+                label="Questions"
+                value={String(count)}
+                placeholder="20 questions"
+                placement="top"
+                options={[
+                  ...[10, 20, 25, 50].map((n) => ({ value: String(n), label: `${n} questions` })),
+                  ...(selectedPolicy?.supportsFullSection
+                    ? [{ value: "full", label: "Full configured section" }]
+                    : []),
+                ]}
+                disabled={busy || loading}
+                onChange={(val) => setCount(val === "full" ? "full" : Number(val))}
+              />
+
+              {/* Clock — custom dropdown */}
+              {selectedPolicy?.clock === "fixed" && (
+                <TrainingSelectDropdown
+                  label="Clock"
+                  value={String(minutes)}
+                  placeholder="10 minutes"
+                  placement="top"
+                  options={(selectedPolicy.minuteOptions.length
                     ? selectedPolicy.minuteOptions
                     : [5, 10, 15]
-                  ).map((n) => (
-                    <option key={n} value={n}>
-                      {n} minutes
-                    </option>
-                  ))}
-                </select>
-              </label>
+                  ).map((n) => ({ value: String(n), label: `${n} minutes` }))}
+                  disabled={busy || loading}
+                  onChange={(val) => setMinutes(Number(val))}
+                />
+              )}
+            </fieldset>
+
+
+            {/* Note / Info Callout Card */}
+            <div className="setup-info-card">
+              <div className="setup-info-icon">
+                <Info size={16} strokeWidth={2.4} aria-hidden="true" />
+              </div>
+              <div className="setup-info-text">
+                <strong>
+                  {selectedPolicy?.sectional
+                    ? "Officially configured section marking is applied."
+                    : "Practice scoring is applied by the server."}
+                </strong>
+                <p>
+                  The clock continues if you leave. Bank availability may shorten the session.
+                </p>
+              </div>
+            </div>
+
+            {error && (
+              <p className="training-error" role="alert">
+                {error}
+              </p>
             )}
           </div>
-          <div className="training-brief-note">
-            <strong>
-              {selectedPolicy?.sectional
-                ? "Officially configured section marking is applied by the server."
-                : "Practice scoring is applied by the server for this mode."}
-            </strong>
-            <p>
-              The clock continues if you leave. Bank availability may shorten
-              the session. Full exam rules are available under Mock.
-            </p>
-          </div>
-          {error && (
-            <p className="training-error" role="alert">
-              {error}
-            </p>
-          )}
-          </div>
-          <footer className="training-setup-footer" data-ui-chrome="footer">
-          <button
-            className="training-start"
-            data-ui-button="primary"
-            disabled={
-              busy ||
-              loading ||
-              (!!selectedPolicy?.requiresSubject && !subject)
-            }
-            onClick={() => start()}
-          >
-            {busy ? "Building your session…" : "Begin training"}
-            <ArrowRight size={18} />
-          </button>
+
+          {/* Sticky Modern Action Footer */}
+          <footer className="setup-footer" data-ui-chrome="footer">
+            <button
+              className="setup-start-btn"
+              disabled={
+                busy ||
+                loading ||
+                (!!selectedPolicy?.requiresSubject && !subject)
+              }
+              onClick={() => start()}
+            >
+              <span>{busy ? "Building your session…" : "Begin training"}</span>
+              {busy ? (
+                <LoaderCircle className="setup-loading-spin" size={18} aria-hidden="true" />
+              ) : (
+                <ArrowRight size={18} strokeWidth={2.4} />
+              )}
+            </button>
           </footer>
         </dialog>
       )}
