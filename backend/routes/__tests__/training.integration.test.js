@@ -361,4 +361,16 @@ describe("persistent training API", () => {
     expect(await db.collection("trainingSkillState").countDocuments({ userId: "student", level: "topic" })).toBe(1);
     expect(await db.collection("trainingReviewState").countDocuments({ userId: "student" })).toBe(1);
   });
+
+  it("returns 201 for a new daily mission and 200 for an existing one", async () => {
+    const firstResponse = await request("/sessions", "POST", { mode: "mission", exam: "ssc-cgl" });
+    expect(firstResponse.status).toBe(201);
+    const firstBody = await firstResponse.json();
+    expect(firstBody).toHaveProperty("id");
+
+    const secondResponse = await request("/sessions", "POST", { mode: "mission", exam: "ssc-cgl" });
+    expect(secondResponse.status).toBe(200);
+    const secondBody = await secondResponse.json();
+    expect(secondBody.id).toBe(firstBody.id);
+  });
 });

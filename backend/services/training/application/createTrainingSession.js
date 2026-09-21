@@ -181,7 +181,9 @@ export async function createTrainingSessionCommand(userId, config, now) {
     await insertTrainingSession(s);
   } catch (error) {
     if (error.code !== 11000 || config.mode !== "mission") throw error;
-    return { session: await findMission(userId, config.exam, missionDate), isNew: false };
+    const existing = await findMission(userId, config.exam, missionDate);
+    if (!existing) throw error;
+    return { session: existing, isNew: false };
   }
   
   logger.info({
