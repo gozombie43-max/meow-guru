@@ -190,12 +190,12 @@ export function TrainingFilterPicker({ label, value, options, emptyLabel, onChan
         type="button"
         id={`${id}-trigger`}
         className={`tsd-trigger ${open ? "tsd-trigger--open" : ""}`}
-        aria-labelledby={`${id}-label`}
+        aria-labelledby={`${id}-label ${id}-value`}
         aria-haspopup="dialog"
         aria-expanded={open}
         onClick={() => { setDraft(value); setQuery(""); setOpen(true); }}
       >
-        <span className={`tsd-trigger-value ${!value ? "tsd-trigger-placeholder" : ""}`}>
+        <span id={`${id}-value`} className={`tsd-trigger-value ${!value ? "tsd-trigger-placeholder" : ""}`}>
           {value || emptyLabel}
         </span>
         <ChevronDown

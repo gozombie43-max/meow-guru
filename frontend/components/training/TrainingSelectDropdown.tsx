@@ -100,6 +100,7 @@ export function TrainingSelectDropdown({
 
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
+        e.preventDefault();
         e.stopPropagation();
         setOpen(false);
         triggerRef.current?.focus();
@@ -149,7 +150,7 @@ export function TrainingSelectDropdown({
         type="button"
         id={`${id}-trigger`}
         className={`tsd-trigger ${open ? "tsd-trigger--open" : ""}`}
-        aria-labelledby={`${id}-label`}
+        aria-labelledby={`${id}-label ${id}-value`}
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={`${id}-list`}
@@ -157,6 +158,7 @@ export function TrainingSelectDropdown({
         onClick={() => (open ? handleClose() : handleOpen())}
       >
         <span
+          id={`${id}-value`}
           className={`tsd-trigger-value ${!value ? "tsd-trigger-placeholder" : ""}`}
         >
           {value ? selectedLabel : placeholder}

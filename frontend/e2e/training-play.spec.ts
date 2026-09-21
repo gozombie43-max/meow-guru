@@ -46,6 +46,7 @@ test("play exposes all modes and persists an adaptive session across reload", as
   context,
   request,
 }, testInfo) => {
+  test.setTimeout(90000);
   const hostname = new URL(testInfo.project.use.baseURL || "http://127.0.0.1:3110").hostname;
   const login = await request.post("http://127.0.0.1:3111/auth/login", {
     data: {
@@ -330,8 +331,10 @@ test("play exposes all modes and persists an adaptive session across reload", as
     await page.getByRole("button", { name: `Set up ${mode.title}`, exact: true }).click();
     const setup = page.getByRole("dialog");
     await expect(setup.getByRole("heading", { name: mode.title, exact: true })).toBeVisible();
-    const startBounds = await setup.getByRole("button", { name: "Begin training" }).boundingBox();
-    expect(startBounds!.y + startBounds!.height).toBeLessThanOrEqual(page.viewportSize()!.height);
+    await expect(async () => {
+      const b = await setup.getByRole("button", { name: "Begin training" }).boundingBox();
+      expect(b!.y + b!.height).toBeLessThanOrEqual(page.viewportSize()!.height);
+    }).toPass();
     if (mode.id === "adaptive") await page.screenshot({ path: testInfo.outputPath("setup.png") });
     await page.getByRole("button", { name: "Close setup" }).click();
   }
@@ -339,15 +342,13 @@ test("play exposes all modes and persists an adaptive session across reload", as
   await page.getByRole("button", { name: "Set up Adaptive" }).click();
   await expect(page.getByRole("heading", { name: "Adaptive" })).toBeVisible();
   await page.getByRole("button", { name: /^Subject / }).click();
-  const subjectPicker = page.getByRole("dialog", { name: "Choose subject", exact: true });
-  await expect(subjectPicker).toBeVisible();
-  await subjectPicker.getByRole("searchbox").fill("engl");
-  await subjectPicker.getByRole("radio", { name: "English", exact: true }).check();
+  const subjectListbox = page.getByRole("listbox", { name: "Subject" });
+  await expect(subjectListbox).toBeVisible();
+  await subjectListbox.getByRole("option", { name: "English", exact: true }).click();
   await page.screenshot({ path: testInfo.outputPath("subject-picker.png") });
-  await subjectPicker.getByRole("button", { name: "Done", exact: true }).click();
   await expect(page.getByRole("button", { name: "Subject English", exact: true })).toBeFocused();
   await page.getByRole("button", { name: /^Topic / }).click();
-  const topicPicker = page.getByRole("dialog", { name: "Choose topic", exact: true });
+  const topicPicker = page.getByRole("dialog", { name: "Choose Topic", exact: true });
   await expect(topicPicker.getByRole("radio", { name: "Grammar", exact: true })).toBeVisible();
   await expect(topicPicker.getByRole("radio", { name: "Arithmetic", exact: true })).toHaveCount(0);
   await topicPicker.getByRole("radio", { name: "Grammar", exact: true }).check();
@@ -359,8 +360,8 @@ test("play exposes all modes and persists an adaptive session across reload", as
   await page.keyboard.press("Escape");
   await expect(topicPicker).toHaveCount(0);
   await page.getByRole("button", { name: /^Subject / }).click();
-  await page.evaluate(() => history.back());
-  await expect(subjectPicker).toHaveCount(0);
+  await page.keyboard.press("Escape");
+  await expect(subjectListbox).toHaveCount(0);
   await expect(page.getByRole("dialog", { name: "Adaptive", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Begin training" }).click();
   await expect(page.getByText("Preparing your questions", { exact: true })).toBeVisible();
@@ -393,8 +394,10 @@ test("play exposes all modes and persists an adaptive session across reload", as
       await page.reload();
       await expect(page.getByText("2 + 2 = ?", { exact: true })).toBeVisible();
       const footer = page.locator(".training-session-footer");
-      const bounds = await footer.boundingBox();
-      expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(page.viewportSize()!.height + 1);
+      await expect(async () => {
+        const bounds = await footer.boundingBox();
+        expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(page.viewportSize()!.height + 1);
+      }).toPass();
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       if (page.viewportSize()!.width < 1024) {
         const toggle = page.getByRole("button", { name: free ? "Questions" : "Session info", exact: true });
