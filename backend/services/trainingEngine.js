@@ -1,4 +1,5 @@
 import { mockAnswerIndex } from "./mockAnswer.js";
+import { normalizeTrainingSubject } from "./trainingSubjects.js";
 import {
   TRAINING_EXAMS,
   TRAINING_MODES,
@@ -442,64 +443,103 @@ export function selectQuestions(
   now = Date.now(),
   exposureRows = [],
 ) {
-  const skills = new Map(
-    intelligence.topics.map((p) => [`${p.subject} / ${p.topic}`, p]),
-  );
-  const due = new Set(intelligence.due.map((r) => r.questionId));
+  const topicKey = q => JSON.stringify([normalizeTrainingSubject(q.subject), q.topic]);
+  // Old sessions can store the same subject under several labels. Combine their
+  // evidence for selection without rewriting historical session snapshots.
+  const skills = new Map();
+  for (const p of intelligence.topics) {
+    const key = topicKey(p);
+    const old = skills.get(key);
+    const attempts = Math.max(0, Number(p.attempts) || 0);
+    const total = (old?.attempts || 0) + attempts;
+    const weight = total ? attempts / total : 1;
+    skills.set(key, {
+      attempts: total,
+      mastery: (old?.mastery ?? 0.5) * (1 - weight) + clamp(p.mastery ?? 0.5, 0, 1) * weight,
+      seconds: (old?.seconds ?? 60) * (1 - weight) + (p.seconds || 60) * weight,
+      lastAt: Math.max(old?.lastAt || 0, Date.parse(p.lastAt) || 0),
+    });
+  }
+  const masteryFor = skill => 0.5 + ((skill?.mastery ?? 0.5) - 0.5) * Math.min(1, (skill?.attempts || 0) / 10);
+  const due = new Set(intelligence.due.map((r) => String(r.questionId)));
   const exposure = new Map(
     exposureRows.map((row) => [String(row.questionId), row]),
   );
-  const ranked = pool
+  const floor = getTrainingModePolicy(mode).minDifficulty;
+  const ranked = [...new Map(pool.map(q => [String(q.id), q])).values()]
+    .filter(q => q.difficulty >= floor)
     .map((q) => {
-      const p = skills.get(`${q.subject} / ${q.topic}`);
-      const weakness = 1 - (p?.mastery ?? 0.5);
-      const fit =
-        1 / (1 + Math.abs(q.difficulty - (1 + (p?.mastery ?? 0.5) * 3)));
+      const p = skills.get(topicKey(q));
+      const mastery = masteryFor(p);
+      const weakness = 1 - mastery;
       const recency = p?.lastAt
-        ? Math.min(1, (now - new Date(p.lastAt).getTime()) / (7 * DAY))
+        ? clamp((now - p.lastAt) / (7 * DAY), 0, 1)
         : 1;
       let rank =
         weakness * 4 +
-        fit * 2 +
         recency +
-        Number(due.has(q.id)) * 4 +
+        Number(due.has(String(q.id))) * 4 +
         Number(q.sourceType === "pyq");
       if (mode === "sprint")
         rank =
-          (p?.mastery ?? 0.5) * 4 +
-          Math.max(0, (p?.seconds || q.expectedTime) / q.expectedTime - 1) * 3 -
-          q.difficulty;
-      if (["challenge", "nightmare", "survival"].includes(mode))
-        rank += q.difficulty * 2 + q.discrimination * 2;
-      if (mode === "review") rank = due.has(q.id) ? 100 : -100;
+          mastery * 4 +
+          clamp((p?.seconds || q.expectedTime) / Math.max(1, q.expectedTime) - 1, 0, 2) * mastery * 3;
+      if (["section", "pressure"].includes(mode))
+        rank = weakness * 0.5 + recency + Number(q.sourceType === "pyq");
+      if (["challenge", "nightmare"].includes(mode))
+        rank += clamp(Number(q.discrimination) || 0, 0, 1) * 2;
+      if (mode === "review") rank = due.has(String(q.id)) ? 100 : -100;
       if (mode !== "review") {
         const seen = exposure.get(String(q.id));
         if (seen) {
           const ageDays = Math.max(
             0,
-            (now - new Date(seen.lastSeenAt || 0).getTime()) / DAY,
+            (now - (Date.parse(seen.lastSeenAt) || 0)) / DAY,
           );
           rank -= Math.log1p(Number(seen.timesSeen) || 1) * 1.5;
           if (ageDays < 1) rank -= 6;
           else if (ageDays < 7) rank -= 3 * (1 - ageDays / 7);
         }
       }
-      return { q, rank };
+      return { q, rank, mastery };
     })
-    .filter((r) => mode !== "review" || due.has(r.q.id))
+    .filter((r) => mode !== "review" || due.has(String(r.q.id)))
     .sort((a, b) => b.rank - a.rank || a.q.id.localeCompare(b.q.id));
   const selected = [],
-    topicCount = new Map();
+    topicCount = new Map(),
+    subjectCount = new Map();
+  const targetCount = Math.min(count, ranked.length);
+  const score = ({ q, rank, mastery }) => {
+    const position = selected.length;
+    const progress = targetCount > 1 ? position / (targetCount - 1) : 0;
+    const ability = 1 + mastery * 3;
+    let target = ability;
+    if (mode === "adaptive") target += [0, 0, -1, 0, 1][position % 5];
+    if (mode === "challenge")
+      target = (position + 1) % 5 === 0 ? ability - 1 : ability + progress * (5 - ability);
+    if (mode === "survival") target = 2 + progress * 3;
+    if (mode === "nightmare") target = Math.max(3, ability) + progress * (5 - Math.max(3, ability));
+    if (mode === "sprint") target = Math.min(3, ability);
+    if (["section", "pressure", "gauntlet"].includes(mode))
+      target = [2, 3, 1, 3, 4][position % 5];
+    const difficultyFit = mode === "review" ? 0 : 4 / (1 + Math.abs(q.difficulty - clamp(target, floor, 5)));
+    return rank + difficultyFit
+      - (topicCount.get(topicKey(q)) || 0) * 2
+      - (subjectCount.get(normalizeTrainingSubject(q.subject)) || 0) * 2;
+  };
   while (ranked.length && selected.length < count) {
-    // Soft distribution constraint: penalize overrepresented topics at every pick.
-    ranked.sort(
-      (a, b) =>
-        b.rank -
-        (topicCount.get(b.q.topic) || 0) * 2 -
-        (a.rank - (topicCount.get(a.q.topic) || 0) * 2),
-    );
-    const { q } = ranked.shift();
-    const skill = skills.get(`${q.subject} / ${q.topic}`);
+    // One scan per pick avoids repeatedly sorting the whole candidate bank.
+    let best = 0;
+    let bestScore = score(ranked[0]);
+    for (let i = 1; i < ranked.length; i++) {
+      const candidateScore = score(ranked[i]);
+      if (candidateScore > bestScore) {
+        best = i;
+        bestScore = candidateScore;
+      }
+    }
+    const { q } = ranked.splice(best, 1)[0];
+    const skill = skills.get(topicKey(q));
     selected.push(
       skill?.attempts >= 5
         ? {
@@ -515,16 +555,18 @@ export function selectQuestions(
           }
         : q,
     );
-    topicCount.set(q.topic, (topicCount.get(q.topic) || 0) + 1);
+    topicCount.set(topicKey(q), (topicCount.get(topicKey(q)) || 0) + 1);
+    const subject = normalizeTrainingSubject(q.subject);
+    subjectCount.set(subject, (subjectCount.get(subject) || 0) + 1);
   }
   if (["challenge", "nightmare", "survival"].includes(mode))
     selected.sort((a, b) => a.difficulty - b.difficulty);
   if (mode === "gauntlet")
     selected.sort((a, b) => {
       const aMastery =
-        skills.get(`${a.subject} / ${a.topic}`)?.mastery ?? 0.5;
+        masteryFor(skills.get(topicKey(a)));
       const bMastery =
-        skills.get(`${b.subject} / ${b.topic}`)?.mastery ?? 0.5;
+        masteryFor(skills.get(topicKey(b)));
       return (
         aMastery - bMastery ||
         a.topic.localeCompare(b.topic) ||

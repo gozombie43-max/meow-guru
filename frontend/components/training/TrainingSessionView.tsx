@@ -1,5 +1,5 @@
 "use client";
-import { useQuizLeaveGuard } from "@/hooks/useAppNavigation";
+import { useBackLayer, useQuizLeaveGuard } from "@/hooks/useAppNavigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -10,6 +10,9 @@ import {
   Clock,
   Flame,
   Heart,
+  List,
+  X,
+  Check,
   Layers,
   RotateCcw,
   Route,
@@ -68,7 +71,12 @@ export default function TrainingSessionView({ id }: { id: string }) {
   const [choice, setChoice] = useState<number | null>(null),
     [confidence, setConfidence] = useState<Confidence | null>(null),
     [confirmFinish, setConfirmFinish] = useState(false);
+  const [showOverview, setShowOverview] = useState(false);
+  const mainRef = useRef<HTMLElement>(null);
+  const finishRef = useRef<HTMLDialogElement>(null);
   useQuizLeaveGuard(session?.status === "active", "/play", "Leave this training quiz? Saved answers will remain, but the session timer may continue.");
+  useBackLayer(showOverview, () => setShowOverview(false));
+  useBackLayer(confirmFinish, () => { if (!busy) setConfirmFinish(false); });
   const offset = useRef(0),
     sending = useRef(false);
   const accept = useCallback((s: TrainingSession) => {
@@ -158,6 +166,21 @@ export default function TrainingSessionView({ id }: { id: string }) {
     return () => clearTimeout(timeout);
   }, [session, remaining, busy, error, act]);
 
+  const currentQuestionId = session?.questions[session.current]?.id;
+  useEffect(() => {
+    mainRef.current?.scrollTo({ top: 0 });
+  }, [currentQuestionId]);
+  useEffect(() => {
+    if (!confirmFinish) return;
+    const dialog = finishRef.current;
+    const trigger = document.activeElement as HTMLElement | null;
+    dialog?.showModal();
+    return () => {
+      dialog?.close();
+      trigger?.focus();
+    };
+  }, [confirmFinish]);
+
   const q = session?.questions[session.current];
   const canNavigate = session?.policy.navigation === "free";
   const seconds = q
@@ -167,9 +190,12 @@ export default function TrainingSessionView({ id }: { id: string }) {
       )
     : 0;
 
+  const answered = session ? Object.values(session.answers).filter(a => a.choice != null).length : 0;
+  const unsaved = !!q && (choice !== (session?.answers[q.id]?.choice ?? null) || confidence !== (session?.answers[q.id]?.confidence ?? null));
+
   return (
     <div
-      className={`training-page training-session ${theme === "dark" ? "training-dark" : ""}`}
+      className={`training-page training-session ${confirmFinish ? "has-finish-dialog" : ""} ${theme === "dark" ? "training-dark" : ""}`}
     >
       <header className="training-session-header" data-ui-chrome="header">
         <Link replace
@@ -206,9 +232,14 @@ export default function TrainingSessionView({ id }: { id: string }) {
             <span>{clock(remaining)}</span>
           </div>
         )}
+        {session?.status === "active" && (
+          <button data-ui-button="secondary" className="training-header-finish" aria-label="Finish session" disabled={busy} onClick={() => setConfirmFinish(true)}>
+            Finish
+          </button>
+        )}
       </header>
 
-      <main className="training-session-main">
+      <main ref={mainRef} className="training-session-main">
         {error && (
           <div role="alert" className="training-error">
             <span>{error}</span>
@@ -232,6 +263,9 @@ export default function TrainingSessionView({ id }: { id: string }) {
         {session?.status === "active" && q && (
           <>
             <div className="training-question-meta">
+              <button className="training-overview-toggle" data-ui-button="secondary" aria-expanded={showOverview} aria-controls="training-overview" onClick={() => setShowOverview(!showOverview)}>
+                <List size={18} /> {canNavigate ? "Questions" : "Session info"}
+              </button>
               <div className="training-meta-left">
                 <span className="training-question-counter">
                   QUESTION {session.current + 1} OF {session.questions.length}
@@ -275,12 +309,63 @@ export default function TrainingSessionView({ id }: { id: string }) {
               <progress
                 className="training-progress"
                 max={session.questions.length}
-                value={session.current + 1}
-                aria-label={`Question ${session.current + 1} of ${session.questions.length}`}
+                value={answered}
+                aria-label={`${answered} of ${session.questions.length} answered`}
               />
             </div>
 
             <div className="training-session-columns">
+              <aside id="training-overview" className={`training-session-aside ${showOverview ? "is-open" : ""}`}>
+                <section className="training-panel training-sidebar-panel">
+                  <h2>
+                    {canNavigate ? "Question Navigator" : "Session Brief"}
+                  </h2>
+                  {canNavigate ? (
+                    <>
+                      <p className="training-sidebar-desc">
+                        Save your answer before moving. Choose any available question below.
+                      </p>
+                      <div className="training-palette">
+                        {session.questions
+                          .map((item, i) => ({ item, i }))
+                          .filter(({ i }) => session.allowedVisitIndices.includes(i))
+                          .map(({ item, i }) => {
+                          const isAnswered =
+                            session.answers[item.id]?.choice != null;
+                          const isCurrent = i === session.current;
+                          return (
+                            <button
+                              key={item.id}
+                              data-ui-button="state"
+                              aria-label={`Question ${i + 1}${isAnswered ? ", answered" : ""}`}
+                              aria-current={isCurrent ? "step" : undefined}
+                              className={`training-palette-btn ${isAnswered ? "answered" : ""} ${isCurrent ? "current" : ""}`}
+                              disabled={busy}
+                              onClick={() => { setShowOverview(false); void act({ type: "visit", index: i }); }}
+                            >
+                              {i + 1}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </>
+                  ) : (
+                    <p className="training-sidebar-desc">
+                      {modes.find((m) => m.id === session.effectiveMode)?.detail ||
+                        "Review due questions. Successful recall extends the next interval."}
+                    </p>
+                  )}
+                  <div className="training-marking-badge">
+                    <span className="marking-pos">+{session.marking.correct} correct</span>
+                    <span className="marking-neg">−{session.marking.wrong} wrong</span>
+                  </div>
+                  <p className="training-footnote">
+                    The clock continues if you leave this page.
+                  </p>
+                </section>
+
+
+              </aside>
               <section className="training-question-panel">
                 <div className="training-question-tags">
                   {q.trainingBlock && (
@@ -298,7 +383,7 @@ export default function TrainingSessionView({ id }: { id: string }) {
                   </span>
                 </div>
 
-                <div className="training-question-text">
+                <div className="training-question-text" key={q.id} tabIndex={-1}>
                   <RichContent text={q.text} />
                   {q.image && (
                     <div className="training-question-image-wrap">
@@ -333,6 +418,7 @@ export default function TrainingSessionView({ id }: { id: string }) {
                         <div className="training-option-content">
                           <RichContent text={option} />
                         </div>
+                        <span className="training-option-check" aria-hidden="true">{isSelected && <Check size={16} />}</span>
                       </button>
                     );
                   })}
@@ -397,6 +483,21 @@ export default function TrainingSessionView({ id }: { id: string }) {
                   </fieldset>
                 )}
 
+
+              </section>
+
+
+            </div>
+          </>
+        )}
+      </main>
+      {session?.status === "active" && q && (
+        <footer className="training-session-footer" data-ui-chrome="footer">
+          <div className="training-footer-inner">
+            <div className="training-save-status" role="status">
+              <strong>{busy ? "Saving your answer..." : unsaved ? "Answer not saved yet" : session.answers[q.id]?.choice != null ? "Answer saved" : "Choose your answer"}</strong>
+              <span>{canNavigate ? "Save before changing questions" : "Save to continue to the next question"}</span>
+            </div>
                 <div className="training-session-actions">
                   <button
                     data-ui-button="secondary"
@@ -424,104 +525,26 @@ export default function TrainingSessionView({ id }: { id: string }) {
                     <ArrowRight size={16} />
                   </button>
                 </div>
-              </section>
-
-              <aside className="training-session-aside">
-                <section className="training-panel training-sidebar-panel">
-                  <h2>
-                    {canNavigate ? "Question Navigator" : "Session Brief"}
-                  </h2>
-                  {canNavigate ? (
-                    <>
-                      <p className="training-sidebar-desc">
-                        Save your answer before moving. You can jump back to any
-                        question at any time.
-                      </p>
-                      <div className="training-palette">
-                        {session.questions
-                          .map((item, i) => ({ item, i }))
-                          .filter(({ i }) => session.allowedVisitIndices.includes(i))
-                          .map(({ item, i }) => {
-                          const isAnswered =
-                            session.answers[item.id]?.choice != null;
-                          const isCurrent = i === session.current;
-                          return (
-                            <button
-                              key={item.id}
-                              data-ui-button="state"
-                              aria-label={`Question ${i + 1}${isAnswered ? ", answered" : ""}`}
-                              aria-current={isCurrent ? "step" : undefined}
-                              className={`training-palette-btn ${isAnswered ? "answered" : ""} ${isCurrent ? "current" : ""}`}
-                              disabled={busy}
-                              onClick={() => act({ type: "visit", index: i })}
-                            >
-                              {i + 1}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </>
-                  ) : (
-                    <p className="training-sidebar-desc">
-                      {modes.find((m) => m.id === session.effectiveMode)?.detail ||
-                        "Review due questions. Successful recall extends the next interval."}
-                    </p>
-                  )}
-                  <div className="training-marking-badge">
-                    <span className="marking-pos">+{session.marking.correct} correct</span>
-                    <span className="marking-neg">−{session.marking.wrong} wrong</span>
-                  </div>
-                  <p className="training-footnote">
-                    The clock continues if you leave this page.
-                  </p>
-                </section>
-
-                {confirmFinish ? (
-                  <section className="training-panel training-finish-panel">
-                    <h2>Finish this session?</h2>
-                    <p>
-                      Unanswered questions earn zero. Your saved answers will be
-                      scored.
-                    </p>
-                    <div className="training-finish-actions">
-                      <button
-                        data-ui-button="primary"
-                        disabled={busy}
-                        onClick={() => act({ type: "finish" })}
-                      >
-                        Finish & see results
-                      </button>
-                      <button
-                        data-ui-button="secondary"
-                        disabled={busy}
-                        onClick={() => setConfirmFinish(false)}
-                      >
-                        Keep training
-                      </button>
-                      <button
-                        data-ui-button="danger"
-                        disabled={busy}
-                        onClick={() => act({ type: "abandon" })}
-                      >
-                        Abandon session
-                      </button>
-                    </div>
-                  </section>
-                ) : (
-                  <button
-                    className="training-finish-trigger"
-                    data-ui-button="secondary"
-                    disabled={busy}
-                    onClick={() => setConfirmFinish(true)}
-                  >
-                    Finish session
-                  </button>
-                )}
-              </aside>
-            </div>
-          </>
-        )}
-      </main>
+          </div>
+        </footer>
+      )}
+      {confirmFinish && session && (
+        <dialog ref={finishRef} className="training-finish-dialog" aria-labelledby="training-finish-title" aria-describedby="training-finish-description" onCancel={event => { if (busy) event.preventDefault(); else setConfirmFinish(false); }}>
+          <div className="training-panel-heading">
+            <span className="training-kicker">SESSION SUMMARY</span>
+            <button data-ui-button="icon" aria-label="Close finish dialog" disabled={busy} onClick={() => setConfirmFinish(false)}><X size={20} /></button>
+          </div>
+          <h2 id="training-finish-title">Finish this session?</h2>
+          <p id="training-finish-description">{answered} of {session.questions.length} answers saved. Unanswered questions earn zero.</p>
+          {unsaved && <p className="training-unsaved-note">Your current selection is not saved. Keep training to save it first.</p>}
+          {error && <p role="alert" className="training-error">{error}</p>}
+          <div className="training-finish-actions">
+            <button data-ui-button="primary" disabled={busy} onClick={() => act({ type: "finish" })}>Finish &amp; see results</button>
+            <button data-ui-button="secondary" disabled={busy} onClick={() => setConfirmFinish(false)}>Keep training</button>
+            <button data-ui-button="danger" disabled={busy} onClick={() => act({ type: "abandon" })}>Abandon session</button>
+          </div>
+        </dialog>
+      )}
     </div>
   );
 }

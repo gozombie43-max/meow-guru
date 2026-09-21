@@ -1,12 +1,26 @@
 import { getMongoDB, getQuestionsCollection, withMongoTransaction } from '../config/mongodb.js';
+import { normalizeTrainingSubject } from '../services/trainingSubjects.js';
 
 const sessions = () => getMongoDB().collection('trainingSessions');
 const reviews = () => getMongoDB().collection('trainingReviewState');
 const exposures = () => getMongoDB().collection('trainingQuestionExposure');
 const skills = () => getMongoDB().collection('trainingSkillState');
 
+const trainingSubjectFilter = subject => {
+  const canonical = normalizeTrainingSubject(subject);
+  const aliases = canonical === 'reasoning' ? ['reasoning', 'logical-reasoning'] : [canonical];
+  const patterns = aliases.map(alias => alias.split('-')
+    .map(part => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+    .join('[\\s_-]+'));
+  return { subject: new RegExp(`^\\s*(?:${patterns.join('|')})\\s*$`, 'i') };
+};
+
 const examFilter = exam => {
-  const pattern = new RegExp(`^${exam.split('-').join('[ -]?')}$`, 'i');
+  // Bank labels also contain tiers, dates, shifts, and combined CGL/CHSL tags.
+  // Keep exam boundaries so CGL does not accidentally include CPO or MTS.
+  const pattern = exam === 'cat'
+    ? /^\s*CAT\b/i
+    : new RegExp(`^\\s*SSC[ -]*(?:CGL\\s*[/&]\\s*|CHSL\\s*[/&]\\s*)?${exam === 'ssc-chsl' ? 'CHSL' : 'CGL'}\\b`, 'i');
   return { $or: [{ exam: pattern }, { examName: pattern }, { exams: pattern }] };
 };
 
@@ -311,10 +325,13 @@ export async function trainingDashboardData(userId, exam) {
       .toArray(),
   ]);
 
-  const catalogPairs = catalog.map(item => ({
-    subject: item._id.subject,
-    topic: item._id.topic,
-  }));
+  const catalogPairs = [...new Map(catalog.map(item => {
+    const pair = {
+      subject: normalizeTrainingSubject(item._id.subject),
+      topic: item._id.topic,
+    };
+    return [JSON.stringify([pair.subject, pair.topic]), pair];
+  })).values()].sort((a, b) => a.subject.localeCompare(b.subject) || a.topic.localeCompare(b.topic));
   return { active, catalogPairs, mocks, reviewRows, skillRows };
 }
 
@@ -327,7 +344,7 @@ export const saveSkillProfile = (userId, exam, intelligence) =>
 
 export async function trainingQuestionPool(config, dueIds, recentIds, weakTopics = []) {
   const and = [examFilter(config.exam)];
-  if (config.subject) and.push({ subject: config.subject });
+  if (config.subject) and.push(trainingSubjectFilter(config.subject));
   if (config.topic)
     and.push({ $or: [{ topic: config.topic }, { questionTopic: config.topic }] });
   if (config.mode === 'review') {

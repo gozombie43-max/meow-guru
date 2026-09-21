@@ -363,6 +363,7 @@ export default function PlayPage() {
               <X size={20} />
             </button>
           </div>
+          <div className="training-setup-scroll">
           <h2 id="training-setup-title">
             {selectedMode?.title || "Smart review"}
           </h2>
@@ -463,6 +464,8 @@ export default function PlayPage() {
               {error}
             </p>
           )}
+          </div>
+          <footer className="training-setup-footer" data-ui-chrome="footer">
           <button
             className="training-start"
             data-ui-button="primary"
@@ -476,6 +479,7 @@ export default function PlayPage() {
             {busy ? "Building your session…" : "Begin training"}
             <ArrowRight size={18} />
           </button>
+          </footer>
         </dialog>
       )}
     </div>

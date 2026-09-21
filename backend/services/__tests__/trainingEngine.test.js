@@ -259,6 +259,71 @@ describe("authoritative session transitions", () => {
   });
 
 describe("shared intelligence", () => {
+  const difficultyBank = () => Array.from({ length: 25 }, (_, i) =>
+    question(`bank${String(i).padStart(2, "0")}`, { difficulty: Math.floor(i / 5) + 1 }),
+  );
+
+  it.each(["adaptive", "challenge", "sprint", "pressure", "section", "gauntlet", "nightmare", "survival"])(
+    "%s selects unique IDs, respects difficulty floors and leaves the pool unchanged",
+    mode => {
+      const pool = difficultyBank();
+      const snapshot = structuredClone(pool);
+      const selected = selectQuestions([...pool, ...pool], mode, 50, buildIntelligence([]), now);
+      const floor = mode === "nightmare" ? 3 : mode === "survival" ? 2 : 1;
+      expect(selected).toHaveLength(pool.filter(q => q.difficulty >= floor).length);
+      expect(new Set(selected.map(q => q.id)).size).toBe(selected.length);
+      expect(selected.every(q => q.difficulty >= floor)).toBe(true);
+      expect(pool).toEqual(snapshot);
+      expect(selectQuestions([...pool, ...pool], mode, 50, buildIntelligence([]), now)).toEqual(selected);
+    },
+  );
+
+  it.each(["section", "pressure"])("%s supplies a mixed difficulty paper instead of only weak-area drills", mode => {
+    const selected = selectQuestions(difficultyBank(), mode, 5, buildIntelligence([]), now);
+    expect(selected.map(q => q.difficulty)).toEqual([2, 3, 1, 3, 4]);
+  });
+
+  it.each(["challenge", "survival"])("%s builds a difficulty ladder instead of filling the run with the hardest questions", mode => {
+    const selected = selectQuestions(difficultyBank(), mode, 6, buildIntelligence([]), now);
+    expect(selected[0].difficulty).toBeLessThanOrEqual(3);
+    expect(selected.at(-1).difficulty).toBe(5);
+    expect(new Set(selected.map(q => q.difficulty)).size).toBeGreaterThanOrEqual(3);
+  });
+
+  it("balances subjects even when one subject has many more topics", () => {
+    const pool = Array.from({ length: 30 }, (_, i) => question(`math${i}`, { topic: `Math topic ${i}` }));
+    pool.push(...Array.from({ length: 10 }, (_, i) => question(`english${i}`, { subject: "english", topic: "Grammar" })));
+    const selected = selectQuestions(pool, "section", 10, buildIntelligence([]), now);
+    expect(selected.filter(q => q.subject === "english").length).toBeGreaterThanOrEqual(3);
+  });
+
+  it("sprint targets known but slow material instead of unfamiliar slow material", () => {
+    const profile = buildIntelligence([]);
+    profile.topics = [
+      { subject: "Mathematics", topic: "Arithmetic", attempts: 20, mastery: 0.9, seconds: 90 },
+      { subject: "Mathematics", topic: "Algebra", attempts: 20, mastery: 0.1, seconds: 600 },
+    ];
+    const selected = selectQuestions([
+      question("known", { difficulty: 3 }),
+      question("unknown", { topic: "Algebra", difficulty: 3 }),
+    ], "sprint", 1, profile, now);
+    expect(selected[0].id).toBe("known");
+  });
+
+  it("uses alias history and discounts mastery estimates from one attempt", () => {
+    const profile = buildIntelligence([]);
+    profile.topics = [
+      { subject: "Logical Reasoning", topic: "Analogy", attempts: 10, mastery: 0.2, seconds: 60 },
+      { subject: "english", topic: "Grammar", attempts: 1, mastery: 0, seconds: 60 },
+    ];
+    const selected = selectQuestions([
+      question("weak", { subject: "reasoning", topic: "Analogy", difficulty: 2 }),
+      question("sparse", { subject: "english", topic: "Grammar", difficulty: 2 }),
+    ], "adaptive", 1, profile, now);
+    expect(selected[0].id).toBe("weak");
+    expect(selected[0].targetSource).toBe("personalized");
+  });
+
   it("correct guesses are not mastery and enter the review queue", () => {
     const s = transition(
       session("adaptive", [question()]),

@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { modes } from "../components/training/training-types";
 
 type BrowserQuestion = {
   id: string;
@@ -43,6 +44,7 @@ test("play exposes all modes and persists an adaptive session across reload", as
   context,
   request,
 }, testInfo) => {
+  const hostname = new URL(testInfo.project.use.baseURL || "http://127.0.0.1:3110").hostname;
   const login = await request.post("http://127.0.0.1:3111/auth/login", {
     data: {
       email: `browser-${testInfo.project.name}@example.test`,
@@ -55,7 +57,7 @@ test("play exposes all modes and persists an adaptive session across reload", as
     {
       name: "refreshToken",
       value: refreshCookie,
-      domain: "127.0.0.1",
+      domain: hostname,
       path: "/",
       httpOnly: true,
       sameSite: "Lax",
@@ -63,7 +65,7 @@ test("play exposes all modes and persists an adaptive session across reload", as
     {
       name: "access_session",
       value: "training-browser-fixture",
-      domain: "127.0.0.1",
+      domain: hostname,
       path: "/",
     },
   ]);
@@ -312,11 +314,79 @@ test("play exposes all modes and persists an adaptive session across reload", as
 
   await page.goto("/play");
   await expect(page.getByRole("button", { name: /^Set up / })).toHaveCount(8);
+  const setupViewport = page.viewportSize()!;
+  if (testInfo.project.name === "mobile") await page.setViewportSize({ width: 320, height: 568 });
+  for (const mode of modes) {
+    await page.getByRole("button", { name: `Set up ${mode.title}`, exact: true }).click();
+    const setup = page.getByRole("dialog");
+    await expect(setup.getByRole("heading", { name: mode.title, exact: true })).toBeVisible();
+    const startBounds = await setup.getByRole("button", { name: "Begin training" }).boundingBox();
+    expect(startBounds!.y + startBounds!.height).toBeLessThanOrEqual(page.viewportSize()!.height);
+    if (mode.id === "adaptive") await page.screenshot({ path: testInfo.outputPath("setup.png") });
+    await page.getByRole("button", { name: "Close setup" }).click();
+  }
+  await page.setViewportSize(setupViewport);
   await page.getByRole("button", { name: "Set up Adaptive" }).click();
   await expect(page.getByRole("heading", { name: "Adaptive" })).toBeVisible();
   await page.getByRole("button", { name: "Begin training" }).click();
 
   await expect(page).toHaveURL(/\/play\/session\/browser-training$/);
+  await expect(page.getByText("2 + 2 = ?", { exact: true })).toBeVisible();
+  for (const theme of ["light", "dark"]) {
+    await page.evaluate(value => localStorage.setItem("ui-theme", value), theme);
+    for (const mode of modes) {
+      const free = ["pressure", "section"].includes(mode.id);
+      session = {
+        ...session, mode: mode.id, effectiveMode: mode.id,
+        policy: policy(mode.id, { navigation: free ? "free" : "forward", confidence: !["nightmare", "survival"].includes(mode.id) }),
+        allowedVisitIndices: free ? [0, 1] : [], lives: mode.id === "survival" ? 3 : 999,
+      };
+      await page.reload();
+      await expect(page.getByText("2 + 2 = ?", { exact: true })).toBeVisible();
+      const footer = page.locator(".training-session-footer");
+      const bounds = await footer.boundingBox();
+      expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(page.viewportSize()!.height + 1);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      if (page.viewportSize()!.width < 1024) {
+        const toggle = page.getByRole("button", { name: free ? "Questions" : "Session info", exact: true });
+        await toggle.click();
+        await expect(page.locator("#training-overview")).toBeVisible();
+        await toggle.click();
+        await expect(page.locator("#training-overview")).toBeHidden();
+      } else {
+        await expect(page.locator("#training-overview")).toBeVisible();
+      }
+      await page.getByRole("radio", { name: /4/ }).click();
+      await expect(page.getByText("Answer not saved yet", { exact: true })).toBeVisible();
+      await page.screenshot({ path: testInfo.outputPath(`${mode.id}-${theme}.png`) });
+    }
+  }
+  session = { ...session, mode: "adaptive", effectiveMode: "adaptive", policy: policy("adaptive"), allowedVisitIndices: [], lives: 999 };
+  const originalViewport = page.viewportSize()!;
+  for (const viewport of [{ width: 320, height: 568 }, { width: 768, height: 540 }]) {
+    await page.setViewportSize(viewport);
+    session.questions = [{ ...questions[0], text: Array(12).fill("Read the statement carefully before selecting the correct answer.").join("\n\n") }, questions[1]];
+    await page.reload();
+    await expect(page.getByRole("button", { name: "Answer & continue" })).toBeVisible();
+    await page.locator(".training-session-main").evaluate(element => { element.scrollTop = element.scrollHeight; });
+    await expect(page.getByRole("radio", { name: /4/ })).toBeInViewport();
+    const footer = await page.locator(".training-session-footer").boundingBox();
+    expect(footer!.y + footer!.height).toBeLessThanOrEqual(viewport.height + 1);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.getByRole("button", { name: "Finish session" }).click();
+    await expect(page.getByRole("dialog", { name: "Finish this session?" })).toBeVisible();
+    await page.screenshot({ path: testInfo.outputPath(`finish-${viewport.width}.png`) });
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Finish session" })).toBeFocused();
+    await page.getByRole("button", { name: "Finish session" }).click();
+    await page.evaluate(() => history.back());
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(page).toHaveURL(/\/play\/session\/browser-training$/);
+  }
+  session.questions = questions;
+  await page.setViewportSize(originalViewport);
+  await page.reload();
   await expect(page.getByText("2 + 2 = ?", { exact: true })).toBeVisible();
   await page.getByRole("radio", { name: /4/ }).click();
   await page.getByRole("button", { name: "Sure", exact: true }).click();

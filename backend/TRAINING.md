@@ -21,6 +21,10 @@ Missing expected time uses a disclosed 60-second baseline. Targets become person
 
 ## Session behavior
 
+Selection uses mode-specific difficulty targets within the available, filtered candidate pool. Adaptive mainly targets current ability with easier consolidation and harder probes; Challenge and Survival build a difficulty ladder; Nightmare stays at difficulty 3 or above. Sprint favors established knowledge with a measured pace deficit, capped so one very slow topic cannot dominate. Section and Pressure aim for a repeating medium/hard/easy/hard/extreme mix, while Gauntlet selects a mixed set before grouping weaker topic blocks first. These are practice heuristics, not official exam difficulty quotas; missing difficulty levels use the nearest suitable available candidates.
+
+Subject and topic repetition penalties apply at every pick, using subject-qualified topic keys. Subject aliases share selection history, weighted by attempt count; mastery estimates are shrunk toward a neutral baseline until ten attempts. IDs are deduplicated and each mode's difficulty floor is enforced inside selection, including mission blocks. Existing exposure penalties, due-only review eligibility, question validation, and recent-session exclusions remain in force. Selection is deterministic for the same candidate pool, profile, exposure records and server time, and scans candidates once per pick rather than sorting the entire pool repeatedly.
+
 - Adaptive adjusts the next difficulty using the latest answer/confidence. Challenge probes harder questions with an easier check every fifth question. Both use validated bank content, including reviewed generated variants when available.
 - Sprint has 5/10/15-minute clocks, forward-only progression and pace metrics. Training points include difficulty, speed and streak; skipped questions reduce Sprint points, separate from academic marks.
 - Pressure allows save/clear/revisit and grants 70% of target solving time. Results flag expensive wrong answers, untouched easy questions, revisits and final-clock accuracy.

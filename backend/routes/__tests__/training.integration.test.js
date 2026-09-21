@@ -82,6 +82,61 @@ async function start(mode = "section") {
   return r.json();
 }
 describe("persistent training API", () => {
+  it.each([
+    "adaptive", "challenge", "sprint", "pressure", "section", "gauntlet", "nightmare", "survival",
+  ])("deduplicates subject aliases and preserves their topics and questions for %s", async (mode) => {
+    await db.collection("questions").deleteMany({});
+    await db.collection("questions").insertMany([
+      { id: "r1", subject: "Reasoning", topic: "Analogy" },
+      { id: "r2", subject: "reasoning", topic: "Analogy" },
+      { id: "r3", subject: " logical reasoning ", topic: "Syllogism" },
+      { id: "r4", subject: "Logical-Reasoning", topic: "Analogy" },
+      { id: "e1", subject: "english", topic: "Grammar" },
+    ].map(q => ({ ...q, exam: "ssc-cgl", question: "Question", options: ["A", "B"], correctAnswer: 0, difficulty: "hard" })));
+    const dashboard = await (await request("/dashboard?exam=ssc-cgl")).json();
+    expect(dashboard.subjects).toEqual(["english", "reasoning"]);
+    expect(dashboard.catalog.filter(pair => pair.subject === "reasoning")).toEqual([
+      { subject: "reasoning", topic: "Analogy" },
+      { subject: "reasoning", topic: "Syllogism" },
+    ]);
+    for (const topic of [undefined, "Analogy", "Syllogism"]) {
+      const response = await request("/sessions", "POST", {
+        mode, exam: "ssc-cgl", subject: "reasoning", topic, count: 10,
+      });
+      expect(response.status).toBe(201);
+      const session = await response.json();
+      const stored = await db.collection("trainingSessions").findOne({ id: session.id });
+      expect(stored.questions.map(q => q.id).sort()).toEqual(
+        topic === "Analogy" ? ["r1", "r2", "r4"] : topic === "Syllogism" ? ["r3"] : ["r1", "r2", "r3", "r4"],
+      );
+    }
+  });
+
+  it.each([
+    "adaptive", "challenge", "sprint", "pressure", "section", "gauntlet", "nightmare", "survival",
+  ])("includes dated and combined exam labels in filters and %s sessions", async (mode) => {
+    await db.collection("questions").deleteMany({});
+    await db.collection("questions").insertMany([
+      { id: "math", subject: "mathematics", topic: "Algebra", exam: "SSC CGL Tier II (08/08/2022)" },
+      { id: "english", subject: "english", questionTopic: "Grammar", examName: "SSC CGL 2024 (1st Shift)" },
+      { id: "combined", subject: "reasoning", topic: "Analogy", exams: ["SSC CGL / CHSL"] },
+      { id: "ga", subject: "general-awareness", topic: "History", exam: "SSC-CGL" },
+      { id: "other", subject: "other", topic: "Excluded", exam: "SSC CPO 2024" },
+    ].map(q => ({ ...q, question: "Question", options: ["A", "B"], correctAnswer: 0, difficulty: "hard" })));
+    const dashboard = await (await request("/dashboard?exam=ssc-cgl")).json();
+    expect(dashboard.subjects).toEqual(["english", "general-awareness", "mathematics", "reasoning"]);
+    expect(dashboard.catalogTopics).toEqual(expect.arrayContaining(["Algebra", "Grammar", "Analogy", "History"]));
+    const chsl = await (await request("/dashboard?exam=ssc-chsl")).json();
+    expect(chsl.subjects).toEqual(["reasoning"]);
+    const response = await request("/sessions", "POST", {
+      mode, exam: "ssc-cgl", subject: "mathematics", topic: "Algebra", count: 10,
+    });
+    expect(response.status).toBe(201);
+    const session = await response.json();
+    const stored = await db.collection("trainingSessions").findOne({ id: session.id });
+    expect(stored.questions.map(q => q.id)).toEqual(["math"]);
+  });
+
   it("exposes the authoritative training capability contract", async () => {
     const response = await request("/capabilities");
     expect(response.status).toBe(200);
