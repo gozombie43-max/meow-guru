@@ -25,7 +25,7 @@ export async function createTrainingSessionCommand(userId, config, now) {
   });
   if (config.mode === "mission") {
     const existing = await findMission(userId, config.exam, missionDate);
-    if (existing) return existing;
+    if (existing) return { session: existing, isNew: false };
   }
   const previous = await history(userId, config.exam);
   const durable = await trainingLearningState(userId, config.exam);
