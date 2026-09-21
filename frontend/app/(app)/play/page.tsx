@@ -2,37 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import {
-  ArrowRight,
-  Brain,
-  ChevronDown,
-  Flame,
-  Info,
-  Layers,
-  LoaderCircle,
-  Route,
-  Shield,
-  Sparkles,
-  Target,
-  Timer,
-  X,
-  Zap,
-} from "lucide-react";
-import { TrainingFilterPicker } from "@/components/training/TrainingFilterPicker";
-import { TrainingSelectDropdown } from "@/components/training/TrainingSelectDropdown";
-import { TrainingLoading } from "@/components/training/TrainingLoading";
-
+import { ArrowRight, ChevronDown, Sparkles, Target } from "lucide-react";
 
 import { useThemeMode } from "@/hooks/useTheme";
-import api from "@/shared/api/client";
-import { isAxiosError } from "axios";
-import {
-  modes,
-  type ModeId,
-  type TrainingCapabilities,
-  type TrainingDashboard,
-} from "@/components/training/training-types";
 import { TrainingInsights } from "@/components/training/TrainingInsights";
 import {
   PlayNavigation,
@@ -43,100 +15,45 @@ import {
 import "./play.css";
 import "./play-hub.css";
 
-const modeIcons: Record<string, React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }>> = {
-  brain: Brain,
-  target: Target,
-  zap: Zap,
-  timer: Timer,
-  layers: Layers,
-  route: Route,
-  flame: Flame,
-  shield: Shield,
-};
-
-const categoryIcons: Record<string, React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }>> = {
-  ai: Sparkles,
-  speed: Zap,
-  sectional: Layers,
-  extreme: Flame,
-};
+import { useTrainingCapabilities } from "./hooks/useTrainingCapabilities";
+import { useTrainingDashboard } from "./hooks/useTrainingDashboard";
+import { useTrainingSetup } from "./hooks/useTrainingSetup";
+import { TrainingSetupDialog } from "./components/TrainingSetupDialog";
 
 export default function PlayPage() {
   const { theme } = useThemeMode();
 
-  const router = useRouter();
   const contentRef = useRef<HTMLElement>(null);
-  const [tab, setTab] = useState("Play"),
-    [exam, setExam] = useState("ssc-cgl");
-  const [dashboard, setDashboard] = useState<TrainingDashboard | null>(null),
-    [capabilities, setCapabilities] = useState<TrainingCapabilities | null>(null),
-    [error, setError] = useState(""),
-    [loading, setLoading] = useState(true),
-    [busy, setBusy] = useState(false);
-  const [selected, setSelected] = useState<ModeId | null>(null),
-    [subject, setSubject] = useState(""),
-    [topic, setTopic] = useState(""),
-    [count, setCount] = useState<number | "full">(20),
-    [tier, setTier] = useState("1"),
-    [minutes, setMinutes] = useState(10);
-  const selectedMode = modes.find((m) => m.id === selected);
-  const selectedPolicy = selected ? capabilities?.modes[selected] : undefined;
-  const topicOptions = subject
-    ? dashboard?.catalog
-        .filter((item) => item.subject === subject)
-        .map((item) => item.topic) || []
-    : dashboard?.catalogTopics || [];
+  const [tab, setTab] = useState("Play");
+  const [exam, setExam] = useState("ssc-cgl");
 
-  useEffect(() => {
-    let live = true;
-    api
-      .get<TrainingCapabilities>("/api/training/capabilities")
-      .then(({ data }) => {
-        if (live) setCapabilities(data);
-      })
-      .catch(() => {
-        if (live) setError("Could not load training capabilities.");
-      });
-    return () => {
-      live = false;
-    };
-  }, []);
+  const { capabilities, error: capabilitiesError } = useTrainingCapabilities();
+  const { dashboard, loading, error: dashboardError, setDashboard, setLoading, setError: setDashboardError } = useTrainingDashboard(exam);
+  const {
+    selected, setSelected,
+    subject, setSubject,
+    topic, setTopic,
+    count, setCount,
+    tier, setTier,
+    minutes, setMinutes,
+    busy, error: setupError,
+    choose, start
+  } = useTrainingSetup(exam);
 
-  useEffect(() => {
-    let live = true;
-    api
-      .get<TrainingDashboard>("/api/training/dashboard", { params: { exam } })
-      .then(({ data }) => {
-        if (live) setDashboard(data);
-      })
-      .catch((e) => {
-        if (live)
-          setError(
-            isAxiosError(e)
-              ? e.response?.data?.error ||
-                  "Could not load your training profile."
-              : "Could not load training.",
-          );
-      })
-      .finally(() => {
-        if (live) setLoading(false);
-      });
-    return () => {
-      live = false;
-    };
-  }, [exam]);
+  const error = capabilitiesError || dashboardError || setupError;
+
   useEffect(() => {
     if (!selected) return;
-    const dialog = document.getElementById(
-      "training-setup",
-    ) as HTMLDialogElement | null;
+    const dialog = document.getElementById("training-setup") as HTMLDialogElement | null;
     const trigger = document.activeElement as HTMLElement | null;
     const previousOverflow = document.body.style.overflow;
     const content = contentRef.current;
     const previousContentOverflow = content?.style.overflowY || "";
+    
     if (content) content.style.overflowY = "hidden";
     document.body.style.overflow = "hidden";
     dialog?.showModal();
+    
     return () => {
       dialog?.close();
       document.body.style.overflow = previousOverflow;
@@ -144,45 +61,12 @@ export default function PlayPage() {
       trigger?.focus({ preventScroll: true });
     };
   }, [selected]);
+
   function navigate(tab: string) {
     setTab(tab);
     contentRef.current?.scrollTo({ top: 0, behavior: "instant" });
   }
-  function choose(mode: ModeId) {
-    if (!capabilities) {
-      setError("Training setup is still loading. Please retry in a moment.");
-      return;
-    }
-    setSelected(mode);
-    setCount(mode === "section" ? 25 : 20);
-    setError("");
-  }
-  async function start(override?: ModeId) {
-    const mode = override || selected;
-    if (!mode || busy) return;
-    setBusy(true);
-    setError("");
-    try {
-      const { data } = await api.post("/api/training/sessions", {
-        mode,
-        exam,
-        tier,
-        subject: mode === "mission" ? undefined : subject || undefined,
-        topic: mode === "mission" ? undefined : topic || undefined,
-        count,
-        minutes,
-      });
-      router.push(`/play/session/${data.id}`);
-    } catch (e) {
-      setError(
-        isAxiosError(e)
-          ? e.response?.data?.error ||
-              "Could not start the session. Please retry."
-          : "Could not start training.",
-      );
-      setBusy(false);
-    }
-  }
+
   return (
     <div
       className={`training-page play-hub ${theme === "dark" ? "training-dark" : ""}`}
@@ -207,7 +91,7 @@ export default function PlayPage() {
                   setExam(e.target.value);
                   setDashboard(null);
                   setLoading(true);
-                  setError("");
+                  setDashboardError("");
                   setSubject("");
                   setTopic("");
                 }}
@@ -361,7 +245,7 @@ export default function PlayPage() {
                 available={!!dashboard}
                 onOpen={() => navigate("Train Me")}
               />
-              <PlayModeLibrary onChoose={choose} />
+              <PlayModeLibrary onChoose={(mode) => choose(mode, !!capabilities)} />
               <PlayPulse
                 dashboard={dashboard}
                 loading={loading}
@@ -375,202 +259,34 @@ export default function PlayPage() {
               dashboard={dashboard}
               loading={loading}
               exam={exam}
-              choose={(mode) => choose(mode)}
+              choose={(mode) => choose(mode, !!capabilities)}
             />
           )}
         </main>
       </div>
-      {selected && (
-        <dialog
-          id="training-setup"
-          aria-labelledby="training-setup-title"
-          aria-describedby="training-setup-description"
-          className={`training-setup play-setup ${theme === "dark" ? "training-dark" : ""}`}
-          onCancel={(e) => {
-            if (busy) e.preventDefault();
-            else setSelected(null);
-          }}
-        >
-          {/* iOS Sheet Handle */}
-          <div className="setup-sheet-handle" aria-hidden="true" />
 
-          {/* Modal Header */}
-          <div className="setup-sheet-header">
-            <div className="setup-badge-group">
-              <span className={`setup-cat-badge setup-cat--${selectedMode?.category?.toLowerCase() || "ai"}`}>
-                {(() => {
-                  const CatIcon = categoryIcons[selectedMode?.category?.toLowerCase() || "ai"] || Sparkles;
-                  return <CatIcon size={12} strokeWidth={2.4} aria-hidden="true" />;
-                })()}
-                {selectedMode?.category || "Training"}
-              </span>
-              <span className="setup-kicker">SESSION BRIEF</span>
-            </div>
-            <button
-              type="button"
-              className="setup-close-btn"
-              aria-label="Close setup"
-              disabled={busy}
-              onClick={() => setSelected(null)}
-            >
-              <X size={16} strokeWidth={2.4} />
-            </button>
-          </div>
-
-          <div className="training-setup-scroll">
-            {/* Mode Hero */}
-            <div className="setup-hero">
-              <div className={`setup-hero-icon-box setup-icon--${selectedMode?.category?.toLowerCase() || "ai"}`}>
-                {(() => {
-                  const ModeIcon = (selectedMode?.icon && modeIcons[selectedMode.icon as keyof typeof modeIcons]) || Sparkles;
-                  return <ModeIcon size={24} strokeWidth={2.2} />;
-                })()}
-              </div>
-              <div className="setup-hero-info">
-                <h2 id="training-setup-title">
-                  {selectedMode?.title || "Smart review"}
-                </h2>
-                <p id="training-setup-description">
-                  {selectedMode?.detail ||
-                    "Work through questions that are due for spaced review."}
-                </p>
-              </div>
-            </div>
-
-            {busy && (
-              <TrainingLoading
-                title="Preparing your questions"
-                description="Choosing questions for your mode and selected topics. Your session will open when ready."
-                skeleton={false}
-              />
-            )}
-
-            {/* Form Fields Grid */}
-            <fieldset
-              className="setup-form-grid"
-              disabled={busy || loading}
-              aria-busy={busy || loading}
-            >
-              {selectedPolicy?.supportsTier && exam !== "cat" && (
-                <TrainingSelectDropdown
-                  label="Tier"
-                  value={tier}
-                  placeholder="Select tier"
-                  options={[
-                    { value: "1", label: "Tier I" },
-                    { value: "2", label: "Tier II" },
-                  ]}
-                  disabled={busy || loading}
-                  onChange={setTier}
-                />
-              )}
-
-              {/* Subject — custom dropdown */}
-              <TrainingSelectDropdown
-                label="Subject"
-                value={subject}
-                placeholder={selectedPolicy?.requiresSubject ? "Choose a subject" : "All subjects"}
-                options={[
-                  { value: "", label: selectedPolicy?.requiresSubject ? "Choose a subject" : "All subjects" },
-                  ...[...new Set(dashboard?.subjects || [])].map((s) => ({ value: s, label: s })),
-                ]}
-                disabled={busy || loading}
-                onChange={(val) => {
-                  if (val !== subject) {
-                    setSubject(val);
-                    setTopic("");
-                  }
-                }}
-              />
-
-              {/* Topic — iOS bottom-sheet modal */}
-              <TrainingFilterPicker
-                label="Topic"
-                value={topic}
-                options={topicOptions}
-                emptyLabel="Balanced topic mix"
-                onChange={setTopic}
-              />
-
-              {/* Questions — custom dropdown */}
-              <TrainingSelectDropdown
-                label="Questions"
-                value={String(count)}
-                placeholder="20 questions"
-                placement="top"
-                options={[
-                  ...[10, 20, 25, 50].map((n) => ({ value: String(n), label: `${n} questions` })),
-                  ...(selectedPolicy?.supportsFullSection
-                    ? [{ value: "full", label: "Full configured section" }]
-                    : []),
-                ]}
-                disabled={busy || loading}
-                onChange={(val) => setCount(val === "full" ? "full" : Number(val))}
-              />
-
-              {/* Clock — custom dropdown */}
-              {selectedPolicy?.clock === "fixed" && (
-                <TrainingSelectDropdown
-                  label="Clock"
-                  value={String(minutes)}
-                  placeholder="10 minutes"
-                  placement="top"
-                  options={(selectedPolicy.minuteOptions.length
-                    ? selectedPolicy.minuteOptions
-                    : [5, 10, 15]
-                  ).map((n) => ({ value: String(n), label: `${n} minutes` }))}
-                  disabled={busy || loading}
-                  onChange={(val) => setMinutes(Number(val))}
-                />
-              )}
-            </fieldset>
-
-
-            {/* Note / Info Callout Card */}
-            <div className="setup-info-card">
-              <div className="setup-info-icon">
-                <Info size={16} strokeWidth={2.4} aria-hidden="true" />
-              </div>
-              <div className="setup-info-text">
-                <strong>
-                  {selectedPolicy?.sectional
-                    ? "Officially configured section marking is applied."
-                    : "Practice scoring is applied by the server."}
-                </strong>
-                <p>
-                  The clock continues if you leave. Bank availability may shorten the session.
-                </p>
-              </div>
-            </div>
-
-            {error && (
-              <p className="training-error" role="alert">
-                {error}
-              </p>
-            )}
-          </div>
-
-          {/* Sticky Modern Action Footer */}
-          <footer className="setup-footer" data-ui-chrome="footer">
-            <button
-              className="setup-start-btn"
-              disabled={
-                busy ||
-                loading ||
-                (!!selectedPolicy?.requiresSubject && !subject)
-              }
-              onClick={() => start()}
-            >
-              <span>{busy ? "Building your session…" : "Begin training"}</span>
-              {busy ? (
-                <LoaderCircle className="setup-loading-spin" size={18} aria-hidden="true" />
-              ) : (
-                <ArrowRight size={18} strokeWidth={2.4} />
-              )}
-            </button>
-          </footer>
-        </dialog>
-      )}
+      <TrainingSetupDialog
+        selected={selected}
+        setSelected={setSelected}
+        exam={exam}
+        theme={theme}
+        dashboard={dashboard}
+        capabilities={capabilities}
+        loading={loading}
+        busy={busy}
+        error={setupError}
+        subject={subject}
+        setSubject={setSubject}
+        topic={topic}
+        setTopic={setTopic}
+        count={count}
+        setCount={setCount}
+        tier={tier}
+        setTier={setTier}
+        minutes={minutes}
+        setMinutes={setMinutes}
+        start={start}
+      />
     </div>
   );
 }
