@@ -6,6 +6,7 @@ import {
   saveTrainingDiagnosis,
   saveTrainingMistakes,
 } from "../repositories/trainingRepository.js";
+import { logger } from "../infrastructure/logger.js";
 import {
   MODES,
   EXAMS,
@@ -74,8 +75,8 @@ export const startTrainingSession = async (req, res, next) => {
       userId = String(req.user.id),
       now = Date.now();
       
-    const session = await createTrainingSessionCommand(userId, config, now);
-    res.status(201).json(publicSession(session));
+    const { session, isNew } = await createTrainingSessionCommand(userId, config, now);
+    res.status(isNew ? 201 : 200).json(publicSession(session));
   } catch (e) {
     if (e.message.includes("section needs") || e.message.includes("No eligible questions") || e.message.includes("Choose a subject") || e.message.includes("mapped to a section")) {
       return fail(res, e.message, 422);
@@ -91,9 +92,18 @@ export const getTrainingSession = async (req, res, next) => {
     if (s.status === "active" && Date.now() >= new Date(s.deadline).getTime()) {
       const updated = transition(s, { type: "finish" });
       const write = await commitTrainingTransition(s, updated);
-      s = write.modifiedCount
-        ? updated
-        : await reloadTrainingSession(s._id);
+      if (write.modifiedCount) {
+        logger.info({
+          event: "training.session.completed",
+          sessionId: updated.id,
+          userId: s.userId,
+          mode: updated.mode,
+          reason: "timeout",
+        });
+        s = updated;
+      } else {
+        s = await reloadTrainingSession(s._id);
+      }
     }
     res.json(publicSession(s));
   } catch (e) {

@@ -11,8 +11,11 @@ import {
   readinessWithEvidence,
   mergeDurableIntelligence,
 } from "../../trainingEngine.js";
+import { getDailyMissionBlocks } from "../mission/missionBlocks.js";
+import { logger } from "../../../infrastructure/logger.js";
 
 export async function getTrainingDashboardData(userId, exam) {
+  const start = performance.now();
   const expired = await expiredActiveSessions(userId, exam);
   for (const stale of expired) {
     const finalized = transition(stale, { type: "finish" });
@@ -61,24 +64,15 @@ export async function getTrainingDashboardData(userId, exam) {
     confidenceScore,
   });
 
-  const weak = intelligence.topics[0];
-  const mission = [
-    {
-      mode: "adaptive",
-      count: 10,
-      label: weak ? `Strengthen ${weak.topic}` : "Build your skill baseline",
-    },
-    { mode: "sprint", count: 8, label: "Train execution speed" },
-    ...(intelligence.due.length
-      ? [{
-          mode: "review",
-          count: Math.min(5, intelligence.due.length),
-          label: "Review due mistakes",
-        }]
-      : []),
-    { mode: "section", count: 10, label: "Previous-year practice" },
-    { mode: "adaptive", count: 9, label: "Consolidate with a mixed block" },
-  ];
+  const blocks = getDailyMissionBlocks(intelligence);
+  const mission = blocks.map(({ mode, count, label }) => ({ mode, count, label }));
+
+  logger.info({
+    event: "training.dashboard.duration_ms",
+    durationMs: Math.round(performance.now() - start),
+    userId,
+    exam,
+  }, "Dashboard generated");
 
   return {
     ...intelligence,

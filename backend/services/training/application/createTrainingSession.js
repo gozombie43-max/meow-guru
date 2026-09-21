@@ -6,6 +6,7 @@ import {
   trainingQuestionPool,
   trainingExposureData,
   trainingLearningState,
+  dueTrainingQuestions,
 } from "../../../repositories/trainingRepository.js";
 import {
   normalizeQuestion,
@@ -16,6 +17,7 @@ import {
 import { getExamConfig } from "../../../config/exam-config.js";
 import { getTrainingModePolicy } from "../../trainingModePolicy.js";
 import { planDailyMission } from "../mission/missionPlanner.js";
+import { logger } from "../../../infrastructure/logger.js";
 
 export async function createTrainingSessionCommand(userId, config, now) {
   const missionDate = new Date(now).toLocaleDateString("en-CA", {
@@ -56,6 +58,8 @@ export async function createTrainingSessionCommand(userId, config, now) {
   const recentIds = previous.slice(0, 3).flatMap((s) => s.questions.map((q) => q.id));
   const exposureRows = await trainingExposureData(userId, config.exam);
   
+  const selectionStart = performance.now();
+  
   const docs = await trainingQuestionPool(
     config,
     intelligence.due.map((r) => r.questionId),
@@ -78,7 +82,9 @@ export async function createTrainingSessionCommand(userId, config, now) {
   
   let questions = [];
   if (config.mode === "mission") {
-    questions = await planDailyMission({ intelligence, pool, now, exposureRows, exam: config.exam });
+    const dueDocs = await dueTrainingQuestions(config.exam, intelligence.due.map((r) => r.questionId));
+    const duePool = dueDocs.map(normalizeQuestion).filter(Boolean);
+    questions = planDailyMission({ intelligence, pool, duePool, now, exposureRows });
   } else {
     questions = selectQuestions(
       eligible,
@@ -101,10 +107,27 @@ export async function createTrainingSessionCommand(userId, config, now) {
       : question;
   });
 
+  const selectionDuration = Math.round(performance.now() - selectionStart);
+
   if (!questions.length) {
+    logger.info({
+      event: "training.selection.empty_pool",
+      durationMs: selectionDuration,
+      poolSize: pool.length,
+      mode: config.mode,
+    }, "Empty question pool for selection");
     if (config.mode === "review") throw new Error("No review questions are due for these filters.");
     else throw new Error("No eligible questions match this exam and topic. Add exam-tagged questions with valid answer keys, or change the filters.");
   }
+
+  logger.info({
+    event: "training.selection.duration_ms",
+    durationMs: selectionDuration,
+    poolSize: pool.length,
+    selectedSize: questions.length,
+    mode: config.mode,
+  }, "Questions selected for training");
+
   if (config.count === "full" && questions.length < requestedCount)
     throw new Error(`This section needs ${requestedCount} eligible questions; only ${questions.length} are available. Choose a shorter session.`);
     
@@ -158,7 +181,15 @@ export async function createTrainingSessionCommand(userId, config, now) {
     await insertTrainingSession(s);
   } catch (error) {
     if (error.code !== 11000 || config.mode !== "mission") throw error;
-    return await findMission(userId, config.exam, missionDate);
+    return { session: await findMission(userId, config.exam, missionDate), isNew: false };
   }
-  return s;
+  
+  logger.info({
+    event: "training.session.created",
+    sessionId: s.id,
+    userId,
+    mode: config.mode,
+  }, "Training session created");
+  
+  return { session: s, isNew: true };
 }
