@@ -1,5 +1,5 @@
 import { ArrowRight } from "lucide-react";
-import { type TrainingSession, type Confidence } from "../training-types";
+import { type TrainingSession, type Confidence, type TrainingAction } from "../training-types";
 
 interface TrainingFooterProps {
   session: TrainingSession;
@@ -10,7 +10,7 @@ interface TrainingFooterProps {
   remaining: number;
   choice: number | null;
   confidence: Confidence | null;
-  act: (action: Record<string, unknown>) => Promise<void>;
+  act: (action: TrainingAction) => Promise<void>;
 }
 
 export function TrainingFooter({ session, q, busy, unsaved, canNavigate, remaining, choice, confidence, act }: TrainingFooterProps) {

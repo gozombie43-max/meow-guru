@@ -36,7 +36,7 @@ export default function PlayPage() {
     count, setCount,
     tier, setTier,
     minutes, setMinutes,
-    busy, error: setupError,
+    busy, error: setupError, setError: setSetupError,
     choose, start
   } = useTrainingSetup(exam);
 
@@ -92,6 +92,7 @@ export default function PlayPage() {
                   setDashboard(null);
                   setLoading(true);
                   setDashboardError("");
+                  setSetupError("");
                   setSubject("");
                   setTopic("");
                 }}

@@ -1,12 +1,12 @@
 import { useEffect } from "react";
-import { type TrainingSession } from "../../training-types";
+import { type TrainingSession, type TrainingAction } from "../../training-types";
 
 export function useTrainingClock(
   session: TrainingSession | null,
   offset: React.MutableRefObject<number>,
   now: number,
   setNow: (n: number) => void,
-  act: (action: Record<string, unknown>) => Promise<void>,
+  act: (action: TrainingAction) => Promise<void>,
   busy: boolean,
   error: string
 ) {

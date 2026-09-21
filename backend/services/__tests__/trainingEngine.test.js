@@ -425,58 +425,79 @@ describe("shared intelligence", () => {
 
 describe("dynamic mode transitions (reordering)", () => {
   it("adjusts dynamic target according to challenge semantics when in challenge mode", () => {
+    // Challenge adjusts difficulty upwards on a correct answer (target becomes harder)
     const q1 = question("q1", { difficulty: 2, expectedTime: 30 });
-    const q2 = question("q2", { difficulty: 2 });
-    const q3 = question("q3", { difficulty: 5 });
-    const s = session("challenge", [q1, q2, q3]);
+    const qEasy = question("qEasy", { difficulty: 1 });
+    const qHard = question("qHard", { difficulty: 5 }); // This should be selected next!
+    
+    // mastery = 0.5 (default baseline). targetDifficulty = 2 (q1) + 1 (challenge bump) + ... = around 4-5
+    const s = session("challenge", [q1, qEasy, qHard]);
     const updatedSession = transition(s, {
       type: "answer",
       questionId: "q1",
-      choice: 0,
+      choice: 1, // correct answer
+      confidence: "sure",
       seconds: 15,
     }, now);
-    expect(updatedSession.questions.length).toBeGreaterThan(0);
+    
+    // We expect the harder question to be brought to index 1
+    expect(updatedSession.questions[updatedSession.current].id).toBe("qHard");
   });
 
   it("never behaves like normal Adaptive when in Nightmare mode", () => {
-    const q1 = question("q1", { difficulty: 3, expectedTime: 30 });
-    const q2 = question("q2", { difficulty: 1 });
-    const q3 = question("q3", { difficulty: 5 });
-    const s = session("nightmare", [q1, q2, q3]);
+    // Nightmare should NOT drop difficulty below 3, even if we get it wrong
+    const q1 = question("q1", { difficulty: 4, expectedTime: 30 });
+    const qEasy = question("qEasy", { difficulty: 1 });
+    const qHard = question("qHard", { difficulty: 4 });
+    
+    const s = session("nightmare", [q1, qEasy, qHard]);
     const updatedSession = transition(s, {
       type: "answer",
       questionId: "q1",
-      choice: 0,
+      choice: 0, // wrong answer -> drops ability
+      confidence: "sure",
       seconds: 10,
     }, now);
-    expect(updatedSession.questions.length).toBeGreaterThan(0);
+    
+    // If it was "adaptive", target would be 1, so qEasy (diff 1) would be picked.
+    // Since it's "nightmare", floor is 3, so target is 3.
+    // Distance for qEasy (1) is 2. Distance for qHard (4) is 1. So qHard is closer!
+    expect(updatedSession.questions[updatedSession.current].id).toBe("qHard");
   });
 
   it("retains Nightmare adaptive semantics inside a Mission + Nightmare block", () => {
-    const q1 = { ...question("q1", { difficulty: 3 }), trainingBlockId: "blk1", trainingMode: "nightmare" };
-    const q2 = { ...question("q2", { difficulty: 2 }), trainingBlockId: "blk1", trainingMode: "nightmare" };
-    const s = session("mission", [q1, q2]);
+    const q1 = { ...question("q1", { difficulty: 4 }), trainingBlockId: "blk1", trainingMode: "nightmare" };
+    const qEasy = { ...question("qEasy", { difficulty: 1 }), trainingBlockId: "blk1", trainingMode: "nightmare" };
+    const qHard = { ...question("qHard", { difficulty: 4 }), trainingBlockId: "blk1", trainingMode: "nightmare" };
+    
+    const s = session("mission", [q1, qEasy, qHard]);
     const updatedSession = transition(s, {
       type: "answer",
       questionId: "q1",
-      choice: 1,
+      choice: 0, // wrong
+      confidence: "sure",
       seconds: 10,
     }, now);
-    // It should have advanced to question 2
-    expect(updatedSession.current).toBe(1);
+    
+    // Due to the mode "nightmare", it should not drop to qEasy (diff 1), target is 3.
+    expect(updatedSession.questions[updatedSession.current].id).toBe("qHard");
   });
 
   it("retains Challenge adaptive semantics inside a Mission + Challenge block", () => {
-    const q1 = { ...question("q1", { difficulty: 3 }), trainingBlockId: "blk1", trainingMode: "challenge" };
-    const q2 = { ...question("q2", { difficulty: 2 }), trainingBlockId: "blk1", trainingMode: "challenge" };
-    const s = session("mission", [q1, q2]);
+    const q1 = { ...question("q1", { difficulty: 2 }), trainingBlockId: "blk1", trainingMode: "challenge" };
+    const qEasy = { ...question("qEasy", { difficulty: 1 }), trainingBlockId: "blk1", trainingMode: "challenge" };
+    const qHard = { ...question("qHard", { difficulty: 5 }), trainingBlockId: "blk1", trainingMode: "challenge" };
+    
+    const s = session("mission", [q1, qEasy, qHard]);
     const updatedSession = transition(s, {
       type: "answer",
       questionId: "q1",
-      choice: 1,
+      choice: 1, // correct
+      confidence: "sure",
       seconds: 10,
     }, now);
-    // It should have advanced to question 2
-    expect(updatedSession.current).toBe(1);
+    
+    // Due to the mode "challenge", it should ramp up difficulty to qHard.
+    expect(updatedSession.questions[updatedSession.current].id).toBe("qHard");
   });
 });

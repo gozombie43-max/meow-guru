@@ -275,3 +275,10 @@ export interface TrainingDashboard {
   mission: Array<{ mode: ModeId; count: number; label: string }>;
   personalBest: number;
 }
+
+export type TrainingAction =
+  | { type: "answer"; choice: number | null; confidence: Confidence | null }
+  | { type: "visit"; index: number }
+  | { type: "finish" }
+  | { type: "abandon" };
+

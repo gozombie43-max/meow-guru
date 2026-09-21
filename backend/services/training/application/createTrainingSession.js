@@ -1,0 +1,164 @@
+import { randomUUID } from "node:crypto";
+import {
+  trainingHistory as history,
+  findMission,
+  createTrainingSession as insertTrainingSession,
+  trainingQuestionPool,
+  trainingExposureData,
+  trainingLearningState,
+} from "../../../repositories/trainingRepository.js";
+import {
+  normalizeQuestion,
+  buildIntelligence,
+  selectQuestions,
+  mergeDurableIntelligence,
+} from "../../trainingEngine.js";
+import { getExamConfig } from "../../../config/exam-config.js";
+import { getTrainingModePolicy } from "../../trainingModePolicy.js";
+import { planDailyMission } from "../mission/missionPlanner.js";
+
+export async function createTrainingSessionCommand(userId, config, now) {
+  const missionDate = new Date(now).toLocaleDateString("en-CA", {
+    timeZone: "Asia/Kolkata",
+  });
+  if (config.mode === "mission") {
+    const existing = await findMission(userId, config.exam, missionDate);
+    if (existing) return existing;
+  }
+  const previous = await history(userId, config.exam);
+  const durable = await trainingLearningState(userId, config.exam);
+  let intelligence = mergeDurableIntelligence(
+    buildIntelligence(previous),
+    durable.skillRows,
+    durable.reviewRows,
+  );
+  const policy = getTrainingModePolicy(config.mode);
+  const sectional = policy.sectional;
+  if (sectional && !config.subject)
+    throw new Error("Choose a subject for sectional training.");
+  const examConfig = getExamConfig(
+    config.exam === "cat" ? "cat" : `${config.exam}-tier${config.tier}`,
+  );
+  const normalizedSubject = (config.subject || "")
+    .toLowerCase()
+    .replaceAll(" ", "-");
+  const sectionConfig = examConfig?.sections.find(
+    (section) =>
+      section.topics.includes(normalizedSubject) ||
+      section.label.toLowerCase() === (config.subject || "").toLowerCase(),
+  );
+  if (sectional && !sectionConfig)
+    throw new Error("This subject is not mapped to a section in the selected exam and tier.");
+  if (config.count === "full" && (!sectional || !sectionConfig))
+    throw new Error("Full section requires a subject mapped to the exam configuration.");
+  
+  const requestedCount = config.count === "full" ? sectionConfig.questionCount : config.count;
+  const recentIds = previous.slice(0, 3).flatMap((s) => s.questions.map((q) => q.id));
+  const exposureRows = await trainingExposureData(userId, config.exam);
+  
+  const docs = await trainingQuestionPool(
+    config,
+    intelligence.due.map((r) => r.questionId),
+    recentIds,
+    intelligence.topics.slice(0, 6).map((item) => item.topic),
+  );
+  
+  const pool = [
+    ...new Map(
+      docs
+        .map(normalizeQuestion)
+        .filter(Boolean)
+        .map((q) => [q.id, q]),
+    ).values(),
+  ];
+  
+  const eligible = pool.filter(
+    (q) => q.difficulty >= (policy.minDifficulty || 1),
+  );
+  
+  let questions = [];
+  if (config.mode === "mission") {
+    questions = await planDailyMission({ intelligence, pool, now, exposureRows, exam: config.exam });
+  } else {
+    questions = selectQuestions(
+      eligible,
+      config.mode,
+      requestedCount,
+      intelligence,
+      now,
+      exposureRows,
+    );
+  }
+  
+  const reviewState = new Map(
+    intelligence.reviews.map((item) => [String(item.questionId), item]),
+  );
+  
+  questions = questions.map((question) => {
+    const review = reviewState.get(String(question.id));
+    return review
+      ? { ...question, priorReviewStage: review.stage }
+      : question;
+  });
+
+  if (!questions.length) {
+    if (config.mode === "review") throw new Error("No review questions are due for these filters.");
+    else throw new Error("No eligible questions match this exam and topic. Add exam-tagged questions with valid answer keys, or change the filters.");
+  }
+  if (config.count === "full" && questions.length < requestedCount)
+    throw new Error(`This section needs ${requestedCount} eligible questions; only ${questions.length} are available. Choose a shorter session.`);
+    
+  const expected = questions.reduce((n, q) => n + q.expectedTime, 0);
+  const duration =
+    policy.clock === "fixed"
+      ? config.minutes * 60
+      : Math.max(
+          60,
+          Math.round(expected * (policy.clockMultiplier || 1.2)),
+        );
+        
+  const s = {
+    id: randomUUID(),
+    userId,
+    ...config,
+    ...(config.mode === "mission" ? { missionDate } : {}),
+    questions,
+    baseline: Object.fromEntries(
+      intelligence.topics.map((p) => [p.key, p.mastery]),
+    ),
+    reserve:
+      config.mode === "gauntlet"
+        ? pool
+            .filter(
+              (q) => !questions.some((selected) => selected.id === q.id),
+            )
+            .sort((a, b) => a.difficulty - b.difficulty)
+            .slice(0, 100)
+        : [],
+    answers: {},
+    events: [{ type: "visit", questionId: questions[0].id, at: now }],
+    marking:
+      sectional && sectionConfig
+        ? {
+            correct: sectionConfig.marking.correct,
+            wrong: sectionConfig.marking.incorrect,
+          }
+        : { correct: 1, wrong: 0.25 },
+    duration,
+    startedAt: new Date(now).toISOString(),
+    deadline: new Date(now + duration * 1000).toISOString(),
+    lastEventAt: now,
+    current: 0,
+    revision: 0,
+    lives: policy.lives || 999,
+    status: "active",
+  };
+  
+  try {
+    await insertTrainingSession(s);
+  } catch (error) {
+    if (error.code !== 11000 || config.mode !== "mission") throw error;
+    return await findMission(userId, config.exam, missionDate);
+  }
+  return s;
+}

@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { isAxiosError } from "axios";
 import api from "@/shared/api/client";
 import { type Confidence, type TrainingSession } from "../../training-types";
 
+import { useTrainingActions } from "./useTrainingActions";
+import { useTrainingClock } from "./useTrainingClock";
+
 export function useTrainingSession(id: string) {
-  const router = useRouter();
   const [session, setSession] = useState<TrainingSession | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -13,6 +14,7 @@ export function useTrainingSession(id: string) {
   const [choice, setChoice] = useState<number | null>(null);
   const [confidence, setConfidence] = useState<Confidence | null>(null);
   const [pendingAction, setPendingAction] = useState("");
+  const [confirmFinish, setConfirmFinish] = useState(false);
   
   const offset = useRef(0);
   const sendingRef = useRef(false);
@@ -66,24 +68,42 @@ export function useTrainingSession(id: string) {
     };
   }, [id, accept]);
 
+  const { act } = useTrainingActions({
+    id,
+    session,
+    sendingRef,
+    setBusy,
+    setPendingAction,
+    setError,
+    accept,
+    setConfirmFinish
+  });
+
+  const { remaining } = useTrainingClock(
+    session,
+    offset,
+    now,
+    setNow,
+    act,
+    busy,
+    error
+  );
+
   return {
     session,
     error,
     busy,
     now,
-    setNow,
-    offset,
+    remaining,
     choice,
     setChoice,
     confidence,
     setConfidence,
     pendingAction,
-    setPendingAction,
-    sendingRef,
+    confirmFinish,
+    setConfirmFinish,
     accept,
     reload,
-    router,
-    setError,
-    setBusy
+    act
   };
 }

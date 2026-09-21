@@ -1,17 +1,17 @@
 import { X } from "lucide-react";
-import { type TrainingSession } from "../training-types";
+import { type TrainingSession, type TrainingAction } from "../training-types";
 import { useEffect } from "react";
 
 interface TrainingFinishDialogProps {
   finishRef: React.RefObject<HTMLDialogElement | null>;
   confirmFinish: boolean;
   setConfirmFinish: (v: boolean) => void;
-  session: TrainingSession;
+  session: TrainingSession | null;
   answered: number;
   unsaved: boolean;
   error: string;
   busy: boolean;
-  act: (action: Record<string, unknown>) => Promise<void>;
+  act: (action: TrainingAction) => Promise<void>;
 }
 
 export function TrainingFinishDialog({

@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { isAxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import api from "@/shared/api/client";
-import { type TrainingSession } from "../../training-types";
+import { type TrainingSession, type TrainingAction } from "../../training-types";
 
 interface UseTrainingActionsProps {
   id: string;
@@ -27,7 +27,7 @@ export function useTrainingActions({
 }: UseTrainingActionsProps) {
   const router = useRouter();
   const act = useCallback(
-    async (action: Record<string, unknown>) => {
+    async (action: TrainingAction) => {
       if (!session || sendingRef.current) return;
       sendingRef.current = true;
       setBusy(true);

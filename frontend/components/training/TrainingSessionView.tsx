@@ -6,8 +6,6 @@ import { useThemeMode } from "@/hooks/useTheme";
 import { TrainingResults } from "./TrainingResults";
 import { TrainingLoading } from "./TrainingLoading";
 import { useTrainingSession } from "./session/hooks/useTrainingSession";
-import { useTrainingActions } from "./session/hooks/useTrainingActions";
-import { useTrainingClock } from "./session/hooks/useTrainingClock";
 import { TrainingSessionHeader } from "./session/TrainingSessionHeader";
 import { TrainingQuestion } from "./session/TrainingQuestion";
 import { TrainingPalette } from "./session/TrainingPalette";
@@ -25,44 +23,20 @@ export default function TrainingSessionView({ id }: { id: string }) {
     error,
     busy,
     now,
-    setNow,
-    offset,
+    remaining,
     choice,
     setChoice,
     confidence,
     setConfidence,
     pendingAction,
-    setPendingAction,
-    sendingRef,
+    confirmFinish,
+    setConfirmFinish,
     accept,
     reload,
-    setError,
-    setBusy
+    act
   } = useTrainingSession(id);
 
-  const [confirmFinish, setConfirmFinish] = useState(false);
   const [showOverview, setShowOverview] = useState(false);
-
-  const { act } = useTrainingActions({
-    id,
-    session,
-    sendingRef,
-    setBusy,
-    setPendingAction,
-    setError,
-    accept,
-    setConfirmFinish
-  });
-
-  const { remaining } = useTrainingClock(
-    session,
-    offset,
-    now,
-    setNow,
-    act,
-    busy,
-    error
-  );
 
   const mainRef = useRef<HTMLElement>(null);
   const finishRef = useRef<HTMLDialogElement>(null);
@@ -221,7 +195,7 @@ export default function TrainingSessionView({ id }: { id: string }) {
         finishRef={finishRef} 
         confirmFinish={confirmFinish} 
         setConfirmFinish={setConfirmFinish} 
-        session={session!} 
+        session={session} 
         answered={answered} 
         unsaved={unsaved} 
         error={error} 

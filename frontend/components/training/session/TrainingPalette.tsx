@@ -1,4 +1,4 @@
-import { type TrainingSession, modes } from "../training-types";
+import { type TrainingSession, modes, type TrainingAction } from "../training-types";
 
 interface TrainingPaletteProps {
   session: TrainingSession;
@@ -6,7 +6,7 @@ interface TrainingPaletteProps {
   setShowOverview: (v: boolean) => void;
   canNavigate: boolean;
   busy: boolean;
-  act: (action: Record<string, unknown>) => Promise<void>;
+  act: (action: TrainingAction) => Promise<void>;
 }
 
 export function TrainingPalette({ session, showOverview, setShowOverview, canNavigate, busy, act }: TrainingPaletteProps) {
