@@ -2,7 +2,7 @@ import { afterAll, beforeAll, beforeEach, expect, it } from 'vitest';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import jwt from 'jsonwebtoken';
 import { connectMongoDB, disconnectMongoDB } from '../../config/mongodb.js';
-import { createSession, rotateSession, assertSession, revokeSession } from '../sessions.js';
+import { createSession, rotateSession, assertSession, revokeSession, evictSessionCache } from '../sessions.js';
 import { verifyToken, verifyRefreshToken, signToken, signRefreshToken } from '../jwt.js';
 import { acquireAiLease } from '../../middleware/aiAdmission.js';
 let mongo, db;
@@ -62,10 +62,13 @@ it('does not treat a current stateless refresh token as legacy', async () => {
 });
 it('enforces suspension, current role and rejects stateless access tokens', async () => {
   const tokens = await createSession({ id: 'user' });
+  const decoded = verifyToken(tokens.token);
   await db.collection('users').updateOne({ id: 'user' }, { $set: { role: 'admin' } });
-  expect((await assertSession(verifyToken(tokens.token))).role).toBe('admin');
+  evictSessionCache(decoded.sid, decoded.id);
+  expect((await assertSession(decoded)).role).toBe('admin');
   await db.collection('users').updateOne({ id: 'user' }, { $set: { status: 'suspended' } });
-  await expect(assertSession(verifyToken(tokens.token))).rejects.toMatchObject({ statusCode: 401 });
+  evictSessionCache(decoded.sid, decoded.id);
+  await expect(assertSession(decoded)).rejects.toMatchObject({ statusCode: 401 });
   await expect(rotateSession(tokens.refreshToken)).rejects.toMatchObject({ statusCode: 401 });
   await expect(assertSession(verifyToken(signToken({ id: 'user' })))).rejects.toMatchObject({ statusCode: 401 });
 });
