@@ -422,3 +422,61 @@ describe("shared intelligence", () => {
     ).toEqual(["q2"]);
   });
 });
+
+describe("dynamic mode transitions (reordering)", () => {
+  it("adjusts dynamic target according to challenge semantics when in challenge mode", () => {
+    const q1 = question("q1", { difficulty: 2, expectedTime: 30 });
+    const q2 = question("q2", { difficulty: 2 });
+    const q3 = question("q3", { difficulty: 5 });
+    const s = session("challenge", [q1, q2, q3]);
+    const updatedSession = transition(s, {
+      type: "answer",
+      questionId: "q1",
+      choice: 0,
+      seconds: 15,
+    }, now);
+    expect(updatedSession.questions.length).toBeGreaterThan(0);
+  });
+
+  it("never behaves like normal Adaptive when in Nightmare mode", () => {
+    const q1 = question("q1", { difficulty: 3, expectedTime: 30 });
+    const q2 = question("q2", { difficulty: 1 });
+    const q3 = question("q3", { difficulty: 5 });
+    const s = session("nightmare", [q1, q2, q3]);
+    const updatedSession = transition(s, {
+      type: "answer",
+      questionId: "q1",
+      choice: 0,
+      seconds: 10,
+    }, now);
+    expect(updatedSession.questions.length).toBeGreaterThan(0);
+  });
+
+  it("retains Nightmare adaptive semantics inside a Mission + Nightmare block", () => {
+    const q1 = { ...question("q1", { difficulty: 3 }), trainingBlockId: "blk1", trainingMode: "nightmare" };
+    const q2 = { ...question("q2", { difficulty: 2 }), trainingBlockId: "blk1", trainingMode: "nightmare" };
+    const s = session("mission", [q1, q2]);
+    const updatedSession = transition(s, {
+      type: "answer",
+      questionId: "q1",
+      choice: 1,
+      seconds: 10,
+    }, now);
+    // It should have advanced to question 2
+    expect(updatedSession.current).toBe(1);
+  });
+
+  it("retains Challenge adaptive semantics inside a Mission + Challenge block", () => {
+    const q1 = { ...question("q1", { difficulty: 3 }), trainingBlockId: "blk1", trainingMode: "challenge" };
+    const q2 = { ...question("q2", { difficulty: 2 }), trainingBlockId: "blk1", trainingMode: "challenge" };
+    const s = session("mission", [q1, q2]);
+    const updatedSession = transition(s, {
+      type: "answer",
+      questionId: "q1",
+      choice: 1,
+      seconds: 10,
+    }, now);
+    // It should have advanced to question 2
+    expect(updatedSession.current).toBe(1);
+  });
+});

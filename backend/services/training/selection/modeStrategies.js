@@ -3,13 +3,13 @@ const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
 const baseRank = (q, { weakness, recency, isDue, p }) =>
   weakness * 4 + recency + Number(isDue) * 4 + Number(q.sourceType === "pyq");
 
-const adaptiveOnAnswer = (s, q, a, { policy, adaptiveTargetDifficulty }) => {
+const adaptiveOnAnswer = (s, q, a, { policy, adaptiveTargetDifficulty }, mode = "adaptive") => {
   const topicKey = `${q.subject} / ${q.topic}`;
   const target = adaptiveTargetDifficulty({
     question: q,
     answer: a,
     mastery: s.baseline?.[topicKey] ?? 0.5,
-    mode: "adaptive",
+    mode: mode,
   });
   const blockEnd =
     s.mode === "mission" && q.trainingBlockId
@@ -55,7 +55,7 @@ const modeStrategies = {
       (position + 1) % 5 === 0 ? ability - 1 : ability + progress * (5 - ability),
     orderQuestions: (selected) => selected.sort((a, b) => a.difficulty - b.difficulty),
     afterAdvance: (s, q, a, ctx) => {
-      adaptiveOnAnswer(s, q, a, { ...ctx, mode: "challenge" });
+      adaptiveOnAnswer(s, q, a, ctx, "challenge");
       const blockEnd =
         s.mode === "mission" && q.trainingBlockId
           ? s.questions.findIndex(
@@ -77,7 +77,7 @@ const modeStrategies = {
     targetDifficulty: ({ ability, progress }) =>
       Math.max(3, ability) + progress * (5 - Math.max(3, ability)),
     orderQuestions: (selected) => selected.sort((a, b) => a.difficulty - b.difficulty),
-    afterAdvance: (s, q, a, ctx) => adaptiveOnAnswer(s, q, a, { ...ctx, mode: "nightmare" })
+    afterAdvance: (s, q, a, ctx) => adaptiveOnAnswer(s, q, a, ctx, "nightmare")
   },
   survival: {
     rankCandidate: baseRank,
