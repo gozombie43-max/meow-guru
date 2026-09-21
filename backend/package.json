@@ -44,7 +44,7 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "test": "vitest run --maxWorkers=2",
+    "test": "vitest run --maxWorkers=1",
     "test:unit": "vitest run --exclude='**/*.integration.test.js'",
     "test:integration": "vitest run integration",
     "test:battle": "vitest run battle",
@@ -57,7 +57,7 @@
     "db:migrate-images": "node scripts/migrate-local-question-images.js",
     "test:load": "node scripts/load-api.js",
     "lint": "eslint . --max-warnings 0",
-    "test:coverage": "vitest run --maxWorkers=2 --coverage"
+    "test:coverage": "vitest run --maxWorkers=1 --coverage"
   },
   "keywords": [],
   "author": "",

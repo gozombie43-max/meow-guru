@@ -188,11 +188,18 @@ export function TrainingSelectDropdown({
                   id={`${id}-opt-${idx}`}
                   role="option"
                   aria-selected={isSelected}
+                  tabIndex={-1}
                   className={`tsd-option ${isSelected ? "tsd-option--selected" : ""} ${isFocused ? "tsd-option--focused" : ""}`}
                   onMouseEnter={() => setFocused(idx)}
                   onClick={(e) => {
                     e.stopPropagation();
                     handleSelect(opt.value);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      handleSelect(opt.value);
+                    }
                   }}
                 >
                   <span className="tsd-option-label">{opt.label}</span>

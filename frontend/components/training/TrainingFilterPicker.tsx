@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, useCallback } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Check, ChevronDown, Search, X } from "lucide-react";
 import { useBackLayer } from "@/hooks/useAppNavigation";
@@ -28,8 +28,6 @@ export function TrainingFilterPicker({ label, value, options, emptyLabel, onChan
   const triggerRef = useRef<HTMLButtonElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
-  useBackLayer(open, () => handleClose());
-
   // Open → find portal target (inside the dialog so it renders in top-layer), animate in
   useEffect(() => {
     if (!open) return;
@@ -37,25 +35,29 @@ export function TrainingFilterPicker({ label, value, options, emptyLabel, onChan
     // Portal INTO the native dialog so we live in the top-layer with it.
     // Fall back to document.body if for some reason the dialog isn't found.
     const setup = document.getElementById("training-setup");
-    setPortalTarget(setup ?? document.body);
 
     // Add class for subtle visual state on the setup dialog (no blur needed now)
     setup?.setAttribute("data-picker-open", "true");
 
-    // Trigger enter animation on next frame
-    const raf = requestAnimationFrame(() => setVisible(true));
+  // Trigger enter animation on next frame
+    const raf = requestAnimationFrame(() => {
+      setPortalTarget(setup ?? document.body);
+      setVisible(true);
+    });
     // Auto-focus search after animation
     const timer = setTimeout(() => searchRef.current?.focus(), 220);
+
+    const trigger = triggerRef.current;
 
     return () => {
       cancelAnimationFrame(raf);
       clearTimeout(timer);
       setup?.removeAttribute("data-picker-open");
-      triggerRef.current?.focus({ preventScroll: true });
+      trigger?.focus({ preventScroll: true });
     };
   }, [open]);
 
-  const handleClose = useCallback(() => {
+  const handleClose = () => {
     setVisible(false);
     // Wait for slide-out animation before unmounting
     setTimeout(() => {
@@ -63,17 +65,19 @@ export function TrainingFilterPicker({ label, value, options, emptyLabel, onChan
       setQuery("");
       setPortalTarget(null);
     }, 320);
-  }, []);
+  };
 
-  const handleDone = useCallback(() => {
+  useBackLayer(open, () => handleClose());
+
+  const handleDone = () => {
     onChange(draft);
     handleClose();
-  }, [draft, onChange, handleClose]);
+  };
 
   // Tap backdrop to dismiss
-  const handleBackdropClick = useCallback((e: React.MouseEvent) => {
+  const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === backdropRef.current) handleClose();
-  }, [handleClose]);
+  };
 
   // Keyboard: Escape closes, Enter confirms
   useEffect(() => {
@@ -84,7 +88,8 @@ export function TrainingFilterPicker({ label, value, options, emptyLabel, onChan
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open, handleClose, handleDone]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   const choices = [
     { value: "", label: emptyLabel },
