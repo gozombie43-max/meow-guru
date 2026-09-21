@@ -1,4 +1,7 @@
-export { MODES, EXAMS } from "./trainingModePolicy.js";
+import { TRAINING_MODES, TRAINING_EXAMS } from "./trainingModePolicy.js";
+
+export const MODES = TRAINING_MODES;
+export const EXAMS = TRAINING_EXAMS.map((exam) => exam.id);
 
 export { normalizeQuestion } from "./training/domain/questionNormalizer.js";
 export { buildIntelligence, mergeDurableIntelligence } from "./training/domain/mastery.js";
