@@ -134,7 +134,7 @@ export const globalLimiter =
       const url = req.originalUrl || req.url || '';
 
       // Skip authenticated training (has its own durable trainingLimiter)
-      if (path.startsWith('/api/training') || url.startsWith('/api/training')) return true;
+      if (path === '/api/training' || path.startsWith('/api/training/') || url === '/api/training' || url.startsWith('/api/training/')) return true;
 
       // Skip health checks and root ping
       if (['/', '/health', '/api/health', '/live'].includes(path)) return true;
