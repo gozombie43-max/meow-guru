@@ -29,6 +29,12 @@ vi.mock('../../config/firebase.js', () => ({
     sendEachForMulticast: vi.fn(),
   },
 }));
+vi.mock('../../config/b2.js', () => ({
+  b2Client: {
+    send: vi.fn(),
+  },
+  B2_BUCKET: 'test-bucket',
+}));
 
 let replica, client, db;
 beforeAll(async () => {
