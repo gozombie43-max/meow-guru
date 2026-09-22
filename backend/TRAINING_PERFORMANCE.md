@@ -22,7 +22,7 @@ New question metadata is maintained by normal single/bulk writes, edits, approve
 
 ## Rollout
 
-The backend release `b832c5b` deployed successfully. The deployment workflow applied migrations `008-training-performance` and `009-training-exam-wide-candidates` before release. On 2026-09-22, the production metadata backfill scanned and updated 21,434 questions with zero conflicts; a second dry run found zero remaining candidates. `TRAINING_INDEXED_QUESTIONS=true` and `TRAINING_LOCAL_INGRESS=true` are enabled on the single App Service instance, which was restarted and returned healthy readiness checks.
+The backend release `4eaec1c` deployed successfully. The deployment workflow applied migrations `008-training-performance` and `009-training-exam-wide-candidates` before release. On 2026-09-22, the production metadata backfill scanned and updated 21,434 questions with zero conflicts; a second dry run found zero remaining candidates. `TRAINING_INDEXED_QUESTIONS=true` and `TRAINING_LOCAL_INGRESS=true` are enabled on the single App Service instance, which was restarted and returned healthy readiness checks.
 
 The backfill preserves question text, options, keys, and display taxonomy. Future external importers that bypass the normal writers still require the same backfill verification before indexed selection is relied on.
 
@@ -33,6 +33,8 @@ Session persistence now separates physical question content from logical order. 
 ## Durable learner-state migration
 
 Migration 010 adds `trainingLearnerStateMeta`. It replaces the bounded recent-history authority heuristic with a per-user/exam `{ version: 1, status: 'ready' }` marker. The separate `npm run db:training-state-backfill` command is inspection-only by default; its `--apply` mode replays every completed session in chronological order through the same learner-state reducer used by live completion, replaces skills/reviews/exposures transactionally, and records the source counts and final session. `completionEpoch` prevents a backfill from committing over a concurrent completion: the pair is retried when the epoch changes.
+
+The learner-state backfill is a separate production operation and is not considered complete without recorded production evidence. On 2026-09-22, the Atlas target configured for this backend was inspected, rebuilt with `--apply`, then inspected again. It contained two completed user/exam pairs; both reported `version: 1, status: 'ready'`, with zero non-ready pairs and zero stored-source-count mismatches. The source evidence totaled 29 completed sessions and 47 attempts before and after the rebuild. Pairs that are absent, pending, failed, or whose source counts change require investigation or a rerun before the migration is closed.
 
 ## Local evidence
 
