@@ -65,6 +65,26 @@ export function evictSessionCache(sid, userId) {
   sessionCache.delete(`${sid}:${userId}`);
 }
 
+export function evictUserSessionCache(userId) {
+  const suffix = `:${String(userId)}`;
+  for (const key of sessionCache.keys()) {
+    if (key.endsWith(suffix)) sessionCache.delete(key);
+  }
+}
+
+export async function revokeUserSessions(userId, reason = 'admin-action') {
+  const normalizedUserId = String(userId);
+  const activeSessions = await sessions()
+    .find({ userId: normalizedUserId, ...active(new Date()) }, { projection: { _id: 1 } })
+    .toArray();
+  await sessions().updateMany(
+    { userId: normalizedUserId, ...active(new Date()) },
+    { $set: { revokedAt: new Date(), revokeReason: reason } },
+  );
+  evictUserSessionCache(normalizedUserId);
+  for (const session of activeSessions) disconnectSession(session._id);
+}
+
 export async function rotateSession(refreshToken, now = new Date()) {
   let decoded;
   try {

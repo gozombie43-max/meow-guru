@@ -7,6 +7,7 @@ import {
 } from '../config/mongodb.js';
 import { roleLevel } from '../middleware/requireRole.js';
 import { sendPushToUser } from '../services/pushNotificationService.js';
+import { evictUserSessionCache, revokeUserSessions } from '../auth/sessions.js';
 
 // ── Helpers ──────────────────────────────────────────────
 
@@ -369,6 +370,7 @@ export async function updateUserRole(req, res) {
       { id: String(id) },
       { $set: { role: newRole, updatedAt: new Date().toISOString() } }
     );
+    evictUserSessionCache(id);
 
     await logAudit({
       adminId: adminUser.id,
@@ -424,6 +426,11 @@ export async function updateUserStatus(req, res) {
       { id: String(id) },
       { $set: { status, updatedAt: new Date().toISOString() } }
     );
+    if (['suspended', 'banned'].includes(status)) {
+      await revokeUserSessions(id, status);
+    } else {
+      evictUserSessionCache(id);
+    }
 
     const actionMap = {
       active: 'USER_REACTIVATED',
@@ -479,6 +486,7 @@ export async function deleteUser(req, res) {
       });
     }
 
+    await revokeUserSessions(id, 'deleted');
     await users.deleteOne({ id: String(id) });
 
     await logAudit({

@@ -11,6 +11,7 @@ import curationRouter from "../trainingCuration.js";
 import { invalidateTrainingCatalog } from '../../services/training/catalogCache.js';
 
 import { up as upPerformance } from '../../migrations/008-training-performance.js';
+import { up as upExamWideCandidates } from '../../migrations/009-training-exam-wide-candidates.js';
 import { backfillTrainingMetadata } from '../../services/training/questionMetadataBackfill.js';
 import { trainingQuestionPool, trainingExposureData, trainingHistory } from '../../repositories/trainingRepository.js';
 
@@ -34,6 +35,7 @@ beforeAll(async () => {
   await up(db);
   await upHardening(db);
   await upPerformance(db);
+  await upExamWideCandidates(db);
   const app = express();
   app.use(express.json());
   app.use("/curation", curationRouter);
@@ -485,6 +487,9 @@ describe('training performance contracts', () => {
     expect(session.questions[0]).not.toHaveProperty('_trainingDocumentId');
     expect(session.questions[0]).not.toHaveProperty('_trainingFingerprint');
     expect(session.questions[0]).not.toHaveProperty('correctIndex');
+    const explain = await questions.find({ trainingExamSlugs: 'ssc-chsl', trainingEligible: true, trainingMetadataVersion: 1 }).sort({ updatedAt: -1, _id: 1 }).limit(10).explain('executionStats');
+    expect(explain.executionStats.totalDocsExamined).toBe(1);
+    expect(JSON.stringify(explain.queryPlanner.winningPlan)).toContain('training_exam_wide_latest');
   });
 
   it('limits exposure reads to the candidate IDs', async () => {

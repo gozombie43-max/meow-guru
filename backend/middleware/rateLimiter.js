@@ -103,6 +103,25 @@ const userKeyGenerator = (req) =>
   req.user?._id ||
   requestIpKey(req);
 
+const isTrainingRequest = req => {
+  const path = req.path || '';
+  const url = req.originalUrl || req.url || '';
+  return path === '/api/training' || path.startsWith('/api/training/') ||
+    url === '/api/training' || url.startsWith('/api/training/');
+};
+
+// The normal global limiter is Mongo-backed in production. Local load runs can
+// avoid its write volume for training traffic while retaining a cheap IP guard.
+export const trainingIngressLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: process.env.NODE_ENV !== 'production' ? 100000 : 5000,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: requestIpKey,
+  skip: req => isDevOrLocal() || process.env.TRAINING_LOCAL_INGRESS !== 'true' || !isTrainingRequest(req),
+  message: { error: 'Too many training requests, please try again later.' },
+});
+
 
 // Global Limiter
 export const globalLimiter =
@@ -130,11 +149,11 @@ export const globalLimiter =
       // Skip HTTP OPTIONS preflight requests
       if (req.method === 'OPTIONS') return true;
 
+      // Skip authenticated training (has its own durable trainingLimiter)
+      if (process.env.TRAINING_LOCAL_INGRESS === 'true' && isTrainingRequest(req)) return true;
+
       const path = req.path || '';
       const url = req.originalUrl || req.url || '';
-
-      // Skip authenticated training (has its own durable trainingLimiter)
-      if (path === '/api/training' || path.startsWith('/api/training/') || url === '/api/training' || url.startsWith('/api/training/')) return true;
 
       // Skip health checks and root ping
       if (['/', '/health', '/api/health', '/live'].includes(path)) return true;

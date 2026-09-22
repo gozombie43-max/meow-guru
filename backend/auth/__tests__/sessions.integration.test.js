@@ -2,7 +2,7 @@ import { afterAll, beforeAll, beforeEach, expect, it } from 'vitest';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import jwt from 'jsonwebtoken';
 import { connectMongoDB, disconnectMongoDB } from '../../config/mongodb.js';
-import { createSession, rotateSession, assertSession, revokeSession, evictSessionCache } from '../sessions.js';
+import { createSession, rotateSession, assertSession, revokeSession, evictSessionCache, evictUserSessionCache, revokeUserSessions } from '../sessions.js';
 import { verifyToken, verifyRefreshToken, signToken, signRefreshToken } from '../jwt.js';
 import { acquireAiLease } from '../../middleware/aiAdmission.js';
 let mongo, db;
@@ -71,6 +71,21 @@ it('enforces suspension, current role and rejects stateless access tokens', asyn
   await expect(assertSession(decoded)).rejects.toMatchObject({ statusCode: 401 });
   await expect(rotateSession(tokens.refreshToken)).rejects.toMatchObject({ statusCode: 401 });
   await expect(assertSession(verifyToken(signToken({ id: 'user' })))).rejects.toMatchObject({ statusCode: 401 });
+});
+it('invalidates every cached session and revokes active sessions for a user', async () => {
+  const first = await createSession({ id: 'user' });
+  const second = await createSession({ id: 'user' });
+  const firstDecoded = verifyToken(first.token);
+  const secondDecoded = verifyToken(second.token);
+  await assertSession(firstDecoded);
+  await assertSession(secondDecoded);
+  evictUserSessionCache('user');
+  await assertSession(firstDecoded);
+  await assertSession(secondDecoded);
+  await revokeUserSessions('user', 'suspended');
+  await expect(assertSession(firstDecoded)).rejects.toMatchObject({ statusCode: 401 });
+  await expect(assertSession(secondDecoded)).rejects.toMatchObject({ statusCode: 401 });
+  expect(await db.collection('authSessions').countDocuments({ revokeReason: 'suspended' })).toBe(2);
 });
 it('limits concurrent AI work across instances and fences expired lease owners', async () => {
   const now = new Date();

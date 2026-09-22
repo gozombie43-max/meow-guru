@@ -350,9 +350,11 @@ export async function trainingQuestionPool(config, dueIds, recentIds, weakTopics
   const projection = indexed ? { id: 1, trainingCandidate: 1 } : {};
   const query = filter => getQuestionsCollection().find(filter).project(projection);
   if (config.subject) and.push(indexed ? { trainingSubjectSlug: normalizeTrainingSubject(config.subject) } : trainingSubjectFilter(config.subject));
-  if (config.topic && indexed) and.push({ $or: [{ trainingTopicSlug: trainingSlug(config.topic) }, { questionTopic: config.topic }] });
-  if (config.topic)
+  if (config.topic && indexed) {
+    and.push({ trainingTopicSlug: trainingSlug(config.topic) });
+  } else if (config.topic) {
     and.push({ $or: [{ topic: config.topic }, { questionTopic: config.topic }] });
+  }
   if (config.mode === 'review') {
     and.push({ id: { $in: dueIds } });
     return query({ $and: and })
@@ -363,7 +365,10 @@ export async function trainingQuestionPool(config, dueIds, recentIds, weakTopics
   if (recentIds.length) and.push({ id: { $nin: recentIds } });
   const base = { $and: and };
   const weakFilter = weakTopics.length
-    ? { $and: [...and, { $or: [{ topic: { $in: weakTopics } }, { questionTopic: { $in: weakTopics } }] }] }
+    ? { $and: [...and, indexed
+      ? { trainingTopicSlug: { $in: weakTopics.map(trainingSlug) } }
+      : { $or: [{ topic: { $in: weakTopics } }, { questionTopic: { $in: weakTopics } }] },
+    ] }
     : null;
 
   const [latest, oldest, quality, weak] = await Promise.all([

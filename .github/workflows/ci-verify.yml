@@ -64,6 +64,10 @@ jobs:
       - name: Install Backend Dependencies
         run: npm ci --workspace backend --include-workspace-root=false
 
+      - name: Verify backend app module imports
+        working-directory: ./backend
+        run: node -e "import('./app.js')"
+
       - name: Run Backend Tests (Vitest)
         working-directory: ./backend
         run: npm run lint && npm run test:coverage
@@ -72,6 +76,7 @@ jobs:
         working-directory: ./backend
         env:
           TRAINING_LOAD_STAGES: '1,5'
+          TRAINING_LOAD_SCENARIOS: 'section-mathematics,adaptive-all,mission-all'
         run: npm run test:load:training
 
   security-and-vulnerability-scan:

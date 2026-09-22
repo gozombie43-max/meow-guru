@@ -8,7 +8,18 @@ import express from 'express';
 // and load an isolated local replica set. Production credentials are ignored.
 const stages = (process.env.TRAINING_LOAD_STAGES || '1,5,10,25,50').split(',').map(Number);
 const count = Number(process.env.TRAINING_LOAD_QUESTIONS || 20);
+const scenarios = (process.env.TRAINING_LOAD_SCENARIOS || 'section-mathematics')
+  .split(',')
+  .map(name => name.trim())
+  .filter(Boolean)
+  .map(name => ({
+    'section-mathematics': { name, lifecycle: true, session: { mode: 'section', exam: 'ssc-cgl', subject: 'mathematics', count } },
+    'adaptive-all': { name, lifecycle: false, session: { mode: 'adaptive', exam: 'ssc-cgl', count } },
+    'mission-all': { name, lifecycle: false, session: { mode: 'mission', exam: 'ssc-cgl', count } },
+  }[name]))
+  .filter(Boolean);
 if (stages.some(n => !Number.isInteger(n) || n < 1 || n > 100) || ![10,20,25,50].includes(count)) throw new Error('Invalid load stages or question count');
+if (!scenarios.length) throw new Error('Invalid training load scenarios');
 process.env.NODE_ENV = 'production';
 process.env.JWT_SECRET = randomUUID();
 process.env.REFRESH_TOKEN_SECRET = randomUUID();
@@ -25,7 +36,7 @@ try {
   const { connectMongoDB, disconnectMongoDB } = await import('../config/mongodb.js');
   disconnect = disconnectMongoDB;
   const db = await connectMongoDB();
-  for (const file of ['005-training', '007-training-hardening', '008-training-performance']) {
+  for (const file of ['005-training', '007-training-hardening', '008-training-performance', '009-training-exam-wide-candidates']) {
     await (await import(`../migrations/${file}.js`)).up(db);
   }
   const { trainingQuestionMetadata } = await import('../services/training/domain/questionMetadata.js');
@@ -44,7 +55,7 @@ try {
   server = app.listen(0, '127.0.0.1');
   await once(server, 'listening');
   const base = `http://127.0.0.1:${server.address().port}/api/training`;
-  for (const concurrency of stages) {
+  for (const scenario of scenarios) for (const concurrency of stages) {
     const samples = {};
     const measure = async (operation, token, path, body) => {
       const start = performance.now();
@@ -66,7 +77,8 @@ try {
       await db.collection('users').insertOne(user);
       const token = (await createSession(user)).token;
       await measure('dashboard', token, '/dashboard?exam=ssc-cgl');
-      let session = await measure('create', token, '/sessions', { mode: 'section', exam: 'ssc-cgl', subject: 'mathematics', count });
+      let session = await measure('create', token, '/sessions', scenario.session);
+      if (!scenario.lifecycle) return session;
       for (let index = 0; index < session.questions.length; index++) {
         if (index) {
           const delta = await measure('visit', token, `/sessions/${session.id}/actions?response=delta`, { type: 'visit', index, revision: session.revision });
@@ -79,15 +91,15 @@ try {
       if (completed.status !== 'completed' || completed.result.attempted !== count) throw new Error('Incomplete learner lifecycle');
       await measure('dashboard', token, '/dashboard?exam=ssc-cgl');
     }));
-    const summary = { concurrency, durationMs: Math.round(performance.now() - started), failedLearners: learners.filter(r => r.status === 'rejected').length, operations: {} };
+    const summary = { scenario: scenario.name, concurrency, durationMs: Math.round(performance.now() - started), failedLearners: learners.filter(r => r.status === 'rejected').length, operations: {} };
     for (const [operation, rows] of Object.entries(samples)) {
       const sorted = rows.map(r => r.ms).sort((a,b) => a-b);
       const percentile = n => Math.round(sorted[Math.max(0, Math.ceil(sorted.length * n) - 1)] * 100) / 100;
-      summary.operations[operation] = { requests: rows.length, errors: rows.filter(r => !r.ok).length, errorRate: rows.filter(r => !r.ok).length / rows.length, p50Ms: percentile(.5), p95Ms: percentile(.95), p99Ms: percentile(.99), meanResponseBytes: Math.round(rows.reduce((n,r) => n+r.bytes, 0) / rows.length) };
+      summary.operations[operation] = { requests: rows.length, errors: rows.filter(r => !r.ok).length, errorRate: rows.filter(r => !r.ok).length / rows.length, p50Ms: percentile(.5), p95Ms: percentile(.95), p99Ms: percentile(.99), meanResponseBytes: Math.round(rows.reduce((n,r) => n+r.bytes, 0) / rows.length), maxResponseBytes: Math.max(...rows.map(r => r.bytes)) };
     }
     report.stages.push(summary);
     console.log(JSON.stringify(summary));
-    if (summary.failedLearners) process.exitCode = 1;
+    if (summary.failedLearners || ['answer', 'visit'].some(operation => summary.operations[operation]?.maxResponseBytes >= 2048)) process.exitCode = 1;
   }
   if (process.env.TRAINING_LOAD_REPORT) await writeFile(process.env.TRAINING_LOAD_REPORT, JSON.stringify(report, null, 2) + '\n');
 } finally {

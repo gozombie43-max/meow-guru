@@ -1,6 +1,6 @@
 import { afterEach, expect, it, vi } from 'vitest';
 vi.mock('express-rate-limit', () => ({ default: options => options, ipKeyGenerator: value => value }));
-import { authLimiter, aiLimiter, globalLimiter, trainingLimiter } from '../rateLimiter.js';
+import { authLimiter, aiLimiter, globalLimiter, trainingIngressLimiter, trainingLimiter } from '../rateLimiter.js';
 afterEach(() => vi.unstubAllEnvs());
 it('enforces production limits on loopback proxy traffic', () => {
   vi.stubEnv('NODE_ENV', 'production');
@@ -18,10 +18,14 @@ it('retains development and production health exemptions', () => {
   expect(globalLimiter.skip({ path: '/health', method: 'GET' })).toBe(true);
 });
 
-it('skips global limiter for training paths to avoid DB write amplification', () => {
+it('uses the distributed global limiter for training unless local ingress is enabled', () => {
   vi.stubEnv('NODE_ENV', 'production');
   const request = { path: '/api/training/sessions/a/actions', method: 'POST' };
+  expect(globalLimiter.skip(request)).toBe(false);
+  expect(trainingIngressLimiter.skip(request)).toBe(true);
+  vi.stubEnv('TRAINING_LOCAL_INGRESS', 'true');
   expect(globalLimiter.skip(request)).toBe(true);
+  expect(trainingIngressLimiter.skip(request)).toBe(false);
   expect(trainingLimiter.skip(request)).toBe(false);
   for (const path of ['/api/training-other', '/api/auth/login']) {
     expect(globalLimiter.skip({ ...request, path })).toBe(false);
