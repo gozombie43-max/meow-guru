@@ -26,7 +26,23 @@ The backend release `4eaec1c` deployed successfully. The deployment workflow app
 
 The backfill preserves question text, options, keys, and display taxonomy. Future external importers that bypass the normal writers still require the same backfill verification before indexed selection is relied on.
 
-An Azure/Atlas load test and an authenticated production training-session exercise have not been run. The supplied local load harness has no remote-target option and always owns a disposable local database, so its results do not establish Azure or Atlas capacity. A separate `npm run test:probe:training-remote` command now supports controlled authenticated staging/production lifecycle measurement without weakening that boundary: it requires an exact expected hostname, a repeated production-host confirmation for production, dedicated synthetic credentials and a new JSON report file. It verifies `/api/health` before login and requires its server-attested environment to match the requested target; the report records deployed release ID, environment, readiness state and service mode. An optional expected release ID fails a mismatched deployment. Production defaults to one synthetic learner and rejects concurrent runs without an explicit override; staging is the appropriate target for concurrency testing.
+The remote probe now supports controlled authenticated staging/production lifecycle measurement without weakening the local harness safety boundary. It requires an exact expected hostname, a repeated production-host confirmation for production, dedicated synthetic credentials and a new JSON report file. It verifies `/api/health` before login and requires its server-attested environment to match the requested target; the report records deployed release ID, environment, readiness state and service mode. An optional expected release ID fails a mismatched deployment. Production defaults to one synthetic learner and rejects concurrent runs without an explicit override; staging is the appropriate target for concurrency testing.
+
+### Production C1 evidence
+
+On 2026-09-22, the authenticated production lifecycle probe was run three times against Azure App Service + MongoDB Atlas on release `be02aa9a815b8b8c726004b9afa1dd4f70afd0dd`. Each run used one synthetic learner, one 10-question lifecycle, and zero concurrency beyond that single learner. All three runs completed with zero errors and all investigation thresholds passed.
+
+| Operation | Run 1 | Run 2 | Run 3 | Worst observed | Investigation threshold |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Dashboard p95 | 615.39 ms | 380.03 ms | 358.65 ms | 615.39 ms | 750 ms |
+| Create | 685.89 ms | 587.35 ms | 510.58 ms | 685.89 ms | 1500 ms |
+| Answer p95 | 314.89 ms | 276.91 ms | 276.95 ms | 314.89 ms | 400 ms |
+| Visit p95 | 333.98 ms | 268.51 ms | 277.81 ms | 333.98 ms | 400 ms |
+| Finish | 363.03 ms | 314.33 ms | 323.70 ms | 363.03 ms | 1000 ms |
+
+Interactive answer and visit responses remained compact at roughly 755-759 bytes on average. Dashboard payloads grew from roughly 24.5 KB average in the first run to 30.9 KB average in the third run as the synthetic account accumulated history; latency still stayed below the investigation threshold. This should be monitored as history grows, but it is not currently a measured defect.
+
+These measurements validate production C1 correctness and baseline latency only. They do not establish production C5/C10 capacity, sustained throughput, autoscaling behavior, multi-instance correctness, or Atlas saturation limits. Higher-concurrency validation belongs in staging/non-production with a separate database and should not be run against the Azure F1 production instance.
 
 Session persistence now separates physical question content from logical order. All updated repository readers understand both old sessions and the new `questionOrder` field. A backend downgrade must first restore physical arrays to the saved logical order; an older backend does not understand the new field. Frontend rollback remains supported by full action responses.
 

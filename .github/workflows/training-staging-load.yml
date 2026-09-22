@@ -1,0 +1,123 @@
+name: Staging training load test
+
+on:
+  workflow_dispatch:
+    inputs:
+      concurrency:
+        description: 'Synthetic learners (run C1 before C5, and C5 before C10)'
+        required: true
+        default: '1'
+        type: choice
+        options:
+          - '1'
+          - '5'
+          - '10'
+
+concurrency:
+  group: staging-training-load
+  cancel-in-progress: false
+
+jobs:
+  load:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      STAGING_MONGODB_DB: quizDB_staging
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22.x'
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Install dependencies
+        run: npm ci --workspace=backend --include-workspace-root
+      - name: Validate isolated staging database secret
+        env:
+          STAGING_MONGODB_URI: ${{ secrets.STAGING_MONGODB_URI }}
+        run: |
+          set -euo pipefail
+          [ -n "$STAGING_MONGODB_URI" ] || { echo '::error::Set repository secret STAGING_MONGODB_URI'; exit 1; }
+          [[ "$STAGING_MONGODB_URI" == *"quizguru-staging.c8bkump.mongodb.net"* ]] || {
+            echo '::error::Refusing load test: database is not the isolated staging cluster'; exit 1;
+          }
+      - name: Login to Azure
+        uses: azure/login@8216e11d8cd9b42fe925c852af8e76311ff067ac # v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_39C048B2FF59452F9613463239824624 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_0994BCA96630443BB4B8D46319B867CD }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_115D8A1EAFB5485E96F15FA5CD4BB615 }}
+      - name: Resolve and attest staging target
+        run: |
+          set -euo pipefail
+          resource_group="$(az webapp list --query "[?name=='quizguru-backend'].resourceGroup | [0]" --output tsv)"
+          app_name="quizguru-stage-${GITHUB_REPOSITORY_ID}"
+          host="$(az webapp show --name "$app_name" --resource-group "$resource_group" --query defaultHostName --output tsv)"
+          [ -n "$host" ] || { echo '::error::Staging Web App is not provisioned'; exit 1; }
+          health="$(curl --fail --silent --show-error --max-time 20 "https://$host/api/health")"
+          echo "$health" | jq -e '.ok == true and .state == "ready" and .environment == "staging"' >/dev/null || {
+            echo '::error::Staging /api/health attestation failed'; echo "$health"; exit 1;
+          }
+          echo "STAGING_HOST=$host" >> "$GITHUB_ENV"
+      - name: Create temporary synthetic learners
+        env:
+          STAGING_MONGODB_URI: ${{ secrets.STAGING_MONGODB_URI }}
+          PROBE_COUNT: ${{ inputs.concurrency }}
+        run: |
+          set -euo pipefail
+          prefix="gh-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          password="$(openssl rand -base64 30 | tr -d '\n')"
+          echo "::add-mask::$password"
+          echo "STAGING_PROBE_PREFIX=$prefix" >> "$GITHUB_ENV"
+          echo "STAGING_PROBE_PASSWORD=$password" >> "$GITHUB_ENV"
+          echo "STAGING_PROBE_COUNT=$PROBE_COUNT" >> "$GITHUB_ENV"
+          STAGING_PROBE_PREFIX="$prefix" STAGING_PROBE_PASSWORD="$password" STAGING_PROBE_COUNT="$PROBE_COUNT" \
+            node backend/scripts/manage-training-staging-users.js create
+      - name: Run authenticated staging lifecycle load
+        env:
+          STAGING_MONGODB_URI: ${{ secrets.STAGING_MONGODB_URI }}
+          PROBE_COUNT: ${{ inputs.concurrency }}
+          REPORT_PATH: ${{ runner.temp }}/training-staging-${{ github.run_id }}.json
+        run: |
+          set -euo pipefail
+          export TRAINING_REMOTE_BASE_URL="https://$STAGING_HOST"
+          export TRAINING_REMOTE_EXPECTED_HOST="$STAGING_HOST"
+          export TRAINING_REMOTE_TARGET=staging
+          export TRAINING_REMOTE_CONCURRENCY="$PROBE_COUNT"
+          export TRAINING_REMOTE_RUNS=1
+          export TRAINING_REMOTE_REPORT="$REPORT_PATH"
+          for i in $(seq 1 "$PROBE_COUNT"); do
+            export "TRAINING_REMOTE_EMAIL_${i}=${STAGING_PROBE_PREFIX}-${i}@staging.invalid"
+            export "TRAINING_REMOTE_PASSWORD_${i}=${STAGING_PROBE_PASSWORD}"
+          done
+          npm run test:probe:training-remote --workspace backend
+          jq -e '
+            .status == "completed" and
+            .target == "staging" and
+            .errors == 0 and
+            .operations.dashboard.withinInvestigationThreshold == true and
+            .operations.create.withinInvestigationThreshold == true and
+            .operations.answer.withinInvestigationThreshold == true and
+            .operations.visit.withinInvestigationThreshold == true and
+            .operations.finish.withinInvestigationThreshold == true
+          ' "$REPORT_PATH" >/dev/null || {
+            echo '::error::Staging lifecycle exceeded an investigation threshold'; cat "$REPORT_PATH"; exit 1;
+          }
+      - name: Cleanup temporary synthetic learners
+        if: always()
+        env:
+          STAGING_MONGODB_URI: ${{ secrets.STAGING_MONGODB_URI }}
+        run: |
+          if [ -n "${STAGING_PROBE_PREFIX:-}" ] && [ -n "${STAGING_PROBE_COUNT:-}" ]; then
+            node backend/scripts/manage-training-staging-users.js cleanup
+          fi
+      - name: Upload staging load report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: training-staging-${{ github.run_id }}-c${{ inputs.concurrency }}
+          path: ${{ runner.temp }}/training-staging-${{ github.run_id }}.json
+          if-no-files-found: error
+          retention-days: 30

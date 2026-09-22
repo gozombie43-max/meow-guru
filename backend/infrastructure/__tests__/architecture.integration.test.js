@@ -182,7 +182,7 @@ describe('durable job leases', () => {
     expect(await completeJob(collection, job, {}, now)).toBe(false);
     await collection.updateOne({ _id: 'job' }, { $set: { status: 'running', owner: job.owner, attempts: 3 } });
     await failJob(collection, { ...job, attempts: 3 }, now);
-    expect((await collection.findOne({ _id: 'job' })).status).toBe('failed');
+    expect((await db.collection('runtimeJobs').findOne({ _id: 'job' })).status).toBe('failed');
   });
   it('isolates attachment jobs by owner and preserves submission idempotency', async () => {
     const input = { context: 'Maths', message: 'Solve', history: [] };
@@ -282,7 +282,7 @@ it('runs the remote training probe only with explicit staging credentials and wr
     next();
   });
   app.get('/api/health', (_req, res) => res.json({ ok: true, state: 'ready', releaseId: 'deployed-probe-release', environment: healthEnvironment, mode: 'quiz-only' }));
-  app.post('/api/auth/login', (req, res) => {
+  app.post('/auth/login', (req, res) => {
     if (req.body.email !== 'probe@example.test' || req.body.password !== 'synthetic-password') return res.status(401).json({ error: 'bad credentials' });
     res.json({ token: 'remote-probe-token' });
   });
@@ -443,7 +443,7 @@ it('authenticates each synthetic account exactly once regardless of the number o
   const app = express();
   app.use(express.json());
   app.get('/api/health', (_req, res) => res.json({ ok: true, state: 'ready', releaseId: 'login-count-release', environment: 'staging', mode: 'quiz-only' }));
-  app.post('/api/auth/login', (req, res) => {
+  app.post('/auth/login', (req, res) => {
     if (req.body.email !== 'probe@example.test' || req.body.password !== 'synthetic-password') return res.status(401).json({ error: 'bad credentials' });
     loginCount++;
     res.json({ token: 'reused-token' });
@@ -510,7 +510,7 @@ it('writes a sanitized partial failure report when a lifecycle fails mid-run', a
   const app = express();
   app.use(express.json());
   app.get('/api/health', (_req, res) => res.json({ ok: true, state: 'ready', releaseId: 'failure-release', environment: 'staging', mode: 'quiz-only' }));
-  app.post('/api/auth/login', (req, res) => {
+  app.post('/auth/login', (req, res) => {
     if (req.body.email !== 'probe@example.test' || req.body.password !== 'synthetic-password') return res.status(401).json({ error: 'bad credentials' });
     res.json({ token: 'failure-token' });
   });
