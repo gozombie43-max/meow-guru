@@ -11,6 +11,9 @@ import { MongoRateLimitStore } from '../../middleware/mongoRateLimitStore.js';
 import { createServer } from 'node:http';
 import { fork } from 'node:child_process';
 import { once } from 'node:events';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { Server } from 'socket.io';
 import { io as connectSocket } from 'socket.io-client';
 import { createAdapter } from '@socket.io/mongo-adapter';
@@ -234,4 +237,104 @@ it('keeps canonical question reads within the local load regression budget', asy
     expect(report.requests).toBe(100);
     expect(report.errors).toBe(0);
   } finally { child?.kill(); await new Promise(resolve => server.close(resolve)); }
+}, 30000);
+
+it('runs the remote training probe only with explicit staging credentials and writes a token-free lifecycle report', async () => {
+  const sessions = new Map();
+  const requestIds = [];
+  let nextSession = 0;
+  const app = express();
+  app.use(express.json());
+  app.use((req, res, next) => {
+    requestIds.push(req.get('x-request-id'));
+    next();
+  });
+  app.post('/api/auth/login', (req, res) => {
+    if (req.body.email !== 'probe@example.test' || req.body.password !== 'synthetic-password') return res.status(401).json({ error: 'bad credentials' });
+    res.json({ token: 'remote-probe-token' });
+  });
+  app.use('/api/training', (req, res, next) => {
+    if (req.get('authorization') !== 'Bearer remote-probe-token') return res.status(401).json({ error: 'missing token' });
+    next();
+  });
+  app.get('/api/training/dashboard', (_req, res) => res.json({ active: [] }));
+  app.post('/api/training/sessions', (req, res) => {
+    if (req.body.count !== 10) return res.status(400).json({ error: 'expected ten questions' });
+    const id = `probe-session-${++nextSession}`;
+    sessions.set(id, { revision: 0 });
+    res.status(201).json({ id, revision: 0, questions: Array.from({ length: 10 }, (_, index) => ({ id: `q${index}` })) });
+  });
+  app.post('/api/training/sessions/:id/actions', (req, res) => {
+    const session = sessions.get(req.params.id);
+    if (!session || req.body.revision !== session.revision) return res.status(409).json({ error: 'revision conflict' });
+    session.revision++;
+    if (req.body.type === 'finish') return res.json({ revision: session.revision, status: 'completed', result: { attempted: 10 } });
+    res.json({ revision: session.revision, current: req.body.type === 'visit' ? req.body.index : undefined });
+  });
+  const server = app.listen(0, '127.0.0.1');
+  await once(server, 'listening');
+  const directory = await mkdtemp(join(tmpdir(), 'training-remote-probe-'));
+  const reportPath = join(directory, 'report.json');
+  let child;
+  try {
+    child = fork(new URL('../../scripts/probe-training-remote.js', import.meta.url), [], {
+      windowsHide: true,
+      execArgv: [],
+      stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
+      env: {
+        ...process.env,
+        TRAINING_REMOTE_BASE_URL: `http://127.0.0.1:${server.address().port}`,
+        TRAINING_REMOTE_TARGET: 'staging',
+        TRAINING_REMOTE_EMAIL: 'probe@example.test',
+        TRAINING_REMOTE_PASSWORD: 'synthetic-password',
+        TRAINING_REMOTE_REPORT: reportPath,
+        RELEASE_ID: 'probe-test-release',
+      },
+    });
+    let output = '';
+    child.stdout.on('data', chunk => { output += chunk; });
+    const [code] = await once(child, 'exit');
+    expect(code, output).toBe(0);
+    const report = JSON.parse(await readFile(reportPath, 'utf8'));
+    expect(report).toMatchObject({ target: 'staging', scenario: 'authenticated-training-lifecycle', releaseId: 'probe-test-release', concurrency: 1, runs: 1, questionsPerSession: 10, errors: 0 });
+    expect(report.operations.answer.requests).toBe(10);
+    expect(report.operations.visit.requests).toBe(9);
+    expect(JSON.stringify(report)).not.toContain('synthetic-password');
+    expect(JSON.stringify(report)).not.toContain('remote-probe-token');
+    expect(requestIds.every(id => /^perf-[A-Za-z0-9_-]+$/.test(id))).toBe(true);
+  } finally {
+    child?.kill();
+    await new Promise(resolve => server.close(resolve));
+    await rm(directory, { recursive: true, force: true });
+  }
+}, 30000);
+
+it('refuses a concurrent production training probe without an explicit override', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'training-remote-probe-safety-'));
+  const reportPath = join(directory, 'report.json');
+  let child;
+  try {
+    child = fork(new URL('../../scripts/probe-training-remote.js', import.meta.url), [], {
+      windowsHide: true,
+      execArgv: [],
+      stdio: ['ignore', 'ignore', 'pipe', 'ipc'],
+      env: {
+        ...process.env,
+        TRAINING_REMOTE_BASE_URL: 'https://probe.example.test',
+        TRAINING_REMOTE_TARGET: 'production',
+        TRAINING_REMOTE_CONCURRENCY: '2',
+        TRAINING_REMOTE_EMAIL: 'probe@example.test',
+        TRAINING_REMOTE_PASSWORD: 'synthetic-password',
+        TRAINING_REMOTE_REPORT: reportPath,
+      },
+    });
+    let errors = '';
+    child.stderr.on('data', chunk => { errors += chunk; });
+    const [code] = await once(child, 'exit');
+    expect(code).toBe(1);
+    expect(errors).toContain('TRAINING_REMOTE_ALLOW_PRODUCTION_CONCURRENCY=true');
+  } finally {
+    child?.kill();
+    await rm(directory, { recursive: true, force: true });
+  }
 }, 30000);

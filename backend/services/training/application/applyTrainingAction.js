@@ -7,6 +7,7 @@ import { logger, hashId } from "../../../infrastructure/logger.js";
 import { publicActionDelta, publicSession } from '../serializers/publicSession.js';
 
 export async function applyTrainingActionCommand(userId, sessionId, action, delta = false) {
+  const actionStart = performance.now();
   const s = await findOwnedSession(sessionId, userId);
   if (!s) throw new Error("Session not found");
   if (s.status !== "active") return delta ? publicSession(s) : s;
@@ -48,6 +49,22 @@ export async function applyTrainingActionCommand(userId, sessionId, action, delt
     durationMs: commitDuration,
     sessionId,
   }, "Committed training state");
+  logger.info({
+    event: "training.action.commit.duration_ms",
+    durationMs: commitDuration,
+    sessionId,
+    actionType: action.type,
+    mode: updated.mode,
+    deltaResponse: delta,
+  }, "Committed training action");
+  logger.info({
+    event: "training.action.duration_ms",
+    durationMs: Math.round(performance.now() - actionStart),
+    sessionId,
+    actionType: action.type,
+    mode: updated.mode,
+    deltaResponse: delta,
+  }, "Applied training action");
   
   return delta ? publicActionDelta(s, updated) : updated;
 }

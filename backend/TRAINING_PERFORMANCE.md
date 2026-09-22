@@ -26,13 +26,15 @@ The backend release `4eaec1c` deployed successfully. The deployment workflow app
 
 The backfill preserves question text, options, keys, and display taxonomy. Future external importers that bypass the normal writers still require the same backfill verification before indexed selection is relied on.
 
-An Azure/Atlas load test and an authenticated production training-session exercise have not been run. The supplied harness has no remote-target option and always owns a disposable local database, so its results do not establish Azure or Atlas capacity.
+An Azure/Atlas load test and an authenticated production training-session exercise have not been run. The supplied local load harness has no remote-target option and always owns a disposable local database, so its results do not establish Azure or Atlas capacity. A separate `npm run test:probe:training-remote` command now supports controlled authenticated staging/production lifecycle measurement without weakening that boundary: it requires an explicit target classification, dedicated synthetic credentials and a new JSON report file. Production defaults to one synthetic learner and rejects concurrent runs without an explicit override; staging is the appropriate target for concurrency testing.
 
 Session persistence now separates physical question content from logical order. All updated repository readers understand both old sessions and the new `questionOrder` field. A backend downgrade must first restore physical arrays to the saved logical order; an older backend does not understand the new field. Frontend rollback remains supported by full action responses.
 
 ## Durable learner-state migration
 
 Migration 010 adds `trainingLearnerStateMeta`. It replaces the bounded recent-history authority heuristic with a per-user/exam `{ version: 1, status: 'ready' }` marker. The separate `npm run db:training-state-backfill` command is inspection-only by default; its `--apply` mode replays every completed session in chronological order through the same learner-state reducer used by live completion, replaces skills/reviews/exposures transactionally, and records the source counts and final session. `completionEpoch` prevents a backfill from committing over a concurrent completion: the pair is retried when the epoch changes.
+
+Training actions now emit both `training.action.commit.duration_ms` for the durable write and `training.action.duration_ms` for the complete application action, with action type, mode and delta-response information. The former `training.learning.commit.duration_ms` remains for compatibility.
 
 The learner-state backfill is a separate production operation and is not considered complete without recorded production evidence. On 2026-09-22, the Atlas target configured for this backend was inspected, rebuilt with `--apply`, then inspected again. It contained two completed user/exam pairs; both reported `version: 1, status: 'ready'`, with zero non-ready pairs and zero stored-source-count mismatches. The source evidence totaled 29 completed sessions and 47 attempts before and after the rebuild. Pairs that are absent, pending, failed, or whose source counts change require investigation or a rerun before the migration is closed.
 

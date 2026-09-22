@@ -56,6 +56,7 @@
     "db:normalize": "node scripts/normalize-question-keys.js",
     "db:migrate-images": "node scripts/migrate-local-question-images.js",
     "test:load": "node scripts/load-api.js",
+    "test:probe:training-remote": "node scripts/probe-training-remote.js",
     "lint": "eslint . --max-warnings 0",
     "test:coverage": "vitest run --maxWorkers=1 --coverage",
     "test:load:training": "node scripts/load-training.js",
