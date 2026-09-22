@@ -1,5 +1,6 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { MongoMemoryReplSet } from "mongodb-memory-server";
+import { ObjectId } from 'mongodb';
 import express from "express";
 import { once } from "node:events";
 import { connectMongoDB, disconnectMongoDB } from "../../config/mongodb.js";
@@ -378,6 +379,36 @@ describe("persistent training API", () => {
       status: 'ready',
       completionEpoch: 1,
     });
+  });
+
+  it('updates a legacy ObjectId exposure instead of colliding with its natural unique key', async () => {
+    const session = await start();
+    const questionId = session.questions[0].id;
+    const legacyId = new ObjectId();
+    const correct = (await db.collection('questions').findOne({ id: questionId })).correctAnswer;
+    await db.collection('trainingQuestionExposure').insertOne({
+      _id: legacyId,
+      userId: 'student',
+      exam: 'ssc-cgl',
+      questionId,
+      timesSeen: 3,
+      timesCorrect: 2,
+      lastSeenAt: '2026-01-01T00:00:00.000Z',
+    });
+
+    expect((await request(`/sessions/${session.id}/actions`, 'POST', {
+      type: 'answer', choice: correct, confidence: 'sure', revision: 0,
+    })).status).toBe(200);
+    const completed = await request(`/sessions/${session.id}/actions`, 'POST', {
+      type: 'finish', revision: 1,
+    });
+    expect(completed.status).toBe(200);
+    expect((await completed.json()).status).toBe('completed');
+    const exposures = await db.collection('trainingQuestionExposure')
+      .find({ userId: 'student', exam: 'ssc-cgl', questionId }).toArray();
+    expect(exposures).toHaveLength(1);
+    expect(exposures[0]._id).toEqual(legacyId);
+    expect(exposures[0].timesSeen).toBe(4);
   });
 
   it("returns 201 for a new daily mission and 200 for an existing one", async () => {

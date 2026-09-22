@@ -31,14 +31,16 @@ export async function inspectLearnerStatePair(db, userId, exam) {
   return { userId, exam, meta, sourceSessionCount: sessions.length, sourceAttemptCount: sessions.reduce((total, session) => total + attemptCount(session), 0) };
 }
 
-export async function rebuildLearnerStateForPair(db, userId, exam, { maxRetries = 4, beforeCommit } = {}) {
+export async function rebuildLearnerStateForPair(db, userId, exam, { maxRetries = 4, afterMetaRead, beforeCommit } = {}) {
   for (let retry = 0; retry < maxRetries; retry++) {
-    const [meta, sessions] = await Promise.all([
-      db.collection('trainingLearnerStateMeta').findOne({ _id: metaId(userId, exam) }),
-      db.collection('trainingSessions').find({ userId, exam, status: 'completed' })
-        .sort({ completedAt: 1, _id: 1 }).toArray(),
-    ]);
+    // The epoch defines the historical snapshot boundary. Read it first: a
+    // completion before this read is included below, while one afterwards
+    // increments the epoch and makes the final compare-and-set fail.
+    const meta = await db.collection('trainingLearnerStateMeta').findOne({ _id: metaId(userId, exam) });
     const completionEpoch = meta?.completionEpoch || 0;
+    if (afterMetaRead) await afterMetaRead({ retry, completionEpoch });
+    const sessions = await db.collection('trainingSessions').find({ userId, exam, status: 'completed' })
+      .sort({ completedAt: 1, _id: 1 }).toArray();
     const state = createLearnerState();
     for (const session of sessions) applySessionToLearnerState(state, session);
     const sourceAttemptCount = sessions.reduce((total, session) => total + attemptCount(session), 0);

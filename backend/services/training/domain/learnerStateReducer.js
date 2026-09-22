@@ -111,7 +111,12 @@ export function learnerStateDocuments(state, userId, exam, now = new Date()) {
   return {
     skillRows: [...state.skills.values()].map(row => stamp({ ...row, _id: `${userId}:${exam}:${row.key}` })),
     reviewRows: [...state.reviews.values()].map(row => stamp({ ...row, _id: `${userId}:${exam}:${row.questionId}` })),
-    exposureRows: [...state.exposures.values()].map(row => stamp({ ...row, _id: `${userId}:${exam}:${row.questionId}` })),
+    // Exposure rows created before durable learner state used Mongo ObjectIds.
+    // Preserve that identity so their natural unique key is updated, not reinserted.
+    exposureRows: [...state.exposures.values()].map(row => stamp({
+      ...row,
+      _id: row._id ?? `${userId}:${exam}:${row.questionId}`,
+    })),
   };
 }
 

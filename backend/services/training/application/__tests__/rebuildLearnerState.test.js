@@ -120,4 +120,35 @@ describe('rebuildLearnerStateForPair', () => {
       status: 'ready',
     });
   });
+
+  it('does not commit a new epoch against a stale session read', async () => {
+    await db.collection('trainingSessions').insertOne(completed({
+      id: 'before', at: '2026-01-01T00:00:00.000Z', choice: 0,
+    }));
+    await db.collection('trainingLearnerStateMeta').insertOne({
+      _id: 'learner:ssc-cgl', userId: 'learner', exam: 'ssc-cgl', version: 0, status: 'pending', completionEpoch: 7,
+    });
+    let completedDuringRead = false;
+    const result = await rebuildLearnerStateForPair(db, 'learner', 'ssc-cgl', {
+      afterMetaRead: async ({ retry }) => {
+        if (retry || completedDuringRead) return;
+        completedDuringRead = true;
+        await db.collection('trainingSessions').insertOne(completed({
+          id: 'during', at: '2026-01-02T00:00:00.000Z', choice: 1,
+        }));
+        await db.collection('trainingLearnerStateMeta').updateOne(
+          { _id: 'learner:ssc-cgl' }, { $inc: { completionEpoch: 1 } },
+        );
+      },
+    });
+    expect(result).toMatchObject({ retries: 1, sourceSessionCount: 2, sourceAttemptCount: 2 });
+    expect(await db.collection('trainingSkillState').findOne({ userId: 'learner', exam: 'ssc-cgl' })).toMatchObject({
+      attempts: 2,
+      correct: 1,
+    });
+    expect(await db.collection('trainingLearnerStateMeta').findOne({ _id: 'learner:ssc-cgl' })).toMatchObject({
+      completionEpoch: 8,
+      backfilledThroughSessionId: 'during',
+    });
+  });
 });
