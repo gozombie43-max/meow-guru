@@ -305,20 +305,103 @@ jobs:
           slot-name: Production
           package: release
       - name: Verify staging release readiness
+        shell: bash
         env:
           EXPECTED_RELEASE: ${{ github.sha }}
         run: |
           set -euo pipefail
-          for attempt in $(seq 1 24); do
+
+          site_id="$(az webapp show --name "$STAGING_APP_NAME" --resource-group "$RESOURCE_GROUP" --query id --output tsv)"
+          sku="$(az appservice plan show --name "$STAGING_APP_SERVICE_PLAN" --resource-group "$RESOURCE_GROUP" --query sku.name --output tsv)"
+          quota_recovery_used=false
+
+          print_state_and_quotas() {
+            local state
+            state="$(az webapp show --name "$STAGING_APP_NAME" --resource-group "$RESOURCE_GROUP" --query state --output tsv 2>/dev/null || echo unknown)"
+            echo "Staging App Service state: $state; plan SKU: $sku"
+            if [ "$sku" = 'F1' ]; then
+              az rest --method get \
+                --url "https://management.azure.com${site_id}/usages?api-version=2025-03-01" \
+                --query "value[].{Quota:name.localizedValue,Current:currentValue,Limit:limit,Unit:unit,NextReset:nextResetTime}" \
+                --output table || true
+            fi
+          }
+
+          recover_after_free_quota() {
+            local quota_file reset now_epoch reset_epoch wait_seconds
+            quota_file="$(mktemp)"
+            if az rest --method get \
+              --url "https://management.azure.com${site_id}/usages?api-version=2025-03-01" \
+              --output json > "$quota_file" 2>/dev/null; then
+              echo 'Free-tier quota snapshot before recovery:'
+              jq -r '.value[] | [(.name.localizedValue // .name.value // "unknown"), (.currentValue|tostring), (.limit|tostring), (.unit // ""), (.nextResetTime // "")] | @tsv' "$quota_file" \
+                | column -t -s $'\t' || cat "$quota_file"
+
+              reset="$(jq -r '[.value[] | select((.limit // 0) > 0 and (.currentValue // 0) >= (.limit // 0)) | .nextResetTime | select(type == "string" and length > 0)] | sort | .[0] // empty' "$quota_file")"
+            else
+              reset=''
+            fi
+            rm -f "$quota_file"
+
+            if [ -n "$reset" ]; then
+              now_epoch="$(date -u +%s)"
+              reset_epoch="$(date -u -d "$reset" +%s 2>/dev/null || echo 0)"
+              if [ "$reset_epoch" -gt "$now_epoch" ]; then
+                wait_seconds=$((reset_epoch - now_epoch + 20))
+                if [ "$wait_seconds" -gt 600 ]; then
+                  echo "::error title=F1 quota exhausted::The staging app hit a Free-tier quota whose next reset is $reset. This is not a transient cold-start failure; wait for the quota reset or use a non-Free staging plan."
+                  return 2
+                fi
+                [ "$wait_seconds" -ge 30 ] || wait_seconds=30
+              else
+                wait_seconds=30
+              fi
+            else
+              # CPU-short quota is a five-minute window. When Azure usage data is delayed,
+              # wait one complete window before trying to start the app again.
+              wait_seconds=330
+            fi
+
+            echo "F1 quota recovery: waiting ${wait_seconds}s before restarting staging."
+            sleep "$wait_seconds"
+            az webapp start --name "$STAGING_APP_NAME" --resource-group "$RESOURCE_GROUP" --output none
+            sleep 15
+          }
+
+          # An earlier failed run can leave the F1 app stopped even after its quota resets.
+          az webapp start --name "$STAGING_APP_NAME" --resource-group "$RESOURCE_GROUP" --output none || true
+
+          for attempt in $(seq 1 30); do
             : > health.json
             status="$(curl --silent --show-error --max-time 20 --output health.json --write-out '%{http_code}' "https://$STAGING_APP_HOST/api/health")" || status='transport-error'
+
             if [ "$status" = '200' ] && jq -e --arg release "$EXPECTED_RELEASE" '.ok == true and .state == "ready" and .releaseId == $release and .environment == "staging"' health.json >/dev/null; then
               cat health.json
+              print_state_and_quotas
               exit 0
             fi
-            echo "Readiness attempt $attempt/24: HTTP $status"
+
+            echo "Readiness attempt $attempt/30: HTTP $status"
+
+            if [ "$status" = '403' ] && grep -Eqi 'web app is stopped|site disabled|quota' health.json; then
+              print_state_and_quotas
+              if [ "$sku" != 'F1' ]; then
+                echo '::error::Staging stopped unexpectedly on a non-F1 plan.'
+                exit 1
+              fi
+              if [ "$quota_recovery_used" = true ]; then
+                echo '::error title=F1 staging remains stopped::The app is still stopped after one complete quota recovery cycle. Inspect the quota table above; do not hide this by repeatedly restarting the app.'
+                exit 1
+              fi
+              quota_recovery_used=true
+              recover_after_free_quota || exit $?
+              continue
+            fi
+
             sleep 10
           done
+
           cat health.json || true
+          print_state_and_quotas
           echo '::error::Staging release failed readiness verification'
           exit 1
