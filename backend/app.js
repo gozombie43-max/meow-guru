@@ -102,6 +102,9 @@ export async function createApp({ isReady, isShuttingDown, quizOnlyMode = proces
       state: isShuttingDown() ? 'draining' : healthy ? 'ready' : 'starting',
       service: 'backend',
       releaseId: getReleaseId(),
+      environment: ['staging', 'production'].includes(process.env.DEPLOYMENT_ENVIRONMENT)
+        ? process.env.DEPLOYMENT_ENVIRONMENT
+        : 'unknown',
       mode: quizOnlyMode ? 'quiz-only' : 'full',
       uptimeSeconds: Math.round(process.uptime()),
       timestamp: new Date().toISOString(),

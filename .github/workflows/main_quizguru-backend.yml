@@ -138,6 +138,7 @@ jobs:
             --settings \
               "QUIZ_ONLY_MODE=true" \
               "RUN_EMBEDDED_WORKERS=false" \
+              "DEPLOYMENT_ENVIRONMENT=production" \
               "PROCESS_ROLE=api" \
             --output none
           az webapp config set \
@@ -165,7 +166,7 @@ jobs:
             echo "Readiness attempt $attempt/24"
             : > health.json
             status="$(curl --silent --show-error --max-time 20 --output health.json --write-out '%{http_code}' "https://$APP_HOST/health")" || status="transport-error"
-            if [ "$status" = "200" ] && jq -e --arg release "$EXPECTED_RELEASE" '.ok == true and .releaseId == $release' health.json; then
+            if [ "$status" = "200" ] && jq -e --arg release "$EXPECTED_RELEASE" '.ok == true and .releaseId == $release and .environment == "production"' health.json; then
               # Exercise the lazy-loaded AI router used by translation admission.
               # No credentials: a healthy route must reject with 401, never 500.
               : > quota.json

@@ -43,7 +43,16 @@ function remoteBaseUrl() {
     throw new Error('TRAINING_REMOTE_BASE_URL must be an absolute HTTP(S) URL without credentials');
   if (url.pathname !== '/' || url.search || url.hash)
     throw new Error('TRAINING_REMOTE_BASE_URL must be an API origin without a path, query or fragment');
-  return url.origin;
+  return { origin: url.origin, hostname: url.hostname.toLowerCase() };
+}
+
+function verifyTargetHost(hostname, target) {
+  const expectedHost = required('TRAINING_REMOTE_EXPECTED_HOST').toLowerCase();
+  if (expectedHost !== hostname)
+    throw new Error('TRAINING_REMOTE_BASE_URL hostname must exactly match TRAINING_REMOTE_EXPECTED_HOST');
+  if (target === 'production' && required('TRAINING_REMOTE_PRODUCTION_CONFIRM').toLowerCase() !== hostname)
+    throw new Error('Production probes require TRAINING_REMOTE_PRODUCTION_CONFIRM to exactly match the target hostname');
+  return expectedHost;
 }
 
 function syntheticCredentials() {
@@ -99,8 +108,10 @@ function targetConfig() {
   return { target, concurrency, runs };
 }
 
-const baseUrl = remoteBaseUrl();
+const remote = remoteBaseUrl();
 const config = targetConfig();
+const expectedHost = verifyTargetHost(remote.hostname, config.target);
+const baseUrl = remote.origin;
 const credentials = syntheticCredentials();
 if (credentials.length < config.concurrency)
   throw new Error(`Provide ${config.concurrency} distinct synthetic account(s) for this probe`);
@@ -163,7 +174,28 @@ async function runLifecycle({ email, password }) {
   await request('dashboard', 'GET', '/api/training/dashboard?exam=ssc-cgl', undefined, token);
 }
 
+async function verifyHealth() {
+  const health = await request('health', 'GET', '/api/health');
+  if (health.ok !== true || health.state !== 'ready')
+    throw new Error('Target /api/health is not ready');
+  if (typeof health.releaseId !== 'string' || !health.releaseId)
+    throw new Error('Target /api/health did not provide a releaseId');
+  if (!TARGETS.has(health.environment) || health.environment !== config.target)
+    throw new Error('Target /api/health environment does not match TRAINING_REMOTE_TARGET');
+  const expectedReleaseId = process.env.TRAINING_REMOTE_EXPECTED_RELEASE_ID?.trim() || null;
+  if (expectedReleaseId && health.releaseId !== expectedReleaseId)
+    throw new Error('Target /api/health releaseId does not match TRAINING_REMOTE_EXPECTED_RELEASE_ID');
+  return {
+    deployedReleaseId: health.releaseId,
+    deployedEnvironment: health.environment,
+    healthState: health.state,
+    serviceMode: typeof health.mode === 'string' ? health.mode : null,
+    expectedReleaseId,
+  };
+}
+
 try {
+  const health = await verifyHealth();
   for (let run = 0; run < config.runs; run++)
     await Promise.all(credentials.slice(0, config.concurrency).map(runLifecycle));
   const operations = summarize(samples);
@@ -171,7 +203,12 @@ try {
     schemaVersion: 1,
     runId,
     timestamp: new Date().toISOString(),
-    releaseId: process.env.RELEASE_ID || 'unknown',
+    expectedHost,
+    deployedReleaseId: health.deployedReleaseId,
+    deployedEnvironment: health.deployedEnvironment,
+    expectedReleaseId: health.expectedReleaseId,
+    healthState: health.healthState,
+    serviceMode: health.serviceMode,
     target: config.target,
     scenario: 'authenticated-training-lifecycle',
     runs: config.runs,

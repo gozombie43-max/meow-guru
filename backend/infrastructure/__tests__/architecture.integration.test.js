@@ -18,6 +18,7 @@ import { Server } from 'socket.io';
 import { io as connectSocket } from 'socket.io-client';
 import { createAdapter } from '@socket.io/mongo-adapter';
 import { registerBattleRelay } from '../battleOutbox.js';
+import { createApp } from '../../app.js';
 import express from 'express';
 import { fetchQuestionCursorPage } from '../../services/questions/questionCursorService.js';
 import { fetchQuestionCounts } from '../../services/questions/questionMetadataService.js';
@@ -64,6 +65,23 @@ describe('versioned migrations', () => {
     await expect(migrate(other)).rejects.toThrow();
     expect(await other.collection('schemaMigrations').findOne({ _id: '002-runtime' })).toBeNull();
   });
+});
+
+it('attests the configured deployment environment in ready health responses', async () => {
+  const previous = process.env.DEPLOYMENT_ENVIRONMENT;
+  process.env.DEPLOYMENT_ENVIRONMENT = 'staging';
+  const { app } = await createApp({ isReady: () => true, isShuttingDown: () => false, quizOnlyMode: true });
+  const server = app.listen(0, '127.0.0.1');
+  await once(server, 'listening');
+  try {
+    const response = await fetch(`http://127.0.0.1:${server.address().port}/api/health`);
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ ok: true, state: 'ready', environment: 'staging', mode: 'quiz-only' });
+  } finally {
+    await new Promise(resolve => server.close(resolve));
+    if (previous === undefined) delete process.env.DEPLOYMENT_ENVIRONMENT;
+    else process.env.DEPLOYMENT_ENVIRONMENT = previous;
+  }
 });
 
 describe('normalized ingestion and backfill', () => {
@@ -242,13 +260,17 @@ it('keeps canonical question reads within the local load regression budget', asy
 it('runs the remote training probe only with explicit staging credentials and writes a token-free lifecycle report', async () => {
   const sessions = new Map();
   const requestIds = [];
+  const requestedPaths = [];
+  let healthEnvironment = 'staging';
   let nextSession = 0;
   const app = express();
   app.use(express.json());
   app.use((req, res, next) => {
     requestIds.push(req.get('x-request-id'));
+    requestedPaths.push(req.path);
     next();
   });
+  app.get('/api/health', (_req, res) => res.json({ ok: true, state: 'ready', releaseId: 'deployed-probe-release', environment: healthEnvironment, mode: 'quiz-only' }));
   app.post('/api/auth/login', (req, res) => {
     if (req.body.email !== 'probe@example.test' || req.body.password !== 'synthetic-password') return res.status(401).json({ error: 'bad credentials' });
     res.json({ token: 'remote-probe-token' });
@@ -285,10 +307,12 @@ it('runs the remote training probe only with explicit staging credentials and wr
         ...process.env,
         TRAINING_REMOTE_BASE_URL: `http://127.0.0.1:${server.address().port}`,
         TRAINING_REMOTE_TARGET: 'staging',
+        TRAINING_REMOTE_EXPECTED_HOST: '127.0.0.1',
         TRAINING_REMOTE_EMAIL: 'probe@example.test',
         TRAINING_REMOTE_PASSWORD: 'synthetic-password',
         TRAINING_REMOTE_REPORT: reportPath,
-        RELEASE_ID: 'probe-test-release',
+        TRAINING_REMOTE_EXPECTED_RELEASE_ID: 'deployed-probe-release',
+        RELEASE_ID: 'caller-controlled-release',
       },
     });
     let output = '';
@@ -296,12 +320,36 @@ it('runs the remote training probe only with explicit staging credentials and wr
     const [code] = await once(child, 'exit');
     expect(code, output).toBe(0);
     const report = JSON.parse(await readFile(reportPath, 'utf8'));
-    expect(report).toMatchObject({ target: 'staging', scenario: 'authenticated-training-lifecycle', releaseId: 'probe-test-release', concurrency: 1, runs: 1, questionsPerSession: 10, errors: 0 });
+    expect(report).toMatchObject({ target: 'staging', scenario: 'authenticated-training-lifecycle', expectedHost: '127.0.0.1', deployedReleaseId: 'deployed-probe-release', deployedEnvironment: 'staging', expectedReleaseId: 'deployed-probe-release', healthState: 'ready', serviceMode: 'quiz-only', concurrency: 1, runs: 1, questionsPerSession: 10, errors: 0 });
     expect(report.operations.answer.requests).toBe(10);
     expect(report.operations.visit.requests).toBe(9);
     expect(JSON.stringify(report)).not.toContain('synthetic-password');
     expect(JSON.stringify(report)).not.toContain('remote-probe-token');
+    expect(JSON.stringify(report)).not.toContain('caller-controlled-release');
     expect(requestIds.every(id => /^perf-[A-Za-z0-9_-]+$/.test(id))).toBe(true);
+    expect(requestedPaths[0]).toBe('/api/health');
+    healthEnvironment = 'production';
+    const mismatchStart = requestedPaths.length;
+    const mismatch = fork(new URL('../../scripts/probe-training-remote.js', import.meta.url), [], {
+      windowsHide: true,
+      execArgv: [],
+      stdio: ['ignore', 'ignore', 'pipe', 'ipc'],
+      env: {
+        ...process.env,
+        TRAINING_REMOTE_BASE_URL: `http://127.0.0.1:${server.address().port}`,
+        TRAINING_REMOTE_TARGET: 'staging',
+        TRAINING_REMOTE_EXPECTED_HOST: '127.0.0.1',
+        TRAINING_REMOTE_EMAIL: 'probe@example.test',
+        TRAINING_REMOTE_PASSWORD: 'synthetic-password',
+        TRAINING_REMOTE_REPORT: join(directory, 'mismatch.json'),
+      },
+    });
+    let mismatchErrors = '';
+    mismatch.stderr.on('data', chunk => { mismatchErrors += chunk; });
+    const [mismatchCode] = await once(mismatch, 'exit');
+    expect(mismatchCode).toBe(1);
+    expect(mismatchErrors).toContain('environment does not match TRAINING_REMOTE_TARGET');
+    expect(requestedPaths.slice(mismatchStart)).toEqual(['/api/health']);
   } finally {
     child?.kill();
     await new Promise(resolve => server.close(resolve));
@@ -322,6 +370,8 @@ it('refuses a concurrent production training probe without an explicit override'
         ...process.env,
         TRAINING_REMOTE_BASE_URL: 'https://probe.example.test',
         TRAINING_REMOTE_TARGET: 'production',
+        TRAINING_REMOTE_EXPECTED_HOST: 'probe.example.test',
+        TRAINING_REMOTE_PRODUCTION_CONFIRM: 'probe.example.test',
         TRAINING_REMOTE_CONCURRENCY: '2',
         TRAINING_REMOTE_EMAIL: 'probe@example.test',
         TRAINING_REMOTE_PASSWORD: 'synthetic-password',
@@ -335,6 +385,42 @@ it('refuses a concurrent production training probe without an explicit override'
     expect(errors).toContain('TRAINING_REMOTE_ALLOW_PRODUCTION_CONCURRENCY=true');
   } finally {
     child?.kill();
+    await rm(directory, { recursive: true, force: true });
+  }
+}, 30000);
+
+it('requires the exact expected host and a deliberate production hostname confirmation before probing', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'training-remote-probe-host-safety-'));
+  const reportPath = join(directory, 'report.json');
+  const run = async (env) => {
+    const child = fork(new URL('../../scripts/probe-training-remote.js', import.meta.url), [], {
+      windowsHide: true,
+      execArgv: [],
+      stdio: ['ignore', 'ignore', 'pipe', 'ipc'],
+      env: { ...process.env, TRAINING_REMOTE_REPORT: reportPath, TRAINING_REMOTE_EMAIL: 'probe@example.test', TRAINING_REMOTE_PASSWORD: 'synthetic-password', ...env },
+    });
+    let errors = '';
+    child.stderr.on('data', chunk => { errors += chunk; });
+    const [code] = await once(child, 'exit');
+    return { code, errors };
+  };
+  try {
+    const hostMismatch = await run({
+      TRAINING_REMOTE_BASE_URL: 'https://production.example.test',
+      TRAINING_REMOTE_TARGET: 'staging',
+      TRAINING_REMOTE_EXPECTED_HOST: 'staging.example.test',
+    });
+    expect(hostMismatch.code).toBe(1);
+    expect(hostMismatch.errors).toContain('TRAINING_REMOTE_EXPECTED_HOST');
+    const missingConfirmation = await run({
+      TRAINING_REMOTE_BASE_URL: 'https://production.example.test',
+      TRAINING_REMOTE_TARGET: 'production',
+      TRAINING_REMOTE_EXPECTED_HOST: 'production.example.test',
+      TRAINING_REMOTE_PRODUCTION_CONFIRM: '',
+    });
+    expect(missingConfirmation.code).toBe(1);
+    expect(missingConfirmation.errors).toContain('TRAINING_REMOTE_PRODUCTION_CONFIRM');
+  } finally {
     await rm(directory, { recursive: true, force: true });
   }
 }, 30000);
