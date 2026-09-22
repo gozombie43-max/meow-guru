@@ -72,6 +72,11 @@ jobs:
           process.env.FIREBASE_PROJECT_ID = 'ci-import-smoke';
           process.env.FIREBASE_CLIENT_EMAIL = 'ci-import-smoke@example.test';
           process.env.FIREBASE_PRIVATE_KEY = generateKeyPairSync('rsa', { modulusLength: 2048 }).privateKey.export({ type: 'pkcs8', format: 'pem' });
+          process.env.B2_ENDPOINT = 'https://s3.us-east-005.backblazeb2.com';
+          process.env.B2_REGION = 'us-east-005';
+          process.env.B2_ACCESS_KEY_ID = 'ci-import-smoke';
+          process.env.B2_SECRET_ACCESS_KEY = 'ci-import-smoke';
+          process.env.B2_BUCKET = 'ci-import-smoke';
           await import('./app.js');"
 
       - name: Run Backend Tests (Vitest)
