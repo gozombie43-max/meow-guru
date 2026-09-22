@@ -1,0 +1,12 @@
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Known deterministic notification dedupe test fixture"
+paths = [
+  '''backend/services/__tests__/notificationCenterService\.test\.js'''
+]
+regexTarget = "line"
+regexes = [
+  '''dedupeKey:\s*['"]duplicate-key-1['"]'''
+]
