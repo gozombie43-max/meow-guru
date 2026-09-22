@@ -1,0 +1,175 @@
+name: Build and deploy staging training backend
+
+on:
+  workflow_dispatch:
+    inputs:
+      sync_questions:
+        description: 'Refresh staging question bank from production questions only'
+        required: true
+        default: true
+        type: boolean
+
+concurrency:
+  group: quizguru-backend-staging
+  cancel-in-progress: false
+
+jobs:
+  verification:
+    uses: ./.github/workflows/ci-verify.yml
+    secrets: inherit
+
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22.x'
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Install locked production dependencies
+        run: npm ci --workspace backend --workspace @meow/contracts --include-workspace-root=false --omit=dev
+      - name: Package staging runtime
+        run: |
+          node backend/scripts/materialize-runtime-workspaces.js
+          node backend/scripts/verify-runtime-dependencies.js --deployment
+          printf '%s' "${{ github.sha }}" > backend/RELEASE_ID
+          tar --exclude='backend/.env*' --exclude='backend/coverage' --exclude='backend/uploads' \
+            -czf release.tar.gz backend contracts node_modules package.json package-lock.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: staging-node-app
+          path: release.tar.gz
+          compression-level: 0
+          if-no-files-found: error
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [build, verification]
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      STAGING_MONGODB_DB: quizDB_staging
+      STAGING_MONGODB_EXPECTED_HOST: quizguru-staging.c8bkump.mongodb.net
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: staging-node-app
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22.x'
+      - name: Extract and verify artifact
+        run: |
+          mkdir release
+          tar -xzf release.tar.gz -C release
+          cd release
+          node backend/scripts/verify-runtime-dependencies.js --deployment
+      - name: Validate staging database secret
+        env:
+          STAGING_MONGODB_URI: ${{ secrets.STAGING_MONGODB_URI }}
+        run: |
+          set -euo pipefail
+          [ -n "$STAGING_MONGODB_URI" ] || { echo '::error::Set repository secret STAGING_MONGODB_URI'; exit 1; }
+          [[ "$STAGING_MONGODB_URI" == *"quizguru-staging.c8bkump.mongodb.net"* ]] || {
+            echo '::error::STAGING_MONGODB_URI does not point at the isolated Atlas staging cluster'; exit 1;
+          }
+      - name: Login to Azure
+        uses: azure/login@8216e11d8cd9b42fe925c852af8e76311ff067ac # v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_39C048B2FF59452F9613463239824624 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_0994BCA96630443BB4B8D46319B867CD }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_115D8A1EAFB5485E96F15FA5CD4BB615 }}
+      - name: Provision isolated free staging App Service
+        shell: bash
+        run: |
+          set -euo pipefail
+          resource_group="$(az webapp list --query "[?name=='quizguru-backend'].resourceGroup | [0]" --output tsv)"
+          [ -n "$resource_group" ] && [ "$resource_group" != "null" ] || {
+            echo '::error::Production resource group could not be resolved'; exit 1;
+          }
+          app_name="quizguru-stage-${GITHUB_REPOSITORY_ID}"
+          plan_name="quizguru-stage-plan"
+          if ! az appservice plan show --name "$plan_name" --resource-group "$resource_group" >/dev/null 2>&1; then
+            az appservice plan create --name "$plan_name" --resource-group "$resource_group" --sku F1 --is-linux --output none
+          fi
+          sku="$(az appservice plan show --name "$plan_name" --resource-group "$resource_group" --query sku.name --output tsv)"
+          [ "$sku" = "F1" ] || { echo "::error::Refusing non-free staging plan SKU: $sku"; exit 1; }
+          if ! az webapp show --name "$app_name" --resource-group "$resource_group" >/dev/null 2>&1; then
+            az webapp create --name "$app_name" --resource-group "$resource_group" --plan "$plan_name" --runtime 'NODE|22-lts' --output none
+          fi
+          host="$(az webapp show --name "$app_name" --resource-group "$resource_group" --query defaultHostName --output tsv)"
+          echo "RESOURCE_GROUP=$resource_group" >> "$GITHUB_ENV"
+          echo "STAGING_APP_NAME=$app_name" >> "$GITHUB_ENV"
+          echo "STAGING_APP_HOST=$host" >> "$GITHUB_ENV"
+      - name: Refresh staging question bank
+        if: ${{ inputs.sync_questions }}
+        working-directory: release
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          MONGODB_DB: ${{ vars.MONGODB_DB || 'quizDB' }}
+          STAGING_MONGODB_URI: ${{ secrets.STAGING_MONGODB_URI }}
+        run: node backend/scripts/sync-training-staging-questions.js
+      - name: Apply staging database migrations
+        working-directory: release
+        env:
+          MONGODB_URI: ${{ secrets.STAGING_MONGODB_URI }}
+          MONGODB_DB: quizDB_staging
+        run: npm run db:migrate --workspace backend
+      - name: Configure isolated staging runtime
+        env:
+          STAGING_MONGODB_URI: ${{ secrets.STAGING_MONGODB_URI }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          jwt_secret="$(openssl rand -hex 32)"
+          refresh_secret="$(openssl rand -hex 32)"
+          echo "::add-mask::$jwt_secret"
+          echo "::add-mask::$refresh_secret"
+          az webapp config appsettings set \
+            --name "$STAGING_APP_NAME" --resource-group "$RESOURCE_GROUP" \
+            --settings \
+              "MONGODB_URI=$STAGING_MONGODB_URI" \
+              "MONGODB_DB=quizDB_staging" \
+              "QUIZ_ONLY_MODE=true" \
+              "RUN_EMBEDDED_WORKERS=false" \
+              "DEPLOYMENT_ENVIRONMENT=staging" \
+              "PROCESS_ROLE=api" \
+              "NODE_ENV=production" \
+              "TRAINING_INDEXED_QUESTIONS=true" \
+              "TRAINING_LOCAL_INGRESS=true" \
+              "JWT_SECRET=$jwt_secret" \
+              "REFRESH_TOKEN_SECRET=$refresh_secret" \
+              "FRONTEND_URL=https://example.invalid" \
+              "GOOGLE_CLIENT_ID=staging-disabled" \
+              "GOOGLE_CLIENT_SECRET=staging-disabled" \
+              "GOOGLE_CALLBACK_URL=https://$STAGING_APP_HOST/auth/google/callback" \
+            --output none
+          az webapp config set --name "$STAGING_APP_NAME" --resource-group "$RESOURCE_GROUP" \
+            --startup-file 'npm --workspace backend start' --always-on false --output none
+      - name: Deploy staging backend
+        uses: azure/webapps-deploy@b686016b4de8820a23519503685d8d03fbfa03a6 # v3
+        with:
+          app-name: ${{ env.STAGING_APP_NAME }}
+          slot-name: Production
+          package: release
+      - name: Verify staging release readiness
+        env:
+          EXPECTED_RELEASE: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 24); do
+            : > health.json
+            status="$(curl --silent --show-error --max-time 20 --output health.json --write-out '%{http_code}' "https://$STAGING_APP_HOST/api/health")" || status='transport-error'
+            if [ "$status" = '200' ] && jq -e --arg release "$EXPECTED_RELEASE" '.ok == true and .state == "ready" and .releaseId == $release and .environment == "staging"' health.json >/dev/null; then
+              cat health.json
+              exit 0
+            fi
+            echo "Readiness attempt $attempt/24: HTTP $status"
+            sleep 10
+          done
+          cat health.json || true
+          echo '::error::Staging release failed readiness verification'
+          exit 1
