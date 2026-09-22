@@ -196,7 +196,7 @@ try {
   health = await verifyHealth();
   const actors = await Promise.all(
     credentials.slice(0, config.concurrency).map(async ({ email, password }) => {
-      const login = await request('login', 'POST', '/api/auth/login', { email, password });
+      const login = await request('login', 'POST', '/auth/login', { email, password });
       if (typeof login.token !== 'string' || !login.token)
         throw new Error('Login response did not include an access token');
       return { token: login.token };
