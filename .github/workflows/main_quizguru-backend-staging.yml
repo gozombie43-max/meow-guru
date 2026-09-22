@@ -52,6 +52,8 @@ jobs:
       id-token: write
       contents: read
     env:
+      AZURE_RESOURCE_GROUP: Meowguru_staging_group
+      STAGING_APP_SERVICE_PLAN: quizguru-stage-plan
       STAGING_MONGODB_DB: quizDB_staging
       STAGING_MONGODB_EXPECTED_HOST: quizguru-staging.c8bkump.mongodb.net
     steps:
@@ -82,23 +84,118 @@ jobs:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_39C048B2FF59452F9613463239824624 }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_0994BCA96630443BB4B8D46319B867CD }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_115D8A1EAFB5485E96F15FA5CD4BB615 }}
+      - name: Verify Azure RBAC for staging resource group
+        shell: bash
+        run: |
+          set -euo pipefail
+          subscription_id="$(az account show --query id --output tsv)"
+          scope="/subscriptions/$subscription_id/resourceGroups/$AZURE_RESOURCE_GROUP"
+          echo "AZURE_RESOURCE_GROUP_SCOPE=$scope" >> "$GITHUB_ENV"
+
+          error_file="$(mktemp)"
+          if ! resource_group_id="$(az group show --name "$AZURE_RESOURCE_GROUP" --query id --output tsv 2>"$error_file")"; then
+            cat "$error_file" >&2 || true
+            rm -f "$error_file"
+            echo "::error title=Azure staging bootstrap required::GitHub OIDC cannot read '$AZURE_RESOURCE_GROUP'. Create that staging-only resource group once, then assign both 'Website Contributor' and 'Web Plan Contributor' to this service principal at scope '$scope'."
+            exit 1
+          fi
+          rm -f "$error_file"
+
+          if [ "${resource_group_id,,}" != "${scope,,}" ]; then
+            echo "::error::Resolved unexpected Azure resource-group scope: $resource_group_id"
+            exit 1
+          fi
       - name: Provision isolated free staging App Service
         shell: bash
         run: |
           set -euo pipefail
-          resource_group="Meowguru_group"
           app_name="quizguru-stage-${GITHUB_REPOSITORY_ID}"
-          plan_name="quizguru-stage-plan"
-          if ! az appservice plan show --name "$plan_name" --resource-group "$resource_group" >/dev/null 2>&1; then
-            az appservice plan create --name "$plan_name" --resource-group "$resource_group" --sku F1 --is-linux --output none
+          plan_name="$STAGING_APP_SERVICE_PLAN"
+
+          fail_rbac() {
+            local operation="$1"
+            echo "::error title=Azure RBAC missing::$operation is not authorized at '$AZURE_RESOURCE_GROUP_SCOPE'. The GitHub OIDC service principal requires both 'Website Contributor' and 'Web Plan Contributor' on staging resource group '$AZURE_RESOURCE_GROUP'."
+            exit 1
+          }
+
+          plan_error="$(mktemp)"
+          if az appservice plan show --name "$plan_name" --resource-group "$AZURE_RESOURCE_GROUP" --output none 2>"$plan_error"; then
+            :
+          else
+            if grep -Eqi 'AuthorizationFailed|does not have authorization|Forbidden' "$plan_error"; then
+              cat "$plan_error" >&2
+              rm -f "$plan_error"
+              fail_rbac "Reading staging App Service plan"
+            fi
+            if ! grep -Eqi 'ResourceNotFound|could not be found|was not found|not found' "$plan_error"; then
+              cat "$plan_error" >&2
+              rm -f "$plan_error"
+              echo '::error::Unexpected error while checking the staging App Service plan'
+              exit 1
+            fi
+            rm -f "$plan_error"
+
+            create_plan_error="$(mktemp)"
+            if ! az appservice plan create \
+              --name "$plan_name" \
+              --resource-group "$AZURE_RESOURCE_GROUP" \
+              --sku F1 \
+              --is-linux \
+              --output none 2>"$create_plan_error"; then
+              cat "$create_plan_error" >&2
+              if grep -Eqi 'AuthorizationFailed|does not have authorization|Forbidden' "$create_plan_error"; then
+                rm -f "$create_plan_error"
+                fail_rbac "Creating staging App Service plan"
+              fi
+              rm -f "$create_plan_error"
+              echo '::error::Failed to create the staging App Service plan'
+              exit 1
+            fi
+            rm -f "$create_plan_error"
           fi
-          sku="$(az appservice plan show --name "$plan_name" --resource-group "$resource_group" --query sku.name --output tsv)"
+
+          sku="$(az appservice plan show --name "$plan_name" --resource-group "$AZURE_RESOURCE_GROUP" --query sku.name --output tsv)"
           [ "$sku" = "F1" ] || { echo "::error::Refusing non-free staging plan SKU: $sku"; exit 1; }
-          if ! az webapp show --name "$app_name" --resource-group "$resource_group" >/dev/null 2>&1; then
-            az webapp create --name "$app_name" --resource-group "$resource_group" --plan "$plan_name" --runtime 'NODE|22-lts' --output none
+
+          app_error="$(mktemp)"
+          if az webapp show --name "$app_name" --resource-group "$AZURE_RESOURCE_GROUP" --output none 2>"$app_error"; then
+            :
+          else
+            if grep -Eqi 'AuthorizationFailed|does not have authorization|Forbidden' "$app_error"; then
+              cat "$app_error" >&2
+              rm -f "$app_error"
+              fail_rbac "Reading staging Web App"
+            fi
+            if ! grep -Eqi 'ResourceNotFound|could not be found|was not found|not found' "$app_error"; then
+              cat "$app_error" >&2
+              rm -f "$app_error"
+              echo '::error::Unexpected error while checking the staging Web App'
+              exit 1
+            fi
+            rm -f "$app_error"
+
+            create_app_error="$(mktemp)"
+            if ! az webapp create \
+              --name "$app_name" \
+              --resource-group "$AZURE_RESOURCE_GROUP" \
+              --plan "$plan_name" \
+              --runtime 'NODE|22-lts' \
+              --output none 2>"$create_app_error"; then
+              cat "$create_app_error" >&2
+              if grep -Eqi 'AuthorizationFailed|does not have authorization|Forbidden' "$create_app_error"; then
+                rm -f "$create_app_error"
+                fail_rbac "Creating staging Web App"
+              fi
+              rm -f "$create_app_error"
+              echo '::error::Failed to create the staging Web App'
+              exit 1
+            fi
+            rm -f "$create_app_error"
           fi
-          host="$(az webapp show --name "$app_name" --resource-group "$resource_group" --query defaultHostName --output tsv)"
-          echo "RESOURCE_GROUP=$resource_group" >> "$GITHUB_ENV"
+
+          host="$(az webapp show --name "$app_name" --resource-group "$AZURE_RESOURCE_GROUP" --query defaultHostName --output tsv)"
+          [ -n "$host" ] || { echo '::error::Azure returned an empty staging hostname'; exit 1; }
+          echo "RESOURCE_GROUP=$AZURE_RESOURCE_GROUP" >> "$GITHUB_ENV"
           echo "STAGING_APP_NAME=$app_name" >> "$GITHUB_ENV"
           echo "STAGING_APP_HOST=$host" >> "$GITHUB_ENV"
       - name: Refresh staging question bank
