@@ -560,6 +560,10 @@ it('writes a sanitized partial failure report when a lifecycle fails mid-run', a
     const report = JSON.parse(await readFile(reportPath, 'utf8'));
     expect(report.status).toBe('failed');
     expect(report.failure).toMatchObject({ operation: 'answer', message: expect.stringContaining('503') });
+    expect(report.deployedReleaseId).toBe('failure-release');
+    expect(report.deployedEnvironment).toBe('staging');
+    expect(report.healthState).toBe('ready');
+    expect(report.serviceMode).toBe('quiz-only');
     expect(report.operations.health).toBeDefined();
     expect(report.operations.login).toBeDefined();
     expect(report.operations.answer).toBeDefined();

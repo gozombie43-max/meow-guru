@@ -121,10 +121,8 @@ if (!reportPath.toLowerCase().endsWith('.json')) throw new Error('TRAINING_REMOT
 const runId = `perf-${new Date().toISOString().replace(/[-:.TZ]/g, '').slice(0, 14)}-${randomUUID().slice(0, 8)}`;
 const samples = {};
 let requestNumber = 0;
-let lastOperation = null;
 
 async function request(operation, method, path, body, token) {
-  lastOperation = operation;
   const requestId = `${runId}-${++requestNumber}-${operation}`;
   const start = performance.now();
   const sample = { ok: false, durationMs: 0, responseBytes: 0 };
@@ -143,13 +141,13 @@ async function request(operation, method, path, body, token) {
     const text = await response.text();
     sample.responseBytes = Buffer.byteLength(text);
     sample.status = response.status;
-    if (!response.ok) throw new Error(`${operation} returned HTTP ${response.status}`);
+    if (!response.ok) { const err = new Error(`${operation} returned HTTP ${response.status}`); err.operation = operation; throw err; }
     try {
       const parsed = JSON.parse(text);
       sample.ok = true;
       return parsed;
     } catch {
-      throw new Error(`${operation} returned invalid JSON`);
+      const err = new Error(`${operation} returned invalid JSON`); err.operation = operation; throw err;
     }
   } finally {
     sample.durationMs = performance.now() - start;
@@ -193,8 +191,9 @@ async function verifyHealth() {
   };
 }
 
+let health = null;
 try {
-  const health = await verifyHealth();
+  health = await verifyHealth();
   const actors = await Promise.all(
     credentials.slice(0, config.concurrency).map(async ({ email, password }) => {
       const login = await request('login', 'POST', '/api/auth/login', { email, password });
@@ -236,10 +235,17 @@ try {
     runId,
     timestamp: new Date().toISOString(),
     expectedHost,
+    ...(health ? {
+      deployedReleaseId: health.deployedReleaseId,
+      deployedEnvironment: health.deployedEnvironment,
+      expectedReleaseId: health.expectedReleaseId,
+      healthState: health.healthState,
+      serviceMode: health.serviceMode,
+    } : {}),
     target: config.target,
     scenario: 'authenticated-training-lifecycle',
     failure: {
-      operation: lastOperation,
+      operation: error.operation ?? null,
       message: error.message,
     },
     runs: config.runs,
