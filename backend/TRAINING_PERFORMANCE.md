@@ -11,7 +11,7 @@ Verified against repository base `388ee38` on 2026-09-22. The source-level hotsp
 | No realistic training load harness | `npm run test:load:training` creates an isolated local replica set, seeds 3,500 questions and uses real authentication and production rate-limit middleware. Section learners perform dashboard/create/sequential visits and answers/finish/dashboard; adaptive and mission scenarios measure exam-wide session creation. CI runs stages 1 and 5 for all three scenarios and fails if active answer or visit deltas reach 2 KB. Defaults are 1/5/10/25/50. |
 | Regex candidate filters and full candidate content | A gated path uses exact canonical exam memberships and subjects, persisted eligibility and compact ranking metadata. Only selected questions and the bounded gauntlet reserve are hydrated. Exam memberships are arrays to preserve combined CGL/CHSL labels. Topic display values and legacy topic aliases remain supported. |
 | Duplicate limiter writes | `TRAINING_LOCAL_INGRESS=true` substitutes a process-local IP guard for the global Mongo counter on training routes. The authenticated durable training quota remains. The default retains the existing distributed global quota. |
-| Full historical sessions and rebuilding skills | History reads project only learning and result evidence. When recent history is fully marked `learningApplied`, durable skills are primary. Legacy histories still replay projected metadata for compatibility; this change does not discard or destructively rebuild historical learning. |
+| Full historical sessions and rebuilding skills | History reads project only learning and result evidence. Durable state becomes authoritative only when its per-user/exam meta row is `version: 1, status: ready`; otherwise compatibility replay remains. |
 | Every dashboard writes a profile | Removed the unused synchronous `userSkillProfile` snapshot write. Expired-session finalization still writes transactionally when needed. |
 | Repeated catalog aggregation | A database/exam-scoped cache coalesces concurrent reads, expires after five minutes, drops failures, and invalidates on application question writes. Other instances and external imports see changes within the TTL. |
 | Whole page ticks every second | Only the clock and pace components tick. A deadline timer controls expiration and automatic finish. Tests cover stable parent renders, server skew, pending saves and error suppression. |
@@ -30,9 +30,9 @@ An Azure/Atlas load test and an authenticated production training-session exerci
 
 Session persistence now separates physical question content from logical order. All updated repository readers understand both old sessions and the new `questionOrder` field. A backend downgrade must first restore physical arrays to the saved logical order; an older backend does not understand the new field. Frontend rollback remains supported by full action responses.
 
-## Durable learner-state follow-up
+## Durable learner-state migration
 
-Durable learner state currently becomes primary when the bounded recent-history window is fully marked `learningApplied` and durable skill rows exist. Because history is limited to 50 sessions, that moving-window inference can eventually omit older sessions that predate durable accounting. Replace it with an explicit per-user, per-exam migration marker such as `learnerStateVersion: 1` or `durableStateBackfilledThrough`, written by a deterministic backfill before durable state is treated as authoritative.
+Migration 010 adds `trainingLearnerStateMeta`. It replaces the bounded recent-history authority heuristic with a per-user/exam `{ version: 1, status: 'ready' }` marker. The separate `npm run db:training-state-backfill` command is inspection-only by default; its `--apply` mode replays every completed session in chronological order through the same learner-state reducer used by live completion, replaces skills/reviews/exposures transactionally, and records the source counts and final session. `completionEpoch` prevents a backfill from committing over a concurrent completion: the pair is retried when the epoch changes.
 
 ## Local evidence
 

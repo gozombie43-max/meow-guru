@@ -59,7 +59,8 @@
     "lint": "eslint . --max-warnings 0",
     "test:coverage": "vitest run --maxWorkers=1 --coverage",
     "test:load:training": "node scripts/load-training.js",
-    "db:training-metadata": "node scripts/backfill-training-metadata.js"
+    "db:training-metadata": "node scripts/backfill-training-metadata.js",
+    "db:training-state-backfill": "node scripts/backfill-training-learner-state.js"
   },
   "keywords": [],
   "author": "",

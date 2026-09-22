@@ -31,7 +31,7 @@ export async function createTrainingSessionCommand(userId, config, now) {
   const creationStart = performance.now();
   const [previous, durable] = await Promise.all([history(userId, config.exam), trainingLearningState(userId, config.exam)]);
   let intelligence = mergeDurableIntelligence(
-    buildIntelligence(previous, now, previous.length > 0 && previous.every(s => s.learningApplied) && durable.skillRows.length > 0),
+    buildIntelligence(previous, now, durable.stateMeta?.version === 1 && durable.stateMeta?.status === 'ready'),
     durable.skillRows,
     durable.reviewRows,
   );

@@ -12,6 +12,7 @@ import { invalidateTrainingCatalog } from '../../services/training/catalogCache.
 
 import { up as upPerformance } from '../../migrations/008-training-performance.js';
 import { up as upExamWideCandidates } from '../../migrations/009-training-exam-wide-candidates.js';
+import { up as upLearnerStateMeta } from '../../migrations/010-training-learner-state-meta.js';
 import { backfillTrainingMetadata } from '../../services/training/questionMetadataBackfill.js';
 import { trainingQuestionPool, trainingExposureData, trainingHistory } from '../../repositories/trainingRepository.js';
 
@@ -36,6 +37,7 @@ beforeAll(async () => {
   await upHardening(db);
   await upPerformance(db);
   await upExamWideCandidates(db);
+  await upLearnerStateMeta(db);
   const app = express();
   app.use(express.json());
   app.use("/curation", curationRouter);
@@ -60,6 +62,7 @@ beforeEach(async () => {
   await db.collection("trainingReviewState").deleteMany({});
   await db.collection("trainingQuestionExposure").deleteMany({});
   await db.collection("trainingSkillState").deleteMany({});
+  await db.collection('trainingLearnerStateMeta').deleteMany({});
   await db.collection("userSkillProfile").deleteMany({});
   await db.collection("questions").deleteMany({});
   await db.collection("questions").insertMany(
@@ -370,6 +373,11 @@ describe("persistent training API", () => {
     expect(await db.collection("trainingQuestionExposure").countDocuments({ userId: "student" })).toBe(1);
     expect(await db.collection("trainingSkillState").countDocuments({ userId: "student", level: "topic" })).toBe(1);
     expect(await db.collection("trainingReviewState").countDocuments({ userId: "student" })).toBe(1);
+    expect(await db.collection('trainingLearnerStateMeta').findOne({ _id: 'student:ssc-cgl' })).toMatchObject({
+      version: 1,
+      status: 'ready',
+      completionEpoch: 1,
+    });
   });
 
   it("returns 201 for a new daily mission and 200 for an existing one", async () => {

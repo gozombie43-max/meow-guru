@@ -4,11 +4,19 @@ import { cachedTrainingCatalog } from '../services/training/catalogCache.js';
 import { trainingExamPattern, trainingSlug, trainingQuestionMetadata } from '../services/training/domain/questionMetadata.js';
 import { normalizeQuestion } from '../services/training/domain/questionNormalizer.js';
 import { sessionUpdate, orderedTrainingSession } from '../services/training/domain/sessionUpdate.js';
+import {
+  applySessionToLearnerState,
+  createLearnerState,
+  learnerStateDocuments,
+  learnerStateKeysForSession,
+} from '../services/training/domain/learnerStateReducer.js';
 
 const sessions = () => getMongoDB().collection('trainingSessions');
 const reviews = () => getMongoDB().collection('trainingReviewState');
 const exposures = () => getMongoDB().collection('trainingQuestionExposure');
 const skills = () => getMongoDB().collection('trainingSkillState');
+const learnerStateMeta = () => getMongoDB().collection('trainingLearnerStateMeta');
+const learnerStateMetaId = (userId, exam) => `${userId}:${exam}`;
 
 const trainingSubjectFilter = subject => {
   const canonical = normalizeTrainingSubject(subject);
@@ -26,218 +34,29 @@ const examFilter = exam => {
   return { $or: [{ exam: pattern }, { examName: pattern }, { exams: pattern }] };
 };
 
-const answerSignal = (correct, confidence) =>
-  correct
-    ? confidence === 'guess'
-      ? 0.25
-      : confidence === 'unsure'
-        ? 0.6
-        : 1
-    : 0;
-
-const skillKeysFor = q => [
-  {
-    key: `${q.subject} / ${q.topic}`,
-    level: 'topic',
-    label: q.topic,
-    subject: q.subject,
-    topic: q.topic,
-  },
-  ...(q.subtopic
-    ? [{
-        key: `${q.subject} / ${q.topic} / subtopic / ${q.subtopic}`,
-        level: 'subtopic',
-        label: q.subtopic,
-        subject: q.subject,
-        topic: q.topic,
-      }]
-    : []),
-  ...(q.concepts || [])
-    .filter(c => typeof c === 'string' && c.trim())
-    .map(label => ({
-      key: `${q.subject} / ${q.topic} / concept / ${label}`,
-      level: 'concept',
-      label,
-      subject: q.subject,
-      topic: q.topic,
-    })),
-];
-
 async function applyCompletedSessionLearning(db, completed, mongoSession) {
   if (!completed?.result || completed.status !== 'completed') return;
-
-  const userId = completed.userId;
-  const exam = completed.exam;
-  const completedAt = completed.completedAt;
-  const attempted = completed.questions
-    .map(q => ({ q, answer: completed.answers[q.id] }))
-    .filter(({ answer }) => answer && answer.choice !== null);
-  if (!attempted.length) return;
-
-  const questionIds = attempted.map(({ q }) => q.id);
-  const existingReviews = await db.collection('trainingReviewState')
-    .find(
-      { userId, exam, questionId: { $in: questionIds } },
-      { session: mongoSession },
-    )
-    .toArray();
-  const reviewByQuestion = new Map(
-    existingReviews.map(item => [String(item.questionId), item]),
+  const { userId, exam } = completed;
+  const { questionIds, skillIds } = learnerStateKeysForSession(completed);
+  if (!questionIds.length) return;
+  const [skillRows, reviewRows, exposureRows] = await Promise.all([
+    db.collection('trainingSkillState').find({ _id: { $in: skillIds } }, { session: mongoSession }).toArray(),
+    db.collection('trainingReviewState').find({ userId, exam, questionId: { $in: questionIds } }, { session: mongoSession }).toArray(),
+    db.collection('trainingQuestionExposure').find({ userId, exam, questionId: { $in: questionIds } }, { session: mongoSession }).toArray(),
+  ]);
+  const durable = learnerStateDocuments(
+    applySessionToLearnerState(createLearnerState({ skillRows, reviewRows, exposureRows }), completed),
+    userId,
+    exam,
   );
-
-  const exposureOps = [];
-  const reviewOps = [];
-  const skillInputs = new Map();
-
-  for (const { q, answer } of attempted) {
-    const correct = answer.choice === q.correctIndex;
-    const risky =
-      !correct ||
-      answer.confidence === 'guess' ||
-      answer.confidence === 'unsure' ||
-      answer.seconds > q.expectedTime * 1.5;
-
-    exposureOps.push({
-      updateOne: {
-        filter: { userId, exam, questionId: q.id },
-        update: {
-          $set: {
-            userId,
-            exam,
-            questionId: q.id,
-            lastSeenAt: completedAt,
-            lastCorrect: correct,
-            lastSeconds: answer.seconds,
-            lastConfidence: answer.confidence || null,
-            updatedAt: new Date(),
-          },
-          $inc: { timesSeen: 1, timesCorrect: Number(correct) },
-          $setOnInsert: { createdAt: new Date() },
-        },
-        upsert: true,
-      },
-    });
-
-    const existingReview = reviewByQuestion.get(String(q.id));
-    const priorReviewStage =
-      existingReview?.stage ??
-      (Number.isInteger(q.priorReviewStage) ? q.priorReviewStage : null);
-    if (risky || existingReview || priorReviewStage !== null) {
-      const stage = risky ? 0 : Math.min((priorReviewStage || 0) + 1, 4);
-      const reason = !risky
-        ? 'Scheduled recall'
-        : !correct
-          ? answer.confidence === 'sure'
-            ? 'Wrong + Sure: possible misconception'
-            : 'Wrong answer'
-          : answer.seconds > q.expectedTime * 1.5
-            ? 'Above target time'
-            : 'Low confidence';
-      const intervals = [1, 3, 7, 21, 60];
-      reviewOps.push({
-        updateOne: {
-          filter: { _id: `${userId}:${exam}:${q.id}` },
-          update: {
-            $set: {
-              userId,
-              exam,
-              questionId: q.id,
-              topic: q.topic,
-              stage,
-              dueAt: new Date(
-                new Date(completedAt).getTime() + intervals[stage] * 86400000,
-              ).toISOString(),
-              reason,
-              mistake: answer.mistake || existingReview?.mistake || null,
-              lastSessionId: completed.id,
-              updatedAt: new Date(),
-            },
-            $setOnInsert: { createdAt: new Date() },
-          },
-          upsert: true,
-        },
-      });
-    }
-
-    for (const meta of skillKeysFor(q)) {
-      const item = skillInputs.get(meta.key) || {
-        ...meta,
-        attempts: 0,
-        correct: 0,
-        seconds: [],
-        signals: [],
-      };
-      item.attempts++;
-      item.correct += Number(correct);
-      item.seconds.push(answer.seconds);
-      item.signals.push(answerSignal(correct, answer.confidence));
-      skillInputs.set(meta.key, item);
-    }
-  }
-
-  if (exposureOps.length) {
-    await db.collection('trainingQuestionExposure').bulkWrite(
-      exposureOps,
-      { ordered: false, session: mongoSession },
-    );
-  }
-  if (reviewOps.length) {
-    await db.collection('trainingReviewState').bulkWrite(
-      reviewOps,
-      { ordered: false, session: mongoSession },
-    );
-  }
-
-  if (!skillInputs.size) return;
-  const ids = [...skillInputs.keys()].map(key => `${userId}:${exam}:${key}`);
-  const existing = await db.collection('trainingSkillState')
-    .find({ _id: { $in: ids } }, { session: mongoSession })
-    .toArray();
-  const byId = new Map(existing.map(item => [item._id, item]));
-  const skillOps = [];
-
-  for (const item of skillInputs.values()) {
-    const _id = `${userId}:${exam}:${item.key}`;
-    const old = byId.get(_id);
-    let mastery =
-      old?.mastery ??
-      (item.level === 'topic' ? completed.baseline?.[item.key] : undefined) ??
-      0.5;
-    let seconds = old?.seconds ?? 60;
-    for (let i = 0; i < item.signals.length; i++) {
-      mastery = 0.8 * mastery + 0.2 * item.signals[i];
-      seconds = 0.8 * seconds + 0.2 * item.seconds[i];
-    }
-    skillOps.push({
-      updateOne: {
-        filter: { _id },
-        update: {
-          $set: {
-            userId,
-            exam,
-            key: item.key,
-            level: item.level,
-            label: item.label,
-            subject: item.subject,
-            topic: item.topic,
-            mastery,
-            seconds,
-            lastAt: completedAt,
-            updatedAt: new Date(),
-          },
-          $inc: { attempts: item.attempts, correct: item.correct },
-          $setOnInsert: { createdAt: new Date() },
-        },
-        upsert: true,
-      },
-    });
-  }
-
-  if (skillOps.length) {
-    await db.collection('trainingSkillState').bulkWrite(
-      skillOps,
-      { ordered: false, session: mongoSession },
-    );
+  for (const [collection, rows] of [
+    ['trainingSkillState', durable.skillRows],
+    ['trainingReviewState', durable.reviewRows],
+    ['trainingQuestionExposure', durable.exposureRows],
+  ]) {
+    if (rows.length) await db.collection(collection).bulkWrite(rows.map(row => ({
+      replaceOne: { filter: { _id: row._id }, replacement: row, upsert: true },
+    })), { ordered: false, session: mongoSession });
   }
 }
 
@@ -276,7 +95,7 @@ export const expiredActiveSessions = (userId, exam, now = Date.now()) =>
     .toArray().then(rows => rows.map(orderedTrainingSession));
 
 export async function trainingLearningState(userId, exam) {
-  const [reviewRows, skillRows] = await Promise.all([
+  const [reviewRows, skillRows, stateMeta] = await Promise.all([
     reviews()
       .find({ userId, exam })
       .sort({ dueAt: 1 })
@@ -287,13 +106,14 @@ export async function trainingLearningState(userId, exam) {
       .sort({ mastery: 1 })
       .limit(5000)
       .toArray(),
+    learnerStateMeta().findOne({ _id: learnerStateMetaId(userId, exam) }),
   ]);
-  return { reviewRows, skillRows };
+  return { reviewRows, skillRows, stateMeta };
 }
 
 export async function trainingDashboardData(userId, exam) {
   const nowIso = new Date().toISOString();
-  const [active, catalog, mocks, reviewRows, skillRows] = await Promise.all([
+  const [active, catalog, mocks, reviewRows, skillRows, stateMeta] = await Promise.all([
     sessions()
       .find({ userId, exam, status: 'active', deadline: { $gt: nowIso } })
       .sort({ startedAt: -1 })
@@ -332,6 +152,7 @@ export async function trainingDashboardData(userId, exam) {
       .sort({ mastery: 1 })
       .limit(5000)
       .toArray(),
+    learnerStateMeta().findOne({ _id: learnerStateMetaId(userId, exam) }),
   ]);
 
   const catalogPairs = [...new Map(catalog.map(item => {
@@ -341,7 +162,7 @@ export async function trainingDashboardData(userId, exam) {
     };
     return [JSON.stringify([pair.subject, pair.topic]), pair];
   })).values()].sort((a, b) => a.subject.localeCompare(b.subject) || a.topic.localeCompare(b.topic));
-  return { active, catalogPairs, mocks, reviewRows, skillRows };
+  return { active, catalogPairs, mocks, reviewRows, skillRows, stateMeta };
 }
 
 export async function trainingQuestionPool(config, dueIds, recentIds, weakTopics = []) {
@@ -400,7 +221,10 @@ export const trainingExposureData = (userId, exam, questionIds) =>
 // Every session mutation retains the optimistic revision guard. Completion is
 // committed atomically with durable skill/review/exposure updates.
 export async function commitTrainingTransition(session, updated) {
-  if (session.status === 'active' && updated.status === 'completed') updated.learningApplied = true;
+  if (session.status === 'active' && updated.status === 'completed') {
+    updated.learningApplied = true;
+    updated.learningAppliedVersion = 1;
+  }
   const update = sessionUpdate(session, updated);
   const isCompletion =
     session.status === 'active' && ['completed', 'abandoned'].includes(updated.status);
@@ -420,6 +244,31 @@ export async function commitTrainingTransition(session, updated) {
     );
     if (write.modifiedCount && updated.status === 'completed') {
       await applyCompletedSessionLearning(db, updated, mongoSession);
+      const metaFilter = { _id: learnerStateMetaId(updated.userId, updated.exam) };
+      const currentMeta = await db.collection('trainingLearnerStateMeta').findOne(metaFilter, { session: mongoSession });
+      const hasPriorCompleted = currentMeta
+        ? true
+        : await db.collection('trainingSessions').countDocuments({
+          userId: updated.userId,
+          exam: updated.exam,
+          status: 'completed',
+          _id: { $ne: session._id },
+        }, { session: mongoSession }) > 0;
+      await db.collection('trainingLearnerStateMeta').updateOne(
+        metaFilter,
+        {
+          $set: { updatedAt: new Date() },
+          $inc: { completionEpoch: 1 },
+          $setOnInsert: {
+            userId: updated.userId,
+            exam: updated.exam,
+            version: hasPriorCompleted ? 0 : 1,
+            status: hasPriorCompleted ? 'pending' : 'ready',
+            createdAt: new Date(),
+          },
+        },
+        { upsert: true, session: mongoSession },
+      );
     }
   });
   return write;

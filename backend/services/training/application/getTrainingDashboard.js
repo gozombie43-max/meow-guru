@@ -28,12 +28,13 @@ export async function getTrainingDashboardData(userId, exam) {
     mocks,
     reviewRows,
     skillRows,
+    stateMeta,
   } = dashboard;
   const subjects = [...new Set(catalogPairs.map((item) => item.subject))];
   const topics = [...new Set(catalogPairs.map((item) => item.topic))];
 
   let intelligence = mergeDurableIntelligence(
-    buildIntelligence(previous, Date.now(), previous.length > 0 && previous.every(s => s.learningApplied) && skillRows.length > 0),
+    buildIntelligence(previous, Date.now(), stateMeta?.version === 1 && stateMeta?.status === 'ready'),
     skillRows,
     reviewRows,
   );
