@@ -107,7 +107,7 @@ jobs:
             echo "::error::Resolved unexpected Azure resource-group scope: $resource_group_id"
             exit 1
           fi
-      - name: Provision isolated free staging App Service
+      - name: Provision isolated staging App Service
         shell: bash
         run: |
           set -euo pipefail
@@ -157,7 +157,17 @@ jobs:
           fi
 
           sku="$(az appservice plan show --name "$plan_name" --resource-group "$AZURE_RESOURCE_GROUP" --query sku.name --output tsv)"
-          [ "$sku" = "F1" ] || { echo "::error::Refusing non-free staging plan SKU: $sku"; exit 1; }
+          case "$sku" in
+            F1)
+              ;;
+            B1)
+              echo '::warning title=Paid staging plan active::Staging App Service is temporarily using B1. Return quizguru-stage-plan to F1 when B1 testing is finished.'
+              ;;
+            *)
+              echo "::error::Refusing unsupported staging plan SKU: $sku. Allowed SKUs are F1 and B1."
+              exit 1
+              ;;
+          esac
 
           app_error="$(mktemp)"
           if az webapp show --name "$app_name" --resource-group "$AZURE_RESOURCE_GROUP" --output none 2>"$app_error"; then
@@ -368,7 +378,7 @@ jobs:
             sleep 15
           }
 
-          # An earlier failed run can leave the F1 app stopped even after its quota resets.
+          # A previous failed run can leave the staging app stopped.
           az webapp start --name "$STAGING_APP_NAME" --resource-group "$RESOURCE_GROUP" --output none || true
 
           for attempt in $(seq 1 30); do
