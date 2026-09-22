@@ -24,6 +24,11 @@ import { fetchQuestionCursorPage } from '../../services/questions/questionCursor
 import { fetchQuestionCounts } from '../../services/questions/questionMetadataService.js';
 import { enqueueTutorJob, getTutorJob, cancelTutorJob } from '../../services/tutorJobs.js';
 vi.mock('../objectStorage.js', () => ({ putObject: vi.fn().mockResolvedValue(undefined) }));
+vi.mock('../../config/firebase.js', () => ({
+  firebaseMessaging: {
+    sendEachForMulticast: vi.fn(),
+  },
+}));
 
 let replica, client, db;
 beforeAll(async () => {
