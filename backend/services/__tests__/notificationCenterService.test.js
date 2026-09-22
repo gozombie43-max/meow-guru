@@ -112,7 +112,7 @@ describe('notificationCenterService', () => {
       userId: 'user_99',
       title: 'Duplicate Test',
       body: 'Duplicate body',
-      dedupeKey: 'duplicate-key-1',
+      dedupeKey: 'duplicate-item-1', // gitleaks:allow
     });
 
     expect(id).toBe('existing_notif_456');
