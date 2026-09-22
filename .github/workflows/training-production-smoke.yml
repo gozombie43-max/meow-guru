@@ -1,0 +1,64 @@
+# Protected manual-only workflow: run exactly one synthetic production training
+# lifecycle and preserve the JSON evidence artifact.
+#
+# Target identity (base URL, expected hostname, production confirmation) lives
+# in the protected GitHub Environment "production-training-smoke".
+# Synthetic credentials live in that environment's secrets.
+#
+# The only operator-supplied input is the expected deployed release SHA so the
+# probe can verify it against /api/health.releaseId before touching auth state.
+
+name: Production training smoke test
+
+on:
+  workflow_dispatch:
+    inputs:
+      expected_release:
+        description: "Expected deployed backend release ID (SHA)"
+        required: true
+        type: string
+
+concurrency:
+  group: production-training-smoke
+  cancel-in-progress: false
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: production-training-smoke
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22.x'
+
+      - name: Install dependencies
+        run: npm ci --workspace=backend --include-workspace-root
+
+      - name: Run production training probe
+        working-directory: backend
+        env:
+          TRAINING_REMOTE_BASE_URL: ${{ vars.TRAINING_REMOTE_BASE_URL }}
+          TRAINING_REMOTE_EXPECTED_HOST: ${{ vars.TRAINING_REMOTE_EXPECTED_HOST }}
+          TRAINING_REMOTE_PRODUCTION_CONFIRM: ${{ vars.TRAINING_REMOTE_PRODUCTION_CONFIRM }}
+          TRAINING_REMOTE_EMAIL: ${{ secrets.TRAINING_REMOTE_EMAIL }}
+          TRAINING_REMOTE_PASSWORD: ${{ secrets.TRAINING_REMOTE_PASSWORD }}
+          TRAINING_REMOTE_TARGET: production
+          TRAINING_REMOTE_CONCURRENCY: '1'
+          TRAINING_REMOTE_RUNS: '1'
+          TRAINING_REMOTE_EXPECTED_RELEASE_ID: ${{ inputs.expected_release }}
+          TRAINING_REMOTE_REPORT: ${{ runner.temp }}/training-production-${{ github.run_id }}.json
+        run: npm run test:probe:training-remote
+
+      - name: Upload smoke report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: training-production-${{ github.run_id }}
+          path: ${{ runner.temp }}/training-production-${{ github.run_id }}.json
+          retention-days: 30
