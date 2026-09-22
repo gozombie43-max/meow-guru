@@ -29,9 +29,6 @@ import { initUserRoutes } from './routes/user.routes.js';
 
 import questionRoutes from './routes/questionRoutes.js';
 import mocktestRoutes from './routes/mocktest.js';
-
-import massUploadImages from './routes/massUploadImages.js';
-import massUploadSolutions from './routes/massUploadSolutions.js';
 import accessCodeRoutes from './routes/accessCodes.js';
 
 function lazyRouter(loader) {
@@ -124,8 +121,13 @@ export async function createApp({ isReady, isShuttingDown, quizOnlyMode = proces
   app.use('/api/questions', questionRoutes);
   app.use('/api/mocktest', mocktestRoutes);
   app.use('/api/upload', uploadLimiter, lazyRouter(() => import('./routes/imageUpload.js')));
-  app.use('/api', uploadLimiter, massUploadImages);
-  app.use('/api', uploadLimiter, massUploadSolutions);
+
+  // Bulk image/solution administration depends on external object storage. Keep
+  // those integrations off the boot-critical path so quiz/training-only runtimes
+  // can start without production B2 credentials.
+  app.use('/api', uploadLimiter, lazyRouter(() => import('./routes/massUploadImages.js')));
+  app.use('/api', uploadLimiter, lazyRouter(() => import('./routes/massUploadSolutions.js')));
+
   app.use('/auth', authLimiter, initAuthRoutes());
   app.use('/users', initUserRoutes());
   app.use('/api/access-code', authLimiter, accessCodeRoutes);
