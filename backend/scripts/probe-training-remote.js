@@ -121,8 +121,10 @@ if (!reportPath.toLowerCase().endsWith('.json')) throw new Error('TRAINING_REMOT
 const runId = `perf-${new Date().toISOString().replace(/[-:.TZ]/g, '').slice(0, 14)}-${randomUUID().slice(0, 8)}`;
 const samples = {};
 let requestNumber = 0;
+let lastOperation = null;
 
 async function request(operation, method, path, body, token) {
+  lastOperation = operation;
   const requestId = `${runId}-${++requestNumber}-${operation}`;
   const start = performance.now();
   const sample = { ok: false, durationMs: 0, responseBytes: 0 };
@@ -154,10 +156,7 @@ async function request(operation, method, path, body, token) {
   }
 }
 
-async function runLifecycle({ email, password }) {
-  const login = await request('login', 'POST', '/api/auth/login', { email, password });
-  if (typeof login.token !== 'string' || !login.token) throw new Error('Login response did not include an access token');
-  const token = login.token;
+async function runLifecycle(token) {
   await request('dashboard', 'GET', '/api/training/dashboard?exam=ssc-cgl', undefined, token);
   let session = await request('create', 'POST', '/api/training/sessions', {
     mode: 'section', exam: 'ssc-cgl', subject: 'mathematics', count: QUESTION_COUNT,
@@ -196,11 +195,20 @@ async function verifyHealth() {
 
 try {
   const health = await verifyHealth();
+  const actors = await Promise.all(
+    credentials.slice(0, config.concurrency).map(async ({ email, password }) => {
+      const login = await request('login', 'POST', '/api/auth/login', { email, password });
+      if (typeof login.token !== 'string' || !login.token)
+        throw new Error('Login response did not include an access token');
+      return { token: login.token };
+    })
+  );
   for (let run = 0; run < config.runs; run++)
-    await Promise.all(credentials.slice(0, config.concurrency).map(runLifecycle));
+    await Promise.all(actors.map(actor => runLifecycle(actor.token)));
   const operations = summarize(samples);
   const report = {
     schemaVersion: 1,
+    status: 'completed',
     runId,
     timestamp: new Date().toISOString(),
     expectedHost,
@@ -222,5 +230,27 @@ try {
   if (report.errors) process.exitCode = 1;
 } catch (error) {
   console.error(`Remote training probe failed: ${error.message}`);
+  const failureReport = {
+    schemaVersion: 1,
+    status: 'failed',
+    runId,
+    timestamp: new Date().toISOString(),
+    expectedHost,
+    target: config.target,
+    scenario: 'authenticated-training-lifecycle',
+    failure: {
+      operation: lastOperation,
+      message: error.message,
+    },
+    runs: config.runs,
+    concurrency: config.concurrency,
+    questionsPerSession: QUESTION_COUNT,
+    operations: summarize(samples),
+  };
+  try {
+    await writeFile(reportPath, JSON.stringify(failureReport, null, 2) + '\n', { flag: 'wx' });
+  } catch {
+    // Report file may already exist or path may be invalid; do not mask the original error.
+  }
   process.exitCode = 1;
 }
