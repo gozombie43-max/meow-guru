@@ -52,7 +52,7 @@ jobs:
       id-token: write
       contents: read
     env:
-      AZURE_RESOURCE_GROUP: Meowguru_group
+      AZURE_RESOURCE_GROUP: Meowguru_staging_group
       STAGING_APP_SERVICE_PLAN: quizguru-stage-plan
       STAGING_MONGODB_DB: quizDB_staging
       STAGING_MONGODB_EXPECTED_HOST: quizguru-staging.c8bkump.mongodb.net
@@ -96,7 +96,7 @@ jobs:
           if ! resource_group_id="$(az group show --name "$AZURE_RESOURCE_GROUP" --query id --output tsv 2>"$error_file")"; then
             cat "$error_file" >&2 || true
             rm -f "$error_file"
-            echo "::error title=Azure RBAC missing::GitHub OIDC cannot read '$AZURE_RESOURCE_GROUP'. Assign both 'Website Contributor' and 'Web Plan Contributor' to this service principal at resource-group scope '$scope', then start a new workflow run."
+            echo "::error title=Azure staging bootstrap required::GitHub OIDC cannot read '$AZURE_RESOURCE_GROUP'. Create that staging-only resource group once, then assign both 'Website Contributor' and 'Web Plan Contributor' to this service principal at scope '$scope'."
             exit 1
           fi
           rm -f "$error_file"
@@ -114,7 +114,7 @@ jobs:
 
           fail_rbac() {
             local operation="$1"
-            echo "::error title=Azure RBAC missing::$operation is not authorized at '$AZURE_RESOURCE_GROUP_SCOPE'. The GitHub OIDC service principal requires both 'Website Contributor' and 'Web Plan Contributor' on resource group '$AZURE_RESOURCE_GROUP'."
+            echo "::error title=Azure RBAC missing::$operation is not authorized at '$AZURE_RESOURCE_GROUP_SCOPE'. The GitHub OIDC service principal requires both 'Website Contributor' and 'Web Plan Contributor' on staging resource group '$AZURE_RESOURCE_GROUP'."
             exit 1
           }
 
