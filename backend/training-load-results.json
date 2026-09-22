@@ -3,262 +3,572 @@
   "questionsPerLearner": 20,
   "stages": [
     {
+      "scenario": "section-mathematics",
       "concurrency": 1,
-      "durationMs": 1571,
+      "durationMs": 1202,
       "failedLearners": 0,
       "operations": {
         "dashboard": {
           "requests": 2,
           "errors": 0,
           "errorRate": 0,
-          "p50Ms": 19.12,
-          "p95Ms": 104.5,
-          "p99Ms": 104.5,
-          "meanResponseBytes": 6211
+          "p50Ms": 16,
+          "p95Ms": 111.02,
+          "p99Ms": 111.02,
+          "meanResponseBytes": 6211,
+          "maxResponseBytes": 10066
         },
         "create": {
           "requests": 1,
           "errors": 0,
           "errorRate": 0,
-          "p50Ms": 175.41,
-          "p95Ms": 175.41,
-          "p99Ms": 175.41,
-          "meanResponseBytes": 23281
+          "p50Ms": 178.53,
+          "p95Ms": 178.53,
+          "p99Ms": 178.53,
+          "meanResponseBytes": 23281,
+          "maxResponseBytes": 23281
         },
         "answer": {
           "requests": 20,
           "errors": 0,
           "errorRate": 0,
-          "p50Ms": 29.97,
-          "p95Ms": 36.33,
-          "p99Ms": 38.12,
-          "meanResponseBytes": 781
+          "p50Ms": 17.56,
+          "p95Ms": 33.36,
+          "p99Ms": 35.48,
+          "meanResponseBytes": 782,
+          "maxResponseBytes": 783
         },
         "visit": {
           "requests": 19,
           "errors": 0,
           "errorRate": 0,
-          "p50Ms": 31.64,
-          "p95Ms": 33.95,
-          "p99Ms": 33.95,
-          "meanResponseBytes": 782
+          "p50Ms": 16.61,
+          "p95Ms": 38.85,
+          "p99Ms": 38.85,
+          "meanResponseBytes": 783,
+          "maxResponseBytes": 798
         },
         "finish": {
           "requests": 1,
           "errors": 0,
           "errorRate": 0,
-          "p50Ms": 58.31,
-          "p95Ms": 58.31,
-          "p99Ms": 58.31,
-          "meanResponseBytes": 79675
+          "p50Ms": 44.83,
+          "p95Ms": 44.83,
+          "p99Ms": 44.83,
+          "meanResponseBytes": 79701,
+          "maxResponseBytes": 79701
         }
       }
     },
     {
+      "scenario": "section-mathematics",
       "concurrency": 5,
-      "durationMs": 1649,
+      "durationMs": 2097,
       "failedLearners": 0,
       "operations": {
         "dashboard": {
           "requests": 10,
           "errors": 0,
           "errorRate": 0,
-          "p50Ms": 39.41,
-          "p95Ms": 52.4,
-          "p99Ms": 52.4,
-          "meanResponseBytes": 6211
+          "p50Ms": 40.84,
+          "p95Ms": 70.88,
+          "p99Ms": 70.88,
+          "meanResponseBytes": 6212,
+          "maxResponseBytes": 10076
         },
         "create": {
           "requests": 5,
           "errors": 0,
           "errorRate": 0,
-          "p50Ms": 331.98,
-          "p95Ms": 344.45,
-          "p99Ms": 344.45,
-          "meanResponseBytes": 23281
+          "p50Ms": 431.14,
+          "p95Ms": 444.86,
+          "p99Ms": 444.86,
+          "meanResponseBytes": 23281,
+          "maxResponseBytes": 23281
         },
         "answer": {
           "requests": 100,
           "errors": 0,
           "errorRate": 0,
-          "p50Ms": 29.18,
-          "p95Ms": 33.1,
-          "p99Ms": 61.63,
-          "meanResponseBytes": 781
+          "p50Ms": 34.36,
+          "p95Ms": 51.75,
+          "p99Ms": 65.8,
+          "meanResponseBytes": 782,
+          "maxResponseBytes": 783
         },
         "visit": {
           "requests": 95,
           "errors": 0,
           "errorRate": 0,
-          "p50Ms": 29.6,
-          "p95Ms": 33.06,
-          "p99Ms": 37.07,
-          "meanResponseBytes": 784
+          "p50Ms": 34.89,
+          "p95Ms": 50.1,
+          "p99Ms": 52.53,
+          "meanResponseBytes": 784,
+          "maxResponseBytes": 798
         },
         "finish": {
           "requests": 5,
           "errors": 0,
           "errorRate": 0,
-          "p50Ms": 56.35,
-          "p95Ms": 56.82,
-          "p99Ms": 56.82,
-          "meanResponseBytes": 79757
+          "p50Ms": 67.93,
+          "p95Ms": 73.35,
+          "p99Ms": 73.35,
+          "meanResponseBytes": 79723,
+          "maxResponseBytes": 79757
         }
       }
     },
     {
+      "scenario": "section-mathematics",
       "concurrency": 10,
-      "durationMs": 3087,
+      "durationMs": 3575,
       "failedLearners": 0,
       "operations": {
         "dashboard": {
           "requests": 20,
           "errors": 0,
           "errorRate": 0,
-          "p50Ms": 59.28,
-          "p95Ms": 75.28,
-          "p99Ms": 83.03,
-          "meanResponseBytes": 6213
+          "p50Ms": 78.02,
+          "p95Ms": 100.71,
+          "p99Ms": 107.51,
+          "meanResponseBytes": 6215,
+          "maxResponseBytes": 10078
         },
         "create": {
           "requests": 10,
           "errors": 0,
           "errorRate": 0,
-          "p50Ms": 655.08,
-          "p95Ms": 675.16,
-          "p99Ms": 675.16,
-          "meanResponseBytes": 23281
+          "p50Ms": 827.36,
+          "p95Ms": 855.09,
+          "p99Ms": 855.09,
+          "meanResponseBytes": 23281,
+          "maxResponseBytes": 23281
         },
         "answer": {
           "requests": 200,
           "errors": 0,
           "errorRate": 0,
-          "p50Ms": 55.21,
-          "p95Ms": 60.71,
-          "p99Ms": 69.4,
-          "meanResponseBytes": 782
+          "p50Ms": 61.89,
+          "p95Ms": 76.81,
+          "p99Ms": 130.27,
+          "meanResponseBytes": 782,
+          "maxResponseBytes": 783
         },
         "visit": {
           "requests": 190,
           "errors": 0,
           "errorRate": 0,
-          "p50Ms": 55.26,
-          "p95Ms": 63.12,
-          "p99Ms": 72.07,
-          "meanResponseBytes": 785
+          "p50Ms": 62.48,
+          "p95Ms": 81.89,
+          "p99Ms": 102.42,
+          "meanResponseBytes": 785,
+          "maxResponseBytes": 797
         },
         "finish": {
           "requests": 10,
           "errors": 0,
           "errorRate": 0,
-          "p50Ms": 105.23,
-          "p95Ms": 110,
-          "p99Ms": 110,
-          "meanResponseBytes": 79791
+          "p50Ms": 122.91,
+          "p95Ms": 142.9,
+          "p99Ms": 142.9,
+          "meanResponseBytes": 79764,
+          "maxResponseBytes": 79809
         }
       }
     },
     {
+      "scenario": "section-mathematics",
       "concurrency": 25,
-      "durationMs": 7005,
+      "durationMs": 7992,
       "failedLearners": 0,
       "operations": {
         "dashboard": {
           "requests": 50,
           "errors": 0,
           "errorRate": 0,
-          "p50Ms": 150.83,
-          "p95Ms": 166.42,
-          "p99Ms": 185.58,
-          "meanResponseBytes": 6214
+          "p50Ms": 161.27,
+          "p95Ms": 291.02,
+          "p99Ms": 324.11,
+          "meanResponseBytes": 6213,
+          "maxResponseBytes": 10088
         },
         "create": {
           "requests": 25,
           "errors": 0,
           "errorRate": 0,
-          "p50Ms": 1516,
-          "p95Ms": 1550.34,
-          "p99Ms": 1552.99,
-          "meanResponseBytes": 23281
+          "p50Ms": 1857.64,
+          "p95Ms": 1892.88,
+          "p99Ms": 1915.53,
+          "meanResponseBytes": 23281,
+          "maxResponseBytes": 23281
         },
         "answer": {
           "requests": 500,
           "errors": 0,
           "errorRate": 0,
-          "p50Ms": 122.54,
-          "p95Ms": 141.45,
-          "p99Ms": 264.28,
-          "meanResponseBytes": 782
+          "p50Ms": 134.74,
+          "p95Ms": 172.49,
+          "p99Ms": 225.55,
+          "meanResponseBytes": 782,
+          "maxResponseBytes": 783
         },
         "visit": {
           "requests": 475,
           "errors": 0,
           "errorRate": 0,
-          "p50Ms": 121.03,
-          "p95Ms": 134.95,
-          "p99Ms": 142.04,
-          "meanResponseBytes": 782
+          "p50Ms": 132.84,
+          "p95Ms": 159.15,
+          "p99Ms": 174.34,
+          "meanResponseBytes": 784,
+          "maxResponseBytes": 797
         },
         "finish": {
           "requests": 25,
           "errors": 0,
           "errorRate": 0,
-          "p50Ms": 286.51,
-          "p95Ms": 291.04,
-          "p99Ms": 291.53,
-          "meanResponseBytes": 79659
+          "p50Ms": 288.24,
+          "p95Ms": 318.56,
+          "p99Ms": 324.45,
+          "meanResponseBytes": 79751,
+          "maxResponseBytes": 79839
         }
       }
     },
     {
+      "scenario": "section-mathematics",
       "concurrency": 50,
-      "durationMs": 13016,
+      "durationMs": 15127,
       "failedLearners": 0,
       "operations": {
         "dashboard": {
           "requests": 100,
           "errors": 0,
           "errorRate": 0,
-          "p50Ms": 254.17,
-          "p95Ms": 297.1,
-          "p99Ms": 300.62,
-          "meanResponseBytes": 6213
+          "p50Ms": 387.95,
+          "p95Ms": 485.69,
+          "p99Ms": 500.34,
+          "meanResponseBytes": 6213,
+          "maxResponseBytes": 10078
         },
         "create": {
           "requests": 50,
           "errors": 0,
           "errorRate": 0,
-          "p50Ms": 2992.47,
-          "p95Ms": 3042.79,
-          "p99Ms": 3064.35,
-          "meanResponseBytes": 23281
+          "p50Ms": 3456.53,
+          "p95Ms": 3567.25,
+          "p99Ms": 3645.04,
+          "meanResponseBytes": 23281,
+          "maxResponseBytes": 23281
         },
         "answer": {
           "requests": 1000,
           "errors": 0,
           "errorRate": 0,
-          "p50Ms": 225.82,
-          "p95Ms": 263.61,
-          "p99Ms": 490.43,
-          "meanResponseBytes": 782
+          "p50Ms": 247.85,
+          "p95Ms": 293.15,
+          "p99Ms": 393.35,
+          "meanResponseBytes": 782,
+          "maxResponseBytes": 783
         },
         "visit": {
           "requests": 950,
           "errors": 0,
           "errorRate": 0,
-          "p50Ms": 226.95,
-          "p95Ms": 248.77,
-          "p99Ms": 261.34,
-          "meanResponseBytes": 785
+          "p50Ms": 247.49,
+          "p95Ms": 290.82,
+          "p99Ms": 304.37,
+          "meanResponseBytes": 784,
+          "maxResponseBytes": 797
         },
         "finish": {
           "requests": 50,
           "errors": 0,
           "errorRate": 0,
-          "p50Ms": 460.88,
-          "p95Ms": 490.79,
-          "p99Ms": 495.19,
-          "meanResponseBytes": 79779
+          "p50Ms": 796.21,
+          "p95Ms": 913.52,
+          "p99Ms": 956.35,
+          "meanResponseBytes": 79728,
+          "maxResponseBytes": 79835
+        }
+      }
+    },
+    {
+      "scenario": "adaptive-all",
+      "concurrency": 1,
+      "durationMs": 136,
+      "failedLearners": 0,
+      "operations": {
+        "dashboard": {
+          "requests": 1,
+          "errors": 0,
+          "errorRate": 0,
+          "p50Ms": 21.74,
+          "p95Ms": 21.74,
+          "p99Ms": 21.74,
+          "meanResponseBytes": 2356,
+          "maxResponseBytes": 2356
+        },
+        "create": {
+          "requests": 1,
+          "errors": 0,
+          "errorRate": 0,
+          "p50Ms": 102.02,
+          "p95Ms": 102.02,
+          "p99Ms": 102.02,
+          "meanResponseBytes": 23245,
+          "maxResponseBytes": 23245
+        }
+      }
+    },
+    {
+      "scenario": "adaptive-all",
+      "concurrency": 5,
+      "durationMs": 395,
+      "failedLearners": 0,
+      "operations": {
+        "dashboard": {
+          "requests": 5,
+          "errors": 0,
+          "errorRate": 0,
+          "p50Ms": 28.9,
+          "p95Ms": 31.54,
+          "p99Ms": 31.54,
+          "meanResponseBytes": 2356,
+          "maxResponseBytes": 2356
+        },
+        "create": {
+          "requests": 5,
+          "errors": 0,
+          "errorRate": 0,
+          "p50Ms": 350.6,
+          "p95Ms": 353.65,
+          "p99Ms": 353.65,
+          "meanResponseBytes": 23245,
+          "maxResponseBytes": 23245
+        }
+      }
+    },
+    {
+      "scenario": "adaptive-all",
+      "concurrency": 10,
+      "durationMs": 698,
+      "failedLearners": 0,
+      "operations": {
+        "dashboard": {
+          "requests": 10,
+          "errors": 0,
+          "errorRate": 0,
+          "p50Ms": 53.16,
+          "p95Ms": 57,
+          "p99Ms": 57,
+          "meanResponseBytes": 2356,
+          "maxResponseBytes": 2356
+        },
+        "create": {
+          "requests": 10,
+          "errors": 0,
+          "errorRate": 0,
+          "p50Ms": 622.27,
+          "p95Ms": 632.49,
+          "p99Ms": 632.49,
+          "meanResponseBytes": 23245,
+          "maxResponseBytes": 23245
+        }
+      }
+    },
+    {
+      "scenario": "adaptive-all",
+      "concurrency": 25,
+      "durationMs": 1703,
+      "failedLearners": 0,
+      "operations": {
+        "dashboard": {
+          "requests": 25,
+          "errors": 0,
+          "errorRate": 0,
+          "p50Ms": 125.99,
+          "p95Ms": 147.05,
+          "p99Ms": 155.22,
+          "meanResponseBytes": 2356,
+          "maxResponseBytes": 2356
+        },
+        "create": {
+          "requests": 25,
+          "errors": 0,
+          "errorRate": 0,
+          "p50Ms": 1524.37,
+          "p95Ms": 1547.97,
+          "p99Ms": 1550.9,
+          "meanResponseBytes": 23245,
+          "maxResponseBytes": 23245
+        }
+      }
+    },
+    {
+      "scenario": "adaptive-all",
+      "concurrency": 50,
+      "durationMs": 3704,
+      "failedLearners": 0,
+      "operations": {
+        "dashboard": {
+          "requests": 50,
+          "errors": 0,
+          "errorRate": 0,
+          "p50Ms": 259.42,
+          "p95Ms": 404.59,
+          "p99Ms": 417.91,
+          "meanResponseBytes": 2356,
+          "maxResponseBytes": 2356
+        },
+        "create": {
+          "requests": 50,
+          "errors": 0,
+          "errorRate": 0,
+          "p50Ms": 3224.78,
+          "p95Ms": 3390.12,
+          "p99Ms": 3413.31,
+          "meanResponseBytes": 23245,
+          "maxResponseBytes": 23245
+        }
+      }
+    },
+    {
+      "scenario": "mission-all",
+      "concurrency": 1,
+      "durationMs": 128,
+      "failedLearners": 0,
+      "operations": {
+        "dashboard": {
+          "requests": 1,
+          "errors": 0,
+          "errorRate": 0,
+          "p50Ms": 19.77,
+          "p95Ms": 19.77,
+          "p99Ms": 19.77,
+          "meanResponseBytes": 2356,
+          "maxResponseBytes": 2356
+        },
+        "create": {
+          "requests": 1,
+          "errors": 0,
+          "errorRate": 0,
+          "p50Ms": 99.99,
+          "p95Ms": 99.99,
+          "p99Ms": 99.99,
+          "meanResponseBytes": 33978,
+          "maxResponseBytes": 33978
+        }
+      }
+    },
+    {
+      "scenario": "mission-all",
+      "concurrency": 5,
+      "durationMs": 437,
+      "failedLearners": 0,
+      "operations": {
+        "dashboard": {
+          "requests": 5,
+          "errors": 0,
+          "errorRate": 0,
+          "p50Ms": 25.31,
+          "p95Ms": 26.76,
+          "p99Ms": 26.76,
+          "meanResponseBytes": 2356,
+          "maxResponseBytes": 2356
+        },
+        "create": {
+          "requests": 5,
+          "errors": 0,
+          "errorRate": 0,
+          "p50Ms": 400.08,
+          "p95Ms": 401.54,
+          "p99Ms": 401.54,
+          "meanResponseBytes": 33978,
+          "maxResponseBytes": 33978
+        }
+      }
+    },
+    {
+      "scenario": "mission-all",
+      "concurrency": 10,
+      "durationMs": 797,
+      "failedLearners": 0,
+      "operations": {
+        "dashboard": {
+          "requests": 10,
+          "errors": 0,
+          "errorRate": 0,
+          "p50Ms": 44.69,
+          "p95Ms": 45.39,
+          "p99Ms": 45.39,
+          "meanResponseBytes": 2356,
+          "maxResponseBytes": 2356
+        },
+        "create": {
+          "requests": 10,
+          "errors": 0,
+          "errorRate": 0,
+          "p50Ms": 729.45,
+          "p95Ms": 734.61,
+          "p99Ms": 734.61,
+          "meanResponseBytes": 33978,
+          "maxResponseBytes": 33978
+        }
+      }
+    },
+    {
+      "scenario": "mission-all",
+      "concurrency": 25,
+      "durationMs": 2123,
+      "failedLearners": 0,
+      "operations": {
+        "dashboard": {
+          "requests": 25,
+          "errors": 0,
+          "errorRate": 0,
+          "p50Ms": 122.55,
+          "p95Ms": 159.69,
+          "p99Ms": 160.4,
+          "meanResponseBytes": 2356,
+          "maxResponseBytes": 2356
+        },
+        "create": {
+          "requests": 25,
+          "errors": 0,
+          "errorRate": 0,
+          "p50Ms": 1774.73,
+          "p95Ms": 1931.72,
+          "p99Ms": 1932.06,
+          "meanResponseBytes": 33978,
+          "maxResponseBytes": 33978
+        }
+      }
+    },
+    {
+      "scenario": "mission-all",
+      "concurrency": 50,
+      "durationMs": 4120,
+      "failedLearners": 0,
+      "operations": {
+        "dashboard": {
+          "requests": 50,
+          "errors": 0,
+          "errorRate": 0,
+          "p50Ms": 256.73,
+          "p95Ms": 331.93,
+          "p99Ms": 336.62,
+          "meanResponseBytes": 2356,
+          "maxResponseBytes": 2356
+        },
+        "create": {
+          "requests": 50,
+          "errors": 0,
+          "errorRate": 0,
+          "p50Ms": 3694.77,
+          "p95Ms": 3780.45,
+          "p99Ms": 3803.25,
+          "meanResponseBytes": 33978,
+          "maxResponseBytes": 33978
         }
       }
     }

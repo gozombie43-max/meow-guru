@@ -22,15 +22,17 @@ New question metadata is maintained by normal single/bulk writes, edits, approve
 
 ## Rollout
 
-The code and scripts are implemented locally. No remote migration, backfill, environment change, load test or deployment was performed.
+The backend release `b832c5b` deployed successfully. The deployment workflow applied migrations `008-training-performance` and `009-training-exam-wide-candidates` before release. On 2026-09-22, the production metadata backfill scanned and updated 21,434 questions with zero conflicts; a second dry run found zero remaining candidates. `TRAINING_INDEXED_QUESTIONS=true` and `TRAINING_LOCAL_INGRESS=true` are enabled on the single App Service instance, which was restarted and returned healthy readiness checks.
 
-1. Deploy the backend with migrations `008-training-performance` and `009-training-exam-wide-candidates` applied through the normal migration process. Keep indexed selection disabled initially. Deploying the backend before the frontend is compatible with existing full-response clients; the frontend also accepts full responses.
-2. Run `npm run db:training-metadata` from `backend` against the intended maintenance database to review the dry-run counts. Run `npm run db:training-metadata -- --apply` to write metadata. Writes are batched and compare source fields so concurrent edits are not overwritten. Rerun the dry run: enable indexing only when there are zero remaining candidates and no conflicts. Coordinate external importers during this verification.
-3. Set `TRAINING_INDEXED_QUESTIONS=true` after backfill verification and query-plan checks on representative data. Removing the flag restores legacy candidate selection. The backfill does not edit question text, options, keys or display taxonomy.
-4. Enable `TRAINING_LOCAL_INGRESS=true` only on a single API instance or when a distributed edge quota protects the service. Leave it unset on other deployments to retain the original shared global protection. Suspending, banning, or deleting a user now revokes that user's active sessions; role and status changes evict local authorization-cache entries.
-5. Verify deployed runtime metrics and run staging load checks appropriate to the real database and hosting tier. The supplied harness has no remote-target option and does not load environment files; it always owns a disposable local database.
+The backfill preserves question text, options, keys, and display taxonomy. Future external importers that bypass the normal writers still require the same backfill verification before indexed selection is relied on.
+
+An Azure/Atlas load test and an authenticated production training-session exercise have not been run. The supplied harness has no remote-target option and always owns a disposable local database, so its results do not establish Azure or Atlas capacity.
 
 Session persistence now separates physical question content from logical order. All updated repository readers understand both old sessions and the new `questionOrder` field. A backend downgrade must first restore physical arrays to the saved logical order; an older backend does not understand the new field. Frontend rollback remains supported by full action responses.
+
+## Durable learner-state follow-up
+
+Durable learner state currently becomes primary when the bounded recent-history window is fully marked `learningApplied` and durable skill rows exist. Because history is limited to 50 sessions, that moving-window inference can eventually omit older sessions that predate durable accounting. Replace it with an explicit per-user, per-exam migration marker such as `learnerStateVersion: 1` or `durableStateBackfilledThrough`, written by a deterministic backfill before durable state is treated as authoritative.
 
 ## Local evidence
 
