@@ -56,6 +56,8 @@ jobs:
       STAGING_APP_SERVICE_PLAN: quizguru-stage-plan
       STAGING_MONGODB_DB: quizDB_staging
       STAGING_MONGODB_EXPECTED_HOST: quizguru-staging.c8bkump.mongodb.net
+      PRODUCTION_RESOURCE_GROUP: Meowguru_group
+      PRODUCTION_APP_NAME: quizguru-backend
     steps:
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
@@ -198,14 +200,67 @@ jobs:
           echo "RESOURCE_GROUP=$AZURE_RESOURCE_GROUP" >> "$GITHUB_ENV"
           echo "STAGING_APP_NAME=$app_name" >> "$GITHUB_ENV"
           echo "STAGING_APP_HOST=$host" >> "$GITHUB_ENV"
+      - name: Resolve production question source
+        if: ${{ inputs.sync_questions }}
+        shell: bash
+        env:
+          ACTIONS_MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          ACTIONS_MONGODB_DB: ${{ vars.MONGODB_DB }}
+        run: |
+          set -euo pipefail
+          source_uri="${ACTIONS_MONGODB_URI:-}"
+          source_db="${ACTIONS_MONGODB_DB:-}"
+
+          if [ -z "$source_uri" ] || [ "$source_uri" = "null" ]; then
+            error_file="$(mktemp)"
+            if ! source_uri="$(az webapp config appsettings list \
+              --name "$PRODUCTION_APP_NAME" \
+              --resource-group "$PRODUCTION_RESOURCE_GROUP" \
+              --query "[?name=='MONGODB_URI'].value | [0]" \
+              --output tsv 2>"$error_file")"; then
+              cat "$error_file" >&2 || true
+              rm -f "$error_file"
+              echo "::error title=Production question source unavailable::MONGODB_URI is not set as a repository secret and the GitHub OIDC principal could not read it from '$PRODUCTION_APP_NAME'. The production deployment identity must retain read access to that Web App, or set repository secret MONGODB_URI."
+              exit 1
+            fi
+            rm -f "$error_file"
+          fi
+
+          if [ -z "$source_db" ] || [ "$source_db" = "null" ]; then
+            source_db="$(az webapp config appsettings list \
+              --name "$PRODUCTION_APP_NAME" \
+              --resource-group "$PRODUCTION_RESOURCE_GROUP" \
+              --query "[?name=='MONGODB_DB'].value | [0]" \
+              --output tsv 2>/dev/null || true)"
+          fi
+          if [ -z "$source_db" ] || [ "$source_db" = "null" ]; then
+            source_db="quizDB"
+          fi
+
+          if [ -z "$source_uri" ] || [ "$source_uri" = "null" ]; then
+            echo '::error title=Production question source unavailable::Resolved production MONGODB_URI is empty'
+            exit 1
+          fi
+          if [[ "$source_db" =~ [Ss][Tt][Aa][Gg][Ii][Nn][Gg] ]]; then
+            echo "::error::Refusing production question source database with staging-like name: $source_db"
+            exit 1
+          fi
+
+          echo "::add-mask::$source_uri"
+          echo "SOURCE_MONGODB_URI=$source_uri" >> "$GITHUB_ENV"
+          echo "SOURCE_MONGODB_DB=$source_db" >> "$GITHUB_ENV"
       - name: Refresh staging question bank
         if: ${{ inputs.sync_questions }}
         working-directory: release
         env:
-          MONGODB_URI: ${{ secrets.MONGODB_URI }}
-          MONGODB_DB: ${{ vars.MONGODB_DB || 'quizDB' }}
           STAGING_MONGODB_URI: ${{ secrets.STAGING_MONGODB_URI }}
         run: node backend/scripts/sync-training-staging-questions.js
+      - name: Clear production question source from runner environment
+        if: ${{ always() && inputs.sync_questions }}
+        shell: bash
+        run: |
+          echo 'SOURCE_MONGODB_URI=' >> "$GITHUB_ENV"
+          echo 'SOURCE_MONGODB_DB=' >> "$GITHUB_ENV"
       - name: Apply staging database migrations
         working-directory: release
         env:
