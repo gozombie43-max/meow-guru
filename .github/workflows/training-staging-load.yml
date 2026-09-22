@@ -52,7 +52,7 @@ jobs:
       - name: Resolve and attest staging target
         run: |
           set -euo pipefail
-          resource_group="$(az webapp list --query "[?name=='quizguru-backend'].resourceGroup | [0]" --output tsv)"
+          resource_group="Meowguru_group"
           app_name="quizguru-stage-${GITHUB_REPOSITORY_ID}"
           host="$(az webapp show --name "$app_name" --resource-group "$resource_group" --query defaultHostName --output tsv)"
           [ -n "$host" ] || { echo '::error::Staging Web App is not provisioned'; exit 1; }

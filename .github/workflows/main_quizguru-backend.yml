@@ -96,11 +96,7 @@ jobs:
           ACTIONS_MONGODB_DB: ${{ vars.MONGODB_DB }}
         run: |
           set -euo pipefail
-          resource_group="$(az webapp list --query "[?name=='quizguru-backend'].resourceGroup | [0]" --output tsv)"
-          if [ -z "$resource_group" ] || [ "$resource_group" = "null" ]; then
-            echo "::error::Azure Web App quizguru-backend was not found in the logged-in subscription"
-            exit 1
-          fi
+          resource_group="Meowguru_group"
           mongodb_uri="$ACTIONS_MONGODB_URI"
           mongodb_db="$ACTIONS_MONGODB_DB"
           if [ -z "$mongodb_uri" ] || [ "$mongodb_uri" = "null" ]; then
