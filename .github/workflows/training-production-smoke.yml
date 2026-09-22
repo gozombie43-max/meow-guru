@@ -31,6 +31,30 @@ jobs:
       contents: read
 
     steps:
+      - name: Validate smoke configuration
+        shell: bash
+        env:
+          BASE_URL: ${{ vars.TRAINING_REMOTE_BASE_URL }}
+          EXPECTED_HOST: ${{ vars.TRAINING_REMOTE_EXPECTED_HOST }}
+          PRODUCTION_CONFIRM: ${{ vars.TRAINING_REMOTE_PRODUCTION_CONFIRM }}
+          EMAIL: ${{ secrets.TRAINING_REMOTE_EMAIL }}
+          PASSWORD: ${{ secrets.TRAINING_REMOTE_PASSWORD }}
+          EXPECTED_RELEASE: ${{ inputs.expected_release }}
+        run: |
+          set -euo pipefail
+
+          [ "$GITHUB_REF" = "refs/heads/main" ] ||
+            { echo "::error::Production smoke must run from main"; exit 1; }
+
+          [[ "$EXPECTED_RELEASE" =~ ^[0-9a-fA-F]{40}$ ]] ||
+            { echo "::error::expected_release must be a full 40-character SHA"; exit 1; }
+
+          for name in BASE_URL EXPECTED_HOST PRODUCTION_CONFIRM EMAIL PASSWORD; do
+            [ -n "${!name}" ] ||
+              { echo "::error::Missing production-smoke configuration: $name"; exit 1; }
+          done
+
+
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -61,4 +85,5 @@ jobs:
         with:
           name: training-production-${{ github.run_id }}
           path: ${{ runner.temp }}/training-production-${{ github.run_id }}.json
+          if-no-files-found: error
           retention-days: 30
