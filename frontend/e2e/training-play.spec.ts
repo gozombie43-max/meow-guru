@@ -414,7 +414,7 @@ test("play exposes all modes and persists an adaptive session across reload", as
         await expect(page.locator("#training-overview")).toBeVisible();
       }
       await page.getByRole("radio", { name: /4/ }).click();
-      await expect(page.getByText("Answer not saved yet", { exact: true })).toBeVisible();
+      await expect(page.getByText("Answer selected", { exact: true })).toBeVisible();
       await page.screenshot({ path: testInfo.outputPath(`${mode.id}-${theme}.png`) });
     }
   }

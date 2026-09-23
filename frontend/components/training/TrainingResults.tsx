@@ -2,12 +2,9 @@ import { useState } from "react";
 import Link from "next/link";
 import {
   AlertCircle,
-  ArrowRight,
   Check,
-  CheckCircle2,
   Clock,
   Sparkles,
-  X,
   Award,
   MinusCircle,
   PlusCircle,
@@ -15,7 +12,6 @@ import {
   BarChart3,
   BookOpen,
   Brain,
-  Filter,
   ChevronDown,
   ChevronUp,
   Target,
@@ -601,6 +597,7 @@ export function TrainingResults({
                       className="trade-ledger-item-header"
                       onClick={() => toggleSingleRow(row.questionId)}
                       aria-expanded={isExpanded}
+                      aria-label={`Toggle details for question ${row.number}`}
                     >
                       <div className="trade-ledger-meta">
                         <span className={`trade-score-tag ${outcomeClass}`}>
