@@ -189,16 +189,14 @@ export function TrainingResults({
               </div>
             </div>
 
-            {/* KaTeX Math Proper Fraction on the Right Side of Box */}
-            <div className="trade-pnl-fraction-wrap">
-              <div
-                className={`trade-math-fraction ${result.score > 0 ? "is-pos" : result.score < 0 ? "is-neg" : "is-zero"}`}
-                dangerouslySetInnerHTML={{
-                  __html: renderScoreFraction(result.score, result.maxScore),
-                }}
-                aria-label={`Net Score: ${result.score} out of ${result.maxScore}`}
-              />
-            </div>
+            {/* KaTeX Math Proper Fraction seamlessly on the Right Side */}
+            <div
+              className={`trade-math-fraction ${result.score > 0 ? "is-pos" : result.score < 0 ? "is-neg" : "is-zero"}`}
+              dangerouslySetInnerHTML={{
+                __html: renderScoreFraction(result.score, result.maxScore),
+              }}
+              aria-label={`Net Score: ${result.score} out of ${result.maxScore}`}
+            />
           </div>
 
           {/* 4-Column KPI Stats Strip */}

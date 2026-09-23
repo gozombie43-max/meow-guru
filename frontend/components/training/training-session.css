@@ -891,24 +891,19 @@
   white-space: nowrap;
 }
 
-/* KaTeX Proper Math Fraction on the Right Side of Box */
-.trade-pnl-fraction-wrap {
+/* KaTeX Proper Math Fraction on the Right Side */
+.trade-math-fraction {
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  padding: 8px 16px;
-  border-radius: 12px;
-  background: var(--tr-surface);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-
-.trade-math-fraction {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 800;
   color: var(--tr-text);
   line-height: 1;
   user-select: none;
+  background: transparent;
+  padding: 0 4px;
 }
 
 .trade-math-fraction .katex-display {
@@ -1905,13 +1900,9 @@
     justify-content: space-between;
   }
 
-  .trade-pnl-fraction-wrap {
-    padding: 6px 12px;
-    border-radius: 10px;
-  }
-
   .trade-math-fraction {
-    font-size: 18px;
+    font-size: 20px;
+    padding: 0;
   }
 
   .trade-kpi-strip {
