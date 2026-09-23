@@ -40,6 +40,7 @@ export const TRAINING_MODE_POLICIES = {
     selection: "challenge",
     adaptiveDifficulty: true,
     challengeCheckInterval: 5,
+    supportsTier: true,
   },
   sprint: {
     ...base,
@@ -83,6 +84,7 @@ export const TRAINING_MODE_POLICIES = {
     confidence: false,
     clockMultiplier: 0.85,
     minDifficulty: 3,
+    supportsTier: true,
   },
   survival: {
     ...base,
@@ -92,6 +94,7 @@ export const TRAINING_MODE_POLICIES = {
     minDifficulty: 2,
     lives: 3,
     slowPenaltyThreshold: 1.5,
+    supportsTier: true,
   },
   review: {
     ...base,

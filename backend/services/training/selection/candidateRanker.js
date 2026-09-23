@@ -61,9 +61,10 @@ export function selectQuestions(
             0,
             (now - (Date.parse(seen.lastSeenAt) || 0)) / DAY,
           );
-          rank -= Math.log1p(Number(seen.timesSeen) || 1) * 1.5;
-          if (ageDays < 1) rank -= 6;
-          else if (ageDays < 7) rank -= 3 * (1 - ageDays / 7);
+          rank -= Math.log1p(Number(seen.timesSeen) || 1) * 2.5;
+          if (ageDays < 1) rank -= 10;
+          else if (ageDays < 7) rank -= 5 * (1 - ageDays / 7);
+          else if (ageDays < 14) rank -= 2 * (1 - (ageDays - 7) / 7);
         }
       }
       return { q, rank, mastery };
