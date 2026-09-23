@@ -24,8 +24,7 @@ export function TrainingFooter({ session, q, busy, unsaved, canNavigate, expired
           <span>{canNavigate ? "Save before changing questions" : "Save to continue to the next question"}</span>
         </div>
         <span className="training-footer-position" aria-label={`Question ${session.current + 1} of ${session.questions.length}`}>
-          <span className="footer-pos-desktop">Question {session.current + 1} of {session.questions.length}</span>
-          <span className="footer-pos-mobile">{session.current + 1}<span> / {session.questions.length}</span></span>
+          {session.current + 1}<span> / {session.questions.length}</span>
         </span>
             <div className="training-session-actions">
               <button
