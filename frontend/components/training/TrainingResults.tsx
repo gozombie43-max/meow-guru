@@ -29,7 +29,20 @@ import {
 } from "lucide-react";
 import api from "@/shared/api/client";
 import RichContent from "@/components/RichContent";
+import katex from "katex";
 import { mistakeTypes, modes, type TrainingSession, type ModeId } from "./training-types";
+
+function renderScoreFraction(score: number, maxScore: number): string {
+  try {
+    const scoreStr = score > 0 ? `+${score}` : `${score}`;
+    return katex.renderToString(`\\dfrac{${scoreStr}}{${maxScore}}`, {
+      displayMode: true,
+      throwOnError: false,
+    });
+  } catch {
+    return `${score} / ${maxScore}`;
+  }
+}
 
 function ModeIcon({ mode }: { mode?: ModeId | string }) {
   switch (mode) {
@@ -164,20 +177,27 @@ export function TrainingResults({
         {/* Main P&L Showcase */}
         <div className="trade-pnl-headline">
           <div className="trade-pnl-main">
-            <span className="trade-pnl-label">NET SCORE (PNL)</span>
-            <div className="trade-pnl-numbers">
-              <span className={`trade-pnl-big ${result.score > 0 ? "is-pos" : result.score < 0 ? "is-neg" : ""}`}>
-                {result.score > 0 ? `+${result.score}` : result.score}
-              </span>
-              <span className="trade-pnl-max">/ {result.maxScore}</span>
+            <div className="trade-pnl-info">
+              <span className="trade-pnl-label">NET SCORE (PNL)</span>
+              <div className="trade-pnl-sub">
+                <span className={`trade-pnl-percent ${scorePercent >= 50 ? "is-pos" : "is-neg"}`}>
+                  {scorePercent}% Accuracy
+                </span>
+                <span className="trade-pnl-details">
+                  (+{correctMarksGained} gain · −{negativeMarksLost} penalty)
+                </span>
+              </div>
             </div>
-            <div className="trade-pnl-sub">
-              <span className={`trade-pnl-percent ${scorePercent >= 50 ? "is-pos" : "is-neg"}`}>
-                {scorePercent}% Accuracy
-              </span>
-              <span className="trade-pnl-details">
-                (+{correctMarksGained} gain · −{negativeMarksLost} penalty)
-              </span>
+
+            {/* KaTeX Math Proper Fraction on the Right Side of Box */}
+            <div className="trade-pnl-fraction-wrap">
+              <div
+                className={`trade-math-fraction ${result.score > 0 ? "is-pos" : result.score < 0 ? "is-neg" : "is-zero"}`}
+                dangerouslySetInnerHTML={{
+                  __html: renderScoreFraction(result.score, result.maxScore),
+                }}
+                aria-label={`Net Score: ${result.score} out of ${result.maxScore}`}
+              />
             </div>
           </div>
 
@@ -358,7 +378,14 @@ export function TrainingResults({
                   </div>
                 </div>
                 <div className="trade-settlement-col-rate">Max {result.maxScore}</div>
-                <div className="trade-settlement-col-val is-total">{result.score}</div>
+                <div className="trade-settlement-col-val is-total">
+                  <span
+                    className="trade-math-fraction-settlement"
+                    dangerouslySetInnerHTML={{
+                      __html: renderScoreFraction(result.score, result.maxScore),
+                    }}
+                  />
+                </div>
               </div>
             </div>
           </section>
