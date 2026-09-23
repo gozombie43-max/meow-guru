@@ -2209,39 +2209,67 @@
 .training-session .training-clock { border-radius: 10px; min-height: 44px; }
 .training-session .training-clock span { color: inherit; font-size: 16px; font-weight: 700; margin: 0; }
 .training-session .training-clock-urgent { animation: none; }
-.training-session .training-session-main {
-  min-height: 0;
-  width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
-  overflow: auto;
-  overscroll-behavior: contain;
-  scrollbar-gutter: stable;
-  padding: 24px max(24px, var(--safe-right)) 32px max(24px, var(--safe-left));
+
+/* Backdrop for drawer/aside on both PC and mobile */
+.training-palette-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 95;
+  animation: fade-in 0.2s ease;
 }
-.training-session .training-session-columns { grid-template-columns: minmax(0, 1fr) 288px; gap: 24px; }
-.training-session .training-question-panel { grid-column: 1; grid-row: 1; padding: clamp(20px, 3vw, 40px); box-shadow: none; }
-.training-session .training-session-aside { grid-column: 2; grid-row: 1; position: sticky; top: 0; min-width: 0; }
-.training-session .training-sidebar-panel { padding: 20px; box-shadow: none; }
-.training-session .training-palette { grid-template-columns: repeat(4, minmax(44px, 1fr)); max-height: 360px; overflow-y: auto; }
-.training-session .training-palette-btn { min-height: 44px; aspect-ratio: auto; }
-.training-session .training-question-text { font-size: 19px; line-height: 1.8; margin: 26px 0; }
-.training-session .training-option-btn { align-items: center; padding: 16px; min-height: 60px; gap: 14px; font-size: 16px; }
-.training-session .training-option-btn:hover:not(:disabled) { transform: none; }
-.training-session .training-option-letter { border-radius: 50%; width: 30px; height: 30px; }
-.training-option-check { width: 20px; flex: 0 0 20px; color: var(--tr-accent); }
-.training-session .training-option-btn.selected { background: color-mix(in srgb, var(--tr-accent) 9%, var(--tr-surface)); box-shadow: none; }
-.training-session .training-option-btn.selected .training-option-letter { background: var(--tr-muted); color: var(--tr-accent); border-color: var(--tr-accent); }
+
+.training-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.training-sidebar-header h2 {
+  font-size: 17px;
+  font-weight: 750;
+  color: var(--tr-text);
+  margin: 0;
+}
+
+.training-sidebar-close {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--tr-muted);
+  border: 1px solid var(--tr-border);
+  color: var(--tr-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.training-sidebar-close:hover {
+  color: var(--tr-text);
+  background: var(--tr-border);
+}
+
+.training-footer-position .footer-pos-desktop {
+  display: inline;
+}
+
+.training-footer-position .footer-pos-mobile {
+  display: none;
+}
+
 .training-session .training-confidence-chips { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: 380px; }
 .training-session .training-conf-chip { min-height: 44px; justify-content: center; }
 .training-session-footer { background: var(--tr-surface); border-top: 1px solid var(--tr-border); padding: 12px max(24px, var(--safe-right)) calc(12px + var(--safe-bottom)) max(24px, var(--safe-left)); }
-.training-footer-inner { width: 100%; max-width: 1232px; margin: auto; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(360px, 520px); gap: 24px; align-items: center; }
+.training-footer-inner { width: 100%; max-width: 860px; margin: auto; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(280px, 340px); gap: 20px; align-items: center; }
 .training-footer-position { font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--tr-text); white-space: nowrap; }
 .training-footer-position span { font-weight: 500; color: var(--tr-secondary); }
 .training-save-status { display: grid; gap: 4px; font-size: 13px; color: var(--tr-text); }
 .training-save-status span { color: var(--tr-secondary); font-size: 12px; }
 .training-session-footer .training-session-actions { width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border: 0; margin: 0; padding: 0; gap: 12px; }
-.training-session-footer .training-session-actions button { padding: 12px 18px; min-height: 48px; white-space: normal; justify-content: center; }
+.training-session-footer .training-session-actions button { padding: 10px 18px; min-height: 44px; font-size: 13.5px; font-weight: 700; white-space: normal; justify-content: center; }
 .training-session-footer .training-session-actions [data-ui-button="primary"] { justify-content: center; }
 .training-finish-dialog { width: min(440px, calc(100% - 32px)); max-height: calc(100dvh - var(--safe-top) - var(--safe-bottom) - 32px); overflow-y: auto; margin: auto; padding: 24px; border: 1px solid var(--tr-border); border-radius: 24px; background: var(--tr-surface); color: var(--tr-text); box-shadow: 0 24px 80px #0003; }
 .training-finish-dialog::backdrop { background: #10182766; backdrop-filter: blur(8px); }
@@ -2251,49 +2279,187 @@
 .training-finish-dialog .training-unsaved-note { padding: 12px; background: var(--tr-muted); border-radius: 12px; }
 .has-finish-dialog > :not(dialog) { filter: blur(5px); }
 .training-session :focus-visible { outline: 3px solid var(--tr-accent); outline-offset: 3px; }
-/* Desktop uses horizontal space to keep the complete answer set in view. */
+
+/* Desktop assessment layout: focused, centered, vertically balanced question stage */
 @media (min-width: 1024px) {
   .training-session .training-session-main {
-    padding-top: 14px;
-    padding-bottom: 16px;
+    min-height: 0;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 32px 24px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
   }
-  .training-session .training-session-columns { gap: 20px; }
+
+  .training-session .training-session-columns {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: 860px;
+    margin: auto 0;
+    position: relative;
+  }
+
   .training-session .training-question-panel {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: 20px;
-    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    background: var(--tr-surface);
+    border: 1px solid var(--tr-border);
+    border-radius: 20px;
+    padding: 32px 36px;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.25);
   }
-  .training-session .training-question-tags,
-  .training-session .training-question-text,
-  .training-session .training-answers { grid-column: 1 / -1; }
+
+  .training-dark .training-session .training-question-panel {
+    background: #11141b;
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+  }
+
+  .training-session .training-question-tags {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 2px;
+  }
+
   .training-session .training-question-text {
-    margin: 16px 0 20px;
-    font-size: 17px;
-    line-height: 1.65;
+    margin: 20px 0 24px;
+    font-size: 18px;
+    line-height: 1.7;
+    font-weight: 500;
+    color: var(--tr-text);
   }
+
   .training-session .training-answers {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: flex;
+    flex-direction: column;
     gap: 12px;
+    width: 100%;
   }
+
   .training-session .training-option-btn {
-    min-height: 52px;
-    padding: 10px 14px;
-    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 20px;
+    min-height: 56px;
+    border-radius: 12px;
+    background: var(--tr-muted);
+    border: 1.5px solid var(--tr-border);
+    font-size: 15.5px;
+    font-weight: 500;
+    color: var(--tr-text);
+    text-align: left;
+    transition: all 0.15s ease;
+    cursor: pointer;
   }
+
+  .training-dark .training-session .training-option-btn {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .training-session .training-option-btn:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--tr-accent) 8%, var(--tr-surface));
+    border-color: var(--tr-accent);
+    transform: translateY(-1px);
+  }
+
+  .training-session .training-option-btn.selected {
+    background: color-mix(in srgb, var(--tr-accent) 14%, var(--tr-surface));
+    border-color: var(--tr-accent);
+    box-shadow: 0 0 0 1px var(--tr-accent), 0 4px 16px rgba(37, 99, 235, 0.18);
+  }
+
+  .training-session .training-option-letter {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    border-radius: 8px;
+    font-size: 13.5px;
+    font-weight: 750;
+    display: grid;
+    place-items: center;
+    background: var(--tr-surface);
+    color: var(--tr-secondary);
+    border: 1px solid var(--tr-border);
+    transition: all 0.15s ease;
+  }
+
+  .training-session .training-option-btn.selected .training-option-letter {
+    background: var(--tr-accent);
+    color: #ffffff;
+    border-color: var(--tr-accent);
+  }
+
   .training-session .training-pace {
-    align-content: center;
-    justify-content: flex-start;
-    margin-top: 16px;
-    padding-top: 0;
-    border: 0;
+    margin-top: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 18px;
+    border-top: 1px solid var(--tr-border);
+    width: 100%;
   }
-  .training-session .training-confidence { margin-top: 16px; min-width: 0; }
+
+  .training-session .training-confidence { margin-top: 20px; min-width: 0; }
   .training-session .training-confidence-chips { gap: 8px; max-width: none; }
   .training-session .training-conf-chip { padding: 8px; }
-  .training-session .training-sidebar-panel { padding: 18px; }
-  .training-session .training-sidebar-desc { margin-bottom: 12px; }
-  .training-session .training-footnote { margin-bottom: 0; }
+
+  /* Slide-over Aside Panel for Desktop */
+  .training-session .training-session-aside {
+    position: fixed;
+    top: 0;
+    right: -380px;
+    bottom: 0;
+    width: 340px;
+    z-index: 100;
+    background: var(--tr-surface);
+    border-left: 1px solid var(--tr-border);
+    box-shadow: -12px 0 40px rgba(0, 0, 0, 0.6);
+    transition: right 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .training-session .training-session-aside.is-open {
+    right: 0;
+    display: flex;
+  }
+
+  .training-session .training-sidebar-panel {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
+
+  .training-session .training-palette {
+    grid-template-columns: repeat(4, minmax(44px, 1fr));
+    max-height: 380px;
+    overflow-y: auto;
+    gap: 8px;
+  }
+
+  .training-session .training-palette-btn {
+    min-height: 44px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 750;
+  }
 }
 
 .training-question-info { position: relative; margin-left: auto; }
@@ -2513,6 +2679,12 @@
   }
   .training-save-status span {
     display: none;
+  }
+  .training-footer-position .footer-pos-desktop {
+    display: none;
+  }
+  .training-footer-position .footer-pos-mobile {
+    display: inline;
   }
   .training-session-footer .training-session-actions {
     grid-column: 1 / -1;

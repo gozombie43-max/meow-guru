@@ -1,3 +1,4 @@
+import { X } from "lucide-react";
 import { type TrainingSession, modes, type TrainingAction } from "../training-types";
 
 interface TrainingPaletteProps {
@@ -11,11 +12,29 @@ interface TrainingPaletteProps {
 
 export function TrainingPalette({ session, showOverview, setShowOverview, canNavigate, busy, act }: TrainingPaletteProps) {
   return (
-    <aside id="training-overview" className={`training-session-aside ${showOverview ? "is-open" : ""}`}>
-      <section className="training-panel training-sidebar-panel">
-        <h2>
-          {canNavigate ? "Question Navigator" : "Session Brief"}
-        </h2>
+    <>
+      {showOverview && (
+        <div 
+          className="training-palette-backdrop" 
+          onClick={() => setShowOverview(false)} 
+          aria-hidden="true" 
+        />
+      )}
+      <aside id="training-overview" className={`training-session-aside ${showOverview ? "is-open" : ""}`} aria-hidden={!showOverview}>
+        <section className="training-panel training-sidebar-panel">
+          <div className="training-sidebar-header">
+            <h2>
+              {canNavigate ? "Question Navigator" : "Session Brief"}
+            </h2>
+            <button
+              type="button"
+              className="training-sidebar-close"
+              onClick={() => setShowOverview(false)}
+              aria-label="Close panel"
+            >
+              <X size={18} />
+            </button>
+          </div>
         {canNavigate ? (
           <>
             <p className="training-sidebar-desc">
@@ -61,5 +80,6 @@ export function TrainingPalette({ session, showOverview, setShowOverview, canNav
         </p>
       </section>
     </aside>
+  </>
   );
 }
