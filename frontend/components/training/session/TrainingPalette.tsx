@@ -10,10 +10,6 @@ interface TrainingPaletteProps {
 }
 
 export function TrainingPalette({ session, showOverview, setShowOverview, canNavigate, busy, act }: TrainingPaletteProps) {
-  if (!canNavigate && !showOverview) {
-    return null;
-  }
-
   return (
     <aside id="training-overview" className={`training-session-aside ${showOverview ? "is-open" : ""}`}>
       <section className="training-panel training-sidebar-panel">

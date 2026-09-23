@@ -462,79 +462,78 @@ export function TrainingResults({
       )}
 
       {/* ──────────────────────────────────────────────────────────────────────
-          TAB 2: QUESTION REVIEW (FILTERABLE & ACCESSIBLE)
+          TAB 2: QUESTION REVIEW (FILTERABLE & STREAMLINED)
           ────────────────────────────────────────────────────────────────────── */}
       {activeTab === "review" && (
-        <div className="results-tab-content">
-          <section className="training-panel review-section-panel">
-            <div className="review-controls-header">
-              <div className="review-filters-group">
-                <span className="review-filter-label">
-                  <Filter size={14} /> Filter:
-                </span>
-                <button
-                  type="button"
-                  className={`review-filter-pill ${reviewFilter === "all" ? "is-active" : ""}`}
-                  onClick={() => setReviewFilter("all")}
-                >
-                  All ({result.rows.length})
-                </button>
-                <button
-                  type="button"
-                  className={`review-filter-pill is-wrong-filter ${reviewFilter === "incorrect" ? "is-active" : ""}`}
-                  onClick={() => setReviewFilter("incorrect")}
-                >
-                  <X size={12} /> Wrong ({incorrectCount})
-                </button>
-                <button
-                  type="button"
-                  className={`review-filter-pill is-correct-filter ${reviewFilter === "correct" ? "is-active" : ""}`}
-                  onClick={() => setReviewFilter("correct")}
-                >
-                  <Check size={12} /> Correct ({result.correct})
-                </button>
-                <button
-                  type="button"
-                  className={`review-filter-pill is-skip-filter ${reviewFilter === "unanswered" ? "is-active" : ""}`}
-                  onClick={() => setReviewFilter("unanswered")}
-                >
-                  <HelpCircle size={12} /> Skipped ({unattemptedCount})
-                </button>
-              </div>
-
-              <div className="review-expand-all-wrap">
-                <button
-                  type="button"
-                  data-ui-button="secondary"
-                  className="review-expand-toggle-btn"
-                  onClick={() => toggleExpandAll(!isAllExpanded)}
-                >
-                  {isAllExpanded ? (
-                    <>
-                      <ChevronUp size={14} /> Collapse all
-                    </>
-                  ) : (
-                    <>
-                      <ChevronDown size={14} /> Expand all
-                    </>
-                  )}
-                </button>
-              </div>
+        <div className="results-tab-content results-review-tab-content">
+          <div className="review-controls-bar">
+            <div className="review-filters-group">
+              <span className="review-filter-label">
+                <Filter size={14} /> Filter:
+              </span>
+              <button
+                type="button"
+                className={`review-filter-pill ${reviewFilter === "all" ? "is-active" : ""}`}
+                onClick={() => setReviewFilter("all")}
+              >
+                All ({result.rows.length})
+              </button>
+              <button
+                type="button"
+                className={`review-filter-pill is-wrong-filter ${reviewFilter === "incorrect" ? "is-active" : ""}`}
+                onClick={() => setReviewFilter("incorrect")}
+              >
+                <X size={12} /> Wrong ({incorrectCount})
+              </button>
+              <button
+                type="button"
+                className={`review-filter-pill is-correct-filter ${reviewFilter === "correct" ? "is-active" : ""}`}
+                onClick={() => setReviewFilter("correct")}
+              >
+                <Check size={12} /> Correct ({result.correct})
+              </button>
+              <button
+                type="button"
+                className={`review-filter-pill is-skip-filter ${reviewFilter === "unanswered" ? "is-active" : ""}`}
+                onClick={() => setReviewFilter("unanswered")}
+              >
+                <HelpCircle size={12} /> Skipped ({unattemptedCount})
+              </button>
             </div>
 
-            {filteredRows.length === 0 ? (
-              <div className="review-empty-filtered-state">
-                <p>No questions found under the "{reviewFilter}" filter.</p>
-                <button
-                  type="button"
-                  data-ui-button="secondary"
-                  onClick={() => setReviewFilter("all")}
-                >
-                  Show all questions
-                </button>
-              </div>
-            ) : (
-              <div className="training-reviews-list">
+            <div className="review-expand-all-wrap">
+              <button
+                type="button"
+                data-ui-button="secondary"
+                className="review-expand-toggle-btn"
+                onClick={() => toggleExpandAll(!isAllExpanded)}
+              >
+                {isAllExpanded ? (
+                  <>
+                    <ChevronUp size={14} /> Collapse all
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown size={14} /> Expand all
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {filteredRows.length === 0 ? (
+            <div className="review-empty-filtered-state">
+              <p>No questions found under the "{reviewFilter}" filter.</p>
+              <button
+                type="button"
+                data-ui-button="secondary"
+                onClick={() => setReviewFilter("all")}
+              >
+                Show all questions
+              </button>
+            </div>
+          ) : (
+            <div className="training-reviews-list">
                 {filteredRows.map((row) => {
                   const q = session.questions.find((q) => q.id === row.questionId)!;
                   const isExpanded = !!expandedMap[row.questionId];
@@ -694,7 +693,6 @@ export function TrainingResults({
                 })}
               </div>
             )}
-          </section>
         </div>
       )}
 

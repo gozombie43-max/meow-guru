@@ -185,50 +185,51 @@
   grid-template-columns: minmax(0, 1fr) 210px;
   background: var(--tr-surface);
   border: 1px solid var(--tr-border);
-  border-radius: 16px;
+  border-radius: 18px;
   overflow: hidden;
-  margin-bottom: 28px;
+  margin-bottom: 32px;
 }
 .training-mission-copy {
-  padding: 22px 24px;
+  padding: 25px 28px;
+  border-left: 4px solid var(--tr-accent);
 }
 .training-mission-copy h2 {
-  font-size: 22px;
-  margin-top: 10px;
+  font-size: 24px;
+  margin-top: 12px;
 }
 .training-mission-copy p {
   font-size: 13px;
   max-width: 490px;
 }
 .training-mission-copy button {
-  margin-top: 16px;
+  margin-top: 18px;
   font-size: 13px;
 }
 .training-readiness {
-  padding: 22px 20px;
+  padding: 28px 24px;
   background: var(--tr-muted);
   border-left: 1px solid var(--tr-border);
 }
 .training-readiness > span {
-  font-size: 9.5px;
-  letter-spacing: 0.8px;
-  font-weight: 750;
+  font-size: 9px;
+  letter-spacing: 1px;
+  font-weight: 700;
   color: var(--tr-secondary);
 }
 .training-readiness > strong {
   display: block;
-  font-size: 42px;
-  font-weight: 700;
+  font-size: 46px;
+  font-weight: 650;
   letter-spacing: -2px;
-  line-height: 1.2;
-  margin-top: 4px;
+  line-height: 1.25;
+  margin-top: 7px;
 }
 .training-readiness small {
-  font-size: 15px;
+  font-size: 16px;
   letter-spacing: 0;
   color: var(--tr-secondary);
   font-weight: 400;
-  margin-left: 4px;
+  margin-left: 5px;
 }
 .training-readiness p {
   font-size: 11px;
@@ -238,7 +239,7 @@
   border-radius: 20px;
   background: var(--tr-border);
   overflow: hidden;
-  margin-top: 12px;
+  margin-top: 15px;
 }
 .training-meter i {
   display: block;
@@ -251,65 +252,57 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin: 20px 0 16px;
+  gap: 14px;
+  margin: 24px 0 18px;
 }
 .training-mode-bar h2 {
-  font-size: 17px;
-  font-weight: 750;
+  font-size: 18px;
 }
 .training-filters {
   display: flex;
   gap: 4px;
   max-width: 100%;
   overflow: auto;
-  background: var(--tr-muted);
-  padding: 3px;
-  border-radius: 12px;
-  border: 1px solid var(--tr-border);
 }
 .training-filters button {
   white-space: nowrap;
-  padding: 6px 12px;
-  border: none;
+  padding: 8px 12px;
+  border: 1px solid transparent;
   background: transparent;
   font-size: 12px;
-  font-weight: 650;
   color: var(--tr-secondary);
-  border-radius: 9px;
-  cursor: pointer;
-  transition: all 0.15s ease;
 }
 .training-filters button[aria-pressed="true"] {
   background: var(--tr-surface);
+  border-color: var(--tr-border);
   color: var(--tr-text);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
 }
 .training-mode-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  gap: 14px;
 }
 .training-mode-card[data-ui-button] {
   display: flex;
   flex-direction: column;
   align-items: stretch;
   text-align: left;
-  padding: 18px 16px 0;
+  padding: 20px 18px 0;
   min-width: 0;
   white-space: normal;
   background: var(--tr-surface);
   border: 1px solid var(--tr-border);
   border-radius: 14px;
-  transition: all 0.15s ease;
+  transition:
+    transform 0.15s,
+    border-color 0.15s;
   color: var(--tr-text);
   font-weight: 400;
   line-height: normal;
 }
 .training-mode-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-3px);
   border-color: var(--tr-accent);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
 }
 .training-card-top {
   display: flex;
@@ -322,9 +315,9 @@
   color: var(--tr-accent);
   display: grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
   background: var(--tr-muted);
   flex-shrink: 0;
 }
@@ -341,34 +334,31 @@
   margin-left: auto;
   font-size: 10px;
   color: var(--tr-secondary);
-  opacity: 0.6;
-  font-weight: 600;
+  opacity: 0.7;
 }
 .training-mode-card h3 {
-  font-size: 18px;
-  margin: 16px 0 0;
-  font-weight: 750;
-  letter-spacing: -0.02em;
+  font-size: 20px;
+  margin: 20px 0 0;
+  font-weight: 700;
 }
 .training-mode-card .training-mode-eyebrow {
   font-size: 11px;
   font-weight: 600;
-  margin-top: 5px;
+  margin-top: 7px;
   color: var(--tr-text);
-  line-height: 1.4;
+  line-height: 1.45;
 }
 .training-mode-description {
-  font-size: 11.5px;
-  margin: 6px 0 16px !important;
+  font-size: 12px;
+  margin: 8px 0 20px !important;
   flex: 1;
-  line-height: 1.5 !important;
 }
 .training-card-bottom {
   display: flex;
   align-items: center;
   justify-content: space-between;
   border-top: 1px solid var(--tr-border);
-  padding: 11px 0;
+  padding: 14px 0;
   gap: 8px;
   font-size: 10px;
   color: var(--tr-secondary);
