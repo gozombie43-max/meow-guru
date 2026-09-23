@@ -45,7 +45,11 @@ export function TrainingFinishDialog({
         <button data-ui-button="icon" aria-label="Close finish dialog" disabled={busy} onClick={() => setConfirmFinish(false)}><X size={20} /></button>
       </div>
       <h2 id="training-finish-title">Finish this session?</h2>
-      <p id="training-finish-description">{answered} of {session.questions.length} answers saved. Unanswered questions earn zero.</p>
+      <p id="training-finish-description">
+        {answered} of {session.questions.length} answers saved.
+        Unanswered questions earn 0 marks with no negative penalty.
+        Incorrect answers receive −{session.marking.wrong} negative marking.
+      </p>
       {unsaved && <p className="training-unsaved-note">Your current selection is not saved. Keep training to save it first.</p>}
       {error && <p role="alert" className="training-error">{error}</p>}
       <div className="training-finish-actions">

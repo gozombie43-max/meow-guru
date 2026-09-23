@@ -54,6 +54,7 @@ export function TrainingPalette({ session, showOverview, setShowOverview, canNav
         <div className="training-marking-badge">
           <span className="marking-pos">+{session.marking.correct} correct</span>
           <span className="marking-neg">−{session.marking.wrong} wrong</span>
+          <span className="marking-zero">0 unattempted</span>
         </div>
         <p className="training-footnote">
           The clock continues if you leave this page.

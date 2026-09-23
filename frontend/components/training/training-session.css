@@ -666,6 +666,17 @@
   border-radius: 6px;
 }
 
+
+.marking-zero {
+  background: var(--tr-muted);
+  color: var(--tr-secondary);
+  border: 1px solid var(--tr-border);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
 .marking-neg {
   background: rgba(239, 68, 68, 0.1);
   color: #dc2626;

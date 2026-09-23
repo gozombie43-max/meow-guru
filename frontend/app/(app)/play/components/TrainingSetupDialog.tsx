@@ -92,6 +92,14 @@ export function TrainingSetupDialog({
         .map((item) => item.topic) || []
     : dashboard?.catalogTopics || [];
 
+  const currentTier = tier || "1";
+  const expectedMarking =
+    exam === "cat"
+      ? { correct: 3, wrong: 1 }
+      : currentTier === "2"
+        ? { correct: 3, wrong: 1 }
+        : { correct: 2, wrong: 0.5 };
+
   return (
     <dialog
       id="training-setup"
@@ -165,8 +173,8 @@ export function TrainingSetupDialog({
               value={tier}
               placeholder="Select tier"
               options={[
-                { value: "1", label: "Tier I" },
-                { value: "2", label: "Tier II" },
+                { value: "1", label: "Tier I (+2 / −0.5)" },
+                { value: "2", label: "Tier II (+3 / −1.0)" },
               ]}
               disabled={busy || loading}
               onChange={setTier}
@@ -234,13 +242,20 @@ export function TrainingSetupDialog({
             <Info size={16} strokeWidth={2.4} aria-hidden="true" />
           </div>
           <div className="setup-info-text">
-            <strong>
-              {selectedPolicy?.sectional
-                ? "Officially configured section marking is applied."
-                : "Practice scoring is applied by the server."}
-            </strong>
+            <div className="setup-marking-overview">
+              <strong>
+                Official {exam.toUpperCase().replaceAll("-", " ")} {selectedPolicy?.supportsTier && exam !== "cat" ? `Tier ${currentTier === "2" ? "II" : "I"}` : ""} Scoring:
+              </strong>
+              <div className="setup-marking-pills">
+                <span className="setup-pill-pos">+{expectedMarking.correct} correct</span>
+                <span className="setup-pill-neg">−{expectedMarking.wrong} wrong</span>
+                <span className="setup-pill-zero">0 skip</span>
+              </div>
+            </div>
             <p>
-              The clock continues if you leave. Bank availability may shorten the session.
+              {expectedMarking.wrong > 0
+                ? `${(expectedMarking.correct / expectedMarking.wrong).toFixed(0)} wrong answers cancel 1 correct answer (+${expectedMarking.correct}). Unattempted questions carry zero penalty.`
+                : "Practice scoring is applied by the server. The clock continues if you leave."}
             </p>
           </div>
         </div>
