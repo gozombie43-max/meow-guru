@@ -125,8 +125,18 @@ export async function createApp({ isReady, isShuttingDown, quizOnlyMode = proces
   // Bulk image/solution administration depends on external object storage. Keep
   // those integrations off the boot-critical path so quiz/training-only runtimes
   // can start without production B2 credentials.
-  app.use('/api', uploadLimiter, lazyRouter(() => import('./routes/massUploadImages.js')));
-  app.use('/api', uploadLimiter, lazyRouter(() => import('./routes/massUploadSolutions.js')));
+  // Scope bulk B2 loaders to their actual endpoints. A broad /api mount would
+  // import B2 on unrelated requests such as /api/training/dashboard.
+  app.use(
+    /^\\/api(?=\\/(?:mass-upload-images|mass-upload-question-images)(?:\\/|$))/,
+    uploadLimiter,
+    lazyRouter(() => import('./routes/massUploadImages.js')),
+  );
+  app.use(
+    /^\\/api(?=\\/mass-upload-solutions(?:\\/|$))/,
+    uploadLimiter,
+    lazyRouter(() => import('./routes/massUploadSolutions.js')),
+  );
 
   app.use('/auth', authLimiter, initAuthRoutes());
   app.use('/users', initUserRoutes());
