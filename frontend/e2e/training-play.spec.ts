@@ -405,7 +405,7 @@ test("play exposes all modes and persists an adaptive session across reload", as
       }).toPass();
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       if (page.viewportSize()!.width < 1024) {
-        const toggle = page.getByRole("button", { name: free ? "Questions" : "Session info", exact: true });
+        const toggle = page.getByRole("button", { name: free ? "Questions" : "Info", exact: true });
         await toggle.click();
         await expect(page.locator("#training-overview")).toBeVisible();
         await toggle.click();
@@ -472,7 +472,7 @@ test("play exposes all modes and persists an adaptive session across reload", as
 
   await page.getByRole("button", { name: "Finish session" }).click();
   await page.getByRole("button", { name: "Finish & see results" }).click();
-  await expect(page.getByRole("heading", { name: "Every session is evidence." })).toBeVisible();
-  await page.locator("summary").first().click();
+  await expect(page.getByRole("heading", { name: "Official Score Breakdown & Deductions" })).toBeVisible();
+  await page.locator(".trade-expand-all-btn").first().click();
   await expect(page.getByText("2 + 2 equals 4.")).toBeVisible();
 });
