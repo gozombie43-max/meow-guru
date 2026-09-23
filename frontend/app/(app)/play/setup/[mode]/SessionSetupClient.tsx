@@ -112,6 +112,9 @@ export default function SessionSetupClient({
     dashboard,
     loading,
     error: dashboardError,
+    setDashboard,
+    setLoading,
+    setError: setDashboardError,
   } = useTrainingDashboard(exam);
   const {
     selected,
@@ -287,6 +290,9 @@ export default function SessionSetupClient({
                 onChange={(value) => {
                   if (value === exam) return;
                   setExam(value);
+                  setDashboard(null);
+                  setLoading(true);
+                  setDashboardError("");
                   setTier("1");
                   setSubject("");
                   setTopic("");
