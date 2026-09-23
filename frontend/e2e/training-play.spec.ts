@@ -472,7 +472,9 @@ test("play exposes all modes and persists an adaptive session across reload", as
 
   await page.getByRole("button", { name: "Finish session" }).click();
   await page.getByRole("button", { name: "Finish & see results" }).click();
-  await expect(page.getByRole("heading", { name: "Every session is evidence." })).toBeVisible();
-  await page.locator("summary").first().click();
+  await expect(page.getByRole("navigation", { name: "Results navigation" })).toBeVisible();
+  await expect(page.getByText("NET SCORE (PNL)", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: /Question Ledger/ }).click();
+  await page.getByRole("button", { name: "Toggle review details for question 1", exact: true }).click();
   await expect(page.getByText("2 + 2 equals 4.")).toBeVisible();
 });

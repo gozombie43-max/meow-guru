@@ -24,7 +24,7 @@ export function TrainingFooter({ session, q, busy, unsaved, canNavigate, expired
             {busy
               ? "Saving your answer..."
               : unsaved
-                ? "Answer selected"
+                ? "Answer not saved yet"
                 : session.answers[q.id]?.choice != null
                   ? "Answer saved"
                   : session.effectiveMode === "survival"

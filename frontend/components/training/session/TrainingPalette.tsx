@@ -1,5 +1,5 @@
 import { type TrainingSession, modes, type TrainingAction } from "../training-types";
-import { Check, Lock, Heart } from "lucide-react";
+import { Check, Heart } from "lucide-react";
 
 interface TrainingPaletteProps {
   session: TrainingSession;
