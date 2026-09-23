@@ -39,7 +39,7 @@ const session = (
   deadline: new Date(now + 600000).toISOString(),
   duration: 600,
   status: "active",
-  marking: { correct: 1, wrong: 0.25 },
+  marking: { correct: 2, wrong: 0.5 },
 });
 
 describe("training question validation", () => {
@@ -149,9 +149,9 @@ describe("authoritative session transitions", () => {
     s = transition(s, { type: "visit", index: 1 }, now + 11000);
     s = transition(s, { type: "answer", choice: 0 }, now + 21000);
     s = transition(s, { type: "finish" }, now + 22000);
-    expect(s.result.score).toBe(0.75);
+    expect(s.result.score).toBe(1.5);
     expect(s.result.attempted).toBe(2);
-    expect(s.result.negativeLoss).toBe(0.25);
+    expect(s.result.negativeLoss).toBe(0.5);
   });
   it("ignores late answers and caps elapsed time at the deadline", () => {
     const s = transition(

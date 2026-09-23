@@ -183,7 +183,12 @@ export async function createTrainingSessionCommand(userId, config, now) {
             correct: sectionConfig.marking.correct,
             wrong: sectionConfig.marking.incorrect,
           }
-        : { correct: 1, wrong: 0.25 },
+        : examConfig
+          ? {
+              correct: examConfig.sections[0].marking.correct,
+              wrong: examConfig.sections[0].marking.incorrect,
+            }
+          : { correct: 2, wrong: 0.5 },
     duration,
     startedAt: new Date(now).toISOString(),
     deadline: new Date(now + duration * 1000).toISOString(),

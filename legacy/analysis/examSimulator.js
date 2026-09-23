@@ -3,7 +3,7 @@ const { readQuestions, readHistory, writeHistory, nextHistoryId, shuffle } = req
 // ─── SSC Marking Scheme ───
 const MARKING = {
   'tier 1': { correct: 2, negative: 0.5 },
-  'tier 2': { correct: 2, negative: 0.25 },
+  'tier 2': { correct: 3, negative: 1 },
   default:  { correct: 2, negative: 0.5 }
 };
 
