@@ -666,17 +666,6 @@
   border-radius: 6px;
 }
 
-
-.marking-zero {
-  background: var(--tr-muted);
-  color: var(--tr-secondary);
-  border: 1px solid var(--tr-border);
-  font-size: 11px;
-  font-weight: 700;
-  padding: 3px 8px;
-  border-radius: 6px;
-}
-
 .marking-neg {
   background: rgba(239, 68, 68, 0.1);
   color: #dc2626;
@@ -737,7 +726,6 @@
 
 /* ==========================================================================
 
-/* ==========================================================================
    RESULTS & REVIEW OVERHAULED MOBILE-FIRST UI/UX
    ========================================================================== */
 
@@ -1809,7 +1797,7 @@
   flex-shrink: 0;
 }
 
-/* ── Mobile Responsive Rules ── */
+/* ── Results Responsive Rules ── */
 @media (max-width: 767px) {
   .results-score-showcase {
     grid-template-columns: 1fr;
@@ -1864,19 +1852,160 @@
     width: 100%;
     justify-content: center;
   }
+}
 
-  .training-review-meta-bar {
-    flex-direction: column;
-    align-items: flex-start;
+/* Shared fullscreen training shell, aligned with the quiz engine. */
+.training-session .training-session-header {
+  position: relative;
+  padding: calc(10px + var(--safe-top)) max(24px, var(--safe-right)) 10px max(24px, var(--safe-left));
+  box-shadow: none;
+}
+.training-session .training-header-back { width: 44px; height: 44px; }
+.training-session .training-clock { border-radius: 10px; min-height: 44px; }
+.training-session .training-clock span { color: inherit; font-size: 16px; font-weight: 700; margin: 0; }
+.training-session .training-clock-urgent { animation: none; }
+.training-session .training-session-main {
+  min-height: 0;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  padding: 24px max(24px, var(--safe-right)) 32px max(24px, var(--safe-left));
+}
+.training-session .training-session-columns { grid-template-columns: minmax(0, 1fr) 288px; gap: 24px; }
+.training-session .training-question-panel { grid-column: 1; grid-row: 1; padding: clamp(20px, 3vw, 40px); box-shadow: none; }
+.training-session .training-session-aside { grid-column: 2; grid-row: 1; position: sticky; top: 0; min-width: 0; }
+.training-session .training-sidebar-panel { padding: 20px; box-shadow: none; }
+.training-session .training-palette { grid-template-columns: repeat(4, minmax(44px, 1fr)); max-height: 360px; overflow-y: auto; }
+.training-session .training-palette-btn { min-height: 44px; aspect-ratio: auto; }
+.training-session .training-question-text { font-size: 19px; line-height: 1.8; margin: 26px 0; }
+.training-session .training-option-btn { align-items: center; padding: 16px; min-height: 60px; gap: 14px; font-size: 16px; }
+.training-session .training-option-btn:hover:not(:disabled) { transform: none; }
+.training-session .training-option-letter { border-radius: 50%; width: 30px; height: 30px; }
+.training-option-check { width: 20px; flex: 0 0 20px; color: var(--tr-accent); }
+.training-session .training-option-btn.selected { background: color-mix(in srgb, var(--tr-accent) 9%, var(--tr-surface)); box-shadow: none; }
+.training-session .training-option-btn.selected .training-option-letter { background: var(--tr-muted); color: var(--tr-accent); border-color: var(--tr-accent); }
+.training-session .training-confidence-chips { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: 380px; }
+.training-session .training-conf-chip { min-height: 44px; justify-content: center; }
+.training-session .training-overview-toggle { display: none; }
+.training-session-footer { background: var(--tr-surface); border-top: 1px solid var(--tr-border); padding: 12px max(24px, var(--safe-right)) calc(12px + var(--safe-bottom)) max(24px, var(--safe-left)); }
+.training-footer-inner { width: 100%; max-width: 1232px; margin: auto; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(360px, 520px); gap: 24px; align-items: center; }
+.training-footer-position { font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--tr-text); white-space: nowrap; }
+.training-footer-position span { font-weight: 500; color: var(--tr-secondary); }
+.training-save-status { display: grid; gap: 4px; font-size: 13px; color: var(--tr-text); }
+.training-save-status span { color: var(--tr-secondary); font-size: 12px; }
+.training-session-footer .training-session-actions { width: 100%; display: grid; grid-template-columns: minmax(110px, 1fr) minmax(0, 2fr); border: 0; margin: 0; padding: 0; gap: 12px; }
+.training-session-footer .training-session-actions button { padding: 12px 18px; min-height: 48px; white-space: normal; }
+.training-session-footer .training-session-actions [data-ui-button="primary"] { flex: 1; justify-content: center; }
+.training-finish-dialog { width: min(440px, calc(100% - 32px)); max-height: calc(100dvh - var(--safe-top) - var(--safe-bottom) - 32px); overflow-y: auto; margin: auto; padding: 24px; border: 1px solid var(--tr-border); border-radius: 24px; background: var(--tr-surface); color: var(--tr-text); box-shadow: 0 24px 80px #0003; }
+.training-finish-dialog::backdrop { background: #10182766; backdrop-filter: blur(8px); }
+.training-finish-dialog h2 { font-size: 24px; margin: 16px 0 10px; }
+.training-finish-dialog p { color: var(--tr-secondary); line-height: 1.65; font-size: 14px; }
+.training-finish-dialog .training-finish-actions { display: grid; gap: 10px; margin-top: 24px; }
+.training-finish-dialog .training-unsaved-note { padding: 12px; background: var(--tr-muted); border-radius: 12px; }
+.has-finish-dialog > :not(dialog) { filter: blur(5px); }
+.training-session :focus-visible { outline: 3px solid var(--tr-accent); outline-offset: 3px; }
+/* Desktop uses horizontal space to keep the complete answer set in view. */
+@media (min-width: 1024px) {
+  .training-session .training-session-main {
+    padding-top: 14px;
+    padding-bottom: 16px;
   }
+  .training-session .training-progress-track { margin: 8px 0 14px; }
+  .training-session .training-session-columns { gap: 20px; }
+  .training-session .training-question-panel {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 20px;
+    padding: 20px 24px;
+  }
+  .training-session .training-question-tags,
+  .training-session .training-question-text,
+  .training-session .training-answers { grid-column: 1 / -1; }
+  .training-session .training-question-text {
+    margin: 16px 0 20px;
+    font-size: 17px;
+    line-height: 1.65;
+  }
+  .training-session .training-answers {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .training-session .training-option-btn {
+    min-height: 52px;
+    padding: 10px 14px;
+    font-size: 15px;
+  }
+  .training-session .training-pace {
+    align-content: center;
+    justify-content: flex-start;
+    margin-top: 16px;
+    padding-top: 0;
+    border: 0;
+  }
+  .training-session .training-confidence { margin-top: 16px; min-width: 0; }
+  .training-session .training-confidence-chips { gap: 8px; max-width: none; }
+  .training-session .training-conf-chip { padding: 8px; }
+  .training-session .training-sidebar-panel { padding: 18px; }
+  .training-session .training-sidebar-desc { margin-bottom: 12px; }
+  .training-session .training-footnote { margin-bottom: 0; }
+}
 
-  .training-mistake-label {
-    width: 100%;
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .training-mistake-label select {
-    width: 100%;
-  }
+.training-question-info { position: relative; margin-left: auto; }
+.training-question-info summary {
+  display: grid; place-items: center; width: 44px; height: 44px;
+  list-style: none; cursor: pointer; border-radius: 12px;
+  color: var(--tr-secondary); border: 1px solid var(--tr-border);
+  background: var(--tr-surface);
+}
+.training-question-info summary::-webkit-details-marker { display: none; }
+.training-question-info[open] summary { color: var(--tr-accent); background: var(--tr-muted); }
+.training-question-info-content {
+  position: absolute; right: 0; top: calc(100% + 8px); z-index: 30;
+  width: min(300px, calc(100vw - 64px)); padding: 16px;
+  background: var(--tr-surface); color: var(--tr-text);
+  border: 1px solid var(--tr-border); border-radius: 14px;
+  box-shadow: 0 8px 28px #0002; font-size: 13px;
+}
+.training-question-info-content dl { margin: 12px 0 0; display: grid; gap: 10px; }
+.training-question-info-content dl > div { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 12px; }
+.training-question-info-content dt { color: var(--tr-secondary); }
+.training-question-info-content dd { margin: 0; overflow-wrap: anywhere; line-height: 1.5; }
+@media (max-width: 1023px) {
+  .training-session .training-session-header { gap: 8px; padding: calc(8px + var(--safe-top)) max(12px, var(--safe-right)) 8px max(12px, var(--safe-left)); }
+  .training-session .training-session-mode-badge { display: none; }
+  .training-session .training-session-header strong { font-size: 14px; }
+  .training-session .training-header-finish { font-size: 12px; max-width: 65px; padding: 6px 8px; line-height: 1.25; white-space: normal; }
+  .training-session .training-clock { padding: 6px 8px; gap: 4px; }
+  .training-session .training-clock svg { display: none; }
+  .training-session .training-clock span { font-size: 14px; }
+  .training-session .training-session-main { padding: 12px max(16px, var(--safe-right)) 24px max(16px, var(--safe-left)); scrollbar-gutter: auto; background: var(--tr-surface); }
+  .training-session .training-session-columns { display: flex; flex-direction: column; gap: 16px; }
+  .training-session .training-question-panel { width: 100%; padding: 0; border: 0; border-radius: 0; background: transparent; }
+  .training-session .training-session-aside { display: none; position: static; width: 100%; }
+  .training-session .training-session-aside.is-open { display: block; }
+  .training-session .training-sidebar-panel { background: var(--tr-muted); padding: 16px; }
+  .training-session .training-overview-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; padding: 6px 10px; }
+  .training-session .training-meta-left { display: none; }
+  .training-session .training-question-meta { gap: 8px; }
+  .training-session .training-progress-track { margin: 10px 0 18px; }
+  .training-session .training-progress { height: 4px; }
+  .training-session .training-question-text { font-size: 17px; margin: 20px 0; line-height: 1.75; }
+  .training-session .training-question-tags { gap: 6px; }
+  .training-session .training-tag-topic { max-width: 100%; overflow-wrap: anywhere; }
+  .training-session .training-tag-source { display: none; }
+  .training-session .training-option-btn { padding: 12px; gap: 10px; font-size: 15px; min-height: 56px; }
+  .training-session .training-pace { margin-top: 18px; }
+  .training-session .training-confidence { margin-top: 18px; }
+  .training-session-footer { padding: 12px max(16px, var(--safe-right)) calc(14px + var(--safe-bottom)) max(16px, var(--safe-left)); }
+  .training-footer-inner { grid-template-columns: minmax(0, 1fr) auto; gap: 12px; }
+  .training-save-status { font-size: 12px; text-align: left; min-width: 0; }
+  .training-save-status span { display: none; }
+  .training-session-footer .training-session-actions { grid-column: 1 / -1; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 12px; }
+  .training-session-footer .training-session-actions button { width: 100%; min-height: 50px; font-size: 14px; padding: 12px; justify-content: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .training-session *, .training-session *::before, .training-session *::after { animation: none; transition: none; scroll-behavior: auto; }
 }
