@@ -194,7 +194,8 @@ export default function SessionSetupClient({
   const examLabel =
     examOptions.find((item) => item.id === exam)?.label ||
     exam.toUpperCase().replaceAll("-", " ");
-  const subjectLabel = subject || "All subjects";
+  const subjectLabel =
+    subject || (policy?.requiresSubject ? "Choose subject" : "All subjects");
   const topicLabel = topic || "Balanced topic mix";
   const questionLabel =
     count === "full" ? "Full configured section" : count + " questions";
