@@ -151,6 +151,7 @@ export function TrainingSessionHeader({
             className="training-header-progress-bar"
             style={{ width: `${progressPct}%` }}
             role="progressbar"
+            aria-label={`Session progress: ${answered} of ${totalQuestions} answered`}
             aria-valuenow={answered}
             aria-valuemin={0}
             aria-valuemax={totalQuestions}
