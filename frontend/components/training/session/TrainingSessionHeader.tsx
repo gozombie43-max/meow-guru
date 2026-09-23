@@ -85,7 +85,7 @@ export function TrainingSessionHeader({
           </button>
         )}
 
-        <div className="training-session-title-wrap">
+        <div className={`training-session-title-wrap ${session?.effectiveMode === "survival" ? "hide-on-mobile" : ""}`}>
           <div className="training-session-title-row">
             <div className="training-session-mode-badge" aria-hidden="true">
               <ModeIcon mode={session?.mode} />

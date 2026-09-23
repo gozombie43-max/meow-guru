@@ -1,5 +1,5 @@
 import { type TrainingSession, modes, type TrainingAction } from "../training-types";
-import { Check, Lock } from "lucide-react";
+import { Check, Lock, Heart } from "lucide-react";
 
 interface TrainingPaletteProps {
   session: TrainingSession;
@@ -27,6 +27,29 @@ export function TrainingPalette({ session, showOverview, setShowOverview, canNav
             ? "Save your answer before moving. Jump to any question below."
             : modes.find((m) => m.id === session.effectiveMode)?.detail || "Sequential recall training."}
         </p>
+
+        {/* Survival Mode Dedicated Lives Card in Sidebar */}
+        {session.effectiveMode === "survival" && (
+          <div className="training-sidebar-survival-card">
+            <div className="training-sidebar-survival-left">
+              <span className="training-sidebar-survival-label">LIVES</span>
+              <div className="training-lives-hearts">
+                {[1, 2, 3].map((lifeIndex) => {
+                  const isAlive = lifeIndex <= session.lives;
+                  return (
+                    <Heart
+                      key={lifeIndex}
+                      size={14}
+                      className={`training-heart-icon ${isAlive ? "is-alive" : "is-lost"}`}
+                      fill={isAlive ? "currentColor" : "none"}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+            <span className="training-sidebar-survival-rule">−1 life on wrong/skip</span>
+          </div>
+        )}
 
         {/* Universal Question Matrix */}
         <div className="training-palette-wrap">

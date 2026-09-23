@@ -20,8 +20,24 @@ export function TrainingFooter({ session, q, busy, unsaved, canNavigate, expired
     <footer className="training-session-footer" data-ui-chrome="footer">
       <div className="training-footer-inner">
         <div className="training-save-status" role="status">
-          <strong>{busy ? "Saving your answer..." : unsaved ? "Answer not saved yet" : session.answers[q.id]?.choice != null ? "Answer saved" : "Choose your answer"}</strong>
-          <span>{canNavigate ? "Save before changing questions" : "Save to continue to the next question"}</span>
+          <strong>
+            {busy
+              ? "Saving your answer..."
+              : unsaved
+                ? "Answer selected"
+                : session.answers[q.id]?.choice != null
+                  ? "Answer saved"
+                  : session.effectiveMode === "survival"
+                    ? "Wrong or skip costs 1 life"
+                    : "Choose your answer"}
+          </strong>
+          <span>
+            {canNavigate
+              ? "Save before changing questions"
+              : session.effectiveMode === "survival"
+                ? "Consecutive slow answers also reduce life"
+                : "Save to continue to the next question"}
+          </span>
         </div>
         <span className="training-footer-position" aria-label={`Question ${session.current + 1} of ${session.questions.length}`}>
           {session.current + 1}<span> / {session.questions.length}</span>
