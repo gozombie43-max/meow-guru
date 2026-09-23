@@ -7,20 +7,14 @@ interface TrainingQuestionProps {
   setChoice: (choice: number) => void;
   busy: boolean;
   expired: boolean;
-  session?: import("../training-types").TrainingSession;
 }
 
-export function TrainingQuestion({ q, choice, setChoice, busy, expired, session }: TrainingQuestionProps) {
+export function TrainingQuestion({ q, choice, setChoice, busy, expired }: TrainingQuestionProps) {
   if (!q) return null;
 
   return (
     <>
       <div className="training-question-tags">
-        {session && (
-          <span className="training-tag-qnum">
-            Q{session.current + 1} of {session.questions.length}
-          </span>
-        )}
         {q.trainingBlock && (
           <span className="training-tag-block">{q.trainingBlock}</span>
         )}

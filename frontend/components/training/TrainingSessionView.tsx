@@ -1,6 +1,6 @@
 "use client";
 import { useRef, useState, useEffect } from "react";
-import { LoaderCircle, ArrowRight } from "lucide-react";
+import { LoaderCircle } from "lucide-react";
 import { useBackLayer, useQuizLeaveGuard } from "@/hooks/useAppNavigation";
 import { useThemeMode } from "@/hooks/useTheme";
 import { TrainingResults } from "./TrainingResults";
@@ -11,6 +11,7 @@ import { TrainingQuestion } from "./session/TrainingQuestion";
 import { TrainingPalette } from "./session/TrainingPalette";
 import { TrainingPace } from "./session/TrainingPace";
 import { TrainingConfidence } from "./session/TrainingConfidence";
+import { TrainingFooter } from "./session/TrainingFooter";
 import { TrainingFinishDialog } from "./session/TrainingFinishDialog";
 import "@/app/(app)/play/play.css";
 import "./training-session.css";
@@ -108,56 +109,35 @@ export default function TrainingSessionView({ id }: { id: string }) {
                 setChoice={setChoice} 
                 busy={busy} 
                 expired={expired}
-                session={session}
               />
 
-              <div className="training-card-footer">
-                <div className="training-card-footer-meta">
-                  <TrainingPace q={q} session={session} timeSync={timeSync} />
+              <TrainingPace q={q} session={session} timeSync={timeSync} />
 
-                  {session.policy.confidence && (
-                    <TrainingConfidence 
-                      confidence={confidence} 
-                      setConfidence={setConfidence} 
-                      busy={busy} 
-                    />
-                  )}
-                </div>
-
-                <div className="training-floating-actions">
-                  <button
-                    data-ui-button="secondary"
-                    type="button"
-                    className="training-btn-skip"
-                    disabled={busy || expired}
-                    onClick={() =>
-                      act({ type: "answer", choice: null, confidence: null })
-                    }
-                  >
-                    <span>{canNavigate ? "Clear" : "Skip"}</span>
-                  </button>
-                  <button
-                    data-ui-button="primary"
-                    type="button"
-                    className="training-btn-continue"
-                    disabled={choice === null || busy || expired}
-                    onClick={() => act({ type: "answer", choice, confidence })}
-                  >
-                    <span>
-                      {busy
-                        ? "Saving…"
-                        : canNavigate
-                          ? "Save answer"
-                          : "Answer & continue"}
-                    </span>
-                    <ArrowRight size={16} />
-                  </button>
-                </div>
-              </div>
+              {session.policy.confidence && (
+                <TrainingConfidence 
+                  confidence={confidence} 
+                  setConfidence={setConfidence} 
+                  busy={busy} 
+                />
+              )}
             </section>
           </div>
         )}
       </main>
+
+      {session?.status === "active" && q && (
+        <TrainingFooter 
+          session={session} 
+          q={q} 
+          busy={busy} 
+          unsaved={unsaved} 
+          canNavigate={canNavigate || false} 
+          expired={expired}
+          choice={choice} 
+          confidence={confidence} 
+          act={act} 
+        />
+      )}
 
       <TrainingFinishDialog 
         finishRef={finishRef} 
