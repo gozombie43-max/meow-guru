@@ -136,110 +136,113 @@ export function TrainingResults({
   const scorePercent = result.maxScore > 0 ? Math.round((result.score / result.maxScore) * 100) : 0;
   const ratingBadge =
     scorePercent >= 80
-      ? { text: "Outstanding", variant: "rating-high" }
+      ? { text: "Outstanding Gain", variant: "is-outstanding" }
       : scorePercent >= 60
-        ? { text: "Good Performance", variant: "rating-good" }
+        ? { text: "Net Positive", variant: "is-positive" }
         : scorePercent >= 40
-          ? { text: "Needs Practice", variant: "rating-mid" }
-          : { text: "Needs Focus", variant: "rating-low" };
+          ? { text: "Moderate Spread", variant: "is-moderate" }
+          : { text: "Drawdown Risk", variant: "is-risk" };
 
   return (
     <div className="training-results-container">
-      {/* ── Modern Hero Scorecard ── */}
-      <section className="results-hero-card">
-        <div className="results-hero-top-row">
-          <div className="results-hero-meta">
-            <span className="results-mode-pill">
+      {/* ── Trading-style Performance Hero Panel ── */}
+      <section className="trade-hero-panel">
+        <div className="trade-hero-header">
+          <div className="trade-hero-breadcrumbs">
+            <span className="trade-mode-badge">
               <ModeIcon mode={session.mode} />
               {modeTitle}
             </span>
-            <span className="results-exam-pill">{examLabel}</span>
+            <span className="trade-exam-tag">{examLabel}</span>
           </div>
-          <span className={`results-rating-pill ${ratingBadge.variant}`}>
-            <Award size={13} />
+          <span className={`trade-rating-pill ${ratingBadge.variant}`}>
+            <TrendingUp size={13} />
             {ratingBadge.text}
           </span>
         </div>
 
-        <div className="results-score-showcase">
-          <div className="results-main-score-box">
-            <span className="results-score-label">NET SCORE</span>
-            <div className="results-score-numbers">
-              <span className="results-score-big">{result.score}</span>
-              <span className="results-score-max">/ {result.maxScore}</span>
+        {/* Main P&L Showcase */}
+        <div className="trade-pnl-headline">
+          <div className="trade-pnl-main">
+            <span className="trade-pnl-label">NET SCORE (PNL)</span>
+            <div className="trade-pnl-numbers">
+              <span className={`trade-pnl-big ${result.score > 0 ? "is-pos" : result.score < 0 ? "is-neg" : ""}`}>
+                {result.score > 0 ? `+${result.score}` : result.score}
+              </span>
+              <span className="trade-pnl-max">/ {result.maxScore}</span>
             </div>
-            <p className="results-score-percent">{scorePercent}% total marks</p>
+            <div className="trade-pnl-sub">
+              <span className={`trade-pnl-percent ${scorePercent >= 50 ? "is-pos" : "is-neg"}`}>
+                {scorePercent}% Accuracy
+              </span>
+              <span className="trade-pnl-details">
+                (+{correctMarksGained} gain · −{negativeMarksLost} penalty)
+              </span>
+            </div>
           </div>
 
-          <div className="results-quick-stats-grid">
+          {/* 4-Column KPI Stats Strip */}
+          <div className="trade-kpi-strip">
             <button
               type="button"
-              className="quick-stat-tile is-correct"
+              className="trade-kpi-item is-gain"
               onClick={() => {
                 setActiveTab("review");
                 setReviewFilter("correct");
               }}
-              title="View correct answers"
+              title="Filter correct questions"
             >
-              <span className="quick-stat-header">
-                <PlusCircle size={14} /> Correct
-              </span>
-              <strong className="quick-stat-value">{result.correct}</strong>
-              <span className="quick-stat-sub">+{correctMarksGained} marks</span>
+              <div className="kpi-tag"><PlusCircle size={13} /> Wins / Correct</div>
+              <strong className="kpi-value">+{result.correct}</strong>
+              <span className="kpi-note">+{correctMarksGained} marks</span>
             </button>
 
             <button
               type="button"
-              className="quick-stat-tile is-wrong"
+              className="trade-kpi-item is-loss"
               onClick={() => {
                 setActiveTab("review");
                 setReviewFilter("incorrect");
               }}
-              title="View incorrect answers"
+              title="Filter incorrect questions"
             >
-              <span className="quick-stat-header">
-                <MinusCircle size={14} /> Wrong
-              </span>
-              <strong className="quick-stat-value">{incorrectCount}</strong>
-              <span className="quick-stat-sub">−{negativeMarksLost} penalty</span>
+              <div className="kpi-tag"><MinusCircle size={13} /> Loss / Wrong</div>
+              <strong className="kpi-value">−{incorrectCount}</strong>
+              <span className="kpi-note">−{negativeMarksLost} penalty</span>
             </button>
 
             <button
               type="button"
-              className="quick-stat-tile is-skip"
+              className="trade-kpi-item is-neutral"
               onClick={() => {
                 setActiveTab("review");
                 setReviewFilter("unanswered");
               }}
-              title="View unanswered questions"
+              title="Filter skipped questions"
             >
-              <span className="quick-stat-header">
-                <HelpCircle size={14} /> Skipped
-              </span>
-              <strong className="quick-stat-value">{unattemptedCount}</strong>
-              <span className="quick-stat-sub">0 penalty</span>
+              <div className="kpi-tag"><HelpCircle size={13} /> Skipped</div>
+              <strong className="kpi-value">{unattemptedCount}</strong>
+              <span className="kpi-note">0.00 penalty</span>
             </button>
 
-            <div className="quick-stat-tile is-pace">
-              <span className="quick-stat-header">
-                <Clock size={14} /> Accuracy &amp; Pace
-              </span>
-              <strong className="quick-stat-value">{result.accuracy}%</strong>
-              <span className="quick-stat-sub">{result.averageSeconds}s / ans</span>
+            <div className="trade-kpi-item is-tempo">
+              <div className="kpi-tag"><Clock size={13} /> Pace &amp; Speed</div>
+              <strong className="kpi-value">{result.averageSeconds}s</strong>
+              <span className="kpi-note">{result.accuracy}% acc</span>
             </div>
           </div>
         </div>
 
-        {/* Action button row */}
-        <div className="results-hero-actions">
-          <Link replace data-ui-button="primary" href="/play" className="results-hero-cta">
+        {/* Action Button Bar */}
+        <div className="trade-hero-actions">
+          <Link replace data-ui-button="primary" href="/play" className="trade-action-cta">
             <RotateCw size={15} />
             <span>Practice Another Session</span>
           </Link>
           <button
             type="button"
             data-ui-button="secondary"
-            className="results-review-shortcut-btn"
+            className="trade-review-shortcut"
             onClick={() => setActiveTab("review")}
           >
             <BookOpen size={15} />
@@ -248,137 +251,196 @@ export function TrainingResults({
         </div>
       </section>
 
-      {/* ── Segmented Navigation Tabs ── */}
-      <nav className="results-nav-tabs" aria-label="Results navigation">
+      {/* ── Sleek Trading Navigation Sub-bar ── */}
+      <nav className="trade-nav-tabs" aria-label="Results navigation">
         <button
           type="button"
-          className={`results-tab-btn ${activeTab === "overview" ? "is-active" : ""}`}
+          className={`trade-tab-btn ${activeTab === "overview" ? "is-active" : ""}`}
           onClick={() => setActiveTab("overview")}
         >
-          <BarChart3 size={16} />
-          <span>Analytics &amp; Scoring</span>
+          <BarChart3 size={15} />
+          <span>Settlement &amp; Analytics</span>
         </button>
 
         <button
           type="button"
-          className={`results-tab-btn ${activeTab === "review" ? "is-active" : ""}`}
+          className={`trade-tab-btn ${activeTab === "review" ? "is-active" : ""}`}
           onClick={() => setActiveTab("review")}
         >
-          <BookOpen size={16} />
-          <span>Question Review</span>
-          <span className="results-tab-counter">{result.rows.length}</span>
+          <BookOpen size={15} />
+          <span>Question Ledger</span>
+          <span className="trade-tab-badge">{result.rows.length}</span>
         </button>
 
         <button
           type="button"
-          className={`results-tab-btn ${activeTab === "insights" ? "is-active" : ""}`}
+          className={`trade-tab-btn ${activeTab === "insights" ? "is-active" : ""}`}
           onClick={() => setActiveTab("insights")}
         >
-          <Sparkles size={16} />
+          <Sparkles size={15} />
           <span>Mistakes &amp; AI</span>
           {incorrectCount > 0 && (
-            <span className="results-tab-counter is-warn">{incorrectCount}</span>
+            <span className="trade-tab-badge is-alert">{incorrectCount}</span>
           )}
         </button>
       </nav>
 
       {/* ──────────────────────────────────────────────────────────────────────
-          TAB 1: OVERVIEW & SCORING ANALYTICS
+          TAB 1: SETTLEMENT & ANALYTICS
           ────────────────────────────────────────────────────────────────────── */}
       {activeTab === "overview" && (
         <div className="results-tab-content">
-          {/* Official Scoring Breakdown Card */}
-          <section className="training-panel results-scoring-panel">
-            <div className="training-panel-header">
-              <div className="training-scoring-header-row">
-                <div>
-                  <span className="training-kicker">OFFICIAL MARKING FORMULA</span>
-                  <h2>Score &amp; Negative Marking Calculation</h2>
-                </div>
-                <div className="training-marking-rule-pills">
-                  <span className="marking-pos">+{session.marking.correct} Correct</span>
-                  <span className="marking-neg">−{session.marking.wrong} Wrong</span>
-                  <span className="marking-zero">0 Skipped</span>
-                </div>
+          {/* Official Score Settlement Table */}
+          <section className="trade-section">
+            <div className="trade-section-header">
+              <div>
+                <span className="trade-kicker">SETTLEMENT LEDGER</span>
+                <h2>Official Score Breakdown &amp; Deductions</h2>
               </div>
-              <p className="training-panel-subtitle">
-                {examLabel} official scheme applied.
-                {session.marking.wrong > 0 && (
-                  <> Every <strong>{ratioToCancel} wrong answers</strong> equal <strong>−{session.marking.correct} marks</strong>, cancelling out <strong>1 correct answer</strong>.</>
-                )}
-              </p>
+              <div className="trade-marking-rules">
+                <span className="trade-rule-pos">+{session.marking.correct} gain</span>
+                <span className="trade-rule-neg">−{session.marking.wrong} loss</span>
+                <span className="trade-rule-zero">0 skipped</span>
+              </div>
             </div>
 
-            <div className="training-scoring-cards-grid">
-              <div className="training-scoring-card is-correct-card">
-                <div className="scoring-card-top">
-                  <span className="scoring-card-tag"><PlusCircle size={13} /> Correct Answers</span>
-                  <strong className="scoring-card-rate">+{session.marking.correct} each</strong>
+            <p className="trade-section-note">
+              Official {examLabel} marking formula applied: Each incorrect answer incurs a <strong>−{session.marking.wrong} negative mark penalty</strong>.
+              {session.marking.wrong > 0 && (
+                <> Every <strong>{ratioToCancel} wrong answers</strong> cancel out <strong>1 full correct answer</strong>.</>
+              )}
+            </p>
+
+            {/* Trading Settlement Statement Table */}
+            <div className="trade-settlement-table">
+              <div className="trade-settlement-row is-pos-row">
+                <div className="trade-settlement-col-item">
+                  <div className="trade-dot is-pos" />
+                  <div>
+                    <strong>Correct Positions (Wins)</strong>
+                    <span>{result.correct} correct answers × (+{session.marking.correct} marks)</span>
+                  </div>
                 </div>
-                <div className="scoring-card-calc">
-                  <span>{result.correct} × (+{session.marking.correct})</span>
-                  <strong className="scoring-card-val">+{correctMarksGained}</strong>
-                </div>
+                <div className="trade-settlement-col-rate">+{session.marking.correct} / ans</div>
+                <div className="trade-settlement-col-val is-pos">+{correctMarksGained}</div>
               </div>
 
-              <div className="training-scoring-card is-wrong-card">
-                <div className="scoring-card-top">
-                  <span className="scoring-card-tag"><MinusCircle size={13} /> Negative Penalty</span>
-                  <strong className="scoring-card-rate">−{session.marking.wrong} each</strong>
+              <div className="trade-settlement-row is-neg-row">
+                <div className="trade-settlement-col-item">
+                  <div className="trade-dot is-neg" />
+                  <div>
+                    <strong>Negative Penalty (Losses)</strong>
+                    <span>{incorrectCount} wrong answers × (−{session.marking.wrong} marks)</span>
+                  </div>
                 </div>
-                <div className="scoring-card-calc">
-                  <span>{incorrectCount} × (−{session.marking.wrong})</span>
-                  <strong className="scoring-card-val">−{negativeMarksLost}</strong>
-                </div>
+                <div className="trade-settlement-col-rate">−{session.marking.wrong} / ans</div>
+                <div className="trade-settlement-col-val is-neg">−{negativeMarksLost}</div>
               </div>
 
-              <div className="training-scoring-card is-unattempted-card">
-                <div className="scoring-card-top">
-                  <span className="scoring-card-tag"><HelpCircle size={13} /> Unattempted</span>
-                  <strong className="scoring-card-rate">0 each</strong>
+              <div className="trade-settlement-row is-zero-row">
+                <div className="trade-settlement-col-item">
+                  <div className="trade-dot is-zero" />
+                  <div>
+                    <strong>Unattempted / Skipped</strong>
+                    <span>{unattemptedCount} left blank (no penalty)</span>
+                  </div>
                 </div>
-                <div className="scoring-card-calc">
-                  <span>{unattemptedCount} × 0</span>
-                  <strong className="scoring-card-val">0</strong>
-                </div>
+                <div className="trade-settlement-col-rate">0.00 / ans</div>
+                <div className="trade-settlement-col-val is-zero">0.00</div>
               </div>
 
-              <div className="training-scoring-card is-net-card">
-                <div className="scoring-card-top">
-                  <span className="scoring-card-tag"><Award size={13} /> Net Raw Score</span>
-                  <strong className="scoring-card-rate">Max {result.maxScore}</strong>
+              <div className="trade-settlement-row is-total-row">
+                <div className="trade-settlement-col-item">
+                  <Award size={18} className="trade-total-icon" />
+                  <div>
+                    <strong>Net Settled Score</strong>
+                    <span>Gross credit (+{correctMarksGained}) − penalties (−{negativeMarksLost})</span>
+                  </div>
                 </div>
-                <div className="scoring-card-calc">
-                  <span>{correctMarksGained} − {negativeMarksLost}</span>
-                  <strong className="scoring-card-val net-val">{result.score}</strong>
-                </div>
+                <div className="trade-settlement-col-rate">Max {result.maxScore}</div>
+                <div className="trade-settlement-col-val is-total">{result.score}</div>
               </div>
             </div>
           </section>
 
-          {/* Strategic Adjustment */}
-          <section className="training-panel">
-            <div className="training-panel-header">
-              <span className="training-kicker">EXAM STRATEGY</span>
-              <h2>Your Next Strategic Adjustment</h2>
+          {/* Sector / Topic Performance */}
+          <section className="trade-section">
+            <div className="trade-section-header">
+              <div>
+                <span className="trade-kicker">SECTOR BREAKDOWN</span>
+                <h2>Topic Performance &amp; Mastery Gains</h2>
+              </div>
             </div>
-            {["sprint", "survival"].includes(session.mode) && (
-              <div className="training-mode-points-banner">
-                <strong>{result.modePoints}</strong> training points · best streak{" "}
-                <strong>{result.bestStreak}</strong> ·{" "}
-                <strong>{result.questionsPerMinute}</strong> questions/min
+
+            {result.masteryDelta && result.masteryDelta.length > 0 && (
+              <div className="trade-mastery-ribbon">
+                {result.masteryDelta.map((p) => (
+                  <div key={p.key} className="trade-mastery-chip">
+                    <span className="chip-topic">{p.topic}:</span>
+                    <span className="chip-prog">{p.before}% → {p.after}%</span>
+                    <span className={`chip-delta ${p.delta >= 0 ? "is-pos" : "is-neg"}`}>
+                      ({p.delta > 0 ? "+" : ""}{p.delta} pts)
+                    </span>
+                  </div>
+                ))}
               </div>
             )}
-            <div className="training-findings-list">
+
+            <div className="trade-topic-ledger">
+              {topics.map((topic) => {
+                const rows = result.rows.filter((r) => r.topic === topic);
+                const correctCount = rows.filter((r) => r.correct).length;
+                const pct = Math.round((correctCount / rows.length) * 100);
+                return (
+                  <div className="trade-topic-entry" key={topic}>
+                    <div className="trade-topic-left">
+                      <strong>{topic}</strong>
+                      <span className="trade-topic-sub">
+                        {Math.round(rows.reduce((n, r) => n + r.seconds, 0))}s invested · {rows.length} questions
+                      </span>
+                    </div>
+                    <div className="trade-topic-right">
+                      <div className="trade-topic-bar">
+                        <div
+                          className={`trade-topic-bar-fill ${pct >= 70 ? "is-pos" : pct >= 40 ? "is-mid" : "is-low"}`}
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                      <span className="trade-topic-ratio">
+                        <strong>{correctCount}/{rows.length}</strong> ({pct}%)
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* Strategy Findings */}
+          <section className="trade-section">
+            <div className="trade-section-header">
+              <div>
+                <span className="trade-kicker">EXECUTION LOG</span>
+                <h2>Strategy &amp; Next Action Adjustments</h2>
+              </div>
+            </div>
+            {["sprint", "survival"].includes(session.mode) && (
+              <div className="trade-mode-banner">
+                <strong>{result.modePoints}</strong> points · Best streak{" "}
+                <strong>{result.bestStreak}</strong> ·{" "}
+                <strong>{result.questionsPerMinute}</strong> Q/min
+              </div>
+            )}
+            <div className="trade-findings-list">
               {result.findings.length ? (
                 result.findings.map((f, i) => (
-                  <div key={i} className="training-finding-item">
-                    <span className="finding-bullet">•</span>
+                  <div key={i} className="trade-finding-row">
+                    <span className="finding-indicator">•</span>
                     <p>{f}</p>
                   </div>
                 ))
               ) : (
-                <p className="training-empty-note">
+                <p className="trade-empty-note">
                   No major time-allocation issue detected in this session. Review
                   uncertain answers before increasing difficulty.
                 </p>
@@ -388,142 +450,93 @@ export function TrainingResults({
 
           {/* Mission Block Breakdown */}
           {session.mode === "mission" && result.blockBreakdown?.length ? (
-            <section className="training-panel">
-              <div className="training-panel-header">
-                <h2>Mission Block Breakdown</h2>
-                <p className="training-panel-subtitle">
-                  Each block keeps its own training objective and behavior.
-                </p>
-              </div>
-              {result.blockBreakdown.map((block) => (
-                <div className="training-list-row" key={block.id}>
-                  <div>
-                    <strong>{block.label}</strong>
-                    <p>
-                      {block.mode} · {block.attempted}/{block.questions} attempted ·{" "}
-                      {block.averageSeconds}s average
-                    </p>
-                  </div>
-                  <strong>{block.accuracy}%</strong>
+            <section className="trade-section">
+              <div className="trade-section-header">
+                <div>
+                  <span className="trade-kicker">MISSION PROTOCOL</span>
+                  <h2>Mission Block Breakdown</h2>
                 </div>
-              ))}
-            </section>
-          ) : null}
-
-          {/* Topic Performance */}
-          <section className="training-panel">
-            <div className="training-panel-header">
-              <span className="training-kicker">SUBJECT PROGRESS</span>
-              <h2>Topic Breakdown &amp; Mastery Gains</h2>
-            </div>
-            {result.masteryDelta && result.masteryDelta.length > 0 && (
-              <div className="training-mastery-deltas">
-                {result.masteryDelta.map((p) => (
-                  <div key={p.key} className="training-mastery-delta-pill">
-                    <span className="topic-name">{p.topic}:</span>
-                    <span className="mastery-val">{p.before}% → {p.after}%</span>
-                    <span className={`delta-val ${p.delta >= 0 ? "pos" : "neg"}`}>
-                      ({p.delta > 0 ? "+" : ""}{p.delta} pts)
-                    </span>
+              </div>
+              <div className="trade-topic-ledger">
+                {result.blockBreakdown.map((block) => (
+                  <div className="trade-topic-entry" key={block.id}>
+                    <div className="trade-topic-left">
+                      <strong>{block.label}</strong>
+                      <span className="trade-topic-sub">
+                        {block.mode} · {block.attempted}/{block.questions} attempted · {block.averageSeconds}s avg
+                      </span>
+                    </div>
+                    <div className="trade-topic-right">
+                      <span className="trade-topic-ratio">
+                        <strong>{block.accuracy}%</strong>
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>
-            )}
-            <div className="training-topic-rows">
-              {topics.map((topic) => {
-                const rows = result.rows.filter((r) => r.topic === topic);
-                const correctCount = rows.filter((r) => r.correct).length;
-                const pct = Math.round((correctCount / rows.length) * 100);
-                return (
-                  <div className="training-topic-row" key={topic}>
-                    <div className="training-topic-info">
-                      <strong>{topic}</strong>
-                      <span className="training-topic-time">
-                        {Math.round(rows.reduce((n, r) => n + r.seconds, 0))}s invested
-                      </span>
-                    </div>
-                    <div className="training-topic-score">
-                      <div className="training-topic-bar-bg">
-                        <div
-                          className="training-topic-bar-fill"
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                      <strong>
-                        {correctCount} / {rows.length} correct ({pct}%)
-                      </strong>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
+            </section>
+          ) : null}
         </div>
       )}
 
       {/* ──────────────────────────────────────────────────────────────────────
-          TAB 2: QUESTION REVIEW (FILTERABLE & STREAMLINED)
+          TAB 2: QUESTION REVIEW (TRADE LEDGER)
           ────────────────────────────────────────────────────────────────────── */}
       {activeTab === "review" && (
-        <div className="results-tab-content results-review-tab-content">
-          <div className="review-controls-bar">
-            <div className="review-filters-group">
-              <span className="review-filter-label">
-                <Filter size={14} /> Filter:
-              </span>
+        <div className="results-tab-content trade-review-container">
+          {/* Filter Bar */}
+          <div className="trade-filter-bar">
+            <div className="trade-filter-group">
               <button
                 type="button"
-                className={`review-filter-pill ${reviewFilter === "all" ? "is-active" : ""}`}
+                className={`trade-filter-tab ${reviewFilter === "all" ? "is-active" : ""}`}
                 onClick={() => setReviewFilter("all")}
               >
                 All ({result.rows.length})
               </button>
               <button
                 type="button"
-                className={`review-filter-pill is-wrong-filter ${reviewFilter === "incorrect" ? "is-active" : ""}`}
+                className={`trade-filter-tab is-loss ${reviewFilter === "incorrect" ? "is-active" : ""}`}
                 onClick={() => setReviewFilter("incorrect")}
               >
-                <X size={12} /> Wrong ({incorrectCount})
+                <MinusCircle size={13} /> Losses ({incorrectCount})
               </button>
               <button
                 type="button"
-                className={`review-filter-pill is-correct-filter ${reviewFilter === "correct" ? "is-active" : ""}`}
+                className={`trade-filter-tab is-gain ${reviewFilter === "correct" ? "is-active" : ""}`}
                 onClick={() => setReviewFilter("correct")}
               >
-                <Check size={12} /> Correct ({result.correct})
+                <PlusCircle size={13} /> Wins ({result.correct})
               </button>
               <button
                 type="button"
-                className={`review-filter-pill is-skip-filter ${reviewFilter === "unanswered" ? "is-active" : ""}`}
+                className={`trade-filter-tab is-zero ${reviewFilter === "unanswered" ? "is-active" : ""}`}
                 onClick={() => setReviewFilter("unanswered")}
               >
-                <HelpCircle size={12} /> Skipped ({unattemptedCount})
+                <HelpCircle size={13} /> Skipped ({unattemptedCount})
               </button>
             </div>
 
-            <div className="review-expand-all-wrap">
-              <button
-                type="button"
-                data-ui-button="secondary"
-                className="review-expand-toggle-btn"
-                onClick={() => toggleExpandAll(!isAllExpanded)}
-              >
-                {isAllExpanded ? (
-                  <>
-                    <ChevronUp size={14} /> Collapse all
-                  </>
-                ) : (
-                  <>
-                    <ChevronDown size={14} /> Expand all
-                  </>
-                )}
-              </button>
-            </div>
+            <button
+              type="button"
+              className="trade-expand-all-btn"
+              onClick={() => toggleExpandAll(!isAllExpanded)}
+            >
+              {isAllExpanded ? (
+                <>
+                  <ChevronUp size={14} /> Collapse all
+                </>
+              ) : (
+                <>
+                  <ChevronDown size={14} /> Expand all
+                </>
+              )}
+            </button>
           </div>
 
           {filteredRows.length === 0 ? (
-            <div className="review-empty-filtered-state">
-              <p>No questions found under the "{reviewFilter}" filter.</p>
+            <div className="trade-empty-state">
+              <p>No questions match "{reviewFilter}".</p>
               <button
                 type="button"
                 data-ui-button="secondary"
@@ -533,166 +546,146 @@ export function TrainingResults({
               </button>
             </div>
           ) : (
-            <div className="training-reviews-list">
-                {filteredRows.map((row) => {
-                  const q = session.questions.find((q) => q.id === row.questionId)!;
-                  const isExpanded = !!expandedMap[row.questionId];
-                  const statusClass = row.correct
-                    ? "status-correct"
-                    : row.attempted
-                      ? "status-incorrect"
-                      : "status-unanswered";
-                  const StatusIcon = row.correct
-                    ? Check
-                    : row.attempted
-                      ? X
-                      : AlertCircle;
+            <div className="trade-ledger-list">
+              {filteredRows.map((row) => {
+                const q = session.questions.find((q) => q.id === row.questionId)!;
+                const isExpanded = !!expandedMap[row.questionId];
+                const outcomeClass = row.correct
+                  ? "is-gain"
+                  : row.attempted
+                    ? "is-loss"
+                    : "is-zero";
 
-                  const scoreBadgeClass = row.correct
-                    ? "score-badge-pos"
-                    : row.attempted
-                      ? "score-badge-neg"
-                      : "score-badge-zero";
+                const scoreFormatted = row.correct
+                  ? `+${row.score}`
+                  : row.score === 0
+                    ? "0.00"
+                    : `${row.score}`;
 
-                  const scoreDisplay = row.correct
-                    ? `+${row.score}`
-                    : row.score === 0
-                      ? "0"
-                      : `${row.score}`;
-
-                  return (
-                    <div
-                      className={`modern-review-card ${isExpanded ? "is-open" : ""}`}
-                      key={row.questionId}
+                return (
+                  <div
+                    className={`trade-ledger-item ${outcomeClass} ${isExpanded ? "is-open" : ""}`}
+                    key={row.questionId}
+                  >
+                    <button
+                      type="button"
+                      className="trade-ledger-item-header"
+                      onClick={() => toggleSingleRow(row.questionId)}
+                      aria-expanded={isExpanded}
                     >
-                      <button
-                        type="button"
-                        className="modern-review-card-header"
-                        onClick={() => toggleSingleRow(row.questionId)}
-                        aria-expanded={isExpanded}
-                      >
-                        <div className="training-review-summary-left">
-                          <span className={`training-review-status-badge ${statusClass}`}>
-                            <StatusIcon size={13} />
-                            Q{row.number} ·{" "}
-                            {row.correct
-                              ? "Correct"
-                              : row.attempted
-                                ? "Incorrect"
-                                : "Unanswered"}
-                          </span>
-                          <span className={`training-review-score-pill ${scoreBadgeClass}`}>
-                            {scoreDisplay} marks
-                          </span>
-                          <span className="training-review-topic">{row.topic}</span>
-                        </div>
+                      <div className="trade-ledger-meta">
+                        <span className={`trade-score-tag ${outcomeClass}`}>
+                          {scoreFormatted} pts
+                        </span>
+                        <strong className="trade-q-title">Q{row.number}</strong>
+                        <span className="trade-topic-tag">{row.topic}</span>
+                      </div>
 
-                        <div className="training-review-summary-right">
-                          <span className="training-review-time">
-                            <Clock size={13} />
-                            {Math.round(row.seconds)}s / {row.target}s
-                          </span>
-                          <span className="review-chevron-indicator">
-                            {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                          </span>
-                        </div>
-                      </button>
+                      <div className="trade-ledger-right">
+                        <span className="trade-time-tag">
+                          <Clock size={12} />
+                          {Math.round(row.seconds)}s
+                        </span>
+                        <span className="trade-chevron">
+                          {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                        </span>
+                      </div>
+                    </button>
 
-                      {isExpanded && (
-                        <div className="training-review-body">
-                          <div className="training-review-question-text">
-                            <RichContent text={q.text} />
-                            {q.image && (
-                              <div className="training-review-image">
-                                <RichContent text={`![Question illustration](${q.image})`} />
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="training-review-answers-grid">
-                            <div className={`training-review-choice-box ${row.correct ? "is-correct" : "is-wrong"}`}>
-                              <span className="box-title">Your answer:</span>
-                              <div className="box-content">
-                                <RichContent
-                                  text={
-                                    row.choice === null ? "Left blank" : q.options[row.choice]
-                                  }
-                                />
-                              </div>
-                            </div>
-
-                            <div className="training-review-choice-box is-solution">
-                              <span className="box-title">Correct answer:</span>
-                              <div className="box-content">
-                                <RichContent text={q.options[row.correctIndex]} />
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Question-level score impact banner */}
-                          <div className={`training-review-score-banner ${row.correct ? "is-pos-impact" : row.attempted ? "is-neg-impact" : "is-zero-impact"}`}>
-                            <div className="score-banner-icon">
-                              {row.correct ? <PlusCircle size={15} /> : row.attempted ? <MinusCircle size={15} /> : <HelpCircle size={15} />}
-                            </div>
-                            <div className="score-banner-text">
-                              <strong>
-                                {row.correct
-                                  ? `+${row.score} Marks Awarded`
-                                  : row.attempted
-                                    ? `−${session.marking.wrong} Negative Penalty Applied`
-                                    : "0 Marks (Unattempted)"}
-                              </strong>
-                              <span>
-                                {row.correct
-                                  ? `Full +${session.marking.correct} credit for correct answer.`
-                                  : row.attempted
-                                    ? `Official −${session.marking.wrong} penalty deducted for wrong answer.`
-                                    : "Skipped question — zero marks awarded and no negative penalty incurred."}
-                              </span>
-                            </div>
-                          </div>
-
-                          {row.solution && (
-                            <div className="training-review-solution-box">
-                              <span className="solution-title">Explanation:</span>
-                              <RichContent text={row.solution} />
+                    {isExpanded && (
+                      <div className="trade-ledger-body">
+                        {/* Question Text */}
+                        <div className="trade-q-text">
+                          <RichContent text={q.text} />
+                          {q.image && (
+                            <div className="trade-q-image">
+                              <RichContent text={`![Question illustration](${q.image})`} />
                             </div>
                           )}
+                        </div>
 
-                          <div className="training-review-meta-bar">
-                            <span className="confidence-tag">
-                              Confidence: <strong>{row.confidence ? row.confidence.toUpperCase() : "Not recorded"}</strong>
-                            </span>
+                        {/* Comparative Choices */}
+                        <div className="trade-choices-comparison">
+                          <div className={`trade-choice-row ${row.correct ? "is-correct-pick" : "is-wrong-pick"}`}>
+                            <span className="choice-label">Your Answer:</span>
+                            <div className="choice-value">
+                              <RichContent
+                                text={
+                                  row.choice === null ? "Left blank (Skipped)" : q.options[row.choice]
+                                }
+                              />
+                            </div>
+                          </div>
 
-                            {row.attempted &&
-                              (!row.correct ||
-                                row.confidence !== "sure" ||
-                                row.seconds > row.target * 1.5) && (
-                                <label className="training-mistake-label">
-                                  <span>Categorize mistake:</span>
-                                  <select
-                                    aria-label={`Mistake category for question ${row.number}`}
-                                    value={row.mistake || ""}
-                                    disabled={saving}
-                                    onChange={(e) =>
-                                      categorize(row.questionId, e.target.value)
-                                    }
-                                  >
-                                    <option value="">Choose category…</option>
-                                    {mistakeTypes.map((m) => (
-                                      <option key={m}>{m}</option>
-                                    ))}
-                                  </select>
-                                </label>
-                              )}
+                          <div className="trade-choice-row is-official-pick">
+                            <span className="choice-label">Correct Solution:</span>
+                            <div className="choice-value">
+                              <RichContent text={q.options[row.correctIndex]} />
+                            </div>
                           </div>
                         </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+
+                        {/* Score Impact Note */}
+                        <div className={`trade-impact-note ${outcomeClass}`}>
+                          <strong>
+                            {row.correct
+                              ? `+${row.score} Marks Awarded`
+                              : row.attempted
+                                ? `−${session.marking.wrong} Negative Penalty Applied`
+                                : "0.00 Marks (Unattempted)"}
+                          </strong>
+                          <span>
+                            {row.correct
+                              ? `Full +${session.marking.correct} credit granted.`
+                              : row.attempted
+                                ? `Official −${session.marking.wrong} negative marking penalty deducted.`
+                                : "Skipped position with zero mark penalty."}
+                          </span>
+                        </div>
+
+                        {/* Solution Explanation */}
+                        {row.solution && (
+                          <div className="trade-solution-callout">
+                            <span className="solution-head">Explanation:</span>
+                            <RichContent text={row.solution} />
+                          </div>
+                        )}
+
+                        {/* Meta bar & mistake category */}
+                        <div className="trade-item-footer">
+                          <span className="trade-conf-tag">
+                            Confidence: <strong>{row.confidence ? row.confidence.toUpperCase() : "Not recorded"}</strong>
+                          </span>
+
+                          {row.attempted &&
+                            (!row.correct ||
+                              row.confidence !== "sure" ||
+                              row.seconds > row.target * 1.5) && (
+                              <label className="trade-mistake-select-label">
+                                <span>Categorize mistake:</span>
+                                <select
+                                  aria-label={`Mistake category for question ${row.number}`}
+                                  value={row.mistake || ""}
+                                  disabled={saving}
+                                  onChange={(e) =>
+                                    categorize(row.questionId, e.target.value)
+                                  }
+                                >
+                                  <option value="">Choose category…</option>
+                                  {mistakeTypes.map((m) => (
+                                    <option key={m}>{m}</option>
+                                  ))}
+                                </select>
+                              </label>
+                            )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 
@@ -701,61 +694,64 @@ export function TrainingResults({
           ────────────────────────────────────────────────────────────────────── */}
       {activeTab === "insights" && (
         <div className="results-tab-content">
-          <section className="training-panel">
-            <div className="training-panel-header">
-              <span className="training-kicker">FAILURE ANALYSIS</span>
-              <h2>Failure Map &amp; Mistake Distribution</h2>
-              <p className="training-panel-subtitle">
-                Tags attached to your incorrect or hesitant answers to guide future spaced repetition.
-              </p>
+          <section className="trade-section">
+            <div className="trade-section-header">
+              <div>
+                <span className="trade-kicker">ERROR ANALYSIS</span>
+                <h2>Failure Classification &amp; AI Diagnosis</h2>
+              </div>
             </div>
 
-            <div className="training-failure-map">
+            <p className="trade-section-note">
+              Categorize hesitant or incorrect responses to strengthen spaced repetition patterns.
+            </p>
+
+            <div className="trade-failure-tags">
               {Object.entries(result.failureMap).filter(([, n]) => n > 0).length === 0 ? (
-                <p className="training-empty-note">
-                  No mistakes categorized yet. Categorize questions under Question Review or click below to run AI diagnosis.
+                <p className="trade-empty-note">
+                  No mistakes categorized yet. Categorize questions in the Question Ledger or click below to run AI diagnosis.
                 </p>
               ) : (
                 Object.entries(result.failureMap)
                   .filter(([, n]) => n > 0)
                   .map(([name, n]) => (
-                    <span className="training-failure-tag" key={name}>
+                    <span className="trade-failure-chip" key={name}>
                       <strong>{name}</strong>
-                      <span className="failure-count">{n}</span>
+                      <span className="chip-count">{n}</span>
                     </span>
                   ))
               )}
             </div>
 
             {!result.diagnosis ? (
-              <div className="training-ai-diagnosis-action">
+              <div className="trade-ai-action-wrap">
                 <button
                   data-ui-button="secondary"
                   disabled={saving}
                   onClick={suggest}
-                  className="training-ai-suggest-btn"
+                  className="trade-ai-suggest-btn"
                 >
                   <Sparkles size={15} />
                   <span>{saving ? "Diagnosing with AI…" : "Suggest mistake categories with AI"}</span>
                 </button>
               </div>
             ) : (
-              <div className="training-ai-diagnosis-box">
-                <div className="diagnosis-note">
+              <div className="trade-ai-diagnosis-container">
+                <div className="trade-diagnosis-head">
                   <Sparkles size={16} />
                   <p>{result.diagnosis.note}</p>
                 </div>
-                <div className="diagnosis-suggestions">
+                <div className="trade-diagnosis-list">
                   {result.diagnosis.suggestions.map((s) => (
-                    <div className="training-diagnosis-item" key={s.questionId}>
-                      <div className="diagnosis-item-content">
+                    <div className="trade-diagnosis-card" key={s.questionId}>
+                      <div className="diagnosis-content">
                         <strong>
                           Q
                           {
                             result.rows.find((r) => r.questionId === s.questionId)
                               ?.number
                           }
-                          : <span className="cat-label">{s.category}</span>
+                          : <span className="cat-pill">{s.category}</span>
                         </strong>
                         <p>{s.reason}</p>
                       </div>
@@ -765,7 +761,7 @@ export function TrainingResults({
                         onClick={() => categorize(s.questionId, s.category)}
                       >
                         <Check size={14} />
-                        <span>Use category</span>
+                        <span>Apply</span>
                       </button>
                     </div>
                   ))}
