@@ -334,18 +334,349 @@ test("play exposes all modes and persists an adaptive session across reload", as
   if (testInfo.project.name === "mobile") await page.setViewportSize({ width: 320, height: 568 });
   for (const mode of modes) {
     await page.getByRole("button", { name: `Set up ${mode.title}`, exact: true }).click();
-    const setup = page.getByRole("dialog");
+    await expect(page).toHaveURL(new RegExp(`/play/setup/${mode.id}\\?exam=ssc-cglimport { test, expect } from "@playwright/test";
+import { modes } from "../components/training/training-types";
+
+type BrowserQuestion = {
+  examName?: string;
+  year?: number;
+  id: string;
+  text: string;
+  options: string[];
+  image: string;
+  subject: string;
+  topic: string;
+  subtopic: string;
+  difficulty: number;
+  expectedTime: number;
+  targetSource: string;
+  sourceType: string;
+  correctIndex?: number;
+  solution?: string;
+};
+
+type BrowserAnswer = {
+  choice: number | null;
+  confidence: string | null;
+  seconds: number;
+};
+
+const policy = (id: string, overrides: Record<string, unknown> = {}) => ({
+  id,
+  navigation: "forward",
+  confidence: true,
+  sectional: false,
+  requiresSubject: false,
+  supportsFullSection: false,
+  supportsTier: false,
+  clock: "target",
+  clockMultiplier: 1.2,
+  minuteOptions: [],
+  minDifficulty: 1,
+  lives: null,
+  ...overrides,
+});
+
+test("play exposes all modes and persists an adaptive session across reload", async ({
+  page,
+  context,
+  request,
+}, testInfo) => {
+  test.setTimeout(90000);
+  const hostname = new URL(testInfo.project.use.baseURL || "http://127.0.0.1:3110").hostname;
+  const login = await request.post("http://127.0.0.1:3111/auth/login", {
+    data: {
+      email: `browser-${testInfo.project.name}@example.test`,
+      password: "Browser-fixture-123!",
+    },
+  });
+  expect(login.ok()).toBeTruthy();
+  const refreshCookie = login.headers()["set-cookie"].split(";")[0].slice("refreshToken=".length);
+  await context.addCookies([
+    {
+      name: "refreshToken",
+      value: refreshCookie,
+      domain: hostname,
+      path: "/",
+      httpOnly: true,
+      sameSite: "Lax",
+    },
+    {
+      name: "access_session",
+      value: "training-browser-fixture",
+      domain: hostname,
+      path: "/",
+    },
+  ]);
+
+  const now = Date.now();
+  let releaseCreation!: () => void;
+  let releaseQuestions!: () => void;
+  const creationGate = new Promise<void>(resolve => { releaseCreation = resolve; });
+  const questionsGate = new Promise<void>(resolve => { releaseQuestions = resolve; });
+  const questions = [
+    {
+      id: "q1",
+      examName: "SSC CHSL Tier I 2023",
+      year: 2023,
+      text: "2 + 2 = ?",
+      options: ["3", "4", "5", "6"],
+      image: "",
+      subject: "Mathematics",
+      topic: "Arithmetic",
+      subtopic: "Addition",
+      difficulty: 1,
+      expectedTime: 30,
+      targetSource: "baseline",
+      sourceType: "bank",
+    },
+    {
+      id: "q2",
+      text: "3 + 3 = ?",
+      options: ["5", "6", "7", "8"],
+      image: "",
+      subject: "Mathematics",
+      topic: "Arithmetic",
+      subtopic: "Addition",
+      difficulty: 2,
+      expectedTime: 30,
+      targetSource: "baseline",
+      sourceType: "bank",
+    },
+  ];
+  let session: {
+    id: string;
+    mode: string;
+    effectiveMode: string;
+    policy: ReturnType<typeof policy>;
+    allowedVisitIndices: number[];
+    exam: string;
+    status: string;
+    completionReason: string | null;
+    revision: number;
+    current: number;
+    duration: number;
+    deadline: string;
+    serverNow: number;
+    lastEventAt: number;
+    lives: number;
+    marking: { correct: number; wrong: number };
+    questions: BrowserQuestion[];
+    answers: Record<string, BrowserAnswer>;
+    result: unknown;
+  } = {
+    id: "browser-training",
+    mode: "adaptive",
+    effectiveMode: "adaptive",
+    policy: policy("adaptive"),
+    allowedVisitIndices: [],
+    exam: "ssc-cgl",
+    status: "active",
+    completionReason: null,
+    revision: 0,
+    current: 0,
+    duration: 600,
+    deadline: new Date(now + 600000).toISOString(),
+    serverNow: now,
+    lastEventAt: now,
+    lives: 999,
+    marking: { correct: 2, wrong: 0.5 },
+    questions,
+    answers: {},
+    result: null,
+  };
+
+  await context.route("**/backend-api/**", async (route) => {
+    const url = new URL(route.request().url());
+    const path = url.pathname.replace("/backend-api", "");
+
+    if (path === "/api/training/capabilities") {
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          exams: [{ id: "ssc-cgl", label: "SSC CGL" }],
+          modes: {
+            adaptive: policy("adaptive"),
+            challenge: policy("challenge"),
+            sprint: policy("sprint", { clock: "fixed", minuteOptions: [5, 10, 15] }),
+            pressure: policy("pressure", { navigation: "free", clockMultiplier: 0.7 }),
+            section: policy("section", { navigation: "free", sectional: true, requiresSubject: true, supportsFullSection: true, supportsTier: true }),
+            gauntlet: policy("gauntlet", { sectional: true, requiresSubject: true, supportsFullSection: true, supportsTier: true }),
+            nightmare: policy("nightmare", { confidence: false, minDifficulty: 3 }),
+            survival: policy("survival", { confidence: false, lives: 3 }),
+            review: policy("review"),
+            mission: policy("mission"),
+          },
+        }),
+      });
+    }
+
+    if (path === "/api/training/dashboard") {
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          readiness: null,
+          evidenceConfidence: "low",
+          confidenceScore: 10,
+          attempts: 0,
+          evidence: "Build your baseline.",
+          factors: {},
+          topics: [],
+          reviews: [],
+          due: [],
+          subjects: ["Mathematics", "English"],
+          catalogTopics: ["Arithmetic", "Algebra", "Grammar"],
+          catalog: [
+            { subject: "Mathematics", topic: "Arithmetic" },
+            { subject: "Mathematics", topic: "Algebra" },
+            { subject: "English", topic: "Grammar" },
+          ],
+          active: [],
+          history: [],
+          mission: [{ mode: "adaptive", count: 10, label: "Build your skill baseline" }],
+          personalBest: 0,
+        }),
+      });
+    }
+
+    if (path === "/api/training/sessions" && route.request().method() === "POST") {
+      await creationGate;
+      session = { ...session, serverNow: Date.now(), lastEventAt: Date.now() };
+      return route.fulfill({
+        status: 201,
+        contentType: "application/json",
+        body: JSON.stringify(session),
+      });
+    }
+
+    if (path === "/api/training/sessions/browser-training" && route.request().method() === "GET") {
+      await questionsGate;
+      session = { ...session, serverNow: Date.now() };
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(session),
+      });
+    }
+
+    if (path === "/api/training/sessions/browser-training/actions") {
+      const body = route.request().postDataJSON() as {
+        type: string;
+        choice?: number | null;
+        confidence?: string | null;
+      };
+      if (body.type === "answer") {
+        const q = questions[session.current];
+        session = {
+          ...session,
+          revision: session.revision + 1,
+          current: Math.min(session.current + 1, questions.length - 1),
+          serverNow: Date.now(),
+          lastEventAt: Date.now(),
+          answers: {
+            ...session.answers,
+            [q.id]: {
+              choice: body.choice ?? null,
+              confidence: body.confidence ?? null,
+              seconds: 8,
+            },
+          },
+        };
+      } else if (body.type === "finish") {
+        session = {
+          ...session,
+          revision: session.revision + 1,
+          status: "completed",
+          completionReason: "submitted",
+          serverNow: Date.now(),
+          questions: questions.map((q, index) => ({
+            ...q,
+            correctIndex: 1,
+            solution: index === 0 ? "2 + 2 equals 4." : "3 + 3 equals 6.",
+          })),
+          result: {
+            rows: [
+              {
+                questionId: "q1",
+                number: 1,
+                topic: "Arithmetic",
+                attempted: true,
+                correct: true,
+                choice: 1,
+                correctIndex: 1,
+                seconds: 8,
+                target: 30,
+                confidence: "sure",
+                mistake: null,
+                solution: "2 + 2 equals 4.",
+                score: 2,
+              },
+              {
+                questionId: "q2",
+                number: 2,
+                topic: "Arithmetic",
+                attempted: false,
+                correct: false,
+                choice: null,
+                correctIndex: 1,
+                seconds: 0,
+                target: 30,
+                confidence: null,
+                mistake: null,
+                solution: "3 + 3 equals 6.",
+                score: 0,
+              },
+            ],
+            blockBreakdown: [],
+            attempted: 1,
+            correct: 1,
+            accuracy: 100,
+            score: 2,
+            maxScore: 4,
+            negativeLoss: 0,
+            secondsSaved: 22,
+            averageSeconds: 8,
+            findings: [],
+            failureMap: {},
+            modePoints: 10,
+            masteryDelta: [],
+            bestStreak: 1,
+            questionsPerMinute: 1,
+          },
+        };
+      }
+      expect(url.searchParams.get('response')).toBe('delta');
+      const { questions: _questions, ...state } = session;
+      const response = session.status === 'active'
+        ? { ...state, kind: 'delta', baseRevision: session.revision - 1 }
+        : session;
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(response),
+      });
+    }
+
+    const fixtureUrl = `http://127.0.0.1:3111${path}${url.search}`;
+    const response = await route.fetch({ url: fixtureUrl });
+    return route.fulfill({ response });
+  });
+
+));
+    const setup = page.getByRole("main", { name: "Session setup" });
     await expect(setup.getByRole("heading", { name: mode.title, exact: true })).toBeVisible();
-    await expect(async () => {
-      const b = await setup.getByRole("button", { name: "Begin training" }).boundingBox();
-      expect(b!.y + b!.height).toBeLessThanOrEqual(page.viewportSize()!.height);
-    }).toPass();
-    if (mode.id === "adaptive") await page.screenshot({ path: testInfo.outputPath("setup.png") });
-    await page.getByRole("button", { name: "Close setup" }).click();
+    await expect(page.getByRole("button", { name: "Begin training" })).toBeInViewport();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    if (mode.id === "adaptive") await page.screenshot({ path: testInfo.outputPath("setup-page.png") });
+    await page.getByRole("button", { name: "Back to Play" }).click();
+    await expect(page).toHaveURL(/\/play$/);
   }
   await page.setViewportSize(setupViewport);
   await page.getByRole("button", { name: "Set up Adaptive" }).click();
-  await expect(page.getByRole("heading", { name: "Adaptive" })).toBeVisible();
+  await expect(page).toHaveURL(/\/play\/setup\/adaptive\?exam=ssc-cgl$/);
+  await expect(page.getByRole("heading", { name: "Adaptive", exact: true })).toBeVisible();
   await page.getByRole("button", { name: /^Subject / }).click();
   const subjectListbox = page.getByRole("listbox", { name: "Subject" });
   await expect(subjectListbox).toBeVisible();
@@ -367,7 +698,7 @@ test("play exposes all modes and persists an adaptive session across reload", as
   await page.getByRole("button", { name: /^Subject / }).click();
   await page.keyboard.press("Escape");
   await expect(subjectListbox).toHaveCount(0);
-  await expect(page.getByRole("dialog", { name: "Adaptive", exact: true })).toBeVisible();
+  await expect(page.getByRole("main", { name: "Session setup" })).toBeVisible();
   await page.getByRole("button", { name: "Begin training" }).click();
   await expect(page.getByText("Preparing your questions", { exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Building your session…" })).toBeDisabled();
