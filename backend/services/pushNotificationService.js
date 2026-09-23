@@ -1,4 +1,3 @@
-import { firebaseMessaging } from "../config/firebase.js";
 import {
   getPushDevicesCollection,
   getUsersCollection,
@@ -8,6 +7,16 @@ import {
   createUserNotification,
   createGlobalNotification,
 } from "./notificationCenterService.js";
+
+let firebaseMessagingPromise;
+
+async function getFirebaseMessaging() {
+  firebaseMessagingPromise ??=
+    import("../config/firebase.js")
+      .then((module) => module.firebaseMessaging);
+
+  return firebaseMessagingPromise;
+}
 
 const INVALID_REGISTRATION_ERRORS = new Set([
   "messaging/registration-token-not-registered",
@@ -253,6 +262,9 @@ export async function sendPushToUser(
         }
       : {}),
   };
+
+  const firebaseMessaging =
+    await getFirebaseMessaging();
 
   const result =
     await firebaseMessaging.sendEachForMulticast({
@@ -515,6 +527,9 @@ export async function sendPushToAllUsers({
         }
       : {}),
   };
+
+  const firebaseMessaging =
+    await getFirebaseMessaging();
 
   // FCM supports maximum 500 targets per multicast request.
   for (let i = 0; i < fids.length; i += 500) {

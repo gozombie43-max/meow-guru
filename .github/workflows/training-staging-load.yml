@@ -24,6 +24,7 @@ jobs:
       id-token: write
       contents: read
     env:
+      AZURE_RESOURCE_GROUP: Meowguru_staging_group
       STAGING_MONGODB_DB: quizDB_staging
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -52,9 +53,15 @@ jobs:
       - name: Resolve and attest staging target
         run: |
           set -euo pipefail
-          resource_group="Meowguru_group"
           app_name="quizguru-stage-${GITHUB_REPOSITORY_ID}"
-          host="$(az webapp show --name "$app_name" --resource-group "$resource_group" --query defaultHostName --output tsv)"
+          error_file="$(mktemp)"
+          if ! host="$(az webapp show --name "$app_name" --resource-group "$AZURE_RESOURCE_GROUP" --query defaultHostName --output tsv 2>"$error_file")"; then
+            cat "$error_file" >&2 || true
+            rm -f "$error_file"
+            echo "::error title=Staging Azure target unavailable::Cannot read '$app_name' in '$AZURE_RESOURCE_GROUP'. Provision staging first and verify the GitHub OIDC principal has Website Contributor on the staging resource group."
+            exit 1
+          fi
+          rm -f "$error_file"
           [ -n "$host" ] || { echo '::error::Staging Web App is not provisioned'; exit 1; }
           health="$(curl --fail --silent --show-error --max-time 20 "https://$host/api/health")"
           echo "$health" | jq -e '.ok == true and .state == "ready" and .environment == "staging"' >/dev/null || {
