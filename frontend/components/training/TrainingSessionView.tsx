@@ -1,6 +1,6 @@
 "use client";
 import { useRef, useState, useEffect } from "react";
-import { Heart, List, LoaderCircle } from "lucide-react";
+import { LoaderCircle } from "lucide-react";
 import { useBackLayer, useQuizLeaveGuard } from "@/hooks/useAppNavigation";
 import { useThemeMode } from "@/hooks/useTheme";
 import { TrainingResults } from "./TrainingResults";
@@ -61,7 +61,11 @@ export default function TrainingSessionView({ id }: { id: string }) {
         session={session} 
         timeSync={timeSync}
         busy={busy} 
-        setConfirmFinish={setConfirmFinish} 
+        setConfirmFinish={setConfirmFinish}
+        showOverview={showOverview}
+        setShowOverview={setShowOverview}
+        answered={answered}
+        canNavigate={canNavigate || false}
       />
 
       <main ref={mainRef} className="training-session-main">
@@ -88,85 +92,36 @@ export default function TrainingSessionView({ id }: { id: string }) {
         )}
 
         {session?.status === "active" && q && (
-          <>
-            <div className="training-question-meta">
-              <button className="training-overview-toggle" data-ui-button="secondary" aria-expanded={showOverview} aria-controls="training-overview" onClick={() => setShowOverview(!showOverview)}>
-                <List size={18} /> {canNavigate ? "Questions" : "Session info"}
-              </button>
-              <div className="training-meta-left">
-                <span className="training-question-counter">
-                  QUESTION {session.current + 1} OF {session.questions.length}
-                </span>
-              </div>
-              {session.effectiveMode === "survival" ? (
-                <div
-                  className="training-survival-lives"
-                  aria-label={`${session.lives} lives remaining`}
-                >
-                  <span className="training-lives-label">LIVES</span>
-                  <div className="training-lives-hearts">
-                    {[1, 2, 3].map((lifeIndex) => {
-                      const isAlive = lifeIndex <= session.lives;
-                      return (
-                        <Heart
-                          key={lifeIndex}
-                          size={16}
-                          className={`training-heart-icon ${isAlive ? "is-alive" : "is-lost"}`}
-                          fill={isAlive ? "currentColor" : "none"}
-                        />
-                      );
-                    })}
-                  </div>
-                </div>
-              ) : (
-                <div className="training-answered-meta">
-                  <span className="training-answered-pill">
-                    {answered} / {session.questions.length} answered
-                  </span>
-                </div>
-              )}
-            </div>
+          <div className="training-session-columns">
+            <TrainingPalette 
+              session={session}
+              showOverview={showOverview}
+              setShowOverview={setShowOverview}
+              canNavigate={canNavigate || false}
+              busy={busy}
+              act={act}
+            />
 
-            <div className="training-progress-track">
-              <progress
-                className="training-progress"
-                max={session.questions.length}
-                value={answered}
-                aria-label={`${answered} of ${session.questions.length} answered`}
-              />
-            </div>
-
-            <div className="training-session-columns">
-              <TrainingPalette 
-                session={session}
-                showOverview={showOverview}
-                setShowOverview={setShowOverview}
-                canNavigate={canNavigate || false}
-                busy={busy}
-                act={act}
+            <section className="training-question-panel">
+              <TrainingQuestion 
+                q={q} 
+                choice={choice} 
+                setChoice={setChoice} 
+                busy={busy} 
+                expired={expired}
               />
 
-              <section className="training-question-panel">
-                <TrainingQuestion 
-                  q={q} 
-                  choice={choice} 
-                  setChoice={setChoice} 
+              <TrainingPace q={q} session={session} timeSync={timeSync} />
+
+              {session.policy.confidence && (
+                <TrainingConfidence 
+                  confidence={confidence} 
+                  setConfidence={setConfidence} 
                   busy={busy} 
-                  expired={expired}
                 />
-
-                <TrainingPace q={q} session={session} timeSync={timeSync} />
-
-                {session.policy.confidence && (
-                  <TrainingConfidence 
-                    confidence={confidence} 
-                    setConfidence={setConfidence} 
-                    busy={busy} 
-                  />
-                )}
-              </section>
-            </div>
-          </>
+              )}
+            </section>
+          </div>
         )}
       </main>
 
