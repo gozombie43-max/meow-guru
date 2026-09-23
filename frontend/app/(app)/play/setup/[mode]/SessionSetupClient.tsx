@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ComponentType } from "react";
+import { useEffect, useState, type ComponentType, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -74,7 +74,7 @@ function FieldCard({
   children,
 }: {
   icon: IconType;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <div className="setup-page-field">
