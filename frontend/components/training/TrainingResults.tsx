@@ -307,200 +307,204 @@ export function TrainingResults({
           TAB 1: SETTLEMENT & ANALYTICS
           ────────────────────────────────────────────────────────────────────── */}
       {activeTab === "overview" && (
-        <div className="results-tab-content">
-          {/* Official Score Settlement Table */}
-          <section className="trade-section">
-            <div className="trade-section-header">
-              <div>
-                <span className="trade-kicker">SETTLEMENT LEDGER</span>
-                <h2>Official Score Breakdown &amp; Deductions</h2>
-              </div>
-              <div className="trade-marking-rules">
-                <span className="trade-rule-pos">+{session.marking.correct} gain</span>
-                <span className="trade-rule-neg">−{session.marking.wrong} loss</span>
-                <span className="trade-rule-zero">0 skipped</span>
-              </div>
-            </div>
-
-            <p className="trade-section-note">
-              Official {examLabel} marking formula applied: Each incorrect answer incurs a <strong>−{session.marking.wrong} negative mark penalty</strong>.
-              {session.marking.wrong > 0 && (
-                <> Every <strong>{ratioToCancel} wrong answers</strong> cancel out <strong>1 full correct answer</strong>.</>
-              )}
-            </p>
-
-            {/* Trading Settlement Statement Table */}
-            <div className="trade-settlement-table">
-              <div className="trade-settlement-row is-pos-row">
-                <div className="trade-settlement-col-item">
-                  <div className="trade-dot is-pos" />
-                  <div>
-                    <strong>Correct Positions (Wins)</strong>
-                    <span>{result.correct} correct answers × (+{session.marking.correct} marks)</span>
-                  </div>
-                </div>
-                <div className="trade-settlement-col-rate">+{session.marking.correct} / ans</div>
-                <div className="trade-settlement-col-val is-pos">+{correctMarksGained}</div>
-              </div>
-
-              <div className="trade-settlement-row is-neg-row">
-                <div className="trade-settlement-col-item">
-                  <div className="trade-dot is-neg" />
-                  <div>
-                    <strong>Negative Penalty (Losses)</strong>
-                    <span>{incorrectCount} wrong answers × (−{session.marking.wrong} marks)</span>
-                  </div>
-                </div>
-                <div className="trade-settlement-col-rate">−{session.marking.wrong} / ans</div>
-                <div className="trade-settlement-col-val is-neg">−{negativeMarksLost}</div>
-              </div>
-
-              <div className="trade-settlement-row is-zero-row">
-                <div className="trade-settlement-col-item">
-                  <div className="trade-dot is-zero" />
-                  <div>
-                    <strong>Unattempted / Skipped</strong>
-                    <span>{unattemptedCount} left blank (no penalty)</span>
-                  </div>
-                </div>
-                <div className="trade-settlement-col-rate">0.00 / ans</div>
-                <div className="trade-settlement-col-val is-zero">0.00</div>
-              </div>
-
-              <div className="trade-settlement-row is-total-row">
-                <div className="trade-settlement-col-item">
-                  <Award size={18} className="trade-total-icon" />
-                  <div>
-                    <strong>Net Settled Score</strong>
-                    <span>Gross credit (+{correctMarksGained}) − penalties (−{negativeMarksLost})</span>
-                  </div>
-                </div>
-                <div className="trade-settlement-col-rate">Max {result.maxScore}</div>
-                <div className="trade-settlement-col-val is-total">
-                  <span
-                    className="trade-math-fraction-settlement"
-                    dangerouslySetInnerHTML={{
-                      __html: renderScoreFraction(result.score, result.maxScore),
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Sector / Topic Performance */}
-          <section className="trade-section">
-            <div className="trade-section-header">
-              <div>
-                <span className="trade-kicker">SECTOR BREAKDOWN</span>
-                <h2>Topic Performance &amp; Mastery Gains</h2>
-              </div>
-            </div>
-
-            {result.masteryDelta && result.masteryDelta.length > 0 && (
-              <div className="trade-mastery-ribbon">
-                {result.masteryDelta.map((p) => (
-                  <div key={p.key} className="trade-mastery-chip">
-                    <span className="chip-topic">{p.topic}:</span>
-                    <span className="chip-prog">{p.before}% → {p.after}%</span>
-                    <span className={`chip-delta ${p.delta >= 0 ? "is-pos" : "is-neg"}`}>
-                      ({p.delta > 0 ? "+" : ""}{p.delta} pts)
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div className="trade-topic-ledger">
-              {topics.map((topic) => {
-                const rows = result.rows.filter((r) => r.topic === topic);
-                const correctCount = rows.filter((r) => r.correct).length;
-                const pct = Math.round((correctCount / rows.length) * 100);
-                return (
-                  <div className="trade-topic-entry" key={topic}>
-                    <div className="trade-topic-left">
-                      <strong>{topic}</strong>
-                      <span className="trade-topic-sub">
-                        {Math.round(rows.reduce((n, r) => n + r.seconds, 0))}s invested · {rows.length} questions
-                      </span>
-                    </div>
-                    <div className="trade-topic-right">
-                      <div className="trade-topic-bar">
-                        <div
-                          className={`trade-topic-bar-fill ${pct >= 70 ? "is-pos" : pct >= 40 ? "is-mid" : "is-low"}`}
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                      <span className="trade-topic-ratio">
-                        <strong>{correctCount}/{rows.length}</strong> ({pct}%)
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-
-          {/* Strategy Findings */}
-          <section className="trade-section">
-            <div className="trade-section-header">
-              <div>
-                <span className="trade-kicker">EXECUTION LOG</span>
-                <h2>Strategy &amp; Next Action Adjustments</h2>
-              </div>
-            </div>
-            {["sprint", "survival"].includes(session.mode) && (
-              <div className="trade-mode-banner">
-                <strong>{result.modePoints}</strong> points · Best streak{" "}
-                <strong>{result.bestStreak}</strong> ·{" "}
-                <strong>{result.questionsPerMinute}</strong> Q/min
-              </div>
-            )}
-            <div className="trade-findings-list">
-              {result.findings.length ? (
-                result.findings.map((f, i) => (
-                  <div key={i} className="trade-finding-row">
-                    <span className="finding-indicator">•</span>
-                    <p>{f}</p>
-                  </div>
-                ))
-              ) : (
-                <p className="trade-empty-note">
-                  No major time-allocation issue detected in this session. Review
-                  uncertain answers before increasing difficulty.
-                </p>
-              )}
-            </div>
-          </section>
-
-          {/* Mission Block Breakdown */}
-          {session.mode === "mission" && result.blockBreakdown?.length ? (
+        <div className="results-tab-content trade-overview-layout">
+          <div className="trade-overview-main-col">
+            {/* Official Score Settlement Table */}
             <section className="trade-section">
               <div className="trade-section-header">
                 <div>
-                  <span className="trade-kicker">MISSION PROTOCOL</span>
-                  <h2>Mission Block Breakdown</h2>
+                  <span className="trade-kicker">SETTLEMENT LEDGER</span>
+                  <h2>Official Score Breakdown &amp; Deductions</h2>
+                </div>
+                <div className="trade-marking-rules">
+                  <span className="trade-rule-pos">+{session.marking.correct} gain</span>
+                  <span className="trade-rule-neg">−{session.marking.wrong} loss</span>
+                  <span className="trade-rule-zero">0 skipped</span>
                 </div>
               </div>
-              <div className="trade-topic-ledger">
-                {result.blockBreakdown.map((block) => (
-                  <div className="trade-topic-entry" key={block.id}>
-                    <div className="trade-topic-left">
-                      <strong>{block.label}</strong>
-                      <span className="trade-topic-sub">
-                        {block.mode} · {block.attempted}/{block.questions} attempted · {block.averageSeconds}s avg
-                      </span>
-                    </div>
-                    <div className="trade-topic-right">
-                      <span className="trade-topic-ratio">
-                        <strong>{block.accuracy}%</strong>
-                      </span>
+
+              <p className="trade-section-note">
+                Official {examLabel} marking formula applied: Each incorrect answer incurs a <strong>−{session.marking.wrong} negative mark penalty</strong>.
+                {session.marking.wrong > 0 && (
+                  <> Every <strong>{ratioToCancel} wrong answers</strong> cancel out <strong>1 full correct answer</strong>.</>
+                )}
+              </p>
+
+              {/* Trading Settlement Statement Table */}
+              <div className="trade-settlement-table">
+                <div className="trade-settlement-row is-pos-row">
+                  <div className="trade-settlement-col-item">
+                    <div className="trade-dot is-pos" />
+                    <div>
+                      <strong>Correct Positions (Wins)</strong>
+                      <span>{result.correct} correct answers × (+{session.marking.correct} marks)</span>
                     </div>
                   </div>
-                ))}
+                  <div className="trade-settlement-col-rate">+{session.marking.correct} / ans</div>
+                  <div className="trade-settlement-col-val is-pos">+{correctMarksGained}</div>
+                </div>
+
+                <div className="trade-settlement-row is-neg-row">
+                  <div className="trade-settlement-col-item">
+                    <div className="trade-dot is-neg" />
+                    <div>
+                      <strong>Negative Penalty (Losses)</strong>
+                      <span>{incorrectCount} wrong answers × (−{session.marking.wrong} marks)</span>
+                    </div>
+                  </div>
+                  <div className="trade-settlement-col-rate">−{session.marking.wrong} / ans</div>
+                  <div className="trade-settlement-col-val is-neg">−{negativeMarksLost}</div>
+                </div>
+
+                <div className="trade-settlement-row is-zero-row">
+                  <div className="trade-settlement-col-item">
+                    <div className="trade-dot is-zero" />
+                    <div>
+                      <strong>Unattempted / Skipped</strong>
+                      <span>{unattemptedCount} left blank (no penalty)</span>
+                    </div>
+                  </div>
+                  <div className="trade-settlement-col-rate">0.00 / ans</div>
+                  <div className="trade-settlement-col-val is-zero">0.00</div>
+                </div>
+
+                <div className="trade-settlement-row is-total-row">
+                  <div className="trade-settlement-col-item">
+                    <Award size={18} className="trade-total-icon" />
+                    <div>
+                      <strong>Net Settled Score</strong>
+                      <span>Gross credit (+{correctMarksGained}) − penalties (−{negativeMarksLost})</span>
+                    </div>
+                  </div>
+                  <div className="trade-settlement-col-rate">Max {result.maxScore}</div>
+                  <div className="trade-settlement-col-val is-total">
+                    <span
+                      className="trade-math-fraction-settlement"
+                      dangerouslySetInnerHTML={{
+                        __html: renderScoreFraction(result.score, result.maxScore),
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
             </section>
-          ) : null}
+
+            {/* Sector / Topic Performance */}
+            <section className="trade-section">
+              <div className="trade-section-header">
+                <div>
+                  <span className="trade-kicker">SECTOR BREAKDOWN</span>
+                  <h2>Topic Performance &amp; Mastery Gains</h2>
+                </div>
+              </div>
+
+              {result.masteryDelta && result.masteryDelta.length > 0 && (
+                <div className="trade-mastery-ribbon">
+                  {result.masteryDelta.map((p) => (
+                    <div key={p.key} className="trade-mastery-chip">
+                      <span className="chip-topic">{p.topic}:</span>
+                      <span className="chip-prog">{p.before}% → {p.after}%</span>
+                      <span className={`chip-delta ${p.delta >= 0 ? "is-pos" : "is-neg"}`}>
+                        ({p.delta > 0 ? "+" : ""}{p.delta} pts)
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="trade-topic-ledger">
+                {topics.map((topic) => {
+                  const rows = result.rows.filter((r) => r.topic === topic);
+                  const correctCount = rows.filter((r) => r.correct).length;
+                  const pct = Math.round((correctCount / rows.length) * 100);
+                  return (
+                    <div className="trade-topic-entry" key={topic}>
+                      <div className="trade-topic-left">
+                        <strong>{topic}</strong>
+                        <span className="trade-topic-sub">
+                          {Math.round(rows.reduce((n, r) => n + r.seconds, 0))}s invested · {rows.length} questions
+                        </span>
+                      </div>
+                      <div className="trade-topic-right">
+                        <div className="trade-topic-bar">
+                          <div
+                            className={`trade-topic-bar-fill ${pct >= 70 ? "is-pos" : pct >= 40 ? "is-mid" : "is-low"}`}
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                        <span className="trade-topic-ratio">
+                          <strong>{correctCount}/{rows.length}</strong> ({pct}%)
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          </div>
+
+          <div className="trade-overview-side-col">
+            {/* Strategy Findings */}
+            <section className="trade-section">
+              <div className="trade-section-header">
+                <div>
+                  <span className="trade-kicker">EXECUTION LOG</span>
+                  <h2>Strategy &amp; Next Action Adjustments</h2>
+                </div>
+              </div>
+              {["sprint", "survival"].includes(session.mode) && (
+                <div className="trade-mode-banner">
+                  <strong>{result.modePoints}</strong> points · Best streak{" "}
+                  <strong>{result.bestStreak}</strong> ·{" "}
+                  <strong>{result.questionsPerMinute}</strong> Q/min
+                </div>
+              )}
+              <div className="trade-findings-list">
+                {result.findings.length ? (
+                  result.findings.map((f, i) => (
+                    <div key={i} className="trade-finding-row">
+                      <span className="finding-indicator">•</span>
+                      <p>{f}</p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="trade-empty-note">
+                    No major time-allocation issue detected in this session. Review
+                    uncertain answers before increasing difficulty.
+                  </p>
+                )}
+              </div>
+            </section>
+
+            {/* Mission Block Breakdown */}
+            {session.mode === "mission" && result.blockBreakdown?.length ? (
+              <section className="trade-section">
+                <div className="trade-section-header">
+                  <div>
+                    <span className="trade-kicker">MISSION PROTOCOL</span>
+                    <h2>Mission Block Breakdown</h2>
+                  </div>
+                </div>
+                <div className="trade-topic-ledger">
+                  {result.blockBreakdown.map((block) => (
+                    <div className="trade-topic-entry" key={block.id}>
+                      <div className="trade-topic-left">
+                        <strong>{block.label}</strong>
+                        <span className="trade-topic-sub">
+                          {block.mode} · {block.attempted}/{block.questions} attempted · {block.averageSeconds}s avg
+                        </span>
+                      </div>
+                      <div className="trade-topic-right">
+                        <span className="trade-topic-ratio">
+                          <strong>{block.accuracy}%</strong>
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            ) : null}
+          </div>
         </div>
       )}
 
@@ -718,12 +722,12 @@ export function TrainingResults({
           TAB 3: MISTAKES & AI DIAGNOSTICS
           ────────────────────────────────────────────────────────────────────── */}
       {activeTab === "insights" && (
-        <div className="results-tab-content">
-          <section className="trade-section">
+        <div className="results-tab-content trade-insights-layout">
+          <section className="trade-section trade-insights-left">
             <div className="trade-section-header">
               <div>
                 <span className="trade-kicker">ERROR ANALYSIS</span>
-                <h2>Failure Classification &amp; AI Diagnosis</h2>
+                <h2>Failure Classification</h2>
               </div>
             </div>
 
@@ -747,9 +751,21 @@ export function TrainingResults({
                   ))
               )}
             </div>
+          </section>
+
+          <section className="trade-section trade-insights-right">
+            <div className="trade-section-header">
+              <div>
+                <span className="trade-kicker">AI DIAGNOSTICS</span>
+                <h2>Intelligent Suggestions</h2>
+              </div>
+            </div>
 
             {!result.diagnosis ? (
               <div className="trade-ai-action-wrap">
+                <p className="trade-section-note">
+                  Run automated AI analysis across your answering patterns to detect hesitation and knowledge gaps.
+                </p>
                 <button
                   data-ui-button="secondary"
                   disabled={saving}
