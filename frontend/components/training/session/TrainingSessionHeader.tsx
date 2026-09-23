@@ -55,7 +55,6 @@ export function TrainingSessionHeader({
 }: TrainingSessionHeaderProps) {
   const isActive = session?.status === "active";
   const totalQuestions = session?.questions.length ?? 0;
-  const currentQNum = (session?.current ?? 0) + 1;
   const progressPct = totalQuestions > 0 ? (answered / totalQuestions) * 100 : 0;
 
   return (
@@ -101,40 +100,28 @@ export function TrainingSessionHeader({
         </div>
       </div>
 
-      {/* Center: Question Counter & Answered Status / Survival Lives */}
-      {isActive && (
+      {/* Center: Survival Lives (only in survival mode) */}
+      {isActive && session.effectiveMode === "survival" && (
         <div className="training-header-center">
-          <span className="training-header-counter">
-            <span className="desktop-text">QUESTION {currentQNum} OF {totalQuestions}</span>
-            <span className="mobile-text">Q{currentQNum}/{totalQuestions}</span>
-          </span>
-
-          {session.effectiveMode === "survival" ? (
-            <div
-              className="training-survival-lives"
-              aria-label={`${session.lives} lives remaining`}
-            >
-              <span className="training-lives-label">LIVES</span>
-              <div className="training-lives-hearts">
-                {[1, 2, 3].map((lifeIndex) => {
-                  const isAlive = lifeIndex <= session.lives;
-                  return (
-                    <Heart
-                      key={lifeIndex}
-                      size={13}
-                      className={`training-heart-icon ${isAlive ? "is-alive" : "is-lost"}`}
-                      fill={isAlive ? "currentColor" : "none"}
-                    />
-                  );
-                })}
-              </div>
+          <div
+            className="training-survival-lives"
+            aria-label={`${session.lives} lives remaining`}
+          >
+            <span className="training-lives-label">LIVES</span>
+            <div className="training-lives-hearts">
+              {[1, 2, 3].map((lifeIndex) => {
+                const isAlive = lifeIndex <= session.lives;
+                return (
+                  <Heart
+                    key={lifeIndex}
+                    size={13}
+                    className={`training-heart-icon ${isAlive ? "is-alive" : "is-lost"}`}
+                    fill={isAlive ? "currentColor" : "none"}
+                  />
+                );
+              })}
             </div>
-          ) : (
-            <span className="training-header-answered-pill">
-              <span className="desktop-text">{answered} / {totalQuestions} answered</span>
-              <span className="mobile-text">{answered}/{totalQuestions}</span>
-            </span>
-          )}
+          </div>
         </div>
       )}
 
