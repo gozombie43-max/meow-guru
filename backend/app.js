@@ -128,12 +128,12 @@ export async function createApp({ isReady, isShuttingDown, quizOnlyMode = proces
   // Scope bulk B2 loaders to their actual endpoints. A broad /api mount would
   // import B2 on unrelated requests such as /api/training/dashboard.
   app.use(
-    /^\\/api(?=\\/(?:mass-upload-images|mass-upload-question-images)(?:\\/|$))/,
+    /^\/api(?=\/(?:mass-upload-images|mass-upload-question-images)(?:\/|$))/,
     uploadLimiter,
     lazyRouter(() => import('./routes/massUploadImages.js')),
   );
   app.use(
-    /^\\/api(?=\\/mass-upload-solutions(?:\\/|$))/,
+    /^\/api(?=\/mass-upload-solutions(?:\/|$))/,
     uploadLimiter,
     lazyRouter(() => import('./routes/massUploadSolutions.js')),
   );
