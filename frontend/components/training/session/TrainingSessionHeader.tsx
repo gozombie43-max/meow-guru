@@ -77,6 +77,7 @@ export function TrainingSessionHeader({
             className={`training-header-overview-btn ${showOverview ? "is-active" : ""}`}
             aria-expanded={showOverview}
             aria-controls="training-overview"
+            aria-label={canNavigate ? "Questions" : "Session info"}
             onClick={() => setShowOverview(!showOverview)}
             title={canNavigate ? "Question Navigator" : "Session info"}
           >
