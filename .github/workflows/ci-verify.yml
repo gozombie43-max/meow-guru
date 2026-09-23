@@ -64,11 +64,9 @@ jobs:
       - name: Install Backend Dependencies
         run: npm ci --workspace backend --include-workspace-root=false
 
-      - name: Verify backend app module imports without optional integration credentials
+      - name: Verify backend app and training route without optional integration credentials
         working-directory: ./backend
-        run: >
-          node --input-type=module -e
-          "await import('./app.js');"
+        run: node scripts/verify-app-no-optional-integrations.js
 
       - name: Run Backend Tests (Vitest)
         working-directory: ./backend
