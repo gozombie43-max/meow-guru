@@ -22,14 +22,11 @@
   white-space: nowrap;
 }
 
-/* ── Backdrop (portaled inside the dialog → lives in the top layer) ─────── */
-/* The native <dialog showModal> is in the browser "top layer".
-   Elements portaled INTO the dialog DOM also live in the top layer.
-   position:fixed here fills the entire viewport (correct in top-layer context). */
+/* ── Backdrop (portaled into document.body or top layer) ─────────────────── */
 .tfp-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 10;
+  z-index: 150;
   display: flex;
   align-items: flex-end;
   justify-content: center;

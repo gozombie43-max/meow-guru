@@ -9,12 +9,26 @@ import "./training-select-dropdown.css";
 import "./training-filter-picker.css";
 
 
-export function TrainingFilterPicker({ label, value, options, emptyLabel, onChange }: {
+export function TrainingFilterPicker({
+  label,
+  value,
+  options,
+  emptyLabel,
+  onChange,
+  icon,
+  iconBgClass,
+  variant = "default",
+  className,
+}: {
   label: string;
   value: string;
   options: string[];
   emptyLabel: string;
   onChange: (value: string) => void;
+  icon?: React.ReactNode;
+  iconBgClass?: string;
+  variant?: "default" | "card";
+  className?: string;
 }) {
   const { theme } = useThemeMode();
   const id = useId();
@@ -28,20 +42,16 @@ export function TrainingFilterPicker({ label, value, options, emptyLabel, onChan
   const triggerRef = useRef<HTMLButtonElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
-  // Open → find portal target (inside the dialog so it renders in top-layer), animate in
+  // Open → find portal target, animate in
   useEffect(() => {
     if (!open) return;
 
-    // Portal INTO the native dialog so we live in the top-layer with it.
-    // Fall back to document.body if for some reason the dialog isn't found.
     const setup = document.getElementById("training-setup");
-
-    // Add class for subtle visual state on the setup dialog (no blur needed now)
     setup?.setAttribute("data-picker-open", "true");
 
-  // Trigger enter animation on next frame
+    // Trigger enter animation on next frame
     const raf = requestAnimationFrame(() => {
-      setPortalTarget(setup ?? document.body);
+      setPortalTarget(setup ?? (typeof document !== "undefined" ? document.body : null));
       setVisible(true);
     });
     // Auto-focus search after animation
@@ -183,23 +193,39 @@ export function TrainingFilterPicker({ label, value, options, emptyLabel, onChan
   const isDark = theme === "dark";
 
   return (
-    <div className={`tsd-field ${isDark ? "tsd-dark" : ""}`}>
-      <label id={`${id}-label`} className="tsd-label">{label}</label>
+    <div className={`tsd-field ${variant === "card" ? "tsd-field--card" : ""} ${open ? "tsd-field--open" : ""} ${isDark ? "tsd-dark" : ""} ${className || ""}`}>
+      {variant !== "card" && (
+        <label id={`${id}-label`} className="tsd-label">{label}</label>
+      )}
       <button
         ref={triggerRef}
         type="button"
         id={`${id}-trigger`}
-        className={`tsd-trigger ${open ? "tsd-trigger--open" : ""}`}
+        className={`tsd-trigger ${variant === "card" ? "tsd-trigger--card" : ""} ${open ? "tsd-trigger--open" : ""}`}
         aria-labelledby={`${id}-label ${id}-value`}
         aria-haspopup="dialog"
         aria-expanded={open}
         onClick={() => { setDraft(value); setQuery(""); setOpen(true); }}
       >
-        <span id={`${id}-value`} className={`tsd-trigger-value ${!value ? "tsd-trigger-placeholder" : ""}`}>
-          {value || emptyLabel}
-        </span>
+        {variant === "card" && icon && (
+          <div className={`tsd-card-icon-wrap ${iconBgClass || ""}`} aria-hidden="true">
+            {icon}
+          </div>
+        )}
+        {variant === "card" ? (
+          <div className="tsd-card-content">
+            <span id={`${id}-label`} className="tsd-card-label">{label}</span>
+            <span id={`${id}-value`} className={`tsd-card-value ${!value ? "tsd-trigger-placeholder" : ""}`}>
+              {value || emptyLabel}
+            </span>
+          </div>
+        ) : (
+          <span id={`${id}-value`} className={`tsd-trigger-value ${!value ? "tsd-trigger-placeholder" : ""}`}>
+            {value || emptyLabel}
+          </span>
+        )}
         <ChevronDown
-          size={16}
+          size={variant === "card" ? 18 : 16}
           className={`tsd-chevron ${open ? "tsd-chevron--open" : ""}`}
           aria-hidden="true"
         />

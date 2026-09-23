@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowRight, ChevronDown, Sparkles, Target } from "lucide-react";
 
 import { useThemeMode } from "@/hooks/useTheme";
@@ -18,10 +19,10 @@ import "./play-hub.css";
 import { useTrainingCapabilities } from "./hooks/useTrainingCapabilities";
 import { useTrainingDashboard } from "./hooks/useTrainingDashboard";
 import { useTrainingSetup } from "./hooks/useTrainingSetup";
-import { TrainingSetupDialog } from "./components/TrainingSetupDialog";
 
 export default function PlayPage() {
   const { theme } = useThemeMode();
+  const router = useRouter();
 
   const contentRef = useRef<HTMLElement>(null);
   const [tab, setTab] = useState("Play");
@@ -30,37 +31,15 @@ export default function PlayPage() {
   const { capabilities, error: capabilitiesError } = useTrainingCapabilities();
   const { dashboard, loading, error: dashboardError, setDashboard, setLoading, setError: setDashboardError } = useTrainingDashboard(exam);
   const {
-    selected, setSelected,
-    subject, setSubject,
-    topic, setTopic,
-    count, setCount,
-    tier, setTier,
-    minutes, setMinutes,
     busy, error: setupError, setError: setSetupError,
-    choose, start
+    start
   } = useTrainingSetup(exam);
 
   const error = capabilitiesError || dashboardError || setupError;
 
-  useEffect(() => {
-    if (!selected) return;
-    const dialog = document.getElementById("training-setup") as HTMLDialogElement | null;
-    const trigger = document.activeElement as HTMLElement | null;
-    const previousOverflow = document.body.style.overflow;
-    const content = contentRef.current;
-    const previousContentOverflow = content?.style.overflowY || "";
-    
-    if (content) content.style.overflowY = "hidden";
-    document.body.style.overflow = "hidden";
-    dialog?.showModal();
-    
-    return () => {
-      dialog?.close();
-      document.body.style.overflow = previousOverflow;
-      if (content) content.style.overflowY = previousContentOverflow;
-      trigger?.focus({ preventScroll: true });
-    };
-  }, [selected]);
+  const handleChooseMode = (mode: string) => {
+    router.push(`/play/setup/${mode}?exam=${encodeURIComponent(exam)}`);
+  };
 
   function navigate(tab: string) {
     setTab(tab);
@@ -93,8 +72,6 @@ export default function PlayPage() {
                   setLoading(true);
                   setDashboardError("");
                   setSetupError("");
-                  setSubject("");
-                  setTopic("");
                 }}
               >
                 {(capabilities?.exams || [
@@ -165,7 +142,7 @@ export default function PlayPage() {
               space
             </span>
           </div>
-          {error && !selected && (
+          {error && (
             <div role="alert" className="training-error">
               {error}
               <button
@@ -246,7 +223,7 @@ export default function PlayPage() {
                 available={!!dashboard}
                 onOpen={() => navigate("Train Me")}
               />
-              <PlayModeLibrary onChoose={(mode) => choose(mode, !!capabilities)} />
+              <PlayModeLibrary onChoose={handleChooseMode} />
               <PlayPulse
                 dashboard={dashboard}
                 loading={loading}
@@ -260,34 +237,11 @@ export default function PlayPage() {
               dashboard={dashboard}
               loading={loading}
               exam={exam}
-              choose={(mode) => choose(mode, !!capabilities)}
+              choose={handleChooseMode}
             />
           )}
         </main>
       </div>
-
-      <TrainingSetupDialog
-        selected={selected}
-        setSelected={setSelected}
-        exam={exam}
-        theme={theme}
-        dashboard={dashboard}
-        capabilities={capabilities}
-        loading={loading}
-        busy={busy}
-        error={setupError}
-        subject={subject}
-        setSubject={setSubject}
-        topic={topic}
-        setTopic={setTopic}
-        count={count}
-        setCount={setCount}
-        tier={tier}
-        setTier={setTier}
-        minutes={minutes}
-        setMinutes={setMinutes}
-        start={start}
-      />
     </div>
   );
 }

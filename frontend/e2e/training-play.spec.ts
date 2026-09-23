@@ -334,17 +334,19 @@ test("play exposes all modes and persists an adaptive session across reload", as
   if (testInfo.project.name === "mobile") await page.setViewportSize({ width: 320, height: 568 });
   for (const mode of modes) {
     await page.getByRole("button", { name: `Set up ${mode.title}`, exact: true }).click();
-    const setup = page.getByRole("dialog");
-    await expect(setup.getByRole("heading", { name: mode.title, exact: true })).toBeVisible();
+    await expect(page).toHaveURL(new RegExp(`/play/setup/${mode.id}`));
+    await expect(page.getByRole("heading", { name: mode.title, exact: true })).toBeVisible();
     await expect(async () => {
-      const b = await setup.getByRole("button", { name: "Begin training" }).boundingBox();
+      const b = await page.getByRole("button", { name: "Begin training" }).boundingBox();
       expect(b!.y + b!.height).toBeLessThanOrEqual(page.viewportSize()!.height);
     }).toPass();
     if (mode.id === "adaptive") await page.screenshot({ path: testInfo.outputPath("setup.png") });
-    await page.getByRole("button", { name: "Close setup" }).click();
+    await page.getByRole("link", { name: "Back to Play" }).click();
+    await expect(page).toHaveURL(/\/play$/);
   }
   await page.setViewportSize(setupViewport);
   await page.getByRole("button", { name: "Set up Adaptive" }).click();
+  await expect(page).toHaveURL(/\/play\/setup\/adaptive/);
   await expect(page.getByRole("heading", { name: "Adaptive" })).toBeVisible();
   await page.getByRole("button", { name: /^Subject / }).click();
   const subjectListbox = page.getByRole("listbox", { name: "Subject" });
@@ -367,9 +369,8 @@ test("play exposes all modes and persists an adaptive session across reload", as
   await page.getByRole("button", { name: /^Subject / }).click();
   await page.keyboard.press("Escape");
   await expect(subjectListbox).toHaveCount(0);
-  await expect(page.getByRole("dialog", { name: "Adaptive", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Begin training" }).click();
-  await expect(page.getByText("Preparing your questions", { exact: true })).toBeVisible();
+  await expect(page.getByText("Building your session…", { exact: false })).toBeVisible();
   await expect(page.getByRole("button", { name: "Building your session…" })).toBeDisabled();
   await expect(page.getByRole("button", { name: /^Subject / })).toBeDisabled();
   releaseCreation();

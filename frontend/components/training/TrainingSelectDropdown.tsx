@@ -18,6 +18,10 @@ interface TrainingSelectDropdownProps {
   onChange: (value: string) => void;
   disabled?: boolean;
   placement?: "auto" | "top" | "bottom";
+  icon?: React.ReactNode;
+  iconBgClass?: string;
+  variant?: "default" | "card";
+  className?: string;
 }
 
 export function TrainingSelectDropdown({
@@ -28,6 +32,10 @@ export function TrainingSelectDropdown({
   onChange,
   disabled = false,
   placement: preferredPlacement = "auto",
+  icon,
+  iconBgClass,
+  variant = "default",
+  className,
 }: TrainingSelectDropdownProps) {
   const { theme } = useThemeMode();
   const id = useId();
@@ -140,16 +148,18 @@ export function TrainingSelectDropdown({
   return (
     <div
       ref={wrapperRef}
-      className={`tsd-field ${open ? "tsd-field--open" : ""} ${isDark ? "tsd-dark" : ""}`}
+      className={`tsd-field ${variant === "card" ? "tsd-field--card" : ""} ${open ? "tsd-field--open" : ""} ${isDark ? "tsd-dark" : ""} ${className || ""}`}
     >
-      <label id={`${id}-label`} className="tsd-label">
-        {label}
-      </label>
+      {variant !== "card" && (
+        <label id={`${id}-label`} className="tsd-label">
+          {label}
+        </label>
+      )}
       <button
         ref={triggerRef}
         type="button"
         id={`${id}-trigger`}
-        className={`tsd-trigger ${open ? "tsd-trigger--open" : ""}`}
+        className={`tsd-trigger ${variant === "card" ? "tsd-trigger--card" : ""} ${open ? "tsd-trigger--open" : ""}`}
         aria-labelledby={`${id}-label ${id}-value`}
         aria-haspopup="listbox"
         aria-expanded={open}
@@ -157,14 +167,31 @@ export function TrainingSelectDropdown({
         disabled={disabled}
         onClick={() => (open ? handleClose() : handleOpen())}
       >
-        <span
-          id={`${id}-value`}
-          className={`tsd-trigger-value ${!value ? "tsd-trigger-placeholder" : ""}`}
-        >
-          {value ? selectedLabel : placeholder}
-        </span>
+        {variant === "card" && icon && (
+          <div className={`tsd-card-icon-wrap ${iconBgClass || ""}`} aria-hidden="true">
+            {icon}
+          </div>
+        )}
+        {variant === "card" ? (
+          <div className="tsd-card-content">
+            <span id={`${id}-label`} className="tsd-card-label">{label}</span>
+            <span
+              id={`${id}-value`}
+              className={`tsd-card-value ${!value ? "tsd-trigger-placeholder" : ""}`}
+            >
+              {value ? selectedLabel : placeholder}
+            </span>
+          </div>
+        ) : (
+          <span
+            id={`${id}-value`}
+            className={`tsd-trigger-value ${!value ? "tsd-trigger-placeholder" : ""}`}
+          >
+            {value ? selectedLabel : placeholder}
+          </span>
+        )}
         <ChevronDown
-          size={16}
+          size={variant === "card" ? 18 : 16}
           className={`tsd-chevron ${open ? "tsd-chevron--open" : ""}`}
           aria-hidden="true"
         />

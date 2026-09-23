@@ -24,7 +24,18 @@ describe('BottomNav Component', () => {
     expect(activeLink).not.toBeNull();
   });
 
-  it.each(['/battle', '/battle/profile', '/battle/leaderboard', '/battle/missions', '/battle/social', '/battle/profile/', '/notifications', '/notifications/'])('stays hidden on %s', (path) => {
+  it.each([
+    '/battle',
+    '/battle/profile',
+    '/battle/leaderboard',
+    '/battle/missions',
+    '/battle/social',
+    '/battle/profile/',
+    '/notifications',
+    '/notifications/',
+    '/play/setup/adaptive',
+    '/play/setup/nightmare',
+  ])('stays hidden on %s', (path) => {
     mockPathname = path;
     const { container } = render(<BottomNav />);
     expect(container.querySelector('nav')).toBeNull();
