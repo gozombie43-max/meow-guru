@@ -13,7 +13,9 @@
 
 .training-session-header {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   padding: calc(10px + var(--safe-top)) max(20px, var(--safe-right)) 10px
     max(20px, var(--safe-left));
   background: var(--tr-surface);
@@ -24,20 +26,12 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
-.training-header-main-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  gap: 16px;
-}
-
 .training-header-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   min-width: 0;
-  flex-shrink: 0;
+  flex-shrink: 1;
 }
 
 .training-header-back {
@@ -56,6 +50,35 @@
 .training-header-back:hover {
   background: var(--tr-border);
   transform: translateX(-1px);
+}
+
+.training-header-overview-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  border-radius: 9px;
+  font-size: 12.5px;
+  font-weight: 750;
+  background: var(--tr-muted);
+  border: 1px solid var(--tr-border);
+  color: var(--tr-text);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  height: 38px;
+  min-height: 38px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.training-header-overview-btn:hover {
+  background: var(--tr-border);
+}
+
+.training-header-overview-btn.is-active {
+  background: var(--tr-accent);
+  color: #fff;
+  border-color: var(--tr-accent);
 }
 
 .training-session-title-wrap {
@@ -95,7 +118,7 @@
   text-overflow: ellipsis;
 }
 
-.training-session-header span {
+.training-session-subtitle {
   display: block;
   color: var(--tr-secondary);
   font-size: 11px;
@@ -103,54 +126,25 @@
   margin-top: 1px;
 }
 
-/* ── Desktop Center (Session Info, Question Counter, Lives/Answered) ── */
-.training-header-desktop-center {
+/* ── Header Center (Counter, Lives/Answered) ── */
+.training-header-center {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  flex: 1;
-  min-width: 0;
-}
-
-.training-header-overview-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: 9px;
-  font-size: 12.5px;
-  font-weight: 750;
-  background: var(--tr-muted);
-  border: 1px solid var(--tr-border);
-  color: var(--tr-text);
-  cursor: pointer;
-  transition: all 0.15s ease;
-  min-height: 34px;
-  white-space: nowrap;
-}
-
-.training-header-overview-btn:hover {
-  background: var(--tr-border);
-}
-
-.training-header-overview-btn.is-active {
-  background: var(--tr-accent);
-  color: #fff;
-  border-color: var(--tr-accent);
+  gap: 10px;
+  flex-shrink: 0;
 }
 
 .training-header-counter {
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.6px;
   color: var(--tr-secondary);
   white-space: nowrap;
 }
 
-.training-header-answered-meta {
-  display: flex;
-  align-items: center;
+.training-header-counter .mobile-text {
+  display: none;
 }
 
 .training-header-answered-pill {
@@ -165,6 +159,10 @@
   color: var(--tr-secondary);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+
+.training-header-answered-pill .mobile-text {
+  display: none;
 }
 
 .training-survival-lives {
@@ -200,16 +198,11 @@
   opacity: 0.35;
 }
 
-/* ── Mobile Sub-row (Hidden on Desktop by default) ── */
-.training-header-mobile-subrow {
-  display: none;
-}
-
 /* ── Header Right (Timer Clock & Finish Button) ── */
 .training-header-right {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-shrink: 0;
 }
 
@@ -217,7 +210,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
+  padding: 0 12px;
   border-radius: 9999px;
   background: var(--tr-muted);
   border: 1px solid var(--tr-border);
@@ -227,8 +220,21 @@
   color: var(--tr-text);
   white-space: nowrap;
   flex-shrink: 0;
-  min-height: 34px;
+  height: 38px;
+  min-height: 38px;
   transition: all 0.2s ease;
+}
+
+.training-clock svg {
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.training-clock span {
+  display: inline-block !important;
+  color: var(--tr-text);
+  font-size: 14px;
+  font-weight: 750;
 }
 
 .training-clock-urgent {
@@ -238,13 +244,21 @@
   animation: pulse-urgent 1.5s infinite;
 }
 
+.training-clock-urgent span {
+  color: #ef4444 !important;
+}
+
 .training-header-finish {
-  padding: 6px 14px;
+  padding: 0 14px;
   border-radius: 9px;
   font-size: 13px;
   font-weight: 700;
-  min-height: 34px;
+  height: 38px;
+  min-height: 38px;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* ── Integrated Progress Track Pin to Header Bottom ── */
@@ -2304,134 +2318,104 @@
 .training-question-info-content dd { margin: 0; overflow-wrap: anywhere; line-height: 1.5; }
 @media (max-width: 1023px) {
   .training-session .training-session-header {
-    padding: calc(8px + var(--safe-top)) max(12px, var(--safe-right)) 8px max(12px, var(--safe-left));
-    gap: 8px;
-  }
-
-  .training-header-main-row {
-    display: flex;
+    padding: calc(6px + var(--safe-top)) max(10px, var(--safe-right)) 6px max(10px, var(--safe-left));
+    gap: 6px;
+    flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    width: 100%;
-    gap: 8px;
   }
 
   .training-header-left {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-width: 0;
-    flex: 1;
+    gap: 6px;
+    flex-shrink: 0;
   }
 
   .training-session .training-header-back {
-    width: 36px;
-    height: 36px;
-    border-radius: 9px;
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    border-radius: 8px;
   }
 
-  .training-session .training-session-mode-badge {
+  .training-header-overview-btn {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 8px;
+  }
+
+  .training-header-overview-btn .training-nav-btn-text {
     display: none;
   }
 
-  .training-session-header strong {
-    font-size: 14px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .training-session-header span {
+  .training-session-title-wrap {
     display: none;
   }
 
-  .training-header-desktop-center {
+  .training-header-center {
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .training-header-counter {
+    font-size: 11.5px;
+    font-weight: 800;
+  }
+
+  .training-header-counter .desktop-text {
     display: none;
+  }
+
+  .training-header-counter .mobile-text {
+    display: inline;
+  }
+
+  .training-header-answered-pill {
+    padding: 2px 6px;
+    font-size: 10.5px;
+  }
+
+  .training-header-answered-pill .desktop-text {
+    display: none;
+  }
+
+  .training-header-answered-pill .mobile-text {
+    display: inline;
   }
 
   .training-header-right {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    gap: 5px;
     flex-shrink: 0;
   }
 
   .training-session .training-clock {
-    padding: 5px 10px;
-    gap: 5px;
-    font-size: 13.5px;
+    height: 34px;
     min-height: 34px;
+    padding: 0 8px;
+    gap: 4px;
     border-radius: 8px;
   }
 
   .training-session .training-clock svg {
+    width: 13px;
+    height: 13px;
     display: inline-block;
-    width: 14px;
-    height: 14px;
   }
 
   .training-session .training-clock span {
-    font-size: 13.5px;
+    font-size: 12.5px;
+    display: inline-block !important;
   }
 
   .training-session .training-header-finish {
-    padding: 5px 12px;
-    font-size: 13px;
+    height: 34px;
     min-height: 34px;
+    padding: 0 10px;
+    font-size: 12px;
     border-radius: 8px;
     font-weight: 750;
-  }
-
-  /* Sub-row in Header on Mobile */
-  .training-header-mobile-subrow {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    padding-top: 6px;
-    border-top: 1px dashed var(--tr-border);
-    gap: 8px;
-  }
-
-  .training-header-mobile-overview-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 4px 9px;
-    border-radius: 7px;
-    font-size: 11.5px;
-    font-weight: 750;
-    background: var(--tr-muted);
-    border: 1px solid var(--tr-border);
-    color: var(--tr-text);
-    cursor: pointer;
-    min-height: 28px;
-    white-space: nowrap;
-  }
-
-  .training-header-mobile-overview-btn.is-active {
-    background: var(--tr-accent);
-    color: #fff;
-    border-color: var(--tr-accent);
-  }
-
-  .training-header-mobile-counter {
-    font-size: 11.5px;
-    font-weight: 850;
-    letter-spacing: 0.6px;
-    color: var(--tr-secondary);
-    text-transform: uppercase;
-  }
-
-  .training-header-mobile-answered {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--tr-secondary);
-    background: var(--tr-muted);
-    border: 1px solid var(--tr-border);
-    padding: 3px 8px;
-    border-radius: 9999px;
-    font-variant-numeric: tabular-nums;
   }
 
   .training-session .training-session-main {

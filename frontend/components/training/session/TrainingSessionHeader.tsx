@@ -60,121 +60,53 @@ export function TrainingSessionHeader({
 
   return (
     <header className="training-session-header" data-ui-chrome="header">
-      {/* Top Main Row */}
-      <div className="training-header-main-row">
-        <div className="training-header-left">
-          <Link
-            replace
-            href="/play"
-            data-ui-button="icon"
-            className="training-header-back"
-            aria-label="Back to Play"
+      {/* Left side: Back + Overview toggle + Title */}
+      <div className="training-header-left">
+        <Link
+          replace
+          href="/play"
+          data-ui-button="icon"
+          className="training-header-back"
+          aria-label="Back to Play"
+        >
+          <ArrowLeft size={18} />
+        </Link>
+
+        {isActive && setShowOverview && (
+          <button
+            type="button"
+            className={`training-header-overview-btn ${showOverview ? "is-active" : ""}`}
+            aria-expanded={showOverview}
+            aria-controls="training-overview"
+            onClick={() => setShowOverview(!showOverview)}
+            title={canNavigate ? "Question Navigator" : "Session info"}
           >
-            <ArrowLeft size={18} />
-          </Link>
-          <div className="training-session-title-wrap">
-            <div className="training-session-title-row">
-              <div className="training-session-mode-badge" aria-hidden="true">
-                <ModeIcon mode={session?.mode} />
-              </div>
-              <strong>
-                {modes.find((m) => m.id === session?.mode)?.title || "Training"}
-              </strong>
-            </div>
-            <span>
-              {session?.exam.replaceAll("-", " ").toUpperCase()}
-            </span>
-          </div>
-        </div>
-
-        {/* Desktop Center (Shown on Desktop >= 1024px) */}
-        {isActive && (
-          <div className="training-header-desktop-center">
-            {setShowOverview && (
-              <button
-                type="button"
-                className={`training-header-overview-btn ${showOverview ? "is-active" : ""}`}
-                aria-expanded={showOverview}
-                aria-controls="training-overview"
-                onClick={() => setShowOverview(!showOverview)}
-                title={canNavigate ? "Question Navigator" : "Session info"}
-              >
-                <List size={15} />
-                <span>{canNavigate ? "Questions" : "Session info"}</span>
-              </button>
-            )}
-
-            <span className="training-header-counter">
-              QUESTION {currentQNum} OF {totalQuestions}
-            </span>
-
-            {session.effectiveMode === "survival" ? (
-              <div
-                className="training-survival-lives"
-                aria-label={`${session.lives} lives remaining`}
-              >
-                <span className="training-lives-label">LIVES</span>
-                <div className="training-lives-hearts">
-                  {[1, 2, 3].map((lifeIndex) => {
-                    const isAlive = lifeIndex <= session.lives;
-                    return (
-                      <Heart
-                        key={lifeIndex}
-                        size={14}
-                        className={`training-heart-icon ${isAlive ? "is-alive" : "is-lost"}`}
-                        fill={isAlive ? "currentColor" : "none"}
-                      />
-                    );
-                  })}
-                </div>
-              </div>
-            ) : (
-              <div className="training-header-answered-meta">
-                <span className="training-header-answered-pill">
-                  {answered} / {totalQuestions} answered
-                </span>
-              </div>
-            )}
-          </div>
+            <List size={16} />
+            <span className="training-nav-btn-text">{canNavigate ? "Questions" : "Info"}</span>
+          </button>
         )}
 
-        <div className="training-header-right">
-          {isActive && (
-            <TrainingClock deadline={session.deadline} timeSync={timeSync} />
-          )}
-          {isActive && (
-            <button
-              type="button"
-              data-ui-button="secondary"
-              className="training-header-finish"
-              aria-label="Finish session"
-              disabled={busy}
-              onClick={() => setConfirmFinish(true)}
-            >
-              Finish
-            </button>
-          )}
+        <div className="training-session-title-wrap">
+          <div className="training-session-title-row">
+            <div className="training-session-mode-badge" aria-hidden="true">
+              <ModeIcon mode={session?.mode} />
+            </div>
+            <strong>
+              {modes.find((m) => m.id === session?.mode)?.title || "Training"}
+            </strong>
+          </div>
+          <span className="training-session-subtitle">
+            {session?.exam.replaceAll("-", " ").toUpperCase()}
+          </span>
         </div>
       </div>
 
-      {/* Mobile Sub-row (Shown on Mobile < 1024px) */}
+      {/* Center: Question Counter & Answered Status / Survival Lives */}
       {isActive && (
-        <div className="training-header-mobile-subrow">
-          {setShowOverview && (
-            <button
-              type="button"
-              className={`training-header-mobile-overview-btn ${showOverview ? "is-active" : ""}`}
-              aria-expanded={showOverview}
-              aria-controls="training-overview"
-              onClick={() => setShowOverview(!showOverview)}
-            >
-              <List size={14} />
-              <span>{canNavigate ? "Questions" : "Session info"}</span>
-            </button>
-          )}
-
-          <span className="training-header-mobile-counter">
-            QUESTION {currentQNum} OF {totalQuestions}
+        <div className="training-header-center">
+          <span className="training-header-counter">
+            <span className="desktop-text">QUESTION {currentQNum} OF {totalQuestions}</span>
+            <span className="mobile-text">Q{currentQNum}/{totalQuestions}</span>
           </span>
 
           {session.effectiveMode === "survival" ? (
@@ -198,14 +130,34 @@ export function TrainingSessionHeader({
               </div>
             </div>
           ) : (
-            <span className="training-header-mobile-answered">
-              {answered} / {totalQuestions} answered
+            <span className="training-header-answered-pill">
+              <span className="desktop-text">{answered} / {totalQuestions} answered</span>
+              <span className="mobile-text">{answered}/{totalQuestions}</span>
             </span>
           )}
         </div>
       )}
 
-      {/* Integrated Progress Track Pin to Header Bottom */}
+      {/* Right side: Timer Clock + Finish */}
+      <div className="training-header-right">
+        {isActive && (
+          <TrainingClock deadline={session.deadline} timeSync={timeSync} />
+        )}
+        {isActive && (
+          <button
+            type="button"
+            data-ui-button="secondary"
+            className="training-header-finish"
+            aria-label="Finish session"
+            disabled={busy}
+            onClick={() => setConfirmFinish(true)}
+          >
+            Finish
+          </button>
+        )}
+      </div>
+
+      {/* Sleek Progress Line at bottom of the header */}
       {isActive && totalQuestions > 0 && (
         <div className="training-header-progress-track">
           <div
