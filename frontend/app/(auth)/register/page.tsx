@@ -9,12 +9,10 @@ import { User, Mail, Lock, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import api from '@/shared/api/client';
 import { API_BASE } from '@/lib/api-base';
-import {
-  AuthCard,
-  AuthInput,
-  AuthGoogleButton,
-  PasswordStrengthBar,
-} from '@/components/auth';
+import AuthCard from '@/components/auth/AuthCard';
+import AuthInput from '@/components/auth/AuthInput';
+import AuthGoogleButton from '@/components/auth/AuthGoogleButton';
+import PasswordStrengthBar from '@/components/auth/PasswordStrengthBar';
 import styles from '@/components/auth/auth.module.css';
 
 const registerSchema = z.object({
