@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
+import { useNativeDialog } from "@/components/ui/Dialog";
 import { LogOut } from "lucide-react";
 import { navigationController, type ExitConfirmation } from "@/lib/navigation-controller";
 import styles from "./QuizExitDialog.module.css";
@@ -16,9 +17,6 @@ function ExitModal({ confirmation }: { confirmation: ExitConfirmation }) {
 
   useEffect(() => {
     const dialog = dialogRef.current;
-    const previousFocus = document.activeElement;
-    const overflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
     const dismissBackdrop = (event: MouseEvent) => {
       if (!dialog || event.target !== dialog) return;
       const bounds = dialog.getBoundingClientRect();
@@ -27,17 +25,13 @@ function ExitModal({ confirmation }: { confirmation: ExitConfirmation }) {
       }
     };
     dialog?.addEventListener("click", dismissBackdrop);
-    dialog?.showModal();
-    cancelRef.current?.focus();
     return () => {
       dialog?.removeEventListener("click", dismissBackdrop);
-      dialog?.close();
-      document.body.style.overflow = overflow;
-      if (previousFocus instanceof HTMLElement && previousFocus.isConnected) previousFocus.focus();
     };
   }, []);
 
   const cancel = () => navigationController().resolveConfirmation(false);
+  useNativeDialog(dialogRef, true, cancel, { back: false, initialFocus: '[data-ui-button="secondary"]' });
   return createPortal(
     <dialog
       ref={dialogRef}

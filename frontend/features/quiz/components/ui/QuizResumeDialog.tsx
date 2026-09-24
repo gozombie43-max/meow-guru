@@ -1,7 +1,7 @@
 "use client";
 
-import { useBackLayer } from "@/hooks/useAppNavigation";
-import { useEffect, useRef } from "react";
+import { Dialog } from "@/components/ui/Dialog";
+import { useRef } from "react";
 import { History, Play, RotateCcw } from "lucide-react";
 import styles from "@/features/quiz/components/ui/QuizResumeDialog.module.css";
 
@@ -16,31 +16,9 @@ type Props = {
 };
 
 export function QuizResumeDialog({ theme, currentIndex, answered, total, onResume, onRestart, onCancel }: Props) {
-  useBackLayer(true, onCancel);
   const resumeRef = useRef<HTMLButtonElement>(null);
   const progress = total > 0 ? Math.min(100, Math.max(0, answered / total * 100)) : 0;
 
-  useEffect(() => {
-    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    resumeRef.current?.focus();
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        onCancel();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = previousOverflow;
-      previousFocus?.focus();
-    };
-  }, [onCancel]);
 
   return (
     <div
@@ -53,7 +31,7 @@ export function QuizResumeDialog({ theme, currentIndex, answered, total, onResum
       role="presentation"
       data-theme={theme}
     >
-      <div
+      <Dialog onClose={onCancel} initialFocus="button"
         className={styles.dialog}
         role="dialog"
         aria-modal="true"
@@ -83,7 +61,7 @@ export function QuizResumeDialog({ theme, currentIndex, answered, total, onResum
           <p id="quiz-restart-hint" className={styles.hint}>Restart clears your saved progress.</p>
           <button type="button" data-ui-button="state" className={styles.cancel} onClick={onCancel}>Cancel</button>
         </div>
-      </div>
+      </Dialog>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { X } from "lucide-react";
 import { type TrainingSession, type TrainingAction } from "../training-types";
-import { useEffect } from "react";
+import { useNativeDialog } from "@/components/ui/Dialog";
 
 interface TrainingFinishDialogProps {
   finishRef: React.RefObject<HTMLDialogElement | null>;
@@ -25,21 +25,12 @@ export function TrainingFinishDialog({
   busy,
   act
 }: TrainingFinishDialogProps) {
-  useEffect(() => {
-    if (!confirmFinish) return;
-    const dialog = finishRef.current;
-    const trigger = document.activeElement as HTMLElement | null;
-    dialog?.showModal();
-    return () => {
-      dialog?.close();
-      trigger?.focus();
-    };
-  }, [confirmFinish, finishRef]);
+  useNativeDialog(finishRef, confirmFinish && !!session, () => setConfirmFinish(false), { busy, initialFocus: '[data-ui-button="secondary"]' });
 
   if (!confirmFinish || !session) return null;
 
   return (
-    <dialog ref={finishRef} className="training-finish-dialog" aria-labelledby="training-finish-title" aria-describedby="training-finish-description" onCancel={event => { if (busy) event.preventDefault(); else setConfirmFinish(false); }}>
+    <dialog ref={finishRef} className="training-finish-dialog" aria-labelledby="training-finish-title" aria-describedby="training-finish-description">
       <div className="training-panel-heading">
         <span className="training-kicker">SESSION SUMMARY</span>
         <button data-ui-button="icon" aria-label="Close finish dialog" disabled={busy} onClick={() => setConfirmFinish(false)}><X size={20} /></button>

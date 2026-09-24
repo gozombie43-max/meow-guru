@@ -1,5 +1,6 @@
 "use client";
 
+import { Dialog } from "@/components/ui/Dialog";
 import React, { useState, useEffect, useMemo, useCallback, useRef, useId } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
@@ -95,11 +96,8 @@ function IosExamPicker({ value, options, onChange }: {
   const [visible, setVisible] = useState(false);
   const backdropRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const prevOverflowRef = useRef("");
 
   const handleOpen = useCallback(() => {
-    prevOverflowRef.current = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
     setOpen(true);
     requestAnimationFrame(() => setVisible(true));
   }, []);
@@ -108,21 +106,14 @@ function IosExamPicker({ value, options, onChange }: {
     setVisible(false);
     setTimeout(() => {
       setOpen(false);
-      document.body.style.overflow = prevOverflowRef.current;
-      triggerRef.current?.focus({ preventScroll: true });
-    }, 340);
+    }, (typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) ? 0 : 340);
   }, []);
 
   const handleBackdropClick = useCallback((e: React.MouseEvent) => {
     if (e.target === backdropRef.current) handleClose();
   }, [handleClose]);
 
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") { e.preventDefault(); handleClose(); } };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open, handleClose]);
+
 
 
   return (
@@ -148,7 +139,7 @@ function IosExamPicker({ value, options, onChange }: {
           role="presentation"
           onClick={handleBackdropClick}
         >
-          <div
+          <Dialog onClose={handleClose}
             className={`${styles.examSheet} ${visible ? styles.examSheetIn : ""}`}
             role="dialog"
             aria-modal="true"
@@ -174,7 +165,7 @@ function IosExamPicker({ value, options, onChange }: {
                 </button>
               ))}
             </div>
-          </div>
+          </Dialog>
         </div>,
         document.body,
       )}

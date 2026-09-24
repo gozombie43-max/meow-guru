@@ -1,3 +1,4 @@
+import { Dialog } from "@/components/ui/Dialog";
 import { X } from "lucide-react";
 import type { CSSProperties } from "react";
 import { resourceTabs, subjects, type ResourceTab, type SubjectId } from "./resource-model";
@@ -12,7 +13,7 @@ type Props = {
 export default function ResourceUploadDialog({ activeSubject, activeTab, onBeginUpload, onClose }: Props) {
   return (
     <div className="res-modal-backdrop">
-      <div className="res-modal" role="dialog" aria-modal="true" aria-labelledby="res-upload-title">
+      <Dialog onClose={onClose} className="res-modal" role="dialog" aria-modal="true" aria-labelledby="res-upload-title">
         <div className="res-modal-header">
           <div>
             <p className="res-modal-eyebrow">Upload Document</p>
@@ -37,7 +38,7 @@ export default function ResourceUploadDialog({ activeSubject, activeTab, onBegin
         </div>
 
         <button data-ui-button="secondary" type="button" className="res-modal-cancel" onClick={onClose}>Cancel</button>
-      </div>
+      </Dialog>
     </div>
   );
 }

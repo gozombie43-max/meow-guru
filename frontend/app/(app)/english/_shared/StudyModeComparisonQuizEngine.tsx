@@ -1,7 +1,8 @@
 'use client';
-import { useEffect, useMemo, useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import { ArrowLeft, LogOut, Volume2, X } from "lucide-react";
 import { studyModeComparisonStyles, studyModeLoadingStyles } from "./study-mode-comparison.styles";
+import { useNativeDialog } from "@/components/ui/Dialog";
 import BackButton from "@/components/BackButton";
 import { ComparisonWordIndex } from "./ComparisonWordIndex";
 import { SpeakerBtn } from "./SpeakerBtn";
@@ -54,8 +55,8 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
   const wordNumbers = useMemo(() => new Map(cards.map((card, index) => [card.id, index + 1])), [cards]);
   const paletteRef = useRef<HTMLDialogElement>(null);
   const exitRef = useRef<HTMLDialogElement>(null);
-  useEffect(() => { if (isMobilePaletteOpen) paletteRef.current?.showModal(); }, [isMobilePaletteOpen]);
-  useEffect(() => { if (showExitConfirm) exitRef.current?.showModal(); }, [showExitConfirm]);
+  useNativeDialog(paletteRef, isMobilePaletteOpen && !loading, () => setIsMobilePaletteOpen(false));
+  useNativeDialog(exitRef, showExitConfirm && !loading, () => setShowExitConfirm(false));
   if (loading) {
     return (
       <main className="apple-dict-viewport" data-theme={theme}>
@@ -78,7 +79,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
     <main className="apple-dict-viewport" data-theme={theme}>
       {/* Mini Middle Pop-up Exit Confirmation Modal */}
       {showExitConfirm && (
-        <dialog ref={exitRef} onCancel={() => setShowExitConfirm(false)}
+        <dialog ref={exitRef}
           className="exit-modal-backdrop"
 
           aria-modal="true"
@@ -329,7 +330,7 @@ export default function StudyModeComparisonQuizEngine({ config }: { config: Stud
 
           {/* Mobile Full-Page Filter Modal */}
           {isMobilePaletteOpen && (
-            <dialog ref={paletteRef} onCancel={() => setIsMobilePaletteOpen(false)} className="mobile-full-modal" aria-modal="true" aria-label="Vocabulary Index Filter">
+            <dialog ref={paletteRef} className="mobile-full-modal" aria-modal="true" aria-label="Vocabulary Index Filter">
               {/* Modal Top Header Bar */}
               <div className="modal-top-bar" data-ui-chrome="header">
                 <button data-ui-button="icon"

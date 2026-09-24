@@ -4,7 +4,7 @@
 
 .pageRoot {
   /* Light Theme (Palette: #EAEFF5 Deeper Canvas / #DFE5ED Ice Blue / #FFFFFF Pure White Cards) */
-  --mac-bg-desktop: #EAEFF5;
+  --mac-bg-desktop: var(--light-canvas);
   --mac-desktop-gradient: radial-gradient(at 10% 12%, var(--light-surface-muted) 0px, transparent 45%),
                           radial-gradient(at 90% 10%, rgba(223, 229, 237, 0.8) 0px, transparent 45%),
                           radial-gradient(at 50% 90%, var(--light-surface-muted) 0px, transparent 55%),
@@ -15,7 +15,7 @@
   --mac-titlebar-bg: var(--light-canvas);
   --mac-sidebar-bg: var(--light-surface-muted);
   --mac-sidebar-border: var(--light-border);
-  --mac-surface: #FFFFFF;
+  --mac-surface: var(--light-surface);
   --mac-surface-hover: var(--light-surface-muted);
   --mac-surface-active: #D0D9E4;
   --mac-border: var(--light-border);
@@ -29,7 +29,7 @@
   --mac-canvas-bg: var(--light-canvas);
   --mac-canvas-header-bg: #F4F7FB;
   
-  --mac-card-bg: #FFFFFF;
+  --mac-card-bg: var(--light-surface);
   --mac-card-border: var(--light-border);
   --mac-card-hover-bg: #FFFFFF;
   --mac-card-hover-border: rgba(0, 113, 227, 0.4);
@@ -176,7 +176,7 @@
 }
 
 /* =============================================================================
-   DESKTOP PC VIEW (Zero Scroll, Locked 100vh >= 768px)
+   DESKTOP PC VIEW (Zero Scroll, Locked 100dvh >= 768px)
    ============================================================================= */
 .desktopContainer {
   display: none;
@@ -184,9 +184,9 @@
 
 @media (min-width: 768px) {
   .pageRoot {
-    height: 100vh;
     height: 100dvh;
-    max-height: 100vh;
+    height: 100dvh;
+    max-height: 100dvh;
     overflow: hidden;
   }
 
@@ -194,9 +194,9 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
     height: 100dvh;
-    max-height: 100vh;
+    height: 100dvh;
+    max-height: 100dvh;
     overflow: hidden;
     padding: 10px 14px;
     box-sizing: border-box;
@@ -265,7 +265,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease;
 }
 
 .navBtn:hover:not(:disabled) {
@@ -291,7 +291,7 @@
   border-radius: 8px;
   background: var(--mac-blue-subtle);
   color: var(--mac-blue);
-  font-size: 10.5px;
+  font-size: var(--ui-font-meta);
   font-weight: 600;
 }
 
@@ -340,7 +340,7 @@
   font-size: 12px;
   outline: none;
   font-family: inherit;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease;
 }
 
 .searchInput::placeholder {
@@ -355,7 +355,7 @@
 .searchShortcut {
   position: absolute;
   right: 6px;
-  font-size: 10px;
+  font-size: var(--ui-font-meta);
   font-weight: 600;
   background: var(--mac-surface-hover);
   color: var(--mac-text-secondary);
@@ -377,7 +377,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
+  font-size: var(--ui-font-meta);
   cursor: pointer;
 }
 
@@ -406,10 +406,10 @@
   border: none;
   background: transparent;
   color: var(--mac-text-secondary);
-  font-size: 11.5px;
+  font-size: var(--ui-font-meta);
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease;
 }
 
 .segmentedBtn:hover {
@@ -434,7 +434,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease;
 }
 
 .actionBtn:hover {
@@ -478,7 +478,7 @@
 }
 
 .sidebarHeading {
-  font-size: 10px;
+  font-size: var(--ui-font-meta);
   font-weight: 700;
   color: var(--mac-text-tertiary);
   text-transform: uppercase;
@@ -499,7 +499,7 @@
   font-weight: 500;
   cursor: pointer;
   text-align: left;
-  transition: all 0.12s ease;
+  transition: background-color 0.12s ease;
   width: 100%;
 }
 
@@ -526,7 +526,7 @@
 }
 
 .sidebarItemCount {
-  font-size: 10px;
+  font-size: var(--ui-font-meta);
   font-weight: 600;
   opacity: 0.9;
   padding: 1px 5px;
@@ -565,7 +565,7 @@
 }
 
 .canvasHeaderTitle {
-  font-size: 10.5px;
+  font-size: var(--ui-font-meta);
   font-weight: 700;
   color: var(--mac-text-secondary);
   text-transform: uppercase;
@@ -576,7 +576,7 @@
 }
 
 .canvasMeta {
-  font-size: 10.5px;
+  font-size: var(--ui-font-meta);
   color: var(--mac-text-secondary);
   display: flex;
   align-items: center;
@@ -591,7 +591,7 @@
   background: none;
   border: none;
   padding: 0;
-  font-size: 10.5px;
+  font-size: var(--ui-font-meta);
 }
 
 .clearFilterLink:hover {
@@ -629,7 +629,7 @@
   text-align: center;
   gap: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
-  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 0.15s cubic-bezier(0.16, 1, 0.3, 1);
   cursor: pointer;
   position: relative;
   text-decoration: none;
@@ -662,7 +662,7 @@
   justify-content: center;
   flex-shrink: 0;
   box-shadow: var(--mac-icon-box-shadow);
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease;
 }
 
 .compactTileSelected .tileIconBox {
@@ -685,7 +685,7 @@
 }
 
 .tileName {
-  font-size: 11.5px;
+  font-size: var(--ui-font-meta);
   font-weight: 600;
   color: var(--mac-text-primary);
   line-height: 1.28;
@@ -702,13 +702,13 @@
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  font-size: 11.5px;
+  font-size: var(--ui-font-meta);
 }
 
 .denseTable th {
   text-align: left;
   padding: 6px 10px;
-  font-size: 10px;
+  font-size: var(--ui-font-meta);
   font-weight: 700;
   color: var(--mac-text-tertiary);
   text-transform: uppercase;
@@ -763,20 +763,20 @@
 }
 
 .tablePriorityBadge {
-  font-size: 9.5px;
+  font-size: var(--ui-font-meta);
   font-weight: 700;
   padding: 2px 6px;
   border-radius: 10px;
 }
 
 .tableWeightBadge {
-  font-size: 9.5px;
+  font-size: var(--ui-font-meta);
   font-weight: 600;
   color: var(--mac-text-secondary);
 }
 
 .tableSubtopics {
-  font-size: 10.5px;
+  font-size: var(--ui-font-meta);
   color: var(--mac-text-secondary);
   max-width: 240px;
   white-space: nowrap;
@@ -785,7 +785,7 @@
 }
 
 .tableActionBtn {
-  font-size: 10.5px;
+  font-size: var(--ui-font-meta);
   font-weight: 600;
   background: var(--mac-card-bg);
   color: var(--mac-text-primary);
@@ -796,7 +796,7 @@
   text-decoration: none;
   display: inline-flex;
   align-items: center;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease;
 }
 
 .tableActionBtn:hover {
@@ -855,7 +855,7 @@
   display: flex;
   flex-direction: column;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease;
 }
 
 .heroCardHeader {
@@ -897,7 +897,7 @@
 }
 
 .heroPriorityPill {
-  font-size: 9.5px;
+  font-size: var(--ui-font-meta);
   font-weight: 600;
   padding: 1px 7px;
   border-radius: 999px;
@@ -926,7 +926,7 @@
 }
 
 .heroStatLabel {
-  font-size: 9px;
+  font-size: var(--ui-font-meta);
   font-weight: 500;
   color: var(--mac-text-tertiary);
   text-transform: uppercase;
@@ -934,7 +934,7 @@
 }
 
 .heroStatValue {
-  font-size: 11px;
+  font-size: var(--ui-font-meta);
   font-weight: 700;
   color: var(--mac-text-primary);
 }
@@ -949,10 +949,10 @@
   border-radius: 9px;
   padding: 8px 12px;
   text-decoration: none;
-  font-size: 11.5px;
+  font-size: var(--ui-font-meta);
   font-weight: 600;
   box-shadow: 0 3px 10px rgba(0, 113, 227, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.25);
-  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 0.15s cubic-bezier(0.16, 1, 0.3, 1);
   cursor: pointer;
 }
 
@@ -975,7 +975,7 @@
   background: rgba(255, 255, 255, 0.2);
   border-radius: 4px;
   padding: 1px 5px;
-  font-size: 10px;
+  font-size: var(--ui-font-meta);
   font-family: inherit;
   color: #ffffff;
   font-weight: 600;
@@ -996,7 +996,7 @@
 }
 
 .deckSectionTitle {
-  font-size: 10px;
+  font-size: var(--ui-font-meta);
   font-weight: 700;
   color: var(--mac-text-tertiary);
   text-transform: uppercase;
@@ -1004,7 +1004,7 @@
 }
 
 .deckSectionBadge {
-  font-size: 9px;
+  font-size: var(--ui-font-meta);
   font-weight: 600;
   color: var(--mac-text-secondary);
   background: var(--mac-stat-bg);
@@ -1109,7 +1109,7 @@
 }
 
 .modeCardTitle {
-  font-size: 11.5px;
+  font-size: var(--ui-font-meta);
   font-weight: 700;
   color: #0f172a;
   line-height: 1.2;
@@ -1125,7 +1125,7 @@
 }
 
 .modeCardSub {
-  font-size: 9px;
+  font-size: var(--ui-font-meta);
   font-weight: 500;
   color: #64748b;
   white-space: nowrap;
@@ -1180,7 +1180,7 @@
 }
 
 .modeCardQsText {
-  font-size: 11.5px;
+  font-size: var(--ui-font-meta);
   font-weight: 750;
   color: #007AFF !important;
   letter-spacing: -0.01em;
@@ -1218,7 +1218,7 @@
   border: 1px solid var(--mac-card-border);
   text-decoration: none;
   color: var(--mac-text-primary);
-  transition: all 0.14s ease;
+  transition: background-color 0.14s ease;
 }
 
 .resourceCard:hover {
@@ -1254,7 +1254,7 @@
 }
 
 .resourceCardTitle {
-  font-size: 10.5px;
+  font-size: var(--ui-font-meta);
   font-weight: 600;
   color: var(--mac-text-primary);
 }
@@ -1278,7 +1278,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 14px;
-  font-size: 10.5px;
+  font-size: var(--ui-font-meta);
   color: var(--mac-text-tertiary);
   user-select: none;
   flex-shrink: 0;
@@ -1318,7 +1318,7 @@
   color: var(--mac-text-secondary);
   padding: 1px 3px;
   border-radius: 3px;
-  font-size: 9px;
+  font-size: var(--ui-font-meta);
   font-family: var(--mac-font-mono);
 }
 
@@ -1462,7 +1462,7 @@
   color: #ffffff;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   box-sizing: border-box;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease;
 }
 
 .mobileSearchInput:focus {
@@ -1863,3 +1863,22 @@
 }
 :global(html.theme-dark) .mobileTopicName { color: var(--dark-text); }
 :global(html.theme-dark) .mobileCountText { color: var(--dark-text-muted); }
+
+/* Reflow on short laptops and at browser zoom; keep large desktop panes. */
+@media (min-width: 768px) and (max-height: 800px) {
+  .pageRoot, .desktopContainer { height: auto; max-height: none; min-height: calc(100dvh - var(--app-bottom-nav-height) - var(--safe-bottom)); overflow: visible; }
+  .desktopContainer { align-items: flex-start; }
+  .macWindow { height: auto; max-height: none; min-height: 600px; }
+  .windowBody { overflow: visible; }
+  .canvasViewport, .sidebar, .commandDeck { overflow-y: visible; }
+}
+@media (max-width: 767px) {
+  .pageRoot { height: auto; min-height: calc(100dvh - var(--app-bottom-nav-height) - var(--safe-bottom)); overflow: visible; }
+  .mobileHeader { grid-template-columns: 44px minmax(0, 1fr) 44px; }
+}
+.searchWrap { min-height: 44px; }
+.searchClearBtn { top: 50%; transform: translateY(-50%); }
+.titlebar { min-height: 60px; height: auto; flex-wrap: wrap; row-gap: 8px; }
+@media (prefers-reduced-motion: reduce) {
+  .pageRoot *, .pageRoot *::before, .pageRoot *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}

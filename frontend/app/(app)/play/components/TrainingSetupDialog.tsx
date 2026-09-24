@@ -1,3 +1,5 @@
+import { useRef } from "react";
+import { useNativeDialog } from "@/components/ui/Dialog";
 import {
   Brain,
   Flame,
@@ -81,6 +83,8 @@ export function TrainingSetupDialog({
   setMinutes,
   start
 }: TrainingSetupDialogProps) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  useNativeDialog(dialogRef, !!selected, () => setSelected(null), { busy });
   if (!selected) return null;
 
   const selectedMode = modes.find((m) => m.id === selected);
@@ -102,6 +106,7 @@ export function TrainingSetupDialog({
 
   return (
     <dialog
+      ref={dialogRef}
       id="training-setup"
       aria-labelledby="training-setup-title"
       aria-describedby="training-setup-description"

@@ -12,8 +12,8 @@ const language = (await read('components/LangToggle.tsx')).split('<style>{`')[1]
 const browser = await chromium.launch({ channel: process.env.PLAYWRIGHT_CHANNEL || undefined });
 try {
   const page = await browser.newPage();
-  for (const width of [320, 390, 768, 1366]) {
-    await page.setViewportSize({ width, height: 900 });
+  for (const width of [320, 390, 768, 1366, 1440]) {
+    await page.setViewportSize({ width, height: width === 320 ? 568 : width === 390 ? 844 : 900 });
     for (const theme of ['light', 'dark']) {
       await page.setContent(`<style>
         * { box-sizing: border-box; } body { margin: 0; }
@@ -29,10 +29,11 @@ try {
         .legacy-switch { background: #308650; }
         .legacy-switch span { position: absolute; top: 2px; left: 2px; background: white; }
       </style><div data-theme="light"><div data-theme="${theme}" class="ios-series-quiz">
-        <header class="ios-series-header"><button data-ui-button="icon" aria-label="Settings"></button>
-          <div class="lang-toggle"><div><div class="lang-toggle-slider"></div>${['English', 'हिंदी', 'বাংলা'].map(label => `<button data-ui-button="state" class="lang-toggle-option">${label}</button>`).join('')}</div></div>
-          <button data-ui-button="icon" aria-label="Menu"></button>
+        <header class="ios-series-header"><div class="ios-series-header-left"><button class="ios-series-icon-button" data-ui-button="icon" aria-label="Back"></button></div>
+          <div class="ios-series-header-center"><div class="lang-toggle"><div><div class="lang-toggle-slider"></div>${['English', 'हिंदी', 'বাংলা'].map(label => `<button data-ui-button="state" class="lang-toggle-option">${label}</button>`).join('')}</div></div></div>
+          <div class="ios-series-header-right"><button class="ios-series-icon-button" data-ui-button="icon" aria-label="Settings"></button><button class="ios-series-icon-button" data-ui-button="icon" aria-label="Menu"></button></div>
         </header>
+        <nav class="ios-series-rail"><button data-ui-button="state" class="ios-series-question">1</button><button data-ui-button="state" class="ios-series-question is-current">2</button></nav>
         <div class="controls">
           <button aria-label="Close" class="legacy" data-ui-button="icon"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" /></svg></button>
           <button aria-label="Selected bookmark" class="legacy" data-ui-button="state" data-ui-shape="icon" style="background:rgb(10, 40, 70)"><svg viewBox="0 0 24 24" /></button>
@@ -45,7 +46,7 @@ try {
           <button class="ios-series-option is-correct" data-ui-button="state" disabled>Correct answer</button>
           <button class="ios-series-option is-wrong" data-ui-button="state" disabled><span class="ios-series-option-letter">C</span><span class="ios-series-option-value">EDEVIC</span><span class="ios-series-option-status"><span class="ios-series-your-answer">Your answer</span><svg class="ios-series-answer-icon" /></span></button>
         </div>
-        <footer class="ios-series-footer"><button data-ui-button="secondary">Previous</button><button data-ui-button="primary">Submit</button></footer>
+        <footer class="ios-series-footer"><button class="ios-series-footer-btn" data-ui-button="secondary">Previous</button><button class="ios-series-footer-btn" data-ui-button="primary">Submit</button></footer>
       </div></div>`);
       const metrics = await page.evaluate(() => {
         const rect = (node) => { const r = node.getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height }; };
@@ -55,6 +56,7 @@ try {
         const answer = document.querySelector('.ios-series-option');
         return {
           overflow: document.documentElement.scrollWidth > innerWidth,
+          targets: [...document.querySelectorAll('.ios-series-header button, .ios-series-rail button')].map(rect),
           icons: icons.map(el => ({ ...rect(el), radius: getComputedStyle(el).borderRadius, glyph: rect(el.querySelector('svg')) })),
           stateColor: getComputedStyle(icons[1]).backgroundColor,
           toggle: rect(toggle), thumb: rect(toggle.firstElementChild),
@@ -87,16 +89,20 @@ try {
       assert.ok(metrics.thumb.x + 24 <= metrics.toggle.x + metrics.toggle.width);
       assert.equal(metrics.labelFits, true);
       assert.equal(metrics.hidden, 'none');
-      assert.ok(metrics.answerHeight >= 64);
-      assert.equal(metrics.submittedHeight, metrics.answerHeight);
-      assert.deepEqual(metrics.footerHeights, [56, 56]);
+      for (const target of metrics.targets) {
+        assert.ok(target.width >= 44 && target.height >= 44, `undersized target: ${JSON.stringify(target)}`);
+        assert.ok(target.x >= 0 && target.x + target.width <= width, 'target outside viewport');
+      }
+      assert.ok(metrics.answerHeight >= 52);
+      assert.ok(metrics.submittedHeight >= 52, 'submitted answer keeps its readable minimum height');
+      assert.deepEqual(metrics.footerHeights, [50, 50]);
       assert.equal(metrics.languageHeight, 44);
       assert.equal(metrics.correctOpacity, '1');
       if (theme === 'dark') {
-        assert.equal(metrics.canvas, 'rgb(0, 0, 0)');
-        assert.equal(metrics.submit, 'rgb(53, 109, 168)');
-        assert.equal(metrics.languageBackground, 'rgb(0, 0, 0)');
-        assert.equal(metrics.languageActive, 'rgb(24, 38, 55)');
+        assert.equal(metrics.canvas, 'rgb(10, 14, 20)');
+        assert.equal(metrics.submit, 'rgb(35, 62, 97)');
+        assert.equal(metrics.languageBackground, 'rgb(17, 22, 32)');
+        assert.equal(metrics.languageActive, 'rgb(32, 52, 77)');
       }
       console.log(`${theme} ${width}px: control geometry, state colors, wrapping, and quiz styles passed`);
     }

@@ -70,7 +70,7 @@
   letter-spacing: -0.6px;
 }
 .play-hub .training-brand-caption {
-  font-size: 9px;
+  font-size: var(--ui-font-meta);
   letter-spacing: 1.4px;
   font-weight: 650;
   color: var(--tr-secondary);
@@ -97,9 +97,9 @@
   font-size: 12px;
   font-weight: 650;
   letter-spacing: 0.2px;
-  min-height: 34px;
+  min-height: var(--ui-control-height);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease;
 }
 .play-hub.training-dark .training-exam select {
   background: rgba(255, 255, 255, 0.05);
@@ -144,7 +144,7 @@
   gap: 12px;
   border-radius: 14px;
   justify-content: flex-start;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease;
 }
 .play-hub .play-nav-icon-wrap {
   display: inline-grid;
@@ -158,7 +158,7 @@
 }
 .play-hub .play-navigation small {
   display: block;
-  font-size: 10px;
+  font-size: var(--ui-font-meta);
   font-weight: 400;
   margin-top: 3px;
   color: var(--tr-secondary);
@@ -207,7 +207,7 @@
 }
 .play-hub .training-heading .training-kicker {
   color: var(--tr-accent);
-  font-size: 10px;
+  font-size: var(--ui-font-meta);
 }
 .play-hub .training-outline-label {
   border: 0;
@@ -215,7 +215,7 @@
   gap: 6px;
   align-items: center;
   letter-spacing: 0;
-  font-size: 11px;
+  font-size: var(--ui-font-meta);
 }
 .play-hub .training-mission {
   position: relative;
@@ -235,7 +235,7 @@
 }
 .play-hub .training-mission-copy .training-kicker {
   color: var(--tr-accent);
-  font-size: 10px;
+  font-size: var(--ui-font-meta);
   letter-spacing: 1.3px;
 }
 .play-hub .training-mission-copy h2 {
@@ -323,7 +323,7 @@
 }
 .play-pulse small {
   display: block;
-  font-size: 11px;
+  font-size: var(--ui-font-meta);
   font-weight: 400;
   margin-top: 2px;
   white-space: nowrap;
@@ -351,7 +351,7 @@
   border-radius: 7px;
   margin-left: 10px;
   padding: 2px 7px;
-  font-size: 11px;
+  font-size: var(--ui-font-meta);
   color: var(--tr-secondary);
   letter-spacing: 0;
 }
@@ -384,7 +384,7 @@
   color: var(--tr-secondary);
   white-space: nowrap;
   flex-shrink: 0;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease;
   cursor: pointer;
 }
 .play-hub .training-filters button:hover {
@@ -458,7 +458,7 @@
   border: 1px solid color-mix(in srgb, var(--mode-color) 18%, transparent);
 }
 .play-hub .play-category {
-  font-size: 10px;
+  font-size: var(--ui-font-meta);
   font-weight: 650;
   color: var(--mode-color);
   background: color-mix(in srgb, var(--mode-color) 10%, var(--tr-surface));
@@ -475,7 +475,7 @@
   line-height: 1.25;
 }
 .play-hub .training-mode-eyebrow {
-  font-size: 11px;
+  font-size: var(--ui-font-meta);
   line-height: 1.4;
   margin-top: 4px;
   color: var(--mode-color);
@@ -492,7 +492,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 11px;
+  font-size: var(--ui-font-meta);
   padding-top: 10px;
   border-top: 1px solid var(--tr-border);
   min-height: auto;
@@ -513,7 +513,7 @@
   gap: 3px;
   color: var(--mode-color);
   font-weight: 600;
-  font-size: 11px;
+  font-size: var(--ui-font-meta);
 }
 .play-hub .training-footnote {
   display: flex;
@@ -720,11 +720,11 @@
     background: transparent;
     color: var(--tr-secondary);
     gap: 3px;
-    font-size: 10.5px;
+    font-size: var(--ui-font-meta);
     font-weight: 550;
     line-height: 1.2;
     cursor: pointer;
-    transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background-color 0.18s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     -webkit-tap-highlight-color: transparent;
   }
@@ -741,7 +741,7 @@
     height: 17px;
   }
   .play-hub .training-mobile-tabs button .play-nav-label {
-    font-size: 10.5px;
+    font-size: var(--ui-font-meta);
     font-weight: 550;
     letter-spacing: -0.1px;
     color: inherit;
@@ -803,7 +803,7 @@
     height: 16px;
   }
   .play-hub .training-mobile-tabs button .play-nav-label {
-    font-size: 10px;
+    font-size: var(--ui-font-meta);
   }
   .play-hub .training-heading {
     margin-bottom: 16px;
@@ -835,7 +835,7 @@
     font-size: 13px;
   }
   .play-hub .training-resume p {
-    font-size: 11px;
+    font-size: var(--ui-font-meta);
     line-height: 1.4;
     margin-top: 2px;
   }
@@ -872,7 +872,7 @@
     margin: 0;
   }
   .play-hub .training-mode-bar h2 span {
-    font-size: 11px;
+    font-size: var(--ui-font-meta);
     margin-left: 6px;
     border: 0;
     padding: 0;
@@ -891,8 +891,8 @@
   }
   .play-hub .training-filters button {
     padding: 7px 12px;
-    min-height: 34px;
-    font-size: 11px;
+    min-height: var(--ui-control-height);
+    font-size: var(--ui-font-meta);
     gap: 5px;
   }
   .play-hub .training-mode-grid {
@@ -936,7 +936,7 @@
   .play-hub .training-mode-eyebrow {
     grid-column: 2;
     grid-row: 2;
-    font-size: 11px;
+    font-size: var(--ui-font-meta);
     line-height: 1.35;
     margin: 2px 0 0;
     color: var(--tr-secondary);
@@ -959,7 +959,7 @@
     min-height: auto;
   }
   .play-hub .training-card-bottom .play-card-time {
-    font-size: 10px;
+    font-size: var(--ui-font-meta);
     padding: 3px 6px;
     border-radius: 6px;
     background: var(--tr-muted);
@@ -976,7 +976,7 @@
     height: 16px;
   }
   .play-hub .training-footnote {
-    font-size: 11px;
+    font-size: var(--ui-font-meta);
     text-align: left;
     align-items: flex-start;
     justify-content: flex-start;
@@ -1018,7 +1018,7 @@
     font-size: 18px;
   }
   .play-pulse small {
-    font-size: 10px;
+    font-size: var(--ui-font-meta);
     line-height: 1.25;
     white-space: normal;
   }
@@ -1123,12 +1123,12 @@
   margin: 0 auto 20px;
 }
 .play-hub .training-interval-stepper .interval-step {
-  font-size: 11px;
+  font-size: var(--ui-font-meta);
   font-weight: 650;
   color: var(--tr-text);
 }
 .play-hub .training-interval-stepper .interval-arrow {
-  font-size: 11px;
+  font-size: var(--ui-font-meta);
   color: var(--tr-secondary);
 }
 .play-hub .training-review-actions {
@@ -1151,62 +1151,6 @@
   margin: 0 0 12px;
 }
 
-/* Primary & Secondary Buttons across Training */
-.play-hub [data-ui-button="primary"],
-.training-page [data-ui-button="primary"],
-.training-setup [data-ui-button="primary"] {
-  background-color: var(--tr-accent) !important;
-  border-color: var(--tr-accent) !important;
-  color: #ffffff !important;
-  font-weight: 600 !important;
-  border-radius: 12px !important;
-  padding: 10px 18px !important;
-  font-size: 13px !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 8px !important;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
-}
-.play-hub [data-ui-button="primary"]:not(:disabled):hover,
-.training-page [data-ui-button="primary"]:not(:disabled):hover,
-.training-setup [data-ui-button="primary"]:not(:disabled):hover {
-  filter: brightness(1.12);
-  box-shadow: 0 4px 14px color-mix(in srgb, var(--tr-accent) 28%, transparent) !important;
-}
-.play-hub [data-ui-button="primary"]:disabled,
-.training-page [data-ui-button="primary"]:disabled,
-.training-setup [data-ui-button="primary"]:disabled {
-  background-color: var(--tr-muted) !important;
-  border-color: var(--tr-border) !important;
-  color: var(--tr-secondary) !important;
-  opacity: 0.6 !important;
-  cursor: not-allowed;
-  box-shadow: none !important;
-}
-.play-hub [data-ui-button="secondary"],
-.training-page [data-ui-button="secondary"],
-.training-setup [data-ui-button="secondary"] {
-  background-color: var(--tr-surface) !important;
-  border: 1px solid var(--tr-border) !important;
-  color: var(--tr-text) !important;
-  font-weight: 600 !important;
-  border-radius: 12px !important;
-  padding: 9px 16px !important;
-  font-size: 13px !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 8px !important;
-  transition: all 0.15s ease !important;
-}
-.play-hub [data-ui-button="secondary"]:not(:disabled):hover,
-.training-page [data-ui-button="secondary"]:not(:disabled):hover,
-.training-setup [data-ui-button="secondary"]:not(:disabled):hover {
-  background-color: var(--tr-muted) !important;
-  border-color: var(--tr-accent) !important;
-  color: var(--tr-accent) !important;
-}
 .play-hub .training-mock-footer {
   margin-top: 20px;
   display: flex;
@@ -1280,7 +1224,7 @@
   gap: 5px;
   padding: 4px 10px;
   border-radius: 999px;
-  font-size: 11px;
+  font-size: var(--ui-font-meta);
   font-weight: 700;
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -1313,7 +1257,7 @@
 .training-dark .setup-cat--extreme { color: #f87171; border-color: rgba(248, 113, 113, 0.3); }
 
 .setup-kicker {
-  font-size: 11px;
+  font-size: var(--ui-font-meta);
   font-weight: 700;
   color: var(--tr-secondary);
   letter-spacing: 0.06em;
@@ -1332,7 +1276,7 @@
   justify-content: center;
   cursor: pointer;
   padding: 0;
-  transition: all 0.15s ease;
+  transition: background-color 0.15s ease;
   -webkit-tap-highlight-color: transparent;
 }
 .setup-close-btn:hover {
@@ -1476,7 +1420,7 @@
   gap: 10px;
   cursor: pointer;
   box-shadow: 0 4px 18px rgba(37, 99, 235, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background-color 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   -webkit-tap-highlight-color: transparent;
 }
 .setup-start-btn:hover:not(:disabled) {
@@ -1576,3 +1520,18 @@
   }
 }
 
+
+/* Secondary destinations remain readable without competing with primary navigation. */
+@media (max-width: 767px) {
+  .play-hub .training-header .training-mobile-tabs {
+    display: flex;
+    overflow-x: auto;
+    justify-content: flex-start;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    gap: 4px;
+  }
+  .play-hub .training-mobile-tabs button { flex: 0 0 auto; padding: 8px 12px; flex-direction: row; }
+  .play-hub .training-mobile-tabs .play-nav-icon-wrap { display: none; }
+}

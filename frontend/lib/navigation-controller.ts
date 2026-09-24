@@ -1,5 +1,5 @@
 /** One temporary history entry for all open panels and the active quiz guard. */
-type Layer = { close: () => void };
+type Layer = { close: () => unknown };
 type Guard = { message: string; fallback: string };
 export type ExitConfirmation = { message: string; theme: "light" | "dark" };
 const marker = "__meowNavigation";
@@ -47,8 +47,7 @@ export function createNavigationController(win: Window) {
   function closeTop() {
     const entry = [...layers.entries()].at(-1);
     if (!entry) return false;
-    layers.delete(entry[0]);
-    entry[1].close();
+    if (entry[1].close() !== false) layers.delete(entry[0]);
     queueMicrotask(reconcile);
     return true;
   }
@@ -157,7 +156,7 @@ export function createNavigationController(win: Window) {
       return () => { listeners.delete(listener); };
     },
     resolveConfirmation,
-    addLayer(close: () => void) {
+    addLayer(close: () => unknown) {
       const id = Symbol();
       layers.set(id, { close });
       arm();

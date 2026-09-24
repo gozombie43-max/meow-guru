@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Check, ChevronDown, Search, X } from "lucide-react";
-import { useBackLayer } from "@/hooks/useAppNavigation";
+import { useModalSurface } from "@/components/ui/Dialog";
 import { useThemeMode } from "@/hooks/useTheme";
 import "./training-select-dropdown.css";
 import "./training-filter-picker.css";
@@ -38,6 +38,8 @@ export function TrainingFilterPicker({
   const [visible, setVisible] = useState(false);
   const [portalTarget, setPortalTarget] = useState<Element | null>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => { if (closeTimer.current) clearTimeout(closeTimer.current); }, []);
   const backdropRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -67,14 +69,15 @@ export function TrainingFilterPicker({
   const handleClose = () => {
     setVisible(false);
     // Wait for slide-out animation before unmounting
-    setTimeout(() => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    closeTimer.current = setTimeout(() => {
       setOpen(false);
       setQuery("");
       setPortalTarget(null);
-    }, 320);
+    }, (typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) ? 0 : 320);
   };
 
-  useBackLayer(open, () => handleClose());
+  useModalSurface(sheetRef, open && !!portalTarget, handleClose, { initialFocus: "input[type=search]" });
 
   const handleDone = () => {
     onChange(draft);
@@ -85,18 +88,6 @@ export function TrainingFilterPicker({
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === backdropRef.current) handleClose();
   };
-
-  // Keyboard: Escape closes, Enter confirms
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") { e.preventDefault(); handleClose(); }
-      if (e.key === "Enter") { e.preventDefault(); handleDone(); }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
 
   const choices = [
     { value: "", label: emptyLabel },
@@ -115,6 +106,7 @@ export function TrainingFilterPicker({
     >
       <div
         ref={sheetRef}
+        tabIndex={-1}
         className={`tfp-sheet ${visible ? "tfp-sheet--in" : ""}`}
         role="dialog"
         aria-modal="true"
@@ -125,11 +117,11 @@ export function TrainingFilterPicker({
 
         {/* Header: Cancel · Title · Done */}
         <header className="tfp-header">
-          <button type="button" className="tfp-header-btn tfp-cancel" onClick={handleClose}>
+          <button type="button" data-ui-button="state" className="tfp-header-btn tfp-cancel" onClick={handleClose}>
             Cancel
           </button>
           <h2 id={`${id}-title`} className="tfp-title">Choose {label}</h2>
-          <button type="button" className="tfp-header-btn tfp-done" onClick={handleDone}>
+          <button type="button" data-ui-button="state" className="tfp-header-btn tfp-done" onClick={handleDone}>
             Done
           </button>
         </header>
@@ -139,6 +131,9 @@ export function TrainingFilterPicker({
           <Search size={16} aria-hidden="true" className="tfp-search-icon" />
           <input
             ref={searchRef}
+            onKeyDown={event => {
+              if (event.key === "Enter") { event.preventDefault(); handleDone(); }
+            }}
             type="search"
             className="tfp-search-input"
             aria-label={`Search ${label.toLowerCase()}s`}
@@ -150,7 +145,7 @@ export function TrainingFilterPicker({
             spellCheck={false}
           />
           {query && (
-            <button type="button" className="tfp-search-clear" aria-label="Clear search" onClick={() => setQuery("")}>
+            <button type="button" data-ui-button="icon" className="tfp-search-clear" aria-label="Clear search" onClick={() => setQuery("")}>
               <X size={14} />
             </button>
           )}
@@ -164,6 +159,9 @@ export function TrainingFilterPicker({
               className={`tfp-row ${draft === item.value ? "tfp-row--selected" : ""} ${idx === 0 ? "tfp-row--empty" : ""}`}
             >
               <input
+                onKeyDown={event => {
+              if (event.key === "Enter") { event.preventDefault(); handleDone(); }
+            }}
                 type="radio"
                 aria-label={item.label}
                 name={`${id}-selection`}

@@ -1,5 +1,6 @@
 'use client';
 
+import { Dialog } from "@/components/ui/Dialog";
 import { useAuth } from '@/context/AuthContext';
 import { useThemeMode } from '@/hooks/useTheme';
 import {
@@ -119,15 +120,6 @@ export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModal
     return () => window.clearTimeout(timer);
   }, [isOpen]);
 
-  // ESC key listener
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
 
   // Load notification preferences and daily reminder from server when modal is opened
   useEffect(() => {
@@ -360,7 +352,7 @@ export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModal
   };
 
   return (
-    <div className={styles.modalBackdrop} role="dialog" aria-modal="true" aria-labelledby="settings-title">
+    <Dialog onClose={onClose} className={styles.modalBackdrop} role="dialog" aria-modal="true" aria-labelledby="settings-title">
       <div className={styles.modalCard}>
         {/* Header */}
         <div data-ui-chrome="header" className={styles.modalHeader}>
@@ -905,6 +897,6 @@ export default function UserSettingsModal({ isOpen, onClose }: UserSettingsModal
           </button>
         </div>
       </div>
-    </div>
+    </Dialog>
   );
 }

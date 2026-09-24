@@ -1,5 +1,6 @@
 'use client';
 
+import { Dialog } from "@/components/ui/Dialog";
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   fetchScheduledNotifications,
@@ -335,7 +336,7 @@ export default function ScheduledNotificationsPanel() {
 
       {/* Retry Confirmation Modal */}
       {retryTargetItem && (
-        <div
+        <Dialog onClose={() => setRetryTargetItem(null)} busy={Boolean(actionLoadingId)}
           className={s.modalBackdrop}
           role="dialog"
           aria-modal="true"
@@ -393,7 +394,7 @@ export default function ScheduledNotificationsPanel() {
               </button>
             </div>
           </div>
-        </div>
+        </Dialog>
       )}
     </section>
   );

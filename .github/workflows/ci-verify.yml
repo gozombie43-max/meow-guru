@@ -123,6 +123,9 @@ jobs:
       - name: Install browser for assessment regression
         working-directory: ./frontend
         run: npm exec playwright install --with-deps chromium
+      - name: Shared interface and design contract
+        working-directory: ./frontend
+        run: npm run check:interface
       - name: Authenticated assessment browser regression
         working-directory: ./frontend
         run: npm run test:e2e

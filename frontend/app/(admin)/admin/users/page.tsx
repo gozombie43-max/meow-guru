@@ -1,5 +1,6 @@
 'use client';
 
+import { Dialog } from "@/components/ui/Dialog";
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -834,7 +835,7 @@ export default function AdminUsersPage() {
 
       {/* ── Notification Modal ────────────────────────────── */}
       {showNotifyModal && selectedUser && (
-        <div className={s.modal} role="dialog" aria-modal="true" aria-labelledby="notify-user-title">
+        <Dialog onClose={() => { setShowNotifyModal(false); setNotifyResult(null); }} busy={actionLoading} className={s.modal} role="dialog" aria-modal="true" aria-labelledby="notify-user-title">
           <div className={s.modalCard}>
             <div id="notify-user-title" className={s.modalTitle}>
               Send Notification to {selectedUser.name}
@@ -894,12 +895,12 @@ export default function AdminUsersPage() {
               </button>}
             </div>
           </div>
-        </div>
+        </Dialog>
       )}
 
       {/* ── Status Confirm Modal ──────────────────────────── */}
       {showStatusConfirm && selectedUser && (
-        <div className={s.modal} role="dialog" aria-modal="true" aria-labelledby="status-user-title">
+        <Dialog onClose={() => setShowStatusConfirm(null)} busy={actionLoading} className={s.modal} role="dialog" aria-modal="true" aria-labelledby="status-user-title">
           <div className={s.modalCard}>
             <div id="status-user-title" className={s.modalTitle}>
               {showStatusConfirm === 'active'
@@ -942,12 +943,12 @@ export default function AdminUsersPage() {
               </button>
             </div>
           </div>
-        </div>
+        </Dialog>
       )}
 
       {/* ── Delete Confirm Modal ──────────────────────────── */}
       {showDeleteConfirm && selectedUser && (
-        <div className={s.modal} role="alertdialog" aria-modal="true" aria-labelledby="delete-user-title">
+        <Dialog onClose={() => setShowDeleteConfirm(false)} busy={actionLoading} initialFocus="button" className={s.modal} role="alertdialog" aria-modal="true" aria-labelledby="delete-user-title">
           <div className={s.modalCard}>
             <div id="delete-user-title" className={s.modalTitle}>
               Delete {selectedUser.name}?
@@ -972,7 +973,7 @@ export default function AdminUsersPage() {
               </button>
             </div>
           </div>
-        </div>
+        </Dialog>
       )}
     </div>
   );

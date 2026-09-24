@@ -2,7 +2,7 @@ import css from "styled-jsx/css";
 
 export const aiChatStyles = css`
         .ai-chat-page {
-          --surface: #ffffff;
+          --surface: var(--light-surface);
           --surface-soft: var(--light-canvas);
           --surface-muted: var(--light-surface-muted);
           --ink: var(--light-text);
@@ -11,7 +11,7 @@ export const aiChatStyles = css`
           --accent: var(--light-accent);
           --accent-dark: var(--light-accent-hover);
           --topbar-bg: rgba(255, 255, 255, 0.75);
-          --input-bg: #ffffff;
+          --input-bg: var(--light-surface);
           --bubble-ai: var(--light-surface-muted);
           --bubble-user: var(--light-accent);
           --bubble-user-text: #ffffff;
@@ -668,7 +668,7 @@ export const aiChatStyles = css`
 
         .file-info span {
           color: var(--muted);
-          font-size: 11px;
+          font-size: var(--ui-font-meta);
         }
 
         .remove-file-btn {
@@ -957,7 +957,7 @@ export const aiChatStyles = css`
           }
 
           .chat-status {
-            font-size: 11px;
+            font-size: var(--ui-font-meta);
           }
 
           .clear-btn {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useBackLayer } from "@/hooks/useAppNavigation";
+import { Dialog } from "@/components/ui/Dialog";
 import {
 AlignJustify,
 Bot,
@@ -98,7 +98,6 @@ export function QuizSettingsModal({
   spacing = "comfortable",
   onSpacingChange,
 }: QuizSettingsModalProps) {
-  useBackLayer(isOpen, onClose);
   if (!isOpen) return null;
 
   const isDark = theme === "dark";
@@ -108,11 +107,12 @@ export function QuizSettingsModal({
     <>
       <div
         className="ios-settings-backdrop"
+        data-dialog-backdrop
         onClick={onClose}
         aria-hidden="true"
         data-testid="settings-backdrop"
       />
-      <div
+      <Dialog onClose={onClose}
         className="ios-settings-popover"
         role="dialog"
         aria-modal="true"
@@ -319,7 +319,7 @@ export function QuizSettingsModal({
             />
           </div>
         </div>
-      </div>
+      </Dialog>
 
       <style>{`
         .ios-settings-backdrop {

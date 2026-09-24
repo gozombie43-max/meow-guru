@@ -1,3 +1,4 @@
+import { Dialog } from "@/components/ui/Dialog";
 import { getQuestionStatus } from "@/features/quiz/model/utils";
 import { X } from "lucide-react";
 import type { QuizController } from "@/features/quiz/hooks/useQuizController";
@@ -57,7 +58,7 @@ export function MobileQuestionNavigator({ activeRailBtnRef, closePalette, curren
       )}
 
       {isPaletteOpen && (
-        <div className="ios-series-palette" role="dialog" aria-modal="true" aria-label="Question navigator">
+        <Dialog onClose={closePalette} className="ios-series-palette" role="dialog" aria-modal="true" aria-label="Question navigator">
           <button type="button" className="ios-series-palette-backdrop" onClick={closePalette} aria-label="Close navigator" />
           <div className="ios-series-palette-panel">
             <div className="ios-series-palette-title">
@@ -81,7 +82,7 @@ export function MobileQuestionNavigator({ activeRailBtnRef, closePalette, curren
               ))}
             </div>
           </div>
-        </div>
+        </Dialog>
       )}
     </>
   );

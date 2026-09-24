@@ -1,5 +1,6 @@
 'use client';
 
+import { Dialog } from "@/components/ui/Dialog";
 import React, { useState } from 'react';
 import { Mail, X, CheckCircle2 } from 'lucide-react';
 import styles from './auth.module.css';
@@ -28,7 +29,7 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
   };
 
   return (
-    <div className={styles.modalOverlay} role="dialog" aria-modal="true" aria-labelledby="password-recovery-title">
+    <Dialog onClose={handleClose} className={styles.modalOverlay} role="dialog" aria-modal="true" aria-labelledby="password-recovery-title">
       <div className={styles.modalSheet}>
         <div data-ui-chrome="header" className={styles.modalHeader}>
           <h3 id="password-recovery-title" className={styles.modalTitle}>Password Recovery</h3>
@@ -104,6 +105,6 @@ export default function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordM
           </form>
         )}
       </div>
-    </div>
+    </Dialog>
   );
 }

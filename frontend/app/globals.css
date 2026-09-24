@@ -28,18 +28,12 @@
   }
 }
 
-/* Viewport Meta Config for iOS */
-@media (max-width: 768px) {
-  html {
-    -webkit-user-select: none;
-    -webkit-touch-callout: none;
-  }
-
-  input, textarea, select {
-    -webkit-user-select: text;
-    -webkit-touch-callout: default;
-  }
+/* Study content remains selectable; only interactive chrome suppresses selection. */
+button, [role="tab"], [data-ui-button] {
+  -webkit-user-select: none;
+  user-select: none;
 }
+
 
 /* ========== Liquid Glass Palette ========== */
 

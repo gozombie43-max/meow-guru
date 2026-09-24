@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -10,7 +10,6 @@ import {
   BarChart2,
   BookOpen,
   Brain,
-  Clock,
   FileText,
   Flame,
   Info,
@@ -23,6 +22,7 @@ import {
   Target,
   Timer,
   Zap,
+  X,
 } from "lucide-react";
 import { isAxiosError } from "axios";
 import api from "@/shared/api/client";
@@ -32,7 +32,6 @@ import {
 } from "@/components/training/training-types";
 import { TrainingSelectDropdown } from "@/components/training/TrainingSelectDropdown";
 import { TrainingFilterPicker } from "@/components/training/TrainingFilterPicker";
-import { TrainingLoading } from "@/components/training/TrainingLoading";
 import { useTrainingCapabilities } from "../../hooks/useTrainingCapabilities";
 import { useTrainingDashboard } from "../../hooks/useTrainingDashboard";
 import "./setup.css";
@@ -93,14 +92,16 @@ export default function PlaySetupPage() {
   const [count, setCount] = useState<number | "full">(modeParam === "section" ? 25 : 20);
   const [tier, setTier] = useState("1");
   const [minutes, setMinutes] = useState(10);
+  const starting = useRef(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
-  const { capabilities, error: capabilitiesError } = useTrainingCapabilities();
+  const { capabilities, error: capabilitiesError, loading: capabilitiesLoading, retry: retryCapabilities } = useTrainingCapabilities();
   const {
     dashboard,
     loading: dashboardLoading,
     error: dashboardError,
+    retry: retryDashboard,
   } = useTrainingDashboard(exam);
 
   const selectedMode = useMemo(() => {
@@ -152,7 +153,8 @@ export default function PlaySetupPage() {
   }, [exam, currentTier]);
 
   const startSession = useCallback(async () => {
-    if (busy) return;
+    if (starting.current) return;
+    starting.current = true;
     setBusy(true);
     setError("");
     try {
@@ -172,11 +174,12 @@ export default function PlaySetupPage() {
           ? e.response?.data?.error || "Could not start the session. Please retry."
           : "Could not start training.",
       );
+      starting.current = false;
       setBusy(false);
     }
-  }, [modeParam, exam, tier, subject, topic, count, minutes, busy, router]);
+  }, [modeParam, exam, tier, subject, topic, count, minutes, router]);
 
-  const isFormDisabled = busy || dashboardLoading;
+  const isFormDisabled = busy || dashboardLoading || capabilitiesLoading;
   const requiresSubjectMissing = !!selectedPolicy?.requiresSubject && !subject;
 
   return (
@@ -190,6 +193,7 @@ export default function PlaySetupPage() {
           <div className="play-setup-header-left">
             <Link
               href="/play"
+              data-ui-button="icon"
               className="play-setup-back-btn"
               aria-label="Back to Play"
             >
@@ -203,7 +207,7 @@ export default function PlaySetupPage() {
               <ModeIcon size={18} strokeWidth={2.2} />
             </div>
 
-            <h1 className="play-setup-mode-title">{selectedMode.title}</h1>
+            <h1 className="play-setup-header-title">{selectedMode.title}</h1>
           </div>
 
           <div className="play-setup-header-right">
@@ -218,31 +222,25 @@ export default function PlaySetupPage() {
       {/* ── Main Setup Body ────────────────────────────────────────────── */}
       <main className="play-setup-body" aria-label="Session setup">
 
-        {/* Preparing Session Indicator when busy */}
-        {busy && (
-          <TrainingLoading
-            title="Building your session…"
-            description="Selecting verified questions and configuring timing. Your training session will start immediately."
-            skeleton={false}
-          />
-        )}
-
-        {/* Error Alert */}
-        {(error || capabilitiesError || dashboardError) && (
+        {capabilitiesError && (
           <div role="alert" className="play-setup-error">
-            <span>{error || capabilitiesError || dashboardError}</span>
-            <button
-              type="button"
-              className="setup-close-btn"
-              aria-label="Dismiss error"
-              onClick={() => setError("")}
-            >
-              ✕
-            </button>
+            <span>{capabilitiesError}</span>
+            <button type="button" data-ui-button="secondary" onClick={retryCapabilities} disabled={busy || capabilitiesLoading}>Retry capabilities</button>
+          </div>
+        )}
+        {dashboardError && (
+          <div role="alert" className="play-setup-error">
+            <span>{dashboardError}</span>
+            <button type="button" data-ui-button="secondary" onClick={retryDashboard} disabled={busy || dashboardLoading}>Retry profile</button>
+          </div>
+        )}
+        {error && (
+          <div role="alert" className="play-setup-error">
+            <span>{error}</span>
+            <button type="button" data-ui-button="icon" aria-label="Dismiss error" onClick={() => setError("")}><X aria-hidden="true" /></button>
           </div>
         )}
 
-        {/* ── Session Setup Configuration Rows ─────────────────────────── */}
         <section className="play-setup-section" aria-labelledby="session-setup-title">
           <div className="play-setup-section-head">
             <h3 id="session-setup-title" className="play-setup-section-title">
@@ -407,11 +405,13 @@ export default function PlaySetupPage() {
 
           <button
             type="button"
+            data-ui-button="primary"
+            aria-busy={busy}
             className="play-setup-start-btn"
-            disabled={isFormDisabled || requiresSubjectMissing}
+            disabled={isFormDisabled || !!capabilitiesError || !!dashboardError || requiresSubjectMissing}
             onClick={startSession}
           >
-            <span>{busy ? "Building your session…" : "Begin training"}</span>
+            <span aria-live="polite">{busy ? "Building your session…" : "Begin training"}</span>
             {busy ? (
               <LoaderCircle className="play-setup-loading-spin" size={18} aria-hidden="true" />
             ) : (

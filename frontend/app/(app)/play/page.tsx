@@ -1,8 +1,8 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, ChevronDown, Sparkles, Target } from "lucide-react";
 
 import { useThemeMode } from "@/hooks/useTheme";
@@ -13,6 +13,7 @@ import {
   PlayPulse,
   PlayMissionShortcut,
 } from "@/components/training/PlayHub";
+import { playTab, playHref } from "./play-navigation";
 import "./play.css";
 import "./play-hub.css";
 
@@ -20,13 +21,14 @@ import { useTrainingCapabilities } from "./hooks/useTrainingCapabilities";
 import { useTrainingDashboard } from "./hooks/useTrainingDashboard";
 import { useTrainingSetup } from "./hooks/useTrainingSetup";
 
-export default function PlayPage() {
+function PlayContent() {
   const { theme } = useThemeMode();
   const router = useRouter();
 
   const contentRef = useRef<HTMLElement>(null);
-  const [tab, setTab] = useState("Play");
-  const [exam, setExam] = useState("ssc-cgl");
+  const searchParams = useSearchParams();
+  const tab = playTab(searchParams.get("view"));
+  const exam = searchParams.get("exam") || "ssc-cgl";
 
   const { capabilities, error: capabilitiesError } = useTrainingCapabilities();
   const { dashboard, loading, error: dashboardError, setDashboard, setLoading, setError: setDashboardError } = useTrainingDashboard(exam);
@@ -42,7 +44,7 @@ export default function PlayPage() {
   };
 
   function navigate(tab: string) {
-    setTab(tab);
+    router.push(playHref(searchParams.toString(), tab, exam), { scroll: false });
     contentRef.current?.scrollTo({ top: 0, behavior: "instant" });
   }
 
@@ -65,9 +67,10 @@ export default function PlayPage() {
             <label className="training-exam">
               <span className="sr-only">Target exam</span>
               <select
+                data-ui-field
                 value={exam}
                 onChange={(e) => {
-                  setExam(e.target.value);
+                  router.push(playHref(searchParams.toString(), tab, e.target.value), { scroll: false });
                   setDashboard(null);
                   setLoading(true);
                   setDashboardError("");
@@ -244,4 +247,8 @@ export default function PlayPage() {
       </div>
     </div>
   );
+}
+
+export default function PlayPage() {
+  return <Suspense fallback={<p role="status">Loading training…</p>}><PlayContent /></Suspense>;
 }

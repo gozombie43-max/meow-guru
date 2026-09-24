@@ -1,3 +1,4 @@
+import { Dialog } from "@/components/ui/Dialog";
 import { X } from "lucide-react";
 import RichContent from "@/components/RichContent";
 import type { Dispatch, SetStateAction } from "react";
@@ -32,7 +33,7 @@ const labelStyle = {
 export function QuestionEditorDialog({ formData, isNew, onClose, onSave, setFormData }: QuestionEditorDialogProps) {
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem" }}>
-      <div style={{ background: "var(--color-background-primary, #ffffff)", color: "var(--color-text-primary, #111827)", borderRadius: 16, padding: "1.5rem", width: "100%", maxWidth: 640, maxHeight: "calc(100dvh - var(--safe-top) - var(--safe-bottom) - 32px)", overflowY: "auto", border: "0.5px solid var(--color-border-secondary, #e5e7eb)" }} role="dialog" aria-modal="true" aria-labelledby="question-editor-title">
+      <Dialog onClose={onClose} style={{ background: "var(--color-background-primary, #ffffff)", color: "var(--color-text-primary, #111827)", borderRadius: 16, padding: "1.5rem", width: "100%", maxWidth: 640, maxHeight: "calc(100dvh - var(--safe-top) - var(--safe-bottom) - 32px)", overflowY: "auto", border: "0.5px solid var(--color-border-secondary, #e5e7eb)" }} role="dialog" aria-modal="true" aria-labelledby="question-editor-title">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem" }}>
           <h2 id="question-editor-title" style={{ fontSize: 18, fontWeight: 500, margin: 0 }}>{isNew ? "Add Question" : "Edit Question"}</h2>
           <button data-ui-button="state" data-ui-shape="icon" onClick={onClose} aria-label="Close question editor" style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "var(--color-text-secondary)" }}><X aria-hidden="true" /></button>
@@ -99,7 +100,7 @@ export function QuestionEditorDialog({ formData, isNew, onClose, onSave, setForm
           <button data-ui-button="state" onClick={onClose} style={{ padding: "8px 18px", borderRadius: 8, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: "pointer", fontSize: 14 }}>Cancel</button>
           <button data-ui-button="state" onClick={onSave} style={{ padding: "8px 18px", borderRadius: 8, border: "none", background: "var(--admin-blue)", color: "#fff", cursor: "pointer", fontSize: 14, fontWeight: 500 }}>{isNew ? "Create" : "Save Changes"}</button>
         </div>
-      </div>
+      </Dialog>
     </div>
   );
 }
@@ -116,21 +117,21 @@ type ConfirmDialogProps = {
 export function ConfirmDialog({ busy = false, confirmLabel, description, onCancel, onConfirm, title }: ConfirmDialogProps) {
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div style={{ background: "var(--color-background-primary, #ffffff)", color: "var(--color-text-primary, #111827)", borderRadius: 16, padding: "1.5rem", width: "min(400px, calc(100vw - 32px))", border: "0.5px solid var(--color-border-secondary, #e5e7eb)" }} role="alertdialog" aria-modal="true" aria-labelledby="confirm-dialog-title">
+      <Dialog onClose={onCancel} busy={busy} initialFocus="button" style={{ background: "var(--color-background-primary, #ffffff)", color: "var(--color-text-primary, #111827)", borderRadius: 16, padding: "1.5rem", width: "min(400px, calc(100vw - 32px))", border: "0.5px solid var(--color-border-secondary, #e5e7eb)" }} role="alertdialog" aria-modal="true" aria-labelledby="confirm-dialog-title">
         <h2 id="confirm-dialog-title" style={{ fontSize: 16, fontWeight: 500, margin: "0 0 8px" }}>{title}</h2>
         <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: "0 0 1.25rem" }}>{description}</p>
         <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
           <button data-ui-button="state" onClick={onCancel} disabled={busy} style={{ padding: "7px 16px", borderRadius: 7, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: "pointer", fontSize: 13 }}>Cancel</button>
           <button data-ui-button="state" onClick={onConfirm} disabled={busy} style={{ padding: "7px 16px", borderRadius: 7, border: "none", background: "#dc2626", color: "#fff", cursor: busy ? "wait" : "pointer", fontSize: 13, fontWeight: 500, opacity: busy ? 0.7 : 1 }}>{busy ? "Deleting..." : confirmLabel}</button>
         </div>
-      </div>
+      </Dialog>
     </div>
   );
 }
 
 export function ImagePreviewDialog({ preview, onClose }: { preview: { src: string; title: string }; onClose: () => void }) {
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 1100, display: "flex", alignItems: "center", justifyContent: "center", padding: "1.5rem" }} role="dialog" aria-modal="true" aria-label="Question image preview">
+    <Dialog onClose={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 1100, display: "flex", alignItems: "center", justifyContent: "center", padding: "1.5rem" }} role="dialog" aria-modal="true" aria-label="Question image preview">
       <div style={{ background: "var(--color-background-primary, #ffffff)", borderRadius: 16, padding: "1rem", width: "100%", maxWidth: 860, border: "0.5px solid var(--color-border-secondary, #e5e7eb)" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
           <div style={{ fontSize: 13, fontWeight: 600, color: "var(--color-text-primary)" }}>{preview.title}</div>
@@ -140,6 +141,6 @@ export function ImagePreviewDialog({ preview, onClose }: { preview: { src: strin
           <img src={preview.src} alt={preview.title} style={{ width: "100%", height: "auto", display: "block", borderRadius: 8 }} />
         </div>
       </div>
-    </div>
+    </Dialog>
   );
 }

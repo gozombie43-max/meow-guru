@@ -18,6 +18,8 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => routeState.searchParams,
 }));
 
+const requestState = vi.hoisted(() => ({ capabilitiesError: "", dashboardError: "", retryCapabilities: vi.fn(), retryDashboard: vi.fn() }));
+
 const mockCapabilities = {
   exams: [
     { id: "ssc-cgl", label: "SSC CGL" },
@@ -98,7 +100,8 @@ vi.mock("../../hooks/useTrainingCapabilities", () => ({
   useTrainingCapabilities: () => ({
     capabilities: mockCapabilities,
     loading: false,
-    error: "",
+    error: requestState.capabilitiesError,
+    retry: requestState.retryCapabilities,
   }),
 }));
 
@@ -106,7 +109,8 @@ vi.mock("../../hooks/useTrainingDashboard", () => ({
   useTrainingDashboard: () => ({
     dashboard: mockDashboard,
     loading: false,
-    error: "",
+    error: requestState.dashboardError,
+    retry: requestState.retryDashboard,
   }),
 }));
 
@@ -122,6 +126,9 @@ describe("Start Session Setup Page (/play/setup/[mode])", () => {
     routeState.params = { mode: "nightmare" };
     routeState.searchParams = new URLSearchParams("exam=ssc-cgl");
     vi.clearAllMocks();
+    requestState.capabilitiesError = "";
+    requestState.dashboardError = "";
+    postMock.mockReset();
   });
   afterEach(cleanup);
 
@@ -183,4 +190,37 @@ describe("Start Session Setup Page (/play/setup/[mode])", () => {
     const beginBtn = screen.getByRole("button", { name: /Begin training/i });
     expect(beginBtn).toBeDisabled();
   });
+  it("offers independent retries for remote failures instead of a misleading dismiss", () => {
+    requestState.capabilitiesError = "Capabilities unavailable";
+    requestState.dashboardError = "Profile unavailable";
+    render(<PlaySetupPage />);
+    fireEvent.click(screen.getByRole("button", { name: "Retry capabilities" }));
+    expect(requestState.retryCapabilities).toHaveBeenCalledOnce();
+    expect(requestState.retryDashboard).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Retry profile" }));
+    expect(requestState.retryDashboard).toHaveBeenCalledOnce();
+    expect(screen.queryByRole("button", { name: "Dismiss error" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Begin training/ })).toBeDisabled();
+  });
+
+  it("dismisses a session error and allows another attempt", async () => {
+    postMock.mockRejectedValueOnce(new Error("Offline"));
+    render(<PlaySetupPage />);
+    fireEvent.click(screen.getByRole("button", { name: /Begin training/ }));
+    fireEvent.click(await screen.findByRole("button", { name: "Dismiss error" }));
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Begin training/ })).toBeEnabled();
+  });
+
+  it("keeps one immediate loading message and submits once while pending", () => {
+    postMock.mockReturnValue(new Promise(() => {}));
+    render(<PlaySetupPage />);
+    const start = screen.getByRole("button", { name: /Begin training/ });
+    fireEvent.click(start);
+    fireEvent.click(start);
+    expect(postMock).toHaveBeenCalledOnce();
+    expect(screen.getAllByText(/Building your session/)).toHaveLength(1);
+    expect(start).toBeDisabled();
+  });
+
 });

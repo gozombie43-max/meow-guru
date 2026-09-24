@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { useBackLayer } from "@/hooks/useAppNavigation";
+import { useModalSurface } from "@/components/ui/Dialog";
 import TutorMarkdown from "./TutorMarkdown";
 import {
   Sun,
@@ -245,7 +245,7 @@ export default function QuizChatbot({
   const addButtonRef = useRef<HTMLButtonElement>(null);
 
   const handleClose = useCallback(() => setIsOpen(false), []);
-  useBackLayer(isOpen, handleClose);
+  useModalSurface(modalRef, isOpen, handleClose, { initialFocus: ":scope" });
 
   // Follow the visible viewport when the mobile keyboard reduces available space.
   useEffect(() => {
@@ -304,47 +304,6 @@ export default function QuizChatbot({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const originalOverflow = document.body.style.overflow;
-    const previousFocus = document.activeElement as HTMLElement | null;
-    const modal = modalRef.current;
-    const focusable = () => Array.from(modal?.querySelectorAll<HTMLElement>(
-      'button:not(:disabled), textarea:not(:disabled), select:not(:disabled), a[href], summary, [tabindex="0"]'
-    ) ?? []).filter((element) => element.getClientRects().length > 0);
-    const background = Array.from(document.body.children)
-      .filter((element): element is HTMLElement => element instanceof HTMLElement && element !== overlayRef.current)
-      .map((element) => ({ element, inert: element.inert }));
-    background.forEach(({ element }) => { element.inert = true; });
-    modal?.focus();
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        setIsOpen(false);
-      }
-      if (event.key === "Tab") {
-        const elements = focusable();
-        const first = elements[0];
-        const last = elements[elements.length - 1];
-        if (!first) { event.preventDefault(); return; }
-        if (event.shiftKey && (document.activeElement === first || document.activeElement === modal)) {
-          event.preventDefault(); last.focus();
-        } else if (!event.shiftKey && (document.activeElement === last || document.activeElement === modal)) {
-          event.preventDefault(); first.focus();
-        }
-      }
-    };
-    document.body.style.overflow = "hidden";
-    window.addEventListener("keydown", closeOnEscape);
-    return () => {
-      document.body.style.overflow = originalOverflow;
-      window.removeEventListener("keydown", closeOnEscape);
-      background.forEach(({ element, inert }) => { element.inert = inert; });
-      previousFocus?.focus();
-    };
-  }, [isOpen]);
 
   const context = useMemo(
     () => buildQuestionContext(questionNumber, topicTitle, question),

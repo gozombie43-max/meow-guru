@@ -7,17 +7,17 @@ export const resourcePageStyles = css.global`
         .resource-page {
           --bg: var(--dark-canvas);
           --card-bg: var(--dark-surface);
-          --card-hover: #242428;
-          --border: rgba(255, 255, 255, 0.09);
+          --card-hover: var(--dark-surface-muted);
+          --border: var(--dark-border);
           --header-bg: rgba(0, 0, 0, 0.92);
-          --text-primary: #f8fafc;
-          --text-secondary: rgba(235, 235, 245, 0.6);
-          --text-tertiary: rgba(235, 235, 245, 0.35);
+          --text-primary: var(--dark-text);
+          --text-secondary: var(--dark-text-secondary);
+          --text-tertiary: var(--dark-text-muted);
           --tab-bg: rgba(255, 255, 255, 0.08);
           --tab-color: rgba(235, 235, 245, 0.75);
-          --accent: #007aff;
+          --accent: var(--dark-accent);
           --modal-bg: var(--dark-surface);
-          --modal-option-bg: #28282c;
+          --modal-option-bg: var(--dark-surface-muted);
           --notice-bg: rgba(255, 255, 255, 0.08);
           --spinner-color: rgba(235, 235, 245, 0.75);
 
@@ -207,7 +207,7 @@ export const resourcePageStyles = css.global`
           justify-content: center;
           gap: 5px;
           cursor: pointer;
-          transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+          transition: background-color 0.15s cubic-bezier(0.16, 1, 0.3, 1);
           -webkit-tap-highlight-color: transparent;
           white-space: nowrap;
           padding: 0 4px;
@@ -266,12 +266,12 @@ export const resourcePageStyles = css.global`
           border: 1px solid var(--border);
           background: var(--card-bg);
           color: var(--tab-color);
-          font-size: 11.5px;
+          font-size: var(--ui-font-meta);
           font-weight: 550;
           letter-spacing: 0.01em;
           cursor: pointer;
           white-space: nowrap;
-          transition: all 0.14s ease;
+          transition: background-color 0.14s ease;
           -webkit-tap-highlight-color: transparent;
           flex-shrink: 0;
           display: flex;
@@ -453,13 +453,13 @@ export const resourcePageStyles = css.global`
           padding: 1px 6px;
           border-radius: 4px;
           background: var(--tab-bg);
-          font-size: 11px;
+          font-size: var(--ui-font-meta);
           font-weight: 500;
           letter-spacing: 0.02em;
         }
 
         .res-card-date {
-          font-size: 11.5px;
+          font-size: var(--ui-font-meta);
           color: var(--text-secondary);
         }
 
@@ -615,7 +615,7 @@ export const resourcePageStyles = css.global`
 
         .res-modal-eyebrow {
           margin: 0;
-          font-size: 11px;
+          font-size: var(--ui-font-meta);
           font-weight: 700;
           letter-spacing: 0.08em;
           text-transform: uppercase;

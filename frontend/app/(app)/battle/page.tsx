@@ -1,5 +1,6 @@
 "use client";
 
+import { Dialog } from "@/components/ui/Dialog";
 import RichContent from "@/components/RichContent";
 import { useAuth } from "@/context/AuthContext";
 import { useBattle } from "@/hooks/useBattle";
@@ -398,7 +399,7 @@ function BattlePageContent() {
       </div>
 
       {showExitModal && (
-        <div className="battle-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="exit-modal-title">
+        <Dialog onClose={() => setShowExitModal(false)} busy={pending === "forfeit"} className="battle-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="exit-modal-title">
           <div className="battle-modal-card">
             <div className="battle-modal-icon is-danger"><AlertTriangle /></div>
             <h2 id="exit-modal-title">Exit Battle?</h2>
@@ -421,7 +422,7 @@ function BattlePageContent() {
               </button>
             </div>
           </div>
-        </div>
+        </Dialog>
       )}
     </main>;
   }

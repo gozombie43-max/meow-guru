@@ -1,4 +1,5 @@
 'use client';
+import { Dialog } from "@/components/ui/Dialog";
 import { NotificationAnalyticsPanel } from '@/features/notifications/admin/NotificationAnalyticsPanel';
 import { NotificationHistory } from '@/features/notifications/admin/NotificationHistory';
 
@@ -338,7 +339,7 @@ export default function AdminNotificationsPage() {
 
       {/* ── Confirmation Modal Dialog ────────────────────── */}
       {isConfirmOpen && (
-        <div
+        <Dialog onClose={() => setIsConfirmOpen(false)} busy={isSubmitting}
           className={s.modalBackdrop}
           role="dialog"
           aria-modal="true"
@@ -411,7 +412,7 @@ export default function AdminNotificationsPage() {
               </button>
             </div>
           </div>
-        </div>
+        </Dialog>
       )}
     </div>
   );

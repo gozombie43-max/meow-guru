@@ -1,5 +1,6 @@
 'use client';
 
+import { Dialog } from "@/components/ui/Dialog";
 import VisualResponse from '@/components/ai/VisualResponse';
 import { AiChatIcon } from '@/components/AiChatIcon';
 import BackButton from "@/components/BackButton";
@@ -51,7 +52,6 @@ function AiChatPageContent() {
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const isMobileSidebar = useMediaQuery("(max-width: 900px)");
   useBackLayer(sidebarOpen && isMobileSidebar, () => setSidebarOpen(false));
-  useBackLayer(isPreviewModalOpen, () => setIsPreviewModalOpen(false));
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const {
@@ -506,7 +506,7 @@ function AiChatPageContent() {
               <button data-ui-button="state" data-ui-shape="icon" className="composer-tool mic-btn" type="button" aria-label="Voice input">
                 <Mic size={20} />
               </button>
-              <button data-ui-button="primary" className="send-btn" type="submit" disabled={!hasInput || isLoading} aria-label="Send message">
+              <button data-ui-button="primary" data-ui-shape="icon" className="send-btn" type="submit" disabled={!hasInput || isLoading} aria-label="Send message">
                 <ArrowUp size={20} className="send-icon" strokeWidth={2.5} />
               </button>
             </div>
@@ -515,14 +515,14 @@ function AiChatPageContent() {
       </section>
 
       {isPreviewModalOpen && attachmentPreview && (
-        <div className="image-modal-overlay" role="dialog" aria-modal="true" aria-label="Image preview">
+        <Dialog onClose={() => setIsPreviewModalOpen(false)} className="image-modal-overlay" role="dialog" aria-modal="true" aria-label="Image preview">
           <div className="image-modal-content">
             <button data-ui-button="state" data-ui-shape="icon" className="image-modal-close" onClick={() => setIsPreviewModalOpen(false)} aria-label="Close image preview">
               <X size={24} />
             </button>
             <img src={attachmentPreview} alt="Preview" className="image-modal-img" />
           </div>
-        </div>
+        </Dialog>
       )}
 
       <style jsx>{aiChatStyles}</style>

@@ -1,5 +1,6 @@
 'use client';
 
+import { Dialog } from "@/components/ui/Dialog";
 import React, { useState, useEffect } from 'react';
 import { X, Check, User as UserIcon, Image as ImageIcon, Sparkles, Loader2, RotateCcw } from 'lucide-react';
 import GoogleAvatarRing from './GoogleAvatarRing';
@@ -46,15 +47,6 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
     }
   }, [user, isOpen]);
 
-  // ESC key listener
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -107,7 +99,7 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
   const currentInitial = name.trim() ? name.trim().charAt(0).toUpperCase() : 'U';
 
   return (
-    <div className={styles.modalBackdrop} role="dialog" aria-modal="true" aria-labelledby="edit-profile-title">
+    <Dialog onClose={onClose} busy={saving} className={styles.modalBackdrop} role="dialog" aria-modal="true" aria-labelledby="edit-profile-title">
       <div className={styles.modalCard}>
         {/* Header */}
         <div data-ui-chrome="header" className={styles.modalHeader}>
@@ -254,6 +246,6 @@ export default function EditProfileModal({ isOpen, onClose, onSuccess }: EditPro
           </button>
         </div>
       </div>
-    </div>
+    </Dialog>
   );
 }

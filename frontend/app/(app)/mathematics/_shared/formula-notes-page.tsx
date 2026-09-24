@@ -1,4 +1,5 @@
 "use client";
+import { Dialog } from "@/components/ui/Dialog";
 import { requestResponse as fetch } from "@/shared/api/request";
 
 
@@ -611,7 +612,7 @@ export default function FormulaNotesPage({
       {/* ── Category Choice Modal ── */}
       {showAddModal ? (
         <div className="modal-backdrop">
-          <div
+          <Dialog onClose={() => setShowAddModal(false)}
             className="add-modal"
             role="dialog"
             aria-modal="true"
@@ -636,7 +637,7 @@ export default function FormulaNotesPage({
             <button data-ui-button="secondary" type="button" className="modal-cancel" onClick={() => setShowAddModal(false)}>
               Cancel
             </button>
-          </div>
+          </Dialog>
         </div>
       ) : null}
 

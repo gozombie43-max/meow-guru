@@ -53,7 +53,7 @@ export function useQuizPresentation(subjectConfig: SubjectConfig, presentation: 
 
   const openPalette = useCallback(() => setIsPaletteOpen(true), []);
   const closePalette = useCallback(() => setIsPaletteOpen(false), []);
-  useBackLayer(isPaletteOpen, closePalette);
+  useBackLayer(isPaletteOpen && !isIos, closePalette);
   const isDesktop = useMediaQuery("(min-width: 1024px)");
   const touchStartXRef = useRef<number | null>(null);
   const touchStartYRef = useRef<number | null>(null);

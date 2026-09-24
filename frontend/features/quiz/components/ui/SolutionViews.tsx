@@ -1,4 +1,4 @@
-import { useBackLayer } from "@/hooks/useAppNavigation";
+import { useModalSurface } from "@/components/ui/Dialog";
 import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, X } from 'lucide-react';
@@ -22,7 +22,8 @@ export function SolutionBottomSheet({
   correctOptionText: string;
   onClose: () => void;
 }) {
-  useBackLayer(isOpen, onClose);
+  const modalRef = React.useRef<HTMLDivElement>(null);
+  useModalSurface(modalRef, isOpen, onClose);
   const [dragOffset, setDragOffset] = React.useState(0);
   const [isDragging, setIsDragging] = React.useState(false);
   const [isHolding, setIsHolding] = React.useState(false);
@@ -168,6 +169,8 @@ export function SolutionBottomSheet({
           onClick={onClose}
         >
           <motion.div
+            ref={modalRef}
+            tabIndex={-1}
             role="dialog"
             aria-modal="true"
             aria-label="Question solution"

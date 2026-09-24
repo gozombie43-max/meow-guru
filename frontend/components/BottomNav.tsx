@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { hidesPrimaryNavigation } from '@/lib/shell-policy';
 import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import { ClipboardList, Home as HomeIcon, Play, Video } from 'lucide-react';
@@ -9,48 +10,7 @@ import { AiChatIcon } from '@/components/AiChatIcon';
 
 export default function BottomNav() {
   const pathname = usePathname() || '/';
-  const normalizedPathname = pathname.replace(/\/+$/, '') || '/';
-  const isQuizRoute = pathname.split('/').includes('quiz');
-  const isNotesViewRoute = pathname === '/notes/view' || pathname.startsWith('/notes/view/');
-  const isAiChat = pathname === '/ai-chat' || pathname.startsWith('/ai-chat/');
-  const isResourceRoute = pathname === '/resource' || pathname.startsWith('/resource/');
-  const isStudyModeRoute =
-    normalizedPathname === '/english/synonyms-antonyms/study-mode' ||
-    normalizedPathname.startsWith('/english/synonyms-antonyms/study-mode/') ||
-    normalizedPathname === '/english/one-word-substitution/study-mode' ||
-    normalizedPathname.startsWith('/english/one-word-substitution/study-mode/') ||
-    normalizedPathname === '/english/idioms-phrases/study-mode' ||
-    normalizedPathname.startsWith('/english/idioms-phrases/study-mode/');
-  const formulaNotesSubjects = [
-    '/mathematics/',
-    '/reasoning/',
-    '/english/',
-    '/general-awareness/',
-  ];
-  const isFormulaNotesRoute =
-    formulaNotesSubjects.some((prefix) => normalizedPathname.startsWith(prefix)) &&
-    normalizedPathname.endsWith('/formula-notes');
-  const isAccessCodeRoute = pathname === '/access-code' || pathname.startsWith('/access-code/');
-  const isDashboardRoute = pathname === '/dashboard' || pathname.startsWith('/dashboard/');
-  const isBattleArenaRoute = ['/battle', '/battle/profile', '/battle/leaderboard', '/battle/missions', '/battle/social'].includes(normalizedPathname);
-  const isMockExamRoute =
-    normalizedPathname.startsWith('/mock-test/') && normalizedPathname !== '/mock-test';
-  const isNotificationsRoute =
-    normalizedPathname === '/notifications' || normalizedPathname.startsWith('/notifications/');
-  const shouldHideNav =
-    pathname.startsWith('/play/session/') ||
-    pathname.startsWith('/play/setup') ||
-    isQuizRoute ||
-    isNotesViewRoute ||
-    isFormulaNotesRoute ||
-    isResourceRoute ||
-    isStudyModeRoute ||
-    isAccessCodeRoute ||
-    isDashboardRoute ||
-    isBattleArenaRoute ||
-    isMockExamRoute ||
-    isNotificationsRoute ||
-    isAiChat;
+  const shouldHideNav = hidesPrimaryNavigation(pathname);
   const { theme } = useThemeMode();
   const isLightSurface = theme === 'light';
 
@@ -96,9 +56,8 @@ export default function BottomNav() {
 
       <Link replace
         href="/ai-chat"
-        className={`bottom-nav-item${isAiChat ? ' is-active' : ''}`}
+        className="bottom-nav-item"
         aria-label="AI Assistant"
-        aria-current={isAiChat ? 'page' : undefined}
       >
         <AiChatIcon className="bottom-nav-icon" />
         <span className="bottom-nav-label">Assistant</span>

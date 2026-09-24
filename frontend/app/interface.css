@@ -1,6 +1,18 @@
 /* Shared visual contract for native controls and existing route chrome.
    Layout/positioning stays with the route shell so fixed offsets remain valid. */
 :root {
+  --ui-space-1: 4px;
+  --ui-space-2: 8px;
+  --ui-space-3: 12px;
+  --ui-space-4: 16px;
+  --ui-space-6: 24px;
+  --ui-space-8: 32px;
+  --ui-font-meta: 12px;
+  --ui-font-secondary: 13px;
+  --ui-font-body: 14px;
+  --ui-font-title: 20px;
+  --ui-radius-sm: 8px;
+  --ui-radius-lg: 16px;
   --ui-control-height: 44px;
   --ui-control-radius: 12px;
   --ui-icon-size: 20px;
@@ -15,7 +27,7 @@
   --ui-danger: #b42332;
 }
 
-.theme-dark, [data-theme="dark"] {
+.theme-dark, [data-theme="dark"], .training-dark {
   --ui-surface: var(--dark-surface);
   --ui-muted-surface: var(--dark-surface-muted);
   --ui-border: var(--dark-border);
@@ -71,7 +83,7 @@
   min-width: 44px;
   height: auto;
   padding: 10px 16px !important;
-  font-size: 14px !important;
+  font-size: var(--ui-font-body) !important;
   line-height: 1.35 !important;
 }
 
@@ -208,4 +220,30 @@
 
 @media (prefers-reduced-motion: reduce) {
   [data-ui-button] { transition: none !important; }
+}
+
+/* Form controls share ergonomics without acquiring button colors or layout. */
+[data-ui-field] {
+  box-sizing: border-box;
+  min-height: var(--ui-control-height);
+  min-width: 44px;
+  font: inherit;
+  font-size: var(--ui-font-body);
+  border-radius: var(--ui-control-radius);
+}
+[data-ui-field]:focus-visible {
+  outline: 3px solid var(--ui-accent);
+  outline-offset: 3px;
+}
+
+/* Keep scrollable content discoverable with a mouse/trackpad. */
+@media (pointer: fine) {
+  .ios-series-rail, .training-filters, .training-mobile-tabs, .qnav-bar-scroll,
+  .scrollbar-hide, html.home-redesign, body.home-redesign {
+    scrollbar-width: thin !important;
+  }
+  .ios-series-rail::-webkit-scrollbar, .training-filters::-webkit-scrollbar,
+  .training-mobile-tabs::-webkit-scrollbar, .qnav-bar-scroll::-webkit-scrollbar,
+  .scrollbar-hide::-webkit-scrollbar, html.home-redesign::-webkit-scrollbar,
+  body.home-redesign::-webkit-scrollbar { display: block !important; width: 6px; height: 6px; }
 }

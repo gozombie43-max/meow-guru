@@ -99,8 +99,6 @@ export function useStudyModeComparisonController(config: StudyModeComparisonConf
     setIsMobilePaletteOpen(false);
   };
   useBackLayer(isLetterDropdownOpen, () => setIsLetterDropdownOpen(false));
-  useBackLayer(isMobilePaletteOpen, () => setIsMobilePaletteOpen(false));
-  useBackLayer(showExitConfirm, () => setShowExitConfirm(false));
   const searchInputRef = useRef<HTMLInputElement>(null);
   const touchStartXRef = useRef<number | null>(null);
   const touchStartYRef = useRef<number | null>(null);
