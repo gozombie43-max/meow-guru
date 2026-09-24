@@ -98,7 +98,20 @@ html {
   overscroll-behavior-x: none;
 }
 
-/* Home page: prevent outer scrolling on desktop */
+/* Home page: remove scrollbar & prevent outer scrolling on desktop */
+html.home-redesign,
+body.home-redesign {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+html.home-redesign::-webkit-scrollbar,
+body.home-redesign::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
 @media (min-width: 1024px) {
   html.home-redesign,
   body.home-redesign {
