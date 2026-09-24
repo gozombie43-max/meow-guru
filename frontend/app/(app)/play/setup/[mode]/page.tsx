@@ -29,9 +29,6 @@ import api from "@/shared/api/client";
 import { useThemeMode } from "@/hooks/useTheme";
 import {
   modes,
-  type ModeId,
-  type TrainingCapabilities,
-  type TrainingDashboard,
 } from "@/components/training/training-types";
 import { TrainingSelectDropdown } from "@/components/training/TrainingSelectDropdown";
 import { TrainingFilterPicker } from "@/components/training/TrainingFilterPicker";

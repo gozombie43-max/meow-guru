@@ -370,7 +370,7 @@ test("play exposes all modes and persists an adaptive session across reload", as
   await page.keyboard.press("Escape");
   await expect(subjectListbox).toHaveCount(0);
   await page.getByRole("button", { name: "Begin training" }).click();
-  await expect(page.getByText("Building your session…", { exact: false })).toBeVisible();
+  await expect(page.getByText("Building your session…", { exact: false }).first()).toBeVisible();
   await expect(page.getByRole("button", { name: "Building your session…" })).toBeDisabled();
   await expect(page.getByRole("button", { name: /^Subject / })).toBeDisabled();
   releaseCreation();
