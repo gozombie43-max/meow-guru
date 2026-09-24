@@ -125,21 +125,11 @@ describe("Start Session Setup Page (/play/setup/[mode])", () => {
   });
   afterEach(cleanup);
 
-  it("renders page header with back button and Start Session title", () => {
-    render(<PlaySetupPage />);
-    expect(screen.getByRole("heading", { name: "Start Session" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Back to Play" })).toHaveAttribute("href", "/play");
-  });
-
-  it("renders selected mode hero card with category badge, title, and description", () => {
+  it("renders page header with back button, mode title, and category badge", () => {
     render(<PlaySetupPage />);
     expect(screen.getByRole("heading", { name: "AI Nightmare" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Back to Play" })).toHaveAttribute("href", "/play");
     expect(screen.getByText("Extreme")).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        "Only hard or higher bank questions qualify. Generated variants require prior validation."
-      )
-    ).toBeInTheDocument();
   });
 
   it("renders interactive configuration fields and official scoring card", () => {
@@ -158,17 +148,6 @@ describe("Start Session Setup Page (/play/setup/[mode])", () => {
     expect(screen.getByText("0 skip")).toBeInTheDocument();
   });
 
-  it("renders live session summary with mode, exam, tier, subject, topic, questions", () => {
-    render(<PlaySetupPage />);
-    expect(screen.getByRole("heading", { name: "Session Summary" })).toBeInTheDocument();
-    const summarySection = screen.getByLabelText("Session parameters breakdown");
-    expect(summarySection).toHaveTextContent("AI Nightmare");
-    expect(summarySection).toHaveTextContent("SSC CGL");
-    expect(summarySection).toHaveTextContent("Tier I (+2/−0.5)");
-    expect(summarySection).toHaveTextContent("All subjects");
-    expect(summarySection).toHaveTextContent("Balanced mix");
-    expect(summarySection).toHaveTextContent("20 questions");
-  });
 
   it("creates session on Begin training click and routes to /play/session/[id]", async () => {
     postMock.mockResolvedValueOnce({ data: { id: "session-12345" } });

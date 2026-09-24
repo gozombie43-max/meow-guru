@@ -181,8 +181,11 @@ export default function PlaySetupPage() {
 
   return (
     <div className={`play-setup-page training-page ${theme === "dark" ? "training-dark" : ""}`}>
-      {/* ── Top Header ─────────────────────────────────────────────────── */}
-      <header className="play-setup-header" data-ui-chrome="header">
+      {/* ── Compact Mode Header ────────────────────────────────────────── */}
+      <header
+        className={`play-setup-header play-setup-header--${category}`}
+        data-ui-chrome="header"
+      >
         <div className="play-setup-header-inner">
           <div className="play-setup-header-left">
             <Link
@@ -190,38 +193,30 @@ export default function PlaySetupPage() {
               className="play-setup-back-btn"
               aria-label="Back to Play"
             >
-              <ArrowLeft size={19} strokeWidth={2.2} />
+              <ArrowLeft size={18} strokeWidth={2.2} />
             </Link>
-            <div className="play-setup-title-wrap">
-              <h1 className="play-setup-page-title">Start Session</h1>
+
+            <div
+              className={`play-setup-hero-icon play-setup-hero-icon--${category}`}
+              aria-hidden="true"
+            >
+              <ModeIcon size={18} strokeWidth={2.2} />
             </div>
+
+            <h1 className="play-setup-mode-title">{selectedMode.title}</h1>
+          </div>
+
+          <div className="play-setup-header-right">
+            <span className={`play-setup-cat-badge play-setup-cat--${category}`}>
+              <CategoryIcon size={11} strokeWidth={2.4} aria-hidden="true" />
+              {selectedMode.category}
+            </span>
           </div>
         </div>
       </header>
 
       {/* ── Main Setup Body ────────────────────────────────────────────── */}
       <main className="play-setup-body" aria-label="Session setup">
-        {/* Hero Mode Card */}
-        <section
-          className={`play-setup-hero play-setup-hero--${category}`}
-          aria-label="Selected Mode Overview"
-        >
-          <div className={`play-setup-hero-icon play-setup-hero-icon--${category}`} aria-hidden="true">
-            <ModeIcon size={26} strokeWidth={2.2} />
-          </div>
-          <div className="play-setup-hero-content">
-            <div className="play-setup-badge-row">
-              <span className={`play-setup-cat-badge play-setup-cat--${category}`}>
-                <CategoryIcon size={12} strokeWidth={2.4} aria-hidden="true" />
-                {selectedMode.category}
-              </span>
-            </div>
-            <h2 className="play-setup-mode-title">{selectedMode.title}</h2>
-            <p className="play-setup-mode-desc">
-              {selectedMode.detail || selectedMode.description}
-            </p>
-          </div>
-        </section>
 
         {/* Preparing Session Indicator when busy */}
         {busy && (
@@ -394,97 +389,6 @@ export default function PlaySetupPage() {
                 ? `${Math.round(expectedMarking.correct / expectedMarking.wrong)} wrong answers cancel 1 correct answer (+${expectedMarking.correct}). Unattempted questions carry zero penalty.`
                 : "Practice scoring is recorded on submission. Unattempted questions carry zero penalty."}
             </p>
-          </div>
-        </section>
-
-        {/* ── Live Session Summary ─────────────────────────────────────── */}
-        <section className="play-setup-section" aria-labelledby="session-summary-title">
-          <div className="play-setup-section-head">
-            <h3 id="session-summary-title" className="play-setup-section-title">
-              Session Summary
-            </h3>
-            <p className="play-setup-section-subtitle">
-              Here&apos;s what you&apos;ll start with
-            </p>
-          </div>
-
-          <div className="play-setup-summary-card" aria-label="Session parameters breakdown">
-            {/* Mode cell */}
-            <div className="play-setup-summary-item">
-              <div className="play-setup-summary-header">
-                <CategoryIcon size={13} className="play-setup-summary-icon" aria-hidden="true" />
-                <span>Mode</span>
-              </div>
-              <span className="play-setup-summary-value">{selectedMode.title}</span>
-            </div>
-
-            {/* Exam cell */}
-            <div className="play-setup-summary-item">
-              <div className="play-setup-summary-header">
-                <Award size={13} className="play-setup-summary-icon" aria-hidden="true" />
-                <span>Exam</span>
-              </div>
-              <span className="play-setup-summary-value">{examLabel}</span>
-            </div>
-
-            {/* Tier cell (when applicable) */}
-            {selectedPolicy?.supportsTier && exam !== "cat" && (
-              <div className="play-setup-summary-item">
-                <div className="play-setup-summary-header">
-                  <BarChart2 size={13} className="play-setup-summary-icon" aria-hidden="true" />
-                  <span>Tier</span>
-                </div>
-                <span className="play-setup-summary-value">
-                  {currentTier === "2" ? "Tier II (+3/−1)" : "Tier I (+2/−0.5)"}
-                </span>
-              </div>
-            )}
-
-            {/* Subject cell */}
-            <div className="play-setup-summary-item">
-              <div className="play-setup-summary-header">
-                <BookOpen size={13} className="play-setup-summary-icon" aria-hidden="true" />
-                <span>Subject</span>
-              </div>
-              <span className="play-setup-summary-value">
-                {subject || "All subjects"}
-              </span>
-            </div>
-
-            {/* Topic cell */}
-            <div className="play-setup-summary-item">
-              <div className="play-setup-summary-header">
-                <Target size={13} className="play-setup-summary-icon" aria-hidden="true" />
-                <span>Topic</span>
-              </div>
-              <span className="play-setup-summary-value">
-                {topic || "Balanced mix"}
-              </span>
-            </div>
-
-            {/* Questions cell */}
-            <div className="play-setup-summary-item">
-              <div className="play-setup-summary-header">
-                <FileText size={13} className="play-setup-summary-icon" aria-hidden="true" />
-                <span>Questions</span>
-              </div>
-              <span className="play-setup-summary-value">
-                {count === "full" ? "Full section" : `${count} questions`}
-              </span>
-            </div>
-
-            {/* Timing cell */}
-            <div className="play-setup-summary-item">
-              <div className="play-setup-summary-header">
-                <Clock size={13} className="play-setup-summary-icon" aria-hidden="true" />
-                <span>Timing</span>
-              </div>
-              <span className="play-setup-summary-value">
-                {selectedPolicy?.clock === "fixed"
-                  ? `${minutes} min clock`
-                  : selectedMode.time || "Adaptive pace"}
-              </span>
-            </div>
           </div>
         </section>
       </main>

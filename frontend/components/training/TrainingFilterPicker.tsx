@@ -54,14 +54,11 @@ export function TrainingFilterPicker({
       setPortalTarget(setup ?? (typeof document !== "undefined" ? document.body : null));
       setVisible(true);
     });
-    // Auto-focus search after animation
-    const timer = setTimeout(() => searchRef.current?.focus(), 220);
 
     const trigger = triggerRef.current;
 
     return () => {
       cancelAnimationFrame(raf);
-      clearTimeout(timer);
       setup?.removeAttribute("data-picker-open");
       trigger?.focus({ preventScroll: true });
     };
