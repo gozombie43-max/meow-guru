@@ -6,7 +6,6 @@ import Link from "next/link";
 import {
   ArrowLeft,
   ArrowRight,
-  Award,
   BarChart2,
   BookOpen,
   Brain,
@@ -84,9 +83,7 @@ export default function PlaySetupPage() {
   const searchParams = useSearchParams();
 
   const modeParam = (params?.mode as string) || "adaptive";
-  const initialExam = searchParams?.get("exam") || "ssc-cgl";
-
-  const [exam, setExam] = useState(initialExam);
+  const exam = searchParams?.get("exam") || "ssc-cgl";
   const [subject, setSubject] = useState("");
   const [topic, setTopic] = useState("");
   const [count, setCount] = useState<number | "full">(modeParam === "section" ? 25 : 20);
@@ -256,25 +253,6 @@ export default function PlaySetupPage() {
             disabled={isFormDisabled}
             aria-busy={isFormDisabled}
           >
-            {/* 1. Exam Selection Row */}
-            <TrainingSelectDropdown
-              variant="card"
-              label="Exam"
-              value={exam}
-              placeholder="Select target exam"
-              options={examOptions}
-              disabled={isFormDisabled}
-              icon={<Award size={20} strokeWidth={2.2} />}
-              iconBgClass="tsd-icon-tile--blue"
-              onChange={(val) => {
-                if (val !== exam) {
-                  setExam(val);
-                  setSubject("");
-                  setTopic("");
-                }
-              }}
-            />
-
             {/* 2. Tier Selection Row (only when supported and not CAT) */}
             {selectedPolicy?.supportsTier && exam !== "cat" && (
               <TrainingSelectDropdown
@@ -320,6 +298,8 @@ export default function PlaySetupPage() {
               label="Topic"
               value={topic}
               options={topicOptions}
+              catalog={dashboard?.catalog.filter(item => !subject || item.subject === subject)}
+              disabled={isFormDisabled}
               emptyLabel="Balanced topic mix"
               icon={<Target size={20} strokeWidth={2.2} />}
               iconBgClass="tsd-icon-tile--green"

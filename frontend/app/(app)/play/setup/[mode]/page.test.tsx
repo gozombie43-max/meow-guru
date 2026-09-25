@@ -142,7 +142,7 @@ describe("Start Session Setup Page (/play/setup/[mode])", () => {
   it("renders interactive configuration fields and official scoring card", () => {
     render(<PlaySetupPage />);
     expect(screen.getByRole("heading", { name: "Session Setup" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /^Exam / })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /^Exam / })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /^Tier / })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /^Subject / })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /^Topic / })).toBeInTheDocument();
@@ -156,7 +156,8 @@ describe("Start Session Setup Page (/play/setup/[mode])", () => {
   });
 
 
-  it("creates session on Begin training click and routes to /play/session/[id]", async () => {
+  it.each(["ssc-cgl", "ssc-chsl", "cat"])("creates session using the %s exam selected on Play", async (exam) => {
+    routeState.searchParams = new URLSearchParams({ exam });
     postMock.mockResolvedValueOnce({ data: { id: "session-12345" } });
     render(<PlaySetupPage />);
 
@@ -166,7 +167,7 @@ describe("Start Session Setup Page (/play/setup/[mode])", () => {
     await waitFor(() => {
       expect(postMock).toHaveBeenCalledWith("/api/training/sessions", {
         mode: "nightmare",
-        exam: "ssc-cgl",
+        exam,
         tier: "1",
         subject: undefined,
         topic: undefined,

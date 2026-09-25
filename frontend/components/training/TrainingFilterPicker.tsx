@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Check, ChevronDown, Search, X } from "lucide-react";
+import { Check, ChevronDown, Layers, Search, Sparkles, X } from "lucide-react";
 import { useModalSurface } from "@/components/ui/Dialog";
 import { useThemeMode } from "@/hooks/useTheme";
 import "./training-select-dropdown.css";
@@ -13,6 +13,8 @@ export function TrainingFilterPicker({
   label,
   value,
   options,
+  catalog,
+  disabled = false,
   emptyLabel,
   onChange,
   icon,
@@ -23,6 +25,8 @@ export function TrainingFilterPicker({
   label: string;
   value: string;
   options: string[];
+  catalog?: { subject: string; topic: string }[];
+  disabled?: boolean;
   emptyLabel: string;
   onChange: (value: string) => void;
   icon?: React.ReactNode;
@@ -34,6 +38,7 @@ export function TrainingFilterPicker({
   const id = useId();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [category, setCategory] = useState("");
   const [draft, setDraft] = useState(value);
   const [visible, setVisible] = useState(false);
   const [portalTarget, setPortalTarget] = useState<Element | null>(null);
@@ -43,6 +48,7 @@ export function TrainingFilterPicker({
   const backdropRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
 
   // Open → find portal target, animate in
   useEffect(() => {
@@ -89,13 +95,42 @@ export function TrainingFilterPicker({
     if (e.target === backdropRef.current) handleClose();
   };
 
-  const choices = [
-    { value: "", label: emptyLabel },
-    ...[...new Set(options)].map(item => ({ value: item, label: item })),
-  ];
-  const filtered = choices.filter(item =>
-    item.label.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()),
-  );
+  const groups = useMemo(() => {
+    const available = new Set(options.filter(Boolean));
+    const assigned = new Set<string>();
+    const grouped = new Map<string, Set<string>>();
+    for (const item of catalog || []) {
+      if (!available.has(item.topic) || !item.subject.trim()) continue;
+      const topics = grouped.get(item.subject) || new Set<string>();
+      topics.add(item.topic);
+      grouped.set(item.subject, topics);
+      assigned.add(item.topic);
+    }
+    const remaining = [...available].filter(topic => !assigned.has(topic));
+    const result = [...grouped].map(([name, topics]) => ({ name, topics: [...topics].sort((a, b) => a.localeCompare(b)) }));
+    if (remaining.length) result.push({ name: grouped.size ? "Other topics" : "Topics", topics: remaining.sort((a, b) => a.localeCompare(b)) });
+    return result.sort((a, b) => a.name.localeCompare(b.name));
+  }, [options, catalog]);
+  const normalizedQuery = query.trim().toLocaleLowerCase();
+  const filteredGroups = groups.filter(group => !category || category === group.name).map(group => ({
+    ...group,
+    topics: group.topics.filter(topic => `${group.name} ${topic}`.toLocaleLowerCase().includes(normalizedQuery)),
+  })).filter(group => group.topics.length);
+  const resultCount = new Set(filteredGroups.flatMap(group => group.topics)).size;
+  const topicCount = new Set(options.filter(Boolean)).size;
+
+  function renderChoice(topic: string, title: string, description?: string) {
+    return (
+      <label key={topic || "__mix__"} className={`tfp-row ${draft === topic ? "tfp-row--selected" : ""} ${!topic ? "tfp-row--mix" : ""}`}>
+        <input type="radio" aria-label={title} name={`${id}-selection`} value={topic}
+          checked={draft === topic} onChange={() => setDraft(topic)}
+          onKeyDown={event => { if (event.key === "Enter") { event.preventDefault(); handleDone(); } }} />
+        {!topic && <Sparkles size={22} aria-hidden="true" />}
+        <span className="tfp-row-label"><span>{title}</span>{description && <small>{description}</small>}</span>
+        <span className="tfp-radio-mark" aria-hidden="true">{draft === topic && <Check size={14} strokeWidth={3} />}</span>
+      </label>
+    );
+  }
 
   const sheet = (
     <div
@@ -115,15 +150,13 @@ export function TrainingFilterPicker({
         {/* iOS Drag Handle */}
         <div className="tfp-handle" aria-hidden="true" />
 
-        {/* Header: Cancel · Title · Done */}
         <header className="tfp-header">
-          <button type="button" data-ui-button="state" className="tfp-header-btn tfp-cancel" onClick={handleClose}>
-            Cancel
-          </button>
-          <h2 id={`${id}-title`} className="tfp-title">Choose {label}</h2>
-          <button type="button" data-ui-button="state" className="tfp-header-btn tfp-done" onClick={handleDone}>
-            Done
-          </button>
+          <div className="tfp-heading-icon"><Layers size={22} aria-hidden="true" /></div>
+          <div className="tfp-heading-copy">
+            <h2 id={`${id}-title`} className="tfp-title">Choose {label}</h2>
+            <p>Focus on one topic or practice a balanced mix.</p>
+          </div>
+          <button type="button" data-ui-button="icon" aria-label="Close topic picker" onClick={handleClose}><X size={20} /></button>
         </header>
 
         {/* Search bar */}
@@ -139,7 +172,7 @@ export function TrainingFilterPicker({
             aria-label={`Search ${label.toLowerCase()}s`}
             placeholder={`Search ${label.toLowerCase()}s…`}
             value={query}
-            onChange={e => setQuery(e.target.value)}
+            onChange={e => { setQuery(e.target.value); listRef.current?.scrollTo?.({ top: 0 }); }}
             autoComplete="off"
             autoCorrect="off"
             spellCheck={false}
@@ -151,36 +184,38 @@ export function TrainingFilterPicker({
           )}
         </div>
 
-        {/* Option list */}
-        <div className="tfp-list" role="group" aria-label={`${label} options`}>
-          {filtered.map((item, idx) => (
-            <label
-              key={item.value || "__empty__"}
-              className={`tfp-row ${draft === item.value ? "tfp-row--selected" : ""} ${idx === 0 ? "tfp-row--empty" : ""}`}
-            >
-              <input
-                onKeyDown={event => {
-              if (event.key === "Enter") { event.preventDefault(); handleDone(); }
-            }}
-                type="radio"
-                aria-label={item.label}
-                name={`${id}-selection`}
-                value={item.value}
-                checked={draft === item.value}
-                onChange={() => setDraft(item.value)}
-              />
-              <span className="tfp-row-label">{item.label}</span>
-              {draft === item.value && (
-                <Check size={20} className="tfp-check" aria-hidden="true" strokeWidth={2.5} />
-              )}
-            </label>
+        <div className="tfp-categories" role="group" aria-label="Topic categories">
+          <button type="button" data-ui-button="state" aria-pressed={!category} onClick={() => { setCategory(""); listRef.current?.scrollTo?.({ top: 0 }); }}>All topics <span>{topicCount}</span></button>
+          {groups.length > 1 && groups.map(group => (
+            <button key={group.name} type="button" data-ui-button="state" aria-pressed={category === group.name}
+              onClick={() => { setCategory(group.name); listRef.current?.scrollTo?.({ top: 0 }); }}>
+              {group.name}<span>{group.topics.length}</span>
+            </button>
           ))}
-          {!filtered.length && (
-            <p className="tfp-empty" role="status">
-              No matching {label.toLowerCase()}s found.
-            </p>
-          )}
         </div>
+        <div ref={listRef} className="tfp-list" role="group" aria-label={`${label} options`}>
+          {!normalizedQuery && !category && renderChoice("", emptyLabel, "Include all topics in your current subject selection")}
+          <div className="tfp-results-meta" aria-live="polite">{resultCount} {resultCount === 1 ? "topic" : "topics"}{normalizedQuery ? " found" : " available"}</div>
+          {filteredGroups.map((group, index) => (
+            <section key={group.name} className="tfp-group" aria-labelledby={`${id}-group-${index}`}>
+              <h3 id={`${id}-group-${index}`}><Layers size={15} aria-hidden="true" />{group.name}<span>{group.topics.length}</span></h3>
+              <div className="tfp-group-options">{group.topics.map(topic => renderChoice(topic, topic))}</div>
+            </section>
+          ))}
+          {!resultCount && <div className="tfp-empty" role="status">
+            <Search size={28} aria-hidden="true" />
+            <strong>{normalizedQuery ? "No matching topics found." : "No topics available."}</strong>
+            <p>{normalizedQuery ? "Try a shorter search or browse all categories." : "Choose a different subject to explore its topics."}</p>
+            {(query || category) && <button type="button" data-ui-button="secondary" onClick={() => { setQuery(""); setCategory(""); }}>Reset filters</button>}
+          </div>}
+        </div>
+        <footer className="tfp-footer">
+          <div className="tfp-selection"><span>YOUR SELECTION</span><strong>{draft || emptyLabel}</strong></div>
+          <div className="tfp-actions">
+            <button type="button" data-ui-button="secondary" onClick={handleClose}>Cancel</button>
+            <button type="button" data-ui-button="primary" onClick={handleDone}><Check size={18} aria-hidden="true" />Done</button>
+          </div>
+        </footer>
       </div>
     </div>
   );
@@ -200,7 +235,8 @@ export function TrainingFilterPicker({
         aria-labelledby={`${id}-label ${id}-value`}
         aria-haspopup="dialog"
         aria-expanded={open}
-        onClick={() => { setDraft(value); setQuery(""); setOpen(true); }}
+        disabled={disabled}
+        onClick={() => { setDraft(value); setQuery(""); setCategory(""); setOpen(true); }}
       >
         {variant === "card" && icon && (
           <div className={`tsd-card-icon-wrap ${iconBgClass || ""}`} aria-hidden="true">

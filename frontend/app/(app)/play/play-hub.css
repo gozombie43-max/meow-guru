@@ -673,17 +673,6 @@
   }
 }
 @media (max-width: 900px) {
-  .training-page.play-hub {
-    position: relative;
-    inset: auto;
-    display: block;
-    height: auto;
-    min-height: 100dvh;
-    overflow: visible;
-  }
-  body.has-bottom-nav .training-page.play-hub {
-    padding-bottom: 24px;
-  }
   .play-hub .training-header {
     display: flex;
     flex-direction: column;
@@ -783,15 +772,11 @@
 
   .play-hub .training-layout {
     display: block;
-    height: auto;
-    overflow: visible;
   }
   .play-hub .training-sidebar {
     display: none;
   }
   .play-hub .training-main {
-    height: auto;
-    overflow: visible;
     padding: 20px max(24px, var(--safe-right)) 16px max(24px, var(--safe-left));
   }
 }

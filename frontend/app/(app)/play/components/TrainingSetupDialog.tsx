@@ -207,6 +207,8 @@ export function TrainingSetupDialog({
             label="Topic"
             value={topic}
             options={topicOptions}
+            catalog={dashboard?.catalog.filter(item => !subject || item.subject === subject)}
+            disabled={busy || loading}
             emptyLabel="Balanced topic mix"
             onChange={setTopic}
           />
