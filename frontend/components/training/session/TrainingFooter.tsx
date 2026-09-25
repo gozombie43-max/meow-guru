@@ -46,27 +46,31 @@ export function TrainingFooter({ session, q, busy, unsaved, canNavigate, expired
               <button
                 data-ui-button="secondary"
                 type="button"
+                aria-label={canNavigate ? "Clear saved answer" : "Skip"}
                 disabled={busy || expired}
                 onClick={() =>
                   act({ type: "answer", choice: null, confidence: null })
                 }
               >
-                {canNavigate ? "Clear saved answer" : "Skip"}
+                <span className="training-action-label-full">{canNavigate ? "Clear saved answer" : "Skip"}</span>
+                <span className="training-action-label-compact" aria-hidden="true">{canNavigate ? "Clear" : "Skip"}</span>
               </button>
               <button
                 data-ui-button="primary"
                 type="button"
+                aria-label={busy ? "Saving…" : canNavigate ? "Save answer" : "Answer & continue"}
                 disabled={choice === null || busy || expired}
                 onClick={() => act({ type: "answer", choice, confidence })}
               >
-                <span>
+                <span className="training-action-label-full">
                   {busy
                     ? "Saving…"
                     : canNavigate
                       ? "Save answer"
                       : "Answer & continue"}
                 </span>
-                <ArrowRight size={16} />
+                <span className="training-action-label-compact" aria-hidden="true">{busy ? "Saving…" : canNavigate ? "Save" : "Continue"}</span>
+                <ArrowRight size={16} aria-hidden="true" />
               </button>
             </div>
       </div>
