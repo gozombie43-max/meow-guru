@@ -51,8 +51,20 @@ async function collectWebVitals(page: Page): Promise<WebVitalsMetrics> {
 /**
  * Log in using the fixture credentials configured in backend/scripts/browser-fixture.js
  */
-async function authenticateFixtureUser(page: Page, deviceName: string) {
-  const email = `browser-${deviceName === 'mobile' ? 'mobile' : 'lighthouse'}@example.test`;
+async function authenticateFixtureUser(page: Page, deviceName: string, variant?: 'performance') {
+  const device = deviceName === 'mobile' ? 'mobile' : 'desktop';
+  const userKey = variant === 'performance'
+    ? `performance-${device}`
+    : deviceName === 'mobile' ? 'mobile' : 'lighthouse';
+  const email = `browser-${userKey}@example.test`;
+  await page.context().addCookies([
+    {
+      name: 'access_session',
+      value: 'local-navigation-fixture',
+      domain: '127.0.0.1',
+      path: '/',
+    },
+  ]);
   await page.goto('/login');
   await page.waitForSelector('#login-email', { timeout: 10000 });
   await page.fill('#login-email', email);
@@ -104,7 +116,7 @@ test.describe('Core Web Vitals & Representative Performance Gates', () => {
 
   test('Topic quiz view /mathematics/algebra renders fast with cursor pagination', async ({ page }) => {
     await page.goto('/mathematics/algebra', { waitUntil: 'domcontentloaded' });
-    await page.waitForSelector('.ios-series-quiz, [data-testid="quiz-view"], main', {
+    await page.waitForSelector('.ios-series-quiz, [data-testid="quiz-view"], [role="banner"], header, main', {
       timeout: 15000,
     });
 
@@ -116,8 +128,9 @@ test.describe('Core Web Vitals & Representative Performance Gates', () => {
   });
 
   test('Mock test session /mock-test/ssc-cgl/browser-test/attempt satisfies performance SLA', async ({ page }) => {
+    await authenticateFixtureUser(page, test.info().project.name, 'performance');
     await page.goto('/mock-test/ssc-cgl/browser-test/attempt', { waitUntil: 'domcontentloaded' });
-    await page.waitForSelector('[data-testid="mock-test-engine"], .mock-test-container, main', {
+    await page.waitForSelector('[data-testid="mock-test-engine"], .mock-test-container, [data-ui-chrome="header"], main', {
       timeout: 15000,
     });
 
