@@ -176,11 +176,12 @@ export default function PlaySetupPage() {
     }
   }, [modeParam, exam, tier, subject, topic, count, minutes, router]);
 
-  const isFormDisabled = busy || dashboardLoading || capabilitiesLoading;
+  const setupLoading = dashboardLoading || capabilitiesLoading;
+  const isFormDisabled = busy || setupLoading;
   const requiresSubjectMissing = !!selectedPolicy?.requiresSubject && !subject;
 
   return (
-    <div className={`play-setup-page training-page ${theme === "dark" ? "training-dark" : ""}`}>
+    <div className={`play-setup-page training-page ${theme === "dark" ? "training-dark" : ""}`} data-setup-loading={setupLoading || undefined}>
       {/* ── Compact Mode Header ────────────────────────────────────────── */}
       <header
         className={`play-setup-header play-setup-header--${category}`}
@@ -189,7 +190,7 @@ export default function PlaySetupPage() {
         <div className="play-setup-header-inner">
           <div className="play-setup-header-left">
             <Link
-              href="/play"
+              href={exam && exam !== "ssc-cgl" ? `/play?exam=${encodeURIComponent(exam)}` : "/play"}
               data-ui-button="icon"
               className="play-setup-back-btn"
               aria-label="Back to Play"
@@ -386,13 +387,13 @@ export default function PlaySetupPage() {
           <button
             type="button"
             data-ui-button="primary"
-            aria-busy={busy}
+            aria-busy={busy || setupLoading}
             className="play-setup-start-btn"
             disabled={isFormDisabled || !!capabilitiesError || !!dashboardError || requiresSubjectMissing}
             onClick={startSession}
           >
-            <span aria-live="polite">{busy ? "Building your session…" : "Begin training"}</span>
-            {busy ? (
+            <span aria-live="polite">{busy ? "Building your session…" : setupLoading ? "Loading setup…" : "Begin training"}</span>
+            {busy || setupLoading ? (
               <LoaderCircle className="play-setup-loading-spin" size={18} aria-hidden="true" />
             ) : (
               <ArrowRight size={18} strokeWidth={2.4} />

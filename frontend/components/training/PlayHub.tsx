@@ -111,26 +111,30 @@ export function PlayPulse({
   ];
   return (
     <section
-      className="play-pulse"
+      className="play-progress"
       aria-label="Your training snapshot"
       aria-busy={loading}
     >
-      {stats.map(({ label, value, icon: Icon, tab }) => (
-        <button
-          key={label}
-          data-ui-button="state"
-          onClick={() => onChange(tab)}
-        >
-          <span className="play-pulse-icon-badge">
-            <Icon size={17} strokeWidth={1.8} aria-hidden="true" />
-          </span>
-          <span className="play-pulse-info">
-            <strong>{loading || value == null ? "—" : value}</strong>
-            <small>{label}</small>
-          </span>
-          <ChevronRight className="play-pulse-arrow" size={15} aria-hidden="true" />
-        </button>
-      ))}
+      <h2>Your progress</h2>
+      <div className="play-pulse">
+        {stats.map(({ label, value, icon: Icon, tab }) => (
+          <button
+            key={label}
+            data-ui-button="state"
+            aria-label={`${label}: ${loading || value == null ? "none" : value}. View ${tab}`}
+            onClick={() => onChange(tab)}
+          >
+            <span className="play-pulse-icon-badge">
+              <Icon size={17} strokeWidth={1.8} aria-hidden="true" />
+            </span>
+            <span className="play-pulse-info">
+              <strong>{loading || value == null ? "—" : value}</strong>
+              <small>{label}</small>
+            </span>
+            <ChevronRight className="play-pulse-arrow" size={15} aria-hidden="true" />
+          </button>
+        ))}
+      </div>
     </section>
   );
 }
@@ -148,10 +152,9 @@ export function PlayModeLibrary({
     <section aria-labelledby="play-modes-title" className="play-library">
       <div className="training-mode-bar">
         <div>
-          <p className="training-kicker">FIND YOUR FOCUS</p>
           <h2 id="play-modes-title">
             Training modes
-            <span>{visible.length.toString().padStart(2, "0")}</span>
+            <span>{visible.length}</span>
           </h2>
         </div>
       </div>
@@ -190,13 +193,20 @@ export function PlayModeLibrary({
                 <span className="play-category">{mode.category}</span>
               </div>
               <span className="play-card-title">{mode.title}</span>
-              <span className="training-mode-eyebrow">{mode.eyebrow}</span>
               <span className="training-mode-description">
                 {mode.description}
               </span>
               <div className="training-card-bottom">
                 <span className="play-card-time">
-                  <Clock3 size={13} aria-hidden="true" />
+                  {mode.category === "Speed" ? (
+                    <Clock3 size={13} aria-hidden="true" />
+                  ) : mode.category === "Extreme" ? (
+                    <Flame size={13} aria-hidden="true" />
+                  ) : mode.category === "AI" ? (
+                    <Sparkles size={13} aria-hidden="true" />
+                  ) : (
+                    <Layers size={13} aria-hidden="true" />
+                  )}
                   {mode.time}
                 </span>
                 <span className="play-configure">
@@ -241,7 +251,7 @@ export function PlayMissionShortcut({
           {loading ? "Loading your plan…" : "A guided session, planned for you"}
         </small>
       </span>
-      <ChevronRight size={20} aria-hidden="true" />
+      <span className="play-mission-action"><span>View plan</span><ChevronRight size={18} aria-hidden="true" /></span>
     </button>
   );
 }

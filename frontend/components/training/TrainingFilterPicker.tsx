@@ -83,7 +83,7 @@ export function TrainingFilterPicker({
     }, (typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) ? 0 : 320);
   };
 
-  useModalSurface(sheetRef, open && !!portalTarget, handleClose, { initialFocus: "input[type=search]" });
+  useModalSurface(sheetRef, open && !!portalTarget, handleClose, { initialFocus: ":scope" });
 
   const handleDone = () => {
     onChange(draft);
@@ -154,7 +154,6 @@ export function TrainingFilterPicker({
           <div className="tfp-heading-icon"><Layers size={22} aria-hidden="true" /></div>
           <div className="tfp-heading-copy">
             <h2 id={`${id}-title`} className="tfp-title">Choose {label}</h2>
-            <p>Focus on one topic or practice a balanced mix.</p>
           </div>
           <button type="button" data-ui-button="icon" aria-label="Close topic picker" onClick={handleClose}><X size={20} /></button>
         </header>
@@ -210,7 +209,6 @@ export function TrainingFilterPicker({
           </div>}
         </div>
         <footer className="tfp-footer">
-          <div className="tfp-selection"><span>YOUR SELECTION</span><strong>{draft || emptyLabel}</strong></div>
           <div className="tfp-actions">
             <button type="button" data-ui-button="secondary" onClick={handleClose}>Cancel</button>
             <button type="button" data-ui-button="primary" onClick={handleDone}><Check size={18} aria-hidden="true" />Done</button>

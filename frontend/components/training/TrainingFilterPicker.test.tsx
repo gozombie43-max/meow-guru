@@ -17,6 +17,22 @@ it("commits the current radio selection with Enter and restores trigger focus", 
   expect(trigger).toHaveFocus();
 });
 
+it("does not auto-focus the search bar when the modal appears", async () => {
+  render(<TrainingFilterPicker label="Topic" value="" options={["Algebra"]} emptyLabel="All topics" onChange={vi.fn()} />);
+  fireEvent.click(screen.getByRole("button", { name: /Topic/ }));
+  const searchbox = await screen.findByRole("searchbox");
+  expect(searchbox).not.toHaveFocus();
+  expect(screen.getByRole("dialog")).toHaveFocus();
+});
+
+it("does not render header subtitle or footer selection texts", async () => {
+  render(<TrainingFilterPicker label="Topic" value="" options={["Algebra"]} emptyLabel="Balanced topic mix" onChange={vi.fn()} />);
+  fireEvent.click(screen.getByRole("button", { name: /Topic/ }));
+  await screen.findByRole("dialog");
+  expect(screen.queryByText(/Focus on one topic/i)).not.toBeInTheDocument();
+  expect(screen.queryByText(/YOUR SELECTION/i)).not.toBeInTheDocument();
+});
+
 it("uses catalog subjects as categories and keeps selection pending until Done", async () => {
   const change = vi.fn();
   render(<TrainingFilterPicker label="Topic" value="Algebra" options={["Algebra", "Algebra", "Geometry", "Grammar", "Unassigned"]}

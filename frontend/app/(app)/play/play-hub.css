@@ -340,7 +340,7 @@
   opacity: 0.6;
 }
 .play-hub .training-mode-bar {
-  margin: 0 0 14px;
+  margin: 0 0 8px;
   align-items: end;
 }
 .play-hub .training-mode-bar h2 {
@@ -367,9 +367,7 @@
   gap: 8px;
   margin: 0 0 18px;
   padding: 2px 2px 4px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
+  flex-wrap: wrap;
 }
 .play-hub .training-filters::-webkit-scrollbar {
   display: none;
@@ -379,10 +377,10 @@
   align-items: center;
   gap: 6px;
   padding: 8px 14px;
-  min-height: 36px;
+  min-height: 44px;
   background: var(--tr-surface);
   border: 1px solid var(--tr-border);
-  border-radius: 9999px;
+  border-radius: 12px;
   font-size: 12px;
   font-weight: 600;
   color: var(--tr-secondary);
@@ -408,14 +406,14 @@
   color: #ffffff !important;
 }
 .play-hub .training-mode-grid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 }
 .play-hub .training-mode-card[data-ui-button] {
   --mode-color: var(--tr-accent);
   position: relative;
   border-radius: 16px;
-  padding: 16px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   background: var(--tr-surface);
@@ -487,9 +485,9 @@
 }
 .play-hub .training-mode-description {
   color: var(--tr-secondary);
-  font-size: 12px;
-  line-height: 1.5;
-  margin: 6px 0 12px !important;
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 8px 0 18px !important;
   flex: 1;
 }
 .play-hub .training-card-bottom {
@@ -601,12 +599,12 @@
 .play-hub .play-mission-shortcut {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
   width: 100%;
-  padding: 20px;
-  margin-bottom: 28px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
   border: 1px solid color-mix(in srgb, var(--tr-accent) 25%, var(--tr-border));
-  border-radius: 18px;
+  border-radius: 14px;
   background: var(--play-accent-soft);
   color: var(--tr-text);
   text-align: left;
@@ -643,7 +641,7 @@
 @media (hover: hover) {
   .play-hub .training-mode-card:hover {
     border-color: var(--mode-color);
-    transform: translateY(-4px);
+    transform: translateY(-2px);
     box-shadow: 0 10px 28px
       color-mix(in srgb, var(--mode-color) 8%, transparent);
   }
@@ -795,7 +793,7 @@
     font-size: 18px;
   }
   .play-hub .training-main {
-    padding: 16px max(14px, var(--safe-right)) 24px max(14px, var(--safe-left));
+    padding: 24px max(16px, var(--safe-right)) 24px max(16px, var(--safe-left));
   }
   .play-hub .training-mobile-tabs button {
     min-height: 46px;
@@ -810,13 +808,13 @@
     font-size: var(--ui-font-meta);
   }
   .play-hub .training-heading {
-    margin-bottom: 16px;
+    margin-bottom: 10px;
   }
   .play-hub .training-heading .training-kicker {
     display: none;
   }
   .play-hub .training-heading h1 {
-    font-size: 25px;
+    font-size: 27px;
     line-height: 1.2;
     letter-spacing: -0.8px;
     margin: 0;
@@ -849,10 +847,10 @@
     font-size: 12px !important;
   }
   .play-hub .play-mission-shortcut {
-    padding: 14px;
-    margin-bottom: 20px;
-    gap: 12px;
-    border-radius: 15px;
+    padding: 10px 12px;
+    margin-bottom: 16px;
+    gap: 10px;
+    border-radius: 12px;
   }
   .play-hub .play-mission-shortcut strong {
     font-size: 14px;
@@ -886,11 +884,11 @@
   }
   .play-hub .training-filters {
     display: flex !important;
+    flex-wrap: nowrap;
     overflow-x: auto;
     scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-    padding: 2px 2px 6px;
-    margin: 0 0 14px;
+    padding: 2px;
+    margin: 0 0 10px;
     gap: 6px;
   }
   .play-hub .training-filters button {
@@ -901,19 +899,20 @@
   }
   .play-hub .training-mode-grid {
     grid-template-columns: minmax(0, 1fr);
-    gap: 8px;
+    gap: 12px;
   }
   .play-hub .training-mode-card[data-ui-button] {
     display: grid;
     grid-template-columns: 40px minmax(0, 1fr);
     align-items: center;
     column-gap: 12px;
-    padding: 12px 14px;
-    border-radius: 14px;
+    padding: 16px;
+    border-radius: 16px;
   }
   .play-hub .training-card-top {
     grid-column: 1;
     grid-row: 1 / 3;
+    align-self: start;
     display: block;
     width: auto;
   }
@@ -932,23 +931,18 @@
   .play-hub .play-card-title {
     grid-column: 2;
     grid-row: 1;
-    font-size: 15px;
-    line-height: 1.25;
+    font-size: 16px;
+    line-height: 1.3;
     margin: 0;
     letter-spacing: -0.3px;
   }
-  .play-hub .training-mode-eyebrow {
+  .play-hub .training-mode-description {
+    display: block;
     grid-column: 2;
     grid-row: 2;
-    font-size: var(--ui-font-meta);
-    line-height: 1.35;
-    margin: 2px 0 0;
-    color: var(--tr-secondary);
-    font-weight: 400;
-    white-space: normal;
-  }
-  .play-hub .training-mode-description {
-    display: none;
+    font-size: 12px;
+    line-height: 1.5;
+    margin: 5px 0 0 !important;
   }
   .play-hub .training-card-bottom {
     grid-column: 2;
@@ -958,23 +952,24 @@
     gap: 8px;
     justify-content: space-between;
     min-width: 0;
-    margin-top: 8px;
+    margin-top: 12px;
     padding: 0;
     border: 0;
     min-height: auto;
   }
   .play-hub .training-card-bottom .play-card-time {
     font-size: var(--ui-font-meta);
-    padding: 3px 6px;
-    border-radius: 6px;
-    background: var(--tr-muted);
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
     color: var(--tr-secondary);
     white-space: normal;
   }
   .play-hub .training-card-bottom .play-configure {
-    color: var(--tr-secondary);
+    color: var(--tr-accent);
     display: inline-flex;
-    font-size: 0;
+    flex-shrink: 0;
+    font-size: 12px;
   }
   .play-hub .training-card-bottom .play-configure svg {
     width: 16px;
@@ -1545,4 +1540,48 @@
     white-space: normal;
     overflow-wrap: anywhere;
   }
+}
+
+/* Hub hierarchy and shared action treatment. */
+.play-hub .training-heading { align-items: flex-start; }
+.play-hub .training-heading > div { min-width: 0; }
+.play-hub .training-brand-caption { font-size: 10px; letter-spacing: 1.2px; }
+.play-hub .training-card-bottom { width: 100%; gap: 12px; }
+.play-hub .play-configure { white-space: nowrap; }
+.play-hub .play-mission-symbol {
+  width: 44px;
+  height: 44px;
+  border: 1px solid color-mix(in srgb, var(--tr-accent) 18%, var(--tr-border));
+  border-radius: 14px;
+  background: var(--tr-surface);
+}
+.play-hub .play-mission-action { display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0; font-size: 13px; font-weight: 650; color: var(--tr-accent); }
+.play-hub .play-progress { margin-top: 32px; }
+.play-hub .play-progress h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--tr-text);
+  letter-spacing: -0.3px;
+  margin: 0 0 14px;
+}
+.play-hub .play-progress .play-pulse { margin: 0; }
+.play-hub .training-mode-card:focus-visible { outline: 2px solid var(--tr-accent); outline-offset: 3px; }
+@media (max-width: 900px) {
+  .play-hub .training-header .training-mobile-tabs { background: var(--tr-muted); border: 1px solid var(--tr-border); border-radius: 14px; gap: 3px; padding: 4px; }
+  .play-hub .training-header-top { gap: 12px; }
+  .play-hub .training-exam-wrapper { min-width: 0; max-width: 55%; }
+  .play-hub .training-exam { min-width: 0; }
+  .play-hub .training-exam select { width: 100%; text-overflow: ellipsis; }
+}
+@media (max-width: 600px) {
+  .play-hub .play-mission-shortcut { display: grid; grid-template-columns: 32px minmax(0, 1fr) 18px; }
+  .play-hub .play-mission-symbol { width: 32px; height: 32px; border-radius: 10px; }
+  .play-hub .play-mission-symbol svg { width: 18px; height: 18px; }
+  .play-hub .play-mission-action > span { display: none; }
+  .play-hub .training-card-bottom { grid-column: 1 / -1; padding-top: 12px; border-top: 1px solid var(--tr-border); }
+  .play-hub .training-filters { gap: 6px; }
+  .play-hub .training-filters button { padding: 8px; }
+  .play-hub .training-filters button svg { display: none; }
+  .play-hub .play-progress { margin-top: 28px; }
+  .play-hub .play-progress .play-pulse button { min-width: 0; padding: 14px 8px; }
 }

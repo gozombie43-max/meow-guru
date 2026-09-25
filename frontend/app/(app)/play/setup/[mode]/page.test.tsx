@@ -18,7 +18,7 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => routeState.searchParams,
 }));
 
-const requestState = vi.hoisted(() => ({ capabilitiesError: "", dashboardError: "", retryCapabilities: vi.fn(), retryDashboard: vi.fn() }));
+const requestState = vi.hoisted(() => ({ capabilitiesLoading: false, dashboardLoading: false, capabilitiesError: "", dashboardError: "", retryCapabilities: vi.fn(), retryDashboard: vi.fn() }));
 
 const mockCapabilities = {
   exams: [
@@ -99,7 +99,7 @@ const mockDashboard = {
 vi.mock("../../hooks/useTrainingCapabilities", () => ({
   useTrainingCapabilities: () => ({
     capabilities: mockCapabilities,
-    loading: false,
+    loading: requestState.capabilitiesLoading,
     error: requestState.capabilitiesError,
     retry: requestState.retryCapabilities,
   }),
@@ -108,7 +108,7 @@ vi.mock("../../hooks/useTrainingCapabilities", () => ({
 vi.mock("../../hooks/useTrainingDashboard", () => ({
   useTrainingDashboard: () => ({
     dashboard: mockDashboard,
-    loading: false,
+    loading: requestState.dashboardLoading,
     error: requestState.dashboardError,
     retry: requestState.retryDashboard,
   }),
@@ -128,15 +128,41 @@ describe("Start Session Setup Page (/play/setup/[mode])", () => {
     vi.clearAllMocks();
     requestState.capabilitiesError = "";
     requestState.dashboardError = "";
+    requestState.capabilitiesLoading = false;
+    requestState.dashboardLoading = false;
     postMock.mockReset();
   });
   afterEach(cleanup);
+
+  it.each(["capabilitiesLoading", "dashboardLoading"] as const)("shows explicit loading until %s settles", (pending) => {
+    requestState[pending] = true;
+    const { container, rerender } = render(<PlaySetupPage />);
+    expect(container.firstChild).toHaveAttribute("data-setup-loading", "true");
+    const start = screen.getByRole("button", { name: /Loading setup/ });
+    expect(start).toBeDisabled();
+    expect(start).toHaveAttribute("aria-busy", "true");
+    expect(screen.getByRole("button", { name: /^Subject / })).toBeDisabled();
+    fireEvent.click(start);
+    expect(postMock).not.toHaveBeenCalled();
+
+    requestState[pending] = false;
+    rerender(<PlaySetupPage />);
+    expect(container.firstChild).not.toHaveAttribute("data-setup-loading");
+    expect(screen.getByRole("button", { name: /Begin training/ })).toBeEnabled();
+    expect(screen.getByRole("button", { name: /^Subject / })).toBeEnabled();
+  });
 
   it("renders page header with back button, mode title, and category badge", () => {
     render(<PlaySetupPage />);
     expect(screen.getByRole("heading", { name: "AI Nightmare" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Back to Play" })).toHaveAttribute("href", "/play");
     expect(screen.getByText("Extreme")).toBeInTheDocument();
+  });
+
+  it("preserves non-default target exam in back link", () => {
+    routeState.searchParams = new URLSearchParams("exam=ssc-chsl");
+    render(<PlaySetupPage />);
+    expect(screen.getByRole("link", { name: "Back to Play" })).toHaveAttribute("href", "/play?exam=ssc-chsl");
   });
 
   it("renders interactive configuration fields and official scoring card", () => {

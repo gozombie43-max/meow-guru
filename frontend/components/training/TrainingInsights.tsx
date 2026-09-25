@@ -26,8 +26,8 @@ export function TrainingInsights({
         </p>
         {loading ? (
           <p role="status">Loading mission…</p>
-        ) : (
-          (dashboard?.mission || []).map((step, i) => (
+        ) : dashboard?.mission?.length ? (
+          dashboard.mission.map((step, i) => (
             <div className="training-list-row" key={`${step.mode}-${i}`}>
               <span className="training-step">{i + 1}</span>
               <div>
@@ -38,6 +38,10 @@ export function TrainingInsights({
               </div>
             </div>
           ))
+        ) : (
+          <p className="training-empty-note">
+            A balanced sequence will be configured for your target exam.
+          </p>
         )}
         <p className="training-footnote">
           Readiness gain is measured after completed work; we do not promise an

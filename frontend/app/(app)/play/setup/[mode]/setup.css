@@ -82,8 +82,6 @@
 }
 
 .play-setup-back-btn {
-  width: 34px;
-  height: 34px;
   border-radius: 10px;
   background: var(--tr-surface);
   border: 1px solid var(--tr-border);
@@ -540,6 +538,13 @@
   box-shadow: none !important;
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* Keep initial setup readable while its remote options are loading. */
+.play-setup-page[data-setup-loading] [data-ui-button]:disabled,
+.play-setup-page[data-setup-loading] .tsd-trigger:disabled {
+  opacity: 1 !important;
+  cursor: progress;
 }
 
 .play-setup-loading-spin {
