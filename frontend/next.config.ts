@@ -21,6 +21,9 @@ const nextConfig: NextConfig = {
     ],
 
   },
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'react-hook-form'],
+  },
   turbopack: {
     // Resolve to the monorepo root so Turbopack can compile hoisted dependencies in CI.
     root: path.resolve(__dirname, ".."),
