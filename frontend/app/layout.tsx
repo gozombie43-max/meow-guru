@@ -1,20 +1,16 @@
 import 'katex/dist/katex.min.css';
+import '@fontsource/noto-sans-bengali/400.css';
+import '@fontsource/noto-sans-bengali/500.css';
+import '@fontsource/noto-sans-bengali/600.css';
+import '@fontsource/noto-sans-bengali/700.css';
 import type { Metadata,Viewport } from 'next';
-import { Geist, Noto_Sans_Bengali } from 'next/font/google';
+import { GeistSans } from 'geist/font/sans';
 import StyledJsxRegistry from '@/lib/styled-jsx-registry';
 import ApplicationProviders from './providers';
 import './globals.css';
 import './light-theme.css';
 import './dark-theme.css';
 import './interface.css';
-
-const geist = Geist({ subsets: ['latin'] });
-const notoSansBengali = Noto_Sans_Bengali({
-  subsets: ['bengali'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-noto-bengali',
-  display: 'swap',
-});
 
 const themeBootstrapScript = `
   (() => {
@@ -74,7 +70,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{ __html: themeBootstrapScript }}
         />
       </head>
-      <body className={`${geist.className} ${notoSansBengali.variable}`} suppressHydrationWarning>
+      <body className={`${GeistSans.className} ${GeistSans.variable}`} suppressHydrationWarning>
         <StyledJsxRegistry><ApplicationProviders>{children}</ApplicationProviders></StyledJsxRegistry>
       </body>
     </html>

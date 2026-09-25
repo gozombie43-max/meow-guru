@@ -4,6 +4,8 @@
 /* ========== iOS Safe Area & Mobile Optimization ========== */
 
 :root {
+  --font-noto-bengali: "Noto Sans Bengali";
+
   /* Safe Area Insets - iOS Notch, Android cutouts & Home Indicator */
   --safe-area-inset-top: env(safe-area-inset-top, 0px);
   --safe-area-inset-right: env(safe-area-inset-right, 0px);
