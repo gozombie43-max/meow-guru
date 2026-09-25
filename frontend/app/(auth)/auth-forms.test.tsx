@@ -1,6 +1,6 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import LoginPage from './login/page';
 import RegisterPage from './register/page';
 
@@ -23,6 +23,10 @@ beforeEach(() => {
   mocks.login.mockReset().mockResolvedValue(undefined);
   mocks.replace.mockReset();
   localStorage.clear();
+});
+
+afterEach(() => {
+  cleanup();
 });
 
 describe('authentication forms', () => {

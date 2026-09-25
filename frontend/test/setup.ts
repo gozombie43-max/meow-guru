@@ -1,5 +1,6 @@
 import "@testing-library/jest-dom/vitest";
 import { afterEach, vi, beforeAll, afterAll } from "vitest";
+import { cleanup } from "@testing-library/react";
 
 const originalConsoleError = console.error;
 const originalConsoleWarn = console.warn;
@@ -49,6 +50,7 @@ afterAll(() => {
 });
 
 afterEach(() => {
+  cleanup();
   vi.restoreAllMocks();
   vi.useRealTimers();
 });
