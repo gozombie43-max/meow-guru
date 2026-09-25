@@ -2,8 +2,6 @@
 
 import { useState, Suspense } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { useRouter } from 'next/navigation';
 import { User, Mail, Lock, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
@@ -13,15 +11,10 @@ import AuthCard from '@/components/auth/AuthCard';
 import AuthInput from '@/components/auth/AuthInput';
 import AuthGoogleButton from '@/components/auth/AuthGoogleButton';
 import PasswordStrengthBar from '@/components/auth/PasswordStrengthBar';
+import { emailPattern } from '@/components/auth/validation';
 import styles from '@/components/auth/auth.module.css';
 
-const registerSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().min(1, 'Email is required').email('Please enter a valid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-});
-
-type RegisterFormData = z.infer<typeof registerSchema>;
+type RegisterFormData = { name: string; email: string; password: string };
 
 function RegisterContent() {
   const { login } = useAuth();
@@ -36,7 +29,6 @@ function RegisterContent() {
     control,
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormData>({
-    resolver: zodResolver(registerSchema),
     defaultValues: {
       name: '',
       email: '',
@@ -96,7 +88,10 @@ function RegisterContent() {
           placeholder="Your full name"
           icon={<User size={17} />}
           error={errors.name?.message}
-          {...register('name')}
+          {...register('name', {
+            required: 'Name must be at least 2 characters',
+            minLength: { value: 2, message: 'Name must be at least 2 characters' },
+          })}
         />
 
         <AuthInput
@@ -107,7 +102,10 @@ function RegisterContent() {
           placeholder="name@example.com"
           icon={<Mail size={17} />}
           error={errors.email?.message}
-          {...register('email')}
+          {...register('email', {
+            required: 'Email is required',
+            pattern: { value: emailPattern, message: 'Please enter a valid email address' },
+          })}
         />
 
         <div>
@@ -120,7 +118,10 @@ function RegisterContent() {
             placeholder="At least 6 characters"
             icon={<Lock size={17} />}
             error={errors.password?.message}
-            {...register('password')}
+            {...register('password', {
+              required: 'Password must be at least 6 characters',
+              minLength: { value: 6, message: 'Password must be at least 6 characters' },
+            })}
           />
           <PasswordStrengthBar password={passwordValue} />
         </div>

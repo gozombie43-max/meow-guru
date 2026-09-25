@@ -2,8 +2,6 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Mail, Lock, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
@@ -13,16 +11,12 @@ import dynamic from 'next/dynamic';
 import AuthCard from '@/components/auth/AuthCard';
 import AuthInput from '@/components/auth/AuthInput';
 import AuthGoogleButton from '@/components/auth/AuthGoogleButton';
+import { emailPattern } from '@/components/auth/validation';
 import styles from '@/components/auth/auth.module.css';
 
 const ForgotPasswordModal = dynamic(() => import('@/components/auth/ForgotPasswordModal'), { ssr: false });
 
-const loginSchema = z.object({
-  email: z.string().min(1, 'Email is required').email('Please enter a valid email address'),
-  password: z.string().min(1, 'Password is required'),
-});
-
-type LoginFormData = z.infer<typeof loginSchema>;
+type LoginFormData = { email: string; password: string };
 
 function LoginContent() {
   const { login } = useAuth();
@@ -50,7 +44,6 @@ function LoginContent() {
     setValue,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
     defaultValues: {
       email: '',
       password: '',
@@ -139,7 +132,10 @@ function LoginContent() {
             placeholder="name@example.com"
             icon={<Mail size={17} />}
             error={errors.email?.message}
-            {...register('email')}
+            {...register('email', {
+              required: 'Email is required',
+              pattern: { value: emailPattern, message: 'Please enter a valid email address' },
+            })}
           />
 
           <AuthInput
@@ -151,7 +147,7 @@ function LoginContent() {
             placeholder="Your password"
             icon={<Lock size={17} />}
             error={errors.password?.message}
-            {...register('password')}
+            {...register('password', { required: 'Password is required' })}
           />
 
           {/* Options: Remember Me & Forgot Password */}
