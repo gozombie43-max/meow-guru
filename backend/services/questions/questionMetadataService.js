@@ -1,5 +1,5 @@
 import { getMongoDB, getQuestionsCollection } from "../../config/mongodb.js";
-import { questionCountsCache, revisionedQuestionCacheKey } from "./questionCache.js";
+import { isNormalizedQuestionKeysEnabled, questionCountsCache, revisionedQuestionCacheKey } from "./questionCache.js";
 import { readQuestionMetadata } from "./questionMetadataCache.js";
 import { canonicalMode, ensureConceptGroups } from "./conceptGroupService.js";
 import { deriveModeKey, normalizeSearchKey } from "./questionNormalizer.js";
@@ -29,7 +29,7 @@ export async function fetchQuestionCounts(params) {
   if (cached) return cached;
 
   const collection = getQuestionsCollection();
-  if (process.env.QUESTIONS_NORMALIZED_KEYS !== 'false') {
+  if (isNormalizedQuestionKeysEnabled()) {
     const topicKey = normalizeSearchKey(topic);
     const filter = topic ? { topicKey: ['synonymsantonyms', 'antosynopyq'].includes(topicKey) ? { $in: ['synonymsantonyms', 'antosynopyq'] } : topicKey } : { subjectKey: normalizeSearchKey(subject) };
     const grouped = await collection.aggregate([{ $match: filter }, { $group: { _id: '$modeKey', count: { $sum: 1 } } }]).toArray();
@@ -130,21 +130,21 @@ async function buildQuestionsMeta(params) {
       normalizedTopic === "synonymsantonyms" ||
       normalizedTopic === "antosynopyq";
     if (isSynonymAntonymTopic) {
-      conditions.push(process.env.QUESTIONS_NORMALIZED_KEYS !== 'false' ? {
+      conditions.push(isNormalizedQuestionKeysEnabled() ? {
         topicKey: { $in: ['antosynopyq', 'synonymsantonyms'] },
       } : {
         topic: { $in: [topic, "antosynopyq", "synonyms-antonyms"] },
       });
     } else {
-      conditions.push(process.env.QUESTIONS_NORMALIZED_KEYS !== "false" ? { topicKey: normalizeSearchKey(topic) } : { topic });
+      conditions.push(isNormalizedQuestionKeysEnabled() ? { topicKey: normalizeSearchKey(topic) } : { topic });
     }
   }
   if (subject) {
-    conditions.push(process.env.QUESTIONS_NORMALIZED_KEYS !== "false" ? { subjectKey: normalizeSearchKey(subject) } : { subject: caseInsensitiveExact(subject) });
+    conditions.push(isNormalizedQuestionKeysEnabled() ? { subjectKey: normalizeSearchKey(subject) } : { subject: caseInsensitiveExact(subject) });
   }
 
   if (mode) {
-    if (process.env.QUESTIONS_NORMALIZED_KEYS !== "false") {
+    if (isNormalizedQuestionKeysEnabled()) {
       conditions.push({ modeKey: canonicalMode(mode) });
     } else if (mode === "studyMode") {
       conditions.push({ $nor: [buildExcludeStudyModeCondition()] });

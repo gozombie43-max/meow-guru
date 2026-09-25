@@ -7,6 +7,7 @@ import {
   normalizeQuizKey,
   normalizeSearchKey,
 } from "./questionNormalizer.js";
+import { isNormalizedQuestionKeysEnabled } from "./questionCache.js";
 import {
   buildExcludeStudyModeCondition,
   buildStudyModeMatchCondition,
@@ -73,7 +74,7 @@ export async function fetchQuestions(params) {
     offset = 0,
     limit,
   } = params;
-  const useNormalizedKeys = process.env.QUESTIONS_NORMALIZED_KEYS !== 'false';
+  const useNormalizedKeys = isNormalizedQuestionKeysEnabled();
 
   const normalizedTopic = topic ? normalizeSearchKey(topic) : null;
   const normalizedQuizName = quizName ? normalizeQuizKey(quizName) : null;
@@ -207,7 +208,9 @@ export async function fetchQuestions(params) {
   resources = await cursor.toArray();
 
   // Fallback: try multi-field search if no results for topic query
+  let usedFallback = false;
   if (topic && !useNormalizedKeys && !isSynonymAntonymTopic && resources.length === 0) {
+    usedFallback = true;
     const topicRegex = caseInsensitiveExact(topic);
     const fallbackConditions = conditions.filter(
       (c) => !c.topic, // remove the direct topic condition
@@ -265,15 +268,10 @@ export async function fetchQuestions(params) {
   }
 
   // Get total count when pagination is active
-  const shouldCount = params.includeTotal === 'true' || params.includeTotal === true;
+  const shouldCount = params.includeTotal === 'true' || params.includeTotal === true || usedFallback || parsedOffset > 0;
   let total;
-  if (shouldCount) {
-    total =
-      resources.length < parsedLimit && parsedOffset === 0
-        ? resources.length
-        : await collection.countDocuments(effectiveFilter, { maxTimeMS: 5000 });
-  } else if (parsedOffset === 0 && resources.length < parsedLimit) {
-    total = resources.length;
+  if (shouldCount && typeof collection.countDocuments === 'function') {
+    total = await collection.countDocuments(effectiveFilter);
   }
 
   const result = { count: total !== undefined ? total : resources.length, ...(total !== undefined ? { total } : {}), questions: resources };
@@ -304,7 +302,7 @@ export async function fetchPracticeTest(params) {
     : 10;
   const limit = Math.min(100, Math.max(1, requestedCount || 10));
 
-  const useNormalizedKeys = process.env.QUESTIONS_NORMALIZED_KEYS !== 'false';
+  const useNormalizedKeys = isNormalizedQuestionKeysEnabled();
   const conditions = [];
 
   if (subject) {

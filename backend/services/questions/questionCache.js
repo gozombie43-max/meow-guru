@@ -3,20 +3,17 @@ import { getMongoDB } from "../../config/mongodb.js";
 
 let cachedRevision = { value: 0, expires: 0 };
 
+export function isNormalizedQuestionKeysEnabled() {
+  return process.env.QUESTIONS_NORMALIZED_KEYS === 'true';
+}
+
 export async function getQuestionRevision() {
-  const now = Date.now();
-  if (cachedRevision.expires > now) {
-    return cachedRevision.value;
-  }
-  if (process.env.NODE_ENV !== 'production') {
-    return 0;
-  }
   try {
     const doc = await getMongoDB()
       .collection('questionMetadata')
       .findOne({ _id: 'revision' }, { projection: { revision: 1 } });
     const revision = doc?.revision ?? 0;
-    cachedRevision = { value: revision, expires: now + 15_000 };
+    cachedRevision = { value: revision, expires: Date.now() };
     return revision;
   } catch {
     return cachedRevision.value;
@@ -24,7 +21,7 @@ export async function getQuestionRevision() {
 }
 
 export function invalidateQuestionCacheRevision() {
-  cachedRevision = { value: cachedRevision.value + 1, expires: Date.now() + 15_000 };
+  cachedRevision = { value: cachedRevision.value + 1, expires: Date.now() };
   questionsQueryCache.clear();
   questionCountsCache.clear();
 }
@@ -32,7 +29,7 @@ export function invalidateQuestionCacheRevision() {
 // Read the shared revision on lookup. Other API instances and
 // workers invalidate immediately; the short TTL bounds out-of-band imports.
 export async function revisionedQuestionCacheKey(key) {
-  const normalized = process.env.QUESTIONS_NORMALIZED_KEYS !== 'false';
+  const normalized = isNormalizedQuestionKeysEnabled();
   const revision = await getQuestionRevision();
   return JSON.stringify([revision, normalized, key]);
 }

@@ -1,5 +1,5 @@
 import { getQuestionsCollection } from "../../config/mongodb.js";
-import { questionsQueryCache, revisionedQuestionCacheKey } from "./questionCache.js";
+import { isNormalizedQuestionKeysEnabled, questionsQueryCache, revisionedQuestionCacheKey } from "./questionCache.js";
 import { normalizeSearchKey } from "./questionNormalizer.js";
 import {
   buildExcludeStudyModeCondition,
@@ -11,7 +11,7 @@ import {
 export async function fetchQuestionsSession(params) {
   const collection = getQuestionsCollection();
   const { topic, subject, mode, limit = 50, cursor: cursorId, letter, exam, concept } = params;
-  const useNormalizedKeys = process.env.QUESTIONS_NORMALIZED_KEYS !== 'false';
+  const useNormalizedKeys = isNormalizedQuestionKeysEnabled();
   const shouldCache = !cursorId && params.includeTotal !== 'true' && params.includeTotal !== true;
   const cacheKey = shouldCache
     ? await revisionedQuestionCacheKey('session:' + JSON.stringify(params))
@@ -111,7 +111,7 @@ export async function fetchQuestionsSession(params) {
   );
   
   const totalCount = params.includeTotal === 'true' || params.includeTotal === true
-    ? await collection.countDocuments(countFilter, { maxTimeMS: 5000 })
+    ? await collection.countDocuments(countFilter)
     : undefined;
 
   const hasMore = resources.length > parsedLimit;

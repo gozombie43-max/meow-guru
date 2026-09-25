@@ -1,7 +1,6 @@
 'use client';
 
 import { Dialog } from "@/components/ui/Dialog";
-import VisualResponse from '@/components/ai/VisualResponse';
 import { AiChatIcon } from '@/components/AiChatIcon';
 import BackButton from "@/components/BackButton";
 import RiskyWidgetBoundary from '@/components/RiskyWidgetBoundary';
@@ -29,6 +28,12 @@ import NextImage from 'next/image';
 import { useEffect,useMemo,useRef,useState,type ChangeEvent,type MouseEvent as ReactMouseEvent } from 'react';
 import { aiChatStyles } from './ai-chat.styles';
 import { useAiChatHistory } from './useAiChatHistory';
+import dynamic from 'next/dynamic';
+
+const VisualResponse = dynamic(() => import('@/components/ai/VisualResponse'), {
+  ssr: false,
+  loading: () => <div className="answer-loading" aria-label="Loading response" />,
+});
 
 import {
 ASSISTANT_CONTEXT,

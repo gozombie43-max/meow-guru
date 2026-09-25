@@ -2,12 +2,12 @@ import { ObjectId } from 'mongodb';
 import { getQuestionsCollection } from '../../config/mongodb.js';
 import { normalizeSearchKey } from './questionNormalizer.js';
 import { caseInsensitiveExact, combineMongoConditions, buildStudyModeMatchCondition, buildExcludeStudyModeCondition } from './questionQueryBuilder.js';
-import { questionsQueryCache, revisionedQuestionCacheKey } from './questionCache.js';
+import { isNormalizedQuestionKeysEnabled, questionsQueryCache, revisionedQuestionCacheKey } from './questionCache.js';
 
 // Opt-in canonical listing. Legacy offset clients retain their existing contract.
 export async function fetchQuestionCursorPage(params) {
   const collection = getQuestionsCollection();
-  const normalized = process.env.QUESTIONS_NORMALIZED_KEYS !== 'false';
+  const normalized = isNormalizedQuestionKeysEnabled();
   const conditions = [];
   if (params.topic) {
     const key = normalizeSearchKey(params.topic);

@@ -1,6 +1,7 @@
 import { getMongoDB } from "../../config/mongodb.js";
 import { invalidateTrainingCatalog } from '../training/catalogCache.js';
 import { invalidateQuestionCacheRevision, getQuestionRevision } from './questionCache.js';
+import { isNormalizedQuestionKeysEnabled } from './questionCache.js';
 
 const COLLECTION = "questionMetadata";
 const REVISION_ID = "revision";
@@ -22,7 +23,7 @@ export async function readQuestionMetadata(params, build) {
   const collection = getMongoDB().collection(COLLECTION);
   const key = JSON.stringify({
     topic: params.topic || "", subject: params.subject || "", mode: params.mode || "",
-    normalized: process.env.QUESTIONS_NORMALIZED_KEYS !== "false", schema: 3,
+    normalized: isNormalizedQuestionKeysEnabled(), schema: 3,
   });
   const revision = await getQuestionRevision();
   const cached = await collection.findOne({ _id: key });
