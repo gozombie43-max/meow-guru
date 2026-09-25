@@ -12,6 +12,6 @@
     "build": "tsc --allowJs --declaration --emitDeclarationOnly --skipLibCheck --module nodenext --target es2022 ai.js geometry.js diagramPrompt.js"
   },
   "dependencies": {
-    "zod": "^4.4.3"
+    "zod": "^4.6.5"
   }
 }
