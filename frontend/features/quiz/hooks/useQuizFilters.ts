@@ -74,6 +74,8 @@ export function useQuizFilters({
     topic: questionTopic ?? slug,
     mode,
     limit: 100,
+    // Unfiltered totals already arrive in metadata. Filter combinations need an exact count.
+    includeTotal: Boolean(selectedRawExams || selectedClassificationConcepts.size || selectedLetters.size),
     exam: selectedRawExams,
     concept:
       selectedClassificationConcepts.size > 0

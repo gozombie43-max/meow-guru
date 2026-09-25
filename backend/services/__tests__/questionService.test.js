@@ -66,9 +66,9 @@ describe('Question Service Helpers', () => {
     const cursor = createCursor([]);
     getQuestionsCollectionMock.mockReturnValue({ find: vi.fn(() => cursor) });
     await fetchQuestions({});
-    expect(cursor.limit).toHaveBeenLastCalledWith(5000);
+    expect(cursor.limit).toHaveBeenLastCalledWith(50);
     await fetchQuestions({ limit: 100000000 });
-    expect(cursor.limit).toHaveBeenLastCalledWith(5000);
+    expect(cursor.limit).toHaveBeenLastCalledWith(200);
     await fetchImageQuestions('visual_reasoning', 100000000);
     expect(cursor.limit).toHaveBeenLastCalledWith(100);
     await fetchPracticeTest({ count: 100000000 });
@@ -536,7 +536,7 @@ describe('MongoDB-backed question writes', () => {
     errorSpy.mockRestore();
   });
 
-  it('queries session questions with formula mode excluding study mode and supports limits up to 5000', async () => {
+  it('queries session questions with formula mode excluding study mode and caps session pages at 200 without counting by default', async () => {
     const mockDocs = [{ _id: 'id1', id: 'anto_syno_1', letter: 'A' }, { _id: 'id2', id: 'anto_syno_2', letter: 'B' }];
     
     const cursor = {
@@ -561,8 +561,9 @@ describe('MongoDB-backed question writes', () => {
     expect(result.questions).toHaveLength(2);
     expect(result.questions[0]._id).toBeUndefined();
     expect(result.hasMore).toBe(false);
-    expect(result.totalCount).toBe(5);
-    expect(cursor.limit).toHaveBeenCalledWith(5001);
+    expect(result.totalCount).toBeUndefined();
+    expect(collection.countDocuments).not.toHaveBeenCalled();
+    expect(cursor.limit).toHaveBeenCalledWith(201);
 
     const firstFindFilter = collection.find.mock.calls[0][0];
     expect(firstFindFilter.$and).toBeDefined();

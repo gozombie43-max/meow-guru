@@ -9,7 +9,7 @@ interface SessionResponse {
   questions: Question[];
   nextCursor: string | null;
   hasMore: boolean;
-  totalCount: number;
+  totalCount?: number;
 }
 
 const fetcher = async (url: string): Promise<SessionResponse> => {
@@ -27,8 +27,9 @@ export function useQuizSession(params: {
   exam?: string;
   concept?: string;
   enabled?: boolean;
+  includeTotal?: boolean;
 }) {
-  const { subject, topic, mode, limit = 50, letter, exam, concept, enabled = true } = params;
+  const { subject, topic, mode, limit = 50, letter, exam, concept, enabled = true, includeTotal = false } = params;
 
   const [revision] = useState(getQuestionSessionRevision);
   const query = new URLSearchParams();
@@ -40,6 +41,7 @@ export function useQuizSession(params: {
   if (exam) query.set("exam", exam);
   if (concept) query.set("concept", concept);
   query.set("limit", String(limit));
+  query.set("includeTotal", String(includeTotal));
 
   const url = enabled
     ? `${API_BASE}/api/questions/session?${query.toString()}`
@@ -54,7 +56,10 @@ export function useQuizSession(params: {
         )
           return null;
         if (pageIndex === 0) return url;
-        return `${url}&cursor=${encodeURIComponent(previousPage!.nextCursor!)}&includeTotal=false`;
+        const nextPage = new URL(url, 'http://localhost');
+        nextPage.searchParams.set('cursor', previousPage!.nextCursor!);
+        nextPage.searchParams.set('includeTotal', 'false');
+        return `${url.split('?')[0]}?${nextPage.searchParams}`;
       },
       fetcher,
       {

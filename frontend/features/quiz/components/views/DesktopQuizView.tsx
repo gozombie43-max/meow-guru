@@ -6,7 +6,7 @@ import { OptionTickIcon, QuizSettingsModal } from "@/features/quiz/components/ui
 import { ConceptBadge } from "@/features/quiz/components/ui/SharedUI";
 import { SolutionBottomSheet } from "@/features/quiz/components/ui/SolutionViews";
 import { getQuestionStatus } from "@/features/quiz/model/utils";
-import { motion } from "framer-motion";
+import transitionStyles from "./question-transition.module.css";
 import { Bookmark, BookmarkCheck, Moon, Settings, Sun, XCircle } from "lucide-react";
 import dynamic from "next/dynamic";
 import type { QuizController } from "@/features/quiz/hooks/useQuizController";
@@ -211,12 +211,9 @@ export function DesktopQuizView({ configuration, question, navigation, answer, s
                 </button>
               </div>
 
-              <motion.section
+              <section
                 key={currentQ.id}
-                initial={{ opacity: 0, x: 10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.2 }}
-                className="mac-series-question-card"
+                className={`mac-series-question-card ${transitionStyles.desktop}`}
               >
                 {hasQuestionText && (
                   <div className="mac-series-prompt">
@@ -226,7 +223,7 @@ export function DesktopQuizView({ configuration, question, navigation, answer, s
                     />
                   </div>
                 )}
-              </motion.section>
+              </section>
 
               <section
                 className="mac-series-options"

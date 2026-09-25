@@ -1,6 +1,6 @@
 import { fetchQuestionCursorPage } from "./questionCursorService.js";
 import { getQuestionsCollection } from "../../config/mongodb.js";
-import { questionsQueryCache } from "./questionCache.js";
+import { questionsQueryCache, questionCountsCache, revisionedQuestionCacheKey } from "./questionCache.js";
 import {
   isStudyModeRecord,
   matchesNormalizedTopic,
@@ -73,6 +73,7 @@ export async function fetchQuestions(params) {
     offset = 0,
     limit,
   } = params;
+  const useNormalizedKeys = process.env.QUESTIONS_NORMALIZED_KEYS !== 'false';
 
   const normalizedTopic = topic ? normalizeSearchKey(topic) : null;
   const normalizedQuizName = quizName ? normalizeQuizKey(quizName) : null;
@@ -89,15 +90,15 @@ export async function fetchQuestions(params) {
     ? Math.max(0, parseInt(offset, 10))
     : 0;
   const parsedLimit = Number.isFinite(Number(limit))
-    ? Math.min(5000, Math.max(1, Math.floor(Number(limit)) || 5000))
-    : 5000;
+    ? Math.min(200, Math.max(1, Math.floor(Number(limit)) || 50))
+    : 50;
 
   const cacheable =
     parsedOffset === 0 &&
     (parsedLimit === null || parsedLimit > 0) &&
-    (queryMode === "topic" || queryMode === "subject");
+    (queryMode === "topic" || queryMode === "subject") && !params.search && !params.includeFacets;
   const cacheKey = cacheable
-    ? `${queryMode}:${JSON.stringify({
+    ? await revisionedQuestionCacheKey(`${queryMode}:${JSON.stringify({
         topic,
         subject,
         chapter,
@@ -105,9 +106,11 @@ export async function fetchQuestions(params) {
         difficulty,
         quizName,
         questionType,
+        exam: params.exam,
+        sort: params.sort,
         offset: parsedOffset,
         limit: parsedLimit,
-      })}`
+      })}`)
     : null;
 
   const cached = cacheKey ? questionsQueryCache.get(cacheKey) : null;
@@ -118,23 +121,30 @@ export async function fetchQuestions(params) {
   const conditions = [];
 
   if (!topic && subject) {
-    conditions.push({ subject: caseInsensitiveExact(subject) });
+    conditions.push(useNormalizedKeys ? { subjectKey: normalizeSearchKey(subject) } : { subject: caseInsensitiveExact(subject) });
   }
   if (chapter) {
-    conditions.push({ chapter: caseInsensitiveExact(chapter) });
+    conditions.push(useNormalizedKeys ? { chapter } : { chapter: caseInsensitiveExact(chapter) });
   }
   if (concept) {
-    conditions.push({ concept: caseInsensitiveExact(concept) });
+    conditions.push(useNormalizedKeys ? { concept } : { concept: caseInsensitiveExact(concept) });
   }
   if (difficulty) {
-    conditions.push({ difficulty: caseInsensitiveExact(difficulty) });
+    conditions.push(useNormalizedKeys ? { difficulty: String(difficulty).toLowerCase() } : { difficulty: caseInsensitiveExact(difficulty) });
+  }
+  if (params.exam) conditions.push(useNormalizedKeys ? { exam: params.exam } : { exam: caseInsensitiveExact(params.exam) });
+  if (params.search) {
+    const escaped = String(params.search).slice(0, 200).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    conditions.push({ $or: ['question', 'id', 'chapter'].map(field => ({ [field]: new RegExp(escaped, 'i') })) });
   }
 
   const isSynonymAntonymTopic =
     normalizedTopic === "synonymsantonyms" || normalizedTopic === "antosynopyq";
 
   if (topic) {
-    if (isSynonymAntonymTopic) {
+    if (useNormalizedKeys) {
+      conditions.push({ topicKey: isSynonymAntonymTopic ? { $in: ['synonymsantonyms', 'antosynopyq'] } : normalizedTopic });
+    } else if (isSynonymAntonymTopic) {
       conditions.push({
         topic: { $in: [topic, "antosynopyq", "synonyms-antonyms"] },
       });
@@ -170,13 +180,13 @@ export async function fetchQuestions(params) {
 
   // Push questionType / study-mode filter into MongoDB (was in-memory before)
   if (isStudyModeRequested) {
-    conditions.push(buildStudyModeMatchCondition());
+    conditions.push(useNormalizedKeys ? { modeKey: 'studyMode' } : buildStudyModeMatchCondition());
   } else if (!isAllRequested) {
     if (normalizedQuestionType) {
       conditions.push({ questionType: caseInsensitiveExact(questionType) });
     } else {
       // Default: exclude study-mode records
-      conditions.push(buildExcludeStudyModeCondition());
+      conditions.push(useNormalizedKeys ? { modeKey: { $ne: 'studyMode' } } : buildExcludeStudyModeCondition());
     }
   }
 
@@ -185,6 +195,10 @@ export async function fetchQuestions(params) {
 
   // ── Execute query with DB-side pagination ─────────────
   let cursor = collection.find(mongoFilter).project({ _id: 0 });
+  if (params.sort === 'asc' || params.sort === 'desc') {
+    const direction = params.sort === 'desc' ? -1 : 1;
+    cursor = cursor.collation({ locale: 'en', numericOrdering: true, strength: 2 }).sort({ id: direction, _id: direction });
+  }
 
   if (parsedOffset > 0) cursor = cursor.skip(parsedOffset);
   if (parsedLimit !== null && parsedLimit > 0)
@@ -193,7 +207,7 @@ export async function fetchQuestions(params) {
   resources = await cursor.toArray();
 
   // Fallback: try multi-field search if no results for topic query
-  if (topic && !isSynonymAntonymTopic && resources.length === 0) {
+  if (topic && !useNormalizedKeys && !isSynonymAntonymTopic && resources.length === 0) {
     const topicRegex = caseInsensitiveExact(topic);
     const fallbackConditions = conditions.filter(
       (c) => !c.topic, // remove the direct topic condition
@@ -213,6 +227,10 @@ export async function fetchQuestions(params) {
     let fallbackCursor = collection
       .find(effectiveFilter)
       .project({ _id: 0 });
+    if (params.sort === 'asc' || params.sort === 'desc') {
+      const direction = params.sort === 'desc' ? -1 : 1;
+      fallbackCursor = fallbackCursor.collation({ locale: 'en', numericOrdering: true, strength: 2 }).sort({ id: direction, _id: direction });
+    }
 
     if (parsedOffset > 0) fallbackCursor = fallbackCursor.skip(parsedOffset);
     if (parsedLimit !== null && parsedLimit > 0)
@@ -247,15 +265,33 @@ export async function fetchQuestions(params) {
   }
 
   // Get total count when pagination is active
-  let total = resources.length;
-  if (parsedLimit !== null && parsedLimit > 0) {
+  const shouldCount = params.includeTotal === 'true' || params.includeTotal === true;
+  let total;
+  if (shouldCount) {
     total =
       resources.length < parsedLimit && parsedOffset === 0
         ? resources.length
-        : await collection.countDocuments(effectiveFilter);
+        : await collection.countDocuments(effectiveFilter, { maxTimeMS: 5000 });
+  } else if (parsedOffset === 0 && resources.length < parsedLimit) {
+    total = resources.length;
   }
 
-  const result = { count: total, questions: resources };
+  const result = { count: total !== undefined ? total : resources.length, ...(total !== undefined ? { total } : {}), questions: resources };
+  if (params.includeFacets === 'true') {
+    // Compact filter choices, never full question documents. Keep choices stable
+    // across pages so values outside the current page remain selectable.
+    const facetsKey = await revisionedQuestionCacheKey('admin-question-facets');
+    let facets = questionCountsCache.get(facetsKey);
+    if (!facets) {
+      [facets] = await collection.aggregate([
+      { $match: buildExcludeStudyModeCondition() },
+      { $group: { _id: null, topics: { $addToSet: '$topic' }, exams: { $addToSet: '$exam' }, quizNames: { $addToSet: { $ifNull: ['$quizName', '$source'] } } } },
+      { $project: { _id: 0 } },
+      ], { maxTimeMS: 5000 }).toArray();
+      if (facets) questionCountsCache.set(facetsKey, facets);
+    }
+    result.facets = facets || { topics: [], exams: [], quizNames: [] };
+  }
   if (cacheKey) questionsQueryCache.set(cacheKey, result);
   return result;
 }
@@ -268,22 +304,24 @@ export async function fetchPracticeTest(params) {
     : 10;
   const limit = Math.min(100, Math.max(1, requestedCount || 10));
 
+  const useNormalizedKeys = process.env.QUESTIONS_NORMALIZED_KEYS !== 'false';
   const conditions = [];
 
   if (subject) {
-    conditions.push({ subject: caseInsensitiveExact(subject) });
+    conditions.push(useNormalizedKeys ? { subjectKey: normalizeSearchKey(subject) } : { subject: caseInsensitiveExact(subject) });
   }
   if (difficulty) {
-    conditions.push({ difficulty: caseInsensitiveExact(difficulty) });
+    conditions.push(useNormalizedKeys ? { difficulty: String(difficulty).toLowerCase() } : { difficulty: caseInsensitiveExact(difficulty) });
   }
 
+  if (useNormalizedKeys) conditions.push({ modeKey: { $ne: 'studyMode' } });
   const resources = await collection
     .find(combineMongoConditions(conditions))
-    .project({ _id: 0 })
+    .project({ _id: 0, id: 1, subject: 1, chapter: 1, concept: 1, question: 1, options: 1, difficulty: 1, questionType: 1, quizName: 1, word: 1, meanings: 1 })
     .limit(limit * 3)
     .toArray();
 
-  const filteredResources = resources.filter((q) => !isStudyModeRecord(q));
+  const filteredResources = useNormalizedKeys ? resources : resources.filter((q) => !isStudyModeRecord(q));
   if (filteredResources.length === 0) return null;
 
   return filteredResources

@@ -1,5 +1,6 @@
 import { getMongoDB } from "../../config/mongodb.js";
 import { invalidateTrainingCatalog } from '../training/catalogCache.js';
+import { invalidateQuestionCacheRevision, getQuestionRevision } from './questionCache.js';
 
 const COLLECTION = "questionMetadata";
 const REVISION_ID = "revision";
@@ -9,6 +10,7 @@ const pending = new Map();
 
 export async function invalidateQuestionMetadata() {
   invalidateTrainingCatalog();
+  invalidateQuestionCacheRevision();
   await getMongoDB().collection(COLLECTION).updateOne(
     { _id: REVISION_ID },
     { $inc: { revision: 1 } },
@@ -20,9 +22,9 @@ export async function readQuestionMetadata(params, build) {
   const collection = getMongoDB().collection(COLLECTION);
   const key = JSON.stringify({
     topic: params.topic || "", subject: params.subject || "", mode: params.mode || "",
-    normalized: process.env.QUESTIONS_NORMALIZED_KEYS === "true", schema: 3,
+    normalized: process.env.QUESTIONS_NORMALIZED_KEYS !== "false", schema: 3,
   });
-  const revision = (await collection.findOne({ _id: REVISION_ID }))?.revision ?? 0;
+  const revision = await getQuestionRevision();
   const cached = await collection.findOne({ _id: key });
   if (cached?.revision === revision && Date.now() - new Date(cached.updatedAt).getTime() < MAX_AGE_MS) {
     return cached.data;

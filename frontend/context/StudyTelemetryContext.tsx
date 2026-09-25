@@ -1,7 +1,8 @@
 "use client";
 
-import React, { createContext, useCallback, useContext, useState } from "react";
-import api from "@/lib/axios";
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import api, { getAccessToken } from "@/lib/axios";
+import { API_BASE } from "@/lib/api-base";
 
 interface StudyTelemetryContextValue {
   studyTime: number;
@@ -21,42 +22,83 @@ export function StudyTelemetryProvider({
   initialStudyTime?: number;
 }) {
   const [studyTime, setStudyTime] = useState(initialStudyTime);
+  const pendingSecondsRef = useRef(0);
+  const isFlushingRef = useRef(false);
 
-  const syncStudyTime = useCallback(async (seconds: number) => {
-    if (seconds <= 0) return;
+  const flush = useCallback(async (useKeepalive = false) => {
+    const seconds = pendingSecondsRef.current;
+    if (seconds <= 0 || isFlushingRef.current) return;
 
-    // Update local state (deferred to avoid React render warnings)
-    setTimeout(() => {
-      setStudyTime((prev) => prev + seconds);
-    }, 0);
+    pendingSecondsRef.current = 0;
+    isFlushingRef.current = true;
 
-    // Fire-and-forget telemetry
     try {
-      const timezone =
-        Intl.DateTimeFormat()
-          .resolvedOptions()
-          .timeZone;
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const payload = JSON.stringify({ activeSeconds: seconds, timezone });
 
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 5000);
-      await api.patch(
-        "/users/me/usage",
-        {
-          activeSeconds:
-            seconds,
+      if (useKeepalive && typeof fetch !== "undefined") {
+        const token = getAccessToken();
+        const headers: Record<string, string> = { "Content-Type": "application/json" };
+        if (token) headers.Authorization = `Bearer ${token}`;
 
-          timezone,
-        },
-        {
-          signal:
-            controller.signal,
-        }
-      );
-      clearTimeout(timer);
+        await fetch(`${API_BASE}/users/me/usage`, {
+          method: "PATCH",
+          headers,
+          body: payload,
+          keepalive: true,
+          credentials: "include",
+        });
+      } else {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 6000);
+        await api.patch(
+          "/users/me/usage",
+          { activeSeconds: seconds, timezone },
+          { signal: controller.signal }
+        );
+        clearTimeout(timer);
+      }
     } catch {
-      // Best-effort telemetry — silent failure
+      // Re-accumulate so time is preserved on transient failures
+      pendingSecondsRef.current += seconds;
+    } finally {
+      isFlushingRef.current = false;
     }
   }, []);
+
+  const syncStudyTime = useCallback((seconds: number) => {
+    if (seconds <= 0) return;
+
+    pendingSecondsRef.current += seconds;
+    setStudyTime((prev) => prev + seconds);
+  }, []);
+
+  // Periodic flush every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      void flush(false);
+    }, 30_000);
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        void flush(true);
+      }
+    };
+
+    const handlePageHide = () => {
+      void flush(true);
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("pagehide", handlePageHide);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("pagehide", handlePageHide);
+      void flush(true);
+    };
+  }, [flush]);
 
   return (
     <StudyTelemetryContext.Provider value={{ studyTime, syncStudyTime }}>

@@ -1,4 +1,5 @@
 import { getQuestionsCollection } from "../../config/mongodb.js";
+import { questionsQueryCache, revisionedQuestionCacheKey } from "./questionCache.js";
 import { normalizeSearchKey } from "./questionNormalizer.js";
 import {
   buildExcludeStudyModeCondition,
@@ -10,10 +11,19 @@ import {
 export async function fetchQuestionsSession(params) {
   const collection = getQuestionsCollection();
   const { topic, subject, mode, limit = 50, cursor: cursorId, letter, exam, concept } = params;
+  const useNormalizedKeys = process.env.QUESTIONS_NORMALIZED_KEYS !== 'false';
+  const shouldCache = !cursorId && params.includeTotal !== 'true' && params.includeTotal !== true;
+  const cacheKey = shouldCache
+    ? await revisionedQuestionCacheKey('session:' + JSON.stringify(params))
+    : null;
+  if (cacheKey) {
+    const cached = questionsQueryCache.get(cacheKey);
+    if (cached) return cached;
+  }
 
   const parsedLimit = Math.max(
     1,
-    Math.min(5000, Math.floor(Number(limit)) || 50),
+    Math.min(200, Math.floor(Number(limit)) || 50),
   );
   const conditions = [];
 
@@ -23,19 +33,21 @@ export async function fetchQuestionsSession(params) {
       normalizedTopic === "synonymsantonyms" ||
       normalizedTopic === "antosynopyq";
     if (isSynonymAntonymTopic) {
-      conditions.push({
+      conditions.push(useNormalizedKeys ? {
+        topicKey: { $in: ['antosynopyq', 'synonymsantonyms'] },
+      } : {
         topic: { $in: [topic, "antosynopyq", "synonyms-antonyms"] },
       });
     } else {
       conditions.push(
-        process.env.QUESTIONS_NORMALIZED_KEYS === "true"
+        useNormalizedKeys
           ? { topicKey: normalizeSearchKey(topic) }
           : { topic },
       );
     }
   } else if (subject) {
     conditions.push(
-      process.env.QUESTIONS_NORMALIZED_KEYS === "true"
+      useNormalizedKeys
         ? { subjectKey: normalizeSearchKey(subject) }
         : { subject: caseInsensitiveExact(subject) },
     );
@@ -44,27 +56,27 @@ export async function fetchQuestionsSession(params) {
   if (letter) {
     const lettersArray = letter.split(',').map(l => l.trim()).filter(Boolean);
     if (lettersArray.length > 0) {
-      conditions.push({ letter: { $in: lettersArray.map(l => caseInsensitiveExact(l)) } });
+      conditions.push(useNormalizedKeys ? { letter: { $in: lettersArray.map(l => l.toUpperCase()) } } : { letter: { $in: lettersArray.map(l => caseInsensitiveExact(l)) } });
     }
   }
 
   if (exam && exam !== "all") {
     const examsArray = exam.split(',').map(e => e.trim()).filter(Boolean);
     if (examsArray.length > 0) {
-      conditions.push({ exam: { $in: examsArray.map(e => caseInsensitiveExact(e)) } });
+      conditions.push(useNormalizedKeys ? { exam: { $in: examsArray } } : { exam: { $in: examsArray.map(e => caseInsensitiveExact(e)) } });
     }
   }
 
   if (concept && concept !== "all") {
     const conceptsArray = concept.split(',').map(c => c.trim()).filter(Boolean);
     if (conceptsArray.length > 0) {
-      conditions.push({ concept: { $in: conceptsArray.map(c => caseInsensitiveExact(c)) } });
+      conditions.push(useNormalizedKeys ? { concept: { $in: conceptsArray } } : { concept: { $in: conceptsArray.map(c => caseInsensitiveExact(c)) } });
     }
   }
 
   // Apply mode filter
   if (mode) {
-    if (process.env.QUESTIONS_NORMALIZED_KEYS === "true") {
+    if (useNormalizedKeys) {
       conditions.push({ modeKey: mode === "ai-challenge" ? "aiChallenge" : mode });
     } else {
       const modeFilter = buildModeFilter(mode);
@@ -72,7 +84,7 @@ export async function fetchQuestionsSession(params) {
     }
   } else {
     // Default: exclude study-mode
-    conditions.push(buildExcludeStudyModeCondition());
+    conditions.push(useNormalizedKeys ? { modeKey: { $ne: 'studyMode' } } : buildExcludeStudyModeCondition());
   }
 
   // Cursor-based pagination using _id
@@ -98,7 +110,9 @@ export async function fetchQuestionsSession(params) {
     conditions.filter((c) => !c._id || !c._id.$gt)
   );
   
-  const totalCount = params.includeTotal === 'false' ? undefined : await collection.countDocuments(countFilter, { maxTimeMS: 5000 });
+  const totalCount = params.includeTotal === 'true' || params.includeTotal === true
+    ? await collection.countDocuments(countFilter, { maxTimeMS: 5000 })
+    : undefined;
 
   const hasMore = resources.length > parsedLimit;
   const pageItems = resources.slice(0, parsedLimit);
@@ -113,10 +127,13 @@ export async function fetchQuestionsSession(params) {
     return rest;
   });
 
-  return {
+  const result = {
     questions,
     nextCursor,
     hasMore,
     totalCount,
   };
+
+  if (cacheKey) questionsQueryCache.set(cacheKey, result);
+  return result;
 }

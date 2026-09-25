@@ -1,6 +1,7 @@
 "use client";
 
 import type { SubjectConfig } from "@/features/quiz/model/types";
+import dynamic from "next/dynamic";
 
 import { normalizeExamLabel } from "@/lib/quiz-index";
 import { QuizThemeProvider } from "@/features/quiz/components/QuizThemeProvider";
@@ -44,11 +45,12 @@ export default function QuizEngine(props: QuizEngineProps) {
 }
 
 import { useQuizController } from "@/features/quiz/hooks/useQuizController";
-import { DesktopQuizView } from "@/features/quiz/components/views/DesktopQuizView";
-import { MobileQuizView } from "@/features/quiz/components/views/MobileQuizView";
 import { QuizStartView } from "@/features/quiz/components/views/QuizStartView";
-import { ResultView } from "@/features/quiz/components/views/ResultView";
 import { mobileQuizViewModel, desktopQuizViewModel } from "../model/viewModels";
+const viewLoading = () => <div role="status" className="min-h-dvh flex items-center justify-center">Loading quiz…</div>;
+const DesktopQuizView = dynamic(() => import('./views/DesktopQuizView').then(module => module.DesktopQuizView), { loading: viewLoading });
+const MobileQuizView = dynamic(() => import('./views/MobileQuizView').then(module => module.MobileQuizView), { loading: viewLoading });
+const ResultView = dynamic(() => import('./views/ResultView').then(module => module.ResultView), { loading: viewLoading });
 function QuizEngineContent(props: QuizEngineProps) {
   const controller = useQuizController(props);
   const { showAnalytics, started, currentQ, subjectConfig, theme, themeStyles, submittedQuestions, currentIndex, selectedAnswer, title, isMac, isIos } = controller;

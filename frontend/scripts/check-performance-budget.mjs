@@ -30,7 +30,7 @@ for (const file of manifests) {
       if (!sizes.has(path)) sizes.set(path, gzipSync(await readFile(path)).length);
       gzipBytes += sizes.get(path);
     }
-    rows.push({ route, gzipBytes, limit: route.includes('(auth)') ? budget.authEntryGzipBytes : budget.routeEntryGzipBytes });
+    rows.push({ route, gzipBytes, limit: budget.routeOverrides?.[route] ?? (route.includes('(auth)') ? budget.authEntryGzipBytes : budget.routeEntryGzipBytes) });
   }
 }
 rows.sort((a, b) => b.gzipBytes - a.gzipBytes);

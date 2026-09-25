@@ -17,7 +17,7 @@ import BulkImageQuestionUpload from "./BulkImageQuestionUpload";
 
 
 export default function AdminPanel() {
-  const { questions, loading, error, success, search, setSearch, filterTopic, setFilterTopic, filterSubject, setFilterSubject, filterDifficulty, setFilterDifficulty, filterExam, setFilterExam, filterQuizName, setFilterQuizName, sortOrder, setSortOrder, muSubject, setMuSubject, muTopic, setMuTopic, muQuiz, setMuQuiz, muFileName, muStats, muQuestions, muUploading, muApiUrl, setMuApiUrl, muFileRef, bulkImages, bulkImageNotice, bulkImageUploading, bulkImageRef, page, setPage, editing, isNew, formData, setFormData, deleteConfirm, setDeleteConfirm, selected, bulkDeleteConfirm, setBulkDeleteConfirm, bulkDeleting, imagePreview, setImagePreview, solImgUploading, solImgRefs, topics, exams, quizNames, muTopicOptions, selectedSubjectId, selectedTopicId, selectedQuizId, selectedSubjectName, selectedTopicName, selectedQuizName, quizOptions, filtered, handleMuFileChange, handleMuClear, handleMuUpload, handleBulkImageFiles, removeBulkImage, clearBulkImages, handleBulkImageUpload, handleSolutionImageUpload, toggleOne, paginated, allPageSelected, togglePage, selectAll, clearSelection, handleBulkDelete, openEdit, openNew, closeModal, handleSave, handleDelete, totalPages, diffColor } = useAdminQuestionBank();
+  const { questions, totalCount, loading, error, success, search, setSearch, filterTopic, setFilterTopic, filterSubject, setFilterSubject, filterDifficulty, setFilterDifficulty, filterExam, setFilterExam, filterQuizName, setFilterQuizName, sortOrder, setSortOrder, muSubject, setMuSubject, muTopic, setMuTopic, muQuiz, setMuQuiz, muFileName, muStats, muQuestions, muUploading, muApiUrl, setMuApiUrl, muFileRef, bulkImages, bulkImageNotice, bulkImageUploading, bulkImageRef, page, setPage, editing, isNew, formData, setFormData, deleteConfirm, setDeleteConfirm, selected, bulkDeleteConfirm, setBulkDeleteConfirm, bulkDeleting, imagePreview, setImagePreview, solImgUploading, solImgRefs, topics, exams, quizNames, muTopicOptions, selectedSubjectId, selectedTopicId, selectedQuizId, selectedSubjectName, selectedTopicName, selectedQuizName, quizOptions, filtered, handleMuFileChange, handleMuClear, handleMuUpload, handleBulkImageFiles, removeBulkImage, clearBulkImages, handleBulkImageUpload, handleSolutionImageUpload, toggleOne, paginated, allPageSelected, togglePage, selectAll, clearSelection, handleBulkDelete, openEdit, openNew, closeModal, handleSave, handleDelete, totalPages, diffColor } = useAdminQuestionBank();
 
 
   return (
@@ -28,7 +28,7 @@ export default function AdminPanel() {
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 500, margin: 0, color: "var(--color-text-primary)" }}>Question Bank Admin</h1>
           <p style={{ fontSize: 13, color: "var(--color-text-secondary)", margin: "4px 0 0" }}>
-            {filtered.length} of {questions.length} questions
+            {questions.length} of {totalCount} questions
             {selected.size > 0 && <span style={{ marginLeft: 8, color: "var(--admin-blue)", fontWeight: 500 }}>· {selected.size} selected</span>}
           </p>
         </div>
@@ -232,7 +232,7 @@ export default function AdminPanel() {
           <span>{selected.size} question{selected.size > 1 ? "s" : ""} selected</span>
           {selected.size < filtered.length && (
             <button data-ui-button="state" onClick={selectAll} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--admin-blue)", fontWeight: 500, fontSize: 13, padding: 0 }}>
-              Select all {filtered.length}
+              Select all {filtered.length} on this page
             </button>
           )}
           <button data-ui-button="state" onClick={clearSelection} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--admin-blue)", fontSize: 13, padding: 0, marginLeft: "auto" }}>

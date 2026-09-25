@@ -6,7 +6,7 @@ import {
 import { questionWriteResponse as fetchWithRetry } from "@/features/quiz/api/questionWrites";
 import { API_BASE } from "@/lib/api-base";
 import { getAccessToken } from "@/shared/api/client";
-import { useCallback,useEffect,useMemo,useRef,useState } from "react";
+import { useCallback,useEffect,useRef,useState } from "react";
 import { useQuestionUploads } from "./useQuestionUploads";
 
 const API = API_BASE;
@@ -14,6 +14,8 @@ const API = API_BASE;
 const getAdminToken = () => getAccessToken() || "";
 export function useAdminQuestionBank() {
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [facets, setFacets] = useState<{ topics: string[]; exams: string[]; quizNames: string[] }>({ topics: [], exams: [], quizNames: [] });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -31,6 +33,12 @@ export function useAdminQuestionBank() {
   // Pagination
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 50;
+  const filterKey = JSON.stringify([filterTopic, filterSubject, filterDifficulty, filterExam, filterQuizName, search, sortOrder]);
+  const [previousFilterKey, setPreviousFilterKey] = useState(filterKey);
+  if (previousFilterKey !== filterKey) {
+    setPreviousFilterKey(filterKey);
+    setPage(1);
+  }
 
   // Modal
   const [editing, setEditing] = useState<Question | null>(null);
@@ -51,11 +59,9 @@ export function useAdminQuestionBank() {
 
 
 
-  const topics = [...new Set(questions.map((q) => q.topic).filter(Boolean))].sort();
-  const exams = [...new Set(questions.map((q) => q.exam).filter(Boolean))].sort();
-  const quizNames = [...new Set(
-    questions.map((q) => q.quizName || q.source).filter((name): name is string => Boolean(name))
-  )].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+  const topics = facets.topics.filter(Boolean).slice().sort();
+  const exams = facets.exams.filter(Boolean).slice().sort();
+  const quizNames = facets.quizNames.filter(Boolean).slice().sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
   const fetchQuestions = useCallback(async () => {
     questionsRequestRef.current?.abort();
     const controller = new AbortController();
@@ -70,6 +76,11 @@ export function useAdminQuestionBank() {
       if (filterDifficulty) params.set("difficulty", filterDifficulty);
       if (filterExam) params.set("exam", filterExam);
       if (filterQuizName) params.set("quizName", filterQuizName);
+      params.set('limit', String(PAGE_SIZE));
+      params.set('offset', String((page - 1) * PAGE_SIZE));
+      params.set('sort', sortOrder);
+      if (search) params.set('search', search);
+      if (page === 1) params.set('includeFacets', 'true');
       const res = await fetchWithRetry(
         `${API}/api/questions?${params}`,
         { signal: controller.signal },
@@ -79,8 +90,11 @@ export function useAdminQuestionBank() {
       const data = await res.json();
       if (questionsRequestRef.current !== controller) return;
       setQuestions(Array.isArray(data) ? data : data.questions || []);
+      setTotalCount(data.count ?? 0);
+      const lastPage = Math.max(1, Math.ceil((data.count ?? 0) / PAGE_SIZE));
+      if (page > lastPage) setPage(lastPage);
+      if (data.facets) setFacets(data.facets);
       setSelected(new Set());
-      setPage(1);
     } catch (e: unknown) {
       if (!controller.signal.aborted && questionsRequestRef.current === controller) {
         setError(e instanceof Error ? e.message : "Failed to fetch");
@@ -91,33 +105,17 @@ export function useAdminQuestionBank() {
         setLoading(false);
       }
     }
-  }, [filterTopic, filterSubject, filterDifficulty, filterExam, filterQuizName]);
+  }, [filterTopic, filterSubject, filterDifficulty, filterExam, filterQuizName, page, search, sortOrder]);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => void fetchQuestions(), 0);
+    const timer = window.setTimeout(() => void fetchQuestions(), 200);
     return () => {
       window.clearTimeout(timer);
       questionsRequestRef.current?.abort();
     };
   }, [fetchQuestions]);
 
-  const filtered = useMemo(() => {
-    const q = search.toLowerCase();
-    const filteredQuestions = questions.filter(
-      (x) =>
-        !q ||
-        x.question?.toLowerCase().includes(q) ||
-        x.id?.toLowerCase().includes(q) ||
-        x.chapter?.toLowerCase().includes(q)
-    );
-
-    const sortedQuestions = filteredQuestions.slice().sort((a, b) => {
-      const cmp = a.id.localeCompare(b.id, undefined, { numeric: true, sensitivity: "base" });
-      return sortOrder === "asc" ? cmp : -cmp;
-    });
-
-    return sortedQuestions;
-  }, [search, questions, sortOrder]);
+  const filtered = questions;
 
   const showMsg = (msg: string, isErr = false) => {
     if (isErr) setError(msg); else setSuccess(msg);
@@ -172,7 +170,7 @@ export function useAdminQuestionBank() {
     });
   };
 
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const paginated = filtered;
   const paginatedIds = paginated.map((q) => q.id);
   const allPageSelected = paginatedIds.length > 0 && paginatedIds.every((id) => selected.has(id));
 
@@ -329,8 +327,8 @@ export function useAdminQuestionBank() {
     }
   };
 
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
   const diffColor = (d: string) =>
     d === "easy" ? "#16a34a" : d === "hard" ? "#dc2626" : "#d97706";
-  return { questions, loading, error, success, search, setSearch, filterTopic, setFilterTopic, filterSubject, setFilterSubject, filterDifficulty, setFilterDifficulty, filterExam, setFilterExam, filterQuizName, setFilterQuizName, sortOrder, setSortOrder, muSubject, setMuSubject, muTopic, setMuTopic, muQuiz, setMuQuiz, muFileName, muStats, muQuestions, muUploading, muApiUrl, setMuApiUrl, muFileRef, bulkImages, bulkImageNotice, bulkImageUploading, bulkImageRef, page, setPage, editing, isNew, formData, setFormData, deleteConfirm, setDeleteConfirm, selected, bulkDeleteConfirm, setBulkDeleteConfirm, bulkDeleting, imagePreview, setImagePreview, solImgUploading, solImgRefs, topics, exams, quizNames, muTopicOptions, selectedSubjectId, selectedTopicId, selectedQuizId, selectedSubjectName, selectedTopicName, selectedQuizName, quizOptions, filtered, handleMuFileChange, handleMuClear, handleMuUpload, handleBulkImageFiles, removeBulkImage, clearBulkImages, handleBulkImageUpload, handleSolutionImageUpload, toggleOne, paginated, allPageSelected, togglePage, selectAll, clearSelection, handleBulkDelete, openEdit, openNew, closeModal, handleSave, handleDelete, totalPages, diffColor };
+  return { questions, totalCount, loading, error, success, search, setSearch, filterTopic, setFilterTopic, filterSubject, setFilterSubject, filterDifficulty, setFilterDifficulty, filterExam, setFilterExam, filterQuizName, setFilterQuizName, sortOrder, setSortOrder, muSubject, setMuSubject, muTopic, setMuTopic, muQuiz, setMuQuiz, muFileName, muStats, muQuestions, muUploading, muApiUrl, setMuApiUrl, muFileRef, bulkImages, bulkImageNotice, bulkImageUploading, bulkImageRef, page, setPage, editing, isNew, formData, setFormData, deleteConfirm, setDeleteConfirm, selected, bulkDeleteConfirm, setBulkDeleteConfirm, bulkDeleting, imagePreview, setImagePreview, solImgUploading, solImgRefs, topics, exams, quizNames, muTopicOptions, selectedSubjectId, selectedTopicId, selectedQuizId, selectedSubjectName, selectedTopicName, selectedQuizName, quizOptions, filtered, handleMuFileChange, handleMuClear, handleMuUpload, handleBulkImageFiles, removeBulkImage, clearBulkImages, handleBulkImageUpload, handleSolutionImageUpload, toggleOne, paginated, allPageSelected, togglePage, selectAll, clearSelection, handleBulkDelete, openEdit, openNew, closeModal, handleSave, handleDelete, totalPages, diffColor };
 }

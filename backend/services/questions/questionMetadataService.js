@@ -1,5 +1,5 @@
 import { getMongoDB, getQuestionsCollection } from "../../config/mongodb.js";
-import { questionCountsCache } from "./questionCache.js";
+import { questionCountsCache, revisionedQuestionCacheKey } from "./questionCache.js";
 import { readQuestionMetadata } from "./questionMetadataCache.js";
 import { canonicalMode, ensureConceptGroups } from "./conceptGroupService.js";
 import { deriveModeKey, normalizeSearchKey } from "./questionNormalizer.js";
@@ -21,15 +21,15 @@ export async function fetchQuestionCounts(params) {
     throw error;
   }
 
-  const cacheKey = JSON.stringify({
+  const cacheKey = await revisionedQuestionCacheKey(JSON.stringify({
     topic: topic || "",
     subject: subject || "",
-  });
+  }));
   const cached = questionCountsCache.get(cacheKey);
   if (cached) return cached;
 
   const collection = getQuestionsCollection();
-  if (process.env.QUESTIONS_NORMALIZED_KEYS === 'true') {
+  if (process.env.QUESTIONS_NORMALIZED_KEYS !== 'false') {
     const topicKey = normalizeSearchKey(topic);
     const filter = topic ? { topicKey: ['synonymsantonyms', 'antosynopyq'].includes(topicKey) ? { $in: ['synonymsantonyms', 'antosynopyq'] } : topicKey } : { subjectKey: normalizeSearchKey(subject) };
     const grouped = await collection.aggregate([{ $match: filter }, { $group: { _id: '$modeKey', count: { $sum: 1 } } }]).toArray();
@@ -130,19 +130,21 @@ async function buildQuestionsMeta(params) {
       normalizedTopic === "synonymsantonyms" ||
       normalizedTopic === "antosynopyq";
     if (isSynonymAntonymTopic) {
-      conditions.push({
+      conditions.push(process.env.QUESTIONS_NORMALIZED_KEYS !== 'false' ? {
+        topicKey: { $in: ['antosynopyq', 'synonymsantonyms'] },
+      } : {
         topic: { $in: [topic, "antosynopyq", "synonyms-antonyms"] },
       });
     } else {
-      conditions.push(process.env.QUESTIONS_NORMALIZED_KEYS === "true" ? { topicKey: normalizeSearchKey(topic) } : { topic });
+      conditions.push(process.env.QUESTIONS_NORMALIZED_KEYS !== "false" ? { topicKey: normalizeSearchKey(topic) } : { topic });
     }
   }
   if (subject) {
-    conditions.push(process.env.QUESTIONS_NORMALIZED_KEYS === "true" ? { subjectKey: normalizeSearchKey(subject) } : { subject: caseInsensitiveExact(subject) });
+    conditions.push(process.env.QUESTIONS_NORMALIZED_KEYS !== "false" ? { subjectKey: normalizeSearchKey(subject) } : { subject: caseInsensitiveExact(subject) });
   }
 
   if (mode) {
-    if (process.env.QUESTIONS_NORMALIZED_KEYS === "true") {
+    if (process.env.QUESTIONS_NORMALIZED_KEYS !== "false") {
       conditions.push({ modeKey: canonicalMode(mode) });
     } else if (mode === "studyMode") {
       conditions.push({ $nor: [buildExcludeStudyModeCondition()] });

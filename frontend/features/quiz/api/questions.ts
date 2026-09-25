@@ -53,9 +53,31 @@ export function questionKey(params: QuestionParams): string {
   return `${API_BASE}/api/questions?${query}`;
 }
 export async function fetchQuestionKey(url: string): Promise<Question[]> {
-  const data = await request<{ questions?: Question[] }>(url, { cache: 'no-store' });
   const type = new URL(url, 'http://localhost').searchParams.get('questionType');
-  const questions = data.questions ?? [];
+  const library = type === 'study-mode' || type === 'studymode';
+  const questions: Question[] = [];
+  const query = new URL(url, 'http://localhost');
+  const requestedLimit = Number(query.searchParams.get('limit'));
+  if (!query.searchParams.has('offset') && !query.searchParams.has('search') && !query.searchParams.has('sort')) {
+    // Prefer cursor pagination everywhere over heavy offset queries.
+    // Transfer in bounded cursor pages without repeating exact count queries.
+    query.searchParams.set('pagination', 'cursor');
+    query.searchParams.set('includeTotal', 'false');
+    query.searchParams.set('limit', String(requestedLimit > 0 ? Math.min(200, requestedLimit) : (library ? 200 : 50)));
+  }
+  const seen = new Set<string>();
+  for (;;) {
+    const data = await request<{ questions?: Question[]; nextCursor?: string | null; hasMore?: boolean }>(
+      `${url.split('?')[0]}?${query.searchParams}`, { cache: 'no-store' },
+    );
+    questions.push(...(data.questions ?? []));
+    if (query.searchParams.get('pagination') !== 'cursor' || !data.hasMore) break;
+    if (requestedLimit > 0 && questions.length >= requestedLimit) break;
+    if (!data.nextCursor || seen.has(data.nextCursor)) throw new Error('Invalid question pagination');
+    seen.add(data.nextCursor);
+    query.searchParams.set('cursor', data.nextCursor);
+    if (requestedLimit > 0) query.searchParams.set('limit', String(Math.min(200, requestedLimit - questions.length)));
+  }
   if (type === 'study-mode' || type === 'studymode') return questions.filter(isStudyModeQuestion);
   return type === 'all' ? questions : questions.filter(question => !isStudyModeQuestion(question));
 }

@@ -137,7 +137,7 @@ describe('normalized ingestion and backfill', () => {
     process.env.QUESTIONS_NORMALIZED_KEYS = 'true';
     try {
       await createQuestionsBulk(Array.from({ length: 123 }, (_, i) => ({ topic: 'Algebra', subject: 'Mathematics', question: `Q${i}` })), { importId: 'cursor-fixture' });
-      const first = await fetchQuestionCursorPage({ topic: 'algebra', limit: 50 });
+      const first = await fetchQuestionCursorPage({ topic: 'algebra', limit: 50, includeTotal: 'true' });
       const second = await fetchQuestionCursorPage({ topic: 'algebra', limit: 50, cursor: first.nextCursor });
       const third = await fetchQuestionCursorPage({ topic: 'algebra', limit: 50, cursor: second.nextCursor });
       expect(new Set([...first.questions, ...second.questions, ...third.questions].map(row => row.id)).size).toBe(123);

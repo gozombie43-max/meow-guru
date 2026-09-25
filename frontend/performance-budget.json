@@ -1,4 +1,11 @@
 {
-  "authEntryGzipBytes": 180000,
-  "routeEntryGzipBytes": 260000
+  "authEntryGzipBytes": 90000,
+  "routeEntryGzipBytes": 180000,
+  "routeOverrides": {
+    "/(app)/play/session/[id]/page": 160000,
+    "/(app)/mock-test/[examSlug]/[testId]/attempt/page": 155000,
+    "/ai-test/page": 215000,
+    "/(app)/ai-chat/page": 215000,
+    "/(app)/battle/page": 215000
+  }
 }

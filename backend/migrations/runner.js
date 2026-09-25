@@ -10,8 +10,10 @@ import * as trainingHardening from './007-training-hardening.js';
 import * as trainingPerformance from './008-training-performance.js';
 import * as trainingExamWideCandidates from './009-training-exam-wide-candidates.js';
 import * as trainingLearnerStateMeta from './010-training-learner-state-meta.js';
+import * as questionBrowserSort from './011-question-browser-sort.js';
+import * as normalizedQuestionIndexes from './012-normalized-question-query-indexes.js';
 
-export const migrations = [existingIndexes, runtime, productionHardening, readiness, training, oauthState, trainingHardening, trainingPerformance, trainingExamWideCandidates, trainingLearnerStateMeta];
+export const migrations = [existingIndexes, runtime, productionHardening, readiness, training, oauthState, trainingHardening, trainingPerformance, trainingExamWideCandidates, trainingLearnerStateMeta, questionBrowserSort, normalizedQuestionIndexes];
 export async function assertMigrations(db) {
   const applied = await db.collection('schemaMigrations').find({ _id: { $in: migrations.map(m => m.id) }, completedAt: { $exists: true } }, { timeoutMS: 2000 }).toArray();
   if (applied.length !== migrations.length) throw new Error('Database migrations required: run npm run db:migrate before starting this release');

@@ -10,7 +10,7 @@ import {
 import { ConceptBadge } from "@/features/quiz/components/ui/SharedUI";
 import { SolutionBottomSheet } from "@/features/quiz/components/ui/SolutionViews";
 import { UptimeTimer } from "@/features/quiz/components/QuizTimer";
-import { motion } from "framer-motion";
+import transitionStyles from "./question-transition.module.css";
 import { XCircle } from "lucide-react";
 import type { QuizController } from "@/features/quiz/hooks/useQuizController";
 export type MobileQuizFields = Pick<
@@ -185,12 +185,9 @@ export function MobileQuizView({ configuration, settings, question, navigation, 
             />
           </div>
 
-          <motion.section
+          <section
             key={`ios-question-${currentQ.id}`}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.2 }}
-            className="ios-series-question-card"
+            className={`ios-series-question-card ${transitionStyles.mobile}`}
           >
             {hasQuestionText && (
               <div className="ios-series-prompt">
@@ -200,7 +197,7 @@ export function MobileQuizView({ configuration, settings, question, navigation, 
                 />
               </div>
             )}
-          </motion.section>
+          </section>
 
           <section className="ios-series-options" aria-label="Answer options">
             {displayedOptions.slice(0, 4).map((option, index) => {
