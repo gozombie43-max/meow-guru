@@ -21,8 +21,9 @@ it("does not auto-focus the search bar when the modal appears", async () => {
   render(<TrainingFilterPicker label="Topic" value="" options={["Algebra"]} emptyLabel="All topics" onChange={vi.fn()} />);
   fireEvent.click(screen.getByRole("button", { name: /Topic/ }));
   const searchbox = await screen.findByRole("searchbox");
+  // The portal can appear before the passive modal-focus effect runs.
+  await waitFor(() => expect(screen.getByRole("dialog")).toHaveFocus());
   expect(searchbox).not.toHaveFocus();
-  expect(screen.getByRole("dialog")).toHaveFocus();
 });
 
 it("does not render header subtitle or footer selection texts", async () => {
