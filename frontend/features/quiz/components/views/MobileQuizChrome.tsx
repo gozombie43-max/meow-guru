@@ -1,59 +1,16 @@
 import { useRef } from "react";
 import BackButton from "@/components/BackButton";
 import { LangToggle } from "@/components/LangToggle";
-import { Menu, Settings, ArrowLeft, ArrowRight } from "lucide-react";
+import { EllipsisVertical, Settings, ArrowLeft, ArrowRight, FileText, Sparkles } from "lucide-react";
 import dynamic from "next/dynamic";
 import type { QuizController } from "@/features/quiz/hooks/useQuizController";
 
-function SolutionIcon({ className = "ios-series-pill-icon solution-icon" }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <rect x="4" y="3.5" width="16" height="17" rx="3" />
-      <path d="M8 2.5v3M12 2.5v3M16 2.5v3M8 10h8M8 14h8M8 18h5" />
-    </svg>
-  );
+function SolutionIcon({ className }: { className?: string }) {
+  return <FileText className={className} aria-hidden="true" />;
 }
 
-function GeminiIcon({ className = "ios-series-pill-icon ai-icon" }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 48 48"
-      className={className}
-      aria-hidden="true"
-    >
-      <linearGradient
-        id="ios-gemini-gradient"
-        x1="3.906"
-        x2="45.428"
-        y1="3.906"
-        y2="45.428"
-        gradientUnits="userSpaceOnUse"
-      >
-        <stop offset="0" stopColor="#ca5df5" />
-        <stop offset=".036" stopColor="#c05ff4" />
-        <stop offset=".293" stopColor="#806cea" />
-        <stop offset=".528" stopColor="#4d77e3" />
-        <stop offset=".731" stopColor="#297fdd" />
-        <stop offset=".895" stopColor="#1283da" />
-        <stop offset="1" stopColor="#0a85d9" />
-      </linearGradient>
-      <path
-        fill="url(#ios-gemini-gradient)"
-        d="M46.117 23.081l-.995-.04h-.002C34.243 22.613 25.387 13.757 24.959 2.88l-.04-.996C24.9 1.39 24.494 1 24 1s-.9.39-.919.883l-.04.996C22.612 13.756 13.756 22.612 2.878 23.041l-.995.04C1.39 23.1 1 23.506 1 24s.39.9.884.919l.995.039c10.877.43 19.733 9.286 20.162 20.163l.04.996C23.1 46.61 23.506 47 24 47s.9-.39.919-.883l.04-.996c.429-10.877 9.285-19.733 20.162-20.163l.995-.039C46.61 24.9 47 24.494 47 24s-.39-.9-.883-.919z"
-      />
-    </svg>
-  );
+function GeminiIcon({ className }: { className?: string }) {
+  return <Sparkles className={className} aria-hidden="true" />;
 }
 
 const QuizChatbot = dynamic(() => import("@/components/QuizChatbot"), {
@@ -93,7 +50,7 @@ export function MobileQuizHeader({ routeBase, subjectConfig, slug, activeLang, c
           <Settings aria-hidden="true" />
         </button>
         <button data-ui-button="state" data-ui-shape="icon" type="button" className={`ios-series-icon-button ${hideQuestionNumbers ? `is-qnum ${sizeClass}` : ""}`} onClick={openPalette} aria-label={hideQuestionNumbers ? `Question ${questionNumber} - Open question navigator` : "Open question navigator"}>
-          {hideQuestionNumbers ? <span className="ios-series-palette-num">{questionNumber}</span> : <Menu aria-hidden="true" />}
+          {hideQuestionNumbers ? <span className="ios-series-palette-num">{questionNumber}</span> : <EllipsisVertical aria-hidden="true" />}
         </button>
       </div>
     </header>
@@ -262,7 +219,7 @@ function MobileQuizFooterControls({
         aria-label={!isCurrentSubmitted ? "Submit" : currentIndex < questions.length - 1 ? "Next" : "Finish"}
       >
         <span>{!isCurrentSubmitted ? "Submit" : currentIndex < questions.length - 1 ? "Next" : "Finish"}</span>
-        {isCurrentSubmitted && <ArrowRight className="ios-series-btn-arrow" aria-hidden="true" />}
+        <ArrowRight className="ios-series-btn-arrow" aria-hidden="true" />
       </button>
     </footer>
   );

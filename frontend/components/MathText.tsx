@@ -46,7 +46,7 @@ const MathText = React.memo(function MathText({ text, className = "" }: Props) {
         return (
           <span key={i} className="inline-flex items-center gap-0.5 align-middle">
             <span className="inline-flex flex-col items-center leading-none" role="math">
-              <span className="text-[var(--text-primary)] font-bold" style={{ fontSize: "0.85em" }}>
+              <span className="text-[var(--text-primary,inherit)] font-bold" style={{ fontSize: "0.85em", color: "inherit" }}>
                 <MathRenderer text={num} />
               </span>
               <span className="w-full border-t border-slate-400 my-[2px]" style={{ minWidth: "1.2em" }} />
@@ -55,7 +55,7 @@ const MathText = React.memo(function MathText({ text, className = "" }: Props) {
               </span>
             </span>
             {percentSuffix && (
-              <span className="text-[var(--text-primary)] font-semibold" style={{ fontSize: "0.95em" }}>
+              <span className="text-[var(--text-primary,inherit)] font-semibold" style={{ fontSize: "0.95em", color: "inherit" }}>
                 %
               </span>
             )}

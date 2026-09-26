@@ -16,6 +16,7 @@ import { UptimeTimer } from "@/features/quiz/components/QuizTimer";
 import transitionStyles from "./question-transition.module.css";
 import { XCircle } from "lucide-react";
 import type { QuizController } from "@/features/quiz/hooks/useQuizController";
+
 export type MobileQuizFields = Pick<
   QuizController,
   | "routeBase"
@@ -78,6 +79,7 @@ export type MobileQuizFields = Pick<
   handleBookmark?: () => void;
   bookmarked?: Set<string>;
 };
+
 export interface MobileQuizViewProps {
   configuration: Pick<MobileQuizFields, "routeBase" | "slug" | "subjectConfig" | "theme" | "themeStyles" | "toggleTheme" | "title">;
   settings: Pick<MobileQuizFields, "isSettingsOpen" | "setIsSettingsOpen" | "hideQuestionNumbers" | "handleToggleHideQuestionNumbers" | "hideViewSolution" | "handleToggleHideViewSolution" | "hideAiTutor" | "handleToggleHideAiTutor" | "handleToggleHideBoth" | "textSize" | "handleSetTextSize" | "spacing" | "handleSetSpacing">;
@@ -86,6 +88,7 @@ export interface MobileQuizViewProps {
   answer: Pick<MobileQuizFields, "isCurrentSubmitted" | "selectedAnswer" | "handleSelectAnswer" | "submitError" | "handleSubmitCurrent" | "canSubmit" | "timerRef" | "results">;
   solution: Pick<MobileQuizFields, "openSolution" | "isSolutionOpen" | "closeSolution">;
 }
+
 export function MobileQuizView({ configuration, settings, question, navigation, answer, solution }: MobileQuizViewProps) {
   const { routeBase, slug, subjectConfig, theme, themeStyles, toggleTheme, title } = configuration;
   const { isSettingsOpen, setIsSettingsOpen, hideQuestionNumbers, handleToggleHideQuestionNumbers, hideViewSolution, handleToggleHideViewSolution, hideAiTutor, handleToggleHideAiTutor, handleToggleHideBoth, textSize, handleSetTextSize, spacing, handleSetSpacing } = settings;
@@ -114,12 +117,12 @@ export function MobileQuizView({ configuration, settings, question, navigation, 
           routeBase={routeBase}
           slug={slug}
           subjectConfig={subjectConfig}
-          activeLang={activeLang}
           currentIndex={currentIndex}
           hideQuestionNumbers={hideQuestionNumbers}
+          openPalette={openPalette}
+          activeLang={activeLang}
           isSettingsOpen={isSettingsOpen}
           isTranslating={isTranslating}
-          openPalette={openPalette}
           setActiveLang={setActiveLang}
           setIsSettingsOpen={setIsSettingsOpen}
         />

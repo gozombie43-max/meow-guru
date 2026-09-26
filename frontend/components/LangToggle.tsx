@@ -116,15 +116,15 @@ export function LangToggle({ active, loading, onChange }: LangToggleProps) {
         [data-theme="dark"] .lang-toggle,
         .dark .lang-toggle,
         .mac-series-quiz[data-theme="dark"] .lang-toggle.lang-toggle {
-          --lang-toggle-bg: #111620;
-          --lang-toggle-border: #222d3d;
+          --lang-toggle-bg: #121722;
+          --lang-toggle-border: rgba(255, 255, 255, 0.08);
           --lang-toggle-highlight: rgba(255, 255, 255, 0.04);
-          --lang-toggle-active-bg: #20344d;
-          --lang-toggle-active-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 1px 2px rgba(0, 0, 0, 0.35);
+          --lang-toggle-active-bg: rgba(95, 143, 200, 0.2);
+          --lang-toggle-active-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 1px 2px rgba(0, 0, 0, 0.25);
           --lang-toggle-divider: rgba(255, 255, 255, 0.08);
-          --lang-toggle-text: #8b9cb0;
-          --lang-toggle-text-hover: #cbd5e1;
-          --lang-toggle-text-active: #ffffff;
+          --lang-toggle-text: #929DB0;
+          --lang-toggle-text-hover: #F1F4F8;
+          --lang-toggle-text-active: #F1F4F8;
         }
 
         body.theme-dark [data-theme="light"] .lang-toggle,

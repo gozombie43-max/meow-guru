@@ -31,7 +31,7 @@ try {
       </style><div data-theme="light"><div data-theme="${theme}" class="ios-series-quiz">
         <header class="ios-series-header"><div class="ios-series-header-left"><button class="ios-series-icon-button" data-ui-button="icon" aria-label="Back"></button></div>
           <div class="ios-series-header-center"><div class="lang-toggle"><div><div class="lang-toggle-slider"></div>${['English', 'हिंदी', 'বাংলা'].map(label => `<button data-ui-button="state" class="lang-toggle-option">${label}</button>`).join('')}</div></div></div>
-          <div class="ios-series-header-right"><button class="ios-series-icon-button" data-ui-button="icon" aria-label="Settings"></button><button class="ios-series-icon-button" data-ui-button="icon" aria-label="Menu"></button></div>
+          <div class="ios-series-header-right"><button class="ios-series-icon-button" data-ui-button="icon" aria-label="Settings"></button></div>
         </header>
         <nav class="ios-series-rail"><button data-ui-button="state" class="ios-series-question">1</button><button data-ui-button="state" class="ios-series-question is-current">2</button></nav>
         <div class="controls">
@@ -99,10 +99,10 @@ try {
       assert.equal(metrics.languageHeight, 44);
       assert.equal(metrics.correctOpacity, '1');
       if (theme === 'dark') {
-        assert.equal(metrics.canvas, 'rgb(10, 14, 20)');
-        assert.equal(metrics.submit, 'rgb(35, 62, 97)');
-        assert.equal(metrics.languageBackground, 'rgb(17, 22, 32)');
-        assert.equal(metrics.languageActive, 'rgb(32, 52, 77)');
+        assert.equal(metrics.canvas, 'rgb(13, 23, 35)');
+        assert.equal(metrics.submit, 'rgb(62, 96, 150)');
+        assert.equal(metrics.languageBackground, 'rgb(20, 32, 48)');
+        assert.equal(metrics.languageActive, 'rgb(40, 63, 97)');
       }
       console.log(`${theme} ${width}px: control geometry, state colors, wrapping, and quiz styles passed`);
     }

@@ -90,87 +90,87 @@ export function QuizThemeStyles({ cssClassName }: { cssClassName: string }) {
 
       .${cssClassName}[data-theme="dark"] {
         color-scheme: dark;
-        --quiz-bg: #0a0e14;
-        --quiz-start-bg: #0a0e14;
-        --quiz-text: #f0f4f8;
-        --quiz-text-muted: #8b9cb0;
-        --quiz-text-soft: #556579;
+        --quiz-bg: #080C14;
+        --quiz-start-bg: #080C14;
+        --quiz-text: #F1F4F8;
+        --quiz-text-muted: #929DB0;
+        --quiz-text-soft: #606F85;
         --quiz-surface: #121722;
-        --quiz-surface-muted: #17202d;
+        --quiz-surface-muted: #171D29;
         --quiz-nav-bg: #121722;
-        --quiz-nav-inner-bg: #17202d;
-        --quiz-nav-border: rgba(255, 255, 255, 0.07);
+        --quiz-nav-inner-bg: #171D29;
+        --quiz-nav-border: rgba(255, 255, 255, 0.08);
         --quiz-card-bg: #121722;
-        --quiz-card-border: rgba(255, 255, 255, 0.065);
+        --quiz-card-border: rgba(255, 255, 255, 0.08);
         --quiz-card-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
         --quiz-card-blur: blur(0px);
-        --quiz-border: rgba(255, 255, 255, 0.07);
-        --quiz-border-strong: #222d3d;
-        --quiz-divider: rgba(255, 255, 255, 0.07);
-        --quiz-pill-bg: rgba(32, 52, 77, 0.35);
+        --quiz-border: rgba(255, 255, 255, 0.08);
+        --quiz-border-strong: rgba(255, 255, 255, 0.12);
+        --quiz-divider: rgba(255, 255, 255, 0.08);
+        --quiz-pill-bg: rgba(95, 143, 200, 0.12);
         --quiz-pill-text: #8cb0de;
-        --quiz-pill-border: #344e73;
-        --quiz-accent-bg: #20344d;
-        --quiz-accent-border: #344e73;
-        --quiz-accent-text: #8cb0de;
-        --quiz-overlay: rgba(0, 0, 0, 0.6);
-        --quiz-option-bg: #121722;
-        --quiz-option-border: rgba(255, 255, 255, 0.065);
-        --quiz-option-hover-bg: #17202d;
-        --quiz-option-hover-border: rgba(52, 78, 115, 0.5);
-        --quiz-option-text: #f0f4f8;
-        --quiz-option-label-bg: rgba(255, 255, 255, 0.08);
-        --quiz-option-label-border: rgba(255, 255, 255, 0.08);
-        --quiz-option-label-text: #cbd5e1;
+        --quiz-pill-border: rgba(95, 143, 200, 0.25);
+        --quiz-accent-bg: rgba(95, 143, 200, 0.16);
+        --quiz-accent-border: #5F8FC8;
+        --quiz-accent-text: #5F8FC8;
+        --quiz-overlay: rgba(0, 0, 0, 0.65);
+        --quiz-option-bg: #171D29;
+        --quiz-option-border: rgba(255, 255, 255, 0.06);
+        --quiz-option-hover-bg: #1C2331;
+        --quiz-option-hover-border: rgba(95, 143, 200, 0.35);
+        --quiz-option-text: #F1F4F8;
+        --quiz-option-label-bg: rgba(255, 255, 255, 0.06);
+        --quiz-option-label-border: rgba(255, 255, 255, 0.06);
+        --quiz-option-label-text: #929DB0;
         --quiz-option-shadow: none;
         --quiz-option-selected-shadow: none;
-        --quiz-option-selected-bg: rgba(32, 52, 77, 0.35);
-        --quiz-option-selected-border: #344e73;
-        --quiz-option-selected-label-bg: #20344d;
-        --quiz-option-selected-label-border: #344e73;
+        --quiz-option-selected-bg: rgba(95, 143, 200, 0.16);
+        --quiz-option-selected-border: #5F8FC8;
+        --quiz-option-selected-label-bg: #5F8FC8;
+        --quiz-option-selected-label-border: #5F8FC8;
         --quiz-option-selected-label-text: #ffffff;
-        --quiz-option-correct-bg: #121722;
-        --quiz-option-correct-border: rgba(255, 255, 255, 0.065);
+        --quiz-option-correct-bg: rgba(34, 197, 94, 0.14);
+        --quiz-option-correct-border: rgba(34, 197, 94, 0.45);
         --quiz-option-correct-label-bg: #16a34a;
         --quiz-option-correct-label-border: #16a34a;
         --quiz-option-correct-label-text: #ffffff;
-        --quiz-option-wrong-bg: #121722;
-        --quiz-option-wrong-border: rgba(255, 255, 255, 0.065);
+        --quiz-option-wrong-bg: rgba(239, 68, 68, 0.14);
+        --quiz-option-wrong-border: rgba(239, 68, 68, 0.45);
         --quiz-option-wrong-label-bg: #dc2626;
         --quiz-option-wrong-label-border: #dc2626;
         --quiz-option-wrong-label-text: #ffffff;
-        --quiz-footer-bg: #0a0e14;
-        --quiz-secondary-bg: #141a24;
-        --quiz-secondary-border: #222c3c;
-        --quiz-secondary-text: #cbd5e1;
-        --quiz-error-bg: rgba(220, 38, 38, 0.16);
-        --quiz-error-border: rgba(220, 38, 38, 0.35);
-        --quiz-error-text: #fca5a5;
+        --quiz-footer-bg: #080C14;
+        --quiz-secondary-bg: #171D29;
+        --quiz-secondary-border: rgba(255, 255, 255, 0.08);
+        --quiz-secondary-text: #F1F4F8;
+        --quiz-error-bg: rgba(239, 68, 68, 0.14);
+        --quiz-error-border: rgba(239, 68, 68, 0.45);
+        --quiz-error-text: #f87171;
         --quiz-ring-track: rgba(255, 255, 255, 0.08);
-        --quiz-quote-bg: rgba(32, 52, 77, 0.35);
-        --quiz-quote-border: #344e73;
+        --quiz-quote-bg: rgba(95, 143, 200, 0.16);
+        --quiz-quote-border: #5F8FC8;
         --quiz-quote-text: #8cb0de;
-        --quiz-selected-icon: #8cb0de;
-        --quiz-toggle-bg: #17202d;
-        --quiz-toggle-border: #222d3d;
-        --quiz-toggle-track: #0a0e14;
-        --quiz-toggle-thumb: linear-gradient(135deg, #222d3d 0%, #17202d 100%);
-        --quiz-status-current-bg: #20344d;
+        --quiz-selected-icon: #5F8FC8;
+        --quiz-toggle-bg: #121722;
+        --quiz-toggle-border: rgba(255, 255, 255, 0.08);
+        --quiz-toggle-track: #080C14;
+        --quiz-toggle-thumb: linear-gradient(135deg, #171D29 0%, #121722 100%);
+        --quiz-status-current-bg: #5F8FC8;
         --quiz-status-current-text: #ffffff;
-        --quiz-status-current-border: #344e73;
-        --quiz-status-current-shadow: none;
-        --quiz-status-answered-bg: rgba(100, 116, 139, 0.15);
-        --quiz-status-answered-text: #94a3b8;
-        --quiz-status-answered-border: rgba(100, 116, 139, 0.5);
-        --quiz-status-correct-bg: rgba(40, 117, 66, 0.22);
-        --quiz-status-correct-text: #f0f4f8;
-        --quiz-status-correct-border: #16a34a;
-        --quiz-status-wrong-bg: rgba(220, 38, 38, 0.22);
-        --quiz-status-wrong-text: #f0f4f8;
-        --quiz-status-wrong-border: #dc2626;
-        --quiz-status-empty-bg: #17202d;
-        --quiz-status-empty-text: #8b9cb0;
-        --quiz-status-empty-border: #222d3d;
+        --quiz-status-current-border: #5F8FC8;
+        --quiz-status-current-shadow: 0 2px 8px rgba(95, 143, 200, 0.35);
+        --quiz-status-answered-bg: rgba(95, 143, 200, 0.12);
+        --quiz-status-answered-text: #8cb0de;
+        --quiz-status-answered-border: rgba(95, 143, 200, 0.3);
+        --quiz-status-correct-bg: rgba(34, 197, 94, 0.18);
+        --quiz-status-correct-text: #4ade80;
+        --quiz-status-correct-border: rgba(34, 197, 94, 0.45);
+        --quiz-status-wrong-bg: rgba(239, 68, 68, 0.18);
+        --quiz-status-wrong-text: #f87171;
+        --quiz-status-wrong-border: rgba(239, 68, 68, 0.45);
+        --quiz-status-empty-bg: #171D29;
+        --quiz-status-empty-text: #929DB0;
+        --quiz-status-empty-border: rgba(255, 255, 255, 0.06);
       }
 
       .${cssClassName} .quiz-start {
@@ -211,7 +211,7 @@ export function QuizThemeStyles({ cssClassName }: { cssClassName: string }) {
       }
 
       .${cssClassName} .concept-badge {
-        border: 1.5px solid var(--concept-border);
+        border: 1px solid var(--concept-border);
         border-radius: 999px;
         padding: 4px 12px;
         font-size: 12px;
@@ -306,21 +306,21 @@ export function QuizThemeStyles({ cssClassName }: { cssClassName: string }) {
       }
 
       .${cssClassName}[data-theme="dark"] .glass-card {
-        background: rgba(15, 23, 42, 0.55);
-        border: 1px solid rgba(148, 163, 184, 0.25);
+        background: rgba(18, 23, 34, 0.75);
+        border: 1px solid rgba(255, 255, 255, 0.08);
         box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.04);
       }
       .${cssClassName}[data-theme="dark"] .glass-card:hover {
         box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
-        border-color: rgba(148, 163, 184, 0.35);
+        border-color: rgba(95, 143, 200, 0.35);
       }
       .${cssClassName}[data-theme="dark"] .btn-outline {
-        background: rgba(15, 23, 42, 0.4);
-        border-color: rgba(148, 163, 184, 0.35);
-        color: #e2e8f0;
+        background: #171D29;
+        border-color: rgba(255, 255, 255, 0.08);
+        color: #F1F4F8;
       }
       .${cssClassName}[data-theme="dark"] .btn-outline:hover {
-        background: rgba(30, 41, 59, 0.6);
+        background: #1C2331;
       }
 
       .${cssClassName}.theme-switching .quiz-card,
@@ -340,4 +340,3 @@ export function QuizThemeStyles({ cssClassName }: { cssClassName: string }) {
     `}</style>
   );
 }
-

@@ -565,10 +565,10 @@ export function QuizSettingsModal({
         }
 
         .ios-segment-btn.is-active {
-          background: #20344d;
-          border: 1px solid #344e73;
+          background: #5F8FC8;
+          border: 1px solid #5F8FC8;
           color: #ffffff;
-          box-shadow: none;
+          box-shadow: 0 1px 4px rgba(95, 143, 200, 0.35);
         }
 
         .ios-settings-popover[data-theme="light"] .ios-segment-btn.is-active {
