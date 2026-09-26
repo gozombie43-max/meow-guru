@@ -88,6 +88,72 @@ test("mobile quiz engine renders with reduced question boldness (400) and reduce
   console.log("Computed .ios-series-timer font-size:", timerFontSize);
   expect(timerFontSize).toBe("12px");
 
+  // 5. Question reads directly from the canvas — no card treatment.
+  const questionCardStyle = await page.$eval(".ios-series-question-card", (el) => {
+    const style = window.getComputedStyle(el);
+    return {
+      backgroundColor: style.backgroundColor,
+      borderTopWidth: style.borderTopWidth,
+      boxShadow: style.boxShadow,
+      borderRadius: style.borderRadius,
+    };
+  });
+  expect(questionCardStyle.backgroundColor).toBe("rgba(0, 0, 0, 0)");
+  expect(questionCardStyle.borderTopWidth).toBe("0px");
+  expect(questionCardStyle.boxShadow).toBe("none");
+  expect(questionCardStyle.borderRadius).toBe("0px");
+
+  // 6. Answer rows use tonal fill separation rather than visible outlines.
+  const optionStyle = await page.$eval(".ios-series-option", (el) => {
+    const style = window.getComputedStyle(el);
+    return {
+      backgroundColor: style.backgroundColor,
+      borderTopWidth: style.borderTopWidth,
+    };
+  });
+  const canvasColor = await page.$eval(".ios-series-quiz", (el) =>
+    window.getComputedStyle(el).backgroundColor
+  );
+  expect(optionStyle.backgroundColor).not.toBe(canvasColor);
+  expect(optionStyle.borderTopWidth).toBe("0px");
+
+  // 7. Solution and Ask AI are equal sibling actions in the same color system.
+  const [solutionIconColor, aiIconColor] = await Promise.all([
+    page.$eval(".ios-series-pill-solution .solution-icon", (el) => window.getComputedStyle(el).color),
+    page.$eval(".ios-series-pill-ai .ai-icon", (el) => window.getComputedStyle(el).color),
+  ]);
+  expect(solutionIconColor).toBe(aiIconColor);
+
+  const [solutionMetrics, aiMetrics] = await Promise.all([
+    page.$eval(".ios-series-pill-solution", (el) => {
+      const style = window.getComputedStyle(el);
+      const rect = el.getBoundingClientRect();
+      return {
+        width: Math.round(rect.width),
+        height: Math.round(rect.height),
+        backgroundColor: style.backgroundColor,
+      };
+    }),
+    page.$eval(".ios-series-pill-ai", (el) => {
+      const style = window.getComputedStyle(el);
+      const rect = el.getBoundingClientRect();
+      return {
+        width: Math.round(rect.width),
+        height: Math.round(rect.height),
+        backgroundColor: style.backgroundColor,
+      };
+    }),
+  ]);
+  expect(solutionMetrics).toEqual(aiMetrics);
+
+  // 8. Submit remains primary, but uses the restrained slate-blue theme.
+  // Select an answer first so Submit is enabled and its active treatment is measurable.
+  await page.locator(".ios-series-option").first().click();
+  const submitColor = await page.$eval(".ios-series-footer-next", (el) =>
+    window.getComputedStyle(el).backgroundColor
+  );
+  expect(submitColor).toBe("rgb(86, 119, 166)");
+
   // Capture Screenshot for visual confirmation
   await page.screenshot({ path: "mobile-quiz-verified.png" });
 });

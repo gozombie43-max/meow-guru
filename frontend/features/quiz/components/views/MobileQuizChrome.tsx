@@ -28,30 +28,16 @@ function GeminiIcon({ className = "ios-series-pill-icon ai-icon" }: { className?
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 48 48"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
       className={className}
       aria-hidden="true"
     >
-      <linearGradient
-        id="ios-gemini-gradient"
-        x1="3.906"
-        x2="45.428"
-        y1="3.906"
-        y2="45.428"
-        gradientUnits="userSpaceOnUse"
-      >
-        <stop offset="0" stopColor="#ca5df5" />
-        <stop offset=".036" stopColor="#c05ff4" />
-        <stop offset=".293" stopColor="#806cea" />
-        <stop offset=".528" stopColor="#4d77e3" />
-        <stop offset=".731" stopColor="#297fdd" />
-        <stop offset=".895" stopColor="#1283da" />
-        <stop offset="1" stopColor="#0a85d9" />
-      </linearGradient>
-      <path
-        fill="url(#ios-gemini-gradient)"
-        d="M46.117 23.081l-.995-.04h-.002C34.243 22.613 25.387 13.757 24.959 2.88l-.04-.996C24.9 1.39 24.494 1 24 1s-.9.39-.919.883l-.04.996C22.612 13.756 13.756 22.612 2.878 23.041l-.995.04C1.39 23.1 1 23.506 1 24s.39.9.884.919l.995.039c10.877.43 19.733 9.286 20.162 20.163l.04.996C23.1 46.61 23.506 47 24 47s.9-.39.919-.883l.04-.996c.429-10.877 9.285-19.733 20.162-20.163l.995-.039C46.61 24.9 47 24.494 47 24s-.39-.9-.883-.919z"
-      />
+      <path d="M12 3l1.25 4.2a5 5 0 0 0 3.55 3.55L21 12l-4.2 1.25a5 5 0 0 0-3.55 3.55L12 21l-1.25-4.2a5 5 0 0 0-3.55-3.55L3 12l4.2-1.25A5 5 0 0 0 10.75 7.2L12 3Z" />
     </svg>
   );
 }
