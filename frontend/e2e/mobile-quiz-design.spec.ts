@@ -88,6 +88,62 @@ test("mobile quiz engine renders with reduced question boldness (400) and reduce
   console.log("Computed .ios-series-timer font-size:", timerFontSize);
   expect(timerFontSize).toBe("12px");
 
+  // 5. Question reads directly from the canvas — no card treatment.
+  const questionCardStyle = await page.$eval(".ios-series-question-card", (el) => {
+    const style = window.getComputedStyle(el);
+    return {
+      backgroundColor: style.backgroundColor,
+      borderTopWidth: style.borderTopWidth,
+      boxShadow: style.boxShadow,
+      borderRadius: style.borderRadius,
+    };
+  });
+  expect(questionCardStyle.backgroundColor).toBe("rgba(0, 0, 0, 0)");
+  expect(questionCardStyle.borderTopWidth).toBe("0px");
+  expect(questionCardStyle.boxShadow).toBe("none");
+  expect(questionCardStyle.borderRadius).toBe("0px");
+
+  // 6. Answer rows use tonal fill separation rather than visible outlines.
+  const optionStyle = await page.$eval(".ios-series-option", (el) => {
+    const style = window.getComputedStyle(el);
+    return {
+      backgroundColor: style.backgroundColor,
+      borderTopWidth: style.borderTopWidth,
+    };
+  });
+  const canvasColor = await page.$eval(".ios-series-quiz", (el) =>
+    window.getComputedStyle(el).backgroundColor
+  );
+  expect(optionStyle.backgroundColor).not.toBe(canvasColor);
+  expect(optionStyle.borderTopWidth).toBe("0px");
+
+  // 7. Solution and Ask AI are equal sibling actions in the same color system.
+  const [solutionIconColor, aiIconColor] = await Promise.all([
+    page.$eval(".ios-series-pill-solution .solution-icon", (el) => window.getComputedStyle(el).color),
+    page.$eval(".ios-series-pill-ai .ai-icon", (el) => window.getComputedStyle(el).color),
+  ]);
+  expect(solutionIconColor).toBe(aiIconColor);
+
+  const actionMetrics = await page.$eval(".ios-series-pill-item", (items) =>
+    items.map((el) => {
+      const style = window.getComputedStyle(el);
+      const rect = el.getBoundingClientRect();
+      return {
+        width: Math.round(rect.width),
+        height: Math.round(rect.height),
+        backgroundColor: style.backgroundColor,
+      };
+    })
+  );
+  expect(actionMetrics).toHaveLength(2);
+  expect(actionMetrics[0]).toEqual(actionMetrics[1]);
+
+  // 8. Submit remains primary, but uses the restrained slate-blue theme.
+  const submitColor = await page.$eval(".ios-series-footer-next", (el) =>
+    window.getComputedStyle(el).backgroundColor
+  );
+  expect(submitColor).toBe("rgb(86, 119, 166)");
+
   // Capture Screenshot for visual confirmation
   await page.screenshot({ path: "mobile-quiz-verified.png" });
 });
