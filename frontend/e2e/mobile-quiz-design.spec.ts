@@ -139,6 +139,8 @@ test("mobile quiz engine renders with reduced question boldness (400) and reduce
   expect(actionMetrics[0]).toEqual(actionMetrics[1]);
 
   // 8. Submit remains primary, but uses the restrained slate-blue theme.
+  // Select an answer first so Submit is enabled and its active treatment is measurable.
+  await page.locator(".ios-series-option").first().click();
   const submitColor = await page.$eval(".ios-series-footer-next", (el) =>
     window.getComputedStyle(el).backgroundColor
   );
