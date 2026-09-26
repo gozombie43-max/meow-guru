@@ -551,24 +551,24 @@
 .ios-series-quiz .ios-series-prompt .quote-highlight {
   font-weight: 500;
 }
-.ios-series-prompt :global(.katex),
-.ios-series-option-value :global(.katex) {
+.ios-series-prompt .katex,
+.ios-series-option-value .katex {
   font-weight: 400;
   line-height: 1.25;
   letter-spacing: normal;
 }
-.ios-series-prompt :global(.katex-html),
-.ios-series-option-value :global(.katex-html) {
+.ios-series-prompt .katex-html,
+.ios-series-option-value .katex-html {
   white-space: normal;
 }
-.ios-series-prompt :global(.katex-display) {
+.ios-series-prompt .katex-display {
   margin: 12px 0;
   padding: 4px 0;
   overflow-x: auto;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
 }
-.ios-series-option-value :global(.katex-display) {
+.ios-series-option-value .katex-display {
   margin: 6px 0;
   padding: 2px 0;
   overflow-x: auto;
