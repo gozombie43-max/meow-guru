@@ -26,6 +26,7 @@ import {
 import api from "@/shared/api/client";
 import RichContent from "@/components/RichContent";
 import katex from "katex";
+import "katex/dist/katex.min.css";
 import { mistakeTypes, modes, type TrainingSession, type ModeId } from "./training-types";
 
 function renderScoreFraction(score: number, maxScore: number): string {

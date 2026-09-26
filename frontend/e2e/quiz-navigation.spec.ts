@@ -14,7 +14,10 @@ for (const [parent, width] of [
     await context.addCookies([{ name: "access_session", value: "navigation-fixture", url: appUrl! }]);
     await page.route("**/backend-api/**", async route => {
       const url = new URL(route.request().url());
-      const question = { id: "1", question: "What is the capital of India?", options: ["Mumbai", "New Delhi", "Kolkata", "Chennai"], correctAnswer: "B", solution: "New Delhi is the capital.", concept: "Capitals", topic: url.searchParams.get("topic"), subject: url.searchParams.get("subject"), difficulty: "easy", questionType: "concept", exam: "SSC CGL 2025" };
+      const solution = parent.startsWith("/mathematics")
+        ? "Worked example: $\\frac{1}{2} + \\frac{1}{2} = 1$."
+        : "New Delhi is the capital.";
+      const question = { id: "1", question: "What is the capital of India?", options: ["Mumbai", "New Delhi", "Kolkata", "Chennai"], correctAnswer: "B", solution, concept: "Capitals", topic: url.searchParams.get("topic"), subject: url.searchParams.get("subject"), difficulty: "easy", questionType: "concept", exam: "SSC CGL 2025" };
       let data: unknown = {};
       if (url.pathname.endsWith("/session")) data = { questions: [question, { ...question, id: "2" }], hasMore: false, nextCursor: null, totalCount: 2 };
       if (url.pathname.endsWith("/meta")) data = { total: 2, exams: [], concepts: ["Capitals"], letters: {}, conceptGroups: [], groupingStatus: "empty" };
@@ -32,6 +35,12 @@ for (const [parent, width] of [
     }
     await page.getByRole("button", { name: /view solution/i }).click();
     await expect(page.getByRole("dialog", { name: "Question solution" })).toBeVisible();
+    if (parent.startsWith("/mathematics")) {
+      // Math CSS is loaded with the lazy typesetter, including when the first
+      // equation appears only after opening a solution on a plain-text quiz.
+      await expect(page.getByRole("dialog", { name: "Question solution" }).locator(".katex").first())
+        .toHaveCSS("font-family", /KaTeX_Main/);
+    }
     await page.getByRole("button", { name: "Back to quiz", exact: true }).click();
     await expect(page.getByRole("dialog", { name: "Question solution" })).toHaveCount(0);
     if (await reviewBtn.isVisible()) {

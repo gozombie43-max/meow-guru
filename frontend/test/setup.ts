@@ -1,6 +1,16 @@
-import "@testing-library/jest-dom/vitest";
-import { afterEach, vi, beforeAll, afterAll } from "vitest";
+import * as matchers from "@testing-library/jest-dom/matchers";
+import type { TestingLibraryMatchers } from "@testing-library/jest-dom/matchers";
+import { afterEach, vi, beforeAll, afterAll, expect } from "vitest";
 import { cleanup } from "@testing-library/react";
+
+// Register against this workspace's Vitest instance. The jest-dom /vitest entry
+// assumes Vitest is hoisted beside it, and uses the pre-v5 assertion types.
+expect.extend(matchers);
+declare module "vitest" {
+  // Declaration merging requires an interface to add the jest-dom matchers.
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  interface Matchers<R extends void | Promise<void> = void | Promise<void>> extends TestingLibraryMatchers<unknown, R> {}
+}
 
 const originalConsoleError = console.error;
 const originalConsoleWarn = console.warn;

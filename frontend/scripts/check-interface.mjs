@@ -7,7 +7,7 @@ const read = (path) => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
 const css = (await Promise.all([
   'app/light-theme.css', 'app/dark-theme.css', 'app/interface.css',
 ].map(read))).join('\n');
-const mobile = (await read('features/quiz/components/views/mobile-quiz-view.styles.ts')).split('`')[1];
+const mobile = await read('features/quiz/components/views/mobile-quiz-view.css');
 const language = (await read('components/LangToggle.tsx')).split('<style>{`')[1].split('`}</style>')[0];
 const browser = await chromium.launch({ channel: process.env.PLAYWRIGHT_CHANNEL || undefined });
 try {

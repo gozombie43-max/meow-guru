@@ -55,7 +55,7 @@ async function authenticateFixtureUser(page: Page, deviceName: string, variant?:
   const device = deviceName === 'mobile' ? 'mobile' : 'desktop';
   const userKey = variant === 'performance'
     ? `performance-${device}`
-    : deviceName === 'mobile' ? 'mobile' : 'lighthouse';
+    : 'lighthouse';
   const email = `browser-${userKey}@example.test`;
   await page.context().addCookies([
     {
@@ -81,7 +81,8 @@ test.describe('Core Web Vitals & Representative Performance Gates', () => {
       // Ignore known benign third-party warnings if any
       console.warn(`[Page Error] ${err.message}`);
     });
-    await authenticateFixtureUser(page, testInfo.project.name);
+    await authenticateFixtureUser(page, testInfo.project.name,
+      testInfo.title.startsWith('Mock test session') ? 'performance' : undefined);
   });
 
   test('Mobile & Desktop /play hub meets Core Web Vitals thresholds', async ({ page }) => {
@@ -128,7 +129,6 @@ test.describe('Core Web Vitals & Representative Performance Gates', () => {
   });
 
   test('Mock test session /mock-test/ssc-cgl/browser-test/attempt satisfies performance SLA', async ({ page }) => {
-    await authenticateFixtureUser(page, test.info().project.name, 'performance');
     await page.goto('/mock-test/ssc-cgl/browser-test/attempt', { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('[data-testid="mock-test-engine"], .mock-test-container, [data-ui-chrome="header"], main', {
       timeout: 15000,

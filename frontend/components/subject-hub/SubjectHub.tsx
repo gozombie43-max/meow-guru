@@ -26,6 +26,47 @@ import type { SubjectHubConfig } from "./types";
 
 const EMPTY_STUDY_TOPICS = new Set<string>();
 
+const MobileTopicRow = React.memo(function MobileTopicRow({
+  href,
+  color,
+  Icon,
+  name,
+  styles,
+}: {
+  href: string;
+  color?: string;
+  Icon?: React.ComponentType<{ size?: number; strokeWidth?: number; color?: string }>;
+  name: string;
+  styles: Record<string, string>;
+}) {
+  return (
+    <Link
+      href={href}
+      prefetch={false}
+      data-hub-part="mobileTopicRow"
+      className={styles.mobileTopicRow}
+    >
+      <div className={styles.mobileTopicRowLeft}>
+        {Icon ? (
+          <div
+            className={styles.mobileTopicIconBox}
+            style={{ background: color || "#38bdf8" }}
+          >
+            <Icon size={18} strokeWidth={2.2} color="#ffffff" />
+          </div>
+        ) : null}
+        <span className={styles.mobileTopicName}>{name}</span>
+      </div>
+
+      <ChevronRight
+        size={16}
+        strokeWidth={2.4}
+        className={styles.mobileChevron}
+      />
+    </Link>
+  );
+});
+
 export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
   const {
     topics: TOPICS,
@@ -626,6 +667,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
                                 <div style={{ display: "inline-flex", gap: 6 }}>
                                   <Link data-ui-button="secondary"
                                     href={`${chapterHref}/quiz?mode=concept`}
+                                    prefetch={false}
                                     className={styles.tableActionBtn}
                                     onClick={(e) => e.stopPropagation()}
                                     title="Start Practice Quiz"
@@ -635,6 +677,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
                                   </Link>
                                   <Link data-ui-button="secondary"
                                     href={chapterHref}
+                                    prefetch={false}
                                     className={styles.tableActionBtn}
                                     onClick={(e) => e.stopPropagation()}
                                     style={{ background: "transparent", border: "1px solid var(--mac-border)" }}
@@ -783,6 +826,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
                             <td style={{ textAlign: "right" }}>
                               <Link data-ui-button="secondary"
                                 href={`${topic.routeBase}`}
+                                prefetch={false}
                                 className={styles.tableActionBtn}
                                 onClick={(e) => e.stopPropagation()}
                                 aria-label={`Open ${topic.name}`}
@@ -863,6 +907,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
                 <div className={styles.studyModeBannerWrap}>
                   <Link
                     href={`${selectedTopic.routeBase}/study-mode`}
+                    prefetch={false}
                     className={styles.studyModeBanner}
                     title="Launch Interactive Study Suite"
                   >
@@ -908,6 +953,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
                       <Link
                         key={pm.key}
                         href={pm.href}
+                        prefetch={false}
                         className={styles.modeCard}
                         style={
                           {
@@ -965,6 +1011,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
                   {STUDY_MODE_TOPICS.has(selectedTopic.slug) && !isChapterMode && (
                     <Link
                       href={`${selectedTopic.routeBase}/study-mode`}
+                      prefetch={false}
                       className={styles.resourceCard}
                       title="Open Interactive Study Suite"
                     >
@@ -1000,6 +1047,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
 
                   <Link
                     href={isChapterMode && selectedChapter && currentGroup ? `${config.chapterBasePrefix}/${selectedTopic.slug}/${selectedChapter.slug}/formula-notes` : `${selectedTopic.routeBase}/formula-notes`}
+                    prefetch={false}
                     className={styles.resourceCard}
                     title={`View ${config.notesLabel}`}
                   >
@@ -1021,6 +1069,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
 
                   <Link
                     href={isChapterMode && selectedChapter && currentGroup ? `${config.chapterBasePrefix}/${selectedTopic.slug}/${selectedChapter.slug}` : `${selectedTopic.routeBase}`}
+                    prefetch={false}
                     className={styles.resourceCard}
                     title={isChapterMode && selectedChapter ? "Complete Chapter Hub" : "Complete Module Hub"}
                   >
@@ -1043,6 +1092,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
                   {isChapterMode && selectedChapter && currentGroup && (
                     <Link
                       href={`${config.chapterBasePrefix}/${selectedTopic.slug}`}
+                      prefetch={false}
                       className={styles.resourceCard}
                       title={`Open All ${selectedTopic.name} Chapters`}
                     >
@@ -1152,33 +1202,16 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
               </div>
             )}
 
-            {filteredTopics.map((topic) => {
-              const TopicIcon = topic.icon;
-              return (
-                <Link
-                  key={topic.id}
-                  href={isChapterMode ? `${config.chapterBasePrefix}/${topic.slug}` : `${topic.routeBase}`}
-                  data-hub-part="mobileTopicRow" className={styles.mobileTopicRow}
-                >
-                  <div className={styles.mobileTopicRowLeft}>
-                    <div
-                      className={styles.mobileTopicIconBox}
-                      style={{ background: topic.color }}
-                    >
-                      <TopicIcon size={18} strokeWidth={2.2} color="#ffffff" />
-                    </div>
-
-                    <span className={styles.mobileTopicName}>{topic.name}</span>
-                  </div>
-
-                  <ChevronRight
-                    size={16}
-                    strokeWidth={2.4}
-                    className={styles.mobileChevron}
-                  />
-                </Link>
-              );
-            })}
+            {filteredTopics.map((topic) => (
+              <MobileTopicRow
+                key={topic.id}
+                href={isChapterMode ? `${config.chapterBasePrefix}/${topic.slug}` : `${topic.routeBase}`}
+                color={topic.color}
+                Icon={topic.icon}
+                name={topic.name}
+                styles={styles}
+              />
+            ))}
           </div>
         </div>
       </div>

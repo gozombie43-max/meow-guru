@@ -3,8 +3,13 @@ const { create, constructor } = vi.hoisted(() => ({ create: vi.fn(), constructor
 vi.mock('openai', () => ({ default: class {
   constructor(options) { constructor(options); this.chat = { completions: { create } }; }
 } }));
-import { chatCompleteMessages } from '../azureClient.js';
-beforeEach(() => create.mockReset());
+let chatCompleteMessages;
+beforeEach(async () => {
+  // Vitest 5 clears call history before each test; initialize after that reset.
+  vi.resetModules();
+  create.mockReset();
+  ({ chatCompleteMessages } = await import('../azureClient.js'));
+});
 it('bounds request duration and disables hidden retry amplification', () => {
   expect(constructor).toHaveBeenCalledWith(expect.objectContaining({ timeout: 45000, maxRetries: 0 }));
 });

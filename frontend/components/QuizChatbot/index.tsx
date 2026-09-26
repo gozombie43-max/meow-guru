@@ -13,6 +13,7 @@ import {
   AlertTriangle,
   Sparkles,
   ArrowUp,
+  ArrowLeft,
   Check,
   ChevronDown,
 } from "lucide-react";
@@ -606,6 +607,15 @@ export default function QuizChatbot({
                         ) : (
                           <Moon className="w-4 h-4 text-[var(--gr)] shrink-0" />
                         )}
+                      </button>
+                      <button data-ui-button="state"
+                        type="button"
+                        className="closebtn"
+                        onClick={handleClose}
+                        title="Back to quiz"
+                        aria-label="Back to quiz"
+                      >
+                        <ArrowLeft className="w-4.5 h-4.5 shrink-0" />
                       </button>
                     </div>
                   </div>

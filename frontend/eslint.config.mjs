@@ -1,4 +1,5 @@
 import { defineConfig, globalIgnores } from "eslint/config";
+import { fixupConfigRules } from "@eslint/compat";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
 import jsxA11y from "eslint-plugin-jsx-a11y";
@@ -57,4 +58,6 @@ const eslintConfig = defineConfig([
   ]),
 ]);
 
-export default eslintConfig;
+// Preserve the React, import and accessibility rules while their plugins still
+// use context APIs removed in ESLint 10.
+export default fixupConfigRules(eslintConfig);

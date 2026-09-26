@@ -45,24 +45,41 @@ export default function QuizEngine(props: QuizEngineProps) {
 }
 
 import { useQuizController } from "@/features/quiz/hooks/useQuizController";
-import { QuizStartView } from "@/features/quiz/components/views/QuizStartView";
 import { mobileQuizViewModel, desktopQuizViewModel } from "../model/viewModels";
 const viewLoading = () => <div role="status" className="min-h-dvh flex items-center justify-center">Loading quiz…</div>;
+const QuizStartView = dynamic(() => import('./views/QuizStartView').then(module => module.QuizStartView), { loading: viewLoading });
 const DesktopQuizView = dynamic(() => import('./views/DesktopQuizView').then(module => module.DesktopQuizView), { loading: viewLoading });
-const MobileQuizView = dynamic(() => import('./views/MobileQuizView').then(module => module.MobileQuizView), { loading: viewLoading });
+import { MobileQuizView } from './views/MobileQuizView';
 const ResultView = dynamic(() => import('./views/ResultView').then(module => module.ResultView), { loading: viewLoading });
 function QuizEngineContent(props: QuizEngineProps) {
   const controller = useQuizController(props);
-  const { showAnalytics, started, currentQ, subjectConfig, theme, themeStyles, submittedQuestions, currentIndex, selectedAnswer, title, isMac, isIos } = controller;
+  const { showAnalytics, started, currentQ, subjectConfig, theme, themeStyles, submittedQuestions, currentIndex, selectedAnswer, title, isMac, isIos, resumeRequested } = controller;
   if (showAnalytics)
     return (
       <ResultView {...controller} />
     );
 
-  if (!started)
+  if (!started) {
+    if (resumeRequested) {
+      return (
+        <div
+          className={`${subjectConfig.cssClassName} min-h-dvh relative flex items-center justify-center`}
+          data-theme={theme}
+          style={{ background: "var(--quiz-bg)", color: "var(--quiz-text)" }}
+          role="status"
+        >
+          {themeStyles}
+          <div className="text-[color:var(--quiz-text-muted)] flex flex-col items-center text-center p-6">
+            <h1 className="text-2xl font-bold text-[color:var(--quiz-text)] mb-2">Resuming your session...</h1>
+            <p className="max-w-sm">Please wait while we load your previous answers and configure the engine.</p>
+          </div>
+        </div>
+      );
+    }
     return (
       <QuizStartView {...controller} />
     );
+  }
 
   if (!currentQ) {
     return (

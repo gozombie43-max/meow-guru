@@ -22,6 +22,8 @@ const nextConfig: NextConfig = {
 
   },
   experimental: {
+    // Avoid shipping unrelated page styles in the shared mobile entry chunks.
+    cssChunking: { type: 'graph', requestCost: 20_000 },
     optimizePackageImports: ['lucide-react', 'react-hook-form'],
   },
   turbopack: {

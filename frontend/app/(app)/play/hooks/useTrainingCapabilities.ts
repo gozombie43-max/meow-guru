@@ -1,8 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import api from "@/shared/api/client";
+import { useAuth } from "@/context/AuthContext";
 import { type TrainingCapabilities } from "@/components/training/training-types";
 
 export function useTrainingCapabilities() {
+  const { loading: authLoading, token } = useAuth();
+  const ready = !authLoading && Boolean(token);
   const [capabilities, setCapabilities] = useState<TrainingCapabilities | null>(null);
   const [error, setError] = useState("");
 
@@ -15,6 +18,7 @@ export function useTrainingCapabilities() {
   }, []);
 
   useEffect(() => {
+    if (!ready) return;
     let live = true;
     api
       .get<TrainingCapabilities>("/api/training/capabilities")
@@ -28,7 +32,7 @@ export function useTrainingCapabilities() {
     return () => {
       live = false;
     };
-  }, [attempt]);
+  }, [attempt, ready]);
 
   return { capabilities, error, setError, loading, retry };
 }

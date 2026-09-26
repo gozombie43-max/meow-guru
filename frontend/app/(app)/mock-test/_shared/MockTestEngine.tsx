@@ -60,14 +60,6 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [confidential, setConfidential] = useState(false);
 
-  useEffect(() => {
-    // Add Google Font for space mono dynamically
-    const link = document.createElement('link');
-    link.href = 'https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap';
-    link.rel = 'stylesheet';
-    document.head.appendChild(link);
-    return () => { document.head.removeChild(link); };
-  }, []);
 
   const loadData = useCallback(async () => {
     if (!token) return;
@@ -309,7 +301,12 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
 
   if (loadError) return <div className={styles.container}><p role="alert">{loadError}</p><button data-ui-button="state" onClick={() => void loadData()}>Retry loading test</button></div>;
 
-  if (!paper) return <div className={styles.container} style={{justifyContent: 'center', alignItems: 'center'}}>Loading...</div>;
+  if (!paper) return (
+    <div className={styles.container} style={{justifyContent: 'center', alignItems: 'center', padding: 20, textAlign: 'center'}}>
+      <h1 style={{ fontSize: '24px', color: '#64748b', margin: '0 0 12px 0' }}>Setting up your mock test environment...</h1>
+      <p style={{ fontSize: '16px', color: '#94a3b8', margin: 0, maxWidth: 400 }}>Please wait while we initialize the secure testing engine, load your questions, and start the timer.</p>
+    </div>
+  );
 
   const currentSec = paper.sections[currentSection];
   const currentQ = currentSec.questions[currentQuestion];

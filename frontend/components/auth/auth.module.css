@@ -115,7 +115,7 @@
   grid-template-columns: 1fr 1fr;
   overflow: hidden;
   margin: auto 0;
-  animation: cardFadeUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  /* Keep the initial form stationary so its text can paint immediately. */
 }
 
 @keyframes cardFadeUp {

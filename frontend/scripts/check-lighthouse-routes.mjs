@@ -19,7 +19,7 @@ for (const file of await readdir('.lighthouseci')) {
     : requested === '/play' ? '/api/training/dashboard'
     : requested.includes('/quiz') ? '/api/questions/session'
     : requested.includes('/attempt') ? '/api/mocktest/' : null;
-  if (endpoint && !report.audits['network-requests']?.details?.items?.some(item => item.url.includes(endpoint) && item.statusCode === 200)) {
+  if (endpoint && !report.audits['network-requests']?.details?.items?.some(item => item.url.includes(endpoint) && (item.statusCode === 200 || item.statusCode === 201))) {
     throw new Error(`Lighthouse did not load successful question/session data for ${requested}`);
   }
   console.log(JSON.stringify({ route: requested, score: report.categories.performance.score,

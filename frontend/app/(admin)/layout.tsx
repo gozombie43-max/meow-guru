@@ -1,7 +1,8 @@
 import AdminShell from "./AdminShell";
+import ApplicationProviders from "@/app/providers";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <AdminShell>{children}</AdminShell>
+    <ApplicationProviders><AdminShell>{children}</AdminShell></ApplicationProviders>
   );
 }

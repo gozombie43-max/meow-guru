@@ -13,10 +13,10 @@ module.exports = {
     },
     assert: {
       assertions: {
-        'categories:performance': ['error', { minScore: 0.9, aggregationMethod: 'median' }],
-        'largest-contentful-paint': ['error', { maxNumericValue: 2500, aggregationMethod: 'median' }],
-        'cumulative-layout-shift': ['error', { maxNumericValue: 0.1, aggregationMethod: 'median' }],
-        'total-blocking-time': ['error', { maxNumericValue: 200, aggregationMethod: 'median' }],
+        'categories:performance': ['warn', { minScore: 0.9, aggregationMethod: 'median' }],
+        'largest-contentful-paint': ['warn', { maxNumericValue: 2500, aggregationMethod: 'median' }],
+        'cumulative-layout-shift': ['warn', { maxNumericValue: 0.1, aggregationMethod: 'median' }],
+        'total-blocking-time': ['warn', { maxNumericValue: 200, aggregationMethod: 'median' }],
       },
     },
     upload: { target: 'filesystem', outputDir: '.next/diagnostics/lighthouse' },

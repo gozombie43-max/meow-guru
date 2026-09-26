@@ -18,11 +18,13 @@ afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 describe('study word rendering', () => {
   it('keeps initial rendering small and progressively reveals a large library', () => {
     render(<WordList cards={cards} saved={new Set()} translations storageReady toggleSave={vi.fn()} />);
-    expect(screen.getAllByRole('article')).toHaveLength(40);
+    // Count every mounted card, including hidden cards, to enforce the DOM-size
+    // bound without repeated jsdom computed-style walks through the library.
+    expect(screen.getAllByRole('article', { hidden: true })).toHaveLength(40);
     act(() => intersect([{ isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver));
-    expect(screen.getAllByRole('article')).toHaveLength(80);
+    expect(screen.getAllByRole('article', { hidden: true })).toHaveLength(80);
     fireEvent.click(screen.getByRole('button', { name: 'Show more words' }));
-    expect(screen.getAllByRole('article')).toHaveLength(120);
+    expect(screen.getAllByRole('article', { hidden: true })).toHaveLength(120);
   });
   it('rerenders only the changed card when saving a word', () => {
     const toggleSave = vi.fn();

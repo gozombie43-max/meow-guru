@@ -26,6 +26,8 @@ export function proxy(request: NextRequest) {
   const isExempt =
     pathname.startsWith('/backend-api') ||   // ← Azure backend proxy — NEVER block
     pathname.startsWith('/api/') ||           // Next.js API routes
+    pathname === '/monitoring' ||             // Sentry tunnel must also work before login
+    pathname.startsWith('/monitoring/') ||
     pathname === '/access-code' ||
     pathname.startsWith('/access-code/') ||
     pathname.startsWith('/_next/') ||
@@ -52,6 +54,6 @@ export const config = {
   // Exclude backend-api, api routes, static assets, and Next.js internals from matcher.
   // This is the primary defence — middleware won't even run for these paths.
   matcher: [
-    '/((?!backend-api|api|_next/static|_next/image|favicon.ico).*)',
+    '/((?!backend-api|api|monitoring(?:/|$)|_next/static|_next/image|favicon.ico).*)',
   ],
 };

@@ -9,6 +9,7 @@ import api, {
   updateAccessToken,
 } from '@/lib/axios';
 import { disconnectSocket } from '@/lib/socket-lifecycle';
+import { discardPreparedSession, restorePreparedSession } from '@/lib/session-bootstrap';
 
 const isAuthError = (err: unknown) => {
   const status = (err as { response?: { status?: number } })?.response?.status;
@@ -72,7 +73,15 @@ interface AuthContextType {
   loading: boolean;
 }
 
+interface AuthActionsContextType {
+  login: (token: string) => Promise<void>;
+  logout: () => void;
+  refreshUser: () => Promise<void>;
+  updateProfile: (data: { name?: string; avatar?: string | null; phone?: string | null }) => Promise<User | null>;
+}
+
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
+const AuthActionsContext = createContext<AuthActionsContextType>({} as AuthActionsContextType);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser]       = useState<User | null>(null);
@@ -101,6 +110,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const clearAuthState = useCallback(() => {
+    discardPreparedSession();
     disconnectSocket();
     setToken(null);
     setUser(null);
@@ -211,7 +221,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         setLoading(true);
         clearLegacyAuthStorage();
-        const activeToken = getAccessToken() ?? await requestTokenRefresh();
+        const activeToken = await restorePreparedSession();
         if (!activeToken) {
           if (!cancelled) setLoading(false);
           return;
@@ -281,11 +291,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     [user, token, login, logout, refreshUser, updateProfile, loading]
   );
 
+  const actionsValue = useMemo(
+    () => ({
+      login,
+      logout,
+      refreshUser,
+      updateProfile,
+    }),
+    [login, logout, refreshUser, updateProfile]
+  );
+
   return (
-    <AuthContext.Provider value={contextValue}>
-      {children}
-    </AuthContext.Provider>
+    <AuthActionsContext.Provider value={actionsValue}>
+      <AuthContext.Provider value={contextValue}>
+        {children}
+      </AuthContext.Provider>
+    </AuthActionsContext.Provider>
   );
 };
 
 export const useAuth = () => useContext(AuthContext);
+export const useAuthActions = () => {
+  const ctx = useContext(AuthActionsContext);
+  if (!ctx) throw new Error('useAuthActions must be used within an AuthProvider');
+  return ctx;
+};

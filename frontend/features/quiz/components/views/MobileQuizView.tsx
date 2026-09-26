@@ -1,5 +1,5 @@
 "use client";
-import { mobileQuizViewStyles } from "@/features/quiz/components/views/mobile-quiz-view.styles";
+import "./mobile-quiz-view.css";
 import { MobileQuestionNavigator } from "@/features/quiz/components/views/MobileQuestionNavigator";
 import { MobileQuizFooter, MobileQuizHeader } from "@/features/quiz/components/views/MobileQuizChrome";
 import RichContent from "@/components/RichContent";
@@ -8,7 +8,10 @@ import {
   QuizSettingsModal,
 } from "@/features/quiz/components/ui/QuizSettingsModal";
 import { ConceptBadge } from "@/features/quiz/components/ui/SharedUI";
-import { SolutionBottomSheet } from "@/features/quiz/components/ui/SolutionViews";
+import dynamic from "next/dynamic";
+import { useState } from "react";
+
+const SolutionBottomSheet = dynamic(() => import("@/features/quiz/components/ui/SolutionViews").then(module => module.SolutionBottomSheet));
 import { UptimeTimer } from "@/features/quiz/components/QuizTimer";
 import transitionStyles from "./question-transition.module.css";
 import { XCircle } from "lucide-react";
@@ -90,6 +93,11 @@ export function MobileQuizView({ configuration, settings, question, navigation, 
   const { currentIndex, openPalette, questions, selectedAnswers, submittedQuestions, activeRailBtnRef, goToQuestion, handlePrev, handleNext, isPaletteOpen, closePalette } = navigation;
   const { isCurrentSubmitted, selectedAnswer, handleSelectAnswer, submitError, handleSubmitCurrent, canSubmit, timerRef, results } = answer;
   const { openSolution, isSolutionOpen, closeSolution } = solution;
+
+  // Keep the sheet mounted after first use so its close animation and focus
+  // restoration still run, without loading it before the learner opens it.
+  const [solutionLoaded, setSolutionLoaded] = useState(false);
+  if (isSolutionOpen && !solutionLoaded) setSolutionLoaded(true);
 
   if (!currentQ) return null;
 
@@ -282,7 +290,7 @@ export function MobileQuizView({ configuration, settings, question, navigation, 
         />
 
       </div>
-      <SolutionBottomSheet
+      {solutionLoaded && <SolutionBottomSheet
         isOpen={isSolutionOpen}
         solution={currentQ.solution ?? ""}
         questionNumber={currentIndex + 1}
@@ -291,8 +299,7 @@ export function MobileQuizView({ configuration, settings, question, navigation, 
           displayedOptions[currentQ.correctAnswer] ?? currentQ.answer ?? ""
         }
         onClose={closeSolution}
-      />
-      <style jsx global>{mobileQuizViewStyles}</style>
+      />}
     </div>
   );
 }

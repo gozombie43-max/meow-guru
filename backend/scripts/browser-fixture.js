@@ -39,6 +39,7 @@ const questions = ['ga', 'reasoning', 'quant', 'english'].flatMap(sectionKey => 
 await db.collection('mockSlots').insertOne({ id: 'browser-test', examSlug: 'ssc-cgl', configKey: 'ssc-cgl-tier1', title: 'Browser assessment', assessmentMode: 'confidential', timingPolicy: 'composite', fixedQuestions: questions });
 const app = express(); app.use(express.json()); app.use(cookieParser()); app.use(passport.initialize());
 app.get('/live', (_req, res) => res.json({ ok: true }));
+// Use real refresh rotation so each browser keeps its own identity and attempts.
 app.use('/auth', auth); app.use('/api/mocktest', mocktest);
 app.use('/api/training', (await import('../routes/training.js')).default);
 const { fetchQuestions, fetchQuestionsSession, fetchQuestionsMeta, fetchQuestionCounts } = await import('../services/questionService.js');

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import api from "@/shared/api/client";
+import { useAuth } from "@/context/AuthContext";
 
 type Paper = {
   id: string;
@@ -22,6 +23,8 @@ type Attempt = {
   result?: { totalScore?: number; maxScore?: number; percentage?: number };
 };
 export default function TrainingMockCatalog({ exam }: { exam: string }) {
+  const { loading: authLoading, token } = useAuth();
+  const ready = !authLoading && Boolean(token);
   const [papers, setPapers] = useState<Paper[]>([]),
     [attempts, setAttempts] = useState<Attempt[]>([]),
     [year, setYear] = useState(""),
@@ -29,6 +32,7 @@ export default function TrainingMockCatalog({ exam }: { exam: string }) {
     [loading, setLoading] = useState(true),
     [error, setError] = useState("");
   useEffect(() => {
+    if (!ready) return;
     let live = true;
     Promise.all([
       api.get(`/api/mocktest/${exam}/slots`),
@@ -56,7 +60,7 @@ export default function TrainingMockCatalog({ exam }: { exam: string }) {
     return () => {
       live = false;
     };
-  }, [exam]);
+  }, [exam, ready]);
   const filtered = papers.filter(
     (p) => (!year || String(p.year) === year) && (!shift || p.shift === shift),
   );

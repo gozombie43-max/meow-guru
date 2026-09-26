@@ -23,6 +23,7 @@ describe("Play authentication boundary", () => {
   afterEach(cleanup);
 
   it("does not mount training requests until session restoration completes", () => {
+    state.pathname = "/play/session/saved-session";
     const request = vi.fn();
     function Training() {
       useEffect(() => {
@@ -52,6 +53,19 @@ describe("Play authentication boundary", () => {
     );
     expect(request).toHaveBeenCalledTimes(1);
     expect(screen.getByText("Training ready")).toBeInTheDocument();
+  });
+
+  it("renders the public hub during restoration without remounting it afterwards", () => {
+    const mount = vi.fn();
+    function Hub() {
+      useEffect(mount, []);
+      return <h1>Training modes</h1>;
+    }
+    const view = render(<PlayLayout><Hub /></PlayLayout>);
+    expect(screen.getByRole("heading", { name: "Training modes" })).toBeInTheDocument();
+    state.auth = { token: "restored-token", loading: false };
+    view.rerender(<PlayLayout><Hub /></PlayLayout>);
+    expect(mount).toHaveBeenCalledTimes(1);
   });
 
   it.each(["/play", "/play/session/saved-session"])(

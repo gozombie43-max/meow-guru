@@ -242,6 +242,7 @@ export function useQuizController({
     isLongQuestion,
     handleClearResponse,
     isDesktop,
+    resumeRequested,
   };
 }
 export type QuizController = ReturnType<typeof useQuizController>;

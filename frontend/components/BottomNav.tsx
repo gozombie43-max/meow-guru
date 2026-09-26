@@ -39,6 +39,7 @@ export default function BottomNav() {
     >
       <Link replace
         href="/"
+        prefetch={false}
         className={`bottom-nav-item${isHome ? ' is-active' : ''}`}
         aria-current={isHome ? 'page' : undefined}
       >
@@ -47,6 +48,7 @@ export default function BottomNav() {
       </Link>
       <Link replace
         href="/mock-test"
+        prefetch={false}
         className={`bottom-nav-item${isMock ? ' is-active' : ''}`}
         aria-current={isMock ? 'page' : undefined}
       >
@@ -56,6 +58,7 @@ export default function BottomNav() {
 
       <Link replace
         href="/ai-chat"
+        prefetch={false}
         className="bottom-nav-item"
         aria-label="AI Assistant"
       >
@@ -65,6 +68,7 @@ export default function BottomNav() {
 
       <Link replace
         href="/play"
+        prefetch={false}
         className={`bottom-nav-item${isPlay ? ' is-active' : ''}`}
         aria-current={isPlay ? 'page' : undefined}
       >
@@ -73,6 +77,7 @@ export default function BottomNav() {
       </Link>
       <Link replace
         href="/videos"
+        prefetch={false}
         className={`bottom-nav-item${isVideos ? ' is-active' : ''}`}
         aria-current={isVideos ? 'page' : undefined}
       >

@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import BackButton from "@/components/BackButton";
 import { LangToggle } from "@/components/LangToggle";
 import { Menu, Settings, ArrowLeft, ArrowRight } from "lucide-react";
@@ -138,6 +139,9 @@ function MobileQuizFooterControls({
   hideViewSolution = false,
   hideAiTutor = false,
 }: FooterProps) {
+  const openChatbotRef = useRef<(() => void) | null>(null);
+  const pendingOpenRef = useRef(false);
+
   const handleNextOrSubmit = () => {
     if (isCurrentSubmitted) {
       handleNext();
@@ -153,7 +157,12 @@ function MobileQuizFooterControls({
 
   const handleOpenAiTutor = () => {
     if (!isCurrentSubmitted || hideAiTutor) return;
-    document.getElementById("mobile-quiz-chatbot-trigger")?.click();
+    if (openChatbotRef.current) {
+      openChatbotRef.current();
+    } else {
+      pendingOpenRef.current = true;
+      document.getElementById("mobile-quiz-chatbot-trigger")?.click();
+    }
   };
 
   const showPill = !(hideViewSolution && hideAiTutor);
@@ -161,7 +170,7 @@ function MobileQuizFooterControls({
   return (
     <footer data-ui-chrome="footer" className="ios-series-footer">
       {/* Render the actual QuizChatbot outside so it can be triggered programmatically */}
-      {!hideAiTutor && currentQ && (
+      {!hideAiTutor && isCurrentSubmitted && currentQ && (
         <QuizChatbot
           key={`ios-chat-${currentQ.id}`}
           isVisible={isCurrentSubmitted}
@@ -170,15 +179,22 @@ function MobileQuizFooterControls({
           question={currentQ}
           theme={theme}
           activeLang={activeLang}
-          renderTrigger={(onOpen) => (
-            <button
-              id="mobile-quiz-chatbot-trigger"
-              type="button"
-              style={{ display: 'none' }}
-              onClick={onOpen}
-              aria-hidden="true"
-            />
-          )}
+          renderTrigger={(onOpen) => {
+            openChatbotRef.current = onOpen;
+            if (pendingOpenRef.current) {
+              pendingOpenRef.current = false;
+              setTimeout(onOpen, 0);
+            }
+            return (
+              <button
+                id="mobile-quiz-chatbot-trigger"
+                type="button"
+                style={{ display: 'none' }}
+                onClick={onOpen}
+                aria-hidden="true"
+              />
+            );
+          }}
         />
       )}
 

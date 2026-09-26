@@ -341,6 +341,17 @@ describe('QuizChatbot Component', () => {
     expect(trigger).toHaveFocus();
   });
 
+  it('closes when clicking the Back to quiz button', () => {
+    render(<QuizChatbot isVisible questionNumber={1} topicTitle="General Awareness" question={mockQuestion} />);
+    const trigger = screen.getByRole('button', { name: /Ask AI Tutor/i });
+    fireEvent.click(trigger);
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    const backBtn = screen.getByRole('button', { name: 'Back to quiz' });
+    expect(backBtn).toBeInTheDocument();
+    fireEvent.click(backBtn);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
   it('renders numbered solution steps and only the latest follow-up group', async () => {
     vi.mocked(meowAIModel.generateContent).mockResolvedValue({
       response: { text: () => '## Method\n\n1. Read the question.\n2. Choose New Delhi.' },

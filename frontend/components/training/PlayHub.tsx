@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 import {
   BarChart3,
   BookOpen,
@@ -139,7 +139,7 @@ export function PlayPulse({
   );
 }
 
-export function PlayModeLibrary({
+export const PlayModeLibrary = memo(function PlayModeLibrary({
   onChoose,
 }: {
   onChoose: (mode: ModeId) => void;
@@ -224,7 +224,7 @@ export function PlayModeLibrary({
       </p>
     </section>
   );
-}
+});
 
 export function PlayMissionShortcut({
   loading,

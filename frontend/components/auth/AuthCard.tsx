@@ -17,7 +17,7 @@ interface AuthCardProps {
   footerLinkHref?: string;
 }
 
-export default function AuthCard({
+function AuthCard({
   title,
   subtitle,
   activeTab,
@@ -36,7 +36,7 @@ export default function AuthCard({
         {/* Left Showcase Pane (Visible on PC Desktop) */}
         <aside className={styles.pcShowcase}>
           <div>
-            <Link href="/" className={styles.showcaseBrand} aria-label="Go to Meow home">
+            <Link href="/" prefetch={false} className={styles.showcaseBrand} aria-label="Go to Meow home">
               <div className={styles.brandSquircle}>
                 <WolfIcon size={32} fillColor="#ffffff" />
               </div>
@@ -90,7 +90,7 @@ export default function AuthCard({
         <section className={styles.authCard}>
           {/* Mobile Header (Shown only on mobile when showcase is hidden) */}
           <div data-ui-chrome="header" className={styles.mobileCardHeader}>
-            <Link href="/" className={styles.brandSquircle} aria-label="Return to home">
+            <Link href="/" prefetch={false} className={styles.brandSquircle} aria-label="Return to home">
               <WolfIcon size={34} fillColor="#ffffff" />
             </Link>
             <h1 className={styles.brandTitle}>{title}</h1>
@@ -108,6 +108,7 @@ export default function AuthCard({
             <Link
               href="/login"
               role="tab"
+              prefetch={false}
               aria-selected={activeTab === 'login'}
               className={`${styles.segmentedTab} ${activeTab === 'login' ? styles.segmentedTabActive : ''}`}
             >
@@ -116,6 +117,7 @@ export default function AuthCard({
             <Link
               href="/register"
               role="tab"
+              prefetch={false}
               aria-selected={activeTab === 'register'}
               className={`${styles.segmentedTab} ${activeTab === 'register' ? styles.segmentedTabActive : ''}`}
             >
@@ -138,7 +140,7 @@ export default function AuthCard({
           {footerText && footerLinkText && footerLinkHref && (
             <div data-ui-chrome="footer" className={styles.cardFooter}>
               <span>{footerText}</span>
-              <Link href={footerLinkHref} className={styles.footerLink}>
+              <Link href={footerLinkHref} prefetch={false} className={styles.footerLink}>
                 {footerLinkText}
               </Link>
             </div>
@@ -148,3 +150,5 @@ export default function AuthCard({
     </main>
   );
 }
+
+export default React.memo(AuthCard);

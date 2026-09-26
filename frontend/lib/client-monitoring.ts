@@ -1,3 +1,5 @@
+import { monitoringDataCollection } from './monitoring-options';
+
 type SentryClient = typeof import('@sentry/nextjs');
 let pending: Promise<SentryClient | null> | undefined;
 
@@ -7,6 +9,7 @@ export function initializeClientMonitoring(): Promise<SentryClient | null> {
   pending ??= import('@sentry/nextjs').then(Sentry => {
     Sentry.init({
       dsn,
+      dataCollection: monitoringDataCollection,
       environment: process.env.NEXT_PUBLIC_VERCEL_ENV || process.env.NODE_ENV,
       integrations: [Sentry.replayIntegration({ maskAllText: true, blockAllMedia: true })],
       tracesSampleRate: 0.1,

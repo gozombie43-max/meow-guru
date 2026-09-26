@@ -12,9 +12,9 @@ export function TrainingLoading({
 }) {
   return (
     <div className="training-loading-state">
-      <div className="training-loading-message" role="status" aria-live="polite">
-        <LoaderCircle className="training-loading-icon" size={24} aria-hidden="true" />
-        <div><strong>{title}</strong><p>{description}</p></div>
+      <div className="training-loading-message" role="status" aria-live="polite" style={{ padding: '40px 20px', textAlign: 'center' }}>
+        <LoaderCircle className="training-loading-icon" size={48} aria-hidden="true" style={{ margin: '0 auto 16px' }} />
+        <div><h1 style={{ fontSize: '32px', color: '#64748b', margin: '0 0 12px 0' }}>{title}</h1><p style={{ fontSize: '18px', color: '#94a3b8', margin: 0, maxWidth: 500 }}>{description}</p></div>
       </div>
       {skeleton && (
         <div className="training-loading-skeleton" aria-hidden="true">

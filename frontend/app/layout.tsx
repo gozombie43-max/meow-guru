@@ -1,16 +1,19 @@
-import 'katex/dist/katex.min.css';
-import '@fontsource/noto-sans-bengali/400.css';
-import '@fontsource/noto-sans-bengali/500.css';
-import '@fontsource/noto-sans-bengali/600.css';
-import '@fontsource/noto-sans-bengali/700.css';
 import type { Metadata,Viewport } from 'next';
-import { GeistSans } from 'geist/font/sans';
-import StyledJsxRegistry from '@/lib/styled-jsx-registry';
-import ApplicationProviders from './providers';
+import localFont from 'next/font/local';
+import { AuthProvider } from '@/context/AuthContext';
 import './globals.css';
 import './light-theme.css';
 import './dark-theme.css';
 import './interface.css';
+
+// Most study/auth surfaces use the system font stack. Only fetch Geist where
+// it is actually used instead of preloading it ahead of every route's content.
+const GeistSans = localFont({
+  src: '../../node_modules/geist/dist/fonts/geist-sans/Geist-Variable.woff2',
+  variable: '--font-geist-sans',
+  weight: '100 900',
+  preload: false,
+});
 
 const themeBootstrapScript = `
   (() => {
@@ -70,8 +73,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{ __html: themeBootstrapScript }}
         />
       </head>
-      <body className={`${GeistSans.className} ${GeistSans.variable}`} suppressHydrationWarning>
-        <StyledJsxRegistry><ApplicationProviders>{children}</ApplicationProviders></StyledJsxRegistry>
+      <body className={GeistSans.variable} suppressHydrationWarning>
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

@@ -376,7 +376,7 @@ test("play exposes all modes and persists an adaptive session across reload", as
   releaseCreation();
 
   await expect(page).toHaveURL(/\/play\/session\/browser-training$/);
-  await expect(page.getByText("Loading your questions", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Loading your questions", exact: true })).toBeVisible();
   await expect(page.locator(".training-skeleton-option")).toHaveCount(4);
   await page.screenshot({ path: testInfo.outputPath("question-loading.png") });
   releaseQuestions();

@@ -1,9 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { isAxiosError } from "axios";
 import api from "@/shared/api/client";
+import { useAuth } from "@/context/AuthContext";
 import { type TrainingDashboard } from "@/components/training/training-types";
 
 export function useTrainingDashboard(exam: string) {
+  const { loading: authLoading, token } = useAuth();
+  const ready = !authLoading && Boolean(token);
   const [dashboard, setDashboard] = useState<TrainingDashboard | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -17,6 +20,7 @@ export function useTrainingDashboard(exam: string) {
   }, []);
 
   useEffect(() => {
+    if (!ready) return;
     let live = true;
     api
       .get<TrainingDashboard>("/api/training/dashboard", { params: { exam } })
@@ -37,7 +41,7 @@ export function useTrainingDashboard(exam: string) {
     return () => {
       live = false;
     };
-  }, [exam, attempt]);
+  }, [exam, attempt, ready]);
 
   return { dashboard: settledExam === exam ? dashboard : null, loading: loading || settledExam !== exam, error: settledExam === exam ? error : "", setError, setDashboard, setLoading, retry };
 }

@@ -4,7 +4,7 @@ import { useEffect, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 
-/** Keep every training request behind the shared cookie/session restoration. */
+/** Render the public mode catalog while its hooks wait for session restoration. */
 export default function PlayLayout({ children }: { children: ReactNode }) {
   const { token, loading } = useAuth();
   const pathname = usePathname();
@@ -18,7 +18,8 @@ export default function PlayLayout({ children }: { children: ReactNode }) {
     }
   }, [loading, token, pathname, router]);
 
-  if (loading || !token) {
+  const restoringHub = loading && pathname === "/play";
+  if (!restoringHub && (loading || !token)) {
     return (
       <main className="min-h-dvh p-6" aria-busy="true">
         <p role="status">

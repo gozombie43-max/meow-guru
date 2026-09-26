@@ -1,7 +1,7 @@
 import { render, screen, waitFor, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import LoginPage from './login/page';
+import LoginPage, { LoginFallback } from './login/page';
 import RegisterPage from './register/page';
 
 const mocks = vi.hoisted(() => ({
@@ -11,7 +11,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock('@/shared/api/client', () => ({ default: { post: mocks.post } }));
-vi.mock('@/context/AuthContext', () => ({ useAuth: () => ({ login: mocks.login }) }));
+vi.mock('@/context/AuthContext', () => ({ useAuth: () => ({ login: mocks.login }), useAuthActions: () => ({ login: mocks.login }) }));
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ replace: mocks.replace }),
   useSearchParams: () => new URLSearchParams(),
@@ -81,5 +81,13 @@ describe('authentication forms', () => {
     }));
     await waitFor(() => expect(mocks.login).toHaveBeenCalledWith('test-token'));
     expect(mocks.replace).toHaveBeenCalledWith('/');
+  });
+
+  it('renders login fallback with full AuthCard structure, footer, and skeleton inputs', () => {
+    render(<LoginFallback />);
+    expect(screen.getByText("Don't have an account?")).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Create one' })).toHaveAttribute('href', '/register');
+    expect(screen.getByLabelText('Email')).toBeDisabled();
+    expect(screen.getByLabelText('Password')).toBeDisabled();
   });
 });

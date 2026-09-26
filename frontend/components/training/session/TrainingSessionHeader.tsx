@@ -64,6 +64,7 @@ export function TrainingSessionHeader({
         <Link
           replace
           href="/play"
+          prefetch={false}
           data-ui-button="icon"
           className="training-header-back"
           aria-label="Back to Play"

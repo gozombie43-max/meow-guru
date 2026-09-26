@@ -140,7 +140,7 @@ body {
 }
 
 .page-transition-shell__page {
-  animation: page-transition-enter 220ms ease-out;
+  /* Route progress is animated separately; keep page content stable at paint. */
 }
 
 .page-transition-shell__progress {

@@ -1,7 +1,9 @@
 import { test, expect } from "@playwright/test";
-import ts from "typescript";
-import { readFileSync } from "node:fs";
+import { execFile } from "node:child_process";
+import { mkdir, readFile } from "node:fs/promises";
+import { createRequire } from "node:module";
 import path from "node:path";
+import { promisify } from "node:util";
 import type { createNavigationController } from "../lib/navigation-controller";
 
 declare global {
@@ -15,10 +17,19 @@ declare global {
 }
 
 let bundle: string;
-test.beforeAll(async () => {
-  const source = readFileSync(path.resolve("lib/navigation-controller.ts"), "utf8");
-  const result = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS } });
-  bundle = `var exports = {}; ${result.outputText}; window.NavigationFixture = exports;`;
+test.beforeAll(async ({ browserName }, testInfo) => {
+  // Use TypeScript 7's supported CLI; it has no stable transpileModule API.
+  // Playwright owns the output directory and cleans it between runs.
+  const outputDirectory = testInfo.outputPath(`navigation-fixture-${browserName}`);
+  await mkdir(outputDirectory, { recursive: true });
+  const require = createRequire(path.resolve("package.json"));
+  const compiler = path.join(path.dirname(require.resolve("typescript/package.json")), "bin", "tsc");
+  await promisify(execFile)(process.execPath, [
+    compiler, "--ignoreConfig", "--target", "ES2022", "--module", "commonjs",
+    "--noCheck", "--outDir", outputDirectory, path.resolve("lib/navigation-controller.ts"),
+  ], { windowsHide: true, timeout: 30000 });
+  const outputText = await readFile(path.join(outputDirectory, "navigation-controller.js"), "utf8");
+  bundle = `var exports = {}; ${outputText}; window.NavigationFixture = exports;`;
 });
 test.beforeEach(async ({ page }) => {
   await page.route("http://navigation.test/**", route => route.fulfill({ contentType: "text/html", body: '<button id="focus">Quiz</button><a href="/topics" id="parent">Back to topics</a>' }));

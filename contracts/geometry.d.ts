@@ -1,4 +1,5 @@
-export const geometryDiagramSchema: z.ZodObject<{
+import { z } from 'zod';
+export declare const geometryDiagramSchema: z.ZodObject<{
     id: z.ZodOptional<z.ZodString>;
     scale: z.ZodOptional<z.ZodNumber>;
     width: z.ZodOptional<z.ZodNumber>;
@@ -6,8 +7,8 @@ export const geometryDiagramSchema: z.ZodObject<{
     caption: z.ZodOptional<z.ZodString>;
     shapes: z.ZodArray<z.ZodUnion<readonly [z.ZodObject<{
         type: z.ZodEnum<{
-            triangle: "triangle";
             right_triangle: "right_triangle";
+            triangle: "triangle";
         }>;
         vertices: z.ZodObject<{
             A: z.ZodObject<{
@@ -33,12 +34,12 @@ export const geometryDiagramSchema: z.ZodObject<{
         }, z.core.$strip>>;
     }, z.core.$strip>, z.ZodObject<{
         type: z.ZodEnum<{
-            sphere: "sphere";
-            hemisphere: "hemisphere";
             cone: "cone";
             cylinder: "cylinder";
-            frustum: "frustum";
             cylinder_with_hemisphere: "cylinder_with_hemisphere";
+            frustum: "frustum";
+            hemisphere: "hemisphere";
+            sphere: "sphere";
         }>;
         center: z.ZodOptional<z.ZodObject<{
             x: z.ZodNumber;
@@ -86,9 +87,9 @@ export const geometryDiagramSchema: z.ZodObject<{
         label: z.ZodOptional<z.ZodString>;
         dashed: z.ZodOptional<z.ZodBoolean>;
         arrow: z.ZodOptional<z.ZodEnum<{
-            none: "none";
-            end: "end";
             both: "both";
+            end: "end";
+            none: "none";
         }>>;
     }, z.core.$strip>, z.ZodObject<{
         type: z.ZodLiteral<"angle">;
@@ -129,4 +130,3 @@ export const geometryDiagramSchema: z.ZodObject<{
         labels: z.ZodOptional<z.ZodArray<z.ZodString>>;
     }, z.core.$strip>]>>;
 }, z.core.$strip>;
-import { z } from 'zod';

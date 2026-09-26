@@ -10,7 +10,11 @@ function stop(code = 0) {
   process.exitCode = code;
 }
 function start(file, args = []) {
-  const child = spawn(process.execPath, [file, ...args], { stdio: 'inherit', windowsHide: true });
+  const child = spawn(process.execPath, [file, ...args], {
+    stdio: 'inherit',
+    windowsHide: true,
+    env: { ...process.env, API_URL: 'http://127.0.0.1:3111' },
+  });
   children.push(child);
   child.on('exit', code => stop(code ?? 1));
   child.on('error', error => { console.error(error.message); stop(1); });

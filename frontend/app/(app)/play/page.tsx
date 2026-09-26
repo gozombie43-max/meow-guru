@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, Suspense } from "react";
+import { useCallback, useRef, useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, ChevronDown, Sparkles, Target } from "lucide-react";
@@ -21,14 +21,40 @@ import { useTrainingCapabilities } from "./hooks/useTrainingCapabilities";
 import { useTrainingDashboard } from "./hooks/useTrainingDashboard";
 import { useTrainingSetup } from "./hooks/useTrainingSetup";
 
+function SearchParamsSync({
+  onChange,
+}: {
+  onChange: (tab: string, exam: string, raw: string) => void;
+}) {
+  const searchParams = useSearchParams();
+  const tab = playTab(searchParams.get("view"));
+  const exam = searchParams.get("exam") || "ssc-cgl";
+  const raw = searchParams.toString();
+
+  useEffect(() => {
+    onChange(tab, exam, raw);
+  }, [tab, exam, raw, onChange]);
+
+  return null;
+}
+
 function PlayContent() {
   const { theme } = useThemeMode();
   const router = useRouter();
 
   const contentRef = useRef<HTMLElement>(null);
-  const searchParams = useSearchParams();
-  const tab = playTab(searchParams.get("view"));
-  const exam = searchParams.get("exam") || "ssc-cgl";
+  const [tab, setTab] = useState("Play");
+  const [exam, setExam] = useState("ssc-cgl");
+  const rawParamsRef = useRef("");
+
+  const handleParamsChange = useCallback(
+    (newTab: string, newExam: string, raw: string) => {
+      setTab(newTab);
+      setExam(newExam);
+      rawParamsRef.current = raw;
+    },
+    [],
+  );
 
   const { capabilities, error: capabilitiesError } = useTrainingCapabilities();
   const { dashboard, loading, error: dashboardError, setDashboard, setLoading, setError: setDashboardError } = useTrainingDashboard(exam);
@@ -39,12 +65,13 @@ function PlayContent() {
 
   const error = capabilitiesError || dashboardError || setupError;
 
-  const handleChooseMode = (mode: string) => {
+  const handleChooseMode = useCallback((mode: string) => {
     router.push(`/play/setup/${mode}?exam=${encodeURIComponent(exam)}`);
-  };
+  }, [exam, router]);
 
-  function navigate(tab: string) {
-    router.push(playHref(searchParams.toString(), tab, exam), { scroll: false });
+  function navigate(nextTab: string) {
+    setTab(nextTab);
+    router.push(playHref(rawParamsRef.current, nextTab, exam), { scroll: false });
     contentRef.current?.scrollTo({ top: 0, behavior: "instant" });
   }
 
@@ -52,9 +79,12 @@ function PlayContent() {
     <div
       className={`training-page play-hub ${theme === "dark" ? "training-dark" : ""}`}
     >
+      <Suspense fallback={null}>
+        <SearchParamsSync onChange={handleParamsChange} />
+      </Suspense>
       <header className="training-header" data-ui-chrome="header">
         <div className="training-header-top">
-          <Link href="/play" className="training-brand">
+          <Link href="/play" prefetch={false} className="training-brand">
             <span className="training-brand-icon">
               <Target size={18} strokeWidth={2.2} />
             </span>
@@ -70,7 +100,9 @@ function PlayContent() {
                 data-ui-field
                 value={exam}
                 onChange={(e) => {
-                  router.push(playHref(searchParams.toString(), tab, e.target.value), { scroll: false });
+                  const nextExam = e.target.value;
+                  setExam(nextExam);
+                  router.push(playHref(rawParamsRef.current, tab, nextExam), { scroll: false });
                   setDashboard(null);
                   setLoading(true);
                   setDashboardError("");
@@ -170,6 +202,7 @@ function PlayContent() {
               <Link
                 data-ui-button="secondary"
                 className="training-resume-btn"
+                prefetch={false}
                 href={`/play/session/${dashboard.active[0].id}`}
               >
                 Resume <ArrowRight size={15} aria-hidden="true" />
@@ -250,5 +283,5 @@ function PlayContent() {
 }
 
 export default function PlayPage() {
-  return <Suspense fallback={<p role="status">Loading training…</p>}><PlayContent /></Suspense>;
+  return <PlayContent />;
 }

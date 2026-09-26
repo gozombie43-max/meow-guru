@@ -5,16 +5,8 @@ import path from 'node:path';
 async function run() {
   console.log('--- Automated Browser Verification of Mobile Quiz Engine Design ---');
 
-  // Read the mobile quiz view styles file to extract CSS
-  const stylesFilePath = path.join(process.cwd(), 'features/quiz/components/views/mobile-quiz-view.styles.ts');
-  const stylesFileContent = fs.readFileSync(stylesFilePath, 'utf8');
-
-  // Extract raw CSS template literal from mobileQuizViewStyles
-  const cssMatch = stylesFileContent.match(/css\.global`([\s\S]*?)`;/);
-  if (!cssMatch) {
-    throw new Error('Failed to extract CSS from mobile-quiz-view.styles.ts');
-  }
-  const cssContent = cssMatch[1];
+  const stylesFilePath = path.join(process.cwd(), 'features/quiz/components/views/mobile-quiz-view.css');
+  const cssContent = fs.readFileSync(stylesFilePath, 'utf8');
 
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext({

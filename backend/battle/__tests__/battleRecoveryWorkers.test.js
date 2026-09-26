@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const roomsCollection = { find: vi.fn() };
 const resolveExpiredQuestion = vi.fn();
@@ -33,7 +33,13 @@ function cursor(items) {
 }
 
 describe("Battle recovery workers", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // The reveal path compares resolution and poll timestamps exactly.
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-09-26T00:00:00.000Z"));
+  });
+  afterEach(() => vi.useRealTimers());
 
   it("advances a durably resolved expired question and broadcasts the next deadline", async () => {
     const now = new Date();
@@ -58,6 +64,10 @@ describe("Battle recovery workers", () => {
     await runBattleQuestionDeadlineWorkerOnce();
 
     expect(advanceQuestion).toHaveBeenCalledWith("4821", 0);
+    expect(emit).toHaveBeenCalledWith("game:scores", { scores: {} });
+    expect(emit).toHaveBeenCalledWith("game:reveal", {
+      questionIndex: 0, correctIndex: 0, selections: {},
+    });
     expect(emit).toHaveBeenCalledWith("game:question", expect.objectContaining({
       questionIndex: 1,
       deadline: expect.any(Date),

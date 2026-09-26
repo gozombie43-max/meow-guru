@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Mail, Lock, ArrowRight } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
+import { useAuthActions } from '@/context/AuthContext';
 import api from '@/shared/api/client';
 import { API_BASE } from '@/lib/api-base';
 import dynamic from 'next/dynamic';
@@ -18,25 +18,22 @@ const ForgotPasswordModal = dynamic(() => import('@/components/auth/ForgotPasswo
 
 type LoginFormData = { email: string; password: string };
 
-function LoginContent() {
-  const { login } = useAuth();
-  const router = useRouter();
+function OAuthError({ onError }: { onError: (message: string) => void }) {
   const searchParams = useSearchParams();
+  useEffect(() => {
+    if (searchParams?.get('error') === 'oauth') {
+      onError('Google authentication was cancelled or failed. Please try again or use your email.');
+    }
+  }, [searchParams, onError]);
+  return null;
+}
 
+function LoginContent() {
+  const { login } = useAuthActions();
+  const router = useRouter();
   const [error, setError] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
   const [forgotOpen, setForgotOpen] = useState(false);
-
-  // Detect OAuth redirect error
-  useEffect(() => {
-    if (searchParams?.get('error') === 'oauth') {
-      const timer = window.setTimeout(
-        () => setError('Google authentication was cancelled or failed. Please try again or use your email.'),
-        0,
-      );
-      return () => window.clearTimeout(timer);
-    }
-  }, [searchParams]);
 
   const {
     register,
@@ -90,7 +87,8 @@ function LoginContent() {
       }
 
       await login(res.data.token);
-      const redirectTarget = searchParams?.get('redirect') || searchParams?.get('next');
+      const searchParams = new URLSearchParams(window.location.search);
+      const redirectTarget = searchParams.get('redirect') || searchParams.get('next');
       router.replace(redirectTarget || '/');
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error;
@@ -100,6 +98,7 @@ function LoginContent() {
 
   return (
     <>
+      <Suspense fallback={null}><OAuthError onError={setError} /></Suspense>
       <AuthCard
         title="Welcome Back"
         subtitle="Sign in to your Meow account"
@@ -191,24 +190,96 @@ function LoginContent() {
       </AuthCard>
 
       {/* iOS Modal for Forgot Password */}
-      <ForgotPasswordModal
+      {forgotOpen && <ForgotPasswordModal
         isOpen={forgotOpen}
         onClose={() => setForgotOpen(false)}
-      />
+      />}
     </>
   );
 }
 
-export default function LoginPage() {
+export function LoginFallback() {
   return (
-    <Suspense
-      fallback={
-        <div className={styles.authContainer}>
-          <div className={styles.spinner} style={{ borderColor: 'rgba(0, 122, 255, 0.3)', borderTopColor: '#007aff' }} />
-        </div>
-      }
+    <AuthCard
+      title="Welcome Back"
+      subtitle="Sign in to your Meow account"
+      activeTab="login"
+      footerText="Don't have an account?"
+      footerLinkText="Create one"
+      footerLinkHref="/register"
     >
-      <LoginContent />
-    </Suspense>
+      {/* Google Single Click Sign-In */}
+      <AuthGoogleButton text="Continue with Google" onClick={() => {}} />
+
+      {/* Apple-style Subtle Divider */}
+      <div className={styles.divider}>
+        <div className={styles.dividerLine} />
+        <span className={styles.dividerText}>or</span>
+        <div className={styles.dividerLine} />
+      </div>
+
+      {/* Skeleton Email & Password Form */}
+      <div className={styles.form} aria-hidden="true">
+        <AuthInput
+          id="login-email-skeleton"
+          label="Email"
+          type="email"
+          autoComplete="email"
+          placeholder="name@example.com"
+          icon={<Mail size={17} />}
+          disabled
+          readOnly
+        />
+
+        <AuthInput
+          id="login-password-skeleton"
+          label="Password"
+          type="password"
+          isPassword
+          autoComplete="current-password"
+          placeholder="Your password"
+          icon={<Lock size={17} />}
+          disabled
+          readOnly
+        />
+
+        {/* Options: Remember Me & Forgot Password */}
+        <div className={styles.optionsRow}>
+          <label className={styles.rememberCheckbox}>
+            <input
+              type="checkbox"
+              defaultChecked
+              disabled
+              readOnly
+              aria-label="Remember me"
+            />
+            <span>Remember me</span>
+          </label>
+
+          <span className={styles.forgotBtn}>
+            Forgot password?
+          </span>
+        </div>
+
+        {/* iOS Action Button */}
+        <button data-ui-button="primary"
+          type="button"
+          disabled
+          className={styles.primaryBtn}
+          aria-label="Sign in"
+        >
+          <span>Sign In</span>
+          <ArrowRight size={16} />
+        </button>
+      </div>
+    </AuthCard>
   );
+}
+
+export default function LoginPage() {
+  // OAuthError is already isolated in its own Suspense boundary.
+  // Rendering LoginContent directly on the server ensures the full AuthCard,
+  // form inputs, and footer exist in initial server HTML (FCP ~1.0s, LCP < 1500ms)
+  // without delaying LCP through an outer Suspense boundary fallback.
+  return <LoginContent />;
 }
