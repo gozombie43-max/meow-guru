@@ -1734,7 +1734,7 @@
 .ios-series-quiz[data-theme="dark"] .ios-series-question::after { width: 6px; height: 6px; bottom: 1px; }
 .ios-series-quiz[data-theme="dark"] .ios-series-meta-row { margin: 0; min-height: 36px; gap: 10px; }
 .ios-series-quiz[data-theme="dark"] .ios-series-meta-items { gap: 6px; }
-.ios-series-quiz[data-theme="dark"] .ios-series-timer { height: 34px; padding-inline: 13px; gap: 8px; font-size: 14px; color: var(--quiz-text-primary); }
+.ios-series-quiz[data-theme="dark"] .ios-series-timer { height: 34px; padding-inline: 13px; gap: 8px; font-size: 12px; color: var(--quiz-text-primary); }
 .ios-series-quiz[data-theme="dark"] .ios-series-timer svg { width: 17px; height: 17px; color: var(--quiz-highlight); }
 .ios-series-quiz[data-theme="dark"] .ios-series-question-card { padding: 32px 12px 20px; }
 .ios-series-quiz[data-theme="dark"] .ios-series-prompt { font-size: 22px; line-height: 1.55; }
