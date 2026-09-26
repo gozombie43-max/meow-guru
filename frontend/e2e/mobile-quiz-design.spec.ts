@@ -124,8 +124,8 @@ test("mobile quiz engine renders with reduced question boldness (400) and reduce
   ]);
   expect(solutionIconColor).toBe(aiIconColor);
 
-  const actionMetrics = await page.$eval(".ios-series-pill-item", (items) =>
-    items.map((el) => {
+  const [solutionMetrics, aiMetrics] = await Promise.all([
+    page.$eval(".ios-series-pill-solution", (el) => {
       const style = window.getComputedStyle(el);
       const rect = el.getBoundingClientRect();
       return {
@@ -133,10 +133,18 @@ test("mobile quiz engine renders with reduced question boldness (400) and reduce
         height: Math.round(rect.height),
         backgroundColor: style.backgroundColor,
       };
-    })
-  );
-  expect(actionMetrics).toHaveLength(2);
-  expect(actionMetrics[0]).toEqual(actionMetrics[1]);
+    }),
+    page.$eval(".ios-series-pill-ai", (el) => {
+      const style = window.getComputedStyle(el);
+      const rect = el.getBoundingClientRect();
+      return {
+        width: Math.round(rect.width),
+        height: Math.round(rect.height),
+        backgroundColor: style.backgroundColor,
+      };
+    }),
+  ]);
+  expect(solutionMetrics).toEqual(aiMetrics);
 
   // 8. Submit remains primary, but uses the restrained slate-blue theme.
   // Select an answer first so Submit is enabled and its active treatment is measurable.
