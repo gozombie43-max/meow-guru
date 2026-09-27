@@ -65,6 +65,11 @@ async function authenticateFixtureUser(page: Page, deviceName: string, variant?:
       path: '/',
     },
   ]);
+  await page.context().route('**/backend-api/**', route => {
+    const url = new URL(route.request().url());
+    const path = url.pathname.replace('/backend-api', '');
+    return route.fetch({ url: `http://127.0.0.1:3111${path}${url.search}` }).then(response => route.fulfill({ response }));
+  });
   await page.goto('/login');
   await page.waitForSelector('#login-email', { timeout: 10000 });
   await page.fill('#login-email', email);
