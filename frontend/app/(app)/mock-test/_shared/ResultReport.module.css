@@ -290,3 +290,15 @@
   .actions { flex-direction: column; width: 100%; }
   .btnPrimary, .btnOutline { width: 100%; }
 }
+
+/* Shared borderless OLED appearance. */
+:global(html.theme-dark) .container {
+  --bg: var(--oled-canvas); --card: var(--oled-surface);
+  --text-dark: var(--oled-text); --text-muted: var(--oled-secondary);
+  --text-light: var(--oled-secondary); --border: transparent;
+  --primary: #75a9df; --primary-light: #75a9df;
+  --primary-bg: var(--oled-selected-soft);
+  background: var(--oled-canvas); color: var(--oled-text);
+}
+:global(html.theme-dark) .container :is(.scoreCard, .sectionBreakdown, .weakAreasSection, .statChip) { background: var(--oled-surface); border: 0; box-shadow: none; border-radius: 14px; }
+:global(html.theme-dark) .container :is(.chip) { background: var(--oled-surface); border: 0; border-radius: 999px !important; box-shadow: none; }

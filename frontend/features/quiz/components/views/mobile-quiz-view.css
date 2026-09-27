@@ -1,16 +1,4 @@
-/* ==========================================================================
-   Refined Mobile Quiz Engine - Dark Theme Palette & Spatial Hierarchy
-   App background: Near-black navy #080C14
-   Primary surface: #121722
-   Elevated surface: #171D29
-   Borders: rgba(255,255,255,0.08) / subtle rgba(255,255,255,0.06)
-   Primary text: #F1F4F8 (Off-white)
-   Secondary text: #929DB0
-   Main accent: Muted steel / academic blue #5F8FC8
-   Selected surface: Blue at ~15–20% opacity rgba(95, 143, 200, 0.16)
-   Correct: Muted green (#16a34a / #22c55e)
-   Incorrect: Muted red (#dc2626 / #ef4444)
-   ========================================================================== */
+/* Mobile quiz layout with theme-scoped OLED surfaces and semantic answer states. */
 
 .ios-series-quiz[data-theme="dark"] {
   --dark-canvas: #080C14;
@@ -1644,21 +1632,21 @@
 }
 /* Theme palettes feed one shared mobile layout and interaction style. */
 .ios-series-quiz[data-theme="dark"] {
-  --quiz-background: #0d1723;
-  --quiz-surface: #142030;
-  --quiz-answer-surface: #152131;
-  --quiz-surface-hover: #1b293c;
-  --quiz-surface-selected: #283f61;
-  --quiz-text-primary: #e7ebf3;
+  --quiz-background: var(--oled-canvas, #000000);
+  --quiz-surface: var(--oled-surface, #1c1c1e);
+  --quiz-answer-surface: var(--oled-surface, #1c1c1e);
+  --quiz-surface-hover: var(--oled-hover, #252527);
+  --quiz-surface-selected: var(--oled-selected-soft, #182f4b);
+  --quiz-text-primary: var(--oled-text, #e5eaf0);
   --quiz-highlight: #79a7ef;
-  --quiz-letter: #1f304a;
-  --quiz-text-secondary: #9ba9bd;
-  --quiz-accent: #3e6096;
+  --quiz-letter: var(--oled-inset, #29292c);
+  --quiz-text-secondary: var(--oled-secondary, #a2a9b4);
+  --quiz-accent: var(--oled-selected, #216bc1);
   --quiz-success: #80b99b;
   --quiz-error: #d59096;
   --dark-canvas: var(--quiz-background);
   --dark-surface: var(--quiz-surface);
-  --dark-surface-muted: #142033;
+  --dark-surface-muted: var(--oled-inset, #29292c);
   --dark-surface-elevated: var(--quiz-surface-hover);
   --dark-text: var(--quiz-text-primary);
   --dark-text-secondary: var(--quiz-text-secondary);
@@ -1803,13 +1791,19 @@
 .ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-icon-button svg { width: 20px !important; height: 20px !important; }
 .ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .lang-toggle,
 .ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .lang-toggle-slider,
-.ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .lang-toggle-option { border-radius: 24px !important; }
-.ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .lang-toggle-option { padding-inline: 9px !important; font-size: 13px !important; }
+.ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .lang-toggle-option { border-radius: 9999px !important; }
+.ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .lang-toggle-option {
+  width: 66px !important;
+  min-width: 66px !important;
+  padding-inline: 4px !important;
+  font-size: 13px !important;
+}
 .ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .lang-toggle { isolation: isolate; }
 .ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .lang-toggle-slider {
   pointer-events: none;
   box-sizing: border-box;
-  border: 3px solid transparent;
+  border-block: 5px solid transparent;
+  border-inline: 3px solid transparent;
   background-clip: padding-box !important;
   transition: transform 320ms cubic-bezier(.22, 1, .36, 1), width 320ms cubic-bezier(.22, 1, .36, 1);
 }
@@ -1847,7 +1841,19 @@
 .ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-pill-item:disabled { opacity: .7 !important; }
 @media (max-width: 359px) {
   .ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-header { padding-inline: max(8px, var(--safe-left)); gap: 2px; }
-  .ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .lang-toggle-option { padding-inline: 4px !important; font-size: 11px !important; }
+  .ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .lang-toggle-option { width: auto !important; min-width: 48px !important; padding-inline: 4px !important; font-size: 11px !important; }
   .ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-footer { gap: 6px; padding-inline: max(10px, var(--safe-left)); }
   .ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-footer-btn { font-size: 11px !important; gap: 3px; }
 }
+
+/* Keep dark cards borderless, including submitted answers and the palette. */
+.ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-options { gap: 8px; }
+.ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-option { border-radius: 14px !important; }
+.ios-series-quiz[data-theme="dark"] .ios-series-option {
+  border: 0 !important; box-shadow: none !important;
+}
+.ios-series-quiz[data-theme="dark"] :is(.ios-series-palette-panel, .ios-series-exam-popover, .ios-series-metadata-dialog) {
+  border: 0; box-shadow: none; background: var(--quiz-surface);
+}
+.ios-series-quiz[data-theme="dark"] .ios-series-palette-grid button { border: 0; box-shadow: none; }
+.ios-series-quiz[data-theme="dark"] .ios-series-palette-grid button.is-current { background: var(--quiz-accent); color: #edf4fc; }

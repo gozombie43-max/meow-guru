@@ -1,5 +1,6 @@
 import { storeQuestionImages } from "../middleware/questionImageStorage.js";
 import express from "express";
+import { fetchTopicCountSnapshot } from "../services/questions/topicCountSnapshot.js";
 import multer from 'multer';
 import questionController from '../controllers/questionController.js';
 import adminAuth from "../middleware/auth.js";
@@ -30,6 +31,15 @@ const questionUpload = upload.fields([
 router.post('/bulk', adminAuth, questionController.bulkCreateQuestions);
 router.post('/bulk-delete', adminAuth, questionController.bulkDeleteQuestions);
 router.post('/check-duplicates', adminAuth, questionController.checkDuplicates);
+router.get('/topic-counts', async (req, res) => {
+  try {
+    const snapshot = await fetchTopicCountSnapshot(req.query.subject);
+    res.set('Cache-Control', 'no-cache');
+    res.json(snapshot);
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ error: error.message });
+  }
+});
 router.get('/counts', questionController.getQuestionCounts);
 router.get('/practice-test', questionController.generatePracticeTest);
 router.post('/analyze', adminAuth, questionController.runAnalysis);

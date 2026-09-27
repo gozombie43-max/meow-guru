@@ -32,7 +32,11 @@ const MobileTopicRow = React.memo(function MobileTopicRow({
   Icon,
   name,
   styles,
+  detail,
+  quiet = false,
 }: {
+  quiet?: boolean;
+  detail?: { color: string; questionCount?: number };
   href: string;
   color?: string;
   Icon?: React.ComponentType<{ size?: number; strokeWidth?: number; color?: string }>;
@@ -50,12 +54,15 @@ const MobileTopicRow = React.memo(function MobileTopicRow({
         {Icon ? (
           <div
             className={styles.mobileTopicIconBox}
-            style={{ background: color || "#38bdf8" }}
+            style={detail || quiet ? { "--topic-color": detail?.color ?? `color-mix(in srgb, ${color || "#4799e8"} 65%, #b6becb)` } as React.CSSProperties : { background: color || "#38bdf8" }}
           >
             <Icon size={18} strokeWidth={2.2} color="#ffffff" />
           </div>
         ) : null}
-        <span className={styles.mobileTopicName}>{name}</span>
+        <span className={styles.mobileTopicText}>
+          <span className={styles.mobileTopicName}>{name}</span>
+          {detail && <span className={styles.mobileTopicCount}>{detail.questionCount === undefined ? "—" : detail.questionCount} Questions</span>}
+        </span>
       </div>
 
       <ChevronRight
@@ -97,6 +104,15 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
   // States
   const [activeCategory, setActiveCategory] = useState<string>("very-high");
   const [selectedChapterSlug, setSelectedChapterSlug] = useState<string>("");
+
+  const [mobileCategory, setMobileCategory] = useState("all");
+  const oledMobile = config.mobileAppearance === "oled";
+  const mobileStyles = oledMobile ? defaultStyles : styles;
+  const mobileTopics = oledMobile ? TOPICS.filter((topic) => {
+    const query = searchQuery.trim().toLowerCase();
+    return (mobileCategory === "all" || topic.priority === mobileCategory) &&
+      (!query || [topic.name, topic.description, ...topic.subtopics].some((text) => text.toLowerCase().includes(query)));
+  }) : null;
 
   // Chapter Mode Check
   const isChapterMode = !!config.getChapterGroup;
@@ -1122,30 +1138,30 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
       {/* =========================================================================
           MOBILE / TABLET VIEW (< 768px Handheld Devices)
           ========================================================================= */}
-      <div className={`${styles.mobileContainer} ${defaultStyles.fixedTopicsMobile}`}>
+      <div className={`${mobileStyles.mobileContainer} ${defaultStyles.fixedTopicsMobile} ${oledMobile ? defaultStyles.oledMobile : ""}`}>
         {/* Mobile Topbar */}
-        <header data-ui-chrome="header" data-hub-part="mobileTopbar" className={styles.mobileTopbar}>
+        <header data-ui-chrome="header" data-hub-part="mobileTopbar" className={mobileStyles.mobileTopbar}>
           <button data-ui-button="icon"
             type="button"
-            className={styles.mobileBackBtn}
+            className={mobileStyles.mobileBackBtn}
             onClick={() => router.replace("/")}
             aria-label="Back"
           >
             <ArrowLeft size={18} strokeWidth={2.4} />
           </button>
-          <span className={styles.mobileTopbarTitle}>
+          <span className={mobileStyles.mobileTopbarTitle}>
             {config.label} Topics
           </span>
           <div style={{ width: 34 }} />
         </header>
 
-        <div data-hub-part="mobileBody" className={styles.mobileBody}>
+        <div data-hub-part="mobileBody" className={mobileStyles.mobileBody}>
           {/* Search */}
-          <div data-hub-part="mobileSearchRow" className={styles.mobileSearchRow}>
-            <Search className={styles.mobileSearchIcon} size={16} />
+          <div data-hub-part="mobileSearchRow" className={mobileStyles.mobileSearchRow}>
+            <Search className={mobileStyles.mobileSearchIcon} size={16} />
             <input
               type="text"
-              className={styles.mobileSearchInput}
+              className={mobileStyles.mobileSearchInput}
               placeholder={
                 isListening
                   ? "Listening... speak topic"
@@ -1155,21 +1171,21 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
               onChange={(e) => setSearchQuery(e.target.value)}
               aria-label="Search topics"
             />
-            <div className={styles.mobileSearchRightActions}>
+            <div className={mobileStyles.mobileSearchRightActions}>
               {searchQuery && (
                 <button data-ui-button="secondary"
                   type="button"
-                  className={styles.mobileSearchClearBtn}
+                  className={mobileStyles.mobileSearchClearBtn}
                   onClick={() => setSearchQuery("")}
                   aria-label="Clear Search"
                 >
                   <X size={11} />
                 </button>
               )}
-              <span className={styles.mobileSearchDivider} aria-hidden="true" />
+              <span className={mobileStyles.mobileSearchDivider} aria-hidden="true" />
               <button data-ui-button="state" data-ui-shape="icon"
                 type="button"
-                className={`${styles.mobileMicBtn} ${isListening ? styles.mobileMicBtnListening : ""}`}
+                className={`${mobileStyles.mobileMicBtn} ${isListening ? mobileStyles.mobileMicBtnListening : ""}`}
                 onClick={toggleVoiceSearch}
                 aria-label={isListening ? "Stop voice search" : "Voice search"}
                 title={isListening ? "Listening..." : "Voice search"}
@@ -1180,21 +1196,22 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
           </div>
 
           {/* TOPICS Section Header */}
-          <div data-hub-part="mobileTopicsTitle" className={styles.mobileTopicsTitle}>TOPICS</div>
+          <div data-hub-part="mobileTopicsTitle" className={mobileStyles.mobileTopicsTitle}>TOPICS</div>
 
           {/* iOS Grouped Card Container with Filter Header */}
-          <div data-hub-part="mobileTopicGroup" className={styles.mobileTopicGroup}>
+          <div data-hub-part="mobileTopicGroup" className={mobileStyles.mobileTopicGroup}>
             {/* Priority Tabs in Card Header */}
-            {!isChapterMode && (
-              <div data-hub-part="mobileTabsScroll" className={styles.mobileTabsScroll}>
-                {CATEGORIES.map((cat) => (
+            {(!isChapterMode || oledMobile) && (
+              <div data-hub-part="mobileTabsScroll" className={mobileStyles.mobileTabsScroll}>
+                {(oledMobile ? [{ id: "all", label: "All" }, ...CATEGORIES] : CATEGORIES).map((cat) => (
                   <button data-ui-button="state"
                     key={cat.id}
                     type="button"
-                    className={`${styles.mobileTabBtn} ${
-                      activeCategory === cat.id ? styles.mobileTabActive : ""
+                    className={`${mobileStyles.mobileTabBtn} ${
+                      (oledMobile ? mobileCategory : activeCategory) === cat.id ? mobileStyles.mobileTabActive : ""
                     }`}
-                    onClick={() => setActiveCategory(cat.id)}
+                    onClick={() => oledMobile ? setMobileCategory(cat.id) : setActiveCategory(cat.id)}
+                    aria-pressed={(oledMobile ? mobileCategory : activeCategory) === cat.id}
                   >
                     {cat.label}
                   </button>
@@ -1202,16 +1219,19 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
               </div>
             )}
 
-            {filteredTopics.map((topic) => (
+            {(mobileTopics ?? filteredTopics).map((topic) => (
               <MobileTopicRow
                 key={topic.id}
                 href={isChapterMode ? `${config.chapterBasePrefix}/${topic.slug}` : `${topic.routeBase}`}
                 color={topic.color}
                 Icon={topic.icon}
                 name={topic.name}
-                styles={styles}
+                quiet={oledMobile}
+                detail={config.mobileTopicDetails?.[topic.slug]}
+                styles={mobileStyles}
               />
             ))}
+            {oledMobile && mobileTopics?.length === 0 && <p role="status" className={mobileStyles.mobileTopicCount}>No topics found. Try another search or filter.</p>}
           </div>
         </div>
       </div>

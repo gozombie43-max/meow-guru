@@ -453,3 +453,22 @@
   border-radius: 20px;
   border: 1px dashed var(--border);
 }
+
+/* Shared borderless OLED appearance. */
+:global(html.theme-dark) .page {
+  --bg: var(--oled-canvas); --card: var(--oled-surface);
+  --text-dark: var(--oled-text); --text-muted: var(--oled-secondary);
+  --text-light: var(--oled-secondary); --border: transparent;
+  --primary: #75a9df; --primary-light: #75a9df;
+  --primary-bg: var(--oled-selected-soft);
+  background: var(--oled-canvas); color: var(--oled-text);
+}
+:global(html.theme-dark) .page :is(.questionCard, .sidebar, .solutionBox) { background: var(--oled-surface); border: 0; box-shadow: none; border-radius: 14px; }
+:global(html.theme-dark) .page :is(.sectionTab, .filterBtn) { background: var(--oled-surface); border: 0; border-radius: 999px !important; box-shadow: none; }
+:global(html.theme-dark) .page :is(.activeSectionTab, .activeFilter) { background: var(--oled-selected) !important; color: #edf4fc !important; border: 0; border-radius: 999px !important; box-shadow: none; }
+:global(html.theme-dark) .page :is(.activeSectionTab, .activeFilter)::after { display: none; }
+
+
+:global(html.theme-dark) .page .optionNormal { background: var(--oled-inset); border: 0; }
+:global(html.theme-dark) .page .optionCorrect { background: #17372b; border: 0; color: #b8e4cd; }
+:global(html.theme-dark) .page .optionUserWrong { background: #402329; border: 0; color: #efc0c5; }

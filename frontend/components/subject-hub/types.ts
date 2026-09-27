@@ -38,6 +38,8 @@ export interface SubjectHubConfig {
   practiceModes: readonly HubPracticeMode[];
   studyModeTopics?: Set<string>;
   styles?: Record<string, string>;
+  mobileAppearance?: "oled";
+  mobileTopicDetails?: Record<string, { color: string; questionCount?: number }>;
   notesLabel: string;
   searchPlaceholder: string;
   mobileSearchPlaceholder: string;

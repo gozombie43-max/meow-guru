@@ -5,6 +5,7 @@ import styles from "./english.module.css";
 import { CATEGORIES,PRACTICE_MODES,PRIORITY_CONFIG,STUDY_MODE_TOPICS,TOPICS } from "./topic-data";
 
 const config = {
+  mobileAppearance: "oled" as const,
   subjectId: "english", label: "English", icon: Languages, topics: TOPICS.map(topic => ({ ...topic, routeBase: `/english/${topic.slug}` })),
   categories: CATEGORIES, priorityConfig: PRIORITY_CONFIG, practiceModes: PRACTICE_MODES,
   studyModeTopics: STUDY_MODE_TOPICS, styles,

@@ -675,5 +675,47 @@ export function SubjectTopicStyles() {
             background: var(--light-canvas);
           }
         }
+        /* Shared mobile OLED topic pages. Keep the existing navigation shell. */
+        @media (max-width: 767px) {
+          html:not(.theme-light) .sg-page {
+            --bg: #000000;
+            --card: #1c1c1e;
+            --label: #e5eaf0;
+            --label-2: #929dac;
+            background: #000000;
+          }
+          html:not(.theme-light) .sg-page .sg-grid { gap: 8px; }
+          html:not(.theme-light) .sg-page .sg-card,
+          html:not(.theme-light) .sg-page .sg-banner {
+            background: #1c1c1e;
+            border: 0;
+            border-radius: 13px;
+            box-shadow: none;
+            transform: none;
+            transition: background .15s ease;
+          }
+          html:not(.theme-light) .sg-page .sg-card:hover,
+          html:not(.theme-light) .sg-page .sg-card:active,
+          html:not(.theme-light) .sg-page .sg-banner:active { background: #252527; }
+          html:not(.theme-light) .sg-page .sg-card-name { color: #e5eaf0; font-weight: 600; }
+          html:not(.theme-light) .sg-page .sg-card-sub { color: #929dac; }
+          html:not(.theme-light) .sg-page .sg-badge {
+            --icon-color: color-mix(in srgb, var(--card-accent) 65%, #b6becb);
+            background: color-mix(in srgb, var(--icon-color) 14%, transparent) !important;
+            color: var(--icon-color) !important;
+            border: 0 !important;
+            box-shadow: none;
+          }
+          html:not(.theme-light) .sg-page .sg-badge svg {
+            color: var(--icon-color) !important;
+            stroke: currentColor;
+          }
+          html:not(.theme-light) .sg-page .sg-tab-bg-svg { display: none; }
+          html:not(.theme-light) .sg-page .sg-card:hover .sg-card-qs-text { transform: none; }
+          html:not(.theme-light) .sg-page .sg-banner-icon svg { filter: none !important; }
+          html:not(.theme-light) .sg-page .sg-banner-open-btn { border: 0; box-shadow: none; border-radius: 999px; }
+          html:not(.theme-light) .sg-page .sg-card:focus-visible,
+          html:not(.theme-light) .sg-page .sg-banner:focus-visible { outline: 2px solid #4799e8; outline-offset: 3px; }
+        }
       `}</style>);
 }

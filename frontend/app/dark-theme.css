@@ -1,5 +1,14 @@
 /* Shared dark constants stay separate from the light exam palette. */
 :root {
+  /* Quiet OLED surfaces shared by Home, Mock Tests and Play. */
+  --oled-canvas: #000000;
+  --oled-surface: #1c1c1e;
+  --oled-hover: #252527;
+  --oled-inset: #29292c;
+  --oled-text: #e5eaf0;
+  --oled-secondary: #a2a9b4;
+  --oled-selected: #216bc1;
+  --oled-selected-soft: #182f4b;
   --dark-canvas: #000000;
   --dark-surface: #1c1c1e;
   --dark-surface-muted: #2c2c2e;
@@ -131,3 +140,76 @@ html.theme-dark .bottom-nav-label {
     box-shadow: 0 -4px 28px rgba(0, 0, 0, 0.55);
   }
 }
+
+/* Play hub, dedicated setup, session, results and their portalled pickers. */
+html.theme-dark .training-dark {
+  --tr-bg: var(--oled-canvas);
+  --tr-surface: var(--oled-surface);
+  --tr-muted: var(--oled-inset);
+  --tr-border: transparent;
+  --tr-text: var(--oled-text);
+  --tr-secondary: var(--oled-secondary);
+  --tr-accent: #75a9df;
+}
+html.theme-dark .training-dark :is(
+  .training-mode-card[data-ui-button], .training-panel, .training-mission,
+  .training-resume, .training-readiness, .training-side-note, .play-mission-shortcut,
+  .play-pulse, .training-review-panel, .training-review-empty,
+  .play-setup-scoring-card, .play-setup-summary-card, .setup-info-card,
+  .training-question-panel, .training-sidebar-panel, .training-finish-panel,
+  .trade-hero-panel, .trade-section, .trade-diagnosis-card, .trade-ledger-item, .training-answer-review
+) {
+  background: var(--oled-surface) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  border-radius: 14px;
+}
+html.theme-dark .training-dark .training-mode-card:hover {
+  background: var(--oled-hover) !important; transform: none;
+}
+html.theme-dark .training-dark :is(.training-mode-card, .trade-hero-panel)::before,
+html.theme-dark .training-dark :is(.training-mode-card, .trade-hero-panel)::after { display: none; }
+html.theme-dark .training-dark :is(.training-filters button, .training-mobile-tabs button, .trade-tab-btn) {
+  border: 0; border-radius: 999px !important; background: var(--oled-surface); box-shadow: none !important;
+}
+html.theme-dark .training-dark :is(.training-filters button[aria-pressed="true"], .training-mobile-tabs button[aria-current], .trade-tab-btn.is-active) {
+  background: var(--oled-selected) !important; color: #edf4fc !important;
+}
+html.theme-dark .training-dark .trade-tab-btn.is-active::after { display: none; }
+html.theme-dark .training-dark .training-mode-icon {
+  --quiet-icon: color-mix(in srgb, var(--mode-color, #8583da) 65%, #b6becb);
+  background: color-mix(in srgb, var(--quiet-icon) 14%, transparent);
+  color: var(--quiet-icon); border: 0; box-shadow: none;
+}
+html.theme-dark .training-dark :is(.play-setup-hero-icon, .setup-hero-icon-box) {
+  background: #292439; color: #ab91cf; box-shadow: none; border: 0;
+}
+html.theme-dark .training-dark :is(.play-setup-hero-icon--speed, .setup-icon--speed) { background: #342c20; color: #cba56c; }
+html.theme-dark .training-dark :is(.play-setup-hero-icon--sectional, .setup-icon--sectional) { background: #1d2b3c; color: #73a8dc; }
+html.theme-dark .training-dark :is(.play-setup-hero-icon--extreme, .setup-icon--extreme) { background: #352429; color: #d5919b; }
+html.theme-dark .training-dark :is(.play-setup-start-btn, .setup-start-btn) {
+  background: var(--oled-selected); box-shadow: none; border: 0;
+}
+html.theme-dark .training-dark :is(.training-option-btn, .training-conf-chip) { border: 0; box-shadow: none; }
+html.theme-dark .training-dark .training-option-btn { background: var(--oled-inset); }
+html.theme-dark .training-dark .training-option-btn.selected { background: var(--oled-selected-soft); }
+html.theme-dark .training-dark .training-option-btn.selected .training-option-letter { background: var(--oled-selected); color: #edf4fc; }
+html.theme-dark .training-dark :is(.training-exam select, .training-form select, .tsd-trigger, .tsd-dropdown) {
+  background: var(--oled-surface); border: 0; box-shadow: none;
+}
+html.theme-dark .tsd-dark :is(.tsd-trigger, .tsd-dropdown) { background: var(--oled-surface); border: 0; box-shadow: none; }
+html.theme-dark .tsd-dark .tsd-option--selected { background: var(--oled-selected-soft); color: var(--oled-text); }
+html.theme-dark .training-finish-dialog.training-dark { border: 0; box-shadow: none; background: var(--oled-surface); }
+html.theme-dark .training-dark.tfp-backdrop {
+  --tfp-bg: var(--oled-canvas); --tfp-surface: var(--oled-surface);
+  --tfp-muted: var(--oled-inset); --tfp-border: transparent;
+  --tfp-text: var(--oled-text); --tfp-secondary: var(--oled-secondary);
+}
+html.theme-dark .training-dark :is(.tfp-sheet, .tfp-search, .tfp-categories button) { border: 0; box-shadow: none; }
+html.theme-dark .training-dark .tfp-categories button { border-radius: 999px; }
+html.theme-dark .training-dark .tfp-categories button[aria-pressed="true"] { background: var(--oled-selected); color: #edf4fc; }
+html.theme-dark .training-dark .tfp-search:focus-within { outline: 2px solid #75a9df; outline-offset: 2px; }
+
+html.theme-dark .training-dark .trade-filter-tab { border: 0; border-radius: 999px !important; box-shadow: none; }
+html.theme-dark .training-dark .trade-ledger-item:hover { background: var(--oled-hover) !important; box-shadow: none; }
+html.theme-dark .training-dark :is(.play-setup-cat-badge, .play-setup-pill-pos, .play-setup-pill-neg, .play-setup-pill-zero, .setup-cat-badge) { border: 0; box-shadow: none; }

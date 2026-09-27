@@ -1344,3 +1344,19 @@
 :global(body.theme-dark) .macosContent::-webkit-scrollbar-thumb:hover {
   background-color: rgba(255, 255, 255, 0.35);
 }
+
+/* Shared borderless OLED appearance. */
+:global(html.theme-dark) .page {
+  --bg: var(--oled-canvas); --card: var(--oled-surface);
+  --text-dark: var(--oled-text); --text-muted: var(--oled-secondary);
+  --text-light: var(--oled-secondary); --border: transparent;
+  --primary: #75a9df; --primary-light: #75a9df;
+  --primary-bg: var(--oled-selected-soft);
+  background: var(--oled-canvas); color: var(--oled-text);
+}
+:global(html.theme-dark) .page :is(.continueCard, .examCard, .statBox, .cardSection, .testLineCard, .detailHeader) { background: var(--oled-surface); border: 0; box-shadow: none; border-radius: 14px; }
+:global(html.theme-dark) .page :is(.catChip, .tabBtn) { background: var(--oled-surface); border: 0; border-radius: 999px !important; box-shadow: none; }
+:global(html.theme-dark) .page :is(.activeChip, .activeTabBtn) { background: var(--oled-selected) !important; color: #edf4fc !important; border: 0; border-radius: 999px !important; box-shadow: none; }
+:global(html.theme-dark) .page :is(.activeChip, .activeTabBtn)::after { display: none; }
+:global(html.theme-dark) .page .testLineCard:hover { background: var(--oled-hover); box-shadow: none; transform: none; }
+:global(html.theme-dark) .page .testLineCard::before { display: none; }

@@ -1882,3 +1882,50 @@
 @media (prefers-reduced-motion: reduce) {
   .pageRoot *, .pageRoot *::before, .pageRoot *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
+
+/* Shared mobile topic lists: quiet surfaces, color reserved for topic icons. */
+.mobileTopicText { display: flex; flex-direction: column; min-width: 0; gap: 3px; }
+.mobileTopicCount { font-size: 12px; line-height: 1.35; color: #929dac; }
+@media (max-width: 767px) {
+  .oledMobile .mobileTopicsTitle { display: none; }
+  .oledMobile .mobileTopicGroup {
+    gap: 8px; background: transparent !important; border: 0 !important;
+    border-radius: 0; box-shadow: none !important; overflow-y: auto;
+  }
+  .oledMobile .mobileTabsScroll {
+    display: grid; grid-template-columns: none; grid-auto-flow: column;
+    grid-auto-columns: minmax(64px, 1fr); overflow-x: auto;
+    gap: 6px; padding: 0; margin: 0 0 4px; border: 0; background: transparent;
+    box-shadow: none;
+  }
+  .oledMobile .mobileTabBtn {
+    min-width: 0; min-height: 44px; padding: 8px 10px; border-radius: 999px !important;
+    font-size: 13px; font-weight: 500; border: 0;
+    box-shadow: none; flex: initial;
+  }
+  .oledMobile .mobileTabBtn.mobileTabActive {
+    background: #216bc1 !important; color: #edf4fc !important;
+    border-radius: 999px !important; font-weight: 600 !important;
+  }
+  .oledMobile .mobileTabActive::after { display: none; }
+  .oledMobile .mobileTopicRow {
+    min-height: 60px; padding: 9px 11px; border-radius: 13px;
+    border: 0; box-shadow: none;
+  }
+  .oledMobile .mobileTopicRow::after { display: none; }
+  .oledMobile .mobileTopicRowLeft { gap: 12px; }
+  .oledMobile .mobileTopicName { font-size: 14px; font-weight: 550; white-space: normal; line-height: 1.3; }
+  .oledMobile .mobileTopicIconBox { width: 36px; height: 36px; border-radius: 9px; background: color-mix(in srgb, var(--topic-color) 14%, transparent); box-shadow: none; }
+  .oledMobile .mobileTopicIconBox svg { width: 24px; height: 24px; color: var(--topic-color) !important; stroke: var(--topic-color); }
+  .oledMobile .mobileTopicRow:focus-visible, .oledMobile .mobileTabBtn:focus-visible { outline: 2px solid #4799e8; outline-offset: 2px; }
+  :global(html:not(.theme-light)) .oledMobile { background: #000; }
+  :global(html:not(.theme-light)) .oledMobile .mobileBody { background: #000; }
+  :global(html:not(.theme-light)) .oledMobile .mobileSearchInput { background: #1c1c1e; border: 0; box-shadow: none; color: #e5eaf0; }
+  :global(html:not(.theme-light)) .oledMobile .mobileTabBtn { background: #1c1c1e; color: #aab4c1; }
+  :global(html:not(.theme-light)) .oledMobile .mobileTabActive { background: #176dcc; color: #edf4fc; border-color: transparent; }
+  :global(html:not(.theme-light)) .oledMobile .mobileTopicRow { background: #1c1c1e; }
+  :global(html:not(.theme-light)) .oledMobile .mobileTopicRow:hover,
+  :global(html:not(.theme-light)) .oledMobile .mobileTopicRow:active { background: #252527; }
+  :global(html:not(.theme-light)) .oledMobile .mobileTopicName { color: #e5eaf0; }
+  :global(html:not(.theme-light)) .oledMobile .mobileChevron { color: #788696; }
+}

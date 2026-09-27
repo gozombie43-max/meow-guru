@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import SubjectHub from "./SubjectHub";
 import { Calculator } from "lucide-react";
@@ -72,6 +72,26 @@ const mockConfig = {
 };
 
 describe("SubjectHub", () => {
+  it("keeps all topics available with OLED filters, including the English Low group", () => {
+    const topics = TOPICS.map((topic, index) => ({ ...topic, priority: index === 0 ? "low" : topic.priority }));
+    const { container } = render(<SubjectHub config={{ ...mockConfig, topics, mobileAppearance: "oled", categories: [...CATEGORIES, { id: "low", label: "Low", icon: Calculator }] }} />);
+    const filters = within(container.querySelector('[data-hub-part="mobileTabsScroll"]') as HTMLElement);
+    expect(container.querySelectorAll('[data-hub-part="mobileTopicRow"]')).toHaveLength(topics.length);
+    fireEvent.click(filters.getByRole("button", { name: "Low" }));
+    expect(filters.getByRole("button", { name: "Low" })).toHaveAttribute("aria-pressed", "true");
+    const rows = container.querySelectorAll('[data-hub-part="mobileTopicRow"]');
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toHaveTextContent("Percentages");
+    expect(rows[0]).not.toHaveTextContent("Questions");
+  });
+  it("preserves chapter-group navigation when mobile priority filters are enabled", () => {
+    const { container } = render(<SubjectHub config={{ ...mockConfig, mobileAppearance: "oled", getChapterGroup: () => null, chapterBasePrefix: "/general-awareness" }} />);
+    const row = container.querySelector('[data-hub-part="mobileTopicRow"]');
+    expect(row).toHaveAttribute("href", "/general-awareness/percentages");
+    const filters = within(container.querySelector('[data-hub-part="mobileTabsScroll"]') as HTMLElement);
+    fireEvent.click(filters.getByRole("button", { name: "High" }));
+    expect(container.querySelectorAll('[data-hub-part="mobileTopicRow"]')).toHaveLength(TOPICS.filter(topic => topic.priority === "high").length);
+  });
   it("renders topics and verifies all links have prefetch disabled", () => {
     linksRendered.length = 0;
     render(<SubjectHub config={mockConfig} />);

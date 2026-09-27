@@ -589,7 +589,7 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
       {/* =========================================================================
           MOBILE / TABLET VIEW (< 768px Handheld Devices)
           ========================================================================= */}
-      <div className={`${hubStyles.mobileContainer} ${hubStyles.fixedTopicsMobile}`}>
+      <div className={`${hubStyles.mobileContainer} ${hubStyles.fixedTopicsMobile} ${hubStyles.oledMobile}`}>
         {/* Mobile Topbar */}
         <header data-ui-chrome="header" data-hub-part="mobileTopbar" className={hubStyles.mobileTopbar}>
           <Link replace
@@ -683,12 +683,12 @@ export default function RankedTopicGroupPage({ group }: { group: RankedTopicGrou
                     <div className={hubStyles.mobileTopicRowLeft}>
                       <div
                         className={hubStyles.mobileTopicIconBox}
-                        style={{ background: meta.color }}
+                        style={{ "--topic-color": `color-mix(in srgb, ${meta.color} 65%, #b6becb)` } as React.CSSProperties}
                       >
                         <TopicIcon size={18} strokeWidth={2.2} color="#ffffff" />
                       </div>
 
-                      <span className={styles.mobileTopicName}>
+                      <span className={`${hubStyles.mobileTopicName} ${styles.mobileTopicName}`}>
                         <span className={styles.mobileRankNum}>{topic.rank}.</span> {topic.title}
                       </span>
                     </div>

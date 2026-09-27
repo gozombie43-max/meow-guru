@@ -323,7 +323,7 @@ export default function MockTestEngine({ examSlug, testId }: { examSlug: string;
   });
 
   return (
-    <div className={`${styles.container} theme-light`}>
+    <div className={styles.container}>
       {confidential && <div role="note" style={{ padding: '8px 16px', fontSize: 12 }}>Confidential assessment · One attempt · Total exam time applies · No answer review</div>}
       {saveStatus && <div role="status">{saveStatus}{hasConflict && <button data-ui-button="state" onClick={() => window.location.reload()}>Reload saved attempt</button>}</div>}
       {submitError && <div role="alert">{submitError}<button data-ui-button="state" disabled={isSubmitting} onClick={() => void handleFinalSubmit()}>Retry submission</button></div>}

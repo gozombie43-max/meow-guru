@@ -1857,3 +1857,42 @@
   }
   .mobileSubjectCard .subjectIcon { width: 32px; height: 36px; }
 }
+
+/* OLED surfaces: layout and navigation remain owned by the home shell. */
+:global(html.theme-dark) .pageWrapper {
+  --mac-canvas-bg: var(--oled-canvas);
+  --mac-window-bg: var(--oled-canvas);
+  --mac-card-bg: var(--oled-surface);
+  --mac-card-subtle: var(--oled-inset);
+  --mac-border: transparent;
+  --mac-border-subtle: transparent;
+  --mac-shadow-window: none;
+  --mac-shadow-card: none;
+  --mac-shadow-hover: none;
+  --surface: var(--oled-surface);
+  --surface-soft: var(--oled-inset);
+  --line: transparent;
+  --shadow: none;
+  --text: var(--oled-text);
+  --mac-text-primary: var(--oled-text);
+  --mac-text-secondary: var(--oled-secondary);
+  background: var(--oled-canvas);
+}
+:global(html.theme-dark) .pageWrapper :is(.heroCard, .mobileHero, .subjectCard, .mobileSubjectCard, .resourceCard, .battleCard, .quizCard, .recentQuizCard, .premiumCard, .searchContainer, .searchDropdown) {
+  background: var(--oled-surface); border: 0; box-shadow: none; border-radius: 14px;
+}
+:global(html.theme-dark) .pageWrapper :is(.subjectCard, .mobileSubjectCard, .resourceCard, .battleCard, .quizCard, .recentQuizCard):hover {
+  background: var(--oled-hover); box-shadow: none; transform: none;
+}
+:global(html.theme-dark) .pageWrapper :is(.heroCard, .mobileHero, .resourceCard, .battleCard)::before,
+:global(html.theme-dark) .pageWrapper :is(.heroCard, .mobileHero, .resourceCard, .battleCard)::after { display: none; }
+:global(html.theme-dark) .pageWrapper .subjectIcon { border: 0; box-shadow: none; }
+:global(html.theme-dark) .pageWrapper .subjectIcon.math { background: #1d2b3c; color: #73a8dc; }
+:global(html.theme-dark) .pageWrapper .subjectIcon.reasoning { background: #292439; color: #ab91cf; }
+:global(html.theme-dark) .pageWrapper .subjectIcon.english { background: #1c302d; color: #71b5a8; }
+:global(html.theme-dark) .pageWrapper .subjectIcon.gk { background: #342c20; color: #cba56c; }
+:global(html.theme-dark) .pageWrapper :is(.railActive, .sidebarThemeToggle) { border: 0; box-shadow: none; }
+:global(html.theme-dark) .pageWrapper .railActive { background: var(--oled-selected-soft); }
+
+
+:global(html.theme-dark) .pageWrapper :is(.mobileHeroDesc, .heroSubtitle, .resourceCard small, .battleCard small) { color: var(--oled-secondary); }

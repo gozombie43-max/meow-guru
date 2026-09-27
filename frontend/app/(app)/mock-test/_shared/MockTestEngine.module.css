@@ -394,3 +394,19 @@
   .btnGroup { gap: 8px; }
   .btnOutline, .btnPrimary { padding-inline: 12px; }
 }
+
+/* Respect the app theme during an attempt, including its palette and dialogs. */
+:global(html.theme-dark) .container {
+  --bg: var(--oled-canvas); --card: var(--oled-surface);
+  --text-dark: var(--oled-text); --text-muted: var(--oled-secondary);
+  --border: transparent; --primary: var(--oled-selected);
+  color-scheme: dark;
+}
+:global(html.theme-dark) .container :is(.optionLabel, .modal, .bottomSheet) { border: 0; box-shadow: none; border-radius: 14px; }
+:global(html.theme-dark) .container .optionLabel { background: var(--oled-surface); }
+:global(html.theme-dark) .container .optionLabel:hover { background: var(--oled-hover); }
+:global(html.theme-dark) .container .optionLabel.selected { background: var(--oled-selected-soft); }
+:global(html.theme-dark) .container :is(.tab, .mobileTab, .mobilePill, .btnOutline) { border: 0; border-radius: 999px !important; background: var(--oled-inset); }
+:global(html.theme-dark) .container :is(.tab.active, .mobileTab.active) { background: var(--oled-selected); color: #edf4fc; }
+:global(html.theme-dark) .container .qBubble.notVisited { background: var(--oled-inset); color: var(--oled-text); }
+:global(html.theme-dark) .container .qBubble.current { box-shadow: none; outline: 2px solid #75a9df; outline-offset: 2px; }

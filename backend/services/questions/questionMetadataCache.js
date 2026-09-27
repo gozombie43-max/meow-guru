@@ -17,6 +17,13 @@ export async function invalidateQuestionMetadata() {
     { $inc: { revision: 1 } },
     { upsert: true },
   );
+  try {
+    const { fetchTopicCountSnapshot } = await import("./topicCountSnapshot.js");
+    await fetchTopicCountSnapshot();
+  } catch (error) {
+    // The write succeeded. A failed refresh is retried by the next metadata read.
+    console.error("Topic count snapshot refresh failed:", error.message);
+  }
 }
 
 export async function readQuestionMetadata(params, build) {

@@ -92,6 +92,7 @@ function IosExamPicker({ value, options, onChange }: {
   onChange: (value: string) => void;
 }) {
   const titleId = useId();
+  const quizTheme = useQuizTheme();
   const [open, setOpen] = useState(false);
   const [visible, setVisible] = useState(false);
   const backdropRef = useRef<HTMLDivElement>(null);
@@ -141,6 +142,7 @@ function IosExamPicker({ value, options, onChange }: {
         >
           <Dialog onClose={handleClose}
             className={`${styles.examSheet} ${visible ? styles.examSheetIn : ""}`}
+            data-theme={quizTheme}
             role="dialog"
             aria-modal="true"
             aria-labelledby={titleId}
@@ -1164,7 +1166,7 @@ function IosQuizStartMobile({
                       >
                         <span
                           className={styles.iosGroupTile}
-                          style={{ background: group.bg, color: group.accent }}
+                          style={{ background: group.bg, color: group.accent, "--group-accent": group.accent } as React.CSSProperties}
                         >
                           <Layers size={16} aria-hidden="true" />
                         </span>

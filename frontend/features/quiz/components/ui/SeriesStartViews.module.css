@@ -1801,3 +1801,43 @@
   .iosSheetBackdrop { transition: none; }
 }
 
+
+/* Mobile Start Quiz matches the shared quiet OLED topic lists. */
+.iosScreen[data-theme="dark"], .examSheet[data-theme="dark"] {
+  --ios-bg: var(--oled-canvas, #000000);
+  --ios-card: var(--oled-surface, #1c1c1e);
+  --ios-field: var(--oled-inset, #29292c);
+  --ios-ink: var(--oled-text, #e5eaf0);
+  --ios-muted: var(--oled-secondary, #a2a9b4);
+  --ios-subtle: var(--oled-secondary, #a2a9b4);
+  --ios-separator: transparent;
+  --ios-nav: var(--oled-canvas, #000000);
+  --ios-accent: var(--oled-selected, #216bc1);
+}
+.iosScreen[data-theme="dark"] :is(.iosSelect, .iosSearchInput, .iosChip, .iosLetterPill) {
+  background: var(--ios-card); border: 0; border-radius: 999px !important; box-shadow: none;
+}
+.iosScreen[data-theme="dark"] :is(.iosChipActive, .iosLetterPillActive) {
+  background: var(--ios-accent) !important; color: #edf4fc !important; border: 0 !important;
+}
+.iosScreen[data-theme="dark"] .iosConceptList { background: transparent; border: 0; border-radius: 0; }
+.iosScreen[data-theme="dark"] .iosConceptGroupContainer {
+  background: var(--ios-card); border: 0; border-radius: 14px; margin-bottom: 8px; overflow: hidden;
+}
+.iosScreen[data-theme="dark"] .iosConceptGroupContainer:last-child { margin-bottom: 0; }
+.iosScreen[data-theme="dark"] .iosGroupTile {
+  color: color-mix(in srgb, var(--group-accent, #75a9df) 65%, #b6becb) !important;
+  background: color-mix(in srgb, currentColor 14%, transparent) !important;
+  box-shadow: none; border: 0;
+}
+.iosScreen[data-theme="dark"] :is(.iosConceptDropdown, .iosSubConceptRow, .iosExpandBtn) { border: 0; box-shadow: none; }
+.iosScreen[data-theme="dark"] .iosSubConceptRowSelected { background: var(--oled-selected-soft, #182f4b); }
+.iosScreen[data-theme="dark"] :is(.iosCheckCircle, .iosSubCheckCircle) { background: var(--ios-field); border: 0; }
+.iosScreen[data-theme="dark"] .iosCheckCircleChecked,
+.iosScreen[data-theme="dark"] .iosSubConceptRowSelected .iosSubCheckCircle { background: var(--ios-accent); color: #edf4fc; }
+.iosScreen[data-theme="dark"] :is(.iosToolbar, .iosNav) { border: 0; box-shadow: none; backdrop-filter: none; }
+.iosScreen[data-theme="dark"] .iosStartBtn { box-shadow: none; border: 0; background: var(--ios-accent); }
+.examSheet[data-theme="dark"] { background: var(--ios-card); border: 0; box-shadow: none; }
+.examSheet[data-theme="dark"] .examSheetOption { border: 0; border-radius: 14px; margin-bottom: 8px; background: var(--ios-field); }
+.examSheet[data-theme="dark"] .examSheetOption[aria-pressed="true"] { background: var(--ios-accent); color: #edf4fc; }
+.examSheet[data-theme="dark"] .examSheetOption[aria-pressed="true"] svg { color: inherit; }
