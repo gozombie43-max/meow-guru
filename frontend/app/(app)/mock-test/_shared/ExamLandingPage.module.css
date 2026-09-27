@@ -3,7 +3,7 @@
   --primary-light: var(--light-accent);
   --primary-bg: var(--light-accent-soft);
   --bg: var(--light-canvas);
-  --card: #ffffff;
+  --card: var(--light-surface);
   --text-dark: var(--light-text);
   --text-muted: var(--light-text-secondary);
   --text-light: var(--light-text-muted);
@@ -33,9 +33,9 @@
 
   :global(body:not(.theme-light)) .page,
   :global(html:not(.theme-light)) .page {
-    --primary: #2997ff;
-    --primary-light: #70baff;
-    --primary-bg: #002244;
+    --primary: var(--dark-accent);
+    --primary-light: var(--dark-accent-hover);
+    --primary-bg: var(--dark-accent-soft);
     --bg: var(--dark-canvas);
     --card: var(--dark-surface);
     --text-dark: var(--dark-text);
@@ -47,9 +47,9 @@
 
 :global(body.theme-dark) .page,
 :global(html.theme-dark) .page {
-  --primary: #2997ff;
-  --primary-light: #70baff;
-  --primary-bg: #002244;
+  --primary: var(--dark-accent);
+  --primary-light: var(--dark-accent-hover);
+  --primary-bg: var(--dark-accent-soft);
   --bg: var(--dark-canvas);
   --card: var(--dark-surface);
   --text-dark: var(--dark-text);

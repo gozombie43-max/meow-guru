@@ -10,7 +10,7 @@ export function mobileQuizViewModel(model: MobileQuizFields): MobileQuizViewProp
     configuration: pick(model, ["routeBase","slug","subjectConfig","theme","themeStyles","toggleTheme","title"]),
     settings: pick(model, ["isSettingsOpen","setIsSettingsOpen","hideQuestionNumbers","handleToggleHideQuestionNumbers","hideViewSolution","handleToggleHideViewSolution","hideAiTutor","handleToggleHideAiTutor","handleToggleHideBoth","textSize","handleSetTextSize","spacing","handleSetSpacing"]),
     question: pick(model, ["activeLang","isTranslating","setActiveLang","currentQ","conceptColours","hasDetailedExamLabel","examDetailsRef","compactExamLabel","fullExamLabel","hasQuestionText","displayedQuestion","renderQuestionLine","displayedOptions"]),
-    navigation: pick(model, ["currentIndex","openPalette","questions","selectedAnswers","submittedQuestions","activeRailBtnRef","goToQuestion","handlePrev","handleNext","isPaletteOpen","closePalette"]),
+    navigation: pick(model, ["hasMore","isFetchingMore","fetchMore","currentIndex","openPalette","questions","selectedAnswers","submittedQuestions","activeRailBtnRef","goToQuestion","handlePrev","handleNext","isPaletteOpen","closePalette"]),
     answer: pick(model, ["isCurrentSubmitted","selectedAnswer","handleSelectAnswer","submitError","handleSubmitCurrent","canSubmit","timerRef","results"]),
     solution: pick(model, ["openSolution","isSolutionOpen","closeSolution"]),
   };

@@ -11,7 +11,7 @@
   --app-header-height: 105px;
   --admin-bg: var(--light-canvas);
   --admin-surface: rgba(255, 255, 255, 0.88);
-  --admin-surface-solid: #ffffff;
+  --admin-surface-solid: var(--light-surface);
   --admin-surface-muted: var(--light-surface-muted);
   --admin-text: var(--light-text);
   --admin-text-secondary: var(--light-text-secondary);

@@ -1,11 +1,17 @@
 import { useModalSurface } from "@/components/ui/Dialog";
 import React, { useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { ArrowLeft, X } from 'lucide-react';
 import RichContent from '@/components/RichContent';
 import MathRenderer from '@/components/MathRenderer';
 import { formatMathBookSolutionLines } from '@/features/quiz/model/utils';
 import { useQuizTheme } from '@/features/quiz/components/QuizThemeProvider';
+
+// Presence keeps this lifecycle mounted throughout the exit animation.
+function SolutionModalSurface({ modalRef, onClose }: { modalRef: React.RefObject<HTMLDivElement | null>; onClose: () => void }) {
+  useModalSurface(modalRef, true, onClose, { initialFocus: ':scope' });
+  return null;
+}
 
 export function SolutionBottomSheet({
   isOpen,
@@ -22,8 +28,8 @@ export function SolutionBottomSheet({
   correctOptionText: string;
   onClose: () => void;
 }) {
+  const reduceMotion = useReducedMotion();
   const modalRef = React.useRef<HTMLDivElement>(null);
-  useModalSurface(modalRef, isOpen, onClose);
   const [dragOffset, setDragOffset] = React.useState(0);
   const [isDragging, setIsDragging] = React.useState(false);
   const [isHolding, setIsHolding] = React.useState(false);
@@ -165,7 +171,7 @@ export function SolutionBottomSheet({
           initial={{ opacity: 0 }}
           animate={{ opacity: dragOffset > 0 ? Math.max(1 - dragOffset / 400, 0.2) : 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.25, ease: "easeOut" }}
+          transition={{ duration: reduceMotion ? 0 : 0.2, ease: "easeOut" }}
           onClick={onClose}
         >
           <motion.div
@@ -175,17 +181,13 @@ export function SolutionBottomSheet({
             aria-modal="true"
             aria-label="Question solution"
             className={`ios-solution-sheet ${isDragging ? "is-dragging" : ""} ${isHolding ? "is-holding" : ""}`}
-            initial={{ y: "100%", opacity: 0.95 }}
+            initial={{ y: reduceMotion ? 0 : "100%", opacity: 1 }}
             animate={{ y: dragOffset, opacity: dragOffset > 0 ? Math.max(1 - dragOffset / 500, 0.4) : 1 }}
-            exit={{ y: "100%", opacity: 0.95 }}
-            transition={isDragging ? { duration: 0 } : {
-              type: "spring",
-              stiffness: 240,
-              damping: 28,
-              mass: 0.9,
-            }}
+            exit={{ y: reduceMotion ? 0 : "100%", opacity: 1 }}
+            transition={{ duration: isDragging || reduceMotion ? 0 : 0.22, ease: [0.22, 1, 0.36, 1] }}
             onClick={(event) => event.stopPropagation()}
           >
+            <SolutionModalSurface modalRef={modalRef} onClose={onClose} />
             <div
               className={`ios-solution-drag-zone ${isHolding ? "is-holding" : ""} ${isDragging ? "is-dragging" : ""}`}
               onPointerDown={handleHeaderPointerDown}

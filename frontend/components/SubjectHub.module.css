@@ -22,7 +22,7 @@
   --mac-border-hover: rgba(0, 113, 227, 0.35);
   --mac-border-focus: var(--light-accent);
   --mac-blue: var(--light-accent);
-  --mac-blue-hover: #0077ed;
+  --mac-blue-hover: var(--light-accent-hover);
   --mac-blue-subtle: var(--light-surface-muted);
   --mac-ice-blue: var(--light-surface-muted);
   
@@ -31,7 +31,7 @@
   
   --mac-card-bg: var(--light-surface);
   --mac-card-border: var(--light-border);
-  --mac-card-hover-bg: #FFFFFF;
+  --mac-card-hover-bg: var(--light-surface);
   --mac-card-hover-border: rgba(0, 113, 227, 0.4);
   --mac-card-hover-shadow: 0 4px 16px rgba(15, 23, 42, 0.09), 0 2px 6px rgba(0, 0, 0, 0.04);
   --mac-card-selected-bg: var(--light-surface-muted);
@@ -44,18 +44,18 @@
   
   --mac-segmented-bg: var(--light-surface-muted);
   --mac-segmented-border: var(--light-border);
-  --mac-segmented-active-bg: #FFFFFF;
+  --mac-segmented-active-bg: var(--light-surface);
   --mac-segmented-active-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 1px rgba(0, 0, 0, 0.05);
   
   --mac-stat-bg: var(--light-canvas);
   --mac-stat-border: var(--light-border);
   
-  --mac-badge-bg: #FFFFFF;
+  --mac-badge-bg: var(--light-surface);
   --mac-badge-border: 1px solid rgba(216, 223, 232, 0.8);
   
   --mac-status-bg: var(--light-canvas);
   --mac-status-border: var(--light-border);
-  --mac-shortcut-bg: #FFFFFF;
+  --mac-shortcut-bg: var(--light-surface);
   --mac-shortcut-border: var(--light-border);
   
   --mac-green: #34c759;

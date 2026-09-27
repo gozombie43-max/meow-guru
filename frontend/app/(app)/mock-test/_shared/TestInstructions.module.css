@@ -3,7 +3,7 @@
   --primary-light: var(--light-accent);
   --primary-bg: var(--light-accent-soft);
   --bg: var(--light-canvas);
-  --card: #ffffff;
+  --card: var(--light-surface);
   --text-dark: var(--light-text);
   --text-muted: var(--light-text-secondary);
   --text-light: var(--light-text-muted);
@@ -21,7 +21,7 @@
 :global(html:not(.theme-light)) .container {
   --primary: var(--dark-accent);
   --primary-light: #47a1ff;
-  --primary-bg: #11284d;
+  --primary-bg: var(--dark-accent-soft);
   --bg: var(--dark-canvas);
   --card: var(--dark-surface);
   --text-dark: var(--dark-text);

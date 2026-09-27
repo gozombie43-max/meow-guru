@@ -716,7 +716,7 @@ export const resourcePageStyles = css.global`
         :global(body.theme-light) .resource-page,
         :global(html.theme-light) .resource-page {
           --bg: var(--light-canvas);
-          --card-bg: #ffffff;
+          --card-bg: var(--light-surface);
           --card-hover: #f8fafc;
           --border: rgba(0, 0, 0, 0.08);
           --header-bg: rgba(246, 248, 250, 0.92);
@@ -725,12 +725,12 @@ export const resourcePageStyles = css.global`
           --text-tertiary: var(--light-text-muted);
           --tab-bg: rgba(0, 0, 0, 0.05);
           --tab-color: var(--light-text-secondary);
-          --modal-bg: #ffffff;
+          --modal-bg: var(--light-surface);
           --modal-option-bg: var(--light-canvas);
           --notice-bg: rgba(0, 0, 0, 0.04);
           --spinner-color: rgba(60, 60, 67, 0.6);
           --segment-track: rgba(118, 118, 128, 0.12);
-          --segment-active-bg: #ffffff;
+          --segment-active-bg: var(--light-surface);
         }
 
         :global(body.theme-light) .res-segment-btn.active,

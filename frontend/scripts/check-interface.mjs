@@ -13,6 +13,7 @@ const browser = await chromium.launch({ channel: process.env.PLAYWRIGHT_CHANNEL 
 try {
   const page = await browser.newPage();
   for (const width of [320, 390, 768, 1366, 1440]) {
+    let lightGeometry;
     await page.setViewportSize({ width, height: width === 320 ? 568 : width === 390 ? 844 : 900 });
     for (const theme of ['light', 'dark']) {
       await page.setContent(`<style>
@@ -41,6 +42,7 @@ try {
           <button class="legacy-switch" data-ui-button="state" role="switch" aria-label="Theme" aria-checked="true"><span></span></button>
           <button data-ui-button="state" data-ui-shape="icon" style="display:none" aria-label="Hidden microphone"></button>
         </div>
+        <section class="ios-series-question-card"><div class="ios-series-prompt">What is the correct answer?</div></section>
         <div class="ios-series-options">
           <button class="ios-series-option" data-ui-button="state">Answer</button>
           <button class="ios-series-option is-correct" data-ui-button="state" disabled>Correct answer</button>
@@ -71,6 +73,12 @@ try {
           correctOpacity: getComputedStyle(document.querySelector('.is-correct')).opacity,
           canvas: getComputedStyle(document.querySelector('.ios-series-quiz')).backgroundColor,
           submit: getComputedStyle(document.querySelector('[data-ui-button="primary"]')).backgroundColor,
+          geometry: ['.ios-series-header', '.ios-series-icon-button', '.lang-toggle', '.ios-series-question', '.ios-series-question-card', '.ios-series-prompt', '.ios-series-option', '.ios-series-option-letter', '.ios-series-footer', '.ios-series-footer-btn'].map(selector => {
+            const node = document.querySelector(selector);
+            const style = getComputedStyle(node);
+            return { selector, ...rect(node), radius: style.borderRadius, padding: style.padding, gap: style.gap, fontSize: style.fontSize, lineHeight: style.lineHeight };
+          }),
+          questionBackground: getComputedStyle(document.querySelector('.ios-series-question-card')).backgroundColor,
         };
       });
       assert.equal(metrics.overflow, false);
@@ -98,14 +106,55 @@ try {
       assert.deepEqual(metrics.footerHeights, [50, 50]);
       assert.equal(metrics.languageHeight, 44);
       assert.equal(metrics.correctOpacity, '1');
+      assert.equal(metrics.questionBackground, 'rgba(0, 0, 0, 0)');
+      if (theme === 'light') {
+        lightGeometry = metrics.geometry;
+        assert.equal(metrics.canvas, 'rgb(245, 247, 250)');
+        assert.equal(metrics.submit, 'rgb(36, 93, 204)');
+        assert.equal(metrics.languageBackground, 'rgb(237, 241, 246)');
+      } else {
+        assert.deepEqual(metrics.geometry, lightGeometry, 'Light and dark mobile quiz geometry must match');
+      }
       if (theme === 'dark') {
         assert.equal(metrics.canvas, 'rgb(13, 23, 35)');
         assert.equal(metrics.submit, 'rgb(62, 96, 150)');
-        assert.equal(metrics.languageBackground, 'rgb(20, 32, 48)');
+        assert.equal(metrics.languageBackground, 'rgb(21, 33, 49)');
         assert.equal(metrics.languageActive, 'rgb(40, 63, 97)');
       }
       console.log(`${theme} ${width}px: control geometry, state colors, wrapping, and quiz styles passed`);
     }
+  }
+  for (const safeBottom of [0, 24, 34, 48]) {
+    await page.setViewportSize({ width: 390, height: 640 });
+    await page.setContent(`<style>
+      * { box-sizing: border-box; } body { margin: 0; }
+      :root { --safe-top: 44px; --safe-bottom: ${safeBottom}px; --safe-left: 0px; --safe-right: 0px; }
+      ${css} ${mobile}
+    </style><div class="ios-series-quiz" data-theme="dark">
+      <div class="ios-series-palette"><div class="ios-series-palette-panel">
+        <div class="ios-series-palette-title">Questions</div>
+        <div class="ios-series-palette-grid">${Array.from({ length: 100 }, (_, index) => `<button data-ui-button="state">${index + 1}</button>`).join('')}
+        <div class="ios-series-palette-load-more"><button data-ui-button="secondary">Load more questions</button></div>
+        </div>
+      </div></div></div>`);
+    const palette = await page.evaluate(() => {
+      const grid = document.querySelector('.ios-series-palette-grid');
+      const loadMore = document.querySelector('.ios-series-palette-load-more button');
+      const hiddenInitially = loadMore.getBoundingClientRect().top >= grid.getBoundingClientRect().bottom;
+      grid.scrollTop = grid.scrollHeight;
+      const button = loadMore.getBoundingClientRect();
+      const panel = document.querySelector('.ios-series-palette-panel').getBoundingClientRect();
+      return { clearance: innerHeight - button.bottom, buttonHeight: button.height,
+        scrollable: grid.scrollHeight > grid.clientHeight, gridBottom: grid.getBoundingClientRect().bottom,
+        buttonTop: button.top, buttonBottom: button.bottom, hiddenInitially, panelTop: panel.top };
+    });
+    assert.ok(palette.clearance >= safeBottom + 16, 'Load more clears the device navigation area');
+    assert.ok(palette.buttonHeight >= 44);
+    assert.ok(palette.scrollable);
+    assert.ok(palette.hiddenInitially, 'Load more is below the initially visible questions');
+    assert.ok(palette.buttonBottom <= palette.gridBottom, 'Load more is visible at the end of the list');
+    assert.ok(palette.panelTop >= 60);
+    console.log(`Palette ${safeBottom}px bottom safe area: Load more clearance and independent scrolling passed`);
   }
 } finally {
   await browser.close();

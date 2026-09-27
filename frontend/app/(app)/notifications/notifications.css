@@ -4,17 +4,17 @@
    ========================================================================== */
 
 :root {
-  --notif-bg: #000000;
-  --notif-card: #1c1c1e;
+  --notif-bg: var(--dark-canvas);
+  --notif-card: var(--dark-surface);
   --notif-border: rgba(255, 255, 255, 0.12);
   --notif-border-hover: rgba(10, 132, 255, 0.45);
   --notif-text: #ffffff;
   --notif-muted: rgba(235, 235, 245, 0.65);
-  --notif-soft: #2c2c2e;
-  --notif-accent: #0a84ff;
+  --notif-soft: var(--dark-surface-muted);
+  --notif-accent: var(--dark-accent);
   --notif-accent-strong: #0070e0;
   --notif-accent-soft: rgba(10, 132, 255, 0.16);
-  --notif-unread-dot: #0a84ff;
+  --notif-unread-dot: var(--dark-accent);
   --notif-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.55);
   --notif-shadow-hover: 0 10px 30px -4px rgba(10, 132, 255, 0.25);
 }
@@ -39,7 +39,7 @@ body.theme-dark {
 html.theme-light,
 body.theme-light {
   --notif-bg: #f8f9fc;
-  --notif-card: #ffffff;
+  --notif-card: var(--light-surface);
   --notif-border: rgba(0, 0, 0, 0.08);
   --notif-border-hover: #b9d5ff;
   --notif-text: #111827;

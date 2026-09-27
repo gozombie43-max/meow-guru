@@ -4,17 +4,16 @@ import { MobileQuestionNavigator } from "@/features/quiz/components/views/Mobile
 import { MobileQuizFooter, MobileQuizHeader } from "@/features/quiz/components/views/MobileQuizChrome";
 import RichContent from "@/components/RichContent";
 import {
-  OptionTickIcon,
   QuizSettingsModal,
 } from "@/features/quiz/components/ui/QuizSettingsModal";
-import { ConceptBadge } from "@/features/quiz/components/ui/SharedUI";
+import { MobileQuizMetadata } from "./MobileQuizMetadata";
 import dynamic from "next/dynamic";
 import { useState } from "react";
 
 const SolutionBottomSheet = dynamic(() => import("@/features/quiz/components/ui/SolutionViews").then(module => module.SolutionBottomSheet));
 import { UptimeTimer } from "@/features/quiz/components/QuizTimer";
 import transitionStyles from "./question-transition.module.css";
-import { XCircle } from "lucide-react";
+import { CircleCheck, XCircle } from "lucide-react";
 import type { QuizController } from "@/features/quiz/hooks/useQuizController";
 
 export type MobileQuizFields = Pick<
@@ -32,6 +31,9 @@ export type MobileQuizFields = Pick<
   | "currentIndex"
   | "hideQuestionNumbers"
   | "openPalette"
+  | "hasMore"
+  | "isFetchingMore"
+  | "fetchMore"
   | "toggleTheme"
   | "handleToggleHideQuestionNumbers"
   | "hideViewSolution"
@@ -84,7 +86,7 @@ export interface MobileQuizViewProps {
   configuration: Pick<MobileQuizFields, "routeBase" | "slug" | "subjectConfig" | "theme" | "themeStyles" | "toggleTheme" | "title">;
   settings: Pick<MobileQuizFields, "isSettingsOpen" | "setIsSettingsOpen" | "hideQuestionNumbers" | "handleToggleHideQuestionNumbers" | "hideViewSolution" | "handleToggleHideViewSolution" | "hideAiTutor" | "handleToggleHideAiTutor" | "handleToggleHideBoth" | "textSize" | "handleSetTextSize" | "spacing" | "handleSetSpacing">;
   question: Pick<MobileQuizFields, "activeLang" | "isTranslating" | "setActiveLang" | "currentQ" | "conceptColours" | "hasDetailedExamLabel" | "examDetailsRef" | "compactExamLabel" | "fullExamLabel" | "hasQuestionText" | "displayedQuestion" | "renderQuestionLine" | "displayedOptions">;
-  navigation: Pick<MobileQuizFields, "currentIndex" | "openPalette" | "questions" | "selectedAnswers" | "submittedQuestions" | "activeRailBtnRef" | "goToQuestion" | "handlePrev" | "handleNext" | "isPaletteOpen" | "closePalette">;
+  navigation: Pick<MobileQuizFields, "hasMore" | "isFetchingMore" | "fetchMore" | "currentIndex" | "openPalette" | "questions" | "selectedAnswers" | "submittedQuestions" | "activeRailBtnRef" | "goToQuestion" | "handlePrev" | "handleNext" | "isPaletteOpen" | "closePalette">;
   answer: Pick<MobileQuizFields, "isCurrentSubmitted" | "selectedAnswer" | "handleSelectAnswer" | "submitError" | "handleSubmitCurrent" | "canSubmit" | "timerRef" | "results">;
   solution: Pick<MobileQuizFields, "openSolution" | "isSolutionOpen" | "closeSolution">;
 }
@@ -92,15 +94,15 @@ export interface MobileQuizViewProps {
 export function MobileQuizView({ configuration, settings, question, navigation, answer, solution }: MobileQuizViewProps) {
   const { routeBase, slug, subjectConfig, theme, themeStyles, toggleTheme, title } = configuration;
   const { isSettingsOpen, setIsSettingsOpen, hideQuestionNumbers, handleToggleHideQuestionNumbers, hideViewSolution, handleToggleHideViewSolution, hideAiTutor, handleToggleHideAiTutor, handleToggleHideBoth, textSize, handleSetTextSize, spacing, handleSetSpacing } = settings;
-  const { activeLang, isTranslating, setActiveLang, currentQ, conceptColours, hasDetailedExamLabel, examDetailsRef, compactExamLabel, fullExamLabel, hasQuestionText, displayedQuestion, renderQuestionLine, displayedOptions } = question;
+  const { activeLang, isTranslating, setActiveLang, currentQ, compactExamLabel, fullExamLabel, hasQuestionText, displayedQuestion, renderQuestionLine, displayedOptions } = question;
   const { currentIndex, openPalette, questions, selectedAnswers, submittedQuestions, activeRailBtnRef, goToQuestion, handlePrev, handleNext, isPaletteOpen, closePalette } = navigation;
   const { isCurrentSubmitted, selectedAnswer, handleSelectAnswer, submitError, handleSubmitCurrent, canSubmit, timerRef, results } = answer;
   const { openSolution, isSolutionOpen, closeSolution } = solution;
 
-  // Keep the sheet mounted after first use so its close animation and focus
-  // restoration still run, without loading it before the learner opens it.
+  // Load as soon as Solution becomes available, before the first tap. Keep it
+  // mounted afterwards so dismissal can finish before focus is restored.
   const [solutionLoaded, setSolutionLoaded] = useState(false);
-  if (isSolutionOpen && !solutionLoaded) setSolutionLoaded(true);
+  if ((isCurrentSubmitted || isSolutionOpen) && !solutionLoaded) setSolutionLoaded(true);
 
   if (!currentQ) return null;
 
@@ -146,6 +148,9 @@ export function MobileQuizView({ configuration, settings, question, navigation, 
         />
 
         <MobileQuestionNavigator
+          hasMore={navigation.hasMore}
+          isFetchingMore={navigation.isFetchingMore}
+          fetchMore={navigation.fetchMore}
           activeRailBtnRef={activeRailBtnRef}
           closePalette={closePalette}
           currentIndex={currentIndex}
@@ -159,35 +164,12 @@ export function MobileQuizView({ configuration, settings, question, navigation, 
 
         <main className="ios-series-content">
           <div className="ios-series-meta-row">
-            <div className="ios-series-meta-items">
-              <ConceptBadge
-                concept={currentQ.concept}
-                colours={conceptColours}
-              />
-              <span className="ios-series-meta-separator" aria-hidden="true">
-                ·
-              </span>
-              {hasDetailedExamLabel ? (
-                <details
-                  className="ios-series-exam-details"
-                  key={currentQ.id}
-                  ref={examDetailsRef}
-                >
-                  <summary
-                    aria-label={`${compactExamLabel}. Tap for full exam details`}
-                  >
-                    {compactExamLabel}
-                  </summary>
-                  <div className="ios-series-exam-popover" role="note">
-                    {fullExamLabel}
-                  </div>
-                </details>
-              ) : (
-                <span className="ios-series-exam-label">
-                  {compactExamLabel}
-                </span>
-              )}
-            </div>
+            <MobileQuizMetadata
+              key={currentQ.id}
+              topic={currentQ.concept || title}
+              compactExamLabel={compactExamLabel}
+              fullExamLabel={fullExamLabel}
+            />
             <UptimeTimer
               ref={timerRef}
               currentIndex={currentIndex}
@@ -245,7 +227,7 @@ export function MobileQuizView({ configuration, settings, question, navigation, 
                           </span>
                         )}
                         {isCorrect && (
-                          <OptionTickIcon
+                          <CircleCheck
                             className="ios-series-answer-icon"
                             aria-label="Correct option"
                           />

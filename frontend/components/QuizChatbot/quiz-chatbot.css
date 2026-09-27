@@ -1142,6 +1142,40 @@
   }
 }
 
+/* Match the shared quiz palette inside the body portal at every viewport. */
+  .quiz-chatbot-shell {
+    --or: var(--light-accent, #245dcc);
+    --orl: var(--light-accent-soft, #eaf1ff);
+    --bg: var(--light-canvas, #f5f7fa);
+    --card-bg: var(--light-surface-muted, #edf1f6);
+    --field: var(--light-surface-muted, #edf1f6);
+    --dk: var(--light-text, #182438);
+    --gr: var(--light-text-secondary, #526176);
+    --bd: var(--light-border, #dce3ec);
+    --tutor-action: var(--light-accent, #245dcc);
+    --theme-action: var(--tutor-action);
+    --ui-action: var(--tutor-action);
+    --ui-surface: var(--field);
+    --ui-text: var(--dk);
+    --ui-border: var(--bd);
+  }
+  .quiz-chatbot-shell.dark {
+    --or: var(--dark-accent);
+    --orl: var(--dark-accent-soft);
+    --bg: var(--dark-canvas);
+    --card-bg: var(--dark-surface);
+    --field: var(--dark-surface);
+    --dk: var(--dark-text);
+    --gr: var(--dark-text-secondary);
+    --bd: rgb(155 169 189 / 16%);
+    --tutor-action: var(--dark-action);
+  }
+  .quiz-chatbot-shell .tutor-header,
+  .quiz-chatbot-shell .tutor-composer-card {
+    background: var(--bg);
+  }
+  .quiz-chatbot-shell .tutor-send-btn.ready { box-shadow: none; }
+
 /* Dev overlay suppression when tutor modal is active */
 body.tutor-modal-open nextjs-portal,
 body.tutor-modal-open [data-nextjs-toast-wrapper],

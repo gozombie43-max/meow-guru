@@ -1,16 +1,16 @@
 import { useRef } from "react";
 import BackButton from "@/components/BackButton";
 import { LangToggle } from "@/components/LangToggle";
-import { EllipsisVertical, Settings, ArrowLeft, ArrowRight, FileText, Sparkles } from "lucide-react";
+import { EllipsisVertical, Settings, ArrowLeft, ArrowRight, BookOpenText } from "lucide-react";
 import dynamic from "next/dynamic";
 import type { QuizController } from "@/features/quiz/hooks/useQuizController";
 
 function SolutionIcon({ className }: { className?: string }) {
-  return <FileText className={className} aria-hidden="true" />;
+  return <BookOpenText className={className} aria-hidden="true" />;
 }
 
 function GeminiIcon({ className }: { className?: string }) {
-  return <Sparkles className={className} aria-hidden="true" />;
+  return <span className={className} aria-hidden="true" style={{ background: 'url("/icons8-gemini-ai.svg") center / contain no-repeat' }} />;
 }
 
 const QuizChatbot = dynamic(() => import("@/components/QuizChatbot"), {

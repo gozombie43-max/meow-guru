@@ -78,20 +78,20 @@
 :global(html.theme-light) .pageRoot,
 .pageRoot[data-theme="light"] {
   --mac-bg-desktop: #F6F8FA;
-  --mac-window-bg: #FFFFFF;
+  --mac-window-bg: var(--light-surface);
   --mac-window-border: var(--light-border);
   --mac-window-shadow: 0 20px 60px -10px rgba(15, 23, 42, 0.08), 0 0 0 1px var(--light-border);
   --mac-titlebar-bg: var(--light-canvas);
   --mac-sidebar-bg: var(--light-border);
   --mac-sidebar-border: var(--light-border);
-  --mac-surface: #FFFFFF;
+  --mac-surface: var(--light-surface);
   --mac-surface-hover: var(--light-canvas);
   --mac-surface-active: var(--light-border);
   --mac-border: var(--light-border);
   --mac-border-hover: rgba(0, 113, 227, 0.35);
   --mac-border-focus: var(--light-accent);
   --mac-blue: var(--light-accent);
-  --mac-blue-hover: #0077ed;
+  --mac-blue-hover: var(--light-accent-hover);
   --mac-blue-subtle: var(--light-border);
   --mac-text-primary: var(--light-text);
   --mac-text-secondary: var(--light-text-secondary);
@@ -944,7 +944,7 @@
 :global(html.theme-light) .iosScreen,
 .iosScreen[data-theme="light"] {
   --ios-bg: var(--light-canvas);
-  --ios-card: #ffffff;
+  --ios-card: var(--light-surface);
   --ios-separator: rgba(60, 60, 67, 0.18);
   --ios-ink: #1c1c1e;
   --ios-muted: #6e6a85;

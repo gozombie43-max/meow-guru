@@ -68,7 +68,7 @@ export const studyModeComparisonStyles = css`
         .apple-dict-viewport[data-theme="light"] {
           --desktop-bg: var(--light-canvas);
           --sidebar-bg: rgba(235, 235, 240, 0.92);
-          --workspace-bg: #ffffff;
+          --workspace-bg: var(--light-surface);
           --window-border: rgba(0, 0, 0, 0.15);
           --divider: rgba(0, 0, 0, 0.08);
           --text-primary: var(--light-text);

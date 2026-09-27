@@ -10,6 +10,9 @@ type Props = Pick<
   | "currentIndex"
   | "goToQuestion"
   | "isPaletteOpen"
+  | "hasMore"
+  | "isFetchingMore"
+  | "fetchMore"
   | "questions"
   | "selectedAnswers"
   | "submittedQuestions"
@@ -21,7 +24,7 @@ function statusClass(status: ReturnType<typeof getQuestionStatus>) {
   return `${status === "current" ? "is-current" : ""} ${status === "correct" ? "is-correct" : ""} ${status === "wrong" ? "is-wrong" : ""} ${status === "answered" ? "is-unsubmitted" : ""}`;
 }
 
-export function MobileQuestionNavigator({ activeRailBtnRef, closePalette, currentIndex, goToQuestion, hideQuestionNumbers, isPaletteOpen, questions, selectedAnswers, submittedQuestions }: Props) {
+export function MobileQuestionNavigator({ activeRailBtnRef, closePalette, currentIndex, goToQuestion, hideQuestionNumbers, isPaletteOpen, questions, selectedAnswers, submittedQuestions, hasMore, isFetchingMore, fetchMore }: Props) {
   const getStatus = (index: number) => getQuestionStatus({
     index,
     currentIndex,
@@ -80,6 +83,14 @@ export function MobileQuestionNavigator({ activeRailBtnRef, closePalette, curren
                   {index + 1}
                 </button>
               ))}
+            {hasMore && (
+              <div className="ios-series-palette-load-more">
+                <button type="button" data-ui-button="secondary" disabled={isFetchingMore}
+                  aria-busy={isFetchingMore} onClick={() => { void fetchMore(); }}>
+                  {isFetchingMore ? "Loading…" : "Load more questions"}
+                </button>
+              </div>
+            )}
             </div>
           </div>
         </Dialog>

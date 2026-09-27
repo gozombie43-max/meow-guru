@@ -19,10 +19,10 @@
   --ios-input-focus-border: var(--light-accent);
   --ios-input-focus-ring: rgba(0, 122, 255, 0.18);
   --ios-segmented-bg: var(--light-surface-muted);
-  --ios-segmented-active: #ffffff;
+  --ios-segmented-active: var(--light-surface);
   --ios-segmented-active-text: var(--light-text);
   --ios-segmented-shadow: 0 3px 8px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.06);
-  --ios-google-bg: #ffffff;
+  --ios-google-bg: var(--light-surface);
   --ios-google-border: var(--light-border);
   --ios-google-hover: #f9f9fb;
   --ios-google-text: var(--light-text);
@@ -31,7 +31,7 @@
   --ios-error-bg: rgba(255, 59, 48, 0.1);
   --ios-error-text: #d70015;
   --ios-error-border: rgba(255, 59, 48, 0.25);
-  --ios-modal-bg: #ffffff;
+  --ios-modal-bg: var(--light-surface);
   --ios-modal-border: rgba(0, 0, 0, 0.1);
 }
 

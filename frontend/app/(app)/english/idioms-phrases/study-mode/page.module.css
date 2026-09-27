@@ -1,6 +1,6 @@
 .container {
   --bg: var(--light-canvas);
-  --bg-elevated: #ffffff;
+  --bg-elevated: var(--light-surface);
   --label: #000000;
   --secondary-label: #6e6e73;
   --tertiary-label: #8e8e93;

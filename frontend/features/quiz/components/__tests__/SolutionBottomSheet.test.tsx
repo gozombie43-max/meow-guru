@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, act, cleanup } from '@testing-library/react';
+import { render, screen, fireEvent, act, cleanup, waitFor } from '@testing-library/react';
 import React from 'react';
 import { SolutionBottomSheet } from '@/features/quiz/components/ui/SolutionViews';
 import { QuizThemeProvider } from '@/features/quiz/components/QuizThemeProvider';
@@ -21,6 +21,51 @@ describe('SolutionBottomSheet Component', () => {
 
   afterEach(() => {
     cleanup();
+  });
+
+  it('keeps focus and scroll locked through exit, then restores the trigger', async () => {
+    function Harness() {
+      const [open, setOpen] = React.useState(false);
+      return <>
+        <button onClick={() => setOpen(true)}>Solution</button>
+        <SolutionBottomSheet isOpen={open} solution="Explanation" questionNumber={1}
+          correctOptionIndex={0} correctOptionText="A" onClose={() => setOpen(false)} />
+      </>;
+    }
+    const overflow = document.body.style.overflow;
+    renderWithTheme(<Harness />);
+    const trigger = screen.getByRole('button', { name: 'Solution' });
+    trigger.focus();
+    fireEvent.click(trigger);
+    expect(screen.getByRole('dialog')).toHaveFocus();
+    expect(document.body.style.overflow).toBe('hidden');
+    fireEvent.click(screen.getByRole('button', { name: 'Back to quiz' }));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(document.body.style.overflow).toBe('hidden');
+    expect(trigger).not.toHaveFocus();
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(trigger).toHaveFocus();
+    expect(document.body.style.overflow).toBe(overflow);
+    fireEvent.click(trigger);
+    expect(screen.getByRole('dialog')).toHaveFocus();
+  });
+
+  it('keeps a rapidly reopened sheet active and releases the lock on unmount', () => {
+    const props = { solution: 'Explanation', questionNumber: 1, correctOptionIndex: 0,
+      correctOptionText: 'A', onClose: mockOnClose };
+    const overflow = document.body.style.overflow;
+    const view = renderWithTheme(<SolutionBottomSheet {...props} isOpen />);
+    view.rerender(<QuizThemeProvider storageKey="solution-bottom-sheet-test-theme">
+      <SolutionBottomSheet {...props} isOpen={false} />
+    </QuizThemeProvider>);
+    view.rerender(<QuizThemeProvider storageKey="solution-bottom-sheet-test-theme">
+      <SolutionBottomSheet {...props} isOpen />
+    </QuizThemeProvider>);
+    expect(screen.getAllByRole('dialog')).toHaveLength(1);
+    expect(screen.getByRole('dialog')).toHaveFocus();
+    expect(document.body.style.overflow).toBe('hidden');
+    view.unmount();
+    expect(document.body.style.overflow).toBe(overflow);
   });
 
   it('renders worked solution modal when open', () => {

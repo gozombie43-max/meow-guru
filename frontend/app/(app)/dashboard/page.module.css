@@ -713,15 +713,15 @@
 
 :global(.theme-light) .page {
   --bg: var(--light-canvas);
-  --bg-elevated: #ffffff;
+  --bg-elevated: var(--light-surface);
   --bg-grouped: var(--light-canvas);
   --sidebar: rgba(255,255,255,0.78);
-  --card: #ffffff;
+  --card: var(--light-surface);
   --hairline: rgba(0,0,0,0.15);
   --hairline-soft: rgba(0,0,0,0.08);
-  --text: #000000;
-  --text-dim: #8e8e93;
-  --text-dimmer: #c7c7cc;
+  --text: var(--light-text);
+  --text-dim: var(--light-text-secondary);
+  --text-dimmer: var(--light-text-muted);
 
   --navbar-bg: rgba(255,255,255,0.72);
   --progress-bg: rgba(118,118,128,0.16);
