@@ -43,10 +43,18 @@ app.get('/live', (_req, res) => res.json({ ok: true }));
 app.use('/auth', auth); app.use('/api/mocktest', mocktest);
 app.use('/api/training', (await import('../routes/training.js')).default);
 const { fetchQuestions, fetchQuestionsSession, fetchQuestionsMeta, fetchQuestionCounts } = await import('../services/questionService.js');
+const { fetchTopicCountSnapshot } = await import('../services/questions/topicCountSnapshot.js');
 app.get('/api/questions', async (req, res) => res.json(await fetchQuestions(req.query)));
 app.get('/api/questions/session', async (req, res) => res.json(await fetchQuestionsSession(req.query)));
 app.get('/api/questions/meta', async (req, res) => res.json(await fetchQuestionsMeta(req.query)));
 app.get('/api/questions/counts', async (req, res) => res.json(await fetchQuestionCounts(req.query)));
+app.get('/api/questions/topic-counts', async (req, res) => {
+  try {
+    res.json(await fetchTopicCountSnapshot(req.query.subject));
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ error: error.message });
+  }
+});
 app.patch('/users/me/usage', protect, (_req, res) => res.json({ ok: true }));
 app.patch('/users/me/recent-quizzes', protect, (_req, res) => res.json({ ok: true }));
 app.get('/users/me', protect, async (req, res) => res.json(await db.collection('users').findOne({ id: req.user.id }, { projection: { passwordHash: 0, _id: 0 } })));
