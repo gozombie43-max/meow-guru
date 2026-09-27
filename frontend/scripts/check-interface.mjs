@@ -116,10 +116,10 @@ try {
         assert.deepEqual(metrics.geometry, lightGeometry, 'Light and dark mobile quiz geometry must match');
       }
       if (theme === 'dark') {
-        assert.equal(metrics.canvas, 'rgb(13, 23, 35)');
-        assert.equal(metrics.submit, 'rgb(62, 96, 150)');
-        assert.equal(metrics.languageBackground, 'rgb(21, 33, 49)');
-        assert.equal(metrics.languageActive, 'rgb(40, 63, 97)');
+        assert.equal(metrics.canvas, 'rgb(0, 0, 0)');
+        assert.equal(metrics.submit, 'rgb(33, 107, 193)');
+        assert.equal(metrics.languageBackground, 'rgb(28, 28, 30)');
+        assert.equal(metrics.languageActive, 'rgb(24, 47, 75)');
       }
       console.log(`${theme} ${width}px: control geometry, state colors, wrapping, and quiz styles passed`);
     }
