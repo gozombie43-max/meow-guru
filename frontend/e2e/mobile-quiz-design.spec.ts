@@ -75,10 +75,11 @@ test("mobile quiz engine renders with reduced question boldness (400) and reduce
   expect(metaRowFontSize).toBe("12px");
 
   // 3. Verify Concept Badge / Meta Items Font Size is 12px
-  const metaItemsFontSize = await page.$eval(".ios-series-meta-items", (el) =>
+  const trigger = await page.waitForSelector(".ios-series-metadata-trigger", { state: "attached" });
+  const metaItemsFontSize = await trigger.evaluate((el) =>
     window.getComputedStyle(el).fontSize
   );
-  console.log("Computed .ios-series-meta-items font-size:", metaItemsFontSize);
+  console.log("Computed .ios-series-metadata-trigger font-size:", metaItemsFontSize);
   expect(metaItemsFontSize).toBe("12px");
 
   // 4. Verify Timer Font Size is 12px
