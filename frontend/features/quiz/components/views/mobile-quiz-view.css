@@ -1944,7 +1944,7 @@
   font-size: var(--reading-option-size) !important; line-height: 1.5 !important;
 }
 
-.ios-series-quiz .ios-series-metadata-trigger { font-size: 13px !important; line-height: 1.4; }
+.ios-series-quiz .ios-series-metadata-trigger { font-size: 12px !important; line-height: 1.4; }
 
 /* Utilities remain neutral; blue belongs to selections and the primary action. */
 .ios-series-quiz[data-theme="dark"] .ios-series-timer { background: rgb(255 255 255 / 3%); }
