@@ -171,7 +171,7 @@ export function SolutionBottomSheet({
           initial={{ opacity: 0 }}
           animate={{ opacity: dragOffset > 0 ? Math.max(1 - dragOffset / 400, 0.2) : 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: reduceMotion ? 0 : 0.24, ease: [0.2, 0.8, 0.2, 1] }}
+          transition={{ duration: reduceMotion ? 0 : 0.2, ease: "easeOut" }}
           onClick={onClose}
         >
           <motion.div
@@ -184,7 +184,7 @@ export function SolutionBottomSheet({
             initial={{ y: reduceMotion ? 0 : "100%", opacity: 1 }}
             animate={{ y: dragOffset, opacity: dragOffset > 0 ? Math.max(1 - dragOffset / 500, 0.4) : 1 }}
             exit={{ y: reduceMotion ? 0 : "100%", opacity: 1 }}
-            transition={{ duration: isDragging || reduceMotion ? 0 : 0.24, ease: [0.2, 0.8, 0.2, 1] }}
+            transition={{ duration: isDragging || reduceMotion ? 0 : 0.22, ease: [0.22, 1, 0.36, 1] }}
             onClick={(event) => event.stopPropagation()}
           >
             <SolutionModalSurface modalRef={modalRef} onClose={onClose} />

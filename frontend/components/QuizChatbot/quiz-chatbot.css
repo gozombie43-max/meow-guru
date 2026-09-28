@@ -1199,11 +1199,3 @@ body.tutor-modal-open [data-next-badge-root] {
   visibility: hidden !important;
   pointer-events: none !important;
 }
-
-.quiz-chatbot-modal { animation: tutor-sheet-enter 240ms cubic-bezier(.2,.8,.2,1); }
-.quiz-chatbot-overlay .tutor-backdrop { animation: tutor-backdrop-enter 240ms cubic-bezier(.2,.8,.2,1); }
-@keyframes tutor-sheet-enter { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-@keyframes tutor-backdrop-enter { from { opacity: 0; } to { opacity: 1; } }
-@media (prefers-reduced-motion: reduce) {
-  .quiz-chatbot-modal, .quiz-chatbot-overlay .tutor-backdrop { animation: none; }
-}

@@ -16,7 +16,6 @@ const SolutionBottomSheet = dynamic(
   { loading: () => null },
 );
 import { UptimeTimer } from "@/features/quiz/components/QuizTimer";
-import { useQuizMotion } from "@/features/quiz/hooks/useQuizMotion";
 import { CircleCheck, XCircle } from "lucide-react";
 import type { QuizController } from "@/features/quiz/hooks/useQuizController";
 
@@ -105,8 +104,6 @@ export function MobileQuizView({ configuration, settings, question, navigation, 
   const { isCurrentSubmitted, selectedAnswer, handleSelectAnswer, submitError, handleSubmitCurrent, canSubmit, timerRef, results } = answer;
   const { openSolution, isSolutionOpen, closeSolution } = solution;
 
-  const { contentRef, stage, submit: submitWithMotion, next: nextWithMotion } = useQuizMotion(currentQ?.id, displayedQuestion + displayedOptions.join("\n"));
-
   // Load as soon as Solution becomes available, before the first tap. Keep it
   // mounted afterwards so dismissal can finish before focus is restored.
   const [solutionLoaded, setSolutionLoaded] = useState(false);
@@ -176,7 +173,7 @@ export function MobileQuizView({ configuration, settings, question, navigation, 
           submittedQuestions={submittedQuestions}
         />
 
-        <main ref={contentRef} className="ios-series-content">
+        <main className="ios-series-content">
           <div className="ios-series-meta-row">
             <MobileQuizMetadata
               key={currentQ.id}
@@ -209,9 +206,9 @@ export function MobileQuizView({ configuration, settings, question, navigation, 
           <section className="ios-series-options" aria-label="Answer options">
             {displayedOptions.slice(0, 4).map((option, index) => {
               const isCorrect =
-                isCurrentSubmitted && stage >= (selectedAnswer === currentQ.correctAnswer ? 1 : 2) && index === currentQ.correctAnswer;
+                isCurrentSubmitted && index === currentQ.correctAnswer;
               const isWrong =
-                isCurrentSubmitted && stage >= 1 &&
+                isCurrentSubmitted &&
                 selectedAnswer === index &&
                 index !== currentQ.correctAnswer;
               const isSelected = selectedAnswer === index;
@@ -223,7 +220,6 @@ export function MobileQuizView({ configuration, settings, question, navigation, 
                   type="button"
                   disabled={isCurrentSubmitted}
                   aria-pressed={isSelected}
-                  data-revealing={isCurrentSubmitted && !isCorrect && !isWrong && (isSelected || index === currentQ.correctAnswer) ? "true" : undefined}
                   onClick={() => handleSelectAnswer(index)}
                   className={`ios-series-option ${isSelected ? "is-selected" : ""} ${isCorrect ? "is-correct" : ""} ${isWrong ? "is-wrong" : ""} ${isUserAnswer ? "is-user-answer" : ""} ${isDimmed ? "is-dimmed" : ""}`}
                 >
@@ -275,10 +271,10 @@ export function MobileQuizView({ configuration, settings, question, navigation, 
         <MobileQuizFooter
           canSubmit={canSubmit}
           currentIndex={currentIndex}
-          handleNext={() => nextWithMotion(handleNext)}
+          handleNext={handleNext}
           handlePrev={handlePrev}
-          handleSubmitCurrent={() => { if (canSubmit) submitWithMotion(handleSubmitCurrent); }}
-          isCurrentSubmitted={isCurrentSubmitted && stage >= 3}
+          handleSubmitCurrent={handleSubmitCurrent}
+          isCurrentSubmitted={isCurrentSubmitted}
           questions={questions}
           currentQ={currentQ}
           openSolution={openSolution}

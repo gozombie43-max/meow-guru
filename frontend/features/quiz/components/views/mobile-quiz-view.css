@@ -1959,7 +1959,7 @@
 }
 .ios-series-dock {
   display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr);
-  align-items: center; gap: 4px; padding: 6px; border-radius: 18px;
+  align-items: center; gap: 4px; padding: 6px; border-radius: 28px;
   background: var(--quiz-answer-surface);
 }
 .ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-dock .ios-series-footer-pill {
@@ -2017,53 +2017,15 @@
   color: var(--quiz-text-secondary); font-size: 14px; font-weight: 500;
 }
 
-/* Quiet exam motion: only the element changing state moves. */
-.ios-series-quiz { --quiz-ease: cubic-bezier(.2,.8,.2,1); }
+/* Keep the refined card geometry without animated state changes. */
 .ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-option {
   min-height: 64px; border-radius: 18px !important;
-  transition: background-color 180ms var(--quiz-ease), transform 120ms var(--quiz-ease) !important;
 }
-.ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-option:not(:disabled):active {
-  transform: scale(.985); background: var(--quiz-surface-hover); transition-duration: 80ms !important;
+.ios-series-quiz .ios-series-option,
+.ios-series-quiz .ios-series-option *,
+.ios-series-quiz .ios-series-dock button,
+.ios-series-quiz .ios-series-dock button * {
+  animation: none !important; transition: none !important;
 }
-.ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-option-letter {
-  transition: background-color 160ms var(--quiz-ease), color 160ms var(--quiz-ease);
-}
-.ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-option-radio {
-  position: relative; background: transparent; box-shadow: none;
-  transition: border-color 160ms var(--quiz-ease), opacity 80ms var(--quiz-ease), transform 80ms var(--quiz-ease);
-}
-.ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-option-radio::after {
-  content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--quiz-accent);
-  transform: scale(0); opacity: 0;
-  transition: transform 160ms var(--quiz-ease), opacity 160ms var(--quiz-ease);
-}
-.ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-option-radio.is-selected {
-  border-color: var(--quiz-accent); background: transparent; box-shadow: none; opacity: 1;
-}
-.ios-series-quiz .ios-series-option-radio.is-selected::after { transform: scale(1); opacity: 1; }
-.ios-series-quiz .ios-series-answer-icon { animation: quiz-symbol-in 160ms var(--quiz-ease) both; }
-.ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-dock button {
-  transition: background-color 180ms var(--quiz-ease), color 180ms var(--quiz-ease), opacity 180ms var(--quiz-ease), transform 120ms var(--quiz-ease) !important;
-}
-.ios-series-quiz .ios-series-dock button:not(:disabled):active { transform: scale(.97); transition-duration: 80ms !important; }
-.ios-series-quiz .ios-series-action-label,
-.ios-series-quiz .ios-series-palette-num { animation: quiz-label-in 120ms var(--quiz-ease); }
-.ios-series-quiz .ios-series-footer-next .ios-series-btn-arrow { animation: quiz-arrow-in 160ms var(--quiz-ease); }
-.ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .lang-toggle-slider { transition: transform 200ms var(--quiz-ease), width 200ms var(--quiz-ease); }
-@keyframes quiz-symbol-in { from { opacity: 0; transform: scale(.75); } to { opacity: 1; transform: scale(1); } }
-@keyframes quiz-label-in { from { opacity: 0; } to { opacity: 1; } }
-@keyframes quiz-arrow-in { from { opacity: 0; transform: translateX(-4px); } to { opacity: 1; transform: translateX(0); } }
-@media (prefers-reduced-motion: reduce) {
-  .ios-series-quiz .ios-series-device *, .ios-series-quiz .ios-series-device *::after {
-    animation: none !important; transition: none !important;
-  }
-  .ios-series-quiz .ios-series-option:active, .ios-series-quiz .ios-series-dock button:active { transform: none !important; }
-}
-
-.ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-option[data-revealing="true"] .ios-series-option-radio {
-  opacity: 0; transform: scale(.75);
-}
-@media (prefers-reduced-motion: reduce) {
-  .ios-series-quiz .ios-series-option[data-revealing="true"] .ios-series-option-radio { transform: none; }
-}
+.ios-series-quiz .ios-series-option:active,
+.ios-series-quiz .ios-series-dock button:active { transform: none !important; }
