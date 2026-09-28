@@ -29,7 +29,7 @@ for (const [parent, width] of [
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     if (width < 768) {
       await expect(page.locator('.ios-series-rail')).toHaveCount(0);
-      await expect(page.locator('.ios-series-quiz')).toHaveAttribute('data-text-size', 'sm');
+      await expect(page.locator('.ios-series-quiz')).toHaveAttribute('data-text-size', 'md');
       const toggle = await page.locator('.lang-toggle').boundingBox();
       if (!toggle) throw new Error('Language toggle is missing');
       expect(Math.abs(toggle.x + toggle.width / 2 - width / 2)).toBeLessThan(2);

@@ -68,10 +68,17 @@ function parseParts(input: string): Part[] {
     if (cursor < part.content.length) pieces.push({ type: "text", content: part.content.slice(cursor) });
     return pieces;
   });
-  const result = expanded.map((part) => ({
-    ...part,
-    content: part.content.replace(/__DOLLAR__/g, "$"),
-  }));
+  const hasProse = expanded.some(part => part.type === "text" && /\p{L}/u.test(part.content));
+  const result: Part[] = expanded.map((part) => {
+    // Keep genuine equations and standalone/display math in KaTeX. Imported
+    // numerals embedded in prose should use the sentence's font and weight.
+    const proseNumber = hasProse && part.type === "inline"
+      && /^[+-]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?(?:\\?%)?$/.test(part.content);
+    return {
+      type: proseNumber ? "text" : part.type,
+      content: proseNumber ? part.content.replace(/\\%/g, "%") : part.content.replace(/__DOLLAR__/g, "$"),
+    };
+  });
 
   if (partsCache.size > MAX_CACHE_SIZE) {
     partsCache.clear();

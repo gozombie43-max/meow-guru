@@ -116,6 +116,7 @@ export function MobileQuizView({ configuration, settings, question, navigation, 
     <div
       className={`ios-series-quiz ${subjectConfig.cssClassName}`}
       data-theme={theme}
+      data-language={activeLang}
       data-text-size={textSize}
       data-spacing={spacing}
       data-text-weight={textWeight}
@@ -127,6 +128,8 @@ export function MobileQuizView({ configuration, settings, question, navigation, 
           slug={slug}
           subjectConfig={subjectConfig}
           currentIndex={currentIndex}
+          questions={questions}
+          hasMore={navigation.hasMore}
           hideQuestionNumbers={hideQuestionNumbers}
           openPalette={openPalette}
           activeLang={activeLang}

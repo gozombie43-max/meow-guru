@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { LangToggle } from "@/components/LangToggle";
-import { EllipsisVertical, Settings, ArrowLeft, ArrowRight, BookOpenText } from "lucide-react";
+import { Settings, ArrowLeft, ArrowRight, BookOpenText } from "lucide-react";
 import dynamic from "next/dynamic";
 import type { QuizController } from "@/features/quiz/hooks/useQuizController";
 
@@ -9,7 +9,7 @@ function SolutionIcon({ className }: { className?: string }) {
 }
 
 function GeminiIcon({ className }: { className?: string }) {
-  return <span className={className} aria-hidden="true" style={{ background: 'url("/icons8-gemini-ai.svg") center / contain no-repeat' }} />;
+  return <span className={className} aria-hidden="true" style={{ backgroundColor: "currentColor", mask: 'url("/icons8-gemini-ai.svg") center / contain no-repeat', WebkitMask: 'url("/icons8-gemini-ai.svg") center / contain no-repeat' }} />;
 }
 
 const QuizChatbot = dynamic(() => import("@/components/QuizChatbot"), {
@@ -23,6 +23,8 @@ type HeaderProps = Pick<
   | "slug"
   | "activeLang"
   | "currentIndex"
+  | "questions"
+  | "hasMore"
   | "hideQuestionNumbers"
   | "isSettingsOpen"
   | "isTranslating"
@@ -31,13 +33,13 @@ type HeaderProps = Pick<
   | "setIsSettingsOpen"
 >;
 
-export function MobileQuizHeader({ activeLang, currentIndex, hideQuestionNumbers, isSettingsOpen, isTranslating, openPalette, setActiveLang, setIsSettingsOpen }: HeaderProps) {
+export function MobileQuizHeader({ activeLang, currentIndex, questions, hasMore, isSettingsOpen, isTranslating, openPalette, setActiveLang, setIsSettingsOpen }: HeaderProps) {
   const questionNumber = currentIndex + 1;
 
   return (
     <header data-ui-chrome="header" className="ios-series-header">
       <div className="ios-series-header-left">
-        <button data-ui-button="state" data-ui-shape="icon" type="button" className={`ios-series-icon-button ${isSettingsOpen ? "is-active" : ""}`} onClick={() => setIsSettingsOpen((previous) => !previous)} aria-label="Open quiz settings" aria-expanded={isSettingsOpen}>
+        <button data-ui-button="state" data-ui-shape="icon" type="button" className={`ios-series-icon-button ios-series-settings-trigger ${isSettingsOpen ? "is-active" : ""}`} onClick={() => setIsSettingsOpen((previous) => !previous)} aria-label="Open quiz settings" aria-expanded={isSettingsOpen}>
           <Settings aria-hidden="true" />
         </button>
       </div>
@@ -45,8 +47,8 @@ export function MobileQuizHeader({ activeLang, currentIndex, hideQuestionNumbers
         <LangToggle active={activeLang} loading={isTranslating} onChange={setActiveLang} />
       </div>
       <div className="ios-series-header-right">
-        <button data-ui-button="state" type="button" className="ios-series-icon-button ios-series-palette-trigger" onClick={openPalette} aria-label={hideQuestionNumbers ? `Question ${questionNumber} - Open question navigator` : "Open question navigator"}>
-          {hideQuestionNumbers ? <span className="ios-series-palette-num">Q {questionNumber}</span> : <EllipsisVertical aria-hidden="true" />}
+        <button data-ui-button="state" type="button" className="ios-series-icon-button ios-series-palette-trigger" onClick={openPalette} aria-label={`Question ${questionNumber} of ${questions.length}${hasMore ? " loaded, more available" : ""} - Open question navigator`}>
+          <span className="ios-series-palette-num">{String(questionNumber).padStart(2, "0")} / {String(questions.length).padStart(2, "0")}{hasMore ? "+" : ""}</span>
         </button>
       </div>
     </header>
@@ -151,6 +153,7 @@ function MobileQuizFooterControls({
         />
       )}
 
+      <div className="ios-series-dock">
       {/* 1. Left: Previous Button */}
       <button
         data-ui-button="secondary"
@@ -199,7 +202,7 @@ function MobileQuizFooterControls({
               aria-label="Ask AI tutor"
             >
               <GeminiIcon className="ios-series-pill-icon ai-icon" />
-              <span className="ios-series-pill-label">Ask AI</span>
+              <span className="ios-series-pill-label">AI</span>
             </button>
           )}
         </div>
@@ -217,6 +220,7 @@ function MobileQuizFooterControls({
         <span>{!isCurrentSubmitted ? "Submit" : currentIndex < questions.length - 1 ? "Next" : "Finish"}</span>
         <ArrowRight className="ios-series-btn-arrow" aria-hidden="true" />
       </button>
+      </div>
     </footer>
   );
 }

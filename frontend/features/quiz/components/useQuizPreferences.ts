@@ -30,8 +30,8 @@ export function useQuizPreferences() {
   const [hideQuestionNumbers, setHideQuestionNumbers] = useState(true);
   const [hideViewSolution, setHideViewSolution] = useState(false);
   const [hideAiTutor, setHideAiTutor] = useState(false);
-  const [textSize, setTextSizeState] = useState<QuizTextSize>("sm");
-  const [textWeight, setTextWeightState] = useState<QuizTextWeight>("low");
+  const [textSize, setTextSizeState] = useState<QuizTextSize>("md");
+  const [textWeight, setTextWeightState] = useState<QuizTextWeight>("medium");
   const [spacing, setSpacingState] = useState<QuizSpacing>("comfortable");
 
   useEffect(() => {

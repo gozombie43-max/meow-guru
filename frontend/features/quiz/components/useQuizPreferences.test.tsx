@@ -11,11 +11,11 @@ describe("useQuizPreferences", () => {
     window.localStorage.clear();
   });
 
-  it("defaults to small text and a hidden strip", () => {
+  it("defaults to medium text and a hidden strip", () => {
     const { result } = renderHook(() => useQuizPreferences());
-    expect(result.current.textSize).toBe("sm");
+    expect(result.current.textSize).toBe("md");
     expect(result.current.hideQuestionNumbers).toBe(true);
-    expect(result.current.textWeight).toBe("low");
+    expect(result.current.textWeight).toBe("medium");
   });
 
   it("restores explicit strip visibility and text weight", async () => {
