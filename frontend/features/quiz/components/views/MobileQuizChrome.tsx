@@ -48,7 +48,7 @@ export function MobileQuizHeader({ activeLang, currentIndex, questions, hasMore,
       </div>
       <div className="ios-series-header-right">
         <button data-ui-button="state" type="button" className="ios-series-icon-button ios-series-palette-trigger" onClick={openPalette} aria-label={`Question ${questionNumber} of ${questions.length}${hasMore ? " loaded, more available" : ""} - Open question navigator`}>
-          <span className="ios-series-palette-num">{String(questionNumber).padStart(2, "0")} / {String(questions.length).padStart(2, "0")}{hasMore ? "+" : ""}</span>
+          <span key={currentIndex} className="ios-series-palette-num">{String(questionNumber).padStart(2, "0")} / {String(questions.length).padStart(2, "0")}{hasMore ? "+" : ""}</span>
         </button>
       </div>
     </header>
@@ -217,8 +217,8 @@ function MobileQuizFooterControls({
         className="ios-series-footer-btn ios-series-footer-next"
         aria-label={!isCurrentSubmitted ? "Submit" : currentIndex < questions.length - 1 ? "Next" : "Finish"}
       >
-        <span>{!isCurrentSubmitted ? "Submit" : currentIndex < questions.length - 1 ? "Next" : "Finish"}</span>
-        <ArrowRight className="ios-series-btn-arrow" aria-hidden="true" />
+        <span key={isCurrentSubmitted ? "graded" : "submit"} className="ios-series-action-label">{!isCurrentSubmitted ? "Submit" : currentIndex < questions.length - 1 ? "Next" : "Finish"}</span>
+        {isCurrentSubmitted && <ArrowRight className="ios-series-btn-arrow" aria-hidden="true" />}
       </button>
       </div>
     </footer>
