@@ -26,6 +26,14 @@ describe("QuizSettingsModal", () => {
     onSpacingChange: vi.fn(),
   };
 
+  it("changes text boldness", () => {
+    const onTextWeightChange = vi.fn();
+    render(<QuizSettingsModal {...defaultProps} textWeight="medium" onTextWeightChange={onTextWeightChange} />);
+    expect(screen.getByRole("button", { name: "medium text boldness" })).toHaveAttribute("aria-pressed", "true");
+    fireEvent.click(screen.getByRole("button", { name: "high text boldness" }));
+    expect(onTextWeightChange).toHaveBeenCalledWith("high");
+  });
+
   it("renders when isOpen is true", () => {
     render(<QuizSettingsModal {...defaultProps} />);
     expect(screen.getByText("Quiz Settings")).toBeInTheDocument();

@@ -1,5 +1,4 @@
 import { useRef } from "react";
-import BackButton from "@/components/BackButton";
 import { LangToggle } from "@/components/LangToggle";
 import { EllipsisVertical, Settings, ArrowLeft, ArrowRight, BookOpenText } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -32,25 +31,22 @@ type HeaderProps = Pick<
   | "setIsSettingsOpen"
 >;
 
-export function MobileQuizHeader({ routeBase, subjectConfig, slug, activeLang, currentIndex, hideQuestionNumbers, isSettingsOpen, isTranslating, openPalette, setActiveLang, setIsSettingsOpen }: HeaderProps) {
+export function MobileQuizHeader({ activeLang, currentIndex, hideQuestionNumbers, isSettingsOpen, isTranslating, openPalette, setActiveLang, setIsSettingsOpen }: HeaderProps) {
   const questionNumber = currentIndex + 1;
-  const digits = String(questionNumber).length;
-  const sizeClass = digits <= 2 ? "is-qnum-sm" : digits === 3 ? "is-qnum-md" : "is-qnum-lg";
 
   return (
     <header data-ui-chrome="header" className="ios-series-header">
       <div className="ios-series-header-left">
-        <BackButton href={routeBase ?? `/${subjectConfig.subjectId}/${slug}`} label="Leave quiz" className="ios-series-icon-button" />
+        <button data-ui-button="state" data-ui-shape="icon" type="button" className={`ios-series-icon-button ${isSettingsOpen ? "is-active" : ""}`} onClick={() => setIsSettingsOpen((previous) => !previous)} aria-label="Open quiz settings" aria-expanded={isSettingsOpen}>
+          <Settings aria-hidden="true" />
+        </button>
       </div>
       <div className="ios-series-header-center">
         <LangToggle active={activeLang} loading={isTranslating} onChange={setActiveLang} />
       </div>
       <div className="ios-series-header-right">
-        <button data-ui-button="state" data-ui-shape="icon" type="button" className={`ios-series-icon-button ${isSettingsOpen ? "is-active" : ""}`} onClick={() => setIsSettingsOpen((previous) => !previous)} aria-label="Open quiz settings" aria-expanded={isSettingsOpen}>
-          <Settings aria-hidden="true" />
-        </button>
-        <button data-ui-button="state" data-ui-shape="icon" type="button" className={`ios-series-icon-button ${hideQuestionNumbers ? `is-qnum ${sizeClass}` : ""}`} onClick={openPalette} aria-label={hideQuestionNumbers ? `Question ${questionNumber} - Open question navigator` : "Open question navigator"}>
-          {hideQuestionNumbers ? <span className="ios-series-palette-num">{questionNumber}</span> : <EllipsisVertical aria-hidden="true" />}
+        <button data-ui-button="state" type="button" className="ios-series-icon-button ios-series-palette-trigger" onClick={openPalette} aria-label={hideQuestionNumbers ? `Question ${questionNumber} - Open question navigator` : "Open question navigator"}>
+          {hideQuestionNumbers ? <span className="ios-series-palette-num">Q {questionNumber}</span> : <EllipsisVertical aria-hidden="true" />}
         </button>
       </div>
     </header>

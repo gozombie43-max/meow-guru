@@ -25,8 +25,19 @@ for (const [parent, width] of [
     });
     await page.goto(`${appUrl}${parent}/quiz`, { waitUntil: "domcontentloaded" });
     await page.getByRole("button", { name: /^Start Quiz/ }).click();
-    await expect(page.getByRole("button", { name: "Leave quiz", exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: width < 768 ? "Open quiz settings" : "Leave quiz", exact: true })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    if (width < 768) {
+      await expect(page.locator('.ios-series-rail')).toHaveCount(0);
+      await expect(page.locator('.ios-series-quiz')).toHaveAttribute('data-text-size', 'sm');
+      const toggle = await page.locator('.lang-toggle').boundingBox();
+      if (!toggle) throw new Error('Language toggle is missing');
+      expect(Math.abs(toggle.x + toggle.width / 2 - width / 2)).toBeLessThan(2);
+      await page.getByRole('button', { name: 'Open quiz settings', exact: true }).click();
+      await page.getByRole('button', { name: 'high text boldness', exact: true }).click();
+      await page.getByRole('button', { name: 'Close settings', exact: true }).click();
+      await expect(page.locator('.ios-series-prompt')).toHaveCSS('font-weight', '600');
+    }
     await page.getByText("New Delhi", { exact: true }).click();
     await page.getByRole("button", { name: "Submit", exact: true }).click();
     const reviewBtn = page.getByRole("button", { name: "Review", exact: true });
@@ -58,10 +69,12 @@ for (const [parent, width] of [
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.evaluate(() => history.back());
     await expect(page.getByRole("dialog", { name: "AI Tutor", exact: true })).toHaveCount(0);
+    if (width < 768) await page.getByRole("button", { name: "Open quiz settings", exact: true }).click();
     await page.getByRole("button", { name: "Leave quiz", exact: true }).click();
     await expect(page.getByRole("dialog", { name: /exit quiz/i })).toBeVisible();
     await page.getByRole("button", { name: "Cancel", exact: true }).click();
     await expect(page.getByText("Your answer", { exact: true })).toBeVisible();
+    if (width < 768) await page.getByRole("button", { name: "Open quiz settings", exact: true }).click();
     await page.getByRole("button", { name: "Leave quiz", exact: true }).click();
     await expect(page.getByRole("dialog", { name: /exit quiz/i })).toBeVisible();
     await page.getByRole("button", { name: "Exit quiz", exact: true }).click();

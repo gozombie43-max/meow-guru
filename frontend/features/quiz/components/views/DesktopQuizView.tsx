@@ -61,6 +61,8 @@ export type DesktopQuizFields = Pick<
   | "handleToggleHideBoth"
   | "textSize"
   | "handleSetTextSize"
+  | "textWeight"
+  | "handleSetTextWeight"
   | "spacing"
   | "handleSetSpacing"
 > & {
@@ -74,7 +76,7 @@ export interface DesktopQuizViewProps {
   navigation: Pick<DesktopQuizFields, "questions" | "currentIndex" | "selectedAnswers" | "submittedQuestions" | "activeMacBtnRef" | "goToQuestion" | "handlePrev" | "handleNext">;
   answer: Pick<DesktopQuizFields, "isCurrentSubmitted" | "selectedAnswer" | "handleSelectAnswer" | "submitError" | "canViewSolution" | "handleSubmitCurrent" | "canSubmit">;
   solution: Pick<DesktopQuizFields, "openSolution" | "isSolutionOpen" | "closeSolution">;
-  settings: Pick<DesktopQuizFields, "isSettingsOpen" | "setIsSettingsOpen" | "hideQuestionNumbers" | "handleToggleHideQuestionNumbers" | "hideViewSolution" | "handleToggleHideViewSolution" | "hideAiTutor" | "handleToggleHideAiTutor" | "handleToggleHideBoth" | "textSize" | "handleSetTextSize" | "spacing" | "handleSetSpacing">;
+  settings: Pick<DesktopQuizFields, "isSettingsOpen" | "setIsSettingsOpen" | "hideQuestionNumbers" | "handleToggleHideQuestionNumbers" | "hideViewSolution" | "handleToggleHideViewSolution" | "hideAiTutor" | "handleToggleHideAiTutor" | "handleToggleHideBoth" | "textSize" | "handleSetTextSize" | "textWeight" | "handleSetTextWeight" | "spacing" | "handleSetSpacing">;
 }
 export function DesktopQuizView({ configuration, question, navigation, answer, solution, settings }: DesktopQuizViewProps) {
   const { routeBase, slug, subjectConfig, theme, themeStyles, title, modeLabels, mode, toggleTheme } = configuration;
@@ -82,7 +84,7 @@ export function DesktopQuizView({ configuration, question, navigation, answer, s
   const { questions, currentIndex, selectedAnswers, submittedQuestions, activeMacBtnRef, goToQuestion, handlePrev, handleNext } = navigation;
   const { isCurrentSubmitted, selectedAnswer, handleSelectAnswer, submitError, canViewSolution, handleSubmitCurrent, canSubmit } = answer;
   const { openSolution, isSolutionOpen, closeSolution } = solution;
-  const { isSettingsOpen, setIsSettingsOpen, hideQuestionNumbers, handleToggleHideQuestionNumbers, hideViewSolution, handleToggleHideViewSolution, hideAiTutor, handleToggleHideAiTutor, handleToggleHideBoth, textSize, handleSetTextSize, spacing, handleSetSpacing } = settings;
+  const { isSettingsOpen, setIsSettingsOpen, hideQuestionNumbers, handleToggleHideQuestionNumbers, hideViewSolution, handleToggleHideViewSolution, hideAiTutor, handleToggleHideAiTutor, handleToggleHideBoth, textSize, handleSetTextSize, textWeight, handleSetTextWeight, spacing, handleSetSpacing } = settings;
 
   if (!currentQ) return null;
 
@@ -92,6 +94,7 @@ export function DesktopQuizView({ configuration, question, navigation, answer, s
       data-theme={theme}
       data-text-size={textSize}
       data-spacing={spacing}
+      data-text-weight={textWeight}
     >
       {themeStyles}
       <div className="mac-series-desktop">
@@ -151,6 +154,8 @@ export function DesktopQuizView({ configuration, question, navigation, answer, s
               onTextSizeChange={handleSetTextSize}
               spacing={spacing}
               onSpacingChange={handleSetSpacing}
+          textWeight={textWeight}
+          onTextWeightChange={handleSetTextWeight}
             />
           )}
 

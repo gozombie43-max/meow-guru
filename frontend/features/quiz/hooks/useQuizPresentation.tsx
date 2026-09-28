@@ -42,12 +42,14 @@ export function useQuizPresentation(subjectConfig: SubjectConfig, presentation: 
     hideViewSolution,
     hideAiTutor,
     textSize,
+    textWeight,
     spacing,
     toggleHideQuestionNumbers: handleToggleHideQuestionNumbers,
     toggleHideViewSolution: handleToggleHideViewSolution,
     toggleHideAiTutor: handleToggleHideAiTutor,
     toggleHideBoth: handleToggleHideBoth,
     setTextSize: handleSetTextSize,
+    setTextWeight: handleSetTextWeight,
     setSpacing: handleSetSpacing,
   } = useQuizPreferences();
 
@@ -112,8 +114,8 @@ export function useQuizPresentation(subjectConfig: SubjectConfig, presentation: 
 
   return { activeRailBtnRef, activeMacBtnRef, examDetailsRef, isIos, isMac, theme, toggleTheme,
     modeLabels, themeStyles, isPaletteOpen, isSettingsOpen, setIsSettingsOpen,
-    hideQuestionNumbers, hideViewSolution, hideAiTutor, textSize, spacing,
+    hideQuestionNumbers, hideViewSolution, hideAiTutor, textSize, textWeight, spacing,
     handleToggleHideQuestionNumbers, handleToggleHideViewSolution, handleToggleHideAiTutor,
-    handleToggleHideBoth, handleSetTextSize, handleSetSpacing, openPalette, closePalette,
+    handleToggleHideBoth, handleSetTextSize, handleSetTextWeight, handleSetSpacing, openPalette, closePalette,
     isDesktop, touchStartXRef, touchStartYRef, scrollActiveQuestion, renderQuestionLine };
 }

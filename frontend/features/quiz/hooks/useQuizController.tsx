@@ -40,9 +40,9 @@ export function useQuizController({
   const searchParams = useSearchParams();
   const { activeRailBtnRef, activeMacBtnRef, examDetailsRef, isIos, isMac, theme, toggleTheme,
     modeLabels, themeStyles, isPaletteOpen, isSettingsOpen, setIsSettingsOpen,
-    hideQuestionNumbers, hideViewSolution, hideAiTutor, textSize, spacing,
+    hideQuestionNumbers, hideViewSolution, hideAiTutor, textSize, textWeight, spacing,
     handleToggleHideQuestionNumbers, handleToggleHideViewSolution, handleToggleHideAiTutor,
-    handleToggleHideBoth, handleSetTextSize, handleSetSpacing, openPalette, closePalette,
+    handleToggleHideBoth, handleSetTextSize, handleSetTextWeight, handleSetSpacing, openPalette, closePalette,
     isDesktop, touchStartXRef, touchStartYRef, scrollActiveQuestion, renderQuestionLine } = useQuizPresentation(subjectConfig, presentation);
   const mode = normalizeMode(searchParams.get("mode"));
   const resumeRequested = searchParams.get("resume") === "1";
@@ -231,7 +231,9 @@ export function useQuizController({
     handleToggleHideBoth,
     textSize,
     handleSetTextSize,
+    textWeight,
     spacing,
+    handleSetTextWeight,
     handleSetSpacing,
     activeRailBtnRef,
     examDetailsRef,

@@ -11,6 +11,23 @@ describe("useQuizPreferences", () => {
     window.localStorage.clear();
   });
 
+  it("defaults to small text and a hidden strip", () => {
+    const { result } = renderHook(() => useQuizPreferences());
+    expect(result.current.textSize).toBe("sm");
+    expect(result.current.hideQuestionNumbers).toBe(true);
+    expect(result.current.textWeight).toBe("low");
+  });
+
+  it("restores explicit strip visibility and text weight", async () => {
+    localStorage.setItem("quiz_hide_question_numbers", "false");
+    localStorage.setItem("quiz_text_weight", "high");
+    const { result } = renderHook(() => useQuizPreferences());
+    await waitFor(() => expect(result.current.textWeight).toBe("high"));
+    expect(result.current.hideQuestionNumbers).toBe(false);
+    act(() => result.current.setTextWeight("medium"));
+    expect(localStorage.getItem("quiz_text_weight")).toBe("medium");
+  });
+
   it("hydrates saved preferences", async () => {
     window.localStorage.setItem("quiz_hide_question_numbers", "true");
     window.localStorage.setItem("quiz_hide_ai_tutor", "true");
@@ -19,7 +36,8 @@ describe("useQuizPreferences", () => {
 
     const { result } = renderHook(() => useQuizPreferences());
 
-    await waitFor(() => expect(result.current.hideQuestionNumbers).toBe(true));
+    await waitFor(() => expect(result.current.textSize).toBe("lg"));
+    expect(result.current.hideQuestionNumbers).toBe(true);
     expect(result.current.hideViewSolution).toBe(false);
     expect(result.current.hideAiTutor).toBe(true);
     expect(result.current.textSize).toBe("lg");

@@ -1160,19 +1160,34 @@
     --ui-border: var(--bd);
   }
   .quiz-chatbot-shell.dark {
-    --or: var(--dark-accent);
-    --orl: var(--dark-accent-soft);
-    --bg: var(--dark-canvas);
-    --card-bg: var(--dark-surface);
-    --field: var(--dark-surface);
-    --dk: var(--dark-text);
-    --gr: var(--dark-text-secondary);
-    --bd: rgb(155 169 189 / 16%);
-    --tutor-action: var(--dark-action);
+    --or: var(--oled-selected, #216bc1);
+    --orl: var(--oled-selected-soft, #182f4b);
+    --bg: var(--oled-canvas, #000);
+    --card-bg: var(--oled-surface, #1c1c1e);
+    --field: var(--oled-surface, #1c1c1e);
+    --dk: var(--oled-text, #e5eaf0);
+    --gr: var(--oled-secondary, #a2a9b4);
+    --bd: transparent;
+    --tutor-action: var(--oled-selected, #216bc1);
   }
-  .quiz-chatbot-shell .tutor-header,
-  .quiz-chatbot-shell .tutor-composer-card {
+  .quiz-chatbot-shell.dark :is(.tutor-composer-card, .tutor-input-capsule, .tutor-plus-btn) {
+    border: 0; box-shadow: none;
+  }
+  .quiz-chatbot-shell.dark .tutor-input-capsule:focus-within {
+    background: var(--oled-inset, #29292c); box-shadow: none;
+  }
+  .quiz-chatbot-shell .tutor-header {
     background: var(--bg);
+  }
+  .quiz-chatbot-shell .tutor-composer-card { background: transparent; }
+  .quiz-chatbot-shell.dark .bbar {
+    background: var(--oled-surface, #1c1c1e);
+    border: 0;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  .quiz-chatbot-shell.dark :is(.tutor-input-capsule, .tutor-plus-btn) {
+    background: var(--oled-inset, #29292c);
   }
   .quiz-chatbot-shell .tutor-send-btn.ready { box-shadow: none; }
 

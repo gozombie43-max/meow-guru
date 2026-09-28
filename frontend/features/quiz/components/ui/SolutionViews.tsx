@@ -333,7 +333,8 @@ export function SolutionBottomSheet({
               }
               .ios-solution-header {
                 display: grid;
-                grid-template-columns: 1fr auto 1fr;
+                grid-template-columns: 44px minmax(0, 1fr) 44px;
+                gap: 12px;
                 align-items: center;
                 padding: 10px 20px 14px 20px;
                 border-bottom: 0.5px solid rgba(255, 255, 255, 0.12);
@@ -350,12 +351,12 @@ export function SolutionBottomSheet({
               .ios-done-btn {
                 background: transparent;
                 border: none;
-                padding: 4px 0 4px 12px;
+                padding: 0;
                 font-size: 17px;
                 font-weight: 600;
                 color: #0a84ff;
                 cursor: pointer;
-                justify-self: end;
+                justify-self: start;
               }
               .ios-done-btn:active {
                 opacity: 0.6;
@@ -463,6 +464,31 @@ export function SolutionBottomSheet({
                   padding: 28px 32px 52px 32px;
                 }
               }
+              .ios-solution-backdrop[data-theme="dark"] { backdrop-filter: none; }
+              .ios-solution-backdrop[data-theme="dark"] .ios-solution-sheet {
+                background: var(--oled-surface, #1c1c1e);
+                color: var(--oled-text, #e5eaf0);
+                border: 0;
+                box-shadow: none;
+              }
+              .ios-solution-backdrop[data-theme="dark"] {
+                --ui-surface: var(--oled-surface, #1c1c1e);
+                --ui-muted-surface: var(--oled-inset, #29292c);
+                --ui-text: var(--oled-text, #e5eaf0);
+                --ui-border: transparent;
+              }
+              .ios-solution-backdrop[data-theme="dark"] .ios-solution-header { border-bottom: 0 !important; }
+              .ios-solution-backdrop[data-theme="dark"] :is(.ios-solution-title, .ios-solution-content-text, .ios-solution-answer-value) {
+                color: var(--oled-text, #e5eaf0);
+              }
+              .ios-solution-backdrop[data-theme="dark"] .ios-solution-answer-summary { color: var(--oled-secondary, #a2a9b4); }
+              .ios-solution-backdrop[data-theme="dark"] .ios-done-btn {
+                background: var(--oled-inset, #29292c);
+                color: var(--oled-text, #e5eaf0);
+                border: 0;
+                box-shadow: none;
+              }
+              .ios-solution-backdrop[data-theme="dark"] .ios-hold-indicator { background: var(--oled-selected, #216bc1); }
             `}</style>
           </motion.div>
         </motion.div>

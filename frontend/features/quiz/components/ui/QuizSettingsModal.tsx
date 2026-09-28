@@ -2,19 +2,19 @@
 
 import { Dialog } from "@/components/ui/Dialog";
 import {
-AlignJustify,
-Bot,
-FileText,
-Layers,
-ListOrdered,
-Moon,
-Settings,
-Sun,
-Type,
-X,
+  AlignJustify,
+  Bot,
+  FileText,
+  Layers,
+  ListOrdered,
+  Moon,
+  Settings,
+  Sun,
+  Type,
+  X,
 } from "lucide-react";
 import type { QuizTheme } from "@/features/quiz/model/types";
-import type { QuizSpacing,QuizTextSize } from "@/features/quiz/components/useQuizPreferences";
+import type { QuizSpacing,QuizTextSize,QuizTextWeight } from "@/features/quiz/components/useQuizPreferences";
 
 export function SettingIcon({ className = "w-4.5 h-4.5" }: { className?: string }) {
   return <Settings className={className} aria-hidden="true" />;
@@ -75,6 +75,8 @@ export interface QuizSettingsModalProps {
   hideAiTutor: boolean;
   onToggleHideAiTutor: (val: boolean) => void;
   onToggleHideBoth: (val: boolean) => void;
+  textWeight?: QuizTextWeight;
+  onTextWeightChange?: (weight: QuizTextWeight) => void;
   textSize?: QuizTextSize;
   onTextSizeChange?: (val: QuizTextSize) => void;
   spacing?: QuizSpacing;
@@ -93,7 +95,9 @@ export function QuizSettingsModal({
   hideAiTutor,
   onToggleHideAiTutor,
   onToggleHideBoth,
-  textSize = "md",
+  textWeight = "low",
+  onTextWeightChange,
+  textSize = "sm",
   onTextSizeChange,
   spacing = "comfortable",
   onSpacingChange,
@@ -137,6 +141,14 @@ export function QuizSettingsModal({
           {/* Section: Reading Comfort */}
           <div className="ios-settings-section-title">Reading Comfort</div>
 
+          <div className="ios-settings-item">
+            <div className="ios-settings-item-left"><div className="ios-settings-icon-box text-size-icon"><Type size={15} /></div><span className="ios-settings-label">Text Boldness</span></div>
+            <div className="ios-settings-segmented" role="group" aria-label="Text boldness">
+              {(["low", "medium", "high"] as const).map((weight) => (
+                <button key={weight} type="button" data-ui-button="state" className={`ios-segment-btn ${textWeight === weight ? "is-active" : ""}`} aria-label={`${weight} text boldness`} aria-pressed={textWeight === weight} onClick={() => onTextWeightChange?.(weight)}>{weight[0].toUpperCase()}</button>
+              ))}
+            </div>
+          </div>
           {/* Text Size Row */}
           <div className="ios-settings-item">
             <div className="ios-settings-item-left">
@@ -365,10 +377,10 @@ export function QuizSettingsModal({
         .ios-series-quiz[data-theme="dark"] .ios-settings-popover,
         .mac-series-quiz[data-theme="dark"] .ios-settings-popover,
         .ios-settings-popover[data-theme="dark"] {
-          background: #121722;
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          color: #f0f4f8;
-          box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.04);
+          background: var(--oled-surface, #1c1c1e);
+          border: 0;
+          color: var(--oled-text, #e5eaf0);
+          box-shadow: none;
         }
 
         /* Light Theme Popover */
@@ -612,6 +624,31 @@ export function QuizSettingsModal({
 
         .ios-settings-switch.is-active .ios-settings-switch-thumb {
           transform: translateX(18px);
+        }
+        .ios-settings-popover[data-theme="dark"] .ios-settings-header { border: 0; }
+        .ios-settings-popover[data-theme="dark"] .ios-settings-divider { background: transparent; }
+        .ios-settings-popover[data-theme="dark"] :is(.ios-settings-close-btn, .ios-settings-segmented, .ios-settings-switch) {
+          background: var(--oled-inset, #29292c); border: 0; box-shadow: none;
+        }
+        /* Separate box selections; switches retain their native pill shape. */
+        .ios-settings-popover .ios-settings-segmented {
+          background: transparent; border: 0; padding: 0; gap: 4px; border-radius: 0;
+        }
+        .ios-settings-popover .ios-segment-btn {
+          min-width: 44px; min-height: 44px; border-radius: 8px !important;
+          background: var(--oled-inset, #29292c); border: 0; box-shadow: none;
+        }
+        .ios-settings-popover[data-theme="light"] .ios-segment-btn { background: var(--light-surface-muted, #edf1f6); }
+        .ios-settings-popover[data-theme="light"] .ios-segment-btn.is-active { background: var(--light-accent, #0071e3); color: white; }
+        .ios-settings-popover[data-theme="dark"] .ios-settings-segmented { background: transparent; }
+        .ios-settings-popover[data-theme="dark"] {
+          --ui-surface: var(--oled-surface, #1c1c1e);
+          --ui-border: transparent;
+          --ui-text: var(--oled-text, #e5eaf0);
+        }
+        .ios-settings-popover[data-theme="dark"] .ios-settings-header { border-bottom: 0 !important; }
+        .ios-settings-popover[data-theme="dark"] :is(.ios-segment-btn.is-active, .ios-settings-switch.is-active) {
+          background: var(--oled-selected, #216bc1); color: #edf4fc; border: 0; box-shadow: none;
         }
       `}</style>
     </>

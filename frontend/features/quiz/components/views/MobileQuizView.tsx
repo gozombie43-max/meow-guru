@@ -10,7 +10,11 @@ import { MobileQuizMetadata } from "./MobileQuizMetadata";
 import dynamic from "next/dynamic";
 import { useState } from "react";
 
-const SolutionBottomSheet = dynamic(() => import("@/features/quiz/components/ui/SolutionViews").then(module => module.SolutionBottomSheet));
+const SolutionBottomSheet = dynamic(
+  () => import("@/features/quiz/components/ui/SolutionViews").then(module => module.SolutionBottomSheet),
+  // Keep first-submit loading inside the optional panel, not the quiz route.
+  { loading: () => null },
+);
 import { UptimeTimer } from "@/features/quiz/components/QuizTimer";
 import transitionStyles from "./question-transition.module.css";
 import { CircleCheck, XCircle } from "lucide-react";
@@ -43,6 +47,8 @@ export type MobileQuizFields = Pick<
   | "handleToggleHideBoth"
   | "textSize"
   | "handleSetTextSize"
+  | "textWeight"
+  | "handleSetTextWeight"
   | "spacing"
   | "handleSetSpacing"
   | "questions"
@@ -84,7 +90,7 @@ export type MobileQuizFields = Pick<
 
 export interface MobileQuizViewProps {
   configuration: Pick<MobileQuizFields, "routeBase" | "slug" | "subjectConfig" | "theme" | "themeStyles" | "toggleTheme" | "title">;
-  settings: Pick<MobileQuizFields, "isSettingsOpen" | "setIsSettingsOpen" | "hideQuestionNumbers" | "handleToggleHideQuestionNumbers" | "hideViewSolution" | "handleToggleHideViewSolution" | "hideAiTutor" | "handleToggleHideAiTutor" | "handleToggleHideBoth" | "textSize" | "handleSetTextSize" | "spacing" | "handleSetSpacing">;
+  settings: Pick<MobileQuizFields, "isSettingsOpen" | "setIsSettingsOpen" | "hideQuestionNumbers" | "handleToggleHideQuestionNumbers" | "hideViewSolution" | "handleToggleHideViewSolution" | "hideAiTutor" | "handleToggleHideAiTutor" | "handleToggleHideBoth" | "textSize" | "handleSetTextSize" | "textWeight" | "handleSetTextWeight" | "spacing" | "handleSetSpacing">;
   question: Pick<MobileQuizFields, "activeLang" | "isTranslating" | "setActiveLang" | "currentQ" | "conceptColours" | "hasDetailedExamLabel" | "examDetailsRef" | "compactExamLabel" | "fullExamLabel" | "hasQuestionText" | "displayedQuestion" | "renderQuestionLine" | "displayedOptions">;
   navigation: Pick<MobileQuizFields, "hasMore" | "isFetchingMore" | "fetchMore" | "currentIndex" | "openPalette" | "questions" | "selectedAnswers" | "submittedQuestions" | "activeRailBtnRef" | "goToQuestion" | "handlePrev" | "handleNext" | "isPaletteOpen" | "closePalette">;
   answer: Pick<MobileQuizFields, "isCurrentSubmitted" | "selectedAnswer" | "handleSelectAnswer" | "submitError" | "handleSubmitCurrent" | "canSubmit" | "timerRef" | "results">;
@@ -93,7 +99,7 @@ export interface MobileQuizViewProps {
 
 export function MobileQuizView({ configuration, settings, question, navigation, answer, solution }: MobileQuizViewProps) {
   const { routeBase, slug, subjectConfig, theme, themeStyles, toggleTheme, title } = configuration;
-  const { isSettingsOpen, setIsSettingsOpen, hideQuestionNumbers, handleToggleHideQuestionNumbers, hideViewSolution, handleToggleHideViewSolution, hideAiTutor, handleToggleHideAiTutor, handleToggleHideBoth, textSize, handleSetTextSize, spacing, handleSetSpacing } = settings;
+  const { isSettingsOpen, setIsSettingsOpen, hideQuestionNumbers, handleToggleHideQuestionNumbers, hideViewSolution, handleToggleHideViewSolution, hideAiTutor, handleToggleHideAiTutor, handleToggleHideBoth, textSize, handleSetTextSize, textWeight, handleSetTextWeight, spacing, handleSetSpacing } = settings;
   const { activeLang, isTranslating, setActiveLang, currentQ, compactExamLabel, fullExamLabel, hasQuestionText, displayedQuestion, renderQuestionLine, displayedOptions } = question;
   const { currentIndex, openPalette, questions, selectedAnswers, submittedQuestions, activeRailBtnRef, goToQuestion, handlePrev, handleNext, isPaletteOpen, closePalette } = navigation;
   const { isCurrentSubmitted, selectedAnswer, handleSelectAnswer, submitError, handleSubmitCurrent, canSubmit, timerRef, results } = answer;
@@ -112,6 +118,7 @@ export function MobileQuizView({ configuration, settings, question, navigation, 
       data-theme={theme}
       data-text-size={textSize}
       data-spacing={spacing}
+      data-text-weight={textWeight}
     >
       {themeStyles}
       <div className="ios-series-device">
@@ -145,6 +152,8 @@ export function MobileQuizView({ configuration, settings, question, navigation, 
           onTextSizeChange={handleSetTextSize}
           spacing={spacing}
           onSpacingChange={handleSetSpacing}
+          textWeight={textWeight}
+          onTextWeightChange={handleSetTextWeight}
         />
 
         <MobileQuestionNavigator
