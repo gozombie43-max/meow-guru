@@ -9,7 +9,7 @@ const mocks = vi.hoisted(() => ({
   hasMore: false,
   fetchMore: vi.fn(),
   start: vi.fn(), stop: vi.fn(), progress: vi.fn().mockResolvedValue({}),
-  refreshUser: vi.fn(), recentQuizzes: [] as Record<string, unknown>[],
+  refreshUser: vi.fn(), recentQuizzes: [] as Record<string, unknown>[], submitQuestionAnswer: vi.fn().mockResolvedValue({}),
 }));
 vi.mock('next/navigation', () => ({ useSearchParams: () => mocks.params }));
 vi.mock('@/hooks/useAppNavigation', () => ({ useBackLayer: vi.fn(), useQuizLeaveGuard: vi.fn() }));
@@ -18,7 +18,7 @@ vi.mock('@/hooks/useMediaQuery', () => ({ useMediaQuery: () => false }));
 vi.mock('@/features/quiz/components/QuizThemeProvider', () => ({ useQuizTheme: () => 'light', useQuizThemeControls: () => ({ toggleTheme: vi.fn() }) }));
 vi.mock('@/features/quiz/components/useQuizPreferences', () => ({ useQuizPreferences: () => ({}) }));
 vi.mock('@/hooks/useTranslatedQuestion', () => ({ useTranslatedQuestion: () => ({}) }));
-vi.mock('@/lib/userApi', () => ({ updateProgress: mocks.progress }));
+vi.mock('@/lib/userApi', () => ({ updateProgress: mocks.progress, submitQuestionAnswer: mocks.submitQuestionAnswer }));
 vi.mock('@/features/quiz/hooks/useQuizFilters', () => ({ useQuizFilters: () => ({ questions: mocks.questions, hasMore: mocks.hasMore, fetchMore: mocks.fetchMore, selectedClassificationConcepts: new Set(), setConceptFilter: vi.fn(), setExamFilter: vi.fn(), setSelectedClassificationConcepts: vi.fn() }) }));
 vi.mock('@/features/quiz/hooks/useQuizBookmarks', () => ({ useQuizBookmarks: () => ({}) }));
 vi.mock('@/features/quiz/hooks/useQuizKeyboard', () => ({ useQuizKeyboard: vi.fn() }));

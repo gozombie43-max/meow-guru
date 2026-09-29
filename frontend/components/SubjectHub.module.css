@@ -1385,7 +1385,8 @@
 .mobileTopbar {
   position: sticky;
   top: 0;
-  z-index: 40;
+  z-index: 90;
+  box-sizing: border-box;
   background: var(--dark-canvas);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -1416,11 +1417,15 @@
 }
 
 .mobileTopbarTitle {
+  min-width: 0;
+  overflow: hidden;
   text-align: center;
+  text-overflow: ellipsis;
   font-size: 1rem;
   font-weight: 700;
   letter-spacing: -0.01em;
   color: inherit;
+  white-space: nowrap;
 }
 
 .mobileBody {
@@ -1947,8 +1952,8 @@
 /* ── OLED Mobile Container & Topbar (Header/Search/Meta pinned, only cards scroll) ── */
 .oledMobile {
   background: #000000 !important;
-  height: 100dvh;
-  max-height: 100dvh;
+  height: calc(100dvh - var(--app-bottom-nav-height) - var(--safe-bottom));
+  max-height: calc(100dvh - var(--app-bottom-nav-height) - var(--safe-bottom));
   display: flex !important;
   flex-direction: column !important;
   overflow: hidden !important;
@@ -1959,7 +1964,8 @@
 .oledMobileTopbar {
   position: relative;
   overflow: visible;
-  height: 58px;
+  height: calc(56px + var(--safe-top));
+  min-height: calc(56px + var(--safe-top));
   padding-inline: 14px;
   flex-shrink: 0;
 }
@@ -2048,7 +2054,7 @@
 .mobileFilterBackdrop {
   position: fixed;
   inset: 0;
-  z-index: 80;
+  z-index: 70;
   background: rgba(0, 0, 0, 0.5);
   -webkit-tap-highlight-color: transparent;
 }

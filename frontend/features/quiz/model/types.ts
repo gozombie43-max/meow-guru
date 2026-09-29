@@ -75,7 +75,7 @@ export interface QuizQuestion {
 }
 
 export interface SessionResult {
-  questionId: number;
+  questionId: string | number;
   questionIndex: number;
   selected: number | null;
   correct: number;

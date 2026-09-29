@@ -30,6 +30,7 @@ import type { SubjectHubConfig } from "./types";
 import { MobileTopicCard } from "./MobileTopicCard";
 
 const EMPTY_STUDY_TOPICS = new Set<string>();
+type SubjectHubSort = "default" | "questions-desc" | "questions-asc" | "alpha";
 
 const MobileTopicRow = React.memo(function MobileTopicRow({
   href,
@@ -112,8 +113,14 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
 
   const [mobileCategory, setMobileCategory] = useState("all");
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
-  const [sortBy, setSortBy] = useState<"default" | "questions-desc" | "questions-asc" | "alpha">("default");
+  const [sortBy, setSortBy] = useState<SubjectHubSort>("default");
   const [sortMenuOpen, setSortMenuOpen] = useState(false);
+  const sortOptions: Array<{ id: SubjectHubSort; label: string }> = [
+    { id: "default", label: "Default" },
+    { id: "questions-desc", label: "Most questions" },
+    { id: "questions-asc", label: "Least questions" },
+    { id: "alpha", label: "A → Z" },
+  ];
   const oledMobile = config.mobileAppearance === "oled";
   const mobileStyles = oledMobile ? defaultStyles : styles;
   const mobileTopics = useMemo(() => {
@@ -1340,18 +1347,13 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
 
                   {sortMenuOpen && (
                     <div className={defaultStyles.oledSortDropdown} role="menu">
-                      {[
-                        { id: "default", label: "Default" },
-                        { id: "questions-desc", label: "Most questions" },
-                        { id: "questions-asc", label: "Least questions" },
-                        { id: "alpha", label: "A → Z" },
-                      ].map((opt) => (
+                      {sortOptions.map((opt) => (
                         <button
                           key={opt.id}
                           type="button"
                           className={`${defaultStyles.oledSortOption} ${sortBy === opt.id ? defaultStyles.oledSortOptionActive : ""}`}
                           onClick={() => {
-                            setSortBy(opt.id as any);
+                            setSortBy(opt.id);
                             setSortMenuOpen(false);
                           }}
                         >
