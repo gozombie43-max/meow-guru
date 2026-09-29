@@ -363,7 +363,7 @@ export interface MobileTopicCardProps {
   /** Kept for type compatibility — not rendered; Iconify is used instead */
   icon: LucideIcon;
   accent: string;
-  questionCount?: number;
+  detail?: { color?: string; questionCount?: number };
 }
 
 export const MobileTopicCard = React.memo(function MobileTopicCard({
@@ -371,7 +371,7 @@ export const MobileTopicCard = React.memo(function MobileTopicCard({
   slug,
   name,
   accent,
-  questionCount,
+  detail,
 }: MobileTopicCardProps) {
   const DecorationComp = SLUG_DECORATION[slug] ?? BarsDecoration;
   const iconName = SLUG_ICON[slug] ?? "ph:math-operations-bold";
@@ -380,9 +380,10 @@ export const MobileTopicCard = React.memo(function MobileTopicCard({
     <Link
       href={href}
       prefetch={false}
+      data-hub-part="mobileTopicRow"
       className={styles.card}
       style={{ "--accent": accent } as React.CSSProperties}
-      aria-label={`${name}${questionCount !== undefined ? `, ${questionCount} questions` : ""}`}
+      aria-label={`${name}${detail?.questionCount !== undefined ? `, ${detail.questionCount} questions` : ""}`}
     >
       <div className={styles.cardInner}>
         <div className={styles.cardTop}>
@@ -398,9 +399,11 @@ export const MobileTopicCard = React.memo(function MobileTopicCard({
 
         <div className={styles.cardMeta}>
           <span className={styles.topicTitle}>{name}</span>
-          <span className={styles.topicCount}>
-            {questionCount !== undefined ? `${questionCount} Questions` : "—"}
-          </span>
+          {detail && (
+            <span className={styles.topicCount}>
+              {detail.questionCount === undefined ? "—" : detail.questionCount} Questions
+            </span>
+          )}
         </div>
 
         <div className={styles.decorWrap} aria-hidden="true" style={{ color: accent }}>

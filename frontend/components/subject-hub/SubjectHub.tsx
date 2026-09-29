@@ -1253,12 +1253,12 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
                     return (
                       <MobileTopicCard
                         key={topic.id}
-                        href={`${topic.routeBase}`}
+                        href={isChapterMode ? `${config.chapterBasePrefix}/${topic.slug}` : `${topic.routeBase}`}
                         slug={topic.slug}
                         name={topic.name}
                         icon={topic.icon}
                         accent={detail?.color ?? topic.color}
-                        questionCount={detail?.questionCount}
+                        detail={detail}
                       />
                     );
                   })}
