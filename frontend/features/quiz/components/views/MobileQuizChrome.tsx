@@ -25,6 +25,7 @@ type HeaderProps = Pick<
   | "currentIndex"
   | "questions"
   | "hasMore"
+  | "availableCount"
   | "hideQuestionNumbers"
   | "isSettingsOpen"
   | "isTranslating"
@@ -33,8 +34,10 @@ type HeaderProps = Pick<
   | "setIsSettingsOpen"
 >;
 
-export function MobileQuizHeader({ activeLang, currentIndex, questions, hasMore, isSettingsOpen, isTranslating, openPalette, setActiveLang, setIsSettingsOpen }: HeaderProps) {
+export function MobileQuizHeader({ activeLang, currentIndex, questions, hasMore, availableCount, isSettingsOpen, isTranslating, openPalette, setActiveLang, setIsSettingsOpen }: HeaderProps) {
   const questionNumber = currentIndex + 1;
+  const total = Number.isInteger(availableCount) && availableCount >= questions.length && availableCount > 0
+    ? availableCount : !hasMore ? questions.length : null;
 
   return (
     <header data-ui-chrome="header" className="ios-series-header">
@@ -47,8 +50,8 @@ export function MobileQuizHeader({ activeLang, currentIndex, questions, hasMore,
         <LangToggle active={activeLang} loading={isTranslating} onChange={setActiveLang} />
       </div>
       <div className="ios-series-header-right">
-        <button data-ui-button="state" type="button" className="ios-series-icon-button ios-series-palette-trigger" onClick={openPalette} aria-label={`Question ${questionNumber} of ${questions.length}${hasMore ? " loaded, more available" : ""} - Open question navigator`}>
-          <span className="ios-series-palette-num">{String(questionNumber).padStart(2, "0")} / {String(questions.length).padStart(2, "0")}{hasMore ? "+" : ""}</span>
+        <button data-ui-button="state" type="button" className="ios-series-icon-button ios-series-palette-trigger" onClick={openPalette} aria-label={`Question ${questionNumber}${total !== null ? ` of ${total}` : ""} - Open question navigator`}>
+          <span className="ios-series-palette-num">{total !== null ? `${questionNumber} / ${total}` : `Question ${questionNumber}`}</span>
         </button>
       </div>
     </header>

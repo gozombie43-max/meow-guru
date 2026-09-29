@@ -34,6 +34,7 @@ export type MobileQuizFields = Pick<
   | "currentIndex"
   | "hideQuestionNumbers"
   | "openPalette"
+  | "availableCount"
   | "hasMore"
   | "isFetchingMore"
   | "fetchMore"
@@ -91,7 +92,7 @@ export interface MobileQuizViewProps {
   configuration: Pick<MobileQuizFields, "routeBase" | "slug" | "subjectConfig" | "theme" | "themeStyles" | "toggleTheme" | "title">;
   settings: Pick<MobileQuizFields, "isSettingsOpen" | "setIsSettingsOpen" | "hideQuestionNumbers" | "handleToggleHideQuestionNumbers" | "hideViewSolution" | "handleToggleHideViewSolution" | "hideAiTutor" | "handleToggleHideAiTutor" | "handleToggleHideBoth" | "textSize" | "handleSetTextSize" | "textWeight" | "handleSetTextWeight" | "spacing" | "handleSetSpacing">;
   question: Pick<MobileQuizFields, "activeLang" | "isTranslating" | "setActiveLang" | "currentQ" | "conceptColours" | "hasDetailedExamLabel" | "examDetailsRef" | "compactExamLabel" | "fullExamLabel" | "hasQuestionText" | "displayedQuestion" | "renderQuestionLine" | "displayedOptions">;
-  navigation: Pick<MobileQuizFields, "hasMore" | "isFetchingMore" | "fetchMore" | "currentIndex" | "openPalette" | "questions" | "selectedAnswers" | "submittedQuestions" | "activeRailBtnRef" | "goToQuestion" | "handlePrev" | "handleNext" | "isPaletteOpen" | "closePalette">;
+  navigation: Pick<MobileQuizFields, "availableCount" | "hasMore" | "isFetchingMore" | "fetchMore" | "currentIndex" | "openPalette" | "questions" | "selectedAnswers" | "submittedQuestions" | "activeRailBtnRef" | "goToQuestion" | "handlePrev" | "handleNext" | "isPaletteOpen" | "closePalette">;
   answer: Pick<MobileQuizFields, "isCurrentSubmitted" | "selectedAnswer" | "handleSelectAnswer" | "submitError" | "handleSubmitCurrent" | "canSubmit" | "timerRef" | "results">;
   solution: Pick<MobileQuizFields, "openSolution" | "isSolutionOpen" | "closeSolution">;
 }
@@ -129,6 +130,7 @@ export function MobileQuizView({ configuration, settings, question, navigation, 
           currentIndex={currentIndex}
           questions={questions}
           hasMore={navigation.hasMore}
+          availableCount={navigation.availableCount}
           hideQuestionNumbers={hideQuestionNumbers}
           openPalette={openPalette}
           activeLang={activeLang}
