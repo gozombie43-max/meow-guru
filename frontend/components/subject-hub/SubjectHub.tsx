@@ -1373,7 +1373,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
 
           {/* Topic Cards / Rows */}
           {oledMobile ? (
-            <>
+            <div className={defaultStyles.oledTopicScrollArea}>
               <div className={defaultStyles.oledTopicGrid}>
                 {(mobileTopics ?? []).map((topic) => {
                   const detail = config.mobileTopicDetails?.[topic.slug];
@@ -1395,7 +1395,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
                   No topics found. Try another search or filter.
                 </p>
               )}
-            </>
+            </div>
           ) : (
             <div data-hub-part="mobileTopicGroup" className={mobileStyles.mobileTopicGroup}>
               {!isChapterMode && (

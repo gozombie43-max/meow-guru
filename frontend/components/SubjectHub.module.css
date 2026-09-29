@@ -1938,15 +1938,16 @@
   padding: 0 0 16px;
 }
 
-/* ── OLED Mobile Container & Topbar ── */
+/* ── OLED Mobile Container & Topbar (Header/Search/Meta pinned, only cards scroll) ── */
 .oledMobile {
   background: #000000 !important;
-  min-height: 100dvh;
-  position: relative;
-  overflow-x: hidden;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding-bottom: calc(104px + env(safe-area-inset-bottom, 0px));
+  height: 100dvh;
+  max-height: 100dvh;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  padding-bottom: 0 !important;
+  box-sizing: border-box;
 }
 
 .oledMobileTopbar {
@@ -1954,6 +1955,7 @@
   overflow: visible;
   height: 58px;
   padding-inline: 14px;
+  flex-shrink: 0;
 }
 
 .oledMobile .mobileBackBtn {
@@ -1971,6 +1973,17 @@
   line-height: 24px;
   letter-spacing: -0.2px;
   color: #F1F1F3;
+}
+
+.oledMobile [data-hub-part="mobileBody"] {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  padding: 12px 14px 0 !important;
+  box-sizing: border-box;
+  background: #000000 !important;
 }
 
 /* ── Mobile Header Filter & Popover ── */
@@ -2156,7 +2169,12 @@
   color: #007aff !important;
 }
 
-/* ── OLED Search Row ── */
+/* ── OLED Search Row (Fixed) ── */
+.oledSearchRow {
+  flex-shrink: 0 !important;
+  margin-bottom: 0 !important;
+}
+
 .oledSearchRow .mobileSearchInput {
   height: 46px;
   border-radius: 16px;
@@ -2179,12 +2197,13 @@
   color: #696972 !important;
 }
 
-/* ── OLED Metadata & Sort Bar ── */
+/* ── OLED Metadata & Sort Bar (Fixed) ── */
 .oledMetaBar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin: 18px 2px 12px;
+  margin: 16px 2px 12px;
+  flex-shrink: 0 !important;
 }
 
 .oledMetaCount {
@@ -2263,4 +2282,20 @@
   background: rgba(52, 127, 209, 0.15) !important;
   color: #69A9ED !important;
   font-weight: 600;
+}
+
+/* ── Only Cards Scroll Area (Scrollable) ── */
+.oledTopicScrollArea {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  padding-bottom: calc(108px + env(safe-area-inset-bottom, 0px));
+  scrollbar-width: none;
+}
+
+.oledTopicScrollArea::-webkit-scrollbar {
+  display: none;
 }
