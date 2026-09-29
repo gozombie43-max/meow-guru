@@ -1173,7 +1173,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
       {/* =========================================================================
           MOBILE / TABLET VIEW (< 768px Handheld Devices)
           ========================================================================= */}
-      <div className={`${mobileStyles.mobileContainer} ${defaultStyles.fixedTopicsMobile} ${oledMobile ? defaultStyles.oledMobile : ""}`}>
+      <div className={`${mobileStyles.mobileContainer} ${oledMobile ? defaultStyles.oledMobile : defaultStyles.fixedTopicsMobile}`}>
         {/* Mobile Topbar */}
         <header data-ui-chrome="header" data-hub-part="mobileTopbar" className={`${mobileStyles.mobileTopbar} ${oledMobile ? defaultStyles.oledMobileTopbar : ""}`}>
           <button data-ui-button="icon"

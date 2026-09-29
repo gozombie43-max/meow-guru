@@ -1941,6 +1941,12 @@
 /* ── OLED Mobile Container & Topbar ── */
 .oledMobile {
   background: #000000 !important;
+  min-height: 100dvh;
+  position: relative;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: calc(104px + env(safe-area-inset-bottom, 0px));
 }
 
 .oledMobileTopbar {
