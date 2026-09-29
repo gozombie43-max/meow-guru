@@ -9,12 +9,14 @@ import {
 ArrowLeft,
 BookOpen,
 BookOpenCheck,
+Check,
 ChevronRight,
 LayoutGrid,
 List as ListIcon,
 Moon,
 Search,
 Sidebar as SidebarIcon,
+SlidersHorizontal,
 Sparkles,
 Sun,
 X,
@@ -107,6 +109,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
   const [selectedChapterSlug, setSelectedChapterSlug] = useState<string>("");
 
   const [mobileCategory, setMobileCategory] = useState("all");
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const oledMobile = config.mobileAppearance === "oled";
   const mobileStyles = oledMobile ? defaultStyles : styles;
   const mobileTopics = oledMobile ? TOPICS.filter((topic) => {
@@ -1153,12 +1156,86 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
           <span className={mobileStyles.mobileTopbarTitle}>
             {config.label} Topics
           </span>
-          <div style={{ width: 34 }} />
+          {/* Header Right: Filter Button & Dropdown */}
+          <div className={defaultStyles.mobileHeaderFilterWrap}>
+            <button
+              data-ui-button="icon"
+              data-hub-part="mobileFilterToggle"
+              type="button"
+              className={`${defaultStyles.mobileHeaderFilterBtn} ${mobileFilterOpen ? defaultStyles.mobileHeaderFilterBtnActive : ""} ${(oledMobile ? mobileCategory !== "all" : activeCategory !== "very-high") ? defaultStyles.mobileHeaderFilterHasSelection : ""}`}
+              onClick={() => setMobileFilterOpen((prev) => !prev)}
+              aria-label="Filter topics"
+              aria-expanded={mobileFilterOpen}
+              aria-haspopup="menu"
+              title="Filter topics"
+            >
+              <SlidersHorizontal size={18} strokeWidth={2.2} />
+              {(oledMobile ? mobileCategory !== "all" : activeCategory !== "very-high") && (
+                <span className={defaultStyles.filterActiveDot} aria-hidden="true" />
+              )}
+            </button>
+
+            {/* Filter Dropdown Popover */}
+            <div
+              data-hub-part="mobileTabsScroll"
+              className={`${defaultStyles.mobileFilterDropdown} ${mobileFilterOpen ? defaultStyles.mobileFilterDropdownOpen : ""}`}
+              aria-label="Filter categories"
+            >
+              <div className={defaultStyles.mobileFilterDropdownHeader}>
+                <span>Filter by Priority</span>
+                {(oledMobile ? mobileCategory !== "all" : activeCategory !== "very-high") && (
+                  <button
+                    type="button"
+                    className={defaultStyles.mobileFilterResetBtn}
+                    onClick={() => {
+                      if (oledMobile) setMobileCategory("all");
+                      else setActiveCategory("very-high");
+                    }}
+                  >
+                    Reset
+                  </button>
+                )}
+              </div>
+              <div className={defaultStyles.mobileFilterOptionsList}>
+                {(oledMobile ? [{ id: "all", label: "All" }, ...CATEGORIES] : CATEGORIES).map((cat) => {
+                  const isSelected = (oledMobile ? mobileCategory : activeCategory) === cat.id;
+                  return (
+                    <button
+                      data-ui-button="state"
+                      key={cat.id}
+                      type="button"
+                      className={`${defaultStyles.mobileFilterOptionItem} ${isSelected ? defaultStyles.mobileFilterOptionItemActive : ""}`}
+                      onClick={() => {
+                        if (oledMobile) setMobileCategory(cat.id);
+                        else setActiveCategory(cat.id);
+                        setMobileFilterOpen(false);
+                      }}
+                      aria-pressed={isSelected}
+                    >
+                      <span className={defaultStyles.mobileFilterOptionLabel}>{cat.label}</span>
+                      {isSelected && (
+                        <Check size={14} strokeWidth={2.6} className={defaultStyles.mobileFilterCheckIcon} />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
           {/* Decorative π — OLED only */}
           {oledMobile && (
             <span className={defaultStyles.oledPiDecoration} aria-hidden="true">π</span>
           )}
         </header>
+
+        {mobileFilterOpen && (
+          <div
+            className={defaultStyles.mobileFilterBackdrop}
+            onClick={() => setMobileFilterOpen(false)}
+            aria-hidden="true"
+          />
+        )}
 
         <div data-hub-part="mobileBody" className={mobileStyles.mobileBody}>
           {/* Search */}
@@ -1205,18 +1282,18 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
 
           {/* iOS Grouped Card Container with Filter Header */}
           <div data-hub-part="mobileTopicGroup" className={mobileStyles.mobileTopicGroup}>
-            {/* Priority Tabs in Card Header */}
-            {(!isChapterMode || oledMobile) && (
+            {/* Priority Tabs in Card Header (for non-OLED views) */}
+            {!oledMobile && !isChapterMode && (
               <div data-hub-part="mobileTabsScroll" className={mobileStyles.mobileTabsScroll}>
-                {(oledMobile ? [{ id: "all", label: "All" }, ...CATEGORIES] : CATEGORIES).map((cat) => (
+                {CATEGORIES.map((cat) => (
                   <button data-ui-button="state"
                     key={cat.id}
                     type="button"
                     className={`${mobileStyles.mobileTabBtn} ${
-                      (oledMobile ? mobileCategory : activeCategory) === cat.id ? mobileStyles.mobileTabActive : ""
+                      activeCategory === cat.id ? mobileStyles.mobileTabActive : ""
                     }`}
-                    onClick={() => oledMobile ? setMobileCategory(cat.id) : setActiveCategory(cat.id)}
-                    aria-pressed={(oledMobile ? mobileCategory : activeCategory) === cat.id}
+                    onClick={() => setActiveCategory(cat.id)}
+                    aria-pressed={activeCategory === cat.id}
                   >
                     {cat.label}
                   </button>

@@ -1959,3 +1959,187 @@
   z-index: 0;
 }
 
+/* ── Mobile Header Filter & Popover ── */
+.mobileHeaderFilterWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.mobileHeaderFilterBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  border: 1px solid rgba(119, 166, 222, 0.22);
+  background: rgba(13, 24, 40, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f0f4fb;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  backdrop-filter: blur(8px);
+  -webkit-tap-highlight-color: transparent;
+}
+
+:global(body.theme-light) .mobileHeaderFilterBtn {
+  background: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+  color: #1c1c1e !important;
+}
+
+.mobileHeaderFilterBtn:active {
+  transform: scale(0.94);
+}
+
+.mobileHeaderFilterBtnActive,
+.mobileHeaderFilterHasSelection {
+  background: rgba(22, 136, 255, 0.18) !important;
+  border-color: rgba(22, 136, 255, 0.45) !important;
+  color: #38bdf8 !important;
+}
+
+.filterActiveDot {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #38bdf8;
+  box-shadow: 0 0 6px #38bdf8;
+}
+
+.mobileFilterBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobileFilterDropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 190px;
+  background: #091321;
+  border: 1px solid rgba(119, 166, 222, 0.24);
+  border-radius: 16px;
+  padding: 8px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  z-index: 90;
+  opacity: 0;
+  transform: translateY(-6px) scale(0.96);
+  pointer-events: none;
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+:global(body.theme-light) .mobileFilterDropdown {
+  background: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12) !important;
+}
+
+.mobileFilterDropdownOpen {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.mobileFilterDropdownHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 6px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(169, 181, 202, 0.7);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 4px;
+}
+
+:global(body.theme-light) .mobileFilterDropdownHeader {
+  color: #6e6e73 !important;
+  border-bottom-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+.mobileFilterResetBtn {
+  background: transparent;
+  border: none;
+  font-size: 11px;
+  font-weight: 600;
+  color: #38bdf8;
+  cursor: pointer;
+  padding: 0;
+}
+
+.mobileFilterOptionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mobileFilterOptionItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #d1d9e6;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.12s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:global(body.theme-light) .mobileFilterOptionItem {
+  color: #1c1c1e !important;
+}
+
+.mobileFilterOptionItem:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+}
+
+:global(body.theme-light) .mobileFilterOptionItem:hover {
+  background: rgba(0, 0, 0, 0.05) !important;
+}
+
+.mobileFilterOptionItemActive {
+  background: rgba(22, 136, 255, 0.16) !important;
+  border-color: rgba(22, 136, 255, 0.35) !important;
+  color: #38bdf8 !important;
+  font-weight: 600;
+}
+
+:global(body.theme-light) .mobileFilterOptionItemActive {
+  background: rgba(0, 122, 255, 0.1) !important;
+  border-color: rgba(0, 122, 255, 0.3) !important;
+  color: #007aff !important;
+}
+
+.mobileFilterOptionLabel {
+  display: inline-block;
+}
+
+.mobileFilterCheckIcon {
+  color: #38bdf8;
+  flex-shrink: 0;
+}
+
+:global(body.theme-light) .mobileFilterCheckIcon {
+  color: #007aff !important;
+}
+
