@@ -116,7 +116,7 @@ export async function updateStudyGoal(
   return data;
 }
 export const submitQuestionAnswer = (token: string, questionId: string | number, answer: number, submissionId: string) =>
-  api.post(`/questions/${questionId}/answer`, { answer, submissionId }, {
+  api.post(`/api/questions/${questionId}/answer`, { answer, submissionId }, {
     headers: { Authorization: `Bearer ${token}` },
   });
 

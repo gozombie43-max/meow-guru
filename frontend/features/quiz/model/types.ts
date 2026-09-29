@@ -50,7 +50,7 @@ export type ConceptColour = { border: string; bg: string; text: string };
 import type { GeometryDiagram } from '@/components/geometry/diagramSchema';
 
 export interface QuizQuestion {
-  id: number;
+  id: number | string;
   concept: string;
   formula: string;
   question: string;

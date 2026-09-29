@@ -1,4 +1,5 @@
 "use client";
+import { useTopicQuestionTotals } from "@/hooks/useTopicQuestionTotals";
 import SubjectHub from "@/components/subject-hub/SubjectHub";
 import { Globe, Zap, TrendingUp, CircleDot } from "lucide-react";
 import { TOPICS, PRACTICE_MODES, PRIORITY_BADGE_STYLE } from "./topic-data";
@@ -9,7 +10,7 @@ const config = {
   subjectId: "general-awareness",
   label: "General Awareness",
   icon: Globe,
-  topics: TOPICS.map(topic => ({ ...topic, routeBase: `/general-awareness/${topic.slug}` })),
+  topics: TOPICS.map((topic) => ({ ...topic, routeBase: `/general-awareness/${topic.slug}` })),
   categories: [
     { id: "very-high", label: "Core", icon: Zap },
     { id: "high", label: "High", icon: TrendingUp },
@@ -25,5 +26,29 @@ const config = {
 };
 
 export default function GeneralAwarenessHubClient() {
-  return <SubjectHub config={config} />;
+  const { data } = useTopicQuestionTotals("general-awareness");
+
+  const mobileTopicDetails = Object.fromEntries(
+    TOPICS.map((topic) => {
+      const topicSlug = topic.slug;
+      const totalQuestions = data?.totals?.[topicSlug] || 0;
+      const userSolved = data?.userProgress?.[topicSlug]?.userSolved || 0;
+
+      const progress = totalQuestions > 0
+        ? Math.round((userSolved / totalQuestions) * 100)
+        : 0;
+
+      return [
+        topicSlug,
+        {
+          color: topic.color,
+          questionCount: totalQuestions,
+          userSolved,
+          progress,
+        },
+      ];
+    })
+  );
+
+  return <SubjectHub config={{ ...config, mobileTopicDetails }} />;
 }

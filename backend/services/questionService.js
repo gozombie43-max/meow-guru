@@ -17,7 +17,9 @@ export const processUserAnswer = async (userId, questionId, providedAnswer, subm
   const questionsColl = getQuestionsCollection();
   
   // 1. Find the question to get the correct answer and topic
-  const question = await questionsColl.findOne({ id: questionId });
+  const numericId = Number(questionId);
+  const queryId = !Number.isNaN(numericId) ? numericId : questionId;
+  const question = await questionsColl.findOne({ $or: [{ id: questionId }, { id: queryId }] });
   if (!question) {
     const error = new Error('Question not found');
     error.statusCode = 404;
@@ -41,7 +43,7 @@ export const processUserAnswer = async (userId, questionId, providedAnswer, subm
     
     const now = new Date();
     
-    const existingDoc = await uqpColl.findOne({ userId: String(userId), questionId }, { session });
+    const existingDoc = await uqpColl.findOne({ userId: String(userId), questionId: queryId }, { session });
     
     let isFirstTime = false;
     let becameMastered = false;
@@ -50,7 +52,7 @@ export const processUserAnswer = async (userId, questionId, providedAnswer, subm
        isFirstTime = true;
        await uqpColl.insertOne({
          userId: String(userId),
-         questionId,
+         questionId: queryId,
          topic,
          firstAttemptedAt: now,
          lastAttemptedAt: now,

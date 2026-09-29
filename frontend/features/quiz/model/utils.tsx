@@ -232,15 +232,7 @@ export function toQuizQuestion(
     "General";
 
   const rawId = String(question.id ?? "");
-  const numericId = Number.parseInt(rawId, 10);
-  let id = Number.isFinite(numericId) ? numericId : index + 1;
-  if (!Number.isFinite(numericId)) {
-    const digitMatch = rawId.match(/\d+/);
-    if (digitMatch) {
-      const parsedMatch = Number.parseInt(digitMatch[0], 10);
-      if (Number.isFinite(parsedMatch)) id = parsedMatch;
-    }
-  }
+  const id = rawId || (index + 1);
 
   const rawAnswer = String(question.correctAnswer ?? "").trim();
   const answer = /^[a-z]$/i.test(rawAnswer)
@@ -295,23 +287,31 @@ export function toQuizQuestion(
 }
 
 export function ensureUniqueQuestionIds(questions: QuizQuestionRecord[]): QuizQuestionRecord[] {
-  const usedIds = new Set<number>();
-  let nextId = questions.reduce((highestId, question) => Math.max(highestId, question.id), 0) + 1;
+  const usedIds = new Set<string | number>();
+  let _nextNumericId: number | null = null;
+  const getNextNumericId = () => {
+    if (_nextNumericId === null) {
+      _nextNumericId = questions.reduce((highest, q) => {
+        const num = typeof q.id === 'number' ? q.id : Number.parseInt(String(q.id).match(/\d+/)?.[0] || '0', 10);
+        return Number.isFinite(num) ? Math.max(highest, num) : highest;
+      }, 0) + 1;
+    }
+    return _nextNumericId++;
+  };
 
   return questions.map((question) => {
-    if (question.id > 0 && !usedIds.has(question.id)) {
+    if (question.id !== undefined && question.id !== null && question.id !== '' && !usedIds.has(question.id)) {
       usedIds.add(question.id);
       return question;
     }
 
-    while (usedIds.has(nextId)) {
-      nextId += 1;
+    let fallbackId: string | number = getNextNumericId();
+    while (usedIds.has(fallbackId)) {
+      fallbackId = getNextNumericId();
     }
-
-    const id = nextId;
-    usedIds.add(id);
-    nextId += 1;
-    return { ...question, id };
+    
+    usedIds.add(fallbackId);
+    return { ...question, id: fallbackId };
   });
 }
 
