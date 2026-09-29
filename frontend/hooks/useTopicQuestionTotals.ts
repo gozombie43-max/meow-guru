@@ -53,8 +53,8 @@ export function useTopicQuestionTotals() {
   return useSWR<Snapshot>(`${API_BASE}/api/progress/topics?subject=mathematics`, fetchSnapshot, {
     fallbackData,
     revalidateOnMount: true,
-    revalidateOnFocus: false,
-    dedupingInterval: 60000,
+    revalidateOnFocus: true,
+    dedupingInterval: 5000,
     errorRetryCount: 2,
   });
 }

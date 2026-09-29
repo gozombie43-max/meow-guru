@@ -1,7 +1,7 @@
 "use client";
 import type { useQuizTimer } from "@/features/quiz/hooks/useQuizTimer";
 import type { QuizQuestion } from "@/features/quiz/model/types";
-import { updateProgress } from "@/lib/userApi";
+import { updateProgress, submitQuestionAnswer } from "@/lib/userApi";
 import { useCallback, useRef, type Dispatch } from "react";
 import type { QuizSessionState, QuizEvent } from "../model/sessionReducer";
 
@@ -28,7 +28,11 @@ export function useQuizAnswerLifecycle({ currentQ, token, timer, state, dispatch
     dispatch({ type: 'SUBMIT', question: currentQ, timeTaken });
     const correct = selected === currentQ.correctAnswer;
     try { navigator.vibrate?.(correct ? [12, 35, 18] : 20); } catch {}
-    if (token) void updateProgress(token, currentQ.concept, 1, correct ? 1 : 0).catch(() => {});
+    if (token) {
+      void updateProgress(token, currentQ.concept, 1, correct ? 1 : 0).catch(() => {});
+      const submissionId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2);
+      void submitQuestionAnswer(token, currentQ.id, selected, submissionId).catch(() => {});
+    }
   }, [currentQ, state.phase, submittedQuestions, currentIndex, selectedAnswers, stopTimer, timerRef, maxTime, token, dispatch]);
   const handleClearResponse = useCallback(() => dispatch({ type: 'CLEAR' }), [dispatch]);
   const resetAnswers = useCallback(() => { submitting.current.clear(); dispatch({ type: 'RESTART' }); }, [dispatch]);

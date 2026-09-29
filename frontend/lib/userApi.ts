@@ -114,4 +114,9 @@ export async function updateStudyGoal(
     dailyGoalMinutes,
   });
   return data;
-}
+}
+export const submitQuestionAnswer = (token: string, questionId: string | number, answer: number, submissionId: string) =>
+  api.post(`/questions/${questionId}/answer`, { answer, submissionId }, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
