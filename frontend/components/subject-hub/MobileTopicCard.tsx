@@ -2,7 +2,6 @@
 import Link from "next/link";
 import React from "react";
 import type { LucideIcon } from "lucide-react";
-import { ChevronRight } from "lucide-react";
 import styles from "./mobile-topic-card.module.css";
 
 // Iconify icon names per slug — uses <iconify-icon> web component via CDN
@@ -391,9 +390,6 @@ export const MobileTopicCard = React.memo(function MobileTopicCard({
           <div className={styles.iconTile} aria-hidden="true">
             {/* @ts-expect-error iconify-icon is a custom element loaded via CDN */}
             <iconify-icon icon={iconName} width="22" height="22" style={{ color: "#ffffff" }} />
-          </div>
-          <div className={styles.chevron} aria-hidden="true">
-            <ChevronRight size={13} strokeWidth={2.5} />
           </div>
         </div>
 

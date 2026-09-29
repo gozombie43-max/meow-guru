@@ -123,27 +123,6 @@
   line-height: 1;
 }
 
-/* ── Chevron circle ── */
-.chevron {
-  width: 24px;
-  height: 24px;
-  flex: 0 0 24px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  color: rgba(255, 255, 255, 0.45);
-  transition: transform 120ms ease, color 120ms ease, background 120ms ease;
-}
-
-.card:active .chevron {
-  transform: translateX(2px);
-  color: rgba(255, 255, 255, 0.85);
-  background: rgba(255, 255, 255, 0.11);
-}
-
 /* ── Topic meta: title + count ── */
 .cardMeta {
   display: flex;
