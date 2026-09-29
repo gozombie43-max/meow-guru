@@ -21,6 +21,7 @@ const { initPassport } = await import('../auth/passport.js'); initPassport();
 const { default: passport } = await import('../auth/passport.js');
 const { default: auth } = await import('../routes/auth.routes.js');
 const { default: mocktest } = await import('../routes/mocktest.js');
+const { default: progress } = await import('../routes/progress.routes.js');
 const { protect } = await import('../middleware/protect.js');
 const passwordHash = await bcrypt.hash('Browser-fixture-123!', 4);
 await db.collection('users').insertMany(['desktop', 'mobile', 'lighthouse', 'performance-desktop', 'performance-mobile'].map(device => ({ id: `browser-${device}`, name: 'Browser Student', email: `browser-${device}@example.test`, passwordHash, role: 'student', progress: {}, bookmarks: [], recentQuizzes: [{ quizKey: 'mathematics:algebra', currentIndex: 0, status: 'in-progress', selectedAnswers: {}, submittedQuestions: [] }] })));
@@ -42,6 +43,7 @@ app.get('/live', (_req, res) => res.json({ ok: true }));
 // Use real refresh rotation so each browser keeps its own identity and attempts.
 app.use('/auth', auth); app.use('/api/mocktest', mocktest);
 app.use('/api/training', (await import('../routes/training.js')).default);
+app.use('/api/progress', progress);
 const { fetchQuestions, fetchQuestionsSession, fetchQuestionsMeta, fetchQuestionCounts } = await import('../services/questionService.js');
 const { fetchTopicCountSnapshot } = await import('../services/questions/topicCountSnapshot.js');
 app.get('/api/questions', async (req, res) => res.json(await fetchQuestions(req.query)));
