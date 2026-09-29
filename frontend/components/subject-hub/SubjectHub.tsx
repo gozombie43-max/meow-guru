@@ -9,8 +9,10 @@ import {
 ArrowLeft,
 BookOpen,
 BookOpenCheck,
+ChartNoAxesColumnIncreasing,
 ChevronRight,
 LayoutGrid,
+Layers3,
 List as ListIcon,
 Moon,
 Search,
@@ -23,6 +25,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React,{ useEffect,useMemo,useRef,useState } from "react";
 import type { SubjectHubConfig } from "./types";
+import { MobileTopicCard } from "./MobileTopicCard";
 
 const EMPTY_STUDY_TOPICS = new Set<string>();
 
@@ -1140,7 +1143,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
           ========================================================================= */}
       <div className={`${mobileStyles.mobileContainer} ${defaultStyles.fixedTopicsMobile} ${oledMobile ? defaultStyles.oledMobile : ""}`}>
         {/* Mobile Topbar */}
-        <header data-ui-chrome="header" data-hub-part="mobileTopbar" className={mobileStyles.mobileTopbar}>
+        <header data-ui-chrome="header" data-hub-part="mobileTopbar" className={`${mobileStyles.mobileTopbar} ${oledMobile ? defaultStyles.oledMobileTopbar : ""}`}>
           <button data-ui-button="icon"
             type="button"
             className={mobileStyles.mobileBackBtn}
@@ -1153,7 +1156,30 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
             {config.label} Topics
           </span>
           <div style={{ width: 34 }} />
+          {/* Decorative π — OLED only */}
+          {oledMobile && (
+            <span className={defaultStyles.oledPiDecoration} aria-hidden="true">π</span>
+          )}
         </header>
+
+        {/* Summary pill — OLED only */}
+        {oledMobile && (() => {
+          const totalQuestions = TOPICS.reduce((sum, t) => {
+            const detail = config.mobileTopicDetails?.[t.slug];
+            return sum + (detail?.questionCount ?? 0);
+          }, 0);
+          return (
+            <div className={defaultStyles.oledSummaryPill} aria-label={`${TOPICS.length} topics, ${totalQuestions > 0 ? totalQuestions.toLocaleString() : "—"} questions`}>
+              <Layers3 size={13} strokeWidth={2} aria-hidden="true" />
+              <span className={defaultStyles.oledSummaryValue}>{TOPICS.length} Topics</span>
+              <span className={defaultStyles.oledSummaryDivider} aria-hidden="true" />
+              <ChartNoAxesColumnIncreasing size={13} strokeWidth={2} aria-hidden="true" />
+              <span className={defaultStyles.oledSummaryValue}>
+                {totalQuestions > 0 ? totalQuestions.toLocaleString() : "—"} Questions
+              </span>
+            </div>
+          );
+        })()}
 
         <div data-hub-part="mobileBody" className={mobileStyles.mobileBody}>
           {/* Search */}
@@ -1219,19 +1245,46 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
               </div>
             )}
 
-            {(mobileTopics ?? filteredTopics).map((topic) => (
-              <MobileTopicRow
-                key={topic.id}
-                href={isChapterMode ? `${config.chapterBasePrefix}/${topic.slug}` : `${topic.routeBase}`}
-                color={topic.color}
-                Icon={topic.icon}
-                name={topic.name}
-                quiet={oledMobile}
-                detail={config.mobileTopicDetails?.[topic.slug]}
-                styles={mobileStyles}
-              />
-            ))}
-            {oledMobile && mobileTopics?.length === 0 && <p role="status" className={mobileStyles.mobileTopicCount}>No topics found. Try another search or filter.</p>}
+            {oledMobile ? (
+              <>
+                <div className={defaultStyles.oledTopicGrid}>
+                  {(mobileTopics ?? []).map((topic) => {
+                    const detail = config.mobileTopicDetails?.[topic.slug];
+                    return (
+                      <MobileTopicCard
+                        key={topic.id}
+                        href={`${topic.routeBase}`}
+                        slug={topic.slug}
+                        name={topic.name}
+                        icon={topic.icon}
+                        accent={detail?.color ?? topic.color}
+                        questionCount={detail?.questionCount}
+                      />
+                    );
+                  })}
+                </div>
+                {mobileTopics?.length === 0 && (
+                  <p role="status" className={mobileStyles.mobileTopicCount}>
+                    No topics found. Try another search or filter.
+                  </p>
+                )}
+              </>
+            ) : (
+              <>
+                {filteredTopics.map((topic) => (
+                  <MobileTopicRow
+                    key={topic.id}
+                    href={isChapterMode ? `${config.chapterBasePrefix}/${topic.slug}` : `${topic.routeBase}`}
+                    color={topic.color}
+                    Icon={topic.icon}
+                    name={topic.name}
+                    quiet={false}
+                    detail={config.mobileTopicDetails?.[topic.slug]}
+                    styles={mobileStyles}
+                  />
+                ))}
+              </>
+            )}
           </div>
         </div>
       </div>

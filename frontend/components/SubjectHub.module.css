@@ -1929,3 +1929,61 @@
   :global(html:not(.theme-light)) .oledMobile .mobileTopicName { color: #e5eaf0; }
   :global(html:not(.theme-light)) .oledMobile .mobileChevron { color: #788696; }
 }
+
+/* Two-column card grid for OLED mathematics mobile view */
+.oledTopicGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 0 0 4px;
+}
+
+
+/* ── OLED mobile header extras: π decoration + summary pill ── */
+.oledMobileTopbar {
+  position: relative;
+  overflow: visible;
+}
+
+.oledPiDecoration {
+  position: absolute;
+  right: -4px;
+  top: -8px;
+  font-size: 88px;
+  font-weight: 800;
+  line-height: 1;
+  color: rgba(119, 166, 222, 0.08);
+  pointer-events: none;
+  user-select: none;
+  letter-spacing: -0.04em;
+  z-index: 0;
+}
+
+.oledSummaryPill {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 auto 12px;
+  padding: 7px 16px;
+  width: fit-content;
+  border-radius: 999px;
+  background: rgba(9, 20, 34, 0.92);
+  border: 1px solid rgba(112, 171, 239, 0.28);
+  color: rgba(169, 181, 202, 0.9);
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.oledSummaryValue {
+  color: #f0f4fb;
+  font-weight: 600;
+}
+
+.oledSummaryDivider {
+  display: inline-block;
+  width: 1px;
+  height: 13px;
+  background: rgba(119, 166, 222, 0.28);
+  flex-shrink: 0;
+}
