@@ -104,7 +104,9 @@ export const MobileTopicCard = React.memo(function MobileTopicCard({
         <div className={styles.iconTile} aria-hidden="true">
           {renderTopicIcon(slug, FallbackIcon)}
         </div>
-        <ChevronRight size={17} strokeWidth={2} className={styles.chevron} aria-hidden="true" />
+        {!isComingSoon && (
+          <ChevronRight size={17} strokeWidth={2} className={styles.chevron} aria-hidden="true" />
+        )}
       </div>
 
       {/* Title and question count */}
