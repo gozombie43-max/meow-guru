@@ -1,4 +1,7 @@
-/* Two-column OLED topic card for Mathematics hub mobile view */
+/* ============================================================
+   MobileTopicCard — Premium OLED two-column card
+   Accent colour injected as --accent per-card via inline style
+   ============================================================ */
 
 .card {
   position: relative;
@@ -6,127 +9,187 @@
   border-radius: 18px;
   overflow: hidden;
   text-decoration: none;
-  /* Layered gradient: radial accent spot + linear dark base */
+  min-height: 106px;
+  /* Layered background:
+     1. Radial accent glow at top-left corner
+     2. Second smaller glow for depth
+     3. Linear dark base going to near-black */
   background:
     radial-gradient(
-      circle at 14% 18%,
-      color-mix(in srgb, var(--accent) 22%, transparent),
-      transparent 48%
+      ellipse 60% 55% at 8% 12%,
+      color-mix(in srgb, var(--accent) 26%, transparent),
+      transparent
+    ),
+    radial-gradient(
+      ellipse 40% 35% at 85% 80%,
+      color-mix(in srgb, var(--accent) 8%, transparent),
+      transparent
     ),
     linear-gradient(
-      140deg,
-      color-mix(in srgb, var(--accent) 16%, #07101c),
-      #07101c 68%
+      148deg,
+      color-mix(in srgb, var(--accent) 18%, #060e1a) 0%,
+      #060e1a 55%,
+      #040912 100%
     );
-  border: 1px solid color-mix(in srgb, var(--accent) 36%, transparent);
-  min-height: 102px;
-  transition: transform 120ms ease, box-shadow 120ms ease;
+  /* Accent-tinted border */
+  border: 1px solid color-mix(in srgb, var(--accent) 32%, rgba(255,255,255,0.04));
+  /* Subtle outer glow */
+  box-shadow:
+    0 0 0 0 transparent,
+    0 2px 12px rgba(0, 0, 0, 0.45);
+  transition: transform 120ms cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 120ms cubic-bezier(0.4, 0, 0.2, 1);
   -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
 }
 
-.card:active {
-  transform: scale(0.982);
-}
-
-/* Inner top-edge highlight */
+/* Top-edge inner highlight + bottom-edge shadow */
 .card::before {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.22);
   z-index: 1;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.30),
+    inset 1px 0 0 rgba(255, 255, 255, 0.04),
+    inset -1px 0 0 rgba(255, 255, 255, 0.02);
 }
 
+/* Pressed state */
+.card:active {
+  transform: scale(0.982);
+  box-shadow:
+    0 0 0 0 transparent,
+    0 1px 6px rgba(0, 0, 0, 0.55);
+}
+
+/* Focus visible */
+.card:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 70%, transparent);
+  outline-offset: 2px;
+}
+
+/* ── Card inner layout ── */
 .cardInner {
   position: relative;
   z-index: 2;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   height: 100%;
-  min-height: 102px;
+  min-height: 106px;
   padding: 14px 13px 13px;
   box-sizing: border-box;
+  gap: 0;
 }
 
+/* ── Top row: icon tile left, chevron right ── */
 .cardTop {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 4px;
   margin-bottom: 10px;
 }
 
+/* ── Icon tile: accent-tinted rounded square ── */
 .iconTile {
   width: 44px;
   height: 44px;
   flex: 0 0 44px;
-  border-radius: 13px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: color-mix(in srgb, var(--accent) 28%, rgba(0, 0, 0, 0.35));
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--accent) 55%, rgba(0,0,0,0.5)),
+      color-mix(in srgb, var(--accent) 30%, rgba(0,0,0,0.7))
+    );
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.15),
+    0 2px 8px rgba(0, 0, 0, 0.40);
+  /* Ensure Iconify web component fits */
+  overflow: hidden;
 }
 
+/* Make iconify-icon web component display correctly */
+.iconTile iconify-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+/* ── Chevron circle ── */
 .chevron {
-  width: 26px;
-  height: 26px;
-  flex: 0 0 26px;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.07);
-  color: rgba(255, 255, 255, 0.55);
-  transition: transform 120ms ease, color 120ms ease;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  color: rgba(255, 255, 255, 0.45);
+  transition: transform 120ms ease, color 120ms ease, background 120ms ease;
 }
 
 .card:active .chevron {
   transform: translateX(2px);
   color: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.11);
 }
 
+/* ── Topic meta: title + count ── */
 .cardMeta {
   display: flex;
   flex-direction: column;
   gap: 3px;
+  margin-top: auto;
 }
 
 .topicTitle {
-  font-size: 15px;
+  font-size: 14.5px;
   font-weight: 680;
-  line-height: 1.2;
-  letter-spacing: -0.015em;
-  color: #f0f4fb;
+  line-height: 1.22;
+  letter-spacing: -0.018em;
+  color: #eef2fa;
   word-break: break-word;
   hyphens: auto;
+  /* Max 2 lines */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .topicCount {
-  font-size: 12.5px;
+  font-size: 11.5px;
   font-weight: 450;
   line-height: 1.3;
-  color: rgba(180, 196, 218, 0.75);
+  color: rgba(169, 181, 202, 0.7);
+  letter-spacing: 0.01em;
 }
 
-/* Decorative SVG bottom-right */
+/* ── Decorative SVG — bottom-right clip ── */
 .decorWrap {
   position: absolute;
-  right: -6px;
-  bottom: -6px;
-  width: 72px;
-  height: 56px;
+  right: -4px;
+  bottom: -5px;
+  width: 80px;
+  height: 62px;
   pointer-events: none;
-  opacity: 0.13;
+  opacity: 0.14;
   z-index: 0;
+  /* Ensure it doesn't bleed outside the card's overflow:hidden */
 }
 
 .decoration {
   width: 100%;
   height: 100%;
+  display: block;
 }

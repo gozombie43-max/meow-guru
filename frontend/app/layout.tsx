@@ -1,4 +1,5 @@
 import type { Metadata,Viewport } from 'next';
+import Script from 'next/script';
 import localFont from 'next/font/local';
 import { AuthProvider } from '@/context/AuthContext';
 import './globals.css';
@@ -74,6 +75,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className={GeistSans.variable} suppressHydrationWarning>
+        {/* Iconify web component — provides <iconify-icon> for topic card icons.
+            afterInteractive: loads after hydration, zero SSR impact. */}
+        <Script
+          src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"
+          strategy="afterInteractive"
+        />
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
