@@ -113,7 +113,7 @@ export const MobileTopicCard = React.memo(function MobileTopicCard({
               {isComingSoon
                 ? "Coming soon"
                 : count !== undefined
-                  ? detail?.userSolved !== undefined && detail.userSolved > 0
+                  ? detail?.userSolved !== undefined
                     ? `${detail.userSolved} / ${count} solved`
                     : `${count} questions`
                   : "—"}
@@ -124,7 +124,7 @@ export const MobileTopicCard = React.memo(function MobileTopicCard({
       </div>
 
       {/* Bottom: Progress bar (omitted for coming soon) */}
-      {!isComingSoon && progressPct !== undefined && progressPct > 0 && (
+      {!isComingSoon && progressPct !== undefined && (
         <div className={styles.cardFooter}>
           <div className={styles.progressRow}>
             <div className={styles.progressTrack}>

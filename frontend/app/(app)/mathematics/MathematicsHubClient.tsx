@@ -45,19 +45,11 @@ export default function MathematicsHubClient() {
       const topicSlug = topic.slug;
       const totalQuestions = data?.totals?.[topicSlug] || 0;
       const mockConfig = config.mobileTopicDetails[topicSlug as keyof typeof config.mobileTopicDetails];
-      const realUserSolved = data?.userProgress?.[topicSlug]?.userSolved || 0;
-      
-      const mockProgress = (mockConfig as any)?.progress as number | undefined;
+      const userSolved = data?.userProgress?.[topicSlug]?.userSolved || 0;
 
-      const userSolved = realUserSolved > 0 
-        ? realUserSolved 
-        : mockProgress 
-          ? Math.round(totalQuestions * (mockProgress / 100)) 
-          : 0;
-
-      const progress = totalQuestions > 0 && realUserSolved > 0 
-        ? Math.round((realUserSolved / totalQuestions) * 100) 
-        : mockProgress;
+      const progress = totalQuestions > 0 
+        ? Math.round((userSolved / totalQuestions) * 100) 
+        : 0;
 
       return [
         topicSlug,
