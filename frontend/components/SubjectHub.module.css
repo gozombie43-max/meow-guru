@@ -1959,31 +1959,3 @@
   z-index: 0;
 }
 
-.oledSummaryPill {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  margin: 0 auto 12px;
-  padding: 7px 16px;
-  width: fit-content;
-  border-radius: 999px;
-  background: rgba(9, 20, 34, 0.92);
-  border: 1px solid rgba(112, 171, 239, 0.28);
-  color: rgba(169, 181, 202, 0.9);
-  font-size: 12.5px;
-  font-weight: 500;
-  line-height: 1;
-}
-
-.oledSummaryValue {
-  color: #f0f4fb;
-  font-weight: 600;
-}
-
-.oledSummaryDivider {
-  display: inline-block;
-  width: 1px;
-  height: 13px;
-  background: rgba(119, 166, 222, 0.28);
-  flex-shrink: 0;
-}

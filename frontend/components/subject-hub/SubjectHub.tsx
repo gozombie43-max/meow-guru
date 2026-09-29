@@ -9,10 +9,8 @@ import {
 ArrowLeft,
 BookOpen,
 BookOpenCheck,
-ChartNoAxesColumnIncreasing,
 ChevronRight,
 LayoutGrid,
-Layers3,
 List as ListIcon,
 Moon,
 Search,
@@ -1161,25 +1159,6 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
             <span className={defaultStyles.oledPiDecoration} aria-hidden="true">π</span>
           )}
         </header>
-
-        {/* Summary pill — OLED only */}
-        {oledMobile && (() => {
-          const totalQuestions = TOPICS.reduce((sum, t) => {
-            const detail = config.mobileTopicDetails?.[t.slug];
-            return sum + (detail?.questionCount ?? 0);
-          }, 0);
-          return (
-            <div className={defaultStyles.oledSummaryPill} aria-label={`${TOPICS.length} topics, ${totalQuestions > 0 ? totalQuestions.toLocaleString() : "—"} questions`}>
-              <Layers3 size={13} strokeWidth={2} aria-hidden="true" />
-              <span className={defaultStyles.oledSummaryValue}>{TOPICS.length} Topics</span>
-              <span className={defaultStyles.oledSummaryDivider} aria-hidden="true" />
-              <ChartNoAxesColumnIncreasing size={13} strokeWidth={2} aria-hidden="true" />
-              <span className={defaultStyles.oledSummaryValue}>
-                {totalQuestions > 0 ? totalQuestions.toLocaleString() : "—"} Questions
-              </span>
-            </div>
-          );
-        })()}
 
         <div data-hub-part="mobileBody" className={mobileStyles.mobileBody}>
           {/* Search */}
