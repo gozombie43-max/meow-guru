@@ -1,10 +1,5 @@
 /* ============================================================
-   MobileTopicCard — OLED Exam Minimalist 2-Column Card
-   Exact match to Quiz Engine surface system
-   ============================================================ */
-
-/* ============================================================
-   MobileTopicCard — OLED Exam Minimalist 2-Column Card
+   MobileTopicCard — Cleaner "Exam Library" Card
    Exact match to Quiz Engine surface system
    ============================================================ */
 
@@ -13,15 +8,17 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 114px;
+  width: 100%;
+  min-width: 0;
+  height: 104px;
   border-radius: 18px;
-  padding: 13px 12px 14px;
+  padding: 11px 12px 10px;
   text-decoration: none;
-  background: #1A1A1C;
+  background: #1B1B1D;
   border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
-  transition: transform 80ms cubic-bezier(0.2, 0.8, 0.2, 1),
-              background-color 80ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.015);
+  transition: transform 100ms cubic-bezier(0.2, 0.8, 0.2, 1),
+              background-color 100ms cubic-bezier(0.2, 0.8, 0.2, 1);
   -webkit-tap-highlight-color: transparent;
   cursor: pointer;
   box-sizing: border-box;
@@ -38,32 +35,41 @@
 }
 
 .cardComingSoon {
-  opacity: 0.52;
+  opacity: 0.58;
   pointer-events: none;
 }
 
-/* ── Top row: Icon tile & Chevron ── */
-.cardHeader {
+/* ── Top row: [icon] + [title / count] on left, chevron on right ── */
+.cardTop {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: 11px;
+  gap: 6px;
+  width: 100%;
+}
+
+.cardHeaderLeft {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
 }
 
 .iconTile {
-  width: 40px;
-  height: 40px;
-  flex: 0 0 40px;
-  border-radius: 12px;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  border-radius: 11px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: color-mix(in srgb, var(--accent) 15%, rgba(255, 255, 255, 0.02));
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
   color: var(--accent);
 }
 
 .algebraIcon {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
   font-style: italic;
   font-family: serif, "Times New Roman", Times;
@@ -71,38 +77,28 @@
 }
 
 .numberSystemIcon {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: -0.4px;
   line-height: 1;
 }
 
-.chevron {
-  color: rgba(255, 255, 255, 0.35);
-  transition: transform 100ms ease, color 100ms ease;
-  flex-shrink: 0;
-}
-
-.card:active .chevron {
-  transform: translateX(2px);
-  color: rgba(255, 255, 255, 0.7);
-}
-
-/* ── Middle: Topic Name and Question Count ── */
-.cardBody {
+.titleBlock {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
 }
 
 .topicTitle {
   font-size: 14.5px;
-  font-weight: 580;
-  line-height: 20px;
-  min-height: 40px;
-  letter-spacing: -0.1px;
+  font-weight: 600;
+  line-height: 18px;
+  letter-spacing: -0.2px;
   color: #F1F1F3;
-  word-break: break-word;
+  word-break: normal;
+  overflow-wrap: break-word;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -110,16 +106,32 @@
 }
 
 .topicCount {
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 450;
-  line-height: 16px;
+  line-height: 15px;
   color: #A4A4AE;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* ── Bottom: Progress Bar or Coming Soon ── */
+.chevron {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  color: rgba(255, 255, 255, 0.35);
+  margin-top: 1px;
+  transition: transform 100ms ease, color 100ms ease;
+}
+
+.card:active .chevron {
+  transform: translateX(2px);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* ── Bottom: Progress Bar ── */
 .cardFooter {
-  margin-top: 11px;
-  min-height: 16px;
+  width: 100%;
   display: flex;
   align-items: center;
 }
@@ -147,23 +159,22 @@
 }
 
 .progressLabel {
-  font-size: 12px;
-  font-weight: 550;
-  color: #9A9AA4;
-  min-width: 26px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #83838C;
+  min-width: 24px;
   text-align: right;
   flex-shrink: 0;
 }
 
-.comingSoonBadge {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 11.5px;
-  font-weight: 500;
-  color: #696972;
-}
-
-.comingSoonBadge svg {
-  color: #696972;
+/* ── Very small phone override (≤ 340px) ── */
+@media (max-width: 340px) {
+  .card {
+    height: 100px;
+    padding: 10px;
+  }
+  .iconTile {
+    width: 34px;
+    height: 34px;
+  }
 }

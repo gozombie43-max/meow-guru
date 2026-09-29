@@ -1938,6 +1938,12 @@
   padding: 0 0 16px;
 }
 
+@media (max-width: 340px) {
+  .oledTopicGrid {
+    gap: 8px;
+  }
+}
+
 /* ── OLED Mobile Container & Topbar (Header/Search/Meta pinned, only cards scroll) ── */
 .oledMobile {
   background: #000000 !important;
