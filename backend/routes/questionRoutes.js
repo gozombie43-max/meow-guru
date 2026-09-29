@@ -4,6 +4,7 @@ import { fetchTopicCountSnapshot } from "../services/questions/topicCountSnapsho
 import multer from 'multer';
 import questionController from '../controllers/questionController.js';
 import adminAuth from "../middleware/auth.js";
+import { protect } from "../middleware/protect.js";
 
 const router = express.Router();
 const upload = multer({
@@ -54,6 +55,7 @@ router.get('/', questionController.getQuestions);
 
 // ── Param routes LAST ───────────────────────────────────
 
+router.post('/:id/answer', protect, questionController.submitAnswer);
 router.get('/:id', questionController.getQuestionById);
 router.put('/:id', adminAuth, questionController.updateQuestion);
 router.patch('/:id', adminAuth, questionController.updateQuestion);

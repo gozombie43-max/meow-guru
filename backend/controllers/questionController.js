@@ -307,7 +307,27 @@ const getQuestionsMeta = async (req, res) => {
   }
 };
 
+// ── POST /api/questions/:id/answer ─────────────────────
+const submitAnswer = async (req, res) => {
+  try {
+    const { answer, submissionId } = req.body;
+    if (typeof answer !== 'number') {
+      return res.status(400).json({ error: 'Valid answer required' });
+    }
+    const result = await questionService.processUserAnswer(
+      req.user._id || req.user.id,
+      req.params.id,
+      answer,
+      submissionId
+    );
+    res.json(result);
+  } catch (err) {
+    res.status(err.statusCode || 500).json({ error: err.message });
+  }
+}
+
 export default { 
+  submitAnswer,
   addQuestion, 
   getQuestionById, 
   updateQuestion, 

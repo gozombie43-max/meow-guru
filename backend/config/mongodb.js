@@ -209,3 +209,11 @@ export function getNotificationEngagementCollection() {
     "notificationEngagement"
   );
 }
+
+export function getUserQuestionProgressCollection() {
+  return getMongoDB().collection("userQuestionProgress");
+}
+
+export function getUserTopicProgressCollection() {
+  return getMongoDB().collection("userTopicProgress");
+}

@@ -30,6 +30,7 @@ import { initUserRoutes } from './routes/user.routes.js';
 import questionRoutes from './routes/questionRoutes.js';
 import mocktestRoutes from './routes/mocktest.js';
 import accessCodeRoutes from './routes/accessCodes.js';
+import progressRoutes from './routes/progress.routes.js';
 
 function lazyRouter(loader) {
   let routerPromise;
@@ -120,6 +121,7 @@ export async function createApp({ isReady, isShuttingDown, quizOnlyMode = proces
   // Quiz-essential routes. These remain available on the Azure Free F1 runtime.
   app.use('/api/questions', questionRoutes);
   app.use('/api/mocktest', mocktestRoutes);
+  app.use('/api/progress', progressRoutes);
   app.use('/api/upload', uploadLimiter, lazyRouter(() => import('./routes/imageUpload.js')));
 
   // Bulk image/solution administration depends on external object storage. Keep

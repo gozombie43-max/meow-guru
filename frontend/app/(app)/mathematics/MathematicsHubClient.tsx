@@ -41,13 +41,24 @@ const config = {
 export default function MathematicsHubClient() {
   const { data } = useTopicQuestionTotals();
   const mobileTopicDetails = Object.fromEntries(
-    TOPICS.map((topic) => [
-      topic.slug,
-      {
-        ...config.mobileTopicDetails[topic.slug as keyof typeof config.mobileTopicDetails],
-        questionCount: data?.totals[topic.slug],
-      },
-    ])
+    TOPICS.map((topic) => {
+      const topicSlug = topic.slug;
+      const totalQuestions = data?.totals?.[topicSlug] || 0;
+      const userSolved = data?.userProgress?.[topicSlug]?.userSolved || 0;
+      const progress = totalQuestions > 0 && userSolved > 0 
+        ? Math.round((userSolved / totalQuestions) * 100) 
+        : undefined;
+
+      return [
+        topicSlug,
+        {
+          ...config.mobileTopicDetails[topicSlug as keyof typeof config.mobileTopicDetails],
+          questionCount: totalQuestions,
+          userSolved,
+          progress,
+        },
+      ];
+    })
   );
   return <SubjectHub config={{ ...config, mobileTopicDetails }} />;
 }

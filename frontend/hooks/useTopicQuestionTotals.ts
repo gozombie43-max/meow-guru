@@ -5,8 +5,14 @@ import useSWR from "swr";
 import { API_BASE } from "@/lib/api-base";
 import { fetchWithRetry } from "@/lib/api/http";
 
-type Snapshot = { subject: string; revision: number; totals: Record<string, number>; updatedAt: string };
-const STORAGE_KEY = "math-topic-counts:v1";
+type Snapshot = { 
+  subject: string; 
+  revision: number; 
+  totals: Record<string, number>; 
+  updatedAt: string;
+  userProgress?: Record<string, { userSolved: number; userMastered: number }>;
+};
+const STORAGE_KEY = "math-topic-counts:v2"; // bumped version
 let stored: Snapshot | undefined;
 let restored = false;
 const subscribe = () => () => {};
@@ -44,7 +50,7 @@ async function fetchSnapshot(url: string): Promise<Snapshot> {
 
 export function useTopicQuestionTotals() {
   const fallbackData = useSyncExternalStore(subscribe, readStoredSnapshot, serverSnapshot);
-  return useSWR<Snapshot>(`${API_BASE}/api/questions/topic-counts?subject=mathematics`, fetchSnapshot, {
+  return useSWR<Snapshot>(`${API_BASE}/api/progress/topics?subject=mathematics`, fetchSnapshot, {
     fallbackData,
     revalidateOnMount: true,
     revalidateOnFocus: false,

@@ -30,7 +30,7 @@ export interface MobileTopicCardProps {
   /** Kept for type compatibility */
   icon?: LucideIcon;
   accent: string;
-  detail?: { color?: string; questionCount?: number; progress?: number };
+  detail?: { color?: string; questionCount?: number; progress?: number; userSolved?: number };
 }
 
 function renderTopicIcon(slug: string, FallbackIcon?: LucideIcon) {
@@ -113,7 +113,9 @@ export const MobileTopicCard = React.memo(function MobileTopicCard({
               {isComingSoon
                 ? "Coming soon"
                 : count !== undefined
-                  ? `${count} questions`
+                  ? detail?.userSolved !== undefined && detail.userSolved > 0
+                    ? `${detail.userSolved} / ${count} solved`
+                    : `${count} questions`
                   : "—"}
             </span>
           </div>
