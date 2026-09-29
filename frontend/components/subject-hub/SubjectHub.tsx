@@ -7,9 +7,11 @@ import defaultStyles from "@/components/SubjectHub.module.css";
 import { useQuestionCounts } from "@/hooks/useQuestionCounts";
 import {
 ArrowLeft,
+ArrowUpDown,
 BookOpen,
 BookOpenCheck,
 Check,
+ChevronDown,
 ChevronRight,
 LayoutGrid,
 List as ListIcon,
@@ -110,13 +112,42 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
 
   const [mobileCategory, setMobileCategory] = useState("all");
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+  const [sortBy, setSortBy] = useState<"default" | "questions-desc" | "questions-asc" | "alpha">("default");
+  const [sortMenuOpen, setSortMenuOpen] = useState(false);
   const oledMobile = config.mobileAppearance === "oled";
   const mobileStyles = oledMobile ? defaultStyles : styles;
-  const mobileTopics = oledMobile ? TOPICS.filter((topic) => {
+  const mobileTopics = useMemo(() => {
+    if (!oledMobile) return null;
     const query = searchQuery.trim().toLowerCase();
-    return (mobileCategory === "all" || topic.priority === mobileCategory) &&
-      (!query || [topic.name, topic.description, ...topic.subtopics].some((text) => text.toLowerCase().includes(query)));
-  }) : null;
+    const filtered = TOPICS.filter((topic) => {
+      return (
+        (mobileCategory === "all" || topic.priority === mobileCategory) &&
+        (!query ||
+          [topic.name, topic.description, ...topic.subtopics].some((text) =>
+            text.toLowerCase().includes(query)
+          ))
+      );
+    });
+
+    if (sortBy === "questions-desc") {
+      return [...filtered].sort(
+        (a, b) =>
+          (config.mobileTopicDetails?.[b.slug]?.questionCount ?? 0) -
+          (config.mobileTopicDetails?.[a.slug]?.questionCount ?? 0)
+      );
+    }
+    if (sortBy === "questions-asc") {
+      return [...filtered].sort(
+        (a, b) =>
+          (config.mobileTopicDetails?.[a.slug]?.questionCount ?? 0) -
+          (config.mobileTopicDetails?.[b.slug]?.questionCount ?? 0)
+      );
+    }
+    if (sortBy === "alpha") {
+      return [...filtered].sort((a, b) => a.name.localeCompare(b.name));
+    }
+    return filtered;
+  }, [oledMobile, TOPICS, searchQuery, mobileCategory, sortBy, config.mobileTopicDetails]);
 
   // Chapter Mode Check
   const isChapterMode = !!config.getChapterGroup;
@@ -1222,11 +1253,6 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
               </div>
             </div>
           </div>
-
-          {/* Decorative π — OLED only */}
-          {oledMobile && (
-            <span className={defaultStyles.oledPiDecoration} aria-hidden="true">π</span>
-          )}
         </header>
 
         {mobileFilterOpen && (
@@ -1237,9 +1263,17 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
           />
         )}
 
+        {sortMenuOpen && (
+          <div
+            className={defaultStyles.mobileFilterBackdrop}
+            onClick={() => setSortMenuOpen(false)}
+            aria-hidden="true"
+          />
+        )}
+
         <div data-hub-part="mobileBody" className={mobileStyles.mobileBody}>
           {/* Search */}
-          <div data-hub-part="mobileSearchRow" className={mobileStyles.mobileSearchRow}>
+          <div data-hub-part="mobileSearchRow" className={`${mobileStyles.mobileSearchRow} ${oledMobile ? defaultStyles.oledSearchRow : ""}`}>
             <Search className={mobileStyles.mobileSearchIcon} size={16} />
             <input
               type="text"
@@ -1253,8 +1287,8 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
               onChange={(e) => setSearchQuery(e.target.value)}
               aria-label="Search topics"
             />
-            <div className={mobileStyles.mobileSearchRightActions}>
-              {searchQuery && (
+            {searchQuery ? (
+              <div className={mobileStyles.mobileSearchRightActions}>
                 <button data-ui-button="secondary"
                   type="button"
                   className={mobileStyles.mobileSearchClearBtn}
@@ -1263,85 +1297,138 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
                 >
                   <X size={11} />
                 </button>
-              )}
-              <span className={mobileStyles.mobileSearchDivider} aria-hidden="true" />
-              <button data-ui-button="state" data-ui-shape="icon"
-                type="button"
-                className={`${mobileStyles.mobileMicBtn} ${isListening ? mobileStyles.mobileMicBtnListening : ""}`}
-                onClick={toggleVoiceSearch}
-                aria-label={isListening ? "Stop voice search" : "Voice search"}
-                title={isListening ? "Listening..." : "Voice search"}
-              >
-                <MicIcon size={16} />
-              </button>
-            </div>
-          </div>
-
-          {/* TOPICS Section Header */}
-          <div data-hub-part="mobileTopicsTitle" className={mobileStyles.mobileTopicsTitle}>TOPICS</div>
-
-          {/* iOS Grouped Card Container with Filter Header */}
-          <div data-hub-part="mobileTopicGroup" className={mobileStyles.mobileTopicGroup}>
-            {/* Priority Tabs in Card Header (for non-OLED views) */}
-            {!oledMobile && !isChapterMode && (
-              <div data-hub-part="mobileTabsScroll" className={mobileStyles.mobileTabsScroll}>
-                {CATEGORIES.map((cat) => (
-                  <button data-ui-button="state"
-                    key={cat.id}
-                    type="button"
-                    className={`${mobileStyles.mobileTabBtn} ${
-                      activeCategory === cat.id ? mobileStyles.mobileTabActive : ""
-                    }`}
-                    onClick={() => setActiveCategory(cat.id)}
-                    aria-pressed={activeCategory === cat.id}
-                  >
-                    {cat.label}
-                  </button>
-                ))}
               </div>
-            )}
-
-            {oledMobile ? (
-              <>
-                <div className={defaultStyles.oledTopicGrid}>
-                  {(mobileTopics ?? []).map((topic) => {
-                    const detail = config.mobileTopicDetails?.[topic.slug];
-                    return (
-                      <MobileTopicCard
-                        key={topic.id}
-                        href={isChapterMode ? `${config.chapterBasePrefix}/${topic.slug}` : `${topic.routeBase}`}
-                        slug={topic.slug}
-                        name={topic.name}
-                        icon={topic.icon}
-                        accent={detail?.color ?? topic.color}
-                        detail={detail}
-                      />
-                    );
-                  })}
-                </div>
-                {mobileTopics?.length === 0 && (
-                  <p role="status" className={mobileStyles.mobileTopicCount}>
-                    No topics found. Try another search or filter.
-                  </p>
-                )}
-              </>
-            ) : (
-              <>
-                {filteredTopics.map((topic) => (
-                  <MobileTopicRow
-                    key={topic.id}
-                    href={isChapterMode ? `${config.chapterBasePrefix}/${topic.slug}` : `${topic.routeBase}`}
-                    color={topic.color}
-                    Icon={topic.icon}
-                    name={topic.name}
-                    quiet={false}
-                    detail={config.mobileTopicDetails?.[topic.slug]}
-                    styles={mobileStyles}
-                  />
-                ))}
-              </>
-            )}
+            ) : !oledMobile ? (
+              <div className={mobileStyles.mobileSearchRightActions}>
+                <span className={mobileStyles.mobileSearchDivider} aria-hidden="true" />
+                <button data-ui-button="state" data-ui-shape="icon"
+                  type="button"
+                  className={`${mobileStyles.mobileMicBtn} ${isListening ? mobileStyles.mobileMicBtnListening : ""}`}
+                  onClick={toggleVoiceSearch}
+                  aria-label={isListening ? "Stop voice search" : "Voice search"}
+                  title={isListening ? "Listening..." : "Voice search"}
+                >
+                  <MicIcon size={16} />
+                </button>
+              </div>
+            ) : null}
           </div>
+
+          {/* OLED Metadata & Sort Bar */}
+          {oledMobile && (() => {
+            const totalQuestions = (mobileTopics ?? []).reduce((sum, t) => {
+              const detail = config.mobileTopicDetails?.[t.slug];
+              return sum + (detail?.questionCount ?? 0);
+            }, 0);
+            return (
+              <div className={defaultStyles.oledMetaBar}>
+                <span className={defaultStyles.oledMetaCount}>
+                  {mobileTopics?.length ?? 0} topics · {totalQuestions.toLocaleString()} questions
+                </span>
+                <div className={defaultStyles.oledSortWrap}>
+                  <button
+                    type="button"
+                    className={`${defaultStyles.oledSortBtn} ${sortMenuOpen ? defaultStyles.oledSortBtnActive : ""}`}
+                    onClick={() => setSortMenuOpen((prev) => !prev)}
+                    aria-label="Sort topics"
+                    aria-expanded={sortMenuOpen}
+                  >
+                    <ArrowUpDown size={12} strokeWidth={2.2} />
+                    <span>Sort</span>
+                    <ChevronDown size={12} strokeWidth={2.2} />
+                  </button>
+
+                  {sortMenuOpen && (
+                    <div className={defaultStyles.oledSortDropdown} role="menu">
+                      {[
+                        { id: "default", label: "Default" },
+                        { id: "questions-desc", label: "Most questions" },
+                        { id: "questions-asc", label: "Least questions" },
+                        { id: "alpha", label: "A → Z" },
+                      ].map((opt) => (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          className={`${defaultStyles.oledSortOption} ${sortBy === opt.id ? defaultStyles.oledSortOptionActive : ""}`}
+                          onClick={() => {
+                            setSortBy(opt.id as any);
+                            setSortMenuOpen(false);
+                          }}
+                        >
+                          <span>{opt.label}</span>
+                          {sortBy === opt.id && <Check size={13} strokeWidth={2.5} />}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* TOPICS Section Header for non-OLED */}
+          {!oledMobile && (
+            <div data-hub-part="mobileTopicsTitle" className={mobileStyles.mobileTopicsTitle}>TOPICS</div>
+          )}
+
+          {/* Topic Cards / Rows */}
+          {oledMobile ? (
+            <>
+              <div className={defaultStyles.oledTopicGrid}>
+                {(mobileTopics ?? []).map((topic) => {
+                  const detail = config.mobileTopicDetails?.[topic.slug];
+                  return (
+                    <MobileTopicCard
+                      key={topic.id}
+                      href={isChapterMode ? `${config.chapterBasePrefix}/${topic.slug}` : `${topic.routeBase}`}
+                      slug={topic.slug}
+                      name={topic.name}
+                      icon={topic.icon}
+                      accent={detail?.color ?? topic.color}
+                      detail={detail}
+                    />
+                  );
+                })}
+              </div>
+              {mobileTopics?.length === 0 && (
+                <p role="status" className={mobileStyles.mobileTopicCount}>
+                  No topics found. Try another search or filter.
+                </p>
+              )}
+            </>
+          ) : (
+            <div data-hub-part="mobileTopicGroup" className={mobileStyles.mobileTopicGroup}>
+              {!isChapterMode && (
+                <div data-hub-part="mobileTabsScroll" className={mobileStyles.mobileTabsScroll}>
+                  {CATEGORIES.map((cat) => (
+                    <button data-ui-button="state"
+                      key={cat.id}
+                      type="button"
+                      className={`${mobileStyles.mobileTabBtn} ${
+                        activeCategory === cat.id ? mobileStyles.mobileTabActive : ""
+                      }`}
+                      onClick={() => setActiveCategory(cat.id)}
+                      aria-pressed={activeCategory === cat.id}
+                    >
+                      {cat.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {filteredTopics.map((topic) => (
+                <MobileTopicRow
+                  key={topic.id}
+                  href={isChapterMode ? `${config.chapterBasePrefix}/${topic.slug}` : `${topic.routeBase}`}
+                  color={topic.color}
+                  Icon={topic.icon}
+                  name={topic.name}
+                  quiet={false}
+                  detail={config.mobileTopicDetails?.[topic.slug]}
+                  styles={mobileStyles}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
