@@ -14,7 +14,7 @@ it("commits the current radio selection with Enter and restores trigger focus", 
   fireEvent.keyDown(choice, { key: "Enter" });
   expect(change).toHaveBeenCalledWith("Geometry");
   await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
-  expect(trigger).toHaveFocus();
+  await waitFor(() => expect(trigger).toHaveFocus());
 });
 
 it("does not auto-focus the search bar when the modal appears", async () => {

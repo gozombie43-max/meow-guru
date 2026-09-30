@@ -1904,15 +1904,24 @@
     box-shadow: none;
   }
   .oledMobile .mobileTabBtn {
-    min-width: 0; min-height: 44px; padding: 8px 10px; border-radius: 999px !important;
-    font-size: 13px; font-weight: 500; border: 0;
-    box-shadow: none; flex: initial;
+    min-width: 0; min-height: 40px; padding: 6px 8px; border-radius: 0 !important;
+    font-size: 13px; font-weight: 550; border: 0;
+    box-shadow: none; flex: initial; color: #9A9CA4; background: transparent !important;
   }
   .oledMobile .mobileTabBtn.mobileTabActive {
-    background: #216bc1 !important; color: #edf4fc !important;
-    border-radius: 999px !important; font-weight: 600 !important;
+    background: transparent !important; color: #ffffff !important;
+    border-radius: 0 !important; font-weight: 650 !important;
   }
-  .oledMobile .mobileTabActive::after { display: none; }
+  .oledMobile .mobileTabActive::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2.5px;
+    background: #2563EB;
+    border-radius: 2px;
+  }
   .oledMobile .mobileTopicRow {
     min-height: 60px; padding: 9px 11px; border-radius: 13px;
     border: 0; box-shadow: none;
@@ -1926,8 +1935,6 @@
   :global(html:not(.theme-light)) .oledMobile { background: #000; }
   :global(html:not(.theme-light)) .oledMobile .mobileBody { background: #000; }
   :global(html:not(.theme-light)) .oledMobile .mobileSearchInput { background: #1c1c1e; border: 0; box-shadow: none; color: #e5eaf0; }
-  :global(html:not(.theme-light)) .oledMobile .mobileTabBtn { background: #1c1c1e; color: #aab4c1; }
-  :global(html:not(.theme-light)) .oledMobile .mobileTabActive { background: #176dcc; color: #edf4fc; border-color: transparent; }
   :global(html:not(.theme-light)) .oledMobile .mobileTopicRow { background: #1c1c1e; }
   :global(html:not(.theme-light)) .oledMobile .mobileTopicRow:hover,
   :global(html:not(.theme-light)) .oledMobile .mobileTopicRow:active { background: #252527; }
@@ -1935,17 +1942,18 @@
   :global(html:not(.theme-light)) .oledMobile .mobileChevron { color: #788696; }
 }
 
-/* Two-column card grid for OLED mathematics mobile view */
+/* Two-column square card grid for OLED mathematics mobile view */
 .oledTopicGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
-  padding: 0 0 16px;
+  padding: 0 0 36px;
 }
 
 @media (max-width: 340px) {
   .oledTopicGrid {
     gap: 8px;
+    padding-bottom: 24px;
   }
 }
 
@@ -1966,25 +1974,47 @@
   overflow: visible;
   height: calc(56px + var(--safe-top));
   min-height: calc(56px + var(--safe-top));
+  padding-top: var(--safe-top);
   padding-inline: 14px;
+  display: grid;
+  grid-template-columns: 36px 1fr 36px;
+  align-items: center;
   flex-shrink: 0;
+  background: #000000 !important;
+  border-bottom: none !important;
 }
 
 .oledMobile .mobileBackBtn {
-  width: 40px;
-  height: 40px;
-  border-radius: 14px;
-  background: #151517;
-  border: 1px solid rgba(255, 255, 255, 0.055);
-  color: #F1F1F3;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: transparent !important;
+  border: none !important;
+  color: #ECECF0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: opacity 100ms ease, background-color 100ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.oledMobile .mobileBackBtn:active {
+  background: rgba(255, 255, 255, 0.08) !important;
+  opacity: 0.8;
 }
 
 .oledMobile .mobileTopbarTitle {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 17.5px;
+  font-weight: 700;
   line-height: 24px;
-  letter-spacing: -0.2px;
-  color: #F1F1F3;
+  letter-spacing: -0.15px;
+  color: #ECECEF;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .oledMobile [data-hub-part="mobileBody"] {
@@ -1993,7 +2023,7 @@
   flex: 1 !important;
   min-height: 0 !important;
   overflow: hidden !important;
-  padding: 12px 14px 0 !important;
+  padding: 0 14px 0 !important;
   box-sizing: border-box;
   background: #000000 !important;
 }
@@ -2008,44 +2038,44 @@
 }
 
 .mobileHeaderFilterBtn {
-  width: 40px;
-  height: 40px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.055);
-  background: #151517;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none !important;
+  background: transparent !important;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #F1F1F3;
+  color: #ECECF0;
   position: relative;
   cursor: pointer;
-  transition: all 0.15s ease;
+  padding: 0;
+  transition: opacity 100ms ease, background-color 100ms ease;
   -webkit-tap-highlight-color: transparent;
 }
 
 :global(body.theme-light) .mobileHeaderFilterBtn {
-  background: #ffffff !important;
-  border-color: rgba(0, 0, 0, 0.12) !important;
+  background: transparent !important;
+  border: none !important;
   color: #1c1c1e !important;
 }
 
 .mobileHeaderFilterBtn:active {
-  transform: scale(0.96);
+  background: rgba(255, 255, 255, 0.08) !important;
+  opacity: 0.8;
 }
 
 .mobileHeaderFilterBtnActive,
 .mobileHeaderFilterHasSelection {
-  background: rgba(52, 127, 209, 0.18) !important;
-  border-color: rgba(52, 127, 209, 0.45) !important;
   color: #69A9ED !important;
 }
 
 .filterActiveDot {
   position: absolute;
-  top: 6px;
-  right: 6px;
-  width: 6px;
-  height: 6px;
+  top: 5px;
+  right: 5px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background: #347FD1;
   box-shadow: 0 0 6px #347FD1;
@@ -2182,30 +2212,85 @@
 
 /* ── OLED Search Row (Fixed) ── */
 .oledSearchRow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
   flex-shrink: 0 !important;
   margin-bottom: 0 !important;
 }
 
 .oledSearchRow .mobileSearchInput {
-  height: 46px;
-  border-radius: 16px;
-  background: #19191B !important;
-  border: 1px solid rgba(255, 255, 255, 0.045) !important;
-  padding: 0 38px 0 42px;
-  font-size: 14px;
-  color: #F1F1F3;
+  height: 40px;
+  border-radius: 12px;
+  background: #17171A !important;
+  border: 1px solid rgba(255, 255, 255, 0.04) !important;
+  outline: none !important;
+  padding: 0 34px 0 36px;
+  font-size: 12px;
+  font-weight: 450;
+  color: #F2F2F4;
   transition: border-color 150ms ease, background-color 150ms ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.oledSearchRow .mobileSearchInput:focus {
-  border-color: rgba(52, 127, 209, 0.32) !important;
-  background: #1D1D20 !important;
+.oledSearchRow .mobileSearchInput::placeholder {
+  color: #7C7E87 !important;
+  font-size: 12px;
+  font-weight: 450;
+}
+
+.oledSearchRow .mobileSearchInput:focus,
+.oledSearchRow .mobileSearchInput:focus-visible {
+  outline: none !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  background: #1C1C20 !important;
   box-shadow: none !important;
 }
 
 .oledSearchRow .mobileSearchIcon {
-  left: 14px;
-  color: #696972 !important;
+  left: 12px;
+  color: #7B7E88 !important;
+  width: 14px;
+  height: 14px;
+  position: absolute;
+  pointer-events: none;
+}
+
+.oledSearchRow .mobileSearchRightActions {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  z-index: 5;
+}
+
+.oledSearchRow .mobileSearchClearBtn {
+  width: 20px !important;
+  height: 20px !important;
+  min-height: 20px !important;
+  min-width: 20px !important;
+  max-width: 20px !important;
+  max-height: 20px !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  background: #27272B !important;
+  border: none !important;
+  color: #A0A1A8 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer;
+  transition: background-color 100ms ease, color 100ms ease, transform 100ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.oledSearchRow .mobileSearchClearBtn:active {
+  background: #36363C !important;
+  color: #F2F2F4 !important;
+  transform: scale(0.92);
 }
 
 /* ── OLED Metadata & Sort Bar (Fixed) ── */
@@ -2213,14 +2298,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin: 16px 2px 12px;
+  margin: 8px 0 8px;
   flex-shrink: 0 !important;
 }
 
 .oledMetaCount {
-  font-size: 13px;
+  font-size: 11.5px;
   font-weight: 500;
-  color: #9B9BA4;
+  color: #A0A1A8;
   letter-spacing: -0.01em;
 }
 
@@ -2233,11 +2318,11 @@
   align-items: center;
   gap: 5px;
   height: 30px;
-  padding: 0 12px;
+  padding: 0 11px;
   border-radius: 999px;
-  background: #19191B;
-  border: 1px solid rgba(255, 255, 255, 0.055);
-  color: #F1F1F3;
+  background: #18181C;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  color: #F2F2F4;
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
@@ -2248,7 +2333,7 @@
 .oledSortBtn:active,
 .oledSortBtnActive {
   background: #222226;
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
 .oledSortDropdown {
@@ -2276,8 +2361,8 @@
   border-radius: 8px;
   border: none;
   background: transparent;
-  color: #9B9BA4;
-  font-size: 12.5px;
+  color: #9B9AA4;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   text-align: left;
@@ -2303,10 +2388,18 @@
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
-  padding-bottom: calc(108px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px));
   scrollbar-width: none;
 }
 
 .oledTopicScrollArea::-webkit-scrollbar {
   display: none;
+}
+
+.oledTopicScrollArea .mobileTopicCount {
+  font-size: 12.5px;
+  color: #8C8E97;
+  text-align: center;
+  padding: 48px 16px;
+  margin: 0;
 }

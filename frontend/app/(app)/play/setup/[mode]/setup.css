@@ -24,6 +24,12 @@
   position: relative;
 }
 
+.play-setup-page.training-dark .play-setup-header,
+:global(html.theme-dark) .play-setup-header {
+  background: #000000 !important;
+  border-bottom: none !important;
+}
+
 .play-setup-page.training-dark {
   --tr-bg: var(--dark-canvas, #17191d);
   --tr-surface: var(--dark-surface, #22252b);
@@ -82,19 +88,21 @@
 }
 
 .play-setup-back-btn {
-  border-radius: 10px;
-  background: var(--tr-surface);
-  border: 1px solid var(--tr-border);
+  border-radius: 50% !important;
+  background: transparent !important;
+  border: none !important;
   color: var(--tr-text);
   display: flex;
   align-items: center;
   justify-content: center;
   text-decoration: none;
   cursor: pointer;
-  transition: background-color 0.15s cubic-bezier(0.2, 0, 0, 1);
+  transition: background-color 0.15s ease, opacity 0.15s ease;
   -webkit-tap-highlight-color: transparent;
   flex-shrink: 0;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  width: 36px !important;
+  height: 36px !important;
+  box-shadow: none !important;
 }
 .play-setup-back-btn:hover {
   background: color-mix(in srgb, var(--tr-accent) 10%, var(--tr-surface));

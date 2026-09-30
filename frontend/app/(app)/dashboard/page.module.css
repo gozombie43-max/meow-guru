@@ -28,7 +28,7 @@
   --progress-bg: rgba(118,118,128,0.24);
   --close-btn: rgba(255, 255, 255, 0.1);
   --close-btn-hover: rgba(255, 255, 255, 0.2);
-  --mobile-navbar-bg: rgba(20,20,22,0.86);
+  --mobile-navbar-bg: #000000;
   --side-group-label: rgba(118,118,128,0.14);
   --side-row-border: rgba(255,255,255,0.06);
   --side-row-active: rgba(255,255,255,0.06);
@@ -145,7 +145,7 @@
   background: var(--mobile-navbar-bg);
   backdrop-filter: blur(28px) saturate(1.7);
   -webkit-backdrop-filter: blur(28px) saturate(1.7);
-  border-bottom: 1px solid var(--hairline-soft);
+  border-bottom: none !important;
   position: sticky; 
   top: 0; 
   z-index: 20;
@@ -330,22 +330,38 @@
 
 .pills { 
   display: flex; 
-  gap: 8px; 
-  flex-wrap: wrap; 
+  gap: 18px; 
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0 4px 4px;
+}
+.pills::-webkit-scrollbar {
+  display: none;
 }
 
 .pill {
   display: flex; 
   align-items: center; 
-  gap: 7px;
-  padding: 7px 14px;
-  border-radius: 100px;
-  font-size: 12.5px; 
-  font-weight: 600;
-  background: var(--pill-bg);
-  color: var(--text-dim);
-  border: none;
+  gap: 6px;
+  padding: 6px 4px 8px;
+  border-radius: 0 !important;
+  font-size: 13px; 
+  font-weight: 550;
+  background: transparent !important;
+  color: var(--text-dim, #9A9CA4);
+  border: none !important;
   cursor: pointer;
+  position: relative;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pill:hover {
+  color: var(--text, #EEEEF1);
 }
 
 .pill .dot { 
@@ -355,8 +371,20 @@
 }
 
 .pill.active { 
-  background: var(--theme-action, var(--ios-blue));
-  color: #fff; 
+  background: transparent !important;
+  color: #ffffff !important; 
+  font-weight: 650;
+}
+
+.pill.active::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  right: 0;
+  height: 2.5px;
+  background: #2563EB;
+  border-radius: 2px;
 }
 
 .cards { 

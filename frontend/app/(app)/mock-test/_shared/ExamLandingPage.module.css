@@ -140,22 +140,23 @@
 }
 
 .mobileBackBtn {
-  background: var(--bg);
-  border: 1px solid var(--border);
+  background: transparent !important;
+  border: none !important;
   color: var(--text-dark);
-  width: 28px;
-  height: 28px;
-  border-radius: 7px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50% !important;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   flex-shrink: 0;
-  transition: transform 0.1s ease;
+  transition: background 0.15s ease, opacity 0.15s ease;
 }
 
 .mobileBackBtn:active {
-  transform: scale(0.94);
+  background: rgba(255, 255, 255, 0.08) !important;
+  opacity: 0.75;
 }
 
 .headerIconBox {
@@ -268,37 +269,40 @@
 }
 
 .mobileTabBtn {
-  background: transparent;
-  border: none;
-  padding: 7px 4px 6px;
-  font-size: 11.5px;
-  font-weight: 600;
-  color: var(--text-muted);
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 10px 4px 8px;
+  font-size: 12.5px;
+  font-weight: 550;
+  color: #9A9CA4;
   cursor: pointer;
   transition: color 0.15s ease;
   white-space: nowrap;
   text-align: center;
   position: relative;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .mobileTabBtn:hover {
-  color: var(--text-dark);
+  color: #EEEEF1;
 }
 
 .activeMobileTabBtn {
-  color: var(--primary) !important;
-  font-weight: 750;
+  color: #FFFFFF !important;
+  font-weight: 650 !important;
+  background: transparent !important;
 }
 
 .activeMobileTabBtn::after {
   content: '';
   position: absolute;
-  bottom: -1px;
+  bottom: 0;
   left: 12%;
   right: 12%;
   height: 2.5px;
-  background: var(--theme-action, var(--primary));
-  border-radius: 2px 2px 0 0;
+  background: #2563EB;
+  border-radius: 2px;
 }
 
 /* Content Body - Only Cards Are Scrollable */
@@ -1061,9 +1065,8 @@
   --primary-bg: var(--oled-selected-soft);
   background: var(--oled-canvas); color: var(--oled-text);
 }
-:global(html.theme-dark) .page :is(.headerCard, .testLineCard, .statBox, .cardSection, .placeholderTab) { background: var(--oled-surface); border: 0; box-shadow: none; border-radius: 14px; }
-:global(html.theme-dark) .page :is(.mobileTabBtn, .tierDropdown) { background: var(--oled-surface); border: 0; border-radius: 999px !important; box-shadow: none; }
-:global(html.theme-dark) .page :is(.activeMobileTabBtn) { background: var(--oled-selected) !important; color: #edf4fc !important; border: 0; border-radius: 999px !important; box-shadow: none; }
-:global(html.theme-dark) .page :is(.activeMobileTabBtn)::after { display: none; }
+:global(html.theme-dark) .page :is(.testLineCard, .statBox, .cardSection, .placeholderTab) { background: var(--oled-surface); border: 0; box-shadow: none; border-radius: 14px; }
+:global(html.theme-dark) .page .headerCard { background: #000000 !important; border: 0 !important; box-shadow: none !important; }
+:global(html.theme-dark) .page :is(.tierDropdown) { background: var(--oled-surface); border: 0; border-radius: 999px !important; box-shadow: none; }
 :global(html.theme-dark) .page .testLineCard:hover { background: var(--oled-hover); box-shadow: none; transform: none; }
 :global(html.theme-dark) .page .testLineCard::before { display: none; }

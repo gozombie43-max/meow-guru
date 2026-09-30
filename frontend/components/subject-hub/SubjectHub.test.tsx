@@ -116,4 +116,38 @@ describe("SubjectHub", () => {
       expect(link.getAttribute("data-prefetch")).toBe("false");
     });
   });
+
+  it("renders OLED square cards without chevrons and correctly displays coming soon / solved counts", () => {
+    const mobileTopicDetails = {
+      percentages: { color: "#5DA6FF", questionCount: 705, userSolved: 0, progress: 0 },
+      "simple-interest": { color: "#F3B54A", questionCount: 0 },
+    };
+    const { container } = render(
+      <SubjectHub
+        config={{
+          ...mockConfig,
+          mobileAppearance: "oled",
+          mobileTopicDetails,
+        }}
+      />
+    );
+
+    // Verify topic titles
+    expect(screen.getAllByText("Percentages").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Simple Interest").length).toBeGreaterThanOrEqual(1);
+
+    // Verify solved count and coming soon text
+    expect(screen.getByText("0 / 705 solved")).toBeInTheDocument();
+    expect(screen.getAllByText("Coming soon").length).toBeGreaterThanOrEqual(1);
+
+    // Verify 0% progress label is present for active topic
+    expect(screen.getAllByText("0%").length).toBeGreaterThanOrEqual(1);
+
+    // Verify NO chevrons exist in mobile topic rows
+    const rows = container.querySelectorAll('[data-hub-part="mobileTopicRow"]');
+    rows.forEach((row) => {
+      expect(row.querySelector('svg.lucide-chevron-right')).toBeNull();
+    });
+  });
 });
+

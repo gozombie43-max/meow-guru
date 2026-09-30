@@ -1,32 +1,34 @@
 /* ============================================================
-   MobileTopicCard — Cleaner "Exam Library" Card
-   Exact match to Quiz Engine surface system
+   MobileTopicCard — Square Exam-Preparation Card
+   Disciplined fixed vertical zones & typography baseline alignment
    ============================================================ */
 
 .card {
   position: relative;
   display: flex;
   flex-direction: column;
+  align-items: center;
   justify-content: space-between;
   width: 100%;
   min-width: 0;
-  height: 104px;
-  border-radius: 18px;
-  padding: 11px 12px 10px;
+  aspect-ratio: 1 / 1;
+  border-radius: 14px;
+  padding: 14px 10px 14px;
   text-decoration: none;
-  background: #1B1B1D;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.015);
+  background: #19191C;
+  border: 1px solid rgba(255, 255, 255, 0.025);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   transition: transform 100ms cubic-bezier(0.2, 0.8, 0.2, 1),
               background-color 100ms cubic-bezier(0.2, 0.8, 0.2, 1);
   -webkit-tap-highlight-color: transparent;
   cursor: pointer;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 .card:active {
   transform: scale(0.985);
-  background: #202023;
+  background: #202024;
 }
 
 .card:focus-visible {
@@ -35,41 +37,44 @@
 }
 
 .cardComingSoon {
-  opacity: 0.58;
-  pointer-events: none;
+  cursor: default;
 }
 
-/* ── Top row: [icon] + [title / count] on left, chevron on right ── */
-.cardTop {
+.cardComingSoon:active {
+  transform: none;
+  background: #19191C;
+}
+
+/* ── Upper Content Block (Identical fixed baseline across all cards) ── */
+.cardBody {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 6px;
+  flex-direction: column;
+  align-items: center;
   width: 100%;
-}
-
-.cardHeaderLeft {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  flex: 1;
   min-width: 0;
 }
 
+/* ── Centered Icon Tile ── */
 .iconTile {
-  width: 36px;
-  height: 36px;
-  flex: 0 0 36px;
-  border-radius: 11px;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  border-radius: 8.5px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
   color: var(--accent);
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
+.cardComingSoon .iconTile {
+  opacity: 0.65;
 }
 
 .algebraIcon {
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 700;
   font-style: italic;
   font-family: serif, "Times New Roman", Times;
@@ -77,77 +82,88 @@
 }
 
 .numberSystemIcon {
-  font-size: 12px;
+  font-size: 10.5px;
   font-weight: 700;
-  letter-spacing: -0.4px;
+  letter-spacing: -0.3px;
   line-height: 1;
 }
 
-.titleBlock {
+/* ── Topic Title & Solved Meta (Rigid Fixed Baseline Zones) ── */
+.topicTitleWrap {
+  width: 100%;
+  height: 28px;
+  min-height: 20px;
+  max-height: 32px;
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  flex: 1;
-  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
 
 .topicTitle {
-  font-size: 14.5px;
-  font-weight: 600;
-  line-height: 18px;
-  letter-spacing: -0.2px;
-  color: #F1F1F3;
-  word-break: normal;
-  overflow-wrap: break-word;
+  font-size: 12.2px;
+  font-weight: 680;
+  line-height: 14.5px;
+  letter-spacing: -0.1px;
+  color: #EEEEF1;
+  text-align: center;
+  width: 100%;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+
+.cardComingSoon .topicTitle {
+  color: #9A9AA1;
 }
 
 .topicCount {
-  font-size: 12px;
-  font-weight: 450;
+  font-size: 11px;
+  font-weight: 500;
   line-height: 15px;
-  color: #A4A4AE;
+  height: 15px;
+  min-height: 15px;
+  max-height: 15px;
+  color: #9A9CA4;
+  margin-top: 4px;
+  text-align: center;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  width: 100%;
 }
 
-.chevron {
-  width: 16px;
-  height: 16px;
-  flex: 0 0 16px;
-  color: rgba(255, 255, 255, 0.35);
-  margin-top: 1px;
-  transition: transform 100ms ease, color 100ms ease;
+.cardComingSoon .topicCount {
+  color: #72747D;
 }
 
-.card:active .chevron {
-  transform: translateX(2px);
-  color: rgba(255, 255, 255, 0.7);
-}
-
-/* ── Bottom: Progress Bar ── */
+/* ── Bottom: Progress Bar (Raised by ~5–7px from bottom) ── */
 .cardFooter {
   width: 100%;
   display: flex;
   align-items: center;
+  margin-top: auto;
+  margin-bottom: 2px;
+  min-height: 14px;
 }
 
 .progressRow {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
   width: 100%;
+  height: 14px;
 }
 
 .progressTrack {
   flex: 1;
-  height: 3px;
+  height: 2.5px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.07);
+  background: #292B30;
   overflow: hidden;
 }
 
@@ -155,26 +171,50 @@
   height: 100%;
   border-radius: 999px;
   background: var(--accent);
+  opacity: 0.85;
   transition: width 200ms ease;
 }
 
 .progressLabel {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 500;
-  color: #83838C;
-  min-width: 24px;
+  color: #777982;
+  min-width: 18px;
   text-align: right;
   flex-shrink: 0;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  transform: translateY(-0.5px);
 }
 
 /* ── Very small phone override (≤ 340px) ── */
 @media (max-width: 340px) {
   .card {
-    height: 100px;
-    padding: 10px;
+    padding: 12px 8px 12px;
+    border-radius: 12px;
   }
   .iconTile {
-    width: 34px;
-    height: 34px;
+    width: 28px;
+    height: 28px;
+    flex: 0 0 28px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+  }
+  .topicTitleWrap {
+    height: 26px;
+    min-height: 20px;
+    max-height: 28px;
+  }
+  .topicTitle {
+    font-size: 11.5px;
+    line-height: 13.5px;
+  }
+  .topicCount {
+    font-size: 10px;
+    line-height: 13px;
+    height: 13px;
+    margin-top: 3px;
   }
 }

@@ -32,6 +32,11 @@
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--tr-border);
 }
+.play-hub.training-dark .training-header,
+:global(html.theme-dark) .play-hub .training-header {
+  background: #000000 !important;
+  border-bottom: none !important;
+}
 .play-hub .training-header-top {
   display: flex;
   align-items: center;

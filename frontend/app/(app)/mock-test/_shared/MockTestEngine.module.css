@@ -402,6 +402,7 @@
   --border: transparent; --primary: var(--oled-selected);
   color-scheme: dark;
 }
+:global(html.theme-dark) .container :is(.topBar, .mobileHeader) { background: #000000 !important; border-bottom: none !important; }
 :global(html.theme-dark) .container :is(.optionLabel, .modal, .bottomSheet) { border: 0; box-shadow: none; border-radius: 14px; }
 :global(html.theme-dark) .container .optionLabel { background: var(--oled-surface); }
 :global(html.theme-dark) .container .optionLabel:hover { background: var(--oled-hover); }

@@ -9,7 +9,7 @@ export const resourcePageStyles = css.global`
           --card-bg: var(--dark-surface);
           --card-hover: var(--dark-surface-muted);
           --border: var(--dark-border);
-          --header-bg: rgba(0, 0, 0, 0.92);
+          --header-bg: #000000;
           --text-primary: var(--dark-text);
           --text-secondary: var(--dark-text-secondary);
           --text-tertiary: var(--dark-text-muted);
@@ -41,7 +41,7 @@ export const resourcePageStyles = css.global`
           background: var(--header-bg);
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
-          border-bottom: 1px solid var(--border);
+          border-bottom: none !important;
           padding-top: var(--safe-top);
         }
 
@@ -248,11 +248,12 @@ export const resourcePageStyles = css.global`
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 6px;
+          gap: 16px;
           overflow-x: auto;
           scrollbar-width: none;
           -webkit-overflow-scrolling: touch;
-          padding: 0 2px;
+          padding: 0 4px 4px;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .res-category-strip::-webkit-scrollbar {
@@ -260,18 +261,19 @@ export const resourcePageStyles = css.global`
         }
 
         .res-chip {
-          height: 25px;
-          padding: 0 11px;
-          border-radius: 999px;
-          border: 1px solid var(--border);
-          background: var(--card-bg);
-          color: var(--tab-color);
+          height: auto;
+          padding: 4px 2px 6px;
+          border-radius: 0 !important;
+          border: none !important;
+          background: transparent !important;
+          color: var(--tab-color, #9A9CA4);
           font-size: var(--ui-font-meta);
           font-weight: 550;
           letter-spacing: 0.01em;
           cursor: pointer;
           white-space: nowrap;
-          transition: background-color 0.14s ease;
+          position: relative;
+          transition: color 0.14s ease;
           -webkit-tap-highlight-color: transparent;
           flex-shrink: 0;
           display: flex;
@@ -281,16 +283,27 @@ export const resourcePageStyles = css.global`
         }
 
         .res-chip:hover {
-          color: var(--text-primary);
-          background: var(--card-hover);
+          color: var(--text-primary, #EEEEF1);
+          background: transparent !important;
         }
 
         .res-chip.active {
-          background: var(--accent);
-          border-color: var(--accent);
-          color: #ffffff;
-          font-weight: 600;
-          box-shadow: 0 1.5px 6px rgba(0, 122, 255, 0.35);
+          background: transparent !important;
+          border-color: transparent !important;
+          color: #ffffff !important;
+          font-weight: 650;
+          box-shadow: none !important;
+        }
+
+        .res-chip.active::after {
+          content: '';
+          position: absolute;
+          bottom: -4px;
+          left: 0;
+          right: 0;
+          height: 2.5px;
+          background: #2563EB;
+          border-radius: 2px;
         }
 
         /* ── Scrollable Document List Area ── */

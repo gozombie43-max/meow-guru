@@ -12,10 +12,10 @@
 
 .battle-page, .battle-game-shell, .battle-centered { color: var(--battle-ink); font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
 .battle-page { width: 100%; min-height: 100dvh; display: flex; flex-direction: column; background: #f7f5fa; }
-.battle-header { position: sticky; top: 0; z-index: 40; height: calc(var(--app-header-height) + var(--safe-top)); padding: var(--safe-top) max(16px, var(--safe-right)) 0 max(16px, var(--safe-left)); border-bottom: 1px solid var(--battle-line); background: rgba(247, 245, 250, .9); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
+.battle-header { position: sticky; top: 0; z-index: 40; height: calc(var(--app-header-height) + var(--safe-top)); padding: var(--safe-top) max(16px, var(--safe-right)) 0 max(16px, var(--safe-left)); border-bottom: none !important; background: #000000 !important; backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
 .battle-header-inner { width: 100%; max-width: 1080px; height: var(--app-header-height); display: grid; grid-template-columns: 42px minmax(0, 1fr) auto; align-items: center; gap: 10px; margin: 0 auto; }
-.battle-icon-button { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; color: var(--battle-ink); }
-.battle-icon-button:hover { background: rgba(34, 25, 58, .06); }
+.battle-icon-button { width: 36px !important; height: 36px !important; display: grid; place-items: center; border-radius: 50% !important; border: none !important; background: transparent !important; color: var(--battle-ink); }
+.battle-icon-button:hover, .battle-icon-button:active { background: rgba(255, 255, 255, 0.08) !important; }
 .battle-icon-button svg { width: 20px; }
 .battle-header-copy { min-width: 0; display: flex; flex-direction: column; }
 .battle-header-copy strong { overflow: hidden; font-size: 15px; line-height: 1.2; text-overflow: ellipsis; white-space: nowrap; }
@@ -336,7 +336,7 @@ html.theme-dark .battle-game-shell,
 html.theme-dark .battle-centered,
 html.theme-dark .battle-aux-page { min-height: 100dvh; color: var(--battle-ink); background: var(--dark-canvas); }
 html.theme-dark .battle-header,
-html.theme-dark .battle-score-header { border-color: var(--battle-line); background: rgba(28, 28, 30, .88); }
+html.theme-dark .battle-score-header { border-bottom: none !important; background: #000000 !important; }
 html.theme-dark .battle-connection { color: #b8b8bd; background: var(--dark-surface-muted); }
 html.theme-dark .battle-connection.is-online { color: #6ce98d; background: rgba(48, 209, 88, .16); }
 html.theme-dark .battle-setup-card,

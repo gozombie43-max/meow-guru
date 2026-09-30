@@ -102,9 +102,9 @@
 
 .header {
   flex-shrink: 0;
-  background: var(--card);
+  background: #000000 !important;
   padding: calc(10px + var(--safe-top)) 12px 0;
-  border-bottom: 1px solid var(--border);
+  border-bottom: none !important;
   position: sticky;
   top: 0;
   z-index: 40;
@@ -237,9 +237,10 @@
   width: 100%;
   display: flex;
   overflow-x: auto;
-  gap: 16px;
-  padding: 0 2px;
+  gap: 18px;
+  padding: 0 4px 4px;
   margin: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-x pan-y;
@@ -253,48 +254,50 @@
   align-items: center;
   gap: 6px;
   padding: 4px 2px 8px;
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  font-size: 13.5px;
-  font-weight: 600;
-  color: var(--text-muted);
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  font-size: 13px;
+  font-weight: 550;
+  color: #9A9CA4;
   white-space: nowrap;
   flex-shrink: 0;
   cursor: pointer;
   position: relative;
   touch-action: manipulation;
   transition: color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .catChip:hover {
-  color: var(--text-dark);
+  color: #EEEEF1;
 }
 
 .activeChip {
-  color: #007aff;
-  font-weight: 700;
+  color: #FFFFFF !important;
+  font-weight: 650 !important;
+  background: transparent !important;
 }
 
 :global(body.theme-dark) .activeChip,
 :global(html.theme-dark) .activeChip {
-  color: #2997ff;
+  color: #FFFFFF !important;
 }
 
 .activeChip::after {
   content: '';
   position: absolute;
-  bottom: 0;
+  bottom: -4px;
   left: 0;
   right: 0;
   height: 2.5px;
-  background: #007aff;
-  border-radius: 3px 3px 0 0;
+  background: #2563EB;
+  border-radius: 2px;
 }
 
 :global(body.theme-dark) .activeChip::after,
 :global(html.theme-dark) .activeChip::after {
-  background: #2997ff;
+  background: #2563EB;
 }
 
 .examGrid {
@@ -1098,67 +1101,70 @@
   }
 
   .categoryScroll {
-  display: flex;
-  overflow-x: auto;
-  gap: 16px;
-  padding: 0 2px;
-  margin: 0;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-x pan-y;
-  overscroll-behavior-x: contain;
-  overscroll-behavior-y: auto;
-}
-.categoryScroll::-webkit-scrollbar { display: none; }
+    display: flex;
+    overflow-x: auto;
+    gap: 18px;
+    padding: 0 4px 4px;
+    margin: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x pan-y;
+    overscroll-behavior-x: contain;
+    overscroll-behavior-y: auto;
+  }
+  .categoryScroll::-webkit-scrollbar { display: none; }
 
-.catChip {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 2px 8px;
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  font-size: 13.5px;
-  font-weight: 600;
-  color: var(--text-muted);
-  white-space: nowrap;
-  flex-shrink: 0;
-  cursor: pointer;
-  position: relative;
-  touch-action: manipulation;
-  transition: color 0.15s ease;
-}
+  .catChip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 2px 8px;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    font-size: 13px;
+    font-weight: 550;
+    color: #9A9CA4;
+    white-space: nowrap;
+    flex-shrink: 0;
+    cursor: pointer;
+    position: relative;
+    touch-action: manipulation;
+    transition: color 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
 
-.catChip:hover {
-  color: var(--text-dark);
-}
+  .catChip:hover {
+    color: #EEEEF1;
+  }
 
-.activeChip {
-  color: #007aff;
-  font-weight: 700;
-}
+  .activeChip {
+    color: #FFFFFF !important;
+    font-weight: 650 !important;
+    background: transparent !important;
+  }
 
-:global(body.theme-dark) .activeChip,
-:global(html.theme-dark) .activeChip {
-  color: #2997ff;
-}
+  :global(body.theme-dark) .activeChip,
+  :global(html.theme-dark) .activeChip {
+    color: #FFFFFF !important;
+  }
 
-.activeChip::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 2.5px;
-  background: #007aff;
-  border-radius: 3px 3px 0 0;
-}
+  .activeChip::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    right: 0;
+    height: 2.5px;
+    background: #2563EB;
+    border-radius: 2px;
+  }
 
-:global(body.theme-dark) .activeChip::after,
-:global(html.theme-dark) .activeChip::after {
-  background: #2997ff;
-}
+  :global(body.theme-dark) .activeChip::after,
+  :global(html.theme-dark) .activeChip::after {
+    background: #2563EB;
+  }
 
 .examGrid {
     grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
@@ -1355,8 +1361,8 @@
   background: var(--oled-canvas); color: var(--oled-text);
 }
 :global(html.theme-dark) .page :is(.continueCard, .examCard, .statBox, .cardSection, .testLineCard, .detailHeader) { background: var(--oled-surface); border: 0; box-shadow: none; border-radius: 14px; }
-:global(html.theme-dark) .page :is(.catChip, .tabBtn) { background: var(--oled-surface); border: 0; border-radius: 999px !important; box-shadow: none; }
-:global(html.theme-dark) .page :is(.activeChip, .activeTabBtn) { background: var(--oled-selected) !important; color: #edf4fc !important; border: 0; border-radius: 999px !important; box-shadow: none; }
-:global(html.theme-dark) .page :is(.activeChip, .activeTabBtn)::after { display: none; }
+:global(html.theme-dark) .page :is(.tabBtn) { background: var(--oled-surface); border: 0; border-radius: 999px !important; box-shadow: none; }
+:global(html.theme-dark) .page :is(.activeTabBtn) { background: var(--oled-selected) !important; color: #edf4fc !important; border: 0; border-radius: 999px !important; box-shadow: none; }
+:global(html.theme-dark) .page :is(.activeTabBtn)::after { display: none; }
 :global(html.theme-dark) .page .testLineCard:hover { background: var(--oled-hover); box-shadow: none; transform: none; }
 :global(html.theme-dark) .page .testLineCard::before { display: none; }

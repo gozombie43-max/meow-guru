@@ -669,7 +669,7 @@ export default function FormulaNotesPage({
           --card-bg: var(--dark-surface);
           --card-hover: #242428;
           --border: rgba(255, 255, 255, 0.09);
-          --header-bg: rgba(0, 0, 0, 0.9);
+          --header-bg: #000000;
           --text-primary: #f8fafc;
           --text-secondary: rgba(235, 235, 245, 0.6);
           --text-tertiary: rgba(235, 235, 245, 0.35);
@@ -701,7 +701,7 @@ export default function FormulaNotesPage({
           background: var(--header-bg);
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
-          border-bottom: 1px solid var(--border);
+          border-bottom: none !important;
           padding-top: var(--safe-top);
         }
 
@@ -715,7 +715,7 @@ export default function FormulaNotesPage({
           align-items: center;
           justify-content: space-between;
           padding: 0 12px;
-          max-width: 680px;
+          max-width: 600px;
           margin: 0 auto;
         }
 
@@ -728,14 +728,14 @@ export default function FormulaNotesPage({
         .fn-back-btn,
         .fn-search-btn,
         .fn-add-btn {
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
+          width: 36px !important;
+          height: 36px !important;
+          border-radius: 50% !important;
           display: flex;
           align-items: center;
           justify-content: center;
-          background: transparent;
-          border: none;
+          background: transparent !important;
+          border: none !important;
           color: var(--text-primary);
           cursor: pointer;
           transition: background-color 0.15s ease, opacity 0.15s ease, transform 0.15s ease;

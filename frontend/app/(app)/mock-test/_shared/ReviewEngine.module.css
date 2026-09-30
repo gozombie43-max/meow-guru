@@ -40,6 +40,11 @@
   --border: var(--dark-border);
 }
 
+:global(body.theme-dark) .page .header {
+  background: #000000 !important;
+  border-bottom: none !important;
+}
+
 .header {
   background: var(--card);
   border-bottom: 1px solid var(--border);
@@ -62,20 +67,25 @@
 .backBtn {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  padding: 8px 14px;
-  border-radius: 10px;
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  width: 36px;
+  height: 36px;
+  border-radius: 50% !important;
   font-size: 13px;
   font-weight: 700;
   color: var(--text-dark);
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.2s, opacity 0.15s;
 }
 
-.backBtn:hover {
-  background: var(--border);
+.backBtn:hover,
+.backBtn:active {
+  background: rgba(255, 255, 255, 0.08) !important;
+  opacity: 0.75;
 }
 
 .examTitleWrap {

@@ -39,38 +39,41 @@ export function SubjectTopicStyles() {
           right: 0;
           z-index: 50;
           padding: var(--safe-top) 16px 0;
-          background: var(--dark-canvas);
+          background: #000000 !important;
         }
         .sg-nav-inline {
           height: 56px;
           display: flex; align-items: center; justify-content: center;
           position: relative;
           margin: 0 -16px; padding: 0 16px;
-          border-bottom: 1px solid rgba(255,255,255,0.14);
+          border-bottom: none !important;
         }
         .sg-back {
-          display: flex; align-items: center; justify-content: center; color: var(--label);
+          display: flex; align-items: center; justify-content: center; color: #ECECF0 !important;
           position: absolute; left: 16px; top: 0; bottom: 0; margin: auto 0;
-          width: 40px; height: 40px;
-          background: transparent; border: none; padding: 0; cursor: pointer;
-          border-radius: 50%;
+          width: 36px !important; height: 36px !important;
+          background: transparent !important; border: none !important; padding: 0; cursor: pointer;
+          border-radius: 50% !important;
           -webkit-tap-highlight-color: transparent;
           transform: none !important;
           transition: opacity 0.15s ease, background-color 0.15s ease;
         }
+        .sg-back:hover,
         .sg-back:active {
           animation: none !important;
           transform: none !important;
-          opacity: 0.5;
+          background: rgba(255, 255, 255, 0.08) !important;
+          opacity: 0.75;
         }
-        .sg-back svg { width: 22px; height: 22px; }
+        .sg-back svg { width: 20px; height: 20px; }
         .sg-nav-title {
-          font-size: 17px; font-weight: 600; letter-spacing: -0.2px;
+          font-size: 17.5px; font-weight: 700; letter-spacing: -0.2px;
           max-width: calc(100% - 104px);
-          margin: 0; color: var(--label);
+          margin: 0; color: #ECECEF !important;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
+          text-align: center;
         }
 
         /* ── Banner ── */

@@ -1426,6 +1426,13 @@ body.theme-dark .bottom-pill-nav::after {
   background: rgba(235, 235, 245, 0.18);
 }
 
+/* Hide Next.js dev indicator in screenshot and mobile viewport */
+nextjs-portal,
+[data-nextjs-toast],
+[data-nextjs-dialog] {
+  display: none !important;
+}
+
 /* Center Button Override */
 .bottom-nav-center-item .bottom-nav-center-btn {
   transform: translateY(-4px);

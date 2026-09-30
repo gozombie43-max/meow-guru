@@ -341,8 +341,8 @@ export default function VideosPage() {
           --video-muted-fg: var(--dark-text-secondary, #a5aebc);
           --video-more-fg: var(--dark-text-secondary, #a5aebc);
           --video-empty-fg: var(--dark-text-secondary, #a5aebc);
-          --video-header-bg: rgba(23, 25, 29, 0.9);
-          --video-header-border: var(--dark-border, #363b44);
+          --video-header-bg: #000000;
+          --video-header-border: transparent;
           --video-chip-bg: var(--dark-surface-muted, #2a2e35);
           --video-chip-fg: var(--dark-text-secondary, #a5aebc);
           --video-chip-border: var(--dark-border, #363b44);
@@ -363,8 +363,8 @@ export default function VideosPage() {
           background: var(--video-header-bg);
           backdrop-filter: blur(20px) saturate(180%);
           -webkit-backdrop-filter: blur(20px) saturate(180%);
-          border-bottom: 1px solid var(--video-header-border);
-          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+          border-bottom: none !important;
+          box-shadow: none !important;
         }
 
         .header-top {
@@ -395,11 +395,12 @@ export default function VideosPage() {
         .video-filters {
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 18px;
           overflow-x: auto;
           max-width: 1200px;
           margin: 0 auto;
-          padding: 4px 16px 12px;
+          padding: 4px 16px 4px;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
           scroll-padding-inline: 16px;
           scroll-snap-type: x proximity;
           scrollbar-width: none;
@@ -412,34 +413,48 @@ export default function VideosPage() {
 
         .video-chip {
           flex: 0 0 auto;
-          min-height: 36px;
-          border: 1px solid var(--video-chip-border);
-          border-radius: 9999px;
-          padding: 0 16px;
-          background: var(--video-chip-bg);
-          color: var(--video-chip-fg);
-          font-size: 0.88rem;
-          font-weight: 650;
+          min-height: auto;
+          border: none !important;
+          border-radius: 0 !important;
+          padding: 6px 4px 8px;
+          background: transparent !important;
+          color: var(--video-muted-fg, #9A9CA4);
+          font-size: 13px;
+          font-weight: 550;
           line-height: 1;
           cursor: pointer;
+          position: relative;
           scroll-snap-align: start;
-          transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+          transition: color 0.15s ease;
+          -webkit-tap-highlight-color: transparent;
         }
 
         .video-chip:hover {
-          border-color: var(--video-title-fg);
-          color: var(--video-title-fg);
+          color: var(--video-title-fg, #EEEEF1);
+          border-color: transparent;
         }
 
         .video-chip.is-active {
-          background: var(--video-chip-active-bg);
-          color: var(--video-chip-active-fg);
-          border-color: var(--video-chip-active-border);
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+          background: transparent !important;
+          color: #FFFFFF !important;
+          font-weight: 650;
+          border-color: transparent !important;
+          box-shadow: none !important;
+        }
+
+        .video-chip.is-active::after {
+          content: '';
+          position: absolute;
+          bottom: -4px;
+          left: 0;
+          right: 0;
+          height: 2.5px;
+          background: #2563EB;
+          border-radius: 2px;
         }
 
         .video-chip:active {
-          transform: scale(0.96);
+          transform: none;
         }
 
         /* --- Content Container & Grid (Scrollable Body) --- */

@@ -1189,10 +1189,10 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
             onClick={() => router.replace("/")}
             aria-label="Back"
           >
-            <ArrowLeft size={18} strokeWidth={2.4} />
+            <ArrowLeft size={20} strokeWidth={2.2} />
           </button>
           <span className={mobileStyles.mobileTopbarTitle}>
-            {config.label} Topics
+            {oledMobile ? config.label : `${config.label} Topics`}
           </span>
           {/* Header Right: Filter Button & Dropdown */}
           <div className={defaultStyles.mobileHeaderFilterWrap}>
@@ -1207,7 +1207,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
               aria-haspopup="menu"
               title="Filter topics"
             >
-              <SlidersHorizontal size={18} strokeWidth={2.2} />
+              <SlidersHorizontal size={19} strokeWidth={2.2} />
               {(oledMobile ? mobileCategory !== "all" : activeCategory !== "very-high") && (
                 <span className={defaultStyles.filterActiveDot} aria-hidden="true" />
               )}
@@ -1296,7 +1296,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
             />
             {searchQuery ? (
               <div className={mobileStyles.mobileSearchRightActions}>
-                <button data-ui-button="secondary"
+                <button
                   type="button"
                   className={mobileStyles.mobileSearchClearBtn}
                   onClick={() => setSearchQuery("")}
@@ -1342,7 +1342,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
                   >
                     <ArrowUpDown size={12} strokeWidth={2.2} />
                     <span>Sort</span>
-                    <ChevronDown size={12} strokeWidth={2.2} />
+                    <ChevronDown size={11} strokeWidth={2.2} />
                   </button>
 
                   {sortMenuOpen && (

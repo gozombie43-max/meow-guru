@@ -61,9 +61,9 @@ const lightVideoTheme = {
 const darkVideoTheme = {
   pageBg: 'var(--dark-canvas)',
   pageFg: 'var(--dark-text)',
-  headerBg: 'var(--dark-surface)',
-  headerBorder: 'var(--dark-border)',
-  headerShadow: '0 1px 0 rgba(255,255,255,0.06)',
+  headerBg: '#000000',
+  headerBorder: 'transparent',
+  headerShadow: 'none',
   title: 'var(--dark-text)',
   muted: 'var(--dark-text-secondary)',
   faint: 'var(--dark-text-muted)',

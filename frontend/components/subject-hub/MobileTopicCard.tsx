@@ -5,7 +5,6 @@ import type { LucideIcon } from "lucide-react";
 import {
   BarChart3,
   Box,
-  ChevronRight,
   Clock3,
   Coins,
   Compass,
@@ -34,7 +33,7 @@ export interface MobileTopicCardProps {
 }
 
 function renderTopicIcon(slug: string, FallbackIcon?: LucideIcon) {
-  const iconProps = { size: 19, strokeWidth: 1.8 };
+  const iconProps = { size: 15.5, strokeWidth: 1.85 };
   switch (slug) {
     case "percentages":
       return <Percent {...iconProps} />;
@@ -88,7 +87,8 @@ export const MobileTopicCard = React.memo(function MobileTopicCard({
 }: MobileTopicCardProps) {
   const count = detail?.questionCount;
   const isComingSoon = count === 0;
-  const progressPct = detail?.progress;
+  const progressPct = detail?.progress ?? 0;
+  const userSolved = detail?.userSolved ?? 0;
 
   return (
     <Link
@@ -101,31 +101,30 @@ export const MobileTopicCard = React.memo(function MobileTopicCard({
       aria-disabled={isComingSoon ? true : undefined}
       tabIndex={isComingSoon ? -1 : undefined}
     >
-      {/* Top row: [icon] + [title / count] on left, chevron on right */}
-      <div className={styles.cardTop}>
-        <div className={styles.cardHeaderLeft}>
-          <div className={styles.iconTile} aria-hidden="true">
-            {renderTopicIcon(slug, FallbackIcon)}
-          </div>
-          <div className={styles.titleBlock}>
-            <span className={styles.topicTitle}>{name}</span>
-            <span className={styles.topicCount}>
-              {isComingSoon
-                ? "Coming soon"
-                : count !== undefined
-                  ? detail?.userSolved !== undefined
-                    ? `${detail.userSolved} / ${count} solved`
-                    : `${count} questions`
-                  : "—"}
-            </span>
-          </div>
+      {/* 1. Top Section: Icon + Title + Meta with fixed baseline */}
+      <div className={styles.cardBody}>
+        <div className={styles.iconTile} aria-hidden="true">
+          {renderTopicIcon(slug, FallbackIcon)}
         </div>
-        <ChevronRight size={16} strokeWidth={2} className={styles.chevron} aria-hidden="true" />
+
+        <div className={styles.topicTitleWrap}>
+          <span className={styles.topicTitle} title={name}>
+            {name}
+          </span>
+        </div>
+
+        <span className={styles.topicCount}>
+          {isComingSoon
+            ? "Coming soon"
+            : count !== undefined
+              ? `${userSolved} / ${count} solved`
+              : "—"}
+        </span>
       </div>
 
-      {/* Bottom: Progress bar (omitted for coming soon) */}
-      {!isComingSoon && progressPct !== undefined && (
-        <div className={styles.cardFooter}>
+      {/* 2. Bottom Section: Progress bar for active topics */}
+      <div className={styles.cardFooter}>
+        {!isComingSoon && (
           <div className={styles.progressRow}>
             <div className={styles.progressTrack}>
               <div
@@ -135,8 +134,8 @@ export const MobileTopicCard = React.memo(function MobileTopicCard({
             </div>
             <span className={styles.progressLabel}>{progressPct}%</span>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </Link>
   );
 });

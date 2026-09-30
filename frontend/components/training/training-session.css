@@ -18,12 +18,12 @@
   gap: 12px;
   padding: calc(10px + var(--safe-top)) max(20px, var(--safe-right)) 10px
     max(20px, var(--safe-left));
-  background: var(--tr-surface);
-  border-bottom: 1px solid var(--tr-border);
+  background: #000000 !important;
+  border-bottom: none !important;
   position: sticky;
   top: 0;
   z-index: 30;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  box-shadow: none !important;
 }
 
 .training-header-left {
@@ -37,19 +37,20 @@
 .training-header-back {
   display: grid;
   place-items: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  border: 1px solid var(--tr-border);
-  background: var(--tr-muted);
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 50% !important;
+  border: none !important;
+  background: transparent !important;
   color: var(--tr-text);
   flex-shrink: 0;
   transition: all 0.15s ease;
 }
 
-.training-header-back:hover {
-  background: var(--tr-border);
-  transform: translateX(-1px);
+.training-header-back:hover,
+.training-header-back:active {
+  background: rgba(255, 255, 255, 0.08) !important;
+  transform: none !important;
 }
 
 .training-header-overview-btn {

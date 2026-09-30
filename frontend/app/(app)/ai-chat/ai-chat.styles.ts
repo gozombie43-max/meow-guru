@@ -38,7 +38,7 @@ export const aiChatStyles = css`
           --line: var(--dark-border, rgba(255, 255, 255, 0.12));
           --accent: var(--dark-accent, #0a84ff);
           --accent-dark: #0060cc;
-          --topbar-bg: rgba(0, 0, 0, 0.75);
+          --topbar-bg: #000000;
           --input-bg: var(--dark-surface, #1c1c1e);
           --bubble-ai: var(--dark-surface, #1c1c1e);
           --bubble-user: var(--dark-accent, #0a84ff);
@@ -297,13 +297,14 @@ export const aiChatStyles = css`
 
         .chat-topbar {
           height: 58px;
-          border-bottom: 1px solid var(--line);
+          border-bottom: none !important;
           display: flex;
           align-items: center;
           justify-content: space-between;
           gap: 16px;
           padding: 0 22px;
-          background: var(--topbar-bg);
+          background: #000000 !important;
+          color: #ECECF0;
           backdrop-filter: blur(20px) saturate(180%);
           -webkit-backdrop-filter: blur(20px) saturate(180%);
         }
@@ -323,13 +324,14 @@ export const aiChatStyles = css`
           font-size: 16px;
           font-weight: 700;
           line-height: 1.2;
+          color: #ECECF0;
         }
 
         .chat-status {
           display: flex;
           align-items: center;
           gap: 7px;
-          color: var(--muted);
+          color: rgba(235, 235, 245, 0.65);
           font-size: 12px;
         }
 
@@ -345,14 +347,15 @@ export const aiChatStyles = css`
           height: 36px;
           padding: 0 12px;
           border-radius: 8px;
-          background: var(--surface-soft);
-          color: var(--ink);
+          background: rgba(255, 255, 255, 0.08);
+          color: #ECECF0;
+          border: 1px solid rgba(255, 255, 255, 0.12);
           font-size: 13px;
           font-weight: 600;
         }
 
         .clear-btn:disabled {
-          opacity: 0.45;
+          opacity: 0.35;
           cursor: not-allowed;
         }
 
