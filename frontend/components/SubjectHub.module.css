@@ -1982,11 +1982,18 @@
   flex-shrink: 0;
   background: #000000 !important;
   border-bottom: none !important;
+  max-width: 500px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .oledMobile .mobileBackBtn {
-  width: 36px;
-  height: 36px;
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  max-width: 36px !important;
+  flex: 0 0 36px !important;
   border-radius: 50%;
   background: transparent !important;
   border: none !important;
@@ -2024,7 +2031,10 @@
   min-height: 0 !important;
   overflow: hidden !important;
   padding: 0 14px 0 !important;
-  box-sizing: border-box;
+  margin: 0 auto !important;
+  max-width: 500px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
   background: #000000 !important;
 }
 
@@ -2033,13 +2043,16 @@
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
   z-index: 10;
 }
 
 .mobileHeaderFilterBtn {
-  width: 36px;
-  height: 36px;
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  max-width: 36px !important;
+  flex: 0 0 36px !important;
   border-radius: 50%;
   border: none !important;
   background: transparent !important;
