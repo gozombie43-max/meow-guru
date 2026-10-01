@@ -12,6 +12,7 @@ import {
 } from "../../trainingEngine.js";
 import { getDailyMissionBlocks } from "../mission/missionBlocks.js";
 import { logger, hashId } from "../../../infrastructure/logger.js";
+import { readTrainingDashboardCache, writeTrainingDashboardCache } from '../dashboardCache.js';
 
 export async function getTrainingDashboardData(userId, exam) {
   const start = performance.now();
@@ -20,6 +21,9 @@ export async function getTrainingDashboardData(userId, exam) {
     const finalized = transition(stale, { type: "finish" });
     await commitTrainingTransition(stale, finalized);
   }
+
+  const cached = await readTrainingDashboardCache(userId, exam);
+  if (cached?.value) return cached.value;
 
   const [previous, dashboard] = await Promise.all([history(userId, exam), trainingDashboardData(userId, exam)]);
   const {
@@ -67,7 +71,7 @@ export async function getTrainingDashboardData(userId, exam) {
     exam,
   }, "Dashboard generated");
 
-  return {
+  const result = {
     ...intelligence,
     evidenceConfidence,
     confidenceScore: Math.round(confidenceScore * 100),
@@ -92,4 +96,6 @@ export async function getTrainingDashboardData(userId, exam) {
         .map((s) => s.result.correct),
     ),
   };
+  await writeTrainingDashboardCache(cached?.key, result);
+  return result;
 }

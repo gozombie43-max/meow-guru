@@ -59,7 +59,7 @@ const answerPayloadSchema = z.object({
 const matchmakingSchema = z.object({ subject: z.enum(["mathematics", "reasoning", "english", "general-awareness"]), topic: z.string().min(1).max(80), questionCount: z.union([z.literal(10), z.literal(15), z.literal(25), z.literal(50)]) });
 const socialChallengeSchema = z.object({ targetUserId: z.string().min(1).max(200), subject: z.enum(["mathematics", "reasoning", "english", "general-awareness"]), topic: z.string().min(1).max(80), questionCount: z.union([z.literal(10), z.literal(15), z.literal(25), z.literal(50)]) });
 
-export function initBattleSocket(httpServer, corsOrigin) {
+export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) {
   // Build an explicit origin allowlist for Socket.IO.
   // Always includes the production Vercel frontend + localhost for dev.
   // Falls back to the shared corsOrigin function if no FRONTEND_URL is set.
@@ -81,11 +81,11 @@ export function initBattleSocket(httpServer, corsOrigin) {
     },
   });
 
-  io.adapter(createAdapter(getSocketIoAdapterCollection(), {
+  io.adapter(adapterFactory || createAdapter(getSocketIoAdapterCollection(), {
     addCreatedAtField: true,
   }));
 
-  console.log('Socket.IO MongoDB adapter enabled ✅');
+  console.log(`Socket.IO ${adapterFactory ? 'Redis Streams' : 'MongoDB'} adapter enabled ✅`);
 
   registerBattleRelay(io);
   setBattleRealtimeServer(io);

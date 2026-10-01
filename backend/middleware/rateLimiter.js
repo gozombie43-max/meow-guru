@@ -1,4 +1,4 @@
-import { MongoRateLimitStore } from "./mongoRateLimitStore.js";
+import { RedisRateLimitStore } from "./redisRateLimitStore.js";
 // middleware/rateLimiter.js
 
 import rateLimit, {
@@ -110,8 +110,8 @@ const isTrainingRequest = req => {
     url === '/api/training' || url.startsWith('/api/training/');
 };
 
-// The normal global limiter is Mongo-backed in production. Local load runs can
-// avoid its write volume for training traffic while retaining a cheap IP guard.
+// Local load runs can avoid the distributed global limiter for training traffic
+// while retaining a cheap IP guard.
 export const trainingIngressLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: process.env.NODE_ENV !== 'production' ? 100000 : 5000,
@@ -126,7 +126,7 @@ export const trainingIngressLimiter = rateLimit({
 // Global Limiter
 export const globalLimiter =
   rateLimit({
-    ...(process.env.NODE_ENV === "production" ? { store: new MongoRateLimitStore('global') } : {}),
+    ...(process.env.NODE_ENV === "production" ? { store: new RedisRateLimitStore('global') } : {}),
     windowMs:
       15 * 60 * 1000,
 
@@ -177,7 +177,7 @@ export const globalLimiter =
 // Authentication
 export const authLimiter =
   rateLimit({
-    ...(process.env.NODE_ENV === "production" ? { store: new MongoRateLimitStore('auth') } : {}),
+    ...(process.env.NODE_ENV === "production" ? { store: new RedisRateLimitStore('auth') } : {}),
     windowMs:
       15 * 60 * 1000,
 
@@ -206,7 +206,7 @@ export const authLimiter =
 // AI
 export const aiLimiter =
   rateLimit({
-    ...(process.env.NODE_ENV === "production" ? { store: new MongoRateLimitStore('ai') } : {}),
+    ...(process.env.NODE_ENV === "production" ? { store: new RedisRateLimitStore('ai') } : {}),
     windowMs:
       15 * 60 * 1000,
 
@@ -237,7 +237,7 @@ export const aiLimiter =
 // cannot exhaust an AI-style bucket.
 export const trainingLimiter =
   rateLimit({
-    ...(process.env.NODE_ENV === "production" ? { store: new MongoRateLimitStore('training') } : {}),
+    ...(process.env.NODE_ENV === "production" ? { store: new RedisRateLimitStore('training') } : {}),
     windowMs:
       15 * 60 * 1000,
 
@@ -266,7 +266,7 @@ export const trainingLimiter =
 // Agents
 export const agentLimiter =
   rateLimit({
-    ...(process.env.NODE_ENV === "production" ? { store: new MongoRateLimitStore('agent') } : {}),
+    ...(process.env.NODE_ENV === "production" ? { store: new RedisRateLimitStore('agent') } : {}),
     windowMs:
       15 * 60 * 1000,
 
@@ -295,7 +295,7 @@ export const agentLimiter =
 // Uploads
 export const uploadLimiter =
   rateLimit({
-    ...(process.env.NODE_ENV === "production" ? { store: new MongoRateLimitStore('upload') } : {}),
+    ...(process.env.NODE_ENV === "production" ? { store: new RedisRateLimitStore('upload') } : {}),
     windowMs:
       15 * 60 * 1000,
 

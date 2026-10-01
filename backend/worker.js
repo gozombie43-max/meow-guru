@@ -4,13 +4,14 @@ import { connectMongoDB, disconnectMongoDB, getMongoDB } from './config/mongodb.
 import { assertMigrations } from './migrations/runner.js';
 import { logger, startRuntimeMetrics } from './infrastructure/logger.js';
 import { startWorkerRealtime } from './infrastructure/workerRealtime.js';
+import { prepareBattleRedisAdapter } from './battle/redisSocketAdapter.js';
 import { startWorkers, stopWorkers } from './infrastructure/workerRegistry.js';
 import { startWorkerHealthServer } from './infrastructure/workerHealthServer.js';
 import { getReleaseId } from './infrastructure/releaseInfo.js';
 import { randomUUID } from 'node:crypto';
 
 const workerId = randomUUID();
-let stopping = false, ready = false, healthServer, closeRealtime, heartbeat, stopMetrics, stopOutbox;
+let stopping = false, ready = false, healthServer, closeRealtime, closeBattleRedisAdapter, heartbeat, stopMetrics, stopOutbox;
 async function shutdown(code = 0) {
   if (stopping) return;
   stopping = true;
@@ -22,6 +23,7 @@ async function shutdown(code = 0) {
     await stopWorkers();
     await stopOutbox?.();
     await closeRealtime?.();
+    await closeBattleRedisAdapter?.();
     stopMetrics?.();
     await disconnectMongoDB();
     await healthServer?.close();
@@ -37,7 +39,9 @@ try {
   healthServer = await startWorkerHealthServer('maintenance', () => ready && !stopping);
   const db = await connectMongoDB();
   await assertMigrations(db);
-  closeRealtime = startWorkerRealtime();
+  const battleAdapter = await prepareBattleRedisAdapter();
+  closeBattleRedisAdapter = battleAdapter?.close;
+  closeRealtime = startWorkerRealtime(battleAdapter?.adapter);
   stopMetrics = startRuntimeMetrics();
   await startWorkers();
   stopOutbox = startBattleOutbox();

@@ -57,6 +57,16 @@ afterAll(async () => {
 });
 
 describe('mock test HTTP and MongoDB contract', () => {
+  it('advances the shared question revision after publishing a practice paper', async () => {
+    const before = (await db.collection('questionMetadata').findOne({ _id: 'revision' }))?.revision ?? 0;
+    const uploaded = await uploadFullPaper({
+      slotData: { id: 'public-revision', title: 'Public revision test', examSlug: 'ssc-cgl', configKey: 'ssc-cgl-tier1' },
+      questions: [{ id: 'public-revision-q1', section: 'quant', topic: 'percentages', subject: 'mathematics', question: 'Two plus two?', options: ['3', '4'], correctAnswer: 'B' }],
+    });
+    expect(uploaded.insertedToBank).toBe(1);
+    expect((await db.collection('questionMetadata').findOne({ _id: 'revision' })).revision).toBe(before + 1);
+  });
+
   it('keeps confidential uploads out of the practice bank and refuses a public downgrade', async () => {
     const questions = ['ga', 'reasoning', 'quant', 'english'].flatMap(section => Array.from({ length: 25 }, (_, i) => ({
       id: `private-${section}-${i}`, section, question: 'Question', options: ['one', 'two'], correctAnswer: 1,

@@ -1,4 +1,4 @@
-import { invalidateTrainingCatalog } from './training/catalogCache.js';
+import { invalidateQuestionMetadata } from './questions/questionMetadataCache.js';
 import { trainingQuestionMetadata } from './training/domain/questionMetadata.js';
 import { normalizedQuestionKeys } from "./questions/questionNormalizer.js";
 import { mockAnswerIndex } from './mockAnswer.js';
@@ -654,11 +654,12 @@ export async function uploadFullPaper({ slotData, questions }) {
         }
       );
       insertedToBank++;
-      invalidateTrainingCatalog();
     } catch (err) {
       console.warn(`Upsert question ${q.id} warning:`, err.message);
     }
   }
+
+  if (insertedToBank) await invalidateQuestionMetadata();
 
   return {
     success: true,

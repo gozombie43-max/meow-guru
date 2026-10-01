@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { activePaper } from '../services/mockTestPresentation.js';
 import { validateAssessment } from '../services/assessmentPolicy.js';
 import { mockAnswerIndex } from '../services/mockAnswer.js';
+import { invalidateTrainingDashboard } from '../services/training/dashboardCache.js';
 import {
   getOwnedAttempt,
   getAttemptByStartKey,
@@ -300,6 +301,7 @@ export const submitAttemptHandler = async (req, res) => {
       if (existing?.status === 'completed') return res.json({ result: existing.result, attemptId: existing.id, idempotent: true });
       return res.status(409).json({ error: 'Progress changed during submission. Please retry.' });
     }
+    await invalidateTrainingDashboard(claimed.userId, claimed.examSlug);
     return res.json({ result: finalResult, attemptId: claimed.id });
   } catch (err) {
     console.error('Submit error:', err);

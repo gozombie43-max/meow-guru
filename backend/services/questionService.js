@@ -12,6 +12,7 @@ import {
   withMongoTransaction,
   getQuestionsCollection
 } from '../config/mongodb.js';
+import { invalidateTopicProgress } from './questions/topicProgressCache.js';
 
 export const processUserAnswer = async (userId, questionId, providedAnswer, submissionId) => {
   const questionsColl = getQuestionsCollection();
@@ -37,7 +38,7 @@ export const processUserAnswer = async (userId, questionId, providedAnswer, subm
   const topic = question.topic || question.chapter || question.subject || 'unknown';
   
   // 2. Use a transaction to safely update both collections
-  return await withMongoTransaction(async ({ db, session }) => {
+  const result = await withMongoTransaction(async ({ db, session }) => {
     const uqpColl = db.collection('userQuestionProgress');
     const utpColl = db.collection('userTopicProgress');
     
@@ -92,4 +93,6 @@ export const processUserAnswer = async (userId, questionId, providedAnswer, subm
       becameMastered
     };
   });
+  if (result.isFirstTime || result.becameMastered) await invalidateTopicProgress(userId);
+  return result;
 };

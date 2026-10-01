@@ -370,7 +370,7 @@ export async function updateUserRole(req, res) {
       { id: String(id) },
       { $set: { role: newRole, updatedAt: new Date().toISOString() } }
     );
-    evictUserSessionCache(id);
+    await evictUserSessionCache(id);
 
     await logAudit({
       adminId: adminUser.id,
@@ -429,7 +429,7 @@ export async function updateUserStatus(req, res) {
     if (['suspended', 'banned'].includes(status)) {
       await revokeUserSessions(id, status);
     } else {
-      evictUserSessionCache(id);
+      await evictUserSessionCache(id);
     }
 
     const actionMap = {

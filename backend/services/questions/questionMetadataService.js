@@ -1,4 +1,6 @@
 import { getMongoDB, getQuestionsCollection } from "../../config/mongodb.js";
+import { createHash } from 'node:crypto';
+import { redisGetJson, redisSetJson } from '../../config/redis.js';
 import { isNormalizedQuestionKeysEnabled, questionCountsCache, revisionedQuestionCacheKey } from "./questionCache.js";
 import { readQuestionMetadata } from "./questionMetadataCache.js";
 import { canonicalMode, ensureConceptGroups } from "./conceptGroupService.js";
@@ -27,6 +29,12 @@ export async function fetchQuestionCounts(params) {
   }));
   const cached = questionCountsCache.get(cacheKey);
   if (cached) return cached;
+  const sharedKey = `question-counts:${createHash('sha256').update(cacheKey).digest('hex')}`;
+  const shared = await redisGetJson(sharedKey);
+  if (shared) {
+    questionCountsCache.set(cacheKey, shared);
+    return shared;
+  }
 
   const collection = getQuestionsCollection();
   if (isNormalizedQuestionKeysEnabled()) {
@@ -36,6 +44,7 @@ export async function fetchQuestionCounts(params) {
     const counts = { concept: 0, formula: 0, mixed: 0, aiChallenge: 0, easy: 0, hard: 0, studyMode: 0 };
     for (const row of grouped) if (Object.hasOwn(counts, row._id)) counts[row._id] += Number(row.count) || 0;
     questionCountsCache.set(cacheKey, counts);
+    await redisSetJson(sharedKey, counts, 120);
     return counts;
   }
   const commonConditions = [];
@@ -100,6 +109,7 @@ export async function fetchQuestionCounts(params) {
   }
 
   questionCountsCache.set(cacheKey, counts);
+  await redisSetJson(sharedKey, counts, 120);
   return counts;
 }
 

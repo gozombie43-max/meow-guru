@@ -5,10 +5,10 @@ import { getSocketIoAdapterCollection } from '../config/mongodb.js';
 import { setBattleRealtimeServer } from '../battle/battleRealtime.js';
 import { setNotificationRealtimeServer } from '../services/notificationRealtime.js';
 
-export function startWorkerRealtime() {
+export function startWorkerRealtime(adapterFactory = null) {
   // A publishing-only adapter participant: no HTTP server or public listener.
   const io = new Server();
-  io.adapter(createAdapter(getSocketIoAdapterCollection(), { addCreatedAtField: true }));
+  io.adapter(adapterFactory || createAdapter(getSocketIoAdapterCollection(), { addCreatedAtField: true }));
   registerBattleRelay(io, false);
   setBattleRealtimeServer(io);
   setNotificationRealtimeServer(io);

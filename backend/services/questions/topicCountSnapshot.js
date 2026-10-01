@@ -1,4 +1,5 @@
 import { getMongoDB } from "../../config/mongodb.js";
+import { redisGetJson, redisSetJson } from '../../config/redis.js';
 import { getQuestionRevision, isNormalizedQuestionKeysEnabled } from "./questionCache.js";
 import { fetchQuestionCounts } from "./questionMetadataService.js";
 
@@ -49,8 +50,14 @@ export async function fetchTopicCountSnapshot(subject = "mathematics") {
   const id = `topic-counts:v2:${normalizedSubject}:${isNormalizedQuestionKeysEnabled()}`;
   for (let attempt = 0; attempt < 3; attempt++) {
     const revision = await getQuestionRevision();
+    const sharedKey = `topic-counts:${id}:${revision}`;
+    const shared = await redisGetJson(sharedKey);
+    if (shared?.revision === revision) return shared;
     const cached = await collection.findOne({ _id: id });
-    if (cached?.revision === revision) return cached.data;
+    if (cached?.revision === revision) {
+      await redisSetJson(sharedKey, cached.data, 120);
+      return cached.data;
+    }
     const key = `${id}:${revision}`;
     if (!pending.has(key)) {
       const work = (async () => {
@@ -75,7 +82,10 @@ export async function fetchTopicCountSnapshot(subject = "mathematics") {
       work.finally(() => pending.delete(key)).catch(() => {});
     }
     const data = await pending.get(key);
-    if (data && await getQuestionRevision() === data.revision) return data;
+    if (data && await getQuestionRevision() === data.revision) {
+      await redisSetJson(sharedKey, data, 120);
+      return data;
+    }
   }
   const error = new Error("Question counts are updating; please retry");
   error.statusCode = 503;

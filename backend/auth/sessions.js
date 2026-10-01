@@ -1,5 +1,8 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
+import { createClient } from 'redis';
+import { LRUCache } from 'lru-cache';
 import { getMongoDB, getUsersCollection } from '../config/mongodb.js';
+import { getRedisClient, redisDelete, redisGetJson, redisKey, redisSetJson, reportRedisFailure } from '../config/redis.js';
 import {
   signToken,
   signRefreshToken,
@@ -40,15 +43,92 @@ export async function createSession(user) {
   return { token: signToken({ ...payload(currentUser), sid }), refreshToken };
 }
 
-import { LRUCache } from 'lru-cache';
+const SESSION_CACHE_TTL_MS = 15_000;
+const sessionCache = new LRUCache({ max: 5000, ttl: SESSION_CACHE_TTL_MS });
+const sharedSessionKey = (sid, userId) => `auth-session:${createHash('sha256').update(`${sid}:${userId}`).digest('hex')}`;
+let invalidationSubscriber;
+let invalidationRetry;
+let stoppingInvalidationSubscriber = false;
 
-const sessionCache = new LRUCache({ max: 5000, ttl: 60 * 1000 * 5 }); // 5 minutes
+function scheduleInvalidationRetry() {
+  if (stoppingInvalidationSubscriber || invalidationRetry || !process.env.REDIS_URL) return;
+  invalidationRetry = setTimeout(() => {
+    invalidationRetry = null;
+    void startSessionInvalidationSubscriber();
+  }, 30_000);
+  invalidationRetry.unref();
+}
+
+function evictLocalUser(userId) {
+  const suffix = `:${String(userId)}`;
+  for (const key of sessionCache.keys()) {
+    if (key.endsWith(suffix)) sessionCache.delete(key);
+  }
+}
+
+async function publishSessionEviction(message) {
+  try {
+    const redis = await getRedisClient();
+    if (redis) await redis.publish(redisKey('auth-evictions'), JSON.stringify(message));
+  } catch { reportRedisFailure(); }
+}
+
+export async function startSessionInvalidationSubscriber() {
+  if (!process.env.REDIS_URL || invalidationSubscriber || stoppingInvalidationSubscriber) return;
+  let client;
+  try {
+    client = createClient({
+      url: process.env.REDIS_URL,
+      socket: { connectTimeout: 1000, reconnectStrategy: retries => Math.min(1000 * 2 ** retries, 5000) },
+    });
+    client.on('error', () => { sessionCache.clear(); reportRedisFailure(); });
+    client.on('ready', () => sessionCache.clear());
+    client.on('end', () => {
+      sessionCache.clear();
+      if (invalidationSubscriber === client) invalidationSubscriber = null;
+      scheduleInvalidationRetry();
+    });
+    let timer;
+    try {
+      await Promise.race([
+        client.connect(),
+        new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('Redis subscriber connection timed out')), 3000); }),
+      ]);
+    } finally { clearTimeout(timer); }
+    await client.subscribe(redisKey('auth-evictions'), raw => {
+      try {
+        const event = JSON.parse(raw);
+        if (event.userId && event.sid) sessionCache.delete(`${event.sid}:${event.userId}`);
+        else if (event.userId) evictLocalUser(event.userId);
+      } catch { /* Ignore malformed messages. */ }
+    });
+    invalidationSubscriber = client;
+  } catch {
+    reportRedisFailure();
+    client?.destroy();
+    scheduleInvalidationRetry();
+  }
+}
+
+export async function closeSessionInvalidationSubscriber() {
+  stoppingInvalidationSubscriber = true;
+  clearTimeout(invalidationRetry);
+  invalidationRetry = null;
+  const client = invalidationSubscriber;
+  invalidationSubscriber = null;
+  if (client) client.destroy();
+}
 
 export async function assertSession(decoded) {
   if (!decoded?.sid || !decoded?.id) throw unauthorized();
   const cacheKey = `${decoded.sid}:${decoded.id}`;
   const cached = sessionCache.get(cacheKey);
   if (cached) return { ...decoded, ...cached };
+  const shared = await redisGetJson(sharedSessionKey(decoded.sid, decoded.id));
+  if (shared) {
+    sessionCache.set(cacheKey, shared);
+    return { ...decoded, ...shared };
+  }
   
   const session = await sessions().findOne(
     { _id: decoded.sid, userId: String(decoded.id), ...active(new Date()) },
@@ -58,18 +138,22 @@ export async function assertSession(decoded) {
   
   const userPayload = payload(await activeUser(decoded.id));
   sessionCache.set(cacheKey, userPayload);
+  await redisSetJson(sharedSessionKey(decoded.sid, decoded.id), userPayload, 15);
   return { ...decoded, ...userPayload };
 }
 
-export function evictSessionCache(sid, userId) {
+export async function evictSessionCache(sid, userId) {
   sessionCache.delete(`${sid}:${userId}`);
+  await redisDelete(sharedSessionKey(sid, userId));
+  await publishSessionEviction({ sid, userId: String(userId) });
 }
 
-export function evictUserSessionCache(userId) {
-  const suffix = `:${String(userId)}`;
-  for (const key of sessionCache.keys()) {
-    if (key.endsWith(suffix)) sessionCache.delete(key);
-  }
+export async function evictUserSessionCache(userId) {
+  evictLocalUser(userId);
+  if (!process.env.REDIS_URL) return;
+  const rows = await sessions().find({ userId: String(userId) }, { projection: { _id: 1 } }).toArray();
+  await redisDelete(...rows.map(row => sharedSessionKey(row._id, userId)));
+  await publishSessionEviction({ userId: String(userId) });
 }
 
 export async function revokeUserSessions(userId, reason = 'admin-action') {
@@ -81,7 +165,7 @@ export async function revokeUserSessions(userId, reason = 'admin-action') {
     { userId: normalizedUserId, ...active(new Date()) },
     { $set: { revokedAt: new Date(), revokeReason: reason } },
   );
-  evictUserSessionCache(normalizedUserId);
+  await evictUserSessionCache(normalizedUserId);
   for (const session of activeSessions) disconnectSession(session._id);
 }
 
@@ -109,7 +193,7 @@ export async function rotateSession(refreshToken, now = new Date()) {
     if (!session || session.previousJti !== decoded.jti || session.previousValidUntil <= now) {
       if (session) {
         await sessions().updateOne(filter, { $set: { revokedAt: now, revokeReason: 'refresh-reuse' } });
-        evictSessionCache(decoded.sid, decoded.id);
+        await evictSessionCache(decoded.sid, decoded.id);
         disconnectSession(decoded.sid);
       }
       throw unauthorized();
@@ -121,6 +205,6 @@ export async function rotateSession(refreshToken, now = new Date()) {
 export async function revokeSession(decoded) {
   if (!decoded?.sid || !decoded?.id) return;
   await sessions().updateOne({ _id: decoded.sid, userId: String(decoded.id) }, { $set: { revokedAt: new Date(), revokeReason: 'logout' } });
-  evictSessionCache(decoded.sid, decoded.id);
+  await evictSessionCache(decoded.sid, decoded.id);
   disconnectSession(decoded.sid);
 }

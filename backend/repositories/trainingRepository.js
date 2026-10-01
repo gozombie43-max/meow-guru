@@ -1,4 +1,8 @@
 import { getMongoDB, getQuestionsCollection, withMongoTransaction } from '../config/mongodb.js';
+import { createHash } from 'node:crypto';
+import { getRedisClient, redisGetEjson, redisSetEjson } from '../config/redis.js';
+import { getQuestionRevision } from '../services/questions/questionCache.js';
+import { invalidateTrainingDashboard } from '../services/training/dashboardCache.js';
 import { normalizeTrainingSubject } from '../services/trainingSubjects.js';
 import { cachedTrainingCatalog } from '../services/training/catalogCache.js';
 import { trainingExamPattern, trainingSlug, trainingQuestionMetadata } from '../services/training/domain/questionMetadata.js';
@@ -80,7 +84,11 @@ export const findMission = (userId, exam, missionDate) =>
 export const findOwnedSession = (id, userId, completed = false) =>
   sessions().findOne({ id, userId, ...(completed ? { status: 'completed' } : {}) }).then(orderedTrainingSession);
 
-export const createTrainingSession = session => sessions().insertOne(session);
+export async function createTrainingSession(session) {
+  const result = await sessions().insertOne(session);
+  await invalidateTrainingDashboard(session.userId, session.exam);
+  return result;
+}
 export const reloadTrainingSession = id => sessions().findOne({ _id: id }).then(orderedTrainingSession);
 
 export const expiredActiveSessions = (userId, exam, now = Date.now()) =>
@@ -183,7 +191,10 @@ export async function trainingQuestionPool(config, dueIds, recentIds, weakTopics
       .limit(500)
       .toArray();
   }
-  if (recentIds.length) and.push({ id: { $nin: recentIds } });
+  const recent = new Set(recentIds.map(String));
+  const reserve = [0, 25, 50, 100, 200, 400].find(size => size >= recent.size);
+  const shared = indexed && reserve !== undefined && Boolean(await getRedisClient());
+  if (!shared && recentIds.length) and.push({ id: { $nin: recentIds } });
   const base = { $and: and };
   const weakFilter = weakTopics.length
     ? { $and: [...and, indexed
@@ -192,14 +203,28 @@ export async function trainingQuestionPool(config, dueIds, recentIds, weakTopics
     ] }
     : null;
 
-  const [latest, oldest, quality, weak] = await Promise.all([
-    query(base).sort({ updatedAt: -1, _id: 1 }).limit(900).toArray(),
-    query(base).sort({ updatedAt: 1, _id: 1 }).limit(450).toArray(),
-    query(base).sort(indexed ? { 'trainingCandidate.difficulty': -1, 'trainingCandidate.discrimination': -1, updatedAt: -1 } : { difficulty: -1, discrimination: -1, updatedAt: -1 }).limit(900).toArray(),
-    weakFilter
-      ? query(weakFilter).sort(indexed ? { 'trainingCandidate.discrimination': -1, updatedAt: -1 } : { discrimination: -1, updatedAt: -1 }).limit(1200).toArray()
-      : [],
-  ]);
+  let lists;
+  const sharedKey = shared ? `training-pool:${createHash('sha256').update(JSON.stringify({
+    revision: await getQuestionRevision(), exam: config.exam,
+    subject: normalizeTrainingSubject(config.subject || ''), topic: trainingSlug(config.topic || ''),
+    weakTopics: [...new Set(weakTopics.map(trainingSlug))].sort(), reserve,
+  })).digest('hex')}` : null;
+  if (sharedKey) lists = await redisGetEjson(sharedKey);
+  if (!lists) {
+    const extra = shared ? reserve : 0;
+    lists = await Promise.all([
+      query(base).sort({ updatedAt: -1, _id: 1 }).limit(900 + extra).toArray(),
+      query(base).sort({ updatedAt: 1, _id: 1 }).limit(450 + extra).toArray(),
+      query(base).sort(indexed ? { 'trainingCandidate.difficulty': -1, 'trainingCandidate.discrimination': -1, updatedAt: -1 } : { difficulty: -1, discrimination: -1, updatedAt: -1 }).limit(900 + extra).toArray(),
+      weakFilter
+        ? query(weakFilter).sort(indexed ? { 'trainingCandidate.discrimination': -1, updatedAt: -1 } : { discrimination: -1, updatedAt: -1 }).limit(1200 + extra).toArray()
+        : [],
+    ]);
+    if (sharedKey) await redisSetEjson(sharedKey, lists, 60);
+  }
+  const [latest, oldest, quality, weak] = shared
+    ? lists.map((rows, index) => rows.filter(row => !recent.has(String(row.id))).slice(0, [900, 450, 900, 1200][index]))
+    : lists;
   return [...new Map([...weak, ...quality, ...latest, ...oldest].map(q => [String(q.id), q])).values()];
 }
 
@@ -229,10 +254,12 @@ export async function commitTrainingTransition(session, updated) {
   const isCompletion =
     session.status === 'active' && ['completed', 'abandoned'].includes(updated.status);
   if (!isCompletion) {
-    return sessions().updateOne(
+    const write = await sessions().updateOne(
       { _id: session._id, revision: session.revision },
       update,
     );
+    if (write.modifiedCount) await invalidateTrainingDashboard(session.userId, session.exam);
+    return write;
   }
 
   let write = { modifiedCount: 0 };
@@ -271,14 +298,18 @@ export async function commitTrainingTransition(session, updated) {
       );
     }
   });
+  if (write.modifiedCount) await invalidateTrainingDashboard(session.userId, session.exam);
   return write;
 }
 
-export const saveTrainingDiagnosis = (session, diagnosis) =>
-  sessions().updateOne(
+export async function saveTrainingDiagnosis(session, diagnosis) {
+  const write = await sessions().updateOne(
     { _id: session._id, revision: session.revision },
     { $set: { 'result.diagnosis': diagnosis }, $inc: { revision: 1 } },
   );
+  if (write.modifiedCount) await invalidateTrainingDashboard(session.userId, session.exam);
+  return write;
+}
 
 export async function saveTrainingMistakes(session) {
   const write = await sessions().updateOne(
@@ -293,6 +324,7 @@ export async function saveTrainingMistakes(session) {
         update: { $set: { mistake: row.mistake, updatedAt: new Date() } },
       } })), { ordered: false });
     }
+    await invalidateTrainingDashboard(session.userId, session.exam);
   }
   return write;
 }

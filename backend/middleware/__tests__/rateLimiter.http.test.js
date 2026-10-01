@@ -3,9 +3,9 @@ import { once } from 'node:events';
 import { afterAll, beforeAll, expect, it, vi } from 'vitest';
 
 // Exercise the real limiter and IP helpers; only replace external persistence.
-vi.mock('../mongoRateLimitStore.js', async () => {
+vi.mock('../redisRateLimitStore.js', async () => {
   const { MemoryStore } = await import('express-rate-limit');
-  return { MongoRateLimitStore: class extends MemoryStore {} };
+  return { RedisRateLimitStore: class extends MemoryStore {} };
 });
 
 let server;

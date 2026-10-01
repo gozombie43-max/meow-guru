@@ -4,6 +4,11 @@ import { describe, it, expect, vi } from 'vitest';
 const mockSlotFindOne = vi.fn();
 const mockSlotUpdateOne = vi.fn();
 const mockQuestionsBulkWrite = vi.fn();
+const mockInvalidateQuestionMetadata = vi.fn();
+
+vi.mock('../questions/questionMetadataCache.js', () => ({
+  invalidateQuestionMetadata: (...args) => mockInvalidateQuestionMetadata(...args),
+}));
 
 vi.mock('../../config/mongodb.js', () => ({
   getMockSlotsCollection: () => ({

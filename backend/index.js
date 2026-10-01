@@ -3,6 +3,8 @@ import { createServer } from 'node:http';
 import { createApp } from './app.js';
 import { initPassport } from './auth/passport.js';
 import { connectMongoDB, disconnectMongoDB } from './config/mongodb.js';
+import { closeRedisClient } from './config/redis.js';
+import { startSessionInvalidationSubscriber, closeSessionInvalidationSubscriber } from './auth/sessions.js';
 import { checkReadiness } from './infrastructure/readiness.js';
 import { startRuntimeMetrics, logger } from './infrastructure/logger.js';
 
@@ -11,6 +13,7 @@ let isShuttingDown = false, isReady = false;
 let stopBattleOutbox;
 let stopWorkers;
 let stopAttachmentWorker;
+let closeBattleRedisAdapter;
 let waitForAttachmentWorkerIdle;
 let setNotificationRealtimeServer;
 
@@ -79,6 +82,9 @@ async function gracefulShutdown(signal, exitCode = 0) {
     }
 
     stopMetrics();
+    await closeSessionInvalidationSubscriber();
+    await closeBattleRedisAdapter?.();
+    await closeRedisClient();
     await disconnectMongoDB();
     logger.info('Graceful shutdown complete');
 
@@ -121,6 +127,7 @@ async function initWithRetry() {
     }
 
     await checkReadiness();
+    await startSessionInvalidationSubscriber();
 
     initPassport();
     const { app, corsOrigin } = await createApp({
@@ -136,7 +143,10 @@ async function initWithRetry() {
         import('./services/notificationRealtime.js'),
       ]);
       setNotificationRealtimeServer = notificationRealtimeModule.setNotificationRealtimeServer;
-      socketServer = battleSocketModule.initBattleSocket(httpServer, corsOrigin);
+      const { prepareBattleRedisAdapter } = await import('./battle/redisSocketAdapter.js');
+      const battleAdapter = await prepareBattleRedisAdapter();
+      closeBattleRedisAdapter = battleAdapter?.close;
+      socketServer = battleSocketModule.initBattleSocket(httpServer, corsOrigin, battleAdapter?.adapter);
     }
 
     if (runEmbeddedWorkers) {
