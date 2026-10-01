@@ -18,7 +18,7 @@
   gap: 12px;
   padding: calc(10px + var(--safe-top)) max(20px, var(--safe-right)) 10px
     max(20px, var(--safe-left));
-  background: #000000 !important;
+  background: var(--ui-header-surface) !important;
   border-bottom: none !important;
   position: sticky;
   top: 0;

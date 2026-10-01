@@ -29,8 +29,8 @@ try {
         .legacy svg { width: 30px; height: 16px; }
         .legacy-switch { background: #308650; }
         .legacy-switch span { position: absolute; top: 2px; left: 2px; background: white; }
-      </style><div data-theme="light"><div data-theme="${theme}" class="ios-series-quiz">
-        <header class="ios-series-header"><div class="ios-series-header-left"><button class="ios-series-icon-button" data-ui-button="icon" aria-label="Back"></button></div>
+      </style><div data-theme="${theme === 'light' ? 'dark' : 'light'}"><div data-theme="${theme}" class="ios-series-quiz">
+        <header data-ui-chrome="header" class="ios-series-header"><div class="ios-series-header-left"><button class="ios-series-icon-button" data-ui-button="icon" aria-label="Back"></button></div>
           <div class="ios-series-header-center"><div class="lang-toggle"><div><div class="lang-toggle-slider"></div>${['English', 'हिंदी', 'বাংলা'].map(label => `<button data-ui-button="state" class="lang-toggle-option">${label}</button>`).join('')}</div></div></div>
           <div class="ios-series-header-right"><button class="ios-series-icon-button" data-ui-button="icon" aria-label="Settings"></button></div>
         </header>
@@ -72,6 +72,8 @@ try {
           languageActive: getComputedStyle(document.querySelector('.lang-toggle-slider')).backgroundColor,
           correctOpacity: getComputedStyle(document.querySelector('.is-correct')).opacity,
           canvas: getComputedStyle(document.querySelector('.ios-series-quiz')).backgroundColor,
+          headerBackground: getComputedStyle(document.querySelector('header')).backgroundColor,
+          headerIconColor: getComputedStyle(document.querySelector('header button')).color,
           submit: getComputedStyle(document.querySelector('[data-ui-button="primary"]')).backgroundColor,
           geometry: ['.ios-series-header', '.ios-series-icon-button', '.lang-toggle', '.ios-series-question', '.ios-series-question-card', '.ios-series-prompt', '.ios-series-option', '.ios-series-option-letter', '.ios-series-footer', '.ios-series-footer-btn'].map(selector => {
             const node = document.querySelector(selector);
@@ -110,6 +112,8 @@ try {
       if (theme === 'light') {
         lightGeometry = metrics.geometry;
         assert.equal(metrics.canvas, 'rgb(245, 247, 250)');
+        assert.equal(metrics.headerBackground, 'rgb(255, 255, 255)', 'Light headers must not inherit the dark canvas');
+        assert.equal(metrics.headerIconColor, 'rgb(24, 36, 56)', 'Light header icons must remain readable');
         assert.equal(metrics.submit, 'rgb(36, 93, 204)');
         assert.equal(metrics.languageBackground, 'rgb(237, 241, 246)');
       } else {
@@ -117,6 +121,8 @@ try {
       }
       if (theme === 'dark') {
         assert.equal(metrics.canvas, 'rgb(0, 0, 0)');
+        assert.equal(metrics.headerBackground, 'rgb(0, 0, 0)', 'Dark headers retain the OLED canvas');
+        assert.equal(metrics.headerIconColor, 'rgb(229, 234, 240)');
         assert.equal(metrics.submit, 'rgb(33, 107, 193)');
         assert.equal(metrics.languageBackground, 'rgb(28, 28, 30)');
         assert.equal(metrics.languageActive, 'rgb(24, 47, 75)');

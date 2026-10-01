@@ -75,14 +75,14 @@ body.theme-light {
 .notif-fixed-top {
   flex-shrink: 0;
   z-index: 40;
-  background: #000000 !important;
+  background: var(--ui-header-surface) !important;
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border-bottom: none !important;
 }
 
 html.theme-dark .notif-fixed-top {
-  background: #000000 !important;
+  background: var(--ui-header-surface) !important;
   border-bottom: none !important;
 }
 

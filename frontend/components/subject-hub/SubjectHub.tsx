@@ -370,7 +370,7 @@ export default function SubjectHub({ config }: { config: SubjectHubConfig }) {
   const SelectedIcon = selectedTopic.icon;
 
   return (
-    <div className={styles.pageRoot}>
+    <div className={styles.pageRoot} data-subject={config.subjectId} data-topic-layout={oledMobile ? "compact" : undefined}>
       {/* =========================================================================
           DESKTOP PC VIEW (Zero-Scroll 100vh macOS Studio >= 768px)
           ========================================================================= */}

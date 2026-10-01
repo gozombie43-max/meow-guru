@@ -303,8 +303,8 @@ export const aiChatStyles = css`
           justify-content: space-between;
           gap: 16px;
           padding: 0 22px;
-          background: #000000 !important;
-          color: #ECECF0;
+          background: var(--ui-header-surface) !important;
+          color: var(--ink);
           backdrop-filter: blur(20px) saturate(180%);
           -webkit-backdrop-filter: blur(20px) saturate(180%);
         }
@@ -324,14 +324,14 @@ export const aiChatStyles = css`
           font-size: 16px;
           font-weight: 700;
           line-height: 1.2;
-          color: #ECECF0;
+          color: var(--ink);
         }
 
         .chat-status {
           display: flex;
           align-items: center;
           gap: 7px;
-          color: rgba(235, 235, 245, 0.65);
+          color: var(--muted);
           font-size: 12px;
         }
 
@@ -347,9 +347,9 @@ export const aiChatStyles = css`
           height: 36px;
           padding: 0 12px;
           border-radius: 8px;
-          background: rgba(255, 255, 255, 0.08);
-          color: #ECECF0;
-          border: 1px solid rgba(255, 255, 255, 0.12);
+          background: var(--surface-soft);
+          color: var(--ink);
+          border: 1px solid var(--line);
           font-size: 13px;
           font-weight: 600;
         }

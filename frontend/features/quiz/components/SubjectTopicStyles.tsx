@@ -39,7 +39,7 @@ export function SubjectTopicStyles() {
           right: 0;
           z-index: 50;
           padding: var(--safe-top) 16px 0;
-          background: #000000 !important;
+          background: var(--ui-header-surface) !important;
         }
         .sg-nav-inline {
           height: 56px;
@@ -49,7 +49,7 @@ export function SubjectTopicStyles() {
           border-bottom: none !important;
         }
         .sg-back {
-          display: flex; align-items: center; justify-content: center; color: #ECECF0 !important;
+          display: flex; align-items: center; justify-content: center; color: var(--ui-text) !important;
           position: absolute; left: 16px; top: 0; bottom: 0; margin: auto 0;
           width: 36px !important; height: 36px !important;
           background: transparent !important; border: none !important; padding: 0; cursor: pointer;
@@ -69,7 +69,7 @@ export function SubjectTopicStyles() {
         .sg-nav-title {
           font-size: 17.5px; font-weight: 700; letter-spacing: -0.2px;
           max-width: calc(100% - 104px);
-          margin: 0; color: #ECECEF !important;
+          margin: 0; color: var(--ui-text) !important;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;

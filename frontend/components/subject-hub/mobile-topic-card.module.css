@@ -26,6 +26,93 @@
   overflow: hidden;
 }
 
+/* Subject topics use the compact catalog rhythm of the mock-test hub. */
+:global([data-topic-layout="compact"]) .card {
+  aspect-ratio: auto;
+  min-height: 140px;
+  padding: 12px 10px 10px;
+  gap: 8px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--oled-surface, #1c1c1e);
+  box-shadow: none;
+}
+
+:global([data-topic-layout="compact"]) .iconTile {
+  width: 36px;
+  height: 36px;
+  flex-basis: 36px;
+  margin-bottom: 6px;
+  border-radius: 9px;
+}
+
+:global([data-topic-layout="compact"]) .iconTile svg {
+  width: 22px;
+  height: 22px;
+}
+
+:global([data-topic-layout="compact"]) .algebraIcon {
+  font-size: 19px;
+}
+
+:global([data-topic-layout="compact"]) .numberSystemIcon {
+  font-size: 13px;
+}
+
+:global([data-topic-layout="compact"]) .topicTitleWrap {
+  height: auto;
+  min-height: 34px;
+  max-height: none;
+  overflow: visible;
+}
+
+:global([data-topic-layout="compact"]) .topicTitle {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 17px;
+  letter-spacing: -0.01em;
+  color: var(--oled-text, #e5eaf0);
+  overflow: visible;
+}
+
+:global([data-topic-layout="compact"]) .topicCount {
+  height: auto;
+  min-height: 16px;
+  max-height: none;
+  margin-top: 2px;
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 500;
+  color: var(--oled-secondary, #a2a9b4);
+}
+
+:global([data-topic-layout="compact"]) .cardFooter {
+  margin-bottom: 0;
+}
+
+:global([data-topic-layout="compact"]) .progressLabel {
+  font-size: 11px;
+  color: var(--oled-secondary, #a2a9b4);
+}
+
+:global(html.theme-light [data-topic-layout="compact"]) .card {
+  background: var(--light-surface);
+}
+
+:global(html.theme-light [data-topic-layout="compact"]) .topicTitle {
+  color: var(--light-text);
+}
+
+:global(html.theme-light [data-topic-layout="compact"]) .topicCount,
+:global(html.theme-light [data-topic-layout="compact"]) .progressLabel {
+  color: var(--light-text-secondary);
+}
+
+:global(html.theme-light [data-topic-layout="compact"]) .progressTrack {
+  background: var(--light-border);
+}
+
 .card:active {
   transform: scale(0.985);
   background: #202024;

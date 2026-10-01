@@ -35,7 +35,7 @@
 
 :global(html.mock-test-surface),
 :global(body.mock-test-surface) {
-  background: var(--dark-canvas, #000000);
+  background: var(--background);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -102,7 +102,7 @@
 
 .header {
   flex-shrink: 0;
-  background: #000000 !important;
+  background: var(--ui-header-surface) !important;
   padding: calc(10px + var(--safe-top)) 12px 0;
   border-bottom: none !important;
   position: sticky;
@@ -259,7 +259,7 @@
   border-radius: 0 !important;
   font-size: 13px;
   font-weight: 550;
-  color: #9A9CA4;
+  color: var(--text-muted);
   white-space: nowrap;
   flex-shrink: 0;
   cursor: pointer;
@@ -270,18 +270,18 @@
 }
 
 .catChip:hover {
-  color: #EEEEF1;
+  color: var(--text-dark);
 }
 
 .activeChip {
-  color: #FFFFFF !important;
+  color: var(--text-dark) !important;
   font-weight: 650 !important;
   background: transparent !important;
 }
 
 :global(body.theme-dark) .activeChip,
 :global(html.theme-dark) .activeChip {
-  color: #FFFFFF !important;
+  color: var(--text-dark) !important;
 }
 
 .activeChip::after {
@@ -1125,7 +1125,7 @@
     border-radius: 0 !important;
     font-size: 13px;
     font-weight: 550;
-    color: #9A9CA4;
+    color: var(--text-muted);
     white-space: nowrap;
     flex-shrink: 0;
     cursor: pointer;
@@ -1136,18 +1136,18 @@
   }
 
   .catChip:hover {
-    color: #EEEEF1;
+    color: var(--text-dark);
   }
 
   .activeChip {
-    color: #FFFFFF !important;
+    color: var(--text-dark) !important;
     font-weight: 650 !important;
     background: transparent !important;
   }
 
   :global(body.theme-dark) .activeChip,
   :global(html.theme-dark) .activeChip {
-    color: #FFFFFF !important;
+    color: var(--text-dark) !important;
   }
 
   .activeChip::after {

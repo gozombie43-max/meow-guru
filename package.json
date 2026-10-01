@@ -26,7 +26,13 @@
     "build:contracts": "npm run build --workspace @meow/contracts"
   },
   "overrides": {
-    "dompurify": "3.4.14",
+    "engine.io": "6.6.11",
+    "dompurify": "3.4.16",
+    "@grpc/grpc-js": "^1.14.5",
+    "@firebase/firestore": {
+      "@grpc/grpc-js": "^1.14.5"
+    },
+    "fast-uri": "^4.2.1",
     "gaxios": {
       "uuid": "^11.1.1"
     },

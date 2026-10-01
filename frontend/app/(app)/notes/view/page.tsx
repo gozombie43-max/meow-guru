@@ -181,8 +181,8 @@ export default function NoteViewPage() {
 
 const styles: Record<string, React.CSSProperties> = {
   page: {
-    background: "#0d1117",
-    color: "#e2e8f0",
+    background: "var(--background)",
+    color: "var(--ui-text)",
     fontFamily: "'Segoe UI', sans-serif",
   },
   header: {
@@ -200,7 +200,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   subtitle: {
     margin: "4px 0 0",
-    color: "#8b949e",
+    color: "var(--ui-secondary)",
     fontSize: "0.9rem",
   },
   viewerCard: {
@@ -218,9 +218,9 @@ const styles: Record<string, React.CSSProperties> = {
     flex: 1,
   },
   backButton: {
-    border: "1px solid #30363d",
-    background: "#161b22",
-    color: "#e2e8f0",
+    border: "1px solid var(--ui-border)",
+    background: "var(--ui-surface)",
+    color: "var(--ui-text)",
     borderRadius: "10px",
     padding: "10px 14px",
     cursor: "pointer",
@@ -228,8 +228,8 @@ const styles: Record<string, React.CSSProperties> = {
   },
   stateShell: {
     minHeight: "100dvh",
-    background: "#0d1117",
-    color: "#e2e8f0",
+    background: "var(--background)",
+    color: "var(--ui-text)",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
@@ -239,7 +239,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   stateText: {
     margin: 0,
-    color: "#8b949e",
+    color: "var(--ui-secondary)",
     fontSize: "1rem",
   },
 };

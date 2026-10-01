@@ -1787,7 +1787,7 @@
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   gap: 6px;
   padding: calc(var(--safe-top) + 10px) max(14px, var(--safe-right)) 10px max(14px, var(--safe-left));
-  background: #000000 !important;
+  background: var(--ui-header-surface) !important;
   border-bottom: none !important;
 }
 .ios-series-quiz:is([data-theme="dark"], [data-theme="light"]) .ios-series-header-center { padding: 0; }

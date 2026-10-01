@@ -286,7 +286,7 @@ function AiChatPageContent() {
   };
 
   return (
-    <main className={`ai-chat-page ios-theme-${theme} ${sidebarOpen ? '' : ' sidebar-collapsed'}`}>
+    <main data-theme={theme} className={`ai-chat-page ios-theme-${theme} ${sidebarOpen ? '' : ' sidebar-collapsed'}`}>
       {sidebarOpen && (
         <button
           type="button"

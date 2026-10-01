@@ -18,6 +18,7 @@
   --ui-icon-size: 20px;
   --ui-chrome-gutter: 16px;
   --ui-surface: var(--light-surface);
+  --ui-header-surface: var(--light-surface);
   --ui-muted-surface: var(--light-surface-muted);
   --ui-border: var(--light-border);
   --ui-text: var(--light-text);
@@ -28,6 +29,7 @@
 }
 
 .theme-dark, [data-theme="dark"], .training-dark {
+  --ui-header-surface: var(--dark-canvas);
   --ui-surface: var(--dark-surface);
   --ui-muted-surface: var(--dark-surface-muted);
   --ui-border: var(--dark-border);
@@ -39,6 +41,7 @@
 }
 
 .theme-light, [data-theme="light"] {
+  --ui-header-surface: var(--light-surface);
   --ui-surface: var(--light-surface);
   --ui-muted-surface: var(--light-surface-muted);
   --ui-border: var(--light-border);
@@ -188,7 +191,7 @@
 }
 
 [data-ui-chrome="header"] {
-  background: #000000 !important;
+  background: var(--ui-header-surface) !important;
   color: var(--ui-text);
   box-shadow: none !important;
   border-bottom: none !important;
@@ -251,13 +254,13 @@
   border: none !important;
   border-radius: 50% !important;
   box-shadow: none !important;
-  color: var(--dark-text, #ECECF0) !important;
-  min-height: unset !important;
+  color: var(--ui-text) !important;
+  min-height: var(--ui-control-height) !important;
   transition: background-color 150ms ease, opacity 150ms ease;
 }
 
 :is(header, [data-ui-chrome="header"]) :is([data-ui-button="icon"], .backBtn, .backButton, .iconButton, .menuButton, .notif-back-btn, .fn-back-btn, .fn-search-btn, .fn-add-btn, .battle-icon-button, .mobileBackBtn):active {
-  background: rgba(255, 255, 255, 0.08) !important;
+  background: var(--ui-muted-surface) !important;
   opacity: 0.75;
 }
 
