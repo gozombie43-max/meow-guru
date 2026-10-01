@@ -2,7 +2,8 @@ import { afterAll, beforeAll, expect, it, vi } from 'vitest';
 import { Collection } from 'mongodb';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 
-const state = vi.hoisted(() => ({ values: new Map(), publish: vi.fn() }));
+const state = vi.hoisted(() => ({ values: new Map(), publish: vi.fn(), createClient: vi.fn() }));
+vi.mock('redis', () => ({ createClient: state.createClient }));
 vi.mock('../../config/redis.js', () => ({
   redisGetJson: vi.fn(async key => state.values.get(key) ?? null),
   redisSetJson: vi.fn(async (key, value) => { state.values.set(key, value); }),
@@ -13,9 +14,12 @@ vi.mock('../../config/redis.js', () => ({
 }));
 
 import { connectMongoDB, disconnectMongoDB } from '../../config/mongodb.js';
-import { assertSession, createSession, evictUserSessionCache, revokeSession } from '../sessions.js';
+import {
+  assertSession, closeSessionInvalidationSubscriber, createSession,
+  evictUserSessionCache, revokeSession, startSessionInvalidationSubscriber,
+} from '../sessions.js';
 import { verifyToken } from '../jwt.js';
-import { redisGetJson } from '../../config/redis.js';
+import { redisGetJson, reportRedisFailure } from '../../config/redis.js';
 
 let mongo, db;
 beforeAll(async () => {
@@ -26,7 +30,12 @@ beforeAll(async () => {
   db = await connectMongoDB();
   await db.collection('users').insertOne({ id: 'learner', role: 'student' });
 }, 60000);
-afterAll(async () => { await disconnectMongoDB(); await mongo?.stop(); vi.unstubAllEnvs(); });
+afterAll(async () => {
+  await closeSessionInvalidationSubscriber();
+  await disconnectMongoDB();
+  await mongo?.stop();
+  vi.unstubAllEnvs();
+});
 
 it('uses Redis after local expiry and evicts shared sessions on role change and logout', async () => {
   const decoded = verifyToken((await createSession({ id: 'learner' })).token);
@@ -48,4 +57,67 @@ it('uses Redis after local expiry and evicts shared sessions on role change and 
   await revokeSession(decoded);
   await expect(assertSession(decoded)).rejects.toMatchObject({ statusCode: 401 });
   expect(state.publish).toHaveBeenCalled();
+});
+
+it('receives cross-instance session invalidations and clears local entries on connection events', async () => {
+  await db.collection('users').updateOne({ id: 'learner' }, { $set: { role: 'student' } });
+  const handlers = new Map();
+  let onMessage;
+  const subscriber = {
+    on: vi.fn((event, handler) => { handlers.set(event, handler); }),
+    connect: vi.fn(async () => {}),
+    subscribe: vi.fn(async (_channel, callback) => { onMessage = callback; }),
+    destroy: vi.fn(),
+  };
+  state.createClient.mockReturnValue(subscriber);
+
+  const decoded = verifyToken((await createSession({ id: 'learner' })).token);
+  await assertSession(decoded);
+  expect((await assertSession(decoded)).role).toBe('student');
+  vi.stubEnv('REDIS_URL', '');
+  await startSessionInvalidationSubscriber();
+  expect(state.createClient).not.toHaveBeenCalled();
+  vi.stubEnv('REDIS_URL', 'redis://mocked');
+  await startSessionInvalidationSubscriber();
+  expect(subscriber.subscribe).toHaveBeenCalledWith('test:auth-evictions', expect.any(Function));
+  await startSessionInvalidationSubscriber();
+  expect(state.createClient).toHaveBeenCalledTimes(1);
+
+  await db.collection('users').updateOne({ id: 'learner' }, { $set: { role: 'editor' } });
+  state.values.clear();
+  onMessage(JSON.stringify({ sid: decoded.sid, userId: decoded.id }));
+  expect((await assertSession(decoded)).role).toBe('editor');
+
+  await db.collection('users').updateOne({ id: 'learner' }, { $set: { role: 'admin' } });
+  state.values.clear();
+  onMessage('{malformed');
+  onMessage('{}');
+  onMessage(JSON.stringify({ userId: decoded.id }));
+  expect((await assertSession(decoded)).role).toBe('admin');
+
+  await db.collection('users').updateOne({ id: 'learner' }, { $set: { role: 'student' } });
+  state.values.clear();
+  handlers.get('ready')();
+  expect((await assertSession(decoded)).role).toBe('student');
+  handlers.get('error')();
+
+  state.publish.mockRejectedValueOnce(new Error('publish failed'));
+  await evictUserSessionCache('learner');
+  expect(reportRedisFailure).toHaveBeenCalled();
+
+  vi.useFakeTimers();
+  const retryClient = {
+    ...subscriber,
+    connect: vi.fn().mockRejectedValue(new Error('connection failed')),
+    destroy: vi.fn(),
+  };
+  state.createClient.mockReturnValue(retryClient);
+  handlers.get('end')();
+  await vi.advanceTimersByTimeAsync(30_000);
+  expect(retryClient.destroy).toHaveBeenCalled();
+  await closeSessionInvalidationSubscriber();
+  vi.useRealTimers();
+  expect(subscriber.destroy).not.toHaveBeenCalled();
+  await startSessionInvalidationSubscriber();
+  expect(state.createClient).toHaveBeenCalledTimes(2);
 });
