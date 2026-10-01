@@ -3,9 +3,10 @@
 import { useCallback, useRef, useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowRight, ChevronDown, Sparkles, Target } from "lucide-react";
+import { ArrowRight, Sparkles, Target } from "lucide-react";
 
 import { useThemeMode } from "@/hooks/useTheme";
+import { TrainingSelectDropdown } from "@/components/training/TrainingSelectDropdown";
 import { TrainingInsights } from "@/components/training/TrainingInsights";
 import {
   PlayNavigation,
@@ -94,37 +95,25 @@ function PlayContent() {
             </span>
           </Link>
           <div className="training-exam-wrapper">
-            <label className="training-exam">
-              <span className="sr-only">Target exam</span>
-              <select
-                data-ui-field
-                value={exam}
-                onChange={(e) => {
-                  const nextExam = e.target.value;
-                  setExam(nextExam);
-                  router.push(playHref(rawParamsRef.current, tab, nextExam), { scroll: false });
-                  setDashboard(null);
-                  setLoading(true);
-                  setDashboardError("");
-                  setSetupError("");
-                }}
-              >
-                {(capabilities?.exams || [
-                  { id: "ssc-cgl", label: "SSC CGL" },
-                  { id: "ssc-chsl", label: "SSC CHSL" },
-                  { id: "cat", label: "CAT" },
-                ]).map((item) => (
-                  <option value={item.id} key={item.id}>
-                    {item.label}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown
-                size={13}
-                className="training-exam-chevron"
-                aria-hidden="true"
-              />
-            </label>
+            <TrainingSelectDropdown
+              className="training-exam"
+              label="Target exam"
+              value={exam}
+              placement="bottom"
+              options={(capabilities?.exams || [
+                { id: "ssc-cgl", label: "SSC CGL" },
+                { id: "ssc-chsl", label: "SSC CHSL" },
+                { id: "cat", label: "CAT" },
+              ]).map(item => ({ value: item.id, label: item.label }))}
+              onChange={(nextExam) => {
+                setExam(nextExam);
+                router.push(playHref(rawParamsRef.current, tab, nextExam), { scroll: false });
+                setDashboard(null);
+                setLoading(true);
+                setDashboardError("");
+                setSetupError("");
+              }}
+            />
           </div>
         </div>
         <PlayNavigation mobile tab={tab} onChange={navigate} />

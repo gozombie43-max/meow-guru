@@ -25,7 +25,7 @@
 }
 
 .play-setup-page.training-dark .play-setup-header,
-:global(html.theme-dark) .play-setup-header {
+html.theme-dark .play-setup-header {
   background: #000000 !important;
   border-bottom: none !important;
 }

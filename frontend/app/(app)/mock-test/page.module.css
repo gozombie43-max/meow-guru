@@ -314,6 +314,8 @@
 }
 
 .examCard {
+  color: inherit;
+  text-decoration: none;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 14px;

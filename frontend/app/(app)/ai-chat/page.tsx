@@ -356,11 +356,13 @@ function AiChatPageContent() {
       <section className={`chat-workspace ${!hasMessages ? 'is-empty' : ''}`} aria-label="AI Tutor chat">
         <header data-ui-chrome="header" className="chat-topbar">
           <div className="topbar-left">
-            <BackButton href="/" label="Back to home" className="icon-btn" />
+            <div className="desktop-back">
+              <BackButton href="/" label="Back to home" className="icon-btn" />
+            </div>
             <button data-ui-button="icon" className="mobile-menu icon-btn" type="button" onClick={() => setSidebarOpen((value) => !value)} aria-label="Open sidebar">
               <Menu size={19} />
             </button>
-            <div>
+            <div className="chat-heading">
               <div className="chat-title">AI Tutor</div>
               <div className="chat-status">
                 <span />
@@ -496,6 +498,7 @@ function AiChatPageContent() {
                 <Plus size={22} />
               </button>
               <textarea
+                data-custom-focus
                 value={input}
                 onChange={(event) => setInput(event.target.value)}
                 onKeyDown={(event) => {

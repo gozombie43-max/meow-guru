@@ -8,8 +8,7 @@ ChevronDown,
 ChevronLeft,
 Clock,
 Layers,
-Lock,
-Play
+Lock
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect,useMemo,useState } from 'react';
@@ -376,11 +375,11 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
                             )}
 
                             {state.status === 'not_started' && (
-                              <button data-ui-button="primary"
+                              <button data-ui-button="secondary"
                                 className={styles.statusNotStarted}
                                 onClick={() => handleStart(slot.id)}
                               >
-                                <Play size={13} fill="currentColor" /> Start Test
+                                Start
                               </button>
                             )}
 
@@ -499,11 +498,11 @@ export default function ExamLandingPage({ examSlug }: ExamLandingPageProps) {
                               )}
 
                               {state.status === 'not_started' && (
-                                <button data-ui-button="primary"
+                                <button data-ui-button="secondary"
                                   className={styles.statusNotStarted}
                                   onClick={() => handleStart(slot.id)}
                                 >
-                                  <Play size={13} fill="currentColor" /> Start Test
+                                  Start
                                 </button>
                               )}
 

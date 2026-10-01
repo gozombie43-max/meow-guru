@@ -466,25 +466,22 @@
   cursor: pointer;
 }
 
-.statusNotStarted {
-  display: flex;
+.statusNotStarted[data-ui-button] {
+  display: inline-flex;
   align-items: center;
-  gap: 4px;
-  background: linear-gradient(135deg, var(--primary), var(--primary-light));
-  color: #fff;
-  border: none;
-  padding: 5px 12px;
-  border-radius: 6px;
-  font-size: 11.5px;
+  justify-content: center;
+  background-color: var(--ui-muted-surface) !important;
+  color: var(--ui-text) !important;
+  border-color: transparent !important;
+  padding: 7px 12px !important;
+  border-radius: 10px !important;
+  font-size: 12px !important;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0, 113, 227, 0.25);
-  transition: all 0.15s;
 }
 
-.statusNotStarted:hover {
-  box-shadow: 0 4px 10px rgba(0, 113, 227, 0.35);
-  transform: translateY(-1px);
+.statusNotStarted[data-ui-button]:hover {
+  background-color: var(--ui-border) !important;
 }
 
 .statusLocked {

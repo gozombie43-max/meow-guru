@@ -1,7 +1,6 @@
-import { memo, useState } from "react";
+import { memo } from "react";
 import {
   BarChart3,
-  BookOpen,
   BookOpenCheck,
   Brain,
   ChevronRight,
@@ -36,13 +35,6 @@ const icons = {
   flame: Flame,
   shield: Shield,
 };
-const categoryConfigs = [
-  { name: "All modes", icon: Layers },
-  { name: "AI", icon: Sparkles },
-  { name: "Speed", icon: Zap },
-  { name: "Sectional", icon: BookOpen },
-  { name: "Extreme", icon: Flame },
-];
 
 export function PlayNavigation({
   tab,
@@ -144,39 +136,18 @@ export const PlayModeLibrary = memo(function PlayModeLibrary({
 }: {
   onChoose: (mode: ModeId) => void;
 }) {
-  const [category, setCategory] = useState("All modes");
-  const visible = modes.filter(
-    (mode) => category === "All modes" || mode.category === category,
-  );
   return (
     <section aria-labelledby="play-modes-title" className="play-library">
       <div className="training-mode-bar">
         <div>
           <h2 id="play-modes-title">
             Training modes
-            <span>{visible.length}</span>
+            <span>{modes.length}</span>
           </h2>
         </div>
       </div>
-      <div
-        className="training-filters"
-        role="group"
-        aria-label="Mode categories"
-      >
-        {categoryConfigs.map(({ name, icon: CatIcon }) => (
-          <button
-            key={name}
-            data-ui-button="state"
-            aria-pressed={category === name}
-            onClick={() => setCategory(name)}
-          >
-            <CatIcon size={14} aria-hidden="true" />
-            <span>{name}</span>
-          </button>
-        ))}
-      </div>
       <div className="training-mode-grid">
-        {visible.map((mode) => {
+        {modes.map((mode) => {
           const Icon = icons[mode.icon];
           return (
             <button
@@ -211,7 +182,6 @@ export const PlayModeLibrary = memo(function PlayModeLibrary({
                 </span>
                 <span className="play-configure">
                   Set up
-                  <ChevronRight size={14} aria-hidden="true" />
                 </span>
               </div>
             </button>
@@ -251,7 +221,9 @@ export function PlayMissionShortcut({
           {loading ? "Loading your plan…" : "A guided session, planned for you"}
         </small>
       </span>
-      <span className="play-mission-action"><span>View plan</span><ChevronRight size={18} aria-hidden="true" /></span>
+      <span className="play-mission-action">
+        Start
+      </span>
     </button>
   );
 }

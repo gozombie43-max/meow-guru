@@ -1,0 +1,71 @@
+.mobileLabel { display: none; }
+.questionTable td.mobileDetails { display: none; }
+.questionContent { max-height: 64px; overflow: hidden; }
+.questionTable td[data-label="ID"] { max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+@media (max-width: 767px) {
+  .questionList { border: 0; border-radius: 0; background: transparent; overflow: visible; }
+  .questionTable tbody { display: grid; gap: 8px; }
+  .questionTable tbody tr {
+    grid-template-columns: 32px minmax(0, 1fr) minmax(0, 1fr);
+    gap: 0 8px;
+    padding: 2px 12px 8px;
+    border: 0;
+    border-radius: 16px;
+    background: var(--admin-surface-solid) !important;
+  }
+  .questionTable tbody tr[data-selected="true"] {
+    box-shadow: inset 0 0 0 2px var(--admin-blue);
+  }
+  .questionTable td[data-label]::before {
+    font-size: 11px;
+    font-weight: 500;
+    margin-bottom: 3px;
+  }
+  .questionTable td[data-label="Select"] { grid-column: 1; grid-row: 1; }
+  .selection { display: inline-flex; align-items: center; justify-content: center; width: 44px; margin-left: -6px; min-height: 44px; cursor: pointer; }
+  .selection input { width: 18px !important; height: 18px !important; accent-color: var(--admin-blue); }
+  .questionTable td[data-label="ID"] {
+    grid-column: 2; grid-row: 1; align-self: center; text-align: left;
+    font-size: 11px; line-height: 1.5;
+    white-space: nowrap !important;
+  }
+  .questionTable td[data-label="Question"] { grid-column: 1 / -1; grid-row: 2; padding: 2px 0 4px !important; }
+  .questionTable td[data-label="Select"]::before,
+  .questionTable td[data-label="ID"]::before,
+  .questionTable td[data-label="Topic"]::before,
+  .questionTable td[data-label="Difficulty"]::before,
+  .questionTable td[data-label="Question"]::before,
+  .questionTable td[data-label="Actions"]::before { display: none; }
+  .questionContent {
+    max-height: none; overflow-x: auto; font-size: 15px; line-height: 1.5;
+    font-weight: 500; color: var(--admin-text);
+  }
+  .questionContent > :first-child { margin-top: 0; }
+  .questionContent > :last-child { margin-bottom: 0; }
+  .questionTable td[data-label="Topic"],
+  .questionTable td[data-label="Chapter"],
+  .questionTable td[data-label="Exam"] { display: none; }
+  .questionTable td[data-label="Difficulty"] { grid-column: 3; grid-row: 1; align-self: center; text-align: right; }
+  .questionTable td.mobileDetails { display: block; grid-column: 1 / -1; grid-row: 3; }
+  .mobileDetails summary { min-height: 44px; align-content: center; cursor: pointer; font-size: 12px; color: var(--admin-text-secondary); }
+  .mobileDetails summary span { float: right; max-width: 65%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--admin-blue); }
+  .mobileDetails dl { display: grid; gap: 6px; margin: 0 0 12px; font-size: 12px; line-height: 1.5; }
+  .mobileDetails dl > div { display: grid; grid-template-columns: 54px minmax(0, 1fr); gap: 8px; }
+  .mobileDetails dt { color: var(--admin-text-secondary); }
+  .mobileDetails dd { margin: 0; color: var(--admin-text); overflow-wrap: anywhere; }
+  .questionTable td[data-label="Actions"] {
+    grid-column: 1 / -1; grid-row: 4;
+    padding-top: 6px !important; border-top: 1px solid var(--admin-separator);
+  }
+  .questionTable td[data-label="Actions"] button {
+    min-height: 44px; flex: 1 1 auto; font-size: 12px !important; border-radius: 10px !important;
+  }
+  .questionTable td[data-label="Actions"] button:nth-of-type(2) {
+    color: var(--admin-danger) !important; border-color: var(--admin-danger-border) !important;
+  }
+  .questionTable td[data-label="Actions"] button:nth-of-type(3) {
+    color: var(--admin-success) !important; border-color: var(--admin-success-border) !important;
+  }
+  .questionTable td[colspan] { grid-column: 1 / -1; }
+}

@@ -169,10 +169,10 @@ html.theme-dark .training-dark .training-mode-card:hover {
 }
 html.theme-dark .training-dark :is(.training-mode-card, .trade-hero-panel)::before,
 html.theme-dark .training-dark :is(.training-mode-card, .trade-hero-panel)::after { display: none; }
-html.theme-dark .training-dark :is(.training-filters button, .training-mobile-tabs button, .trade-tab-btn) {
+html.theme-dark .training-dark :is(.training-filters button, .trade-tab-btn) {
   border: 0; border-radius: 999px !important; background: var(--oled-surface); box-shadow: none !important;
 }
-html.theme-dark .training-dark :is(.training-filters button[aria-pressed="true"], .training-mobile-tabs button[aria-current], .trade-tab-btn.is-active) {
+html.theme-dark .training-dark :is(.training-filters button[aria-pressed="true"], .trade-tab-btn.is-active) {
   background: var(--oled-selected) !important; color: #edf4fc !important;
 }
 html.theme-dark .training-dark .trade-tab-btn.is-active::after { display: none; }

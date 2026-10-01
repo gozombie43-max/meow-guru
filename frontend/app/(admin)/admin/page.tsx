@@ -1,6 +1,7 @@
 "use client";
 import AdminDisclosure from "@/components/admin/AdminDisclosure";
 import layout from "@/components/admin/AdminLayout.module.css";
+import styles from "./QuestionBank.module.css";
 import MassSolutionUpload from "@/components/admin/MassSolutionUpload";
 import RichContent from "@/components/RichContent";
 import { useAdminQuestionBank } from '@/features/admin/questions/useAdminQuestionBank';
@@ -242,8 +243,8 @@ export default function AdminPanel() {
       )}
 
       {/* Table */}
-      <div className={layout.tableWrap}>
-        <table className={layout.table}>
+      <div className={`${layout.tableWrap} ${styles.questionList}`}>
+        <table className={`${layout.table} ${styles.questionTable}`}>
           <thead>
             <tr style={{ background: "var(--color-background-secondary)" }}>
               <th style={{ padding: "10px 14px", borderBottom: "0.5px solid var(--color-border-tertiary)", width: 40 }}>
@@ -261,15 +262,18 @@ export default function AdminPanel() {
             ) : paginated.length === 0 ? (
               <tr><td colSpan={8} style={{ padding: 40, textAlign: "center", color: "var(--color-text-secondary)" }}>No questions found</td></tr>
             ) : paginated.map((q, i) => (
-              <tr key={q.id} style={{
+              <tr key={q.id} data-selected={selected.has(q.id)} style={{
                 borderBottom: "0.5px solid var(--color-border-tertiary)",
                 background: selected.has(q.id) ? "var(--admin-blue-soft)" : i % 2 === 0 ? "var(--color-background-primary)" : "var(--color-background-secondary)"
               }}>
                 <td data-label="Select" style={{ padding: "10px 14px" }}>
+                  <label className={styles.selection}>
                   <input type="checkbox" checked={selected.has(q.id)} onChange={() => toggleOne(q.id)}
                     style={{ cursor: "pointer", width: 15, height: 15 }} aria-label={`Select question ${q.id}`} />
+                  <span className={styles.mobileLabel}>Select</span>
+                  </label>
                 </td>
-                <td data-label="ID" style={{ padding: "10px 14px", color: "var(--color-text-secondary)", fontFamily: "monospace", fontSize: 11 }}>{q.id?.slice(0, 16)}...</td>
+                <td data-label="ID" title={q.id} style={{ padding: "10px 14px", color: "var(--color-text-secondary)", fontFamily: "monospace", fontSize: 11 }}>{q.id}</td>
                 <td data-label="Topic" style={{ padding: "10px 14px" }}>
                   <span style={{ background: "var(--admin-blue-soft)", color: "var(--admin-blue)", padding: "2px 8px", borderRadius: 6, fontSize: 12 }}>{q.topic}</span>
                 </td>
@@ -279,7 +283,7 @@ export default function AdminPanel() {
                 </td>
                 <td data-label="Exam" style={{ padding: "10px 14px", color: "var(--color-text-secondary)", maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 11 }}>{q.exam}</td>
                 <td data-label="Question" style={{ padding: "10px 14px", maxWidth: 320 }}>
-                  <div style={{ maxHeight: 64, overflow: "hidden" }}>
+                  <div className={styles.questionContent}>
                     {q.question ? (
                       <RichContent text={q.question} />
                     ) : q.questionImage ? (
@@ -288,6 +292,17 @@ export default function AdminPanel() {
                       </span>
                     ) : null}
                   </div>
+                </td>
+                <td className={styles.mobileDetails} aria-label="Question details">
+                  <details>
+                    <summary>Details<span>{q.topic || "Question metadata"}</span></summary>
+                    <dl>
+                      <div><dt>ID</dt><dd>{q.id}</dd></div>
+                      <div><dt>Topic</dt><dd>{q.topic || "—"}</dd></div>
+                      <div><dt>Chapter</dt><dd>{q.chapter || "—"}</dd></div>
+                      <div><dt>Exam</dt><dd>{q.exam || "—"}</dd></div>
+                    </dl>
+                  </details>
                 </td>
                 <td data-label="Actions" style={{ padding: "10px 14px", whiteSpace: "nowrap" }}>
                   <button data-ui-button="state" onClick={() => openEdit(q)} style={{ marginRight: 6, padding: "4px 10px", borderRadius: 6, border: "0.5px solid var(--color-border-secondary)", background: "transparent", cursor: "pointer", fontSize: 12, color: "var(--color-text-primary)" }}>Edit</button>

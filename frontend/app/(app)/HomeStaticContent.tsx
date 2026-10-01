@@ -1,6 +1,5 @@
 import BattleIcon from '@/components/BattleIcon';
 import BooksIcon from '@/components/BooksIcon';
-import QuizChartArt from '@/components/QuizChartArt';
 import Typewriter from '@/components/Typewriter';
 import { ChevronRight,GraduationCap } from 'lucide-react';
 import Image from 'next/image';
@@ -10,7 +9,6 @@ import {
 desktopSubjects,
 HERO_BLUR_DATA_URL,
 mobileSubjects,
-recentQuizzesData,
 } from './home-data';
 import styles from './page.module.css';
 
@@ -96,30 +94,7 @@ export function DesktopHomeContent() {
         </section>
       </div>
 
-      <aside className={styles.recentQuizzesColumn} aria-labelledby="recent-quizzes-title">
-        <div className={styles.recentQuizzesHeader}>
-          <h2 id="recent-quizzes-title" className={styles.recentQuizzesTitle}>Recent Quizzes</h2>
-          <Link href="/dashboard" className={styles.viewAllLink}>View All</Link>
-        </div>
-        <div className={styles.recentQuizList}>
-          {recentQuizzesData.map((quiz) => (
-            <Link key={quiz.title} href={quiz.href} className={styles.recentQuizCard}>
-              <div className={styles.quizCardMain}>
-                <div className={styles.quizCardMeta}>
-                  <span className={`${styles.quizTag} ${styles[quiz.tagTone]}`}>{quiz.tag}</span>
-                  <span className={styles.quizProgressRatio}>{quiz.progress}</span>
-                </div>
-                <h3 className={styles.quizCardTitle}>{quiz.title}</h3>
-                <p className={styles.quizCardSubtitle}>{quiz.subtitle}</p>
-                <div className={styles.quizProgressBar}>
-                  <div className={styles.quizProgressFill} style={{ width: `${quiz.progressPercent}%` }} />
-                </div>
-              </div>
-              <div className={styles.quizCardArt}><QuizChartArt size={42} /></div>
-            </Link>
-          ))}
-        </div>
-      </aside>
+      <MobileRecentQuiz desktop />
     </div>
   );
 }

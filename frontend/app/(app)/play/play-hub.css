@@ -33,7 +33,7 @@
   border-bottom: 1px solid var(--tr-border);
 }
 .play-hub.training-dark .training-header,
-:global(html.theme-dark) .play-hub .training-header {
+html.theme-dark .play-hub .training-header {
   background: #000000 !important;
   border-bottom: none !important;
 }
@@ -89,38 +89,44 @@
   align-items: center;
 }
 .play-hub .training-exam {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
+  min-width: 104px;
+  gap: 0;
 }
-.play-hub .training-exam select {
-  appearance: none;
-  -webkit-appearance: none;
+.play-hub .training-exam .tsd-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.play-hub .training-exam .tsd-trigger {
+  min-height: 44px;
+  padding: 6px 12px;
+  border-radius: 10px;
   background: var(--tr-muted);
   color: var(--tr-text);
   border: 1px solid var(--tr-border);
-  border-radius: 9999px;
-  padding: 6px 30px 6px 14px;
   font-size: 12px;
   font-weight: 650;
-  letter-spacing: 0.2px;
-  min-height: var(--ui-control-height);
-  cursor: pointer;
-  transition: background-color 0.15s ease;
+  box-shadow: none;
+  transform: none;
 }
-.play-hub.training-dark .training-exam select {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.1);
+.play-hub.training-dark .training-exam .tsd-trigger,
+.play-hub.training-dark .training-exam .tsd-dropdown {
+  background: #1c1c1e;
+  border-color: transparent;
+  box-shadow: none;
 }
-.play-hub .training-exam select:hover {
-  border-color: var(--tr-accent);
-  background: color-mix(in srgb, var(--tr-accent) 8%, var(--tr-muted));
-}
-.play-hub .training-exam-chevron {
-  position: absolute;
-  right: 10px;
-  pointer-events: none;
-  color: var(--tr-secondary);
+.play-hub .training-exam .tsd-dropdown {
+  left: auto;
+  right: 0;
+  width: max-content;
+  min-width: 180px;
+  max-width: min(280px, calc(100vw - 32px));
+  border-radius: 12px;
+  animation: none;
 }
 .play-hub .training-header .training-mobile-tabs {
   display: none;
@@ -722,9 +728,10 @@
     justify-content: center;
     min-height: 48px;
     padding: 5px 2px 4px;
-    border-radius: 11px;
+    border-radius: 0 !important;
     border: 0;
-    background: transparent;
+    border-bottom: 2px solid transparent;
+    background: transparent !important;
     color: var(--tr-secondary);
     gap: 3px;
     font-size: var(--ui-font-meta);
@@ -759,18 +766,17 @@
     color: var(--tr-text);
   }
   .play-hub .training-mobile-tabs button[aria-current] {
-    background: var(--tr-surface) !important;
+    background: transparent !important;
+    border-bottom-color: var(--tr-accent);
     color: var(--tr-accent) !important;
     font-weight: 650;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08), 0 0 0 1px var(--tr-border) !important;
+    box-shadow: none !important;
   }
   .play-hub.training-dark .training-mobile-tabs button[aria-current] {
-    background: #252830 !important;
+    background: transparent !important;
+    border-bottom-color: var(--tr-accent);
     color: #93c5fd !important;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
-  }
-  .play-hub .training-mobile-tabs button[aria-current] .play-nav-icon-wrap {
-    transform: scale(1.08);
+    box-shadow: none !important;
   }
 
   .play-hub .training-layout {
@@ -1552,7 +1558,64 @@
 .play-hub .training-heading > div { min-width: 0; }
 .play-hub .training-brand-caption { font-size: 10px; letter-spacing: 1.2px; }
 .play-hub .training-card-bottom { width: 100%; gap: 12px; }
-.play-hub .play-configure { white-space: nowrap; }
+.play-hub .training-card-bottom .play-configure,
+.play-hub .play-mission-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  min-height: 44px;
+  min-width: 80px;
+  padding: 10px 18px;
+  border: 1px solid var(--light-border, #e5e7eb);
+  border-radius: 12px;
+  background: var(--play-action-bg, #fff);
+  color: var(--play-action-text, var(--light-text, #111827));
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 20px;
+  text-align: center;
+  white-space: nowrap;
+  box-shadow: none;
+  transition: background-color 160ms ease, border-color 160ms ease,
+    transform 160ms ease;
+}
+.play-hub.training-dark .training-card-bottom .play-configure,
+.play-hub.training-dark .play-mission-action {
+  --play-action-bg: var(--oled-selected-soft, #182f4b);
+  --play-action-text: #b8d8fa;
+  --play-action-hover: #213f60;
+  --play-action-pressed: #294e75;
+  border-color: transparent;
+}
+@media (hover: hover) and (pointer: fine) {
+  .play-hub .training-mode-card:hover:not(:disabled) .play-configure,
+  .play-hub .play-mission-shortcut:hover:not(:disabled) .play-mission-action {
+    background: var(--play-action-hover, #e2e8f0);
+    border-color: var(--play-action-hover, #94a3b8);
+    transform: translateY(-2px) scale(1.03);
+  }
+}
+.play-hub .training-mode-card:active:not(:disabled) .play-configure,
+.play-hub .play-mission-shortcut:active:not(:disabled) .play-mission-action {
+  background: var(--play-action-pressed, #cbd5e1);
+  border-color: var(--play-action-pressed, #64748b);
+  transform: translateY(1px) scale(0.94);
+  transition-duration: 0ms;
+}
+.play-hub .training-mode-card:focus-visible .play-configure,
+.play-hub .play-mission-shortcut:focus-visible .play-mission-action {
+  outline: 2px solid var(--tr-accent);
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .play-hub .training-card-bottom .play-configure,
+  .play-hub .play-mission-shortcut .play-mission-action {
+    transition: none;
+    transform: none !important;
+  }
+}
 .play-hub .play-mission-symbol {
   width: 44px;
   height: 44px;
@@ -1560,7 +1623,10 @@
   border-radius: 14px;
   background: var(--tr-surface);
 }
-.play-hub .play-mission-action { display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0; font-size: 13px; font-weight: 650; color: var(--tr-accent); }
+.play-hub .play-mission-shortcut:disabled .play-mission-action {
+  background: var(--tr-muted);
+  color: var(--tr-secondary);
+}
 .play-hub .play-progress { margin-top: 32px; }
 .play-hub .play-progress h2 {
   font-size: 18px;
@@ -1576,13 +1642,12 @@
   .play-hub .training-header-top { gap: 12px; }
   .play-hub .training-exam-wrapper { min-width: 0; max-width: 55%; }
   .play-hub .training-exam { min-width: 0; }
-  .play-hub .training-exam select { width: 100%; text-overflow: ellipsis; }
+  .play-hub .training-exam .tsd-trigger { width: 100%; }
 }
 @media (max-width: 600px) {
-  .play-hub .play-mission-shortcut { display: grid; grid-template-columns: 32px minmax(0, 1fr) 18px; }
+  .play-hub .play-mission-shortcut { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; }
   .play-hub .play-mission-symbol { width: 32px; height: 32px; border-radius: 10px; }
   .play-hub .play-mission-symbol svg { width: 18px; height: 18px; }
-  .play-hub .play-mission-action > span { display: none; }
   .play-hub .training-card-bottom { grid-column: 1 / -1; padding-top: 12px; border-top: 1px solid var(--tr-border); }
   .play-hub .training-filters { gap: 6px; }
   .play-hub .training-filters button { padding: 8px; }

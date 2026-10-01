@@ -575,6 +575,11 @@ export const aiChatStyles = css`
           box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
         }
 
+        .composer:has(textarea:focus-visible) {
+          outline: 1px solid var(--muted);
+          outline-offset: 2px;
+        }
+
         .composer-row {
           display: flex;
           align-items: flex-end;
@@ -882,6 +887,14 @@ export const aiChatStyles = css`
 
           .mobile-menu {
             display: inline-flex;
+            flex: 0 0 44px;
+            min-width: 44px;
+            min-height: 44px;
+          }
+
+          .desktop-back,
+          .clear-btn {
+            display: none;
           }
 
           .chat-topbar {
@@ -895,11 +908,14 @@ export const aiChatStyles = css`
           .topbar-left {
             flex: 1 1 auto;
             min-width: 0;
-            gap: 10px;
+            gap: 12px;
           }
 
-          .topbar-left > div {
+          .topbar-left > .chat-heading {
             min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
           }
 
           .chat-title,
@@ -909,6 +925,10 @@ export const aiChatStyles = css`
 
           .chat-status {
             line-height: 1.35;
+          }
+
+          .chat-status span {
+            flex-shrink: 0;
           }
 
           .clear-btn {

@@ -2,7 +2,7 @@
 
 import ShinyPill from '@/components/ShinyPill';
 import { Layers } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import styles from './page.module.css';
 
@@ -281,7 +281,6 @@ const examCards: ExamCard[] = [
 ];
 
 export default function MockTestPage() {
-  const router = useRouter();
   const [activeCategory, setActiveCategory] = useState('all');
   const [logoErrors, setLogoErrors] = useState<Record<string, boolean>>({});
 
@@ -301,10 +300,6 @@ export default function MockTestPage() {
       return activeCategory === 'all' || exam.type === activeCategory;
     });
   }, [activeCategory]);
-
-  const openDetail = (exam: ExamCard) => {
-    router.push(`/mock-test/${exam.id}`);
-  };
 
   return (
     <main className={styles.page}>
@@ -365,12 +360,12 @@ export default function MockTestPage() {
                 <section className={styles.section}>
                   <div className={styles.examGrid}>
                     {filteredExams.map((card) => (
-                      <button
+                      <Link
                         data-ui-button="state"
-                        type="button"
                         key={card.id}
                         className={styles.examCard}
-                        onClick={() => openDetail(card)}
+                        href={`/mock-test/${card.id}`}
+                        prefetch={true}
                       >
                         <div className={styles.examTop}>
                           <div className={styles.examLogoBox}>
@@ -407,7 +402,7 @@ export default function MockTestPage() {
                           </div>
                           
                         </div>
-                      </button>
+                      </Link>
                     ))}
                   </div>
                   {filteredExams.length === 0 && (

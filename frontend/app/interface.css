@@ -178,15 +178,11 @@
   outline-offset: 3px;
 }
 
-@media (hover: hover) {
-  [data-ui-button="secondary"]:not(:disabled):hover,
-  [data-ui-button="icon"]:not(:disabled):hover {
+@media (hover: hover) and (pointer: fine) {
+  [data-ui-button="secondary"]:not(:disabled, [aria-disabled="true"], [aria-busy="true"]):hover,
+  [data-ui-button="icon"]:not(:disabled, [aria-disabled="true"], [aria-busy="true"]):hover {
     background-color: var(--ui-muted-surface) !important;
     border-color: var(--ui-accent) !important;
-  }
-  [data-ui-button="primary"]:not(:disabled):hover,
-  [data-ui-button="danger"]:not(:disabled):hover {
-    filter: brightness(1.08);
   }
 }
 
@@ -234,6 +230,15 @@
   outline-offset: 3px;
 }
 
+/* Search controls use a quiet inset indicator rather than the global blue box.
+   Match semantics as well as labels so shared and route-owned searches agree. */
+html:is(.theme-light, .theme-dark) body :is(input[type="search"], input[placeholder*="search" i], input[aria-label*="search" i], input[placeholder*="find" i], input[aria-label*="find" i], input[placeholder*="filter" i]):focus-visible:not(.tfp-search-input, [data-custom-focus]) {
+  outline: 1px solid var(--text-secondary, #66758a);
+  outline-offset: -1px;
+  border-radius: 8px;
+  box-shadow: none;
+}
+
 /* Keep scrollable content discoverable with a mouse/trackpad. */
 @media (pointer: fine) {
   .ios-series-rail, .training-filters, .training-mobile-tabs, .qnav-bar-scroll,
@@ -259,8 +264,34 @@
   transition: background-color 150ms ease, opacity 150ms ease;
 }
 
-:is(header, [data-ui-chrome="header"]) :is([data-ui-button="icon"], .backBtn, .backButton, .iconButton, .menuButton, .notif-back-btn, .fn-back-btn, .fn-search-btn, .fn-add-btn, .battle-icon-button, .mobileBackBtn):active {
+:is(header, [data-ui-chrome="header"]) :is([data-ui-button="icon"], .backBtn, .backButton, .iconButton, .menuButton, .notif-back-btn, .fn-back-btn, .fn-search-btn, .fn-add-btn, .battle-icon-button, .mobileBackBtn):not(:disabled, [aria-disabled="true"], [aria-busy="true"]):active {
   background: var(--ui-muted-surface) !important;
   opacity: 0.75;
+}
+
+/* Shared feedback also covers native controls without a visual variant.
+   Dismiss backdrops and decorative controls must never shrink the viewport.
+   Individual scale preserves route-owned positioning transforms. */
+:is(button, [role="button"], input[type="button"], input[type="submit"], input[type="reset"], [data-ui-button]):not(:disabled, [aria-disabled="true"], [aria-busy="true"], [data-ui-interaction="none"], [class*="backdrop" i], [class*="overlay" i], [class*="traffic" i]) {
+  cursor: pointer;
+  transition: background-color 150ms ease, border-color 150ms ease, opacity 150ms ease, filter 150ms ease, scale 120ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  :is(button, [role="button"], input[type="button"], input[type="submit"], input[type="reset"], [data-ui-button]):not(:disabled, [aria-disabled="true"], [aria-busy="true"], [data-ui-interaction="none"], [class*="backdrop" i], [class*="overlay" i], [class*="traffic" i]):hover {
+    filter: brightness(0.94);
+  }
+}
+
+:is(button, [role="button"], input[type="button"], input[type="submit"], input[type="reset"], [data-ui-button]):not(:disabled, [aria-disabled="true"], [aria-busy="true"], [data-ui-interaction="none"], [class*="backdrop" i], [class*="overlay" i], [class*="traffic" i]):active {
+  scale: 0.97;
+  filter: brightness(0.88);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is(button, [role="button"], input[type="button"], input[type="submit"], input[type="reset"], [data-ui-button]) {
+    transition: none !important;
+    scale: none !important;
+  }
 }
 
