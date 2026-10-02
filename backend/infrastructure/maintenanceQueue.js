@@ -62,7 +62,12 @@ export async function startMaintenanceQueue(tasks, options = {}) {
       async close() { state = 'draining'; await worker.close(); await queue.close(); active = null; state = 'disabled'; },
     };
     return active;
-  } catch (error) { await worker?.close(true); await queue.close(); state = 'degraded'; throw error; }
+  } catch (error) {
+    if (worker) await worker.close(true).catch(() => {});
+    await queue.close().catch(() => {});
+    state = 'degraded';
+    throw error;
+  }
 }
 
 export async function enqueueMaintenance(name, deduplicationKey, { delay = 0, priority = 10 } = {}) {
