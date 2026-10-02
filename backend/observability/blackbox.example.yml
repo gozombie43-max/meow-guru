@@ -1,0 +1,12 @@
+modules:
+  meow_ready:
+    prober: http
+    timeout: 8s
+    http:
+      method: GET
+      valid_status_codes: [200]
+      follow_redirects: false
+      fail_if_not_ssl: true
+      preferred_ip_protocol: ip4
+      fail_if_body_not_matches_regexp:
+        - '"ok"\s*:\s*true'

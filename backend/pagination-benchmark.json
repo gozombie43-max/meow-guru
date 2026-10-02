@@ -1,0 +1,2859 @@
+{
+  "environment": "disposable local Mongo",
+  "repetitions": 5,
+  "pageSize": 50,
+  "notes": [
+    "Offset comparison deliberately bypasses the retired-offset API guard.",
+    "End-to-end cursor timings include last-page count work; pageQueryStats describe page find queries only.",
+    "Indexes are existing repository migrations; fixture timings are not Atlas capacity."
+  ],
+  "datasets": [
+    {
+      "size": 10000,
+      "cases": [
+        {
+          "variant": "global",
+          "page": 1,
+          "offset": 0,
+          "cursor": {
+            "p50Ms": 7,
+            "p95Ms": 14.83,
+            "pageQueryStats": [
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              }
+            ]
+          },
+          "offsetQuery": {
+            "p50Ms": 4.41,
+            "p95Ms": 5.06,
+            "pageQueryStats": [
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              }
+            ]
+          }
+        },
+        {
+          "variant": "global",
+          "page": 100,
+          "offset": 4950,
+          "cursor": {
+            "p50Ms": 5.26,
+            "p95Ms": 5.87,
+            "pageQueryStats": [
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              }
+            ]
+          },
+          "offsetQuery": {
+            "p50Ms": 8.94,
+            "p95Ms": 10.78,
+            "pageQueryStats": [
+              {
+                "docsExamined": 50,
+                "keysExamined": 5000,
+                "executionMs": 8
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 5000,
+                "executionMs": 7
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 5000,
+                "executionMs": 7
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 5000,
+                "executionMs": 7
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 5000,
+                "executionMs": 7
+              }
+            ]
+          }
+        },
+        {
+          "variant": "global",
+          "page": 200,
+          "offset": 9950,
+          "cursor": {
+            "p50Ms": 3.24,
+            "p95Ms": 3.8,
+            "pageQueryStats": [
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              }
+            ]
+          },
+          "offsetQuery": {
+            "p50Ms": 13.28,
+            "p95Ms": 13.74,
+            "pageQueryStats": [
+              {
+                "docsExamined": 50,
+                "keysExamined": 10000,
+                "executionMs": 14
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 10000,
+                "executionMs": 14
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 10000,
+                "executionMs": 14
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 10000,
+                "executionMs": 14
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 10000,
+                "executionMs": 14
+              }
+            ]
+          }
+        },
+        {
+          "variant": "filtered",
+          "page": 1,
+          "offset": 0,
+          "cursor": {
+            "p50Ms": 5.65,
+            "p95Ms": 9.98,
+            "pageQueryStats": [
+              {
+                "docsExamined": 251,
+                "keysExamined": 251,
+                "executionMs": 3
+              },
+              {
+                "docsExamined": 251,
+                "keysExamined": 251,
+                "executionMs": 3
+              },
+              {
+                "docsExamined": 251,
+                "keysExamined": 251,
+                "executionMs": 3
+              },
+              {
+                "docsExamined": 251,
+                "keysExamined": 251,
+                "executionMs": 3
+              },
+              {
+                "docsExamined": 251,
+                "keysExamined": 251,
+                "executionMs": 3
+              }
+            ]
+          },
+          "offsetQuery": {
+            "p50Ms": 3.61,
+            "p95Ms": 4.01,
+            "pageQueryStats": [
+              {
+                "docsExamined": 246,
+                "keysExamined": 246,
+                "executionMs": 3
+              },
+              {
+                "docsExamined": 246,
+                "keysExamined": 246,
+                "executionMs": 3
+              },
+              {
+                "docsExamined": 246,
+                "keysExamined": 246,
+                "executionMs": 3
+              },
+              {
+                "docsExamined": 246,
+                "keysExamined": 246,
+                "executionMs": 3
+              },
+              {
+                "docsExamined": 246,
+                "keysExamined": 246,
+                "executionMs": 3
+              }
+            ]
+          }
+        },
+        {
+          "variant": "filtered",
+          "page": 40,
+          "offset": 1950,
+          "cursor": {
+            "p50Ms": 4.27,
+            "p95Ms": 5.39,
+            "pageQueryStats": [
+              {
+                "docsExamined": 50,
+                "keysExamined": 52,
+                "executionMs": 2
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 52,
+                "executionMs": 2
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 52,
+                "executionMs": 2
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 52,
+                "executionMs": 2
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 52,
+                "executionMs": 1
+              }
+            ]
+          },
+          "offsetQuery": {
+            "p50Ms": 35.39,
+            "p95Ms": 81.43,
+            "pageQueryStats": [
+              {
+                "docsExamined": 50,
+                "keysExamined": 2000,
+                "executionMs": 32
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 2000,
+                "executionMs": 32
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 2000,
+                "executionMs": 33
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 2000,
+                "executionMs": 33
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 2000,
+                "executionMs": 32
+              }
+            ]
+          }
+        },
+        {
+          "variant": "sorted",
+          "page": 1,
+          "offset": 0,
+          "cursor": {
+            "p50Ms": 4.91,
+            "p95Ms": 5.58,
+            "pageQueryStats": [
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              }
+            ]
+          },
+          "offsetQuery": {
+            "p50Ms": 2.9,
+            "p95Ms": 3.23,
+            "pageQueryStats": [
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              }
+            ]
+          }
+        },
+        {
+          "variant": "sorted",
+          "page": 100,
+          "offset": 4950,
+          "cursor": {
+            "p50Ms": 3.4,
+            "p95Ms": 3.67,
+            "pageQueryStats": [
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 1
+              }
+            ]
+          },
+          "offsetQuery": {
+            "p50Ms": 9.08,
+            "p95Ms": 10.04,
+            "pageQueryStats": [
+              {
+                "docsExamined": 50,
+                "keysExamined": 5000,
+                "executionMs": 8
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 5000,
+                "executionMs": 8
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 5000,
+                "executionMs": 8
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 5000,
+                "executionMs": 8
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 5000,
+                "executionMs": 8
+              }
+            ]
+          }
+        },
+        {
+          "variant": "sorted",
+          "page": 200,
+          "offset": 9950,
+          "cursor": {
+            "p50Ms": 3.39,
+            "p95Ms": 3.77,
+            "pageQueryStats": [
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              }
+            ]
+          },
+          "offsetQuery": {
+            "p50Ms": 14.51,
+            "p95Ms": 15,
+            "pageQueryStats": [
+              {
+                "docsExamined": 50,
+                "keysExamined": 10000,
+                "executionMs": 16
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 10000,
+                "executionMs": 15
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 10000,
+                "executionMs": 15
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 10000,
+                "executionMs": 17
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 10000,
+                "executionMs": 16
+              }
+            ]
+          }
+        },
+        {
+          "variant": "sorted",
+          "navigation": "last",
+          "cursor": {
+            "p50Ms": 13.78,
+            "p95Ms": 16.3,
+            "pageQueryStats": [
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              }
+            ]
+          }
+        },
+        {
+          "variant": "sorted",
+          "navigation": "previous-from-last",
+          "cursor": {
+            "p50Ms": 3.8,
+            "p95Ms": 4.74,
+            "pageQueryStats": [
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 1
+              }
+            ]
+          }
+        },
+        {
+          "variant": "filtered-sorted",
+          "page": 1,
+          "offset": 0,
+          "cursor": {
+            "p50Ms": 5.46,
+            "p95Ms": 6.31,
+            "pageQueryStats": [
+              {
+                "docsExamined": 251,
+                "keysExamined": 251,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 251,
+                "keysExamined": 251,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 251,
+                "keysExamined": 251,
+                "executionMs": 2
+              },
+              {
+                "docsExamined": 251,
+                "keysExamined": 251,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 251,
+                "keysExamined": 251,
+                "executionMs": 1
+              }
+            ]
+          },
+          "offsetQuery": {
+            "p50Ms": 3.54,
+            "p95Ms": 4.07,
+            "pageQueryStats": [
+              {
+                "docsExamined": 246,
+                "keysExamined": 246,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 246,
+                "keysExamined": 246,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 246,
+                "keysExamined": 246,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 246,
+                "keysExamined": 246,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 246,
+                "keysExamined": 246,
+                "executionMs": 1
+              }
+            ]
+          }
+        },
+        {
+          "variant": "filtered-sorted",
+          "page": 40,
+          "offset": 1950,
+          "cursor": {
+            "p50Ms": 5.25,
+            "p95Ms": 8.48,
+            "pageQueryStats": [
+              {
+                "docsExamined": 254,
+                "keysExamined": 254,
+                "executionMs": 4
+              },
+              {
+                "docsExamined": 254,
+                "keysExamined": 254,
+                "executionMs": 4
+              },
+              {
+                "docsExamined": 254,
+                "keysExamined": 254,
+                "executionMs": 4
+              },
+              {
+                "docsExamined": 254,
+                "keysExamined": 254,
+                "executionMs": 4
+              },
+              {
+                "docsExamined": 254,
+                "keysExamined": 254,
+                "executionMs": 4
+              }
+            ]
+          },
+          "offsetQuery": {
+            "p50Ms": 32.02,
+            "p95Ms": 32.9,
+            "pageQueryStats": [
+              {
+                "docsExamined": 9996,
+                "keysExamined": 9996,
+                "executionMs": 32
+              },
+              {
+                "docsExamined": 9996,
+                "keysExamined": 9996,
+                "executionMs": 33
+              },
+              {
+                "docsExamined": 9996,
+                "keysExamined": 9996,
+                "executionMs": 43
+              },
+              {
+                "docsExamined": 9996,
+                "keysExamined": 9996,
+                "executionMs": 32
+              },
+              {
+                "docsExamined": 9996,
+                "keysExamined": 9996,
+                "executionMs": 34
+              }
+            ]
+          }
+        },
+        {
+          "variant": "filtered-sorted",
+          "navigation": "last",
+          "cursor": {
+            "p50Ms": 16.03,
+            "p95Ms": 18.61,
+            "pageQueryStats": [
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 2
+              },
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 1
+              }
+            ]
+          }
+        },
+        {
+          "variant": "filtered-sorted",
+          "navigation": "previous-from-last",
+          "cursor": {
+            "p50Ms": 4.86,
+            "p95Ms": 8.02,
+            "pageQueryStats": [
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 4
+              },
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 4
+              },
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 3
+              },
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 4
+              },
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 4
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "size": 50000,
+      "cases": [
+        {
+          "variant": "global",
+          "page": 1,
+          "offset": 0,
+          "cursor": {
+            "p50Ms": 4.38,
+            "p95Ms": 4.93,
+            "pageQueryStats": [
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              }
+            ]
+          },
+          "offsetQuery": {
+            "p50Ms": 2.61,
+            "p95Ms": 2.82,
+            "pageQueryStats": [
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              }
+            ]
+          }
+        },
+        {
+          "variant": "global",
+          "page": 100,
+          "offset": 4950,
+          "cursor": {
+            "p50Ms": 2.83,
+            "p95Ms": 2.99,
+            "pageQueryStats": [
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              }
+            ]
+          },
+          "offsetQuery": {
+            "p50Ms": 8.14,
+            "p95Ms": 9.24,
+            "pageQueryStats": [
+              {
+                "docsExamined": 50,
+                "keysExamined": 5000,
+                "executionMs": 7
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 5000,
+                "executionMs": 8
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 5000,
+                "executionMs": 7
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 5000,
+                "executionMs": 7
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 5000,
+                "executionMs": 7
+              }
+            ]
+          }
+        },
+        {
+          "variant": "global",
+          "page": 1000,
+          "offset": 49950,
+          "cursor": {
+            "p50Ms": 2.92,
+            "p95Ms": 3.3,
+            "pageQueryStats": [
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              }
+            ]
+          },
+          "offsetQuery": {
+            "p50Ms": 51.03,
+            "p95Ms": 51.67,
+            "pageQueryStats": [
+              {
+                "docsExamined": 50,
+                "keysExamined": 50000,
+                "executionMs": 65
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50000,
+                "executionMs": 69
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50000,
+                "executionMs": 66
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50000,
+                "executionMs": 68
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50000,
+                "executionMs": 70
+              }
+            ]
+          }
+        },
+        {
+          "variant": "filtered",
+          "page": 1,
+          "offset": 0,
+          "cursor": {
+            "p50Ms": 26.91,
+            "p95Ms": 39.79,
+            "pageQueryStats": [
+              {
+                "docsExamined": 251,
+                "keysExamined": 251,
+                "executionMs": 15
+              },
+              {
+                "docsExamined": 251,
+                "keysExamined": 251,
+                "executionMs": 3
+              },
+              {
+                "docsExamined": 251,
+                "keysExamined": 251,
+                "executionMs": 4
+              },
+              {
+                "docsExamined": 251,
+                "keysExamined": 251,
+                "executionMs": 4
+              },
+              {
+                "docsExamined": 251,
+                "keysExamined": 251,
+                "executionMs": 3
+              }
+            ]
+          },
+          "offsetQuery": {
+            "p50Ms": 25.18,
+            "p95Ms": 25.77,
+            "pageQueryStats": [
+              {
+                "docsExamined": 246,
+                "keysExamined": 246,
+                "executionMs": 3
+              },
+              {
+                "docsExamined": 246,
+                "keysExamined": 246,
+                "executionMs": 3
+              },
+              {
+                "docsExamined": 246,
+                "keysExamined": 246,
+                "executionMs": 3
+              },
+              {
+                "docsExamined": 246,
+                "keysExamined": 246,
+                "executionMs": 3
+              },
+              {
+                "docsExamined": 246,
+                "keysExamined": 246,
+                "executionMs": 3
+              }
+            ]
+          }
+        },
+        {
+          "variant": "filtered",
+          "page": 100,
+          "offset": 4950,
+          "cursor": {
+            "p50Ms": 6.53,
+            "p95Ms": 9.65,
+            "pageQueryStats": [
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 4
+              },
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 4
+              },
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 3
+              },
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 4
+              },
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 3
+              }
+            ]
+          },
+          "offsetQuery": {
+            "p50Ms": 30.95,
+            "p95Ms": 32,
+            "pageQueryStats": [
+              {
+                "docsExamined": 50,
+                "keysExamined": 10000,
+                "executionMs": 130
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 10000,
+                "executionMs": 130
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 10000,
+                "executionMs": 131
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 10000,
+                "executionMs": 131
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 10000,
+                "executionMs": 131
+              }
+            ]
+          }
+        },
+        {
+          "variant": "filtered",
+          "page": 200,
+          "offset": 9950,
+          "cursor": {
+            "p50Ms": 4.45,
+            "p95Ms": 4.71,
+            "pageQueryStats": [
+              {
+                "docsExamined": 50,
+                "keysExamined": 52,
+                "executionMs": 2
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 52,
+                "executionMs": 2
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 52,
+                "executionMs": 2
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 52,
+                "executionMs": 2
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 52,
+                "executionMs": 2
+              }
+            ]
+          },
+          "offsetQuery": {
+            "p50Ms": 37.39,
+            "p95Ms": 37.96,
+            "pageQueryStats": [
+              {
+                "docsExamined": 49996,
+                "keysExamined": 49996,
+                "executionMs": 250
+              },
+              {
+                "docsExamined": 49996,
+                "keysExamined": 49996,
+                "executionMs": 251
+              },
+              {
+                "docsExamined": 49996,
+                "keysExamined": 49996,
+                "executionMs": 249
+              },
+              {
+                "docsExamined": 49996,
+                "keysExamined": 49996,
+                "executionMs": 251
+              },
+              {
+                "docsExamined": 49996,
+                "keysExamined": 49996,
+                "executionMs": 252
+              }
+            ]
+          }
+        },
+        {
+          "variant": "sorted",
+          "page": 1,
+          "offset": 0,
+          "cursor": {
+            "p50Ms": 4.25,
+            "p95Ms": 5.11,
+            "pageQueryStats": [
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              }
+            ]
+          },
+          "offsetQuery": {
+            "p50Ms": 2.67,
+            "p95Ms": 2.69,
+            "pageQueryStats": [
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              }
+            ]
+          }
+        },
+        {
+          "variant": "sorted",
+          "page": 100,
+          "offset": 4950,
+          "cursor": {
+            "p50Ms": 3.86,
+            "p95Ms": 4.12,
+            "pageQueryStats": [
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 1
+              }
+            ]
+          },
+          "offsetQuery": {
+            "p50Ms": 9.61,
+            "p95Ms": 18.54,
+            "pageQueryStats": [
+              {
+                "docsExamined": 50,
+                "keysExamined": 5000,
+                "executionMs": 8
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 5000,
+                "executionMs": 9
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 5000,
+                "executionMs": 9
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 5000,
+                "executionMs": 8
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 5000,
+                "executionMs": 8
+              }
+            ]
+          }
+        },
+        {
+          "variant": "sorted",
+          "page": 1000,
+          "offset": 49950,
+          "cursor": {
+            "p50Ms": 3.5,
+            "p95Ms": 4.03,
+            "pageQueryStats": [
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 1
+              }
+            ]
+          },
+          "offsetQuery": {
+            "p50Ms": 58.94,
+            "p95Ms": 59.54,
+            "pageQueryStats": [
+              {
+                "docsExamined": 50,
+                "keysExamined": 50000,
+                "executionMs": 79
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50000,
+                "executionMs": 78
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50000,
+                "executionMs": 76
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50000,
+                "executionMs": 76
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50000,
+                "executionMs": 77
+              }
+            ]
+          }
+        },
+        {
+          "variant": "sorted",
+          "navigation": "last",
+          "cursor": {
+            "p50Ms": 30.69,
+            "p95Ms": 31.34,
+            "pageQueryStats": [
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              }
+            ]
+          }
+        },
+        {
+          "variant": "sorted",
+          "navigation": "previous-from-last",
+          "cursor": {
+            "p50Ms": 3.85,
+            "p95Ms": 13.25,
+            "pageQueryStats": [
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 1
+              }
+            ]
+          }
+        },
+        {
+          "variant": "filtered-sorted",
+          "page": 1,
+          "offset": 0,
+          "cursor": {
+            "p50Ms": 4.84,
+            "p95Ms": 5.29,
+            "pageQueryStats": [
+              {
+                "docsExamined": 251,
+                "keysExamined": 251,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 251,
+                "keysExamined": 251,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 251,
+                "keysExamined": 251,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 251,
+                "keysExamined": 251,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 251,
+                "keysExamined": 251,
+                "executionMs": 1
+              }
+            ]
+          },
+          "offsetQuery": {
+            "p50Ms": 3.24,
+            "p95Ms": 3.41,
+            "pageQueryStats": [
+              {
+                "docsExamined": 246,
+                "keysExamined": 246,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 246,
+                "keysExamined": 246,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 246,
+                "keysExamined": 246,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 246,
+                "keysExamined": 246,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 246,
+                "keysExamined": 246,
+                "executionMs": 1
+              }
+            ]
+          }
+        },
+        {
+          "variant": "filtered-sorted",
+          "page": 100,
+          "offset": 4950,
+          "cursor": {
+            "p50Ms": 3.74,
+            "p95Ms": 3.97,
+            "pageQueryStats": [
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 3
+              },
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 3
+              },
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 3
+              },
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 4
+              },
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 3
+              }
+            ]
+          },
+          "offsetQuery": {
+            "p50Ms": 61.58,
+            "p95Ms": 64.72,
+            "pageQueryStats": [
+              {
+                "docsExamined": 24996,
+                "keysExamined": 24996,
+                "executionMs": 72
+              },
+              {
+                "docsExamined": 24996,
+                "keysExamined": 24996,
+                "executionMs": 68
+              },
+              {
+                "docsExamined": 24996,
+                "keysExamined": 24996,
+                "executionMs": 62
+              },
+              {
+                "docsExamined": 24996,
+                "keysExamined": 24996,
+                "executionMs": 63
+              },
+              {
+                "docsExamined": 24996,
+                "keysExamined": 24996,
+                "executionMs": 60
+              }
+            ]
+          }
+        },
+        {
+          "variant": "filtered-sorted",
+          "page": 200,
+          "offset": 9950,
+          "cursor": {
+            "p50Ms": 3.61,
+            "p95Ms": 4.63,
+            "pageQueryStats": [
+              {
+                "docsExamined": 254,
+                "keysExamined": 254,
+                "executionMs": 3
+              },
+              {
+                "docsExamined": 254,
+                "keysExamined": 254,
+                "executionMs": 3
+              },
+              {
+                "docsExamined": 254,
+                "keysExamined": 254,
+                "executionMs": 3
+              },
+              {
+                "docsExamined": 254,
+                "keysExamined": 254,
+                "executionMs": 3
+              },
+              {
+                "docsExamined": 254,
+                "keysExamined": 254,
+                "executionMs": 3
+              }
+            ]
+          },
+          "offsetQuery": {
+            "p50Ms": 105.16,
+            "p95Ms": 107.21,
+            "pageQueryStats": [
+              {
+                "docsExamined": 49996,
+                "keysExamined": 49996,
+                "executionMs": 120
+              },
+              {
+                "docsExamined": 49996,
+                "keysExamined": 49996,
+                "executionMs": 119
+              },
+              {
+                "docsExamined": 49996,
+                "keysExamined": 49996,
+                "executionMs": 117
+              },
+              {
+                "docsExamined": 49996,
+                "keysExamined": 49996,
+                "executionMs": 121
+              },
+              {
+                "docsExamined": 49996,
+                "keysExamined": 49996,
+                "executionMs": 118
+              }
+            ]
+          }
+        },
+        {
+          "variant": "filtered-sorted",
+          "navigation": "last",
+          "cursor": {
+            "p50Ms": 34.01,
+            "p95Ms": 34.75,
+            "pageQueryStats": [
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 1
+              }
+            ]
+          }
+        },
+        {
+          "variant": "filtered-sorted",
+          "navigation": "previous-from-last",
+          "cursor": {
+            "p50Ms": 3.82,
+            "p95Ms": 4.49,
+            "pageQueryStats": [
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 3
+              },
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 3
+              },
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 3
+              },
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 3
+              },
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 3
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "size": 100000,
+      "cases": [
+        {
+          "variant": "global",
+          "page": 1,
+          "offset": 0,
+          "cursor": {
+            "p50Ms": 3.64,
+            "p95Ms": 4.23,
+            "pageQueryStats": [
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              }
+            ]
+          },
+          "offsetQuery": {
+            "p50Ms": 1.81,
+            "p95Ms": 2.44,
+            "pageQueryStats": [
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              }
+            ]
+          }
+        },
+        {
+          "variant": "global",
+          "page": 100,
+          "offset": 4950,
+          "cursor": {
+            "p50Ms": 2.78,
+            "p95Ms": 3.1,
+            "pageQueryStats": [
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              }
+            ]
+          },
+          "offsetQuery": {
+            "p50Ms": 6.58,
+            "p95Ms": 6.65,
+            "pageQueryStats": [
+              {
+                "docsExamined": 50,
+                "keysExamined": 5000,
+                "executionMs": 5
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 5000,
+                "executionMs": 5
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 5000,
+                "executionMs": 5
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 5000,
+                "executionMs": 6
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 5000,
+                "executionMs": 5
+              }
+            ]
+          }
+        },
+        {
+          "variant": "global",
+          "page": 1000,
+          "offset": 49950,
+          "cursor": {
+            "p50Ms": 3.14,
+            "p95Ms": 3.23,
+            "pageQueryStats": [
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              }
+            ]
+          },
+          "offsetQuery": {
+            "p50Ms": 37.42,
+            "p95Ms": 38.23,
+            "pageQueryStats": [
+              {
+                "docsExamined": 50,
+                "keysExamined": 50000,
+                "executionMs": 48
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50000,
+                "executionMs": 47
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50000,
+                "executionMs": 47
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50000,
+                "executionMs": 48
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50000,
+                "executionMs": 48
+              }
+            ]
+          }
+        },
+        {
+          "variant": "global",
+          "page": 2000,
+          "offset": 99950,
+          "cursor": {
+            "p50Ms": 2.74,
+            "p95Ms": 2.78,
+            "pageQueryStats": [
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              }
+            ]
+          },
+          "offsetQuery": {
+            "p50Ms": 67.79,
+            "p95Ms": 68.47,
+            "pageQueryStats": [
+              {
+                "docsExamined": 50,
+                "keysExamined": 100000,
+                "executionMs": 93
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 100000,
+                "executionMs": 92
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 100000,
+                "executionMs": 97
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 100000,
+                "executionMs": 92
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 100000,
+                "executionMs": 97
+              }
+            ]
+          }
+        },
+        {
+          "variant": "filtered",
+          "page": 1,
+          "offset": 0,
+          "cursor": {
+            "p50Ms": 35.29,
+            "p95Ms": 38.43,
+            "pageQueryStats": [
+              {
+                "docsExamined": 251,
+                "keysExamined": 251,
+                "executionMs": 15
+              },
+              {
+                "docsExamined": 251,
+                "keysExamined": 251,
+                "executionMs": 2
+              },
+              {
+                "docsExamined": 251,
+                "keysExamined": 251,
+                "executionMs": 2
+              },
+              {
+                "docsExamined": 251,
+                "keysExamined": 251,
+                "executionMs": 2
+              },
+              {
+                "docsExamined": 251,
+                "keysExamined": 251,
+                "executionMs": 2
+              }
+            ]
+          },
+          "offsetQuery": {
+            "p50Ms": 35,
+            "p95Ms": 35.05,
+            "pageQueryStats": [
+              {
+                "docsExamined": 246,
+                "keysExamined": 246,
+                "executionMs": 3
+              },
+              {
+                "docsExamined": 246,
+                "keysExamined": 246,
+                "executionMs": 2
+              },
+              {
+                "docsExamined": 246,
+                "keysExamined": 246,
+                "executionMs": 3
+              },
+              {
+                "docsExamined": 246,
+                "keysExamined": 246,
+                "executionMs": 3
+              },
+              {
+                "docsExamined": 246,
+                "keysExamined": 246,
+                "executionMs": 2
+              }
+            ]
+          }
+        },
+        {
+          "variant": "filtered",
+          "page": 100,
+          "offset": 4950,
+          "cursor": {
+            "p50Ms": 3.8,
+            "p95Ms": 4.35,
+            "pageQueryStats": [
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 3
+              },
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 2
+              },
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 2
+              },
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 2
+              },
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 2
+              }
+            ]
+          },
+          "offsetQuery": {
+            "p50Ms": 37.9,
+            "p95Ms": 38.54,
+            "pageQueryStats": [
+              {
+                "docsExamined": 24996,
+                "keysExamined": 24996,
+                "executionMs": 166
+              },
+              {
+                "docsExamined": 24996,
+                "keysExamined": 24996,
+                "executionMs": 166
+              },
+              {
+                "docsExamined": 24996,
+                "keysExamined": 24996,
+                "executionMs": 166
+              },
+              {
+                "docsExamined": 24996,
+                "keysExamined": 24996,
+                "executionMs": 167
+              },
+              {
+                "docsExamined": 24996,
+                "keysExamined": 24996,
+                "executionMs": 169
+              }
+            ]
+          }
+        },
+        {
+          "variant": "filtered",
+          "page": 400,
+          "offset": 19950,
+          "cursor": {
+            "p50Ms": 3.39,
+            "p95Ms": 3.51,
+            "pageQueryStats": [
+              {
+                "docsExamined": 50,
+                "keysExamined": 52,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 52,
+                "executionMs": 2
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 52,
+                "executionMs": 2
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 52,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 52,
+                "executionMs": 1
+              }
+            ]
+          },
+          "offsetQuery": {
+            "p50Ms": 53.22,
+            "p95Ms": 55.21,
+            "pageQueryStats": [
+              {
+                "docsExamined": 99996,
+                "keysExamined": 99996,
+                "executionMs": 365
+              },
+              {
+                "docsExamined": 99996,
+                "keysExamined": 99996,
+                "executionMs": 374
+              },
+              {
+                "docsExamined": 99996,
+                "keysExamined": 99996,
+                "executionMs": 368
+              },
+              {
+                "docsExamined": 99996,
+                "keysExamined": 99996,
+                "executionMs": 376
+              },
+              {
+                "docsExamined": 99996,
+                "keysExamined": 99996,
+                "executionMs": 370
+              }
+            ]
+          }
+        },
+        {
+          "variant": "sorted",
+          "page": 1,
+          "offset": 0,
+          "cursor": {
+            "p50Ms": 4.55,
+            "p95Ms": 5.58,
+            "pageQueryStats": [
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              }
+            ]
+          },
+          "offsetQuery": {
+            "p50Ms": 1.83,
+            "p95Ms": 2.45,
+            "pageQueryStats": [
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              }
+            ]
+          }
+        },
+        {
+          "variant": "sorted",
+          "page": 100,
+          "offset": 4950,
+          "cursor": {
+            "p50Ms": 2.89,
+            "p95Ms": 3.65,
+            "pageQueryStats": [
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 1
+              }
+            ]
+          },
+          "offsetQuery": {
+            "p50Ms": 8.47,
+            "p95Ms": 8.75,
+            "pageQueryStats": [
+              {
+                "docsExamined": 50,
+                "keysExamined": 5000,
+                "executionMs": 7
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 5000,
+                "executionMs": 7
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 5000,
+                "executionMs": 8
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 5000,
+                "executionMs": 7
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 5000,
+                "executionMs": 7
+              }
+            ]
+          }
+        },
+        {
+          "variant": "sorted",
+          "page": 1000,
+          "offset": 49950,
+          "cursor": {
+            "p50Ms": 3.36,
+            "p95Ms": 3.94,
+            "pageQueryStats": [
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 1
+              }
+            ]
+          },
+          "offsetQuery": {
+            "p50Ms": 48.21,
+            "p95Ms": 49.65,
+            "pageQueryStats": [
+              {
+                "docsExamined": 50,
+                "keysExamined": 50000,
+                "executionMs": 59
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50000,
+                "executionMs": 61
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50000,
+                "executionMs": 62
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50000,
+                "executionMs": 61
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50000,
+                "executionMs": 81
+              }
+            ]
+          }
+        },
+        {
+          "variant": "sorted",
+          "page": 2000,
+          "offset": 99950,
+          "cursor": {
+            "p50Ms": 2.95,
+            "p95Ms": 3.49,
+            "pageQueryStats": [
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 50,
+                "executionMs": 1
+              }
+            ]
+          },
+          "offsetQuery": {
+            "p50Ms": 107.24,
+            "p95Ms": 115.54,
+            "pageQueryStats": [
+              {
+                "docsExamined": 50,
+                "keysExamined": 100000,
+                "executionMs": 136
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 100000,
+                "executionMs": 133
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 100000,
+                "executionMs": 166
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 100000,
+                "executionMs": 166
+              },
+              {
+                "docsExamined": 50,
+                "keysExamined": 100000,
+                "executionMs": 136
+              }
+            ]
+          }
+        },
+        {
+          "variant": "sorted",
+          "navigation": "last",
+          "cursor": {
+            "p50Ms": 44.07,
+            "p95Ms": 63.8,
+            "pageQueryStats": [
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              }
+            ]
+          }
+        },
+        {
+          "variant": "sorted",
+          "navigation": "previous-from-last",
+          "cursor": {
+            "p50Ms": 2.87,
+            "p95Ms": 3.79,
+            "pageQueryStats": [
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 51,
+                "keysExamined": 51,
+                "executionMs": 0
+              }
+            ]
+          }
+        },
+        {
+          "variant": "filtered-sorted",
+          "page": 1,
+          "offset": 0,
+          "cursor": {
+            "p50Ms": 4.86,
+            "p95Ms": 5.72,
+            "pageQueryStats": [
+              {
+                "docsExamined": 251,
+                "keysExamined": 251,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 251,
+                "keysExamined": 251,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 251,
+                "keysExamined": 251,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 251,
+                "keysExamined": 251,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 251,
+                "keysExamined": 251,
+                "executionMs": 1
+              }
+            ]
+          },
+          "offsetQuery": {
+            "p50Ms": 3.69,
+            "p95Ms": 6.32,
+            "pageQueryStats": [
+              {
+                "docsExamined": 246,
+                "keysExamined": 246,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 246,
+                "keysExamined": 246,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 246,
+                "keysExamined": 246,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 246,
+                "keysExamined": 246,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 246,
+                "keysExamined": 246,
+                "executionMs": 1
+              }
+            ]
+          }
+        },
+        {
+          "variant": "filtered-sorted",
+          "page": 100,
+          "offset": 4950,
+          "cursor": {
+            "p50Ms": 4.75,
+            "p95Ms": 5.05,
+            "pageQueryStats": [
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 4
+              },
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 4
+              },
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 3
+              },
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 2
+              },
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 3
+              }
+            ]
+          },
+          "offsetQuery": {
+            "p50Ms": 56.98,
+            "p95Ms": 71.49,
+            "pageQueryStats": [
+              {
+                "docsExamined": 24996,
+                "keysExamined": 24996,
+                "executionMs": 70
+              },
+              {
+                "docsExamined": 24996,
+                "keysExamined": 24996,
+                "executionMs": 64
+              },
+              {
+                "docsExamined": 24996,
+                "keysExamined": 24996,
+                "executionMs": 62
+              },
+              {
+                "docsExamined": 24996,
+                "keysExamined": 24996,
+                "executionMs": 63
+              },
+              {
+                "docsExamined": 24996,
+                "keysExamined": 24996,
+                "executionMs": 66
+              }
+            ]
+          }
+        },
+        {
+          "variant": "filtered-sorted",
+          "page": 400,
+          "offset": 19950,
+          "cursor": {
+            "p50Ms": 4.23,
+            "p95Ms": 5.09,
+            "pageQueryStats": [
+              {
+                "docsExamined": 254,
+                "keysExamined": 254,
+                "executionMs": 3
+              },
+              {
+                "docsExamined": 254,
+                "keysExamined": 254,
+                "executionMs": 3
+              },
+              {
+                "docsExamined": 254,
+                "keysExamined": 254,
+                "executionMs": 4
+              },
+              {
+                "docsExamined": 254,
+                "keysExamined": 254,
+                "executionMs": 4
+              },
+              {
+                "docsExamined": 254,
+                "keysExamined": 254,
+                "executionMs": 5
+              }
+            ]
+          },
+          "offsetQuery": {
+            "p50Ms": 242.4,
+            "p95Ms": 269.75,
+            "pageQueryStats": [
+              {
+                "docsExamined": 99996,
+                "keysExamined": 99996,
+                "executionMs": 253
+              },
+              {
+                "docsExamined": 99996,
+                "keysExamined": 99996,
+                "executionMs": 263
+              },
+              {
+                "docsExamined": 99996,
+                "keysExamined": 99996,
+                "executionMs": 296
+              },
+              {
+                "docsExamined": 99996,
+                "keysExamined": 99996,
+                "executionMs": 258
+              },
+              {
+                "docsExamined": 99996,
+                "keysExamined": 99996,
+                "executionMs": 260
+              }
+            ]
+          }
+        },
+        {
+          "variant": "filtered-sorted",
+          "navigation": "last",
+          "cursor": {
+            "p50Ms": 65.85,
+            "p95Ms": 77.12,
+            "pageQueryStats": [
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 1
+              },
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 1
+              }
+            ]
+          }
+        },
+        {
+          "variant": "filtered-sorted",
+          "navigation": "previous-from-last",
+          "cursor": {
+            "p50Ms": 4.54,
+            "p95Ms": 5,
+            "pageQueryStats": [
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 4
+              },
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 4
+              },
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 4
+              },
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 3
+              },
+              {
+                "docsExamined": 255,
+                "keysExamined": 255,
+                "executionMs": 3
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

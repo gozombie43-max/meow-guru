@@ -61,7 +61,22 @@ it.each(['nodejs', 'edge'])('initializes %s request instrumentation with the sam
     dsn: 'https://server@example.test/2', enabled: true, tracesSampleRate: 0.1,
     dataCollection: expect.objectContaining({ cookies: false, httpBodies: [], databaseQueryData: false, queues: false }),
   }));
-  expect(instrumentation.onRequestError).toBe(sdk.captureRequestError);
+  const error = new Error('request failure');
+  const request = { path: '/play', method: 'GET', headers: {} };
+  const context = { routerKind: 'App Router', routePath: '/play', routeType: 'render', renderSource: 'react-server-components', revalidateReason: undefined } as const;
+  await instrumentation.onRequestError(error, request, context);
+  expect(sdk.captureRequestError).toHaveBeenCalledWith(error, request, context);
+});
+
+it.each(['nodejs', 'edge'])('skips unconfigured %s server monitoring', async runtime => {
+  vi.stubEnv('NEXT_RUNTIME', runtime);
+  const instrumentation = await import('../instrumentation');
+  await instrumentation.register();
+  await instrumentation.onRequestError(new Error('unconfigured'), { path: '/play', method: 'GET', headers: {} }, {
+    routerKind: 'App Router', routePath: '/play', routeType: 'render', renderSource: 'react-server-components', revalidateReason: undefined,
+  });
+  expect(sdk.init).not.toHaveBeenCalled();
+  expect(sdk.captureRequestError).not.toHaveBeenCalled();
 });
 
 it('forwards router transitions after lazy initialization', async () => {

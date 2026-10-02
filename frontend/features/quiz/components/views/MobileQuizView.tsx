@@ -3,6 +3,7 @@ import "./mobile-quiz-view.css";
 import { MobileQuestionNavigator } from "@/features/quiz/components/views/MobileQuestionNavigator";
 import { MobileQuizFooter, MobileQuizHeader } from "@/features/quiz/components/views/MobileQuizChrome";
 import RichContent from "@/components/RichContent";
+import { useAppNavigation } from "@/hooks/useAppNavigation";
 import {
   QuizSettingsModal,
 } from "@/features/quiz/components/ui/QuizSettingsModal";
@@ -98,6 +99,7 @@ export interface MobileQuizViewProps {
 }
 
 export function MobileQuizView({ configuration, settings, question, navigation, answer, solution }: MobileQuizViewProps) {
+  const appNavigation = useAppNavigation();
   const { routeBase, slug, subjectConfig, theme, themeStyles, toggleTheme, title } = configuration;
   const { isSettingsOpen, setIsSettingsOpen, hideQuestionNumbers, handleToggleHideQuestionNumbers, hideViewSolution, handleToggleHideViewSolution, hideAiTutor, handleToggleHideAiTutor, handleToggleHideBoth, textSize, handleSetTextSize, textWeight, handleSetTextWeight, spacing, handleSetSpacing } = settings;
   const { activeLang, isTranslating, setActiveLang, currentQ, compactExamLabel, fullExamLabel, hasQuestionText, displayedQuestion, renderQuestionLine, displayedOptions } = question;
@@ -143,6 +145,10 @@ export function MobileQuizView({ configuration, settings, question, navigation, 
         <QuizSettingsModal
           isOpen={isSettingsOpen}
           onClose={() => setIsSettingsOpen(false)}
+          onLeaveQuiz={() => {
+            setIsSettingsOpen(false);
+            appNavigation.replace(routeBase ?? `/${subjectConfig.subjectId}/${slug}`);
+          }}
           theme={theme}
           onToggleTheme={toggleTheme}
           hideQuestionNumbers={hideQuestionNumbers}

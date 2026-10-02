@@ -20,13 +20,29 @@ export function queueConnection(url) {
   };
 }
 
+export async function verifyQueueDurability(client) {
+  // Different logical databases share the same eviction and persistence policy.
+  const [eviction, aof, snapshots, persistence] = await Promise.all([
+    client.config('GET', 'maxmemory-policy'),
+    client.config('GET', 'appendonly'),
+    client.config('GET', 'save'),
+    client.info('persistence'),
+  ]);
+  if (eviction[1] !== 'noeviction') throw new Error('Durable queue Redis requires maxmemory-policy=noeviction');
+  const fields = Object.fromEntries(persistence.split(/\r?\n/).filter(line => line.includes(':')).map(line => line.split(':')));
+  const hasAof = aof[1] === 'yes' && fields.aof_enabled === '1' && fields.aof_last_write_status === 'ok';
+  const hasSnapshots = Boolean(snapshots[1]?.trim()) && fields.rdb_last_bgsave_status === 'ok';
+  if (fields.loading !== '0' || (!hasAof && !hasSnapshots)) throw new Error('Durable queue Redis requires healthy enabled persistence');
+}
+
 export async function startMaintenanceQueue(tasks, options = {}) {
   if (active) return active;
   if (process.env.USE_DURABLE_QUEUE !== 'true') return null;
-  if (!process.env.REDIS_URL) throw new Error('USE_DURABLE_QUEUE requires REDIS_URL');
+  const url = process.env.QUEUE_REDIS_URL || (process.env.QUEUE_REDIS_ALLOW_SHARED === 'true' ? process.env.REDIS_URL : undefined);
+  if (!url) throw new Error('USE_DURABLE_QUEUE requires QUEUE_REDIS_URL (or explicit QUEUE_REDIS_ALLOW_SHARED=true)');
   state = 'starting';
   const { Queue, Worker } = await import('bullmq');
-  const connection = queueConnection(process.env.REDIS_URL);
+  const connection = queueConnection(url);
   const prefix = redisKey('jobs');
   let connected = false;
   const queue = new Queue('maintenance', {
@@ -39,6 +55,7 @@ export async function startMaintenanceQueue(tasks, options = {}) {
   let worker;
   try {
     await queue.waitUntilReady();
+    await verifyQueueDurability(await queue.client);
     connected = true;
     await queue.setGlobalConcurrency(options.concurrency || 2);
     for (const task of tasks) {

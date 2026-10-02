@@ -21,6 +21,13 @@ describe('study library pagination', () => {
     expect(await fetchQuestions({ topic: 'words', questionType: 'study-mode', limit: 1 })).toHaveLength(1);
     expect(request).toHaveBeenCalledTimes(1);
   });
+  it('treats an explicit zero offset as the first cursor page', async () => {
+    request.mockResolvedValue({ questions: [word('a')], hasMore: false });
+    await fetchQuestions({ questionType: 'study-mode', offset: 0, limit: 1 });
+    const first = new URL(request.mock.calls[0][0], 'http://localhost');
+    expect(first.searchParams.get('pagination')).toBe('cursor');
+    expect(first.searchParams.has('offset')).toBe(false);
+  });
   it('rejects a repeated cursor instead of looping forever', async () => {
     request.mockResolvedValue({ questions: [word('a')], hasMore: true, nextCursor: 'repeat' });
     await expect(fetchQuestions({ questionType: 'study-mode' })).rejects.toThrow('Invalid question pagination');

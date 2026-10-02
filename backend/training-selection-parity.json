@@ -1,0 +1,167 @@
+{
+  "baseline": "c75815a7",
+  "cases": [
+    {
+      "mode": "adaptive",
+      "count": 10,
+      "selected": 10,
+      "identical": true
+    },
+    {
+      "mode": "adaptive",
+      "count": 25,
+      "selected": 25,
+      "identical": true
+    },
+    {
+      "mode": "adaptive",
+      "count": 50,
+      "selected": 50,
+      "identical": true
+    },
+    {
+      "mode": "sprint",
+      "count": 10,
+      "selected": 10,
+      "identical": true
+    },
+    {
+      "mode": "sprint",
+      "count": 25,
+      "selected": 25,
+      "identical": true
+    },
+    {
+      "mode": "sprint",
+      "count": 50,
+      "selected": 50,
+      "identical": true
+    },
+    {
+      "mode": "section",
+      "count": 10,
+      "selected": 10,
+      "identical": true
+    },
+    {
+      "mode": "section",
+      "count": 25,
+      "selected": 25,
+      "identical": true
+    },
+    {
+      "mode": "section",
+      "count": 50,
+      "selected": 50,
+      "identical": true
+    },
+    {
+      "mode": "pressure",
+      "count": 10,
+      "selected": 10,
+      "identical": true
+    },
+    {
+      "mode": "pressure",
+      "count": 25,
+      "selected": 25,
+      "identical": true
+    },
+    {
+      "mode": "pressure",
+      "count": 50,
+      "selected": 50,
+      "identical": true
+    },
+    {
+      "mode": "challenge",
+      "count": 10,
+      "selected": 10,
+      "identical": true
+    },
+    {
+      "mode": "challenge",
+      "count": 25,
+      "selected": 25,
+      "identical": true
+    },
+    {
+      "mode": "challenge",
+      "count": 50,
+      "selected": 50,
+      "identical": true
+    },
+    {
+      "mode": "nightmare",
+      "count": 10,
+      "selected": 10,
+      "identical": true
+    },
+    {
+      "mode": "nightmare",
+      "count": 25,
+      "selected": 25,
+      "identical": true
+    },
+    {
+      "mode": "nightmare",
+      "count": 50,
+      "selected": 50,
+      "identical": true
+    },
+    {
+      "mode": "survival",
+      "count": 10,
+      "selected": 10,
+      "identical": true
+    },
+    {
+      "mode": "survival",
+      "count": 25,
+      "selected": 25,
+      "identical": true
+    },
+    {
+      "mode": "survival",
+      "count": 50,
+      "selected": 50,
+      "identical": true
+    },
+    {
+      "mode": "gauntlet",
+      "count": 10,
+      "selected": 10,
+      "identical": true
+    },
+    {
+      "mode": "gauntlet",
+      "count": 25,
+      "selected": 25,
+      "identical": true
+    },
+    {
+      "mode": "gauntlet",
+      "count": 50,
+      "selected": 50,
+      "identical": true
+    },
+    {
+      "mode": "review",
+      "count": 10,
+      "selected": 10,
+      "identical": true
+    },
+    {
+      "mode": "review",
+      "count": 25,
+      "selected": 14,
+      "identical": true
+    },
+    {
+      "mode": "review",
+      "count": 50,
+      "selected": 14,
+      "identical": true
+    }
+  ]
+}

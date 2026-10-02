@@ -1,0 +1,13 @@
+# Replace the receiver with the operator's destination and verify actual
+# delivery before declaring monitoring active. This template sends nothing.
+route:
+  receiver: staging-operator
+  group_by: [alertname, instance]
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+receivers:
+  - name: staging-operator
+    webhook_configs:
+      - url_file: /run/secrets/meow-staging-alert-webhook
+        send_resolved: true

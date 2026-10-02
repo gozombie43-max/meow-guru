@@ -9,6 +9,7 @@ export const httpRequests = new Counter({ name: 'meow_http_requests_total', help
 export const dependencyLatency = new Histogram({ name: 'meow_dependency_duration_seconds', help: 'Dependency operation duration', labelNames: ['dependency', 'operation'], buckets: [0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.3, 0.5, 1, 5, 10], registers });
 export const dependencyErrors = new Counter({ name: 'meow_dependency_errors_total', help: 'Dependency failures', labelNames: ['dependency'], registers });
 export const mongoPoolWaiting = new Gauge({ name: 'meow_mongo_pool_waiting', help: 'Pending Mongo connection checkouts', registers });
+export const trainingCreateStageDuration = new Histogram({ name: 'meow_training_create_stage_duration_seconds', help: 'Training creation stage duration, including failed stages', labelNames: ['stage', 'outcome'], buckets: [0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.2, 0.3, 0.5, 0.8, 1, 2, 5, 10], registers });
 
 export function recordHttp(req, res, durationMs) {
   if (['/health', '/api/health', '/live', '/metrics'].includes(req.path)) return;

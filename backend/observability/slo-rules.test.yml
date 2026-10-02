@@ -2,6 +2,31 @@ rule_files:
   - slo-rules.yml
 evaluation_interval: 1m
 tests:
+  - name: external failure catches an unreachable backend
+    interval: 1m
+    input_series:
+      - series: 'probe_success{job="meow-uptime",instance="https://fixture.invalid/health"}'
+        values: '0x10'
+      - series: 'up{job="meow-uptime"}'
+        values: '1x10'
+    alert_rule_test:
+      - eval_time: 3m
+        alertname: MeowBackendUnreachable
+        exp_alerts:
+          - exp_labels: { severity: page, job: meow-uptime, instance: 'https://fixture.invalid/health' }
+            exp_annotations: { summary: 'External backend liveness/readiness probe failed' }
+      - eval_time: 6m
+        alertname: MeowExternalProbeMissing
+        exp_alerts: []
+  - name: missing external coverage raises an alert
+    interval: 1m
+    input_series: []
+    alert_rule_test:
+      - eval_time: 6m
+        alertname: MeowExternalProbeMissing
+        exp_alerts:
+          - exp_labels: { severity: ticket, job: meow-uptime }
+            exp_annotations: { summary: 'External probe coverage is unavailable' }
   - name: healthy traffic preserves the error budget
     interval: 1m
     input_series:

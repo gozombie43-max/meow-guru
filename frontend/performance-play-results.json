@@ -1,0 +1,210 @@
+{
+  "environment": "local production Next server with disposable authenticated browser fixture",
+  "samples": {
+    "desktop": [
+      {
+        "run": 1,
+        "ttfb": 80.60000000149012,
+        "fcp": 232,
+        "lcp": 232,
+        "cls": 0.034978357236481225,
+        "domContentLoaded": 132.60000000149012
+      },
+      {
+        "run": 2,
+        "ttfb": 15.700000002980232,
+        "fcp": 128,
+        "lcp": 128,
+        "cls": 0.034978357236481225,
+        "domContentLoaded": 62.80000000447035
+      },
+      {
+        "run": 3,
+        "ttfb": 12.700000002980232,
+        "fcp": 128,
+        "lcp": 128,
+        "cls": 0.034978357236481225,
+        "domContentLoaded": 58.600000001490116
+      }
+    ],
+    "mobile": [
+      {
+        "run": 1,
+        "ttfb": 48.399999998509884,
+        "fcp": 184,
+        "lcp": 184,
+        "cls": 0,
+        "domContentLoaded": 170.10000000149012
+      },
+      {
+        "run": 2,
+        "ttfb": 9.599999994039536,
+        "fcp": 104,
+        "lcp": 104,
+        "cls": 0,
+        "domContentLoaded": 59.599999994039536
+      },
+      {
+        "run": 3,
+        "ttfb": 9.200000002980232,
+        "fcp": 96,
+        "lcp": 96,
+        "cls": 0,
+        "domContentLoaded": 49.80000000447035
+      }
+    ]
+  },
+  "coldDocumentBaseline": {
+    "description": "First /play HTTP request immediately after fresh Next startup; response-header timing, distinct from browser rendering metrics.",
+    "samples": [
+      {
+        "restart": 1,
+        "phase": "cold-first-request",
+        "responseHeadersMs": 3889.04
+      },
+      {
+        "restart": 1,
+        "phase": "warm",
+        "responseHeadersMs": 29.43
+      },
+      {
+        "restart": 1,
+        "phase": "warm",
+        "responseHeadersMs": 23.92
+      },
+      {
+        "restart": 2,
+        "phase": "cold-first-request",
+        "responseHeadersMs": 3780.55
+      },
+      {
+        "restart": 2,
+        "phase": "warm",
+        "responseHeadersMs": 21.96
+      },
+      {
+        "restart": 2,
+        "phase": "warm",
+        "responseHeadersMs": 27.42
+      },
+      {
+        "restart": 3,
+        "phase": "cold-first-request",
+        "responseHeadersMs": 2893.21
+      },
+      {
+        "restart": 3,
+        "phase": "warm",
+        "responseHeadersMs": 19.73
+      },
+      {
+        "restart": 3,
+        "phase": "warm",
+        "responseHeadersMs": 14.37
+      }
+    ]
+  },
+  "coldDocumentIntermediate": {
+    "description": "Fresh Next process; Sentry build plugin loaded only during build/development. HTTP response-header timing, distinct from browser metrics.",
+    "samples": [
+      {
+        "restart": 1,
+        "phase": "cold-first-request",
+        "responseHeadersMs": 1720.36
+      },
+      {
+        "restart": 1,
+        "phase": "warm",
+        "responseHeadersMs": 19.5
+      },
+      {
+        "restart": 1,
+        "phase": "warm",
+        "responseHeadersMs": 24.23
+      },
+      {
+        "restart": 2,
+        "phase": "cold-first-request",
+        "responseHeadersMs": 1591.48
+      },
+      {
+        "restart": 2,
+        "phase": "warm",
+        "responseHeadersMs": 17.76
+      },
+      {
+        "restart": 2,
+        "phase": "warm",
+        "responseHeadersMs": 18.81
+      },
+      {
+        "restart": 3,
+        "phase": "cold-first-request",
+        "responseHeadersMs": 1586.75
+      },
+      {
+        "restart": 3,
+        "phase": "warm",
+        "responseHeadersMs": 24
+      },
+      {
+        "restart": 3,
+        "phase": "warm",
+        "responseHeadersMs": 27.77
+      }
+    ]
+  },
+  "coldDocumentAfter": {
+    "environment": "Local production Next server; HTTP response-header timing after the CLI ready message, including lazy initialization. Distinct from authenticated browser rendering metrics.",
+    "objectiveMs": 800,
+    "passed": false,
+    "samples": [
+      {
+        "restart": 1,
+        "phase": "cold-first-request",
+        "responseHeadersMs": 1056.32
+      },
+      {
+        "restart": 1,
+        "phase": "warm",
+        "responseHeadersMs": 30.7
+      },
+      {
+        "restart": 1,
+        "phase": "warm",
+        "responseHeadersMs": 24.93
+      },
+      {
+        "restart": 2,
+        "phase": "cold-first-request",
+        "responseHeadersMs": 1065.61
+      },
+      {
+        "restart": 2,
+        "phase": "warm",
+        "responseHeadersMs": 19.87
+      },
+      {
+        "restart": 2,
+        "phase": "warm",
+        "responseHeadersMs": 24.16
+      },
+      {
+        "restart": 3,
+        "phase": "cold-first-request",
+        "responseHeadersMs": 1035.08
+      },
+      {
+        "restart": 3,
+        "phase": "warm",
+        "responseHeadersMs": 20.18
+      },
+      {
+        "restart": 3,
+        "phase": "warm",
+        "responseHeadersMs": 27.32
+      }
+    ]
+  },
+  "collectedAt": "2026-10-02T17:39:56.552Z"
+}

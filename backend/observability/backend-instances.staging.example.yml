@@ -1,0 +1,3 @@
+- targets: ['staging-instance-a.example.invalid:443', 'staging-instance-b.example.invalid:443']
+  labels:
+    environment: staging

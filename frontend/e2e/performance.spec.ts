@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { writeFile } from 'node:fs/promises';
 
 interface WebVitalsMetrics {
   ttfb: number;
@@ -8,6 +9,29 @@ interface WebVitalsMetrics {
   domContentLoaded: number;
 }
 
+async function observeWebVitals(page: Page) {
+  await page.addInitScript(() => {
+    const state = { lcp: 0, cls: 0 };
+    Object.assign(window, { __performanceGate: state });
+    new PerformanceObserver(list => {
+      for (const entry of list.getEntries()) state.lcp = entry.startTime;
+    }).observe({ type: 'largest-contentful-paint', buffered: true });
+    let windowStart = 0, lastShift = 0, windowScore = 0;
+    new PerformanceObserver(list => {
+      for (const entry of list.getEntries() as (PerformanceEntry & { hadRecentInput: boolean; value: number })[]) {
+        if (entry.hadRecentInput) continue;
+        if (entry.startTime - lastShift > 1000 || entry.startTime - windowStart > 5000) {
+          windowStart = entry.startTime;
+          windowScore = 0;
+        }
+        lastShift = entry.startTime;
+        windowScore += entry.value;
+        state.cls = Math.max(state.cls, windowScore);
+      }
+    }).observe({ type: 'layout-shift', buffered: true });
+  });
+}
+
 /**
  * Collect standard Core Web Vitals and timing metrics from the browser performance API.
  */
@@ -15,34 +39,24 @@ async function collectWebVitals(page: Page): Promise<WebVitalsMetrics> {
   // Allow initial renders, network responses, and animations to stabilize
   await page.waitForLoadState('domcontentloaded');
   await page.waitForTimeout(500);
+  await page.waitForFunction(() => (window as Window & { __performanceGate?: { lcp: number } }).__performanceGate?.lcp);
 
   return await page.evaluate(() => {
     // TTFB and DOMContentLoaded from navigation timing
     const navEntries = performance.getEntriesByType('navigation') as PerformanceNavigationTiming[];
     const nav = navEntries.length > 0 ? navEntries[0] : null;
-    const ttfb = nav ? nav.responseStart - nav.startTime : 0;
-    const domContentLoaded = nav ? nav.domContentLoadedEventEnd - nav.startTime : 0;
+    if (!nav || nav.responseStart <= 0) throw new Error('Missing navigation timing');
+    const ttfb = nav.responseStart - nav.startTime;
+    const domContentLoaded = nav.domContentLoadedEventEnd - nav.startTime;
 
     // FCP from paint timing
     const paintEntries = performance.getEntriesByType('paint');
     const fcpEntry = paintEntries.find((entry) => entry.name === 'first-contentful-paint');
-    const fcp = fcpEntry ? fcpEntry.startTime : 0;
-
-    // LCP from largest-contentful-paint timing entries
-    const lcpEntries = performance.getEntriesByType('largest-contentful-paint');
-    const lcp = lcpEntries.length > 0 ? lcpEntries[lcpEntries.length - 1].startTime : (fcp || 0);
-
-    // CLS from layout-shift timing entries (excluding input-induced shifts)
-    let cls = 0;
-    const shiftEntries = performance.getEntriesByType('layout-shift') as (PerformanceEntry & {
-      hadRecentInput?: boolean;
-      value?: number;
-    })[];
-    for (const entry of shiftEntries) {
-      if (!entry.hadRecentInput && typeof entry.value === 'number') {
-        cls += entry.value;
-      }
-    }
+    if (!fcpEntry) throw new Error('Missing first contentful paint');
+    const fcp = fcpEntry.startTime;
+    const observed = (window as Window & { __performanceGate?: { lcp: number; cls: number } }).__performanceGate;
+    if (!observed || observed.lcp <= 0) throw new Error('Missing observed largest contentful paint');
+    const { lcp, cls } = observed;
 
     return { ttfb, fcp, lcp, cls, domContentLoaded };
   });
@@ -81,6 +95,7 @@ async function authenticateFixtureUser(page: Page, deviceName: string, variant?:
 
 test.describe('Core Web Vitals & Representative Performance Gates', () => {
   test.beforeEach(async ({ page }, testInfo) => {
+    await observeWebVitals(page);
     // Monitor uncaught client exceptions
     page.on('pageerror', (err) => {
       // Ignore known benign third-party warnings if any
@@ -90,21 +105,21 @@ test.describe('Core Web Vitals & Representative Performance Gates', () => {
       testInfo.title.startsWith('Mock test session') ? 'performance' : undefined);
   });
 
-  test('Mobile & Desktop /play hub meets Core Web Vitals thresholds', async ({ page }) => {
-    await page.goto('/play', { waitUntil: 'domcontentloaded' });
-    await page.waitForSelector('.training-brand, .play-hub, [data-ui-chrome="header"]', {
-      timeout: 10000,
-    });
-
-    const metrics = await collectWebVitals(page);
-
-    // Assert Core Web Vitals thresholds:
-    // - TTFB < 800ms
-    // - LCP < 2500ms (Good rating threshold)
-    // - CLS < 0.1 (Good rating threshold)
-    expect(metrics.ttfb).toBeLessThan(800);
-    expect(metrics.lcp).toBeLessThan(2500);
-    expect(metrics.cls).toBeLessThan(0.1);
+  test('Mobile & Desktop /play hub meets Core Web Vitals thresholds', async ({ page }, testInfo) => {
+    const observations = [];
+    for (let run = 0; run < 3; run++) {
+      await page.goto('/play', { waitUntil: 'domcontentloaded' });
+      await expect(page.getByRole('heading', { name: 'Choose your training.' })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Set up Adaptive' })).toBeVisible();
+      const metrics = await collectWebVitals(page);
+      observations.push({ run: run + 1, ...metrics });
+      expect(metrics.ttfb).toBeLessThan(800);
+      expect(metrics.lcp).toBeLessThan(2500);
+      expect(metrics.cls).toBeLessThan(0.1);
+    }
+    const reportPath = testInfo.outputPath('play-web-vitals.json');
+    await writeFile(reportPath, JSON.stringify(observations, null, 2));
+    await testInfo.attach('play-web-vitals', { path: reportPath, contentType: 'application/json' });
   });
 
   test('Active training session /play/session/lighthouse-training renders efficiently', async ({ page }) => {

@@ -1,13 +1,14 @@
 import { getMongoDB, getQuestionsCollection, withMongoTransaction } from '../config/mongodb.js';
 import { createHash } from 'node:crypto';
 import { dashboardEvidence } from '../services/training/domain/dashboardEvidence.js';
-import { getRedisClient, redisGetEjson, redisSetEjson } from '../config/redis.js';
 import { getQuestionRevision } from '../services/questions/questionCache.js';
 import { invalidateTrainingDashboard } from '../services/training/dashboardCache.js';
 import { normalizeTrainingSubject } from '../services/trainingSubjects.js';
 import { cachedTrainingCatalog } from '../services/training/catalogCache.js';
+import { cachedTrainingPool } from '../services/training/poolCache.js';
 import { trainingExamPattern, trainingSlug, trainingQuestionMetadata } from '../services/training/domain/questionMetadata.js';
 import { normalizeQuestion } from '../services/training/domain/questionNormalizer.js';
+import { measureTrainingCreate } from '../services/training/createStage.js';
 import { sessionUpdate, orderedTrainingSession } from '../services/training/domain/sessionUpdate.js';
 import {
   applySessionToLearnerState,
@@ -91,8 +92,8 @@ export const findOwnedSession = (id, userId, completed = false) =>
   sessions().findOne({ id, userId, ...(completed ? { status: 'completed' } : {}) }).then(orderedTrainingSession);
 
 export async function createTrainingSession(session) {
-  const result = await sessions().insertOne(session);
-  await invalidateTrainingDashboard(session.userId, session.exam);
+  const result = await measureTrainingCreate('insert', () => sessions().insertOne(session));
+  await measureTrainingCreate('invalidation', () => invalidateTrainingDashboard(session.userId, session.exam));
   return result;
 }
 export const reloadTrainingSession = id => sessions().findOne({ _id: id }).then(orderedTrainingSession);
@@ -199,7 +200,7 @@ export async function trainingQuestionPool(config, dueIds, recentIds, weakTopics
   }
   const recent = new Set(recentIds.map(String));
   const reserve = [0, 25, 50, 100, 200, 400].find(size => size >= recent.size);
-  const shared = indexed && reserve !== undefined && Boolean(await getRedisClient());
+  const shared = indexed && reserve !== undefined;
   if (!shared && recentIds.length) and.push({ id: { $nin: recentIds } });
   const base = { $and: and };
   const weakFilter = weakTopics.length
@@ -209,16 +210,14 @@ export async function trainingQuestionPool(config, dueIds, recentIds, weakTopics
     ] }
     : null;
 
-  let lists;
-  const sharedKey = shared ? `training-pool:${createHash('sha256').update(JSON.stringify({
+  const sharedKey = shared ? `training-pool:v2:${createHash('sha256').update(JSON.stringify({
     revision: await getQuestionRevision(), exam: config.exam,
     subject: normalizeTrainingSubject(config.subject || ''), topic: trainingSlug(config.topic || ''),
     weakTopics: [...new Set(weakTopics.map(trainingSlug))].sort(), reserve,
   })).digest('hex')}` : null;
-  if (sharedKey) lists = await redisGetEjson(sharedKey);
-  if (!lists) {
+  const build = () => {
     const extra = shared ? reserve : 0;
-    lists = await Promise.all([
+    return Promise.all([
       query(base).sort({ updatedAt: -1, _id: 1 }).limit(900 + extra).toArray(),
       query(base).sort({ updatedAt: 1, _id: 1 }).limit(450 + extra).toArray(),
       query(base).sort(indexed ? { 'trainingCandidate.difficulty': -1, 'trainingCandidate.discrimination': -1, updatedAt: -1 } : { difficulty: -1, discrimination: -1, updatedAt: -1 }).limit(900 + extra).toArray(),
@@ -226,8 +225,8 @@ export async function trainingQuestionPool(config, dueIds, recentIds, weakTopics
         ? query(weakFilter).sort(indexed ? { 'trainingCandidate.discrimination': -1, updatedAt: -1 } : { discrimination: -1, updatedAt: -1 }).limit(1200 + extra).toArray()
         : [],
     ]);
-    if (sharedKey) await redisSetEjson(sharedKey, lists, 60);
-  }
+  };
+  const lists = sharedKey ? await cachedTrainingPool(getMongoDB(), sharedKey, build) : await build();
   const [latest, oldest, quality, weak] = shared
     ? lists.map((rows, index) => rows.filter(row => !recent.has(String(row.id))).slice(0, [900, 450, 900, 1200][index]))
     : lists;

@@ -69,10 +69,23 @@ for (const [parent, width] of [
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.evaluate(() => history.back());
     await expect(page.getByRole("dialog", { name: "AI Tutor", exact: true })).toHaveCount(0);
-    if (width < 768) await page.getByRole("button", { name: "Open quiz settings", exact: true }).click();
+    if (width < 768) {
+      await page.setViewportSize({ width, height: 568 });
+      await page.getByRole("button", { name: "Open quiz settings", exact: true }).click();
+      const leaveButton = page.getByRole("button", { name: "Leave quiz", exact: true });
+      await leaveButton.scrollIntoViewIfNeeded();
+      const bounds = await leaveButton.boundingBox();
+      if (!bounds) throw new Error("Leave quiz is missing from settings");
+      expect(bounds.height).toBeGreaterThanOrEqual(44);
+      expect(bounds.y).toBeGreaterThanOrEqual(0);
+      expect(bounds.y + bounds.height).toBeLessThanOrEqual(568);
+    }
     await page.getByRole("button", { name: "Leave quiz", exact: true }).click();
     await expect(page.getByRole("dialog", { name: /exit quiz/i })).toBeVisible();
+    await expect(page.getByRole("dialog", { name: "Quiz settings", exact: true })).toHaveCount(0);
     await page.getByRole("button", { name: "Cancel", exact: true }).click();
+    await expect(page).toHaveURL(`${appUrl}${parent}/quiz`);
+    if (width < 768) await expect(page.getByRole("button", { name: "Open quiz settings", exact: true })).toBeFocused();
     await expect(page.getByText("Your answer", { exact: true })).toBeVisible();
     if (width < 768) await page.getByRole("button", { name: "Open quiz settings", exact: true }).click();
     await page.getByRole("button", { name: "Leave quiz", exact: true }).click();

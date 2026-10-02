@@ -12,6 +12,7 @@ const run = async () => { attempts++; if (attempts === 1) throw new Error('Simul
 beforeAll(async () => {
   if (!enabled) return;
   vi.stubEnv('REDIS_URL', process.env.REDIS_TEST_URL);
+  vi.stubEnv('QUEUE_REDIS_URL', process.env.REDIS_TEST_URL);
   vi.stubEnv('REDIS_NAMESPACE', `reliability-test-${randomUUID()}`);
   vi.stubEnv('USE_DURABLE_QUEUE', 'true');
   runtime = await startMaintenanceQueue([{ name: 'probe', run }]);

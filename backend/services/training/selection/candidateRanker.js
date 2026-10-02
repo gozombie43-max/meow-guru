@@ -39,7 +39,11 @@ export function selectQuestions(
   const ranked = [...new Map(pool.map(q => [String(q.id), q])).values()]
     .filter(q => q.difficulty >= floor)
     .map((q) => {
-      const p = skills.get(topicKey(q));
+      // This scan runs once per selected question. Normalize keys once per
+      // candidate instead of repeating string work inside every scoring pass.
+      const subject = normalizeTrainingSubject(q.subject);
+      const topic = JSON.stringify([subject, q.topic]);
+      const p = skills.get(topic);
       const mastery = masteryFor(p);
       const weakness = 1 - mastery;
       const recency = p?.lastAt
@@ -67,7 +71,7 @@ export function selectQuestions(
           else if (ageDays < 14) rank -= 2 * (1 - (ageDays - 7) / 7);
         }
       }
-      return { q, rank, mastery };
+      return { q, rank, mastery, subject, topic };
     })
     .filter((r) => mode !== "review" || due.has(String(r.q.id)))
     .sort((a, b) => b.rank - a.rank || a.q.id.localeCompare(b.q.id));
@@ -77,7 +81,7 @@ export function selectQuestions(
     subjectCount = new Map();
   const targetCount = Math.min(count, ranked.length);
   
-  const score = ({ q, rank, mastery }) => {
+  const score = ({ q, rank, mastery, topic, subject }) => {
     const position = selected.length;
     const progress = targetCount > 1 ? position / (targetCount - 1) : 0;
     const ability = 1 + mastery * 3;
@@ -86,8 +90,8 @@ export function selectQuestions(
     
     const difficultyFit = strategy.ignoreDifficultyFit ? 0 : 4 / (1 + Math.abs(q.difficulty - clamp(target, floor, 5)));
     return rank + difficultyFit
-      - (topicCount.get(topicKey(q)) || 0) * 2
-      - (subjectCount.get(normalizeTrainingSubject(q.subject)) || 0) * 2;
+      - (topicCount.get(topic) || 0) * 2
+      - (subjectCount.get(subject) || 0) * 2;
   };
   
   while (ranked.length && selected.length < count) {
@@ -100,8 +104,8 @@ export function selectQuestions(
         bestScore = candidateScore;
       }
     }
-    const { q } = ranked.splice(best, 1)[0];
-    const skill = skills.get(topicKey(q));
+    const { q, topic, subject } = ranked.splice(best, 1)[0];
+    const skill = skills.get(topic);
     selected.push(
       skill?.attempts >= 5
         ? {
@@ -117,8 +121,7 @@ export function selectQuestions(
           }
         : q,
     );
-    topicCount.set(topicKey(q), (topicCount.get(topicKey(q)) || 0) + 1);
-    const subject = normalizeTrainingSubject(q.subject);
+    topicCount.set(topic, (topicCount.get(topic) || 0) + 1);
     subjectCount.set(subject, (subjectCount.get(subject) || 0) + 1);
   }
   

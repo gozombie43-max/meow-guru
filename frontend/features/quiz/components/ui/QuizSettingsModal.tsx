@@ -7,6 +7,7 @@ import {
   FileText,
   Layers,
   ListOrdered,
+  LogOut,
   Moon,
   Settings,
   Sun,
@@ -66,6 +67,7 @@ function SwitchToggle({ checked, onChange, ariaLabel }: SwitchToggleProps) {
 export interface QuizSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onLeaveQuiz?: () => void;
   theme: QuizTheme;
   onToggleTheme: () => void;
   hideQuestionNumbers: boolean;
@@ -86,6 +88,7 @@ export interface QuizSettingsModalProps {
 export function QuizSettingsModal({
   isOpen,
   onClose,
+  onLeaveQuiz,
   theme,
   onToggleTheme,
   hideQuestionNumbers,
@@ -331,6 +334,17 @@ export function QuizSettingsModal({
             />
           </div>
         </div>
+        {onLeaveQuiz && (
+          <button
+            data-ui-button="secondary"
+            type="button"
+            className="ios-settings-leave-btn"
+            onClick={onLeaveQuiz}
+          >
+            <LogOut size={18} aria-hidden="true" />
+            Leave quiz
+          </button>
+        )}
       </Dialog>
 
       <style>{`
@@ -350,6 +364,8 @@ export function QuizSettingsModal({
           left: 12px;
           width: calc(100% - 24px);
           max-width: 340px;
+          max-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 68px);
+          overflow-y: auto;
           z-index: 999;
           border-radius: 18px;
           padding: 14px 16px 16px;
@@ -448,6 +464,16 @@ export function QuizSettingsModal({
         .ios-settings-list {
           display: flex;
           flex-direction: column;
+        }
+
+        .ios-settings-leave-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          width: 100%;
+          min-height: 44px;
+          margin-top: 12px;
         }
 
         .ios-settings-item {

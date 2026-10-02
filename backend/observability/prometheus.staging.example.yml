@@ -1,0 +1,40 @@
+# Run the probe/exporter outside Azure. Replace example.invalid targets and
+# mount a dedicated staging token; keep production in a separate tenant.
+global:
+  scrape_interval: 15s
+  evaluation_interval: 30s
+rule_files:
+  - /etc/prometheus/slo-rules.yml
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager:9093']
+scrape_configs:
+  - job_name: meow-backend
+    scheme: https
+    metrics_path: /metrics
+    authorization:
+      type: Bearer
+      credentials_file: /run/secrets/meow-staging-metrics-token
+    # Each target must reach a specific API instance, not a load-balanced
+    # address randomly routing scrapes to different instances.
+    file_sd_configs:
+      - files: [/etc/prometheus/backend-instances.staging.yml]
+  - job_name: meow-uptime
+    metrics_path: /probe
+    scrape_timeout: 10s
+    params:
+      module: [meow_ready]
+    static_configs:
+      - targets:
+          - https://staging-api.example.invalid/live
+          - https://staging-api.example.invalid/health
+        labels:
+          environment: staging
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115

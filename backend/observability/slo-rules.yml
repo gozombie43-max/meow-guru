@@ -27,6 +27,18 @@ groups:
         expr: histogram_quantile(0.95, sum by (le) (rate(meow_http_duration_seconds_bucket{route="/api/training/sessions",method="POST"}[5m])))
       - record: meow:redis_latency:p95
         expr: histogram_quantile(0.95, sum by (le) (rate(meow_dependency_duration_seconds_bucket{dependency="redis"}[5m])))
+      - record: meow:training_create_stage:p95
+        expr: histogram_quantile(0.95, sum by (le, stage) (rate(meow_training_create_stage_duration_seconds_bucket{outcome="success"}[5m])))
+      - alert: MeowBackendUnreachable
+        expr: probe_success{job="meow-uptime"} == 0
+        for: 2m
+        labels: { severity: page }
+        annotations: { summary: 'External backend liveness/readiness probe failed' }
+      - alert: MeowExternalProbeMissing
+        expr: absent(up{job="meow-uptime"}) or up{job="meow-uptime"} == 0
+        for: 5m
+        labels: { severity: ticket }
+        annotations: { summary: 'External probe coverage is unavailable' }
       - alert: MeowMetricsMissing
         expr: absent(up{job="meow-backend"}) or up{job="meow-backend"} == 0
         for: 5m

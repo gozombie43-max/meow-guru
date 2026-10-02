@@ -50,6 +50,21 @@ beforeEach(() => {
 });
 
 describe('Question Service Helpers', () => {
+  it('rejects retired deep offsets before issuing any question query', async () => {
+    const find = vi.fn();
+    getQuestionsCollectionMock.mockReturnValue({ find });
+    await expect(fetchQuestions({ offset: 1001 })).rejects.toMatchObject({ statusCode: 400 });
+    expect(find).not.toHaveBeenCalled();
+  });
+
+  it('preserves bounded legacy offset results', async () => {
+    const cursor = createCursor([{ id: 'q1000' }]);
+    cursor.skip = vi.fn(() => cursor);
+    const countDocuments = vi.fn().mockResolvedValue(1200);
+    getQuestionsCollectionMock.mockReturnValue({ find: vi.fn(() => cursor), countDocuments });
+    expect(await fetchQuestions({ offset: 1000, limit: 1, questionType: 'all' })).toMatchObject({ total: 1200, questions: [{ id: 'q1000' }] });
+    expect(cursor.skip).toHaveBeenCalledWith(1000);
+  });
   it('preserves total counts on cached fallback pages', async () => {
     const direct = createCursor([]);
     const fallback = createCursor([{ id: 'a', chapter: 'Algebra' }, { id: 'b', chapter: 'Algebra' }]);

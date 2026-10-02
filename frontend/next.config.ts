@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 import path from "path";
-import { withSentryConfig } from "@sentry/nextjs/config";
+import { PHASE_PRODUCTION_SERVER } from "next/constants";
 
 const configuredBackend = process.env.API_URL || process.env.AZURE_BACKEND_URL;
 if (process.env.NODE_ENV === 'production' && !configuredBackend) {
@@ -64,16 +64,30 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withSentryConfig(nextConfig, {
-  org: process.env.SENTRY_ORG,
-  project: process.env.SENTRY_PROJECT,
-  authToken: process.env.SENTRY_AUTH_TOKEN,
-  silent: !process.env.CI,
-  tunnelRoute: "/monitoring",
-  widenClientFileUpload: true,
-  buildTimeInstrumentation: false,
-  webpack: {
-    treeshake: { removeDebugLogging: true },
-    automaticVercelMonitors: true,
-  },
-});
+export default async function configure(phase: string) {
+  if (phase === PHASE_PRODUCTION_SERVER) {
+    // The build already embeds Sentry instrumentation, tunnel rewrites and release
+    // metadata. Loading the build plugin again delays the first document request.
+    return {
+      ...nextConfig,
+      experimental: {
+        ...nextConfig.experimental,
+        clientTraceMetadata: ["baggage", "sentry-trace"],
+      },
+    };
+  }
+  const { withSentryConfig } = await import("@sentry/nextjs/config");
+  return withSentryConfig(nextConfig, {
+    org: process.env.SENTRY_ORG,
+    project: process.env.SENTRY_PROJECT,
+    authToken: process.env.SENTRY_AUTH_TOKEN,
+    silent: !process.env.CI,
+    tunnelRoute: "/monitoring",
+    widenClientFileUpload: true,
+    buildTimeInstrumentation: false,
+    webpack: {
+      treeshake: { removeDebugLogging: true },
+      automaticVercelMonitors: true,
+    },
+  });
+}

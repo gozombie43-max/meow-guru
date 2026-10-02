@@ -50,6 +50,9 @@ beforeAll(async () => {
 }, 60000);
 beforeEach(async () => {
   invalidateTrainingCatalog();
+  // Raw fixture replacement bypasses question writers. Advance the shared
+  // revision just as a real importer must, rather than reusing cached ObjectIds.
+  await db.collection('questionMetadata').updateOne({ _id: 'revision' }, { $inc: { revision: 1 } }, { upsert: true });
   await db
     .collection("users")
     .updateOne(

@@ -1,4 +1,5 @@
 import { fetchQuestionCursorPage } from "./questionCursorService.js";
+import { logger } from '../../infrastructure/logger.js';
 import { getQuestionsCollection } from "../../config/mongodb.js";
 import { questionsQueryCache, questionCountsCache, revisionedQuestionCacheKey } from "./questionCache.js";
 import {
@@ -90,6 +91,8 @@ export async function fetchQuestions(params) {
   const parsedOffset = Number.isFinite(Number(offset))
     ? Math.max(0, parseInt(offset, 10))
     : 0;
+  if (parsedOffset > 1000) throw Object.assign(new Error('Offsets above 1000 are retired. Use pagination=cursor and nextCursor.'), { statusCode: 400 });
+  logger.info({ event: 'questions.pagination.legacy', offset: parsedOffset, queryMode });
   const parsedLimit = Number.isFinite(Number(limit))
     ? Math.min(200, Math.max(1, Math.floor(Number(limit)) || 50))
     : 50;

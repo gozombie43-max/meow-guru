@@ -14,6 +14,7 @@
     "check": "npm run typecheck && npm run test:run && npm run lint",
     "check:interface": "node scripts/check-interface.mjs && node scripts/check-ui-contract.mjs",
     "check:performance": "node scripts/check-performance-budget.mjs",
+    "test:performance:startup": "node scripts/benchmark-play-startup.mjs",
     "test:e2e": "playwright test"
   },
   "dependencies": {

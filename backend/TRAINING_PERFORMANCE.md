@@ -58,4 +58,20 @@ The learner-state backfill is a separate production operation and is not conside
 
 The detailed load report is [training-load-results.json](training-load-results.json). Each stage reports p50/p95/p99, errors and response sizes separately for dashboard, creation, answers, visits and completion. It is a short synthetic burst using one session per learner, no think time, local MongoDB, and 20 questions per session. Authentication uses generated test accounts and the normal session issuer; password-login throughput is not measured. These results do not establish sustained capacity, large-history performance, network latency or Azure/Atlas limits.
 
-Validation results and the final load table are recorded below after the final checks.
+### 2026-10-02 measured follow-up
+
+The [verified plan](../PERFORMANCE_RELIABILITY_PLAN.md) and [staging runbook](RELIABILITY_STAGING_RUNBOOK.md) track the current review against `c75815a7`. Creation now has nine bounded-label stage histograms and matching spans. Cold pool work is coalesced with database-scoped local caching and revisioned EJSON Redis storage; candidate volumes remain unchanged. Selection reuses normalized subject/topic keys instead of recomputing them on every ranking scan.
+
+The new default diagnostic stages are C1/C5/C10, each cold then warm. Cold clears candidate and catalog L1 caches; Redis is disabled in this disposable harness. These phases measure short local bursts, not shared-Redis behavior or sustained Azure/Atlas capacity.
+
+| C10 creation p95 | Cold | Warm |
+| --- | ---: | ---: |
+| Mathematics section | 286.68 ms | 174.86 ms |
+| Exam-wide adaptive | 200.12 ms | 166.86 ms |
+| Daily mission | 276.77 ms | 244.89 ms |
+
+The [baseline](training-load-before.json) section C10 cold run breached the 800 ms objective at 959.36 ms. The [final report](training-load-after.json) passes all 18 scenario/stage/phase combinations with zero request errors or failed learners. Section C10 dashboard/answer p95 are 96.61/67.47 ms cold and 67.53/49.53 ms warm. [Selection parity](training-selection-parity.json) records identical selected objects/order/timing against the baseline algorithm across nine modes and three question counts (27 cases). This is deterministic parity evidence, not a longitudinal learning-quality study.
+
+The [pagination benchmark](pagination-benchmark.json) covers 10K/50K/100K datasets with five repetitions, ID parity and execution statistics. At 100K, sorted page 1000 reads in 3.94 ms p95 with a cursor versus 49.65 ms with an offset; a filtered/sorted last-page seek examines 254 documents versus 99,996 with an offset. Last-page latency still includes an exact count, which is reported explicitly; filtered low-selectivity queries need separate attention. Internal browsing uses cursors, shallow legacy offsets remain compatible, and offsets above 1000 return a migration error.
+
+Full backend validation: 511 tests passed, two tests requiring disposable Redis skipped; lint passed. Redis restart/worker-death, staging capacity, monitoring delivery, canary promotion and restore remain operator gates, with flags preserved until their actual evidence exists.

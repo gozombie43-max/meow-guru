@@ -6,7 +6,9 @@ import express from 'express';
 
 // Deliberately no dotenv or remote-target option: this command can only create
 // and load an isolated local replica set. Production credentials are ignored.
-const stages = (process.env.TRAINING_LOAD_STAGES || '1,5,10,25,50').split(',').map(Number);
+const stages = (process.env.TRAINING_LOAD_STAGES || '1,5,10').split(',').map(Number);
+const phases = (process.env.TRAINING_LOAD_PHASES || 'cold,warm').split(',');
+if (!['cold', 'cold,warm'].includes(phases.join(','))) throw new Error('Use cold or cold,warm load phases');
 const count = Number(process.env.TRAINING_LOAD_QUESTIONS || 20);
 const scenarios = (process.env.TRAINING_LOAD_SCENARIOS || 'section-mathematics')
   .split(',')
@@ -26,9 +28,12 @@ process.env.REFRESH_TOKEN_SECRET = randomUUID();
 process.env.LOG_LEVEL = 'error';
 process.env.TRAINING_INDEXED_QUESTIONS = 'true';
 process.env.TRAINING_LOCAL_INGRESS = 'true';
+// Do not send fixture data to a Redis endpoint inherited from the shell.
+delete process.env.REDIS_URL;
+delete process.env.QUEUE_REDIS_URL;
 
 let mongo, server, disconnect, stopMetrics;
-const report = { environment: 'isolated local Mongo replica set', questionsPerLearner: count, stages: [] };
+const report = { environment: 'isolated local Mongo replica set', cacheScope: 'candidate/catalog L1; Redis disabled', questionsPerLearner: count, stages: [] };
 try {
   mongo = await MongoMemoryReplSet.create({ replSet: { count: 1 } });
   process.env.MONGODB_URI = mongo.getUri();
@@ -47,6 +52,9 @@ try {
   const { createSession } = await import('../auth/sessions.js');
   const { globalLimiter } = await import('../middleware/rateLimiter.js');
   const { startRuntimeMetrics } = await import('../infrastructure/logger.js');
+  const { trainingCreateStageDuration } = await import('../infrastructure/metrics.js');
+  const { clearSharedLocalCaches } = await import('../infrastructure/tieredCache.js');
+  const { invalidateTrainingCatalog } = await import('../services/training/catalogCache.js');
   stopMetrics = startRuntimeMetrics();
   const app = express();
   app.use(express.json(), globalLimiter);
@@ -55,7 +63,9 @@ try {
   server = app.listen(0, '127.0.0.1');
   await once(server, 'listening');
   const base = `http://127.0.0.1:${server.address().port}/api/training`;
-  stagesLoop: for (const scenario of scenarios) for (const concurrency of stages) {
+  stagesLoop: for (const scenario of scenarios) for (const concurrency of stages) for (const phase of phases) {
+    if (phase === 'cold') { clearSharedLocalCaches(); invalidateTrainingCatalog(); }
+    trainingCreateStageDuration.reset();
     const samples = {};
     const measure = async (operation, token, path, body) => {
       const start = performance.now();
@@ -91,7 +101,13 @@ try {
       if (completed.status !== 'completed' || completed.result.attempted !== count) throw new Error('Incomplete learner lifecycle');
       await measure('dashboard', token, '/dashboard?exam=ssc-cgl');
     }));
-    const summary = { scenario: scenario.name, concurrency, durationMs: Math.round(performance.now() - started), failedLearners: learners.filter(r => r.status === 'rejected').length, operations: {} };
+    const summary = { scenario: scenario.name, concurrency, phase, durationMs: Math.round(performance.now() - started), failedLearners: learners.filter(r => r.status === 'rejected').length, operations: {}, creationStages: {} };
+    const stageMetrics = (await trainingCreateStageDuration.get()).values;
+    for (const countMetric of stageMetrics.filter(value => value.metricName.endsWith('_count'))) {
+      const { stage, outcome } = countMetric.labels;
+      const sum = stageMetrics.find(value => value.metricName.endsWith('_sum') && value.labels.stage === stage && value.labels.outcome === outcome)?.value || 0;
+      summary.creationStages[`${stage}:${outcome}`] = { count: countMetric.value, meanMs: Math.round(sum * 1000 / countMetric.value * 100) / 100 };
+    }
     for (const [operation, rows] of Object.entries(samples)) {
       const sorted = rows.map(r => r.ms).sort((a,b) => a-b);
       const percentile = n => Math.round(sorted[Math.max(0, Math.ceil(sorted.length * n) - 1)] * 100) / 100;

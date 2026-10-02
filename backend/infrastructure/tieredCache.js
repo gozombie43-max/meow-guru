@@ -8,7 +8,7 @@ const renew = "if redis.call('GET', KEYS[1]) == ARGV[1] then return redis.call('
 const caches = new Set();
 export function clearSharedLocalCaches() { for (const ref of caches) { const cache = ref.deref(); if (cache) cache.clear(); else caches.delete(ref); } }
 
-export function createTieredCache({ freshMs = 300000, staleMs = 1800000, localMs = 10000, lockMs = 15000, waitMs = 5000, now = Date.now, random = Math.random } = {}) {
+export function createTieredCache({ freshMs = 300000, staleMs = 1800000, localMs = 10000, lockMs = 15000, waitMs = 5000, now = Date.now, random = Math.random, getShared = redisGetJson, setShared = redisSetJson } = {}) {
   const local = new LRUCache({ max: 300, maxSize: 20 * 1024 * 1024, sizeCalculation: value => Buffer.byteLength(JSON.stringify(value)), ttl: staleMs });
   const pending = new Map();
   const api = { clear() { local.clear(); }, read };
@@ -29,7 +29,7 @@ export function createTieredCache({ freshMs = 300000, staleMs = 1800000, localMs
           do {
             try { acquired = Boolean(await redis.set(lockKey, token, { NX: true, PX: lockMs })); }
             catch { redis = null; break; }
-            const shared = await redisGetJson(key);
+            const shared = await getShared(key);
             if (shared?.freshUntil > now()) { local.set(scoped, { ...shared, checkedAt: now() }); return shared.value; }
             if (acquired) break;
             if (now() >= deadline) throw Object.assign(new Error('Metadata refresh is busy'), { statusCode: 503 });
@@ -43,7 +43,7 @@ export function createTieredCache({ freshMs = 300000, staleMs = 1800000, localMs
         const value = await build();
         const freshUntil = now() + Math.min(staleMs, Math.round(freshMs * (0.9 + random() * 0.2)));
         const entry = { value, freshUntil, staleUntil: now() + staleMs };
-        await redisSetJson(key, entry, Math.max(1, Math.ceil(staleMs / 1000)));
+        await setShared(key, entry, Math.max(1, Math.ceil(staleMs / 1000)));
         local.set(scoped, { ...entry, checkedAt: now() });
         return value;
       } finally {
@@ -60,7 +60,7 @@ export function createTieredCache({ freshMs = 300000, staleMs = 1800000, localMs
     const scoped = redisKey(key);
     let entry = local.get(scoped);
     if (!entry || now() - entry.checkedAt >= localMs) {
-      const shared = await redisGetJson(key);
+      const shared = await getShared(key);
       if (shared?.staleUntil > now()) entry = { ...shared, checkedAt: now() };
       if (entry) local.set(scoped, entry);
     }

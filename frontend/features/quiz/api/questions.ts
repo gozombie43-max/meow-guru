@@ -58,10 +58,11 @@ export async function fetchQuestionKey(url: string): Promise<Question[]> {
   const questions: Question[] = [];
   const query = new URL(url, 'http://localhost');
   const requestedLimit = Number(query.searchParams.get('limit'));
-  if (!query.searchParams.has('offset') && !query.searchParams.has('search') && !query.searchParams.has('sort')) {
+  if (!query.searchParams.has('offset') || query.searchParams.get('offset') === '0') {
     // Prefer cursor pagination everywhere over heavy offset queries.
     // Transfer in bounded cursor pages without repeating exact count queries.
     query.searchParams.set('pagination', 'cursor');
+    query.searchParams.delete('offset');
     query.searchParams.set('includeTotal', 'false');
     query.searchParams.set('limit', String(requestedLimit > 0 ? Math.min(200, requestedLimit) : (library ? 200 : 50)));
   }
