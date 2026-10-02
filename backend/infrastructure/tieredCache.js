@@ -29,9 +29,9 @@ export function createTieredCache({ freshMs = 300000, staleMs = 1800000, localMs
           do {
             try { acquired = Boolean(await redis.set(lockKey, token, { NX: true, PX: lockMs })); }
             catch { redis = null; break; }
-            if (acquired) break;
             const shared = await redisGetJson(key);
             if (shared?.freshUntil > now()) { local.set(scoped, { ...shared, checkedAt: now() }); return shared.value; }
+            if (acquired) break;
             if (now() >= deadline) throw Object.assign(new Error('Metadata refresh is busy'), { statusCode: 503 });
             await pause(50 + Math.floor(random() * 100));
           } while (true);
