@@ -55,7 +55,7 @@ export async function startMaintenanceQueue(tasks, options = {}) {
   let worker;
   try {
     await queue.waitUntilReady();
-    await verifyQueueDurability(await queue.client);
+    await verifyQueueDurability(await queue.getBackend().client);
     connected = true;
     await queue.setGlobalConcurrency(options.concurrency || 2);
     for (const task of tasks) {

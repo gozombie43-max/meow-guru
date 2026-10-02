@@ -125,3 +125,11 @@ Existing browser assertions were preserved and strengthened to check settings di
 | Backend / security / runtime / load | The full checks above remain applicable to unchanged backend/dependency sources: 511 backend tests passed, two Redis tests skipped; audits, tracing, Prometheus, load and pagination checks passed. The final current-source secret scan also passed. |
 
 **Ready for a local commit within the agreed scope.** Two real-Redis tests remain skipped because no disposable Redis is available. The coverage omission, warning-level Lighthouse results and external staging/device/production gates remain documented limitations; this does not claim production promotion readiness. No commit or push was made.
+
+## CI Redis queue client compatibility correction — 2026-10-03
+
+The subsequent real-Redis CI run exposed a BullMQ 6 API mismatch: `queue.client` was removed, so durability verification received `undefined`. The unit mock still exposed that old getter. Queue activation now obtains the Redis client through `queue.getBackend().client`, and the mock mirrors that API. Eviction/persistence inspection, activation failure handling and queue scheduling remain enforced.
+
+The exact reported failure was reproduced locally before the fix using checksum-verified Redis 7.4.3 on loopback with its built-in defaults (`noeviction`, RDB snapshots enabled, AOF disabled), matching the CI Redis 7.4 configuration. After the fix, the exact focused command passed **2/2 real-Redis tests**. Full backend coverage then passed **89 files / 513 tests, zero skipped**, including the queue durability unit tests; configured coverage thresholds, backend lint and the final diff check passed. The disposable Redis server was stopped after verification.
+
+This completes the two formerly unavailable local Redis checks. It is local verification of the CI failure and its correction; GitHub Actions has not been rerun here. Cold `/play` and `/play` LCP work remain deferred as requested.

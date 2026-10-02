@@ -1,7 +1,7 @@
 import { beforeEach, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({ scheduler: vi.fn(), concurrency: vi.fn(), close: vi.fn(), add: vi.fn(), ready: vi.fn(), worker: vi.fn(), producer: vi.fn(), config: vi.fn(), info: vi.fn() }));
 vi.mock('bullmq', () => ({
-  Queue: class { constructor(name, options) { mocks.producer(name, options); this.client = Promise.resolve({ config: mocks.config, info: mocks.info }); this.upsertJobScheduler = mocks.scheduler; this.setGlobalConcurrency = mocks.concurrency; this.close = mocks.close; this.add = mocks.add; this.waitUntilReady = mocks.ready; } on() {} },
+  Queue: class { constructor(name, options) { mocks.producer(name, options); this.getBackend = () => ({ client: Promise.resolve({ config: mocks.config, info: mocks.info }) }); this.upsertJobScheduler = mocks.scheduler; this.setGlobalConcurrency = mocks.concurrency; this.close = mocks.close; this.add = mocks.add; this.waitUntilReady = mocks.ready; } on() {} },
   Worker: class { constructor(name, run, options) { mocks.worker(name, run, options); } on() {} close() { return mocks.close(); } },
 }));
 import { enqueueMaintenance, maintenanceQueueHealth, queueConnection, startMaintenanceQueue } from '../maintenanceQueue.js';
