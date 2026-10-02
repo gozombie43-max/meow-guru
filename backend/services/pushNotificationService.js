@@ -1,3 +1,4 @@
+import { firebaseProvider } from '../infrastructure/dependencyBoundary.js';
 import {
   getPushDevicesCollection,
   getUsersCollection,
@@ -267,7 +268,7 @@ export async function sendPushToUser(
     await getFirebaseMessaging();
 
   const result =
-    await firebaseMessaging.sendEachForMulticast({
+    await firebaseProvider.execute(() => firebaseMessaging.sendEachForMulticast({
       fids,
 
       data: {
@@ -279,7 +280,7 @@ export async function sendPushToUser(
       android: {
         priority: "high",
       },
-    });
+    }));
 
   const invalidFids = [];
 
@@ -536,7 +537,7 @@ export async function sendPushToAllUsers({
     const batch = fids.slice(i, i + 500);
 
     const result =
-      await firebaseMessaging.sendEachForMulticast({
+      await firebaseProvider.execute(() => firebaseMessaging.sendEachForMulticast({
         fids: batch,
 
         data: {
@@ -548,7 +549,7 @@ export async function sendPushToAllUsers({
         android: {
           priority: "high",
         },
-      });
+      }));
 
     successCount += result.successCount;
     failureCount += result.failureCount;

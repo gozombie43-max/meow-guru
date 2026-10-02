@@ -2,6 +2,7 @@ import { getMongoDB } from "../config/mongodb.js";
 import { claimJob, renewJob, completeJob } from "../infrastructure/durableQueue.js";
 import { generateConceptGroups } from "../ai/conceptGrouping.js";
 import { GROUPING_COLLECTION, validateConceptGroups } from "./questions/conceptGroupService.js";
+import { withTrace, withTraceCarrier } from '../infrastructure/tracing.js';
 
 const LEASE_MS = 240000;
 export async function processConceptGroupingJob(generate = generateConceptGroups) {
@@ -14,14 +15,14 @@ export async function processConceptGroupingJob(generate = generateConceptGroups
   }, 30000);
   heartbeat.unref();
   try {
-    const generated = await generate(job.scope, job.concepts);
+    const generated = await withTraceCarrier(job.trace, () => withTrace('job.concept-grouping', { 'job.attempt': job.attempts }, () => generate(job.scope, job.concepts)));
     const groups = validateConceptGroups(generated.output, job.concepts);
     if (!owned || !await completeJob(collection, job, { groups, model: generated.model, usage: generated.usage, version: job.version })) throw new Error("Grouping lease expired");
     return { id: job._id, status: "completed", scope: job.scope, concepts: job.concepts.length, groups: groups.length };
   } catch (error) {
     const retry = job.attempts < 3;
     await collection.updateOne({ _id: job._id, owner: job.owner, status: "running", leaseUntil: { $gt: new Date() } }, {
-      $set: { status: retry ? "queued" : "failed", error: String(error.message).slice(0, 300), availableAt: new Date(Date.now() + job.attempts * 15000) },
+      $set: { status: retry ? "queued" : "failed", error: String(error.message).slice(0, 300), availableAt: new Date(Date.now() + Math.round(15000 * 2 ** (job.attempts - 1) * (0.8 + Math.random() * 0.6))) },
       $unset: { owner: "", leaseUntil: "" },
     });
     return { id: job._id, status: retry ? "retrying" : "failed", scope: job.scope, error: String(error.message).slice(0, 300) };

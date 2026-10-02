@@ -339,7 +339,8 @@ export const getInboxHandler = async (req, res, next) => {
     const now = new Date();
 
     const lastReadAllAt = await repo.getUserLastReadAllAt(req.user.id);
-    const { items, total, unreadCount } = await repo.getInboxItems(req.user.id, lastReadAllAt, now, page, limit);
+    const cursorMode = req.query.pagination === 'cursor';
+    const { items, total, unreadCount, nextCursor, hasMore } = await repo.getInboxItems(req.user.id, lastReadAllAt, now, page, limit, cursorMode ? { cursor: req.query.cursor } : undefined);
 
     const ids = items.map((item) => item._id);
     const readDocs = await repo.getReadReceiptsForIds(req.user.id, ids);
@@ -357,7 +358,8 @@ export const getInboxHandler = async (req, res, next) => {
       page,
       limit,
       total,
-      totalPages: Math.ceil(total / limit),
+      totalPages: total === undefined ? undefined : Math.ceil(total / limit),
+      ...(cursorMode ? { nextCursor, hasMore } : {}),
     });
   } catch (error) {
     next(error);

@@ -1,0 +1,43 @@
+rule_files:
+  - slo-rules.yml
+evaluation_interval: 1m
+tests:
+  - name: healthy traffic preserves the error budget
+    interval: 1m
+    input_series:
+      - series: 'meow_http_requests_total{method="GET",route="/api/training/dashboard",status="200"}'
+        values: '0+999x360'
+      - series: 'meow_http_requests_total{method="GET",route="/api/training/dashboard",status="500"}'
+        values: '0+1x360'
+      - series: 'up{job="meow-backend",instance="fixture"}'
+        values: '1x360'
+    alert_rule_test:
+      - eval_time: 6h
+        alertname: MeowFastErrorBudgetBurn
+        exp_alerts: []
+      - eval_time: 6h
+        alertname: MeowSlowErrorBudgetBurn
+        exp_alerts: []
+      - eval_time: 6h
+        alertname: MeowMetricsMissing
+        exp_alerts: []
+  - name: sustained failures burn both windows
+    interval: 1m
+    input_series:
+      - series: 'meow_http_requests_total{method="POST",route="/api/training/sessions",status="200"}'
+        values: '0+98x360'
+      - series: 'meow_http_requests_total{method="POST",route="/api/training/sessions",status="500"}'
+        values: '0+2x360'
+      - series: 'up{job="meow-backend",instance="fixture"}'
+        values: '1x360'
+    alert_rule_test:
+      - eval_time: 6h
+        alertname: MeowFastErrorBudgetBurn
+        exp_alerts:
+          - exp_labels: { severity: page }
+            exp_annotations: { summary: 'API availability consumes the 99.9% monthly budget rapidly' }
+      - eval_time: 6h
+        alertname: MeowSlowErrorBudgetBurn
+        exp_alerts:
+          - exp_labels: { severity: ticket }
+            exp_annotations: { summary: 'API availability has sustained error budget consumption' }

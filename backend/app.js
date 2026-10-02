@@ -1,5 +1,11 @@
 import { isTrustedOrigin } from './auth/requestOrigin.js';
 import { requestLogging } from './infrastructure/logger.js';
+import { requestTrace } from './infrastructure/tracing.js';
+import { optionalWorkAdmission } from './middleware/overload.js';
+import { metricsHandler } from './infrastructure/metrics.js';
+import { redisHealth } from './config/redis.js';
+import { maintenanceQueueHealth } from './infrastructure/maintenanceQueue.js';
+import { dependencyHealth } from './infrastructure/dependencyBoundary.js';
 import { checkReadiness } from './infrastructure/readiness.js';
 import { requestBodyLimits } from './middleware/requestBodyLimits.js';
 import { getReleaseId } from './infrastructure/releaseInfo.js';
@@ -48,6 +54,7 @@ function lazyRouter(loader) {
 
 export async function createApp({ isReady, isShuttingDown, quizOnlyMode = process.env.QUIZ_ONLY_MODE === 'true' }) {
   const app = express();
+  app.use(requestTrace);
   app.use(requestLogging);
   app.set('trust proxy', 1);
 
@@ -78,7 +85,6 @@ export async function createApp({ isReady, isShuttingDown, quizOnlyMode = proces
   // Keep legacy question images readable while their stored references are migrated.
   app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-  app.use(trainingIngressLimiter, globalLimiter);
   app.use(passport.initialize());
 
   app.get('/', (_req, res) =>
@@ -97,6 +103,13 @@ export async function createApp({ isReady, isShuttingDown, quizOnlyMode = proces
 
     return res.status(healthy ? 200 : 503).json({
       ok: healthy,
+      dependencies: {
+        mongo: healthy ? 'healthy' : 'unavailable',
+        redis: redisHealth(),
+        maintenanceQueue: maintenanceQueueHealth(),
+        storage: dependencyHealth().storage?.circuit === 'open' ? 'degraded' : 'unknown',
+        workers: quizOnlyMode || process.env.RUN_EMBEDDED_WORKERS === 'false' ? 'disabled' : 'unknown',
+      },
       state: isShuttingDown() ? 'draining' : healthy ? 'ready' : 'starting',
       service: 'backend',
       releaseId: getReleaseId(),
@@ -112,6 +125,9 @@ export async function createApp({ isReady, isShuttingDown, quizOnlyMode = proces
   app.get('/live', (_req, res) => res.json({ ok: true, mode: quizOnlyMode ? 'quiz-only' : 'full' }));
   app.get('/health', healthCheck);
   app.get('/api/health', healthCheck);
+  app.get('/metrics', metricsHandler);
+  app.use(trainingIngressLimiter, globalLimiter);
+  app.use(optionalWorkAdmission);
 
   app.use((req, res, next) => {
     if (!isShuttingDown()) return next();

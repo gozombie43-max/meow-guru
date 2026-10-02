@@ -24,6 +24,7 @@ async function shutdown(code = 0) {
     stopMetrics();
     await disconnectMongoDB();
     await healthServer?.close();
+    await globalThis.__shutdownTelemetry?.();
   } catch (error) {
     logger.error({ err: error }, 'attachment worker shutdown failed');
     code = 1;

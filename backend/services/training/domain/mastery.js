@@ -114,7 +114,10 @@ export function buildIntelligence(sessions, now = Date.now(), durablePrimary = f
   const rows = sessions
     .flatMap((s) => s.result?.rows || [])
     .filter((r) => r.attempted);
-  const speed = rows.length
+  const compact = sessions.filter(s => s.dashboardEvidence?.version === 1);
+  const legacyRows = sessions.filter(s => s.dashboardEvidence?.version !== 1).flatMap(s => s.result?.rows || []).filter(r => r.attempted);
+  const attemptsForSpeed = compact.reduce((n, s) => n + s.dashboardEvidence.attempted, 0) + legacyRows.length;
+  const speed = compact.length ? (compact.reduce((n, s) => n + s.dashboardEvidence.speedSum, 0) + legacyRows.reduce((n, r) => n + (r.correct ? Math.min(1, r.target / Math.max(1, r.seconds)) : 0), 0)) / Math.max(1, attemptsForSpeed) : rows.length
     ? rows.reduce(
         (n, r) =>
           n + (r.correct ? Math.min(1, r.target / Math.max(1, r.seconds)) : 0),

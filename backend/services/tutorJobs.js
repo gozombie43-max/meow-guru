@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { getMongoDB } from '../config/mongodb.js';
 import { putObject } from '../infrastructure/objectStorage.js';
+import { traceCarrier } from '../infrastructure/tracing.js';
 
 const jobs = () => getMongoDB().collection('runtimeJobs');
 export async function enqueueTutorJob(userId, input, file, idempotencyKey) {
@@ -10,7 +11,7 @@ export async function enqueueTutorJob(userId, input, file, idempotencyKey) {
   const payloadHash = hash(bytes);
   const id = hash(`${userId}:${idempotencyKey || randomUUID()}`);
   const key = `tutor-jobs/${id}/input.json`;
-  const doc = { _id: id, kind: 'tutor', userId, payloadHash, inputKey: key, status: 'staging', attempts: 0, createdAt: new Date(), availableAt: new Date(), expiresAt: new Date(Date.now() + 7 * 86400000) };
+  const doc = { _id: id, kind: 'tutor', userId, payloadHash, inputKey: key, trace: traceCarrier(), status: 'staging', attempts: 0, createdAt: new Date(), availableAt: new Date(), expiresAt: new Date(Date.now() + 7 * 86400000) };
   try { await jobs().insertOne(doc); }
   catch (error) {
     if (error.code !== 11000) throw error;

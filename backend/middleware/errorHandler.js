@@ -9,6 +9,7 @@ import { logger } from "../infrastructure/logger.js";
 export function errorHandler(err, req, res, _next) {
   logger.error({ err, requestId: req.id }, "Unhandled request error");
   const status = err.status || err.statusCode || 500;
+  if (status === 503 || err.retryAfter) res.set('Retry-After', String(err.retryAfter || 3));
   res.status(status).json({
     error:
       process.env.NODE_ENV === "production" && status >= 500

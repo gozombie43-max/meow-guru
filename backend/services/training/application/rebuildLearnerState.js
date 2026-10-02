@@ -1,4 +1,5 @@
 import { withMongoTransaction } from '../../../config/mongodb.js';
+import { dashboardEvidence } from '../domain/dashboardEvidence.js';
 import {
   applySessionToLearnerState,
   createLearnerState,
@@ -91,6 +92,9 @@ export async function rebuildLearnerStateForPair(db, userId, exam, { maxRetries 
           { $set: { learningApplied: true, learningAppliedVersion: META_VERSION } },
           { session: mongoSession },
         );
+        if (sessions.length) await db.collection('trainingSessions').bulkWrite(sessions.map(item => ({ updateOne: {
+          filter: { _id: item._id }, update: { $set: { dashboardEvidence: dashboardEvidence(item) } },
+        } })), { ordered: false, session: mongoSession });
       });
       return { userId, exam, retries: retry, sourceSessionCount: sessions.length, sourceAttemptCount };
     } catch (error) {

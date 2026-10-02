@@ -41,6 +41,9 @@ export function useQuizSessionLifecycle({ subjectConfig, title, slug, mode, rout
   const resumeAppliedRef = useRef(false);
 
   const currentQ = questions[currentIndex];
+  useEffect(() => {
+    if (started && !showAnalytics && hasMore && currentIndex >= questions.length - 3) void fetchMore();
+  }, [started, showAnalytics, hasMore, currentIndex, questions.length, fetchMore]);
   const answers = useQuizAnswerLifecycle({ currentQ, token, timer, state, dispatch });
   const initialization = state.restored;
   const savedIndex = resumeEntry?.currentIndex ?? 0;

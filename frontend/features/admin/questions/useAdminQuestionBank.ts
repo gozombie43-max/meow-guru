@@ -32,6 +32,7 @@ export function useAdminQuestionBank() {
 
   // Pagination
   const [page, setPage] = useState(1);
+  const cursorsRef = useRef<{ filter: string; pages: Map<number, { cursor: string; before?: boolean }> }>({ filter: '', pages: new Map() });
   const PAGE_SIZE = 50;
   const filterKey = JSON.stringify([filterTopic, filterSubject, filterDifficulty, filterExam, filterQuizName, search, sortOrder]);
   const [previousFilterKey, setPreviousFilterKey] = useState(filterKey);
@@ -77,7 +78,14 @@ export function useAdminQuestionBank() {
       if (filterExam) params.set("exam", filterExam);
       if (filterQuizName) params.set("quizName", filterQuizName);
       params.set('limit', String(PAGE_SIZE));
-      params.set('offset', String((page - 1) * PAGE_SIZE));
+      params.set('pagination', 'cursor');
+      if (cursorsRef.current.filter !== filterKey) cursorsRef.current = { filter: filterKey, pages: new Map() };
+      const boundary = cursorsRef.current.pages.get(page);
+      if (page > 1 && boundary) {
+        params.set('cursor', boundary.cursor);
+        if (boundary.before) params.set('before', 'true');
+      } else if (page > 1) params.set('last', 'true');
+      if (page === 1 || params.has('last')) params.set('includeTotal', 'true');
       params.set('sort', sortOrder);
       if (search) params.set('search', search);
       if (page === 1) params.set('includeFacets', 'true');
@@ -90,9 +98,14 @@ export function useAdminQuestionBank() {
       const data = await res.json();
       if (questionsRequestRef.current !== controller) return;
       setQuestions(Array.isArray(data) ? data : data.questions || []);
-      setTotalCount(data.count ?? 0);
-      const lastPage = Math.max(1, Math.ceil((data.count ?? 0) / PAGE_SIZE));
-      if (page > lastPage) setPage(lastPage);
+      if (data.total !== undefined) {
+        setTotalCount(data.total);
+        const lastPage = Math.max(1, Math.ceil(data.total / PAGE_SIZE));
+        if (page > lastPage) { cursorsRef.current.pages.clear(); setPage(lastPage); }
+      }
+      if (data.nextCursor) cursorsRef.current.pages.set(page + 1, { cursor: data.nextCursor });
+      if (data.prevCursor) cursorsRef.current.pages.set(page - 1, { cursor: data.prevCursor, before: true });
+      if (!data.questions?.length && page > 1) { cursorsRef.current.pages.clear(); setPage(1); }
       if (data.facets) setFacets(data.facets);
       setSelected(new Set());
     } catch (e: unknown) {
@@ -105,7 +118,7 @@ export function useAdminQuestionBank() {
         setLoading(false);
       }
     }
-  }, [filterTopic, filterSubject, filterDifficulty, filterExam, filterQuizName, page, search, sortOrder]);
+  }, [filterTopic, filterSubject, filterDifficulty, filterExam, filterQuizName, page, search, sortOrder, filterKey]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => void fetchQuestions(), 200);

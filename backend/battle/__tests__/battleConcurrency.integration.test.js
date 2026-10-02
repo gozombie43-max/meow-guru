@@ -208,6 +208,48 @@ describe("Battle Phase-15 replica-set races", () => {
     expect(await mongo.getBattleSeasonRewardsCollection().countDocuments({ seasonKey: "old" })).toBe(0);
   });
 
+  it('recovers crashed/legacy finalization while leaving a live lease untouched', async () => {
+    const now = new Date();
+    await mongo.getBattleSeasonsCollection().insertMany([
+      { key: 'expired', status: 'finalizing', endsAt: new Date(now - 1000), finalizationOwner: 'crashed', finalizationLeaseUntil: new Date(now - 1000) },
+      { key: 'legacy', status: 'finalizing', endsAt: new Date(now - 1000), finalizingAt: new Date(now - 180000) },
+      { key: 'busy', status: 'finalizing', endsAt: new Date(now - 1000), finalizationOwner: 'live', finalizationLeaseUntil: new Date(now.getTime() + 120000) },
+    ]);
+    await mongo.getBattleSeasonProfilesCollection().insertMany(['expired', 'legacy', 'busy'].flatMap(seasonKey => ['a', 'b'].map(userId => ({ seasonKey, userId, rating: 1200, wins: 3, gamesPlayed: 5, tier: 'Silver' }))));
+    await seasonWorker.runBattleSeasonWorkerOnce();
+    await seasonWorker.runBattleSeasonWorkerOnce();
+    for (const key of ['expired', 'legacy']) {
+      expect((await mongo.getBattleSeasonsCollection().findOne({ key })).status).toBe('completed');
+      const rewards = await mongo.getBattleSeasonRewardsCollection().find({ seasonKey: key }).sort({ finalRank: 1 }).toArray();
+      expect(rewards.map(row => [row.userId, row.finalRank])).toEqual([['a', 1], ['b', 2]]);
+    }
+    expect((await mongo.getBattleSeasonsCollection().findOne({ key: 'busy' })).finalizationOwner).toBe('live');
+    expect(await mongo.getBattleSeasonRewardsCollection().countDocuments({ seasonKey: 'busy' })).toBe(0);
+  });
+
+  it('rolls back rewards when another worker replaces the finalization owner', async () => {
+    const db = mongo.getMongoDB(), now = new Date();
+    const seasons = mongo.getBattleSeasonsCollection(), rewards = mongo.getBattleSeasonRewardsCollection();
+    await seasons.insertOne({ key: 'fenced', status: 'active', endsAt: new Date(now - 1000) });
+    await mongo.getBattleSeasonProfilesCollection().insertOne({ seasonKey: 'fenced', userId: 'a', rating: 1200, wins: 3, gamesPlayed: 5, tier: 'Silver' });
+    const originalCollection = db.collection.bind(db), originalWrite = rewards.bulkWrite.bind(rewards);
+    const lookup = vi.spyOn(db, 'collection').mockImplementation(name => name === 'battleSeasonRewards' ? rewards : originalCollection(name));
+    const write = vi.spyOn(rewards, 'bulkWrite').mockImplementationOnce(async (...args) => {
+      const result = await originalWrite(...args);
+      // Simulate a lease recovery on another instance before the old commit.
+      await seasons.updateOne({ key: 'fenced' }, { $set: { finalizationOwner: 'replacement', finalizationLeaseUntil: new Date(Date.now() + 120000) } });
+      return result;
+    });
+    try { await expect(seasonWorker.runBattleSeasonWorkerOnce()).rejects.toThrow('lease lost'); }
+    finally { write.mockRestore(); lookup.mockRestore(); }
+    expect(await rewards.countDocuments({ seasonKey: 'fenced' })).toBe(0);
+    expect((await seasons.findOne({ key: 'fenced' })).finalizationOwner).toBe('replacement');
+    await seasons.updateOne({ key: 'fenced' }, { $set: { finalizationLeaseUntil: new Date(Date.now() - 1000) } });
+    await seasonWorker.runBattleSeasonWorkerOnce();
+    expect(await rewards.countDocuments({ seasonKey: 'fenced' })).toBe(1);
+    expect((await seasons.findOne({ key: 'fenced' })).status).toBe('completed');
+  });
+
   it("delivers a user-room event across two Socket.IO instances", async () => {
     await mongo.getUsersCollection().insertMany([{ id: 'user-a' }, { id: 'user-b' }]);
     const tokenA = (await createSession({ id: 'user-a' })).token;

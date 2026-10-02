@@ -1,4 +1,5 @@
 import express from 'express';
+import { idempotency } from '../middleware/idempotency.js';
 import { protect } from '../middleware/protect.js';
 import adminAuth from '../middleware/auth.js';
 
@@ -52,13 +53,15 @@ router.post('/admin/slots/seed', adminAuth, adminSeedSlots);
 // ─── User Attempt Routes (protect: JWT token) ─────────────
 
 // POST /:examSlug/:testId/start — Start a new mock test attempt
+// Start already deduplicates by its stored attempt key and returns live saved
+// progress. Replaying the original JSON snapshot would undo reload recovery.
 router.post('/:examSlug/:testId/start', protect, startMockTest);
 
 // PATCH /attempt/:attemptId/autosave — Autosave progress
 router.patch('/attempt/:attemptId/autosave', protect, autosaveAttempt);
 
 // POST /attempt/:attemptId/submit — Submit and grade attempt
-router.post('/attempt/:attemptId/submit', protect, submitAttemptHandler);
+router.post('/attempt/:attemptId/submit', protect, idempotency('mock.submit'), submitAttemptHandler);
 
 // GET /attempt/:attemptId — Get attempt details
 router.get('/attempt/:attemptId', protect, getAttemptDetails);

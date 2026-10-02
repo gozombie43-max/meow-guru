@@ -1,4 +1,8 @@
 import { getMongoDB } from "../../config/mongodb.js";
+import { createTieredCache } from '../../infrastructure/tieredCache.js';
+import { createHash } from 'node:crypto';
+import { heavyMongo } from '../../infrastructure/dependencyBoundary.js';
+import { publishCacheInvalidation, onCacheInvalidation } from '../../infrastructure/cacheInvalidation.js';
 import { invalidateTrainingCatalog } from '../training/catalogCache.js';
 import { invalidateQuestionCacheRevision, getQuestionRevision } from './questionCache.js';
 import { isNormalizedQuestionKeysEnabled } from './questionCache.js';
@@ -8,6 +12,8 @@ const REVISION_ID = "revision";
 // Recovery for imports performed outside the application write services.
 const MAX_AGE_MS = 60 * 60 * 1000;
 const pending = new Map();
+const metadataCache = createTieredCache();
+onCacheInvalidation(() => { invalidateTrainingCatalog(); invalidateQuestionCacheRevision(); });
 
 export async function invalidateQuestionMetadata() {
   invalidateTrainingCatalog();
@@ -17,6 +23,7 @@ export async function invalidateQuestionMetadata() {
     { $inc: { revision: 1 } },
     { upsert: true },
   );
+  await publishCacheInvalidation();
   try {
     const { fetchTopicCountSnapshot } = await import("./topicCountSnapshot.js");
     await fetchTopicCountSnapshot();
@@ -33,6 +40,10 @@ export async function readQuestionMetadata(params, build) {
     normalized: isNormalizedQuestionKeysEnabled(), schema: 3,
   });
   const revision = await getQuestionRevision();
+  return metadataCache.read(`question-meta:${revision}:${createHash('sha256').update(key).digest('hex')}`, () => readPersistedMetadata(collection, key, revision, params, build));
+}
+
+async function readPersistedMetadata(collection, key, revision, params, build) {
   const cached = await collection.findOne({ _id: key });
   if (cached?.revision === revision && Date.now() - new Date(cached.updatedAt).getTime() < MAX_AGE_MS) {
     return cached.data;
@@ -40,7 +51,7 @@ export async function readQuestionMetadata(params, build) {
   const pendingKey = `${key}:${revision}`;
   if (pending.has(pendingKey)) return pending.get(pendingKey);
   const work = (async () => {
-    const data = await build();
+    const data = await heavyMongo.execute(build);
     // A concurrent upload changes the revision. Older builds can never be reused
     // as current metadata, even across separate API/worker processes.
     await collection.updateOne({ _id: key }, {

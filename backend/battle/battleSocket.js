@@ -1,4 +1,5 @@
 import { assertSession } from '../auth/sessions.js';
+import { tracedSocketListener } from '../infrastructure/tracing.js';
 import { registerBattleRelay } from "../infrastructure/battleOutbox.js";
 import { finishBattle } from "./battleCompletion.js";
 export { finishBattle, sendBattleResultNotifications } from "./battleCompletion.js";
@@ -105,6 +106,7 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
   });
 
   io.on('connection', (socket) => {
+    const onEvent = (event, listener) => socket.on(event, tracedSocketListener(socket, event, listener));
     socket.use(async (_packet, next) => {
       try {
         socket.user = await assertSession(verifyToken(socket.handshake.auth.token));
@@ -124,22 +126,22 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
     let lastInviteTime = 0;
     let lastRematchTime = 0;
     let lastAnswerEventAt = 0;
-    socket.on('matchmaking:join', async (raw) => {
+    onEvent('matchmaking:join', async (raw) => {
       if (!canUseMatchmaking(socket.user.id)) return socket.emit('matchmaking:error', { code: 'MATCHMAKING_UNAVAILABLE', message: 'Matchmaking is temporarily unavailable.' });
       const parsed = matchmakingSchema.safeParse(raw);
       if (!parsed.success) return socket.emit('matchmaking:error', { message: 'Invalid matchmaking settings.' });
       try { const ticket = await joinMatchmakingQueue({ userId: socket.user.id, displayName: socket.user.name || socket.user.email || 'Player', ...parsed.data }); socket.emit('matchmaking:queued', { queuedAt: ticket.queuedAt, rating: ticket.rating, subject: ticket.subject, topic: ticket.topic, questionCount: ticket.questionCount }); }
       catch (error) { console.error('matchmaking:join:', error); socket.emit('matchmaking:error', { message: 'Could not enter matchmaking.' }); }
     });
-    socket.on('matchmaking:cancel', async () => { await cancelMatchmakingQueue(socket.user.id).catch(console.error); socket.emit('matchmaking:cancelled'); });
-    socket.on('battle:challengeUser', async (raw) => {
+    onEvent('matchmaking:cancel', async () => { await cancelMatchmakingQueue(socket.user.id).catch(console.error); socket.emit('matchmaking:cancelled'); });
+    onEvent('battle:challengeUser', async (raw) => {
       if (!canCreateBattle(socket.user.id)) return socket.emit('room:error', { message: 'New battles are temporarily unavailable.' });
       const parsed = socialChallengeSchema.safeParse(raw); if (!parsed.success || parsed.data.targetUserId === socket.user.id) return;
       try { const { targetUserId, subject, topic, questionCount } = parsed.data, code = await createRoom(socket.id, socket.user.name || 'Player', subject, topic, questionCount, socket.user.id); socket.join(code); const payload = { roomCode: code, challenger: { userId: socket.user.id, name: socket.user.name || 'Player' }, subject, topic, questionCount }; io.to(`user:${targetUserId}`).emit('battle:challengeReceived', payload); void sendPushToUser(targetUserId, { title: `${payload.challenger.name} challenged you ⚔️`, body: `Join the ${subject} battle.`, route: `/battle?join=${code}`, category: 'battleInvites', data: { type: 'battle_invite', roomCode: code, challengerUserId: socket.user.id }, centerKey: `social-battle:${code}:${targetUserId}` }).catch(console.error); socket.emit('battle:challengeSent', { roomCode: code, targetUserId }); }
       catch (error) { console.error('battle:challengeUser:', error); socket.emit('room:error', { message: 'Could not send challenge.' }); }
     });
 
-    socket.on('battle:resume', async ({ code = null } = {}) => {
+    onEvent('battle:resume', async ({ code = null } = {}) => {
       try {
         const userId = String(socket.user?.id || '');
         if (!userId) return;
@@ -195,7 +197,7 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
     });
 
     // ── Create room ──────────────────────────────────────
-    socket.on('room:create', async ({ playerName, subject = 'mathematics', topic = 'all', questionCount = 10 }) => {
+    onEvent('room:create', async ({ playerName, subject = 'mathematics', topic = 'all', questionCount = 10 }) => {
       if (!canCreateBattle(socket.user.id)) return socket.emit('room:error', { message: 'New battles are temporarily unavailable.' });
       const now = Date.now();
       if (now - lastRoomCreateTime < ROOM_CREATE_COOLDOWN_MS) {
@@ -213,7 +215,7 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
     // Waiting-room cancellation is explicit so a cancelled room is not
     // immediately restored by battle:resume on the next connection.
     // In active rooms, leaving forfeits the match and grants the opponent an instant win.
-    socket.on('room:leave', async ({ code } = {}) => {
+    onEvent('room:leave', async ({ code } = {}) => {
       const normalizedCode = String(code ?? '').replace(/\D/g, '').slice(0, 4);
       const room = normalizedCode.length === 4 ? await getRoom(normalizedCode) : null;
       const userId = String(socket.user?.id || '');
@@ -240,7 +242,7 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
       socket.emit('room:left');
     });
 
-    socket.on('game:forfeit', async ({ code } = {}) => {
+    onEvent('game:forfeit', async ({ code } = {}) => {
       const normalizedCode = String(code ?? '').replace(/\D/g, '').slice(0, 4);
       const userId = String(socket.user?.id || '');
       const finishedRoom = await forfeitRoom(normalizedCode, userId);
@@ -250,7 +252,7 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
     });
 
     // ── Invite opponent ──────────────────────────────────
-    socket.on('room:invite', async ({ code, email }) => {
+    onEvent('room:invite', async ({ code, email }) => {
       const now = Date.now();
       if (now - lastInviteTime < 10000) {
         socket.emit('room:inviteResult', {
@@ -352,7 +354,7 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
     });
 
     // ── Rematch ──────────────────────────────────────────
-    socket.on('battle:rematch', async ({ rematchToken, playerName }) => {
+    onEvent('battle:rematch', async ({ rematchToken, playerName }) => {
       try {
         if (!canCreateBattle(socket.user.id)) {
           socket.emit('battle:rematchResult', { ok: false, message: 'New battles are temporarily unavailable.' });
@@ -421,7 +423,7 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
     });
 
     // ── Join room ────────────────────────────────────────
-    socket.on('room:join', async ({ code, playerName }) => {
+    onEvent('room:join', async ({ code, playerName }) => {
       const normalizedCode = String(code ?? '').replace(/\D/g, '').slice(0, 4);
       if (normalizedCode.length !== 4) {
         socket.emit('room:error', { message: 'Enter 4-digit room code' });
@@ -450,7 +452,7 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
     });
 
     // ── Submit answer ────────────────────────────────────
-    socket.on('game:answer', async (rawPayload) => {
+    onEvent('game:answer', async (rawPayload) => {
       if (Date.now() - lastAnswerEventAt < 150) return;
       lastAnswerEventAt = Date.now();
       const parsed = answerPayloadSchema.safeParse(rawPayload);
@@ -508,7 +510,7 @@ export function initBattleSocket(httpServer, corsOrigin, adapterFactory = null) 
     });
 
     // ── Disconnect ───────────────────────────────────────
-    socket.on('disconnect', async (reason) => {
+    onEvent('disconnect', async (reason) => {
       void cancelMatchmakingQueue(socket.user.id).catch((error) => console.error('Matchmaking disconnect cleanup:', error));
       try {
         const found = await markSocketDisconnected(socket.id, {

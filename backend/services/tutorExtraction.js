@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 import { PDFParse } from 'pdf-parse';
 import sharp from 'sharp';
 import { createWorker, PSM } from 'tesseract.js';
+import { ocrBudget, pdfBudget, imageBudget } from '../infrastructure/dependencyBoundary.js';
 async function extractPdfText(file) {
   const parser = new PDFParse({ data: file.buffer });
   try {
@@ -31,22 +32,22 @@ function hasUsefulPdfText(text) {
 }
 
 async function prepareImageForOcr(buffer) {
-  return sharp(buffer, { limitInputPixels: 40000000 })
+  return imageBudget.execute(() => sharp(buffer, { limitInputPixels: 40000000 })
     .rotate()
     .resize({ width: 2200, height: 2200, fit: "inside", withoutEnlargement: false })
     .grayscale()
     .normalize()
     .sharpen({ sigma: 1 })
     .png()
-    .toBuffer();
+    .toBuffer());
 }
 
 async function prepareImageForVision(buffer) {
-  const output = await sharp(buffer, { limitInputPixels: 40000000 })
+  const output = await imageBudget.execute(() => sharp(buffer, { limitInputPixels: 40000000 })
     .rotate()
     .resize({ width: 1600, height: 1600, fit: "inside", withoutEnlargement: true })
     .jpeg({ quality: 86, mozjpeg: true })
-    .toBuffer();
+    .toBuffer());
 
   return {
     type: "image_url",
@@ -105,7 +106,7 @@ export async function extractAttachmentContext(attachment) {
 
   if (attachment.mimetype.startsWith("image/")) {
     const [ocr, visionImage] = await Promise.all([
-      recognizeImageText(attachment.buffer),
+      ocrBudget.execute(() => recognizeImageText(attachment.buffer)),
       prepareImageForVision(attachment.buffer),
     ]);
 
@@ -121,7 +122,7 @@ export async function extractAttachmentContext(attachment) {
   }
 
   if (attachment.mimetype === "application/pdf") {
-    const directText = await extractPdfText(attachment);
+    const directText = await pdfBudget.execute(() => extractPdfText(attachment));
     const lines = [`Attached PDF: ${attachment.originalname || "document.pdf"}`];
 
     if (hasUsefulPdfText(directText)) {
@@ -131,11 +132,11 @@ export async function extractAttachmentContext(attachment) {
       return context;
     }
 
-    const pages = await renderPdfPagesForOcr(attachment);
+    const pages = await pdfBudget.execute(() => renderPdfPagesForOcr(attachment));
     const ocrPages = [];
 
     for (const page of pages) {
-      const ocr = await recognizeImageText(page.buffer);
+      const ocr = await ocrBudget.execute(() => recognizeImageText(page.buffer));
       if (ocr.text) {
         ocrPages.push(`Page ${page.pageNumber} OCR (confidence ${ocr.confidence}%):\n${ocr.text}`);
       }

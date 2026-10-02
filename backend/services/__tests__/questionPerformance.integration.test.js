@@ -31,6 +31,32 @@ beforeEach(async () => {
 afterAll(async () => { await disconnectMongoDB(); await server?.stop(); vi.unstubAllEnvs(); });
 
 describe('bounded question reads', () => {
+  it('supports last and previous admin pages without offsets', async () => {
+    const last = await fetchQuestions({ pagination: 'cursor', sort: 'asc', limit: 50, last: 'true', questionType: 'all' });
+    expect(last.questions.map(q => q.id)).toEqual(['q450']);
+    expect(last.total).toBe(451);
+    const previous = await fetchQuestions({ pagination: 'cursor', sort: 'asc', limit: 50, before: 'true', cursor: last.prevCursor, questionType: 'all' });
+    expect(previous.questions[0].id).toBe('q400');
+    expect(previous.questions.at(-1).id).toBe('q449');
+    const next = await fetchQuestions({ pagination: 'cursor', sort: 'asc', limit: 50, cursor: previous.nextCursor, questionType: 'all' });
+    expect(next.questions[0].id).toBe('q450');
+  });
+  it.each(['asc', 'desc'])('keyset pages preserve natural ordering, duplicate IDs, search, exam and facets (%s)', async sort => {
+    await db.collection('questions').insertOne({ id: 'q50', topic: 'algebra', subject: 'Mathematics', exam: 'SSC CGL', question: 'Example duplicate' });
+    const ids = [];
+    let cursor;
+    do {
+      const page = await fetchQuestions({ pagination: 'cursor', sort, exam: 'SSC CGL', search: 'Example', questionType: 'all', limit: 37, cursor, includeTotal: 'true', includeFacets: 'true' });
+      expect(page.total).toBe(251);
+      expect(page.facets.exams).toContain('SSC CHSL');
+      ids.push(...page.questions.map(q => q.id));
+      if (cursor) await expect(fetchQuestions({ pagination: 'cursor', sort, exam: 'other', cursor })).rejects.toMatchObject({ statusCode: 400 });
+      cursor = page.nextCursor;
+    } while (cursor);
+    expect(ids).toHaveLength(251);
+    expect(ids.filter(id => id === 'q50')).toHaveLength(2);
+    expect(ids).toEqual([...ids].sort((a, b) => a.localeCompare(b, 'en', { numeric: true, sensitivity: 'base' }) * (sort === 'desc' ? -1 : 1)));
+  });
   it('uses the natural ID index for both admin sort directions', async () => {
     for (const direction of [1, -1]) {
       const plan = await db.collection('questions').find({}).collation({ locale: 'en', numericOrdering: true, strength: 2 }).sort({ id: direction, _id: direction }).limit(50).explain('executionStats');

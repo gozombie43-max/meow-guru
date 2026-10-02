@@ -4,6 +4,7 @@ import { tutorChat } from '../services/tutorChatService.js';
 import { enqueueTutorJob, getTutorJob, cancelTutorJob } from '../services/tutorJobs.js';
 // backend/routes/aiRoutes.js
 import express from "express";
+import { idempotency } from '../middleware/idempotency.js';
 import multer from "multer";
 import { chatComplete } from "../ai/azureClient.js";
 import adminAuth from "../middleware/auth.js";
@@ -67,7 +68,7 @@ router.post('/diagram', protect, async (req, res, next) => {
 });
 
 // ── 1. Generate Questions ─────────────────────────────
-router.post("/generate-questions", adminAuth, async (req, res) => {
+router.post("/generate-questions", adminAuth, idempotency('ai.question.generate'), async (req, res) => {
   const { topic, difficulty = "medium", count = 5 } = req.body;
 
   if (!topic) return res.status(400).json({ error: "topic is required" });

@@ -1,4 +1,5 @@
 import express from "express";
+import { readKeysetPage } from '../infrastructure/keysetPage.js';
 import { z } from "zod";
 
 import {
@@ -150,6 +151,8 @@ router.get(
       const collection =
         getExamUpdatesCollection();
 
+      if (req.query.pagination === 'cursor') return res.json(await readKeysetPage(collection, { filter, scope: `exam-updates:${examSlug || 'all'}`, field: 'publishedAt', cursor: req.query.cursor, limit, includeTotal: !req.query.cursor }));
+
       const [items, total] =
         await Promise.all([
           collection
@@ -207,6 +210,8 @@ router.get(
 
       const filter =
         { examSlug };
+
+      if (req.query.pagination === 'cursor') return res.json(await readKeysetPage(collection, { filter, scope: `exam-updates:${examSlug}`, field: 'publishedAt', cursor: req.query.cursor, limit, includeTotal: !req.query.cursor }));
 
       const [items, total] =
         await Promise.all([

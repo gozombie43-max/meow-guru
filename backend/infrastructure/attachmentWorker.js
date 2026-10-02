@@ -5,6 +5,7 @@ import { claimJob, renewJob, completeJob, failJob } from './durableQueue.js';
 import { deleteObject } from './objectStorage.js';
 import { logger } from './logger.js';
 import { getReleaseId } from './releaseInfo.js';
+import { withTrace, withTraceCarrier } from './tracing.js';
 
 const workerId = randomUUID();
 let stopping = true;
@@ -34,7 +35,7 @@ function runChild(job) {
     const child = fork(new URL('./tutorJobChild.js', import.meta.url), [], {
       stdio: ['ignore', 'ignore', 'ignore', 'ipc'],
       windowsHide: true,
-      execArgv: ['--max-old-space-size=512'],
+      execArgv: ['--max-old-space-size=512', '--import', new URL('../instrumentation.js', import.meta.url).href],
     });
     activeChild = child;
     let message;
@@ -51,7 +52,7 @@ function runChild(job) {
       if (code === 0 && message?.result) resolve(message.result);
       else reject(new Error('Attachment child failed or timed out'));
     });
-    child.send({ key: job.inputKey });
+    child.send({ key: job.inputKey, trace: job.trace });
   });
 }
 
@@ -123,7 +124,7 @@ async function processJobs(db, jobs) {
           .catch(() => renewingChild?.kill());
       }, 10_000);
       try {
-        const result = await runChild(job);
+        const result = await withTraceCarrier(job.trace, () => withTrace('job.tutor', { 'job.attempt': job.attempts }, () => runChild(job)));
         await completeJob(jobs, job, result);
         logger.info({
           jobId: job._id,

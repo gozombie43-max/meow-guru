@@ -1,0 +1,34 @@
+groups:
+  - name: meow-service-objectives
+    rules:
+      - record: meow:availability_error_ratio:5m
+        expr: (sum(rate(meow_http_requests_total{status=~"5.."}[5m])) or vector(0)) / clamp_min(sum(rate(meow_http_requests_total[5m])), 0.001)
+      - record: meow:availability_error_ratio:1h
+        expr: (sum(rate(meow_http_requests_total{status=~"5.."}[1h])) or vector(0)) / clamp_min(sum(rate(meow_http_requests_total[1h])), 0.001)
+      - record: meow:availability_error_ratio:30m
+        expr: (sum(rate(meow_http_requests_total{status=~"5.."}[30m])) or vector(0)) / clamp_min(sum(rate(meow_http_requests_total[30m])), 0.001)
+      - record: meow:availability_error_ratio:6h
+        expr: (sum(rate(meow_http_requests_total{status=~"5.."}[6h])) or vector(0)) / clamp_min(sum(rate(meow_http_requests_total[6h])), 0.001)
+      - alert: MeowFastErrorBudgetBurn
+        expr: meow:availability_error_ratio:1h > 14.4 * 0.001 and meow:availability_error_ratio:5m > 14.4 * 0.001
+        labels: { severity: page }
+        annotations: { summary: 'API availability consumes the 99.9% monthly budget rapidly' }
+      - alert: MeowSlowErrorBudgetBurn
+        expr: meow:availability_error_ratio:6h > 6 * 0.001 and meow:availability_error_ratio:30m > 6 * 0.001
+        labels: { severity: ticket }
+        annotations: { summary: 'API availability has sustained error budget consumption' }
+      - record: meow:get_latency:p95
+        expr: histogram_quantile(0.95, sum by (le) (rate(meow_http_duration_seconds_bucket{method="GET"}[5m])))
+      - record: meow:mongo_latency:p95
+        expr: histogram_quantile(0.95, sum by (le) (rate(meow_dependency_duration_seconds_bucket{dependency="mongo"}[5m])))
+      - record: meow:answer_latency:p95
+        expr: histogram_quantile(0.95, sum by (le) (rate(meow_http_duration_seconds_bucket{operation="answer"}[5m])))
+      - record: meow:create_latency:p95
+        expr: histogram_quantile(0.95, sum by (le) (rate(meow_http_duration_seconds_bucket{route="/api/training/sessions",method="POST"}[5m])))
+      - record: meow:redis_latency:p95
+        expr: histogram_quantile(0.95, sum by (le) (rate(meow_dependency_duration_seconds_bucket{dependency="redis"}[5m])))
+      - alert: MeowMetricsMissing
+        expr: absent(up{job="meow-backend"}) or up{job="meow-backend"} == 0
+        for: 5m
+        labels: { severity: ticket }
+        annotations: { summary: 'Backend scrape is unavailable; inspect /live and /health' }

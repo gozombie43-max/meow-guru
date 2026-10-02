@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       concurrency:
-        description: 'Synthetic learners (run C1 before C5, and C5 before C10)'
+        description: 'Run C1, C5, C10, C25, C50, C100 in order; stop when a stage fails'
         required: true
         default: '1'
         type: choice
@@ -12,6 +12,9 @@ on:
           - '1'
           - '5'
           - '10'
+          - '25'
+          - '50'
+          - '100'
 
 concurrency:
   group: staging-training-load
@@ -104,13 +107,16 @@ jobs:
             .status == "completed" and
             .target == "staging" and
             .errors == 0 and
+            .operations.dashboard.p95Ms <= 300 and
+            .operations.create.p95Ms <= 800 and
+            .operations.answer.p95Ms <= 350 and
             .operations.dashboard.withinInvestigationThreshold == true and
             .operations.create.withinInvestigationThreshold == true and
             .operations.answer.withinInvestigationThreshold == true and
             .operations.visit.withinInvestigationThreshold == true and
             .operations.finish.withinInvestigationThreshold == true
           ' "$REPORT_PATH" >/dev/null || {
-            echo '::error::Staging lifecycle exceeded an investigation threshold'; cat "$REPORT_PATH"; exit 1;
+            echo '::error::Staging lifecycle exceeded a service objective or investigation threshold; stop before the next stage'; cat "$REPORT_PATH"; exit 1;
           }
       - name: Cleanup temporary synthetic learners
         if: always()

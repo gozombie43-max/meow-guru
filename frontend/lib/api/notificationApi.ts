@@ -26,6 +26,8 @@ export interface UserNotification {
 }
 
 export interface NotificationInboxResponse {
+  nextCursor?: string | null;
+  hasMore?: boolean;
   items:
     UserNotification[];
 
@@ -46,11 +48,11 @@ export interface NotificationInboxResponse {
 }
 
 export async function fetchNotifications(
-  page = 1
+  cursor?: string
 ): Promise<NotificationInboxResponse> {
   const { data } =
     await api.get(
-      `/api/notifications/inbox?page=${page}&limit=20`
+      `/api/notifications/inbox?pagination=cursor&limit=20${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`
     );
 
   return data;

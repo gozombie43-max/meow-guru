@@ -1,6 +1,10 @@
 import dns from "node:dns";
 import { MongoClient } from "mongodb";
 import { observeMongo } from '../infrastructure/logger.js';
+import { mongoPoolWaiting, dependencyLatency } from '../infrastructure/metrics.js';
+
+let poolWaiting = 0;
+export function mongoPoolHealth() { return { waiting: poolWaiting, capacity: 30 }; }
 
 const dnsServers = process.env.MONGODB_DNS_SERVERS;
 
@@ -40,6 +44,13 @@ async function openMongoDB() {
   });
   connectingClient.on('commandSucceeded', event => observeMongo(event));
   connectingClient.on('commandFailed', event => observeMongo(event, true));
+  connectingClient.on('connectionCheckOutStarted', () => { poolWaiting++; mongoPoolWaiting.set(poolWaiting); });
+  const checkoutFinished = event => {
+    poolWaiting = Math.max(0, poolWaiting - 1); mongoPoolWaiting.set(poolWaiting);
+    if (Number.isFinite(event.durationMS)) dependencyLatency.observe({ dependency: 'mongo.pool', operation: 'checkout' }, event.durationMS / 1000);
+  };
+  connectingClient.on('connectionCheckedOut', checkoutFinished);
+  connectingClient.on('connectionCheckOutFailed', checkoutFinished);
   try {
     await connectingClient.connect();
     await connectingClient.db('admin').command({ ping: 1 }, { timeoutMS: 5000 });
@@ -72,6 +83,7 @@ export async function disconnectMongoDB() {
   // Prevent collection access while shutdown is in progress.
   client = null;
   db = null;
+  poolWaiting = 0; mongoPoolWaiting.set(0);
 
   if (!activeClient) {
     return;

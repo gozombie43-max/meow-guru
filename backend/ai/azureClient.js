@@ -1,7 +1,7 @@
 // backend/ai/azureClient.js
 import OpenAI from "openai";
-import { createProviderGate } from './providerGate.js';
-const providerGate = createProviderGate();
+import { aiProvider } from '../infrastructure/dependencyBoundary.js';
+const providerGate = work => aiProvider.execute(work);
 
 const apiKey = process.env.AZURE_OPENAI_KEY || process.env.OPENAI_API_KEY;
 const baseURL = process.env.AZURE_OPENAI_BASE_URL || process.env.AZURE_OPENAI_ENDPOINT || "https://quizguru-ai.openai.azure.com/openai/v1";
@@ -32,11 +32,11 @@ export async function chatComplete(userPrompt, model = "o4-mini", systemPrompt =
 }
 
 export async function chatCompleteMessages(messages, model = "o4-mini", maxTokens = TUTOR_MAX_TOKENS) {
-  const response = await providerGate(() => client.chat.completions.create({
+  const response = await providerGate(signal => client.chat.completions.create({
     model,
     messages,
     max_completion_tokens: maxTokens,
-  }));
+  }, { signal }));
 
   const content = response.choices?.[0]?.message?.content;
   if (typeof content !== 'string' || !content.trim()) {

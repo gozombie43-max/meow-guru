@@ -6,6 +6,7 @@ import { connectMongoDB, disconnectMongoDB } from './config/mongodb.js';
 import { closeRedisClient } from './config/redis.js';
 import { startSessionInvalidationSubscriber, closeSessionInvalidationSubscriber } from './auth/sessions.js';
 import { checkReadiness } from './infrastructure/readiness.js';
+import { startCacheInvalidationSubscriber, closeCacheInvalidationSubscriber } from './infrastructure/cacheInvalidation.js';
 import { startRuntimeMetrics, logger } from './infrastructure/logger.js';
 
 let socketServer = null, httpServer;
@@ -83,9 +84,11 @@ async function gracefulShutdown(signal, exitCode = 0) {
 
     stopMetrics();
     await closeSessionInvalidationSubscriber();
+    await closeCacheInvalidationSubscriber();
     await closeBattleRedisAdapter?.();
     await closeRedisClient();
     await disconnectMongoDB();
+    await globalThis.__shutdownTelemetry?.();
     logger.info('Graceful shutdown complete');
 
     clearTimeout(forceTimer);
@@ -128,6 +131,7 @@ async function initWithRetry() {
 
     await checkReadiness();
     await startSessionInvalidationSubscriber();
+    await startCacheInvalidationSubscriber();
 
     initPassport();
     const { app, corsOrigin } = await createApp({

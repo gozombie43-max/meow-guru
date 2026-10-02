@@ -13,8 +13,8 @@ if (!['create', 'cleanup'].includes(action)) throw new Error('Usage: node manage
 const uri = required('STAGING_MONGODB_URI');
 const dbName = process.env.STAGING_MONGODB_DB?.trim() || 'quizDB_staging';
 const prefix = required('STAGING_PROBE_PREFIX').replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase();
-const count = Math.max(1, Math.min(20, Number(process.env.STAGING_PROBE_COUNT || 1)));
-if (!Number.isInteger(count)) throw new Error('STAGING_PROBE_COUNT must be an integer');
+const count = Number(process.env.STAGING_PROBE_COUNT || 1);
+if (!Number.isInteger(count) || count < 1 || count > 100) throw new Error('STAGING_PROBE_COUNT must be an integer from 1 to 100');
 if (!/staging/i.test(dbName)) throw new Error('Refusing synthetic-user mutation outside a staging database');
 
 const client = new MongoClient(uri, { serverSelectionTimeoutMS: 10000 });

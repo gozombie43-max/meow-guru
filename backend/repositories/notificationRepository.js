@@ -1,4 +1,5 @@
 import { ObjectId } from "mongodb";
+import { readKeysetPage } from '../infrastructure/keysetPage.js';
 import {
   getPushDevicesCollection,
   getNotificationHistoryCollection,
@@ -190,7 +191,7 @@ export const getInboxUnreadCount = async (userId, lastReadAllAt, now) => {
   return result[0]?.count ?? 0;
 };
 
-export const getInboxItems = async (userId, lastReadAllAt, now, page, limit) => {
+export const getInboxItems = async (userId, lastReadAllAt, now, page, limit, pagination) => {
   const feed = getNotificationFeedCollection();
   const visibleFilter = {
     $and: [
@@ -199,7 +200,8 @@ export const getInboxItems = async (userId, lastReadAllAt, now, page, limit) => 
     ],
   };
 
-  const [items, total] = await Promise.all([
+  const cursorPage = pagination ? await readKeysetPage(feed, { filter: visibleFilter, scope: `inbox:${userId}`, cursor: pagination.cursor, limit, includeTotal: !pagination.cursor }) : null;
+  const [items, total] = cursorPage ? [cursorPage.items, cursorPage.total] : await Promise.all([
     feed.find(visibleFilter).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).toArray(),
     feed.countDocuments(visibleFilter),
   ]);
@@ -235,7 +237,7 @@ export const getInboxItems = async (userId, lastReadAllAt, now, page, limit) => 
     { $count: "count" },
   ]).toArray();
 
-  return { items, total, unreadCount: unreadResult[0]?.count ?? 0 };
+  return { items, total, unreadCount: unreadResult[0]?.count ?? 0, ...(cursorPage ? { nextCursor: cursorPage.nextCursor, hasMore: cursorPage.hasMore } : {}) };
 };
 
 export const getReadReceiptsForIds = async (userId, ids) => {

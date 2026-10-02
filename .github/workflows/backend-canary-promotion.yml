@@ -1,0 +1,103 @@
+name: Promote a verified backend canary slot
+on:
+  workflow_dispatch:
+    inputs:
+      expected_release:
+        description: 'Exact already-deployed canary release ID'
+        required: true
+        type: string
+concurrency:
+  group: backend-production-promotion
+  cancel-in-progress: false
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    environment: backend-canary
+    permissions: { contents: read, id-token: write }
+    env:
+      APP: ${{ vars.CANARY_AZURE_APP }}
+      GROUP: ${{ vars.CANARY_AZURE_RESOURCE_GROUP }}
+      SLOT: ${{ vars.CANARY_AZURE_SLOT }}
+      OBSERVATIONS_URL: ${{ vars.CANARY_OBSERVATIONS_URL }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with: { node-version: '22.x' }
+      - name: Validate existing canary configuration
+        run: |
+          set -euo pipefail
+          test -n "$APP" && test -n "$GROUP" && test -n "$SLOT" && test -n "$OBSERVATIONS_URL"
+          [[ "$SLOT" != "production" && "$SLOT" != "Production" ]]
+          [[ "$OBSERVATIONS_URL" == https://* ]]
+      - uses: azure/login@8216e11d8cd9b42fe925c852af8e76311ff067ac
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_39C048B2FF59452F9613463239824624 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_0994BCA96630443BB4B8D46319B867CD }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_115D8A1EAFB5485E96F15FA5CD4BB615 }}
+      - name: Verify exact canary readiness
+        id: identity
+        env: { EXPECTED_RELEASE: '${{ inputs.expected_release }}' }
+        run: |
+          set -euo pipefail
+          host="$(az webapp show --name "$APP" --resource-group "$GROUP" --slot "$SLOT" --query defaultHostName -o tsv)"
+          curl --fail --silent --show-error --max-time 20 "https://$host/health" > canary-health.json
+          jq -e --arg expected "$EXPECTED_RELEASE" '.ok == true and .releaseId == $expected' canary-health.json
+          production_host="$(az webapp show --name "$APP" --resource-group "$GROUP" --query defaultHostName -o tsv)"
+          curl --fail --silent --show-error --max-time 20 "https://$production_host/health" > previous-production-health.json
+          jq -e --arg expected "$EXPECTED_RELEASE" '.ok == true and (.releaseId | type == "string" and length > 0) and .releaseId != $expected' previous-production-health.json
+          test "$(az webapp traffic-routing show --name "$APP" --resource-group "$GROUP" --query 'length(@)' -o tsv)" = '0'
+      - name: Route five percent and observe
+        id: route
+        run: |
+          set -euo pipefail
+          echo 'routing_attempted=true' >> "$GITHUB_OUTPUT"
+          az webapp traffic-routing set --name "$APP" --resource-group "$GROUP" --distribution "$SLOT=5" --output none
+          sleep 300
+      - name: Evaluate measured canary
+        env:
+          OBSERVATIONS_TOKEN: ${{ secrets.CANARY_OBSERVATIONS_TOKEN }}
+          EXPECTED_RELEASE: ${{ inputs.expected_release }}
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --max-time 20 -H "Authorization: Bearer $OBSERVATIONS_TOKEN" "$OBSERVATIONS_URL" > observations.json
+          jq -e --arg expected "$EXPECTED_RELEASE" '.releaseId == $expected and .windowSeconds >= 300' observations.json
+          node backend/scripts/evaluate-canary.js observations.json decision.json
+      - name: Promote existing canary slot
+        id: swap
+        run: |
+          set -euo pipefail
+          echo 'swap_attempted=true' >> "$GITHUB_OUTPUT"
+          az webapp deployment slot swap --name "$APP" --resource-group "$GROUP" --slot "$SLOT" --target-slot production --output none
+          az webapp traffic-routing clear --name "$APP" --resource-group "$GROUP" --output none
+      - name: Check production release after promotion
+        env: { EXPECTED_RELEASE: '${{ inputs.expected_release }}' }
+        run: |
+          set -euo pipefail
+          host="$(az webapp show --name "$APP" --resource-group "$GROUP" --query defaultHostName -o tsv)"
+          curl --fail --silent --show-error --max-time 20 "https://$host/health" > production-health.json
+          jq -e --arg expected "$EXPECTED_RELEASE" '.ok == true and .releaseId == $expected' production-health.json
+      - name: Roll back failed promotion
+        if: failure() && steps.route.outputs.routing_attempted == 'true'
+        env:
+          SWAP_ATTEMPTED: ${{ steps.swap.outputs.swap_attempted }}
+          EXPECTED_RELEASE: ${{ inputs.expected_release }}
+        run: |
+          set -euo pipefail
+          az webapp traffic-routing clear --name "$APP" --resource-group "$GROUP" --output none
+          if [ "$SWAP_ATTEMPTED" = "true" ]; then
+            host="$(az webapp show --name "$APP" --resource-group "$GROUP" --query defaultHostName -o tsv)"
+            curl --fail --silent --show-error --max-time 20 "https://$host/health" > rollback-production-health.json
+            current="$(jq -r '.releaseId' rollback-production-health.json)"
+            previous="$(jq -r '.releaseId' previous-production-health.json)"
+            if [ "$current" = "$EXPECTED_RELEASE" ]; then
+              az webapp deployment slot swap --name "$APP" --resource-group "$GROUP" --slot "$SLOT" --target-slot production --output none
+              curl --fail --silent --show-error --max-time 20 "https://$host/health" > restored-production-health.json
+              jq -e --arg previous "$previous" '.ok == true and .releaseId == $previous' restored-production-health.json
+            elif [ "$current" != "$previous" ]; then
+              echo 'Unexpected production release: refusing an ambiguous slot swap.' >&2
+              exit 1
+            fi
+          fi
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with: { name: canary-decision, path: '*.json', if-no-files-found: ignore }

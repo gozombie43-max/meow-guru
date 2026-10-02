@@ -55,7 +55,7 @@ try {
   server = app.listen(0, '127.0.0.1');
   await once(server, 'listening');
   const base = `http://127.0.0.1:${server.address().port}/api/training`;
-  for (const scenario of scenarios) for (const concurrency of stages) {
+  stagesLoop: for (const scenario of scenarios) for (const concurrency of stages) {
     const samples = {};
     const measure = async (operation, token, path, body) => {
       const start = performance.now();
@@ -98,8 +98,9 @@ try {
       summary.operations[operation] = { requests: rows.length, errors: rows.filter(r => !r.ok).length, errorRate: rows.filter(r => !r.ok).length / rows.length, p50Ms: percentile(.5), p95Ms: percentile(.95), p99Ms: percentile(.99), meanResponseBytes: Math.round(rows.reduce((n,r) => n+r.bytes, 0) / rows.length), maxResponseBytes: Math.max(...rows.map(r => r.bytes)) };
     }
     report.stages.push(summary);
+    summary.objectiveFailures = Object.entries({ dashboard: 300, create: 800, answer: 350 }).filter(([operation, budget]) => summary.operations[operation]?.p95Ms > budget).map(([operation]) => `${operation} p95`);
     console.log(JSON.stringify(summary));
-    if (summary.failedLearners || ['answer', 'visit'].some(operation => summary.operations[operation]?.maxResponseBytes >= 2048)) process.exitCode = 1;
+    if (summary.failedLearners || summary.objectiveFailures.length || ['answer', 'visit'].some(operation => summary.operations[operation]?.maxResponseBytes >= 2048)) { process.exitCode = 1; report.stoppedAt = { scenario: scenario.name, concurrency }; break stagesLoop; }
   }
   if (process.env.TRAINING_LOAD_REPORT) await writeFile(process.env.TRAINING_LOAD_REPORT, JSON.stringify(report, null, 2) + '\n');
 } finally {

@@ -10,6 +10,8 @@ import transitionStyles from "./question-transition.module.css";
 import { Bookmark, BookmarkCheck, Moon, Settings, Sun, XCircle } from "lucide-react";
 import dynamic from "next/dynamic";
 import type { QuizController } from "@/features/quiz/hooks/useQuizController";
+import { useEffect, useRef } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 const QuizChatbot = dynamic(() => import("@/components/QuizChatbot"), {
   ssr: false,
 });
@@ -79,12 +81,18 @@ export interface DesktopQuizViewProps {
   settings: Pick<DesktopQuizFields, "isSettingsOpen" | "setIsSettingsOpen" | "hideQuestionNumbers" | "handleToggleHideQuestionNumbers" | "hideViewSolution" | "handleToggleHideViewSolution" | "hideAiTutor" | "handleToggleHideAiTutor" | "handleToggleHideBoth" | "textSize" | "handleSetTextSize" | "textWeight" | "handleSetTextWeight" | "spacing" | "handleSetSpacing">;
 }
 export function DesktopQuizView({ configuration, question, navigation, answer, solution, settings }: DesktopQuizViewProps) {
+  "use no memo"; // Virtualizer methods read mutable scroll state.
   const { routeBase, slug, subjectConfig, theme, themeStyles, title, modeLabels, mode, toggleTheme } = configuration;
   const { activeLang, isTranslating, setActiveLang, currentQ, conceptColours, handleBookmark, bookmarked, hasQuestionText, displayedQuestion, renderQuestionLine, displayedOptions } = question;
   const { questions, currentIndex, selectedAnswers, submittedQuestions, activeMacBtnRef, goToQuestion, handlePrev, handleNext } = navigation;
   const { isCurrentSubmitted, selectedAnswer, handleSelectAnswer, submitError, canViewSolution, handleSubmitCurrent, canSubmit } = answer;
   const { openSolution, isSolutionOpen, closeSolution } = solution;
   const { isSettingsOpen, setIsSettingsOpen, hideQuestionNumbers, handleToggleHideQuestionNumbers, hideViewSolution, handleToggleHideViewSolution, hideAiTutor, handleToggleHideAiTutor, handleToggleHideBoth, textSize, handleSetTextSize, textWeight, handleSetTextWeight, spacing, handleSetSpacing } = settings;
+  const paletteRef = useRef<HTMLDivElement | null>(null);
+  const large = questions.length > 100;
+  // eslint-disable-next-line react-hooks/incompatible-library -- This component opts out above and retains the instance locally.
+  const palette = useVirtualizer({ count: Math.ceil(questions.length / 4), getScrollElement: () => paletteRef.current, estimateSize: () => 52, overscan: 3, enabled: large, initialRect: { width: 220, height: 600 } });
+  useEffect(() => { if (large) palette.scrollToIndex(Math.floor(currentIndex / 4), { align: 'auto' }); }, [large, currentIndex, palette]);
 
   if (!currentQ) return null;
 
@@ -164,9 +172,9 @@ export function DesktopQuizView({ configuration, question, navigation, answer, s
               <div className="mac-sidebar-title">
                 <span>Questions</span>
               </div>
-              <div className="mac-series-palette-grid-wrap">
-                <div className="mac-series-palette-grid">
-                  {questions.map((question, index) => {
+              <div ref={paletteRef} className="mac-series-palette-grid-wrap">
+                <div className="mac-series-palette-grid" style={large ? { display: 'block', position: 'relative', height: palette.getTotalSize() } : undefined}>
+                  {(large ? palette.getVirtualItems().flatMap(row => questions.slice(row.index * 4, row.index * 4 + 4).map((question, column) => ({ question, index: row.index * 4 + column, start: row.start, column }))) : questions.map((question, index) => ({ question, index, start: 0, column: 0 }))).map(({ question, index, start, column }) => {
                     const status = getQuestionStatus({
                       index,
                       currentIndex,
@@ -179,6 +187,9 @@ export function DesktopQuizView({ configuration, question, navigation, answer, s
                         key={`mac-palette-${question.id}-${index}`}
                         type="button"
                         ref={index === currentIndex ? activeMacBtnRef : null}
+                        aria-label={`Go to question ${index + 1}`}
+                        aria-current={index === currentIndex ? 'step' : undefined}
+                        style={large ? { position: 'absolute', top: start, left: `calc(${column} * (100% + 8px) / 4)`, width: 'calc((100% - 24px) / 4)', height: 44 } : undefined}
                         className={`mac-palette-btn ${status === "current" ? "is-current" : ""} ${status === "answered" || status === "correct" ? "is-answered" : ""} ${status === "wrong" ? "is-wrong" : ""}`}
                         onClick={() => goToQuestion(index + 1)}
                       >

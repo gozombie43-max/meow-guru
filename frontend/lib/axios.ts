@@ -2,6 +2,7 @@ import axios from 'axios';
 import { canRetry, isFirstPartyApi, retryCount, retryDelay, waitForRetry } from '@/shared/api/policy';
 import { normalizeError } from '@/shared/api/error';
 import type {} from '@/shared/api/request';
+import { correlationHeaders } from '@/shared/api/correlation';
 import { API_BASE } from '@/lib/api-base';
 
 export const AUTH_TOKEN_CHANGED_EVENT = 'auth-token-changed';
@@ -69,6 +70,9 @@ export const requestTokenRefresh = async (): Promise<string | null> => {
 // Access tokens stay in memory. The HttpOnly refresh cookie restores sessions after reloads.
 api.interceptors.request.use((config) => {
   const trusted = isFirstPartyApi(api.getUri(config));
+  if (trusted && !config.headers.has('traceparent')) {
+    for (const [name, value] of Object.entries(correlationHeaders())) if (!config.headers.has(name)) config.headers.set(name, value);
+  }
   const session = trusted && config.apiPolicy?.auth !== 'none';
   if (!session) config.withCredentials = false;
   const token = session ? getAccessToken() : null;
@@ -104,7 +108,7 @@ api.interceptors.response.use(
     }
 
     const policy = original.apiPolicy ?? {};
-    if (canRetry(method, status, policy)) {
+    if (canRetry(method, status, policy, original.headers?.get?.('Idempotency-Key') as string | undefined)) {
       const count = original._networkRetryCount ?? 0;
       if (count < retryCount(policy)) {
         original._networkRetryCount = count + 1;

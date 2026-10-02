@@ -1,6 +1,6 @@
 import { getMongoDB, getQuestionsCollection } from "../../config/mongodb.js";
 import { createHash } from 'node:crypto';
-import { redisGetJson, redisSetJson } from '../../config/redis.js';
+import { redisGetJson, redisGetJsonMany, redisSetJson } from '../../config/redis.js';
 import { isNormalizedQuestionKeysEnabled, questionCountsCache, revisionedQuestionCacheKey } from "./questionCache.js";
 import { readQuestionMetadata } from "./questionMetadataCache.js";
 import { canonicalMode, ensureConceptGroups } from "./conceptGroupService.js";
@@ -15,7 +15,14 @@ import {
   buildModeFilter,
 } from "./questionQueryBuilder.js";
 
-export async function fetchQuestionCounts(params) {
+export async function primeQuestionCountCaches(paramsList) {
+  const keys = await Promise.all(paramsList.map(params => revisionedQuestionCacheKey(JSON.stringify({ topic: params.topic || '', subject: params.subject || '' }))));
+  const missing = keys.filter(key => !questionCountsCache.has(key));
+  const shared = await redisGetJsonMany(missing.map(key => `question-counts:${createHash('sha256').update(key).digest('hex')}`));
+  missing.forEach((key, index) => { if (shared[index]) questionCountsCache.set(key, shared[index]); });
+}
+
+export async function fetchQuestionCounts(params, { sharedChecked = false } = {}) {
   const { topic, subject } = params;
   if (!topic && !subject) {
     const error = new Error("topic or subject is required");
@@ -30,7 +37,7 @@ export async function fetchQuestionCounts(params) {
   const cached = questionCountsCache.get(cacheKey);
   if (cached) return cached;
   const sharedKey = `question-counts:${createHash('sha256').update(cacheKey).digest('hex')}`;
-  const shared = await redisGetJson(sharedKey);
+  const shared = sharedChecked ? null : await redisGetJson(sharedKey);
   if (shared) {
     questionCountsCache.set(cacheKey, shared);
     return shared;
@@ -168,27 +175,21 @@ async function buildQuestionsMeta(params) {
 
   const mongoFilter = combineMongoConditions(conditions);
 
-  const [total, examAgg, conceptAgg, letterAgg] = await Promise.all([
-    collection.countDocuments(mongoFilter),
-    collection
-      .aggregate([
-        { $match: mongoFilter },
+  const [facets] = await collection.aggregate([
+    { $match: mongoFilter },
+    { $facet: {
+      total: [{ $count: 'count' }],
+      exams: [
         { $group: { _id: { $toLower: mongoString("$exam") } } },
         { $match: { _id: { $ne: "" } } },
         { $sort: { _id: 1 } },
-      ])
-      .toArray(),
-    collection
-      .aggregate([
-        { $match: mongoFilter },
+      ],
+      concepts: [
         { $group: { _id: { $toLower: mongoString("$concept") } } },
         { $match: { _id: { $ne: "" } } },
         { $sort: { _id: 1 } },
-      ])
-      .toArray(),
-    collection
-      .aggregate([
-        { $match: mongoFilter },
+      ],
+      letters: [
         {
           $match: {
             letter: { $exists: true, $ne: "" },
@@ -201,9 +202,11 @@ async function buildQuestionsMeta(params) {
           },
         },
         { $sort: { _id: 1 } },
-      ])
-      .toArray(),
-  ]);
+      ],
+    } },
+  ], { maxTimeMS: 10000 }).toArray();
+  const { exams: examAgg, concepts: conceptAgg, letters: letterAgg } = facets;
+  const total = facets.total[0]?.count ?? 0;
 
   const letters = {};
   for (const row of letterAgg) {

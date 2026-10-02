@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { traceCarrier } from '../../infrastructure/tracing.js';
 import { getMongoDB } from "../../config/mongodb.js";
 import { normalizeSearchKey } from "./questionNormalizer.js";
 
@@ -39,7 +40,7 @@ export async function ensureConceptGroups(params, concepts) {
   const collection = getMongoDB().collection(GROUPING_COLLECTION);
   const now = new Date();
   await collection.updateOne({ _id: input.fingerprint }, { $setOnInsert: {
-    ...input, params, version: GROUPING_VERSION, kind: "concept-grouping", status: "queued", attempts: 0,
+    ...input, params, version: GROUPING_VERSION, kind: "concept-grouping", trace: traceCarrier(), status: "queued", attempts: 0,
     availableAt: now, createdAt: now, expiresAt: new Date(+now + 10 * 365 * 86400000),
   } }, { upsert: true });
   const doc = await collection.findOne({ _id: input.fingerprint });

@@ -49,10 +49,14 @@ const MobileTopicRow = React.memo(function MobileTopicRow({
   name: string;
   styles: Record<string, string>;
 }) {
+  const router = useRouter();
   return (
     <Link
       href={href}
       prefetch={false}
+      onPointerEnter={() => router.prefetch(href)}
+      onFocus={() => router.prefetch(href)}
+      onTouchStart={() => router.prefetch(href)}
       data-hub-part="mobileTopicRow"
       className={styles.mobileTopicRow}
     >

@@ -1,7 +1,7 @@
 // Database identity isolates test/reconnect instances. Expiration also covers
 // imports made outside this process; application writes invalidate immediately.
 import { createHash } from 'node:crypto';
-import { redisGetJson, redisSetJson } from '../../config/redis.js';
+import { createTieredCache } from '../../infrastructure/tieredCache.js';
 import { getQuestionRevision } from '../questions/questionCache.js';
 
 let databases = new WeakMap();
@@ -9,18 +9,18 @@ export function invalidateTrainingCatalog() { databases = new WeakMap(); }
 export async function cachedTrainingCatalog(db, key, build) {
   let entries = databases.get(db);
   if (!entries) { entries = new Map(); databases.set(db, entries); }
-  const cached = entries.get(key);
+  const revision = await getQuestionRevision();
+  const versionKey = `${key}:${revision}`;
+  const cached = entries.get(versionKey);
   if (cached && cached.expires > Date.now()) return cached.promise;
   const entry = { expires: Date.now() + 5 * 60 * 1000, promise: Promise.resolve().then(async () => {
-    const revision = await getQuestionRevision();
     const sharedKey = `training-catalog:${revision}:${createHash('sha256').update(key).digest('hex')}`;
-    const shared = await redisGetJson(sharedKey);
-    if (shared) return shared;
-    const value = await build();
-    await redisSetJson(sharedKey, value, 300);
-    return value;
+    let cache = entries.get('__cache');
+    if (!cache) { cache = createTieredCache({ staleMs: 300000 }); entries.set('__cache', cache); }
+    return cache.read(sharedKey, build, { allowStale: false });
   }) };
-  entries.set(key, entry);
+  if (entries.size > 300) entries.clear();
+  entries.set(versionKey, entry);
   try { return await entry.promise; }
-  catch (error) { if (entries.get(key) === entry) entries.delete(key); throw error; }
+  catch (error) { if (entries.get(versionKey) === entry) entries.delete(versionKey); throw error; }
 }

@@ -1,7 +1,7 @@
 import { getMongoDB } from "../../config/mongodb.js";
 import { redisGetJson, redisSetJson } from '../../config/redis.js';
 import { getQuestionRevision, isNormalizedQuestionKeysEnabled } from "./questionCache.js";
-import { fetchQuestionCounts } from "./questionMetadataService.js";
+import { fetchQuestionCounts, primeQuestionCountCaches } from "./questionMetadataService.js";
 
 // Canonical hub topics per subject. Counts use the same mode resolver as topic pages.
 const SUBJECT_TOPICS = {
@@ -62,10 +62,11 @@ export async function fetchTopicCountSnapshot(subject = "mathematics") {
     if (!pending.has(key)) {
       const work = (async () => {
         const totals = {};
+        await primeQuestionCountCaches(topics.map(topic => ({ subject: normalizedSubject, topic })));
         // Bounded concurrency; only runs at initialization or after question writes.
         for (let offset = 0; offset < topics.length; offset += 4) {
           await Promise.all(topics.slice(offset, offset + 4).map(async topic => {
-            const counts = await fetchQuestionCounts({ subject: normalizedSubject, topic });
+            const counts = await fetchQuestionCounts({ subject: normalizedSubject, topic }, { sharedChecked: true });
             totals[topic] = MODES.reduce((sum, mode) => sum + (counts[mode] ?? 0), 0);
           }));
         }

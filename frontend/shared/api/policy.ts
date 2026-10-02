@@ -13,8 +13,10 @@ export function retryCount(policy: RetryPolicy) {
   return Math.max(0, (policy.attempts ?? ((policy.retries ?? 2) + 1)) - 1);
 }
 
-export function canRetry(method: string, status: number | undefined, policy: RetryPolicy) {
-  return (policy.retryMethods ?? ['GET', 'HEAD', 'OPTIONS']).some(value => value.toUpperCase() === method.toUpperCase())
+export function canRetry(method: string, status: number | undefined, policy: RetryPolicy, idempotencyKey?: string | null) {
+  const safe = ['GET', 'HEAD', 'OPTIONS'].includes(method.toUpperCase());
+  const protectedWrite = Boolean(idempotencyKey && /^[a-zA-Z0-9_-]{8,100}$/.test(idempotencyKey));
+  return (safe || protectedWrite) && (policy.retryMethods ?? (protectedWrite ? ['GET', 'HEAD', 'OPTIONS', 'POST', 'PUT', 'PATCH'] : ['GET', 'HEAD', 'OPTIONS'])).some(value => value.toUpperCase() === method.toUpperCase())
     && (status === undefined || (policy.retryOnStatuses ?? [408, 425, 429, 500, 502, 503, 504]).includes(status));
 }
 
@@ -22,9 +24,9 @@ export function retryDelay(attempt: number, policy: RetryPolicy, retryAfter?: st
   if (retryAfter) {
     const seconds = Number(retryAfter);
     const delay = Number.isFinite(seconds) ? seconds * 1000 : Date.parse(retryAfter) - Date.now();
-    if (Number.isFinite(delay) && delay > 0) return Math.min(delay, 5000);
+    if (Number.isFinite(delay) && delay > 0) return delay + Math.floor(Math.random() * 250);
   }
-  return (policy.retryDelayMs ?? 1200) * (attempt + 1);
+  return Math.min(30000, (policy.retryDelayMs ?? 1200) * 2 ** attempt * (0.8 + Math.random() * 0.6));
 }
 
 export function abortError() { return new DOMException('Request cancelled', 'AbortError'); }

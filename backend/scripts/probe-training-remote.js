@@ -6,7 +6,7 @@ import { writeFile } from 'node:fs/promises';
 // supplied explicitly by the operator running it.
 const TARGETS = new Set(['staging', 'production']);
 const PRODUCTION_MAX_RUNS = 3;
-const STAGING_MAX_CONCURRENCY = 20;
+const STAGING_MAX_CONCURRENCY = 100;
 const PRODUCTION_MAX_CONCURRENCY = 3;
 const QUESTION_COUNT = 10;
 const thresholds = {

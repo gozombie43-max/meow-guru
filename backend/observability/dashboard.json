@@ -1,0 +1,17 @@
+{
+  "title": "Meow API reliability",
+  "uid": "meow-api-reliability",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "time": { "from": "now-1h", "to": "now" },
+  "__inputs": [{ "name": "DS_PROMETHEUS", "label": "Prometheus", "type": "datasource", "pluginId": "prometheus", "pluginName": "Prometheus" }],
+  "panels": [
+    { "id": 1, "type": "timeseries", "title": "5xx ratio (objective 0.001)", "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 }, "targets": [{ "refId": "A", "expr": "meow:availability_error_ratio:5m" }], "fieldConfig": { "defaults": { "unit": "percentunit" }, "overrides": [] } },
+    { "id": 2, "type": "timeseries", "title": "GET / answer / create p95", "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 }, "targets": [{ "refId": "A", "expr": "meow:get_latency:p95", "legendFormat": "GET (300ms)" }, { "refId": "B", "expr": "meow:answer_latency:p95", "legendFormat": "answer (350ms)" }, { "refId": "C", "expr": "meow:create_latency:p95", "legendFormat": "create (800ms)" }], "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] } },
+    { "id": 3, "type": "timeseries", "title": "Mongo / Redis p95", "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 }, "targets": [{ "refId": "A", "expr": "meow:mongo_latency:p95", "legendFormat": "Mongo (100ms)" }, { "refId": "B", "expr": "meow:redis_latency:p95", "legendFormat": "Redis (10ms)" }], "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] } },
+    { "id": 4, "type": "timeseries", "title": "Request rate by route", "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 }, "targets": [{ "refId": "A", "expr": "sum by (route) (rate(meow_http_requests_total[5m]))", "legendFormat": "{{route}}" }] },
+    { "id": 5, "type": "timeseries", "title": "Mongo pool waiting by instance", "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "gridPos": { "x": 0, "y": 16, "w": 12, "h": 8 }, "targets": [{ "refId": "A", "expr": "meow_mongo_pool_waiting", "legendFormat": "{{instance}}" }] },
+    { "id": 6, "type": "timeseries", "title": "Memory / event loop delay", "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" }, "gridPos": { "x": 12, "y": 16, "w": 12, "h": 8 }, "targets": [{ "refId": "A", "expr": "meow_process_resident_memory_bytes", "legendFormat": "RSS {{instance}}" }, { "refId": "B", "expr": "meow_nodejs_eventloop_lag_p99_seconds", "legendFormat": "event loop {{instance}}" }], "fieldConfig": { "defaults": {}, "overrides": [{ "matcher": { "id": "byFrameRefID", "options": "A" }, "properties": [{ "id": "unit", "value": "bytes" }] }, { "matcher": { "id": "byFrameRefID", "options": "B" }, "properties": [{ "id": "unit", "value": "s" }, { "id": "custom.axisPlacement", "value": "right" }] }] } }
+  ]
+}

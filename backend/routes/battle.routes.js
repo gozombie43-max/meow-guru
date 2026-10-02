@@ -1,4 +1,5 @@
 import express from "express";
+import { idempotency } from '../middleware/idempotency.js';
 import { protect } from "../middleware/protect.js";
 import { requireRole } from "../middleware/requireRole.js";
 import { battleReadLimiter } from "../middleware/battleRateLimits.js";
@@ -8,10 +9,10 @@ const router = express.Router();
 
 router.get("/capabilities", protect, battleReadLimiter, controller.getCapabilities);
 router.get("/missions", protect, controller.getMissions);
-router.post("/missions/:id/claim", protect, controller.claimMission);
+router.post("/missions/:id/claim", protect, idempotency('battle.mission.claim'), controller.claimMission);
 router.get("/admin/analytics/competitive-health", protect, requireRole("admin", "superadmin"), controller.getCompetitiveHealth);
 router.get("/season/reward-track", protect, controller.getSeasonRewardTrackHandler);
-router.post("/season/reward-track/:level/claim", protect, controller.claimSeasonRewardHandler);
+router.post("/season/reward-track/:level/claim", protect, idempotency('battle.season.claim'), controller.claimSeasonRewardHandler);
 router.get("/cosmetics", protect, controller.getCosmetics);
 router.put("/cosmetics/equip", protect, controller.equipCosmetic);
 router.get("/profile", protect, controller.getProfile);

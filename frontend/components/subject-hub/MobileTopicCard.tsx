@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { useRouter } from 'next/navigation';
 import React from "react";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -85,6 +86,7 @@ export const MobileTopicCard = React.memo(function MobileTopicCard({
   accent,
   detail,
 }: MobileTopicCardProps) {
+  const router = useRouter();
   const count = detail?.questionCount;
   const isComingSoon = count === 0;
   const progressPct = detail?.progress ?? 0;
@@ -94,6 +96,9 @@ export const MobileTopicCard = React.memo(function MobileTopicCard({
     <Link
       href={href}
       prefetch={false}
+      onPointerEnter={() => { if (!isComingSoon) router.prefetch(href); }}
+      onFocus={() => { if (!isComingSoon) router.prefetch(href); }}
+      onTouchStart={() => { if (!isComingSoon) router.prefetch(href); }}
       data-hub-part="mobileTopicRow"
       className={`${styles.card} ${isComingSoon ? styles.cardComingSoon : ""}`}
       style={{ "--accent": accent } as React.CSSProperties}

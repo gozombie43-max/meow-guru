@@ -1,8 +1,8 @@
 import { conceptGroupsSchema } from "@meow/contracts/ai";
 import OpenAI from "openai";
-import { createProviderGate } from "./providerGate.js";
+import { backgroundAi, aiProvider } from '../infrastructure/dependencyBoundary.js';
 
-const gate = createProviderGate({ concurrency: 2 });
+const gate = work => backgroundAi.execute(signal => aiProvider.execute(work, { signal, timeoutMs: 300000 }));
 const CHUNK_SIZE = 250;
 
 function buildSchema() {
@@ -23,14 +23,14 @@ function buildSystemPrompt(maxGroups) {
 }
 
 async function callGroupingAPI(client, model, maxTokens, maxGroups, scope, indexedConcepts) {
-  const response = await gate(() => client.chat.completions.create({
+  const response = await gate(signal => client.chat.completions.create({
     model, max_completion_tokens: maxTokens,
     messages: [
       { role: "system", content: buildSystemPrompt(maxGroups) },
       { role: "user", content: JSON.stringify({ scope, concepts: indexedConcepts }) },
     ],
     response_format: buildSchema(),
-  }));
+  }, { signal }));
   const choice = response.choices?.[0];
   if (choice?.finish_reason !== "stop" || choice.message?.refusal || !choice.message?.content) {
     throw new Error("AI grouping response was incomplete or refused");

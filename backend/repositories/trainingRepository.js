@@ -1,5 +1,6 @@
 import { getMongoDB, getQuestionsCollection, withMongoTransaction } from '../config/mongodb.js';
 import { createHash } from 'node:crypto';
+import { dashboardEvidence } from '../services/training/domain/dashboardEvidence.js';
 import { getRedisClient, redisGetEjson, redisSetEjson } from '../config/redis.js';
 import { getQuestionRevision } from '../services/questions/questionCache.js';
 import { invalidateTrainingDashboard } from '../services/training/dashboardCache.js';
@@ -64,12 +65,17 @@ async function applyCompletedSessionLearning(db, completed, mongoSession) {
   }
 }
 
-export const trainingHistory = (userId, exam) =>
+export const trainingHistory = (userId, exam, compact = false) =>
   sessions()
     .find({ userId, exam, status: 'completed' })
     .sort({ completedAt: -1 })
     .limit(50)
-    .project({ id: 1, mode: 1, completedAt: 1, completionReason: 1, learningApplied: 1, questionOrder: 1,
+    .project(compact ? {
+      id: 1, mode: 1, completedAt: 1, completionReason: 1, learningApplied: 1, dashboardEvidence: 1,
+      questions: { $cond: [{ $eq: ['$dashboardEvidence.version', 1] }, '$$REMOVE', '$questions'] },
+      answers: { $cond: [{ $eq: ['$dashboardEvidence.version', 1] }, '$$REMOVE', '$answers'] },
+      result: { score: '$result.score', maxScore: '$result.maxScore', accuracy: '$result.accuracy', correct: '$result.correct', negativeLoss: '$result.negativeLoss', rows: { $cond: [{ $eq: ['$dashboardEvidence.version', 1] }, '$$REMOVE', '$result.rows'] } },
+    } : { id: 1, mode: 1, completedAt: 1, completionReason: 1, learningApplied: 1, questionOrder: 1, dashboardEvidence: 1,
       'questions.id': 1, 'questions.subject': 1, 'questions.topic': 1,
       'questions.subtopic': 1, 'questions.concepts': 1, 'questions.correctIndex': 1,
       'questions.expectedTime': 1, 'questions.difficulty': 1, answers: 1,
@@ -249,8 +255,10 @@ export async function commitTrainingTransition(session, updated) {
   if (session.status === 'active' && updated.status === 'completed') {
     updated.learningApplied = true;
     updated.learningAppliedVersion = 1;
+    updated.dashboardEvidence = dashboardEvidence(updated);
   }
   const update = sessionUpdate(session, updated);
+  if (updated.dashboardEvidence) update.$set.dashboardEvidence = updated.dashboardEvidence;
   const isCompletion =
     session.status === 'active' && ['completed', 'abandoned'].includes(updated.status);
   if (!isCompletion) {

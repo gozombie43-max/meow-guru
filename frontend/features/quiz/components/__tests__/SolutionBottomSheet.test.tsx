@@ -44,7 +44,7 @@ describe('SolutionBottomSheet Component', () => {
     expect(document.body.style.overflow).toBe('hidden');
     expect(trigger).not.toHaveFocus();
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
-    expect(trigger).toHaveFocus();
+    await waitFor(() => expect(trigger).toHaveFocus());
     expect(document.body.style.overflow).toBe(overflow);
     fireEvent.click(trigger);
     expect(screen.getByRole('dialog')).toHaveFocus();

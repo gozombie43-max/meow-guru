@@ -4,9 +4,11 @@ import { useRouter } from "next/navigation";
 import api from "@/shared/api/client";
 import { type TrainingSession, type TrainingAction } from "../../training-types";
 import { mergeTrainingResponse, type TrainingDelta } from '../sessionDelta';
+import { offlineTrainingEnabled, savePendingTrainingAction, clearPendingTrainingAction } from '../offlineTraining';
 
 interface UseTrainingActionsProps {
   id: string;
+  userId?: string;
   session: TrainingSession | null;
   sendingRef: React.MutableRefObject<boolean>;
   setBusy: (busy: boolean) => void;
@@ -18,6 +20,7 @@ interface UseTrainingActionsProps {
 
 export function useTrainingActions({
   id,
+  userId,
   session,
   sendingRef,
   setBusy,
@@ -34,11 +37,19 @@ export function useTrainingActions({
       setBusy(true);
       setPendingAction(String(action.type));
       setError("");
+      const key = crypto.randomUUID();
       try {
+        const body = { ...action, revision: session.revision };
+        if (offlineTrainingEnabled() && userId) {
+          await savePendingTrainingAction(userId, id, { key, body, expiresAt: Date.now() + 86400000 });
+          if (!navigator.onLine) throw new Error('Action saved on this device. Reconnect and reload to synchronize.');
+        }
         const { data } = await api.post<TrainingSession | TrainingDelta>(
           `/api/training/sessions/${id}/actions?response=delta`,
-          { ...action, revision: session.revision },
+          body,
+          { headers: { 'Idempotency-Key': key }, apiPolicy: { retries: 2 } },
         );
+        if (offlineTrainingEnabled() && userId) await clearPendingTrainingAction(userId, id, key);
         if (data.status === "abandoned") {
           router.replace("/play");
           return;
@@ -46,11 +57,14 @@ export function useTrainingActions({
         accept(mergeTrainingResponse(session, data));
         setConfirmFinish(false);
       } catch (e) {
+        if (offlineTrainingEnabled() && userId && isAxiosError(e) && [400, 409, 422].includes(e.response?.status ?? 0) && e.response?.data?.code !== 'IDEMPOTENCY_PENDING') {
+          await clearPendingTrainingAction(userId, id, key).catch(() => {});
+        }
         setError(
           isAxiosError(e)
             ? e.response?.data?.error ||
                 "Save failed. Reload the saved session before retrying."
-            : "Save failed. Reload before retrying.",
+            : e instanceof Error ? e.message : "Save failed. Reload before retrying.",
         );
       } finally {
         sendingRef.current = false;
@@ -58,7 +72,7 @@ export function useTrainingActions({
         setPendingAction("");
       }
     },
-    [id, session, accept, router, sendingRef, setBusy, setError, setPendingAction, setConfirmFinish],
+    [id, userId, session, accept, router, sendingRef, setBusy, setError, setPendingAction, setConfirmFinish],
   );
 
   return { act };

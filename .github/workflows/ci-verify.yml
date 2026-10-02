@@ -49,6 +49,13 @@ jobs:
   backend-tests:
     name: Backend Unit Tests
     runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7.4-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 3s --health-retries 10
 
     steps:
       - name: Checkout repository
@@ -68,9 +75,24 @@ jobs:
         working-directory: ./backend
         run: node scripts/verify-app-no-optional-integrations.js
 
+      - name: Verify OpenTelemetry ESM preload and local export
+        working-directory: ./backend
+        run: node scripts/verify-tracing-runtime.js --with-mongo
+
+      - name: Validate Prometheus rules
+        run: |
+          docker run --rm --volume "$PWD/backend/observability:/rules:ro" --entrypoint /bin/promtool prom/prometheus:v3.5.0 check rules /rules/slo-rules.yml
+          docker run --rm --volume "$PWD/backend/observability:/rules:ro" --entrypoint /bin/promtool prom/prometheus:v3.5.0 test rules /rules/slo-rules.test.yml
+
       - name: Run Backend Tests (Vitest)
         working-directory: ./backend
         run: npm run lint && npm run test:coverage
+
+      - name: Real Redis queue and cache multi-instance recovery
+        working-directory: ./backend
+        env:
+          REDIS_TEST_URL: redis://127.0.0.1:6379
+        run: npm test -- infrastructure/__tests__/redisReliability.integration.test.js
 
       - name: Authenticated training load smoke (isolated local database)
         working-directory: ./backend

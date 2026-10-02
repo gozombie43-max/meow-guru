@@ -4,6 +4,7 @@ import { connectMongoDB, disconnectMongoDB } from "../../config/mongodb.js";
 import { fetchQuestionsMeta } from "../questions/questionMetadataService.js";
 import { createQuestion, createQuestionsBulk, modifyQuestion, removeQuestion } from "../questions/questionWriteService.js";
 import { invalidateQuestionMetadata, readQuestionMetadata } from "../questions/questionMetadataCache.js";
+import { clearSharedLocalCaches } from '../../infrastructure/tieredCache.js';
 
 let server, db;
 const params = { topic: "coding", subject: "reasoning", mode: "concept" };
@@ -17,6 +18,7 @@ beforeAll(async () => {
   db = await connectMongoDB();
 }, 120000);
 beforeEach(async () => {
+  clearSharedLocalCaches();
   await db.collection("questions").deleteMany({});
   await db.collection("questionMetadata").deleteMany({});
 });
@@ -61,6 +63,7 @@ describe("persisted question metadata", () => {
   it("rebuilds expired metadata to recover from external imports", async () => {
     await readQuestionMetadata(params, async () => ({ concepts: [] }));
     await db.collection("questionMetadata").updateMany({}, { $set: { updatedAt: new Date(0) } });
+    clearSharedLocalCaches();
     const build = vi.fn(async () => ({ concepts: ["Imported"] }));
     expect(await readQuestionMetadata(params, build)).toEqual({ concepts: ["Imported"] });
     expect(build).toHaveBeenCalledTimes(1);

@@ -13,5 +13,5 @@ export async function completeJob(collection, job, result, now = new Date()) {
 }
 export async function failJob(collection, job, now = new Date()) {
   const retry = job.attempts < 3;
-  return collection.updateOne(owned(job, now), { $set: { status: retry ? 'queued' : 'failed', error: 'Unable to process this attachment. Try a clearer image or smaller PDF.', availableAt: new Date(+now + job.attempts * 5000), ...(!retry ? { finishedAt: now } : {}) }, $unset: { owner: '', leaseUntil: '' } });
+  return collection.updateOne(owned(job, now), { $set: { status: retry ? 'queued' : 'failed', error: 'Unable to process this attachment. Try a clearer image or smaller PDF.', availableAt: new Date(+now + Math.round(5000 * 2 ** (job.attempts - 1) * (0.8 + Math.random() * 0.6))), ...(!retry ? { finishedAt: now } : {}) }, $unset: { owner: '', leaseUntil: '' } });
 }

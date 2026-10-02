@@ -13,11 +13,14 @@ export function readinessWithEvidence(
   const coverage = catalogTopics.length
     ? catalogTopics.filter((t) => trained.has(t)).length / catalogTopics.length
     : 0;
-  const questions = sessions.flatMap((s) =>
-    s.questions.filter((q) => s.answers[q.id]?.choice === q.correctIndex),
+  const questions = sessions.filter(s => s.dashboardEvidence?.version !== 1).flatMap((s) =>
+    (s.questions || []).filter((q) => s.answers[q.id]?.choice === q.correctIndex),
   );
-  const difficulty = questions.length
-    ? questions.reduce((n, q) => n + q.difficulty / 5, 0) / questions.length
+  const compact = sessions.filter(s => s.dashboardEvidence?.version === 1);
+  const correctCount = questions.length + compact.reduce((n, s) => n + s.dashboardEvidence.correctCount, 0);
+  const attemptedCount = rows.length + sessions.filter(s => !s.result?.rows && s.dashboardEvidence?.version === 1).reduce((n, s) => n + s.dashboardEvidence.attempted, 0);
+  const difficulty = correctCount
+    ? (questions.reduce((n, q) => n + q.difficulty / 5, 0) + compact.reduce((n, s) => n + s.dashboardEvidence.difficultySum, 0)) / correctCount
     : 0;
   const mockScores = mocks
     .map((m) => m.result)
@@ -37,7 +40,7 @@ export function readinessWithEvidence(
           (mockScores.reduce((n, v) => n + v, 0) / mockScores.length) * 100,
         )
       : 0,
-    negativeMarking: rows.length
+    negativeMarking: attemptedCount
       ? Math.round((1 - Math.min(1, losses / Math.max(1, positive))) * 100)
       : 0,
   };

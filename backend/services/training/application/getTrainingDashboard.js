@@ -13,6 +13,7 @@ import {
 import { getDailyMissionBlocks } from "../mission/missionBlocks.js";
 import { logger, hashId } from "../../../infrastructure/logger.js";
 import { readTrainingDashboardCache, writeTrainingDashboardCache } from '../dashboardCache.js';
+import { featureEnabled } from '../../../infrastructure/featureRollout.js';
 
 export async function getTrainingDashboardData(userId, exam) {
   const start = performance.now();
@@ -25,7 +26,9 @@ export async function getTrainingDashboardData(userId, exam) {
   const cached = await readTrainingDashboardCache(userId, exam);
   if (cached?.value) return cached.value;
 
-  const [previous, dashboard] = await Promise.all([history(userId, exam), trainingDashboardData(userId, exam)]);
+  const dashboard = await trainingDashboardData(userId, exam);
+  const durablePrimary = dashboard.stateMeta?.version === 1 && dashboard.stateMeta?.status === 'ready';
+  const previous = await history(userId, exam, durablePrimary && featureEnabled('USE_COMPACT_TRAINING_HISTORY', userId));
   const {
     active,
     catalogPairs,

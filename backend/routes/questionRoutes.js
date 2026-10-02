@@ -1,5 +1,6 @@
 import { storeQuestionImages } from "../middleware/questionImageStorage.js";
 import express from "express";
+import { idempotency } from '../middleware/idempotency.js';
 import { fetchTopicCountSnapshot } from "../services/questions/topicCountSnapshot.js";
 import multer from 'multer';
 import questionController from '../controllers/questionController.js';
@@ -29,6 +30,8 @@ const questionUpload = upload.fields([
 
 // ── Specific named routes FIRST (before /:id) ──────────
 
+// Bulk imports already fence each row by import key/hash and return large,
+// per-row outcomes. Preserve that recovery protocol and its response budget.
 router.post('/bulk', adminAuth, questionController.bulkCreateQuestions);
 router.post('/bulk-delete', adminAuth, questionController.bulkDeleteQuestions);
 router.post('/check-duplicates', adminAuth, questionController.checkDuplicates);
@@ -36,6 +39,7 @@ router.get('/topic-counts', async (req, res) => {
   try {
     const snapshot = await fetchTopicCountSnapshot(req.query.subject);
     res.set('Cache-Control', 'no-cache');
+    res.set('Vercel-CDN-Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
     res.json(snapshot);
   } catch (error) {
     res.status(error.statusCode || 500).json({ error: error.message });
@@ -55,7 +59,7 @@ router.get('/', questionController.getQuestions);
 
 // ── Param routes LAST ───────────────────────────────────
 
-router.post('/:id/answer', protect, questionController.submitAnswer);
+router.post('/:id/answer', protect, idempotency('questions.answer'), questionController.submitAnswer);
 router.get('/:id', questionController.getQuestionById);
 router.put('/:id', adminAuth, questionController.updateQuestion);
 router.patch('/:id', adminAuth, questionController.updateQuestion);
