@@ -63,8 +63,10 @@ export async function startMaintenanceQueue(tasks, options = {}) {
     };
     return active;
   } catch (error) {
-    if (worker) await worker.close(true).catch(() => {});
-    await queue.close().catch(() => {});
+    if (worker) {
+      try { await worker.close(true); } catch {}
+    }
+    try { await queue.close(); } catch {}
     state = 'degraded';
     throw error;
   }
