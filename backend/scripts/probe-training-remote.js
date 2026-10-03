@@ -105,7 +105,26 @@ function targetConfig() {
   const runs = boundedInteger('TRAINING_REMOTE_RUNS', 1, 1, target === 'production' ? PRODUCTION_MAX_RUNS : 20);
   if (target === 'production' && concurrency > 1 && process.env.TRAINING_REMOTE_ALLOW_PRODUCTION_CONCURRENCY !== 'true')
     throw new Error('Production probes require TRAINING_REMOTE_CONCURRENCY=1 unless TRAINING_REMOTE_ALLOW_PRODUCTION_CONCURRENCY=true');
-  return { target, concurrency, runs };
+  const loginConcurrency = boundedInteger(
+    'TRAINING_REMOTE_LOGIN_CONCURRENCY',
+    Math.min(20, concurrency),
+    1,
+    Math.min(100, concurrency),
+  );
+  return { target, concurrency, runs, loginConcurrency };
+}
+
+async function mapWithConcurrency(rows, concurrency, worker) {
+  const results = new Array(rows.length);
+  let next = 0;
+  await Promise.all(Array.from({ length: Math.min(concurrency, rows.length) }, async () => {
+    while (true) {
+      const index = next++;
+      if (index >= rows.length) return;
+      results[index] = await worker(rows[index], index);
+    }
+  }));
+  return results;
 }
 
 const remote = remoteBaseUrl();
@@ -194,13 +213,15 @@ async function verifyHealth() {
 let health = null;
 try {
   health = await verifyHealth();
-  const actors = await Promise.all(
-    credentials.slice(0, config.concurrency).map(async ({ email, password }) => {
+  const actors = await mapWithConcurrency(
+    credentials.slice(0, config.concurrency),
+    config.loginConcurrency,
+    async ({ email, password }) => {
       const login = await request('login', 'POST', '/auth/login', { email, password });
       if (typeof login.token !== 'string' || !login.token)
         throw new Error('Login response did not include an access token');
       return { token: login.token };
-    })
+    },
   );
   for (let run = 0; run < config.runs; run++)
     await Promise.all(actors.map(actor => runLifecycle(actor.token)));
@@ -220,6 +241,7 @@ try {
     scenario: 'authenticated-training-lifecycle',
     runs: config.runs,
     concurrency: config.concurrency,
+    loginConcurrency: config.loginConcurrency,
     questionsPerSession: QUESTION_COUNT,
     operations,
     errors: Object.values(operations).reduce((total, operation) => total + operation.errors, 0),
@@ -250,6 +272,7 @@ try {
     },
     runs: config.runs,
     concurrency: config.concurrency,
+    loginConcurrency: config.loginConcurrency,
     questionsPerSession: QUESTION_COUNT,
     operations: summarize(samples),
   };
