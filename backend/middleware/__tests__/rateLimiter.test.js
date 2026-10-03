@@ -1,6 +1,7 @@
 import { afterEach, expect, it, vi } from 'vitest';
 vi.mock('express-rate-limit', () => ({ default: options => options, ipKeyGenerator: value => value }));
 import { authLimiter, authCredentialLimiter, aiLimiter, globalLimiter, trainingIngressLimiter, trainingLimiter } from '../rateLimiter.js';
+import { signToken } from '../../auth/jwt.js';
 afterEach(() => vi.unstubAllEnvs());
 it('enforces production limits on loopback proxy traffic', () => {
   vi.stubEnv('NODE_ENV', 'production');
@@ -39,4 +40,13 @@ it('keys credential attempts by normalized account instead of shared NAT IP', ()
   expect(first).toBe('account:student@example.com');
   expect(sameAccount).toBe(first);
   expect(otherAccount).not.toBe(first);
+});
+
+it('gives valid signed users independent global buckets behind one IP', () => {
+  const first = signToken({ id: 'learner-a' });
+  const second = signToken({ id: 'learner-b' });
+  const shared = { ip: '203.0.113.10' };
+  expect(globalLimiter.keyGenerator({ ...shared, headers: { authorization: `Bearer ${first}` } })).toBe('user:learner-a');
+  expect(globalLimiter.keyGenerator({ ...shared, headers: { authorization: `Bearer ${second}` } })).toBe('user:learner-b');
+  expect(globalLimiter.keyGenerator({ ...shared, headers: { authorization: 'Bearer invalid' } })).toContain('ip:');
 });
