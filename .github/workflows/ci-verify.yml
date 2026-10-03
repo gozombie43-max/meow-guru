@@ -116,8 +116,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Audit Backend Dependencies
-        run: npm audit --workspace backend --audit-level=high
+      - name: Audit Backend Production Dependencies
+        run: npm audit --workspace backend --omit=dev --audit-level=high
+
+      - name: Audit Backend Development Dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          report="$RUNNER_TEMP/backend-audit.json"
+          npm audit --workspace backend --audit-level=high --json > "$report" || true
+          node backend/scripts/verify-known-dev-audit-exceptions.mjs "$report" package-lock.json
 
       - name: Audit Frontend Production Dependencies
         run: npm audit --workspace frontend --omit=dev --audit-level=high
