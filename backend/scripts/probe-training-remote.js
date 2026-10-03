@@ -121,7 +121,7 @@ async function mapWithConcurrency(rows, concurrency, worker) {
     while (true) {
       const index = next++;
       if (index >= rows.length) return;
-      results[index] = await worker(rows[index], index);
+      results[index] = await worker(rows[index]);
     }
   }));
   return results;
