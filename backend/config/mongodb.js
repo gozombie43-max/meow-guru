@@ -3,8 +3,31 @@ import { MongoClient } from "mongodb";
 import { observeMongo } from '../infrastructure/logger.js';
 import { mongoPoolWaiting, dependencyLatency } from '../infrastructure/metrics.js';
 
+function boundedInteger(name, fallback, min, max) {
+  const raw = process.env[name];
+  if (raw === undefined || raw === '') return fallback;
+  const value = Number(raw);
+  if (!Number.isInteger(value) || value < min || value > max) {
+    throw new Error(`${name} must be an integer from ${min} to ${max}`);
+  }
+  return value;
+}
+
+const mongoMaxPoolSize = boundedInteger('MONGODB_MAX_POOL_SIZE', 30, 5, 200);
+const configuredMinPoolSize = boundedInteger('MONGODB_MIN_POOL_SIZE', 0, 0, 50);
+const mongoMinPoolSize = Math.min(configuredMinPoolSize, mongoMaxPoolSize);
+const mongoMaxConnecting = boundedInteger('MONGODB_MAX_CONNECTING', 4, 1, 20);
+const mongoWaitQueueTimeoutMS = boundedInteger('MONGODB_WAIT_QUEUE_TIMEOUT_MS', 5000, 500, 30000);
+const mongoMaxIdleTimeMS = boundedInteger('MONGODB_MAX_IDLE_TIME_MS', 60000, 5000, 300000);
+
 let poolWaiting = 0;
-export function mongoPoolHealth() { return { waiting: poolWaiting, capacity: 30 }; }
+export function mongoPoolHealth() {
+  return {
+    waiting: poolWaiting,
+    capacity: mongoMaxPoolSize,
+    maxConnecting: mongoMaxConnecting,
+  };
+}
 
 const dnsServers = process.env.MONGODB_DNS_SERVERS;
 
@@ -38,8 +61,13 @@ async function openMongoDB() {
   }
 
   const connectingClient = new MongoClient(uri, {
-    serverSelectionTimeoutMS: 5000, connectTimeoutMS: 10000,
-    maxPoolSize: 30, minPoolSize: 0, maxIdleTimeMS: 60000, waitQueueTimeoutMS: 5000,
+    serverSelectionTimeoutMS: 5000,
+    connectTimeoutMS: 10000,
+    maxPoolSize: mongoMaxPoolSize,
+    minPoolSize: mongoMinPoolSize,
+    maxConnecting: mongoMaxConnecting,
+    maxIdleTimeMS: mongoMaxIdleTimeMS,
+    waitQueueTimeoutMS: mongoWaitQueueTimeoutMS,
     monitorCommands: true,
   });
   connectingClient.on('commandSucceeded', event => observeMongo(event));

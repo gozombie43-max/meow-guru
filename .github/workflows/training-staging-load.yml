@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       concurrency:
-        description: 'Run C1, C5, C10, C25, C50, C100 in order; stop when a stage fails'
+        description: 'Select one staging load level; validate progressively through C1000'
         required: true
         default: '1'
         type: choice
@@ -15,6 +15,9 @@ on:
           - '25'
           - '50'
           - '100'
+          - '250'
+          - '500'
+          - '1000'
 
 concurrency:
   group: staging-training-load

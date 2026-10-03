@@ -1,10 +1,16 @@
 import { RedisRateLimitStore } from "./redisRateLimitStore.js";
-// middleware/rateLimiter.js
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
+import { verifyToken } from '../auth/jwt.js';
 
-import rateLimit, {
-  ipKeyGenerator,
-} from 'express-rate-limit';
-
+function productionLimit(name, fallback, min, max) {
+  const raw = process.env[name];
+  if (raw === undefined || raw === '') return fallback;
+  const value = Number(raw);
+  if (!Number.isInteger(value) || value < min || value > max) {
+    throw new Error(`${name} must be an integer from ${min} to ${max}`);
+  }
+  return value;
+}
 
 /**
  * Azure App Service can expose req.ip as:
@@ -18,90 +24,48 @@ import rateLimit, {
  * Also safely handles IPv6 and IPv4-mapped IPv6.
  */
 function normalizeClientIp(ip) {
-  let value =
-    String(ip || '').trim();
+  let value = String(ip || '').trim();
+  if (!value) return null;
 
-  if (!value) {
-    return null;
-  }
+  const bracketedIpv6 = value.match(/^\[([^\]]+)\](?::\d+)?$/);
+  if (bracketedIpv6) value = bracketedIpv6[1];
 
-  // [IPv6]:port
-  const bracketedIpv6 =
-    value.match(
-      /^\[([^\]]+)\](?::\d+)?$/
-    );
+  const ipv4WithPort = value.match(/^(\d{1,3}(?:\.\d{1,3}){3}):\d+$/);
+  if (ipv4WithPort) value = ipv4WithPort[1];
 
-  if (bracketedIpv6) {
-    value =
-      bracketedIpv6[1];
-  }
-
-  // IPv4:port
-  const ipv4WithPort =
-    value.match(
-      /^(\d{1,3}(?:\.\d{1,3}){3}):\d+$/
-    );
-
-  if (ipv4WithPort) {
-    value =
-      ipv4WithPort[1];
-  }
-
-  // ::ffff:192.168.1.1
-  if (
-    value.startsWith(
-      '::ffff:'
-    ) &&
-    value.includes('.')
-  ) {
-    value =
-      value.slice(7);
-  }
-
+  if (value.startsWith('::ffff:') && value.includes('.')) value = value.slice(7);
   return value;
 }
 
-
-/**
- * Generate a safe IP-based limiter key.
- *
- * ipKeyGenerator is retained so IPv6 addresses
- * are handled correctly by express-rate-limit.
- */
 function requestIpKey(req) {
-  const normalizedIp =
-    normalizeClientIp(
-      req.ip ||
-      req.socket?.remoteAddress
-    );
-
-  if (!normalizedIp) {
-    return 'unknown-client';
-  }
-
-  return ipKeyGenerator(
-    normalizedIp
-  );
+  const normalizedIp = normalizeClientIp(req.ip || req.socket?.remoteAddress);
+  if (!normalizedIp) return 'unknown-client';
+  return ipKeyGenerator(normalizedIp);
 }
 
+const isDevOrLocal = () => process.env.NODE_ENV !== 'production';
 
-/**
- * Local development can bypass limits; production always enforces them.
- */
-const isDevOrLocal = () => {
-  // Production traffic can arrive through a local reverse proxy. Loopback is
-  // not an authorization signal and must never disable abuse protection.
-  return process.env.NODE_ENV !== 'production';
+function verifiedBearerUserKey(req) {
+  const header = String(req.headers?.authorization || '');
+  if (!header.startsWith('Bearer ')) return null;
+  try {
+    const decoded = verifyToken(header.slice(7));
+    return decoded?.id ? `user:${String(decoded.id)}` : null;
+  } catch {
+    return null;
+  }
+}
+
+const userKeyGenerator = (req) => {
+  const resolvedUser = req.user?.id || req.user?._id;
+  if (resolvedUser) return `user:${String(resolvedUser)}`;
+  return verifiedBearerUserKey(req) || `ip:${requestIpKey(req)}`;
 };
 
-/**
- * Prefer authenticated user identity where available.
- * Otherwise fall back to normalized client IP.
- */
-const userKeyGenerator = (req) =>
-  req.user?.id ||
-  req.user?._id ||
-  requestIpKey(req);
+const credentialKeyGenerator = (req) => {
+  const email = String(req.body?.email || '').trim().toLowerCase();
+  return email ? `account:${email}` : `ip:${requestIpKey(req)}`;
+};
 
 const isTrainingRequest = req => {
   const path = req.path || '';
@@ -110,11 +74,11 @@ const isTrainingRequest = req => {
     url === '/api/training' || url.startsWith('/api/training/');
 };
 
-// Local load runs can avoid the distributed global limiter for training traffic
-// while retaining a cheap IP guard.
 export const trainingIngressLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: process.env.NODE_ENV !== 'production' ? 100000 : 5000,
+  max: process.env.NODE_ENV !== 'production'
+    ? 100000
+    : productionLimit('TRAINING_INGRESS_RATE_LIMIT_MAX', 5000, 1000, 100000),
   standardHeaders: true,
   legacyHeaders: false,
   keyGenerator: requestIpKey,
@@ -122,200 +86,109 @@ export const trainingIngressLimiter = rateLimit({
   message: { error: 'Too many training requests, please try again later.' },
 });
 
+export const globalLimiter = rateLimit({
+  ...(process.env.NODE_ENV === "production" ? { store: new RedisRateLimitStore('global') } : {}),
+  windowMs: 15 * 60 * 1000,
+  max: process.env.NODE_ENV !== 'production'
+    ? 100000
+    : productionLimit('GLOBAL_RATE_LIMIT_MAX', 5000, 1000, 100000),
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: userKeyGenerator,
+  skip: (req) => {
+    if (isDevOrLocal()) return true;
+    if (req.method === 'OPTIONS') return true;
+    if (process.env.TRAINING_LOCAL_INGRESS === 'true' && isTrainingRequest(req)) return true;
 
-// Global Limiter
-export const globalLimiter =
-  rateLimit({
-    ...(process.env.NODE_ENV === "production" ? { store: new RedisRateLimitStore('global') } : {}),
-    windowMs:
-      15 * 60 * 1000,
+    const path = req.path || '';
+    const url = req.originalUrl || req.url || '';
+    if (['/', '/health', '/api/health', '/live'].includes(path)) return true;
+    if (path.startsWith('/uploads') || url.startsWith('/uploads')) return true;
+    if (path.startsWith('/api/pdfs') || url.startsWith('/api/pdfs')) return true;
+    return false;
+  },
+  message: { error: 'Too many requests, please try again later.' },
+});
 
-    max:
-      process.env.NODE_ENV !== 'production' ? 100000 : 5000,
+// Broad auth ingress guard. This is intentionally much larger than the
+// per-account credential limiter so many legitimate users behind one NAT can
+// refresh or sign in without sharing a tiny 100-request bucket.
+export const authLimiter = rateLimit({
+  ...(process.env.NODE_ENV === "production" ? { store: new RedisRateLimitStore('auth-ingress') } : {}),
+  windowMs: 15 * 60 * 1000,
+  max: process.env.NODE_ENV !== 'production'
+    ? 10000
+    : productionLimit('AUTH_INGRESS_RATE_LIMIT_MAX', 2000, 100, 20000),
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: requestIpKey,
+  skip: isDevOrLocal,
+  message: { error: 'Too many authentication requests, please try again later.' },
+});
 
-    standardHeaders:
-      true,
+// Login/register protection follows the account identifier instead of forcing
+// every user behind the same school/mobile NAT to share one credential bucket.
+export const authCredentialLimiter = rateLimit({
+  ...(process.env.NODE_ENV === "production" ? { store: new RedisRateLimitStore('auth-credential') } : {}),
+  windowMs: 15 * 60 * 1000,
+  max: process.env.NODE_ENV !== 'production'
+    ? 1000
+    : productionLimit('AUTH_CREDENTIAL_RATE_LIMIT_MAX', 20, 5, 100),
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: credentialKeyGenerator,
+  skip: isDevOrLocal,
+  message: { error: 'Too many attempts for this account, please try again later.' },
+});
 
-    legacyHeaders:
-      false,
+export const aiLimiter = rateLimit({
+  ...(process.env.NODE_ENV === "production" ? { store: new RedisRateLimitStore('ai') } : {}),
+  windowMs: 15 * 60 * 1000,
+  max: process.env.NODE_ENV !== 'production'
+    ? 10000
+    : productionLimit('AI_RATE_LIMIT_MAX', 100, 10, 5000),
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: userKeyGenerator,
+  skip: isDevOrLocal,
+  message: { error: 'AI rate limit reached, please try again later.' },
+});
 
-    keyGenerator:
-      userKeyGenerator,
+export const trainingLimiter = rateLimit({
+  ...(process.env.NODE_ENV === "production" ? { store: new RedisRateLimitStore('training') } : {}),
+  windowMs: 15 * 60 * 1000,
+  max: process.env.NODE_ENV !== 'production'
+    ? 100000
+    : productionLimit('TRAINING_RATE_LIMIT_MAX', 1500, 100, 10000),
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: userKeyGenerator,
+  skip: isDevOrLocal,
+  message: { error: 'Training request limit reached, please try again shortly.' },
+});
 
-    skip: (req) => {
-      // Skip only outside production.
-      if (isDevOrLocal(req)) return true;
+export const agentLimiter = rateLimit({
+  ...(process.env.NODE_ENV === "production" ? { store: new RedisRateLimitStore('agent') } : {}),
+  windowMs: 15 * 60 * 1000,
+  max: process.env.NODE_ENV !== 'production'
+    ? 10000
+    : productionLimit('AGENT_RATE_LIMIT_MAX', 150, 10, 5000),
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: userKeyGenerator,
+  skip: isDevOrLocal,
+  message: { error: 'Agent rate limit reached, please try again later.' },
+});
 
-      // Skip HTTP OPTIONS preflight requests
-      if (req.method === 'OPTIONS') return true;
-
-      // Skip authenticated training (has its own durable trainingLimiter)
-      if (process.env.TRAINING_LOCAL_INGRESS === 'true' && isTrainingRequest(req)) return true;
-
-      const path = req.path || '';
-      const url = req.originalUrl || req.url || '';
-
-      // Skip health checks and root ping
-      if (['/', '/health', '/api/health', '/live'].includes(path)) return true;
-
-      // Skip static uploads and image requests
-      if (path.startsWith('/uploads') || url.startsWith('/uploads')) return true;
-
-      // Skip reading PDFs, notes, and streaming content
-      if (path.startsWith('/api/pdfs') || url.startsWith('/api/pdfs')) return true;
-
-      return false;
-    },
-
-    message: {
-      error:
-        'Too many requests, please try again later.',
-    },
-  });
-
-
-// Authentication
-export const authLimiter =
-  rateLimit({
-    ...(process.env.NODE_ENV === "production" ? { store: new RedisRateLimitStore('auth') } : {}),
-    windowMs:
-      15 * 60 * 1000,
-
-    max:
-      process.env.NODE_ENV !== 'production' ? 10000 : 100,
-
-    standardHeaders:
-      true,
-
-    legacyHeaders:
-      false,
-
-    keyGenerator:
-      requestIpKey,
-
-    skip:
-      isDevOrLocal,
-
-    message: {
-      error:
-        'Too many authentication attempts, please try again later.',
-    },
-  });
-
-
-// AI
-export const aiLimiter =
-  rateLimit({
-    ...(process.env.NODE_ENV === "production" ? { store: new RedisRateLimitStore('ai') } : {}),
-    windowMs:
-      15 * 60 * 1000,
-
-    max:
-      process.env.NODE_ENV !== 'production' ? 10000 : 100,
-
-    standardHeaders:
-      true,
-
-    legacyHeaders:
-      false,
-
-    keyGenerator:
-      userKeyGenerator,
-
-    skip:
-      isDevOrLocal,
-
-    message: {
-      error:
-        'AI rate limit reached, please try again later.',
-    },
-  });
-
-
-// Training actions are frequent, authenticated, low-cost state mutations.
-// Keep them separate from AI/agent quotas so normal 25–50 question sessions
-// cannot exhaust an AI-style bucket.
-export const trainingLimiter =
-  rateLimit({
-    ...(process.env.NODE_ENV === "production" ? { store: new RedisRateLimitStore('training') } : {}),
-    windowMs:
-      15 * 60 * 1000,
-
-    max:
-      process.env.NODE_ENV !== 'production' ? 100000 : 1500,
-
-    standardHeaders:
-      true,
-
-    legacyHeaders:
-      false,
-
-    keyGenerator:
-      userKeyGenerator,
-
-    skip:
-      isDevOrLocal,
-
-    message: {
-      error:
-        'Training request limit reached, please try again shortly.',
-    },
-  });
-
-
-// Agents
-export const agentLimiter =
-  rateLimit({
-    ...(process.env.NODE_ENV === "production" ? { store: new RedisRateLimitStore('agent') } : {}),
-    windowMs:
-      15 * 60 * 1000,
-
-    max:
-      process.env.NODE_ENV !== 'production' ? 10000 : 150,
-
-    standardHeaders:
-      true,
-
-    legacyHeaders:
-      false,
-
-    keyGenerator:
-      userKeyGenerator,
-
-    skip:
-      isDevOrLocal,
-
-    message: {
-      error:
-        'Agent rate limit reached, please try again later.',
-    },
-  });
-
-
-// Uploads
-export const uploadLimiter =
-  rateLimit({
-    ...(process.env.NODE_ENV === "production" ? { store: new RedisRateLimitStore('upload') } : {}),
-    windowMs:
-      15 * 60 * 1000,
-
-    max:
-      process.env.NODE_ENV !== 'production' ? 10000 : 200,
-
-    standardHeaders:
-      true,
-
-    legacyHeaders:
-      false,
-
-    keyGenerator:
-      userKeyGenerator,
-
-    skip:
-      isDevOrLocal,
-
-    message: {
-      error:
-        'Upload rate limit reached, please try again later.',
-    },
-  });
+export const uploadLimiter = rateLimit({
+  ...(process.env.NODE_ENV === "production" ? { store: new RedisRateLimitStore('upload') } : {}),
+  windowMs: 15 * 60 * 1000,
+  max: process.env.NODE_ENV !== 'production'
+    ? 10000
+    : productionLimit('UPLOAD_RATE_LIMIT_MAX', 200, 10, 5000),
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: userKeyGenerator,
+  skip: isDevOrLocal,
+  message: { error: 'Upload rate limit reached, please try again later.' },
+});

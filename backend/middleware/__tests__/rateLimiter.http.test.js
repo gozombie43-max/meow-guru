@@ -13,6 +13,9 @@ let origin;
 
 beforeAll(async () => {
   vi.stubEnv('NODE_ENV', 'production');
+  vi.stubEnv('JWT_SECRET', 'test-access-secret-for-rate-limiter');
+  vi.stubEnv('REFRESH_TOKEN_SECRET', 'test-refresh-secret-for-rate-limiter');
+  vi.stubEnv('AUTH_INGRESS_RATE_LIMIT_MAX', '100');
   const { authLimiter } = await import('../rateLimiter.js');
   const app = express();
   app.set('trust proxy', 'loopback');
@@ -46,7 +49,7 @@ it.each([
   expect(blocked.headers.get('ratelimit-remaining')).toBe('0');
   expect(Number(blocked.headers.get('retry-after'))).toBeGreaterThan(0);
   expect(blocked.headers.get('x-ratelimit-limit')).toBeNull();
-  expect(await blocked.json()).toEqual({ error: 'Too many authentication attempts, please try again later.' });
+  expect(await blocked.json()).toEqual({ error: 'Too many authentication requests, please try again later.' });
   const allowed = await request(otherBucket);
   expect(allowed.status).toBe(200);
   await allowed.text();

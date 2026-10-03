@@ -4,6 +4,7 @@ import { requestTrace } from './infrastructure/tracing.js';
 import { optionalWorkAdmission } from './middleware/overload.js';
 import { metricsHandler } from './infrastructure/metrics.js';
 import { redisHealth } from './config/redis.js';
+import { mongoPoolHealth } from './config/mongodb.js';
 import { maintenanceQueueHealth } from './infrastructure/maintenanceQueue.js';
 import { dependencyHealth } from './infrastructure/dependencyBoundary.js';
 import { checkReadiness } from './infrastructure/readiness.js';
@@ -25,6 +26,7 @@ import {
   globalLimiter,
   trainingIngressLimiter,
   authLimiter,
+  authCredentialLimiter,
   agentLimiter,
   uploadLimiter,
 } from './middleware/rateLimiter.js';
@@ -82,9 +84,7 @@ export async function createApp({ isReady, isShuttingDown, quizOnlyMode = proces
   app.use(requestBodyLimits);
   app.use(cookieParser());
 
-  // Keep legacy question images readable while their stored references are migrated.
   app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
   app.use(passport.initialize());
 
   app.get('/', (_req, res) =>
@@ -105,6 +105,7 @@ export async function createApp({ isReady, isShuttingDown, quizOnlyMode = proces
       ok: healthy,
       dependencies: {
         mongo: healthy ? 'healthy' : 'unavailable',
+        mongoPool: mongoPoolHealth(),
         redis: redisHealth(),
         maintenanceQueue: maintenanceQueueHealth(),
         storage: dependencyHealth().storage?.circuit === 'open' ? 'degraded' : 'unknown',
@@ -134,17 +135,11 @@ export async function createApp({ isReady, isShuttingDown, quizOnlyMode = proces
     return res.status(503).json({ ok: false, state: 'draining' });
   });
 
-  // Quiz-essential routes. These remain available on the Azure Free F1 runtime.
   app.use('/api/questions', questionRoutes);
   app.use('/api/mocktest', mocktestRoutes);
   app.use('/api/progress', progressRoutes);
   app.use('/api/upload', uploadLimiter, lazyRouter(() => import('./routes/imageUpload.js')));
 
-  // Bulk image/solution administration depends on external object storage. Keep
-  // those integrations off the boot-critical path so quiz/training-only runtimes
-  // can start without production B2 credentials.
-  // Scope bulk B2 loaders to their actual endpoints. A broad /api mount would
-  // import B2 on unrelated requests such as /api/training/dashboard.
   app.use(
     /^\/api(?=\/(?:mass-upload-images|mass-upload-question-images)(?:\/|$))/,
     uploadLimiter,
@@ -156,12 +151,11 @@ export async function createApp({ isReady, isShuttingDown, quizOnlyMode = proces
     lazyRouter(() => import('./routes/massUploadSolutions.js')),
   );
 
+  app.use(['/auth/login', '/auth/register'], authCredentialLimiter);
   app.use('/auth', authLimiter, initAuthRoutes());
   app.use('/users', initUserRoutes());
   app.use('/api/access-code', authLimiter, accessCodeRoutes);
 
-  // Keep user-invoked study tools on F1, but lazy-load them so they consume no
-  // route/module startup cost until the user actually opens Tutor or Notes/PDF.
   app.use('/api/ai', lazyRouter(() => import('./routes/aiRoutes.js')));
   app.use('/api/upload-note-image', uploadLimiter, lazyRouter(() => import('./routes/uploadNoteImage.js')));
   app.use('/api/notes', lazyRouter(() => import('./routes/notes.routes.js')));
