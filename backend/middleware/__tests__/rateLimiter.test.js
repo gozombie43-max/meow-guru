@@ -1,6 +1,6 @@
 import { afterEach, expect, it, vi } from 'vitest';
 vi.mock('express-rate-limit', () => ({ default: options => options, ipKeyGenerator: value => value }));
-import { authLimiter, aiLimiter, globalLimiter, trainingIngressLimiter, trainingLimiter } from '../rateLimiter.js';
+import { authLimiter, authCredentialLimiter, aiLimiter, globalLimiter, trainingIngressLimiter, trainingLimiter } from '../rateLimiter.js';
 afterEach(() => vi.unstubAllEnvs());
 it('enforces production limits on loopback proxy traffic', () => {
   vi.stubEnv('NODE_ENV', 'production');
@@ -30,4 +30,13 @@ it('uses the distributed global limiter for training unless local ingress is ena
   for (const path of ['/api/training-other', '/api/auth/login']) {
     expect(globalLimiter.skip({ ...request, path })).toBe(false);
   }
+});
+
+it('keys credential attempts by normalized account instead of shared NAT IP', () => {
+  const first = authCredentialLimiter.keyGenerator({ body: { email: ' Student@Example.com ' }, ip: '10.0.0.1' });
+  const sameAccount = authCredentialLimiter.keyGenerator({ body: { email: 'student@example.com' }, ip: '10.0.0.2' });
+  const otherAccount = authCredentialLimiter.keyGenerator({ body: { email: 'other@example.com' }, ip: '10.0.0.1' });
+  expect(first).toBe('account:student@example.com');
+  expect(sameAccount).toBe(first);
+  expect(otherAccount).not.toBe(first);
 });
