@@ -13,6 +13,8 @@ let origin;
 
 beforeAll(async () => {
   vi.stubEnv('NODE_ENV', 'production');
+  vi.stubEnv('JWT_SECRET', 'test-access-secret-for-rate-limiter');
+  vi.stubEnv('REFRESH_TOKEN_SECRET', 'test-refresh-secret-for-rate-limiter');
   vi.stubEnv('AUTH_INGRESS_RATE_LIMIT_MAX', '100');
   const { authLimiter } = await import('../rateLimiter.js');
   const app = express();
