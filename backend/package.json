@@ -58,7 +58,7 @@
   },
   "scripts": {
     "start": "node --import ./instrumentation.js index.js",
-    "dev": "nodemon --exec \"node --import ./instrumentation.js\" index.js",
+    "dev": "node --watch --import ./instrumentation.js index.js",
     "test": "vitest run --maxWorkers=1",
     "test:unit": "vitest run --exclude='**/*.integration.test.js'",
     "test:integration": "vitest run integration",
@@ -89,7 +89,6 @@
     "eslint": "^10.11.0",
     "globals": "^17.12.0",
     "mongodb-memory-server": "^11.3.0",
-    "nodemon": "^3.1.14",
     "socket.io-client": "^4.8.4",
     "vitest": "^5.0.2"
   },
