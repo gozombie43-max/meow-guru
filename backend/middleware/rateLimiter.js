@@ -96,7 +96,7 @@ export const globalLimiter = rateLimit({
   legacyHeaders: false,
   keyGenerator: userKeyGenerator,
   skip: (req) => {
-    if (isDevOrLocal(req)) return true;
+    if (isDevOrLocal()) return true;
     if (req.method === 'OPTIONS') return true;
     if (process.env.TRAINING_LOCAL_INGRESS === 'true' && isTrainingRequest(req)) return true;
 
