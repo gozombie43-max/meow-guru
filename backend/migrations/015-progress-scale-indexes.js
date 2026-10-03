@@ -11,7 +11,13 @@ function sameKey(left = {}, right = {}) {
 }
 
 async function ensureIndex(collection, key, options) {
-  const existing = await collection.listIndexes().toArray();
+  let existing;
+  try {
+    existing = await collection.listIndexes().toArray();
+  } catch (error) {
+    if (error?.code !== 26 && error?.codeName !== 'NamespaceNotFound') throw error;
+    existing = [];
+  }
   const matchingKey = existing.find(index => sameKey(index.key, key));
   if (matchingKey) {
     const expectedUnique = Boolean(options.unique);
