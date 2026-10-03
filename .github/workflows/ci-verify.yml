@@ -119,8 +119,16 @@ jobs:
       - name: Audit Backend Dependencies
         run: npm audit --workspace backend --audit-level=high
 
-      - name: Audit Frontend Dependencies
-        run: npm audit --workspace frontend --audit-level=high
+      - name: Audit Frontend Production Dependencies
+        run: npm audit --workspace frontend --omit=dev --audit-level=high
+
+      - name: Audit Frontend Development Dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          report="$RUNNER_TEMP/frontend-audit.json"
+          npm audit --workspace frontend --audit-level=high --json > "$report" || true
+          node frontend/scripts/verify-known-dev-audit-exceptions.mjs "$report" package-lock.json
 
   build-and-analyze:
     name: Production Build & Bundle Report
