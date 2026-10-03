@@ -1,5 +1,6 @@
 import { RedisRateLimitStore } from "./redisRateLimitStore.js";
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
+import { verifyToken } from '../auth/jwt.js';
 
 function productionLimit(name, fallback, min, max) {
   const raw = process.env[name];
@@ -44,10 +45,22 @@ function requestIpKey(req) {
 
 const isDevOrLocal = () => process.env.NODE_ENV !== 'production';
 
-const userKeyGenerator = (req) =>
-  req.user?.id ||
-  req.user?._id ||
-  requestIpKey(req);
+function verifiedBearerUserKey(req) {
+  const header = String(req.headers?.authorization || '');
+  if (!header.startsWith('Bearer ')) return null;
+  try {
+    const decoded = verifyToken(header.slice(7));
+    return decoded?.id ? `user:${String(decoded.id)}` : null;
+  } catch {
+    return null;
+  }
+}
+
+const userKeyGenerator = (req) => {
+  const resolvedUser = req.user?.id || req.user?._id;
+  if (resolvedUser) return `user:${String(resolvedUser)}`;
+  return verifiedBearerUserKey(req) || `ip:${requestIpKey(req)}`;
+};
 
 const credentialKeyGenerator = (req) => {
   const email = String(req.body?.email || '').trim().toLowerCase();
