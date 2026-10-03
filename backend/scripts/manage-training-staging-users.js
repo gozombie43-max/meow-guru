@@ -14,10 +14,10 @@ const uri = required('STAGING_MONGODB_URI');
 const dbName = process.env.STAGING_MONGODB_DB?.trim() || 'quizDB_staging';
 const prefix = required('STAGING_PROBE_PREFIX').replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase();
 const count = Number(process.env.STAGING_PROBE_COUNT || 1);
-if (!Number.isInteger(count) || count < 1 || count > 100) throw new Error('STAGING_PROBE_COUNT must be an integer from 1 to 100');
+if (!Number.isInteger(count) || count < 1 || count > 1000) throw new Error('STAGING_PROBE_COUNT must be an integer from 1 to 1000');
 if (!/staging/i.test(dbName)) throw new Error('Refusing synthetic-user mutation outside a staging database');
 
-const client = new MongoClient(uri, { serverSelectionTimeoutMS: 10000 });
+const client = new MongoClient(uri, { serverSelectionTimeoutMS: 10000, maxPoolSize: 10 });
 const emailFor = (index) => `${prefix}-${index}@staging.invalid`;
 const idFor = (index) => `staging-probe-${prefix}-${index}`;
 
@@ -59,8 +59,8 @@ try {
       recentQuizzes: [],
       createdAt: now,
     }));
-    await db.collection('users').insertMany(users);
-    console.log(JSON.stringify({ action, count, prefix, emails: users.map((user) => user.email) }));
+    await db.collection('users').insertMany(users, { ordered: false });
+    console.log(JSON.stringify({ action, count, prefix }));
   } else {
     console.log(JSON.stringify({ action, count, prefix }));
   }
