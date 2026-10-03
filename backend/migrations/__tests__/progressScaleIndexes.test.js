@@ -21,6 +21,18 @@ async function database() {
 }
 
 describe('progress scale indexes', () => {
+  it('creates the hot progress indexes on a fresh database', async () => {
+    const db = await database();
+
+    await up(db);
+
+    const questionIndexes = await db.collection('userQuestionProgress').listIndexes().toArray();
+    const topicIndexes = await db.collection('userTopicProgress').listIndexes().toArray();
+    expect(questionIndexes.find(index => index.name === 'progress_user_question_unique')?.unique).toBe(true);
+    expect(questionIndexes.some(index => index.name === 'progress_user_topic_lookup')).toBe(true);
+    expect(topicIndexes.find(index => index.name === 'topic_progress_user_topic_unique')?.unique).toBe(true);
+  });
+
   it('adopts legacy equivalent indexes and remains idempotent', async () => {
     const db = await database();
     await db.collection('userQuestionProgress').createIndex(
