@@ -108,13 +108,14 @@ jobs:
         run: npm run test:load:training
 
       - name: Pagination benchmark (isolated local database)
+        id: pagination_benchmark
         working-directory: ./backend
         env:
           PAGINATION_BENCH_REPORT: ${{ runner.temp }}/pagination-benchmark.json
         run: npm run test:benchmark:pagination
 
       - name: Upload raw benchmark evidence
-        if: always()
+        if: ${{ !cancelled() && steps.pagination_benchmark.outcome == 'success' }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: pagination-benchmark

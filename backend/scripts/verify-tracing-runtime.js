@@ -1,6 +1,7 @@
 import { createServer } from 'node:http';
 import { once } from 'node:events';
 import { execFile } from 'node:child_process';
+import { randomBytes } from 'node:crypto';
 import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import assert from 'node:assert/strict';
@@ -27,7 +28,17 @@ try {
   const code = `const { withTrace } = await import('./infrastructure/tracing.js'); await withTrace('runtime.preload', { 'url.full': 'secret-signed-url' }, () => fetch('${base}/dependency?token=secret')); ${mongoProbe} await globalThis.__shutdownTelemetry();`;
   await promisify(execFile)(process.execPath, ['--import', './instrumentation.js', '--input-type=module', '--eval', code], {
     cwd: fileURLToPath(new URL('../', import.meta.url)), timeout: 30000, windowsHide: true,
-    env: { ...process.env, TRACE_TEST_MONGO_URI: mongo?.getUri() || '', OTEL_ENABLED: 'true', OTEL_TRACES_SAMPLER: 'always_on', OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: `${base}/v1/traces`, OTEL_EXPORTER_OTLP_HEADERS: '', OTEL_RESOURCE_ATTRIBUTES: '' },
+    env: {
+      ...process.env,
+      // This child verifies runtime preload against disposable local services.
+      NODE_ENV: 'test', DEPLOYMENT_ENVIRONMENT: 'test',
+      JWT_SECRET: randomBytes(32).toString('hex'),
+      REFRESH_TOKEN_SECRET: randomBytes(32).toString('hex'),
+      TRACE_TEST_MONGO_URI: mongo?.getUri() || '',
+      OTEL_ENABLED: 'true', OTEL_TRACES_SAMPLER: 'always_on',
+      OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: `${base}/v1/traces`,
+      OTEL_EXPORTER_OTLP_HEADERS: '', OTEL_RESOURCE_ATTRIBUTES: '',
+    },
   });
   const spans = payloads.flatMap(data => data.resourceSpans || []).flatMap(resource => resource.scopeSpans || []).flatMap(scope => scope.spans || []);
   assert(spans.some(span => span.name === 'runtime.preload'), 'Manual span did not reach the local collector');
